@@ -3565,8 +3565,20 @@ extract_range_basic (value_range_t *vr, gimple stmt)
   bool sop = false;
   tree type = gimple_expr_type (stmt);
 
-  if (INTEGRAL_TYPE_P (type)
-      && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
+  /* If the call is __builtin_constant_p and the argument is a
+     function parameter resolve it to false.  This avoids bogus
+     array bound warnings.
+     ???  We could do this as early as inlining is finished.  */
+  if (gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
+    {
+      tree arg = gimple_call_arg (stmt, 0);
+      if (TREE_CODE (arg) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (arg)
+	  && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL)
+	set_value_range_to_null (vr, type);
+    }
+  else if (INTEGRAL_TYPE_P (type)
+	   && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
     set_value_range_to_nonnegative (vr, type,
 				    sop || stmt_overflow_infinity (stmt));
   else if (vrp_stmt_computes_nonzero (stmt, &sop)

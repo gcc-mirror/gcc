@@ -1,3 +1,9 @@
+2012-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44061
+	* tree-vrp.c (extract_range_basic): Compute zero as
+	value-range for __builtin_constant_p of function parameters.
+
 2013-01-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
