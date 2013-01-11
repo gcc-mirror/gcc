@@ -1,3 +1,10 @@
+2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (Tree checking): Set TREECHECKING to yes if enabled.
+	Substitute TREECHECKING.
+	* configure: Regenerate.
+	* Makefile.in (TREECHECKING): New.
+
 2012-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44061

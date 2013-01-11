@@ -470,6 +470,7 @@ if test x$ac_tree_checking != x ; then
    routines will also be enabled by this option.
    ])
   TREEBROWSER=tree-browser.o
+  TREECHECKING=yes
 fi
 if test x$ac_types_checking != x ; then
   AC_DEFINE(ENABLE_TYPES_CHECKING, 1,
@@ -478,6 +479,7 @@ if test x$ac_types_checking != x ; then
    ])
 fi
 AC_SUBST(TREEBROWSER)
+AC_SUBST(TREECHECKING)
 if test x$ac_rtl_checking != x ; then
   AC_DEFINE(ENABLE_RTL_CHECKING, 1,
 [Define if you want all operations on RTL (the basic data structure

@@ -773,6 +773,7 @@ coverage_flags
 valgrind_command
 valgrind_path_defines
 valgrind_path
+TREECHECKING
 TREEBROWSER
 nocommon_flag
 noexception_flags
@@ -6786,12 +6787,14 @@ if test x$ac_tree_checking != x ; then
 $as_echo "#define ENABLE_TREE_CHECKING 1" >>confdefs.h
 
   TREEBROWSER=tree-browser.o
+  TREECHECKING=yes
 fi
 if test x$ac_types_checking != x ; then
 
 $as_echo "#define ENABLE_TYPES_CHECKING 1" >>confdefs.h
 
 fi
+
 
 if test x$ac_rtl_checking != x ; then
 
@@ -17822,7 +17825,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17825 "configure"
+#line 17828 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17928,7 +17931,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17931 "configure"
+#line 17934 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

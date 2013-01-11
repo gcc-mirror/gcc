@@ -1,3 +1,8 @@
+2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.tpl (BOOT_ADAFLAGS): Remove -gnata.
+	* Makefile.in: Regenerate.
+
 2013-01-10  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* MAINTAINERS (arc): Add new port maintainership for myself.

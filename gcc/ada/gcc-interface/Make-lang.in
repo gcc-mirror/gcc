@@ -45,7 +45,12 @@ RMDIR = rm -rf
 
 
 # Extra flags to pass to recursive makes.
-COMMON_ADAFLAGS= -gnatpg -gnata
+COMMON_ADAFLAGS= -gnatpg
+ifeq ($(TREECHECKING),)
+CHECKING_ADAFLAGS=
+else
+CHECKING_ADAFLAGS= -gnata
+endif
 WARN_ADAFLAGS= -W -Wall
 
 # For native builds, the base compiler might be old and we need to arrange for
@@ -59,7 +64,8 @@ else
 ADAFLAGS= $(COMMON_ADAFLAGS)
 endif
 
-ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(WARN_ADAFLAGS)
+ALL_ADAFLAGS = \
+  $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(CHECKING_ADAFLAGS) $(WARN_ADAFLAGS)
 FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
 ADA_INCLUDES = -nostdinc -I- -I. -Iada -I$(srcdir)/ada -I$(srcdir)/ada/gcc-interface
