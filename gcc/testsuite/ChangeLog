@@ -1,3 +1,8 @@
+2012-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44061
+	* gcc.dg/pr44061.c: New testcase.
+
 2013-01-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
