@@ -2,7 +2,8 @@
 
 	* doc/extend.texi (X86 Built-in Functions): Add whitespace in
 	__builtin_ia32_paddb256 and __builtin_ia32_pavgb256
-	documentation.
+	documentation.  Add missing '__' in front of
+	__builtin_ia32_packssdw256.
 
 2013-01-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
