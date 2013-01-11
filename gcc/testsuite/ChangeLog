@@ -1,4 +1,9 @@
-2012-01-11  Richard Guenther  <rguenther@suse.de>
+2013-01-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/55719
+	* gcc.target/s390/pr55719.c: New testcase.
+
+2013-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44061
 	* gcc.dg/pr44061.c: New testcase.

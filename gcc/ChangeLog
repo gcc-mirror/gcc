@@ -1,3 +1,11 @@
+2013-01-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/55719
+	* config/s390/s390.c (s390_preferred_reload_class): Do not return
+	NO_REGS for larl operands.
+	(s390_reload_larl_operand): Use s390_load_address instead of
+	emit_move_insn.
+
 2013-01-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_node_sharing_1): Split out from ...
