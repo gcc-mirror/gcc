@@ -1,3 +1,7 @@
+2013-01-11  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config.sub: Update from config repo.
+
 2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.tpl (BOOT_ADAFLAGS): Remove -gnata.
