@@ -1,3 +1,9 @@
+2013-01-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_node_sharing_1): Split out from ...
+	(verify_node_sharing): ... here.
+	(verify_gimple_in_cfg): Use verify_node_sharing_1 for walk_tree.
+
 2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (Tree checking): Set TREECHECKING to yes if enabled.
