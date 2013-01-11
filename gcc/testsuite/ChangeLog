@@ -1,3 +1,7 @@
+2013-01-11  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.c-torture/compile/pr55921.c: Don't use matching constraints.
+
 2013-01-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/55719
