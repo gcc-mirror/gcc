@@ -1487,6 +1487,10 @@ ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 BACKEND = libbackend.a main.o @TREEBROWSER@ libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER)
 
+# This is defined to "yes" if Tree checking is enabled, which roughly means
+# front-end checking.
+TREECHECKING = @TREECHECKING@
+
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \

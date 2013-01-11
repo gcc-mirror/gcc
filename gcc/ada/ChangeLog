@@ -1,3 +1,9 @@
+2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (COMMON_ADAFLAGS): Remove -gnata.
+	(CHECKING_ADAFLAGS): New.
+	(ALL_ADAFLAGS): Include CHECKING_ADAFLAGS.
+
 2013-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/config-lang.in (boot_language_boot_flags): Delete.
