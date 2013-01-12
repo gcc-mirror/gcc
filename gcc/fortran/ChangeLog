@@ -1,3 +1,9 @@
+2013-01-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55072
+	* trans-array.c (gfc_conv_array_parameter): No packing was done for
+	full arrays of derived type.
+
 2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55868
