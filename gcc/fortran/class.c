@@ -460,9 +460,9 @@ get_unique_type_string (char *string, gfc_symbol *derived)
 {
   char dt_name[GFC_MAX_SYMBOL_LEN+1];
   if (derived->attr.unlimited_polymorphic)
-    sprintf (dt_name, "%s", "$tar");
+    strcpy (dt_name, "STAR");
   else
-  sprintf (dt_name, "%s", derived->name);
+    strcpy (dt_name, derived->name);
   dt_name[0] = TOUPPER (dt_name[0]);
   if (derived->attr.unlimited_polymorphic)
     sprintf (string, "_%s", dt_name);
