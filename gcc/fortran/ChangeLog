@@ -1,3 +1,10 @@
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55868
+	* class.c (get_unique_type_string): Change $tar to STAR and
+	replace sprintf by strcpy where there is no formatting.
+	* decl.c (gfc_match_decl_type_spec): Change $tar to STAR.
+
 2013-01-09  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/47203
