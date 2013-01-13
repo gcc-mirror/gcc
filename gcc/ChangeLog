@@ -1,3 +1,13 @@
+2013-01-13  Terry Guo  <terry.guo@arm.com>
+
+	* gcc/Makefile.in (s-mlib): New argument MULTILIB_REUSE.
+	* gcc/doc/fragments.texi: Document MULTILIB_REUSE.
+	* gcc/gcc.c (multilib_reuse): New internal spec.
+	(set_multilib_dir): Also search multilib from multilib_reuse.
+	* gcc/genmultilib (tmpmultilib3): Refactor code.
+	(tmpmultilib4): Ditto.
+	(multilib_reuse): New multilib argument.
+
 2013-01-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* Makefile.in: Update copyright.

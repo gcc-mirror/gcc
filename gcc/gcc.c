@@ -855,6 +855,7 @@ static const char *multilib_select;
 static const char *multilib_matches;
 static const char *multilib_defaults;
 static const char *multilib_exclusions;
+static const char *multilib_reuse;
 
 /* Check whether a particular argument is a default argument.  */
 
@@ -1248,6 +1249,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("multilib_matches",		&multilib_matches),
   INIT_STATIC_SPEC ("multilib_exclusions",	&multilib_exclusions),
   INIT_STATIC_SPEC ("multilib_options",		&multilib_options),
+  INIT_STATIC_SPEC ("multilib_reuse",		&multilib_reuse),
   INIT_STATIC_SPEC ("linker",			&linker_name_spec),
   INIT_STATIC_SPEC ("linker_plugin_file",	&linker_plugin_file_spec),
   INIT_STATIC_SPEC ("lto_wrapper",		&lto_wrapper_spec),
@@ -6323,6 +6325,13 @@ main (int argc, char **argv)
     obstack_1grow (&multilib_obstack, 0);
     multilib_exclusions = XOBFINISH (&multilib_obstack, const char *);
 
+    q = multilib_reuse_raw;
+    while ((p = *q++) != (char *) 0)
+      obstack_grow (&multilib_obstack, p, strlen (p));
+
+    obstack_1grow (&multilib_obstack, 0);
+    multilib_reuse = XOBFINISH (&multilib_obstack, const char *);
+
     need_space = FALSE;
     for (i = 0; i < ARRAY_SIZE (multilib_defaults_raw); i++)
       {
@@ -7536,6 +7545,12 @@ set_multilib_dir (void)
 
   first = 1;
   p = multilib_select;
+
+  /* Append multilib reuse rules if any.  With those rules, we can reuse
+     one multilib for certain different options sets.  */
+  if (strlen (multilib_reuse) > 0)
+    p = concat (p, multilib_reuse, NULL);
+
   while (*p != '\0')
     {
       /* Ignore newlines.  */
@@ -7552,8 +7567,8 @@ set_multilib_dir (void)
 	  if (*p == '\0')
 	    {
 	    invalid_select:
-	      fatal_error ("multilib select %qs is invalid",
-			   multilib_select);
+	      fatal_error ("multilib select %qs %qs is invalid",
+			   multilib_select, multilib_reuse);
 	    }
 	  ++p;
 	}
