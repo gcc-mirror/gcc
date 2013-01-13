@@ -3506,7 +3506,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       if (comp)
 	s1 = comp->ts.interface;
       else
-	s1 = lvalue->symtree->n.sym;
+	{
+	  s1 = lvalue->symtree->n.sym;
+	  if (s1->ts.interface)
+	    s1 = s1->ts.interface;
+	}
 
       comp = gfc_get_proc_ptr_comp (rvalue);
       if (comp)
@@ -3514,7 +3518,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  if (rvalue->expr_type == EXPR_FUNCTION)
 	    {
 	      s2 = comp->ts.interface->result;
-	      name = comp->ts.interface->result->name;
+	      name = s2->name;
 	    }
 	  else
 	    {
@@ -3525,16 +3529,30 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       else if (rvalue->expr_type == EXPR_FUNCTION)
 	{
 	  s2 = rvalue->symtree->n.sym->result;
-	  name = rvalue->symtree->n.sym->result->name;
+	  name = s2->name;
 	}
       else
 	{
 	  s2 = rvalue->symtree->n.sym;
-	  name = rvalue->symtree->n.sym->name;
+	  name = s2->name;
 	}
 
-      if (s1 && s2 && !gfc_compare_interfaces (s1, s2, name, 0, 1,
-					       err, sizeof(err), NULL, NULL))
+      if (s2->attr.proc_pointer && s2->ts.interface)
+	s2 = s2->ts.interface;
+
+      if (s1 == s2 || !s1 || !s2)
+	return SUCCESS;
+
+      if (!gfc_compare_interfaces (s1, s2, name, 0, 1,
+				   err, sizeof(err), NULL, NULL))
+	{
+	  gfc_error ("Interface mismatch in procedure pointer assignment "
+		     "at %L: %s", &rvalue->where, err);
+	  return FAILURE;
+	}
+
+      if (!gfc_compare_interfaces (s2, s1, name, 0, 1,
+				   err, sizeof(err), NULL, NULL))
 	{
 	  gfc_error ("Interface mismatch in procedure pointer assignment "
 		     "at %L: %s", &rvalue->where, err);
