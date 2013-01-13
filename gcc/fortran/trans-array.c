@@ -6847,19 +6847,13 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
     this_array_result = false;
 
   /* Passing address of the array if it is not pointer or assumed-shape.  */
-  if (full_array_var && g77 && !this_array_result)
+  if (full_array_var && g77 && !this_array_result
+      && sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
     {
       tmp = gfc_get_symbol_decl (sym);
 
       if (sym->ts.type == BT_CHARACTER)
 	se->string_length = sym->ts.u.cl->backend_decl;
-
-      if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
-	{
-	  gfc_conv_expr_descriptor (se, expr, ss);
-	  se->expr = gfc_conv_array_data (se->expr);
-	  return;
-	}
 
       if (!sym->attr.pointer
 	    && sym->as
