@@ -1,5 +1,9 @@
 2013-01-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/unroll_5.c: Add nomips16 attributes.
+
+2013-01-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Update expected results for MIPS.
 
 2013-01-12  Janus Weil  <janus@gcc.gnu.org>
