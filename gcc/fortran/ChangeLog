@@ -1,3 +1,13 @@
+2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/54286
+	* expr.c (gfc_check_pointer_assign): Ensure that both lvalue
+	and rvalue interfaces are presented to gfc_compare_interfaces.
+	Simplify references to interface names by using the symbols
+	themselves. Call gfc_compare_interfaces with s1 and s2 inter-
+	changed to overcome the asymmetry of this function. Do not
+	repeat the check for the presence of s1 and s2.
+
 2013-01-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55072
