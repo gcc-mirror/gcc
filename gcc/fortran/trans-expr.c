@@ -6137,6 +6137,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	  gfc_symbol *vtabs;
 	  vtabs = cm->initializer->symtree->n.sym;
 	  vtab = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtabs));
+	  vtab = unshare_expr_without_location (vtab);
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, vtab);
 	}
       else if (cm->ts.u.derived && strcmp (cm->name, "_size") == 0)
@@ -6150,6 +6151,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 				      TREE_TYPE (cm->backend_decl),
 				      cm->attr.dimension, cm->attr.pointer,
 				      cm->attr.proc_pointer);
+	  val = unshare_expr_without_location (val);
 
 	  /* Append it to the constructor list.  */
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);

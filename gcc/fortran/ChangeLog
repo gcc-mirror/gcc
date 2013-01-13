@@ -1,3 +1,9 @@
+2013-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55935
+	* trans-expr.c (gfc_conv_structure): Call
+	unshare_expr_without_location on the ctor elements.
+
 2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/54286

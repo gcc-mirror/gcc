@@ -1,3 +1,11 @@
+2013-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55935
+	* gimple-fold.c (get_symbol_constant_value): Call
+	unshare_expr.
+	(fold_gimple_assign): Don't call unshare_expr here.
+	(fold_ctor_reference): Call unshare_expr.
+
 2013-01-13  Terry Guo  <terry.guo@arm.com>
 
 	* gcc/Makefile.in (s-mlib): New argument MULTILIB_REUSE.
@@ -57,7 +65,7 @@
 
 2013-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimization/pr55672
+	PR rtl-optimization/55672
 	* lra-eliminations.c (mark_not_eliminable): Permit addition with
 	const to be eliminable.
 
