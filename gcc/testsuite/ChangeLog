@@ -1,3 +1,8 @@
+2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55618
+	* gfortran.dg/elemental_scalar_args_2.f90: New test.
+
 2013-01-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/42769
@@ -2599,7 +2604,7 @@
 
 2012-02-06  Andrey Belevantsev  <abel@ispras.ru>
 
-	* gcc.dg/pr48374.c: Actually add the test I forgot 
+	* gcc.dg/pr48374.c: Actually add the test I forgot
 	in the 2012-01-25 commit.
 
 2012-02-05  Thomas König  <tkoenig@gcc.gnu.org>

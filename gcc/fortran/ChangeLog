@@ -1,3 +1,10 @@
+2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55618
+	* trans-expr.c (gfc_conv_procedure_call): Dereference scalar
+	character function arguments to elemental procedures in
+	scalarization loops.
+
 2013-01-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/42769
@@ -609,7 +616,7 @@
 
 	PR fortran/50981
 	* trans-array.c (gfc_walk_elemental_function_args): Fix
-	passing of deallocated allocatables/pointers as absent argument. 
+	passing of deallocated allocatables/pointers as absent argument.
 
 2012-01-16  Tobias Burnus  <burnus@net-b.de>
 
@@ -645,7 +652,7 @@
 2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-array.c (gfc_trans_create_temp_array): In the case of a
-	class array temporary, detect a null 'eltype' on entry and use 
+	class array temporary, detect a null 'eltype' on entry and use
 	'initial' to provde the class reference and so, through the
 	vtable, the element size for the dynamic type.
 	* trans-stmt.c (gfc_conv_elemental_dependencies): For class
