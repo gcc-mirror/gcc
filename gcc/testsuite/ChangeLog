@@ -52,7 +52,7 @@
 
 2013-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimization/pr55672
+	PR rtl-optimization/55672
 	* gcc.target/i386/pr55672.c: New.
 
 2013-01-10  Jeff Law  <law@redhat.com>

@@ -101,9 +101,11 @@
   [(match_operand:SI 0 "const_int_operand")]		;; model
   ""
 {
+  enum memmodel model = (enum memmodel) (INTVAL (operands[0]) & MEMMODEL_MASK);
+
   /* Unless this is a SEQ_CST fence, the i386 memory model is strong
      enough not to require barriers of any kind.  */
-  if (INTVAL (operands[0]) == MEMMODEL_SEQ_CST)
+  if (model == MEMMODEL_SEQ_CST)
     {
       rtx (*mfence_insn)(rtx);
       rtx mem;
@@ -200,7 +202,7 @@
 		       UNSPEC_MOVA))]
   ""
 {
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = (enum memmodel) (INTVAL (operands[2]) & MEMMODEL_MASK);
 
   if (<MODE>mode == DImode && !TARGET_64BIT)
     {

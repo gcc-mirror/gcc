@@ -1,8 +1,14 @@
+2013-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (mem_thread_fence): Mask operands[0] with
+	MEMMODEL_MASK to determine memory model.
+	(atomic_store<mode>): Ditto from operands[2].
+	* config/i386/i386.c (ix86_memmodel_check): Declare "strong" as bool.
+
 2013-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/55935
-	* gimple-fold.c (get_symbol_constant_value): Call
-	unshare_expr.
+	* gimple-fold.c (get_symbol_constant_value): Call unshare_expr.
 	(fold_gimple_assign): Don't call unshare_expr here.
 	(fold_ctor_reference): Call unshare_expr.
 
@@ -61,7 +67,7 @@
 
 2013-01-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	Update copyright years
+	Update copyright years.
 
 2013-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 

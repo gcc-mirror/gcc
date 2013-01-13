@@ -42082,7 +42082,7 @@ static unsigned HOST_WIDE_INT
 ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 {
   unsigned HOST_WIDE_INT model = val & MEMMODEL_MASK;
-  unsigned HOST_WIDE_INT strong;
+  bool strong;
 
   if (val & ~(unsigned HOST_WIDE_INT)(IX86_HLE_ACQUIRE|IX86_HLE_RELEASE
 				      |MEMMODEL_MASK)
