@@ -1,3 +1,13 @@
+2013-01-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55806
+	* frontend-passes.c (optimize_reduction):  New function,
+	including prototype.
+	(callback_reduction):  Likewise.
+	(gfc_run_passes):  Also run optimize_reduction.
+	(copy_walk_reduction_arg):  New function.
+	(dummy_code_callback):  New function.
+
 2013-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/55935
