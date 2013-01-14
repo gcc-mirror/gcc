@@ -1,3 +1,4 @@
+! { dg-do run }
 ! Test of fix for PR18878
 !
 ! Based on example in PR by Steve Kargl

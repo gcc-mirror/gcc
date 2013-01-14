@@ -1,6 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1793,7 +1792,7 @@ ipa_inline (void)
     }
 
   inline_small_functions ();
-  symtab_remove_unreachable_nodes (true, dump_file);
+  symtab_remove_unreachable_nodes (false, dump_file);
   free (order);
 
   /* Inline functions with a property that after inlining into all callers the

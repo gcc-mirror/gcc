@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH 
    non-Linux embedded targets.
-   Copyright (C) 2002, 2003, 2007, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by J"orn Rennecke <joern.rennecke@superh.com>
 
 This file is part of GCC.

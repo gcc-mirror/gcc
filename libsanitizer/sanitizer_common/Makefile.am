@@ -22,6 +22,7 @@ sanitizer_common_files = \
         sanitizer_stackdepot.cc \
         sanitizer_stacktrace.cc \
         sanitizer_symbolizer.cc \
+	sanitizer_symbolizer_itanium.cc \
         sanitizer_symbolizer_linux.cc \
         sanitizer_symbolizer_mac.cc \
         sanitizer_symbolizer_win.cc \

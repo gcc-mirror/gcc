@@ -1,5 +1,4 @@
-/* Copyright (C) 2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 2012-2013 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
    This file is part of GCC.
@@ -86,9 +85,9 @@ int main (void)
 {
   enum avr_arch arch = ARCH_UNKNOWN;
   size_t i, n_mcus = 0;
-  const struct mcu_type_s *mcu;
+  const avr_mcu_t *mcu;
 
-  printf ("@c Copyright (C) 2012 Free Software Foundation, Inc.\n");
+  printf ("@c Copyright (C) 2012-2013 Free Software Foundation, Inc.\n");
   printf ("@c This is part of the GCC manual.\n");
   printf ("@c For copying conditions, see the file "
           "gcc/doc/include/fdl.texi.\n\n");

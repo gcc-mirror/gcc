@@ -59,9 +59,9 @@ am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
 	sanitizer_flags.lo sanitizer_libc.lo sanitizer_linux.lo \
 	sanitizer_mac.lo sanitizer_posix.lo sanitizer_printf.lo \
 	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
-	sanitizer_symbolizer.lo sanitizer_symbolizer_linux.lo \
-	sanitizer_symbolizer_mac.lo sanitizer_symbolizer_win.lo \
-	sanitizer_win.lo
+	sanitizer_symbolizer.lo sanitizer_symbolizer_itanium.lo \
+	sanitizer_symbolizer_linux.lo sanitizer_symbolizer_mac.lo \
+	sanitizer_symbolizer_win.lo sanitizer_win.lo
 am_libsanitizer_common_la_OBJECTS = $(am__objects_1)
 libsanitizer_common_la_OBJECTS = $(am_libsanitizer_common_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -236,6 +236,7 @@ sanitizer_common_files = \
         sanitizer_stackdepot.cc \
         sanitizer_stacktrace.cc \
         sanitizer_symbolizer.cc \
+	sanitizer_symbolizer_itanium.cc \
         sanitizer_symbolizer_linux.cc \
         sanitizer_symbolizer_mac.cc \
         sanitizer_symbolizer_win.cc \
@@ -345,6 +346,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_itanium.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_win.Plo@am__quote@

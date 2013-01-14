@@ -1,4 +1,4 @@
-! { do-do run }
+! { dg-do run }
 ! PR 51858 - this used to generate wrong code.
 ! Original test case by Don Simons.
 

@@ -43,7 +43,7 @@ struct Flags {
   int  report_globals;
   // If set, attempts to catch initialization order issues.
   bool check_initialization_order;
-  // Max number of stack frames kept for each allocation.
+  // Max number of stack frames kept for each allocation/deallocation.
   int  malloc_context_size;
   // If set, uses custom wrappers and replacements for libc string functions
   // to find more errors.
@@ -93,6 +93,17 @@ struct Flags {
   bool print_full_thread_history;
   // ASan will write logs to "log_path.pid" instead of stderr.
   const char *log_path;
+  // Use fast (frame-pointer-based) unwinder on fatal errors (if available).
+  bool fast_unwind_on_fatal;
+  // Use fast (frame-pointer-based) unwinder on malloc/free (if available).
+  bool fast_unwind_on_malloc;
+  // Poison (or not) the heap memory on [de]allocation. Zero value is useful
+  // for benchmarking the allocator or instrumentator.
+  bool poison_heap;
+  // Report errors on malloc/delete, new/free, new/delete[], etc.
+  bool alloc_dealloc_mismatch;
+  // Use stack depot instead of storing stacks in the redzones.
+  bool use_stack_depot;
 };
 
 Flags *flags();

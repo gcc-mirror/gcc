@@ -1,5 +1,5 @@
 /* ppc64-darwin host-specific hook definitions.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

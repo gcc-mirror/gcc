@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2013 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -41,7 +41,7 @@
 (define_predicate "aarch64_fp_compare_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_double")
-	    (match_test "aarch64_const_double_zero_rtx_p (op)"))))
+	    (match_test "aarch64_float_const_zero_rtx_p (op)"))))
 
 (define_predicate "aarch64_plus_immediate"
   (and (match_code "const_int")

@@ -1,9 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996,
-# 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1487,6 +1485,10 @@ ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 BACKEND = libbackend.a main.o @TREEBROWSER@ libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER)
 
+# This is defined to "yes" if Tree checking is enabled, which roughly means
+# front-end checking.
+TREECHECKING = @TREECHECKING@
+
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
@@ -1826,10 +1828,12 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	    "$(MULTILIB_OSDIRNAMES)" \
 	    "$(MULTILIB_REQUIRED)" \
 	    "$(MULTIARCH_DIRNAME)" \
+	    "$(MULTILIB_REUSE)" \
 	    "@enable_multilib@" \
 	    > tmp-mlib.h; \
 	else \
-	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' '' "$(MULTIARCH_DIRNAME)" no \
+	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' '' \
+	    "$(MULTIARCH_DIRNAME)" '' no \
 	    > tmp-mlib.h; \
 	fi
 	$(SHELL) $(srcdir)/../move-if-change tmp-mlib.h multilib.h

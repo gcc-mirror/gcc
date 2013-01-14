@@ -15,6 +15,7 @@ toolexeclib_LTLIBRARIES = libasan.la
 
 asan_files = \
 	asan_allocator.cc \
+	asan_allocator2.cc \
 	asan_interceptors.cc \
 	asan_mac.cc \
 	asan_malloc_mac.cc \
@@ -23,6 +24,7 @@ asan_files = \
 	asan_rtl.cc \
 	asan_stats.cc \
 	asan_thread_registry.cc \
+	asan_fake_stack.cc \
 	asan_globals.cc \
 	asan_linux.cc \
 	asan_malloc_linux.cc \
@@ -40,7 +42,7 @@ libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 else
 libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
 endif
-libasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDLAGS)
+libasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 

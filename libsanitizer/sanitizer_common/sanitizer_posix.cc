@@ -91,11 +91,30 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size) {
   return p;
 }
 
+void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
+  uptr PageSize = GetPageSizeCached();
+  void *p = internal_mmap((void*)(fixed_addr & ~(PageSize - 1)),
+      RoundUpTo(size, PageSize),
+      PROT_READ | PROT_WRITE,
+      MAP_PRIVATE | MAP_ANON | MAP_FIXED,
+      -1, 0);
+  if (p == (void*)-1) {
+    Report("ERROR: Failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
+           size, size, fixed_addr, errno);
+    CHECK("unable to mmap" && 0);
+  }
+  return p;
+}
+
 void *Mprotect(uptr fixed_addr, uptr size) {
   return internal_mmap((void*)fixed_addr, size,
                        PROT_NONE,
                        MAP_PRIVATE | MAP_ANON | MAP_FIXED | MAP_NORESERVE,
                        -1, 0);
+}
+
+void FlushUnneededShadowMemory(uptr addr, uptr size) {
+  madvise((void*)addr, size, MADV_DONTNEED);
 }
 
 void *MapFileToMemory(const char *file_name, uptr *buff_size) {

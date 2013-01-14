@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-options "-O2" } */
 
-/* { dg-final { scan-assembler-not "fmr \[0-9\]+,\[0-9\]+" } }
+/* { dg-final { scan-assembler-not "lfd \(f?\[0-9\]+\),\[^\n\r\]*\[\n\r\]+\[ \t]*fmr f?1,\\1\[\n\r\]+\[ \t]*blr" } } */
 
 /* Origin:Pete Steinmetz <steinmtz@us.ibm.com> */
 

@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -2197,20 +2197,25 @@ analyze_access_subtree (struct access *root, struct access *parent,
     }
   else
     {
-      if (MAY_HAVE_DEBUG_STMTS && allow_replacements
+      if (allow_replacements
 	  && scalar && !root->first_child
 	  && (root->grp_scalar_write || root->grp_assignment_write))
 	{
 	  gcc_checking_assert (!root->grp_scalar_read
 			       && !root->grp_assignment_read);
-	  root->grp_to_be_debug_replaced = 1;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  sth_created = true;
+	  if (MAY_HAVE_DEBUG_STMTS)
 	    {
-	      fprintf (dump_file, "Marking ");
-	      print_generic_expr (dump_file, root->base, 0);
-	      fprintf (dump_file, " offset: %u, size: %u ",
-		       (unsigned) root->offset, (unsigned) root->size);
-	      fprintf (dump_file, " to be replaced with debug statements.\n");
+	      root->grp_to_be_debug_replaced = 1;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Marking ");
+		  print_generic_expr (dump_file, root->base, 0);
+		  fprintf (dump_file, " offset: %u, size: %u ",
+			   (unsigned) root->offset, (unsigned) root->size);
+		  fprintf (dump_file, " to be replaced with debug "
+			   "statements.\n");
+		}
 	    }
 	}
 
@@ -2220,17 +2225,11 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	root->grp_total_scalarization = 0;
     }
 
-  if (sth_created
-      && (!hole || root->grp_total_scalarization))
-    {
-      root->grp_covered = 1;
-      return true;
-    }
-  if (root->grp_write || TREE_CODE (root->base) == PARM_DECL)
+  if (!hole || root->grp_total_scalarization)
+    root->grp_covered = 1;
+  else if (root->grp_write || TREE_CODE (root->base) == PARM_DECL)
     root->grp_unscalarized_data = 1; /* not covered and written to */
-  if (sth_created)
-    return true;
-  return false;
+  return sth_created;
 }
 
 /* Analyze all access trees linked by next_grp by the means of

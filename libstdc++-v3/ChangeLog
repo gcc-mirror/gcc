@@ -1,3 +1,27 @@
+2013-01-03  Janis Johnson  <janisjo@codesourcery.com>
+
+	* testsuite/lib/gdb-test.exp (gdb_batch_check): Catch error running
+	gdb command.
+
+2013-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Document that N3189 is missing.
+
+2013-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55908
+	* include/std/functional (_Mem_fn::operator()): Fix constraints to
+	avoid ambiguity.
+	* testsuite/20_util/function_objects/mem_fn/55908.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
+2013-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/55594
+	* acinclude.m4 (GLIBCXX_CHECK_ASSEMBLER_HWCAP): Restrict test to
+	Solaris targets.
+	* configure: Regenerate.
+
 2013-01-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/55847

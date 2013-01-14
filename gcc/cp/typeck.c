@@ -1,8 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -4095,10 +4092,13 @@ cp_build_binary_op (location_t location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
+	  tree const_op1 = maybe_constant_value (op1);
+	  if (TREE_CODE (const_op1) != INTEGER_CST)
+	    const_op1 = op1;
 	  result_type = type0;
-	  if (TREE_CODE (op1) == INTEGER_CST)
+	  if (TREE_CODE (const_op1) == INTEGER_CST)
 	    {
-	      if (tree_int_cst_lt (op1, integer_zero_node))
+	      if (tree_int_cst_lt (const_op1, integer_zero_node))
 		{
 		  if ((complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
@@ -4106,7 +4106,7 @@ cp_build_binary_op (location_t location,
 		}
 	      else
 		{
-		  if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0
+		  if (compare_tree_int (const_op1, TYPE_PRECISION (type0)) >= 0
 		      && (complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
 		    warning (0, "right shift count >= width of type");
@@ -4138,16 +4138,20 @@ cp_build_binary_op (location_t location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
+	  tree const_op1 = maybe_constant_value (op1);
+	  if (TREE_CODE (const_op1) != INTEGER_CST)
+	    const_op1 = op1;
 	  result_type = type0;
-	  if (TREE_CODE (op1) == INTEGER_CST)
+	  if (TREE_CODE (const_op1) == INTEGER_CST)
 	    {
-	      if (tree_int_cst_lt (op1, integer_zero_node))
+	      if (tree_int_cst_lt (const_op1, integer_zero_node))
 		{
 		  if ((complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
 		    warning (0, "left shift count is negative");
 		}
-	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
+	      else if (compare_tree_int (const_op1,
+					 TYPE_PRECISION (type0)) >= 0)
 		{
 		  if ((complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)

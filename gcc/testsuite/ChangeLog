@@ -1,3 +1,287 @@
+2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/tree-ssa/slsr-8.c: Allow widening multiplications.
+
+2013-01-14  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/aarch64/vect-ld1r-compile-fp.c: New.
+	* gcc.target/aarch64/vect-ld1r-compile.c: New.
+	* gcc.target/aarch64/vect-ld1r-fp.c: New.
+	* gcc.target/aarch64/vect-ld1r.c: New.
+	* gcc.target/aarch64/vect-ld1r.x: New.
+
+2012-01-14  Andi Kleen  <ak@linux.intel.com>
+
+	PR target/55948
+	* gcc.target/i386/hle-clear-rel.c: New file
+	* gcc.target/i386/hle-store-rel.c: New file.
+
+2013-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/aint_anint_1.f90: Add dg-do run.
+	* gfortran.dg/bounds_check_4.f90: Likewise.
+	* gfortran.dg/inquire_10.f90: Likewise.
+	* gfortran.dg/minloc_3.f90: Likewise.
+	* gfortran.dg/minlocval_3.f90: Likewise.
+	* gfortran.dg/module_double_reuse.f90: Likewise.
+	* gfortran.dg/mvbits_1.f90: Likewise.
+	* gfortran.dg/oldstyle_1.f90: Likewise.
+	* gfortran.dg/pr20163-2.f: Likewise.
+	* gfortran.dg/save_1.f90: Likewise.
+	* gfortran.dg/scan_1.f90: Likewise.
+	* gfortran.dg/select_char_1.f90: Likewise.
+	* gfortran.dg/shape_4.f90: Likewise.
+	* gfortran.dg/coarray_29_2.f90: Fix dg-do directive.
+	* gfortran.dg/function_optimize_10.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.11.2.f90: Likewise.
+	* gfortran.dg/used_types_17.f90: Likewise.
+	* gfortran.dg/used_types_18.f90: Likewise.
+
+2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/54286
+	* gfortran.dg/proc_ptr_result_8.f90 : New test.
+
+2013-01-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/unroll_5.c: Add nomips16 attributes.
+
+2013-01-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Update expected results for MIPS.
+
+2013-01-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55072
+	* gfortran.dg/assumed_type_2.f90: Fix test case.
+	* gfortran.dg/internal_pack_13.f90: New test.
+	* gfortran.dg/internal_pack_14.f90: New test.
+
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55868
+	* gfortran.dg/unlimited_polymorphic_8.f90: Update
+	scan-tree-dump-times for foo.0.x._vptr to deal with change from
+	$tar to STAR.
+
+2013-01-11  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.c-torture/compile/pr55921.c: Don't use matching constraints.
+
+2013-01-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/55719
+	* gcc.target/s390/pr55719.c: New testcase.
+
+2013-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44061
+	* gcc.dg/pr44061.c: New testcase.
+
+2013-01-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years.
+
+2013-01-10  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55565
+	* gcc.target/powerpc/ppc-mov-1.c: Update scan-assembler-not regex.
+
+2013-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55672
+	* gcc.target/i386/pr55672.c: New.
+
+2013-01-10  Jeff Law  <law@redhat.com>
+
+	* gcc/dg/tree-ssa/vrp06.c: Tighten expected output.  Make each
+	pass/fail message unique.
+
+
+2013-01-10  Jason Merrill  <jason@redhat.com>
+
+	* ada/.gitignore: New.
+
+2013-01-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/tls/thread_local-cse.C: Don't xfail on *-*-solaris2.9.
+	Add tls options.
+	* g++.dg/tls/thread_local2.C: Likewise.
+	* g++.dg/tls/thread_local2g.C: Likewise.
+	* g++.dg/tls/thread_local6.C: Likewise.
+	* g++.dg/tls/thread_local-order1.C: Add tls options.
+	* g++.dg/tls/thread_local-order2.C: Likewise.
+	* g++.dg/tls/thread_local3.C: Likewise.
+	* g++.dg/tls/thread_local3g.C: Likewise.
+	* g++.dg/tls/thread_local4.C: Likewise.
+	* g++.dg/tls/thread_local4g.C: Likewise.
+	* g++.dg/tls/thread_local5.C: Likewise.
+	* g++.dg/tls/thread_local5g.C: Likewise.
+	* g++.dg/tls/thread_local6g.C: Likewise.
+
+2013-01-10  Kostya Serebryany  <kcc@google.com>
+
+	* g++.dg/asan/asan_test.cc: Sync from upstream.
+
+2013-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55921
+	* gcc.c-torture/compile/pr55921.c: New test.
+
+2013-01-09  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55569
+	* gcc.c-torture/compile/pr55569.c: New testcase.
+
+2013-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/47203
+	* gfortran.dg/use_28.f90: New test.
+
+2012-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/intrinsic_size_3.f90: Make scan-tree-dump-times
+	number matching more robust.
+
+2013-01-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55829
+	* gcc.target/i386/pr55829.c: New.
+
+2013-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55758
+	* gfortran.dg/bind_c_bool_1.f90: New.
+	* gfortran.dg/do_5.f90: Add dg-warning.
+
+2013-01-09  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55875
+	* gcc.c-torture/execute/pr55875.c: New testcase.
+	* g++.dg/torture/pr55875.C: New testcase.
+
+2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48418
+	* c-c++-common/pr48418.c: New test.
+
+2013-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55801
+	* g++.dg/tls/thread_local-ice.C: New.
+
+2013-01-09  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/guality/pr54693.c: Null-terminate arr.
+
+2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48189
+	* gcc.dg/pr48189.c: New test.
+
+2013-01-04  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55823
+	* g++.dg/ipa/devirt-10.C: New testcase.
+
+2012-01-08  Uros Bizjak  <ubizjak@gmail.com>
+	    Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
+
+	PR rtl-optimization/55845
+	* gcc.target/i386/pr55845.c: New test.
+
+2013-01-08  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/vect-mull-compile.c: Explicitly scan for
+	instructions generated instead of number of occurances.
+
+2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-fcm-eq-d.c: New.
+	* gcc.target/aarch64/vect-fcm-eq-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm.x: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_vect_cond): Enable for AArch64.
+
+2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vsqrt.c (test_square_root_v2sf): Use
+	endian-safe float pool loading.
+	(test_square_root_v4sf): Likewise.
+	(test_square_root_v2df): Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_vect_call_sqrtf): Add AArch64.
+
+2013-01-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/55579
+	* gcc.dg/tree-ssa/pr55579.c: New test.
+
+2013-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/pr54508.C: Allow for more whitespace after
+	asm comments.
+
+2013-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55890
+	* gcc.dg/torture/pr55890-3.c: New test.
+
+	PR middle-end/55851
+	* gcc.c-torture/compile/pr55851.c: New test.
+
+	PR sanitizer/55844
+	* c-c++-common/asan/null-deref-1.c: Add -fno-shrink-wrap to
+	dg-options.
+
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55618
+	* gfortran.dg/elemental_scalar_args_2.f90: New test.
+
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55763
+	* gfortran.dg/pointer_init_2.f90: Update dg-error.
+	* gfortran.dg/pointer_init_7.f90: New.
+
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/lto/pr55525_0.c (s): Size like char *.
+
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55890
+	* gcc.dg/torture/pr55890-1.c: New testcase.
+	* gcc.dg/torture/pr55890-2.c: Likewise.
+
+2013-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/fmovd.c: New.
+	* gcc.target/aarch64/fmovf.c: Likewise.
+	* gcc.target/aarch64/fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/fmovf-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c: Likewise.
+
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55888
+	PR tree-optimization/55862
+	* gcc.dg/torture/pr55888.c: New testcase.
+
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55852
+	* gfortran.dg/intrinsic_size_3.f90: New.
+
 2012-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
@@ -10,9 +294,9 @@
 
 2013-01-06  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/PR53876
-	PR fortran/PR54990
-	PR fortran/PR54992
+	PR fortran/53876
+	PR fortran/54990
+	PR fortran/54992
 	* gfortran.dg/class_array_15.f03: New test.
 
 2013-01-06  Mikael Morin  <mikael@gcc.gnu.org>

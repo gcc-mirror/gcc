@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2007-2013 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -893,6 +893,7 @@ extern bool walk_stmt_load_store_ops (gimple, void *,
 				      bool (*)(gimple, tree, void *),
 				      bool (*)(gimple, tree, void *));
 extern bool gimple_ior_addresses_taken (bitmap, gimple);
+extern bool gimple_call_builtin_p (gimple, enum built_in_class);
 extern bool gimple_call_builtin_p (gimple, enum built_in_function);
 extern bool gimple_asm_clobbers_memory_p (const_gimple);
 

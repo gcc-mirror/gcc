@@ -1,3 +1,9 @@
+2013-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (lib_gnu_awt_xlib_la_LDFLAGS): Replace
+	LIBSTDCXX_RAW_CXX_LDLAGS with LIBSTDCXX_RAW_CXX_LDFLAGS.
+	* Makefile.in: Regenerated.
+
 2013-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice

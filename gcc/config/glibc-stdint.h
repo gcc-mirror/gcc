@@ -1,5 +1,5 @@
 /* Definitions for <stdint.h> types on systems using GNU libc or uClibc.
-   Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

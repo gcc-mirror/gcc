@@ -1,6 +1,5 @@
 ;; GCC machine description for SSE instructions
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-;; Free Software Foundation, Inc.
+;; Copyright (C) 2005-2013 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -4622,7 +4621,7 @@
   (set_attr "type" "sselog,sselog,sselog,ssemov,ssemov,ssemov")
    (set_attr "prefix_data16" "*,*,*,1,*,1")
    (set_attr "prefix" "orig,vex,maybe_vex,orig,vex,maybe_vex")
-   (set_attr "mode" "V2DF,V2DF,V2DF,V1DF,V1DF,V1DF")])
+   (set_attr "mode" "V2DF,V2DF,DF,V1DF,V1DF,V1DF")])
 
 ;; Recall that the 256-bit unpck insns only shuffle within their lanes.
 (define_expand "avx_movddup256"
@@ -4723,7 +4722,7 @@
    (set_attr "type" "sselog,sselog,sselog,ssemov,ssemov,ssemov")
    (set_attr "prefix_data16" "*,*,*,1,*,1")
    (set_attr "prefix" "orig,vex,maybe_vex,orig,vex,maybe_vex")
-   (set_attr "mode" "V2DF,V2DF,V2DF,V1DF,V1DF,V1DF")])
+   (set_attr "mode" "V2DF,V2DF,DF,V1DF,V1DF,V1DF")])
 
 (define_split
   [(set (match_operand:V2DF 0 "memory_operand")
@@ -5180,7 +5179,7 @@
   [(set_attr "isa" "noavx,sse3")
    (set_attr "type" "sselog1")
    (set_attr "prefix" "orig,maybe_vex")
-   (set_attr "mode" "V2DF")])
+   (set_attr "mode" "V2DF,DF")])
 
 (define_insn "*vec_concatv2df"
   [(set (match_operand:V2DF 0 "register_operand"     "=x,x,x,x,x,x,x,x")

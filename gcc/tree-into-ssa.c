@@ -1,6 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1355,13 +1354,18 @@ rewrite_add_phi_arguments (basic_block bb)
       for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  tree currdef;
-	  gimple stmt;
+	  tree currdef, res;
+	  location_t loc;
 
 	  phi = gsi_stmt (gsi);
-	  currdef = get_reaching_def (SSA_NAME_VAR (gimple_phi_result (phi)));
-	  stmt = SSA_NAME_DEF_STMT (currdef);
-	  add_phi_arg (phi, currdef, e, gimple_location (stmt));
+	  res = gimple_phi_result (phi);
+	  currdef = get_reaching_def (SSA_NAME_VAR (res));
+	  /* Virtual operand PHI args do not need a location.  */
+	  if (virtual_operand_p (res))
+	    loc = UNKNOWN_LOCATION;
+	  else
+	    loc = gimple_location (SSA_NAME_DEF_STMT (currdef));
+	  add_phi_arg (phi, currdef, e, loc);
 	}
     }
 }
@@ -2018,20 +2022,26 @@ rewrite_update_phi_arguments (basic_block bb)
           /* Update the argument if there is a reaching def.  */
 	  if (reaching_def)
 	    {
-	      gimple stmt;
 	      source_location locus;
 	      int arg_i = PHI_ARG_INDEX_FROM_USE (arg_p);
 
 	      SET_USE (arg_p, reaching_def);
-	      stmt = SSA_NAME_DEF_STMT (reaching_def);
 
-	      /* Single element PHI nodes  behave like copies, so get the
-		 location from the phi argument.  */
-	      if (gimple_code (stmt) == GIMPLE_PHI &&
-		  gimple_phi_num_args (stmt) == 1)
-		locus = gimple_phi_arg_location (stmt, 0);
+	      /* Virtual operands do not need a location.  */
+	      if (virtual_operand_p (reaching_def))
+		locus = UNKNOWN_LOCATION;
 	      else
-		locus = gimple_location (stmt);
+		{
+		  gimple stmt = SSA_NAME_DEF_STMT (reaching_def);
+
+		  /* Single element PHI nodes  behave like copies, so get the
+		     location from the phi argument.  */
+		  if (gimple_code (stmt) == GIMPLE_PHI
+		      && gimple_phi_num_args (stmt) == 1)
+		    locus = gimple_phi_arg_location (stmt, 0);
+		  else
+		    locus = gimple_location (stmt);
+		}
 
 	      gimple_phi_arg_set_location (phi, arg_i, locus);
 	    }

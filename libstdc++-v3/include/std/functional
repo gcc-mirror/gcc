@@ -648,7 +648,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+	  = _Require<_NotSame<_Class, _Tp>, _NotSame<const _Class*, _Tp>,
 		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
 
       template<typename _Tp, typename... _Args>
@@ -727,7 +727,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+	  = _Require<_NotSame<_Class, _Tp>, _NotSame<volatile _Class*, _Tp>,
 		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
 
       template<typename _Tp, typename... _Args>
@@ -807,7 +807,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+	  = _Require<_NotSame<_Class, _Tp>,
+		     _NotSame<const volatile _Class*, _Tp>,
 		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
 
       template<typename _Tp, typename... _Args>

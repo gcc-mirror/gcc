@@ -1,6 +1,5 @@
 /* Target independent definitions for LynxOS.
-   Copyright (C) 1993, 1994, 1995, 1996, 1999, 2000, 2002, 2003, 2004,
-   2007 Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -121,13 +121,14 @@ uptr AsanThreadRegistry::GetCurrentAllocatedBytes() {
 uptr AsanThreadRegistry::GetHeapSize() {
   ScopedLock lock(&mu_);
   UpdateAccumulatedStatsUnlocked();
-  return accumulated_stats_.mmaped;
+  return accumulated_stats_.mmaped - accumulated_stats_.munmaped;
 }
 
 uptr AsanThreadRegistry::GetFreeBytes() {
   ScopedLock lock(&mu_);
   UpdateAccumulatedStatsUnlocked();
   uptr total_free = accumulated_stats_.mmaped
+                  - accumulated_stats_.munmaped
                   + accumulated_stats_.really_freed
                   + accumulated_stats_.really_freed_redzones;
   uptr total_used = accumulated_stats_.malloced

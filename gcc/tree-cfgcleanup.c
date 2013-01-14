@@ -1,6 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -413,7 +412,8 @@ remove_forwarder_block (basic_block bb)
 	    {
 	      gimple phi = gsi_stmt (gsi);
 	      source_location l = gimple_phi_arg_location_from_edge (phi, succ);
-	      add_phi_arg (phi, gimple_phi_arg_def (phi, succ->dest_idx), s, l);
+	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
+	      add_phi_arg (phi, unshare_expr (def), s, l);
 	    }
 	}
     }

@@ -1,6 +1,5 @@
 /* Definitions for option handling for SPARC.
-   Copyright (C) 1996, 1999, 2002, 2006, 2007, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1996-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

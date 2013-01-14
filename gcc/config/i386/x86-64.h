@@ -1,6 +1,5 @@
 /* OS independent definitions for AMD x86-64.
-   Copyright (C) 2001, 2005, 2007, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
    Contributed by Bo Thorsen <bo@suse.de>.
 
 This file is part of GCC.

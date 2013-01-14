@@ -70790,12 +70790,16 @@ esac
 
   test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
 
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -Wa,-nH"
+  # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
+  # with a different meaning.
+  case ${target_os} in
+    solaris2*)
+      ac_save_CFLAGS="$CFLAGS"
+      CFLAGS="$CFLAGS -Wa,-nH"
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for as that supports -Wa,-nH" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for as that supports -Wa,-nH" >&5
 $as_echo_n "checking for as that supports -Wa,-nH... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -70812,13 +70816,15 @@ else
   ac_hwcap_flags=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  if test "$ac_hwcap_flags" = "yes"; then
-    HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_flags" >&5
+      if test "$ac_hwcap_flags" = "yes"; then
+	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_flags" >&5
 $as_echo "$ac_hwcap_flags" >&6; }
 
-  CFLAGS="$ac_save_CFLAGS"
+      CFLAGS="$ac_save_CFLAGS"
+      ;;
+  esac
 
 
 

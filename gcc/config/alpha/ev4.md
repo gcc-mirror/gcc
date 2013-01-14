@@ -1,5 +1,5 @@
 ;; Scheduling description for Alpha EV4.
-;;   Copyright (C) 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
+;;   Copyright (C) 2002-2013 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

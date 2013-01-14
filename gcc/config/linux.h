@@ -2,8 +2,7 @@
    MMU, using ELF at the compiler level but possibly FLT for final
    linked executables and shared libraries in some no-MMU cases, and
    possibly with a choice of libc implementations.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004, 2005, 2006,
-   2007, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1995-2013 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 

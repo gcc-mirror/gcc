@@ -1,3 +1,27 @@
+2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (COMMON_ADAFLAGS): Remove -gnata.
+	(CHECKING_ADAFLAGS): New.
+	(ALL_ADAFLAGS): Include CHECKING_ADAFLAGS.
+
+2013-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/config-lang.in (boot_language_boot_flags): Delete.
+	* gcc-interface/Make-lang.in (BOOT_ADAFLAGS): Likewise.
+
+2013-01-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Adjust
+	comment about type extension with discriminants.
+	<E_Record_Subtype>: Remove useless test and reorder conditions.
+	(elaborate_entity) <E_Record_Subtype>: Likewise.
+
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR ada/864
+	* gcc-interface/Make-lang.in (ada.install-common): Always apply
+	program_transform_name.
+
 2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Current_Year): Bump to 2013.

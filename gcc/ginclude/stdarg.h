@@ -1,5 +1,4 @@
-/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2009, 2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 1989-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

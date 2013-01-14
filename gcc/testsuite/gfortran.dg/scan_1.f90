@@ -1,3 +1,4 @@
+! { dg-do run }
 program b
    integer w
    character(len=2) s, t

@@ -1,5 +1,4 @@
-#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-#   2011, 2012 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2013 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -3699,7 +3698,8 @@ proc check_effective_target_vect_condition { } {
 	verbose "check_effective_target_vect_cond: using cached result" 2
     } else {
 	set et_vect_cond_saved 0
-	if { [istarget powerpc*-*-*]
+	if { [istarget aarch64*-*-*]
+	     || [istarget powerpc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget spu-*-*]
@@ -3952,7 +3952,8 @@ proc check_effective_target_vect_call_sqrtf { } {
 	verbose "check_effective_target_vect_call_sqrtf: using cached result" 2
     } else {
 	set et_vect_call_sqrtf_saved 0
-	if { [istarget i?86-*-*]
+	if { [istarget aarch64*-*-*]
+	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available]) } {
 	    set et_vect_call_sqrtf_saved 1

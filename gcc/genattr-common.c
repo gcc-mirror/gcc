@@ -1,8 +1,7 @@
 /* Generate attribute information shared between driver and core
    compilers (insn-attr-common.h) from machine description.  Split out
    of genattr.c.
-   Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008,
-   2010, 2011  Free Software Foundation, Inc.
+   Copyright (C) 1991-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

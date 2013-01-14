@@ -1,6 +1,5 @@
 /* Memory and optimization statistics helpers.
-   Copyright (C) 2004, 2007, 2008, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2004-2013 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.

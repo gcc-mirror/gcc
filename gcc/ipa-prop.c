@@ -1,6 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2005-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2264,8 +2263,31 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
-      if (jfunc->type == IPA_JF_PASS_THROUGH
-	  && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
+
+      if (!flag_indirect_inlining)
+	new_direct_edge = NULL;
+      else if (ici->polymorphic)
+	new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc,
+							     new_root_info);
+      else
+	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
+							    new_root_info);
+      if (new_direct_edge)
+	{
+	  new_direct_edge->indirect_inlining_edge = 1;
+	  if (new_direct_edge->call_stmt)
+	    new_direct_edge->call_stmt_cannot_inline_p
+	      = !gimple_check_call_matching_types (new_direct_edge->call_stmt,
+						   new_direct_edge->callee->symbol.decl);
+	  if (new_edges)
+	    {
+	      new_edges->safe_push (new_direct_edge);
+	      top = IPA_EDGE_REF (cs);
+	      res = true;
+	    }
+	}
+      else if (jfunc->type == IPA_JF_PASS_THROUGH
+	       && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
 	{
 	  if (ici->agg_contents
 	      && !ipa_get_jf_pass_through_agg_preserved (jfunc))
@@ -2287,31 +2309,6 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       else
 	/* Either we can find a destination for this edge now or never. */
 	ici->param_index = -1;
-
-      if (!flag_indirect_inlining)
-	continue;
-
-      if (ici->polymorphic)
-	new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc,
-							     new_root_info);
-      else
-	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
-							    new_root_info);
-
-      if (new_direct_edge)
-	{
-	  new_direct_edge->indirect_inlining_edge = 1;
-	  if (new_direct_edge->call_stmt)
-	    new_direct_edge->call_stmt_cannot_inline_p
-	      = !gimple_check_call_matching_types (new_direct_edge->call_stmt,
-						   new_direct_edge->callee->symbol.decl);
-	  if (new_edges)
-	    {
-	      new_edges->safe_push (new_direct_edge);
-	      top = IPA_EDGE_REF (cs);
-	      res = true;
-	    }
-	}
     }
 
   return res;

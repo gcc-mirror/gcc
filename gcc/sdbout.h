@@ -1,5 +1,5 @@
 /* sdbout.h - Various declarations for functions found in sdbout.c
-   Copyright (C) 1998, 2000, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1998-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

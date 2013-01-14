@@ -1,6 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GCC compiler
-;;   Copyright (C) 1992-2012
-;;   Free Software Foundation, Inc.
+;;   Copyright (C) 1992-2013 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -6584,7 +6583,7 @@
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "r,r")
-		     (match_operand:SI 2 "arith32_operand" "q,n")))]
+		     (match_operand:SI 2 "shift5_operand" "q,n")))]
   ""
   "@
    {vshd %%r0,%1,%0|shrpw %%r0,%1,%%sar,%0}
@@ -6595,7 +6594,7 @@
 (define_insn "lshrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "r,r")
-		     (match_operand:DI 2 "arith32_operand" "q,n")))]
+		     (match_operand:DI 2 "shift6_operand" "q,n")))]
   "TARGET_64BIT"
   "@
    shrpd %%r0,%1,%%sar,%0
@@ -6603,10 +6602,40 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
+; Shift right pair word 0 to 31 bits.
+(define_insn "shrpsi4"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand" "r,r")
+			   (minus:SI (const_int 32)
+			     (match_operand:SI 3 "shift5_operand" "q,n")))
+		(lshiftrt:SI (match_operand:SI 2 "register_operand" "r,r")
+			     (match_dup 3))))]
+  ""
+  "@
+   {vshd %1,%2,%0|shrpw %1,%2,%%sar,%0}
+   {shd|shrpw} %1,%2,%3,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
+; Shift right pair doubleword 0 to 63 bits.
+(define_insn "shrpdi4"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(ior:DI (ashift:DI (match_operand:SI 1 "register_operand" "r,r")
+			   (minus:DI (const_int 64)
+			     (match_operand:DI 3 "shift6_operand" "q,n")))
+		(lshiftrt:DI (match_operand:DI 2 "register_operand" "r,r")
+			     (match_dup 3))))]
+  "TARGET_64BIT"
+  "@
+   shrpd %1,%2,%%sar,%0
+   shrpd %1,%2,%3,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
+
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(rotatert:SI (match_operand:SI 1 "register_operand" "r,r")
-		     (match_operand:SI 2 "arith32_operand" "q,n")))]
+		     (match_operand:SI 2 "shift5_operand" "q,n")))]
   ""
   "*
 {
@@ -8365,21 +8394,22 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }")
 
 ;;; Operands 2 and 3 are assumed to be CONST_INTs.
-(define_expand "extzv"
-  [(set (match_operand 0 "register_operand" "")
-	(zero_extract (match_operand 1 "register_operand" "")
-		      (match_operand 2 "uint32_operand" "")
-		      (match_operand 3 "uint32_operand" "")))]
+(define_expand "extzvsi"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "")
+			 (match_operand:SI 2 "uint5_operand" "")
+			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
   "
 {
-  HOST_WIDE_INT len = INTVAL (operands[2]);
-  HOST_WIDE_INT pos = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT len = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT pos = UINTVAL (operands[3]);
 
   /* PA extraction insns don't support zero length bitfields or fields
-     extending beyond the left or right-most bits.  Also, we reject lengths
-     equal to a word as they are better handled by the move patterns.  */
-  if (len <= 0 || len >= BITS_PER_WORD || pos < 0 || pos + len > BITS_PER_WORD)
+     extending beyond the left or right-most bits.  Also, the predicate
+     rejects lengths equal to a word as they are better handled by
+     the move patterns.  */
+  if (len == 0 || pos + len > 32)
     FAIL;
 
   /* From mips.md: extract_bit_field doesn't verify that our source
@@ -8387,12 +8417,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   if (!register_operand (operands[1], VOIDmode))
     FAIL;
 
-  if (TARGET_64BIT)
-    emit_insn (gen_extzv_64 (operands[0], operands[1],
-			     operands[2], operands[3]));
-  else
-    emit_insn (gen_extzv_32 (operands[0], operands[1],
-			     operands[2], operands[3]));
+  emit_insn (gen_extzv_32 (operands[0], operands[1],
+			   operands[2], operands[3]));
   DONE;
 }")
 
@@ -8401,7 +8427,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "uint5_operand" "")
 			 (match_operand:SI 3 "uint5_operand" "")))]
-  ""
+  "UINTVAL (operands[2]) > 0
+   && UINTVAL (operands[2]) + UINTVAL (operands[3]) <= 32"
   "{extru|extrw,u} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -8416,12 +8443,42 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
+(define_expand "extzvdi"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extract:DI (match_operand:DI 1 "register_operand" "")
+			 (match_operand:DI 2 "uint6_operand" "")
+			 (match_operand:DI 3 "uint6_operand" "")))]
+  "TARGET_64BIT"
+  "
+{
+  unsigned HOST_WIDE_INT len = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT pos = UINTVAL (operands[3]);
+
+  /* PA extraction insns don't support zero length bitfields or fields
+     extending beyond the left or right-most bits.  Also, the predicate
+     rejects lengths equal to a doubleword as they are better handled by
+     the move patterns.  */
+  if (len == 0 || pos + len > 64)
+    FAIL;
+
+  /* From mips.md: extract_bit_field doesn't verify that our source
+     matches the predicate, so check it again here.  */
+  if (!register_operand (operands[1], VOIDmode))
+    FAIL;
+
+  emit_insn (gen_extzv_64 (operands[0], operands[1],
+			   operands[2], operands[3]));
+  DONE;
+}")
+
 (define_insn "extzv_64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (match_operand:DI 1 "register_operand" "r")
-			 (match_operand:DI 2 "uint32_operand" "")
-			 (match_operand:DI 3 "uint32_operand" "")))]
-  "TARGET_64BIT"
+			 (match_operand:DI 2 "uint6_operand" "")
+			 (match_operand:DI 3 "uint6_operand" "")))]
+  "TARGET_64BIT
+   && UINTVAL (operands[2]) > 0
+   && UINTVAL (operands[2]) + UINTVAL (operands[3]) <= 64"
   "extrd,u %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -8437,21 +8494,22 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (set_attr "length" "4")])
 
 ;;; Operands 2 and 3 are assumed to be CONST_INTs.
-(define_expand "extv"
-  [(set (match_operand 0 "register_operand" "")
-	(sign_extract (match_operand 1 "register_operand" "")
-		      (match_operand 2 "uint32_operand" "")
-		      (match_operand 3 "uint32_operand" "")))]
+(define_expand "extvsi"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "")
+			 (match_operand:SI 2 "uint5_operand" "")
+			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
   "
 {
-  HOST_WIDE_INT len = INTVAL (operands[2]);
-  HOST_WIDE_INT pos = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT len = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT pos = UINTVAL (operands[3]);
 
   /* PA extraction insns don't support zero length bitfields or fields
-     extending beyond the left or right-most bits.  Also, we reject lengths
-     equal to a word as they are better handled by the move patterns.  */
-  if (len <= 0 || len >= BITS_PER_WORD || pos < 0 || pos + len > BITS_PER_WORD)
+     extending beyond the left or right-most bits.  Also, the predicate
+     rejects lengths equal to a word as they are better handled by
+     the move patterns.  */
+  if (len == 0 || pos + len > 32)
     FAIL;
 
   /* From mips.md: extract_bit_field doesn't verify that our source
@@ -8459,12 +8517,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   if (!register_operand (operands[1], VOIDmode))
     FAIL;
 
-  if (TARGET_64BIT)
-    emit_insn (gen_extv_64 (operands[0], operands[1],
-			    operands[2], operands[3]));
-  else
-    emit_insn (gen_extv_32 (operands[0], operands[1],
-			    operands[2], operands[3]));
+  emit_insn (gen_extv_32 (operands[0], operands[1],
+			  operands[2], operands[3]));
   DONE;
 }")
 
@@ -8473,7 +8527,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "uint5_operand" "")
 			 (match_operand:SI 3 "uint5_operand" "")))]
-  ""
+  "UINTVAL (operands[2]) > 0
+   && UINTVAL (operands[2]) + UINTVAL (operands[3]) <= 32"
   "{extrs|extrw,s} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -8488,12 +8543,42 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
+(define_expand "extvdi"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extract:DI (match_operand:DI 1 "register_operand" "")
+			 (match_operand:DI 2 "uint6_operand" "")
+			 (match_operand:DI 3 "uint6_operand" "")))]
+  "TARGET_64BIT"
+  "
+{
+  unsigned HOST_WIDE_INT len = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT pos = UINTVAL (operands[3]);
+
+  /* PA extraction insns don't support zero length bitfields or fields
+     extending beyond the left or right-most bits.  Also, the predicate
+     rejects lengths equal to a doubleword as they are better handled by
+     the move patterns.  */
+  if (len == 0 || pos + len > 64)
+    FAIL;
+
+  /* From mips.md: extract_bit_field doesn't verify that our source
+     matches the predicate, so check it again here.  */
+  if (!register_operand (operands[1], VOIDmode))
+    FAIL;
+
+  emit_insn (gen_extv_64 (operands[0], operands[1],
+			  operands[2], operands[3]));
+  DONE;
+}")
+
 (define_insn "extv_64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extract:DI (match_operand:DI 1 "register_operand" "r")
-			 (match_operand:DI 2 "uint32_operand" "")
-			 (match_operand:DI 3 "uint32_operand" "")))]
-  "TARGET_64BIT"
+			 (match_operand:DI 2 "uint6_operand" "")
+			 (match_operand:DI 3 "uint6_operand" "")))]
+  "TARGET_64BIT
+   && UINTVAL (operands[2]) > 0
+   && UINTVAL (operands[2]) + UINTVAL (operands[3]) <= 64"
   "extrd,s %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
@@ -8509,21 +8594,22 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (set_attr "length" "4")])
 
 ;;; Operands 1 and 2 are assumed to be CONST_INTs.
-(define_expand "insv"
-  [(set (zero_extract (match_operand 0 "register_operand" "")
-                      (match_operand 1 "uint32_operand" "")
-                      (match_operand 2 "uint32_operand" ""))
-        (match_operand 3 "arith5_operand" ""))]
+(define_expand "insvsi"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "")
+			 (match_operand:SI 1 "uint5_operand" "")
+			 (match_operand:SI 2 "uint5_operand" ""))
+	(match_operand:SI 3 "arith5_operand" ""))]
   ""
   "
 {
-  HOST_WIDE_INT len = INTVAL (operands[1]);
-  HOST_WIDE_INT pos = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT len = UINTVAL (operands[1]);
+  unsigned HOST_WIDE_INT pos = UINTVAL (operands[2]);
 
   /* PA insertion insns don't support zero length bitfields or fields
-     extending beyond the left or right-most bits.  Also, we reject lengths
-     equal to a word as they are better handled by the move patterns.  */
-  if (len <= 0 || len >= BITS_PER_WORD || pos < 0 || pos + len > BITS_PER_WORD)
+     extending beyond the left or right-most bits.  Also, the predicate
+     rejects lengths equal to a word as they are better handled by
+     the move patterns.  */
+  if (len <= 0 || pos + len > 32)
     FAIL;
 
   /* From mips.md: insert_bit_field doesn't verify that our destination
@@ -8531,12 +8617,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   if (!register_operand (operands[0], VOIDmode))
     FAIL;
 
-  if (TARGET_64BIT)
-    emit_insn (gen_insv_64 (operands[0], operands[1],
-			    operands[2], operands[3]));
-  else
-    emit_insn (gen_insv_32 (operands[0], operands[1],
-			    operands[2], operands[3]));
+  emit_insn (gen_insv_32 (operands[0], operands[1],
+			  operands[2], operands[3]));
   DONE;
 }")
 
@@ -8545,7 +8627,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 			 (match_operand:SI 1 "uint5_operand" "")
 			 (match_operand:SI 2 "uint5_operand" ""))
 	(match_operand:SI 3 "arith5_operand" "r,L"))]
-  ""
+  "UINTVAL (operands[1]) > 0
+   && UINTVAL (operands[1]) + UINTVAL (operands[2]) <= 32"
   "@
    {dep|depw} %3,%2+%1-1,%1,%0
    {depi|depwi} %3,%2+%1-1,%1,%0"
@@ -8568,12 +8651,42 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
+(define_expand "insvdi"
+  [(set (zero_extract:DI (match_operand:DI 0 "register_operand" "")
+			 (match_operand:DI 1 "uint6_operand" "")
+			 (match_operand:DI 2 "uint6_operand" ""))
+	(match_operand:DI 3 "arith5_operand" ""))]
+  "TARGET_64BIT"
+  "
+{
+  unsigned HOST_WIDE_INT len = UINTVAL (operands[1]);
+  unsigned HOST_WIDE_INT pos = UINTVAL (operands[2]);
+
+  /* PA insertion insns don't support zero length bitfields or fields
+     extending beyond the left or right-most bits.  Also, the predicate
+     rejects lengths equal to a doubleword as they are better handled by
+     the move patterns.  */
+  if (len <= 0 || pos + len > 64)
+    FAIL;
+
+  /* From mips.md: insert_bit_field doesn't verify that our destination
+     matches the predicate, so check it again here.  */
+  if (!register_operand (operands[0], VOIDmode))
+    FAIL;
+
+  emit_insn (gen_insv_64 (operands[0], operands[1],
+			  operands[2], operands[3]));
+  DONE;
+}")
+
 (define_insn "insv_64"
   [(set (zero_extract:DI (match_operand:DI 0 "register_operand" "+r,r")
-			 (match_operand:DI 1 "uint32_operand" "")
-			 (match_operand:DI 2 "uint32_operand" ""))
-	(match_operand:DI 3 "arith32_operand" "r,L"))]
-  "TARGET_64BIT"
+			 (match_operand:DI 1 "uint6_operand" "")
+			 (match_operand:DI 2 "uint6_operand" ""))
+	(match_operand:DI 3 "arith5_operand" "r,L"))]
+  "TARGET_64BIT
+   && UINTVAL (operands[1]) > 0
+   && UINTVAL (operands[1]) + UINTVAL (operands[2]) <= 64"
   "@
    depd %3,%2+%1-1,%1,%0
    depdi %3,%2+%1-1,%1,%0"
@@ -8583,8 +8696,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; Optimize insertion of const_int values of type 1...1xxxx.
 (define_insn ""
   [(set (zero_extract:DI (match_operand:DI 0 "register_operand" "+r")
-			 (match_operand:DI 1 "uint32_operand" "")
-			 (match_operand:DI 2 "uint32_operand" ""))
+			 (match_operand:DI 1 "uint6_operand" "")
+			 (match_operand:DI 2 "uint6_operand" ""))
 	(match_operand:DI 3 "const_int_operand" ""))]
   "(INTVAL (operands[3]) & 0x10) != 0
    && TARGET_64BIT

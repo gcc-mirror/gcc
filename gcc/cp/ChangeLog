@@ -1,3 +1,39 @@
+2013-01-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55878
+	* rtti.c (build_typeid, get_typeid): Add complain parm.
+	(get_tinfo_decl_dynamic): Likewise.
+	* cp-tree.h, parser.c, pt.c: Adjust.
+
+	PR c++/55893
+	* decl.c (cp_finish_decl): Clear TREE_READONLY if the variable
+	needs destruction.
+
+2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48418
+	* typeck.c (cp_build_binary_op): For LSHIFT_EXPR and RSHIFT_EXPR,
+	call maybe_constant_value for the negative or too big shift
+	count warnings.
+
+2013-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55801
+	* decl2.c (var_needs_tls_wrapper): Return false when error_operand_p
+	of the argument is true.
+
+2013-01-08  Joel Brobecker  <brobecker@adacore.com>
+
+	* parser.c (cp_parser_initializer_list): Move declaration
+	of variable non_const to start of lexical block.
+
+2013-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55753
+	* tree.c (build_aggr_init_expr): Do nothing in a template.
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Strip an ADDR_EXPR off
+	a FUNCTION_DECL before tsubsting.
+
 2013-01-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/52343

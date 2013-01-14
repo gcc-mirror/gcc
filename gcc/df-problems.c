@@ -1,6 +1,5 @@
 /* Standard problems for dataflow support routines.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1999-2013 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -3858,6 +3857,8 @@ can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
 	}
       if (NONDEBUG_INSN_P (insn))
 	{
+	  if (volatile_insn_p (PATTERN (insn)))
+	    return false;
 	  memrefs_in_across |= for_each_rtx (&PATTERN (insn), find_memory,
 					     NULL);
 	  note_stores (PATTERN (insn), find_memory_stores,
@@ -3917,7 +3918,9 @@ can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
       if (NONDEBUG_INSN_P (insn))
 	{
 	  if (may_trap_or_fault_p (PATTERN (insn))
-	      && (trapping_insns_in_across || other_branch_live != NULL))
+	      && (trapping_insns_in_across
+		  || other_branch_live != NULL
+		  || volatile_insn_p (PATTERN (insn))))
 	    break;
 
 	  /* We cannot move memory stores past each other, or move memory

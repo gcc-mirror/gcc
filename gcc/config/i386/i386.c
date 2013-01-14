@@ -1,7 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
-   Free Software Foundation, Inc.
+   Copyright (C) 1988-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2014,7 +2012,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
      the auto-vectorizer.  */
-  m_BDVER,
+  m_BDVER | m_BTVER2,
 
   /* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
      during reassociation of integer computation.  */
@@ -2395,12 +2393,6 @@ static enum calling_abi ix86_function_abi (const_tree);
 
 #ifndef SUBTARGET32_DEFAULT_CPU
 #define SUBTARGET32_DEFAULT_CPU "i386"
-#endif
-
-/* The svr4 ABI for the i386 says that records and unions are returned
-   in memory.  */
-#ifndef DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 1
 #endif
 
 /* Whether -mtune= or -march= were specified */
@@ -42105,7 +42097,7 @@ static unsigned HOST_WIDE_INT
 ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 {
   unsigned HOST_WIDE_INT model = val & MEMMODEL_MASK;
-  unsigned HOST_WIDE_INT strong;
+  bool strong;
 
   if (val & ~(unsigned HOST_WIDE_INT)(IX86_HLE_ACQUIRE|IX86_HLE_RELEASE
 				      |MEMMODEL_MASK)

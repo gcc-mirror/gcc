@@ -1,3 +1,75 @@
+2013-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55935
+	* trans-expr.c (gfc_conv_structure): Call
+	unshare_expr_without_location on the ctor elements.
+
+2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/54286
+	* expr.c (gfc_check_pointer_assign): Ensure that both lvalue
+	and rvalue interfaces are presented to gfc_compare_interfaces.
+	Simplify references to interface names by using the symbols
+	themselves. Call gfc_compare_interfaces with s1 and s2 inter-
+	changed to overcome the asymmetry of this function. Do not
+	repeat the check for the presence of s1 and s2.
+
+2013-01-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55072
+	* trans-array.c (gfc_conv_array_parameter): No packing was done for
+	full arrays of derived type.
+
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55868
+	* class.c (get_unique_type_string): Change $tar to STAR and
+	replace sprintf by strcpy where there is no formatting.
+	* decl.c (gfc_match_decl_type_spec): Change $tar to STAR.
+
+2013-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/47203
+	* module.c (check_for_ambiguous): Get the current program unit using
+	gfc_current_ns.
+
+2013-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55758
+	* resolve.c (resolve_symbol): Reject non-C_Bool logicals
+	in BIND(C) procedures with -std=f*.
+
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55618
+	* trans-expr.c (gfc_conv_procedure_call): Dereference scalar
+	character function arguments to elemental procedures in
+	scalarization loops.
+
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55763
+	* gfortran.h (gfc_check_assign_symbol): Update prototype.
+	* decl.c (add_init_expr_to_sym, do_parm): Update call.
+	* expr.c (gfc_check_assign_symbol): Handle BT_CLASS and
+	improve error location; support components.
+	(gfc_check_pointer_assign): Handle component assignments.
+	* resolve.c (resolve_fl_derived0): Call gfc_check_assign_symbol.
+	(resolve_values): Update call.
+	(resolve_structure_cons): Avoid double diagnostic.
+
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55852
+	* expr.c (gfc_build_intrinsic_call): Avoid clashes
+	with user's procedures.
+	* gfortran.h (gfc_build_intrinsic_call): Update prototype.
+	* simplify.c (gfc_simplify_size): Update call.
+	* class.c (finalization_scalarizer, finalization_get_offset,
+	finalizer_insert_packed_call, generate_finalization_wrapper):
+	Clean up by using gfc_build_intrinsic_call.
+
 2012-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
@@ -6,9 +78,9 @@
 
 2013-01-06  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/PR53876
-	PR fortran/PR54990
-	PR fortran/PR54992
+	PR fortran/53876
+	PR fortran/54990
+	PR fortran/54992
 	* trans-array.c (build_array_ref): Check the TYPE_CANONICAL
 	to see if it is GFC_CLASS_TYPE_P.
 	* trans-expr.c (gfc_get_vptr_from_expr): The same.

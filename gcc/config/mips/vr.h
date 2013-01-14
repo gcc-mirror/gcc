@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    NEC VR Series Processors
-   Copyright (c) 2002, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.

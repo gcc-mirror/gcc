@@ -1,6 +1,5 @@
 /* Callgraph clones
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -184,6 +183,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   new_node->symbol.decl = decl;
   symtab_register_node ((symtab_node)new_node);
   new_node->origin = n->origin;
+  new_node->symbol.lto_file_data = n->symbol.lto_file_data;
   if (new_node->origin)
     {
       new_node->next_nested = new_node->origin->nested;

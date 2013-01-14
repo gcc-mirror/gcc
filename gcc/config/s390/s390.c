@@ -1,6 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1999-2013 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -2148,13 +2147,17 @@ s390_legitimate_address_without_index_p (rtx op)
 }
 
 
-/* Return true if ADDR is of kind symbol_ref or symbol_ref + const_int
-   and return these parts in SYMREF and ADDEND.  You can pass NULL in
-   SYMREF and/or ADDEND if you are not interested in these values.
-   Literal pool references are *not* considered symbol references.  */
+/* Return TRUE if ADDR is an operand valid for a load/store relative
+   instruction.  Be aware that the alignment of the operand needs to
+   be checked separately.
+   Valid addresses are single references or a sum of a reference and a
+   constant integer. Return these parts in SYMREF and ADDEND.  You can
+   pass NULL in REF and/or ADDEND if you are not interested in these
+   values.  Literal pool references are *not* considered symbol
+   references.  */
 
 static bool
-s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
+s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
 {
   HOST_WIDE_INT tmpaddend = 0;
 
@@ -2163,43 +2166,26 @@ s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
 
   if (GET_CODE (addr) == PLUS)
     {
-      if (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
-	  && !CONSTANT_POOL_ADDRESS_P (XEXP (addr, 0))
-	  && CONST_INT_P (XEXP (addr, 1)))
-	{
-	  tmpaddend = INTVAL (XEXP (addr, 1));
-	  addr = XEXP (addr, 0);
-	}
-      else
+      if (!CONST_INT_P (XEXP (addr, 1)))
 	return false;
+
+      tmpaddend = INTVAL (XEXP (addr, 1));
+      addr = XEXP (addr, 0);
     }
-  else
-    if (GET_CODE (addr) != SYMBOL_REF || CONSTANT_POOL_ADDRESS_P (addr))
-	return false;
 
-  if (symref)
-    *symref = addr;
-  if (addend)
-    *addend = tmpaddend;
+  if ((GET_CODE (addr) == SYMBOL_REF && !CONSTANT_POOL_ADDRESS_P (addr))
+      || (GET_CODE (addr) == UNSPEC
+	  && (XINT (addr, 1) == UNSPEC_GOTENT
+	      || (TARGET_CPU_ZARCH && XINT (addr, 1) == UNSPEC_PLT))))
+    {
+      if (symref)
+	*symref = addr;
+      if (addend)
+	*addend = tmpaddend;
 
-  return true;
-}
-
-/* Return TRUE if ADDR is an operand valid for a load/store relative
-   instructions.  Be aware that the alignment of the operand needs to
-   be checked separately.  */
-static bool
-s390_loadrelative_operand_p (rtx addr)
-{
-  if (GET_CODE (addr) == CONST)
-    addr = XEXP (addr, 0);
-
-  /* Enable load relative for symbol@GOTENT.  */
-  if (GET_CODE (addr) == UNSPEC
-      && XINT (addr, 1) == UNSPEC_GOTENT)
-    return true;
-
-  return s390_symref_operand_p (addr, NULL, NULL);
+      return true;
+    }
+  return false;
 }
 
 /* Return true if the address in OP is valid for constraint letter C
@@ -2215,7 +2201,7 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 
   /* This check makes sure that no symbolic address (except literal
      pool references) are accepted by the R or T constraints.  */
-  if (s390_loadrelative_operand_p (op))
+  if (s390_loadrelative_operand_p (op, NULL, NULL))
     return 0;
 
   /* Ensure literal pool references are only accepted if LIT_POOL_OK.  */
@@ -2992,9 +2978,23 @@ s390_preferred_reload_class (rtx op, reg_class_t rclass)
 	 it is most likely being used as an address, so
 	 prefer ADDR_REGS.  If 'class' is not a superset
 	 of ADDR_REGS, e.g. FP_REGS, reject this reload.  */
+      case CONST:
+	/* A larl operand with odd addend will get fixed via secondary
+	   reload.  So don't request it to be pushed into literal
+	   pool.  */
+	if (TARGET_CPU_ZARCH
+	    && GET_CODE (XEXP (op, 0)) == PLUS
+	    && GET_CODE (XEXP (XEXP(op, 0), 0)) == SYMBOL_REF
+	    && GET_CODE (XEXP (XEXP(op, 0), 1)) == CONST_INT)
+	  {
+	    if (reg_class_subset_p (ADDR_REGS, rclass))
+	      return ADDR_REGS;
+	    else
+	      return NO_REGS;
+	  }
+	/* fallthrough */
       case LABEL_REF:
       case SYMBOL_REF:
-      case CONST:
 	if (!legitimate_reload_constant_p (op))
           return NO_REGS;
 	/* fallthrough */
@@ -3022,18 +3022,21 @@ s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment)
   HOST_WIDE_INT addend;
   rtx symref;
 
-  /* Accept symbol@GOTENT with pointer size alignment.  */
-  if (GET_CODE (addr) == CONST
-      && GET_CODE (XEXP (addr, 0)) == UNSPEC
-      && XINT (XEXP (addr, 0), 1) == UNSPEC_GOTENT
+  if (!s390_loadrelative_operand_p (addr, &symref, &addend))
+    return false;
+
+  if (addend & (alignment - 1))
+    return false;
+
+  if (GET_CODE (symref) == SYMBOL_REF
+      && !SYMBOL_REF_NOT_NATURALLY_ALIGNED_P (symref))
+    return true;
+
+  if (GET_CODE (symref) == UNSPEC
       && alignment <= UNITS_PER_LONG)
     return true;
 
-  if (!s390_symref_operand_p (addr, &symref, &addend))
-    return false;
-
-  return (!SYMBOL_REF_NOT_NATURALLY_ALIGNED_P (symref)
-	  && !(addend & (alignment - 1)));
+  return false;
 }
 
 /* ADDR is moved into REG using larl.  If ADDR isn't a valid larl
@@ -3046,7 +3049,7 @@ s390_reload_larl_operand (rtx reg, rtx addr, rtx scratch)
   HOST_WIDE_INT addend;
   rtx symref;
 
-  if (!s390_symref_operand_p (addr, &symref, &addend))
+  if (!s390_loadrelative_operand_p (addr, &symref, &addend))
     gcc_unreachable ();
 
   if (!(addend & 1))
@@ -3072,7 +3075,7 @@ s390_reload_larl_operand (rtx reg, rtx addr, rtx scratch)
 	emit_move_insn (scratch, symref);
 
       /* Increment the address using la in order to avoid clobbering cc.  */
-      emit_move_insn (reg, gen_rtx_PLUS (Pmode, scratch, const1_rtx));
+      s390_load_address (reg, gen_rtx_PLUS (Pmode, scratch, const1_rtx));
     }
 }
 
@@ -3132,7 +3135,7 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       /* On z10 several optimizer steps may generate larl operands with
 	 an odd addend.  */
       if (in_p
-	  && s390_symref_operand_p (x, &symref, &offset)
+	  && s390_loadrelative_operand_p (x, &symref, &offset)
 	  && mode == Pmode
 	  && !SYMBOL_REF_ALIGN1_P (symref)
 	  && (offset & 1) == 1)
@@ -3144,7 +3147,7 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	 or if the symref addend of a SI or DI move is not aligned to the
 	 width of the access.  */
       if (MEM_P (x)
-	  && s390_symref_operand_p (XEXP (x, 0), NULL, NULL)
+	  && s390_loadrelative_operand_p (XEXP (x, 0), NULL, NULL)
 	  && (mode == QImode || mode == TImode || FLOAT_MODE_P (mode)
 	      || (!TARGET_ZARCH && mode == DImode)
 	      || ((mode == HImode || mode == SImode || mode == DImode)
@@ -3419,52 +3422,125 @@ rtx
 legitimize_pic_address (rtx orig, rtx reg)
 {
   rtx addr = orig;
+  rtx addend = const0_rtx;
   rtx new_rtx = orig;
-  rtx base;
 
   gcc_assert (!TLS_SYMBOLIC_CONST (addr));
 
-  if (GET_CODE (addr) == LABEL_REF
-      || (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (addr)))
-    {
-      /* This is a local symbol.  */
-      if (TARGET_CPU_ZARCH && larl_operand (addr, VOIDmode))
-        {
-          /* Access local symbols PC-relative via LARL.
-             This is the same as in the non-PIC case, so it is
-             handled automatically ...  */
-        }
-      else
-        {
-          /* Access local symbols relative to the GOT.  */
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
 
-          rtx temp = reg? reg : gen_reg_rtx (Pmode);
+  if (GET_CODE (addr) == PLUS)
+    {
+      addend = XEXP (addr, 1);
+      addr = XEXP (addr, 0);
+    }
+
+  if ((GET_CODE (addr) == LABEL_REF
+       || (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (addr))
+       || (GET_CODE (addr) == UNSPEC &&
+	   (XINT (addr, 1) == UNSPEC_GOTENT
+	    || (TARGET_CPU_ZARCH && XINT (addr, 1) == UNSPEC_PLT))))
+      && GET_CODE (addend) == CONST_INT)
+    {
+      /* This can be locally addressed.  */
+
+      /* larl_operand requires UNSPECs to be wrapped in a const rtx.  */
+      rtx const_addr = (GET_CODE (addr) == UNSPEC ?
+			gen_rtx_CONST (Pmode, addr) : addr);
+
+      if (TARGET_CPU_ZARCH
+	  && larl_operand (const_addr, VOIDmode)
+	  && INTVAL (addend) < (HOST_WIDE_INT)1 << 31
+	  && INTVAL (addend) >= -((HOST_WIDE_INT)1 << 31))
+	{
+	  if (INTVAL (addend) & 1)
+	    {
+	      /* LARL can't handle odd offsets, so emit a pair of LARL
+		 and LA.  */
+	      rtx temp = reg? reg : gen_reg_rtx (Pmode);
+
+	      if (!DISP_IN_RANGE (INTVAL (addend)))
+		{
+		  HOST_WIDE_INT even = INTVAL (addend) - 1;
+		  addr = gen_rtx_PLUS (Pmode, addr, GEN_INT (even));
+		  addr = gen_rtx_CONST (Pmode, addr);
+		  addend = const1_rtx;
+		}
+
+	      emit_move_insn (temp, addr);
+	      new_rtx = gen_rtx_PLUS (Pmode, temp, addend);
+
+	      if (reg != 0)
+		{
+		  s390_load_address (reg, new_rtx);
+		  new_rtx = reg;
+		}
+	    }
+	  else
+	    {
+	      /* If the offset is even, we can just use LARL.  This
+		 will happen automatically.  */
+	    }
+	}
+      else
+	{
+	  /* No larl - Access local symbols relative to the GOT.  */
+
+	  rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
 	  if (reload_in_progress || reload_completed)
 	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
-          addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
-          addr = gen_rtx_CONST (Pmode, addr);
-          addr = force_const_mem (Pmode, addr);
+	  addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
+	  if (addend != const0_rtx)
+	    addr = gen_rtx_PLUS (Pmode, addr, addend);
+	  addr = gen_rtx_CONST (Pmode, addr);
+	  addr = force_const_mem (Pmode, addr);
 	  emit_move_insn (temp, addr);
 
-          new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-          if (reg != 0)
-            {
-              s390_load_address (reg, new_rtx);
-              new_rtx = reg;
-            }
-        }
+	  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
+	  if (reg != 0)
+	    {
+	      s390_load_address (reg, new_rtx);
+	      new_rtx = reg;
+	    }
+	}
     }
-  else if (GET_CODE (addr) == SYMBOL_REF)
+  else if (GET_CODE (addr) == SYMBOL_REF && addend == const0_rtx)
     {
+      /* A non-local symbol reference without addend.
+
+	 The symbol ref is wrapped into an UNSPEC to make sure the
+	 proper operand modifier (@GOT or @GOTENT) will be emitted.
+	 This will tell the linker to put the symbol into the GOT.
+
+	 Additionally the code dereferencing the GOT slot is emitted here.
+
+	 An addend to the symref needs to be added afterwards.
+	 legitimize_pic_address calls itself recursively to handle
+	 that case.  So no need to do it here.  */
+
       if (reg == 0)
         reg = gen_reg_rtx (Pmode);
 
-      if (flag_pic == 1)
+      if (TARGET_Z10)
+	{
+	  /* Use load relative if possible.
+	     lgrl <target>, sym@GOTENT  */
+	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTENT);
+	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+	  new_rtx = gen_const_mem (GET_MODE (reg), new_rtx);
+
+	  emit_move_insn (reg, new_rtx);
+	  new_rtx = reg;
+	}
+      else if (flag_pic == 1)
         {
-          /* Assume GOT offset < 4k.  This is handled the same way
-             in both 31- and 64-bit code (@GOT).  */
+          /* Assume GOT offset is a valid displacement operand (< 4k
+             or < 512k with z990).  This is handled the same way in
+             both 31- and 64-bit code (@GOT).
+             lg <target>, sym@GOT(r12)  */
 
 	  if (reload_in_progress || reload_completed)
 	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
@@ -3479,7 +3555,9 @@ legitimize_pic_address (rtx orig, rtx reg)
       else if (TARGET_CPU_ZARCH)
         {
           /* If the GOT offset might be >= 4k, we determine the position
-             of the GOT entry via a PC-relative LARL (@GOTENT).  */
+             of the GOT entry via a PC-relative LARL (@GOTENT).
+	     larl temp, sym@GOTENT
+             lg   <target>, 0(temp) */
 
           rtx temp = reg ? reg : gen_reg_rtx (Pmode);
 
@@ -3488,21 +3566,21 @@ legitimize_pic_address (rtx orig, rtx reg)
 
           new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTENT);
           new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+	  emit_move_insn (temp, new_rtx);
 
-	  if (!TARGET_Z10)
-	    {
-	      emit_move_insn (temp, new_rtx);
-	      new_rtx = gen_const_mem (Pmode, temp);
-	    }
-	  else
-	    new_rtx = gen_const_mem (GET_MODE (reg), new_rtx);
+	  new_rtx = gen_const_mem (Pmode, temp);
           emit_move_insn (reg, new_rtx);
+
           new_rtx = reg;
         }
       else
         {
           /* If the GOT offset might be >= 4k, we have to load it
-             from the literal pool (@GOT).  */
+             from the literal pool (@GOT).
+
+	     lg temp, lit-litbase(r13)
+             lg <target>, 0(temp)
+	     lit:  .long sym@GOT  */
 
           rtx temp = reg ? reg : gen_reg_rtx (Pmode);
 
@@ -3523,175 +3601,94 @@ legitimize_pic_address (rtx orig, rtx reg)
           new_rtx = reg;
         }
     }
-  else
+  else if (GET_CODE (addr) == UNSPEC && GET_CODE (addend) == CONST_INT)
     {
-      if (GET_CODE (addr) == CONST)
+      gcc_assert (XVECLEN (addr, 0) == 1);
+      switch (XINT (addr, 1))
 	{
-	  addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) == UNSPEC)
+	  /* These address symbols (or PLT slots) relative to the GOT
+	     (not GOT slots!).  In general this will exceed the
+	     displacement range so these value belong into the literal
+	     pool.  */
+	case UNSPEC_GOTOFF:
+	case UNSPEC_PLTOFF:
+	  new_rtx = force_const_mem (Pmode, orig);
+	  break;
+
+	  /* For -fPIC the GOT size might exceed the displacement
+	     range so make sure the value is in the literal pool.  */
+	case UNSPEC_GOT:
+	  if (flag_pic == 2)
+	    new_rtx = force_const_mem (Pmode, orig);
+	  break;
+
+	  /* For @GOTENT larl is used.  This is handled like local
+	     symbol refs.  */
+	case UNSPEC_GOTENT:
+	  gcc_unreachable ();
+	  break;
+
+	  /* @PLT is OK as is on 64-bit, must be converted to
+	     GOT-relative @PLTOFF on 31-bit.  */
+	case UNSPEC_PLT:
+	  if (!TARGET_CPU_ZARCH)
 	    {
-	      gcc_assert (XVECLEN (addr, 0) == 1);
-              switch (XINT (addr, 1))
-                {
-                  /* If someone moved a GOT-relative UNSPEC
-                     out of the literal pool, force them back in.  */
-                  case UNSPEC_GOTOFF:
-                  case UNSPEC_PLTOFF:
-                    new_rtx = force_const_mem (Pmode, orig);
-                    break;
+	      rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
-                  /* @GOT is OK as is if small.  */
-		  case UNSPEC_GOT:
-		    if (flag_pic == 2)
-		      new_rtx = force_const_mem (Pmode, orig);
-		    break;
+	      if (reload_in_progress || reload_completed)
+		df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
-                  /* @GOTENT is OK as is.  */
-                  case UNSPEC_GOTENT:
-                    break;
+	      addr = XVECEXP (addr, 0, 0);
+	      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
+				     UNSPEC_PLTOFF);
+	      if (addend != const0_rtx)
+		addr = gen_rtx_PLUS (Pmode, addr, addend);
+	      addr = gen_rtx_CONST (Pmode, addr);
+	      addr = force_const_mem (Pmode, addr);
+	      emit_move_insn (temp, addr);
 
-                  /* @PLT is OK as is on 64-bit, must be converted to
-                     GOT-relative @PLTOFF on 31-bit.  */
-                  case UNSPEC_PLT:
-                    if (!TARGET_CPU_ZARCH)
-                      {
-                        rtx temp = reg? reg : gen_reg_rtx (Pmode);
-
-			if (reload_in_progress || reload_completed)
-			  df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
-
-                        addr = XVECEXP (addr, 0, 0);
-                        addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
-					       UNSPEC_PLTOFF);
-                        addr = gen_rtx_CONST (Pmode, addr);
-                        addr = force_const_mem (Pmode, addr);
-	                emit_move_insn (temp, addr);
-
-                        new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-                        if (reg != 0)
-                          {
-                            s390_load_address (reg, new_rtx);
-                            new_rtx = reg;
-                          }
-                      }
-                    break;
-
-                  /* Everything else cannot happen.  */
-                  default:
-                    gcc_unreachable ();
-                }
-	    }
-	  else
-	    gcc_assert (GET_CODE (addr) == PLUS);
-	}
-      if (GET_CODE (addr) == PLUS)
-	{
-	  rtx op0 = XEXP (addr, 0), op1 = XEXP (addr, 1);
-
-	  gcc_assert (!TLS_SYMBOLIC_CONST (op0));
-	  gcc_assert (!TLS_SYMBOLIC_CONST (op1));
-
-	  /* Check first to see if this is a constant offset
-             from a local symbol reference.  */
-	  if ((GET_CODE (op0) == LABEL_REF
-		|| (GET_CODE (op0) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op0)))
-	      && GET_CODE (op1) == CONST_INT)
-	    {
-              if (TARGET_CPU_ZARCH
-		  && larl_operand (op0, VOIDmode)
-		  && INTVAL (op1) < (HOST_WIDE_INT)1 << 31
-		  && INTVAL (op1) >= -((HOST_WIDE_INT)1 << 31))
-                {
-                  if (INTVAL (op1) & 1)
-                    {
-                      /* LARL can't handle odd offsets, so emit a
-                         pair of LARL and LA.  */
-                      rtx temp = reg? reg : gen_reg_rtx (Pmode);
-
-                      if (!DISP_IN_RANGE (INTVAL (op1)))
-                        {
-                          HOST_WIDE_INT even = INTVAL (op1) - 1;
-                          op0 = gen_rtx_PLUS (Pmode, op0, GEN_INT (even));
-			  op0 = gen_rtx_CONST (Pmode, op0);
-                          op1 = const1_rtx;
-                        }
-
-                      emit_move_insn (temp, op0);
-                      new_rtx = gen_rtx_PLUS (Pmode, temp, op1);
-
-                      if (reg != 0)
-                        {
-                          s390_load_address (reg, new_rtx);
-                          new_rtx = reg;
-                        }
-                    }
-                  else
-                    {
-                      /* If the offset is even, we can just use LARL.
-                         This will happen automatically.  */
-                    }
-                }
-              else
-                {
-                  /* Access local symbols relative to the GOT.  */
-
-                  rtx temp = reg? reg : gen_reg_rtx (Pmode);
-
-		  if (reload_in_progress || reload_completed)
-		    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
-
-                  addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0),
-					 UNSPEC_GOTOFF);
-                  addr = gen_rtx_PLUS (Pmode, addr, op1);
-                  addr = gen_rtx_CONST (Pmode, addr);
-                  addr = force_const_mem (Pmode, addr);
-		  emit_move_insn (temp, addr);
-
-                  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-                  if (reg != 0)
-                    {
-                      s390_load_address (reg, new_rtx);
-                      new_rtx = reg;
-                    }
-                }
-	    }
-
-          /* Now, check whether it is a GOT relative symbol plus offset
-             that was pulled out of the literal pool.  Force it back in.  */
-
-	  else if (GET_CODE (op0) == UNSPEC
-	           && GET_CODE (op1) == CONST_INT
-	           && XINT (op0, 1) == UNSPEC_GOTOFF)
-            {
-	      gcc_assert (XVECLEN (op0, 0) == 1);
-
-              new_rtx = force_const_mem (Pmode, orig);
-            }
-
-          /* Otherwise, compute the sum.  */
-	  else
-	    {
-	      base = legitimize_pic_address (XEXP (addr, 0), reg);
-	      new_rtx  = legitimize_pic_address (XEXP (addr, 1),
-					     base == reg ? NULL_RTX : reg);
-	      if (GET_CODE (new_rtx) == CONST_INT)
-		new_rtx = plus_constant (Pmode, base, INTVAL (new_rtx));
-	      else
+	      new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
+	      if (reg != 0)
 		{
-		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
-		    {
-		      base = gen_rtx_PLUS (Pmode, base, XEXP (new_rtx, 0));
-		      new_rtx = XEXP (new_rtx, 1);
-		    }
-		  new_rtx = gen_rtx_PLUS (Pmode, base, new_rtx);
+		  s390_load_address (reg, new_rtx);
+		  new_rtx = reg;
 		}
-
-	      if (GET_CODE (new_rtx) == CONST)
-		new_rtx = XEXP (new_rtx, 0);
-              new_rtx = force_operand (new_rtx, 0);
 	    }
+	  else
+	    /* On 64 bit larl can be used.  This case is handled like
+	       local symbol refs.  */
+	    gcc_unreachable ();
+	  break;
+
+	  /* Everything else cannot happen.  */
+	default:
+	  gcc_unreachable ();
 	}
     }
+  else if (addend != const0_rtx)
+    {
+      /* Otherwise, compute the sum.  */
+
+      rtx base = legitimize_pic_address (addr, reg);
+      new_rtx  = legitimize_pic_address (addend,
+					 base == reg ? NULL_RTX : reg);
+      if (GET_CODE (new_rtx) == CONST_INT)
+	new_rtx = plus_constant (Pmode, base, INTVAL (new_rtx));
+      else
+	{
+	  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
+	    {
+	      base = gen_rtx_PLUS (Pmode, base, XEXP (new_rtx, 0));
+	      new_rtx = XEXP (new_rtx, 1);
+	    }
+	  new_rtx = gen_rtx_PLUS (Pmode, base, new_rtx);
+	}
+
+      if (GET_CODE (new_rtx) == CONST)
+	new_rtx = XEXP (new_rtx, 0);
+      new_rtx = force_operand (new_rtx, 0);
+    }
+
   return new_rtx;
 }
 
@@ -5350,7 +5347,7 @@ print_operand_address (FILE *file, rtx addr)
 {
   struct s390_address ad;
 
-  if (s390_loadrelative_operand_p (addr))
+  if (s390_loadrelative_operand_p (addr, NULL, NULL))
     {
       if (!TARGET_Z10)
 	{

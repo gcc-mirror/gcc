@@ -1,6 +1,6 @@
 /* Operating system specific prototypes to be used when targeting GCC for any
    Solaris 2 system.
-   Copyright 2004, 2007, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2004-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

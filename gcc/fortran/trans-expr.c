@@ -1,7 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012, 2013
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -4115,7 +4113,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
 	    }
 	  else
-	    gfc_conv_expr_reference (&parmse, e);
+	    {
+	      gfc_conv_expr_reference (&parmse, e);
+	      if (e->ts.type == BT_CHARACTER && !e->rank
+		  && e->expr_type == EXPR_FUNCTION)
+		parmse.expr = build_fold_indirect_ref_loc (input_location,
+							   parmse.expr);
+	    }
 
 	  if (fsym && fsym->ts.type == BT_DERIVED
 	      && gfc_is_class_container_ref (e))
@@ -6133,6 +6137,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	  gfc_symbol *vtabs;
 	  vtabs = cm->initializer->symtree->n.sym;
 	  vtab = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtabs));
+	  vtab = unshare_expr_without_location (vtab);
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, vtab);
 	}
       else if (cm->ts.u.derived && strcmp (cm->name, "_size") == 0)
@@ -6146,6 +6151,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 				      TREE_TYPE (cm->backend_decl),
 				      cm->attr.dimension, cm->attr.pointer,
 				      cm->attr.proc_pointer);
+	  val = unshare_expr_without_location (val);
 
 	  /* Append it to the constructor list.  */
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);

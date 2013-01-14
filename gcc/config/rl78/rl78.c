@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RL78 processors.
-   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2011-2013 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -838,6 +838,9 @@ rl78_expand_prologue (void)
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->framesize;
+
+  if (is_interrupt_func (cfun->decl))
+    emit_insn (gen_sel_rb (GEN_INT (0)));
 
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])

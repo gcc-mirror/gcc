@@ -1,3 +1,4 @@
+! { dg-do run }
 subroutine foo(n,x)
   implicit none
   integer, intent(in) :: n

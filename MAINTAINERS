@@ -46,6 +46,7 @@ their own patches from other maintainers or reviewers.
 aarch64 port		Marcus Shawcroft	marcus.shawcroft@arm.com
 aarch64 port		Richard Earnshaw	richard.earnshaw@arm.com
 alpha port		Richard Henderson	rth@redhat.com
+arc port		Joern Rennecke		joern.rennecke@embecosm.com
 arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	richard.earnshaw@arm.com
 arm port		Paul Brook		paul@codesourcery.com
@@ -402,7 +403,7 @@ Manfred Hollstein				mh@suse.com
 Falk Hueffner					falk@debian.org
 Andrew John Hughes				gnu_andrew@member.fsf.org
 Andy Hutchinson					hutchinsonandy@aim.com
-Naveen H.S					naveen.S@kpitcummins.com
+Naveen H.S					Naveen.Hurugalawadi@caviumnetworks.com
 Meador Inge					meadori@codesourcery.com
 Bernardo Innocenti				bernie@develer.com
 Balaji V. Iyer                                  bviyer@gmail.com

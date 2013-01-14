@@ -1,6 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -481,7 +480,7 @@ scale_loop_frequencies (struct loop *loop, int num, int den)
    to iterate too many times.  */
 
 void
-scale_loop_profile (struct loop *loop, int scale, int iteration_bound)
+scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 {
   gcov_type iterations = expected_loop_iterations_unbounded (loop);
   edge e;
@@ -491,7 +490,7 @@ scale_loop_profile (struct loop *loop, int scale, int iteration_bound)
     fprintf (dump_file, ";; Scaling loop %i with scale %f, "
 	     "bounding iterations to %i from guessed %i\n",
 	     loop->num, (double)scale / REG_BR_PROB_BASE,
-	     iteration_bound, (int)iterations);
+	     (int)iteration_bound, (int)iterations);
 
   /* See if loop is predicted to iterate too many times.  */
   if (iteration_bound && iterations > 0

@@ -1,5 +1,5 @@
 ;; Scheduling description for Motorola PowerPC processor cores.
-;;   Copyright (C) 2003, 2004, 2007, 2009 Free Software Foundation, Inc.
+;;   Copyright (C) 2003-2013 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

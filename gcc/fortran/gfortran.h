@@ -1,7 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2770,7 +2768,7 @@ int gfc_kind_max (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_conformance (gfc_expr *, gfc_expr *, const char *, ...) ATTRIBUTE_PRINTF_3;
 gfc_try gfc_check_assign (gfc_expr *, gfc_expr *, int);
 gfc_try gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
-gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
+gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_component *, gfc_expr *);
 
 bool gfc_has_default_initializer (gfc_symbol *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);
@@ -2798,7 +2796,8 @@ int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
-gfc_expr* gfc_build_intrinsic_call (const char*, locus, unsigned, ...);
+gfc_expr* gfc_build_intrinsic_call (gfc_namespace *, gfc_isym_id, const char*,
+				    locus, unsigned, ...);
 gfc_try gfc_check_vardef_context (gfc_expr*, bool, bool, bool, const char*);
 
 

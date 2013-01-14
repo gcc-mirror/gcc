@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -3215,6 +3215,7 @@ do_whole_program_analysis (void)
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
   execute_ipa_pass_list (all_regular_ipa_passes);
+  symtab_remove_unreachable_nodes (false, dump_file);
 
   if (cgraph_dump_file)
     {

@@ -1,7 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -900,9 +898,9 @@ associate_trees (location_t loc, tree t1, tree t2, enum tree_code code, tree typ
 static bool
 int_binop_types_match_p (enum tree_code code, const_tree type1, const_tree type2)
 {
-  if (TREE_CODE (type1) != INTEGER_TYPE && !POINTER_TYPE_P (type1))
+  if (!INTEGRAL_TYPE_P (type1) && !POINTER_TYPE_P (type1))
     return false;
-  if (TREE_CODE (type2) != INTEGER_TYPE && !POINTER_TYPE_P (type2))
+  if (!INTEGRAL_TYPE_P (type2) && !POINTER_TYPE_P (type2))
     return false;
 
   switch (code)

@@ -1,6 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2005-2013 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -3566,8 +3565,20 @@ extract_range_basic (value_range_t *vr, gimple stmt)
   bool sop = false;
   tree type = gimple_expr_type (stmt);
 
-  if (INTEGRAL_TYPE_P (type)
-      && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
+  /* If the call is __builtin_constant_p and the argument is a
+     function parameter resolve it to false.  This avoids bogus
+     array bound warnings.
+     ???  We could do this as early as inlining is finished.  */
+  if (gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
+    {
+      tree arg = gimple_call_arg (stmt, 0);
+      if (TREE_CODE (arg) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (arg)
+	  && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL)
+	set_value_range_to_null (vr, type);
+    }
+  else if (INTEGRAL_TYPE_P (type)
+	   && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
     set_value_range_to_nonnegative (vr, type,
 				    sop || stmt_overflow_infinity (stmt));
   else if (vrp_stmt_computes_nonzero (stmt, &sop)
@@ -8753,9 +8764,11 @@ range_fits_type_p (value_range_t *vr, unsigned precision, bool unsigned_p)
       && !POINTER_TYPE_P (src_type))
     return false;
 
-  /* An extension is always fine, so is an identity transform.  */
+  /* An extension is fine unless VR is signed and unsigned_p,
+     and so is an identity transform.  */
   src_precision = TYPE_PRECISION (TREE_TYPE (vr->min));
-  if (src_precision < precision
+  if ((src_precision < precision
+       && !(unsigned_p && !TYPE_UNSIGNED (src_type)))
       || (src_precision == precision
 	  && TYPE_UNSIGNED (src_type) == unsigned_p))
     return true;
@@ -8813,7 +8826,7 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
     mode = TYPE_MODE (TREE_TYPE (rhs1));
   /* If we can do the conversion in the current input mode do nothing.  */
   else if (can_float_p (fltmode, TYPE_MODE (TREE_TYPE (rhs1)),
-			TYPE_UNSIGNED (TREE_TYPE (rhs1))))
+			TYPE_UNSIGNED (TREE_TYPE (rhs1))) != CODE_FOR_nothing)
     return false;
   /* Otherwise search for a mode we can use, starting from the narrowest
      integer mode available.  */

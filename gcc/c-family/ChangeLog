@@ -1,3 +1,11 @@
+2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48418
+	* c-common.c (c_fully_fold_internal): Warn for LSHIFT_EXPR and
+	RSHIFT_EXPR, if orig_op1 isn't INTEGER_CST, op1 is INTEGER_CST
+	and is either negative or bigger or equal to type precision
+	of the first operand.
+
 2012-12-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/55570
@@ -2350,7 +2358,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+Copyright (C) 2010-2013 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

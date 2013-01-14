@@ -1,3 +1,47 @@
+2013-01-14  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.def (install-target-libsanitizer): Depend on
+	install-target-libstdc++-v3.
+	* Makefile.in: Regenerate.
+
+2013-01-14  Richard Biener  <rguenther@suse.de>
+
+	* configure.ac (cloog/isl): Also allow ISL 0.11.x and CLooG 0.18.0.
+	* configure: Re-generate
+
+2013-01-11  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config.sub: Update from config repo.
+
+2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.tpl (BOOT_ADAFLAGS): Remove -gnata.
+	* Makefile.in: Regenerate.
+
+2013-01-10  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* MAINTAINERS (arc): Add new port maintainership for myself.
+
+2013-01-09  Jason Merrill  <jason@redhat.com>
+
+	* .gitignore: Import from gdb repository.
+
+2013-01-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.def (configure-gcc): Depend on all-gmp.
+	(all-gcc): Remove dependency on all-gmp.
+	* Makefile.in: Regenerated.
+
+2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config.sub: Merge from config repo.
+	* config.guess: Ditto.
+
+2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* Makefile.def: Merge from binutils.
+	* Makefile.in: Ditto.
+
 2013-01-01  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
 	* MAINTAINERS: Update my email.

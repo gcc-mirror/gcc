@@ -1,5 +1,5 @@
 /* Definitions for <stdint.h> types for FreeBSD systems.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by Gerald Pfeifer <gerald@pfeifer.com>.
 
 This file is part of GCC.
