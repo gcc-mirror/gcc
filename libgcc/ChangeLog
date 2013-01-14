@@ -1,3 +1,10 @@
+2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* fixed-bit.c (SATFRACT) <FROM_TYPE=1, TO_TYPE=4>: Only
+	declare / set min_low, min_high if TO_MODE_UNSIGNED == 0.
+	(SATFRACT) <FROM_TYPE=TO_TYPE=4>: Only declare / set min_low,
+	min_high if FROM_MODE_UNSIGNED == 0 and TO_MODE_UNSIGNED == 0.
+
 2013-01-07  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.host (i[34567]86-*-openbsd* and x86_64-*-openbsd*):
