@@ -1,3 +1,7 @@
+2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-modes.def: Add GPL copyright notice.
+
 2013-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (mem_thread_fence): Mask operands[0] with
