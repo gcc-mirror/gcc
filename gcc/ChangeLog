@@ -1,3 +1,10 @@
+2013-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vectorizer.h (vect_get_single_scalar_iteraion_cost): Fix typo.
+	* tree-vect-loop.c (vect_get_single_scalar_iteraion_cost): Likewise.
+	(vect_estimate_min_profitable_iter): Adjust to above fix.
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost): Likewise.
+
 2013-01-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/53789

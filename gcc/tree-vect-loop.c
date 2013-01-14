@@ -2062,7 +2062,7 @@ vect_force_simple_reduction (loop_vec_info loop_info, gimple phi,
 
 /* Calculate the cost of one scalar iteration of the loop.  */
 int
-vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
+vect_get_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -2272,7 +2272,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	}
     }
 
-  scalar_single_iter_cost = vect_get_single_scalar_iteraion_cost (loop_vinfo);
+  scalar_single_iter_cost = vect_get_single_scalar_iteration_cost (loop_vinfo);
 
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.
