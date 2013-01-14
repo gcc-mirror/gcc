@@ -1,3 +1,7 @@
+2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years.
+
 2012-06-11  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (GNATLIBCFLAGS_FOR_C): Remove $(PICFLAG).
@@ -310,7 +314,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright 2003, 2004 Free Software Foundation, Inc.
+Copyright (C) 2003-2013 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.
