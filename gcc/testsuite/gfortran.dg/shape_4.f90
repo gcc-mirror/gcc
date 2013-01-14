@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR 35001 - we need to return 0 for the shapes of
 ! negative extents.  Test case adapted from Tobias Burnus.
 program main

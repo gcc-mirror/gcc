@@ -1,3 +1,4 @@
+! { dg-do run }
 integer function char_select (s)
   character(len=*), intent(in) :: s
 
