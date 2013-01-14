@@ -18,6 +18,7 @@ f (int s, int *c)
 }
 
 /* There are 4 ' * ' instances in the decls (since "int * iftmp.0;" is
-   added), 1 parm, 2 in the code.  */
-/* { dg-final { scan-tree-dump-times " \\* " 7 "optimized" } } */
+   added), 1 parm, 2 in the code.  The second one in the code can be
+   a widening mult.  */
+/* { dg-final { scan-tree-dump-times " w?\\* " 7 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
