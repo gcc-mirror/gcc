@@ -1,8 +1,3 @@
-2013-01-14  Ian Lance Taylor  <iant@google.com>
-
-	* generic-morestack-thread.c: Change declaration of
-	__real_pthread_create to not be weak.
-
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S: Remove trailing blanks.

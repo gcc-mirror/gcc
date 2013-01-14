@@ -136,7 +136,8 @@ int __wrap_pthread_create (pthread_t *, const pthread_attr_t *,
   __attribute__ ((visibility ("hidden")));
 
 extern int __real_pthread_create (pthread_t *, const pthread_attr_t *,
-				  void *(*start_routine) (void *), void *);
+				  void *(*start_routine) (void *), void *)
+  __attribute__ ((weak));
 
 int
 __wrap_pthread_create (pthread_t *tid, const pthread_attr_t *attr,
