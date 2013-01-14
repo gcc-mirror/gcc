@@ -1,5 +1,5 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004,
-# 2006, 2010, 2011 Free Software Foundation, Inc.
+# 2006, 2010, 2011, 2012 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -26,4 +26,5 @@
 
 MULTILIB_OPTIONS = m64/m32
 MULTILIB_DIRNAMES = 64 32
-MULTILIB_OSDIRNAMES = ../lib64 $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
+MULTILIB_OSDIRNAMES = ../lib64$(call if_multiarch,:sparc64-linux-gnu)
+MULTILIB_OSDIRNAMES += $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:sparc-linux-gnu)

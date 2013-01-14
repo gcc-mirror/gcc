@@ -1,4 +1,4 @@
-# Copyright (C) 2005, 2009, 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2005-2012 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -24,3 +24,8 @@ MULTILIB_DIRNAMES	=
 #MULTILIB_OPTIONS     += mcpu=fa606te/mcpu=fa626te/mcpu=fmp626/mcpu=fa726te
 #MULTILIB_DIRNAMES    += fa606te fa626te fmp626 fa726te
 #MULTILIB_EXCEPTIONS  += *mthumb/*mcpu=fa606te *mthumb/*mcpu=fa626te *mthumb/*mcpu=fmp626 *mthumb/*mcpu=fa726te*
+
+ifneq (,$(findstring gnueabi,$(target)))
+ARM_EB = $(if $(findstring TARGET_BIG_ENDIAN_DEFAULT=1, $(tm_defines)),eb)
+MULTIARCH_DIRNAME = $(call if_multiarch,arm$(ARM_EB)-linux-gnueabi$(if $(filter hard,$(with_float)),hf))
+endif

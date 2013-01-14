@@ -1,0 +1,5 @@
+MULTIARCH_DIRNAME = $(call if_multiarch,i386-kfreebsd-gnu)
+
+# MULTILIB_OSDIRNAMES are set in t-linux64.
+KFREEBSD_OS = $(filter kfreebsd%, $(word 3, $(subst -, ,$(target))))
+MULTILIB_OSDIRNAMES := $(filter-out mx32=%,$(subst linux,$(KFREEBSD_OS),$(MULTILIB_OSDIRNAMES)))

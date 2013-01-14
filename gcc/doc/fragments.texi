@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2003, 2004, 2005, 2008, 2011
+@c 1999, 2000, 2001, 2003, 2004, 2005, 2008, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -93,6 +93,12 @@ Write one element in @code{MULTILIB_DIRNAMES} for each element in
 default value will be @code{MULTILIB_OPTIONS}, with all slashes treated
 as spaces.
 
+@code{MULTILIB_DIRNAMES} describes the multilib directories using GCC
+conventions and is applied to directories that are part of the GCC
+installation.  When multilib-enabled, the compiler will add a
+subdirectory of the form @var{prefix}/@var{multilib} before each
+directory in the search path for libraries and crt files.
+
 For example, if @code{MULTILIB_OPTIONS} is set to @samp{m68000/m68020
 msoft-float}, then the default value of @code{MULTILIB_DIRNAMES} is
 @samp{m68000 m68020 msoft-float}.  You may specify a different value if
@@ -128,6 +134,60 @@ Sometimes it is desirable that when building multiple versions of
 compiler.  In that case, set @code{MULTILIB_EXTRA_OPTS} to be the list
 of options to be used for all builds.  If you set this, you should
 probably set @code{CRTSTUFF_T_CFLAGS} to a dash followed by it.
+
+@findex MULTILIB_OSDIRNAMES
+@item MULTILIB_OSDIRNAMES
+If @code{MULTILIB_OPTIONS} is used, this variable specifies 
+a list of subdirectory names, that are used to modify the search
+path depending on the chosen multilib.  Unlike @code{MULTILIB_DIRNAMES},
+@code{MULTILIB_OSDIRNAMES} describes the multilib directories using
+operating systems conventions, and is applied to the directories such as
+@code{lib} or those in the @env{LIBRARY_PATH} environment variable.
+The format is either the same as of
+@code{MULTILIB_DIRNAMES}, or a set of mappings.  When it is the same
+as @code{MULTILIB_DIRNAMES}, it describes the multilib directories
+using operating system conventions, rather than GCC conventions.  When it is a set
+of mappings of the form @var{gccdir}=@var{osdir}, the left side gives
+the GCC convention and the right gives the equivalent OS defined
+location.  If the @var{osdir} part begins with a @samp{!},
+GCC will not search in the non-multilib directory and use
+exclusively the multilib directory.  Otherwise, the compiler will
+examine the search path for libraries and crt files twice; the first
+time it will add @var{multilib} to each directory in the search path,
+the second it will not.
+
+For configurations that support both multilib and multiarch,
+@code{MULTILIB_OSDIRNAMES} also encodes the multiarch name, thus
+subsuming @code{MULTIARCH_DIRNAME}.  The multiarch name is appended to
+each directory name, separated by a colon (e.g.
+@samp{../lib32:i386-linux-gnu}).
+
+Each multiarch subdirectory will be searched before the corresponding OS
+multilib directory, for example @samp{/lib/i386-linux-gnu} before
+@samp{/lib/../lib32}.  The multiarch name will also be used to modify the
+system header search path, as explained for @code{MULTIARCH_DIRNAME}.
+
+@findex MULTIARCH_DIRNAME
+@item MULTIARCH_DIRNAME
+This variable specifies the multiarch name for configurations that are
+multiarch-enabled but not multilibbed configurations.
+
+The multiarch name is used to augment the search path for libraries, crt
+files and system header files with additional locations.  The compiler
+will add a multiarch subdirectory of the form
+@var{prefix}/@var{multiarch} before each directory in the library and
+crt search path.  It will also add two directories
+@code{LOCAL_INCLUDE_DIR}/@var{multiarch} and
+@code{NATIVE_SYSTEM_HEADER_DIR}/@var{multiarch}) to the system header
+search path, respectively before @code{LOCAL_INCLUDE_DIR} and
+@code{NATIVE_SYSTEM_HEADER_DIR}.
+
+@code{MULTIARCH_DIRNAME} is not used for configurations that support
+both multilib and multiarch.  In that case, multiarch names are encoded
+in @code{MULTILIB_OSDIRNAMES} instead.
+
+More documentation about multiarch can be found at
+@uref{http://wiki.debian.org/Multiarch}.
 
 @findex SPECS
 @item SPECS

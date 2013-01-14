@@ -540,6 +540,21 @@ extra_modes_file=@extra_modes_file@
 extra_opt_files=@extra_opt_files@
 host_hook_obj=@out_host_hook_obj@
 
+# Multiarch support
+enable_multiarch = @enable_multiarch@
+with_cpu = @with_cpu@
+with_float = @with_float@
+ifeq ($(enable_multiarch),yes)
+  if_multiarch = $(1)
+else
+  ifeq ($(enable_multiarch),auto)
+    # SYSTEM_HEADER_DIR is makefile syntax, cannot be evaluated in configure.ac
+    if_multiarch = $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib/*/crti.o),$(1))
+  else
+    if_multiarch =
+  endif
+endif
+
 # ------------------------
 # Installation directories
 # ------------------------
@@ -1833,10 +1848,11 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	    "$(MULTILIB_EXTRA_OPTS)" \
 	    "$(MULTILIB_EXCLUSIONS)" \
 	    "$(MULTILIB_OSDIRNAMES)" \
+	    "$(MULTIARCH_DIRNAME)" \
 	    "@enable_multilib@" \
 	    > tmp-mlib.h; \
 	else \
-	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' no \
+	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' "$(MULTIARCH_DIRNAME)" no \
 	    > tmp-mlib.h; \
 	fi
 	$(SHELL) $(srcdir)/../move-if-change tmp-mlib.h multilib.h

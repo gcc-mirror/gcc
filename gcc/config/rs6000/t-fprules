@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2005, 2006, 2008, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2005, 2006, 2008, 2011, 2012 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,17 +16,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
-			  msoft-float=mcpu?403 \
-			  msoft-float=mcpu?405 \
-			  msoft-float=mcpu?440 \
-			  msoft-float=mcpu?464 \
-			  msoft-float=mcpu?476 \
-			  msoft-float=mcpu?ec603e \
-			  msoft-float=mcpu?801 \
-			  msoft-float=mcpu?821 \
-			  msoft-float=mcpu?823 \
-			  msoft-float=mcpu?860
+SOFT_FLOAT_CPUS = e300c2 401 403 405 440 464 476 ec603e 801 821 823 860
+MULTILIB_MATCHES_FLOAT = $(foreach cpu, $(SOFT_FLOAT_CPUS), msoft-float=mcpu?$(cpu))
 
 # Build the libraries for both hard and soft floating point by default
 
