@@ -762,6 +762,9 @@ TARGET_SYSTEM_ROOT
 enable_shared
 enable_fixed_point
 enable_decimal_float
+with_float
+with_cpu
+enable_multiarch
 enable_multilib
 ENABLE_BUILD_WITH_CXX
 coverage_flags
@@ -871,6 +874,7 @@ enable_gather_detailed_mem_stats
 enable_build_with_cxx
 with_stabs
 enable_multilib
+enable_multiarch
 enable___cxa_atexit
 enable_decimal_float
 enable_fixed_point
@@ -1572,6 +1576,7 @@ Optional Features:
   --enable-gather-detailed-mem-stats         enable detailed memory allocation stats gathering
   --enable-build-with-cxx build with C++ compiler instead of C compiler
   --enable-multilib       enable library support for multiple ABIs
+  --enable-multiarch      enable support for multiarch paths
   --enable-__cxa_atexit   enable __cxa_atexit for C++
   --enable-decimal-float={no,yes,bid,dpd}
 			enable decimal float extension to C.  Selecting 'bid'
@@ -6871,6 +6876,33 @@ if test "${enable_multilib+set}" = set; then :
 else
   enable_multilib=yes
 fi
+
+
+
+# Determine whether or not multiarch is enabled.
+# Check whether --enable-multiarch was given.
+if test "${enable_multiarch+set}" = set; then :
+  enableval=$enable_multiarch; case "${enableval}" in
+yes|no|auto) enable_multiarch=$enableval;;
+*) as_fn_error "bad value ${enableval} given for --enable-multiarch option" "$LINENO" 5 ;;
+esac
+else
+  enable_multiarch=auto
+fi
+
+if test x${enable_multiarch} = xauto; then
+  if test x$host != x$target && test "x$with_sysroot" = x; then
+    ma_msg_suffix=", disabled auto check (cross build configured without --with-sysroot)"
+    enable_multiarch=no
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch configuration" >&5
+$as_echo_n "checking for multiarch configuration... " >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_multiarch$ma_msg_suffix" >&5
+$as_echo "$enable_multiarch$ma_msg_suffix" >&6; }
+
+# needed for setting the multiarch name for soft-float/hard-float ABIs
 
 
 
@@ -17495,7 +17527,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17498 "configure"
+#line 17530 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17601,7 +17633,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17604 "configure"
+#line 17636 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

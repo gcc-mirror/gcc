@@ -1,6 +1,6 @@
 # GCC target-specific configuration file.
 # Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+# 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -2172,6 +2172,7 @@ powerpc-*-linux* | powerpc64-*-linux*)
 		;;
 	    *)
 		tm_file="${tm_file} rs6000/linux.h glibc-stdint.h"
+		tmake_file="$tmake_file rs6000/t-linux"
 		;;
 	esac
 	tmake_file="${tmake_file} t-slibgcc-libgcc rs6000/t-fprules-softfp soft-fp/t-softfp"
@@ -3659,10 +3660,14 @@ case ${target} in
 	i[34567]86-*-darwin* | x86_64-*-darwin*)
 		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp"
 		;;
-	i[34567]86-*-linux* | x86_64-*-linux* | \
-	  i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
-	  i[34567]86-*-gnu*)
+	i[34567]86-*-linux* | x86_64-*-linux*)
 		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp i386/t-linux"
+		;;
+	i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu)
+		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp i386/t-linux i386/t-kfreebsd"
+		;;
+	i[34567]86-*-gnu*)
+		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp i386/t-linux i386/t-gnu"
 		;;
 	i[34567]86-*-solaris2*)
 		tmake_file="${tmake_file} i386/t-fprules-softfp soft-fp/t-softfp"

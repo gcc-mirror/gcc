@@ -35,3 +35,5 @@ fptr.c: $(srcdir)/config/pa/fptr.c
 
 # Compile crtbeginS.o and crtendS.o as PIC.
 CRTSTUFF_T_CFLAGS_S = -fPIC
+
+MULTIARCH_DIRNAME = $(call if_multiarch,hppa-linux-gnu)

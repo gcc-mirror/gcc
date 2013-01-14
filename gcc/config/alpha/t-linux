@@ -1,1 +1,2 @@
+MULTIARCH_DIRNAME = $(call if_multiarch,alpha-linux-gnu)
 SHLIB_MAPFILES += $(srcdir)/config/alpha/libgcc-alpha-ldbl.ver

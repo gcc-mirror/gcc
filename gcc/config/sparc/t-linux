@@ -3,3 +3,5 @@
 # Avoid the t-linux version file.
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver \
 		 $(srcdir)/config/sparc/libgcc-sparc-glibc.ver
+
+MULTIARCH_DIRNAME = $(call if_multiarch,sparc-linux-gnu)

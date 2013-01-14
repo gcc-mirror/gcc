@@ -3,3 +3,5 @@ LIB2ADDEH = $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c \
   $(srcdir)/unwind-compat.c
 
 SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-glibc.ver
+
+MULTIARCH_DIRNAME = $(call if_multiarch,ia64-linux-gnu)
