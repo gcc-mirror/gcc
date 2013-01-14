@@ -1,5 +1,10 @@
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/lib1funcs.S: Remove trailing blanks.
+	* config/avr/lib1funcs-fixed.S: Ditto.
+
+2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr-lib.h: Add GPL copyright notice.
 
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>

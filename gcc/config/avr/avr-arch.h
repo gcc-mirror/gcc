@@ -74,7 +74,7 @@ struct base_arch_s
   /* This core has the RAMPD special function register
      and thus also the RAMPX, RAMPY and RAMPZ registers.  */
   int have_rampd;
-  
+
   /* Default start of data section address for architecture.  */
   int default_data_section_start;
 
@@ -84,9 +84,9 @@ struct base_arch_s
 
   /* Architecture id to built-in define __AVR_ARCH__ (NULL -> no macro) */
   const char *const macro;
-  
+
   /* Architecture name.  */
-  const char *const arch_name;  
+  const char *const arch_name;
 };
 
 
@@ -96,16 +96,16 @@ struct mcu_type_s
 {
   /* Device name.  */
   const char *const name;
-  
+
   /* Index in avr_arch_types[].  */
-  enum avr_arch arch; 
-  
+  enum avr_arch arch;
+
   /* Must lie outside user's namespace.  NULL == no macro.  */
   const char *const macro;
-  
+
   /* Stack pointer have 8 bits width.  */
   int short_sp;
-  
+
   /* Some AVR devices have a core erratum when skipping a 2-word instruction.
      Skip instructions are:  SBRC, SBRS, SBIC, SBIS, CPSE.
      Problems will occur with return address is IRQ executes during the
@@ -125,15 +125,15 @@ struct mcu_type_s
 
   /* Core Erratum:  Must not skip 2-word instruction.  */
   int errata_skip;
-  
+
   /* Start of data section.  */
   int data_section_start;
-  
+
   /* Number of 64k segments in the flash.  */
   int n_flash;
 
   /* Name of device library.  */
-  const char *const library_name; 
+  const char *const library_name;
 };
 
 /* Map architecture to its texinfo string.  */

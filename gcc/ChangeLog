@@ -1,3 +1,27 @@
+2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-stdint.h: Remove trailing blanks.
+	* config/avr/avr-log.h: Same.
+	* config/avr/avr-arch.h: Same.
+	* config/avr/avr-devices.c: Same.
+	* config/avr/avr-dimode.md: Same.
+	* config/avr/predicates.md: Same.
+	* config/avr/avr-c.c: Same.  And fix typo.
+	
+	* config/avr/avr-protos.h: Same.  And:
+	(function_arg_regno_p): Rename to avr_function_arg_regno_p.
+	(init_cumulative_args): Rename to avr_init_cumulative_args.
+	(expand_prologue): Rename to avr_expand_prologue.
+	(expand_epilogue): Rename to avr_expand_epilogue.
+	(adjust_insn_length): Rename to avr_adjust_insn_length.
+	(notice_update_cc): Rename to avr_notice_update_cc.
+	(final_prescan_insn): Rename to avr_final_prescan_insn.
+	* config/avr/avr.c: Same.
+	* config/avr/avr.h: Same.
+	* config/avr/avr.md: Remove trailing blanks.
+	(prologue): Use avr_expand_prologue.
+	(epilogue, sibcall_epilogue): Use avr_expand_epilogue.
+
 2013-01-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_expr_location, verify_expr_location_1,

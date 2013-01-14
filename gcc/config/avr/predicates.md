@@ -162,11 +162,11 @@
 ;; True for EQ & NE
 (define_predicate "eqne_operator"
   (match_code "eq,ne"))
-       
+
 ;; True for GE & LT
 (define_predicate "gelt_operator"
   (match_code "ge,lt"))
-       
+
 ;; True for GT, GTU, LE & LEU
 (define_predicate "difficult_comparison_operator"
   (match_code "gt,gtu,le,leu"))

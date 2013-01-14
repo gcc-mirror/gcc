@@ -201,10 +201,11 @@ enum
     32,33,34,35					\
     }
 
-#define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER avr_adjust_reg_alloc_order()
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE) ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#define HARD_REGNO_NREGS(REGNO, MODE)                                   \
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) avr_hard_regno_mode_ok(REGNO, MODE)
 
@@ -318,15 +319,19 @@ enum reg_class {
    for POST_DEC targets (PR27386).  */
 /*#define PUSH_ROUNDING(NPUSHED) (NPUSHED)*/
 
-typedef struct avr_args {
-  int nregs;			/* # registers available for passing */
-  int regno;			/* next available register number */
+typedef struct avr_args
+{
+  /* # Registers available for passing */
+  int nregs;
+
+  /* Next available register number */
+  int regno;
 } CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
-  init_cumulative_args (&(CUM), FNTYPE, LIBNAME, FNDECL)
+  avr_init_cumulative_args (&(CUM), FNTYPE, LIBNAME, FNDECL)
 
-#define FUNCTION_ARG_REGNO_P(r) function_arg_regno_p(r)
+#define FUNCTION_ARG_REGNO_P(r) avr_function_arg_regno_p(r)
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
@@ -415,7 +420,8 @@ typedef struct avr_args {
     "r24","r25","r26","r27","r28","r29","r30","r31",	\
     "__SP_L__","__SP_H__","argL","argH"}
 
-#define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
+#define FINAL_PRESCAN_INSN(insn, operand, nop)  \
+  avr_final_prescan_insn (insn, operand,nop)
 
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)	\
 {						\
@@ -429,8 +435,8 @@ typedef struct avr_args {
   fprintf (STREAM, "\tpop\tr%d", REGNO);	\
 }
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)		\
-  avr_output_addr_vec_elt(STREAM, VALUE)
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)  \
+  avr_output_addr_vec_elt (STREAM, VALUE)
 
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)                 \
   do {                                                  \
@@ -459,7 +465,7 @@ typedef struct avr_args {
    after execution of an instruction whose pattern is EXP.
    Do not alter them if the instruction would not alter the cc's.  */
 
-#define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
+#define NOTICE_UPDATE_CC(EXP, INSN) avr_notice_update_cc (EXP, INSN)
 
 /* The add insns don't set overflow in a usable way.  */
 #define CC_OVERFLOW_UNUSABLE 01000
@@ -477,8 +483,8 @@ typedef struct avr_args {
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
   fprintf (FILE, "/* profiler %d */", (LABELNO))
 
-#define ADJUST_INSN_LENGTH(INSN, LENGTH) (LENGTH =\
-					  adjust_insn_length (INSN, LENGTH))
+#define ADJUST_INSN_LENGTH(INSN, LENGTH)                \
+    (LENGTH = avr_adjust_insn_length (INSN, LENGTH))
 
 extern const char *avr_device_to_arch (int argc, const char **argv);
 extern const char *avr_device_to_data_start (int argc, const char **argv);
