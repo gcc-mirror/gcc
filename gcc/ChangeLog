@@ -1,5 +1,12 @@
 2013-01-14  Richard Biener  <rguenther@suse.de>
 
+	* tree-cfg.c (verify_expr_location, verify_expr_location_1,
+	verify_location, collect_subblocks): New functions.
+	(verify_gimple_in_cfg): Verify that locations only reference
+	BLOCKs in the functions BLOCK tree.
+
+2013-01-14  Richard Biener  <rguenther@suse.de>
+
 	* tree-cfgcleanup.c (remove_forwarder_block): Unshare propagated
 	PHI argument.
 	* graphite-sese-to-poly.c (insert_out_of_ssa_copy): Properly
