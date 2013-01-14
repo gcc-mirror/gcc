@@ -2020,7 +2020,7 @@ insert_out_of_ssa_copy (scop_p scop, tree res, tree expr, gimple after_stmt)
   gimple_seq stmts;
   gimple_stmt_iterator gsi;
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
-  gimple stmt = gimple_build_assign (res, var);
+  gimple stmt = gimple_build_assign (unshare_expr (res), var);
   vec<gimple> x;
   x.create (3);
 
@@ -2076,7 +2076,7 @@ insert_out_of_ssa_copy_on_edge (scop_p scop, edge e, tree res, tree expr)
   gimple_stmt_iterator gsi;
   gimple_seq stmts = NULL;
   tree var = force_gimple_operand (expr, &stmts, true, NULL_TREE);
-  gimple stmt = gimple_build_assign (res, var);
+  gimple stmt = gimple_build_assign (unshare_expr (res), var);
   basic_block bb;
   vec<gimple> x;
   x.create (3);
@@ -2232,7 +2232,7 @@ rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
     {
       tree zero_dim_array = create_zero_dim_array (res, "Close_Phi");
 
-      stmt = gimple_build_assign (res, zero_dim_array);
+      stmt = gimple_build_assign (res, unshare_expr (zero_dim_array));
 
       if (TREE_CODE (arg) == SSA_NAME)
 	insert_out_of_ssa_copy (scop, zero_dim_array, arg,
@@ -2258,10 +2258,8 @@ rewrite_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
   gimple phi = gsi_stmt (*psi);
   basic_block bb = gimple_bb (phi);
   tree res = gimple_phi_result (phi);
-  tree var;
   tree zero_dim_array = create_zero_dim_array (res, "phi_out_of_ssa");
   gimple stmt;
-  gimple_seq stmts;
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -2278,13 +2276,10 @@ rewrite_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
 	insert_out_of_ssa_copy_on_edge (scop, e, zero_dim_array, arg);
     }
 
-  var = force_gimple_operand (zero_dim_array, &stmts, true, NULL_TREE);
-
-  stmt = gimple_build_assign (res, var);
+  stmt = gimple_build_assign (res, unshare_expr (zero_dim_array));
   remove_phi_node (psi, false);
   SSA_NAME_DEF_STMT (res) = stmt;
-
-  insert_stmts (scop, stmt, stmts, gsi_after_labels (bb));
+  insert_stmts (scop, stmt, NULL, gsi_after_labels (bb));
 }
 
 /* Rewrite the degenerate phi node at position PSI from the degenerate

@@ -4449,13 +4449,6 @@ tree_node_can_be_shared (tree t)
   if (TREE_CODE (t) == CASE_LABEL_EXPR)
     return true;
 
-  while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
-	   && is_gimple_min_invariant (TREE_OPERAND (t, 1)))
-	 || TREE_CODE (t) == COMPONENT_REF
-	 || TREE_CODE (t) == REALPART_EXPR
-	 || TREE_CODE (t) == IMAGPART_EXPR)
-    t = TREE_OPERAND (t, 0);
-
   if (DECL_P (t))
     return true;
 

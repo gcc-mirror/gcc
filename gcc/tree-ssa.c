@@ -427,7 +427,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	      && (!gimple_assign_single_p (def_stmt)
 		  || is_gimple_min_invariant (value)))
 	  || is_gimple_reg (value))
-	value = unshare_expr (value);
+	;
       else
 	{
 	  gimple def_temp;
@@ -469,7 +469,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	       that was unshared when we found it had a single debug
 	       use, or a DEBUG_EXPR_DECL, that can be safely
 	       shared.  */
-	    SET_USE (use_p, value);
+	    SET_USE (use_p, unshare_expr (value));
 	  /* If we didn't replace uses with a debug decl fold the
 	     resulting expression.  Otherwise we end up with invalid IL.  */
 	  if (TREE_CODE (value) != DEBUG_EXPR_DECL)

@@ -412,7 +412,8 @@ remove_forwarder_block (basic_block bb)
 	    {
 	      gimple phi = gsi_stmt (gsi);
 	      source_location l = gimple_phi_arg_location_from_edge (phi, succ);
-	      add_phi_arg (phi, gimple_phi_arg_def (phi, succ->dest_idx), s, l);
+	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
+	      add_phi_arg (phi, unshare_expr (def), s, l);
 	    }
 	}
     }

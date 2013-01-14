@@ -1,3 +1,18 @@
+2013-01-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfgcleanup.c (remove_forwarder_block): Unshare propagated
+	PHI argument.
+	* graphite-sese-to-poly.c (insert_out_of_ssa_copy): Properly
+	unshare reference.
+	(insert_out_of_ssa_copy_on_edge): Likewise.
+	(rewrite_close_phi_out_of_ssa): Likewise.
+	* tree-ssa.c (insert_debug_temp_for_var_def): Properly unshare
+	debug expressions.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Properly unshare
+	propagated constants.
+	* tree-cfg.c (tree_node_can_be_shared): Handled component-refs
+	can not be shared.
+
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-modes.def: Add GPL copyright notice.
