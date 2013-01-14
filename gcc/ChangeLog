@@ -57,6 +57,7 @@
 
 	* config/ia64/t-linux: New file; define MULTIARCH_DIRNAME.
 	* config.gcc <ia64*-*-linux*> (tmake_file): Include ia64/t-linux.
+
 2013-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vectorizer.h (vect_get_single_scalar_iteraion_cost): Fix typo.
