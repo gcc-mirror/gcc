@@ -1,6 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007-2013
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987

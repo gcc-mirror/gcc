@@ -1,5 +1,5 @@
 /* Dependency generator for Makefile fragments.
-   Copyright (C) 2000, 2001, 2003, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Zack Weinberg, Mar 2000
 
 This program is free software; you can redistribute it and/or modify it
