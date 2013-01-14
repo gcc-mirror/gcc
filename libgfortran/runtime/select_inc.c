@@ -1,5 +1,5 @@
 /* Implement the SELECT statement for character variables.
-   Copyright 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
