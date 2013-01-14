@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2013 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
    This file is part of the GNU OpenMP Library (libgomp).
