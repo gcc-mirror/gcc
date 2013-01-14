@@ -170,8 +170,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
             const char *name = avr_addrspace[i].name;
             char *Name = (char*) alloca (1 + strlen (name));
 
-            cpp_define_formatted (pfile, "%s=%s",
-                                  avr_toupper (Name, name), name);
+            cpp_define (pfile, avr_toupper (Name, name));
           }
     }
 
@@ -188,7 +187,9 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 
   /* Builtin macros for the __int24 and __uint24 type.  */
 
-  cpp_define (pfile, "__INT24_MAX__=8388607L");
+  cpp_define_formatted (pfile, "__INT24_MAX__=8388607%s",
+                        INT_TYPE_SIZE == 8 ? "LL" : "L");
   cpp_define (pfile, "__INT24_MIN__=(-__INT24_MAX__-1)");
-  cpp_define (pfile, "__UINT24_MAX__=16777215UL");
+  cpp_define_formatted (pfile, "__UINT24_MAX__=16777215%s",
+                        INT_TYPE_SIZE == 8 ? "ULL" : "UL");
 }
