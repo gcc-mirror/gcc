@@ -22,7 +22,7 @@
 	* cppdefault.h (default_include): Document multiarch in multilib
 	member.
 	* cppdefault.c: [LOCAL_INCLUDE_DIR, STANDARD_INCLUDE_DIR] Add an
-        include directory for multiarch directories.
+	include directory for multiarch directories.
 	* common.opt: New options --print-multiarch and -imultilib.
 
 	* config.gcc <i[34567]86-*-gnu*> (tmake_file): Include i386/t-gnu.
