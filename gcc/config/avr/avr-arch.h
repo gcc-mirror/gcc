@@ -45,7 +45,7 @@ enum avr_arch
 
 /* Architecture-specific properties.  */
 
-struct base_arch_s
+typedef struct
 {
   /* Assembler only.  */
   int asm_only;
@@ -87,12 +87,12 @@ struct base_arch_s
 
   /* Architecture name.  */
   const char *const arch_name;
-};
+} avr_arch_t;
 
 
 /* Device-specific properties.  */
 
-struct mcu_type_s
+typedef struct
 {
   /* Device name.  */
   const char *const name;
@@ -134,22 +134,23 @@ struct mcu_type_s
 
   /* Name of device library.  */
   const char *const library_name;
-};
+} avr_mcu_t;
 
 /* Map architecture to its texinfo string.  */
 
-struct arch_info_s
+typedef struct
 {
   /* Architecture ID.  */
   enum avr_arch arch;
 
   /* textinfo source to describe the archtiecture.  */
   const char *texinfo;
-};
+} avr_arch_info_t;
 
 /* Preprocessor macros to define depending on MCU type.  */
 
-extern const struct base_arch_s *avr_current_arch;
-extern const struct mcu_type_s *avr_current_device;
-extern const struct mcu_type_s avr_mcu_types[];
-extern const struct base_arch_s avr_arch_types[];
+extern const avr_arch_t avr_arch_types[];
+extern const avr_arch_t *avr_current_arch;
+
+extern const avr_mcu_t avr_mcu_types[];
+extern const avr_mcu_t *avr_current_device;

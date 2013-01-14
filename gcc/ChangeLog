@@ -1,3 +1,15 @@
+2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-arch.h
+	(struct base_arch_s): Use typedef avr_arch_t instead.
+	(struct arch_info_s): Use typedef avr_arch_info_t instead.
+	(struct mcu_type_s): Use typedef avr_mcu_t instead.
+	* config/avr/avr.c: Same.
+	* config/avr/avr-devices.c: Same.
+	* config/avr/driver-avr.c: Same.
+	* config/avr/gen-avr-mmcu-texi.c: Same.
+	* config/avr/avr-mcus.def: Adjust comment.
+
 2013-01-14  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): New. 

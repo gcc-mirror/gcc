@@ -184,10 +184,10 @@ static GTY(()) rtx xstring_empty;
 static GTY(()) rtx xstring_e;
 
 /* Current architecture.  */
-const struct base_arch_s *avr_current_arch;
+const avr_arch_t *avr_current_arch;
 
 /* Current device.  */
-const struct mcu_type_s *avr_current_device;
+const avr_mcu_t *avr_current_device;
 
 /* Section to put switch tables in.  */
 static GTY(()) section *progmem_swtable_section;
