@@ -1,5 +1,13 @@
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/55974
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Define __FLASH
+	etc. to 1 and not to __flash.
+	Use LL suffix for __INT24_MAX__ with -mint8.
+	Use ULL suffix for __UINT24_MAX__ with -mint8.
+
+2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr-arch.h
 	(struct base_arch_s): Use typedef avr_arch_t instead.
 	(struct arch_info_s): Use typedef avr_arch_info_t instead.
