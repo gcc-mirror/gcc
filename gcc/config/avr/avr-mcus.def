@@ -39,7 +39,7 @@
    AVR_MCU (NAME, ARCH, MACRO, SHORT_SP, ERRATA_SKIP, DATA_SEC, N_FLASH,
             LIBRARY_NAME)
 
-   where the arguments are the fields of struct mcu_type_s:
+   where the arguments are the fields of avr_mcu_t:
    
        NAME         Accept -mmcu=<NAME>
 

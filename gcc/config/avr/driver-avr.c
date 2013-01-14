@@ -24,10 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 
 /* Current architecture.  */
-const struct base_arch_s *avr_current_arch = NULL;
+const avr_arch_t *avr_current_arch = NULL;
 
 /* Current device.  */
-const struct mcu_type_s *avr_current_device = NULL;
+const avr_mcu_t *avr_current_device = NULL;
 
 /* Initialize avr_current_arch and avr_current_device variables.  */
 
