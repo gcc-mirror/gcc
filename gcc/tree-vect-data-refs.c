@@ -1296,7 +1296,7 @@ vect_peeling_hash_get_lowest_cost (void **slot, void *data)
     }
 
   outside_cost += vect_get_known_peeling_cost (loop_vinfo, elem->npeel, &dummy,
-                         vect_get_single_scalar_iteraion_cost (loop_vinfo));
+                         vect_get_single_scalar_iteration_cost (loop_vinfo));
 
   if (inside_cost < min->inside_cost
       || (inside_cost == min->inside_cost && outside_cost < min->outside_cost))

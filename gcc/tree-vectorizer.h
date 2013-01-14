@@ -916,7 +916,7 @@ extern int vect_estimate_min_profitable_iters (loop_vec_info);
 extern tree get_initial_def_for_reduction (gimple, tree, tree *);
 extern int vect_min_worthwhile_factor (enum tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *, int);
-extern int vect_get_single_scalar_iteraion_cost (loop_vec_info);
+extern int vect_get_single_scalar_iteration_cost (loop_vec_info);
 
 /* In tree-vect-slp.c.  */
 extern void vect_free_slp_instance (slp_instance);
