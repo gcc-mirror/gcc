@@ -524,6 +524,7 @@ dependencies = { module=all-target-libstdc++-v3; on=configure-target-libgomp; };
 dependencies = { module=install-target-libgo; on=install-target-libatomic; };
 dependencies = { module=install-target-libgfortran; on=install-target-libquadmath; };
 dependencies = { module=install-target-libgfortran; on=install-target-libgcc; };
+dependencies = { module=install-target-libsanitizer; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
 dependencies = { module=install-target-libjava; on=install-target-libgcc; };
 dependencies = { module=install-target-libitm; on=install-target-libgcc; };
