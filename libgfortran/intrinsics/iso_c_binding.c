@@ -1,5 +1,5 @@
 /* Implementation of the ISO_C_BINDING library helper functions.
-   Copyright (C) 2007, 2009, 2010, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2007-2013 Free Software Foundation, Inc.
    Contributed by Christopher Rickett.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
