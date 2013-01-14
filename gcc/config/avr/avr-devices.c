@@ -35,7 +35,7 @@ avr_arch_types[] =
   /*
     A  M  J  LM E  E  E  X  R   d S   S O   A
     S  U  M  PO L  L  I  M  A   a t   F ff  r
-    M  L  P  MV P  P  J  E  M   t a   R s   c 
+    M  L  P  MV P  P  J  E  M   t a   R s   c
              XW M  M  M  G  P   a r     e   h
                    X  P  A  D     t     t   ID   */
   { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, "1",   "avr1"  },

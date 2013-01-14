@@ -41,8 +41,8 @@
    avr_edump (fmt, ...) is a shortcut for avr_fdump (stderr, fmt, ...)
 
   == known %-codes ==
-  
-  b: bool  
+
+  b: bool
   r: rtx
   t: tree
   T: tree (brief)
@@ -55,7 +55,7 @@
   H: location_t
 
   == no arguments ==
-  
+
   A: call abort()
   f: current_function_name()
   F: caller (via __FUNCTION__)
@@ -65,7 +65,7 @@
      else return.
 
   == same as printf ==
-  
+
   %: %
   c: char
   s: string
@@ -95,11 +95,11 @@ static int
 avr_log_fdump_e (const char *fmt, ...)
 {
   va_list ap;
-        
+
   va_start (ap, fmt);
   avr_log_vadump (stderr, fmt, ap);
   va_end (ap);
-    
+
   return 1;
 }
 
@@ -107,12 +107,12 @@ static int
 avr_log_fdump_f (FILE *stream, const char *fmt, ...)
 {
   va_list ap;
-        
+
   va_start (ap, fmt);
   if (stream)
     avr_log_vadump (stream, fmt, ap);
   va_end (ap);
-    
+
   return 1;
 }
 
@@ -124,7 +124,7 @@ avr_log_set_caller_e (const char *caller)
      )(const char*, ...)
 {
   avr_log_caller = caller;
-  
+
   return avr_log_fdump_e;
 }
 
@@ -192,19 +192,19 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
         default:
           fputc (*(fmt-1), file);
           break;
-          
+
         case '\\':
           bs[1] = *fmt++;
           fputs (bs, file);
           break;
-          
+
         case '%':
           switch (*fmt++)
             {
             case '%':
               fputc ('%', file);
               break;
-              
+
             case 't':
               {
                 tree t = va_arg (ap, tree);
@@ -222,15 +222,15 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
                   }
                 break;
               }
-              
+
             case 'T':
               print_node_brief (file, "", va_arg (ap, tree), 3);
               break;
-              
+
             case 'd':
               fprintf (file, "%d", va_arg (ap, int));
               break;
-              
+
             case 'D':
               dump_double_int (file, va_arg (ap, double_int), false);
               break;
@@ -238,23 +238,23 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
             case 'X':
               avr_dump_double_int_hex (file, va_arg (ap, double_int));
               break;
-              
+
             case 'x':
               fprintf (file, "%x", va_arg (ap, int));
               break;
-                        
+
             case 'b':
               fprintf (file, "%s", va_arg (ap, int) ? "true" : "false");
               break;
-                        
+
             case 'c':
               fputc (va_arg (ap, int), file);
               break;
-                        
+
             case 'r':
               print_inline_rtx (file, va_arg (ap, rtx), 0);
               break;
-                        
+
             case 'L':
               {
                 rtx insn = va_arg (ap, rtx);
@@ -267,39 +267,40 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
                   }
                 break;
               }
-                        
+
             case 'f':
               if (cfun && cfun->decl)
                 fputs (current_function_name(), file);
               break;
-                        
+
             case 's':
               {
                 const char *str = va_arg (ap, char*);
                 fputs (str ? str : "(null)", file);
               }
               break;
-                        
+
             case 'm':
-              fputs (GET_MODE_NAME ((enum machine_mode) va_arg (ap, int)), file);
+              fputs (GET_MODE_NAME ((enum machine_mode) va_arg (ap, int)),
+                     file);
               break;
-              
+
             case 'C':
               fputs (rtx_name[va_arg (ap, int)], file);
               break;
-              
+
             case 'R':
               fputs (reg_class_names[va_arg (ap, int)], file);
               break;
-              
+
             case 'F':
               fputs (avr_log_caller, file);
               break;
-              
+
             case 'H':
               {
                 location_t loc = va_arg (ap, location_t);
-                
+
                 if (BUILTINS_LOCATION == loc)
                   fprintf (file, "<BUILTIN-LOCATION>");
                 else if (UNKNOWN_LOCATION == loc)
@@ -307,45 +308,45 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
                 else
                   fprintf (file, "%s:%d",
                            LOCATION_FILE (loc), LOCATION_LINE (loc));
-                
+
                 break;
               }
-              
+
             case '!':
               if (!current_pass)
                 return;
               /* FALLTHRU */
-              
+
             case '?':
               avr_log_fdump_f (file, "%F[%f:%P]");
               break;
-                        
+
             case 'P':
               if (current_pass)
-                fprintf (file, "%s(%d)", 
+                fprintf (file, "%s(%d)",
                          current_pass->name,
                          current_pass->static_pass_number);
               else
                 fprintf (file, "pass=?");
-                        
+
               break;
-                        
+
             case 'A':
               fflush (file);
               abort();
-              
+
             default:
               /* Unknown %-code: Stop printing */
-              
+
               fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
               fmt = "";
-              
+
               break;
             }
           break; /* % */
         }
     }
-    
+
   fflush (file);
 }
 
@@ -357,14 +358,14 @@ void
 avr_log_set_avr_log (void)
 {
   bool all = TARGET_ALL_DEBUG != 0;
-  
+
   if (all || avr_log_details)
     {
       /* Adding , at beginning and end of string makes searching easier.  */
-      
+
       char *str = (char*) alloca (3 + strlen (avr_log_details));
       bool info;
-      
+
       str[0] = ',';
       strcat (stpcpy (str+1, avr_log_details), ",");
 

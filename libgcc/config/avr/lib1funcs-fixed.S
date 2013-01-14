@@ -1,5 +1,5 @@
 /*  -*- Mode: Asm -*-  */
-;;    Copyright (C) 2012
+;;    Copyright (C) 2012-2013
 ;;    Free Software Foundation, Inc.
 ;;    Contributed by Sean D'Epagnier  (sean@depagnier.com)
 ;;                   Georg-Johann Lay (avr@gjlay.de)
@@ -163,7 +163,7 @@ ENDF __fractusasf
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Conversions from float
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-       
+
 #if defined (L_fractsfqq)
 DEFUN __fractsfqq
     ;; Multiply with 2^{24+7} to get a QQ result in r25
@@ -408,14 +408,14 @@ DEFUN __mulusa3_round
 
     mul A1, B0  $  add  C3, r0  $  adc C0, r1
     mul A0, B1  $  add  C3, r0  $  adc C0, r1  $  rol C1
-    
+
     ;; Round if T = 1.  Store guarding bits outside the result for rounding
     ;; and left-shift by the signed version (function below).
     brtc 0f
     sbrc C3, 7
     adiw C0, 1
 0:  push C3
-    
+
     ;; The following MULs don't have LSBs outside the result.
     ;; C2/C3 is the high part.
 
@@ -429,11 +429,11 @@ DEFUN __mulusa3_round
     mul  A2, B1  $  add C1, r0  $  adc C2, r1  $  sbci C3, 0
     mul  A3, B0  $  add C1, r0  $  adc C2, r1  $  sbci C3, 0
     neg  C3
-    
+
     mul  A1, B3  $  add C2, r0  $  adc C3, r1
     mul  A2, B2  $  add C2, r0  $  adc C3, r1
     mul  A3, B1  $  add C2, r0  $  adc C3, r1
-    
+
     mul  A2, B3  $  add C3, r0
     mul  A3, B2  $  add C3, r0
 
@@ -636,7 +636,7 @@ DEFUN __mulusa3_round
     adc     C1, __zero_reg__
     adc     C2, __zero_reg__
     adc     C3, __zero_reg__
-6:  
+6:
     pop     GUARD
     ;; Epilogue
     pop     CC3

@@ -1,5 +1,5 @@
 /*  -*- Mode: Asm -*-  */
-/* Copyright (C) 1998, 1999, 2000, 2007, 2008, 2009
+/* Copyright (C) 1998-2013
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov <chertykov@gmail.com>
 
@@ -151,16 +151,16 @@ __mulqi3_loop:
 	add	r_res,r_arg2
 	add	r_arg2,r_arg2	; shift multiplicand
 	breq	__mulqi3_exit	; while multiplicand != 0
-	lsr	r_arg1		; 
+	lsr	r_arg1		;
 	brne	__mulqi3_loop	; exit if multiplier = 0
 __mulqi3_exit:	
 	mov	r_arg1,r_res	; result to return register
 	ret
 ENDF __mulqi3
 
-#undef r_arg2  
-#undef r_arg1  
-#undef r_res   
+#undef r_arg2
+#undef r_arg1
+#undef r_res
 	
 #endif 	/* defined (L_mulqi3) */
 
@@ -370,7 +370,7 @@ DEFUN __mulsi3_helper
 
 2:  ;; B <<= 1
     lsl  B0      $  rol  B1      $  rol  B2      $  rol  B3
-    
+
 3:  ;; A >>= 1:  Carry = n-th bit of A
     lsr  A3      $  ror  A2      $  ror  A1      $  ror  A0
 
@@ -409,7 +409,7 @@ ENDF __mulsi3_helper
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#if defined (__AVR_HAVE_MUL__)    
+#if defined (__AVR_HAVE_MUL__)
 #define A0 26
 #define B0 18
 #define C0 22
@@ -427,7 +427,7 @@ ENDF __mulsi3_helper
 /*******************************************************
     Widening Multiplication  32 = 16 x 16  with MUL
 *******************************************************/
-                              
+
 #if defined (L_mulhisi3)
 ;;; R25:R22 = (signed long) R27:R26 * (signed long) R19:R18
 ;;; C3:C0   = (signed long) A1:A0   * (signed long) B1:B0
@@ -512,7 +512,7 @@ DEFUN __mulshisi3
     XJMP    __muluhisi3
     ;; FALLTHRU
 ENDF __mulshisi3
-    
+
 ;;; R25:R22 = (one-extended long) R27:R26 * R21:R18
 ;;; (C3:C0) = (one-extended long) A1:A0   * B3:B0
 ;;; Clobbers: __tmp_reg__
@@ -647,23 +647,23 @@ DEFUN __mulpsi3
     ;; C[] = 0
     clr     __tmp_reg__
     clr     C2
-    
+
 0:  ;; Shift N-th Bit of B[] into Carry.  N = 24 - Loop
     LSR  B2     $  ror  B1     $  ror  B0
-    
+
     ;; If the N-th Bit of B[] was set...
     brcc    1f
-    
+
     ;; ...then add A[] * 2^N to the Result C[]
     ADD  C0,A0  $  adc  C1,A1  $  adc  C2,A2
-    
+
 1:  ;; Multiply A[] by 2
     LSL  A0     $  rol  A1     $  rol  A2
-    
+
     ;; Loop until B[] is 0
     subi B0,0   $  sbci B1,0   $  sbci B2,0
     brne    0b
-    
+
     ;; Copy C[] to the return Register A[]
     wmov    A0, C0
     mov     A2, C2
@@ -1002,7 +1002,7 @@ __udivmodqi4_ep:
 	rol	r_arg1		; shift dividend (with CARRY)
 	dec	r_cnt		; decrement loop counter
 	brne	__udivmodqi4_loop
-	com	r_arg1		; complement result 
+	com	r_arg1		; complement result
 				; because C flag was complemented in loop
 	ret
 ENDF __udivmodqi4
@@ -1112,14 +1112,14 @@ __divmodhi4_exit:
 ENDF __divmodhi4
 #endif /* defined (L_divmodhi4) */
 
-#undef r_remH  
-#undef r_remL  
-             
-#undef r_arg1H 
-#undef r_arg1L 
-             
-#undef r_arg2H 
-#undef r_arg2L 
+#undef r_remH
+#undef r_remL
+
+#undef r_arg1H
+#undef r_arg1L
+
+#undef r_arg2H
+#undef r_arg2L
              	
 #undef r_cnt   	
 
@@ -1501,8 +1501,8 @@ DEFUN __udivmod64
 
 1:  ;; Compare shifted Devidend against Divisor
     ;; If -- even after Shifting -- it is smaller...
-    CP  A7,B0  $  cpc C0,B1  $  cpc C1,B2  $  cpc C2,B3  
-    cpc C3,B4  $  cpc C4,B5  $  cpc C5,B6  $  cpc C6,B7  
+    CP  A7,B0  $  cpc C0,B1  $  cpc C1,B2  $  cpc C2,B3
+    cpc C3,B4  $  cpc C4,B5  $  cpc C5,B6  $  cpc C6,B7
     brcc    2f
 
     ;; ...then we can subtract it.  Thus, it is legal to shift left
@@ -1596,7 +1596,7 @@ DEFUN __udivmod64
 
 ENDF __udivmod64
 #endif /* L_udivmod64 */
-    
+
 
 #if defined (L_divdi3)
 
@@ -1622,7 +1622,7 @@ DEFUN  __divdi3_moddi3
     brmi    0f
     ;; Both Signs are 0:  the following Complexitiy is not needed
     XJMP    __udivdi3_umoddi3
-#endif /* SPEED_DIV */    
+#endif /* SPEED_DIV */
 
 0:  ;; The Prologue
     ;; Save 12 Registers:  Y, 17...8
@@ -1645,7 +1645,7 @@ DEFUN  __divdi3_moddi3
 #else
     brpl    21f
 #endif /* SPEED_DIV */
-   
+
     XCALL   __negdi2
 
     ;; Adjust Divisor's Sign and SS.7 as needed
@@ -1809,7 +1809,7 @@ ENDF __negdi2
 
 
 .section .text.libgcc.prologue, "ax", @progbits
-    
+
 /**********************************
  * This is a prologue subroutine
  **********************************/
@@ -1944,7 +1944,7 @@ _cleanup:
 
 
 .section .text.libgcc, "ax", @progbits
-    
+
 #ifdef L_tablejump
 DEFUN __tablejump2__
 	lsl	r30
@@ -2146,7 +2146,7 @@ ENDF __do_global_dtors
 #endif /* L_dtors */
 
 .section .text.libgcc, "ax", @progbits
-    
+
 #ifdef L_tablejump_elpm
 DEFUN __tablejump_elpm__
 #if defined (__AVR_HAVE_ELPMX__)
@@ -2484,7 +2484,7 @@ DEFUN __loop_ffsqi2
     brcc __loop_ffsqi2
     mov  r24, r26
     clr  r25
-    ret    
+    ret
 ENDF __loop_ffsqi2
 #endif /* defined (L_loop_ffsqi2) */
 
@@ -2586,7 +2586,7 @@ ENDF __clzhi2
 
 
 /**********************************
- * Parity 
+ * Parity
  **********************************/
 
 #if defined (L_paritydi2)
@@ -2702,20 +2702,20 @@ ENDF __popcountdi2
 DEFUN __popcountqi2
     mov  __tmp_reg__, r24
     andi r24, 1
-    lsr  __tmp_reg__    
-    lsr  __tmp_reg__    
+    lsr  __tmp_reg__
+    lsr  __tmp_reg__
     adc  r24, __zero_reg__
-    lsr  __tmp_reg__    
+    lsr  __tmp_reg__
     adc  r24, __zero_reg__
-    lsr  __tmp_reg__    
+    lsr  __tmp_reg__
     adc  r24, __zero_reg__
-    lsr  __tmp_reg__    
+    lsr  __tmp_reg__
     adc  r24, __zero_reg__
-    lsr  __tmp_reg__    
+    lsr  __tmp_reg__
     adc  r24, __zero_reg__
-    lsr  __tmp_reg__    
-    adc  r24, __tmp_reg__    
-    ret    
+    lsr  __tmp_reg__
+    adc  r24, __tmp_reg__
+    ret
 ENDF __popcountqi2
 #endif /* defined (L_popcountqi2) */
 
@@ -2850,10 +2850,10 @@ ENDF __rotldi3
 
 .section .text.libgcc.fmul, "ax", @progbits
 
-/***********************************************************/    
+/***********************************************************/
 ;;; Softmul versions of FMUL, FMULS and FMULSU to implement
 ;;; __builtin_avr_fmul* if !AVR_HAVE_MUL
-/***********************************************************/    
+/***********************************************************/
 
 #define A1 24
 #define B1 25

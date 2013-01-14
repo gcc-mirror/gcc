@@ -31,7 +31,7 @@
 ;; The DImode insns are all straight forward -- except movdi.  The approach
 ;; of this implementation is to provide DImode insns without the burden of
 ;; introducing movdi.
-;; 
+;;
 ;; The caveat is that if there are insns for some mode, there must also be a
 ;; respective move insn that describes reloads.  Therefore, this
 ;; implementation uses an accumulator-based model with two hard-coded,
@@ -75,7 +75,7 @@
       {
         emit_move_insn (gen_rtx_REG (QImode, REG_X), operands[2]);
         emit_insn (gen_adddi3_const8_insn ());
-      }        
+      }
     else if (const_operand (operands[2], GET_MODE (operands[2])))
       {
         emit_insn (gen_add<mode>3_const_insn (operands[2]));
@@ -344,7 +344,7 @@
       {
         emit_move_insn (gen_rtx_REG (QImode, REG_X), operands[2]);
         emit_insn (gen_compare_const8_di2 ());
-      }        
+      }
     else if (const_operand (operands[2], GET_MODE (operands[2])))
       {
         emit_insn (gen_compare_const_<mode>2 (operands[2]));
