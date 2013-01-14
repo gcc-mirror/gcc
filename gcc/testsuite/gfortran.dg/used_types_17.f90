@@ -1,4 +1,4 @@
-! { dg do-compile }
+! { dg-do compile }
 ! Tests the fix for PR31630, in which the association of the argument
 ! of 'cmp' did not work.
 !

@@ -1,3 +1,24 @@
+2013-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/aint_anint_1.f90: Add dg-do run.
+	* gfortran.dg/bounds_check_4.f90: Likewise.
+	* gfortran.dg/inquire_10.f90: Likewise.
+	* gfortran.dg/minloc_3.f90: Likewise.
+	* gfortran.dg/minlocval_3.f90: Likewise.
+	* gfortran.dg/module_double_reuse.f90: Likewise.
+	* gfortran.dg/mvbits_1.f90: Likewise.
+	* gfortran.dg/oldstyle_1.f90: Likewise.
+	* gfortran.dg/pr20163-2.f: Likewise.
+	* gfortran.dg/save_1.f90: Likewise.
+	* gfortran.dg/scan_1.f90: Likewise.
+	* gfortran.dg/select_char_1.f90: Likewise.
+	* gfortran.dg/shape_4.f90: Likewise.
+	* gfortran.dg/coarray_29_2.f90: Fix dg-do directive.
+	* gfortran.dg/function_optimize_10.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.11.2.f90: Likewise.
+	* gfortran.dg/used_types_17.f90: Likewise.
+	* gfortran.dg/used_types_18.f90: Likewise.
+
 2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/54286

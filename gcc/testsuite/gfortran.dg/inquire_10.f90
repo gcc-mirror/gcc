@@ -1,3 +1,4 @@
+! { dg-do run }
   character(len=800) :: cwd
   integer :: unit
 
