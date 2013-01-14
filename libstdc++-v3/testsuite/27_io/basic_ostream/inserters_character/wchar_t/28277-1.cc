@@ -1,6 +1,6 @@
 // 2006-07-15  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006, 2009 Free Software Foundation
+// Copyright (C) 2006, 2009, 2013 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,12 @@
 
 // 27.6.2.5.4 basic_ostream character inserters
 
+// { dg-options "-DMAX_SIZE=50000" { target simulator } }
+
+#ifndef MAX_SIZE
+#define MAX_SIZE 5000000
+#endif
+
 #include <ostream>
 #include <sstream>
 #include <testsuite_hooks.h>
@@ -30,7 +36,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   wostringstream oss_01;
-  const string str_01(5000000, 'a');
+  const string str_01(MAX_SIZE, 'a');
 
   oss_01 << str_01.c_str();
 

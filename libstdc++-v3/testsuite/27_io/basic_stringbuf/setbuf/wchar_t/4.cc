@@ -1,6 +1,6 @@
 // 2004-10-06  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2009, 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,12 @@
 
 // 27.8.1.4 Overridden virtual functions
 
+// { dg-options "-DMAX_SIZE=4096" { target simulator } }
+
+#ifndef MAX_SIZE
+#define MAX_SIZE (1 << 18)
+#endif
+
 #include <sstream>
 #include <testsuite_hooks.h>
 
@@ -27,7 +33,7 @@ void test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  const unsigned max_size = 1 << 18;
+  const unsigned max_size = MAX_SIZE;
 
   static wchar_t ref[max_size];
   wmemset(ref, L'\0', max_size);

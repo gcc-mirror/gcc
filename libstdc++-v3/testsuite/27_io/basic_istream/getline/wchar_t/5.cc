@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2013 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,12 @@
 // <http://www.gnu.org/licenses/>.
 
 // 27.6.1.3 unformatted input functions
+
+// { dg-options "-DMAX_LENGTH=7" { target simulator } }
+
+#ifndef MAX_LENGTH
+#define MAX_LENGTH 777
+#endif
 
 #include <istream>
 #include <string>
@@ -68,7 +74,7 @@ void test01()
 
   const wchar_t delim = L'|';
   const unsigned nchunks = 10;
-  const wstring data = prepare(777, nchunks, delim);
+  const wstring data = prepare(MAX_LENGTH, nchunks, delim);
 
   wofstream ofstrm;
   ofstrm.open(filename);
