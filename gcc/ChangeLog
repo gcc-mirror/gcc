@@ -1,3 +1,11 @@
+2012-01-14  Uros Bizjak  <ubizjak@gmail.com>
+	    Andi Kleen  <ak@linux.intel.com>
+
+	PR target/55948
+	* config/i386/sync.md (atomic_store<mode>_1): New pattern.
+	(atomic_store<mode>): Call atomic_store<mode>_1 for IX86_HLE_RELEASE
+	memmodel flag.
+
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-stdint.h: Remove trailing blanks.
@@ -7,7 +15,7 @@
 	* config/avr/avr-dimode.md: Same.
 	* config/avr/predicates.md: Same.
 	* config/avr/avr-c.c: Same.  And fix typo.
-	
+
 	* config/avr/avr-protos.h: Same.  And:
 	(function_arg_regno_p): Rename to avr_function_arg_regno_p.
 	(init_cumulative_args): Rename to avr_init_cumulative_args.

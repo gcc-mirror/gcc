@@ -224,14 +224,26 @@
 	  DONE;
 	}
 
-      /* Otherwise use a normal store.  */
-      emit_move_insn (operands[0], operands[1]);
+      /* Otherwise use a store.  */
+      if (INTVAL (operands[2]) & IX86_HLE_RELEASE)
+	emit_insn (gen_atomic_store<mode>_1 (operands[0], operands[1],
+					     operands[2]));
+      else
+	emit_move_insn (operands[0], operands[1]);
     }
   /* ... followed by an MFENCE, if required.  */
   if (model == MEMMODEL_SEQ_CST)
     emit_insn (gen_mem_thread_fence (operands[2]));
   DONE;
 })
+
+(define_insn "atomic_store<mode>_1"
+  [(set (match_operand:ATOMIC 0 "memory_operand" "=m")
+	(unspec:ATOMIC [(match_operand:ATOMIC 1 "<nonmemory_operand>" "<r><i>")
+			(match_operand:SI 2 "const_int_operand")]
+		       UNSPEC_MOVA))]
+  ""
+  "%K2mov{<imodesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn_and_split "atomic_storedi_fpu"
   [(set (match_operand:DI 0 "memory_operand" "=m,m,m")
