@@ -1,3 +1,10 @@
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55920
+	* tree-sra.c (sra_modify_assign): If for lacc->grp_to_be_debug_replaced
+	there is non-useless type conversion needed from debug rhs to lhs,
+	use build_debug_ref_for_model and/or VIEW_CONVERT_EXPR.
+
 2013-01-15  Joseph Myers  <joseph@codesourcery.com>
 	    Mikael Pettersson  <mikpe@it.uu.se>
 

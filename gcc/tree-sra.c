@@ -3108,8 +3108,20 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 
   if (lacc && lacc->grp_to_be_debug_replaced)
     {
-      gimple ds = gimple_build_debug_bind (get_access_replacement (lacc),
-					   unshare_expr (rhs), *stmt);
+      tree dlhs = get_access_replacement (lacc);
+      tree drhs = unshare_expr (rhs);
+      if (!useless_type_conversion_p (TREE_TYPE (dlhs), TREE_TYPE (drhs)))
+	{
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (drhs))
+	      && !contains_vce_or_bfcref_p (drhs))
+	    drhs = build_debug_ref_for_model (loc, drhs, 0, lacc);
+	  if (drhs
+	      && !useless_type_conversion_p (TREE_TYPE (dlhs),
+					     TREE_TYPE (drhs)))
+	    drhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR,
+				    TREE_TYPE (dlhs), drhs);
+	}
+      gimple ds = gimple_build_debug_bind (dlhs, drhs, *stmt);
       gsi_insert_before (gsi, ds, GSI_SAME_STMT);
     }
 

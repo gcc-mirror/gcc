@@ -1,3 +1,8 @@
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55920
+	* gcc.c-torture/compile/pr55920.c: New test.
+
 2013-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55882
