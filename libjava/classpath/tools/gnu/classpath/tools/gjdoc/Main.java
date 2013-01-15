@@ -1337,12 +1337,17 @@ public final class Main
           void process(String[] args)
           {
             option_source = args[0];
-            if (!"1.2".equals(option_source)
+            if ("1.5".equals(option_source)
+                || "1.6".equals(option_source)
+                || "1.7".equals(option_source)) {
+              System.err.println("WARNING: support for option -source " + option_source + " is experimental");
+            }
+            else if (!"1.2".equals(option_source)
                 && !"1.3".equals(option_source)
                 && !"1.4".equals(option_source)) {
 
-              throw new RuntimeException("Only he following values are currently"
-                                         + " supported for option -source: 1.2, 1.3, 1.4.");
+              throw new RuntimeException("Only the following values are currently"
+                                         + " supported for option -source: 1.2, 1.3, 1.4; experimental: 1.5, 1.6, 1.7.");
             }
           }
         });
