@@ -1755,6 +1755,16 @@ common_handle_option (struct gcc_options *opts,
       /* No-op. Used by the driver and passed to us because it starts with f.*/
       break;
 
+    case OPT_fwrapv:
+      if (value)
+	opts->x_flag_trapv = 0;
+      break;
+
+    case OPT_ftrapv:
+      if (value)
+	opts->x_flag_wrapv = 0;
+      break;
+
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */
