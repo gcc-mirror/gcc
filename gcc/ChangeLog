@@ -1,3 +1,9 @@
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48766
+	* opts.c (common_handle_option): For -fwrapv disable -ftrapv, for
+	-ftrapv disable -fwrapv.
+
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/55974
