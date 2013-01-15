@@ -1,5 +1,9 @@
 2013-01-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/55955
+	* tree-vect-loop.c (vectorizable_reduction): Give up early on
+	*SHIFT_EXPR and *ROTATE_EXPR codes.
+
 	PR tree-optimization/48766
 	* opts.c (common_handle_option): For -fwrapv disable -ftrapv, for
 	-ftrapv disable -fwrapv.
