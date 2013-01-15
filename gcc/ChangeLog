@@ -1,3 +1,9 @@
+2013-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55882
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Correctly
+	account for bitpos when computing alignment.
+
 2013-01-15  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 
 	* config/i386/i386-c.c (ix86_target_macros_internal): New case.
