@@ -288,7 +288,7 @@ BEGIN {
 /^Using / {
   if (variant == curvar && print_using) { print; next }
 }
-/^Running / {
+/^Running .*\\.exp \\.\\.\\./ {
   print_using=0
   if (variant == curvar) {
     if (need_close) close(curfile)
