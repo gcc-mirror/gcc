@@ -1,5 +1,10 @@
 2013-01-15  Richard Biener  <rguenther@suse.de>
 
+	PR bootstrap/55961
+	* system.h: Do not include gmp.h for building host tools.
+
+2013-01-15  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/55882
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Correctly
 	account for bitpos when computing alignment.
