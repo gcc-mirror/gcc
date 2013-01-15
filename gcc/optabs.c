@@ -325,10 +325,10 @@ widen_operand (rtx op, enum machine_mode mode, enum machine_mode oldmode,
 	  && SUBREG_PROMOTED_UNSIGNED_P (op) == unsignedp))
     return convert_modes (mode, oldmode, op, unsignedp);
 
-  /* If MODE is no wider than a single word, we return a paradoxical
+  /* If MODE is no wider than a single word, we return a lowpart or paradoxical
      SUBREG.  */
   if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
-    return gen_rtx_SUBREG (mode, force_reg (GET_MODE (op), op), 0);
+    return gen_lowpart (mode, force_reg (GET_MODE (op), op));
 
   /* Otherwise, get an object of MODE, clobber it, and set the low-order
      part to OP.  */
