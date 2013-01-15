@@ -1,3 +1,10 @@
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55940
+	* function.c (thread_prologue_and_epilogue_insns): Always
+	add crtl->drap_reg to set_up_by_prologue.set, even if
+	stack_realign_drap is false.
+
 2013-01-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/vax/vax.md (add<mode>3, sub<mode>3, mul<mode>3, div<mode>3,
@@ -12,7 +19,7 @@
 
 2013-01-15  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimization/pr55153
+	PR rtl-optimization/55153
 	* sched-deps.c (sched_analyze_2): Add pending reads for prefetch.
 
 2013-01-15  Martin Jambor  <mjambor@suse.cz>
