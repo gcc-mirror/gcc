@@ -1,3 +1,25 @@
+2013-01-15  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): New case.
+	(ix86_target_macros_internal): Likewise.
+
+	* config/i386/i386.c (m_CORE2I7): Removed.
+	(m_CORE_HASWELL): New macro.
+	(m_CORE_ALL): Likewise.
+	(initial_ix86_tune_features): m_CORE2I7 is replaced by m_CORE_ALL.
+	(initial_ix86_arch_features): Likewise.
+	(processor_target_table): Initializations for Core avx2.
+	(cpu_names): New names "core-avx2".
+	(ix86_option_override_internal): Changed PROCESSOR_COREI7 by
+	PROCESSOR_CORE_HASWELL.
+	(ix86_issue_rate): New case.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	(ix86_sched_init_global): Likewise.
+
+	* config/i386/i386.h (TARGET_HASWELL): New macro.
+	(target_cpu_default): New TARGET_CPU_DEFAULT_haswell.
+	(processor_type): New PROCESSOR_HASWELL.
+
 2013-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55955
