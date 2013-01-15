@@ -1182,6 +1182,29 @@ shorten_branches (rtx first)
 	  if (LABEL_P (insn))
 	    {
 	      int log = LABEL_TO_ALIGNMENT (insn);
+
+#ifdef CASE_VECTOR_SHORTEN_MODE
+	      /* If the mode of a following jump table was changed, we
+		 may need to update the alignment of this label.  */
+	      rtx next;
+	      bool next_is_jumptable;
+
+	      next = next_nonnote_insn (insn);
+	      next_is_jumptable = next && JUMP_TABLE_DATA_P (next);
+	      if ((JUMP_TABLES_IN_TEXT_SECTION
+		   || readonly_data_section == text_section)
+		  && next_is_jumptable)
+		{
+		  int newlog = ADDR_VEC_ALIGN (next);
+		  if (newlog != log)
+		    {
+		      log = newlog;
+		      LABEL_TO_ALIGNMENT (insn) = log;
+		      something_changed = 1;
+		    }
+		}
+#endif
+
 	      if (log > insn_current_align)
 		{
 		  int align = 1 << log;
