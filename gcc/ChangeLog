@@ -1,3 +1,9 @@
+2013-01-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/vax.md (add<mode>3, sub<mode>3, mul<mode>3, div<mode>3,
+	and<mode>3, *and<mode>_const_int, ior<mode>3, xor<mode>3, ashrsi3,
+	*call): Fix indention.
+
 2013-01-15  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/55876
