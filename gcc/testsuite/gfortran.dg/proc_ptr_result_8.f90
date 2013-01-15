@@ -2,7 +2,24 @@
 ! Test fix for PR54286.
 !
 ! Contributed by Janus Weil  <janus@gcc.gnu.org>
+! Module 'm' added later because original fix missed possibility of
+! null interfaces - thanks to Dominique Dhumieres  <dominiq@lps.ens.fr>
 !
+module m
+  type :: foobar
+    real, pointer :: array(:)
+    procedure (), pointer, nopass :: f
+  end type
+contains
+  elemental subroutine fooAssgn (a1, a2)
+    type(foobar), intent(out) :: a1
+    type(foobar), intent(in) :: a2
+    allocate (a1%array(size(a2%array)))
+    a1%array = a2%array
+    a1%f => a2%f
+  end subroutine
+end module m
+
 implicit integer (a)
 type :: t
   procedure(a), pointer, nopass :: p

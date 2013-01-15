@@ -1,3 +1,9 @@
+2013-01-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/54286
+	* expr.c (gfc_check_pointer_assign): Check for presence of
+	's2' before using it.
+
 2013-01-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/55806
