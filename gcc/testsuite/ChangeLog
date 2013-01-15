@@ -1,3 +1,16 @@
+2013-01-15  Manfred Schwarb  <manfred99@gmx.ch>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/bounds_check_4.f90: Add dg-options "-fbounds-check".
+	* gfortran.dg/bounds_check_5.f90: Likewise.
+	* gfortran.dg/class_array_10.f03: Fix syntax of dg-directive.
+	* gfortran.dg/continuation_9.f90: Likewise.
+	* gfortran.dg/move_alloc_13.f90: Likewise.
+	* gfortran.dg/structure_constructor_11.f90: Likewise.
+	* gfortran.dg/tab_continuation.f: Likewise.
+	* gfortran.dg/warning-directive-2.F90: Likewise.
+	* gfortran.dg/coarray_lib_token_4.f90: Remove misspelled directive.
+
 2013-01-15  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/fma.c: Skip for conflicting multilib options.
