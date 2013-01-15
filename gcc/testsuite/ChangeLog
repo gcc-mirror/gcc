@@ -1,3 +1,8 @@
+2013-01-15  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/fma.c: Skip for conflicting multilib options.
+	* gcc.target/arm/fma-sp.c: Likewise.
+
 2013-01-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/pr55153

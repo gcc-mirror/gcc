@@ -1,5 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb" } */
+/* { dg-skip-if "avoid conflicts with multilib options" { ! arm_thumb2_ok } { "-march=*" } { "" } } */
+/* { dg-skip-if "avoid conflicts with multilib options" { *-*-* } { "-mcpu=*" } { "-mcpu=cortex-m4" } } */
+/* { dg-skip-if "avoid conflicts with multilib options" { *-*-* } { "-mfpu=*" } { "-mfpu=fpv4-sp-d16" } } */
+/* { dg-skip-if "avoid conflicts with multilib options" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=hard" } } */
+/* { dg-options "-O2 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb -mfloat-abi=hard" } */
 
 #include "fma.h"
 
