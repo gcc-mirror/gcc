@@ -1,3 +1,8 @@
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55940
+	* gcc.dg/pr55940.c: New test.
+
 2013-01-15  Manfred Schwarb  <manfred99@gmx.ch>
 	    Harald Anlauf  <anlauf@gmx.de>
 
@@ -18,7 +23,7 @@
 
 2013-01-15  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimization/pr55153
+	PR rtl-optimization/55153
 	* gcc.dg/pr55153.c: New.
 
 2013-01-15  Jakub Jelinek  <jakub@redhat.com>
