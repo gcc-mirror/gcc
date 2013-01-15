@@ -1,3 +1,9 @@
+2013-01-15  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/55663
+	* pt.c (coerce_innermost_template_parms): New static function.
+	(instantiate_alias_template):  Use it here.
+
 2013-01-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55878
