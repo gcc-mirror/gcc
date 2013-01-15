@@ -2,6 +2,8 @@
 
 	* dg-extract-results.sh: Handle KPASSes.
 
+	* dg-extract-results.sh: Constrain the start-of-log pattern.
+
 2012-12-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* testsuite-management/validate_failures.py
