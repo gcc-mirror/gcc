@@ -1,3 +1,8 @@
+2013-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR other/55973
+	* configure: Re-generate.
+
 2013-01-14  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.def (install-target-libsanitizer): Depend on
