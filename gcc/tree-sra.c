@@ -2199,7 +2199,9 @@ analyze_access_subtree (struct access *root, struct access *parent,
     {
       if (allow_replacements
 	  && scalar && !root->first_child
-	  && (root->grp_scalar_write || root->grp_assignment_write))
+	  && (root->grp_scalar_write || root->grp_assignment_write)
+	  && !bitmap_bit_p (cannot_scalarize_away_bitmap,
+			    DECL_UID (root->base)))
 	{
 	  gcc_checking_assert (!root->grp_scalar_read
 			       && !root->grp_assignment_read);

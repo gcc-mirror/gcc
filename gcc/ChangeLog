@@ -1,3 +1,9 @@
+2013-01-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55920
+	* tree-sra.c (analyze_access_subtree): Do not mark non-removable
+	accesses as grp_to_be_debug_replaced.
+
 2013-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55920
