@@ -1,3 +1,8 @@
+2013-01-15  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/sync-cache.c (__aarch64_sync_cache_range): Update
+	loop start address for cache clearing.
+
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S: Remove trailing blanks.
