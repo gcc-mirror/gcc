@@ -1,3 +1,8 @@
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55955
+	* gcc.c-torture/compile/pr55955.c: New test.
+
 2013-01-15  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/55663
