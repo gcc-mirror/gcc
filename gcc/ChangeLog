@@ -1,3 +1,14 @@
+2013-01-15  Joseph Myers  <joseph@codesourcery.com>
+	    Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR target/43961
+	* config/arm/arm.h (ADDR_VEC_ALIGN): Align SImode jump tables for
+	Thumb.
+	(ASM_OUTPUT_CASE_LABEL): Remove.
+	(ASM_OUTPUT_BEFORE_CASE_LABEL): Define to empty.
+	* final.c (shorten_branches): Update alignment of labels before
+	jump tables if CASE_VECTOR_SHORTEN_MODE.
+
 2013-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/55961
