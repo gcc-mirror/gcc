@@ -1,6 +1,6 @@
 // unordered_set implementation -*- C++ -*-
 
-// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1291,6 +1291,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { return !(__x == __y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+
+  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
+    struct is_copy_constructible<_GLIBCXX_STD_C::unordered_set<_Key, _Hash,
+							       _Pred, _Alloc>>
+    : __has_copy_insertable_val<_GLIBCXX_STD_C::unordered_set<_Key, _Hash,
+							      _Pred, _Alloc>>
+    { };
+
+  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
+    struct
+    is_copy_constructible<_GLIBCXX_STD_C::unordered_multiset<_Key, _Hash,
+							     _Pred, _Alloc>>
+    : __has_copy_insertable_val<_GLIBCXX_STD_C::unordered_multiset<_Key, _Hash,
+								   _Pred,
+								   _Alloc>>
+    { };
+
 } // namespace std
 
 #endif /* _UNORDERED_SET_H */

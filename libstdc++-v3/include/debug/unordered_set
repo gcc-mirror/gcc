@@ -1,7 +1,6 @@
 // Debugging unordered_set/unordered_multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-// Free Software Foundation, Inc.
+// Copyright (C) 2003-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -921,6 +920,27 @@ namespace __debug
     { return !(__x == __y); }
 
 } // namespace __debug
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
+    struct
+    is_copy_constructible<__debug::unordered_set<_Key, _Hash, _Pred, _Alloc>>
+    : is_copy_constructible< _GLIBCXX_STD_C::unordered_set<_Key,
+							   _Hash, _Pred,
+							   _Alloc> >
+    { };
+
+  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
+    struct
+    is_copy_constructible<__debug::unordered_multiset<_Key, _Hash, _Pred,
+						      _Alloc>>
+    : is_copy_constructible< _GLIBCXX_STD_C::unordered_multiset<_Key,
+								_Hash, _Pred,
+								_Alloc> >
+    { };
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

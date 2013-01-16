@@ -370,7 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Hashtable(_Hashtable&&);
 
-      // Use delegating construtors.
+      // Use delegating constructors.
       explicit
       _Hashtable(size_type __n = 10,
 		 const _H1& __hf = _H1(),
@@ -914,7 +914,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
-      // Update, if necessary, bucket pointing to before begin that hasn't move.
+      // Update, if necessary, bucket pointing to before begin that hasn't moved.
       if (_M_begin())
 	_M_buckets[_M_bucket_index(_M_begin())] = &_M_before_begin();
       __ht._M_rehash_policy = _RehashPolicy();
