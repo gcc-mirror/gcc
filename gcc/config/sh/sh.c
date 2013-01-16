@@ -4926,6 +4926,8 @@ broken_move (rtx insn)
 	     order bits end up as.  */
 	  && GET_MODE (SET_DEST (pat)) != QImode
 	  && (CONSTANT_P (SET_SRC (pat))
+	      || (GET_CODE (SET_SRC (pat)) == UNSPEC_VOLATILE
+		  && XINT (SET_SRC (pat), 1) ==  UNSPECV_SP_SWITCH_B)
 	      /* Match mova_const.  */
 	      || (GET_CODE (SET_SRC (pat)) == UNSPEC
 		  && XINT (SET_SRC (pat), 1) == UNSPEC_MOVA
@@ -6422,6 +6424,14 @@ sh_reorg (void)
 					       gen_rtvec (1, newsrc),
 					       UNSPEC_MOVA);
 		    }
+		  else if (GET_CODE (src) == UNSPEC_VOLATILE
+			   && XINT (src, 1) == UNSPECV_SP_SWITCH_B)
+		    {
+		      newsrc = XVECEXP (src, 0, 0);
+		      XVECEXP (src, 0, 0) = gen_const_mem (mode, newsrc);
+		      INSN_CODE (scan) = -1;
+		      continue;
+		    }
 		  else
 		    {
 		      lab = add_constant (src, mode, 0);
@@ -7624,7 +7634,6 @@ sh_expand_prologue (void)
 
       lab = add_constant (sp_switch, SImode, 0);
       newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
-      newsrc = gen_const_mem (SImode, newsrc);
 
       emit_insn (gen_sp_switch_1 (newsrc));
     }

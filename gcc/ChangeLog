@@ -1,4 +1,19 @@
-2013-01-15  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/55301
+	* config/sh/sh.c (sh_expand_prologue): Postpone new_stack mem symbol.
+	(broken_move): Handle UNSPECV_SP_SWITCH_B.
+	* config/sh/sh.md (sp_switch_1): Use set (reg:SI SP_REG).
+
+2013-01-16  DJ Delorie  <dj@redhat.com>
+
+	* config/sh/sh.md (UNSPECV_SP_SWITCH_B): New.
+	(UNSPECV_SP_SWITCH_E): New.
+	(sp_switch_1): Change to an unspec.
+	(sp_switch_2): Change to an unspec.  Don't use post-inc when we
+	replace $r15.
+
+2013-01-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* emit-rtl.c (need_atomic_barrier_p): Mask memory model argument
 	with MEMMODEL_MASK before comparing with MEMMODEL_* memory types.

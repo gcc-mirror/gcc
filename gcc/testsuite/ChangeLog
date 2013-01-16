@@ -1,3 +1,8 @@
+2013-01-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/55301
+	* gcc.target/sh/sh-switch.c: New testcase.
+
 2013-01-15  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/webizer.c: Increase the array size.
