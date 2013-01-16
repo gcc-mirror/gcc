@@ -174,6 +174,8 @@
   (UNSPECV_CONST_END	11)
   (UNSPECV_EH_RETURN	12)
   (UNSPECV_GBR		13)
+  (UNSPECV_SP_SWITCH_B  14)
+  (UNSPECV_SP_SWITCH_E  15)
 ])
 
 ;; -------------------------------------------------------------------------
@@ -13587,7 +13589,8 @@ label:
 
 ;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).
 (define_insn "sp_switch_1"
-  [(const_int 1) (match_operand:SI 0 "symbol_ref_operand" "s")]
+  [(set (reg:SI SP_REG) (unspec_volatile [(match_operand:SI 0 "" "")]
+    UNSPECV_SP_SWITCH_B))]
   "TARGET_SH1"
 {
   return       "mov.l	r0,@-r15"	"\n"
@@ -13601,10 +13604,11 @@ label:
 ;; Switch back to the original stack for interrupt functions with the
 ;; sp_switch attribute.
 (define_insn "sp_switch_2"
-  [(const_int 2)]
+  [(unspec_volatile [(const_int 0)]
+    UNSPECV_SP_SWITCH_E)]
   "TARGET_SH1"
 {
-  return       "mov.l	@r15+,r15"	"\n"
+  return       "mov.l	@r15,r15"	"\n"
 	 "	mov.l	@r15+,r0";
 }
   [(set_attr "length" "4")])
