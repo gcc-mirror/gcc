@@ -1839,7 +1839,12 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 
       if (!align_computed)
 	{
-	  unsigned int obj_align = get_object_alignment (t);
+	  unsigned int obj_align;
+	  unsigned HOST_WIDE_INT obj_bitpos;
+	  obj_align = get_object_alignment_1 (t, &obj_bitpos);
+	  obj_bitpos = (obj_bitpos - bitpos) & (obj_align - 1);
+	  if (obj_bitpos != 0)
+	    obj_align = (obj_bitpos & -obj_bitpos);
 	  attrs.align = MAX (attrs.align, obj_align);
 	}
     }

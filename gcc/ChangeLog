@@ -1,3 +1,9 @@
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55882
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Correctly
+	account for bitpos when computing alignment.
+
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-01-14 trunk r195169.
