@@ -1,5 +1,14 @@
 2013-01-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/54767
+	PR tree-optimization/53465
+	* tree-vrp.c (vrp_meet_1): Revert original fix for PR53465.
+	(vrp_visit_phi_node): For PHI arguments coming via backedges
+	drop all symbolical range information.
+	(execute_vrp): Compute backedges.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
 	* doc/install.texi: Update CLooG and ISL requirements to
 	0.18.0 and 0.11.1.
 
