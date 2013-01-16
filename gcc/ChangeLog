@@ -1,3 +1,8 @@
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	* doc/install.texi: Update CLooG and ISL requirements to
+	0.18.0 and 0.11.1.
+
 2013-01-16  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/55301
