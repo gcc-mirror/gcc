@@ -257,7 +257,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 
       template<typename _Tp, typename... _Args>
 	static typename
-       	enable_if<!__construct_helper<_Tp, _Args...>::value, void>::type
+	enable_if<__and_<__not_<__construct_helper<_Tp, _Args...>>,
+			 is_constructible<_Tp, _Args...>>::value, void>::type
        	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
 	{ ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
 
@@ -389,7 +390,8 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
        *  arguments @a __args...
       */
       template<typename _Tp, typename... _Args>
-	static void construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
+	static auto construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
+	-> decltype(_S_construct(__a, __p, std::forward<_Args>(__args)...))
 	{ _S_construct(__a, __p, std::forward<_Args>(__args)...); }
 
       /**
@@ -526,9 +528,10 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 	_M_select(...);
 
     public:
-	typedef decltype(_M_select<typename _Alloc::value_type>(0)) type;
+      typedef decltype(_M_select<typename _Alloc::value_type>(0)) type;
     };
 
+  // true if _Alloc::value_type is CopyInsertable into containers using _Alloc
   template<typename _Alloc>
     struct __is_copy_insertable
     : __is_copy_insertable_impl<_Alloc>::type
@@ -540,9 +543,23 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
     : is_copy_constructible<_Tp>
     { };
 
-  template<typename _Container>
-    using __has_copy_insertable_val
-      = __is_copy_insertable<typename _Container::allocator_type>;
+  // Used to allow copy construction of unordered containers
+  template<bool> struct __allow_copy_cons { };
+
+  // Used to delete copy constructor of unordered containers
+  template<>
+    struct __allow_copy_cons<false>
+    {
+      __allow_copy_cons() = default;
+      __allow_copy_cons(const __allow_copy_cons&) = delete;
+      __allow_copy_cons(__allow_copy_cons&&) = default;
+      __allow_copy_cons& operator=(const __allow_copy_cons&) = default;
+      __allow_copy_cons& operator=(__allow_copy_cons&&) = default;
+    };
+
+  template<typename _Alloc>
+    using __check_copy_constructible
+      = __allow_copy_cons<__is_copy_insertable<_Alloc>::value>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

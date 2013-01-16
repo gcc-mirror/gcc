@@ -339,25 +339,11 @@ namespace __profile
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
 
-} // namespace __profile
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
-	   typename _Alloc>
-    struct
-    is_copy_constructible<__profile::unordered_map<_Key, _Tp, _Hash,
-						   _Pred, _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_BASE >
-    { };
-_GLIBCXX_END_NAMESPACE_VERSION
-
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
 #define _GLIBCXX_BASE unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_C::_GLIBCXX_BASE
 
-namespace __profile
-{
   /// Class std::unordered_multimap wrapper with performance instrumentation.
   template<typename _Key, typename _Tp,
 	   typename _Hash  = std::hash<_Key>,
@@ -623,18 +609,6 @@ namespace __profile
     { return !(__x == __y); }
 
 } // namespace __profile
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
-	   typename _Alloc>
-    struct
-    is_copy_constructible<__profile::unordered_multimap<_Key, _Tp, _Hash,
-							_Pred, _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_BASE >
-    { };
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #undef _GLIBCXX_BASE

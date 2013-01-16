@@ -96,14 +96,12 @@ namespace __debug
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
-      unordered_map(const unordered_map& __x) 
-      : _Base(__x) { }
+      unordered_map(const unordered_map& __x) = default;
 
       unordered_map(const _Base& __x)
       : _Base(__x) { }
 
-      unordered_map(unordered_map&& __x)
-      : _Base(std::move(__x)) { }
+      unordered_map(unordered_map&& __x) = default;
 
       unordered_map(initializer_list<value_type> __l,
 		    size_type __n = 0,
@@ -547,14 +545,12 @@ namespace __debug
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
-      unordered_multimap(const unordered_multimap& __x) 
-      : _Base(__x) { }
+      unordered_multimap(const unordered_multimap& __x) = default;
 
       unordered_multimap(const _Base& __x) 
       : _Base(__x) { }
 
-      unordered_multimap(unordered_multimap&& __x)
-      : _Base(std::move(__x)) { }
+      unordered_multimap(unordered_multimap&& __x) = default;
 
       unordered_multimap(initializer_list<value_type> __l,
 			 size_type __n = 0,
@@ -938,30 +934,6 @@ namespace __debug
     { return !(__x == __y); }
 
 } // namespace __debug
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
-	   typename _Alloc>
-    struct
-    is_copy_constructible<__debug::unordered_map<_Key, _Tp, _Hash, _Pred,
-						 _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_C::unordered_map<_Key, _Tp,
-							   _Hash, _Pred,
-							   _Alloc> >
-    { };
-
-  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
-	   typename _Alloc>
-    struct
-    is_copy_constructible<__debug::unordered_multimap<_Key, _Tp, _Hash, _Pred,
-						      _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_C::unordered_multimap<_Key, _Tp,
-								_Hash, _Pred,
-								_Alloc> >
-    { };
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

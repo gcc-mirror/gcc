@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value> >
-    class unordered_set
+    class unordered_set : __check_copy_constructible<_Alloc>
     {
       typedef __uset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;
@@ -695,7 +695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value> >
-    class unordered_multiset
+    class unordered_multiset : __check_copy_constructible<_Alloc>
     {
       typedef __umset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;
@@ -1291,23 +1291,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { return !(__x == __y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
-
-  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
-    struct is_copy_constructible<_GLIBCXX_STD_C::unordered_set<_Key, _Hash,
-							       _Pred, _Alloc>>
-    : __has_copy_insertable_val<_GLIBCXX_STD_C::unordered_set<_Key, _Hash,
-							      _Pred, _Alloc>>
-    { };
-
-  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
-    struct
-    is_copy_constructible<_GLIBCXX_STD_C::unordered_multiset<_Key, _Hash,
-							     _Pred, _Alloc>>
-    : __has_copy_insertable_val<_GLIBCXX_STD_C::unordered_multiset<_Key, _Hash,
-								   _Pred,
-								   _Alloc>>
-    { };
-
 } // namespace std
 
 #endif /* _UNORDERED_SET_H */
