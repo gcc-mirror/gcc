@@ -6019,7 +6019,7 @@ insn_file (const_rtx insn)
 bool
 need_atomic_barrier_p (enum memmodel model, bool pre)
 {
-  switch (model)
+  switch (model & MEMMODEL_MASK)
     {
     case MEMMODEL_RELAXED:
     case MEMMODEL_CONSUME:

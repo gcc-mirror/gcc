@@ -1,3 +1,13 @@
+2013-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* emit-rtl.c (need_atomic_barrier_p): Mask memory model argument
+	with MEMMODEL_MASK before comparing with MEMMODEL_* memory types.
+	* optabs.c (maybe_emit_sync_lock_test_and_set): Ditto.
+	(expand_mem_thread_fence): Ditto.
+	(expand_mem_signal_fence): Ditto.
+	(expand_atomic_load): Ditto.
+	(expand_atomic_store): Ditto.
+
 2013-01-16  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/55547
@@ -120,8 +130,8 @@
 
 2013-01-14  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): New. 
-	* config/aarch64/iterators.md (VALLDI): New. 
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): New.
+	* config/aarch64/iterators.md (VALLDI): New.
 
 2012-01-14  Uros Bizjak  <ubizjak@gmail.com>
 	    Andi Kleen  <ak@linux.intel.com>
