@@ -4,6 +4,8 @@
 
 	* dg-extract-results.sh: Constrain the start-of-log pattern.
 
+	* dg-extract-results.sh: Fix order of summary counts.
+
 2012-12-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* testsuite-management/validate_failures.py
