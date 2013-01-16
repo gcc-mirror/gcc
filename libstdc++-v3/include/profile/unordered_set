@@ -305,23 +305,11 @@ namespace __profile
 	       const unordered_set<_Key, _Hash, _Pred, _Alloc>& __y)
     { return !(__x == __y); }
 
-} // namespace __profile
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
-    struct
-    is_copy_constructible<__profile::unordered_set<_Key, _Hash, _Pred, _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_BASE >
-    { };
-_GLIBCXX_END_NAMESPACE_VERSION
-
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_C::_GLIBCXX_BASE
 #define _GLIBCXX_BASE unordered_multiset<_Value, _Hash, _Pred, _Alloc>
 
-namespace __profile
-{
   /** @brief Unordered_multiset wrapper with performance instrumentation.  */
   template<typename _Value,
        typename _Hash  = std::hash<_Value>,
@@ -580,17 +568,6 @@ namespace __profile
     { return !(__x == __y); }
 
 } // namespace __profile
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    struct
-    is_copy_constructible<__profile::unordered_multiset<_Value, _Hash,
-							_Pred, _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_BASE >
-    { };
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #undef _GLIBCXX_BASE

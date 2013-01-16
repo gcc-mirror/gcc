@@ -96,14 +96,12 @@ namespace __debug
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
-      unordered_set(const unordered_set& __x) 
-      : _Base(__x) { }
+      unordered_set(const unordered_set& __x) = default;
 
       unordered_set(const _Base& __x) 
       : _Base(__x) { }
 
-      unordered_set(unordered_set&& __x)
-      : _Base(std::move(__x)) { }
+      unordered_set(unordered_set&& __x) = default;
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 0,
@@ -542,14 +540,12 @@ namespace __debug
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
-      unordered_multiset(const unordered_multiset& __x) 
-      : _Base(__x) { }
+      unordered_multiset(const unordered_multiset& __x) = default;
 
       unordered_multiset(const _Base& __x) 
       : _Base(__x) { }
 
-      unordered_multiset(unordered_multiset&& __x)
-      : _Base(std::move(__x)) { }
+      unordered_multiset(unordered_multiset&& __x) = default;
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 0,
@@ -920,27 +916,6 @@ namespace __debug
     { return !(__x == __y); }
 
 } // namespace __debug
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
-    struct
-    is_copy_constructible<__debug::unordered_set<_Key, _Hash, _Pred, _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_C::unordered_set<_Key,
-							   _Hash, _Pred,
-							   _Alloc> >
-    { };
-
-  template<typename _Key, typename _Hash, typename _Pred, typename _Alloc>
-    struct
-    is_copy_constructible<__debug::unordered_multiset<_Key, _Hash, _Pred,
-						      _Alloc>>
-    : is_copy_constructible< _GLIBCXX_STD_C::unordered_multiset<_Key,
-								_Hash, _Pred,
-								_Alloc> >
-    { };
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

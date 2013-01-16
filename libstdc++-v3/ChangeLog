@@ -1,5 +1,29 @@
 2013-01-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/55043 (again)
+	* include/bits/alloc_traits.h (allocator_traits::construct): Disable
+	unless construction would be well-formed.
+	(__allow_copy_cons, __check_copy_constructible): Define.
+	* include/bits/unordered_map.h (__check_copy_constructible): Use as
+	base class so copy constructor will be deleted if appropriate.
+	(is_copy_constructible): Remove specialization.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/unordered_map.h: Undo previous commit. Default copy
+	and move constructors.
+	* include/debug/unordered_set.h: Likewise.
+	* include/profile/unordered_map.h: Undo previous commit.
+	* include/profile/unordered_set.h: Likewise.
+	* testsuite/23_containers/unordered_map/55043.cc: Fix test.
+	* testsuite/23_containers/unordered_multimap/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_set/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/53339.cc: XFAIL,
+	cannot support incomplete types.
+	* testsuite/23_containers/unordered_multimap/requirements/53339.cc:
+	Likewise.
+
+2013-01-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/55043
 	* include/std/unordered_map: Include alloc_traits.h
 	* include/std/unordered_set: Likewise.

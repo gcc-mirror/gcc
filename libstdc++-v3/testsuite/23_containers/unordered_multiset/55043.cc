@@ -67,7 +67,7 @@ struct Alloc : std::allocator<T>
 
 // verify is_copy_constructible depends on allocator
 typedef test_type<Alloc<MoveOnly, true>> uim_rval;
-static_assert(std::is_copy_constructible<uim_rval>::value, "is not copyable");
+static_assert(!std::is_copy_constructible<uim_rval>::value, "is not copyable");
 
 typedef test_type<Alloc<MoveOnly, false>> uim_lval;
 static_assert(std::is_copy_constructible<uim_lval>::value, "is copyable");

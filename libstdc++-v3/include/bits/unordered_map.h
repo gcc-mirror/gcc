@@ -94,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Key>,
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
-    class unordered_map
+    class unordered_map : __check_copy_constructible<_Alloc>
     {
       typedef __umap_hashtable<_Key, _Tp, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;
@@ -775,7 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Hash = hash<_Key>,
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
-    class unordered_multimap
+    class unordered_multimap : __check_copy_constructible<_Alloc>
     {
       typedef __ummap_hashtable<_Key, _Tp, _Hash, _Pred, _Alloc>  _Hashtable;
       _Hashtable _M_h;
@@ -1408,26 +1408,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { return !(__x == __y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
-
-  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
-	   typename _Alloc>
-    struct
-    is_copy_constructible<_GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash,
-							_Pred, _Alloc>>
-    : __has_copy_insertable_val<_GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash,
-							      _Pred, _Alloc>>
-    { };
-
-  template<typename _Key, typename _Tp, typename _Hash, typename _Pred,
-	   typename _Alloc>
-    struct
-    is_copy_constructible<_GLIBCXX_STD_C::unordered_multimap<_Key, _Tp, _Hash,
-							     _Pred, _Alloc>>
-    : __has_copy_insertable_val<_GLIBCXX_STD_C::unordered_multimap<_Key, _Tp,
-								   _Hash, _Pred,
-								   _Alloc>>
-    { };
-
 } // namespace std
 
 #endif /* _UNORDERED_MAP_H */
