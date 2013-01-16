@@ -4815,4 +4815,53 @@ fix = {
     test_text = "extern char *\tsprintf();";
 };
 
+/*
+ *  Incorrect feraiseexcept extern inline in bits/fenv.h on x86_64
+ *  that fails when compiling for SSE-less 32-bit x86.
+ */
+fix = {
+    hackname  = feraiseexcept_nosse_invalid;
+    mach      = 'i[34567]86-*-linux*', 'x86*-linux*', 'amd64-*-linux*';
+    files     = bits/fenv.h;
+    select    = "^([\t ]*)__asm__ __volatile__ \\(\"divss %0, %0 *\" : "
+		": \"x\" \\(__f\\)\\);$";
+    bypass    = "\"fdiv .*; fwait\"";
+    
+    c_fix     = format;
+    c_fix_arg = <<- _EOText_
+	# ifdef __SSE_MATH__
+	%0
+	# else
+	%1__asm__ __volatile__ ("fdiv %%%%st, %%%%st(0); fwait"
+	%1			: "=t" (__f) : "0" (__f));
+	# endif
+	_EOText_;
+
+    test_text = <<- _EOText_
+	  __asm__ __volatile__ ("divss %0, %0" : : "x" (__f));
+	_EOText_;
+};
+fix = {
+    hackname  = feraiseexcept_nosse_divbyzero;
+    mach      = 'i[34567]86-*-linux*', 'x86*-linux*', 'amd64-*-linux*';
+    files     = bits/fenv.h;
+    select    = "^([\t ]*)__asm__ __volatile__ \\(\"divss %1, %0 *\" : "
+		": \"x\" \\(__f\\), \"x\" \\(__g\\)\\);$";
+    bypass    = "\"fdivp .*; fwait\"";
+    
+    c_fix     = format;
+    c_fix_arg = <<- _EOText_
+	# ifdef __SSE_MATH__
+	%0
+	# else
+	%1__asm__ __volatile__ ("fdivp %%%%st, %%%%st(1); fwait"
+	%1			: "=t" (__f) : "0" (__f), "u" (__g) : "st(1)");
+	# endif
+	_EOText_;
+
+    test_text = <<- _EOText_
+	  __asm__ __volatile__ ("divss %1, %0" : : "x" (__f), "x" (__g));
+	_EOText_;
+};
+
 /*EOF*/
