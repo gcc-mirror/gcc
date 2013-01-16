@@ -1,3 +1,8 @@
+2013-01-16  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/neon-vld1_dupQ.c: Use types that match function
+	prototypes.
+
 2013-01-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55964
