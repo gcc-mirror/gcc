@@ -1,3 +1,13 @@
+2013-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/Makefile.am (AM_CXXFLAGS): Remove
+	-Wno-c99-extensions.
+	* interception/Makefile.am (AM_CXXFLAGS): Likewise.
+	* asan/Makefile.am (AM_CXXFLAGS): Likewise.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* interception/Makefile.in: Regenerated.
+	* asan/Makefile.in: Regenerated.
+
 2013-01-10  Wei Mi  <wmi@google.com>
 
 	PR sanitizer/55488
