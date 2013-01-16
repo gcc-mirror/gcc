@@ -1518,8 +1518,9 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
        body;
 cycle_label:
        dovar += step
-       if (countm1 ==0) goto exit_label;
+       countm1t = countm1;
        countm1--;
+       if (countm1t == 0) goto exit_label;
      }
 exit_label:
 
@@ -1739,18 +1740,22 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     gfc_add_modify_loc (loc, &body, saved_dovar, dovar);
 
-  /* End with the loop condition.  Loop until countm1 == 0.  */
-  cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, countm1,
-			  build_int_cst (utype, 0));
-  tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
-  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
-			 cond, tmp, build_empty_stmt (loc));
-  gfc_add_expr_to_block (&body, tmp);
+  /* Initialize countm1t.  */
+  tree countm1t = gfc_create_var (utype, "countm1t");
+  gfc_add_modify_loc (loc, &body, countm1t, countm1);
 
   /* Decrement the loop count.  */
   tmp = fold_build2_loc (loc, MINUS_EXPR, utype, countm1,
 			 build_int_cst (utype, 1));
   gfc_add_modify_loc (loc, &body, countm1, tmp);
+
+  /* End with the loop condition.  Loop until countm1t == 0.  */
+  cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, countm1t,
+			  build_int_cst (utype, 0));
+  tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
+  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
+			 cond, tmp, build_empty_stmt (loc));
+  gfc_add_expr_to_block (&body, tmp);
 
   /* End of loop body.  */
   tmp = gfc_finish_block (&body);
