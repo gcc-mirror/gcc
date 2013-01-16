@@ -1,3 +1,21 @@
+2013-01-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55043
+	* include/std/unordered_map: Include alloc_traits.h
+	* include/std/unordered_set: Likewise.
+	* include/bits/alloc_traits.h: Define __is_copy_insertable.
+	* include/bits/unordered_map.h: Use it.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/unordered_map.h: Likewise.
+	* include/debug/unordered_set.h: Likewise.
+	* include/profile/unordered_map.h: Likewise.
+	* include/profile/unordered_set.h: Likewise.
+	* include/bits/hashtable.h: Fix comment typos.
+	* testsuite/23_containers/unordered_map/55043.cc: New.
+	* testsuite/23_containers/unordered_multimap/55043.cc: New.
+	* testsuite/23_containers/unordered_multiset/55043.cc: New.
+	* testsuite/23_containers/unordered_set/55043.cc: New.
+
 2013-01-03  Janis Johnson  <janisjo@codesourcery.com>
 
 	* testsuite/lib/gdb-test.exp (gdb_batch_check): Catch error running

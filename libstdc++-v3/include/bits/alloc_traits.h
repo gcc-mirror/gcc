@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2012 Free Software Foundation, Inc.
+// Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,9 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Tp>
+    class allocator;
 
   template<typename _Alloc, typename _Tp>
     class __alloctr_rebind_helper
@@ -505,6 +508,41 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
       typedef typename __traits::propagate_on_container_swap __pocs;
       __do_alloc_on_swap(__one, __two, __pocs());
     }
+
+  template<typename _Alloc>
+    class __is_copy_insertable_impl
+    {
+      typedef allocator_traits<_Alloc> _Traits;
+
+      template<typename _Up, typename
+	       = decltype(_Traits::construct(std::declval<_Alloc&>(),
+					     std::declval<_Up*>(),
+					     std::declval<const _Up&>()))>
+	static true_type
+	_M_select(int);
+
+      template<typename _Up>
+	static false_type
+	_M_select(...);
+
+    public:
+	typedef decltype(_M_select<typename _Alloc::value_type>(0)) type;
+    };
+
+  template<typename _Alloc>
+    struct __is_copy_insertable
+    : __is_copy_insertable_impl<_Alloc>::type
+    { };
+
+  // std::allocator<_Tp> just requires CopyConstructible
+  template<typename _Tp>
+    struct __is_copy_insertable<allocator<_Tp>>
+    : is_copy_constructible<_Tp>
+    { };
+
+  template<typename _Container>
+    using __has_copy_insertable_val
+      = __is_copy_insertable<typename _Container::allocator_type>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
