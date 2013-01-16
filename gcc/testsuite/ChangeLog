@@ -1,3 +1,8 @@
+2013-01-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55983
+	* gfortran.dg/class_55.f90: New.
+
 2013-01-16  Janis Johnson  <janisjo@codesourcery.com>
 
 	PR testsuite/55994
