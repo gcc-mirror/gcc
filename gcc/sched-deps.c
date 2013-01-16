@@ -2719,8 +2719,9 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 	 to generate accurate dependencies for prefetch insns as
 	 prefetch has only the start address but it is better to have
 	 something than nothing.  */
-      add_insn_mem_dependence (deps, true, insn,
-			       gen_rtx_MEM (Pmode, XEXP (PATTERN (insn), 0)));
+      if (!deps->readonly)
+	add_insn_mem_dependence (deps, true, insn,
+				 gen_rtx_MEM (Pmode, XEXP (PATTERN (insn), 0)));
       break;
 
     case UNSPEC_VOLATILE:
