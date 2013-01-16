@@ -2080,14 +2080,20 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 
   /* Deal with alignment ANDs by adjusting offset and size so as to
      cover the maximum range, without taking any previously known
-     alignment into account.  */
+     alignment into account.  Make a size negative after such an
+     adjustments, so that, if we end up with e.g. two SYMBOL_REFs, we
+     assume a potential overlap, because they may end up in contiguous
+     memory locations and the stricter-alignment access may span over
+     part of both.  */
   if (GET_CODE (x) == AND && CONST_INT_P (XEXP (x, 1)))
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (x, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (xsize > 0 && sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && -uc == (uc & -uc))
 	{
-	  xsize -= sc + 1;
+	  if (xsize > 0)
+	    xsize = -xsize;
+	  xsize += sc + 1;
 	  c -= sc + 1;
 	  return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
 				     ysize, y, c);
@@ -2097,9 +2103,11 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (y, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (ysize > 0 && sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && -uc == (uc & -uc))
 	{
-	  ysize -= sc + 1;
+	  if (ysize > 0)
+	    ysize = -ysize;
+	  ysize += sc + 1;
 	  c += sc + 1;
 	  return memrefs_conflict_p (xsize, x,
 				     ysize, canon_rtx (XEXP (y, 0)), c);
