@@ -1,3 +1,13 @@
+2013-01-16  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc/config/aarch64/aarch64.md
+	(*cstoresi_neg_uxtw): New pattern.
+	(*cmovsi_insn_uxtw): New pattern.
+	(*<optab>si3_uxtw): New pattern.
+	(*<LOGICAL:optab>_<SHIFT:optab>si3_uxtw): New pattern.
+	(*<optab>si3_insn_uxtw): New pattern.
+	(*bswapsi2_uxtw): New pattern.
+
 2013-01-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-inline.c (tree_function_versioning): Remove set but
