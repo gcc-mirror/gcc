@@ -1,5 +1,22 @@
 2013-01-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/55964
+	* tree-flow.h (rename_variables_in_loop): Remove.
+	(rename_variables_in_bb): Likewise.
+	* tree-loop-distribution.c (update_phis_for_loop_copy): Remove.
+	(copy_loop_before): Adjust and delete update-ssa status.
+	* tree-vect-loop-manip.c (rename_variables_in_bb): Make static.
+	(rename_variables_in_bb): Likewise.  Properly walk over
+	predecessors.
+	(rename_variables_in_loop): Remove.
+	(slpeel_update_phis_for_duplicate_loop): Likewise.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Handle nested loops,
+	use available cfg machinery instead of duplicating it.
+	Update PHI nodes and perform poor-mans SSA update here.
+	(slpeel_tree_peel_loop_to_edge): Adjust.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/54767
 	PR tree-optimization/53465
 	* tree-vrp.c (vrp_meet_1): Revert original fix for PR53465.
