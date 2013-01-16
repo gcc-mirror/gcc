@@ -1,5 +1,12 @@
 2013-01-16  Janis Johnson  <janisjo@codesourcery.com>
 
+	PR testsuite/54622
+	* lib/target-supports.exp (check_effective_target_vect_perm_byte,
+	check_effective_target_vect_perm_short,
+	check_effective_target_vect_widen_mult_qi_to_hi_pattern,
+	check_effective_target_vect64): Return 0 for big-endian ARM.
+	(check_effective_target_vect_widen_sum_qi_to_hi): Return 1 for ARM.
+
 	* gcc.target/arm/neon-vld1_dupQ.c: Use types that match function
 	prototypes.
 
