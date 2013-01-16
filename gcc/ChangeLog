@@ -1,5 +1,10 @@
 2013-01-16  Richard Biener  <rguenther@suse.de>
 
+	* tree-inline.c (tree_function_versioning): Remove set but
+	never used variable.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55964
 	* tree-flow.h (rename_variables_in_loop): Remove.
 	(rename_variables_in_bb): Likewise.
