@@ -3082,7 +3082,8 @@ proc check_effective_target_vect_perm_byte { } {
         verbose "check_effective_target_vect_perm_byte: using cached result" 2
     } else {
         set et_vect_perm_byte_saved 0
-        if { [is-effective-target arm_neon_ok]
+        if { ([is-effective-target arm_neon_ok]
+	      && [is-effective-target arm_little_endian])
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
@@ -3105,7 +3106,8 @@ proc check_effective_target_vect_perm_short { } {
         verbose "check_effective_target_vect_perm_short: using cached result" 2
     } else {
         set et_vect_perm_short_saved 0
-        if { [is-effective-target arm_neon_ok]
+        if { ([is-effective-target arm_neon_ok]
+	      && [is-effective-target arm_little_endian])
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
@@ -3175,6 +3177,7 @@ proc check_effective_target_vect_widen_sum_qi_to_hi { } {
     } else {
         set et_vect_widen_sum_qi_to_hi_saved 0
 	if { [check_effective_target_vect_unpack] 
+	     || [check_effective_target_arm_neon_ok]
 	     || [istarget ia64-*-*] } {
             set et_vect_widen_sum_qi_to_hi_saved 1
 	}
@@ -3282,7 +3285,9 @@ proc check_effective_target_vect_widen_mult_qi_to_hi_pattern { } {
     } else {
         set et_vect_widen_mult_qi_to_hi_pattern_saved 0
         if { [istarget powerpc*-*-*]
-              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
+              || ([istarget arm*-*-*]
+		  && [check_effective_target_arm_neon_ok]
+		  && [check_effective_target_arm_little_endian]) } {
             set et_vect_widen_mult_qi_to_hi_pattern_saved 1
         }
     }
@@ -3307,7 +3312,9 @@ proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
               || [istarget ia64-*-*]
               || [istarget i?86-*-*]
               || [istarget x86_64-*-*]
-              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
+              || ([istarget arm*-*-*]
+		  && [check_effective_target_arm_neon_ok]
+		  && [check_effective_target_arm_little_endian]) } {
             set et_vect_widen_mult_hi_to_si_pattern_saved 1
         }
     }
@@ -3914,7 +3921,9 @@ proc check_effective_target_vect64 { } {
         verbose "check_effective_target_vect64: using cached result" 2
     } else {
         set et_vect64_saved 0
-        if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
+        if { ([istarget arm*-*-*]
+	      && [check_effective_target_arm_neon_ok]
+	      && [check_effective_target_arm_little_endian]) } {
            set et_vect64_saved 1
         }
     }
