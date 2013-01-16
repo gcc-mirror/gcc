@@ -1,3 +1,7 @@
+2013-01-15  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/webizer.c: Increase the array size.
+
 2013-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/55940

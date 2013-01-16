@@ -8,7 +8,7 @@ typedef struct rowbox {
     int ypos ;
     int desiredL ;
 } ROWBOX ;
-ROWBOX rowArray1[2] ;
+ROWBOX rowArray1[3] ;
 ROWBOX *rowArray = rowArray1;
 
 int numRows = 2;
