@@ -1,5 +1,9 @@
 2013-01-16  Janis Johnson  <janisjo@codesourcery.com>
 
+	PR testsuite/55994
+	* gcc.c-torture/execute/builtins/builtins.exp: Add
+	-Wl,--allow-multiple-definition for eabi and elf targets.
+
 	PR testsuite/54622
 	* lib/target-supports.exp (check_effective_target_vect_perm_byte,
 	check_effective_target_vect_perm_short,
