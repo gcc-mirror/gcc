@@ -422,7 +422,11 @@ Fortran RejectNegative
 Interpret any INTEGER(4) as an INTEGER(8)
 
 fintrinsic-modules-path
-Fortran RejectNegative Joined Separate
+Fortran RejectNegative Separate
+Specify where to find the compiled intrinsic modules
+
+fintrinsic-modules-path=
+Fortran RejectNegative Joined
 Specify where to find the compiled intrinsic modules
 
 ffixed-line-length-none
