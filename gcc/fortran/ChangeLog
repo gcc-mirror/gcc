@@ -1,4 +1,13 @@
 2013-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR driver/55884
+	* lang.opt (fintrinsic-modules-path): Don't accept Joined.
+	(fintrinsic-modules-path=): New.
+	* options.c (gfc_handle_option, gfc_get_option_string,
+	gfc_get_option_string): Handle the latter.
+
+2013-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/52865
 	* trans-stmt.c (gfc_trans_do): Put countm1-- before conditional
