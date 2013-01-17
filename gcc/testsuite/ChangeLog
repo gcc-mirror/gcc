@@ -1,3 +1,8 @@
+2013-01-17  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/51083
+	* gcc.c-torture/compile/pr51083.c: New testcase.
+
 2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55981
