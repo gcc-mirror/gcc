@@ -144,12 +144,7 @@ unswitch_loops (void)
   /* Go through inner loops (only original ones).  */
 
   FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
-    {
-      unswitch_single_loop (loop, NULL_RTX, 0);
-#ifdef ENABLE_CHECKING
-      verify_loop_structure ();
-#endif
-    }
+    unswitch_single_loop (loop, NULL_RTX, 0);
 
   iv_analysis_done ();
 }
@@ -368,6 +363,10 @@ unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
   /* Unswitch the loop on this condition.  */
   nloop = unswitch_loop (loop, bbs[i], copy_rtx_if_shared (cond), cinsn);
   gcc_assert (nloop);
+
+#ifdef ENABLE_CHECKING
+  verify_loop_structure ();
+#endif
 
   /* Invoke itself on modified loops.  */
   unswitch_single_loop (nloop, rconds, num + 1);

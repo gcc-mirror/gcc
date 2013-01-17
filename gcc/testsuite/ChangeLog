@@ -1,3 +1,8 @@
+2013-01-17  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/55833
+	* gcc.dg/pr55833.c: New test.
+
 2013-01-17  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55273
