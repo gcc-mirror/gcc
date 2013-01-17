@@ -940,14 +940,16 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
   gfc_symtree* res;
   gfc_symtree* root;
 
-  /* Set correct symbol-root.  */
-  gcc_assert (derived->f2k_derived);
-  root = (uop ? derived->f2k_derived->tb_uop_root
-	      : derived->f2k_derived->tb_sym_root);
-
   /* Set default to failure.  */
   if (t)
     *t = FAILURE;
+
+  if (derived->f2k_derived)
+    /* Set correct symbol-root.  */
+    root = (uop ? derived->f2k_derived->tb_uop_root
+		: derived->f2k_derived->tb_sym_root);
+  else
+    return NULL;
 
   /* Try to find it in the current type's namespace.  */
   res = gfc_find_symtree (root, name);
