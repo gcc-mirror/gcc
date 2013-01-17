@@ -1,3 +1,10 @@
+2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55981
+	* config/i386/sync.md (atomic_store<mode>): Always generate SWImode
+	store through atomic_store<mode>_1.
+	(atomic_store<mode>_1): Macroize insn using SWI mode iterator.
+
 2013-01-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimizations/55264
@@ -39,8 +46,7 @@
 	* tree-loop-distribution.c (update_phis_for_loop_copy): Remove.
 	(copy_loop_before): Adjust and delete update-ssa status.
 	* tree-vect-loop-manip.c (rename_variables_in_bb): Make static.
-	(rename_variables_in_bb): Likewise.  Properly walk over
-	predecessors.
+	(rename_variables_in_bb): Likewise.  Properly walk over predecessors.
 	(rename_variables_in_loop): Remove.
 	(slpeel_update_phis_for_duplicate_loop): Likewise.
 	(slpeel_tree_duplicate_loop_to_edge_cfg): Handle nested loops,

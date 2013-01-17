@@ -225,11 +225,8 @@
 	}
 
       /* Otherwise use a store.  */
-      if (INTVAL (operands[2]) & IX86_HLE_RELEASE)
-	emit_insn (gen_atomic_store<mode>_1 (operands[0], operands[1],
-					     operands[2]));
-      else
-	emit_move_insn (operands[0], operands[1]);
+      emit_insn (gen_atomic_store<mode>_1 (operands[0], operands[1],
+					   operands[2]));
     }
   /* ... followed by an MFENCE, if required.  */
   if (model == MEMMODEL_SEQ_CST)
@@ -238,10 +235,10 @@
 })
 
 (define_insn "atomic_store<mode>_1"
-  [(set (match_operand:ATOMIC 0 "memory_operand" "=m")
-	(unspec:ATOMIC [(match_operand:ATOMIC 1 "<nonmemory_operand>" "<r><i>")
-			(match_operand:SI 2 "const_int_operand")]
-		       UNSPEC_MOVA))]
+  [(set (match_operand:SWI 0 "memory_operand" "=m")
+	(unspec:SWI [(match_operand:SWI 1 "<nonmemory_operand>" "<r><i>")
+		     (match_operand:SI 2 "const_int_operand")]
+		    UNSPEC_MOVA))]
   ""
   "%K2mov{<imodesuffix>}\t{%1, %0|%0, %1}")
 
