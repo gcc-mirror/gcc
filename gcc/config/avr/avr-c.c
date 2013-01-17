@@ -70,14 +70,6 @@ avr_toupper (char *up, const char *lo)
 
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
-static const char *const avr_builtin_name[] =
-  {
-#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE) NAME,
-#include "builtins.def"
-#undef DEF_BUILTIN
-    NULL
-  };
-
 void
 avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 {
@@ -176,13 +168,10 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   /* Define builtin macros so that the user can easily query whether or
      not a specific builtin is available. */
 
-  for (i = 0; avr_builtin_name[i]; i++)
-    {
-      const char *name = avr_builtin_name[i];
-      char *Name = (char*) alloca (1 + strlen (name));
-
-      cpp_define (pfile, avr_toupper (Name, name));
-    }
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE)   \
+  cpp_define (pfile, "__BUILTIN_AVR_" #NAME);
+#include "builtins.def"
+#undef DEF_BUILTIN
 
   /* Builtin macros for the __int24 and __uint24 type.  */
 

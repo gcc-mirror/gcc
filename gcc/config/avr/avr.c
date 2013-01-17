@@ -205,6 +205,22 @@ bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
 
 
+/* Transform UP into lowercase and write the result to LO.
+   You must provide enough space for LO.  Return LO.  */
+
+static char*
+avr_tolower (char *lo, const char *up)
+{
+  char *lo0 = lo;
+
+  for (; *up; up++, lo++)
+    *lo = TOLOWER (*up);
+
+  *lo = '\0';
+
+  return lo0;
+}
+
 
 /* Custom function to count number of set bits.  */
 
@@ -11368,7 +11384,8 @@ avr_out_insert_bits (rtx *op, int *plen)
 
 enum avr_builtin_id
   {
-#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE) ID,
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE)   \
+    AVR_BUILTIN_ ## NAME,
 #include "builtins.def"
 #undef DEF_BUILTIN
 
@@ -11378,7 +11395,6 @@ enum avr_builtin_id
 struct GTY(()) avr_builtin_description
 {
   enum insn_code icode;
-  const char *name;
   int n_args;
   tree fndecl;
 };
@@ -11391,9 +11407,8 @@ struct GTY(()) avr_builtin_description
 static GTY(()) struct avr_builtin_description
 avr_bdesc[AVR_BUILTIN_COUNT] =
   {
-
-#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)      \
-    { (enum insn_code) ICODE, NAME, N_ARGS, NULL_TREE },
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE)                  \
+    { (enum insn_code) CODE_FOR_ ## ICODE, N_ARGS, NULL_TREE },
 #include "builtins.def"
 #undef DEF_BUILTIN
   };
@@ -11462,22 +11477,29 @@ avr_init_builtins (void)
                                 NULL_TREE);
 
   tree const_memx_void_node
-      = build_qualified_type (void_type_node,
-                              TYPE_QUAL_CONST
-                              | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_MEMX));
+    = build_qualified_type (void_type_node,
+                            TYPE_QUAL_CONST
+                            | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_MEMX));
 
   tree const_memx_ptr_type_node
-      = build_pointer_type_for_mode (const_memx_void_node, PSImode, false);
+    = build_pointer_type_for_mode (const_memx_void_node, PSImode, false);
 
   tree char_ftype_const_memx_ptr
-      = build_function_type_list (char_type_node,
-                                  const_memx_ptr_type_node,
-                                  NULL);
+    = build_function_type_list (char_type_node,
+                                const_memx_ptr_type_node,
+                                NULL);
 
-#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE)                       \
-  gcc_assert (ID < AVR_BUILTIN_COUNT);                                  \
-  avr_bdesc[ID].fndecl                                                  \
-    = add_builtin_function (NAME, TYPE, ID, BUILT_IN_MD, NULL, NULL_TREE);
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE)                           \
+  {                                                                     \
+    int id = AVR_BUILTIN_ ## NAME;                                      \
+    const char *Name = "__builtin_avr_" #NAME;                          \
+    char *name = (char*) alloca (1 + strlen (Name));                    \
+                                                                        \
+    gcc_assert (id < AVR_BUILTIN_COUNT);                                \
+    avr_bdesc[id].fndecl                                                \
+      = add_builtin_function (avr_tolower (name, Name), TYPE, id,       \
+                              BUILT_IN_MD, NULL, NULL_TREE);            \
+  }
 #include "builtins.def"
 #undef DEF_BUILTIN
 
@@ -11604,6 +11626,7 @@ avr_expand_builtin (tree exp, rtx target,
 
   /* No special treatment needed: vanilla expand.  */
 
+  gcc_assert (d->icode != CODE_FOR_nothing);
   gcc_assert (d->n_args == call_expr_nargs (exp));
 
   if (d->n_args == 0)
