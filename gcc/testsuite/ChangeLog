@@ -1,3 +1,33 @@
+2013-01-17  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/ftest-support.h: Replace for compile-only tests.
+	* gcc.target/arm/ftest-support-arm.h: Delete.
+	* gcc.target/arm/ftest-support-thumb.h: Delete.
+	* gcc.target/arm/ftest-armv4-arm.c: Replace with compile-only test.
+	* gcc.target/arm/ftest-armv4t-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv4t-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv5t-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv5t-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv5te-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv5te-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6k-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6k-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6m-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6t2-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6t2-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6z-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6z-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7em-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7m-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
+
 2013-01-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimizations/55264
