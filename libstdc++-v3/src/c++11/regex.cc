@@ -1,6 +1,6 @@
 // regex -*- C++ -*-
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { }
 
   regex_error::~regex_error() throw() { }
+
+#ifdef _AIX
+  // PR libstdc++/52887
+  template class function<void (__regex::_PatternCursor const&,
+				__regex::_Results&)>;
+  template class function<bool (__regex::_PatternCursor const&)>;
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
