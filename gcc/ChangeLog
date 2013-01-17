@@ -1,3 +1,17 @@
+2013-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def (DEF_BUILTIN): Factor out
+	"__builtin_avr_" from NAME, turn NAME to an uppercase identifier.
+	Factor out 'CODE_FOR_' from ICODE, use 'nothing' instead of '-1'.
+	Remove ID.  Adjust comments.
+	* config/avr/avr-c.c (avr_builtin_name): Remove.
+	(avr_cpu_cpp_builtins): Use DEF_BUILTIN instead of for-loop.
+	* config/avr/avr.c (avr_tolower): New static function.
+	(DEF_BUILTIN): Remove parameter ID.  Prefix ICODE by 'CODE_FOR_'.
+	Stringify NAME, prefix it with "__builtin_avr_" and lowercase it.
+	(avr_expand_builtin): Assert insn_code != CODE_FOR_nothing for
+	default expansion.
+
 2013-01-17  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55273

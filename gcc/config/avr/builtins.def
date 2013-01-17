@@ -20,35 +20,35 @@
    builtins defined in the AVR part of the GNU compiler.
    Befor including this file, define a macro
 
-   DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)
+   DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE)
 
-   NAME:   The name as visible by the user as a C string.
+   NAME:   `__builtin_avr_name' will be the user-level name of the builtin.
+           `AVR_BUILTIN_NAME' will be the internal builtin's id.
    N_ARGS: Number of input arguments.  If special treatment is needed,
            set to -1 and handle it by hand, see avr.c:avr_expand_builtin().
-   ID:     An integer to identify the built-in.
    TYPE:   A tree node describing the prototype of the built-in.
-   ICODE:  Insn code number for the insn attached to the built-in.
-           If special treatment is needed to expand the built-in, set to -1.
+   ICODE:  Name of attached insn or expander.  If special treatment in avr.c
+           is needed to expand the built-in, use `nothing'.
 */
 
 /* Mapped to respective instruction.  */
 
-DEF_BUILTIN ("__builtin_avr_nop",  -1, AVR_BUILTIN_NOP, void_ftype_void, -1)
-DEF_BUILTIN ("__builtin_avr_sei",   0, AVR_BUILTIN_SEI, void_ftype_void, CODE_FOR_enable_interrupt)
-DEF_BUILTIN ("__builtin_avr_cli",   0, AVR_BUILTIN_CLI, void_ftype_void, CODE_FOR_disable_interrupt)
-DEF_BUILTIN ("__builtin_avr_wdr",   0, AVR_BUILTIN_WDR,   void_ftype_void, CODE_FOR_wdr)
-DEF_BUILTIN ("__builtin_avr_sleep", 0, AVR_BUILTIN_SLEEP, void_ftype_void, CODE_FOR_sleep)
+DEF_BUILTIN (NOP,  -1, void_ftype_void, nothing)
+DEF_BUILTIN (SEI,   0, void_ftype_void, enable_interrupt)
+DEF_BUILTIN (CLI,   0, void_ftype_void, disable_interrupt)
+DEF_BUILTIN (WDR,   0, void_ftype_void, wdr)
+DEF_BUILTIN (SLEEP, 0, void_ftype_void, sleep)
 
 /* Mapped to respective instruction but might also be folded away
    or emit as libgcc call if ISA does not provide the instruction.  */
 
-DEF_BUILTIN ("__builtin_avr_swap",   1, AVR_BUILTIN_SWAP,   uchar_ftype_uchar,      CODE_FOR_rotlqi3_4)
-DEF_BUILTIN ("__builtin_avr_fmul",   2, AVR_BUILTIN_FMUL,   uint_ftype_uchar_uchar, CODE_FOR_fmul)
-DEF_BUILTIN ("__builtin_avr_fmuls",  2, AVR_BUILTIN_FMULS,  int_ftype_char_char,    CODE_FOR_fmuls)
-DEF_BUILTIN ("__builtin_avr_fmulsu", 2, AVR_BUILTIN_FMULSU, int_ftype_char_uchar,   CODE_FOR_fmulsu)
+DEF_BUILTIN (SWAP,   1, uchar_ftype_uchar,      rotlqi3_4)
+DEF_BUILTIN (FMUL,   2, uint_ftype_uchar_uchar, fmul)
+DEF_BUILTIN (FMULS,  2, int_ftype_char_char,    fmuls)
+DEF_BUILTIN (FMULSU, 2, int_ftype_char_uchar,   fmulsu)
 
 /* More complex stuff that cannot be mapped 1:1 to an instruction.  */
 
-DEF_BUILTIN ("__builtin_avr_delay_cycles", -1, AVR_BUILTIN_DELAY_CYCLES, void_ftype_ulong, -1)
-DEF_BUILTIN ("__builtin_avr_insert_bits", 3, AVR_BUILTIN_INSERT_BITS, uchar_ftype_ulong_uchar_uchar, CODE_FOR_insert_bits)
-DEF_BUILTIN ("__builtin_avr_flash_segment", 1, AVR_BUILTIN_FLASH_SEGMENT, char_ftype_const_memx_ptr, CODE_FOR_flash_segment)
+DEF_BUILTIN (DELAY_CYCLES, -1, void_ftype_ulong, nothing)
+DEF_BUILTIN (INSERT_BITS, 3, uchar_ftype_ulong_uchar_uchar, insert_bits)
+DEF_BUILTIN (FLASH_SEGMENT, 1, char_ftype_const_memx_ptr, flash_segment)
