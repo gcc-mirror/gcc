@@ -730,12 +730,23 @@ proc check_effective_target_clone {} {
 
 # Return 1 if the target supports setrlimit, 0 otherwise.
 proc check_effective_target_setrlimit {} {
+    # Darwin has non-posix compliant RLIMIT_AS
+    if { [istarget *-*-darwin*] } {
+        return 0
+    }
     return [check_function_available "setrlimit"]
 }
 
 # Return 1 if the target supports swapcontext, 0 otherwise.
 proc check_effective_target_swapcontext {} {
-    return [check_function_available "swapcontext"]
+    return [check_no_compiler_messages swapcontext executable {
+	#include <ucontext.h>
+	int main (void)
+	{
+	  ucontext_t orig_context,child_context;
+	  if (swapcontext(&child_context, &orig_context) < 0) { }
+	}
+    }]
 }
 
 # Return 1 if compilation with -pthread is error-free for trivial

@@ -3,6 +3,7 @@
 // { dg-do run }
 // { dg-options "-fno-builtin-malloc -fno-builtin-free" }
 // { dg-shouldfail "asan" }
+// { dg-skip-if "Darwin uses mac function interposition" { *-*-darwin* } }
 
 #include <stdlib.h>
 #include <stdio.h>
