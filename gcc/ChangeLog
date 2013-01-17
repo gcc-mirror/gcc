@@ -1,3 +1,15 @@
+2013-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimizations/55264
+	* ipa-inline-transform.c (can_remove_node_now_p_1): Never return true
+	for virtual methods.
+	* ipa.c (symtab_remove_unreachable_nodes): Never return true for
+	virtual methods before inlining is over.
+	* cgraph.h (cgraph_only_called_directly_or_aliased_p): Return false for
+	virtual functions.
+	* cgraphclones.c (cgraph_create_virtual_clone): Mark clones as
+	non-virtual.
+
 2013-01-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56005
