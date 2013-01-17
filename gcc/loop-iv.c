@@ -2819,7 +2819,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   else
     {
       max = determine_max_iter (loop, desc, old_niter);
-      gcc_assert (max);
+      if (!max)
+	goto zero_iter_simplify;
       if (!desc->infinite
 	  && !desc->assumptions)
 	record_niter_bound (loop, double_int::from_uhwi (max),
