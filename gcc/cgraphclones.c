@@ -319,6 +319,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   TREE_PUBLIC (new_node->symbol.decl) = 0;
   DECL_COMDAT (new_node->symbol.decl) = 0;
   DECL_WEAK (new_node->symbol.decl) = 0;
+  DECL_VIRTUAL_P (new_node->symbol.decl) = 0;
   DECL_STATIC_CONSTRUCTOR (new_node->symbol.decl) = 0;
   DECL_STATIC_DESTRUCTOR (new_node->symbol.decl) = 0;
   new_node->clone.tree_map = tree_map;
