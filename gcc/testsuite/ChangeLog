@@ -1,3 +1,8 @@
+2013-01-18  Sharad Singhai  <singhai@google.com>
+
+	PR tree-optimization/55995
+	* gcc.dg/vect/vect.exp: Use "details" flags for dump info.
+
 2013-01-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/55433
