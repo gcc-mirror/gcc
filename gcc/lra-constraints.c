@@ -2791,30 +2791,42 @@ curr_insn_transform (void)
 
   if (use_sec_mem_p)
     {
-      rtx new_reg, set, src, dest;
-      enum machine_mode sec_mode;
+      rtx new_reg, src, dest, rld, rld_subst;
+      enum machine_mode sec_mode, rld_mode;
 
       lra_assert (sec_mem_p);
-      set = single_set (curr_insn);
-      lra_assert (set != NULL_RTX && ! side_effects_p (set));
-      dest = SET_DEST (set);
-      src = SET_SRC (set);
+      lra_assert (curr_static_id->operand[0].type == OP_OUT
+		  && curr_static_id->operand[1].type == OP_IN);
+      dest = *curr_id->operand_loc[0];
+      src = *curr_id->operand_loc[1];
+      rld = (GET_MODE_SIZE (GET_MODE (dest)) <= GET_MODE_SIZE (GET_MODE (src))
+	     ? dest : src);
+      rld_mode = GET_MODE (rld);
 #ifdef SECONDARY_MEMORY_NEEDED_MODE
-      sec_mode = SECONDARY_MEMORY_NEEDED_MODE (GET_MODE (src));
+      sec_mode = SECONDARY_MEMORY_NEEDED_MODE (rld_mode);
 #else
-      sec_mode = GET_MODE (src);
+      sec_mode = rld_mode;
 #endif
       new_reg = lra_create_new_reg (sec_mode, NULL_RTX,
 				    NO_REGS, "secondary");
       /* If the mode is changed, it should be wider.  */
-      lra_assert (GET_MODE_SIZE (GET_MODE (new_reg))
-		  >= GET_MODE_SIZE (GET_MODE (src)));
-      after = emit_spill_move (false, new_reg, dest);
-      lra_process_new_insns (curr_insn, NULL_RTX, after,
-			     "Inserting the sec. move");
-      before = emit_spill_move (true, new_reg, src);
-      lra_process_new_insns (curr_insn, before, NULL_RTX, "Changing on");
-      lra_set_insn_deleted (curr_insn);
+      lra_assert (GET_MODE_SIZE (sec_mode) >= GET_MODE_SIZE (rld_mode));
+      rld_subst = (sec_mode == rld_mode ? new_reg : gen_lowpart_SUBREG (rld_mode, new_reg));
+      if (dest == rld)
+	{
+	  *curr_id->operand_loc[0] = rld_subst;
+	  after = emit_spill_move (false, new_reg, dest);
+	  lra_process_new_insns (curr_insn, NULL_RTX, after,
+				 "Inserting the sec. move");
+	}
+      else
+	{
+	  *curr_id->operand_loc[1] = rld_subst;
+	  before = emit_spill_move (true, new_reg, src);
+	  lra_process_new_insns (curr_insn, before, NULL_RTX,
+				 "Inserting the sec. move");
+	}
+      lra_update_insn_regno_info (curr_insn);
       return true;
     }
 #endif
@@ -3801,7 +3813,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 
       rclass = cl;
     }
-  if (check_secondary_memory_needed_p (cl, next_usage_insns))
+  if (check_secondary_memory_needed_p (rclass, next_usage_insns))
     {
       /* Reject inheritance resulting in secondary memory moves.
 	 Otherwise, there is a danger in LRA cycling.  Also such
@@ -3820,7 +3832,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 		   "    Rejecting inheritance for insn %d(%s)<-%d(%s) "
 		   "as secondary mem is needed\n",
 		   REGNO (dest), reg_class_names[get_reg_class (REGNO (dest))],
-		   original_regno, reg_class_names[cl]);
+		   original_regno, reg_class_names[rclass]);
 	  fprintf (lra_dump_file,
 		   "    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 	}
