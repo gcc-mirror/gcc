@@ -1,3 +1,9 @@
+2013-01-18  Sharad Singhai  <singhai@google.com>
+
+	PR tree-optimization/55995
+	* dumpfile.c (dump_loc): Print location only if available.
+	* tree-vectorizer.c (increase_alignment): Intialize vect_location.
+
 2013-01-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/55433
