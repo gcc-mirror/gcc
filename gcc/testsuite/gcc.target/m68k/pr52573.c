@@ -1,5 +1,4 @@
 
-/* { dg-do compile { target  { m68k-*-* } } } */
 /* { dg-options "-w -O3 -funroll-loops" } */
 /* { dg-final { scan-assembler-not "%d0:%d0" } } */
 /* { dg-final { scan-assembler-not "%d1:%d1" } } */
