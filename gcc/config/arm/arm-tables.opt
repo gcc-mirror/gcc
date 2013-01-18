@@ -273,6 +273,9 @@ Enum(processor_type) String(cortex-m0) Value(cortexm0)
 EnumValue
 Enum(processor_type) String(cortex-m0plus) Value(cortexm0plus)
 
+EnumValue
+Enum(processor_type) String(marvell-pj4) Value(marvell_pj4)
+
 Enum
 Name(arm_arch) Type(int)
 Known ARM architectures (for use with the -march= option):
