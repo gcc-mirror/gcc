@@ -1,3 +1,7 @@
+2013-01-18  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/vect/vect-multitypes-12.c: Refactor dg-final directive.
+
 2013-01-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect-fcm-gt-f.c: Change expected output.
