@@ -1334,6 +1334,16 @@ mudflap_finish_file (void)
           if (! TREE_PUBLIC (obj) && ! TREE_ADDRESSABLE (obj))
             continue;
 
+	  /* If we're neither emitting nor referencing the symbol,
+	     don't register it.  We have to register external symbols
+	     if they happen to be in other files not compiled with
+	     mudflap (say system libraries), and we must not register
+	     internal symbols that we don't emit or they'll become
+	     dangling references or force symbols to be emitted that
+	     didn't have to.  */
+	  if (!symtab_get_node (obj))
+	    continue;
+
           if (! COMPLETE_TYPE_P (TREE_TYPE (obj)))
             {
               warning (OPT_Wmudflap,
