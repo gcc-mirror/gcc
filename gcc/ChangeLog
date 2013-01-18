@@ -1,5 +1,11 @@
 2013-01-18  Alexandre Oliva <aoliva@redhat.com>
 
+	PR libmudflap/53359
+	* tree-mudflap.c (mudflap_finish_file): Skip deferred decls
+	not found in the symtab.
+
+2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+
 	PR rtl-optimization/55547
 	PR rtl-optimization/53827
 	PR debug/53671
