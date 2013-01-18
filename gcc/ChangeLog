@@ -1,3 +1,7 @@
+2013-01-18  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/arm_neon.h: Map scalar types to standard types.
+
 2013-01-18  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54114
