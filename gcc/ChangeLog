@@ -1,3 +1,9 @@
+2013-01-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_vcond_internal<mode>): Handle unordered cases.
+	* config/aarch64/iterators.md (v_cmp_result): New.
+
 2013-01-18  Yi-Hsiu Hsu  <ahsu@marvell.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
