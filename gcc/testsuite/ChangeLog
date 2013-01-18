@@ -1,3 +1,8 @@
+2013-01-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55433
+	* gcc.target/i386/pr55433.c: New.
+
 2013-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56015

@@ -1,3 +1,11 @@
+2013-01-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55433
+	* lra-constraints.c (curr_insn_transform): Reuse original insn for
+	secondary memory move.
+	(inherit_reload_reg): Use rclass instead of cl for
+	check_secondary_memory_needed_p.
+
 2013-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56015
