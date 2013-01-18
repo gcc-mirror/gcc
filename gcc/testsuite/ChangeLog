@@ -1,3 +1,8 @@
+2013-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56015
+	* gfortran.dg/pr56015.f90: New test.
+
 2013-01-18  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/vect/vect-multitypes-12.c: Refactor dg-final directive.
