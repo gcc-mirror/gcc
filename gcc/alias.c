@@ -1465,6 +1465,10 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
+    case ENTRY_VALUE:
+      /* This is magic, don't go through canonicalization et al.  */
+      return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
+
     case VALUE:
     CASE_CONST_UNIQUE:
       /* There's no need to compare the contents of CONST_DOUBLEs or

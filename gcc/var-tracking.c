@@ -1948,6 +1948,14 @@ var_regno_delete (dataflow_set *set, int regno)
   *reg = NULL;
 }
 
+/* Return true if I is the negated value of a power of two.  */
+static bool
+negative_power_of_two_p (HOST_WIDE_INT i)
+{
+  unsigned HOST_WIDE_INT x = -(unsigned HOST_WIDE_INT)i;
+  return x == (x & -x);
+}
+
 /* Strip constant offsets and alignments off of LOC.  Return the base
    expression.  */
 
@@ -1958,83 +1966,191 @@ vt_get_canonicalize_base (rtx loc)
 	  || GET_CODE (loc) == AND)
 	 && GET_CODE (XEXP (loc, 1)) == CONST_INT
 	 && (GET_CODE (loc) != AND
-	     || INTVAL (XEXP (loc, 1)) < 0))
+	     || negative_power_of_two_p (INTVAL (XEXP (loc, 1)))))
     loc = XEXP (loc, 0);
 
   return loc;
 }
 
+/* This caches canonicalized addresses for VALUEs, computed using
+   information in the global cselib table.  */
+static struct pointer_map_t *global_get_addr_cache;
+
+/* This caches canonicalized addresses for VALUEs, computed using
+   information from the global cache and information pertaining to a
+   basic block being analyzed.  */
+static struct pointer_map_t *local_get_addr_cache;
+
+static rtx vt_canonicalize_addr (dataflow_set *, rtx);
+
+/* Return the canonical address for LOC, that must be a VALUE, using a
+   cached global equivalence or computing it and storing it in the
+   global cache.  */
+
+static rtx
+get_addr_from_global_cache (rtx const loc)
+{
+  rtx x;
+  void **slot;
+
+  gcc_checking_assert (GET_CODE (loc) == VALUE);
+  
+  slot = pointer_map_insert (global_get_addr_cache, loc);
+  if (*slot)
+    return (rtx)*slot;
+
+  x = canon_rtx (get_addr (loc));
+
+  /* Tentative, avoiding infinite recursion.  */
+  *slot = x;
+
+  if (x != loc)
+    {
+      rtx nx = vt_canonicalize_addr (NULL, x);
+      if (nx != x)
+	{
+	  /* The table may have moved during recursion, recompute
+	     SLOT.  */
+	  slot = pointer_map_contains (global_get_addr_cache, loc);
+	  *slot = x = nx;
+	}
+    }
+
+  return x;
+}
+
+/* Return the canonical address for LOC, that must be a VALUE, using a
+   cached local equivalence or computing it and storing it in the
+   local cache.  */
+
+static rtx
+get_addr_from_local_cache (dataflow_set *set, rtx const loc)
+{
+  rtx x;
+  void **slot;
+  decl_or_value dv;
+  variable var;
+  location_chain l;
+
+  gcc_checking_assert (GET_CODE (loc) == VALUE);
+  
+  slot = pointer_map_insert (local_get_addr_cache, loc);
+  if (*slot)
+    return (rtx)*slot;
+
+  x = get_addr_from_global_cache (loc);
+  
+  /* Tentative, avoiding infinite recursion.  */
+  *slot = x;
+
+  /* Recurse to cache local expansion of X, or if we need to search
+     for a VALUE in the expansion.  */
+  if (x != loc)
+    {
+      rtx nx = vt_canonicalize_addr (set, x);
+      if (nx != x)
+	{
+	  slot = pointer_map_contains (local_get_addr_cache, loc);
+	  *slot = x = nx;
+	}
+      return x;
+    }
+
+  dv = dv_from_rtx (x);
+  var = (variable) htab_find_with_hash (shared_hash_htab (set->vars),
+					dv, dv_htab_hash (dv));
+  if (!var)
+    return x;
+
+  /* Look for an improved equivalent expression.  */
+  for (l = var->var_part[0].loc_chain; l; l = l->next)
+    {
+      rtx base = vt_get_canonicalize_base (l->loc);
+      if (GET_CODE (base) == VALUE
+	  && canon_value_cmp (base, loc))
+	{
+	  rtx nx = vt_canonicalize_addr (set, l->loc);
+	  if (x != nx)
+	    {
+	      slot = pointer_map_contains (local_get_addr_cache, loc);
+	      *slot = x = nx;
+	    }
+	  break;
+	}
+    }
+
+  return x;
+}
+
 /* Canonicalize LOC using equivalences from SET in addition to those
-   in the cselib static table.  */
+   in the cselib static table.  It expects a VALUE-based expression,
+   and it will only substitute VALUEs with other VALUEs or
+   function-global equivalences, so that, if two addresses have base
+   VALUEs that are locally or globally related in ways that
+   memrefs_conflict_p cares about, they will both canonicalize to
+   expressions that have the same base VALUE.
+
+   The use of VALUEs as canonical base addresses enables the canonical
+   RTXs to remain unchanged globally, if they resolve to a constant,
+   or throughout a basic block otherwise, so that they can be cached
+   and the cache needs not be invalidated when REGs, MEMs or such
+   change.  */
 
 static rtx
 vt_canonicalize_addr (dataflow_set *set, rtx oloc)
 {
   HOST_WIDE_INT ofst = 0;
   enum machine_mode mode = GET_MODE (oloc);
-  rtx loc = canon_rtx (get_addr (oloc));
+  rtx loc = oloc;
+  rtx x;
+  bool retry = true;
 
-  /* Try to substitute a base VALUE for equivalent expressions as much
-     as possible.  The goal here is to expand stack-related addresses
-     to one of the stack base registers, so that we can compare
-     addresses for overlaps.  */
-  while (GET_CODE (vt_get_canonicalize_base (loc)) == VALUE)
+  while (retry)
     {
-      rtx x;
-      decl_or_value dv;
-      variable var;
-      location_chain l;
-
-      while (GET_CODE (loc) == PLUS)
+      while (GET_CODE (loc) == PLUS
+	     && GET_CODE (XEXP (loc, 1)) == CONST_INT)
 	{
 	  ofst += INTVAL (XEXP (loc, 1));
 	  loc = XEXP (loc, 0);
-	  continue;
 	}
 
       /* Alignment operations can't normally be combined, so just
 	 canonicalize the base and we're done.  We'll normally have
 	 only one stack alignment anyway.  */
-      if (GET_CODE (loc) == AND)
+      if (GET_CODE (loc) == AND
+	  && GET_CODE (XEXP (loc, 1)) == CONST_INT
+	  && negative_power_of_two_p (INTVAL (XEXP (loc, 1))))
 	{
 	  x = vt_canonicalize_addr (set, XEXP (loc, 0));
 	  if (x != XEXP (loc, 0))
 	    loc = gen_rtx_AND (mode, x, XEXP (loc, 1));
-	  loc = canon_rtx (get_addr (loc));
-	  break;
+	  retry = false;
 	}
 
-      x = canon_rtx (get_addr (loc));
-
-      /* We've made progress!  Start over.  */
-      if (x != loc || GET_CODE (x) != VALUE)
+      if (GET_CODE (loc) == VALUE)
 	{
-	  loc = x;
-	  continue;
-	}
+	  if (set)
+	    loc = get_addr_from_local_cache (set, loc);
+	  else
+	    loc = get_addr_from_global_cache (loc);
 
-      dv = dv_from_rtx (x);
-      var = (variable) htab_find_with_hash (shared_hash_htab (set->vars),
-					    dv, dv_htab_hash (dv));
-      if (!var)
-	break;
-
-      /* Look for an improved equivalent expression.  */
-      for (l = var->var_part[0].loc_chain; l; l = l->next)
-	{
-	  rtx base = vt_get_canonicalize_base (l->loc);
-	  if (GET_CODE (base) == REG
-	      || (GET_CODE (base) == VALUE
-		  && canon_value_cmp (base, loc)))
+	  /* Consolidate plus_constants.  */
+	  while (ofst && GET_CODE (loc) == PLUS
+		 && GET_CODE (XEXP (loc, 1)) == CONST_INT)
 	    {
-	      loc = l->loc;
-	      break;
+	      ofst += INTVAL (XEXP (loc, 1));
+	      loc = XEXP (loc, 0);
 	    }
-	}
 
-      /* No luck with the dataflow set, so we're done.  */
-      if (!l)
-	break;
+	  retry = false;
+	}
+      else
+	{
+	  x = canon_rtx (loc);
+	  if (retry)
+	    retry = (x != loc);
+	  loc = x;
+	}
     }
 
   /* Add OFST back in.  */
@@ -2052,19 +2168,6 @@ vt_canonicalize_addr (dataflow_set *set, rtx oloc)
   return loc;
 }
 
-/* Return true iff ADDR has a stack register as the base address.  */
-
-static inline bool
-vt_stack_offset_p (rtx addr)
-{
-  rtx base = vt_get_canonicalize_base (addr);
-
-  if (GET_CODE (base) != REG)
-    return false;
-
-  return REGNO_PTR_FRAME_P (REGNO (base));
-}
-
 /* Return true iff there's a true dependence between MLOC and LOC.
    MADDR must be a canonicalized version of MLOC's address.  */
 
@@ -2074,14 +2177,9 @@ vt_canon_true_dep (dataflow_set *set, rtx mloc, rtx maddr, rtx loc)
   if (GET_CODE (loc) != MEM)
     return false;
 
-  if (!canon_true_dependence (mloc, GET_MODE (mloc), maddr, loc, NULL))
+  rtx addr = vt_canonicalize_addr (set, XEXP (loc, 0));
+  if (!canon_true_dependence (mloc, GET_MODE (mloc), maddr, loc, addr))
     return false;
-
-  if (!MEM_EXPR (loc) && vt_stack_offset_p (maddr))
-    {
-      rtx addr = vt_canonicalize_addr (set, XEXP (loc, 0));
-      return canon_true_dependence (mloc, GET_MODE (mloc), maddr, loc, addr);
-    }
 
   return true;
 }
@@ -2176,6 +2274,8 @@ static void
 clobber_overlapping_mems (dataflow_set *set, rtx loc)
 {
   struct overlapping_mems coms;
+
+  gcc_checking_assert (GET_CODE (loc) == MEM);
 
   coms.set = set;
   coms.loc = canon_rtx (loc);
@@ -2358,6 +2458,17 @@ val_store (dataflow_set *set, rtx val, rtx loc, rtx insn, bool modified)
   val_bind (set, val, loc, modified);
 }
 
+/* Clear (canonical address) slots that reference X.  */
+
+static bool
+local_get_addr_clear_given_value (const void *v ATTRIBUTE_UNUSED,
+				  void **slot, void *x)
+{
+  if (vt_get_canonicalize_base ((rtx)*slot) == x)
+    *slot = NULL;
+  return true;
+}
+
 /* Reset this node, detaching all its equivalences.  Return the slot
    in the variable hash table that holds dv, if there is one.  */
 
@@ -2372,6 +2483,28 @@ val_reset (dataflow_set *set, decl_or_value dv)
     return;
 
   gcc_assert (var->n_var_parts == 1);
+
+  if (var->onepart == ONEPART_VALUE)
+    {
+      rtx x = dv_as_value (dv);
+      void **slot;
+      
+      /* Relationships in the global cache don't change, so reset the
+	 local cache entry only.  */
+      slot = pointer_map_contains (local_get_addr_cache, x);
+      if (slot)
+	{
+	  /* If the value resolved back to itself, odds are that other
+	     values may have cached it too.  These entries now refer
+	     to the old X, so detach them too.  Entries that used the
+	     old X but resolved to something else remain ok as long as
+	     that something else isn't also reset.  */
+	  if (*slot == x)
+	    pointer_map_traverse (local_get_addr_cache,
+				  local_get_addr_clear_given_value, x);
+	  *slot = NULL;
+	}
+    }
 
   cval = NULL;
   for (node = var->var_part[0].loc_chain; node; node = node->next)
@@ -6424,6 +6557,9 @@ compute_bb_dataflow (basic_block bb)
   dataflow_set_copy (&old_out, out);
   dataflow_set_copy (out, in);
 
+  if (MAY_HAVE_DEBUG_INSNS)
+    local_get_addr_cache = pointer_map_create ();
+
   FOR_EACH_VEC_ELT (VTI (bb)->mos, i, mo)
     {
       rtx insn = mo->insn;
@@ -6613,7 +6749,12 @@ compute_bb_dataflow (basic_block bb)
 	      else if (REG_P (uloc))
 		var_regno_delete (out, REGNO (uloc));
 	      else if (MEM_P (uloc))
-		clobber_overlapping_mems (out, uloc);
+		{
+		  gcc_checking_assert (GET_CODE (vloc) == MEM);
+		  gcc_checking_assert (dstv == vloc);
+		  if (dstv != vloc)
+		    clobber_overlapping_mems (out, vloc);
+		}
 
 	      val_store (out, val, dstv, insn, true);
 	    }
@@ -6700,6 +6841,9 @@ compute_bb_dataflow (basic_block bb)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
+      pointer_map_destroy (local_get_addr_cache);
+      local_get_addr_cache = NULL;
+
       dataflow_set_equiv_regs (out);
       htab_traverse (shared_hash_htab (out->vars), canonicalize_values_mark,
 		     out);
@@ -9113,7 +9257,12 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	      else if (REG_P (uloc))
 		var_regno_delete (set, REGNO (uloc));
 	      else if (MEM_P (uloc))
-		clobber_overlapping_mems (set, uloc);
+		{
+		  gcc_checking_assert (GET_CODE (vloc) == MEM);
+		  gcc_checking_assert (vloc == dstv);
+		  if (vloc != dstv)
+		    clobber_overlapping_mems (set, vloc);
+		}
 
 	      val_store (set, val, dstv, insn, true);
 
@@ -9240,8 +9389,15 @@ vt_emit_notes (void)
 	 subsequent basic blocks.  */
       emit_notes_for_differences (BB_HEAD (bb), &cur, &VTI (bb)->in);
 
+      if (MAY_HAVE_DEBUG_INSNS)
+	local_get_addr_cache = pointer_map_create ();
+
       /* Emit the notes for the changes in the basic block itself.  */
       emit_notes_in_bb (bb, &cur);
+
+      if (MAY_HAVE_DEBUG_INSNS)
+	pointer_map_destroy (local_get_addr_cache);
+      local_get_addr_cache = NULL;
 
       /* Free memory occupied by the in hash table, we won't need it
 	 again.  */
@@ -9611,11 +9767,13 @@ vt_initialize (void)
       valvar_pool = create_alloc_pool ("small variable_def pool",
 				       sizeof (struct variable_def), 256);
       preserved_values.create (256);
+      global_get_addr_cache = pointer_map_create ();
     }
   else
     {
       scratch_regs = NULL;
       valvar_pool = NULL;
+      global_get_addr_cache = NULL;
     }
 
   if (MAY_HAVE_DEBUG_INSNS)
@@ -9952,6 +10110,9 @@ vt_finalize (void)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
+      if (global_get_addr_cache)
+	pointer_map_destroy (global_get_addr_cache);
+      global_get_addr_cache = NULL;
       if (loc_exp_dep_pool)
 	free_alloc_pool (loc_exp_dep_pool);
       loc_exp_dep_pool = NULL;
