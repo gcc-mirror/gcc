@@ -11242,6 +11242,7 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m1},
 @samp{cortex-m0},
 @samp{cortex-m0plus},
+@samp{marvell-pj4},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.

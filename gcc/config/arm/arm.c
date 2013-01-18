@@ -25644,6 +25644,7 @@ arm_issue_rate (void)
     case cortexa8:
     case cortexa9:
     case fa726te:
+    case marvell_pj4:
       return 2;
 
     default:

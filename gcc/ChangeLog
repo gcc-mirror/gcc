@@ -1,3 +1,16 @@
+2013-01-18  Yi-Hsiu Hsu  <ahsu@marvell.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/marvell-pj4.md: New file.
+	* config/arm/arm.c (arm_issue_rate): Add marvell_pj4.
+	* config/arm/arm.md (generic_sched): Add marvell_pj4.
+	(generic_vfp): Likewise.
+	* config/arm/arm-cores.def: Add marvell-pj4.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add marvell_pj4.
+	* doc/invoke.texi: Document marvell-pj4.
+
 2013-01-18  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/arm_neon.h: Map scalar types to standard types.
