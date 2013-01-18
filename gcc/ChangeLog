@@ -1,5 +1,29 @@
 2013-01-18  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/54114
+	PR debug/54402
+	PR debug/49888
+	* var-tracking.c (negative_power_of_two_p): New.
+	(global_get_addr_cache, local_get_addr_cache): New.
+	(get_addr_from_global_cache, get_addr_from_local_cache): New.
+	(vt_canonicalize_addr): Rewrite using the above.  Adjust the
+	heading comment.
+	(vt_stack_offset_p): Remove.
+	(vt_canon_true_dep): Always canonicalize loc's address.
+	(clobber_overlapping_mems): Make sure we have a MEM.
+	(local_get_addr_clear_given_value): New.
+	(val_reset): Clear local cached entries.
+	(compute_bb_dataflow): Create and release the local cache.
+	Disable duplicate MEMs clobbering.
+	(emit_notes_in_bb): Clobber MEMs likewise.
+	(vt_emit_notes): Create and release the local cache.
+	(vt_initialize, vt_finalize): Create and release the global
+	cache, respectively.
+	* alias.c (rtx_equal_for_memref_p): Compare operands of
+	ENTRY_VALUEs.
+
+2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+
 	PR libmudflap/53359
 	* tree-mudflap.c (mudflap_finish_file): Skip deferred decls
 	not found in the symtab.
