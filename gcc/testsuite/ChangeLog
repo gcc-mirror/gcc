@@ -1,3 +1,8 @@
+2013-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56029
+	* g++.dg/torture/pr56029.C: New test.
+
 2013-01-18  Sharad Singhai  <singhai@google.com>
 
 	PR tree-optimization/55995

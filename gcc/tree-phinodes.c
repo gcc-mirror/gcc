@@ -312,6 +312,7 @@ reserve_phi_args_for_new_edge (basic_block bb)
 	 redirects edges, and then fixes up PHI arguments later in
 	 batch.  */
       SET_PHI_ARG_DEF (stmt, len - 1, NULL_TREE);
+      gimple_phi_arg_set_location (stmt, len - 1, UNKNOWN_LOCATION);
 
       stmt->gimple_phi.nargs++;
     }

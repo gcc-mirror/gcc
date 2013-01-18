@@ -1,3 +1,9 @@
+2013-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56029
+	* tree-phinodes.c (reserve_phi_args_for_new_edge): Set
+	gimple_phi_arg_location for the new arg to UNKNOWN_LOCATION.
+
 2013-01-18  Sharad Singhai  <singhai@google.com>
 
 	PR tree-optimization/55995
