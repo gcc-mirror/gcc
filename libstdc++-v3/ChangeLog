@@ -1,3 +1,13 @@
+2013-01-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55861
+	* include/std/future (_State_base::_S_check(const shared_ptr<T>&)):
+	Fix return type.
+	(__basic_future::_M_get_result()): Const qualify.
+	(shared_future::get()): Likewise.
+	* testsuite/30_threads/shared_future/members/get.cc: Use const
+	objects.
+
 2013-01-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/55043 (again)
