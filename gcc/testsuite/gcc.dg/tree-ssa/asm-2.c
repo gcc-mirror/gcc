@@ -4,7 +4,11 @@
 #ifdef __hppa__
 #define REGISTER "1"
 #else
+#ifdef __moxie__
+#define REGISTER "2"
+#else
 #define REGISTER "0"
+#endif
 #endif
 
 void baz(void)
