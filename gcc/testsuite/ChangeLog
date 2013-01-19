@@ -1,3 +1,8 @@
+2013-01-19  Anthony Green  <green@moxielogic.com>
+
+	* gcc.dg/tree-ssa/asm-2.c (REGISTER): Pick an appropriate register
+	for moxie.
+
 2013-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56029
