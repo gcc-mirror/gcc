@@ -281,6 +281,9 @@ moxie_expand_prologue (void)
 
   moxie_compute_frame ();
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = cfun->machine->size_for_adjusting_sp;
+
   /* Save callee-saved registers.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
