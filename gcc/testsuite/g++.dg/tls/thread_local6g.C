@@ -5,7 +5,6 @@
 // { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
 // { dg-require-cxa-atexit "" }
-// { dg-require-alias }
 
 extern "C" void _exit (int);
 
