@@ -1,3 +1,9 @@
+2013-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR target/54908
+	* c.opt (-fextern-tls-init): New.
+	* c-opts.c (c_common_post_options): Handle it.
+
 2013-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48418

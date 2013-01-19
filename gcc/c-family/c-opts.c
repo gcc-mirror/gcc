@@ -901,6 +901,20 @@ c_common_post_options (const char **pfilename)
   else if (warn_narrowing == -1)
     warn_narrowing = 0;
 
+  if (flag_extern_tls_init)
+    {
+#if !defined (ASM_OUTPUT_DEF) || !SUPPORTS_WEAK
+      /* Lazy TLS initialization for a variable in another TU requires
+	 alias and weak reference support. */
+      if (flag_extern_tls_init > 0)
+	sorry ("external TLS initialization functions not supported "
+	       "on this target");
+      flag_extern_tls_init = 0;
+#else
+      flag_extern_tls_init = 1;
+#endif
+    }
+
   if (flag_preprocess_only)
     {
       /* Open the output now.  We must do so even if flag_no_output is

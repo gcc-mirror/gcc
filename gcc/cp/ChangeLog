@@ -1,3 +1,14 @@
+2013-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR target/54908
+	* decl2.c (get_local_tls_init_fn): New.
+	(get_tls_init_fn): Handle flag_extern_tls_init.  Don't bother
+	with aliases for internal variables.  Don't use weakrefs if
+	the variable needs destruction.
+	(generate_tls_wrapper): Mark the wrapper as const if no
+	initialization is needed.
+	(handle_tls_init): Don't require aliases.
+
 2013-01-15  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/55663

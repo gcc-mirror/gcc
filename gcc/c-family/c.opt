@@ -913,6 +913,9 @@ finput-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
 -finput-charset=<cset>	Specify the default character set for source files
 
+fextern-tls-init
+C++ ObjC++ Var(flag_extern_tls_init) Init(-1)
+Support dynamic initialization of thread-local variables in a different translation unit
 
 fexternal-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)

@@ -2029,6 +2029,29 @@ exceptions in violation of the exception specifications; the compiler
 still optimizes based on the specifications, so throwing an
 unexpected exception results in undefined behavior at run time.
 
+@item -fextern-tls-init
+@itemx -fno-extern-tls-init
+@opindex fextern-tls-init
+@opindex fno-extern-tls-init
+The C++11 and OpenMP standards allow @samp{thread_local} and
+@samp{threadprivate} variables to have dynamic (runtime)
+initialization.  To support this, any use of such a variable goes
+through a wrapper function that performs any necessary initialization.
+When the use and definition of the variable are in the same
+translation unit, this overhead can be optimized away, but when the
+use is in a different translation unit there is significant overhead
+even if the variable doesn't actually need dynamic initialization.  If
+the programmer can be sure that no use of the variable in a
+non-defining TU needs to trigger dynamic initialization (either
+because the variable is statically initialized, or a use of the
+variable in the defining TU will be executed before any uses in
+another TU), they can avoid this overhead with the
+@option{-fno-extern-tls-init} option.
+
+On targets that support symbol aliases, the default is
+@option{-fextern-tls-init}.  On targets that do not support symbol
+aliases, the default is @option{-fno-extern-tls-init}.
+
 @item -ffor-scope
 @itemx -fno-for-scope
 @opindex ffor-scope
