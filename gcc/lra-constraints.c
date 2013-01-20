@@ -2791,7 +2791,7 @@ curr_insn_transform (void)
 
   if (use_sec_mem_p)
     {
-      rtx new_reg, src, dest, rld, rld_subst;
+      rtx new_reg, src, dest, rld;
       enum machine_mode sec_mode, rld_mode;
 
       lra_assert (sec_mem_p);
@@ -2811,17 +2811,28 @@ curr_insn_transform (void)
 				    NO_REGS, "secondary");
       /* If the mode is changed, it should be wider.  */
       lra_assert (GET_MODE_SIZE (sec_mode) >= GET_MODE_SIZE (rld_mode));
-      rld_subst = (sec_mode == rld_mode ? new_reg : gen_lowpart_SUBREG (rld_mode, new_reg));
-      if (dest == rld)
-	{
-	  *curr_id->operand_loc[0] = rld_subst;
+      if (sec_mode != rld_mode)
+        {
+	  /* If the target says specifically to use another mode for
+	     secondary memory moves we can not reuse the original
+	     insn.  */
+         after = emit_spill_move (false, new_reg, dest);
+         lra_process_new_insns (curr_insn, NULL_RTX, after,
+                                "Inserting the sec. move");
+         before = emit_spill_move (true, new_reg, src);
+         lra_process_new_insns (curr_insn, before, NULL_RTX, "Changing on");
+         lra_set_insn_deleted (curr_insn);
+       }
+      else if (dest == rld)
+       {
+         *curr_id->operand_loc[0] = new_reg;
 	  after = emit_spill_move (false, new_reg, dest);
 	  lra_process_new_insns (curr_insn, NULL_RTX, after,
 				 "Inserting the sec. move");
 	}
       else
 	{
-	  *curr_id->operand_loc[1] = rld_subst;
+	  *curr_id->operand_loc[1] = new_reg;
 	  before = emit_spill_move (true, new_reg, src);
 	  lra_process_new_insns (curr_insn, before, NULL_RTX,
 				 "Inserting the sec. move");

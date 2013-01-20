@@ -1,3 +1,10 @@
+2013-01-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55433
+	* lra-constraints.c (curr_insn_transform): Don't reuse original
+	insn for secondary memory move when memory mode should be
+	different.
+
 2013-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md (atomic_loaddi, atomic_loaddi_1, atomic_storedi,
