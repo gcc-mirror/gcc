@@ -1,3 +1,7 @@
+2013-01-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/inquire_10.f90: Run only for non-newlib targets.
+
 2013-01-19  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/52631
