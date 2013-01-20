@@ -1,3 +1,8 @@
+2013-01-20  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR debug/53235
+	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on darwin.
+	
 2013-01-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/inquire_10.f90: Run only for non-newlib targets.

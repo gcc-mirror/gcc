@@ -1,6 +1,6 @@
 // PR debug/53235
 // { dg-options "-gdwarf-4 -fdebug-types-section" }
-// { dg-final { scan-assembler-times "debug_types" 2 } }
+// { dg-final { scan-assembler-times "debug_types" 2 { xfail *-*-darwin* } } }
 
 namespace E {
   class O {};
