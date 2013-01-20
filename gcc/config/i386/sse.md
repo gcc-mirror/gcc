@@ -898,6 +898,7 @@
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "ssemul")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "direct,double")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sse>_vmmul<mode>3"
@@ -972,6 +973,7 @@
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "ssediv")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "direct,double")
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_rcp<mode>2"
@@ -982,6 +984,7 @@
   "%vrcpps\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
    (set_attr "atom_sse_attr" "rcp")
+   (set_attr "btver2_sse_attr" "rcp")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
@@ -999,6 +1002,7 @@
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "atom_sse_attr" "rcp")
+   (set_attr "btver2_sse_attr" "rcp")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "SF")])
 
@@ -1030,6 +1034,7 @@
   "%vsqrt<ssemodesuffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
    (set_attr "atom_sse_attr" "sqrt")
+   (set_attr "btver2_sse_attr" "sqrt")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
@@ -1047,6 +1052,7 @@
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "atom_sse_attr" "sqrt")
+   (set_attr "btver2_sse_attr" "sqrt")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -1114,6 +1120,7 @@
    v<maxmin_float><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
+   (set_attr "btver2_sse_attr" "maxmin")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<MODE>")])
 
@@ -1128,6 +1135,7 @@
    v<maxmin_float><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
+   (set_attr "btver2_sse_attr" "maxmin")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<MODE>")])
 
@@ -1145,6 +1153,7 @@
    v<maxmin_float><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
+   (set_attr "btver2_sse_attr" "maxmin")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -2417,6 +2426,7 @@
    (set_attr "athlon_decode" "vector,double,*")
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "SF")])
 
@@ -2437,6 +2447,7 @@
    (set_attr "athlon_decode" "vector,double,*")
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "length_vex" "*,*,4")
    (set_attr "prefix_rex" "1,1,*")
    (set_attr "prefix" "orig,orig,vex")
@@ -2645,6 +2656,7 @@
   [(set_attr "type" "ssecvt")
    (set_attr "unit" "mmx")
    (set_attr "bdver1_decode" "double")
+   (set_attr "btver2_decode" "direct")
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "DI")])
 
@@ -2676,6 +2688,7 @@
    (set_attr "athlon_decode" "double,direct,*")
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "DF")])
 
@@ -2713,6 +2726,7 @@
   [(set_attr "type" "sseicvt")
    (set_attr "athlon_decode" "double,vector")
    (set_attr "bdver1_decode" "double,double")
+   (set_attr "btver2_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "SI")])
@@ -2773,6 +2787,7 @@
    (set_attr "athlon_decode" "double,vector")
    (set_attr "amdfam10_decode" "double,double")
    (set_attr "bdver1_decode" "double,double")
+   (set_attr "btver2_decode" "double,double")
    (set_attr "prefix_rep" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "SI")])
@@ -2856,6 +2871,7 @@
   "vcvtpd2dq{y}\t{%1, %x0|%x0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "OI")])
 
 (define_expand "sse2_cvtpd2dq"
@@ -2915,6 +2931,7 @@
   "vcvttpd2dq{y}\t{%1, %x0|%x0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "OI")])
 
 (define_expand "sse2_cvttpd2dq"
@@ -2962,6 +2979,7 @@
    (set_attr "athlon_decode" "vector,double,*")
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "direct,direct,*")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "SF")])
 
@@ -2984,6 +3002,7 @@
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "athlon_decode" "direct,direct,*")
    (set_attr "bdver1_decode" "direct,direct,*")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "DF")])
 
@@ -2995,6 +3014,7 @@
   "vcvtpd2ps{y}\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "V4SF")])
 
 (define_expand "sse2_cvtpd2ps"
@@ -5637,6 +5657,7 @@
    (set_attr "type" "sseimul")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "mul<mode>3"
@@ -8276,6 +8297,7 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "ssse3_pshufbv8qi3"
@@ -8512,6 +8534,7 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "vector,vector") 
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sse4_1>_dp<ssemodesuffix><avxsizesuffix>"
@@ -8531,6 +8554,7 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sse4_1_avx2>_movntdqa"
@@ -8560,6 +8584,7 @@
    (set_attr "length_immediate" "1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "avx2_packusdw"
@@ -8609,6 +8634,7 @@
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "*,1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "sse4_1_pblendw"
@@ -8868,6 +8894,7 @@
   [(set_attr "type" "ssecomi")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "OI")])
 
 (define_insn "sse4_1_ptest"
@@ -9210,6 +9237,7 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "length_immediate" "1")
+   (set_attr "btver2_decode" "vector")
    (set_attr "memory" "none,load")
    (set_attr "mode" "TI")])
 
@@ -9237,6 +9265,7 @@
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "memory" "none,load")
    (set_attr "mode" "TI")])
 
@@ -9262,6 +9291,7 @@
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,load,none,load")
+   (set_attr "btver2_decode" "vector,vector,vector,vector") 
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
@@ -9390,6 +9420,7 @@
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "memory" "none,load")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
 (define_insn "sse4_2_pcmpistrm"
@@ -9413,6 +9444,7 @@
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "memory" "none,load")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
 (define_insn "sse4_2_pcmpistr_cconly"
@@ -9436,6 +9468,7 @@
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,load,none,load")
    (set_attr "prefix" "maybe_vex")
+   (set_attr "btver2_decode" "vector,vector,vector,vector")
    (set_attr "mode" "TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -10298,6 +10331,7 @@
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "double,double")
    (set_attr "mode" "TI")])
 
 (define_insn "aesenclast"
@@ -10313,6 +10347,7 @@
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "double,double") 
    (set_attr "mode" "TI")])
 
 (define_insn "aesdec"
@@ -10328,6 +10363,7 @@
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "double,double") 
    (set_attr "mode" "TI")])
 
 (define_insn "aesdeclast"
@@ -10343,6 +10379,7 @@
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "double,double")
    (set_attr "mode" "TI")])
 
 (define_insn "aesimc"
@@ -10415,6 +10452,7 @@
    (set_attr "modrm" "0")
    (set_attr "memory" "none")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "OI")])
 
 ;; Clear the upper 128bits of AVX registers, equivalent to a NOP
@@ -10427,6 +10465,7 @@
    (set_attr "modrm" "0")
    (set_attr "memory" "none")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "OI")])
 
 (define_mode_attr AVXTOSSEMODE
@@ -10745,6 +10784,7 @@
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "avx_vperm2f128<mode>3"
@@ -11032,6 +11072,7 @@
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>"
@@ -11046,6 +11087,7 @@
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector") 
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "avx_<castmode><avxsizesuffix>_<castmode>"
@@ -11210,6 +11252,7 @@
   "vcvtph2ps\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "double")
    (set_attr "mode" "V8SF")])
 
 (define_expand "vcvtps2ph"
@@ -11255,6 +11298,7 @@
   "vcvtps2ph\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "vex")
+   (set_attr "btver2_decode" "vector")
    (set_attr "mode" "V8SF")])
 
 ;; For gather* insn patterns

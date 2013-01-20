@@ -1,3 +1,13 @@
+2013-01-20  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	btver2 pipeline descriptions.
+	* config/i386/i386.c: Enable CPU_BTVER2 to use btver2 pipeline
+	descriptions.
+	* config/i386/i386.md (btver2_decode): New type attributes.
+	* config/i386/sse.md (btver2_decode, btver2_sse_attr): New 
+	type attributes.
+	* config/i386/btver2.md: New file describing btver2 pipelines.
+
 2013-01-19  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-optimization/52631
