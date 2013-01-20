@@ -3422,6 +3422,28 @@ visit_use (tree use)
 		}
 	      else
 		{
+		  /* First try to lookup the simplified expression.  */
+		  if (simplified)
+		    {
+		      enum gimple_rhs_class rhs_class;
+
+
+		      rhs_class = get_gimple_rhs_class (TREE_CODE (simplified));
+		      if ((rhs_class == GIMPLE_UNARY_RHS
+			   || rhs_class == GIMPLE_BINARY_RHS
+			   || rhs_class == GIMPLE_TERNARY_RHS)
+			  && valid_gimple_rhs_p (simplified))
+			{
+			  tree result = vn_nary_op_lookup (simplified, NULL);
+			  if (result)
+			    {
+			      changed = set_ssa_val_to (lhs, result);
+			      goto done;
+			    }
+			}
+		    }
+
+		  /* Otherwise visit the original statement.  */
 		  switch (vn_get_stmt_kind (stmt))
 		    {
 		    case VN_NARY:
