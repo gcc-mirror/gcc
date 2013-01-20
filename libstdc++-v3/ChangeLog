@@ -1,3 +1,18 @@
+2013-01-12  Andi Kleen  <ak@linux.intel.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55223
+	* include/bits/atomic_base.h (__memory_order_modifier): Add
+	__memory_order_mask, __memory_order_modifier_mask,
+	__memory_order_hle_acquire, __memory_order_hle_release.
+	(operator|,operator&): Add.
+	(__cmpexch_failure_order):  Rename to __cmpexch_failure_order2.
+	(__cmpexch_failure_order): Add.
+	(clear, store, load, compare_exchange_weak, compare_exchange_strong):
+	Handle flags.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:
+	Add.
+
 2013-01-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/55861
