@@ -1,3 +1,9 @@
+2013-01-19  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-optimization/52631
+	* tree-ssa-sccvn (visit_use): Before looking up the original
+	statement, try looking up the simplified expression.
+
 2013-01-19  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.c (moxie_expand_prologue): Set

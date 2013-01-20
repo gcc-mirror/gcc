@@ -1,3 +1,9 @@
+2013-01-19  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/52631
+	* tree-ssa/pr52631.c: New test.
+	* tree-ssa/ssa-fre-9: Update expected output.
+
 2013-01-19  Anthony Green  <green@moxielogic.com>
 
 	* gcc.dg/tree-ssa/asm-2.c (REGISTER): Pick an appropriate register
