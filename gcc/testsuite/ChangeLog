@@ -1,7 +1,17 @@
+2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/pr55579.c: Cleanup esra tree dump
+	* gfortran.dg/unlimited_polymorphic_8.f90: Cleanup original tree dump.
+
 2013-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56051
 	* gcc.c-torture/execute/pr56051.c: New test.
+
+2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/pr55579.c: Cleanup esra tree dump
+	* gfortran.dg/unlimited_polymorphic_8.f90: Cleanup original tree dump.
 
 2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
