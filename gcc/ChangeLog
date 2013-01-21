@@ -1,9 +1,12 @@
+2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (enabled): Do not disable fma4 for TARGET_FMA.
+
 2013-01-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/55433
 	* lra-constraints.c (curr_insn_transform): Don't reuse original
-	insn for secondary memory move when memory mode should be
-	different.
+	insn for secondary memory move when memory mode should be different.
 
 2013-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -16,7 +19,7 @@
 	* config/i386/i386.c: Enable CPU_BTVER2 to use btver2 pipeline
 	descriptions.
 	* config/i386/i386.md (btver2_decode): New type attributes.
-	* config/i386/sse.md (btver2_decode, btver2_sse_attr): New 
+	* config/i386/sse.md (btver2_decode, btver2_sse_attr): New
 	type attributes.
 	* config/i386/btver2.md: New file describing btver2 pipelines.
 
@@ -55,8 +58,7 @@
 
 	PR middle-end/56015
 	* expr.c (expand_expr_real_2) <case COMPLEX_EXPR>: Handle
-	the case where writing real complex part of target modifies
-	op1.
+	the case where writing real complex part of target modifies op1.
 
 2013-01-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
@@ -102,8 +104,7 @@
 	(vt_emit_notes): Create and release the local cache.
 	(vt_initialize, vt_finalize): Create and release the global
 	cache, respectively.
-	* alias.c (rtx_equal_for_memref_p): Compare operands of
-	ENTRY_VALUEs.
+	* alias.c (rtx_equal_for_memref_p): Compare operands of ENTRY_VALUEs.
 
 2013-01-18  Alexandre Oliva <aoliva@redhat.com>
 
