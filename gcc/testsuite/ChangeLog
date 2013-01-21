@@ -1,3 +1,8 @@
+2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/56023
+	* gcc.dg/pr56023.c: New test.
+
 2013-01-21  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
