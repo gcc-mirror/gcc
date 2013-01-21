@@ -69,26 +69,26 @@
 
 (define_insn_reservation "pj4_shift" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu_shift,alu_shift_reg")
+       (eq_attr "type" "alu_shift,alu_shift_reg,simple_alu_shift")
        (not (eq_attr "conds" "set"))
        (eq_attr "shift" "1"))  "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_shift_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu_shift,alu_shift_reg")
+       (eq_attr "type" "alu_shift,alu_shift_reg,simple_alu_shift")
        (eq_attr "conds" "set")
        (eq_attr "shift" "1"))  "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu_shift" 1
   (and (eq_attr "tune" "marvell_pj4")
        (not (eq_attr "conds" "set"))
-       (eq_attr "type" "alu_shift,alu_shift_reg"))
+       (eq_attr "type" "alu_shift,alu_shift_reg,simple_alu_shift"))
                                "pj4_is,(pj4_alu1,nothing,pj4_w1+pj4_cp)|(pj4_alu2,nothing,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu_shift_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
        (eq_attr "conds" "set")
-       (eq_attr "type" "alu_shift,alu_shift_reg"))
+       (eq_attr "type" "alu_shift,alu_shift_reg,simple_alu_shift"))
                                "pj4_is,(pj4_alu1,nothing,pj4_w1+pj4_cp)|(pj4_alu2,nothing,pj4_w2+pj4_cp)")
 
 (define_bypass 2 "pj4_alu_shift,pj4_shift"
