@@ -1,3 +1,9 @@
+2013-01-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55919
+	* add_path_to_list:  Copy path to temporary and strip
+	trailing directory separators before calling stat().
+
 2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/pr55579.c: Cleanup esra tree dump.
