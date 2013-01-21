@@ -1,3 +1,8 @@
+2013-01-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/56022
+	* gcc.target/i386/pr56022.c: New test.
+
 2013-01-21  Jason Merrill  <jason@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_alias): New.

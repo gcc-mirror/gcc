@@ -4479,7 +4479,6 @@ get_last_funcdef_no (void)
 void
 allocate_struct_function (tree fndecl, bool abstract_p)
 {
-  tree result;
   tree fntype = fndecl ? TREE_TYPE (fndecl) : NULL_TREE;
 
   cfun = ggc_alloc_cleared_function ();
@@ -4498,8 +4497,13 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       DECL_STRUCT_FUNCTION (fndecl) = cfun;
       cfun->decl = fndecl;
       current_function_funcdef_no = get_next_funcdef_no ();
+    }
 
-      result = DECL_RESULT (fndecl);
+  invoke_set_current_function_hook (fndecl);
+
+  if (fndecl != NULL_TREE)
+    {
+      tree result = DECL_RESULT (fndecl);
       if (!abstract_p && aggregate_value_p (result, fndecl))
 	{
 #ifdef PCC_STATIC_STRUCT_RETURN
@@ -4518,8 +4522,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
     }
-
-  invoke_set_current_function_hook (fndecl);
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL
