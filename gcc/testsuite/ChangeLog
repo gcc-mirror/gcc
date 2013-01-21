@@ -1,3 +1,7 @@
+2013-01-21  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_alias): New.
+
 2013-01-20  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR debug/53235
