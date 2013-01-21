@@ -1,3 +1,8 @@
+2013-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* reload1.c (init_reload): Only initialize reload_obstack
+	during the first call.
+
 2013-01-21  Marek Polacek  <polacek@redhat.com>
 
 	* cfgloop.c (verify_loop_structure): Fix up grammar.
