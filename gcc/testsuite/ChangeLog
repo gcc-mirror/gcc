@@ -1,3 +1,8 @@
+2013-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56051
+	* gcc.c-torture/execute/pr56051.c: New test.
+
 2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/56023

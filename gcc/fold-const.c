@@ -13556,10 +13556,22 @@ fold_binary_loc (location_t loc,
 				   TREE_OPERAND (arg1, 1)),
 			   build_zero_cst (TREE_TYPE (arg0)));
 
+      /* Similarly for X < (cast) (1 << Y).  But cast can't be narrowing,
+	 otherwise Y might be >= # of bits in X's type and thus e.g.
+	 (unsigned char) (1 << Y) for Y 15 might be 0.
+	 If the cast is widening, then 1 << Y should have unsigned type,
+	 otherwise if Y is number of bits in the signed shift type minus 1,
+	 we can't optimize this.  E.g. (unsigned long long) (1 << Y) for Y
+	 31 might be 0xffffffff80000000.  */
       if ((code == LT_EXPR || code == GE_EXPR)
 	  && TYPE_UNSIGNED (TREE_TYPE (arg0))
 	  && CONVERT_EXPR_P (arg1)
 	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == LSHIFT_EXPR
+	  && (TYPE_PRECISION (TREE_TYPE (arg1))
+	      >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 0))))
+	  && (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg1, 0)))
+	      || (TYPE_PRECISION (TREE_TYPE (arg1))
+		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 0)))))
 	  && integer_onep (TREE_OPERAND (TREE_OPERAND (arg1, 0), 0)))
 	{
 	  tem = build2 (RSHIFT_EXPR, TREE_TYPE (arg0), arg0,
