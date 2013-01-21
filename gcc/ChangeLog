@@ -1,5 +1,12 @@
 2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
+	Backport from mainline
+	2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (enabled): Do not disable fma4 for TARGET_FMA.
+
+2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR rtl-optimization/56023
 	* haifa-sched.c (fix_inter_tick): Do not update ticks of instructions,
 	dependent on debug instruction.
