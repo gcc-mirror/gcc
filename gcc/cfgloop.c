@@ -1344,7 +1344,7 @@ verify_loop_structure (void)
       for (j = 0; j < loop->num_nodes; j++)
 	if (!flow_bb_inside_loop_p (loop, bbs[j]))
 	  {
-	    error ("bb %d do not belong to loop %d",
+	    error ("bb %d does not belong to loop %d",
 		   bbs[j]->index, loop->num);
 	    err = 1;
 	  }
