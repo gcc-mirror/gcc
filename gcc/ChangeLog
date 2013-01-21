@@ -1,3 +1,7 @@
+2013-01-21  Marek Polacek  <polacek@redhat.com>
+
+	* cfgloop.c (verify_loop_structure): Fix up grammar.
+
 2013-01-21  Yi-Hsiu Hsu  <ahsu@marvell.com>
 
 	* config/arm/marvell-pj4.md (pj4_shift_conds, pj4_alu_shift,
