@@ -1,3 +1,9 @@
+2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/56023
+	* haifa-sched.c (fix_inter_tick): Do not update ticks of instructions,
+	dependent on debug instruction.
+
 2013-01-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/56022
