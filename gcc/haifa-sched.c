@@ -5038,6 +5038,9 @@ fix_inter_tick (rtx head, rtx tail)
 	      INSN_TICK (head) = tick;
 	    }
 
+	  if (DEBUG_INSN_P (head))
+	    continue;
+
 	  FOR_EACH_DEP (head, SD_LIST_RES_FORW, sd_it, dep)
 	    {
 	      rtx next;
