@@ -95,9 +95,7 @@ can_remove_node_now_p_1 (struct cgraph_node *node)
 	     those only after all devirtualizable virtual calls are processed.
 	     Lacking may edges in callgraph we just preserve them post
 	     inlining.  */
-	  && (!DECL_VIRTUAL_P (node->decl)
-	      || (!DECL_COMDAT (node->decl)
-		  && !DECL_EXTERNAL (node->decl)))
+	  && !DECL_VIRTUAL_P (node->decl)
 	  /* During early inlining some unanalyzed cgraph nodes might be in the
 	     callgraph and they might reffer the function in question.  */
 	  && !cgraph_new_nodes);

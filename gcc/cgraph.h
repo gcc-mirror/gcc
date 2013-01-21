@@ -935,6 +935,7 @@ cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
   gcc_assert (!node->global.inlined_to);
   return (!node->needed && !node->address_taken
 	  && !node->reachable_from_other_partition
+	  && !DECL_VIRTUAL_P (node->decl)
 	  && !DECL_STATIC_CONSTRUCTOR (node->decl)
 	  && !DECL_STATIC_DESTRUCTOR (node->decl)
 	  && !node->local.externally_visible);

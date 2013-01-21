@@ -194,9 +194,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     if (node->analyzed && !node->global.inlined_to
 	&& (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
 	    /* Keep around virtual functions for possible devirtualization.  */
-	    || (before_inlining_p
-		&& DECL_VIRTUAL_P (node->decl)
-		&& (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl)))))
+	    || (before_inlining_p && DECL_VIRTUAL_P (node->decl))))
       {
         gcc_assert (!node->global.inlined_to);
 	enqueue_cgraph_node (node, &first);
