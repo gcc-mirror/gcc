@@ -1,5 +1,5 @@
 ;; Marvell ARM Processor Pipeline Description
-;; Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2013 Free Software Foundation, Inc.
 ;; Contributed by Marvell.
 
 ;; This file is part of GCC.
@@ -41,28 +41,28 @@
 
 (define_insn_reservation "pj4_alu_e1" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu")
+       (eq_attr "type" "simple_alu_imm,alu_reg")
        (not (eq_attr "conds" "set"))
        (eq_attr "insn" "mov,mvn"))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu_e1_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu")
+       (eq_attr "type" "simple_alu_imm,alu_reg")
        (eq_attr "conds" "set")
        (eq_attr "insn" "mov,mvn"))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu")
+       (eq_attr "type" "simple_alu_imm,alu_reg")
        (not (eq_attr "conds" "set"))
        (not (eq_attr "insn" "mov,mvn")))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu")
+       (eq_attr "type" "simple_alu_imm,alu_reg")
        (eq_attr "conds" "set")
        (not (eq_attr "insn" "mov,mvn")))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
