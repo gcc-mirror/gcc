@@ -1,3 +1,8 @@
+2013-01-21  Yi-Hsiu Hsu  <ahsu@marvell.com>
+
+	* config/arm/marvell-pj4.md (pj4_shift_conds, pj4_alu_shift,
+	pj4_alu_shift_conds, pj4_shift): Handle simple_alu_shift.
+
 2013-01-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/56058
