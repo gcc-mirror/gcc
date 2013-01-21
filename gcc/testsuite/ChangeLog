@@ -1,3 +1,11 @@
+2013-01-21  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2013-01-17  Martin Jambor  <mjambor@suse.cz>
+
+        PR tree-optimizations/55264
+	* g++.dg/ipa/pr55264.C: New test.
+
 2013-01-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55072

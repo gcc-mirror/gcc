@@ -2342,6 +2342,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   TREE_PUBLIC (new_node->decl) = 0;
   DECL_COMDAT (new_node->decl) = 0;
   DECL_WEAK (new_node->decl) = 0;
+  DECL_VIRTUAL_P (new_node->decl) = 0;
   new_node->clone.tree_map = tree_map;
   new_node->clone.args_to_skip = args_to_skip;
   FOR_EACH_VEC_ELT (ipa_replace_map_p, tree_map, i, map)
