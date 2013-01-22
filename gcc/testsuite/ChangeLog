@@ -1,3 +1,8 @@
+2013-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55686
+	* gcc.target/i386/pr55686.c: New test.
+
 2013-01-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53609
