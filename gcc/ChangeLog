@@ -1,3 +1,19 @@
+2012-01-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56028
+	* config/i386/i386.md (*movti_internal_rex64): Change (o,riF)
+	alternative to (o,r).
+	(*movdi_internal_rex64): Remove (!o,n) alternative.
+	(DImode immediate->memory splitter): Remove.
+	(DImode immediate->memory peephole2): Remove.
+	(movtf): Enable for TARGET_64BIT || TARGET_SSE.
+	(*movtf_internal_rex64): Rename from *movtf_internal. Change (!o,F*r)
+	alternative to (!o,*r).
+	(*movtf_internal_sse): New pattern.
+	(*movxf_internal_rex64): New pattern.
+	(*movxf_internal): Disable for TARGET_64BIT.
+	(*movdf_internal_rex64): Remove (!o,F) alternative.
+
 2013-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56074
