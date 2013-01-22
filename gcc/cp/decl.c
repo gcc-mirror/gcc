@@ -5693,7 +5693,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 		       && (!init || TREE_CODE (init) == TREE_LIST))
 		{
 		  init = build_functional_cast (type, init, tf_none);
-		  if (init != error_mark_node)
+		  if (TREE_CODE (init) == TARGET_EXPR)
 		    TARGET_EXPR_DIRECT_INIT_P (init) = true;
 		}
 	      init_code = NULL_TREE;

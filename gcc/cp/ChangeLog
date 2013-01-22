@@ -1,3 +1,9 @@
+2013-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55944
+	* decl.c (check_initializer): Use TARGET_EXPR_DIRECT_INIT_P only
+	on TARGET_EXPR nodes.
+
 2013-01-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56071
