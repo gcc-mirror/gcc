@@ -1,3 +1,8 @@
+2013-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56071
+	* pt.c (maybe_instantiate_noexcept): Don't defer access checks.
+
 2013-01-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53609
