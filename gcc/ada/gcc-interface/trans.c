@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1254,14 +1254,19 @@ Pragma_to_gnu (Node_Id gnat_node)
       switch (Chars (Expression
 		     (First (Pragma_Argument_Associations (gnat_node)))))
 	{
-	case Name_Time:  case Name_Space:
-	  if (!optimize)
-	    post_error ("insufficient -O value?", gnat_node);
-	  break;
-
 	case Name_Off:
 	  if (optimize)
 	    post_error ("must specify -O0?", gnat_node);
+	  break;
+
+	case Name_Space:
+	  if (!optimize_size)
+	    post_error ("must specify -Os?", gnat_node);
+	  break;
+
+	case Name_Time:
+	  if (!optimize)
+	    post_error ("insufficient -O value?", gnat_node);
 	  break;
 
 	default:
@@ -4743,6 +4748,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   const bool body_p = (Nkind (gnat_unit) == N_Package_Body
 		       || Nkind (gnat_unit) == N_Subprogram_Body);
   const Entity_Id gnat_unit_entity = Defining_Entity (gnat_unit);
+  Node_Id gnat_pragma;
   /* Make the decl for the elaboration procedure.  */
   tree gnu_elab_proc_decl
     = create_subprog_decl
@@ -4778,8 +4784,16 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 	return;
     }
 
+  /* Then process any pragmas and declarations preceding the unit.  */
+  for (gnat_pragma = First (Context_Items (gnat_node));
+       Present (gnat_pragma);
+       gnat_pragma = Next (gnat_pragma))
+    if (Nkind (gnat_pragma) == N_Pragma)
+      add_stmt (gnat_to_gnu (gnat_pragma));
   process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty, Empty,
 		 true, true);
+
+  /* Process the unit itself.  */
   add_stmt (gnat_to_gnu (gnat_unit));
 
   /* If we can inline, generate code for all the inlined subprograms.  */
