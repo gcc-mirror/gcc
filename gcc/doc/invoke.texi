@@ -2673,23 +2673,6 @@ Warn when overload resolution chooses a promotion from unsigned or
 enumerated type to a signed type, over a conversion to an unsigned type of
 the same size.  Previous versions of G++ tried to preserve
 unsignedness, but the standard mandates the current behavior.
-
-@smallexample
-struct A @{
-  operator int ();
-  A& operator = (int);
-@};
-
-main ()
-@{
-  A a,b;
-  a = b;
-@}
-@end smallexample
-
-@noindent
-In this example, G++ synthesizes a default @samp{A& operator =
-(const A&);}, while cfront uses the user-defined @samp{operator =}.
 @end table
 
 @node Objective-C and Objective-C++ Dialect Options
