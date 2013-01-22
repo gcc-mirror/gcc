@@ -1,5 +1,12 @@
 2013-01-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53650
+	* call.c (type_has_extended_temps): New.
+	* cp-tree.h: Declare it.
+	* decl.c (check_initializer): Use build_aggr_init for arrays
+	if it is false.
+	* init.c (build_vec_init): Avoid mixed signed/unsigned arithmetic.
+
 	PR c++/56071
 	* pt.c (maybe_instantiate_noexcept): Don't defer access checks.
 
