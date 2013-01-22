@@ -37,6 +37,7 @@
 #include "bitmap.h"
 #include "cgraph.h"
 #include "target.h"
+#include "common/common-target.h"
 
 #include "ada.h"
 #include "adadecode.h"
@@ -504,6 +505,13 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 			   Empty);
   DECL_IGNORED_P (end_handler_decl) = 1;
 
+  unhandled_except_decl
+    = create_subprog_decl (get_identifier ("__gnat_unhandled_except_handler"),
+			   NULL_TREE,
+			   ftype, NULL_TREE, false, true, true, true, NULL,
+			   Empty);
+  DECL_IGNORED_P (unhandled_except_decl) = 1;
+
   reraise_zcx_decl
     = create_subprog_decl (get_identifier ("__gnat_reraise_zcx"), NULL_TREE,
 			   ftype, NULL_TREE, false, true, true, true, NULL,
@@ -636,6 +644,12 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   all_others_decl
     = create_var_decl (get_identifier ("ALL_OTHERS"),
 		       get_identifier ("__gnat_all_others_value"),
+		       integer_type_node, NULL_TREE, true, false, true, false,
+		       NULL, Empty);
+
+  unhandled_others_decl
+    = create_var_decl (get_identifier ("UNHANDLED_OTHERS"),
+		       get_identifier ("__gnat_unhandled_others_value"),
 		       integer_type_node, NULL_TREE, true, false, true, false,
 		       NULL, Empty);
 
@@ -3494,6 +3508,26 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      declaration tree.  */
   set_end_locus_from_node (gnu_result, gnat_node);
   set_end_locus_from_node (gnu_subprog_decl, gnat_node);
+
+  /* On SEH targets, install an exception handler around the main entry
+     point to catch unhandled exceptions.  */
+  if (DECL_NAME (gnu_subprog_decl) == main_identifier_node
+      && targetm_common.except_unwind_info (&global_options) == UI_SEH)
+    {
+      tree t;
+      tree etype;
+
+      t = build_call_expr (builtin_decl_explicit (BUILT_IN_EH_POINTER),
+			   1, integer_zero_node);
+      t = build_call_n_expr (unhandled_except_decl, 1, t);
+
+      etype = build_unary_op (ADDR_EXPR, NULL_TREE, unhandled_others_decl);
+      etype = tree_cons (NULL_TREE, etype, NULL_TREE);
+
+      t = build2 (CATCH_EXPR, void_type_node, etype, t);
+      gnu_result = build2 (TRY_CATCH_EXPR, TREE_TYPE (gnu_result),
+			   gnu_result, t);
+    }
 
   end_subprog_body (gnu_result);
 
