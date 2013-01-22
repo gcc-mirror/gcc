@@ -1,3 +1,13 @@
+2013-01-22  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/gigi.h (ADT_unhandled_except_decl,
+	ADT_unhandled_others_decl): New.
+	(unhandled_others_decl, unhandled_except_decl): Define.
+	* gcc-interface/trans.c: Include common/common-target.h.
+	(gigi): Initialize them.
+	(Subprogram_Body_to_gnu): On SEH targets, wrap the body of the main
+	function in a try/catch clause.
+
 2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (COMMON_ADAFLAGS): Remove -gnata.
