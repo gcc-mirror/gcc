@@ -1338,6 +1338,8 @@ strip_typedefs_expr (tree t)
 	    r = copy_node (t);
 	    for (i = 0; i < n; ++i)
 	      TREE_VEC_ELT (r, i) = VEC_index (tree, vec, i);
+	    SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT
+	      (r, GET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (t));
 	  }
 	else
 	  r = t;
