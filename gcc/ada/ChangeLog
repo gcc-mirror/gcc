@@ -1,5 +1,10 @@
 2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Expression_With_Actions>: Do
+	not translate the Etype of the node before translating the Actions.
+
+2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Pragma_to_gnu) <Name_Space>: Use optimize_size
 	instead of optimize and adjust warning message.
 	(Compilation_Unit_to_gnu): Process pragmas preceding the unit.
