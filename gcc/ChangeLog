@@ -1,3 +1,8 @@
+2013-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56067
+	* doc/invoke.texi: Remove left over -Wsynth example.
+
 2013-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56051
