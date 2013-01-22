@@ -18086,12 +18086,14 @@ maybe_instantiate_noexcept (tree fn)
       if (push_tinst_level (fn))
 	{
 	  push_access_scope (fn);
+	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
 	  noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
 					DEFERRED_NOEXCEPT_ARGS (noex),
 					tf_warning_or_error, fn,
 					/*function_p=*/false,
 					/*integral_constant_expression_p=*/true);
+	  pop_deferring_access_checks ();
 	  pop_access_scope (fn);
 	  pop_tinst_level ();
 	  spec = build_noexcept_spec (noex, tf_warning_or_error);
