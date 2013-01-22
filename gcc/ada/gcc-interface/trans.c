@@ -6810,7 +6810,6 @@ gnat_to_gnu (Node_Id gnat_node)
     /****************/
 
     case N_Expression_With_Actions:
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
       /* This construct doesn't define a scope so we don't wrap the statement
 	 list in a BIND_EXPR; however, we wrap it in a SAVE_EXPR to protect it
 	 from unsharing.  */
@@ -6820,6 +6819,7 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_expr = gnat_to_gnu (Expression (gnat_node));
       gnu_result
 	= build_compound_expr (TREE_TYPE (gnu_expr), gnu_result, gnu_expr);
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
       break;
 
     case N_Freeze_Entity:
