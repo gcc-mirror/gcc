@@ -1,8 +1,13 @@
-2012-01-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2013-01-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/install.texi (Downloading the Source): Update references to
+	downloading separate components.
+
+2013-01-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/extend.texi (__int128): Improve grammar.
 
-2012-01-22  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/56028
 	* config/i386/i386.md (*movti_internal_rex64): Change (o,riF)
@@ -45,7 +50,7 @@
 	a narrowing conversion, or widening conversion from signed
 	to unsigned.
 
-2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/56023
 	* haifa-sched.c (fix_inter_tick): Do not update ticks of instructions,
@@ -77,7 +82,7 @@
 	* config/arm/marvell-pj4.md: Update copyright year.
 	Fix up use of alu to alu_reg and simple_alu_imm.
 
-2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (enabled): Do not disable fma4 for TARGET_FMA.
 
@@ -240,7 +245,7 @@
 	PR tree-optimization/55273
 	* loop-iv.c (iv_number_of_iterations): Consider zero iteration case.
 
-2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55981
 	* config/i386/sync.md (atomic_store<mode>): Always generate SWImode
@@ -460,7 +465,7 @@
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): New.
 	* config/aarch64/iterators.md (VALLDI): New.
 
-2012-01-14  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-14  Uros Bizjak  <ubizjak@gmail.com>
 	    Andi Kleen  <ak@linux.intel.com>
 
 	PR target/55948
@@ -579,7 +584,7 @@
 	* configure: Regenerate.
 	* Makefile.in (TREECHECKING): New.
 
-2012-01-11  Richard Guenther  <rguenther@suse.de>
+2013-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44061
 	* tree-vrp.c (extract_range_basic): Compute zero as
@@ -769,7 +774,7 @@
 	* ipa-prop.c (update_indirect_edges_after_inlining): Fix ordering
 	issue.
 
-2012-01-08  Jakub Jelinek  <jakub@redhat.com>
+2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/55845

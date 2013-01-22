@@ -528,26 +528,18 @@ the executables named @command{cantlr}, @command{runantlr} or
 
 GCC is distributed via @uref{http://gcc.gnu.org/svn.html,,SVN} and FTP
 tarballs compressed with @command{gzip} or
-@command{bzip2}.  It is possible to download a full distribution or specific
-components.
+@command{bzip2}.
 
 Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The full distribution includes the C, C++, Objective-C, Fortran, Java,
-and Ada (in the case of GCC 3.1 and later) compilers.  The full
-distribution also includes runtime libraries for C++, Objective-C,
-Fortran, and Java.  In GCC 3.0 and later versions, the GNU compiler
-testsuites are also included in the full distribution.
-
-If you choose to download specific components, you must download the core
-GCC distribution plus any language specific distributions you wish to
-use.  The core distribution includes the C language front end as well as the
-shared components.  Each language has a tarball which includes the language
-front end as well as the language runtime (when appropriate).
-
-Unpack the core distribution as well as any language specific
-distributions in the same directory.
+The source distribution includes the C, C++, Objective-C, Fortran, Java,
+and Ada (in the case of GCC 3.1 and later) compilers, as well as
+runtime libraries for C++, Objective-C, Fortran, and Java.
+For previous versions these were downloadable as separate components such
+as the core GCC distribution, which included the C language front end and
+shared components, and language-specific distributions including the
+language front end and the language runtime (where appropriate).
 
 If you also intend to build binutils (either to upgrade an existing
 installation or for use in place of the corresponding tools of your
