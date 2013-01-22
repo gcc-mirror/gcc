@@ -201,7 +201,6 @@ static void append_type_to_template_for_access_check_1 (tree, tree, tree,
 static tree listify (tree);
 static tree listify_autos (tree, tree);
 static tree template_parm_to_arg (tree t);
-static bool arg_from_parm_pack_p (tree, tree);
 static tree current_template_args (void);
 static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
 static tree instantiate_alias_template (tree, tree, tsubst_flags_t);
@@ -3814,42 +3813,6 @@ template_parm_to_arg (tree t)
 	}
     }
   return t;
-}
-
-/* This function returns TRUE if PARM_PACK is a template parameter
-   pack and if ARG_PACK is what template_parm_to_arg returned when
-   passed PARM_PACK.  */
-
-static bool
-arg_from_parm_pack_p (tree arg_pack, tree parm_pack)
-{
-  /* For clarity in the comments below let's use the representation
-     argument_pack<elements>' to denote an argument pack and its
-     elements.
-
-     In the 'if' block below, we want to detect cases where
-     ARG_PACK is argument_pack<PARM_PACK...>.  I.e, we want to
-     check if ARG_PACK is an argument pack which sole element is
-     the expansion of PARM_PACK.  That argument pack is typically
-     created by template_parm_to_arg when passed a parameter
-     pack.  */
-
-  if (arg_pack
-      && TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack)) == 1
-      && PACK_EXPANSION_P (TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack), 0)))
-    {
-      tree expansion = TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack), 0);
-      tree pattern = PACK_EXPANSION_PATTERN (expansion);
-      if ((TYPE_P (pattern) && same_type_p (pattern, parm_pack))
-	  || (!TYPE_P (pattern) && cp_tree_equal (parm_pack, pattern)))
-	/* The argument pack that the parameter maps to is just an
-	   expansion of the parameter itself, such as one would
-	   find in the implicit typedef of a class inside the
-	   class itself.  Consider this parameter "unsubstituted",
-	   so that we will maintain the outer pack expansion.  */
-	return true;
-    }
-  return false;
 }
 
 /* Given a set of template parameters, return them as a set of template
@@ -9148,6 +9111,168 @@ make_fnparm_pack (tree spec_parm)
   return extract_fnparm_pack (NULL_TREE, &spec_parm);
 }
 
+/* Return true iff the Ith element of the argument pack ARG_PACK is a
+   pack expansion.  */
+
+static bool
+argument_pack_element_is_expansion_p (tree arg_pack, int i)
+{
+  tree vec = ARGUMENT_PACK_ARGS (arg_pack);
+  if (i >= TREE_VEC_LENGTH (vec))
+    return false;
+  return PACK_EXPANSION_P (TREE_VEC_ELT (vec, i));
+}
+
+
+/* Creates and return an ARGUMENT_PACK_SELECT tree node.  */
+
+static tree
+make_argument_pack_select (tree arg_pack, unsigned index)
+{
+  tree aps = make_node (ARGUMENT_PACK_SELECT);
+
+  ARGUMENT_PACK_SELECT_FROM_PACK (aps) = arg_pack;
+  ARGUMENT_PACK_SELECT_INDEX (aps) = index;
+
+  return aps;
+}
+
+/*  This is a subroutine of tsubst_pack_expansion.
+
+    It returns TRUE if we need to use the PACK_EXPANSION_EXTRA_ARGS
+    mechanism to store the (non complete list of) arguments of the
+    substitution and return a non substituted pack expansion, in order
+    to wait for when we have enough arguments to really perform the
+    substitution.  */
+
+static bool
+use_pack_expansion_extra_args_p (tree parm_packs,
+				 int arg_pack_len,
+				 bool has_empty_arg)
+{
+  if (parm_packs == NULL_TREE)
+    return false;
+
+  bool has_expansion_arg = false;
+  for (int i = 0 ; i < arg_pack_len; ++i)
+    {
+      bool has_non_expansion_arg = false;
+      for (tree parm_pack = parm_packs;
+	   parm_pack;
+	   parm_pack = TREE_CHAIN (parm_pack))
+	{
+	  tree arg = TREE_VALUE (parm_pack);
+
+	  if (argument_pack_element_is_expansion_p (arg, i))
+	    has_expansion_arg = true;
+	  else
+	    has_non_expansion_arg = true;
+	}
+
+      /* If one pack has an expansion and another pack has a normal
+	 argument or if one pack has an empty argument another one
+	 hasn't then tsubst_pack_expansion cannot perform the
+	 substitution and need to fall back on the
+	 PACK_EXPANSION_EXTRA mechanism.  */
+      if ((has_expansion_arg && has_non_expansion_arg)
+	  || (has_empty_arg && (has_expansion_arg || has_non_expansion_arg)))
+	return true;
+    }
+  return false;
+}
+
+/* [temp.variadic]/6 says that:
+
+       The instantiation of a pack expansion [...]
+       produces a list E1,E2, ..., En, where N is the number of elements
+       in the pack expansion parameters.
+
+   This subroutine of tsubst_pack_expansion produces one of these Ei.
+
+   PATTERN is the pattern of the pack expansion.  PARM_PACKS is a
+   TREE_LIST in which each TREE_PURPOSE is a parameter pack of
+   PATTERN, and each TREE_VALUE is its corresponding argument pack.
+   INDEX is the index 'i' of the element Ei to produce.  ARGS,
+   COMPLAIN, and IN_DECL are the same parameters as for the
+   tsubst_pack_expansion function.
+
+   The function returns the resulting Ei upon successful completion,
+   or error_mark_node.
+
+   Note that this function possibly modifies the ARGS parameter, so
+   it's the responsibility of the caller to restore it.  */
+
+static tree
+gen_elem_of_pack_expansion_instantiation (tree pattern,
+					  tree parm_packs,
+					  unsigned index,
+					  tree args /* This parm gets
+						       modified.  */,
+					  tsubst_flags_t complain,
+					  tree in_decl)
+{
+  tree t;
+  bool ith_elem_is_expansion = false;
+
+  /* For each parameter pack, change the substitution of the parameter
+     pack to the ith argument in its argument pack, then expand the
+     pattern.  */
+  for (tree pack = parm_packs; pack; pack = TREE_CHAIN (pack))
+    {
+      tree parm = TREE_PURPOSE (pack);
+      tree arg_pack = TREE_VALUE (pack);
+      tree aps;			/* instance of ARGUMENT_PACK_SELECT.  */
+
+      ith_elem_is_expansion |=
+	argument_pack_element_is_expansion_p (arg_pack, index);
+
+      /* Select the Ith argument from the pack.  */
+      if (TREE_CODE (parm) == PARM_DECL)
+	{
+	  if (index == 0)
+	    {
+	      aps = make_argument_pack_select (arg_pack, index);
+	      mark_used (parm);
+	      register_local_specialization (aps, parm);
+	    }
+	  else
+	    aps = retrieve_local_specialization (parm);
+	}
+      else
+	{
+	  int idx, level;
+	  template_parm_level_and_index (parm, &level, &idx);
+
+	  if (index == 0)
+	    {
+	      aps = make_argument_pack_select (arg_pack, index);
+	      /* Update the corresponding argument.  */
+	      TMPL_ARG (args, level, idx) = aps;
+	    }
+	  else
+	    /* Re-use the ARGUMENT_PACK_SELECT.  */
+	    aps = TMPL_ARG (args, level, idx);
+	}
+      ARGUMENT_PACK_SELECT_INDEX (aps) = index;
+    }
+
+  /* Substitute into the PATTERN with the (possibly altered)
+     arguments.  */
+  if (!TYPE_P (pattern))
+    t = tsubst_expr (pattern, args, complain, in_decl,
+		     /*integral_constant_expression_p=*/false);
+  else
+    t = tsubst (pattern, args, complain, in_decl);
+
+  /*  If the Ith argument pack element is a pack expansion, then
+      the Ith element resulting from the substituting is going to
+      be a pack expansion as well.  */
+  if (ith_elem_is_expansion)
+    t = make_pack_expansion (t);
+
+  return t;
+}
+
 /* Substitute ARGS into T, which is an pack expansion
    (i.e. TYPE_PACK_EXPANSION or EXPR_PACK_EXPANSION). Returns a
    TREE_VEC with the substituted arguments, a PACK_EXPANSION_* node
@@ -9160,8 +9285,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   tree pattern;
   tree pack, packs = NULL_TREE;
   bool unsubstituted_packs = false;
-  bool real_packs = false;
-  int missing_level = 0;
   int i, len = -1;
   tree result;
   struct pointer_map_t *saved_local_specializations = NULL;
@@ -9240,14 +9363,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	  return result;
 	}
 
-      if (arg_from_parm_pack_p (arg_pack, parm_pack))
-	/* The argument pack that the parameter maps to is just an
-	   expansion of the parameter itself, such as one would find
-	   in the implicit typedef of a class inside the class itself.
-	   Consider this parameter "unsubstituted", so that we will
-	   maintain the outer pack expansion.  */
-	arg_pack = NULL_TREE;
-          
       if (arg_pack)
         {
           int my_len = 
@@ -9275,13 +9390,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
               return error_mark_node;
             }
 
-	  if (TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack)) == 1
-	      && PACK_EXPANSION_P (TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack),
-						 0)))
-	    /* This isn't a real argument pack yet.  */;
-	  else
-	    real_packs = true;
-
           /* Keep track of the parameter packs and their corresponding
              argument packs.  */
           packs = tree_cons (parm_pack, arg_pack, packs);
@@ -9293,58 +9401,36 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	     well as the missing_level counter because function parameter
 	     packs don't have a level.  */
 	  unsubstituted_packs = true;
-	  if (!missing_level || missing_level > level)
-	    missing_level = level;
 	}
     }
 
   /* We cannot expand this expansion expression, because we don't have
      all of the argument packs we need.  */
-  if (unsubstituted_packs)
+  if (use_pack_expansion_extra_args_p (packs, len, unsubstituted_packs))
     {
-      if (real_packs)
-	{
-	  /* We got some full packs, but we can't substitute them in until we
-	     have values for all the packs.  So remember these until then.  */
-	  tree save_args;
+      /* We got some full packs, but we can't substitute them in until we
+	 have values for all the packs.  So remember these until then.  */
 
-	  t = make_pack_expansion (pattern);
-
-	  /* The call to add_to_template_args above assumes no overlap
-	     between saved args and new args, so prune away any fake
-	     args, i.e. those that satisfied arg_from_parm_pack_p above.  */
-	  if (missing_level && levels >= missing_level)
-	    {
-	      gcc_assert (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args)
-			  && missing_level > 1);
-	      TREE_VEC_LENGTH (args) = missing_level - 1;
-	      save_args = copy_node (args);
-	      TREE_VEC_LENGTH (args) = levels;
-	    }
-	  else
-	    save_args = args;
-
-	  PACK_EXPANSION_EXTRA_ARGS (t) = save_args;
-	}
+      t = make_pack_expansion (pattern);
+      PACK_EXPANSION_EXTRA_ARGS (t) = args;
+      return t;
+    }
+  else if (unsubstituted_packs)
+    {
+      /* There were no real arguments, we're just replacing a parameter
+	 pack with another version of itself. Substitute into the
+	 pattern and return a PACK_EXPANSION_*. The caller will need to
+	 deal with that.  */
+      if (TREE_CODE (t) == EXPR_PACK_EXPANSION)
+	t = tsubst_expr (pattern, args, complain, in_decl,
+			 /*integral_constant_expression_p=*/false);
       else
-	{
-	  /* There were no real arguments, we're just replacing a parameter
-	     pack with another version of itself. Substitute into the
-	     pattern and return a PACK_EXPANSION_*. The caller will need to
-	     deal with that.  */
-	  if (TREE_CODE (t) == EXPR_PACK_EXPANSION)
-	    t = tsubst_expr (pattern, args, complain, in_decl,
-			     /*integral_constant_expression_p=*/false);
-	  else
-	    t = tsubst (pattern, args, complain, in_decl);
-	  t = make_pack_expansion (t);
-	}
+	t = tsubst (pattern, args, complain, in_decl);
+      t = make_pack_expansion (t);
       return t;
     }
 
-  /* We could not find any argument packs that work.  */
-  if (len < 0)
-    return error_mark_node;
+  gcc_assert (len >= 0);
 
   if (need_local_specializations)
     {
@@ -9361,55 +9447,12 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   result = make_tree_vec (len);
   for (i = 0; i < len; ++i)
     {
-      /* For parameter pack, change the substitution of the parameter
-         pack to the ith argument in its argument pack, then expand
-         the pattern.  */
-      for (pack = packs; pack; pack = TREE_CHAIN (pack))
-        {
-          tree parm = TREE_PURPOSE (pack);
-	  tree arg;
-
-	  /* Select the Ith argument from the pack.  */
-          if (TREE_CODE (parm) == PARM_DECL)
-            {
-	      if (i == 0)
-		{
-		  arg = make_node (ARGUMENT_PACK_SELECT);
-		  ARGUMENT_PACK_SELECT_FROM_PACK (arg) = TREE_VALUE (pack);
-		  mark_used (parm);
-		  register_local_specialization (arg, parm);
-		}
-	      else
-		arg = retrieve_local_specialization (parm);
-            }
-          else
-            {
-              int idx, level;
-              template_parm_level_and_index (parm, &level, &idx);
-
-	      if (i == 0)
-		{
-		  arg = make_node (ARGUMENT_PACK_SELECT);
-		  ARGUMENT_PACK_SELECT_FROM_PACK (arg) = TREE_VALUE (pack);
-		  /* Update the corresponding argument.  */
-		  TMPL_ARG (args, level, idx) = arg;
-		}
-	      else
-		/* Re-use the ARGUMENT_PACK_SELECT.  */
-		arg = TMPL_ARG (args, level, idx);
-            }
-	  ARGUMENT_PACK_SELECT_INDEX (arg) = i;
-        }
-
-      /* Substitute into the PATTERN with the altered arguments.  */
-      if (!TYPE_P (pattern))
-        TREE_VEC_ELT (result, i) = 
-          tsubst_expr (pattern, args, complain, in_decl,
-                       /*integral_constant_expression_p=*/false);
-      else
-        TREE_VEC_ELT (result, i) = tsubst (pattern, args, complain, in_decl);
-
-      if (TREE_VEC_ELT (result, i) == error_mark_node)
+      t = gen_elem_of_pack_expansion_instantiation (pattern, packs,
+						    i,
+						    args, complain,
+						    in_decl);
+      TREE_VEC_ELT (result, i) = t;
+      if (t == error_mark_node)
 	{
 	  result = error_mark_node;
 	  break;
@@ -9427,6 +9470,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       else
         {
           int idx, level;
+
+	  if (TREE_VALUE (pack) == NULL_TREE)
+	    continue;
+
           template_parm_level_and_index (parm, &level, &idx);
           
           /* Update the corresponding argument.  */
@@ -11163,8 +11210,24 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    arg = TMPL_ARG (args, level, idx);
 
 	    if (arg && TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
-	      /* See through ARGUMENT_PACK_SELECT arguments. */
-	      arg = ARGUMENT_PACK_SELECT_ARG (arg);
+	      {
+		/* See through ARGUMENT_PACK_SELECT arguments. */
+		arg = ARGUMENT_PACK_SELECT_ARG (arg);
+		/* If the selected argument is an expansion E, that most
+		   likely means we were called from
+		   gen_elem_of_pack_expansion_instantiation during the
+		   substituting of pack an argument pack (which Ith
+		   element is a pack expansion, where I is
+		   ARGUMENT_PACK_SELECT_INDEX) into a pack expansion.
+		   In this case, the Ith element resulting from this
+		   substituting is going to be a pack expansion, which
+		   pattern is the pattern of E.  Let's return the
+		   pattern of E, and
+		   gen_elem_of_pack_expansion_instantiation will
+		   build the resulting pack expansion from it.  */
+		if (PACK_EXPANSION_P (arg))
+		  arg = PACK_EXPANSION_PATTERN (arg);
+	      }
 	  }
 
 	if (arg == error_mark_node)

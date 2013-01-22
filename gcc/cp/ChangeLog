@@ -1,3 +1,20 @@
+2013-01-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53609
+	* pt.c (argument_pack_element_is_expansion_p)
+	(make_argument_pack_select, use_pack_expansion_extra_args_p)
+	(gen_elem_of_pack_expansion_instantiation): New static functions.
+	(tsubst): When looking through an ARGUMENT_PACK_SELECT tree node,
+	look through the possibly resulting pack expansion as well.
+	(tsubst_pack_expansion): Use use_pack_expansion_extra_p to
+	generalize when to use the PACK_EXPANSION_EXTRA_ARGS mechanism.
+	Use gen_elem_of_pack_expansion_instantiation to build the
+	instantiation piece-wise.  Don't use arg_from_parm_pack_p anymore,
+	as gen_elem_of_pack_expansion_instantiation and the change in
+	tsubst above generalize this particular case.
+	(arg_from_parm_pack_p): Remove this for it's not used by
+	tsubst_pack_expansion anymore.
+
 2013-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56059
