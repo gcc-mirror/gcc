@@ -1357,7 +1357,8 @@ find_loop_location (struct loop *loop)
 
   stmt = get_loop_exit_condition (loop);
 
-  if (stmt && gimple_location (stmt) != UNKNOWN_LOC)
+  if (stmt
+      && LOCATION_LOCUS (gimple_location (stmt)) > BUILTINS_LOCATION)
     return gimple_location (stmt);
 
   /* If we got here the loop is probably not "well formed",
@@ -1371,7 +1372,7 @@ find_loop_location (struct loop *loop)
   for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
       stmt = gsi_stmt (si);
-      if (gimple_location (stmt) != UNKNOWN_LOC)
+      if (LOCATION_LOCUS (gimple_location (stmt)) > BUILTINS_LOCATION)
         return gimple_location (stmt);
     }
 
