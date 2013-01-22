@@ -1,3 +1,9 @@
+2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Pragma_to_gnu) <Name_Space>: Use optimize_size
+	instead of optimize and adjust warning message.
+	(Compilation_Unit_to_gnu): Process pragmas preceding the unit.
+
 2013-01-22  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/gigi.h (ADT_unhandled_except_decl,
