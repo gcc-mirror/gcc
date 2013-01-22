@@ -1,3 +1,9 @@
+2013-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56059
+	* tree.c (strip_typedefs_expr) [TREE_VEC]: Preserve non-default
+	template args count.
+
 2013-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR target/54908
