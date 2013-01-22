@@ -260,7 +260,7 @@ dump_loc (int dump_kind, FILE *dfile, source_location loc)
   /* Currently vectorization passes print location information.  */
   if (dump_kind)
     {
-      if (loc != UNKNOWN_LOCATION)
+      if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
         fprintf (dfile, "\n%s:%d: note: ", LOCATION_FILE (loc),
                  LOCATION_LINE (loc));
       else if (current_function_decl)

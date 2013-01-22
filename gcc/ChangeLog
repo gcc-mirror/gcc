@@ -1,5 +1,12 @@
 2013-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/56074
+	* dumpfile.c (dump_loc): Only print loc if LOCATION_LOCUS (loc)
+	isn't UNKNOWN_LOCATION nor BUILTINS_LOCATION.
+	* tree-vect-loop-manip.c (find_loop_location): Also ignore
+	stmt locations where LOCATION_LOCUS of the stmt location is
+	UNKNOWN_LOCATION or BUILTINS_LOCATION.
+
 	PR target/55686
 	* config/i386/i386.md (UNSPEC_STOS): New.
 	(strset_singleop, *strsetdi_rex_1, *strsetsi_1, *strsethi_1,
