@@ -1,3 +1,10 @@
+2013-01-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53609
+	* g++.dg/cpp0x/variadic139.C: New test.
+	* g++.dg/cpp0x/variadic140.C: Likewise.
+	* g++.dg/cpp0x/variadic141.C: Likewise.
+
 2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/warn8.adb: New test.
