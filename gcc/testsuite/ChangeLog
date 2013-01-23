@@ -1,3 +1,8 @@
+2013-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49069
+	* gcc.dg/pr49069.c: New test.
+
 2013-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55944
@@ -27,8 +32,7 @@
 2013-01-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/55919
-	* add_path_to_list:  Copy path to temporary and strip
-	trailing directory separators before calling stat().
+	* gfortran.dg/include_8.f90: New test.
 
 2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
