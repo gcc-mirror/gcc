@@ -8847,9 +8847,10 @@ type_has_extended_temps (tree type)
     return true;
   if (CLASS_TYPE_P (type))
     {
+      tree f;
       if (is_std_init_list (type))
 	return true;
-      for (tree f = next_initializable_field (TYPE_FIELDS (type));
+      for (f = next_initializable_field (TYPE_FIELDS (type));
 	   f; f = next_initializable_field (DECL_CHAIN (f)))
 	if (type_has_extended_temps (TREE_TYPE (f)))
 	  return true;

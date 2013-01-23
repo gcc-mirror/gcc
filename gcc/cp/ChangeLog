@@ -1,5 +1,7 @@
 2013-01-22  Jason Merrill  <jason@redhat.com>
 
+	* call.c (type_has_extended_temps): Fix C++ism.
+
 	PR c++/53650
 	* call.c (type_has_extended_temps): New.
 	* cp-tree.h: Declare it.
