@@ -1,3 +1,8 @@
+2013-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdf_internal_rex64): Disparage alternatives
+	involving stack registers slightly.
+
 2013-01-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Check that
