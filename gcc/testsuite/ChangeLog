@@ -1,3 +1,7 @@
+2013-01-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* gcc.target/microblaze/microblaze.exp: Remove target_config_cflags check
+
 2013-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/56052
