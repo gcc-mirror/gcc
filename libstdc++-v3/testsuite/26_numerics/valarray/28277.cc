@@ -1,6 +1,6 @@
 // 2006-07-15  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006, 2009 Free Software Foundation
+// Copyright (C) 2006, 2009, 2013 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-DMAX_SIZE=5000" { target simulator } }
+
+#ifndef MAX_SIZE
+#define MAX_SIZE 5000000
+#endif
+
 #include <valarray>
 #include <testsuite_hooks.h>
 
@@ -25,7 +31,7 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  const std::valarray<int> v1(1, 5000000);
+  const std::valarray<int> v1(1, MAX_SIZE);
 
   const std::valarray<int> v2 = v1.shift(1);
   VERIFY( v2.size() == v1.size() );

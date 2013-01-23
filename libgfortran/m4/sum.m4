@@ -1,5 +1,5 @@
 `/* Implementation of the SUM intrinsic
-   Copyright 2002, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).

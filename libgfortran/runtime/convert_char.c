@@ -1,5 +1,5 @@
 /* Runtime conversion of strings from one character kind to another.
-   Copyright 2008, 2009, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 

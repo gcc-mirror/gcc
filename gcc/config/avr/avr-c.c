@@ -70,14 +70,6 @@ avr_toupper (char *up, const char *lo)
 
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
-static const char *const avr_builtin_name[] =
-  {
-#define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, CODE) NAME,
-#include "builtins.def"
-#undef DEF_BUILTIN
-    NULL
-  };
-
 void
 avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 {
@@ -169,25 +161,23 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
             const char *name = avr_addrspace[i].name;
             char *Name = (char*) alloca (1 + strlen (name));
 
-            cpp_define_formatted (pfile, "%s=%s",
-                                  avr_toupper (Name, name), name);
+            cpp_define (pfile, avr_toupper (Name, name));
           }
     }
 
   /* Define builtin macros so that the user can easily query whether or
      not a specific builtin is available. */
 
-  for (i = 0; avr_builtin_name[i]; i++)
-    {
-      const char *name = avr_builtin_name[i];
-      char *Name = (char*) alloca (1 + strlen (name));
-
-      cpp_define (pfile, avr_toupper (Name, name));
-    }
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE)   \
+  cpp_define (pfile, "__BUILTIN_AVR_" #NAME);
+#include "builtins.def"
+#undef DEF_BUILTIN
 
   /* Builtin macros for the __int24 and __uint24 type.  */
 
-  cpp_define (pfile, "__INT24_MAX__=8388607L");
+  cpp_define_formatted (pfile, "__INT24_MAX__=8388607%s",
+                        INT_TYPE_SIZE == 8 ? "LL" : "L");
   cpp_define (pfile, "__INT24_MIN__=(-__INT24_MAX__-1)");
-  cpp_define (pfile, "__UINT24_MAX__=16777215UL");
+  cpp_define_formatted (pfile, "__UINT24_MAX__=16777215%s",
+                        INT_TYPE_SIZE == 8 ? "ULL" : "UL");
 }

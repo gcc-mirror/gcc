@@ -128,6 +128,8 @@ static tree tsubst_initializer_list (tree, tree);
 static tree get_class_bindings (tree, tree, tree, tree);
 static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t,
 				   bool, bool);
+static tree coerce_innermost_template_parms (tree, tree, tree, tsubst_flags_t,
+					      bool, bool);
 static void tsubst_enum	(tree, tree, tree);
 static tree add_to_template_args (tree, tree);
 static tree add_outermost_template_args (tree, tree);
@@ -6738,6 +6740,61 @@ coerce_template_parms (tree parms,
 #endif
 
   return new_inner_args;
+}
+
+/* Like coerce_template_parms.  If PARMS represents all template
+   parameters levels, this function returns a vector of vectors
+   representing all the resulting argument levels.  Note that in this
+   case, only the innermost arguments are coerced because the
+   outermost ones are supposed to have been coerced already.
+
+   Otherwise, if PARMS represents only (the innermost) vector of
+   parameters, this function returns a vector containing just the
+   innermost resulting arguments.  */
+
+static tree
+coerce_innermost_template_parms (tree parms,
+				  tree args,
+				  tree in_decl,
+				  tsubst_flags_t complain,
+				  bool require_all_args,
+				  bool use_default_args)
+{
+  int parms_depth = TMPL_PARMS_DEPTH (parms);
+  int args_depth = TMPL_ARGS_DEPTH (args);
+  tree coerced_args;
+
+  if (parms_depth > 1)
+    {
+      coerced_args = make_tree_vec (parms_depth);
+      tree level;
+      int cur_depth;
+
+      for (level = parms, cur_depth = parms_depth;
+	   parms_depth > 0 && level != NULL_TREE;
+	   level = TREE_CHAIN (level), --cur_depth)
+	{
+	  tree l;
+	  if (cur_depth == args_depth)
+	    l = coerce_template_parms (TREE_VALUE (level),
+				       args, in_decl, complain,
+				       require_all_args,
+				       use_default_args);
+	  else
+	    l = TMPL_ARGS_LEVEL (args, cur_depth);
+
+	  if (l == error_mark_node)
+	    return error_mark_node;
+
+	  SET_TMPL_ARGS_LEVEL (coerced_args, cur_depth, l);
+	}
+    }
+  else
+    coerced_args = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parms),
+					  args, in_decl, complain,
+					  require_all_args,
+					  use_default_args);
+  return coerced_args;
 }
 
 /* Returns 1 if template args OT and NT are equivalent.  */
@@ -14640,6 +14697,13 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
       ggc_free (tinst);
       return error_mark_node;
     }
+
+  args =
+    coerce_innermost_template_parms (DECL_TEMPLATE_PARMS (tmpl),
+				     args, tmpl, complain,
+				     /*require_all_args=*/true,
+				     /*use_default_args=*/true);
+
   tree r = instantiate_template (tmpl, args, complain);
   pop_tinst_level ();
   /* We can't free this if a pending_template entry or last_error_tinst_level

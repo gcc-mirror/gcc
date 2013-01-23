@@ -699,6 +699,67 @@
 (include "predicates.md")
 (include "constraints.md")
 
+;; Atomic instructions
+
+;; All memory loads and stores access storage atomically except
+;; for one exception.  The STORE BYTES, STORE DOUBLE BYTES, and
+;; doubleword loads and stores are not guaranteed to be atomic
+;; when referencing the I/O address space.
+
+;; Implement atomic DImode load using 64-bit floating point load and copy.
+
+(define_expand "atomic_loaddi"
+  [(match_operand:DI 0 "register_operand")              ;; val out
+   (match_operand:DI 1 "memory_operand")                ;; memory
+   (match_operand:SI 2 "const_int_operand")]            ;; model
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  operands[1] = force_reg (SImode, XEXP (operands[1], 0));
+  operands[2] = gen_reg_rtx (DImode);
+  expand_mem_thread_fence (model);
+  emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1], operands[2]));
+  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
+    expand_mem_thread_fence (model);
+  DONE;
+})
+
+(define_insn "atomic_loaddi_1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (mem:DI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (match_operand:DI 2 "register_operand" "=&f"))]
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
+  "{fldds|fldd} 0(%1),%2\;{fstds|fstd} %2,-16(%%sp)\;{ldws|ldw} -16(%%sp),%0\;{ldws|ldw} -12(%%sp),%R0"
+  [(set_attr "type" "move")
+   (set_attr "length" "16")])
+
+;; Implement atomic DImode store using copy and 64-bit floating point store.
+
+(define_expand "atomic_storedi"
+  [(match_operand:DI 0 "memory_operand")                ;; memory
+   (match_operand:DI 1 "register_operand")              ;; val out
+   (match_operand:SI 2 "const_int_operand")]            ;; model
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
+{
+  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  operands[0] = force_reg (SImode, XEXP (operands[0], 0));
+  operands[2] = gen_reg_rtx (DImode);
+  expand_mem_thread_fence (model);
+  emit_insn (gen_atomic_storedi_1 (operands[0], operands[1], operands[2]));
+  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
+    expand_mem_thread_fence (model);
+  DONE;
+})
+
+(define_insn "atomic_storedi_1"
+  [(set (mem:DI (match_operand:SI 0 "register_operand" "r"))
+        (match_operand:DI 1 "register_operand" "r"))
+   (clobber (match_operand:DI 2 "register_operand" "=&f"))]
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
+  "{stws|stw} %1,-16(%%sp)\;{stws|stw} %R1,-12(%%sp)\;{fldds|fldd} -16(%%sp),%2\;{fstds|fstd} %2,0(%0)"
+  [(set_attr "type" "move")
+   (set_attr "length" "16")])
+
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
 

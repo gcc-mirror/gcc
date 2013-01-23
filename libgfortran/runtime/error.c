@@ -1,5 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2006, 2007, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).

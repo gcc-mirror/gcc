@@ -40,6 +40,8 @@ static bool optimize_lexical_comparison (gfc_expr *);
 static void optimize_minmaxloc (gfc_expr **);
 static bool is_empty_string (gfc_expr *e);
 static void doloop_warn (gfc_namespace *);
+static void optimize_reduction (gfc_namespace *);
+static int callback_reduction (gfc_expr **, int *, void *);
 
 /* How deep we are inside an argument list.  */
 
@@ -107,6 +109,7 @@ gfc_run_passes (gfc_namespace *ns)
       expr_array = XNEWVEC(gfc_expr **, expr_size);
 
       optimize_namespace (ns);
+      optimize_reduction (ns);
       if (gfc_option.dump_fortran_optimized)
 	gfc_dump_parse_tree (ns, stdout);
 
@@ -180,6 +183,145 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+/* Auxiliary function to handle the arguments to reduction intrnisics.  If the
+   function is a scalar, just copy it; otherwise returns the new element, the
+   old one can be freed.  */
+
+static gfc_expr *
+copy_walk_reduction_arg (gfc_expr *e, gfc_expr *fn)
+{
+  gfc_expr *fcn;
+  gfc_isym_id id;
+
+  if (e->rank == 0 || e->expr_type == EXPR_FUNCTION)
+    fcn = gfc_copy_expr (e);
+  else
+    {
+      id = fn->value.function.isym->id;
+
+      if (id == GFC_ISYM_SUM || id == GFC_ISYM_PRODUCT)
+	fcn = gfc_build_intrinsic_call (current_ns,
+					fn->value.function.isym->id,
+					fn->value.function.isym->name,
+					fn->where, 3, gfc_copy_expr (e),
+					NULL, NULL);
+      else if (id == GFC_ISYM_ANY || id == GFC_ISYM_ALL)
+	fcn = gfc_build_intrinsic_call (current_ns,
+					fn->value.function.isym->id,
+					fn->value.function.isym->name,
+					fn->where, 2, gfc_copy_expr (e),
+					NULL);
+      else
+	gfc_internal_error ("Illegal id in copy_walk_reduction_arg");
+
+      fcn->symtree->n.sym->attr.access = ACCESS_PRIVATE;
+    }
+
+  (void) gfc_expr_walker (&fcn, callback_reduction, NULL);
+
+  return fcn;
+}
+
+/* Callback function for optimzation of reductions to scalars.  Transform ANY
+   ([f1,f2,f3, ...]) to f1 .or. f2 .or. f3 .or. ..., with ANY, SUM and PRODUCT
+   correspondingly.  Handly only the simple cases without MASK and DIM.  */
+
+static int
+callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+		    void *data ATTRIBUTE_UNUSED)
+{
+  gfc_expr *fn, *arg;
+  gfc_intrinsic_op op;
+  gfc_isym_id id;
+  gfc_actual_arglist *a;
+  gfc_actual_arglist *dim;
+  gfc_constructor *c;
+  gfc_expr *res, *new_expr;
+  gfc_actual_arglist *mask;
+
+  fn = *e;
+
+  if (fn->rank != 0 || fn->expr_type != EXPR_FUNCTION
+      || fn->value.function.isym == NULL)
+    return 0;
+
+  id = fn->value.function.isym->id;
+
+  if (id != GFC_ISYM_SUM && id != GFC_ISYM_PRODUCT
+      && id != GFC_ISYM_ANY && id != GFC_ISYM_ALL)
+    return 0;
+
+  a = fn->value.function.actual;
+
+  /* Don't handle MASK or DIM.  */
+
+  dim = a->next;
+
+  if (dim->expr != NULL)
+    return 0;
+
+  if (id == GFC_ISYM_SUM || id == GFC_ISYM_PRODUCT)
+    {
+      mask = dim->next;
+      if ( mask->expr != NULL)
+	return 0;
+    }
+
+  arg = a->expr;
+
+  if (arg->expr_type != EXPR_ARRAY)
+    return 0;
+
+  switch (id)
+    {
+    case GFC_ISYM_SUM:
+      op = INTRINSIC_PLUS;
+      break;
+
+    case GFC_ISYM_PRODUCT:
+      op = INTRINSIC_TIMES;
+      break;
+
+    case GFC_ISYM_ANY:
+      op = INTRINSIC_OR;
+      break;
+
+    case GFC_ISYM_ALL:
+      op = INTRINSIC_AND;
+      break;
+
+    default:
+      return 0;
+    }
+
+  c = gfc_constructor_first (arg->value.constructor);
+
+  if (c == NULL)
+    return 0;
+
+  res = copy_walk_reduction_arg (c->expr, fn);
+
+  c = gfc_constructor_next (c);
+  while (c)
+    {
+      new_expr = gfc_get_expr ();
+      new_expr->ts = fn->ts;
+      new_expr->expr_type = EXPR_OP;
+      new_expr->rank = fn->rank;
+      new_expr->where = fn->where;
+      new_expr->value.op.op = op;
+      new_expr->value.op.op1 = res;
+      new_expr->value.op.op2 = copy_walk_reduction_arg (c->expr, fn);
+      res = new_expr;
+      c = gfc_constructor_next (c);
+    }
+
+  gfc_simplify_expr (res, 0);
+  *e = res;
+  gfc_free_expr (fn);
+
+  return 0;
+}
 
 /* Callback function for common function elimination, called from cfe_expr_0.
    Put all eligible function expressions into expr_array.  */
@@ -484,6 +626,16 @@ dummy_expr_callback (gfc_expr **e ATTRIBUTE_UNUSED, int *walk_subtrees,
   return 0;
 }
 
+/* Dummy function for code callback, for use when we really
+   don't want to do anything.  */
+static int
+dummy_code_callback (gfc_code **e ATTRIBUTE_UNUSED,
+		     int *walk_subtrees ATTRIBUTE_UNUSED,
+		     void *data ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 /* Code callback function for converting
    do while(a)
    end do
@@ -636,6 +788,20 @@ optimize_namespace (gfc_namespace *ns)
     {
       if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
 	optimize_namespace (ns);
+    }
+}
+
+static void
+optimize_reduction (gfc_namespace *ns)
+{
+  current_ns = ns;
+  gfc_code_walker (&ns->code, dummy_code_callback, callback_reduction, NULL);
+
+/* BLOCKs are handled in the expression walker below.  */
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	optimize_reduction (ns);
     }
 }
 

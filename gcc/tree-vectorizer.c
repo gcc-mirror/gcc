@@ -225,6 +225,8 @@ increase_alignment (void)
 {
   struct varpool_node *vnode;
 
+  vect_location = UNKNOWN_LOC;
+
   /* Increase the alignment of all global arrays for vectorization.  */
   FOR_EACH_DEFINED_VARIABLE (vnode)
     {

@@ -1465,6 +1465,10 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
+    case ENTRY_VALUE:
+      /* This is magic, don't go through canonicalization et al.  */
+      return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
+
     case VALUE:
     CASE_CONST_UNIQUE:
       /* There's no need to compare the contents of CONST_DOUBLEs or
@@ -1904,6 +1908,20 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
   return addr;
 }
 
+/* Return TRUE if an object X sized at XSIZE bytes and another object
+   Y sized at YSIZE bytes, starting C bytes after X, may overlap.  If
+   any of the sizes is zero, assume an overlap, otherwise use the
+   absolute value of the sizes as the actual sizes.  */
+
+static inline bool
+offset_overlap_p (HOST_WIDE_INT c, int xsize, int ysize)
+{
+  return (xsize == 0 || ysize == 0
+	  || (c >= 0
+	      ? (abs (xsize) > c)
+	      : (abs (ysize) > -c)));
+}
+
 /* Return one if X and Y (memory addresses) reference the
    same location in memory or if the references overlap.
    Return zero if they do not overlap, else return
@@ -1976,23 +1994,17 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
   else if (GET_CODE (x) == LO_SUM)
     x = XEXP (x, 1);
   else
-    x = addr_side_effect_eval (x, xsize, 0);
+    x = addr_side_effect_eval (x, abs (xsize), 0);
   if (GET_CODE (y) == HIGH)
     y = XEXP (y, 0);
   else if (GET_CODE (y) == LO_SUM)
     y = XEXP (y, 1);
   else
-    y = addr_side_effect_eval (y, ysize, 0);
+    y = addr_side_effect_eval (y, abs (ysize), 0);
 
   if (rtx_equal_for_memref_p (x, y))
     {
-      if (xsize <= 0 || ysize <= 0)
-	return 1;
-      if (c >= 0 && xsize > c)
-	return 1;
-      if (c < 0 && ysize+c > 0)
-	return 1;
-      return 0;
+      return offset_overlap_p (c, xsize, ysize);
     }
 
   /* This code used to check for conflicts involving stack references and
@@ -2062,8 +2074,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	  x0 = canon_rtx (XEXP (x, 0));
 	  y0 = canon_rtx (XEXP (y, 0));
 	  if (rtx_equal_for_memref_p (x0, y0))
-	    return (xsize == 0 || ysize == 0
-		    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
+	    return offset_overlap_p (c, xsize, ysize);
 
 	  /* Can't properly adjust our sizes.  */
 	  if (!CONST_INT_P (x1))
@@ -2080,14 +2091,21 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 
   /* Deal with alignment ANDs by adjusting offset and size so as to
      cover the maximum range, without taking any previously known
-     alignment into account.  */
+     alignment into account.  Make a size negative after such an
+     adjustments, so that, if we end up with e.g. two SYMBOL_REFs, we
+     assume a potential overlap, because they may end up in contiguous
+     memory locations and the stricter-alignment access may span over
+     part of both.  */
   if (GET_CODE (x) == AND && CONST_INT_P (XEXP (x, 1)))
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (x, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (xsize > 0 && sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && -uc == (uc & -uc))
 	{
-	  xsize -= sc + 1;
+	  if (xsize > 0)
+	    xsize = -xsize;
+	  if (xsize)
+	    xsize += sc + 1;
 	  c -= sc + 1;
 	  return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
 				     ysize, y, c);
@@ -2097,9 +2115,12 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (y, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (ysize > 0 && sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && -uc == (uc & -uc))
 	{
-	  ysize -= sc + 1;
+	  if (ysize > 0)
+	    ysize = -ysize;
+	  if (ysize)
+	    ysize += sc + 1;
 	  c += sc + 1;
 	  return memrefs_conflict_p (xsize, x,
 				     ysize, canon_rtx (XEXP (y, 0)), c);
@@ -2111,8 +2132,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       if (CONST_INT_P (x) && CONST_INT_P (y))
 	{
 	  c += (INTVAL (y) - INTVAL (x));
-	  return (xsize <= 0 || ysize <= 0
-		  || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
+	  return offset_overlap_p (c, xsize, ysize);
 	}
 
       if (GET_CODE (x) == CONST)
@@ -2128,10 +2148,12 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	return memrefs_conflict_p (xsize, x, ysize,
 				   canon_rtx (XEXP (y, 0)), c);
 
+      /* Assume a potential overlap for symbolic addresses that went
+	 through alignment adjustments (i.e., that have negative
+	 sizes), because we can't know how far they are from each
+	 other.  */
       if (CONSTANT_P (y))
-	return (xsize <= 0 || ysize <= 0
-		|| (rtx_equal_for_memref_p (x, y)
-		    && ((c >= 0 && xsize > c) || (c < 0 && ysize+c > 0))));
+	return (xsize < 0 || ysize < 0 || offset_overlap_p (c, xsize, ysize));
 
       return -1;
     }

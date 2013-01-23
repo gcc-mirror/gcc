@@ -636,7 +636,10 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 #include <dlfcn.h>
 #endif
 
+/* Do not introduce a gmp.h dependency on the build system.  */
+#ifndef GENERATOR_FILE
 #include <gmp.h>
+#endif
 
 /* Get libiberty declarations.  */
 #include "libiberty.h"

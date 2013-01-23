@@ -151,58 +151,6 @@ stmt_has_scalar_dependences_outside_loop (loop_p loop, gimple stmt)
   return false;
 }
 
-/* Update the PHI nodes of NEW_LOOP.  NEW_LOOP is a duplicate of
-   ORIG_LOOP.  */
-
-static void
-update_phis_for_loop_copy (struct loop *orig_loop, struct loop *new_loop)
-{
-  tree new_ssa_name;
-  gimple_stmt_iterator si_new, si_orig;
-  edge orig_loop_latch = loop_latch_edge (orig_loop);
-  edge orig_entry_e = loop_preheader_edge (orig_loop);
-  edge new_loop_entry_e = loop_preheader_edge (new_loop);
-
-  /* Scan the phis in the headers of the old and new loops
-     (they are organized in exactly the same order).  */
-  for (si_new = gsi_start_phis (new_loop->header),
-       si_orig = gsi_start_phis (orig_loop->header);
-       !gsi_end_p (si_new) && !gsi_end_p (si_orig);
-       gsi_next (&si_new), gsi_next (&si_orig))
-    {
-      tree def;
-      source_location locus;
-      gimple phi_new = gsi_stmt (si_new);
-      gimple phi_orig = gsi_stmt (si_orig);
-
-      /* Add the first phi argument for the phi in NEW_LOOP (the one
-	 associated with the entry of NEW_LOOP)  */
-      def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_entry_e);
-      locus = gimple_phi_arg_location_from_edge (phi_orig, orig_entry_e);
-      add_phi_arg (phi_new, def, new_loop_entry_e, locus);
-
-      /* Add the second phi argument for the phi in NEW_LOOP (the one
-	 associated with the latch of NEW_LOOP)  */
-      def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_loop_latch);
-      locus = gimple_phi_arg_location_from_edge (phi_orig, orig_loop_latch);
-
-      if (TREE_CODE (def) == SSA_NAME)
-	{
-	  new_ssa_name = get_current_def (def);
-
-	  if (!new_ssa_name)
-	    /* This only happens if there are no definitions inside the
-	       loop.  Use the the invariant in the new loop as is.  */
-	    new_ssa_name = def;
-	}
-      else
-	/* Could be an integer.  */
-	new_ssa_name = def;
-
-      add_phi_arg (phi_new, new_ssa_name, loop_latch_edge (new_loop), locus);
-    }
-}
-
 /* Return a copy of LOOP placed before LOOP.  */
 
 static struct loop *
@@ -215,9 +163,7 @@ copy_loop_before (struct loop *loop)
   res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, preheader);
   gcc_assert (res != NULL);
   free_original_copy_tables ();
-
-  update_phis_for_loop_copy (loop, res);
-  rename_variables_in_loop (res);
+  delete_update_ssa ();
 
   return res;
 }

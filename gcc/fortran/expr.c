@@ -3537,7 +3537,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  name = s2->name;
 	}
 
-      if (s2->attr.proc_pointer && s2->ts.interface)
+      if (s2 && s2->attr.proc_pointer && s2->ts.interface)
 	s2 = s2->ts.interface;
 
       if (s1 == s2 || !s1 || !s2)

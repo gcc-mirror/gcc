@@ -1710,9 +1710,16 @@ build_def_use (basic_block bb)
 	      scan_rtx (insn, &XEXP (note, 0), ALL_REGS, mark_read,
 			OP_INOUT);
 
-	  /* Step 4: Close chains for registers that die here.  */
+	  /* Step 4: Close chains for registers that die here, unless
+	     the register is mentioned in a REG_UNUSED note.  In that
+	     case we keep the chain open until step #7 below to ensure
+	     it conflicts with other output operands of this insn.
+	     See PR 52573.  Arguably the insn should not have both
+	     notes; it has proven difficult to fix that without
+	     other undesirable side effects.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_DEAD)
+	    if (REG_NOTE_KIND (note) == REG_DEAD
+		&& !find_regno_note (insn, REG_UNUSED, REGNO (XEXP (note, 0))))
 	      {
 		remove_from_hard_reg_set (&live_hard_regs,
 					  GET_MODE (XEXP (note, 0)),

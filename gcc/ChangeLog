@@ -1,3 +1,368 @@
+2013-01-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55433
+	* lra-constraints.c (curr_insn_transform): Don't reuse original
+	insn for secondary memory move when memory mode should be
+	different.
+
+2013-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.md (atomic_loaddi, atomic_loaddi_1, atomic_storedi,
+	atomic_storedi_1): New patterns.
+
+2013-01-20  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	btver2 pipeline descriptions.
+	* config/i386/i386.c: Enable CPU_BTVER2 to use btver2 pipeline
+	descriptions.
+	* config/i386/i386.md (btver2_decode): New type attributes.
+	* config/i386/sse.md (btver2_decode, btver2_sse_attr): New 
+	type attributes.
+	* config/i386/btver2.md: New file describing btver2 pipelines.
+
+2013-01-19  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-optimization/52631
+	* tree-ssa-sccvn (visit_use): Before looking up the original
+	statement, try looking up the simplified expression.
+
+2013-01-19  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.c (moxie_expand_prologue): Set
+	current_function_static_stack_size.
+
+2013-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56029
+	* tree-phinodes.c (reserve_phi_args_for_new_edge): Set
+	gimple_phi_arg_location for the new arg to UNKNOWN_LOCATION.
+
+2013-01-18  Sharad Singhai  <singhai@google.com>
+
+	PR tree-optimization/55995
+	* dumpfile.c (dump_loc): Print location only if available.
+	* tree-vectorizer.c (increase_alignment): Intialize vect_location.
+
+2013-01-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55433
+	* lra-constraints.c (curr_insn_transform): Reuse original insn for
+	secondary memory move.
+	(inherit_reload_reg): Use rclass instead of cl for
+	check_secondary_memory_needed_p.
+
+2013-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56015
+	* expr.c (expand_expr_real_2) <case COMPLEX_EXPR>: Handle
+	the case where writing real complex part of target modifies
+	op1.
+
+2013-01-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_vcond_internal<mode>): Handle unordered cases.
+	* config/aarch64/iterators.md (v_cmp_result): New.
+
+2013-01-18  Yi-Hsiu Hsu  <ahsu@marvell.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/marvell-pj4.md: New file.
+	* config/arm/arm.c (arm_issue_rate): Add marvell_pj4.
+	* config/arm/arm.md (generic_sched): Add marvell_pj4.
+	(generic_vfp): Likewise.
+	* config/arm/arm-cores.def: Add marvell-pj4.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add marvell_pj4.
+	* doc/invoke.texi: Document marvell-pj4.
+
+2013-01-18  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/arm_neon.h: Map scalar types to standard types.
+
+2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54114
+	PR debug/54402
+	PR debug/49888
+	* var-tracking.c (negative_power_of_two_p): New.
+	(global_get_addr_cache, local_get_addr_cache): New.
+	(get_addr_from_global_cache, get_addr_from_local_cache): New.
+	(vt_canonicalize_addr): Rewrite using the above.  Adjust the
+	heading comment.
+	(vt_stack_offset_p): Remove.
+	(vt_canon_true_dep): Always canonicalize loc's address.
+	(clobber_overlapping_mems): Make sure we have a MEM.
+	(local_get_addr_clear_given_value): New.
+	(val_reset): Clear local cached entries.
+	(compute_bb_dataflow): Create and release the local cache.
+	Disable duplicate MEMs clobbering.
+	(emit_notes_in_bb): Clobber MEMs likewise.
+	(vt_emit_notes): Create and release the local cache.
+	(vt_initialize, vt_finalize): Create and release the global
+	cache, respectively.
+	* alias.c (rtx_equal_for_memref_p): Compare operands of
+	ENTRY_VALUEs.
+
+2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+
+	PR libmudflap/53359
+	* tree-mudflap.c (mudflap_finish_file): Skip deferred decls
+	not found in the symtab.
+
+2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/56006
+	PR rtl-optimization/55547
+	PR rtl-optimization/53827
+	PR debug/53671
+	PR debug/49888
+	* alias.c (offset_overlap_p): New, factored out of...
+	(memrefs_conflict_p): ... this.  Use absolute sizes.  Retain
+	the conservative special case for symbolic constants.  Don't
+	adjust zero sizes on alignment.
+
+2013-01-18  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/52573
+	* regrename.c (build_def_use): Ignore REG_DEAD notes if there is a
+	REG_UNUSED for the same register.
+
+2013-01-17  Richard Biener  <rguenther@suse.de>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/55833
+	* loop-unswitch.c (unswitch_loops): Move loop verification...
+	(unswitch_single_loop): ...here.  Call mark_irreducible_loops.
+	* cfgloopmanip.c (fix_loop_placement): Add IRRED_INVALIDATED parameter.
+	Set it to true when we're removing a loop from hierarchy tree in
+	an irreducible region.
+	(fix_bb_placements): Adjust caller.
+	(fix_loop_placements): Likewise.
+
+2013-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def (DEF_BUILTIN): Factor out
+	"__builtin_avr_" from NAME, turn NAME to an uppercase identifier.
+	Factor out 'CODE_FOR_' from ICODE, use 'nothing' instead of '-1'.
+	Remove ID.  Adjust comments.
+	* config/avr/avr-c.c (avr_builtin_name): Remove.
+	(avr_cpu_cpp_builtins): Use DEF_BUILTIN instead of for-loop.
+	* config/avr/avr.c (avr_tolower): New static function.
+	(DEF_BUILTIN): Remove parameter ID.  Prefix ICODE by 'CODE_FOR_'.
+	Stringify NAME, prefix it with "__builtin_avr_" and lowercase it.
+	(avr_expand_builtin): Assert insn_code != CODE_FOR_nothing for
+	default expansion.
+
+2013-01-17  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55273
+	* loop-iv.c (iv_number_of_iterations): Consider zero iteration case.
+
+2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55981
+	* config/i386/sync.md (atomic_store<mode>): Always generate SWImode
+	store through atomic_store<mode>_1.
+	(atomic_store<mode>_1): Macroize insn using SWI mode iterator.
+
+2013-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimizations/55264
+	* ipa-inline-transform.c (can_remove_node_now_p_1): Never return true
+	for virtual methods.
+	* ipa.c (symtab_remove_unreachable_nodes): Never return true for
+	virtual methods before inlining is over.
+	* cgraph.h (cgraph_only_called_directly_or_aliased_p): Return false for
+	virtual functions.
+	* cgraphclones.c (cgraph_create_virtual_clone): Mark clones as
+	non-virtual.
+
+2013-01-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56005
+	* sched-deps.c (sched_analyze_2): Check deps->readonly for adding
+	pending reads for prefetch.
+
+2013-01-16  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc/config/aarch64/aarch64.md
+	(*cstoresi_neg_uxtw): New pattern.
+	(*cmovsi_insn_uxtw): New pattern.
+	(*<optab>si3_uxtw): New pattern.
+	(*<LOGICAL:optab>_<SHIFT:optab>si3_uxtw): New pattern.
+	(*<optab>si3_insn_uxtw): New pattern.
+	(*bswapsi2_uxtw): New pattern.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (tree_function_versioning): Remove set but
+	never used variable.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55964
+	* tree-flow.h (rename_variables_in_loop): Remove.
+	(rename_variables_in_bb): Likewise.
+	* tree-loop-distribution.c (update_phis_for_loop_copy): Remove.
+	(copy_loop_before): Adjust and delete update-ssa status.
+	* tree-vect-loop-manip.c (rename_variables_in_bb): Make static.
+	(rename_variables_in_bb): Likewise.  Properly walk over predecessors.
+	(rename_variables_in_loop): Remove.
+	(slpeel_update_phis_for_duplicate_loop): Likewise.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Handle nested loops,
+	use available cfg machinery instead of duplicating it.
+	Update PHI nodes and perform poor-mans SSA update here.
+	(slpeel_tree_peel_loop_to_edge): Adjust.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54767
+	PR tree-optimization/53465
+	* tree-vrp.c (vrp_meet_1): Revert original fix for PR53465.
+	(vrp_visit_phi_node): For PHI arguments coming via backedges
+	drop all symbolical range information.
+	(execute_vrp): Compute backedges.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	* doc/install.texi: Update CLooG and ISL requirements to
+	0.18.0 and 0.11.1.
+
+2013-01-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/55301
+	* config/sh/sh.c (sh_expand_prologue): Postpone new_stack mem symbol.
+	(broken_move): Handle UNSPECV_SP_SWITCH_B.
+	* config/sh/sh.md (sp_switch_1): Use set (reg:SI SP_REG).
+
+2013-01-16  DJ Delorie  <dj@redhat.com>
+
+	* config/sh/sh.md (UNSPECV_SP_SWITCH_B): New.
+	(UNSPECV_SP_SWITCH_E): New.
+	(sp_switch_1): Change to an unspec.
+	(sp_switch_2): Change to an unspec.  Don't use post-inc when we
+	replace $r15.
+
+2013-01-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* emit-rtl.c (need_atomic_barrier_p): Mask memory model argument
+	with MEMMODEL_MASK before comparing with MEMMODEL_* memory types.
+	* optabs.c (maybe_emit_sync_lock_test_and_set): Ditto.
+	(expand_mem_thread_fence): Ditto.
+	(expand_mem_signal_fence): Ditto.
+	(expand_atomic_load): Ditto.
+	(expand_atomic_store): Ditto.
+
+2013-01-16  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/55547
+	PR rtl-optimization/53827
+	PR debug/53671
+	PR debug/49888
+	* alias.c (memrefs_conflict_p): Set sizes to negative after
+	AND adjustments.
+
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55940
+	* function.c (thread_prologue_and_epilogue_insns): Always
+	add crtl->drap_reg to set_up_by_prologue.set, even if
+	stack_realign_drap is false.
+
+2013-01-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/vax.md (add<mode>3, sub<mode>3, mul<mode>3, div<mode>3,
+	and<mode>3, *and<mode>_const_int, ior<mode>3, xor<mode>3, ashrsi3,
+	*call): Fix indention.
+
+2013-01-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/55876
+	* optabs.c (widen_operand): Use gen_lowpart instead of gen_rtx_SUBREG.
+	Update comment.
+
+2013-01-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55153
+	* sched-deps.c (sched_analyze_2): Add pending reads for prefetch.
+
+2013-01-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55920
+	* tree-sra.c (analyze_access_subtree): Do not mark non-removable
+	accesses as grp_to_be_debug_replaced.
+
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55920
+	* tree-sra.c (sra_modify_assign): If for lacc->grp_to_be_debug_replaced
+	there is non-useless type conversion needed from debug rhs to lhs,
+	use build_debug_ref_for_model and/or VIEW_CONVERT_EXPR.
+
+2013-01-15  Joseph Myers  <joseph@codesourcery.com>
+	    Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR target/43961
+	* config/arm/arm.h (ADDR_VEC_ALIGN): Align SImode jump tables for
+	Thumb.
+	(ASM_OUTPUT_CASE_LABEL): Remove.
+	(ASM_OUTPUT_BEFORE_CASE_LABEL): Define to empty.
+	* final.c (shorten_branches): Update alignment of labels before
+	jump tables if CASE_VECTOR_SHORTEN_MODE.
+
+2013-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/55961
+	* system.h: Do not include gmp.h for building host tools.
+
+2013-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55882
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Correctly
+	account for bitpos when computing alignment.
+
+2013-01-15  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): New case.
+	(ix86_target_macros_internal): Likewise.
+
+	* config/i386/i386.c (m_CORE2I7): Removed.
+	(m_CORE_HASWELL): New macro.
+	(m_CORE_ALL): Likewise.
+	(initial_ix86_tune_features): m_CORE2I7 is replaced by m_CORE_ALL.
+	(initial_ix86_arch_features): Likewise.
+	(processor_target_table): Initializations for Core avx2.
+	(cpu_names): New names "core-avx2".
+	(ix86_option_override_internal): Changed PROCESSOR_COREI7 by
+	PROCESSOR_CORE_HASWELL.
+	(ix86_issue_rate): New case.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	(ix86_sched_init_global): Likewise.
+
+	* config/i386/i386.h (TARGET_HASWELL): New macro.
+	(target_cpu_default): New TARGET_CPU_DEFAULT_haswell.
+	(processor_type): New PROCESSOR_HASWELL.
+
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55955
+	* tree-vect-loop.c (vectorizable_reduction): Give up early on
+	*SHIFT_EXPR and *ROTATE_EXPR codes.
+
+	PR tree-optimization/48766
+	* opts.c (common_handle_option): For -fwrapv disable -ftrapv, for
+	-ftrapv disable -fwrapv.
+
+2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/55974
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Define __FLASH
+	etc. to 1 and not to __flash.
+	Use LL suffix for __INT24_MAX__ with -mint8.
+	Use ULL suffix for __UINT24_MAX__ with -mint8.
+
 2013-01-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-arch.h
@@ -12,8 +377,8 @@
 
 2013-01-14  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): New. 
-	* config/aarch64/iterators.md (VALLDI): New. 
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_ld1r<mode>): New.
+	* config/aarch64/iterators.md (VALLDI): New.
 
 2012-01-14  Uros Bizjak  <ubizjak@gmail.com>
 	    Andi Kleen  <ak@linux.intel.com>

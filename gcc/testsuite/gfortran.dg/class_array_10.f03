@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! PR fortran/41587
 ! This program was leading to an ICE related to class allocatable arrays

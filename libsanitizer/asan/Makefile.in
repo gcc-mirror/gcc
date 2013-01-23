@@ -264,8 +264,7 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
-	-Wno-variadic-macros -Wno-c99-extensions \
-	$(LIBSTDCXX_RAW_CXX_CXXFLAGS)
+	-Wno-variadic-macros $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libasan.la
 asan_files = \

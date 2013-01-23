@@ -4,7 +4,6 @@
 // { dg-options "-std=c++11 -O -fno-inline -save-temps" }
 // { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
-// { dg-require-alias }
 // { dg-final { scan-assembler-times "call *_ZTW2ir" 1 { xfail *-*-* } } }
 // { dg-final cleanup-saved-temps }
 

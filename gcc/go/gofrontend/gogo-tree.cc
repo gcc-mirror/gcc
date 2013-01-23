@@ -438,15 +438,15 @@ Gogo::initialization_function_decl()
   // The tedious details of building your own function.  There doesn't
   // seem to be a helper function for this.
   std::string name = this->package_name() + ".init";
-  tree fndecl = build_decl(BUILTINS_LOCATION, FUNCTION_DECL,
-			   get_identifier_from_string(name),
+  tree fndecl = build_decl(this->package_->location().gcc_location(),
+			   FUNCTION_DECL, get_identifier_from_string(name),
 			   build_function_type(void_type_node,
 					       void_list_node));
   const std::string& asm_name(this->get_init_fn_name());
   SET_DECL_ASSEMBLER_NAME(fndecl, get_identifier_from_string(asm_name));
 
-  tree resdecl = build_decl(BUILTINS_LOCATION, RESULT_DECL, NULL_TREE,
-			    void_type_node);
+  tree resdecl = build_decl(this->package_->location().gcc_location(),
+			    RESULT_DECL, NULL_TREE, void_type_node);
   DECL_ARTIFICIAL(resdecl) = 1;
   DECL_CONTEXT(resdecl) = fndecl;
   DECL_RESULT(fndecl) = resdecl;
@@ -481,7 +481,8 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
     push_struct_function(fndecl);
   else
     push_cfun(DECL_STRUCT_FUNCTION(fndecl));
-  cfun->function_end_locus = BUILTINS_LOCATION;
+  cfun->function_start_locus = this->package_->location().gcc_location();
+  cfun->function_end_locus = cfun->function_start_locus;
 
   gimplify_function_tree(fndecl);
 
@@ -1118,6 +1119,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 		else
 		  push_cfun(DECL_STRUCT_FUNCTION(decl));
 
+		cfun->function_start_locus = func->location().gcc_location();
 		cfun->function_end_locus =
                   func->block()->end_location().gcc_location();
 

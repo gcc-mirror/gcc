@@ -13,9 +13,9 @@ int main (void)
   int64x1_t input[2] = {(int64x1_t)0x0123456776543210LL,
 			(int64x1_t)0x89abcdeffedcba90LL};
   int64x1_t output[2] = {0, 0};
-  int64x2_t var = vld1q_dup_s64(input);
+  int64x2_t var = vld1q_dup_s64((int64_t *)input);
 
-  vst1q_s64(output, var);
+  vst1q_s64((int64_t *)output, var);
   if (output[0] != (int64x1_t)0x0123456776543210LL)
     abort();
   if (output[1] != (int64x1_t)0x0123456776543210LL)

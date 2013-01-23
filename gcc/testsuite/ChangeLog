@@ -1,3 +1,228 @@
+2013-01-20  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR debug/53235
+	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on darwin.
+	
+2013-01-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/inquire_10.f90: Run only for non-newlib targets.
+
+2013-01-19  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/52631
+	* tree-ssa/pr52631.c: New test.
+	* tree-ssa/ssa-fre-9: Update expected output.
+
+2013-01-19  Anthony Green  <green@moxielogic.com>
+
+	* gcc.dg/tree-ssa/asm-2.c (REGISTER): Pick an appropriate register
+	for moxie.
+
+2013-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56029
+	* g++.dg/torture/pr56029.C: New test.
+
+2013-01-18  Sharad Singhai  <singhai@google.com>
+
+	PR tree-optimization/55995
+	* gcc.dg/vect/vect.exp: Use "details" flags for dump info.
+
+2013-01-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55433
+	* gcc.target/i386/pr55433.c: New.
+
+2013-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56015
+	* gfortran.dg/pr56015.f90: New test.
+
+2013-01-18  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/vect/vect-multitypes-12.c: Refactor dg-final directive.
+
+2013-01-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-fcm-gt-f.c: Change expected output.
+	* gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-eq-f.c: Likewise.
+
+2013-01-17  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/pr52573.c: Move to...
+	* gcc.target/m68k/pr52573.c: Here.  Eliminate target selector.
+
+	PR rtl-optimization/52573
+	* gcc.dg/pr52573.c: New test.
+
+2013-01-17  Jack Howarth <howarth@bromo.med.uc.edu>
+
+        PR sanitizer/55679
+        * g++.dg/asan/interception-test-1.C: Skip on darwin.
+        * lib/target-supports.exp (check_effective_target_swapcontext): Use
+        check_no_compiler_messages to test support in ucontext.h.
+	(check_effective_target_setrlimit): Return 0 for Darwin's non-posix
+	compliant RLIMIT_AS.
+
+2013-01-17  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/55833
+	* gcc.dg/pr55833.c: New test.
+
+2013-01-17  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55273
+	* gcc.c-torture/compile/pr55273.c: New testcase.
+
+2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55981
+	* gcc.target/pr55981.c: New test.
+
+2013-01-17  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr40887.c: Require at least armv5.
+	* gcc.target/arm/pr51835.c: Avoid conflicts with multilib flags.
+	* gcc.target/arm/pr51915.c: Likewise.
+	* gcc.target/arm/pr52006.c: Likewise.
+	* gcc.target/arm/pr53187.c: Likewise.
+
+	* gcc.target/arm/ftest-support.h: Replace for compile-only tests.
+	* gcc.target/arm/ftest-support-arm.h: Delete.
+	* gcc.target/arm/ftest-support-thumb.h: Delete.
+	* gcc.target/arm/ftest-armv4-arm.c: Replace with compile-only test.
+	* gcc.target/arm/ftest-armv4t-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv4t-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv5t-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv5t-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv5te-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv5te-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6k-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6k-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6m-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6t2-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6t2-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6z-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6z-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7em-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7m-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
+
+2013-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimizations/55264
+	* g++.dg/ipa/pr55264.C: New test.
+
+2013-01-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55983
+	* gfortran.dg/class_55.f90: New.
+
+2013-01-16  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR testsuite/55994
+	* gcc.c-torture/execute/builtins/builtins.exp: Add
+	-Wl,--allow-multiple-definition for eabi and elf targets.
+
+	PR testsuite/54622
+	* lib/target-supports.exp (check_effective_target_vect_perm_byte,
+	check_effective_target_vect_perm_short,
+	check_effective_target_vect_widen_mult_qi_to_hi_pattern,
+	check_effective_target_vect64): Return 0 for big-endian ARM.
+	(check_effective_target_vect_widen_sum_qi_to_hi): Return 1 for ARM.
+
+	* gcc.target/arm/neon-vld1_dupQ.c: Use types that match function
+	prototypes.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55964
+	* gcc.dg/torture/pr55964.c: New testcase.
+
+2013-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54767
+	PR tree-optimization/53465
+	* gfortran.fortran-torture/execute/pr54767.f90: New testcase.
+
+2013-01-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/55301
+	* gcc.target/sh/sh-switch.c: New testcase.
+
+2013-01-15  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/webizer.c: Increase the array size.
+
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55940
+	* gcc.dg/pr55940.c: New test.
+
+2013-01-15  Manfred Schwarb  <manfred99@gmx.ch>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/bounds_check_4.f90: Add dg-options "-fbounds-check".
+	* gfortran.dg/bounds_check_5.f90: Likewise.
+	* gfortran.dg/class_array_10.f03: Fix syntax of dg-directive.
+	* gfortran.dg/continuation_9.f90: Likewise.
+	* gfortran.dg/move_alloc_13.f90: Likewise.
+	* gfortran.dg/structure_constructor_11.f90: Likewise.
+	* gfortran.dg/tab_continuation.f: Likewise.
+	* gfortran.dg/warning-directive-2.F90: Likewise.
+	* gfortran.dg/coarray_lib_token_4.f90: Remove misspelled directive.
+
+2013-01-15  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/fma.c: Skip for conflicting multilib options.
+	* gcc.target/arm/fma-sp.c: Likewise.
+
+2013-01-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55153
+	* gcc.dg/pr55153.c: New.
+
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55920
+	* gcc.c-torture/compile/pr55920.c: New test.
+
+2013-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55882
+	* gcc.dg/torture/pr55882.c: New testcase.
+
+2013-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55955
+	* gcc.c-torture/compile/pr55955.c: New test.
+
+2013-01-15  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/55663
+	* g++.dg/cpp0x/alias-decl-31.C: New test.
+
+2013-01-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/54286
+	* gfortran.dg/proc_ptr_result_8.f90 : Add module 'm' to check
+	case where interface is null.
+
+2013-01-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55806
+	* gfortran.dg/array_constructor_40.f90:  New test.
+
 2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/tree-ssa/slsr-8.c: Allow widening multiplications.

@@ -843,6 +843,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fintrinsic_modules_path:
+    case OPT_fintrinsic_modules_path_:
       gfc_add_intrinsic_modules_path (arg);
       break;
 
@@ -1146,6 +1147,7 @@ gfc_get_option_string (void)
         case OPT_quiet:
         case OPT_version:
         case OPT_fintrinsic_modules_path:
+        case OPT_fintrinsic_modules_path_:
           /* Ignore these.  */
           break;
 	default:
@@ -1171,6 +1173,7 @@ gfc_get_option_string (void)
         case OPT_quiet:
         case OPT_version:
         case OPT_fintrinsic_modules_path:
+        case OPT_fintrinsic_modules_path_:
           /* Ignore these.  */
 	  continue;
 

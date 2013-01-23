@@ -2812,6 +2812,28 @@ var_needs_tls_wrapper (tree var)
 	  && !var_defined_without_dynamic_init (var));
 }
 
+/* Get the FUNCTION_DECL for the shared TLS init function for this
+   translation unit.  */
+
+static tree
+get_local_tls_init_fn (void)
+{
+  tree sname = get_identifier ("__tls_init");
+  tree fn = IDENTIFIER_GLOBAL_VALUE (sname);
+  if (!fn)
+    {
+      fn = build_lang_decl (FUNCTION_DECL, sname,
+			     build_function_type (void_type_node,
+						  void_list_node));
+      SET_DECL_LANGUAGE (fn, lang_c);
+      TREE_PUBLIC (fn) = false;
+      DECL_ARTIFICIAL (fn) = true;
+      mark_used (fn);
+      SET_IDENTIFIER_GLOBAL_VALUE (sname, fn);
+    }
+  return fn;
+}
+
 /* Get a FUNCTION_DECL for the init function for the thread_local
    variable VAR.  The init function will be an alias to the function
    that initializes all the non-local TLS variables in the translation
@@ -2823,6 +2845,18 @@ get_tls_init_fn (tree var)
   /* Only C++11 TLS vars need this init fn.  */
   if (!var_needs_tls_wrapper (var))
     return NULL_TREE;
+
+  /* If -fno-extern-tls-init, assume that we don't need to call
+     a tls init function for a variable defined in another TU.  */
+  if (!flag_extern_tls_init && DECL_EXTERNAL (var))
+    return NULL_TREE;
+
+#ifdef ASM_OUTPUT_DEF
+  /* If the variable is internal, or if we can't generate aliases,
+     call the local init function directly.  */
+  if (!TREE_PUBLIC (var))
+#endif
+    return get_local_tls_init_fn ();
 
   tree sname = mangle_tls_init_fn (var);
   tree fn = IDENTIFIER_GLOBAL_VALUE (sname);
@@ -2841,11 +2875,12 @@ get_tls_init_fn (tree var)
       if (TREE_PUBLIC (var))
 	{
 	  tree obtype = strip_array_types (non_reference (TREE_TYPE (var)));
-	  /* If the variable might have static initialization, make the
-	     init function a weak reference.  */
+	  /* If the variable is defined somewhere else and might have static
+	     initialization, make the init function a weak reference.  */
 	  if ((!TYPE_NEEDS_CONSTRUCTING (obtype)
 	       || TYPE_HAS_CONSTEXPR_CTOR (obtype))
-	      && TARGET_SUPPORTS_WEAK)
+	      && TYPE_HAS_TRIVIAL_DESTRUCTOR (obtype)
+	      && DECL_EXTERNAL (var))
 	    declare_weak (fn);
 	  else
 	    DECL_WEAK (fn) = DECL_WEAK (var);
@@ -2956,6 +2991,9 @@ generate_tls_wrapper (tree fn)
 	  finish_if_stmt (if_stmt);
 	}
     }
+  else
+    /* If there's no initialization, the wrapper is a constant function.  */
+    TREE_READONLY (fn) = true;
   finish_return_stmt (convert_from_reference (var));
   finish_function_body (body);
   expand_or_defer_fn (finish_function (0));
@@ -3861,15 +3899,6 @@ handle_tls_init (void)
 
   location_t loc = DECL_SOURCE_LOCATION (TREE_VALUE (vars));
 
-  #ifndef ASM_OUTPUT_DEF
-  /* This currently requires alias support.  FIXME other targets could use
-     small thunks instead of aliases.  */
-  input_location = loc;
-  sorry ("dynamic initialization of non-function-local thread_local "
-	 "variables not supported on this target");
-  return;
-  #endif
-
   write_out_vars (vars);
 
   tree guard = build_decl (loc, VAR_DECL, get_identifier ("__tls_guard"),
@@ -3882,14 +3911,7 @@ handle_tls_init (void)
   DECL_TLS_MODEL (guard) = decl_default_tls_model (guard);
   pushdecl_top_level_and_finish (guard, NULL_TREE);
 
-  tree fn = build_lang_decl (FUNCTION_DECL,
-			     get_identifier ("__tls_init"),
-			     build_function_type (void_type_node,
-						  void_list_node));
-  SET_DECL_LANGUAGE (fn, lang_c);
-  TREE_PUBLIC (fn) = false;
-  DECL_ARTIFICIAL (fn) = true;
-  mark_used (fn);
+  tree fn = get_local_tls_init_fn ();
   start_preparsed_function (fn, NULL_TREE, SF_PRE_PARSED);
   tree body = begin_function_body ();
   tree if_stmt = begin_if_stmt ();
@@ -3904,11 +3926,17 @@ handle_tls_init (void)
       tree init = TREE_PURPOSE (vars);
       one_static_initialization_or_destruction (var, init, true);
 
-      tree single_init_fn = get_tls_init_fn (var);
-      cgraph_node *alias
-	= cgraph_same_body_alias (cgraph_get_create_node (fn),
-				  single_init_fn, fn);
-      gcc_assert (alias != NULL);
+#ifdef ASM_OUTPUT_DEF
+      /* Output init aliases even with -fno-extern-tls-init.  */
+      if (TREE_PUBLIC (var))
+	{
+          tree single_init_fn = get_tls_init_fn (var);
+	  cgraph_node *alias
+	    = cgraph_same_body_alias (cgraph_get_create_node (fn),
+				      single_init_fn, fn);
+	  gcc_assert (alias != NULL);
+	}
+#endif
     }
 
   finish_then_clause (if_stmt);

@@ -1,5 +1,5 @@
 `/* Support routines for the intrinsic power (**) operator.
-   Copyright 2004, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004-2013 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).

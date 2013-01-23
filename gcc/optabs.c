@@ -325,10 +325,10 @@ widen_operand (rtx op, enum machine_mode mode, enum machine_mode oldmode,
 	  && SUBREG_PROMOTED_UNSIGNED_P (op) == unsignedp))
     return convert_modes (mode, oldmode, op, unsignedp);
 
-  /* If MODE is no wider than a single word, we return a paradoxical
+  /* If MODE is no wider than a single word, we return a lowpart or paradoxical
      SUBREG.  */
   if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
-    return gen_rtx_SUBREG (mode, force_reg (GET_MODE (op), op), 0);
+    return gen_lowpart (mode, force_reg (GET_MODE (op), op));
 
   /* Otherwise, get an object of MODE, clobber it, and set the low-order
      part to OP.  */
@@ -7008,9 +7008,9 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
      exists, and the memory model is stronger than acquire, add a release 
      barrier before the instruction.  */
 
-  if (model == MEMMODEL_SEQ_CST
-      || model == MEMMODEL_RELEASE
-      || model == MEMMODEL_ACQ_REL)
+  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST
+      || (model & MEMMODEL_MASK) == MEMMODEL_RELEASE
+      || (model & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
     expand_mem_thread_fence (model);
 
   if (icode != CODE_FOR_nothing)
@@ -7388,7 +7388,7 @@ expand_mem_thread_fence (enum memmodel model)
 {
   if (HAVE_mem_thread_fence)
     emit_insn (gen_mem_thread_fence (GEN_INT (model)));
-  else if (model != MEMMODEL_RELAXED)
+  else if ((model & MEMMODEL_MASK) != MEMMODEL_RELAXED)
     {
       if (HAVE_memory_barrier)
 	emit_insn (gen_memory_barrier ());
@@ -7412,7 +7412,7 @@ expand_mem_signal_fence (enum memmodel model)
 {
   if (HAVE_mem_signal_fence)
     emit_insn (gen_mem_signal_fence (GEN_INT (model)));
-  else if (model != MEMMODEL_RELAXED)
+  else if ((model & MEMMODEL_MASK) != MEMMODEL_RELAXED)
     {
       /* By default targets are coherent between a thread and the signal
 	 handler running on the same thread.  Thus this really becomes a
@@ -7467,7 +7467,7 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
     target = gen_reg_rtx (mode);
 
   /* For SEQ_CST, emit a barrier before the load.  */
-  if (model == MEMMODEL_SEQ_CST)
+  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
     expand_mem_thread_fence (model);
 
   emit_move_insn (target, mem);
@@ -7513,7 +7513,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 	  if (maybe_expand_insn (icode, 2, ops))
 	    {
 	      /* lock_release is only a release barrier.  */
-	      if (model == MEMMODEL_SEQ_CST)
+	      if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
 		expand_mem_thread_fence (model);
 	      return const0_rtx;
 	    }
@@ -7540,7 +7540,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
   emit_move_insn (mem, val);
 
   /* For SEQ_CST, also emit a barrier after the store.  */
-  if (model == MEMMODEL_SEQ_CST)
+  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
     expand_mem_thread_fence (model);
 
   return const0_rtx;

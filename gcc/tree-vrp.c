@@ -7877,17 +7877,13 @@ vrp_meet_1 (value_range_t *vr0, value_range_t *vr1)
 
   if (vr0->type == VR_UNDEFINED)
     {
-      /* Drop equivalences.  See PR53465.  */
-      set_value_range (vr0, vr1->type, vr1->min, vr1->max, NULL);
+      set_value_range (vr0, vr1->type, vr1->min, vr1->max, vr1->equiv);
       return;
     }
 
   if (vr1->type == VR_UNDEFINED)
     {
-      /* VR0 already has the resulting range, just drop equivalences.
-	 See PR53465.  */
-      if (vr0->equiv)
-	bitmap_clear (vr0->equiv);
+      /* VR0 already has the resulting range.  */
       return;
     }
 
@@ -8012,6 +8008,21 @@ vrp_visit_phi_node (gimple phi)
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
 	      vr_arg = *(get_value_range (arg));
+	      /* Do not allow equivalences or symbolic ranges to leak in from
+		 backedges.  That creates invalid equivalencies.
+		 See PR53465 and PR54767.  */
+	      if (e->flags & EDGE_DFS_BACK
+		  && (vr_arg.type == VR_RANGE
+		      || vr_arg.type == VR_ANTI_RANGE))
+		{
+		  vr_arg.equiv = NULL;
+		  if (symbolic_range_p (&vr_arg))
+		    {
+		      vr_arg.type = VR_VARYING;
+		      vr_arg.min = NULL_TREE;
+		      vr_arg.max = NULL_TREE;
+		    }
+		}
 	    }
 	  else
 	    {
@@ -9260,11 +9271,17 @@ execute_vrp (void)
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   scev_initialize ();
 
+  /* ???  This ends up using stale EDGE_DFS_BACK for liveness computation.
+     Inserting assertions may split edges which will invalidate
+     EDGE_DFS_BACK.  */
   insert_range_assertions ();
 
   to_remove_edges.create (10);
   to_update_switch_stmts.create (5);
   threadedge_initialize_values ();
+
+  /* For visiting PHI nodes we need EDGE_DFS_BACK computed.  */
+  mark_dfs_back_edges ();
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
