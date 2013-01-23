@@ -647,9 +647,6 @@ internal_proto(init_loop_spec);
 extern void next_record (st_parameter_dt *, int);
 internal_proto(next_record);
 
-extern void reverse_memcpy (void *, const void *, size_t);
-internal_proto (reverse_memcpy);
-
 extern void st_wait (st_parameter_wait *);
 export_proto(st_wait);
 
