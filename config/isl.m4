@@ -114,7 +114,6 @@ AC_DEFUN([ISL_CHECK_VERSION],
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
     LIBS="${_isl_saved_LIBS} -lisl"
-    echo $CFLAGS
 
     AC_MSG_CHECKING([for version $1.$2 of ISL])
     AC_RUN_IFELSE([_ISL_CHECK_CT_PROG($1,$2)],
