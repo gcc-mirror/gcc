@@ -5833,7 +5833,6 @@ $as_echo "$as_me: WARNING: using in-tree ISL, disabling version check" >&2;}
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
     LIBS="${_isl_saved_LIBS} -lisl"
-    echo $CFLAGS
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.10 of ISL" >&5
 $as_echo_n "checking for version 0.10 of ISL... " >&6; }
@@ -5882,7 +5881,6 @@ $as_echo "$gcc_cv_isl" >&6; }
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
     LIBS="${_isl_saved_LIBS} -lisl"
-    echo $CFLAGS
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.11 of ISL" >&5
 $as_echo_n "checking for version 0.11 of ISL... " >&6; }
