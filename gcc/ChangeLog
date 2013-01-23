@@ -1,3 +1,10 @@
+2013-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49069
+	* config/arm/arm.md (cbranchdi4, cstoredi4): Use s_register_operand
+	instead of cmpdi_operand for first comparison operand.
+	Don't assert that comparison operands aren't both constants.
+
 2013-01-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/install.texi (Downloading the Source): Update references to

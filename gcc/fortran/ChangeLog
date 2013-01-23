@@ -1,7 +1,8 @@
 2013-01-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/55919
-	* gfortran.dg/include_8.f90:  New test.
+	* scanner.c (add_path_to_list): Copy path to temporary and strip
+	trailing directory separators before calling stat().
 
 2013-01-17  Richard Biener  <rguenther@suse.de>
 
