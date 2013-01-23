@@ -1,3 +1,11 @@
+2013-01-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56081
+	* resolve.c (resolve_select): Add argument 'select_type', reject
+	non-scalar expressions.
+	(resolve_select_type,resolve_code): Pass new argument to
+	'resolve_select'.
+
 2013-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/56052
