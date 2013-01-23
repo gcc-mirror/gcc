@@ -27,7 +27,6 @@
 #if ASAN_ALLOCATOR_VERSION == 1
 #include "asan_interceptors.h"
 #include "asan_internal.h"
-#include "asan_lock.h"
 #include "asan_mapping.h"
 #include "asan_stats.h"
 #include "asan_report.h"
@@ -35,6 +34,7 @@
 #include "asan_thread_registry.h"
 #include "sanitizer/asan_interface.h"
 #include "sanitizer_common/sanitizer_atomic.h"
+#include "sanitizer_common/sanitizer_mutex.h"
 
 namespace __asan {
 
@@ -227,7 +227,7 @@ class MallocInfo {
     AsanChunk *m = 0;
     AsanChunk **fl = &free_lists_[size_class];
     {
-      ScopedLock lock(&mu_);
+      BlockingMutexLock lock(&mu_);
       for (uptr i = 0; i < n_chunks; i++) {
         if (!(*fl)) {
           *fl = GetNewChunks(size_class);
@@ -245,7 +245,7 @@ class MallocInfo {
   void SwallowThreadLocalMallocStorage(AsanThreadLocalMallocStorage *x,
                                        bool eat_free_lists) {
     CHECK(flags()->quarantine_size > 0);
-    ScopedLock lock(&mu_);
+    BlockingMutexLock lock(&mu_);
     AsanChunkFifoList *q = &x->quarantine_;
     if (q->size() > 0) {
       quarantine_.PushList(q);
@@ -269,18 +269,18 @@ class MallocInfo {
   }
 
   void BypassThreadLocalQuarantine(AsanChunk *chunk) {
-    ScopedLock lock(&mu_);
+    BlockingMutexLock lock(&mu_);
     quarantine_.Push(chunk);
   }
 
   AsanChunk *FindChunkByAddr(uptr addr) {
-    ScopedLock lock(&mu_);
+    BlockingMutexLock lock(&mu_);
     return FindChunkByAddrUnlocked(addr);
   }
 
   uptr AllocationSize(uptr ptr) {
     if (!ptr) return 0;
-    ScopedLock lock(&mu_);
+    BlockingMutexLock lock(&mu_);
 
     // Make sure this is our chunk and |ptr| actually points to the beginning
     // of the allocated memory.
@@ -303,7 +303,7 @@ class MallocInfo {
   }
 
   void PrintStatus() {
-    ScopedLock lock(&mu_);
+    BlockingMutexLock lock(&mu_);
     uptr malloced = 0;
 
     Printf(" MallocInfo: in quarantine: %zu malloced: %zu; ",
@@ -321,7 +321,7 @@ class MallocInfo {
   }
 
   PageGroup *FindPageGroup(uptr addr) {
-    ScopedLock lock(&mu_);
+    BlockingMutexLock lock(&mu_);
     return FindPageGroupUnlocked(addr);
   }
 
@@ -479,7 +479,7 @@ class MallocInfo {
 
   AsanChunk *free_lists_[kNumberOfSizeClasses];
   AsanChunkFifoList quarantine_;
-  AsanLock mu_;
+  BlockingMutex mu_;
 
   PageGroup *page_groups_[kMaxAvailableRam / kMinMmapSize];
   atomic_uint32_t n_page_groups_;

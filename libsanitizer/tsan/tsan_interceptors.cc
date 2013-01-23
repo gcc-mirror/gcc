@@ -1239,33 +1239,6 @@ TSAN_INTERCEPTOR(int, pipe2, int *pipefd, int flags) {
   return res;
 }
 
-TSAN_INTERCEPTOR(long_t, read, int fd, void *buf, long_t sz) {
-  SCOPED_TSAN_INTERCEPTOR(read, fd, buf, sz);
-  int res = REAL(read)(fd, buf, sz);
-  if (res >= 0 && fd >= 0) {
-    FdAcquire(thr, pc, fd);
-  }
-  return res;
-}
-
-TSAN_INTERCEPTOR(long_t, pread, int fd, void *buf, long_t sz, unsigned off) {
-  SCOPED_TSAN_INTERCEPTOR(pread, fd, buf, sz, off);
-  int res = REAL(pread)(fd, buf, sz, off);
-  if (res >= 0 && fd >= 0) {
-    FdAcquire(thr, pc, fd);
-  }
-  return res;
-}
-
-TSAN_INTERCEPTOR(long_t, pread64, int fd, void *buf, long_t sz, u64 off) {
-  SCOPED_TSAN_INTERCEPTOR(pread64, fd, buf, sz, off);
-  int res = REAL(pread64)(fd, buf, sz, off);
-  if (res >= 0 && fd >= 0) {
-    FdAcquire(thr, pc, fd);
-  }
-  return res;
-}
-
 TSAN_INTERCEPTOR(long_t, readv, int fd, void *vec, int cnt) {
   SCOPED_TSAN_INTERCEPTOR(readv, fd, vec, cnt);
   int res = REAL(readv)(fd, vec, cnt);
@@ -1281,30 +1254,6 @@ TSAN_INTERCEPTOR(long_t, preadv64, int fd, void *vec, int cnt, u64 off) {
   if (res >= 0 && fd >= 0) {
     FdAcquire(thr, pc, fd);
   }
-  return res;
-}
-
-TSAN_INTERCEPTOR(long_t, write, int fd, void *buf, long_t sz) {
-  SCOPED_TSAN_INTERCEPTOR(write, fd, buf, sz);
-  if (fd >= 0)
-    FdRelease(thr, pc, fd);
-  int res = REAL(write)(fd, buf, sz);
-  return res;
-}
-
-TSAN_INTERCEPTOR(long_t, pwrite, int fd, void *buf, long_t sz, unsigned off) {
-  SCOPED_TSAN_INTERCEPTOR(pwrite, fd, buf, sz, off);
-  if (fd >= 0)
-    FdRelease(thr, pc, fd);
-  int res = REAL(pwrite)(fd, buf, sz, off);
-  return res;
-}
-
-TSAN_INTERCEPTOR(long_t, pwrite64, int fd, void *buf, long_t sz, u64 off) {
-  SCOPED_TSAN_INTERCEPTOR(pwrite64, fd, buf, sz, off);
-  if (fd >= 0)
-    FdRelease(thr, pc, fd);
-  int res = REAL(pwrite64)(fd, buf, sz, off);
   return res;
 }
 
@@ -1449,6 +1398,8 @@ TSAN_INTERCEPTOR(int, epoll_ctl, int epfd, int op, int fd, void *ev) {
     FdRelease(thr, pc, epfd);
   }
   int res = REAL(epoll_ctl)(epfd, op, fd, ev);
+  if (fd >= 0)
+    FdAccess(thr, pc, fd);
   return res;
 }
 
@@ -1641,6 +1592,33 @@ TSAN_INTERCEPTOR(int, fork, int fake) {
   return pid;
 }
 
+struct TsanInterceptorContext {
+  ThreadState *thr;
+  const uptr caller_pc;
+  const uptr pc;
+};
+
+#define COMMON_INTERCEPTOR_WRITE_RANGE(ctx, ptr, size) \
+    MemoryAccessRange(((TsanInterceptorContext*)ctx)->thr,  \
+                      ((TsanInterceptorContext*)ctx)->pc,   \
+                      (uptr)ptr, size, true)
+#define COMMON_INTERCEPTOR_READ_RANGE(ctx, ptr, size)       \
+    MemoryAccessRange(((TsanInterceptorContext*)ctx)->thr,  \
+                      ((TsanInterceptorContext*)ctx)->pc,   \
+                      (uptr)ptr, size, false)
+#define COMMON_INTERCEPTOR_ENTER(ctx, func, ...) \
+    SCOPED_TSAN_INTERCEPTOR(func, __VA_ARGS__) \
+    TsanInterceptorContext _ctx = {thr, caller_pc, pc}; \
+    ctx = (void*)&_ctx; \
+    (void)ctx;
+#define COMMON_INTERCEPTOR_FD_ACQUIRE(ctx, fd) \
+    FdAcquire(((TsanInterceptorContext*)ctx)->thr, pc, fd)
+#define COMMON_INTERCEPTOR_FD_RELEASE(ctx, fd) \
+    FdRelease(((TsanInterceptorContext*)ctx)->thr, pc, fd)
+#define COMMON_INTERCEPTOR_SET_THREAD_NAME(ctx, name) \
+    ThreadSetName(((TsanInterceptorContext*)ctx)->thr, name)
+#include "sanitizer_common/sanitizer_common_interceptors.inc"
+
 namespace __tsan {
 
 void ProcessPendingSignals(ThreadState *thr) {
@@ -1675,6 +1653,7 @@ void ProcessPendingSignals(ThreadState *thr) {
               (uptr)sigactions[sig].sa_sigaction :
               (uptr)sigactions[sig].sa_handler;
           stack.Init(&pc, 1);
+          Lock l(&ctx->thread_mtx);
           ScopedReport rep(ReportTypeErrnoInSignal);
           if (!IsFiredSuppression(ctx, rep, stack)) {
             rep.AddStack(&stack);
@@ -1702,6 +1681,8 @@ void InitializeInterceptors() {
   REAL(memset) = internal_memset;
   REAL(memcpy) = internal_memcpy;
   REAL(memcmp) = internal_memcmp;
+
+  SANITIZER_COMMON_INTERCEPTORS_INIT;
 
   TSAN_INTERCEPT(longjmp);
   TSAN_INTERCEPT(siglongjmp);
@@ -1806,14 +1787,8 @@ void InitializeInterceptors() {
   TSAN_INTERCEPT(pipe);
   TSAN_INTERCEPT(pipe2);
 
-  TSAN_INTERCEPT(read);
-  TSAN_INTERCEPT(pread);
-  TSAN_INTERCEPT(pread64);
   TSAN_INTERCEPT(readv);
   TSAN_INTERCEPT(preadv64);
-  TSAN_INTERCEPT(write);
-  TSAN_INTERCEPT(pwrite);
-  TSAN_INTERCEPT(pwrite64);
   TSAN_INTERCEPT(writev);
   TSAN_INTERCEPT(pwritev64);
   TSAN_INTERCEPT(send);

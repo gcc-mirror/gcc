@@ -25,9 +25,13 @@ class StaticSpinMutex {
   }
 
   void Lock() {
-    if (atomic_exchange(&state_, 1, memory_order_acquire) == 0)
+    if (TryLock())
       return;
     LockSlow();
+  }
+
+  bool TryLock() {
+    return atomic_exchange(&state_, 1, memory_order_acquire) == 0;
   }
 
   void Unlock() {
@@ -59,6 +63,16 @@ class SpinMutex : public StaticSpinMutex {
  private:
   SpinMutex(const SpinMutex&);
   void operator=(const SpinMutex&);
+};
+
+class BlockingMutex {
+ public:
+  explicit BlockingMutex(LinkerInitialized);
+  void Lock();
+  void Unlock();
+ private:
+  uptr opaque_storage_[10];
+  uptr owner_;  // for debugging
 };
 
 template<typename MutexType>
@@ -100,6 +114,7 @@ class GenericScopedReadLock {
 };
 
 typedef GenericScopedLock<StaticSpinMutex> SpinMutexLock;
+typedef GenericScopedLock<BlockingMutex> BlockingMutexLock;
 
 }  // namespace __sanitizer
 

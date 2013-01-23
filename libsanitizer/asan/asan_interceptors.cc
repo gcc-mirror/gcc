@@ -73,15 +73,30 @@ static inline uptr MaybeRealStrnlen(const char *s, uptr maxlen) {
   return internal_strnlen(s, maxlen);
 }
 
+void SetThreadName(const char *name) {
+  AsanThread *t = asanThreadRegistry().GetCurrent();
+  if (t)
+    t->summary()->set_name(name);
+}
+
 }  // namespace __asan
 
 // ---------------------- Wrappers ---------------- {{{1
 using namespace __asan;  // NOLINT
 
-#define COMMON_INTERCEPTOR_WRITE_RANGE(ptr, size) ASAN_WRITE_RANGE(ptr, size)
-#define COMMON_INTERCEPTOR_READ_RANGE(ptr, size) ASAN_READ_RANGE(ptr, size)
-#define COMMON_INTERCEPTOR_ENTER(func, ...) ENSURE_ASAN_INITED()
-#include "sanitizer_common/sanitizer_common_interceptors.h"
+#define COMMON_INTERCEPTOR_WRITE_RANGE(ctx, ptr, size) \
+  ASAN_WRITE_RANGE(ptr, size)
+#define COMMON_INTERCEPTOR_READ_RANGE(ctx, ptr, size) ASAN_READ_RANGE(ptr, size)
+#define COMMON_INTERCEPTOR_ENTER(ctx, func, ...) \
+  do {                                           \
+    ctx = 0;                                     \
+    (void)ctx;                                   \
+    ENSURE_ASAN_INITED();                        \
+  } while (false)
+#define COMMON_INTERCEPTOR_FD_ACQUIRE(ctx, fd) do { } while (false)
+#define COMMON_INTERCEPTOR_FD_RELEASE(ctx, fd) do { } while (false)
+#define COMMON_INTERCEPTOR_SET_THREAD_NAME(ctx, name) SetThreadName(name)
+#include "sanitizer_common/sanitizer_common_interceptors.inc"
 
 static thread_return_t THREAD_CALLING_CONV asan_thread_start(void *arg) {
   AsanThread *t = (AsanThread*)arg;
@@ -122,6 +137,18 @@ DEFINE_REAL(int, sigaction, int signum, const struct sigaction *act,
 #endif  // ASAN_INTERCEPT_SIGNAL_AND_SIGACTION
 
 #if ASAN_INTERCEPT_SWAPCONTEXT
+static void ClearShadowMemoryForContextStack(uptr stack, uptr ssize) {
+  // Align to page size.
+  uptr PageSize = GetPageSizeCached();
+  uptr bottom = stack & ~(PageSize - 1);
+  ssize += stack - bottom;
+  ssize = RoundUpTo(ssize, PageSize);
+  static const uptr kMaxSaneContextStackSize = 1 << 22;  // 4 Mb
+  if (ssize && ssize <= kMaxSaneContextStackSize) {
+    PoisonShadow(bottom, ssize, 0);
+  }
+}
+
 INTERCEPTOR(int, swapcontext, struct ucontext_t *oucp,
             struct ucontext_t *ucp) {
   static bool reported_warning = false;
@@ -132,16 +159,18 @@ INTERCEPTOR(int, swapcontext, struct ucontext_t *oucp,
   }
   // Clear shadow memory for new context (it may share stack
   // with current context).
-  ClearShadowMemoryForContext(ucp);
+  uptr stack, ssize;
+  ReadContextStack(ucp, &stack, &ssize);
+  ClearShadowMemoryForContextStack(stack, ssize);
   int res = REAL(swapcontext)(oucp, ucp);
   // swapcontext technically does not return, but program may swap context to
   // "oucp" later, that would look as if swapcontext() returned 0.
   // We need to clear shadow for ucp once again, as it may be in arbitrary
   // state.
-  ClearShadowMemoryForContext(ucp);
+  ClearShadowMemoryForContextStack(stack, ssize);
   return res;
 }
-#endif
+#endif  // ASAN_INTERCEPT_SWAPCONTEXT
 
 INTERCEPTOR(void, longjmp, void *env, int val) {
   __asan_handle_no_return();
@@ -159,25 +188,6 @@ INTERCEPTOR(void, _longjmp, void *env, int val) {
 INTERCEPTOR(void, siglongjmp, void *env, int val) {
   __asan_handle_no_return();
   REAL(siglongjmp)(env, val);
-}
-#endif
-
-#if ASAN_INTERCEPT_PRCTL
-#define PR_SET_NAME 15
-INTERCEPTOR(int, prctl, int option,
-            unsigned long arg2, unsigned long arg3,  // NOLINT
-            unsigned long arg4, unsigned long arg5) {  // NOLINT
-  int res = REAL(prctl(option, arg2, arg3, arg4, arg5));
-  if (option == PR_SET_NAME) {
-    AsanThread *t = asanThreadRegistry().GetCurrent();
-    if (t) {
-      char buff[17];
-      internal_strncpy(buff, (char*)arg2, 16);
-      buff[16] = 0;
-      t->summary()->set_name(buff);
-    }
-  }
-  return res;
 }
 #endif
 
@@ -726,9 +736,6 @@ void InitializeAsanInterceptors() {
 #endif
 #if ASAN_INTERCEPT_SIGLONGJMP
   ASAN_INTERCEPT_FUNC(siglongjmp);
-#endif
-#if ASAN_INTERCEPT_PRCTL
-  ASAN_INTERCEPT_FUNC(prctl);
 #endif
 
   // Intercept exception handling functions.

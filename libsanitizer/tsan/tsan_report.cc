@@ -102,16 +102,17 @@ static void PrintMop(const ReportMop *mop, bool first) {
 static void PrintLocation(const ReportLocation *loc) {
   char thrbuf[kThreadBufSize];
   if (loc->type == ReportLocationGlobal) {
-    Printf("  Location is global '%s' of size %zu at %zx %s:%d (%s+%p)\n\n",
-               loc->name, loc->size, loc->addr, loc->file, loc->line,
-               loc->module, loc->offset);
+    Printf("  Location is global '%s' of size %zu at %zx (%s+%p)\n\n",
+               loc->name, loc->size, loc->addr, loc->module, loc->offset);
   } else if (loc->type == ReportLocationHeap) {
     char thrbuf[kThreadBufSize];
     Printf("  Location is heap block of size %zu at %p allocated by %s:\n",
         loc->size, loc->addr, thread_name(thrbuf, loc->tid));
     PrintStack(loc->stack);
   } else if (loc->type == ReportLocationStack) {
-    Printf("  Location is stack of %s\n\n", thread_name(thrbuf, loc->tid));
+    Printf("  Location is stack of %s.\n\n", thread_name(thrbuf, loc->tid));
+  } else if (loc->type == ReportLocationTLS) {
+    Printf("  Location is TLS of %s.\n\n", thread_name(thrbuf, loc->tid));
   } else if (loc->type == ReportLocationFD) {
     Printf("  Location is file descriptor %d created by %s at:\n",
         loc->fd, thread_name(thrbuf, loc->tid));

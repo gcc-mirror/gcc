@@ -1,3 +1,9 @@
+2013-01-23  Kostya Serebryany  <kcc@google.com>
+
+        PR sanitizer/55989
+	* All source files: Merge from upstream r173241.
+	* merge.sh: Support merging .inc files.
+
 2013-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/Makefile.am (AM_CXXFLAGS): Remove

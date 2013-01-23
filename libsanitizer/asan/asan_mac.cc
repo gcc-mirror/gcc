@@ -34,7 +34,6 @@
 #include <stdlib.h>  // for free()
 #include <unistd.h>
 #include <libkern/OSAtomic.h>
-#include <CoreFoundation/CFString.h>
 
 namespace __asan {
 
@@ -129,33 +128,6 @@ bool AsanInterceptsSignal(int signum) {
 }
 
 void AsanPlatformThreadInit() {
-  // For the first program thread, we can't replace the allocator before
-  // __CFInitialize() has been called. If it hasn't, we'll call
-  // MaybeReplaceCFAllocator() later on this thread.
-  // For other threads __CFInitialize() has been called before their creation.
-  // See also asan_malloc_mac.cc.
-  if (((CFRuntimeBase*)kCFAllocatorSystemDefault)->_cfisa) {
-    MaybeReplaceCFAllocator();
-  }
-}
-
-AsanLock::AsanLock(LinkerInitialized) {
-  // We assume that OS_SPINLOCK_INIT is zero
-}
-
-void AsanLock::Lock() {
-  CHECK(sizeof(OSSpinLock) <= sizeof(opaque_storage_));
-  CHECK(OS_SPINLOCK_INIT == 0);
-  CHECK(owner_ != (uptr)pthread_self());
-  OSSpinLockLock((OSSpinLock*)&opaque_storage_);
-  CHECK(!owner_);
-  owner_ = (uptr)pthread_self();
-}
-
-void AsanLock::Unlock() {
-  CHECK(owner_ == (uptr)pthread_self());
-  owner_ = 0;
-  OSSpinLockUnlock((OSSpinLock*)&opaque_storage_);
 }
 
 void GetStackTrace(StackTrace *stack, uptr max_s, uptr pc, uptr bp, bool fast) {
@@ -170,7 +142,7 @@ void GetStackTrace(StackTrace *stack, uptr max_s, uptr pc, uptr bp, bool fast) {
   }
 }
 
-void ClearShadowMemoryForContext(void *context) {
+void ReadContextStack(void *context, uptr *stack, uptr *ssize) {
   UNIMPLEMENTED();
 }
 
@@ -254,9 +226,6 @@ mach_error_t __interception_deallocate_island(void *ptr) {
 // The implementation details are at
 //   http://libdispatch.macosforge.org/trac/browser/trunk/src/queue.c
 
-typedef void* pthread_workqueue_t;
-typedef void* pthread_workitem_handle_t;
-
 typedef void* dispatch_group_t;
 typedef void* dispatch_queue_t;
 typedef void* dispatch_source_t;
@@ -287,9 +256,6 @@ void dispatch_barrier_async_f(dispatch_queue_t dq, void *ctxt,
                               dispatch_function_t func);
 void dispatch_group_async_f(dispatch_group_t group, dispatch_queue_t dq,
                             void *ctxt, dispatch_function_t func);
-int pthread_workqueue_additem_np(pthread_workqueue_t workq,
-    void *(*workitem_func)(void *), void * workitem_arg,
-    pthread_workitem_handle_t * itemhandlep, unsigned int *gencountp);
 }  // extern "C"
 
 static ALWAYS_INLINE
@@ -444,66 +410,6 @@ INTERCEPTOR(void, dispatch_source_set_event_handler,
 }
 #endif
 
-// The following stuff has been extremely helpful while looking for the
-// unhandled functions that spawned jobs on Chromium shutdown. If the verbosity
-// level is 2 or greater, we wrap pthread_workqueue_additem_np() in order to
-// find the points of worker thread creation (each of such threads may be used
-// to run several tasks, that's why this is not enough to support the whole
-// libdispatch API.
-extern "C"
-void *wrap_workitem_func(void *arg) {
-  if (flags()->verbosity >= 2) {
-    Report("wrap_workitem_func: %p, pthread_self: %p\n", arg, pthread_self());
-  }
-  asan_block_context_t *ctxt = (asan_block_context_t*)arg;
-  worker_t fn = (worker_t)(ctxt->func);
-  void *result =  fn(ctxt->block);
-  GET_STACK_TRACE_THREAD;
-  asan_free(arg, &stack, FROM_MALLOC);
-  return result;
-}
-
-INTERCEPTOR(int, pthread_workqueue_additem_np, pthread_workqueue_t workq,
-    void *(*workitem_func)(void *), void * workitem_arg,
-    pthread_workitem_handle_t * itemhandlep, unsigned int *gencountp) {
-  GET_STACK_TRACE_THREAD;
-  asan_block_context_t *asan_ctxt =
-      (asan_block_context_t*) asan_malloc(sizeof(asan_block_context_t), &stack);
-  asan_ctxt->block = workitem_arg;
-  asan_ctxt->func = (dispatch_function_t)workitem_func;
-  asan_ctxt->parent_tid = asanThreadRegistry().GetCurrentTidOrInvalid();
-  if (flags()->verbosity >= 2) {
-    Report("pthread_workqueue_additem_np: %p\n", asan_ctxt);
-    PRINT_CURRENT_STACK();
-  }
-  return REAL(pthread_workqueue_additem_np)(workq, wrap_workitem_func,
-                                            asan_ctxt, itemhandlep,
-                                            gencountp);
-}
-
-// See http://opensource.apple.com/source/CF/CF-635.15/CFString.c
-int __CFStrIsConstant(CFStringRef str) {
-  CFRuntimeBase *base = (CFRuntimeBase*)str;
-#if __LP64__
-  return base->_rc == 0;
-#else
-  return (base->_cfinfo[CF_RC_BITS]) == 0;
-#endif
-}
-
-INTERCEPTOR(CFStringRef, CFStringCreateCopy, CFAllocatorRef alloc,
-                                             CFStringRef str) {
-  if (__CFStrIsConstant(str)) {
-    return str;
-  } else {
-    return REAL(CFStringCreateCopy)(alloc, str);
-  }
-}
-
-DECLARE_REAL_AND_INTERCEPTOR(void, free, void *ptr)
-
-DECLARE_REAL_AND_INTERCEPTOR(void, __CFInitialize, void)
-
 namespace __asan {
 
 void InitializeMacInterceptors() {
@@ -512,26 +418,6 @@ void InitializeMacInterceptors() {
   CHECK(INTERCEPT_FUNCTION(dispatch_after_f));
   CHECK(INTERCEPT_FUNCTION(dispatch_barrier_async_f));
   CHECK(INTERCEPT_FUNCTION(dispatch_group_async_f));
-  // We don't need to intercept pthread_workqueue_additem_np() to support the
-  // libdispatch API, but it helps us to debug the unsupported functions. Let's
-  // intercept it only during verbose runs.
-  if (flags()->verbosity >= 2) {
-    CHECK(INTERCEPT_FUNCTION(pthread_workqueue_additem_np));
-  }
-  // Normally CFStringCreateCopy should not copy constant CF strings.
-  // Replacing the default CFAllocator causes constant strings to be copied
-  // rather than just returned, which leads to bugs in big applications like
-  // Chromium and WebKit, see
-  // http://code.google.com/p/address-sanitizer/issues/detail?id=10
-  // Until this problem is fixed we need to check that the string is
-  // non-constant before calling CFStringCreateCopy.
-  CHECK(INTERCEPT_FUNCTION(CFStringCreateCopy));
-  // Some of the library functions call free() directly, so we have to
-  // intercept it.
-  CHECK(INTERCEPT_FUNCTION(free));
-  if (flags()->replace_cfallocator) {
-    CHECK(INTERCEPT_FUNCTION(__CFInitialize));
-  }
 }
 
 }  // namespace __asan
