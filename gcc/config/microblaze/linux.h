@@ -33,3 +33,6 @@
       -dynamic-linker %(dynamic_linker)} \
     %{static:-static}}"
 
+/* For the microblaze-*-linux* subtarget.  */
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
