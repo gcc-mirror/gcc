@@ -1,5 +1,8 @@
 2013-01-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/56052
+	* gfortran.dg/gomp/pr56052.f90: New test.
+
 	PR target/49069
 	* gcc.dg/pr49069.c: New test.
 
