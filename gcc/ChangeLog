@@ -1,4 +1,9 @@
-2013-01-23  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-01-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Check that
+	TOC operand is a valid symbol ref in the constant pool.
+
+2013-01-23  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* gcc/config/microblaze/linux.h: Add TARGET_OS_CPP_BUILTINS
 
