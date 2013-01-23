@@ -35,6 +35,15 @@ avr-log.o: $(srcdir)/config/avr/avr-log.c \
 
 avr.o avr-c.o: $(srcdir)/config/avr/builtins.def
 
+# This overrides stdfix.h from USER_H which we supply and include
+# in our own stdint.h as stdint-gcc.h.
+
+EXTRA_HEADERS = $(srcdir)/config/avr/stdfix.h \
+	      	stdfix-gcc.h
+
+stdfix-gcc.h: $(srcdir)/ginclude/stdfix.h
+	-cp $< $@
+
 # Files and Variables auto-generated from avr-mcus.def
 
 AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
