@@ -12,7 +12,6 @@
 #include "asan_allocator.h"
 #include "asan_interceptors.h"
 #include "asan_internal.h"
-#include "asan_lock.h"
 #include "asan_mapping.h"
 #include "asan_report.h"
 #include "asan_stack.h"
@@ -140,10 +139,12 @@ void InitializeFlags(Flags *f, const char *env) {
   f->allow_reexec = true;
   f->print_full_thread_history = true;
   f->log_path = 0;
-  f->fast_unwind_on_fatal = true;
+  f->fast_unwind_on_fatal = false;
   f->fast_unwind_on_malloc = true;
   f->poison_heap = true;
-  f->alloc_dealloc_mismatch = true;
+  // Turn off alloc/dealloc mismatch checker on Mac for now.
+  // TODO(glider): Fix known issues and enable this back.
+  f->alloc_dealloc_mismatch = (ASAN_MAC == 0);
   f->use_stack_depot = true;  // Only affects allocator2.
 
   // Override from user-specified string.
@@ -228,7 +229,6 @@ static NOINLINE void force_interface_symbols() {
     case 8: __asan_report_store4(0); break;
     case 9: __asan_report_store8(0); break;
     case 10: __asan_report_store16(0); break;
-    case 11: __asan_register_global(0, 0, 0); break;
     case 12: __asan_register_globals(0, 0); break;
     case 13: __asan_unregister_globals(0, 0); break;
     case 14: __asan_set_death_callback(0); break;

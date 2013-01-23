@@ -119,6 +119,7 @@ static ReportStack *SymbolizeStack(const StackTrace& trace) {
 
 ScopedReport::ScopedReport(ReportType typ) {
   ctx_ = CTX();
+  ctx_->thread_mtx.CheckLocked();
   void *mem = internal_alloc(MBlockReport, sizeof(ReportDesc));
   rep_ = new(mem) ReportDesc;
   rep_->typ = typ;
@@ -185,10 +186,32 @@ void ScopedReport::AddThread(const ThreadContext *tctx) {
 
 #ifndef TSAN_GO
 static ThreadContext *FindThread(int unique_id) {
-  CTX()->thread_mtx.CheckLocked();
+  Context *ctx = CTX();
+  ctx->thread_mtx.CheckLocked();
   for (unsigned i = 0; i < kMaxTid; i++) {
-    ThreadContext *tctx = CTX()->threads[i];
+    ThreadContext *tctx = ctx->threads[i];
     if (tctx && tctx->unique_id == unique_id) {
+      return tctx;
+    }
+  }
+  return 0;
+}
+
+ThreadContext *IsThreadStackOrTls(uptr addr, bool *is_stack) {
+  Context *ctx = CTX();
+  ctx->thread_mtx.CheckLocked();
+  for (unsigned i = 0; i < kMaxTid; i++) {
+    ThreadContext *tctx = ctx->threads[i];
+    if (tctx == 0 || tctx->status != ThreadStatusRunning)
+      continue;
+    ThreadState *thr = tctx->thr;
+    CHECK(thr);
+    if (addr >= thr->stk_addr && addr < thr->stk_addr + thr->stk_size) {
+      *is_stack = true;
+      return tctx;
+    }
+    if (addr >= thr->tls_addr && addr < thr->tls_addr + thr->tls_size) {
+      *is_stack = false;
       return tctx;
     }
   }
@@ -274,25 +297,21 @@ void ScopedReport::AddLocation(uptr addr, uptr size) {
       AddThread(tctx);
     return;
   }
-#endif
-  ReportStack *symb = SymbolizeData(addr);
-  if (symb) {
+  bool is_stack = false;
+  if (ThreadContext *tctx = IsThreadStackOrTls(addr, &is_stack)) {
     void *mem = internal_alloc(MBlockReportLoc, sizeof(ReportLocation));
     ReportLocation *loc = new(mem) ReportLocation();
     rep_->locs.PushBack(loc);
-    loc->type = ReportLocationGlobal;
-    loc->addr = addr;
-    loc->size = size;
-    loc->module = symb->module ? internal_strdup(symb->module) : 0;
-    loc->offset = symb->offset;
-    loc->tid = 0;
-    loc->name = symb->func ? internal_strdup(symb->func) : 0;
-    loc->file = symb->file ? internal_strdup(symb->file) : 0;
-    loc->line = symb->line;
-    loc->stack = 0;
-    internal_free(symb);
+    loc->type = is_stack ? ReportLocationStack : ReportLocationTLS;
+    loc->tid = tctx->tid;
+    AddThread(tctx);
+  }
+  ReportLocation *loc = SymbolizeData(addr);
+  if (loc) {
+    rep_->locs.PushBack(loc);
     return;
   }
+#endif
 }
 
 #ifndef TSAN_GO
@@ -386,7 +405,7 @@ static bool HandleRacyStacks(ThreadState *thr, const StackTrace (&traces)[2],
     uptr addr_min, uptr addr_max) {
   Context *ctx = CTX();
   bool equal_stack = false;
-  RacyStacks hash = {};
+  RacyStacks hash;
   if (flags()->suppress_equal_stacks) {
     hash.hash[0] = md5_hash(traces[0].Begin(), traces[0].Size() * sizeof(uptr));
     hash.hash[1] = md5_hash(traces[1].Begin(), traces[1].Size() * sizeof(uptr));

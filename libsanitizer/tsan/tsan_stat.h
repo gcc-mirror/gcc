@@ -197,6 +197,7 @@ enum StatType {
   StatInt_pipe,
   StatInt_pipe2,
   StatInt_read,
+  StatInt_prctl,
   StatInt_pread,
   StatInt_pread64,
   StatInt_readv,
@@ -232,6 +233,12 @@ enum StatType {
   StatInt_nanosleep,
   StatInt_gettimeofday,
   StatInt_fork,
+  StatInt_vscanf,
+  StatInt_vsscanf,
+  StatInt_vfscanf,
+  StatInt_scanf,
+  StatInt_sscanf,
+  StatInt_fscanf,
 
   // Dynamic annotations.
   StatAnnotation,
