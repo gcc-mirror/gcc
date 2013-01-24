@@ -1,3 +1,9 @@
+2013-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56085
+	* include/std/complex (pow(const complex<>&, int)): Avoid __n
+	signed overflow.
+
 2013-01-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52887
