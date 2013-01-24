@@ -1,3 +1,13 @@
+2013-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2013-01-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55755
+	* gcc.dg/torture/pr55755.c: New test.
+	* gcc.dg/tree-ssa/sra-13.c: Likewise.
+	* gcc.dg/tree-ssa/pr45144.c: Update.
+
 2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/56023
