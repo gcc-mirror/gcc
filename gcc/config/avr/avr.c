@@ -7114,13 +7114,13 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
       unsigned d1 = d0 + step;
 
       // Current and next regno of source
-      unsigned s0 = d0 - offset;
-      unsigned s1 = s0 + step;
+      signed s0 = d0 - offset;
+      signed s1 = s0 + step;
 
       // Must current resp. next regno be CLRed?  This applies to the low
       // bytes of the destination that have no associated source bytes.
-      bool clr0 = s0 < src.regno;
-      bool clr1 = s1 < src.regno && d1 >= dest.regno;
+      bool clr0 = s0 < (signed) src.regno;
+      bool clr1 = s1 < (signed) src.regno && d1 >= dest.regno;
 
       // First gather what code to emit (if any) and additional step to
       // apply if a MOVW is in use.  xop[2] is destination rtx and xop[3]
@@ -7150,12 +7150,12 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
                 }
             }
         }
-      else if (offset && s0 <= src.regno_msb)
+      else if (offset && s0 <= (signed) src.regno_msb)
         {
           int movw = AVR_HAVE_MOVW && offset % 2 == 0
             && d0 % 2 == (offset > 0)
             && d1 <= dest.regno_msb && d1 >= dest.regno
-            && s1 <= src.regno_msb  && s1 >= src.regno;
+            && s1 <= (signed) src.regno_msb  && s1 >= (signed) src.regno;
 
           xop[2] = all_regs_rtx[d0 & ~movw];
           xop[3] = all_regs_rtx[s0 & ~movw];
