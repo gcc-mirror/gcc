@@ -1,3 +1,8 @@
+2013-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55927
+	* g++.dg/ipa/devirt-10.C: Disable early inlining.
+
 2013-01-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/movsd.c: New test.
