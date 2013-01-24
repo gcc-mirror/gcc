@@ -8,7 +8,7 @@
 
 #include "runtime.h"
 
-String getgoroot (void) asm ("runtime.getgoroot");
+String getgoroot (void) __asm__ (GOSYM_PREFIX "runtime.getgoroot");
 
 String
 getgoroot ()

@@ -57,7 +57,7 @@ runtime_lfstackpop(uint64 *head)
 }
 
 LFNode* runtime_lfstackpop2(uint64*)
-  asm("runtime.lfstackpop2");
+  __asm__ (GOSYM_PREFIX "runtime.lfstackpop2");
 
 LFNode*
 runtime_lfstackpop2(uint64 *head)

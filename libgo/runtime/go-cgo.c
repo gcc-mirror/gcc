@@ -24,10 +24,10 @@
    */
 
 /* We let Go code call these via the syscall package.  */
-void syscall_cgocall(void) __asm__ ("syscall.Cgocall");
-void syscall_cgocalldone(void) __asm__ ("syscall.CgocallDone");
-void syscall_cgocallback(void) __asm__ ("syscall.CgocallBack");
-void syscall_cgocallbackdone(void) __asm__ ("syscall.CgocallBackDone");
+void syscall_cgocall(void) __asm__ (GOSYM_PREFIX "syscall.Cgocall");
+void syscall_cgocalldone(void) __asm__ (GOSYM_PREFIX "syscall.CgocallDone");
+void syscall_cgocallback(void) __asm__ (GOSYM_PREFIX "syscall.CgocallBack");
+void syscall_cgocallbackdone(void) __asm__ (GOSYM_PREFIX "syscall.CgocallBackDone");
 
 void
 syscall_cgocall ()
@@ -119,7 +119,7 @@ _cgo_allocate (size_t n)
 }
 
 extern const struct __go_type_descriptor string_type_descriptor
-  asm ("__go_tdn_string");
+  __asm__ (GOSYM_PREFIX "__go_tdn_string");
 
 void
 _cgo_panic (const char *p)
@@ -152,7 +152,7 @@ _cgo_panic (const char *p)
 
 /* Return the number of CGO calls.  */
 
-int64 runtime_NumCgoCall (void) __asm__ ("runtime.NumCgoCall");
+int64 runtime_NumCgoCall (void) __asm__ (GOSYM_PREFIX "runtime.NumCgoCall");
 
 int64
 runtime_NumCgoCall (void)

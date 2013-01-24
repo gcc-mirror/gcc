@@ -156,9 +156,9 @@ struct caller_ret
   _Bool ok;
 };
 
-struct caller_ret Caller (int n) asm ("runtime.Caller");
+struct caller_ret Caller (int n) __asm__ (GOSYM_PREFIX "runtime.Caller");
 
-Func *FuncForPC (uintptr_t) asm ("runtime.FuncForPC");
+Func *FuncForPC (uintptr_t) __asm__ (GOSYM_PREFIX "runtime.FuncForPC");
 
 /* Implement runtime.Caller.  */
 
@@ -216,7 +216,7 @@ struct funcline_go_return
 
 struct funcline_go_return
 runtime_funcline_go (Func *f, uintptr targetpc)
-  __asm__ ("runtime.funcline_go");
+  __asm__ (GOSYM_PREFIX "runtime.funcline_go");
 
 struct funcline_go_return
 runtime_funcline_go (Func *f __attribute__((unused)), uintptr targetpc)

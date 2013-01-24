@@ -106,7 +106,7 @@ runtime_panicstring(const char *s)
 	runtime_panic(err);
 }
 
-void runtime_Goexit (void) asm ("runtime.Goexit");
+void runtime_Goexit (void) __asm__ (GOSYM_PREFIX "runtime.Goexit");
 
 void
 runtime_Goexit(void)

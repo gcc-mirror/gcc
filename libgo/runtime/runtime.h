@@ -24,6 +24,10 @@
 #include "interface.h"
 #include "go-alloc.h"
 
+#define _STRINGIFY2_(x) #x
+#define _STRINGIFY_(x) _STRINGIFY2_(x)
+#define GOSYM_PREFIX _STRINGIFY_(__USER_LABEL_PREFIX__)
+
 /* This file supports C files copied from the 6g runtime library.
    This is a version of the 6g runtime.h rewritten for gccgo's version
    of the code.  */
@@ -387,8 +391,8 @@ void	runtime_park(void(*)(Lock*), Lock*, const char*);
 void	runtime_tsleep(int64, const char*);
 M*	runtime_newm(void);
 void	runtime_goexit(void);
-void	runtime_entersyscall(void) __asm__("syscall.Entersyscall");
-void	runtime_exitsyscall(void) __asm__("syscall.Exitsyscall");
+void	runtime_entersyscall(void) __asm__ (GOSYM_PREFIX "syscall.Entersyscall");
+void	runtime_exitsyscall(void) __asm__ (GOSYM_PREFIX "syscall.Exitsyscall");
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
 int32	runtime_callers(int32, uintptr*, int32);
@@ -453,7 +457,7 @@ void	runtime_futexwakeup(uint32*, uint32);
  * so they can be garbage collected if there are no other pointers to nodes.
  */
 void	runtime_lfstackpush(uint64 *head, LFNode *node)
-  asm("runtime.lfstackpush");
+  __asm__ (GOSYM_PREFIX "runtime.lfstackpush");
 LFNode*	runtime_lfstackpop(uint64 *head);
 
 /*
@@ -466,7 +470,7 @@ LFNode*	runtime_lfstackpop(uint64 *head);
  */
 ParFor*	runtime_parforalloc(uint32 nthrmax);
 void	runtime_parforsetup(ParFor *desc, uint32 nthr, uint32 n, void *ctx, bool wait, void (*body)(ParFor*, uint32));
-void	runtime_parfordo(ParFor *desc) asm("runtime.parfordo");
+void	runtime_parfordo(ParFor *desc) __asm__ (GOSYM_PREFIX "runtime.parfordo");
 
 /*
  * low level C-called
@@ -514,7 +518,7 @@ void	runtime_printcomplex(__complex double);
 struct __go_func_type;
 void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
 		  void **, void **)
-  asm ("reflect.call");
+  __asm__ (GOSYM_PREFIX "reflect.call");
 
 /* Functions.  */
 #define runtime_panic __go_panic
@@ -562,11 +566,11 @@ void	runtime_usleep(uint32);
  * runtime c-called (but written in Go)
  */
 void	runtime_printany(Eface)
-     __asm__("runtime.Printany");
+     __asm__ (GOSYM_PREFIX "runtime.Printany");
 void	runtime_newTypeAssertionError(const String*, const String*, const String*, const String*, Eface*)
-     __asm__("runtime.NewTypeAssertionError");
+     __asm__ (GOSYM_PREFIX "runtime.NewTypeAssertionError");
 void	runtime_newErrorString(String, Eface*)
-     __asm__("runtime.NewErrorString");
+     __asm__ (GOSYM_PREFIX "runtime.NewErrorString");
 
 /*
  * wrapped for go users
@@ -577,8 +581,8 @@ void	runtime_semrelease(uint32 volatile *);
 int32	runtime_gomaxprocsfunc(int32 n);
 void	runtime_procyield(uint32);
 void	runtime_osyield(void);
-void	runtime_LockOSThread(void) __asm__("runtime.LockOSThread");
-void	runtime_UnlockOSThread(void) __asm__("runtime.UnlockOSThread");
+void	runtime_LockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.LockOSThread");
+void	runtime_UnlockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.UnlockOSThread");
 
 bool	runtime_showframe(String);
 

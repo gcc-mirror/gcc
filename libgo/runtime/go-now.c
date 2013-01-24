@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <sys/time.h>
 
+#include "runtime.h"
+
 // Return current time.  This is the implementation of time.now().
 
 struct time_now_ret
@@ -15,7 +17,7 @@ struct time_now_ret
 };
 
 struct time_now_ret now()
-  __asm__ ("time.now")
+  __asm__ (GOSYM_PREFIX "time.now")
   __attribute__ ((no_split_stack));
 
 struct time_now_ret
