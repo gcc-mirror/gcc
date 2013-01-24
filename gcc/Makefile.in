@@ -661,9 +661,6 @@ LIBINTL_DEP = @LIBINTL_DEP@
 LIBICONV = @LIBICONV@
 LIBICONV_DEP = @LIBICONV_DEP@
 
-# The GC method to be used on this system.
-GGC=@GGC@.o
-
 # If a supplementary library is being used for the GC.
 GGC_LIB=
 
@@ -1157,7 +1154,7 @@ OBJS = \
 	insn-preds.o \
 	insn-recog.o \
 	insn-enums.o \
-	$(GGC) \
+	ggc-page.o \
 	alias.o \
 	alloc-pool.o \
 	auto-inc-dec.o \
@@ -2119,10 +2116,6 @@ ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
 	$(FLAGS_H) $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H) \
 	$(TREE_FLOW_H) $(PLUGIN_H) $(GGC_INTERNAL_H)
-
-ggc-zone.o: ggc-zone.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-	$(TREE_H) $(FLAGS_H) $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) \
-	$(PARAMS_H) $(BITMAP_H) $(PLUGIN_H) $(GGC_INTERNAL_H)
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
 	$(BCONFIG_H)

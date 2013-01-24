@@ -42,10 +42,6 @@ along with GCC; see the file COPYING3.  If not see
    garbage collector.  Similar results have been seen on a wider variety
    of tests (such as the compiler itself).
 
-   We could also use a zone allocator for these objects since they have
-   a very well defined lifetime.  If someone wants to experiment with that
-   this is the place to try it.
-
    PHI nodes have different sizes, so we can't have a single list of all
    the PHI nodes as it would be too expensive to walk down that list to
    find a PHI of a suitable size.

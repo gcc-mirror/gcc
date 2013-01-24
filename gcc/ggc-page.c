@@ -1199,15 +1199,6 @@ ggc_round_alloc_size (size_t requested_size)
   return size;
 }
 
-/* Typed allocation function.  Does nothing special in this collector.  */
-
-void *
-ggc_alloc_typed_stat (enum gt_types_enum type ATTRIBUTE_UNUSED, size_t size
-		      MEM_STAT_DECL)
-{
-  return ggc_internal_alloc_stat (size PASS_MEM_STAT);
-}
-
 /* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
 void *
@@ -2230,8 +2221,7 @@ init_ggc_pch (void)
 
 void
 ggc_pch_count_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
-		      size_t size, bool is_string ATTRIBUTE_UNUSED,
-		      enum gt_types_enum type ATTRIBUTE_UNUSED)
+		      size_t size, bool is_string ATTRIBUTE_UNUSED)
 {
   unsigned order;
 
@@ -2274,8 +2264,7 @@ ggc_pch_this_base (struct ggc_pch_data *d, void *base)
 
 char *
 ggc_pch_alloc_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
-		      size_t size, bool is_string ATTRIBUTE_UNUSED,
-		      enum gt_types_enum type ATTRIBUTE_UNUSED)
+		      size_t size, bool is_string ATTRIBUTE_UNUSED)
 {
   unsigned order;
   char *result;
@@ -2507,12 +2496,3 @@ ggc_pch_read (FILE *f, void *addr)
   /* Update the statistics.  */
   G.allocated = G.allocated_last_gc = offs - (char *)addr;
 }
-
-struct alloc_zone
-{
-  int dummy;
-};
-
-struct alloc_zone rtl_zone;
-struct alloc_zone tree_zone;
-struct alloc_zone tree_id_zone;
