@@ -12358,7 +12358,7 @@ linker multiple times and joining the results together with
 
 The subtype of the file created (like @samp{ppc7400} or @samp{ppc970} or
 @samp{i686}) is determined by the flags that specify the ISA
-that GCC is targetting, like @option{-mcpu} or @option{-march}.  The
+that GCC is targeting, like @option{-mcpu} or @option{-march}.  The
 @option{-force_cpusubtype_ALL} option can be used to override this.
 
 The Darwin tools vary in their behavior when presented with an ISA
