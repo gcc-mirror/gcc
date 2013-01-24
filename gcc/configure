@@ -674,7 +674,6 @@ MAINT
 zlibinc
 zlibdir
 HOST_LIBS
-GGC
 libgcc_visibility
 gcc_cv_readelf
 gcc_cv_objdump
@@ -1670,7 +1669,8 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-plugin-ld=[ARG]  specify the plugin linker
   --with-long-double-128  use 128-bit long double by default
-  --with-gc={page,zone}   choose the garbage collection mechanism to use with
+  --with-gc={page,zone}   this option is not supported anymore. It used to
+                          choose the garbage collection mechanism to use with
                           the compiler
   --with-system-zlib      use installed libz
   --with-linker-hash-style={sysv,gnu,both}
@@ -26807,30 +26807,14 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_target_dl_iterate_phdr" >&5
 $as_echo "$gcc_cv_target_dl_iterate_phdr" >&6; }
 
-# Find out what GC implementation we want, or may, use.
+# We no longer support different GC mechanisms.  Emit an error if
+# the user configures with --with-gc.
 
 # Check whether --with-gc was given.
 if test "${with_gc+set}" = set; then :
-  withval=$with_gc; case "$withval" in
-  page)
-    GGC=ggc-$withval
-    ;;
-  zone)
-    GGC=ggc-$withval
-
-$as_echo "#define GGC_ZONE 1" >>confdefs.h
-
-    ;;
-  *)
-    as_fn_error "$withval is an invalid option to --with-gc" "$LINENO" 5
-    ;;
-esac
-else
-  GGC=ggc-page
+  withval=$with_gc; as_fn_error "Configure option --with-gc is only supported up to GCC 4.7.x" "$LINENO" 5
 fi
 
-
-echo "Using $GGC for garbage collection."
 
 # Libraries to use on the host.  This will normally be set by the top
 # level Makefile.  Here we simply capture the value for our Makefile.
