@@ -1847,11 +1847,27 @@ process_alt_operands (int only_alternative)
 	      int const_to_mem = 0;
 	      bool no_regs_p;
 
+	      /* If this alternative asks for a specific reg class, see if there
+		 is at least one allocatable register in that class.  */
 	      no_regs_p
 		= (this_alternative == NO_REGS
 		   || (hard_reg_set_subset_p
 		       (reg_class_contents[this_alternative],
 			lra_no_alloc_regs)));
+
+	      /* For asms, verify that the class for this alternative is possible
+		 for the mode that is specified.  */
+	      if (!no_regs_p && REG_P (op) && INSN_CODE (curr_insn) < 0)
+		{
+		  int i;
+		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		    if (HARD_REGNO_MODE_OK (i, mode)
+			&& in_hard_reg_set_p (reg_class_contents[this_alternative], mode, i))
+		      break;
+		  if (i == FIRST_PSEUDO_REGISTER)
+		    winreg = false;
+		}
+
 	      /* If this operand accepts a register, and if the
 		 register class has at least one allocatable register,
 		 then this operand can be reloaded.  */
@@ -2741,10 +2757,6 @@ curr_insn_transform (void)
       else
 	swap_operands (commutative);
     }
-
-  /* The operands don't meet the constraints.  goal_alt describes the
-     alternative that we could reach by reloading the fewest operands.
-     Reload so as to fit it.  */
 
   if (! alt_p && ! sec_mem_p)
     {
