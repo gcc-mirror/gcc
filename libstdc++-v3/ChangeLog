@@ -1,3 +1,9 @@
+2013-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56085
+	* include/std/complex (pow(const complex<>&, int)): Avoid __n
+	signed overflow.
+
 2013-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:
