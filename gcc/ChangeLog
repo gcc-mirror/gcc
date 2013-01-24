@@ -1,3 +1,8 @@
+2013-01-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_out_fract): Make register numbers that
+	might be outside of source operand signed.
+
 2013-01-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraints.md (Yf): New constraint.
