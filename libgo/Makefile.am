@@ -840,13 +840,13 @@ if LIBGO_IS_OPENBSD
 go_os_stat_file = go/os/stat_atim.go
 else
 if LIBGO_IS_DARWIN
-go_os_stat_file = go/os/stat_atimspec.go
+go_os_stat_file = go/os/stat_atimespec.go
 else
 if LIBGO_IS_FREEBSD
-go_os_stat_file = go/os/stat_atimspec.go
+go_os_stat_file = go/os/stat_atimespec.go
 else
 if LIBGO_IS_NETBSD
-go_os_stat_file = go/os/stat_atimspec.go
+go_os_stat_file = go/os/stat_atimespec.go
 else
 go_os_stat_file = go/os/stat.go
 endif
