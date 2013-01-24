@@ -1,3 +1,9 @@
+2013-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/56078
+	* gcc.dg/pr56078.c: New test.
+	* gcc.c-torture/compile/20030305-1.c: Add dg-error lines.
+
 2013-01-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55927

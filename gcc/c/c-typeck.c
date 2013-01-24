@@ -7574,7 +7574,9 @@ set_nonincremental_init_from_string (tree str,
   end = p + TREE_STRING_LENGTH (str);
 
   for (purpose = bitsize_zero_node;
-       p < end && !tree_int_cst_lt (constructor_max_index, purpose);
+       p < end
+       && !(constructor_max_index
+	    && tree_int_cst_lt (constructor_max_index, purpose));
        purpose = size_binop (PLUS_EXPR, purpose, bitsize_one_node))
     {
       if (wchar_bytes == 1)
@@ -8106,9 +8108,9 @@ process_init_element (struct c_expr value, bool implicit,
 			      true, braced_init_obstack);
       else if ((TREE_CODE (constructor_type) == ARRAY_TYPE
 	        || TREE_CODE (constructor_type) == VECTOR_TYPE)
-	       && (constructor_max_index == 0
-		   || tree_int_cst_lt (constructor_max_index,
-				       constructor_index)))
+	       && constructor_max_index
+	       && tree_int_cst_lt (constructor_max_index,
+				   constructor_index))
 	process_init_element (pop_init_level (1, braced_init_obstack),
 			      true, braced_init_obstack);
       else

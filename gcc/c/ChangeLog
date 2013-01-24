@@ -1,3 +1,11 @@
+2013-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/56078
+	* c-typeck.c (set_nonincremental_init_from_string): If
+	constructor_max_index is NULL, treat it as if tree_int_cst_lt
+	returned false.
+	(process_init_element): Likewise.
+
 2012-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55619
