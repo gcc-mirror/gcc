@@ -1,3 +1,8 @@
+2013-01-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR inline-asm/55934
+	* gcc.target/i386/pr55934.c: New test.
+
 2013-01-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56081

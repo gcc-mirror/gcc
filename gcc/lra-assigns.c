@@ -1240,6 +1240,23 @@ assign_by_spills (void)
 		  asm_p = true;
 		  error_for_asm (insn,
 				 "%<asm%> operand has impossible constraints");
+		  /* Avoid further trouble with this insn.
+		     For asm goto, instead of fixing up all the edges
+		     just clear the template and clear input operands
+		     (asm goto doesn't have any output operands).  */
+		  if (JUMP_P (insn))
+		    {
+		      rtx asm_op = extract_asm_operands (PATTERN (insn));
+		      ASM_OPERANDS_TEMPLATE (asm_op) = ggc_strdup ("");
+		      ASM_OPERANDS_INPUT_VEC (asm_op) = rtvec_alloc (0);
+		      ASM_OPERANDS_INPUT_CONSTRAINT_VEC (asm_op) = rtvec_alloc (0);
+		      lra_update_insn_regno_info (insn);
+		    }
+		  else
+		    {
+		      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
+		      lra_set_insn_deleted (insn);
+		    }
 		}
 	    }
 	  lra_assert (asm_p);
@@ -1263,6 +1280,9 @@ assign_by_spills (void)
 	  bitmap_ior_into (&changed_insns,
 			   &lra_reg_info[sorted_pseudos[i]].insn_bitmap);
 	}
+
+      /* FIXME: Look up the changed insns in the cached LRA insn data using
+	 an EXECUTE_IF_SET_IN_BITMAP over changed_insns.  */
       FOR_EACH_BB (bb)
 	FOR_BB_INSNS (bb, insn)
 	if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))

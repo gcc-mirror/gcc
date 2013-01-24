@@ -1,3 +1,13 @@
+2013-01-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR inline-asm/55934
+	* lra-assigns.c (assign_by_spills): Throw away the pattern of asms
+	that have operands with impossible constraints.
+	Add a FIXME for a speed-up opportunity.
+	* lra-constraints.c (process_alt_operands): Verify that a class
+	selected from constraints on asms is valid for the operand mode.
+	(curr_insn_transform): Remove incorrect comment.
+
 2013-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdf_internal_rex64): Disparage alternatives
