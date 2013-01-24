@@ -23,7 +23,7 @@ MHeap runtime_mheap;
 extern MStats mstats;	// defined in zruntime_def_$GOOS_$GOARCH.go
 
 extern volatile intgo runtime_MemProfileRate
-  __asm__ ("runtime.MemProfileRate");
+  __asm__ (GOSYM_PREFIX "runtime.MemProfileRate");
 
 // Allocate an object of at least size bytes.
 // Small objects are allocated from the per-thread cache's free lists.
@@ -308,7 +308,7 @@ runtime_purgecachedstats(MCache *c)
 }
 
 extern uintptr runtime_sizeof_C_MStats
-  __asm__ ("runtime.Sizeof_C_MStats");
+  __asm__ (GOSYM_PREFIX "runtime.Sizeof_C_MStats");
 
 #define MaxArena32 (2U<<30)
 

@@ -503,8 +503,8 @@ runtime_schedinit(void)
 		runtime_raceinit();
 }
 
-extern void main_init(void) __asm__ ("__go_init_main");
-extern void main_main(void) __asm__ ("main.main");
+extern void main_init(void) __asm__ (GOSYM_PREFIX "__go_init_main");
+extern void main_main(void) __asm__ (GOSYM_PREFIX "main.main");
 
 // The main goroutine.
 void
@@ -1500,7 +1500,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 /* For runtime package testing.  */
 
 void runtime_testing_entersyscall(void)
-  __asm__("runtime.entersyscall");
+  __asm__ (GOSYM_PREFIX "runtime.entersyscall");
 
 void
 runtime_testing_entersyscall()
@@ -1509,7 +1509,7 @@ runtime_testing_entersyscall()
 }
 
 void runtime_testing_exitsyscall(void)
-  __asm__("runtime.exitsyscall");
+  __asm__ (GOSYM_PREFIX "runtime.exitsyscall");
 
 void
 runtime_testing_exitsyscall()
@@ -1609,7 +1609,7 @@ gfget(void)
 	return gp;
 }
 
-void runtime_Gosched (void) asm ("runtime.Gosched");
+void runtime_Gosched (void) __asm__ (GOSYM_PREFIX "runtime.Gosched");
 
 void
 runtime_Gosched(void)
@@ -1688,7 +1688,7 @@ runtime_lockedOSThread(void)
 // for testing of callbacks
 
 _Bool runtime_golockedOSThread(void)
-  asm("runtime.golockedOSThread");
+  __asm__ (GOSYM_PREFIX "runtime.golockedOSThread");
 
 _Bool
 runtime_golockedOSThread(void)
@@ -1704,7 +1704,7 @@ runtime_mid()
 }
 
 intgo runtime_NumGoroutine (void)
-  __asm__ ("runtime.NumGoroutine");
+  __asm__ (GOSYM_PREFIX "runtime.NumGoroutine");
 
 intgo
 runtime_NumGoroutine()

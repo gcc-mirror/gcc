@@ -34,7 +34,7 @@ extern const char _edata[] __attribute__ ((weak));
 extern const char __edata[] __attribute__ ((weak));
 extern const char __bss_start[] __attribute__ ((weak));
 
-void runtime_Fieldtrack (struct __go_map *) __asm__ ("runtime.Fieldtrack");
+void runtime_Fieldtrack (struct __go_map *) __asm__ (GOSYM_PREFIX "runtime.Fieldtrack");
 
 void
 runtime_Fieldtrack (struct __go_map *m)

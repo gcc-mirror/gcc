@@ -24,8 +24,8 @@ runtime_gotraceback(void)
 static int32	argc;
 static byte**	argv;
 
-extern Slice os_Args asm ("os.Args");
-extern Slice syscall_Envs asm ("syscall.Envs");
+extern Slice os_Args __asm__ (GOSYM_PREFIX "os.Args");
+extern Slice syscall_Envs __asm__ (GOSYM_PREFIX "syscall.Envs");
 
 void (*runtime_sysargs)(int32, uint8**);
 
@@ -172,7 +172,7 @@ runtime_tickspersecond(void)
 }
 
 int64 runtime_pprof_runtime_cyclesPerSecond(void)
-     asm("runtime_pprof.runtime_cyclesPerSecond");
+     __asm__ (GOSYM_PREFIX "runtime_pprof.runtime_cyclesPerSecond");
 
 int64
 runtime_pprof_runtime_cyclesPerSecond(void)

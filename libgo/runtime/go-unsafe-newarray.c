@@ -13,7 +13,7 @@
 /* Implement unsafe_NewArray, called from the reflect package.  */
 
 void *unsafe_NewArray (const struct __go_type_descriptor *, intgo)
-  asm ("reflect.unsafe_NewArray");
+  __asm__ (GOSYM_PREFIX "reflect.unsafe_NewArray");
 
 /* The dynamic type of the argument will be a pointer to a type
    descriptor.  */

@@ -13,7 +13,7 @@
 /* Implement unsafe_New, called from the reflect package.  */
 
 void *unsafe_New (const struct __go_type_descriptor *)
-  asm ("reflect.unsafe_New");
+  __asm__ (GOSYM_PREFIX "reflect.unsafe_New");
 
 /* The dynamic type of the argument will be a pointer to a type
    descriptor.  */

@@ -15,7 +15,7 @@
    descriptor.  */
 
 extern const struct __go_type_descriptor unsafe_Pointer
-  asm ("__go_tdn_unsafe.Pointer");
+  __asm__ (GOSYM_PREFIX "__go_tdn_unsafe.Pointer");
 
 /* Used to determine the field alignment.  */
 struct field_align
@@ -61,7 +61,7 @@ const struct __go_type_descriptor unsafe_Pointer =
    it to be defined elsewhere.  */
 
 extern const struct __go_ptr_type pointer_unsafe_Pointer
-  asm ("__go_td_pN14_unsafe.Pointer");
+  __asm__ (GOSYM_PREFIX "__go_td_pN14_unsafe.Pointer");
 
 /* The reflection string.  */
 #define PREFLECTION "*unsafe.Pointer"

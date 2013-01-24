@@ -247,7 +247,7 @@ struct MStats
 };
 
 extern MStats mstats
-  __asm__ ("runtime.VmemStats");
+  __asm__ (GOSYM_PREFIX "runtime.VmemStats");
 
 
 // Size classes.  Computed and initialized by InitSizes.
