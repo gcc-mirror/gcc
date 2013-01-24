@@ -1,3 +1,11 @@
+2013-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Yf): New constraint.
+	* config/i386/i386.md (*movdf_internal_rex64): Use Yf*f instead
+	of f constraint to conditionaly disable x87 register preferences.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+
 2013-01-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR inline-asm/55934
@@ -7,11 +15,6 @@
 	* lra-constraints.c (process_alt_operands): Verify that a class
 	selected from constraints on asms is valid for the operand mode.
 	(curr_insn_transform): Remove incorrect comment.
-
-2013-01-23  Uros Bizjak  <ubizjak@gmail.com>
-
-	* config/i386/i386.md (*movdf_internal_rex64): Disparage alternatives
-	involving stack registers slightly.
 
 2013-01-23  David Edelsohn  <dje.gcc@gmail.com>
 

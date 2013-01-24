@@ -1,3 +1,7 @@
+2013-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/movsd.c: New test.
+
 2013-01-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR inline-asm/55934
@@ -8,9 +12,10 @@
 	PR fortran/56081
 	* gfortran.dg/select_8.f90: New.
 
-2013-01-23  David Holsgrove <david.holsgrove@xilinx.com>
+2013-01-23  David Holsgrove  <david.holsgrove@xilinx.com>
 
-	* gcc.target/microblaze/microblaze.exp: Remove target_config_cflags check
+	* gcc.target/microblaze/microblaze.exp: Remove
+	target_config_cflags check.
 
 2013-01-23  Jakub Jelinek  <jakub@redhat.com>
 
