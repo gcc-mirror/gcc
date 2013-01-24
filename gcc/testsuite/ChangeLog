@@ -1,3 +1,8 @@
+2013-01-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56081
+	* gfortran.dg/select_8.f90: New.
+
 2013-01-24  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
