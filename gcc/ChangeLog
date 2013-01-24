@@ -1,3 +1,10 @@
+2012-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal_rex64): Add (o,e) alternative.
+	(*movtf_internal_rex64): Add (!o,C) alternative
+	(*movxf_internal_rex64): Ditto.
+	(*movdf_internal_rex64): Add (?r,C) and (?m,C) alternatives.
+
 2013-01-24  Shenghou Ma  <minux.ma@gmail.com>
 
 	* doc/invoke.texi: fix typo.
