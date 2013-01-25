@@ -340,6 +340,22 @@
 			(QI   "QI")])
 
 ;; Define container mode for lane selection.
+(define_mode_attr VCOND [(V4HI "V4HI") (V8HI "V4HI")
+			 (V2SI "V2SI") (V4SI "V2SI")
+			 (DI   "DI") (V2DI "DI")
+			 (V2SF "V2SF") (V4SF "V2SF")
+			 (V2DF "DF")])
+
+;; Define container mode for lane selection.
+(define_mode_attr VCONQ [(V8QI "V16QI") (V16QI "V16QI")
+			 (V4HI "V8HI") (V8HI "V8HI")
+			 (V2SI "V4SI") (V4SI "V4SI")
+			 (DI   "V2DI") (V2DI "V2DI")
+			 (V2SF "V2SF") (V4SF "V4SF")
+			 (V2DF "V2DF") (SI   "V4SI")
+			 (HI   "V8HI") (QI   "V16QI")])
+
+;; Define container mode for lane selection.
 (define_mode_attr VCON [(V8QI "V16QI") (V16QI "V16QI")
 			(V4HI "V8HI") (V8HI "V8HI")
 			(V2SI "V4SI") (V4SI "V4SI")
