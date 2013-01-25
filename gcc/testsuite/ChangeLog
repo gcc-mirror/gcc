@@ -1,3 +1,9 @@
+2013-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56098
+	* gcc.dg/pr56098-1.c: New test.
+	* gcc.dg/pr56098-2.c: New test.
+
 2013-01-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
