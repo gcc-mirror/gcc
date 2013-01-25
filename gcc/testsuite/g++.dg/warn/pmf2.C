@@ -3,8 +3,6 @@
 
 struct Foo
 {
-  Foo();
-  Foo(const Foo&);
     void call()
     {}
 };
