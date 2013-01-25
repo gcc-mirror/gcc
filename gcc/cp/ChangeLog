@@ -1,5 +1,9 @@
 2013-01-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56095
+	* pt.c (convert_nontype_argument_function): Handle invalid input.
+	(convert_nontype_argument): Likewise.
+
 	PR c++/56104
 	* typeck.c (get_member_function_from_ptrfunc): Optimize if the
 	dynamic type has no virtual functions.

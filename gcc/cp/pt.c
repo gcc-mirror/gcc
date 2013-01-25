@@ -5113,6 +5113,17 @@ convert_nontype_argument_function (tree type, tree expr)
      [...]
      -- the address of an object or function with external [C++11: or
         internal] linkage.  */
+
+  if (TREE_CODE (fn_no_ptr) != FUNCTION_DECL)
+    {
+      error ("%qE is not a valid template argument for type %qT", expr, type);
+      if (TREE_CODE (type) == POINTER_TYPE)
+	error ("it must be the address of a function with external linkage");
+      else
+	error ("it must be the name of a function with external linkage");
+      return NULL_TREE;
+    }
+
   linkage = decl_linkage (fn_no_ptr);
   if (cxx_dialect >= cxx0x ? linkage == lk_none : linkage != lk_external)
     {
@@ -5511,15 +5522,16 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	     could actually change the type to something more cv-qualified,
 	     and this is not folded by convert_from_reference.  */
 	  tree addr = TREE_OPERAND (probe, 0);
-	  gcc_assert (TREE_CODE (probe_type) == REFERENCE_TYPE);
-	  gcc_assert (TREE_CODE (addr) == ADDR_EXPR);
-	  gcc_assert (TREE_CODE (TREE_TYPE (addr)) == POINTER_TYPE);
-	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (probe_type),
-		       TREE_TYPE (TREE_TYPE (addr))));
-
-	  expr = TREE_OPERAND (addr, 0);
-	  expr_type = TREE_TYPE (expr);
+	  if (TREE_CODE (probe_type) == REFERENCE_TYPE
+	      && TREE_CODE (addr) == ADDR_EXPR
+	      && TREE_CODE (TREE_TYPE (addr)) == POINTER_TYPE
+	      && (same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (probe_type),
+		   TREE_TYPE (TREE_TYPE (addr)))))
+	    {
+	      expr = TREE_OPERAND (addr, 0);
+	      expr_type = TREE_TYPE (expr);
+	    }
 	}
     }
 
@@ -5745,13 +5757,6 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       expr = convert_nontype_argument_function (type, expr);
       if (!expr || expr == error_mark_node)
 	return expr;
-
-      if (TREE_CODE (expr) != ADDR_EXPR)
-	{
-	  error ("%qE is not a valid template argument for type %qT", expr, type);
-	  error ("it must be the address of a function with external linkage");
-	  return NULL_TREE;
-	}
     }
   /* [temp.arg.nontype]/5, bullet 5
 
