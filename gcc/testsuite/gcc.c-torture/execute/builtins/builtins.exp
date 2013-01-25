@@ -41,6 +41,10 @@ set additional_flags ""
 if [istarget "powerpc-*-darwin*"] {
    lappend additional_flags "-Wl,-multiply_defined,suppress"
 }
+if { [istarget *-*-eabi*]
+     || [istarget *-*-elf] } {
+   lappend additional_flags "-Wl,--allow-multiple-definition"
+}
 
 foreach src [lsort [find $srcdir/$subdir *.c]] {
     if {![string match *-lib.c $src] && [runtest_file_p $runtests $src]} {

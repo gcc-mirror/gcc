@@ -1,6 +1,13 @@
 2013-01-24  Janis Johnson  <janisjo@codesourcery.com>
 
 	Backport from mainline
+	2013-01-16  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR testsuite/55994
+	* gcc.c-torture/execute/builtins/builtins.exp: Add
+	-Wl,--allow-multiple-definition for eabi and elf targets.
+
+	Backport from mainline
 	2013-01-17  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr51835.c: Avoid conflicts with multilib flags.
