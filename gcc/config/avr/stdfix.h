@@ -35,11 +35,10 @@
 
 #include <stdfix-gcc.h>
 
-/* 2.1.7.4 The bitwise fixed-point to integer conversion functions.  */
-/* 2.1.7.5 The bitwise integer to fixed-point conversion functions.  */
-
 #define _GCC_TYPEPUN(A, B)                      \
   __builtin_memcpy (&A, &B, sizeof (A))
+
+/* 7.18a.6  The fixed-point intrinsic functions.  */
 
 #if __SIZEOF_INT__ == 2
 
@@ -88,6 +87,79 @@ typedef long long unsigned int uint_uk_t;
 #endif /* __SIZEOF_INT__ == 2 */
 
 
+/* 7.18a.6.2 The fixed-point absolute value functions. */
+
+/* short fract (hr): abshr */
+
+static __inline__ __attribute__((__always_inline__))
+short fract abshr (const short fract __q)
+{
+  return __builtin_avr_abshr (__q);
+}
+
+/* fract (r): absr */
+
+static __inline__ __attribute__((__always_inline__))
+fract absr (const fract __q)
+{
+  return __builtin_avr_absr (__q);
+}
+
+/* long fract (lr): abslr */
+
+static __inline__ __attribute__((__always_inline__))
+long fract abslr (const long fract __q)
+{
+  return __builtin_avr_abslr (__q);
+}
+
+/* short accum (hk): abshk */
+
+static __inline__ __attribute__((__always_inline__))
+short accum abshk (const short accum __q)
+{
+  return __builtin_avr_abshk (__q);
+}
+
+/* accum (k): absk */
+
+static __inline__ __attribute__((__always_inline__))
+accum absk (const accum __q)
+{
+  return __builtin_avr_absk (__q);
+}
+
+#if __SIZEOF_INT__ == 2
+
+/* long long fract (llr): absllr */
+
+static __inline__ __attribute__((__always_inline__))
+long long fract absllr (const long long fract __q) /* GCC extension */
+{
+  return __builtin_avr_absllr (__q);
+}
+
+/* long accum (lk): abslk */
+
+static __inline__ __attribute__((__always_inline__))
+long accum abslk (const long accum __q)
+{
+  return __builtin_avr_abslk (__q);
+}
+
+/* long long accum (llk): absllk */
+
+static __inline__ __attribute__((__always_inline__))
+long long accum absllk (const long long accum __q) /* GCC extension */
+{
+  return __builtin_avr_absllk (__q);
+}
+
+#endif /* __SIZEOF_INT__ == 2 */
+
+
+/* 7.18a.6.5 The bitwise fixed-point to integer conversion functions. */
+/* 7.18a.6.6 The bitwise integer to fixed-point conversion functions. */
 
 /* short fract (hr): bitshr, bitsuhr, hrbits, uhrbits */
 
