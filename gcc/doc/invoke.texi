@@ -11842,6 +11842,9 @@ the device name as from the AVR user manual. The difference between
 If @var{device} is not a device but only a core architecture like
 @code{avr51}, this macro will not be defined.
 
+@item __AVR_XMEGA__
+The device / architecture belongs to the XMEGA family of devices.
+
 @item __AVR_HAVE_ELPM__
 The device has the the @code{ELPM} instruction.
 
