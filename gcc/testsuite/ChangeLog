@@ -1,6 +1,11 @@
 2013-01-24  Janis Johnson  <janisjo@codesourcery.com>
 
 	Backport from mainline
+	2012-09-26  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/combine-movs.c
+
+	Backport from mainline
 	2012-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/neon-vset_lanes8.c: Fix for big-endian support.
