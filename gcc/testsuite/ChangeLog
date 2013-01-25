@@ -3,6 +3,11 @@
 	Backport from mainline
 	2012-09-26  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr42879.c: Handle big-endian.
+
+	Backport from mainline
+	2012-09-26  Janis Johnson  <janisjo@codesourcery.com>
+
 	* gcc.target/arm/combine-movs.c
 
 	Backport from mainline

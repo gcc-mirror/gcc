@@ -4,6 +4,9 @@
 
 struct A
 {
+#ifdef __ARMEB__
+  int dummy:31;
+#endif
   int v:1;
 };
 
