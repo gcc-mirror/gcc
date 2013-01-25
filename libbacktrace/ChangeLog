@@ -1,3 +1,9 @@
+2013-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/56076
+	* dwarf.c (read_line_header): Don't crash if DW_AT_comp_dir
+	attribute was not seen.
+
 2013-01-16  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf.c (struct unit): Add filename and abs_filename fields.
