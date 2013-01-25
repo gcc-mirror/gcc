@@ -37,7 +37,7 @@
 	users.
 	* ggc-internal.h (ggc_pch_alloc_object): Remove last argument.
 	Update all users.
-	* gcc/ggc-none.c (ggc_alloc_typed_stat): Remove.
+	* ggc-none.c (ggc_alloc_typed_stat): Remove.
 	(struct alloc_zone): Remove.
 	(ggc_internal_alloc_zone_stat): Remove.
 	(ggc_internal_cleared_alloc_zone_stat): Remove.
@@ -94,7 +94,7 @@
 
 2013-01-23  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
-	* gcc/config/microblaze/linux.h: Add TARGET_OS_CPP_BUILTINS
+	* config/microblaze/linux.h: Add TARGET_OS_CPP_BUILTINS
 
 2013-01-23  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -208,7 +208,6 @@
 	* lra-constraints.c (curr_insn_transform): Don't reuse original
 	insn for secondary memory move when memory mode should be different.
 
->>>>>>> .r195407
 2013-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md (atomic_loaddi, atomic_loaddi_1, atomic_storedi,
@@ -389,7 +388,7 @@
 
 2013-01-16  Ian Bolton  <ian.bolton@arm.com>
 
-	* gcc/config/aarch64/aarch64.md
+	* config/aarch64/aarch64.md
 	(*cstoresi_neg_uxtw): New pattern.
 	(*cmovsi_insn_uxtw): New pattern.
 	(*<optab>si3_uxtw): New pattern.
@@ -656,11 +655,11 @@
 
 2013-01-13  Terry Guo  <terry.guo@arm.com>
 
-	* gcc/Makefile.in (s-mlib): New argument MULTILIB_REUSE.
-	* gcc/doc/fragments.texi: Document MULTILIB_REUSE.
-	* gcc/gcc.c (multilib_reuse): New internal spec.
+	* Makefile.in (s-mlib): New argument MULTILIB_REUSE.
+	* doc/fragments.texi: Document MULTILIB_REUSE.
+	* gcc.c (multilib_reuse): New internal spec.
 	(set_multilib_dir): Also search multilib from multilib_reuse.
-	* gcc/genmultilib (tmpmultilib3): Refactor code.
+	* genmultilib (tmpmultilib3): Refactor code.
 	(tmpmultilib4): Ditto.
 	(multilib_reuse): New multilib argument.
 
