@@ -1655,7 +1655,8 @@ read_line_header (struct backtrace_state *state, struct unit *u,
 		    strnlen ((const char *) hdr_buf.buf, hdr_buf.left) + 1))
 	return 0;
       dir_index = read_uleb128 (&hdr_buf);
-      if (IS_ABSOLUTE_PATH (filename))
+      if (IS_ABSOLUTE_PATH (filename)
+	  || (dir_index == 0 && u->comp_dir == NULL))
 	hdr->filenames[i] = filename;
       else
 	{
