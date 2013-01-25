@@ -1,5 +1,9 @@
 2013-01-25  Georg-Johann Lay  <avr@gjlay.de>
 
+	* doc/invoke.texi (AVR Built-in Macros): Document __XMEGA__.
+
+2013-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
 	* doc/extend.texi (Example of asm with clobbered asm reg): Fix
 	missing ':' in asm example.
 
