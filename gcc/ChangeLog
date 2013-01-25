@@ -1,3 +1,7 @@
+2013-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Built-in Macros): Document __XMEGA__.
+
 2013-01-24  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
