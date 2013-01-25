@@ -1,6 +1,11 @@
 2013-01-24  Janis Johnson  <janisjo@codesourcery.com>
 
 	Backport from mainline
+	2012-09-27  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/unsigned-extend-1.c: Omit -march option.
+
+	Backport from mainline
 	2012-09-26  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr42879.c: Handle big-endian.

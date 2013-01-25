@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv6" } */
+/* { dg-options "-O2" } */
 
 unsigned char foo (unsigned char c)
 {
