@@ -1,5 +1,7 @@
 /* PR target/53187 */
 /* { dg-do compile } */
+/* { dg-skip-if "no support for hard-float VFP ABI" { arm_thumb1 } { "-march=*" } { "" } } */
+/* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=hard" } } */
 /* { dg-options "-march=armv7-a -mfloat-abi=hard -O2" } */
 
 void bar (int);
