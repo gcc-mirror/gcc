@@ -1,3 +1,9 @@
+2013-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56104
+	* typeck.c (get_member_function_from_ptrfunc): Optimize if the
+	dynamic type has no virtual functions.
+
 2013-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55944

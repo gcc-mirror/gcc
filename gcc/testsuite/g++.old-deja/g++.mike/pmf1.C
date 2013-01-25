@@ -1,5 +1,5 @@
 // { dg-do run  }
-// extern "C" printf(const char *, ...);
+// extern "C" int printf(const char *, ...);
 
 class X
 {
