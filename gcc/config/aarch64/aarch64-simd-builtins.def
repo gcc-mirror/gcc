@@ -142,9 +142,13 @@
   /* Implemented by aarch64_sq<r>dmulh<mode>.  */
   BUILTIN_VSDQ_HSI (BINOP, sqdmulh)
   BUILTIN_VSDQ_HSI (BINOP, sqrdmulh)
-  /* Implemented by aarch64_sq<r>dmulh_lane<mode>.  */
-  BUILTIN_VSDQ_HSI (TERNOP, sqdmulh_lane)
-  BUILTIN_VSDQ_HSI (TERNOP, sqrdmulh_lane)
+  /* Implemented by aarch64_sq<r>dmulh_lane<q><mode>.  */
+  BUILTIN_VDQHS (TERNOP, sqdmulh_lane)
+  BUILTIN_VDQHS (TERNOP, sqdmulh_laneq)
+  BUILTIN_VDQHS (TERNOP, sqrdmulh_lane)
+  BUILTIN_VDQHS (TERNOP, sqrdmulh_laneq)
+  BUILTIN_SD_HSI (TERNOP, sqdmulh_lane)
+  BUILTIN_SD_HSI (TERNOP, sqrdmulh_lane)
 
   BUILTIN_VSDQ_I_DI (BINOP, sshl_n)
   BUILTIN_VSDQ_I_DI (BINOP, ushl_n)
