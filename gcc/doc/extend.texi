@@ -6062,7 +6062,7 @@ int foo ()
   int *y = &x;
   int result;
   asm ("magic stuff accessing an 'int' pointed to by '%1'"
-        "=&d" (r) : "a" (y), "m" (*y));
+       : "=&d" (r) : "a" (y), "m" (*y));
   return result;
 @}
 @end smallexample
