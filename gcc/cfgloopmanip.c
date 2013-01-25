@@ -1823,10 +1823,8 @@ fix_loop_structure (bitmap changed_bbs)
       /* If there was no latch, schedule the loop for removal.  */
       if (!first_latch)
 	loop->header = NULL;
-      /* If there was a single latch and it belongs to the loop of the
-	 header, record it.  */
-      else if (latch
-	       && latch->src->loop_father == loop)
+      /* If there was a single latch, record it.  */
+      else if (latch)
 	loop->latch = latch->src;
       /* Otherwise there are multiple latches which are eventually
          disambiguated below.  */

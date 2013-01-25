@@ -1,3 +1,8 @@
+2013-01-25  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56035
+	* cfgloopmanip.c (fix_loop_structure): Remove redundant condition.
+
 2012-01-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movti_internal_rex64): Add (o,e) alternative.
