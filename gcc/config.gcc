@@ -1739,11 +1739,11 @@ microblaze*-*-rtems*)
 	tmake_file="${tmake_file} microblaze/t-microblaze"
 	tmake_file="${tmake_file} t-rtems microblaze/t-rtems"
         ;;
-microblaze*-*-*)
-        tm_file="${tm_file} dbxelf.h"
+microblaze*-*-elf)
+	tm_file="${tm_file} dbxelf.h newlib-stdint.h"
 	c_target_objs="${c_target_objs} microblaze-c.o"
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
-        tmake_file="${tmake_file} microblaze/t-microblaze"
+	tmake_file="${tmake_file} microblaze/t-microblaze"
         ;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
