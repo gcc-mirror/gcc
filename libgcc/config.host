@@ -713,7 +713,7 @@ mcore-*-elf)
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 microblaze*-linux*)
-        tmake_file="$tmake_file t-slibgcc-nolc-override microblaze/t-microblaze t-fdpbit"
+	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit t-slibgcc-libgcc"
 	;;
 microblaze*-*-elf)
 	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit"

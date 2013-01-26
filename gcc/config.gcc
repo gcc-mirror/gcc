@@ -1728,8 +1728,10 @@ mep-*-*)
 	;;
 microblaze*-linux*)
 	tm_file="${tm_file} dbxelf.h gnu-user.h linux.h microblaze/linux.h"
+	tm_file="${tm_file} glibc-stdint.h"
 	c_target_objs="${c_target_objs} microblaze-c.o"
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
+	tmake_file="${tmake_file} microblaze/t-microblaze"
 	;;
 microblaze*-*-rtems*)
 	tm_file="${tm_file} dbxelf.h"
