@@ -23650,6 +23650,12 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_static_dynamic=yes
   else
     case "$target" in
+      # AIX ld uses -b flags
+      *-*-aix4.[23]* | *-*-aix[5-9]*)
+	gcc_cv_ld_static_dynamic=yes
+	gcc_cv_ld_static_option="-bstatic"
+	gcc_cv_ld_dynamic_option="-bdynamic"
+	;;
       # HP-UX ld uses -a flags to select between shared and archive.
       *-*-hpux*)
 	if test x"$gnu_ld" = xno; then
