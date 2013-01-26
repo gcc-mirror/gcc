@@ -50,8 +50,11 @@ AC_PROG_AWK
 WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
 AC_SUBST(WARN_FLAGS)
 
-dnl FIXME: This should be controlled by --enable-maintainer-mode.
-WERROR="-Werror"
+AC_ARG_ENABLE(werror, [AS_HELP_STRING([--enable-werror],
+                                      [turns on -Werror @<:@default=yes@:>@])])
+if test "x$enable_werror" != "xno"; then
+  WERROR="-Werror"
+fi
 AC_SUBST(WERROR)
 
 glibgo_toolexecdir=no
