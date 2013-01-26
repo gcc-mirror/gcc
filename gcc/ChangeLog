@@ -1,3 +1,8 @@
+2013-01-26  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+
+	* config.gcc (microblaze*-*-*): Rename microblaze*-*-elf, update
+	tm_file.
+
 2013-01-25  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
 
 	* configure.ac (gcc_cv_ld_static_dynamic): Define for AIX native ld.
