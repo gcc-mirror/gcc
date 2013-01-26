@@ -1,3 +1,8 @@
+2013-01-25  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+
+	* configure.ac (gcc_cv_ld_static_dynamic): Define for AIX native ld.
+	* configure: Regenerate.
+
 2013-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56098
