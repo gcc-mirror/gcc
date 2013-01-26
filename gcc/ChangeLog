@@ -1,3 +1,9 @@
+2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
+
+	PR target/54663
+	* config.gcc (microblaze*-linux*): Add tmake_file to allow building
+	of microblaze-c.o
+
 2013-01-26  Edgar E. Iglesias <edgar.iglesias@gmail.com>
 
 	* config.gcc (microblaze*-*-*): Rename microblaze*-*-elf, update
