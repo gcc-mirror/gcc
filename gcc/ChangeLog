@@ -1,3 +1,10 @@
+2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56114
+	* config/i386/i386.md (*movabs<mode>_1): Add square brackets around
+	operand 0 in movabs insn template for -masm=intel asm alternative.
+	(*movabs<mode>_2): Ditto for operand 1.
+
 2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
 
 	PR target/54663
@@ -38,8 +45,8 @@
 
 	* config/aarch64/aarch64-simd-builtins.def: Separate sq<r>dmulh_lane
 	entries into lane and laneq entries.
-	* config/aarch64/aarch64-simd.md (aarch64_sq<r>dmulh_lane<mode>): Remove
-	AdvSIMD scalar modes.
+	* config/aarch64/aarch64-simd.md (aarch64_sq<r>dmulh_lane<mode>):
+	Remove AdvSIMD scalar modes.
 	(aarch64_sq<r>dmulh_laneq<mode>): New.
 	(aarch64_sq<r>dmulh_lane<mode>): New RTL pattern for Scalar AdvSIMD
 	modes.
@@ -91,8 +98,7 @@
 
 2013-01-24  Diego Novillo  <dnovillo@google.com>
 
-	* Makefile.in (GGC): Remove.  Replace all instances with
-	ggc-page.o.
+	* Makefile.in (GGC): Remove.  Replace all instances with ggc-page.o.
 	(ggc-zone.o): Remove.
 	* configure.ac: Remove option --with-gc.
 	* configure: Re-generate.
@@ -102,13 +108,11 @@
 	(output_type_enum): Remove.  Update all users.
 	(write_enum_defn): Remove.  Update all users.
 	(enum alloc_zone): Remove.  Update all users.
-	(write_splay_tree_allocator_def): Remove generation of gt_e_*
-	argument.
+	(write_splay_tree_allocator_def): Remove generation of gt_e_* argument.
 	* ggc-common.c (ggc_splay_alloc): Remove first argument.
 	Update all callers.
 	(struct ptr_data): Remove field TYPE.  Update all users.
-	(gt_pch_note_object): Remove argument TYPE.  Update all
-	users.
+	(gt_pch_note_object): Remove argument TYPE.  Update all users.
 	* ggc-internal.h (ggc_pch_alloc_object): Remove last argument.
 	Update all users.
 	* ggc-none.c (ggc_alloc_typed_stat): Remove.
@@ -116,14 +120,11 @@
 	(ggc_internal_alloc_zone_stat): Remove.
 	(ggc_internal_cleared_alloc_zone_stat): Remove.
 	* ggc-page.c (ggc_alloc_typed_stat): Remove.
-	(ggc_pch_count_object): Remove last argument.  Update all
-	users.
-	(ggc_pch_alloc_object): Remove last argument.  Update all
-	users.
+	(ggc_pch_count_object): Remove last argument.  Update all users.
+	(ggc_pch_alloc_object): Remove last argument.  Update all users.
 	(struct alloc_zone): Remove.
 	* ggc-zone.c: Remove.
-	* ggc.h (gt_pch_note_object): Remove last argument.  Update
-	all users.
+	* ggc.h (gt_pch_note_object): Remove last argument.  Update all users.
 	(struct alloc_zone): Remove.
 	(ggc_alloc_typed_stat): Remove.
 	(ggc_alloc_typed): Remove.
@@ -132,11 +133,9 @@
 	(tree_zone): Remove.  Update all users.
 	(tree_id_zone): Remove.  Update all users.
 	(ggc_internal_zone_alloc_stat): Remove.  Update all users.
-	(ggc_internal_zone_cleared_alloc_stat): Remove.  Update all
-	users.
+	(ggc_internal_zone_cleared_alloc_stat): Remove.  Update all users.
 	(ggc_internal_zone_vec_alloc_stat): Remove.  Update all users.
-	* tree-ssanames.c: Remove references to zone allocator in
-	comments.
+	* tree-ssanames.c: Remove references to zone allocator in comments.
 
 2013-01-24  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -179,7 +178,8 @@
 
 2013-01-23  Kostya Serebryany  <kcc@google.com>
 
-	* config/darwin.h: remove dependency on CoreFoundation (asan on Mac OS).
+	* config/darwin.h: remove dependency on
+	CoreFoundation (asan on Mac OS).
 
 2013-01-23  Jakub Jelinek  <jakub@redhat.com>
 
