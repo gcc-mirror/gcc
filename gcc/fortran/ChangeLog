@@ -1,6 +1,6 @@
 2013-01-27 Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/55789
+	PR fortran/55984
 	PR fortran/56047
 	* gfortran.h : Add associate_var to symbol_attr.
 	* resolve.c (resolve_assoc_var): Set associate_var attribute.
