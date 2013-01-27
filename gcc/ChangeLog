@@ -1,6 +1,16 @@
 2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
+	2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56114
+	* config/i386/i386.md (*movabs<mode>_1): Add square brackets around
+	operand 0 in movabs insn template for -masm=intel asm alternative.
+	(*movabs<mode>_2): Ditto for operand 1.
+
+2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
 	2013-01-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/56028
