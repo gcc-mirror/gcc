@@ -8,7 +8,7 @@
 	* gcc.dg/tree-ssa/sra-13.c: Likewise.
 	* gcc.dg/tree-ssa/pr45144.c: Update.
 
-2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/56023
 	* gcc.dg/pr56023.c: New test.
