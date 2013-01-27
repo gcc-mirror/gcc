@@ -1,6 +1,6 @@
 2013-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/55789
+	PR fortran/55984
 	* gfortran.dg/associate_14.f90: New test.
 
 	PR fortran/56047
