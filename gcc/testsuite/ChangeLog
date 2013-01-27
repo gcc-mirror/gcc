@@ -1,3 +1,15 @@
+2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-01-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56028
+	* gcc.target/i386/pr56028.c: New test.
+
+	2013-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/movsd.c: New test.
+
 2013-01-24  Janis Johnson  <janisjo@codesourcery.com>
 
 	Backport from mainline
@@ -56,7 +68,7 @@
 	* gcc.dg/tree-ssa/sra-13.c: Likewise.
 	* gcc.dg/tree-ssa/pr45144.c: Update.
 
-2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/56023
 	* gcc.dg/pr56023.c: New test.
@@ -69,10 +81,10 @@
 	PR tree-optimizations/55264
 	* g++.dg/ipa/pr55264.C: New test.
 
-2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
-	2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+	2013-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55981
 	* gcc.target/pr55981.c: New test.

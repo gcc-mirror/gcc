@@ -1,3 +1,42 @@
+2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-01-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56028
+	* config/i386/i386.md (*movti_internal_rex64): Change (o,riF)
+	alternative to (o,r).
+	(*movdi_internal_rex64): Remove (!o,n) alternative.
+	(DImode immediate->memory splitter): Remove.
+	(DImode immediate->memory peephole2): Remove.
+	(movtf): Enable for TARGET_64BIT || TARGET_SSE.
+	(*movtf_internal_rex64): Rename from *movtf_internal. Change (!o,F*r)
+	alternative to (!o,*r).
+	(*movtf_internal_sse): New pattern.
+	(*movxf_internal_rex64): New pattern.
+	(*movxf_internal): Disable for TARGET_64BIT.
+	(*movdf_internal_rex64): Remove (!o,F) alternative.
+
+	2013-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdf_internal_rex64): Disparage alternatives
+	involving stack registers slightly.
+
+	2013-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Yf): New constraint.
+	* config/i386/i386.md (*movdf_internal_rex64): Use Yf*f instead
+	of f constraint to conditionaly disable x87 register preferences.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+
+	2012-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal_rex64): Add (o,e) alternative.
+	(*movtf_internal_rex64): Add (!o,C) alternative
+	(*movxf_internal_rex64): Ditto.
+	(*movdf_internal_rex64): Add (?r,C) and (?m,C) alternatives.
+
 2013-01-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Built-in Macros): Document __XMEGA__.
@@ -11,14 +50,14 @@
 	* tree-sra.c (sra_modify_assign): Do not check that an access has no
 	children when trying to avoid producing a VIEW_CONVERT_EXPR.
 
-2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
-	2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+	2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (enabled): Do not disable fma4 for TARGET_FMA.
 
-2012-01-21  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/56023
 	* haifa-sched.c (fix_inter_tick): Do not update ticks of instructions,
@@ -38,7 +77,7 @@
 	* ipa.c (cgraph_remove_unreachable_nodes): Never return true for
 	virtual methods before inlining is over.
 
-2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
 	2012-01-17  Uros Bizjak  <ubizjak@gmail.com>

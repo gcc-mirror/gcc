@@ -92,6 +92,7 @@
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  d	Integer register when integer DFmode moves are enabled
 ;;  x	Integer register when integer XFmode moves are enabled
+;;  f	x87 register when 80387 floating point arithmetic is enabled
 
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
  "First SSE register (@code{%xmm0}).")
@@ -117,6 +118,10 @@
 (define_register_constraint "Yx"
  "optimize_function_for_speed_p (cfun) ? GENERAL_REGS : NO_REGS"
  "@internal Any integer register when integer XFmode moves are enabled.")
+
+(define_register_constraint "Yf"
+ "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
+ "@internal Any x87 register when 80387 FP arithmetic is enabled.")
 
 (define_constraint "z"
   "@internal Constant call address operand."
