@@ -1,5 +1,12 @@
 2013-01-28  Richard Biener  <rguenther@suse.de>
 
+	* tree-inline.c (remap_gimple_stmt): Do not assing a BLOCK
+	to a stmt that didn't have one.
+	(copy_phis_for_bb): Likewise for PHI arguments.
+	(copy_debug_stmt): Likewise for debug stmts.
+
+2013-01-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56034
 	* tree-loop-distribution.c (enum partition_kind): Add
 	PKIND_REDUCTION.
