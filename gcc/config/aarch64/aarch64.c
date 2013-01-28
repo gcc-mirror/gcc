@@ -7964,6 +7964,7 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
   aarch64_vectorize_vec_perm_const_ok
 
 
+#undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS aarch64_fixed_condition_code_regs
 
 struct gcc_target targetm = TARGET_INITIALIZER;

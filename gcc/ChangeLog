@@ -16,6 +16,12 @@
 	* config.gcc (microblaze*-*-*): Rename microblaze*-*-elf, update
 	tm_file.
 
+
+2013-01-25 Naveen H.S <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.c (TARGET_FIXED_CONDITION_CODE_REGS):
+	Undef to avoid warning.
+
 2013-01-25  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
 
 	* configure.ac (gcc_cv_ld_static_dynamic): Define for AIX native ld.
