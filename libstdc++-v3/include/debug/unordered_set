@@ -356,10 +356,9 @@ namespace __debug
 	    this->_M_invalidate_if(
 			    [__victim](_Base_const_iterator __it)
 			    { return __it == __victim; });
-	    _Base_local_iterator __local_victim = _S_to_local(__victim);
 	    this->_M_invalidate_local_if(
-			    [__local_victim](_Base_const_local_iterator __it)
-			    { return __it == __local_victim; });
+			    [__victim](_Base_const_local_iterator __it)
+			    { return __it._M_cur == __victim._M_cur; });
 	    size_type __bucket_count = this->bucket_count();
 	    _Base::erase(__victim);
 	    _M_check_rehashed(__bucket_count);
@@ -376,10 +375,9 @@ namespace __debug
 	this->_M_invalidate_if(
 			[__victim](_Base_const_iterator __it)
 			{ return __it == __victim; });
-	_Base_const_local_iterator __local_victim = _S_to_local(__victim);
 	this->_M_invalidate_local_if(
-			[__local_victim](_Base_const_local_iterator __it)
-			{ return __it == __local_victim; });
+			[__victim](_Base_const_local_iterator __it)
+			{ return __it._M_cur == __victim._M_cur; });
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __next = _Base::erase(__it.base());
 	_M_check_rehashed(__bucket_count);
@@ -404,10 +402,9 @@ namespace __debug
 	    this->_M_invalidate_if(
 			    [__tmp](_Base_const_iterator __it)
 			    { return __it == __tmp; });
-	    _Base_const_local_iterator __local_tmp = _S_to_local(__tmp);
 	    this->_M_invalidate_local_if(
-			    [__local_tmp](_Base_const_local_iterator __it)
-			    { return __it == __local_tmp; });
+			    [__tmp](_Base_const_local_iterator __it)
+			    { return __it._M_cur == __tmp._M_cur; });
 	  }
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __next = _Base::erase(__first.base(),
@@ -447,22 +444,6 @@ namespace __debug
       {
 	if (__prev_count != this->bucket_count())
 	  _M_invalidate_locals();
-      }
-
-      static _Base_local_iterator
-      _S_to_local(_Base_iterator __it)
-      {
-        // The returned local iterator will not be incremented so we don't
-	// need to compute __it's node bucket
-	return _Base_local_iterator(__it._M_cur, 0, 0);
-      }
-
-      static _Base_const_local_iterator
-      _S_to_local(_Base_const_iterator __it)
-      {
-        // The returned local iterator will not be incremented so we don't
-	// need to compute __it's node bucket
-	return _Base_const_local_iterator(__it._M_cur, 0, 0);
       }
     };
 
@@ -798,10 +779,9 @@ namespace __debug
 	  {
 	    this->_M_invalidate_if([__victim](_Base_const_iterator __it)
 			    { return __it == __victim; });
-	    _Base_local_iterator __local_victim = _S_to_local(__victim);
 	    this->_M_invalidate_local_if(
-			    [__local_victim](_Base_const_local_iterator __it)
-			    { return __it == __local_victim; });
+			    [__victim](_Base_const_local_iterator __it)
+			    { return __it._M_cur == __victim._M_cur; });
 	    _Base::erase(__victim++);
 	    ++__ret;
 	  }
@@ -815,10 +795,9 @@ namespace __debug
 	_Base_const_iterator __victim = __it.base();
 	this->_M_invalidate_if([__victim](_Base_const_iterator __it)
 			{ return __it == __victim; });
-	_Base_const_local_iterator __local_victim = _S_to_local(__victim);
 	this->_M_invalidate_local_if(
-			[__local_victim](_Base_const_local_iterator __it)
-			{ return __it == __local_victim; });
+			[__victim](_Base_const_local_iterator __it)
+			{ return __it._M_cur == __victim._M_cur; });
 	return iterator(_Base::erase(__it.base()), this);
       }
 
@@ -839,10 +818,9 @@ namespace __debug
 				  ._M_iterator(__last, "last"));
 	    this->_M_invalidate_if([__tmp](_Base_const_iterator __it)
 			    { return __it == __tmp; });
-	    _Base_const_local_iterator __local_tmp = _S_to_local(__tmp);
 	    this->_M_invalidate_local_if(
-			    [__local_tmp](_Base_const_local_iterator __it)
-			    { return __it == __local_tmp; });
+			    [__tmp](_Base_const_local_iterator __it)
+			    { return __it._M_cur == __tmp._M_cur; });
 	  }
 	return iterator(_Base::erase(__first.base(),
 				     __last.base()), this);
@@ -878,22 +856,6 @@ namespace __debug
       {
 	if (__prev_count != this->bucket_count())
 	  _M_invalidate_locals();
-      }
-
-      static _Base_local_iterator
-      _S_to_local(_Base_iterator __it)
-      {
-        // The returned local iterator will not be incremented so we don't
-	// need to compute __it's node bucket
-	return _Base_local_iterator(__it._M_cur, 0, 0);
-      }
-
-      static _Base_const_local_iterator
-      _S_to_local(_Base_const_iterator __it)
-      {
-        // The returned local iterator will not be incremented so we don't
-	// need to compute __it's node bucket
-	return _Base_const_local_iterator(__it._M_cur, 0, 0);
       }
     };
 
