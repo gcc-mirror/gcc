@@ -1,3 +1,13 @@
+2013-01-28  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53537
+	* gfortran.dg/import2.f90: Adjust undeclared type error messages.
+	* gfortran.dg/import8.f90: Likewise.
+	* gfortran.dg/interface_derived_type_1.f90: Likewise.
+	* gfortran.dg/import10.f90: New test.
+	* gfortran.dg/import11.f90: Likewise
+
 2013-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/56053
