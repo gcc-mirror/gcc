@@ -1,5 +1,14 @@
 2013-01-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/56125
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Don't optimize
+	pow(x,c) into sqrt(x) * powi(x, n/2) or
+	1.0 / (sqrt(x) * powi(x, abs(n/2))) if c is an integer or when
+	optimizing for size.
+	Don't optimize pow(x,c) into powi(x, n/3) * powi(cbrt(x), n%3) or
+	1.0 / (powi(x, abs(n)/3) * powi(cbrt(x), abs(n)%3)) if 2c is an
+	integer.
+
 	PR tree-optimization/56094
 	* gimplify.c (force_gimple_operand_1): Temporarily set input_location
 	to UNKNOWN_LOCATION while gimplifying expr.
@@ -11,19 +20,18 @@
 	operand 0 in movabs insn template for -masm=intel asm alternative.
 	(*movabs<mode>_2): Ditto for operand 1.
 
-2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
+2013-01-26  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	PR target/54663
 	* config.gcc (microblaze*-linux*): Add tmake_file to allow building
 	of microblaze-c.o
 
-2013-01-26  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-01-26  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config.gcc (microblaze*-*-*): Rename microblaze*-*-elf, update
 	tm_file.
 
-
-2013-01-25 Naveen H.S <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-01-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.c (TARGET_FIXED_CONDITION_CODE_REGS):
 	Undef to avoid warning.
@@ -369,7 +377,7 @@
 
 	* config/aarch64/arm_neon.h: Map scalar types to standard types.
 
-2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+2013-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/54114
 	PR debug/54402
@@ -392,13 +400,13 @@
 	cache, respectively.
 	* alias.c (rtx_equal_for_memref_p): Compare operands of ENTRY_VALUEs.
 
-2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+2013-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR libmudflap/53359
 	* tree-mudflap.c (mudflap_finish_file): Skip deferred decls
 	not found in the symtab.
 
-2013-01-18  Alexandre Oliva <aoliva@redhat.com>
+2013-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/56006
 	PR rtl-optimization/55547
@@ -542,7 +550,7 @@
 	(expand_atomic_load): Ditto.
 	(expand_atomic_store): Ditto.
 
-2013-01-16  Alexandre Oliva <aoliva@redhat.com>
+2013-01-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/55547
 	PR rtl-optimization/53827
@@ -1101,7 +1109,7 @@
 	(asan_finish_file): Test it here instead.
 
 2013-01-07   Nick Clifton  <nickc@redhat.com>
-	     Matthias Klose <doko@debian.org>
+	     Matthias Klose  <doko@debian.org>
 	     Doug Kwan  <dougkwan@google.com>
 	     H.J. Lu  <hongjiu.lu@intel.com>
 
