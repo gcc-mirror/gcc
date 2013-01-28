@@ -2720,8 +2720,12 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 	 prefetch has only the start address but it is better to have
 	 something than nothing.  */
       if (!deps->readonly)
-	add_insn_mem_dependence (deps, true, insn,
-				 gen_rtx_MEM (Pmode, XEXP (PATTERN (insn), 0)));
+	{
+	  rtx x = gen_rtx_MEM (Pmode, XEXP (PATTERN (insn), 0));
+	  if (sched_deps_info->use_cselib)
+	    cselib_lookup_from_insn (x, Pmode, true, VOIDmode, insn);
+	  add_insn_mem_dependence (deps, true, insn, x);
+	}
       break;
 
     case UNSPEC_VOLATILE:

@@ -1,3 +1,10 @@
+2013-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56117
+	* sched-deps.c (sched_analyze_2) <case PREFETCH>: For use_cselib
+	call cselib_lookup_from_insn on the MEM before calling
+	add_insn_mem_dependence.
+
 2013-01-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-inline.c (remap_gimple_stmt): Do not assing a BLOCK
