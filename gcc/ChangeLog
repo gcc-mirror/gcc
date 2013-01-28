@@ -1,3 +1,16 @@
+2013-01-28  Leif Ekblad  <leif@rdos.net>
+
+	* config.gcc (i[34567]86-*-rdos*, x86_64-*-rdos*): New targets.
+	* config/i386/i386.h (TARGET_RDOS): New macro.
+	(DEFAULT_LARGE_SECTION_THRESHOLD): New macro.
+	* config/i386/i386.c (ix86_option_override_internal): For 64bit
+	TARGET_RDOS, set ix86_cmodel to CM_MEDIUM_PIC and flag_pic to 1.
+	* config/i386/i386.opt (mlarge-data-threshold): Initialize to
+	DEFAULT_LARGE_SECTION_THRESHOLD.
+	* config/i386/i386.md (R14_REG, R15_REG): New constants.
+	* config/i386/rdos.h: New file.
+	* config/i386/rdos64.h: New file.
+
 2013-01-28  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR other/54814

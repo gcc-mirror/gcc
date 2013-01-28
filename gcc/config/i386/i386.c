@@ -3235,10 +3235,12 @@ ix86_option_override_internal (bool main_args_p)
 	 DLL, and is essentially just as efficient as direct addressing.  */
       if (TARGET_64BIT && DEFAULT_ABI == MS_ABI)
 	ix86_cmodel = CM_SMALL_PIC, flag_pic = 1;
+      else if (TARGET_64BIT && TARGET_RDOS)
+	ix86_cmodel = CM_MEDIUM_PIC, flag_pic = 1;
       else if (TARGET_64BIT)
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
       else
-        ix86_cmodel = CM_32;
+	ix86_cmodel = CM_32;
     }
   if (TARGET_MACHO && ix86_asm_dialect == ASM_INTEL)
     {
