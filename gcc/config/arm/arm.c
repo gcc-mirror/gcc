@@ -172,7 +172,7 @@ static void cirrus_reorg (rtx);
 static void arm_init_builtins (void);
 static void arm_init_iwmmxt_builtins (void);
 static rtx safe_vector_operand (rtx, enum machine_mode);
-static rtx arm_expand_binop_builtin (enum insn_code, tree, rtx);
+static rtx arm_expand_binop_builtin (enum insn_code, tree, rtx, bool);
 static rtx arm_expand_unop_builtin (enum insn_code, tree, rtx, int);
 static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree arm_builtin_decl (unsigned, bool);
@@ -20499,7 +20499,7 @@ safe_vector_operand (rtx x, enum machine_mode mode)
 
 static rtx
 arm_expand_binop_builtin (enum insn_code icode,
-			  tree exp, rtx target)
+			  tree exp, rtx target, bool allow_void)
 {
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
@@ -20520,7 +20520,32 @@ arm_expand_binop_builtin (enum insn_code icode,
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
 
-  gcc_assert (GET_MODE (op0) == mode0 && GET_MODE (op1) == mode1);
+  if (GET_MODE (op0) != mode0)
+    {
+      error ("the first argument to the builtin has mode %s, expecting %s",
+	     mode_name[GET_MODE (op0)], mode_name[mode0]);
+      /* Do not return a NULL_RTX - it causes an ICE in store_expr()
+	 which does not expect builtin expansion to fail.  */
+      return const0_rtx;
+    }	  
+  
+  if (GET_MODE (op1) != mode1)
+    {
+      if (GET_MODE (op1) == VOIDmode)
+	{
+	  /* We are being passed a constant as our second parameter.
+	     If allow_void is true, assume that the pattern allows
+	     immediates.  Otherwise, copy the value into a register.  */
+	  if (! allow_void)
+	    op1 = copy_to_mode_reg (mode1, op1);
+	}
+      else
+	{
+	  error ("the second argument to the builtin has mode %s, expecting %s",
+		 mode_name[GET_MODE (op1)], mode_name[mode1]);
+	  return const0_rtx;
+	}
+    }
 
   if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
@@ -21153,13 +21178,13 @@ arm_expand_builtin (tree exp,
       return target;
 
     case ARM_BUILTIN_WSADB:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadb, exp, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadb, exp, target, false);
     case ARM_BUILTIN_WSADH:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadh, exp, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadh, exp, target, false);
     case ARM_BUILTIN_WSADBZ:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadbz, exp, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadbz, exp, target, false);
     case ARM_BUILTIN_WSADHZ:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadhz, exp, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadhz, exp, target, false);
 
       /* Several three-argument builtins.  */
     case ARM_BUILTIN_WMACS:
@@ -21207,6 +21232,32 @@ arm_expand_builtin (tree exp,
       emit_insn (pat);
       return target;
 
+    case ARM_BUILTIN_WSLLHI:
+    case ARM_BUILTIN_WSLLWI:
+    case ARM_BUILTIN_WSLLDI:
+    case ARM_BUILTIN_WSRAHI:
+    case ARM_BUILTIN_WSRAWI:
+    case ARM_BUILTIN_WSRADI:
+    case ARM_BUILTIN_WSRLHI:
+    case ARM_BUILTIN_WSRLWI:
+    case ARM_BUILTIN_WSRLDI:
+    case ARM_BUILTIN_WRORHI:
+    case ARM_BUILTIN_WRORWI:
+    case ARM_BUILTIN_WRORDI:
+      icode = (  fcode == ARM_BUILTIN_WSLLHI ? CODE_FOR_ashlv4hi3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSLLWI ? CODE_FOR_ashlv2si3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSLLDI ? CODE_FOR_ashldi3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSRAHI ? CODE_FOR_ashrv4hi3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSRAWI ? CODE_FOR_ashrv2si3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSRADI ? CODE_FOR_ashrdi3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSRLHI ? CODE_FOR_lshrv4hi3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSRLWI ? CODE_FOR_lshrv2si3_iwmmxt
+	       : fcode == ARM_BUILTIN_WSRLDI ? CODE_FOR_lshrdi3_iwmmxt
+	       : fcode == ARM_BUILTIN_WRORHI ? CODE_FOR_rorv4hi3
+	       : fcode == ARM_BUILTIN_WRORWI ? CODE_FOR_rorv2si3
+	       :       /* ARM_BUILTIN_WRORDI */CODE_FOR_rordi3);
+      return arm_expand_binop_builtin (icode, exp, target, true);
+
     case ARM_BUILTIN_WZERO:
       target = gen_reg_rtx (DImode);
       emit_insn (gen_iwmmxt_clrdi (target));
@@ -21221,7 +21272,7 @@ arm_expand_builtin (tree exp,
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == (const enum arm_builtins) fcode)
-      return arm_expand_binop_builtin (d->icode, exp, target);
+      return arm_expand_binop_builtin (d->icode, exp, target, false);
 
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == (const enum arm_builtins) fcode)

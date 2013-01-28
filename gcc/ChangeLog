@@ -1,3 +1,13 @@
+2013-01-28  Serowk  <serowk@yandex.ru>
+
+	PR target/35294
+	* config/arm/arm.c (arm_expand_binop_builtin): Add new parameter.
+	Fix mode checks to allow for the passing of constants in the
+	second parameter.
+	(arm_expand_builtin): Adjust calls to arm_expand_binop_builtin.
+	Add entries in the switch statement for builtin iwmmxt vector
+	shift and rotate builtins.
+
 2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
