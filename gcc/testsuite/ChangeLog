@@ -1,5 +1,13 @@
 2013-01-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/56053
+	* c-c++-common/asan/heap-overflow-1.c: Don't include stdlib.h and
+	string.h.  Provide memset, malloc and free prototypes, adjust line
+	numbers in dg-output.
+	* c-c++-common/asan/stack-overflow-1.c: Don't include string.h.
+	Provide memset prototype and adjust line numbers in dg-output.
+	* c-c++-common/asan/global-overflow-1.c: Likewise.
+
 	PR tree-optimization/56094
 	* gcc.dg/pr56094.c: New test.
 
