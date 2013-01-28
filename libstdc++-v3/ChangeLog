@@ -1,3 +1,31 @@
+2013-01-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Local_iterator_base): Use
+	_Hashtable_ebo_helper to embed functors into the local_iterator
+	when necessary. Pass information about functors involved in hash
+	code by copy.
+	* include/bits/hashtable.h (__cache_default): Do not cache for
+	builtin integral types unless the hash functor is not noexcept
+	qualified or is not default constructible. Adapt static assertions
+	and local iterator instantiations.
+	* include/debug/unordered_set
+	(std::__debug::unordered_set<>::erase): Detect local iterators to
+	invalidate using contained node rather than generating a dummy
+	local_iterator instance.
+	(std::__debug::unordered_multiset<>::erase): Likewise.
+	* include/debug/unordered_map
+	(std::__debug::unordered_map<>::erase): Likewise.
+	(std::__debug::unordered_multimap<>::erase): Likewise.
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Test
+	std::tr1 and std versions of unordered_set regardless of any
+	macro. Add test on default cache behavior.
+	* testsuite/performance/23_containers/insert/54075.cc: Likewise.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adapt line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: New.
+	* testsuite/23_containers/unordered_set/buckets/swap.cc: New.
+
 2013-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/56085
