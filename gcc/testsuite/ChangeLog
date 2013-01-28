@@ -1,3 +1,8 @@
+2013-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56094
+	* gcc.dg/pr56094.c: New test.
+
 2013-01-27  Amol Pise  <amolpise15@gmail.com>
 
 	* gcc.target/arm/neon-vfnms-1.c: New test.

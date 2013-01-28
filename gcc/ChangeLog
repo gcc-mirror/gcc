@@ -1,3 +1,9 @@
+2013-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56094
+	* gimplify.c (force_gimple_operand_1): Temporarily set input_location
+	to UNKNOWN_LOCATION while gimplifying expr.
+
 2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/56114
