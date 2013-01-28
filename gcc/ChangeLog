@@ -1,3 +1,9 @@
+2013-01-28  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR other/54814
+	* reload.c (find_valid_class_1): Use in_hard_reg_set_p instead of
+	TEST_HARD_REG_BIT.
+
 2013-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/56117

@@ -707,7 +707,7 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 }
 
 /* We are trying to reload a subreg of something that is not a register.
-   Find the largest class which has at least one register valid in
+   Find the largest class which contains only registers valid in
    mode MODE.  OUTER is the mode of the subreg, DEST_CLASS the class in
    which we would eventually like to obtain the object.  */
 
@@ -727,10 +727,12 @@ find_valid_class_1 (enum machine_mode outer ATTRIBUTE_UNUSED,
     {
       int bad = 0;
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER && !bad; regno++)
-	if (TEST_HARD_REG_BIT (reg_class_contents[rclass], regno)
-	    && !HARD_REGNO_MODE_OK (regno, mode))
-	  bad = 1;
-
+	{
+	  if (in_hard_reg_set_p (reg_class_contents[rclass], mode, regno)
+	      && !HARD_REGNO_MODE_OK (regno, mode))
+	    bad = 1;
+	}
+      
       if (bad)
 	continue;
 
