@@ -1,3 +1,19 @@
+2013-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56034
+	* tree-loop-distribution.c (enum partition_kind): Add
+	PKIND_REDUCTION.
+	(partition_builtin_p): Adjust.
+	(generate_code_for_partition): Handle PKIND_REDUCTION.  Assert
+	it is the last partition.
+	(rdg_flag_uses): Check SSA_NAME_IS_DEFAULT_DEF before looking
+	up the vertex for the definition.
+	(classify_partition): Classify whether a partition is a
+	PKIND_REDUCTION, thus has uses outside of the loop.
+	(ldist_gen): Inherit PKIND_REDUCTION when merging partitions.
+	Merge all PKIND_REDUCTION partitions into the last partition.
+	(tree_loop_distribution): Seed partitions from reductions as well.
+
 2013-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56125
