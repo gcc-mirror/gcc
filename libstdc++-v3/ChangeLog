@@ -1,3 +1,10 @@
+2013-01-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56112
+	* include/bits/hashtable_policy.h (insert(_Pair&&)): Use _M_emplace
+	to construct value_type explicitly before trying to extract the key.
+	* testsuite/23_containers/unordered_map/cons/56112.cc: New.
+
 2013-01-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Local_iterator_base): Use

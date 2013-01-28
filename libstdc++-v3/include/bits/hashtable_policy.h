@@ -836,7 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	insert(_Pair&& __v)
 	{
 	  __hashtable& __h = this->_M_conjure_hashtable();
-	  return __h._M_insert(std::forward<_Pair>(__v), __unique_keys());
+	  return __h._M_emplace(__unique_keys(), std::forward<_Pair>(__v));
 	}
 
       template<typename _Pair, typename = _IFconsp<_Pair>>
