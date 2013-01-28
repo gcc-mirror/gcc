@@ -7935,7 +7935,7 @@ validate_case_label_expr (gfc_expr *e, gfc_expr *case_expr)
    expression.  */
 
 static void
-resolve_select (gfc_code *code)
+resolve_select (gfc_code *code, bool select_type)
 {
   gfc_code *body;
   gfc_expr *case_expr;
@@ -7965,14 +7965,25 @@ resolve_select (gfc_code *code)
     }
 
   case_expr = code->expr1;
-
   type = case_expr->ts.type;
+
+  /* F08:C830.  */
   if (type != BT_LOGICAL && type != BT_INTEGER && type != BT_CHARACTER)
     {
       gfc_error ("Argument of SELECT statement at %L cannot be %s",
 		 &case_expr->where, gfc_typename (&case_expr->ts));
 
       /* Punt. Going on here just produce more garbage error messages.  */
+      return;
+    }
+
+  /* F08:R842.  */
+  if (!select_type && case_expr->rank != 0)
+    {
+      gfc_error ("Argument of SELECT statement at %L must be a scalar "
+		 "expression", &case_expr->where);
+
+      /* Punt.  */
       return;
     }
 
@@ -8314,6 +8325,13 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	 has no corank.  */
       sym->as->corank = 0;
     }
+
+  /* Mark this as an associate variable.  */
+  sym->attr.associate_var = 1;
+
+  /* If the target is a good class object, so is the associate variable.  */
+  if (sym->ts.type == BT_CLASS && gfc_expr_attr (target).class_ok)
+    sym->attr.class_ok = 1;
 }
 
 
@@ -8668,7 +8686,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   gfc_resolve_blocks (code->block, gfc_current_ns);
   gfc_current_ns = old_ns;
 
-  resolve_select (code);
+  resolve_select (code, true);
 }
 
 
@@ -10285,7 +10303,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_SELECT:
 	  /* Select is complicated. Also, a SELECT construct could be
 	     a transformed computed GOTO.  */
-	  resolve_select (code);
+	  resolve_select (code, false);
 	  break;
 
 	case EXEC_SELECT_TYPE:

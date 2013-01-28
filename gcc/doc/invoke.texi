@@ -2673,23 +2673,6 @@ Warn when overload resolution chooses a promotion from unsigned or
 enumerated type to a signed type, over a conversion to an unsigned type of
 the same size.  Previous versions of G++ tried to preserve
 unsignedness, but the standard mandates the current behavior.
-
-@smallexample
-struct A @{
-  operator int ();
-  A& operator = (int);
-@};
-
-main ()
-@{
-  A a,b;
-  a = b;
-@}
-@end smallexample
-
-@noindent
-In this example, G++ synthesizes a default @samp{A& operator =
-(const A&);}, while cfront uses the user-defined @samp{operator =}.
 @end table
 
 @node Objective-C and Objective-C++ Dialect Options
@@ -11859,6 +11842,9 @@ the device name as from the AVR user manual. The difference between
 If @var{device} is not a device but only a core architecture like
 @code{avr51}, this macro will not be defined.
 
+@item __AVR_XMEGA__
+The device / architecture belongs to the XMEGA family of devices.
+
 @item __AVR_HAVE_ELPM__
 The device has the the @code{ELPM} instruction.
 
@@ -12375,7 +12361,7 @@ linker multiple times and joining the results together with
 
 The subtype of the file created (like @samp{ppc7400} or @samp{ppc970} or
 @samp{i686}) is determined by the flags that specify the ISA
-that GCC is targetting, like @option{-mcpu} or @option{-march}.  The
+that GCC is targeting, like @option{-mcpu} or @option{-march}.  The
 @option{-force_cpusubtype_ALL} option can be used to override this.
 
 The Darwin tools vary in their behavior when presented with an ISA

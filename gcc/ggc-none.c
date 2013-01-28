@@ -31,13 +31,6 @@
 #include "coretypes.h"
 #include "ggc.h"
 
-void *
-ggc_alloc_typed_stat (enum gt_types_enum ARG_UNUSED (gte), size_t size
-		      MEM_STAT_DECL)
-{
-  return xmalloc (size);
-}
-
 /* For a given size of memory requested for allocation, return the
    actual size that is going to be allocated.  */
 
@@ -70,31 +63,3 @@ ggc_free (void *p)
 {
   free (p);
 }
-
-struct alloc_zone
-{
-  int dummy;
-};
-
-struct alloc_zone rtl_zone;
-struct alloc_zone tree_zone;
-struct alloc_zone tree_id_zone;
-
-#if defined (GGC_ZONE) && !defined (GENERATOR_FILE)
-
-void *
-ggc_internal_alloc_zone_stat (size_t size,
-                              struct alloc_zone * ARG_UNUSED(z) MEM_STAT_DECL)
-{
-    return xmalloc (size);
-}
-
-void *
-ggc_internal_cleared_alloc_zone_stat (size_t size,
-                                      struct alloc_zone * ARG_UNUSED(z)
-                                      MEM_STAT_DECL)
-{
-    return xcalloc (size, 1);
-}
-
-#endif

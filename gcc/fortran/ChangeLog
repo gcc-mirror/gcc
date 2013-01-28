@@ -1,3 +1,37 @@
+2013-01-27 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55984
+	PR fortran/56047
+	* gfortran.h : Add associate_var to symbol_attr.
+	* resolve.c (resolve_assoc_var): Set associate_var attribute.
+	If the target class_ok is set, set it for the associate
+	variable.
+	* check.c (allocatable_check): Associate variables should not
+	have the allocatable attribute even if their symbols do.
+	* class.c (gfc_build_class_symbol): Symbols with associate_var
+	set will always have a good class container.
+
+2013-01-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56081
+	* resolve.c (resolve_select): Add argument 'select_type', reject
+	non-scalar expressions.
+	(resolve_select_type,resolve_code): Pass new argument to
+	'resolve_select'.
+
+2013-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56052
+	* trans-decl.c (gfc_get_symbol_decl): Set DECL_ARTIFICIAL
+	and DECL_IGNORED_P on select_type_temporary and don't set
+	DECL_BY_REFERENCE.
+
+2013-01-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55919
+	* scanner.c (add_path_to_list): Copy path to temporary and strip
+	trailing directory separators before calling stat().
+
 2013-01-17  Richard Biener  <rguenther@suse.de>
 
 	* trans-stmt.c (gfc_trans_do): Conditionally compute countm1

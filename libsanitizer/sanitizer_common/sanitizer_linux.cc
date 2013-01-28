@@ -32,6 +32,7 @@
 #include <unwind.h>
 #include <errno.h>
 #include <sys/prctl.h>
+#include <linux/futex.h>
 
 // Are we using 32-bit or 64-bit syscalls?
 // x32 (which defines __x86_64__) has SANITIZER_WORDSIZE == 32
@@ -198,24 +199,31 @@ const char *GetEnv(const char *name) {
   return 0;  // Not found.
 }
 
-void ReExec() {
-  static const int kMaxArgv = 100;
-  InternalScopedBuffer<char*> argv(kMaxArgv + 1);
-  static char *buff;
+static void ReadNullSepFileToArray(const char *path, char ***arr,
+                                   int arr_size) {
+  char *buff;
   uptr buff_size = 0;
-  ReadFileToBuffer("/proc/self/cmdline", &buff, &buff_size, 1024 * 1024);
-  argv[0] = buff;
-  int argc, i;
-  for (argc = 1, i = 1; ; i++) {
+  *arr = (char **)MmapOrDie(arr_size * sizeof(char *), "NullSepFileArray");
+  ReadFileToBuffer(path, &buff, &buff_size, 1024 * 1024);
+  (*arr)[0] = buff;
+  int count, i;
+  for (count = 1, i = 1; ; i++) {
     if (buff[i] == 0) {
       if (buff[i+1] == 0) break;
-      argv[argc] = &buff[i+1];
-      CHECK_LE(argc, kMaxArgv);  // FIXME: make this more flexible.
-      argc++;
+      (*arr)[count] = &buff[i+1];
+      CHECK_LE(count, arr_size - 1);  // FIXME: make this more flexible.
+      count++;
     }
   }
-  argv[argc] = 0;
-  execv(argv[0], argv.data());
+  (*arr)[count] = 0;
+}
+
+void ReExec() {
+  static const int kMaxArgv = 100, kMaxEnvp = 1000;
+  char **argv, **envp;
+  ReadNullSepFileToArray("/proc/self/cmdline", &argv, kMaxArgv);
+  ReadNullSepFileToArray("/proc/self/environ", &envp, kMaxEnvp);
+  execve(argv[0], argv, envp);
 }
 
 void PrepareForSandboxing() {
@@ -366,16 +374,24 @@ bool MemoryMappingLayout::GetObjectNameAndOffset(uptr addr, uptr *offset,
 }
 
 bool SanitizerSetThreadName(const char *name) {
+#ifdef PR_SET_NAME
   return 0 == prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);  // NOLINT
+#else
+  return false;
+#endif
 }
 
 bool SanitizerGetThreadName(char *name, int max_len) {
+#ifdef PR_GET_NAME
   char buff[17];
   if (prctl(PR_GET_NAME, (unsigned long)buff, 0, 0, 0))  // NOLINT
     return false;
   internal_strncpy(name, buff, max_len);
   name[max_len] = 0;
   return true;
+#else
+  return false;
+#endif
 }
 
 #ifndef SANITIZER_GO
@@ -433,6 +449,32 @@ void StackTrace::SlowUnwindStack(uptr pc, uptr max_depth) {
 }
 
 #endif  // #ifndef SANITIZER_GO
+
+enum MutexState {
+  MtxUnlocked = 0,
+  MtxLocked = 1,
+  MtxSleeping = 2
+};
+
+BlockingMutex::BlockingMutex(LinkerInitialized) {
+  CHECK_EQ(owner_, 0);
+}
+
+void BlockingMutex::Lock() {
+  atomic_uint32_t *m = reinterpret_cast<atomic_uint32_t *>(&opaque_storage_);
+  if (atomic_exchange(m, MtxLocked, memory_order_acquire) == MtxUnlocked)
+    return;
+  while (atomic_exchange(m, MtxSleeping, memory_order_acquire) != MtxUnlocked)
+    syscall(__NR_futex, m, FUTEX_WAIT, MtxSleeping, 0, 0, 0);
+}
+
+void BlockingMutex::Unlock() {
+  atomic_uint32_t *m = reinterpret_cast<atomic_uint32_t *>(&opaque_storage_);
+  u32 v = atomic_exchange(m, MtxUnlocked, memory_order_relaxed);
+  CHECK_NE(v, MtxUnlocked);
+  if (v == MtxSleeping)
+    syscall(__NR_futex, m, FUTEX_WAKE, 1, 0, 0, 0);
+}
 
 }  // namespace __sanitizer
 

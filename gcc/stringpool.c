@@ -207,7 +207,7 @@ void
 gt_pch_n_S (const void *x)
 {
   gt_pch_note_object (CONST_CAST (void *, x), CONST_CAST (void *, x),
-		      &gt_pch_p_S, gt_types_enum_last);
+		      &gt_pch_p_S);
 }
 
 

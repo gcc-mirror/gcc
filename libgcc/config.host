@@ -713,11 +713,11 @@ mcore-*-elf)
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 microblaze*-linux*)
-        tmake_file="$tmake_file t-slibgcc-nolc-override microblaze/t-microblaze t-fdpbit"
+	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit t-slibgcc-libgcc"
 	;;
-microblaze*-*-*)
-        tmake_file="microblaze/t-microblaze t-fdpbit"
-	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
+microblaze*-*-elf)
+	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit"
+	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o crti.o crtn.o"
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;

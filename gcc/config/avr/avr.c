@@ -7114,13 +7114,13 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
       unsigned d1 = d0 + step;
 
       // Current and next regno of source
-      unsigned s0 = d0 - offset;
-      unsigned s1 = s0 + step;
+      signed s0 = d0 - offset;
+      signed s1 = s0 + step;
 
       // Must current resp. next regno be CLRed?  This applies to the low
       // bytes of the destination that have no associated source bytes.
-      bool clr0 = s0 < src.regno;
-      bool clr1 = s1 < src.regno && d1 >= dest.regno;
+      bool clr0 = s0 < (signed) src.regno;
+      bool clr1 = s1 < (signed) src.regno && d1 >= dest.regno;
 
       // First gather what code to emit (if any) and additional step to
       // apply if a MOVW is in use.  xop[2] is destination rtx and xop[3]
@@ -7150,12 +7150,12 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
                 }
             }
         }
-      else if (offset && s0 <= src.regno_msb)
+      else if (offset && s0 <= (signed) src.regno_msb)
         {
           int movw = AVR_HAVE_MOVW && offset % 2 == 0
             && d0 % 2 == (offset > 0)
             && d1 <= dest.regno_msb && d1 >= dest.regno
-            && s1 <= src.regno_msb  && s1 >= src.regno;
+            && s1 <= (signed) src.regno_msb  && s1 >= (signed) src.regno;
 
           xop[2] = all_regs_rtx[d0 & ~movw];
           xop[3] = all_regs_rtx[s0 & ~movw];
@@ -11384,7 +11384,7 @@ avr_out_insert_bits (rtx *op, int *plen)
 
 enum avr_builtin_id
   {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE)   \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)  \
     AVR_BUILTIN_ ## NAME,
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -11407,7 +11407,7 @@ struct GTY(()) avr_builtin_description
 static GTY(()) struct avr_builtin_description
 avr_bdesc[AVR_BUILTIN_COUNT] =
   {
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE)                  \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, LIBNAME)         \
     { (enum insn_code) CODE_FOR_ ## ICODE, N_ARGS, NULL_TREE },
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -11489,7 +11489,33 @@ avr_init_builtins (void)
                                 const_memx_ptr_type_node,
                                 NULL);
 
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE)                           \
+  tree hr_ftype_hr
+    = build_function_type_list (short_fract_type_node,
+                                short_fract_type_node, NULL);
+  tree r_ftype_r
+    = build_function_type_list (fract_type_node,
+                                fract_type_node, NULL);
+  tree lr_ftype_lr
+    = build_function_type_list (long_fract_type_node,
+                                long_fract_type_node, NULL);
+  tree llr_ftype_llr
+    = build_function_type_list (long_long_fract_type_node,
+                                long_long_fract_type_node, NULL);
+
+  tree hk_ftype_hk
+    = build_function_type_list (short_accum_type_node,
+                                short_accum_type_node, NULL);
+  tree k_ftype_k
+    = build_function_type_list (accum_type_node,
+                                accum_type_node, NULL);
+  tree lk_ftype_lk
+    = build_function_type_list (long_accum_type_node,
+                                long_accum_type_node, NULL);
+  tree llk_ftype_llk
+    = build_function_type_list (long_long_accum_type_node,
+                                long_long_accum_type_node, NULL);
+  
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)                  \
   {                                                                     \
     int id = AVR_BUILTIN_ ## NAME;                                      \
     const char *Name = "__builtin_avr_" #NAME;                          \
@@ -11498,7 +11524,7 @@ avr_init_builtins (void)
     gcc_assert (id < AVR_BUILTIN_COUNT);                                \
     avr_bdesc[id].fndecl                                                \
       = add_builtin_function (avr_tolower (name, Name), TYPE, id,       \
-                              BUILT_IN_MD, NULL, NULL_TREE);            \
+                              BUILT_IN_MD, LIBNAME, NULL_TREE);         \
   }
 #include "builtins.def"
 #undef DEF_BUILTIN
@@ -11580,7 +11606,7 @@ static rtx
 avr_expand_builtin (tree exp, rtx target,
                     rtx subtarget ATTRIBUTE_UNUSED,
                     enum machine_mode mode ATTRIBUTE_UNUSED,
-                    int ignore ATTRIBUTE_UNUSED)
+                    int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
@@ -11624,6 +11650,14 @@ avr_expand_builtin (tree exp, rtx target,
       }
     }
 
+  /* No fold found and no insn:  Call support function from libgcc.  */
+
+  if (d->icode == CODE_FOR_nothing
+      && DECL_ASSEMBLER_NAME (get_callee_fndecl (exp)) != NULL_TREE)
+    {
+      return expand_call (exp, target, ignore);
+    }
+
   /* No special treatment needed: vanilla expand.  */
 
   gcc_assert (d->icode != CODE_FOR_nothing);
@@ -11636,6 +11670,33 @@ avr_expand_builtin (tree exp, rtx target,
     }
 
   return avr_default_expand_builtin (d->icode, exp, target);
+}
+
+
+/* Helper for `avr_fold_builtin' that folds  absfx (FIXED_CST).  */
+
+static tree
+avr_fold_absfx (tree tval)
+{
+  if (FIXED_CST != TREE_CODE (tval))
+    return NULL_TREE;
+
+  /* Our fixed-points have no padding:  Use double_int payload directly.  */
+
+  FIXED_VALUE_TYPE fval = TREE_FIXED_CST (tval);
+  unsigned int bits = GET_MODE_BITSIZE (fval.mode);
+  double_int ival = fval.data.sext (bits);
+
+  if (!ival.is_negative())
+    return tval;
+
+  /* ISO/IEC TR 18037, 7.18a.6.2:  The absfx functions are saturating.  */
+
+  fval.data = (ival == double_int::min_value (bits, false).sext (bits))
+    ? double_int::max_value (bits, false)
+    : -ival;
+
+  return build_fixed (TREE_TYPE (tval), fval);
 }
 
 
@@ -11661,6 +11722,19 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         return fold_build2 (LROTATE_EXPR, val_type, arg[0],
                             build_int_cst (val_type, 4));
       }
+
+    case AVR_BUILTIN_ABSHR:
+    case AVR_BUILTIN_ABSR:
+    case AVR_BUILTIN_ABSLR:
+    case AVR_BUILTIN_ABSLLR:
+
+    case AVR_BUILTIN_ABSHK:
+    case AVR_BUILTIN_ABSK:
+    case AVR_BUILTIN_ABSLK:
+    case AVR_BUILTIN_ABSLLK:
+      /* GCC is not good with folding ABS for fixed-point.  Do it by hand.  */
+
+      return avr_fold_absfx (arg[0]);
 
     case AVR_BUILTIN_INSERT_BITS:
       {

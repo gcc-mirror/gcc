@@ -457,7 +457,7 @@ runtime_setsig (int32 i, bool def __attribute__ ((unused)), bool restart)
 
 /* Used by the os package to raise SIGPIPE.  */
 
-void os_sigpipe (void) __asm__ ("os.sigpipe");
+void os_sigpipe (void) __asm__ (GOSYM_PREFIX "os.sigpipe");
 
 void
 os_sigpipe (void)

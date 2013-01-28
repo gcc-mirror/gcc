@@ -3122,7 +3122,8 @@ build_array_ref (location_t loc, tree array, tree idx)
    With the final ISO C++ rules, such an optimization is
    incorrect: A pointer to a derived member can be static_cast
    to pointer-to-base-member, as long as the dynamic object
-   later has the right member.  */
+   later has the right member.  So now we only do this optimization
+   when we know the dynamic type of the object.  */
 
 tree
 get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
@@ -3133,8 +3134,10 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (function)))
     {
-      tree idx, delta, e1, e2, e3, vtbl, basetype;
+      tree idx, delta, e1, e2, e3, vtbl;
+      bool nonvirtual;
       tree fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
+      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (fntype));
 
       tree instance_ptr = *instance_ptrptr;
       tree instance_save_expr = 0;
@@ -3157,6 +3160,12 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 	    }
 	}
 
+      /* True if we know that the dynamic type of the object doesn't have
+	 virtual functions, so we can assume the PFN field is a pointer.  */
+      nonvirtual = (COMPLETE_TYPE_P (basetype)
+		    && !TYPE_POLYMORPHIC_P (basetype)
+		    && resolves_to_fixed_type_p (instance_ptr, 0));
+
       if (TREE_SIDE_EFFECTS (instance_ptr))
 	instance_ptr = instance_save_expr = save_expr (instance_ptr);
 
@@ -3167,7 +3176,9 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       e3 = pfn_from_ptrmemfunc (function);
       delta = delta_from_ptrmemfunc (function);
       idx = build1 (NOP_EXPR, vtable_index_type, e3);
-      switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
+      if (nonvirtual)
+	e1 = integer_zero_node;
+      else switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
 	case ptrmemfunc_vbit_in_pfn:
 	  e1 = cp_build_binary_op (input_location,
@@ -3204,7 +3215,6 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 	 a member of C, and no conversion is required.  In fact,
 	 lookup_base will fail in that case, because incomplete
 	 classes do not have BINFOs.  */
-      basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (fntype));
       if (!same_type_ignoring_top_level_qualifiers_p
 	  (basetype, TREE_TYPE (TREE_TYPE (instance_ptr))))
 	{
@@ -3221,17 +3231,16 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       /* Hand back the adjusted 'this' argument to our caller.  */
       *instance_ptrptr = instance_ptr;
 
+      if (nonvirtual)
+	/* Now just return the pointer.  */
+	return e3;
+
       /* Next extract the vtable pointer from the object.  */
       vtbl = build1 (NOP_EXPR, build_pointer_type (vtbl_ptr_type_node),
 		     instance_ptr);
       vtbl = cp_build_indirect_ref (vtbl, RO_NULL, complain);
       if (vtbl == error_mark_node)
 	return error_mark_node;
-
-      /* If the object is not dynamic the access invokes undefined
-	 behavior.  As it is not executed in this case silence the
-	 spurious warnings it may provoke.  */
-      TREE_NO_WARNING (vtbl) = 1;
 
       /* Finally, extract the function pointer from the vtable.  */
       e2 = fold_build_pointer_plus_loc (input_location, vtbl, idx);

@@ -2210,17 +2210,49 @@
 ;; sq<r>dmulh_lane
 
 (define_insn "aarch64_sq<r>dmulh_lane<mode>"
-  [(set (match_operand:VSDQ_HSI 0 "register_operand" "=w")
-        (unspec:VSDQ_HSI
-	  [(match_operand:VSDQ_HSI 1 "register_operand" "w")
+  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+        (unspec:VDQHS
+	  [(match_operand:VDQHS 1 "register_operand" "w")
            (vec_select:<VEL>
-             (match_operand:<VCON> 2 "register_operand" "<vwx>")
+             (match_operand:<VCOND> 2 "register_operand" "<vwx>")
              (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
 	 VQDMULH))]
   "TARGET_SIMD"
   "*
-   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCON>mode));
-   return \"sq<r>dmulh\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2.<Vetype>[%3]\";"
+   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCOND>mode));
+   return \"sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]\";"
+  [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aarch64_sq<r>dmulh_laneq<mode>"
+  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+        (unspec:VDQHS
+	  [(match_operand:VDQHS 1 "register_operand" "w")
+           (vec_select:<VEL>
+             (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
+             (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
+	 VQDMULH))]
+  "TARGET_SIMD"
+  "*
+   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+   return \"sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]\";"
+  [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aarch64_sq<r>dmulh_lane<mode>"
+  [(set (match_operand:SD_HSI 0 "register_operand" "=w")
+        (unspec:SD_HSI
+	  [(match_operand:SD_HSI 1 "register_operand" "w")
+           (vec_select:<VEL>
+             (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
+             (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
+	 VQDMULH))]
+  "TARGET_SIMD"
+  "*
+   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+   return \"sq<r>dmulh\\t%<v>0, %<v>1, %2.<v>[%3]\";"
   [(set_attr "simd_type" "simd_sat_mul")
    (set_attr "simd_mode" "<MODE>")]
 )

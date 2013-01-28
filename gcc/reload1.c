@@ -468,8 +468,11 @@ init_reload (void)
     }
 
   /* Initialize obstack for our rtl allocation.  */
-  gcc_obstack_init (&reload_obstack);
-  reload_startobj = XOBNEWVAR (&reload_obstack, char, 0);
+  if (reload_startobj == NULL)
+    {
+      gcc_obstack_init (&reload_obstack);
+      reload_startobj = XOBNEWVAR (&reload_obstack, char, 0);
+    }
 
   INIT_REG_SET (&spilled_pseudos);
   INIT_REG_SET (&changed_allocation_pseudos);

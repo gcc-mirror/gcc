@@ -1,3 +1,16 @@
+2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config.host(microblaze*-linux*): tmake_file: Remove 
+	t-slibgcc-nolc-override, add t-slibgcc-libgcc.
+	* config/microblaze/t-microblaze: Set LIB2FUNCS_EXCLUDE
+	to exclude functions from being built with libgcc.c and use
+	the microblaze assembly.
+
+2013-01-26  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+
+	* config.host (microblaze*-*-*): Rename microblaze*-*-elf, update
+	extra_parts.
+
 2013-01-17  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/sync-cache.c (__aarch64_sync_cache_range): Cast the

@@ -1449,7 +1449,7 @@ gc(struct gc_args *args)
 }
 
 void runtime_ReadMemStats(MStats *)
-  __asm__("runtime.ReadMemStats");
+  __asm__ (GOSYM_PREFIX "runtime.ReadMemStats");
 
 void
 runtime_ReadMemStats(MStats *stats)

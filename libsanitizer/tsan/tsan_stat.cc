@@ -202,6 +202,7 @@ void StatOutput(u64 *stat) {
   name[StatInt_pipe]                     = "  pipe                            ";
   name[StatInt_pipe2]                    = "  pipe2                           ";
   name[StatInt_read]                     = "  read                            ";
+  name[StatInt_prctl]                    = "  prctl                           ";
   name[StatInt_pread]                    = "  pread                           ";
   name[StatInt_pread64]                  = "  pread64                         ";
   name[StatInt_readv]                    = "  readv                           ";
@@ -233,6 +234,12 @@ void StatOutput(u64 *stat) {
   name[StatInt_nanosleep]                = "  nanosleep                       ";
   name[StatInt_gettimeofday]             = "  gettimeofday                    ";
   name[StatInt_fork]                     = "  fork                            ";
+  name[StatInt_vscanf]                   = "  vscanf                          ";
+  name[StatInt_vsscanf]                  = "  vsscanf                         ";
+  name[StatInt_vfscanf]                  = "  vfscanf                         ";
+  name[StatInt_scanf]                    = "  scanf                           ";
+  name[StatInt_sscanf]                   = "  sscanf                          ";
+  name[StatInt_fscanf]                   = "  fscanf                          ";
 
   name[StatAnnotation]                   = "Dynamic annotations               ";
   name[StatAnnotateHappensBefore]        = "  HappensBefore                   ";

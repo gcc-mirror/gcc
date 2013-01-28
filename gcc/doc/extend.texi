@@ -811,15 +811,15 @@ the middle operand uses the value already computed without the undesirable
 effects of recomputing it.
 
 @node __int128
-@section 128-bits integers
+@section 128-bit integers
 @cindex @code{__int128} data types
 
 As an extension the integer scalar type @code{__int128} is supported for
-targets having an integer mode wide enough to hold 128 bits.
+targets which have an integer mode wide enough to hold 128 bits.
 Simply write @code{__int128} for a signed 128-bit integer, or
 @code{unsigned __int128} for an unsigned 128-bit integer.  There is no
-support in GCC to express an integer constant of type @code{__int128}
-for targets having @code{long long} integer less than 128 bits wide.
+support in GCC for expressing an integer constant of type @code{__int128}
+for targets with @code{long long} integer less than 128 bits wide.
 
 @node Long Long
 @section Double-Word Integers
@@ -6062,7 +6062,7 @@ int foo ()
   int *y = &x;
   int result;
   asm ("magic stuff accessing an 'int' pointed to by '%1'"
-        "=&d" (r) : "a" (y), "m" (*y));
+       : "=&d" (r) : "a" (y), "m" (*y));
   return result;
 @}
 @end smallexample

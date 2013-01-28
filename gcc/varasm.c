@@ -374,7 +374,7 @@ create_block_symbol (const char *label, struct object_block *block,
 
   /* Create the extended SYMBOL_REF.  */
   size = RTX_HDR_SIZE + sizeof (struct block_symbol);
-  symbol = ggc_alloc_zone_rtx_def (size, &rtl_zone);
+  symbol = ggc_alloc_rtx_def (size);
 
   /* Initialize the normal SYMBOL_REF fields.  */
   memset (symbol, 0, size);

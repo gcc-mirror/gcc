@@ -14,7 +14,7 @@
    library function, which shouldn't need much stack space.  */
 
 intgo IndexByte (struct __go_open_array, char)
-  asm ("bytes.IndexByte")
+  __asm__ (GOSYM_PREFIX "bytes.IndexByte")
   __attribute__ ((no_split_stack));
 
 intgo
@@ -31,7 +31,7 @@ IndexByte (struct __go_open_array s, char b)
 /* Comparison.  */
 
 _Bool Equal (struct __go_open_array a, struct __go_open_array b)
-  asm ("bytes.Equal")
+  __asm__ (GOSYM_PREFIX "bytes.Equal")
   __attribute__ ((no_split_stack));
 
 _Bool

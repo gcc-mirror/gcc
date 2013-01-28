@@ -1,3 +1,47 @@
+2013-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56095
+	* pt.c (convert_nontype_argument_function): Handle invalid input.
+	(convert_nontype_argument): Likewise.
+
+	PR c++/56104
+	* typeck.c (get_member_function_from_ptrfunc): Optimize if the
+	dynamic type has no virtual functions.
+
+2013-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55944
+	* decl.c (check_initializer): Use TARGET_EXPR_DIRECT_INIT_P only
+	on TARGET_EXPR nodes.
+
+2013-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56071
+	* pt.c (maybe_instantiate_noexcept): Don't defer access checks.
+
+2013-01-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53609
+	* pt.c (argument_pack_element_is_expansion_p)
+	(make_argument_pack_select, use_pack_expansion_extra_args_p)
+	(gen_elem_of_pack_expansion_instantiation): New static functions.
+	(tsubst): When looking through an ARGUMENT_PACK_SELECT tree node,
+	look through the possibly resulting pack expansion as well.
+	(tsubst_pack_expansion): Use use_pack_expansion_extra_p to
+	generalize when to use the PACK_EXPANSION_EXTRA_ARGS mechanism.
+	Use gen_elem_of_pack_expansion_instantiation to build the
+	instantiation piece-wise.  Don't use arg_from_parm_pack_p anymore,
+	as gen_elem_of_pack_expansion_instantiation and the change in
+	tsubst above generalize this particular case.
+	(arg_from_parm_pack_p): Remove this for it's not used by
+	tsubst_pack_expansion anymore.
+
+2013-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56059
+	* tree.c (strip_typedefs_expr) [TREE_VEC]: Preserve non-default
+	template args count.
+
 2013-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR target/54908

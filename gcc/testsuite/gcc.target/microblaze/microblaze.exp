@@ -22,12 +22,6 @@ if { ![istarget microblaze*-*-*] } then {
   return
 }
 
-# Don't execute when we are testing some configuration of GCC or G++.
-# This we figure out by looking at target_config_cflags which needs to be "" for microblaze.exp
-if { $target_config_cflags != "" } {
-  return 
-}
-
 global TORTURE_OPTIONS
 set TORTURE_OPTIONS [list \
                          { -O0 } \

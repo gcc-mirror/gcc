@@ -1,8 +1,139 @@
+2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56114
+	* gcc.target/i386/pr56114.c: New test.
+
+2013-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55984
+	* gfortran.dg/associate_14.f90: New test.
+
+	PR fortran/56047
+	* gfortran.dg/associate_13.f90: New test.
+
+2013-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56098
+	* gcc.dg/pr56098-1.c: New test.
+	* gcc.dg/pr56098-2.c: New test.
+
+2013-01-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* gcc.target/avr/torture/builtins-3-absfx.c: New test.
+
+2013-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56035
+	* gcc.dg/pr56035.c: New test.
+
+2013-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gfortran.dg/bind_c_array_params_2.f90: Require -mno-relax-pic-calls
+	for MIPS.
+
+2013-01-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/octeon-pipe-1.c: Add -ffat-lto-objects
+
+2013-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/56078
+	* gcc.dg/pr56078.c: New test.
+	* gcc.c-torture/compile/20030305-1.c: Add dg-error lines.
+
+2013-01-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55927
+	* g++.dg/ipa/devirt-10.C: Disable early inlining.
+
+2013-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/movsd.c: New test.
+
+2013-01-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR inline-asm/55934
+	* gcc.target/i386/pr55934.c: New test.
+
+2013-01-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56081
+	* gfortran.dg/select_8.f90: New.
+
+2013-01-23  David Holsgrove  <david.holsgrove@xilinx.com>
+
+	* gcc.target/microblaze/microblaze.exp: Remove
+	target_config_cflags check.
+
+2013-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56052
+	* gfortran.dg/gomp/pr56052.f90: New test.
+
+	PR target/49069
+	* gcc.dg/pr49069.c: New test.
+
+2013-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55944
+	* g++.dg/cpp0x/constexpr-static10.C: New.
+
+2013-01-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56028
+	* gcc.target/i386/pr56028.c: New test.
+
+2013-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55686
+	* gcc.target/i386/pr55686.c: New test.
+
+2013-01-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53609
+	* g++.dg/cpp0x/variadic139.C: New test.
+	* g++.dg/cpp0x/variadic140.C: Likewise.
+	* g++.dg/cpp0x/variadic141.C: Likewise.
+
+2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn8.adb: New test.
+
+2013-01-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55919
+	* gfortran.dg/include_8.f90: New test.
+
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/pr55579.c: Cleanup esra tree dump.
+	* gfortran.dg/unlimited_polymorphic_8.f90: Cleanup original tree dump.
+
+2013-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56051
+	* gcc.c-torture/execute/pr56051.c: New test.
+
+2013-01-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/56023
+	* gcc.dg/pr56023.c: New test.
+
+2013-01-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/56022
+	* gcc.target/i386/pr56022.c: New test.
+
+2013-01-21  Jason Merrill  <jason@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_alias): New.
+
 2013-01-20  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR debug/53235
 	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on darwin.
-	
+
 2013-01-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/inquire_10.f90: Run only for non-newlib targets.
@@ -60,10 +191,10 @@
 
 2013-01-17  Jack Howarth <howarth@bromo.med.uc.edu>
 
-        PR sanitizer/55679
-        * g++.dg/asan/interception-test-1.C: Skip on darwin.
-        * lib/target-supports.exp (check_effective_target_swapcontext): Use
-        check_no_compiler_messages to test support in ucontext.h.
+	PR sanitizer/55679
+	* g++.dg/asan/interception-test-1.C: Skip on darwin.
+	* lib/target-supports.exp (check_effective_target_swapcontext): Use
+	check_no_compiler_messages to test support in ucontext.h.
 	(check_effective_target_setrlimit): Return 0 for Darwin's non-posix
 	compliant RLIMIT_AS.
 
@@ -77,7 +208,7 @@
 	PR tree-optimization/55273
 	* gcc.c-torture/compile/pr55273.c: New testcase.
 
-2012-01-17  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55981
 	* gcc.target/pr55981.c: New test.
@@ -235,7 +366,7 @@
 	* gcc.target/aarch64/vect-ld1r.c: New.
 	* gcc.target/aarch64/vect-ld1r.x: New.
 
-2012-01-14  Andi Kleen  <ak@linux.intel.com>
+2013-01-14  Andi Kleen  <ak@linux.intel.com>
 
 	PR target/55948
 	* gcc.target/i386/hle-clear-rel.c: New file
@@ -364,7 +495,7 @@
 	PR fortran/47203
 	* gfortran.dg/use_28.f90: New test.
 
-2012-01-09  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/intrinsic_size_3.f90: Make scan-tree-dump-times
 	number matching more robust.
@@ -410,7 +541,7 @@
 	PR tree-optimization/55823
 	* g++.dg/ipa/devirt-10.C: New testcase.
 
-2012-01-08  Uros Bizjak  <ubizjak@gmail.com>
+2013-01-08  Uros Bizjak  <ubizjak@gmail.com>
 	    Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 
 	PR rtl-optimization/55845
@@ -507,7 +638,7 @@
 	PR fortran/55852
 	* gfortran.dg/intrinsic_size_3.f90: New.
 
-2012-01-07  Tobias Burnus  <burnus@net-b.de>
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
 	* gfortran.dg/select_type_32.f90: New.

@@ -1,6 +1,7 @@
 ! { dg-do compile }
 ! { dg-options "-std=f2008ts -fdump-tree-original" }
 ! { dg-additional-options "-mno-explicit-relocs" { target alpha*-*-* } }
+! { dg-additional-options "-mno-relax-pic-calls" { target mips*-*-* } }
 !
 ! Check that assumed-shape variables are correctly passed to BIND(C)
 ! as defined in TS 29913

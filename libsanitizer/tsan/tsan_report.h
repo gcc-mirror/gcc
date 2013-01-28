@@ -56,6 +56,7 @@ enum ReportLocationType {
   ReportLocationGlobal,
   ReportLocationHeap,
   ReportLocationStack,
+  ReportLocationTLS,
   ReportLocationFD
 };
 
