@@ -1,3 +1,14 @@
+2013-01-28  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53537
+	* symbol.c (gfc_find_sym_tree): Don't look for the symbol outside an
+	interface block.
+	(gfc_get_ha_symtree): Let gfc_find_sym_tree lookup the parent namespace.
+	* decl.c (gfc_match_data_decl): Ditto.
+	(variable_decl): Remove undeclared type error.
+	(gfc_match_import): Use renamed instead of original name.
+
 2013-01-27 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55984
