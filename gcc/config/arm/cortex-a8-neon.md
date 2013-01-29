@@ -149,12 +149,12 @@
 
 (define_insn_reservation "cortex_a8_vfp_macs" 21
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "fmacs"))
+       (eq_attr "type" "fmacs,ffmas"))
   "cortex_a8_vfp,cortex_a8_vfplite*20")
 
 (define_insn_reservation "cortex_a8_vfp_macd" 26
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "fmacd"))
+       (eq_attr "type" "fmacd,ffmad"))
   "cortex_a8_vfp,cortex_a8_vfplite*25")
 
 (define_insn_reservation "cortex_a8_vfp_divs" 37

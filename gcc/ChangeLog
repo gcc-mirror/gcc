@@ -1,3 +1,23 @@
+2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/arm.md (type): Add ffmas and ffmad to "type" attribute.
+        * config/arm/vfp.md (fma,fmsub,fnmsub,fnmadd): Change type
+        from fmac to ffma.
+        * config/arm/vfp11.md (vfp_farith): Use ffmas.
+        (vfp_fmul): Use ffmad.
+        * config/arm/cortex-r4f.md (cortex_r4_fmacs): Use ffmas.
+        (cortex_r4_fmacd): Use ffmad.
+        * config/arm/cortex-m4-fpu.md (cortex_m4_fmacs): Use ffmas.
+        * config/arm/cortex-a9.md (cortex_a9_fmacs):  Use ffmas.
+        (cortex_a9_fmacd): Use ffmad.
+        * config/arm/cortex-a8-neon.md (cortex_a8_vfp_macs): Use ffmas.
+        (cortex_a8_vfp_macd): Use ffmad.
+        * config/arm/cortex-a5.md (cortex_a5_fpmacs): Use ffmas.
+        (cortex_a5_fpmacd): Use ffmad.
+        * config/arm/cortex-a15-neon.md (cortex_a15_vfp_macs) Use ffmas.
+        (cortex_a15_vfp_macd): Use ffmad.
+        * config/arm/arm1020e.md (v10_fmul): Use ffmas and ffmad.
+
 2013-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/54314

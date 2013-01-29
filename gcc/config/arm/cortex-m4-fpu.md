@@ -46,7 +46,7 @@
 
 (define_insn_reservation "cortex_m4_fmacs" 4
   (and (eq_attr "tune" "cortexm4")
-       (eq_attr "type" "fmacs"))
+       (eq_attr "type" "fmacs,ffmas"))
   "cortex_m4_ex_v*3")
 
 (define_insn_reservation "cortex_m4_ffariths" 1
