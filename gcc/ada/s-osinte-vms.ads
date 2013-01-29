@@ -125,7 +125,7 @@ package System.OS_Interface is
       Acmode : unsigned_short := 0;
       Mbxnam : String := String'Null_Parameter;
       Flags  : unsigned_long := 0);
-   pragma Interface (External, Sys_Assign);
+   pragma Import (External, Sys_Assign);
    pragma Import_Valued_Procedure
      (Sys_Assign, "SYS$ASSIGN",
       (Cond_Value_Type, String,         unsigned_short,
@@ -148,7 +148,7 @@ package System.OS_Interface is
      (Status : out Cond_Value_Type;
       Reqidt : Address;
       Acmode : unsigned);
-   pragma Interface (External, Sys_Cantim);
+   pragma Import (External, Sys_Cantim);
    pragma Import_Valued_Procedure
      (Sys_Cantim, "SYS$CANTIM",
       (Cond_Value_Type, Address, unsigned),
@@ -180,7 +180,7 @@ package System.OS_Interface is
       Acmode : unsigned_short := 0;
       Lognam : String;
       Flags  : unsigned_long := 0);
-   pragma Interface (External, Sys_Crembx);
+   pragma Import (External, Sys_Crembx);
    pragma Import_Valued_Procedure
      (Sys_Crembx, "SYS$CREMBX",
       (Cond_Value_Type, unsigned_char,  unsigned_short,
@@ -235,7 +235,7 @@ package System.OS_Interface is
       P5     : unsigned_long := 0;
       P6     : unsigned_long := 0);
 
-   pragma Interface (External, Sys_QIO);
+   pragma Import (External, Sys_QIO);
    pragma Import_Valued_Procedure
      (Sys_QIO, "SYS$QIO",
       (Cond_Value_Type,      unsigned_long, unsigned_short, unsigned_long,
@@ -278,7 +278,7 @@ package System.OS_Interface is
       AST    : AST_Handler;
       Reqidt : Address;
       Flags  : unsigned_long);
-   pragma Interface (External, Sys_Setimr);
+   pragma Import (External, Sys_Setimr);
    pragma Import_Valued_Procedure
      (Sys_Setimr, "SYS$SETIMR",
       (Cond_Value_Type, unsigned_long,     Long_Integer,

@@ -720,6 +720,11 @@ package Opt is
    --  code from foreign compilers for checking or ASIS purposes. Can be
    --  set True by use of -gnatI.
 
+   Ignore_Style_Checks_Pragmas : Boolean := False;
+   --  GNAT
+   --  Set True to ignore all Style_Checks pragmas. Can be set True by use
+   --  of -gnateY.
+
    Implementation_Unit_Warnings : Boolean := True;
    --  GNAT
    --  Set True to active warnings for use of implementation internal units.

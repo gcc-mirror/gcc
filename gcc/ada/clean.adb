@@ -397,7 +397,8 @@ package body Clean is
                 File    => Main_Lib_File,
                 Unit    => No_Unit_Name,
                 Index   => 0,
-                Project => No_Project));
+                Project => No_Project,
+                Sid     => No_Source));
          end if;
 
          while not Queue.Is_Empty loop
@@ -440,7 +441,8 @@ package body Clean is
                                   File    => Withs.Table (K).Afile,
                                   Unit    => No_Unit_Name,
                                   Index   => 0,
-                                  Project => No_Project));
+                                  Project => No_Project,
+                                  Sid     => No_Source));
                            end if;
                         end loop;
                      end loop;

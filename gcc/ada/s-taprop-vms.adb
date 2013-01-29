@@ -1225,7 +1225,7 @@ package body System.Task_Primitives.Operations is
         return System.Aux_DEC.Unsigned_Word;
       --  DBGEXT is imported  from s-tasdeb.adb and its parameter re-typed
       --  as Address to avoid having a VMS specific s-tasdeb.ads.
-      pragma Interface (C, DBGEXT);
+      pragma Import (C, DBGEXT);
       pragma Import_Function (DBGEXT, "GNAT$DBGEXT");
 
       type Facility_Type is range 0 .. 65535;

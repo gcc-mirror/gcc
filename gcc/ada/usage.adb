@@ -257,6 +257,11 @@ begin
    Write_Switch_Char ("eV");
    Write_Line ("Validity checks on subprogram parameters");
 
+   --  Line for -gnateY switch
+
+   Write_Switch_Char ("eY");
+   Write_Line ("Ignore all Style_Checks pragmas in source");
+
    --  Line for -gnatez switch
 
    Write_Switch_Char ("ez");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,7 +81,7 @@ package body System.OS_Primitives is
       Reptim : Long_Integer := Long_Integer'Null_Parameter
      );
 
-   pragma Interface (External, Sys_Schdwk);
+   pragma Import (External, Sys_Schdwk);
    --  VMS system call to schedule a wakeup event
    pragma Import_Valued_Procedure
      (Sys_Schdwk, "SYS$SCHDWK",
@@ -105,7 +105,7 @@ package body System.OS_Primitives is
       Tim    : out OS_Time
      );
    --  VMS system call to get the current system time
-   pragma Interface (External, Sys_Gettim);
+   pragma Import (External, Sys_Gettim);
    pragma Import_Valued_Procedure
      (Sys_Gettim, "SYS$GETTIM",
       (Cond_Value_Type, OS_Time),
@@ -122,7 +122,7 @@ package body System.OS_Primitives is
 
    procedure Sys_Hiber (Status : out Cond_Value_Type);
    --  VMS system call to hibernate the current process
-   pragma Interface (External, Sys_Hiber);
+   pragma Import (External, Sys_Hiber);
    pragma Import_Valued_Procedure
      (Sys_Hiber, "SYS$HIBER",
       (Cond_Value_Type),
