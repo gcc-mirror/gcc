@@ -1,5 +1,13 @@
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+        * config/arm/arm-protos.h (arm_mac_accumulator_is_result): New
+        declaration.
+        * config/arm/arm.c (arm_mac_accumulator_is_result): New function.
+        * config/arm/cortex-a7.md: New bypasses using
+        arm_mac_accumulator_is_result.
+
+2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
+
         * config/arm/cortex-a7.md (cortex_a7_neon_mul):  New reservation.
 	(cortex_a7_neon_mla): Likewise.
         (cortex_a7_fpfmad): New reservation.

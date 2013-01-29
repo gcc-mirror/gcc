@@ -137,6 +137,12 @@
             (eq_attr "neon_type" "none")))
   "cortex_a7_both")
 
+;; Forward the result of a multiply operation to the accumulator 
+;; of the following multiply and accumulate instruction.
+(define_bypass 1 "cortex_a7_mul"
+                 "cortex_a7_mul"
+                 "arm_mac_accumulator_is_result")
+
 ;; The latency depends on the operands, so we use an estimate here.
 (define_insn_reservation "cortex_a7_idiv" 5
   (and (eq_attr "tune" "cortexa7")
@@ -264,6 +270,10 @@
                  neon_fp_vmla_qqq_scalar"))
   "cortex_a7_both+cortex_a7_fpmul_pipe")
 
+(define_bypass 4 "cortex_a7_fpmacs,cortex_a7_neon_mla"
+                 "cortex_a7_fpmacs,cortex_a7_neon_mla"
+                 "arm_mac_accumulator_is_result")
+
 ;; Non-multiply instructions can issue between two cycles of a
 ;; double-precision multiply. 
 
@@ -284,6 +294,10 @@
        (and (eq_attr "type" "ffmad")
             (eq_attr "neon_type" "none")))
   "cortex_a7_ex1+cortex_a7_fpmul_pipe, cortex_a7_fpmul_pipe*4")
+
+(define_bypass 7 "cortex_a7_fpmacd"
+                 "cortex_a7_fpmacd,cortex_a7_fpfmad"
+                 "arm_mac_accumulator_is_result")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Floating-point divide/square root instructions.
