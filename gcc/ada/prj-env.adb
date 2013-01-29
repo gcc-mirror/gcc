@@ -2188,7 +2188,7 @@ package body Prj.Env is
 
       function Try_Path_Name is new Find_Name_In_Path
         (Check_Filename => Is_Regular_File);
-      --  Find a file in the project search path.
+      --  Find a file in the project search path
 
       --  Local Declarations
 
