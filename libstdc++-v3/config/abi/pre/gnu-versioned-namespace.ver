@@ -55,9 +55,6 @@ GLIBCXX_7.0 {
     # function-scope static objects requires a guard variable.
     _ZGVNSt*;
 
-    # construction vtable
-    _ZTCNSt*;
-
     # VTT structure
     _ZTTNSt*;
 

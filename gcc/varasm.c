@@ -5788,8 +5788,9 @@ default_assemble_visibility (tree decl ATTRIBUTE_UNUSED,
   assemble_name (asm_out_file, name);
   fprintf (asm_out_file, "\n");
 #else
-  warning (OPT_Wattributes, "visibility attribute not supported "
-	   "in this configuration; ignored");
+  if (!DECL_ARTIFICIAL (decl))
+    warning (OPT_Wattributes, "visibility attribute not supported "
+	     "in this configuration; ignored");
 #endif
 }
 
