@@ -522,7 +522,7 @@ package body Atree is
    --  entries in this table. Normal programs won't use it at all.
 
    type Paren_Count_Entry is record
-      Nod   : Node_Id;
+      Nod : Node_Id;
       --  The node to which this count applies
 
       Count : Nat range 3 .. Nat'Last;
@@ -2519,6 +2519,12 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          return Node_Id (Nodes.Table (N + 4).Field11);
       end Node29;
+
+      function Node30 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 5).Field6);
+      end Node30;
 
       function List1 (N : Node_Id) return List_Id is
       begin
@@ -5218,6 +5224,12 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 4).Field11 := Union_Id (Val);
       end Set_Node29;
+
+      procedure Set_Node30 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field6 := Union_Id (Val);
+      end Set_Node30;
 
       procedure Set_List1 (N : Node_Id; Val : List_Id) is
       begin

@@ -265,6 +265,7 @@ package body Prj.Attr is
    "Ladefault_switches#" &
    "LcOleading_switches#" &
    "LcOswitches#" &
+   "LcOtrailing_switches#" &
    "LVlinker_options#" &
    "SVmap_file_option#" &
 

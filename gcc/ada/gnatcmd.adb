@@ -2366,8 +2366,9 @@ begin
                      then
                         declare
                            Path : constant String :=
-                             Absolute_Path
-                               (Path_Name_Type (Variable.Value), Project);
+                                    Absolute_Path
+                                      (Path_Name_Type (Variable.Value),
+                                       Variable.Project);
                         begin
                            Add_To_Carg_Switches
                              (new String'("-gnatec=" & Path));
@@ -2411,8 +2412,9 @@ begin
                         then
                            declare
                               Path : constant String :=
-                                Absolute_Path
-                                  (Path_Name_Type (Variable.Value), Project);
+                                       Absolute_Path
+                                         (Path_Name_Type (Variable.Value),
+                                          Variable.Project);
                            begin
                               Add_To_Carg_Switches
                                 (new String'("-gnatec=" & Path));

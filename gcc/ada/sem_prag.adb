@@ -11095,11 +11095,19 @@ package body Sem_Prag is
             Process_Import_Or_Interface;
 
             --  In Ada 2005, the permission to use Interface (a reserved word)
-            --  as a pragma name is considered an obsolescent feature.
+            --  as a pragma name is considered an obsolescent feature, and this
+            --  pragma was already obsolescent in Ada 95.
 
-            if Ada_Version >= Ada_2005 then
+            if Ada_Version >= Ada_95 then
                Check_Restriction
                  (No_Obsolescent_Features, Pragma_Identifier (N));
+
+               if Warn_On_Obsolescent_Feature then
+                  Error_Msg_N
+                    ("pragma Interface is an obsolescent feature?j?", N);
+                  Error_Msg_N
+                    ("|use pragma Import instead?j?", N);
+               end if;
             end if;
 
          --------------------
@@ -11125,6 +11133,19 @@ package body Sem_Prag is
             Check_At_Most_N_Arguments  (3);
             Id := Get_Pragma_Arg (Arg1);
             Analyze (Id);
+
+            --  This is obsolete from Ada 95 on, but it is an implementation
+            --  defined pragma, so we do not consider that it violates the
+            --  restriction (No_Obsolescent_Features).
+
+            if Ada_Version >= Ada_95 then
+               if Warn_On_Obsolescent_Feature then
+                  Error_Msg_N
+                    ("pragma Interface_Name is an obsolescent feature?j?", N);
+                  Error_Msg_N
+                    ("|use pragma Import instead?j?", N);
+               end if;
+            end if;
 
             if not Is_Entity_Name (Id) then
                Error_Pragma_Arg

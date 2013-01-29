@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -387,6 +387,7 @@ extern Node_Id Current_Error_Node;
 #define Field27(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field9)
 #define Field28(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field10)
 #define Field29(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.field11)
+#define Field30(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field6)
 
 #define Node1(N)      Field1  (N)
 #define Node2(N)      Field2  (N)
@@ -417,6 +418,7 @@ extern Node_Id Current_Error_Node;
 #define Node27(N)     Field27 (N)
 #define Node28(N)     Field28 (N)
 #define Node29(N)     Field29 (N)
+#define Node30(N)     Field30 (N)
 
 #define List1(N)      Field1  (N)
 #define List2(N)      Field2  (N)

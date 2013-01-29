@@ -5523,7 +5523,9 @@ In addition to the above cases, warnings are also generated for
 GNAT features that have been provided in past versions but which
 have been superseded (typically by features in the new Ada standard).
 For example, @code{pragma Ravenscar} will be flagged since its
-function is replaced by @code{pragma Profile(Ravenscar)}.
+function is replaced by @code{pragma Profile(Ravenscar)}, and
+@code{pragma Interface_Name} will be flagged since its function
+is replaced by @code{pragma Import}.
 
 Note that this warning option functions differently from the
 restriction @code{No_Obsolescent_Features} in two respects.
