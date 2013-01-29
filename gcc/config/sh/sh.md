@@ -13140,6 +13140,8 @@ label:
 })
 
 ;; SH2A instructions for bitwise operations.
+;; FIXME: Convert multiple instruction insns to insn_and_split.
+;; FIXME: Use iterators to fold at least and,xor,or insn variations.
 
 ;; Clear a bit in a memory location.
 (define_insn "bclr_m2a"
@@ -13148,7 +13150,7 @@ label:
 	    (not:QI (ashift:QI (const_int 1)
 			(match_operand:QI 1 "const_int_operand" "K03,K03")))
 	    (match_dup 0)))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bclr.b	%1,%0
 	bclr.b	%1,@(0,%t0)"
@@ -13171,7 +13173,7 @@ label:
 	    (ashift:QI (const_int 1)
 		       (match_operand:QI 1 "const_int_operand" "K03,K03"))
 	    (match_dup 0)))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bset.b	%1,%0
 	bset.b	%1,@(0,%t0)"
@@ -13198,7 +13200,7 @@ label:
 	    (ior:QI
 		(ashift:QI (const_int 1) (match_dup 1))
 		(match_dup 0))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bst.b	%1,%0
 	bst.b	%1,@(0,%t0)"
@@ -13211,7 +13213,7 @@ label:
 	    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,Sbv")
 	    (const_int 1)
 	    (match_operand 1 "const_int_operand" "K03,K03")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bld.b	%1,%0
 	bld.b	%1,@(0,%t0)"
@@ -13224,7 +13226,7 @@ label:
 	    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 	    (const_int 1)
 	    (match_operand 1 "const_int_operand" "K03,K03")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bld.b	%1,%0
 	bld.b	%1,@(0,%t0)"
@@ -13236,7 +13238,7 @@ label:
 	(zero_extract:SI (match_operand:SI 0 "arith_reg_operand" "r")
 			 (const_int 1)
 			 (match_operand 1 "const_int_operand" "K03")))]
-  "TARGET_SH2A"
+  "TARGET_SH2A && satisfies_constraint_K03 (operands[1])"
   "bld	%1,%0")
 
 (define_insn "*bld_regqi"
@@ -13244,7 +13246,7 @@ label:
 	(zero_extract:SI (match_operand:QI 0 "arith_reg_operand" "r")
 			 (const_int 1)
 			 (match_operand 1 "const_int_operand" "K03")))]
-  "TARGET_SH2A"
+  "TARGET_SH2A && satisfies_constraint_K03 (operands[1])"
   "bld	%1,%0")
 
 ;; Take logical and of a specified bit of memory with the T bit and
@@ -13256,7 +13258,7 @@ label:
 		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 		    (const_int 1)
 		    (match_operand 1 "const_int_operand" "K03,K03"))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	band.b	%1,%0
 	band.b	%1,@(0,%t0)"
@@ -13269,7 +13271,7 @@ label:
 		    (const_int 1)
 		    (match_operand 2 "const_int_operand" "K03,K03"))
         	(match_operand:SI 3 "register_operand" "r,r")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[2])"
 {
   static const char* alt[] =
   {
@@ -13292,7 +13294,7 @@ label:
 		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 		    (const_int 1)
 		    (match_operand 1 "const_int_operand" "K03,K03"))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bor.b	%1,%0
 	bor.b	%1,@(0,%t0)"
@@ -13305,7 +13307,7 @@ label:
 		    (const_int 1)
 		    (match_operand 2 "const_int_operand" "K03,K03"))
 		(match_operand:SI 3 "register_operand" "=r,r")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[2])"
 {
   static const char* alt[] =
   {
@@ -13328,7 +13330,7 @@ label:
 		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 		    (const_int 1)
 		    (match_operand 1 "const_int_operand" "K03,K03"))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bxor.b	%1,%0
 	bxor.b	%1,@(0,%t0)"
@@ -13341,7 +13343,7 @@ label:
 		    (const_int 1)
 		    (match_operand 2 "const_int_operand" "K03,K03"))
 		(match_operand:SI 3 "register_operand" "=r,r")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[2])"
 {
   static const char* alt[] =
   {

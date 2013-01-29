@@ -1,3 +1,10 @@
+2013-01-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/56121
+	* config/sh/sh.md (bclr_m2a, bset_m2a, bst_m2a, bld_m2a, bldsign_m2a,
+	bld_reg, *bld_regqi, band_m2a, bandreg_m2a, bor_m2a, borreg_m2a,
+	bxor_m2a, bxorreg_m2a): Add satisfies_constraint_K03 condition.
+
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
         * config/arm/cortex-a7.md (cortex_a7_neon, cortex_a7_all): Remove.
