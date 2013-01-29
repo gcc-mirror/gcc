@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2477,7 +2477,9 @@ begin
                --  the file name ends with the spec suffix, then indicate to
                --  gnatstub the name of the body file with a -o switch.
 
-               if not Is_Standard_GNAT_Naming (Lang.Config.Naming_Data) then
+               if Lang /= No_Language_Index
+                 and then not Is_Standard_GNAT_Naming (Lang.Config.Naming_Data)
+               then
                   if File_Index /= 0 then
                      declare
                         Spec : constant String :=

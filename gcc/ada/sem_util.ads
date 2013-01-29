@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1079,7 +1079,7 @@ package Sem_Util is
    --  scope that is not a block or a package). This is used when the
    --  sequential flow-of-control assumption is violated (occurrence of a
    --  label, head of a loop, or start of an exception handler). The effect of
-   --  the call is to clear the Constant_Value field (but we do not need to
+   --  the call is to clear the Current_Value field (but we do not need to
    --  clear the Is_True_Constant flag, since that only gets reset if there
    --  really is an assignment somewhere in the entity scope). This procedure
    --  also calls Kill_All_Checks, since this is a special case of needing to
