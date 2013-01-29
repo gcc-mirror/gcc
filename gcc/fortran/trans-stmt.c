@@ -236,7 +236,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 
   ss = loopse->ss;
   arg0 = arg;
-  formal = sym->formal;
+  formal = gfc_sym_get_dummy_args (sym);
 
   /* Loop over all the arguments testing for dependencies.  */
   for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
