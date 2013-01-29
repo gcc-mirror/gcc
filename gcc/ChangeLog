@@ -7,53 +7,53 @@
 
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/cortex-a7.md (cortex_a7_neon, cortex_a7_all): Remove.
-        (cortex_a7_idiv): Use cortex_a7_both instead of cortex_a7_all.
+	* config/arm/cortex-a7.md (cortex_a7_neon, cortex_a7_all): Remove.
+	(cortex_a7_idiv): Use cortex_a7_both instead of cortex_a7_all.
 
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.c (cortexa7_younger): Return true for TYPE_CALL.
-        * config/arm/cortex-a7.md (cortex_a7_call): Update required units.
+	* config/arm/arm.c (cortexa7_younger): Return true for TYPE_CALL.
+	* config/arm/cortex-a7.md (cortex_a7_call): Update required units.
 
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm-protos.h (arm_mac_accumulator_is_result): New
-        declaration.
-        * config/arm/arm.c (arm_mac_accumulator_is_result): New function.
-        * config/arm/cortex-a7.md: New bypasses using
-        arm_mac_accumulator_is_result.
+	* config/arm/arm-protos.h (arm_mac_accumulator_is_result): New
+	declaration.
+	* config/arm/arm.c (arm_mac_accumulator_is_result): New function.
+	* config/arm/cortex-a7.md: New bypasses using
+	arm_mac_accumulator_is_result.
 
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/cortex-a7.md (cortex_a7_neon_mul):  New reservation.
+	* config/arm/cortex-a7.md (cortex_a7_neon_mul):  New reservation.
 	(cortex_a7_neon_mla): Likewise.
-        (cortex_a7_fpfmad): New reservation.
-        (cortex_a7_fpmacs): Use ffmas and update required units.
-        (cortex_a7_fpmuld): Update required units and latency.
-        (cortex_a7_fpmacd): Likewise.
-        (cortex_a7_fdivs, cortex_a7_fdivd): Likewise.
-        (cortex_a7_neon). Likewise.
-        (bypass) Update participating units.
+	(cortex_a7_fpfmad): New reservation.
+	(cortex_a7_fpmacs): Use ffmas and update required units.
+	(cortex_a7_fpmuld): Update required units and latency.
+	(cortex_a7_fpmacd): Likewise.
+	(cortex_a7_fdivs, cortex_a7_fdivd): Likewise.
+	(cortex_a7_neon). Likewise.
+	(bypass) Update participating units.
 
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.md (type): Add ffmas and ffmad to "type" attribute.
-        * config/arm/vfp.md (fma,fmsub,fnmsub,fnmadd): Change type
-        from fmac to ffma.
-        * config/arm/vfp11.md (vfp_farith): Use ffmas.
-        (vfp_fmul): Use ffmad.
-        * config/arm/cortex-r4f.md (cortex_r4_fmacs): Use ffmas.
-        (cortex_r4_fmacd): Use ffmad.
-        * config/arm/cortex-m4-fpu.md (cortex_m4_fmacs): Use ffmas.
-        * config/arm/cortex-a9.md (cortex_a9_fmacs):  Use ffmas.
-        (cortex_a9_fmacd): Use ffmad.
-        * config/arm/cortex-a8-neon.md (cortex_a8_vfp_macs): Use ffmas.
-        (cortex_a8_vfp_macd): Use ffmad.
-        * config/arm/cortex-a5.md (cortex_a5_fpmacs): Use ffmas.
-        (cortex_a5_fpmacd): Use ffmad.
-        * config/arm/cortex-a15-neon.md (cortex_a15_vfp_macs) Use ffmas.
-        (cortex_a15_vfp_macd): Use ffmad.
-        * config/arm/arm1020e.md (v10_fmul): Use ffmas and ffmad.
+	* config/arm/arm.md (type): Add ffmas and ffmad to "type" attribute.
+	* config/arm/vfp.md (fma,fmsub,fnmsub,fnmadd): Change type
+	from fmac to ffma.
+	* config/arm/vfp11.md (vfp_farith): Use ffmas.
+	(vfp_fmul): Use ffmad.
+	* config/arm/cortex-r4f.md (cortex_r4_fmacs): Use ffmas.
+	(cortex_r4_fmacd): Use ffmad.
+	* config/arm/cortex-m4-fpu.md (cortex_m4_fmacs): Use ffmas.
+	* config/arm/cortex-a9.md (cortex_a9_fmacs):  Use ffmas.
+	(cortex_a9_fmacd): Use ffmad.
+	* config/arm/cortex-a8-neon.md (cortex_a8_vfp_macs): Use ffmas.
+	(cortex_a8_vfp_macd): Use ffmad.
+	* config/arm/cortex-a5.md (cortex_a5_fpmacs): Use ffmas.
+	(cortex_a5_fpmacd): Use ffmad.
+	* config/arm/cortex-a15-neon.md (cortex_a15_vfp_macs) Use ffmas.
+	(cortex_a15_vfp_macd): Use ffmad.
+	* config/arm/arm1020e.md (v10_fmul): Use ffmas and ffmad.
 
 2013-01-29  Jason Merrill  <jason@redhat.com>
 
