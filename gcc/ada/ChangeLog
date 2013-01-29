@@ -1,5 +1,15 @@
 2013-01-29  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document all Ada 2005 and Ada 2012 pragmas as
+	being available as implementation-defined pragmas in earlier
+	versions of Ada.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Delete): On VMS, delete all versions of the file.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch6.adb (No_Constraint_Maybe_Expr_Func): New procedure.
 	* par-util.adb (No_Constraint): Undo special handling, moved
 	to par-ch6.adb.
