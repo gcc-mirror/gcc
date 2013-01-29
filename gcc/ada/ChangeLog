@@ -1,5 +1,65 @@
 2013-01-29  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch6.adb (No_Constraint_Maybe_Expr_Func): New procedure.
+	* par-util.adb (No_Constraint): Undo special handling, moved
+	to par-ch6.adb.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads: Aspect Warnings is implementation defined Add
+	some other missing entries to impl-defined list Mark Warnings
+	as GNAT pragma in main list.
+	* sem_ch8.adb: Process aspects for all cases of renaming
+	declarations.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Call): Set In_Assertion flag.
+	* sem_elab.adb (Check_Internal_Call_Continue): Do not issue
+	warnings about possible elaboration error if call is within
+	an assertion.
+	* sinfo.ads, sinfo.adb (In_Assertion): New flag in N_Function_Call node.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-calend-vms.adb, g-eacodu-vms.adb, g-trasym-vms-alpha.adb,
+	* s-auxdec-vms-ia64.adb, s-mastop-vms.adb, s-osprim-vms.adb,
+	s-tasdeb-vms.adb: Replace pragma Interface by pragma Import.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads (Ignore_Style_Checks_Pragmas): New flag.
+	* par-prag.adb (Par, case Style_Checks): Recognize
+	Ignore_Style_Checks_Pragmas.
+	* sem_prag.adb (Analyze_Pragma, case Style_Checks): Recognize
+	Ignore_Style_Checks_Pragmas.
+	* switch-c.adb: Recognize -gnateY switch.
+	* usage.adb: Add documentation for "-gnateY".
+	* vms_data.ads: Add IGNORE_STYLE_CHECKS_PRAGMAS (-gnateY).
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Clean_Executables): Add Sid component when calling
+	Queue.Insert.
+	* make.adb: When inserting in the Queue, add the Source_Id
+	(Sid) when it is known (Start_Compile_If_Possible): When the
+	Source_Id is known (Sid), get the path name of the ALI file
+	(Full_Lib_File) from it, to avoid finding old ALI files in other
+	object directories.
+	* makeutl.ads (Source_Info): New Source_Id component Sid in
+	Format_Gnatmake variant.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document -gnateY.
+
+2013-01-29  Doug Rupp  <rupp@adacore.com>
+
+	* s-osinte-vms.ads, s-taprop-vms.adb, system-vms_64.ads,
+	system-vms-ia64.ads: Replace pragma Interface by pragma Import.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
 	* atree.ads, atree.adb (Node30): New function.
 	(Set_Node30): New procedure.
 	(Num_Extension_Nodes): Change to 5 (activate new fields/flags).

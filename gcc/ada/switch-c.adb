@@ -633,6 +633,12 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      Check_Validity_Of_Parameters := True;
 
+                  --  -gnateY (ignore Style_Checks pragmas)
+
+                  when 'Y' =>
+                     Ignore_Style_Checks_Pragmas := True;
+                     Ptr := Ptr + 1;
+
                   --  -gnatez (final delimiter of explicit switches)
 
                   --  All switches that come after -gnatez have been added by

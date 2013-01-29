@@ -554,6 +554,14 @@ package body Sem_Ch8 is
             Set_Renamed_Object (Id, Entity (Nam));
          end if;
       end if;
+
+      --  Implementation-defined aspect specifications can appear in a renaming
+      --  declaration, but not language-defined ones. The call to procedure
+      --  Analyze_Aspect_Specifications will take care of this error check.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Exception_Renaming;
 
    ---------------------------
@@ -681,6 +689,14 @@ package body Sem_Ch8 is
 
          Check_Library_Unit_Renaming (N, Old_P);
       end if;
+
+      --  Implementation-defined aspect specifications can appear in a renaming
+      --  declaration, but not language-defined ones. The call to procedure
+      --  Analyze_Aspect_Specifications will take care of this error check.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, New_P);
+      end if;
    end Analyze_Generic_Renaming;
 
    -----------------------------
@@ -728,8 +744,7 @@ package body Sem_Ch8 is
             then
                null;
 
-            --  A renaming of an unchecked union does not have an
-            --  actual subtype.
+            --  A renaming of an unchecked union has no actual subtype
 
             elsif Is_Unchecked_Union (Typ) then
                null;
@@ -800,9 +815,7 @@ package body Sem_Ch8 is
       --  when the renaming is generated in removing side effects of an
       --  already-analyzed expression.
 
-      if Nkind (Nam) = N_Selected_Component
-        and then Analyzed (Nam)
-      then
+      if Nkind (Nam) = N_Selected_Component and then Analyzed (Nam) then
          T := Etype (Nam);
          Dec :=  Build_Actual_Subtype_Of_Component (Etype (Nam), Nam);
 
@@ -1235,6 +1248,17 @@ package body Sem_Ch8 is
       end if;
 
       Set_Renamed_Object (Id, Nam);
+
+      --  Implementation-defined aspect specifications can appear in a renaming
+      --  declaration, but not language-defined ones. The call to procedure
+      --  Analyze_Aspect_Specifications will take care of this error check.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
+
+      --  Deal with dimensions
+
       Analyze_Dimension (N);
    end Analyze_Object_Renaming;
 
@@ -1380,6 +1404,14 @@ package body Sem_Ch8 is
                end loop;
             end;
          end if;
+      end if;
+
+      --  Implementation-defined aspect specifications can appear in a renaming
+      --  declaration, but not language-defined ones. The call to procedure
+      --  Analyze_Aspect_Specifications will take care of this error check.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, New_P);
       end if;
    end Analyze_Package_Renaming;
 

@@ -10454,8 +10454,9 @@ package body Sem_Prag is
          -- Implemented --
          -----------------
 
-         --  pragma Implemented (procedure_LOCAL_NAME, implementation_kind);
-         --  implementation_kind ::=
+         --  pragma Implemented (procedure_LOCAL_NAME, IMPLEMENTATION_KIND);
+
+         --  IMPLEMENTATION_KIND ::=
          --    By_Entry | By_Protected_Procedure | By_Any | Optional
 
          --  "By_Any" and "Optional" are treated as synonyms in order to
@@ -14945,15 +14946,17 @@ package body Sem_Prag is
 
                   E := Entity (E_Id);
 
-                  if E = Any_Id then
-                     return;
-                  else
-                     loop
-                        Set_Suppress_Style_Checks (E,
-                          (Chars (Get_Pragma_Arg (Arg1)) = Name_Off));
-                        exit when No (Homonym (E));
-                        E := Homonym (E);
-                     end loop;
+                  if not Ignore_Style_Checks_Pragmas then
+                     if E = Any_Id then
+                        return;
+                     else
+                        loop
+                           Set_Suppress_Style_Checks
+                             (E, Chars (Get_Pragma_Arg (Arg1)) = Name_Off);
+                           exit when No (Homonym (E));
+                           E := Homonym (E);
+                        end loop;
+                     end if;
                   end if;
                end;
 
@@ -14982,7 +14985,10 @@ package body Sem_Prag is
                         --  them in the parser.
 
                         if J = Slen then
-                           Set_Style_Check_Options (Options);
+                           if not Ignore_Style_Checks_Pragmas then
+                              Set_Style_Check_Options (Options);
+                           end if;
+
                            exit;
                         end if;
 
@@ -14992,17 +14998,23 @@ package body Sem_Prag is
 
                elsif Nkind (A) = N_Identifier then
                   if Chars (A) = Name_All_Checks then
-                     if GNAT_Mode then
-                        Set_GNAT_Style_Check_Options;
-                     else
-                        Set_Default_Style_Check_Options;
+                     if not Ignore_Style_Checks_Pragmas then
+                        if GNAT_Mode then
+                           Set_GNAT_Style_Check_Options;
+                        else
+                           Set_Default_Style_Check_Options;
+                        end if;
                      end if;
 
                   elsif Chars (A) = Name_On then
-                     Style_Check := True;
+                     if not Ignore_Style_Checks_Pragmas then
+                        Style_Check := True;
+                     end if;
 
                   elsif Chars (A) = Name_Off then
-                     Style_Check := False;
+                     if not Ignore_Style_Checks_Pragmas then
+                        Style_Check := False;
+                     end if;
                   end if;
                end if;
             end if;

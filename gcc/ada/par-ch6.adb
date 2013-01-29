@@ -39,16 +39,19 @@ package body Ch6 is
    function P_Return_Object_Declaration  return Node_Id;
 
    procedure P_Return_Subtype_Indication (Decl_Node : Node_Id);
-   --  Decl_Node is a N_Object_Declaration.
-   --  Set the Null_Exclusion_Present and Object_Definition fields of
-   --  Decl_Node.
+   --  Decl_Node is a N_Object_Declaration. Set the Null_Exclusion_Present and
+   --  Object_Definition fields of Decl_Node.
 
    procedure Check_Junk_Semicolon_Before_Return;
-
    --  Check for common error of junk semicolon before RETURN keyword of
-   --  function specification. If present, skip over it with appropriate
-   --  error message, leaving Scan_Ptr pointing to the RETURN after. This
-   --  routine also deals with a possibly misspelled version of Return.
+   --  function specification. If present, skip over it with appropriate error
+   --  message, leaving Scan_Ptr pointing to the RETURN after. This routine
+   --  also deals with a possibly misspelled version of Return.
+
+   procedure No_Constraint_Maybe_Expr_Func;
+   --  Called after scanning return subtype to check for missing constraint,
+   --  taking into account the possibility of an occurrence of an expression
+   --  function where the IS has been forgotten.
 
    ----------------------------------------
    -- Check_Junk_Semicolon_Before_Return --
@@ -75,6 +78,52 @@ package body Ch6 is
          null;
       end if;
    end Check_Junk_Semicolon_Before_Return;
+
+   -----------------------------------
+   -- No_Constraint_Maybe_Expr_Func --
+   -----------------------------------
+
+   procedure No_Constraint_Maybe_Expr_Func is
+   begin
+      --  If we have a left paren at the start of the line, then assume this is
+      --  the case of an expression function with missing IS. We do not have to
+      --  diagnose the missing IS, that is done elsewhere. We do this game in
+      --  Ada 2012 mode where expression functions are legal.
+
+      if Token = Tok_Left_Paren
+        and Ada_Version >= Ada_2012
+        and Token_Is_At_Start_Of_Line
+      then
+         --  One exception if we have "(token .." then this is a constraint
+
+         declare
+            Scan_State : Saved_Scan_State;
+
+         begin
+            Save_Scan_State (Scan_State);
+            Scan; -- past left paren
+            Scan; -- past following token
+
+            --  If we have "(token .." then restore scan state and treat as
+            --  unexpected constraint.
+
+            if Token = Tok_Dot_Dot then
+               Restore_Scan_State (Scan_State);
+               No_Constraint;
+
+            --  Otherwise we treat this as an expression function
+
+            else
+               Restore_Scan_State (Scan_State);
+            end if;
+         end;
+
+      --  Otherwise use standard routine to check for no constraint present
+
+      else
+         No_Constraint;
+      end if;
+   end No_Constraint_Maybe_Expr_Func;
 
    -----------------------------------------------------
    -- 6.1  Subprogram (Also 6.3, 8.5.4, 10.1.3, 12.3) --
@@ -385,7 +434,7 @@ package body Ch6 is
 
          else
             Result_Node := P_Subtype_Mark;
-            No_Constraint;
+            No_Constraint_Maybe_Expr_Func;
          end if;
 
       else
@@ -965,7 +1014,7 @@ package body Ch6 is
 
          else
             Result_Node := P_Subtype_Mark;
-            No_Constraint;
+            No_Constraint_Maybe_Expr_Func;
          end if;
 
          Set_Null_Exclusion_Present (Specification_Node, Result_Not_Null);

@@ -635,14 +635,9 @@ package body Util is
 
    procedure No_Constraint is
    begin
-      --  If next token is at start of line, don't object, it seems relatively
-      --  unlikely that a constraint would be on its own starting a line.
-
-      if Token_Is_At_Start_Of_Line then
-         return;
-      end if;
-
-      --  Otherwise if we have a token that could start a constraint, object
+      --  If we have a token that could start a constraint on the same line
+      --  then cnsider this an illegal constraint. It seems unlikely it could
+      --  be anything else if it is on the same line.
 
       if Token in Token_Class_Consk then
          Error_Msg_SC ("constraint not allowed here");

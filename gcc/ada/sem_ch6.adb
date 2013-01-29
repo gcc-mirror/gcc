@@ -501,6 +501,12 @@ package body Sem_Ch6 is
       end if;
 
       Analyze_Call (N);
+
+      --  Mark function call if within assertion
+
+      if In_Assertion_Expr /= 0 then
+         Set_In_Assertion (N);
+      end if;
    end Analyze_Function_Call;
 
    -----------------------------
