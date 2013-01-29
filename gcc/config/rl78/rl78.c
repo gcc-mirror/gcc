@@ -769,7 +769,7 @@ rl78_regno_mode_code_ok_for_base_p (int regno, enum machine_mode mode ATTRIBUTE_
 				    addr_space_t address_space ATTRIBUTE_UNUSED,
 				    int outer_code ATTRIBUTE_UNUSED, int index_code)
 {
-  if (regno < 24 && regno >= 16)
+  if (regno <= SP_REG && regno >= 16)
     return true;
   if (index_code == REG)
     return (regno == HL_REG);
