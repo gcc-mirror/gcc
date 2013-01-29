@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1595,8 +1595,9 @@ package Opt is
 
    Warn_On_Overlap : Boolean := False;
    --  GNAT
-   --  Set to True to generate warnings when a writable actual which is not
-   --  a by-copy type overlaps with another actual in a subprogram call.
+   --  Set to True to generate warnings when a writable actual overlaps with
+   --  another actual in a subprogram call. This applies only in modes before
+   --  Ada 2012. Starting with Ada 2012, such overlaps are illegal.
    --  Modified by use of -gnatw.i/.I.
 
    Warn_On_Questionable_Missing_Parens : Boolean := True;
