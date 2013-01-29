@@ -12638,6 +12638,7 @@ package body Sem_Util is
          else
             Set_Name_Entity_Id (Chars (E), Empty);
          end if;
+
       else
          H := Current_Entity (E);
          while Present (H) and then H /= E loop
@@ -12645,7 +12646,11 @@ package body Sem_Util is
             H    := Homonym (H);
          end loop;
 
-         Set_Homonym (Prev, Homonym (E));
+         --  If E is not on the homonym chain, nothing to do
+
+         if Present (H) then
+            Set_Homonym (Prev, Homonym (E));
+         end if;
       end if;
    end Remove_Homonym;
 

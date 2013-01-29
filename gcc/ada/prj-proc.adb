@@ -2076,7 +2076,7 @@ package body Prj.Proc is
                      Val := Shared.String_Elements.Table (Val).Next;
                   end loop;
 
-                  --  Prepend them in the oder found in the attribute
+                  --  Prepend them in the order found in the attribute
 
                   for K in Positive range 1 .. Positive (List.Length) loop
                      Prj.Env.Add_Directories
