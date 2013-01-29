@@ -1250,7 +1250,19 @@ package body Clean is
            or else Is_Writable_File (Full_Name (1 .. Last))
            or else Is_Symbolic_Link (Full_Name (1 .. Last))
          then
-            Delete_File (Full_Name (1 .. Last), Success);
+            --  On VMS, we have to delete all versions of the file
+
+            if OpenVMS_On_Target then
+               Delete_File (Full_Name (1 .. Last) & ";*", Success);
+
+            --  Otherwise just delete the specified file
+
+            else
+               Delete_File (Full_Name (1 .. Last), Success);
+            end if;
+
+         --  Here if no deletion required
+
          else
             Success := False;
          end if;
