@@ -1,3 +1,18 @@
+2013-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Inherit
+	Is_Generic_Actual_Type flag in a nested instance.
+	* sem_ch12.adb (Restore_Private_Views): Preserve
+	Is_Generic_Actual_Type flag if actual is a Generic_Actual_Type
+	of an enclosing instance.
+	* sem_util.adb (Corresponding_Generic_Type): Handle generic actual
+	which is an actual of an enclosing instance.
+	* sem_type.adb (Real_Actual): If a generic_actual_type is the
+	formal of an enclosing generic and thus renames the corresponding
+	actual, use the actual of the enclosing instance to resolve
+	spurious ambiguities in instantiations when two formals are
+	instantiated with the same actual.
+
 2013-01-29  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document all Ada 2005 and Ada 2012 pragmas as
