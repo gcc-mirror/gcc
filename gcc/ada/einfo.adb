@@ -108,7 +108,6 @@ package body Einfo is
    --    Esize                           Uint12
    --    Next_Inlined_Subprogram         Node12
 
-   --    Corresponding_Equality          Node13
    --    Component_Clause                Node13
    --    Elaboration_Entity              Node13
    --    Extra_Accessibility             Node13
@@ -232,7 +231,6 @@ package body Einfo is
    --    Overridden_Operation            Node26
    --    Package_Instantiation           Node26
    --    Relative_Deadline_Variable      Node26
-   --    Static_Initialization           Node26
 
    --    Current_Use_Clause              Node27
    --    Related_Type                    Node27
@@ -244,7 +242,8 @@ package body Einfo is
 
    --    Subprograms_For_Type            Node29
 
-   --    (unused)                        Node30
+   --    Corresponding_Equality          Node30
+   --    Static_Initialization           Node30
 
    --    (unused)                        Node31
 
@@ -863,7 +862,7 @@ package body Einfo is
         (Ekind (Id) = E_Function
           and then not Comes_From_Source (Id)
           and then Chars (Id) = Name_Op_Ne);
-      return Node13 (Id);
+      return Node30 (Id);
    end Corresponding_Equality;
 
    function Corresponding_Protected_Entry (Id : E) return E is
@@ -2862,7 +2861,7 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind (Id) = E_Procedure and then not Is_Dispatching_Operation (Id));
-      return Node26 (Id);
+      return Node30 (Id);
    end Static_Initialization;
 
    function Stored_Constraint (Id : E) return L is
@@ -3391,7 +3390,7 @@ package body Einfo is
         (Ekind (Id) = E_Function
           and then not Comes_From_Source (Id)
           and then Chars (Id) = Name_Op_Ne);
-      Set_Node13 (Id, V);
+      Set_Node30 (Id, V);
    end Set_Corresponding_Equality;
 
    procedure Set_Corresponding_Protected_Entry (Id : E; V : E) is
@@ -5469,7 +5468,7 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind (Id) = E_Procedure and then not Is_Dispatching_Operation (Id));
-      Set_Node26 (Id, V);
+      Set_Node30 (Id, V);
    end Set_Static_Initialization;
 
    procedure Set_Stored_Constraint (Id : E; V : L) is
@@ -8221,18 +8220,7 @@ package body Einfo is
             Write_Str ("Component_Clause");
 
          when E_Function                                   =>
-            if not Comes_From_Source (Id)
-                 and then
-               Chars (Id) = Name_Op_Ne
-            then
-               Write_Str ("Corresponding_Equality");
-
-            elsif Comes_From_Source (Id) then
-               Write_Str ("Elaboration_Entity");
-
-            else
-               Write_Str ("Field13??");
-            end if;
+            Write_Str ("Elaboration_Entity");
 
          when E_Procedure                                  |
               E_Package                                    |
@@ -8879,13 +8867,7 @@ package body Einfo is
 
          when E_Procedure                                  |
               E_Function                                   =>
-            if Ekind (Id) = E_Procedure
-              and then not Is_Dispatching_Operation (Id)
-            then
-               Write_Str ("Static_Initialization");
-            else
-               Write_Str ("Overridden_Operation");
-            end if;
+            Write_Str ("Overridden_Operation");
 
          when others                                       =>
             Write_Str ("Field26??");
@@ -8942,6 +8924,10 @@ package body Einfo is
       end case;
    end Write_Field28_Name;
 
+   ------------------------
+   -- Write_Field29_Name --
+   ------------------------
+
    procedure Write_Field29_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
@@ -8952,6 +8938,84 @@ package body Einfo is
             Write_Str ("Field29??");
       end case;
    end Write_Field29_Name;
+
+   ------------------------
+   -- Write_Field30_Name --
+   ------------------------
+
+   procedure Write_Field30_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when E_Function                                   =>
+            Write_Str ("Corresponding_Equality");
+
+         when E_Procedure                                  =>
+            Write_Str ("Static_Initialization");
+
+         when others                                       =>
+            Write_Str ("Field30??");
+      end case;
+   end Write_Field30_Name;
+
+   ------------------------
+   -- Write_Field31_Name --
+   ------------------------
+
+   procedure Write_Field31_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field31??");
+      end case;
+   end Write_Field31_Name;
+
+   ------------------------
+   -- Write_Field32_Name --
+   ------------------------
+
+   procedure Write_Field32_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field32??");
+      end case;
+   end Write_Field32_Name;
+
+   ------------------------
+   -- Write_Field33_Name --
+   ------------------------
+
+   procedure Write_Field33_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field33??");
+      end case;
+   end Write_Field33_Name;
+
+   ------------------------
+   -- Write_Field34_Name --
+   ------------------------
+
+   procedure Write_Field34_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field34??");
+      end case;
+   end Write_Field34_Name;
+
+   ------------------------
+   -- Write_Field35_Name --
+   ------------------------
+
+   procedure Write_Field35_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field35??");
+      end case;
+   end Write_Field35_Name;
 
    -------------------------
    -- Iterator Procedures --

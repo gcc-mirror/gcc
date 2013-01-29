@@ -1,3 +1,42 @@
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads, atree.adb (Node30): New function.
+	(Set_Node30): New procedure.
+	(Num_Extension_Nodes): Change to 5 (activate new fields/flags).
+	* atree.h: Add macros for Field30 and Node30.
+	* einfo.ads, einfo.adb: Move some fields to avoid duplexing.
+	* treepr.adb (Print_Entity_Information): Print fields 30-35.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Interface): Consider to
+	be a violation of No_Obsolescent_Features even in Ada 95. Also
+	generates a warning in -gnatwj mode.
+	(Analyze_Pragma, case Interface_Name): Generates a warning in -gnatwj
+	mode.
+	* gnat_ugn.texi: Additional documentation on -gnatwj and pragma
+	Interface[_Name].
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* snames.ads-tmpl: Add new standard name Trailing_Switches.
+
+2013-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Controlling_Type): If a designated type T
+	of an anonymous access type is a limited view of a tagged type,
+	it can be a controlling type only if the subprogram is in the
+	same scope as T.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Use the project where the config pragmas file is
+	declared to get its path.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New attribute Linker'Trailing_Switches.
+
 2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Expression_With_Actions>: Do

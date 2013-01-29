@@ -1343,6 +1343,7 @@ package Snames is
    Name_Toolchain_Description              : constant Name_Id := N + $;
    Name_Toolchain_Version                  : constant Name_Id := N + $;
    Name_Trailing_Required_Switches         : constant Name_Id := N + $;
+   Name_Trailing_Switches                  : constant Name_Id := N + $;
    Name_Runtime_Library_Dir                : constant Name_Id := N + $;
    Name_Runtime_Source_Dir                 : constant Name_Id := N + $;
 
