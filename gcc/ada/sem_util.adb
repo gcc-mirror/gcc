@@ -1242,7 +1242,8 @@ package body Sem_Util is
       --  Return the entity associated with the function call
 
       procedure Preanalyze_Without_Errors (N : Node_Id);
-      --  Preanalyze N without reporting errors
+      --  Preanalyze N without reporting errors. Very dubious, you can't just
+      --  go analyzing things more than once???
 
       -------------------------
       -- Collect_Identifiers --
@@ -1273,14 +1274,12 @@ package body Sem_Util is
                if No (Entity (N)) then
                   return Skip;
 
-               --  We don't collect identifiers of packages, called functions,
-               --  etc.
+               --  Don't collect identifiers of packages, called functions, etc
 
-               elsif Ekind_In (Entity (N),
-                       E_Package,
-                       E_Function,
-                       E_Procedure,
-                       E_Entry)
+               elsif Ekind_In (Entity (N), E_Package,
+                                           E_Function,
+                                           E_Procedure,
+                                           E_Entry)
                then
                   return Skip;
 
@@ -1350,21 +1349,22 @@ package body Sem_Util is
             pragma Assert (Nkind (N) in N_Has_Entity);
 
             Elmt : Elmt_Id;
+
          begin
             if List = No_Elist then
                return False;
             end if;
 
             Elmt := First_Elmt (List);
-            loop
-               if No (Elmt) then
-                  return False;
-               elsif Entity (Node (Elmt)) = Entity (N) then
+            while Present (Elmt) loop
+               if Entity (Node (Elmt)) = Entity (N) then
                   return True;
                else
                   Next_Elmt (Elmt);
                end if;
             end loop;
+
+            return False;
          end Contains;
 
          ------------------
@@ -1397,6 +1397,7 @@ package body Sem_Util is
       function Get_Function_Id (Call : Node_Id) return Entity_Id is
          Nam : constant Node_Id := Name (Call);
          Id  : Entity_Id;
+
       begin
          if Nkind (Nam) = N_Explicit_Dereference then
             Id := Etype (Nam);
@@ -1432,15 +1433,14 @@ package body Sem_Util is
    begin
       if Ada_Version < Ada_2012
         or else (not (Nkind (N) in N_Op)
-                   and then not (Nkind (N) in N_Membership_Test)
-                   and then not Nkind_In (N,
-                                  N_Range,
-                                  N_Aggregate,
-                                  N_Extension_Aggregate,
-                                  N_Full_Type_Declaration,
-                                  N_Function_Call,
-                                  N_Procedure_Call_Statement,
-                                  N_Entry_Call_Statement))
+                  and then not (Nkind (N) in N_Membership_Test)
+                  and then not Nkind_In (N, N_Range,
+                                            N_Aggregate,
+                                            N_Extension_Aggregate,
+                                            N_Full_Type_Declaration,
+                                            N_Function_Call,
+                                            N_Procedure_Call_Statement,
+                                            N_Entry_Call_Statement))
         or else (Nkind (N) = N_Full_Type_Declaration
                    and then not Is_Record_Type (Defining_Identifier (N)))
       then
@@ -1502,6 +1502,7 @@ package body Sem_Util is
                Comp   : Node_Id;
                Def_Id : Entity_Id := Defining_Identifier (N);
                Rec    : Node_Id   := Get_Record_Part (N);
+
             begin
                --  No need to perform any analysis if the record has no
                --  components
@@ -1650,9 +1651,8 @@ package body Sem_Util is
                      end loop;
 
                      Num_Components :=
-                       Expr_Value (High_Bound (Aggregate_Bounds (N)))
-                         - Expr_Value (Low_Bound (Aggregate_Bounds (N)))
-                         + 1;
+                       Expr_Value (High_Bound (Aggregate_Bounds (N))) -
+                         Expr_Value (Low_Bound (Aggregate_Bounds (N))) + 1;
 
                      pragma Assert (Count_Components <= Num_Components);
 
@@ -1735,8 +1735,7 @@ package body Sem_Util is
 
                            if Nkind (Choice) in N_Has_Entity
                              and then Present (Entity (Choice))
-                             and then Ekind (Entity (Choice))
-                                        = E_Discriminant
+                             and then Ekind (Entity (Choice)) = E_Discriminant
                            then
                               null;
 

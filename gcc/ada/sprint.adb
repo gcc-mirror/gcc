@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,7 +70,10 @@ package body Sprint is
    --  or for Print_Generated_Code (-gnatG) or Dump_Generated_Code (-gnatD).
 
    Dump_Freeze_Null : Boolean;
-   --  Set True if freeze nodes and non-source null statements output
+   --  Set True if empty freeze nodes and non-source null statements output.
+   --  Note that freeze nodes containing freeze actions are always output,
+   --  as are freeze nodes for itypes, which in general have the effect of
+   --  causing elaboration of the itype.
 
    Freeze_Indent : Int := 0;
    --  Keep track of freeze indent level (controls output of blank lines before
@@ -1827,7 +1830,15 @@ package body Sprint is
             if Dump_Original_Only then
                null;
 
-            elsif Present (Actions (Node)) or else Dump_Freeze_Null then
+            --  A freeze node is output if it has some effect (i.e. non-empty
+            --  actions, or freeze node for an itype, which causes elaboration
+            --  of the itype), and is also always output if Dump_Freeze_Null
+            --  is set True.
+
+            elsif Present (Actions (Node))
+              or else Is_Itype (Entity (Node))
+              or else Dump_Freeze_Null
+            then
                Write_Indent;
                Write_Rewrite_Str ("<<<");
                Write_Str_With_Col_Check_Sloc ("freeze ");
@@ -4084,7 +4095,7 @@ package body Sprint is
 
                   when E_Modular_Integer_Type =>
                      Write_Header;
-                     Write_Str (" mod ");
+                     Write_Str ("mod ");
                      Write_Uint_With_Col_Check (Modulus (Typ), Auto);
 
                   --  Floating point types and subtypes
