@@ -87,7 +87,7 @@ void
 runtime_throw(const char *s)
 {
 	runtime_startpanic();
-	runtime_printf("throw: %s\n", s);
+	runtime_printf("fatal error: %s\n", s);
 	runtime_dopanic(0);
 	*(int32*)0 = 0;	// not reached
 	runtime_exit(1);	// even more not reached

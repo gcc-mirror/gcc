@@ -303,6 +303,11 @@ for m in IP_PKTINFO IPV6_V6ONLY IPPROTO_IPV6 IPV6_JOIN_GROUP IPV6_LEAVE_GROUP IP
     echo "const $m = 0" >> ${OUT}
   fi
 done
+for m in SOCK_CLOEXEC SOCK_NONBLOCK; do
+  if ! grep "^const $m " ${OUT} >/dev/null 2>&1; then
+    echo "const $m = -1" >> ${OUT}
+  fi
+done
 
 # pathconf constants.
 grep '^const __PC' gen-sysinfo.go |

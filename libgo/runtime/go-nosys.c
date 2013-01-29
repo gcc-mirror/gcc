@@ -16,8 +16,10 @@
 #include <math.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #ifndef HAVE_OFF64_T
@@ -26,6 +28,19 @@ typedef signed int off64_t __attribute__ ((mode (DI)));
 
 #ifndef HAVE_LOFF_T
 typedef off64_t loff_t;
+#endif
+
+#ifndef HAVE_ACCEPT4
+struct sockaddr;
+int
+accept4 (int sockfd __attribute__ ((unused)),
+	 struct sockaddr *addr __attribute__ ((unused)),
+	 socklen_t *addrlen __attribute__ ((unused)),
+	 int flags __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
 #endif
 
 #ifndef HAVE_EPOLL_CREATE1
@@ -171,6 +186,16 @@ openat (int dirfd __attribute__ ((unused)),
 }
 #endif
 
+#ifndef HAVE_PIPE2
+int
+pipe2 (int pipefd[2] __attribute__ ((unused)),
+       int flags __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
 #ifndef HAVE_RENAMEAT
 int
 renameat (int olddirfd __attribute__ ((unused)),
@@ -235,6 +260,19 @@ unlinkat (int dirfd __attribute__ ((unused)),
 #ifndef HAVE_UNSHARE
 int
 unshare (int flags __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  return -1;
+}
+#endif
+
+#ifndef HAVE_UTIMENSAT
+struct timespec;
+int
+utimensat(int dirfd __attribute__ ((unused)),
+	  const char *pathname __attribute__ ((unused)),
+	  const struct timespec times[2] __attribute__ ((unused)),
+	  int flags __attribute__ ((unused)))
 {
   errno = ENOSYS;
   return -1;

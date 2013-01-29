@@ -386,7 +386,7 @@ func parse(rawurl string, viaRequest bool) (url *URL, err error) {
 		}
 	}
 
-	if (url.Scheme != "" || !viaRequest) && strings.HasPrefix(rest, "//") && !strings.HasPrefix(rest, "///") {
+	if (url.Scheme != "" || !viaRequest && !strings.HasPrefix(rest, "///")) && strings.HasPrefix(rest, "//") {
 		var authority string
 		authority, rest = split(rest[2:], '/', false)
 		url.User, url.Host, err = parseAuthority(authority)
@@ -434,30 +434,35 @@ func parseAuthority(authority string) (user *Userinfo, host string, err error) {
 
 // String reassembles the URL into a valid URL string.
 func (u *URL) String() string {
-	// TODO: Rewrite to use bytes.Buffer
-	result := ""
+	var buf bytes.Buffer
 	if u.Scheme != "" {
-		result += u.Scheme + ":"
+		buf.WriteString(u.Scheme)
+		buf.WriteByte(':')
 	}
 	if u.Opaque != "" {
-		result += u.Opaque
+		buf.WriteString(u.Opaque)
 	} else {
-		if u.Host != "" || u.User != nil {
-			result += "//"
+		if u.Scheme != "" || u.Host != "" || u.User != nil {
+			buf.WriteString("//")
 			if u := u.User; u != nil {
-				result += u.String() + "@"
+				buf.WriteString(u.String())
+				buf.WriteByte('@')
 			}
-			result += u.Host
+			if h := u.Host; h != "" {
+				buf.WriteString(h)
+			}
 		}
-		result += escape(u.Path, encodePath)
+		buf.WriteString(escape(u.Path, encodePath))
 	}
 	if u.RawQuery != "" {
-		result += "?" + u.RawQuery
+		buf.WriteByte('?')
+		buf.WriteString(u.RawQuery)
 	}
 	if u.Fragment != "" {
-		result += "#" + escape(u.Fragment, encodeFragment)
+		buf.WriteByte('#')
+		buf.WriteString(escape(u.Fragment, encodeFragment))
 	}
-	return result
+	return buf.String()
 }
 
 // Values maps a string key to a list of values.

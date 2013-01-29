@@ -81,6 +81,10 @@ runtime_SysAlloc(uintptr n)
 			runtime_printf("if you're running SELinux, enable execmem for this process.\n");
 			exit(2);
 		}
+		if(errno == EAGAIN) {
+			runtime_printf("runtime: mmap: too much locked memory (check 'ulimit -l').\n");
+			runtime_exit(2);
+		}
 		return nil;
 	}
 	return p;

@@ -166,6 +166,24 @@ func Reboot(cmd int) (err error) {
 	return reboot(LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, cmd, "")
 }
 
+//sys	accept4(fd int, sa *RawSockaddrAny, len *Socklen_t, flags int) (nfd int, err error)
+//accept4(fd _C_int, sa *RawSockaddrAny, len *Socklen_t, flags _C_int) _C_int
+
+func Accept4(fd int, flags int) (nfd int, sa Sockaddr, err error) {
+	var rsa RawSockaddrAny
+	var len Socklen_t = SizeofSockaddrAny
+	nfd, err = accept4(fd, &rsa, &len, flags)
+	if err != nil {
+		return -1, nil, err
+	}
+	sa, err = anyToSockaddr(&rsa)
+	if err != nil {
+		Close(nfd)
+		return -1, nil, err
+	}
+	return nfd, sa, nil
+}
+
 //sys	Acct(path string) (err error)
 //acct(path *byte) int
 
@@ -270,6 +288,19 @@ func ParseDirent(buf []byte, max int, names []string) (consumed int, count int, 
 
 //sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
 //mknodat(dirfd int, path *byte, mode Mode_t, dev _dev_t) int
+
+//sysnb	pipe2(p *[2]_C_int, flags int) (err error)
+//pipe2(p *[2]_C_int, flags _C_int) _C_int
+func Pipe2(p []int, flags int) (err error) {
+	if len(p) != 2 {
+		return EINVAL
+	}
+	var pp [2]_C_int
+	err = pipe2(&pp, flags)
+	p[0] = int(pp[0])
+	p[1] = int(pp[1])
+	return
+}
 
 //sys	PivotRoot(newroot string, putold string) (err error)
 //pivot_root(newroot *byte, putold *byte) int

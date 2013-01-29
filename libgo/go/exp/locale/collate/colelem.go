@@ -8,27 +8,43 @@ import (
 	"unicode"
 )
 
+// Level identifies the collation comparison level.
+// The primary level corresponds to the basic sorting of text.
+// The secondary level corresponds to accents and related linguistic elements.
+// The tertiary level corresponds to casing and related concepts.
+// The quaternary level is derived from the other levels by the
+// various algorithms for handling variable elements.
+type Level int
+
+const (
+	Primary Level = iota
+	Secondary
+	Tertiary
+	Quaternary
+	Identity
+)
+
 const (
 	defaultSecondary = 0x20
 	defaultTertiary  = 0x2
 	maxTertiary      = 0x1F
-	maxQuaternary    = 0x1FFFFF // 21 bits.
+	MaxQuaternary    = 0x1FFFFF // 21 bits.
 )
 
-// colElem is a representation of a collation element.
-// In the typical case, a rune maps to a single collation element. If a rune
-// can be the start of a contraction or expands into multiple collation elements,
-// then the colElem that is associated with a rune will have a special form to represent
-// such m to n mappings.  Such special colElems have a value >= 0x80000000.
-type colElem uint32
+// Elem is a representation of a collation element. This API provides ways to encode
+// and decode Elems. Implementations of collation tables may use values greater
+// or equal to PrivateUse for their own purposes.  However, these should never be
+// returned by AppendNext.
+type Elem uint32
 
 const (
-	maxCE       colElem = 0x80FFFFFF
-	minContract         = 0xC0000000
-	maxContract         = 0xDFFFFFFF
-	minExpand           = 0xE0000000
-	maxExpand           = 0xEFFFFFFF
-	minDecomp           = 0xF0000000
+	maxCE       Elem = 0xAFFFFFFF
+	PrivateUse       = minContract
+	minContract      = 0xC0000000
+	maxContract      = 0xDFFFFFFF
+	minExpand        = 0xE0000000
+	maxExpand        = 0xEFFFFFFF
+	minDecomp        = 0xF0000000
 )
 
 type ceType int
@@ -40,7 +56,7 @@ const (
 	ceDecompose                      // rune expands using NFKC decomposition
 )
 
-func (ce colElem) ctype() ceType {
+func (ce Elem) ctype() ceType {
 	if ce <= maxCE {
 		return ceNormal
 	}
@@ -62,69 +78,115 @@ func (ce colElem) ctype() ceType {
 // 01pppppp pppppppp ppppppp0 ssssssss
 //   - p* is primary collation value
 //   - s* is the secondary collation value
-// or
 // 00pppppp pppppppp ppppppps sssttttt, where
 //   - p* is primary collation value
 //   - s* offset of secondary from default value.
 //   - t* is the tertiary collation value
+// 100ttttt cccccccc pppppppp pppppppp
+//   - t* is the tertiar collation value
+//   - c* is the cannonical combining class
+//   - p* is the primary collation value
 // Collation elements with a secondary value are of the form
-// 10000000 0000ssss ssssssss tttttttt, where
-//   - 16 BMP implicit -> weight
-//   - 8 bit s
-//   - default tertiary
+// 1010cccc ccccssss ssssssss tttttttt, where
+//   - c* is the canonical combining class
+//   - s* is the secondary collation value
+//   - t* is the tertiary collation value
 // 11qqqqqq qqqqqqqq qqqqqqq0 00000000
 //   - q* quaternary value
 const (
 	ceTypeMask            = 0xC0000000
+	ceTypeMaskExt         = 0xE0000000
 	ceType1               = 0x40000000
 	ceType2               = 0x00000000
-	ceType3               = 0x80000000
+	ceType3or4            = 0x80000000
+	ceType4               = 0xA0000000
 	ceTypeQ               = 0xC0000000
-	ceIgnore              = ceType3
+	ceIgnore              = ceType4
 	firstNonPrimary       = 0x80000000
+	lastSpecialPrimary    = 0xA0000000
 	secondaryMask         = 0x80000000
 	hasTertiaryMask       = 0x40000000
 	primaryValueMask      = 0x3FFFFE00
 	primaryShift          = 9
+	compactPrimaryBits    = 16
 	compactSecondaryShift = 5
 	minCompactSecondary   = defaultSecondary - 4
 )
 
-func makeImplicitCE(primary int) colElem {
-	return ceType1 | colElem(primary<<primaryShift) | defaultSecondary
+func makeImplicitCE(primary int) Elem {
+	return ceType1 | Elem(primary<<primaryShift) | defaultSecondary
 }
 
-func makeQuaternary(primary int) colElem {
-	return ceTypeQ | colElem(primary<<primaryShift)
+// MakeElem returns an Elem for the given values.  It will return an error
+// if the given combination of values is invalid.
+func MakeElem(primary, secondary, tertiary int, ccc uint8) (Elem, error) {
+	// TODO: implement
+	return 0, nil
 }
 
-func (ce colElem) primary() int {
+// MakeQuaternary returns an Elem with the given quaternary value.
+func MakeQuaternary(v int) Elem {
+	return ceTypeQ | Elem(v<<primaryShift)
+}
+
+// Mask sets weights for any level smaller than l to 0.
+// The resulting Elem can be used to test for equality with
+// other Elems to which the same mask has been applied.
+func (ce Elem) Mask(l Level) uint32 {
+	return 0
+}
+
+// CCC returns the canoncial combining class associated with the underlying character,
+// if applicable, or 0 otherwise.
+func (ce Elem) CCC() uint8 {
+	if ce&ceType3or4 != 0 {
+		if ce&ceType4 == ceType3or4 {
+			return uint8(ce >> 16)
+		}
+		return uint8(ce >> 20)
+	}
+	return 0
+}
+
+// Primary returns the primary collation weight for ce.
+func (ce Elem) Primary() int {
 	if ce >= firstNonPrimary {
-		return 0
+		if ce > lastSpecialPrimary {
+			return 0
+		}
+		return int(uint16(ce))
 	}
 	return int(ce&primaryValueMask) >> primaryShift
 }
 
-func (ce colElem) secondary() int {
+// Secondary returns the secondary collation weight for ce.
+func (ce Elem) Secondary() int {
 	switch ce & ceTypeMask {
 	case ceType1:
 		return int(uint8(ce))
 	case ceType2:
 		return minCompactSecondary + int((ce>>compactSecondaryShift)&0xF)
-	case ceType3:
-		return int(uint16(ce >> 8))
+	case ceType3or4:
+		if ce < ceType4 {
+			return defaultSecondary
+		}
+		return int(ce>>8) & 0xFFF
 	case ceTypeQ:
 		return 0
 	}
 	panic("should not reach here")
 }
 
-func (ce colElem) tertiary() uint8 {
+// Tertiary returns the tertiary collation weight for ce.
+func (ce Elem) Tertiary() uint8 {
 	if ce&hasTertiaryMask == 0 {
-		if ce&ceType3 == 0 {
+		if ce&ceType3or4 == 0 {
 			return uint8(ce & 0x1F)
 		}
-		return uint8(ce)
+		if ce&ceType4 == ceType4 {
+			return uint8(ce)
+		}
+		return uint8(ce>>24) & 0x1F // type 2
 	} else if ce&ceTypeMask == ceType1 {
 		return defaultTertiary
 	}
@@ -132,27 +194,47 @@ func (ce colElem) tertiary() uint8 {
 	return 0
 }
 
-func (ce colElem) updateTertiary(t uint8) colElem {
+func (ce Elem) updateTertiary(t uint8) Elem {
 	if ce&ceTypeMask == ceType1 {
+		// convert to type 4
 		nce := ce & primaryValueMask
-		nce |= colElem(uint8(ce)-minCompactSecondary) << compactSecondaryShift
+		nce |= Elem(uint8(ce)-minCompactSecondary) << compactSecondaryShift
 		ce = nce
+	} else if ce&ceTypeMaskExt == ceType3or4 {
+		ce &= ^Elem(maxTertiary << 24)
+		return ce | (Elem(t) << 24)
 	} else {
-		ce &= ^colElem(maxTertiary)
+		// type 2 or 4
+		ce &= ^Elem(maxTertiary)
 	}
-	return ce | colElem(t)
+	return ce | Elem(t)
 }
 
-// quaternary returns the quaternary value if explicitly specified,
-// 0 if ce == ceIgnore, or maxQuaternary otherwise.
+// Quaternary returns the quaternary value if explicitly specified,
+// 0 if ce == ceIgnore, or MaxQuaternary otherwise.
 // Quaternary values are used only for shifted variants.
-func (ce colElem) quaternary() int {
+func (ce Elem) Quaternary() int {
 	if ce&ceTypeMask == ceTypeQ {
 		return int(ce&primaryValueMask) >> primaryShift
 	} else if ce == ceIgnore {
 		return 0
 	}
-	return maxQuaternary
+	return MaxQuaternary
+}
+
+// Weight returns the collation weight for the given level.
+func (ce Elem) Weight(l Level) int {
+	switch l {
+	case Primary:
+		return ce.Primary()
+	case Secondary:
+		return ce.Secondary()
+	case Tertiary:
+		return int(ce.Tertiary())
+	case Quaternary:
+		return ce.Quaternary()
+	}
+	return 0 // return 0 (ignore) for undefined levels.
 }
 
 // For contractions, collation elements are of the form
@@ -167,7 +249,7 @@ const (
 	maxContractOffsetBits = 13
 )
 
-func splitContractIndex(ce colElem) (index, n, offset int) {
+func splitContractIndex(ce Elem) (index, n, offset int) {
 	n = int(ce & (1<<maxNBits - 1))
 	ce >>= maxNBits
 	index = int(ce & (1<<maxTrieIndexBits - 1))
@@ -176,23 +258,23 @@ func splitContractIndex(ce colElem) (index, n, offset int) {
 	return
 }
 
-// For expansions, colElems are of the form 11100000 00000000 bbbbbbbb bbbbbbbb,
+// For expansions, Elems are of the form 11100000 00000000 bbbbbbbb bbbbbbbb,
 // where b* is the index into the expansion sequence table.
 const maxExpandIndexBits = 16
 
-func splitExpandIndex(ce colElem) (index int) {
+func splitExpandIndex(ce Elem) (index int) {
 	return int(uint16(ce))
 }
 
 // Some runes can be expanded using NFKD decomposition. Instead of storing the full
 // sequence of collation elements, we decompose the rune and lookup the collation
 // elements for each rune in the decomposition and modify the tertiary weights.
-// The colElem, in this case, is of the form 11110000 00000000 wwwwwwww vvvvvvvv, where
+// The Elem, in this case, is of the form 11110000 00000000 wwwwwwww vvvvvvvv, where
 //   - v* is the replacement tertiary weight for the first rune,
 //   - w* is the replacement tertiary weight for the second rune,
 // Tertiary weights of subsequent runes should be replaced with maxTertiary.
 // See http://www.unicode.org/reports/tr10/#Compatibility_Decompositions for more details.
-func splitDecompose(ce colElem) (t1, t2 uint8) {
+func splitDecompose(ce Elem) (t1, t2 uint8) {
 	return uint8(ce), uint8(ce >> 8)
 }
 

@@ -227,8 +227,8 @@ toolexeclibgoexp_DATA = \
 	$(exp_inotify_gox) \
 	exp/norm.gox \
 	exp/proxy.gox \
+	exp/ssa.gox \
 	exp/terminal.gox \
-	exp/types.gox \
 	exp/utf8string.gox
 
 toolexeclibgoexphtmldir = $(toolexeclibgoexpdir)/html
@@ -256,7 +256,8 @@ toolexeclibgogo_DATA = \
 	go/parser.gox \
 	go/printer.gox \
 	go/scanner.gox \
-	go/token.gox
+	go/token.gox \
+	go/types.gox
 
 toolexeclibgohashdir = $(toolexeclibgodir)/hash
 
@@ -682,7 +683,7 @@ go_net_fd_os_file = go/net/fd_linux.go
 go_net_newpollserver_file = go/net/newpollserver_unix.go
 else # !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
 if LIBGO_IS_NETBSD
-go_net_fd_os_file = go/net/fd_netbsd.go
+go_net_fd_os_file = go/net/fd_bsd.go
 go_net_newpollserver_file = go/net/newpollserver_unix.go
 else # !LIBGO_IS_NETBSD && !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
 # By default use select with pipes.  Most systems should have
@@ -753,9 +754,16 @@ go_net_interface_file = go/net/interface_stub.go
 endif
 endif
 
+if LIBGO_IS_LINUX
+go_net_cloexec_file = go/net/sock_cloexec.go
+else
+go_net_cloexec_file = go/net/sys_cloexec.go
+endif
+
 go_net_files = \
 	go/net/cgo_unix.go \
 	$(go_net_cgo_file) \
+	$(go_net_cloexec_file) \
 	go/net/dial.go \
 	go/net/dnsclient.go \
 	go/net/dnsclient_unix.go \
@@ -856,6 +864,12 @@ endif
 endif
 endif
 
+if LIBGO_IS_LINUX
+go_os_pipe_file = go/os/pipe_linux.go
+else
+go_os_pipe_file = go/os/pipe_bsd.go
+endif
+
 go_os_files = \
 	$(go_os_dir_file) \
 	go/os/dir.go \
@@ -872,6 +886,7 @@ go_os_files = \
 	go/os/getwd.go \
 	go/os/path.go \
 	go/os/path_unix.go \
+	$(go_os_pipe_file) \
 	go/os/proc.go \
 	$(go_os_stat_file) \
 	go/os/str.go \
@@ -1026,6 +1041,7 @@ go_compress_bzip2_files = \
 go_compress_flate_files = \
 	go/compress/flate/copy.go \
 	go/compress/flate/deflate.go \
+	go/compress/flate/fixedhuff.go \
 	go/compress/flate/huffman_bit_writer.go \
 	go/compress/flate/huffman_code.go \
 	go/compress/flate/inflate.go \
@@ -1222,8 +1238,10 @@ go_exp_inotify_files = \
 go_exp_locale_collate_files = \
 	go/exp/locale/collate/colelem.go \
 	go/exp/locale/collate/collate.go \
+	go/exp/locale/collate/colltab.go \
 	go/exp/locale/collate/contract.go \
 	go/exp/locale/collate/export.go \
+	go/exp/locale/collate/sort.go \
 	go/exp/locale/collate/table.go \
 	go/exp/locale/collate/tables.go \
 	go/exp/locale/collate/trie.go
@@ -1248,23 +1266,18 @@ go_exp_proxy_files = \
 	go/exp/proxy/per_host.go \
 	go/exp/proxy/proxy.go \
 	go/exp/proxy/socks5.go
+go_exp_ssa_files = \
+	go/exp/ssa/blockopt.go \
+	go/exp/ssa/doc.go \
+	go/exp/ssa/func.go \
+	go/exp/ssa/sanity.go \
+	go/exp/ssa/ssa.go \
+	go/exp/ssa/literal.go \
+	go/exp/ssa/print.go \
+	go/exp/ssa/util.go
 go_exp_terminal_files = \
 	go/exp/terminal/terminal.go \
 	go/exp/terminal/util.go
-go_exp_types_files = \
-	go/exp/types/builtins.go \
-	go/exp/types/check.go \
-	go/exp/types/const.go \
-	go/exp/types/conversions.go \
-	go/exp/types/errors.go \
-	go/exp/types/exportdata.go \
-	go/exp/types/expr.go \
-	go/exp/types/gcimporter.go \
-	go/exp/types/operand.go \
-	go/exp/types/predicates.go \
-	go/exp/types/stmt.go \
-	go/exp/types/types.go \
-	go/exp/types/universe.go
 go_exp_utf8string_files = \
 	go/exp/utf8string/string.go
 
@@ -1305,6 +1318,24 @@ go_go_token_files = \
 	go/go/token/position.go \
 	go/go/token/serialize.go \
 	go/go/token/token.go
+go_go_types_files = \
+	go/go/types/api.go \
+	go/go/types/builtins.go \
+	go/go/types/check.go \
+	go/go/types/const.go \
+	go/go/types/conversions.go \
+	go/go/types/errors.go \
+	go/go/types/exportdata.go \
+	go/go/types/expr.go \
+	go/go/types/gcimporter.go \
+	go/go/types/objects.go \
+	go/go/types/operand.go \
+	go/go/types/predicates.go \
+	go/go/types/resolve.go \
+	go/go/types/scope.go \
+	go/go/types/stmt.go \
+	go/go/types/types.go \
+	go/go/types/universe.go
 
 go_hash_adler32_files = \
 	go/hash/adler32/adler32.go
@@ -1848,8 +1879,8 @@ libgo_go_objs = \
 	exp/locale/collate/build.lo \
 	exp/norm.lo \
 	exp/proxy.lo \
+	exp/ssa.lo \
 	exp/terminal.lo \
-	exp/types.lo \
 	exp/utf8string.lo \
 	html/template.lo \
 	go/ast.lo \
@@ -1860,6 +1891,7 @@ libgo_go_objs = \
 	go/printer.lo \
 	go/scanner.lo \
 	go/token.lo \
+	go/types.lo \
 	hash/adler32.lo \
 	hash/crc32.lo \
 	hash/crc64.lo \
@@ -2751,6 +2783,15 @@ exp/proxy/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/proxy/check
 
+@go_include@ exp/ssa.lo.dep
+exp/ssa.lo.dep: $(go_exp_ssa_files)
+	$(BUILDDEPS)
+exp/ssa.lo: $(go_exp_ssa_files)
+	$(BUILDPACKAGE)
+exp/ssa/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: exp/ssa/check
+
 @go_include@ exp/terminal.lo.dep
 exp/terminal.lo.dep: $(go_exp_terminal_files)
 	$(BUILDDEPS)
@@ -2759,15 +2800,6 @@ exp/terminal.lo: $(go_exp_terminal_files)
 exp/terminal/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/terminal/check
-
-@go_include@ exp/types.lo.dep
-exp/types.lo.dep: $(go_exp_types_files)
-	$(BUILDDEPS)
-exp/types.lo: $(go_exp_types_files)
-	$(BUILDPACKAGE)
-exp/types/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/types/check
 
 @go_include@ exp/utf8string.lo.dep
 exp/utf8string.lo.dep: $(go_exp_utf8string_files)
@@ -2876,6 +2908,15 @@ go/token.lo: $(go_go_token_files)
 go/token/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: go/token/check
+
+@go_include@ go/types.lo.dep
+go/types.lo.dep: $(go_go_types_files)
+	$(BUILDDEPS)
+go/types.lo: $(go_go_types_files)
+	$(BUILDPACKAGE)
+go/types/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: go/types/check
 
 @go_include@ hash/adler32.lo.dep
 hash/adler32.lo.dep: $(go_hash_adler32_files)
@@ -3507,9 +3548,9 @@ exp/norm.gox: exp/norm.lo
 	$(BUILDGOX)
 exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
-exp/terminal.gox: exp/terminal.lo
+exp/ssa.gox: exp/ssa.lo
 	$(BUILDGOX)
-exp/types.gox: exp/types.lo
+exp/terminal.gox: exp/terminal.lo
 	$(BUILDGOX)
 exp/utf8string.gox: exp/utf8string.lo	
 	$(BUILDGOX)
@@ -3532,6 +3573,8 @@ go/printer.gox: go/printer.lo
 go/scanner.gox: go/scanner.lo
 	$(BUILDGOX)
 go/token.gox: go/token.lo
+	$(BUILDGOX)
+go/types.gox: go/types.lo
 	$(BUILDGOX)
 
 hash/adler32.gox: hash/adler32.lo
@@ -3734,7 +3777,6 @@ TEST_PACKAGES = \
 	exp/norm/check \
 	exp/proxy/check \
 	exp/terminal/check \
-	exp/types/check \
 	exp/utf8string/check \
 	html/template/check \
 	go/ast/check \
@@ -3745,7 +3787,7 @@ TEST_PACKAGES = \
 	go/printer/check \
 	go/scanner/check \
 	go/token/check \
-	$(go_types_check_omitted_since_it_calls_6g) \
+	go/types/check \
 	hash/adler32/check \
 	hash/crc32/check \
 	hash/crc64/check \

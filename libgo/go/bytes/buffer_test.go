@@ -260,7 +260,7 @@ func TestWriteTo(t *testing.T) {
 
 func TestRuneIO(t *testing.T) {
 	const NRune = 1000
-	// Built a test array while we write the data
+	// Built a test slice while we write the data
 	b := make([]byte, utf8.UTFMax*NRune)
 	var buf Buffer
 	n := 0
@@ -451,5 +451,27 @@ func TestReadEmptyAtEOF(t *testing.T) {
 	}
 	if n != 0 {
 		t.Errorf("wrong count; got %d want 0", n)
+	}
+}
+
+func TestUnreadByte(t *testing.T) {
+	b := new(Buffer)
+	b.WriteString("abcdefghijklmnopqrstuvwxyz")
+
+	_, err := b.ReadBytes('m')
+	if err != nil {
+		t.Fatalf("ReadBytes: %v", err)
+	}
+
+	err = b.UnreadByte()
+	if err != nil {
+		t.Fatalf("UnreadByte: %v", err)
+	}
+	c, err := b.ReadByte()
+	if err != nil {
+		t.Fatalf("ReadByte: %v", err)
+	}
+	if c != 'm' {
+		t.Errorf("ReadByte = %q; want %q", c, 'm')
 	}
 }
