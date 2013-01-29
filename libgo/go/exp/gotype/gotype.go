@@ -5,14 +5,13 @@
 package main
 
 import (
-	"errors"
-	"exp/types"
 	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/scanner"
 	"go/token"
+	"go/types"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -92,8 +91,7 @@ func parse(fset *token.FileSet, filename string, src []byte) *ast.File {
 	return file
 }
 
-func parseStdin(fset *token.FileSet) (files map[string]*ast.File) {
-	files = make(map[string]*ast.File)
+func parseStdin(fset *token.FileSet) (files []*ast.File) {
 	src, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		report(err)
@@ -101,13 +99,12 @@ func parseStdin(fset *token.FileSet) (files map[string]*ast.File) {
 	}
 	const filename = "<standard input>"
 	if file := parse(fset, filename, src); file != nil {
-		files[filename] = file
+		files = []*ast.File{file}
 	}
 	return
 }
 
-func parseFiles(fset *token.FileSet, filenames []string) (files map[string]*ast.File) {
-	files = make(map[string]*ast.File)
+func parseFiles(fset *token.FileSet, filenames []string) (files []*ast.File) {
 	for _, filename := range filenames {
 		src, err := ioutil.ReadFile(filename)
 		if err != nil {
@@ -115,11 +112,7 @@ func parseFiles(fset *token.FileSet, filenames []string) (files map[string]*ast.
 			continue
 		}
 		if file := parse(fset, filename, src); file != nil {
-			if files[filename] != nil {
-				report(errors.New(fmt.Sprintf("%q: duplicate file", filename)))
-				continue
-			}
-			files[filename] = file
+			files = append(files, file)
 		}
 	}
 	return
@@ -169,14 +162,9 @@ func processFiles(filenames []string, allFiles bool) {
 	processPackage(fset, parseFiles(fset, filenames[0:i]))
 }
 
-func processPackage(fset *token.FileSet, files map[string]*ast.File) {
-	// make a package (resolve all identifiers)
-	pkg, err := ast.NewPackage(fset, files, types.GcImport, types.Universe)
+func processPackage(fset *token.FileSet, files []*ast.File) {
+	_, err := types.Check(fset, files)
 	if err != nil {
-		report(err)
-		return
-	}
-	if err = types.Check(fset, pkg, nil, nil); err != nil {
 		report(err)
 	}
 }

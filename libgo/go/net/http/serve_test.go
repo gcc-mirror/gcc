@@ -67,6 +67,7 @@ func (a dummyAddr) String() string {
 type testConn struct {
 	readBuf  bytes.Buffer
 	writeBuf bytes.Buffer
+	closec   chan bool // if non-nil, send value to it on close
 }
 
 func (c *testConn) Read(b []byte) (int, error) {
@@ -78,6 +79,10 @@ func (c *testConn) Write(b []byte) (int, error) {
 }
 
 func (c *testConn) Close() error {
+	select {
+	case c.closec <- true:
+	default:
+	}
 	return nil
 }
 
@@ -179,10 +184,11 @@ var vtests = []struct {
 }
 
 func TestHostHandlers(t *testing.T) {
+	mux := NewServeMux()
 	for _, h := range handlers {
-		Handle(h.pattern, stringHandler(h.msg))
+		mux.Handle(h.pattern, stringHandler(h.msg))
 	}
-	ts := httptest.NewServer(nil)
+	ts := httptest.NewServer(mux)
 	defer ts.Close()
 
 	conn, err := net.Dial("tcp", ts.Listener.Addr().String())
@@ -484,6 +490,7 @@ func TestChunkedResponseHeaders(t *testing.T) {
 
 	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 		w.Header().Set("Content-Length", "intentional gibberish") // we check that this is deleted
+		w.(Flusher).Flush()
 		fmt.Fprintf(w, "I am a chunked response.")
 	}))
 	defer ts.Close()
@@ -764,6 +771,7 @@ func TestServerUnreadRequestBodyLittle(t *testing.T) {
 			t.Errorf("on request, read buffer length is %d; expected about 100 KB", conn.readBuf.Len())
 		}
 		rw.WriteHeader(200)
+		rw.(Flusher).Flush()
 		if g, e := conn.readBuf.Len(), 0; g != e {
 			t.Errorf("after WriteHeader, read buffer length is %d; want %d", g, e)
 		}
@@ -786,24 +794,24 @@ func TestServerUnreadRequestBodyLarge(t *testing.T) {
 			"Content-Length: %d\r\n"+
 			"\r\n", len(body))))
 	conn.readBuf.Write([]byte(body))
-
-	done := make(chan bool)
+	conn.closec = make(chan bool, 1)
 
 	ls := &oneConnListener{conn}
 	go Serve(ls, HandlerFunc(func(rw ResponseWriter, req *Request) {
-		defer close(done)
 		if conn.readBuf.Len() < len(body)/2 {
 			t.Errorf("on request, read buffer length is %d; expected about 1MB", conn.readBuf.Len())
 		}
 		rw.WriteHeader(200)
+		rw.(Flusher).Flush()
 		if conn.readBuf.Len() < len(body)/2 {
 			t.Errorf("post-WriteHeader, read buffer length is %d; expected about 1MB", conn.readBuf.Len())
 		}
-		if c := rw.Header().Get("Connection"); c != "close" {
-			t.Errorf(`Connection header = %q; want "close"`, c)
-		}
 	}))
-	<-done
+	<-conn.closec
+
+	if res := conn.writeBuf.String(); !strings.Contains(res, "Connection: close") {
+		t.Errorf("Expected a Connection: close header; got response: %s", res)
+	}
 }
 
 func TestTimeoutHandler(t *testing.T) {
@@ -1144,22 +1152,17 @@ func TestClientWriteShutdown(t *testing.T) {
 // Tests that chunked server responses that write 1 byte at a time are
 // buffered before chunk headers are added, not after chunk headers.
 func TestServerBufferedChunking(t *testing.T) {
-	if true {
-		t.Logf("Skipping known broken test; see Issue 2357")
-		return
-	}
 	conn := new(testConn)
 	conn.readBuf.Write([]byte("GET / HTTP/1.1\r\n\r\n"))
-	done := make(chan bool)
+	conn.closec = make(chan bool, 1)
 	ls := &oneConnListener{conn}
 	go Serve(ls, HandlerFunc(func(rw ResponseWriter, req *Request) {
-		defer close(done)
-		rw.Header().Set("Content-Type", "text/plain") // prevent sniffing, which buffers
+		rw.(Flusher).Flush() // force the Header to be sent, in chunking mode, not counting the length
 		rw.Write([]byte{'x'})
 		rw.Write([]byte{'y'})
 		rw.Write([]byte{'z'})
 	}))
-	<-done
+	<-conn.closec
 	if !bytes.HasSuffix(conn.writeBuf.Bytes(), []byte("\r\n\r\n3\r\nxyz\r\n0\r\n\r\n")) {
 		t.Errorf("response didn't end with a single 3 byte 'xyz' chunk; got:\n%q",
 			conn.writeBuf.Bytes())

@@ -10,12 +10,12 @@ import (
 )
 
 type ceTest struct {
-	f   func(inout []int) (colElem, ceType)
+	f   func(inout []int) (Elem, ceType)
 	arg []int
 }
 
 // The make* funcs are simplified versions of the functions in build/colelem.go
-func makeCE(weights []int) colElem {
+func makeCE(weights []int) Elem {
 	const (
 		maxPrimaryBits          = 21
 		maxSecondaryBits        = 12
@@ -23,72 +23,81 @@ func makeCE(weights []int) colElem {
 		maxSecondaryDiffBits    = 4
 		maxTertiaryBits         = 8
 		maxTertiaryCompactBits  = 5
-		isSecondary             = 0x80000000
 		isPrimary               = 0x40000000
+		isPrimaryCCC            = 0x80000000
+		isSecondary             = 0xA0000000
 	)
-	var ce colElem
+	var ce Elem
+	ccc := weights[3]
 	if weights[0] != 0 {
-		if weights[2] == defaultTertiary {
-			ce = colElem(weights[0]<<(maxSecondaryCompactBits+1) + weights[1])
+		if ccc != 0 {
+			ce = Elem(weights[2] << 24)
+			ce |= Elem(ccc) << 16
+			ce |= Elem(weights[0])
+			ce |= isPrimaryCCC
+		} else if weights[2] == defaultTertiary {
+			ce = Elem(weights[0]<<(maxSecondaryCompactBits+1) + weights[1])
 			ce |= isPrimary
 		} else {
 			d := weights[1] - defaultSecondary + 4
-			ce = colElem(weights[0]<<maxSecondaryDiffBits + d)
-			ce = ce<<maxTertiaryCompactBits + colElem(weights[2])
+			ce = Elem(weights[0]<<maxSecondaryDiffBits + d)
+			ce = ce<<maxTertiaryCompactBits + Elem(weights[2])
 		}
 	} else {
-		ce = colElem(weights[1]<<maxTertiaryBits + weights[2])
+		ce = Elem(weights[1]<<maxTertiaryBits + weights[2])
+		ce += Elem(ccc) << 20
 		ce |= isSecondary
 	}
 	return ce
 }
 
-func makeContractIndex(index, n, offset int) colElem {
+func makeContractIndex(index, n, offset int) Elem {
 	const (
 		contractID            = 0xC0000000
 		maxNBits              = 4
 		maxTrieIndexBits      = 12
 		maxContractOffsetBits = 13
 	)
-	ce := colElem(contractID)
-	ce += colElem(offset << (maxNBits + maxTrieIndexBits))
-	ce += colElem(index << maxNBits)
-	ce += colElem(n)
+	ce := Elem(contractID)
+	ce += Elem(offset << (maxNBits + maxTrieIndexBits))
+	ce += Elem(index << maxNBits)
+	ce += Elem(n)
 	return ce
 }
 
-func makeExpandIndex(index int) colElem {
+func makeExpandIndex(index int) Elem {
 	const expandID = 0xE0000000
-	return expandID + colElem(index)
+	return expandID + Elem(index)
 }
 
-func makeDecompose(t1, t2 int) colElem {
+func makeDecompose(t1, t2 int) Elem {
 	const decompID = 0xF0000000
-	return colElem(t2<<8+t1) + decompID
+	return Elem(t2<<8+t1) + decompID
 }
 
-func normalCE(inout []int) (ce colElem, t ceType) {
-	w := makeCE(inout)
-	inout[0] = w.primary()
-	inout[1] = w.secondary()
-	inout[2] = int(w.tertiary())
+func normalCE(inout []int) (ce Elem, t ceType) {
+	ce = makeCE(inout)
+	inout[0] = ce.Primary()
+	inout[1] = ce.Secondary()
+	inout[2] = int(ce.Tertiary())
+	inout[3] = int(ce.CCC())
 	return ce, ceNormal
 }
 
-func expandCE(inout []int) (ce colElem, t ceType) {
+func expandCE(inout []int) (ce Elem, t ceType) {
 	ce = makeExpandIndex(inout[0])
 	inout[0] = splitExpandIndex(ce)
 	return ce, ceExpansionIndex
 }
 
-func contractCE(inout []int) (ce colElem, t ceType) {
+func contractCE(inout []int) (ce Elem, t ceType) {
 	ce = makeContractIndex(inout[0], inout[1], inout[2])
 	i, n, o := splitContractIndex(ce)
 	inout[0], inout[1], inout[2] = i, n, o
 	return ce, ceContractionIndex
 }
 
-func decompCE(inout []int) (ce colElem, t ceType) {
+func decompCE(inout []int) (ce Elem, t ceType) {
 	ce = makeDecompose(inout[0], inout[1])
 	t1, t2 := splitDecompose(ce)
 	inout[0], inout[1] = int(t1), int(t2)
@@ -102,9 +111,13 @@ const (
 )
 
 var ceTests = []ceTest{
-	{normalCE, []int{0, 0, 0}},
-	{normalCE, []int{0, 30, 3}},
-	{normalCE, []int{100, defaultSecondary, 3}},
+	{normalCE, []int{0, 0, 0, 0}},
+	{normalCE, []int{0, 30, 3, 0}},
+	{normalCE, []int{0, 30, 3, 0xFF}},
+	{normalCE, []int{100, defaultSecondary, defaultTertiary, 0}},
+	{normalCE, []int{100, defaultSecondary, defaultTertiary, 0xFF}},
+	{normalCE, []int{100, defaultSecondary, 3, 0}},
+	{normalCE, []int{0x123, defaultSecondary, 8, 0xFF}},
 
 	{contractCE, []int{0, 0, 0}},
 	{contractCE, []int{1, 1, 1}},
@@ -127,11 +140,11 @@ func TestColElem(t *testing.T) {
 		copy(inout, tt.arg)
 		ce, typ := tt.f(inout)
 		if ce.ctype() != typ {
-			t.Errorf("%d: type is %d; want %d", i, ce.ctype(), typ)
+			t.Errorf("%d: type is %d; want %d (ColElem: %X)", i, ce.ctype(), typ, ce)
 		}
 		for j, a := range tt.arg {
 			if inout[j] != a {
-				t.Errorf("%d: argument %d is %X; want %X", i, j, inout[j], a)
+				t.Errorf("%d: argument %d is %X; want %X (ColElem: %X)", i, j, inout[j], a, ce)
 			}
 		}
 	}
@@ -170,17 +183,92 @@ func TestImplicit(t *testing.T) {
 
 func TestUpdateTertiary(t *testing.T) {
 	tests := []struct {
-		in, out colElem
+		in, out Elem
 		t       uint8
 	}{
 		{0x4000FE20, 0x0000FE8A, 0x0A},
 		{0x4000FE21, 0x0000FEAA, 0x0A},
 		{0x0000FE8B, 0x0000FE83, 0x03},
-		{0x8000CC02, 0x8000CC1B, 0x1B},
+		{0x82FF0188, 0x9BFF0188, 0x1B},
+		{0xAFF0CC02, 0xAFF0CC1B, 0x1B},
 	}
 	for i, tt := range tests {
 		if out := tt.in.updateTertiary(tt.t); out != tt.out {
 			t.Errorf("%d: was %X; want %X", i, out, tt.out)
+		}
+	}
+}
+
+func TestDoNorm(t *testing.T) {
+	const div = -1 // The insertion point of the next block.
+	tests := []struct {
+		in, out []int
+	}{
+		{in: []int{4, div, 3},
+			out: []int{3, 4},
+		},
+		{in: []int{4, div, 3, 3, 3},
+			out: []int{3, 3, 3, 4},
+		},
+		{in: []int{0, 4, div, 3},
+			out: []int{0, 3, 4},
+		},
+		{in: []int{0, 0, 4, 5, div, 3, 3},
+			out: []int{0, 0, 3, 3, 4, 5},
+		},
+		{in: []int{0, 0, 1, 4, 5, div, 3, 3},
+			out: []int{0, 0, 1, 3, 3, 4, 5},
+		},
+		{in: []int{0, 0, 1, 4, 5, div, 4, 4},
+			out: []int{0, 0, 1, 4, 4, 4, 5},
+		},
+	}
+	for j, tt := range tests {
+		i := iter{}
+		var w, p, s int
+		for k, cc := range tt.in {
+			if cc == 0 {
+				s = 0
+			}
+			if cc == div {
+				w = 100
+				p = k
+				i.pStarter = s
+				continue
+			}
+			i.ce = append(i.ce, makeCE([]int{w, 20, 2, cc}))
+		}
+		i.prevCCC = i.ce[p-1].CCC()
+		i.doNorm(p, i.ce[p].CCC())
+		if len(i.ce) != len(tt.out) {
+			t.Errorf("%d: length was %d; want %d", j, len(i.ce), len(tt.out))
+		}
+		prevCCC := uint8(0)
+		for k, ce := range i.ce {
+			if int(ce.CCC()) != tt.out[k] {
+				t.Errorf("%d:%d: unexpected CCC. Was %d; want %d", j, k, ce.CCC(), tt.out[k])
+			}
+			if k > 0 && ce.CCC() == prevCCC && i.ce[k-1].Primary() > ce.Primary() {
+				t.Errorf("%d:%d: normalization crossed across CCC boundary.", j, k)
+			}
+		}
+	}
+	// test cutoff of large sequence of combining characters.
+	result := []uint8{8, 8, 8, 5, 5}
+	for o := -2; o <= 2; o++ {
+		i := iter{pStarter: 2, prevCCC: 8}
+		n := maxCombiningCharacters + 1 + o
+		for j := 1; j < n+i.pStarter; j++ {
+			i.ce = append(i.ce, makeCE([]int{100, 20, 2, 8}))
+		}
+		p := len(i.ce)
+		i.ce = append(i.ce, makeCE([]int{0, 20, 2, 5}))
+		i.doNorm(p, 5)
+		if i.prevCCC != result[o+2] {
+			t.Errorf("%d: i.prevCCC was %d; want %d", n, i.prevCCC, result[o+2])
+		}
+		if result[o+2] == 5 && i.pStarter != p {
+			t.Errorf("%d: i.pStarter was %d; want %d", n, i.pStarter, p)
 		}
 	}
 }

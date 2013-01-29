@@ -54,9 +54,10 @@ func TestAfterStress(t *testing.T) {
 	go func() {
 		for atomic.LoadUint32(&stop) == 0 {
 			runtime.GC()
-			// Need to yield, because otherwise
-			// the main goroutine will never set the stop flag.
-			runtime.Gosched()
+			// Yield so that the OS can wake up the timer thread,
+			// so that it can generate channel sends for the main goroutine,
+			// which will eventually set stop = 1 for us.
+			Sleep(Nanosecond)
 		}
 	}()
 	c := Tick(1)
@@ -245,4 +246,51 @@ func TestSleepZeroDeadlock(t *testing.T) {
 		<-tmp
 	}
 	<-c
+}
+
+func testReset(d Duration) error {
+	t0 := NewTimer(2 * d)
+	Sleep(d)
+	if t0.Reset(3*d) != true {
+		return errors.New("resetting unfired timer returned false")
+	}
+	Sleep(2 * d)
+	select {
+	case <-t0.C:
+		return errors.New("timer fired early")
+	default:
+	}
+	Sleep(2 * d)
+	select {
+	case <-t0.C:
+	default:
+		return errors.New("reset timer did not fire")
+	}
+
+	if t0.Reset(50*Millisecond) != false {
+		return errors.New("resetting expired timer returned true")
+	}
+	return nil
+}
+
+func TestReset(t *testing.T) {
+	// We try to run this test with increasingly larger multiples
+	// until one works so slow, loaded hardware isn't as flaky,
+	// but without slowing down fast machines unnecessarily.
+	const unit = 25 * Millisecond
+	tries := []Duration{
+		1 * unit,
+		3 * unit,
+		7 * unit,
+		15 * unit,
+	}
+	var err error
+	for _, d := range tries {
+		err = testReset(d)
+		if err == nil {
+			t.Logf("passed using duration %v", d)
+			return
+		}
+	}
+	t.Error(err)
 }

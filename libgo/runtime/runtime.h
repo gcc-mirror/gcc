@@ -119,6 +119,13 @@ enum
 {
 	PtrSize = sizeof(void*),
 };
+enum
+{
+	// Per-M stack segment cache size.
+	StackCacheSize = 32,
+	// Global <-> per-M stack segment cache transfer batch size.
+	StackCacheBatch = 16,
+};
 
 /*
  * structures
@@ -178,6 +185,8 @@ struct	G
 	int32	sig;
 	int32	writenbuf;
 	byte*	writebuf;
+	// DeferChunk	*dchunk;
+	// DeferChunk	*dchunknext;
 	uintptr	sigcode0;
 	uintptr	sigcode1;
 	// uintptr	sigpc;
@@ -344,14 +353,14 @@ struct CgoMal
  * external data
  */
 extern	uintptr runtime_zerobase;
-G*	runtime_allg;
-G*	runtime_lastg;
-M*	runtime_allm;
+extern	G*	runtime_allg;
+extern	G*	runtime_lastg;
+extern	M*	runtime_allm;
 extern	int32	runtime_gomaxprocs;
 extern	bool	runtime_singleproc;
 extern	uint32	runtime_panicking;
 extern	int32	runtime_gcwaiting;		// gc is waiting to run
-int32	runtime_ncpu;
+extern	int32	runtime_ncpu;
 
 /*
  * common functions and data

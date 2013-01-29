@@ -22,8 +22,7 @@ func perpetuumMobile() {
 
 func TestStopTheWorldDeadlock(t *testing.T) {
 	if testing.Short() {
-		t.Logf("skipping during short test")
-		return
+		t.Skip("skipping during short test")
 	}
 	maxprocs := runtime.GOMAXPROCS(3)
 	compl := make(chan bool, 2)
@@ -53,7 +52,7 @@ func stackGrowthRecursive(i int) {
 	}
 }
 
-func BenchmarkStackGrowth(b *testing.B) {
+func benchmarkStackGrowth(b *testing.B, rec int) {
 	const CallsPerSched = 1000
 	procs := runtime.GOMAXPROCS(-1)
 	N := int32(b.N / CallsPerSched)
@@ -63,7 +62,7 @@ func BenchmarkStackGrowth(b *testing.B) {
 			for atomic.AddInt32(&N, -1) >= 0 {
 				runtime.Gosched()
 				for g := 0; g < CallsPerSched; g++ {
-					stackGrowthRecursive(10)
+					stackGrowthRecursive(rec)
 				}
 			}
 			c <- true
@@ -72,6 +71,14 @@ func BenchmarkStackGrowth(b *testing.B) {
 	for p := 0; p < procs; p++ {
 		<-c
 	}
+}
+
+func BenchmarkStackGrowth(b *testing.B) {
+	benchmarkStackGrowth(b, 10)
+}
+
+func BenchmarkStackGrowthDeep(b *testing.B) {
+	benchmarkStackGrowth(b, 1024)
 }
 
 func BenchmarkSyscall(b *testing.B) {

@@ -75,8 +75,9 @@ import (
 //   Field int `json:",omitempty"`
 //
 // The "string" option signals that a field is stored as JSON inside a
-// JSON-encoded string.  This extra level of encoding is sometimes
-// used when communicating with JavaScript programs:
+// JSON-encoded string. It applies only to fields of string, floating point,
+// or integer types. This extra level of encoding is sometimes used when
+// communicating with JavaScript programs:
 //
 //    Int64String int64 `json:",string"`
 //
@@ -437,7 +438,7 @@ func isValidTag(s string) bool {
 	}
 	for _, c := range s {
 		switch {
-		case strings.ContainsRune("!#$%&()*+-./:<=>?@[]^_{|}~", c):
+		case strings.ContainsRune("!#$%&()*+-./:<=>?@[]^_{|}~ ", c):
 			// Backslash and quote chars are reserved, but
 			// otherwise any punctuation chars are allowed
 			// in a tag name.
@@ -617,13 +618,20 @@ func typeFields(t reflect.Type) []field {
 				index := make([]int, len(f.index)+1)
 				copy(index, f.index)
 				index[len(f.index)] = i
+
+				ft := sf.Type
+				if ft.Name() == "" && ft.Kind() == reflect.Ptr {
+					// Follow pointer.
+					ft = ft.Elem()
+				}
+
 				// Record found field and index sequence.
-				if name != "" || !sf.Anonymous {
+				if name != "" || !sf.Anonymous || ft.Kind() != reflect.Struct {
 					tagged := name != ""
 					if name == "" {
 						name = sf.Name
 					}
-					fields = append(fields, field{name, tagged, index, sf.Type,
+					fields = append(fields, field{name, tagged, index, ft,
 						opts.Contains("omitempty"), opts.Contains("string")})
 					if count[f.typ] > 1 {
 						// If there were multiple instances, add a second,
@@ -636,11 +644,6 @@ func typeFields(t reflect.Type) []field {
 				}
 
 				// Record new anonymous struct to explore in next round.
-				ft := sf.Type
-				if ft.Name() == "" {
-					// Must be pointer.
-					ft = ft.Elem()
-				}
 				nextCount[ft]++
 				if nextCount[ft] == 1 {
 					next = append(next, field{name: ft.Name(), index: index, typ: ft})

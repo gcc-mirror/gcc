@@ -446,7 +446,7 @@ void	runtime_markallocated(void *v, uintptr n, bool noptr);
 void	runtime_checkallocated(void *v, uintptr n);
 void	runtime_markfreed(void *v, uintptr n);
 void	runtime_checkfreed(void *v, uintptr n);
-int32	runtime_checking;
+extern	int32	runtime_checking;
 void	runtime_markspan(void *v, uintptr size, uintptr n, bool leftover);
 void	runtime_unmarkspan(void *v, uintptr size);
 bool	runtime_blockspecial(void*);
@@ -500,6 +500,7 @@ enum
 
 // defined in mgc0.go
 void	runtime_gc_m_ptr(Eface*);
+void	runtime_gc_itab_ptr(Eface*);
 
 void	runtime_memorydump(void);
 

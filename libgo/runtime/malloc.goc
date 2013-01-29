@@ -20,6 +20,8 @@ package runtime
 
 MHeap runtime_mheap;
 
+int32	runtime_checking;
+
 extern MStats mstats;	// defined in zruntime_def_$GOOS_$GOARCH.go
 
 extern volatile intgo runtime_MemProfileRate
@@ -718,14 +720,22 @@ runtime_new(const Type *typ)
 
 	if(raceenabled)
 		runtime_m()->racepc = runtime_getcallerpc(&typ);
-	flag = typ->__code&GO_NO_POINTERS ? FlagNoPointers : 0;
-	ret = runtime_mallocgc(typ->__size, flag, 1, 1);
 
-	if(UseSpanType && !flag) {
-		if(false) {
-			runtime_printf("new %S: %p\n", *typ->__reflection, ret);
+	if(typ->__size == 0) {
+		// All 0-length allocations use this pointer.
+		// The language does not require the allocations to
+		// have distinct values.
+		ret = (uint8*)&runtime_zerobase;
+	} else {
+		flag = typ->__code&GO_NO_POINTERS ? FlagNoPointers : 0;
+		ret = runtime_mallocgc(typ->__size, flag, 1, 1);
+
+		if(UseSpanType && !flag) {
+			if(false) {
+				runtime_printf("new %S: %p\n", *typ->__reflection, ret);
+			}
+			runtime_settype(ret, (uintptr)typ | TypeInfo_SingleObject);
 		}
-		runtime_settype(ret, (uintptr)typ | TypeInfo_SingleObject);
 	}
 
 	return ret;

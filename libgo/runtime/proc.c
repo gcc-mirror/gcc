@@ -167,6 +167,13 @@ runtime_m(void)
 
 int32	runtime_gcwaiting;
 
+G*	runtime_allg;
+G*	runtime_lastg;
+M*	runtime_allm;
+
+int8*	runtime_goos;
+int32	runtime_ncpu;
+
 // The static TLS size.  See runtime_newm.
 static int tlssize;
 

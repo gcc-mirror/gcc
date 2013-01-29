@@ -216,7 +216,6 @@ var cgoEnabled = map[string]bool{
 	"darwin/amd64":  true,
 	"freebsd/386":   true,
 	"freebsd/amd64": true,
-	"freebsd/arm":   true,
 	"linux/386":     true,
 	"linux/amd64":   true,
 	"linux/arm":     true,
@@ -322,7 +321,13 @@ func (p *Package) IsCommand() bool {
 // ImportDir is like Import but processes the Go package found in
 // the named directory.
 func (ctxt *Context) ImportDir(dir string, mode ImportMode) (*Package, error) {
-	return ctxt.Import(".", dir, mode)
+	p, err := ctxt.Import(".", dir, mode)
+	// TODO(rsc,adg): breaks godoc net/http. Not sure why.
+	// See CL 7232047 and issue 4696.
+	if false && err == nil && !ctxt.isDir(p.Dir) {
+		err = fmt.Errorf("%q is not a directory", p.Dir)
+	}
+	return p, err
 }
 
 // NoGoError is the error used by Import to describe a directory
