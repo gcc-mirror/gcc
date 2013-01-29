@@ -1,3 +1,12 @@
+2013-01-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE): Add:
+	_mulQQ,  _mulHQ,  _mulHA,  _mulSA,
+	_mulUQQ, _mulUHQ, _mulUHA, _mulUSA,
+	_divQQ,  _divHQ,  _divHA,  _divSA,
+	_divUQQ, _divUHQ, _divUHA, _divUSA.
+
 2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config.host(microblaze*-linux*): tmake_file: Remove 
