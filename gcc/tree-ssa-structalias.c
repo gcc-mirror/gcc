@@ -1916,10 +1916,10 @@ equiv_class_label_eq (const void *p1, const void *p2)
 }
 
 /* Lookup a equivalence class in TABLE by the bitmap of LABELS it
-   contains.  */
+   contains.  Sets *REF_LABELS to the bitmap LABELS is equivalent to.  */
 
 static unsigned int
-equiv_class_lookup (htab_t table, bitmap labels)
+equiv_class_lookup (htab_t table, bitmap labels, bitmap *ref_labels)
 {
   void **slot;
   struct equiv_class_label ecl;
@@ -1930,9 +1930,18 @@ equiv_class_lookup (htab_t table, bitmap labels)
   slot = htab_find_slot_with_hash (table, &ecl,
 				   ecl.hashcode, NO_INSERT);
   if (!slot)
-    return 0;
+    {
+      if (ref_labels)
+	*ref_labels = NULL;
+      return 0;
+    }
   else
-    return ((equiv_class_label_t) *slot)->equivalence_class;
+    {
+      equiv_class_label_t ec = (equiv_class_label_t) *slot;
+      if (ref_labels)
+	*ref_labels = ec->labels;
+      return ec->equivalence_class;
+    }
 }
 
 
@@ -2132,13 +2141,20 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 
   if (!bitmap_empty_p (graph->points_to[n]))
     {
+      bitmap ref_points_to;
       unsigned int label = equiv_class_lookup (pointer_equiv_class_table,
-					       graph->points_to[n]);
+					       graph->points_to[n],
+					       &ref_points_to);
       if (!label)
 	{
 	  label = pointer_equiv_class++;
 	  equiv_class_add (pointer_equiv_class_table,
 			   label, graph->points_to[n]);
+	}
+      else
+	{
+	  BITMAP_FREE (graph->points_to[n]);
+	  graph->points_to[n] = ref_points_to;
 	}
       graph->pointer_label[n] = label;
     }
@@ -2199,7 +2215,7 @@ perform_var_substitution (constraint_graph_t graph)
       /* Look up the location equivalence label if one exists, or make
 	 one otherwise.  */
       label = equiv_class_lookup (location_equiv_class_table,
-				  pointed_by);
+				  pointed_by, NULL);
       if (label == 0)
 	{
 	  label = location_equiv_class++;
