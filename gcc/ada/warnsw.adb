@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -292,6 +292,7 @@ package body Warnsw is
             Warn_On_Non_Local_Exception         := True;
             Warn_On_Object_Renames_Function     := True;
             Warn_On_Obsolescent_Feature         := True;
+            Warn_On_Overlap                     := True;
             Warn_On_Parameter_Order             := True;
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Redundant_Constructs        := True;

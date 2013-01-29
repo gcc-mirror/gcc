@@ -1,3 +1,29 @@
+2013-01-29  Javier Miranda  <miranda@adacore.com>
+
+	* errout.ads, errout.adb (Get_Ignore_Errors): New subprogram.
+	* opt.ads (Warn_On_Overlap): Update documentation.
+	* sem_aggr.adb (Resolve_Aggregate, Resolve_Extension_Aggregate):
+	Check function writable actuals.
+	* sem_ch3.adb (Build_Derived_Record_Type,
+	Record_Type_Declaration): Check function writable actuals.
+	* sem_ch4.adb (Analyze_Range): Check function writable actuals.
+	* sem_ch5.adb (Analyze_Assignment): Remove code of the initial
+	implementation of AI05-0144.
+	* sem_ch6.adb (Analyze_Function_Return,
+	(Analyze_Procedure_Call.Analyze_Call_And_Resolve): Remove code
+	of the initial implementation of AI05-0144.
+	* sem_res.adb (Resolve): Remove code of the initial implementation.
+	(Resolve_Actuals): Call Check_Function_Writable_Actuals and remove call
+	of the initial implementation.
+	(Resolve_Arithmetic_Op, Resolve_Logical_Op,
+	Resolve_Membership_Op): Check function writable actuals.
+	* sem_util.ad[sb] (Actuals_In_Call): Removed
+	(Check_Order_Dependence): Removed (Save_Actual): Removed
+	(Check_Function_Writable_Actuals): New subprogram.
+	* usage.adb (Usage): Update documentation.
+	* warnsw.adb (Set_Warning_Switch): Enable warn_on_overlap when
+	setting all warnings.
+
 2013-01-29  Robert Dewar  <dewar@adacore.com>
 
 	* a-calend-vms.adb: Minor comment fix.
