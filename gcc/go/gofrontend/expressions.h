@@ -983,6 +983,11 @@ class Temporary_reference_expression : public Expression
       statement_(statement), is_lvalue_(false)
   { }
 
+  // The temporary that this expression refers to.
+  Temporary_statement*
+  statement() const
+  { return this->statement_; }
+
   // Indicate that this reference appears on the left hand side of an
   // assignment statement.
   void

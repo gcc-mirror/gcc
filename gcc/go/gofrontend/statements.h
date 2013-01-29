@@ -490,6 +490,11 @@ class Temporary_statement : public Statement
   Type*
   type() const;
 
+  // Return the initializer if there is one.
+  Expression*
+  init() const
+  { return this->init_; }
+
   // Note that it is OK for this statement to set hidden fields.
   void
   set_hidden_fields_are_ok()
