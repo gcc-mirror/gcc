@@ -203,7 +203,7 @@ cortex_a9_store3_4, cortex_a9_store1_2,  cortex_a9_load3_4")
 ;; Pipeline   Instruction Classification.
 ;; FPS - fcpys, ffariths, ffarithd,r_2_f,f_2_r
 ;; FP_ADD   - fadds, faddd, fcmps (1)
-;; FPMUL   - fmul{s,d}, fmac{s,d}
+;; FPMUL   - fmul{s,d}, fmac{s,d}, ffma{s,d}
 ;; FPDIV - fdiv{s,d}
 (define_cpu_unit "ca9fps" "cortex_a9")
 (define_cpu_unit "ca9fp_add1, ca9fp_add2, ca9fp_add3, ca9fp_add4" "cortex_a9")
@@ -253,12 +253,12 @@ cortex_a9_store3_4, cortex_a9_store1_2,  cortex_a9_load3_4")
 
 (define_insn_reservation "cortex_a9_fmacs" 8
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "fmacs"))
+       (eq_attr "type" "fmacs,ffmas"))
   "ca9fmuls, ca9fp_add")
 
 (define_insn_reservation "cortex_a9_fmacd" 9
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "fmacd"))
+       (eq_attr "type" "fmacd,ffmad"))
   "ca9fmuld, ca9fp_add")
 
 ;; Division pipeline description.
