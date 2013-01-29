@@ -408,6 +408,15 @@ package body Sem_Ch6 is
       --  that the expression can be inlined whenever possible.
 
       else
+         --  An expression function that is not a completion is not a
+         --  subprogram declaration, and thus cannot appear in a protected
+         --  definition.
+
+         if Nkind (Parent (N)) = N_Protected_Definition then
+            Error_Msg_N
+              ("an expression function is not a legal protected operation", N);
+         end if;
+
          New_Decl :=
            Make_Subprogram_Declaration (Loc, Specification => Spec);
 

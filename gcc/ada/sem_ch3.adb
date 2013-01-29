@@ -4282,13 +4282,26 @@ package body Sem_Ch3 is
                   Set_Stored_Constraint_From_Discriminant_Constraint (Id);
 
                   --  This would seem semantically correct, but apparently
-                  --  confuses the back-end. To be explained and checked with
-                  --  current version ???
+                  --  generates spurious errors about missing components ???
 
                   --  Set_Has_Discriminants (Id);
                end if;
 
                Prepare_Private_Subtype_Completion (Id, N);
+
+               --  If this is the subtype of a constrained private type with
+               --  discriminants that has got a full view and we also have
+               --  built a completion just above, show that the completion
+               --  is a clone of the full view to the back-end.
+
+               if Has_Discriminants (T)
+                  and then not Has_Unknown_Discriminants (T)
+                  and then not Is_Empty_Elmt_List (Discriminant_Constraint (T))
+                  and then Present (Full_View (T))
+                  and then Present (Full_View (Id))
+               then
+                  Set_Cloned_Subtype (Full_View (Id), Full_View (T));
+               end if;
 
             when Access_Kind =>
                Set_Ekind             (Id, E_Access_Subtype);
