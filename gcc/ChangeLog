@@ -1,3 +1,9 @@
+2013-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55270
+	* tree-ssa-dom.c (eliminate_degenerate_phis): If we changed
+	the CFG, schedule loops for fixup.
+
 2013-01-29  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_regno_mode_code_ok_for_base_p): Allow
