@@ -80,12 +80,15 @@
             (eq_attr "neon_type" "none")))
   "(cortex_a7_ex2|cortex_a7_ex1)+cortex_a7_branch")
 
-;; A call reserves all issue slots. The result is available the next cycle.
+;; Call cannot dual-issue as an older instruction. It can dual-issue
+;; as a younger instruction, or single-issue.  Call cannot dual-issue
+;; with another branch instruction.  The result is available the next
+;; cycle.
 (define_insn_reservation "cortex_a7_call" 1
   (and (eq_attr "tune" "cortexa7")
        (and (eq_attr "type" "call")
             (eq_attr "neon_type" "none")))
-  "cortex_a7_all")
+  "(cortex_a7_ex2|cortex_a7_both)+cortex_a7_branch")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ALU instructions.

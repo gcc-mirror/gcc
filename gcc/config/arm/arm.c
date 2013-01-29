@@ -8758,6 +8758,7 @@ cortexa7_younger (FILE *file, int verbose, rtx insn)
     case TYPE_SIMPLE_ALU_IMM:
     case TYPE_SIMPLE_ALU_SHIFT:
     case TYPE_BRANCH:
+    case TYPE_CALL:
       return true;
     default:
       return false;
