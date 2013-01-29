@@ -33,11 +33,12 @@ with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Nmsc; use Prj.Nmsc;
-with Prj.Util;
 with Prj.Part;
+with Prj.Util;
 with Snames;
 
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Containers.Vectors;
+with Ada.Strings.Fixed;      use Ada.Strings.Fixed;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
 with GNAT.HTable;
@@ -2062,19 +2063,30 @@ package body Prj.Proc is
          if Is_Attribute and then Name = Snames.Name_Project_Path then
             if In_Tree.Is_Root_Tree then
                declare
-                  Val : String_List_Id := New_Value.Values;
+                  package Name_Ids is
+                    new Ada.Containers.Vectors (Positive, Name_Id);
+                  Val  : String_List_Id := New_Value.Values;
+                  List : Name_Ids.Vector;
                begin
+                  --  Get all values
+
                   while Val /= Nil_String loop
+                     List.Prepend
+                       (Shared.String_Elements.Table (Val).Value);
+                     Val := Shared.String_Elements.Table (Val).Next;
+                  end loop;
+
+                  --  Prepend them in the oder found in the attribute
+
+                  for K in Positive range 1 .. Positive (List.Length) loop
                      Prj.Env.Add_Directories
                        (Child_Env.Project_Path,
                         Normalize_Pathname
-                          (Name =>
-                             Get_Name_String
-                             (Shared.String_Elements.Table (Val).Value),
-                           Directory =>
-                             Get_Name_String
-                             (Project.Directory.Display_Name)));
-                     Val := Shared.String_Elements.Table (Val).Next;
+                          (Name      => Get_Name_String
+                             (List.Element (K)),
+                           Directory => Get_Name_String
+                             (Project.Directory.Display_Name)),
+                        Prepend => True);
                   end loop;
                end;
 

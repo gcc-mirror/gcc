@@ -1,3 +1,8 @@
+2013-01-29  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb (Process_Expression_Variable_Decl): Prepend
+	Project_Path to current environment.
+
 2013-01-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sprint.adb (Sprint_Node_Actual): Output freeze nodes for
