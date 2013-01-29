@@ -1,5 +1,13 @@
 2013-01-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56113
+	* tree-ssa-structalias.c (equiv_class_lookup): Also return
+	the bitmap leader.
+	(label_visit): Free duplicate bitmaps and record the leader instead.
+	(perform_var_substitution): Adjust.
+
+2013-01-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55270
 	* tree-ssa-dom.c (eliminate_degenerate_phis): If we changed
 	the CFG, schedule loops for fixup.
