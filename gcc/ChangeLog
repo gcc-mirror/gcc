@@ -1,5 +1,10 @@
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+        * config/arm/cortex-a7.md (cortex_a7_neon, cortex_a7_all): Remove.
+        (cortex_a7_idiv): Use cortex_a7_both instead of cortex_a7_all.
+
+2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
+
         * config/arm/arm.c (cortexa7_younger): Return true for TYPE_CALL.
         * config/arm/cortex-a7.md (cortex_a7_call): Update required units.
 
