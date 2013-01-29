@@ -12677,7 +12677,20 @@ package body Sem_Ch12 is
          if Is_Type (E)
            and then Nkind (Parent (E)) = N_Subtype_Declaration
          then
-            Set_Is_Generic_Actual_Type (E, False);
+            --  If the actual for E is itself a generic actual type from
+            --  an enclosing instance, E is still a generic actual type
+            --  outside of the current instance. This matter when resolving
+            --  an overloaded call that may be ambiguous in the enclosing
+            --  instance, when two of its actuals coincide.
+
+            if Is_Entity_Name (Subtype_Indication (Parent (E)))
+              and then Is_Generic_Actual_Type
+                         (Entity (Subtype_Indication (Parent (E))))
+            then
+               null;
+            else
+               Set_Is_Generic_Actual_Type (E, False);
+            end if;
 
             --  An unusual case of aliasing: the actual may also be directly
             --  visible in the generic, and be private there, while it is fully

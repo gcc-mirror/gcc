@@ -4375,8 +4375,15 @@ package body Sem_Ch3 is
 
       --  Some common processing on all types
 
-      Set_Size_Info      (Id,                 T);
+      Set_Size_Info      (Id, T);
       Set_First_Rep_Item (Id, First_Rep_Item (T));
+
+      --  If the parent type is a generic actual, so is the subtype. This may
+      --  happen in a nested instance. Why Comes_From_Source test???
+
+      if not Comes_From_Source (N) then
+         Set_Is_Generic_Actual_Type (Id, Is_Generic_Actual_Type (T));
+      end if;
 
       T := Etype (Id);
 

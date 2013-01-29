@@ -750,6 +750,12 @@ package body Sem_Type is
       --  removes spurious errors from nested instantiations that involve,
       --  among other things, types derived from private types.
 
+      function Real_Actual (T : Entity_Id) return Entity_Id;
+      --  If an actual in an inner instance is the formal of an enclosing
+      --  generic, the actual in the enclosing instance is the one that can
+      --  create an accidental ambiguity, and the check on compatibily of
+      --  generic actual types must use this enclosing actual.
+
       ----------------------
       -- Full_View_Covers --
       ----------------------
@@ -764,6 +770,33 @@ package body Sem_Type is
                  or else Base_Type (Typ1) = Typ2
                  or else Base_Type (Typ2) = Typ1);
       end Full_View_Covers;
+
+      -----------------
+      -- Real_Actual --
+      -----------------
+
+      function Real_Actual (T : Entity_Id) return Entity_Id is
+         Par : constant Node_Id := Parent (T);
+         RA  : Entity_Id;
+
+      begin
+         --  Retrieve parent subtype from subtype declaration for actual.
+
+         if Nkind (Par) = N_Subtype_Declaration
+           and then not Comes_From_Source (Par)
+           and then Is_Entity_Name (Subtype_Indication (Par))
+         then
+            RA := Entity (Subtype_Indication (Par));
+
+            if Is_Generic_Actual_Type (RA) then
+               return RA;
+            end if;
+         end if;
+
+         --  Otherwise actual is not the actual of an enclosing instance.
+
+         return T;
+      end Real_Actual;
 
    --  Start of processing for Covers
 
@@ -822,21 +855,34 @@ package body Sem_Type is
       --  Generic actuals require special treatment to avoid spurious ambi-
       --  guities in an instance, when two formal types are instantiated with
       --  the same actual, so that different subprograms end up with the same
-      --  signature in the instance.
+      --  signature in the instance. If a generic actual is the actual of an
+      --  enclosing instance, it is that actual that we must compare: generic
+      --  actuals are only incompatible if they appear in the same instance.
 
       if BT1 = BT2
         or else BT1 = T2
         or else BT2 = T1
       then
-         if not Is_Generic_Actual_Type (T1) then
+         if not Is_Generic_Actual_Type (T1)
+              or else
+            not Is_Generic_Actual_Type (T2)
+         then
             return True;
+
+         --  Both T1 and T2 are generic actual types
+
          else
-            return (not Is_Generic_Actual_Type (T2)
-                     or else Is_Itype (T1)
-                     or else Is_Itype (T2)
-                     or else Is_Constr_Subt_For_U_Nominal (T1)
-                     or else Is_Constr_Subt_For_U_Nominal (T2)
-                     or else Scope (T1) /= Scope (T2));
+            declare
+               RT1 : constant Entity_Id := Real_Actual (T1);
+               RT2 : constant Entity_Id := Real_Actual (T2);
+            begin
+               return RT1 = RT2
+                  or else Is_Itype (T1)
+                  or else Is_Itype (T2)
+                  or else Is_Constr_Subt_For_U_Nominal (T1)
+                  or else Is_Constr_Subt_For_U_Nominal (T2)
+                  or else Scope (RT1) /= Scope (RT2);
+            end;
          end if;
 
       --  Literals are compatible with types in a given "class"
@@ -1267,7 +1313,8 @@ package body Sem_Type is
       --  Determine whether a subprogram is an actual in an enclosing instance.
       --  An overloading between such a subprogram and one declared outside the
       --  instance is resolved in favor of the first, because it resolved in
-      --  the generic.
+      --  the generic. Within the instance the eactual is represented by a
+      --  constructed subprogram renaming.
 
       function Matches (Actual, Formal : Node_Id) return Boolean;
       --  Look for exact type match in an instance, to remove spurious
@@ -1349,6 +1396,14 @@ package body Sem_Type is
       function Is_Actual_Subprogram (S : Entity_Id) return Boolean is
       begin
          return In_Open_Scopes (Scope (S))
+           and then
+             Nkind (Unit_Declaration_Node (S)) =
+               N_Subprogram_Renaming_Declaration
+
+           --  Why the Comes_From_Source test here???
+
+           and then not Comes_From_Source (Unit_Declaration_Node (S))
+
            and then
              (Is_Generic_Instance (Scope (S))
                or else Is_Wrapper_Package (Scope (S)));

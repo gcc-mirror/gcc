@@ -2538,6 +2538,16 @@ package body Sem_Util is
       if not Is_Generic_Actual_Type (T) then
          return Any_Type;
 
+      --  If the actual is the actual of an enclosing instance, resolution
+      --  was correct in the generic.
+
+      elsif Nkind (Parent (T)) = N_Subtype_Declaration
+        and then Is_Entity_Name (Subtype_Indication (Parent (T)))
+        and then
+          Is_Generic_Actual_Type (Entity (Subtype_Indication (Parent (T))))
+      then
+         return Any_Type;
+
       else
          Inst := Scope (T);
 
