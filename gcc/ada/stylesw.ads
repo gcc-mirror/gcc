@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,7 +149,7 @@ package Stylesw is
    --  is not allowed.
 
    Style_Check_Indentation : Column_Number range 0 .. 9 := 0;
-   --  This can be set non-zero by using the -gnatyn (n a digit) switch. If
+   --  This can be set non-zero by using the -gnaty? (? a digit) switch. If
    --  it is non-zero it activates indentation checking with the indicated
    --  indentation value. A value of zero turns off checking. The requirement
    --  is that any new statement, line comment, declaration or keyword such
@@ -217,8 +217,9 @@ package Stylesw is
 
    Style_Check_Standard : Boolean := False;
    --  This can be set True by using the -gnatyn switch. If it is True, then
-   --  any references to names in Standard have to be in mixed case mode (e.g.
-   --  Integer, Boolean).
+   --  any references to names in Standard have to be cased in a manner that
+   --  is consistent with the Ada RM (usually Mixed case, as in Long_Integer)
+   --  but there are some exceptions (e.g. NUL, ASCII).
 
    Style_Check_Tokens : Boolean := False;
    --  This can be set True by using the -gnatyt switch. If it is True, then

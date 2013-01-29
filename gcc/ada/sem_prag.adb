@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6646,7 +6646,22 @@ package body Sem_Prag is
          -- Abstract_State --
          --------------------
 
-         --  ??? no formal grammar available yet
+         --  pragma Abstract_State (ABSTRACT_STATE_LIST)
+
+         --  ABSTRACT_STATE_LIST        ::=
+         --    null
+         --    | STATE_NAME_WITH_PROPERTIES {, STATE_NAME_WITH_PROPERTIES}
+
+         --  STATE_NAME_WITH_PROPERTIES ::=
+         --    STATE_NAME
+         --    | (STATE_NAME with PROPERTY_LIST)
+
+         --  PROPERTY_LIST              ::= PROPERTY {, PROPERTY}
+         --  PROPERTY                   ::= SIMPLE_PROPERTY
+         --                                 | NAME_VALUE_PROPERTY
+         --  SIMPLE_PROPERTY            ::= IDENTIFIER
+         --  NAME_VALUE_PROPERTY        ::= IDENTIFIER => EXPRESSION
+         --  STATE_NAME                 ::= DEFINING_IDENTIFIER
 
          when Pragma_Abstract_State => Abstract_State : declare
             Pack_Id : Entity_Id;
@@ -9954,7 +9969,16 @@ package body Sem_Prag is
          -- Global --
          ------------
 
-         --  ??? no formal grammar pragma available yet
+         --  pragma Global (GLOBAL_SPECIFICATION)
+
+         --  GLOBAL_SPECIFICATION ::= MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
+         --                           | GLOBAL_LIST
+         --                           | null
+         --  MODED_GLOBAL_LIST    ::= MODE_SELECTOR => GLOBAL_LIST
+         --  MODE_SELECTOR        ::= Input | Output | In_Out | Contract_In
+         --  GLOBAL_LIST          ::= GLOBAL_ITEM
+         --                           | (GLOBAL_ITEM {, GLOBAL_ITEM})
+         --  GLOBAL_ITEM          ::= NAME
 
          when Pragma_Global => Global : declare
             Subp_Id : Entity_Id;
@@ -10054,14 +10078,7 @@ package body Sem_Prag is
                      return;
                   end if;
 
-                  --  Ensure that the formal parameters are visible when
-                  --  processing an item. This falls out of the general rule
-                  --  of aspects pertaining to subprogram declarations.
-
-                  Push_Scope (Subp_Id);
-                  Install_Formals (Subp_Id);
                   Analyze (Item);
-                  Pop_Scope;
 
                   if Is_Entity_Name (Item) then
                      Id := Entity (Item);
@@ -10302,7 +10319,16 @@ package body Sem_Prag is
             --  error messages.
 
             else
+               --  Ensure that the formal parameters are visible when
+               --  processing an item. This falls out of the general rule of
+               --  aspects pertaining to subprogram declarations.
+
+               Push_Scope (Subp_Id);
+               Install_Formals (Subp_Id);
+
                Analyze_Global_List (List);
+
+               Pop_Scope;
             end if;
          end Global;
 

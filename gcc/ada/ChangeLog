@@ -1,3 +1,35 @@
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-calend-vms.adb: Minor comment fix.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-utl.adb, gnatlink.adb: Avoid reference to ASCII.Back_Slash
+	because of casing issues.
+	* sem_util.ads: Minor comment fix.
+	* style.adb (Check_Identifier): Set proper casing for entities
+	in ASCII.
+	* styleg.adb: Minor comment improvement.
+	* stylesw.ads (Style_Check_Standard): Fix bad comments.
+
+2013-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb: Add the grammar for pragmas Abstract_State and Global.
+	(Analyze_Pragma): Push the scope of the related subprogram and install
+	its formals once before starting the analysis of the [moded] global
+	list.
+
+2013-01-29  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb (Process_Expression_Variable_Decl): Always handle
+	relative paths in Project_Path as relative to the aggregate
+	project location. Note that this was what was documented.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: For "gnat stub -P ...", do not check the naming
+	scheme for Ada, when Ada is not a language for the project.
+
 2013-01-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Subtype_Declaration): Inherit

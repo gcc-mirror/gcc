@@ -49,7 +49,7 @@ package body Ada.Calendar is
    --  on various targets, a system independent model is incorporated into
    --  Ada.Calendar. The idea behind the design is to encapsulate all target
    --  dependent machinery in a single package, thus providing a uniform
-   --  pragma Import to all existing and any potential children.
+   --  interface to all existing and potential children.
 
    --     package Ada.Calendar
    --        procedure Split (5 parameters) -------+

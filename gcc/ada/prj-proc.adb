@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2067,8 +2067,13 @@ package body Prj.Proc is
                   while Val /= Nil_String loop
                      Prj.Env.Add_Directories
                        (Child_Env.Project_Path,
-                        Get_Name_String
-                          (Shared.String_Elements.Table (Val).Value));
+                        Normalize_Pathname
+                          (Name =>
+                             Get_Name_String
+                             (Shared.String_Elements.Table (Val).Value),
+                           Directory =>
+                             Get_Name_String
+                             (Project.Directory.Display_Name)));
                      Val := Shared.String_Elements.Table (Val).Next;
                   end loop;
                end;
