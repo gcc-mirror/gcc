@@ -1,3 +1,14 @@
+2013-01-16  Alexandre Oliva <aoliva@redhat.com>
+
+	* inclhack.def (feraiseexcept_nosse_invalid): New.
+	(feraiseexcept_nosse_divbyzero): Likewise.
+	* fixincl.x: Rebuilt.
+	* tests/base/bits/fenv.h: New.
+
+2013-01-14  Richard Biener  <rguenther@suse.de>
+
+	* fixlib.h (verbose_level, fixinc_mode): Mark extern.
+
 2012-10-29  Bruce Korb  <bkorb@gnu.org>
 
 	* README: testing wrap and replacement fixes is pointless.

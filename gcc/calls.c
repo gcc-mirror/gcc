@@ -1,7 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1989-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3136,7 +3134,9 @@ expand_call (tree exp, rtx target, int ignore)
 	  int arg_nr = return_flags & ERF_RETURN_ARG_MASK;
 	  if (PUSH_ARGS_REVERSED)
 	    arg_nr = num_actuals - arg_nr - 1;
-	  if (args[arg_nr].reg
+	  if (arg_nr >= 0
+	      && arg_nr < num_actuals
+	      && args[arg_nr].reg
 	      && valreg
 	      && REG_P (valreg)
 	      && GET_MODE (args[arg_nr].reg) == GET_MODE (valreg))

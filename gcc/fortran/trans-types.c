@@ -1,7 +1,5 @@
 /* Backend support for Fortran 95 basic types and derived types.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -124,7 +122,7 @@ int gfc_atomic_logical_kind;
 
 /* The kind size used for record offsets. If the target system supports
    kind=8, this will be set to 8, otherwise it is set to 4.  */
-int gfc_intio_kind; 
+int gfc_intio_kind;
 
 /* The integer kind used to store character lengths.  */
 int gfc_charlen_int_kind;
@@ -138,7 +136,7 @@ gfc_try
 gfc_check_any_c_kind (gfc_typespec *ts)
 {
   int i;
-  
+
   for (i = 0; i < ISOCBINDING_NUMBER; i++)
     {
       /* Check for any C interoperable kind for the given type/kind in ts.
@@ -400,7 +398,7 @@ gfc_init_kinds (void)
       i_index += 1;
     }
 
-  /* Set the kind used to match GFC_INT_IO in libgfortran.  This is 
+  /* Set the kind used to match GFC_INT_IO in libgfortran.  This is
      used for large file access.  */
 
   if (saw_i8)
@@ -408,8 +406,8 @@ gfc_init_kinds (void)
   else
     gfc_intio_kind = 4;
 
-  /* If we do not at least have kind = 4, everything is pointless.  */  
-  gcc_assert(saw_i4);  
+  /* If we do not at least have kind = 4, everything is pointless.  */
+  gcc_assert(saw_i4);
 
   /* Set the maximum integer kind.  Used with at least BOZ constants.  */
   gfc_max_integer_kind = gfc_integer_kinds[i_index - 1].kind;
@@ -550,7 +548,7 @@ gfc_init_kinds (void)
   else
     gfc_default_real_kind = gfc_real_kinds[0].kind;
 
-  /* Choose the default double kind.  If -fdefault-real and -fdefault-double 
+  /* Choose the default double kind.  If -fdefault-real and -fdefault-double
      are specified, we use kind=8, if it's available.  If -fdefault-real is
      specified without -fdefault-double, we use kind=16, if it's available.
      Otherwise we do not change anything.  */
@@ -1624,10 +1622,10 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	  type = build_pointer_type (type);
 
 	  if (restricted)
-	    type = build_qualified_type (type, TYPE_QUAL_RESTRICT);	
+	    type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
 
 	  GFC_ARRAY_TYPE_P (type) = 1;
-	  TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type)); 
+	  TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type));
 	}
 
       return type;
@@ -2286,7 +2284,7 @@ gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
      a derived type, we need a copy of its component declarations.
      This is done by recursing into gfc_get_derived_type and
      ensures that the component's component declarations have
-     been built.  If it is a character, we need the character 
+     been built.  If it is a character, we need the character
      length, as well.  */
   for (; to_cm; to_cm = to_cm->next, from_cm = from_cm->next)
     {
@@ -2367,7 +2365,7 @@ gfc_get_derived_type (gfc_symbol * derived)
          BT_INTEGER that needs to fit a void * for the purpose of the
          iso_c_binding derived types.  */
       derived->ts.f90_type = BT_VOID;
-      
+
       return derived->backend_decl;
     }
 
@@ -2531,6 +2529,15 @@ gfc_get_derived_type (gfc_symbol * derived)
 	    && c->ts.u.derived && c->ts.u.derived->attr.vtype)
 	  field_type = build_pointer_type_for_mode (TREE_TYPE (field_type),
 						    ptr_mode, true);
+
+      /* Ensure that the CLASS language specific flag is set.  */
+      if (c->ts.type == BT_CLASS)
+	{
+	  if (POINTER_TYPE_P (field_type))
+	    GFC_CLASS_TYPE_P (TREE_TYPE (field_type)) = 1;
+	  else
+	    GFC_CLASS_TYPE_P (field_type) = 1;
+	}
 
       field = gfc_add_field_to_struct (typenode,
 				       get_identifier (c->name),
@@ -2832,7 +2839,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	   && sym->ts.kind == gfc_default_real_kind
 	   && !sym->attr.always_explicit)
     {
-      /* Special case: f2c calling conventions require that (scalar) 
+      /* Special case: f2c calling conventions require that (scalar)
 	 default REAL functions return the C type double instead.  f2c
 	 compatibility is only an issue with functions that don't
 	 require an explicit interface, as only these could be

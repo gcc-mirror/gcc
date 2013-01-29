@@ -1786,13 +1786,21 @@ package VMS_Data is
                                              "-gnati1";
    --  NODOC (see /IDENTIFIER_CHARACTER_SET)
 
-   S_GCC_Ignore  : aliased constant S := "/IGNORE_REP_CLAUSES "            &
+   S_GCC_IgnoreR : aliased constant S := "/IGNORE_REP_CLAUSES "            &
                                              "-gnatI";
    --        /IGNORE_REP_CLAUSES
    --
    --   Causes all representation clauses to be ignored and treated as
    --   comments. Useful when compiling foreign code (for example when ASIS
    --   is used to analyze such code).
+
+   S_GCC_IgnoreS : aliased constant S := "/IGNORE_STYLE_CHECKS_PRAGMAS "   &
+                                             "-gnateY";
+   --        /IGNORE_STYLE_CHECKS_PRAGMAS
+   --
+   --   Causes all Style_Checks pragmas to be checked for legality, but
+   --   otherwise ignored. Allows style checks to be fully controlled by
+   --   command line qualifiers.
 
    S_GCC_Immed   : aliased constant S := "/IMMEDIATE_ERRORS "              &
                                              "-gnatdO";
@@ -3660,7 +3668,8 @@ package VMS_Data is
                      S_GCC_Help    'Access,
                      S_GCC_Ident   'Access,
                      S_GCC_IdentX  'Access,
-                     S_GCC_Ignore  'Access,
+                     S_GCC_IgnoreR 'Access,
+                     S_GCC_IgnoreS 'Access,
                      S_GCC_Immed   'Access,
                      S_GCC_Inline  'Access,
                      S_GCC_InlineX 'Access,

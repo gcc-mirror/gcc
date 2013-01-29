@@ -25,40 +25,43 @@ void ReplaceOperatorsNewAndDelete() { }
 
 using namespace __asan;  // NOLINT
 
-// On Android new() goes through malloc interceptors.
-#if !ASAN_ANDROID
+// On Mac and Android new() goes through malloc interceptors.
+// See also https://code.google.com/p/address-sanitizer/issues/detail?id=131.
+#if !ASAN_ANDROID && !ASAN_MAC
 
 // Fake std::nothrow_t to avoid including <new>.
 namespace std {
 struct nothrow_t {};
 }  // namespace std
 
-#define OPERATOR_NEW_BODY \
-  GET_STACK_TRACE_HERE_FOR_MALLOC;\
-  return asan_memalign(0, size, &stack);
+#define OPERATOR_NEW_BODY(type) \
+  GET_STACK_TRACE_MALLOC;\
+  return asan_memalign(0, size, &stack, type);
 
 INTERCEPTOR_ATTRIBUTE
-void *operator new(size_t size) { OPERATOR_NEW_BODY; }
+void *operator new(size_t size) { OPERATOR_NEW_BODY(FROM_NEW); }
 INTERCEPTOR_ATTRIBUTE
-void *operator new[](size_t size) { OPERATOR_NEW_BODY; }
+void *operator new[](size_t size) { OPERATOR_NEW_BODY(FROM_NEW_BR); }
 INTERCEPTOR_ATTRIBUTE
-void *operator new(size_t size, std::nothrow_t const&) { OPERATOR_NEW_BODY; }
+void *operator new(size_t size, std::nothrow_t const&)
+{ OPERATOR_NEW_BODY(FROM_NEW); }
 INTERCEPTOR_ATTRIBUTE
-void *operator new[](size_t size, std::nothrow_t const&) { OPERATOR_NEW_BODY; }
+void *operator new[](size_t size, std::nothrow_t const&)
+{ OPERATOR_NEW_BODY(FROM_NEW_BR); }
 
-#define OPERATOR_DELETE_BODY \
-  GET_STACK_TRACE_HERE_FOR_FREE(ptr);\
-  asan_free(ptr, &stack);
+#define OPERATOR_DELETE_BODY(type) \
+  GET_STACK_TRACE_FREE;\
+  asan_free(ptr, &stack, type);
 
 INTERCEPTOR_ATTRIBUTE
-void operator delete(void *ptr) { OPERATOR_DELETE_BODY; }
+void operator delete(void *ptr) { OPERATOR_DELETE_BODY(FROM_NEW); }
 INTERCEPTOR_ATTRIBUTE
-void operator delete[](void *ptr) { OPERATOR_DELETE_BODY; }
+void operator delete[](void *ptr) { OPERATOR_DELETE_BODY(FROM_NEW_BR); }
 INTERCEPTOR_ATTRIBUTE
 void operator delete(void *ptr, std::nothrow_t const&)
-{ OPERATOR_DELETE_BODY; }
+{ OPERATOR_DELETE_BODY(FROM_NEW); }
 INTERCEPTOR_ATTRIBUTE
 void operator delete[](void *ptr, std::nothrow_t const&)
-{ OPERATOR_DELETE_BODY; }
+{ OPERATOR_DELETE_BODY(FROM_NEW_BR); }
 
 #endif

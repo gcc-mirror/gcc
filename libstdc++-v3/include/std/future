@@ -1,6 +1,6 @@
 // <future> -*- C++ -*-
 
-// Copyright (C) 2009-2012 Free Software Foundation, Inc.
+// Copyright (C) 2009-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -447,7 +447,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __setter(promise<void>* __prom);
 
       template<typename _Tp>
-        static bool
+        static void
         _S_check(const shared_ptr<_Tp>& __p)
         {
           if (!static_cast<bool>(__p))
@@ -583,7 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     protected:
       /// Wait for the state to be ready and rethrow any stored exception
       __result_type
-      _M_get_result()
+      _M_get_result() const
       {
         _State_base::_S_check(_M_state);
         _Result_base& __res = _M_state->wait();
@@ -794,12 +794,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Retrieving the value
       const _Res&
-      get()
-      {
-	typename _Base_type::__result_type __r = this->_M_get_result();
-	_Res& __rs(__r._M_value());
-	return __rs;
-      }
+      get() const { return this->_M_get_result()._M_value(); }
     };
 
   /// Partial specialization for shared_future<R&>
@@ -838,7 +833,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Retrieving the value
       _Res&
-      get() { return this->_M_get_result()._M_get(); }
+      get() const { return this->_M_get_result()._M_get(); }
     };
 
   /// Explicit specialization for shared_future<void>
@@ -877,7 +872,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Retrieving the value
       void
-      get() { this->_M_get_result(); }
+      get() const { this->_M_get_result(); }
     };
 
   // Now we can define the protected __basic_future constructors.

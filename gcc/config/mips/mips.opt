@@ -1,7 +1,6 @@
 ; Options for the MIPS port of the compiler
 ;
-; Copyright (C) 2005, 2007, 2008, 2010, 2011, 2012
-; Free Software Foundation, Inc.
+; Copyright (C) 2005-2013 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -55,7 +54,7 @@ mabicalls
 Target Report Mask(ABICALLS)
 Generate code that can be used in SVR4-style dynamic objects
 
-mad
+mmad
 Target Report Var(TARGET_MAD)
 Use PMC-style 'mad' instructions
 

@@ -1,8 +1,6 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -4493,7 +4491,7 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
   module_locus locus;
   symbol_attribute attr;
 
-  if (st_sym->ns->proc_name && st_sym->name == st_sym->ns->proc_name->name)
+  if (st_sym->name == gfc_current_ns->proc_name->name)
     {
       gfc_error ("'%s' of module '%s', imported at %C, is also the name of the "
 		 "current program unit", st_sym->name, module_name);
@@ -4663,8 +4661,14 @@ read_module (void)
 	  if (p == NULL)
 	    {
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
-	      if (st != NULL)
-		info->u.rsym.symtree = st;
+	      if (st != NULL
+		  && strcmp (st->n.sym->name, info->u.rsym.true_name) == 0
+		  && st->n.sym->module != NULL
+		  && strcmp (st->n.sym->module, info->u.rsym.module) == 0)
+		{
+		  info->u.rsym.symtree = st;
+		  info->u.rsym.sym = st->n.sym;
+		}
 	      continue;
 	    }
 
@@ -4685,7 +4689,8 @@ read_module (void)
 	      /* Check for ambiguous symbols.  */
 	      if (check_for_ambiguous (st->n.sym, info))
 		st->ambiguous = 1;
-	      info->u.rsym.symtree = st;
+	      else
+		info->u.rsym.symtree = st;
 	    }
 	  else
 	    {

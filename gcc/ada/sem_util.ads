@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,6 +178,17 @@ package Sem_Util is
    --  not necessarily mean that CE could be raised, but a response of True
    --  means that for sure CE cannot be raised.
 
+   procedure Check_Function_Writable_Actuals (N : Node_Id);
+   --  (Ada 2012): If the construct N has two or more direct constituents that
+   --  are names or expressions whose evaluation may occur in an arbitrary
+   --  order, at least one of which contains a function call with an in out or
+   --  out parameter, then the construct is legal only if: for each name that
+   --  is passed as a parameter of mode in out or out to some inner function
+   --  call C2 (not including the construct N itself), there is no other name
+   --  anywhere within a direct constituent of the construct C other than
+   --  the one containing C2, that is known to refer to the same object (RM
+   --  6.4.1(6.17/3)).
+
    procedure Check_Implicit_Dereference (Nam : Node_Id; Typ : Entity_Id);
    --  AI05-139-2: Accessors and iterators for containers. This procedure
    --  checks whether T is a reference type, and if so it adds an interprettion
@@ -214,11 +225,6 @@ package Sem_Util is
    --  Check whether Ent denotes an entity declared in an uplevel scope, which
    --  is accessed inside a nested procedure, and set Has_Up_Level_Access flag
    --  accordingly. This is currently only enabled for VM_Target /= No_VM.
-
-   procedure Check_Order_Dependence;
-   --  Examine the actuals in a top-level call to determine whether aliasing
-   --  between two actuals, one of which is writable, can make the call
-   --  order-dependent.
 
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
@@ -1079,7 +1085,7 @@ package Sem_Util is
    --  scope that is not a block or a package). This is used when the
    --  sequential flow-of-control assumption is violated (occurrence of a
    --  label, head of a loop, or start of an exception handler). The effect of
-   --  the call is to clear the Constant_Value field (but we do not need to
+   --  the call is to clear the Current_Value field (but we do not need to
    --  clear the Is_True_Constant flag, since that only gets reset if there
    --  really is an assignment somewhere in the entity scope). This procedure
    --  also calls Kill_All_Checks, since this is a special case of needing to
@@ -1403,11 +1409,6 @@ package Sem_Util is
    --  inside it, where both entities represent scopes. Note that scopes
    --  are only partially ordered, so Scope_Within_Or_Same (A,B) and
    --  Scope_Within_Or_Same (B,A) can both be False for a given pair A,B.
-
-   procedure Save_Actual (N : Node_Id; Writable : Boolean := False);
-   --  Enter an actual in a call in a table global, for subsequent check of
-   --  possible order dependence in the presence of IN OUT parameters for
-   --  functions in Ada 2012 (or access parameters in older language versions).
 
    function Scope_Within (Scope1, Scope2 : Entity_Id) return Boolean;
    --  Like Scope_Within_Or_Same, except that this function returns

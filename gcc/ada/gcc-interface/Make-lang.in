@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
+#   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -45,9 +45,13 @@ RMDIR = rm -rf
 
 
 # Extra flags to pass to recursive makes.
-COMMON_ADAFLAGS= -gnatpg -gnata
+COMMON_ADAFLAGS= -gnatpg
+ifeq ($(TREECHECKING),)
+CHECKING_ADAFLAGS=
+else
+CHECKING_ADAFLAGS= -gnata
+endif
 WARN_ADAFLAGS= -W -Wall
-BOOT_ADAFLAGS= $(COMMON_ADAFLAGS)
 
 # For native builds, the base compiler might be old and we need to arrange for
 # style warnings not to be flagged as errors during stage1.  Cross compilers
@@ -60,7 +64,8 @@ else
 ADAFLAGS= $(COMMON_ADAFLAGS)
 endif
 
-ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(WARN_ADAFLAGS)
+ALL_ADAFLAGS = \
+  $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(CHECKING_ADAFLAGS) $(WARN_ADAFLAGS)
 FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
 ADA_INCLUDES = -nostdinc -I- -I. -Iada -I$(srcdir)/ada -I$(srcdir)/ada/gcc-interface
@@ -736,14 +741,13 @@ ada.install-common:
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  for tool in $(ADA_TOOLS) ; do \
+	    install_name=`echo $$tool|sed '$(program_transform_name)'`$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$$install_name; \
 	    if [ -f $$tool-cross$(exeext) ] ; \
 	    then \
-	      install_name=`echo $$tool|sed '$(program_transform_name)'`$(exeext); \
-	      $(RM) $(DESTDIR)$(bindir)/$$install_name; \
 	      $(INSTALL_PROGRAM) $$tool-cross$(exeext) $(DESTDIR)$(bindir)/$$install_name; \
 	    else \
-	      $(RM) $(DESTDIR)$(bindir)/$$tool$(exeext); \
-	      $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$tool$(exeext); \
+	      $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$install_name; \
 	    fi ; \
 	  done; \
 	  $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
@@ -4158,10 +4162,11 @@ ada/style.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/snames.ads ada/stand.ads ada/style.ads ada/style.adb ada/styleg.ads \
    ada/styleg.adb ada/stylesw.ads ada/system.ads ada/s-exctab.ads \
    ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads \
-   ada/s-secsta.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
-   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
-   ada/table.ads ada/table.adb ada/tree_io.ads ada/types.ads ada/uintp.ads \
-   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
+   ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \
+   ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads \
+   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
+   ada/tree_io.ads ada/types.ads ada/uintp.ads ada/unchconv.ads \
+   ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
 
 ada/styleg.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/atree.ads ada/casing.ads \

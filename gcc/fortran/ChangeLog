@@ -1,3 +1,245 @@
+2013-01-28  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53537
+	* symbol.c (gfc_find_sym_tree): Don't look for the symbol outside an
+	interface block.
+	(gfc_get_ha_symtree): Let gfc_find_sym_tree lookup the parent namespace.
+	* decl.c (gfc_match_data_decl): Ditto.
+	(variable_decl): Remove undeclared type error.
+	(gfc_match_import): Use renamed instead of original name.
+
+2013-01-27 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55984
+	PR fortran/56047
+	* gfortran.h : Add associate_var to symbol_attr.
+	* resolve.c (resolve_assoc_var): Set associate_var attribute.
+	If the target class_ok is set, set it for the associate
+	variable.
+	* check.c (allocatable_check): Associate variables should not
+	have the allocatable attribute even if their symbols do.
+	* class.c (gfc_build_class_symbol): Symbols with associate_var
+	set will always have a good class container.
+
+2013-01-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56081
+	* resolve.c (resolve_select): Add argument 'select_type', reject
+	non-scalar expressions.
+	(resolve_select_type,resolve_code): Pass new argument to
+	'resolve_select'.
+
+2013-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/56052
+	* trans-decl.c (gfc_get_symbol_decl): Set DECL_ARTIFICIAL
+	and DECL_IGNORED_P on select_type_temporary and don't set
+	DECL_BY_REFERENCE.
+
+2013-01-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55919
+	* scanner.c (add_path_to_list): Copy path to temporary and strip
+	trailing directory separators before calling stat().
+
+2013-01-17  Richard Biener  <rguenther@suse.de>
+
+	* trans-stmt.c (gfc_trans_do): Conditionally compute countm1
+	dependent on sign of step, avoids repeated evaluation of
+	step sign test.  Avoid undefined overflow issues by using unsigned
+	arithmetic.
+
+2013-01-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55983
+	* class.c (find_typebound_proc_uop): Check for f2k_derived instead of
+	asserting it.
+
+2013-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR driver/55884
+	* lang.opt (fintrinsic-modules-path): Don't accept Joined.
+	(fintrinsic-modules-path=): New.
+	* options.c (gfc_handle_option, gfc_get_option_string,
+	gfc_get_option_string): Handle the latter.
+
+2013-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/52865
+	* trans-stmt.c (gfc_trans_do): Put countm1-- before conditional
+	and use value of countm1 before the decrement in the condition.
+
+2013-01-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/54286
+	* expr.c (gfc_check_pointer_assign): Check for presence of
+	's2' before using it.
+
+2013-01-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55806
+	* frontend-passes.c (optimize_reduction):  New function,
+	including prototype.
+	(callback_reduction):  Likewise.
+	(gfc_run_passes):  Also run optimize_reduction.
+	(copy_walk_reduction_arg):  New function.
+	(dummy_code_callback):  New function.
+
+2013-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55935
+	* trans-expr.c (gfc_conv_structure): Call
+	unshare_expr_without_location on the ctor elements.
+
+2013-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/54286
+	* expr.c (gfc_check_pointer_assign): Ensure that both lvalue
+	and rvalue interfaces are presented to gfc_compare_interfaces.
+	Simplify references to interface names by using the symbols
+	themselves. Call gfc_compare_interfaces with s1 and s2 inter-
+	changed to overcome the asymmetry of this function. Do not
+	repeat the check for the presence of s1 and s2.
+
+2013-01-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55072
+	* trans-array.c (gfc_conv_array_parameter): No packing was done for
+	full arrays of derived type.
+
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55868
+	* class.c (get_unique_type_string): Change $tar to STAR and
+	replace sprintf by strcpy where there is no formatting.
+	* decl.c (gfc_match_decl_type_spec): Change $tar to STAR.
+
+2013-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/47203
+	* module.c (check_for_ambiguous): Get the current program unit using
+	gfc_current_ns.
+
+2013-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55758
+	* resolve.c (resolve_symbol): Reject non-C_Bool logicals
+	in BIND(C) procedures with -std=f*.
+
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55618
+	* trans-expr.c (gfc_conv_procedure_call): Dereference scalar
+	character function arguments to elemental procedures in
+	scalarization loops.
+
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55763
+	* gfortran.h (gfc_check_assign_symbol): Update prototype.
+	* decl.c (add_init_expr_to_sym, do_parm): Update call.
+	* expr.c (gfc_check_assign_symbol): Handle BT_CLASS and
+	improve error location; support components.
+	(gfc_check_pointer_assign): Handle component assignments.
+	* resolve.c (resolve_fl_derived0): Call gfc_check_assign_symbol.
+	(resolve_values): Update call.
+	(resolve_structure_cons): Avoid double diagnostic.
+
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55852
+	* expr.c (gfc_build_intrinsic_call): Avoid clashes
+	with user's procedures.
+	* gfortran.h (gfc_build_intrinsic_call): Update prototype.
+	* simplify.c (gfc_simplify_size): Update call.
+	* class.c (finalization_scalarizer, finalization_get_offset,
+	finalizer_insert_packed_call, generate_finalization_wrapper):
+	Clean up by using gfc_build_intrinsic_call.
+
+2012-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55763
+	* resolve.c (resolve_select_type): Reject intrinsic types for
+	a non-unlimited-polymorphic selector.
+
+2013-01-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/53876
+	PR fortran/54990
+	PR fortran/54992
+	* trans-array.c (build_array_ref): Check the TYPE_CANONICAL
+	to see if it is GFC_CLASS_TYPE_P.
+	* trans-expr.c (gfc_get_vptr_from_expr): The same.
+	(gfc_conv_class_to_class): If the types are not the same,
+	cast parmese->expr to the type of ctree.
+	* trans-types.c (gfc_get_derived_type): GFC_CLASS_TYPE_P of
+	CLASS components must be set.
+
+2013-01-06  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42769
+	PR fortran/45836
+	PR fortran/45900
+	* module.c (read_module): Don't reuse local symtree if the associated
+	symbol isn't exactly the one wanted.  Don't reuse local symtree if it is
+	ambiguous.
+	* resolve.c (resolve_call): Use symtree's name instead of symbol's to
+	lookup the symtree.
+
+2013-01-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/55827
+	* class.c (gfc_fix_class_refs): Adapt ts initialization for the case
+	e->symtree == NULL.
+	* trans-expr.c (gfc_conv_function_expr): Init sym earlier. Use it.
+
+2013-01-05  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (finalize_component): Used passed offset expr.
+	(finalization_get_offset): New static function.
+	(finalizer_insert_packed_call, generate_finalization_wrapper): Use it
+	to handle noncontiguous arrays.
+
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
+	* trans.c (gfc_build_final_call): New function.
+	* trans.h (gfc_build_final_call, gfc_conv_scalar_to_descriptor):
+	New function prototypes.
+	* trans-expr.c (gfc_conv_scalar_to_descriptor): Renamed from
+	conv_scalar_to_descriptor, removed static attribute.
+	(gfc_conv_procedure_call): Honor renaming.
+
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.c (add_functions): New internal intrinsic
+	function GFC_PREFIX ("stride").
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_STRIDE.
+	* intrinsic.h (gfc_resolve_stride): New prototypes.
+	* iresolve.c (gfc_resolve_stride): New function.
+	* trans-intrinsic.c (conv_intrinsic_stride): New static
+	function.
+	(gfc_conv_intrinsic_function): Use it.
+
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (gfc_find_intrinsic_vtab): Add _final
+	component.
+	* decl.c (gfc_match_null): Remove superfluous
+	variadic argument to gfc_match.
+
+2013-01-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55172
+	* match.c (copy_ts_from_selector_to_associate): Remove call to
+	gfc_resolve_expr and replace it with explicit setting of the
+	array reference type.
+	* resolve.c (resolve_select_type): It is an error if the
+	selector is coindexed.
+
 2013-01-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763

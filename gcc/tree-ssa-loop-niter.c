@@ -1,6 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2004-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1208,6 +1207,8 @@ dump_affine_iv (FILE *file, affine_iv *iv)
    -- in this case we can use the information whether the control induction
    variables can overflow or not in a more efficient way.
 
+   if EVERY_ITERATION is true, we know the test is executed on every iteration.
+
    The results (number of iterations and assumptions as described in
    comments at struct tree_niter_desc in tree-flow.h) are stored to NITER.
    Returns false if it fails to determine number of iterations, true if it
@@ -1217,10 +1218,20 @@ static bool
 number_of_iterations_cond (struct loop *loop,
 			   tree type, affine_iv *iv0, enum tree_code code,
 			   affine_iv *iv1, struct tree_niter_desc *niter,
-			   bool only_exit)
+			   bool only_exit, bool every_iteration)
 {
   bool exit_must_be_taken = false, ret;
   bounds bnds;
+
+  /* If the test is not executed every iteration, wrapping may make the test
+     to pass again. 
+     TODO: the overflow case can be still used as unreliable estimate of upper
+     bound.  But we have no API to pass it down to number of iterations code
+     and, at present, it will not use it anyway.  */
+  if (!every_iteration
+      && (!iv0->no_overflow || !iv1->no_overflow
+	  || code == NE_EXPR || code == EQ_EXPR))
+    return false;
 
   /* The meaning of these assumptions is this:
      if !assumptions
@@ -1807,9 +1818,11 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   tree op0, op1;
   enum tree_code code;
   affine_iv iv0, iv1;
+  bool safe;
 
-  if (every_iteration
-      && !dominated_by_p (CDI_DOMINATORS, loop->latch, exit->src))
+  safe = dominated_by_p (CDI_DOMINATORS, loop->latch, exit->src);
+
+  if (every_iteration && !safe)
     return false;
 
   niter->assumptions = boolean_false_node;
@@ -1826,9 +1839,9 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     {
     case GT_EXPR:
     case GE_EXPR:
-    case NE_EXPR:
     case LT_EXPR:
     case LE_EXPR:
+    case NE_EXPR:
       break;
 
     default:
@@ -1855,7 +1868,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   iv0.base = expand_simple_operations (iv0.base);
   iv1.base = expand_simple_operations (iv1.base);
   if (!number_of_iterations_cond (loop, type, &iv0, code, &iv1, niter,
-				  loop_only_exit_p (loop, exit)))
+				  loop_only_exit_p (loop, exit), safe))
     {
       fold_undefer_and_ignore_overflow_warnings ();
       return false;
@@ -2657,6 +2670,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   tree low, high, type, next;
   bool sign, upper = true, at_end = false;
   struct loop *loop = data->loop;
+  bool reliable = true;
 
   if (TREE_CODE (base) != ARRAY_REF)
     return true;
@@ -2728,7 +2742,14 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
       && tree_int_cst_compare (next, high) <= 0)
     return true;
 
-  record_nonwrapping_iv (loop, init, step, data->stmt, low, high, true, upper);
+  /* If access is not executed on every iteration, we must ensure that overlow may
+     not make the access valid later.  */
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (data->stmt))
+      && scev_probably_wraps_p (initial_condition_in_loop_num (ev, loop->num),
+				step, data->stmt, loop, true))
+    reliable = false;
+
+  record_nonwrapping_iv (loop, init, step, data->stmt, low, high, reliable, upper);
   return true;
 }
 
@@ -3549,8 +3570,15 @@ stmt_dominates_stmt_p (gimple s1, gimple s2)
 /* Returns true when we can prove that the number of executions of
    STMT in the loop is at most NITER, according to the bound on
    the number of executions of the statement NITER_BOUND->stmt recorded in
-   NITER_BOUND.  If STMT is NULL, we must prove this bound for all
-   statements in the loop.  */
+   NITER_BOUND and fact that NITER_BOUND->stmt dominate STMT.
+
+   ??? This code can become quite a CPU hog - we can have many bounds,
+   and large basic block forcing stmt_dominates_stmt_p to be queried
+   many times on a large basic blocks, so the whole thing is O(n^2)
+   for scev_probably_wraps_p invocation (that can be done n times).
+
+   It would make more sense (and give better answers) to remember BB
+   bounds computed by discover_iteration_bound_by_body_walk.  */
 
 static bool
 n_of_executions_at_most (gimple stmt,
@@ -3571,32 +3599,43 @@ n_of_executions_at_most (gimple stmt,
   /* We know that NITER_BOUND->stmt is executed at most NITER_BOUND->bound + 1
      times.  This means that:
 
-     -- if NITER_BOUND->is_exit is true, then everything before
-        NITER_BOUND->stmt is executed at most NITER_BOUND->bound + 1
-	times, and everything after it at most NITER_BOUND->bound times.
+     -- if NITER_BOUND->is_exit is true, then everything after
+	it at most NITER_BOUND->bound times.
 
      -- If NITER_BOUND->is_exit is false, then if we can prove that when STMT
 	is executed, then NITER_BOUND->stmt is executed as well in the same
-	iteration (we conclude that if both statements belong to the same
-	basic block, or if STMT is after NITER_BOUND->stmt), then STMT
-	is executed at most NITER_BOUND->bound + 1 times.  Otherwise STMT is
-	executed at most NITER_BOUND->bound + 2 times.  */
+	iteration then STMT is executed at most NITER_BOUND->bound + 1 times. 
+
+	If we can determine that NITER_BOUND->stmt is always executed
+	after STMT, then STMT is executed at most NITER_BOUND->bound + 2 times.
+	We conclude that if both statements belong to the same
+	basic block and STMT is before NITER_BOUND->stmt and there are no
+	statements with side effects in between.  */
 
   if (niter_bound->is_exit)
     {
-      if (stmt
-	  && stmt != niter_bound->stmt
-	  && stmt_dominates_stmt_p (niter_bound->stmt, stmt))
-	cmp = GE_EXPR;
-      else
-	cmp = GT_EXPR;
+      if (stmt == niter_bound->stmt
+	  || !stmt_dominates_stmt_p (niter_bound->stmt, stmt))
+	return false;
+      cmp = GE_EXPR;
     }
   else
     {
-      if (!stmt
-	  || (gimple_bb (stmt) != gimple_bb (niter_bound->stmt)
-	      && !stmt_dominates_stmt_p (niter_bound->stmt, stmt)))
+      if (!stmt_dominates_stmt_p (niter_bound->stmt, stmt))
 	{
+          gimple_stmt_iterator bsi;
+	  if (gimple_bb (stmt) != gimple_bb (niter_bound->stmt)
+	      || gimple_code (stmt) == GIMPLE_PHI
+	      || gimple_code (niter_bound->stmt) == GIMPLE_PHI)
+	    return false;
+
+	  /* By stmt_dominates_stmt_p we already know that STMT appears
+	     before NITER_BOUND->STMT.  Still need to test that the loop
+	     can not be terinated by a side effect in between.  */
+	  for (bsi = gsi_for_stmt (stmt); gsi_stmt (bsi) != niter_bound->stmt;
+	       gsi_next (&bsi))
+	    if (gimple_has_side_effects (gsi_stmt (bsi)))
+	       return false;
 	  bound += double_int_one;
 	  if (bound.is_zero ()
 	      || !double_int_fits_to_tree_p (nit_type, bound))
@@ -3640,10 +3679,12 @@ scev_probably_wraps_p (tree base, tree step,
 		       gimple at_stmt, struct loop *loop,
 		       bool use_overflow_semantics)
 {
-  struct nb_iter_bound *bound;
   tree delta, step_abs;
   tree unsigned_type, valid_niter;
   tree type = TREE_TYPE (step);
+  tree e;
+  double_int niter;
+  struct nb_iter_bound *bound;
 
   /* FIXME: We really need something like
      http://gcc.gnu.org/ml/gcc-patches/2005-06/msg02025.html.
@@ -3706,14 +3747,26 @@ scev_probably_wraps_p (tree base, tree step,
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
 
   estimate_numbers_of_iterations_loop (loop);
-  for (bound = loop->bounds; bound; bound = bound->next)
+
+  if (max_loop_iterations (loop, &niter)
+      && double_int_fits_to_tree_p (TREE_TYPE (valid_niter), niter)
+      && (e = fold_binary (GT_EXPR, boolean_type_node, valid_niter,
+			   double_int_to_tree (TREE_TYPE (valid_niter),
+					       niter))) != NULL
+      && integer_nonzerop (e))
     {
-      if (n_of_executions_at_most (at_stmt, bound, valid_niter))
-	{
-	  fold_undefer_and_ignore_overflow_warnings ();
-	  return false;
-	}
+      fold_undefer_and_ignore_overflow_warnings ();
+      return false;
     }
+  if (at_stmt)
+    for (bound = loop->bounds; bound; bound = bound->next)
+      {
+	if (n_of_executions_at_most (at_stmt, bound, valid_niter))
+	  {
+	    fold_undefer_and_ignore_overflow_warnings ();
+	    return false;
+	  }
+      }
 
   fold_undefer_and_ignore_overflow_warnings ();
 

@@ -1,6 +1,5 @@
 /* Definitions for Renesas M32R running Linux-based GNU systems using ELF.
-   Copyright (C) 2003, 2004, 2006, 2007, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

@@ -1,7 +1,5 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000,
-;;  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-;;  Free Software Foundation, Inc.
+;;  Copyright (C) 1991-2013 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -284,6 +282,8 @@
   fmuld,\
   fmacs,\
   fmacd,\
+  ffmas,\
+  ffmad,\
   f_rints,\
   f_rintd,\
   f_minmaxs,\
@@ -502,7 +502,7 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa7,cortexa8,cortexa9,cortexa15,cortexm4")
+          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa7,cortexa8,cortexa9,cortexa15,cortexm4,marvell_pj4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -510,7 +510,7 @@
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,cortexa8,cortexa9,cortexm4")
+	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,cortexa8,cortexa9,cortexm4,marvell_pj4")
 	       (eq_attr "tune_cortexr4" "no"))
 	  (const_string "yes")
 	  (const_string "no"))))
@@ -536,6 +536,7 @@
 (include "cortex-m4.md")
 (include "cortex-m4-fpu.md")
 (include "vfp11.md")
+(include "marvell-pj4.md")
 
 
 ;;---------------------------------------------------------------------------
@@ -7031,16 +7032,12 @@
 (define_expand "cbranchdi4"
   [(set (pc) (if_then_else
 	      (match_operator 0 "expandable_comparison_operator"
-	       [(match_operand:DI 1 "cmpdi_operand" "")
+	       [(match_operand:DI 1 "s_register_operand" "")
 	        (match_operand:DI 2 "cmpdi_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "TARGET_32BIT"
   "{
-     /* We should not have two constants.  */
-     gcc_assert (GET_MODE (operands[1]) == DImode
-		 || GET_MODE (operands[2]) == DImode);
-
      if (!arm_validize_comparison (&operands[0], &operands[1], &operands[2]))
        FAIL;
      emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
@@ -7956,14 +7953,10 @@
 (define_expand "cstoredi4"
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(match_operator:SI 1 "expandable_comparison_operator"
-	 [(match_operand:DI 2 "cmpdi_operand" "")
+	 [(match_operand:DI 2 "s_register_operand" "")
 	  (match_operand:DI 3 "cmpdi_operand" "")]))]
   "TARGET_32BIT"
   "{
-     /* We should not have two constants.  */
-     gcc_assert (GET_MODE (operands[2]) == DImode
-		 || GET_MODE (operands[3]) == DImode);
-
      if (!arm_validize_comparison (&operands[1],
      				   &operands[2],
 				   &operands[3]))

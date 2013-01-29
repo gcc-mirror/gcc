@@ -1,3 +1,4 @@
+! { dg-do run }
 ! { dg-options "-O2 -fno-automatic" }
       subroutine foo (b)
 	logical b

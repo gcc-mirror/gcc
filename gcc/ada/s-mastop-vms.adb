@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/VMS)                          --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -176,7 +176,7 @@ package body System.Machine_State_Operations is
          Invo_Handle  : Invo_Handle_Type;
          Invo_Context : out Invo_Context_Blk_Type);
 
-      pragma Interface (External, Get_Invo_Context);
+      pragma Import (External, Get_Invo_Context);
 
       pragma Import_Valued_Procedure (Get_Invo_Context, "LIB$GET_INVO_CONTEXT",
          (Unsigned_Longword, Invo_Handle_Type, Invo_Context_Blk_Type),
@@ -221,7 +221,7 @@ package body System.Machine_State_Operations is
          Result : out Invo_Handle_Type; -- return value
          ICB    : Invo_Handle_Type);
 
-      pragma Interface (External, Get_Prev_Invo_Handle);
+      pragma Import (External, Get_Prev_Invo_Handle);
 
       pragma Import_Valued_Procedure
         (Get_Prev_Invo_Handle, "LIB$GET_PREV_INVO_HANDLE",
@@ -244,7 +244,7 @@ package body System.Machine_State_Operations is
       procedure Get_Curr_Invo_Context
         (Invo_Context : out Invo_Context_Blk_Type);
 
-      pragma Interface (External, Get_Curr_Invo_Context);
+      pragma Import (External, Get_Curr_Invo_Context);
 
       pragma Import_Valued_Procedure
         (Get_Curr_Invo_Context, "LIB$GET_CURR_INVO_CONTEXT",
@@ -255,7 +255,7 @@ package body System.Machine_State_Operations is
          Result       : out Invo_Handle_Type; -- return value
          Invo_Context : Invo_Context_Blk_Type);
 
-      pragma Interface (External, Get_Invo_Handle);
+      pragma Import (External, Get_Invo_Handle);
 
       pragma Import_Valued_Procedure (Get_Invo_Handle, "LIB$GET_INVO_HANDLE",
          (Invo_Handle_Type, Invo_Context_Blk_Type),

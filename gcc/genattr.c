@@ -1,6 +1,5 @@
 /* Generate attribute information (insn-attr.h) from machine description.
-   Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008,
-   2010, 2011, 2012  Free Software Foundation, Inc.
+   Copyright (C) 1991-2013 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.

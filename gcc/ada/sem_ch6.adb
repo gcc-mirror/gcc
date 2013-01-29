@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -408,6 +408,15 @@ package body Sem_Ch6 is
       --  that the expression can be inlined whenever possible.
 
       else
+         --  An expression function that is not a completion is not a
+         --  subprogram declaration, and thus cannot appear in a protected
+         --  definition.
+
+         if Nkind (Parent (N)) = N_Protected_Definition then
+            Error_Msg_N
+              ("an expression function is not a legal protected operation", N);
+         end if;
+
          New_Decl :=
            Make_Subprogram_Declaration (Loc, Specification => Spec);
 
@@ -501,6 +510,12 @@ package body Sem_Ch6 is
       end if;
 
       Analyze_Call (N);
+
+      --  Mark function call if within assertion
+
+      if In_Assertion_Expr /= 0 then
+         Set_In_Assertion (N);
+      end if;
    end Analyze_Function_Call;
 
    -----------------------------
@@ -972,10 +987,6 @@ package body Sem_Ch6 is
                          & "null-excluding return??",
                Reason => CE_Null_Not_Allowed);
          end if;
-
-         --  Apply checks suggested by AI05-0144 (dangerous order dependence)
-
-         Check_Order_Dependence;
       end if;
    end Analyze_Function_Return;
 
@@ -1260,11 +1271,6 @@ package body Sem_Ch6 is
          if Nkind (N) = N_Procedure_Call_Statement then
             Analyze_Call (N);
             Resolve (N, Standard_Void_Type);
-
-            --  Apply checks suggested by AI05-0144
-
-            Check_Order_Dependence;
-
          else
             Analyze (N);
          end if;

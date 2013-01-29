@@ -21,10 +21,16 @@ uptr GetPageSizeCached() {
   return PageSize;
 }
 
-// By default, dump to stderr. If report_fd is kInvalidFd, try to obtain file
-// descriptor by opening file in report_path.
+static bool log_to_file = false;  // Set to true by __sanitizer_set_report_path
+
+// By default, dump to stderr. If |log_to_file| is true and |report_fd_pid|
+// isn't equal to the current PID, try to obtain file descriptor by opening
+// file "report_path_prefix.<PID>".
 static fd_t report_fd = kStderrFd;
-static char report_path[4096];  // Set via __sanitizer_set_report_path.
+static char report_path_prefix[4096];  // Set via __sanitizer_set_report_path.
+// PID of process that opened |report_fd|. If a fork() occurs, the PID of the
+// child thread will be different from |report_fd_pid|.
+static int report_fd_pid = 0;
 
 static void (*DieCallback)(void);
 void SetDieCallback(void (*callback)(void)) {
@@ -48,21 +54,29 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
   if (CheckFailedCallback) {
     CheckFailedCallback(file, line, cond, v1, v2);
   }
-  Report("Sanitizer CHECK failed: %s:%d %s (%zd, %zd)\n", file, line, cond,
-                                                          v1, v2);
+  Report("Sanitizer CHECK failed: %s:%d %s (%lld, %lld)\n", file, line, cond,
+                                                            v1, v2);
   Die();
 }
 
 static void MaybeOpenReportFile() {
-  if (report_fd != kInvalidFd)
-    return;
-  fd_t fd = internal_open(report_path, true);
+  if (!log_to_file || (report_fd_pid == GetPid())) return;
+  InternalScopedBuffer<char> report_path_full(4096);
+  internal_snprintf(report_path_full.data(), report_path_full.size(),
+                    "%s.%d", report_path_prefix, GetPid());
+  fd_t fd = internal_open(report_path_full.data(), true);
   if (fd == kInvalidFd) {
     report_fd = kStderrFd;
-    Report("ERROR: Can't open file: %s\n", report_path);
+    log_to_file = false;
+    Report("ERROR: Can't open file: %s\n", report_path_full.data());
     Die();
   }
+  if (report_fd != kInvalidFd) {
+    // We're in the child. Close the parent's log.
+    internal_close(report_fd);
+  }
   report_fd = fd;
+  report_fd_pid = GetPid();
 }
 
 bool PrintsToTty() {
@@ -153,6 +167,27 @@ void SortArray(uptr *array, uptr size) {
   }
 }
 
+// We want to map a chunk of address space aligned to 'alignment'.
+// We do it by maping a bit more and then unmaping redundant pieces.
+// We probably can do it with fewer syscalls in some OS-dependent way.
+void *MmapAlignedOrDie(uptr size, uptr alignment, const char *mem_type) {
+// uptr PageSize = GetPageSizeCached();
+  CHECK(IsPowerOfTwo(size));
+  CHECK(IsPowerOfTwo(alignment));
+  uptr map_size = size + alignment;
+  uptr map_res = (uptr)MmapOrDie(map_size, mem_type);
+  uptr map_end = map_res + map_size;
+  uptr res = map_res;
+  if (res & (alignment - 1))  // Not aligned.
+    res = (map_res + alignment) & ~(alignment - 1);
+  uptr end = res + size;
+  if (res != map_res)
+    UnmapOrDie((void*)map_res, res - map_res);
+  if (end != map_end)
+    UnmapOrDie((void*)end, map_end - end);
+  return (void*)res;
+}
+
 }  // namespace __sanitizer
 
 using namespace __sanitizer;  // NOLINT
@@ -161,14 +196,16 @@ extern "C" {
 void __sanitizer_set_report_path(const char *path) {
   if (!path) return;
   uptr len = internal_strlen(path);
-  if (len > sizeof(report_path) - 100) {
+  if (len > sizeof(report_path_prefix) - 100) {
     Report("ERROR: Path is too long: %c%c%c%c%c%c%c%c...\n",
            path[0], path[1], path[2], path[3],
            path[4], path[5], path[6], path[7]);
     Die();
   }
-  internal_snprintf(report_path, sizeof(report_path), "%s.%d", path, GetPid());
+  internal_strncpy(report_path_prefix, path, sizeof(report_path_prefix));
+  report_path_prefix[len] = '\0';
   report_fd = kInvalidFd;
+  log_to_file = true;
 }
 
 void __sanitizer_set_report_fd(int fd) {
@@ -177,5 +214,10 @@ void __sanitizer_set_report_fd(int fd) {
       report_fd != kInvalidFd)
     internal_close(report_fd);
   report_fd = fd;
+}
+
+void NOINLINE __sanitizer_sandbox_on_notify(void *reserved) {
+  (void)reserved;
+  PrepareForSandboxing();
 }
 }  // extern "C"

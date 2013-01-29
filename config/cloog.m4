@@ -57,12 +57,15 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
   if test "x${with_cloog_lib}" != x; then
     clooglibs="-L$with_cloog_lib"
   fi
-  dnl If no --with-cloog flag was specified and there is in-tree ClooG
-  dnl source, set up flags to use that.
+  dnl If no --with-cloog flag was specified and there is in-tree CLooG
+  dnl source, set up flags to use that and skip any version tests
+  dnl as we cannot run them reliably before building CLooG
   if test "x${clooginc}" = x && test "x${clooglibs}" = x \
      && test -d ${srcdir}/cloog; then
      clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
      clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
+    ENABLE_CLOOG_CHECK=no
+    AC_MSG_WARN([using in-tree CLooG, disabling version check])
   fi
 
   clooginc="-DCLOOG_INT_GMP ${clooginc}"
@@ -115,11 +118,11 @@ AC_DEFUN([CLOOG_CHECK_VERSION],
     CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${islinc} ${gmpinc}"
     LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${isllibs} ${gmplib}"
 
-    AC_CACHE_CHECK([for version $1.$2.$3 of CLooG],
-      [gcc_cv_cloog],
-      [AC_COMPILE_IFELSE([_CLOOG_CHECK_CT_PROG($1,$2,$3)],
+    AC_MSG_CHECKING([for version $1.$2.$3 of CLooG])
+    AC_COMPILE_IFELSE([_CLOOG_CHECK_CT_PROG($1,$2,$3)],
 	[gcc_cv_cloog=yes],
-	[gcc_cv_cloog=no])])
+	[gcc_cv_cloog=no])
+    AC_MSG_RESULT([$gcc_cv_cloog])
 
     CFLAGS=$_cloog_saved_CFLAGS
     LDFLAGS=$_cloog_saved_LDFLAGS

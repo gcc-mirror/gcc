@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 !
 ! PR fortran/51970
 ! PR fortran/51977

@@ -1,5 +1,5 @@
 /* LTO routines to use object files.
-   Copyright 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2010-2013 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 This file is part of GCC.

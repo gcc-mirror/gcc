@@ -1,6 +1,5 @@
 /* Definitions for PA_RISC with ELF-32 format
-   Copyright (C) 2000, 2002, 2004, 2006, 2007, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

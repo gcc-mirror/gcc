@@ -1,5 +1,5 @@
 ;; Predicate definitions for NEC V850.
-;; Copyright (C) 2005, 2007, 2010, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2013 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -496,4 +496,69 @@
     return 0;
 
   return op == CONST0_RTX(mode);
+})
+
+;; Return true if the floating point comparison operation
+;; given produces a canonical answer.
+(define_predicate "v850_float_z_comparison_operator"
+  (match_code "lt,le,eq,gt,ge")
+{
+  enum rtx_code code = GET_CODE (op);
+
+  if (GET_RTX_CLASS (code) != RTX_COMPARE
+      && GET_RTX_CLASS (code) != RTX_COMM_COMPARE)
+    return 0;
+
+  if (mode != GET_MODE (op) && mode != VOIDmode)
+    return 0;
+
+  if ((GET_CODE (XEXP (op, 0)) != REG
+       || REGNO (XEXP (op, 0)) != CC_REGNUM)
+      || XEXP (op, 1) != const0_rtx)
+    return 0;
+
+  if (GET_MODE (XEXP (op, 0)) == CC_FPU_LTmode)
+    return code == LT;
+  if (GET_MODE (XEXP (op, 0)) == CC_FPU_LEmode)
+    return code == LE;
+  if (GET_MODE (XEXP (op, 0)) == CC_FPU_EQmode)
+    return code == EQ;
+  if (GET_MODE (XEXP (op, 0)) == CC_FPU_GTmode)
+    return code == GT;
+  if (GET_MODE (XEXP (op, 0)) == CC_FPU_GEmode)
+    return code == GE;
+
+  /* Note we do not accept CC_FPU_NEmode here.  See
+     v850_float_nz_comparison for the reason why.  */
+  return 0;
+})
+
+;; Return true if the floating point comparison operation
+;; given produces an inverted answer.
+(define_predicate "v850_float_nz_comparison_operator"
+  (match_code "ne")
+{
+  enum rtx_code code = GET_CODE (op);
+
+  /* The V850E2V3 does not have a floating point NZ comparison operator.
+     Instead it is implemented as an EQ comparison and this function ensures
+     that the branch_nz_normal and set_nz_insn patterns are used to examine
+     (and invert) the result of the floating point comparison.  */
+
+  if (GET_RTX_CLASS (code) != RTX_COMPARE
+      && GET_RTX_CLASS (code) != RTX_COMM_COMPARE)
+    return 0;
+
+  if (mode != GET_MODE (op) && mode != VOIDmode)
+    return 0;
+
+  if ((GET_CODE (XEXP (op, 0)) != REG
+       || REGNO (XEXP (op, 0)) != CC_REGNUM)
+      || XEXP (op, 1) != const0_rtx)
+    return 0;
+
+  if (GET_MODE (XEXP (op, 0)) == CC_FPU_NEmode)
+    return code == NE;
+
+  return 0;
 })

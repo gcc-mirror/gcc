@@ -1,7 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -1653,6 +1651,35 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
   type = gfc_typenode_for_spec (&expr->ts);
   se->expr = convert (type, se->expr);
+}
+
+
+static void
+conv_intrinsic_stride (gfc_se * se, gfc_expr * expr)
+{
+  gfc_actual_arglist *array_arg;
+  gfc_actual_arglist *dim_arg;
+  gfc_se argse;
+  tree desc, tmp;
+
+  array_arg = expr->value.function.actual;
+  dim_arg = array_arg->next;
+
+  gcc_assert (array_arg->expr->expr_type == EXPR_VARIABLE);
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr_descriptor (&argse, array_arg->expr);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  gfc_add_block_to_block (&se->post, &argse.post);
+  desc = argse.expr;
+
+  gcc_assert (dim_arg->expr);
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr_type (&argse, dim_arg->expr, gfc_array_index_type);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			 argse.expr, gfc_index_one_node);
+  se->expr = gfc_conv_descriptor_stride_get (desc, tmp);
 }
 
 
@@ -6804,6 +6831,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_SPACING:
       gfc_conv_intrinsic_spacing (se, expr);
+      break;
+
+    case GFC_ISYM_STRIDE:
+      conv_intrinsic_stride (se, expr);
       break;
 
     case GFC_ISYM_SUM:

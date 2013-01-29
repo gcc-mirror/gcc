@@ -1,7 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-;;  2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-;;  Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2013 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -176,6 +174,8 @@
   (UNSPECV_CONST_END	11)
   (UNSPECV_EH_RETURN	12)
   (UNSPECV_GBR		13)
+  (UNSPECV_SP_SWITCH_B  14)
+  (UNSPECV_SP_SWITCH_E  15)
 ])
 
 ;; -------------------------------------------------------------------------
@@ -13140,6 +13140,8 @@ label:
 })
 
 ;; SH2A instructions for bitwise operations.
+;; FIXME: Convert multiple instruction insns to insn_and_split.
+;; FIXME: Use iterators to fold at least and,xor,or insn variations.
 
 ;; Clear a bit in a memory location.
 (define_insn "bclr_m2a"
@@ -13148,7 +13150,7 @@ label:
 	    (not:QI (ashift:QI (const_int 1)
 			(match_operand:QI 1 "const_int_operand" "K03,K03")))
 	    (match_dup 0)))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bclr.b	%1,%0
 	bclr.b	%1,@(0,%t0)"
@@ -13171,7 +13173,7 @@ label:
 	    (ashift:QI (const_int 1)
 		       (match_operand:QI 1 "const_int_operand" "K03,K03"))
 	    (match_dup 0)))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bset.b	%1,%0
 	bset.b	%1,@(0,%t0)"
@@ -13198,7 +13200,7 @@ label:
 	    (ior:QI
 		(ashift:QI (const_int 1) (match_dup 1))
 		(match_dup 0))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bst.b	%1,%0
 	bst.b	%1,@(0,%t0)"
@@ -13211,7 +13213,7 @@ label:
 	    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,Sbv")
 	    (const_int 1)
 	    (match_operand 1 "const_int_operand" "K03,K03")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bld.b	%1,%0
 	bld.b	%1,@(0,%t0)"
@@ -13224,7 +13226,7 @@ label:
 	    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 	    (const_int 1)
 	    (match_operand 1 "const_int_operand" "K03,K03")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bld.b	%1,%0
 	bld.b	%1,@(0,%t0)"
@@ -13236,7 +13238,7 @@ label:
 	(zero_extract:SI (match_operand:SI 0 "arith_reg_operand" "r")
 			 (const_int 1)
 			 (match_operand 1 "const_int_operand" "K03")))]
-  "TARGET_SH2A"
+  "TARGET_SH2A && satisfies_constraint_K03 (operands[1])"
   "bld	%1,%0")
 
 (define_insn "*bld_regqi"
@@ -13244,7 +13246,7 @@ label:
 	(zero_extract:SI (match_operand:QI 0 "arith_reg_operand" "r")
 			 (const_int 1)
 			 (match_operand 1 "const_int_operand" "K03")))]
-  "TARGET_SH2A"
+  "TARGET_SH2A && satisfies_constraint_K03 (operands[1])"
   "bld	%1,%0")
 
 ;; Take logical and of a specified bit of memory with the T bit and
@@ -13256,7 +13258,7 @@ label:
 		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 		    (const_int 1)
 		    (match_operand 1 "const_int_operand" "K03,K03"))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	band.b	%1,%0
 	band.b	%1,@(0,%t0)"
@@ -13269,7 +13271,7 @@ label:
 		    (const_int 1)
 		    (match_operand 2 "const_int_operand" "K03,K03"))
         	(match_operand:SI 3 "register_operand" "r,r")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[2])"
 {
   static const char* alt[] =
   {
@@ -13292,7 +13294,7 @@ label:
 		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 		    (const_int 1)
 		    (match_operand 1 "const_int_operand" "K03,K03"))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bor.b	%1,%0
 	bor.b	%1,@(0,%t0)"
@@ -13305,7 +13307,7 @@ label:
 		    (const_int 1)
 		    (match_operand 2 "const_int_operand" "K03,K03"))
 		(match_operand:SI 3 "register_operand" "=r,r")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[2])"
 {
   static const char* alt[] =
   {
@@ -13328,7 +13330,7 @@ label:
 		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
 		    (const_int 1)
 		    (match_operand 1 "const_int_operand" "K03,K03"))))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[1])"
   "@
 	bxor.b	%1,%0
 	bxor.b	%1,@(0,%t0)"
@@ -13341,7 +13343,7 @@ label:
 		    (const_int 1)
 		    (match_operand 2 "const_int_operand" "K03,K03"))
 		(match_operand:SI 3 "register_operand" "=r,r")))]
-  "TARGET_SH2A && TARGET_BITOPS"
+  "TARGET_SH2A && TARGET_BITOPS && satisfies_constraint_K03 (operands[2])"
 {
   static const char* alt[] =
   {
@@ -13589,7 +13591,8 @@ label:
 
 ;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).
 (define_insn "sp_switch_1"
-  [(const_int 1) (match_operand:SI 0 "symbol_ref_operand" "s")]
+  [(set (reg:SI SP_REG) (unspec_volatile [(match_operand:SI 0 "" "")]
+    UNSPECV_SP_SWITCH_B))]
   "TARGET_SH1"
 {
   return       "mov.l	r0,@-r15"	"\n"
@@ -13603,10 +13606,11 @@ label:
 ;; Switch back to the original stack for interrupt functions with the
 ;; sp_switch attribute.
 (define_insn "sp_switch_2"
-  [(const_int 2)]
+  [(unspec_volatile [(const_int 0)]
+    UNSPECV_SP_SWITCH_E)]
   "TARGET_SH1"
 {
-  return       "mov.l	@r15+,r15"	"\n"
+  return       "mov.l	@r15,r15"	"\n"
 	 "	mov.l	@r15+,r0";
 }
   [(set_attr "length" "4")])

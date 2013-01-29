@@ -1,5 +1,5 @@
 ;; ARM Cortex-A5 pipeline description
-;; Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2013 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -185,7 +185,7 @@
 
 (define_insn_reservation "cortex_a5_fpmacs" 8
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "fmacs"))
+       (eq_attr "type" "fmacs,ffmas"))
   "cortex_a5_ex1+cortex_a5_fpmul_pipe, nothing*3, cortex_a5_fpadd_pipe")
 
 ;; Non-multiply instructions can issue in the middle two instructions of a
@@ -201,7 +201,7 @@
 
 (define_insn_reservation "cortex_a5_fpmacd" 11
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "fmacd"))
+       (eq_attr "type" "fmacd,ffmad"))
   "cortex_a5_ex1+cortex_a5_fpmul_pipe, cortex_a5_fpmul_pipe*2,\
    cortex_a5_ex1+cortex_a5_fpmul_pipe, nothing*3, cortex_a5_fpadd_pipe")
 

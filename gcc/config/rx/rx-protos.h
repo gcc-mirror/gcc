@@ -1,6 +1,5 @@
 /* Exported function prototypes from the Renesas RX backend.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.

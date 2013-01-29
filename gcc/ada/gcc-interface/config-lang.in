@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU Ada (GNAT).
-#   Copyright (C) 1994-2008 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2013 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -21,15 +21,13 @@
 # We define several parameters used by configure:
 #
 # language	- name of language as it would appear in $(LANGUAGES)
-# boot_language - "yes" if we need to build this language in stage1
+# gcc_subdir	- where the gcc integration files are to be found
+# boot_language	- "yes" if we need to build this language in stage1
 # compilers	- value to add to $(COMPILERS)
 
 language="ada"
 gcc_subdir="ada/gcc-interface"
-
 boot_language=yes
-boot_language_boot_flags='ADAFLAGS="$(BOOT_ADAFLAGS)"'
-
 compilers="gnat1\$(exeext)"
 
 gtfiles="\$(srcdir)/ada/gcc-interface/ada-tree.h \$(srcdir)/ada/gcc-interface/gigi.h \$(srcdir)/ada/gcc-interface/decl.c \$(srcdir)/ada/gcc-interface/trans.c \$(srcdir)/ada/gcc-interface/utils.c \$(srcdir)/ada/gcc-interface/misc.c"

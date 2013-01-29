@@ -1,6 +1,5 @@
 /* Output routines for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2005-2013 Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.

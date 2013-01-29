@@ -1,9 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996,
-# 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -663,9 +661,6 @@ LIBINTL_DEP = @LIBINTL_DEP@
 LIBICONV = @LIBICONV@
 LIBICONV_DEP = @LIBICONV_DEP@
 
-# The GC method to be used on this system.
-GGC=@GGC@.o
-
 # If a supplementary library is being used for the GC.
 GGC_LIB=
 
@@ -1159,7 +1154,7 @@ OBJS = \
 	insn-preds.o \
 	insn-recog.o \
 	insn-enums.o \
-	$(GGC) \
+	ggc-page.o \
 	alias.o \
 	alloc-pool.o \
 	auto-inc-dec.o \
@@ -1486,6 +1481,10 @@ ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
 BACKEND = libbackend.a main.o @TREEBROWSER@ libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER)
+
+# This is defined to "yes" if Tree checking is enabled, which roughly means
+# front-end checking.
+TREECHECKING = @TREECHECKING@
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
@@ -1826,10 +1825,12 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	    "$(MULTILIB_OSDIRNAMES)" \
 	    "$(MULTILIB_REQUIRED)" \
 	    "$(MULTIARCH_DIRNAME)" \
+	    "$(MULTILIB_REUSE)" \
 	    "@enable_multilib@" \
 	    > tmp-mlib.h; \
 	else \
-	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' '' "$(MULTIARCH_DIRNAME)" no \
+	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' '' \
+	    "$(MULTIARCH_DIRNAME)" '' no \
 	    > tmp-mlib.h; \
 	fi
 	$(SHELL) $(srcdir)/../move-if-change tmp-mlib.h multilib.h
@@ -2115,10 +2116,6 @@ ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
 	$(FLAGS_H) $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H) \
 	$(TREE_FLOW_H) $(PLUGIN_H) $(GGC_INTERNAL_H)
-
-ggc-zone.o: ggc-zone.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-	$(TREE_H) $(FLAGS_H) $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) \
-	$(PARAMS_H) $(BITMAP_H) $(PLUGIN_H) $(GGC_INTERNAL_H)
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
 	$(BCONFIG_H)

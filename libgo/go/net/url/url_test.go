@@ -122,14 +122,14 @@ var urltests = []URLTest{
 		},
 		"http:%2f%2fwww.google.com/?q=go+language",
 	},
-	// non-authority
+	// non-authority with path
 	{
 		"mailto:/webmaster@golang.org",
 		&URL{
 			Scheme: "mailto",
 			Path:   "/webmaster@golang.org",
 		},
-		"",
+		"mailto:///webmaster@golang.org", // unfortunate compromise
 	},
 	// non-authority
 	{
@@ -242,6 +242,15 @@ var urltests = []URLTest{
 		},
 		"http://www.google.com/?q=go+language#foo&bar",
 	},
+	{
+		"file:///home/adg/rabbits",
+		&URL{
+			Scheme: "file",
+			Host:   "",
+			Path:   "/home/adg/rabbits",
+		},
+		"file:///home/adg/rabbits",
+	},
 }
 
 // more useful string for debugging than fmt's struct printer
@@ -267,6 +276,30 @@ func DoTest(t *testing.T, parse func(string) (*URL, error), name string, tests [
 		if !reflect.DeepEqual(u, tt.out) {
 			t.Errorf("%s(%q):\n\thave %v\n\twant %v\n",
 				name, tt.in, ufmt(u), ufmt(tt.out))
+		}
+	}
+}
+
+func BenchmarkString(b *testing.B) {
+	b.StopTimer()
+	b.ReportAllocs()
+	for _, tt := range urltests {
+		u, err := Parse(tt.in)
+		if err != nil {
+			b.Errorf("Parse(%q) returned error %s", tt.in, err)
+			continue
+		}
+		if tt.roundtrip == "" {
+			continue
+		}
+		b.StartTimer()
+		var g string
+		for i := 0; i < b.N; i++ {
+			g = u.String()
+		}
+		b.StopTimer()
+		if w := tt.roundtrip; g != w {
+			b.Errorf("Parse(%q).String() == %q, want %q", tt.in, g, w)
 		}
 	}
 }

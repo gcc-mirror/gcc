@@ -1,7 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1992-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1269,6 +1267,25 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  && !TREE_OVERFLOW_P (op0)
 	  && !TREE_OVERFLOW_P (op1))
 	overflow_warning (EXPR_LOCATION (expr), ret);
+      if ((code == LSHIFT_EXPR || code == RSHIFT_EXPR)
+	  && TREE_CODE (orig_op1) != INTEGER_CST
+	  && TREE_CODE (op1) == INTEGER_CST
+	  && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
+	      || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
+	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
+	  && c_inhibit_evaluation_warnings == 0)
+	{
+	  if (tree_int_cst_sgn (op1) < 0)
+	    warning_at (loc, 0, (code == LSHIFT_EXPR
+				 ? G_("left shift count is negative")
+				 : G_("right shift count is negative")));
+	  else if (compare_tree_int (op1,
+				     TYPE_PRECISION (TREE_TYPE (orig_op0)))
+		   >= 0)
+	    warning_at (loc, 0, (code == LSHIFT_EXPR
+				 ? G_("left shift count >= width of type")
+				 : G_("right shift count >= width of type")));
+	}
       goto out;
 
     case INDIRECT_REF:

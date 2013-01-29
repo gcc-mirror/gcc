@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,9 @@ package body Style is
    ----------------------
 
    --  In check references mode (-gnatyr), identifier uses must be cased
-   --  the same way as the corresponding identifier declaration.
+   --  the same way as the corresponding identifier declaration. If standard
+   --  references are checked (-gnatyn), then identifiers from Standard must
+   --  be cased as in the Reference Manual.
 
    procedure Check_Identifier
      (Ref : Node_Or_Entity_Id;
@@ -197,10 +199,30 @@ package body Style is
                if Entity (Ref) = Standard_ASCII then
                   Cas := All_Upper_Case;
 
-               --  Special names in ASCII are also all upper case
+               --  Special handling for names in package ASCII
 
                elsif Sdef = Standard_ASCII_Location then
-                  Cas := All_Upper_Case;
+                  declare
+                     Nam : constant String := Get_Name_String (Chars (Def));
+
+                  begin
+                     --  Bar is mixed case
+
+                     if Nam = "bar" then
+                        Cas := Mixed_Case;
+
+                     --  All names longer than 4 characters are mixed case
+
+                     elsif Nam'Length > 4 then
+                        Cas := Mixed_Case;
+
+                     --  All names shorter than 4 characters (other than Bar,
+                     --  which we already tested for specially) are Upper case.
+
+                     else
+                        Cas := All_Upper_Case;
+                     end if;
+                  end;
 
                --  All other entities are in mixed case
 

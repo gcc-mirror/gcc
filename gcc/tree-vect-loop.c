@@ -1,6 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-   2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
 
@@ -4776,6 +4775,17 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   else
     {
       /* 4. Supportable by target?  */
+
+      if (code == LSHIFT_EXPR || code == RSHIFT_EXPR
+	  || code == LROTATE_EXPR || code == RROTATE_EXPR)
+	{
+	  /* Shifts and rotates are only supported by vectorizable_shifts,
+	     not vectorizable_reduction.  */
+          if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported shift or rotation.");
+	  return false;
+	}
 
       /* 4.1. check support for the operation in the loop  */
       optab = optab_for_tree_code (code, vectype_in, optab_default);

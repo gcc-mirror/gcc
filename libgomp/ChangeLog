@@ -1,3 +1,25 @@
+2013-01-22  Alan Modra  <amodra@gmail.com>
+
+	PR libgomp/51376
+	PR libgomp/56073
+	* task.c (GOMP_task): Revert 2011-12-09 change.
+	(GOMP_taskwait): Likewise.  Instead use atomic load with acquire
+	barrier to read task->children..
+	(gomp_barrier_handle_tasks): ..and matching atomic store with
+	release barrier here when setting parent->children to NULL.
+
+2013-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR driver/55884
+	* testsuite/libgomp.fortran/fortran.exp: Use
+	-fintrinsic-modules-path= instead of
+	-fintrinsic-modules-path.
+
+2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years.
+
 2012-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	* testsuite/libgomp.fortran/fortran.exp: Set

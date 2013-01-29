@@ -1,7 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -859,9 +857,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 
   record_node_allocation_statistics (code, length);
 
-  t = ggc_alloc_zone_cleared_tree_node_stat (
-               (code == IDENTIFIER_NODE) ? &tree_id_zone : &tree_zone,
-               length PASS_MEM_STAT);
+  t = ggc_alloc_cleared_tree_node_stat (length PASS_MEM_STAT);
   TREE_SET_CODE (t, code);
 
   switch (type)
@@ -955,7 +951,7 @@ copy_node_stat (tree node MEM_STAT_DECL)
 
   length = tree_size (node);
   record_node_allocation_statistics (code, length);
-  t = ggc_alloc_zone_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
+  t = ggc_alloc_tree_node_stat (length PASS_MEM_STAT);
   memcpy (t, node, length);
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
@@ -1313,7 +1309,7 @@ make_vector_stat (unsigned len MEM_STAT_DECL)
 
   record_node_allocation_statistics (VECTOR_CST, length);
 
-  t = ggc_alloc_zone_cleared_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
+  t = ggc_alloc_cleared_tree_node_stat (length PASS_MEM_STAT);
 
   TREE_SET_CODE (t, VECTOR_CST);
   TREE_CONSTANT (t) = 1;
@@ -1676,7 +1672,7 @@ make_tree_binfo_stat (unsigned base_binfos MEM_STAT_DECL)
 
   record_node_allocation_statistics (TREE_BINFO, length);
 
-  t = ggc_alloc_zone_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
+  t = ggc_alloc_tree_node_stat (length PASS_MEM_STAT);
 
   memset (t, 0, offsetof (struct tree_binfo, base_binfos));
 
@@ -1715,7 +1711,7 @@ make_tree_vec_stat (int len MEM_STAT_DECL)
 
   record_node_allocation_statistics (TREE_VEC, length);
 
-  t = ggc_alloc_zone_cleared_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
+  t = ggc_alloc_cleared_tree_node_stat (length PASS_MEM_STAT);
 
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
@@ -2332,8 +2328,7 @@ tree_cons_stat (tree purpose, tree value, tree chain MEM_STAT_DECL)
 {
   tree node;
 
-  node = ggc_alloc_zone_tree_node_stat (&tree_zone, sizeof (struct tree_list)
-                                        PASS_MEM_STAT);
+  node = ggc_alloc_tree_node_stat (sizeof (struct tree_list) PASS_MEM_STAT);
   memset (node, 0, sizeof (struct tree_common));
 
   record_node_allocation_statistics (TREE_LIST, sizeof (struct tree_list));
@@ -3802,7 +3797,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 
   gcc_assert (TREE_CODE_LENGTH (code) == 1);
 
-  t = ggc_alloc_zone_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
+  t = ggc_alloc_tree_node_stat (length PASS_MEM_STAT);
 
   memset (t, 0, sizeof (struct tree_common));
 
@@ -10075,7 +10070,7 @@ build_vl_exp_stat (enum tree_code code, int len MEM_STAT_DECL)
 
   record_node_allocation_statistics (code, length);
 
-  t = ggc_alloc_zone_cleared_tree_node_stat (&tree_zone, length PASS_MEM_STAT);
+  t = ggc_alloc_cleared_tree_node_stat (length PASS_MEM_STAT);
 
   TREE_SET_CODE (t, code);
 

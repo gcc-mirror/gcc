@@ -485,14 +485,15 @@ package Makeutl is
          record
             case Format is
                when Format_Gprbuild =>
-                  Tree : Project_Tree_Ref := null;
-                  Id   : Source_Id        := null;
+                  Tree : Project_Tree_Ref := No_Project_Tree;
+                  Id   : Source_Id        := No_Source;
 
                when Format_Gnatmake =>
                   File    : File_Name_Type := No_File;
                   Unit    : Unit_Name_Type := No_Unit_Name;
                   Index   : Int            := 0;
                   Project : Project_Id     := No_Project;
+                  Sid     : Source_Id      := No_Source;
             end case;
          end record;
       --  Information about files stored in the queue. The exact information

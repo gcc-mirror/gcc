@@ -1,6 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2013 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -898,61 +897,6 @@ output_move_single (rtx * operands)
   return "";
 }
 
-/* Generate comparison code.  */
-int
-v850_float_z_comparison_operator (rtx op, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (op);
-
-  if (GET_RTX_CLASS (code) != RTX_COMPARE
-      && GET_RTX_CLASS (code) != RTX_COMM_COMPARE)
-    return 0;
-
-  if (mode != GET_MODE (op) && mode != VOIDmode)
-    return 0;
-
-  if ((GET_CODE (XEXP (op, 0)) != REG
-       || REGNO (XEXP (op, 0)) != CC_REGNUM)
-      || XEXP (op, 1) != const0_rtx)
-    return 0;
-
-  if (GET_MODE (XEXP (op, 0)) == CC_FPU_LTmode)
-    return code == LT;
-  if (GET_MODE (XEXP (op, 0)) == CC_FPU_LEmode)
-    return code == LE;
-  if (GET_MODE (XEXP (op, 0)) == CC_FPU_EQmode)
-    return code == EQ;
-
-  return 0;
-}
-
-int
-v850_float_nz_comparison_operator (rtx op, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (op);
-
-  if (GET_RTX_CLASS (code) != RTX_COMPARE
-      && GET_RTX_CLASS (code) != RTX_COMM_COMPARE)
-    return 0;
-
-  if (mode != GET_MODE (op) && mode != VOIDmode)
-    return 0;
-
-  if ((GET_CODE (XEXP (op, 0)) != REG
-       || REGNO (XEXP (op, 0)) != CC_REGNUM)
-      || XEXP (op, 1) != const0_rtx)
-    return 0;
-
-  if (GET_MODE (XEXP (op, 0)) == CC_FPU_GTmode)
-    return code == GT;
-  if (GET_MODE (XEXP (op, 0)) == CC_FPU_GEmode)
-    return code == GE;
-  if (GET_MODE (XEXP (op, 0)) == CC_FPU_NEmode)
-    return code == NE;
-
-  return code == GT || code == GE || code == NE;
-}
-
 enum machine_mode
 v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
 {
@@ -973,7 +917,7 @@ v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
 	case NE:
 	  return CC_FPU_NEmode;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return CCmode;
@@ -982,7 +926,7 @@ v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
 enum machine_mode
 v850_gen_float_compare (enum rtx_code cond, enum machine_mode mode ATTRIBUTE_UNUSED, rtx op0, rtx op1)
 {
-  if (GET_MODE(op0) == DFmode)
+  if (GET_MODE (op0) == DFmode)
     {
       switch (cond)
 	{
@@ -998,17 +942,18 @@ v850_gen_float_compare (enum rtx_code cond, enum machine_mode mode ATTRIBUTE_UNU
 	case GT:
 	  emit_insn (gen_cmpdf_gt_insn (op0, op1));
 	  break;
+	case NE:
+	  /* Note: There is no NE comparison operator. So we
+	     perform an EQ comparison and invert the branch.
+	     See v850_float_nz_comparison for how this is done.  */
 	case EQ:
 	  emit_insn (gen_cmpdf_eq_insn (op0, op1));
 	  break;
-	case NE:
-	  emit_insn (gen_cmpdf_ne_insn (op0, op1));
-	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
-  else if (GET_MODE(v850_compare_op0) == SFmode)
+  else if (GET_MODE (v850_compare_op0) == SFmode)
     {
       switch (cond)
 	{
@@ -1024,20 +969,19 @@ v850_gen_float_compare (enum rtx_code cond, enum machine_mode mode ATTRIBUTE_UNU
 	case GT:
 	  emit_insn (gen_cmpsf_gt_insn(op0, op1));
 	  break;
+	case NE:
+	  /* Note: There is no NE comparison operator. So we
+	     perform an EQ comparison and invert the branch.
+	     See v850_float_nz_comparison for how this is done.  */
 	case EQ:
 	  emit_insn (gen_cmpsf_eq_insn(op0, op1));
 	  break;
-	case NE:
-	  emit_insn (gen_cmpsf_ne_insn(op0, op1));
-	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else
-    {
-      abort ();
-    }
+    gcc_unreachable ();
 
   return v850_select_cc_mode (cond, op0, op1);
 }

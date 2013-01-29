@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -413,8 +413,10 @@ enum standard_datatypes
   ADT_reraise_zcx_decl,
   ADT_begin_handler_decl,
   ADT_end_handler_decl,
+  ADT_unhandled_except_decl,
   ADT_others_decl,
   ADT_all_others_decl,
+  ADT_unhandled_others_decl,
   ADT_LAST};
 
 /* Define kind of exception information associated with raise statements.  */
@@ -460,7 +462,9 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define begin_handler_decl gnat_std_decls[(int) ADT_begin_handler_decl]
 #define others_decl gnat_std_decls[(int) ADT_others_decl]
 #define all_others_decl gnat_std_decls[(int) ADT_all_others_decl]
+#define unhandled_others_decl gnat_std_decls[(int) ADT_unhandled_others_decl]
 #define end_handler_decl gnat_std_decls[(int) ADT_end_handler_decl]
+#define unhandled_except_decl gnat_std_decls[(int) ADT_unhandled_except_decl]
 
 /* Routines expected by the gcc back-end. They must have exactly the same
    prototype and names as below.  */

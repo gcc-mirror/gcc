@@ -1,6 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2005-2013 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -1908,10 +1907,10 @@ equiv_class_label_eq (const void *p1, const void *p2)
 }
 
 /* Lookup a equivalence class in TABLE by the bitmap of LABELS it
-   contains.  */
+   contains.  Sets *REF_LABELS to the bitmap LABELS is equivalent to.  */
 
 static unsigned int
-equiv_class_lookup (htab_t table, bitmap labels)
+equiv_class_lookup (htab_t table, bitmap labels, bitmap *ref_labels)
 {
   void **slot;
   struct equiv_class_label ecl;
@@ -1922,9 +1921,18 @@ equiv_class_lookup (htab_t table, bitmap labels)
   slot = htab_find_slot_with_hash (table, &ecl,
 				   ecl.hashcode, NO_INSERT);
   if (!slot)
-    return 0;
+    {
+      if (ref_labels)
+	*ref_labels = NULL;
+      return 0;
+    }
   else
-    return ((equiv_class_label_t) *slot)->equivalence_class;
+    {
+      equiv_class_label_t ec = (equiv_class_label_t) *slot;
+      if (ref_labels)
+	*ref_labels = ec->labels;
+      return ec->equivalence_class;
+    }
 }
 
 
@@ -2124,13 +2132,20 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 
   if (!bitmap_empty_p (graph->points_to[n]))
     {
+      bitmap ref_points_to;
       unsigned int label = equiv_class_lookup (pointer_equiv_class_table,
-					       graph->points_to[n]);
+					       graph->points_to[n],
+					       &ref_points_to);
       if (!label)
 	{
 	  label = pointer_equiv_class++;
 	  equiv_class_add (pointer_equiv_class_table,
 			   label, graph->points_to[n]);
+	}
+      else
+	{
+	  BITMAP_FREE (graph->points_to[n]);
+	  graph->points_to[n] = ref_points_to;
 	}
       graph->pointer_label[n] = label;
     }
@@ -2191,7 +2206,7 @@ perform_var_substitution (constraint_graph_t graph)
       /* Look up the location equivalence label if one exists, or make
 	 one otherwise.  */
       label = equiv_class_lookup (location_equiv_class_table,
-				  pointed_by);
+				  pointed_by, NULL);
       if (label == 0)
 	{
 	  label = location_equiv_class++;
@@ -4014,8 +4029,7 @@ find_func_aliases_for_builtin_call (gimple t)
   vec<ce_s> rhsc = vNULL;
   varinfo_t fi;
 
-  if (fndecl != NULL_TREE
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (gimple_call_builtin_p (t, BUILT_IN_NORMAL))
     /* ???  All builtins that are handled here need to be handled
        in the alias-oracle query functions explicitly!  */
     switch (DECL_FUNCTION_CODE (fndecl))
@@ -4768,8 +4782,7 @@ find_func_clobbers (gimple origt)
 
       /* For builtins we do not have separate function info.  For those
 	 we do not generate escapes for we have to generate clobbers/uses.  */
-      if (decl
-	  && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+      if (gimple_call_builtin_p (t, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (decl))
 	  {
 	  /* The following functions use and clobber memory pointed to

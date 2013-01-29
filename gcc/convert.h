@@ -1,5 +1,5 @@
 /* Definition of functions in convert.c.
-   Copyright (C) 1993, 2000, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

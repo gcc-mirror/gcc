@@ -1,8 +1,7 @@
 /* Various declarations for language-independent pretty-print
    subroutines that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 2002, 2003, 2004, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

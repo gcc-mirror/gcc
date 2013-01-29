@@ -1,0 +1,36 @@
+//===-- sanitizer_platform_interceptors.h -----------------------*- C++ -*-===//
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+//
+// This file defines macro telling whether sanitizer tools can/should intercept
+// given library functions on a given platform.
+//
+//===----------------------------------------------------------------------===//
+
+#include "sanitizer_internal_defs.h"
+
+#if !defined(_WIN32)
+# define SI_NOT_WINDOWS 1
+#else
+# define SI_NOT_WINDOWS 0
+#endif
+
+#if defined(__linux__) && !defined(ANDROID)
+# define SI_LINUX_NOT_ANDROID 1
+#else
+# define SI_LINUX_NOT_ANDROID 0
+#endif
+
+# define SANITIZER_INTERCEPT_READ   SI_NOT_WINDOWS
+# define SANITIZER_INTERCEPT_PREAD  SI_NOT_WINDOWS
+# define SANITIZER_INTERCEPT_WRITE  SI_NOT_WINDOWS
+# define SANITIZER_INTERCEPT_PWRITE SI_NOT_WINDOWS
+
+# define SANITIZER_INTERCEPT_PREAD64 SI_LINUX_NOT_ANDROID
+# define SANITIZER_INTERCEPT_PWRITE64 SI_LINUX_NOT_ANDROID
+# define SANITIZER_INTERCEPT_PRCTL   SI_LINUX_NOT_ANDROID
+
+# define SANITIZER_INTERCEPT_SCANF 0

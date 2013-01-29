@@ -1,6 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -648,9 +646,6 @@ internal_proto(init_loop_spec);
 
 extern void next_record (st_parameter_dt *, int);
 internal_proto(next_record);
-
-extern void reverse_memcpy (void *, const void *, size_t);
-internal_proto (reverse_memcpy);
 
 extern void st_wait (st_parameter_wait *);
 export_proto(st_wait);

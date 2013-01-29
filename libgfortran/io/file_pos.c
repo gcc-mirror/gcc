@@ -1,5 +1,4 @@
-/* Copyright (C) 2002-2003, 2005, 2006, 2007, 2009, 2010
-   Free Software Foundation, Inc.
+/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -140,15 +139,21 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 	}
       else
 	{
+	  uint32_t u32;
+	  uint64_t u64;
 	  switch (length)
 	    {
 	    case sizeof(GFC_INTEGER_4):
-	      reverse_memcpy (&m4, p, sizeof (m4));
+	      memcpy (&u32, p, sizeof (u32));
+	      u32 = __builtin_bswap32 (u32);
+	      memcpy (&m4, &u32, sizeof (m4));
 	      m = m4;
 	      break;
 
 	    case sizeof(GFC_INTEGER_8):
-	      reverse_memcpy (&m8, p, sizeof (m8));
+	      memcpy (&u64, p, sizeof (u64));
+	      u64 = __builtin_bswap64 (u64);
+	      memcpy (&m8, &u64, sizeof (m8));
 	      m = m8;
 	      break;
 

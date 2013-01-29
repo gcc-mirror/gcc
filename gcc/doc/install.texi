@@ -44,9 +44,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-@c 2010, 2011 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2013 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -71,9 +69,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-2010 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2013 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -371,23 +367,24 @@ installed but it is not in your default library search path, the
 @option{--with-mpc} configure option should be used.  See also
 @option{--with-mpc-lib} and @option{--with-mpc-include}.
 
-@item ISL Library version 0.10
+@item ISL Library version 0.11.1
 
 Necessary to build GCC with the Graphite loop optimizations.
-It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
+It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}
+as @file{isl-0.11.1.tar.bz2}.
 
 The @option{--with-isl} configure option should be used if ISL is not
 installed in your default library search path.
 
-@item CLooG 0.17.0
+@item CLooG 0.18.0
 
 Necessary to build GCC with the Graphite loop optimizations.  It can be
 downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
-@file{cloog-0.17.0.tar.gz}.  The @option{--with-cloog} configure option should
+@file{cloog-0.18.0.tar.gz}.  The @option{--with-cloog} configure option should
 be used if CLooG is not installed in your default library search path.
-CLooG needs to be built against ISL 0.10, not its included copy of ISL
-which is too old.  Use @option{--with-isl=system} to direct CLooG to pick
-up an already installed ISL.  CLooG needs to be configured to use GMP
+CLooG needs to be built against ISL 0.11.1.  Use @option{--with-isl=system}
+to direct CLooG to pick up an already installed ISL, otherwise it will use
+ISL 0.11.1 as bundled with CLooG.  CLooG needs to be configured to use GMP
 internally, use @option{--with-bits=gmp} to direct it to do that.
 
 @end table
@@ -531,26 +528,18 @@ the executables named @command{cantlr}, @command{runantlr} or
 
 GCC is distributed via @uref{http://gcc.gnu.org/svn.html,,SVN} and FTP
 tarballs compressed with @command{gzip} or
-@command{bzip2}.  It is possible to download a full distribution or specific
-components.
+@command{bzip2}.
 
 Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The full distribution includes the C, C++, Objective-C, Fortran, Java,
-and Ada (in the case of GCC 3.1 and later) compilers.  The full
-distribution also includes runtime libraries for C++, Objective-C,
-Fortran, and Java.  In GCC 3.0 and later versions, the GNU compiler
-testsuites are also included in the full distribution.
-
-If you choose to download specific components, you must download the core
-GCC distribution plus any language specific distributions you wish to
-use.  The core distribution includes the C language front end as well as the
-shared components.  Each language has a tarball which includes the language
-front end as well as the language runtime (when appropriate).
-
-Unpack the core distribution as well as any language specific
-distributions in the same directory.
+The source distribution includes the C, C++, Objective-C, Fortran, Java,
+and Ada (in the case of GCC 3.1 and later) compilers, as well as
+runtime libraries for C++, Objective-C, Fortran, and Java.
+For previous versions these were downloadable as separate components such
+as the core GCC distribution, which included the C language front end and
+shared components, and language-specific distributions including the
+language front end and the language runtime (where appropriate).
 
 If you also intend to build binutils (either to upgrade an existing
 installation or for use in place of the corresponding tools of your
@@ -1534,12 +1523,6 @@ When this option is specified more detailed information on memory
 allocation is gathered.  This information is printed when using
 @option{-fmem-report}.
 
-@item --with-gc
-@itemx --with-gc=@var{choice}
-With this option you can specify the garbage collector implementation
-used during the compilation process.  @var{choice} can be one of
-@samp{page} and @samp{zone}, where @samp{page} is the default.
-
 @item --enable-nls
 @itemx --disable-nls
 The @option{--enable-nls} option enables Native Language Support (NLS),
@@ -1812,6 +1795,16 @@ Specifies that @samp{newlib} is
 being used as the target C library.  This causes @code{__eprintf} to be
 omitted from @file{libgcc.a} on the assumption that it will be provided by
 @samp{newlib}.
+
+@item --with-avrlibc
+Specifies that @samp{AVR-Libc} is
+being used as the target C library.  This causes float support
+functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
+the assumption that it will be provided by @file{libm.a}.  For more
+technical details, cf. @uref{http://gcc.gnu.org/PR54461,,PR54461}.
+This option is only supported for the AVR target.  It is not supported for
+RTEMS configurations, which currently use newlib.  The option is
+supported since version 4.7.2 and is the default in 4.8.0 and newer.
 
 @item --with-build-time-tools=@var{dir}
 Specifies where to find the set of target tools (assembler, linker, etc.)

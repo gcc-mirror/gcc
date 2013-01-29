@@ -1,5 +1,5 @@
 ;; ARM VFP11 pipeline description
-;; Copyright (C) 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2013 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -56,12 +56,12 @@
 
 (define_insn_reservation "vfp_farith" 8
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fadds,faddd,fconsts,fconstd,f_cvt,fmuls,fmacs"))
+      (eq_attr "type" "fadds,faddd,fconsts,fconstd,f_cvt,fmuls,fmacs,ffmas"))
  "fmac")
 
 (define_insn_reservation "vfp_fmul" 9
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fmuld,fmacd"))
+      (eq_attr "type" "fmuld,fmacd,ffmad"))
  "fmac*2")
 
 (define_insn_reservation "vfp_fdivs" 19

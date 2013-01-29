@@ -364,7 +364,7 @@ BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 # here so that they can be overridden by Makefile fragments.
 BOOT_CFLAGS= -g -O2
 BOOT_LDFLAGS=
-BOOT_ADAFLAGS=-gnatpg -gnata
+BOOT_ADAFLAGS= -gnatpg
 
 AWK = @AWK@
 SED = @SED@
@@ -45485,6 +45485,14 @@ configure-stage3-gcc: maybe-configure-stage3-intl
 configure-stage4-gcc: maybe-configure-stage4-intl
 configure-stageprofile-gcc: maybe-configure-stageprofile-intl
 configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
+configure-gcc: maybe-all-gmp
+
+configure-stage1-gcc: maybe-all-stage1-gmp
+configure-stage2-gcc: maybe-all-stage2-gmp
+configure-stage3-gcc: maybe-all-stage3-gmp
+configure-stage4-gcc: maybe-all-stage4-gmp
+configure-stageprofile-gcc: maybe-all-stageprofile-gmp
+configure-stagefeedback-gcc: maybe-all-stagefeedback-gmp
 configure-gcc: maybe-all-lto-plugin
 
 configure-stage1-gcc: maybe-all-stage1-lto-plugin
@@ -45541,14 +45549,6 @@ all-stage3-gcc: all-stage3-libiberty
 all-stage4-gcc: all-stage4-libiberty
 all-stageprofile-gcc: all-stageprofile-libiberty
 all-stagefeedback-gcc: all-stagefeedback-libiberty
-all-gcc: maybe-all-gmp
-
-all-stage1-gcc: maybe-all-stage1-gmp
-all-stage2-gcc: maybe-all-stage2-gmp
-all-stage3-gcc: maybe-all-stage3-gmp
-all-stage4-gcc: maybe-all-stage4-gmp
-all-stageprofile-gcc: maybe-all-stageprofile-gmp
-all-stagefeedback-gcc: maybe-all-stagefeedback-gmp
 all-gcc: maybe-all-intl
 
 all-stage1-gcc: maybe-all-stage1-intl
@@ -45910,6 +45910,14 @@ all-stage3-binutils: maybe-all-stage3-intl
 all-stage4-binutils: maybe-all-stage4-intl
 all-stageprofile-binutils: maybe-all-stageprofile-intl
 all-stagefeedback-binutils: maybe-all-stagefeedback-intl
+all-binutils: maybe-all-gas
+
+all-stage1-binutils: maybe-all-stage1-gas
+all-stage2-binutils: maybe-all-stage2-gas
+all-stage3-binutils: maybe-all-stage3-gas
+all-stage4-binutils: maybe-all-stage4-gas
+all-stageprofile-binutils: maybe-all-stageprofile-gas
+all-stagefeedback-binutils: maybe-all-stagefeedback-gas
 install-binutils: maybe-install-opcodes
 install-strip-binutils: maybe-install-strip-opcodes
 install-opcodes: maybe-install-bfd
@@ -45959,6 +45967,7 @@ all-gprof: maybe-all-libiberty
 all-gprof: maybe-all-bfd
 all-gprof: maybe-all-opcodes
 all-gprof: maybe-all-intl
+all-gprof: maybe-all-gas
 configure-ld: maybe-configure-intl
 
 configure-stage1-ld: maybe-configure-stage1-intl
@@ -46015,6 +46024,14 @@ all-stage3-ld: maybe-all-stage3-intl
 all-stage4-ld: maybe-all-stage4-intl
 all-stageprofile-ld: maybe-all-stageprofile-intl
 all-stagefeedback-ld: maybe-all-stagefeedback-intl
+all-ld: maybe-all-gas
+
+all-stage1-ld: maybe-all-stage1-gas
+all-stage2-ld: maybe-all-stage2-gas
+all-stage3-ld: maybe-all-stage3-gas
+all-stage4-ld: maybe-all-stage4-gas
+all-stageprofile-ld: maybe-all-stageprofile-gas
+all-stagefeedback-ld: maybe-all-stagefeedback-gas
 install-ld: maybe-install-gold
 install-strip-ld: maybe-install-strip-gold
 configure-gold: maybe-configure-intl
@@ -46057,6 +46074,14 @@ all-stage3-gold: maybe-all-build-bison
 all-stage4-gold: maybe-all-build-bison
 all-stageprofile-gold: maybe-all-build-bison
 all-stagefeedback-gold: maybe-all-build-bison
+all-gold: maybe-all-gas
+
+all-stage1-gold: maybe-all-stage1-gas
+all-stage2-gold: maybe-all-stage2-gas
+all-stage3-gold: maybe-all-stage3-gas
+all-stage4-gold: maybe-all-stage4-gas
+all-stageprofile-gold: maybe-all-stageprofile-gas
+all-stagefeedback-gold: maybe-all-stagefeedback-gas
 check-gold: maybe-all-binutils
 
 check-stage1-gold: maybe-all-stage1-binutils
@@ -46191,6 +46216,7 @@ all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libg
 install-target-libgo: maybe-install-target-libatomic
 install-target-libgfortran: maybe-install-target-libquadmath
 install-target-libgfortran: maybe-install-target-libgcc
+install-target-libsanitizer: maybe-install-target-libstdc++-v3
 install-target-libsanitizer: maybe-install-target-libgcc
 install-target-libjava: maybe-install-target-libgcc
 install-target-libitm: maybe-install-target-libgcc

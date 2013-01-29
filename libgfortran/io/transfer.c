@@ -1,5 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -878,50 +877,138 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 }
 
 
+/* Reverse memcpy - used for byte swapping.  */
+
+static void
+reverse_memcpy (void *dest, const void *src, size_t n)
+{
+  char *d, *s;
+  size_t i;
+
+  d = (char *) dest;
+  s = (char *) src + n - 1;
+
+  /* Write with ascending order - this is likely faster
+     on modern architectures because of write combining.  */
+  for (i=0; i<n; i++)
+      *(d++) = *(s--);
+}
+
+
+/* Utility function for byteswapping an array, using the bswap
+   builtins if possible. dest and src can overlap completely, or then
+   they must point to separate objects; partial overlaps are not
+   allowed.  */
+
+static void
+bswap_array (void *dest, const void *src, size_t size, size_t nelems)
+{
+  const char *ps; 
+  char *pd;
+
+  switch (size)
+    {
+    case 1:
+      break;
+    case 2:
+      for (size_t i = 0; i < nelems; i++)
+	((uint16_t*)dest)[i] = __builtin_bswap16 (((uint16_t*)src)[i]);
+      break;
+    case 4:
+      for (size_t i = 0; i < nelems; i++)
+	((uint32_t*)dest)[i] = __builtin_bswap32 (((uint32_t*)src)[i]);
+      break;
+    case 8:
+      for (size_t i = 0; i < nelems; i++)
+	((uint64_t*)dest)[i] = __builtin_bswap64 (((uint64_t*)src)[i]);
+      break;
+    case 12:
+      ps = src;
+      pd = dest;
+      for (size_t i = 0; i < nelems; i++)
+	{
+	  uint32_t tmp;
+	  memcpy (&tmp, ps, 4);
+	  *(uint32_t*)pd = __builtin_bswap32 (*(uint32_t*)(ps + 8));
+	  *(uint32_t*)(pd + 4) = __builtin_bswap32 (*(uint32_t*)(ps + 4));
+	  *(uint32_t*)(pd + 8) = __builtin_bswap32 (tmp);
+	  ps += size;
+	  pd += size;
+	}
+      break;
+    case 16:
+      ps = src;
+      pd = dest;
+      for (size_t i = 0; i < nelems; i++)
+	{
+	  uint64_t tmp;
+	  memcpy (&tmp, ps, 8);
+	  *(uint64_t*)pd = __builtin_bswap64 (*(uint64_t*)(ps + 8));
+	  *(uint64_t*)(pd + 8) = __builtin_bswap64 (tmp);
+	  ps += size;
+	  pd += size;
+	}
+      break;
+    default:
+      pd = dest;
+      if (dest != src)
+	{
+	  ps = src;
+	  for (size_t i = 0; i < nelems; i++)
+	    {
+	      reverse_memcpy (pd, ps, size);
+	      ps += size;
+	      pd += size;
+	    }
+	}
+      else
+	{
+	  /* In-place byte swap.  */
+	  for (size_t i = 0; i < nelems; i++)
+	    {
+	      char tmp, *low = pd, *high = pd + size - 1;
+	      for (size_t j = 0; j < size/2; j++)
+		{
+		  tmp = *low;
+		  *low = *high;
+		  *high = tmp;
+		  low++;
+		  high--;
+		}
+	      pd += size;
+	    }
+	}
+    }
+}
+
+
 /* Master function for unformatted reads.  */
 
 static void
 unformatted_read (st_parameter_dt *dtp, bt type,
 		  void *dest, int kind, size_t size, size_t nelems)
 {
-  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE)
-      || kind == 1)
-    {
-      if (type == BT_CHARACTER)
-	size *= GFC_SIZE_OF_CHAR_KIND(kind);
-      read_block_direct (dtp, dest, size * nelems);
-    }
-  else
-    {
-      char buffer[16];
-      char *p;
-      size_t i;
+  if (type == BT_CHARACTER)
+    size *= GFC_SIZE_OF_CHAR_KIND(kind);
+  read_block_direct (dtp, dest, size * nelems);
 
-      p = dest;
-
+  if (unlikely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_SWAP)
+      && kind != 1)
+    {
       /* Handle wide chracters.  */
-      if (type == BT_CHARACTER && kind != 1)
-	{
-	  nelems *= size;
-	  size = kind;
-	}
+      if (type == BT_CHARACTER)
+  	{
+  	  nelems *= size;
+  	  size = kind;
+  	}
 
       /* Break up complex into its constituent reals.  */
-      if (type == BT_COMPLEX)
-	{
-	  nelems *= 2;
-	  size /= 2;
-	}
-      
-      /* By now, all complex variables have been split into their
-	 constituent reals.  */
-      
-      for (i = 0; i < nelems; i++)
-	{
- 	  read_block_direct (dtp, buffer, size);
- 	  reverse_memcpy (p, buffer, size);
- 	  p += size;
- 	}
+      else if (type == BT_COMPLEX)
+  	{
+  	  nelems *= 2;
+  	  size /= 2;
+  	}
+      bswap_array (dest, dest, size, nelems);
     }
 }
 
@@ -945,9 +1032,10 @@ unformatted_write (st_parameter_dt *dtp, bt type,
     }
   else
     {
-      char buffer[16];
+#define BSWAP_BUFSZ 512
+      char buffer[BSWAP_BUFSZ];
       char *p;
-      size_t i;
+      size_t nrem;
 
       p = source;
 
@@ -968,12 +1056,21 @@ unformatted_write (st_parameter_dt *dtp, bt type,
       /* By now, all complex variables have been split into their
 	 constituent reals.  */
 
-      for (i = 0; i < nelems; i++)
+      nrem = nelems;
+      do
 	{
-	  reverse_memcpy(buffer, p, size);
- 	  p += size;
-	  write_buf (dtp, buffer, size);
+	  size_t nc;
+	  if (size * nrem > BSWAP_BUFSZ)
+	    nc = BSWAP_BUFSZ / size;
+	  else
+	    nc = nrem;
+
+	  bswap_array (buffer, p, size, nc);
+	  write_buf (dtp, buffer, size * nc);
+	  p += size * nc;
+	  nrem -= nc;
 	}
+      while (nrem > 0);
     }
 }
 
@@ -2153,15 +2250,22 @@ us_read (st_parameter_dt *dtp, int continued)
 	}
     }
   else
+    {
+      uint32_t u32;
+      uint64_t u64;
       switch (nr)
 	{
 	case sizeof(GFC_INTEGER_4):
-	  reverse_memcpy (&i4, &i, sizeof (i4));
+	  memcpy (&u32, &i, sizeof (u32));
+	  u32 = __builtin_bswap32 (u32);
+	  memcpy (&i4, &u32, sizeof (i4));
 	  i = i4;
 	  break;
 
 	case sizeof(GFC_INTEGER_8):
-	  reverse_memcpy (&i8, &i, sizeof (i8));
+	  memcpy (&u64, &i, sizeof (u64));
+	  u64 = __builtin_bswap64 (u64);
+	  memcpy (&i8, &u64, sizeof (i8));
 	  i = i8;
 	  break;
 
@@ -2169,6 +2273,7 @@ us_read (st_parameter_dt *dtp, int continued)
 	  runtime_error ("Illegal value for record marker");
 	  break;
 	}
+    }
 
   if (i >= 0)
     {
@@ -3036,7 +3141,6 @@ write_us_marker (st_parameter_dt *dtp, const gfc_offset buf)
   size_t len;
   GFC_INTEGER_4 buf4;
   GFC_INTEGER_8 buf8;
-  char p[sizeof (GFC_INTEGER_8)];
 
   if (compile_options.record_marker == 0)
     len = sizeof (GFC_INTEGER_4);
@@ -3065,18 +3169,22 @@ write_us_marker (st_parameter_dt *dtp, const gfc_offset buf)
     }
   else
     {
+      uint32_t u32;
+      uint64_t u64;
       switch (len)
 	{
 	case sizeof (GFC_INTEGER_4):
 	  buf4 = buf;
-	  reverse_memcpy (p, &buf4, sizeof (GFC_INTEGER_4));
-	  return swrite (dtp->u.p.current_unit->s, p, len);
+	  memcpy (&u32, &buf4, sizeof (u32));
+	  u32 = __builtin_bswap32 (u32);
+	  return swrite (dtp->u.p.current_unit->s, &u32, len);
 	  break;
 
 	case sizeof (GFC_INTEGER_8):
 	  buf8 = buf;
-	  reverse_memcpy (p, &buf8, sizeof (GFC_INTEGER_8));
-	  return swrite (dtp->u.p.current_unit->s, p, len);
+	  memcpy (&u64, &buf8, sizeof (u64));
+	  u64 = __builtin_bswap64 (u64);
+	  return swrite (dtp->u.p.current_unit->s, &u64, len);
 	  break;
 
 	default:
@@ -3711,22 +3819,6 @@ st_set_nml_var_dim (st_parameter_dt *dtp, GFC_INTEGER_4 n_dim,
   for (nml = dtp->u.p.ionml; nml->next; nml = nml->next);
 
   GFC_DIMENSION_SET(nml->dim[n],lbound,ubound,stride);
-}
-
-/* Reverse memcpy - used for byte swapping.  */
-
-void reverse_memcpy (void *dest, const void *src, size_t n)
-{
-  char *d, *s;
-  size_t i;
-
-  d = (char *) dest;
-  s = (char *) src + n - 1;
-
-  /* Write with ascending order - this is likely faster
-     on modern architectures because of write combining.  */
-  for (i=0; i<n; i++)
-      *(d++) = *(s--);
 }
 
 

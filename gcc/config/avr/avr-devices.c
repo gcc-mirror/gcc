@@ -1,5 +1,4 @@
-/* Copyright (C) 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
    This file is part of GCC.
@@ -28,7 +27,7 @@
 /* List of all known AVR MCU architectures.
    Order as of enum avr_arch from avr.h.  */
 
-const struct base_arch_s
+const avr_arch_t
 avr_arch_types[] =
 {
   /* unknown device specified */
@@ -36,7 +35,7 @@ avr_arch_types[] =
   /*
     A  M  J  LM E  E  E  X  R   d S   S O   A
     S  U  M  PO L  L  I  M  A   a t   F ff  r
-    M  L  P  MV P  P  J  E  M   t a   R s   c 
+    M  L  P  MV P  P  J  E  M   t a   R s   c
              XW M  M  M  G  P   a r     e   h
                    X  P  A  D     t     t   ID   */
   { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, "1",   "avr1"  },
@@ -57,7 +56,7 @@ avr_arch_types[] =
   { 0, 1, 1, 1, 1, 1, 1, 1, 1, 0x2000,  0, "107", "avrxmega7" }
 };
 
-const struct arch_info_s
+const avr_arch_info_t
 avr_texinfo[] =
 {
   { ARCH_AVR1,
@@ -102,9 +101,11 @@ avr_texinfo[] =
     "and more than 64@tie{}KiB of RAM." }
 };
 
-const struct mcu_type_s avr_mcu_types[] = {
-#define AVR_MCU(NAME,ARCH,MACRO,SHORT_SP,ERRATA_SKIP,DATA_SEC,N_FLASH,LIB_NAME)\
-  { NAME, ARCH, MACRO, SHORT_SP, ERRATA_SKIP, DATA_SEC, N_FLASH, LIB_NAME },
+const avr_mcu_t
+avr_mcu_types[] =
+{
+#define AVR_MCU(NAME, ARCH, MACRO, SP8, ERR_SKIP, DATA_SEC, N_FLASH, LIBNAME)\
+  { NAME, ARCH, MACRO, SP8, ERR_SKIP, DATA_SEC, N_FLASH, LIBNAME },
 #include "avr-mcus.def"
 #undef AVR_MCU
     /* End of list.  */

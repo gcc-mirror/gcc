@@ -1631,6 +1631,14 @@ package body Sinfo is
       return Flag16 (N);
    end Import_Interface_Present;
 
+   function In_Assertion
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call);
+      return Flag4 (N);
+   end In_Assertion;
+
    function In_Present
       (N : Node_Id) return Boolean is
    begin
@@ -4694,6 +4702,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma);
       Set_Flag16 (N, Val);
    end Set_Import_Interface_Present;
+
+   procedure Set_In_Assertion
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call);
+      Set_Flag4 (N, Val);
+   end Set_In_Assertion;
 
    procedure Set_In_Present
       (N : Node_Id; Val : Boolean := True) is

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -382,10 +382,11 @@ package System.Rident is
       --  value of the parameter permitted by the profile.
    end record;
 
-   Profile_Info : constant array (Profile_Name_Actual) of Profile_Data :=
+   Profile_Info : constant array (Profile_Name_Actual) of Profile_Data := (
 
-                    (No_Implementation_Extensions =>
-                        --  Restrictions for Restricted profile
+                     --  No_Implementation_Extensions profile
+
+                     No_Implementation_Extensions =>
 
                        (Set   =>
                           (No_Implementation_Aspect_Specifications => True,

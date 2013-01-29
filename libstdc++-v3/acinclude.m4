@@ -178,17 +178,23 @@ dnl
 AC_DEFUN([GLIBCXX_CHECK_ASSEMBLER_HWCAP], [
   test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
 
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -Wa,-nH"
+  # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
+  # with a different meaning.
+  case ${target_os} in
+    solaris2*)
+      ac_save_CFLAGS="$CFLAGS"
+      CFLAGS="$CFLAGS -Wa,-nH"
 
-  AC_MSG_CHECKING([for as that supports -Wa,-nH])
-  AC_TRY_COMPILE([], [return 0;], [ac_hwcap_flags=yes],[ac_hwcap_flags=no])
-  if test "$ac_hwcap_flags" = "yes"; then
-    HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
-  fi
-  AC_MSG_RESULT($ac_hwcap_flags)
+      AC_MSG_CHECKING([for as that supports -Wa,-nH])
+      AC_TRY_COMPILE([], [return 0;], [ac_hwcap_flags=yes],[ac_hwcap_flags=no])
+      if test "$ac_hwcap_flags" = "yes"; then
+	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
+      fi
+      AC_MSG_RESULT($ac_hwcap_flags)
 
-  CFLAGS="$ac_save_CFLAGS"
+      CFLAGS="$ac_save_CFLAGS"
+      ;;
+  esac
 
   AC_SUBST(HWCAP_FLAGS)
 ])

@@ -1,4 +1,4 @@
-/* Copyright (C) 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2013 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -116,11 +116,10 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	}
       else
 	fn (data);
-      if (team != NULL)
+      if (task.children != NULL)
 	{
 	  gomp_mutex_lock (&team->task_lock);
-	  if (task.children != NULL)
-	    gomp_clear_parent (task.children);
+	  gomp_clear_parent (task.children);
 	  gomp_mutex_unlock (&team->task_lock);
 	}
       gomp_end_task ();
@@ -258,7 +257,13 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
 		    parent->children = child_task->next_child;
 		  else
 		    {
-		      parent->children = NULL;
+		      /* We access task->children in GOMP_taskwait
+			 outside of the task lock mutex region, so
+			 need a release barrier here to ensure memory
+			 written by child_task->fn above is flushed
+			 before the NULL is written.  */
+		      __atomic_store_n (&parent->children, NULL,
+					MEMMODEL_RELEASE);
 		      if (parent->in_taskwait)
 			gomp_sem_post (&parent->taskwait_sem);
 		    }
@@ -291,7 +296,8 @@ GOMP_taskwait (void)
   struct gomp_task *child_task = NULL;
   struct gomp_task *to_free = NULL;
 
-  if (task == NULL || team == NULL)
+  if (task == NULL
+      || __atomic_load_n (&task->children, MEMMODEL_ACQUIRE) == NULL)
     return;
 
   gomp_mutex_lock (&team->task_lock);

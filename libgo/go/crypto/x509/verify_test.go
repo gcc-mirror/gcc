@@ -15,19 +15,31 @@ import (
 )
 
 type verifyTest struct {
-	leaf          string
-	intermediates []string
-	roots         []string
-	currentTime   int64
-	dnsName       string
-	systemSkip    bool
-	keyUsages     []ExtKeyUsage
+	leaf                 string
+	intermediates        []string
+	roots                []string
+	currentTime          int64
+	dnsName              string
+	systemSkip           bool
+	keyUsages            []ExtKeyUsage
+	testSystemRootsError bool
 
 	errorCallback  func(*testing.T, int, error) bool
 	expectedChains [][]string
 }
 
 var verifyTests = []verifyTest{
+	{
+		leaf:                 googleLeaf,
+		intermediates:        []string{thawteIntermediate},
+		currentTime:          1302726541,
+		dnsName:              "www.google.com",
+		testSystemRootsError: true,
+
+		// Without any roots specified we should get a system roots
+		// error.
+		errorCallback: expectSystemRootsError,
+	},
 	{
 		leaf:          googleLeaf,
 		intermediates: []string{thawteIntermediate},
@@ -180,6 +192,14 @@ func expectAuthorityUnknown(t *testing.T, i int, err error) (ok bool) {
 	return true
 }
 
+func expectSystemRootsError(t *testing.T, i int, err error) bool {
+	if _, ok := err.(SystemRootsError); !ok {
+		t.Errorf("#%d: error was not SystemRootsError: %s", i, err)
+		return false
+	}
+	return true
+}
+
 func certificateFromPEM(pemBytes string) (*Certificate, error) {
 	block, _ := pem.Decode([]byte(pemBytes))
 	if block == nil {
@@ -191,6 +211,9 @@ func certificateFromPEM(pemBytes string) (*Certificate, error) {
 func testVerify(t *testing.T, useSystemRoots bool) {
 	for i, test := range verifyTests {
 		if useSystemRoots && test.systemSkip {
+			continue
+		}
+		if runtime.GOOS == "windows" && test.testSystemRootsError {
 			continue
 		}
 
@@ -226,7 +249,18 @@ func testVerify(t *testing.T, useSystemRoots bool) {
 			return
 		}
 
+		var oldSystemRoots *CertPool
+		if test.testSystemRootsError {
+			oldSystemRoots = systemRootsPool()
+			systemRoots = nil
+			opts.Roots = nil
+		}
+
 		chains, err := leaf.Verify(opts)
+
+		if test.testSystemRootsError {
+			systemRoots = oldSystemRoots
+		}
 
 		if test.errorCallback == nil && err != nil {
 			t.Errorf("#%d: unexpected error: %s", i, err)
@@ -275,8 +309,7 @@ func TestGoVerify(t *testing.T) {
 
 func TestSystemVerify(t *testing.T) {
 	if runtime.GOOS != "windows" {
-		t.Logf("skipping verify test using system APIs on %q", runtime.GOOS)
-		return
+		t.Skipf("skipping verify test using system APIs on %q", runtime.GOOS)
 	}
 
 	testVerify(t, true)

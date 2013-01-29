@@ -1,6 +1,5 @@
 /* Rtl-level induction variable analysis.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013
-   Free Software Foundation, Inc.
+   Copyright (C) 2004-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2820,7 +2819,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   else
     {
       max = determine_max_iter (loop, desc, old_niter);
-      gcc_assert (max);
+      if (!max)
+	goto zero_iter_simplify;
       if (!desc->infinite
 	  && !desc->assumptions)
 	record_niter_bound (loop, double_int::from_uhwi (max),

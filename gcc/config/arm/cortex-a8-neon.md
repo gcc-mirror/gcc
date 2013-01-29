@@ -1,5 +1,5 @@
 ;; ARM Cortex-A8 NEON scheduling description.
-;; Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2013 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 
 ;; This file is part of GCC.
@@ -149,12 +149,12 @@
 
 (define_insn_reservation "cortex_a8_vfp_macs" 21
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "fmacs"))
+       (eq_attr "type" "fmacs,ffmas"))
   "cortex_a8_vfp,cortex_a8_vfplite*20")
 
 (define_insn_reservation "cortex_a8_vfp_macd" 26
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "fmacd"))
+       (eq_attr "type" "fmacd,ffmad"))
   "cortex_a8_vfp,cortex_a8_vfplite*25")
 
 (define_insn_reservation "cortex_a8_vfp_divs" 37

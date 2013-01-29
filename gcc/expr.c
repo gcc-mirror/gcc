@@ -1,7 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012 Free Software Foundation, Inc.
+   Copyright (C) 1988-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2077,6 +2075,23 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
   /* Copy from the pseudo into the (probable) hard reg.  */
   if (orig_dst != dst)
     emit_move_insn (orig_dst, dst);
+}
+
+/* Return a form of X that does not use a PARALLEL.  TYPE is the type
+   of the value stored in X.  */
+
+rtx
+maybe_emit_group_store (rtx x, tree type)
+{
+  enum machine_mode mode = TYPE_MODE (type);
+  gcc_checking_assert (GET_MODE (x) == VOIDmode || GET_MODE (x) == mode);
+  if (GET_CODE (x) == PARALLEL)
+    {
+      rtx result = gen_reg_rtx (mode);
+      emit_group_store (result, x, type, int_size_in_bytes (type));
+      return result;
+    }
+  return x;
 }
 
 /* Copy a BLKmode object of TYPE out of a register SRCREG into TARGET.
@@ -8845,6 +8860,54 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 
       if (!target)
 	target = gen_reg_rtx (TYPE_MODE (type));
+      else
+	/* If target overlaps with op1, then either we need to force
+	   op1 into a pseudo (if target also overlaps with op0),
+	   or write the complex parts in reverse order.  */
+	switch (GET_CODE (target))
+	  {
+	  case CONCAT:
+	    if (reg_overlap_mentioned_p (XEXP (target, 0), op1))
+	      {
+		if (reg_overlap_mentioned_p (XEXP (target, 1), op0))
+		  {
+		  complex_expr_force_op1:
+		    temp = gen_reg_rtx (GET_MODE_INNER (GET_MODE (target)));
+		    emit_move_insn (temp, op1);
+		    op1 = temp;
+		    break;
+		  }
+	      complex_expr_swap_order:
+		/* Move the imaginary (op1) and real (op0) parts to their
+		   location.  */
+		write_complex_part (target, op1, true);
+		write_complex_part (target, op0, false);
+
+		return target;
+	      }
+	    break;
+	  case MEM:
+	    temp = adjust_address_nv (target,
+				      GET_MODE_INNER (GET_MODE (target)), 0);
+	    if (reg_overlap_mentioned_p (temp, op1))
+	      {
+		enum machine_mode imode = GET_MODE_INNER (GET_MODE (target));
+		temp = adjust_address_nv (target, imode,
+					  GET_MODE_SIZE (imode));
+		if (reg_overlap_mentioned_p (temp, op0))
+		  goto complex_expr_force_op1;
+		goto complex_expr_swap_order;
+	      }
+	    break;
+	  default:
+	    if (reg_overlap_mentioned_p (target, op1))
+	      {
+		if (reg_overlap_mentioned_p (target, op0))
+		  goto complex_expr_force_op1;
+		goto complex_expr_swap_order;
+	      }
+	    break;
+	  }
 
       /* Move the real (op0) and imaginary (op1) parts to their location.  */
       write_complex_part (target, op0, false);

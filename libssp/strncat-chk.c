@@ -87,12 +87,6 @@ __strncat_chk (char *__restrict__ dest, const char *__restrict__ src,
           *++dest = c;
           if (c == '\0')
             return s;
-          if (slen-- == 0)
-            __chk_fail ();
-          c = *src++;
-          *++dest = c;
-          if (c == '\0')
-            return s;
         } while (--n4 > 0);
       n &= 3;
     }

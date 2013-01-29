@@ -1,6 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012 Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1165,6 +1164,7 @@ cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
   gcc_assert (!node->global.inlined_to);
   return (!node->symbol.force_output && !node->symbol.address_taken
 	  && !node->symbol.used_from_other_partition
+	  && !DECL_VIRTUAL_P (node->symbol.decl)
 	  && !DECL_STATIC_CONSTRUCTOR (node->symbol.decl)
 	  && !DECL_STATIC_DESTRUCTOR (node->symbol.decl)
 	  && !node->symbol.externally_visible);

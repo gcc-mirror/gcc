@@ -1,6 +1,5 @@
 /* CPP Library - charsets
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006, 2008, 2009,
-   2010, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1998-2013 Free Software Foundation, Inc.
 
    Broken out of c-lex.c Apr 2003, adding valid C99 UCN ranges.
 

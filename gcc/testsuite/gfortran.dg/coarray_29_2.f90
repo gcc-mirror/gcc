@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! { dg-options "-fcoarray=single" }
 
 ! Requires that coarray_29.f90 has been compiled before

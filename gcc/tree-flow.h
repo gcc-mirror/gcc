@@ -1,6 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -655,8 +654,6 @@ bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
 					 edge, vec<edge> *,
 					 int);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *, edge);
-void rename_variables_in_loop (struct loop *);
-void rename_variables_in_bb (basic_block bb);
 tree expand_simple_operations (tree);
 void substitute_in_loop_info (struct loop *, tree, tree);
 edge single_dom_exit (struct loop *);

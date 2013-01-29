@@ -1,6 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
-   2012 Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -208,7 +207,7 @@ void
 gt_pch_n_S (const void *x)
 {
   gt_pch_note_object (CONST_CAST (void *, x), CONST_CAST (void *, x),
-		      &gt_pch_p_S, gt_types_enum_last);
+		      &gt_pch_p_S);
 }
 
 

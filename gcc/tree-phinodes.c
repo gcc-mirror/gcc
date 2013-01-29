@@ -1,6 +1,5 @@
 /* Generic routines for manipulating PHIs
-   Copyright (C) 2003, 2005, 2007, 2008, 2009, 2010, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,10 +41,6 @@ along with GCC; see the file COPYING3.  If not see
    little.  This additionally helps reduce the amount of work done by the
    garbage collector.  Similar results have been seen on a wider variety
    of tests (such as the compiler itself).
-
-   We could also use a zone allocator for these objects since they have
-   a very well defined lifetime.  If someone wants to experiment with that
-   this is the place to try it.
 
    PHI nodes have different sizes, so we can't have a single list of all
    the PHI nodes as it would be too expensive to walk down that list to
@@ -313,6 +308,7 @@ reserve_phi_args_for_new_edge (basic_block bb)
 	 redirects edges, and then fixes up PHI arguments later in
 	 batch.  */
       SET_PHI_ARG_DEF (stmt, len - 1, NULL_TREE);
+      gimple_phi_arg_set_location (stmt, len - 1, UNKNOWN_LOCATION);
 
       stmt->gimple_phi.nargs++;
     }

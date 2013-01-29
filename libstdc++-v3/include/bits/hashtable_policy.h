@@ -1,6 +1,6 @@
 // Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -202,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Value, bool _Cache_hash_code>
     struct _Node_iterator_base
     {
-      typedef _Hash_node<_Value, _Cache_hash_code>    	__node_type;
+      using __node_type = _Hash_node<_Value, _Cache_hash_code>;
 
       __node_type*  _M_cur;
 
@@ -282,7 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Node_const_iterator
     : public _Node_iterator_base<_Value, __cache>
     {
-     private:
+    private:
       using __base_type = _Node_iterator_base<_Value, __cache>;
       using __node_type = typename __base_type::__node_type;
 
@@ -836,7 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	insert(_Pair&& __v)
 	{
 	  __hashtable& __h = this->_M_conjure_hashtable();
-	  return __h._M_insert(std::forward<_Pair>(__v), __unique_keys());
+	  return __h._M_emplace(__unique_keys(), std::forward<_Pair>(__v));
 	}
 
       template<typename _Pair, typename = _IFconsp<_Pair>>
@@ -941,6 +941,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /**
+   *  Primary class template _Local_iterator_base.
+   *
+   *  Base class for local iterators, used to iterate within a bucket
+   *  but not between buckets.
+   */
+  template<typename _Key, typename _Value, typename _ExtractKey,
+	   typename _H1, typename _H2, typename _Hash,
+	   bool __cache_hash_code>
+    struct _Local_iterator_base;
+
+  /**
    *  Primary class template _Hash_code_base.
    *
    *  Encapsulates two policy issues that aren't quite orthogonal.
@@ -974,8 +985,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private _Hashtable_ebo_helper<1, _Hash>
     {
     private:
-      typedef _Hashtable_ebo_helper<0, _ExtractKey> 	_EboExtractKey;
-      typedef _Hashtable_ebo_helper<1, _Hash> 		_EboHash;
+      using __ebo_extract_key = _Hashtable_ebo_helper<0, _ExtractKey>;
+      using __ebo_hash = _Hashtable_ebo_helper<1, _Hash>;
 
     protected:
       typedef void* 					__hash_code;
@@ -986,7 +997,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Hash_code_base(const _ExtractKey& __ex, const _H1&, const _H2&,
 		      const _Hash& __h)
-      : _EboExtractKey(__ex), _EboHash(__h) { }
+      : __ebo_extract_key(__ex), __ebo_hash(__h) { }
 
       __hash_code
       _M_hash_code(const _Key& __key) const
@@ -1017,16 +1028,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       const _ExtractKey&
-      _M_extract() const { return _EboExtractKey::_S_cget(*this); }
+      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
 
       _ExtractKey&
-      _M_extract() { return _EboExtractKey::_S_get(*this); }
+      _M_extract() { return __ebo_extract_key::_S_get(*this); }
 
       const _Hash&
-      _M_ranged_hash() const { return _EboHash::_S_cget(*this); }
+      _M_ranged_hash() const { return __ebo_hash::_S_cget(*this); }
 
       _Hash&
-      _M_ranged_hash() { return _EboHash::_S_get(*this); }
+      _M_ranged_hash() { return __ebo_hash::_S_get(*this); }
     };
 
   // No specialization for ranged hash function while caching hash codes.
@@ -1041,7 +1052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Specialization: hash function and range-hashing function, no
   /// caching of hash codes.
-  /// Provides typedef and accessor required by TR1.
+  /// Provides typedef and accessor required by C++ 11.
   template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
@@ -1051,9 +1062,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private _Hashtable_ebo_helper<2, _H2>
     {
     private:
-      typedef _Hashtable_ebo_helper<0, _ExtractKey> 	_EboExtractKey;
-      typedef _Hashtable_ebo_helper<1, _H1> 		_EboH1;
-      typedef _Hashtable_ebo_helper<2, _H2> 		_EboH2;
+      using __ebo_extract_key = _Hashtable_ebo_helper<0, _ExtractKey>;
+      using __ebo_h1 = _Hashtable_ebo_helper<1, _H1>;
+      using __ebo_h2 = _Hashtable_ebo_helper<2, _H2>;
 
     public:
       typedef _H1 					hasher;
@@ -1062,17 +1073,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       hash_function() const
       { return _M_h1(); }
 
+    protected:
       typedef std::size_t 				__hash_code;
       typedef _Hash_node<_Value, false>			__node_type;
 
-    protected:
       // We need the default constructor for the local iterators.
       _Hash_code_base() = default;
 
       _Hash_code_base(const _ExtractKey& __ex,
 		      const _H1& __h1, const _H2& __h2,
 		      const _Default_ranged_hash&)
-      : _EboExtractKey(__ex), _EboH1(__h1), _EboH2(__h2) { }
+      : __ebo_extract_key(__ex), __ebo_h1(__h1), __ebo_h2(__h2) { }
 
       __hash_code
       _M_hash_code(const _Key& __k) const
@@ -1104,27 +1115,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       const _ExtractKey&
-      _M_extract() const { return _EboExtractKey::_S_cget(*this); }
+      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
 
       _ExtractKey&
-      _M_extract() { return _EboExtractKey::_S_get(*this); }
+      _M_extract() { return __ebo_extract_key::_S_get(*this); }
 
       const _H1&
-      _M_h1() const { return _EboH1::_S_cget(*this); }
+      _M_h1() const { return __ebo_h1::_S_cget(*this); }
 
       _H1&
-      _M_h1() { return _EboH1::_S_get(*this); }
+      _M_h1() { return __ebo_h1::_S_get(*this); }
 
       const _H2&
-      _M_h2() const { return _EboH2::_S_cget(*this); }
+      _M_h2() const { return __ebo_h2::_S_cget(*this); }
 
       _H2&
-      _M_h2() { return _EboH2::_S_get(*this); }
+      _M_h2() { return __ebo_h2::_S_get(*this); }
     };
 
   /// Specialization: hash function and range-hashing function,
   /// caching hash codes.  H is provided but ignored.  Provides
-  /// typedef and accessor required by TR1.
+  /// typedef and accessor required by C++ 11.
   template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2>
     struct _Hash_code_base<_Key, _Value, _ExtractKey, _H1, _H2,
@@ -1134,9 +1145,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private _Hashtable_ebo_helper<2, _H2>
     {
     private:
-      typedef _Hashtable_ebo_helper<0, _ExtractKey>	_EboExtractKey;
-      typedef _Hashtable_ebo_helper<1, _H1> 		_EboH1;
-      typedef _Hashtable_ebo_helper<2, _H2> 		_EboH2;
+      // Gives access to _M_h2() to the local iterator implementation.
+      friend struct _Local_iterator_base<_Key, _Value, _ExtractKey, _H1, _H2,
+					 _Default_ranged_hash, true>;
+
+      using __ebo_extract_key = _Hashtable_ebo_helper<0, _ExtractKey>;
+      using __ebo_h1 = _Hashtable_ebo_helper<1, _H1>;
+      using __ebo_h2 = _Hashtable_ebo_helper<2, _H2>;
 
     public:
       typedef _H1 					hasher;
@@ -1145,14 +1160,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       hash_function() const
       { return _M_h1(); }
 
+    protected:
       typedef std::size_t 				__hash_code;
       typedef _Hash_node<_Value, true>			__node_type;
 
-    protected:
       _Hash_code_base(const _ExtractKey& __ex,
 		      const _H1& __h1, const _H2& __h2,
 		      const _Default_ranged_hash&)
-      : _EboExtractKey(__ex), _EboH1(__h1), _EboH2(__h2) { }
+      : __ebo_extract_key(__ex), __ebo_h1(__h1), __ebo_h2(__h2) { }
 
       __hash_code
       _M_hash_code(const _Key& __k) const
@@ -1184,22 +1199,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       const _ExtractKey&
-      _M_extract() const { return _EboExtractKey::_S_cget(*this); }
+      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
 
       _ExtractKey&
-      _M_extract() { return _EboExtractKey::_S_get(*this); }
+      _M_extract() { return __ebo_extract_key::_S_get(*this); }
 
       const _H1&
-      _M_h1() const { return _EboH1::_S_cget(*this); }
+      _M_h1() const { return __ebo_h1::_S_cget(*this); }
 
       _H1&
-      _M_h1() { return _EboH1::_S_get(*this); }
+      _M_h1() { return __ebo_h1::_S_get(*this); }
 
       const _H2&
-      _M_h2() const { return _EboH2::_S_cget(*this); }
+      _M_h2() const { return __ebo_h2::_S_cget(*this); }
 
       _H2&
-      _M_h2() { return _EboH2::_S_get(*this); }
+      _M_h2() { return __ebo_h2::_S_get(*this); }
     };
 
   /**
@@ -1234,28 +1249,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
 
-  /**
-   *  Primary class template _Local_iterator_base.
-   *
-   *  Base class for local iterators, used to iterate within a bucket
-   *  but not between buckets.
-   */
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _H1, typename _H2, typename _Hash,
-	   bool __cache_hash_code>
-    struct _Local_iterator_base;
-
   /// Specialization.
   template<typename _Key, typename _Value, typename _ExtractKey,
 	   typename _H1, typename _H2, typename _Hash>
     struct _Local_iterator_base<_Key, _Value, _ExtractKey,
 				_H1, _H2, _Hash, true>
-    : private _H2
+    : private _Hashtable_ebo_helper<0, _H2>
     {
+    protected:
+      using __base_type = _Hashtable_ebo_helper<0, _H2>;
+      using __hash_code_base = _Hash_code_base<_Key, _Value, _ExtractKey,
+					       _H1, _H2, _Hash, true>;
+
+    public:
       _Local_iterator_base() = default;
-      _Local_iterator_base(_Hash_node<_Value, true>* __p,
+      _Local_iterator_base(const __hash_code_base& __base,
+			   _Hash_node<_Value, true>* __p,
 			   std::size_t __bkt, std::size_t __bkt_count)
-      : _M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
+      : __base_type(__base._M_h2()),
+	_M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
 
       void
       _M_incr()
@@ -1263,14 +1275,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_cur = _M_cur->_M_next();
 	if (_M_cur)
 	  {
-	    std::size_t __bkt = _M_h2()(_M_cur->_M_hash_code, _M_bucket_count);
+	    std::size_t __bkt
+	      = __base_type::_S_get(*this)(_M_cur->_M_hash_code,
+					   _M_bucket_count);
 	    if (__bkt != _M_bucket)
 	      _M_cur = nullptr;
 	  }
       }
-
-      const _H2& _M_h2() const
-      { return *this; }
 
       _Hash_node<_Value, true>*  _M_cur;
       std::size_t _M_bucket;
@@ -1285,10 +1296,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : private _Hash_code_base<_Key, _Value, _ExtractKey,
 			      _H1, _H2, _Hash, false>
     {
+    protected:
+      using __hash_code_base = _Hash_code_base<_Key, _Value, _ExtractKey,
+					       _H1, _H2, _Hash, false>;
+
+    public:
       _Local_iterator_base() = default;
-      _Local_iterator_base(_Hash_node<_Value, false>* __p,
+      _Local_iterator_base(const __hash_code_base& __base,
+			   _Hash_node<_Value, false>* __p,
 			   std::size_t __bkt, std::size_t __bkt_count)
-      : _M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
+	: __hash_code_base(__base),
+	  _M_cur(__p), _M_bucket(__bkt), _M_bucket_count(__bkt_count) { }
 
       void
       _M_incr()
@@ -1333,6 +1351,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Local_iterator_base<_Key, _Value, _ExtractKey,
 				  _H1, _H2, _Hash, __cache>
     {
+    private:
+      using __base_type = _Local_iterator_base<_Key, _Value, _ExtractKey,
+					       _H1, _H2, _Hash, __cache>;
+      using __hash_code_base = typename __base_type::__hash_code_base;
+    public:
       typedef _Value                                   value_type;
       typedef typename std::conditional<__constant_iterators,
 					const _Value*, _Value*>::type
@@ -1345,11 +1368,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Local_iterator() = default;
 
-      explicit
-      _Local_iterator(_Hash_node<_Value, __cache>* __p,
+      _Local_iterator(const __hash_code_base& __base,
+		      _Hash_node<_Value, __cache>* __p,
 		      std::size_t __bkt, std::size_t __bkt_count)
-      : _Local_iterator_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
-			     __cache>(__p, __bkt, __bkt_count)
+	: __base_type(__base, __p, __bkt, __bkt_count)
       { }
 
       reference
@@ -1384,6 +1406,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Local_iterator_base<_Key, _Value, _ExtractKey,
 				  _H1, _H2, _Hash, __cache>
     {
+    private:
+      using __base_type = _Local_iterator_base<_Key, _Value, _ExtractKey,
+					       _H1, _H2, _Hash, __cache>;
+      using __hash_code_base = typename __base_type::__hash_code_base;
+
+    public:
       typedef _Value                                   value_type;
       typedef const _Value*                            pointer;
       typedef const _Value&                            reference;
@@ -1392,20 +1420,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Local_const_iterator() = default;
 
-      explicit
-      _Local_const_iterator(_Hash_node<_Value, __cache>* __p,
+      _Local_const_iterator(const __hash_code_base& __base,
+			    _Hash_node<_Value, __cache>* __p,
 			    std::size_t __bkt, std::size_t __bkt_count)
-      : _Local_iterator_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
-			     __cache>(__p, __bkt, __bkt_count)
+	: __base_type(__base, __p, __bkt, __bkt_count)
       { }
 
       _Local_const_iterator(const _Local_iterator<_Key, _Value, _ExtractKey,
 						  _H1, _H2, _Hash,
 						  __constant_iterators,
 						  __cache>& __x)
-      : _Local_iterator_base<_Key, _Value, _ExtractKey, _H1, _H2, _Hash,
-			     __cache>(__x._M_cur, __x._M_bucket,
-				      __x._M_bucket_count)
+	: __base_type(__x)
       { }
 
       reference

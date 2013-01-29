@@ -1,7 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -1399,6 +1397,12 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	DECL_IGNORED_P (decl) = 1;
     }
 
+  if (sym->attr.select_type_temporary)
+    {
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+    }
+
   if (sym->attr.dimension || sym->attr.codimension)
     {
       /* Create variables to hold the non-constant bits of array info.  */
@@ -1498,7 +1502,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && POINTER_TYPE_P (TREE_TYPE (decl))
       && !sym->attr.pointer
       && !sym->attr.allocatable
-      && !sym->attr.proc_pointer)
+      && !sym->attr.proc_pointer
+      && !sym->attr.select_type_temporary)
     DECL_BY_REFERENCE (decl) = 1;
 
   if (sym->attr.vtab

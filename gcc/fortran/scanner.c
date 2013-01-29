@@ -1,6 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -311,14 +310,26 @@ add_path_to_list (gfc_directorylist **list, const char *path,
 {
   gfc_directorylist *dir;
   const char *p;
+  char *q;
   struct stat st;
+  size_t len;
+  int i;
   
   p = path;
   while (*p == ' ' || *p == '\t')  /* someone might do "-I include" */
     if (*p++ == '\0')
       return;
 
-  if (stat (p, &st))
+  /* Strip trailing directory separators from the path, as this
+     will confuse Windows systems.  */
+  len = strlen (p);
+  q = (char *) alloca (len + 1);
+  memcpy (q, p, len + 1);
+  i = len - 1;
+  while (i >=0 && IS_DIR_SEPARATOR(q[i]))
+    q[i--] = '\0';
+
+  if (stat (q, &st))
     {
       if (errno != ENOENT)
 	gfc_warning_now ("Include directory \"%s\": %s", path,

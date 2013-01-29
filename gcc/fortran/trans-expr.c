@@ -1,7 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -61,8 +59,8 @@ get_scalar_to_descriptor_type (tree scalar, symbol_attribute attr)
 				    akind, !(attr.pointer || attr.target));
 }
 
-static tree
-conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
+tree
+gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
 {
   tree desc, type;
 
@@ -198,16 +196,31 @@ gfc_vtable_final_get (tree decl)
 #undef VTABLE_FINAL_FIELD
 
 
-/* Obtain the vptr of the last class reference in an expression.  */
+/* Obtain the vptr of the last class reference in an expression.
+   Return NULL_TREE if no class reference is found.  */
 
 tree
 gfc_get_vptr_from_expr (tree expr)
 {
-  tree tmp = expr;
-  while (tmp && !GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
-    tmp = TREE_OPERAND (tmp, 0);
-  tmp = gfc_class_vptr_get (tmp);
-  return tmp;
+  tree tmp;
+  tree type;
+
+  for (tmp = expr; tmp; tmp = TREE_OPERAND (tmp, 0))
+    {
+      type = TREE_TYPE (tmp);
+      while (type)
+	{
+	  if (GFC_CLASS_TYPE_P (type))
+	    return gfc_class_vptr_get (tmp);
+	  if (type != TYPE_CANONICAL (type))
+	    type = TYPE_CANONICAL (type);
+	  else
+	    type = NULL_TREE;
+	}
+      if (TREE_CODE (tmp) == VAR_DECL)
+	break;
+    }
+  return NULL_TREE;
 }
 
 
@@ -594,7 +607,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
     }
   else
     {
-      if (CLASS_DATA (e)->attr.codimension)
+      if (TREE_TYPE (parmse->expr) != TREE_TYPE (ctree))
 	parmse->expr = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
 					TREE_TYPE (ctree), parmse->expr);
       gfc_add_modify (&block, ctree, parmse->expr);
@@ -1562,6 +1575,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       c->norestrict_decl = f2;
       field = f2;
     }
+
   tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
 			 decl, field, NULL_TREE);
 
@@ -4099,7 +4113,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
 	    }
 	  else
-	    gfc_conv_expr_reference (&parmse, e);
+	    {
+	      gfc_conv_expr_reference (&parmse, e);
+	      if (e->ts.type == BT_CHARACTER && !e->rank
+		  && e->expr_type == EXPR_FUNCTION)
+		parmse.expr = build_fold_indirect_ref_loc (input_location,
+							   parmse.expr);
+	    }
 
 	  if (fsym && fsym->ts.type == BT_DERIVED
 	      && gfc_is_class_container_ref (e))
@@ -4355,8 +4375,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      if (TREE_CODE (tmp) == ADDR_EXPR
 			  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp, 0))))
 			tmp = TREE_OPERAND (tmp, 0);
-		      parmse.expr = conv_scalar_to_descriptor (&parmse, tmp,
-							       fsym->attr);
+		      parmse.expr = gfc_conv_scalar_to_descriptor (&parmse, tmp,
+								   fsym->attr);
 		      parmse.expr = gfc_build_addr_expr (NULL_TREE,
 							 parmse.expr);
 		    }
@@ -5525,19 +5545,19 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
       return;
     }
 
-  /* We distinguish statement functions from general functions to improve
-     runtime performance.  */
-  if (expr->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
-    {
-      gfc_conv_statement_function (se, expr);
-      return;
-    }
-
   /* expr.value.function.esym is the resolved (specific) function symbol for
      most functions.  However this isn't set for dummy procedures.  */
   sym = expr->value.function.esym;
   if (!sym)
     sym = expr->symtree->n.sym;
+
+  /* We distinguish statement functions from general functions to improve
+     runtime performance.  */
+  if (sym->attr.proc == PROC_ST_FUNCTION)
+    {
+      gfc_conv_statement_function (se, expr);
+      return;
+    }
 
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			   NULL);
@@ -6117,6 +6137,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	  gfc_symbol *vtabs;
 	  vtabs = cm->initializer->symtree->n.sym;
 	  vtab = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtabs));
+	  vtab = unshare_expr_without_location (vtab);
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, vtab);
 	}
       else if (cm->ts.u.derived && strcmp (cm->name, "_size") == 0)
@@ -6130,6 +6151,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 				      TREE_TYPE (cm->backend_decl),
 				      cm->attr.dimension, cm->attr.pointer,
 				      cm->attr.proc_pointer);
+	  val = unshare_expr_without_location (val);
 
 	  /* Append it to the constructor list.  */
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);

@@ -14,7 +14,7 @@ set quadmath_library_path "../libquadmath/.libs"
 dg-init
 
 if { $blddir != "" } {
-    lappend ALWAYS_CFLAGS "additional_flags=-fintrinsic-modules-path ${blddir}"
+    lappend ALWAYS_CFLAGS "additional_flags=-fintrinsic-modules-path=${blddir}"
     # Look for a static libgfortran first.
     if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
         set lang_test_file "${lang_library_path}/libgfortran.a"

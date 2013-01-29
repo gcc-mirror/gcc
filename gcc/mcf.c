@@ -1,7 +1,6 @@
 /* Routines to implement minimum-cost maximal flow algorithm used to smooth
    basic block and edge frequency counts.
-   Copyright (C) 2008, 2009, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
    Contributed by Paul Yuan (yingbo.com@gmail.com) and
                   Vinodha Ramasamy (vinodha@google.com).
 

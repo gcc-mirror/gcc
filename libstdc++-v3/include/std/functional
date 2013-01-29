@@ -1,6 +1,6 @@
 // <functional> -*- C++ -*-
 
-// Copyright (C) 2001-2012 Free Software Foundation, Inc.
+// Copyright (C) 2001-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -648,7 +648,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+	  = _Require<_NotSame<_Class, _Tp>, _NotSame<const _Class*, _Tp>,
 		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
 
       template<typename _Tp, typename... _Args>
@@ -727,7 +727,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+	  = _Require<_NotSame<_Class, _Tp>, _NotSame<volatile _Class*, _Tp>,
 		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
 
       template<typename _Tp, typename... _Args>
@@ -807,7 +807,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       template<typename _Tp, typename... _Args>
 	using _RequireValidArgs2
-	  = _Require<_NotSame<_Class, _Tp>, _NotSame<_Class*, _Tp>,
+	  = _Require<_NotSame<_Class, _Tp>,
+		     _NotSame<const volatile _Class*, _Tp>,
 		     _AllConvertible<_Pack<_Args...>, _Pack<_ArgTypes...>>>;
 
       template<typename _Tp, typename... _Args>
@@ -1767,6 +1768,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   {
   public:
     virtual ~bad_function_call() noexcept;
+
+    const char* what() const noexcept;
   };
 
   /**

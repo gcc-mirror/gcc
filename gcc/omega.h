@@ -5,7 +5,7 @@
    This code has no license restrictions, and is considered public
    domain.
 
-   Changes copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Changes copyright (C) 2005-2013 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>
 
 This file is part of GCC.

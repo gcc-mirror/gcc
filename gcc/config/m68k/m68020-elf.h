@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  "naked" 68020,
    elf object files and debugging, version.
-   Copyright (C) 1987, 1988, 1992, 1995, 1996, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

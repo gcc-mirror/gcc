@@ -7,7 +7,7 @@
 #include "runtime.h"
 #include "array.h"
 
-extern Slice syscall_Envs asm ("syscall.Envs");
+extern Slice syscall_Envs __asm__ (GOSYM_PREFIX "syscall.Envs");
 
 const byte*
 runtime_getenv(const char *s)

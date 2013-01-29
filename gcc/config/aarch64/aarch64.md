@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2013 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -915,38 +915,44 @@
 )
 
 (define_insn "*movsf_aarch64"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "= w,?r,w,w,m,r,m ,r")
-	(match_operand:SF 1 "general_operand"      "?rY, w,w,m,w,m,rY,r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=w, ?r,w,w  ,w,m,r,m ,r")
+	(match_operand:SF 1 "general_operand"      "?rY, w,w,Ufc,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], SFmode)
     || register_operand (operands[1], SFmode))"
   "@
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1
+   fmov\\t%s0, %1
    ldr\\t%s0, %1
    str\\t%s1, %0
    ldr\\t%w0, %1
    str\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "v8type" "fmovi2f,fmovf2i,fmov,fpsimd_load,fpsimd_store,fpsimd_load,fpsimd_store,fmov")
+  [(set_attr "v8type" "fmovi2f,fmovf2i,\
+		       fmov,fconst,fpsimd_load,\
+		       fpsimd_store,fpsimd_load,fpsimd_store,fmov")
    (set_attr "mode" "SF")]
 )
 
 (define_insn "*movdf_aarch64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "= w,?r,w,w,m,r,m ,r")
-	(match_operand:DF 1 "general_operand"      "?rY, w,w,m,w,m,rY,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=w, ?r,w,w  ,w,m,r,m ,r")
+	(match_operand:DF 1 "general_operand"      "?rY, w,w,Ufc,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], DFmode)
     || register_operand (operands[1], DFmode))"
   "@
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
+   fmov\\t%d0, %1
    ldr\\t%d0, %1
    str\\t%d1, %0
    ldr\\t%x0, %1
    str\\t%x1, %0
    mov\\t%x0, %x1"
-  [(set_attr "v8type" "fmovi2f,fmovf2i,fmov,fpsimd_load,fpsimd_store,fpsimd_load,fpsimd_store,move")
+  [(set_attr "v8type" "fmovi2f,fmovf2i,\
+		       fmov,fconst,fpsimd_load,\
+		       fpsimd_store,fpsimd_load,fpsimd_store,move")
    (set_attr "mode" "DF")]
 )
 
@@ -990,7 +996,6 @@
    (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*")
    (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*")]
 )
-
 
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
@@ -2193,6 +2198,18 @@
    (set_attr "mode" "<MODE>")]
 )
 
+;; zero_extend version of the above
+(define_insn "*cstoresi_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (match_operator:SI 1 "aarch64_comparison_operator"
+	  [(match_operand 2 "cc_register" "") (const_int 0)])))]
+  ""
+  "cset\\t%w0, %m1"
+  [(set_attr "v8type" "csel")
+   (set_attr "mode" "SI")]
+)
+
 (define_insn "*cstore<mode>_neg"
   [(set (match_operand:ALLI 0 "register_operand" "=r")
 	(neg:ALLI (match_operator:ALLI 1 "aarch64_comparison_operator"
@@ -2201,6 +2218,18 @@
   "csetm\\t%<w>0, %m1"
   [(set_attr "v8type" "csel")
    (set_attr "mode" "<MODE>")]
+)
+
+;; zero_extend version of the above
+(define_insn "*cstoresi_neg_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (neg:SI (match_operator:SI 1 "aarch64_comparison_operator"
+		  [(match_operand 2 "cc_register" "") (const_int 0)]))))]
+  ""
+  "csetm\\t%w0, %m1"
+  [(set_attr "v8type" "csel")
+   (set_attr "mode" "SI")]
 )
 
 (define_expand "cmov<mode>6"
@@ -2255,6 +2284,30 @@
    mov\\t%<w>0, 1"
   [(set_attr "v8type" "csel")
    (set_attr "mode" "<MODE>")]
+)
+
+;; zero_extend version of above
+(define_insn "*cmovsi_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r,r,r")
+	(zero_extend:DI
+	 (if_then_else:SI
+	  (match_operator 1 "aarch64_comparison_operator"
+	   [(match_operand 2 "cc_register" "") (const_int 0)])
+	  (match_operand:SI 3 "aarch64_reg_zero_or_m1_or_1" "rZ,rZ,UsM,rZ,Ui1,UsM,Ui1")
+	  (match_operand:SI 4 "aarch64_reg_zero_or_m1_or_1" "rZ,UsM,rZ,Ui1,rZ,UsM,Ui1"))))]
+  "!((operands[3] == const1_rtx && operands[4] == constm1_rtx)
+     || (operands[3] == constm1_rtx && operands[4] == const1_rtx))"
+  ;; Final two alternatives should be unreachable, but included for completeness
+  "@
+   csel\\t%w0, %w3, %w4, %m1
+   csinv\\t%w0, %w3, wzr, %m1
+   csinv\\t%w0, %w4, wzr, %M1
+   csinc\\t%w0, %w3, wzr, %m1
+   csinc\\t%w0, %w4, wzr, %M1
+   mov\\t%w0, -1
+   mov\\t%w0, 1"
+  [(set_attr "v8type" "csel")
+   (set_attr "mode" "SI")]
 )
 
 (define_insn "*cmov<mode>_insn"
@@ -2369,6 +2422,17 @@
   [(set_attr "v8type" "logic,logic_imm")
    (set_attr "mode" "<MODE>")])
 
+;; zero_extend version of above
+(define_insn "*<optab>si3_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r,rk")
+	(zero_extend:DI
+         (LOGICAL:SI (match_operand:SI 1 "register_operand" "%r,r")
+		     (match_operand:SI 2 "aarch64_logical_operand" "r,K"))))]
+  ""
+  "<logical>\\t%w0, %w1, %w2"
+  [(set_attr "v8type" "logic,logic_imm")
+   (set_attr "mode" "SI")])
+
 (define_insn "*<LOGICAL:optab>_<SHIFT:optab><mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(LOGICAL:GPI (SHIFT:GPI
@@ -2379,6 +2443,19 @@
   "<LOGICAL:logical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
   [(set_attr "v8type" "logic_shift")
    (set_attr "mode" "<MODE>")])
+
+;; zero_extend version of above
+(define_insn "*<LOGICAL:optab>_<SHIFT:optab>si3_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (LOGICAL:SI (SHIFT:SI
+		      (match_operand:SI 1 "register_operand" "r")
+		      (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
+		     (match_operand:SI 3 "register_operand" "r"))))]
+  ""
+  "<LOGICAL:logical>\\t%w0, %w3, %w1, <SHIFT:shift> %2"
+  [(set_attr "v8type" "logic_shift")
+   (set_attr "mode" "SI")])
 
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
@@ -2591,6 +2668,18 @@
    (set_attr "mode" "<MODE>")]
 )
 
+;; zero_extend version of above
+(define_insn "*<optab>si3_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI (SHIFT:SI
+	 (match_operand:SI 1 "register_operand" "r")
+	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_si" "rUss"))))]
+  ""
+  "<shift>\\t%w0, %w1, %w2"
+  [(set_attr "v8type" "shift")
+   (set_attr "mode" "SI")]
+)
+
 (define_insn "*ashl<mode>3_insn"
   [(set (match_operand:SHORT 0 "register_operand" "=r")
 	(ashift:SHORT (match_operand:SHORT 1 "register_operand" "r")
@@ -2726,6 +2815,16 @@
   "rev16\\t%w0, %w1"
   [(set_attr "v8type" "rev")
    (set_attr "mode" "HI")]
+)
+
+;; zero_extend version of above
+(define_insn "*bswapsi2_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI (bswap:SI (match_operand:SI 1 "register_operand" "r"))))]
+  ""
+  "rev\\t%w0, %w1"
+  [(set_attr "v8type" "rev")
+   (set_attr "mode" "SI")]
 )
 
 ;; -------------------------------------------------------------------

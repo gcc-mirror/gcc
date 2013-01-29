@@ -1,7 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1616,7 +1614,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004, 2007, 2009, 2012 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2013 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
@@ -2416,7 +2414,6 @@ static void write_local_func_for_structure
   (const_type_p orig_s, type_p s, type_p *param);
 static void write_local (outf_p output_header,
 			 type_p structures, type_p param_structs);
-static void write_enum_defn (type_p structures, type_p param_structs);
 static int contains_scalar_p (type_p t);
 static void put_mangled_filename (outf_p, const input_file *);
 static void finish_root_table (struct flist *flp, const char *pfx,
@@ -3171,20 +3168,6 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 	    }
 	  else
 	    oprintf (d->of, ", gt_%sa_%s", wtd->param_prefix, d->prev_val[0]);
-
-	  if (f->u.p->kind == TYPE_PARAM_STRUCT
-	      && f->u.p->u.s.line.file != NULL)
-	    {
-	      oprintf (d->of, ", gt_e_");
-	      output_mangled_typename (d->of, f);
-	    }
-	  else if (union_or_struct_p (f) && f->u.p->u.s.line.file != NULL)
-	    {
-	      oprintf (d->of, ", gt_ggc_e_");
-	      output_mangled_typename (d->of, f);
-	    }
-	  else
-	    oprintf (d->of, ", gt_types_enum_last");
 	}
       oprintf (d->of, ");\n");
       if (d->reorder_fn && wtd->reorder_note_routine)
@@ -3227,25 +3210,6 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_ARRAY:
       gcc_unreachable ();
     }
-}
-
-/* A subroutine of write_func_for_structure.  Write the enum tag for S.  */
-
-static void
-output_type_enum (outf_p of, type_p s)
-{
-  if (s->kind == TYPE_PARAM_STRUCT && s->u.param_struct.line.file != NULL)
-    {
-      oprintf (of, ", gt_e_");
-      output_mangled_typename (of, s);
-    }
-  else if (union_or_struct_p (s) && s->u.s.line.file != NULL)
-    {
-      oprintf (of, ", gt_ggc_e_");
-      output_mangled_typename (of, s);
-    }
-  else
-    oprintf (of, ", gt_types_enum_last");
 }
 
 /* Return an output file that is suitable for definitions which can
@@ -3522,7 +3486,6 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	{
 	  oprintf (d.of, ", x, gt_%s_", wtd->param_prefix);
 	  output_mangled_typename (d.of, orig_s);
-	  output_type_enum (d.of, orig_s);
 	}
       oprintf (d.of, "))\n");
     }
@@ -3536,7 +3499,6 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	{
 	  oprintf (d.of, ", xlimit, gt_%s_", wtd->param_prefix);
 	  output_mangled_typename (d.of, orig_s);
-	  output_type_enum (d.of, orig_s);
 	}
       oprintf (d.of, "))\n");
       if (chain_circular != NULL)
@@ -3570,7 +3532,6 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	    {
 	      oprintf (d.of, ", xprev, gt_%s_", wtd->param_prefix);
 	      output_mangled_typename (d.of, orig_s);
-	      output_type_enum (d.of, orig_s);
 	    }
 	  oprintf (d.of, ");\n");
 	  oprintf (d.of, "      }\n");
@@ -3582,7 +3543,6 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	    {
 	      oprintf (d.of, ", xlimit, gt_%s_", wtd->param_prefix);
 	      output_mangled_typename (d.of, orig_s);
-	      output_type_enum (d.of, orig_s);
 	    }
 	  oprintf (d.of, "));\n");
 	  if (mark_hook_name && !wtd->skip_hooks)
@@ -4092,50 +4052,6 @@ write_local (outf_p output_header, type_p structures, type_p param_structs)
 	   || ((s)->gc_used == GC_USED					\
 	       && strncmp (s->u.s.tag, "anonymous", strlen ("anonymous"))))))
 
-
-/* Write out the 'enum' definition for gt_types_enum.  */
-
-static void
-write_enum_defn (type_p structures, type_p param_structs)
-{
-  type_p s;
-  int nbstruct = 0;
-  int nbparamstruct = 0;
-
-  if (!header_file)
-    return;
-  oprintf (header_file, "\n/* Enumeration of types known.  */\n");
-  oprintf (header_file, "enum gt_types_enum {\n");
-  for (s = structures; s; s = s->next)
-    if (USED_BY_TYPED_GC_P (s))
-      {
-	nbstruct++;
-	DBGPRINTF ("write_enum_defn s @ %p nbstruct %d",
-		   (void*) s, nbstruct);
-	if (union_or_struct_p (s))
-	  DBGPRINTF ("write_enum_defn s %p #%d is unionorstruct tagged %s",
-		     (void*) s, nbstruct, s->u.s.tag);
-	oprintf (header_file, " gt_ggc_e_");
-	output_mangled_typename (header_file, s);
-	oprintf (header_file, ",\n");
-      }
-  for (s = param_structs; s; s = s->next)
-    if (s->gc_used == GC_POINTED_TO)
-      {
-	nbparamstruct++;
-	DBGPRINTF ("write_enum_defn s %p nbparamstruct %d",
-		   (void*) s, nbparamstruct);
-	oprintf (header_file, " gt_e_");
-	output_mangled_typename (header_file, s);
-	oprintf (header_file, ",\n");
-      }
-  oprintf (header_file, " gt_types_enum_last\n");
-  oprintf (header_file, "};\n");
-  if (verbosity_level >= 2)
-    printf ("%s handled %d GTY-ed structures & %d parameterized structures.\n",
-	    progname, nbstruct, nbparamstruct);
-
-}
 
 /* Might T contain any non-pointer elements?  */
 
@@ -4806,38 +4722,30 @@ variable_size_p (const type_p s)
 
 enum alloc_quantity
 { single, vector };
-enum alloc_zone
-{ any_zone, specific_zone };
 
 /* Writes one typed allocator definition into output F for type
    identifier TYPE_NAME with optional type specifier TYPE_SPECIFIER.
    The allocator name will contain ALLOCATOR_TYPE.  If VARIABLE_SIZE
    is true, the allocator will have an extra parameter specifying
    number of bytes to allocate.  If QUANTITY is set to VECTOR, a
-   vector allocator will be output, if ZONE is set to SPECIFIC_ZONE,
-   the allocator will be zone-specific.  */
+   vector allocator will be output.  */
 
 static void
 write_typed_alloc_def (outf_p f, 
                        bool variable_size, const char *type_specifier,
                        const char *type_name, const char *allocator_type,
-                       enum alloc_quantity quantity, enum alloc_zone zone)
+                       enum alloc_quantity quantity)
 {
   bool two_args = variable_size && (quantity == vector);
-  bool third_arg = ((zone == specific_zone)
-		    && (variable_size || (quantity == vector)));
   gcc_assert (f != NULL);
   const char *type_name_as_id = filter_type_name (type_name);
   oprintf (f, "#define ggc_alloc_%s%s", allocator_type, type_name_as_id);
-  oprintf (f, "(%s%s%s%s%s) ",
+  oprintf (f, "(%s%s%s) ",
 	   (variable_size ? "SIZE" : ""),
 	   (two_args ? ", " : ""),
-	   (quantity == vector) ? "n" : "",
-	   (third_arg ? ", " : ""), (zone == specific_zone) ? "z" : "");
+	   (quantity == vector) ? "n" : "");
   oprintf (f, "((%s%s *)", type_specifier, type_name);
   oprintf (f, "(ggc_internal_%salloc_stat (", allocator_type);
-  if (zone == specific_zone)
-    oprintf (f, "z, ");
   if (variable_size)
     oprintf (f, "SIZE");
   else
@@ -4855,12 +4763,11 @@ write_typed_alloc_def (outf_p f,
 static void
 write_typed_struct_alloc_def (outf_p f,
 			      const type_p s, const char *allocator_type,
-			      enum alloc_quantity quantity,
-			      enum alloc_zone zone)
+			      enum alloc_quantity quantity)
 {
   gcc_assert (union_or_struct_p (s));
   write_typed_alloc_def (f, variable_size_p (s), get_type_specifier (s),
-                         s->u.s.tag, allocator_type, quantity, zone);
+                         s->u.s.tag, allocator_type, quantity);
 }
 
 /* Writes a typed allocator definition into output F for a typedef P,
@@ -4869,11 +4776,10 @@ write_typed_struct_alloc_def (outf_p f,
 static void
 write_typed_typedef_alloc_def (outf_p f,
                                const pair_p p, const char *allocator_type,
-                               enum alloc_quantity quantity,
-                               enum alloc_zone zone)
+                               enum alloc_quantity quantity)
 {
   write_typed_alloc_def (f, variable_size_p (p->type), "", p->name,
-                         allocator_type, quantity, zone);
+                         allocator_type, quantity);
 }
 
 /* Writes typed allocator definitions into output F for the types in
@@ -4899,16 +4805,10 @@ write_typed_alloc_defns (outf_p f,
       if (nb_plugin_files > 0 
 	  && ((s->u.s.line.file == NULL) || !s->u.s.line.file->inpisplugin))
 	continue;
-      write_typed_struct_alloc_def (f, s, "", single, any_zone);
-      write_typed_struct_alloc_def (f, s, "cleared_", single, any_zone);
-      write_typed_struct_alloc_def (f, s, "vec_", vector, any_zone);
-      write_typed_struct_alloc_def (f, s, "cleared_vec_", vector, any_zone);
-      write_typed_struct_alloc_def (f, s, "zone_", single, specific_zone);
-      write_typed_struct_alloc_def (f, s, "zone_cleared_", single,
-				    specific_zone);
-      write_typed_struct_alloc_def (f, s, "zone_vec_", vector, specific_zone);
-      write_typed_struct_alloc_def (f, s, "zone_cleared_vec_", vector,
-				    specific_zone);
+      write_typed_struct_alloc_def (f, s, "", single);
+      write_typed_struct_alloc_def (f, s, "cleared_", single);
+      write_typed_struct_alloc_def (f, s, "vec_", vector);
+      write_typed_struct_alloc_def (f, s, "cleared_vec_", vector);
     }
 
   oprintf (f, "\n/* Allocators for known typedefs.  */\n");
@@ -4925,15 +4825,10 @@ write_typed_alloc_defns (outf_p f,
 	  if (!filoc || !filoc->file->inpisplugin)
 	    continue;
 	};
-      write_typed_typedef_alloc_def (f, p, "", single, any_zone);
-      write_typed_typedef_alloc_def (f, p, "cleared_", single, any_zone);
-      write_typed_typedef_alloc_def (f, p, "vec_", vector, any_zone);
-      write_typed_typedef_alloc_def (f, p, "cleared_vec_", vector, any_zone);
-      write_typed_typedef_alloc_def (f, p, "zone_", single, specific_zone);
-      write_typed_typedef_alloc_def (f, p, "zone_cleared_", single,
-				     specific_zone);
-      write_typed_typedef_alloc_def (f, p, "zone_cleared_vec_", vector,
-				     specific_zone);
+      write_typed_typedef_alloc_def (f, p, "", single);
+      write_typed_typedef_alloc_def (f, p, "cleared_", single);
+      write_typed_typedef_alloc_def (f, p, "vec_", vector);
+      write_typed_typedef_alloc_def (f, p, "cleared_vec_", vector);
     }
 }
 
@@ -4992,10 +4887,7 @@ write_splay_tree_allocator_def (const_type_p s)
   output_typename (of, s);
   oprintf (of, " (int sz, void * nl)\n");
   oprintf (of, "{\n");
-  oprintf (of, "  return ggc_splay_alloc (");
-  oprintf (of, "gt_e_");
-  output_mangled_typename (of, s);
-  oprintf (of, ", sz, nl);\n");
+  oprintf (of, "  return ggc_splay_alloc (sz, nl);\n");
   oprintf (of, "}\n\n");
 }
 
@@ -5649,7 +5541,6 @@ main (int argc, char **argv)
 
   open_base_files ();
 
-  write_enum_defn (structures, param_structs);
   output_header = plugin_output ? plugin_output : header_file;
   write_typed_alloc_defns (output_header, structures, typedefs);
   DBGPRINT_COUNT_TYPE ("structures before write_types outputheader",

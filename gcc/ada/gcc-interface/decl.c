@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1887,8 +1887,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
 
       /* If the type we are dealing with has got a smaller alignment than the
-	 natural one, we need to wrap it up in a record type and under-align
-	 the latter.  We reuse the padding machinery for this purpose.  */
+	 natural one, we need to wrap it up in a record type and misalign the
+	 latter; we reuse the padding machinery for this purpose.  Note that,
+	 even if the record type is marked as packed because of misalignment,
+	 we don't pack the field so as to give it the size of the type.  */
       else if (align > 0)
 	{
 	  tree gnu_field_type, gnu_field;
@@ -1918,7 +1920,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     a bitfield.  */
 	  gnu_field
 	    = create_field_decl (get_identifier ("F"), gnu_field_type,
-				 gnu_type, NULL_TREE, bitsize_zero_node, 1, 0);
+				 gnu_type, TYPE_SIZE (gnu_field_type),
+				 bitsize_zero_node, 0, 0);
 
 	  finish_record_type (gnu_type, gnu_field, 2, debug_info_p);
 	  compute_record_mode (gnu_type);
@@ -3003,9 +3006,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    tree gnu_parent;
 
 	    /* A major complexity here is that the parent subtype will
-	       reference our discriminants in its Discriminant_Constraint
-	       list.  But those must reference the parent component of this
-	       record which is of the parent subtype we have not built yet!
+	       reference our discriminants in its Stored_Constraint list.
+	       But those must reference the parent component of this record
+	       which is precisely of the parent subtype we have not built yet!
 	       To break the circle we first build a dummy COMPONENT_REF which
 	       represents the "get to the parent" operation and initialize
 	       each of those discriminants to a COMPONENT_REF of the above
@@ -3284,9 +3287,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  if (IN (Ekind (gnat_base_type), Record_Kind)
 	      && !Is_Unchecked_Union (gnat_base_type)
 	      && !Is_For_Access_Subtype (gnat_entity)
-	      && Is_Constrained (gnat_entity)
 	      && Has_Discriminants (gnat_entity)
-	      && Present (Discriminant_Constraint (gnat_entity))
+	      && Is_Constrained (gnat_entity)
 	      && Stored_Constraint (gnat_entity) != No_Elist)
 	    {
 	      vec<subst_pair> gnu_subst_list
@@ -4965,7 +4967,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 	}
 
-      /* If this is a record type or subtype, call elaborate_expression_1 on
+      /* If this is a record type or subtype, call elaborate_expression_2 on
 	 any field position.  Do this for both global and local types.
 	 Skip any fields that we haven't made trees for to avoid problems with
 	 class wide types.  */
@@ -5941,25 +5943,11 @@ elaborate_entity (Entity_Id gnat_entity)
       break;
       }
 
-    case E_Record_Type:
-      {
-	Node_Id full_definition = Declaration_Node (gnat_entity);
-	Node_Id record_definition = Type_Definition (full_definition);
-
-	/* If this is a record extension, go a level further to find the
-	   record definition.  */
-	if (Nkind (record_definition) == N_Derived_Type_Definition)
-	  record_definition = Record_Extension_Part (record_definition);
-      }
-      break;
-
     case E_Record_Subtype:
     case E_Private_Subtype:
     case E_Limited_Private_Subtype:
     case E_Record_Subtype_With_Private:
-      if (Is_Constrained (gnat_entity)
-	  && Has_Discriminants (gnat_entity)
-	  && Present (Discriminant_Constraint (gnat_entity)))
+      if (Has_Discriminants (gnat_entity) && Is_Constrained (gnat_entity))
 	{
 	  Node_Id gnat_discriminant_expr;
 	  Entity_Id gnat_field;
@@ -6498,10 +6486,11 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	}
 
       /* If this field needs strict alignment, check that the record is
-	 sufficiently aligned and that position and size are consistent
-	 with the alignment.  But don't do it if we are just annotating
-	 types and the field's type is tagged, since tagged types aren't
-	 fully laid out in this mode.  */
+	 sufficiently aligned and that position and size are consistent with
+	 the alignment.  But don't do it if we are just annotating types and
+	 the field's type is tagged, since tagged types aren't fully laid out
+	 in this mode.  Also, note that atomic implies volatile so the inner
+	 test sequences ordering is significant here.  */
       if (needs_strict_alignment
 	  && !(type_annotate_only && Is_Tagged_Type (gnat_field_type)))
 	{
@@ -6517,6 +6506,12 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
 		   TYPE_SIZE (gnu_field_type));
 
+	      else if (is_volatile)
+		post_error_ne_tree
+		  ("volatile field& must be natural size of type{ (^)}",
+		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
+		   TYPE_SIZE (gnu_field_type));
+
 	      else if (Is_Aliased (gnat_field))
 		post_error_ne_tree
 		  ("size of aliased field& must be ^ bits",
@@ -6529,6 +6524,9 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
 		   TYPE_SIZE (gnu_field_type));
 
+              else
+		gcc_unreachable ();
+
 	      gnu_size = NULL_TREE;
 	    }
 
@@ -6536,7 +6534,13 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 			      (TRUNC_MOD_EXPR, gnu_pos,
 			       bitsize_int (TYPE_ALIGN (gnu_field_type)))))
 	    {
-	      if (is_volatile)
+	      if (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type))
+		post_error_ne_num
+		  ("position of atomic field& must be multiple of ^ bits",
+		   First_Bit (Component_Clause (gnat_field)), gnat_field,
+		   TYPE_ALIGN (gnu_field_type));
+
+              else if (is_volatile)
 		post_error_ne_num
 		  ("position of volatile field& must be multiple of ^ bits",
 		   First_Bit (Component_Clause (gnat_field)), gnat_field,
@@ -7286,15 +7290,22 @@ annotate_value (tree gnu_size)
 
     case COMPONENT_REF:
       /* The only case we handle here is a simple discriminant reference.  */
-      if (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == PLACEHOLDER_EXPR
-	  && TREE_CODE (TREE_OPERAND (gnu_size, 1)) == FIELD_DECL
-	  && DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1)))
-	return Create_Node (Discrim_Val,
-			    annotate_value (DECL_DISCRIMINANT_NUMBER
-					    (TREE_OPERAND (gnu_size, 1))),
-			    No_Uint, No_Uint);
-      else
-	return No_Uint;
+      if (DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1)))
+	{
+	  tree n = DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1));
+
+	  /* Climb up the chain of successive extensions, if any.  */
+	  while (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == COMPONENT_REF
+		 && DECL_NAME (TREE_OPERAND (TREE_OPERAND (gnu_size, 0), 1))
+		    == parent_name_id)
+	    gnu_size = TREE_OPERAND (gnu_size, 0);
+
+	  if (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == PLACEHOLDER_EXPR)
+	    return
+	      Create_Node (Discrim_Val, annotate_value (n), No_Uint, No_Uint);
+	}
+
+      return No_Uint;
 
     CASE_CONVERT:   case NON_LVALUE_EXPR:
       return annotate_value (TREE_OPERAND (gnu_size, 0));

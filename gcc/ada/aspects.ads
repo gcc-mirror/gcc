@@ -127,7 +127,7 @@ package Aspects is
       Aspect_Unsuppress,
       Aspect_Value_Size,                    -- GNAT
       Aspect_Variable_Indexing,
-      Aspect_Warnings,
+      Aspect_Warnings,                      -- GNAT
       Aspect_Write,
 
       --  The following aspects correspond to library unit pragmas
@@ -234,6 +234,7 @@ package Aspects is
                              Aspect_Favor_Top_Level          => True,
                              Aspect_Global                   => True,
                              Aspect_Inline_Always            => True,
+                             Aspect_Invariant                => True,
                              Aspect_Lock_Free                => True,
                              Aspect_Object_Size              => True,
                              Aspect_Persistent_BSS           => True,
@@ -243,18 +244,19 @@ package Aspects is
                              Aspect_Pure_12                  => True,
                              Aspect_Pure_Function            => True,
                              Aspect_Remote_Access_Type       => True,
-                             Aspect_Shared                   => True,
                              Aspect_Scalar_Storage_Order     => True,
+                             Aspect_Shared                   => True,
                              Aspect_Simple_Storage_Pool      => True,
                              Aspect_Simple_Storage_Pool_Type => True,
                              Aspect_Suppress_Debug_Info      => True,
                              Aspect_Test_Case                => True,
-                             Aspect_Universal_Data           => True,
                              Aspect_Universal_Aliasing       => True,
+                             Aspect_Universal_Data           => True,
                              Aspect_Unmodified               => True,
                              Aspect_Unreferenced             => True,
                              Aspect_Unreferenced_Objects     => True,
                              Aspect_Value_Size               => True,
+                             Aspect_Warnings                 => True,
                              others                          => False);
 
    --  The following array indicates aspects for which multiple occurrences of

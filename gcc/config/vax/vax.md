@@ -1,6 +1,5 @@
 ;; Machine description for GNU compiler, VAX Version
-;; Copyright (C) 1987, 1988, 1991, 1994, 1995, 1996, 1998, 1999, 2000, 2001,
-;; 2002, 2004, 2005, 2007, 2009, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -370,7 +369,7 @@
 (define_insn "add<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g")
 	(plus:VAXint (match_operand:VAXint 1 "general_operand" "nrmT")
-		    (match_operand:VAXint 2 "general_operand" "nrmT")))]
+		     (match_operand:VAXint 2 "general_operand" "nrmT")))]
   ""
   "* return vax_output_int_add (insn, operands, <MODE>mode);")
 
@@ -410,7 +409,7 @@
 (define_insn "sub<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g,g")
 	(minus:VAXint (match_operand:VAXint 1 "general_operand" "0,nrmT")
-		     (match_operand:VAXint 2 "general_operand" "nrmT,nrmT")))]
+		      (match_operand:VAXint 2 "general_operand" "nrmT,nrmT")))]
   ""
   "@
    sub<VAXint:isfx>2 %2,%0
@@ -453,7 +452,7 @@
 (define_insn "mul<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g,g,g")
 	(mult:VAXint (match_operand:VAXint 1 "general_operand" "0,nrmT,nrmT")
-		    (match_operand:VAXint 2 "general_operand" "nrmT,0,nrmT")))]
+		     (match_operand:VAXint 2 "general_operand" "nrmT,0,nrmT")))]
   ""
   "@
    mul<VAXint:isfx>2 %2,%0
@@ -512,7 +511,7 @@
 (define_insn "div<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g,g")
 	(div:VAXint (match_operand:VAXint 1 "general_operand" "0,nrmT")
-		   (match_operand:VAXint 2 "general_operand" "nrmT,nrmT")))]
+		    (match_operand:VAXint 2 "general_operand" "nrmT,nrmT")))]
   ""
   "@
    div<VAXint:isfx>2 %2,%0
@@ -534,7 +533,7 @@
 (define_expand "and<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "")
 	(and:VAXint (not:VAXint (match_operand:VAXint 1 "general_operand" ""))
-		   (match_operand:VAXint 2 "general_operand" "")))]
+		    (match_operand:VAXint 2 "general_operand" "")))]
   ""
   "
 {
@@ -571,7 +570,7 @@
 (define_insn "*and<mode>_const_int"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g,g")
 	(and:VAXint (match_operand:VAXint 1 "general_operand" "0,nrmT")
-		   (match_operand:VAXint 2 "const_int_operand" "n,n")))]
+		    (match_operand:VAXint 2 "const_int_operand" "n,n")))]
   ""
   "@
    bic<VAXint:isfx>2 %<VAXint:iprefx>2,%0
@@ -583,7 +582,7 @@
 (define_insn "ior<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g,g,g")
 	(ior:VAXint (match_operand:VAXint 1 "general_operand" "0,nrmT,nrmT")
-		   (match_operand:VAXint 2 "general_operand" "nrmT,0,nrmT")))]
+		    (match_operand:VAXint 2 "general_operand" "nrmT,0,nrmT")))]
   ""
   "@
    bis<VAXint:isfx>2 %2,%0
@@ -595,7 +594,7 @@
 (define_insn "xor<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g,g,g")
 	(xor:VAXint (match_operand:VAXint 1 "general_operand" "0,nrmT,nrmT")
-		   (match_operand:VAXint 2 "general_operand" "nrmT,0,nrmT")))]
+		    (match_operand:VAXint 2 "general_operand" "nrmT,0,nrmT")))]
   ""
   "@
    xor<VAXint:isfx>2 %2,%0
@@ -630,7 +629,7 @@
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "general_operand" "=g")
 	(ashiftrt:SI (match_operand:SI 1 "general_operand" "g")
-		   (match_operand:QI 2 "general_operand" "g")))]
+		     (match_operand:QI 2 "general_operand" "g")))]
   ""
   "
 {
@@ -1362,7 +1361,7 @@
 
 (define_insn "*call"
    [(call (match_operand:QI 0 "memory_operand" "m")
-       (match_operand:SI 1 "const_int_operand" ""))]
+	  (match_operand:SI 1 "const_int_operand" ""))]
   ""
   "calls $0,%0")
 

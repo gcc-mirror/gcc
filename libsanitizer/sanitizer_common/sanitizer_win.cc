@@ -13,10 +13,13 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOGDI
 #include <stdlib.h>
+#include <io.h>
 #include <windows.h>
 
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
+#include "sanitizer_placement_new.h"
+#include "sanitizer_mutex.h"
 
 namespace __sanitizer {
 
@@ -73,12 +76,18 @@ void UnmapOrDie(void *addr, uptr size) {
 }
 
 void *MmapFixedNoReserve(uptr fixed_addr, uptr size) {
+  // FIXME: is this really "NoReserve"? On Win32 this does not matter much,
+  // but on Win64 it does.
   void *p = VirtualAlloc((LPVOID)fixed_addr, size,
       MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
   if (p == 0)
     Report("ERROR: Failed to allocate 0x%zx (%zd) bytes at %p (%d)\n",
            size, size, fixed_addr, GetLastError());
   return p;
+}
+
+void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
+  return MmapFixedNoReserve(fixed_addr, size);
 }
 
 void *Mprotect(uptr fixed_addr, uptr size) {
@@ -127,6 +136,10 @@ void ReExec() {
   UNIMPLEMENTED();
 }
 
+void PrepareForSandboxing() {
+  // Nothing here for now.
+}
+
 bool StackSizeIsUnlimited() {
   UNIMPLEMENTED();
 }
@@ -173,7 +186,7 @@ int internal_close(fd_t fd) {
 }
 
 int internal_isatty(fd_t fd) {
-  UNIMPLEMENTED();
+  return _isatty(fd);
 }
 
 fd_t internal_open(const char *filename, bool write) {
@@ -211,6 +224,42 @@ uptr internal_readlink(const char *path, char *buf, uptr bufsize) {
 int internal_sched_yield() {
   Sleep(0);
   return 0;
+}
+
+// ---------------------- BlockingMutex ---------------- {{{1
+enum LockState {
+  LOCK_UNINITIALIZED = 0,
+  LOCK_READY = -1,
+};
+
+BlockingMutex::BlockingMutex(LinkerInitialized li) {
+  // FIXME: see comments in BlockingMutex::Lock() for the details.
+  CHECK(li == LINKER_INITIALIZED || owner_ == LOCK_UNINITIALIZED);
+
+  CHECK(sizeof(CRITICAL_SECTION) <= sizeof(opaque_storage_));
+  InitializeCriticalSection((LPCRITICAL_SECTION)opaque_storage_);
+  owner_ = LOCK_READY;
+}
+
+void BlockingMutex::Lock() {
+  if (owner_ == LOCK_UNINITIALIZED) {
+    // FIXME: hm, global BlockingMutex objects are not initialized?!?
+    // This might be a side effect of the clang+cl+link Frankenbuild...
+    new(this) BlockingMutex((LinkerInitialized)(LINKER_INITIALIZED + 1));
+
+    // FIXME: If it turns out the linker doesn't invoke our
+    // constructors, we should probably manually Lock/Unlock all the global
+    // locks while we're starting in one thread to avoid double-init races.
+  }
+  EnterCriticalSection((LPCRITICAL_SECTION)opaque_storage_);
+  CHECK(owner_ == LOCK_READY);
+  owner_ = GetThreadSelf();
+}
+
+void BlockingMutex::Unlock() {
+  CHECK(owner_ == GetThreadSelf());
+  owner_ = LOCK_READY;
+  LeaveCriticalSection((LPCRITICAL_SECTION)opaque_storage_);
 }
 
 }  // namespace __sanitizer

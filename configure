@@ -5819,6 +5819,8 @@ fi
     isllibs='-L$$r/$(HOST_SUBDIR)/isl/'"$lt_cv_objdir"' '
     islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
     ENABLE_ISL_CHECK=no
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using in-tree ISL, disabling version check" >&5
+$as_echo "$as_me: WARNING: using in-tree ISL, disabling version check" >&2;}
   fi
 
 
@@ -5831,14 +5833,10 @@ fi
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
     LIBS="${_isl_saved_LIBS} -lisl"
-    echo $CFLAGS
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.10 of ISL" >&5
 $as_echo_n "checking for version 0.10 of ISL... " >&6; }
-if test "${gcc_cv_isl+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test "$cross_compiling" = yes; then :
+    if test "$cross_compiling" = yes; then :
   gcc_cv_isl=yes
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -5864,8 +5862,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_isl" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_isl" >&5
 $as_echo "$gcc_cv_isl" >&6; }
 
     CFLAGS=$_isl_saved_CFLAGS
@@ -5874,6 +5871,55 @@ $as_echo "$gcc_cv_isl" >&6; }
   fi
 
 
+  if test "${gcc_cv_isl}" = no ; then
+
+  if test "${ENABLE_ISL_CHECK}" = yes ; then
+    _isl_saved_CFLAGS=$CFLAGS
+    _isl_saved_LDFLAGS=$LDFLAGS
+    _isl_saved_LIBS=$LIBS
+
+    CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
+    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
+    LIBS="${_isl_saved_LIBS} -lisl"
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.11 of ISL" >&5
+$as_echo_n "checking for version 0.11 of ISL... " >&6; }
+    if test "$cross_compiling" = yes; then :
+  gcc_cv_isl=yes
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <isl/version.h>
+   #include <string.h>
+int
+main ()
+{
+if (strncmp (isl_version (), "isl-0.11", strlen ("isl-0.11")) != 0)
+     return 1;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  gcc_cv_isl=yes
+else
+  gcc_cv_isl=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_isl" >&5
+$as_echo "$gcc_cv_isl" >&6; }
+
+    CFLAGS=$_isl_saved_CFLAGS
+    LDFLAGS=$_isl_saved_LDFLAGS
+    LIBS=$_isl_saved_LIBS
+  fi
+
+
+  fi
 
 
 
@@ -5947,10 +5993,13 @@ fi
   if test "x${with_cloog_lib}" != x; then
     clooglibs="-L$with_cloog_lib"
   fi
-      if test "x${clooginc}" = x && test "x${clooglibs}" = x \
+        if test "x${clooginc}" = x && test "x${clooglibs}" = x \
      && test -d ${srcdir}/cloog; then
      clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
      clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
+    ENABLE_CLOOG_CHECK=no
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using in-tree CLooG, disabling version check" >&5
+$as_echo "$as_me: WARNING: using in-tree CLooG, disabling version check" >&2;}
   fi
 
   clooginc="-DCLOOG_INT_GMP ${clooginc}"
@@ -5969,10 +6018,7 @@ fi
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.17.0 of CLooG" >&5
 $as_echo_n "checking for version 0.17.0 of CLooG... " >&6; }
-if test "${gcc_cv_cloog+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "cloog/version.h"
 int
@@ -5993,8 +6039,7 @@ else
   gcc_cv_cloog=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog" >&5
 $as_echo "$gcc_cv_cloog" >&6; }
 
     CFLAGS=$_cloog_saved_CFLAGS
@@ -6002,6 +6047,49 @@ $as_echo "$gcc_cv_cloog" >&6; }
   fi
 
 
+    if test "${gcc_cv_cloog}" = no ; then
+
+
+
+  if test "${ENABLE_CLOOG_CHECK}" = yes ; then
+    _cloog_saved_CFLAGS=$CFLAGS
+    _cloog_saved_LDFLAGS=$LDFLAGS
+
+    CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${islinc} ${gmpinc}"
+    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${isllibs} ${gmplib}"
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.18.0 of CLooG" >&5
+$as_echo_n "checking for version 0.18.0 of CLooG... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "cloog/version.h"
+int
+main ()
+{
+#if CLOOG_VERSION_MAJOR != 0 \
+    || CLOOG_VERSION_MINOR != 18 \
+    || CLOOG_VERSION_REVISION < 0
+    choke me
+   #endif
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  gcc_cv_cloog=yes
+else
+  gcc_cv_cloog=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog" >&5
+$as_echo "$gcc_cv_cloog" >&6; }
+
+    CFLAGS=$_cloog_saved_CFLAGS
+    LDFLAGS=$_cloog_saved_LDFLAGS
+  fi
+
+
+    fi
 
 
 

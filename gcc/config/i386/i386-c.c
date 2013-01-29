@@ -1,6 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013
-   Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -142,6 +141,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__corei7");
       def_or_undef (parse_in, "__corei7__");
       break;
+    case PROCESSOR_HASWELL:
+      def_or_undef (parse_in, "__core_avx2");
+      def_or_undef (parse_in, "__core_avx2__");
+      break;
     case PROCESSOR_ATOM:
       def_or_undef (parse_in, "__atom");
       def_or_undef (parse_in, "__atom__");
@@ -231,6 +234,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_COREI7:
       def_or_undef (parse_in, "__tune_corei7__");
+      break;
+    case PROCESSOR_HASWELL:
+      def_or_undef (parse_in, "__tune_core_avx2__");
       break;
     case PROCESSOR_ATOM:
       def_or_undef (parse_in, "__tune_atom__");

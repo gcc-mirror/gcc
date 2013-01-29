@@ -1,4 +1,4 @@
-! { dg do-compile }
+! { dg-do compile }
 ! { dg-options "-std=f2003" }
 !
 ! Fortran 2003 allowes TYPE without components

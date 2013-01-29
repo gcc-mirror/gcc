@@ -1,6 +1,5 @@
 /* SSA Dominator optimizations for trees
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -3007,7 +3006,12 @@ eliminate_degenerate_phis (void)
     }
 
   if (cfg_altered)
-    free_dominance_info (CDI_DOMINATORS);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      /* If we changed the CFG schedule loops for fixup by cfgcleanup.  */
+      if (current_loops)
+	loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   /* Propagation of const and copies may make some EH edges dead.  Purge
      such edges from the CFG as needed.  */

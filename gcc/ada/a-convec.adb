@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -582,8 +582,8 @@ package body Ada.Containers.Vectors is
          C := Capacity;
 
       else
-         raise Capacity_Error
-           with "Requested capacity is less than Source length";
+         raise Capacity_Error with
+           "Requested capacity is less than Source length";
       end if;
 
       return Target : Vector do

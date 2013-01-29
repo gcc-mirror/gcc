@@ -1,6 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -242,8 +241,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	&& (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
 	    /* Keep around virtual functions for possible devirtualization.  */
 	    || (before_inlining_p
-		&& DECL_VIRTUAL_P (node->symbol.decl)
-		&& (DECL_COMDAT (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl)))))
+		&& DECL_VIRTUAL_P (node->symbol.decl))))
       {
         gcc_assert (!node->global.inlined_to);
 	pointer_set_insert (reachable, node);

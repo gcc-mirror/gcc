@@ -1,6 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011,
-   2012 Free Software Foundation, Inc.
+   Copyright (C) 1999-2013 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.

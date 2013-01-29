@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2006, 2007, 2009, 2012 Free Software Foundation
+// Copyright (C) 2005-2013 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,10 +40,11 @@ test01()
   {
     std::shared_ptr<A> a2(wa);
   }
-  catch (const std::bad_weak_ptr&)
+  catch (const std::bad_weak_ptr& e)
   {
     // Expected.
-    test = true;
+    if (e.what() == std::string("bad_weak_ptr"))
+      test = true;
   }
   VERIFY( test );
 

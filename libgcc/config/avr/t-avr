@@ -164,3 +164,17 @@ LIB2FUNCS_EXCLUDE += \
 LIB2FUNCS_EXCLUDE += \
 	$(foreach func,_usadd _ussub _usneg,\
 	$(foreach mode,$(usat_modes),$(func_X)))
+
+
+smul_modes =  QQ  HQ  HA  SA
+umul_modes = UQQ UHQ UHA USA
+sdiv_modes =  QQ  HQ  HA  SA
+udiv_modes = UQQ UHQ UHA USA
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_mul,\
+	$(foreach mode,$(smul_modes) $(umul_modes),$(func_X)))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_div,\
+	$(foreach mode,$(sdiv_modes) $(udiv_modes),$(func_X)))

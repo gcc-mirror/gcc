@@ -22,9 +22,31 @@ extern "C" void _mm_pause();
 extern "C" long _InterlockedExchangeAdd(  // NOLINT
     long volatile * Addend, long Value);  // NOLINT
 #pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" void *InterlockedCompareExchangePointer(
+
+#ifdef _WIN64
+extern "C" void *_InterlockedCompareExchangePointer(
     void *volatile *Destination,
     void *Exchange, void *Comparand);
+#pragma intrinsic(_InterlockedCompareExchangePointer)
+#else
+// There's no _InterlockedCompareExchangePointer intrinsic on x86,
+// so call _InterlockedCompareExchange instead.
+extern "C"
+long __cdecl _InterlockedCompareExchange(  // NOLINT
+    long volatile *Destination,            // NOLINT
+    long Exchange, long Comparand);        // NOLINT
+#pragma intrinsic(_InterlockedCompareExchange)
+
+inline static void *_InterlockedCompareExchangePointer(
+    void *volatile *Destination,
+    void *Exchange, void *Comparand) {
+  return reinterpret_cast<void*>(
+      _InterlockedCompareExchange(
+          reinterpret_cast<long volatile*>(Destination),  // NOLINT
+          reinterpret_cast<long>(Exchange),               // NOLINT
+          reinterpret_cast<long>(Comparand)));            // NOLINT
+}
+#endif
 
 namespace __sanitizer {
 
@@ -48,6 +70,7 @@ INLINE typename T::Type atomic_load(
       | memory_order_acquire | memory_order_seq_cst));
   DCHECK(!((uptr)a % sizeof(*a)));
   typename T::Type v;
+  // FIXME(dvyukov): 64-bit load is not atomic on 32-bits.
   if (mo == memory_order_relaxed) {
     v = a->val_dont_use;
   } else {
@@ -63,6 +86,7 @@ INLINE void atomic_store(volatile T *a, typename T::Type v, memory_order mo) {
   DCHECK(mo & (memory_order_relaxed | memory_order_release
       | memory_order_seq_cst));
   DCHECK(!((uptr)a % sizeof(*a)));
+  // FIXME(dvyukov): 64-bit store is not atomic on 32-bits.
   if (mo == memory_order_relaxed) {
     a->val_dont_use = v;
   } else {
@@ -113,7 +137,7 @@ INLINE bool atomic_compare_exchange_strong(volatile atomic_uintptr_t *a,
                                            uptr xchg,
                                            memory_order mo) {
   uptr cmpv = *cmp;
-  uptr prev = (uptr)InterlockedCompareExchangePointer(
+  uptr prev = (uptr)_InterlockedCompareExchangePointer(
       (void*volatile*)&a->val_dont_use, (void*)xchg, (void*)cmpv);
   if (prev == cmpv)
     return true;

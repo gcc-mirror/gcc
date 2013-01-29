@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2003-2013 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -40,6 +40,10 @@ set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 set additional_flags "-fno-tree-loop-distribute-patterns"
 if [istarget "powerpc-*-darwin*"] {
    lappend additional_flags "-Wl,-multiply_defined,suppress"
+}
+if { [istarget *-*-eabi*]
+     || [istarget *-*-elf] } {
+   lappend additional_flags "-Wl,--allow-multiple-definition"
 }
 
 foreach src [lsort [find $srcdir/$subdir *.c]] {

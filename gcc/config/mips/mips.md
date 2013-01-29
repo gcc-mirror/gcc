@@ -1,8 +1,5 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
-;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-;;  2011, 2012
-;;  Free Software Foundation, Inc.
+;;  Copyright (C) 1989-2013 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -2901,7 +2898,7 @@
 
 (define_insn "*and<mode>3_mips16"
   [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d,d")
-	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "%o,o,W,d,0")
+	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "%W,W,W,d,0")
 		 (match_operand:GPR 2 "and_operand" "Yb,Yh,Yw,Yw,d")))]
   "TARGET_MIPS16 && and_operands_ok (<MODE>mode, operands[1], operands[2])"
 {

@@ -1,6 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2006-2013 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -3423,6 +3422,28 @@ visit_use (tree use)
 		}
 	      else
 		{
+		  /* First try to lookup the simplified expression.  */
+		  if (simplified)
+		    {
+		      enum gimple_rhs_class rhs_class;
+
+
+		      rhs_class = get_gimple_rhs_class (TREE_CODE (simplified));
+		      if ((rhs_class == GIMPLE_UNARY_RHS
+			   || rhs_class == GIMPLE_BINARY_RHS
+			   || rhs_class == GIMPLE_TERNARY_RHS)
+			  && valid_gimple_rhs_p (simplified))
+			{
+			  tree result = vn_nary_op_lookup (simplified, NULL);
+			  if (result)
+			    {
+			      changed = set_ssa_val_to (lhs, result);
+			      goto done;
+			    }
+			}
+		    }
+
+		  /* Otherwise visit the original statement.  */
 		  switch (vn_get_stmt_kind (stmt))
 		    {
 		    case VN_NARY:

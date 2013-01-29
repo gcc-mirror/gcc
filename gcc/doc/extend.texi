@@ -1,6 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-@c Free Software Foundation, Inc.
+@c Copyright (C) 1988-2013 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -813,15 +811,15 @@ the middle operand uses the value already computed without the undesirable
 effects of recomputing it.
 
 @node __int128
-@section 128-bits integers
+@section 128-bit integers
 @cindex @code{__int128} data types
 
 As an extension the integer scalar type @code{__int128} is supported for
-targets having an integer mode wide enough to hold 128 bits.
+targets which have an integer mode wide enough to hold 128 bits.
 Simply write @code{__int128} for a signed 128-bit integer, or
 @code{unsigned __int128} for an unsigned 128-bit integer.  There is no
-support in GCC to express an integer constant of type @code{__int128}
-for targets having @code{long long} integer less than 128 bits wide.
+support in GCC for expressing an integer constant of type @code{__int128}
+for targets with @code{long long} integer less than 128 bits wide.
 
 @node Long Long
 @section Double-Word Integers
@@ -1280,7 +1278,7 @@ If the high bit of the address is clear, data is read from flash
 with @code{RAMPZ} set according to the high byte of the address.
 @xref{AVR Built-in Functions,,@code{__builtin_avr_flash_segment}}.
 
-Objects in this address space are located in @code{.progmem.data}.
+Objects in this address space are located in @code{.progmemx.data}.
 @end table
 
 @b{Example}
@@ -6064,7 +6062,7 @@ int foo ()
   int *y = &x;
   int result;
   asm ("magic stuff accessing an 'int' pointed to by '%1'"
-        "=&d" (r) : "a" (y), "m" (*y));
+       : "=&d" (r) : "a" (y), "m" (*y));
   return result;
 @}
 @end smallexample
@@ -10432,11 +10430,11 @@ v32qi __builtin_ia32_mpsadbw256 (v32qi,v32qi,v32qi,int)
 v32qi __builtin_ia32_pabsb256 (v32qi)
 v16hi __builtin_ia32_pabsw256 (v16hi)
 v8si __builtin_ia32_pabsd256 (v8si)
-v16hi builtin_ia32_packssdw256 (v8si,v8si)
+v16hi __builtin_ia32_packssdw256 (v8si,v8si)
 v32qi __builtin_ia32_packsswb256 (v16hi,v16hi)
 v16hi __builtin_ia32_packusdw256 (v8si,v8si)
 v32qi __builtin_ia32_packuswb256 (v16hi,v16hi)
-v32qi__builtin_ia32_paddb256 (v32qi,v32qi)
+v32qi __builtin_ia32_paddb256 (v32qi,v32qi)
 v16hi __builtin_ia32_paddw256 (v16hi,v16hi)
 v8si __builtin_ia32_paddd256 (v8si,v8si)
 v4di __builtin_ia32_paddq256 (v4di,v4di)
@@ -10447,7 +10445,7 @@ v16hi __builtin_ia32_paddusw256 (v16hi,v16hi)
 v4di __builtin_ia32_palignr256 (v4di,v4di,int)
 v4di __builtin_ia32_andsi256 (v4di,v4di)
 v4di __builtin_ia32_andnotsi256 (v4di,v4di)
-v32qi__builtin_ia32_pavgb256 (v32qi,v32qi)
+v32qi __builtin_ia32_pavgb256 (v32qi,v32qi)
 v16hi __builtin_ia32_pavgw256 (v16hi,v16hi)
 v32qi __builtin_ia32_pblendvb256 (v32qi,v32qi,v32qi)
 v16hi __builtin_ia32_pblendw256 (v16hi,v16hi,int)

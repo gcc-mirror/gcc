@@ -1,8 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1185,6 +1182,29 @@ shorten_branches (rtx first)
 	  if (LABEL_P (insn))
 	    {
 	      int log = LABEL_TO_ALIGNMENT (insn);
+
+#ifdef CASE_VECTOR_SHORTEN_MODE
+	      /* If the mode of a following jump table was changed, we
+		 may need to update the alignment of this label.  */
+	      rtx next;
+	      bool next_is_jumptable;
+
+	      next = next_nonnote_insn (insn);
+	      next_is_jumptable = next && JUMP_TABLE_DATA_P (next);
+	      if ((JUMP_TABLES_IN_TEXT_SECTION
+		   || readonly_data_section == text_section)
+		  && next_is_jumptable)
+		{
+		  int newlog = ADDR_VEC_ALIGN (next);
+		  if (newlog != log)
+		    {
+		      log = newlog;
+		      LABEL_TO_ALIGNMENT (insn) = log;
+		      something_changed = 1;
+		    }
+		}
+#endif
+
 	      if (log > insn_current_align)
 		{
 		  int align = 1 << log;

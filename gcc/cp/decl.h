@@ -1,6 +1,5 @@
 /* Variables and structures for declaration processing.
-   Copyright (C) 1993, 2000, 2002, 2004, 2005, 2007, 2008, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

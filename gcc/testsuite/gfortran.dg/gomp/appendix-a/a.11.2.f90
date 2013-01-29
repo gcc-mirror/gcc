@@ -1,4 +1,4 @@
-! { do-do compile }
+! { dg-do compile }
 
       SUBROUTINE A11_2(AA, BB, CC, DD, EE, FF, N)
       INTEGER N

@@ -285,7 +285,7 @@ runtime_MProf_Free(void *p, uintptr size)
 
 int64 runtime_blockprofilerate;  // in CPU ticks
 
-void runtime_SetBlockProfileRate(intgo) asm("runtime.SetBlockProfileRate");
+void runtime_SetBlockProfileRate(intgo) __asm__ (GOSYM_PREFIX "runtime.SetBlockProfileRate");
 
 void
 runtime_SetBlockProfileRate(intgo rate)

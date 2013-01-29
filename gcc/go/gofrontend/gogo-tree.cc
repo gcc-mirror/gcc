@@ -438,15 +438,15 @@ Gogo::initialization_function_decl()
   // The tedious details of building your own function.  There doesn't
   // seem to be a helper function for this.
   std::string name = this->package_name() + ".init";
-  tree fndecl = build_decl(BUILTINS_LOCATION, FUNCTION_DECL,
-			   get_identifier_from_string(name),
+  tree fndecl = build_decl(this->package_->location().gcc_location(),
+			   FUNCTION_DECL, get_identifier_from_string(name),
 			   build_function_type(void_type_node,
 					       void_list_node));
   const std::string& asm_name(this->get_init_fn_name());
   SET_DECL_ASSEMBLER_NAME(fndecl, get_identifier_from_string(asm_name));
 
-  tree resdecl = build_decl(BUILTINS_LOCATION, RESULT_DECL, NULL_TREE,
-			    void_type_node);
+  tree resdecl = build_decl(this->package_->location().gcc_location(),
+			    RESULT_DECL, NULL_TREE, void_type_node);
   DECL_ARTIFICIAL(resdecl) = 1;
   DECL_CONTEXT(resdecl) = fndecl;
   DECL_RESULT(fndecl) = resdecl;
@@ -481,7 +481,8 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
     push_struct_function(fndecl);
   else
     push_cfun(DECL_STRUCT_FUNCTION(fndecl));
-  cfun->function_end_locus = BUILTINS_LOCATION;
+  cfun->function_start_locus = this->package_->location().gcc_location();
+  cfun->function_end_locus = cfun->function_start_locus;
 
   gimplify_function_tree(fndecl);
 
@@ -498,7 +499,7 @@ class Find_var : public Traverse
   // A hash table we use to avoid looping.  The index is the name of a
   // named object.  We only look through objects defined in this
   // package.
-  typedef Unordered_set(std::string) Seen_objects;
+  typedef Unordered_set(const void*) Seen_objects;
 
   Find_var(Named_object* var, Seen_objects* seen_objects)
     : Traverse(traverse_expressions),
@@ -546,7 +547,7 @@ Find_var::expression(Expression** pexpr)
 	  if (init != NULL)
 	    {
 	      std::pair<Seen_objects::iterator, bool> ins =
-		this->seen_objects_->insert(v->name());
+		this->seen_objects_->insert(v);
 	      if (ins.second)
 		{
 		  // This is the first time we have seen this name.
@@ -567,11 +568,30 @@ Find_var::expression(Expression** pexpr)
       if (f->is_function() && f->package() == NULL)
 	{
 	  std::pair<Seen_objects::iterator, bool> ins =
-	    this->seen_objects_->insert(f->name());
+	    this->seen_objects_->insert(f);
 	  if (ins.second)
 	    {
 	      // This is the first time we have seen this name.
 	      if (f->func_value()->block()->traverse(this) == TRAVERSE_EXIT)
+		return TRAVERSE_EXIT;
+	    }
+	}
+    }
+
+  Temporary_reference_expression* tre = e->temporary_reference_expression();
+  if (tre != NULL)
+    {
+      Temporary_statement* ts = tre->statement();
+      Expression* init = ts->init();
+      if (init != NULL)
+	{
+	  std::pair<Seen_objects::iterator, bool> ins =
+	    this->seen_objects_->insert(ts);
+	  if (ins.second)
+	    {
+	      // This is the first time we have seen this temporary
+	      // statement.
+	      if (Expression::traverse(&init, this) == TRAVERSE_EXIT)
 		return TRAVERSE_EXIT;
 	    }
 	}
@@ -612,11 +632,11 @@ class Var_init
 {
  public:
   Var_init()
-    : var_(NULL), init_(NULL_TREE), waiting_(0)
+    : var_(NULL), init_(NULL_TREE)
   { }
 
   Var_init(Named_object* var, tree init)
-    : var_(var), init_(init), waiting_(0)
+    : var_(var), init_(init)
   { }
 
   // Return the variable.
@@ -629,24 +649,11 @@ class Var_init
   init() const
   { return this->init_; }
 
-  // Return the number of variables waiting for this one to be
-  // initialized.
-  size_t
-  waiting() const
-  { return this->waiting_; }
-
-  // Increment the number waiting.
-  void
-  increment_waiting()
-  { ++this->waiting_; }
-
  private:
   // The variable being initialized.
   Named_object* var_;
   // The initialization expression to run.
   tree init_;
-  // The number of variables which are waiting for this one.
-  size_t waiting_;
 };
 
 typedef std::list<Var_init> Var_inits;
@@ -659,6 +666,10 @@ typedef std::list<Var_init> Var_inits;
 static void
 sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 {
+  typedef std::pair<Named_object*, Named_object*> No_no;
+  typedef std::map<No_no, bool> Cache;
+  Cache cache;
+
   Var_inits ready;
   while (!var_inits->empty())
     {
@@ -669,23 +680,30 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
       Named_object* dep = gogo->var_depends_on(var->var_value());
 
       // Start walking through the list to see which variables VAR
-      // needs to wait for.  We can skip P1->WAITING variables--that
-      // is the number we've already checked.
+      // needs to wait for.
       Var_inits::iterator p2 = p1;
       ++p2;
-      for (size_t i = p1->waiting(); i > 0; --i)
-	++p2;
 
       for (; p2 != var_inits->end(); ++p2)
 	{
 	  Named_object* p2var = p2->var();
-	  if (expression_requires(init, preinit, dep, p2var))
+	  No_no key(var, p2var);
+	  std::pair<Cache::iterator, bool> ins =
+	    cache.insert(std::make_pair(key, false));
+	  if (ins.second)
+	    ins.first->second = expression_requires(init, preinit, dep, p2var);
+	  if (ins.first->second)
 	    {
 	      // Check for cycles.
-	      if (expression_requires(p2var->var_value()->init(),
+	      key = std::make_pair(p2var, var);
+	      ins = cache.insert(std::make_pair(key, false));
+	      if (ins.second)
+		ins.first->second =
+		  expression_requires(p2var->var_value()->init(),
 				      p2var->var_value()->preinit(),
 				      gogo->var_depends_on(p2var->var_value()),
-				      var))
+				      var);
+	      if (ins.first->second)
 		{
 		  error_at(var->location(),
 			   ("initialization expressions for %qs and "
@@ -699,12 +717,8 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 	      else
 		{
 		  // We can't emit P1 until P2 is emitted.  Move P1.
-		  // Note that the WAITING loop always executes at
-		  // least once, which is what we want.
-		  p2->increment_waiting();
 		  Var_inits::iterator p3 = p2;
-		  for (size_t i = p2->waiting(); i > 0; --i)
-		    ++p3;
+		  ++p3;
 		  var_inits->splice(p3, *var_inits, p1);
 		}
 	      break;
@@ -1118,6 +1132,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 		else
 		  push_cfun(DECL_STRUCT_FUNCTION(decl));
 
+		cfun->function_start_locus = func->location().gcc_location();
 		cfun->function_end_locus =
                   func->block()->end_location().gcc_location();
 

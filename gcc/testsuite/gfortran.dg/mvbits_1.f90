@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR 25577
 ! MVBITS didn't work correctly for integer types wider than a C int
 ! The testcase is based on the one Dale Ranta posted in the bug report

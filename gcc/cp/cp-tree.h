@@ -1,8 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -5476,9 +5473,9 @@ extern void finish_repo				(void);
 extern GTY(()) vec<tree, va_gc> *unemitted_tinfo_decls;
 
 extern void init_rtti_processing		(void);
-extern tree build_typeid			(tree);
+extern tree build_typeid			(tree, tsubst_flags_t);
 extern tree get_tinfo_decl			(tree);
-extern tree get_typeid				(tree);
+extern tree get_typeid				(tree, tsubst_flags_t);
 extern tree build_headof			(tree);
 extern tree build_dynamic_cast			(tree, tree, tsubst_flags_t);
 extern void emit_support_tinfos			(void);

@@ -1,6 +1,5 @@
 /* Natural loop discovery code for GNU compiler.
-   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1345,7 +1344,7 @@ verify_loop_structure (void)
       for (j = 0; j < loop->num_nodes; j++)
 	if (!flow_bb_inside_loop_p (loop, bbs[j]))
 	  {
-	    error ("bb %d do not belong to loop %d",
+	    error ("bb %d does not belong to loop %d",
 		   bbs[j]->index, loop->num);
 	    err = 1;
 	  }

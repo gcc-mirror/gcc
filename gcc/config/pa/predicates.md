@@ -1,5 +1,5 @@
 ;; Predicate definitions for HP PA-RISC.
-;; Copyright (C) 2005, 2007, 2010, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2013 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -30,6 +30,13 @@
 (define_predicate "uint5_operand"
   (and (match_code "const_int")
        (match_test "INT_U5_BITS (op)")))
+
+;; Return truth value of whether OP is an integer which fits the range
+;; constraining 6-bit unsigned immediate operands in three-address insns.
+
+(define_predicate "uint6_operand"
+  (and (match_code "const_int")
+       (match_test "INT_U6_BITS (op)")))
 
 ;; Return truth value of whether OP is an integer which fits the range
 ;; constraining 11-bit signed immediate operands in three-address insns.
@@ -124,6 +131,20 @@
 (define_predicate "arith32_operand"
   (ior (match_operand 0 "register_operand")
        (match_code "const_int")))
+
+;; Return truth value of whether OP can be used as a shift operand in
+;; a shift insn that accepts registers of mode MODE or 5-bit shift amounts.
+
+(define_predicate "shift5_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "uint5_operand")))
+
+;; Return truth value of whether OP can be used as a shift operand in
+;; a shift insn that accepts registers of mode MODE or 6-bit shift amounts.
+
+(define_predicate "shift6_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "uint6_operand")))
 
 ;; True iff OP can be used as an operand in an adddi3 insn.
 

@@ -1,5 +1,5 @@
 /* Target Code for moxie
-   Copyright (C) 2008, 2009, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -280,6 +280,9 @@ moxie_expand_prologue (void)
   rtx insn;
 
   moxie_compute_frame ();
+
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = cfun->machine->size_for_adjusting_sp;
 
   /* Save callee-saved registers.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)

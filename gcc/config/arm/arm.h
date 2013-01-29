@@ -1,7 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2013 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -2131,20 +2129,13 @@ extern int making_const_table;
 	asm_fprintf (STREAM, "\tpop {%r}\n", REGNO);	\
     } while (0)
 
-/* Jump table alignment is explicit in ASM_OUTPUT_CASE_LABEL.  */
-#define ADDR_VEC_ALIGN(JUMPTABLE) 0
+#define ADDR_VEC_ALIGN(JUMPTABLE)	\
+  ((TARGET_THUMB && GET_MODE (PATTERN (JUMPTABLE)) == SImode) ? 2 : 0)
 
-/* This is how to output a label which precedes a jumptable.  Since
-   Thumb instructions are 2 bytes, we may need explicit alignment here.  */
-#undef  ASM_OUTPUT_CASE_LABEL
-#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
-  do									\
-    {									\
-      if (TARGET_THUMB && GET_MODE (PATTERN (JUMPTABLE)) == SImode)	\
-        ASM_OUTPUT_ALIGN (FILE, 2);					\
-      (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);		\
-    }									\
-  while (0)
+/* Alignment for case labels comes from ADDR_VEC_ALIGN; avoid the
+   default alignment from elfos.h.  */
+#undef ASM_OUTPUT_BEFORE_CASE_LABEL
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) /* Empty.  */
 
 /* Make sure subsequent insns are aligned after a TBB.  */
 #define ASM_OUTPUT_CASE_END(FILE, NUM, JUMPTABLE)	\

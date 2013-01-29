@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2864,18 +2864,6 @@ package body Sem_Res is
             return;
          end if;
 
-         --  AI05-144-2: Check dangerous order dependence within an expression
-         --  that is not a subexpression. Exclude RHS of an assignment, because
-         --  both sides may have side-effects and the check must be performed
-         --  over the statement.
-
-         if Nkind (Parent (N)) not in N_Subexpr
-           and then Nkind (Parent (N)) /= N_Assignment_Statement
-           and then Nkind (Parent (N)) /= N_Procedure_Call_Statement
-         then
-            Check_Order_Dependence;
-         end if;
-
          --  The expression is definitely NOT overloaded at this point, so
          --  we reset the Is_Overloaded flag to avoid any confusion when
          --  reanalyzing the node.
@@ -3378,6 +3366,7 @@ package body Sem_Res is
 
    begin
       Check_Argument_Order;
+      Check_Function_Writable_Actuals (N);
 
       if Present (First_Actual (N)) then
          Check_Prefixed_Call;
@@ -3776,21 +3765,6 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  Save actual for subsequent check on order dependence, and
-            --  indicate whether actual is modifiable. For AI05-0144-2.
-
-            --  If this is a call to a reference function that is the result
-            --  of expansion, as in element iterator loops, this does not lead
-            --  to a dangerous order dependence: only subsequent use of the
-            --  denoted element might, in some enclosing call.
-
-            if not Has_Implicit_Dereference (Etype (Nam))
-              or else Comes_From_Source (N)
-            then
-               Save_Actual (A, Ekind (F) /= E_In_Parameter);
-            end if;
-
-            --  For mode IN, if actual is an entity, and the type of the formal
             --  has warnings suppressed, then we reset Never_Set_In_Source for
             --  the calling entity. The reason for this is to catch cases like
             --  GNAT.Spitbol.Patterns.Vstring_Var where the called subprogram
@@ -5108,6 +5082,7 @@ package body Sem_Res is
 
       Check_Unset_Reference (L);
       Check_Unset_Reference (R);
+      Check_Function_Writable_Actuals (N);
    end Resolve_Arithmetic_Op;
 
    ------------------
@@ -7632,6 +7607,8 @@ package body Sem_Res is
             end if;
          end;
       end if;
+
+      Check_Function_Writable_Actuals (N);
    end Resolve_Logical_Op;
 
    ---------------------------
@@ -7729,6 +7706,7 @@ package body Sem_Res is
 
       if Present (Alternatives (N)) then
          Resolve_Set_Membership;
+         Check_Function_Writable_Actuals (N);
          return;
 
       elsif not Is_Overloaded (R)
@@ -7793,6 +7771,7 @@ package body Sem_Res is
       end if;
 
       Eval_Membership_Op (N);
+      Check_Function_Writable_Actuals (N);
    end Resolve_Membership_Op;
 
    ------------------

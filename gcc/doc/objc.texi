@@ -1,6 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2010
-@c Free Software Foundation, Inc.
+@c Copyright (C) 1988-2013 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1165,7 +1163,7 @@ and @code{+resolveClassMethod:} has been attempted and did not succeed
 in dynamically registering the method.
 
 To configure the hook, you set the global variable
-@code{__objc_msg_foward2} to a function with the same argument and
+@code{__objc_msg_forward2} to a function with the same argument and
 return types of @code{objc_msg_lookup()}.  When
 @code{objc_msg_lookup()} can not find a method implementation, it
 invokes the hook function you provided to get a method implementation

@@ -14,7 +14,7 @@
 
 /* Set the C environment from Go.  This is called by syscall.Setenv.  */
 
-void setenv_c (String, String) __asm__ ("syscall.setenv_c");
+void setenv_c (String, String) __asm__ (GOSYM_PREFIX "syscall.setenv_c");
 
 void
 setenv_c (String k, String v)
@@ -25,20 +25,25 @@ setenv_c (String k, String v)
   unsigned char *vn;
 
   ks = k.str;
+  if (ks == NULL)
+    ks = (const byte *) "";
   kn = NULL;
+
   vs = v.str;
+  if (vs == NULL)
+    vs = (const byte *) "";
   vn = NULL;
 
 #ifdef HAVE_SETENV
 
-  if (ks[k.len] != 0)
+  if (ks != NULL && ks[k.len] != 0)
     {
       kn = __go_alloc (k.len + 1);
       __builtin_memcpy (kn, ks, k.len);
       ks = kn;
     }
 
-  if (vs[v.len] != 0)
+  if (vs != NULL && vs[v.len] != 0)
     {
       vn = __go_alloc (v.len + 1);
       __builtin_memcpy (vn, vs, v.len);

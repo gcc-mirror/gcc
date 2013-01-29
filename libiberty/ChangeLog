@@ -1,3 +1,9 @@
+2013-01-04  Ian Lance Taylor  <iant@google.com>
+
+	PR other/54800
+	* simple-object-mach-o.c (simple_object_mach_o_segment): Don't
+	bother to zero out a buffer we are about to set anyhow.
+
 2013-01-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* simple-object-xcoff.c: New file.

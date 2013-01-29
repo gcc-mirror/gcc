@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2013 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,35 +20,53 @@
    builtins defined in the AVR part of the GNU compiler.
    Befor including this file, define a macro
 
-   DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)
+   DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, LIBNAME)
 
-   NAME:   The name as visible by the user as a C string.
-   N_ARGS: Number of input arguments.  If special treatment is needed,
-           set to -1 and handle it by hand, see avr.c:avr_expand_builtin().
-   ID:     An integer to identify the built-in.
-   TYPE:   A tree node describing the prototype of the built-in.
-   ICODE:  Insn code number for the insn attached to the built-in.
-           If special treatment is needed to expand the built-in, set to -1.
-*/
+   NAME:    `__builtin_avr_name' will be the user-level name of the builtin.
+            `AVR_BUILTIN_NAME' will be the internal builtin's id.
+   N_ARGS:  Number of input arguments.  If special treatment is needed,
+            set to -1 and handle it by hand, see avr.c:avr_expand_builtin().
+   TYPE:    A tree node describing the prototype of the built-in.
+   ICODE:   Name of attached insn or expander.  If special treatment in avr.c
+            is needed to expand the built-in, use `nothing'.
+   LIBNAME: Name of the attached implementation in libgcc which is used if
+            the builtin cannot be folded away and there is no insn.  */
 
 /* Mapped to respective instruction.  */
 
-DEF_BUILTIN ("__builtin_avr_nop",  -1, AVR_BUILTIN_NOP, void_ftype_void, -1)
-DEF_BUILTIN ("__builtin_avr_sei",   0, AVR_BUILTIN_SEI, void_ftype_void, CODE_FOR_enable_interrupt)
-DEF_BUILTIN ("__builtin_avr_cli",   0, AVR_BUILTIN_CLI, void_ftype_void, CODE_FOR_disable_interrupt)
-DEF_BUILTIN ("__builtin_avr_wdr",   0, AVR_BUILTIN_WDR,   void_ftype_void, CODE_FOR_wdr)
-DEF_BUILTIN ("__builtin_avr_sleep", 0, AVR_BUILTIN_SLEEP, void_ftype_void, CODE_FOR_sleep)
+DEF_BUILTIN (NOP,  -1, void_ftype_void, nothing, NULL)
+DEF_BUILTIN (SEI,   0, void_ftype_void, enable_interrupt, NULL)
+DEF_BUILTIN (CLI,   0, void_ftype_void, disable_interrupt, NULL)
+DEF_BUILTIN (WDR,   0, void_ftype_void, wdr, NULL)
+DEF_BUILTIN (SLEEP, 0, void_ftype_void, sleep, NULL)
 
 /* Mapped to respective instruction but might also be folded away
    or emit as libgcc call if ISA does not provide the instruction.  */
 
-DEF_BUILTIN ("__builtin_avr_swap",   1, AVR_BUILTIN_SWAP,   uchar_ftype_uchar,      CODE_FOR_rotlqi3_4)
-DEF_BUILTIN ("__builtin_avr_fmul",   2, AVR_BUILTIN_FMUL,   uint_ftype_uchar_uchar, CODE_FOR_fmul)
-DEF_BUILTIN ("__builtin_avr_fmuls",  2, AVR_BUILTIN_FMULS,  int_ftype_char_char,    CODE_FOR_fmuls)
-DEF_BUILTIN ("__builtin_avr_fmulsu", 2, AVR_BUILTIN_FMULSU, int_ftype_char_uchar,   CODE_FOR_fmulsu)
+DEF_BUILTIN (SWAP,   1, uchar_ftype_uchar,      rotlqi3_4, NULL)
+DEF_BUILTIN (FMUL,   2, uint_ftype_uchar_uchar, fmul, NULL)
+DEF_BUILTIN (FMULS,  2, int_ftype_char_char,    fmuls, NULL)
+DEF_BUILTIN (FMULSU, 2, int_ftype_char_uchar,   fmulsu, NULL)
 
 /* More complex stuff that cannot be mapped 1:1 to an instruction.  */
 
-DEF_BUILTIN ("__builtin_avr_delay_cycles", -1, AVR_BUILTIN_DELAY_CYCLES, void_ftype_ulong, -1)
-DEF_BUILTIN ("__builtin_avr_insert_bits", 3, AVR_BUILTIN_INSERT_BITS, uchar_ftype_ulong_uchar_uchar, CODE_FOR_insert_bits)
-DEF_BUILTIN ("__builtin_avr_flash_segment", 1, AVR_BUILTIN_FLASH_SEGMENT, char_ftype_const_memx_ptr, CODE_FOR_flash_segment)
+DEF_BUILTIN (DELAY_CYCLES, -1, void_ftype_ulong, nothing, NULL)
+DEF_BUILTIN (INSERT_BITS, 3, uchar_ftype_ulong_uchar_uchar, insert_bits, NULL)
+DEF_BUILTIN (FLASH_SEGMENT, 1, char_ftype_const_memx_ptr, flash_segment, NULL)
+
+/* ISO/IEC TR 18037 "Embedded C"
+   The following builtins are undocumented and used by stdfix.h.  */
+
+/* 7.18a.6 The fixed-point intrinsic functions. */
+
+/* 7.18a.6.2 The fixed-point absolute value functions. */
+
+DEF_BUILTIN (ABSHR,   1, hr_ftype_hr,   ssabsqq2, NULL)
+DEF_BUILTIN (ABSR,    1, r_ftype_r,     ssabshq2, NULL)
+DEF_BUILTIN (ABSLR,   1, lr_ftype_lr,   ssabssq2, NULL)
+DEF_BUILTIN (ABSLLR,  1, llr_ftype_llr, nothing, "__ssabsdq2") // GCC extension
+
+DEF_BUILTIN (ABSHK,   1, hk_ftype_hk,   ssabsha2, NULL)
+DEF_BUILTIN (ABSK,    1, k_ftype_k,     ssabssa2, NULL)
+DEF_BUILTIN (ABSLK,  -1, lk_ftype_lk,   nothing, "__ssabsda2")
+DEF_BUILTIN (ABSLLK, -1, llk_ftype_llk, nothing, "__ssabsta2") // GCC extension

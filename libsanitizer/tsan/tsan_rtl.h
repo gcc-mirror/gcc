@@ -34,6 +34,7 @@
 #include "tsan_vector.h"
 #include "tsan_report.h"
 #include "tsan_platform.h"
+#include "tsan_mutexset.h"
 
 #if SANITIZER_WORDSIZE != 64
 # error "ThreadSanitizer is supported only on 64-bit platforms"
@@ -48,6 +49,10 @@ struct MBlock {
   u32 alloc_tid;
   u32 alloc_stack_id;
   SyncVar *head;
+
+  MBlock()
+    : mtx(MutexTypeMBlock, StatMtxMBlock) {
+  }
 };
 
 #ifndef TSAN_GO
@@ -58,10 +63,22 @@ const uptr kAllocatorSpace = 0x7d0000000000ULL;
 #endif
 const uptr kAllocatorSize  =  0x10000000000ULL;  // 1T.
 
+struct TsanMapUnmapCallback {
+  void OnMap(uptr p, uptr size) const { }
+  void OnUnmap(uptr p, uptr size) const {
+    // We are about to unmap a chunk of user memory.
+    // Mark the corresponding shadow memory as not needed.
+    uptr shadow_beg = MemToShadow(p);
+    uptr shadow_end = MemToShadow(p + size);
+    CHECK(IsAligned(shadow_end|shadow_beg, GetPageSizeCached()));
+    FlushUnneededShadowMemory(shadow_beg, shadow_end - shadow_beg);
+  }
+};
+
 typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, sizeof(MBlock),
     DefaultSizeClassMap> PrimaryAllocator;
 typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
-typedef LargeMmapAllocator SecondaryAllocator;
+typedef LargeMmapAllocator<TsanMapUnmapCallback> SecondaryAllocator;
 typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
     SecondaryAllocator> Allocator;
 Allocator *allocator();
@@ -298,6 +315,7 @@ struct ThreadState {
   uptr *shadow_stack;
   uptr *shadow_stack_end;
 #endif
+  MutexSet mset;
   ThreadClock clock;
 #ifndef TSAN_GO
   AllocatorCache alloc_cache;
@@ -369,6 +387,7 @@ struct ThreadContext {
   u64 epoch0;
   u64 epoch1;
   StackTrace creation_stack;
+  int creation_tid;
   ThreadDeadInfo *dead_info;
   ThreadContext *dead_next;  // In dead thread list.
   char *name;  // As annotated by user.
@@ -445,7 +464,8 @@ class ScopedReport {
   ~ScopedReport();
 
   void AddStack(const StackTrace *stack);
-  void AddMemoryAccess(uptr addr, Shadow s, const StackTrace *stack);
+  void AddMemoryAccess(uptr addr, Shadow s, const StackTrace *stack,
+                       const MutexSet *mset);
   void AddThread(const ThreadContext *tctx);
   void AddMutex(const SyncVar *s);
   void AddLocation(uptr addr, uptr size);
@@ -457,11 +477,13 @@ class ScopedReport {
   Context *ctx_;
   ReportDesc *rep_;
 
+  void AddMutex(u64 id);
+
   ScopedReport(const ScopedReport&);
   void operator = (const ScopedReport&);
 };
 
-void RestoreStack(int tid, const u64 epoch, StackTrace *stk);
+void RestoreStack(int tid, const u64 epoch, StackTrace *stk, MutexSet *mset);
 
 void StatAggregate(u64 *dst, u64 *src);
 void StatOutput(u64 *stat);
@@ -471,6 +493,7 @@ void ALWAYS_INLINE INLINE StatInc(ThreadState *thr, StatType typ, u64 n = 1) {
 }
 
 void MapShadow(uptr addr, uptr size);
+void MapThreadTrace(uptr addr, uptr size);
 void InitializeShadowMemory();
 void InitializeInterceptors();
 void InitializeDynamicAnnotations();
@@ -501,6 +524,10 @@ void PrintCurrentStack(ThreadState *thr, uptr pc);
 
 void Initialize(ThreadState *thr);
 int Finalize(ThreadState *thr);
+
+SyncVar* GetJavaSync(ThreadState *thr, uptr pc, uptr addr,
+                     bool write_lock, bool create);
+SyncVar* GetAndRemoveJavaSync(ThreadState *thr, uptr pc, uptr addr);
 
 void MemoryAccess(ThreadState *thr, uptr pc, uptr addr,
     int kAccessSizeLog, bool kAccessIsWrite);
@@ -553,7 +580,7 @@ void AfterSleep(ThreadState *thr, uptr pc);
 // The trick is that the call preserves all registers and the compiler
 // does not treat it as a call.
 // If it does not work for you, use normal call.
-#if 0 && TSAN_DEBUG == 0
+#if TSAN_DEBUG == 0
 // The caller may not create the stack frame for itself at all,
 // so we create a reserve stack frame for it (1024b must be enough).
 #define HACKY_CALL(f) \
@@ -575,7 +602,10 @@ uptr TraceParts();
 
 extern "C" void __tsan_trace_switch();
 void ALWAYS_INLINE INLINE TraceAddEvent(ThreadState *thr, FastState fs,
-                                        EventType typ, uptr addr) {
+                                        EventType typ, u64 addr) {
+  DCHECK_GE((int)typ, 0);
+  DCHECK_LE((int)typ, 7);
+  DCHECK_EQ(GetLsb(addr, 61), addr);
   StatInc(thr, StatEvents);
   u64 pos = fs.GetTracePos();
   if (UNLIKELY((pos % kTracePartSize) == 0)) {

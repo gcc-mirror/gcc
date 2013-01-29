@@ -1,3 +1,18 @@
+2013-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR other/55973
+	* isl.m4 (ISL_INIT_FLAGS): Warn about disabled version check
+	for in-tree build.
+	(ISL_CHECK_VERSION): Do not use AC_CACHE_CHECK.
+	* cloog.m4 (CLOOG_INIT_FLAGS): Disable version check for
+	in-tree build and warn about that.
+	(CLOOG_CHECK_VERSION): Do not use AC_CACHE_CHECK.
+
+2013-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* libstdc++-raw-cxx.m4 (GCC_LIBSTDCXX_RAW_CXX_FLAGS): Remove
+	"-I" from LIBSTDCXX_RAW_CXX_LDFLAGS.
+
 2012-12-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* libstdc++-raw-cxx.m4 (GCC_LIBSTDCXX_RAW_CXX_FLAGS): Also

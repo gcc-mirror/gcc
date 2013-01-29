@@ -1,7 +1,6 @@
 // Support for <functional> -*- C++ -*-
 
-// Copyright (C) 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +28,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  bad_function_call::~bad_function_call() throw() = default;
+  bad_function_call::~bad_function_call() noexcept = default;
+
+  const char*
+  bad_function_call::what() const noexcept
+  { return "bad_function_call"; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

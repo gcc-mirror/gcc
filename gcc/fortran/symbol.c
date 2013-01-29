@@ -1,7 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2679,6 +2677,11 @@ gfc_find_sym_tree (const char *name, gfc_namespace *ns, int parent_flag,
       if (!parent_flag)
 	break;
 
+      /* Don't escape an interface block.  */
+      if (ns && !ns->has_import_set
+          && ns->proc_name && ns->proc_name->attr.if_source == IFSRC_IFBODY)
+	break;
+
       ns = ns->parent;
     }
   while (ns != NULL);
@@ -2837,17 +2840,14 @@ gfc_get_ha_sym_tree (const char *name, gfc_symtree **result)
       return i;
     }
 
-  if (gfc_current_ns->parent != NULL)
-    {
-      i = gfc_find_sym_tree (name, gfc_current_ns->parent, 1, &st);
-      if (i)
-	return i;
+  i = gfc_find_sym_tree (name, gfc_current_ns, 1, &st);
+  if (i)
+    return i;
 
-      if (st != NULL)
-	{
-	  *result = st;
-	  return 0;
-	}
+  if (st != NULL)
+    {
+      *result = st;
+      return 0;
     }
 
   return gfc_get_sym_tree (name, gfc_current_ns, result, false);

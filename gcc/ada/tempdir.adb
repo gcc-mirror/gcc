@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,7 @@ package body Tempdir is
 
    Tmpdir    : constant String := "TMPDIR";
    Gnutmpdir : constant String := "GNUTMPDIR";
-   No_Dir    : aliased String  := "";
-   Temp_Dir  : String_Access   := No_Dir'Access;
+   Temp_Dir  : String_Access   := new String'("");
 
    ----------------------
    -- Create_Temp_File --
@@ -46,7 +45,7 @@ package body Tempdir is
      (FD   : out File_Descriptor;
       Name : out Path_Name_Type)
    is
-      File_Name : String_Access;
+      File_Name   : String_Access;
       Current_Dir : constant String := Get_Current_Dir;
 
       function Directory return String;
@@ -60,7 +59,6 @@ package body Tempdir is
       begin
          if Temp_Dir'Length /= 0 then
             return Temp_Dir.all;
-
          else
             return Current_Dir;
          end if;
@@ -102,7 +100,6 @@ package body Tempdir is
             Path_Name : constant String :=
                           Normalize_Pathname
                             (Directory & Directory_Separator & File_Name.all);
-
          begin
             Name_Len := Path_Name'Length;
             Name_Buffer (1 .. Name_Len) := Path_Name;
@@ -112,35 +109,49 @@ package body Tempdir is
       end if;
    end Create_Temp_File;
 
---  Start of elaboration for package Tempdir
+   ------------------
+   -- Use_Temp_Dir --
+   ------------------
 
-begin
-   declare
+   procedure Use_Temp_Dir (Status : Boolean) is
       Dir : String_Access;
 
    begin
-      --  On VMS, if GNUTMPDIR is defined, use it
+      if Status then
 
-      if OpenVMS then
-         Dir := Getenv (Gnutmpdir);
+         --  On VMS, if GNUTMPDIR is defined, use it
 
-         --  Otherwise, if GNUTMPDIR is not defined, try TMPDIR
+         if OpenVMS then
+            Dir := Getenv (Gnutmpdir);
 
-         if Dir'Length = 0 then
+            --  Otherwise, if GNUTMPDIR is not defined, try TMPDIR
+
+            if Dir'Length = 0 then
+               Dir := Getenv (Tmpdir);
+            end if;
+
+         else
             Dir := Getenv (Tmpdir);
          end if;
-
-      else
-         Dir := Getenv (Tmpdir);
       end if;
 
-      if Dir'Length > 0 and then
-        Is_Absolute_Path (Dir.all) and then
-        Is_Directory (Dir.all)
+      Free (Temp_Dir);
+
+      if Dir /= null
+        and then Dir'Length > 0
+        and then Is_Absolute_Path (Dir.all)
+        and then Is_Directory (Dir.all)
       then
          Temp_Dir := new String'(Normalize_Pathname (Dir.all));
+      else
+         Temp_Dir := new String'("");
       end if;
 
       Free (Dir);
-   end;
+   end Use_Temp_Dir;
+
+--  Start of elaboration for package Tempdir
+
+begin
+   Use_Temp_Dir (Status => True);
 end Tempdir;

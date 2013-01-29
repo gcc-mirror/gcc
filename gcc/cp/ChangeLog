@@ -1,3 +1,111 @@
+2013-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/54314
+	* class.c (build_ctor_vtbl_group): Give construction vtables
+	hidden visibility.
+
+2013-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56095
+	* pt.c (convert_nontype_argument_function): Handle invalid input.
+	(convert_nontype_argument): Likewise.
+
+	PR c++/56104
+	* typeck.c (get_member_function_from_ptrfunc): Optimize if the
+	dynamic type has no virtual functions.
+
+2013-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55944
+	* decl.c (check_initializer): Use TARGET_EXPR_DIRECT_INIT_P only
+	on TARGET_EXPR nodes.
+
+2013-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56071
+	* pt.c (maybe_instantiate_noexcept): Don't defer access checks.
+
+2013-01-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53609
+	* pt.c (argument_pack_element_is_expansion_p)
+	(make_argument_pack_select, use_pack_expansion_extra_args_p)
+	(gen_elem_of_pack_expansion_instantiation): New static functions.
+	(tsubst): When looking through an ARGUMENT_PACK_SELECT tree node,
+	look through the possibly resulting pack expansion as well.
+	(tsubst_pack_expansion): Use use_pack_expansion_extra_p to
+	generalize when to use the PACK_EXPANSION_EXTRA_ARGS mechanism.
+	Use gen_elem_of_pack_expansion_instantiation to build the
+	instantiation piece-wise.  Don't use arg_from_parm_pack_p anymore,
+	as gen_elem_of_pack_expansion_instantiation and the change in
+	tsubst above generalize this particular case.
+	(arg_from_parm_pack_p): Remove this for it's not used by
+	tsubst_pack_expansion anymore.
+
+2013-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56059
+	* tree.c (strip_typedefs_expr) [TREE_VEC]: Preserve non-default
+	template args count.
+
+2013-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR target/54908
+	* decl2.c (get_local_tls_init_fn): New.
+	(get_tls_init_fn): Handle flag_extern_tls_init.  Don't bother
+	with aliases for internal variables.  Don't use weakrefs if
+	the variable needs destruction.
+	(generate_tls_wrapper): Mark the wrapper as const if no
+	initialization is needed.
+	(handle_tls_init): Don't require aliases.
+
+2013-01-15  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/55663
+	* pt.c (coerce_innermost_template_parms): New static function.
+	(instantiate_alias_template):  Use it here.
+
+2013-01-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55878
+	* rtti.c (build_typeid, get_typeid): Add complain parm.
+	(get_tinfo_decl_dynamic): Likewise.
+	* cp-tree.h, parser.c, pt.c: Adjust.
+
+	PR c++/55893
+	* decl.c (cp_finish_decl): Clear TREE_READONLY if the variable
+	needs destruction.
+
+2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48418
+	* typeck.c (cp_build_binary_op): For LSHIFT_EXPR and RSHIFT_EXPR,
+	call maybe_constant_value for the negative or too big shift
+	count warnings.
+
+2013-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55801
+	* decl2.c (var_needs_tls_wrapper): Return false when error_operand_p
+	of the argument is true.
+
+2013-01-08  Joel Brobecker  <brobecker@adacore.com>
+
+	* parser.c (cp_parser_initializer_list): Move declaration
+	of variable non_const to start of lexical block.
+
+2013-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55753
+	* tree.c (build_aggr_init_expr): Do nothing in a template.
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Strip an ADDR_EXPR off
+	a FUNCTION_DECL before tsubsting.
+
+2013-01-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/52343
+	* pt.c (check_instantiated_arg): Allow type template arguments.
+
 2013-01-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55877

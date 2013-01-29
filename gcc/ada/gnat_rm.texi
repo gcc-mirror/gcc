@@ -128,9 +128,12 @@ Implementation Defined Pragmas
 * Pragma CPP_Constructor::
 * Pragma CPP_Virtual::
 * Pragma CPP_Vtable::
+* Pragma CPU::
 * Pragma Debug::
 * Pragma Debug_Policy::
+* Pragma Default_Storage_Pool::
 * Pragma Detect_Blocking::
+* Pragma Dispatching_Domain::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
 * Pragma Export_Exception::
@@ -155,6 +158,8 @@ Implementation Defined Pragmas
 * Pragma Import_Object::
 * Pragma Import_Procedure::
 * Pragma Import_Valued_Procedure::
+* Pragma Independent::
+* Pragma Independent_Components::
 * Pragma Initialize_Scalars::
 * Pragma Inline_Always::
 * Pragma Inline_Generic::
@@ -182,15 +187,19 @@ Implementation Defined Pragmas
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
 * Pragma Overflow_Mode::
+* Pragma Partition_Elaboration_Policy::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
 * Pragma Postcondition::
 * Pragma Precondition::
+* Pragma Preelaborable_Initialization::
+* Pragma Priority_Specific_Dispatching::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
+* Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
 * Pragma Restriction_Warnings::
 * Pragma Shared::
@@ -868,9 +877,12 @@ consideration, the use of these pragmas should be minimized.
 * Pragma CPP_Constructor::
 * Pragma CPP_Virtual::
 * Pragma CPP_Vtable::
+* Pragma CPU::
 * Pragma Debug::
 * Pragma Debug_Policy::
+* Pragma Default_Storage_Pool::
 * Pragma Detect_Blocking::
+* Pragma Dispatching_Domain::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
 * Pragma Export_Exception::
@@ -895,6 +907,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Import_Object::
 * Pragma Import_Procedure::
 * Pragma Import_Valued_Procedure::
+* Pragma Independent::
+* Pragma Independent_Components::
 * Pragma Initialize_Scalars::
 * Pragma Inline_Always::
 * Pragma Inline_Generic::
@@ -922,15 +936,19 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
 * Pragma Overflow_Mode::
+* Pragma Partition_Elaboration_Policy::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
 * Pragma Postcondition::
 * Pragma Precondition::
+* Pragma Preelaborable_Initialization::
+* Pragma Priority_Specific_Dispatching::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
+* Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
 * Pragma Restriction_Warnings::
 * Pragma Shared::
@@ -1210,6 +1228,9 @@ pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
 @end smallexample
 
 @noindent
+This is a standard Ada 2005 pragma that is available as an
+implementation-defined pragma in earlier versions of Ada.
+
 If the argument is @code{CHECK}, then assertions are enabled.
 If the argument is @code{IGNORE}, then assertions are ignored.
 This pragma overrides the effect of the @option{-gnata} switch on the
@@ -2039,6 +2060,21 @@ the same object layout than the G++ compiler.
 
 See @ref{Interfacing to C++} for related information.
 
+@node Pragma CPU
+@unnumberedsec Pragma CPU
+@findex CPU
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma CPU (EXPRESSSION);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2012, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
 @node Pragma Debug
 @unnumberedsec Pragma Debug
 @findex Debug
@@ -2089,6 +2125,21 @@ be useful when the pragma argument references subprograms
 in a with'ed package which is replaced by a dummy package
 for the final build.
 
+@node Pragma Default_Storage_Pool
+@unnumberedsec Pragma Default_Storage_Pool
+@findex Default_Storage_Pool
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Default_Storage_Pool (storage_pool_NAME | null);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2012, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
 @node Pragma Detect_Blocking
 @unnumberedsec Pragma Detect_Blocking
 @findex Detect_Blocking
@@ -2100,9 +2151,27 @@ pragma Detect_Blocking;
 @end smallexample
 
 @noindent
+This is a standard pragma in Ada 2005, that is available in all earlier
+versions of Ada as an implementation-defined pragma.
+
 This is a configuration pragma that forces the detection of potentially
 blocking operations within a protected operation, and to raise Program_Error
 if that happens.
+
+@node Pragma Dispatching_Domain
+@unnumberedsec Pragma Dispatching_Domain
+@findex Dispatching_Domain
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Dispatching_Domain (EXPRESSION);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2012, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
 
 @node Pragma Elaboration_Checks
 @unnumberedsec Pragma Elaboration_Checks
@@ -2824,8 +2893,9 @@ implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
 This is an Ada 2012 representation pragma which applies to protected, task
 and synchronized interface primitives. The use of pragma Implemented provides
 a way to impose a static requirement on the overriding operation by adhering
-to one of the three implementation kids: entry, protected procedure or any of
-the above.
+to one of the three implementation kinds: entry, protected procedure or any of
+the above. This pragma is available in all earlier versions of Ada as an
+implementation-defined pragma.
 
 @smallexample @c ada
 type Synch_Iface is synchronized interface;
@@ -3150,6 +3220,49 @@ specified, the default mechanism is used.
 Note that it is important to use this pragma in conjunction with a separate
 pragma Import that specifies the desired convention, since otherwise the
 default convention is Ada, which is almost certainly not what is required.
+
+@node Pragma Independent
+@unnumberedsec Pragma Independent
+@findex Independent
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Independent (Local_NAME);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2012 mode (which also provides an aspect
+of the same name). It is also available as an implementation-defined
+pragma in all earlier versions. It specifies that the
+designated object or all objects of the designated type must be
+independently addressable. This means that separate tasks can safely
+manipulate such objects. For example, if two components of a record are
+independent, then two separate tasks may access these two components.
+This may place
+constraints on the representation of the object (for instance prohibiting
+tight packing).
+
+@node Pragma Independent_Components
+@unnumberedsec Pragma Independent_Components
+@findex Independent_Components
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Independent_Components (Local_NAME);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2012 mode (which also provides an aspect
+of the same name). It is also available as an implementation-defined
+pragma in all earlier versions. It specifies that the components of the
+designated object, or the components of each object of the designated
+type, must be
+independently addressable. This means that separate tasks can safely
+manipulate separate components in the composite object. This may place
+constraints on the representation of the object (for instance prohibiting
+tight packing).
 
 @node Pragma Initialize_Scalars
 @unnumberedsec Pragma Initialize_Scalars
@@ -3846,8 +3959,9 @@ an exception. Another use of this pragma is to suppress incorrect warnings
 about missing returns in functions, where the last statement of a function
 statement sequence is a call to such a procedure.
 
-Note that in Ada 2005 mode, this pragma is part of the language, and is
-identical in effect to the pragma as implemented in Ada 95 mode.
+Note that in Ada 2005 mode, this pragma is part of the language. It is
+available in all earlier versions of Ada as an implementation-defined
+pragma.
 
 @node Pragma No_Strict_Aliasing
 @unnumberedsec Pragma No_Strict_Aliasing
@@ -4259,6 +4373,23 @@ overflow checking, but does not affect the overflow mode.
 The pragma @code{Unsuppress (Overflow_Check)} unsuppresses (enables)
 overflow checking, but does not affect the overflow mode.
 
+@node Pragma Partition_Elaboration_Policy
+@unnumberedsec Pragma Partition_Elaboration_Policy
+@findex Partition_Elaboration_Policy
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Partition_Elaboration_Policy (POLICY_IDENTIFIER);
+
+POLICY_IDENTIFIER ::= Concurrent | Sequential
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
 @node Pragma Passive
 @unnumberedsec Pragma Passive
 @findex Passive
@@ -4511,6 +4642,45 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
+@node Pragma Preelaborable_Initialization
+@unnumberedsec Pragma Preelaborable_Initialization
+@findex Preelaborable_Initialization
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Preelaborable_Initialization (DIRECT_NAME);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
+@node Pragma Priority_Specific_Dispatching
+@unnumberedsec Pragma Priority_Specific_Dispatching
+@findex Priority_Specific_Dispatching
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Priority_Specific_Dispatching (
+   POLICY_IDENTIFIER,
+   first_priority_EXPRESSION,
+   last_priority_EXPRESSION)
+
+POLICY_IDENTIFIER ::=
+   EDF_Across_Priorities            |
+   FIFO_Within_Priorities           |
+   Non_Preemptive_Within_Priorities |
+   Round_Robin_Within_Priorities
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
 @node Pragma Precondition
 @unnumberedsec Pragma Precondition
 @cindex Preconditions
@@ -4566,11 +4736,13 @@ checking is enabled.
 Syntax:
 
 @smallexample @c ada
-pragma Profile (Ravenscar);
+pragma Profile (Ravenscar | Restricted);
 @end smallexample
 
 @noindent
-A configuration pragma that establishes the following set of configuration
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma. This is a
+configuration pragma that establishes the following set of configuration
 pragmas:
 
 @table @code
@@ -4666,7 +4838,9 @@ pragma Profile (Restricted);
 @end smallexample
 
 @noindent
-A configuration pragma that establishes the following set of restrictions:
+This is an implementation-defined version of the standard pragma defined
+in Ada 2005. It is available in all versions of Ada. It is a
+configuration pragma that establishes the following set of restrictions:
 
 @itemize @bullet
 @item No_Abort_Statements
@@ -4773,6 +4947,21 @@ If pragma @code{Pure_Function} is applied to a library level function, the
 function is also considered pure from an optimization point of view, but the
 unit is not a Pure unit in the categorization sense. So for example, a function
 thus marked is free to @code{with} non-pure units.
+
+@node Pragma Relative_Deadline
+@unnumberedsec Pragma Relative_Deadline
+@findex Relative_Deadline
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Relative_Deadline (time_span_EXPRESSSION);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
 
 @node Pragma Remote_Access_Type
 @unnumberedsec Pragma Remote_Access_Type
@@ -5605,7 +5794,7 @@ equivalent to a C union. It was introduced as a GNAT implementation defined
 pragma in the GNAT Ada 95 mode. Ada 2005 includes an extended version of this
 pragma, making it language defined, and GNAT fully implements this extended
 version in all language modes (Ada 83, Ada 95, and Ada 2005). For full
-details, consult the Ada 2005 Reference Manual, section B.3.3.
+details, consult the Ada 2012 Reference Manual, section B.3.3.
 
 @node Pragma Unimplemented_Unit
 @unnumberedsec Pragma Unimplemented_Unit
@@ -5825,6 +6014,9 @@ One important application is to ensure that checks are on in cases where
 code depends on the checks for its correct functioning, so that the code
 will compile correctly even if the compiler switches are set to suppress
 checks.
+
+This pragma is standard in Ada 2005. It is available in all earlier versions
+of Ada as an implementation-defined pragma.
 
 @node Pragma Use_VADS_Size
 @unnumberedsec Pragma Use_VADS_Size

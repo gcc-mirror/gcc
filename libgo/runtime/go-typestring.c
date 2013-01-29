@@ -8,7 +8,7 @@
 #include "interface.h"
 #include "go-type.h"
 
-String typestring(struct __go_empty_interface) asm ("runtime.typestring");
+String typestring(struct __go_empty_interface) __asm__ (GOSYM_PREFIX "runtime.typestring");
 
 String
 typestring (struct __go_empty_interface e)

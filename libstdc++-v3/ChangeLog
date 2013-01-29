@@ -1,3 +1,177 @@
+2013-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/54314
+	* config/abi/pre/gnu.ver: Don't export construction vtables.
+	* config/abi/pre/gnu-versioned-namespace.ver: Likewise.
+
+2013-01-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56112
+	* include/bits/hashtable_policy.h (insert(_Pair&&)): Use _M_emplace
+	to construct value_type explicitly before trying to extract the key.
+	* testsuite/23_containers/unordered_map/cons/56112.cc: New.
+
+2013-01-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Local_iterator_base): Use
+	_Hashtable_ebo_helper to embed functors into the local_iterator
+	when necessary. Pass information about functors involved in hash
+	code by copy.
+	* include/bits/hashtable.h (__cache_default): Do not cache for
+	builtin integral types unless the hash functor is not noexcept
+	qualified or is not default constructible. Adapt static assertions
+	and local iterator instantiations.
+	* include/debug/unordered_set
+	(std::__debug::unordered_set<>::erase): Detect local iterators to
+	invalidate using contained node rather than generating a dummy
+	local_iterator instance.
+	(std::__debug::unordered_multiset<>::erase): Likewise.
+	* include/debug/unordered_map
+	(std::__debug::unordered_map<>::erase): Likewise.
+	(std::__debug::unordered_multimap<>::erase): Likewise.
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Test
+	std::tr1 and std versions of unordered_set regardless of any
+	macro. Add test on default cache behavior.
+	* testsuite/performance/23_containers/insert/54075.cc: Likewise.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adapt line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: New.
+	* testsuite/23_containers/unordered_set/buckets/swap.cc: New.
+
+2013-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56085
+	* include/std/complex (pow(const complex<>&, int)): Avoid __n
+	signed overflow.
+
+2013-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:
+	Tightten scan-assembler-times regexps, add dg-additional-options for
+	ia32, add -g0 -fno-exceptions -fno-asynchronous-unwind-tables to
+	dg-options.
+
+2013-01-12  Andi Kleen  <ak@linux.intel.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55233
+	* include/bits/atomic_base.h (__memory_order_modifier): Add
+	__memory_order_mask, __memory_order_modifier_mask,
+	__memory_order_hle_acquire, __memory_order_hle_release.
+	(operator|,operator&): Add.
+	(__cmpexch_failure_order):  Rename to __cmpexch_failure_order2.
+	(__cmpexch_failure_order): Add.
+	(clear, store, load, compare_exchange_weak, compare_exchange_strong):
+	Handle flags.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:
+	Add.
+
+2013-01-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55861
+	* include/std/future (_State_base::_S_check(const shared_ptr<T>&)):
+	Fix return type.
+	(__basic_future::_M_get_result()): Const qualify.
+	(shared_future::get()): Likewise.
+	* testsuite/30_threads/shared_future/members/get.cc: Use const
+	objects.
+
+2013-01-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55043 (again)
+	* include/bits/alloc_traits.h (allocator_traits::construct): Disable
+	unless construction would be well-formed.
+	(__allow_copy_cons, __check_copy_constructible): Define.
+	* include/bits/unordered_map.h (__check_copy_constructible): Use as
+	base class so copy constructor will be deleted if appropriate.
+	(is_copy_constructible): Remove specialization.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/unordered_map.h: Undo previous commit. Default copy
+	and move constructors.
+	* include/debug/unordered_set.h: Likewise.
+	* include/profile/unordered_map.h: Undo previous commit.
+	* include/profile/unordered_set.h: Likewise.
+	* testsuite/23_containers/unordered_map/55043.cc: Fix test.
+	* testsuite/23_containers/unordered_multimap/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_set/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/53339.cc: XFAIL,
+	cannot support incomplete types.
+	* testsuite/23_containers/unordered_multimap/requirements/53339.cc:
+	Likewise.
+
+2013-01-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55043
+	* include/std/unordered_map: Include alloc_traits.h
+	* include/std/unordered_set: Likewise.
+	* include/bits/alloc_traits.h: Define __is_copy_insertable.
+	* include/bits/unordered_map.h: Use it.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/unordered_map.h: Likewise.
+	* include/debug/unordered_set.h: Likewise.
+	* include/profile/unordered_map.h: Likewise.
+	* include/profile/unordered_set.h: Likewise.
+	* include/bits/hashtable.h: Fix comment typos.
+	* testsuite/23_containers/unordered_map/55043.cc: New.
+	* testsuite/23_containers/unordered_multimap/55043.cc: New.
+	* testsuite/23_containers/unordered_multiset/55043.cc: New.
+	* testsuite/23_containers/unordered_set/55043.cc: New.
+
+2013-01-03  Janis Johnson  <janisjo@codesourcery.com>
+
+	* testsuite/lib/gdb-test.exp (gdb_batch_check): Catch error running
+	gdb command.
+
+2013-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Document that N3189 is missing.
+
+2013-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55908
+	* include/std/functional (_Mem_fn::operator()): Fix constraints to
+	avoid ambiguity.
+	* testsuite/20_util/function_objects/mem_fn/55908.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
+2013-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/55594
+	* acinclude.m4 (GLIBCXX_CHECK_ASSEMBLER_HWCAP): Restrict test to
+	Solaris targets.
+	* configure: Regenerate.
+
+2013-01-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55847
+	* src/c++11/shared_ptr.cc (bad_weak_ptr::what()): Correct string.
+	* testsuite/20_util/shared_ptr/cons/weak_ptr_expired.cc: Verify
+	string.
+
+	PR libstdc++/55728
+	* include/std/functional (bad_function_call::what()): Declare.
+	* src/c++11/functional.cc (bad_function_call::what()): Define.
+	* config/abi/pre/gnu.ver (bad_function_call::what()): Export.
+	* testsuite/20_util/bad_function_call/what.cc: New.
+
+2013-01-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unordered_map.h: Fix typo in comments.
+	* doc/xml/manual/status_cxx2011.xml: Add implementation-defined bucket
+	counts for unordered associative containers.
+
+2013-01-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/abi.xml: Update library and symbol versions.
+
+2013-01-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Fix typo
+	in copyright years.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/3.cc: Likewise.
+
 
 Copyright (C) 2013 Free Software Foundation, Inc.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3743,10 +3743,14 @@ package body Exp_Ch5 is
          end loop;
       end if;
 
-      --  If original loop has a name, preserve it so it can be recognized by
-      --  an exit statement in the body of the rewritten loop.
+      --  If original loop has a source name, preserve it so it can be
+      --  recognized by an exit statement in the body of the rewritten loop.
+      --  This only concerns source names: the generated name of an anonymous
+      --  loop will be create again during the subsequent analysis below.
 
-      if Present (Identifier (N)) then
+      if Present (Identifier (N))
+        and then Comes_From_Source (Identifier (N))
+      then
          Set_Identifier (Core_Loop, Relocate_Node (Identifier (N)));
       end if;
 
@@ -3810,6 +3814,7 @@ package body Exp_Ch5 is
             Ltype   : constant Entity_Id := Etype (Loop_Id);
             Btype   : constant Entity_Id := Base_Type (Ltype);
             Expr    : Node_Id;
+            Decls   : List_Id;
             New_Id  : Entity_Id;
 
          begin
@@ -3869,6 +3874,16 @@ package body Exp_Ch5 is
                         New_List (New_Reference_To (New_Id, Loc)));
                end if;
 
+               --  Build declaration for loop identifier
+
+               Decls :=
+                 New_List (
+                   Make_Object_Declaration (Loc,
+                     Defining_Identifier => Loop_Id,
+                     Constant_Present    => True,
+                     Object_Definition   => New_Reference_To (Ltype, Loc),
+                     Expression          => Expr));
+
                Rewrite (N,
                  Make_Loop_Statement (Loc,
                    Identifier => Identifier (N),
@@ -3916,14 +3931,7 @@ package body Exp_Ch5 is
 
                    Statements => New_List (
                      Make_Block_Statement (Loc,
-                       Declarations => New_List (
-                         Make_Object_Declaration (Loc,
-                           Defining_Identifier => Loop_Id,
-                           Constant_Present    => True,
-                           Object_Definition   =>
-                             New_Reference_To (Ltype, Loc),
-                           Expression          => Expr)),
-
+                       Declarations => Decls,
                        Handled_Statement_Sequence =>
                          Make_Handled_Sequence_Of_Statements (Loc,
                            Statements => Statements (N)))),
@@ -3931,13 +3939,22 @@ package body Exp_Ch5 is
                    End_Label => End_Label (N)));
 
                --  The loop parameter's entity must be removed from the loop
-               --  scope's entity list, since it will now be located in the
-               --  new block scope. Any other entities already associated with
-               --  the loop scope, such as the loop parameter's subtype, will
-               --  remain there.
+               --  scope's entity list and rendered invisible, since it will
+               --  now be located in the new block scope. Any other entities
+               --  already associated with the loop scope, such as the loop
+               --  parameter's subtype, will remain there.
 
-               pragma Assert (First_Entity (Scope (Loop_Id)) = Loop_Id);
+               --  In an element loop, the loop will contain a declaration for
+               --  a cursor variable; otherwise the loop id is the first entity
+               --  in the scope constructed for the loop.
+
+               if Comes_From_Source (Loop_Id) then
+                  pragma Assert (First_Entity (Scope (Loop_Id)) = Loop_Id);
+                  null;
+               end if;
+
                Set_First_Entity (Scope (Loop_Id), Next_Entity (Loop_Id));
+               Remove_Homonym (Loop_Id);
 
                if Last_Entity (Scope (Loop_Id)) = Loop_Id then
                   Set_Last_Entity (Scope (Loop_Id), Empty);

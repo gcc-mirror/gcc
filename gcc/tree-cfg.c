@@ -1,6 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011, 2012  Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -4450,26 +4449,18 @@ tree_node_can_be_shared (tree t)
   if (TREE_CODE (t) == CASE_LABEL_EXPR)
     return true;
 
-  while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
-	   && is_gimple_min_invariant (TREE_OPERAND (t, 1)))
-	 || TREE_CODE (t) == COMPONENT_REF
-	 || TREE_CODE (t) == REALPART_EXPR
-	 || TREE_CODE (t) == IMAGPART_EXPR)
-    t = TREE_OPERAND (t, 0);
-
   if (DECL_P (t))
     return true;
 
   return false;
 }
 
-/* Called via walk_gimple_stmt.  Verify tree sharing.  */
+/* Called via walk_tree.  Verify tree sharing.  */
 
 static tree
-verify_node_sharing (tree *tp, int *walk_subtrees, void *data)
+verify_node_sharing_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct pointer_set_t *visited = (struct pointer_set_t *) wi->info;
+  struct pointer_set_t *visited = (struct pointer_set_t *) data;
 
   if (tree_node_can_be_shared (*tp))
     {
@@ -4481,6 +4472,15 @@ verify_node_sharing (tree *tp, int *walk_subtrees, void *data)
     return *tp;
 
   return NULL;
+}
+
+/* Called via walk_gimple_stmt.  Verify tree sharing.  */
+
+static tree
+verify_node_sharing (tree *tp, int *walk_subtrees, void *data)
+{
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  return verify_node_sharing_1 (tp, walk_subtrees, wi->info);
 }
 
 static bool eh_error_found;
@@ -4499,6 +4499,63 @@ verify_eh_throw_stmt_node (void **slot, void *data)
   return 1;
 }
 
+/* Verify if the location LOCs block is in BLOCKS.  */
+
+static bool
+verify_location (pointer_set_t *blocks, location_t loc)
+{
+  tree block = LOCATION_BLOCK (loc);
+  if (block != NULL_TREE
+      && !pointer_set_contains (blocks, block))
+    {
+      error ("location references block not in block tree");
+      return true;
+    }
+  return false;
+}
+
+/* Called via walk_tree.  Verify locations of expressions.  */
+
+static tree
+verify_expr_location_1 (tree *tp, int *walk_subtrees, void *data)
+{
+  struct pointer_set_t *blocks = (struct pointer_set_t *) data;
+
+  if (!EXPR_P (*tp))
+    {
+      *walk_subtrees = false;
+      return NULL;
+    }
+
+  location_t loc = EXPR_LOCATION (*tp);
+  if (verify_location (blocks, loc))
+    return *tp;
+
+  return NULL;
+}
+
+/* Called via walk_gimple_op.  Verify locations of expressions.  */
+
+static tree
+verify_expr_location (tree *tp, int *walk_subtrees, void *data)
+{
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  return verify_expr_location_1 (tp, walk_subtrees, wi->info);
+}
+
+/* Insert all subblocks of BLOCK into BLOCKS and recurse.  */
+
+static void
+collect_subblocks (pointer_set_t *blocks, tree block)
+{
+  tree t;
+  for (t = BLOCK_SUBBLOCKS (block); t; t = BLOCK_CHAIN (t))
+    {
+      pointer_set_insert (blocks, t);
+      collect_subblocks (blocks, t);
+    }
+}
+
 /* Verify the GIMPLE statements in the CFG of FN.  */
 
 DEBUG_FUNCTION void
@@ -4506,11 +4563,19 @@ verify_gimple_in_cfg (struct function *fn)
 {
   basic_block bb;
   bool err = false;
-  struct pointer_set_t *visited, *visited_stmts;
+  struct pointer_set_t *visited, *visited_stmts, *blocks;
 
   timevar_push (TV_TREE_STMT_VERIFY);
   visited = pointer_set_create ();
   visited_stmts = pointer_set_create ();
+
+  /* Collect all BLOCKs referenced by the BLOCK tree of FN.  */
+  blocks = pointer_set_create ();
+  if (DECL_INITIAL (fn->decl))
+    {
+      pointer_set_insert (blocks, DECL_INITIAL (fn->decl));
+      collect_subblocks (blocks, DECL_INITIAL (fn->decl));
+    }
 
   FOR_EACH_BB_FN (bb, fn)
     {
@@ -4532,16 +4597,38 @@ verify_gimple_in_cfg (struct function *fn)
 
 	  err2 |= verify_gimple_phi (phi);
 
+	  /* Only PHI arguments have locations.  */
+	  if (gimple_location (phi) != UNKNOWN_LOCATION)
+	    {
+	      error ("PHI node with location");
+	      err2 = true;
+	    }
+
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
-	      tree addr = walk_tree (&arg, verify_node_sharing, visited, NULL);
+	      tree addr = walk_tree (&arg, verify_node_sharing_1,
+				     visited, NULL);
 	      if (addr)
 		{
 		  error ("incorrect sharing of tree nodes");
 		  debug_generic_expr (addr);
 		  err2 |= true;
 		}
+	      location_t loc = gimple_phi_arg_location (phi, i);
+	      if (virtual_operand_p (gimple_phi_result (phi))
+		  && loc != UNKNOWN_LOCATION)
+		{
+		  error ("virtual PHI with argument locations");
+		  err2 = true;
+		}
+	      addr = walk_tree (&arg, verify_expr_location_1, blocks, NULL);
+	      if (addr)
+		{
+		  debug_generic_expr (addr);
+		  err2 = true;
+		}
+	      err2 |= verify_location (blocks, loc);
 	    }
 
 	  if (err2)
@@ -4566,6 +4653,7 @@ verify_gimple_in_cfg (struct function *fn)
 	    }
 
 	  err2 |= verify_gimple_stmt (stmt);
+	  err2 |= verify_location (blocks, gimple_location (stmt));
 
 	  memset (&wi, 0, sizeof (wi));
 	  wi.info = (void *) visited;
@@ -4573,6 +4661,15 @@ verify_gimple_in_cfg (struct function *fn)
 	  if (addr)
 	    {
 	      error ("incorrect sharing of tree nodes");
+	      debug_generic_expr (addr);
+	      err2 |= true;
+	    }
+
+	  memset (&wi, 0, sizeof (wi));
+	  wi.info = (void *) blocks;
+	  addr = walk_gimple_op (stmt, verify_expr_location, &wi);
+	  if (addr)
+	    {
 	      debug_generic_expr (addr);
 	      err2 |= true;
 	    }
@@ -4631,6 +4728,7 @@ verify_gimple_in_cfg (struct function *fn)
 
   pointer_set_destroy (visited);
   pointer_set_destroy (visited_stmts);
+  pointer_set_destroy (blocks);
   verify_histograms ();
   timevar_pop (TV_TREE_STMT_VERIFY);
 }

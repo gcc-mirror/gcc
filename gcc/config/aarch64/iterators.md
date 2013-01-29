@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2013 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -88,6 +88,9 @@
 
 ;; All modes.
 (define_mode_iterator VALL [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF])
+
+;; All vector modes and DI.
+(define_mode_iterator VALLDI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF DI])
 
 ;; Vector modes for Integer reduction across lanes.
 (define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI])
@@ -337,6 +340,22 @@
 			(QI   "QI")])
 
 ;; Define container mode for lane selection.
+(define_mode_attr VCOND [(V4HI "V4HI") (V8HI "V4HI")
+			 (V2SI "V2SI") (V4SI "V2SI")
+			 (DI   "DI") (V2DI "DI")
+			 (V2SF "V2SF") (V4SF "V2SF")
+			 (V2DF "DF")])
+
+;; Define container mode for lane selection.
+(define_mode_attr VCONQ [(V8QI "V16QI") (V16QI "V16QI")
+			 (V4HI "V8HI") (V8HI "V8HI")
+			 (V2SI "V4SI") (V4SI "V4SI")
+			 (DI   "V2DI") (V2DI "V2DI")
+			 (V2SF "V2SF") (V4SF "V4SF")
+			 (V2DF "V2DF") (SI   "V4SI")
+			 (HI   "V8HI") (QI   "V16QI")])
+
+;; Define container mode for lane selection.
 (define_mode_attr VCON [(V8QI "V16QI") (V16QI "V16QI")
 			(V4HI "V8HI") (V8HI "V8HI")
 			(V2SI "V4SI") (V4SI "V4SI")
@@ -426,6 +445,14 @@
 				(DI   "DI")   (V2DI  "V2DI")
 				(V2SF "V2SI") (V4SF  "V4SI")
 				(V2DF "V2DI")])
+
+;; Lower case mode of results of comparison operations.
+(define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
+				(V4HI "v4hi") (V8HI  "v8hi")
+				(V2SI "v2si") (V4SI  "v4si")
+				(DI   "di")   (V2DI  "v2di")
+				(V2SF "v2si") (V4SF  "v4si")
+				(V2DF "v2di")])
 
 ;; Vm for lane instructions is restricted to FP_LO_REGS.
 (define_mode_attr vwx [(V4HI "x") (V8HI "x") (HI "x")

@@ -1,7 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012 Free Software Foundation, Inc.
+   Copyright (C) 1988-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2753,6 +2751,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
   exp = build_call_nofold_loc (EXPR_LOCATION (exp), fallback_fndecl, 1, arg);
 
   tmp = expand_normal (exp);
+  tmp = maybe_emit_group_store (tmp, TREE_TYPE (exp));
 
   /* Truncate the result of floating point optab to integer
      via expand_fix ().  */
@@ -2856,6 +2855,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 				   fallback_fndecl, 1, arg);
 
       target = expand_call (exp, NULL_RTX, target == const0_rtx);
+      target = maybe_emit_group_store (target, TREE_TYPE (exp));
       return convert_to_mode (mode, target, 0);
     }
 
@@ -4851,8 +4851,7 @@ expand_builtin_init_trampoline (tree exp, bool onstack)
      within the local function's FRAME decl.  Either way, let's see if
      we can fill in the MEM_ATTRs for this memory.  */
   if (TREE_CODE (t_tramp) == ADDR_EXPR)
-    set_mem_attributes_minus_bitpos (m_tramp, TREE_OPERAND (t_tramp, 0),
-				     true, 0);
+    set_mem_attributes (m_tramp, TREE_OPERAND (t_tramp, 0), true);
 
   /* Creator of a heap trampoline is responsible for making sure the
      address is aligned to at least STACK_BOUNDARY.  Normally malloc

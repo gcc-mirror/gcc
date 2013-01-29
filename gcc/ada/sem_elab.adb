@@ -2252,6 +2252,13 @@ package body Sem_Elab is
 
          if not Suppress_Elaboration_Warnings (E)
            and then not Elaboration_Checks_Suppressed (E)
+
+           --  Suppress this warning if we have a function call that occurred
+           --  within an assertion expression, since we can get false warnings
+           --  in this case, due to the out of order handling in this case.
+
+           and then (Nkind (Original_Node (N)) /= N_Function_Call
+                      or else not In_Assertion (Original_Node (N)))
          then
             if Inst_Case then
                Error_Msg_NE

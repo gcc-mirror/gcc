@@ -1,6 +1,5 @@
 ;; ARM VFP instruction patterns
-;; Copyright (C) 2003, 2005, 2006, 2007, 2008, 2010, 2011, 2012
-;; Free Software Foundation, Inc.
+;; Copyright (C) 2003-2013 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -33,6 +32,8 @@
 ;; fmuld	Double precision multiply.
 ;; fmacs	Single precision multiply-accumulate.
 ;; fmacd	Double precision multiply-accumulate.
+;; ffmas	Single precision fused multiply-accumulate.
+;; ffmad	Double precision fused multiply-accumulate.
 ;; fdivs	Single precision sqrt or division.
 ;; fdivd	Double precision sqrt or division.
 ;; f_flag	fmstat operation
@@ -910,7 +911,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmac<vfp_type>")]
+   (set_attr "type" "ffma<vfp_type>")]
 )
 
 (define_insn "*fmsub<SDF:mode>4"
@@ -922,7 +923,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmac<vfp_type>")]
+   (set_attr "type" "ffma<vfp_type>")]
 )
 
 (define_insn "*fnmsub<SDF:mode>4"
@@ -933,7 +934,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfnms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmac<vfp_type>")]
+   (set_attr "type" "ffma<vfp_type>")]
 )
 
 (define_insn "*fnmadd<SDF:mode>4"
@@ -945,7 +946,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfnma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fmac<vfp_type>")]
+   (set_attr "type" "ffma<vfp_type>")]
 )
 
 

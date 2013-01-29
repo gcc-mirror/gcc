@@ -39,7 +39,11 @@ __aarch64_sync_cache_range (const void *base, const void *end)
      instruction cache fetches the updated data.  'end' is exclusive,
      as per the GNU definition of __clear_cache.  */
 
-  for (address = base; address < (const char *) end; address += dcache_lsize)
+  /* Make the start address of the loop cache aligned.  */
+  address = (const char*) ((__UINTPTR_TYPE__) base
+			   & ~ (__UINTPTR_TYPE__) (dcache_lsize - 1));
+
+  for (address; address < (const char *) end; address += dcache_lsize)
     asm volatile ("dc\tcvau, %0"
 		  :
 		  : "r" (address)
@@ -47,7 +51,11 @@ __aarch64_sync_cache_range (const void *base, const void *end)
 
   asm volatile ("dsb\tish" : : : "memory");
 
-  for (address = base; address < (const char *) end; address += icache_lsize)
+  /* Make the start address of the loop cache aligned.  */
+  address = (const char*) ((__UINTPTR_TYPE__) base
+			   & ~ (__UINTPTR_TYPE__) (icache_lsize - 1));
+
+  for (address; address < (const char *) end; address += icache_lsize)
     asm volatile ("ic\tivau, %0"
 		  :
 		  : "r" (address)

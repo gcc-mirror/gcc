@@ -1,7 +1,5 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -5144,11 +5142,9 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 {
   gfc_ref *ref;
   gfc_symbol *assoc_sym;
+  int i;
 
   assoc_sym = associate->symtree->n.sym;
-
-  /* Ensure that any array reference is resolved.  */
-  gfc_resolve_expr (selector);
 
   /* At this stage the expression rank and arrayspec dimensions have
      not been completely sorted out. We must get the expr2->rank
@@ -5161,6 +5157,23 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 	&& CLASS_DATA (selector)->as
 	&& ref && ref->type == REF_ARRAY)
     {
+      /* Ensure that the array reference type is set.  We cannot use
+	 gfc_resolve_expr at this point, so the usable parts of
+	 resolve.c(resolve_array_ref) are employed to do it.  */
+      if (ref->u.ar.type == AR_UNKNOWN)
+	{
+	  ref->u.ar.type = AR_ELEMENT;
+	  for (i = 0; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+	    if (ref->u.ar.dimen_type[i] == DIMEN_RANGE
+		|| ref->u.ar.dimen_type[i] == DIMEN_VECTOR
+		|| (ref->u.ar.dimen_type[i] == DIMEN_UNKNOWN
+		    && ref->u.ar.start[i] && ref->u.ar.start[i]->rank))
+	      {
+		ref->u.ar.type = AR_SECTION;
+		break;
+	      }
+	}
+
       if (ref->u.ar.type == AR_FULL)
 	selector->rank = CLASS_DATA (selector)->as->rank;
       else if (ref->u.ar.type == AR_SECTION)

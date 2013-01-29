@@ -118,7 +118,7 @@ runtime_makechan_c(ChanType *t, int64 hint)
 // For reflect
 //	func makechan(typ *ChanType, size uint64) (chan)
 uintptr reflect_makechan(ChanType *, uint64)
-  asm ("reflect.makechan");
+  __asm__ (GOSYM_PREFIX "reflect.makechan");
 
 uintptr
 reflect_makechan(ChanType *t, uint64 size)
@@ -508,7 +508,7 @@ __go_receive_big(ChanType *t, Hchan* c, byte* p)
 }
 
 _Bool runtime_chanrecv2(ChanType *t, Hchan* c, byte* p)
-  __asm__("runtime.chanrecv2");
+  __asm__ (GOSYM_PREFIX "runtime.chanrecv2");
 
 _Bool
 runtime_chanrecv2(ChanType *t, Hchan* c, byte* p)
@@ -613,7 +613,7 @@ runtime_selectnbrecv2(ChanType *t, byte *v, _Bool *received, Hchan *c)
 // the actual data if it fits, or else a pointer to the data.
 
 _Bool reflect_chansend(ChanType *, Hchan *, uintptr, _Bool)
-  __asm__("reflect.chansend");
+  __asm__ (GOSYM_PREFIX "reflect.chansend");
 
 _Bool
 reflect_chansend(ChanType *t, Hchan *c, uintptr val, _Bool nb)
@@ -650,7 +650,7 @@ struct chanrecv_ret
 };
 
 struct chanrecv_ret reflect_chanrecv(ChanType *, Hchan *, _Bool)
-  __asm__("reflect.chanrecv");
+  __asm__ (GOSYM_PREFIX "reflect.chanrecv");
 
 struct chanrecv_ret
 reflect_chanrecv(ChanType *t, Hchan *c, _Bool nb)
@@ -686,7 +686,7 @@ static void newselect(int32, Select**);
 
 // newselect(size uint32) (sel *byte);
 
-void* runtime_newselect(int32) __asm__("runtime.newselect");
+void* runtime_newselect(int32) __asm__ (GOSYM_PREFIX "runtime.newselect");
 
 void*
 runtime_newselect(int32 size)
@@ -732,7 +732,7 @@ static void selectsend(Select *sel, Hchan *c, int index, void *elem);
 // selectsend(sel *byte, hchan *chan any, elem *any) (selected bool);
 
 void runtime_selectsend(Select *, Hchan *, void *, int32)
-  __asm__("runtime.selectsend");
+  __asm__ (GOSYM_PREFIX "runtime.selectsend");
 
 void
 runtime_selectsend(Select *sel, Hchan *c, void *elem, int32 index)
@@ -772,7 +772,7 @@ static void selectrecv(Select *sel, Hchan *c, int index, void *elem, bool*);
 // selectrecv(sel *byte, hchan *chan any, elem *any) (selected bool);
 
 void runtime_selectrecv(Select *, Hchan *, void *, int32)
-  __asm__("runtime.selectrecv");
+  __asm__ (GOSYM_PREFIX "runtime.selectrecv");
 
 void
 runtime_selectrecv(Select *sel, Hchan *c, void *elem, int32 index)
@@ -787,7 +787,7 @@ runtime_selectrecv(Select *sel, Hchan *c, void *elem, int32 index)
 // selectrecv2(sel *byte, hchan *chan any, elem *any, received *bool) (selected bool);
 
 void runtime_selectrecv2(Select *, Hchan *, void *, bool *, int32)
-  __asm__("runtime.selectrecv2");
+  __asm__ (GOSYM_PREFIX "runtime.selectrecv2");
 
 void
 runtime_selectrecv2(Select *sel, Hchan *c, void *elem, bool *received, int32 index)
@@ -827,7 +827,7 @@ static void selectdefault(Select*, int);
 
 // selectdefault(sel *byte) (selected bool);
 
-void runtime_selectdefault(Select *, int32) __asm__("runtime.selectdefault");
+void runtime_selectdefault(Select *, int32) __asm__ (GOSYM_PREFIX "runtime.selectdefault");
 
 void
 runtime_selectdefault(Select *sel, int32 index)
@@ -898,7 +898,7 @@ static int selectgo(Select**);
 
 // selectgo(sel *byte);
 
-int runtime_selectgo(Select *) __asm__("runtime.selectgo");
+int runtime_selectgo(Select *) __asm__ (GOSYM_PREFIX "runtime.selectgo");
 
 int
 runtime_selectgo(Select *sel)
@@ -1181,7 +1181,7 @@ struct rselect_ret {
 // func rselect(cases []runtimeSelect) (chosen int, word uintptr, recvOK bool)
 
 struct rselect_ret reflect_rselect(Slice)
-     asm("reflect.rselect");
+     __asm__ (GOSYM_PREFIX "reflect.rselect");
 
 struct rselect_ret
 reflect_rselect(Slice cases)
@@ -1309,7 +1309,7 @@ __go_builtin_close(Hchan *c)
 // For reflect
 //	func chanclose(c chan)
 
-void reflect_chanclose(uintptr) __asm__("reflect.chanclose");
+void reflect_chanclose(uintptr) __asm__ (GOSYM_PREFIX "reflect.chanclose");
 
 void
 reflect_chanclose(uintptr c)
@@ -1320,7 +1320,7 @@ reflect_chanclose(uintptr c)
 // For reflect
 //	func chanlen(c chan) (len int)
 
-intgo reflect_chanlen(uintptr) __asm__("reflect.chanlen");
+intgo reflect_chanlen(uintptr) __asm__ (GOSYM_PREFIX "reflect.chanlen");
 
 intgo
 reflect_chanlen(uintptr ca)
@@ -1345,7 +1345,7 @@ __go_chan_len(Hchan *c)
 // For reflect
 //	func chancap(c chan) (cap intgo)
 
-intgo reflect_chancap(uintptr) __asm__("reflect.chancap");
+intgo reflect_chancap(uintptr) __asm__ (GOSYM_PREFIX "reflect.chancap");
 
 intgo
 reflect_chancap(uintptr ca)

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2012 Free Software Foundation, Inc.
+   Copyright (C) 1991-2013 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -5831,6 +5831,8 @@ rs6000_delegitimize_address (rtx orig_x)
       /* Do not associate thread-local symbols with the original
 	 constant pool symbol.  */
       if (TARGET_XCOFF
+	  && GET_CODE (y) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (y)
 	  && SYMBOL_REF_TLS_MODEL (get_pool_constant (y)) >= TLS_MODEL_REAL)
 	return orig_x;
 #endif

@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -767,16 +767,6 @@ do {									     \
 #undef ASM_APP_OFF
 #define ASM_APP_ON	"\t" ASM_COMMENT_START " Start of user assembly\n"
 #define ASM_APP_OFF	"\t" ASM_COMMENT_START " End of user assembly\n"
-
-#define ASM_FPRINTF_EXTENSIONS(FILE, ARGS, P)		\
-  case '@':						\
-    fputs (ASM_COMMENT_START, FILE);			\
-    break;						\
-							\
-  case 'r':						\
-    fputs (REGISTER_PREFIX, FILE);			\
-    fputs (reg_names[va_arg (ARGS, int)], FILE);	\
-    break;
 
 #define CONSTANT_POOL_BEFORE_FUNCTION 0
 

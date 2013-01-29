@@ -12,7 +12,7 @@ typedef struct {
 } s2_t;
 
 static s2_t s2_array[]= {
-    { 1, 4 },
-    { 2, 5 },
-    { 3, 6 }
+    { 1, 4 },	/* { dg-error "(initialization of flexible array member|near)" } */
+    { 2, 5 },	/* { dg-error "(initialization of flexible array member|near)" } */
+    { 3, 6 }	/* { dg-error "(initialization of flexible array member|near)" } */
 };

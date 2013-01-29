@@ -24,13 +24,26 @@ subroutine sub
 
   type :: t
     integer, pointer :: dpc0 => 13  ! { dg-error "Error in pointer initialization" }
-    integer, pointer :: dpc1 => r   ! { dg-error "is REAL but should be INTEGER" }
-    integer, pointer :: dpc2 => v   ! { dg-error "rank of the element.*does not match" }
-    integer, pointer :: dpc3 => i   ! { dg-error "should be a POINTER or a TARGET" }
-    integer, pointer :: dpc4 => j   ! { dg-error "must have the SAVE attribute" }
-    integer, pointer :: dpc5 => a   ! { dg-error "must not be ALLOCATABLE" }
-  end type
+  end type t
 
-  type(t) ::u
+  type t2
+    integer, pointer :: dpc1 => r   ! { dg-error "attempted assignment of REAL.4. to INTEGER.4." }
+  end type t2
+
+  type t3
+    integer, pointer :: dpc2 => v   ! { dg-error "Different ranks in pointer assignment" }
+  end type t3
+
+  type t4
+    integer, pointer :: dpc3 => i   ! { dg-error "Pointer assignment target is neither TARGET nor POINTER" }
+  end type t4
+
+  type t5
+    integer, pointer :: dpc4 => j   ! { dg-error "must have the SAVE attribute" }
+  end type t5
+
+  type t6
+    integer, pointer :: dpc5 => a   ! { dg-error "must not be ALLOCATABLE" }
+  end type t6
 
 end subroutine

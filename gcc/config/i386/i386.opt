@@ -1,7 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005, 2006, 2007, 2008, 2009,
-; 2010, 2011, 2012 Free Software Foundation, Inc.
+; Copyright (C) 2005-2013 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -141,7 +140,7 @@ Target RejectNegative Joined UInteger Var(ix86_branch_cost)
 Branches are this expensive (1-5, arbitrary units)
 
 mlarge-data-threshold=
-Target RejectNegative Joined UInteger Var(ix86_section_threshold) Init(65536)
+Target RejectNegative Joined UInteger Var(ix86_section_threshold) Init(DEFAULT_LARGE_SECTION_THRESHOLD)
 Data greater than given threshold will go into .ldata section in x86-64 medium model
 
 mcmodel=

@@ -66,6 +66,7 @@ AC_DEFUN([ISL_INIT_FLAGS],
     isllibs='-L$$r/$(HOST_SUBDIR)/isl/'"$lt_cv_objdir"' '
     islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
     ENABLE_ISL_CHECK=no
+    AC_MSG_WARN([using in-tree ISL, disabling version check])
   fi
 ]
 )
@@ -113,14 +114,13 @@ AC_DEFUN([ISL_CHECK_VERSION],
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
     LIBS="${_isl_saved_LIBS} -lisl"
-    echo $CFLAGS
 
-    AC_CACHE_CHECK([for version $1.$2 of ISL],
-      [gcc_cv_isl],
-      [AC_RUN_IFELSE([_ISL_CHECK_CT_PROG($1,$2)],
+    AC_MSG_CHECKING([for version $1.$2 of ISL])
+    AC_RUN_IFELSE([_ISL_CHECK_CT_PROG($1,$2)],
 	[gcc_cv_isl=yes],
 	[gcc_cv_isl=no],
-	[gcc_cv_isl=yes])])
+	[gcc_cv_isl=yes])
+    AC_MSG_RESULT([$gcc_cv_isl])
 
     CFLAGS=$_isl_saved_CFLAGS
     LDFLAGS=$_isl_saved_LDFLAGS

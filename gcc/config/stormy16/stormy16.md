@@ -1,6 +1,5 @@
 ;; XSTORMY16 Machine description template
-;; Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-;; 2010, 2011 Free Software Foundation, Inc.
+;; Copyright (C) 1997-2013 Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
 ;; This file is part of GCC.

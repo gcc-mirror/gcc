@@ -12,7 +12,6 @@
 #include "asan_allocator.h"
 #include "asan_interceptors.h"
 #include "asan_internal.h"
-#include "asan_lock.h"
 #include "asan_mapping.h"
 #include "asan_report.h"
 #include "asan_stack.h"
@@ -52,7 +51,7 @@ static void AsanCheckFailed(const char *file, int line, const char *cond,
              file, line, cond, (uptr)v1, (uptr)v2);
   // FIXME: check for infinite recursion without a thread-local counter here.
   PRINT_CURRENT_STACK();
-  ShowStatsAndAbort();
+  Die();
 }
 
 // -------------------------- Flags ------------------------- {{{1
@@ -62,6 +61,10 @@ static Flags asan_flags;
 
 Flags *flags() {
   return &asan_flags;
+}
+
+static const char *MaybeCallAsanDefaultOptions() {
+  return (&__asan_default_options) ? __asan_default_options() : "";
 }
 
 static void ParseFlagsFromString(Flags *f, const char *str) {
@@ -98,13 +101,12 @@ static void ParseFlagsFromString(Flags *f, const char *str) {
   ParseFlag(str, &f->allow_reexec, "allow_reexec");
   ParseFlag(str, &f->print_full_thread_history, "print_full_thread_history");
   ParseFlag(str, &f->log_path, "log_path");
+  ParseFlag(str, &f->fast_unwind_on_fatal, "fast_unwind_on_fatal");
+  ParseFlag(str, &f->fast_unwind_on_malloc, "fast_unwind_on_malloc");
+  ParseFlag(str, &f->poison_heap, "poison_heap");
+  ParseFlag(str, &f->alloc_dealloc_mismatch, "alloc_dealloc_mismatch");
+  ParseFlag(str, &f->use_stack_depot, "use_stack_depot");
 }
-
-extern "C" {
-SANITIZER_WEAK_ATTRIBUTE
-SANITIZER_INTERFACE_ATTRIBUTE
-const char* __asan_default_options() { return ""; }
-}  // extern "C"
 
 void InitializeFlags(Flags *f, const char *env) {
   internal_memset(f, 0, sizeof(*f));
@@ -112,7 +114,7 @@ void InitializeFlags(Flags *f, const char *env) {
   f->quarantine_size = (ASAN_LOW_MEMORY) ? 1UL << 26 : 1UL << 28;
   f->symbolize = false;
   f->verbosity = 0;
-  f->redzone = (ASAN_LOW_MEMORY) ? 64 : 128;
+  f->redzone = ASAN_ALLOCATOR_VERSION == 2 ? 16 : (ASAN_LOW_MEMORY) ? 64 : 128;
   f->debug = false;
   f->report_globals = 1;
   f->check_initialization_order = true;
@@ -137,12 +139,19 @@ void InitializeFlags(Flags *f, const char *env) {
   f->allow_reexec = true;
   f->print_full_thread_history = true;
   f->log_path = 0;
+  f->fast_unwind_on_fatal = false;
+  f->fast_unwind_on_malloc = true;
+  f->poison_heap = true;
+  // Turn off alloc/dealloc mismatch checker on Mac for now.
+  // TODO(glider): Fix known issues and enable this back.
+  f->alloc_dealloc_mismatch = (ASAN_MAC == 0);
+  f->use_stack_depot = true;  // Only affects allocator2.
 
   // Override from user-specified string.
-  ParseFlagsFromString(f, __asan_default_options());
+  ParseFlagsFromString(f, MaybeCallAsanDefaultOptions());
   if (flags()->verbosity) {
     Report("Using the defaults from __asan_default_options: %s\n",
-           __asan_default_options());
+           MaybeCallAsanDefaultOptions());
   }
 
   // Override from command line.
@@ -220,7 +229,6 @@ static NOINLINE void force_interface_symbols() {
     case 8: __asan_report_store4(0); break;
     case 9: __asan_report_store8(0); break;
     case 10: __asan_report_store16(0); break;
-    case 11: __asan_register_global(0, 0, 0); break;
     case 12: __asan_register_globals(0, 0); break;
     case 13: __asan_unregister_globals(0, 0); break;
     case 14: __asan_set_death_callback(0); break;
@@ -239,15 +247,12 @@ static NOINLINE void force_interface_symbols() {
     case 27: __asan_set_error_exit_code(0); break;
     case 28: __asan_stack_free(0, 0, 0); break;
     case 29: __asan_stack_malloc(0, 0); break;
-    case 30: __asan_on_error(); break;
-    case 31: __asan_default_options(); break;
-    case 32: __asan_before_dynamic_init(0, 0); break;
-    case 33: __asan_after_dynamic_init(); break;
-    case 34: __asan_malloc_hook(0, 0); break;
-    case 35: __asan_free_hook(0); break;
-    case 36: __asan_symbolize(0, 0, 0); break;
-    case 37: __asan_poison_stack_memory(0, 0); break;
-    case 38: __asan_unpoison_stack_memory(0, 0); break;
+    case 30: __asan_before_dynamic_init(0, 0); break;
+    case 31: __asan_after_dynamic_init(); break;
+    case 32: __asan_poison_stack_memory(0, 0); break;
+    case 33: __asan_unpoison_stack_memory(0, 0); break;
+    case 34: __asan_region_is_poisoned(0, 0); break;
+    case 35: __asan_describe_address(0); break;
   }
 }
 
@@ -260,6 +265,13 @@ static void asan_atexit() {
 
 // ---------------------- Interface ---------------- {{{1
 using namespace __asan;  // NOLINT
+
+#if !SANITIZER_SUPPORTS_WEAK_HOOKS
+extern "C" {
+SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
+const char* __asan_default_options() { return ""; }
+}  // extern "C"
+#endif
 
 int NOINLINE __asan_set_error_exit_code(int exit_code) {
   int old = flags()->exitcode;

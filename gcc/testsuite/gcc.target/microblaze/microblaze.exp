@@ -1,4 +1,4 @@
-#   Copyright 2009, 2010 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2013 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,12 +20,6 @@
 # Exit immediately if this isn't a MicroBlaze target.
 if { ![istarget microblaze*-*-*] } then {
   return
-}
-
-# Don't execute when we are testing some configuration of GCC or G++.
-# This we figure out by looking at target_config_cflags which needs to be "" for microblaze.exp
-if { $target_config_cflags != "" } {
-  return 
 }
 
 global TORTURE_OPTIONS

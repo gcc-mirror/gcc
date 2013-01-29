@@ -1,7 +1,7 @@
 // { dg-do run }
 // { dg-options "-std=c++11" }
+// { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
-// { dg-require-alias }
 // { dg-require-cxa-atexit "" }
 
 extern "C" void abort();

@@ -1,7 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011, 2012  Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4481,7 +4479,6 @@ get_last_funcdef_no (void)
 void
 allocate_struct_function (tree fndecl, bool abstract_p)
 {
-  tree result;
   tree fntype = fndecl ? TREE_TYPE (fndecl) : NULL_TREE;
 
   cfun = ggc_alloc_cleared_function ();
@@ -4500,8 +4497,13 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       DECL_STRUCT_FUNCTION (fndecl) = cfun;
       cfun->decl = fndecl;
       current_function_funcdef_no = get_next_funcdef_no ();
+    }
 
-      result = DECL_RESULT (fndecl);
+  invoke_set_current_function_hook (fndecl);
+
+  if (fndecl != NULL_TREE)
+    {
+      tree result = DECL_RESULT (fndecl);
       if (!abstract_p && aggregate_value_p (result, fndecl))
 	{
 #ifdef PCC_STATIC_STRUCT_RETURN
@@ -4520,8 +4522,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
     }
-
-  invoke_set_current_function_hook (fndecl);
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL
@@ -6031,7 +6031,7 @@ thread_prologue_and_epilogue_insns (void)
       if (pic_offset_table_rtx)
 	add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			     PIC_OFFSET_TABLE_REGNUM);
-      if (stack_realign_drap && crtl->drap_reg)
+      if (crtl->drap_reg)
 	add_to_hard_reg_set (&set_up_by_prologue.set,
 			     GET_MODE (crtl->drap_reg),
 			     REGNO (crtl->drap_reg));

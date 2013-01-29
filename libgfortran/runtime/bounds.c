@@ -1,5 +1,4 @@
-/* Copyright (C) 2009, 2012
-   Free Software Foundation, Inc.
+/* Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).

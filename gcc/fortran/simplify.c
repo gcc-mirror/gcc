@@ -1,6 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -5584,7 +5583,9 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
       /* Otherwise, we build a new SIZE call.  This is hopefully at least
 	 simpler than the original one.  */
       if (!simplified)
-	simplified = gfc_build_intrinsic_call ("size", array->where, 3,
+	simplified = gfc_build_intrinsic_call (gfc_current_ns,
+					       GFC_ISYM_SIZE, "size",
+					       array->where, 3,
 					       gfc_copy_expr (replacement),
 					       gfc_copy_expr (dim),
 					       gfc_copy_expr (kind));

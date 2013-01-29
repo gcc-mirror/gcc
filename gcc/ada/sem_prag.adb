@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6646,7 +6646,22 @@ package body Sem_Prag is
          -- Abstract_State --
          --------------------
 
-         --  ??? no formal grammar available yet
+         --  pragma Abstract_State (ABSTRACT_STATE_LIST)
+
+         --  ABSTRACT_STATE_LIST        ::=
+         --    null
+         --    | STATE_NAME_WITH_PROPERTIES {, STATE_NAME_WITH_PROPERTIES}
+
+         --  STATE_NAME_WITH_PROPERTIES ::=
+         --    STATE_NAME
+         --    | (STATE_NAME with PROPERTY_LIST)
+
+         --  PROPERTY_LIST              ::= PROPERTY {, PROPERTY}
+         --  PROPERTY                   ::= SIMPLE_PROPERTY
+         --                                 | NAME_VALUE_PROPERTY
+         --  SIMPLE_PROPERTY            ::= IDENTIFIER
+         --  NAME_VALUE_PROPERTY        ::= IDENTIFIER => EXPRESSION
+         --  STATE_NAME                 ::= DEFINING_IDENTIFIER
 
          when Pragma_Abstract_State => Abstract_State : declare
             Pack_Id : Entity_Id;
@@ -9954,7 +9969,16 @@ package body Sem_Prag is
          -- Global --
          ------------
 
-         --  ??? no formal grammar pragma available yet
+         --  pragma Global (GLOBAL_SPECIFICATION)
+
+         --  GLOBAL_SPECIFICATION ::= MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
+         --                           | GLOBAL_LIST
+         --                           | null
+         --  MODED_GLOBAL_LIST    ::= MODE_SELECTOR => GLOBAL_LIST
+         --  MODE_SELECTOR        ::= Input | Output | In_Out | Contract_In
+         --  GLOBAL_LIST          ::= GLOBAL_ITEM
+         --                           | (GLOBAL_ITEM {, GLOBAL_ITEM})
+         --  GLOBAL_ITEM          ::= NAME
 
          when Pragma_Global => Global : declare
             Subp_Id : Entity_Id;
@@ -10054,14 +10078,7 @@ package body Sem_Prag is
                      return;
                   end if;
 
-                  --  Ensure that the formal parameters are visible when
-                  --  processing an item. This falls out of the general rule
-                  --  of aspects pertaining to subprogram declarations.
-
-                  Push_Scope (Subp_Id);
-                  Install_Formals (Subp_Id);
                   Analyze (Item);
-                  Pop_Scope;
 
                   if Is_Entity_Name (Item) then
                      Id := Entity (Item);
@@ -10302,7 +10319,16 @@ package body Sem_Prag is
             --  error messages.
 
             else
+               --  Ensure that the formal parameters are visible when
+               --  processing an item. This falls out of the general rule of
+               --  aspects pertaining to subprogram declarations.
+
+               Push_Scope (Subp_Id);
+               Install_Formals (Subp_Id);
+
                Analyze_Global_List (List);
+
+               Pop_Scope;
             end if;
          end Global;
 
@@ -10454,8 +10480,9 @@ package body Sem_Prag is
          -- Implemented --
          -----------------
 
-         --  pragma Implemented (procedure_LOCAL_NAME, implementation_kind);
-         --  implementation_kind ::=
+         --  pragma Implemented (procedure_LOCAL_NAME, IMPLEMENTATION_KIND);
+
+         --  IMPLEMENTATION_KIND ::=
          --    By_Entry | By_Protected_Procedure | By_Any | Optional
 
          --  "By_Any" and "Optional" are treated as synonyms in order to
@@ -11095,11 +11122,19 @@ package body Sem_Prag is
             Process_Import_Or_Interface;
 
             --  In Ada 2005, the permission to use Interface (a reserved word)
-            --  as a pragma name is considered an obsolescent feature.
+            --  as a pragma name is considered an obsolescent feature, and this
+            --  pragma was already obsolescent in Ada 95.
 
-            if Ada_Version >= Ada_2005 then
+            if Ada_Version >= Ada_95 then
                Check_Restriction
                  (No_Obsolescent_Features, Pragma_Identifier (N));
+
+               if Warn_On_Obsolescent_Feature then
+                  Error_Msg_N
+                    ("pragma Interface is an obsolescent feature?j?", N);
+                  Error_Msg_N
+                    ("|use pragma Import instead?j?", N);
+               end if;
             end if;
 
          --------------------
@@ -11125,6 +11160,19 @@ package body Sem_Prag is
             Check_At_Most_N_Arguments  (3);
             Id := Get_Pragma_Arg (Arg1);
             Analyze (Id);
+
+            --  This is obsolete from Ada 95 on, but it is an implementation
+            --  defined pragma, so we do not consider that it violates the
+            --  restriction (No_Obsolescent_Features).
+
+            if Ada_Version >= Ada_95 then
+               if Warn_On_Obsolescent_Feature then
+                  Error_Msg_N
+                    ("pragma Interface_Name is an obsolescent feature?j?", N);
+                  Error_Msg_N
+                    ("|use pragma Import instead?j?", N);
+               end if;
+            end if;
 
             if not Is_Entity_Name (Id) then
                Error_Pragma_Arg
@@ -14924,15 +14972,17 @@ package body Sem_Prag is
 
                   E := Entity (E_Id);
 
-                  if E = Any_Id then
-                     return;
-                  else
-                     loop
-                        Set_Suppress_Style_Checks (E,
-                          (Chars (Get_Pragma_Arg (Arg1)) = Name_Off));
-                        exit when No (Homonym (E));
-                        E := Homonym (E);
-                     end loop;
+                  if not Ignore_Style_Checks_Pragmas then
+                     if E = Any_Id then
+                        return;
+                     else
+                        loop
+                           Set_Suppress_Style_Checks
+                             (E, Chars (Get_Pragma_Arg (Arg1)) = Name_Off);
+                           exit when No (Homonym (E));
+                           E := Homonym (E);
+                        end loop;
+                     end if;
                   end if;
                end;
 
@@ -14961,7 +15011,10 @@ package body Sem_Prag is
                         --  them in the parser.
 
                         if J = Slen then
-                           Set_Style_Check_Options (Options);
+                           if not Ignore_Style_Checks_Pragmas then
+                              Set_Style_Check_Options (Options);
+                           end if;
+
                            exit;
                         end if;
 
@@ -14971,17 +15024,23 @@ package body Sem_Prag is
 
                elsif Nkind (A) = N_Identifier then
                   if Chars (A) = Name_All_Checks then
-                     if GNAT_Mode then
-                        Set_GNAT_Style_Check_Options;
-                     else
-                        Set_Default_Style_Check_Options;
+                     if not Ignore_Style_Checks_Pragmas then
+                        if GNAT_Mode then
+                           Set_GNAT_Style_Check_Options;
+                        else
+                           Set_Default_Style_Check_Options;
+                        end if;
                      end if;
 
                   elsif Chars (A) = Name_On then
-                     Style_Check := True;
+                     if not Ignore_Style_Checks_Pragmas then
+                        Style_Check := True;
+                     end if;
 
                   elsif Chars (A) = Name_Off then
-                     Style_Check := False;
+                     if not Ignore_Style_Checks_Pragmas then
+                        Style_Check := False;
+                     end if;
                   end if;
                end if;
             end if;

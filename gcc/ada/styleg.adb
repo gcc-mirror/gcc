@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -611,7 +611,7 @@ package body Styleg is
    -- Check_Indentation --
    -----------------------
 
-   --  In check indentation mode (-gnatyn for n a digit), a new statement or
+   --  In check indentation mode (-gnaty? for ? a digit), a new statement or
    --  declaration is required to start in a column that is a multiple of the
    --  indentation amount.
 

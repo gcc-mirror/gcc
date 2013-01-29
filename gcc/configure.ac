@@ -1,8 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-# 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1997-2013 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -471,6 +470,7 @@ if test x$ac_tree_checking != x ; then
    routines will also be enabled by this option.
    ])
   TREEBROWSER=tree-browser.o
+  TREECHECKING=yes
 fi
 if test x$ac_types_checking != x ; then
   AC_DEFINE(ENABLE_TYPES_CHECKING, 1,
@@ -479,6 +479,7 @@ if test x$ac_types_checking != x ; then
    ])
 fi
 AC_SUBST(TREEBROWSER)
+AC_SUBST(TREECHECKING)
 if test x$ac_rtl_checking != x ; then
   AC_DEFINE(ENABLE_RTL_CHECKING, 1,
 [Define if you want all operations on RTL (the basic data structure
@@ -3010,6 +3011,24 @@ foo:	.long	25
 	tls_first_minor=20
 	tls_as_opt='--fatal-warnings'
 	;;
+  powerpc-ibm-aix*)
+    conftest_s='
+	.extern __get_tpointer
+	.toc
+LC..1:
+	.tc a[TC],a[TL]@le
+	.csect .text[PR]
+.tlstest:
+	lwz 9,LC..1(2)
+	bla __get_tpointer
+	lwzx 3,9,3
+	.globl a
+	.csect a[TL],4
+a:
+	.space 4'
+	tls_first_major=0
+	tls_first_minor=0
+	;;
   powerpc-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
@@ -3298,6 +3317,12 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_static_dynamic=yes
   else
     case "$target" in
+      # AIX ld uses -b flags
+      *-*-aix4.[[23]]* | *-*-aix[[5-9]]*)
+	gcc_cv_ld_static_dynamic=yes
+	gcc_cv_ld_static_option="-bstatic"
+	gcc_cv_ld_dynamic_option="-bdynamic"
+	;;
       # HP-UX ld uses -a flags to select between shared and archive.
       *-*-hpux*)
 	if test x"$gnu_ld" = xno; then
@@ -4778,26 +4803,14 @@ if test x$gcc_cv_target_dl_iterate_phdr = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_target_dl_iterate_phdr)
 
-# Find out what GC implementation we want, or may, use.
+# We no longer support different GC mechanisms.  Emit an error if
+# the user configures with --with-gc.
 AC_ARG_WITH(gc,
 [AS_HELP_STRING([--with-gc={page,zone}],
-		[choose the garbage collection mechanism to use
-                 with the compiler])],
-[case "$withval" in
-  page)
-    GGC=ggc-$withval
-    ;;
-  zone)
-    GGC=ggc-$withval
-    AC_DEFINE(GGC_ZONE, 1, [Define if the zone collector is in use])
-    ;;
-  *)
-    AC_MSG_ERROR([$withval is an invalid option to --with-gc])
-    ;;
-esac],
-[GGC=ggc-page])
-AC_SUBST(GGC)
-echo "Using $GGC for garbage collection."
+		[this option is not supported anymore.  It used to choose
+		 the garbage collection mechanism to use with the compiler])],
+[AC_MSG_ERROR([Configure option --with-gc is only supported up to GCC 4.7.x])],
+[])
 
 # Libraries to use on the host.  This will normally be set by the top
 # level Makefile.  Here we simply capture the value for our Makefile.

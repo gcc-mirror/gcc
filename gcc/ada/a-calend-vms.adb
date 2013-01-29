@@ -49,7 +49,7 @@ package body Ada.Calendar is
    --  on various targets, a system independent model is incorporated into
    --  Ada.Calendar. The idea behind the design is to encapsulate all target
    --  dependent machinery in a single package, thus providing a uniform
-   --  interface to all existing and any potential children.
+   --  interface to all existing and potential children.
 
    --     package Ada.Calendar
    --        procedure Split (5 parameters) -------+
@@ -1017,7 +1017,7 @@ package body Ada.Calendar is
             Timbuf : out Unsigned_Word_Array;
             Timadr : Time);
 
-         pragma Interface (External, Numtim);
+         pragma Import (External, Numtim);
 
          pragma Import_Valued_Procedure
            (Numtim, "SYS$NUMTIM",
@@ -1134,7 +1134,7 @@ package body Ada.Calendar is
             Input_Time     : Unsigned_Word_Array;
             Resultant_Time : out Time);
 
-         pragma Interface (External, Cvt_Vectim);
+         pragma Import (External, Cvt_Vectim);
 
          pragma Import_Valued_Procedure
            (Cvt_Vectim, "LIB$CVT_VECTIM",

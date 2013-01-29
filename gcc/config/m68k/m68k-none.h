@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  "naked" 68020.
-   Copyright (C) 1994, 1996, 2003, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1994-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

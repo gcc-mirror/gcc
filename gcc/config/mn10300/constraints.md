@@ -1,5 +1,5 @@
 ;; Constraint definitions for the MN10300.
-;; Copyright (C) 2007, 2008, 2011 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2013 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

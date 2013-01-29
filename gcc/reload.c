@@ -1,7 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1987-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -709,7 +707,7 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 }
 
 /* We are trying to reload a subreg of something that is not a register.
-   Find the largest class which has at least one register valid in
+   Find the largest class which contains only registers valid in
    mode MODE.  OUTER is the mode of the subreg, DEST_CLASS the class in
    which we would eventually like to obtain the object.  */
 
@@ -729,10 +727,12 @@ find_valid_class_1 (enum machine_mode outer ATTRIBUTE_UNUSED,
     {
       int bad = 0;
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER && !bad; regno++)
-	if (TEST_HARD_REG_BIT (reg_class_contents[rclass], regno)
-	    && !HARD_REGNO_MODE_OK (regno, mode))
-	  bad = 1;
-
+	{
+	  if (in_hard_reg_set_p (reg_class_contents[rclass], mode, regno)
+	      && !HARD_REGNO_MODE_OK (regno, mode))
+	    bad = 1;
+	}
+      
       if (bad)
 	continue;
 

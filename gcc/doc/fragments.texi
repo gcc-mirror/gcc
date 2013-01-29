@@ -1,6 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2003, 2004, 2005, 2008, 2011, 2012
-@c Free Software Foundation, Inc.
+@c Copyright (C) 1988-2013 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -149,6 +147,35 @@ The @code{MULTILIB_REQUIRED} can be used together with
 @code{MULTILIB_EXCEPTIONS}.  The option combinations generated from
 @code{MULTILIB_OPTIONS} will be filtered by @code{MULTILIB_EXCEPTIONS}
 and then by @code{MULTILIB_REQUIRED}.
+
+@findex MULTILIB_REUSE
+@item MULTILIB_REUSE
+Sometimes it is desirable to reuse one existing multilib for different
+sets of options.  Such kind of reuse can minimize the number of multilib
+variants.  And for some targets it is better to reuse an existing multilib
+than to fall back to default multilib when there is no corresponding multilib.
+This can be done by adding reuse rules to @code{MULTILIB_REUSE}.
+
+A reuse rule is comprised of two parts connected by equality sign.  The left part
+is option set used to build multilib and the right part is option set that will
+reuse this multilib.  The order of options in the left part matters and should be
+same with those specified in @code{MULTILIB_REQUIRED} or aligned with order in
+@code{MULTILIB_OPTIONS}.  There is no such limitation for options in right part
+as we don't build multilib from them.  But the equality sign in both parts should
+be replaced with period.
+
+The @code{MULTILIB_REUSE} is different from @code{MULTILIB_MATCHES} in that it
+sets up relations between two option sets rather than two options.  Here is an
+example to demo how we reuse libraries built in Thumb mode for applications built
+in ARM mode:
+@smallexample
+@code{MULTILIB_REUSE} = mthumb/march.armv7-r=marm/march.armv7-r
+@end smallexample
+
+Before the advent of @code{MULTILIB_REUSE}, GCC select multilib by comparing command
+line options with options used to build multilib.  The @code{MULTILIB_REUSE} is
+complementary to that way.  Only when the original comparison matches nothing it will
+work to see if it is OK to reuse some existing multilib.
 
 @findex MULTILIB_EXTRA_OPTS
 @item MULTILIB_EXTRA_OPTS

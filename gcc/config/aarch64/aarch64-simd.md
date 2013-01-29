@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 AdvSIMD architecture.
-;; Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2013 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -394,34 +394,8 @@
      case 4: return "ins\t%0.d[0], %1";
      case 5: return "mov\t%0, %1";
      case 6:
-       {
-	int is_valid;
-	unsigned char widthc;
-	int width;
-	static char templ[40];
-	int shift = 0, mvn = 0;
-	const char *mnemonic;
-	int length = 0;
-
-	is_valid =
-	  aarch64_simd_immediate_valid_for_move (operands[1], <MODE>mode,
-						 &operands[1], &width, &widthc,
-						 &mvn, &shift);
-	gcc_assert (is_valid != 0);
-
-	mnemonic = mvn ? "mvni" : "movi";
-	if (widthc != 'd')
-	  length += snprintf (templ, sizeof (templ),
-			      "%s\t%%0.%d%c, %%1",
-			      mnemonic, 64 / width, widthc);
-	else
-	  length += snprintf (templ, sizeof (templ), "%s\t%%d0, %%1", mnemonic);
-
-	if (shift != 0)
-	  length += snprintf (templ + length, sizeof (templ) - length,
-			      ", lsl %d", shift);
-	return templ;
-       }
+	return aarch64_output_simd_mov_immediate (&operands[1],
+						  <MODE>mode, 64);
      default: gcc_unreachable ();
      }
 }
@@ -438,39 +412,19 @@
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
 {
-   switch (which_alternative)
-     {
-     case 0: return "ld1\t{%0.<Vtype>}, %1";
-     case 1: return "st1\t{%1.<Vtype>}, %0";
-     case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
-     case 3: return "umov\t%0, %1.d[0]\;umov\t%H0, %1.d[1]";
-     case 4: return "ins\t%0.d[0], %1\;ins\t%0.d[1], %H1";
-     case 5: return "#";
-     case 6:
-       {
-	int is_valid;
-	unsigned char widthc;
-	int width;
-	static char templ[40];
-	int shift = 0, mvn = 0;
-
-	is_valid =
-	  aarch64_simd_immediate_valid_for_move (operands[1], <MODE>mode,
-						 &operands[1], &width, &widthc,
-						 &mvn, &shift);
-	gcc_assert (is_valid != 0);
-	if (shift)
-	  snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, %%1, lsl %d",
-		    mvn ? "mvni" : "movi",
-		    128 / width, widthc, shift);
-	else
-	  snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, %%1",
-		    mvn ? "mvni" : "movi",
-		    128 / width, widthc);
-	return templ;
-       }
-     default: gcc_unreachable ();
-     }
+  switch (which_alternative)
+    {
+    case 0: return "ld1\t{%0.<Vtype>}, %1";
+    case 1: return "st1\t{%1.<Vtype>}, %0";
+    case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
+    case 3: return "umov\t%0, %1.d[0]\;umov\t%H0, %1.d[1]";
+    case 4: return "ins\t%0.d[0], %1\;ins\t%0.d[1], %H1";
+    case 5: return "#";
+    case 6:
+	return aarch64_output_simd_mov_immediate (&operands[1],
+						  <MODE>mode, 128);
+    default: gcc_unreachable ();
+    }
 }
   [(set_attr "simd_type" "simd_load1,simd_store1,simd_move,simd_movgp,simd_insgp,simd_move,simd_move_imm")
    (set_attr "simd_mode" "<MODE>")
@@ -1100,7 +1054,7 @@
                            (match_operand:VQW 2 "register_operand" "w")
                            (match_dup 3)))))]
   "TARGET_SIMD"
-  "<su>mull %0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
+  "<su>mull\\t%0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
   [(set_attr "simd_type" "simd_mull")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -1128,7 +1082,7 @@
 			    (match_operand:VQW 2 "register_operand" "w")
 			    (match_dup 3)))))]
   "TARGET_SIMD"
-  "<su>mull2 %0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>mull2\\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_mull")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -1509,7 +1463,7 @@
    (set_attr "simd_mode" "V2SI")]
 )
 
-;; vbsl_* intrinsics may compile to any of vbsl/vbif/vbit depending on register
+;; vbsl_* intrinsics may compile to any of bsl/bif/bit depending on register
 ;; allocation.  For an intrinsic of form:
 ;;   vD = bsl_* (vS, vN, vM)
 ;; We can use any of:
@@ -1518,11 +1472,12 @@
 ;;   bif vD, vM, vS  (if D = N, so 0-bits in vS choose bits from vM, else vN)
 
 (define_insn "aarch64_simd_bsl<mode>_internal"
-  [(set (match_operand:VDQ 0 "register_operand"		     "=w,w,w")
-	(unspec:VDQ [(match_operand:VDQ 1 "register_operand" " 0,w,w")
-		     (match_operand:VDQ 2 "register_operand" " w,w,0")
-		     (match_operand:VDQ 3 "register_operand" " w,0,w")]
-		    UNSPEC_BSL))]
+  [(set (match_operand:VALL 0 "register_operand"		"=w,w,w")
+	(unspec:VALL
+	 [(match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w")
+	  (match_operand:VALL 2 "register_operand"		" w,w,0")
+	  (match_operand:VALL 3 "register_operand"		" w,0,w")]
+	 UNSPEC_BSL))]
   "TARGET_SIMD"
   "@
   bsl\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
@@ -1531,15 +1486,15 @@
 )
 
 (define_expand "aarch64_simd_bsl<mode>"
-  [(set (match_operand:VDQ 0 "register_operand")
-	(unspec:VDQ [(match_operand:<V_cmp_result> 1 "register_operand")
-		     (match_operand:VDQ 2 "register_operand")
-		     (match_operand:VDQ 3 "register_operand")]
-		    UNSPEC_BSL))]
+  [(set (match_operand:VALL 0 "register_operand")
+	(unspec:VALL [(match_operand:<V_cmp_result> 1 "register_operand")
+		      (match_operand:VALL 2 "register_operand")
+		      (match_operand:VALL 3 "register_operand")]
+		     UNSPEC_BSL))]
   "TARGET_SIMD"
 {
   /* We can't alias operands together if they have different modes.  */
-  operands[1] = gen_lowpart (<MODE>mode, operands[1]);
+  operands[1] = gen_lowpart (<V_cmp_result>mode, operands[1]);
 })
 
 (define_expand "aarch64_vcond_internal<mode>"
@@ -1620,14 +1575,155 @@
   DONE;
 })
 
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VDQ 0 "register_operand")
-	(if_then_else:VDQ
+(define_expand "aarch64_vcond_internal<mode>"
+  [(set (match_operand:VDQF 0 "register_operand")
+	(if_then_else:VDQF
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQ 4 "register_operand")
-	     (match_operand:VDQ 5 "nonmemory_operand")])
-	  (match_operand:VDQ 1 "register_operand")
-	  (match_operand:VDQ 2 "register_operand")))]
+	    [(match_operand:VDQF 4 "register_operand")
+	     (match_operand:VDQF 5 "nonmemory_operand")])
+	  (match_operand:VDQF 1 "register_operand")
+	  (match_operand:VDQF 2 "register_operand")))]
+  "TARGET_SIMD"
+{
+  int inverse = 0;
+  int swap_bsl_operands = 0;
+  rtx mask = gen_reg_rtx (<V_cmp_result>mode);
+  rtx tmp = gen_reg_rtx (<V_cmp_result>mode);
+
+  rtx (*base_comparison) (rtx, rtx, rtx);
+  rtx (*complimentary_comparison) (rtx, rtx, rtx);
+
+  switch (GET_CODE (operands[3]))
+    {
+    case GE:
+    case LE:
+    case EQ:
+      if (!REG_P (operands[5])
+	  && (operands[5] != CONST0_RTX (<MODE>mode)))
+	operands[5] = force_reg (<MODE>mode, operands[5]);
+      break;
+    default:
+      if (!REG_P (operands[5]))
+	operands[5] = force_reg (<MODE>mode, operands[5]);
+    }
+
+  switch (GET_CODE (operands[3]))
+    {
+    case LT:
+    case UNLT:
+      inverse = 1;
+      /* Fall through.  */
+    case GE:
+    case UNGE:
+    case ORDERED:
+    case UNORDERED:
+      base_comparison = gen_aarch64_cmge<mode>;
+      complimentary_comparison = gen_aarch64_cmgt<mode>;
+      break;
+    case LE:
+    case UNLE:
+      inverse = 1;
+      /* Fall through.  */
+    case GT:
+    case UNGT:
+      base_comparison = gen_aarch64_cmgt<mode>;
+      complimentary_comparison = gen_aarch64_cmge<mode>;
+      break;
+    case EQ:
+    case NE:
+    case UNEQ:
+      base_comparison = gen_aarch64_cmeq<mode>;
+      complimentary_comparison = gen_aarch64_cmeq<mode>;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (GET_CODE (operands[3]))
+    {
+    case LT:
+    case LE:
+    case GT:
+    case GE:
+    case EQ:
+      /* The easy case.  Here we emit one of FCMGE, FCMGT or FCMEQ.
+	 As a LT b <=> b GE a && a LE b <=> b GT a.  Our transformations are:
+	 a GE b -> a GE b
+	 a GT b -> a GT b
+	 a LE b -> b GE a
+	 a LT b -> b GT a
+	 a EQ b -> a EQ b  */
+
+      if (!inverse)
+	emit_insn (base_comparison (mask, operands[4], operands[5]));
+      else
+	emit_insn (complimentary_comparison (mask, operands[5], operands[4]));
+      break;
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+    case NE:
+      /* FCM returns false for lanes which are unordered, so if we use
+	 the inverse of the comparison we actually want to emit, then
+	 swap the operands to BSL, we will end up with the correct result.
+	 Note that a NE NaN and NaN NE b are true for all a, b.
+
+	 Our transformations are:
+	 a GE b -> !(b GT a)
+	 a GT b -> !(b GE a)
+	 a LE b -> !(a GT b)
+	 a LT b -> !(a GE b)
+	 a NE b -> !(a EQ b)  */
+
+      if (inverse)
+	emit_insn (base_comparison (mask, operands[4], operands[5]));
+      else
+	emit_insn (complimentary_comparison (mask, operands[5], operands[4]));
+
+      swap_bsl_operands = 1;
+      break;
+    case UNEQ:
+      /* We check (a > b ||  b > a).  combining these comparisons give us
+	 true iff !(a != b && a ORDERED b), swapping the operands to BSL
+	 will then give us (a == b ||  a UNORDERED b) as intended.  */
+
+      emit_insn (gen_aarch64_cmgt<mode> (mask, operands[4], operands[5]));
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[5], operands[4]));
+      emit_insn (gen_ior<v_cmp_result>3 (mask, mask, tmp));
+      swap_bsl_operands = 1;
+      break;
+    case UNORDERED:
+       /* Operands are ORDERED iff (a > b || b >= a).
+	 Swapping the operands to BSL will give the UNORDERED case.  */
+     swap_bsl_operands = 1;
+     /* Fall through.  */
+    case ORDERED:
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[4], operands[5]));
+      emit_insn (gen_aarch64_cmge<mode> (mask, operands[5], operands[4]));
+      emit_insn (gen_ior<v_cmp_result>3 (mask, mask, tmp));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (swap_bsl_operands)
+    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[2],
+				    operands[1]));
+  else
+    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[1],
+				    operands[2]));
+  DONE;
+})
+
+(define_expand "vcond<mode><mode>"
+  [(set (match_operand:VALL 0 "register_operand")
+	(if_then_else:VALL
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:VALL 4 "register_operand")
+	     (match_operand:VALL 5 "nonmemory_operand")])
+	  (match_operand:VALL 1 "register_operand")
+	  (match_operand:VALL 2 "register_operand")))]
   "TARGET_SIMD"
 {
   emit_insn (gen_aarch64_vcond_internal<mode> (operands[0], operands[1],
@@ -2114,17 +2210,49 @@
 ;; sq<r>dmulh_lane
 
 (define_insn "aarch64_sq<r>dmulh_lane<mode>"
-  [(set (match_operand:VSDQ_HSI 0 "register_operand" "=w")
-        (unspec:VSDQ_HSI
-	  [(match_operand:VSDQ_HSI 1 "register_operand" "w")
+  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+        (unspec:VDQHS
+	  [(match_operand:VDQHS 1 "register_operand" "w")
            (vec_select:<VEL>
-             (match_operand:<VCON> 2 "register_operand" "<vwx>")
+             (match_operand:<VCOND> 2 "register_operand" "<vwx>")
              (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
 	 VQDMULH))]
   "TARGET_SIMD"
   "*
-   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCON>mode));
-   return \"sq<r>dmulh\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2.<Vetype>[%3]\";"
+   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCOND>mode));
+   return \"sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]\";"
+  [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aarch64_sq<r>dmulh_laneq<mode>"
+  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+        (unspec:VDQHS
+	  [(match_operand:VDQHS 1 "register_operand" "w")
+           (vec_select:<VEL>
+             (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
+             (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
+	 VQDMULH))]
+  "TARGET_SIMD"
+  "*
+   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+   return \"sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]\";"
+  [(set_attr "simd_type" "simd_sat_mul")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aarch64_sq<r>dmulh_lane<mode>"
+  [(set (match_operand:SD_HSI 0 "register_operand" "=w")
+        (unspec:SD_HSI
+	  [(match_operand:SD_HSI 1 "register_operand" "w")
+           (vec_select:<VEL>
+             (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
+             (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
+	 VQDMULH))]
+  "TARGET_SIMD"
+  "*
+   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+   return \"sq<r>dmulh\\t%<v>0, %<v>1, %2.<v>[%3]\";"
   [(set_attr "simd_type" "simd_sat_mul")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -2912,6 +3040,22 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+;; fcm(eq|ge|le|lt|gt)
+
+(define_insn "aarch64_cm<cmp><mode>"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w,w")
+	(unspec:<V_cmp_result>
+	  [(match_operand:VDQF 1 "register_operand" "w,w")
+	   (match_operand:VDQF 2 "aarch64_simd_reg_or_zero" "w,Dz")]
+	   VCMP_S))]
+  "TARGET_SIMD"
+  "@
+  fcm<cmp>\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>
+  fcm<cmp>\t%<v>0<Vmtype>, %<v>1<Vmtype>, 0"
+  [(set_attr "simd_type" "simd_fcmp")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
 ;; addp
 
 (define_insn "aarch64_addp<mode>"
@@ -3527,3 +3671,22 @@
   DONE;
 })
 
+;; Standard pattern name vec_init<mode>.
+
+(define_expand "vec_init<mode>"
+  [(match_operand:VALL 0 "register_operand" "")
+   (match_operand 1 "" "")]
+  "TARGET_SIMD"
+{
+  aarch64_expand_vector_init (operands[0], operands[1]);
+  DONE;
+})
+
+(define_insn "*aarch64_simd_ld1r<mode>"
+  [(set (match_operand:VALLDI 0 "register_operand" "=w")
+	(vec_duplicate:VALLDI
+	  (match_operand:<VEL> 1 "aarch64_simd_struct_operand" "Utv")))]
+  "TARGET_SIMD"
+  "ld1r\\t{%0.<Vtype>}, %1"
+  [(set_attr "simd_type" "simd_load1r")
+   (set_attr "simd_mode" "<MODE>")])

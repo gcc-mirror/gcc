@@ -46,6 +46,7 @@ static void SignalUnsafeCall(ThreadState *thr, uptr pc) {
   Context *ctx = CTX();
   StackTrace stack;
   stack.ObtainCurrent(thr, pc);
+  Lock l(&ctx->thread_mtx);
   ScopedReport rep(ReportTypeSignalUnsafe);
   if (!IsFiredSuppression(ctx, rep, stack)) {
     rep.AddStack(&stack);
@@ -58,8 +59,9 @@ void *user_alloc(ThreadState *thr, uptr pc, uptr sz, uptr align) {
   void *p = allocator()->Allocate(&thr->alloc_cache, sz, align);
   if (p == 0)
     return 0;
-  MBlock *b = (MBlock*)allocator()->GetMetaData(p);
+  MBlock *b = new(allocator()->GetMetaData(p)) MBlock;
   b->size = sz;
+  b->head = 0;
   b->alloc_tid = thr->unique_id;
   b->alloc_stack_id = CurrentStackId(thr, pc);
   if (CTX() && CTX()->initialized) {
@@ -90,6 +92,7 @@ void user_free(ThreadState *thr, uptr pc, void *p) {
   if (CTX() && CTX()->initialized && thr->in_rtl == 1) {
     MemoryRangeFreed(thr, pc, (uptr)p, b->size);
   }
+  b->~MBlock();
   allocator()->Deallocate(&thr->alloc_cache, p);
   SignalUnsafeCall(thr, pc);
 }
@@ -115,9 +118,11 @@ void *user_realloc(ThreadState *thr, uptr pc, void *p, uptr sz) {
 }
 
 MBlock *user_mblock(ThreadState *thr, void *p) {
-  // CHECK_GT(thr->in_rtl, 0);
   CHECK_NE(p, (void*)0);
-  return (MBlock*)allocator()->GetMetaData(p);
+  Allocator *a = allocator();
+  void *b = a->GetBlockBegin(p);
+  CHECK_NE(b, 0);
+  return (MBlock*)a->GetMetaData(b);
 }
 
 void invoke_malloc_hook(void *ptr, uptr size) {

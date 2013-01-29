@@ -1,6 +1,5 @@
 /* Definitions for branch prediction routines in the GNU compiler.
-   Copyright (C) 2001, 2003, 2004, 2007, 2008, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -69,12 +69,13 @@ package Atree is
    -- Size of Entities --
    ----------------------
 
-   --  Currently entities are composed of 5 sequentially allocated 32-byte
+   --  Currently entities are composed of 6 sequentially allocated 32-byte
    --  nodes, considered as a single record. The following definition gives
    --  the number of extension nodes.
 
-   Num_Extension_Nodes : Int := 4;
-   --  This value is increased by one if debug flag -gnatd.N is set
+   Num_Extension_Nodes : Int := 5;
+   --  This value is increased by one if debug flag -gnatd.N is set. This is
+   --  for testing performance impact of adding a new extension node.
 
    ----------------------------------------
    -- Definitions of Fields in Tree Node --
@@ -1166,6 +1167,9 @@ package Atree is
 
       function Node29 (N : Node_Id) return Node_Id;
       pragma Inline (Node29);
+
+      function Node30 (N : Node_Id) return Node_Id;
+      pragma Inline (Node30);
 
       function List1 (N : Node_Id) return List_Id;
       pragma Inline (List1);
@@ -2445,6 +2449,9 @@ package Atree is
 
       procedure Set_Node29 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node29);
+
+      procedure Set_Node30 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node30);
 
       procedure Set_List1 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1);

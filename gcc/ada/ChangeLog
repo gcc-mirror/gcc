@@ -1,3 +1,322 @@
+2013-01-29  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Fixed typos. Minor edits.
+
+2013-01-29  Bob Duff  <duff@adacore.com>
+
+	* a-convec.adb: Minor reformatting.
+
+2013-01-29  Pascal Obry  <obry@adacore.com>
+
+	* tempdir.adb, tempdir.ads (Use_Temp_Dir): Set wether to use the temp
+	directory.
+
+2013-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Preserve loop
+	identifier only if it comes from source.
+	(Expand_N_Loop_Statement): If the domain of iteration is an
+	enumeration type with a representation clause, remove from
+	visibility the loop identifier before rewriting the loop as a
+	block with a declaration for said identifier.
+	* sem_util.adb (Remove_Homonym): Handle properly the default case.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb: Minor comment spelling fix.
+
+2013-01-29  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb (Process_Expression_Variable_Decl): Prepend
+	Project_Path to current environment.
+
+2013-01-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual): Output freeze nodes for
+	itypes even if Dump_Freeze_Null is not set.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+	* s-rident.ads: Minor comment fixes.
+
+2013-01-29  Pascal Obry  <obry@adacore.com>
+
+	* prj-env.ads, prj-env.adb (Add_Directories): Add parameter to
+	control if the path is prepended or appended.
+
+2013-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): An expression
+	function declaration is not a subprogram declaration, and thus
+	cannot appear in a protected definition.
+
+2013-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Insert_Actions): When new
+	actions come from the expression of the expression with actions,
+	then they must be added to the list of existing actions.
+
+2013-01-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration) <Private_Kind>: For
+	the subtype of a constrained private type with discriminants
+	that has got a full view, show that the completion is a clone
+	of the full view.
+
+2013-01-29  Javier Miranda  <miranda@adacore.com>
+
+	* errout.ads, errout.adb (Get_Ignore_Errors): New subprogram.
+	* opt.ads (Warn_On_Overlap): Update documentation.
+	* sem_aggr.adb (Resolve_Aggregate, Resolve_Extension_Aggregate):
+	Check function writable actuals.
+	* sem_ch3.adb (Build_Derived_Record_Type,
+	Record_Type_Declaration): Check function writable actuals.
+	* sem_ch4.adb (Analyze_Range): Check function writable actuals.
+	* sem_ch5.adb (Analyze_Assignment): Remove code of the initial
+	implementation of AI05-0144.
+	* sem_ch6.adb (Analyze_Function_Return,
+	(Analyze_Procedure_Call.Analyze_Call_And_Resolve): Remove code
+	of the initial implementation of AI05-0144.
+	* sem_res.adb (Resolve): Remove code of the initial implementation.
+	(Resolve_Actuals): Call Check_Function_Writable_Actuals and remove call
+	of the initial implementation.
+	(Resolve_Arithmetic_Op, Resolve_Logical_Op,
+	Resolve_Membership_Op): Check function writable actuals.
+	* sem_util.ad[sb] (Actuals_In_Call): Removed
+	(Check_Order_Dependence): Removed (Save_Actual): Removed
+	(Check_Function_Writable_Actuals): New subprogram.
+	* usage.adb (Usage): Update documentation.
+	* warnsw.adb (Set_Warning_Switch): Enable warn_on_overlap when
+	setting all warnings.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-calend-vms.adb: Minor comment fix.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-utl.adb, gnatlink.adb: Avoid reference to ASCII.Back_Slash
+	because of casing issues.
+	* sem_util.ads: Minor comment fix.
+	* style.adb (Check_Identifier): Set proper casing for entities
+	in ASCII.
+	* styleg.adb: Minor comment improvement.
+	* stylesw.ads (Style_Check_Standard): Fix bad comments.
+
+2013-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb: Add the grammar for pragmas Abstract_State and Global.
+	(Analyze_Pragma): Push the scope of the related subprogram and install
+	its formals once before starting the analysis of the [moded] global
+	list.
+
+2013-01-29  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb (Process_Expression_Variable_Decl): Always handle
+	relative paths in Project_Path as relative to the aggregate
+	project location. Note that this was what was documented.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: For "gnat stub -P ...", do not check the naming
+	scheme for Ada, when Ada is not a language for the project.
+
+2013-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Inherit
+	Is_Generic_Actual_Type flag in a nested instance.
+	* sem_ch12.adb (Restore_Private_Views): Preserve
+	Is_Generic_Actual_Type flag if actual is a Generic_Actual_Type
+	of an enclosing instance.
+	* sem_util.adb (Corresponding_Generic_Type): Handle generic actual
+	which is an actual of an enclosing instance.
+	* sem_type.adb (Real_Actual): If a generic_actual_type is the
+	formal of an enclosing generic and thus renames the corresponding
+	actual, use the actual of the enclosing instance to resolve
+	spurious ambiguities in instantiations when two formals are
+	instantiated with the same actual.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document all Ada 2005 and Ada 2012 pragmas as
+	being available as implementation-defined pragmas in earlier
+	versions of Ada.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Delete): On VMS, delete all versions of the file.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch6.adb (No_Constraint_Maybe_Expr_Func): New procedure.
+	* par-util.adb (No_Constraint): Undo special handling, moved
+	to par-ch6.adb.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads: Aspect Warnings is implementation defined Add
+	some other missing entries to impl-defined list Mark Warnings
+	as GNAT pragma in main list.
+	* sem_ch8.adb: Process aspects for all cases of renaming
+	declarations.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Call): Set In_Assertion flag.
+	* sem_elab.adb (Check_Internal_Call_Continue): Do not issue
+	warnings about possible elaboration error if call is within
+	an assertion.
+	* sinfo.ads, sinfo.adb (In_Assertion): New flag in N_Function_Call node.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-calend-vms.adb, g-eacodu-vms.adb, g-trasym-vms-alpha.adb,
+	* s-auxdec-vms-ia64.adb, s-mastop-vms.adb, s-osprim-vms.adb,
+	s-tasdeb-vms.adb: Replace pragma Interface by pragma Import.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads (Ignore_Style_Checks_Pragmas): New flag.
+	* par-prag.adb (Par, case Style_Checks): Recognize
+	Ignore_Style_Checks_Pragmas.
+	* sem_prag.adb (Analyze_Pragma, case Style_Checks): Recognize
+	Ignore_Style_Checks_Pragmas.
+	* switch-c.adb: Recognize -gnateY switch.
+	* usage.adb: Add documentation for "-gnateY".
+	* vms_data.ads: Add IGNORE_STYLE_CHECKS_PRAGMAS (-gnateY).
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Clean_Executables): Add Sid component when calling
+	Queue.Insert.
+	* make.adb: When inserting in the Queue, add the Source_Id
+	(Sid) when it is known (Start_Compile_If_Possible): When the
+	Source_Id is known (Sid), get the path name of the ALI file
+	(Full_Lib_File) from it, to avoid finding old ALI files in other
+	object directories.
+	* makeutl.ads (Source_Info): New Source_Id component Sid in
+	Format_Gnatmake variant.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document -gnateY.
+
+2013-01-29  Doug Rupp  <rupp@adacore.com>
+
+	* s-osinte-vms.ads, s-taprop-vms.adb, system-vms_64.ads,
+	system-vms-ia64.ads: Replace pragma Interface by pragma Import.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads, atree.adb (Node30): New function.
+	(Set_Node30): New procedure.
+	(Num_Extension_Nodes): Change to 5 (activate new fields/flags).
+	* atree.h: Add macros for Field30 and Node30.
+	* einfo.ads, einfo.adb: Move some fields to avoid duplexing.
+	* treepr.adb (Print_Entity_Information): Print fields 30-35.
+
+2013-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Interface): Consider to
+	be a violation of No_Obsolescent_Features even in Ada 95. Also
+	generates a warning in -gnatwj mode.
+	(Analyze_Pragma, case Interface_Name): Generates a warning in -gnatwj
+	mode.
+	* gnat_ugn.texi: Additional documentation on -gnatwj and pragma
+	Interface[_Name].
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* snames.ads-tmpl: Add new standard name Trailing_Switches.
+
+2013-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Controlling_Type): If a designated type T
+	of an anonymous access type is a limited view of a tagged type,
+	it can be a controlling type only if the subprogram is in the
+	same scope as T.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Use the project where the config pragmas file is
+	declared to get its path.
+
+2013-01-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New attribute Linker'Trailing_Switches.
+
+2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Expression_With_Actions>: Do
+	not translate the Etype of the node before translating the Actions.
+
+2013-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Pragma_to_gnu) <Name_Space>: Use optimize_size
+	instead of optimize and adjust warning message.
+	(Compilation_Unit_to_gnu): Process pragmas preceding the unit.
+
+2013-01-22  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/gigi.h (ADT_unhandled_except_decl,
+	ADT_unhandled_others_decl): New.
+	(unhandled_others_decl, unhandled_except_decl): Define.
+	* gcc-interface/trans.c: Include common/common-target.h.
+	(gigi): Initialize them.
+	(Subprogram_Body_to_gnu): On SEH targets, wrap the body of the main
+	function in a try/catch clause.
+
+2013-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (COMMON_ADAFLAGS): Remove -gnata.
+	(CHECKING_ADAFLAGS): New.
+	(ALL_ADAFLAGS): Include CHECKING_ADAFLAGS.
+
+2013-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/config-lang.in (boot_language_boot_flags): Delete.
+	* gcc-interface/Make-lang.in (BOOT_ADAFLAGS): Likewise.
+
+2013-01-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Adjust
+	comment about type extension with discriminants.
+	<E_Record_Subtype>: Remove useless test and reorder conditions.
+	(elaborate_entity) <E_Record_Subtype>: Likewise.
+
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR ada/864
+	* gcc-interface/Make-lang.in (ada.install-common): Always apply
+	program_transform_name.
+
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Current_Year): Bump to 2013.
+
+2013-01-06  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Emit a specialized
+	diagnostic for component size mismatch wrt volatile requirements.
+	Add a gcc_unreachable() at the end of the checks for size.  Split
+	the check on volatile for positions into one check on atomic and
+	a subsequent one on volatile.
+
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (elaborate_entity) <E_Record_Type>: Delete.
+
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <discrete_type>: Do not
+	pack the field of the record type made for a misaligned type.
+
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value) <COMPONENT_REF>: Be prepared
+	for discriminants inherited from parent record types.
+
 2013-01-04  Robert Dewar  <dewar@adacore.com>
 
 	* warnsw.adb: Minor fixes to -gnatw.d handling.
@@ -7,7 +326,7 @@
 	* einfo.adb, atree.adb: Enlarge entities to make 63 more flags, 6 more
 	fields.
 
-2013-01-04  Joel Brobecker  <brobecker@adacore.com brobecker>
+2013-01-04  Joel Brobecker  <brobecker@adacore.com>
 
 	* gnat_ugn.texi: Fix typo.
 

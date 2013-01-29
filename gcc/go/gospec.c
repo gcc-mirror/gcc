@@ -1,5 +1,5 @@
 /* gospec.c -- Specific flags and argument handling of the gcc Go front end.
-   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2009-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -227,7 +227,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 
   /* Make sure to have room for the trailing NULL argument.  */
-  num_args = argc + need_math + shared_libgcc + (library > 0) * 5 + 5;
+  num_args = argc + need_math + shared_libgcc + (library > 0) * 5 + 10;
   new_decoded_options = XNEWVEC (struct cl_decoded_option, num_args);
 
   i = 0;
@@ -380,6 +380,20 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if (shared_libgcc && !static_link)
     generate_option (OPT_shared_libgcc, NULL, 1, CL_DRIVER,
 		     &new_decoded_options[j++]);
+
+#ifdef TARGET_CAN_SPLIT_STACK
+  /* libgcc wraps pthread_create to support split stack, however, due to
+     relative ordering of -lpthread and -lgcc, we can't just mark
+     __real_pthread_create in libgcc as non-weak.  But we need to link in
+     pthread_create from pthread if we are statically linking, so we work-
+     around by passing -u pthread_create to to the linker. */
+  if (static_link)
+    {
+      generate_option (OPT_Wl_, "-u,pthread_create", 1, CL_DRIVER,
+		       &new_decoded_options[j]);
+      j++;
+    }
+#endif
 
   *in_decoded_options_count = j;
   *in_decoded_options = new_decoded_options;

@@ -1,6 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012 Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -901,6 +900,20 @@ c_common_post_options (const char **pfilename)
     }
   else if (warn_narrowing == -1)
     warn_narrowing = 0;
+
+  if (flag_extern_tls_init)
+    {
+#if !defined (ASM_OUTPUT_DEF) || !SUPPORTS_WEAK
+      /* Lazy TLS initialization for a variable in another TU requires
+	 alias and weak reference support. */
+      if (flag_extern_tls_init > 0)
+	sorry ("external TLS initialization functions not supported "
+	       "on this target");
+      flag_extern_tls_init = 0;
+#else
+      flag_extern_tls_init = 1;
+#endif
+    }
 
   if (flag_preprocess_only)
     {

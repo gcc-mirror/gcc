@@ -1,5 +1,5 @@
 /* Definitions for <stdint.h> types on systems using newlib.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
    - For the same reason, [u]int_fast8_t is defined as 8-bit type.
 
 */
-   
+
 #define SIG_ATOMIC_TYPE "char"
 
 #define INT8_TYPE "signed char"

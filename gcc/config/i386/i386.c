@@ -1,7 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
-   Free Software Foundation, Inc.
+   Copyright (C) 1988-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1732,7 +1730,8 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_P4_NOCONA (m_PENT4 | m_NOCONA)
 #define m_CORE2 (1<<PROCESSOR_CORE2)
 #define m_COREI7 (1<<PROCESSOR_COREI7)
-#define m_CORE2I7 (m_CORE2 | m_COREI7)
+#define m_HASWELL (1<<PROCESSOR_HASWELL)
+#define m_CORE_ALL (m_CORE2 | m_COREI7  | m_HASWELL)
 #define m_ATOM (1<<PROCESSOR_ATOM)
 
 #define m_GEODE (1<<PROCESSOR_GEODE)
@@ -1745,10 +1744,10 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BDVER1 (1<<PROCESSOR_BDVER1)
 #define m_BDVER2 (1<<PROCESSOR_BDVER2)
 #define m_BDVER3 (1<<PROCESSOR_BDVER3)
-#define m_BDVER	(m_BDVER1 | m_BDVER2 | m_BDVER3)
-#define m_BTVER (m_BTVER1 | m_BTVER2)
 #define m_BTVER1 (1<<PROCESSOR_BTVER1)
 #define m_BTVER2 (1<<PROCESSOR_BTVER2)
+#define m_BDVER	(m_BDVER1 | m_BDVER2 | m_BDVER3)
+#define m_BTVER (m_BTVER1 | m_BTVER2)
 #define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER)
 
 #define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
@@ -1768,16 +1767,16 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      negatively, so enabling for Generic64 seems like good code size
      tradeoff.  We can't enable it for 32bit generic because it does not
      work well with PPro base chips.  */
-  m_386 | m_CORE2I7 | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC64,
+  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC64,
 
   /* X86_TUNE_PUSH_MEMORY */
-  m_386 | m_P4_NOCONA | m_CORE2I7 | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
+  m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_ZERO_EXTEND_WITH_AND */
   m_486 | m_PENT,
 
   /* X86_TUNE_UNROLL_STRLEN */
-  m_486 | m_PENT | m_PPRO | m_ATOM | m_CORE2I7 | m_K6 | m_AMD_MULTIPLE | m_GENERIC,
+  m_486 | m_PENT | m_PPRO | m_ATOM | m_CORE_ALL | m_K6 | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
      on simulation result. But after P4 was made, no performance benefit
@@ -1789,11 +1788,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   ~m_386,
 
   /* X86_TUNE_USE_SAHF */
-  m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC,
 
   /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
      partial dependencies.  */
-  m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC,
 
   /* X86_TUNE_PARTIAL_REG_STALL: We probably ought to watch for partial
      register stalls on Generic32 compilation setting as well.  However
@@ -1806,17 +1805,17 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO,
 
   /* X86_TUNE_PARTIAL_FLAG_REG_STALL */
-  m_CORE2I7 | m_GENERIC,
+  m_CORE_ALL | m_GENERIC,
 
   /* X86_TUNE_LCP_STALL: Avoid an expensive length-changing prefix stall
    * on 16-bit immediate moves into memory on Core2 and Corei7.  */
-  m_CORE2I7 | m_GENERIC,
+  m_CORE_ALL | m_GENERIC,
 
   /* X86_TUNE_USE_HIMODE_FIOP */
   m_386 | m_486 | m_K6_GEODE,
 
   /* X86_TUNE_USE_SIMODE_FIOP */
-  ~(m_PENT | m_PPRO | m_CORE2I7 | m_ATOM | m_AMD_MULTIPLE | m_GENERIC),
+  ~(m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC),
 
   /* X86_TUNE_USE_MOV0 */
   m_K6,
@@ -1837,7 +1836,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   ~(m_PENT | m_PPRO),
 
   /* X86_TUNE_PROMOTE_QIMODE */
-  m_386 | m_486 | m_PENT | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
+  m_386 | m_486 | m_PENT | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_FAST_PREFIX */
   ~(m_386 | m_486 | m_PENT),
@@ -1878,10 +1877,10 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
      for DFmode copies */
-  ~(m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_GEODE | m_AMD_MULTIPLE | m_ATOM | m_GENERIC),
+  ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_GEODE | m_AMD_MULTIPLE | m_ATOM | m_GENERIC),
 
   /* X86_TUNE_PARTIAL_REG_DEPENDENCY */
-  m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: In the Generic model we have a
      conflict here in between PPro/Pentium4 based chips that thread 128bit
@@ -1892,7 +1891,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      shows that disabling this option on P4 brings over 20% SPECfp regression,
      while enabling it on K8 brings roughly 2.4% regression that can be partly
      masked by careful scheduling of moves.  */
-  m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM  | m_AMDFAM10 | m_BDVER | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM  | m_AMDFAM10 | m_BDVER | m_GENERIC,
 
   /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL */
   m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER,
@@ -1916,7 +1915,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO | m_P4_NOCONA,
 
   /* X86_TUNE_MEMORY_MISMATCH_STALL */
-  m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_PROLOGUE_USING_MOVE */
   m_PPRO | m_ATHLON_K8,
@@ -1938,28 +1937,28 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
      than 4 branch instructions in the 16 byte window.  */
-  m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_SCHEDULE */
-  m_PENT | m_PPRO | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
+  m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_USE_BT */
-  m_CORE2I7 | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_USE_INCDEC */
-  ~(m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_GENERIC),
+  ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_GENERIC),
 
   /* X86_TUNE_PAD_RETURNS */
-  m_CORE2I7 | m_AMD_MULTIPLE | m_GENERIC,
+  m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_PAD_SHORT_FUNCTION: Pad short funtion.  */
   m_ATOM,
 
   /* X86_TUNE_EXT_80387_CONSTANTS */
-  m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
 
   /* X86_TUNE_AVOID_VECTOR_DECODE */
-  m_CORE2I7 | m_K8 | m_GENERIC64,
+  m_CORE_ALL | m_K8 | m_GENERIC64,
 
   /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
      and SImode multiply, but 386 and 486 do HImode multiply faster.  */
@@ -1967,11 +1966,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
      vector path on AMD machines.  */
-  m_CORE2I7 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
+  m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
 
   /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
      machines.  */
-  m_CORE2I7 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
+  m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
 
   /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
      than a MOV.  */
@@ -1988,7 +1987,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_USE_VECTOR_FP_CONVERTS: Prefer vector packed SSE conversion
      from FP to FP. */
-  m_CORE2I7 | m_AMDFAM10 | m_GENERIC,
+  m_CORE_ALL | m_AMDFAM10 | m_GENERIC,
 
   /* X86_TUNE_USE_VECTOR_CONVERTS: Prefer vector packed SSE conversion
      from integer to FP. */
@@ -2014,7 +2013,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
      the auto-vectorizer.  */
-  m_BDVER,
+  m_BDVER | m_BTVER2,
 
   /* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
      during reassociation of integer computation.  */
@@ -2026,7 +2025,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
      regs instead of memory.  */
-  m_COREI7 | m_CORE2I7,
+  m_CORE_ALL,
 
   /* X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE: Try to avoid memory operands for
      a conditional move.  */
@@ -2056,10 +2055,10 @@ static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
 };
 
 static const unsigned int x86_accumulate_outgoing_args
-  = m_PPRO | m_P4_NOCONA | m_ATOM | m_CORE2I7 | m_AMD_MULTIPLE | m_GENERIC;
+  = m_PPRO | m_P4_NOCONA | m_ATOM | m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC;
 
 static const unsigned int x86_arch_always_fancy_math_387
-  = m_PENT | m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_AMD_MULTIPLE | m_GENERIC;
+  = m_PENT | m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC;
 
 static const unsigned int x86_avx256_split_unaligned_load
   = m_COREI7 | m_GENERIC;
@@ -2397,12 +2396,6 @@ static enum calling_abi ix86_function_abi (const_tree);
 #define SUBTARGET32_DEFAULT_CPU "i386"
 #endif
 
-/* The svr4 ABI for the i386 says that records and unions are returned
-   in memory.  */
-#ifndef DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 1
-#endif
-
 /* Whether -mtune= or -march= were specified */
 static int ix86_tune_defaulted;
 static int ix86_arch_specified;
@@ -2440,6 +2433,8 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&core_cost, 16, 10, 16, 10, 16},
   /* Core i7  */
   {&core_cost, 16, 10, 16, 10, 16},
+  /* Core avx2  */
+  {&core_cost, 16, 10, 16, 10, 16},
   {&generic32_cost, 16, 7, 16, 7, 16},
   {&generic64_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
@@ -2467,6 +2462,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "nocona",
   "core2",
   "corei7",
+  "core-avx2",
   "atom",
   "geode",
   "k6",
@@ -2918,7 +2914,7 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
 	| PTA_RDRND | PTA_F16C | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
-      {"core-avx2", PROCESSOR_COREI7, CPU_COREI7,
+      {"core-avx2", PROCESSOR_HASWELL, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX | PTA_AVX2
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
@@ -2994,7 +2990,7 @@ ix86_option_override_internal (bool main_args_p)
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
 	| PTA_FXSR | PTA_XSAVE},
-      {"btver2", PROCESSOR_BTVER2, CPU_GENERIC64,
+      {"btver2", PROCESSOR_BTVER2, CPU_BTVER2,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_SSE4_1
 	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX
@@ -3239,10 +3235,12 @@ ix86_option_override_internal (bool main_args_p)
 	 DLL, and is essentially just as efficient as direct addressing.  */
       if (TARGET_64BIT && DEFAULT_ABI == MS_ABI)
 	ix86_cmodel = CM_SMALL_PIC, flag_pic = 1;
+      else if (TARGET_64BIT && TARGET_RDOS)
+	ix86_cmodel = CM_MEDIUM_PIC, flag_pic = 1;
       else if (TARGET_64BIT)
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
       else
-        ix86_cmodel = CM_32;
+	ix86_cmodel = CM_32;
     }
   if (TARGET_MACHO && ix86_asm_dialect == ASM_INTEL)
     {
@@ -13247,8 +13245,7 @@ ix86_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	  rtx val  = force_operand (XEXP (x, 1), temp);
 	  if (val != temp)
 	    {
-	      if (GET_MODE (val) != Pmode)
-		val = convert_to_mode (Pmode, val, 1);
+	      val = convert_to_mode (Pmode, val, 1);
 	      emit_move_insn (temp, val);
 	    }
 
@@ -13262,8 +13259,7 @@ ix86_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	  rtx val  = force_operand (XEXP (x, 0), temp);
 	  if (val != temp)
 	    {
-	      if (GET_MODE (val) != Pmode)
-		val = convert_to_mode (Pmode, val, 1);
+	      val = convert_to_mode (Pmode, val, 1);
 	      emit_move_insn (temp, val);
 	    }
 
@@ -15931,8 +15927,7 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	  op1 = force_operand (op1, op0);
 	  if (op1 == op0)
 	    return;
-	  if (GET_MODE (op1) != mode)
-	    op1 = convert_to_mode (mode, op1, 1);
+	  op1 = convert_to_mode (mode, op1, 1);
 	}
       else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
 	       && SYMBOL_REF_DLLIMPORT_P (op1))
@@ -16013,8 +16008,7 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	      op1 = legitimize_pic_address (op1, reg);
 	      if (op0 == op1)
 		return;
-	      if (GET_MODE (op1) != mode)
-		op1 = convert_to_mode (mode, op1, 1);
+	      op1 = convert_to_mode (mode, op1, 1);
 	    }
 	}
     }
@@ -21650,9 +21644,7 @@ ix86_adjust_counter (rtx countreg, HOST_WIDE_INT value)
 rtx
 ix86_zero_extend_to_Pmode (rtx exp)
 {
-  if (GET_MODE (exp) != Pmode)
-    exp = convert_to_mode (Pmode, exp, 1);
-  return force_reg (Pmode, exp);
+  return force_reg (Pmode, convert_to_mode (Pmode, exp, 1));
 }
 
 /* Divide COUNTREG by SCALE.  */
@@ -23624,9 +23616,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	   ? !sibcall_insn_operand (XEXP (fnaddr, 0), word_mode)
 	   : !call_insn_operand (XEXP (fnaddr, 0), word_mode))
     {
-      fnaddr = XEXP (fnaddr, 0);
-      if (GET_MODE (fnaddr) != word_mode)
-	fnaddr = convert_to_mode (word_mode, fnaddr, 1);
+      fnaddr = convert_to_mode (word_mode, XEXP (fnaddr, 0), 1);
       fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));
     }
 
@@ -24064,6 +24054,7 @@ ix86_issue_rate (void)
     case PROCESSOR_PENTIUM4:
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
+    case PROCESSOR_HASWELL:
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
@@ -24320,6 +24311,7 @@ ia32_multipass_dfa_lookahead (void)
 
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
+    case PROCESSOR_HASWELL:
     case PROCESSOR_ATOM:
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
 	 as many instructions can be executed on a cycle, i.e.,
@@ -24864,6 +24856,7 @@ ix86_sched_init_global (FILE *dump ATTRIBUTE_UNUSED,
     {
     case PROCESSOR_CORE2:
     case PROCESSOR_COREI7:
+    case PROCESSOR_HASWELL:
       /* Do not perform multipass scheduling for pre-reload schedule
          to save compile time.  */
       if (reload_completed)
@@ -31276,9 +31269,8 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       gcc_assert (target == 0);
       if (memory)
 	{
-	  if (GET_MODE (op) != Pmode)
-	    op = convert_to_mode (Pmode, op, 1);
-	  target = gen_rtx_MEM (tmode, force_reg (Pmode, op));
+	  op = force_reg (Pmode, convert_to_mode (Pmode, op, 1));
+	  target = gen_rtx_MEM (tmode, op);
 	}
       else
 	target = force_reg (tmode, op);
@@ -31322,9 +31314,8 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	  if (i == memory)
 	    {
 	      /* This must be the memory operand.  */
-	      if (GET_MODE (op) != Pmode)
-		op = convert_to_mode (Pmode, op, 1);
-	      op = gen_rtx_MEM (mode, force_reg (Pmode, op));
+	      op = force_reg (Pmode, convert_to_mode (Pmode, op, 1));
+	      op = gen_rtx_MEM (mode, op);
 	      gcc_assert (GET_MODE (op) == mode
 			  || GET_MODE (op) == VOIDmode);
 	    }
@@ -31572,9 +31563,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
 
-      if (GET_MODE (op0) != Pmode)
-	op0 = convert_to_mode (Pmode, op0, 1);
-      op0 = gen_rtx_MEM (mode1, force_reg (Pmode, op0));
+      op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
+      op0 = gen_rtx_MEM (mode1, op0);
 
       if (!insn_data[icode].operand[0].predicate (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
@@ -31605,11 +31595,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	op0 = expand_normal (arg0);
 	icode = CODE_FOR_sse2_clflush;
 	if (!insn_data[icode].operand[0].predicate (op0, Pmode))
-	  {
-	    if (GET_MODE (op0) != Pmode)
-	      op0 = convert_to_mode (Pmode, op0, 1);
-	    op0 = force_reg (Pmode, op0);
-	  }
+	  op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
 
 	emit_insn (gen_sse2_clflush (op0));
 	return 0;
@@ -31622,11 +31608,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
       if (!REG_P (op0))
-	{
-	  if (GET_MODE (op0) != Pmode)
-	    op0 = convert_to_mode (Pmode, op0, 1);
-	  op0 = force_reg (Pmode, op0);
-	}
+	op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
       if (!REG_P (op1))
 	op1 = copy_to_mode_reg (SImode, op1);
       if (!REG_P (op2))
@@ -31863,11 +31845,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       op0 = expand_normal (arg0);
       icode = CODE_FOR_lwp_llwpcb;
       if (!insn_data[icode].operand[0].predicate (op0, Pmode))
-	{
-	  if (GET_MODE (op0) != Pmode)
-	    op0 = convert_to_mode (Pmode, op0, 1);
-	  op0 = force_reg (Pmode, op0);
-	}
+	op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
       emit_insn (gen_lwp_llwpcb (op0));
       return 0;
 
@@ -32013,9 +31991,7 @@ addcarryx:
 
       /* Generate CF from input operand.  */
       op1 = expand_normal (arg0);
-      if (GET_MODE (op1) != QImode)
-	op1 = convert_to_mode (QImode, op1, 1);
-      op1 = copy_to_mode_reg (QImode, op1);
+      op1 = copy_to_mode_reg (QImode, convert_to_mode (QImode, op1, 1));
       emit_insn (gen_addqi3_cc (op0, op1, constm1_rtx));
 
       /* Gen ADCX instruction to compute X+Y+CF.  */
@@ -32165,9 +32141,7 @@ addcarryx:
       /* Force memory operand only with base register here.  But we
 	 don't want to do it on memory operand for other builtin
 	 functions.  */
-      if (GET_MODE (op1) != Pmode)
-	op1 = convert_to_mode (Pmode, op1, 1);
-      op1 = force_reg (Pmode, op1);
+      op1 = force_reg (Pmode, convert_to_mode (Pmode, op1, 1));
 
       if (!insn_data[icode].operand[1].predicate (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
@@ -42117,7 +42091,7 @@ static unsigned HOST_WIDE_INT
 ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 {
   unsigned HOST_WIDE_INT model = val & MEMMODEL_MASK;
-  unsigned HOST_WIDE_INT strong;
+  bool strong;
 
   if (val & ~(unsigned HOST_WIDE_INT)(IX86_HLE_ACQUIRE|IX86_HLE_RELEASE
 				      |MEMMODEL_MASK)

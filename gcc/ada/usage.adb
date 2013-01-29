@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -257,6 +257,11 @@ begin
    Write_Switch_Char ("eV");
    Write_Line ("Validity checks on subprogram parameters");
 
+   --  Line for -gnateY switch
+
+   Write_Switch_Char ("eY");
+   Write_Line ("Ignore all Style_Checks pragmas in source");
+
    --  Line for -gnatez switch
 
    Write_Switch_Char ("ez");
@@ -497,8 +502,8 @@ begin
    Write_Line ("        .H*  turn off warnings for holes in records");
    Write_Line ("        i*+  turn on warnings for implementation unit");
    Write_Line ("        I    turn off warnings for implementation unit");
-   Write_Line ("        .i   turn on warnings for overlapping actuals");
-   Write_Line ("        .I*  turn off warnings for overlapping actuals");
+   Write_Line ("        .i*+ turn on warnings for overlapping actuals");
+   Write_Line ("        .I   turn off warnings for overlapping actuals");
    Write_Line ("        j+   turn on warnings for obsolescent " &
                                                   "(annex J) feature");
    Write_Line ("        J*   turn off warnings for obsolescent " &

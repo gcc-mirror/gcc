@@ -1,5 +1,5 @@
 /* dwarf.c -- Get file/line information from DWARF for backtraces.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2013 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -283,8 +283,12 @@ struct unit
   int addrsize;
   /* Offset into line number information.  */
   off_t lineoff;
+  /* Primary source file.  */
+  const char *filename;
   /* Compilation command working directory.  */
   const char *comp_dir;
+  /* Absolute file name, only set if needed.  */
+  const char *abs_filename;
   /* The abbreviations for this unit.  */
   struct abbrevs abbrevs;
 
@@ -1288,6 +1292,7 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
       int have_ranges;
       uint64_t lineoff;
       int have_lineoff;
+      const char *filename;
       const char *comp_dir;
 
       if (info.reported_underflow)
@@ -1346,6 +1351,7 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
       have_ranges = 0;
       lineoff = 0;
       have_lineoff = 0;
+      filename = NULL;
       comp_dir = NULL;
       for (i = 0; i < abbrev->num_attrs; ++i)
 	{
@@ -1394,6 +1400,10 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 		  have_lineoff = 1;
 		}
 	      break;
+	    case DW_AT_name:
+	      if (val.encoding == ATTR_VAL_STRING)
+		filename = val.u.string;
+	      break;
 	    case DW_AT_comp_dir:
 	      if (val.encoding == ATTR_VAL_STRING)
 		comp_dir = val.u.string;
@@ -1421,7 +1431,9 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 	  u->version = version;
 	  u->is_dwarf64 = is_dwarf64;
 	  u->addrsize = addrsize;
+	  u->filename = filename;
 	  u->comp_dir = comp_dir;
+	  u->abs_filename = NULL;
 	  u->lineoff = lineoff;
 	  u->abbrevs = abbrevs;
 	  memset (&abbrevs, 0, sizeof abbrevs);
@@ -1643,7 +1655,8 @@ read_line_header (struct backtrace_state *state, struct unit *u,
 		    strnlen ((const char *) hdr_buf.buf, hdr_buf.left) + 1))
 	return 0;
       dir_index = read_uleb128 (&hdr_buf);
-      if (IS_ABSOLUTE_PATH (filename))
+      if (IS_ABSOLUTE_PATH (filename)
+	  || (dir_index == 0 && u->comp_dir == NULL))
 	hdr->filenames[i] = filename;
       else
 	{
@@ -2701,8 +2714,45 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
 				sizeof (struct line), line_search);
   if (ln == NULL)
     {
-      error_callback (data, "inconsistent DWARF line number info", 0);
-      return 0;
+      /* The PC is between the low_pc and high_pc attributes of the
+	 compilation unit, but no entry in the line table covers it.
+	 This implies that the start of the compilation unit has no
+	 line number information.  */
+
+      if (entry->u->abs_filename == NULL)
+	{
+	  const char *filename;
+
+	  filename = entry->u->filename;
+	  if (filename != NULL
+	      && !IS_ABSOLUTE_PATH (filename)
+	      && entry->u->comp_dir != NULL)
+	    {
+	      size_t filename_len;
+	      const char *dir;
+	      size_t dir_len;
+	      char *s;
+
+	      filename_len = strlen (filename);
+	      dir = entry->u->comp_dir;
+	      dir_len = strlen (dir);
+	      s = (char *) backtrace_alloc (state, dir_len + filename_len + 2,
+					    error_callback, data);
+	      if (s == NULL)
+		{
+		  *found = 0;
+		  return 0;
+		}
+	      memcpy (s, dir, dir_len);
+	      /* FIXME: Should use backslash if DOS file system.  */
+	      s[dir_len] = '/';
+	      memcpy (s + dir_len + 1, filename, filename_len + 1);
+	      filename = s;
+	    }
+	  entry->u->abs_filename = filename;
+	}
+
+      return callback (data, pc, entry->u->abs_filename, 0, NULL);
     }
 
   /* Search for function name within this unit.  */

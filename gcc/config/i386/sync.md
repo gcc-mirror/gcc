@@ -1,6 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-;; Free Software Foundation, Inc.
+;; Copyright (C) 2005-2013 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -102,9 +101,11 @@
   [(match_operand:SI 0 "const_int_operand")]		;; model
   ""
 {
+  enum memmodel model = (enum memmodel) (INTVAL (operands[0]) & MEMMODEL_MASK);
+
   /* Unless this is a SEQ_CST fence, the i386 memory model is strong
      enough not to require barriers of any kind.  */
-  if (INTVAL (operands[0]) == MEMMODEL_SEQ_CST)
+  if (model == MEMMODEL_SEQ_CST)
     {
       rtx (*mfence_insn)(rtx);
       rtx mem;
@@ -201,7 +202,7 @@
 		       UNSPEC_MOVA))]
   ""
 {
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = (enum memmodel) (INTVAL (operands[2]) & MEMMODEL_MASK);
 
   if (<MODE>mode == DImode && !TARGET_64BIT)
     {
@@ -223,14 +224,23 @@
 	  DONE;
 	}
 
-      /* Otherwise use a normal store.  */
-      emit_move_insn (operands[0], operands[1]);
+      /* Otherwise use a store.  */
+      emit_insn (gen_atomic_store<mode>_1 (operands[0], operands[1],
+					   operands[2]));
     }
   /* ... followed by an MFENCE, if required.  */
   if (model == MEMMODEL_SEQ_CST)
     emit_insn (gen_mem_thread_fence (operands[2]));
   DONE;
 })
+
+(define_insn "atomic_store<mode>_1"
+  [(set (match_operand:SWI 0 "memory_operand" "=m")
+	(unspec:SWI [(match_operand:SWI 1 "<nonmemory_operand>" "<r><i>")
+		     (match_operand:SI 2 "const_int_operand")]
+		    UNSPEC_MOVA))]
+  ""
+  "%K2mov{<imodesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn_and_split "atomic_storedi_fpu"
   [(set (match_operand:DI 0 "memory_operand" "=m,m,m")

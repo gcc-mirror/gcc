@@ -23,6 +23,6 @@ void __frame_state_for1 (volatile char *state_in)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 2 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 2" 2 "fre1" } } */
 /* { dg-final { scan-tree-dump-times "Insertions: 1" 2 "fre1" } } */
 /* { dg-final { cleanup-tree-dump "fre1" } } */

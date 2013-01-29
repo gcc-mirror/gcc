@@ -1,5 +1,4 @@
-# Copyright (C) 1997, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
-# Free Software Foundation, Inc.
+# Copyright (C) 1997-2013 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -157,7 +156,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/section-anchors-*.\[cS\]]]  
 
 # alignment-sensitive -fsection-anchors tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-fsection-anchors" "-fdump-ipa-increase_alignment"
+lappend DEFAULT_VECTCFLAGS "-fsection-anchors" \
+	"-fdump-ipa-increase_alignment-details"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/aligned-section-anchors-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 

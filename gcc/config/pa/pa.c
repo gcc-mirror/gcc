@@ -1,7 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1992-2013 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -2190,8 +2188,12 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		  emit_insn (gen_rtx_SET (VOIDmode, temp,
 					  gen_rtx_HIGH (mode, operand1)));
 		  emit_move_insn (temp, gen_rtx_LO_SUM (mode, temp, operand1));
-		  emit_insn (gen_insv (operand0, GEN_INT (32),
-				       const0_rtx, temp));
+		  if (mode == DImode)
+		    emit_insn (gen_insvdi (operand0, GEN_INT (32),
+					   const0_rtx, temp));
+		  else
+		    emit_insn (gen_insvsi (operand0, GEN_INT (32),
+					   const0_rtx, temp));
 		}
 	      else
 		{
@@ -2212,8 +2214,12 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 			  pos -= 1;
 			}
 
-		      emit_insn (gen_insv (operand0, GEN_INT (len),
-					   GEN_INT (pos), GEN_INT (v5)));
+		      if (mode == DImode)
+			emit_insn (gen_insvdi (operand0, GEN_INT (len),
+					       GEN_INT (pos), GEN_INT (v5)));
+		      else
+			emit_insn (gen_insvsi (operand0, GEN_INT (len),
+					       GEN_INT (pos), GEN_INT (v5)));
 
 		      len = pos > 0 && pos < 5 ? pos : 5;
 		      pos -= len;
