@@ -1,3 +1,9 @@
+2013-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/54314
+	* config/abi/pre/gnu.ver: Don't export construction vtables.
+	* config/abi/pre/gnu-versioned-namespace.ver: Likewise.
+
 2013-01-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/56112

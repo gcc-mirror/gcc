@@ -1336,9 +1336,6 @@ GLIBCXX_3.4.18 {
       std::random_device::*;
     };
 
-    # construction vtable
-    _ZTCSt*;
-
     # std::this_thread::__sleep_for
     _ZNSt11this_thread11__sleep_for*;
 

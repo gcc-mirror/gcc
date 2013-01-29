@@ -1,3 +1,9 @@
+2013-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/54314
+	* varasm.c (default_assemble_visibility): Don't warn about
+	visibility on artificial decls.
+
 2013-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56113
