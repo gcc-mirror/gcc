@@ -1,3 +1,22 @@
+2013-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): An expression
+	function declaration is not a subprogram declaration, and thus
+	cannot appear in a protected definition.
+
+2013-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Insert_Actions): When new
+	actions come from the expression of the expression with actions,
+	then they must be added to the list of existing actions.
+
+2013-01-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration) <Private_Kind>: For
+	the subtype of a constrained private type with discriminants
+	that has got a full view, show that the completion is a clone
+	of the full view.
+
 2013-01-29  Javier Miranda  <miranda@adacore.com>
 
 	* errout.ads, errout.adb (Get_Ignore_Errors): New subprogram.
