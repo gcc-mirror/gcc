@@ -19,7 +19,10 @@
 
 #if __SIZEOF_POINTER__ == 8 && defined(__sparc__)
 // SPARC64 uses all 64 bits of virtual addresses.  Use low-order three
-bits as ABA counter.
+// bits as ABA counter.
+#undef PTR_BITS
+#undef CNT_MASK
+#undef PTR_MASK
 #define PTR_BITS 0
 #define CNT_MASK 7
 #define PTR_MASK ((0ull-1)<<3)
