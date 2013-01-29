@@ -223,7 +223,6 @@ resolve_procedure_interface (gfc_symbol *sym)
       sym->ts.interface = ifc;
       sym->attr.function = ifc->attr.function;
       sym->attr.subroutine = ifc->attr.subroutine;
-      gfc_copy_formal_args (sym, ifc, IFSRC_DECL);
 
       sym->attr.allocatable = ifc->attr.allocatable;
       sym->attr.pointer = ifc->attr.pointer;
@@ -238,20 +237,10 @@ resolve_procedure_interface (gfc_symbol *sym)
       sym->attr.class_ok = ifc->attr.class_ok;
       /* Copy array spec.  */
       sym->as = gfc_copy_array_spec (ifc->as);
-      if (sym->as)
-	{
-	  int i;
-	  for (i = 0; i < sym->as->rank; i++)
-	    {
-	      gfc_expr_replace_symbols (sym->as->lower[i], sym);
-	      gfc_expr_replace_symbols (sym->as->upper[i], sym);
-	    }
-	}
       /* Copy char length.  */
       if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 	{
 	  sym->ts.u.cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
-	  gfc_expr_replace_symbols (sym->ts.u.cl->length, sym);
 	  if (sym->ts.u.cl->length && !sym->ts.u.cl->resolved
 	      && gfc_resolve_expr (sym->ts.u.cl->length) == FAILURE)
 	    return FAILURE;
@@ -3141,7 +3130,8 @@ resolve_function (gfc_expr *expr)
 
   if (expr->value.function.isym && expr->value.function.isym->inquiry)
     inquiry_argument = true;
-  no_formal_args = sym && is_external_proc (sym) && sym->formal == NULL;
+  no_formal_args = sym && is_external_proc (sym)
+  		       && gfc_sym_get_dummy_args (sym) == NULL;
 
   if (resolve_actual_arglist (expr->value.function.actual,
 			      p, no_formal_args) == FAILURE)
@@ -3826,7 +3816,8 @@ resolve_call (gfc_code *c)
   if (csym)
     ptype = csym->attr.proc;
 
-  no_formal_args = csym && is_external_proc (csym) && csym->formal == NULL;
+  no_formal_args = csym && is_external_proc (csym)
+			&& gfc_sym_get_dummy_args (csym) == NULL;
   if (resolve_actual_arglist (c->ext.actual, ptype,
 			      no_formal_args) == FAILURE)
     return FAILURE;
@@ -6018,7 +6009,8 @@ resolve_typebound_generic_call (gfc_expr* e, const char **name)
 					  g->specific->pass_arg);
 	    }
 	  resolve_actual_arglist (args, target->attr.proc,
-				  is_external_proc (target) && !target->formal);
+				  is_external_proc (target)
+				  && gfc_sym_get_dummy_args (target) == NULL);
 
 	  /* Check if this arglist matches the formal.  */
 	  matches = gfc_arglist_matches_symbol (&args, target);
@@ -6438,7 +6430,7 @@ resolve_ppc_call (gfc_code* c)
   c->ext.actual = c->expr1->value.compcall.actual;
 
   if (resolve_actual_arglist (c->ext.actual, comp->attr.proc,
-			      comp->formal == NULL) == FAILURE)
+			      !(comp->ts.interface && comp->ts.interface->formal)) == FAILURE)
     return FAILURE;
 
   gfc_ppc_use (comp, &c->expr1->value.compcall.actual, &c->expr1->where);
@@ -6472,7 +6464,7 @@ resolve_expr_ppc (gfc_expr* e)
     return FAILURE;
 
   if (resolve_actual_arglist (e->value.function.actual, comp->attr.proc,
-			      comp->formal == NULL) == FAILURE)
+			      !(comp->ts.interface && comp->ts.interface->formal)) == FAILURE)
     return FAILURE;
 
   if (update_ppc_arglist (e) == FAILURE)
@@ -9963,6 +9955,7 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 
       if (this_code->op == EXEC_ASSIGN_CALL)
 	{
+	  gfc_formal_arglist *dummy_args;
 	  gfc_symbol *rsym;
 	  /* Check that there is a typebound defined assignment.  If not,
 	     then this must be a module defined assignment.  We cannot
@@ -9981,8 +9974,9 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	  /* If the first argument of the subroutine has intent INOUT
 	     a temporary must be generated and used instead.  */
 	  rsym = this_code->resolved_sym;
-	  if (rsym->formal
-	      && rsym->formal->sym->attr.intent == INTENT_INOUT)
+	  dummy_args = gfc_sym_get_dummy_args (rsym);
+	  if (dummy_args
+	      && dummy_args->sym->attr.intent == INTENT_INOUT)
 	    {
 	      gfc_code *temp_code;
 	      inout = true;
@@ -11414,7 +11408,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
     {
       gfc_interface *iface;
 
-      for (arg = sym->formal; arg; arg = arg->next)
+      for (arg = gfc_sym_get_dummy_args (sym); arg; arg = arg->next)
 	{
 	  if (arg->sym
 	      && arg->sym->ts.type == BT_DERIVED
@@ -11436,7 +11430,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	 PRIVATE to the containing module.  */
       for (iface = sym->generic; iface; iface = iface->next)
 	{
-	  for (arg = iface->sym->formal; arg; arg = arg->next)
+	  for (arg = gfc_sym_get_dummy_args (iface->sym); arg; arg = arg->next)
 	    {
 	      if (arg->sym
 		  && arg->sym->ts.type == BT_DERIVED
@@ -11460,7 +11454,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	 PRIVATE to the containing module.  */
       for (iface = sym->generic; iface; iface = iface->next)
 	{
-	  for (arg = iface->sym->formal; arg; arg = arg->next)
+	  for (arg = gfc_sym_get_dummy_args (iface->sym); arg; arg = arg->next)
 	    {
 	      if (arg->sym
 		  && arg->sym->ts.type == BT_DERIVED
@@ -11580,7 +11574,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
           sym->ts.is_c_interop = 1;
         }
 
-      curr_arg = sym->formal;
+      curr_arg = gfc_sym_get_dummy_args (sym);
       while (curr_arg != NULL)
         {
           /* Skip implicitly typed dummy args here.  */
@@ -11667,6 +11661,7 @@ gfc_resolve_finalizers (gfc_symbol* derived)
   prev_link = &derived->f2k_derived->finalizers;
   for (list = derived->f2k_derived->finalizers; list; list = *prev_link)
     {
+      gfc_formal_arglist *dummy_args;
       gfc_symbol* arg;
       gfc_finalizer* i;
       int my_rank;
@@ -11687,13 +11682,14 @@ gfc_resolve_finalizers (gfc_symbol* derived)
 	}
 
       /* We should have exactly one argument.  */
-      if (!list->proc_sym->formal || list->proc_sym->formal->next)
+      dummy_args = gfc_sym_get_dummy_args (list->proc_sym);
+      if (!dummy_args || dummy_args->next)
 	{
 	  gfc_error ("FINAL procedure at %L must have exactly one argument",
 		     &list->where);
 	  goto error;
 	}
-      arg = list->proc_sym->formal->sym;
+      arg = dummy_args->sym;
 
       /* This argument must be of our type.  */
       if (arg->ts.type != BT_DERIVED || arg->ts.u.derived != derived)
@@ -11745,11 +11741,14 @@ gfc_resolve_finalizers (gfc_symbol* derived)
       my_rank = (arg->as ? arg->as->rank : 0);
       for (i = list->next; i; i = i->next)
 	{
+	  gfc_formal_arglist *dummy_args;
+
 	  /* Argument list might be empty; that is an error signalled earlier,
 	     but we nevertheless continued resolving.  */
-	  if (i->proc_sym->formal)
+	  dummy_args = gfc_sym_get_dummy_args (i->proc_sym);
+	  if (dummy_args)
 	    {
-	      gfc_symbol* i_arg = i->proc_sym->formal->sym;
+	      gfc_symbol* i_arg = dummy_args->sym;
 	      const int i_rank = (i_arg->as ? i_arg->as->rank : 0);
 	      if (i_rank == my_rank)
 		{
@@ -11835,13 +11834,13 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
   else if (t1->specific->pass_arg)
     pass1 = t1->specific->pass_arg;
   else
-    pass1 = t1->specific->u.specific->n.sym->formal->sym->name;
+    pass1 = gfc_sym_get_dummy_args (t1->specific->u.specific->n.sym)->sym->name;
   if (t2->specific->nopass)
     pass2 = NULL;
   else if (t2->specific->pass_arg)
     pass2 = t2->specific->pass_arg;
   else
-    pass2 = t2->specific->u.specific->n.sym->formal->sym->name;
+    pass2 = gfc_sym_get_dummy_args (t2->specific->u.specific->n.sym)->sym->name;
   if (gfc_compare_interfaces (sym1, sym2, sym2->name, !t1->is_operator, 0,
 			      NULL, 0, pass1, pass2))
     {
@@ -12205,16 +12204,19 @@ resolve_typebound_procedure (gfc_symtree* stree)
      from a .mod file.  */
   if (!stree->n.tb->nopass && stree->n.tb->pass_arg_num == 0)
     {
+      gfc_formal_arglist *dummy_args;
+
+      dummy_args = gfc_sym_get_dummy_args (proc);
       if (stree->n.tb->pass_arg)
 	{
-	  gfc_formal_arglist* i;
+	  gfc_formal_arglist *i;
 
 	  /* If an explicit passing argument name is given, walk the arg-list
 	     and look for it.  */
 
 	  me_arg = NULL;
 	  stree->n.tb->pass_arg_num = 1;
-	  for (i = proc->formal; i; i = i->next)
+	  for (i = dummy_args; i; i = i->next)
 	    {
 	      if (!strcmp (i->sym->name, stree->n.tb->pass_arg))
 		{
@@ -12238,13 +12240,13 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	  /* Otherwise, take the first one; there should in fact be at least
 	     one.  */
 	  stree->n.tb->pass_arg_num = 1;
-	  if (!proc->formal)
+	  if (!dummy_args)
 	    {
 	      gfc_error ("Procedure '%s' with PASS at %L must have at"
 			 " least one argument", proc->name, &where);
 	      goto error;
 	    }
-	  me_arg = proc->formal->sym;
+	  me_arg = dummy_args->sym;
 	}
 
       /* Now check that the argument-type matches and the passed-object
@@ -12623,30 +12625,18 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      c->ts.interface = ifc;
 	      c->attr.function = ifc->attr.function;
 	      c->attr.subroutine = ifc->attr.subroutine;
-	      gfc_copy_formal_args_ppc (c, ifc, IFSRC_DECL);
 
 	      c->attr.pure = ifc->attr.pure;
 	      c->attr.elemental = ifc->attr.elemental;
 	      c->attr.recursive = ifc->attr.recursive;
 	      c->attr.always_explicit = ifc->attr.always_explicit;
 	      c->attr.ext_attr |= ifc->attr.ext_attr;
-	      /* Replace symbols in array spec.  */
-	      if (c->as)
-		{
-		  int i;
-		  for (i = 0; i < c->as->rank; i++)
-		    {
-		      gfc_expr_replace_comp (c->as->lower[i], c);
-		      gfc_expr_replace_comp (c->as->upper[i], c);
-		    }
-		}
 	      /* Copy char length.  */
 	      if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 		{
 		  gfc_charlen *cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
-		  gfc_expr_replace_comp (cl->length, c);
 		  if (cl->length && !cl->resolved
-			&& gfc_resolve_expr (cl->length) == FAILURE)
+		      && gfc_resolve_expr (cl->length) == FAILURE)
 		    return FAILURE;
 		  c->ts.u.cl = cl;
 		}
@@ -12674,7 +12664,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
 	      me_arg = NULL;
 	      c->tb->pass_arg_num = 1;
-	      for (i = c->formal; i; i = i->next)
+	      for (i = c->ts.interface->formal; i; i = i->next)
 		{
 		  if (!strcmp (i->sym->name, c->tb->pass_arg))
 		    {
@@ -12698,7 +12688,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      /* Otherwise, take the first one; there should in fact be at least
 		one.  */
 	      c->tb->pass_arg_num = 1;
-	      if (!c->formal)
+	      if (!c->ts.interface->formal)
 		{
 		  gfc_error ("Procedure pointer component '%s' with PASS at %L "
 			     "must have at least one argument",
@@ -12706,7 +12696,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		  c->tb->error = 1;
 		  return FAILURE;
 		}
-	      me_arg = c->formal->sym;
+	      me_arg = c->ts.interface->formal->sym;
 	    }
 
 	  /* Now check that the argument-type matches.  */
@@ -14793,7 +14783,7 @@ check_uop_procedure (gfc_symbol *sym, locus where)
       return FAILURE;
     }
 
-  formal = sym->formal;
+  formal = gfc_sym_get_dummy_args (sym);
   if (!formal || !formal->sym)
     {
       gfc_error ("User operator procedure '%s' at %L must have at least "

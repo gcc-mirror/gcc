@@ -1447,7 +1447,7 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (co->resolved_sym == NULL)
 	break;
 
-      f = co->resolved_sym->formal;
+      f = gfc_sym_get_dummy_args (co->resolved_sym);
 
       /* Withot a formal arglist, there is only unknown INTENT,
 	 which we don't check for.  */
@@ -1516,7 +1516,7 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   if (expr->value.function.isym)
     return 0;
 
-  f = expr->symtree->n.sym->formal;
+  f = gfc_sym_get_dummy_args (expr->symtree->n.sym);
 
   /* Without a formal arglist, there is only unknown INTENT,
      which we don't check for.  */

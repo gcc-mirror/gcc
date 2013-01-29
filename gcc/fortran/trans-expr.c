@@ -3266,7 +3266,7 @@ gfc_map_fcn_formal_to_actual (gfc_expr *expr, gfc_expr *map_expr,
   gfc_actual_arglist *actual;
 
   actual = expr->value.function.actual;
-  f = map_expr->symtree->n.sym->formal;
+  f = gfc_sym_get_dummy_args (map_expr->symtree->n.sym);
 
   for (; f && actual; f = f->next, actual = actual->next)
     {
@@ -3996,7 +3996,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_init_interface_mapping (&mapping);
   if (!comp)
     {
-      formal = sym->formal;
+      formal = gfc_sym_get_dummy_args (sym);
       need_interface_mapping = sym->attr.dimension ||
 			       (sym->ts.type == BT_CHARACTER
 				&& sym->ts.u.cl->length
@@ -4005,7 +4005,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     }
   else
     {
-      formal = comp->formal;
+      formal = comp->ts.interface ? comp->ts.interface->formal : NULL;
       need_interface_mapping = comp->attr.dimension ||
 			       (comp->ts.type == BT_CHARACTER
 				&& comp->ts.u.cl->length
@@ -4858,7 +4858,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    cl.backend_decl = (*stringargs)[0];
 	  else
 	    {
-	      formal = sym->ns->proc_name->formal;
+	      formal = gfc_sym_get_dummy_args (sym->ns->proc_name);
 	      for (; formal; formal = formal->next)
 		if (strcmp (formal->sym->name, sym->name) == 0)
 		  cl.backend_decl = formal->sym->ts.u.cl->backend_decl;
@@ -5440,12 +5440,13 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
   gfc_init_se (&rse, NULL);
 
   n = 0;
-  for (fargs = sym->formal; fargs; fargs = fargs->next)
+  for (fargs = gfc_sym_get_dummy_args (sym); fargs; fargs = fargs->next)
     n++;
   saved_vars = XCNEWVEC (gfc_saved_var, n);
   temp_vars = XCNEWVEC (tree, n);
 
-  for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
+  for (fargs = gfc_sym_get_dummy_args (sym), n = 0; fargs;
+       fargs = fargs->next, n++)
     {
       /* Each dummy shall be specified, explicitly or implicitly, to be
          scalar.  */
@@ -5499,7 +5500,8 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
     }
 
   /* Use the temporary variables in place of the real ones.  */
-  for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
+  for (fargs = gfc_sym_get_dummy_args (sym), n = 0; fargs;
+       fargs = fargs->next, n++)
     gfc_shadow_sym (fargs->sym, temp_vars[n], &saved_vars[n]);
 
   gfc_conv_expr (se, sym->value);
@@ -5525,7 +5527,8 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
     }
 
   /* Restore the original variables.  */
-  for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
+  for (fargs = gfc_sym_get_dummy_args (sym), n = 0; fargs;
+       fargs = fargs->next, n++)
     gfc_restore_sym (fargs->sym, &saved_vars[n]);
   free (temp_vars);
   free (saved_vars);

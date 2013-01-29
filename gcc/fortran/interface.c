@@ -616,7 +616,7 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
   r1 = r2 = -1;
   k1 = k2 = -1;
 
-  for (formal = sym->formal; formal; formal = formal->next)
+  for (formal = gfc_sym_get_dummy_args (sym); formal; formal = formal->next)
     {
       gfc_symbol *fsym = formal->sym;
       if (fsym == NULL)
@@ -662,6 +662,8 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
      INTRINSIC_ASSIGN which should map to a subroutine.  */
   if (op == INTRINSIC_ASSIGN)
     {
+      gfc_formal_arglist *dummy_args;
+
       if (!sym->attr.subroutine)
 	{
 	  gfc_error ("Assignment operator interface at %L must be "
@@ -674,12 +676,13 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
 	 - First argument is a scalar and second an array,
 	 - Types and kinds do not conform, or
 	 - First argument is of derived type.  */
-      if (sym->formal->sym->ts.type != BT_DERIVED
-	  && sym->formal->sym->ts.type != BT_CLASS
+      dummy_args = gfc_sym_get_dummy_args (sym);
+      if (dummy_args->sym->ts.type != BT_DERIVED
+	  && dummy_args->sym->ts.type != BT_CLASS
 	  && (r2 == 0 || r1 == r2)
-	  && (sym->formal->sym->ts.type == sym->formal->next->sym->ts.type
-	      || (gfc_numeric_ts (&sym->formal->sym->ts)
-		  && gfc_numeric_ts (&sym->formal->next->sym->ts))))
+	  && (dummy_args->sym->ts.type == dummy_args->next->sym->ts.type
+	      || (gfc_numeric_ts (&dummy_args->sym->ts)
+		  && gfc_numeric_ts (&dummy_args->next->sym->ts))))
 	{
 	  gfc_error ("Assignment operator interface at %L must not redefine "
 		     "an INTRINSIC type assignment", &sym->declared_at);
@@ -1377,8 +1380,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
       || s2->attr.if_source == IFSRC_UNKNOWN)
     return 1;
 
-  f1 = s1->formal;
-  f2 = s2->formal;
+  f1 = gfc_sym_get_dummy_args (s1);
+  f2 = gfc_sym_get_dummy_args (s2);
 
   if (f1 == NULL && f2 == NULL)
     return 1;			/* Special case: No arguments.  */
@@ -3107,6 +3110,8 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 gfc_try
 gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 {
+  gfc_formal_arglist *dummy_args;
+
   /* Warn about calls with an implicit interface.  Special case
      for calling a ISO_C_BINDING becase c_loc and c_funloc
      are pseudo-unknown.  Additionally, warn about procedures not
@@ -3202,14 +3207,16 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
       return SUCCESS;
     }
 
-  if (!compare_actual_formal (ap, sym->formal, 0, sym->attr.elemental, where))
+  dummy_args = gfc_sym_get_dummy_args (sym);
+
+  if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental, where))
     return FAILURE;
 
-  if (check_intents (sym->formal, *ap) == FAILURE)
+  if (check_intents (dummy_args, *ap) == FAILURE)
     return FAILURE;
 
   if (gfc_option.warn_aliasing)
-    check_some_aliasing (sym->formal, *ap);
+    check_some_aliasing (dummy_args, *ap);
 
   return SUCCESS;
 }
@@ -3222,7 +3229,6 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 void
 gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
 {
-
   /* Warn about calls with an implicit interface.  Special case
      for calling a ISO_C_BINDING becase c_loc and c_funloc
      are pseudo-unknown.  */
@@ -3250,12 +3256,13 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
       return;
     }
 
-  if (!compare_actual_formal (ap, comp->formal, 0, comp->attr.elemental, where))
+  if (!compare_actual_formal (ap, comp->ts.interface->formal, 0,
+			      comp->attr.elemental, where))
     return;
 
-  check_intents (comp->formal, *ap);
+  check_intents (comp->ts.interface->formal, *ap);
   if (gfc_option.warn_aliasing)
-    check_some_aliasing (comp->formal, *ap);
+    check_some_aliasing (comp->ts.interface->formal, *ap);
 }
 
 
@@ -3266,16 +3273,19 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
 bool
 gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
 {
+  gfc_formal_arglist *dummy_args;
   bool r;
 
   gcc_assert (sym->attr.flavor == FL_PROCEDURE);
 
+  dummy_args = gfc_sym_get_dummy_args (sym);
+
   r = !sym->attr.elemental;
-  if (compare_actual_formal (args, sym->formal, r, !r, NULL))
+  if (compare_actual_formal (args, dummy_args, r, !r, NULL))
     {
-      check_intents (sym->formal, *args);
+      check_intents (dummy_args, *args);
       if (gfc_option.warn_aliasing)
-	check_some_aliasing (sym->formal, *args);
+	check_some_aliasing (dummy_args, *args);
       return true;
     }
 
@@ -4080,8 +4090,9 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   if (!old->n.tb->nopass && !old->n.tb->pass_arg)
     old_pass_arg = 1;
   argpos = 1;
-  for (proc_formal = proc_target->formal, old_formal = old_target->formal;
-       proc_formal && old_formal;
+  proc_formal = gfc_sym_get_dummy_args (proc_target);
+  old_formal = gfc_sym_get_dummy_args (old_target);
+  for ( ; proc_formal && old_formal;
        proc_formal = proc_formal->next, old_formal = old_formal->next)
     {
       if (proc->n.tb->pass_arg
