@@ -57,15 +57,6 @@
 
 (define_cpu_unit "cortex_a7_fp_div_sqrt" "cortex_a7")
 
-;; Neon pipeline
-(define_cpu_unit "cortex_a7_neon" "cortex_a7")
-
-(define_reservation "cortex_a7_all" "cortex_a7_both+\
-                                     cortex_a7_fpmul_pipe+\
-                                     cortex_a7_fpadd_pipe+\
-                                     cortex_a7_fp_div_sqrt+\
-                                     cortex_a7_neon")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Branches.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,7 +141,7 @@
 (define_insn_reservation "cortex_a7_idiv" 5
   (and (eq_attr "tune" "cortexa7")
        (eq_attr "insn" "udiv,sdiv"))
-  "cortex_a7_all*5")
+  "cortex_a7_both*5")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Load/store instructions.
