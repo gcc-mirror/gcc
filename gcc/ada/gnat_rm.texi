@@ -2893,7 +2893,7 @@ implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
 This is an Ada 2012 representation pragma which applies to protected, task
 and synchronized interface primitives. The use of pragma Implemented provides
 a way to impose a static requirement on the overriding operation by adhering
-to one of the three implementation kids: entry, protected procedure or any of
+to one of the three implementation kinds: entry, protected procedure or any of
 the above. This pragma is available in all earlier versions of Ada as an
 implementation-defined pragma.
 
@@ -3237,7 +3237,7 @@ of the same name). It is also available as an implementation-defined
 pragma in all earlier versions. It specifies that the
 designated object or all objects of the designated type must be
 independently addressable. This means that separate tasks can safely
-manipulate such objects. For example, if two comonents of a record are
+manipulate such objects. For example, if two components of a record are
 independent, then two separate tasks may access these two components.
 This may place
 constraints on the representation of the object (for instance prohibiting
@@ -3257,9 +3257,10 @@ pragma Independent_Components (Local_NAME);
 This pragma is standard in Ada 2012 mode (which also provides an aspect
 of the same name). It is also available as an implementation-defined
 pragma in all earlier versions. It specifies that the components of the
-designated object or all objects of the designated type must be
+designated object, or the components of each object of the designated
+type, must be
 independently addressable. This means that separate tasks can safely
-manipulate separate components in the composite object. this may place
+manipulate separate components in the composite object. This may place
 constraints on the representation of the object (for instance prohibiting
 tight packing).
 
