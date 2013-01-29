@@ -1,3 +1,16 @@
+2013-01-29  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Fixed typos. Minor edits.
+
+2013-01-29  Bob Duff  <duff@adacore.com>
+
+	* a-convec.adb: Minor reformatting.
+
+2013-01-29  Pascal Obry  <obry@adacore.com>
+
+	* tempdir.adb, tempdir.ads (Use_Temp_Dir): Set wether to use the temp
+	directory.
+
 2013-01-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Preserve loop
