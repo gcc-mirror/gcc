@@ -1,5 +1,17 @@
 2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+        * config/arm/cortex-a7.md (cortex_a7_neon_mul):  New reservation.
+	(cortex_a7_neon_mla): Likewise.
+        (cortex_a7_fpfmad): New reservation.
+        (cortex_a7_fpmacs): Use ffmas and update required units.
+        (cortex_a7_fpmuld): Update required units and latency.
+        (cortex_a7_fpmacd): Likewise.
+        (cortex_a7_fdivs, cortex_a7_fdivd): Likewise.
+        (cortex_a7_neon). Likewise.
+        (bypass) Update participating units.
+
+2013-01-29  Greta Yorsh  <Greta.Yorsh@arm.com>
+
         * config/arm/arm.md (type): Add ffmas and ffmad to "type" attribute.
         * config/arm/vfp.md (fma,fmsub,fnmsub,fnmadd): Change type
         from fmac to ffma.
