@@ -1,3 +1,8 @@
+2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* gcc.dg/fixed-point/view-convert.c: New test.
+
 2013-01-30  Andreas Schwab  <schwab@suse.de>
 
 	* lib/target-supports-dg.exp (dg-process-target): Use expr to

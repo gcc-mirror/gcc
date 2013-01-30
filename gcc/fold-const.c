@@ -7200,6 +7200,36 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len)
 }
 
 
+/* Subroutine of native_encode_expr.  Encode the FIXED_CST
+   specified by EXPR into the buffer PTR of length LEN bytes.
+   Return the number of bytes placed in the buffer, or zero
+   upon failure.  */
+
+static int
+native_encode_fixed (const_tree expr, unsigned char *ptr, int len)
+{
+  tree type = TREE_TYPE (expr);
+  enum machine_mode mode = TYPE_MODE (type);
+  int total_bytes = GET_MODE_SIZE (mode);
+  FIXED_VALUE_TYPE value;
+  tree i_value, i_type;
+
+  if (total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
+    return 0;
+
+  i_type = lang_hooks.types.type_for_size (GET_MODE_BITSIZE (mode), 1);
+
+  if (NULL_TREE == i_type
+      || TYPE_PRECISION (i_type) != total_bytes)
+    return 0;
+  
+  value = TREE_FIXED_CST (expr);
+  i_value = double_int_to_tree (i_type, value.data);
+
+  return native_encode_int (i_value, ptr, len);
+}
+
+
 /* Subroutine of native_encode_expr.  Encode the REAL_CST
    specified by EXPR into the buffer PTR of length LEN bytes.
    Return the number of bytes placed in the buffer, or zero
@@ -7345,6 +7375,9 @@ native_encode_expr (const_tree expr, unsigned char *ptr, int len)
     case REAL_CST:
       return native_encode_real (expr, ptr, len);
 
+    case FIXED_CST:
+      return native_encode_fixed (expr, ptr, len);
+
     case COMPLEX_CST:
       return native_encode_complex (expr, ptr, len);
 
@@ -7368,44 +7401,37 @@ static tree
 native_interpret_int (tree type, const unsigned char *ptr, int len)
 {
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
-  int byte, offset, word, words;
-  unsigned char value;
   double_int result;
 
-  if (total_bytes > len)
+  if (total_bytes > len
+      || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
     return NULL_TREE;
-  if (total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
-    return NULL_TREE;
 
-  result = double_int_zero;
-  words = total_bytes / UNITS_PER_WORD;
-
-  for (byte = 0; byte < total_bytes; byte++)
-    {
-      int bitpos = byte * BITS_PER_UNIT;
-      if (total_bytes > UNITS_PER_WORD)
-	{
-	  word = byte / UNITS_PER_WORD;
-	  if (WORDS_BIG_ENDIAN)
-	    word = (words - 1) - word;
-	  offset = word * UNITS_PER_WORD;
-	  if (BYTES_BIG_ENDIAN)
-	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
-	  else
-	    offset += byte % UNITS_PER_WORD;
-	}
-      else
-	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
-      value = ptr[offset];
-
-      if (bitpos < HOST_BITS_PER_WIDE_INT)
-	result.low |= (unsigned HOST_WIDE_INT) value << bitpos;
-      else
-	result.high |= (unsigned HOST_WIDE_INT) value
-		       << (bitpos - HOST_BITS_PER_WIDE_INT);
-    }
+  result = double_int::from_buffer (ptr, total_bytes);
 
   return double_int_to_tree (type, result);
+}
+
+
+/* Subroutine of native_interpret_expr.  Interpret the contents of
+   the buffer PTR of length LEN as a FIXED_CST of type TYPE.
+   If the buffer cannot be interpreted, return NULL_TREE.  */
+
+static tree
+native_interpret_fixed (tree type, const unsigned char *ptr, int len)
+{
+  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  double_int result;
+  FIXED_VALUE_TYPE fixed_value;
+
+  if (total_bytes > len
+      || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
+    return NULL_TREE;
+
+  result = double_int::from_buffer (ptr, total_bytes);
+  fixed_value = fixed_from_double_int (result, TYPE_MODE (type));
+
+  return build_fixed (type, fixed_value);
 }
 
 
@@ -7533,6 +7559,9 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
     case REAL_TYPE:
       return native_interpret_real (type, ptr, len);
 
+    case FIXED_POINT_TYPE:
+      return native_interpret_fixed (type, ptr, len);
+
     case COMPLEX_TYPE:
       return native_interpret_complex (type, ptr, len);
 
@@ -7557,6 +7586,7 @@ can_native_interpret_type_p (tree type)
     case BOOLEAN_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+    case FIXED_POINT_TYPE:
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:

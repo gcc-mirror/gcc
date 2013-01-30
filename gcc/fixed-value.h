@@ -49,6 +49,22 @@ extern FIXED_VALUE_TYPE fconst1[MAX_FCONST1];
   const_fixed_from_fixed_value (r, m)
 extern rtx const_fixed_from_fixed_value (FIXED_VALUE_TYPE, enum machine_mode);
 
+/* Construct a FIXED_VALUE from a bit payload and machine mode MODE.
+   The bits in PAYLOAD are used verbatim.  */
+extern FIXED_VALUE_TYPE fixed_from_double_int (double_int,
+						     enum machine_mode);
+
+/* Return a CONST_FIXED from a bit payload and machine mode MODE.
+   The bits in PAYLOAD are used verbatim.  */
+static inline rtx
+const_fixed_from_double_int (double_int payload,
+                             enum machine_mode mode)
+{
+  return
+    const_fixed_from_fixed_value (fixed_from_double_int (payload, mode),
+                                  mode);
+}
+
 /* Initialize from a decimal or hexadecimal string.  */
 extern void fixed_from_string (FIXED_VALUE_TYPE *, const char *,
 			       enum machine_mode);

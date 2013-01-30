@@ -59,6 +59,10 @@ struct double_int
   static double_int from_shwi (HOST_WIDE_INT cst);
   static double_int from_pair (HOST_WIDE_INT high, unsigned HOST_WIDE_INT low);
 
+  /* Construct from a fuffer of length LEN.  BUFFER will be read according
+     to byte endianess and word endianess.  */
+  static double_int from_buffer (const unsigned char *buffer, int len);
+
   /* No copy assignment operator or destructor to keep the type a POD.  */
 
   /* There are some special value-creation static member functions.  */
