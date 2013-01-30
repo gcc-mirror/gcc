@@ -3775,7 +3775,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					        null_pointer_node));
 		}
 
-	      if ((sym->attr.dummy ||sym->attr.result)
+	      if ((sym->attr.dummy || sym->attr.result || sym->result == sym)
 		    && sym->ts.type == BT_CHARACTER
 		    && sym->ts.deferred)
 		{
