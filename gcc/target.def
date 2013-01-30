@@ -2831,14 +2831,6 @@ DEFHOOK
  bool, (tree decl1, tree decl2),
  hook_bool_tree_tree_false)
 
-/* This function returns true if the target supports function
-   multiversioning.  */
-DEFHOOK
-(supports_function_versions,
- "",
- bool, (void),
- hook_bool_void_false)
-
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"

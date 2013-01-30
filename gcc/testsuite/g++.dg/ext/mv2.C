@@ -7,7 +7,7 @@
 #include <assert.h>
 
 /* Default version.  */
-int foo ();
+int foo () __attribute__ ((target ("default")));
 /* The dispatch checks should be in the exact reverse order of the
    declarations below.  */
 int foo () __attribute__ ((target ("mmx")));
@@ -51,7 +51,7 @@ int main ()
   return 0;
 }
 
-int
+int __attribute__ ((target("default")))
 foo ()
 {
   return 0;

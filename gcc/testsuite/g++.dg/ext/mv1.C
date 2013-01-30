@@ -6,7 +6,8 @@
 #include <assert.h>
 
 /* Default version.  */
-int foo ();
+int foo (); // Extra declaration that is merged with the second one.
+int foo () __attribute__ ((target("default")));
 /* The other versions of foo.  Mix up the ordering and 
    check if the dispatching does it in the order of priority. */
 /* Check combination of target attributes.  */
@@ -65,7 +66,8 @@ int main ()
   return 0;
 }
 
-int foo ()
+int __attribute__ ((target("default")))
+foo ()
 {
   return 0;
 }

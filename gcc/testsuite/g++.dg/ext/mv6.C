@@ -8,6 +8,7 @@ class Foo
 {
  public:
   /* Default version of foo.  */
+  __attribute__ ((target("default")))
   int foo ()
   {
     return 0;
