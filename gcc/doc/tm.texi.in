@@ -9768,11 +9768,6 @@ different target specific attributes, that is, they are compiled for
 different target machines.
 @end deftypefn
 
-@hook TARGET_OPTION_SUPPORTS_FUNCTION_VERSIONS
-This target hook returns @code{true} if the target supports function
-multiversioning.
-@end deftypefn
-
 @hook TARGET_CAN_INLINE_P
 This target hook returns @code{false} if the @var{caller} function
 cannot inline @var{callee}, based on target specific information.  By

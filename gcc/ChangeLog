@@ -1,3 +1,38 @@
+2013-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55742
+	* config/i386/i386.c (ix86_valid_target_attribute_inner_p): Diagnose
+	invalid args instead of ICEing on it.
+	(ix86_valid_target_attribute_tree): Return error_mark_node if
+	ix86_valid_target_attribute_inner_p failed.
+	(ix86_valid_target_attribute_p): Return false only if
+	ix86_valid_target_attribute_tree returned error_mark_node.  Allow
+	target("default") attribute.
+	(sorted_attr_string): Change argument from const char * to tree,
+	merge in all target attribute arguments rather than just one.
+	Formatting fix.  Use XNEWVEC instead of xmalloc and XDELETEVEC
+	instead of free.  Avoid using strcat.
+	(ix86_mangle_function_version_assembler_name): Mangle
+	target("default") as if no target attribute is present.  Adjust
+	sorted_attr_string caller.  Avoid leaking memory.  Use XNEWVEC
+	instead of xmalloc and XDELETEVEC instead of free.
+	(ix86_function_versions): Don't return true if one of the decls
+	doesn't have target attribute.  If they don't and one of the decls
+	is DECL_FUNCTION_VERSIONED, report an error.  Adjust
+	sorted_attr_string caller.  Use XDELETEVEC instead of free.
+	(ix86_supports_function_versions): Remove.
+	(make_name): Fix up formatting.
+	(make_dispatcher_decl): Remove resolver_name and its initialization.
+	Avoid leaking memory.
+	(is_function_default_version): Return true if there is
+	target("default") attribute rather than no target attribute at all.
+	(make_resolver_func): Avoid leaking memory.
+	(ix86_generate_version_dispatcher_body): Likewise.
+	(TARGET_OPTION_SUPPORTS_FUNCTION_VERSIONS): Remove.
+	* target.def (supports_function_versions): Remove.
+	* doc/tm.texi.in (SUPPORTS_FUNCTION_VERSIONS): Remove.
+	* doc/tm.texi: Regenerated.
+
 2013-01-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56144

@@ -7,7 +7,7 @@
 
 
 /* Default version.  */
-inline int
+inline int __attribute__ ((target ("default")))
 foo ()
 {
   return 0;
