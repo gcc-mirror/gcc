@@ -1,5 +1,13 @@
 2013-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/55374
+	* gcc.c (LIBASAN_SPEC): Define just to ADD_STATIC_LIBASAN_LIBS if
+	LIBASAN_EARLY_SPEC is defined.
+	(LIBASAN_EARLY_SPEC): Define to empty string if not already defined.
+	(LINK_COMMAND_SPEC): Add LIBASAN_EARLY_SPEC for -fsanitize=address,
+	before %o.
+	* config/gnu-user.h (LIBASAN_EARLY_SPEC): Define.
+
 	PR c++/55742
 	* config/i386/i386.c (ix86_valid_target_attribute_inner_p): Diagnose
 	invalid args instead of ICEing on it.

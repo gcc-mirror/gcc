@@ -1,5 +1,12 @@
 2013-01-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/55374
+	* g++.dg/asan/large-func-test-1.C: Allow both _Zna[jm] in addition
+	to _Znw[jm] in the backtrace.  Allow _Zna[jm] to be the first frame
+	printed in backtrace.
+	* g++.dg/asan/deep-stack-uaf-1.C: Use malloc instead of operator new
+	to avoid errors about mismatched allocation vs. deallocation.
+
 	PR c++/55742
 	* g++.dg/mv1.C: Moved to...
 	* g++.dg/ext/mv1.C: ... here.  Adjust test.
