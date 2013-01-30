@@ -1,3 +1,18 @@
+2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* fixed-value.c (fixed_from_double_int): New function.
+	* fixed-value.h (fixed_from_double_int): New prototype.
+	(const_fixed_from_double_int): New static inline function.
+	* fold-const.c (native_interpret_fixed): New static function.
+	(native_interpret_expr) <FIXED_POINT_TYPE>: Use it.
+	(can_native_interpret_type_p) <FIXED_POINT_TYPE>: Return true.
+	(native_encode_fixed): New static function.
+	(native_encode_expr) <FIXED_CST>: Use it.
+	(native_interpret_int): Move double_int worker code to...
+	* double-int.c (double_int::from_buffer): ...this new static method.
+	* double-int.h (double_int::from_buffer): Prototype it.
+
 2013-01-30  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (final_solutions, final_solutions_obstack):

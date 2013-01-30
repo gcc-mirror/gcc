@@ -641,6 +641,54 @@ div_and_round_double (unsigned code, int uns,
   return overflow;
 }
 
+
+/* Construct from a buffer of length LEN.  BUFFER will be read according
+   to byte endianess and word endianess.  Only the lower LEN bytes
+   of the result are set; the remaining high bytes are cleared.  */
+
+double_int
+double_int::from_buffer (const unsigned char *buffer, int len)
+{
+  double_int result = double_int_zero;
+  int words = len / UNITS_PER_WORD;
+
+  gcc_assert (len * BITS_PER_UNIT <= HOST_BITS_PER_DOUBLE_INT);
+
+  for (int byte = 0; byte < len; byte++)
+    {
+      int offset;
+      int bitpos = byte * BITS_PER_UNIT;
+      unsigned HOST_WIDE_INT value;
+
+      if (len > UNITS_PER_WORD)
+	{
+	  int word = byte / UNITS_PER_WORD;
+
+	  if (WORDS_BIG_ENDIAN)
+	    word = (words - 1) - word;
+
+	  offset = word * UNITS_PER_WORD;
+
+	  if (BYTES_BIG_ENDIAN)
+	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
+	  else
+	    offset += byte % UNITS_PER_WORD;
+	}
+      else
+	offset = BYTES_BIG_ENDIAN ? (len - 1) - byte : byte;
+
+      value = (unsigned HOST_WIDE_INT) buffer[offset];
+
+      if (bitpos < HOST_BITS_PER_WIDE_INT)
+	result.low |= value << bitpos;
+      else
+	result.high |= value << (bitpos - HOST_BITS_PER_WIDE_INT);
+    }
+
+  return result;
+}
+
+
 /* Returns mask for PREC bits.  */
 
 double_int
