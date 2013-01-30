@@ -132,10 +132,12 @@ runtime_cputicks(void)
 }
 
 bool
-runtime_showframe(String s)
+runtime_showframe(String s, bool current)
 {
 	static int32 traceback = -1;
-	
+
+	if(current && runtime_m()->throwing > 0)
+		return 1;
 	if(traceback < 0)
 		traceback = runtime_gotraceback();
 	return traceback > 1 || (__builtin_memchr(s.str, '.', s.len) != nil && __builtin_memcmp(s.str, "runtime.", 7) != 0);
