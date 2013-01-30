@@ -1,3 +1,11 @@
+2013-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (HAVE_AS_SPARC_NOBITS): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section): Emit
+	#nobits/#progbits if supported.
+
 2013-01-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/56121
