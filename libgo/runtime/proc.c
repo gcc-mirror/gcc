@@ -631,7 +631,7 @@ runtime_goroutinetrailer(G *g)
 struct Traceback
 {
 	G* gp;
-	uintptr pcbuf[100];
+	Location locbuf[100];
 	int32 c;
 };
 
@@ -677,7 +677,7 @@ runtime_tracebackothers(G * volatile me)
 			runtime_gogo(gp);
 		}
 
-		runtime_printtrace(tb.pcbuf, tb.c, false);
+		runtime_printtrace(tb.locbuf, tb.c, false);
 		runtime_goroutinetrailer(gp);
 	}
 }
@@ -692,8 +692,8 @@ gtraceback(G* gp)
 
 	traceback = gp->traceback;
 	gp->traceback = nil;
-	traceback->c = runtime_callers(1, traceback->pcbuf,
-		sizeof traceback->pcbuf / sizeof traceback->pcbuf[0]);
+	traceback->c = runtime_callers(1, traceback->locbuf,
+		sizeof traceback->locbuf / sizeof traceback->locbuf[0]);
 	runtime_gogo(traceback->gp);
 }
 
@@ -1742,13 +1742,14 @@ static struct {
 	void (*fn)(uintptr*, int32);
 	int32 hz;
 	uintptr pcbuf[100];
+	Location locbuf[100];
 } prof;
 
 // Called if we receive a SIGPROF signal.
 void
 runtime_sigprof()
 {
-	int32 n;
+	int32 n, i;
 
 	if(prof.fn == nil || prof.hz == 0)
 		return;
@@ -1758,7 +1759,9 @@ runtime_sigprof()
 		runtime_unlock(&prof);
 		return;
 	}
-	n = runtime_callers(0, prof.pcbuf, nelem(prof.pcbuf));
+	n = runtime_callers(0, prof.locbuf, nelem(prof.locbuf));
+	for(i = 0; i < n; i++)
+		prof.pcbuf[i] = prof.locbuf[i].pc;
 	if(n > 0)
 		prof.fn(prof.pcbuf, n);
 	runtime_unlock(&prof);
