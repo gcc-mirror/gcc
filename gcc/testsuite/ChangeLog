@@ -1,3 +1,8 @@
+2013-01-30  Andreas Schwab  <schwab@suse.de>
+
+	* lib/target-supports-dg.exp (dg-process-target): Use expr to
+	evaluate the end index in string range.
+
 2012-01-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56138
