@@ -2679,7 +2679,7 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 	spec[spec_len++] = 'R';
     }
 
-  for (f = sym->formal; f; f = f->next)
+  for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     if (spec_len < sizeof (spec))
       {
 	if (!f->sym || f->sym->attr.pointer || f->sym->attr.target
@@ -2763,7 +2763,7 @@ gfc_get_function_type (gfc_symbol * sym)
     }
 
   /* Build the argument types for the function.  */
-  for (f = sym->formal; f; f = f->next)
+  for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     {
       arg = f->sym;
       if (arg)
@@ -2806,7 +2806,7 @@ gfc_get_function_type (gfc_symbol * sym)
     }
 
   /* Add hidden string length parameters.  */
-  for (f = sym->formal; f; f = f->next)
+  for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     {
       arg = f->sym;
       if (arg && arg->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)

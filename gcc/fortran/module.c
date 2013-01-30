@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, 
    if yout want it to be recognized.  */
-#define MOD_VERSION "9"
+#define MOD_VERSION "10"
 
 
 /* Structure that describes a position within a module file.  */
@@ -2573,7 +2573,6 @@ mio_component (gfc_component *c, int vtype)
 {
   pointer_info *p;
   int n;
-  gfc_formal_arglist *formal;
 
   mio_lparen ();
 
@@ -2606,32 +2605,7 @@ mio_component (gfc_component *c, int vtype)
     mio_expr (&c->initializer);
 
   if (c->attr.proc_pointer)
-    {
-      if (iomode == IO_OUTPUT)
-	{
-	  formal = c->formal;
-	  while (formal && !formal->sym)
-	    formal = formal->next;
-
-	  if (formal)
-	    mio_namespace_ref (&formal->sym->ns);
-	  else
-	    mio_namespace_ref (&c->formal_ns);
-	}
-      else
-	{
-	  mio_namespace_ref (&c->formal_ns);
-	  /* TODO: if (c->formal_ns)
-	    {
-	      c->formal_ns->proc_name = c;
-	      c->refs++;
-	    }*/
-	}
-
-      mio_formal_arglist (&c->formal);
-
-      mio_typebound_proc (&c->tb);
-    }
+    mio_typebound_proc (&c->tb);
 
   mio_rparen ();
 }

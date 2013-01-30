@@ -822,7 +822,7 @@ gfc_check_fncall_dependency (gfc_expr *other, sym_intent intent,
   gfc_formal_arglist *formal;
   gfc_expr *expr;
 
-  formal = fnsym ? fnsym->formal : NULL;
+  formal = fnsym ? gfc_sym_get_dummy_args (fnsym) : NULL;
   for (; actual; actual = actual->next, formal = formal ? formal->next : NULL)
     {
       expr = actual->expr;

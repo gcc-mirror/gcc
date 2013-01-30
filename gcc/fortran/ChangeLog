@@ -1,3 +1,49 @@
+2012-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56138
+	* trans-decl.c (gfc_trans_deferred_vars): Fix deferred-length
+	results for functions without extra result variable.
+
+2013-01-29  Janus Weil  <janus@gcc.gnu.org>
+	    Mikael Morin <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	* gfortran.h (gfc_component): Delete members 'formal' and 'formal_ns'.
+	(gfc_copy_formal_args,gfc_copy_formal_args_ppc,gfc_expr_replace_symbols,
+	gfc_expr_replace_comp): Delete.
+	(gfc_sym_get_dummy_args): New prototype.
+	* dependency.c (gfc_check_fncall_dependency): Use
+	'gfc_sym_get_dummy_args'.
+	* expr.c (gfc_is_constant_expr): Ditto.
+	(replace_symbol,gfc_expr_replace_symbols,replace_comp,
+	gfc_expr_replace_comp): Deleted.
+	* frontend-passes.c (doloop_code,do_function): Use
+	'gfc_sym_get_dummy_args'.
+	* interface.c (gfc_check_operator_interface,gfc_compare_interfaces,
+	gfc_procedure_use,gfc_ppc_use,gfc_arglist_matches_symbol,
+	gfc_check_typebound_override): Ditto.
+	* module.c (MOD_VERSION): Bump module version.
+	(mio_component): Do not read/write 'formal' and 'formal_ns'.
+	* resolve.c (resolve_procedure_interface,resolve_fl_derived0): Do not
+	copy formal args, but just keep a pointer to the interface.
+	(resolve_function,resolve_call,resolve_typebound_generic_call,
+	resolve_ppc_call,resolve_expr_ppc,generate_component_assignments,
+	resolve_fl_procedure,gfc_resolve_finalizers,check_generic_tbp_ambiguity,
+	resolve_typebound_procedure,check_uop_procedure): Use
+	'gfc_sym_get_dummy_args'.
+	* symbol.c (free_components): Do not free 'formal' and 'formal_ns'.
+	(gfc_copy_formal_args,gfc_copy_formal_args_ppc): Deleted.
+	(gfc_sym_get_dummy_args): New function.
+	* trans-array.c (get_array_charlen,gfc_walk_elemental_function_args):
+	Use 'gfc_sym_get_dummy_args'.
+	* trans-decl.c (build_function_decl,create_function_arglist,
+	build_entry_thunks,init_intent_out_dt,gfc_trans_deferred_vars,
+	add_argument_checking): Ditto.
+	* trans-expr.c (gfc_map_fcn_formal_to_actual,gfc_conv_procedure_call,
+	gfc_conv_statement_function): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Ditto.
+	* trans-types.c (create_fn_spec,gfc_get_function_type): Ditto.
+
 2013-01-28  Tobias Burnus  <burnus@net-b.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

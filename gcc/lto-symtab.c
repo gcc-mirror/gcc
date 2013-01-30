@@ -443,7 +443,8 @@ lto_symtab_merge_decls_1 (symtab_node first)
       else if (TREE_CODE (prevailing->symbol.decl) == FUNCTION_DECL)
 	{
 	  for (e = first; e; e = e->symbol.next_sharing_asm_name)
-	    if (DECL_BUILT_IN (e->symbol.decl))
+	    if (TREE_CODE (e->symbol.decl) == FUNCTION_DECL
+		&& DECL_BUILT_IN (e->symbol.decl))
 	      {
 		prevailing = e;
 		break;

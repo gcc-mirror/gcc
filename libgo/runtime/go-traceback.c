@@ -13,29 +13,25 @@
 void
 runtime_traceback ()
 {
-  uintptr pcbuf[100];
+  Location locbuf[100];
   int32 c;
 
-  c = runtime_callers (1, pcbuf, sizeof pcbuf / sizeof pcbuf[0]);
-  runtime_printtrace (pcbuf, c);
+  c = runtime_callers (1, locbuf, nelem (locbuf));
+  runtime_printtrace (locbuf, c, true);
 }
 
 void
-runtime_printtrace (uintptr *pcbuf, int32 c)
+runtime_printtrace (Location *locbuf, int32 c, bool current)
 {
   int32 i;
 
   for (i = 0; i < c; ++i)
     {
-      String fn;
-      String file;
-      intgo line;
-
-      if (__go_file_line (pcbuf[i], &fn, &file, &line)
-	  && runtime_showframe (fn))
+      if (runtime_showframe (locbuf[i].function, current))
 	{
-	  runtime_printf ("%S\n", fn);
-	  runtime_printf ("\t%S:%D\n", file, (int64) line);
+	  runtime_printf ("%S\n", locbuf[i].function);
+	  runtime_printf ("\t%S:%D\n", locbuf[i].filename,
+			  (int64) locbuf[i].lineno);
 	}
     }
 }

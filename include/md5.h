@@ -40,6 +40,11 @@
 # include <sys/types.h>
 typedef u_int32_t md5_uint32;
 typedef uintptr_t md5_uintptr;
+#elif defined (HAVE_SYS_TYPES_H) && defined (HAVE_STDINT_H)
+#include <stdint.h>
+#include <sys/types.h>
+typedef uint32_t md5_uint32;
+typedef uintptr_t md5_uintptr;
 #else
 #  define INT_MAX_32_BITS 2147483647
 

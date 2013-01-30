@@ -528,6 +528,7 @@ runtime_main(void)
 	setmcpumax(runtime_gomaxprocs);
 	runtime_sched.init = true;
 	scvg = __go_go(runtime_MHeap_Scavenger, nil);
+	scvg->issystem = true;
 	main_init();
 	runtime_sched.init = false;
 	if(!runtime_sched.lockmain)
@@ -630,7 +631,7 @@ runtime_goroutinetrailer(G *g)
 struct Traceback
 {
 	G* gp;
-	uintptr pcbuf[100];
+	Location locbuf[100];
 	int32 c;
 };
 
@@ -638,11 +639,15 @@ void
 runtime_tracebackothers(G * volatile me)
 {
 	G * volatile gp;
-	Traceback traceback;
+	Traceback tb;
+	int32 traceback;
 
-	traceback.gp = me;
+	tb.gp = me;
+	traceback = runtime_gotraceback();
 	for(gp = runtime_allg; gp != nil; gp = gp->alllink) {
 		if(gp == me || gp->status == Gdead)
+			continue;
+		if(gp->issystem && traceback < 2)
 			continue;
 		runtime_printf("\n");
 		runtime_goroutineheader(gp);
@@ -661,7 +666,7 @@ runtime_tracebackothers(G * volatile me)
 			continue;
 		}
 
-		gp->traceback = &traceback;
+		gp->traceback = &tb;
 
 #ifdef USING_SPLIT_STACK
 		__splitstack_getcontext(&me->stack_context[0]);
@@ -672,7 +677,7 @@ runtime_tracebackothers(G * volatile me)
 			runtime_gogo(gp);
 		}
 
-		runtime_printtrace(traceback.pcbuf, traceback.c);
+		runtime_printtrace(tb.locbuf, tb.c, false);
 		runtime_goroutinetrailer(gp);
 	}
 }
@@ -687,8 +692,8 @@ gtraceback(G* gp)
 
 	traceback = gp->traceback;
 	gp->traceback = nil;
-	traceback->c = runtime_callers(1, traceback->pcbuf,
-		sizeof traceback->pcbuf / sizeof traceback->pcbuf[0]);
+	traceback->c = runtime_callers(1, traceback->locbuf,
+		sizeof traceback->locbuf / sizeof traceback->locbuf[0]);
 	runtime_gogo(traceback->gp);
 }
 
@@ -975,6 +980,7 @@ top:
 	if((scvg == nil && runtime_sched.grunning == 0) ||
 	   (scvg != nil && runtime_sched.grunning == 1 && runtime_sched.gwait == 0 &&
 	    (scvg->status == Grunning || scvg->status == Gsyscall))) {
+		m->throwing = -1;  // do not dump full stacks
 		runtime_throw("all goroutines are asleep - deadlock!");
 	}
 
@@ -1736,13 +1742,14 @@ static struct {
 	void (*fn)(uintptr*, int32);
 	int32 hz;
 	uintptr pcbuf[100];
+	Location locbuf[100];
 } prof;
 
 // Called if we receive a SIGPROF signal.
 void
 runtime_sigprof()
 {
-	int32 n;
+	int32 n, i;
 
 	if(prof.fn == nil || prof.hz == 0)
 		return;
@@ -1752,7 +1759,9 @@ runtime_sigprof()
 		runtime_unlock(&prof);
 		return;
 	}
-	n = runtime_callers(0, prof.pcbuf, nelem(prof.pcbuf));
+	n = runtime_callers(0, prof.locbuf, nelem(prof.locbuf));
+	for(i = 0; i < n; i++)
+		prof.pcbuf[i] = prof.locbuf[i].pc;
 	if(n > 0)
 		prof.fn(prof.pcbuf, n);
 	runtime_unlock(&prof);

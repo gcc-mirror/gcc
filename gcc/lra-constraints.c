@@ -414,24 +414,26 @@ get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
 	= lra_create_new_reg_with_unique_value (mode, original, rclass, title);
       return true;
     }
-  for (i = 0; i < curr_insn_input_reloads_num; i++)
-    if (rtx_equal_p (curr_insn_input_reloads[i].input, original)
-	&& in_class_p (curr_insn_input_reloads[i].reg, rclass, &new_class))
-      {
-	lra_assert (! side_effects_p (original));
-	*result_reg = curr_insn_input_reloads[i].reg;
-	regno = REGNO (*result_reg);
-	if (lra_dump_file != NULL)
-	  {
-	    fprintf (lra_dump_file, "	 Reuse r%d for reload ", regno);
-	    dump_value_slim (lra_dump_file, original, 1);
-	  }
-	if (new_class != lra_get_allocno_class (regno))
-	  change_class (regno, new_class, ", change", false);
-	if (lra_dump_file != NULL)
-	  fprintf (lra_dump_file, "\n");
-	return false;
-      }
+  /* Prevent reuse value of expression with side effects,
+     e.g. volatile memory.  */
+  if (! side_effects_p (original))
+    for (i = 0; i < curr_insn_input_reloads_num; i++)
+      if (rtx_equal_p (curr_insn_input_reloads[i].input, original)
+	  && in_class_p (curr_insn_input_reloads[i].reg, rclass, &new_class))
+	{
+	  *result_reg = curr_insn_input_reloads[i].reg;
+	  regno = REGNO (*result_reg);
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file, "	 Reuse r%d for reload ", regno);
+	      dump_value_slim (lra_dump_file, original, 1);
+	    }
+	  if (new_class != lra_get_allocno_class (regno))
+	    change_class (regno, new_class, ", change", false);
+	  if (lra_dump_file != NULL)
+	    fprintf (lra_dump_file, "\n");
+	  return false;
+	}
   *result_reg = lra_create_new_reg (mode, original, rclass, title);
   lra_assert (curr_insn_input_reloads_num < LRA_MAX_INSN_RELOADS);
   curr_insn_input_reloads[curr_insn_input_reloads_num].input = original;

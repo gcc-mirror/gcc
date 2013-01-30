@@ -548,13 +548,19 @@ proper position among the other output files.  */
 #else
 #define ADD_STATIC_LIBASAN_LIBS
 #endif
-#ifdef HAVE_LD_STATIC_DYNAMIC
+#ifdef LIBASAN_EARLY_SPEC
+#define LIBASAN_SPEC ADD_STATIC_LIBASAN_LIBS
+#elif defined(HAVE_LD_STATIC_DYNAMIC)
 #define LIBASAN_SPEC "%{static-libasan:" LD_STATIC_OPTION \
 		     "} -lasan %{static-libasan:" LD_DYNAMIC_OPTION "}" \
 		     ADD_STATIC_LIBASAN_LIBS
 #else
 #define LIBASAN_SPEC "-lasan" ADD_STATIC_LIBASAN_LIBS
 #endif
+#endif
+
+#ifndef LIBASAN_EARLY_SPEC
+#define LIBASAN_EARLY_SPEC ""
 #endif
 
 #ifndef LIBTSAN_SPEC
@@ -705,7 +711,8 @@ proper position among the other output files.  */
    "%{fuse-ld=*:-fuse-ld=%*}\
     %X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}\
-    %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
+    %{static:} %{L*} %(mfwrap) %(link_libgcc) \
+    %{fsanitize=address:" LIBASAN_EARLY_SPEC "} %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\

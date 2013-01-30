@@ -15,20 +15,37 @@
 
 struct callers_data
 {
-  uintptr *pcbuf;
+  Location *locbuf;
   int index;
   int max;
 };
 
-/* Callback function for backtrace_simple.  Just collect the PC
-   values.  Return zero to continue, non-zero to stop.  */
+/* Callback function for backtrace_full.  Just collect the locations.
+   Return zero to continue, non-zero to stop.  */
 
 static int
-callback (void *data, uintptr_t pc)
+callback (void *data, uintptr_t pc, const char *filename, int lineno,
+	  const char *function)
 {
   struct callers_data *arg = (struct callers_data *) data;
+  Location *loc;
 
-  arg->pcbuf[arg->index] = pc;
+  /* Skip split stack functions.  */
+  if (function != NULL)
+    {
+      const char *p = function;
+
+      if (__builtin_strncmp (p, "___", 3) == 0)
+	++p;
+      if (__builtin_strncmp (p, "__morestack_", 12) == 0)
+	return 0;
+    }
+
+  loc = &arg->locbuf[arg->index];
+  loc->pc = pc;
+  loc->filename = runtime_gostring ((const byte *) filename);
+  loc->function = runtime_gostring ((const byte *) function);
+  loc->lineno = lineno;
   ++arg->index;
   return arg->index >= arg->max;
 }
@@ -47,15 +64,15 @@ error_callback (void *data __attribute__ ((unused)),
 /* Gather caller PC's.  */
 
 int32
-runtime_callers (int32 skip, uintptr *pcbuf, int32 m)
+runtime_callers (int32 skip, Location *locbuf, int32 m)
 {
   struct callers_data data;
 
-  data.pcbuf = pcbuf;
+  data.locbuf = locbuf;
   data.index = 0;
   data.max = m;
-  backtrace_simple (__go_get_backtrace_state (), skip + 1, callback,
-		    error_callback, &data);
+  backtrace_full (__go_get_backtrace_state (), skip + 1, callback,
+		  error_callback, &data);
   return data.index;
 }
 
@@ -65,8 +82,19 @@ int Callers (int, struct __go_open_array)
 int
 Callers (int skip, struct __go_open_array pc)
 {
+  Location *locbuf;
+  int ret;
+  int i;
+
+  locbuf = (Location *) runtime_mal (pc.__count * sizeof (Location));
+
   /* In the Go 1 release runtime.Callers has an off-by-one error,
      which we can not correct because it would break backward
      compatibility.  Adjust SKIP here to be compatible.  */
-  return runtime_callers (skip - 1, (uintptr *) pc.__values, pc.__count);
+  ret = runtime_callers (skip - 1, locbuf, pc.__count);
+
+  for (i = 0; i < ret; i++)
+    ((uintptr *) pc.__values)[i] = locbuf[i].pc;
+
+  return ret;
 }

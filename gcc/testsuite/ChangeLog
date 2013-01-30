@@ -1,3 +1,64 @@
+2013-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55374
+	* g++.dg/asan/large-func-test-1.C: Allow both _Zna[jm] in addition
+	to _Znw[jm] in the backtrace.  Allow _Zna[jm] to be the first frame
+	printed in backtrace.
+	* g++.dg/asan/deep-stack-uaf-1.C: Use malloc instead of operator new
+	to avoid errors about mismatched allocation vs. deallocation.
+
+	PR c++/55742
+	* g++.dg/mv1.C: Moved to...
+	* g++.dg/ext/mv1.C: ... here.  Adjust test.
+	* g++.dg/mv2.C: Moved to...
+	* g++.dg/ext/mv2.C: ... here.  Adjust test.
+	* g++.dg/mv3.C: Moved to...
+	* g++.dg/ext/mv3.C: ... here.
+	* g++.dg/mv4.C: Moved to...
+	* g++.dg/ext/mv4.C: ... here.
+	* g++.dg/mv5.C: Moved to...
+	* g++.dg/ext/mv5.C: ... here.  Adjust test.
+	* g++.dg/mv6.C: Moved to...
+	* g++.dg/ext/mv6.C: ... here.  Adjust test.
+	* g++.dg/ext/mv7.C: New test.
+	* g++.dg/ext/mv8.C: New test.
+	* g++.dg/ext/mv9.C: New test.
+	* g++.dg/ext/mv10.C: New test.
+	* g++.dg/ext/mv11.C: New test.
+
+2013-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56144
+	* gcc.dg/pr56144.c: New.
+
+2013-01-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp0x/constexpr-53094-2.C: Ignore non-standard ABI
+	message.
+	* g++.dg/cpp0x/constexpr-53094-3.C: Same.
+	* g++.dg/cpp0x/constexpr-55573.C: Same
+
+2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* gcc.dg/fixed-point/view-convert.c: New test.
+
+2013-01-30  Andreas Schwab  <schwab@suse.de>
+
+	* lib/target-supports-dg.exp (dg-process-target): Use expr to
+	evaluate the end index in string range.
+
+2012-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56138
+	* gfortran.dg/allocatable_function_6.f90: New.
+
+2013-01-29  Janus Weil  <janus@gcc.gnu.org>
+	    Mikael Morin <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	* gfortran.dg/proc_ptr_comp_36.f90: New.
+
 2013-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55270

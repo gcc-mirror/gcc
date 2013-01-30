@@ -1,3 +1,104 @@
+2013-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55374
+	* gcc.c (LIBASAN_SPEC): Define just to ADD_STATIC_LIBASAN_LIBS if
+	LIBASAN_EARLY_SPEC is defined.
+	(LIBASAN_EARLY_SPEC): Define to empty string if not already defined.
+	(LINK_COMMAND_SPEC): Add LIBASAN_EARLY_SPEC for -fsanitize=address,
+	before %o.
+	* config/gnu-user.h (LIBASAN_EARLY_SPEC): Define.
+
+	PR c++/55742
+	* config/i386/i386.c (ix86_valid_target_attribute_inner_p): Diagnose
+	invalid args instead of ICEing on it.
+	(ix86_valid_target_attribute_tree): Return error_mark_node if
+	ix86_valid_target_attribute_inner_p failed.
+	(ix86_valid_target_attribute_p): Return false only if
+	ix86_valid_target_attribute_tree returned error_mark_node.  Allow
+	target("default") attribute.
+	(sorted_attr_string): Change argument from const char * to tree,
+	merge in all target attribute arguments rather than just one.
+	Formatting fix.  Use XNEWVEC instead of xmalloc and XDELETEVEC
+	instead of free.  Avoid using strcat.
+	(ix86_mangle_function_version_assembler_name): Mangle
+	target("default") as if no target attribute is present.  Adjust
+	sorted_attr_string caller.  Avoid leaking memory.  Use XNEWVEC
+	instead of xmalloc and XDELETEVEC instead of free.
+	(ix86_function_versions): Don't return true if one of the decls
+	doesn't have target attribute.  If they don't and one of the decls
+	is DECL_FUNCTION_VERSIONED, report an error.  Adjust
+	sorted_attr_string caller.  Use XDELETEVEC instead of free.
+	(ix86_supports_function_versions): Remove.
+	(make_name): Fix up formatting.
+	(make_dispatcher_decl): Remove resolver_name and its initialization.
+	Avoid leaking memory.
+	(is_function_default_version): Return true if there is
+	target("default") attribute rather than no target attribute at all.
+	(make_resolver_func): Avoid leaking memory.
+	(ix86_generate_version_dispatcher_body): Likewise.
+	(TARGET_OPTION_SUPPORTS_FUNCTION_VERSIONS): Remove.
+	* target.def (supports_function_versions): Remove.
+	* doc/tm.texi.in (SUPPORTS_FUNCTION_VERSIONS): Remove.
+	* doc/tm.texi: Regenerated.
+
+2013-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56144
+	* lra-constraints.c (get_reload_reg): Don't reuse reload pseudo
+	for values with side effects.
+
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	* sparseset.h (sparseset_bit_p): Use gcc_checking_assert.
+	(sparseset_pop): Likewise.
+	* cfganal.c (compute_idf): Likewise.  Increase work-stack size
+	to be able to use quick_push in the worker loop.
+
+2013-01-30  Marek Polacek  <polacek@redhat.com>
+
+	* cfgcleanup.c (cleanup_cfg): Don't mark affected BBs.
+
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56147
+	* lto-symtab.c (lto_symtab_merge_decls_1): Guard DECL_BUILT_IN
+	check.
+
+2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* fixed-value.c (fixed_from_double_int): New function.
+	* fixed-value.h (fixed_from_double_int): New prototype.
+	(const_fixed_from_double_int): New static inline function.
+	* fold-const.c (native_interpret_fixed): New static function.
+	(native_interpret_expr) <FIXED_POINT_TYPE>: Use it.
+	(can_native_interpret_type_p) <FIXED_POINT_TYPE>: Return true.
+	(native_encode_fixed): New static function.
+	(native_encode_expr) <FIXED_CST>: Use it.
+	(native_interpret_int): Move double_int worker code to...
+	* double-int.c (double_int::from_buffer): ...this new static method.
+	* double-int.h (double_int::from_buffer): Prototype it.
+
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (final_solutions, final_solutions_obstack):
+	New pointer-map and obstack.
+	(init_alias_vars): Allocate pointer-map and obstack.
+	(delete_points_to_sets): Free them.
+	(find_what_var_points_to): Cache result.
+	(find_what_p_points_to): Adjust for changed interface of
+	find_what_var_points_to.
+	(compute_points_to_sets): Likewise.
+	(ipa_pta_execute): Likewise.
+
+2013-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (HAVE_AS_SPARC_NOBITS): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section): Emit
+	#nobits/#progbits if supported.
+
 2013-01-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/56121

@@ -10,12 +10,46 @@ package runtime
 
 #define charntorune(pv, str, len) __go_get_rune(str, len, pv)
 
+const String	runtime_emptystring;
+
 intgo
 runtime_findnull(const byte *s)
 {
 	if(s == nil)
 		return 0;
 	return __builtin_strlen((const char*) s);
+}
+
+static String
+gostringsize(intgo l, byte** pmem)
+{
+	String s;
+	byte *mem;
+
+	if(l == 0) {
+		*pmem = nil;
+		return runtime_emptystring;
+	}
+	// leave room for NUL for C runtime (e.g., callers of getenv)
+	mem = runtime_mallocgc(l+1, FlagNoPointers, 1, 0);
+	s.str = mem;
+	s.len = l;
+	mem[l] = 0;
+	*pmem = mem;
+	return s;
+}
+
+String
+runtime_gostring(const byte *str)
+{
+	intgo l;
+	String s;
+	byte *mem;
+
+	l = runtime_findnull(str);
+	s = gostringsize(l, &mem);
+	runtime_memmove(mem, str, l);
+	return s;
 }
 
 String

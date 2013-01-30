@@ -98,6 +98,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_C99_FUNCTIONS 1
 #define TARGET_HAS_SINCOS 1
 
+/* Link -lasan early on the command line.  For -static-libasan, don't link
+   it for -shared link, the executable should be compiled with -static-libasan
+   in that case, and for executable link link with --{,no-}whole-archive around
+   it to force everything into the executable.  */
+#undef LIBASAN_EARLY_SPEC
+#define LIBASAN_EARLY_SPEC "%{static-libasan:%{!shared:" \
+  LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
+  LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
+
 /* Additional libraries needed by -static-libasan.  */
 #undef STATIC_LIBASAN_LIBS
 #define STATIC_LIBASAN_LIBS "-ldl -lpthread"

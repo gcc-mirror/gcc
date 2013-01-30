@@ -110,8 +110,10 @@ addtimer(Timer *t)
 			runtime_ready(timers.timerproc);
 		}
 	}
-	if(timers.timerproc == nil)
+	if(timers.timerproc == nil) {
 		timers.timerproc = __go_go(timerproc, nil);
+		timers.timerproc->issystem = true;
+	}
 }
 
 // Delete timer t from the heap.

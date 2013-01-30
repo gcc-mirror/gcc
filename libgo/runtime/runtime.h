@@ -83,6 +83,8 @@ typedef struct	__go_map_type		MapType;
 
 typedef struct  Traceback	Traceback;
 
+typedef struct	Location	Location;
+
 /*
  * Per-CPU declaration.
  */
@@ -155,6 +157,16 @@ struct	GCStats
 	uint64	nosyield;
 	uint64	nsleep;
 };
+
+// A location in the program, used for backtraces.
+struct	Location
+{
+	uintptr	pc;
+	String	filename;
+	String	function;
+	intgo	lineno;
+};
+
 struct	G
 {
 	Defer*	defer;
@@ -178,6 +190,7 @@ struct	G
 	G*	schedlink;
 	bool	readyonstop;
 	bool	ispanic;
+	bool	issystem;
 	int8	raceignore; // ignore race detection events
 	M*	m;		// for debuggers, but offset not hard-coded
 	M*	lockedm;
@@ -208,6 +221,7 @@ struct	M
 	G*	curg;		// current running goroutine
 	int32	id;
 	int32	mallocing;
+	int32	throwing;
 	int32	gcing;
 	int32	locks;
 	int32	nomemprof;
@@ -224,7 +238,7 @@ struct	M
 	MCache	*mcache;
 	G*	lockedg;
 	G*	idleg;
-	uintptr	createstack[32];	// Stack that created this thread.
+	Location createstack[32];	// Stack that created this thread.
 	M*	nextwaitm;	// next M waiting for lock
 	uintptr	waitsema;	// semaphore for parking on locks
 	uint32	waitsemacount;
@@ -389,7 +403,8 @@ void	runtime_goroutineheader(G*);
 void	runtime_goroutinetrailer(G*);
 void	runtime_traceback();
 void	runtime_tracebackothers(G*);
-void	runtime_printtrace(uintptr*, int32);
+void	runtime_printtrace(Location*, int32, bool);
+String	runtime_gostring(const byte*);
 String	runtime_gostringnocopy(const byte*);
 void*	runtime_mstart(void*);
 G*	runtime_malg(int32, byte**, size_t*);
@@ -404,7 +419,7 @@ void	runtime_entersyscall(void) __asm__ (GOSYM_PREFIX "syscall.Entersyscall");
 void	runtime_exitsyscall(void) __asm__ (GOSYM_PREFIX "syscall.Exitsyscall");
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
-int32	runtime_callers(int32, uintptr*, int32);
+int32	runtime_callers(int32, Location*, int32);
 int64	runtime_nanotime(void);
 int64	runtime_cputicks(void);
 int64	runtime_tickspersecond(void);
@@ -593,7 +608,7 @@ void	runtime_osyield(void);
 void	runtime_LockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.LockOSThread");
 void	runtime_UnlockOSThread(void) __asm__ (GOSYM_PREFIX "runtime.UnlockOSThread");
 
-bool	runtime_showframe(String);
+bool	runtime_showframe(String, bool);
 
 uintptr	runtime_memlimit(void);
 
