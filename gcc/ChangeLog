@@ -1,3 +1,9 @@
+2013-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56144
+	* lra-constraints.c (get_reload_reg): Don't reuse reload pseudo
+	for values with side effects.
+
 2013-01-30  Richard Biener  <rguenther@suse.de>
 
 	* sparseset.h (sparseset_bit_p): Use gcc_checking_assert.
