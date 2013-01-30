@@ -1,3 +1,15 @@
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (final_solutions, final_solutions_obstack):
+	New pointer-map and obstack.
+	(init_alias_vars): Allocate pointer-map and obstack.
+	(delete_points_to_sets): Free them.
+	(find_what_var_points_to): Cache result.
+	(find_what_p_points_to): Adjust for changed interface of
+	find_what_var_points_to.
+	(compute_points_to_sets): Likewise.
+	(ipa_pta_execute): Likewise.
+
 2013-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (HAVE_AS_SPARC_NOBITS): New test.
