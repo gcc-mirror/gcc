@@ -1141,7 +1141,8 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
   vec<int> work_stack;
   bitmap phi_insertion_points;
 
-  work_stack.create (n_basic_blocks);
+  /* Each block can appear at most twice on the work-stack.  */
+  work_stack.create (2 * n_basic_blocks);
   phi_insertion_points = BITMAP_ALLOC (NULL);
 
   /* Seed the work list with all the blocks in DEF_BLOCKS.  We use
@@ -1165,15 +1166,12 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
 	 form, the basic blocks where new and/or old names are defined
 	 may have disappeared by CFG cleanup calls.  In this case,
 	 we may pull a non-existing block from the work stack.  */
-      gcc_assert (bb_index < (unsigned) last_basic_block);
+      gcc_checking_assert (bb_index < (unsigned) last_basic_block);
 
       EXECUTE_IF_AND_COMPL_IN_BITMAP (&dfs[bb_index], phi_insertion_points,
 	                              0, i, bi)
 	{
-	  /* Use a safe push because if there is a definition of VAR
-	     in every basic block, then WORK_STACK may eventually have
-	     more than N_BASIC_BLOCK entries.  */
-	  work_stack.safe_push (i);
+	  work_stack.quick_push (i);
 	  bitmap_set_bit (phi_insertion_points, i);
 	}
     }

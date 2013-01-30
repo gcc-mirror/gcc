@@ -1,3 +1,10 @@
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	* sparseset.h (sparseset_bit_p): Use gcc_checking_assert.
+	(sparseset_pop): Likewise.
+	* cfganal.c (compute_idf): Likewise.  Increase work-stack size
+	to be able to use quick_push in the worker loop.
+
 2013-01-30  Marek Polacek  <polacek@redhat.com>
 
 	* cfgcleanup.c (cleanup_cfg): Don't mark affected BBs.
