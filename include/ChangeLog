@@ -1,3 +1,13 @@
+2013-01-30  Kai Tietz  <ktietz@redhat.com>
+
+	Merged from trunk.
+
+	PR other/54620
+	PR target/39064
+	* md5.h (md5_uintptr, md5_uint32): Define as uintptr_t/uint32_t if
+	stdint.h and sys/types.h headers are present.
+	* sha1.h (sha1_uintptr, sha1_uint32): Likewise.
+
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
