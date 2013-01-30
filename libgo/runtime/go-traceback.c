@@ -17,11 +17,11 @@ runtime_traceback ()
   int32 c;
 
   c = runtime_callers (1, pcbuf, sizeof pcbuf / sizeof pcbuf[0]);
-  runtime_printtrace (pcbuf, c);
+  runtime_printtrace (pcbuf, c, true);
 }
 
 void
-runtime_printtrace (uintptr *pcbuf, int32 c)
+runtime_printtrace (uintptr *pcbuf, int32 c, bool current)
 {
   int32 i;
 
@@ -32,7 +32,7 @@ runtime_printtrace (uintptr *pcbuf, int32 c)
       intgo line;
 
       if (__go_file_line (pcbuf[i], &fn, &file, &line)
-	  && runtime_showframe (fn))
+	  && runtime_showframe (fn, current))
 	{
 	  runtime_printf ("%S\n", fn);
 	  runtime_printf ("\t%S:%D\n", file, (int64) line);

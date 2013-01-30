@@ -528,6 +528,7 @@ runtime_main(void)
 	setmcpumax(runtime_gomaxprocs);
 	runtime_sched.init = true;
 	scvg = __go_go(runtime_MHeap_Scavenger, nil);
+	scvg->issystem = true;
 	main_init();
 	runtime_sched.init = false;
 	if(!runtime_sched.lockmain)
@@ -638,11 +639,15 @@ void
 runtime_tracebackothers(G * volatile me)
 {
 	G * volatile gp;
-	Traceback traceback;
+	Traceback tb;
+	int32 traceback;
 
-	traceback.gp = me;
+	tb.gp = me;
+	traceback = runtime_gotraceback();
 	for(gp = runtime_allg; gp != nil; gp = gp->alllink) {
 		if(gp == me || gp->status == Gdead)
+			continue;
+		if(gp->issystem && traceback < 2)
 			continue;
 		runtime_printf("\n");
 		runtime_goroutineheader(gp);
@@ -661,7 +666,7 @@ runtime_tracebackothers(G * volatile me)
 			continue;
 		}
 
-		gp->traceback = &traceback;
+		gp->traceback = &tb;
 
 #ifdef USING_SPLIT_STACK
 		__splitstack_getcontext(&me->stack_context[0]);
@@ -672,7 +677,7 @@ runtime_tracebackothers(G * volatile me)
 			runtime_gogo(gp);
 		}
 
-		runtime_printtrace(traceback.pcbuf, traceback.c);
+		runtime_printtrace(tb.pcbuf, tb.c, false);
 		runtime_goroutinetrailer(gp);
 	}
 }
@@ -975,6 +980,7 @@ top:
 	if((scvg == nil && runtime_sched.grunning == 0) ||
 	   (scvg != nil && runtime_sched.grunning == 1 && runtime_sched.gwait == 0 &&
 	    (scvg->status == Grunning || scvg->status == Gsyscall))) {
+		m->throwing = -1;  // do not dump full stacks
 		runtime_throw("all goroutines are asleep - deadlock!");
 	}
 

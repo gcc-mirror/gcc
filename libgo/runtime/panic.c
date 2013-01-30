@@ -86,6 +86,11 @@ runtime_dopanic(int32 unused __attribute__ ((unused)))
 void
 runtime_throw(const char *s)
 {
+	M *mp;
+
+	mp = runtime_m();
+	if(mp->throwing == 0)
+		mp->throwing = 1;
 	runtime_startpanic();
 	runtime_printf("fatal error: %s\n", s);
 	runtime_dopanic(0);
