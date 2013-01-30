@@ -1,3 +1,9 @@
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56147
+	* lto-symtab.c (lto_symtab_merge_decls_1): Guard DECL_BUILT_IN
+	check.
+
 2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR tree-optimization/56064
