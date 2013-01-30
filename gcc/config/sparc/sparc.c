@@ -9512,7 +9512,14 @@ sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
   if (flags & SECTION_CODE)
     fputs (",#execinstr", asm_out_file);
 
-  /* ??? Handle SECTION_BSS.  */
+  /* Sun as only supports #nobits/#progbits since Solaris 10.  */
+  if (HAVE_AS_SPARC_NOBITS)
+    {
+      if (flags & SECTION_BSS)
+	fputs (",#nobits", asm_out_file);
+      else
+	fputs (",#progbits", asm_out_file);
+    }
 
   fputc ('\n', asm_out_file);
 }
