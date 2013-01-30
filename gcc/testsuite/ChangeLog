@@ -1,3 +1,10 @@
+2013-01-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp0x/constexpr-53094-2.C: Ignore non-standard ABI
+	message.
+	* g++.dg/cpp0x/constexpr-53094-3.C: Same.
+	* g++.dg/cpp0x/constexpr-55573.C: Same
+	
 2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR tree-optimization/56064
