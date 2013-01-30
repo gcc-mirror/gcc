@@ -586,7 +586,7 @@ if { [info procs saved-dg-process-target] == [list] } {
 	if [regexp "^target .* xfail .*" $selector] {
 	    set xfail_index [string first "xfail" $selector]
 	    set xfail_selector [string range $selector $xfail_index end]
-	    set target_selector [string range $selector 0 $xfail_index-1]
+	    set target_selector [string range $selector 0 [expr $xfail_index-1]]
 	    set target_selector [string trim $target_selector]
 	    if { [dg-process-target-1 $target_selector] == "N" } {
 		return "N"
