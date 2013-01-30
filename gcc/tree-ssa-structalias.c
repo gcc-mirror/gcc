@@ -303,7 +303,9 @@ static inline bool type_can_have_subvars (const_tree);
 /* Pool of variable info structures.  */
 static alloc_pool variable_info_pool;
 
-
+/* Map varinfo to final pt_solution.  */
+static pointer_map_t *final_solutions;
+struct obstack final_solutions_obstack;
 
 /* Table of variable info structures for constraint variables.
    Indexed directly by variable info id.  */
@@ -5872,20 +5874,28 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
 
 /* Compute the points-to solution *PT for the variable VI.  */
 
-static void
-find_what_var_points_to (varinfo_t orig_vi, struct pt_solution *pt)
+static struct pt_solution
+find_what_var_points_to (varinfo_t orig_vi)
 {
   unsigned int i;
   bitmap_iterator bi;
   bitmap finished_solution;
   bitmap result;
   varinfo_t vi;
-
-  memset (pt, 0, sizeof (struct pt_solution));
+  void **slot;
+  struct pt_solution *pt;
 
   /* This variable may have been collapsed, let's get the real
      variable.  */
   vi = get_varinfo (find (orig_vi->id));
+
+  /* See if we have already computed the solution and return it.  */
+  slot = pointer_map_insert (final_solutions, vi);
+  if (*slot != NULL)
+    return *(struct pt_solution *)*slot;
+
+  *slot = pt = XOBNEW (&final_solutions_obstack, struct pt_solution);
+  memset (pt, 0, sizeof (struct pt_solution));
 
   /* Translate artificial variables into SSA_NAME_PTR_INFO
      attributes.  */
@@ -5921,7 +5931,7 @@ find_what_var_points_to (varinfo_t orig_vi, struct pt_solution *pt)
   /* Instead of doing extra work, simply do not create
      elaborate points-to information for pt_anything pointers.  */
   if (pt->anything)
-    return;
+    return *pt;
 
   /* Share the final set of variables when possible.  */
   finished_solution = BITMAP_GGC_ALLOC ();
@@ -5939,6 +5949,8 @@ find_what_var_points_to (varinfo_t orig_vi, struct pt_solution *pt)
       pt->vars = result;
       bitmap_clear (finished_solution);
     }
+
+  return *pt;
 }
 
 /* Given a pointer variable P, fill in its points-to set.  */
@@ -5963,7 +5975,7 @@ find_what_p_points_to (tree p)
     return;
 
   pi = get_ptr_info (p);
-  find_what_var_points_to (vi, &pi->pt);
+  pi->pt = find_what_var_points_to (vi);
 }
 
 
@@ -6480,6 +6492,9 @@ init_alias_vars (void)
   init_base_vars ();
 
   gcc_obstack_init (&fake_var_decl_obstack);
+
+  final_solutions = pointer_map_create ();
+  gcc_obstack_init (&final_solutions_obstack);
 }
 
 /* Remove the REF and ADDRESS edges from GRAPH, as well as all the
@@ -6638,8 +6653,7 @@ compute_points_to_sets (void)
   solve_constraints ();
 
   /* Compute the points-to set for ESCAPED used for call-clobber analysis.  */
-  find_what_var_points_to (get_varinfo (escaped_id),
-			   &cfun->gimple_df->escaped);
+  cfun->gimple_df->escaped = find_what_var_points_to (get_varinfo (escaped_id));
 
   /* Make sure the ESCAPED solution (which is used as placeholder in
      other solutions) does not reference itself.  This simplifies
@@ -6679,7 +6693,7 @@ compute_points_to_sets (void)
 	    memset (pt, 0, sizeof (struct pt_solution));
 	  else if ((vi = lookup_call_use_vi (stmt)) != NULL)
 	    {
-	      find_what_var_points_to (vi, pt);
+	      *pt = find_what_var_points_to (vi);
 	      /* Escaped (and thus nonlocal) variables are always
 	         implicitly used by calls.  */
 	      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -6700,7 +6714,7 @@ compute_points_to_sets (void)
 	    memset (pt, 0, sizeof (struct pt_solution));
 	  else if ((vi = lookup_call_clobber_vi (stmt)) != NULL)
 	    {
-	      find_what_var_points_to (vi, pt);
+	      *pt = find_what_var_points_to (vi);
 	      /* Escaped (and thus nonlocal) variables are always
 	         implicitly clobbered by calls.  */
 	      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -6755,6 +6769,9 @@ delete_points_to_sets (void)
   free_alloc_pool (constraint_pool);
 
   obstack_free (&fake_var_decl_obstack, NULL);
+
+  pointer_map_destroy (final_solutions);
+  obstack_free (&final_solutions_obstack, NULL);
 }
 
 
@@ -7023,7 +7040,7 @@ ipa_pta_execute (void)
      ???  Note that the computed escape set is not correct
      for the whole unit as we fail to consider graph edges to
      externally visible functions.  */
-  find_what_var_points_to (get_varinfo (escaped_id), &ipa_escaped_pt);
+  ipa_escaped_pt = find_what_var_points_to (get_varinfo (escaped_id));
 
   /* Make sure the ESCAPED solution (which is used as placeholder in
      other solutions) does not reference itself.  This simplifies
@@ -7058,9 +7075,9 @@ ipa_pta_execute (void)
       /* Compute the call-use and call-clobber sets for all direct calls.  */
       fi = lookup_vi_for_tree (node->symbol.decl);
       gcc_assert (fi->is_fn_info);
-      find_what_var_points_to (first_vi_for_offset (fi, fi_clobbers),
-			       &clobbers);
-      find_what_var_points_to (first_vi_for_offset (fi, fi_uses), &uses);
+      clobbers
+	= find_what_var_points_to (first_vi_for_offset (fi, fi_clobbers));
+      uses = find_what_var_points_to (first_vi_for_offset (fi, fi_uses));
       for (e = node->callers; e; e = e->next_caller)
 	{
 	  if (!e->call_stmt)
@@ -7097,7 +7114,7 @@ ipa_pta_execute (void)
 		    memset (pt, 0, sizeof (struct pt_solution));
 		  else if ((vi = lookup_call_use_vi (stmt)) != NULL)
 		    {
-		      find_what_var_points_to (vi, pt);
+		      *pt = find_what_var_points_to (vi);
 		      /* Escaped (and thus nonlocal) variables are always
 			 implicitly used by calls.  */
 		      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -7118,7 +7135,7 @@ ipa_pta_execute (void)
 		    memset (pt, 0, sizeof (struct pt_solution));
 		  else if ((vi = lookup_call_clobber_vi (stmt)) != NULL)
 		    {
-		      find_what_var_points_to (vi, pt);
+		      *pt = find_what_var_points_to (vi);
 		      /* Escaped (and thus nonlocal) variables are always
 			 implicitly clobbered by calls.  */
 		      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -7178,14 +7195,14 @@ ipa_pta_execute (void)
 
 			  if (!uses->anything)
 			    {
-			      find_what_var_points_to
-				  (first_vi_for_offset (vi, fi_uses), &sol);
+			      sol = find_what_var_points_to
+				      (first_vi_for_offset (vi, fi_uses));
 			      pt_solution_ior_into (uses, &sol);
 			    }
 			  if (!clobbers->anything)
 			    {
-			      find_what_var_points_to
-				  (first_vi_for_offset (vi, fi_clobbers), &sol);
+			      sol = find_what_var_points_to
+				      (first_vi_for_offset (vi, fi_clobbers));
 			      pt_solution_ior_into (clobbers, &sol);
 			    }
 			}
