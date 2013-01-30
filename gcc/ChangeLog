@@ -1,3 +1,7 @@
+2013-01-30  Marek Polacek  <polacek@redhat.com>
+
+	* cfgcleanup.c (cleanup_cfg): Don't mark affected BBs.
+
 2013-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56147
