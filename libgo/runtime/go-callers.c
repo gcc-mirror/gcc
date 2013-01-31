@@ -43,8 +43,14 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 
   loc = &arg->locbuf[arg->index];
   loc->pc = pc;
-  loc->filename = runtime_gostring ((const byte *) filename);
-  loc->function = runtime_gostring ((const byte *) function);
+
+  /* The libbacktrace library says that these strings might disappear,
+     but with the current implementation they won't.  We can't easily
+     allocate memory here, so for now assume that we can save a
+     pointer to the strings.  */
+  loc->filename = runtime_gostringnocopy ((const byte *) filename);
+  loc->function = runtime_gostringnocopy ((const byte *) function);
+
   loc->lineno = lineno;
   ++arg->index;
   return arg->index >= arg->max;
