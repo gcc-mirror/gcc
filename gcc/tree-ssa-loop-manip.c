@@ -402,7 +402,7 @@ find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis)
   if (is_gimple_debug (stmt))
     return;
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
     find_uses_to_rename_use (bb, var, use_blocks, need_phis);
 }
 
@@ -422,8 +422,9 @@ find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
     for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
       {
         gimple phi = gsi_stmt (bsi);
-	find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
-				 use_blocks, need_phis);
+	if (! virtual_operand_p (gimple_phi_result (phi)))
+	  find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
+				   use_blocks, need_phis);
       }
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
