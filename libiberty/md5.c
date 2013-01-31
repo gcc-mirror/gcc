@@ -293,8 +293,7 @@ md5_process_block (const void *buffer, size_t len, struct md5_ctx *ctx)
      length of the file up to 2^64 bits.  Here we only compute the
      number of bytes.  Do a double word increment.  */
   ctx->total[0] += len;
-  if (ctx->total[0] < len)
-    ++ctx->total[1];
+  ctx->total[1] += ((len >> 31) >> 1) + (ctx->total[0] < len);
 
   /* Process all bytes in the buffer with 64 bytes in each round of
      the loop.  */
