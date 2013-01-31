@@ -1,3 +1,11 @@
+2013-01-31  Kai Tietz  <ktietz@redhat.com>
+        2012-07-31  Mike Frysinger  <vapier@gentoo.org>
+
+	Merged from trunk.
+	PR other/53285
+	* md5.c (md5_finish_ctx): Declare swap_bytes.  Assign SWAP() output
+	to swap_bytes, and then call memcpy to move it to ctx->buffer.
+
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
