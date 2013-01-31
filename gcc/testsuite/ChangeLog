@@ -1,3 +1,8 @@
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56150
+	* gcc.dg/torture/pr56150.c: New testcase.
+
 2013-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/55374
