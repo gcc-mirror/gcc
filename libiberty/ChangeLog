@@ -6,7 +6,7 @@
 	a wider-integer-scalar as a 32-bit unsigned integer.
 
 	Merged from trunk.
-	PR other/543413
+	PR other/53413
 	* md5.c (md5_process_block):  Handle case that size_t is
 	a wider-integer-scalar a 32-bit unsigned integer.
 
