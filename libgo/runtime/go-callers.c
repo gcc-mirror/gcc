@@ -34,11 +34,22 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
   /* Skip split stack functions.  */
   if (function != NULL)
     {
-      const char *p = function;
+      const char *p;
 
+      p = function;
       if (__builtin_strncmp (p, "___", 3) == 0)
 	++p;
       if (__builtin_strncmp (p, "__morestack_", 12) == 0)
+	return 0;
+    }
+  else if (filename != NULL)
+    {
+      const char *p;
+
+      p = strrchr (filename, '/');
+      if (p == NULL)
+	p = filename;
+      if (__builtin_strncmp (p, "morestack.S", 11) == 0)
 	return 0;
     }
 
