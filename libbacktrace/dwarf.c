@@ -2473,9 +2473,20 @@ read_function_info (struct backtrace_state *state, struct dwarf_data *ddata,
 		    struct function_addrs **ret_addrs,
 		    size_t *ret_addrs_count)
 {
+  struct function_vector lvec;
+  struct function_vector *pfvec;
   struct dwarf_buf unit_buf;
   struct function_addrs *addrs;
   size_t addrs_count;
+
+  /* Use FVEC if it is not NULL.  Otherwise use our own vector.  */
+  if (fvec != NULL)
+    pfvec = fvec;
+  else
+    {
+      memset (&lvec, 0, sizeof lvec);
+      pfvec = &lvec;
+    }
 
   unit_buf.name = ".debug_info";
   unit_buf.start = ddata->dwarf_info;
@@ -2489,20 +2500,28 @@ read_function_info (struct backtrace_state *state, struct dwarf_data *ddata,
   while (unit_buf.left > 0)
     {
       if (!read_function_entry (state, ddata, u, 0, &unit_buf, lhdr,
-				error_callback, data, fvec))
+				error_callback, data, pfvec))
 	return;
     }
 
-  if (fvec->count == 0)
+  if (pfvec->count == 0)
     return;
 
-  addrs = (struct function_addrs *) fvec->vec.base;
-  addrs_count = fvec->count;
+  addrs = (struct function_addrs *) pfvec->vec.base;
+  addrs_count = pfvec->count;
 
-  /* Finish this list of addresses, but leave the remaining space in
-     the vector available for the next function unit.  */
-  backtrace_vector_finish (state, &fvec->vec);
-  fvec->count = 0;
+  if (fvec == NULL)
+    {
+      if (!backtrace_vector_release (state, &lvec.vec, error_callback, data))
+	return;
+    }
+  else
+    {
+      /* Finish this list of addresses, but leave the remaining space in
+	 the vector available for the next function unit.  */
+      backtrace_vector_finish (state, &fvec->vec);
+      fvec->count = 0;
+    }
 
   qsort (addrs, addrs_count, sizeof (struct function_addrs),
 	 function_addrs_compare);
@@ -2663,8 +2682,16 @@ dwarf_lookup_pc (struct backtrace_state *state, struct dwarf_data *ddata,
       if (read_line_info (state, ddata, error_callback, data, entry->u, &lhdr,
 			  &lines, &count))
 	{
+	  struct function_vector *pfvec;
+
+	  /* If not threaded, reuse DDATA->FVEC for better memory
+	     consumption.  */
+	  if (state->threaded)
+	    pfvec = NULL;
+	  else
+	    pfvec = &ddata->fvec;
 	  read_function_info (state, ddata, &lhdr, error_callback, data,
-			      entry->u, &ddata->fvec, &function_addrs,
+			      entry->u, pfvec, &function_addrs,
 			      &function_addrs_count);
 	  free_line_header (state, &lhdr, error_callback, data);
 	  new_data = 1;
