@@ -1,3 +1,11 @@
+2013-01-31  Paul Koning  <ni1d@arrl.net>
+
+	PR debug/55059
+	PR debug/54508
+	* dwarf2out.c (prune_unused_types_mark): Mark all of parent's
+	children if parent is a class.
+	(prune_unused_types_prune): Don't add DW_AT_declaration.
+
 2013-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56157
