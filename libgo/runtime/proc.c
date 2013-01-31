@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include <limits.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -1217,6 +1218,9 @@ runtime_newm(void)
 	pthread_attr_t attr;
 	pthread_t tid;
 	size_t stacksize;
+	sigset_t clear;
+	sigset_t old;
+	int ret;
 
 #if 0
 	static const Type *mtype;  // The Go type M
@@ -1249,7 +1253,15 @@ runtime_newm(void)
 	if(pthread_attr_setstacksize(&attr, stacksize) != 0)
 		runtime_throw("pthread_attr_setstacksize");
 
-	if(pthread_create(&tid, &attr, runtime_mstart, mp) != 0)
+	// Block signals during pthread_create so that the new thread
+	// starts with signals disabled.  It will enable them in minit.
+	sigfillset(&clear);
+	sigemptyset(&old);
+	sigprocmask(SIG_BLOCK, &clear, &old);
+	ret = pthread_create(&tid, &attr, runtime_mstart, mp);
+	sigprocmask(SIG_SETMASK, &old, nil);
+
+	if (ret != 0)
 		runtime_throw("pthread_create");
 
 	return mp;

@@ -19061,6 +19061,10 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
 
   scope_die = scope_die_for (type, context_die);
 
+  /* Generate child dies for template paramaters.  */
+  if (!type_die && debug_info_level > DINFO_LEVEL_TERSE)
+    schedule_generic_params_dies_gen (type);
+
   if (! type_die || (nested && is_cu_die (scope_die)))
     /* First occurrence of type or toplevel definition of nested class.  */
     {
@@ -19077,11 +19081,6 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
     }
   else
     remove_AT (type_die, DW_AT_declaration);
-
-  /* Generate child dies for template paramaters.  */
-  if (debug_info_level > DINFO_LEVEL_TERSE
-      && COMPLETE_TYPE_P (type))
-    schedule_generic_params_dies_gen (type);
 
   /* If this type has been completed, then give it a byte_size attribute and
      then give a list of members.  */
@@ -20592,7 +20591,8 @@ gen_scheduled_generic_parms_dies (void)
     return;
   
   FOR_EACH_VEC_ELT (*generic_type_instances, i, t)
-    gen_generic_params_dies (t);
+    if (COMPLETE_TYPE_P (t))
+      gen_generic_params_dies (t);
 }
 
 

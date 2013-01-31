@@ -1,3 +1,21 @@
+2013-01-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Revert.
+	2013-01-27  Amol Pise  <amolpise15@gmail.com>
+
+	* gcc.target/arm/neon-vfnms-1.c: New test.
+	* gcc.target/arm/neon-vfnma-1.c: New test.
+
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56157
+	* gcc.dg/torture/pr56157.c: New testcase.
+
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56150
+	* gcc.dg/torture/pr56150.c: New testcase.
+
 2013-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/55374

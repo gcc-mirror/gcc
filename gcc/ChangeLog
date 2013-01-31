@@ -1,3 +1,38 @@
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56157
+	* tree-vect-slp.c (vect_get_slp_defs): More thoroughly try to
+	match up operand with SLP child.
+
+2013-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54410
+	* dwarf2out.c (gen_struct_or_union_type_die): Always schedule template
+	parameters the first time.
+	(gen_scheduled_generic_parms_dies): Check completeness here.
+
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/53073
+	* common.opt (faggressive-loop-optimizations): New flag,
+	enabled by default.
+	* doc/invoke.texi (faggressive-loop-optimizations): Document.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Guard
+	infer_loop_bounds_from_undefined by it.
+
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56150
+	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt): Do not
+	visit virtual operands.
+	(find_uses_to_rename_bb): Likewise.
+
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56150
+	* tree-ssa-tail-merge.c (gimple_equal_p): Properly handle
+	mixed store non-store stmts.
+
 2013-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/55374

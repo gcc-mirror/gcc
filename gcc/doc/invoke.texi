@@ -349,7 +349,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
-@gccoptlist{-falign-functions[=@var{n}] -falign-jumps[=@var{n}] @gol
+@gccoptlist{-faggressive-loop-optimizations -falign-functions[=@var{n}] @gol
+-falign-jumps[=@var{n}] @gol
 -falign-labels[=@var{n}] -falign-loops[=@var{n}] @gol
 -fassociative-math -fauto-inc-dec -fbranch-probabilities @gol
 -fbranch-target-load-optimize -fbranch-target-load-optimize2 @gol
@@ -6987,6 +6988,16 @@ Not enabled at any optimization level.
 When @option{-fgcse-after-reload} is enabled, a redundant load elimination
 pass is performed after reload.  The purpose of this pass is to clean up
 redundant spilling.
+
+@item -faggressive-loop-optimizations
+@opindex faggressive-loop-optimizations
+This option tells the loop optimizer to use language constraints to
+derive bounds for the number of iterations of a loop.  This assumes that
+loop code does not invoke undefined behavior by for example causing signed
+integer overflows or out-of-bound array accesses.  The bounds for the
+number of iterations of a loop are used to guide loop unrolling and peeling
+and loop exit test optimizations.
+This option is enabled by default.
 
 @item -funsafe-loop-optimizations
 @opindex funsafe-loop-optimizations
