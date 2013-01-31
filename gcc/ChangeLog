@@ -1,3 +1,10 @@
+2013-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54410
+	* dwarf2out.c (gen_struct_or_union_type_die): Always schedule template
+	parameters the first time.
+	(gen_scheduled_generic_parms_dies): Check completeness here.
+
 2013-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/53073
