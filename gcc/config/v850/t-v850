@@ -20,6 +20,9 @@
 MULTILIB_OPTIONS  = m8byte-align mgcc-abi msoft-float
 MULTILIB_DIRNAMES =  8byte        gcc-abi  soft-float
 
+MULTILIB_OPTIONS  += mv850e3v5
+MULTILIB_DIRNAMES +=  v850e3v5
+
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
 
 v850-c.o: $(srcdir)/config/v850/v850-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \

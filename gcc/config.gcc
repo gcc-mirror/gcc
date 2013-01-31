@@ -2554,6 +2554,9 @@ v850-*-rtems*)
 	;;
 v850*-*-*)
 	case ${target} in
+	v850e3v5-*-*)
+		target_cpu_default="TARGET_CPU_v850e3v5"
+		;;
 	v850e2v3-*-*)
 		target_cpu_default="TARGET_CPU_v850e2v3"
 		;;
@@ -3614,7 +3617,7 @@ case "${target}" in
 	v850*-*-*)
 		supported_defaults=cpu
 		case ${with_cpu} in
-		"" | v850e | v850e1 | v850e2 | v850es | v850e2v3)
+		"" | v850e | v850e1 | v850e2 | v850es | v850e2v3 | v850e3v5)
 			# OK
 			;;
 		*)
@@ -3741,7 +3744,7 @@ case ${target} in
 		case "x$with_cpu" in
 		x)
 			;;
-		xv850e | xv850e1 | xv850e2 | xv850e2v3)
+		xv850e | xv850e1 | xv850e2 | xv850e2v3 | xv850e3v5)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
 			;;
 		xv850es)

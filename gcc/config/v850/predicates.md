@@ -498,6 +498,26 @@
   return op == CONST0_RTX(mode);
 })
 
+(define_predicate "label_ref_operand"
+  (match_code "label_ref")
+)
+
+
+(define_predicate "e3v5_shift_operand"
+  (match_code "const_int,reg")
+  {
+    if (CONST_INT_P (op))
+      return IN_RANGE (INTVAL (op), 0, 31);
+    return true;
+  }
+)
+
+(define_predicate "ior_operator"
+  (match_code "ior")
+{
+  return (GET_CODE (op) == IOR);
+})
+
 ;; Return true if the floating point comparison operation
 ;; given produces a canonical answer.
 (define_predicate "v850_float_z_comparison_operator"
