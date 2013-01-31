@@ -76,7 +76,7 @@
        (match_test "0")))
 
 ;;; Extra constraints.
-(define_constraint "Q"
+(define_memory_constraint "Q"
   "A memory address that does not contain a symbol address."
   (and (match_code "mem")
        (match_test "ep_memory_operand (op, mode, FALSE)")))

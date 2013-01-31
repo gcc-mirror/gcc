@@ -81,7 +81,7 @@ ___mulsi3:
         add   r7,  r10
         jmp   [r31]
 #endif /* __v850__ */
-#if defined(__v850e__) || defined(__v850ea__) || defined(__v850e2__) || defined(__v850e2v3__)
+#if defined(__v850e__) || defined(__v850ea__) || defined(__v850e2__) || defined(__v850e2v3__) || defined(__v850e3v5__)
         /* This routine is almost unneccesarry because gcc
            generates the MUL instruction for the RTX mulsi3.
            But if someone wants to link his application with
@@ -1765,7 +1765,7 @@ __restore_all_interrupt:
 #endif /* L_save_all_interrupt */
 	
 #if defined __V850_CALLT__
-#if defined(__v850e__) || defined(__v850e1__) || defined(__v850e2__) || defined(__v850e2v3__)
+#if defined(__v850e__) || defined(__v850e1__) || defined(__v850e2__) || defined(__v850e2v3__) || defined(__v850e3v5__)
 #ifdef	L_callt_save_r2_r29
 	/* Put these functions into the call table area.  */
 	.call_table_text
@@ -2146,7 +2146,7 @@ __callt_save_r31c:	.short ctoff(.L_callt_save_r31c)
 __callt_return_r31c:	.short ctoff(.L_callt_return_r31c)		
 #endif
 
-#endif /* __v850e__ */
+#endif /* __v850e__ + */
 #endif /* __V850_CALLT__ */
 
 /*  libgcc2 routines for NEC V850.  */

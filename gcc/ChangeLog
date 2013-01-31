@@ -1,3 +1,58 @@
+2013-01-31  Hiroyuki Ono  <hiroyuki.ono.jc@renesas.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/constraints.md (Q): Define as a memory constraint.
+	* config/v850/predicates.md (label_ref_operand): New predicate.
+	(e3v5_shift_operand): New predicate.
+	(ior_operator): New predicate.
+	* config/v850/t-v850: Add e3v5 multilib.
+	* config/v850/v850-protos.h (v850_adjust_insn_length): Prototype.
+	(v850_gen_movdi): Prototype.
+	* config/v850/v850.c: Add support for e3v5 architecture.
+	Rename all uses of TARGET_V850E || TARGET_V850E2_ALL to
+	TARGET_V850E_UP.
+	(construct_save_jarl): Add e3v5 long JARL support.
+	(v850_adjust_insn_length): New function.  Adjust length of call
+	insns when using e3v5 instructions.
+	(v850_gen_movdi): New function: Generate instructions to move a
+	DImode value.
+	* config/v850/v850.h (TARGET_CPU_v850e3v5): Define.
+	(CPP_SPEC): Define __v850e3v5__ as appropriate.
+	(TARGET_USE_FPU): Enable for e3v5.
+	(CONST_OK_FOR_W): New macro.
+	(ADJUST_INSN_LENGTH): Define.
+	* config/v850/v850.md (UNSPEC_LOOP): Define.
+	(attr cpu): Add v850e3v5.
+	Rename all uses of TARGET_V850E2 to TARGET_V850E2V3_UP.
+	(movdi): New pattern.
+	(movdi_internal): New pattern.
+	(cbranchsf4): Conditionalize on TARGET_USE_FPU.
+	(cbranchdf4): Conditionalize on TARGET_USE_FPU.
+	(cstoresf4): Likewise.
+	(cstoredf4): Likewise.
+	(insv): New pattern.
+	(rotlso3_a): New pattern.
+	(rotlsi3_b): New pattern
+	(rotlsi3_v850e3v5): New pattern.
+	(doloop_begin): New pattern.
+	(fix_loop_counter): New pattern.
+	(doloop_end): New pattern.
+	(branch_normal): Add e3v5 long branch support.
+	(branch_invert): Likewise.
+	(branch_z_normal): Likewise.
+	(branch_z_invert): Likewise.
+	(branch_nz_normal): Likewise.
+	(branch_nz_invert): Likewise.
+	(call_internal_short): Add e3v5 register-indirect JARL support.
+	(call_internal_long): Likewise.
+	(call_value_internal_short): Likewise.
+	(call_value_internal_long): Likewise.
+	* config/v850/v850.opt (mv850e3v5, mv850e2v4): New options.
+	(mloop): New option.
+	* config.gcc: Add support for configuring v840e3v5 target.
+	* doc/invoke.texi: Document new v850 specific command line
+	options.
+
 2013-01-31  Paul Koning  <ni1d@arrl.net>
 
 	PR debug/55059
