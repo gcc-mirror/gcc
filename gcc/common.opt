@@ -792,6 +792,10 @@ Driver Undocumented
 fabi-version=
 Common Joined RejectNegative UInteger Var(flag_abi_version) Init(2)
 
+faggressive-loop-optimizations
+Common Report Var(flag_aggressive_loop_optimizations) Optimization Init(1) 
+Aggressively optimize loops using language constraints
+
 falign-functions
 Common Report Var(align_functions,0) Optimization UInteger
 Align the start of functions

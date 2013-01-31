@@ -1,5 +1,14 @@
 2013-01-31  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/53073
+	* common.opt (faggressive-loop-optimizations): New flag,
+	enabled by default.
+	* doc/invoke.texi (faggressive-loop-optimizations): Document.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Guard
+	infer_loop_bounds_from_undefined by it.
+
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56150
 	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt): Do not
 	visit virtual operands.
