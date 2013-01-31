@@ -37,7 +37,7 @@ extern GTY(()) rtx v850_compare_op1;
 #define TARGET_CPU_v850e1	3
 #define TARGET_CPU_v850e2	4
 #define TARGET_CPU_v850e2v3	5
-
+#define TARGET_CPU_v850e3v5	6
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT	TARGET_CPU_generic
@@ -86,7 +86,22 @@ extern GTY(()) rtx v850_compare_op1;
 #define SUBTARGET_CPP_SPEC	"%{!mv*:-D__v850e2v3__} %{mv850e2v3:-D__v850e2v3__}"
 #endif
 
-#define TARGET_V850E2_ALL      (TARGET_V850E2 || TARGET_V850E2V3) 
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v850e3v5
+#undef  MASK_DEFAULT
+#define MASK_DEFAULT            MASK_V850E3V5
+#undef  SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC	"%{!mv*:-mv850e3v5}"
+#undef  SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC	"%{!mv*:-D__v850e3v5__} %{mv850e3v5:-D__v850e3v5__}"
+#undef  TARGET_VERSION
+#define TARGET_VERSION		fprintf (stderr, " (Renesas V850E3V5)");
+#endif
+
+#define TARGET_V850E3V5_UP ((TARGET_V850E3V5))     
+#define TARGET_V850E2V3_UP ((TARGET_V850E2V3) || TARGET_V850E3V5_UP)
+#define TARGET_V850E2_UP   ((TARGET_V850E2)   || TARGET_V850E2V3_UP)
+#define TARGET_V850E_UP    ((TARGET_V850E)    || TARGET_V850E2_UP)
+#define TARGET_ALL         ((TARGET_V850)     || TARGET_V850E_UP)
 
 #define ASM_SPEC "%{m850es:-mv850e1}%{!mv850es:%{mv*:-mv%*}} \
 %{mrelax:-mrelax} \
@@ -96,14 +111,15 @@ extern GTY(()) rtx v850_compare_op1;
 #define LINK_SPEC "%{mgcc-abi:-m v850}"
 
 #define CPP_SPEC "\
+  %{mv850e3v5:-D__v850e3v5__} \
   %{mv850e2v3:-D__v850e2v3__} \
   %{mv850e2:-D__v850e2__} \
   %{mv850es:-D__v850e1__} \
   %{mv850e1:-D__v850e1__} \
   %{mv850e:-D__v850e__} \
   %{mv850:-D__v850__} \
-  %(subtarget_cpp_spec)" \
-  " %{mep:-D__EP__}"
+  %(subtarget_cpp_spec) \
+  %{mep:-D__EP__}"
 
 #define EXTRA_SPECS \
  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC }, \
@@ -111,7 +127,7 @@ extern GTY(()) rtx v850_compare_op1;
 
 
 /* Macro to decide when FPU instructions can be used.  */
-#define TARGET_USE_FPU  (TARGET_V850E2V3 && ! TARGET_SOFT_FLOAT)
+#define TARGET_USE_FPU  (TARGET_V850E2V3_UP && ! TARGET_SOFT_FLOAT)
 
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
@@ -136,7 +152,7 @@ extern GTY(()) rtx v850_compare_op1;
     }						\
   while(0)
 
-#define MASK_CPU (MASK_V850 | MASK_V850E | MASK_V850E1 | MASK_V850E2 | MASK_V850E2V3)
+#define MASK_CPU (MASK_V850 | MASK_V850E | MASK_V850E1 | MASK_V850E2 | MASK_V850E2V3 | MASK_V850E3V5)
 
 /* Target machine storage layout */
 
@@ -380,7 +396,8 @@ enum reg_class
   insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_N)
 #define CONST_OK_FOR_O(VALUE) \
   insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_O)
-
+#define CONST_OK_FOR_W(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_W)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -797,9 +814,9 @@ typedef enum
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
   fprintf (FILE, "\t%s %s.L%d-.L%d%s\n",				\
 	   (TARGET_BIG_SWITCH ? ".long" : ".short"),			\
-	   (0 && ! TARGET_BIG_SWITCH && (TARGET_V850E || TARGET_V850E2_ALL) ? "(" : ""),             \
+	   (0 && ! TARGET_BIG_SWITCH && (TARGET_V850E_UP) ? "(" : ""),             \
 	   VALUE, REL,							\
-	   (0 && ! TARGET_BIG_SWITCH && (TARGET_V850E || TARGET_V850E2_ALL) ? ")>>1" : ""))
+	   (0 && ! TARGET_BIG_SWITCH && (TARGET_V850E_UP) ? ")>>1" : ""))
 
 #define ASM_OUTPUT_ALIGN(FILE, LOG)	\
   if ((LOG) != 0)			\
@@ -959,5 +976,8 @@ extern tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
    in a build directory where the libstdc++ header files are found via a
    -isystem <path-to-build-dir>.  */
 #define NO_IMPLICIT_EXTERN_C
+
+#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
+  ((LENGTH) = v850_adjust_insn_length ((INSN), (LENGTH)))
 
 #endif /* ! GCC_V850_H */

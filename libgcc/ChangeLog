@@ -1,3 +1,8 @@
+2013-01-31  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/lib1funcs.S: Add support for e3v5 architecture
+	variant.
+
 2013-01-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
@@ -9,7 +14,7 @@
 
 2013-01-26  David Holsgrove <david.holsgrove@xilinx.com>
 
-	* config.host(microblaze*-linux*): tmake_file: Remove 
+	* config.host(microblaze*-linux*): tmake_file: Remove
 	t-slibgcc-nolc-override, add t-slibgcc-libgcc.
 	* config/microblaze/t-microblaze: Set LIB2FUNCS_EXCLUDE
 	to exclude functions from being built with libgcc.c and use

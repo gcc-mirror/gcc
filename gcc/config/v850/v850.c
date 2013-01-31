@@ -824,7 +824,7 @@ output_move_single (rtx * operands)
 	    return "movhi hi0(%1),%.,%0";
 
 	  /* A random constant.  */
-	  else if (TARGET_V850E || TARGET_V850E2_ALL)
+	  else if (TARGET_V850E_UP)
 	      return "mov %1,%0";
 	  else
 	    return "movhi hi(%1),%.,%0\n\tmovea lo(%1),%0,%0";
@@ -846,7 +846,7 @@ output_move_single (rtx * operands)
 	    return "movhi hi0(%F1),%.,%0";
 
 	  /* A random constant.  */
-	else if (TARGET_V850E || TARGET_V850E2_ALL)
+	else if (TARGET_V850E_UP)
 	      return "mov %F1,%0";
 
 	  else
@@ -863,7 +863,7 @@ output_move_single (rtx * operands)
 	       || GET_CODE (src) == SYMBOL_REF
 	       || GET_CODE (src) == CONST)
 	{
-	  if (TARGET_V850E || TARGET_V850E2_ALL) 
+	  if (TARGET_V850E_UP) 
 	    return "mov hilo(%1),%0";
 	  else
 	    return "movhi hi(%1),%.,%0\n\tmovea lo(%1),%0,%0";
@@ -1018,7 +1018,7 @@ ep_memory_offset (enum machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
     case QImode:
       if (TARGET_SMALL_SLD)
 	max_offset = (1 << 4);
-      else if ((TARGET_V850E || TARGET_V850E2_ALL)
+      else if ((TARGET_V850E_UP)
 		&& unsignedp)
 	max_offset = (1 << 4);
       else
@@ -1028,7 +1028,7 @@ ep_memory_offset (enum machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
     case HImode:
       if (TARGET_SMALL_SLD)
 	max_offset = (1 << 5);
-      else if ((TARGET_V850E || TARGET_V850E2_ALL)
+      else if ((TARGET_V850E_UP)
 		&& unsignedp)
 	max_offset = (1 << 5);
       else
@@ -1656,7 +1656,7 @@ expand_prologue (void)
   /* Save/setup global registers for interrupt functions right now.  */
   if (interrupt_handler)
     {
-      if (! TARGET_DISABLE_CALLT && (TARGET_V850E || TARGET_V850E2_ALL))
+      if (! TARGET_DISABLE_CALLT && (TARGET_V850E_UP))
 	emit_insn (gen_callt_save_interrupt ());
       else
 	emit_insn (gen_save_interrupt ());
@@ -1759,7 +1759,7 @@ expand_prologue (void)
       /* Special case interrupt functions that save all registers for a call.  */
       if (interrupt_handler && ((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
 	{
-	  if (! TARGET_DISABLE_CALLT && (TARGET_V850E || TARGET_V850E2_ALL))
+	  if (! TARGET_DISABLE_CALLT && (TARGET_V850E_UP))
 	    emit_insn (gen_callt_save_all_interrupt ());
 	  else
 	    emit_insn (gen_save_all_interrupt ());
@@ -1967,7 +1967,7 @@ expand_epilogue (void)
       /* And return or use reti for interrupt handlers.  */
       if (interrupt_handler)
         {
-          if (! TARGET_DISABLE_CALLT && (TARGET_V850E || TARGET_V850E2_ALL))
+          if (! TARGET_DISABLE_CALLT && (TARGET_V850E_UP))
             emit_insn (gen_callt_return_interrupt ());
           else
             emit_jump_insn (gen_return_interrupt ());
@@ -2437,8 +2437,11 @@ construct_save_jarl (rtx op)
       else
 	sprintf (name, "__save_%s_%s", reg_names [first], reg_names [last]);
       
-      sprintf (buff, "movhi hi(%s), r0, r11\n\tmovea lo(%s), r11, r11\n\tjarl .+4, r10\n\tadd 4, r10\n\tjmp r11",
-	       name, name);
+      if (TARGET_V850E3V5_UP)
+	sprintf (buff, "mov hilo(%s), r11\n\tjarl [r11], r10", name);
+      else
+	sprintf (buff, "movhi hi(%s), r0, r11\n\tmovea lo(%s), r11, r11\n\tjarl .+4, r10\n\tadd 4, r10\n\tjmp r11",
+		 name, name);
     }
   else
     {
@@ -3048,7 +3051,7 @@ v850_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 static int
 v850_issue_rate (void)
 {
-  return (TARGET_V850E2_ALL? 2 : 1);
+  return (TARGET_V850E2_UP ? 2 : 1);
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
@@ -3082,6 +3085,32 @@ v850_memory_move_cost (enum machine_mode mode,
       return (GET_MODE_SIZE (mode) / 2) * (in ? 3 : 1);
     }
 }
+
+int
+v850_adjust_insn_length (rtx insn, int length)
+{
+  if (TARGET_V850E3V5_UP)
+    {
+      if (CALL_P (insn))
+	{
+	  if (TARGET_LONG_CALLS)
+	    {
+	      /* call_internal_long, call_value_internal_long.  */
+	      if (length == 8)
+		length = 4;
+	      if (length == 16)
+		length = 10;
+	    }
+	  else
+	    {
+	      /* call_internal_short, call_value_internal_short.  */
+	      if (length == 8)
+		length = 4;
+	    }
+	}
+    }
+  return length;
+}
 
 /* V850 specific attributes.  */
 
@@ -3102,7 +3131,6 @@ static const struct attribute_spec v850_attribute_table[] =
   { NULL,                0, 0, false, false, false, NULL, false }
 };
 
-
 static void
 v850_option_override (void)
 {
@@ -3112,6 +3140,40 @@ v850_option_override (void)
   /* The RH850 ABI does not (currently) support the use of the CALLT instruction.  */
   if (! TARGET_GCC_ABI)
     target_flags |= MASK_DISABLE_CALLT;
+}
+
+const char *
+v850_gen_movdi (rtx * operands)
+{
+  if (REG_P (operands[0]))
+    {
+      if (REG_P (operands[1]))
+	{
+	  if (REGNO (operands[0]) == (REGNO (operands[1]) - 1))
+	    return "mov %1, %0; mov %R1, %R0";
+
+	  return "mov %R1, %R0; mov %1, %0";
+	}
+
+      if (MEM_P (operands[1]))
+	{
+	  if (REGNO (operands[0]) & 1)
+	    /* Use two load word instructions to synthesise a load double.  */
+	    return "ld.w %1, %0 ; ld.w %R1, %R0" ;
+
+	  return "ld.dw %1, %0";
+	}
+
+      return "mov %1, %0; mov %R1, %R0";
+    }
+
+  gcc_assert (REG_P (operands[1]));
+
+  if (REGNO (operands[1]) & 1)
+    /* Use two store word instructions to synthesise a store double.  */
+    return "st.w %1, %0 ; st.w %R1, %R0 ";
+  
+  return "st.dw %1, %0";
 }
 
 /* Initialize the GCC target structure.  */
