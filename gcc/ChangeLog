@@ -1,3 +1,8 @@
+2013-01-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/56113
+	* fwprop.c (fwprop_init): Set up loops without CFG modifications.
+
 2013-01-31  Hiroyuki Ono  <hiroyuki.ono.jc@renesas.com>
 	    Nick Clifton  <nickc@redhat.com>
 
