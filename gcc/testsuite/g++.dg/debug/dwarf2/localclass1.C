@@ -59,11 +59,11 @@ main ()
 // { dg-final { scan-assembler "foo\[^\n\r\]*DW_AT_name" } }
 // { dg-final { scan-assembler "staticfn1\[^\n\r\]*DW_AT_name" } }
 // { dg-final { scan-assembler "staticfn2\[^\n\r\]*DW_AT_name" } }
-// { dg-final { scan-assembler-not "staticfn3\[^\n\r\]*DW_AT_name" } }
-// { dg-final { scan-assembler-not "staticfn4\[^\n\r\]*DW_AT_name" } }
+// { dg-final { scan-assembler "staticfn3\[^\n\r\]*DW_AT_name" } }
+// { dg-final { scan-assembler "staticfn4\[^\n\r\]*DW_AT_name" } }
 // { dg-final { scan-assembler-not "staticfn5\[^\n\r\]*DW_AT_name" } }
 // { dg-final { scan-assembler-not "staticfn6\[^\n\r\]*DW_AT_name" } }
-// { dg-final { scan-assembler-not "method1\[^\n\r\]*DW_AT_name" } }
+// { dg-final { scan-assembler "method1\[^\n\r\]*DW_AT_name" } }
 // { dg-final { scan-assembler "arg1\[^\n\r\]*DW_AT_name" } }
 // { dg-final { scan-assembler "arg2\[^\n\r\]*DW_AT_name" } }
 // { dg-final { scan-assembler "arg3\[^\n\r\]*DW_AT_name" } }
