@@ -1,3 +1,9 @@
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56157
+	* tree-vect-slp.c (vect_get_slp_defs): More thoroughly try to
+	match up operand with SLP child.
+
 2013-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54410
