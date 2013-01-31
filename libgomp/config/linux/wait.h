@@ -51,7 +51,7 @@ static inline int do_spin (int *addr, int val)
   if (__builtin_expect (gomp_managed_threads > gomp_available_cpus, 0))
     count = gomp_throttled_spin_count_var;
   for (i = 0; i < count; i++)
-    if (__builtin_expect (*addr != val, 0))
+    if (__builtin_expect (__atomic_load_n (addr, MEMMODEL_RELAXED) != val, 0))
       return 0;
     else
       cpu_relax ();

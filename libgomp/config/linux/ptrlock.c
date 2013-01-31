@@ -50,9 +50,9 @@ gomp_ptrlock_get_slow (gomp_ptrlock_t *ptrlock)
 #endif
   do
     do_wait (intptr, 2);
-  while (*intptr == 2);
+  while (__atomic_load_n (intptr, MEMMODEL_RELAXED) == 2);
   __asm volatile ("" : : : "memory");
-  return *ptrlock;
+  return (void *) __atomic_load_n (ptrlock, MEMMODEL_ACQUIRE);
 }
 
 void

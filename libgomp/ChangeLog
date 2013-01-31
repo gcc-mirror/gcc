@@ -1,3 +1,13 @@
+2013-01-31  Dmitry Vyukov  <dvyukov@gcc.gnu.org>
+	    Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	PR libgomp/55561
+	* config/linux/wait.h (do_spin): Use atomic load for addr.
+	* config/linux/ptrlock.c (gomp_ptrlock_get_slow): Use atomic
+	for intptr and ptrlock.
+	* config/linux/ptrlock.h (gomp_ptrlock_get): Use atomic load
+	for ptrlock.
+
 2013-01-22  Alan Modra  <amodra@gmail.com>
 
 	PR libgomp/51376
