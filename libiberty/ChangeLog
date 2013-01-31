@@ -1,4 +1,10 @@
 2013-01-31  Kai Tietz  <ktietz@redhat.com>
+
+	Merged from trunk.
+	PR other/543413
+	* md5.c (md5_process_block):  Handle case that size_t is
+	a wider-integer-scalar a 32-bit unsigned integer.
+
         2012-07-31  Mike Frysinger  <vapier@gentoo.org>
 
 	Merged from trunk.
