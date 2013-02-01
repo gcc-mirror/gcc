@@ -1,3 +1,7 @@
+2013-02-01  Alan Modra  <amodra@gmail.com>
+
+	* task.c (GOMP_task, GOMP_taskwait): Comment.
+
 2013-01-31  Dmitry Vyukov  <dvyukov@gcc.gnu.org>
 	    Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
 

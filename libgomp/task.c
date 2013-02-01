@@ -116,6 +116,15 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	}
       else
 	fn (data);
+      /* Access to "children" is normally done inside a task_lock
+	 mutex region, but the only way this particular task.children
+	 can be set is if this thread's task work function (fn)
+	 creates children.  So since the setter is *this* thread, we
+	 need no barriers here when testing for non-NULL.  We can have
+	 task.children set by the current thread then changed by a
+	 child thread, but seeing a stale non-NULL value is not a
+	 problem.  Once past the task_lock acquisition, this thread
+	 will see the real value of task.children.  */
       if (task.children != NULL)
 	{
 	  gomp_mutex_lock (&team->task_lock);
@@ -296,6 +305,12 @@ GOMP_taskwait (void)
   struct gomp_task *child_task = NULL;
   struct gomp_task *to_free = NULL;
 
+  /* The acquire barrier on load of task->children here synchronizes
+     with the write of a NULL in gomp_barrier_handle_tasks.  It is
+     not necessary that we synchronize with other non-NULL writes at
+     this point, but we must ensure that all writes to memory by a
+     child thread task work function are seen before we exit from
+     GOMP_taskwait.  */
   if (task == NULL
       || __atomic_load_n (&task->children, MEMMODEL_ACQUIRE) == NULL)
     return;
