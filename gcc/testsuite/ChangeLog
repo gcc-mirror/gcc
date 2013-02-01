@@ -1,3 +1,7 @@
+2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt26.adb: New test.
+
 2013-01-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Revert.

@@ -3813,6 +3813,10 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
   switch (code)
     {
     case TRUTH_NOT_EXPR:
+      /* We can only do something if the range is testing for zero.  */
+      if (low == NULL_TREE || high == NULL_TREE
+	  || ! integer_zerop (low) || ! integer_zerop (high))
+	return NULL_TREE;
       *p_in_p = ! in_p;
       return arg0;
 

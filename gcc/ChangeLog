@@ -1,3 +1,8 @@
+2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (make_range_step) <TRUTH_NOT_EXPR>: Bail out if the
+	range isn't testing for zero.
+
 2013-01-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/56113
