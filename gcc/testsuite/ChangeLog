@@ -1,6 +1,11 @@
 2013-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55236
+	* gcc.dg/pr55236.c: New test.
+
 	2012-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/54127

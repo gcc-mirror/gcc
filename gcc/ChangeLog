@@ -1,6 +1,12 @@
 2013-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55236
+	* fold-const.c (make_range_step) <case NEGATE_EXPR>: For -fwrapv
+	and signed ARG0_TYPE, force low and high to be non-NULL.
+
 	2012-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/54127
