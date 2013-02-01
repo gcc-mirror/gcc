@@ -1,3 +1,8 @@
+2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr56023.c: XFAIL on AIX.
+	* gcc.dg/vect/pr49352.c: Same.
+
 2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt26.adb: New test.
