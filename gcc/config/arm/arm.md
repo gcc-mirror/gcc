@@ -6904,7 +6904,7 @@
 (define_expand "cbranchdi4"
   [(set (pc) (if_then_else
 	      (match_operator 0 "expandable_comparison_operator"
-	       [(match_operand:DI 1 "cmpdi_operand" "")
+	       [(match_operand:DI 1 "s_register_operand" "")
 	        (match_operand:DI 2 "cmpdi_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
@@ -6912,10 +6912,6 @@
   "{
      rtx swap = NULL_RTX;
      enum rtx_code code = GET_CODE (operands[0]);
-
-     /* We should not have two constants.  */
-     gcc_assert (GET_MODE (operands[1]) == DImode
-		 || GET_MODE (operands[2]) == DImode);
 
     /* Flip unimplemented DImode comparisons to a form that
        arm_gen_compare_reg can handle.  */
@@ -7917,16 +7913,12 @@
 (define_expand "cstoredi4"
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(match_operator:SI 1 "expandable_comparison_operator"
-	 [(match_operand:DI 2 "cmpdi_operand" "")
+	 [(match_operand:DI 2 "s_register_operand" "")
 	  (match_operand:DI 3 "cmpdi_operand" "")]))]
   "TARGET_32BIT"
   "{
      rtx swap = NULL_RTX;
      enum rtx_code code = GET_CODE (operands[1]);
-
-     /* We should not have two constants.  */
-     gcc_assert (GET_MODE (operands[2]) == DImode
-		 || GET_MODE (operands[3]) == DImode);
 
     /* Flip unimplemented DImode comparisons to a form that
        arm_gen_compare_reg can handle.  */
