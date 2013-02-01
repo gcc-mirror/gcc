@@ -1,3 +1,8 @@
+2013-02-01  Richard Henderson <rth@redhat.com>
+
+	* config/rs6000/rs6000.md (smulditi3): New.
+	(umulditi3): New.
+
 2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/xcoff.h (ASM_OUTPUT_ALIGNED_COMMON): Use floor_log2.
