@@ -369,7 +369,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Return a bucket count appropriate for n elements
     std::size_t
-    _M_bkt_for_elements(std::size_t __n) const;
+    _M_bkt_for_elements(std::size_t __n) const
+    { return __builtin_ceil(__n / (long double)_M_max_load_factor); }
 
     // __n_bkt is current bucket count, __n_elt is current element count,
     // and __n_ins is number of elements to be inserted.  Do we need to
@@ -396,77 +397,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     float                _M_max_load_factor;
     mutable std::size_t  _M_next_resize;
   };
-
-  extern const unsigned long __prime_list[];
-
-  // XXX This is a hack.  There's no good reason for any of
-  // _Prime_rehash_policy's member functions to be inline.
-
-  // Return a prime no smaller than n.
-  inline std::size_t
-  _Prime_rehash_policy::
-  _M_next_bkt(std::size_t __n) const
-  {
-    // Optimize lookups involving the first elements of __prime_list.
-    // (useful to speed-up, eg, constructors)
-    static const unsigned char __fast_bkt[12]
-      = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11 };
-
-    if (__n <= 11)
-      {
-	_M_next_resize
-	  = __builtin_ceil(__fast_bkt[__n]
-			   * (long double)_M_max_load_factor);
-	return __fast_bkt[__n];
-      }
-
-    const unsigned long* __next_bkt
-      = std::lower_bound(__prime_list + 5, __prime_list + _S_n_primes,
-			 __n);
-    _M_next_resize
-      = __builtin_ceil(*__next_bkt * (long double)_M_max_load_factor);
-    return *__next_bkt;
-  }
-
-  // Return the smallest integer p such that alpha p >= n, where alpha
-  // is the load factor.
-  inline std::size_t
-  _Prime_rehash_policy::
-  _M_bkt_for_elements(std::size_t __n) const
-  { return __builtin_ceil(__n / (long double)_M_max_load_factor); }
-
-  // Finds the smallest prime p such that alpha p > __n_elt + __n_ins.
-  // If p > __n_bkt, return make_pair(true, p); otherwise return
-  // make_pair(false, 0).  In principle this isn't very different from
-  // _M_bkt_for_elements.
-
-  // The only tricky part is that we're caching the element count at
-  // which we need to rehash, so we don't have to do a floating-point
-  // multiply for every insertion.
-
-  inline std::pair<bool, std::size_t>
-  _Prime_rehash_policy::
-  _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
-		 std::size_t __n_ins) const
-  {
-    if (__n_elt + __n_ins >= _M_next_resize)
-      {
-	long double __min_bkts = (__n_elt + __n_ins)
-				 / (long double)_M_max_load_factor;
-	if (__min_bkts >= __n_bkt)
-	  return std::make_pair(true,
-	    _M_next_bkt(std::max<std::size_t>(__builtin_floor(__min_bkts) + 1,
-					      __n_bkt * _S_growth_factor)));
-	else
-	  {
-	    _M_next_resize
-	      = __builtin_floor(__n_bkt * (long double)_M_max_load_factor);
-	    return std::make_pair(false, 0);
-	  }
-      }
-    else
-      return std::make_pair(false, 0);
-  }
 
   // Base classes for std::_Hashtable.  We define these base classes
   // because in some cases we want to do different things depending on

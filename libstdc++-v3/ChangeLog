@@ -1,3 +1,13 @@
+2013-02-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Prime_rehash_policy::_M_next_bkt)
+	(_Prime_rehash_policy::_M_need_rehash): Move definition...
+	* src/c++11/hashtable_c++0x.cc: ... here.
+	* src/shared/hashtable-aux.cc: Remove c++config.h include.
+	* config/abi/gnu.ver (GLIBCXX_3.4.18): Export _Prime_rehash_policy
+	symbols.
+
 2013-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/54314
