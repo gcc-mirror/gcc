@@ -1232,7 +1232,7 @@ nt_init_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
     {
       gimple stmt = gsi_stmt (gsi);
 
-      if (gimple_assign_single_p (stmt))
+      if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
 	{
 	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), nontrap_set, true);
 	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), nontrap_set, false);
@@ -1309,7 +1309,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 
   /* Check if middle_bb contains of only one store.  */
   if (!assign
-      || !gimple_assign_single_p (assign))
+      || !gimple_assign_single_p (assign)
+      || gimple_has_volatile_ops (assign))
     return false;
 
   locus = gimple_location (assign);
@@ -1386,9 +1387,11 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   if (then_assign == NULL
       || !gimple_assign_single_p (then_assign)
       || gimple_clobber_p (then_assign)
+      || gimple_has_volatile_ops (then_assign)
       || else_assign == NULL
       || !gimple_assign_single_p (else_assign)
-      || gimple_clobber_p (else_assign))
+      || gimple_clobber_p (else_assign)
+      || gimple_has_volatile_ops (else_assign))
     return false;
 
   lhs = gimple_assign_lhs (then_assign);
