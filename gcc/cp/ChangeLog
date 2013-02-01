@@ -1,6 +1,14 @@
 2013-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55542
+	* pt.c (make_ith_pack_parameter_name): Return NULL if
+	name is NULL.
+	(tsubst_decl): Call make_ith_pack_parameter_name even if
+	DECL_NAME is NULL.
+
 	2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54046
