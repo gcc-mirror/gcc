@@ -4170,6 +4170,11 @@ Struct_field::is_field_name(const std::string& name) const
 
 // Class Struct_type.
 
+// A hash table used to find identical unnamed structs so that they
+// share method tables.
+
+Struct_type::Identical_structs Struct_type::identical_structs;
+
 // Traversal.
 
 int
@@ -4596,6 +4601,21 @@ Struct_type::finalize_methods(Gogo* gogo)
 {
   if (this->all_methods_ != NULL)
     return;
+
+  // It is possible to have multiple identical structs that have
+  // methods.  We want them to share method tables.  Otherwise we will
+  // emit identical methods more than once, which is bad since they
+  // will even have the same names.
+  std::pair<Identical_structs::iterator, bool> ins =
+    Struct_type::identical_structs.insert(std::make_pair(this, this));
+  if (!ins.second)
+    {
+      // An identical struct was already entered into the hash table.
+      // Note that finalize_methods is, fortunately, not recursive.
+      this->all_methods_ = ins.first->second->all_methods_;
+      return;
+    }
+
   Type::finalize_methods(gogo, this, this->location_, &this->all_methods_);
 }
 
