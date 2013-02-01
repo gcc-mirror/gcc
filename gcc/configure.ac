@@ -1455,6 +1455,9 @@ if test x$enable___cxa_atexit = xyes || \
       *-*-mingw32*)
 	use_cxa_atexit=yes
 	;;
+      powerpc-ibm-aix*)
+	use_cxa_atexit=yes
+	;;
       *)
 	AC_CHECK_FUNC(__cxa_atexit,[use_cxa_atexit=yes],
 	  [echo "__cxa_atexit can't be enabled on this target"])

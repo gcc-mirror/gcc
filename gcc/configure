@@ -11136,6 +11136,9 @@ if test x$enable___cxa_atexit = xyes || \
       *-*-mingw32*)
 	use_cxa_atexit=yes
 	;;
+      powerpc-ibm-aix*)
+	use_cxa_atexit=yes
+	;;
       *)
 	ac_fn_c_check_func "$LINENO" "__cxa_atexit" "ac_cv_func___cxa_atexit"
 if test "x$ac_cv_func___cxa_atexit" = x""yes; then :
@@ -17825,7 +17828,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17828 "configure"
+#line 17831 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17931,7 +17934,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17934 "configure"
+#line 17937 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
