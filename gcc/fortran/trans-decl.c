@@ -1369,6 +1369,12 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	DECL_IGNORED_P (decl) = 1;
     }
 
+  if (sym->attr.select_type_temporary)
+    {
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+    }
+
   if (sym->attr.dimension || sym->attr.codimension)
     {
       /* Create variables to hold the non-constant bits of array info.  */
@@ -1479,7 +1485,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && POINTER_TYPE_P (TREE_TYPE (decl))
       && !sym->attr.pointer
       && !sym->attr.allocatable
-      && !sym->attr.proc_pointer)
+      && !sym->attr.proc_pointer
+      && !sym->attr.select_type_temporary)
     DECL_BY_REFERENCE (decl) = 1;
 
   if (sym->attr.vtab
