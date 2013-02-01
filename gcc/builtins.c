@@ -4721,7 +4721,14 @@ expand_builtin_trap (void)
 {
 #ifdef HAVE_trap
   if (HAVE_trap)
-    emit_insn (gen_trap ());
+    {
+      rtx insn = emit_insn (gen_trap ());
+      /* For trap insns when not accumulating outgoing args force
+	 REG_ARGS_SIZE note to prevent crossjumping of calls with
+	 different args sizes.  */
+      if (!ACCUMULATE_OUTGOING_ARGS)
+	add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+    }
   else
 #endif
     emit_library_call (abort_libfunc, LCT_NORETURN, VOIDmode, 0);
