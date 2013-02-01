@@ -227,6 +227,25 @@ init_shadowed_var_for_decl (void)
 					   tree_decl_map_eq, 0);
 }
 
+/* Return true if stmt can fall thru.  Used by block_may_fallthru
+   default case.  */
+
+bool
+cxx_block_may_fallthru (const_tree stmt)
+{
+  switch (TREE_CODE (stmt))
+    {
+    case EXPR_STMT:
+      return block_may_fallthru (EXPR_STMT_EXPR (stmt));
+
+    case THROW_EXPR:
+      return false;
+
+    default:
+      return true;
+    }
+}
+
 void
 cp_common_init_ts (void)
 {

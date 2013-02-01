@@ -465,6 +465,10 @@ struct lang_hooks
      FUNCTION_DECL for `std::terminate'.  */
   tree (*eh_protect_cleanup_actions) (void);
 
+  /* Return true if a stmt can fallthru.  Used by block_may_fallthru
+     to possibly handle language trees.  */
+  bool (*block_may_fallthru) (const_tree);
+
   /* True if this language uses __cxa_end_cleanup when the ARM EABI
      is enabled.  */
   bool eh_use_cxa_end_cleanup;

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "diagnostic-core.h"
 #include "tree-pass.h"
+#include "langhooks.h"
 
 /* The differences between High GIMPLE and Low GIMPLE are the
    following:
@@ -680,8 +681,14 @@ block_may_fallthru (const_tree block)
     case CLEANUP_POINT_EXPR:
       return block_may_fallthru (TREE_OPERAND (stmt, 0));
 
-    default:
+    case TARGET_EXPR:
+      return block_may_fallthru (TREE_OPERAND (stmt, 1));
+
+    case ERROR_MARK:
       return true;
+
+    default:
+      return lang_hooks.block_may_fallthru (stmt);
     }
 }
 

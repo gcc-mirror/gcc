@@ -1,3 +1,13 @@
+2013-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54046
+	* cp-objcp-common.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Redefine.
+	* cp-objcp-common.c (cxx_block_may_fallthru): New function.
+	* cp-tree.h (cxx_block_may_fallthru): New prototype.
+
 2013-01-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56104
