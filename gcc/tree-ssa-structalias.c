@@ -2107,14 +2107,13 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 static void
 label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 {
-  unsigned int i;
+  unsigned int i, first_pred;
   bitmap_iterator bi;
+
   bitmap_set_bit (si->visited, n);
 
-  if (!graph->points_to[n])
-    graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
-
   /* Label and union our incoming edges's points to sets.  */
+  first_pred = -1U;
   EXECUTE_IF_IN_NONNULL_BITMAP (graph->preds[n], 0, i, bi)
     {
       unsigned int w = si->node_mapping[i];
@@ -2126,11 +2125,45 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 	continue;
 
       if (graph->points_to[w])
-	bitmap_ior_into(graph->points_to[n], graph->points_to[w]);
+	{
+	  if (first_pred == -1U)
+	    first_pred = w;
+	  else if (!graph->points_to[n])
+	    {
+	      graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
+	      bitmap_ior (graph->points_to[n],
+			  graph->points_to[first_pred], graph->points_to[w]);
+	    }
+	  else
+	    bitmap_ior_into(graph->points_to[n], graph->points_to[w]);
+	}
     }
-  /* Indirect nodes get fresh variables.  */
+
+  /* Indirect nodes get fresh variables and a new pointer equiv class.  */
   if (!bitmap_bit_p (graph->direct_nodes, n))
-    bitmap_set_bit (graph->points_to[n], FIRST_REF_NODE + n);
+    {
+      if (!graph->points_to[n])
+	{
+	  graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
+	  if (first_pred != -1U)
+	    bitmap_copy (graph->points_to[n], graph->points_to[first_pred]);
+	}
+      bitmap_set_bit (graph->points_to[n], FIRST_REF_NODE + n);
+      graph->pointer_label[n] = pointer_equiv_class++;
+      return;
+    }
+
+  /* If there was only a single non-empty predecessor the pointer equiv
+     class is the same.  */
+  if (!graph->points_to[n])
+    {
+      if (first_pred != -1U)
+	{
+	  graph->pointer_label[n] = graph->pointer_label[first_pred];
+	  graph->points_to[n] = graph->points_to[first_pred];
+	}
+      return;
+    }
 
   if (!bitmap_empty_p (graph->points_to[n]))
     {

@@ -1,3 +1,9 @@
+2013-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56113
+	* tree-ssa-structalias.c (label_visit): Reduce work for
+	single-predecessor nodes.
+
 2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (make_range_step) <TRUTH_NOT_EXPR>: Bail out if the
