@@ -2184,6 +2184,12 @@ class Struct_type : public Type
   do_export(Export*) const;
 
  private:
+  // Used to merge method sets of identical unnamed structs.
+  typedef Unordered_map_hash(Struct_type*, Struct_type*, Type_hash_identical,
+			     Type_identical) Identical_structs;
+
+  static Identical_structs identical_structs;
+
   // Used to avoid infinite loops in field_reference_depth.
   struct Saw_named_type
   {
