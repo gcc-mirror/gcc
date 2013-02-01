@@ -1,0 +1,10 @@
+LIB2ADDEH += $(srcdir)/config/rs6000/cxa_atexit.c \
+	$(srcdir)/config/rs6000/cxa_finalize.c
+
+SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-aix-cxa.ver
+
+crtcxa.o: $(srcdir)/config/rs6000/crtcxa.c
+	$(crt_compile) -c $<
+
+crtcxa_s.o: $(srcdir)/config/rs6000/crtcxa.c
+	$(crt_compile) -DSHARED -c $<

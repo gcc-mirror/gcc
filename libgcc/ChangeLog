@@ -1,3 +1,15 @@
+2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/54601
+	* config.host (powerpc-ibm-aix[56789]): Add t-aix-cxa to tmake_file.
+	Add crtcxa to extra_parts.
+	* config/rs6000/exit.h: New file.
+	* config/rs6000/cxa_atexit.c: New file.
+	* config/rs6000/cxa_finalize.c: New file.
+	* config/rs6000/crtcxa.c: New file.
+	* config/rs6000/t-aix-cxa: New file.
+	* config/rs6000/libgcc-aix-cxa.ver: New file.
+
 2013-01-31  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/lib1funcs.S: Add support for e3v5 architecture
