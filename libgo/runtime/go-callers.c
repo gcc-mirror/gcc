@@ -49,7 +49,7 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
       p = strrchr (filename, '/');
       if (p == NULL)
 	p = filename;
-      if (__builtin_strncmp (p, "morestack.S", 11) == 0)
+      if (__builtin_strncmp (p, "/morestack.S", 12) == 0)
 	return 0;
     }
 
