@@ -3873,6 +3873,10 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh,
       switch (code)
 	{
 	case TRUTH_NOT_EXPR:
+	  /* We can only do something if the range is testing for zero.  */
+	  if (low == NULL_TREE || high == NULL_TREE
+	      || ! integer_zerop (low) || ! integer_zerop (high))
+	    break;
 	  in_p = ! in_p, exp = arg0;
 	  continue;
 

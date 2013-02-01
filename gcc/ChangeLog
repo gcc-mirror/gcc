@@ -1,3 +1,8 @@
+2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (make_range_step) <TRUTH_NOT_EXPR>: Bail out if the
+	range isn't testing for zero.
+
 2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
