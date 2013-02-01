@@ -1302,15 +1302,21 @@ build_noexcept_spec (tree expr, int complain)
 						LOOKUP_NORMAL);
       expr = cxx_constant_value (expr);
     }
-  if (expr == boolean_true_node)
-    return noexcept_true_spec;
-  else if (expr == boolean_false_node)
-    return noexcept_false_spec;
+  if (TREE_CODE (expr) == INTEGER_CST)
+    {
+      if (operand_equal_p (expr, boolean_true_node, 0))
+	return noexcept_true_spec;
+      else
+	{
+	  gcc_checking_assert (operand_equal_p (expr, boolean_false_node, 0));
+	  return noexcept_false_spec;
+	}
+    }
   else if (expr == error_mark_node)
     return error_mark_node;
   else
     {
-      gcc_assert (processing_template_decl || expr == error_mark_node
+      gcc_assert (processing_template_decl
 		  || TREE_CODE (expr) == DEFERRED_NOEXCEPT);
       return build_tree_list (expr, NULL_TREE);
     }

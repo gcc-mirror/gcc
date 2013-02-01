@@ -1855,7 +1855,7 @@ merge_exception_specifiers (tree list, tree add, tree fn)
       /* If ADD is a deferred noexcept, we must have been called from
 	 process_subob_fn.  For implicitly declared functions, we build up
 	 a list of functions to consider at instantiation time.  */
-      if (noex == boolean_true_node)
+      if (noex && operand_equal_p (noex, boolean_true_node, 0))
 	noex = NULL_TREE;
       gcc_assert (fn && (!noex || is_overloaded_fn (noex)));
       noex = build_overload (fn, noex);
