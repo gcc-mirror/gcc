@@ -123,8 +123,8 @@ The following mathematical constants of type @code{__float128} are defined.
 @item @code{M_LN2q}: natural logarithm of 2
 @item @code{M_LN10q}: natural logarithm of 10
 @item @code{M_PIq}: pi
-@item @code{M_PI_2q}: two pi
-@item @code{M_PI_4q}: four pi
+@item @code{M_PI_2q}: pi divided by two
+@item @code{M_PI_4q}: pi divided by four
 @item @code{M_1_PIq}: one over pi
 @item @code{M_2_PIq}: one over two pi
 @item @code{M_2_SQRTPIq}: two over square root of pi
