@@ -1,3 +1,15 @@
+2013-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/54127
+	* cfgrtl.c (force_nonfallthru_and_redirect): When redirecting
+	asm goto labels from BB_HEAD (e->dest) to target bb, decrement
+	LABEL_NUSES of BB_HEAD (e->dest) and increment LABEL_NUSES of
+	BB_HEAD (target) appropriately and adjust JUMP_LABEL and/or
+	REG_LABEL_TARGET and REG_LABEL_OPERAND.
+
 2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (make_range_step) <TRUTH_NOT_EXPR>: Bail out if the

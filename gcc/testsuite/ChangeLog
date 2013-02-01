@@ -1,3 +1,11 @@
+2013-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/54127
+	* gcc.dg/torture/pr54127.c: New test.
+
 2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt26.adb: New test.

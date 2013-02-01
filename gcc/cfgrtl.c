@@ -1231,13 +1231,45 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       && (note = extract_asm_operands (PATTERN (BB_END (e->src)))))
     {
       int i, n = ASM_OPERANDS_LABEL_LENGTH (note);
+      bool adjust_jump_target = false;
 
       for (i = 0; i < n; ++i)
 	{
 	  if (XEXP (ASM_OPERANDS_LABEL (note, i), 0) == BB_HEAD (e->dest))
-	    XEXP (ASM_OPERANDS_LABEL (note, i), 0) = block_label (target);
+	    {
+	      LABEL_NUSES (XEXP (ASM_OPERANDS_LABEL (note, i), 0))--;
+	      XEXP (ASM_OPERANDS_LABEL (note, i), 0) = block_label (target);
+	      LABEL_NUSES (XEXP (ASM_OPERANDS_LABEL (note, i), 0))++;
+	      adjust_jump_target = true;
+	    }
 	  if (XEXP (ASM_OPERANDS_LABEL (note, i), 0) == BB_HEAD (target))
 	    asm_goto_edge = true;
+	}
+      if (adjust_jump_target)
+	{
+	  rtx insn = BB_END (e->src), note;
+	  rtx old_label = BB_HEAD (e->dest);
+	  rtx new_label = BB_HEAD (target);
+
+	  if (JUMP_LABEL (insn) == old_label)
+	    {
+	      JUMP_LABEL (insn) = new_label;
+	      note = find_reg_note (insn, REG_LABEL_TARGET, new_label);
+	      if (note)
+		remove_note (insn, note);
+	    }
+	  else
+	    {
+	      note = find_reg_note (insn, REG_LABEL_TARGET, old_label);
+	      if (note)
+		remove_note (insn, note);
+	      if (JUMP_LABEL (insn) != new_label
+		  && !find_reg_note (insn, REG_LABEL_TARGET, new_label))
+		add_reg_note (insn, REG_LABEL_TARGET, new_label);
+	    }
+	  while ((note = find_reg_note (insn, REG_LABEL_OPERAND, old_label))
+		 != NULL_RTX)
+	    XEXP (note, 0) = new_label;
 	}
     }
 
