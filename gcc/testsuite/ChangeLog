@@ -1,3 +1,7 @@
+2013-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-dg.exp (restore-target-env-var): Avoid using lreverse.
+
 2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/pr56023.c: XFAIL on AIX.

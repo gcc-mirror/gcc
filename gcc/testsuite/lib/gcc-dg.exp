@@ -305,7 +305,9 @@ proc set-target-env-var { } {
 
 proc restore-target-env-var { } {
     upvar 1 saved_target_env_var saved_target_env_var
-    foreach env_var [lreverse $saved_target_env_var] {
+    for { set env_vari [llength $saved_target_env_var] } {
+          [incr env_vari -1] >= 0 } {} {
+	set env_var [lindex $saved_target_env_var $env_vari]
 	set var [lindex $env_var 0]
 	if [lindex $env_var 1] {
 	    setenv $var [lindex $env_var 2]
