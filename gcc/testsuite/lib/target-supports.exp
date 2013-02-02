@@ -2935,6 +2935,7 @@ proc check_effective_target_vect_float { } {
 	if { [istarget i?86-*-*]
 	      || [istarget powerpc*-*-*]
 	      || [istarget spu-*-*]
+	      || [istarget mips-sde-elf]
 	      || [istarget mipsisa64*-*-*]
 	      || [istarget x86_64-*-*]
 	      || [istarget ia64-*-*]
@@ -3532,6 +3533,7 @@ proc check_effective_target_vect_no_align { } {
     } else {
 	set et_vect_no_align_saved 0
 	if { [istarget mipsisa64*-*-*]
+	     || [istarget mips-sde-elf]
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [check_effective_target_arm_vect_no_misalign]
