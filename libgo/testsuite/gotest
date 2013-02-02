@@ -259,12 +259,20 @@ mkdir _test
 case "x$gofiles" in
 x)
 	gofiles=`ls *_test.go 2>/dev/null`
+	;;
+*)
+	xgofiles=$gofiles
+	gofiles=
+	for f in $xgofiles; do
+	    gofiles="$gofiles `basename $f`"
+	done
 esac
 
 case "x$gofiles" in
 x)
 	echo 'no test files found' 1>&2
 	exit 1
+	;;
 esac
 
 # Run any commands given in sources, like
@@ -295,6 +303,7 @@ esac
 
 # Split $gofiles into external gofiles (those in *_test packages)
 # and internal ones (those in the main package).
+xgofiles=
 for f in $gofiles; do
     package=`grep '^package[ 	]' $f | sed 1q`
     case "$package" in

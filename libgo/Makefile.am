@@ -1696,6 +1696,13 @@ else
 syscall_utimesnano_file = go/syscall/libcall_posix_utimesnano.go
 endif
 
+# Test files.
+if LIBGO_IS_LINUX
+syscall_creds_test_file = go/syscall/creds_test.go
+else
+syscall_creds_test_file =
+endif
+
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -1733,6 +1740,10 @@ go_syscall_c_files = \
 	go/syscall/errno.c \
 	go/syscall/signame.c \
 	$(syscall_wait_c_file)
+
+go_syscall_test_files = \
+	$(syscall_creds_test_file) \
+	go/syscall/passfd_test.go
 
 libcalls.go: s-libcalls; @true
 s-libcalls: Makefile go/syscall/mksyscall.awk $(go_base_syscall_files)
@@ -2005,9 +2016,9 @@ CHECK = \
 	$(MKDIR_P) $(@D); \
 	rm -f $@-testsum $@-testlog; \
 	if test "$(use_dejagnu)" = "yes"; then \
-	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" --goarch="$(GOARCH)" $(GOTESTFLAGS); \
+	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" --goarch="$(GOARCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files); \
 	else \
-	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" $(GOTESTFLAGS) >>$@-testlog 2>&1; then \
+	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files) >>$@-testlog 2>&1; then \
 	    echo "PASS: $(@D)" >> $@-testlog; \
 	    echo "PASS: $(@D)"; \
 	    echo "PASS: $(@D)" > $@-testsum; \
