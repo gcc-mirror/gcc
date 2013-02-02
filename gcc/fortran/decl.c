@@ -5955,6 +5955,8 @@ gfc_match_end (gfc_statement *st)
   const char *target;
   int eos_ok;
   match m;
+  gfc_namespace *parent_ns, *ns, *prev_ns;
+  gfc_namespace **nsp;
 
   old_loc = gfc_current_locus;
   if (gfc_match ("end") != MATCH_YES)
@@ -6180,6 +6182,35 @@ syntax:
 
 cleanup:
   gfc_current_locus = old_loc;
+
+  /* If we are missing an END BLOCK, we created a half-ready namespace.
+     Remove it from the parent namespace's sibling list.  */
+
+  if (state == COMP_BLOCK)
+    {
+      parent_ns = gfc_current_ns->parent;
+
+      nsp = &(gfc_state_stack->previous->tail->ext.block.ns);
+
+      prev_ns = NULL;
+      ns = *nsp;
+      while (ns)
+	{
+	  if (ns == gfc_current_ns)
+	    {
+	      if (prev_ns == NULL)
+		*nsp = NULL;
+	      else
+		prev_ns->sibling = ns->sibling;
+	    }
+	  prev_ns = ns;
+	  ns = ns->sibling;
+	}
+  
+      gfc_free_namespace (gfc_current_ns);
+      gfc_current_ns = parent_ns;
+    }
+
   return MATCH_ERROR;
 }
 
