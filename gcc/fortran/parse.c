@@ -4283,6 +4283,7 @@ parse_module (void)
 {
   gfc_statement st;
   gfc_gsymbol *s;
+  bool error;
 
   s = gfc_get_gsymbol (gfc_new_block->name);
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_MODULE))
@@ -4296,6 +4297,7 @@ parse_module (void)
 
   st = parse_spec (ST_NONE);
 
+  error = false;
 loop:
   switch (st)
     {
@@ -4314,12 +4316,15 @@ loop:
       gfc_error ("Unexpected %s statement in MODULE at %C",
 		 gfc_ascii_statement (st));
 
+      error = true;
       reject_statement ();
       st = next_statement ();
       goto loop;
     }
 
-  s->ns = gfc_current_ns;
+  /* Make sure not to free the namespace twice on error.  */
+  if (!error)
+    s->ns = gfc_current_ns;
 }
 
 
