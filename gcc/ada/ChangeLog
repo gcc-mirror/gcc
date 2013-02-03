@@ -1,3 +1,11 @@
+2013-02-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c: Include diagnostic-core.h.
+	(gnat_to_gnu_entity) <E_Array_Type>: Sorry if Reverse_Storage_Order
+	is set on the entity.
+	<E_Record_Type>: Likewise.
+	* gcc-interface/Make-lang.in (ada/decl.o): Add $(DIAGNOSTIC_CORE_H).
+
 2013-01-29  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_rm.texi: Fixed typos. Minor edits.
