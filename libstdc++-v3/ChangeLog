@@ -1,3 +1,7 @@
+2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/os/mingw32/ctype_inline.h: Fix copyright typo.
+
 2013-02-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h
