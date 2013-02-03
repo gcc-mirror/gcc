@@ -22,17 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ELF
 #define TARGET_ELF 1
 
-/* Generate DWARF2 debugging information and make it the default */
+/* Generate DWARF2 debugging information and make it the default.  */
 #define DWARF2_DEBUGGING_INFO 1
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* use a more compact format for line information */
+/* Use a more compact format for line information.  */
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
 #undef WCHAR_TYPE
-/* #define WCHAR_TYPE (TARGET_SH5 ? "int" : "long int") */
+/* #define WCHAR_TYPE (TARGET_SH5 ? "int" : "long int")  */
 #define WCHAR_TYPE SH_ELF_WCHAR_TYPE
    
 #undef WCHAR_TYPE_SIZE
@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* The prefix to add to user-visible assembler symbols.  */
-
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 

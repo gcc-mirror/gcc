@@ -1010,7 +1010,8 @@ sh_media_FMTRXSUB_S (const void *mtrxg, const void *mtrxh, void *mtrxf)
 
 __inline__ static
 void
-sh_media_FTRVADD_S (const void *mtrxg, const void *fvh, const void *fvi, void *fvf)
+sh_media_FTRVADD_S (const void *mtrxg, const void *fvh, const void *fvi,
+		    void *fvf)
 {
   sh_media_FTRV_S (mtrxg, fvh, fvf);
   sh_media_FVADD_S (fvf, fvi, fvf);
@@ -1018,7 +1019,8 @@ sh_media_FTRVADD_S (const void *mtrxg, const void *fvh, const void *fvi, void *f
 
 __inline__ static
 void
-sh_media_FTRVSUB_S (const void *mtrxg, const void *fvh, const void *fvi, void *fvf)
+sh_media_FTRVSUB_S (const void *mtrxg, const void *fvh, const void *fvi,
+		    void *fvf)
 {
   sh_media_FTRV_S (mtrxg, fvh, fvf);
   sh_media_FVSUB_S (fvf, fvi, fvf);
@@ -1045,7 +1047,8 @@ sh_media_FMTRXMUL_S (const void *mtrxg, const void *mtrxh, void *mtrxf)
 
 __inline__ static
 void
-sh_media_FMTRXMULADD_S (const void *mtrxg, const void *mtrxh, const void *mtrxi, void *mtrxf)
+sh_media_FMTRXMULADD_S (const void *mtrxg, const void *mtrxh,
+			const void *mtrxi, void *mtrxf)
 {
   const __GCC_FV *g = mtrxg, *i = mtrxi;
   __GCC_FV *f = mtrxf;
@@ -1064,7 +1067,8 @@ sh_media_FMTRXMULADD_S (const void *mtrxg, const void *mtrxh, const void *mtrxi,
 
 __inline__ static
 void
-sh_media_FMTRXMULSUB_S (const void *mtrxg, const void *mtrxh, const void *mtrxi, void *mtrxf)
+sh_media_FMTRXMULSUB_S (const void *mtrxg, const void *mtrxh,
+			const void *mtrxi, void *mtrxf)
 {
   const __GCC_FV *g = mtrxg, *i = mtrxi;
   __GCC_FV *f = mtrxf;

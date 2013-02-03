@@ -41,35 +41,29 @@
 
 ;; Two automata are defined to reduce number of states
 ;; which a single large automaton will have. (Factoring)
-
 (define_automaton "inst_pipeline,fpu_pipe")
 
 ;; This unit is basically the decode unit of the processor.
 ;; Since SH4 is a dual issue machine,it is as if there are two
 ;; units so that any insn can be processed by either one
 ;; of the decoding unit.
-
 (define_cpu_unit "pipe_01,pipe_02" "inst_pipeline")
 
 
 ;; The fixed point arithmetic calculator(?? EX Unit).
-
 (define_cpu_unit  "int" "inst_pipeline")
 
 ;; f1_1 and f1_2 are floating point units.Actually there is
 ;; a f1 unit which can overlap with other f1 unit but
 ;; not another F1 unit.It is as though there were two
 ;; f1 units.
-
 (define_cpu_unit "f1_1,f1_2" "fpu_pipe")
 
 ;; The floating point units (except FS - F2 always precedes it.)
-
 (define_cpu_unit "F0,F1,F2,F3" "fpu_pipe")
 
 ;; This is basically the MA unit of SH4
 ;; used in LOAD/STORE pipeline.
-
 (define_cpu_unit "memory" "inst_pipeline")
 
 ;; However, there are LS group insns that don't use it, even ones that
@@ -85,12 +79,10 @@
 
 ;; ----------------------------------------------------
 ;; This reservation is to simplify the dual issue description.
-
 (define_reservation  "issue"  "pipe_01|pipe_02")
 
 ;; This is to express the locking of D stage.
 ;; Note that the issue of a CO group insn also effectively locks the D stage.
-
 (define_reservation  "d_lock" "pipe_01+pipe_02")
 
 ;; Every FE instruction but fipr / ftrv starts with issue and this.
@@ -98,12 +90,10 @@
 
 ;; This is to simplify description where F1,F2,FS
 ;; are used simultaneously.
-
 (define_reservation "fpu" "F1+F2")
 
 ;; This is to highlight the fact that f1
 ;; cannot overlap with F1.
-
 (exclusion_set  "f1_1,f1_2" "F1")
 
 (define_insn_reservation "nil" 0 (eq_attr "type" "nil") "nothing")
@@ -113,14 +103,12 @@
 ;; for one cycle.
 
 ;; Group:	MT
-
 (define_insn_reservation "reg_mov" 0
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "move"))
   "issue")
 
 ;; Group:	LS
-
 (define_insn_reservation "freg_mov" 0
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "fmove"))
@@ -145,7 +133,6 @@
 ;; Group:	MT
 ;; Latency: 	1
 ;; Issue Rate: 	1
-
 (define_insn_reservation "mt" 1
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "mt_group"))
@@ -155,7 +142,6 @@
 ;; Group:	EX
 ;; Latency: 	1
 ;; Issue Rate: 	1
-
 (define_insn_reservation "sh4_simple_arith" 1
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "insn_class" "ex_group"))
@@ -178,7 +164,6 @@
 ;; Group:	LS
 ;; Latency: 	2
 ;; Issue Rate: 	1
-
 (define_insn_reservation "sh4_load" 2
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "load,pcload"))
@@ -220,7 +205,6 @@
 ;; Group:	LS
 ;; Latency: 	1
 ;; Issue Rate: 	1
-
 (define_insn_reservation "sh4_gp_fpul" 1
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "gp_fpul"))
@@ -230,7 +214,6 @@
 ;; Group:	LS
 ;; Latency: 	3
 ;; Issue Rate: 	1
-
 (define_insn_reservation "sh4_fpul_gp" 3
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "fpul_gp"))
@@ -246,7 +229,6 @@
 ;; ??? If the branch is likely, we might want to fill the delay slot;
 ;; if the branch is likely, but not very likely, should we pretend to use
 ;; a resource that CO instructions use, to get a pairable delay slot insn?
-
 (define_insn_reservation "sh4_branch"  1
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "cbranch,jump"))
@@ -258,7 +240,6 @@
 ;; Issue Rate: 	2
 ;; ??? Scheduling happens before branch shortening, and hence jmp and braf
 ;; can't be distinguished from bra for the "jump" pattern.
-
 (define_insn_reservation "sh4_return" 3
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "return,jump_ind"))
@@ -270,7 +251,6 @@
 ;; Issue Rate: 	5
 ;; this instruction can be executed in any of the pipelines
 ;; and blocks the pipeline for next 4 stages.
-
 (define_insn_reservation "sh4_return_from_exp" 5
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "rte"))
@@ -280,8 +260,11 @@
 ;; Group:	CO
 ;; Latency: 	1-5
 ;; Issue Rate: 	1
-
-;; cwb is used for the sequence ocbwb @%0; extu.w %0,%2; or %1,%2; mov.l %0,@%2
+;; cwb is used for the sequence
+;;	ocbwb  @%0
+;;	extu.w %0,%2
+;;	or     %1,%2
+;;	mov.l  %0,@%2
 ;; ocbwb on its own would be "d_lock,nothing,memory*5"
 (define_insn_reservation "ocbwb"  6
   (and (eq_attr "pipe_model" "sh4")
@@ -298,7 +281,6 @@
 ;; or when we are doing a function call - and we don't do inter-function
 ;; scheduling.  For the function call case, it's really best that we end with
 ;; something that models an rts.
-
 (define_insn_reservation "sh4_lds_to_pr" 3
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "prset") )
@@ -311,7 +293,6 @@
 ;; since there are no instructions that contend for memory access early.
 ;; We could, of course, provide exact scheduling information for specific
 ;; sfuncs, if that should prove useful.
-
 (define_insn_reservation "sh4_call" 16
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "call,sfunc"))
@@ -322,7 +303,6 @@
 ;; Latency: 	3
 ;; Issue Rate: 	2
 ;; The SX unit is blocked for last 2 cycles.
-
 (define_insn_reservation "ldsmem_to_pr"  3
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "pload"))
@@ -333,7 +313,6 @@
 ;; Latency: 	2
 ;; Issue Rate: 	2
 ;; The SX unit in second and third cycles.
-
 (define_insn_reservation "sts_from_pr" 2
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "prget"))
@@ -343,7 +322,6 @@
 ;; Group:	CO
 ;; Latency: 	2
 ;; Issue Rate: 	2
-
 (define_insn_reservation "sh4_prstore_mem" 2
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "pstore"))
@@ -354,7 +332,6 @@
 ;; Latency: 	4
 ;; Issue Rate: 	1
 ;; F1 is blocked for last three cycles.
-
 (define_insn_reservation "fpscr_load" 4
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "gp_fpscr"))
@@ -366,7 +343,6 @@
 ;; Latency to update Rn is 1 and latency to update FPSCR is 4
 ;; Issue Rate: 	1
 ;; F1 is blocked for last three cycles.
-
 (define_insn_reservation "fpscr_load_mem" 4
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type"  "mem_fpscr"))
@@ -377,7 +353,6 @@
 ;; Group:	CO
 ;; Latency: 	4 / 4
 ;; Issue Rate: 	2
-
 (define_insn_reservation "multi" 4
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "smpy,dmpy"))
@@ -387,7 +362,6 @@
 ;; Group:	CO
 ;; Latency: 	3
 ;; Issue Rate: 	1
-
 (define_insn_reservation "sh4_mac_gp" 3
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "mac_gp,gp_mac,mem_mac"))
@@ -399,7 +373,6 @@
 ;; Group:	FE
 ;; Latency: 	3/4
 ;; Issue Rate: 	1
-
 (define_insn_reservation "fp_arith"  3
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "fp,fp_cmp"))
@@ -424,7 +397,6 @@
 ;; Latency: 	12/13 (FDIV); 11/12 (FSQRT)
 ;; Issue Rate: 	1
 ;; We describe fdiv here; fsqrt is actually one cycle faster.
-
 (define_insn_reservation "fp_div" 12
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "fdiv"))
@@ -435,7 +407,6 @@
 ;; Group:	FE
 ;; Latency: 	(3,4)/5
 ;; Issue Rate: 	1
-
 (define_insn_reservation "dp_float" 4
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "dfp_conv"))
@@ -445,7 +416,6 @@
 ;; Group:	FE
 ;; Latency: 	(7,8)/9
 ;; Issue Rate: 	1
-
 (define_insn_reservation "fp_double_arith" 8
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "dfp_arith,dfp_mul"))
@@ -455,7 +425,6 @@
 ;; Group:	CO
 ;; Latency: 	3/5
 ;; Issue Rate: 	2
-
 (define_insn_reservation "fp_double_cmp" 3
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "dfp_cmp"))
@@ -465,7 +434,6 @@
 ;; Group:	FE
 ;; Latency: 	(24,25)/26
 ;; Issue Rate: 	1
-
 (define_insn_reservation "dp_div" 25
   (and (eq_attr "pipe_model" "sh4")
        (eq_attr "type" "dfdiv"))

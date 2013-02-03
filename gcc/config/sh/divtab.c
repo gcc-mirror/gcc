@@ -53,7 +53,8 @@ double max_defect3 = 0.;
 double max_defect3_x;
 int max_defect3_val;
 
-static double note_defect3 (int val, double d2, double y2d, double x)
+static double
+note_defect3 (int val, double d2, double y2d, double x)
 {
   int cutoff_val = val >> CUTOFF_BITS;
   double cutoff;
@@ -172,8 +173,10 @@ main ()
     printf ("   Min defect: %e at %e\n", min_defect, min_defect_x);
     printf ("   Max 2nd step defect: %e at %e\n", max_defect2, max_defect2_x);
     printf ("   Min 2nd step defect: %e at %e\n", min_defect2, min_defect2_x);
-    printf ("   Max div defect: %e at %d:%e\n", max_defect3, max_defect3_val, max_defect3_x);
-    printf ("   Min div defect: %e at %d:%e\n", min_defect3, min_defect3_val, min_defect3_x);
+    printf ("   Max div defect: %e at %d:%e\n", max_defect3, max_defect3_val,
+						max_defect3_x);
+    printf ("   Min div defect: %e at %d:%e\n", min_defect3, min_defect3_val,
+						min_defect3_x);
     printf ("   Defect at 1: %e\n",
 	    calc_defect (1., constants[0], factors[0]));
     printf ("   Defect at -2: %e */\n",

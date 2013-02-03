@@ -1,3 +1,21 @@
+2013-02-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/divtab.c: Fix formatting and comments throughout the file.
+	* config/sh/sh4-300.md: Likewise.
+	* config/sh/sh4a.md: Likewise.
+	* config/sh/constraints.md: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sh/netbsd-elf.h: Likewise.
+	* config/sh/predicates.md: Likewise.
+	* config/sh/sh-protos.h: Likewise.
+	* config/sh/ushmedia.h: Likewise.
+	* config/sh/linux.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/superh.h: Likewise.
+	* config/sh/elf.h: Likewise.
+	* config/sh/sh4.md: Likewise.
+	* config/sh/sh.h: Likewise.
+
 2013-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/constraints.md: Adjust unused letters.  Change "T"
