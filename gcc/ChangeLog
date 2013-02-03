@@ -1,3 +1,48 @@
+2013-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/constraints.md: Adjust unused letters.  Change "T"
+	constraint to match_test floating_point_store_memory_operand().
+	* config/pa/predicates.md (reg_plus_base_memory_operand): New.
+	(base14_operand): New.
+	(floating_point_store_memory_operand): New.
+	(integer_store_memory_operand): Revise to use base14_operand and
+	reg_plus_base_memory_operand.
+	(move_dest_operand): Allow symbolic_memory_operands.
+	(symbolic_memory_operand): Check for LO_SOM.
+	(symbolic_operand): Change default case to break.
+	* config/pa/pa.md: Remove unamed DFmode and SFmode patterns to force
+	CONST_DOUBLE values to be reloaded by putting them into memory when
+	the destination is a floating point register.
+	(movdf): Remove code to handle CONST_DOUBLE.
+	(movsf): Likewise.
+	(reload_indf_r1): New.
+	(reload_insf_r1): New.
+	Consistently use "Q" and "T" constraints with integer and floating
+	point move instructions, respectively.
+	(movdi): Remove FAIL.
+	Change predicate for source operand unamed DImode move from
+	general_operand to move_src_operand.
+	(umulsidi3): Change predicate for destination operand to
+	register_operand.
+	Likewise for similar unamed patterns.
+	* config/pa/pa-protos.h (pa_legitimize_reload_address): Declare.
+	* config/pa/pa.c (pa_symbolic_expression_p): Remove extra parenthesis.
+	(hppa_legitimize_address): Simplify mask calculation.
+	(pa_emit_move_sequence): Revised handling of secondary reloads from
+	REG+D addresses for floating point loads and stores.  Directly handle
+	loading CONST0_RTX (mode) to a floating point register.
+	(pa_secondary_reload): Handle reloading DF and SFmode constant values
+	to floating point registers.  Don't restrict secondary reloads to
+	floating point registers to integer modes.  Revise some comments and
+	cleanup some code.
+	(TARGET_LEGITIMATE_ADDRESS_P): Define.
+	(pa_legitimate_address_p): New.
+	(pa_legitimize_reload_address): New.
+	* config/pa/pa.h (STRICT_REG_OK_FOR_INDEX_P): New.
+	(STRICT_REG_OK_FOR_BASE_P): New.
+	(GO_IF_LEGITIMATE_ADDRESS): Delete.  Update some related comments.
+	(LEGITIMIZE_RELOAD_ADDRESS): Revise to use pa_legitimize_reload_address.
+
 2013-02-03  David Edelsohn  <dje.gcc@gmail.com>
 	    Andrew Dixie  <andrewd@gentrack.com>
 
