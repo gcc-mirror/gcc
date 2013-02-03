@@ -1,6 +1,5 @@
 /* Interface for the Object class for Objective-C.
-   Copyright (C) 1993, 1994, 1995, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

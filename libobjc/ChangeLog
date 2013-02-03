@@ -1,3 +1,7 @@
+2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years.
+
 2012-10-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* encoding.c (TARGET_VSX): Provide definitions based on the
