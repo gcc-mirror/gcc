@@ -2763,12 +2763,14 @@ scan_libraries (const char *prog_name)
 /* 0757 = U803XTOCMAGIC (AIX 4.3) and 0767 = U64_TOCMAGIC (AIX V5) */
 #if TARGET_AIX_VERSION >= 51
 #   define GCC_CHECK_HDR(X) \
-     ((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
-      || (HEADER (X).f_magic == 0767 && aix64_flag))
+     (((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
+       || (HEADER (X).f_magic == 0767 && aix64_flag)) \
+      && !(HEADER (X).f_flags & F_LOADONLY))
 #else
 #   define GCC_CHECK_HDR(X) \
-     ((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
-      || (HEADER (X).f_magic == 0757 && aix64_flag))
+     (((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
+       || (HEADER (X).f_magic == 0757 && aix64_flag)) \
+      && !(HEADER (X).f_flags & F_LOADONLY))
 #endif
 
 #endif
