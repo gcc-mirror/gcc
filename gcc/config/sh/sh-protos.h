@@ -212,7 +212,8 @@ extern void sh_pr_nosave_low_regs (struct cpp_reader *);
 extern rtx function_symbol (rtx, const char *, enum sh_function_kind);
 extern rtx sh_get_pr_initial_val (void);
 
-extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, signed int, enum machine_mode);
+extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
+				     signed int, enum machine_mode);
 extern rtx sh_dwarf_register_span (rtx);
 
 extern rtx replace_n_hard_rtx (rtx, rtx *, int , int);
