@@ -1,5 +1,29 @@
 2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Update copyright years.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc,
+	testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc,
+	testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc,
+	testsuite/23_containers/deque/requirements/dr438/insert_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/assign_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/insert_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/assign_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/insert_neg.cc,
+	testsuite/29_atomics/atomic/cons/assign_neg.cc,
+	testsuite/29_atomics/atomic/cons/copy_neg.cc,
+	testsuite/29_atomics/atomic_integral/cons/assign_neg.cc,
+	testsuite/29_atomics/atomic_integral/cons/copy_neg.cc,
+	testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc,
+	testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc,
+	testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Update lines in dg error matches.
+
+2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/os/mingw32/ctype_inline.h: Fix copyright typo.
 
 2013-02-01  François Dumont  <fdumont@gcc.gnu.org>
