@@ -1,7 +1,6 @@
 ## Makefile for the toplevel directory of the mudflap library.
 ##
-## Copyright (C) 2002, 2003, 2004, 2007
-## Free Software Foundation, Inc.
+## Copyright (C) 2002-2013 Free Software Foundation, Inc.
 ##
 
 AUTOMAKE_OPTIONS = 1.8 foreign
