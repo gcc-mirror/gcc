@@ -1,7 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011
-// Free Software Foundation
+// Copyright (C) 2002-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +36,7 @@ test01()
 {
   std::auto_ptr<Base> ptr2;
   ptr2 = new Base; // { dg-error "no match" }
-  // { dg-error "candidate" "candidate note" { target *-*-* } 39 }
+  // { dg-error "candidate" "candidate note" { target *-*-* } 38 }
   return 0;
 }
 
