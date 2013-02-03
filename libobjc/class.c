@@ -1,6 +1,5 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993, 1995, 1996, 1997, 2001, 2002, 2009, 2010, 2011
-     Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup and Dennis Glatting.
 
    Lock-free class table code designed and written from scratch by

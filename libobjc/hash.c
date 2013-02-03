@@ -1,6 +1,5 @@
 /* Hash tables for Objective C internal structures
-   Copyright (C) 1993, 1996, 1997, 2004, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

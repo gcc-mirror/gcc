@@ -1,6 +1,5 @@
 /* GNU Objective C Runtime nil receiver function
-   Copyright (C) 1993, 1995, 1996, 2002, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.
