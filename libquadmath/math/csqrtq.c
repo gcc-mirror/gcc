@@ -1,5 +1,5 @@
 /* Complex square root of __float128 value.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Based on an algorithm by Stephen L. Moshier <moshier@world.std.com>.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.

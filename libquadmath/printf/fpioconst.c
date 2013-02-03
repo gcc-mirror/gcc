@@ -1,6 +1,5 @@
 /* Table of MP integer constants 10^(2^i), used for floating point <-> decimal.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2002, 2003
-   Free Software Foundation, Inc.
+   Copyright (C) 1995-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or

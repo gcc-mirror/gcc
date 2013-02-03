@@ -1,5 +1,5 @@
 /* Internal header for proving correct grouping in strings of numbers.
-   Copyright (C) 1995,1996,1997,1998,2000,2003 Free Software Foundation, Inc.
+   Copyright (C) 1995-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
 
