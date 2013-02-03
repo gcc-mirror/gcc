@@ -986,8 +986,8 @@ ada/cuintp.o : ada/gcc-interface/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/decl.o : ada/gcc-interface/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(TARGET_H) \
-   $(TREE_INLINE_H) ada/gcc-interface/ada.h ada/types.h ada/atree.h \
+   $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(TARGET_H) $(TREE_INLINE_H) \
+   $(DIAGNOSTIC_CORE_H) ada/gcc-interface/ada.h ada/types.h ada/atree.h \
    ada/elists.h ada/namet.h ada/nlists.h ada/repinfo.h ada/snames.h \
    ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h ada/einfo.h $(ADA_TREE_H) \
    ada/gcc-interface/gigi.h gt-ada-decl.h
