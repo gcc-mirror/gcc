@@ -187,6 +187,7 @@ static section *pa_function_section (tree, enum node_frequency, bool, bool);
 static bool pa_cannot_force_const_mem (enum machine_mode, rtx);
 static bool pa_legitimate_constant_p (enum machine_mode, rtx);
 static unsigned int pa_section_type_flags (tree, const char *, int);
+static bool pa_legitimate_address_p (enum machine_mode, rtx, bool);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -384,6 +385,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_LEGITIMATE_CONSTANT_P pa_legitimate_constant_p
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS pa_section_type_flags
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P pa_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -685,7 +688,7 @@ pa_symbolic_expression_p (rtx x)
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);
 
-  return (symbolic_operand (x, VOIDmode));
+  return symbolic_operand (x, VOIDmode);
 }
 
 /* Accept any constant that can be moved in one instruction into a
@@ -1057,7 +1060,7 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       int mask;
 
       mask = (GET_MODE_CLASS (mode) == MODE_FLOAT
-	      ? (INT14_OK_STRICT ? 0x3fff : 0x1f) : 0x3fff);
+	      && !INT14_OK_STRICT ? 0x1f : 0x3fff);
 
       /* Choose which way to round the offset.  Round up if we
 	 are >= halfway to the next boundary.  */
@@ -1393,7 +1396,7 @@ hppa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    PIC addresses are very expensive.
 
    It is no coincidence that this has the same structure
-   as GO_IF_LEGITIMATE_ADDRESS.  */
+   as pa_legitimate_address_p.  */
 
 static int
 hppa_address_cost (rtx X, enum machine_mode mode ATTRIBUTE_UNUSED,
@@ -1650,14 +1653,10 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
      (subreg (mem (addr))) cases.  */
   if (scratch_reg
       && fp_reg_operand (operand0, mode)
-      && ((GET_CODE (operand1) == MEM
-	   && !memory_address_p ((GET_MODE_SIZE (mode) == 4 ? SFmode : DFmode),
-				 XEXP (operand1, 0)))
-	  || ((GET_CODE (operand1) == SUBREG
-	       && GET_CODE (XEXP (operand1, 0)) == MEM
-	       && !memory_address_p ((GET_MODE_SIZE (mode) == 4
-				      ? SFmode : DFmode),
-				     XEXP (XEXP (operand1, 0), 0))))))
+      && (MEM_P (operand1)
+	  || (GET_CODE (operand1) == SUBREG
+	      && MEM_P (XEXP (operand1, 0))))
+      && !floating_point_store_memory_operand (operand1, mode))
     {
       if (GET_CODE (operand1) == SUBREG)
 	operand1 = XEXP (operand1, 0);
@@ -1669,7 +1668,10 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
-      if (!memory_address_p (Pmode, XEXP (operand1, 0)))
+      if (reg_plus_base_memory_operand (operand1, mode)
+	  && !(TARGET_PA_20
+	       && !TARGET_ELF32
+	       && INT_14_BITS (XEXP (XEXP (operand1, 0), 1))))
 	{
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
 	  emit_move_insn (scratch_reg,
@@ -1686,15 +1688,10 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
     }
   else if (scratch_reg
 	   && fp_reg_operand (operand1, mode)
-	   && ((GET_CODE (operand0) == MEM
-		&& !memory_address_p ((GET_MODE_SIZE (mode) == 4
-					? SFmode : DFmode),
-				       XEXP (operand0, 0)))
-	       || ((GET_CODE (operand0) == SUBREG)
-		   && GET_CODE (XEXP (operand0, 0)) == MEM
-		   && !memory_address_p ((GET_MODE_SIZE (mode) == 4
-					  ? SFmode : DFmode),
-			   		 XEXP (XEXP (operand0, 0), 0)))))
+	   && (MEM_P (operand0)
+	       || (GET_CODE (operand0) == SUBREG
+		   && MEM_P (XEXP (operand0, 0))))
+	   && !floating_point_store_memory_operand (operand0, mode))
     {
       if (GET_CODE (operand0) == SUBREG)
 	operand0 = XEXP (operand0, 0);
@@ -1706,7 +1703,10 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
-      if (!memory_address_p (Pmode, XEXP (operand0, 0)))
+      if (reg_plus_base_memory_operand (operand0, mode)
+	  && !(TARGET_PA_20
+	       && !TARGET_ELF32
+	       && INT_14_BITS (XEXP (XEXP (operand0, 0), 1))))
 	{
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand0, 0), 1));
 	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand0,
@@ -1724,19 +1724,21 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
       return 1;
     }
   /* Handle secondary reloads for loads of FP registers from constant
-     expressions by forcing the constant into memory.
+     expressions by forcing the constant into memory.  For the most part,
+     this is only necessary for SImode and DImode.
 
-     Use scratch_reg to hold the address of the memory location.
-
-     The proper fix is to change TARGET_PREFERRED_RELOAD_CLASS to return
-     NO_REGS when presented with a const_int and a register class
-     containing only FP registers.  Doing so unfortunately creates
-     more problems than it solves.   Fix this for 2.5.  */
+     Use scratch_reg to hold the address of the memory location.  */
   else if (scratch_reg
 	   && CONSTANT_P (operand1)
 	   && fp_reg_operand (operand0, mode))
     {
       rtx const_mem, xoperands[2];
+
+      if (operand1 == CONST0_RTX (mode))
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
+	  return 1;
+	}
 
       /* SCRATCH_REG will hold an address and maybe the actual data.  We want
 	 it in WORD_MODE regardless of what mode it was originally given
@@ -5341,7 +5343,7 @@ pa_print_operand (FILE *file, rtx x, int code)
 		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == REG)
 	    {
 	      /* Because the REG_POINTER flag can get lost during reload,
-		 GO_IF_LEGITIMATE_ADDRESS canonicalizes the order of the
+		 pa_legitimate_address_p canonicalizes the order of the
 		 index and base registers in the combined move patterns.  */
 	      rtx base = XEXP (XEXP (x, 0), 1);
 	      rtx index = XEXP (XEXP (x, 0), 0);
@@ -5892,9 +5894,9 @@ pa_output_arg_descriptor (rtx call_insn)
   fputc ('\n', asm_out_file);
 }
 
-/* Inform reload about cases where moving X with a mode MODE to a register in
-   RCLASS requires an extra scratch or immediate register.  Return the class
-   needed for the immediate register.  */
+/* Inform reload about cases where moving X with a mode MODE to or from
+   a register in RCLASS requires an extra scratch or immediate register.
+   Return the class needed for the immediate register.  */
 
 static reg_class_t
 pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
@@ -5923,19 +5925,39 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     return NO_REGS;
 
   /* Trying to load a constant into a FP register during PIC code
-     generation requires %r1 as a scratch register.  */
+     generation requires %r1 as a scratch register.  For float modes,
+     the only legitimate constant is CONST0_RTX.  However, there are
+     a few patterns that accept constant double operands.  */
   if (flag_pic
-      && (mode == SImode || mode == DImode)
       && FP_REG_CLASS_P (rclass)
       && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE))
     {
-      sri->icode = (mode == SImode ? CODE_FOR_reload_insi_r1
-		    : CODE_FOR_reload_indi_r1);
+      switch (mode)
+	{
+	case SImode:
+	  sri->icode = CODE_FOR_reload_insi_r1;
+	  break;
+
+	case DImode:
+	  sri->icode = CODE_FOR_reload_indi_r1;
+	  break;
+
+	case SFmode:
+	  sri->icode = CODE_FOR_reload_insf_r1;
+	  break;
+
+	case DFmode:
+	  sri->icode = CODE_FOR_reload_indf_r1;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
       return NO_REGS;
     }
 
-  /* Secondary reloads of symbolic operands require %r1 as a scratch
-     register when we're generating PIC code and when the operand isn't
+  /* Secondary reloads of symbolic expressions require %r1 as a scratch
+     register when we're generating PIC code or when the operand isn't
      readonly.  */
   if (pa_symbolic_expression_p (x))
     {
@@ -5944,9 +5966,19 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
       if (flag_pic || !read_only_operand (x, VOIDmode))
 	{
-	  gcc_assert (mode == SImode || mode == DImode);
-	  sri->icode = (mode == SImode ? CODE_FOR_reload_insi_r1
-			: CODE_FOR_reload_indi_r1);
+	  switch (mode)
+	    {
+	    case SImode:
+	      sri->icode = CODE_FOR_reload_insi_r1;
+	      break;
+
+	    case DImode:
+	      sri->icode = CODE_FOR_reload_indi_r1;
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
 	  return NO_REGS;
 	}
     }
@@ -5956,22 +5988,11 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   if (regno >= FIRST_PSEUDO_REGISTER || GET_CODE (x) == SUBREG)
     regno = true_regnum (x);
 
-  /* In order to allow 14-bit displacements in integer loads and stores,
-     we need to prevent reload from generating out of range integer mode
-     loads and stores to the floating point registers.  Previously, we
-     used to call for a secondary reload and have pa_emit_move_sequence()
-     fix the instruction sequence.  However, reload occasionally wouldn't
-     generate the reload and we would end up with an invalid REG+D memory
-     address.  So, now we use an intermediate general register for most
-     memory loads and stores.  */
+  /* Handle reloads for floating point loads and stores.  */
   if ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
-      && GET_MODE_CLASS (mode) == MODE_INT
       && FP_REG_CLASS_P (rclass))
     {
-      /* Reload passes (mem:SI (reg/f:DI 30 %r30) when it wants to check
-	 the secondary reload needed for a pseudo.  It never passes a
-	 REG+D address.  */
-      if (GET_CODE (x) == MEM)
+      if (MEM_P (x))
 	{
 	  x = XEXP (x, 0);
 
@@ -5985,7 +6006,7 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	      || IS_LO_SUM_DLT_ADDR_P (x))
 	    return NO_REGS;
 
-	  /* Otherwise, we need an intermediate general register.  */
+	  /* Request intermediate general register.  */
 	  return GENERAL_REGS;
 	}
 
@@ -10404,6 +10425,255 @@ pa_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_WRITE | SECTION_RELRO;
 
   return flags;
+}
+
+/* pa_legitimate_address_p recognizes an RTL expression that is a
+   valid memory address for an instruction.  The MODE argument is the
+   machine mode for the MEM expression that wants to use this address.
+
+   On HP PA-RISC, the legitimate address forms are REG+SMALLINT,
+   REG+REG, and REG+(REG*SCALE).  The indexed address forms are only
+   available with floating point loads and stores, and integer loads.
+   We get better code by allowing indexed addresses in the initial
+   RTL generation.
+
+   The acceptance of indexed addresses as legitimate implies that we
+   must provide patterns for doing indexed integer stores, or the move
+   expanders must force the address of an indexed store to a register.
+   We have adopted the latter approach.
+   
+   Another function of pa_legitimate_address_p is to ensure that
+   the base register is a valid pointer for indexed instructions.
+   On targets that have non-equivalent space registers, we have to
+   know at the time of assembler output which register in a REG+REG
+   pair is the base register.  The REG_POINTER flag is sometimes lost
+   in reload and the following passes, so it can't be relied on during
+   code generation.  Thus, we either have to canonicalize the order
+   of the registers in REG+REG indexed addresses, or treat REG+REG
+   addresses separately and provide patterns for both permutations.
+
+   The latter approach requires several hundred additional lines of
+   code in pa.md.  The downside to canonicalizing is that a PLUS
+   in the wrong order can't combine to form to make a scaled indexed
+   memory operand.  As we won't need to canonicalize the operands if
+   the REG_POINTER lossage can be fixed, it seems better canonicalize.
+
+   We initially break out scaled indexed addresses in canonical order
+   in pa_emit_move_sequence.  LEGITIMIZE_ADDRESS also canonicalizes
+   scaled indexed addresses during RTL generation.  However, fold_rtx
+   has its own opinion on how the operands of a PLUS should be ordered.
+   If one of the operands is equivalent to a constant, it will make
+   that operand the second operand.  As the base register is likely to
+   be equivalent to a SYMBOL_REF, we have made it the second operand.
+
+   pa_legitimate_address_p accepts REG+REG as legitimate when the
+   operands are in the order INDEX+BASE on targets with non-equivalent
+   space registers, and in any order on targets with equivalent space
+   registers.  It accepts both MULT+BASE and BASE+MULT for scaled indexing.
+
+   We treat a SYMBOL_REF as legitimate if it is part of the current
+   function's constant-pool, because such addresses can actually be
+   output as REG+SMALLINT.  */
+
+static bool
+pa_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+{
+  if ((REG_P (x)
+       && (strict ? STRICT_REG_OK_FOR_BASE_P (x)
+		  : REG_OK_FOR_BASE_P (x)))
+      || ((GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_DEC
+	   || GET_CODE (x) == PRE_INC || GET_CODE (x) == POST_INC)
+	  && REG_P (XEXP (x, 0))
+	  && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))
+		     : REG_OK_FOR_BASE_P (XEXP (x, 0)))))
+    return true;
+
+  if (GET_CODE (x) == PLUS)
+    {
+      rtx base, index;
+
+      /* For REG+REG, the base register should be in XEXP (x, 1),
+	 so check it first.  */
+      if (REG_P (XEXP (x, 1))
+	  && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 1))
+		     : REG_OK_FOR_BASE_P (XEXP (x, 1))))
+	base = XEXP (x, 1), index = XEXP (x, 0);
+      else if (REG_P (XEXP (x, 0))
+	       && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))
+			  : REG_OK_FOR_BASE_P (XEXP (x, 0))))
+	base = XEXP (x, 0), index = XEXP (x, 1);
+      else
+	return false;
+
+      if (GET_CODE (index) == CONST_INT)
+	{
+	  if (INT_5_BITS (index))
+	    return true;
+
+	  /* When INT14_OK_STRICT is false, a secondary reload is needed
+	     to adjust the displacement of SImode and DImode floating point
+	     instructions.  So, we return false when STRICT is true.  We
+	     also reject long displacements for float mode addresses since
+	     the majority of accesses will use floating point instructions
+	     that don't support 14-bit offsets.  */
+	  if (!INT14_OK_STRICT
+	      && (GET_MODE_CLASS (mode) == MODE_FLOAT
+		  || (reload_in_progress
+		      && strict
+		      && (mode == SImode || mode == DImode))))
+	   return false;
+
+	  if (INT_14_BITS (index)
+	      && (mode == BLKmode
+		  || mode == QImode
+		  || mode == HImode
+		  /* Displacement must be a multiple of its size.  */
+		  || (INTVAL (index) % GET_MODE_SIZE (mode)) == 0))
+	    return true;
+
+	  return false;
+	}
+
+      if (!TARGET_DISABLE_INDEXING
+	  /* Only accept the "canonical" INDEX+BASE operand order
+	     on targets with non-equivalent space registers.  */
+	  && (TARGET_NO_SPACE_REGS
+	      ? REG_P (index)
+	      : (base == XEXP (x, 1) && REG_P (index)
+		 && (reload_completed
+		     || (reload_in_progress && HARD_REGISTER_P (base))
+		     || REG_POINTER (base))
+		 && (reload_completed
+		     || (reload_in_progress && HARD_REGISTER_P (index))
+		     || !REG_POINTER (index))))
+	  && MODE_OK_FOR_UNSCALED_INDEXING_P (mode)
+	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (index)
+		     : REG_OK_FOR_INDEX_P (index))
+	  && borx_reg_operand (base, Pmode)
+	  && borx_reg_operand (index, Pmode))
+	return true;
+
+      if (!TARGET_DISABLE_INDEXING
+	  && GET_CODE (index) == MULT
+	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
+	  && REG_P (XEXP (index, 0))
+	  && GET_MODE (XEXP (index, 0)) == Pmode
+	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (XEXP (index, 0))
+		     : REG_OK_FOR_INDEX_P (XEXP (index, 0)))
+	  && GET_CODE (XEXP (index, 1)) == CONST_INT
+	  && INTVAL (XEXP (index, 1))
+	     == (HOST_WIDE_INT) GET_MODE_SIZE (mode)
+	  && borx_reg_operand (base, Pmode))
+	return true;
+
+      return false;
+    }
+
+  if (GET_CODE (x) == LO_SUM)
+    {
+      rtx y = XEXP (x, 0);
+
+      if (GET_CODE (y) == SUBREG)
+	y = SUBREG_REG (y);
+
+      if (REG_P (y)
+	  && (strict ? STRICT_REG_OK_FOR_BASE_P (y)
+		     : REG_OK_FOR_BASE_P (y)))
+	{
+	  /* Needed for -fPIC */
+	  if (mode == Pmode
+	      && GET_CODE (XEXP (x, 1)) == UNSPEC)
+	    return true;
+
+	  if (!INT14_OK_STRICT
+	      && (GET_MODE_CLASS (mode) == MODE_FLOAT
+		  || (reload_in_progress
+		      && strict
+		      && (mode == SImode || mode == DImode))))
+	   return false;
+
+	  if (CONSTANT_P (XEXP (x, 1)))
+	    return true;
+	}
+      return false;
+    }
+
+  if (GET_CODE (x) == CONST_INT && INT_5_BITS (x))
+    return true;
+
+  return false;
+}
+
+/* Look for machine dependent ways to make the invalid address AD a
+   valid address.
+
+   For the PA, transform:
+
+        memory(X + <large int>)
+
+   into:
+
+        if (<large int> & mask) >= 16
+          Y = (<large int> & ~mask) + mask + 1  Round up.
+        else
+          Y = (<large int> & ~mask)             Round down.
+        Z = X + Y
+        memory (Z + (<large int> - Y));
+
+   This makes reload inheritance and reload_cse work better since Z
+   can be reused.
+
+   There may be more opportunities to improve code with this hook.  */
+
+rtx
+pa_legitimize_reload_address (rtx ad, enum machine_mode mode,
+			      int opnum, int type,
+			      int ind_levels ATTRIBUTE_UNUSED)
+{
+  long offset, newoffset, mask;
+  rtx new_rtx, temp = NULL_RTX;
+
+  mask = (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && !INT14_OK_STRICT ? 0x1f : 0x3fff);
+
+  if (optimize && GET_CODE (ad) == PLUS)
+    temp = simplify_binary_operation (PLUS, Pmode,
+				      XEXP (ad, 0), XEXP (ad, 1));
+
+  new_rtx = temp ? temp : ad;
+
+  if (optimize
+      && GET_CODE (new_rtx) == PLUS
+      && GET_CODE (XEXP (new_rtx, 0)) == REG
+      && GET_CODE (XEXP (new_rtx, 1)) == CONST_INT)
+    {
+      offset = INTVAL (XEXP ((new_rtx), 1));
+
+      /* Choose rounding direction.  Round up if we are >= halfway.  */
+      if ((offset & mask) >= ((mask + 1) / 2))
+	newoffset = (offset & ~mask) + mask + 1;
+      else
+	newoffset = offset & ~mask;
+
+      /* Ensure that long displacements are aligned.  */
+      if (mask == 0x3fff
+	  && (GET_MODE_CLASS (mode) == MODE_FLOAT
+	      || (TARGET_64BIT && (mode) == DImode)))
+	newoffset &= ~(GET_MODE_SIZE (mode) - 1);
+
+      if (newoffset != 0 && VAL_14_BITS_P (newoffset))
+	{
+	  temp = gen_rtx_PLUS (Pmode, XEXP (new_rtx, 0),
+			       GEN_INT (newoffset));
+	  ad = gen_rtx_PLUS (Pmode, temp, GEN_INT (offset - newoffset));
+	  push_reload (XEXP (ad, 0), 0, &XEXP (ad, 0), 0,
+		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
+		       opnum, (enum reload_type) type);
+	  return ad;
+	}
+    }
+
+  return NULL_RTX;
 }
 
 #include "gt-pa.h"

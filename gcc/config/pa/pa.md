@@ -3772,50 +3772,30 @@
 
 ;; Floating point move insns
 
-;; This pattern forces (set (reg:DF ...) (const_double ...))
-;; to be reloaded by putting the constant into memory when
-;; reg is a floating point register.
-;;
-;; For integer registers we use ldil;ldo to set the appropriate
-;; value.
-;;
-;; This must come before the movdf pattern, and it must be present
-;; to handle obscure reloading cases.
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=?r,f")
-	(match_operand:DF 1 "" "?F,m"))]
-  "GET_CODE (operands[1]) == CONST_DOUBLE
-   && operands[1] != CONST0_RTX (DFmode)
-   && !TARGET_64BIT
-   && !TARGET_SOFT_FLOAT"
-  "* return (which_alternative == 0 ? pa_output_move_double (operands)
-				    : \"fldd%F1 %1,%0\");"
-  [(set_attr "type" "move,fpload")
-   (set_attr "length" "16,4")])
-
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
 	(match_operand:DF 1 "general_operand" ""))]
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && operands[1] != CONST0_RTX (DFmode))
-    {
-      /* Reject CONST_DOUBLE loads to all hard registers when
-	 generating 64-bit code and to floating point registers
-	 when generating 32-bit code.  */
-      if (REG_P (operands[0])
-	  && HARD_REGISTER_P (operands[0])
-	  && (TARGET_64BIT || REGNO (operands[0]) >= 32))
-	FAIL;
-
-      if (TARGET_64BIT)
-	operands[1] = force_const_mem (DFmode, operands[1]);
-    }
-
   if (pa_emit_move_sequence (operands, DFmode, 0))
     DONE;
+}")
+
+;; Handle DFmode input reloads requiring %r1 as a scratch register.
+(define_expand "reload_indf_r1"
+  [(set (match_operand:DF 0 "register_operand" "=Z")
+	(match_operand:DF 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&a"))]
+  ""
+  "
+{
+  if (pa_emit_move_sequence (operands, DFmode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
 }")
 
 ;; Handle DFmode input reloads requiring a general register as a
@@ -3854,9 +3834,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=f,*r,Q,?o,?Q,f,*r,*r,?*r,?f")
+			  "=f,*r,T,?o,?Q,f,*r,*r,?*r,?f")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,*rG,f,*r,*r,RQ,o,RQ,f,*r"))]
+			  "fG,*rG,f,*r,*r,RT,o,RQ,f,*r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !(GET_CODE (operands[1]) == CONST_DOUBLE
@@ -4071,18 +4051,6 @@
   ""
   "
 {
-  /* Except for zero, we don't support loading a CONST_INT directly
-     to a hard floating-point register since a scratch register is
-     needed for the operation.  While the operation could be handled
-     before register allocation, the simplest solution is to fail.  */
-  if (TARGET_64BIT
-      && GET_CODE (operands[1]) == CONST_INT
-      && operands[1] != CONST0_RTX (DImode)
-      && REG_P (operands[0])
-      && HARD_REGISTER_P (operands[0])
-      && REGNO (operands[0]) >= 32)
-    FAIL;
-
   if (pa_emit_move_sequence (operands, DImode, 0))
     DONE;
 }")
@@ -4190,7 +4158,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "move_dest_operand"
 			  "=r,o,Q,r,r,r,*f,*f,T,?r,?*f")
-	(match_operand:DI 1 "general_operand"
+	(match_operand:DI 1 "move_src_operand"
 			  "rM,r,r,o*R,Q,i,*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
@@ -4355,42 +4323,30 @@
   [(set_attr "type" "move,move")
    (set_attr "length" "4,8")])
 
-;; This pattern forces (set (reg:SF ...) (const_double ...))
-;; to be reloaded by putting the constant into memory when
-;; reg is a floating point register.
-;;
-;; For integer registers we use ldil;ldo to set the appropriate
-;; value.
-;;
-;; This must come before the movsf pattern, and it must be present
-;; to handle obscure reloading cases.
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=?r,f")
-	(match_operand:SF 1 "" "?F,m"))]
-  "GET_CODE (operands[1]) == CONST_DOUBLE
-   && operands[1] != CONST0_RTX (SFmode)
-   && ! TARGET_SOFT_FLOAT"
-  "* return (which_alternative == 0 ? pa_singlemove_string (operands)
-				    : \" fldw%F1 %1,%0\");"
-  [(set_attr "type" "move,fpload")
-   (set_attr "length" "8,4")])
-
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
 	(match_operand:SF 1 "general_operand" ""))]
   ""
   "
 {
-  /* Reject CONST_DOUBLE loads to floating point registers.  */
-  if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && operands[1] != CONST0_RTX (SFmode)
-      && REG_P (operands[0])
-      && HARD_REGISTER_P (operands[0])
-      && REGNO (operands[0]) >= 32)
-    FAIL;
-
   if (pa_emit_move_sequence (operands, SFmode, 0))
     DONE;
+}")
+
+;; Handle SFmode input reloads requiring %r1 as a scratch register.
+(define_expand "reload_insf_r1"
+  [(set (match_operand:SF 0 "register_operand" "=Z")
+	(match_operand:SF 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&a"))]
+  ""
+  "
+{
+  if (pa_emit_move_sequence (operands, SFmode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
 }")
 
 ;; Handle SFmode input reloads requiring a general register as a
@@ -4429,9 +4385,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
-			  "=f,!*r,f,*r,Q,Q,?*r,?f")
+			  "=f,!*r,f,*r,T,Q,?*r,?f")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,!*rG,RQ,RQ,f,*rG,f,*r"))]
+			  "fG,!*rG,RT,RQ,f,*rG,f,*r"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
    && !TARGET_SOFT_FLOAT
@@ -4451,9 +4407,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
-			  "=f,!*r,f,*r,Q,Q")
+			  "=f,!*r,f,*r,T,Q")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,!*rG,RQ,RQ,f,*rG"))]
+			  "fG,!*rG,RT,RQ,f,*rG"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
    && !TARGET_SOFT_FLOAT
@@ -5408,7 +5364,7 @@
 }")
 
 (define_insn "umulsidi3"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
+  [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
 		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "f"))))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
@@ -5417,7 +5373,7 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
+  [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && !TARGET_64BIT"
@@ -5426,7 +5382,7 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
+  [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && TARGET_64BIT"
