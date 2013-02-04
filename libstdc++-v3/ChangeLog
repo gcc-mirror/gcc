@@ -1,6 +1,16 @@
 2013-02-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/56202 (again)
+	* include/bits/random.tcc (binomial_distribution<>::
+	_M_waiting(_UniformRandomNumberGenerator&, _IntType)): Fix thinko
+	in previous commit.
+
+	* include/bits/random.h: Fix comment typo.
+
+2013-02-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/56202
 	* include/bits/random.tcc (binomial_distribution<>::
 	_M_waiting(_UniformRandomNumberGenerator&, _IntType)): Avoid

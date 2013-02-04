@@ -3770,7 +3770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @brief A discrete binomial random number distribution.
    *
    * The formula for the binomial probability density function is
-   * @f$p(i|t,p) = \binom{n}{i} p^i (1 - p)^{t - i}@f$ where @f$t@f$
+   * @f$p(i|t,p) = \binom{t}{i} p^i (1 - p)^{t - i}@f$ where @f$t@f$
    * and @f$p@f$ are the parameters of the distribution.
    */
   template<typename _IntType = int>
