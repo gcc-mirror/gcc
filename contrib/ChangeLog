@@ -1,6 +1,6 @@
 2013-02-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* update-copyright.pl: New file.
+	* update-copyright.py: New file.
 
 2013-01-15  David Blaikie <dblaikie@gmail.com>
 
