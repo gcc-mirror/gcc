@@ -250,8 +250,9 @@ i386_pe_assemble_visibility (tree decl,
   if (!decl
       || !lookup_attribute ("visibility", DECL_ATTRIBUTES (decl)))
     return;
-  warning (OPT_Wattributes, "visibility attribute not supported "
-	   "in this configuration; ignored");
+  if (!DECL_ARTIFICIAL (decl))
+    warning (OPT_Wattributes, "visibility attribute not supported "
+			      "in this configuration; ignored");
 }
 
 /* This is used as a target hook to modify the DECL_ASSEMBLER_NAME

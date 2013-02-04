@@ -1,3 +1,10 @@
+2013-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/54314
+	* config/i386/winnt.c (i386_pe_assemble_visibility): Don't warn
+	about visibility on artificial decls.
+	* config/sol2.c (solaris_assemble_visibility): Likewise.
+
 2013-02-04  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/56186
@@ -9,10 +16,9 @@
 	(return_in_memory_ms_64): Sync 16-byte sized mode handling with
 	handling infunction_value_64 function.
 
-
 2013-02-04  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
 
-	* gcc/reload.c (subst_reloads): Fix DEBUG_RELOAD build issue.
+	* reload.c (subst_reloads): Fix DEBUG_RELOAD build issue.
 
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
