@@ -1658,6 +1658,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	do
 	  {
 	    const double __e = -std::log(1.0 - __aurng());
+	    if (__t == __x)
+	      {
+		if (__e)
+		  return __x;
+		continue;
+	      }
 	    __sum += __e / (__t - __x);
 	    __x += 1;
 	  }
