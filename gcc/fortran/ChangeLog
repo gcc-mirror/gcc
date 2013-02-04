@@ -1,3 +1,13 @@
+2013-02-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56008
+	PR fortran/47517
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Save
+	the lhs descriptor before it is modified for reallocation. Use
+	it to deallocate allocatable components in the reallocation
+	block.  Nullify allocatable components for newly (re)allocated
+	arrays.
+
 2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54195
