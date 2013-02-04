@@ -194,6 +194,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // @} group hashes
 
+  // Hint about performance of hash functor. If not fast the hash based
+  // containers will cache the hash code.
+  // Default behavior is to consider that hasher are fast unless specified
+  // otherwise.
+  template<typename _Hash>
+    struct __is_fast_hash : public std::true_type
+    { };
+
+  template<>
+    struct __is_fast_hash<hash<long double>> : public std::false_type
+    { };
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

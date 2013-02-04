@@ -1,3 +1,16 @@
+2013-02-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/functional_hash.h (std::__is_fast_hash<>): New.
+	* include/bits/basic_string.h: Specialize previous to mark
+	std::hash for string types as slow.
+	* include/bits/hashtable.h (__cache_default): Replace is_integral
+	with __is_fast_hash.
+	* src/c++11/hash_c++0x.cc: Add type_traits include.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adapt dg-error line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Likewise.
+
 2013-02-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
