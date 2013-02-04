@@ -3033,16 +3033,22 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     fprintf (stderr, "Merging declarations\n");
 
   timevar_push (TV_IPA_LTO_DECL_MERGE);
-  /* Merge global decls.  */
-  lto_symtab_merge_decls ();
+  /* Merge global decls.  In ltrans mode we read merged cgraph, we do not
+     need to care about resolving symbols again, we only need to replace
+     duplicated declarations read from the callgraph and from function
+     sections.  */
+  if (!flag_ltrans)
+    {
+      lto_symtab_merge_decls ();
 
-  /* If there were errors during symbol merging bail out, we have no
-     good way to recover here.  */
-  if (seen_error ())
-    fatal_error ("errors during merging of translation units");
+      /* If there were errors during symbol merging bail out, we have no
+	 good way to recover here.  */
+      if (seen_error ())
+	fatal_error ("errors during merging of translation units");
 
-  /* Fixup all decls.  */
-  lto_fixup_decls (all_file_decl_data);
+      /* Fixup all decls.  */
+      lto_fixup_decls (all_file_decl_data);
+    }
   htab_delete (tree_with_vars);
   tree_with_vars = NULL;
   ggc_collect ();

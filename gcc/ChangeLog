@@ -1,3 +1,12 @@
+2013-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/56168
+	* lto-symtab.c (lto_symtab_merge_decls_1): Make non-builtin
+	node prevail as last resort.
+	(lto_symtab_merge_decls): Remove guard on LTRANS here.
+	(lto_symtab_prevailing_decl): Builtins are their own prevailing
+	decl.
+
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56113

@@ -439,12 +439,12 @@ lto_symtab_merge_decls_1 (symtab_node first)
 		&& COMPLETE_TYPE_P (TREE_TYPE (e->symbol.decl)))
 	      prevailing = e;
 	}
-      /* For variables prefer the builtin if one is available.  */
+      /* For variables prefer the non-builtin if one is available.  */
       else if (TREE_CODE (prevailing->symbol.decl) == FUNCTION_DECL)
 	{
 	  for (e = first; e; e = e->symbol.next_sharing_asm_name)
 	    if (TREE_CODE (e->symbol.decl) == FUNCTION_DECL
-		&& DECL_BUILT_IN (e->symbol.decl))
+		&& !DECL_BUILT_IN (e->symbol.decl))
 	      {
 		prevailing = e;
 		break;
@@ -506,12 +506,6 @@ void
 lto_symtab_merge_decls (void)
 {
   symtab_node node;
-
-  /* In ltrans mode we read merged cgraph, we do not really need to care
-     about resolving symbols again, we only need to replace duplicated declarations
-     read from the callgraph and from function sections.  */
-  if (flag_ltrans)
-    return;
 
   /* Populate assembler name hash.   */
   symtab_initialize_asm_name_hash ();
@@ -596,6 +590,11 @@ lto_symtab_prevailing_decl (tree decl)
 
   /* DECL_ABSTRACTs are their own prevailng decl.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_ABSTRACT (decl))
+    return decl;
+
+  /* Likewise builtins are their own prevailing decl.  This preserves
+     non-builtin vs. builtin uses from compile-time.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
     return decl;
 
   /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */
