@@ -1,5 +1,11 @@
 2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/54195
+	* resolve.c (resolve_typebound_procedures): Recurse through
+	resolve_symbol.
+
+2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	PR fortran/54107
 	PR fortran/54195
 	* gfortran.h (struct gfc_symbol): New field 'resolved'.

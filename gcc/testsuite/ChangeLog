@@ -1,5 +1,11 @@
 2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/54195
+	* gfortran.dg/typebound_operator_19.f90: New test.
+	* gfortran.dg/typebound_assignment_4.f90: New test.
+
+2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
+
 	PR fortran/54107
 	* gfortran.dg/recursive_interface_1.f90: New test.
 
