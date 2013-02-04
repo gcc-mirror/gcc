@@ -11051,11 +11051,6 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 {
   gfc_array_spec *as;
 
-  /* Avoid double diagnostics for function result symbols.  */
-  if ((sym->result || sym->attr.result) && !sym->attr.dummy
-      && (sym->ns != gfc_current_ns))
-    return SUCCESS;
-
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
     as = CLASS_DATA (sym)->as;
   else
@@ -13170,6 +13165,10 @@ resolve_symbol (gfc_symbol *sym)
   gfc_array_spec *as;
   bool saved_specification_expr;
 
+  if (sym->resolved)
+    return;
+  sym->resolved = 1;
+
   if (sym->attr.artificial)
     return;
 
@@ -13779,7 +13778,6 @@ resolve_symbol (gfc_symbol *sym)
      described in 14.7.5, to those variables that have not already
      been assigned one.  */
   if (sym->ts.type == BT_DERIVED
-      && sym->ns == gfc_current_ns
       && !sym->value
       && !sym->attr.allocatable
       && !sym->attr.alloc_comp)
