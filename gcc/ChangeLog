@@ -1,3 +1,7 @@
+2013-02-04  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+
+	* gcc/reload.c (subst_reloads): Fix DEBUG_RELOAD build issue.
+
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56188

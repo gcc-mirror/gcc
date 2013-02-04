@@ -6313,14 +6313,14 @@ subst_reloads (rtx insn)
 	  for (check_regno = 0; check_regno < max_regno; check_regno++)
 	    {
 #define CHECK_MODF(ARRAY)						\
-	      gcc_assert (!reg_equivs[check_regno].ARRAY		\
+	      gcc_assert (!(*reg_equivs)[check_regno].ARRAY		\
 			  || !loc_mentioned_in_p (r->where,		\
-						  reg_equivs[check_regno).ARRAY)]
+						  (*reg_equivs)[check_regno].ARRAY))
 
-	      CHECK_MODF (equiv_constant);
-	      CHECK_MODF (equiv_memory_loc);
-	      CHECK_MODF (equiv_address);
-	      CHECK_MODF (equiv_mem);
+	      CHECK_MODF (constant);
+	      CHECK_MODF (memory_loc);
+	      CHECK_MODF (address);
+	      CHECK_MODF (mem);
 #undef CHECK_MODF
 	    }
 #endif /* DEBUG_RELOAD */
