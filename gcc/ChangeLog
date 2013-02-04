@@ -1,3 +1,10 @@
+2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56188
+	* tree-ssa-structalias.c (label_visit): Consider case with
+	initially non-empty points-to set.
+	(perform_var_substitution): Dump node mapping and clean up.
+
 2013-02-04  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/56168

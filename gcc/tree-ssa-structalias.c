@@ -2101,13 +2101,17 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 
       if (graph->points_to[w])
 	{
-	  if (first_pred == -1U)
-	    first_pred = w;
-	  else if (!graph->points_to[n])
+	  if (!graph->points_to[n])
 	    {
-	      graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior (graph->points_to[n],
-			  graph->points_to[first_pred], graph->points_to[w]);
+	      if (first_pred == -1U)
+		first_pred = w;
+	      else
+		{
+		  graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
+		  bitmap_ior (graph->points_to[n],
+			      graph->points_to[first_pred],
+			      graph->points_to[w]);
+		}
 	    }
 	  else
 	    bitmap_ior_into(graph->points_to[n], graph->points_to[w]);
@@ -2231,14 +2235,20 @@ perform_var_substitution (constraint_graph_t graph)
   if (dump_file && (dump_flags & TDF_DETAILS))
     for (i = 0; i < FIRST_REF_NODE; i++)
       {
-	bool direct_node = bitmap_bit_p (graph->direct_nodes, i);
-	fprintf (dump_file,
-		 "Equivalence classes for %s node id %d:%s are pointer: %d"
-		 ", location:%d\n",
-		 direct_node ? "Direct node" : "Indirect node", i,
-		 get_varinfo (i)->name,
-		 graph->pointer_label[si->node_mapping[i]],
-		 graph->loc_label[si->node_mapping[i]]);
+	unsigned j = si->node_mapping[i];
+	if (j != i)
+	  fprintf (dump_file, "%s node id %d (%s) mapped to SCC leader "
+		   "node id %d (%s)\n",
+		    bitmap_bit_p (graph->direct_nodes, i)
+		    ? "Direct" : "Indirect", i, get_varinfo (i)->name,
+		    j, get_varinfo (j)->name);
+	else
+	  fprintf (dump_file,
+		   "Equivalence classes for %s node id %d (%s): pointer %d"
+		   ", location %d\n",
+		   bitmap_bit_p (graph->direct_nodes, i)
+		   ? "direct" : "indirect", i, get_varinfo (i)->name,
+		   graph->pointer_label[i], graph->loc_label[i]);
       }
 
   /* Quickly eliminate our non-pointer variables.  */
