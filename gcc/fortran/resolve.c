@@ -12344,7 +12344,7 @@ resolve_typebound_procedures (gfc_symbol* derived)
 
   super_type = gfc_get_derived_super_type (derived);
   if (super_type)
-    resolve_typebound_procedures (super_type);
+    resolve_symbol (super_type);
 
   resolve_bindings_derived = derived;
   resolve_bindings_result = SUCCESS;
