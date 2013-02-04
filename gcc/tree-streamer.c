@@ -251,6 +251,16 @@ streamer_tree_cache_get (struct streamer_tree_cache_d *cache, unsigned ix)
 static void
 record_common_node (struct streamer_tree_cache_d *cache, tree node)
 {
+  /* If we recursively end up at nodes we do not want to preload simply don't.
+     ???  We'd want to verify that this doesn't happen, or alternatively
+     do not recurse at all.  */
+  if (node == char_type_node)
+    return;
+
+  gcc_checking_assert (node != boolean_type_node
+		       && node != boolean_true_node
+		       && node != boolean_false_node);
+
   /* We have to make sure to fill exactly the same number of
      elements for all frontends.  That can include NULL trees.
      As our hash table can't deal with zero entries we'll simply stream

@@ -812,10 +812,10 @@ adjust_last_stmt (strinfo si, gimple stmt, bool is_strcat)
 
   if (!is_gimple_call (last.stmt))
     return;
-  callee = gimple_call_fndecl (last.stmt);
-  if (callee == NULL_TREE || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL)
+  if (!gimple_call_builtin_class_p (last.stmt, BUILT_IN_NORMAL))
     return;
 
+  callee = gimple_call_fndecl (last.stmt);
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_MEMCPY:
@@ -1753,7 +1753,7 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
   if (is_gimple_call (stmt))
     {
       tree callee = gimple_call_fndecl (stmt);
-      if (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+      if (gimple_call_builtin_class_p (stmt, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
 	  case BUILT_IN_STRLEN:

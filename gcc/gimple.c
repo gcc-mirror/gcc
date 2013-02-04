@@ -5464,16 +5464,61 @@ gimple_decl_printable_name (tree decl, int verbosity)
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
-/* Return true when STMT is builtins call to CODE.  */
+/* Return true when STMTs arguments match those of FNDECL.  */
+
+static bool
+validate_call (gimple stmt, tree fndecl)
+{
+  tree arg, targs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  unsigned nargs = gimple_call_num_args (stmt);
+  unsigned i;
+  for (i = 0; i < nargs; ++i)
+    {
+      /* Variadic args follow.  */
+      if (!targs)
+	return true;
+      arg = gimple_call_arg (stmt, i);
+      if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
+	  && INTEGRAL_TYPE_P (TREE_VALUE (targs)))
+	;
+      else if (POINTER_TYPE_P (TREE_TYPE (arg))
+	       && POINTER_TYPE_P (TREE_VALUE (targs)))
+	;
+      else if (TREE_CODE (TREE_TYPE (arg))
+	       != TREE_CODE (TREE_VALUE (targs)))
+	return false;
+      targs = TREE_CHAIN (targs);
+    }
+  if (targs && !VOID_TYPE_P (TREE_VALUE (targs)))
+    return false;
+  return true;
+}
+
+/* Return true when STMT is builtins call to CLASS.  */
+
+bool
+gimple_call_builtin_class_p (gimple stmt, enum built_in_class klass)
+{
+  tree fndecl;
+  if (is_gimple_call (stmt)
+      && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
+      && DECL_BUILT_IN_CLASS (fndecl) == klass)
+    return validate_call (stmt, fndecl);
+  return false;
+}
+
+/* Return true when STMT is builtins call to CODE of CLASS.  */
 
 bool
 gimple_call_builtin_p (gimple stmt, enum built_in_function code)
 {
   tree fndecl;
-  return (is_gimple_call (stmt)
-	  && (fndecl = gimple_call_fndecl (stmt)) != NULL
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (fndecl) == code);
+  if (is_gimple_call (stmt)
+      && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL 
+      && DECL_FUNCTION_CODE (fndecl) == code)
+    return validate_call (stmt, fndecl);
+  return false;
 }
 
 /* Return true if STMT clobbers memory.  STMT is required to be a
