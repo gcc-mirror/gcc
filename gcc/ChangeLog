@@ -1,3 +1,15 @@
+2013-02-04  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/56186
+	* config/i386/i386.c (function_value_ms_64): Add additional valtype
+	argument and improve checking of return-argument types for 16-byte
+	modes.
+	(ix86_function_value_1): Add additional valtype argument on call
+	of function_value_64.
+	(return_in_memory_ms_64): Sync 16-byte sized mode handling with
+	handling infunction_value_64 function.
+
+
 2013-02-04  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
 
 	* gcc/reload.c (subst_reloads): Fix DEBUG_RELOAD build issue.
