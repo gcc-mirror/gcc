@@ -1,4 +1,9 @@
-2012-02-04  Oleg Endo  <olegendo@gcc.gnu.org>
+2013-02-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55146
+	* gcc.target/sh/pr55146.c: New.
+
+2013-02-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR tree-optimization/54386
 	* gcc.target/sh/pr54386.c: New.
