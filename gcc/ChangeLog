@@ -1,3 +1,12 @@
+2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56113
+	* tree-ssa-structalias.c (equiv_class_lookup, equiv_class_add):
+	Merge into ...
+	(equiv_class_lookup_or_add): ... this.
+	(label_visit): Adjust and fix error in previous patch.
+	(perform_var_substitution): Adjust.
+
 2013-02-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/divtab.c: Fix formatting and comments throughout the file.
