@@ -1,3 +1,12 @@
+2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	PR fortran/54195
+	* gfortran.h (struct gfc_symbol): New field 'resolved'.
+	* resolve.c (resolve_fl_var_and_proc): Don't skip result symbols.
+	(resolve_symbol): Skip duplicate calls.  Don't check the current
+	namespace.
+
 2013-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/50627
@@ -7,7 +16,7 @@
 	* parse.c (parse_module):  Do not put namespace into
 	gsymbol on error.
 
-2012-01-30  Tobias Burnus  <burnus@net-b.de>
+2013-01-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56138
 	* trans-decl.c (gfc_trans_deferred_vars): Fix deferred-length
@@ -214,7 +223,7 @@
 	finalizer_insert_packed_call, generate_finalization_wrapper):
 	Clean up by using gfc_build_intrinsic_call.
 
-2012-01-07  Tobias Burnus  <burnus@net-b.de>
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
 	* resolve.c (resolve_select_type): Reject intrinsic types for
