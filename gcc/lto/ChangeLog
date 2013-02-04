@@ -1,3 +1,9 @@
+2013-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/56168
+	* lto.c (read_cgraph_and_symbols): Do not call lto_symtab_merge_decls
+	or lto_fixup_decls at LTRANS time.
+
 2013-01-09  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/45375
