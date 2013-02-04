@@ -3051,6 +3051,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(), __s.length()); }
     };
 
+  template<>
+    struct __is_fast_hash<hash<string>> : std::false_type
+    { };
+
 #ifdef _GLIBCXX_USE_WCHAR_T
   /// std::hash specialization for wstring.
   template<>
@@ -3062,6 +3066,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(),
                                      __s.length() * sizeof(wchar_t)); }
     };
+
+  template<>
+    struct __is_fast_hash<hash<wstring>> : std::false_type
+    { };
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
@@ -3077,6 +3085,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __s.length() * sizeof(char16_t)); }
     };
 
+  template<>
+    struct __is_fast_hash<hash<u16string>> : std::false_type
+    { };
+
   /// std::hash specialization for u32string.
   template<>
     struct hash<u32string>
@@ -3087,6 +3099,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(),
                                      __s.length() * sizeof(char32_t)); }
     };
+
+  template<>
+    struct __is_fast_hash<hash<u32string>> : std::false_type
+    { };
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
