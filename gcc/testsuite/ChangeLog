@@ -1,6 +1,19 @@
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44061
+	* gcc.dg/pr44061.c: New testcase.
+
+	2013-01-08  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR middle-end/55890
+	* gcc.dg/torture/pr55890-3.c: New test.
+
+2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53844

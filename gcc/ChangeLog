@@ -1,6 +1,20 @@
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44061
+	* tree-vrp.c (extract_range_basic): Compute zero as
+	value-range for __builtin_constant_p of function parameters.
+
+	2013-01-08  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR middle-end/55890
+	* tree-ssa-ccp.c (evaluate_stmt): Use gimple_call_builtin_class_p.
+
+2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53844
