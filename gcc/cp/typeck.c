@@ -3176,9 +3176,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       e3 = pfn_from_ptrmemfunc (function);
       delta = delta_from_ptrmemfunc (function);
       idx = build1 (NOP_EXPR, vtable_index_type, e3);
-      if (nonvirtual)
-	e1 = integer_zero_node;
-      else switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
+      switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
 	case ptrmemfunc_vbit_in_pfn:
 	  e1 = cp_build_binary_op (input_location,

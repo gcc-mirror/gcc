@@ -39,6 +39,8 @@ extern char * construct_restore_jr          (rtx);
 extern char * construct_dispose_instruction (rtx);
 extern char * construct_prepare_instruction (rtx);
 extern int    ep_memory_operand             (rtx, enum machine_mode, int);
+extern int    v850_adjust_insn_length       (rtx, int);
+extern const char * v850_gen_movdi          (rtx *);
 extern rtx    v850_gen_compare              (enum rtx_code, enum machine_mode,
 					     rtx, rtx);
 extern enum machine_mode  v850_gen_float_compare (enum rtx_code,

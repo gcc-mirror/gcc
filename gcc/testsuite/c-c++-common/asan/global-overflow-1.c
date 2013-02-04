@@ -2,7 +2,12 @@
 /* { dg-options "-fno-builtin-memset" } */
 /* { dg-shouldfail "asan" } */
 
-#include <string.h>
+extern
+#ifdef __cplusplus
+"C"
+#endif
+void *memset (void *, int, __SIZE_TYPE__);
+
 volatile int ten = 10;
 
 int main() {
@@ -18,6 +23,6 @@ int main() {
 }
 
 /* { dg-output "READ of size 1 at 0x\[0-9a-f\]+ thread T0.*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ (in _*main (\[^\n\r]*global-overflow-1.c:15|\[^\n\r]*:0)|\[(\])\[^\n\r]*(\n|\r\n|\r).*" } */
+/* { dg-output "    #0 0x\[0-9a-f\]+ (in _*main (\[^\n\r]*global-overflow-1.c:20|\[^\n\r]*:0)|\[(\])\[^\n\r]*(\n|\r\n|\r).*" } */
 /* { dg-output "0x\[0-9a-f\]+ is located 0 bytes to the right of global variable" } */
 /* { dg-output ".*YYY\[^\n\r]* of size 10\[^\n\r]*(\n|\r\n|\r)" } */

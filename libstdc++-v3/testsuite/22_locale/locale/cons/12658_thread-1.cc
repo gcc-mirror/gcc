@@ -4,7 +4,7 @@
 // { dg-require-namedlocale "en_US" }
 // { dg-require-namedlocale "fr_FR" }
 
-// Copyright (C) 2004, 2005, 2007, 2009, 2010, 2012 Free Software Foundation
+// Copyright (C) 2004-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

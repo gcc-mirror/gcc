@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,5 +43,11 @@ package Tempdir is
    --  directory designated by TMPDIR, otherwise, it is created in the current
    --  directory. If temporary file cannot be created, FD gets the value
    --  Invalid_FD and Name gets the value No_Name.
+
+   procedure Use_Temp_Dir (Status : Boolean);
+   --  Specify if the temp file should be created in the system temporary
+   --  directory as specified by the corresponding environment variables. If
+   --  Status is False, the temp files will be created into the current working
+   --  directory.
 
 end Tempdir;

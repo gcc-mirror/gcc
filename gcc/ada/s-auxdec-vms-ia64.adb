@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -411,7 +411,7 @@ package body System.Aux_DEC is
 
       procedure SYS_PAL_INSQHIL
         (STATUS : out Integer; Header : Address; ITEM : Address);
-      pragma Interface (External, SYS_PAL_INSQHIL);
+      pragma Import (External, SYS_PAL_INSQHIL);
       pragma Import_Valued_Procedure (SYS_PAL_INSQHIL, "SYS$PAL_INSQHIL",
          (Integer, Address, Address),
          (Value, Value, Value));
@@ -454,7 +454,7 @@ package body System.Aux_DEC is
 
       procedure SYS_PAL_REMQHIL
         (Remret : out Remq; Header : Address);
-      pragma Interface (External, SYS_PAL_REMQHIL);
+      pragma Import (External, SYS_PAL_REMQHIL);
       pragma Import_Valued_Procedure
         (SYS_PAL_REMQHIL, "SYS$PAL_REMQHIL",
          (Remq, Address),
@@ -499,7 +499,7 @@ package body System.Aux_DEC is
 
       procedure SYS_PAL_INSQTIL
         (STATUS : out Integer; Header : Address; ITEM : Address);
-      pragma Interface (External, SYS_PAL_INSQTIL);
+      pragma Import (External, SYS_PAL_INSQTIL);
       pragma Import_Valued_Procedure (SYS_PAL_INSQTIL, "SYS$PAL_INSQTIL",
          (Integer, Address, Address),
          (Value, Value, Value));
@@ -542,7 +542,7 @@ package body System.Aux_DEC is
 
       procedure SYS_PAL_REMQTIL
         (Remret : out Remq; Header : Address);
-      pragma Interface (External, SYS_PAL_REMQTIL);
+      pragma Import (External, SYS_PAL_REMQTIL);
       pragma Import_Valued_Procedure (SYS_PAL_REMQTIL, "SYS$PAL_REMQTIL",
          (Remq, Address),
          (Value, Value));

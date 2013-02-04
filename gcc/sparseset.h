@@ -140,7 +140,7 @@ sparseset_bit_p (sparseset s, SPARSESET_ELT_TYPE e)
 {
   SPARSESET_ELT_TYPE idx;
 
-  gcc_assert (e < s->size);
+  gcc_checking_assert (e < s->size);
 
   idx = s->sparse[e];
 
@@ -174,7 +174,7 @@ sparseset_pop (sparseset s)
 {
   SPARSESET_ELT_TYPE mem = s->members;
 
-  gcc_assert (mem != 0);
+  gcc_checking_assert (mem != 0);
 
   s->members = mem - 1;
   return s->dense[mem];

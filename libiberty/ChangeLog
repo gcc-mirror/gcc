@@ -1,3 +1,13 @@
+2013-01-31  Kai Tietz  <ktietz@redhat.com>
+
+	PR other/54620
+	* sha1.c (sha1_process_block):  Handle case that size_t is
+	a wider-integer-scalar as a 32-bit unsigned integer.
+
+	PR other/53413
+	* md5.c (md5_process_block):  Handle case that size_t is
+	a wider-integer-scalar a 32-bit unsigned integer.
+
 2013-01-04  Ian Lance Taylor  <iant@google.com>
 
 	PR other/54800

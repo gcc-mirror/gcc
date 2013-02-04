@@ -51,7 +51,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 
-enum partition_kind { PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY };
+enum partition_kind {
+    PKIND_NORMAL, PKIND_REDUCTION, PKIND_MEMSET, PKIND_MEMCPY
+};
 
 typedef struct partition_s
 {
@@ -90,7 +92,7 @@ partition_free (partition_t partition)
 static bool
 partition_builtin_p (partition_t partition)
 {
-  return partition->kind != PKIND_NORMAL;
+  return partition->kind > PKIND_REDUCTION;
 }
 
 /* Returns true if the partition has an writes.  */
@@ -481,6 +483,9 @@ generate_code_for_partition (struct loop *loop,
 	destroy_loop (loop);
       break;
 
+    case PKIND_REDUCTION:
+      /* Reductions all have to be in the last partition.  */
+      gcc_assert (!copy_p);
     case PKIND_NORMAL:
       generate_loops_for_partition (loop, partition, copy_p);
       break;
@@ -628,7 +633,8 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
 	{
 	  tree use = USE_FROM_PTR (use_p);
 
-	  if (TREE_CODE (use) == SSA_NAME)
+	  if (TREE_CODE (use) == SSA_NAME
+	      && !SSA_NAME_IS_DEFAULT_DEF (use))
 	    {
 	      gimple def_stmt = SSA_NAME_DEF_STMT (use);
 	      int v = rdg_vertex_for_stmt (rdg, def_stmt);
@@ -858,25 +864,18 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
   unsigned i;
   tree nb_iter;
   data_reference_p single_load, single_store;
+  bool volatiles_p = false;
 
   partition->kind = PKIND_NORMAL;
   partition->main_dr = NULL;
   partition->secondary_dr = NULL;
-
-  if (!flag_tree_loop_distribute_patterns)
-    return;
-
-  /* Perform general partition disqualification for builtins.  */
-  nb_iter = number_of_exit_cond_executions (loop);
-  if (!nb_iter || nb_iter == chrec_dont_know)
-    return;
 
   EXECUTE_IF_SET_IN_BITMAP (partition->stmts, 0, i, bi)
     {
       gimple stmt = RDG_STMT (rdg, i);
 
       if (gimple_has_volatile_ops (stmt))
-	return;
+	volatiles_p = true;
 
       /* If the stmt has uses outside of the loop fail.
 	 ???  If the stmt is generated in another partition that
@@ -886,9 +885,19 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "not generating builtin, partition has "
 		     "scalar uses outside of the loop\n");
+	  partition->kind = PKIND_REDUCTION;
 	  return;
 	}
     }
+
+  /* Perform general partition disqualification for builtins.  */
+  if (volatiles_p
+      || !flag_tree_loop_distribute_patterns)
+    return;
+
+  nb_iter = number_of_exit_cond_executions (loop);
+  if (!nb_iter || nb_iter == chrec_dont_know)
+    return;
 
   /* Detect memset and memcpy.  */
   single_load = NULL;
@@ -1294,6 +1303,8 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	    if (!partition_builtin_p (partition))
 	      {
 		bitmap_ior_into (into->stmts, partition->stmts);
+		if (partition->kind == PKIND_REDUCTION)
+		  into->kind = PKIND_REDUCTION;
 		partitions.ordered_remove (i);
 		i--;
 	      }
@@ -1328,9 +1339,34 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 			       "memory accesses\n");
 		    }
 		  bitmap_ior_into (into->stmts, partition->stmts);
+		  if (partition->kind == PKIND_REDUCTION)
+		    into->kind = PKIND_REDUCTION;
 		  partitions.ordered_remove (j);
 		  j--;
 		}
+	    }
+	}
+    }
+
+  /* Fuse all reduction partitions into the last.  */
+  if (partitions.length () > 1)
+    {
+      partition_t into = partitions.last ();
+      for (i = partitions.length () - 2; i >= 0; --i)
+	{
+	  partition_t what = partitions[i];
+	  if (what->kind == PKIND_REDUCTION)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "fusing partitions\n");
+		  dump_bitmap (dump_file, into->stmts);
+		  dump_bitmap (dump_file, what->stmts);
+		  fprintf (dump_file, "because the latter has reductions\n");
+		}
+	      bitmap_ior_into (into->stmts, what->stmts);
+	      into->kind = PKIND_REDUCTION;
+	      partitions.ordered_remove (i);
 	    }
 	}
     }
@@ -1478,11 +1514,13 @@ tree_loop_distribution (void)
 	  for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
-	      /* Only distribute stores for now.
-	         ???  We should also try to distribute scalar reductions,
-		 thus SSA defs that have scalar uses outside of the loop.  */
-	      if (!gimple_assign_single_p (stmt)
-		  || is_gimple_reg (gimple_assign_lhs (stmt)))
+	      /* Distribute stmts which have defs that are used outside of
+	         the loop.  */
+	      if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
+		;
+	      /* Otherwise only distribute stores for now.  */
+	      else if (!gimple_assign_single_p (stmt)
+		       || is_gimple_reg (gimple_assign_lhs (stmt)))
 		continue;
 
 	      work_list.safe_push (stmt);

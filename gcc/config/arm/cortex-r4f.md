@@ -63,7 +63,7 @@
 
 (define_insn_reservation "cortex_r4_fmacs" 6
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fmacs"))
+      (eq_attr "type" "fmacs,ffmas"))
  "(cortex_r4_issue_a+cortex_r4_v1)|(cortex_r4_issue_b+cortex_r4_vmla)")
 
 (define_insn_reservation "cortex_r4_fdivs" 17
@@ -119,7 +119,7 @@
 
 (define_insn_reservation "cortex_r4_fmacd" 20
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fmacd"))
+      (eq_attr "type" "fmacd,ffmad"))
  "cortex_r4_single_issue*13")
 
 (define_insn_reservation "cortex_r4_farith" 10

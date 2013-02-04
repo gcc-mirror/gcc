@@ -1,6 +1,5 @@
 /* GNU Objective C Runtime internal declarations
-   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2004, 2009, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.

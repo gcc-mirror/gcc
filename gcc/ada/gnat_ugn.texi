@@ -4280,6 +4280,13 @@ Generate target dependent information.
 @cindex @option{-gnateV} (@command{gcc})
 Check validity of subprogram parameters.
 
+@item ^-gnateY^/IGNORE_SUPPRESS_SYLE_CHECK_PRAGMAS^
+@cindex @option{-gnateY} (@command{gcc})
+Ignore all STYLE_CHECKS pragmas. Full legality checks
+are still carried out, but the pragmas have no effect
+on what style checks are active. This allows all style
+checking options to be controlled from the command line.
+
 @item -gnatE
 @cindex @option{-gnatE} (@command{gcc})
 Full dynamic elaboration checks.
@@ -5523,7 +5530,9 @@ In addition to the above cases, warnings are also generated for
 GNAT features that have been provided in past versions but which
 have been superseded (typically by features in the new Ada standard).
 For example, @code{pragma Ravenscar} will be flagged since its
-function is replaced by @code{pragma Profile(Ravenscar)}.
+function is replaced by @code{pragma Profile(Ravenscar)}, and
+@code{pragma Interface_Name} will be flagged since its function
+is replaced by @code{pragma Import}.
 
 Note that this warning option functions differently from the
 restriction @code{No_Obsolescent_Features} in two respects.

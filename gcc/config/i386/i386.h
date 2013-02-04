@@ -518,6 +518,9 @@ extern tree x86_mfence;
 #define MACHOPIC_INDIRECT 0
 #define MACHOPIC_PURE 0
 
+/* For the RDOS  */
+#define TARGET_RDOS 0
+
 /* For the Windows 64-bit ABI.  */
 #define TARGET_64BIT_MS_ABI (TARGET_64BIT && ix86_cfun_abi () == MS_ABI)
 
@@ -2081,6 +2084,10 @@ do {									\
    asm (SECTION_OP "\n\t"					\
 	"call " CRT_MKSTR(__USER_LABEL_PREFIX__) #FUNC "\n"	\
 	TEXT_SECTION_ASM_OP);
+
+/* Default threshold for putting data in large sections
+   with x86-64 medium memory model */
+#define DEFAULT_LARGE_SECTION_THRESHOLD 65536
 
 /* Which processor to tune code generation for.  */
 

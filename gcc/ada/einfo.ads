@@ -659,7 +659,7 @@ package Einfo is
 --       used to constrain a discriminant of the parent type. Points to the
 --       corresponding discriminant in the parent type. Otherwise it is Empty.
 
---    Corresponding_Equality (Node13)
+--    Corresponding_Equality (Node30)
 --       Defined in function entities for implicit inequality operators.
 --       Denotes the explicit or derived equality operation that creates
 --       the implicit inequality. Note that this field is not present in
@@ -3746,7 +3746,7 @@ package Einfo is
 --       all types declared in the package, and that a warning must be emitted
 --       for those types to which static initialization is not available.
 
---    Static_Initialization (Node26)
+--    Static_Initialization (Node30)
 --       Defined in initialization procedures for types whose objects can be
 --       initialized statically. The value of this attribute is a positional
 --       aggregate whose components are compile-time static values. Used
@@ -5310,8 +5310,7 @@ package Einfo is
    --    Handler_Records                     (List10)   (non-generic case only)
    --    Protected_Body_Subprogram           (Node11)
    --    Next_Inlined_Subprogram             (Node12)
-   --    Corresponding_Equality              (Node13)   (implicit /= only)
-   --    Elaboration_Entity                  (Node13)   (all other cases)
+   --    Elaboration_Entity                  (Node13)   (not implicit /=)
    --    First_Optional_Parameter            (Node14)   (non-generic case only)
    --    DT_Position                         (Uint15)
    --    DTC_Entity                          (Node16)
@@ -5331,6 +5330,7 @@ package Einfo is
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
    --    Extra_Formals                       (Node28)
    --    Subprograms_For_Type                (Node29)
+   --    Corresponding_Equality              (Node30)   (implicit /= only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Elaboration_Entity_Required         (Flag174)
    --    Default_Expressions_Processed       (Flag108)
@@ -5596,10 +5596,10 @@ package Einfo is
    --    Protection_Object                   (Node23)   (for concurrent kind)
    --    Contract                            (Node24)
    --    Interface_Alias                     (Node25)
-   --    Static_Initialization               (Node26)   (init_proc only)
    --    Overridden_Operation                (Node26)   (never for init proc)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
    --    Extra_Formals                       (Node28)
+   --    Static_Initialization               (Node30)   (init_proc only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
@@ -7357,6 +7357,12 @@ package Einfo is
    procedure Write_Field27_Name (Id : Entity_Id);
    procedure Write_Field28_Name (Id : Entity_Id);
    procedure Write_Field29_Name (Id : Entity_Id);
+   procedure Write_Field30_Name (Id : Entity_Id);
+   procedure Write_Field31_Name (Id : Entity_Id);
+   procedure Write_Field32_Name (Id : Entity_Id);
+   procedure Write_Field33_Name (Id : Entity_Id);
+   procedure Write_Field34_Name (Id : Entity_Id);
+   procedure Write_Field35_Name (Id : Entity_Id);
    --  These routines are used in Treepr to output a nice symbolic name for
    --  the given field, depending on the Ekind. No blanks or end of lines are
    --  output, just the characters of the field name.

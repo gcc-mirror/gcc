@@ -1198,7 +1198,6 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 {
   gimple copy = NULL;
   struct walk_stmt_info wi;
-  tree new_block;
   bool skip_first = false;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
@@ -1458,18 +1457,14 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
     }
 
   /* If STMT has a block defined, map it to the newly constructed
-     block.  When inlining we want statements without a block to
-     appear in the block of the function call.  */
-  new_block = id->block;
+     block.  */
   if (gimple_block (copy))
     {
       tree *n;
       n = (tree *) pointer_map_contains (id->decl_map, gimple_block (copy));
       gcc_assert (n);
-      new_block = *n;
+      gimple_set_block (copy, *n);
     }
-
-  gimple_set_block (copy, new_block);
 
   if (gimple_debug_bind_p (copy) || gimple_debug_source_bind_p (copy))
     return copy;
@@ -1987,7 +1982,6 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 	      edge old_edge = find_edge ((basic_block) new_edge->src->aux, bb);
 	      tree arg;
 	      tree new_arg;
-	      tree block = id->block;
 	      edge_iterator ei2;
 	      location_t locus;
 
@@ -2015,19 +2009,18 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		  inserted = true;
 		}
 	      locus = gimple_phi_arg_location_from_edge (phi, old_edge);
-	      block = id->block;
 	      if (LOCATION_BLOCK (locus))
 		{
 		  tree *n;
 		  n = (tree *) pointer_map_contains (id->decl_map,
 			LOCATION_BLOCK (locus));
 		  gcc_assert (n);
-		  block = *n;
+		  locus = COMBINE_LOCATION_DATA (line_table, locus, *n);
 		}
+	      else
+		locus = LOCATION_LOCUS (locus);
 
-	      add_phi_arg (new_phi, new_arg, new_edge, block ?
-		  COMBINE_LOCATION_DATA (line_table, locus, block) :
-		  LOCATION_LOCUS (locus));
+	      add_phi_arg (new_phi, new_arg, new_edge, locus);
 	    }
 	}
     }
@@ -2324,14 +2317,11 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
   tree t, *n;
   struct walk_stmt_info wi;
 
-  t = id->block;
   if (gimple_block (stmt))
     {
       n = (tree *) pointer_map_contains (id->decl_map, gimple_block (stmt));
-      if (n)
-	t = *n;
+      gimple_set_block (stmt, n ? *n : id->block);
     }
-  gimple_set_block (stmt, t);
 
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));

@@ -13,7 +13,7 @@ contains
   subroutine sim_1(func1,params)
     interface
       function func1(fparams)
-        type(fcnparms) :: fparams ! { dg-error "not been declared within the interface" }
+        type(fcnparms) :: fparams ! { dg-error "is being used before it is defined" }
         real :: func1
       end function func1
     end interface

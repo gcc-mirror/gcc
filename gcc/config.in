@@ -199,12 +199,6 @@
 #endif
 
 
-/* Define if the zone collector is in use */
-#ifndef USED_FOR_TARGET
-#undef GGC_ZONE
-#endif
-
-
 /* mcontext_t fields start with __ */
 #ifndef USED_FOR_TARGET
 #undef HAS_MCONTEXT_T_UNDERSCORES
@@ -263,12 +257,6 @@
 /* Define if your assembler supports FMAF, HPC, and VIS 3.0 instructions. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_FMAF_HPC_VIS3
-#endif
-
-
-/* Define if your assembler supports SPARC4 instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_SPARC4
 #endif
 
 
@@ -477,9 +465,21 @@
 #endif
 
 
+/* Define if your assembler supports SPARC4 instructions. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_SPARC4
+#endif
+
+
 /* Define if your assembler and linker support GOTDATA_OP relocs. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC_GOTDATA_OP
+#endif
+
+
+/* Define to 1 if your assembler supports #nobits, 0 otherwise. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_SPARC_NOBITS
 #endif
 
 
@@ -1228,7 +1228,7 @@
 #endif
 
 
-/* Define if your PowerPC64 linker supports a large TOC. */
+/* Define if your AIX linker supports a large TOC. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_LARGE_TOC
 #endif

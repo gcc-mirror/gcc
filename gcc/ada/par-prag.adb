@@ -935,7 +935,10 @@ begin
                      end if;
 
                      if J = Slen then
-                        Set_Style_Check_Options (Options, OK, Ptr);
+                        if not Ignore_Style_Checks_Pragmas then
+                           Set_Style_Check_Options (Options, OK, Ptr);
+                        end if;
+
                         exit;
 
                      else
@@ -955,17 +958,23 @@ begin
                OK := False;
 
             elsif Chars (A) = Name_All_Checks then
-               if GNAT_Mode then
-                  Stylesw.Set_GNAT_Style_Check_Options;
-               else
-                  Stylesw.Set_Default_Style_Check_Options;
+               if not Ignore_Style_Checks_Pragmas then
+                  if GNAT_Mode then
+                     Stylesw.Set_GNAT_Style_Check_Options;
+                  else
+                     Stylesw.Set_Default_Style_Check_Options;
+                  end if;
                end if;
 
             elsif Chars (A) = Name_On then
-               Style_Check := True;
+               if not Ignore_Style_Checks_Pragmas then
+                  Style_Check := True;
+               end if;
 
             elsif Chars (A) = Name_Off then
-               Style_Check := False;
+               if not Ignore_Style_Checks_Pragmas then
+                  Style_Check := False;
+               end if;
 
             else
                OK := False;

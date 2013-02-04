@@ -1,5 +1,5 @@
 /* Quad-precision floating point sine and cosine tables.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
 

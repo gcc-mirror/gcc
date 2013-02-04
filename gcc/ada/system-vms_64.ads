@@ -239,7 +239,7 @@ private
    ----------------------------
 
    procedure Lib_Stop (Cond_Value : Integer);
-   pragma Interface (C, Lib_Stop);
+   pragma Import (C, Lib_Stop);
    pragma Import_Procedure (Lib_Stop, "LIB$STOP", Mechanism => (Value));
    --  Interface to VMS condition handling. Used by RTSfind and pragma
    --  {Import,Export}_Exception. Put here because this is the only

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1457,6 +1457,15 @@ package body Errout is
 
       return S;
    end First_Sloc;
+
+   -----------------------
+   -- Get_Ignore_Errors --
+   -----------------------
+
+   function Get_Ignore_Errors return Boolean is
+   begin
+      return Errors_Must_Be_Ignored;
+   end Get_Ignore_Errors;
 
    ----------------
    -- Initialize --

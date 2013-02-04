@@ -282,6 +282,8 @@
   fmuld,\
   fmacs,\
   fmacd,\
+  ffmas,\
+  ffmad,\
   f_rints,\
   f_rintd,\
   f_minmaxs,\

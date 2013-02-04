@@ -57,15 +57,6 @@
 
 (define_cpu_unit "cortex_a7_fp_div_sqrt" "cortex_a7")
 
-;; Neon pipeline
-(define_cpu_unit "cortex_a7_neon" "cortex_a7")
-
-(define_reservation "cortex_a7_all" "cortex_a7_both+\
-                                     cortex_a7_fpmul_pipe+\
-                                     cortex_a7_fpadd_pipe+\
-                                     cortex_a7_fp_div_sqrt+\
-                                     cortex_a7_neon")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Branches.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -80,12 +71,15 @@
             (eq_attr "neon_type" "none")))
   "(cortex_a7_ex2|cortex_a7_ex1)+cortex_a7_branch")
 
-;; A call reserves all issue slots. The result is available the next cycle.
+;; Call cannot dual-issue as an older instruction. It can dual-issue
+;; as a younger instruction, or single-issue.  Call cannot dual-issue
+;; with another branch instruction.  The result is available the next
+;; cycle.
 (define_insn_reservation "cortex_a7_call" 1
   (and (eq_attr "tune" "cortexa7")
        (and (eq_attr "type" "call")
             (eq_attr "neon_type" "none")))
-  "cortex_a7_all")
+  "(cortex_a7_ex2|cortex_a7_both)+cortex_a7_branch")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ALU instructions.
@@ -137,11 +131,17 @@
             (eq_attr "neon_type" "none")))
   "cortex_a7_both")
 
+;; Forward the result of a multiply operation to the accumulator 
+;; of the following multiply and accumulate instruction.
+(define_bypass 1 "cortex_a7_mul"
+                 "cortex_a7_mul"
+                 "arm_mac_accumulator_is_result")
+
 ;; The latency depends on the operands, so we use an estimate here.
 (define_insn_reservation "cortex_a7_idiv" 5
   (and (eq_attr "tune" "cortexa7")
        (eq_attr "insn" "udiv,sdiv"))
-  "cortex_a7_all*5")
+  "cortex_a7_both*5")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Load/store instructions.
@@ -202,6 +202,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Floating-point arithmetic.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Neon integer, neon floating point, and single-precision floating
+;; point instructions of the same type have the same timing
+;; characteristics, but neon instructions cannot dual-issue.
 
 (define_insn_reservation "cortex_a7_fpalu" 4
   (and (eq_attr "tune" "cortexa7")
@@ -229,18 +232,41 @@
             (eq_attr "neon_type" "none")))
   "cortex_a7_ex1+cortex_a7_fpmul_pipe")
 
-;; For single-precision multiply-accumulate, the add (accumulate) is issued
-;; whilst the multiply is in F4.  The multiply result can then be forwarded
-;; from F5 to F1.  The issue unit is only used once (when we first start
-;; processing the instruction), but the usage of the FP add pipeline could
-;; block other instructions attempting to use it simultaneously.  We try to
-;; avoid that using cortex_a7_fpadd_pipe.
+(define_insn_reservation "cortex_a7_neon_mul" 4
+  (and (eq_attr "tune" "cortexa7")
+       (eq_attr "neon_type"
+                "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
+                 neon_mul_qqq_8_16_32_ddd_32,\
+                 neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar,\
+                 neon_mul_ddd_16_scalar_32_16_long_scalar,\
+                 neon_mul_qqd_32_scalar,\
+                 neon_fp_vmul_ddd,\
+                 neon_fp_vmul_qqd"))
+  "(cortex_a7_both+cortex_a7_fpmul_pipe)*2")
 
 (define_insn_reservation "cortex_a7_fpmacs" 8
   (and (eq_attr "tune" "cortexa7")
-       (and (eq_attr "type" "fmacs")
+       (and (eq_attr "type" "fmacs,ffmas")
             (eq_attr "neon_type" "none")))
-  "cortex_a7_ex1+cortex_a7_fpmul_pipe, nothing*3, cortex_a7_fpadd_pipe")
+  "cortex_a7_ex1+cortex_a7_fpmul_pipe")
+
+(define_insn_reservation "cortex_a7_neon_mla" 8
+  (and (eq_attr "tune" "cortexa7")
+       (eq_attr "neon_type"
+                "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
+                 neon_mla_qqq_8_16,\
+                 neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long,\
+                 neon_mla_qqq_32_qqd_32_scalar,\
+                 neon_mla_ddd_16_scalar_qdd_32_16_long_scalar,\
+                 neon_fp_vmla_ddd,\
+                 neon_fp_vmla_qqq,\
+                 neon_fp_vmla_ddd_scalar,\
+                 neon_fp_vmla_qqq_scalar"))
+  "cortex_a7_both+cortex_a7_fpmul_pipe")
+
+(define_bypass 4 "cortex_a7_fpmacs,cortex_a7_neon_mla"
+                 "cortex_a7_fpmacs,cortex_a7_neon_mla"
+                 "arm_mac_accumulator_is_result")
 
 ;; Non-multiply instructions can issue between two cycles of a
 ;; double-precision multiply. 
@@ -249,15 +275,23 @@
   (and (eq_attr "tune" "cortexa7")
        (and (eq_attr "type" "fmuld")
             (eq_attr "neon_type" "none")))
-  "cortex_a7_ex1+cortex_a7_fpmul_pipe, cortex_a7_fpmul_pipe*2,\
-   cortex_a7_ex1+cortex_a7_fpmul_pipe")
+  "cortex_a7_ex1+cortex_a7_fpmul_pipe, cortex_a7_fpmul_pipe*3")
 
 (define_insn_reservation "cortex_a7_fpmacd" 11
   (and (eq_attr "tune" "cortexa7")
        (and (eq_attr "type" "fmacd")
             (eq_attr "neon_type" "none")))
-  "cortex_a7_ex1+cortex_a7_fpmul_pipe, cortex_a7_fpmul_pipe*2,\
-   cortex_a7_ex1+cortex_a7_fpmul_pipe, nothing*3, cortex_a7_fpadd_pipe")
+  "cortex_a7_ex1+cortex_a7_fpmul_pipe, cortex_a7_fpmul_pipe*3")
+
+(define_insn_reservation "cortex_a7_fpfmad" 8
+  (and (eq_attr "tune" "cortexa7")
+       (and (eq_attr "type" "ffmad")
+            (eq_attr "neon_type" "none")))
+  "cortex_a7_ex1+cortex_a7_fpmul_pipe, cortex_a7_fpmul_pipe*4")
+
+(define_bypass 7 "cortex_a7_fpmacd"
+                 "cortex_a7_fpmacd,cortex_a7_fpfmad"
+                 "arm_mac_accumulator_is_result")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Floating-point divide/square root instructions.
@@ -267,13 +301,13 @@
   (and (eq_attr "tune" "cortexa7")
        (and (eq_attr "type" "fdivs")
             (eq_attr "neon_type" "none")))
-  "cortex_a7_ex1, cortex_a7_fp_div_sqrt * 14")
+  "cortex_a7_ex1+cortex_a7_fp_div_sqrt, cortex_a7_fp_div_sqrt * 13")
 
-(define_insn_reservation "cortex_a7_fdivd" 29
+(define_insn_reservation "cortex_a7_fdivd" 31
   (and (eq_attr "tune" "cortexa7")
        (and (eq_attr "type" "fdivd")
             (eq_attr "neon_type" "none")))
-  "cortex_a7_ex1, cortex_a7_fp_div_sqrt * 28")
+  "cortex_a7_ex1+cortex_a7_fp_div_sqrt, cortex_a7_fp_div_sqrt * 28")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; VFP to/from core transfers.
@@ -338,16 +372,36 @@
 ;; i.e. a latency of two.
 
 (define_bypass 2 "cortex_a7_f_loads, cortex_a7_f_loadd"
-                 "cortex_a7_fpalu, cortex_a7_fpmacs, cortex_a7_fpmuld,\
-		  cortex_a7_fpmacd, cortex_a7_fdivs, cortex_a7_fdivd,\
-		  cortex_a7_f2r")
+                  "cortex_a7_fpalu,\
+                   cortex_a7_fpmuls,cortex_a7_fpmacs,\
+                   cortex_a7_fpmuld,cortex_a7_fpmacd, cortex_a7_fpfmad,\
+                   cortex_a7_fdivs, cortex_a7_fdivd,\
+		   cortex_a7_f2r")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; NEON load/store.
+;; NEON
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Simple modeling for all neon instructions not covered earlier.
 
 (define_insn_reservation "cortex_a7_neon" 4
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "neon_type" "!none"))
+       (eq_attr "neon_type"
+                "!none,\
+                  neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
+                  neon_mul_qqq_8_16_32_ddd_32,\
+                  neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar,\
+                  neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
+                  neon_mla_qqq_8_16,\
+                  neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long,\
+                  neon_mla_qqq_32_qqd_32_scalar,\
+                  neon_mul_ddd_16_scalar_32_16_long_scalar,\
+                  neon_mul_qqd_32_scalar,\
+                  neon_mla_ddd_16_scalar_qdd_32_16_long_scalar,\
+                  neon_fp_vmul_ddd,\
+                  neon_fp_vmul_qqd,\
+                  neon_fp_vmla_ddd,\
+                  neon_fp_vmla_qqq,\
+                  neon_fp_vmla_ddd_scalar,\
+                  neon_fp_vmla_qqq_scalar"))
   "cortex_a7_both*2")

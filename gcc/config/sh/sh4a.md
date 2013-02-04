@@ -19,7 +19,6 @@
 
 ;; The following description models the SH4A pipeline
 ;; using the DFA based scheduler.
-
 (define_automaton "sh4a")
 
 (define_cpu_unit "sh4a_ex"   "sh4a")
@@ -34,7 +33,6 @@
 ;; to control how often instructions are issued.
 (define_reservation "ID_or" "sh4a_ex|sh4a_ls")
 (define_reservation "ID_and" "sh4a_ex+sh4a_ls")
-
 
 ;; =======================================================
 ;; Locking Descriptions

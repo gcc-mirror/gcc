@@ -1,3 +1,155 @@
+2013-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50627
+	PR fortran/56054
+	* gfortran.dg/block_12.f90:  New test.
+	* gfortran.dg/module_error_1.f90:  New test.
+
+2013-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_float)
+	(check_effective_target_vect_no_align): Add mips-sde-elf.
+
+2013-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-dg.exp (restore-target-env-var): Avoid using lreverse.
+
+2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr56023.c: XFAIL on AIX.
+	* gcc.dg/vect/pr49352.c: Same.
+
+2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt26.adb: New test.
+
+2013-01-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Revert.
+	2013-01-27  Amol Pise  <amolpise15@gmail.com>
+
+	* gcc.target/arm/neon-vfnms-1.c: New test.
+	* gcc.target/arm/neon-vfnma-1.c: New test.
+
+2013-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56157
+	* gcc.dg/torture/pr56157.c: New testcase.
+
+2013-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56150
+	* gcc.dg/torture/pr56150.c: New testcase.
+
+2013-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55374
+	* g++.dg/asan/large-func-test-1.C: Allow both _Zna[jm] in addition
+	to _Znw[jm] in the backtrace.  Allow _Zna[jm] to be the first frame
+	printed in backtrace.
+	* g++.dg/asan/deep-stack-uaf-1.C: Use malloc instead of operator new
+	to avoid errors about mismatched allocation vs. deallocation.
+
+	PR c++/55742
+	* g++.dg/mv1.C: Moved to...
+	* g++.dg/ext/mv1.C: ... here.  Adjust test.
+	* g++.dg/mv2.C: Moved to...
+	* g++.dg/ext/mv2.C: ... here.  Adjust test.
+	* g++.dg/mv3.C: Moved to...
+	* g++.dg/ext/mv3.C: ... here.
+	* g++.dg/mv4.C: Moved to...
+	* g++.dg/ext/mv4.C: ... here.
+	* g++.dg/mv5.C: Moved to...
+	* g++.dg/ext/mv5.C: ... here.  Adjust test.
+	* g++.dg/mv6.C: Moved to...
+	* g++.dg/ext/mv6.C: ... here.  Adjust test.
+	* g++.dg/ext/mv7.C: New test.
+	* g++.dg/ext/mv8.C: New test.
+	* g++.dg/ext/mv9.C: New test.
+	* g++.dg/ext/mv10.C: New test.
+	* g++.dg/ext/mv11.C: New test.
+
+2013-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56144
+	* gcc.dg/pr56144.c: New.
+
+2013-01-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp0x/constexpr-53094-2.C: Ignore non-standard ABI
+	message.
+	* g++.dg/cpp0x/constexpr-53094-3.C: Same.
+	* g++.dg/cpp0x/constexpr-55573.C: Same
+
+2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* gcc.dg/fixed-point/view-convert.c: New test.
+
+2013-01-30  Andreas Schwab  <schwab@suse.de>
+
+	* lib/target-supports-dg.exp (dg-process-target): Use expr to
+	evaluate the end index in string range.
+
+2012-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56138
+	* gfortran.dg/allocatable_function_6.f90: New.
+
+2013-01-29  Janus Weil  <janus@gcc.gnu.org>
+	    Mikael Morin <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	* gfortran.dg/proc_ptr_comp_36.f90: New.
+
+2013-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55270
+	* gcc.dg/torture/pr55270.c: New testcase.
+
+2013-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56117
+	* gcc.dg/pr56117.c: New test.
+
+2013-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56034
+	* gcc.dg/torture/pr56034.c: New testcase.
+
+2013-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56125
+	* gcc.dg/pr56125.c: New test.
+
+2013-01-28  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53537
+	* gfortran.dg/import2.f90: Adjust undeclared type error messages.
+	* gfortran.dg/import8.f90: Likewise.
+	* gfortran.dg/interface_derived_type_1.f90: Likewise.
+	* gfortran.dg/import10.f90: New test.
+	* gfortran.dg/import11.f90: Likewise
+
+2013-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/56053
+	* c-c++-common/asan/heap-overflow-1.c: Don't include stdlib.h and
+	string.h.  Provide memset, malloc and free prototypes, adjust line
+	numbers in dg-output.
+	* c-c++-common/asan/stack-overflow-1.c: Don't include string.h.
+	Provide memset prototype and adjust line numbers in dg-output.
+	* c-c++-common/asan/global-overflow-1.c: Likewise.
+
+	PR tree-optimization/56094
+	* gcc.dg/pr56094.c: New test.
+
+2013-01-27  Amol Pise  <amolpise15@gmail.com>
+
+	* gcc.target/arm/neon-vfnms-1.c: New test.
+	* gcc.target/arm/neon-vfnma-1.c: New test.
+
 2013-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/56114
@@ -129,7 +281,7 @@
 
 	* lib/target-supports.exp (check_effective_target_alias): New.
 
-2013-01-20  Jack Howarth <howarth@bromo.med.uc.edu>
+2013-01-20  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR debug/53235
 	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on darwin.
@@ -189,7 +341,7 @@
 	PR rtl-optimization/52573
 	* gcc.dg/pr52573.c: New test.
 
-2013-01-17  Jack Howarth <howarth@bromo.med.uc.edu>
+2013-01-17  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR sanitizer/55679
 	* g++.dg/asan/interception-test-1.C: Skip on darwin.

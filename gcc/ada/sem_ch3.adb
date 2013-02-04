@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4282,13 +4282,26 @@ package body Sem_Ch3 is
                   Set_Stored_Constraint_From_Discriminant_Constraint (Id);
 
                   --  This would seem semantically correct, but apparently
-                  --  confuses the back-end. To be explained and checked with
-                  --  current version ???
+                  --  generates spurious errors about missing components ???
 
                   --  Set_Has_Discriminants (Id);
                end if;
 
                Prepare_Private_Subtype_Completion (Id, N);
+
+               --  If this is the subtype of a constrained private type with
+               --  discriminants that has got a full view and we also have
+               --  built a completion just above, show that the completion
+               --  is a clone of the full view to the back-end.
+
+               if Has_Discriminants (T)
+                  and then not Has_Unknown_Discriminants (T)
+                  and then not Is_Empty_Elmt_List (Discriminant_Constraint (T))
+                  and then Present (Full_View (T))
+                  and then Present (Full_View (Id))
+               then
+                  Set_Cloned_Subtype (Full_View (Id), Full_View (T));
+               end if;
 
             when Access_Kind =>
                Set_Ekind             (Id, E_Access_Subtype);
@@ -4375,8 +4388,15 @@ package body Sem_Ch3 is
 
       --  Some common processing on all types
 
-      Set_Size_Info      (Id,                 T);
+      Set_Size_Info      (Id, T);
       Set_First_Rep_Item (Id, First_Rep_Item (T));
+
+      --  If the parent type is a generic actual, so is the subtype. This may
+      --  happen in a nested instance. Why Comes_From_Source test???
+
+      if not Comes_From_Source (N) then
+         Set_Is_Generic_Actual_Type (Id, Is_Generic_Actual_Type (T));
+      end if;
 
       T := Etype (Id);
 
@@ -8054,6 +8074,8 @@ package body Sem_Ch3 is
          Set_Last_Entity
            (Class_Wide_Type (Derived_Type), Last_Entity (Derived_Type));
       end if;
+
+      Check_Function_Writable_Actuals (N);
    end Build_Derived_Record_Type;
 
    ------------------------
@@ -19671,6 +19693,8 @@ package body Sem_Ch3 is
       then
          Derive_Progenitor_Subprograms (T, T);
       end if;
+
+      Check_Function_Writable_Actuals (N);
    end Record_Type_Declaration;
 
    ----------------------------

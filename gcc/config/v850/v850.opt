@@ -112,6 +112,17 @@ mv850e2v3
 Target Report RejectNegative Mask(V850E2V3)
 Compile for the v850e2v3 processor
 
+mv850e3v5
+Target Report RejectNegative Mask(V850E3V5)
+Compile for the v850e3v5 processor
+
+mv850e2v4
+Target RejectNegative Mask(V850E3V5) MaskExists
+
+mloop
+Target Report Mask(LOOP)
+Enable v850e3v5 loop instructions
+
 mzda=
 Target RejectNegative Joined UInteger
 Set the max size of data eligible for the ZDA area

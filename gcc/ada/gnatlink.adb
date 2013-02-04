@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -903,7 +903,8 @@ procedure Gnatlink is
       --------------
 
       procedure Write_RF (S : String) is
-         Success : Boolean := True;
+         Success    : Boolean            := True;
+         Back_Slash : constant Character := '\';
 
       begin
          --  If a GNU response file is used, space and backslash need to be
@@ -915,7 +916,7 @@ procedure Gnatlink is
          if Using_GNU_response_file then
             for J in S'Range loop
                if S (J) = ' ' or else S (J) = '\' then
-                  if Write (Tname_FD, ASCII.BACK_SLASH'Address, 1) /= 1 then
+                  if Write (Tname_FD, Back_Slash'Address, 1) /= 1 then
                      Success := False;
                   end if;
                end if;

@@ -1,6 +1,6 @@
 // std::__detail and std::tr1::__detail definitions -*- C++ -*-
 
-// Copyright (C) 2007, 2009, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,8 +21,6 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
-
-#include <bits/c++config.h>
 
 namespace __detail
 {

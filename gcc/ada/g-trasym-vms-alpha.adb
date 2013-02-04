@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2009, Free Software Foundation, Inc.        --
+--           Copyright (C) 1999-2012, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,7 +93,7 @@ package body GNAT.Traceback.Symbolic is
       User_Arg_Value : User_Arg_Type     := 0);
    --  Comment on above procedure required ???
 
-   pragma Interface (External, Symbolize);
+   pragma Import (External, Symbolize);
 
    pragma Import_Valued_Procedure
      (Symbolize, "TBK$SYMBOLIZE",

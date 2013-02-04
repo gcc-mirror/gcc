@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
    NetBSD ELF LINK_SPEC.  */
 
 /* LINK_EMUL_PREFIX from sh/elf.h */
-
 #undef SUBTARGET_LINK_EMUL_SUFFIX
 #define SUBTARGET_LINK_EMUL_SUFFIX "_nbsd"
 

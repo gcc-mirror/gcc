@@ -6282,7 +6282,7 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
       /* Map expressions involving the dummy arguments onto the actual
 	 argument expressions.  */
       gfc_init_interface_mapping (&mapping);
-      formal = expr->symtree->n.sym->formal;
+      formal = gfc_sym_get_dummy_args (expr->symtree->n.sym);
       arg = expr->value.function.actual;
 
       /* Set se = NULL in the calls to the interface mapping, to suppress any
@@ -8626,7 +8626,7 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   tail = NULL;
 
   if (proc_ifc)
-    dummy_arg = proc_ifc->formal;
+    dummy_arg = gfc_sym_get_dummy_args (proc_ifc);
   else
     dummy_arg = NULL;
 

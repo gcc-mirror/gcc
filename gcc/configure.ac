@@ -1631,6 +1631,9 @@ if test x$enable___cxa_atexit = xyes || \
       *-*-mingw32*)
 	use_cxa_atexit=yes
 	;;
+      powerpc-ibm-aix*)
+	use_cxa_atexit=yes
+	;;
       *)
 	AC_CHECK_FUNC(__cxa_atexit,[use_cxa_atexit=yes],
 	  [echo "__cxa_atexit can't be enabled on this target"])
@@ -3642,6 +3645,13 @@ case "$target" in
       [.register %g2, #scratch],,
       [AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
 		[Define if your assembler supports .register.])])
+
+    gcc_GAS_CHECK_FEATURE([@%:@nobits], gcc_cv_as_sparc_nobits,,,
+      [.section "nobits",#alloc,#write,#nobits
+       .section "progbits",#alloc,#write,#progbits])
+    AC_DEFINE_UNQUOTED(HAVE_AS_SPARC_NOBITS,
+      [`if test $gcc_cv_as_sparc_nobits = yes; then echo 1; else echo 0; fi`],
+      [Define to 1 if your assembler supports #nobits, 0 otherwise.])
 
     gcc_GAS_CHECK_FEATURE([-relax option], gcc_cv_as_sparc_relax,,
       [-relax], [.text],,

@@ -1,5 +1,5 @@
 /* GCC Quad-Precision Math Library
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2013 Free Software Foundation, Inc.
 
 This file is part of the libquadmath library.
 Libquadmath is free software; you can redistribute it and/or

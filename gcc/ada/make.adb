@@ -2746,7 +2746,8 @@ package body Make is
                              File    => Sfile,
                              Unit    => No_Unit_Name,
                              Project => No_Project,
-                             Index   => 0))
+                             Index   => 0,
+                             Sid     => No_Source))
                   then
                      if Is_In_Obsoleted (Sfile) then
                         Executable_Obsolete := True;
@@ -3091,6 +3092,7 @@ package body Make is
          ALI          : ALI_Id;
          Source_Index : Int;
          Sfile        : File_Name_Type;
+         Sid          : Prj.Source_Id;
          Uname        : Unit_Name_Type;
          Unit_Name    : Name_Id;
          Uid          : Prj.Unit_Index;
@@ -3137,6 +3139,7 @@ package body Make is
                   loop
                      Sfile := Withs.Table (K).Sfile;
                      Uname := Withs.Table (K).Uname;
+                     Sid   := No_Source;
 
                      --  If project files are used, find the proper source to
                      --  compile in case Sfile is the spec but there is a body.
@@ -3154,12 +3157,14 @@ package body Make is
                            then
                               Sfile        := Uid.File_Names (Impl).File;
                               Source_Index := Uid.File_Names (Impl).Index;
+                              Sid          := Uid.File_Names (Impl);
 
                            elsif Uid.File_Names (Spec) /= null
                              and then not Uid.File_Names (Spec).Locally_Removed
                            then
                               Sfile        := Uid.File_Names (Spec).File;
                               Source_Index := Uid.File_Names (Spec).Index;
+                              Sid          := Uid.File_Names (Spec);
                            end if;
                         end if;
                      end if;
@@ -3187,7 +3192,8 @@ package body Make is
                                File    => Sfile,
                                Project => ALI_P.Project,
                                Unit    => Withs.Table (K).Uname,
-                               Index   => Source_Index));
+                               Index   => Source_Index,
+                               Sid     => Sid));
                         end if;
                      end if;
                   end loop;
@@ -3308,16 +3314,16 @@ package body Make is
       is
          In_Lib_Dir      : Boolean;
          Need_To_Compile : Boolean;
-         Pid             : Process_Id;
+         Pid             : Process_Id := Invalid_Pid;
          Process_Created : Boolean;
 
          Source           : Queue.Source_Info;
-         Full_Source_File : File_Name_Type;
+         Full_Source_File : File_Name_Type := No_File;
          Source_File_Attr : aliased File_Attributes;
          --  The full name of the source file and its attributes (size, ...)
 
          Lib_File      : File_Name_Type;
-         Full_Lib_File : File_Name_Type;
+         Full_Lib_File : File_Name_Type := No_File;
          Lib_File_Attr : aliased File_Attributes;
          Read_Only     : Boolean := False;
          ALI           : ALI_Id;
@@ -3335,23 +3341,49 @@ package body Make is
          then
             Queue.Extract (Found, Source);
 
-            Osint.Full_Source_Name
-              (Source.File,
-               Full_File => Full_Source_File,
-               Attr      => Source_File_Attr'Access);
+            --  If it is a source in a project, first look for the ALI file
+            --  in the object directory. When the project is extending another
+            --  the ALI file may not be found, but the source does not
+            --  necessarily need to be compiled, as it may already be up to
+            --  date in the project being extended. In this case, look for an
+            --  ALI file in all the object directories, as is done when
+            --  gnatmake is not invoked with a project file.
 
-            Lib_File := Osint.Lib_File_Name (Source.File, Source.Index);
+            if Source.Sid /= No_Source then
+               Initialize_Source_Record (Source.Sid);
+               Full_Source_File :=
+                 File_Name_Type (Source.Sid.Path.Display_Name);
+               Lib_File      := Source.Sid.Dep_Name;
+               Full_Lib_File := File_Name_Type (Source.Sid.Dep_Path);
+               Lib_File_Attr := Unknown_Attributes;
 
-            --  ??? This call could be avoided when using projects, since we
-            --  know where the ALI file is supposed to be. That would avoid
-            --  searches in the object directories, including in the runtime
-            --  dir. However, that would require getting access to the
-            --  Source_Id.
+               if Full_Lib_File /= No_File then
+                  declare
+                     FLF : constant String :=
+                       Get_Name_String (Full_Lib_File) & ASCII.NUL;
+                  begin
+                     if not Is_Regular_File
+                       (FLF'Address, Lib_File_Attr'Access)
+                     then
+                        Full_Lib_File := No_File;
+                     end if;
+                  end;
+               end if;
+            end if;
 
-            Osint.Full_Lib_File_Name
-              (Lib_File,
-               Lib_File => Full_Lib_File,
-               Attr     => Lib_File_Attr);
+            if Full_Lib_File = No_File then
+               Osint.Full_Source_Name
+                 (Source.File,
+                  Full_File => Full_Source_File,
+                  Attr      => Source_File_Attr'Access);
+
+               Lib_File := Osint.Lib_File_Name (Source.File, Source.Index);
+
+               Osint.Full_Lib_File_Name
+                 (Lib_File,
+                  Lib_File => Full_Lib_File,
+                  Attr     => Lib_File_Attr);
+            end if;
 
             --  If source has already been compiled, executable is obsolete
 
@@ -3734,7 +3766,8 @@ package body Make is
           File    => Main_Source,
           Project => Main_Project,
           Unit    => No_Unit_Name,
-          Index   => Main_Index));
+          Index   => Main_Index,
+          Sid     => No_Source));
 
       First_Compiled_File   := No_File;
       Most_Recent_Obj_File  := No_File;
@@ -6650,6 +6683,7 @@ package body Make is
       Put_In_Q : Boolean := Into_Q;
       Unit     : Unit_Index;
       Sfile    : File_Name_Type;
+      Sid      : Prj.Source_Id;
       Index    : Int;
       Project  : Project_Id;
 
@@ -6659,6 +6693,7 @@ package body Make is
       Unit := Units_Htable.Get_First (Project_Tree.Units_HT);
       while Unit /= null loop
          Sfile   := No_File;
+         Sid     := No_Source;
          Index   := 0;
          Project := No_Project;
 
@@ -6704,15 +6739,18 @@ package body Make is
                      if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                         Sfile := No_File;
                         Index := 0;
+                        Sid   := No_Source;
                      else
                         Sfile := Unit.File_Names (Impl).Display_File;
                         Index := Unit.File_Names (Impl).Index;
+                        Sid   := Unit.File_Names (Impl);
                      end if;
                   end;
 
                else
                   Sfile := Unit.File_Names (Impl).Display_File;
                   Index := Unit.File_Names (Impl).Index;
+                  Sid   := Unit.File_Names (Impl);
                end if;
             end if;
 
@@ -6728,6 +6766,7 @@ package body Make is
 
             Sfile := Unit.File_Names (Spec).Display_File;
             Index := Unit.File_Names (Spec).Index;
+            Sid   := Unit.File_Names (Spec);
             Project := Unit.File_Names (Spec).Project;
          end if;
 
@@ -6744,7 +6783,8 @@ package body Make is
                 File     => Sfile,
                 Project  => Project,
                 Unit     => No_Unit_Name,
-                Index    => Index));
+                Index    => Index,
+                Sid      => Sid));
          end if;
 
          if not Put_In_Q and then Sfile /= No_File then

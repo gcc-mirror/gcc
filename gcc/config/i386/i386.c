@@ -3235,10 +3235,12 @@ ix86_option_override_internal (bool main_args_p)
 	 DLL, and is essentially just as efficient as direct addressing.  */
       if (TARGET_64BIT && DEFAULT_ABI == MS_ABI)
 	ix86_cmodel = CM_SMALL_PIC, flag_pic = 1;
+      else if (TARGET_64BIT && TARGET_RDOS)
+	ix86_cmodel = CM_MEDIUM_PIC, flag_pic = 1;
       else if (TARGET_64BIT)
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
       else
-        ix86_cmodel = CM_32;
+	ix86_cmodel = CM_32;
     }
   if (TARGET_MACHO && ix86_asm_dialect == ASM_INTEL)
     {
@@ -4223,7 +4225,10 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     }
 
   else if (TREE_CODE (args) != STRING_CST)
-    gcc_unreachable ();
+    {
+      error ("attribute %<target%> argument not a string");
+      return false;
+    }
 
   /* Handle multiple arguments separated by commas.  */
   next_optstr = ASTRDUP (TREE_STRING_POINTER (args));
@@ -4368,7 +4373,7 @@ ix86_valid_target_attribute_tree (tree args)
   /* Process each of the options on the chain.  */
   if (! ix86_valid_target_attribute_inner_p (args, option_strings,
 					     &enum_opts_set))
-    return NULL_TREE;
+    return error_mark_node;
 
   /* If the changed options are different from the default, rerun
      ix86_option_override_internal, and then save the options away.
@@ -4433,6 +4438,15 @@ ix86_valid_target_attribute_p (tree fndecl,
 {
   struct cl_target_option cur_target;
   bool ret = true;
+
+  /* attribute((target("default"))) does nothing, beyond
+     affecting multi-versioning.  */
+  if (TREE_VALUE (args)
+      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
+      && TREE_CHAIN (args) == NULL_TREE
+      && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "default") == 0)
+    return true;
+
   tree old_optimize = build_optimization_node ();
   tree new_target, new_optimize;
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
@@ -4449,10 +4463,10 @@ ix86_valid_target_attribute_p (tree fndecl,
   new_target = ix86_valid_target_attribute_tree (args);
   new_optimize = build_optimization_node ();
 
-  if (!new_target)
+  if (new_target == error_mark_node)
     ret = false;
 
-  else if (fndecl)
+  else if (fndecl && new_target)
     {
       DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
 
@@ -28961,26 +28975,44 @@ attr_strcmp (const void *v1, const void *v2)
   return strcmp (c1, c2);
 }
 
-/* STR is the argument to target attribute.  This function tokenizes
+/* ARGLIST is the argument to target attribute.  This function tokenizes
    the comma separated arguments, sorts them and returns a string which
    is a unique identifier for the comma separated arguments.   It also
    replaces non-identifier characters "=,-" with "_".  */
 
 static char *
-sorted_attr_string (const char *str)
+sorted_attr_string (tree arglist)
 {
+  tree arg;
+  size_t str_len_sum = 0;
   char **args = NULL;
   char *attr_str, *ret_str;
   char *attr = NULL;
   unsigned int argnum = 1;
   unsigned int i;
 
-  for (i = 0; i < strlen (str); i++)
-    if (str[i] == ',')
-      argnum++;
+  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+    {
+      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
+      size_t len = strlen (str);
+      str_len_sum += len + 1;
+      if (arg != arglist)
+	argnum++;
+      for (i = 0; i < strlen (str); i++)
+	if (str[i] == ',')
+	  argnum++;
+    }
 
-  attr_str = (char *)xmalloc (strlen (str) + 1);
-  strcpy (attr_str, str);
+  attr_str = XNEWVEC (char, str_len_sum);
+  str_len_sum = 0;
+  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+    {
+      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
+      size_t len = strlen (str);
+      memcpy (attr_str + str_len_sum, str, len);
+      attr_str[str_len_sum + len] = TREE_CHAIN (arg) ? ',' : '\0';
+      str_len_sum += len + 1;
+    }
 
   /* Replace "=,-" with "_".  */
   for (i = 0; i < strlen (attr_str); i++)
@@ -29001,18 +29033,20 @@ sorted_attr_string (const char *str)
       attr = strtok (NULL, ",");
     }
 
-  qsort (args, argnum, sizeof (char*), attr_strcmp);
+  qsort (args, argnum, sizeof (char *), attr_strcmp);
 
-  ret_str = (char *)xmalloc (strlen (str) + 1);
-  strcpy (ret_str, args[0]);
-  for (i = 1; i < argnum; i++)
+  ret_str = XNEWVEC (char, str_len_sum);
+  str_len_sum = 0;
+  for (i = 0; i < argnum; i++)
     {
-      strcat (ret_str, "_");
-      strcat (ret_str, args[i]);
+      size_t len = strlen (args[i]);
+      memcpy (ret_str + str_len_sum, args[i], len);
+      ret_str[str_len_sum + len] = i < argnum - 1 ? '_' : '\0';
+      str_len_sum += len + 1;
     }
 
-  free (args);
-  free (attr_str);
+  XDELETEVEC (args);
+  XDELETEVEC (attr_str);
   return ret_str;
 }
 
@@ -29024,8 +29058,8 @@ static tree
 ix86_mangle_function_version_assembler_name (tree decl, tree id)
 {
   tree version_attr;
-  const char *orig_name, *version_string, *attr_str;
-  char *assembler_name;
+  const char *orig_name, *version_string;
+  char *attr_str, *assembler_name;
 
   if (DECL_DECLARED_INLINE_P (decl)
       && lookup_attribute ("gnu_inline",
@@ -29049,9 +29083,11 @@ ix86_mangle_function_version_assembler_name (tree decl, tree id)
   version_string
     = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (version_attr)));
 
-  attr_str = sorted_attr_string (version_string);
-  assembler_name = (char *) xmalloc (strlen (orig_name)
-				     + strlen (attr_str) + 2);
+  if (strcmp (version_string, "default") == 0)
+    return id;
+
+  attr_str = sorted_attr_string (TREE_VALUE (version_attr));
+  assembler_name = XNEWVEC (char, strlen (orig_name) + strlen (attr_str) + 2);
 
   sprintf (assembler_name, "%s.%s", orig_name, attr_str);
 
@@ -29059,7 +29095,10 @@ ix86_mangle_function_version_assembler_name (tree decl, tree id)
   if (DECL_ASSEMBLER_NAME_SET_P (decl))
     SET_DECL_RTL (decl, NULL);
 
-  return get_identifier (assembler_name);
+  tree ret = get_identifier (assembler_name);
+  XDELETEVEC (attr_str);
+  XDELETEVEC (assembler_name);
+  return ret;
 }
 
 /* This function returns true if FN1 and FN2 are versions of the same function,
@@ -29070,10 +29109,9 @@ static bool
 ix86_function_versions (tree fn1, tree fn2)
 {
   tree attr1, attr2;
-  const char *attr_str1, *attr_str2;
   char *target1, *target2;
   bool result;
-  
+
   if (TREE_CODE (fn1) != FUNCTION_DECL
       || TREE_CODE (fn2) != FUNCTION_DECL)
     return false;
@@ -29085,15 +29123,35 @@ ix86_function_versions (tree fn1, tree fn2)
   if (attr1 == NULL_TREE && attr2 == NULL_TREE)
     return false;
 
-  /* If one function does not have a target attribute, these are versions.  */
+  /* Diagnose missing target attribute if one of the decls is already
+     multi-versioned.  */
   if (attr1 == NULL_TREE || attr2 == NULL_TREE)
-    return true;
+    {
+      if (DECL_FUNCTION_VERSIONED (fn1) || DECL_FUNCTION_VERSIONED (fn2))
+	{
+	  if (attr2 != NULL_TREE)
+	    {
+	      tree tem = fn1;
+	      fn1 = fn2;
+	      fn2 = tem;
+	      attr1 = attr2;
+	    }
+	  error_at (DECL_SOURCE_LOCATION (fn2),
+		    "missing %<target%> attribute for multi-versioned %D",
+		    fn2);
+	  error_at (DECL_SOURCE_LOCATION (fn1),
+		    "previous declaration of %D", fn1);
+	  /* Prevent diagnosing of the same error multiple times.  */
+	  DECL_ATTRIBUTES (fn2)
+	    = tree_cons (get_identifier ("target"),
+			 copy_node (TREE_VALUE (attr1)),
+			 DECL_ATTRIBUTES (fn2));
+	}
+      return false;
+    }
 
-  attr_str1 =  TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr1)));
-  attr_str2 =  TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr2)));
-
-  target1 = sorted_attr_string (attr_str1);
-  target2 = sorted_attr_string (attr_str2);
+  target1 = sorted_attr_string (TREE_VALUE (attr1));
+  target2 = sorted_attr_string (TREE_VALUE (attr2));
 
   /* The sorted target strings must be different for fn1 and fn2
      to be versions.  */
@@ -29102,18 +29160,10 @@ ix86_function_versions (tree fn1, tree fn2)
   else
     result = true;
 
-  free (target1);
-  free (target2); 
+  XDELETEVEC (target1);
+  XDELETEVEC (target2); 
   
   return result;
-}
-
-/* This target supports function multiversioning.  */
-
-static bool
-ix86_supports_function_versions (void)
-{
-  return true;
 }
 
 static tree 
@@ -29156,10 +29206,10 @@ make_name (tree decl, const char *suffix, bool make_unique)
 
   /* Use '.' to concatenate names as it is demangler friendly.  */
   if (make_unique)
-      snprintf (global_var_name, name_len, "%s.%s.%s", name,
-		unique_name, suffix);
+    snprintf (global_var_name, name_len, "%s.%s.%s", name, unique_name,
+	      suffix);
   else
-      snprintf (global_var_name, name_len, "%s.%s", name, suffix);
+    snprintf (global_var_name, name_len, "%s.%s", name, suffix);
 
   return global_var_name;
 }
@@ -29174,7 +29224,7 @@ static tree
 make_dispatcher_decl (const tree decl)
 {
   tree func_decl;
-  char *func_name, *resolver_name;
+  char *func_name;
   tree fn_type, func_type;
   bool is_uniq = false;
 
@@ -29182,14 +29232,13 @@ make_dispatcher_decl (const tree decl)
     is_uniq = true;
 
   func_name = make_name (decl, "ifunc", is_uniq);
-  resolver_name = make_name (decl, "resolver", is_uniq);
-  gcc_assert (resolver_name);
 
   fn_type = TREE_TYPE (decl);
   func_type = build_function_type (TREE_TYPE (fn_type),
 				   TYPE_ARG_TYPES (fn_type));
   
   func_decl = build_fn_decl (func_name, func_type);
+  XDELETEVEC (func_name);
   TREE_USED (func_decl) = 1;
   DECL_CONTEXT (func_decl) = NULL_TREE;
   DECL_INITIAL (func_decl) = error_mark_node;
@@ -29211,9 +29260,14 @@ make_dispatcher_decl (const tree decl)
 static bool
 is_function_default_version (const tree decl)
 {
-  return (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_FUNCTION_VERSIONED (decl)
-	  && lookup_attribute ("target", DECL_ATTRIBUTES (decl)) == NULL_TREE);
+  if (TREE_CODE (decl) != FUNCTION_DECL
+      || !DECL_FUNCTION_VERSIONED (decl))
+    return false;
+  tree attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+  gcc_assert (attr);
+  attr = TREE_VALUE (TREE_VALUE (attr));
+  return (TREE_CODE (attr) == STRING_CST
+	  && strcmp (TREE_STRING_POINTER (attr), "default") == 0);
 }
 
 /* Make a dispatcher declaration for the multi-versioned function DECL.
@@ -29407,6 +29461,7 @@ make_resolver_func (const tree default_decl,
   /* Create the alias for dispatch to resolver here.  */
   /*cgraph_create_function_alias (dispatch_decl, decl);*/
   cgraph_same_body_alias (NULL, dispatch_decl, decl);
+  XDELETEVEC (resolver_name);
   return decl;
 }
 
@@ -29468,7 +29523,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
     }
 
   dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
-
+  fn_ver_vec.release ();
   rebuild_cgraph_edges (); 
   pop_cfun ();
   return resolver_decl;
@@ -42455,10 +42510,6 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_OPTION_FUNCTION_VERSIONS
 #define TARGET_OPTION_FUNCTION_VERSIONS ix86_function_versions
-
-#undef TARGET_OPTION_SUPPORTS_FUNCTION_VERSIONS
-#define TARGET_OPTION_SUPPORTS_FUNCTION_VERSIONS \
-  ix86_supports_function_versions
 
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P ix86_can_inline_p

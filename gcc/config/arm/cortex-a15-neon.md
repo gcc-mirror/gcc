@@ -505,12 +505,12 @@
 
 (define_insn_reservation "cortex_a15_vfp_macs" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "fmacs"))
+       (eq_attr "type" "fmacs,ffmas"))
   "ca15_issue1,ca15_cx_vfp")
 
 (define_insn_reservation "cortex_a15_vfp_macd" 11
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "fmacd"))
+       (eq_attr "type" "fmacd,ffmad"))
   "ca15_issue2,ca15_cx_vfp*2")
 
 (define_insn_reservation "cortex_a15_vfp_cvt" 6

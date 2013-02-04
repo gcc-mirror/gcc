@@ -1,6 +1,6 @@
 // hashtable.h header -*- C++ -*-
 
-// Copyright (C) 2007-2012 Free Software Foundation, Inc.
+// Copyright (C) 2007-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,10 +39,15 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Hash>
-    using __cache_default =  __not_<__and_<is_integral<_Tp>,
-					   is_empty<_Hash>,
-				  integral_constant<bool, !__is_final(_Hash)>,
-				 __detail::__is_noexcept_hash<_Tp, _Hash> >>;
+    using __cache_default
+      =  __not_<__and_<// Do not cache for builtin integral types having trivial
+		       // hasher.
+		       is_integral<_Tp>,
+		       // Mandatory to make local_iterator default
+		       // constructible.
+		       is_default_constructible<_Hash>,
+		       // Mandatory to have erase not throwing.
+		       __detail::__is_noexcept_hash<_Tp, _Hash>>>;
 
   /**
    *  Primary class template _Hashtable.
@@ -249,21 +254,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    " or qualify your hash functor with noexcept");
 
       // Following two static assertions are necessary to guarantee
-      // that swapping two hashtable instances won't invalidate
-      // associated local iterators.
+      // that local_iterator will be default constructible.
 
-      // When hash codes are cached local iterator only uses H2 which
-      // must then be empty.
-      static_assert(__if_hash_cached<is_empty<_H2>>::value,
+      // When hash codes are cached local iterator inherits from H2 functor
+      // which must then be default constructible.
+      static_assert(__if_hash_cached<is_default_constructible<_H2>>::value,
 		    "Functor used to map hash code to bucket index"
-		    " must be empty");
+		    " must be default constructible");
 
-      // When hash codes are not cached local iterator is going to use
-      // __hash_code_base above to compute node bucket index so it has
-      // to be empty.
-      static_assert(__if_hash_not_cached<is_empty<__hash_code_base>>::value,
-		   "Cache the hash code or make functors involved in hash code"
-		   " and bucket index computation empty");
+      // When hash codes are not cached local iterator inherits from
+      // __hash_code_base above to compute node bucket index so it has to be
+      // default constructible.
+      static_assert(__if_hash_not_cached<
+		      is_default_constructible<__hash_code_base>>::value,
+		    "Cache the hash code or make functors involved in hash code"
+		    " and bucket index computation default constructible");
 
     public:
       template<typename _Keya, typename _Valuea, typename _Alloca,
@@ -500,30 +505,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       local_iterator
       begin(size_type __n)
-      { return local_iterator(_M_bucket_begin(__n), __n, _M_bucket_count); }
+      {
+	return local_iterator(*this, _M_bucket_begin(__n),
+			      __n, _M_bucket_count);
+      }
 
       local_iterator
       end(size_type __n)
-      { return local_iterator(nullptr, __n, _M_bucket_count); }
+      { return local_iterator(*this, nullptr, __n, _M_bucket_count); }
 
       const_local_iterator
       begin(size_type __n) const
-      { return const_local_iterator(_M_bucket_begin(__n), __n,
-				    _M_bucket_count); }
+      {
+	return const_local_iterator(*this, _M_bucket_begin(__n),
+				    __n, _M_bucket_count);
+      }
 
       const_local_iterator
       end(size_type __n) const
-      { return const_local_iterator(nullptr, __n, _M_bucket_count); }
+      { return const_local_iterator(*this, nullptr, __n, _M_bucket_count); }
 
       // DR 691.
       const_local_iterator
       cbegin(size_type __n) const
-      { return const_local_iterator(_M_bucket_begin(__n), __n,
-				    _M_bucket_count); }
+      {
+	return const_local_iterator(*this, _M_bucket_begin(__n),
+				    __n, _M_bucket_count);
+      }
 
       const_local_iterator
       cend(size_type __n) const
-      { return const_local_iterator(nullptr, __n, _M_bucket_count); }
+      { return const_local_iterator(*this, nullptr, __n, _M_bucket_count); }
 
       float
       load_factor() const noexcept
@@ -1141,7 +1153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (this->_M_equals(__k, __code, __p))
 	    return __prev_p;
-	  if (!(__p->_M_nxt) || _M_bucket_index(__p->_M_next()) != __n)
+	  if (!__p->_M_nxt || _M_bucket_index(__p->_M_next()) != __n)
 	    break;
 	  __prev_p = __p;
 	}

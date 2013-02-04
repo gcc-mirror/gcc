@@ -41,23 +41,14 @@ func startServer(done chan<- string) {
 	go runSyslog(c, done)
 }
 
-func skipNetTest(t *testing.T) bool {
-	if testing.Short() {
-		// Depends on syslog daemon running, and sometimes it's not.
-		t.Logf("skipping syslog test during -short")
-		return true
-	}
-	return false
-}
-
 func TestNew(t *testing.T) {
 	if LOG_LOCAL7 != 23<<3 {
 		t.Fatalf("LOG_LOCAL7 has wrong value")
 	}
-	if skipNetTest(t) {
-		return
+	if testing.Short() {
+		// Depends on syslog daemon running, and sometimes it's not.
+		t.Skip("skipping syslog test during -short")
 	}
-
 	s, err := New(LOG_INFO|LOG_USER, "")
 	if err != nil {
 		t.Fatalf("New() failed: %s", err)
@@ -67,8 +58,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewLogger(t *testing.T) {
-	if skipNetTest(t) {
-		return
+	if testing.Short() {
+		t.Skip("skipping syslog test during -short")
 	}
 	f, err := NewLogger(LOG_USER|LOG_INFO, 0)
 	if f == nil {
@@ -77,8 +68,8 @@ func TestNewLogger(t *testing.T) {
 }
 
 func TestDial(t *testing.T) {
-	if skipNetTest(t) {
-		return
+	if testing.Short() {
+		t.Skip("skipping syslog test during -short")
 	}
 	f, err := Dial("", "", (LOG_LOCAL7|LOG_DEBUG)+1, "syslog_test")
 	if f != nil {
@@ -104,16 +95,15 @@ func TestUDPDial(t *testing.T) {
 	}
 	msg := "udp test"
 	l.Info(msg)
-	expected := fmt.Sprintf("<%d>1 ", LOG_USER+LOG_INFO) + "%s %s syslog_test[%d]: udp test\n"
+	expected := fmt.Sprintf("<%d>", LOG_USER+LOG_INFO) + "%s %s syslog_test[%d]: udp test\n"
 	rcvd := <-done
 	var parsedHostname, timestamp string
 	var pid int
 	if hostname, err := os.Hostname(); err != nil {
 		t.Fatalf("Error retrieving hostname")
 	} else {
-		if n, err := fmt.Sscanf(rcvd, expected, &timestamp, &parsedHostname, &pid); n != 3 ||
-			err != nil || hostname != parsedHostname {
-			t.Fatalf("s.Info() = '%q', didn't match '%q'", rcvd, expected)
+		if n, err := fmt.Sscanf(rcvd, expected, &timestamp, &parsedHostname, &pid); n != 3 || err != nil || hostname != parsedHostname {
+			t.Fatalf("'%q', didn't match '%q' (%d, %s)", rcvd, expected, n, err)
 		}
 	}
 }
@@ -146,12 +136,13 @@ func TestWrite(t *testing.T) {
 				t.Fatalf("WriteString() failed: %s", err)
 			}
 			rcvd := <-done
-			test.exp = fmt.Sprintf("<%d>1 ", test.pri) + test.exp
+			test.exp = fmt.Sprintf("<%d>", test.pri) + test.exp
 			var parsedHostname, timestamp string
 			var pid int
-			if n, err := fmt.Sscanf(rcvd, test.exp, &timestamp, &parsedHostname, &pid); n != 3 ||
-				err != nil || hostname != parsedHostname {
-				t.Fatalf("s.Info() = '%q', didn't match '%q'", rcvd, test.exp)
+			if n, err := fmt.Sscanf(rcvd, test.exp, &timestamp, &parsedHostname,
+				&pid); n != 3 || err != nil || hostname != parsedHostname {
+				t.Fatalf("'%q', didn't match '%q' (%d %s)", rcvd, test.exp,
+					n, err)
 			}
 		}
 	}

@@ -332,6 +332,7 @@ package body Sem_Disp is
 
          elsif From_With_Type (Designated_Type (T))
            and then Present (Non_Limited_View (Designated_Type (T)))
+           and then Scope (Designated_Type (T)) = Scope (Subp)
          then
             if Is_First_Subtype (Non_Limited_View (Designated_Type (T))) then
                Tagged_Type := Non_Limited_View (Designated_Type (T));

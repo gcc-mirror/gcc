@@ -3336,7 +3336,8 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
     }
   exits.release ();
 
-  infer_loop_bounds_from_undefined (loop);
+  if (flag_aggressive_loop_optimizations)
+    infer_loop_bounds_from_undefined (loop);
 
   discover_iteration_bound_by_body_walk (loop);
 

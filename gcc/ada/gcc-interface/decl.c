@@ -33,6 +33,7 @@
 #include "ggc.h"
 #include "target.h"
 #include "tree-inline.h"
+#include "diagnostic-core.h"
 
 #include "ada.h"
 #include "types.h"
@@ -2244,6 +2245,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	for (index = ndim - 1; index >= 0; index--)
 	  {
 	    tem = build_nonshared_array_type (tem, gnu_index_types[index]);
+	    if (Reverse_Storage_Order (gnat_entity))
+	      sorry ("non-default Scalar_Storage_Order");
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
@@ -2957,6 +2960,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type = make_node (tree_code_for_record_type (gnat_entity));
 	TYPE_NAME (gnu_type) = gnu_entity_name;
 	TYPE_PACKED (gnu_type) = (packed != 0) || has_rep;
+	if (Reverse_Storage_Order (gnat_entity))
+	  sorry ("non-default Scalar_Storage_Order");
 
 	if (!definition)
 	  {

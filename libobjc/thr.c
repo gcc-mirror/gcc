@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime Thread Interface
-   Copyright (C) 1996, 1997, 2009, 2010, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2013 Free Software Foundation, Inc.
    Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
 
 This file is part of GCC.

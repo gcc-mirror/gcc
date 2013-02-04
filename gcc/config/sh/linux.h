@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
    %{static:-static}"
 
 /* Output assembler code to STREAM to call the profiler.  */
-
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\
   do {									\
