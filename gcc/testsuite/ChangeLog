@@ -1,3 +1,9 @@
+2013-02-04  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR testsuite/56206
+	* lib/target-supports.exp (check_effective_target_arm_hard_vfp_ok):
+	Fix typo.
+
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
