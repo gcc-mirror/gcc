@@ -1,7 +1,6 @@
 /* ieee754-sf.S single-precision floating point support for ARM
 
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it

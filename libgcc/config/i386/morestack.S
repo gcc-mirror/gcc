@@ -1,5 +1,5 @@
 # x86/x86_64 support for -fsplit-stack.
-# Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 # Contributed by Ian Lance Taylor <iant@google.com>.
 
 # This file is part of GCC.

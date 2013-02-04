@@ -1,5 +1,5 @@
 /* libgcc routines for 68000 w/o floating-point hardware.
-   Copyright (C) 1994, 1996, 1997, 1998, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1994-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

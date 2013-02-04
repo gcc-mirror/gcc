@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001, 2003, 2005, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Jes Sorensen, <Jes.Sorensen@cern.ch>
 
    This file is part of GCC.
