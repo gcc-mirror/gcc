@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2013 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson <hp@bitrange.com>
 
 This file is free software; you can redistribute it and/or modify it
