@@ -1,3 +1,12 @@
+2013-02-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2013-02-03  David Edelsohn  <dje.gcc@gmail.com>
+		    Andrew Dixie  <andrewd@gentrack.com>
+
+	* collect2.c (GCC_CHECK_HDR): Do not scan objects with F_LOADONLY
+	flag set.
+
 2013-02-05  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
