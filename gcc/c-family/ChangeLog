@@ -1,3 +1,8 @@
+2013-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56167
+	* c-common.c (handle_error_attribute): Fix condition.
+
 2013-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55742

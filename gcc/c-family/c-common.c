@@ -6678,7 +6678,7 @@ handle_error_attribute (tree *node, tree name, tree args,
 			int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL
-      || TREE_CODE (TREE_VALUE (args)) == STRING_CST)
+      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
     /* Do nothing else, just set the attribute.  We'll get at
        it later with lookup_attribute.  */
     ;
