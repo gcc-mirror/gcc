@@ -1,6 +1,16 @@
 2013-02-05  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimization/r55789
+	PR tree-optimization/55789
+	* g++.dg/tree-ssa/inline-1.C: Update max-inliner-iterations.
+	* g++.dg/tree-ssa/inline-2.C: Update max-inliner-iterations.
+	* g++.dg/tree-ssa/inline-3.C: Update max-inliner-iterations.
+	* g++.dg/ipa/inline-1.C: New testcase.
+	* g++.dg/ipa/inline-2.C: New testcase.
+	* g++.dg/ipa/inline-3.C: New testcase.
+
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55789
 	* g++.dg/torture/pr55789.C: New testcase.
 
 2013-02-05  Jakub Jelinek  <jakub@redhat.com>
