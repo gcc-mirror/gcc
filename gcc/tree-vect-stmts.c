@@ -4353,7 +4353,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   tree aggr_type;
   tree gather_base = NULL_TREE, gather_off = NULL_TREE;
   tree gather_off_vectype = NULL_TREE, gather_decl = NULL_TREE;
-  tree stride_base, stride_step;
   int gather_scale = 1;
   enum vect_def_type gather_dt = vect_unknown_def_type;
 
@@ -4462,11 +4461,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	}
     }
   else if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
-    {
-      if (!vect_check_strided_load (stmt, loop_vinfo,
-				    &stride_base, &stride_step))
-	return false;
-    }
+    ;
   else
     {
       negative = tree_int_cst_compare (nested_in_vect_loop
@@ -4674,13 +4669,21 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       bool insert_after;
       gimple incr;
       tree offvar;
-      tree ref = DR_REF (dr);
       tree ivstep;
       tree running_off;
       vec<constructor_elt, va_gc> *v = NULL;
       gimple_seq stmts = NULL;
+      tree stride_base, stride_step, alias_off;
 
-      gcc_assert (stride_base && stride_step);
+      gcc_assert (!nested_in_vect_loop);
+
+      stride_base
+	= fold_build_pointer_plus
+	    (unshare_expr (DR_BASE_ADDRESS (dr)),
+	     size_binop (PLUS_EXPR,
+			 convert_to_ptrofftype (unshare_expr (DR_OFFSET (dr))),
+			 convert_to_ptrofftype (DR_INIT(dr))));
+      stride_step = fold_convert (sizetype, unshare_expr (DR_STEP (dr)));
 
       /* For a load with loop-invariant (but other than power-of-2)
          stride (i.e. not a grouped access) like so:
@@ -4716,6 +4719,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       prev_stmt_info = NULL;
       running_off = offvar;
+      alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (dr)), 0);
       for (j = 0; j < ncopies; j++)
 	{
 	  tree vec_inv;
@@ -4725,33 +4729,16 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    {
 	      tree newref, newoff;
 	      gimple incr;
-	      if (TREE_CODE (ref) == ARRAY_REF)
-		{
-		  newref = build4 (ARRAY_REF, TREE_TYPE (ref),
-				   unshare_expr (TREE_OPERAND (ref, 0)),
-				   running_off,
-				   NULL_TREE, NULL_TREE);
-		  if (!useless_type_conversion_p (TREE_TYPE (vectype),
-						  TREE_TYPE (newref)))
-		    newref = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vectype),
-				     newref);
-		}
-	      else
-		newref = build2 (MEM_REF, TREE_TYPE (vectype),
-				 running_off,
-				 TREE_OPERAND (ref, 1));
+	      newref = build2 (MEM_REF, TREE_TYPE (vectype),
+			       running_off, alias_off);
 
 	      newref = force_gimple_operand_gsi (gsi, newref, true,
 						 NULL_TREE, true,
 						 GSI_SAME_STMT);
 	      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, newref);
 	      newoff = copy_ssa_name (running_off, NULL);
-	      if (POINTER_TYPE_P (TREE_TYPE (newoff)))
-		incr = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, newoff,
-						     running_off, stride_step);
-	      else
-		incr = gimple_build_assign_with_ops (PLUS_EXPR, newoff,
-						     running_off, stride_step);
+	      incr = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, newoff,
+						   running_off, stride_step);
 	      vect_finish_stmt_generation (stmt, incr, gsi);
 
 	      running_off = newoff;

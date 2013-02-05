@@ -1,5 +1,17 @@
 2013-02-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/53342
+	PR tree-optimization/53185
+	* tree-vectorizer.h (vect_check_strided_load): Remove.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Do
+	not disallow peeling for vectorized strided loads.
+	(vect_check_strided_load): Make static and simplify.
+	(vect_analyze_data_refs): Adjust.
+	* tree-vect-stmts.c (vectorizable_load): Handle peeled loops
+	correctly when vectorizing strided loads.
+
+2013-02-05  Richard Biener  <rguenther@suse.de>
+
 	* doc/install.texi: Refer to ISL, not PPL.
 
 2013-02-05  Jan Hubicka  <jh@suse.cz>

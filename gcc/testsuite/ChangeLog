@@ -1,3 +1,9 @@
+2013-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/53342
+	PR tree-optimization/53185
+	* gcc.dg/vect/pr53185-2.c: New testcase.
+
 2013-02-05  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55789
