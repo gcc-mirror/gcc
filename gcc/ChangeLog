@@ -1,5 +1,10 @@
-2013-02-04  Alexander Potapenko <glider@google.com>
-            Jack Howarth  <howarth@bromo.med.uc.edu>
+2013-02-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/55374
+	* config/gnu-user.h (LIBASAN_EARLY_SPEC): Add missing guard.
+
+2013-02-04  Alexander Potapenko  <glider@google.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/55617

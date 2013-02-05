@@ -102,10 +102,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    it for -shared link, the executable should be compiled with -static-libasan
    in that case, and for executable link link with --{,no-}whole-archive around
    it to force everything into the executable.  */
+#if defined(HAVE_LD_STATIC_DYNAMIC)
 #undef LIBASAN_EARLY_SPEC
 #define LIBASAN_EARLY_SPEC "%{static-libasan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
+#endif
 
 /* Additional libraries needed by -static-libasan.  */
 #undef STATIC_LIBASAN_LIBS
