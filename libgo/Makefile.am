@@ -1991,12 +1991,6 @@ BUILDPACKAGE = \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
 	$(LTGOCOMPILE) -I . -c -fgo-pkgpath=`echo $@ | sed -e 's/.lo$$//' -e 's/-go$$//'` -o $@ $$files
 
-if LIBGO_IS_RTEMS
-use_dejagnu = yes
-else
-use_dejagnu = no
-endif
-
 GOTESTFLAGS =
 
 # Check a package.
@@ -2015,7 +2009,7 @@ CHECK = \
 	export LD_LIBRARY_PATH; \
 	$(MKDIR_P) $(@D); \
 	rm -f $@-testsum $@-testlog; \
-	if test "$(use_dejagnu)" = "yes"; then \
+	if test "$(USE_DEJAGNU)" = "yes"; then \
 	  $(SHELL) $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" --goarch="$(GOARCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files); \
 	else \
 	  if $(SHELL) $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files) >>$@-testlog 2>&1; then \
