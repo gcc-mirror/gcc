@@ -1619,9 +1619,9 @@ variable (@env{LD_LIBRARY_PATH} on GNU/Linux and Solaris systems).
 These flags are applicable to the host platform only.  When building
 a cross compiler, they will not be used to configure target libraries.
 
-@item --with-ppl=@var{pathname}
-@itemx --with-ppl-include=@var{pathname}
-@itemx --with-ppl-lib=@var{pathname}
+@item --with-isl=@var{pathname}
+@itemx --with-isl-include=@var{pathname}
+@itemx --with-isl-lib=@var{pathname}
 @itemx --with-cloog=@var{pathname}
 @itemx --with-cloog-include=@var{pathname}
 @itemx --with-cloog-lib=@var{pathname}
