@@ -1,5 +1,7 @@
 2013-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.h (struct tree_decl_with_vis): Remove thread_local field.
+
 	PR sanitizer/55374
 	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Define.
 	(STATIC_LIBTSAN_LIBS): Likewise.
