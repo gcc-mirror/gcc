@@ -116,11 +116,19 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	}
       else
 	fn (data);
-      if (team != NULL)
+      /* Access to "children" is normally done inside a task_lock
+	 mutex region, but the only way this particular task.children
+	 can be set is if this thread's task work function (fn)
+	 creates children.  So since the setter is *this* thread, we
+	 need no barriers here when testing for non-NULL.  We can have
+	 task.children set by the current thread then changed by a
+	 child thread, but seeing a stale non-NULL value is not a
+	 problem.  Once past the task_lock acquisition, this thread
+	 will see the real value of task.children.  */
+      if (task.children != NULL)
 	{
 	  gomp_mutex_lock (&team->task_lock);
-	  if (task.children != NULL)
-	    gomp_clear_parent (task.children);
+	  gomp_clear_parent (task.children);
 	  gomp_mutex_unlock (&team->task_lock);
 	}
       gomp_end_task ();
@@ -258,7 +266,13 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
 		    parent->children = child_task->next_child;
 		  else
 		    {
-		      parent->children = NULL;
+		      /* We access task->children in GOMP_taskwait
+			 outside of the task lock mutex region, so
+			 need a release barrier here to ensure memory
+			 written by child_task->fn above is flushed
+			 before the NULL is written.  */
+		      __atomic_store_n (&parent->children, NULL,
+					MEMMODEL_RELEASE);
 		      if (parent->in_taskwait)
 			gomp_sem_post (&parent->taskwait_sem);
 		    }
@@ -291,7 +305,14 @@ GOMP_taskwait (void)
   struct gomp_task *child_task = NULL;
   struct gomp_task *to_free = NULL;
 
-  if (task == NULL || team == NULL)
+  /* The acquire barrier on load of task->children here synchronizes
+     with the write of a NULL in gomp_barrier_handle_tasks.  It is
+     not necessary that we synchronize with other non-NULL writes at
+     this point, but we must ensure that all writes to memory by a
+     child thread task work function are seen before we exit from
+     GOMP_taskwait.  */
+  if (task == NULL
+      || __atomic_load_n (&task->children, MEMMODEL_ACQUIRE) == NULL)
     return;
 
   gomp_mutex_lock (&team->task_lock);

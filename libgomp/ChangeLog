@@ -1,3 +1,13 @@
+2013-01-22  Alan Modra  <amodra@gmail.com>
+
+	PR libgomp/51376
+	PR libgomp/56073
+	* task.c (GOMP_task): Revert 2011-12-09 change.
+	(GOMP_taskwait): Likewise.  Instead use atomic load with acquire
+	barrier to read task->children..
+	(gomp_barrier_handle_tasks): ..and matching atomic store with
+	release barrier here when setting parent->children to NULL.
+
 2012-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/55411
