@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline" } */
+/* { dg-options "-O2 -fdump-tree-einline --param max-early-inliner-iterations=3" } */
 /* { dg-add-options bind_pic_locally } */
 
 namespace std {

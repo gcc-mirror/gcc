@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline --param max-early-inliner-iterations=3" } */
+/* { dg-options "-O2 -fdump-ipa-inline --param max-early-inliner-iterations=1" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <algorithm>
@@ -24,6 +24,6 @@ int main(int argc, char **argv)
   std::for_each (argv, argv + argc, inline_me_too);
 }
 
-/* { dg-final { scan-tree-dump-times "Inlining void inline_me\\(" 1 "einline"} } */
-/* { dg-final { scan-tree-dump-times "Inlining void inline_me_too\\(" 1 "einline"} } */
-/* { dg-final { cleanup-tree-dump "einline" } } */
+/* { dg-final { scan-ipa-dump-times "Considering void inline_me\\(" 1 "inline"} } */
+/* { dg-final { scan-ipa-dump-times "Considering void inline_me_too\\(" 1 "inline"} } */
+/* { dg-final { cleanup-tree-dump "inline" } } */
