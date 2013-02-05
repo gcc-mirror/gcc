@@ -1,3 +1,9 @@
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/r55789
+	* cgraphclones.c (cgraph_remove_node_and_inline_clones): Remove
+	the dead call anyway.
+
 2013-02-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR sanitizer/55374

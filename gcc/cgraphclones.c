@@ -570,7 +570,10 @@ cgraph_remove_node_and_inline_clones (struct cgraph_node *node, struct cgraph_no
   bool found = false;
 
   if (node == forbidden_node)
-    return true;
+    {
+      cgraph_remove_edge (node->callers);
+      return true;
+    }
   for (e = node->callees; e; e = next)
     {
       next = e->next_callee;

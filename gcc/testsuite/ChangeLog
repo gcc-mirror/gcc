@@ -1,3 +1,8 @@
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/r55789
+	* g++.dg/torture/pr55789.C: New testcase.
+
 2013-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56167
