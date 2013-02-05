@@ -564,12 +564,25 @@ proper position among the other output files.  */
 #endif
 
 #ifndef LIBTSAN_SPEC
-#ifdef HAVE_LD_STATIC_DYNAMIC
-#define LIBTSAN_SPEC "%{static-libtsan:" LD_STATIC_OPTION \
-		     "} -ltsan %{static-libtsan:" LD_DYNAMIC_OPTION "}"
+#ifdef STATIC_LIBTSAN_LIBS
+#define ADD_STATIC_LIBTSAN_LIBS \
+  " %{static-libtsan:" STATIC_LIBTSAN_LIBS "}"
 #else
-#define LIBTSAN_SPEC "-ltsan"
+#define ADD_STATIC_LIBTSAN_LIBS
 #endif
+#ifdef LIBTSAN_EARLY_SPEC
+#define LIBTSAN_SPEC ADD_STATIC_LIBTSAN_LIBS
+#elif defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBTSAN_SPEC "%{static-libtsan:" LD_STATIC_OPTION \
+		     "} -ltsan %{static-libtsan:" LD_DYNAMIC_OPTION "}" \
+		     ADD_STATIC_LIBTSAN_LIBS
+#else
+#define LIBTSAN_SPEC "-ltsan" ADD_STATIC_LIBTSAN_LIBS
+#endif
+#endif
+
+#ifndef LIBTSAN_EARLY_SPEC
+#define LIBTSAN_EARLY_SPEC ""
 #endif
 
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
@@ -691,6 +704,21 @@ proper position among the other output files.  */
     %e-fuse-linker-plugin is not supported in this configuration}"
 #endif
 
+/* Linker command line options for -fsanitize= early on the command line.  */
+#ifndef SANITIZER_EARLY_SPEC
+#define SANITIZER_EARLY_SPEC "\
+%{!nostdlib:%{!nodefaultlibs:%{fsanitize=address:" LIBASAN_EARLY_SPEC "} \
+    %{fsanitize=thread:" LIBTSAN_EARLY_SPEC "}}}"
+#endif
+
+/* Linker command line options for -fsanitize= late on the command line.  */
+#ifndef SANITIZER_SPEC
+#define SANITIZER_SPEC "\
+%{!nostdlib:%{!nodefaultlibs:%{fsanitize=address:" LIBASAN_SPEC "\
+    %{static:%ecannot specify -static with -fsanitize=address}}\
+    %{fsanitize=thread:" LIBTSAN_SPEC "\
+    %{!pie:%{!shared:%e-fsanitize=thread linking must be done with -pie or -shared}}}}}"
+#endif
 
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static:} simply prevents an error message if the target machine
@@ -706,19 +734,16 @@ proper position among the other output files.  */
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker) " \
     LINK_PLUGIN_SPEC \
-    "%{flto|flto=*:%<fcompare-debug*} \
+   "%{flto|flto=*:%<fcompare-debug*} \
     %{flto} %{flto=*} %l " LINK_PIE_SPEC \
    "%{fuse-ld=*:-fuse-ld=%*}\
     %X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}\
-    %{static:} %{L*} %(mfwrap) %(link_libgcc) \
-    %{fsanitize=address:" LIBASAN_EARLY_SPEC "} %o\
+    %{static:} %{L*} %(mfwrap) %(link_libgcc) " SANITIZER_EARLY_SPEC " %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
-    %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
-    %{fsanitize=address:" LIBASAN_SPEC "%{static:%ecannot specify -static with -fsanitize=address}}\
-    %{fsanitize=thread:" LIBTSAN_SPEC "}\
+    %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif
