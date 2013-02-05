@@ -277,6 +277,7 @@ Archive_file::interpret_header(const Archive_header* hdr, off_t off,
       return false;
     }
 
+  *nested_off = 0;
   if (hdr->ar_name[0] != '/')
     {
       const char* name_end = strchr(hdr->ar_name, '/');
@@ -288,7 +289,6 @@ Archive_file::interpret_header(const Archive_header* hdr, off_t off,
 	  return false;
 	}
       pname->assign(hdr->ar_name, name_end - hdr->ar_name);
-      *nested_off = 0;
     }
   else if (hdr->ar_name[1] == ' ')
     {
@@ -327,8 +327,7 @@ Archive_file::interpret_header(const Archive_header* hdr, off_t off,
 	  return false;
 	}
       pname->assign(name, name_end - 1 - name);
-      if (nested_off != NULL)
-        *nested_off = y;
+      *nested_off = y;
     }
 
   return true;
