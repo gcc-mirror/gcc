@@ -1,3 +1,9 @@
+2013-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56205
+	* gcc.dg/tree-ssa/stdarg-6.c: New test.
+	* gcc.c-torture/execute/pr56205.c: New test.
+
 2013-02-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/53342

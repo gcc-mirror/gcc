@@ -1,3 +1,10 @@
+2013-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56205
+	* tree-stdarg.c (check_all_va_list_escapes): Return true if
+	there are any PHI nodes that set non-va_list_escape_vars SSA_NAME
+	and some va_list_escape_vars SSA_NAME appears in some PHI argument.
+
 2013-02-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/53342
