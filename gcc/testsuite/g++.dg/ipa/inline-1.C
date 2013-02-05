@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline --param max-early-inliner-iterations=3" } */
+/* { dg-options "-O2 -fdump-ipa-inline --param max-early-inliner-iterations=1" } */
 /* { dg-add-options bind_pic_locally } */
 
 namespace std {
@@ -7,7 +7,7 @@ namespace std {
 }
 
 template <class T, class E> void
-foreach (T b, T e, E ptr)
+foreach (T b, T e, void (*ptr)(E))
 {
   for (; b != e; b++)
     ptr(*b);
@@ -31,6 +31,6 @@ int main(int argc, char **argv)
   foreach (argv, argv + argc, inline_me_too);
 }
 
-/* { dg-final { scan-tree-dump-times "Inlining void inline_me\\(" 1 "einline"} } */
-/* { dg-final { scan-tree-dump-times "Inlining void inline_me_too\\(" 1 "einline"} } */
+/* { dg-final { scan-tree-dump-times "Considering void inline_me\\(" 1 "inline"} } */
+/* { dg-final { scan-tree-dump-times "Considering void inline_me_too\\(" 1 "inline"} } */
 /* { dg-final { cleanup-tree-dump "einline" } } */

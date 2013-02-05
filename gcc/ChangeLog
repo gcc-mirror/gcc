@@ -1,6 +1,11 @@
 2013-02-05  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimization/r55789
+	PR tree-optimization/55789
+	* params.def (PARAM_EARLY_INLINER_MAX_ITERATIONS): Drop to 1.
+
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55789
 	* cgraphclones.c (cgraph_remove_node_and_inline_clones): Remove
 	the dead call anyway.
 

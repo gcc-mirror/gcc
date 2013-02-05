@@ -109,7 +109,7 @@ DEFPARAM (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY,
 DEFPARAM (PARAM_EARLY_INLINER_MAX_ITERATIONS,
 	  "max-early-inliner-iterations",
 	  "The maximum number of nested indirect inlining performed by early inliner",
-	  10, 0, 0)
+	  1, 0, 0)
 
 /* Limit on probability of entry BB.  */
 DEFPARAM (PARAM_COMDAT_SHARING_PROBABILITY,
