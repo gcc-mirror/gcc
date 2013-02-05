@@ -1,3 +1,8 @@
+2013-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56167
+	* gcc.dg/pr56167.c: New test.
+
 2013-02-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/55146
