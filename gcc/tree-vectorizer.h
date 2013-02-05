@@ -923,7 +923,6 @@ extern bool vect_analyze_data_ref_accesses (loop_vec_info, bb_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern tree vect_check_gather (gimple, loop_vec_info, tree *, tree *,
 			       int *);
-extern bool vect_check_strided_load (gimple, loop_vec_info, tree *, tree *);
 extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *);
 extern tree vect_create_data_ref_ptr (gimple, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
