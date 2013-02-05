@@ -1,5 +1,14 @@
 2013-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/55374
+	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Define.
+	(STATIC_LIBTSAN_LIBS): Likewise.
+	* gcc.c (ADD_STATIC_LIBTSAN_LIBS, LIBTSAN_EARLY_SPEC): Define.
+	(LIBTSAN_SPEC): Add ADD_STATIC_LIBTSAN_LIBS, if LIBTSAN_EARLY_SPEC
+	is defined, don't add anything else beyond that.
+	(SANITIZER_EARLY_SPEC, SANITIZER_SPEC): Define.
+	(LINK_COMMAND_SPEC): Use them.
+
 	PR tree-optimization/56205
 	* tree-stdarg.c (check_all_va_list_escapes): Return true if
 	there are any PHI nodes that set non-va_list_escape_vars SSA_NAME
