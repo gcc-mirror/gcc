@@ -526,6 +526,37 @@ check_all_va_list_escapes (struct stdarg_info *si)
     {
       gimple_stmt_iterator i;
 
+      for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
+	{
+	  tree lhs;
+	  use_operand_p uop;
+	  ssa_op_iter soi;
+	  gimple phi = gsi_stmt (i);
+
+	  lhs = PHI_RESULT (phi);
+	  if (virtual_operand_p (lhs)
+	      || bitmap_bit_p (si->va_list_escape_vars,
+			       SSA_NAME_VERSION (lhs)))
+	    continue;
+
+	  FOR_EACH_PHI_ARG (uop, phi, soi, SSA_OP_USE)
+	    {
+	      tree rhs = USE_FROM_PTR (uop);
+	      if (TREE_CODE (rhs) == SSA_NAME
+		  && bitmap_bit_p (si->va_list_escape_vars,
+				SSA_NAME_VERSION (rhs)))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fputs ("va_list escapes in ", dump_file);
+		      print_gimple_stmt (dump_file, phi, 0, dump_flags);
+		      fputc ('\n', dump_file);
+		    }
+		  return true;
+		}
+	    }
+	}
+
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
 	{
 	  gimple stmt = gsi_stmt (i);
