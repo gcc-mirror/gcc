@@ -1,3 +1,10 @@
+2013-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54767
+	* tree-vrp.c (vrp_visit_phi_node): For PHI arguments coming via
+	backedges drop all symbolical range information.
+	(execute_vrp): Compute backedges.
+
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
