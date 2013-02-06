@@ -91,7 +91,7 @@ __gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg)
       */
       if ((ExceptionRecord->ExceptionInformation[1] & 3) != 0
 	  || IsBadCodePtr
-	  ((void *)(ExceptionRecord->ExceptionInformation[1] + 4096)))
+	  ((FARPROC)(ExceptionRecord->ExceptionInformation[1] + 4096)))
 	{
 	  *msg = "EXCEPTION_ACCESS_VIOLATION";
 	  return &program_error;
