@@ -1,3 +1,20 @@
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* snames.ads-tmpl (Name_Loop_Optimize, Name_No_Unroll,
+	Name_Unroll, Name_No_Vector, Name_Vector): New pragma-related
+	names.
+	(Pragma_Id): Add Pragma_Loop_Optimize value.
+	* par-prag.adb (Prag): Handle Pragma_Loop_Optimize.
+	* sem_prag.adb (Check_Loop_Invariant_Variant_Placement): Rename to...
+	(Check_Loop_Pragma_Placement): ...this.
+	(Analyze_Pragma)
+	<Pragma_Loop_Invariant>: Adjust to above renaming.
+	<Loop_Variant>: Likewise.
+	 <Pragma_Loop_Optimize>: Implement new pragma Loop_Optimize.
+	(Sig_Flags): Add Pragma_Loop_Optimize.
+	* gnat_rm.texi (Implementation Defined Pragmas): Add Loop_Optimize.
+	* gnat_ugn.texi (Vectorization of loops): Mention Loop_Optimize.
+
 2013-02-06  Robert Dewar  <dewar@adacore.com>
 
 	* osint.ads: Minor fix of typo.

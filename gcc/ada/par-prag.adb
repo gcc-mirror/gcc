@@ -1203,6 +1203,7 @@ begin
            Pragma_Locking_Policy                 |
            Pragma_Long_Float                     |
            Pragma_Loop_Invariant                 |
+           Pragma_Loop_Optimize                  |
            Pragma_Loop_Variant                   |
            Pragma_Machine_Attribute              |
            Pragma_Main                           |

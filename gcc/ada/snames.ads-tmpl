@@ -408,6 +408,7 @@ package Snames is
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
    Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
    Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
@@ -727,6 +728,8 @@ package Snames is
    Name_No_Specification_Of_Aspect     : constant Name_Id := N + $;
    Name_No_Task_Attributes             : constant Name_Id := N + $;
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
+   Name_No_Unroll                      : constant Name_Id := N + $;
+   Name_No_Vector                      : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
    Name_Optional                       : constant Name_Id := N + $;
@@ -762,10 +765,12 @@ package Snames is
    Name_Unit_Name                      : constant Name_Id := N + $;
    Name_Unknown                        : constant Name_Id := N + $;
    Name_Unrestricted                   : constant Name_Id := N + $;
+   Name_Unroll                         : constant Name_Id := N + $;
    Name_Uppercase                      : constant Name_Id := N + $;
    Name_User                           : constant Name_Id := N + $;
    Name_Variant                        : constant Name_Id := N + $;
    Name_VAX_Float                      : constant Name_Id := N + $;
+   Name_Vector                         : constant Name_Id := N + $;
    Name_VMS                            : constant Name_Id := N + $;
    Name_Vtable_Ptr                     : constant Name_Id := N + $;
    Name_Working_Storage                : constant Name_Id := N + $;
@@ -1705,6 +1710,7 @@ package Snames is
       Pragma_Locking_Policy,
       Pragma_Long_Float,
       Pragma_Loop_Invariant,
+      Pragma_Loop_Optimize,
       Pragma_Loop_Variant,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
