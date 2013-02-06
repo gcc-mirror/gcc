@@ -114,7 +114,7 @@ func (p *pollster) StopWaiting(fd int, bits uint) {
 	}
 }
 
-func (p *pollster) DelFD(fd int, mode int) {
+func (p *pollster) DelFD(fd int, mode int) bool {
 	// pollServer is locked.
 
 	if mode == 'r' {
@@ -133,6 +133,7 @@ func (p *pollster) DelFD(fd int, mode int) {
 			i++
 		}
 	}
+	return false
 }
 
 func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err error) {

@@ -110,15 +110,23 @@ func (s *pollServer) AddFD(fd *netFD, mode int) error {
 // any I/O running on fd.  The caller must have locked
 // pollserver.
 func (s *pollServer) Evict(fd *netFD) {
+	doWakeup := false
 	if s.pending[fd.sysfd<<1] == fd {
 		s.WakeFD(fd, 'r', errClosing)
-		s.poll.DelFD(fd.sysfd, 'r')
+		if s.poll.DelFD(fd.sysfd, 'r') {
+			doWakeup = true
+		}
 		delete(s.pending, fd.sysfd<<1)
 	}
 	if s.pending[fd.sysfd<<1|1] == fd {
 		s.WakeFD(fd, 'w', errClosing)
-		s.poll.DelFD(fd.sysfd, 'w')
+		if s.poll.DelFD(fd.sysfd, 'w') {
+			doWakeup = true
+		}
 		delete(s.pending, fd.sysfd<<1|1)
+	}
+	if doWakeup {
+		s.Wakeup()
 	}
 }
 
