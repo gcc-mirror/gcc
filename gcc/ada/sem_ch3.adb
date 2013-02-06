@@ -9060,17 +9060,16 @@ package body Sem_Ch3 is
 
          Impl_Prag :=
            Make_Pragma (Loc,
-             Chars => Name_Implemented,
+             Chars                        => Name_Implemented,
              Pragma_Argument_Associations => New_List (
                Make_Pragma_Argument_Association (Loc,
-                 Expression =>
-                   New_Reference_To (Subp, Loc)),
+                 Expression => New_Reference_To (Subp, Loc)),
 
                Make_Pragma_Argument_Association (Loc,
                  Expression => Make_Identifier (Loc, Iface_Kind))));
 
          --  The pragma doesn't need to be analyzed because it is internally
-         --  build. It is safe to directly register it as a rep item since we
+         --  built. It is safe to directly register it as a rep item since we
          --  are only interested in the characters of the implementation kind.
 
          Record_Rep_Item (Subp, Impl_Prag);

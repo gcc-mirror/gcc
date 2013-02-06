@@ -1,5 +1,24 @@
 2013-02-06  Robert Dewar  <dewar@adacore.com>
 
+	* exp_prag.adb, sem_ch3.adb, exp_attr.adb, sem_prag.adb, sem_ch6.adb,
+	exp_intr.adb, exp_dist.adb, sem_ch13.adb: Internal clean up for
+	N_Pragma nodes.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor text updates for pragma Warning.
+
+2013-02-06  Geert Bosch  <bosch@adacore.com>
+
+	* s-multip.adb (Number_Of_CPUs): Short-circuit in case of
+	CPU'Last = 1.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Delete): On VMS use host notation to delete all files.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb, sem_ch6.adb, prj-conf.adb, erroutc.adb: Minor
 	reformatting.
 

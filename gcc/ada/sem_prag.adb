@@ -7289,8 +7289,7 @@ package body Sem_Prag is
 
             Rewrite (N,
               Make_Pragma (Loc,
-                Chars => Name_Check_Policy,
-
+                Chars                        => Name_Check_Policy,
                 Pragma_Argument_Associations => New_List (
                   Make_Pragma_Argument_Association (Loc,
                     Expression => Make_Identifier (Loc, Name_Assertion)),
@@ -8436,11 +8435,10 @@ package body Sem_Prag is
             Rewrite (N,
               Make_Pragma (Loc,
                 Chars                        => Name_Import,
-                Pragma_Argument_Associations =>
-                  New_List (
-                    Make_Pragma_Argument_Association (Loc,
-                      Expression => Make_Identifier (Loc, Name_CPP)),
-                    New_Copy (First (Pragma_Argument_Associations (N))))));
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Name_CPP)),
+                  New_Copy (First (Pragma_Argument_Associations (N))))));
             Analyze (N);
          end CPP_Class;
 
@@ -13485,7 +13483,7 @@ package body Sem_Prag is
             if In_Body then
                Rewrite (N,
                  Make_Pragma (Loc,
-                   Chars => Name_Check,
+                   Chars                        => Name_Check,
                    Pragma_Argument_Associations => New_List (
                      Make_Pragma_Argument_Association (Loc,
                        Expression => Make_Identifier (Loc, Name_Precondition)),

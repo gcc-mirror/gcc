@@ -11763,7 +11763,7 @@ package body Sem_Ch6 is
          if not Expander_Active then
             CP :=
               Make_Pragma (Loc,
-                Chars => Name_Postcondition,
+                Chars                        => Name_Postcondition,
                 Pragma_Argument_Associations => New_List (
                   Make_Pragma_Argument_Association (Loc,
                     Chars      => Name_Check,
