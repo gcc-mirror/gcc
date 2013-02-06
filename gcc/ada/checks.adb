@@ -1536,9 +1536,9 @@ package body Checks is
       --  the constraints are constants. In this case, we can do the check
       --  successfully at compile time.
 
-      --  We skip this check for the case where the node is a rewritten`as
-      --  an allocator, because it already carries the context subtype, and
-      --  extracting the discriminants from the aggregate is messy.
+      --  We skip this check for the case where the node is rewritten`as
+      --  an allocator, because it already carries the context subtype,
+      --  and extracting the discriminants from the aggregate is messy.
 
       if Is_Constrained (S_Typ)
         and then Nkind (Original_Node (N)) /= N_Allocator
@@ -1596,11 +1596,11 @@ package body Checks is
             if Ekind (T_Typ) = E_Private_Subtype
               and then Present (Full_View (T_Typ))
             then
-               DconT  :=
+               DconT :=
                  First_Elmt (Discriminant_Constraint (Full_View (T_Typ)));
-
             else
-               DconT  := First_Elmt (Discriminant_Constraint (T_Typ));
+               DconT :=
+                 First_Elmt (Discriminant_Constraint (T_Typ));
             end if;
 
             while Present (Discr) loop

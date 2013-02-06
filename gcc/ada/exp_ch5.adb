@@ -2476,7 +2476,8 @@ package body Exp_Ch5 is
                   --  the assignment we generate run-time check to ensure that
                   --  the tags of source and target match.
 
-                  if Is_Class_Wide_Type (Typ)
+                  if not Tag_Checks_Suppressed (Typ)
+                    and then Is_Class_Wide_Type (Typ)
                     and then Is_Tagged_Type (Typ)
                     and then Is_Tagged_Type (Underlying_Type (Etype (Rhs)))
                   then

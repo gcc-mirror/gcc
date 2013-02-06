@@ -7952,9 +7952,9 @@ package body Exp_Util is
       Par : Node_Id;
 
    begin
-      --  Locate an enclosing case or if expression. Note that these constructs
-      --  appear as expression_with_actions, hence the test using the original
-      --  node.
+      --  Locate an enclosing case or if expression. Note: these constructs can
+      --  get expanded into Expression_With_Actions, hence the need to test
+      --  using the original node.
 
       Par := N;
       while Present (Par) loop
