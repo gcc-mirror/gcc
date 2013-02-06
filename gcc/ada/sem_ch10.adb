@@ -4741,11 +4741,10 @@ package body Sem_Ch10 is
       --  compiling the body of the child unit.
 
       if P = Cunit_Entity (Current_Sem_Unit)
-        or else
-         (Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
-            and then P = Main_Unit_Entity
-            and then
-              Is_Ancestor_Unit (Cunit (Main_Unit), Cunit (Current_Sem_Unit)))
+        or else (Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
+                  and then P = Main_Unit_Entity
+                  and then Is_Ancestor_Unit
+                             (Cunit (Main_Unit), Cunit (Current_Sem_Unit)))
       then
          return;
       end if;

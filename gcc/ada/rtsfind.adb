@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,6 +148,7 @@ package body Rtsfind is
    --  value in RTU_Id.
 
    procedure Load_Fail (S : String; U_Id : RTU_Id; Id : RE_Id);
+   pragma No_Return (Load_Fail);
    --  Internal procedure called if we can't successfully locate or process a
    --  run-time unit. The parameters give information about the error message
    --  to be given. S is a reason for failing to compile the file and U_Id is

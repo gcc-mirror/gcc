@@ -4181,9 +4181,7 @@ package body Exp_Ch6 is
          if Is_Entity_Name (N) and then Present (Entity (N)) then
             E := Entity (N);
 
-            if Is_Formal (E)
-              and then Scope (E) = Subp
-            then
+            if Is_Formal (E) and then Scope (E) = Subp then
                A := Renamed_Object (E);
 
                --  Rewrite the occurrence of the formal into an occurrence of

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4131,6 +4131,9 @@ package body Exp_Disp is
 
          --  Nb_Prim. If the tagged type has no primitives we add a dummy
          --  slot whose address will be the tag of this type.
+
+         --  ???codepeer???
+         --  Nb_Prim cannot be zero here, so this test is wrong
 
          if Nb_Prim = 0 then
             New_Node := Make_Integer_Literal (Loc, 1);
