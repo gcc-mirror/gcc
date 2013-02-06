@@ -1,5 +1,9 @@
 2013-02-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54122
+	* tree.c (lvalue_kind) [INDIRECT_REF]: Don't check for
+	METHOD_TYPE.
+
 	PR c++/56177
 	* decl.c (start_preparsed_function): Update restype if we change
 	decl1.
