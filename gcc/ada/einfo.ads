@@ -1671,6 +1671,11 @@ package Einfo is
 --       pragma Inline_Always applies. Note that if this flag is set, the flag
 --       Has_Pragma_Inline is also set.
 
+--    Has_Pragma_No_Inline (Flag201)
+--       Defined in all entities. Set for functions and procedures for which a
+--       pragma No_Inline applies. Note that if this flag is set, the flag
+--       Has_Pragma_Inline_Always cannot be set.
+
 --    Has_Pragma_Ordered (Flag198) [implementation base type only]
 --       Defined in entities for enumeration types. If set indicates that a
 --       valid pragma Ordered was given for the type. This flag is inherited
@@ -4833,6 +4838,7 @@ package Einfo is
    --    Has_Pragma_Elaborate_Body           (Flag150)
    --    Has_Pragma_Inline                   (Flag157)
    --    Has_Pragma_Inline_Always            (Flag230)
+   --    Has_Pragma_No_Inline                (Flag201)
    --    Has_Pragma_Pure                     (Flag203)
    --    Has_Pragma_Pure_Function            (Flag179)
    --    Has_Pragma_Thread_Local_Storage     (Flag169)
@@ -6232,6 +6238,7 @@ package Einfo is
    function Has_Pragma_Elaborate_Body           (Id : E) return B;
    function Has_Pragma_Inline                   (Id : E) return B;
    function Has_Pragma_Inline_Always            (Id : E) return B;
+   function Has_Pragma_No_Inline                (Id : E) return B;
    function Has_Pragma_Ordered                  (Id : E) return B;
    function Has_Pragma_Pack                     (Id : E) return B;
    function Has_Pragma_Preelab_Init             (Id : E) return B;
@@ -6831,6 +6838,7 @@ package Einfo is
    procedure Set_Has_Pragma_Elaborate_Body       (Id : E; V : B := True);
    procedure Set_Has_Pragma_Inline               (Id : E; V : B := True);
    procedure Set_Has_Pragma_Inline_Always        (Id : E; V : B := True);
+   procedure Set_Has_Pragma_No_Inline            (Id : E; V : B := True);
    procedure Set_Has_Pragma_Ordered              (Id : E; V : B := True);
    procedure Set_Has_Pragma_Pack                 (Id : E; V : B := True);
    procedure Set_Has_Pragma_Preelab_Init         (Id : E; V : B := True);
@@ -7521,6 +7529,7 @@ package Einfo is
    pragma Inline (Has_Pragma_Elaborate_Body);
    pragma Inline (Has_Pragma_Inline);
    pragma Inline (Has_Pragma_Inline_Always);
+   pragma Inline (Has_Pragma_No_Inline);
    pragma Inline (Has_Pragma_Ordered);
    pragma Inline (Has_Pragma_Pack);
    pragma Inline (Has_Pragma_Preelab_Init);
@@ -7971,6 +7980,7 @@ package Einfo is
    pragma Inline (Set_Has_Pragma_Elaborate_Body);
    pragma Inline (Set_Has_Pragma_Inline);
    pragma Inline (Set_Has_Pragma_Inline_Always);
+   pragma Inline (Set_Has_Pragma_No_Inline);
    pragma Inline (Set_Has_Pragma_Ordered);
    pragma Inline (Set_Has_Pragma_Pack);
    pragma Inline (Set_Has_Pragma_Preelab_Init);

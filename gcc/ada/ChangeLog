@@ -1,3 +1,49 @@
+2013-02-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Process_Aggregated_Projects): Use a new project
+	node tree for each project tree rooted at an aggregated project.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Interface_Conversion): New routine.
+	(Object_Access_Level): Detect an interface conversion
+	that has been rewritten into a different construct. Use the
+	original form of the conversion to find the access level of
+	the operand.
+
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Pragma_No_Inline): New flag using Flag201.
+	(Has_Pragma_No_Inline): Declare and mark as inline.
+	(Set_Has_Pragma_No_Inline): Likewise.
+	* einfo.adb (Has_Pragma_No_Inline): New function.
+	(Set_Has_Pragma_No_Inline): New procedure.
+	(Write_Entity_Flags): Handle Has_Pragma_No_Inline.
+	* snames.ads-tmpl (Name_No_Inline): New pragma-related name.
+	(Pragma_Id): Add Pragma_No_Inline value.
+	* par-prag.adb (Prag): Handle Pragma_Inline.
+	* sem_prag.adb (Inline_Status): New enumeration type.
+	(Process_Inline): Change Active parameter
+	to Inline_Status and add support for suppressed inlining.
+	(Analyze_Pragma) <Pragma_Inline>: Adjust to above change.
+	<Pragma_Inline_Always>: Likewise.
+	 <Pragma_No_Inline>: Implement new pragma No_Inline.
+	(Sig_Flags): Add Pragma_No_Inline.
+	* gnat_rm.texi (Implementation Defined Pragmas): Add No_Inline.
+	* gnat_ugn.texi (Switches for gcc): Mention Pragma No_Inline.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb (Clock): Make sure we copy all data locally
+	to avoid interleaved modifications that could happen from another
+	task calling Get_Base_Data.
+	(Get_Base_Data): Make it a critical section. Avoid updating if another
+	task has already done it.
+
 2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_prag.adb: Minor reformatting.

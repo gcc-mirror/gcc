@@ -182,6 +182,7 @@ Implementation Defined Pragmas
 * Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
+* Pragma No_Inline::
 * Pragma No_Return::
 * Pragma No_Strict_Aliasing ::
 * Pragma Normalize_Scalars::
@@ -934,6 +935,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
+* Pragma No_Inline::
 * Pragma No_Return::
 * Pragma No_Strict_Aliasing::
 * Pragma Normalize_Scalars::
@@ -3373,8 +3375,8 @@ pragma Inline_Always (NAME [, NAME]);
 
 @noindent
 Similar to pragma @code{Inline} except that inlining is not subject to
-the use of option @option{-gnatn} and the inlining happens regardless of
-whether this option is used.
+the use of option @option{-gnatn} or @option{-gnatN} and the inlining
+happens regardless of whether these options are used.
 
 @node Pragma Inline_Generic
 @unnumberedsec Pragma Inline_Generic
@@ -4019,6 +4021,24 @@ This is particularly useful during maintenance when a package is modified in
 such a way that a body needed before is no longer needed. The provision of a
 dummy body with a No_Body pragma ensures that there is no interference from
 earlier versions of the package body.
+
+@node Pragma No_Inline
+@unnumberedsec Pragma No_Inline
+@findex No_Inline
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma No_Inline (NAME [, NAME]);
+@end smallexample
+
+@noindent
+This pragma suppresses inlining for the callable entity or the instances of
+the generic subprogram designated by @var{NAME}, including inlining that
+results from the use of pragma @code{Inline}.  This pragma is always active,
+in particular it is not subject to the use of option @option{-gnatn} or
+@option{-gnatN}.  It is illegal to specify both pragma @code{No_Inline} and
+pragma @code{Inline_Always} for the same @var{NAME}.
 
 @node Pragma No_Return
 @unnumberedsec Pragma No_Return

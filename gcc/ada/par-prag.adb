@@ -1210,6 +1210,7 @@ begin
            Pragma_Main_Storage                   |
            Pragma_Memory_Size                    |
            Pragma_No_Body                        |
+           Pragma_No_Inline                      |
            Pragma_No_Return                      |
            Pragma_No_Run_Time                    |
            Pragma_No_Strict_Aliasing             |
