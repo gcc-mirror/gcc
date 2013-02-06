@@ -1,3 +1,22 @@
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch10.adb: Minor reformatting.
+	* exp_disp.adb: Minor comment update.
+	* comperr.ads, osint.ads, rtsfind.adb, sem_prag.adb: Minor addition of
+	No_Return pragmas.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* targparm.ads, sem_ch13.adb (Support_Nondefault_SSO): New target
+	parameter, defaulted to False for now, indicates targets where
+	non-default scalar storage order may be specified.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sprint.adb (Write_Itype): Treat E_Record_Subtype_With_Private
+	same as E_Record_Subtype.  Display E_Class_Wide_Subtype as
+	subtype, not type.
+
 2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Complete_Private_Subtype): Inherit the

@@ -1924,6 +1924,7 @@ package body Sem_Prag is
 
       procedure Check_Loop_Invariant_Variant_Placement is
          procedure Placement_Error (Constr : Node_Id);
+         pragma No_Return (Placement_Error);
          --  Node Constr denotes the last loop restricted construct before we
          --  encountered an illegal relation between enclosing constructs. Emit
          --  an error depending on what Constr was.
@@ -6049,6 +6050,7 @@ package body Sem_Prag is
                S2 : constant String_Id := Strval (New_Name);
 
                procedure Mismatch;
+               pragma No_Return (Mismatch);
                --  Called if names do not match
 
                --------------
@@ -6154,9 +6156,11 @@ package body Sem_Prag is
          Mech_Name_Id : Name_Id;
 
          procedure Bad_Class;
+         pragma No_Return (Bad_Class);
          --  Signal bad descriptor class name
 
          procedure Bad_Mechanism;
+         pragma No_Return (Bad_Mechanism);
          --  Signal bad mechanism name
 
          ---------------

@@ -3622,9 +3622,17 @@ package body Sem_Ch13 is
                   Flag_Non_Static_Expr
                     ("Scalar_Storage_Order requires static expression!", Expr);
 
-               else
-                  if (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
+               elsif (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
+
+                  --  Here for the case of a non-default (i.e. non-confirming)
+                  --  Scalar_Storage_Order attribute definition.
+
+                  if Support_Nondefault_SSO_On_Target then
                      Set_Reverse_Storage_Order (Base_Type (U_Ent), True);
+                  else
+                     Error_Msg_N
+                       ("non-default Scalar_Storage_Order "
+                        & "not supported on target", Expr);
                   end if;
                end if;
             end if;
