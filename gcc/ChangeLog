@@ -1,3 +1,10 @@
+2013-02-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/56131
+	* cfgrtl.c (delete_insn): Use NOTE_BASIC_BLOCK instead of BLOCK_FOR_INSN
+	to get the bb of a NOTE_INSN_BASIC_BLOCK.  Handle the case that the bb
+	of the label is NULL.  Add comment.
+
 2013-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (struct tree_decl_with_vis): Remove thread_local field.
