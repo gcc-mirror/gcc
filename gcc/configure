@@ -23894,6 +23894,12 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_static_dynamic=yes
   else
     case "$target" in
+      # AIX ld uses -b flags
+      *-*-aix4.[23]* | *-*-aix[5-9]*)
+	gcc_cv_ld_static_dynamic=yes
+	gcc_cv_ld_static_option="-bstatic"
+	gcc_cv_ld_dynamic_option="-bdynamic"
+	;;
       # Tru64 UNIX support -noso/-so_archive instead of -Bstatic/-Bdynamic.
       alpha*-dec-osf*)
         gcc_cv_ld_static_dynamic=yes
