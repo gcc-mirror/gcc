@@ -64,7 +64,7 @@ func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, error) {
 	return false, nil
 }
 
-func (p *pollster) DelFD(fd int, mode int) {
+func (p *pollster) DelFD(fd int, mode int) bool {
 	// pollServer is locked.
 
 	var kmode int
@@ -77,6 +77,7 @@ func (p *pollster) DelFD(fd int, mode int) {
 	// EV_DELETE - delete event from kqueue list
 	syscall.SetKevent(ev, fd, kmode, syscall.EV_DELETE)
 	syscall.Kevent(p.kq, p.kbuf[:], nil, nil)
+	return false
 }
 
 func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err error) {
