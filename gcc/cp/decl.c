@@ -13116,6 +13116,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	    DECL_CONTEXT (decl1) = DECL_CONTEXT (DECL_TI_TEMPLATE (decl1));
 	}
       fntype = TREE_TYPE (decl1);
+      restype = TREE_TYPE (fntype);
 
       /* If #pragma weak applies, mark the decl appropriately now.
 	 The pragma only applies to global functions.  Because
