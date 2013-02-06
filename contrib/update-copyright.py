@@ -752,14 +752,13 @@ class GCCCmdLine (CmdLine):
             'libatomic',
             'libbacktrace',
             'libcpp',
+            'libdecnumber',
             'libgcc',
             'libgfortran',
             'libgomp',
             'libitm',
             'libmudflap',
             'libobjc',
-            'libquadmath',
-            'libssp',
             'libstdc++-v3',
             ]
 
