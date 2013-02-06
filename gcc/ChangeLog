@@ -1,3 +1,8 @@
+2013-02-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gnu.h (GNU_USER_TARGET_OS_CPP_BUILTINS): Never define
+	MACH, just __MACH__.
+
 2013-02-06  Richard Biener  <rguenther@suse.de>
 
 	* tracer.c (tracer): Mark loops with LOOPS_NEED_FIXUP
