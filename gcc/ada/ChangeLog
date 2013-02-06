@@ -1,3 +1,21 @@
+2013-02-06  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Remove useless includes (sys/stat.h, adaint.h)
+	Enclosing debugging functions within #ifndef inhibit_libc to
+	support builds without full C headers.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Add a minimal example of Scalar_Storage_Order.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Install_Limited_Withed_Unit): Add a missing
+	check to detect a parent-child relationship between two units in
+	order to correctly bypass the installation of a limited view. In
+	other words, the comment on the intended usage of the check was
+	correct, but the code itself did not reflect the behavior.
+
 2013-02-06  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not generate the
