@@ -1,3 +1,13 @@
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not build the body
+	of an inlined function if we do not generate code for the function.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.adb (Locate_Exec_On_Path): Call Normalize_Pathname
+	with Resolve_Links set to False.
+
 2013-02-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c: Include diagnostic-core.h.

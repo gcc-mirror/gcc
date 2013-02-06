@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2012, AdaCore                     --
+--                     Copyright (C) 1995-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1479,7 +1479,7 @@ package body System.OS_Lib is
          if not Is_Absolute_Path (Result.all) then
             declare
                Absolute_Path : constant String :=
-                                 Normalize_Pathname (Result.all);
+                 Normalize_Pathname (Result.all, Resolve_Links => False);
             begin
                Free (Result);
                Result := new String'(Absolute_Path);
