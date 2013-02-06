@@ -1,3 +1,7 @@
+2013-02-06  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_enum_specifier): Check for error_mark_node.
+
 2013-02-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54122
