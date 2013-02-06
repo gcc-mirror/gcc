@@ -1,5 +1,74 @@
 2013-02-06  Robert Dewar  <dewar@adacore.com>
 
+	* osint.ads: Minor fix of typo.
+
+2013-02-06  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: gnatmetric: update the documentation of
+	complexity metrics for Ada 2012.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_Secondary_DT): Code cleanup:
+	remove useless initialization.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminant_Constraints): Do not
+	generate overflow checks on a discriminant expression if the
+	discriminant constraint is applied to a private type that has
+	a full view, because the check will be applied when the full
+	view is elaborated.  Removing the redundant check is not just
+	an optimization, but it prevents spurious assembler errors,
+	because of the way the backend generates names for expressions
+	that require overflow checking.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb: Removes workaround for an old GNU/Linker
+	limitation on Windows.
+	(DA): Removed.
+	(LIA): Removed.
+	(LLIA): Removed.
+	(TFA): Removed.
+	(BTA): Removed.
+	(BMTA): Removed.
+	(BCA): Removed.
+	(BMCA): Removed.
+	(BTiA): Removed.
+	(Clock): Use variable corresponding to access.
+	(Get_Base_Time): Likewise.
+	(Monotonic_Clock): Likewise.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): When gnatmake is called with a project
+	file, do not invoke gnatbind with -I-.
+	* makeutl.adb (Create_Binder_Mapping_File): Rewrite function. Get
+	the infos from all the sources.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* snames.ads-tmpl: Add Name_Overriding_Renamings and pragma
+	Overriding_Renamings.
+	* par-prag.adb: Recognize pragma Overriding_Renamings.
+	* opt.ads (Overriding_Renamings): flag to control compatibility
+	mode with Rational compiler, replaces Rational_Profile flag.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): When
+	Overriding_Renamings is enabled, accept renaming declarations
+	where the new subprogram renames and overrides a locally inherited
+	operation. Improve error message for some illegal renamings.
+	* sem_prag.adb (Analyze_Pragma): Add case for Overriding_Renamings.
+	(Set_Rational_Profile): The Rational_Profile enables
+	Overriding_Renamings, Implicit_Packing, and Use_Vads_Size.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb: Set parent of copied aggregate component, to
+	prevent infinite loop.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sem_ch10.adb: Minor reformatting.
 	* exp_disp.adb: Minor comment update.
 	* comperr.ads, osint.ads, rtsfind.adb, sem_prag.adb: Minor addition of

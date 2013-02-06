@@ -2820,9 +2820,15 @@ package body Sem_Ch8 is
          elsif Nkind (Nam) = N_Expanded_Name
            and then Entity (Prefix (Nam)) = Current_Scope
            and then Chars (Selector_Name (Nam)) = Chars (New_S)
-           and then not Rational_Profile
          then
-            Error_Msg_N ("subprogram cannot rename itself", N);
+            if Overriding_Renamings then
+               null;
+
+            else
+               Error_Msg_NE
+                  ("implicit operation& is not visible (RM 8.3 (15))",
+                     Nam, Old_S);
+            end if;
          end if;
 
          Set_Convention (New_S, Convention (Old_S));

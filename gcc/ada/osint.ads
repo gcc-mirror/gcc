@@ -637,7 +637,7 @@ package Osint is
    --  Set_Exit_Status as the last action of the program.
 
    procedure OS_Exit_Through_Exception (Status : Integer);
-   pragma No_Return;
+   pragma No_Return (OS_Exit_Through_Exception);
    --  Set the Current_Exit_Status, then raise Types.Terminate_Program
 
    type Exit_Code_Type is (

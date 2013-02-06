@@ -1181,9 +1181,10 @@ package Opt is
    --  Set to True if the tool should not have any output if there are no
    --  errors or warnings.
 
-   Rational_Profile : Boolean := False;
+   Overriding_Renamings : Boolean := False;
    --  GNAT
-   --  Set to True to enable compatibility mode with Rational compiler.
+   --  Set to True to enable compatibility mode with Rational compiler, and
+   --  to accept renamings of implicit operations in their own scope.
 
    Replace_In_Comments : Boolean := False;
    --  GNATPREP
