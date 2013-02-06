@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -10699,13 +10699,19 @@ package body Sem_Ch12 is
          --  issues when the generic is a child unit and some aspect of the
          --  generic type is declared in a parent unit of the generic. We do
          --  the test to handle this special case only after a direct check
-         --  for static matching has failed.
+         --  for static matching has failed. The case where both the component
+         --  type and the array type are separate formals, and the component
+         --  type is a private view may also require special checking.
 
          if Subtypes_Match
            (Component_Type (A_Gen_T), Component_Type (Act_T))
              or else Subtypes_Match
-                      (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
-                       Component_Type (Act_T))
+               (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
+               Component_Type (Act_T))
+             or else Subtypes_Match
+               (Base_Type
+                 (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T)),
+               Component_Type (Act_T))
          then
             null;
          else
