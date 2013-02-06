@@ -1,3 +1,9 @@
+2013-02-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55978
+	* runtime/in_pack_generic.c (internal_pack): Return if base_addr is
+	NULL.
+
 2013-01-23  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/file_pos.c (unformatted_backspace): Use __builtin_bswapXX

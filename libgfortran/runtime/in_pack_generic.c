@@ -48,6 +48,9 @@ internal_pack (gfc_array_char * source)
   index_type size;
   index_type type_size;
 
+  if (source->base_addr == NULL)
+    return NULL;
+
   type_size = GFC_DTYPE_TYPE_SIZE(source);
   size = GFC_DESCRIPTOR_SIZE (source);
   switch (type_size)

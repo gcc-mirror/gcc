@@ -3,7 +3,7 @@
 !
 ! PR fortran/50981
 ! PR fortran/54618
-!
+! PR fortran/55978
 
   implicit none
   type t
@@ -547,7 +547,7 @@ contains
 !   call s2elem(z5) ! FIXME: Segfault
 !   call s2elem_t(x) ! FIXME: Conditional jump or move depends on uninitialised value
 !   call s2elem_t(y) ! FIXME: Conditional jump or move depends on uninitialised value
-!   call s2elem_t(z) ! FIXME: Conditional jump or move depends on uninitialised value
+   call s2elem_t(z)
 !   call s2elem_t(z2) ! FIXME: Segfault
 !   call s2elem_t(z3) ! FIXME: Segfault
 !   call s2elem_t(z4) ! FIXME: Segfault
@@ -590,7 +590,7 @@ contains
 !   call s2elem(z5) ! FIXME: Segfault
 !   call s2elem_t2(x) ! FIXME: Conditional jump or move depends on uninitialised value
 !   call s2elem_t2(y) ! FIXME: Conditional jump or move depends on uninitialised value
-!   call s2elem_t2(z) ! FIXME: Conditional jump or move depends on uninitialised value
+   call s2elem_t2(z)
 !   call s2elem_t2(z2) ! FIXME: Segfault
 !   call s2elem_t2(z3) ! FIXME: Segfault
 !   call s2elem_t2(z4) ! FIXME: Segfault
