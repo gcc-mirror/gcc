@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3725,11 +3725,12 @@ package Einfo is
 
 --    Status_Flag_Or_Transient_Decl (Node15)
 --       Defined in variables and constants. Applies to objects that require
---       special treatment by the finalization machinery. Such examples are
---       extended return results, if and case expression results and objects
---       inside N_Expression_With_Actions nodes. The attribute contains the
---       entity of a flag which specifies particular behavior over a region
---       of code or the declaration of a "hook" object.
+--       special treatment by the finalization machinery, such as extended
+--       return results, IF and CASE expression results, and objects inside
+--       N_Expression_With_Actions nodes. The attribute contains the entity
+--       of a flag which specifies particular behavior over a region of code
+--       or the declaration of a "hook" object.
+--       In which case is it a flag, or a hook object???
 
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Defined in access types and task type entities. This flag is set

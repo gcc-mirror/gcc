@@ -1,3 +1,26 @@
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Look for discriminant
+	constraint in full view of private type when needed.
+	* sem_ch12.adb (Validate_Array_Type_Instance): Specialize
+	previous patch to components types that are private and without
+	discriminants.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Find_Enclosing_Context): Recognize
+	a simple return statement as one of the cases that require special
+	processing with respect to temporary controlled function results.
+	(Process_Transient_Object): Do attempt to finalize a temporary
+	controlled function result when the associated context is
+	a simple return statement.  Instead, leave this task to the
+	general finalization mechanism.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	(Status_Flag_Or_Transient_Decl): Add ??? comment.
+
 2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Expression_With_Actions): Rewritten. This

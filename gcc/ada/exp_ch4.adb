@@ -5038,7 +5038,7 @@ package body Exp_Ch4 is
             --  Start of processing for Find_Enclosing_Context
 
             begin
-               --  The expression_with_action is in a case or if expression and
+               --  The expression_with_actions is in a case/if expression and
                --  the lifetime of any temporary controlled object is therefore
                --  extended. Find a suitable insertion node by locating the top
                --  most case or if expressions.
@@ -5088,12 +5088,12 @@ package body Exp_Ch4 is
 
                   return Par;
 
-               --  Shor circuit operators in complex expressions are converted
+               --  Short circuit operators in complex expressions are converted
                --  into expression_with_actions.
 
                else
                   --  Take care of the case where the expression_with_actions
-                  --  is burried deep inside an if statement. The temporary
+                  --  is buried deep inside an IF statement. The temporary
                   --  function result must be finalized before the then, elsif
                   --  or else statements are evaluated.
 
@@ -5123,7 +5123,7 @@ package body Exp_Ch4 is
 
                   Top := Par;
 
-                  --  The expression_with_action might be located in a pragm
+                  --  The expression_with_actions might be located in a pragma
                   --  in which case locate the pragma itself:
 
                   --    pragma Precondition (... and then Ctrl_Func_Call ...);
@@ -5133,10 +5133,16 @@ package body Exp_Ch4 is
 
                   --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
 
+                  --  Another case to consider is an expression_with_actions as
+                  --  part of a return statement:
+
+                  --    return ... and then Ctrl_Func_Call ...;
+
                   while Present (Par) loop
                      if Nkind_In (Par, N_Assignment_Statement,
                                        N_Object_Declaration,
-                                       N_Pragma)
+                                       N_Pragma,
+                                       N_Simple_Return_Statement)
                      then
                         return Par;
 
@@ -5238,23 +5244,32 @@ package body Exp_Ch4 is
             --       Temp := null;
             --    end if;
 
-            Insert_Action_After (Context,
-              Make_If_Statement (Loc,
-                Condition =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd  => New_Reference_To (Temp_Id, Loc),
-                    Right_Opnd => Make_Null (Loc)),
+            --  When the expression_with_actions is part of a return statement,
+            --  there is no need to insert a finalization call, as the general
+            --  finalization mechanism (see Build_Finalizer) would take care of
+            --  the temporary function result on subprogram exit. Note that it
+            --  would also be impossible to insert the finalization code after
+            --  the return statement as this would make it unreachable.
 
-                Then_Statements => New_List (
-                  Make_Final_Call
-                    (Obj_Ref =>
-                       Make_Explicit_Dereference (Loc,
-                         Prefix => New_Reference_To (Temp_Id, Loc)),
-                     Typ     => Desig_Typ),
+            if Nkind (Context) /= N_Simple_Return_Statement then
+               Insert_Action_After (Context,
+                 Make_If_Statement (Loc,
+                   Condition =>
+                     Make_Op_Ne (Loc,
+                       Left_Opnd  => New_Reference_To (Temp_Id, Loc),
+                       Right_Opnd => Make_Null (Loc)),
 
-                  Make_Assignment_Statement (Loc,
-                    Name       => New_Reference_To (Temp_Id, Loc),
-                    Expression => Make_Null (Loc)))));
+                   Then_Statements => New_List (
+                     Make_Final_Call
+                       (Obj_Ref =>
+                          Make_Explicit_Dereference (Loc,
+                            Prefix => New_Reference_To (Temp_Id, Loc)),
+                        Typ     => Desig_Typ),
+
+                     Make_Assignment_Statement (Loc,
+                       Name       => New_Reference_To (Temp_Id, Loc),
+                       Expression => Make_Null (Loc)))));
+            end if;
          end Process_Transient_Object;
 
       --  Start of processing for Process_Action

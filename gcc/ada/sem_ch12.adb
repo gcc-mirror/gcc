@@ -10708,10 +10708,14 @@ package body Sem_Ch12 is
              or else Subtypes_Match
                (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
                Component_Type (Act_T))
-             or else Subtypes_Match
-               (Base_Type
-                 (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T)),
-               Component_Type (Act_T))
+             or else
+               (Is_Private_Type (Component_Type (A_Gen_T))
+                 and then not Has_Discriminants (Component_Type (A_Gen_T))
+                 and then
+                  Subtypes_Match
+                    (Base_Type
+                      (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T)),
+                    Component_Type (Act_T)))
          then
             null;
          else
