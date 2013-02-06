@@ -1,5 +1,15 @@
 2013-02-06  Robert Dewar  <dewar@adacore.com>
 
+	* s-dim.ads, clean.adb: Minor reformatting.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Undo previous patch.
+	(Can_Split_Unconstrained_Function): Only split the inlined function if
+	the compiler generates the code of its body.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
 	* exp_prag.adb, sem_ch3.adb, exp_attr.adb, sem_prag.adb, sem_ch6.adb,
 	exp_intr.adb, exp_dist.adb, sem_ch13.adb: Internal clean up for
 	N_Pragma nodes.

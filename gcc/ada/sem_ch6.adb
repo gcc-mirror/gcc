@@ -2909,10 +2909,6 @@ package body Sem_Ch6 is
         and then Serious_Errors_Detected = 0
         and then Present (Spec_Id)
         and then Has_Pragma_Inline (Spec_Id)
-
-        --  This test needs commenting ???
-
-        and then In_Extended_Main_Code_Unit (N)
       then
          Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
       end if;
@@ -4268,9 +4264,9 @@ package body Sem_Ch6 is
       --  This body is subsequently used for inline expansions at call sites.
 
       function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean;
-      --  Return true if the function body N has no local declarations and its
-      --  unique statement is a single extended return statement with a handled
-      --  statements sequence.
+      --  Return true if we generate code for the function body N, the function
+      --  body N has no local declarations and its unique statement is a single
+      --  extended return statement with a handled statements sequence.
 
       function Check_Body_To_Inline
         (N    : Node_Id;
@@ -5005,7 +5001,13 @@ package body Sem_Ch6 is
             end loop;
          end if;
 
-         return Present (Ret_Node)
+         --  We only split the inlined function when we are generating the code
+         --  of its body; otherwise we leave duplicated split subprograms in
+         --  the tree which (if referenced) generate wrong references at link
+         --  time.
+
+         return In_Extended_Main_Code_Unit (N)
+           and then Present (Ret_Node)
            and then Nkind (Ret_Node) = N_Extended_Return_Statement
            and then No (Next (Ret_Node))
            and then Present (Handled_Statement_Sequence (Ret_Node));

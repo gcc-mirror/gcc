@@ -1261,10 +1261,8 @@ package body Clean is
                     or else Host_Full_Name'Length = 0
                   then
                      Success := False;
-
                   else
-                     Delete_File
-                       (Host_Full_Name.all & ";*", Success);
+                     Delete_File (Host_Full_Name.all & ";*", Success);
                   end if;
                end;
 
