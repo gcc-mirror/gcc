@@ -16017,9 +16017,23 @@ package body Sem_Prag is
                            if OK then
                               Chr := Get_Character (C);
 
+                              --  Dash case: only -Wxxx is accepted
+
+                              if J = 1
+                                and then J < Len
+                                and then Chr = '-'
+                              then
+                                 J := J + 1;
+                                 C := Get_String_Char (Str, J);
+                                 Chr := Get_Character (C);
+                                 if Chr = 'W' then
+                                    exit;
+                                 end if;
+                                 OK := False;
+
                               --  Dot case
 
-                              if J < Len and then Chr = '.' then
+                              elsif J < Len and then Chr = '.' then
                                  J := J + 1;
                                  C := Get_String_Char (Str, J);
                                  Chr := Get_Character (C);

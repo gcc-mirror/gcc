@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1282,7 +1282,14 @@ package body Erroutc is
                   Eproc.all
                     ("?pragma Warnings Off with no matching Warnings On",
                      SWE.Start);
-               elsif not SWE.Used then
+
+               --  Do not issue this warning for -Wxxx messages since the
+               --  back-end doesn't report the information.
+
+               elsif not SWE.Used
+                 and then not (SWE.Msg'Length > 2
+                                 and then SWE.Msg (1 .. 2) = "-W")
+               then
                   Eproc.all
                     ("?no warning suppressed by this pragma", SWE.Start);
                end if;
