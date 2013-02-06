@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2012, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2013, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,13 +38,12 @@
 
 #include "tconfig.h"
 #include "tsystem.h"
-#include <sys/stat.h>
+
 #include <stdarg.h>
 typedef char bool;
 # define true 1
 # define false 0
 
-#include "adaint.h"
 #include "raise.h"
 
 #ifdef __APPLE__
@@ -81,7 +80,6 @@ extern struct Exception_Occurrence *__gnat_setup_current_excep
  (_Unwind_Exception *);
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
-#include "dwarf2.h"
 #include "unwind-pe.h"
 
 /* The known and handled exception classes.  */
@@ -92,6 +90,8 @@ extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 /* --------------------------------------------------------------
    -- The DB stuff below is there for debugging purposes only. --
    -------------------------------------------------------------- */
+
+#ifndef inhibit_libc
 
 #define DB_PHASES     0x1
 #define DB_CSITE      0x2
@@ -193,7 +193,11 @@ db_phases (int phases)
 
   db (DB_PHASES, " :\n");
 }
-
+#else /* !inhibit_libc */
+#define db_phases(X)
+#define db_indent(X)
+#define db(X, ...)
+#endif /* !inhibit_libc */
 
 /* ---------------------------------------------------------------
    --  Now come a set of useful structures and helper routines. --
@@ -516,6 +520,7 @@ get_ip_from_context (_Unwind_Context *uw_context)
 static void
 db_region_for (region_descriptor *region, _Unwind_Ptr ip)
 {
+#ifndef inhibit_libc
   if (! (db_accepted_codes () & DB_REGIONS))
     return;
 
@@ -527,6 +532,7 @@ db_region_for (region_descriptor *region, _Unwind_Ptr ip)
     db (DB_REGIONS, "no lsda");
 
   db (DB_REGIONS, "\n");
+#endif
 }
 
 /* Retrieve the ttype entry associated with FILTER in the REGION's
@@ -647,6 +653,7 @@ typedef struct
 static void
 db_action_for (action_descriptor *action, _Unwind_Ptr ip)
 {
+#ifndef inhibit_libc
   db (DB_ACTIONS, "For ip @ %p => ", (void *)ip);
 
   switch (action->kind)
@@ -672,8 +679,7 @@ db_action_for (action_descriptor *action, _Unwind_Ptr ip)
        db (DB_ACTIONS, "Err? Unexpected action kind !\n");
        break;
     }
-
-  return;
+#endif
 }
 
 /* Search the call_site_table of REGION for an entry appropriate for the

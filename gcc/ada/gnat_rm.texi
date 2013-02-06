@@ -7051,13 +7051,47 @@ this attribute.
 @noindent
 For every array or record type @var{S}, the representation attribute
 @code{Scalar_Storage_Order} denotes the order in which storage elements
-that make up scalar components are ordered within S. Other properties are
+that make up scalar components are ordered within S:
+
+@smallexample @c ada
+   --  Component type definitions
+
+   subtype Yr_Type is Natural range 0 .. 127;
+   subtype Mo_Type is Natural range 1 .. 12;
+   subtype Da_Type is Natural range 1 .. 31;
+
+   --  Record declaration
+
+   type Date is record
+      Years_Since_1980 : Yr_Type;
+      Month            : Mo_Type;
+      Day_Of_Month     : Da_Type;
+   end record;
+
+   --  Record representation clause
+
+   for Date use record
+      Years_Since_1980 at 0 range 0  ..  6;
+      Month            at 0 range 7  .. 10;
+      Day_Of_Month     at 0 range 11 .. 15;
+   end record;
+
+   --  Attribute definition clauses
+
+   for Date'Bit_Order use System.High_Order_First;
+   for Date'Scalar_Storage_Order use System.High_Order_First;
+   --  If Scalar_Storage_Order is specified, it must be consistent with
+   --  Bit_Order, so it's best to always define the latter explicitly if
+   --  the former is used.
+@end smallexample
+
+Other properties are
 as for standard representation attribute @code{Bit_Order}, as defined by
 Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
 
 For a record type @var{S}, if @code{@var{S}'Scalar_Storage_Order} is
 specified explicitly, it shall be equal to @code{@var{S}'Bit_Order}. Note:
-This means that if a @code{Scalar_Storage_Order} attribute definition
+this means that if a @code{Scalar_Storage_Order} attribute definition
 clause is not confirming, then the type's @code{Bit_Order} shall be
 specified explicitly and set to the same value.
 
