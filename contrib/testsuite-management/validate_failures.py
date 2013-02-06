@@ -362,7 +362,7 @@ def GetManifestPath(srcdir, target, user_provided_must_exist):
       Error('Manifest does not exist: %s' % manifest_path)
     return manifest_path
   else:
-    assert srdir and target
+    assert srcdir and target
     return _MANIFEST_PATH_PATTERN % (srcdir, _MANIFEST_SUBDIR, target)
 
 
