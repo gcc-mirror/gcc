@@ -947,6 +947,10 @@ package body Sem_Prag is
       --  argument has the right form then the Mechanism field of Ent is
       --  set appropriately.
 
+      procedure Set_Rational_Profile;
+      --  Activate the set of configuration pragmas and permissions that make
+      --  up the Rational profile.
+
       procedure Set_Ravenscar_Profile (N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
       --  up the Ravenscar Profile. N is the corresponding pragma node, which
@@ -6361,6 +6365,20 @@ package body Sem_Prag is
             Bad_Class;
          end if;
       end Set_Mechanism_Value;
+
+      --------------------------
+      -- Set_Rational_Profile --
+      --------------------------
+
+      --  The Rational profile includes Implicit_Packing, Use_Vads_Size, and
+      --  and extension to the semantics of renaming declarations.
+
+      procedure Set_Rational_Profile is
+      begin
+         Implicit_Packing     := True;
+         Overriding_Renamings := True;
+         Use_VADS_Size        := True;
+      end Set_Rational_Profile;
 
       ---------------------------
       -- Set_Ravenscar_Profile --
@@ -13063,6 +13081,9 @@ package body Sem_Prag is
             end if;
          end Overflow_Mode;
 
+         when Pragma_Overriding_Renamings =>
+            Overriding_Renamings := True;
+
          -------------
          -- Ordered --
          -------------
@@ -13884,7 +13905,7 @@ package body Sem_Prag is
                      N, Warn => Treat_Restrictions_As_Warnings);
 
                elsif Chars (Argx) = Name_Rational then
-                  Rational_Profile := True;
+                  Set_Rational_Profile;
 
                elsif Chars (Argx) = Name_No_Implementation_Extensions then
                   Set_Profile_Restrictions
@@ -14289,7 +14310,7 @@ package body Sem_Prag is
          --  pragma Rational, for compatibility with foreign compiler
 
          when Pragma_Rational =>
-            Rational_Profile := True;
+            Set_Rational_Profile;
 
          -----------------------
          -- Relative_Deadline --
@@ -16591,6 +16612,7 @@ package body Sem_Prag is
       Pragma_Optimize                       => -1,
       Pragma_Optimize_Alignment             => -1,
       Pragma_Overflow_Mode                  =>  0,
+      Pragma_Overriding_Renamings           =>  0,
       Pragma_Ordered                        =>  0,
       Pragma_Pack                           =>  0,
       Pragma_Page                           => -1,

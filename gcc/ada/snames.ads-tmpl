@@ -414,6 +414,7 @@ package Snames is
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
    Name_Overflow_Mode                  : constant Name_Id := N + $; -- GNAT
+   Name_Overriding_Renamings           : constant Name_Id := N + $; -- GNAT
    Name_Partition_Elaboration_Policy   : constant Name_Id := N + $; -- Ada 05
    Name_Persistent_BSS                 : constant Name_Id := N + $; -- GNAT
    Name_Polling                        : constant Name_Id := N + $; -- GNAT
@@ -1710,6 +1711,7 @@ package Snames is
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
       Pragma_Overflow_Mode,
+      Pragma_Overriding_Renamings,
       Pragma_Partition_Elaboration_Policy,
       Pragma_Persistent_BSS,
       Pragma_Polling,

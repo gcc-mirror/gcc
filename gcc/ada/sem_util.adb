@@ -1746,6 +1746,7 @@ package body Sem_Util is
                               if not Analyzed (Expression (Assoc)) then
                                  Comp_Expr :=
                                    New_Copy_Tree (Expression (Assoc));
+                                 Set_Parent (Comp_Expr, Parent (N));
                                  Preanalyze_Without_Errors (Comp_Expr);
                               else
                                  Comp_Expr := Expression (Assoc);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,46 +42,23 @@ package body System.OS_Primitives is
    -- Data for the high resolution clock --
    ----------------------------------------
 
-   --  Declare some pointers to access multi-word data above. This is needed
-   --  to workaround a limitation in the GNU/Linker auto-import feature used
-   --  to build the GNAT runtime DLLs. In fact the Clock and Monotonic_Clock
-   --  routines are inlined and they are using some multi-word variables.
-   --  GNU/Linker will fail to auto-import those variables when building
-   --  libgnarl.dll. The indirection level introduced here has no measurable
-   --  penalties.
-
-   type DA is access all Duration;
-   --  Use to have indirect access to multi-word variables
-
-   type LIA is access all LARGE_INTEGER;
-   --  Use to have indirect access to multi-word variables
-
-   type LLIA is access all Long_Long_Integer;
-   --  Use to have indirect access to multi-word variables
-
    Tick_Frequency : aliased LARGE_INTEGER;
-   TFA : constant LIA := Tick_Frequency'Access;
    --  Holds frequency of high-performance counter used by Clock
    --  Windows NT uses a 1_193_182 Hz counter on PCs.
 
-   Base_Ticks : aliased LARGE_INTEGER;
-   BTA : constant LIA := Base_Ticks'Access;
+   Base_Ticks : LARGE_INTEGER;
    --  Holds the Tick count for the base time
 
-   Base_Monotonic_Ticks : aliased LARGE_INTEGER;
-   BMTA : constant LIA := Base_Monotonic_Ticks'Access;
+   Base_Monotonic_Ticks : LARGE_INTEGER;
    --  Holds the Tick count for the base monotonic time
 
-   Base_Clock : aliased Duration;
-   BCA : constant DA := Base_Clock'Access;
+   Base_Clock : Duration;
    --  Holds the current clock for the standard clock's base time
 
-   Base_Monotonic_Clock : aliased Duration;
-   BMCA : constant DA := Base_Monotonic_Clock'Access;
+   Base_Monotonic_Clock : Duration;
    --  Holds the current clock for monotonic clock's base time
 
-   Base_Time : aliased Long_Long_Integer;
-   BTiA : constant LLIA := Base_Time'Access;
+   Base_Time : Long_Long_Integer;
    --  Holds the base time used to check for system time change, used with
    --  the standard clock.
 
@@ -118,12 +95,12 @@ package body System.OS_Primitives is
       GetSystemTimeAsFileTime (Now'Access);
 
       Elap_Secs_Sys :=
-        Duration (Long_Long_Float (abs (Now - BTiA.all)) /
+        Duration (Long_Long_Float (abs (Now - Base_Time)) /
                     Hundreds_Nano_In_Sec);
 
       Elap_Secs_Tick :=
-        Duration (Long_Long_Float (Current_Ticks - BTA.all) /
-                  Long_Long_Float (TFA.all));
+        Duration (Long_Long_Float (Current_Ticks - Base_Ticks) /
+                  Long_Long_Float (Tick_Frequency));
 
       --  If we have a shift of more than Max_Shift seconds we resynchronize
       --  the Clock. This is probably due to a manual Clock adjustment, a DST
@@ -134,11 +111,11 @@ package body System.OS_Primitives is
          Get_Base_Time;
 
          Elap_Secs_Tick :=
-           Duration (Long_Long_Float (Current_Ticks - BTA.all) /
-                     Long_Long_Float (TFA.all));
+           Duration (Long_Long_Float (Current_Ticks - Base_Ticks) /
+                     Long_Long_Float (Tick_Frequency));
       end if;
 
-      return BCA.all + Elap_Secs_Tick;
+      return Base_Clock + Elap_Secs_Tick;
    end Clock;
 
    -------------------
@@ -243,9 +220,9 @@ package body System.OS_Primitives is
 
       else
          Elap_Secs_Tick :=
-           Duration (Long_Long_Float (Current_Ticks - BMTA.all) /
-                       Long_Long_Float (TFA.all));
-         return BMCA.all + Elap_Secs_Tick;
+           Duration (Long_Long_Float (Current_Ticks - Base_Monotonic_Ticks) /
+                       Long_Long_Float (Tick_Frequency));
+         return Base_Monotonic_Clock + Elap_Secs_Tick;
       end if;
    end Monotonic_Clock;
 

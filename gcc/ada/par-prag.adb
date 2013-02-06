@@ -1218,6 +1218,7 @@ begin
            Pragma_Optimize                       |
            Pragma_Optimize_Alignment             |
            Pragma_Overflow_Mode                  |
+           Pragma_Overriding_Renamings           |
            Pragma_Pack                           |
            Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |
