@@ -14989,6 +14989,12 @@ fn_type_unification (tree fn,
       if (fntype == error_mark_node)
 	goto fail;
 
+      /* Throw away these access checks; we'll see them again in
+	 instantiate_template and they might have the wrong
+	 access path at this point.  */
+      pop_deferring_access_checks ();
+      push_deferring_access_checks (dk_deferred);
+
       /* Place the explicitly specified arguments in TARGS.  */
       for (i = NUM_TMPL_ARGS (explicit_targs); i--;)
 	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (explicit_targs, i);

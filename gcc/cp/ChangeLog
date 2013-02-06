@@ -1,3 +1,9 @@
+2013-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56208
+	* pt.c (fn_type_unification): Discard any access checks from
+	substituting explicit args.
+
 2013-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56162
