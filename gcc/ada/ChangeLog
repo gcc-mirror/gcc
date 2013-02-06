@@ -1,3 +1,25 @@
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Rewritten. This
+	routine should be able to properly detect controlled transient
+	objects in its actions and generate the appropriate finalization
+	actions.
+	* exp_ch6.adb (Enclosing_Context): Removed.
+	(Expand_Ctrl_Function_Call): Remove local subprogram and
+	constant. Use routine Within_Case_Or_If_Expression to determine
+	whether the lifetime of the function result must be extended to
+	match that of the context.
+	* exp_util.ads, exp_util.adb (Within_Case_Or_If_Expression): New
+	routine.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Array_Type_Instance): Extend check
+	for subtype matching of component type of formal array type,
+	to avoid spurious error when component type is a separate actual
+	in the instance, and there may be a discrepancy between private
+	and full view of component type.
+
 2013-02-06  Robert Dewar  <dewar@adacore.com>
 
 	* s-dim.ads, clean.adb: Minor reformatting.

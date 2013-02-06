@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -817,6 +817,9 @@ package Exp_Util is
    --  that may be bit aligned (see Possible_Bit_Aligned_Component). The result
    --  is conservative, in that a result of False is decisive. A result of True
    --  means that such a component may or may not be present.
+
+   function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N is within a case or an if expression
 
    procedure Wrap_Cleanup_Procedure (N : Node_Id);
    --  Given an N_Subprogram_Body node, this procedure adds an Abort_Defer call
