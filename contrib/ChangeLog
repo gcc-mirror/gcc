@@ -1,3 +1,12 @@
+2013-02-06  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py: Update
+	Copyright years.
+	Request contributions not to use Python features newer
+	than 2.4.
+	(GetBuildData): If this is not a build directory,
+	emit an error only if --results or --manifest are missing.
+
 2013-02-06  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* testsuite-management/validate_failures.py
