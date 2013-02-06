@@ -1,5 +1,9 @@
 2013-02-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56177
+	* decl.c (start_preparsed_function): Update restype if we change
+	decl1.
+
 	PR c++/56208
 	* pt.c (fn_type_unification): Discard any access checks from
 	substituting explicit args.
