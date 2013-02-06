@@ -1,3 +1,8 @@
+2013-02-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55978
+	* gfortran.dg/class_optional_2.f90: Uncomment some cases which work now.
+
 2013-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56217
