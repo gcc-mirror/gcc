@@ -1,3 +1,8 @@
+2013-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56217
+	* testsuite/libgomp.c++/pr56217.C: New test.
+
 2013-02-01  Alan Modra  <amodra@gmail.com>
 
 	* task.c (GOMP_task, GOMP_taskwait): Comment.
