@@ -1,3 +1,8 @@
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gcc-interface/Make-lang.in: Enable System.Stack_Checking.Operations
+	target pairs on VxWorks 5 only.
+
 2013-02-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.
