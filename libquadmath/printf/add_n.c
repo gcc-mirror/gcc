@@ -1,6 +1,6 @@
 /* mpn_add_n -- Add two limb vectors of equal, non-zero length.
 
-Copyright (C) 1992-2013 Free Software Foundation, Inc.
+Copyright (C) 1992, 1993, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
