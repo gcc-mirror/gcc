@@ -1,3 +1,8 @@
+2013-02-06  Richard Biener  <rguenther@suse.de>
+
+	* tracer.c (tracer): Mark loops with LOOPS_NEED_FIXUP
+	instead of calling fix_loop_structure.
+
 2013-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56217
