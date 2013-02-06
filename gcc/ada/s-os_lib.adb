@@ -1656,7 +1656,7 @@ package body System.OS_Lib is
    procedure Normalize_Arguments (Args : in out Argument_List) is
 
       procedure Quote_Argument (Arg : in out String_Access);
-      --  Add quote around argument if it contains spaces
+      --  Add quote around argument if it contains spaces (or HT characters)
 
       C_Argument_Needs_Quote : Integer;
       pragma Import (C, C_Argument_Needs_Quote, "__gnat_argument_needs_quote");

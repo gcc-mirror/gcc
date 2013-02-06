@@ -1629,9 +1629,8 @@ package body Prj.Conf is
       Success             : Boolean;
 
       Conf_Project : Project_Id := No_Project;
-      --  The object directory of this project will be used to store the config
-      --  project file in auto-configuration. Set by procedure Check_Project
-      --  below.
+      --  The object directory of this project is used to store the config
+      --  project file in auto-configuration. Set by Check_Project below.
 
       procedure Check_Project (Project : Project_Id);
       --  Look for a non aggregate project. If one is found, put its project Id
@@ -1644,11 +1643,11 @@ package body Prj.Conf is
       procedure Check_Project (Project : Project_Id) is
       begin
          if Project.Qualifier = Aggregate
-           or else Project.Qualifier = Aggregate_Library
+              or else
+            Project.Qualifier = Aggregate_Library
          then
             declare
-               List : Aggregated_Project_List :=
-                 Project.Aggregated_Projects;
+               List : Aggregated_Project_List := Project.Aggregated_Projects;
 
             begin
                --  Look for a non aggregate project until one is found
@@ -1663,6 +1662,8 @@ package body Prj.Conf is
             Conf_Project := Project;
          end if;
       end Check_Project;
+
+   --  Start of processing for Process_Project_And_Apply_Config
 
    begin
       Main_Project := No_Project;

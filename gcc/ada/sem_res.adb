@@ -3423,7 +3423,9 @@ package body Sem_Res is
                   --  * For a scalar type that has the Default_Value aspect
                   --    specified, the formal parameter is initialized from the
                   --    value of the actual, without checking that the value
-                  --    satisfies any constraint or any predicate;
+                  --    satisfies any constraint or any predicate.
+                  --  I do not understand why this case is included??? this is
+                  --  not a case where an OUT parameter is treated as IN OUT.
 
                   --  * For a composite type with discriminants or that has
                   --    implicit initial values for any subcomponents, the
@@ -3442,10 +3444,9 @@ package body Sem_Res is
                                 Present (Default_Aspect_Value (Etype (F))))
                          or else
                            (Is_Composite_Type (Etype (F))
-                              and then
-                                (Has_Discriminants (Etype (F))
-                                   or else
-                                 Is_Partially_Initialized_Type (Etype (F)))))
+                              and then (Has_Discriminants (Etype (F))
+                                         or else Is_Partially_Initialized_Type
+                                                   (Etype (F)))))
                   then
                      Generate_Reference (Orig_A, A);
                   end if;

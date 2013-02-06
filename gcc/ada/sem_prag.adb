@@ -13859,7 +13859,7 @@ package body Sem_Prag is
 
          --  pragma Profile (profile_IDENTIFIER);
 
-         --  profile_IDENTIFIER => Restricted | Ravenscar
+         --  profile_IDENTIFIER => Restricted | Ravenscar | Rational
 
          when Pragma_Profile =>
             Ada_2005_Pragma;
@@ -13878,6 +13878,9 @@ package body Sem_Prag is
                   Set_Profile_Restrictions
                     (Restricted,
                      N, Warn => Treat_Restrictions_As_Warnings);
+
+               elsif Chars (Argx) = Name_Rational then
+                  Rational_Profile := True;
 
                elsif Chars (Argx) = Name_No_Implementation_Extensions then
                   Set_Profile_Restrictions
@@ -14274,6 +14277,15 @@ package body Sem_Prag is
                end if;
             end if;
          end;
+
+         --------------
+         -- Rational --
+         --------------
+
+         --  pragma Rational, for compatibility with foreign compiler
+
+         when Pragma_Rational =>
+            Rational_Profile := True;
 
          -----------------------
          -- Relative_Deadline --
@@ -16599,6 +16611,7 @@ package body Sem_Prag is
       Pragma_Pure_12                        => -1,
       Pragma_Pure_Function                  => -1,
       Pragma_Queuing_Policy                 => -1,
+      Pragma_Rational                       => -1,
       Pragma_Ravenscar                      => -1,
       Pragma_Relative_Deadline              => -1,
       Pragma_Remote_Access_Type             => -1,

@@ -10452,24 +10452,24 @@ package body Sem_Ch12 is
          T : constant Entity_Id := Get_Instance_Of (Gen_T);
 
       begin
+         --  Some detailed comments would be useful here ???
+
          return ((Base_Type (T) = Act_T
                    or else Base_Type (T) = Base_Type (Act_T))
                   and then Subtypes_Statically_Match (T, Act_T))
 
            or else (Is_Class_Wide_Type (Gen_T)
                      and then Is_Class_Wide_Type (Act_T)
-                     and then
-                       Subtypes_Match
-                        (Get_Instance_Of (Root_Type (Gen_T)),
-                         Root_Type (Act_T)))
+                     and then Subtypes_Match
+                                (Get_Instance_Of (Root_Type (Gen_T)),
+                                 Root_Type (Act_T)))
 
            or else
-             ((Ekind (Gen_T) = E_Anonymous_Access_Subprogram_Type
-                 or else Ekind (Gen_T) = E_Anonymous_Access_Type)
+             (Ekind_In (Gen_T, E_Anonymous_Access_Subprogram_Type,
+                               E_Anonymous_Access_Type)
                and then Ekind (Act_T) = Ekind (Gen_T)
-               and then
-                 Subtypes_Statically_Match
-                   (Designated_Type (Gen_T), Designated_Type (Act_T)));
+               and then Subtypes_Statically_Match
+                          (Designated_Type (Gen_T), Designated_Type (Act_T)));
       end Subtypes_Match;
 
       -----------------------------------------
