@@ -62,6 +62,7 @@ import sys
 
 # Handled test results.
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
+_VALID_TEST_RESULTS_REX = re.compile("%s" % "|".join(_VALID_TEST_RESULTS))
 
 # Subdirectory of srcdir in which to find the manifest file.
 _MANIFEST_SUBDIR = 'contrib/testsuite-management'
@@ -210,7 +211,7 @@ def IsInterestingResult(line):
   if '|' in line:
     (_, line) = line.split('|', 1)
     line = line.strip()
-  return any(line.startswith(result) for result in _VALID_TEST_RESULTS)
+  return bool(_VALID_TEST_RESULTS_REX.match(line))
 
 
 def IsInclude(line):
