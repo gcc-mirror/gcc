@@ -14567,7 +14567,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 				     /*check_dependency=*/true,
 				     /*ambiguous_decls=*/NULL,
 				     input_location);
-      if (name)
+      if (name && name != error_mark_node)
 	{
 	  type = TREE_TYPE (name);
 	  if (TREE_CODE (type) == TYPENAME_TYPE)
