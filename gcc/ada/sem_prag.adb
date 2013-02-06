@@ -618,9 +618,9 @@ package body Sem_Prag is
       --  Common processing for first argument of pragma Interrupt_Handler or
       --  pragma Attach_Handler.
 
-      procedure Check_Loop_Invariant_Variant_Placement;
-      --  Verify whether pragma Loop_Invariant or pragma Loop_Variant appear
-      --  immediately within a construct restricted to loops.
+      procedure Check_Loop_Pragma_Placement;
+      --  Verify whether pragma Loop_Invariant or Loop_Optimize or Loop_Variant
+      --  appear immediately within a construct restricted to loops.
 
       procedure Check_Is_In_Decl_Part_Or_Package_Spec;
       --  Check that pragma appears in a declarative part, or in a package
@@ -1922,11 +1922,11 @@ package body Sem_Prag is
          end if;
       end Check_Interrupt_Or_Attach_Handler;
 
-      --------------------------------------------
-      -- Check_Loop_Invariant_Variant_Placement --
-      --------------------------------------------
+      ---------------------------------
+      -- Check_Loop_Pragma_Placement --
+      ---------------------------------
 
-      procedure Check_Loop_Invariant_Variant_Placement is
+      procedure Check_Loop_Pragma_Placement is
          procedure Placement_Error (Constr : Node_Id);
          pragma No_Return (Placement_Error);
          --  Node Constr denotes the last loop restricted construct before we
@@ -1955,7 +1955,7 @@ package body Sem_Prag is
          Prev : Node_Id;
          Stmt : Node_Id;
 
-      --  Start of processing for Check_Loop_Invariant_Variant_Placement
+      --  Start of processing for Check_Loop_Pragma_Placement
 
       begin
          Prev := N;
@@ -2011,7 +2011,7 @@ package body Sem_Prag is
                return;
             end if;
          end loop;
-      end Check_Loop_Invariant_Variant_Placement;
+      end Check_Loop_Pragma_Placement;
 
       -------------------------------------------
       -- Check_Is_In_Decl_Part_Or_Package_Spec --
@@ -12341,7 +12341,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             S14_Pragma;
             Check_Arg_Count (1);
-            Check_Loop_Invariant_Variant_Placement;
+            Check_Loop_Pragma_Placement;
 
             --  Completely ignore if disabled
 
@@ -12370,6 +12370,30 @@ package body Sem_Prag is
             Analyze (N);
          end Loop_Invariant;
 
+         -------------------
+         -- Loop_Optimize --
+         -------------------
+
+         --  pragma Loop_Optimize ( OPTIMIZATION_HINT {, OPTIMIZATION_HINT } );
+
+         --  OPTIMIZATION_HINT ::= No_Unroll | Unroll | No_Vector | Vector
+
+         when Pragma_Loop_Optimize => Loop_Optimize : declare
+            Hint      : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_No_Identifiers;
+            Hint := First (Pragma_Argument_Associations (N));
+            while Present (Hint) loop
+               Check_Arg_Is_One_Of (Hint, Name_No_Unroll, Name_Unroll,
+                                    Name_No_Vector, Name_Vector);
+               Next (Hint);
+            end loop;
+            Check_Loop_Pragma_Placement;
+         end Loop_Optimize;
+
          ------------------
          -- Loop_Variant --
          ------------------
@@ -12388,7 +12412,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             S14_Pragma;
             Check_At_Least_N_Arguments (1);
-            Check_Loop_Invariant_Variant_Placement;
+            Check_Loop_Pragma_Placement;
 
             --  Completely ignore if disabled
 
@@ -16598,6 +16622,7 @@ package body Sem_Prag is
       Pragma_Locking_Policy                 => -1,
       Pragma_Long_Float                     => -1,
       Pragma_Loop_Invariant                 => -1,
+      Pragma_Loop_Optimize                  => -1,
       Pragma_Loop_Variant                   => -1,
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,

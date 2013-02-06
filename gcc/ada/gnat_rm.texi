@@ -176,6 +176,7 @@ Implementation Defined Pragmas
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
+* Pragma Loop_Optimize::
 * Pragma Machine_Attribute::
 * Pragma Main::
 * Pragma Main_Storage::
@@ -925,6 +926,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
+* Pragma Loop_Optimize::
 * Pragma Machine_Attribute::
 * Pragma Main::
 * Pragma Main_Storage::
@@ -2927,6 +2929,7 @@ the target's overriding subprogram kind.
 @node Pragma Implicit_Packing
 @unnumberedsec Pragma Implicit_Packing
 @findex Implicit_Packing
+@cindex Rational Profile
 @noindent
 Syntax:
 
@@ -3844,6 +3847,55 @@ type @code{Long_Float} and for floating point type representations with
 For further details on this pragma, see the
 @cite{DEC Ada Language Reference Manual}, section 3.5.7b.  Note that to use
 this pragma, the standard runtime libraries must be recompiled.
+
+@node Pragma Loop_Optimize
+@unnumberedsec Pragma Loop_Optimize
+@findex Loop_Optimize
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Loop_Optimize (OPTIMIZATION_HINT @{, OPTIMIZATION_HINT@});
+
+OPTIMIZATION_HINT ::= No_Unroll | Unroll | No_Vector | Vector
+@end smallexample
+
+@noindent
+This pragma must appear immediately within a loop statement.  It allows the
+programmer to specify optimization hints for the enclosing loop.  The hints
+are not mutually exclusive and can be freely mixed, but not all combinations
+will yield a sensible outcome.
+
+There are four supported optimization hints for a loop:
+@itemize @bullet
+@item No_Unroll
+
+The loop must not be unrolled.  This is a strong hint: the compiler will not
+unroll a loop marked with this hint.
+
+@item Unroll
+
+The loop should be unrolled.  This is a weak hint: the compiler will try to
+apply unrolling to this loop preferably to other optimizations, notably
+vectorization, but there is no guarantee that the loop will be unrolled.
+
+@item No_Vector
+
+The loop must not be vectorized.  This is a strong hint: the compiler will not
+vectorize a loop marked with this hint.
+
+@item Vector
+
+The loop should be vectorized.  This is a weak hint: the compiler will try to
+apply vectorization to this loop preferably to other optimizations, notably
+unrolling, but there is no guarantee that the loop will be vectorized.
+
+@end itemize
+
+These hints do not void the need to pass the appropriate switches to the
+compiler in order to enable the relevant optimizations, that is to say
+@option{-funroll-loops} for unrolling and @option{-ftree-vectorize} for
+vectorization.
 
 @node Pragma Machine_Attribute
 @unnumberedsec Pragma Machine_Attribute
@@ -4865,6 +4917,29 @@ This set of restrictions causes the automatic selection of a simplified
 version of the run time that provides improved performance for the
 limited set of tasking functionality permitted by this set of restrictions.
 
+@node Pragma Profile (Rational)
+@unnumberedsec Pragma Profile (Rational)
+@findex Rational compatibility mode
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Profile (Rational);
+@end smallexample
+
+@noindent
+The Rational profile is intended to facilitate porting legacy code that
+compiles with the Rational APEX compiler, even when the code includes non-
+conforming Ada constructs.  The profile enables the following three pragmas:
+
+
+@itemize @bullet
+pragma Implicit_Packing;
+pragma Overriding_Renamings;
+pragma Use_VADS_Size;
+@end itemize
+
+@noindent
 @node Pragma Psect_Object
 @unnumberedsec Pragma Psect_Object
 @findex Psect_Object
@@ -6021,6 +6096,7 @@ of Ada as an implementation-defined pragma.
 @node Pragma Use_VADS_Size
 @unnumberedsec Pragma Use_VADS_Size
 @cindex @code{Size}, VADS compatibility
+@cindex Rational profile
 @findex Use_VADS_Size
 @noindent
 Syntax:

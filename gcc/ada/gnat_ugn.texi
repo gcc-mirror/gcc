@@ -10978,6 +10978,17 @@ types.  This is so because, the less information the compiler has about the
 bounds of the array, the more fallback code it needs to generate in order to
 fix things up at run time.
 
+It is possible to specify that a given loop should be subject to vectorization
+preferably to other optimizations by means of pragma @code{Loop_Optimize}:
+
+@smallexample @c ada
+  pragma Loop_Optimize (Vector);
+@end smallexample
+
+@noindent
+placed immediately within the loop will convey the appropriate hint to the
+compiler for this loop.
+
 You can obtain information about the vectorization performed by the compiler
 by specifying @option{-ftree-vectorizer-verbose=N}.  For more details of
 this switch, see @ref{Debugging Options,,Options for Debugging Your Program
