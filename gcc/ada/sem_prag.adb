@@ -12379,7 +12379,7 @@ package body Sem_Prag is
          --  OPTIMIZATION_HINT ::= No_Unroll | Unroll | No_Vector | Vector
 
          when Pragma_Loop_Optimize => Loop_Optimize : declare
-            Hint      : Node_Id;
+            Hint : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -12387,8 +12387,8 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Hint := First (Pragma_Argument_Associations (N));
             while Present (Hint) loop
-               Check_Arg_Is_One_Of (Hint, Name_No_Unroll, Name_Unroll,
-                                    Name_No_Vector, Name_Vector);
+               Check_Arg_Is_One_Of (Hint,
+                 Name_No_Unroll, Name_Unroll, Name_No_Vector, Name_Vector);
                Next (Hint);
             end loop;
             Check_Loop_Pragma_Placement;

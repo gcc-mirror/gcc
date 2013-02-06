@@ -151,6 +151,7 @@ Implementation Defined Pragmas
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implementation_Defined::
 * Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
@@ -198,6 +199,7 @@ Implementation Defined Pragmas
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
+* Pragma Profile (Rational)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Relative_Deadline::
@@ -901,6 +903,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implementation_Defined::
 * Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
@@ -948,6 +951,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
+* Pragma Profile (Rational)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Relative_Deadline::
@@ -2878,6 +2882,34 @@ the DEC Ada 83 pragma of the same name. Note that in DEC Ada 83, the
 maximum allowed length is 31 characters, so if it is important to
 maintain compatibility with this compiler, you should obey this length
 limit.
+
+@node Pragma Implementation_Defined
+@unnumberedsec Pragma Implementation_Defined
+@findex Implementation_Defined
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Implementation_Defined (local_NAME);
+@end smallexample
+
+@noindent
+This pragma marks a previously declared entioty as implementation-defined.
+For an overloaded entity, applies to the most recent homonym.
+
+@smallexample @c ada
+pragma Implementation_Defined;
+@end smallexample
+
+@noindent
+The form with no arguments appears anywhere within a scope, most
+typically a package spec, and indicates that all entities that are
+defined within the package spec are Implementation_Defined.
+
+This pragma is used within the GNAT runtime library to identify
+implementation-defined entities introduced in language-defined units,
+for the purpose of implementing the No_Implementation_Identifiers
+restriction.
 
 @node Pragma Implemented
 @unnumberedsec Pragma Implemented
@@ -4931,7 +4963,6 @@ pragma Profile (Rational);
 The Rational profile is intended to facilitate porting legacy code that
 compiles with the Rational APEX compiler, even when the code includes non-
 conforming Ada constructs.  The profile enables the following three pragmas:
-
 
 @itemize @bullet
 pragma Implicit_Packing;
@@ -8298,8 +8329,8 @@ Manual.
 @unnumberedsubsec No_Implementation_Identifiers
 @findex No_Implementation_Identifiers
 [RM 13.12.1] This restriction checks at compile time that no
-implementation-defined identifiers occur within language-defined
-packages.
+implementation-defined identifiers (marked with pragma Implementation_Defined)
+occur within language-defined packages.
 
 @node No_Implementation_Pragmas
 @unnumberedsubsec No_Implementation_Pragmas

@@ -1,5 +1,13 @@
 2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_prag.adb: Minor reformatting.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-tasloc.ads: Set System.Task_Lock to preelaborate.
+
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* snames.ads-tmpl (Name_Loop_Optimize, Name_No_Unroll,
 	Name_Unroll, Name_No_Vector, Name_Vector): New pragma-related
 	names.
