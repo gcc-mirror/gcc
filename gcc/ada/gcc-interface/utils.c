@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2621,14 +2621,14 @@ create_label_decl (tree label_name, Node_Id gnat_node)
    node), PARAM_DECL_LIST is the list of the subprogram arguments (a list of
    PARM_DECL nodes chained through the DECL_CHAIN field).
 
-   INLINE_FLAG, PUBLIC_FLAG, EXTERN_FLAG, ARTIFICIAL_FLAG and ATTR_LIST are
+   INLINE_STATUS, PUBLIC_FLAG, EXTERN_FLAG, ARTIFICIAL_FLAG and ATTR_LIST are
    used to set the appropriate fields in the FUNCTION_DECL.  GNAT_NODE is
    used for the position of the decl.  */
 
 tree
 create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
-		     tree param_decl_list, bool inline_flag, bool public_flag,
-		     bool extern_flag, bool artificial_flag,
+ 		     tree param_decl_list, enum inline_status_t inline_status,
+		     bool public_flag, bool extern_flag, bool artificial_flag,
 		     struct attrib *attr_list, Node_Id gnat_node)
 {
   tree subprog_decl = build_decl (input_location, FUNCTION_DECL, subprog_name,
@@ -2642,7 +2642,7 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
      function in the current unit since it is private to the other unit.
      We could inline the nested function as well but it's probably better
      to err on the side of too little inlining.  */
-  if (!inline_flag
+  if (inline_status != is_enabled
       && !public_flag
       && current_function_decl
       && DECL_DECLARED_INLINE_P (current_function_decl)
@@ -2651,8 +2651,24 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
 
   DECL_ARTIFICIAL (subprog_decl) = artificial_flag;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
-  DECL_DECLARED_INLINE_P (subprog_decl) = inline_flag;
-  DECL_NO_INLINE_WARNING_P (subprog_decl) = inline_flag && artificial_flag;
+
+  switch (inline_status)
+    {
+    case is_suppressed:
+      DECL_UNINLINABLE (subprog_decl) = 1;
+      break;
+
+    case is_disabled:
+      break;
+
+    case is_enabled:
+      DECL_DECLARED_INLINE_P (subprog_decl) = 1;
+      DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_flag;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   TREE_PUBLIC (subprog_decl) = public_flag;
   TREE_READONLY (subprog_decl) = TYPE_READONLY (subprog_type);

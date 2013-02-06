@@ -886,10 +886,15 @@ package body Sem_Prag is
       --  to declare types that match predefined C types, especially for cases
       --  without corresponding Ada predefined type.
 
-      procedure Process_Inline (Active : Boolean);
-      --  Common processing for Inline and Inline_Always. The parameter
-      --  indicates if the inline pragma is active, i.e. if it should actually
-      --  cause inlining to occur.
+      type Inline_Status is (Suppressed, Disabled, Enabled);
+      --  Inline status of a subprogram, indicated as follows:
+      --    Suppressed: inlining is suppressed for the subprogram
+      --    Disabled:   no inlining is requested for the subprogram
+      --    Enabled:    inlining is requested/required for the subprogram
+
+      procedure Process_Inline (Status : Inline_Status);
+      --  Common processing for Inline, Inline_Always and No_Inline. Parameter
+      --  indicates the inline status specified by the pragma.
 
       procedure Process_Interface_Name
         (Subprogram_Def : Entity_Id;
@@ -4912,7 +4917,7 @@ package body Sem_Prag is
       -- Process_Inline --
       --------------------
 
-      procedure Process_Inline (Active : Boolean) is
+      procedure Process_Inline (Status : Inline_Status) is
          Assoc     : Node_Id;
          Decl      : Node_Id;
          Subp_Id   : Node_Id;
@@ -5017,7 +5022,9 @@ package body Sem_Prag is
 
             --  If inlining is not possible, for now do not treat as an error
 
-            elsif Inlining_Not_Possible (Subp) then
+            elsif Status /= Suppressed
+              and then Inlining_Not_Possible (Subp)
+            then
                Applies := True;
                return;
 
@@ -5145,18 +5152,56 @@ package body Sem_Prag is
 
          procedure Set_Inline_Flags (Subp : Entity_Id) is
          begin
-            if Active then
-               Set_Is_Inlined (Subp);
+            --  First set the Has_Pragma_XXX flags and issue the appropriate
+            --  errors and warnings for suspicious combinations.
+
+            if Prag_Id = Pragma_No_Inline then
+               if Has_Pragma_Inline_Always (Subp) then
+                  Error_Msg_N
+                    ("Inline_Always and No_Inline are mutually exclusive", N);
+               elsif Has_Pragma_Inline (Subp) then
+                  Error_Msg_NE
+                    ("Inline and No_Inline both specified for& ??",
+                     N, Entity (Subp_Id));
+               end if;
+
+               Set_Has_Pragma_No_Inline (Subp);
+            else
+               if Prag_Id = Pragma_Inline_Always then
+                  if Has_Pragma_No_Inline (Subp) then
+                     Error_Msg_N
+                       ("Inline_Always and No_Inline are mutually exclusive",
+                        N);
+                  end if;
+
+                  Set_Has_Pragma_Inline_Always (Subp);
+               else
+                  if Has_Pragma_No_Inline (Subp) then
+                     Error_Msg_NE
+                       ("Inline and No_Inline both specified for& ??",
+                        N, Entity (Subp_Id));
+                  end if;
+               end if;
+
+               if not Has_Pragma_Inline (Subp) then
+                  Set_Has_Pragma_Inline (Subp);
+                  Effective := True;
+               end if;
             end if;
 
-            if not Has_Pragma_Inline (Subp) then
-               Set_Has_Pragma_Inline (Subp);
-               Effective := True;
-            end if;
+            --  Then adjust the Is_Inlined flag. It can never be set if the
+            --  subprogram is subject to pragma No_Inline.
 
-            if Prag_Id = Pragma_Inline_Always then
-               Set_Has_Pragma_Inline_Always (Subp);
-            end if;
+            case Status is
+               when Suppressed =>
+                  Set_Is_Inlined (Subp, False);
+               when Disabled =>
+                  null;
+               when Enabled =>
+                  if not Has_Pragma_No_Inline (Subp) then
+                     Set_Is_Inlined (Subp, True);
+                  end if;
+            end case;
          end Set_Inline_Flags;
 
       --  Start of processing for Process_Inline
@@ -5165,7 +5210,7 @@ package body Sem_Prag is
          Check_No_Identifiers;
          Check_At_Least_N_Arguments (1);
 
-         if Active then
+         if Status = Enabled then
             Inline_Processing_Required := True;
          end if;
 
@@ -5211,7 +5256,7 @@ package body Sem_Prag is
 
             elsif not Effective
               and then Warn_On_Redundant_Constructs
-              and then not Suppress_All_Inlining
+              and then not (Status = Suppressed or Suppress_All_Inlining)
             then
                if Inlining_Not_Possible (Subp) then
                   Error_Msg_NE
@@ -11061,9 +11106,13 @@ package body Sem_Prag is
 
          when Pragma_Inline =>
 
-            --  Pragma is active if inlining option is active
+            --  Inline status is Enabled if inlining option is active
 
-            Process_Inline (Inline_Active);
+            if Inline_Active then
+               Process_Inline (Enabled);
+            else
+               Process_Inline (Disabled);
+            end if;
 
          -------------------
          -- Inline_Always --
@@ -11078,7 +11127,7 @@ package body Sem_Prag is
             --  this causes walk order issues.
 
             if not (CodePeer_Mode or Alfa_Mode) then
-               Process_Inline (True);
+               Process_Inline (Enabled);
             end if;
 
          --------------------
@@ -12612,6 +12661,16 @@ package body Sem_Prag is
          when Pragma_No_Body =>
             GNAT_Pragma;
             Pragma_Misplaced;
+
+         ---------------
+         -- No_Inline --
+         ---------------
+
+         --  pragma No_Inline ( NAME {, NAME} );
+
+         when Pragma_No_Inline =>
+            GNAT_Pragma;
+            Process_Inline (Suppressed);
 
          ---------------
          -- No_Return --
@@ -16630,6 +16689,7 @@ package body Sem_Prag is
       Pragma_Memory_Size                    => -1,
       Pragma_No_Return                      =>  0,
       Pragma_No_Body                        =>  0,
+      Pragma_No_Inline                      =>  0,
       Pragma_No_Run_Time                    => -1,
       Pragma_No_Strict_Aliasing             => -1,
       Pragma_Normalize_Scalars              => -1,

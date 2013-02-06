@@ -4055,7 +4055,8 @@ switches are set.  This includes suppression of inlining that
 results from the use of the pragma @code{Inline_Always}.
 Any occurrences of pragma @code{Inline} or @code{Inline_Always}
 are ignored, and @option{-gnatn} and @option{-gnatN} have no
-effect if this switch is present.
+effects if this switch is present.  Note that inlining can also
+be suppressed on a finer-grained basis with pragma @code{No_Inline}.
 
 @item -fno-inline-functions
 @cindex @option{-fno-inline-functions} (@command{gcc})

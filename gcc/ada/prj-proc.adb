@@ -2607,6 +2607,7 @@ package body Prj.Proc is
          Loaded_Project : Prj.Tree.Project_Node_Id;
          Success        : Boolean := True;
          Tree           : Project_Tree_Ref;
+         Node_Tree      : Project_Node_Tree_Ref;
 
       begin
          if Project.Qualifier not in Aggregate_Project then
@@ -2623,8 +2624,11 @@ package body Prj.Proc is
 
          List := Project.Aggregated_Projects;
          while Success and then List /= null loop
+            Node_Tree := new Project_Node_Tree_Data;
+            Initialize (Node_Tree);
+
             Prj.Part.Parse
-              (In_Tree           => From_Project_Node_Tree,
+              (In_Tree           => Node_Tree,
                Project           => Loaded_Project,
                Packages_To_Check => Packages_To_Check,
                Project_File_Name => Get_Name_String (List.Path),
@@ -2661,7 +2665,7 @@ package body Prj.Proc is
                      Packages_To_Check      => Packages_To_Check,
                      Success                => Success,
                      From_Project_Node      => Loaded_Project,
-                     From_Project_Node_Tree => From_Project_Node_Tree,
+                     From_Project_Node_Tree => Node_Tree,
                      Env                    => Child_Env,
                      Reset_Tree             => False);
                else
@@ -2673,7 +2677,7 @@ package body Prj.Proc is
                      Packages_To_Check      => Packages_To_Check,
                      Success                => Success,
                      From_Project_Node      => Loaded_Project,
-                     From_Project_Node_Tree => From_Project_Node_Tree,
+                     From_Project_Node_Tree => Node_Tree,
                      Env                    => Env,
                      Reset_Tree             => False);
                end if;

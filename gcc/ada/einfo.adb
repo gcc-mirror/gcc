@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -483,6 +483,7 @@ package body Einfo is
    --    Is_Ada_2012_Only                Flag199
 
    --    Has_Delayed_Aspects             Flag200
+   --    Has_Pragma_No_Inline            Flag201
    --    Itype_Printed                   Flag202
    --    Has_Pragma_Pure                 Flag203
    --    Is_Known_Null                   Flag204
@@ -541,8 +542,6 @@ package body Einfo is
    --    Is_Processed_Transient          Flag252
    --    Has_Anonymous_Master            Flag253
    --    Is_Implementation_Defined       Flag254
-
-   --    (unused)                        Flag201
 
    --    (unused)                        Flag255
    --    (unused)                        Flag256
@@ -1559,6 +1558,11 @@ package body Einfo is
    begin
       return Flag230 (Id);
    end Has_Pragma_Inline_Always;
+
+   function Has_Pragma_No_Inline (Id : E) return B is
+   begin
+      return Flag201 (Id);
+   end Has_Pragma_No_Inline;
 
    function Has_Pragma_Ordered (Id : E) return B is
    begin
@@ -4110,6 +4114,11 @@ package body Einfo is
    begin
       Set_Flag230 (Id, V);
    end Set_Has_Pragma_Inline_Always;
+
+   procedure Set_Has_Pragma_No_Inline (Id : E; V : B := True) is
+   begin
+      Set_Flag201 (Id, V);
+   end Set_Has_Pragma_No_Inline;
 
    procedure Set_Has_Pragma_Ordered (Id : E; V : B := True) is
    begin
@@ -7686,6 +7695,7 @@ package body Einfo is
       W ("Has_Pragma_Elaborate_Body",       Flag150 (Id));
       W ("Has_Pragma_Inline",               Flag157 (Id));
       W ("Has_Pragma_Inline_Always",        Flag230 (Id));
+      W ("Has_Pragma_No_Inline",            Flag201 (Id));
       W ("Has_Pragma_Ordered",              Flag198 (Id));
       W ("Has_Pragma_Pack",                 Flag121 (Id));
       W ("Has_Pragma_Preelab_Init",         Flag221 (Id));
