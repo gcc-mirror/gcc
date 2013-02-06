@@ -1,3 +1,9 @@
+2013-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54122
+	* tree.c (lvalue_kind) [INDIRECT_REF]: Don't check for
+	METHOD_TYPE.
+
 2013-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
