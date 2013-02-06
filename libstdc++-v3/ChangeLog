@@ -1,3 +1,9 @@
+2013-02-04  Dodji Seketeli  <dodji@redhat.com>
+
+	Add missing explicit instantiation for std::lower_bound template
+	* libstdc++-v3/src/c++11/hashtable_c++0x.cc (namespace std): Add
+	missing instantiation for std::lower_bound template.
+
 2013-02-04  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/functional_hash.h (std::__is_fast_hash<>): New.
