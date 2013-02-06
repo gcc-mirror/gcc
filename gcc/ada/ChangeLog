@@ -1,3 +1,8 @@
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Inherit the
+	Has_Unknown_Discriminants from the full view of the base type.
+
 2013-02-06  Tristan Gingold  <gingold@adacore.com>
 
 	* raise-gcc.c: Remove useless includes (sys/stat.h, adaint.h)
