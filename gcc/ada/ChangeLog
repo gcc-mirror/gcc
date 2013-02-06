@@ -1,3 +1,8 @@
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_ch6.adb, prj-conf.adb, erroutc.adb: Minor
+	reformatting.
+
 2013-02-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch6.adb (Check_For_Primitive_Subprogram): Test for

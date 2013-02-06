@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             P R J . C O N F                             --
+--                             P R J . C O N F                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -567,9 +567,8 @@ package body Prj.Conf is
 
       OK :=
         Target = ""
-        or else
-          (Tgt_Name /= No_Name
-           and then Target = Get_Name_String (Tgt_Name));
+          or else (Tgt_Name /= No_Name
+                    and then Target = Get_Name_String (Tgt_Name));
 
       if not OK then
          if Autoconf_Specified then
@@ -778,6 +777,7 @@ package body Prj.Conf is
       procedure Get_Project_Target is
       begin
          if Selected_Target'Length = 0 then
+
             --  Check if attribute Target is specified in the main
             --  project, or in a project it extends. If it is, use this
             --  target to invoke gprconfig.
@@ -1021,15 +1021,16 @@ package body Prj.Conf is
             else
                if Selected_Target'Length = 0 then
                   if At_Least_One_Compiler_Command then
-                     Args (4) := new String'("--target=all");
-
+                     Args (4) :=
+                       new String'("--target=all");
                   else
                      Args (4) :=
                        new String'("--target=" & Normalized_Hostname);
                   end if;
 
                else
-                  Args (4) := new String'("--target=" & Selected_Target.all);
+                  Args (4) :=
+                    new String'("--target=" & Selected_Target.all);
                end if;
 
                Arg_Last := 4;
