@@ -1688,7 +1688,7 @@ package body System.OS_Lib is
                   Res (J) := '"';
                   Quote_Needed := True;
 
-               elsif Arg (K) = ' ' then
+               elsif Arg (K) = ' ' or else Arg (K) = ASCII.HT then
                   Res (J) := Arg (K);
                   Quote_Needed := True;
 

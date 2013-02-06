@@ -599,6 +599,7 @@ package body Prj.Conf is
 
    procedure Get_Or_Create_Configuration_File
      (Project                    : Project_Id;
+      Conf_Project               : Project_Id;
       Project_Tree               : Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
       Env                        : in out Prj.Tree.Environment;
@@ -860,7 +861,7 @@ package body Prj.Conf is
          Obj_Dir : constant Variable_Value :=
                      Value_Of
                        (Name_Object_Dir,
-                        Project.Decl.Attributes,
+                        Conf_Project.Decl.Attributes,
                         Shared);
 
          Gprconfig_Path  : String_Access;
@@ -874,10 +875,10 @@ package body Prj.Conf is
               ("could not locate gprconfig for auto-configuration");
          end if;
 
-         --  First, find the object directory of the user's project
+         --  First, find the object directory of the Conf_Project
 
          if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
-            Get_Name_String (Project.Directory.Display_Name);
+            Get_Name_String (Conf_Project.Directory.Display_Name);
 
          else
             if Is_Absolute_Path (Get_Name_String (Obj_Dir.Value)) then
@@ -886,7 +887,7 @@ package body Prj.Conf is
             else
                Name_Len := 0;
                Add_Str_To_Name_Buffer
-                 (Get_Name_String (Project.Directory.Display_Name));
+                 (Get_Name_String (Conf_Project.Directory.Display_Name));
                Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
             end if;
          end if;
@@ -1627,6 +1628,42 @@ package body Prj.Conf is
       Main_Config_Project : Project_Id;
       Success             : Boolean;
 
+      Conf_Project : Project_Id := No_Project;
+      --  The object directory of this project will be used to store the config
+      --  project file in auto-configuration. Set by procedure Check_Project
+      --  below.
+
+      procedure Check_Project (Project : Project_Id);
+      --  Look for a non aggregate project. If one is found, put its project Id
+      --  in Conf_Project.
+
+      -------------------
+      -- Check_Project --
+      -------------------
+
+      procedure Check_Project (Project : Project_Id) is
+      begin
+         if Project.Qualifier = Aggregate
+           or else Project.Qualifier = Aggregate_Library
+         then
+            declare
+               List : Aggregated_Project_List :=
+                 Project.Aggregated_Projects;
+
+            begin
+               --  Look for a non aggregate project until one is found
+
+               while Conf_Project = No_Project and then List /= null loop
+                  Check_Project (List.Project);
+                  List := List.Next;
+               end loop;
+            end;
+
+         else
+            Conf_Project := Project;
+         end if;
+      end Check_Project;
+
    begin
       Main_Project := No_Project;
       Automatically_Generated := False;
@@ -1682,11 +1719,25 @@ package body Prj.Conf is
          Read_Source_Info_File (Project_Tree);
       end if;
 
+      --  Get the first project that is not an aggregate project or an
+      --  aggregate library project. The object directory of this project will
+      --  be used to store the config project file in auto-configuration.
+
+      Check_Project (Main_Project);
+
+      --  Fail if there is only aggregate projects and aggregate library
+      --  projects in the project tree.
+
+      if Conf_Project = No_Project then
+         Raise_Invalid_Config ("there are no non-aggregate projects");
+      end if;
+
       --  Find configuration file
 
       Get_Or_Create_Configuration_File
         (Config                     => Main_Config_Project,
          Project                    => Main_Project,
+         Conf_Project               => Conf_Project,
          Project_Tree               => Project_Tree,
          Project_Node_Tree          => Project_Node_Tree,
          Env                        => Env,

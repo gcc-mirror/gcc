@@ -10452,7 +10452,8 @@ package body Sem_Ch12 is
          T : constant Entity_Id := Get_Instance_Of (Gen_T);
 
       begin
-         return (Base_Type (T) = Base_Type (Act_T)
+         return ((Base_Type (T) = Act_T
+                   or else Base_Type (T) = Base_Type (Act_T))
                   and then Subtypes_Statically_Match (T, Act_T))
 
            or else (Is_Class_Wide_Type (Gen_T)
@@ -10701,21 +10702,14 @@ package body Sem_Ch12 is
          --  the test to handle this special case only after a direct check
          --  for static matching has failed. The case where both the component
          --  type and the array type are separate formals, and the component
-         --  type is a private view may also require special checking.
+         --  type is a private view may also require special checking in
+         --  Subtypes_Match.
 
          if Subtypes_Match
            (Component_Type (A_Gen_T), Component_Type (Act_T))
              or else Subtypes_Match
                (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
                Component_Type (Act_T))
-             or else
-               (Is_Private_Type (Component_Type (A_Gen_T))
-                 and then not Has_Discriminants (Component_Type (A_Gen_T))
-                 and then
-                  Subtypes_Match
-                    (Base_Type
-                      (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T)),
-                    Component_Type (Act_T)))
          then
             null;
          else

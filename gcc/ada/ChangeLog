@@ -1,3 +1,43 @@
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Expand_Loop_Entry_Attributes): When
+	dealing with a for loop that iterates over a subtype indication
+	with a range, use the low and high bounds of the subtype.
+
+2013-02-06  Nicolas Roche  <roche@adacore.com>
+
+	* s-os_lib.adb (Normalize_Arguments): Arguments containing tabs should
+	be quoted
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Process_Project_And_Apply_Config): New variable
+	Conf_Project.  New recursive procedure Check_Project to find a non
+	aggregate project and put its Project_Id in Conf_Project. Fails if
+	no such project can be found.
+	(Get_Or_Create_Configuration_File): New parameter Conf_Project.
+	 (Do_Autoconf): Use project directory of project Conf_Project to store
+	the generated configuration project file.
+	* prj-conf.ads (Get_Or_Create_Configuration_File): New parameter
+	Conf_Project.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Generate a read
+	reference for out-mode parameters in the cases specified by
+	RM 6.4.1(12).
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Do not resolve the prefix of
+	Loop_Entry, instead wait until the attribute has been expanded. The
+	delay ensures that any generated checks or temporaries are inserted
+	before the relocated prefix.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Code clean up.
+
 2013-02-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Discriminant_Check): Look for discriminant
