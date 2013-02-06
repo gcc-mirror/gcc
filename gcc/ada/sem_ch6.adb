@@ -2909,6 +2909,9 @@ package body Sem_Ch6 is
         and then Serious_Errors_Detected = 0
         and then Present (Spec_Id)
         and then Has_Pragma_Inline (Spec_Id)
+
+        --  This test needs commenting ???
+
         and then In_Extended_Main_Code_Unit (N)
       then
          Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);

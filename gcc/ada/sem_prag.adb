@@ -16026,9 +16026,7 @@ package body Sem_Prag is
                                  J := J + 1;
                                  C := Get_String_Char (Str, J);
                                  Chr := Get_Character (C);
-                                 if Chr = 'W' then
-                                    exit;
-                                 end if;
+                                 exit when Chr = 'W';
                                  OK := False;
 
                               --  Dot case
