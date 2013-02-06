@@ -2577,6 +2577,7 @@ package body Sem_Util is
       Op_List        : Elist_Id;
       Formal         : Entity_Id;
       Is_Prim        : Boolean;
+      Is_Type_In_Pkg : Boolean;
       Formal_Derived : Boolean := False;
       Id             : Entity_Id;
 
@@ -2636,12 +2637,9 @@ package body Sem_Util is
             null;
          end if;
 
-      elsif (Is_Package_Or_Generic_Package (B_Scope)
-              and then
-                Nkind (Parent (Declaration_Node (First_Subtype (T)))) /=
-                                                            N_Package_Body)
-        or else Is_Derived_Type (B_Type)
-      then
+      --  Locate the primitive subprograms of the type
+
+      else
          --  The primitive operations appear after the base type, except
          --  if the derivation happens within the private part of B_Scope
          --  and the type is a private type, in which case both the type
@@ -2657,13 +2655,30 @@ package body Sem_Util is
             Id := Next_Entity (B_Type);
          end if;
 
+         --  Set flag if this is a type in a package spec
+
+         Is_Type_In_Pkg :=
+           Is_Package_Or_Generic_Package (B_Scope)
+             and then
+               Nkind (Parent (Declaration_Node (First_Subtype (T)))) /=
+                                                           N_Package_Body;
+
          while Present (Id) loop
 
-            --  Note that generic formal subprograms are not
-            --  considered to be primitive operations and thus
-            --  are never inherited.
+            --  Test whether the result type or any of the parameter types of
+            --  each subprogram following the type match that type when the
+            --  type is declared in a package spec, is a derived type, or the
+            --  subprogram is marked as primitive. (The Is_Primitive test is
+            --  needed to find primitives of nonderived types in declarative
+            --  parts that happen to override the predefined "=" operator.)
+
+            --  Note that generic formal subprograms are not considered to be
+            --  primitive operations and thus are never inherited.
 
             if Is_Overloadable (Id)
+              and then (Is_Type_In_Pkg
+                         or else Is_Derived_Type (B_Type)
+                         or else Is_Primitive (Id))
               and then Nkind (Parent (Parent (Id)))
                          not in N_Formal_Subprogram_Declaration
             then
@@ -2684,9 +2699,9 @@ package body Sem_Util is
                   end loop;
                end if;
 
-               --  For a formal derived type, the only primitives are the
-               --  ones inherited from the parent type. Operations appearing
-               --  in the package declaration are not primitive for it.
+               --  For a formal derived type, the only primitives are the ones
+               --  inherited from the parent type. Operations appearing in the
+               --  package declaration are not primitive for it.
 
                if Is_Prim
                  and then (not Formal_Derived

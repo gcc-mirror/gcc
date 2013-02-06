@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2012, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2013, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -565,12 +565,11 @@ package body Prj.Conf is
          Tgt_Name := Variable.Value;
       end if;
 
-      if Target = "" then
-         OK := Autoconf_Specified or else Tgt_Name = No_Name;
-      else
-         OK := Tgt_Name /= No_Name
-                 and then Target = Get_Name_String (Tgt_Name);
-      end if;
+      OK :=
+        Target = ""
+        or else
+          (Tgt_Name /= No_Name
+           and then Target = Get_Name_String (Tgt_Name));
 
       if not OK then
          if Autoconf_Specified then
@@ -625,6 +624,8 @@ package body Prj.Conf is
       --  The configuration project file name. May be modified if there are
       --  switches --config= in the Builder package of the main project.
 
+      Selected_Target : String_Access := new String'(Target_Name);
+
       function Default_File_Name return String;
       --  Return the name of the default config file that should be tested
 
@@ -634,6 +635,10 @@ package body Prj.Conf is
 
       procedure Check_Builder_Switches;
       --  Check for switches --config and --RTS in package Builder
+
+      procedure Get_Project_Target;
+      --  Target_Name is empty, get the specifiedtarget in the project file,
+      --  if any.
 
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
@@ -766,6 +771,47 @@ package body Prj.Conf is
          end if;
       end Check_Builder_Switches;
 
+      ------------------------
+      -- Get_Project_Target --
+      ------------------------
+
+      procedure Get_Project_Target is
+      begin
+         if Selected_Target'Length = 0 then
+            --  Check if attribute Target is specified in the main
+            --  project, or in a project it extends. If it is, use this
+            --  target to invoke gprconfig.
+
+            declare
+               Variable : Variable_Value;
+               Proj     : Project_Id;
+               Tgt_Name : Name_Id := No_Name;
+
+            begin
+               Proj := Project;
+               Project_Loop :
+               while Proj /= No_Project loop
+                  Variable :=
+                    Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
+
+                  if Variable /= Nil_Variable_Value
+                    and then not Variable.Default
+                    and then Variable.Value /= No_Name
+                  then
+                     Tgt_Name := Variable.Value;
+                     exit Project_Loop;
+                  end if;
+
+                  Proj := Proj.Extends;
+               end loop Project_Loop;
+
+               if Tgt_Name /= No_Name then
+                  Selected_Target := new String'(Get_Name_String (Tgt_Name));
+               end if;
+            end;
+         end if;
+      end Get_Project_Target;
+
       -----------------------
       -- Default_File_Name --
       -----------------------
@@ -775,13 +821,14 @@ package body Prj.Conf is
          Tmp     : String_Access;
 
       begin
-         if Target_Name /= "" then
+         if Selected_Target'Length /= 0 then
             if Ada_RTS /= "" then
                return
-                 Target_Name & '-' & Ada_RTS & Config_Project_File_Extension;
+                 Selected_Target.all & '-' &
+                 Ada_RTS & Config_Project_File_Extension;
             else
                return
-                 Target_Name & Config_Project_File_Extension;
+                 Selected_Target.all & Config_Project_File_Extension;
             end if;
 
          elsif Ada_RTS /= "" then
@@ -972,51 +1019,17 @@ package body Prj.Conf is
             if Normalized_Hostname = "" then
                Arg_Last := 3;
             else
-               if Target_Name = "" then
+               if Selected_Target'Length = 0 then
+                  if At_Least_One_Compiler_Command then
+                     Args (4) := new String'("--target=all");
 
-                  --  Check if attribute Target is specified in the main
-                  --  project, or in a project it extends. If it is, use this
-                  --  target to invoke gprconfig.
-
-                  declare
-                     Variable : Variable_Value;
-                     Proj     : Project_Id;
-                     Tgt_Name : Name_Id := No_Name;
-
-                  begin
-                     Proj := Project;
-                     Project_Loop :
-                     while Proj /= No_Project loop
-                        Variable :=
-                          Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
-
-                        if Variable /= Nil_Variable_Value
-                          and then not Variable.Default
-                          and then Variable.Value /= No_Name
-                        then
-                           Tgt_Name := Variable.Value;
-                           exit Project_Loop;
-                        end if;
-
-                        Proj := Proj.Extends;
-                     end loop Project_Loop;
-
-                     if Tgt_Name /= No_Name then
-                        Args (4) :=
-                          new String'("--target=" &
-                                      Get_Name_String (Tgt_Name));
-
-                     elsif At_Least_One_Compiler_Command then
-                        Args (4) := new String'("--target=all");
-
-                     else
-                        Args (4) :=
-                          new String'("--target=" & Normalized_Hostname);
-                     end if;
-                  end;
+                  else
+                     Args (4) :=
+                       new String'("--target=" & Normalized_Hostname);
+                  end if;
 
                else
-                  Args (4) := new String'("--target=" & Target_Name);
+                  Args (4) := new String'("--target=" & Selected_Target.all);
                end if;
 
                Arg_Last := 4;
@@ -1348,6 +1361,7 @@ package body Prj.Conf is
       Free (Config_File_Path);
       Config := No_Project;
 
+      Get_Project_Target;
       Check_Builder_Switches;
 
       if Conf_File_Name'Length > 0 then
@@ -1448,7 +1462,8 @@ package body Prj.Conf is
 
       if not Automatically_Generated
         and then not
-          Check_Target (Config, Autoconf_Specified, Project_Tree, Target_Name)
+          Check_Target
+            (Config, Autoconf_Specified, Project_Tree, Selected_Target.all)
       then
          Automatically_Generated := True;
          goto Process_Config_File;

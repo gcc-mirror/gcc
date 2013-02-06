@@ -1,3 +1,34 @@
+2013-02-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Check_For_Primitive_Subprogram): Test for
+	the special case of a user-defined equality that overrides
+	the predefined equality of a nonderived type declared in a
+	declarative part.
+	* sem_util.adb (Collect_Primitive_Operations): Add test for
+	Is_Primitive when looping over the subprograms following a type,
+	to catch the case of primitives such as a user-defined equality,
+	which otherwise won't be found when the type is not a derived
+	type and is declared in a declarative part.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Check_Target): Always return True when Target
+	is empty (Get_Or_Create_Configuration_File.Get_Project_Target):
+	New procedure to get the value of attribute Target in the main
+	project.
+	(Get_Or_Create_Configuration_File.Do_Autoconf): No
+	need to get the value of attribute Target in the main project.
+	(Get_Or_Create_Configuration_File): Call Get_Project_Target and
+	use the target fom this call.
+
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warning): Do not issue the
+	warning about an ineffective Pragma Warnings for -Wxxx warnings.
+	* sem_prag.adb (Analyze_Pragma) <Warnings>: Accept -Wxxx warnings.
+	* gnat_rm.texi (Pragma Warnings): Document coordination with
+	warnings of the GCC back-end.
+
 2013-02-06  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not build the body
