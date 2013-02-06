@@ -1,5 +1,9 @@
 2013-02-06  Diego Novillo  <dnovillo@google.com>
 
+	* testsuite-management/validate_failures.py: Fix typo.
+
+2013-02-06  Diego Novillo  <dnovillo@google.com>
+
 	* testsuite-management/validate_failures.py: Update
 	Copyright years.
 	Request contributions not to use Python features newer
