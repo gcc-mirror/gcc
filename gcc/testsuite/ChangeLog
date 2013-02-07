@@ -1,3 +1,11 @@
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55789
+	* g++.dg/ipa/inline-3.C: Use cleanup-ipa-dump instead of
+	cleanup-tree-dump.
+	* gcc.dg/tree-ssa/inline-3.c: Add
+	--param max-early-inliner-iterations=2 option.
+
 2013-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR debug/53363

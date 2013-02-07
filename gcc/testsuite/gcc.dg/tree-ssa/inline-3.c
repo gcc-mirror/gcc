@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline" } */
+/* { dg-options "-O2 -fdump-tree-einline --param max-early-inliner-iterations=2" } */
 /* { dg-add-options bind_pic_locally } */
 
 extern void inlined ();
