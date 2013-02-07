@@ -2164,31 +2164,31 @@ ggc_print_statistics (void)
   {
     fprintf (stderr, "\nTotal allocations and overheads during the compilation process\n");
 
-    fprintf (stderr, "Total Overhead:                        %10lld\n",
+    fprintf (stderr, "Total Overhead:                        %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_overhead);
-    fprintf (stderr, "Total Allocated:                       %10lld\n",
+    fprintf (stderr, "Total Allocated:                       %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_allocated);
 
-    fprintf (stderr, "Total Overhead  under  32B:            %10lld\n",
+    fprintf (stderr, "Total Overhead  under  32B:            %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_overhead_under32);
-    fprintf (stderr, "Total Allocated under  32B:            %10lld\n",
+    fprintf (stderr, "Total Allocated under  32B:            %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_allocated_under32);
-    fprintf (stderr, "Total Overhead  under  64B:            %10lld\n",
+    fprintf (stderr, "Total Overhead  under  64B:            %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_overhead_under64);
-    fprintf (stderr, "Total Allocated under  64B:            %10lld\n",
+    fprintf (stderr, "Total Allocated under  64B:            %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_allocated_under64);
-    fprintf (stderr, "Total Overhead  under 128B:            %10lld\n",
+    fprintf (stderr, "Total Overhead  under 128B:            %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_overhead_under128);
-    fprintf (stderr, "Total Allocated under 128B:            %10lld\n",
+    fprintf (stderr, "Total Allocated under 128B:            %10" HOST_LONG_LONG_FORMAT "d\n",
              G.stats.total_allocated_under128);
 
     for (i = 0; i < NUM_ORDERS; i++)
       if (G.stats.total_allocated_per_order[i])
         {
-          fprintf (stderr, "Total Overhead  page size %7lu:     %10lld\n",
+          fprintf (stderr, "Total Overhead  page size %7lu:     %10" HOST_LONG_LONG_FORMAT "d\n",
                    (unsigned long) OBJECT_SIZE (i),
 		   G.stats.total_overhead_per_order[i]);
-          fprintf (stderr, "Total Allocated page size %7lu:     %10lld\n",
+          fprintf (stderr, "Total Allocated page size %7lu:     %10" HOST_LONG_LONG_FORMAT "d\n",
                    (unsigned long) OBJECT_SIZE (i),
 		   G.stats.total_allocated_per_order[i]);
         }

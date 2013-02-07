@@ -1,3 +1,12 @@
+2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56227
+	* lto.c (lto_resolution_ready): Use %wx instead of
+	HOST_WIDE_INT_PRINT_HEX_PURE in the argument to internal_error.
+
 2012-09-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

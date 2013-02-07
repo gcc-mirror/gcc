@@ -1,3 +1,13 @@
+2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56227
+	* ggc-page.c (ggc_print_statistics): Use HOST_LONG_LONG_FORMAT
+	instead of "ll".
+	* config/i386/i386.c (ix86_print_operand): Ditto.
+
 2013-02-07  Alan Modra  <amodra@gmail.com>
 
 	PR target/53040
