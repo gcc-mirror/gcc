@@ -1,3 +1,8 @@
+2013-02-07  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+
+	* collect2.c (main): Set aix64_flag for -G and -bsvr4 too, disable
+	if -bnortl. Convert to strcmp and strncmp.
+
 2013-02-07  Alan Modra  <amodra@gmail.com>
 
 	PR target/54009
