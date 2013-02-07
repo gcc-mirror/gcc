@@ -633,7 +633,7 @@ usage(void)
 	sysfatal("Usage: goc2c [--go-pkgpath PKGPATH] [--go-prefix PREFIX] [file]\n");
 }
 
-void
+int
 main(int argc, char **argv)
 {
 	char *goarch;
