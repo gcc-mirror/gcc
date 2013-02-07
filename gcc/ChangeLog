@@ -1,3 +1,11 @@
+2013-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/56178
+	* cse.c (cse_insn): Do not create a REG_EQUAL note if the source is a
+	SUBREG of a register.  Tidy up related block of code.
+	* fwprop.c (forward_propagate_and_simplify): Do not create a REG_EQUAL
+	note if the source is a register or a SUBREG of a register.
+
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56228

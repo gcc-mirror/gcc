@@ -1316,10 +1316,16 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
 	 separately try plugging the definition in the note and simplifying.
 	 And only install a REQ_EQUAL note when the destination is a REG
 	 that isn't mentioned in USE_SET, as the note would be invalid
-	 otherwise.  */
-      set_reg_equal = (note == NULL_RTX && REG_P (SET_DEST (use_set))
-		       && ! reg_mentioned_p (SET_DEST (use_set),
-					     SET_SRC (use_set)));
+	 otherwise.  We also don't want to install a note if we are merely
+	 propagating a pseudo since verifying that this pseudo isn't dead
+	 is a pain; moreover such a note won't help anything.  */
+      set_reg_equal = (note == NULL_RTX
+		       && REG_P (SET_DEST (use_set))
+		       && !REG_P (src)
+		       && !(GET_CODE (src) == SUBREG
+			    && REG_P (SUBREG_REG (src)))
+		       && !reg_mentioned_p (SET_DEST (use_set),
+					    SET_SRC (use_set)));
     }
 
   if (GET_MODE (*loc) == VOIDmode)
