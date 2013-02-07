@@ -1,3 +1,12 @@
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56228
+	* config/rs6000/rs6000.md (ptrm): New mode attr.
+	(call_indirect_aix<ptrsize>, call_indirect_aix<ptrsize>_nor11,
+	call_value_indirect_aix<pttrsize>,
+	call_value_indirect_aix<pttrsize>_nor11): Use <ptrm> instead of
+	m in constraints.
+
 2013-02-07  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
 
 	* collect2.c (main): Set aix64_flag for -G and -bsvr4 too, disable
