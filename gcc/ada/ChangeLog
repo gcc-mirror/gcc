@@ -1,3 +1,10 @@
+2013-02-07  Simon Wright  <simon@pushface.org>
+
+	PR target/50678
+	* init.c (__darwin_major_version): New function for x86-64/Darwin.
+	(__gnat_adjust_context_for_raise) [Darwin]: Disable the workaround
+	on Darwin 12 and above.
+
 2013-02-06  Rainer Emrich  <rainer@emrich-ebersheim.de>
 
 	PR target/52123
