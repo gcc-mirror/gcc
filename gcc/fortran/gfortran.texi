@@ -221,7 +221,7 @@ compiler.
 
 The GNU Fortran compiler front end was
 designed initially as a free replacement for,
-or alternative to, the unix @command{f95} command;
+or alternative to, the Unix @command{f95} command;
 @command{gfortran} is the command you will use to invoke the compiler.
 
 @menu
@@ -522,12 +522,13 @@ ISO/IEC 1539:1997 (Fortran 95).  As such, it can also compile essentially all
 standard-compliant Fortran 90 and Fortran 77 programs.   It also supports
 the ISO/IEC TR-15581 enhancements to allocatable arrays.
 
-In the future, the GNU Fortran compiler will also support ISO/IEC
-1539-1:2004 (Fortran 2003), ISO/IEC 1539-1:2010 (Fortran 2008) and
-future Fortran standards.  Partial support of the Fortran 2003 and
-Fortran 2008 standard is already provided; the current status of the
-support is reported in the @ref{Fortran 2003 status} and
-@ref{Fortran 2008 status} sections of the documentation.
+GNU Fortran also have a partial support for ISO/IEC 1539-1:2004 (Fortran
+2003), ISO/IEC 1539-1:2010 (Fortran 2008), the Technical Specification
+@code{Further Interoperability of Fortran with C} (ISO/IEC TS 29113:2012).
+Full support of those standards and future Fortran standards is planned.
+The current status of the support is can be found in the
+@ref{Fortran 2003 status}, @ref{Fortran 2008 status} and
+@ref{TS 29113 status} sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
 (version 3.1, @url{http://openmp.org/@/wp/@/openmp-specifications/}).
@@ -545,6 +546,10 @@ for them, which work with GNU Fortran.  They can be found at
 @uref{http://www.fortran.com/@/iso_varying_string.f95} and at
 @uref{ftp://ftp.nag.co.uk/@/sc22wg5/@/ISO_VARYING_STRING/}.
 
+Deferred-length character strings of Fortran 2003 supports part of
+the features of @code{ISO_VARYING_STRING} and should be considered as
+replacement. (Namely, allocatable or pointers of the type
+@code{character(len=:)}.)
 
 
 @c =====================================================================
@@ -807,8 +812,8 @@ operators bound to a type.
 override type-bound procedures or to have deferred binding.
 
 @item Polymorphic entities (``@code{CLASS}'') for derived types -- including
-@code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE}.
-Note that unlimited polymorphism is currently not supported.
+@code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE} for
+scalars and arrays, including unlimited polymorphism.
 
 @item Generic interface names, which have the same name as derived types,
 are now supported. This allows one to write constructor functions.  Note
@@ -1079,16 +1084,23 @@ The @uref{http://gcc.gnu.org/wiki/TS29113Status, wiki} has some information
 about the current TS 29113 implementation status.  In particular, the
 following is implemented.
 
+See also @ref{Further Interoperability of Fortran with C}.
+
 @itemize
 @item The @option{-std=f2008ts} option.
 
 @item The @code{OPTIONAL} attribute is allowed for dummy arguments
 of @code{BIND(C) procedures.}
 
-@item The RANK intrinsic is supported.
+@item The @code{RANK} intrinsic is supported.
 
 @item GNU Fortran's implementation for variables with @code{ASYNCHRONOUS}
 attribute is compatible with TS 29113.
+
+@item Assumed types (@code{TYPE(*)}.
+
+@item Assumed-rank (@code{DIMENSION(..)}). However, the array descriptor
+of the TS is not yet supported.
 @end itemize
 
 
@@ -2264,7 +2276,7 @@ Derived types with the C binding attribute shall not have the @code{sequence}
 attribute, type parameters, the @code{extends} attribute, nor type-bound
 procedures.  Every component must be of interoperable type and kind and may not
 have the @code{pointer} or @code{allocatable} attribute.  The names of the
-variables are irrelevant for interoperability.
+components are irrelevant for interoperability.
 
 As there exist no direct Fortran equivalents, neither unions nor structs
 with bit field or variable-length array members are interoperable.
@@ -2304,11 +2316,14 @@ be compatible with C.  The dummy argument declaration is relatively
 straightforward.  However, one needs to be careful because C uses
 call-by-value by default while Fortran behaves usually similar to
 call-by-reference.  Furthermore, strings and pointers are handled
-differently.  Note that only explicit size and assumed-size arrays are
-supported but not assumed-shape or allocatable arrays.
+differently.  Note that in Fortran 2003 and 2008 only explicit size
+and assumed-size arrays are supported but not assumed-shape or
+deferred-shape (i.e. allocatable or pointer) arrays.  However, those
+are allowed since the Technical Specification 29113, see
+@ref{Further Interoperability of Fortran with C}
 
 To pass a variable by value, use the @code{VALUE} attribute.
-Thus the following C prototype
+Thus, the following C prototype
 
 @smallexample
 @code{int func(int i, int *j)}
@@ -2401,6 +2416,11 @@ The intrinsic procedures are described in @ref{Intrinsic Procedures}.
 C pointers are represented in Fortran via the special opaque derived type
 @code{type(c_ptr)} (with private components).  Thus one needs to
 use intrinsic conversion procedures to convert from or to C pointers.
+
+For some applications, using an assumed type (@code{TYPE(*)}) can be an
+alternative to a C pointer; see
+@ref{Further Interoperability of Fortran with C}.
+
 For example,
 
 @smallexample
@@ -2546,17 +2566,76 @@ END MODULE m
 @node Further Interoperability of Fortran with C
 @subsection Further Interoperability of Fortran with C
 
-Assumed-shape and allocatable arrays are passed using an array descriptor
-(dope vector).  The internal structure of the array descriptor used
-by GNU Fortran is not yet documented and will change.  There will also be
-a Technical Specification (TS 29113) which standardizes an interoperable
-array descriptor.  Until then, you can use the Chasm Language
+The Technical Specification ISO/IEC TS 29113:2012 on further
+interoperability of Fortran with C extends the interoperability support
+of Fortran 2003 and Fortran 2008. Besides removing some restrictions
+and constraints, it adds assumed-type (@code{TYPE(*)}) and assumed-rank
+(@code{dimension}) variables and allows for interoperability of
+assumed-shape, assumed-rank and deferred-shape arrays, including
+allocatables and pointers.
+
+Note: Currently, GNU Fortran does not support the array descriptor
+(dope vector) as specified in the Technical Specification, but uses
+an array descriptor with different fields. The Chasm Language
 Interoperability Tools, @url{http://chasm-interop.sourceforge.net/},
-which provide an interface to GNU Fortran's array descriptor.
+provide an interface to GNU Fortran's array descriptor.
 
-GNU Fortran already supports the C-interoperable @code{OPTIONAL}
-attribute; for absent arguments, a @code{NULL} pointer is passed.
+The Technical Specification adds the following new features, which
+are supported by GNU Fortran:
 
+@itemize @bullet
+
+@item The @code{ASYNCHRONOUS} attribute has been clarified and
+extended to allow its use with asynchronous communication in
+user-provided libraries such as in implementations of the
+Message Passing Interface specification.
+
+@item Many constraints have been relaxed, in particular for
+the @code{C_LOC} and @code{C_F_POINTER} intrinsics.
+
+@item The @code{OPTIONAL} attribute is now allowed for dummy
+arguments; an absent argument matches a @code{NULL} pointer.
+
+@item Assumed types (@code{TYPE(*)}) have been added, which may
+only be used for dummy arguments.  They are unlimited polymorphic
+but contrary to @code{CLASS(*)} they do not contain any type
+information, similar to C's @code{void *} pointers.  Expressions
+of any type and kind can be passed; thus, it can be used as
+replacement for @code{TYPE(C_PTR)}, avoiding the use of
+@code{C_LOC} in the caller.
+
+Note, however, that @code{TYPE(*)} only accepts scalar arguments,
+unless the @code{DIMENSION} is explicitly specified.  As
+@code{DIMENSION(*)} only supports array (including array elements) but
+no scalars, it is not a full replacement for @code{C_LOC}.  On the
+other hand, assumed-type assumed-rank dummy arguments
+(@code{TYPE(*), DIMENSION(..)}) allow for both scalars and arrays, but
+require special code on the callee side to handle the array descriptor.
+
+@item Assumed-shape arrays (@code{DIMENSION(..)}) as dummy argument
+allow that scalars and arrays of any rank can be passed as actual
+argument. As the Technical Specification does not provide for direct
+means to operate with them, they have to be used either from the C side
+or be converted using @code{C_LOC} and @code{C_F_POINTER} to scalars
+or arrays of a specific rank. The rank can be determined using the
+@code{RANK} intrinisic.
+@end itemize
+
+
+Currently unimplemented:
+
+@itemize @bullet
+
+@item GNU Fortran always uses an array descriptor, which does not
+match the one of the Technical Specification. The
+@code{ISO_Fortran_binding.h} header file and the C functions it
+specifies are not available.
+
+@item Using assumed-shape, assumed-rank and deferred-shape arrays in
+@code{BIND(C)} procedures is not fully supported. In particular,
+C interoperable strings of other length than one are not supported
+as this requires the new array descriptor.
+@end itemize
 
 
 @node GNU Fortran Compiler Directives
@@ -3100,7 +3179,7 @@ Environment variable for filename for * IO-unit.
 Environment variable for temporary file directory.
 
 @item
-Environment variable forcing standard output to be line buffered (unix).
+Environment variable forcing standard output to be line buffered (Unix).
 
 @end itemize
 
