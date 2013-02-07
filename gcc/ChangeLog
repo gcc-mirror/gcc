@@ -1,3 +1,16 @@
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56154
+	* dwarf2out.c (dwarf2_debug_hooks): Set end_function hook to
+	dwarf2out_end_function.
+	(in_first_function_p, maybe_at_text_label_p,
+	first_loclabel_num_not_at_text_label): New variables.
+	(dwarf2out_var_location): In the first function find out
+	lowest loclabel_num N where .LVLN is known not to be equal
+	to .Ltext0.
+	(find_empty_loc_ranges_at_text_label, dwarf2out_end_function): New
+	functions.
+
 2013-02-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/56178

@@ -1,5 +1,12 @@
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/56154
+	* gcc.dg/guality/pr56154-1.c: New test.
+	* gcc.dg/guality/pr56154-2.c: New test.
+	* gcc.dg/guality/pr56154-3.c: New test.
+	* gcc.dg/guality/pr56154-4.c: New test.
+	* gcc.dg/guality/pr56154-aux.c: New file.
+
 	PR tree-optimization/55789
 	* g++.dg/ipa/inline-3.C: Use cleanup-ipa-dump instead of
 	cleanup-tree-dump.
