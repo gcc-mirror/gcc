@@ -1,3 +1,10 @@
+2013-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR debug/53363
+	* g++.dg/debug/dwarf2/thunk1.C: Restrict to 32-bit x86.
+	Add -fno-dwarf2-cfi-asm to dg-options.
+	Adapt match count.
+
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56228
