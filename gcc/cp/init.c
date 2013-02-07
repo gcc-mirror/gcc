@@ -253,8 +253,6 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
 	{
 	  constructor_elt ce;
 
-	  vec_alloc (v, 1);
-
 	  /* If this is a one element array, we just use a regular init.  */
 	  if (tree_int_cst_equal (size_zero_node, max_index))
 	    ce.index = size_zero_node;
@@ -265,7 +263,11 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
 	  ce.value = build_zero_init_1 (TREE_TYPE (type),
 					 /*nelts=*/NULL_TREE,
 					 static_storage_p, NULL_TREE);
-	  v->quick_push (ce);
+	  if (ce.value)
+	    {
+	      vec_alloc (v, 1);
+	      v->quick_push (ce);
+	    }
 	}
 
       /* Build a constructor to contain the initializations.  */
@@ -447,8 +449,6 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	{
 	  constructor_elt ce;
 
-	  vec_alloc (v, 1);
-
 	  /* If this is a one element array, we just use a regular init.  */
 	  if (tree_int_cst_equal (size_zero_node, max_index))
 	    ce.index = size_zero_node;
@@ -456,16 +456,20 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	    ce.index = build2 (RANGE_EXPR, sizetype, size_zero_node, max_index);
 
 	  ce.value = build_value_init (TREE_TYPE (type), complain);
-	  v->quick_push (ce);
+	  if (ce.value)
+	    {
+	      if (ce.value == error_mark_node)
+		return error_mark_node;
 
-	  if (ce.value == error_mark_node)
-	    return error_mark_node;
+	      vec_alloc (v, 1);
+	      v->quick_push (ce);
 
-	  /* We shouldn't have gotten here for anything that would need
-	     non-trivial initialization, and gimplify_init_ctor_preeval
-	     would need to be fixed to allow it.  */
-	  gcc_assert (TREE_CODE (ce.value) != TARGET_EXPR
-		      && TREE_CODE (ce.value) != AGGR_INIT_EXPR);
+	      /* We shouldn't have gotten here for anything that would need
+		 non-trivial initialization, and gimplify_init_ctor_preeval
+		 would need to be fixed to allow it.  */
+	      gcc_assert (TREE_CODE (ce.value) != TARGET_EXPR
+			  && TREE_CODE (ce.value) != AGGR_INIT_EXPR);
+	    }
 	}
 
       /* Build a constructor to contain the initializations.  */
@@ -3469,9 +3473,12 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      else
 		{
 		  if (do_static_init)
-		    CONSTRUCTOR_APPEND_ELT (new_vec, field,
-					    build_zero_init (TREE_TYPE (e),
-							     NULL_TREE, true));
+		    {
+		      tree value = build_zero_init (TREE_TYPE (e), NULL_TREE,
+						    true);
+		      if (value)
+			CONSTRUCTOR_APPEND_ELT (new_vec, field, value);
+		    }
 		  saw_non_const = true;
 		}
 	    }
