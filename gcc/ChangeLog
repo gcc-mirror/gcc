@@ -1,3 +1,9 @@
+2013-02-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56225
+	* lra-constraints.c (process_alt_operands): Check that reload hard
+	reg can hold value for strict_low_part.
+
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/56154
