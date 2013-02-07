@@ -1,3 +1,10 @@
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56237
+	* decl.c (push_local_name): Look at DECL_DISCRIMINATOR (t)
+	only if DECL_DISCRIMINATOR_SET_P (t) rather than just
+	DECL_LANG_SPECIFIC (t).
+
 2013-02-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56235

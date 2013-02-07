@@ -1,3 +1,8 @@
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56237
+	* g++.dg/abi/mangle61.C: New test.
+
 2013-02-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56225
