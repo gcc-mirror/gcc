@@ -1895,7 +1895,22 @@ process_alt_operands (int only_alternative)
 			? in_hard_reg_set_p (this_alternative_set,
 					     mode, hard_regno[nop])
 			: in_class_p (op, this_alternative, NULL))))
-		losers++;
+		{
+		  /* Strict_low_part requires reload the register not
+		     the sub-register.  In this case we should check
+		     that a final reload hard reg can hold the
+		     value.  */
+		  if (curr_static_id->operand[nop].strict_low
+		      && REG_P (op)
+		      && hard_regno[nop] < 0
+		      && GET_CODE (*curr_id->operand_loc[nop]) == SUBREG
+		      && ira_class_hard_regs_num[this_alternative] > 0
+		      && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
+					       [this_alternative][0],
+					       GET_MODE (op)))
+		    goto fail;
+		  losers++;
+		}
 	      if (operand_reg[nop] != NULL_RTX
 		  /* Output operands and matched input operands are
 		     not inherited.  The following conditions do not
