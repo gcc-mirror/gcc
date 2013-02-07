@@ -1,3 +1,9 @@
+2013-02-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/basic_ios.h: Replace operator void*() const
+	with explicit operator bool() const in C++11 and greater.
+	* testsuite/27_io/basic_ios/pr56193.cc: New file.
+
 2013-02-04  Dodji Seketeli  <dodji@redhat.com>
 
 	Add missing explicit instantiation for std::lower_bound template
