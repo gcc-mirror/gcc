@@ -1,7 +1,13 @@
+2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56227
+	* ggc-page.c (ggc_print_statistics): Use HOST_LONG_LONG_FORMAT
+	instead of "ll".
+	* config/i386/i386.c (ix86_print_operand): Ditto.
+
 2013-02-07  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* lra-constraints.c (process_alt_operands): Fix recently added
-	comment.
+	* lra-constraints.c (process_alt_operands): Fix recently added comment.
 
 2013-02-07  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -17,8 +23,7 @@
 	(in_first_function_p, maybe_at_text_label_p,
 	first_loclabel_num_not_at_text_label): New variables.
 	(dwarf2out_var_location): In the first function find out
-	lowest loclabel_num N where .LVLN is known not to be equal
-	to .Ltext0.
+	lowest loclabel_num N where .LVLN is known not to be equal to .Ltext0.
 	(find_empty_loc_ranges_at_text_label, dwarf2out_end_function): New
 	functions.
 
@@ -171,8 +176,7 @@
 	* lto-symtab.c (lto_symtab_merge_decls_1): Make non-builtin
 	node prevail as last resort.
 	(lto_symtab_merge_decls): Remove guard on LTRANS here.
-	(lto_symtab_prevailing_decl): Builtins are their own prevailing
-	decl.
+	(lto_symtab_prevailing_decl): Builtins are their own prevailing decl.
 
 2013-02-04  Richard Biener  <rguenther@suse.de>
 
@@ -359,8 +363,7 @@
 	* config/v850/v850.opt (mv850e3v5, mv850e2v4): New options.
 	(mloop): New option.
 	* config.gcc: Add support for configuring v840e3v5 target.
-	* doc/invoke.texi: Document new v850 specific command line
-	options.
+	* doc/invoke.texi: Document new v850 specific command line options.
 
 2013-01-31  Paul Koning  <ni1d@arrl.net>
 
@@ -468,8 +471,7 @@
 2013-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56147
-	* lto-symtab.c (lto_symtab_merge_decls_1): Guard DECL_BUILT_IN
-	check.
+	* lto-symtab.c (lto_symtab_merge_decls_1): Guard DECL_BUILT_IN check.
 
 2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -624,8 +626,7 @@
 2013-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56034
-	* tree-loop-distribution.c (enum partition_kind): Add
-	PKIND_REDUCTION.
+	* tree-loop-distribution.c (enum partition_kind): Add PKIND_REDUCTION.
 	(partition_builtin_p): Adjust.
 	(generate_code_for_partition): Handle PKIND_REDUCTION.  Assert
 	it is the last partition.
@@ -1587,7 +1588,7 @@
 	* predict.c (predict_loops): If max is 0, don't call compare_tree_int.
 	If nitercst is 0, don't predict the exit edge.
 
-2013-01-08   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-01-08  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Replace %r
 	in asm_fprintf with reg_names.
@@ -1747,10 +1748,10 @@
 	* asan.c (asan_protect_global): Don't check TREE_ASM_WRITTEN here.
 	(asan_finish_file): Test it here instead.
 
-2013-01-07   Nick Clifton  <nickc@redhat.com>
-	     Matthias Klose  <doko@debian.org>
-	     Doug Kwan  <dougkwan@google.com>
-	     H.J. Lu  <hongjiu.lu@intel.com>
+2013-01-07  Nick Clifton  <nickc@redhat.com>
+	    Matthias Klose  <doko@debian.org>
+	    Doug Kwan  <dougkwan@google.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/55470
 	* collect2.c (main): Support -fuse-ld=bfd and -fuse-ld=gold.
