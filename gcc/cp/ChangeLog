@@ -1,3 +1,10 @@
+2013-02-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56235
+	* method.c (do_build_copy_constructor): Don't bother turning
+	scalars from lvalues to xvalues.
+	(do_build_copy_assign): Likewise.
+
 2013-02-06  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_enum_specifier): Check for error_mark_node.
