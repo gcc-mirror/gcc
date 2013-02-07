@@ -1,5 +1,7 @@
 2013-02-07  Alan Modra  <amodra@gmail.com>
 
+	PR target/54009
+	* gcc.target/powerpc/pr54009.c: New test.
 	PR target/54131
 	* gfortran.dg/pr54131.f: New test.
 

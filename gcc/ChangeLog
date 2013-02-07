@@ -1,3 +1,11 @@
+2013-02-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/54009
+	* config/rs6000/rs6000.c (mem_operand_gpr): Check that LO_SUM
+	addresses won't wrap when offsetting.
+	(rs6000_secondary_reload): Provide secondary reloads needed for
+	wrapping LO_SUM addresses.
+
 2013-02-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/gnu.h (GNU_USER_TARGET_OS_CPP_BUILTINS): Never define
