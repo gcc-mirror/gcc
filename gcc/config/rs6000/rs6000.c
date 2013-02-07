@@ -17503,8 +17503,9 @@ rs6000_savres_strategy (rs6000_stack_t *info,
      static chain is rarely used anyway.  FPRs are saved w.r.t the stack
      pointer on Darwin.  */
   if (using_static_chain_p)
-    strategy |= (DEFAULT_ABI == ABI_DARWIN ? 0 : SAVE_INLINE_FPRS)
-		| SAVE_INLINE_GPRS;
+    strategy |= ((DEFAULT_ABI == ABI_DARWIN
+		  ? 0 : SAVE_INLINE_FPRS | REST_INLINE_FPRS)
+		 | SAVE_INLINE_GPRS);
 
   /* If we are going to use store multiple, then don't even bother
      with the out-of-line routines, since the store-multiple

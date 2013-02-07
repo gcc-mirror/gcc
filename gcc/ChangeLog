@@ -1,3 +1,9 @@
+2013-02-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/53040
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): When using
+	static chain, set REST_INLINE_FPRS too.
+
 2013-02-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backport from mainline
