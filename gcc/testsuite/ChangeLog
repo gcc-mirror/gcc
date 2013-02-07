@@ -1,5 +1,8 @@
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/56239
+	* g++.dg/parse/pr56239.C: New test.
+
 	PR c++/56237
 	* g++.dg/abi/mangle61.C: New test.
 

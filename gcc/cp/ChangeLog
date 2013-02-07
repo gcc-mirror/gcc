@@ -1,5 +1,12 @@
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/56239
+	* parser.c (cp_parser_token_starts_cast_expression): Renamed to...
+	(cp_parser_tokens_start_cast_expression): ... this.  Change parameter
+	to cp_parser *, call cp_lexer_peek_token first.  For CPP_OPEN_PAREN,
+	return true only if 2nd token isn't CPP_CLOSE_PAREN.
+	(cp_parser_cast_expression): Adjust caller.
+
 	PR c++/56237
 	* decl.c (push_local_name): Look at DECL_DISCRIMINATOR (t)
 	only if DECL_DISCRIMINATOR_SET_P (t) rather than just
