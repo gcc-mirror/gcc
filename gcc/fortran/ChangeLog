@@ -1,3 +1,13 @@
+2013-02-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54339 
+	* gfortran.texi (Standards): Mention TS29113.
+	(Varying Length Character): Mention deferred-length
+	strings.
+	(Fortran 2003 Status): Add unlimited polymorphic.
+	(TS 29113 Status): Add TYPE(*) and DIMENSION(..).
+	(C Interop): Update the section about TS29113.
+
 2013-02-06 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55789
