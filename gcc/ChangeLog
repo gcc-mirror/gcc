@@ -1,3 +1,11 @@
+2013-02-07  David S. Miller  <davem@davemloft.net>
+
+	* dwarf2out.c (based_loc_descr): Perform leaf register remapping
+	on 'reg'.
+	* var-tracking.c (vt_add_function_parameter): Test the presence of
+	HAVE_window_save properly and do not remap argument registers when
+	we have a leaf function.
+
 2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/56227
