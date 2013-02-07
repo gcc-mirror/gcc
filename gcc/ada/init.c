@@ -2256,7 +2256,9 @@ __gnat_install_handler(void)
 #elif defined(__APPLE__)
 
 #include <signal.h>
+#include <stdlib.h>
 #include <sys/syscall.h>
+#include <sys/sysctl.h>
 #include <mach/mach_vm.h>
 #include <mach/mach_init.h>
 #include <mach/vm_statistics.h>
@@ -2295,20 +2297,52 @@ __gnat_is_stack_guard (mach_vm_address_t addr)
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
 
+#if defined (__x86_64__)
+static int
+__darwin_major_version (void)
+{
+  static int cache = -1;
+  if (cache < 0)
+    {
+      int mib[2] = {CTL_KERN, KERN_OSRELEASE};
+      size_t len;
+
+      /* Find out how big the buffer needs to be (and set cache to 0
+         on failure).  */
+      if (sysctl (mib, 2, NULL, &len, NULL, 0) == 0)
+        {
+          char release[len];
+          sysctl (mib, 2, release, &len, NULL, 0);
+          /* Darwin releases are of the form L.M.N where L is the major
+             version, so strtol will return L.  */
+          cache = (int) strtol (release, NULL, 10);
+        }
+      else
+        {
+          cache = 0;
+        }
+    }
+  return cache;
+}
+#endif
+
 void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 				 void *ucontext ATTRIBUTE_UNUSED)
 {
 #if defined (__x86_64__)
-  /* Work around radar #10302855/pr50678, where the unwinders (libunwind or
-     libgcc_s depending on the system revision) and the DWARF unwind data for
-     the sigtramp have different ideas about register numbering (causing rbx
-     and rdx to be transposed)..  */
-  ucontext_t *uc = (ucontext_t *)ucontext ;
-  unsigned long t = uc->uc_mcontext->__ss.__rbx;
+  if (__darwin_major_version () < 12)
+    {
+      /* Work around radar #10302855, where the unwinders (libunwind or
+	 libgcc_s depending on the system revision) and the DWARF unwind
+	 data for sigtramp have different ideas about register numbering,
+	 causing rbx and rdx to be transposed.  */
+      ucontext_t *uc = (ucontext_t *)ucontext;
+      unsigned long t = uc->uc_mcontext->__ss.__rbx;
 
-  uc->uc_mcontext->__ss.__rbx = uc->uc_mcontext->__ss.__rdx;
-  uc->uc_mcontext->__ss.__rdx = t;
+      uc->uc_mcontext->__ss.__rbx = uc->uc_mcontext->__ss.__rdx;
+      uc->uc_mcontext->__ss.__rdx = t;
+    }
 #endif
 }
 
