@@ -1896,10 +1896,10 @@ process_alt_operands (int only_alternative)
 					     mode, hard_regno[nop])
 			: in_class_p (op, this_alternative, NULL))))
 		{
-		  /* Strict_low_part requires reload the register not
-		     the sub-register.  In this case we should check
-		     that a final reload hard reg can hold the
-		     value.  */
+		  /* Strict_low_part requires to reload the register
+		     not the sub-register.  In this case we should
+		     check that a final reload hard reg can hold the
+		     value mode.  */
 		  if (curr_static_id->operand[nop].strict_low
 		      && REG_P (op)
 		      && hard_regno[nop] < 0
