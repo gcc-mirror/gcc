@@ -162,7 +162,7 @@ dnl build.
 USE_DEJAGNU=no
 case ${host} in
   *-*-rtems*) USE_DEJAGNU=yes ;;
-  ${target}) ;;
+  ${build}) ;;
   *) USE_DEJAGNU=yes ;;
 esac
 AC_SUBST(USE_DEJAGNU)
