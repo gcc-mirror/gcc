@@ -10603,7 +10603,16 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 	}
     }
 
-  regno = DWARF_FRAME_REGNUM (REGNO (reg));
+  regno = REGNO (reg);
+#ifdef LEAF_REG_REMAP
+  if (current_function_uses_only_leaf_regs)
+    {
+      int leaf_reg = LEAF_REG_REMAP (regno);
+      if (leaf_reg != -1)
+	regno = (unsigned) leaf_reg;
+    }
+#endif
+  regno = DWARF_FRAME_REGNUM (regno);
 
   if (!optimize && fde
       && (fde->drap_reg == regno || fde->vdrap_reg == regno))
