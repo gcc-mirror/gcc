@@ -1,3 +1,29 @@
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/avr.md (unspec) <UNSPEC_ROUND>: Add.
+	* config/avr/avr-fixed.md (ALL4QA, ALL124QA): New mode iterators.
+	(round<mode>3, round<mode>3_const): New expanders for fixed-mode.
+	(*round<mode>3.libgcc): New insns for fixed-modes.
+	* config/avr/builtins.def (ABSxx): Use a non-NULL LIBNAME.
+	(ROUNDxx, COUNTLSxx, BITSxx, xxBITS): New DEF_BUILTINs.
+	(ROUNDFX, COUNTLSFX, ABSFX): New DEF_BUILTINs.
+	* config/avr/stdfix.h (absFX, bitsFX, FXbits): Remove inline
+	implementations.  Define to __builtin_avr_absFX,
+	__builtin_avr_bitsFX, __builtin_avr_FXbits, respectively.
+	(roundFX, countlsFX): Define to __builtin_avr_roundFX,
+	__builtin_avr_countlsFX, respectively.
+	* config/avr/avr-c.c (target.h): Include it.
+	(enum avr_builtin_id): New enum.
+	(avr_resolve_overloaded_builtin): New static function.
+	(avr_register_target_pragmas): Use it to set
+	targetm.resolve_overloaded_builtin.
+	* config/avr/avr.c (avr_init_builtins): Supply myriads of local
+	tree nodes used by DEF_BUILTIN.
+	(avr_expand_builtin) <AVR_BUILTIN_ROUNDxx>: Sanity-check them.
+	(avr_fold_builtin) <AVR_BUILTIN_BITSxx>: Fold to VIEW_COVERT_EXPR.
+	<AVR_BUILTIN_xxBITS>: Same.
+
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
 	* cfgloop.c (verify_loop_structure): Properly handle

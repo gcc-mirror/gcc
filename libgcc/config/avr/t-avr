@@ -75,13 +75,24 @@ LIB1ASMFUNCS += \
 	_divsa3 _udivusa3 \
 	_clr_8 \
 	_ssneg_2 _ssneg_4 _ssneg_8 \
-	_ssabs_2 _ssabs_4 _ssabs_8 \
+	_ssabs_1 _ssabs_2 _ssabs_4 _ssabs_8 \
 	_ssadd_8 _sssub_8 \
-	_usadd_8 _ussub_8
+	_usadd_8 _ussub_8 \
+	_mask1 _ret \
+	_roundqq3 _rounduqq3 \
+	_round_s2 _round_u2 _round_2_const _addmask_2 \
+	_round_s4 _round_u4 _round_4_const _addmask_4 \
+	_round_x8 \
+	_rounddq3 _roundudq3 \
+	_roundda3 _rounduda3 \
+	_roundta3 _rounduta3 \
+
 
 LIB2FUNCS_EXCLUDE = \
 	_moddi3 _umoddi3 \
-	_clz
+	_clz \
+	_clrsbdi2 \
+
 
 # We do not have the DF type.
 # Most of the C functions in libgcc2 use almost all registers,
@@ -106,12 +117,83 @@ ifeq ($(enable_shared),yes)
 libgcc-s-objects += $(patsubst %,%_s$(objext),$(hiintfuncs16))
 endif
 
-
-# Filter out supported conversions from fixed-bit.c
-# Also filter out TQ and UTQ.
+###
 
 conv_XY=$(conv)$(mode1)$(mode2)
 func_X=$(func)$(mode)
+
+# Compile C functions from lib2funcs.c and add them to libgcc.a.
+#
+# Some functions which are not performance.critical are more convenient
+# to implement in C than in assembler.  Most of them serve as implementation
+# for AVR-specific builtins in the case where the address of a builtin
+# function is taken or if there is no insn that implements the builtin.
+#
+# We don't use LIB2ADD because we want to iterate over the source for
+# different modes, fixed-point suffixes, etc.  See iter-labels and L_LABEL.
+# iter-label will get one more underscore in order to avoid too short
+# labels like -DLk and we use -DL_k instead.
+
+# Build roundFX functions from lib2funcs.c
+
+round_suffix :=  hr r lr uhr ur ulr  \
+		 hk k    uhk uk 
+round_funcs  := $(foreach func,_round,\
+		$(foreach mode,$(round_suffix),$(func_X)))
+
+iter-items  := $(round_funcs)
+iter-labels := $(round_suffix)
+iter-flags  := $(patsubst %,-DL_round,$(iter-items))
+
+include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+
+libgcc-objects += $(patsubst %,%$(objext),$(round_funcs))
+
+# Build clrsbXX functions from lib2funcs.c
+
+clrsb_modes := qi di
+clrsb_funcs := $(foreach func,_clrsb,\
+	       $(foreach mode,$(clrsb_modes),$(func_X)))
+
+iter-items  := $(clrsb_funcs)
+iter-labels := $(clrsb_funcs)
+iter-flags  := $(patsubst %,-DL_clrsb,$(iter-items))
+
+include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+
+libgcc-objects += $(patsubst %,%$(objext),$(clrsb_funcs))
+
+# Build signed countlsFX functions from lib2funcs.c
+
+countls_modes := qi hi si di
+countls_funcs := $(foreach func,_countls,\
+		 $(foreach mode,$(countls_modes),$(func_X)))
+
+iter-items  := $(countls_funcs)
+iter-labels := $(countls_modes)
+iter-flags  := $(patsubst %,-DL_countls,$(iter-items))
+
+include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+
+libgcc-objects += $(patsubst %,%$(objext),$(countls_funcs))
+
+# Build unsigned countlsFX functions from lib2funcs.c
+
+countlsu_modes := qi hi si di
+countlsu_funcs := $(foreach func,_countlsu,\
+		  $(foreach mode,$(countlsu_modes),$(func_X)))
+
+iter-items  := $(countlsu_funcs)
+iter-labels := $(countlsu_modes)
+iter-flags  := $(patsubst %,-DL_countlsu,$(iter-items))
+
+include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/config/avr/lib2-object.mk,$(iter-items))
+
+libgcc-objects += $(patsubst %,%$(objext),$(countlsu_funcs))
+
+
+# Filter out supported conversions from fixed-bit.c
+# Also filter out TQ and UTQ.
 
 # Conversions supported by the compiler
 

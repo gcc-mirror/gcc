@@ -68,6 +68,7 @@
    UNSPEC_COPYSIGN
    UNSPEC_IDENTITY
    UNSPEC_INSERT_BITS
+   UNSPEC_ROUND
    ])
 
 (define_c_enum "unspecv"
