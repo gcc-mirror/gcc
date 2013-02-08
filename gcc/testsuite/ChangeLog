@@ -1,3 +1,8 @@
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56181
+	* gcc.dg/torture/pr56181.c: New testcase.
+
 2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
