@@ -421,8 +421,20 @@ get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
       if (rtx_equal_p (curr_insn_input_reloads[i].input, original)
 	  && in_class_p (curr_insn_input_reloads[i].reg, rclass, &new_class))
 	{
-	  *result_reg = curr_insn_input_reloads[i].reg;
-	  regno = REGNO (*result_reg);
+	  rtx reg = curr_insn_input_reloads[i].reg;
+	  regno = REGNO (reg);
+	  /* If input is equal to original and both are VOIDmode,
+	     GET_MODE (reg) might be still different from mode.
+	     Ensure we don't return *result_reg with wrong mode.  */
+	  if (GET_MODE (reg) != mode)
+	    {
+	      if (GET_MODE_SIZE (GET_MODE (reg)) < GET_MODE_SIZE (mode))
+		continue;
+	      reg = lowpart_subreg (mode, reg, GET_MODE (reg));
+	      if (reg == NULL_RTX || GET_CODE (reg) != SUBREG)
+		continue;
+	    }
+	  *result_reg = reg;
 	  if (lra_dump_file != NULL)
 	    {
 	      fprintf (lra_dump_file, "	 Reuse r%d for reload ", regno);

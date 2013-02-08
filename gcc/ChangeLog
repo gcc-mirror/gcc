@@ -1,5 +1,10 @@
 2013-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/56195
+	* lra-constraints.c (get_reload_reg): Don't reuse regs
+	if they have smaller mode than requested, if they have
+	wider mode than requested, try to return a SUBREG.
+
 	PR tree-optimization/56250
 	* fold-const.c (extract_muldiv_1) <case NEGATE_EXPR>: Don't optimize
 	if type is unsigned and code isn't MULT_EXPR.
