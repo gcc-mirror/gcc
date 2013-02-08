@@ -66,7 +66,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __poly_hermite_recursion(const unsigned int __n, const _Tp __x)
+    __poly_hermite_recursion(unsigned int __n, _Tp __x)
     {
       //  Compute H_0.
       _Tp __H_0 = 1;
@@ -108,7 +108,7 @@ namespace tr1
      */
     template<typename _Tp>
     inline _Tp
-    __poly_hermite(const unsigned int __n, const _Tp __x)
+    __poly_hermite(unsigned int __n, _Tp __x)
     {
       if (__isnan(__x))
         return std::numeric_limits<_Tp>::quiet_NaN();

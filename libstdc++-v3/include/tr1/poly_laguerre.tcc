@@ -67,8 +67,7 @@ namespace tr1
      */
     template<typename _Tpa, typename _Tp>
     _Tp
-    __poly_laguerre_large_n(const unsigned __n, const _Tpa __alpha1,
-                            const _Tp __x)
+    __poly_laguerre_large_n(unsigned __n, _Tpa __alpha1, _Tp __x)
     {
       const _Tp __a = -_Tp(__n);
       const _Tp __b = _Tp(__alpha1) + _Tp(1);
@@ -122,8 +121,7 @@ namespace tr1
      */
     template<typename _Tpa, typename _Tp>
     _Tp
-    __poly_laguerre_hyperg(const unsigned int __n, const _Tpa __alpha1,
-			   const _Tp __x)
+    __poly_laguerre_hyperg(unsigned int __n, _Tpa __alpha1, _Tp __x)
     {
       const _Tp __b = _Tp(__alpha1) + _Tp(1);
       const _Tp __mx = -__x;
@@ -179,8 +177,7 @@ namespace tr1
      */
     template<typename _Tpa, typename _Tp>
     _Tp
-    __poly_laguerre_recursion(const unsigned int __n,
-                              const _Tpa __alpha1, const _Tp __x)
+    __poly_laguerre_recursion(unsigned int __n, _Tpa __alpha1, _Tp __x)
     {
       //   Compute l_0.
       _Tp __l_0 = _Tp(1);
@@ -238,9 +235,8 @@ namespace tr1
      *           degree @f$ \alpha @f$, and argument x.
      */
     template<typename _Tpa, typename _Tp>
-    inline _Tp
-    __poly_laguerre(const unsigned int __n, const _Tpa __alpha1,
-                    const _Tp __x)
+    _Tp
+    __poly_laguerre(unsigned int __n, _Tpa __alpha1, _Tp __x)
     {
       if (__x < _Tp(0))
         std::__throw_domain_error(__N("Negative argument "
@@ -292,11 +288,8 @@ namespace tr1
      */
     template<typename _Tp>
     inline _Tp
-    __assoc_laguerre(const unsigned int __n, const unsigned int __m,
-                     const _Tp __x)
-    {
-      return __poly_laguerre<unsigned int, _Tp>(__n, __m, __x);
-    }
+    __assoc_laguerre(unsigned int __n, unsigned int __m, _Tp __x)
+    { return __poly_laguerre<unsigned int, _Tp>(__n, __m, __x); }
 
 
     /**
@@ -315,10 +308,8 @@ namespace tr1
      */
     template<typename _Tp>
     inline _Tp
-    __laguerre(const unsigned int __n, const _Tp __x)
-    {
-      return __poly_laguerre<unsigned int, _Tp>(__n, 0, __x);
-    }
+    __laguerre(unsigned int __n, _Tp __x)
+    { return __poly_laguerre<unsigned int, _Tp>(__n, 0, __x); }
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace std::tr1::__detail

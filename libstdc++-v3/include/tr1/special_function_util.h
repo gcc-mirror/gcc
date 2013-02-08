@@ -107,30 +107,22 @@ namespace tr1
     /// out of intrinsics, this will disappear completely in favor of
     /// std::isnan.
     template<typename _Tp>
-    inline bool __isnan(const _Tp __x)
-    {
-      return std::isnan(__x);
-    }
+    inline bool __isnan(_Tp __x)
+    { return std::isnan(__x); }
 
 #else
 
     template<typename _Tp>
     inline bool __isnan(const _Tp __x)
-    {
-      return __builtin_isnan(__x);
-    }
+    { return __builtin_isnan(__x); }
 
     template<>
-    inline bool __isnan<float>(const float __x)
-    {
-      return __builtin_isnanf(__x);
-    }
+    inline bool __isnan<float>(float __x)
+    { return __builtin_isnanf(__x); }
 
     template<>
-    inline bool __isnan<long double>(const long double __x)
-    {
-      return __builtin_isnanl(__x);
-    }
+    inline bool __isnan<long double>(long double __x)
+    { return __builtin_isnanl(__x); }
 
 #endif
 
