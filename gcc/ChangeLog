@@ -1,3 +1,17 @@
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56231
+	* lto-streamer.h (struct data_in): Remove current_file, current_line
+	and current_col members.
+	* lto-streamer-out.c (lto_output_location): Stream changed bits
+	en-block for efficiency.
+	* lto-streamer-in.c (clear_line_info): Remove.
+	(lto_input_location): Cache current file, line and column
+	globally via local statics.  Read changed bits en-block.
+	(input_function): Do not call clear_line_info.
+	(lto_read_body): Likewise.
+	(lto_input_toplevel_asms): Likewise.
+
 2013-02-08  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/52448
