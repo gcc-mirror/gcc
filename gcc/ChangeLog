@@ -1,3 +1,11 @@
+2013-02-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56246
+	* lra-constraints.c (simplify_operand_subreg): Try tor reuse
+	reload pseudo.
+	* lra.c (lra): Clear lra_optional_reload_pseudos only when all
+	constraints are satisfied.
+
 2013-02-08  Jeff Law  <law@redhat.com>
 
 	PR debug/53948

@@ -1213,24 +1213,26 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
       enum reg_class rclass
 	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 
-      new_reg = lra_create_new_reg_with_unique_value (reg_mode, reg, rclass,
-						      "subreg reg");
-      bitmap_set_bit (&lra_optional_reload_pseudos, REGNO (new_reg));
-      if (type != OP_OUT
-	  || GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode))
+      if (get_reload_reg (curr_static_id->operand[nop].type, reg_mode, reg,
+			  rclass, "subreg reg", &new_reg))
 	{
-	  push_to_sequence (before);
-	  lra_emit_move (new_reg, reg);
-	  before = get_insns ();
-	  end_sequence ();
-	}
-      if (type != OP_IN)
-	{
-	  start_sequence ();
-	  lra_emit_move (reg, new_reg);
-	  emit_insn (after);
-	  after = get_insns ();
-	  end_sequence ();
+	  bitmap_set_bit (&lra_optional_reload_pseudos, REGNO (new_reg));
+	  if (type != OP_OUT
+	      || GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode))
+	    {
+	      push_to_sequence (before);
+	      lra_emit_move (new_reg, reg);
+	      before = get_insns ();
+	      end_sequence ();
+	    }
+	  if (type != OP_IN)
+	    {
+	      start_sequence ();
+	      lra_emit_move (reg, new_reg);
+	      emit_insn (after);
+	      after = get_insns ();
+	      end_sequence ();
+	    }
 	}
       SUBREG_REG (operand) = new_reg;
       lra_process_new_insns (curr_insn, before, after,
