@@ -3699,7 +3699,8 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 	  bdecl = builtin_decl_implicit (fn);
 	  suffix = "d2";				/* pow -> powd2 */
 	  if (el_mode != DFmode
-	      || n != 2)
+	      || n != 2
+	      || !bdecl)
 	    return NULL_TREE;
 	  break;
 
@@ -3736,7 +3737,8 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 	  bdecl = builtin_decl_implicit (fn);
 	  suffix = "4";					/* powf -> powf4 */
 	  if (el_mode != SFmode
-	      || n != 4)
+	      || n != 4
+	      || !bdecl)
 	    return NULL_TREE;
 	  break;
 
@@ -3749,6 +3751,9 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 
   gcc_assert (suffix != NULL);
   bname = IDENTIFIER_POINTER (DECL_NAME (bdecl));
+  if (!bname)
+    return NULL_TREE;
+
   strcpy (name, bname + sizeof ("__builtin_") - 1);
   strcat (name, suffix);
 
