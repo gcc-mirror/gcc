@@ -42083,9 +42083,8 @@ static reg_class_t
 ix86_spill_class (reg_class_t rclass, enum machine_mode mode)
 {
   if (TARGET_SSE && TARGET_GENERAL_REGS_SSE_SPILL && ! TARGET_MMX
-      && hard_reg_set_subset_p (reg_class_contents[rclass],
-				reg_class_contents[GENERAL_REGS])
-      && (mode == SImode || (TARGET_64BIT && mode == DImode)))
+      && (mode == SImode || (TARGET_64BIT && mode == DImode))
+      && INTEGER_CLASS_P (rclass))
     return SSE_REGS;
   return NO_REGS;
 }

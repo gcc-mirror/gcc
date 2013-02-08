@@ -1,7 +1,10 @@
+2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_spill_class): Use INTEGER_CLASS_P macro.
+
 2013-02-08  Marek Polacek  <polacek@redhat.com>
 
-	* cfgloop.c (verify_loop_structure): Add more checking
-	of headers.
+	* cfgloop.c (verify_loop_structure): Add more checking of headers.
 
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
@@ -69,8 +72,7 @@
 	* Makefile.in (tree-tailcall.o): Add $(CFGLOOP_H) dependency.
 	* ipa-pure-const.c (analyze_function): Avoid calling
 	mark_irreducible_loops twice.
-	* tree-tailcall.c (tree_optimize_tail_calls_1): Mark loops
-	for fixup.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Mark loops for fixup.
 
 2013-02-07  David S. Miller  <davem@davemloft.net>
 
