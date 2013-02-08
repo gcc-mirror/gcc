@@ -1,3 +1,8 @@
+2013-02-08  Jeff Law  <law@redhat.com>
+
+	PR debug/53948
+	* gcc.dg/debug/dwarf2/pr53948.c: New test.
+
 2013-02-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/56043

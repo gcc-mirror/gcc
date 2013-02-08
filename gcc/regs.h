@@ -89,6 +89,8 @@ REG_N_SETS (int regno)
 #define SET_REG_N_SETS(N,V) (regstat_n_sets_and_refs[N].sets = V)
 #define INC_REG_N_SETS(N,V) (regstat_n_sets_and_refs[N].sets += V)
 
+/* Given a REG, return TRUE if the reg is a PARM_DECL, FALSE otherwise.  */
+extern bool reg_is_parm_p (rtx);
 
 /* Functions defined in regstat.c.  */
 extern void regstat_init_n_sets_and_refs (void);
