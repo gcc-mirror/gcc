@@ -1,3 +1,22 @@
+2013-02-08  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+
+	* config.gcc (microblaze*-linux*): Add TARGET_BIG_ENDIAN_DEFAULT
+	(microblaze*-*-elf): Likewise
+	* config/microblaze/linux.h: Add -mbig-endian / -mlittle-endian to 
+	LINK_SPEC
+	* config/microblaze/microblaze-c.c: Add builtin defines for _LITTLE_ENDIAN 
+	and _BIG_ENDIAN
+	* config/microblaze/microblaze.h: Add TARGET_ENDIAN_DEFAULT and add to 
+	TARGET_DEFAULT flags.
+	Expand ASM_SPEC and LINK_SPEC.
+	Update BYTES_BIG_ENDIAN and WORDS_BIG_ENDIAN
+	* config/microblaze/microblaze.md: Update extendsidi2 and movdi_internal 
+	instructions to use low-order / high-order reg print_operands
+	* config/microblaze/microblaze.opt: Add mbig-endian and mlittle-endian 
+	options and inversemask / mask of LITTLE_ENDIAN
+	* config/microblaze/t-microblaze: Expand multilib options to include mlittle-
+	endian (le) and update exceptions patterns
+	
 2013-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/56195
