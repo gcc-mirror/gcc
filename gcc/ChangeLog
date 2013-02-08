@@ -1,3 +1,11 @@
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* fixed-value.c (fixed_from_double_int): Sign/zero extend payload
+	bits according to mode.
+	* fixed-value.h (fixed_from_double_int)
+	(const_fixed_from_double_int): Adjust comments.
+
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56231
