@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "dbgcnt.h"
 #include "target.h"
+#include "cfgloop.h"
 #include "common/common-target.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
@@ -1011,7 +1012,12 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
     }
 
   if (changed)
-    free_dominance_info (CDI_DOMINATORS);
+    {
+      /* We may have created new loops.  Make them magically appear.  */
+      if (current_loops)
+	loops_state_set (LOOPS_NEED_FIXUP);
+      free_dominance_info (CDI_DOMINATORS);
+    }
 
   /* Add phi nodes for the virtual operands defined in the function to the
      header of the loop created by tail recursion elimination.  Do so

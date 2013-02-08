@@ -1,3 +1,11 @@
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (tree-tailcall.o): Add $(CFGLOOP_H) dependency.
+	* ipa-pure-const.c (analyze_function): Avoid calling
+	mark_irreducible_loops twice.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Mark loops
+	for fixup.
+
 2013-02-07  David S. Miller  <davem@davemloft.net>
 
 	* dwarf2out.c (based_loc_descr): Perform leaf register remapping
