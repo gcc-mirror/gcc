@@ -1,3 +1,8 @@
+2013-02-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	* gfortran.dg/recursive_interface_2.f90: New test.
+
 2013-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56250
