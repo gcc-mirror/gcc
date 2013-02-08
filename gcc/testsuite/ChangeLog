@@ -1,3 +1,8 @@
+2013-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56195
+	* gcc.dg/torture/pr56195.c: New test.
+
 2013-02-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54107
