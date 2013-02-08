@@ -1,3 +1,8 @@
+2013-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56250
+	* gcc.c-torture/execute/pr56250.c: New test.
+
 2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR tree-optimization/56064
