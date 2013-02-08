@@ -1353,6 +1353,15 @@ verify_loop_structure (void)
 	}
     }
 
+  /* Check the headers.  */
+  FOR_EACH_BB (bb)
+    if (bb_loop_header_p (bb)
+	&& bb->loop_father->header != bb)
+      {
+	error ("loop with header %d not in loop tree", bb->index);
+	err = 1;
+      }
+
   /* Check get_loop_body.  */
   visited = sbitmap_alloc (last_basic_block);
   bitmap_clear (visited);

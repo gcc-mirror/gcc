@@ -1,3 +1,8 @@
+2013-02-08  Marek Polacek  <polacek@redhat.com>
+
+	* cfgloop.c (verify_loop_structure): Add more checking
+	of headers.
+
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56181
