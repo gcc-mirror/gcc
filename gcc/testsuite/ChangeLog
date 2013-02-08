@@ -1,4 +1,4 @@
-2013-02-08  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-02-08  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* 20101011-1.c: Add __MICROBLAZE__ exception to set DO_TEST 0
 

@@ -1,5 +1,11 @@
 2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (FMAMODEM): New mode iterator.
+	(fma<mode>4, fms<mode>4, fnma<mode>4, fnms<mode>4): Use FMAMODEM
+	mode iterator. Do not use TARGET_SSE_MATH in insn constraint.
+
+2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/gnu-user.h (TARGET_CAN_SPLIT_STACK): Define only
 	when HAVE_GAS_CFI_PERSONALITY_DIRECTIVE is set.
 	* config/i386/gnu-user64.h (TARGET_CAN_SPLIT_STACK): Ditto.
