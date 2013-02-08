@@ -1,3 +1,8 @@
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* gcc.dg/fixed-point/view-convert-2.c: New test.
+
 2013-02-08  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/52448
