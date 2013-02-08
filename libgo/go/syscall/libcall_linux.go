@@ -9,10 +9,10 @@ package syscall
 import "unsafe"
 
 //sys	Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
-//openat(dirfd int, path *byte, flags int, mode Mode_t) int
+//openat(dirfd _C_int, path *byte, flags _C_int, mode Mode_t) _C_int
 
 //sys	futimesat(dirfd int, path *byte, times *[2]Timeval) (err error)
-//futimesat(dirfd int, path *byte, times *[2]Timeval) int
+//futimesat(dirfd _C_int, path *byte, times *[2]Timeval) _C_int
 func Futimesat(dirfd int, path string, tv []Timeval) (err error) {
 	if len(tv) != 2 {
 		return EINVAL
@@ -27,10 +27,10 @@ func Futimes(fd int, tv []Timeval) (err error) {
 }
 
 //sys	ptrace(request int, pid int, addr uintptr, data uintptr) (err error)
-//ptrace(request int, pid Pid_t, addr *byte, data *byte) _C_long
+//ptrace(request _C_int, pid Pid_t, addr *byte, data *byte) _C_long
 
 //sysnb raw_ptrace(request int, pid int, addr *byte, data *byte) (err Errno)
-//ptrace(request int, pid Pid_t, addr *byte, data *byte) _C_long
+//ptrace(request _C_int, pid Pid_t, addr *byte, data *byte) _C_long
 
 func ptracePeek(req int, pid int, addr uintptr, out []byte) (count int, err error) {
 	// The peek requests are machine-size oriented, so we wrap it
@@ -161,7 +161,7 @@ func PtraceAttach(pid int) (err error) { return ptrace(PTRACE_ATTACH, pid, 0, 0)
 func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0) }
 
 //sys	reboot(magic1 uint, magic2 uint, cmd int, arg string) (err error)
-//reboot(magic1 uint, magic2 uint, cmd int, arg *byte) int
+//reboot(magic1 _C_uint, magic2 _C_uint, cmd _C_int, arg *byte) _C_int
 func Reboot(cmd int) (err error) {
 	return reboot(LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, cmd, "")
 }
@@ -185,28 +185,28 @@ func Accept4(fd int, flags int) (nfd int, sa Sockaddr, err error) {
 }
 
 //sys	Acct(path string) (err error)
-//acct(path *byte) int
+//acct(path *byte) _C_int
 
 //sys	Adjtimex(buf *Timex) (state int, err error)
-//adjtimex(buf *Timex) int
+//adjtimex(buf *Timex) _C_int
 
 //sys	Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
-//faccessat(dirfd int, pathname *byte, mode int, flags int) int
+//faccessat(dirfd _C_int, pathname *byte, mode _C_int, flags _C_int) _C_int
 
 //sys	Fallocate(fd int, mode uint32, off int64, len int64) (err error)
-//fallocate(fd int, mode int, offset Offset_t, len Offset_t) int
+//fallocate(fd _C_int, mode _C_int, offset Offset_t, len Offset_t) _C_int
 
 //sys	Fchmodat(dirfd int, path string, mode uint32, flags int) (err error)
-//fchmodat(dirfd int, pathname *byte, mode Mode_t, flags int) int
+//fchmodat(dirfd _C_int, pathname *byte, mode Mode_t, flags _C_int) _C_int
 
 //sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
-//fchownat(dirfd int, path *byte, owner Uid_t, group Gid_t, flags int) int
+//fchownat(dirfd _C_int, path *byte, owner Uid_t, group Gid_t, flags _C_int) _C_int
 
 //sys	Flock(fd int, how int) (err error)
-//flock(fd int, how int) int
+//flock(fd _C_int, how _C_int) _C_int
 
 //sys	Fstatfs(fd int, buf *Statfs_t) (err error)
-//fstatfs(fd int, buf *Statfs_t) int
+//fstatfs(fd _C_int, buf *Statfs_t) _C_int
 
 func Gettid() (tid int) {
 	r1, _, _ := Syscall(SYS_GETTID, 0, 0, 0)
@@ -269,25 +269,25 @@ func ParseDirent(buf []byte, max int, names []string) (consumed int, count int, 
 }
 
 //sys	InotifyAddWatch(fd int, pathname string, mask uint32) (watchdesc int, err error)
-//inotify_add_watch(fd int, pathname *byte, mask uint32) int
+//inotify_add_watch(fd _C_int, pathname *byte, mask uint32) _C_int
 
 //sysnb	InotifyInit() (fd int, err error)
-//inotify_init() int
+//inotify_init() _C_int
 
 //sysnb	InotifyInit1(flags int) (fd int, err error)
-//inotify_init1(flags int) int
+//inotify_init1(flags _C_int) _C_int
 
 //sysnb	InotifyRmWatch(fd int, watchdesc uint32) (success int, err error)
-//inotify_rm_watch(fd int, wd uint32) int
+//inotify_rm_watch(fd _C_int, wd uint32) _C_int
 
 //sys	Klogctl(typ int, buf []byte) (n int, err error)
-//klogctl(typ int, bufp *byte, len int) int
+//klogctl(typ _C_int, bufp *byte, len _C_int) _C_int
 
 //sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
-//mkdirat(dirfd int, path *byte, mode Mode_t) int
+//mkdirat(dirfd _C_int, path *byte, mode Mode_t) _C_int
 
 //sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
-//mknodat(dirfd int, path *byte, mode Mode_t, dev _dev_t) int
+//mknodat(dirfd _C_int, path *byte, mode Mode_t, dev _dev_t) _C_int
 
 //sysnb	pipe2(p *[2]_C_int, flags int) (err error)
 //pipe2(p *[2]_C_int, flags _C_int) _C_int
@@ -303,13 +303,13 @@ func Pipe2(p []int, flags int) (err error) {
 }
 
 //sys	PivotRoot(newroot string, putold string) (err error)
-//pivot_root(newroot *byte, putold *byte) int
+//pivot_root(newroot *byte, putold *byte) _C_int
 
 //sys	Renameat(olddirfd int, oldpath string, newdirfd int, newpath string) (err error)
-//renameat(olddirfd int, oldpath *byte, newdirfd int, newpath *byte) int
+//renameat(olddirfd _C_int, oldpath *byte, newdirfd _C_int, newpath *byte) _C_int
 
 //sys	sendfile(outfd int, infd int, offset *Offset_t, count int) (written int, err error)
-//sendfile64(outfd int, infd int, offset *Offset_t, count Size_t) Ssize_t
+//sendfile64(outfd _C_int, infd _C_int, offset *Offset_t, count Size_t) Ssize_t
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
@@ -327,19 +327,19 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 }
 
 //sys	Setfsgid(gid int) (err error)
-//setfsgid(gid Gid_t) int
+//setfsgid(gid Gid_t) _C_int
 
 //sys	Setfsuid(uid int) (err error)
-//setfsuid(uid Uid_t) int
+//setfsuid(uid Uid_t) _C_int
 
 //sysnb	Setresgid(rgid int, egid int, sgid int) (err error)
-//setresgid(rgid Gid_t, egid Gid_t, sgid Gid_t) int
+//setresgid(rgid Gid_t, egid Gid_t, sgid Gid_t) _C_int
 
 //sysnb	Setresuid(ruid int, eguid int, suid int) (err error)
-//setresuid(ruid Uid_t, euid Uid_t, suid Uid_t) int
+//setresuid(ruid Uid_t, euid Uid_t, suid Uid_t) _C_int
 
 //sys	splice(rfd int, roff *_loff_t, wfd int, woff *_loff_t, len int, flags int) (n int64, err error)
-//splice(rfd int, roff *_loff_t, wfd int, woff *_loff_t, len Size_t, flags uint) Ssize_t
+//splice(rfd _C_int, roff *_loff_t, wfd _C_int, woff *_loff_t, len Size_t, flags _C_uint) Ssize_t
 func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n int64, err error) {
 	var lroff _loff_t
 	var plroff *_loff_t
@@ -364,16 +364,16 @@ func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n i
 }
 
 //sys	Statfs(path string, buf *Statfs_t) (err error)
-//statfs(path *byte, buf *Statfs_t) int
+//statfs(path *byte, buf *Statfs_t) _C_int
 
 //sys	SyncFileRange(fd int, off int64, n int64, flags int) (err error)
-//sync_file_range(fd int, off Offset_t, n Offset_t, flags uint) int
+//sync_file_range(fd _C_int, off Offset_t, n Offset_t, flags _C_uint) _C_int
 
 //sysnb	Sysinfo(info *Sysinfo_t) (err error)
-//sysinfo(info *Sysinfo_t) int
+//sysinfo(info *Sysinfo_t) _C_int
 
 //sys	Tee(rfd int, wfd int, len int, flags int) (n int64, err error)
-//tee(rfd int, wfd int, len Size_t, flags uint) Ssize_t
+//tee(rfd _C_int, wfd _C_int, len Size_t, flags _C_uint) Ssize_t
 
 func Tgkill(tgid int, tid int, sig Signal) error {
 	r1, _, errno := Syscall(SYS_TGKILL, uintptr(tgid), uintptr(tid), uintptr(sig))
@@ -384,17 +384,17 @@ func Tgkill(tgid int, tid int, sig Signal) error {
 }
 
 //sys	unlinkat(dirfd int, path string, flags int) (err error)
-//unlinkat(dirfd int, path *byte, flags int) int
+//unlinkat(dirfd _C_int, path *byte, flags _C_int) _C_int
 
 func Unlinkat(dirfd int, path string) (err error) {
 	return unlinkat(dirfd, path, 0)
 }
 
 //sys	Unmount(target string, flags int) (err error) = SYS_UMOUNT2
-//umount2(target *byte, flags int) int
+//umount2(target *byte, flags _C_int) _C_int
 
 //sys	Unshare(flags int) (err error)
-//unshare(flags int) int
+//unshare(flags _C_int) _C_int
 
 //sys	Ustat(dev int, ubuf *Ustat_t) (err error)
-//ustat(dev _dev_t, ubuf *Ustat_t) int
+//ustat(dev _dev_t, ubuf *Ustat_t) _C_int
