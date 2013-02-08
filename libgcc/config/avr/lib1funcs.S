@@ -1684,11 +1684,11 @@ DEFUN  __divdi3_moddi3
 
 ENDF __divdi3_moddi3
 
+#endif /* L_divdi3 */
+
 #undef R_cnt
 #undef SS
 #undef NN
-
-#endif /* L_divdi3 */
 
 .section .text.libgcc, "ax", @progbits
 

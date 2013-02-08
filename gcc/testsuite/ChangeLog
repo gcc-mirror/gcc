@@ -1,3 +1,9 @@
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* gcc.target/avr/torture/builtins-4-roundfx.c: New test.
+	* gcc.target/avr/torture/builtins-5-countlsfx.c: New test.
+
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56241

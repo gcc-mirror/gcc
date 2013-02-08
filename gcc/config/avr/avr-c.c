@@ -26,9 +26,225 @@
 #include "tm_p.h"
 #include "cpplib.h"
 #include "tree.h"
+#include "target.h"
 #include "c-family/c-common.h"
 #include "langhooks.h"
 
+
+/* IDs for all the AVR builtins.  */
+
+enum avr_builtin_id
+  {
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)  \
+    AVR_BUILTIN_ ## NAME,
+#include "builtins.def"
+#undef DEF_BUILTIN
+
+    AVR_BUILTIN_COUNT
+  };
+
+
+/* Implement `TARGET_RESOLVE_OVERLOADED_PLUGIN'.  */
+
+static tree
+avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
+{
+  tree type0, type1, fold = NULL_TREE;
+  enum avr_builtin_id id = AVR_BUILTIN_COUNT;
+  location_t loc = (location_t) iloc;
+  vec<tree, va_gc> &args = * (vec<tree, va_gc>*) vargs;
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    default:
+      break;
+
+    case AVR_BUILTIN_ABSFX:
+      if (args.length() != 1)
+        {
+          error_at (loc, "%qs expects 1 argument but %d given",
+                    "absfx", (int) args.length());
+
+          fold = error_mark_node;
+          break;
+        }
+
+      type0 = TREE_TYPE (args[0]);
+
+      if (!FIXED_POINT_TYPE_P (type0))
+        {
+          error_at (loc, "%qs expects a fixed-point value as argument",
+                    "absfx");
+
+          fold = error_mark_node;
+        }
+
+      switch (TYPE_MODE (type0))
+        {
+        case QQmode: id = AVR_BUILTIN_ABSHR; break;
+        case HQmode: id = AVR_BUILTIN_ABSR; break;
+        case SQmode: id = AVR_BUILTIN_ABSLR; break;
+        case DQmode: id = AVR_BUILTIN_ABSLLR; break;
+
+        case HAmode: id = AVR_BUILTIN_ABSHK; break;
+        case SAmode: id = AVR_BUILTIN_ABSK; break;
+        case DAmode: id = AVR_BUILTIN_ABSLK; break;
+        case TAmode: id = AVR_BUILTIN_ABSLLK; break;
+
+        case UQQmode:
+        case UHQmode:
+        case USQmode:
+        case UDQmode:
+        case UHAmode:
+        case USAmode:
+        case UDAmode:
+        case UTAmode:
+          warning_at (loc, 0, "using %qs with unsigned type has no effect",
+                      "absfx");
+          return args[0];
+
+        default:
+          error_at (loc, "no matching fixed-point overload found for %qs",
+                    "absfx");
+
+          fold = error_mark_node;
+          break;
+        }
+
+      fold = targetm.builtin_decl (id, true);
+
+      if (fold != error_mark_node)
+        fold = build_function_call_vec (loc, fold, &args, NULL);
+
+      break; // absfx
+
+    case AVR_BUILTIN_ROUNDFX:
+      if (args.length() != 2)
+        {
+          error_at (loc, "%qs expects 2 arguments but %d given",
+                    "roundfx", (int) args.length());
+
+          fold = error_mark_node;
+          break;
+        }
+
+      type0 = TREE_TYPE (args[0]);
+      type1 = TREE_TYPE (args[1]);
+
+      if (!FIXED_POINT_TYPE_P (type0))
+        {
+          error_at (loc, "%qs expects a fixed-point value as first argument",
+                    "roundfx");
+
+          fold = error_mark_node;
+        }
+
+      if (!INTEGRAL_TYPE_P (type1))
+        {
+          error_at (loc, "%qs expects an integer value as second argument",
+                    "roundfx");
+
+          fold = error_mark_node;
+        }
+
+      switch (TYPE_MODE (type0))
+        {
+        case QQmode: id = AVR_BUILTIN_ROUNDHR; break;
+        case HQmode: id = AVR_BUILTIN_ROUNDR; break;
+        case SQmode: id = AVR_BUILTIN_ROUNDLR; break;
+        case DQmode: id = AVR_BUILTIN_ROUNDLLR; break;
+
+        case UQQmode: id = AVR_BUILTIN_ROUNDUHR; break;
+        case UHQmode: id = AVR_BUILTIN_ROUNDUR; break;
+        case USQmode: id = AVR_BUILTIN_ROUNDULR; break;
+        case UDQmode: id = AVR_BUILTIN_ROUNDULLR; break;
+
+        case HAmode: id = AVR_BUILTIN_ROUNDHK; break;
+        case SAmode: id = AVR_BUILTIN_ROUNDK; break;
+        case DAmode: id = AVR_BUILTIN_ROUNDLK; break;
+        case TAmode: id = AVR_BUILTIN_ROUNDLLK; break;
+
+        case UHAmode: id = AVR_BUILTIN_ROUNDUHK; break;
+        case USAmode: id = AVR_BUILTIN_ROUNDUK; break;
+        case UDAmode: id = AVR_BUILTIN_ROUNDULK; break;
+        case UTAmode: id = AVR_BUILTIN_ROUNDULLK; break;
+
+        default:
+          error_at (loc, "no matching fixed-point overload found for %qs",
+                    "roundfx");
+
+          fold = error_mark_node;
+          break;
+        }
+
+      fold = targetm.builtin_decl (id, true);
+
+      if (fold != error_mark_node)
+        fold = build_function_call_vec (loc, fold, &args, NULL);
+
+      break; // roundfx
+
+    case AVR_BUILTIN_COUNTLSFX:
+      if (args.length() != 1)
+        {
+          error_at (loc, "%qs expects 1 argument but %d given",
+                    "countlsfx", (int) args.length());
+
+          fold = error_mark_node;
+          break;
+        }
+
+      type0 = TREE_TYPE (args[0]);
+
+      if (!FIXED_POINT_TYPE_P (type0))
+        {
+          error_at (loc, "%qs expects a fixed-point value as first argument",
+                    "countlsfx");
+
+          fold = error_mark_node;
+        }
+
+      switch (TYPE_MODE (type0))
+        {
+        case QQmode: id = AVR_BUILTIN_COUNTLSHR; break;
+        case HQmode: id = AVR_BUILTIN_COUNTLSR; break;
+        case SQmode: id = AVR_BUILTIN_COUNTLSLR; break;
+        case DQmode: id = AVR_BUILTIN_COUNTLSLLR; break;
+
+        case UQQmode: id = AVR_BUILTIN_COUNTLSUHR; break;
+        case UHQmode: id = AVR_BUILTIN_COUNTLSUR; break;
+        case USQmode: id = AVR_BUILTIN_COUNTLSULR; break;
+        case UDQmode: id = AVR_BUILTIN_COUNTLSULLR; break;
+
+        case HAmode: id = AVR_BUILTIN_COUNTLSHK; break;
+        case SAmode: id = AVR_BUILTIN_COUNTLSK; break;
+        case DAmode: id = AVR_BUILTIN_COUNTLSLK; break;
+        case TAmode: id = AVR_BUILTIN_COUNTLSLLK; break;
+
+        case UHAmode: id = AVR_BUILTIN_COUNTLSUHK; break;
+        case USAmode: id = AVR_BUILTIN_COUNTLSUK; break;
+        case UDAmode: id = AVR_BUILTIN_COUNTLSULK; break;
+        case UTAmode: id = AVR_BUILTIN_COUNTLSULLK; break;
+
+        default:
+          error_at (loc, "no matching fixed-point overload found for %qs",
+                    "countlsfx");
+
+          fold = error_mark_node;
+          break;
+        }
+
+      fold = targetm.builtin_decl (id, true);
+
+      if (fold != error_mark_node)
+        fold = build_function_call_vec (loc, fold, &args, NULL);
+
+      break; // countlsfx
+    }
+
+  return fold;
+}
+  
 
 /* Implement `REGISTER_TARGET_PRAGMAS'.  */
 
@@ -49,6 +265,8 @@ avr_register_target_pragmas (void)
       if (!ADDR_SPACE_GENERIC_P (i))
         c_register_addr_space (avr_addrspace[i].name, avr_addrspace[i].id);
     }
+
+  targetm.resolve_overloaded_builtin = avr_resolve_overloaded_builtin;
 }
 
 
