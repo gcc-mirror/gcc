@@ -162,6 +162,9 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
   xloc = expand_location (loc);
 
   bp_pack_value (bp, ob->current_file != xloc.file, 1);
+  bp_pack_value (bp, ob->current_line != xloc.line, 1);
+  bp_pack_value (bp, ob->current_col != xloc.column, 1);
+
   if (ob->current_file != xloc.file)
     bp_pack_var_len_unsigned (bp,
 	                      streamer_string_index (ob, xloc.file,
@@ -169,12 +172,10 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
 						     true));
   ob->current_file = xloc.file;
 
-  bp_pack_value (bp, ob->current_line != xloc.line, 1);
   if (ob->current_line != xloc.line)
     bp_pack_var_len_unsigned (bp, xloc.line);
   ob->current_line = xloc.line;
 
-  bp_pack_value (bp, ob->current_col != xloc.column, 1);
   if (ob->current_col != xloc.column)
     bp_pack_var_len_unsigned (bp, xloc.column);
   ob->current_col = xloc.column;

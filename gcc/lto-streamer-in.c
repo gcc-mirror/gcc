@@ -123,58 +123,48 @@ canon_file_name (const char *string)
 }
 
 
-/* Clear the line info stored in DATA_IN.  */
-
-static void
-clear_line_info (struct data_in *data_in)
-{
-  if (data_in->current_file)
-    linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-  data_in->current_file = NULL;
-  data_in->current_line = 0;
-  data_in->current_col = 0;
-}
-
-
 /* Read a location bitpack from input block IB.  */
 
 location_t
 lto_input_location (struct bitpack_d *bp, struct data_in *data_in)
 {
+  static const char *current_file;
+  static int current_line;
+  static int current_col;
   bool file_change, line_change, column_change;
   unsigned len;
-  bool prev_file = data_in->current_file != NULL;
+  bool prev_file = current_file != NULL;
 
   if (bp_unpack_value (bp, 1))
     return UNKNOWN_LOCATION;
 
   file_change = bp_unpack_value (bp, 1);
-  if (file_change)
-    data_in->current_file = canon_file_name
-			      (string_for_index (data_in,
-						 bp_unpack_var_len_unsigned (bp),
-					         &len));
-
   line_change = bp_unpack_value (bp, 1);
-  if (line_change)
-    data_in->current_line = bp_unpack_var_len_unsigned (bp);
-
   column_change = bp_unpack_value (bp, 1);
+
+  if (file_change)
+    current_file = canon_file_name
+		     (string_for_index (data_in,
+					bp_unpack_var_len_unsigned (bp),
+					&len));
+
+  if (line_change)
+    current_line = bp_unpack_var_len_unsigned (bp);
+
   if (column_change)
-    data_in->current_col = bp_unpack_var_len_unsigned (bp);
+    current_col = bp_unpack_var_len_unsigned (bp);
 
   if (file_change)
     {
       if (prev_file)
 	linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 
-      linemap_add (line_table, LC_ENTER, false, data_in->current_file,
-		   data_in->current_line);
+      linemap_add (line_table, LC_ENTER, false, current_file, current_line);
     }
   else if (line_change)
-    linemap_line_start (line_table, data_in->current_line, data_in->current_col);
+    linemap_line_start (line_table, current_line, current_col);
 
-  return linemap_position_for_column (line_table, data_in->current_col);
+  return linemap_position_for_column (line_table, current_col);
 }
 
 
@@ -806,7 +796,6 @@ input_function (tree fn_decl, struct data_in *data_in,
 
   fn = DECL_STRUCT_FUNCTION (fn_decl);
   tag = streamer_read_record_start (ib);
-  clear_line_info (data_in);
 
   gimple_register_cfg_hooks ();
   lto_tag_check (tag, LTO_function);
@@ -987,7 +976,6 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
       pop_cfun ();
     }
 
-  clear_line_info (data_in);
   lto_data_in_delete (data_in);
 }
 
@@ -1137,7 +1125,6 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
 	symtab_order = node->order + 1;
     }
 
-  clear_line_info (data_in);
   lto_data_in_delete (data_in);
 
   lto_free_section_data (file_data, LTO_section_asm, NULL, data, len);

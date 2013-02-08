@@ -691,10 +691,6 @@ struct data_in
   /* Number of unnamed labels.  */
   unsigned int num_unnamed_labels;
 
-  const char *current_file;
-  int current_line;
-  int current_col;
-
   /* Maps each reference number to the resolution done by the linker. */
   vec<ld_plugin_symbol_resolution_t> globals_resolution;
 

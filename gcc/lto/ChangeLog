@@ -1,3 +1,8 @@
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56231
+	* lto-lang.c (lto_init): Do not enter a dummy file.
+
 2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/56227
