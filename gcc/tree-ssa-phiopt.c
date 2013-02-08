@@ -1233,6 +1233,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 struct name_to_bb
 {
   unsigned int ssa_name_ver;
+  unsigned int phase;
   bool store;
   HOST_WIDE_INT offset, size;
   basic_block bb;
@@ -1240,6 +1241,10 @@ struct name_to_bb
 
 /* The hash table for remembering what we've seen.  */
 static htab_t seen_ssa_names;
+
+/* Used for quick clearing of the hash-table when we see calls.
+   Hash entries with phase < nt_call_phase are invalid.  */
+static unsigned int nt_call_phase;
 
 /* The set of MEM_REFs which can't trap.  */
 static struct pointer_set_t *nontrap_set;
@@ -1291,6 +1296,7 @@ add_or_mark_expr (basic_block bb, tree exp,
       /* Try to find the last seen MEM_REF through the same
          SSA_NAME, which can trap.  */
       map.ssa_name_ver = SSA_NAME_VERSION (name);
+      map.phase = 0;
       map.bb = 0;
       map.store = store;
       map.offset = tree_low_cst (TREE_OPERAND (exp, 1), 0);
@@ -1298,13 +1304,13 @@ add_or_mark_expr (basic_block bb, tree exp,
 
       slot = htab_find_slot (seen_ssa_names, &map, INSERT);
       n2bb = (struct name_to_bb *) *slot;
-      if (n2bb)
+      if (n2bb && n2bb->phase >= nt_call_phase)
         found_bb = n2bb->bb;
 
       /* If we've found a trapping MEM_REF, _and_ it dominates EXP
          (it's in a basic block on the path from us to the dominator root)
 	 then we can't trap.  */
-      if (found_bb && found_bb->aux == (void *)1)
+      if (found_bb && (((size_t)found_bb->aux) & 1) == 1)
 	{
 	  pointer_set_insert (nontrap, exp);
 	}
@@ -1313,12 +1319,14 @@ add_or_mark_expr (basic_block bb, tree exp,
 	  /* EXP might trap, so insert it into the hash table.  */
 	  if (n2bb)
 	    {
+	      n2bb->phase = nt_call_phase;
 	      n2bb->bb = bb;
 	    }
 	  else
 	    {
 	      n2bb = XNEW (struct name_to_bb);
 	      n2bb->ssa_name_ver = SSA_NAME_VERSION (name);
+	      n2bb->phase = nt_call_phase;
 	      n2bb->bb = bb;
 	      n2bb->store = store;
 	      n2bb->offset = map.offset;
@@ -1329,20 +1337,55 @@ add_or_mark_expr (basic_block bb, tree exp,
     }
 }
 
+/* Return true when CALL is a call stmt that definitely doesn't
+   free any memory or makes it unavailable otherwise.  */
+static bool
+nonfreeing_call_p (gimple call)
+{
+  if (gimple_call_builtin_p (call, BUILT_IN_NORMAL)
+      && gimple_call_flags (call) & ECF_LEAF)
+    switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
+      {
+	/* Just in case these become ECF_LEAF in the future.  */
+	case BUILT_IN_FREE:
+	case BUILT_IN_TM_FREE:
+	case BUILT_IN_REALLOC:
+	case BUILT_IN_STACK_RESTORE:
+	  return false;
+	default:
+	  return true;
+      }
+
+  return false;
+}
+
 /* Called by walk_dominator_tree, when entering the block BB.  */
 static void
 nt_init_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
 {
+  edge e;
+  edge_iterator ei;
   gimple_stmt_iterator gsi;
-  /* Mark this BB as being on the path to dominator root.  */
-  bb->aux = (void*)1;
+
+  /* If we haven't seen all our predecessors, clear the hash-table.  */
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if ((((size_t)e->src->aux) & 2) == 0)
+      {
+	nt_call_phase++;
+	break;
+      }
+
+  /* Mark this BB as being on the path to dominator root and as visited.  */
+  bb->aux = (void*)(1 | 2);
 
   /* And walk the statements in order.  */
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
 
-      if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
+      if (is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
+	nt_call_phase++;
+      else if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
 	{
 	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), nontrap_set, true);
 	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), nontrap_set, false);
@@ -1355,7 +1398,7 @@ static void
 nt_fini_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
 {
   /* This BB isn't on the path to dominator root anymore.  */
-  bb->aux = NULL;
+  bb->aux = (void*)2;
 }
 
 /* This is the entry point of gathering non trapping memory accesses.
@@ -1368,6 +1411,7 @@ get_non_trapping (void)
   struct pointer_set_t *nontrap;
   struct dom_walk_data walk_data;
 
+  nt_call_phase = 0;
   nontrap = pointer_set_create ();
   seen_ssa_names = htab_create (128, name_to_bb_hash, name_to_bb_eq,
 				free);
@@ -1389,6 +1433,7 @@ get_non_trapping (void)
   fini_walk_dominator_tree (&walk_data);
   htab_delete (seen_ssa_names);
 
+  clear_aux_for_blocks ();
   return nontrap;
 }
 

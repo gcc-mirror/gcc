@@ -1,3 +1,8 @@
+2013-02-08  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/52448
+	* gcc.dg/pr52448.c: New test.
+
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56181
