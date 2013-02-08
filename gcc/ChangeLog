@@ -1,3 +1,7 @@
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	* ira.c (ira): Free broken dominator information.
+
 2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_spill_class): Use INTEGER_CLASS_P macro.

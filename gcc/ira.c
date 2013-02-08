@@ -4520,6 +4520,7 @@ ira (FILE *f)
 	     change if new insns were generated?  Can that be handled
 	     by updating the loop tree incrementally?  */
 	  loop_optimizer_finalize ();
+	  free_dominance_info (CDI_DOMINATORS);
 	  loop_optimizer_init (AVOID_CFG_MODIFICATIONS
 			       | LOOPS_HAVE_RECORDED_EXITS);
 
