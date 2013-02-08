@@ -77,7 +77,7 @@ namespace tr1
      */
     template <typename _Tp>
     void
-    __bessel_ik(const _Tp __nu, const _Tp __x,
+    __bessel_ik(_Tp __nu, _Tp __x,
                 _Tp & __Inu, _Tp & __Knu, _Tp & __Ipnu, _Tp & __Kpnu)
     {
       if (__x == _Tp(0))
@@ -132,7 +132,7 @@ namespace tr1
         }
       if (__i > __max_iter)
         std::__throw_runtime_error(__N("Argument x too large "
-                                       "in __bessel_jn; "
+                                       "in __bessel_ik; "
                                        "try asymptotic expansion."));
       _Tp __Inul = __fp_min;
       _Tp __Ipnul = __h * __Inul;
@@ -185,7 +185,7 @@ namespace tr1
             }
           if (__i > __max_iter)
             std::__throw_runtime_error(__N("Bessel k series failed to converge "
-                                           "in __bessel_jn."));
+                                           "in __bessel_ik."));
           __Kmu = __sum;
           __Knu1 = __sum1 * __xi2;
         }
@@ -221,7 +221,7 @@ namespace tr1
             }
           if (__i > __max_iter)
             std::__throw_runtime_error(__N("Steed's method failed "
-                                           "in __bessel_jn."));
+                                           "in __bessel_ik."));
           __h = __a1 * __h;
           __Kmu = std::sqrt(__numeric_constants<_Tp>::__pi() / (_Tp(2) * __x))
                 * std::exp(-__x) / __s;
@@ -261,7 +261,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __cyl_bessel_i(const _Tp __nu, const _Tp __x)
+    __cyl_bessel_i(_Tp __nu, _Tp __x)
     {
       if (__nu < _Tp(0) || __x < _Tp(0))
         std::__throw_domain_error(__N("Bad argument "
@@ -297,7 +297,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __cyl_bessel_k(const _Tp __nu, const _Tp __x)
+    __cyl_bessel_k(_Tp __nu, _Tp __x)
     {
       if (__nu < _Tp(0) || __x < _Tp(0))
         std::__throw_domain_error(__N("Bad argument "
@@ -331,7 +331,7 @@ namespace tr1
      */
     template <typename _Tp>
     void
-    __sph_bessel_ik(const unsigned int __n, const _Tp __x,
+    __sph_bessel_ik(unsigned int __n, _Tp __x,
                     _Tp & __i_n, _Tp & __k_n, _Tp & __ip_n, _Tp & __kp_n)
     {
       const _Tp __nu = _Tp(__n) + _Tp(0.5L);
@@ -366,8 +366,7 @@ namespace tr1
      */
     template <typename _Tp>
     void
-    __airy(const _Tp __x,
-           _Tp & __Ai, _Tp & __Bi, _Tp & __Aip, _Tp & __Bip)
+    __airy(_Tp __x, _Tp & __Ai, _Tp & __Bi, _Tp & __Aip, _Tp & __Bip)
     {
       const _Tp __absx = std::abs(__x);
       const _Tp __rootx = std::sqrt(__absx);

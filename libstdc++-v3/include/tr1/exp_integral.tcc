@@ -58,7 +58,7 @@ namespace tr1
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-    template<typename _Tp> _Tp __expint_E1(const _Tp);
+    template<typename _Tp> _Tp __expint_E1(_Tp);
 
     /**
      *   @brief Return the exponential integral @f$ E_1(x) @f$
@@ -75,7 +75,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_E1_series(const _Tp __x)
+    __expint_E1_series(_Tp __x)
     {
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
       _Tp __term = _Tp(1);
@@ -112,7 +112,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_E1_asymp(const _Tp __x)
+    __expint_E1_asymp(_Tp __x)
     {
       _Tp __term = _Tp(1);
       _Tp __esum = _Tp(1);
@@ -149,7 +149,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_En_series(const unsigned int __n, const _Tp __x)
+    __expint_En_series(unsigned int __n, _Tp __x)
     {
       const unsigned int __max_iter = 100;
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
@@ -195,7 +195,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_En_cont_frac(const unsigned int __n, const _Tp __x)
+    __expint_En_cont_frac(unsigned int __n, _Tp __x)
     {
       const unsigned int __max_iter = 100;
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
@@ -240,7 +240,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_En_recursion(const unsigned int __n, const _Tp __x)
+    __expint_En_recursion(unsigned int __n, _Tp __x)
     {
       _Tp __En;
       _Tp __E1 = __expint_E1(__x);
@@ -284,7 +284,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_Ei_series(const _Tp __x)
+    __expint_Ei_series(_Tp __x)
     {
       _Tp __term = _Tp(1);
       _Tp __sum = _Tp(0);
@@ -315,7 +315,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_Ei_asymp(const _Tp __x)
+    __expint_Ei_asymp(_Tp __x)
     {
       _Tp __term = _Tp(1);
       _Tp __sum = _Tp(1);
@@ -348,7 +348,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_Ei(const _Tp __x)
+    __expint_Ei(_Tp __x)
     {
       if (__x < _Tp(0))
         return -__expint_E1(-__x);
@@ -372,7 +372,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_E1(const _Tp __x)
+    __expint_E1(_Tp __x)
     {
       if (__x < _Tp(0))
         return -__expint_Ei(-__x);
@@ -402,7 +402,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_asymp(const unsigned int __n, const _Tp __x)
+    __expint_asymp(unsigned int __n, _Tp __x)
     {
       _Tp __term = _Tp(1);
       _Tp __sum = _Tp(1);
@@ -436,7 +436,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint_large_n(const unsigned int __n, const _Tp __x)
+    __expint_large_n(unsigned int __n, _Tp __x)
     {
       const _Tp __xpn = __x + __n;
       const _Tp __xpn2 = __xpn * __xpn;
@@ -470,7 +470,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __expint(const unsigned int __n, const _Tp __x)
+    __expint(unsigned int __n, _Tp __x)
     {
       //  Return NaN on NaN input.
       if (__isnan(__x))
@@ -510,7 +510,7 @@ namespace tr1
      */
     template<typename _Tp>
     inline _Tp
-    __expint(const _Tp __x)
+    __expint(_Tp __x)
     {
       if (__isnan(__x))
         return std::numeric_limits<_Tp>::quiet_NaN();

@@ -70,7 +70,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __riemann_zeta_sum(const _Tp __s)
+    __riemann_zeta_sum(_Tp __s)
     {
       //  A user shouldn't get to this.
       if (__s < _Tp(1))
@@ -107,7 +107,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __riemann_zeta_alt(const _Tp __s)
+    __riemann_zeta_alt(_Tp __s)
     {
       _Tp __sgn = _Tp(1);
       _Tp __zeta = _Tp(0);
@@ -149,7 +149,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __riemann_zeta_glob(const _Tp __s)
+    __riemann_zeta_glob(_Tp __s)
     {
       _Tp __zeta = _Tp(0);
 
@@ -244,7 +244,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __riemann_zeta_product(const _Tp __s)
+    __riemann_zeta_product(_Tp __s)
     {
       static const _Tp __prime[] = {
         _Tp(2), _Tp(3), _Tp(5), _Tp(7), _Tp(11), _Tp(13), _Tp(17), _Tp(19),
@@ -285,7 +285,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __riemann_zeta(const _Tp __s)
+    __riemann_zeta(_Tp __s)
     {
       if (__isnan(__s))
         return std::numeric_limits<_Tp>::quiet_NaN();
@@ -357,7 +357,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __hurwitz_zeta_glob(const _Tp __a, const _Tp __s)
+    __hurwitz_zeta_glob(_Tp __a, _Tp __s)
     {
       _Tp __zeta = _Tp(0);
 
@@ -422,10 +422,8 @@ namespace tr1
      */
     template<typename _Tp>
     inline _Tp
-    __hurwitz_zeta(const _Tp __a, const _Tp __s)
-    {
-      return __hurwitz_zeta_glob(__a, __s);
-    }
+    __hurwitz_zeta(_Tp __a, _Tp __s)
+    { return __hurwitz_zeta_glob(__a, __s); }
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace std::tr1::__detail
