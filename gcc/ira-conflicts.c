@@ -895,8 +895,12 @@ ira_build_conflicts (void)
 
 	  if ((! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	      /* For debugging purposes don't put user defined variables in
-		 callee-clobbered registers.  */
-	      || (optimize == 0 && REG_USERVAR_P (allocno_reg)))
+		 callee-clobbered registers.  However, do allow parameters
+		 in callee-clobbered registers to improve debugging.  This
+		 is a bit of a fragile hack.  */
+	      || (optimize == 0
+		  && REG_USERVAR_P (allocno_reg)
+		  && ! reg_is_parm_p (allocno_reg)))
 	    {
 	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
 				call_used_reg_set);
