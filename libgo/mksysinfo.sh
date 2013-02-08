@@ -429,8 +429,10 @@ echo "type Socklen_t _socklen_t" >> ${OUT}
 sizeof_int=`grep '^const ___SIZEOF_INT__ = ' gen-sysinfo.go | sed -e 's/.*= //'`
 if test "$sizeof_int" = "4"; then
   echo "type _C_int int32" >> ${OUT}
+  echo "type _C_uint uint32" >> ${OUT}
 elif test "$sizeof_int" = "8"; then
   echo "type _C_int int64" >> ${OUT}
+  echo "type _C_uint uint64" >> ${OUT}
 else
   echo 1>&2 "mksysinfo.sh: could not determine size of int (got $sizeof_int)"
   exit 1
