@@ -47,9 +47,6 @@ along with GCC; see the file COPYING3.  If not see
    ? REG_FREQ_MAX : (freq * REG_FREQ_MAX / BB_FREQ_MAX)			   \
    ? (freq * REG_FREQ_MAX / BB_FREQ_MAX) : 1)
 
-/* All natural loops.  */
-extern struct loops ira_loops;
-
 /* A modified value of flag `-fira-verbose' used internally.  */
 extern int internal_flag_ira_verbose;
 

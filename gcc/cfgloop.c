@@ -1542,7 +1542,12 @@ verify_loop_structure (void)
 		eloops++;
 
 	      for (loop = bb->loop_father;
-		   loop != e->dest->loop_father;
+		   loop != e->dest->loop_father
+		   /* When a loop exit is also an entry edge which
+		      can happen when avoiding CFG manipulations
+		      then the last loop exited is the outer loop
+		      of the loop entered.  */
+		   && loop != loop_outer (e->dest->loop_father);
 		   loop = loop_outer (loop))
 		{
 		  eloops--;

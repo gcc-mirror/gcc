@@ -1,5 +1,24 @@
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
+	* cfgloop.c (verify_loop_structure): Properly handle
+	a loop exiting to another loop header.
+	* ira-int.h (ira_loops): Remove.
+	* ira.c (ira_loops): Remove.
+	(ira): Use loop_optimizer_init and loop_optimizer_finalize.
+	(do_reload): Use loop_optimizer_finalize.
+	* ira-build.c (create_loop_tree_nodes): Use get_loops and
+	number_of_loops to access the loop tree.
+	(more_one_region_p): Likewise.
+	(finish_loop_tree_nodes): Likewise.
+	(rebuild_regno_allocno_maps): Likewise.
+	(mark_loops_for_removal): Likewise.
+	(mark_all_loops_for_removal): Likewise.
+	(remove_unnecessary_regions): Likewise.
+	(ira_build): Likewise.
+	* ira-emit.c (setup_entered_from_non_parent_p): Likewise.
+
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
 	* Makefile.in (tree-tailcall.o): Add $(CFGLOOP_H) dependency.
 	* ipa-pure-const.c (analyze_function): Avoid calling
 	mark_irreducible_loops twice.
