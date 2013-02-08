@@ -46,8 +46,17 @@ extern enum pipeline_type microblaze_pipe;
 
 #define OBJECT_FORMAT_ELF
 
+#if TARGET_BIG_ENDIAN_DEFAULT
+#define TARGET_ENDIAN_DEFAULT    0
+#define TARGET_ENDIAN_OPTION     "mbig-endian"
+#else
+#define TARGET_ENDIAN_DEFAULT    MASK_LITTLE_ENDIAN
+#define TARGET_ENDIAN_OPTION     "mlittle-endian"
+#endif
+
 /* Default target_flags if no switches are specified  */
-#define TARGET_DEFAULT      (MASK_SOFT_MUL | MASK_SOFT_DIV | MASK_SOFT_FLOAT)
+#define TARGET_DEFAULT      (MASK_SOFT_MUL | MASK_SOFT_DIV | MASK_SOFT_FLOAT \
+                             | TARGET_ENDIAN_DEFAULT)
 
 /* What is the default setting for -mcpu= . We set it to v4.00.a even though 
    we are actually ahead. This is safest version that has generate code 
@@ -77,12 +86,16 @@ extern enum pipeline_type microblaze_pipe;
 #define TARGET_ASM_SPEC ""
 
 #define ASM_SPEC "\
-%(target_asm_spec)"
+%(target_asm_spec) \
+%{mbig-endian:-EB} \
+%{mlittle-endian:-EL}"
 
 /* Extra switches sometimes passed to the linker.  */
 /* -xl-mode-xmdstub translated to -Zxl-mode-xmdstub -- deprecated.  */
 
 #define LINK_SPEC "%{shared:-shared} -N -relax \
+  %{mbig-endian:-EB --oformat=elf32-microblaze} \
+  %{mlittle-endian:-EL --oformat=elf32-microblazeel} \
   %{Zxl-mode-xmdstub:-defsym _TEXT_START_ADDR=0x800} \
   %{mxl-mode-xmdstub:-defsym _TEXT_START_ADDR=0x800} \
   %{mxl-gp-opt:%{G*}} %{!mxl-gp-opt: -G 0} \
@@ -167,8 +180,8 @@ extern enum pipeline_type microblaze_pipe;
 /* Target machine storage layout */
 
 #define BITS_BIG_ENDIAN 0
-#define BYTES_BIG_ENDIAN 1
-#define WORDS_BIG_ENDIAN 1
+#define BYTES_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
+#define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 #define BITS_PER_UNIT           8
 #define BITS_PER_WORD           32
 #define UNITS_PER_WORD          4
