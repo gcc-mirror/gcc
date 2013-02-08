@@ -1,3 +1,15 @@
+2013-02-08  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/52448
+	* tree-ssa-phiopt.c (struct name_to_bb): Add phase member.
+	(nt_call_phase): New static.
+	(add_or_mark_expr): Only mark accesses with newer phase than any
+	call seen.
+	(nonfreeing_call_p): New.
+	(nt_init_block): Update nt_call_phase, mark blocks as visited.
+	(nt_fini_block): Keep blocks marked as visited.
+	(get_non_trapping): Initialize nt_call_phase, and reset aux pointer.
+
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
 	* ira.c (ira): Free broken dominator information.
