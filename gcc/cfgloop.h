@@ -205,7 +205,8 @@ struct GTY (()) loops {
 };
 
 /* Loop recognition.  */
-extern int flow_loops_find (struct loops *);
+bool bb_loop_header_p (basic_block);
+extern struct loops *flow_loops_find (struct loops *);
 extern void disambiguate_loops_with_multiple_latches (void);
 extern void flow_loops_free (struct loops *);
 extern void flow_loops_dump (FILE *,

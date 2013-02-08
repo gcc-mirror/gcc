@@ -1,3 +1,19 @@
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56181
+	* cfgloop.h (flow_loops_find): Adjust.
+	(bb_loop_header_p): Declare.
+	* cfgloop.c (bb_loop_header_p): New function split out from ...
+	(flow_loops_find): ... here.  Adjust function signature,
+	support incremental loop structure update.
+	(verify_loop_structure): Cleanup.  Verify a loop is a loop.
+	* cfgloopmanip.c (fix_loop_structure): Move ...
+	* loop-init.c (fix_loop_structure): ... here.
+	(apply_loop_flags): Split out from ...
+	(loop_optimizer_init): ... here.
+	(fix_loop_structure): Use apply_loop_flags.  Use flow_loops_find
+	in incremental mode, only remove dead loops here.
+
 2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
