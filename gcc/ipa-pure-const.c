@@ -779,8 +779,10 @@ end:
         {
 	  /* Preheaders are needed for SCEV to work.
 	     Simple latches and recorded exits improve chances that loop will
-	     proved to be finite in testcases such as in loop-15.c and loop-24.c  */
-	  loop_optimizer_init (LOOPS_NORMAL
+	     proved to be finite in testcases such as in loop-15.c
+	     and loop-24.c  */
+	  loop_optimizer_init (LOOPS_HAVE_PREHEADERS
+			       | LOOPS_HAVE_SIMPLE_LATCHES
 			       | LOOPS_HAVE_RECORDED_EXITS);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    flow_loops_dump (dump_file, NULL, 0);
@@ -799,7 +801,8 @@ end:
 		if (!finite_loop_p (loop))
 		  {
 		    if (dump_file)
-		      fprintf (dump_file, "    can not prove finiteness of loop %i\n", loop->num);
+		      fprintf (dump_file, "    can not prove finiteness of "
+			       "loop %i\n", loop->num);
 		    l->looping =true;
 		    FOR_EACH_LOOP_BREAK (li);
 		  }
