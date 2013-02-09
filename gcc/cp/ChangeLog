@@ -1,3 +1,11 @@
+2013-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56238
+	* pt.c (build_non_dependent_expr): Don't try to fold
+	instantiation-dependent expressions.
+	(instantiation_dependent_r) [TRAIT_EXPR]: Split out.
+	[BIND_EXPR]: Treat as dependent.
+
 2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56241
