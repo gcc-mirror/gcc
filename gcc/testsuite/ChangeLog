@@ -1,3 +1,11 @@
+2013-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/asan/asan_test.C: Compile with -D__NO_INLINE__
+	for *-*-linux-gnu targets.
+	* g++.dg/asan/interception-test-1.c: Ditto.
+	* g++.dg/asan/interception-failure-test-1.C: Ditto.
+	* g++.dg/asan/interception-malloc-test-1.C: Ditto.
+
 2013-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55362
@@ -184,7 +192,7 @@
 	* gfortran.dg/realloc_on _assign_17.f90 : New test.
 
 2013-02-04  Alexander Potapenko <glider@google.com>
-            Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/55617

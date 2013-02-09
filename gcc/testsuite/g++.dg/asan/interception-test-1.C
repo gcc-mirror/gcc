@@ -2,6 +2,7 @@
 
 // { dg-do run }
 // { dg-options "-fno-builtin-malloc -fno-builtin-free" }
+// { dg-additional-options "-D__NO_INLINE__" { target { *-*-linux-gnu } } }
 // { dg-shouldfail "asan" }
 // { dg-skip-if "Darwin uses mac function interposition" { *-*-darwin* } }
 
