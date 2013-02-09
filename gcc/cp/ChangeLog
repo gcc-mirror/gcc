@@ -1,5 +1,7 @@
 2013-02-09  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (decls_match): Check versions later.
+
 	PR c++/56238
 	* pt.c (build_non_dependent_expr): Don't try to fold
 	instantiation-dependent expressions.
