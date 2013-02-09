@@ -409,14 +409,8 @@ namespace tr1
                            unsigned int __max_iter)
     {
       if (__x == _Tp(0))
-	{
-          if (__nu == _Tp(0))
-            return _Tp(1);
-          else if (__nu == _Tp(1))
-            return _Tp(0);
-          else
-            return _Tp(0);
-	}
+	return __nu == _Tp(0) ? _Tp(1) : _Tp(0);
+
       const _Tp __x2 = __x / _Tp(2);
       _Tp __fact = __nu * std::log(__x2);
 #if _GLIBCXX_USE_C99_MATH_TR1
