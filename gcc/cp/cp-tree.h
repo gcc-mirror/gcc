@@ -4205,6 +4205,10 @@ extern GTY(()) tree integer_two_node;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
+/* Nonzero if we are inside eq_specializations, which affects comparison of
+   PARM_DECLs in cp_tree_equal.  */
+extern int comparing_specializations;
+
 /* In parser.c.  */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
