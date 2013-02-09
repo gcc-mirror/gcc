@@ -3848,7 +3848,10 @@ check-head:
 	@echo >> libgo.head
 
 check-tail: check-recursive check-multi
-	@lib=`${PWD_COMMAND} | sed -e 's,^.*/\([^/][^/]*\)$$,\1,'`; \
+	@if test "$(USE_DEJAGNU)" = "yes"; then \
+	  exit 0; \
+	fi; \
+	lib=`${PWD_COMMAND} | sed -e 's,^.*/\([^/][^/]*\)$$,\1,'`; \
 	for dir in . $(MULTIDIRS); do \
 	  mv ../$${dir}/$${lib}/libgo.sum ../$${dir}/$${lib}/libgo.sum.sep; \
 	  mv ../$${dir}/$${lib}/libgo.log ../$${dir}/$${lib}/libgo.log.sep; \
