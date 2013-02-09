@@ -1,3 +1,8 @@
+2013-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56256
+	* config/rs6000/rs6000.h (ASSEMBLER_DIALECT): Define.
+
 2013-02-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56246

@@ -356,6 +356,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define PROCESSOR_DEFAULT   PROCESSOR_PPC603
 #define PROCESSOR_DEFAULT64 PROCESSOR_RS64A
 
+/* Specify the dialect of assembler to use.  Only new mnemonics are supported
+   starting with GCC 4.8, i.e. just one dialect, but for backwards
+   compatibility with older inline asm ASSEMBLER_DIALECT needs to be
+   defined.  */
+#define ASSEMBLER_DIALECT 1
+
 /* Debug support */
 #define MASK_DEBUG_STACK	0x01	/* debug stack applications */
 #define	MASK_DEBUG_ARG		0x02	/* debug argument handling */
