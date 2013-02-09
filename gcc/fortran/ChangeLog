@@ -1,3 +1,9 @@
+2013-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55362
+	* check.c (array_check): It is an error if a procedure is
+	passed.
+
 2013-02-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54107
@@ -8,7 +14,7 @@
 
 2013-02-07  Tobias Burnus  <burnus@net-b.de>
 
-	PR fortran/54339 
+	PR fortran/54339
 	* gfortran.texi (Standards): Mention TS29113.
 	(Varying Length Character): Mention deferred-length
 	strings.
