@@ -1,3 +1,7 @@
+2013-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lto.c: Include output.h.
+
 2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
@@ -589,7 +593,7 @@
 2010-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_materialize_function): Do not tamper with STATIC and
-	EXTERNAL flags. 
+	EXTERNAL flags.
 
 2010-09-15  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
@@ -1048,7 +1052,7 @@
 	* lto.c (O_BINARY): Define.
 	(lto_read_section_data): Open file in binary mode.
 	* lto-elf.c (O_BINARY): Define.
-	(lto_elf_file_open): Open file in binary mode. 
+	(lto_elf_file_open): Open file in binary mode.
 
 2010-01-08  Richard Guenther  <rguenther@suse.de>
 
@@ -1608,7 +1612,7 @@
 
 2009-01-29  Ramana Radhakrishnan  <ramana.r@gmail.com>
 
-	* Make-lang.in (LTO_EXE): Link with all 
+	* Make-lang.in (LTO_EXE): Link with all
 	BACKENDLIBS and not only GMPLIBS
 
 2009-01-28  H.J. Lu  <hongjiu.lu@intel.com>
@@ -1808,7 +1812,7 @@
 	exceptions flag is given.
 	* lto-lang.c: (lto_init_options) Set default exceptions flag.
 	(lto_init_eh): Remove exceptions flag initialization.
-	(lto_init): Only call lto_init_eh if exceptions flag is set. 
+	(lto_init): Only call lto_init_eh if exceptions flag is set.
 
 2008-10-21  Diego Novillo  <dnovillo@google.com>
 
@@ -1939,7 +1943,7 @@
 	* lto.c (lto_main): Call lto_fixup_nothrow_decls to fix up function
 	bodies affected by exception attribute merging of DECLs.
 	* lto-symtab.c (lto_symtab_merge_decl): Handle exception attribute
-	merging. 
+	merging.
 
 2008-09-25  Rafael Espindola  <espindola@google.com>
 
@@ -2075,7 +2079,7 @@
 2008-08-04  Bill Maddox  <maddox@google.com>
 
 	* lto-symtab.c (lto_symtab_merge_decl): Add comment.
-	
+
 2008-09-03  Doug Kwan  <dougkwan@google.com>
 
 	lto.c (lto_add_all_inlinees): Reset FAILED_REASON of edges to
@@ -2131,7 +2135,7 @@
 	(lto_1_to_1_map, lto_add_all_inlinees, lto_wpa_write_files):
 	New functions.
 	(lto_main): Initialize bitmap obstack.  Add code to handle WPA mode.
-	* Make-lang.in (LTO_H): Replace filename lto-section-in.h with 
+	* Make-lang.in (LTO_H): Replace filename lto-section-in.h with
 	variable LTO_SECTION_IN_H.
 	(lto/lto.o): Include gt-lto-lto-c.h ggc.h ,VEC_H, BITMAP_H,
 	pointer-set.h and IPA_PROP_H. Also replace filename lto-section-in.h
@@ -2147,12 +2151,12 @@
 	asserting.
 	(lto_post_options): Suppress debug info generation.
 	* Make-lang.in: Add dependency of lto-lang.o on tree-gimple.h.
-	
+
 2008-08-25  Bill Maddox <maddox@google.com>
 
 	* lto-symtab.c (lto_symtab_merge_decl): Remove a suspect
 	assertion and leave an explanatory comment in its place.
-	
+
 2008-08-21  Doug Kwan  <dougkwan@google.com>
 
 	* lto.c (preload_common_nodes): Call lto_get_common_nodes to get a list
@@ -2182,21 +2186,21 @@
 	* lto.h (struct lto_file_struct): Remove GTY marker.
 	* config-lang.in: Remove lto/lto.h and lto/lto.c from
 	gtfiles.
-	
+
 2008-08-20  Bill Maddox  <maddox@google.com>
 
 	* lto.c (lto_read_decls): Provide dummy argument to input_tree
 	to conform to its new signature.
 	* lto-symtab.c (lto_symtab_merge_decl): Do not invoke ggc_free
 	on discarded node here, now called in global_vector_fixup.
-	
+
 2008-08-09  Bill Maddox  <maddox@google.com>
 
 	* lto.c (preload_common_nodes): Verify that fileptr_type_node
 	has not been set to a front-end-specific value.
-	
+
 2008-08-05  Doug Kwan  <dougkwan@google.com>
-	
+
 	* Make-lang.in (lto-symtab.o): Add missing dependencies to fix
 	build breakage.
 
@@ -2415,7 +2419,7 @@
 
 2008-06-07  Kenneth Zadeck <zadeck@naturalbridge.com>
 	    Jan Hubicka  <jh@suse.cz>
-	
+
 	* lto.c (sys/mman.h, tree-pass.h): New includes.
 	(lto_materialize_constructors_and_inits,
 	lto_materialize_function): Keeps length of section.
@@ -2427,12 +2431,12 @@
 	(lto_read_section_data, get_section_data, free_section_data): New
 	functions.
 	(lto_main): Now calls pass manager, sets the hooks so that the ipa
-	passes can get the section data. 
-	
+	passes can get the section data.
+
 2008-05-27  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto.h (lto_read_decls): Made local.
-	(lto_input_function_body, lto_input_constructors_and_inits, 
+	(lto_input_function_body, lto_input_constructors_and_inits,
 	lto_input_cgraph): Declarations moved to lto-section-in.h.
 	* lto-section-in.c: Moved to .. .
 	* lto-cgraph-in.c: Ditto.
@@ -2443,7 +2447,6 @@
 	(LANG_HOOKS_INSERT_BLOCK): Removed.
 	* Make-lang.in (lto-cgraph-in.o, lto-function-in.o,
 	lto-section-in.o): Rules moved to lto/Makefile.in.
-	
 
 2008-05-16  Ollie Wild  <aaw@google.com>
 
@@ -2524,7 +2527,7 @@
 	(lto_file_read): Made local and initialize dictionary so that
 	other lto sections can be read without reprocessing the elf file.
 	(lto_main): Read all functions after all files have been processed
-	for their types, globals and cgraph.  
+	for their types, globals and cgraph.
 	* Make-lang.in (lto.o, lto-cgraph-in.c, lto-section-in): Changed
 	dependencies.
 	* lto-elf.c (lto_elf_file): Removed strtab, symtab fields.
@@ -2534,7 +2537,7 @@
 	* lto.h (lto_info_fd_struct): Removed unmaterialized_fndecls.
 	(lto_file_read): Made local.
 	(lto_get_file_name, lto_elf_build_section_table,
-	lto_input_cgraph): 
+	lto_input_cgraph):
 	New function.
 	* lto-section-in.c (lto_read_section_data, lto_get_section_data):
 	New functions.
@@ -2549,7 +2552,6 @@
 	* lto_section_in.h (lto_section_slot): New structure.
 	(section_hash_table.lto_file_decl_data): New field.
 
-	
 2008-02-09  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto.c (lto_read_variable_formal_parameter_const): Remove code to
@@ -2568,7 +2570,7 @@
 	* lto/lto-elf.c (lto_elf_map_optional_lto_section): Add
 	lto_section_type parameter.
 	(lto_elf_unmap_fn_body): Renamed to lto_elf_unmap_section.
-	* lto.h (lto_file_vtable_struct): Removed two of the fields and 
+	* lto.h (lto_file_vtable_struct): Removed two of the fields and
 	renamed the other two so that there is only one map function and
 	one unmap function and each takes a section type parameter.
 	(lto_read_function_body): Renamed to lto_input_function_body and
@@ -2586,7 +2588,7 @@
 	(lto_read_function_body, lto_input_constructors_and_inits):
 	Renamed to lto_input_function_body and takes file_data parameter.
 	* lto-section-in.h (lto_file_decl_data): New structure.
-	
+
 2008-01-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-function-in.c (input_globals.c): Changed input type to
@@ -2595,8 +2597,8 @@
 	(input_function): Renumber all stmts after they are input.
 	(lto_read_body, lto_read_function_body, lto_read_var_init):
 	Changed to used new header format and enum section_type.
-	*lto-lang.c (success): Removed. 
-	
+	*lto-lang.c (success): Removed.
+
 2008-01-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-elf.c (lto_elf_lookup_sym): Remove unused function.
@@ -2628,7 +2630,7 @@
 	* lto-section-in.c: New file with changes from above.
 	* Make-lang.in (lto-read.o): Renamed lto-function-in.c.
 	(lto-section-in.o): New rule.
-	
+
 2007-12-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-read.c (input_expr_operand): Mark static and external
@@ -2751,7 +2753,7 @@
 	* lto.h (struct lto_str_fd_struct): New struct.
 	(struct lto_file_struct): Added new field DEBUG_STR
 	to hold the file descriptor for the debug string table.
-	
+
 2007-12-07  Bill Maddox  <maddox@google.com>
 
 	* lto.c (lto_str_fd_init): New function.
@@ -2867,14 +2869,14 @@
 
 2007-11-16  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	* lto-read.c (input_expr_operand): Get types right 
+	* lto-read.c (input_expr_operand): Get types right
 	for COMPLEX_CST.
 
 2007-11-16  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (make_new_block, input_cfg): Properly set
 	n_basic_blocks.
-	
+
 2007-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c (lto_read_array_type_DIE): Handle DIEs with DW_AT_GNU_vector
@@ -2894,7 +2896,7 @@
 	(input_expr_operand): Keeps track locally if current node needs a loc.
 	(input_local_var): Added code to handle DECL_INITIAL for
 	static local vars. Only set loc if necessary.
-	
+
 2007-11-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c (lto_read_subroutine_type_subprogram_DIE): Fix thinko'd
@@ -2919,14 +2921,14 @@
 	registered_builtin_fndecls.
 
 2007-11-15  Kenneth Zadeck <zadeck@naturalbridge.com>
-	    
+
 	* lto-read.c (process_tree_flags, lto_static_init_local):
 	Renamed to ADD_CLASS_EXPR_FLAG. ADD_CLASS_DECL_FLAG New Macro.
 	(input_line_info, clear_line_info): Fixed new line number code.
 	(input_expr_operand): Added type to SWITCH_EXPR.
 	(lto_read_body): Properly initialized data_in.
 	Clear line info when leaving.
-	
+
 2007-11-13  Diego Novillo  <dnovillo@google.com>
 
 	* lto.c (lto_read_variable_formal_parameter_constant_DIE):
@@ -2939,11 +2941,11 @@
 2007-11-13  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (input_type_ref): Renamed from get_type_ref.
-	(input_expr_operand, input_local_var): Renamed get_type_ref to 
+	(input_expr_operand, input_local_var): Renamed get_type_ref to
 	input_type_ref.
-	(input_expr_operand): Get the types correct for 
+	(input_expr_operand): Get the types correct for
 	vector-cst.  Get SSA_NAME_DEF_STMT correct for return_exprs.
-	
+
 2007-11-13  Doug Kwan  <dougkwan@google.com>
 
 	* lto-read.c (input_widest_uint_uleb128): New function.
@@ -2961,7 +2963,7 @@
 	DW_AT_static_link and DW_AT_specification.  Return the
 	specification if present.
 	(lto_read_base_type_DIE): Handle DW_ATE_complex_float.
-	
+
 2007-11-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-lang.c: Include target.h.
@@ -2977,7 +2979,7 @@
 
 	* lto-read.c (input_expr_operand): Added code to properly handle
 	index filed. Added new RANGE_EXPR case.
-	
+
 2007-11-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (ADD_FUNC_FLAG): Deleted macro.
@@ -3045,7 +3047,7 @@
 	 read flags of VAR_DECL and FUNCTION_DECL of size>1.
 	 change global array num_flags_for_code to flags_length_for_code.
 	 (set_line_info): Make decls work in USE_MAPPED_LOCATION mode.
-	
+
 2007-11-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c (lto_read_structure_union_class_type_DIE): Use proper record
@@ -3091,10 +3093,10 @@
 
 	* lto-read.c (data_in): Added type_decls and current_col fields.
 	(string_slot): New type to hold canonized file name.
-	(hash_string_slot_node, eq_string_slot_node, canon_file_name, 
+	(hash_string_slot_node, eq_string_slot_node, canon_file_name,
 	input_line_info, set_line_info, clear_line_info): New functions.
 	(file_name_hash_table): New hash table.
-	(input_local_var, input_labels, input_local_vars_index, 
+	(input_local_var, input_labels, input_local_vars_index,
 	input_local_var, input_local_vars, input_ssa_names): Reorganized parameters.
 	(input_uleb128): Changed type of byte var.
 	(input_expr_operand): Large number of changes to get line numbers
@@ -3108,7 +3110,6 @@
 	(lto_read_body): Added code to get TYPE_DECLS read and to change
 	parameters to the calls above that had their parms reorganized.
 
-	
 2007-10-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.h (lto_resolve_typedecl_ref): Declare.
@@ -3130,7 +3131,7 @@
 
 	* lto-read.c (input_expr_operand): Give label_values the proper
 	context and provide switch statements with a default type.
-	
+
 2007-10-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-read.c (lto_read_body): Move call to init_ssa_operands...
@@ -3164,7 +3165,7 @@
 	(input_ssa_names): Now calls input_tree_flags.
 	(lto_read_body): Now sets cfun.
 	(lto_read_function_body): Now sets current_function_pointer.
-	
+
 2007-10-19  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Check
@@ -3239,8 +3240,7 @@
 	(input_expr_operand): Make asm operands use input_tree_list.
 	(input_local_var): Now uses input_tree_list.
 	(lto_read_body): Change placement for setting context of debug_labels.
-	
-	
+
 2007-10-16  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (input_real): Output debugging in proper order.
@@ -3252,7 +3252,7 @@
 	written.
 	(dump_debug_stream): Also print char in hex.
 	(debug_out_fun): Fix signed unsigned mismatch.
-	
+
 2007-10-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c (lto_read_form): Handle DW_AT_MIPS_linkage_name and
@@ -3290,7 +3290,7 @@
 2007-09-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (input_expr_operand): Added type for STRING_CST.
-	
+
 2007-09-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-read.c (lto_read): Set the type of the newly created CALL_EXPR.
@@ -3324,33 +3324,32 @@
 
 	* lto-read.c (fun_in): Renamed to data_in.
 	(input_expr_operand, input_local_var, input_string_internal,
-	input_string, input_real, input_list, get_label_decl, 
+	input_string, input_real, input_list, get_label_decl,
 	get_type_ref, input_expr_operand, input_globals, input_labels,
-	input_local_vars_index, input_local_var, input_local_vars, 
+	input_local_vars_index, input_local_var, input_local_vars,
 	input_cfg, input_phi, input_ssa_names, input_bb, ): Renamed fun_in to data_in.
 	(input_constructor): New function.
 	(lto_read_function_body): Renamed to lto_read_body and generalized
 	to handle both functions and constructors.
 	(lto_read_function_body, lto_read_var_init): New function.
-	
-	
+
 2007-08-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (input_expr_operand): Assert that there really is a
 	FUNCTION_DECL.
 	(input_globals): Removed checks on 0 section.
-	
+
 2007-08-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (fun_in): Added local_decls_index and
-	local_decls_index_d.  
+	local_decls_index_d.
 	(input_expr_operand): Changed inputting of PARM_DECLs and VAR_DECLs.
 	(input_globals): Enabled code to handle FIELD_DECLs.
 	(input_local_vars_index, input_local_vars): New function.
 	(input_local_var): Changed to allow locals to be input randomly.
 	(lto_read_function_body): Added code to input the
 	local_decls_index and to free various structures.
-	
+
 2007-08-17  Jim Blandy  <jimb@codesourcery.com>
 
 	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Remove
@@ -3381,7 +3380,7 @@
 
 	* lto.c (lto_read_form): Complete attr_classes table.
 	(DWARF2_form_data): Doc fix.
-	
+
 2007-08-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* lto.h (lto_file_vtable): Remove read_var_init.  Add map_var_init
@@ -3409,13 +3408,11 @@
 	input_expr_operand, input_local_vars, input_cfg, input_phi,
 	input_ssa_names, input_bb, input_function): Added semicolons.
 
-	
 2007-07-31  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (input_globals): Remove debugging.
 	(input_function): Set DECL_ARGUMENTS.
 
-	
 2007-07-31  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto-read.c (input_expr_operand): Fixed code for COND_EXEC,
@@ -3425,8 +3422,7 @@
 	(input_ssa_names): Initialize SSA_NAME_DEF_STMT to empty stmt.
 	(input_flags): New function.
 	* lto-lang.c (lto_init): Changed state of in_lto_p.
-	
-	
+
 2007-07-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* lto-tree.h (lto_varargs_cookie): Remove.
@@ -3476,8 +3472,7 @@
 	(lto_read_function_body): Processes new header fields to construct
 	streams for the ssa_names and cfg and their debugging.
 	* lto/lto-lang.c (lto_init): Set in_lto_p.
-	
-	
+
 2007-06-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* lto.h (lto_file_vtable): Add read_var_init.
@@ -3504,11 +3499,11 @@
 
 	* lto-read (make_new_block): Initialize the stmt_list.
 	(lto_static_init_local): Add debugging for missing codes.
-	
+
 2007-06-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* lto.c (lto_read_subroutine_type_subprogram_DIE): Handle
-	unprototyped functions. 
+	unprototyped functions.
 
 2007-06-23  Mark Mitchell  <mark@codesourcery.com>
 
@@ -3520,9 +3515,9 @@
 	* lto-symbtab.c: Build function types out of TREE_LISTs.
 
 	* lto-elf.c (<libelf>): Check for HAVE_LIBELF_H.
-	
+
 	* Make-lang.in (LTO_OBJS): Depend on attribs.o.
-	
+
 2007-06-21  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* lto/lto-tree.h (lang_decl, lang_type, language_function): Added
@@ -3646,7 +3641,7 @@
 	(lto_read_form): Change first argument to lto_info_fd *.
 	Add FORM_CONTEXT argument.
 	Handle DW_FORM_ref_addr.
-	(lto_read_tag_DIE): Change first argument to lto_info_fd *.	
+	(lto_read_tag_DIE): Change first argument to lto_info_fd *.
 	(LTO_BEGIN_READ_ATTRS_UNCHECKED): Save old context.
 	Swap contexts if necessary for form.
 	(LTO_BEGIN_READ_ATTRS): Cast fd to right type for
@@ -3669,7 +3664,7 @@
 	* lto.h (DWARF2_CompUnit): New structure.
 	(lto_info_fd): Ditto.
 	(lto_file): Change debug_info to be an lto_info_fd.
-	
+
 2006-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* lto.c (toplev.h): Include it.
@@ -3728,7 +3723,7 @@
 	(lto_file): Use new types.
 	(lto_file_close): Declare.
 	* lto-lang.c (lto_init): Always use unit-at-a-time mode.
-	
+
 2006-06-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* lto.h: New file.
@@ -3738,7 +3733,7 @@
 	(lto.h): Likewise.
 	(lto_init): New function.
 	(lto_write_globals): Remove.
-	(LANG_HOOKS_WRITE_GLOBALS): Define to lhd_do_nothing. 
+	(LANG_HOOKS_WRITE_GLOBALS): Define to lhd_do_nothing.
 	(LANG_HOOKS_INIT): Define.
 	(LANG_HOOKS_PARSE_FILE): Likewise.
 	* Make-lang.in (LTO_OBJS): Add lto.o and lto-elf.o.
