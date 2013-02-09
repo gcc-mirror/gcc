@@ -1,3 +1,7 @@
+2013-02-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix61.h (OS_MISSING_ALTIVEC): Undefine.
+
 2013-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56256
@@ -6,7 +10,7 @@
 2013-02-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56246
-	* lra-constraints.c (simplify_operand_subreg): Try tor reuse
+	* lra-constraints.c (simplify_operand_subreg): Try to reuse
 	reload pseudo.
 	* lra.c (lra): Clear lra_optional_reload_pseudos only when all
 	constraints are satisfied.
