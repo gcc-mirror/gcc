@@ -1,3 +1,10 @@
+2013-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56247
+	* pt.c (eq_specializations): Set comparing_specializations.
+	* tree.c (cp_tree_equal): Check it.
+	* cp-tree.h: Declare it.
+
 2013-01-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55877
