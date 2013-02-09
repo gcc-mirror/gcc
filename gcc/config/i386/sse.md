@@ -1719,42 +1719,46 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_mode_iterator FMAMODE [SF DF V4SF V2DF V8SF V4DF])
+;; The standard names for scalar FMA are only available with SSE math enabled.
+(define_mode_iterator FMAMODEM [(SF "TARGET_SSE_MATH")
+				(DF "TARGET_SSE_MATH")
+				V4SF V2DF V8SF V4DF])
 
-;; The standard names for fma is only available with SSE math enabled.
 (define_expand "fma<mode>4"
-  [(set (match_operand:FMAMODE 0 "register_operand")
-	(fma:FMAMODE
-	  (match_operand:FMAMODE 1 "nonimmediate_operand")
-	  (match_operand:FMAMODE 2 "nonimmediate_operand")
-	  (match_operand:FMAMODE 3 "nonimmediate_operand")))]
-  "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH")
+  [(set (match_operand:FMAMODEM 0 "register_operand")
+	(fma:FMAMODEM
+	  (match_operand:FMAMODEM 1 "nonimmediate_operand")
+	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
+	  (match_operand:FMAMODEM 3 "nonimmediate_operand")))]
+  "TARGET_FMA || TARGET_FMA4")
 
 (define_expand "fms<mode>4"
-  [(set (match_operand:FMAMODE 0 "register_operand")
-	(fma:FMAMODE
-	  (match_operand:FMAMODE 1 "nonimmediate_operand")
-	  (match_operand:FMAMODE 2 "nonimmediate_operand")
-	  (neg:FMAMODE (match_operand:FMAMODE 3 "nonimmediate_operand"))))]
-  "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH")
+  [(set (match_operand:FMAMODEM 0 "register_operand")
+	(fma:FMAMODEM
+	  (match_operand:FMAMODEM 1 "nonimmediate_operand")
+	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
+	  (neg:FMAMODEM (match_operand:FMAMODEM 3 "nonimmediate_operand"))))]
+  "TARGET_FMA || TARGET_FMA4")
 
 (define_expand "fnma<mode>4"
-  [(set (match_operand:FMAMODE 0 "register_operand")
-	(fma:FMAMODE
-	  (neg:FMAMODE (match_operand:FMAMODE 1 "nonimmediate_operand"))
-	  (match_operand:FMAMODE 2 "nonimmediate_operand")
-	  (match_operand:FMAMODE 3 "nonimmediate_operand")))]
-  "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH")
+  [(set (match_operand:FMAMODEM 0 "register_operand")
+	(fma:FMAMODEM
+	  (neg:FMAMODEM (match_operand:FMAMODEM 1 "nonimmediate_operand"))
+	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
+	  (match_operand:FMAMODEM 3 "nonimmediate_operand")))]
+  "TARGET_FMA || TARGET_FMA4")
 
 (define_expand "fnms<mode>4"
-  [(set (match_operand:FMAMODE 0 "register_operand")
-	(fma:FMAMODE
-	  (neg:FMAMODE (match_operand:FMAMODE 1 "nonimmediate_operand"))
-	  (match_operand:FMAMODE 2 "nonimmediate_operand")
-	  (neg:FMAMODE (match_operand:FMAMODE 3 "nonimmediate_operand"))))]
-  "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH")
+  [(set (match_operand:FMAMODEM 0 "register_operand")
+	(fma:FMAMODEM
+	  (neg:FMAMODEM (match_operand:FMAMODEM 1 "nonimmediate_operand"))
+	  (match_operand:FMAMODEM 2 "nonimmediate_operand")
+	  (neg:FMAMODEM (match_operand:FMAMODEM 3 "nonimmediate_operand"))))]
+  "TARGET_FMA || TARGET_FMA4")
 
-;; The builtin for intrinsics is not constrained by SSE math enabled.
+;; The builtins for intrinsics are not constrained by SSE math enabled.
+(define_mode_iterator FMAMODE [SF DF V4SF V2DF V8SF V4DF])
+
 (define_expand "fma4i_fmadd_<mode>"
   [(set (match_operand:FMAMODE 0 "register_operand")
 	(fma:FMAMODE

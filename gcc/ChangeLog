@@ -1,3 +1,18 @@
+2013-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (FMAMODEM): New mode iterator.
+	(fma<mode>4, fms<mode>4, fnma<mode>4, fnms<mode>4): Use FMAMODEM
+	mode iterator. Do not use TARGET_SSE_MATH in insn constraint.
+
+	2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/gnu-user.h (TARGET_CAN_SPLIT_STACK): Define only
+	when HAVE_GAS_CFI_PERSONALITY_DIRECTIVE is set.
+	* config/i386/gnu-user64.h (TARGET_CAN_SPLIT_STACK): Ditto.
+
 2013-02-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
@@ -84,7 +99,7 @@
 	value-range for __builtin_constant_p of function parameters.
 
 	2013-01-08  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR middle-end/55890
 	* tree-ssa-ccp.c (evaluate_stmt): Use gimple_call_builtin_class_p.
 

@@ -198,7 +198,11 @@ along with GCC; see the file COPYING3.  If not see
 /* i386 glibc provides __stack_chk_guard in %gs:0x14.  */
 #define TARGET_THREAD_SSP_OFFSET	0x14
 
-/* We steal the last transactional memory word.  */
+/* We only build the -fsplit-stack support in libgcc if the
+   assembler has full support for the CFI directives.  */
+#if HAVE_GAS_CFI_PERSONALITY_DIRECTIVE
 #define TARGET_CAN_SPLIT_STACK
+#endif
+/* We steal the last transactional memory word.  */
 #define TARGET_THREAD_SPLIT_STACK_OFFSET 0x30
 #endif
