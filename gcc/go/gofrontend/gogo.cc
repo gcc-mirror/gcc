@@ -515,16 +515,23 @@ Gogo::add_import_init_fn(const std::string& package_name,
        p != this->imported_init_fns_.end();
        ++p)
     {
-      if (p->init_name() == init_name
-	  && (p->package_name() != package_name || p->priority() != prio))
+      if (p->init_name() == init_name)
 	{
-	  error("duplicate package initialization name %qs",
-		Gogo::message_name(init_name).c_str());
-	  inform(UNKNOWN_LOCATION, "used by package %qs at priority %d",
-		 Gogo::message_name(p->package_name()).c_str(),
-		 p->priority());
-	  inform(UNKNOWN_LOCATION, " and by package %qs at priority %d",
-		 Gogo::message_name(package_name).c_str(), prio);
+	  // If a test of package P1, built as part of package P1,
+	  // imports package P2, and P2 imports P1 (perhaps
+	  // indirectly), then we will see the same import name with
+	  // different import priorities.  That is OK, so don't give
+	  // an error about it.
+	  if (p->package_name() != package_name)
+	    {
+	      error("duplicate package initialization name %qs",
+		    Gogo::message_name(init_name).c_str());
+	      inform(UNKNOWN_LOCATION, "used by package %qs at priority %d",
+		     Gogo::message_name(p->package_name()).c_str(),
+		     p->priority());
+	      inform(UNKNOWN_LOCATION, " and by package %qs at priority %d",
+		     Gogo::message_name(package_name).c_str(), prio);
+	    }
 	  return;
 	}
     }

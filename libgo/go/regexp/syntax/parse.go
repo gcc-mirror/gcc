@@ -191,7 +191,7 @@ func (p *parser) newLiteral(r rune, flags Flags) *Regexp {
 
 // minFoldRune returns the minimum rune fold-equivalent to r.
 func minFoldRune(r rune) rune {
-	if r < MinFold || r > MaxFold {
+	if r < minFold || r > maxFold {
 		return r
 	}
 	min := r
@@ -1553,7 +1553,7 @@ func (p *parser) parseClass(s string) (rest string, err error) {
 			}
 		}
 		if p.flags&FoldCase == 0 {
-			class = AppendRange(class, lo, hi)
+			class = appendRange(class, lo, hi)
 		} else {
 			class = appendFoldedRange(class, lo, hi)
 		}
@@ -1608,11 +1608,11 @@ func appendLiteral(r []rune, x rune, flags Flags) []rune {
 	if flags&FoldCase != 0 {
 		return appendFoldedRange(r, x, x)
 	}
-	return AppendRange(r, x, x)
+	return appendRange(r, x, x)
 }
 
 // appendRange returns the result of appending the range lo-hi to the class r.
-func AppendRange(r []rune, lo, hi rune) []rune {
+func appendRange(r []rune, lo, hi rune) []rune {
 	// Expand last range or next to last range if it overlaps or abuts.
 	// Checking two ranges helps when appending case-folded
 	// alphabets, so that one range can be expanding A-Z and the
@@ -1639,39 +1639,39 @@ func AppendRange(r []rune, lo, hi rune) []rune {
 const (
 	// minimum and maximum runes involved in folding.
 	// checked during test.
-	MinFold = 0x0041
-	MaxFold = 0x1044f
+	minFold = 0x0041
+	maxFold = 0x1044f
 )
 
 // appendFoldedRange returns the result of appending the range lo-hi
 // and its case folding-equivalent runes to the class r.
 func appendFoldedRange(r []rune, lo, hi rune) []rune {
 	// Optimizations.
-	if lo <= MinFold && hi >= MaxFold {
+	if lo <= minFold && hi >= maxFold {
 		// Range is full: folding can't add more.
-		return AppendRange(r, lo, hi)
+		return appendRange(r, lo, hi)
 	}
-	if hi < MinFold || lo > MaxFold {
+	if hi < minFold || lo > maxFold {
 		// Range is outside folding possibilities.
-		return AppendRange(r, lo, hi)
+		return appendRange(r, lo, hi)
 	}
-	if lo < MinFold {
-		// [lo, MinFold-1] needs no folding.
-		r = AppendRange(r, lo, MinFold-1)
-		lo = MinFold
+	if lo < minFold {
+		// [lo, minFold-1] needs no folding.
+		r = appendRange(r, lo, minFold-1)
+		lo = minFold
 	}
-	if hi > MaxFold {
-		// [MaxFold+1, hi] needs no folding.
-		r = AppendRange(r, MaxFold+1, hi)
-		hi = MaxFold
+	if hi > maxFold {
+		// [maxFold+1, hi] needs no folding.
+		r = appendRange(r, maxFold+1, hi)
+		hi = maxFold
 	}
 
-	// Brute force.  Depend on AppendRange to coalesce ranges on the fly.
+	// Brute force.  Depend on appendRange to coalesce ranges on the fly.
 	for c := lo; c <= hi; c++ {
-		r = AppendRange(r, c, c)
+		r = appendRange(r, c, c)
 		f := unicode.SimpleFold(c)
 		for f != c {
-			r = AppendRange(r, f, f)
+			r = appendRange(r, f, f)
 			f = unicode.SimpleFold(f)
 		}
 	}
@@ -1682,7 +1682,7 @@ func appendFoldedRange(r []rune, lo, hi rune) []rune {
 // It assume x is clean.
 func appendClass(r []rune, x []rune) []rune {
 	for i := 0; i < len(x); i += 2 {
-		r = AppendRange(r, x[i], x[i+1])
+		r = appendRange(r, x[i], x[i+1])
 	}
 	return r
 }
@@ -1702,12 +1702,12 @@ func appendNegatedClass(r []rune, x []rune) []rune {
 	for i := 0; i < len(x); i += 2 {
 		lo, hi := x[i], x[i+1]
 		if nextLo <= lo-1 {
-			r = AppendRange(r, nextLo, lo-1)
+			r = appendRange(r, nextLo, lo-1)
 		}
 		nextLo = hi + 1
 	}
 	if nextLo <= unicode.MaxRune {
-		r = AppendRange(r, nextLo, unicode.MaxRune)
+		r = appendRange(r, nextLo, unicode.MaxRune)
 	}
 	return r
 }
@@ -1717,21 +1717,21 @@ func appendTable(r []rune, x *unicode.RangeTable) []rune {
 	for _, xr := range x.R16 {
 		lo, hi, stride := rune(xr.Lo), rune(xr.Hi), rune(xr.Stride)
 		if stride == 1 {
-			r = AppendRange(r, lo, hi)
+			r = appendRange(r, lo, hi)
 			continue
 		}
 		for c := lo; c <= hi; c += stride {
-			r = AppendRange(r, c, c)
+			r = appendRange(r, c, c)
 		}
 	}
 	for _, xr := range x.R32 {
 		lo, hi, stride := rune(xr.Lo), rune(xr.Hi), rune(xr.Stride)
 		if stride == 1 {
-			r = AppendRange(r, lo, hi)
+			r = appendRange(r, lo, hi)
 			continue
 		}
 		for c := lo; c <= hi; c += stride {
-			r = AppendRange(r, c, c)
+			r = appendRange(r, c, c)
 		}
 	}
 	return r
@@ -1744,14 +1744,14 @@ func appendNegatedTable(r []rune, x *unicode.RangeTable) []rune {
 		lo, hi, stride := rune(xr.Lo), rune(xr.Hi), rune(xr.Stride)
 		if stride == 1 {
 			if nextLo <= lo-1 {
-				r = AppendRange(r, nextLo, lo-1)
+				r = appendRange(r, nextLo, lo-1)
 			}
 			nextLo = hi + 1
 			continue
 		}
 		for c := lo; c <= hi; c += stride {
 			if nextLo <= c-1 {
-				r = AppendRange(r, nextLo, c-1)
+				r = appendRange(r, nextLo, c-1)
 			}
 			nextLo = c + 1
 		}
@@ -1760,20 +1760,20 @@ func appendNegatedTable(r []rune, x *unicode.RangeTable) []rune {
 		lo, hi, stride := rune(xr.Lo), rune(xr.Hi), rune(xr.Stride)
 		if stride == 1 {
 			if nextLo <= lo-1 {
-				r = AppendRange(r, nextLo, lo-1)
+				r = appendRange(r, nextLo, lo-1)
 			}
 			nextLo = hi + 1
 			continue
 		}
 		for c := lo; c <= hi; c += stride {
 			if nextLo <= c-1 {
-				r = AppendRange(r, nextLo, c-1)
+				r = appendRange(r, nextLo, c-1)
 			}
 			nextLo = c + 1
 		}
 	}
 	if nextLo <= unicode.MaxRune {
-		r = AppendRange(r, nextLo, unicode.MaxRune)
+		r = appendRange(r, nextLo, unicode.MaxRune)
 	}
 	return r
 }
