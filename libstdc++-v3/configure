@@ -26223,6 +26223,122 @@ done
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5
 $as_echo_n "checking for strtold declaration... " >&6; }
   if test x${glibcxx_cv_func_strtold_use+set} != xset; then
@@ -33125,6 +33241,122 @@ done
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5
 $as_echo_n "checking for strtold declaration... " >&6; }
   if test x${glibcxx_cv_func_strtold_use+set} != xset; then
@@ -38938,6 +39170,122 @@ done
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5
@@ -44768,6 +45116,122 @@ done
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5
@@ -51274,6 +51738,122 @@ done
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5
 $as_echo_n "checking for strtold declaration... " >&6; }
   if test x${glibcxx_cv_func_strtold_use+set} != xset; then
@@ -57441,6 +58021,122 @@ done
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5
@@ -63638,6 +64334,122 @@ done
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5
 $as_echo_n "checking for strtold declaration... " >&6; }
   if test x${glibcxx_cv_func_strtold_use+set} != xset; then
@@ -69504,6 +70316,122 @@ done
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at_quick_exit declaration" >&5
+$as_echo_n "checking for at_quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_at_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_at_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ at_quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_at_quick_exit_use=yes
+else
+  glibcxx_cv_func_at_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_at_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_at_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_at_quick_exit_use = x"yes"; then
+    for ac_func in at_quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "at_quick_exit" "ac_cv_func_at_quick_exit"
+if test "x$ac_cv_func_at_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_AT_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quick_exit declaration" >&5
+$as_echo_n "checking for quick_exit declaration... " >&6; }
+  if test x${glibcxx_cv_func_quick_exit_use+set} != xset; then
+    if test "${glibcxx_cv_func_quick_exit_use+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+ quick_exit(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_func_quick_exit_use=yes
+else
+  glibcxx_cv_func_quick_exit_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_quick_exit_use" >&5
+$as_echo "$glibcxx_cv_func_quick_exit_use" >&6; }
+  if test x$glibcxx_cv_func_quick_exit_use = x"yes"; then
+    for ac_func in quick_exit
+do :
+  ac_fn_c_check_func "$LINENO" "quick_exit" "ac_cv_func_quick_exit"
+if test "x$ac_cv_func_quick_exit" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICK_EXIT 1
+_ACEOF
+
+fi
+done
+
+  fi
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtold declaration" >&5

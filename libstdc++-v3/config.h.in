@@ -27,6 +27,9 @@
 /* Define to 1 if you have the `atanl' function. */
 #undef HAVE_ATANL
 
+/* Define to 1 if you have the `at_quick_exit' function. */
+#undef HAVE_AT_QUICK_EXIT
+
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 
@@ -302,6 +305,9 @@
 
 /* Define to 1 if you have the `qfpclass' function. */
 #undef HAVE_QFPCLASS
+
+/* Define to 1 if you have the `quick_exit' function. */
+#undef HAVE_QUICK_EXIT
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV

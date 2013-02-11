@@ -57,6 +57,8 @@ namespace std
   extern "C" void abort(void) throw () _GLIBCXX_NORETURN;
   extern "C" int atexit(void (*)()) throw ();
   extern "C" void exit(int) throw () _GLIBCXX_NORETURN;
+  extern "C" int at_quick_exit(void (*)()) throw ();
+  extern "C" void quick_exit(int) throw() _GLIBCXX_NORETURN;
 } // namespace
 
 #else
@@ -67,6 +69,7 @@ namespace std
 #undef abort
 #undef abs
 #undef atexit
+#undef at_quick_exit
 #undef atof
 #undef atoi
 #undef atol
@@ -83,6 +86,7 @@ namespace std
 #undef mbstowcs
 #undef mbtowc
 #undef qsort
+#undef quick_exit
 #undef rand
 #undef realloc
 #undef srand
@@ -103,6 +107,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::abort;
   using ::abs;
   using ::atexit;
+#ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
+  using ::at_quick_exit;
+#endif
   using ::atof;
   using ::atoi;
   using ::atol;
@@ -121,6 +128,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::mbtowc;
 #endif // _GLIBCXX_HAVE_MBSTATE_T
   using ::qsort;
+#ifdef _GLIBCXX_HAVE_QUICK_EXIT
+  using ::quick_exit;
+#endif
   using ::rand;
   using ::realloc;
   using ::srand;
