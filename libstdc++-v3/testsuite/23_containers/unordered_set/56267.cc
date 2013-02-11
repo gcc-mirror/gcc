@@ -1,6 +1,5 @@
+// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
-// { dg-options "-std=c++11" }
-// { dg-require-normal-mode "" }
 
 // Copyright (C) 2013 Free Software Foundation, Inc.
 //
@@ -19,33 +18,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "default constructible" "" { target *-*-* } 268 }
+// libstdc++/56267
 
 #include <unordered_set>
 
-namespace
+struct hash : std::hash<int>
 {
-  struct hash
-  {
-    hash(std::size_t seed)
-      : _M_seed(seed)
-    { }
+  hash& operator=(const hash&) = delete;
+};
 
-    std::size_t operator() (int val) const noexcept
-    { return val ^ _M_seed; }
-
-  private:
-    std::size_t _M_seed;
-  };
-}
-
-void
-test01()
+int main()
 {
-  using traits = std::__detail::_Hashtable_traits<false, true, true>;
-  using hashtable = std::__uset_hashtable<int, hash,
-					  std::equal_to<int>,
-					  std::allocator<int>, traits>;
-
-  hashtable ht(10, hash(1));
+  std::unordered_set<int, hash> s{ 0, 1, 2 };
+  auto i = s.begin(0);
+  i = i;
 }
