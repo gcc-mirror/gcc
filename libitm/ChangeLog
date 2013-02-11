@@ -1,3 +1,11 @@
+2013-02-11  Iain Sandoe  <iain@codesourcery.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/55693
+	* alloc_cpp.cc: Enable function declarations on darwin.
+	* eh_cpp.cc: Likewise.
+
 2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years.
