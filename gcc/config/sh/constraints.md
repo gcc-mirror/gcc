@@ -26,7 +26,7 @@
 ;;  Csu: unsigned 16-bit constant, literal or symbolic
 ;;  Csy: label or symbol
 ;;  Cpg: non-explicit constants that can be directly loaded into a general
-;;       purpose register in PIC code.  like 's' except we don't allow
+;;       purpose register in PIC code.  Like 's' except we don't allow
 ;;       PIC_ADDR_P
 ;; IJKLMNOP: CONT_INT constants
 ;;  Ixx: signed xx bit
@@ -315,7 +315,7 @@
        (match_test "satisfies_constraint_K12 (XEXP (XEXP (op, 0), 1))")))
 
 (define_memory_constraint "Sra"
-  "A memory reference that uses a simple register addressing."
+  "A memory reference that uses simple register addressing."
   (and (match_test "MEM_P (op)")
        (match_test "REG_P (XEXP (op, 0))")))
 

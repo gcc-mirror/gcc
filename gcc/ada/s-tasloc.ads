@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@
 --  a renaming of this package in GNAT.Task_Lock (file g-tasloc.ads).
 
 package System.Task_Lock is
-   pragma Elaborate_Body;
+   pragma Preelaborate;
 
    procedure Lock;
    pragma Inline (Lock);

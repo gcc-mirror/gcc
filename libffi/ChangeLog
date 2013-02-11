@@ -1,3 +1,8 @@
+2013-02-06  Andreas Tobler  <andreast@fgznet.ch>
+
+	* src/powerpc/ffi.c (ffi_prep_cif_machdep): Fix case where
+	DOUBLE equal LONGDOUBLE.
+
 2013-01-07  Thorsten Glaser <tg@mirbsd.org>
 
 	* testsuite/libffi.call/cls_uchar_va.c,

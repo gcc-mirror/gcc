@@ -40,9 +40,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Hash>
     using __cache_default
-      =  __not_<__and_<// Do not cache for builtin integral types having trivial
-		       // hasher.
-		       is_integral<_Tp>,
+      =  __not_<__and_<// Do not cache for fast hasher.
+		       __is_fast_hash<_Hash>,
 		       // Mandatory to make local_iterator default
 		       // constructible.
 		       is_default_constructible<_Hash>,

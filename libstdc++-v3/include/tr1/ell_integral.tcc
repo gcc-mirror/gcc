@@ -1,7 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2006-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,7 +70,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __ellint_rf(const _Tp __x, const _Tp __y, const _Tp __z)
+    __ellint_rf(_Tp __x, _Tp __y, _Tp __z)
     {
       const _Tp __min = std::numeric_limits<_Tp>::min();
       const _Tp __max = std::numeric_limits<_Tp>::max();
@@ -150,7 +149,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __comp_ellint_1_series(const _Tp __k)
+    __comp_ellint_1_series(_Tp __k)
     {
 
       const _Tp __kk = __k * __k;
@@ -188,7 +187,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __comp_ellint_1(const _Tp __k)
+    __comp_ellint_1(_Tp __k)
     {
 
       if (__isnan(__k))
@@ -216,7 +215,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __ellint_1(const _Tp __k, const _Tp __phi)
+    __ellint_1(_Tp __k, _Tp __phi)
     {
 
       if (__isnan(__k) || __isnan(__phi))
@@ -263,7 +262,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __comp_ellint_2_series(const _Tp __k)
+    __comp_ellint_2_series(_Tp __k)
     {
 
       const _Tp __kk = __k * __k;
@@ -311,7 +310,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __ellint_rd(const _Tp __x, const _Tp __y, const _Tp __z)
+    __ellint_rd(_Tp __x, _Tp __y, _Tp __z)
     {
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
       const _Tp __errtol = std::pow(__eps / _Tp(8), _Tp(1) / _Tp(6));
@@ -399,7 +398,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __comp_ellint_2(const _Tp __k)
+    __comp_ellint_2(_Tp __k)
     {
 
       if (__isnan(__k))
@@ -433,7 +432,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __ellint_2(const _Tp __k, const _Tp __phi)
+    __ellint_2(_Tp __k, _Tp __phi)
     {
 
       if (__isnan(__k) || __isnan(__phi))
@@ -492,7 +491,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __ellint_rc(const _Tp __x, const _Tp __y)
+    __ellint_rc(_Tp __x, _Tp __y)
     {
       const _Tp __min = std::numeric_limits<_Tp>::min();
       const _Tp __max = std::numeric_limits<_Tp>::max();
@@ -563,7 +562,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __ellint_rj(const _Tp __x, const _Tp __y, const _Tp __z, const _Tp __p)
+    __ellint_rj(_Tp __x, _Tp __y, _Tp __z, _Tp __p)
     {
       const _Tp __min = std::numeric_limits<_Tp>::min();
       const _Tp __max = std::numeric_limits<_Tp>::max();
@@ -667,7 +666,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __comp_ellint_3(const _Tp __k, const _Tp __nu)
+    __comp_ellint_3(_Tp __k, _Tp __nu)
     {
 
       if (__isnan(__k) || __isnan(__nu))
@@ -707,7 +706,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __ellint_3(const _Tp __k, const _Tp __nu, const _Tp __phi)
+    __ellint_3(_Tp __k, _Tp __nu, _Tp __phi)
     {
 
       if (__isnan(__k) || __isnan(__nu) || __isnan(__phi))

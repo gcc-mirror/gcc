@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -637,6 +637,7 @@ package Osint is
    --  Set_Exit_Status as the last action of the program.
 
    procedure OS_Exit_Through_Exception (Status : Integer);
+   pragma No_Return (OS_Exit_Through_Exception);
    --  Set the Current_Exit_Status, then raise Types.Terminate_Program
 
    type Exit_Code_Type is (

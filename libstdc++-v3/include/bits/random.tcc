@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2009-2012 Free Software Foundation, Inc.
+// Copyright (C) 2009-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1657,6 +1657,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	do
 	  {
+	    if (__t == __x)
+	      return __x;
 	    const double __e = -std::log(1.0 - __aurng());
 	    __sum += __e / (__t - __x);
 	    __x += 1;

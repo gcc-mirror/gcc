@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1203,12 +1203,14 @@ begin
            Pragma_Locking_Policy                 |
            Pragma_Long_Float                     |
            Pragma_Loop_Invariant                 |
+           Pragma_Loop_Optimize                  |
            Pragma_Loop_Variant                   |
            Pragma_Machine_Attribute              |
            Pragma_Main                           |
            Pragma_Main_Storage                   |
            Pragma_Memory_Size                    |
            Pragma_No_Body                        |
+           Pragma_No_Inline                      |
            Pragma_No_Return                      |
            Pragma_No_Run_Time                    |
            Pragma_No_Strict_Aliasing             |
@@ -1218,6 +1220,7 @@ begin
            Pragma_Optimize                       |
            Pragma_Optimize_Alignment             |
            Pragma_Overflow_Mode                  |
+           Pragma_Overriding_Renamings           |
            Pragma_Pack                           |
            Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |
@@ -1245,6 +1248,7 @@ begin
            Pragma_Remote_Call_Interface          |
            Pragma_Remote_Types                   |
            Pragma_Restricted_Run_Time            |
+           Pragma_Rational                       |
            Pragma_Ravenscar                      |
            Pragma_Reviewable                     |
            Pragma_Share_Generic                  |

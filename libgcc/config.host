@@ -1,6 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 1997-2013 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -899,7 +898,8 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	md_unwind_header=rs6000/aix-unwind.h
-	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble"
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble rs6000/t-aix-cxa"
+	extra_parts="crtcxa.o crtcxa_s.o"
 	;;
 rl78-*-elf)
 	tmake_file="$tm_file t-fdpbit rl78/t-rl78"

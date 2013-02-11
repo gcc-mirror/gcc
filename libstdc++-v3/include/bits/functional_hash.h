@@ -1,7 +1,6 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
-// Free Software Foundation, Inc.
+// Copyright (C) 2007-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -194,6 +193,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // @} group hashes
+
+  // Hint about performance of hash functor. If not fast the hash based
+  // containers will cache the hash code.
+  // Default behavior is to consider that hasher are fast unless specified
+  // otherwise.
+  template<typename _Hash>
+    struct __is_fast_hash : public std::true_type
+    { };
+
+  template<>
+    struct __is_fast_hash<hash<long double>> : public std::false_type
+    { };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

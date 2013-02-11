@@ -1,8 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 1997-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -3053,6 +3051,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(), __s.length()); }
     };
 
+  template<>
+    struct __is_fast_hash<hash<string>> : std::false_type
+    { };
+
 #ifdef _GLIBCXX_USE_WCHAR_T
   /// std::hash specialization for wstring.
   template<>
@@ -3064,6 +3066,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(),
                                      __s.length() * sizeof(wchar_t)); }
     };
+
+  template<>
+    struct __is_fast_hash<hash<wstring>> : std::false_type
+    { };
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
@@ -3079,6 +3085,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __s.length() * sizeof(char16_t)); }
     };
 
+  template<>
+    struct __is_fast_hash<hash<u16string>> : std::false_type
+    { };
+
   /// std::hash specialization for u32string.
   template<>
     struct hash<u32string>
@@ -3089,6 +3099,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::_Hash_impl::hash(__s.data(),
                                      __s.length() * sizeof(char32_t)); }
     };
+
+  template<>
+    struct __is_fast_hash<hash<u32string>> : std::false_type
+    { };
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

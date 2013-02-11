@@ -3,6 +3,7 @@
 
 // { dg-do run }
 // { dg-options "-fno-builtin-malloc -fno-builtin-free" }
+// { dg-additional-options "-D__NO_INLINE__" { target { *-*-linux-gnu } } }
 
 #include <stdlib.h>
 #include <stdio.h>

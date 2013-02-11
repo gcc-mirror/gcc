@@ -1,0 +1,4 @@
+GCC_4.8 {
+  __cxa_atexit
+  __cxa_finalize
+}

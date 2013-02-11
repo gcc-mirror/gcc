@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2013 Free Software Foundation, Inc.
    This file was adapted from glibc sources.
 
 This file is part of GCC.

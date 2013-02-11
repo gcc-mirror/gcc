@@ -55,6 +55,14 @@ mmemcpy
 Target Mask(MEMCPY)
 Don't optimize block moves, use memcpy
 
+mbig-endian
+Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
+Assume target CPU is configured as big endian
+
+mlittle-endian
+Target Report RejectNegative Mask(LITTLE_ENDIAN)
+Assume target CPU is configured as little endian
+
 mxl-soft-mul
 Target Mask(SOFT_MUL)
 Use the soft multiply emulation (default)

@@ -18,7 +18,6 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; TODO: Add a comment here.
-
 (define_predicate "trapping_target_operand"
   (match_code "if_then_else")
 {
@@ -58,8 +57,7 @@
 	  && INTVAL (XEXP (cond, 1)) == 3);
 })
 
-;; TODO: Add a comment here.
-
+;; A logical operand that can be used in an shmedia and insn.
 (define_predicate "and_operand"
   (match_code "subreg,reg,const_int")
 {
@@ -77,7 +75,6 @@
 
 ;; Like arith_reg_dest, but this predicate is defined with
 ;; define_special_predicate, not define_predicate.
-
 (define_special_predicate "any_arith_reg_dest"
   (match_code "subreg,reg")
 {
@@ -86,7 +83,6 @@
 
 ;; Like register_operand, but this predicate is defined with
 ;; define_special_predicate, not define_predicate.
-
 (define_special_predicate "any_register_operand"
   (match_code "subreg,reg")
 {
@@ -94,7 +90,6 @@
 })
 
 ;; Returns 1 if OP is a valid source operand for an arithmetic insn.
-
 (define_predicate "arith_operand"
   (match_code "subreg,reg,const_int,truncate")
 {
@@ -132,7 +127,6 @@
 ;; Like above, but for DImode destinations: forbid paradoxical DImode
 ;; subregs, because this would lead to missing sign extensions when
 ;; truncating from DImode to SImode.
-
 (define_predicate "arith_reg_dest"
   (match_code "subreg,reg")
 {
@@ -144,7 +138,6 @@
 })
 
 ;; Returns 1 if OP is a normal arithmetic register.
-
 (define_predicate "arith_reg_operand"
   (match_code "subreg,reg,sign_extend")
 {
@@ -190,7 +183,6 @@
 })
 
 ;; Returns 1 if OP is a valid source operand for a compare insn.
-
 (define_predicate "arith_reg_or_0_operand"
   (match_code "subreg,reg,const_int,const_vector")
 {
@@ -203,21 +195,18 @@
   return 0;
 })
 
-;; TODO: Add a comment here.
-
+;; Returns 1 if OP is a floating point operator with two operands.
 (define_predicate "binary_float_operator"
   (and (match_code "plus,minus,mult,div")
        (match_test "GET_MODE (op) == mode")))
 
-;; TODO: Add a comment here.
-
+;; Returns 1 if OP is a logical operator with two operands.
 (define_predicate "binary_logical_operator"
   (and (match_code "and,ior,xor")
        (match_test "GET_MODE (op) == mode")))
 
-;; Return 1 of OP is an address suitable for a cache manipulation operation.
+;; Return 1 if OP is an address suitable for a cache manipulation operation.
 ;; MODE has the meaning as in address_operand.
-
 (define_special_predicate "cache_address_operand"
   (match_code "plus,reg")
 {
@@ -234,8 +223,7 @@
   return address_operand (op, mode);
 })
 
-;; Return 1 if OP is a valid source operand for shmedia cmpgt / cmpgtu.
-
+;; Returns 1 if OP is a valid source operand for shmedia cmpgt / cmpgtu.
 (define_predicate "cmp_operand"
   (match_code "subreg,reg,const_int")
 {
@@ -248,8 +236,8 @@
   return arith_reg_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is an operand that can be used as the first operand in
+;; the cstoresi4 expander pattern.
 (define_predicate "cmpsi_operand"
   (match_code "subreg,reg,const_int")
 {
@@ -260,19 +248,18 @@
   return arith_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
+;; Returns true if OP is a comutative float operator.
+;; This predicate is currently unused.
+;;(define_predicate "commutative_float_operator"
+;;  (and (match_code "plus,mult")
+;;       (match_test "GET_MODE (op) == mode")))
 
-(define_predicate "commutative_float_operator"
-  (and (match_code "plus,mult")
-       (match_test "GET_MODE (op) == mode")))
-
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a equal or not equal operator.
 (define_predicate "equality_comparison_operator"
   (match_code "eq,ne"))
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is an arithmetic operand that is zero extended during
+;; an operation.
 (define_predicate "extend_reg_operand"
   (match_code "subreg,reg,truncate")
 {
@@ -281,8 +268,7 @@
 	  : arith_reg_operand) (op, mode);
 })
 
-;; TODO: Add a comment here.
-
+;; Like extend_reg_operand, but also allow a constant 0.
 (define_predicate "extend_reg_or_0_operand"
   (match_code "subreg,reg,truncate,const_int")
 {
@@ -292,15 +278,14 @@
 })
 
 ;; Like arith_reg_operand, but this predicate does not accept SIGN_EXTEND.
-
 (define_predicate "ext_dest_operand"
   (match_code "subreg,reg")
 {
   return arith_reg_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP can be used as a destination register for shmedia floating
+;; point to integer conversions.
 (define_predicate "fp_arith_reg_dest"
   (match_code "subreg,reg")
 {
@@ -310,8 +295,8 @@
   return fp_arith_reg_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a floating point register that can be used in floating
+;; point arithmetic operations.
 (define_predicate "fp_arith_reg_operand"
   (match_code "subreg,reg")
 {
@@ -332,8 +317,7 @@
   return 0;
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is the FPSCR.
 (define_predicate "fpscr_operand"
   (match_code "reg")
 {
@@ -382,8 +366,7 @@
   (and (match_code "const_double")
        (match_test "op == sh_fsca_int2sf ()")))
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is an operand that is zero extended during an operation.
 (define_predicate "general_extend_operand"
   (match_code "subreg,reg,mem,truncate")
 {
@@ -423,9 +406,9 @@
 ;; Returns 1 if OP can be source of a simple move operation. Same as
 ;; general_operand, but a LABEL_REF is valid, PRE_DEC is invalid as
 ;; are subregs of system registers.
-
 (define_predicate "general_movsrc_operand"
-  (match_code "subreg,reg,const_int,const_double,mem,symbol_ref,label_ref,const,const_vector")
+  (match_code "subreg,reg,const_int,const_double,mem,symbol_ref,label_ref,
+	       const,const_vector")
 {
   if (t_reg_operand (op, mode))
     return 0;
@@ -482,7 +465,6 @@
 })
 
 ;; Returns 1 if OP is a MEM that does not use displacement addressing.
-
 (define_predicate "movsrc_no_disp_mem_operand"
   (match_code "mem")
 {
@@ -491,7 +473,6 @@
 
 ;; Returns 1 if OP can be a destination of a move. Same as
 ;; general_operand, but no preinc allowed.
-
 (define_predicate "general_movdst_operand"
   (match_code "subreg,reg,mem")
 {
@@ -534,7 +515,6 @@
 })
 
 ;; Returns 1 if OP is a POST_INC on stack pointer register.
-
 (define_predicate "sh_no_delay_pop_operand"
   (match_code "mem")
 {
@@ -551,7 +531,6 @@
 })
 
 ;; Returns 1 if OP is a MEM that can be source of a simple move operation.
-
 (define_predicate "unaligned_load_operand"
   (match_code "mem")
 {
@@ -599,13 +578,12 @@
 	 && sh_legitimate_index_p (mode, XEXP (plus0_rtx, 1), TARGET_SH2A, true);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is some kind of greater comparision.
 (define_predicate "greater_comparison_operator"
   (match_code "gt,ge,gtu,geu"))
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is an operand suitable for shmedia reload_inqi and
+;; reload_inhi insns.
 (define_predicate "inqhi_operand"
   (match_code "truncate")
 {
@@ -617,28 +595,26 @@
   return REG_P (op) && FP_REGISTER_P (REGNO (op));
 })
 
-;; TODO: Add a comment here.
+;; Returns true if OP is a general purpose integer register.
+;; This predicate is currently unused.
+;;(define_special_predicate "int_gpr_dest"
+;;  (match_code "subreg,reg")
+;;{
+;;  enum machine_mode op_mode = GET_MODE (op);
+;;
+;;  if (GET_MODE_CLASS (op_mode) != MODE_INT
+;;      || GET_MODE_SIZE (op_mode) >= UNITS_PER_WORD)
+;;    return 0;
+;;  if (! reload_completed)
+;;    return 0;
+;;  return true_regnum (op) <= LAST_GENERAL_REG;
+;;})
 
-(define_special_predicate "int_gpr_dest"
-  (match_code "subreg,reg")
-{
-  enum machine_mode op_mode = GET_MODE (op);
-
-  if (GET_MODE_CLASS (op_mode) != MODE_INT
-      || GET_MODE_SIZE (op_mode) >= UNITS_PER_WORD)
-    return 0;
-  if (! reload_completed)
-    return 0;
-  return true_regnum (op) <= LAST_GENERAL_REG;
-})
-
-;; TODO: Add a comment here.
-
+;; Returns true if OP is some kind of less comparison.
 (define_predicate "less_comparison_operator"
   (match_code "lt,le,ltu,leu"))
 
 ;; Returns 1 if OP is a valid source operand for a logical operation.
-
 (define_predicate "logical_operand"
   (match_code "subreg,reg,const_int")
 {
@@ -678,14 +654,12 @@
   return 0;
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a logical operator.
 (define_predicate "logical_operator"
   (match_code "and,ior,xor"))
 
 ;; Like arith_reg_operand, but for register source operands of narrow
 ;; logical SHMEDIA operations: forbid subregs of DImode / TImode regs.
-
 (define_predicate "logical_reg_operand"
   (match_code "subreg,reg")
 {
@@ -697,8 +671,7 @@
   return arith_reg_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a valid bit offset value for the shmedia mextr insns.
 (define_predicate "mextr_bit_offset"
   (match_code "const_int")
 {
@@ -710,19 +683,19 @@
   return i >= 1 * 8 && i <= 7 * 8 && (i & 7) == 0;
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a constant -1, 0 or an zero extended register that
+;; can be used as an operator in the *subsi3_media insn.
 (define_predicate "minuend_operand"
   (match_code "subreg,reg,truncate,const_int")
 {
   return op == constm1_rtx || extend_reg_or_0_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
-
-(define_predicate "noncommutative_float_operator"
-  (and (match_code "minus,div")
-       (match_test "GET_MODE (op) == mode")))
+;; Returns true if OP is a noncommutative floating point operator.
+;; This predicate is currently unused.
+;;(define_predicate "noncommutative_float_operator"
+;;  (and (match_code "minus,div")
+;;       (match_test "GET_MODE (op) == mode")))
 
 ;; UNORDERED is only supported on SHMEDIA.
 
@@ -735,8 +708,7 @@
   (ior (match_operand 0 "equality_comparison_operator")
        (match_operand 0 "greater_comparison_operator")))
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a constant vector.
 (define_predicate "sh_const_vec"
   (match_code "const_vector")
 {
@@ -755,7 +727,6 @@
 ;; Determine if OP is a constant vector matching MODE with only one
 ;; element that is not a sign extension.  Two byte-sized elements
 ;; count as one.
-
 (define_predicate "sh_1el_vec"
   (match_code "const_vector")
 {
@@ -789,7 +760,6 @@
 
 ;; Like register_operand, but take into account that SHMEDIA can use
 ;; the constant zero like a general register.
-
 (define_predicate "sh_register_operand"
   (match_code "reg,subreg,const_int,const_double")
 {
@@ -798,8 +768,8 @@
   return register_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a vector which is composed of one element that is
+;; repeated.
 (define_predicate "sh_rep_vec"
   (match_code "const_vector,parallel")
 {
@@ -826,10 +796,10 @@
   return 1;
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a valid shift count operand for shift operations.
 (define_predicate "shift_count_operand"
-  (match_code "const_int,const_double,const,symbol_ref,label_ref,subreg,reg,zero_extend,sign_extend")
+  (match_code "const_int,const_double,const,symbol_ref,label_ref,subreg,reg,
+	       zero_extend,sign_extend")
 {
   /* Allow T_REG as shift count for dynamic shifts, although it is not
      really possible.  It will then be copied to a general purpose reg.  */
@@ -844,8 +814,8 @@
 	  : shift_count_reg_operand (op, mode));
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a valid shift count operand in a register which can
+;; be used by shmedia shift insns.
 (define_predicate "shift_count_reg_operand"
   (match_code "subreg,reg,zero_extend,sign_extend")
 {
@@ -890,19 +860,16 @@
        (ior (match_test "! satisfies_constraint_P27 (op)")
 	    (match_test "satisfies_constraint_M (op)"))))
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is some kind of a shift operator.
 (define_predicate "shift_operator"
   (match_code "ashift,ashiftrt,lshiftrt"))
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a symbol reference.
 (define_predicate "symbol_ref_operand"
   (match_code "symbol_ref"))
 
 ;; Same as target_reg_operand, except that label_refs and symbol_refs
 ;; are accepted before reload.
-
 (define_special_predicate "target_operand"
   (match_code "subreg,reg,label_ref,symbol_ref,const,unspec")
 {
@@ -916,8 +883,7 @@
   return target_reg_operand (op, mode);
 })
 
-;; Accept pseudos and branch target registers.
-
+;; A predicate that accepts pseudos and branch target registers.
 (define_special_predicate "target_reg_operand"
   (match_code "subreg,reg")
 {
@@ -942,8 +908,7 @@
   return 0;
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a valid operand for the shmedia mperm.w insn.
 (define_special_predicate "trunc_hi_operand"
   (match_code "subreg,reg,truncate")
 {
@@ -955,8 +920,8 @@
   return extend_reg_operand (op, mode);
 })
 
-;; Return 1 of OP is an address suitable for an unaligned access instruction.
-
+;; Returns true if OP is an address suitable for an unaligned access
+;; instruction.
 (define_special_predicate "ua_address_operand"
   (match_code "subreg,reg,plus")
 {
@@ -966,22 +931,19 @@
   return address_operand (op, QImode);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a valid offset for an unaligned memory address.
 (define_predicate "ua_offset"
   (match_code "const_int")
 {
   return satisfies_constraint_I06 (op);
 })
 
-;; TODO: Add a comment here.
-
+;; Returns true if OP is a floating point operator with one operand.
 (define_predicate "unary_float_operator"
   (and (match_code "abs,neg,sqrt")
        (match_test "GET_MODE (op) == mode")))
 
 ;; Return 1 if OP is a valid source operand for xor.
-
 (define_predicate "xor_operand"
   (match_code "subreg,reg,const_int")
 {
@@ -1080,7 +1042,7 @@
   return sh_eval_treg_value (op) >= 0;
 })
 
-;; Returns true of OP is arith_reg_operand or t_reg_operand.
+;; Returns true if OP is arith_reg_operand or t_reg_operand.
 (define_predicate "arith_reg_or_t_reg_operand"
   (ior (match_operand 0 "arith_reg_operand")
        (match_operand 0 "t_reg_operand")))
@@ -1124,7 +1086,7 @@
 })
 
 ;; A predicate that determines whether a given constant is a valid
-;; displacement for a gbr load/store of the specified mode.
+;; displacement for a GBR load/store of the specified mode.
 (define_predicate "gbr_displacement"
   (match_code "const_int")
 {

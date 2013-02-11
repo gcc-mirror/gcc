@@ -133,6 +133,9 @@ do {									\
 #undef  PROCESSOR_DEFAULT64
 #define PROCESSOR_DEFAULT64 PROCESSOR_POWER7
 
+/* AIX 6.1 kernel and assembler have necessary support for Altivec and VSX.  */
+#undef OS_MISSING_ALTIVEC
+
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
    defaults for this target and thus do not need to be handled
@@ -163,7 +166,8 @@ do {									\
    %{maix64:%{pg:gcrt0_64%O%s}%{!pg:%{p:mcrt0_64%O%s}%{!p:crt0_64%O%s}}}\
    %{!maix64:\
      %{pthread:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
-     %{!pthread:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}"
+     %{!pthread:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}\
+   %{shared:crtcxa_s%O%s;:crtcxa%O%s}"
 
 /* AIX V5 typedefs ptrdiff_t as "long" while earlier releases used "int".  */
 

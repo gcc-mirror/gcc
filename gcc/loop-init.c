@@ -32,37 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 
 
-/* Initialize loop structures.  This is used by the tree and RTL loop
-   optimizers.  FLAGS specify what properties to compute and/or ensure for
-   loops.  */
+/* Apply FLAGS to the loop state.  */
 
-void
-loop_optimizer_init (unsigned flags)
+static void
+apply_loop_flags (unsigned flags)
 {
-  timevar_push (TV_LOOP_INIT);
-  if (!current_loops)
-    {
-      struct loops *loops = ggc_alloc_cleared_loops ();
-
-      gcc_assert (!(cfun->curr_properties & PROP_loops));
-
-      /* Find the loops.  */
-
-      flow_loops_find (loops);
-      current_loops = loops;
-    }
-  else
-    {
-      gcc_assert (cfun->curr_properties & PROP_loops);
-
-      /* Ensure that the dominators are computed, like flow_loops_find does.  */
-      calculate_dominance_info (CDI_DOMINATORS);
-
-#ifdef ENABLE_CHECKING
-      verify_loop_structure ();
-#endif
-    }
-
   if (flags & LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
     {
       /* If the loops may have multiple latches, we cannot canonicalize
@@ -97,6 +71,38 @@ loop_optimizer_init (unsigned flags)
 
   if (flags & LOOPS_HAVE_RECORDED_EXITS)
     record_loop_exits ();
+}
+
+/* Initialize loop structures.  This is used by the tree and RTL loop
+   optimizers.  FLAGS specify what properties to compute and/or ensure for
+   loops.  */
+
+void
+loop_optimizer_init (unsigned flags)
+{
+  timevar_push (TV_LOOP_INIT);
+
+  if (!current_loops)
+    {
+      gcc_assert (!(cfun->curr_properties & PROP_loops));
+
+      /* Find the loops.  */
+      current_loops = flow_loops_find (NULL);
+    }
+  else
+    {
+      gcc_assert (cfun->curr_properties & PROP_loops);
+
+      /* Ensure that the dominators are computed, like flow_loops_find does.  */
+      calculate_dominance_info (CDI_DOMINATORS);
+
+#ifdef ENABLE_CHECKING
+      verify_loop_structure ();
+#endif
+    }
+
+  /* Apply flags to loops.  */
+  apply_loop_flags (flags);
 
   /* Dump loops.  */
   flow_loops_dump (dump_file, NULL, 1);
@@ -157,6 +163,97 @@ loop_fini_done:
   timevar_pop (TV_LOOP_FINI);
 }
 
+/* The structure of loops might have changed.  Some loops might get removed
+   (and their headers and latches were set to NULL), loop exists might get
+   removed (thus the loop nesting may be wrong), and some blocks and edges
+   were changed (so the information about bb --> loop mapping does not have
+   to be correct).  But still for the remaining loops the header dominates
+   the latch, and loops did not get new subloops (new loops might possibly
+   get created, but we are not interested in them).  Fix up the mess.
+
+   If CHANGED_BBS is not NULL, basic blocks whose loop has changed are
+   marked in it.  */
+
+void
+fix_loop_structure (bitmap changed_bbs)
+{
+  basic_block bb;
+  int record_exits = 0;
+  loop_iterator li;
+  struct loop *loop;
+
+  timevar_push (TV_LOOP_INIT);
+
+  /* We need exact and fast dominance info to be available.  */
+  gcc_assert (dom_info_state (CDI_DOMINATORS) == DOM_OK);
+
+  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
+    {
+      release_recorded_exits ();
+      record_exits = LOOPS_HAVE_RECORDED_EXITS;
+    }
+
+  /* Remember the depth of the blocks in the loop hierarchy, so that we can
+     recognize blocks whose loop nesting relationship has changed.  */
+  if (changed_bbs)
+    FOR_EACH_BB (bb)
+      bb->aux = (void *) (size_t) loop_depth (bb->loop_father);
+
+  /* Remove the dead loops from structures.  We start from the innermost
+     loops, so that when we remove the loops, we know that the loops inside
+     are preserved, and do not waste time relinking loops that will be
+     removed later.  */
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+    {
+      /* Detect the case that the loop is no longer present even though
+         it wasn't marked for removal.
+	 ???  If we do that we can get away with not marking loops for
+	 removal at all.  And possibly avoid some spurious removals.  */
+      if (loop->header
+	  && bb_loop_header_p (loop->header))
+	continue;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "fix_loop_structure: removing loop %d\n",
+		 loop->num);
+
+      while (loop->inner)
+	{
+	  struct loop *ploop = loop->inner;
+	  flow_loop_tree_node_remove (ploop);
+	  flow_loop_tree_node_add (loop_outer (loop), ploop);
+	}
+
+      /* Remove the loop and free its data.  */
+      delete_loop (loop);
+    }
+
+  /* Re-compute loop structure in-place.  */
+  flow_loops_find (current_loops);
+
+  /* Mark the blocks whose loop has changed.  */
+  if (changed_bbs)
+    {
+      FOR_EACH_BB (bb)
+	{
+	  if ((void *) (size_t) loop_depth (bb->loop_father) != bb->aux)
+	    bitmap_set_bit (changed_bbs, bb->index);
+
+    	  bb->aux = NULL;
+	}
+    }
+
+  loops_state_clear (LOOPS_NEED_FIXUP);
+
+  /* Apply flags to loops.  */
+  apply_loop_flags (current_loops->state | record_exits);
+
+#ifdef ENABLE_CHECKING
+  verify_loop_structure ();
+#endif
+
+  timevar_pop (TV_LOOP_INIT);
+}
 
 /* Gate for the RTL loop superpass.  The actual passes are subpasses.
    See passes.c for more on that.  */

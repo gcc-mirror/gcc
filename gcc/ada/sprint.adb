@@ -4145,7 +4145,7 @@ package body Sprint is
 
                   --  Record subtypes
 
-                  when E_Record_Subtype =>
+                  when E_Record_Subtype | E_Record_Subtype_With_Private =>
                      Write_Header (False);
                      Write_Str ("record");
                      Indent_Begin;
@@ -4170,7 +4170,7 @@ package body Sprint is
 
                   when E_Class_Wide_Type    |
                        E_Class_Wide_Subtype =>
-                     Write_Header;
+                     Write_Header (Ekind (Typ) = E_Class_Wide_Type);
                      Write_Name_With_Col_Check (Chars (Etype (Typ)));
                      Write_Str ("'Class");
 

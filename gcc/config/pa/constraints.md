@@ -18,8 +18,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;    ABCDEF H             V  Y 
-;;;     bcde ghijklmnop  stuvw  z
+;;;    ABCD   H                Y 
+;;;     bcde  h jkl       tuvw  z
 
 ;; Register constraints.
 (define_register_constraint "a" "R1_REGS"
@@ -124,12 +124,7 @@
 
 (define_constraint "T"
   "A memory operand for floating-point loads and stores."
-  (and (match_code "mem")
-       (match_test "!IS_LO_SUM_DLT_ADDR_P (XEXP (op, 0))
-		    && !IS_INDEX_ADDR_P (XEXP (op, 0))
-		    && memory_address_p ((GET_MODE_SIZE (mode) == 4
-					  ? SFmode : DFmode),
-					 XEXP (op, 0))")))
+  (match_test "floating_point_store_memory_operand (op, mode)"))
 
 ;; We could allow short displacements but TARGET_LEGITIMATE_ADDRESS_P
 ;; can't tell when a long displacement is valid.

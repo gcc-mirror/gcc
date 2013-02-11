@@ -1,3 +1,507 @@
+2013-02-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix61.h (OS_MISSING_ALTIVEC): Undefine.
+
+2013-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56256
+	* config/rs6000/rs6000.h (ASSEMBLER_DIALECT): Define.
+
+2013-02-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56246
+	* lra-constraints.c (simplify_operand_subreg): Try to reuse
+	reload pseudo.
+	* lra.c (lra): Clear lra_optional_reload_pseudos only when all
+	constraints are satisfied.
+
+2013-02-08  Jeff Law  <law@redhat.com>
+
+	PR debug/53948
+	* emit-rtl.c (reg_is_parm_p): New function.
+	* regs.h (reg_is_parm_p): New prototype.
+	* ira-conflicts.c (ira_build_conflicts): Allow parameters in
+	callee-clobbered registers.
+
+2013-02-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/56043
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_libmass):
+	If there is no implicit builtin declaration, just return NULL.
+
+2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (FMAMODEM): New mode iterator.
+	(fma<mode>4, fms<mode>4, fnma<mode>4, fnms<mode>4): Use FMAMODEM
+	mode iterator. Do not use TARGET_SSE_MATH in insn constraint.
+
+2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/gnu-user.h (TARGET_CAN_SPLIT_STACK): Define only
+	when HAVE_GAS_CFI_PERSONALITY_DIRECTIVE is set.
+	* config/i386/gnu-user64.h (TARGET_CAN_SPLIT_STACK): Ditto.
+
+2013-02-08  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config.gcc (microblaze*-linux*): Add TARGET_BIG_ENDIAN_DEFAULT.
+	(microblaze*-*-elf): Likewise.
+	* config/microblaze/linux.h: Add -mbig-endian / -mlittle-endian to
+	LINK_SPEC.
+	* config/microblaze/microblaze-c.c: Add builtin defines for
+	_LITTLE_ENDIAN and _BIG_ENDIAN.
+	* config/microblaze/microblaze.h: Add TARGET_ENDIAN_DEFAULT and
+	add to TARGET_DEFAULT flags.
+	Expand ASM_SPEC and LINK_SPEC.
+	Update BYTES_BIG_ENDIAN and WORDS_BIG_ENDIAN.
+	* config/microblaze/microblaze.md: Update extendsidi2 and
+	movdi_internal instructions to use low-order / high-order reg
+	print_operands.
+	* config/microblaze/microblaze.opt: Add mbig-endian and mlittle-endian
+	options and inversemask / mask of LITTLE_ENDIAN.
+	* config/microblaze/t-microblaze: Expand multilib options to
+	include mlittle-endian (le) and update exceptions patterns.
+
+2013-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56195
+	* lra-constraints.c (get_reload_reg): Don't reuse regs
+	if they have smaller mode than requested, if they have
+	wider mode than requested, try to return a SUBREG.
+
+	PR tree-optimization/56250
+	* fold-const.c (extract_muldiv_1) <case NEGATE_EXPR>: Don't optimize
+	if type is unsigned and code isn't MULT_EXPR.
+
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* fixed-value.c (fixed_from_double_int): Sign/zero extend payload
+	bits according to mode.
+	* fixed-value.h (fixed_from_double_int)
+	(const_fixed_from_double_int): Adjust comments.
+
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56231
+	* lto-streamer.h (struct data_in): Remove current_file, current_line
+	and current_col members.
+	* lto-streamer-out.c (lto_output_location): Stream changed bits
+	en-block for efficiency.
+	* lto-streamer-in.c (clear_line_info): Remove.
+	(lto_input_location): Cache current file, line and column
+	globally via local statics.  Read changed bits en-block.
+	(input_function): Do not call clear_line_info.
+	(lto_read_body): Likewise.
+	(lto_input_toplevel_asms): Likewise.
+
+2013-02-08  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/52448
+	* tree-ssa-phiopt.c (struct name_to_bb): Add phase member.
+	(nt_call_phase): New static.
+	(add_or_mark_expr): Only mark accesses with newer phase than any
+	call seen.
+	(nonfreeing_call_p): New.
+	(nt_init_block): Update nt_call_phase, mark blocks as visited.
+	(nt_fini_block): Keep blocks marked as visited.
+	(get_non_trapping): Initialize nt_call_phase, and reset aux pointer.
+
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	* ira.c (ira): Free broken dominator information.
+
+2013-02-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_spill_class): Use INTEGER_CLASS_P macro.
+
+2013-02-08  Marek Polacek  <polacek@redhat.com>
+
+	* cfgloop.c (verify_loop_structure): Add more checking of headers.
+
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56181
+	* cfgloop.h (flow_loops_find): Adjust.
+	(bb_loop_header_p): Declare.
+	* cfgloop.c (bb_loop_header_p): New function split out from ...
+	(flow_loops_find): ... here.  Adjust function signature,
+	support incremental loop structure update.
+	(verify_loop_structure): Cleanup.  Verify a loop is a loop.
+	* cfgloopmanip.c (fix_loop_structure): Move ...
+	* loop-init.c (fix_loop_structure): ... here.
+	(apply_loop_flags): Split out from ...
+	(loop_optimizer_init): ... here.
+	(fix_loop_structure): Use apply_loop_flags.  Use flow_loops_find
+	in incremental mode, only remove dead loops here.
+
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/avr.md (unspec) <UNSPEC_ROUND>: Add.
+	* config/avr/avr-fixed.md (ALL4QA, ALL124QA): New mode iterators.
+	(round<mode>3, round<mode>3_const): New expanders for fixed-mode.
+	(*round<mode>3.libgcc): New insns for fixed-modes.
+	* config/avr/builtins.def (ABSxx): Use a non-NULL LIBNAME.
+	(ROUNDxx, COUNTLSxx, BITSxx, xxBITS): New DEF_BUILTINs.
+	(ROUNDFX, COUNTLSFX, ABSFX): New DEF_BUILTINs.
+	* config/avr/stdfix.h (absFX, bitsFX, FXbits): Remove inline
+	implementations.  Define to __builtin_avr_absFX,
+	__builtin_avr_bitsFX, __builtin_avr_FXbits, respectively.
+	(roundFX, countlsFX): Define to __builtin_avr_roundFX,
+	__builtin_avr_countlsFX, respectively.
+	* config/avr/avr-c.c (target.h): Include it.
+	(enum avr_builtin_id): New enum.
+	(avr_resolve_overloaded_builtin): New static function.
+	(avr_register_target_pragmas): Use it to set
+	targetm.resolve_overloaded_builtin.
+	* config/avr/avr.c (avr_init_builtins): Supply myriads of local
+	tree nodes used by DEF_BUILTIN.
+	(avr_expand_builtin) <AVR_BUILTIN_ROUNDxx>: Sanity-check them.
+	(avr_fold_builtin) <AVR_BUILTIN_BITSxx>: Fold to VIEW_COVERT_EXPR.
+	<AVR_BUILTIN_xxBITS>: Same.
+
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	* cfgloop.c (verify_loop_structure): Properly handle
+	a loop exiting to another loop header.
+	* ira-int.h (ira_loops): Remove.
+	* ira.c (ira_loops): Remove.
+	(ira): Use loop_optimizer_init and loop_optimizer_finalize.
+	(do_reload): Use loop_optimizer_finalize.
+	* ira-build.c (create_loop_tree_nodes): Use get_loops and
+	number_of_loops to access the loop tree.
+	(more_one_region_p): Likewise.
+	(finish_loop_tree_nodes): Likewise.
+	(rebuild_regno_allocno_maps): Likewise.
+	(mark_loops_for_removal): Likewise.
+	(mark_all_loops_for_removal): Likewise.
+	(remove_unnecessary_regions): Likewise.
+	(ira_build): Likewise.
+	* ira-emit.c (setup_entered_from_non_parent_p): Likewise.
+
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (tree-tailcall.o): Add $(CFGLOOP_H) dependency.
+	* ipa-pure-const.c (analyze_function): Avoid calling
+	mark_irreducible_loops twice.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Mark loops for fixup.
+
+2013-02-07  David S. Miller  <davem@davemloft.net>
+
+	* dwarf2out.c (based_loc_descr): Perform leaf register remapping
+	on 'reg'.
+	* var-tracking.c (vt_add_function_parameter): Test the presence of
+	HAVE_window_save properly and do not remap argument registers when
+	we have a leaf function.
+
+2013-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56227
+	* ggc-page.c (ggc_print_statistics): Use HOST_LONG_LONG_FORMAT
+	instead of "ll".
+	* config/i386/i386.c (ix86_print_operand): Ditto.
+
+2013-02-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (process_alt_operands): Fix recently added comment.
+
+2013-02-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56225
+	* lra-constraints.c (process_alt_operands): Check that reload hard
+	reg can hold value for strict_low_part.
+
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56154
+	* dwarf2out.c (dwarf2_debug_hooks): Set end_function hook to
+	dwarf2out_end_function.
+	(in_first_function_p, maybe_at_text_label_p,
+	first_loclabel_num_not_at_text_label): New variables.
+	(dwarf2out_var_location): In the first function find out
+	lowest loclabel_num N where .LVLN is known not to be equal to .Ltext0.
+	(find_empty_loc_ranges_at_text_label, dwarf2out_end_function): New
+	functions.
+
+2013-02-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/56178
+	* cse.c (cse_insn): Do not create a REG_EQUAL note if the source is a
+	SUBREG of a register.  Tidy up related block of code.
+	* fwprop.c (forward_propagate_and_simplify): Do not create a REG_EQUAL
+	note if the source is a register or a SUBREG of a register.
+
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56228
+	* config/rs6000/rs6000.md (ptrm): New mode attr.
+	(call_indirect_aix<ptrsize>, call_indirect_aix<ptrsize>_nor11,
+	call_value_indirect_aix<pttrsize>,
+	call_value_indirect_aix<pttrsize>_nor11): Use <ptrm> instead of
+	m in constraints.
+
+2013-02-07  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+
+	* collect2.c (main): Set aix64_flag for -G and -bsvr4 too, disable
+	if -bnortl. Convert to strcmp and strncmp.
+
+2013-02-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/54009
+	* config/rs6000/rs6000.c (mem_operand_gpr): Check that LO_SUM
+	addresses won't wrap when offsetting.
+	(rs6000_secondary_reload): Provide secondary reloads needed for
+	wrapping LO_SUM addresses.
+
+2013-02-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gnu.h (GNU_USER_TARGET_OS_CPP_BUILTINS): Never define
+	MACH, just __MACH__.
+
+2013-02-06  Richard Biener  <rguenther@suse.de>
+
+	* tracer.c (tracer): Mark loops with LOOPS_NEED_FIXUP
+	instead of calling fix_loop_structure.
+
+2013-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56217
+	* omp-low.c (use_pointer_for_field): Return false if
+	lower_send_shared_vars doesn't generate any copy-out code.
+
+2013-02-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/56131
+	* cfgrtl.c (delete_insn): Use NOTE_BASIC_BLOCK instead of BLOCK_FOR_INSN
+	to get the bb of a NOTE_INSN_BASIC_BLOCK.  Handle the case that the bb
+	of the label is NULL.  Add comment.
+
+2013-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (struct tree_decl_with_vis): Remove thread_local field.
+
+	PR sanitizer/55374
+	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Define.
+	(STATIC_LIBTSAN_LIBS): Likewise.
+	* gcc.c (ADD_STATIC_LIBTSAN_LIBS, LIBTSAN_EARLY_SPEC): Define.
+	(LIBTSAN_SPEC): Add ADD_STATIC_LIBTSAN_LIBS, if LIBTSAN_EARLY_SPEC
+	is defined, don't add anything else beyond that.
+	(SANITIZER_EARLY_SPEC, SANITIZER_SPEC): Define.
+	(LINK_COMMAND_SPEC): Use them.
+
+	PR tree-optimization/56205
+	* tree-stdarg.c (check_all_va_list_escapes): Return true if
+	there are any PHI nodes that set non-va_list_escape_vars SSA_NAME
+	and some va_list_escape_vars SSA_NAME appears in some PHI argument.
+
+2013-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/53342
+	PR tree-optimization/53185
+	* tree-vectorizer.h (vect_check_strided_load): Remove.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Do
+	not disallow peeling for vectorized strided loads.
+	(vect_check_strided_load): Make static and simplify.
+	(vect_analyze_data_refs): Adjust.
+	* tree-vect-stmts.c (vectorizable_load): Handle peeled loops
+	correctly when vectorizing strided loads.
+
+2013-02-05  Richard Biener  <rguenther@suse.de>
+
+	* doc/install.texi: Refer to ISL, not PPL.
+
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55789
+	* params.def (PARAM_EARLY_INLINER_MAX_ITERATIONS): Drop to 1.
+
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55789
+	* cgraphclones.c (cgraph_remove_node_and_inline_clones): Remove
+	the dead call anyway.
+
+2013-02-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR sanitizer/55374
+	* config/gnu-user.h (LIBASAN_EARLY_SPEC): Add missing guard.
+
+2013-02-04  Alexander Potapenko  <glider@google.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55617
+	* config/darwin.c (sort_ctor_records): Stabilized qsort
+	on constructor priority by using original position.
+	(finalize_ctors): New routine to sort constructors by
+	priority before use in assemble_integer.
+	(machopic_asm_out_constructor): Use finalize_ctors if needed.
+
+2013-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/54314
+	* config/i386/winnt.c (i386_pe_assemble_visibility): Don't warn
+	about visibility on artificial decls.
+	* config/sol2.c (solaris_assemble_visibility): Likewise.
+
+2013-02-04  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/56186
+	* config/i386/i386.c (function_value_ms_64): Add additional valtype
+	argument and improve checking of return-argument types for 16-byte
+	modes.
+	(ix86_function_value_1): Add additional valtype argument on call
+	of function_value_64.
+	(return_in_memory_ms_64): Sync 16-byte sized mode handling with
+	handling infunction_value_64 function.
+
+2013-02-04  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+
+	* reload.c (subst_reloads): Fix DEBUG_RELOAD build issue.
+
+2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56188
+	* tree-ssa-structalias.c (label_visit): Consider case with
+	initially non-empty points-to set.
+	(perform_var_substitution): Dump node mapping and clean up.
+
+2013-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/56168
+	* lto-symtab.c (lto_symtab_merge_decls_1): Make non-builtin
+	node prevail as last resort.
+	(lto_symtab_merge_decls): Remove guard on LTRANS here.
+	(lto_symtab_prevailing_decl): Builtins are their own prevailing decl.
+
+2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56113
+	* tree-ssa-structalias.c (equiv_class_lookup, equiv_class_add):
+	Merge into ...
+	(equiv_class_lookup_or_add): ... this.
+	(label_visit): Adjust and fix error in previous patch.
+	(perform_var_substitution): Adjust.
+
+2013-02-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/divtab.c: Fix formatting and comments throughout the file.
+	* config/sh/sh4-300.md: Likewise.
+	* config/sh/sh4a.md: Likewise.
+	* config/sh/constraints.md: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sh/netbsd-elf.h: Likewise.
+	* config/sh/predicates.md: Likewise.
+	* config/sh/sh-protos.h: Likewise.
+	* config/sh/ushmedia.h: Likewise.
+	* config/sh/linux.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/superh.h: Likewise.
+	* config/sh/elf.h: Likewise.
+	* config/sh/sh4.md: Likewise.
+	* config/sh/sh.h: Likewise.
+
+2013-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/constraints.md: Adjust unused letters.  Change "T"
+	constraint to match_test floating_point_store_memory_operand().
+	* config/pa/predicates.md (reg_plus_base_memory_operand): New.
+	(base14_operand): New.
+	(floating_point_store_memory_operand): New.
+	(integer_store_memory_operand): Revise to use base14_operand and
+	reg_plus_base_memory_operand.
+	(move_dest_operand): Allow symbolic_memory_operands.
+	(symbolic_memory_operand): Check for LO_SOM.
+	(symbolic_operand): Change default case to break.
+	* config/pa/pa.md: Remove unamed DFmode and SFmode patterns to force
+	CONST_DOUBLE values to be reloaded by putting them into memory when
+	the destination is a floating point register.
+	(movdf): Remove code to handle CONST_DOUBLE.
+	(movsf): Likewise.
+	(reload_indf_r1): New.
+	(reload_insf_r1): New.
+	Consistently use "Q" and "T" constraints with integer and floating
+	point move instructions, respectively.
+	(movdi): Remove FAIL.
+	Change predicate for source operand unamed DImode move from
+	general_operand to move_src_operand.
+	(umulsidi3): Change predicate for destination operand to
+	register_operand.
+	Likewise for similar unamed patterns.
+	* config/pa/pa-protos.h (pa_legitimize_reload_address): Declare.
+	* config/pa/pa.c (pa_symbolic_expression_p): Remove extra parenthesis.
+	(hppa_legitimize_address): Simplify mask calculation.
+	(pa_emit_move_sequence): Revised handling of secondary reloads from
+	REG+D addresses for floating point loads and stores.  Directly handle
+	loading CONST0_RTX (mode) to a floating point register.
+	(pa_secondary_reload): Handle reloading DF and SFmode constant values
+	to floating point registers.  Don't restrict secondary reloads to
+	floating point registers to integer modes.  Revise some comments and
+	cleanup some code.
+	(TARGET_LEGITIMATE_ADDRESS_P): Define.
+	(pa_legitimate_address_p): New.
+	(pa_legitimize_reload_address): New.
+	* config/pa/pa.h (STRICT_REG_OK_FOR_INDEX_P): New.
+	(STRICT_REG_OK_FOR_BASE_P): New.
+	(GO_IF_LEGITIMATE_ADDRESS): Delete.  Update some related comments.
+	(LEGITIMIZE_RELOAD_ADDRESS): Revise to use pa_legitimize_reload_address.
+
+2013-02-03  David Edelsohn  <dje.gcc@gmail.com>
+	    Andrew Dixie  <andrewd@gentrack.com>
+
+	* collect2.c (GCC_CHECK_HDR): Do not scan objects with F_LOADONLY
+	flag set.
+
+2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expmed.c (extract_bit_field_1): Pass the full width of the
+	structure to get_best_reg_extraction_insn.
+
+2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/54601
+	* configure.ac (use_cxa_atexit): Add AIX.
+	* configure: Regenerate.
+
+	* config/rs6000/aix61.h (STARTFILE_SPEC): Add crtcxa.o.
+
+2013-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54793
+	* final.c (need_profile_function): New variable.
+	(final_start_function): Drop ATTRIBUTE_UNUSED from first argument.
+	If first of NOTE_INSN_BASIC_BLOCK or NOTE_INSN_FUNCTION_BEG
+	is only preceeded by NOTE_INSN_VAR_LOCATION or NOTE_INSN_DELETED
+	notes, targetm.asm_out.function_prologue doesn't emit anything,
+	HAVE_prologue and profiler should be emitted before prologue,
+	set need_profile_function instead of emitting it.
+	(final_scan_insn): If need_profile_function, emit
+	profile_function on the first NOTE_INSN_BASIC_BLOCK or
+	NOTE_INSN_FUNCTION_BEG note.
+
+2013-02-01  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.md (smulditi3): New.
+	(umulditi3): New.
+
+	* config/alpha/alpha.md (umulditi3): New.
+
+2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/xcoff.h (ASM_OUTPUT_ALIGNED_COMMON): Use floor_log2.
+	(ASM_OUTPUT_ALIGNED_LOCAL): New.
+
+2013-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56113
+	* tree-ssa-structalias.c (label_visit): Reduce work for
+	single-predecessor nodes.
+
+2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (make_range_step) <TRUTH_NOT_EXPR>: Bail out if the
+	range isn't testing for zero.
+
 2013-01-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/56113
@@ -55,8 +559,7 @@
 	* config/v850/v850.opt (mv850e3v5, mv850e2v4): New options.
 	(mloop): New option.
 	* config.gcc: Add support for configuring v840e3v5 target.
-	* doc/invoke.texi: Document new v850 specific command line
-	options.
+	* doc/invoke.texi: Document new v850 specific command line options.
 
 2013-01-31  Paul Koning  <ni1d@arrl.net>
 
@@ -164,8 +667,7 @@
 2013-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56147
-	* lto-symtab.c (lto_symtab_merge_decls_1): Guard DECL_BUILT_IN
-	check.
+	* lto-symtab.c (lto_symtab_merge_decls_1): Guard DECL_BUILT_IN check.
 
 2013-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -320,8 +822,7 @@
 2013-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56034
-	* tree-loop-distribution.c (enum partition_kind): Add
-	PKIND_REDUCTION.
+	* tree-loop-distribution.c (enum partition_kind): Add PKIND_REDUCTION.
 	(partition_builtin_p): Adjust.
 	(generate_code_for_partition): Handle PKIND_REDUCTION.  Assert
 	it is the last partition.
@@ -1283,7 +1784,7 @@
 	* predict.c (predict_loops): If max is 0, don't call compare_tree_int.
 	If nitercst is 0, don't predict the exit edge.
 
-2013-01-08   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-01-08  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Replace %r
 	in asm_fprintf with reg_names.
@@ -1443,10 +1944,10 @@
 	* asan.c (asan_protect_global): Don't check TREE_ASM_WRITTEN here.
 	(asan_finish_file): Test it here instead.
 
-2013-01-07   Nick Clifton  <nickc@redhat.com>
-	     Matthias Klose  <doko@debian.org>
-	     Doug Kwan  <dougkwan@google.com>
-	     H.J. Lu  <hongjiu.lu@intel.com>
+2013-01-07  Nick Clifton  <nickc@redhat.com>
+	    Matthias Klose  <doko@debian.org>
+	    Doug Kwan  <dougkwan@google.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/55470
 	* collect2.c (main): Support -fuse-ld=bfd and -fuse-ld=gold.

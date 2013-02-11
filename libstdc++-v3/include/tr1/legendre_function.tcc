@@ -1,7 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2006-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,7 +72,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __poly_legendre_p(const unsigned int __l, const _Tp __x)
+    __poly_legendre_p(unsigned int __l, _Tp __x)
     {
 
       if ((__x < _Tp(-1)) || (__x > _Tp(+1)))
@@ -130,8 +129,7 @@ namespace tr1
      */
     template<typename _Tp>
     _Tp
-    __assoc_legendre_p(const unsigned int __l, const unsigned int __m,
-                       const _Tp __x)
+    __assoc_legendre_p(unsigned int __l, unsigned int __m, _Tp __x)
     {
 
       if (__x < _Tp(-1) || __x > _Tp(+1))
@@ -210,8 +208,7 @@ namespace tr1
      */
     template <typename _Tp>
     _Tp
-    __sph_legendre(const unsigned int __l, const unsigned int __m,
-                   const _Tp __theta)
+    __sph_legendre(unsigned int __l, unsigned int __m, _Tp __theta)
     {
       if (__isnan(__theta))
         return std::numeric_limits<_Tp>::quiet_NaN();

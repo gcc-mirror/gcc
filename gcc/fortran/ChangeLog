@@ -1,4 +1,68 @@
-2012-01-30  Tobias Burnus  <burnus@net-b.de>
+2013-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55362
+	* check.c (array_check): It is an error if a procedure is
+	passed.
+
+2013-02-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	* trans-types.c (gfc_get_function_type): Change a NULL backend_decl
+	to error_mark_node on entry.  Detect recursive types.  Build a variadic
+	procedure type if the type is recursive.  Restore the initial
+	backend_decl.
+
+2013-02-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54339
+	* gfortran.texi (Standards): Mention TS29113.
+	(Varying Length Character): Mention deferred-length
+	strings.
+	(Fortran 2003 Status): Add unlimited polymorphic.
+	(TS 29113 Status): Add TYPE(*) and DIMENSION(..).
+	(C Interop): Update the section about TS29113.
+
+2013-02-06 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55789
+	* trans-array.c (trans_array_constructor): Remove condition
+	'dynamic' = true if the loop ubound is a VAR_DECL.
+
+2013-02-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56008
+	PR fortran/47517
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Save
+	the lhs descriptor before it is modified for reallocation. Use
+	it to deallocate allocatable components in the reallocation
+	block.  Nullify allocatable components for newly (re)allocated
+	arrays.
+
+2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54195
+	* resolve.c (resolve_typebound_procedures): Recurse through
+	resolve_symbol.
+
+2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	PR fortran/54195
+	* gfortran.h (struct gfc_symbol): New field 'resolved'.
+	* resolve.c (resolve_fl_var_and_proc): Don't skip result symbols.
+	(resolve_symbol): Skip duplicate calls.  Don't check the current
+	namespace.
+
+2013-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50627
+	PR fortran/56054
+	* decl.c (gfc_match_end):  Remove half-ready namespace
+	from parent if the end of a block is missing.
+	* parse.c (parse_module):  Do not put namespace into
+	gsymbol on error.
+
+2013-01-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56138
 	* trans-decl.c (gfc_trans_deferred_vars): Fix deferred-length
@@ -205,7 +269,7 @@
 	finalizer_insert_packed_call, generate_finalization_wrapper):
 	Clean up by using gfc_build_intrinsic_call.
 
-2012-01-07  Tobias Burnus  <burnus@net-b.de>
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
 	* resolve.c (resolve_select_type): Reject intrinsic types for

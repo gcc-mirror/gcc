@@ -919,6 +919,18 @@ gen_reg_rtx (enum machine_mode mode)
   return val;
 }
 
+/* Return TRUE if REG is a PARM_DECL, FALSE otherwise.  */
+
+bool
+reg_is_parm_p (rtx reg)
+{
+  tree decl;
+
+  gcc_assert (REG_P (reg));
+  decl = REG_EXPR (reg);
+  return (decl && TREE_CODE (decl) == PARM_DECL);
+}
+
 /* Update NEW with the same attributes as REG, but with OFFSET added
    to the REG_OFFSET.  */
 

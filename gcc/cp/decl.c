@@ -920,7 +920,7 @@ push_local_name (tree decl)
 	  if (!DECL_LANG_SPECIFIC (decl))
 	    retrofit_lang_decl (decl);
 	  DECL_LANG_SPECIFIC (decl)->u.base.u2sel = 1;
-	  if (DECL_LANG_SPECIFIC (t))
+	  if (DECL_DISCRIMINATOR_SET_P (t))
 	    DECL_DISCRIMINATOR (decl) = DECL_DISCRIMINATOR (t) + 1;
 	  else
 	    DECL_DISCRIMINATOR (decl) = 1;
@@ -975,36 +975,6 @@ decls_match (tree newdecl, tree olddecl)
 		 : NULL_TREE);
       if (t1 != t2)
 	return 0;
-
-      /* The decls dont match if they correspond to two different versions
-	 of the same function.   Disallow extern "C" functions to be
-	 versions for now.  */
-      if (compparms (p1, p2)
-	  && same_type_p (TREE_TYPE (f1), TREE_TYPE (f2))
-	  && !DECL_EXTERN_C_P (newdecl)
-	  && !DECL_EXTERN_C_P (olddecl)
-	  && targetm.target_option.function_versions (newdecl, olddecl))
-	{
-	  /* Mark functions as versions if necessary.  Modify the mangled decl
-	     name if necessary.  */
-	  if (DECL_FUNCTION_VERSIONED (newdecl)
-	      && DECL_FUNCTION_VERSIONED (olddecl))
-	    return 0;
-	  if (!DECL_FUNCTION_VERSIONED (newdecl))
-	    {
-	      DECL_FUNCTION_VERSIONED (newdecl) = 1;
-	      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
-	        mangle_decl (newdecl);
-	    }
-	  if (!DECL_FUNCTION_VERSIONED (olddecl))
-	    {
-	      DECL_FUNCTION_VERSIONED (olddecl) = 1;
-	      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
-	       mangle_decl (olddecl);
-	    }
-	  record_function_versions (olddecl, newdecl);
-	  return 0;
-	}
 
       if (CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl)
 	  && ! (DECL_EXTERN_C_P (newdecl)
@@ -1063,6 +1033,35 @@ decls_match (tree newdecl, tree olddecl)
 	}
       else
 	types_match = 0;
+
+      /* The decls dont match if they correspond to two different versions
+	 of the same function.   Disallow extern "C" functions to be
+	 versions for now.  */
+      if (types_match
+	  && !DECL_EXTERN_C_P (newdecl)
+	  && !DECL_EXTERN_C_P (olddecl)
+	  && targetm.target_option.function_versions (newdecl, olddecl))
+	{
+	  /* Mark functions as versions if necessary.  Modify the mangled decl
+	     name if necessary.  */
+	  if (DECL_FUNCTION_VERSIONED (newdecl)
+	      && DECL_FUNCTION_VERSIONED (olddecl))
+	    return 0;
+	  if (!DECL_FUNCTION_VERSIONED (newdecl))
+	    {
+	      DECL_FUNCTION_VERSIONED (newdecl) = 1;
+	      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
+	        mangle_decl (newdecl);
+	    }
+	  if (!DECL_FUNCTION_VERSIONED (olddecl))
+	    {
+	      DECL_FUNCTION_VERSIONED (olddecl) = 1;
+	      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
+	       mangle_decl (olddecl);
+	    }
+	  record_function_versions (olddecl, newdecl);
+	  return 0;
+	}
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
@@ -13116,6 +13115,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	    DECL_CONTEXT (decl1) = DECL_CONTEXT (DECL_TI_TEMPLATE (decl1));
 	}
       fntype = TREE_TYPE (decl1);
+      restype = TREE_TYPE (fntype);
 
       /* If #pragma weak applies, mark the decl appropriately now.
 	 The pragma only applies to global functions.  Because

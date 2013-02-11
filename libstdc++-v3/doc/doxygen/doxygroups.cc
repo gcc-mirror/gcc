@@ -1,6 +1,5 @@
 /*
-   Copyright (C) 2001, 2002, 2005, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
    See license.html for license.
 
    This just provides documentation for stuff that doesn't need to be in the

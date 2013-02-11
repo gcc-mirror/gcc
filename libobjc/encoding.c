@@ -1,6 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993, 1995, 1996, 1997, 1998, 2000, 2002, 2004, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
    Bitfield support by Ovidiu Predescu
 

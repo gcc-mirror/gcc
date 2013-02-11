@@ -1746,6 +1746,7 @@ package body Sem_Util is
                               if not Analyzed (Expression (Assoc)) then
                                  Comp_Expr :=
                                    New_Copy_Tree (Expression (Assoc));
+                                 Set_Parent (Comp_Expr, Parent (N));
                                  Preanalyze_Without_Errors (Comp_Expr);
                               else
                                  Comp_Expr := Expression (Assoc);
@@ -2577,6 +2578,7 @@ package body Sem_Util is
       Op_List        : Elist_Id;
       Formal         : Entity_Id;
       Is_Prim        : Boolean;
+      Is_Type_In_Pkg : Boolean;
       Formal_Derived : Boolean := False;
       Id             : Entity_Id;
 
@@ -2636,12 +2638,9 @@ package body Sem_Util is
             null;
          end if;
 
-      elsif (Is_Package_Or_Generic_Package (B_Scope)
-              and then
-                Nkind (Parent (Declaration_Node (First_Subtype (T)))) /=
-                                                            N_Package_Body)
-        or else Is_Derived_Type (B_Type)
-      then
+      --  Locate the primitive subprograms of the type
+
+      else
          --  The primitive operations appear after the base type, except
          --  if the derivation happens within the private part of B_Scope
          --  and the type is a private type, in which case both the type
@@ -2657,13 +2656,30 @@ package body Sem_Util is
             Id := Next_Entity (B_Type);
          end if;
 
+         --  Set flag if this is a type in a package spec
+
+         Is_Type_In_Pkg :=
+           Is_Package_Or_Generic_Package (B_Scope)
+             and then
+               Nkind (Parent (Declaration_Node (First_Subtype (T)))) /=
+                                                           N_Package_Body;
+
          while Present (Id) loop
 
-            --  Note that generic formal subprograms are not
-            --  considered to be primitive operations and thus
-            --  are never inherited.
+            --  Test whether the result type or any of the parameter types of
+            --  each subprogram following the type match that type when the
+            --  type is declared in a package spec, is a derived type, or the
+            --  subprogram is marked as primitive. (The Is_Primitive test is
+            --  needed to find primitives of nonderived types in declarative
+            --  parts that happen to override the predefined "=" operator.)
+
+            --  Note that generic formal subprograms are not considered to be
+            --  primitive operations and thus are never inherited.
 
             if Is_Overloadable (Id)
+              and then (Is_Type_In_Pkg
+                         or else Is_Derived_Type (B_Type)
+                         or else Is_Primitive (Id))
               and then Nkind (Parent (Parent (Id)))
                          not in N_Formal_Subprogram_Declaration
             then
@@ -2684,9 +2700,9 @@ package body Sem_Util is
                   end loop;
                end if;
 
-               --  For a formal derived type, the only primitives are the
-               --  ones inherited from the parent type. Operations appearing
-               --  in the package declaration are not primitive for it.
+               --  For a formal derived type, the only primitives are the ones
+               --  inherited from the parent type. Operations appearing in the
+               --  package declaration are not primitive for it.
 
                if Is_Prim
                  and then (not Formal_Derived
@@ -11981,9 +11997,6 @@ package body Sem_Util is
    -- Object_Access_Level --
    -------------------------
 
-   function Object_Access_Level (Obj : Node_Id) return Uint is
-      E : Entity_Id;
-
    --  Returns the static accessibility level of the view denoted by Obj. Note
    --  that the value returned is the result of a call to Scope_Depth. Only
    --  scope depths associated with dynamic scopes can actually be returned.
@@ -11992,6 +12005,12 @@ package body Sem_Util is
    --  always one is immaterial (invariant: if level(E2) is deeper than
    --  level(E1), then Scope_Depth(E1) < Scope_Depth(E2)).
 
+   function Object_Access_Level (Obj : Node_Id) return Uint is
+      function Is_Interface_Conversion (N : Node_Id) return Boolean;
+      --  Determine whether N is a construct of the form
+      --    Some_Type (Operand._tag'Address)
+      --  This construct appears in the context of dispatching calls
+
       function Reference_To (Obj : Node_Id) return Node_Id;
       --  An explicit dereference is created when removing side-effects from
       --  expressions for constraint checking purposes. In this case a local
@@ -11999,6 +12018,18 @@ package body Sem_Util is
       --  the original source node. We detect this case by noting that the
       --  prefix of the dereference is created by an object declaration whose
       --  initial expression is a reference.
+
+      -----------------------------
+      -- Is_Interface_Conversion --
+      -----------------------------
+
+      function Is_Interface_Conversion (N : Node_Id) return Boolean is
+      begin
+         return
+           Nkind (N) = N_Unchecked_Type_Conversion
+             and then Nkind (Expression (N)) = N_Attribute_Reference
+             and then Attribute_Name (Expression (N)) = Name_Address;
+      end Is_Interface_Conversion;
 
       ------------------
       -- Reference_To --
@@ -12017,6 +12048,10 @@ package body Sem_Util is
             return Empty;
          end if;
       end Reference_To;
+
+      --  Local variables
+
+      E : Entity_Id;
 
    --  Start of processing for Object_Access_Level
 
@@ -12088,7 +12123,17 @@ package body Sem_Util is
          then
             return Object_Access_Level (Prefix (Obj));
 
-         elsif not (Comes_From_Source (Obj)) then
+         --  Detect an interface conversion in the context of a dispatching
+         --  call. Use the original form of the conversion to find the access
+         --  level of the operand.
+
+         elsif Is_Interface (Etype (Obj))
+           and then Is_Interface_Conversion (Prefix (Obj))
+           and then Nkind (Original_Node (Obj)) = N_Type_Conversion
+         then
+            return Object_Access_Level (Original_Node (Obj));
+
+         elsif not Comes_From_Source (Obj) then
             declare
                Ref : constant Node_Id := Reference_To (Obj);
             begin
@@ -12103,9 +12148,7 @@ package body Sem_Util is
             return Type_Access_Level (Etype (Prefix (Obj)));
          end if;
 
-      elsif Nkind (Obj) = N_Type_Conversion
-        or else Nkind (Obj) = N_Unchecked_Type_Conversion
-      then
+      elsif Nkind_In (Obj, N_Type_Conversion, N_Unchecked_Type_Conversion) then
          return Object_Access_Level (Expression (Obj));
 
       elsif Nkind (Obj) = N_Function_Call then

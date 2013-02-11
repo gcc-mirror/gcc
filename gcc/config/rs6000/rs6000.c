@@ -3699,7 +3699,8 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 	  bdecl = builtin_decl_implicit (fn);
 	  suffix = "d2";				/* pow -> powd2 */
 	  if (el_mode != DFmode
-	      || n != 2)
+	      || n != 2
+	      || !bdecl)
 	    return NULL_TREE;
 	  break;
 
@@ -3736,7 +3737,8 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 	  bdecl = builtin_decl_implicit (fn);
 	  suffix = "4";					/* powf -> powf4 */
 	  if (el_mode != SFmode
-	      || n != 4)
+	      || n != 4
+	      || !bdecl)
 	    return NULL_TREE;
 	  break;
 
@@ -3749,6 +3751,9 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
 
   gcc_assert (suffix != NULL);
   bname = IDENTIFIER_POINTER (DECL_NAME (bdecl));
+  if (!bname)
+    return NULL_TREE;
+
   strcpy (name, bname + sizeof ("__builtin_") - 1);
   strcat (name, suffix);
 
@@ -5135,17 +5140,14 @@ mem_operand_gpr (rtx op, enum machine_mode mode)
   if (TARGET_POWERPC64 && (offset & 3) != 0)
     return false;
 
-  if (GET_CODE (addr) == LO_SUM)
-    /* We know by alignment that ABI_AIX medium/large model toc refs
-       will not cross a 32k boundary, since all entries in the
-       constant pool are naturally aligned and we check alignment for
-       other medium model toc-relative addresses.  For ABI_V4 and
-       ABI_DARWIN lo_sum addresses, we just check that 64-bit
-       offsets are 4-byte aligned.  */
-    return true;
-
   extra = GET_MODE_SIZE (mode) - UNITS_PER_WORD;
   gcc_assert (extra >= 0);
+
+  if (GET_CODE (addr) == LO_SUM)
+    /* For lo_sum addresses, we must allow any offset except one that
+       causes a wrap, so test only the low 16 bits.  */
+    offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
+
   return offset + 0x8000 < 0x10000u - extra;
 }
 
@@ -13823,19 +13825,36 @@ rs6000_secondary_reload (bool in_p,
 	   && MEM_P (x)
 	   && GET_MODE_SIZE (GET_MODE (x)) >= UNITS_PER_WORD)
     {
-      rtx off = address_offset (XEXP (x, 0));
-      unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
+      rtx addr = XEXP (x, 0);
+      rtx off = address_offset (addr);
 
-      if (off != NULL_RTX
-	  && (INTVAL (off) & 3) != 0
-	  && (unsigned HOST_WIDE_INT) INTVAL (off) + 0x8000 < 0x10000 - extra)
+      if (off != NULL_RTX)
 	{
-	  if (in_p)
-	    sri->icode = CODE_FOR_reload_di_load;
+	  unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
+	  unsigned HOST_WIDE_INT offset = INTVAL (off);
+
+	  /* We need a secondary reload when our legitimate_address_p
+	     says the address is good (as otherwise the entire address
+	     will be reloaded), and the offset is not a multiple of
+	     four or we have an address wrap.  Address wrap will only
+	     occur for LO_SUMs since legitimate_offset_address_p
+	     rejects addresses for 16-byte mems that will wrap.  */
+	  if (GET_CODE (addr) == LO_SUM
+	      ? (1 /* legitimate_address_p allows any offset for lo_sum */
+		 && ((offset & 3) != 0
+		     || ((offset & 0xffff) ^ 0x8000) >= 0x10000 - extra))
+	      : (offset + 0x8000 < 0x10000 - extra /* legitimate_address_p */
+		 && (offset & 3) != 0))
+	    {
+	      if (in_p)
+		sri->icode = CODE_FOR_reload_di_load;
+	      else
+		sri->icode = CODE_FOR_reload_di_store;
+	      sri->extra_cost = 2;
+	      ret = NO_REGS;
+	    }
 	  else
-	    sri->icode = CODE_FOR_reload_di_store;
-	  sri->extra_cost = 2;
-	  ret = NO_REGS;
+	    default_p = true;
 	}
       else
 	default_p = true;
@@ -13845,25 +13864,43 @@ rs6000_secondary_reload (bool in_p,
 	   && MEM_P (x)
 	   && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
     {
-      rtx off = address_offset (XEXP (x, 0));
-      unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
+      rtx addr = XEXP (x, 0);
+      rtx off = address_offset (addr);
 
-      /* We need a secondary reload only when our legitimate_address_p
-	 says the address is good (as otherwise the entire address
-	 will be reloaded).  So for mode sizes of 8 and 16 this will
-	 be when the offset is in the ranges [0x7ffc,0x7fff] and
-	 [0x7ff4,0x7ff7] respectively.  Note that the address we see
-	 here may have been manipulated by legitimize_reload_address.  */
-      if (off != NULL_RTX
-	  && ((unsigned HOST_WIDE_INT) INTVAL (off) - (0x8000 - extra)
-	      < UNITS_PER_WORD))
+      if (off != NULL_RTX)
 	{
-	  if (in_p)
-	    sri->icode = CODE_FOR_reload_si_load;
+	  unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
+	  unsigned HOST_WIDE_INT offset = INTVAL (off);
+
+	  /* We need a secondary reload when our legitimate_address_p
+	     says the address is good (as otherwise the entire address
+	     will be reloaded), and we have a wrap.
+
+	     legitimate_lo_sum_address_p allows LO_SUM addresses to
+	     have any offset so test for wrap in the low 16 bits.
+
+	     legitimate_offset_address_p checks for the range
+	     [-0x8000,0x7fff] for mode size of 8 and [-0x8000,0x7ff7]
+	     for mode size of 16.  We wrap at [0x7ffc,0x7fff] and
+	     [0x7ff4,0x7fff] respectively, so test for the
+	     intersection of these ranges, [0x7ffc,0x7fff] and
+	     [0x7ff4,0x7ff7] respectively.
+
+	     Note that the address we see here may have been
+	     manipulated by legitimize_reload_address.  */
+	  if (GET_CODE (addr) == LO_SUM
+	      ? ((offset & 0xffff) ^ 0x8000) >= 0x10000 - extra
+	      : offset - (0x8000 - extra) < UNITS_PER_WORD)
+	    {
+	      if (in_p)
+		sri->icode = CODE_FOR_reload_si_load;
+	      else
+		sri->icode = CODE_FOR_reload_si_store;
+	      sri->extra_cost = 2;
+	      ret = NO_REGS;
+	    }
 	  else
-	    sri->icode = CODE_FOR_reload_si_store;
-	  sri->extra_cost = 2;
-	  ret = NO_REGS;
+	    default_p = true;
 	}
       else
 	default_p = true;

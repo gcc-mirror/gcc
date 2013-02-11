@@ -7336,17 +7336,24 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
 }
 
 static rtx
-function_value_ms_64 (enum machine_mode orig_mode, enum machine_mode mode)
+function_value_ms_64 (enum machine_mode orig_mode, enum machine_mode mode,
+		      const_tree valtype)
 {
   unsigned int regno = AX_REG;
 
   if (TARGET_SSE)
     {
       switch (GET_MODE_SIZE (mode))
-        {
-        case 16:
-          if((SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
-	     && !COMPLEX_MODE_P (mode))
+	{
+	case 16:
+	  if (valtype != NULL_TREE
+	      && !VECTOR_INTEGER_TYPE_P (valtype)
+	      && !VECTOR_INTEGER_TYPE_P (valtype)
+	      && !INTEGRAL_TYPE_P (valtype)
+	      && !VECTOR_FLOAT_TYPE_P (valtype))
+	    break;
+	  if ((SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
+	      && !COMPLEX_MODE_P (mode))
 	    regno = FIRST_SSE_REG;
 	  break;
 	case 8:
@@ -7373,7 +7380,7 @@ ix86_function_value_1 (const_tree valtype, const_tree fntype_or_decl,
   fntype = fn ? TREE_TYPE (fn) : fntype_or_decl;
 
   if (TARGET_64BIT && ix86_function_type_abi (fntype) == MS_ABI)
-    return function_value_ms_64 (orig_mode, mode);
+    return function_value_ms_64 (orig_mode, mode, valtype);
   else if (TARGET_64BIT)
     return function_value_64 (orig_mode, mode, valtype);
   else
@@ -7486,7 +7493,9 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
   HOST_WIDE_INT size = int_size_in_bytes (type);
 
   /* __m128 is returned in xmm0.  */
-  if ((SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
+  if ((!type || VECTOR_INTEGER_TYPE_P (type) || INTEGRAL_TYPE_P (type)
+       || VECTOR_FLOAT_TYPE_P (type))
+      && (SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
       && !COMPLEX_MODE_P (mode) && (GET_MODE_SIZE (mode) == 16 || size == 16))
     return false;
 
@@ -14619,7 +14628,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	putc ('$', file);
       /* Sign extend 32bit SFmode immediate to 8 bytes.  */
       if (code == 'q')
-	fprintf (file, "0x%08llx", (unsigned long long) (int) l);
+	fprintf (file, "0x%08" HOST_LONG_LONG_FORMAT "x",
+		 (unsigned long long) (int) l);
       else
 	fprintf (file, "0x%08x", (unsigned int) l);
     }
@@ -42073,9 +42083,8 @@ static reg_class_t
 ix86_spill_class (reg_class_t rclass, enum machine_mode mode)
 {
   if (TARGET_SSE && TARGET_GENERAL_REGS_SSE_SPILL && ! TARGET_MMX
-      && hard_reg_set_subset_p (reg_class_contents[rclass],
-				reg_class_contents[GENERAL_REGS])
-      && (mode == SImode || (TARGET_64BIT && mode == DImode)))
+      && (mode == SImode || (TARGET_64BIT && mode == DImode))
+      && INTEGER_CLASS_P (rclass))
     return SSE_REGS;
   return NO_REGS;
 }

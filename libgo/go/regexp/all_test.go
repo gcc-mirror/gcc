@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package regexp_test
+package regexp
 
 import (
 	"reflect"
-	. "regexp"
 	"strings"
 	"testing"
 )

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1536,9 +1536,9 @@ package body Checks is
       --  the constraints are constants. In this case, we can do the check
       --  successfully at compile time.
 
-      --  We skip this check for the case where the node is a rewritten`
-      --  allocator, because it already carries the context subtype, and
-      --  extracting the discriminants from the aggregate is messy.
+      --  We skip this check for the case where the node is rewritten`as
+      --  an allocator, because it already carries the context subtype,
+      --  and extracting the discriminants from the aggregate is messy.
 
       if Is_Constrained (S_Typ)
         and then Nkind (Original_Node (N)) /= N_Allocator
@@ -1591,7 +1591,17 @@ package body Checks is
                end if;
             end if;
 
-            DconT  := First_Elmt (Discriminant_Constraint (T_Typ));
+            --  Constraint may appear in full view of type
+
+            if Ekind (T_Typ) = E_Private_Subtype
+              and then Present (Full_View (T_Typ))
+            then
+               DconT :=
+                 First_Elmt (Discriminant_Constraint (Full_View (T_Typ)));
+            else
+               DconT :=
+                 First_Elmt (Discriminant_Constraint (T_Typ));
+            end if;
 
             while Present (Discr) loop
                ItemS := Node (DconS);

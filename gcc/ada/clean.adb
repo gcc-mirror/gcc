@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1253,7 +1253,18 @@ package body Clean is
             --  On VMS, we have to delete all versions of the file
 
             if OpenVMS_On_Target then
-               Delete_File (Full_Name (1 .. Last) & ";*", Success);
+               declare
+                  Host_Full_Name : constant String_Access :=
+                    To_Host_File_Spec (Full_Name (1 .. Last));
+               begin
+                  if Host_Full_Name = null
+                    or else Host_Full_Name'Length = 0
+                  then
+                     Success := False;
+                  else
+                     Delete_File (Host_Full_Name.all & ";*", Success);
+                  end if;
+               end;
 
             --  Otherwise just delete the specified file
 

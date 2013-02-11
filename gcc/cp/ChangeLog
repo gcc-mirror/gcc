@@ -1,3 +1,64 @@
+2013-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56247
+	* pt.c (eq_specializations): Set comparing_specializations.
+	* tree.c (cp_tree_equal): Check it.
+	* cp-tree.h: Declare it.
+
+	* decl.c (decls_match): Check versions later.
+
+	PR c++/56238
+	* pt.c (build_non_dependent_expr): Don't try to fold
+	instantiation-dependent expressions.
+	(instantiation_dependent_r) [TRAIT_EXPR]: Split out.
+	[BIND_EXPR]: Treat as dependent.
+
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56241
+	* init.c (build_vec_init): Don't append NULL values into new_vec.
+	(build_zero_init_1): Don't push anything into v if recursive call
+	returned NULL_TREE.
+	(build_value_init_noctor): Don't push anything into v if
+	build_value_init call returned NULL_TREE.
+
+	PR c++/56239
+	* parser.c (cp_parser_token_starts_cast_expression): Renamed to...
+	(cp_parser_tokens_start_cast_expression): ... this.  Change parameter
+	to cp_parser *, call cp_lexer_peek_token first.  For CPP_OPEN_PAREN,
+	return true only if 2nd token isn't CPP_CLOSE_PAREN.
+	(cp_parser_cast_expression): Adjust caller.
+
+	PR c++/56237
+	* decl.c (push_local_name): Look at DECL_DISCRIMINATOR (t)
+	only if DECL_DISCRIMINATOR_SET_P (t) rather than just
+	DECL_LANG_SPECIFIC (t).
+
+2013-02-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56235
+	* method.c (do_build_copy_constructor): Don't bother turning
+	scalars from lvalues to xvalues.
+	(do_build_copy_assign): Likewise.
+
+2013-02-06  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_enum_specifier): Check for error_mark_node.
+
+2013-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54122
+	* tree.c (lvalue_kind) [INDIRECT_REF]: Don't check for
+	METHOD_TYPE.
+
+	PR c++/56177
+	* decl.c (start_preparsed_function): Update restype if we change
+	decl1.
+
+	PR c++/56208
+	* pt.c (fn_type_unification): Discard any access checks from
+	substituting explicit args.
+
 2013-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56162

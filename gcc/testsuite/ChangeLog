@@ -1,3 +1,245 @@
+2013-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/asan/asan_test.C: Compile with -D__NO_INLINE__
+	for *-*-linux-gnu targets.
+	* g++.dg/asan/interception-test-1.c: Ditto.
+	* g++.dg/asan/interception-failure-test-1.C: Ditto.
+	* g++.dg/asan/interception-malloc-test-1.C: Ditto.
+
+2013-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55362
+	* gfortran.dg/intrinsic_size_4.f90 : New test.
+
+2013-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56256
+	* gcc.target/powerpc/pr56256.c: New test.
+
+2013-02-08  Ian Lance Taylor  <iant@google.com>
+
+	* lib/go.exp: Load timeout.exp.
+
+2013-02-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56246
+	* gcc.target/i386/pr56246.c: New test.
+
+2013-02-08  Jeff Law  <law@redhat.com>
+
+	PR debug/53948
+	* gcc.dg/debug/dwarf2/pr53948.c: New test.
+
+2013-02-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/56043
+	* gcc.target/powerpc/vsx-mass-1.c: Only run this test on
+	powerpc*-*-linux*.
+
+2013-02-08  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* 20101011-1.c: Add __MICROBLAZE__ exception to set DO_TEST 0
+
+2013-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56195
+	* gcc.dg/torture/pr56195.c: New test.
+
+2013-02-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	* gfortran.dg/recursive_interface_2.f90: New test.
+
+2013-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56250
+	* gcc.c-torture/execute/pr56250.c: New test.
+
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/56064
+	* gcc.dg/fixed-point/view-convert-2.c: New test.
+
+2013-02-08  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/52448
+	* gcc.dg/pr52448.c: New test.
+
+2013-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56181
+	* gcc.dg/torture/pr56181.c: New testcase.
+
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* gcc.target/avr/torture/builtins-4-roundfx.c: New test.
+	* gcc.target/avr/torture/builtins-5-countlsfx.c: New test.
+
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56241
+	* g++.dg/parse/crash61.C: New test.
+
+	PR c++/56239
+	* g++.dg/parse/pr56239.C: New test.
+
+	PR c++/56237
+	* g++.dg/abi/mangle61.C: New test.
+
+2013-02-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56225
+	* gcc.target/i386/pr56225.c: New test.
+
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56154
+	* gcc.dg/guality/pr56154-1.c: New test.
+	* gcc.dg/guality/pr56154-2.c: New test.
+	* gcc.dg/guality/pr56154-3.c: New test.
+	* gcc.dg/guality/pr56154-4.c: New test.
+	* gcc.dg/guality/pr56154-aux.c: New file.
+
+	PR tree-optimization/55789
+	* g++.dg/ipa/inline-3.C: Use cleanup-ipa-dump instead of
+	cleanup-tree-dump.
+	* gcc.dg/tree-ssa/inline-3.c: Add
+	--param max-early-inliner-iterations=2 option.
+
+2013-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR debug/53363
+	* g++.dg/debug/dwarf2/thunk1.C: Restrict to 32-bit x86.
+	Add -fno-dwarf2-cfi-asm to dg-options.
+	Adapt match count.
+
+2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56228
+	* gcc.dg/pr56228.c: New test.
+
+2013-02-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/54009
+	* gcc.target/powerpc/pr54009.c: New test.
+	PR target/54131
+	* gfortran.dg/pr54131.f: New test.
+
+2013-02-06 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55789
+	* gfortran.dg/array_constructor_41.f90: New test.
+
+2013-02-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55978
+	* gfortran.dg/class_optional_2.f90: Uncomment some cases which work now.
+
+2013-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56217
+	* g++.dg/gomp/pr56217.C: New test.
+
+2013-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56205
+	* gcc.dg/tree-ssa/stdarg-6.c: New test.
+	* gcc.c-torture/execute/pr56205.c: New test.
+
+2013-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/53342
+	PR tree-optimization/53185
+	* gcc.dg/vect/pr53185-2.c: New testcase.
+
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55789
+	* g++.dg/tree-ssa/inline-1.C: Update max-inliner-iterations.
+	* g++.dg/tree-ssa/inline-2.C: Update max-inliner-iterations.
+	* g++.dg/tree-ssa/inline-3.C: Update max-inliner-iterations.
+	* g++.dg/ipa/inline-1.C: New testcase.
+	* g++.dg/ipa/inline-2.C: New testcase.
+	* g++.dg/ipa/inline-3.C: New testcase.
+
+2013-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55789
+	* g++.dg/torture/pr55789.C: New testcase.
+
+2013-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56167
+	* gcc.dg/pr56167.c: New test.
+
+2013-02-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55146
+	* gcc.target/sh/pr55146.c: New.
+
+2013-02-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR tree-optimization/54386
+	* gcc.target/sh/pr54386.c: New.
+
+2013-02-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56008
+	* gfortran.dg/realloc_on _assign_16.f90 : New test.
+
+	PR fortran/47517
+	* gfortran.dg/realloc_on _assign_17.f90 : New test.
+
+2013-02-04  Alexander Potapenko <glider@google.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55617
+	* g++.dg/asan/pr55617.C: New test.
+
+2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54195
+	* gfortran.dg/typebound_operator_19.f90: New test.
+	* gfortran.dg/typebound_assignment_4.f90: New test.
+
+2013-02-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54107
+	* gfortran.dg/recursive_interface_1.f90: New test.
+
+2013-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/56168
+	* gcc.dg/lto/pr56168_0.c: New testcase.
+	* gcc.dg/lto/pr56168_1.c: Likewise.
+
+2013-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/50627
+	PR fortran/56054
+	* gfortran.dg/block_12.f90:  New test.
+	* gfortran.dg/module_error_1.f90:  New test.
+
+2013-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_float)
+	(check_effective_target_vect_no_align): Add mips-sde-elf.
+
+2013-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-dg.exp (restore-target-env-var): Avoid using lreverse.
+
+2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr56023.c: XFAIL on AIX.
+	* gcc.dg/vect/pr49352.c: Same.
+
+2013-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt26.adb: New test.
+
 2013-01-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Revert.
@@ -66,7 +308,7 @@
 	* lib/target-supports-dg.exp (dg-process-target): Use expr to
 	evaluate the end index in string range.
 
-2012-01-30  Tobias Burnus  <burnus@net-b.de>
+2013-01-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56138
 	* gfortran.dg/allocatable_function_6.f90: New.

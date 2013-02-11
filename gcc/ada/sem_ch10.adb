@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4741,9 +4741,10 @@ package body Sem_Ch10 is
       --  compiling the body of the child unit.
 
       if P = Cunit_Entity (Current_Sem_Unit)
-        or else
-         (Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
-            and then P = Main_Unit_Entity)
+        or else (Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
+                  and then P = Main_Unit_Entity
+                  and then Is_Ancestor_Unit
+                             (Cunit (Main_Unit), Cunit (Current_Sem_Unit)))
       then
          return;
       end if;

@@ -2307,9 +2307,6 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	}
     }
 
-  if (TREE_CODE (*loop_ubound0) == VAR_DECL)
-    dynamic = true;
-
   gfc_trans_create_temp_array (&outer_loop->pre, &outer_loop->post, ss, type,
 			       NULL_TREE, dynamic, true, false, where);
 
@@ -7941,6 +7938,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tree lbound;
   tree ubound;
   tree desc;
+  tree old_desc;
   tree desc2;
   tree offset;
   tree jump_label1;
@@ -8091,6 +8089,13 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			  size1, size2);
   neq_size = gfc_evaluate_now (cond, &fblock);
 
+  /* Deallocation of allocatable components will have to occur on
+     reallocation.  Fix the old descriptor now.  */
+  if ((expr1->ts.type == BT_DERIVED)
+	&& expr1->ts.u.derived->attr.alloc_comp)
+    old_desc = gfc_evaluate_now (desc, &fblock);
+  else
+    old_desc = NULL_TREE;
 
   /* Now modify the lhs descriptor and the associated scalarizer
      variables. F2003 7.4.1.3: "If variable is or becomes an
@@ -8201,12 +8206,30 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   /* Realloc expression.  Note that the scalarizer uses desc.data
      in the array reference - (*desc.data)[<element>]. */
   gfc_init_block (&realloc_block);
+
+  if ((expr1->ts.type == BT_DERIVED)
+	&& expr1->ts.u.derived->attr.alloc_comp)
+    {
+      tmp = gfc_deallocate_alloc_comp (expr1->ts.u.derived, old_desc,
+				       expr1->rank);
+      gfc_add_expr_to_block (&realloc_block, tmp);
+    }
+
   tmp = build_call_expr_loc (input_location,
 			     builtin_decl_explicit (BUILT_IN_REALLOC), 2,
 			     fold_convert (pvoid_type_node, array1),
 			     size2);
   gfc_conv_descriptor_data_set (&realloc_block,
 				desc, tmp);
+
+  if ((expr1->ts.type == BT_DERIVED)
+	&& expr1->ts.u.derived->attr.alloc_comp)
+    {
+      tmp = gfc_nullify_alloc_comp (expr1->ts.u.derived, desc,
+				    expr1->rank);
+      gfc_add_expr_to_block (&realloc_block, tmp);
+    }
+
   realloc_expr = gfc_finish_block (&realloc_block);
 
   /* Only reallocate if sizes are different.  */
@@ -8224,6 +8247,13 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 				desc, tmp);
   tmp = gfc_conv_descriptor_dtype (desc);
   gfc_add_modify (&alloc_block, tmp, gfc_get_dtype (TREE_TYPE (desc)));
+  if ((expr1->ts.type == BT_DERIVED)
+	&& expr1->ts.u.derived->attr.alloc_comp)
+    {
+      tmp = gfc_nullify_alloc_comp (expr1->ts.u.derived, desc,
+				    expr1->rank);
+      gfc_add_expr_to_block (&alloc_block, tmp);
+    }
   alloc_expr = gfc_finish_block (&alloc_block);
 
   /* Malloc if not allocated; realloc otherwise.  */

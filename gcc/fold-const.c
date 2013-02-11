@@ -3813,6 +3813,10 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
   switch (code)
     {
     case TRUTH_NOT_EXPR:
+      /* We can only do something if the range is testing for zero.  */
+      if (low == NULL_TREE || high == NULL_TREE
+	  || ! integer_zerop (low) || ! integer_zerop (high))
+	return NULL_TREE;
       *p_in_p = ! in_p;
       return arg0;
 
@@ -5691,6 +5695,11 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
         break;
       /* FALLTHROUGH */
     case NEGATE_EXPR:
+      /* For division and modulus, type can't be unsigned, as e.g.
+	 (-(x / 2U)) / 2U isn't equal to -((x / 2U) / 2U) for x >= 2.
+	 For signed types, even with wrapping overflow, this is fine.  */
+      if (code != MULT_EXPR && TYPE_UNSIGNED (type))
+	break;
       if ((t1 = extract_muldiv (op0, c, code, wide_type, strict_overflow_p))
 	  != 0)
 	return fold_build1 (tcode, ctype, fold_convert (ctype, t1));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -408,12 +408,14 @@ package Snames is
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
    Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
    Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
    Name_Overflow_Mode                  : constant Name_Id := N + $; -- GNAT
+   Name_Overriding_Renamings           : constant Name_Id := N + $; -- GNAT
    Name_Partition_Elaboration_Policy   : constant Name_Id := N + $; -- Ada 05
    Name_Persistent_BSS                 : constant Name_Id := N + $; -- GNAT
    Name_Polling                        : constant Name_Id := N + $; -- GNAT
@@ -422,6 +424,7 @@ package Snames is
    Name_Profile_Warnings               : constant Name_Id := N + $; -- GNAT
    Name_Propagate_Exceptions           : constant Name_Id := N + $; -- GNAT
    Name_Queuing_Policy                 : constant Name_Id := N + $;
+   Name_Rational                       : constant Name_Id := N + $; -- GNAT
    Name_Ravenscar                      : constant Name_Id := N + $; -- GNAT
    Name_Restricted_Run_Time            : constant Name_Id := N + $; -- GNAT
    Name_Restrictions                   : constant Name_Id := N + $;
@@ -546,6 +549,7 @@ package Snames is
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
    Name_Memory_Size                    : constant Name_Id := N + $; -- Ada 83
    Name_No_Body                        : constant Name_Id := N + $; -- GNAT
+   Name_No_Inline                      : constant Name_Id := N + $; -- GNAT
    Name_No_Return                      : constant Name_Id := N + $; -- Ada 05
    Name_Obsolescent                    : constant Name_Id := N + $; -- GNAT
    Name_Optimize                       : constant Name_Id := N + $;
@@ -725,6 +729,8 @@ package Snames is
    Name_No_Specification_Of_Aspect     : constant Name_Id := N + $;
    Name_No_Task_Attributes             : constant Name_Id := N + $;
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
+   Name_No_Unroll                      : constant Name_Id := N + $;
+   Name_No_Vector                      : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
    Name_Optional                       : constant Name_Id := N + $;
@@ -760,10 +766,12 @@ package Snames is
    Name_Unit_Name                      : constant Name_Id := N + $;
    Name_Unknown                        : constant Name_Id := N + $;
    Name_Unrestricted                   : constant Name_Id := N + $;
+   Name_Unroll                         : constant Name_Id := N + $;
    Name_Uppercase                      : constant Name_Id := N + $;
    Name_User                           : constant Name_Id := N + $;
    Name_Variant                        : constant Name_Id := N + $;
    Name_VAX_Float                      : constant Name_Id := N + $;
+   Name_Vector                         : constant Name_Id := N + $;
    Name_VMS                            : constant Name_Id := N + $;
    Name_Vtable_Ptr                     : constant Name_Id := N + $;
    Name_Working_Storage                : constant Name_Id := N + $;
@@ -1703,12 +1711,14 @@ package Snames is
       Pragma_Locking_Policy,
       Pragma_Long_Float,
       Pragma_Loop_Invariant,
+      Pragma_Loop_Optimize,
       Pragma_Loop_Variant,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
       Pragma_Overflow_Mode,
+      Pragma_Overriding_Renamings,
       Pragma_Partition_Elaboration_Policy,
       Pragma_Persistent_BSS,
       Pragma_Polling,
@@ -1717,6 +1727,7 @@ package Snames is
       Pragma_Profile_Warnings,
       Pragma_Propagate_Exceptions,
       Pragma_Queuing_Policy,
+      Pragma_Rational,
       Pragma_Ravenscar,
       Pragma_Restricted_Run_Time,
       Pragma_Restrictions,
@@ -1809,6 +1820,7 @@ package Snames is
       Pragma_Main_Storage,
       Pragma_Memory_Size,
       Pragma_No_Body,
+      Pragma_No_Inline,
       Pragma_No_Return,
       Pragma_Obsolescent,
       Pragma_Optimize,

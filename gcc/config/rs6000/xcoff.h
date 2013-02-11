@@ -283,7 +283,7 @@
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
        if ((ALIGN) > 32)				\
 	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", (SIZE), \
-		  exact_log2 ((ALIGN) / BITS_PER_UNIT)); \
+		  floor_log2 ((ALIGN) / BITS_PER_UNIT)); \
        else if ((SIZE) > 4)				\
          fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",3\n", (SIZE)); \
        else						\
@@ -292,11 +292,29 @@
 
 /* This says how to output an assembler line
    to define a local common symbol.
-   Alignment cannot be specified, but we can try to maintain
+   The assembler in AIX 6.1 and later supports an alignment argument.
+   For earlier releases of AIX, we try to maintain
    alignment after preceding TOC section if it was aligned
    for 64-bit mode.  */
 
 #define LOCAL_COMMON_ASM_OP "\t.lcomm "
+
+#if TARGET_AIX_VERSION >= 61
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)	\
+  do { fputs (LOCAL_COMMON_ASM_OP, (FILE));			\
+       RS6000_OUTPUT_BASENAME ((FILE), (NAME));			\
+       if ((ALIGN) > 32)					\
+	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s,%u\n",	\
+		  (SIZE), xcoff_bss_section_name,			\
+		  floor_log2 ((ALIGN) / BITS_PER_UNIT));		\
+       else if ((SIZE) > 4)					\
+	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s,3\n",	\
+		  (SIZE), xcoff_bss_section_name);		\
+       else							\
+	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s\n",	\
+		  (SIZE), xcoff_bss_section_name);		\
+     } while (0)
+#endif
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
   do { fputs (LOCAL_COMMON_ASM_OP, (FILE));		\

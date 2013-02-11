@@ -9,7 +9,7 @@ package syscall
 import "unsafe"
 
 //sys	utimensat(dirfd int, path string, times *[2]Timespec, flags int) (err error)
-//utimensat(dirfd int, path *byte, times *[2]Timespec, flags int) int
+//utimensat(dirfd _C_int, path *byte, times *[2]Timespec, flags _C_int) _C_int
 func UtimesNano(path string, ts []Timespec) (err error) {
 	if len(ts) != 2 {
 		return EINVAL

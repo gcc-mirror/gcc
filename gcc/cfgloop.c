@@ -359,139 +359,156 @@ init_loops_structure (struct loops *loops, unsigned num_loops)
   loops->tree_root = root;
 }
 
+/* Returns whether HEADER is a loop header.  */
+
+bool
+bb_loop_header_p (basic_block header)
+{
+  edge_iterator ei;
+  edge e;
+
+  /* If we have an abnormal predecessor, do not consider the
+     loop (not worth the problems).  */
+  if (bb_has_abnormal_pred (header))
+    return false;
+
+  /* Look for back edges where a predecessor is dominated
+     by this block.  A natural loop has a single entry
+     node (header) that dominates all the nodes in the
+     loop.  It also has single back edge to the header
+     from a latch node.  */
+  FOR_EACH_EDGE (e, ei, header->preds)
+    {
+      basic_block latch = e->src;
+      if (latch != ENTRY_BLOCK_PTR
+	  && dominated_by_p (CDI_DOMINATORS, latch, header))
+	return true;
+    }
+
+  return false;
+}
+
 /* Find all the natural loops in the function and save in LOOPS structure and
    recalculate loop_father information in basic block structures.
-   Return the number of natural loops found.  */
+   If LOOPS is non-NULL then the loop structures for already recorded loops
+   will be re-used and their number will not change.  We assume that no
+   stale loops exist in LOOPS.
+   When LOOPS is NULL it is allocated and re-built from scratch.
+   Return the built LOOPS structure.  */
 
-int
+struct loops *
 flow_loops_find (struct loops *loops)
 {
-  int b;
-  int num_loops;
-  edge e;
-  sbitmap headers;
-  int *dfs_order;
+  bool from_scratch = (loops == NULL);
   int *rc_order;
-  basic_block header;
-  basic_block bb;
+  int b;
+  unsigned i;
+  vec<loop_p> larray;
 
   /* Ensure that the dominators are computed.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
+  if (!loops)
+    {
+      loops = ggc_alloc_cleared_loops ();
+      init_loops_structure (loops, 1);
+    }
+
+  /* Ensure that loop exits were released.  */
+  gcc_assert (loops->exits == NULL);
+
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
   if (n_basic_blocks == NUM_FIXED_BLOCKS)
+    return loops;
+
+  /* The root loop node contains all basic-blocks.  */
+  loops->tree_root->num_nodes = n_basic_blocks;
+
+  /* Compute depth first search order of the CFG so that outer
+     natural loops will be found before inner natural loops.  */
+  rc_order = XNEWVEC (int, n_basic_blocks);
+  pre_and_rev_post_order_compute (NULL, rc_order, false);
+
+  /* Gather all loop headers in reverse completion order and allocate
+     loop structures for loops that are not already present.  */
+  larray.create (loops->larray->length());
+  for (b = 0; b < n_basic_blocks - NUM_FIXED_BLOCKS; b++)
     {
-      init_loops_structure (loops, 1);
-      return 1;
+      basic_block header = BASIC_BLOCK (rc_order[b]);
+      if (bb_loop_header_p (header))
+	{
+	  struct loop *loop;
+
+	  /* The current active loop tree has valid loop-fathers for
+	     header blocks.  */
+	  if (!from_scratch
+	      && header->loop_father->header == header)
+	    {
+	      loop = header->loop_father;
+	      /* If we found an existing loop remove it from the
+		 loop tree.  It is going to be inserted again
+		 below.  */
+	      flow_loop_tree_node_remove (loop);
+	    }
+	  else
+	    {
+	      /* Otherwise allocate a new loop structure for the loop.  */
+	      loop = alloc_loop ();
+	      /* ???  We could re-use unused loop slots here.  */
+	      loop->num = loops->larray->length ();
+	      vec_safe_push (loops->larray, loop);
+	      loop->header = header;
+
+	      if (!from_scratch
+		  && dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "flow_loops_find: discovered new "
+			 "loop %d with header %d\n",
+			 loop->num, header->index);
+	    }
+	  larray.safe_push (loop);
+	}
+
+      /* Make blocks part of the loop root node at start.  */
+      header->loop_father = loops->tree_root;
     }
 
-  dfs_order = NULL;
-  rc_order = NULL;
+  free (rc_order);
 
-  /* Count the number of loop headers.  This should be the
-     same as the number of natural loops.  */
-  headers = sbitmap_alloc (last_basic_block);
-  bitmap_clear (headers);
-
-  num_loops = 0;
-  FOR_EACH_BB (header)
+  /* Now iterate over the loops found, insert them into the loop tree
+     and assign basic-block ownership.  */
+  for (i = 0; i < larray.length (); ++i)
     {
+      struct loop *loop = larray[i];
+      basic_block header = loop->header;
       edge_iterator ei;
+      edge e;
 
-      /* If we have an abnormal predecessor, do not consider the
-	 loop (not worth the problems).  */
-      if (bb_has_abnormal_pred (header))
-	continue;
+      flow_loop_tree_node_add (header->loop_father, loop);
+      loop->num_nodes = flow_loop_nodes_find (loop->header, loop);
 
+      /* Look for the latch for this header block, if it has just a
+	 single one.  */
       FOR_EACH_EDGE (e, ei, header->preds)
 	{
 	  basic_block latch = e->src;
 
-	  gcc_assert (!(e->flags & EDGE_ABNORMAL));
-
-	  /* Look for back edges where a predecessor is dominated
-	     by this block.  A natural loop has a single entry
-	     node (header) that dominates all the nodes in the
-	     loop.  It also has single back edge to the header
-	     from a latch node.  */
-	  if (latch != ENTRY_BLOCK_PTR
-	      && dominated_by_p (CDI_DOMINATORS, latch, header))
+	  if (flow_bb_inside_loop_p (loop, latch))
 	    {
-	      /* Shared headers should be eliminated by now.  */
-	      bitmap_set_bit (headers, header->index);
-	      num_loops++;
-	    }
-	}
-    }
-
-  /* Allocate loop structures.  */
-  init_loops_structure (loops, num_loops + 1);
-
-  /* Find and record information about all the natural loops
-     in the CFG.  */
-  FOR_EACH_BB (bb)
-    bb->loop_father = loops->tree_root;
-
-  if (num_loops)
-    {
-      /* Compute depth first search order of the CFG so that outer
-	 natural loops will be found before inner natural loops.  */
-      dfs_order = XNEWVEC (int, n_basic_blocks);
-      rc_order = XNEWVEC (int, n_basic_blocks);
-      pre_and_rev_post_order_compute (dfs_order, rc_order, false);
-
-      num_loops = 1;
-
-      for (b = 0; b < n_basic_blocks - NUM_FIXED_BLOCKS; b++)
-	{
-	  struct loop *loop;
-	  edge_iterator ei;
-
-	  /* Search the nodes of the CFG in reverse completion order
-	     so that we can find outer loops first.  */
-	  if (!bitmap_bit_p (headers, rc_order[b]))
-	    continue;
-
-	  header = BASIC_BLOCK (rc_order[b]);
-
-	  loop = alloc_loop ();
-	  loops->larray->quick_push (loop);
-
-	  loop->header = header;
-	  loop->num = num_loops;
-	  num_loops++;
-
-	  flow_loop_tree_node_add (header->loop_father, loop);
-	  loop->num_nodes = flow_loop_nodes_find (loop->header, loop);
-
-	  /* Look for the latch for this header block, if it has just a
-	     single one.  */
-	  FOR_EACH_EDGE (e, ei, header->preds)
-	    {
-	      basic_block latch = e->src;
-
-	      if (flow_bb_inside_loop_p (loop, latch))
+	      if (loop->latch != NULL)
 		{
-		  if (loop->latch != NULL)
-		    {
-		      /* More than one latch edge.  */
-		      loop->latch = NULL;
-		      break;
-		    }
-		  loop->latch = latch;
+		  /* More than one latch edge.  */
+		  loop->latch = NULL;
+		  break;
 		}
+	      loop->latch = latch;
 	    }
 	}
-
-      free (dfs_order);
-      free (rc_order);
     }
 
-  sbitmap_free (headers);
+  larray.release();
 
-  loops->exits = NULL;
-  return loops->larray->length ();
+  return loops;
 }
 
 /* Ratio of frequencies of edges so that one of more latch edges is
@@ -1300,7 +1317,7 @@ verify_loop_structure (void)
 {
   unsigned *sizes, i, j;
   sbitmap irreds;
-  basic_block *bbs, bb;
+  basic_block bb;
   struct loop *loop;
   int err = 0;
   edge e;
@@ -1308,7 +1325,7 @@ verify_loop_structure (void)
   loop_iterator li;
   struct loop_exit *exit, *mexit;
   bool dom_available = dom_info_available_p (CDI_DOMINATORS);
-  sbitmap visited = sbitmap_alloc (last_basic_block);
+  sbitmap visited;
 
   /* We need up-to-date dominators, compute or verify them.  */
   if (!dom_available)
@@ -1336,28 +1353,32 @@ verify_loop_structure (void)
 	}
     }
 
-  /* Check get_loop_body.  */
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      bbs = get_loop_body (loop);
+  /* Check the headers.  */
+  FOR_EACH_BB (bb)
+    if (bb_loop_header_p (bb)
+	&& bb->loop_father->header != bb)
+      {
+	error ("loop with header %d not in loop tree", bb->index);
+	err = 1;
+      }
 
-      for (j = 0; j < loop->num_nodes; j++)
-	if (!flow_bb_inside_loop_p (loop, bbs[j]))
-	  {
-	    error ("bb %d does not belong to loop %d",
-		   bbs[j]->index, loop->num);
-	    err = 1;
-	  }
-      free (bbs);
-    }
+  /* Check get_loop_body.  */
+  visited = sbitmap_alloc (last_basic_block);
   bitmap_clear (visited);
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      bbs = get_loop_body (loop);
+      basic_block *bbs = get_loop_body (loop);
 
       for (j = 0; j < loop->num_nodes; j++)
 	{
 	  bb = bbs[j];
+
+	  if (!flow_bb_inside_loop_p (loop, bb))
+	    {
+	      error ("bb %d does not belong to loop %d",
+		     bb->index, loop->num);
+	      err = 1;
+	    }
 
 	  /* Ignore this block if it is in an inner loop.  */
 	  if (bitmap_bit_p (visited, bb->index))
@@ -1371,14 +1392,21 @@ verify_loop_structure (void)
 	      err = 1;
 	    }
 	}
+
       free (bbs);
     }
+  sbitmap_free (visited);
 
   /* Check headers and latches.  */
   FOR_EACH_LOOP (li, loop, 0)
     {
       i = loop->num;
 
+      if (!bb_loop_header_p (loop->header))
+	{
+	  error ("loop %d%'s header is not a loop header", i);
+	  err = 1;
+	}
       if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS)
 	  && EDGE_COUNT (loop->header->preds) != 2)
 	{
@@ -1542,7 +1570,12 @@ verify_loop_structure (void)
 		eloops++;
 
 	      for (loop = bb->loop_father;
-		   loop != e->dest->loop_father;
+		   loop != e->dest->loop_father
+		   /* When a loop exit is also an entry edge which
+		      can happen when avoiding CFG manipulations
+		      then the last loop exited is the outer loop
+		      of the loop entered.  */
+		   && loop != loop_outer (e->dest->loop_father);
 		   loop = loop_outer (loop))
 		{
 		  eloops--;
@@ -1580,7 +1613,6 @@ verify_loop_structure (void)
 
   gcc_assert (!err);
 
-  sbitmap_free (visited);
   free (sizes);
   if (!dom_available)
     free_dominance_info (CDI_DOMINATORS);

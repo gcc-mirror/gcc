@@ -1,6 +1,7 @@
 /* PR tree-optimization/49352 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 int
 foo (int *x, int *y, int n)

@@ -8295,6 +8295,15 @@ package body Sem_Ch3 is
       --  Return the Position number within array Discr_Expr of a discriminant
       --  D within the discriminant list of the discriminated type T.
 
+      procedure Process_Discriminant_Expression
+         (Expr : Node_Id;
+          D    : Entity_Id);
+      --  If this is a discriminant constraint on a partial view, do not
+      --  generate an overflow check on the discriminant expression. The check
+      --  will be generated when constraining the full view. Otherwise the
+      --  backend creates duplicate symbols for the temporaries corresponding
+      --  to the expressions to be checked, causing spurious assembler errors.
+
       ------------------
       -- Pos_Of_Discr --
       ------------------
@@ -8318,6 +8327,31 @@ package body Sem_Ch3 is
 
          raise Program_Error;
       end Pos_Of_Discr;
+
+      -------------------------------------
+      -- Process_Discriminant_Expression --
+      -------------------------------------
+
+      procedure Process_Discriminant_Expression
+         (Expr : Node_Id;
+          D    : Entity_Id)
+      is
+         BDT : constant Entity_Id := Base_Type (Etype (D));
+
+      begin
+         --  If this is a discriminant constraint on a partial view, do
+         --  not generate an overflow on the discriminant expression. The
+         --  check will be generated when constraining the full view.
+
+         if Is_Private_Type (T)
+           and then Present (Full_View (T))
+         then
+            Analyze_And_Resolve (Expr, BDT, Suppress => Overflow_Check);
+
+         else
+            Analyze_And_Resolve (Expr, BDT);
+         end if;
+      end Process_Discriminant_Expression;
 
       --  Declarations local to Build_Discriminant_Constraints
 
@@ -8359,7 +8393,7 @@ package body Sem_Ch3 is
             Discr_Expr (D) := Error;
 
          else
-            Analyze_And_Resolve (Constr, Base_Type (Etype (Discr)));
+            Process_Discriminant_Expression (Constr, Discr);
             Discr_Expr (D) := Constr;
          end if;
 
@@ -8470,7 +8504,7 @@ package body Sem_Ch3 is
                   end if;
 
                   Discr_Expr (Position) := Expr;
-                  Analyze_And_Resolve (Expr, Base_Type (Etype (Discr)));
+                  Process_Discriminant_Expression (Expr, Discr);
                end if;
 
                --  A discriminant association with more than one discriminant
@@ -9060,17 +9094,16 @@ package body Sem_Ch3 is
 
          Impl_Prag :=
            Make_Pragma (Loc,
-             Chars => Name_Implemented,
+             Chars                        => Name_Implemented,
              Pragma_Argument_Associations => New_List (
                Make_Pragma_Argument_Association (Loc,
-                 Expression =>
-                   New_Reference_To (Subp, Loc)),
+                 Expression => New_Reference_To (Subp, Loc)),
 
                Make_Pragma_Argument_Association (Loc,
                  Expression => Make_Identifier (Loc, Iface_Kind))));
 
          --  The pragma doesn't need to be analyzed because it is internally
-         --  build. It is safe to directly register it as a rep item since we
+         --  built. It is safe to directly register it as a rep item since we
          --  are only interested in the characters of the implementation kind.
 
          Record_Rep_Item (Subp, Impl_Prag);
@@ -10256,19 +10289,23 @@ package body Sem_Ch3 is
               Protected_Kind   =>
             Copy_Node (Priv, Full);
 
-            Set_Has_Discriminants  (Full, Has_Discriminants (Full_Base));
-            Set_First_Entity       (Full, First_Entity (Full_Base));
-            Set_Last_Entity        (Full, Last_Entity (Full_Base));
+            Set_Has_Discriminants
+                             (Full, Has_Discriminants (Full_Base));
+            Set_Has_Unknown_Discriminants
+                             (Full, Has_Unknown_Discriminants (Full_Base));
+            Set_First_Entity (Full, First_Entity (Full_Base));
+            Set_Last_Entity  (Full, Last_Entity (Full_Base));
 
          when others =>
             Copy_Node (Full_Base, Full);
-            Set_Chars          (Full, Chars (Priv));
-            Conditional_Delay  (Full, Priv);
-            Set_Sloc           (Full, Sloc (Priv));
+
+            Set_Chars         (Full, Chars (Priv));
+            Conditional_Delay (Full, Priv);
+            Set_Sloc          (Full, Sloc (Priv));
       end case;
 
-      Set_Next_Entity (Full, Save_Next_Entity);
-      Set_Homonym     (Full, Save_Homonym);
+      Set_Next_Entity               (Full, Save_Next_Entity);
+      Set_Homonym                   (Full, Save_Homonym);
       Set_Associated_Node_For_Itype (Full, Related_Nod);
 
       --  Set common attributes for all subtypes: kind, convention, etc.
@@ -17389,7 +17426,6 @@ package body Sem_Ch3 is
       if Is_Private_Type (Id_B) then
          Append_Elmt (Id, Private_Dependents (Id_B));
       end if;
-
    end Prepare_Private_Subtype_Completion;
 
    ---------------------------

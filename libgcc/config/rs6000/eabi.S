@@ -1,8 +1,7 @@
 /*
  * Special support for eabi and SVR4
  *
- *   Copyright (C) 1995, 1996, 1998, 2000, 2001, 2008, 2009
- *   Free Software Foundation, Inc.
+ *   Copyright (C) 1995-2013 Free Software Foundation, Inc.
  *   Written By Michael Meissner
  * 
  * This file is free software; you can redistribute it and/or modify it

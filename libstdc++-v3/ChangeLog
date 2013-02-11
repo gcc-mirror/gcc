@@ -1,3 +1,114 @@
+2013-02-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/tr1/bessel_function.tcc (__cyl_bessel_ij_series): Code
+	simplification.
+
+2013-02-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/56216
+	* include/tr1/special_function_util.h: Remove spurious const
+	from numeric arguments.
+	* include/tr1/riemann_zeta.tcc: Ditto.
+	* include/tr1/exp_integral.tcc: Ditto.
+	* include/tr1/bessel_function.tcc: Ditto.
+	* include/tr1/hypergeometric.tcc: Ditto.
+	* include/tr1/modified_bessel_func.tcc: Ditto.
+	* include/tr1/poly_laguerre.tcc: Ditto.
+	* include/tr1/gamma.tcc: Ditto.
+	* include/tr1/legendre_function.tcc: Ditto.
+	* include/tr1/poly_hermite.tcc: Ditto.
+	* include/tr1/ell_integral.tcc: Ditto.
+	* include/tr1/bessel_function.tcc (__cyl_bessel_ij_series):
+	If argument is zero return function value.
+	* testsuite/tr1/5_numerical_facilities/special_functions/08_cyl_bessel_i/pr56216.cc:
+	New file.
+
+2013-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/27_io/basic_ios/pr56193.cc: Tweak.
+
+2013-02-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/56193
+	* include/bits/basic_ios.h: Replace operator void*() const
+	with explicit operator bool() const in C++11 and greater.
+	* testsuite/27_io/basic_ios/pr56193.cc: New file.
+
+2013-02-04  Dodji Seketeli  <dodji@redhat.com>
+
+	Add missing explicit instantiation for std::lower_bound template
+	* libstdc++-v3/src/c++11/hashtable_c++0x.cc (namespace std): Add
+	missing instantiation for std::lower_bound template.
+
+2013-02-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/functional_hash.h (std::__is_fast_hash<>): New.
+	* include/bits/basic_string.h: Specialize previous to mark
+	std::hash for string types as slow.
+	* include/bits/hashtable.h (__cache_default): Replace is_integral
+	with __is_fast_hash.
+	* src/c++11/hash_c++0x.cc: Add type_traits include.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adapt dg-error line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Likewise.
+
+2013-02-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56202 (again)
+	* include/bits/random.tcc (binomial_distribution<>::
+	_M_waiting(_UniformRandomNumberGenerator&, _IntType)): Fix thinko
+	in previous commit.
+
+	* include/bits/random.h: Fix comment typo.
+
+2013-02-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56202
+	* include/bits/random.tcc (binomial_distribution<>::
+	_M_waiting(_UniformRandomNumberGenerator&, _IntType)): Avoid
+	division by zero.
+
+2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc,
+	testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc,
+	testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc,
+	testsuite/23_containers/deque/requirements/dr438/insert_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/assign_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc,
+	testsuite/23_containers/list/requirements/dr438/insert_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/assign_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc,
+	testsuite/23_containers/vector/requirements/dr438/insert_neg.cc,
+	testsuite/29_atomics/atomic/cons/assign_neg.cc,
+	testsuite/29_atomics/atomic/cons/copy_neg.cc,
+	testsuite/29_atomics/atomic_integral/cons/assign_neg.cc,
+	testsuite/29_atomics/atomic_integral/cons/copy_neg.cc,
+	testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc,
+	testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc,
+	testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Update lines in dg error matches.
+
+2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/os/mingw32/ctype_inline.h: Fix copyright typo.
+
+2013-02-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Prime_rehash_policy::_M_next_bkt)
+	(_Prime_rehash_policy::_M_need_rehash): Move definition...
+	* src/c++11/hashtable_c++0x.cc: ... here.
+	* src/shared/hashtable-aux.cc: Remove c++config.h include.
+	* config/abi/gnu.ver (GLIBCXX_3.4.18): Export _Prime_rehash_policy
+	symbols.
+
 2013-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/54314

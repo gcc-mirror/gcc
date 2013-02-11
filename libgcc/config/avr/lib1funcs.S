@@ -1,6 +1,5 @@
 /*  -*- Mode: Asm -*-  */
-/* Copyright (C) 1998-2013
-   Free Software Foundation, Inc.
+/* Copyright (C) 1998-2013 Free Software Foundation, Inc.
    Contributed by Denis Chertykov <chertykov@gmail.com>
 
 This file is free software; you can redistribute it and/or modify it
@@ -1685,11 +1684,11 @@ DEFUN  __divdi3_moddi3
 
 ENDF __divdi3_moddi3
 
+#endif /* L_divdi3 */
+
 #undef R_cnt
 #undef SS
 #undef NN
-
-#endif /* L_divdi3 */
 
 .section .text.libgcc, "ax", @progbits
 

@@ -33,7 +33,7 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 	builtin_define ("__gnu_hurd__");	\
 	builtin_define ("__GNU__");		\
 	builtin_define_std ("unix");		\
-	builtin_define_std ("MACH");		\
+	builtin_define ("__MACH__");		\
 	builtin_assert ("system=gnu");		\
 	builtin_assert ("system=mach");		\
 	builtin_assert ("system=unix");		\

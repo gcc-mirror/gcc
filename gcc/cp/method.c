@@ -610,7 +610,9 @@ do_build_copy_constructor (tree fndecl)
 	    }
 
 	  init = build3 (COMPONENT_REF, expr_type, parm, field, NULL_TREE);
-	  if (move_p && TREE_CODE (expr_type) != REFERENCE_TYPE)
+	  if (move_p && TREE_CODE (expr_type) != REFERENCE_TYPE
+	      /* 'move' breaks bit-fields, and has no effect for scalars.  */
+	      && !scalarish_type_p (expr_type))
 	    init = move (init);
 	  init = build_tree_list (NULL_TREE, init);
 
@@ -724,7 +726,9 @@ do_build_copy_assign (tree fndecl)
 	  expr_type = cp_build_qualified_type (expr_type, quals);
 
 	  init = build3 (COMPONENT_REF, expr_type, init, field, NULL_TREE);
-	  if (move_p && TREE_CODE (expr_type) != REFERENCE_TYPE)
+	  if (move_p && TREE_CODE (expr_type) != REFERENCE_TYPE
+	      /* 'move' breaks bit-fields, and has no effect for scalars.  */
+	      && !scalarish_type_p (expr_type))
 	    init = move (init);
 
 	  if (DECL_NAME (field))

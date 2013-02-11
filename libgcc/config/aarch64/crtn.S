@@ -1,5 +1,5 @@
 # Machine description for AArch64 architecture.
-# Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 # Contributed by ARM Ltd.
 #
 # This file is free software; you can redistribute it and/or modify it

@@ -1,6 +1,6 @@
 // Exception Handling support header (exception_ptr class) for -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation
+// Copyright (C) 2008-2013 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //

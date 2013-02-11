@@ -380,9 +380,9 @@ tracer (void)
   if (changed)
     {
       free_dominance_info (CDI_DOMINATORS);
-      calculate_dominance_info (CDI_DOMINATORS);
+      /* If we changed the CFG schedule loops for fixup by cleanup_cfg.  */
       if (current_loops)
-	fix_loop_structure (NULL);
+	loops_state_set (LOOPS_NEED_FIXUP);
     }
 
   if (dump_file)

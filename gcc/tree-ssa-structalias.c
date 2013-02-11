@@ -1908,54 +1908,29 @@ equiv_class_label_eq (const void *p1, const void *p2)
 	  && bitmap_equal_p (eql1->labels, eql2->labels));
 }
 
-/* Lookup a equivalence class in TABLE by the bitmap of LABELS it
-   contains.  Sets *REF_LABELS to the bitmap LABELS is equivalent to.  */
+/* Lookup a equivalence class in TABLE by the bitmap of LABELS with
+   hash HAS it contains.  Sets *REF_LABELS to the bitmap LABELS
+   is equivalent to.  */
 
-static unsigned int
-equiv_class_lookup (htab_t table, bitmap labels, bitmap *ref_labels)
+static equiv_class_label *
+equiv_class_lookup_or_add (htab_t table, bitmap labels)
 {
-  void **slot;
-  struct equiv_class_label ecl;
+  equiv_class_label **slot;
+  equiv_class_label ecl;
 
   ecl.labels = labels;
   ecl.hashcode = bitmap_hash (labels);
-
-  slot = htab_find_slot_with_hash (table, &ecl,
-				   ecl.hashcode, NO_INSERT);
-  if (!slot)
+  slot = (equiv_class_label **) htab_find_slot_with_hash (table, &ecl,
+							  ecl.hashcode, INSERT);
+  if (!*slot)
     {
-      if (ref_labels)
-	*ref_labels = NULL;
-      return 0;
+      *slot = XNEW (struct equiv_class_label);
+      (*slot)->labels = labels;
+      (*slot)->hashcode = ecl.hashcode;
+      (*slot)->equivalence_class = 0;
     }
-  else
-    {
-      equiv_class_label_t ec = (equiv_class_label_t) *slot;
-      if (ref_labels)
-	*ref_labels = ec->labels;
-      return ec->equivalence_class;
-    }
-}
 
-
-/* Add an equivalence class named EQUIVALENCE_CLASS with labels LABELS
-   to TABLE.  */
-
-static void
-equiv_class_add (htab_t table, unsigned int equivalence_class,
-		 bitmap labels)
-{
-  void **slot;
-  equiv_class_label_t ecl = XNEW (struct equiv_class_label);
-
-  ecl->labels = labels;
-  ecl->equivalence_class = equivalence_class;
-  ecl->hashcode = bitmap_hash (labels);
-
-  slot = htab_find_slot_with_hash (table, ecl,
-				   ecl->hashcode, INSERT);
-  gcc_assert (!*slot);
-  *slot = (void *) ecl;
+  return *slot;
 }
 
 /* Perform offline variable substitution.
@@ -2107,14 +2082,13 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 static void
 label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 {
-  unsigned int i;
+  unsigned int i, first_pred;
   bitmap_iterator bi;
+
   bitmap_set_bit (si->visited, n);
 
-  if (!graph->points_to[n])
-    graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
-
   /* Label and union our incoming edges's points to sets.  */
+  first_pred = -1U;
   EXECUTE_IF_IN_NONNULL_BITMAP (graph->preds[n], 0, i, bi)
     {
       unsigned int w = si->node_mapping[i];
@@ -2126,30 +2100,67 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 	continue;
 
       if (graph->points_to[w])
-	bitmap_ior_into(graph->points_to[n], graph->points_to[w]);
+	{
+	  if (!graph->points_to[n])
+	    {
+	      if (first_pred == -1U)
+		first_pred = w;
+	      else
+		{
+		  graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
+		  bitmap_ior (graph->points_to[n],
+			      graph->points_to[first_pred],
+			      graph->points_to[w]);
+		}
+	    }
+	  else
+	    bitmap_ior_into(graph->points_to[n], graph->points_to[w]);
+	}
     }
-  /* Indirect nodes get fresh variables.  */
+
+  /* Indirect nodes get fresh variables and a new pointer equiv class.  */
   if (!bitmap_bit_p (graph->direct_nodes, n))
-    bitmap_set_bit (graph->points_to[n], FIRST_REF_NODE + n);
+    {
+      if (!graph->points_to[n])
+	{
+	  graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
+	  if (first_pred != -1U)
+	    bitmap_copy (graph->points_to[n], graph->points_to[first_pred]);
+	}
+      bitmap_set_bit (graph->points_to[n], FIRST_REF_NODE + n);
+      graph->pointer_label[n] = pointer_equiv_class++;
+      equiv_class_label_t ecl;
+      ecl = equiv_class_lookup_or_add (pointer_equiv_class_table,
+				       graph->points_to[n]);
+      ecl->equivalence_class = graph->pointer_label[n];
+      return;
+    }
+
+  /* If there was only a single non-empty predecessor the pointer equiv
+     class is the same.  */
+  if (!graph->points_to[n])
+    {
+      if (first_pred != -1U)
+	{
+	  graph->pointer_label[n] = graph->pointer_label[first_pred];
+	  graph->points_to[n] = graph->points_to[first_pred];
+	}
+      return;
+    }
 
   if (!bitmap_empty_p (graph->points_to[n]))
     {
-      bitmap ref_points_to;
-      unsigned int label = equiv_class_lookup (pointer_equiv_class_table,
-					       graph->points_to[n],
-					       &ref_points_to);
-      if (!label)
-	{
-	  label = pointer_equiv_class++;
-	  equiv_class_add (pointer_equiv_class_table,
-			   label, graph->points_to[n]);
-	}
+      equiv_class_label_t ecl;
+      ecl = equiv_class_lookup_or_add (pointer_equiv_class_table,
+				       graph->points_to[n]);
+      if (ecl->equivalence_class == 0)
+	ecl->equivalence_class = pointer_equiv_class++;
       else
 	{
 	  BITMAP_FREE (graph->points_to[n]);
-	  graph->points_to[n] = ref_points_to;
+	  graph->points_to[n] = ecl->labels;
 	}
-      graph->pointer_label[n] = label;
+      graph->pointer_label[n] = ecl->equivalence_class;
     }
 }
 
@@ -2189,7 +2200,6 @@ perform_var_substitution (constraint_graph_t graph)
       bitmap pointed_by;
       bitmap_iterator bi;
       unsigned int j;
-      unsigned int label;
 
       if (!graph->pointed_by[i])
 	continue;
@@ -2207,14 +2217,10 @@ perform_var_substitution (constraint_graph_t graph)
 
       /* Look up the location equivalence label if one exists, or make
 	 one otherwise.  */
-      label = equiv_class_lookup (location_equiv_class_table,
-				  pointed_by, NULL);
-      if (label == 0)
-	{
-	  label = location_equiv_class++;
-	  equiv_class_add (location_equiv_class_table,
-			   label, pointed_by);
-	}
+      equiv_class_label_t ecl;
+      ecl = equiv_class_lookup_or_add (location_equiv_class_table, pointed_by);
+      if (ecl->equivalence_class == 0)
+	ecl->equivalence_class = location_equiv_class++;
       else
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2222,21 +2228,27 @@ perform_var_substitution (constraint_graph_t graph)
 		     get_varinfo (i)->name);
 	  BITMAP_FREE (pointed_by);
 	}
-      graph->loc_label[i] = label;
+      graph->loc_label[i] = ecl->equivalence_class;
 
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     for (i = 0; i < FIRST_REF_NODE; i++)
       {
-	bool direct_node = bitmap_bit_p (graph->direct_nodes, i);
-	fprintf (dump_file,
-		 "Equivalence classes for %s node id %d:%s are pointer: %d"
-		 ", location:%d\n",
-		 direct_node ? "Direct node" : "Indirect node", i,
-		 get_varinfo (i)->name,
-		 graph->pointer_label[si->node_mapping[i]],
-		 graph->loc_label[si->node_mapping[i]]);
+	unsigned j = si->node_mapping[i];
+	if (j != i)
+	  fprintf (dump_file, "%s node id %d (%s) mapped to SCC leader "
+		   "node id %d (%s)\n",
+		    bitmap_bit_p (graph->direct_nodes, i)
+		    ? "Direct" : "Indirect", i, get_varinfo (i)->name,
+		    j, get_varinfo (j)->name);
+	else
+	  fprintf (dump_file,
+		   "Equivalence classes for %s node id %d (%s): pointer %d"
+		   ", location %d\n",
+		   bitmap_bit_p (graph->direct_nodes, i)
+		   ? "direct" : "indirect", i, get_varinfo (i)->name,
+		   graph->pointer_label[i], graph->loc_label[i]);
       }
 
   /* Quickly eliminate our non-pointer variables.  */

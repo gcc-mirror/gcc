@@ -124,8 +124,7 @@ solaris_output_init_fini (FILE *file, tree decl)
    the visibility type VIS, which must not be VISIBILITY_DEFAULT.  */
 
 void
-solaris_assemble_visibility (tree decl ATTRIBUTE_UNUSED,
-			     int vis ATTRIBUTE_UNUSED)
+solaris_assemble_visibility (tree decl, int vis ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_GAS_HIDDEN
   /* Sun as uses .symbolic for STV_PROTECTED.  STV_INTERNAL is marked as
@@ -152,8 +151,9 @@ solaris_assemble_visibility (tree decl ATTRIBUTE_UNUSED,
   assemble_name (asm_out_file, name);
   fprintf (asm_out_file, "\n");
 #else
-  warning (OPT_Wattributes, "visibility attribute not supported "
-	   "in this configuration; ignored");
+  if (!DECL_ARTIFICIAL (decl))
+    warning (OPT_Wattributes, "visibility attribute not supported "
+			      "in this configuration; ignored");
 #endif
 }
 

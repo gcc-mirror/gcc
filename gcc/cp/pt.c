@@ -1461,14 +1461,21 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 /* Returns true iff two spec_entry nodes are equivalent.  Only compares the
    TMPL and ARGS members, ignores SPEC.  */
 
+int comparing_specializations;
+
 static int
 eq_specializations (const void *p1, const void *p2)
 {
   const spec_entry *e1 = (const spec_entry *)p1;
   const spec_entry *e2 = (const spec_entry *)p2;
+  int equal;
 
-  return (e1->tmpl == e2->tmpl
-	  && comp_template_args (e1->args, e2->args));
+  ++comparing_specializations;
+  equal = (e1->tmpl == e2->tmpl
+	   && comp_template_args (e1->args, e2->args));
+  --comparing_specializations;
+
+  return equal;
 }
 
 /* Returns a hash for a template TMPL and template arguments ARGS.  */
@@ -14989,6 +14996,12 @@ fn_type_unification (tree fn,
       if (fntype == error_mark_node)
 	goto fail;
 
+      /* Throw away these access checks; we'll see them again in
+	 instantiate_template and they might have the wrong
+	 access path at this point.  */
+      pop_deferring_access_checks ();
+      push_deferring_access_checks (dk_deferred);
+
       /* Place the explicitly specified arguments in TARGS.  */
       for (i = NUM_TMPL_ARGS (explicit_targs); i--;)
 	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (explicit_targs, i);
@@ -19857,16 +19870,13 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
     case ALIGNOF_EXPR:
     case TYPEID_EXPR:
     case AT_ENCODE_EXPR:
-    case TRAIT_EXPR:
       {
 	tree op = TREE_OPERAND (*tp, 0);
 	if (code == SIZEOF_EXPR && SIZEOF_EXPR_TYPE_P (*tp))
 	  op = TREE_TYPE (op);
 	if (TYPE_P (op))
 	  {
-	    if (dependent_type_p (op)
-		|| (code == TRAIT_EXPR
-		    && dependent_type_p (TREE_OPERAND (*tp, 1))))
+	    if (dependent_type_p (op))
 	      return *tp;
 	    else
 	      {
@@ -19876,6 +19886,13 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 	  }
 	break;
       }
+
+    case TRAIT_EXPR:
+      if (dependent_type_p (TRAIT_EXPR_TYPE1 (*tp))
+	  || dependent_type_p (TRAIT_EXPR_TYPE2 (*tp)))
+	return *tp;
+      *walk_subtrees = false;
+      return NULL_TREE;
 
     case COMPONENT_REF:
       if (TREE_CODE (TREE_OPERAND (*tp, 1)) == IDENTIFIER_NODE)
@@ -19891,6 +19908,10 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 	return *tp;
       else
 	break;
+
+      /* Treat statement-expressions as dependent.  */
+    case BIND_EXPR:
+      return *tp;
 
     default:
       break;
@@ -20335,9 +20356,10 @@ build_non_dependent_expr (tree expr)
   tree inner_expr;
 
 #ifdef ENABLE_CHECKING
-  /* Try to get a constant value for all non-type-dependent expressions in
+  /* Try to get a constant value for all non-dependent expressions in
       order to expose bugs in *_dependent_expression_p and constexpr.  */
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx0x
+      && !instantiation_dependent_expression_p (expr))
     maybe_constant_value (fold_non_dependent_expr_sfinae (expr, tf_none));
 #endif
 

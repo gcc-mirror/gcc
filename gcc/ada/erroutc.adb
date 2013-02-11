@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1276,13 +1276,27 @@ package body Erroutc is
       for J in Specific_Warnings.First .. Specific_Warnings.Last loop
          declare
             SWE : Specific_Warning_Entry renames Specific_Warnings.Table (J);
+
          begin
             if not SWE.Config then
+
+               --  Warn for unmatched Warnings (Off, ...)
+
                if SWE.Open then
                   Eproc.all
                     ("?pragma Warnings Off with no matching Warnings On",
                      SWE.Start);
-               elsif not SWE.Used then
+
+               --  Warn for ineffective Warnings (Off, ..)
+
+               elsif not SWE.Used
+
+                 --  Do not issue this warning for -Wxxx messages since the
+                 --  back-end doesn't report the information.
+
+                 and then not
+                   (SWE.Msg'Length > 2 and then SWE.Msg (1 .. 2) = "-W")
+               then
                   Eproc.all
                     ("?no warning suppressed by this pragma", SWE.Start);
                end if;

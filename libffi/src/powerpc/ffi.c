@@ -664,9 +664,11 @@ ffi_prep_cif_machdep (ffi_cif *cif)
   switch (type)
     {
 #ifndef __NO_FPRS__
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
     case FFI_TYPE_LONGDOUBLE:
       flags |= FLAG_RETURNS_128BITS;
       /* Fall through.  */
+#endif
     case FFI_TYPE_DOUBLE:
       flags |= FLAG_RETURNS_64BITS;
       /* Fall through.  */

@@ -1,6 +1,5 @@
 /* GNU Objective C Runtime initialization 
-   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
    +load support contributed by Ovidiu Predescu <ovidiu@net-community.com>
 

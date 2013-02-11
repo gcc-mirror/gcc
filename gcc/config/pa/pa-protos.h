@@ -67,6 +67,8 @@ extern int pa_fpstore_bypass_p (rtx, rtx);
 extern int pa_attr_length_millicode_call (rtx);
 extern int pa_attr_length_call (rtx, int);
 extern int pa_attr_length_indirect_call (rtx);
+extern rtx pa_legitimize_reload_address (rtx, enum machine_mode,
+					 int, int, int);
 
 /* Declare functions defined in pa.c and used in templates.  */
 

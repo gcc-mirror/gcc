@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -454,7 +454,7 @@ package body Exp_Intr is
             New_Occurrence_Of (Standard_Character, Loc)),
 
         Make_Pragma (Loc,
-          Chars => Name_Import,
+          Chars                        => Name_Import,
           Pragma_Argument_Associations => New_List (
             Make_Pragma_Argument_Association (Loc,
               Expression => Make_Identifier (Loc, Name_Ada)),
