@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { powerpc*-*-linux* && ilp32 } || { powerpc-*-eabi* } } } } */
+/* { dg-do compile { target { { powerpc*-*-linux* && ilp32 } || { powerpc-*-eabi* powerpc-*-rtems* } } } } */
 /* { dg-options "-O2 -fno-common -G 8 -msdata=sysv" } */
 /* { dg-require-effective-target nonpic } */
 /* { dg-final { scan-assembler "\\.section\[ \t\]\\.sdata," } } */

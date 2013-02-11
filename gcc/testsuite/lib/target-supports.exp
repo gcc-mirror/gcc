@@ -2605,6 +2605,18 @@ proc check_effective_target_arm_prefer_ldrd_strd { } {
     }  "-O2 -mthumb" ]
 }
 
+# Return 1 if this is a PowerPC target supporting -meabi.
+
+proc check_effective_target_powerpc_eabi_ok { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_no_compiler_messages powerpc_eabi_ok object {
+	    int dummy;
+	} "-meabi"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is a PowerPC target with floating-point registers.
 
 proc check_effective_target_powerpc_fprs { } {

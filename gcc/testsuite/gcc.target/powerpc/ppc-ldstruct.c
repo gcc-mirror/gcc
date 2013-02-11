@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc*-*-eabi* powerpc*-*-elf* powerpc*-*-linux* } } */
+/* { dg-do run { target powerpc*-*-eabi* powerpc*-*-elf* powerpc*-*-linux* powerpc*-*-rtems* } } */
 /* { dg-options "-O -mlong-double-128" } */
 
 #include <stdlib.h>
