@@ -1,3 +1,10 @@
+2013-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56278
+	* include/bits/hashtable_policy.h (_Hash_code_base): Make default
+	constructor public.
+	* testsuite/23_containers/unordered_set/56278.cc: New.
+
 2013-02-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/tr1/bessel_function.tcc (__cyl_bessel_ij_series): Code
