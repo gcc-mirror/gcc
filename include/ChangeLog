@@ -1,3 +1,8 @@
+2013-02-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* plugin-api.h (enum ld_plugin_level): Assign integers
+	explicitly for all values.
+
 2013-01-30  Kai Tietz  <ktietz@redhat.com>
 
 	PR other/54620
