@@ -363,7 +363,8 @@ extern GTY(()) int darwin_ms_struct;
   %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
 
 /* We want a destructor last in the list.  */
-#define ENDFILE_SPEC "%{fgnu-tm: -lcrttme.o}"
+#define TM_DESTRUCTOR "%{fgnu-tm: -lcrttme.o}"
+#define ENDFILE_SPEC TM_DESTRUCTOR
 
 #define DARWIN_EXTRA_SPECS						\
   { "darwin_crt1", DARWIN_CRT1_SPEC },					\
