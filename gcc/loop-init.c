@@ -171,16 +171,19 @@ loop_fini_done:
    the latch, and loops did not get new subloops (new loops might possibly
    get created, but we are not interested in them).  Fix up the mess.
 
-   If CHANGED_BBS is not NULL, basic blocks whose loop has changed are
-   marked in it.  */
+   If CHANGED_BBS is not NULL, basic blocks whose loop depth has changed are
+   marked in it.
 
-void
+   Returns the number of new discovered loops.  */
+
+unsigned
 fix_loop_structure (bitmap changed_bbs)
 {
   basic_block bb;
   int record_exits = 0;
   loop_iterator li;
   struct loop *loop;
+  unsigned old_nloops;
 
   timevar_push (TV_LOOP_INIT);
 
@@ -228,6 +231,10 @@ fix_loop_structure (bitmap changed_bbs)
       delete_loop (loop);
     }
 
+  /* Remember the number of loops so we can return how many new loops
+     flow_loops_find discovered.  */
+  old_nloops = number_of_loops ();
+
   /* Re-compute loop structure in-place.  */
   flow_loops_find (current_loops);
 
@@ -253,6 +260,8 @@ fix_loop_structure (bitmap changed_bbs)
 #endif
 
   timevar_pop (TV_LOOP_INIT);
+
+  return number_of_loops () - old_nloops;
 }
 
 /* Gate for the RTL loop superpass.  The actual passes are subpasses.

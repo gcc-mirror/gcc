@@ -1,5 +1,10 @@
 2013-02-11  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56264
+	* gcc.dg/torture/pr56264.c: New testcase.
+
+2013-02-11  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56273
 	* g++.dg/warn/Warray-bounds-6.C: New testcase.
 	* gcc.dg/tree-ssa/pr21559.c: Adjust.
