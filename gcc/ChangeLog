@@ -1,3 +1,11 @@
+2013-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* tree-vrp.c (simplify_cond_using_ranges): Disable for the
+	first VRP run.
+	(check_array_ref): Fix missing newline in dumps.
+	(search_for_addr_array): Likewise.
+
 2013-02-09  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix61.h (OS_MISSING_ALTIVEC): Undefine.

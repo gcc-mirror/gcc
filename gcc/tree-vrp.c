@@ -6027,6 +6027,7 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 	{
 	  fprintf (dump_file, "Array bound warning for ");
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
+	  fprintf (dump_file, "\n");
 	}
       warning_at (location, OPT_Warray_bounds,
 		  "array subscript is above array bounds");
@@ -6039,6 +6040,7 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 	{
 	  fprintf (dump_file, "Array bound warning for ");
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
+	  fprintf (dump_file, "\n");
 	}
       warning_at (location, OPT_Warray_bounds,
 		  "array subscript is below array bounds");
@@ -6112,6 +6114,7 @@ search_for_addr_array (tree t, location_t location)
 	    {
 	      fprintf (dump_file, "Array bound warning for ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
+	      fprintf (dump_file, "\n");
 	    }
 	  warning_at (location, OPT_Warray_bounds,
 		      "array subscript is below array bounds");
@@ -6125,6 +6128,7 @@ search_for_addr_array (tree t, location_t location)
 	    {
 	      fprintf (dump_file, "Array bound warning for ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
+	      fprintf (dump_file, "\n");
 	    }
 	  warning_at (location, OPT_Warray_bounds,
 		      "array subscript is above array bounds");
@@ -8499,9 +8503,8 @@ test_for_singularity (enum tree_code cond_code, tree op0,
   return NULL;
 }
 
-/* Simplify a conditional using a relational operator to an equality
-   test if the range information indicates only one value can satisfy
-   the original conditional.  */
+/* Simplify the conditional stmt STMT using final range information.
+   Return true if we simplified the statement.  */
 
 static bool
 simplify_cond_using_ranges (gimple stmt)
@@ -8510,7 +8513,13 @@ simplify_cond_using_ranges (gimple stmt)
   tree op1 = gimple_cond_rhs (stmt);
   enum tree_code cond_code = gimple_cond_code (stmt);
 
-  if (cond_code != NE_EXPR
+  /* Simplify a conditional using a relational operator to an equality
+     test if the range information indicates only one value can satisfy
+     the original conditional.
+     Do that only in the second VRP pass as otherwise assertions derived
+     from this predicate are weakened.  */
+  if (!first_pass_instance
+      && cond_code != NE_EXPR
       && cond_code != EQ_EXPR
       && TREE_CODE (op0) == SSA_NAME
       && INTEGRAL_TYPE_P (TREE_TYPE (op0))
