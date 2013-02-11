@@ -1,3 +1,12 @@
+2013-02-11  Jason Merrill  <jason@redhat.com>
+
+	* linkage.m4 (GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE): New.
+	(GLIBCXX_CHECK_STDLIB_SUPPORT): Check for atexit and at_quick_exit.
+	* config.h.in, configure: Regenerate.
+	* include/c_std/cstdlib: Add atexit and at_quick_exit.
+	* include/c_global/cstdlib: Add atexit and at_quick_exit.
+	* testsuite/18_support/quick_exit/quick_exit.cc: New.
+
 2013-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/56282
