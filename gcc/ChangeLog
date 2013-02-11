@@ -1,5 +1,14 @@
 2013-02-11  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56264
+	* cfgloop.h (fix_loop_structure): Adjust prototype.
+	* loop-init.c (fix_loop_structure): Return the number of
+	newly discovered loops.
+	* tree-cfgcleanup.c (repair_loop_structures): When new loops
+	are discovered, do a full loop-closed SSA rewrite.
+
+2013-02-11  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56273
 	* tree-vrp.c (simplify_cond_using_ranges): Disable for the
 	first VRP run.
