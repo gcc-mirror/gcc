@@ -1,5 +1,7 @@
-// 2013-02-11 Jason Merrill
-
+// { dg-options "-std=gnu++11" }
+//
+// 2013-02-11  Jason  Merrill
+//
 // Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -33,7 +35,9 @@ void wrong_handler()
 
 int main()
 {
+#if defined(_GLIBCXX_HAVE_AT_QUICK_EXIT) && defined(_GLIBCXX_HAVE_QUICK_EXIT)
   std::at_quick_exit (handler);
   std::atexit (wrong_handler);
   std::quick_exit (1);
+#endif
 }
