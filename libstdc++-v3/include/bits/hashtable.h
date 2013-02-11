@@ -43,8 +43,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       =  __not_<__and_<// Do not cache for fast hasher.
 		       __is_fast_hash<_Hash>,
 		       // Mandatory to make local_iterator default
-		       // constructible.
+		       // constructible and assignable.
 		       is_default_constructible<_Hash>,
+		       is_copy_assignable<_Hash>,
 		       // Mandatory to have erase not throwing.
 		       __detail::__is_noexcept_hash<_Tp, _Hash>>>;
 
@@ -268,6 +269,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      is_default_constructible<__hash_code_base>>::value,
 		    "Cache the hash code or make functors involved in hash code"
 		    " and bucket index computation default constructible");
+
+      // When hash codes are not cached local iterator inherits from
+      // __hash_code_base above to compute node bucket index so it has to be
+      // assignable.
+      static_assert(__if_hash_not_cached<
+		      is_copy_assignable<__hash_code_base>>::value,
+		    "Cache the hash code or make functors involved in hash code"
+		    " and bucket index computation copy assignable");
 
     public:
       template<typename _Keya, typename _Valuea, typename _Alloca,

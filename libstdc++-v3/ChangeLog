@@ -1,5 +1,14 @@
 2013-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/56267
+	* include/bits/hashtable.h (__cache_default): Check if hash function
+	is copy assignable.
+	* testsuite/23_containers/unordered_set/56267.cc: New.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Likewise.
+
 	PR libstdc++/56278
 	* include/bits/hashtable_policy.h (_Hash_code_base): Make default
 	constructor public.
