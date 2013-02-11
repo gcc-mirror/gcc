@@ -1,3 +1,7 @@
+2013-02-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/html/*: Regenerate.
+	
 2013-02-11  Jason Merrill  <jason@redhat.com>
 
 	* linkage.m4 (GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE): New.
