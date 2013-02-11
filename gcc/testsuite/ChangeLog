@@ -1,3 +1,13 @@
+2013-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* g++.dg/warn/Warray-bounds-6.C: New testcase.
+	* gcc.dg/tree-ssa/pr21559.c: Adjust.
+	* gcc.dg/tree-ssa/vrp17.c: Likewise.
+	* gcc.dg/tree-ssa/vrp18.c: Likewise.
+	* gcc.dg/tree-ssa/vrp23.c: Likewise.
+	* gcc.dg/tree-ssa/vrp24.c: Likewise.
+
 2013-02-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/asan/asan_test.C: Compile with -D__NO_INLINE__
