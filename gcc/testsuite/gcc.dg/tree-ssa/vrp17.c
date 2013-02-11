@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp2" } */
+/* { dg-options "-O2 -fno-tree-tail-merge -fdump-tree-vrp2" } */
 
 extern void abort (void) __attribute__ ((__noreturn__));
 union tree_node;

@@ -1,5 +1,10 @@
 2013-02-11  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56273
+	* gcc.dg/tree-ssa/vrp17.c: Disable tail-merging.
+
+2013-02-11  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56264
 	* gcc.dg/torture/pr56264.c: New testcase.
 
