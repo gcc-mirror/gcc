@@ -1,3 +1,14 @@
+2013-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56282
+	Revert:
+	2013-02-06  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/56193
+	* include/bits/basic_ios.h: Replace operator void*() const
+	with explicit operator bool() const in C++11 and greater.
+	* testsuite/27_io/basic_ios/pr56193.cc: New file.
+
 2013-02-10  François Dumont  <fdumont@gcc.gnu.org>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -30,20 +41,20 @@
 	PR libstdc++/56216
 	* include/tr1/special_function_util.h: Remove spurious const
 	from numeric arguments.
-	* include/tr1/riemann_zeta.tcc: Ditto.
-	* include/tr1/exp_integral.tcc: Ditto.
-	* include/tr1/bessel_function.tcc: Ditto.
-	* include/tr1/hypergeometric.tcc: Ditto.
-	* include/tr1/modified_bessel_func.tcc: Ditto.
-	* include/tr1/poly_laguerre.tcc: Ditto.
-	* include/tr1/gamma.tcc: Ditto.
-	* include/tr1/legendre_function.tcc: Ditto.
-	* include/tr1/poly_hermite.tcc: Ditto.
-	* include/tr1/ell_integral.tcc: Ditto.
+	* include/tr1/riemann_zeta.tcc: Likewise.
+	* include/tr1/exp_integral.tcc: Likewise.
+	* include/tr1/bessel_function.tcc: Likewise.
+	* include/tr1/hypergeometric.tcc: Likewise.
+	* include/tr1/modified_bessel_func.tcc: Likewise.
+	* include/tr1/poly_laguerre.tcc: Likewise.
+	* include/tr1/gamma.tcc: Likewise.
+	* include/tr1/legendre_function.tcc: Likewise.
+	* include/tr1/poly_hermite.tcc: Likewise.
+	* include/tr1/ell_integral.tcc: Likewise.
 	* include/tr1/bessel_function.tcc (__cyl_bessel_ij_series):
 	If argument is zero return function value.
-	* testsuite/tr1/5_numerical_facilities/special_functions/08_cyl_bessel_i/pr56216.cc:
-	New file.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/pr56216.cc: New.
 
 2013-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
