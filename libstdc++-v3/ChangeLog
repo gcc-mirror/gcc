@@ -1,3 +1,9 @@
+2013-02-10  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/containers.xml: Add section on unordered containers.
+	* doc/xml/manual/using.xml: Fix incomplete sentence.
+
 2013-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/56267
