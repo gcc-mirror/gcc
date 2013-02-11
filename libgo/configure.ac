@@ -413,8 +413,9 @@ PTHREAD_LIBS=
 AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS=-lpthread)
 AC_SUBST(PTHREAD_LIBS)
 
-dnl Test if -lrt is required for sched_yield.
+dnl Test if -lrt is required for sched_yield and/or nanosleep.
 AC_SEARCH_LIBS([sched_yield], [rt])
+AC_SEARCH_LIBS([nanosleep], [rt])
 
 AC_C_BIGENDIAN
 
