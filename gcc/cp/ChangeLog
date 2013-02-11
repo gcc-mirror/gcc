@@ -1,3 +1,9 @@
+2013-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56268
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Call
+	maybe_instantiate_noexcept.
+
 2013-02-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56247
