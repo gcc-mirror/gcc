@@ -5885,31 +5885,38 @@ check_constexpr_ctor_body (tree last, tree list)
 /* VEC is a vector of constructor elements built up for the base and member
    initializers of a constructor for TYPE.  They need to be in increasing
    offset order, which they might not be yet if TYPE has a primary base
-   which is not first in the base-clause.  */
+   which is not first in the base-clause or a vptr and at least one base
+   all of which are non-primary.  */
 
 static VEC(constructor_elt,gc) *
 sort_constexpr_mem_initializers (tree type, VEC(constructor_elt,gc) *vec)
 {
   tree pri = CLASSTYPE_PRIMARY_BINFO (type);
+  tree field_type;
   constructor_elt elt;
   int i;
 
-  if (pri == NULL_TREE
-      || pri == BINFO_BASE_BINFO (TYPE_BINFO (type), 0))
+  if (pri)
+    field_type = BINFO_TYPE (pri);
+  else if (TYPE_CONTAINS_VPTR_P (type))
+    field_type = vtbl_ptr_type_node;
+  else
     return vec;
 
-  /* Find the element for the primary base and move it to the beginning of
-     the vec.  */
-  pri = BINFO_TYPE (pri);
-  for (i = 1; ; ++i)
-    if (TREE_TYPE (VEC_index (constructor_elt, vec, i)->index) == pri)
+  /* Find the element for the primary base or vptr and move it to the
+     beginning of the vec.  */
+  for (i = 0; ; ++i)
+    if (TREE_TYPE (VEC_index (constructor_elt, vec, i)->index) == field_type)
       break;
 
-  elt = *VEC_index (constructor_elt, vec, i);
-  for (; i > 0; --i)
-    VEC_replace (constructor_elt, vec, i,
-		 VEC_index (constructor_elt, vec, i-1));
-  VEC_replace (constructor_elt, vec, 0, &elt);
+  if (i > 0)
+    {
+      elt = *VEC_index (constructor_elt, vec, i);
+      for (; i > 0; --i)
+	VEC_replace (constructor_elt, vec, i,
+		     VEC_index (constructor_elt, vec, i-1));
+      VEC_replace (constructor_elt, vec, 0, &elt);
+    }
   return vec;
 }
 
