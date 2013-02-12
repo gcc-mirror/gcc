@@ -1,3 +1,9 @@
+2013-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56288
+	* tree-ssa.c (verify_ssa_name): Fix check, move
+	SSA_NAME_IN_FREE_LIST check up.
+
 2013-02-12  Jakub Jelinek  <jakub@redhat.com>
 	    Steven Bosscher   <steven@gcc.gnu.org>
 
