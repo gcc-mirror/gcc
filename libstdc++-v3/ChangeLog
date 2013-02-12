@@ -1,3 +1,8 @@
+2013-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_std/cstdlib (at_quick_exit, quick_exit): Provide in
+	C++11 mode.
+
 2013-02-12  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc (test01):
