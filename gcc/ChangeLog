@@ -1,3 +1,9 @@
+2013-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/avr-dimode.md (umulsidi3, mulsidi3): New expanders.
+	(umulsidi3_insn, mulsidi3_insn): New insns.
+
 2013-02-12  Christophe Lyon <christophe.lyon@linaro.org>
 
 	* config/arm/arm-protos.h (struct cpu_vec_costs): New struct type.
