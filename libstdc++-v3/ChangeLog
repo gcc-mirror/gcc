@@ -1,3 +1,11 @@
+2013-02-12  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc (test01):
+	Don't expect dots after abbreviated weekday names for ru_RU for
+	glibc versions >= 2.17.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-2.cc (test01):
+	Likewise.
+
 2013-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc (__transform): Remove.
