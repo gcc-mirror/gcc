@@ -79,13 +79,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
       }
 
     template<typename _InputIterator, typename _OutputIterator,
-	     typename _UnaryOperation>
+	     typename _Tp>
       _OutputIterator
-      __transform(_InputIterator __first, _InputIterator __last,
-		  _OutputIterator __result, _UnaryOperation __unary_op)
+      __normalize(_InputIterator __first, _InputIterator __last,
+		  _OutputIterator __result, const _Tp& __factor)
       {
 	for (; __first != __last; ++__first, ++__result)
-	  *__result = __unary_op(*__first);
+	  *__result = *__first / __factor;
 	return __result;
       }
 
@@ -2802,8 +2802,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const double __sum = std::accumulate(_M_prob.begin(),
 					   _M_prob.end(), 0.0);
       // Now normalize the probabilites.
-      __detail::__transform(_M_prob.begin(), _M_prob.end(), _M_prob.begin(),
-			  std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_prob.begin(), _M_prob.end(), _M_prob.begin(),
+			    __sum);
       // Accumulate partial sums.
       _M_cp.reserve(_M_prob.size());
       std::partial_sum(_M_prob.begin(), _M_prob.end(),
@@ -2955,8 +2955,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const double __sum = std::accumulate(_M_den.begin(),
 					   _M_den.end(), 0.0);
 
-      __detail::__transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
-			    std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_den.begin(), _M_den.end(), _M_den.begin(),
+			    __sum);
 
       _M_cp.reserve(_M_den.size());
       std::partial_sum(_M_den.begin(), _M_den.end(),
@@ -3189,14 +3189,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       //  Now normalize the densities...
-      __detail::__transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
-			  std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_den.begin(), _M_den.end(), _M_den.begin(),
+			    __sum);
       //  ... and partial sums... 
-      __detail::__transform(_M_cp.begin(), _M_cp.end(), _M_cp.begin(),
-			    std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_cp.begin(), _M_cp.end(), _M_cp.begin(), __sum);
       //  ... and slopes.
-      __detail::__transform(_M_m.begin(), _M_m.end(), _M_m.begin(),
-			    std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_m.begin(), _M_m.end(), _M_m.begin(), __sum);
+
       //  Make sure the last cumulative probablility is one.
       _M_cp[_M_cp.size() - 1] = 1.0;
      }
