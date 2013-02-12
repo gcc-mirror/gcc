@@ -143,22 +143,23 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
     case GIMPLE_DEBUG:
       for (i = 0; i < num_ops; i++)
 	{
-	  tree op = stream_read_tree (ib, data_in);
+	  tree *opp, op = stream_read_tree (ib, data_in);
 	  gimple_set_op (stmt, i, op);
 	  if (!op)
 	    continue;
 
-	  if (TREE_CODE (op) == ADDR_EXPR)
-	    op = TREE_OPERAND (op, 0);
-	  while (handled_component_p (op))
+	  opp = gimple_op_ptr (stmt, i);
+	  if (TREE_CODE (*opp) == ADDR_EXPR)
+	    opp = &TREE_OPERAND (*opp, 0);
+	  while (handled_component_p (*opp))
 	    {
-	      if (TREE_CODE (op) == COMPONENT_REF)
+	      if (TREE_CODE (*opp) == COMPONENT_REF)
 		{
 		  /* Fixup FIELD_DECLs in COMPONENT_REFs, they are not handled
 		     by decl merging.  */
 		  tree field, type, tem;
 		  tree closest_match = NULL_TREE;
-		  field = TREE_OPERAND (op, 1);
+		  field = TREE_OPERAND (*opp, 1);
 		  type = DECL_CONTEXT (field);
 		  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
 		    {
@@ -186,12 +187,12 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		      if (warning_at (gimple_location (stmt), 0,
 				      "use of type %<%E%> with two mismatching "
 				      "declarations at field %<%E%>",
-				      type, TREE_OPERAND (op, 1)))
+				      type, TREE_OPERAND (*opp, 1)))
 			{
 			  if (TYPE_FIELDS (type))
 			    inform (DECL_SOURCE_LOCATION (TYPE_FIELDS (type)),
 				    "original type declared here");
-			  inform (DECL_SOURCE_LOCATION (TREE_OPERAND (op, 1)),
+			  inform (DECL_SOURCE_LOCATION (TREE_OPERAND (*opp, 1)),
 				  "field in mismatching type declared here");
 			  if (TYPE_NAME (TREE_TYPE (field))
 			      && (TREE_CODE (TYPE_NAME (TREE_TYPE (field)))
@@ -208,28 +209,44 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 				    "type of mismatching field declared here");
 			}
 		      /* And finally fixup the types.  */
-		      TREE_OPERAND (op, 0)
+		      TREE_OPERAND (*opp, 0)
 			= build1 (VIEW_CONVERT_EXPR, type,
-				  TREE_OPERAND (op, 0));
+				  TREE_OPERAND (*opp, 0));
 		    }
 		  else
-		    TREE_OPERAND (op, 1) = tem;
+		    TREE_OPERAND (*opp, 1) = tem;
 		}
-	      else if ((TREE_CODE (op) == ARRAY_REF
-			|| TREE_CODE (op) == ARRAY_RANGE_REF)
-		       && (TREE_CODE (TREE_TYPE (TREE_OPERAND (op, 0)))
+	      else if ((TREE_CODE (*opp) == ARRAY_REF
+			|| TREE_CODE (*opp) == ARRAY_RANGE_REF)
+		       && (TREE_CODE (TREE_TYPE (TREE_OPERAND (*opp, 0)))
 			   != ARRAY_TYPE))
 		{
 		  /* And ARRAY_REFs to objects that had mismatched types
 		     during symbol merging to avoid ICEs.  */
-		  TREE_OPERAND (op, 0)
+		  TREE_OPERAND (*opp, 0)
 		    = build1 (VIEW_CONVERT_EXPR,
-			      build_array_type (TREE_TYPE (op), NULL_TREE),
-			      TREE_OPERAND (op, 0));
+			      build_array_type (TREE_TYPE (*opp), NULL_TREE),
+			      TREE_OPERAND (*opp, 0));
 		}
 
-	      op = TREE_OPERAND (op, 0);
+	      opp = &TREE_OPERAND (*opp, 0);
 	    }
+	  /* At LTO output time we wrap all global decls in MEM_REFs to
+	     allow seamless replacement with prevailing decls.  Undo this
+	     here if the prevailing decl allows for this.
+	     ???  Maybe we should simply fold all stmts.  */
+	  if (TREE_CODE (*opp) == MEM_REF
+	      && TREE_CODE (TREE_OPERAND (*opp, 0)) == ADDR_EXPR
+	      && integer_zerop (TREE_OPERAND (*opp, 1))
+	      && (TREE_THIS_VOLATILE (*opp)
+		  == TREE_THIS_VOLATILE
+		       (TREE_OPERAND (TREE_OPERAND (*opp, 0), 0)))
+	      && !TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (*opp, 1)))
+	      && (TREE_TYPE (*opp)
+		  == TREE_TYPE (TREE_TYPE (TREE_OPERAND (*opp, 1))))
+	      && (TREE_TYPE (*opp)
+		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*opp, 0), 0))))
+	    *opp = TREE_OPERAND (TREE_OPERAND (*opp, 0), 0);
 	}
       if (is_gimple_call (stmt))
 	{
