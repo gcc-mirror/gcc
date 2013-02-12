@@ -500,7 +500,8 @@ add_one_base_init (tree binfo, tree parm, bool move_p, tree inh,
       for (; parm; parm = DECL_CHAIN (parm))
 	{
 	  tree exp = convert_from_reference (parm);
-	  if (TREE_CODE (TREE_TYPE (parm)) != REFERENCE_TYPE)
+	  if (TREE_CODE (TREE_TYPE (parm)) != REFERENCE_TYPE
+	      || TYPE_REF_IS_RVALUE (TREE_TYPE (parm)))
 	    exp = move (exp);
 	  *p = build_tree_list (NULL_TREE, exp);
 	  p = &TREE_CHAIN (*p);
