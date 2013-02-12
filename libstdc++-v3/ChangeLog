@@ -1,3 +1,13 @@
+2013-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.tcc (__transform): Remove.
+	(__normalize): Add.
+	(discrete_distribution<>::param_type::_M_initialize): Adjust.
+	(piecewise_constant_distribution<>::param_type::_M_initialize):
+	Likewise.
+	(piecewise_linear_distribution<>::param_type::_M_initialize):
+	Likewise.
+
 2013-02-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/c++11/Makefile.am (hashtable_c++0x.lo, hashtable_c++0x.o):
