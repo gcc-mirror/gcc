@@ -1,3 +1,11 @@
+2013-02-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/c++11/Makefile.am (hashtable_c++0x.lo, hashtable_c++0x.o):
+	Use -fimplicit-templates.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/hashtable_c++0x.cc: Remove instantiation for
+	std::lower_bound template.
+
 2013-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_std/cstdlib (at_quick_exit, quick_exit): Do not declare.

@@ -627,6 +627,13 @@ uninstall-am:
 
 vpath % $(top_srcdir)/src/c++11
 
+# Use special rules for the hashtable.cc file so that all
+# the generated template functions are also instantiated. 
+hashtable_c++0x.lo: hashtable_c++0x.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c $<
+hashtable_c++0x.o: hashtable_c++0x.cc
+	$(CXXCOMPILE) -fimplicit-templates -c $<
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
