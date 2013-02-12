@@ -1,3 +1,9 @@
+2013-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56291
+	* semantics.c (sort_constexpr_mem_initializers): Handle
+	vptr out of order.
+
 2013-02-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56268
