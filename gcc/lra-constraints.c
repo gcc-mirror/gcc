@@ -1533,8 +1533,8 @@ process_alt_operands (int only_alternative)
 			if (! curr_static_id->operand[m].early_clobber
 			    || operand_reg[nop] == NULL_RTX
 			    || (find_regno_note (curr_insn, REG_DEAD,
-						 REGNO (operand_reg[nop]))
-						 != NULL_RTX))
+						 REGNO (op))
+				|| REGNO (op) == REGNO (operand_reg[m])))
 			  match_p = true;
 		      }
 		    if (match_p)
@@ -2059,6 +2059,7 @@ process_alt_operands (int only_alternative)
 	  if ((! curr_alt_win[i] && ! curr_alt_match_win[i])
 	      || hard_regno[i] < 0)
 	    continue;
+	  lra_assert (operand_reg[i] != NULL_RTX);
 	  clobbered_hard_regno = hard_regno[i];
 	  CLEAR_HARD_REG_SET (temp_set);
 	  add_to_hard_reg_set (&temp_set, biggest_mode[i], clobbered_hard_regno);
@@ -2073,30 +2074,49 @@ process_alt_operands (int only_alternative)
 	    else if ((curr_alt_matches[j] == i && curr_alt_match_win[j])
 		     || (curr_alt_matches[i] == j && curr_alt_match_win[i]))
 	      continue;
-	    else if (uses_hard_regs_p (*curr_id->operand_loc[j], temp_set))
+	    /* If we don't reload j-th operand, check conflicts.  */
+	    else if ((curr_alt_win[j] || curr_alt_match_win[j])
+		     && uses_hard_regs_p (*curr_id->operand_loc[j], temp_set))
 	      break;
 	  if (j >= n_operands)
 	    continue;
-	  /* We need to reload early clobbered register.  */
-	  for (j = 0; j < n_operands; j++)
-	    if (curr_alt_matches[j] == i)
-	      {
-		curr_alt_match_win[j] = false;
-		losers++;
-		overall += LRA_LOSER_COST_FACTOR;
-	      }
-	  if (! curr_alt_match_win[i])
-	    curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++] = i;
+	  /* If earlyclobber operand conflicts with another
+	     non-matching operand which is actually the same register
+	     as the earlyclobber operand, it is better to reload the
+	     another operand as an operand matching the earlyclobber
+	     operand can be also the same.  */
+	  if (operand_reg[j] != NULL_RTX && ! curr_alt_match_win[j]
+	      && REGNO (operand_reg[i]) == REGNO (operand_reg[j]))
+	    {
+	      curr_alt_win[j] = false;
+	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++] = j;
+	      losers++;
+	      overall += LRA_LOSER_COST_FACTOR;
+	    }
 	  else
 	    {
-	      /* Remember pseudos used for match reloads are never
-		 inherited.  */
-	      lra_assert (curr_alt_matches[i] >= 0);
-	      curr_alt_win[curr_alt_matches[i]] = false;
+	      /* We need to reload early clobbered register and the
+		 matched registers.  */
+	      for (j = 0; j < n_operands; j++)
+		if (curr_alt_matches[j] == i)
+		  {
+		    curr_alt_match_win[j] = false;
+		    losers++;
+		    overall += LRA_LOSER_COST_FACTOR;
+		  }
+	      if (! curr_alt_match_win[i])
+		curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++] = i;
+	      else
+		{
+		  /* Remember pseudos used for match reloads are never
+		     inherited.  */
+		  lra_assert (curr_alt_matches[i] >= 0);
+		  curr_alt_win[curr_alt_matches[i]] = false;
+		}
+	      curr_alt_win[i] = curr_alt_match_win[i] = false;
+	      losers++;
+	      overall += LRA_LOSER_COST_FACTOR;
 	    }
-	  curr_alt_win[i] = curr_alt_match_win[i] = false;
-	  losers++;
-	  overall += LRA_LOSER_COST_FACTOR;
 	}
       small_class_operands_num = 0;
       for (nop = 0; nop < n_operands; nop++)

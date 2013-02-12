@@ -1,3 +1,8 @@
+2013-02-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/56148
+	* gcc.target/i386/pr56148.c: New test.
+
 2013-02-12  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Tobias Burnus  <burnus@net-b.de>
 
