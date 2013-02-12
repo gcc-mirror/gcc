@@ -1,3 +1,10 @@
+2013-02-12  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56082
+	* gfortran.dg/bind_c_bool_1.f90 (sub): Change kind=4
+	to kind=2.
+
 2013-02-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56297
