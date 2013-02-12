@@ -1,3 +1,14 @@
+2013-02-11  Sriraman Tallam  <tmsriramgoogle.com>
+
+	* doc/extend.texi: Document Function Multiversioning and "default"
+	parameter string to target attribute.
+	* config/i386/i386.c (get_builtin_code_for_version): Return 0 if
+	target attribute parameter is "default".
+	(ix86_compare_version_priority): Remove checks for target attribute.
+	(ix86_mangle_function_version_assembler_name): Change error to sorry.
+	Remove check for target attribute equal to NULL. Add assert.
+	(ix86_generate_version_dispatcher_body): Change error to sorry.
+
 2013-02-11  Iain Sandoe  <iain@codesourcery.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Patrick Marlier  <patrick.marlier@gmail.com>

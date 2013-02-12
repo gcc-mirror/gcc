@@ -1,3 +1,10 @@
+2013-02-11  Sriraman Tallam  <tmsriramgoogle.com>
+
+	* g++.dg/ext/mv12.C: New test.
+	* g++.dg/ext/mv12.h: New file.
+	* g++.dg/ext/mv12-aux.C: New file.
+	* g++.dg/ext/mv13.C: New test.
+
 2013-02-11  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* lib/target-supports.exp
