@@ -1,5 +1,9 @@
 2013-02-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56285
+	* method.c (add_one_base_init): Handle base constructor
+	taking rvalue reference parm.
+
 	PR c++/56291
 	* semantics.c (sort_constexpr_mem_initializers): Handle
 	vptr out of order.
