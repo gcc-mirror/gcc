@@ -190,16 +190,39 @@ add_equal_note (rtx insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
   if (GET_CODE (target) == ZERO_EXTRACT)
     return 1;
 
-  /* If TARGET is in OP0 or OP1, punt.  We'd end up with a note referencing
-     a value changing in the insn, so the note would be invalid for CSE.  */
-  if (reg_overlap_mentioned_p (target, op0)
-      || (op1 && reg_overlap_mentioned_p (target, op1)))
-    return 0;
-
   for (last_insn = insns;
        NEXT_INSN (last_insn) != NULL_RTX;
        last_insn = NEXT_INSN (last_insn))
     ;
+
+  /* If TARGET is in OP0 or OP1, punt.  We'd end up with a note referencing
+     a value changing in the insn, so the note would be invalid for CSE.  */
+  if (reg_overlap_mentioned_p (target, op0)
+      || (op1 && reg_overlap_mentioned_p (target, op1)))
+    {
+      if (MEM_P (target)
+	  && (rtx_equal_p (target, op0)
+	      || (op1 && rtx_equal_p (target, op1))))
+	{
+	  /* For MEM target, with MEM = MEM op X, prefer no REG_EQUAL note
+	     over expanding it as temp = MEM op X, MEM = temp.  If the target
+	     supports MEM = MEM op X instructions, it is sometimes too hard
+	     to reconstruct that form later, especially if X is also a memory,
+	     and due to multiple occurrences of addresses the address might
+	     be forced into register unnecessarily.
+	     Note that not emitting the REG_EQUIV note might inhibit
+	     CSE in some cases.  */
+	  set = single_set (last_insn);
+	  if (set
+	      && GET_CODE (SET_SRC (set)) == code
+	      && MEM_P (SET_DEST (set))
+	      && (rtx_equal_p (SET_DEST (set), XEXP (SET_SRC (set), 0))
+		  || (op1 && rtx_equal_p (SET_DEST (set),
+					  XEXP (SET_SRC (set), 1)))))
+	    return 1;
+	}
+      return 0;
+    }
 
   set = single_set (last_insn);
   if (set == NULL_RTX)
