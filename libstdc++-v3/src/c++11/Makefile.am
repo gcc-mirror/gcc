@@ -60,6 +60,13 @@ vpath % $(top_srcdir)/src/c++11
 
 libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)
 
+# Use special rules for the hashtable.cc file so that all
+# the generated template functions are also instantiated. 
+hashtable_c++0x.lo: hashtable_c++0x.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c $<
+hashtable_c++0x.o: hashtable_c++0x.cc
+	$(CXXCOMPILE) -fimplicit-templates -c $<
+
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
