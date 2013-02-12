@@ -1,5 +1,11 @@
 2013-02-12  Richard Biener  <rguenther@suse.de>
 
+	PR lto/56295
+	* gimple-streamer-in.c (input_gimple_stmt): Strip MEM_REFs off
+	decls again if possible.
+
+2013-02-12  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/56288
 	* tree-ssa.c (verify_ssa_name): Fix check, move
 	SSA_NAME_IN_FREE_LIST check up.
