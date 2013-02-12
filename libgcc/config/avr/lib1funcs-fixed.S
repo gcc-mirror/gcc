@@ -669,6 +669,210 @@ ENDF __mulusa3_round
 
 #undef GUARD
 
+/***********************************************************
+    Fixed  unsigned saturated Multiplication  8.8 x 8.8
+***********************************************************/
+
+#define C0  22
+#define C1  C0+1
+#define C2  C0+2
+#define C3  C0+3
+#define SS __tmp_reg__
+
+#if defined (L_usmuluha3)
+DEFUN __usmuluha3
+    ;; Widening multiply
+#ifdef __AVR_HAVE_MUL__
+    ;; Adjust interface
+    movw    R26, R22
+    movw    R18, R24
+#endif /* HAVE MUL */
+    XCALL   __umulhisi3
+    tst     C3
+    brne .Lmax
+    ;; Round, target is in C1..C2
+    lsl     C0
+    adc     C1, __zero_reg__
+    adc     C2, __zero_reg__
+    brcs .Lmax
+    ;; Move result into place
+    mov     C3, C2
+    mov     C2, C1
+    ret
+.Lmax:
+    ;; Saturate
+    ldi     C2, 0xff
+    ldi     C3, 0xff
+    ret
+ENDF  __usmuluha3
+#endif /* L_usmuluha3 */
+
+/***********************************************************
+    Fixed signed saturated Multiplication  s8.7 x s8.7
+***********************************************************/
+
+#if defined (L_ssmulha3)
+DEFUN __ssmulha3
+    ;; Widening multiply
+#ifdef __AVR_HAVE_MUL__
+    ;; Adjust interface
+    movw    R26, R22
+    movw    R18, R24
+#endif /* HAVE MUL */
+    XCALL   __mulhisi3
+    ;; Adjust decimal point
+    lsl     C0
+    rol     C1
+    rol     C2
+    brvs .LsatC3.3
+    ;; The 9 MSBs must be the same
+    rol     C3
+    sbc     SS, SS
+    cp      C3, SS
+    brne .LsatSS
+    ;; Round
+    lsl     C0
+    adc     C1, __zero_reg__
+    adc     C2, __zero_reg__
+    brvs .Lmax
+    ;; Move result into place
+    mov    C3, C2
+    mov    C2, C1
+    ret
+.Lmax:
+    ;; Load 0x7fff
+    clr     C3
+.LsatC3.3:
+    ;; C3 <  0 -->  0x8000
+    ;; C3 >= 0 -->  0x7fff
+    mov     SS, C3
+.LsatSS:
+    ;; Load min / max value:
+    ;; SS = -1  -->  0x8000
+    ;; SS =  0  -->  0x7fff
+    ldi     C3, 0x7f
+    ldi     C2, 0xff
+    sbrc    SS, 7
+    adiw    C2, 1
+    ret
+ENDF  __ssmulha3
+#endif /* L_ssmulha3 */
+
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+#undef SS
+
+/***********************************************************
+    Fixed  unsigned saturated Multiplication  16.16 x 16.16
+***********************************************************/
+
+#define C0  18
+#define C1  C0+1
+#define C2  C0+2
+#define C3  C0+3
+#define C4  C0+4
+#define C5  C0+5
+#define C6  C0+6
+#define C7  C0+7
+#define SS __tmp_reg__
+
+#if defined (L_usmulusa3)
+;; R22[4] = R22[4] *{ssat} R18[4]
+;; Ordinary ABI function
+DEFUN __usmulusa3
+    ;; Widening multiply
+    XCALL   __umulsidi3
+    or      C7, C6
+    brne .Lmax
+    ;; Round, target is in C2..C5
+    lsl     C1
+    adc     C2, __zero_reg__
+    adc     C3, __zero_reg__
+    adc     C4, __zero_reg__
+    adc     C5, __zero_reg__
+    brcs .Lmax
+    ;; Move result into place
+    wmov    C6, C4
+    wmov    C4, C2
+    ret
+.Lmax:
+    ;; Saturate
+    ldi     C7, 0xff
+    ldi     C6, 0xff
+    wmov    C4, C6
+    ret
+ENDF  __usmulusa3
+#endif /* L_usmulusa3 */
+
+/***********************************************************
+    Fixed signed saturated Multiplication  s16.15 x s16.15
+***********************************************************/
+
+#if defined (L_ssmulsa3)
+;; R22[4] = R22[4] *{ssat} R18[4]
+;; Ordinary ABI function
+DEFUN __ssmulsa3
+    ;; Widening multiply
+    XCALL   __mulsidi3
+    ;; Adjust decimal point
+    lsl     C1
+    rol     C2
+    rol     C3
+    rol     C4
+    rol     C5
+    brvs .LsatC7.7
+    ;; The 17 MSBs must be the same
+    rol     C6
+    rol     C7
+    sbc     SS, SS
+    cp      C6, SS
+    cpc     C7, SS
+    brne .LsatSS
+    ;; Round
+    lsl     C1
+    adc     C2, __zero_reg__
+    adc     C3, __zero_reg__
+    adc     C4, __zero_reg__
+    adc     C5, __zero_reg__
+    brvs .Lmax
+    ;; Move result into place
+    wmov    C6, C4
+    wmov    C4, C2
+    ret
+
+.Lmax:
+    ;; Load 0x7fffffff
+    clr     C7
+.LsatC7.7:
+    ;; C7 <  0 -->  0x80000000
+    ;; C7 >= 0 -->  0x7fffffff
+    lsl     C7
+    sbc     SS, SS
+.LsatSS:
+    ;; Load min / max value:
+    ;; SS = -1  -->  0x80000000
+    ;; SS =  0  -->  0x7fffffff
+    com     SS
+    mov     C4, SS
+    mov     C5, C4
+    wmov    C6, C4
+    subi    C7, 0x80
+    ret
+ENDF  __ssmulsa3
+#endif /* L_ssmulsa3 */
+
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+#undef C4
+#undef C5
+#undef C6
+#undef C7
+#undef SS
+
 /*******************************************************
       Fractional Division 8 / 8
 *******************************************************/
