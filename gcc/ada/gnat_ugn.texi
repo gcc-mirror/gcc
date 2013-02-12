@@ -7,7 +7,7 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c           Copyright (C) 1992-2012, Free Software Foundation, Inc.          o
+@c           Copyright (C) 1992-2013, Free Software Foundation, Inc.          o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
@@ -4055,7 +4055,8 @@ switches are set.  This includes suppression of inlining that
 results from the use of the pragma @code{Inline_Always}.
 Any occurrences of pragma @code{Inline} or @code{Inline_Always}
 are ignored, and @option{-gnatn} and @option{-gnatN} have no
-effect if this switch is present.
+effects if this switch is present.  Note that inlining can also
+be suppressed on a finer-grained basis with pragma @code{No_Inline}.
 
 @item -fno-inline-functions
 @cindex @option{-fno-inline-functions} (@command{gcc})
@@ -10978,6 +10979,17 @@ types.  This is so because, the less information the compiler has about the
 bounds of the array, the more fallback code it needs to generate in order to
 fix things up at run time.
 
+It is possible to specify that a given loop should be subject to vectorization
+preferably to other optimizations by means of pragma @code{Loop_Optimize}:
+
+@smallexample @c ada
+  pragma Loop_Optimize (Vector);
+@end smallexample
+
+@noindent
+placed immediately within the loop will convey the appropriate hint to the
+compiler for this loop.
+
 You can obtain information about the vectorization performed by the compiler
 by specifying @option{-ftree-vectorizer-verbose=N}.  For more details of
 this switch, see @ref{Debugging Options,,Options for Debugging Your Program
@@ -14916,8 +14928,9 @@ The McCabe cyclomatic complexity metric is defined
 in @url{http://www.mccabe.com/pdf/mccabe-nist235r.pdf}
 
 According to McCabe, both control statements and short-circuit control forms
-should be taken into account when computing cyclomatic complexity. For each
-body, we compute three metric values:
+should be taken into account when computing cyclomatic complexity.
+For Ada 2012 we have also take into account conditional expressions
+and quantified expressions. For each body, we compute three metric values:
 
 @itemize @bullet
 @item
@@ -14933,6 +14946,10 @@ cyclomatic complexity, which is the sum of these two values.
 @end itemize
 
 @noindent
+
+The cyclomatic complexity is also computed for Ada 2012 expression functions.
+An expression function cannot have statements as its components, so only one
+metric value is computed as a cyclomatic complexity of an expression function.
 
 The origin of cyclomatic complexity metric is the need to estimate the number
 of independent paths in the control flow graph that in turn gives the number
@@ -14962,7 +14979,9 @@ suitable for typical Ada usage. For example, short circuit forms
 are not penalized as unstructured in the Ada essential complexity metric.
 
 When computing cyclomatic and essential complexity, @command{gnatmetric} skips
-the code in the exception handlers and in all the nested program units.
+the code in the exception handlers and in all the nested program units. The
+code of assertions and predicates (that is, subprogram preconditions and
+postconditions, subtype predicates and type invariants) is also skipped.
 
 By default, all the complexity metrics are computed and reported.
 For more fine-grained control you can use

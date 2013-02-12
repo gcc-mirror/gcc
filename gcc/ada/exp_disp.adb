@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4129,17 +4129,10 @@ package body Exp_Disp is
          DT_Constr_List := New_List;
          DT_Aggr_List   := New_List;
 
-         --  Nb_Prim. If the tagged type has no primitives we add a dummy
-         --  slot whose address will be the tag of this type.
+         --  Nb_Prim
 
-         if Nb_Prim = 0 then
-            New_Node := Make_Integer_Literal (Loc, 1);
-         else
-            New_Node := Make_Integer_Literal (Loc, Nb_Prim);
-         end if;
-
-         Append_To (DT_Constr_List, New_Node);
-         Append_To (DT_Aggr_List, New_Copy (New_Node));
+         Append_To (DT_Constr_List, Make_Integer_Literal (Loc, Nb_Prim));
+         Append_To (DT_Aggr_List, Make_Integer_Literal (Loc, Nb_Prim));
 
          --  Signature
 

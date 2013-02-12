@@ -11489,32 +11489,118 @@ avr_init_builtins (void)
                                 const_memx_ptr_type_node,
                                 NULL);
 
-  tree hr_ftype_hr
-    = build_function_type_list (short_fract_type_node,
-                                short_fract_type_node, NULL);
-  tree r_ftype_r
-    = build_function_type_list (fract_type_node,
-                                fract_type_node, NULL);
-  tree lr_ftype_lr
-    = build_function_type_list (long_fract_type_node,
-                                long_fract_type_node, NULL);
-  tree llr_ftype_llr
-    = build_function_type_list (long_long_fract_type_node,
-                                long_long_fract_type_node, NULL);
-
-  tree hk_ftype_hk
-    = build_function_type_list (short_accum_type_node,
-                                short_accum_type_node, NULL);
-  tree k_ftype_k
-    = build_function_type_list (accum_type_node,
-                                accum_type_node, NULL);
-  tree lk_ftype_lk
-    = build_function_type_list (long_accum_type_node,
-                                long_accum_type_node, NULL);
-  tree llk_ftype_llk
-    = build_function_type_list (long_long_accum_type_node,
-                                long_long_accum_type_node, NULL);
+#define ITYP(T)                                                         \
+  lang_hooks.types.type_for_size (TYPE_PRECISION (T), TYPE_UNSIGNED (T))
   
+#define FX_FTYPE_FX(fx)                                                 \
+  tree fx##r_ftype_##fx##r                                              \
+    = build_function_type_list (node_##fx##r, node_##fx##r, NULL);      \
+  tree fx##k_ftype_##fx##k                                              \
+    = build_function_type_list (node_##fx##k, node_##fx##k, NULL)
+
+#define FX_FTYPE_FX_INT(fx)                                             \
+  tree fx##r_ftype_##fx##r_int                                          \
+    = build_function_type_list (node_##fx##r, node_##fx##r,             \
+                                integer_type_node, NULL);               \
+  tree fx##k_ftype_##fx##k_int                                          \
+    = build_function_type_list (node_##fx##k, node_##fx##k,             \
+                                integer_type_node, NULL)
+  
+#define INT_FTYPE_FX(fx)                                                \
+  tree int_ftype_##fx##r                                                \
+    = build_function_type_list (integer_type_node, node_##fx##r, NULL); \
+  tree int_ftype_##fx##k                                                \
+    = build_function_type_list (integer_type_node, node_##fx##k, NULL)
+
+#define INTX_FTYPE_FX(fx)                                               \
+  tree int##fx##r_ftype_##fx##r                                         \
+    = build_function_type_list (ITYP (node_##fx##r), node_##fx##r, NULL); \
+  tree int##fx##k_ftype_##fx##k                                         \
+    = build_function_type_list (ITYP (node_##fx##k), node_##fx##k, NULL)
+
+#define FX_FTYPE_INTX(fx)                                               \
+  tree fx##r_ftype_int##fx##r                                           \
+    = build_function_type_list (node_##fx##r, ITYP (node_##fx##r), NULL); \
+  tree fx##k_ftype_int##fx##k                                           \
+    = build_function_type_list (node_##fx##k, ITYP (node_##fx##k), NULL)
+
+  tree node_hr = short_fract_type_node;
+  tree node_r = fract_type_node;
+  tree node_lr = long_fract_type_node;
+  tree node_llr = long_long_fract_type_node;
+
+  tree node_uhr = unsigned_short_fract_type_node;
+  tree node_ur = unsigned_fract_type_node;
+  tree node_ulr = unsigned_long_fract_type_node;
+  tree node_ullr = unsigned_long_long_fract_type_node;
+
+  tree node_hk = short_accum_type_node;
+  tree node_k = accum_type_node;
+  tree node_lk = long_accum_type_node;
+  tree node_llk = long_long_accum_type_node;
+
+  tree node_uhk = unsigned_short_accum_type_node;
+  tree node_uk = unsigned_accum_type_node;
+  tree node_ulk = unsigned_long_accum_type_node;
+  tree node_ullk = unsigned_long_long_accum_type_node;
+
+
+  /* For absfx builtins.  */
+
+  FX_FTYPE_FX (h);
+  FX_FTYPE_FX ();
+  FX_FTYPE_FX (l);
+  FX_FTYPE_FX (ll);
+
+  /* For roundfx builtins.  */
+
+  FX_FTYPE_FX_INT (h);
+  FX_FTYPE_FX_INT ();
+  FX_FTYPE_FX_INT (l);
+  FX_FTYPE_FX_INT (ll);
+
+  FX_FTYPE_FX_INT (uh);
+  FX_FTYPE_FX_INT (u);
+  FX_FTYPE_FX_INT (ul);
+  FX_FTYPE_FX_INT (ull);
+
+  /* For countlsfx builtins.  */
+
+  INT_FTYPE_FX (h);
+  INT_FTYPE_FX ();
+  INT_FTYPE_FX (l);
+  INT_FTYPE_FX (ll);
+
+  INT_FTYPE_FX (uh);
+  INT_FTYPE_FX (u);
+  INT_FTYPE_FX (ul);
+  INT_FTYPE_FX (ull);
+
+  /* For bitsfx builtins.  */
+
+  INTX_FTYPE_FX (h);
+  INTX_FTYPE_FX ();
+  INTX_FTYPE_FX (l);
+  INTX_FTYPE_FX (ll);
+
+  INTX_FTYPE_FX (uh);
+  INTX_FTYPE_FX (u);
+  INTX_FTYPE_FX (ul);
+  INTX_FTYPE_FX (ull);
+
+  /* For fxbits builtins.  */
+
+  FX_FTYPE_INTX (h);
+  FX_FTYPE_INTX ();
+  FX_FTYPE_INTX (l);
+  FX_FTYPE_INTX (ll);
+
+  FX_FTYPE_INTX (uh);
+  FX_FTYPE_INTX (u);
+  FX_FTYPE_INTX (ul);
+  FX_FTYPE_INTX (ull);
+
+
 #define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME)                  \
   {                                                                     \
     int id = AVR_BUILTIN_ ## NAME;                                      \
@@ -11647,7 +11733,50 @@ avr_expand_builtin (tree exp, rtx target,
                    " as first argument", bname);
             return target;
           }
+
+        break;
       }
+
+    case AVR_BUILTIN_ROUNDHR:   case AVR_BUILTIN_ROUNDUHR:
+    case AVR_BUILTIN_ROUNDR:    case AVR_BUILTIN_ROUNDUR:
+    case AVR_BUILTIN_ROUNDLR:   case AVR_BUILTIN_ROUNDULR:
+    case AVR_BUILTIN_ROUNDLLR:  case AVR_BUILTIN_ROUNDULLR:
+
+    case AVR_BUILTIN_ROUNDHK:   case AVR_BUILTIN_ROUNDUHK:
+    case AVR_BUILTIN_ROUNDK:    case AVR_BUILTIN_ROUNDUK:
+    case AVR_BUILTIN_ROUNDLK:   case AVR_BUILTIN_ROUNDULK:
+    case AVR_BUILTIN_ROUNDLLK:  case AVR_BUILTIN_ROUNDULLK:
+
+      /* Warn about odd rounding.  Rounding points >= FBIT will have
+         no effect.  */
+      
+      if (TREE_CODE (CALL_EXPR_ARG (exp, 1)) != INTEGER_CST)
+        break;
+
+      int rbit = (int) TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1));
+
+      if (rbit >= (int) GET_MODE_FBIT (mode))
+        {
+          warning (OPT_Wextra, "rounding to %d bits has no effect for "
+                   "fixed-point value with %d fractional bits",
+                   rbit, GET_MODE_FBIT (mode));
+
+          return expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX, mode,
+                              EXPAND_NORMAL);
+        }
+      else if (rbit <= - (int) GET_MODE_IBIT (mode))
+        {
+          warning (0, "rounding result will always be 0");
+          return CONST0_RTX (mode);
+        }
+
+      /* The rounding points RP satisfies now:  -IBIT < RP < FBIT.
+
+         TR 18037 only specifies results for  RP > 0.  However, the
+         remaining cases of  -IBIT < RP <= 0  can easily be supported
+         without any additional overhead.  */
+
+      break; /* round */
     }
 
   /* No fold found and no insn:  Call support function from libgcc.  */
@@ -11735,6 +11864,31 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
       /* GCC is not good with folding ABS for fixed-point.  Do it by hand.  */
 
       return avr_fold_absfx (arg[0]);
+
+    case AVR_BUILTIN_BITSHR:    case AVR_BUILTIN_HRBITS:
+    case AVR_BUILTIN_BITSHK:    case AVR_BUILTIN_HKBITS:
+    case AVR_BUILTIN_BITSUHR:   case AVR_BUILTIN_UHRBITS:
+    case AVR_BUILTIN_BITSUHK:   case AVR_BUILTIN_UHKBITS:
+
+    case AVR_BUILTIN_BITSR:     case AVR_BUILTIN_RBITS:
+    case AVR_BUILTIN_BITSK:     case AVR_BUILTIN_KBITS:
+    case AVR_BUILTIN_BITSUR:    case AVR_BUILTIN_URBITS:
+    case AVR_BUILTIN_BITSUK:    case AVR_BUILTIN_UKBITS:
+
+    case AVR_BUILTIN_BITSLR:    case AVR_BUILTIN_LRBITS:
+    case AVR_BUILTIN_BITSLK:    case AVR_BUILTIN_LKBITS:
+    case AVR_BUILTIN_BITSULR:   case AVR_BUILTIN_ULRBITS:
+    case AVR_BUILTIN_BITSULK:   case AVR_BUILTIN_ULKBITS:
+
+    case AVR_BUILTIN_BITSLLR:   case AVR_BUILTIN_LLRBITS:
+    case AVR_BUILTIN_BITSLLK:   case AVR_BUILTIN_LLKBITS:
+    case AVR_BUILTIN_BITSULLR:  case AVR_BUILTIN_ULLRBITS:
+    case AVR_BUILTIN_BITSULLK:  case AVR_BUILTIN_ULLKBITS:
+
+      gcc_assert (TYPE_PRECISION (val_type)
+                  == TYPE_PRECISION (TREE_TYPE (arg[0])));
+
+      return build1 (VIEW_CONVERT_EXPR, val_type, arg[0]);
 
     case AVR_BUILTIN_INSERT_BITS:
       {

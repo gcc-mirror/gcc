@@ -1754,13 +1754,18 @@ package body Exp_Ch5 is
          declare
             Loop_Spec : constant Node_Id :=
                           Loop_Parameter_Specification (Scheme);
-            Subt_Def  : constant Node_Id :=
-                          Discrete_Subtype_Definition (Loop_Spec);
             Cond      : Node_Id;
+            Subt_Def  : Node_Id;
 
          begin
-            --  At this point in the expansion all discrete subtype definitions
-            --  should be transformed into ranges.
+            Subt_Def := Discrete_Subtype_Definition (Loop_Spec);
+
+            --  When the loop iterates over a subtype indication with a range,
+            --  use the low and high bounds of the subtype itself.
+
+            if Nkind (Subt_Def) = N_Subtype_Indication then
+               Subt_Def := Scalar_Range (Etype (Subt_Def));
+            end if;
 
             pragma Assert (Nkind (Subt_Def) = N_Range);
 
@@ -2471,7 +2476,8 @@ package body Exp_Ch5 is
                   --  the assignment we generate run-time check to ensure that
                   --  the tags of source and target match.
 
-                  if Is_Class_Wide_Type (Typ)
+                  if not Tag_Checks_Suppressed (Typ)
+                    and then Is_Class_Wide_Type (Typ)
                     and then Is_Tagged_Type (Typ)
                     and then Is_Tagged_Type (Underlying_Type (Etype (Rhs)))
                   then

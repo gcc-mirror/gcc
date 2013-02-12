@@ -7944,6 +7944,43 @@ package body Exp_Util is
       end if;
    end Type_May_Have_Bit_Aligned_Components;
 
+   ----------------------------------
+   -- Within_Case_Or_If_Expression --
+   ----------------------------------
+
+   function Within_Case_Or_If_Expression (N : Node_Id) return Boolean is
+      Par : Node_Id;
+
+   begin
+      --  Locate an enclosing case or if expression. Note: these constructs can
+      --  get expanded into Expression_With_Actions, hence the need to test
+      --  using the original node.
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind_In (Original_Node (Par), N_Case_Expression,
+                                           N_If_Expression)
+         then
+            return True;
+
+         --  Prevent the search from going too far
+
+         elsif Nkind_In (Par, N_Entry_Body,
+                              N_Package_Body,
+                              N_Package_Declaration,
+                              N_Protected_Body,
+                              N_Subprogram_Body,
+                              N_Task_Body)
+         then
+            return False;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return False;
+   end Within_Case_Or_If_Expression;
+
    ----------------------------
    -- Wrap_Cleanup_Procedure --
    ----------------------------

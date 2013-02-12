@@ -1,7 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 1992, 2001, 2002, 2003, 2004, 2009, 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 1989-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -515,8 +515,6 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \
   s-parame.adb<s-parame-vxworks.adb \
-  s-stchop.ads<s-stchop-limit.ads \
-  s-stchop.adb<s-stchop-vxworks.adb \
   s-taprop.adb<s-taprop-vxworks.adb \
   s-tasinf.ads<s-tasinf-vxworks.ads \
   s-taspri.ads<s-taspri-vxworks.ads \
@@ -526,6 +524,19 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
   g-stsifd.adb<g-stsifd-sockets.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS)
+
+  # VxWorks 5 and 6 both use the same target triplet making them
+  # indistinguishable in the context of this make file. Package
+  # System.Stack_Checking.Operations is not needed on VxWorks 6 as it leads to
+  # an undefined symbol when building a dynamic shared library. To alleviate
+  # this problem and distinguish this case, we use the THREAD_KIND and include
+  # the package only in kernel mode.
+
+  ifeq ($(strip $(filter-out default,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS += \
+      s-stchop.ads<s-stchop-limit.ads \
+      s-stchop.adb<s-stchop-vxworks.adb
+  endif
 
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \

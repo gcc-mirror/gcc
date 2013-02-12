@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2012, AdaCore                     --
+--                     Copyright (C) 1995-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1479,7 +1479,7 @@ package body System.OS_Lib is
          if not Is_Absolute_Path (Result.all) then
             declare
                Absolute_Path : constant String :=
-                                 Normalize_Pathname (Result.all);
+                 Normalize_Pathname (Result.all, Resolve_Links => False);
             begin
                Free (Result);
                Result := new String'(Absolute_Path);
@@ -1656,7 +1656,7 @@ package body System.OS_Lib is
    procedure Normalize_Arguments (Args : in out Argument_List) is
 
       procedure Quote_Argument (Arg : in out String_Access);
-      --  Add quote around argument if it contains spaces
+      --  Add quote around argument if it contains spaces (or HT characters)
 
       C_Argument_Needs_Quote : Integer;
       pragma Import (C, C_Argument_Needs_Quote, "__gnat_argument_needs_quote");
@@ -1688,7 +1688,7 @@ package body System.OS_Lib is
                   Res (J) := '"';
                   Quote_Needed := True;
 
-               elsif Arg (K) = ' ' then
+               elsif Arg (K) = ' ' or else Arg (K) = ASCII.HT then
                   Res (J) := Arg (K);
                   Quote_Needed := True;
 

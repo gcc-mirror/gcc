@@ -1,8 +1,7 @@
 @ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright 1995, 1996, 1998, 1999, 2000, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2013 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the

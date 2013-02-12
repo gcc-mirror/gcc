@@ -143,9 +143,7 @@ lvalue_kind (const_tree ref)
     case ARRAY_REF:
     case PARM_DECL:
     case RESULT_DECL:
-      if (TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
-	return clk_ordinary;
-      break;
+      return clk_ordinary;
 
       /* A scope ref in a template, left as SCOPE_REF to support later
 	 access checking.  */
@@ -2582,6 +2580,13 @@ cp_tree_equal (tree t1, tree t2)
 	 with an out-of-class definition of the function, but can also come
 	 up for expressions that involve 'this' in a member function
 	 template.  */
+
+      if (comparing_specializations)
+	/* When comparing hash table entries, only an exact match is
+	   good enough; we don't want to replace 'this' with the
+	   version from another function.  */
+	return false;
+
       if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	{
 	  if (DECL_ARTIFICIAL (t1) ^ DECL_ARTIFICIAL (t2))

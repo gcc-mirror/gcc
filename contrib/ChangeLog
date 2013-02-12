@@ -1,3 +1,30 @@
+2013-02-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* update-copyright.py: Add libdecnumber to the default list.
+	Remove libquadmath and libssp.
+
+2013-02-06  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py: Fix typo.
+
+2013-02-06  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py: Update
+	Copyright years.
+	Request contributions not to use Python features newer
+	than 2.4.
+	(GetBuildData): If this is not a build directory,
+	emit an error only if --results or --manifest are missing.
+
+2013-02-06  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite-management/validate_failures.py
+	(IsInterestingResult): Fix performance regression
+
+2013-02-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* update-copyright.py: New file.
+
 2013-01-15  David Blaikie <dblaikie@gmail.com>
 
 	* dg-extract-results.sh: Handle KPASSes.

@@ -4338,9 +4338,6 @@ allocate_initial_values (void)
    function.  */
 bool ira_use_lra_p;
 
-/* All natural loops.  */
-struct loops ira_loops;
-
 /* True if we have allocno conflicts.  It is false for non-optimized
    mode or when the conflict table is too big.  */
 bool ira_conflicts_p;
@@ -4464,11 +4461,7 @@ ira (FILE *f)
 
   ira_assert (current_loops == NULL);
   if (flag_ira_region == IRA_REGION_ALL || flag_ira_region == IRA_REGION_MIXED)
-    {
-      flow_loops_find (&ira_loops);
-      current_loops = &ira_loops;
-      record_loop_exits ();
-    }
+    loop_optimizer_init (AVOID_CFG_MODIFICATIONS | LOOPS_HAVE_RECORDED_EXITS);
 
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Building IRA IR\n");
@@ -4526,11 +4519,10 @@ ira (FILE *f)
 	  /* ??? Rebuild the loop tree, but why?  Does the loop tree
 	     change if new insns were generated?  Can that be handled
 	     by updating the loop tree incrementally?  */
-	  release_recorded_exits ();
-	  flow_loops_free (&ira_loops);
-	  flow_loops_find (&ira_loops);
-	  current_loops = &ira_loops;
-	  record_loop_exits ();
+	  loop_optimizer_finalize ();
+	  free_dominance_info (CDI_DOMINATORS);
+	  loop_optimizer_init (AVOID_CFG_MODIFICATIONS
+			       | LOOPS_HAVE_RECORDED_EXITS);
 
 	  if (! ira_use_lra_p)
 	    {
@@ -4607,8 +4599,7 @@ do_reload (void)
     {
       if (current_loops != NULL)
 	{
-	  release_recorded_exits ();
-	  flow_loops_free (&ira_loops);
+	  loop_optimizer_finalize ();
 	  free_dominance_info (CDI_DOMINATORS);
 	}
       FOR_ALL_BB (bb)
@@ -4657,8 +4648,7 @@ do_reload (void)
       ira_destroy ();
       if (current_loops != NULL)
 	{
-	  release_recorded_exits ();
-	  flow_loops_free (&ira_loops);
+	  loop_optimizer_finalize ();
 	  free_dominance_info (CDI_DOMINATORS);
 	}
       FOR_ALL_BB (bb)

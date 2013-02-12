@@ -1,3 +1,7 @@
+2013-02-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Revert previous patch.
+
 2013-02-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years.

@@ -101,12 +101,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Link -lasan early on the command line.  For -static-libasan, don't link
    it for -shared link, the executable should be compiled with -static-libasan
    in that case, and for executable link link with --{,no-}whole-archive around
-   it to force everything into the executable.  */
+   it to force everything into the executable.  And similarly for -ltsan.  */
+#if defined(HAVE_LD_STATIC_DYNAMIC)
 #undef LIBASAN_EARLY_SPEC
 #define LIBASAN_EARLY_SPEC "%{static-libasan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
+#undef LIBTSAN_EARLY_SPEC
+#define LIBTSAN_EARLY_SPEC "%{static-libtsan:%{!shared:" \
+  LD_STATIC_OPTION " --whole-archive -ltsan --no-whole-archive " \
+  LD_DYNAMIC_OPTION "}}%{!static-libtsan:-ltsan}"
+#endif
 
 /* Additional libraries needed by -static-libasan.  */
 #undef STATIC_LIBASAN_LIBS
 #define STATIC_LIBASAN_LIBS "-ldl -lpthread"
+
+/* Additional libraries needed by -static-libtsan.  */
+#undef STATIC_LIBTSAN_LIBS
+#define STATIC_LIBTSAN_LIBS "-ldl -lpthread"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -843,7 +843,9 @@ package body Sem_Ch13 is
             Prag :=
               Make_Pragma (Loc,
                 Pragma_Argument_Associations => New_List (
-                  New_Occurrence_Of (Ent, Sloc (Ident))),
+                  Make_Pragma_Argument_Association (Sloc (Ident),
+                    Expression => New_Occurrence_Of (Ent, Sloc (Ident)))),
+
                 Pragma_Identifier            =>
                   Make_Identifier (Sloc (Ident), Chars (Ident)));
 
@@ -1212,21 +1214,29 @@ package body Sem_Ch13 is
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
-                        New_Occurrence_Of (E, Loc),
-                        Relocate_Node (Expr)),
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => New_Occurrence_Of (E, Loc)),
+
+                        Make_Pragma_Argument_Association (Sloc (Expr),
+                          Expression => Relocate_Node (Expr))),
+
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)));
 
                when Aspect_Synchronization =>
 
                   --  The aspect corresponds to pragma Implemented.
-                  --  Construct the pragma
+                  --  Construct the pragma.
 
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
-                        New_Occurrence_Of (E, Loc),
-                        Relocate_Node (Expr)),
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => New_Occurrence_Of (E, Loc)),
+
+                        Make_Pragma_Argument_Association (Sloc (Expr),
+                          Expression => Relocate_Node (Expr))),
+
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Name_Implemented));
 
@@ -1241,8 +1251,11 @@ package body Sem_Ch13 is
                     Make_Pragma (Loc,
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Name_Attach_Handler),
-                      Pragma_Argument_Associations =>
-                        New_List (Ent, Relocate_Node (Expr)));
+                          Pragma_Argument_Associations => New_List (
+                            Make_Pragma_Argument_Association (Sloc (Ent),
+                              Expression => Ent),
+                            Make_Pragma_Argument_Association (Sloc (Expr),
+                              Expression => Relocate_Node (Expr))));
 
                when Aspect_Dynamic_Predicate |
                     Aspect_Predicate         |
@@ -1253,8 +1266,11 @@ package body Sem_Ch13 is
 
                   Aitem :=
                     Make_Pragma (Loc,
-                      Pragma_Argument_Associations =>
-                        New_List (Ent, Relocate_Node (Expr)),
+                      Pragma_Argument_Associations => New_List (
+                         Make_Pragma_Argument_Association (Sloc (Ent),
+                           Expression => Ent),
+                         Make_Pragma_Argument_Association (Sloc (Expr),
+                           Expression => Relocate_Node (Expr))),
                       Class_Present                => Class_Present (Aspect),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Name_Predicate));
@@ -1305,8 +1321,7 @@ package body Sem_Ch13 is
                      while Present (A) loop
                         A_Name := Chars (Identifier (A));
 
-                        if A_Name = Name_Import
-                             or else
+                        if A_Name = Name_Import or else
                            A_Name = Name_Export
                         then
                            if Found then
@@ -1333,7 +1348,11 @@ package body Sem_Ch13 is
                         Next (A);
                      end loop;
 
-                     Arg_List := New_List (Relocate_Node (Expr), Ent);
+                     Arg_List := New_List (
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr)),
+                       Make_Pragma_Argument_Association (Sloc (Ent),
+                         Expression => Ent));
 
                      if Present (L_Assoc) then
                         Append_To (Arg_List, L_Assoc);
@@ -1361,8 +1380,9 @@ package body Sem_Ch13 is
                   if Nkind (N) = N_Subprogram_Body then
                      Aitem :=
                        Make_Pragma (Loc,
-                         Pragma_Argument_Associations =>
-                           New_List (Relocate_Node (Expr)),
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (Sloc (Expr),
+                             Expression => Relocate_Node (Expr))),
                          Pragma_Identifier            =>
                            Make_Identifier (Sloc (Id), Chars (Id)));
                   else
@@ -1380,8 +1400,10 @@ package body Sem_Ch13 is
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
-                        Relocate_Node (Expr),
-                        New_Occurrence_Of (E, Loc)),
+                        Make_Pragma_Argument_Association (Sloc (Expr),
+                          Expression => Relocate_Node (Expr)),
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => New_Occurrence_Of (E, Loc))),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)),
                       Class_Present                => Class_Present (Aspect));
@@ -1409,8 +1431,11 @@ package body Sem_Ch13 is
 
                   Aitem :=
                     Make_Pragma (Loc,
-                      Pragma_Argument_Associations =>
-                        New_List (Ent, Relocate_Node (Expr)),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Sloc (Ent),
+                          Expression => Ent),
+                        Make_Pragma_Argument_Association (Sloc (Expr),
+                          Expression => Relocate_Node (Expr))),
                       Class_Present                => Class_Present (Aspect),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Name_Invariant));
@@ -1661,6 +1686,7 @@ package body Sem_Ch13 is
 
                when Aspect_Contract_Case |
                     Aspect_Test_Case     =>
+
                   declare
                      Args      : List_Id;
                      Comp_Expr : Node_Id;
@@ -1692,10 +1718,9 @@ package body Sem_Ch13 is
                      while Present (Comp_Expr) loop
                         New_Expr := Relocate_Node (Comp_Expr);
                         Set_Original_Node (New_Expr, Comp_Expr);
-                        Append
-                          (Make_Pragma_Argument_Association (Sloc (Comp_Expr),
-                           Expression => New_Expr),
-                           Args);
+                        Append_To (Args,
+                          Make_Pragma_Argument_Association (Sloc (Comp_Expr),
+                            Expression => New_Expr));
                         Next (Comp_Expr);
                      end loop;
 
@@ -1713,11 +1738,10 @@ package body Sem_Ch13 is
 
                         New_Expr := Relocate_Node (Expression (Comp_Assn));
                         Set_Original_Node (New_Expr, Expression (Comp_Assn));
-                        Append (Make_Pragma_Argument_Association (
-                          Sloc       => Sloc (Comp_Assn),
+                        Append_To (Args,
+                          Make_Pragma_Argument_Association (Sloc (Comp_Assn),
                           Chars      => Chars (First (Choices (Comp_Assn))),
-                          Expression => New_Expr),
-                          Args);
+                          Expression => New_Expr));
                         Next (Comp_Assn);
                      end loop;
 
@@ -1893,7 +1917,9 @@ package body Sem_Ch13 is
                   if No (Expr) then
                      Aitem :=
                        Make_Pragma (Loc,
-                         Pragma_Argument_Associations => New_List (Ent),
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (Sloc (Ent),
+                             Expression => Ent)),
                          Pragma_Identifier            =>
                            Make_Identifier (Sloc (Id), Chars (Id)));
 
@@ -1940,7 +1966,9 @@ package body Sem_Ch13 is
                      if Is_True (Static_Boolean (Expr)) then
                         Aitem :=
                           Make_Pragma (Loc,
-                            Pragma_Argument_Associations => New_List (Ent),
+                            Pragma_Argument_Associations => New_List (
+                              Make_Pragma_Argument_Association (Sloc (Ent),
+                                Expression => Ent)),
                             Pragma_Identifier            =>
                               Make_Identifier (Sloc (Id), Chars (Id)));
 
@@ -3594,9 +3622,17 @@ package body Sem_Ch13 is
                   Flag_Non_Static_Expr
                     ("Scalar_Storage_Order requires static expression!", Expr);
 
-               else
-                  if (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
+               elsif (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
+
+                  --  Here for the case of a non-default (i.e. non-confirming)
+                  --  Scalar_Storage_Order attribute definition.
+
+                  if Support_Nondefault_SSO_On_Target then
                      Set_Reverse_Storage_Order (Base_Type (U_Ent), True);
+                  else
+                     Error_Msg_N
+                       ("non-default Scalar_Storage_Order "
+                        & "not supported on target", Expr);
                   end if;
                end if;
             end if;

@@ -1022,20 +1022,20 @@ main (int argc, char **argv)
 	  selected_linker = USE_GOLD_LD;
 
 #ifdef COLLECT_EXPORT_LIST
-	/* since -brtl, -bexport, -b64 are not position dependent
-	   also check for them here */
-	if ((argv[i][0] == '-') && (argv[i][1] == 'b'))
-  	  {
-	    arg = argv[i];
-	    /* We want to disable automatic exports on AIX when user
-	       explicitly puts an export list in command line */
-	    if (arg[2] == 'E' || strncmp (&arg[2], "export", 6) == 0)
-	      export_flag = 1;
-	    else if (arg[2] == '6' && arg[3] == '4')
-	      aix64_flag = 1;
-	    else if (arg[2] == 'r' && arg[3] == 't' && arg[4] == 'l')
-	      aixrtl_flag = 1;
-	  }
+	/* These flags are position independent, although their order
+	   is important - subsequent flags override earlier ones. */
+	else if (strcmp (argv[i], "-b64") == 0)
+	    aix64_flag = 1;
+	/* -bexport:filename always needs the :filename */
+	else if (strncmp (argv[i], "-bE:", 4) == 0
+	      || strncmp (argv[i], "-bexport:", 9) == 0)
+	    export_flag = 1;
+	else if (strcmp (argv[i], "-brtl") == 0
+	      || strcmp (argv[i], "-bsvr4") == 0
+	      || strcmp (argv[i], "-G") == 0)
+	    aixrtl_flag = 1;
+	else if (strcmp (argv[i], "-bnortl") == 0)
+	    aixrtl_flag = 0;
 #endif
       }
     vflag = debug;

@@ -405,7 +405,7 @@ runtime_MHeap_Scavenger(void* dummy)
 			// GC blocks other goroutines via the runtime_worldsema.
 			runtime_noteclear(&note);
 			notep = &note;
-			__go_go(forcegchelper, (void*)&notep);
+			__go_go(forcegchelper, (void*)notep);
 			runtime_entersyscall();
 			runtime_notesleep(&note);
 			runtime_exitsyscall();

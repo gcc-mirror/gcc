@@ -43,6 +43,7 @@ load_gcc_lib prune.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib wrapper.exp
 load_gcc_lib gcc-defs.exp
+load_gcc_lib timeout.exp
 load_gcc_lib go.exp
 
 proc libgo_init { args } {

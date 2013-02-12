@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -513,7 +513,7 @@ package body Exp_Prag is
 
       Insert_After_And_Analyze (N,
          Make_Pragma (Loc,
-           Chars => Name_Machine_Attribute,
+           Chars                        => Name_Machine_Attribute,
            Pragma_Argument_Associations => New_List (
              Make_Pragma_Argument_Association (Iloc,
                Expression => New_Copy_Tree (Internal)),
@@ -644,44 +644,38 @@ package body Exp_Prag is
                        (UI_To_Int (Exception_Code (Id)) / 8 * 8);
 
                      Excep_Alias :=
-                       Make_Pragma
-                         (Loc,
-                          Name_Linker_Alias,
-                          New_List
-                            (Make_Pragma_Argument_Association
-                               (Sloc => Loc,
-                                Expression =>
-                                  New_Reference_To (Excep_Internal, Loc)),
+                       Make_Pragma (Loc,
+                         Chars                        => Name_Linker_Alias,
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression =>
+                               New_Reference_To (Excep_Internal, Loc)),
 
-                             Make_Pragma_Argument_Association
-                               (Sloc => Loc,
-                                Expression =>
-                                  Make_String_Literal
-                                    (Sloc => Loc,
-                                     Strval => End_String))));
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression =>
+                               Make_String_Literal (Loc, End_String))));
 
                      Insert_Action (N, Excep_Alias);
                      Analyze (Excep_Alias);
 
                      Export_Pragma :=
-                       Make_Pragma
-                         (Loc,
-                          Name_Export,
-                          New_List
-                            (Make_Pragma_Argument_Association (Loc,
-                               Expression => Make_Identifier (Loc, Name_C)),
+                       Make_Pragma (Loc,
+                         Chars                        => Name_Export,
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression => Make_Identifier (Loc, Name_C)),
 
-                             Make_Pragma_Argument_Association (Loc,
-                               Expression =>
-                                 New_Reference_To (Excep_Internal, Loc)),
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression =>
+                               New_Reference_To (Excep_Internal, Loc)),
 
-                             Make_Pragma_Argument_Association (Loc,
-                               Expression =>
-                                 Make_String_Literal (Loc, Excep_Image)),
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression =>
+                               Make_String_Literal (Loc, Excep_Image)),
 
-                             Make_Pragma_Argument_Association (Loc,
-                                Expression =>
-                                  Make_String_Literal (Loc, Excep_Image))));
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression =>
+                               Make_String_Literal (Loc, Excep_Image))));
 
                      Insert_Action (N, Export_Pragma);
                      Analyze (Export_Pragma);

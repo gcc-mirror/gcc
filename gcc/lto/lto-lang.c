@@ -1156,9 +1156,6 @@ lto_init (void)
   /* We need to generate LTO if running in WPA mode.  */
   flag_generate_lto = flag_wpa;
 
-  /* Initialize libcpp line maps for gcc_assert to work.  */
-  linemap_add (line_table, LC_ENTER, 0, NULL, 0);
-
   /* Create the basic integer types.  */
   build_common_tree_nodes (flag_signed_char, /*short_double=*/false);
 

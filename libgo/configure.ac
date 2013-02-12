@@ -156,6 +156,17 @@ AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AC_SUBST(GOOS)
 
+dnl Test whether we need to use DejaGNU or whether we can use the
+dnl simpler gotest approach.  We can only use gotest for a native
+dnl build.
+USE_DEJAGNU=no
+case ${host} in
+  *-*-rtems*) USE_DEJAGNU=yes ;;
+  ${build}) ;;
+  *) USE_DEJAGNU=yes ;;
+esac
+AC_SUBST(USE_DEJAGNU)
+
 dnl N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
 is_386=no
 is_alpha=no

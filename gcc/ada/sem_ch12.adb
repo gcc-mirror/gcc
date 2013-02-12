@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -10452,23 +10452,24 @@ package body Sem_Ch12 is
          T : constant Entity_Id := Get_Instance_Of (Gen_T);
 
       begin
-         return (Base_Type (T) = Base_Type (Act_T)
+         --  Some detailed comments would be useful here ???
+
+         return ((Base_Type (T) = Act_T
+                   or else Base_Type (T) = Base_Type (Act_T))
                   and then Subtypes_Statically_Match (T, Act_T))
 
            or else (Is_Class_Wide_Type (Gen_T)
                      and then Is_Class_Wide_Type (Act_T)
-                     and then
-                       Subtypes_Match
-                        (Get_Instance_Of (Root_Type (Gen_T)),
-                         Root_Type (Act_T)))
+                     and then Subtypes_Match
+                                (Get_Instance_Of (Root_Type (Gen_T)),
+                                 Root_Type (Act_T)))
 
            or else
-             ((Ekind (Gen_T) = E_Anonymous_Access_Subprogram_Type
-                 or else Ekind (Gen_T) = E_Anonymous_Access_Type)
+             (Ekind_In (Gen_T, E_Anonymous_Access_Subprogram_Type,
+                               E_Anonymous_Access_Type)
                and then Ekind (Act_T) = Ekind (Gen_T)
-               and then
-                 Subtypes_Statically_Match
-                   (Designated_Type (Gen_T), Designated_Type (Act_T)));
+               and then Subtypes_Statically_Match
+                          (Designated_Type (Gen_T), Designated_Type (Act_T)));
       end Subtypes_Match;
 
       -----------------------------------------
@@ -10699,13 +10700,16 @@ package body Sem_Ch12 is
          --  issues when the generic is a child unit and some aspect of the
          --  generic type is declared in a parent unit of the generic. We do
          --  the test to handle this special case only after a direct check
-         --  for static matching has failed.
+         --  for static matching has failed. The case where both the component
+         --  type and the array type are separate formals, and the component
+         --  type is a private view may also require special checking in
+         --  Subtypes_Match.
 
          if Subtypes_Match
            (Component_Type (A_Gen_T), Component_Type (Act_T))
              or else Subtypes_Match
-                      (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
-                       Component_Type (Act_T))
+               (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
+               Component_Type (Act_T))
          then
             null;
          else

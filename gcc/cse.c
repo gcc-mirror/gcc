@@ -5311,33 +5311,33 @@ cse_insn (rtx insn)
 	}
 
       /* If this is a single SET, we are setting a register, and we have an
-	 equivalent constant, we want to add a REG_NOTE.   We don't want
-	 to write a REG_EQUAL note for a constant pseudo since verifying that
-	 that pseudo hasn't been eliminated is a pain.  Such a note also
-	 won't help anything.
+	 equivalent constant, we want to add a REG_EQUAL note if the constant
+	 is different from the source.  We don't want to do it for a constant
+	 pseudo since verifying that this pseudo hasn't been eliminated is a
+	 pain; moreover such a note won't help anything.
 
 	 Avoid a REG_EQUAL note for (CONST (MINUS (LABEL_REF) (LABEL_REF)))
 	 which can be created for a reference to a compile time computable
 	 entry in a jump table.  */
-
-      if (n_sets == 1 && src_const && REG_P (dest)
+      if (n_sets == 1
+	  && REG_P (dest)
+	  && src_const
 	  && !REG_P (src_const)
-	  && ! (GET_CODE (src_const) == CONST
-		&& GET_CODE (XEXP (src_const, 0)) == MINUS
-		&& GET_CODE (XEXP (XEXP (src_const, 0), 0)) == LABEL_REF
-		&& GET_CODE (XEXP (XEXP (src_const, 0), 1)) == LABEL_REF))
+	  && !(GET_CODE (src_const) == SUBREG
+	       && REG_P (SUBREG_REG (src_const)))
+	  && !(GET_CODE (src_const) == CONST
+	       && GET_CODE (XEXP (src_const, 0)) == MINUS
+	       && GET_CODE (XEXP (XEXP (src_const, 0), 0)) == LABEL_REF
+	       && GET_CODE (XEXP (XEXP (src_const, 0), 1)) == LABEL_REF)
+	  && !rtx_equal_p (src, src_const))
 	{
-	  /* We only want a REG_EQUAL note if src_const != src.  */
-	  if (! rtx_equal_p (src, src_const))
-	    {
-	      /* Make sure that the rtx is not shared.  */
-	      src_const = copy_rtx (src_const);
+	  /* Make sure that the rtx is not shared.  */
+	  src_const = copy_rtx (src_const);
 
-	      /* Record the actual constant value in a REG_EQUAL note,
-		 making a new one if one does not already exist.  */
-	      set_unique_reg_note (insn, REG_EQUAL, src_const);
-	      df_notes_rescan (insn);
-	    }
+	  /* Record the actual constant value in a REG_EQUAL note,
+	     making a new one if one does not already exist.  */
+	  set_unique_reg_note (insn, REG_EQUAL, src_const);
+	  df_notes_rescan (insn);
 	}
 
       /* Now deal with the destination.  */

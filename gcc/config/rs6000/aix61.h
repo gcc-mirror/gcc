@@ -133,6 +133,9 @@ do {									\
 #undef  PROCESSOR_DEFAULT64
 #define PROCESSOR_DEFAULT64 PROCESSOR_POWER7
 
+/* AIX 6.1 kernel and assembler have necessary support for Altivec and VSX.  */
+#undef OS_MISSING_ALTIVEC
+
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
    defaults for this target and thus do not need to be handled

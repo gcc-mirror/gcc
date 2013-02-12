@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -9819,6 +9819,18 @@ package body Sem_Attr is
          --  specially and not touched by Resolve.
 
          when Attribute_Enabled =>
+            null;
+
+         ----------------
+         -- Loop_Entry --
+         ----------------
+
+         --  Do not resolve the prefix of Loop_Entry, instead wait until the
+         --  attribute has been expanded (see Expand_Loop_Entry_Attributes).
+         --  The delay ensures that any generated checks or temporaries are
+         --  inserted before the relocated prefix.
+
+         when Attribute_Loop_Entry =>
             null;
 
          --------------------

@@ -1,3 +1,21 @@
+2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/lib2funcs.c: New C sources for modules for libgcc.a.
+	* config/avr/lib2-object.mk: New iterator to build objects from it.
+	* config/avr/t-avr: Iterate lib2-object.mk to build objects from
+	lib2funcs.c.
+	(LIB2FUNCS_EXCLUDE): Add _clrsbdi2.
+	(LIB1ASMFUNCS): Add: _ssabs_1, _mask1, _ret, _roundqq3, _rounduqq3,
+	_round_s2, _round_u2, _round_2_const, _addmask_2, _round_s4,
+	_round_u4, _round_4_const, _addmask_4, _round_x8, _rounddq3
+	_roundudq3, _roundda3 _rounduda3, _roundta3 _rounduta3.
+	* config/avr/lib1funcs-fixed.S: Implement them.
+
+2013-02-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years.
+
 2013-02-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/54601

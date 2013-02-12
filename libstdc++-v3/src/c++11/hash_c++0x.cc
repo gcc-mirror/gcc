@@ -26,6 +26,7 @@
 # error "hash_c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
+#include <type_traits>
 #include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

@@ -7,6 +7,7 @@
 package net
 
 import (
+	"errors"
 	"os"
 	"syscall"
 )
@@ -17,6 +18,7 @@ type pollster struct {
 	readyReadFds, readyWriteFds  *syscall.FdSet
 	nReady                       int
 	lastFd                       int
+	closed                       bool
 }
 
 func newpollster() (p *pollster, err error) {
@@ -35,6 +37,10 @@ func newpollster() (p *pollster, err error) {
 func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, error) {
 	// pollServer is locked.
 
+	if p.closed {
+		return false, errors.New("pollster closed")
+	}
+
 	if mode == 'r' {
 		syscall.FDSet(fd, p.readFds)
 	} else {
@@ -52,19 +58,23 @@ func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, error) {
 	return true, nil
 }
 
-func (p *pollster) DelFD(fd int, mode int) {
+func (p *pollster) DelFD(fd int, mode int) bool {
 	// pollServer is locked.
+
+	if p.closed {
+		return false
+	}
 
 	if mode == 'r' {
 		if !syscall.FDIsSet(fd, p.readFds) {
 			print("Select unexpected fd=", fd, " for read\n")
-			return
+			return false
 		}
 		syscall.FDClr(fd, p.readFds)
 	} else {
 		if !syscall.FDIsSet(fd, p.writeFds) {
 			print("Select unexpected fd=", fd, " for write\n")
-			return
+			return false
 		}
 		syscall.FDClr(fd, p.writeFds)
 	}
@@ -73,6 +83,8 @@ func (p *pollster) DelFD(fd int, mode int) {
 	syscall.FDClr(fd, p.repeatFds)
 
 	// We don't worry about maxFd here.
+
+	return true
 }
 
 func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err error) {
@@ -89,6 +101,10 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err erro
 		var e error
 		var tmpReadFds, tmpWriteFds syscall.FdSet
 		for {
+			if p.closed {
+				return -1, 0, errors.New("pollster closed")
+			}
+
 			// Temporary syscall.FdSet's into which the values are copied
 			// because select mutates the values.
 			tmpReadFds = *p.readFds
@@ -161,5 +177,6 @@ func (p *pollster) WaitFD(s *pollServer, nsec int64) (fd int, mode int, err erro
 }
 
 func (p *pollster) Close() error {
+	p.closed = true
 	return nil
 }

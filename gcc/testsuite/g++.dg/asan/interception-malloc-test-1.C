@@ -2,6 +2,7 @@
 
 // { dg-do run { target *-*-linux* } }
 // { dg-options "-fno-builtin-free" }
+// { dg-additional-options "-D__NO_INLINE__" { target { *-*-linux-gnu } } }
 // { dg-shouldfail "asan" }
 
 #include <stdlib.h>

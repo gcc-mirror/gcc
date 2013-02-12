@@ -3409,7 +3409,47 @@ package body Sem_Res is
                   Generate_Reference (Orig_A, A, 'm');
 
                elsif not Is_Overloaded (A) then
-                  Generate_Reference (Orig_A, A);
+                  if Ekind (F) /= E_Out_Parameter then
+                     Generate_Reference (Orig_A, A);
+
+                  --  RM 6.4.1(12): For an out parameter that is passed by
+                  --  copy, the formal parameter object is created, and:
+
+                  --  * For an access type, the formal parameter is initialized
+                  --    from the value of the actual, without checking that the
+                  --    value satisfies any constraint, any predicate, or any
+                  --    exclusion of the null value.
+
+                  --  * For a scalar type that has the Default_Value aspect
+                  --    specified, the formal parameter is initialized from the
+                  --    value of the actual, without checking that the value
+                  --    satisfies any constraint or any predicate.
+                  --  I do not understand why this case is included??? this is
+                  --  not a case where an OUT parameter is treated as IN OUT.
+
+                  --  * For a composite type with discriminants or that has
+                  --    implicit initial values for any subcomponents, the
+                  --    behavior is as for an in out parameter passed by copy.
+
+                  --  Hence for these cases we generate the read reference now
+                  --  (the write reference will be generated later by
+                  --   Note_Possible_Modification).
+
+                  elsif Is_By_Copy_Type (Etype (F))
+                    and then
+                      (Is_Access_Type (Etype (F))
+                         or else
+                           (Is_Scalar_Type (Etype (F))
+                              and then
+                                Present (Default_Aspect_Value (Etype (F))))
+                         or else
+                           (Is_Composite_Type (Etype (F))
+                              and then (Has_Discriminants (Etype (F))
+                                         or else Is_Partially_Initialized_Type
+                                                   (Etype (F)))))
+                  then
+                     Generate_Reference (Orig_A, A);
+                  end if;
                end if;
             end if;
          end if;

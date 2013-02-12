@@ -2,10 +2,14 @@
 
 # Script to compare testsuite failures against a list of known-to-fail
 # tests.
+#
+# NOTE: This script is used in installations that are running Python 2.4.
+#       Please stick to syntax features available in 2.4 and earlier
+#       versions.
 
 # Contributed by Diego Novillo <dnovillo@google.com>
 #
-# Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -62,6 +66,7 @@ import sys
 
 # Handled test results.
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
+_VALID_TEST_RESULTS_REX = re.compile("%s" % "|".join(_VALID_TEST_RESULTS))
 
 # Subdirectory of srcdir in which to find the manifest file.
 _MANIFEST_SUBDIR = 'contrib/testsuite-management'
@@ -77,7 +82,7 @@ _MANIFEST_PATH_PATTERN = '%s/%s/%s.xfail'
 _OPTIONS = None
 
 def Error(msg):
-  print >>sys.stderr, '\nerror: %s' % msg
+  print >>sys.stderr, 'error: %s' % msg
   sys.exit(1)
 
 
@@ -210,7 +215,7 @@ def IsInterestingResult(line):
   if '|' in line:
     (_, line) = line.split('|', 1)
     line = line.strip()
-  return any(line.startswith(result) for result in _VALID_TEST_RESULTS)
+  return bool(_VALID_TEST_RESULTS_REX.match(line))
 
 
 def IsInclude(line):
@@ -357,15 +362,24 @@ def GetManifestPath(srcdir, target, user_provided_must_exist):
       Error('Manifest does not exist: %s' % manifest_path)
     return manifest_path
   else:
+    assert srcdir and target
     return _MANIFEST_PATH_PATTERN % (srcdir, _MANIFEST_SUBDIR, target)
 
 
 def GetBuildData():
-  target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
   srcdir = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'srcdir =')
+  target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
   if not ValidBuildDirectory(_OPTIONS.build_dir, target):
-    Error('%s is not a valid GCC top level build directory.' %
-          _OPTIONS.build_dir)
+    # If we have been given a set of results to use, we may
+    # not be inside a valid GCC build directory.  In that case,
+    # the user must provide both a manifest file and a set
+    # of results to check against it.
+    if not _OPTIONS.results or not _OPTIONS.manifest:
+      Error('%s is not a valid GCC top level build directory. '
+            'You must use --manifest and --results to do the validation.' %
+            _OPTIONS.build_dir)
+    else:
+      return None, None
   print 'Source directory: %s' % srcdir
   print 'Build target:     %s' % target
   return srcdir, target
@@ -409,7 +423,7 @@ def PerformComparison(expected, actual, ignore_missing_failures):
 
 
 def CheckExpectedResults():
-  (srcdir, target) = GetBuildData()
+  srcdir, target = GetBuildData()
   manifest_path = GetManifestPath(srcdir, target, True)
   print 'Manifest:         %s' % manifest_path
   manifest = GetManifest(manifest_path)
@@ -484,7 +498,8 @@ def Main(argv):
   parser.add_option('--manifest', action='store', type='string',
                     dest='manifest', default=None,
                     help='Name of the manifest file to use (default = '
-                    'taken from contrib/testsuite-managment/<target_alias>.xfail)')
+                    'taken from '
+                    'contrib/testsuite-managment/<target_alias>.xfail)')
   parser.add_option('--produce_manifest', action='store_true',
                     dest='produce_manifest', default=False,
                     help='Produce the manifest for the current '

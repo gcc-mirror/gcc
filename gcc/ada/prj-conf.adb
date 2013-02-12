@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             P R J . C O N F                             --
+--                             P R J . C O N F                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2012, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2013, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -565,12 +565,10 @@ package body Prj.Conf is
          Tgt_Name := Variable.Value;
       end if;
 
-      if Target = "" then
-         OK := Autoconf_Specified or else Tgt_Name = No_Name;
-      else
-         OK := Tgt_Name /= No_Name
-                 and then Target = Get_Name_String (Tgt_Name);
-      end if;
+      OK :=
+        Target = ""
+          or else (Tgt_Name /= No_Name
+                    and then Target = Get_Name_String (Tgt_Name));
 
       if not OK then
          if Autoconf_Specified then
@@ -601,6 +599,7 @@ package body Prj.Conf is
 
    procedure Get_Or_Create_Configuration_File
      (Project                    : Project_Id;
+      Conf_Project               : Project_Id;
       Project_Tree               : Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
       Env                        : in out Prj.Tree.Environment;
@@ -625,6 +624,8 @@ package body Prj.Conf is
       --  The configuration project file name. May be modified if there are
       --  switches --config= in the Builder package of the main project.
 
+      Selected_Target : String_Access := new String'(Target_Name);
+
       function Default_File_Name return String;
       --  Return the name of the default config file that should be tested
 
@@ -634,6 +635,10 @@ package body Prj.Conf is
 
       procedure Check_Builder_Switches;
       --  Check for switches --config and --RTS in package Builder
+
+      procedure Get_Project_Target;
+      --  Target_Name is empty, get the specifiedtarget in the project file,
+      --  if any.
 
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
@@ -766,6 +771,48 @@ package body Prj.Conf is
          end if;
       end Check_Builder_Switches;
 
+      ------------------------
+      -- Get_Project_Target --
+      ------------------------
+
+      procedure Get_Project_Target is
+      begin
+         if Selected_Target'Length = 0 then
+
+            --  Check if attribute Target is specified in the main
+            --  project, or in a project it extends. If it is, use this
+            --  target to invoke gprconfig.
+
+            declare
+               Variable : Variable_Value;
+               Proj     : Project_Id;
+               Tgt_Name : Name_Id := No_Name;
+
+            begin
+               Proj := Project;
+               Project_Loop :
+               while Proj /= No_Project loop
+                  Variable :=
+                    Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
+
+                  if Variable /= Nil_Variable_Value
+                    and then not Variable.Default
+                    and then Variable.Value /= No_Name
+                  then
+                     Tgt_Name := Variable.Value;
+                     exit Project_Loop;
+                  end if;
+
+                  Proj := Proj.Extends;
+               end loop Project_Loop;
+
+               if Tgt_Name /= No_Name then
+                  Selected_Target := new String'(Get_Name_String (Tgt_Name));
+               end if;
+            end;
+         end if;
+      end Get_Project_Target;
+
       -----------------------
       -- Default_File_Name --
       -----------------------
@@ -775,13 +822,14 @@ package body Prj.Conf is
          Tmp     : String_Access;
 
       begin
-         if Target_Name /= "" then
+         if Selected_Target'Length /= 0 then
             if Ada_RTS /= "" then
                return
-                 Target_Name & '-' & Ada_RTS & Config_Project_File_Extension;
+                 Selected_Target.all & '-' &
+                 Ada_RTS & Config_Project_File_Extension;
             else
                return
-                 Target_Name & Config_Project_File_Extension;
+                 Selected_Target.all & Config_Project_File_Extension;
             end if;
 
          elsif Ada_RTS /= "" then
@@ -813,7 +861,7 @@ package body Prj.Conf is
          Obj_Dir : constant Variable_Value :=
                      Value_Of
                        (Name_Object_Dir,
-                        Project.Decl.Attributes,
+                        Conf_Project.Decl.Attributes,
                         Shared);
 
          Gprconfig_Path  : String_Access;
@@ -827,10 +875,10 @@ package body Prj.Conf is
               ("could not locate gprconfig for auto-configuration");
          end if;
 
-         --  First, find the object directory of the user's project
+         --  First, find the object directory of the Conf_Project
 
          if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
-            Get_Name_String (Project.Directory.Display_Name);
+            Get_Name_String (Conf_Project.Directory.Display_Name);
 
          else
             if Is_Absolute_Path (Get_Name_String (Obj_Dir.Value)) then
@@ -839,7 +887,7 @@ package body Prj.Conf is
             else
                Name_Len := 0;
                Add_Str_To_Name_Buffer
-                 (Get_Name_String (Project.Directory.Display_Name));
+                 (Get_Name_String (Conf_Project.Directory.Display_Name));
                Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
             end if;
          end if;
@@ -972,51 +1020,18 @@ package body Prj.Conf is
             if Normalized_Hostname = "" then
                Arg_Last := 3;
             else
-               if Target_Name = "" then
-
-                  --  Check if attribute Target is specified in the main
-                  --  project, or in a project it extends. If it is, use this
-                  --  target to invoke gprconfig.
-
-                  declare
-                     Variable : Variable_Value;
-                     Proj     : Project_Id;
-                     Tgt_Name : Name_Id := No_Name;
-
-                  begin
-                     Proj := Project;
-                     Project_Loop :
-                     while Proj /= No_Project loop
-                        Variable :=
-                          Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
-
-                        if Variable /= Nil_Variable_Value
-                          and then not Variable.Default
-                          and then Variable.Value /= No_Name
-                        then
-                           Tgt_Name := Variable.Value;
-                           exit Project_Loop;
-                        end if;
-
-                        Proj := Proj.Extends;
-                     end loop Project_Loop;
-
-                     if Tgt_Name /= No_Name then
-                        Args (4) :=
-                          new String'("--target=" &
-                                      Get_Name_String (Tgt_Name));
-
-                     elsif At_Least_One_Compiler_Command then
-                        Args (4) := new String'("--target=all");
-
-                     else
-                        Args (4) :=
-                          new String'("--target=" & Normalized_Hostname);
-                     end if;
-                  end;
+               if Selected_Target'Length = 0 then
+                  if At_Least_One_Compiler_Command then
+                     Args (4) :=
+                       new String'("--target=all");
+                  else
+                     Args (4) :=
+                       new String'("--target=" & Normalized_Hostname);
+                  end if;
 
                else
-                  Args (4) := new String'("--target=" & Target_Name);
+                  Args (4) :=
+                    new String'("--target=" & Selected_Target.all);
                end if;
 
                Arg_Last := 4;
@@ -1348,6 +1363,7 @@ package body Prj.Conf is
       Free (Config_File_Path);
       Config := No_Project;
 
+      Get_Project_Target;
       Check_Builder_Switches;
 
       if Conf_File_Name'Length > 0 then
@@ -1448,7 +1464,8 @@ package body Prj.Conf is
 
       if not Automatically_Generated
         and then not
-          Check_Target (Config, Autoconf_Specified, Project_Tree, Target_Name)
+          Check_Target
+            (Config, Autoconf_Specified, Project_Tree, Selected_Target.all)
       then
          Automatically_Generated := True;
          goto Process_Config_File;
@@ -1611,6 +1628,43 @@ package body Prj.Conf is
       Main_Config_Project : Project_Id;
       Success             : Boolean;
 
+      Conf_Project : Project_Id := No_Project;
+      --  The object directory of this project is used to store the config
+      --  project file in auto-configuration. Set by Check_Project below.
+
+      procedure Check_Project (Project : Project_Id);
+      --  Look for a non aggregate project. If one is found, put its project Id
+      --  in Conf_Project.
+
+      -------------------
+      -- Check_Project --
+      -------------------
+
+      procedure Check_Project (Project : Project_Id) is
+      begin
+         if Project.Qualifier = Aggregate
+              or else
+            Project.Qualifier = Aggregate_Library
+         then
+            declare
+               List : Aggregated_Project_List := Project.Aggregated_Projects;
+
+            begin
+               --  Look for a non aggregate project until one is found
+
+               while Conf_Project = No_Project and then List /= null loop
+                  Check_Project (List.Project);
+                  List := List.Next;
+               end loop;
+            end;
+
+         else
+            Conf_Project := Project;
+         end if;
+      end Check_Project;
+
+   --  Start of processing for Process_Project_And_Apply_Config
+
    begin
       Main_Project := No_Project;
       Automatically_Generated := False;
@@ -1666,11 +1720,25 @@ package body Prj.Conf is
          Read_Source_Info_File (Project_Tree);
       end if;
 
+      --  Get the first project that is not an aggregate project or an
+      --  aggregate library project. The object directory of this project will
+      --  be used to store the config project file in auto-configuration.
+
+      Check_Project (Main_Project);
+
+      --  Fail if there is only aggregate projects and aggregate library
+      --  projects in the project tree.
+
+      if Conf_Project = No_Project then
+         Raise_Invalid_Config ("there are no non-aggregate projects");
+      end if;
+
       --  Find configuration file
 
       Get_Or_Create_Configuration_File
         (Config                     => Main_Config_Project,
          Project                    => Main_Project,
+         Conf_Project               => Conf_Project,
          Project_Tree               => Project_Tree,
          Project_Node_Tree          => Project_Node_Tree,
          Env                        => Env,

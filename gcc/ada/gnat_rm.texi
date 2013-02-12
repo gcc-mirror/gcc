@@ -151,6 +151,7 @@ Implementation Defined Pragmas
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implementation_Defined::
 * Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
@@ -176,10 +177,12 @@ Implementation Defined Pragmas
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
+* Pragma Loop_Optimize::
 * Pragma Machine_Attribute::
 * Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
+* Pragma No_Inline::
 * Pragma No_Return::
 * Pragma No_Strict_Aliasing ::
 * Pragma Normalize_Scalars::
@@ -197,6 +200,7 @@ Implementation Defined Pragmas
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
+* Pragma Profile (Rational)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Relative_Deadline::
@@ -900,6 +904,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implementation_Defined::
 * Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
@@ -925,10 +930,12 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
+* Pragma Loop_Optimize::
 * Pragma Machine_Attribute::
 * Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
+* Pragma No_Inline::
 * Pragma No_Return::
 * Pragma No_Strict_Aliasing::
 * Pragma Normalize_Scalars::
@@ -946,6 +953,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
+* Pragma Profile (Rational)::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Relative_Deadline::
@@ -2877,6 +2885,34 @@ maximum allowed length is 31 characters, so if it is important to
 maintain compatibility with this compiler, you should obey this length
 limit.
 
+@node Pragma Implementation_Defined
+@unnumberedsec Pragma Implementation_Defined
+@findex Implementation_Defined
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Implementation_Defined (local_NAME);
+@end smallexample
+
+@noindent
+This pragma marks a previously declared entioty as implementation-defined.
+For an overloaded entity, applies to the most recent homonym.
+
+@smallexample @c ada
+pragma Implementation_Defined;
+@end smallexample
+
+@noindent
+The form with no arguments appears anywhere within a scope, most
+typically a package spec, and indicates that all entities that are
+defined within the package spec are Implementation_Defined.
+
+This pragma is used within the GNAT runtime library to identify
+implementation-defined entities introduced in language-defined units,
+for the purpose of implementing the No_Implementation_Identifiers
+restriction.
+
 @node Pragma Implemented
 @unnumberedsec Pragma Implemented
 @findex Implemented
@@ -2927,6 +2963,7 @@ the target's overriding subprogram kind.
 @node Pragma Implicit_Packing
 @unnumberedsec Pragma Implicit_Packing
 @findex Implicit_Packing
+@cindex Rational Profile
 @noindent
 Syntax:
 
@@ -3338,8 +3375,8 @@ pragma Inline_Always (NAME [, NAME]);
 
 @noindent
 Similar to pragma @code{Inline} except that inlining is not subject to
-the use of option @option{-gnatn} and the inlining happens regardless of
-whether this option is used.
+the use of option @option{-gnatn} or @option{-gnatN} and the inlining
+happens regardless of whether these options are used.
 
 @node Pragma Inline_Generic
 @unnumberedsec Pragma Inline_Generic
@@ -3845,6 +3882,55 @@ For further details on this pragma, see the
 @cite{DEC Ada Language Reference Manual}, section 3.5.7b.  Note that to use
 this pragma, the standard runtime libraries must be recompiled.
 
+@node Pragma Loop_Optimize
+@unnumberedsec Pragma Loop_Optimize
+@findex Loop_Optimize
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Loop_Optimize (OPTIMIZATION_HINT @{, OPTIMIZATION_HINT@});
+
+OPTIMIZATION_HINT ::= No_Unroll | Unroll | No_Vector | Vector
+@end smallexample
+
+@noindent
+This pragma must appear immediately within a loop statement.  It allows the
+programmer to specify optimization hints for the enclosing loop.  The hints
+are not mutually exclusive and can be freely mixed, but not all combinations
+will yield a sensible outcome.
+
+There are four supported optimization hints for a loop:
+@itemize @bullet
+@item No_Unroll
+
+The loop must not be unrolled.  This is a strong hint: the compiler will not
+unroll a loop marked with this hint.
+
+@item Unroll
+
+The loop should be unrolled.  This is a weak hint: the compiler will try to
+apply unrolling to this loop preferably to other optimizations, notably
+vectorization, but there is no guarantee that the loop will be unrolled.
+
+@item No_Vector
+
+The loop must not be vectorized.  This is a strong hint: the compiler will not
+vectorize a loop marked with this hint.
+
+@item Vector
+
+The loop should be vectorized.  This is a weak hint: the compiler will try to
+apply vectorization to this loop preferably to other optimizations, notably
+unrolling, but there is no guarantee that the loop will be vectorized.
+
+@end itemize
+
+These hints do not void the need to pass the appropriate switches to the
+compiler in order to enable the relevant optimizations, that is to say
+@option{-funroll-loops} for unrolling and @option{-ftree-vectorize} for
+vectorization.
+
 @node Pragma Machine_Attribute
 @unnumberedsec Pragma Machine_Attribute
 @findex Machine_Attribute
@@ -3935,6 +4021,24 @@ This is particularly useful during maintenance when a package is modified in
 such a way that a body needed before is no longer needed. The provision of a
 dummy body with a No_Body pragma ensures that there is no interference from
 earlier versions of the package body.
+
+@node Pragma No_Inline
+@unnumberedsec Pragma No_Inline
+@findex No_Inline
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma No_Inline (NAME [, NAME]);
+@end smallexample
+
+@noindent
+This pragma suppresses inlining for the callable entity or the instances of
+the generic subprogram designated by @var{NAME}, including inlining that
+results from the use of pragma @code{Inline}.  This pragma is always active,
+in particular it is not subject to the use of option @option{-gnatn} or
+@option{-gnatN}.  It is illegal to specify both pragma @code{No_Inline} and
+pragma @code{Inline_Always} for the same @var{NAME}.
 
 @node Pragma No_Return
 @unnumberedsec Pragma No_Return
@@ -4865,6 +4969,28 @@ This set of restrictions causes the automatic selection of a simplified
 version of the run time that provides improved performance for the
 limited set of tasking functionality permitted by this set of restrictions.
 
+@node Pragma Profile (Rational)
+@unnumberedsec Pragma Profile (Rational)
+@findex Rational compatibility mode
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Profile (Rational);
+@end smallexample
+
+@noindent
+The Rational profile is intended to facilitate porting legacy code that
+compiles with the Rational APEX compiler, even when the code includes non-
+conforming Ada constructs.  The profile enables the following three pragmas:
+
+@itemize @bullet
+pragma Implicit_Packing;
+pragma Overriding_Renamings;
+pragma Use_VADS_Size;
+@end itemize
+
+@noindent
 @node Pragma Psect_Object
 @unnumberedsec Pragma Psect_Object
 @findex Psect_Object
@@ -6021,6 +6147,7 @@ of Ada as an implementation-defined pragma.
 @node Pragma Use_VADS_Size
 @unnumberedsec Pragma Use_VADS_Size
 @cindex @code{Size}, VADS compatibility
+@cindex Rational profile
 @findex Use_VADS_Size
 @noindent
 Syntax:
@@ -6154,6 +6281,14 @@ full details see @ref{Warning Message Control,,, gnat_ugn, @value{EDITION}
 User's Guide}.
 
 @noindent
+The warnings controlled by the `-gnatw' switch are generated by the front end
+of the compiler. The `GCC' back end can provide additional warnings and they
+are controlled by the `-W' switch.
+The form with a single static_string_EXPRESSION argument also works for the
+latters, but the string must be a single full `-W' switch in this case.
+The above reference lists a few examples of these additional warnings.
+
+@noindent
 The specified warnings will be in effect until the end of the program
 or another pragma Warnings is encountered. The effect of the pragma is
 cumulative. Initially the set of warnings is the standard default set
@@ -6173,9 +6308,18 @@ message @code{warning: 960 bits of "a" unused}. No other regular
 expression notations are permitted. All characters other than asterisk in
 these three specific cases are treated as literal characters in the match.
 
+The above use of patterns to match the message applies only to warning
+messages generated by the front end. This form of the pragma with a
+string argument can also be used to control back end warnings controlled
+by a "-Wxxx" switch. Such warnings can be identified by the appearence
+of a string of the form "[-Wxxx]" in the message which identifies the
+"-W" switch that controls the message. By using the text of the
+"-W" switch in the pragma, such back end warnings can be turned on and off.
+
 There are two ways to use the pragma in this form. The OFF form can be used as a
 configuration pragma. The effect is to suppress all warnings (if any)
-that match the pattern string throughout the compilation.
+that match the pattern string throughout the compilation (or match the
+-W switch in the back end case).
 
 The second usage is to suppress a warning locally, and in this case, two
 pragmas must appear in sequence:
@@ -7034,13 +7178,47 @@ this attribute.
 @noindent
 For every array or record type @var{S}, the representation attribute
 @code{Scalar_Storage_Order} denotes the order in which storage elements
-that make up scalar components are ordered within S. Other properties are
+that make up scalar components are ordered within S:
+
+@smallexample @c ada
+   --  Component type definitions
+
+   subtype Yr_Type is Natural range 0 .. 127;
+   subtype Mo_Type is Natural range 1 .. 12;
+   subtype Da_Type is Natural range 1 .. 31;
+
+   --  Record declaration
+
+   type Date is record
+      Years_Since_1980 : Yr_Type;
+      Month            : Mo_Type;
+      Day_Of_Month     : Da_Type;
+   end record;
+
+   --  Record representation clause
+
+   for Date use record
+      Years_Since_1980 at 0 range 0  ..  6;
+      Month            at 0 range 7  .. 10;
+      Day_Of_Month     at 0 range 11 .. 15;
+   end record;
+
+   --  Attribute definition clauses
+
+   for Date'Bit_Order use System.High_Order_First;
+   for Date'Scalar_Storage_Order use System.High_Order_First;
+   --  If Scalar_Storage_Order is specified, it must be consistent with
+   --  Bit_Order, so it's best to always define the latter explicitly if
+   --  the former is used.
+@end smallexample
+
+Other properties are
 as for standard representation attribute @code{Bit_Order}, as defined by
 Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
 
 For a record type @var{S}, if @code{@var{S}'Scalar_Storage_Order} is
 specified explicitly, it shall be equal to @code{@var{S}'Bit_Order}. Note:
-This means that if a @code{Scalar_Storage_Order} attribute definition
+this means that if a @code{Scalar_Storage_Order} attribute definition
 clause is not confirming, then the type's @code{Bit_Order} shall be
 specified explicitly and set to the same value.
 
@@ -8171,8 +8349,8 @@ Manual.
 @unnumberedsubsec No_Implementation_Identifiers
 @findex No_Implementation_Identifiers
 [RM 13.12.1] This restriction checks at compile time that no
-implementation-defined identifiers occur within language-defined
-packages.
+implementation-defined identifiers (marked with pragma Implementation_Defined)
+occur within language-defined packages.
 
 @node No_Implementation_Pragmas
 @unnumberedsubsec No_Implementation_Pragmas

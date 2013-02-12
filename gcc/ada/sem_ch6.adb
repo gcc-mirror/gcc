@@ -4264,9 +4264,9 @@ package body Sem_Ch6 is
       --  This body is subsequently used for inline expansions at call sites.
 
       function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean;
-      --  Return true if the function body N has no local declarations and its
-      --  unique statement is a single extended return statement with a handled
-      --  statements sequence.
+      --  Return true if we generate code for the function body N, the function
+      --  body N has no local declarations and its unique statement is a single
+      --  extended return statement with a handled statements sequence.
 
       function Check_Body_To_Inline
         (N    : Node_Id;
@@ -5001,7 +5001,13 @@ package body Sem_Ch6 is
             end loop;
          end if;
 
-         return Present (Ret_Node)
+         --  We only split the inlined function when we are generating the code
+         --  of its body; otherwise we leave duplicated split subprograms in
+         --  the tree which (if referenced) generate wrong references at link
+         --  time.
+
+         return In_Extended_Main_Code_Unit (N)
+           and then Present (Ret_Node)
            and then Nkind (Ret_Node) = N_Extended_Return_Statement
            and then No (Next (Ret_Node))
            and then Present (Handled_Statement_Sequence (Ret_Node));
@@ -9753,6 +9759,30 @@ package body Sem_Ch6 is
 
                Next_Formal (Formal);
             end loop;
+
+         --  Special case: An equality function can be redefined for a type
+         --  occurring in a declarative part, and won't otherwise be treated as
+         --  a primitive because it doesn't occur in a package spec and doesn't
+         --  override an inherited subprogram. It's important that we mark it
+         --  primitive so it can be returned by Collect_Primitive_Operations
+         --  and be used in composing the equality operation of later types
+         --  that have a component of the type.
+
+         elsif Chars (S) = Name_Op_Eq
+           and then Etype (S) = Standard_Boolean
+         then
+            B_Typ := Base_Type (Etype (First_Formal (S)));
+
+            if Scope (B_Typ) = Current_Scope
+              and then
+                Base_Type (Etype (Next_Formal (First_Formal (S)))) = B_Typ
+              and then not Is_Limited_Type (B_Typ)
+            then
+               Is_Primitive := True;
+               Set_Is_Primitive (S);
+               Set_Has_Primitive_Operations (B_Typ);
+               Check_Private_Overriding (B_Typ);
+            end if;
          end if;
       end Check_For_Primitive_Subprogram;
 
@@ -11735,7 +11765,7 @@ package body Sem_Ch6 is
          if not Expander_Active then
             CP :=
               Make_Pragma (Loc,
-                Chars => Name_Postcondition,
+                Chars                        => Name_Postcondition,
                 Pragma_Argument_Associations => New_List (
                   Make_Pragma_Argument_Association (Loc,
                     Chars      => Name_Check,

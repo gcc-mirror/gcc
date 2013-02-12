@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2010, Free Software Foundation, Inc.             --
+--         Copyright (C) 2010-2013, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,16 +30,22 @@ with Interfaces.C; use Interfaces.C;
 
 package body System.Multiprocessors is
 
-   function Gnat_Number_Of_CPUs return int;
-   pragma Import (C, Gnat_Number_Of_CPUs, "__gnat_number_of_cpus");
-
    --------------------
    -- Number_Of_CPUs --
    --------------------
 
    function Number_Of_CPUs return CPU is
    begin
-      return CPU (Gnat_Number_Of_CPUs);
+      if CPU'Last = 1 then
+         return 1;
+      else
+         declare
+            function Gnat_Number_Of_CPUs return int;
+            pragma Import (C, Gnat_Number_Of_CPUs, "__gnat_number_of_cpus");
+         begin
+            return CPU (Gnat_Number_Of_CPUs);
+         end;
+      end if;
    end Number_Of_CPUs;
 
 end System.Multiprocessors;

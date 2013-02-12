@@ -1,3 +1,399 @@
+2013-02-07  Simon Wright  <simon@pushface.org>
+
+	PR target/50678
+	* init.c (__darwin_major_version): New function for x86-64/Darwin.
+	(__gnat_adjust_context_for_raise) [Darwin]: Disable the workaround
+	on Darwin 12 and above.
+
+2013-02-06  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	PR target/52123
+	* adaint.c (__gnat_check_OWNER_ACL): Cast from pointer via
+	SECURITY_DESCRIPTOR *
+	(__gnat_set_OWNER_ACL): Cast from DWORD to ACCESS_MODE
+	(__gnat_portable_spawn): Fix cast to char* const*
+	(add_handle): Cast from pointer via void **
+	(add_handle): Cast from pointer via int *
+	(__gnat_locate_exec_on_path): Cast from pointer via TCHAR *
+	(__gnat_locate_exec_on_path): Cast from pointer via char *
+	* initialize.c (append_arg): Cast from pointer via LPWSTR
+	(__gnat_initialize): Cast from pointer via LPWSTR
+	* seh_init.c (__gnat_map_SEH): Cast from pointer via FARPROC
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gcc-interface/Make-lang.in: Enable System.Stack_Checking.Operations
+	target pairs on VxWorks 5 only.
+
+2013-02-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Process_Aggregated_Projects): Use a new project
+	node tree for each project tree rooted at an aggregated project.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Interface_Conversion): New routine.
+	(Object_Access_Level): Detect an interface conversion
+	that has been rewritten into a different construct. Use the
+	original form of the conversion to find the access level of
+	the operand.
+
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Pragma_No_Inline): New flag using Flag201.
+	(Has_Pragma_No_Inline): Declare and mark as inline.
+	(Set_Has_Pragma_No_Inline): Likewise.
+	* einfo.adb (Has_Pragma_No_Inline): New function.
+	(Set_Has_Pragma_No_Inline): New procedure.
+	(Write_Entity_Flags): Handle Has_Pragma_No_Inline.
+	* snames.ads-tmpl (Name_No_Inline): New pragma-related name.
+	(Pragma_Id): Add Pragma_No_Inline value.
+	* par-prag.adb (Prag): Handle Pragma_Inline.
+	* sem_prag.adb (Inline_Status): New enumeration type.
+	(Process_Inline): Change Active parameter
+	to Inline_Status and add support for suppressed inlining.
+	(Analyze_Pragma) <Pragma_Inline>: Adjust to above change.
+	<Pragma_Inline_Always>: Likewise.
+	 <Pragma_No_Inline>: Implement new pragma No_Inline.
+	(Sig_Flags): Add Pragma_No_Inline.
+	* gnat_rm.texi (Implementation Defined Pragmas): Add No_Inline.
+	* gnat_ugn.texi (Switches for gcc): Mention Pragma No_Inline.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb (Clock): Make sure we copy all data locally
+	to avoid interleaved modifications that could happen from another
+	task calling Get_Base_Data.
+	(Get_Base_Data): Make it a critical section. Avoid updating if another
+	task has already done it.
+
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-tasloc.ads: Set System.Task_Lock to preelaborate.
+
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* snames.ads-tmpl (Name_Loop_Optimize, Name_No_Unroll,
+	Name_Unroll, Name_No_Vector, Name_Vector): New pragma-related
+	names.
+	(Pragma_Id): Add Pragma_Loop_Optimize value.
+	* par-prag.adb (Prag): Handle Pragma_Loop_Optimize.
+	* sem_prag.adb (Check_Loop_Invariant_Variant_Placement): Rename to...
+	(Check_Loop_Pragma_Placement): ...this.
+	(Analyze_Pragma)
+	<Pragma_Loop_Invariant>: Adjust to above renaming.
+	<Loop_Variant>: Likewise.
+	 <Pragma_Loop_Optimize>: Implement new pragma Loop_Optimize.
+	(Sig_Flags): Add Pragma_Loop_Optimize.
+	* gnat_rm.texi (Implementation Defined Pragmas): Add Loop_Optimize.
+	* gnat_ugn.texi (Vectorization of loops): Mention Loop_Optimize.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* osint.ads: Minor fix of typo.
+
+2013-02-06  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: gnatmetric: update the documentation of
+	complexity metrics for Ada 2012.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_Secondary_DT): Code cleanup:
+	remove useless initialization.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminant_Constraints): Do not
+	generate overflow checks on a discriminant expression if the
+	discriminant constraint is applied to a private type that has
+	a full view, because the check will be applied when the full
+	view is elaborated.  Removing the redundant check is not just
+	an optimization, but it prevents spurious assembler errors,
+	because of the way the backend generates names for expressions
+	that require overflow checking.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb: Removes workaround for an old GNU/Linker
+	limitation on Windows.
+	(DA): Removed.
+	(LIA): Removed.
+	(LLIA): Removed.
+	(TFA): Removed.
+	(BTA): Removed.
+	(BMTA): Removed.
+	(BCA): Removed.
+	(BMCA): Removed.
+	(BTiA): Removed.
+	(Clock): Use variable corresponding to access.
+	(Get_Base_Time): Likewise.
+	(Monotonic_Clock): Likewise.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): When gnatmake is called with a project
+	file, do not invoke gnatbind with -I-.
+	* makeutl.adb (Create_Binder_Mapping_File): Rewrite function. Get
+	the infos from all the sources.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* snames.ads-tmpl: Add Name_Overriding_Renamings and pragma
+	Overriding_Renamings.
+	* par-prag.adb: Recognize pragma Overriding_Renamings.
+	* opt.ads (Overriding_Renamings): flag to control compatibility
+	mode with Rational compiler, replaces Rational_Profile flag.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): When
+	Overriding_Renamings is enabled, accept renaming declarations
+	where the new subprogram renames and overrides a locally inherited
+	operation. Improve error message for some illegal renamings.
+	* sem_prag.adb (Analyze_Pragma): Add case for Overriding_Renamings.
+	(Set_Rational_Profile): The Rational_Profile enables
+	Overriding_Renamings, Implicit_Packing, and Use_Vads_Size.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb: Set parent of copied aggregate component, to
+	prevent infinite loop.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch10.adb: Minor reformatting.
+	* exp_disp.adb: Minor comment update.
+	* comperr.ads, osint.ads, rtsfind.adb, sem_prag.adb: Minor addition of
+	No_Return pragmas.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* targparm.ads, sem_ch13.adb (Support_Nondefault_SSO): New target
+	parameter, defaulted to False for now, indicates targets where
+	non-default scalar storage order may be specified.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sprint.adb (Write_Itype): Treat E_Record_Subtype_With_Private
+	same as E_Record_Subtype.  Display E_Class_Wide_Subtype as
+	subtype, not type.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Inherit the
+	Has_Unknown_Discriminants from the full view of the base type.
+
+2013-02-06  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Remove useless includes (sys/stat.h, adaint.h)
+	Enclosing debugging functions within #ifndef inhibit_libc to
+	support builds without full C headers.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Add a minimal example of Scalar_Storage_Order.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Install_Limited_Withed_Unit): Add a missing
+	check to detect a parent-child relationship between two units in
+	order to correctly bypass the installation of a limited view. In
+	other words, the comment on the intended usage of the check was
+	correct, but the code itself did not reflect the behavior.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not generate the
+	runtime check on assignment to tagged types if compiling with checks
+	suppressed.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, checks.adb, sem_ch12.adb, sem_res.adb, prj-conf.adb,
+	s-os_lib.adb: Minor reformatting
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* ug_words: Add -gnateY = /IGNORE_STYLE_CHECKS_PRAGMAS.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* snames.ads-tmpl: Add Name_Rational and pragma Rational.
+	* par-prag.adb: Recognize pragma Rational.
+	* opt.ads (Rational_Profile): flag to control compatibility mode
+	with Rational compiler.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): When Rational profile
+	is enable, accept renaming declarations where the new subprogram
+	and the renamed entity have the same name.
+	* sem_prag.adb (analyze_pragma): Add pragma Rational, and recognize
+	Rational as a profile.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb (Expand_Loop_Entry_Attributes): When
+	dealing with a for loop that iterates over a subtype indication
+	with a range, use the low and high bounds of the subtype.
+
+2013-02-06  Nicolas Roche  <roche@adacore.com>
+
+	* s-os_lib.adb (Normalize_Arguments): Arguments containing tabs should
+	be quoted
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Process_Project_And_Apply_Config): New variable
+	Conf_Project.  New recursive procedure Check_Project to find a non
+	aggregate project and put its Project_Id in Conf_Project. Fails if
+	no such project can be found.
+	(Get_Or_Create_Configuration_File): New parameter Conf_Project.
+	 (Do_Autoconf): Use project directory of project Conf_Project to store
+	the generated configuration project file.
+	* prj-conf.ads (Get_Or_Create_Configuration_File): New parameter
+	Conf_Project.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Generate a read
+	reference for out-mode parameters in the cases specified by
+	RM 6.4.1(12).
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Do not resolve the prefix of
+	Loop_Entry, instead wait until the attribute has been expanded. The
+	delay ensures that any generated checks or temporaries are inserted
+	before the relocated prefix.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Code clean up.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Look for discriminant
+	constraint in full view of private type when needed.
+	* sem_ch12.adb (Validate_Array_Type_Instance): Specialize
+	previous patch to components types that are private and without
+	discriminants.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Find_Enclosing_Context): Recognize
+	a simple return statement as one of the cases that require special
+	processing with respect to temporary controlled function results.
+	(Process_Transient_Object): Do attempt to finalize a temporary
+	controlled function result when the associated context is
+	a simple return statement.  Instead, leave this task to the
+	general finalization mechanism.
+
+2013-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	(Status_Flag_Or_Transient_Decl): Add ??? comment.
+
+2013-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Rewritten. This
+	routine should be able to properly detect controlled transient
+	objects in its actions and generate the appropriate finalization
+	actions.
+	* exp_ch6.adb (Enclosing_Context): Removed.
+	(Expand_Ctrl_Function_Call): Remove local subprogram and
+	constant. Use routine Within_Case_Or_If_Expression to determine
+	whether the lifetime of the function result must be extended to
+	match that of the context.
+	* exp_util.ads, exp_util.adb (Within_Case_Or_If_Expression): New
+	routine.
+
+2013-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Array_Type_Instance): Extend check
+	for subtype matching of component type of formal array type,
+	to avoid spurious error when component type is a separate actual
+	in the instance, and there may be a discrepancy between private
+	and full view of component type.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-dim.ads, clean.adb: Minor reformatting.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Undo previous patch.
+	(Can_Split_Unconstrained_Function): Only split the inlined function if
+	the compiler generates the code of its body.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, sem_ch3.adb, exp_attr.adb, sem_prag.adb, sem_ch6.adb,
+	exp_intr.adb, exp_dist.adb, sem_ch13.adb: Internal clean up for
+	N_Pragma nodes.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor text updates for pragma Warning.
+
+2013-02-06  Geert Bosch  <bosch@adacore.com>
+
+	* s-multip.adb (Number_Of_CPUs): Short-circuit in case of
+	CPU'Last = 1.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Delete): On VMS use host notation to delete all files.
+
+2013-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_ch6.adb, prj-conf.adb, erroutc.adb: Minor
+	reformatting.
+
+2013-02-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Check_For_Primitive_Subprogram): Test for
+	the special case of a user-defined equality that overrides
+	the predefined equality of a nonderived type declared in a
+	declarative part.
+	* sem_util.adb (Collect_Primitive_Operations): Add test for
+	Is_Primitive when looping over the subprograms following a type,
+	to catch the case of primitives such as a user-defined equality,
+	which otherwise won't be found when the type is not a derived
+	type and is declared in a declarative part.
+
+2013-02-06  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Check_Target): Always return True when Target
+	is empty (Get_Or_Create_Configuration_File.Get_Project_Target):
+	New procedure to get the value of attribute Target in the main
+	project.
+	(Get_Or_Create_Configuration_File.Do_Autoconf): No
+	need to get the value of attribute Target in the main project.
+	(Get_Or_Create_Configuration_File): Call Get_Project_Target and
+	use the target fom this call.
+
+2013-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warning): Do not issue the
+	warning about an ineffective Pragma Warnings for -Wxxx warnings.
+	* sem_prag.adb (Analyze_Pragma) <Warnings>: Accept -Wxxx warnings.
+	* gnat_rm.texi (Pragma Warnings): Document coordination with
+	warnings of the GCC back-end.
+
+2013-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not build the body
+	of an inlined function if we do not generate code for the function.
+
+2013-02-06  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.adb (Locate_Exec_On_Path): Call Normalize_Pathname
+	with Resolve_Links set to False.
+
 2013-02-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c: Include diagnostic-core.h.

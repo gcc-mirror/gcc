@@ -1,6 +1,5 @@
 /*  -*- Mode: Asm -*-  */
-;;    Copyright (C) 2012-2013
-;;    Free Software Foundation, Inc.
+;;    Copyright (C) 2012-2013 Free Software Foundation, Inc.
 ;;    Contributed by Sean D'Epagnier  (sean@depagnier.com)
 ;;                   Georg-Johann Lay (avr@gjlay.de)
 
@@ -960,6 +959,28 @@ ENDF __udivusa3
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Saturation, 1 Byte
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; First Argument and Return Register
+#define A0  24
+
+#if defined (L_ssabs_1)
+DEFUN __ssabs_1
+    sbrs    A0, 7
+    ret
+    neg     A0
+    sbrc    A0,7
+    dec     A0
+    ret
+ENDF __ssabs_1
+#endif /* L_ssabs_1 */
+
+#undef A0
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Saturation, 2 Bytes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1177,3 +1198,509 @@ ENDF __sssub_8
 #undef B5
 #undef B6
 #undef B7
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rounding Helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#ifdef L_mask1
+
+#define AA 24
+#define CC 25
+
+;; R25 = 1 << (R24 & 7)
+;; CC  = 1 << (AA  & 7)
+;; Clobbers: None
+DEFUN __mask1
+    ;; CC = 2 ^ AA.1
+    ldi     CC, 1 << 2
+    sbrs    AA, 1
+    ldi     CC, 1 << 0
+    ;; CC *= 2 ^ AA.0
+    sbrc    AA, 0
+    lsl     CC
+    ;; CC *= 2 ^ AA.2
+    sbrc    AA, 2
+    swap    CC
+    ret
+ENDF __mask1
+
+#undef AA
+#undef CC
+#endif /* L_mask1 */
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; The rounding point. Any bits smaller than
+;; 2^{-RP} will be cleared.
+#define RP R24
+
+#define A0 22
+#define A1 A0 + 1
+
+#define C0 24
+#define C1 C0 + 1
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rounding, 1 Byte
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#ifdef L_roundqq3
+
+;; R24 = round (R22, R24)
+;; Clobbers: R22, __tmp_reg__
+DEFUN  __roundqq3
+    mov     __tmp_reg__, C1
+    subi    RP, __QQ_FBIT__ - 1
+    neg     RP
+    ;; R25 = 1 << RP  (Total offset is FBIT-1 - RP)
+    XCALL   __mask1
+    mov     C0, C1
+    ;; Add-Saturate 2^{-RP-1}
+    add     A0, C0
+    brvc 0f
+    ldi     A0, 0x7f
+0:  ;; Mask out bits beyond RP
+    lsl     C0
+    neg     C0
+    and     C0, A0
+    mov     C1, __tmp_reg__
+    ret
+ENDF  __roundqq3
+#endif /* L_roundqq3 */
+
+#ifdef L_rounduqq3
+
+;; R24 = round (R22, R24)
+;; Clobbers: R22, __tmp_reg__
+DEFUN  __rounduqq3
+    mov     __tmp_reg__, C1
+    subi    RP, __UQQ_FBIT__ - 1
+    neg     RP
+    ;; R25 = 1 << RP  (Total offset is FBIT-1 - RP)
+    XCALL   __mask1
+    mov     C0, C1
+    ;; Add-Saturate 2^{-RP-1}
+    add     A0, C0
+    brcc 0f
+    ldi     A0, 0xff
+0:  ;; Mask out bits beyond RP
+    lsl     C0
+    neg     C0
+    and     C0, A0
+    mov     C1, __tmp_reg__
+    ret
+ENDF  __rounduqq3
+#endif /* L_rounduqq3 */
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rounding, 2 Bytes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#ifdef L_addmask_2
+
+;; [ R25:R24 =  1 << (R24 & 15)
+;;   R23:R22 += 1 << (R24 & 15) ]
+;; SREG is set according to the addition
+DEFUN __addmask_2
+    ;; R25 = 1 << (R24 & 7)
+    XCALL   __mask1
+    cpi     RP, 1 << 3
+    sbc     C0, C0
+    ;; Swap C0 and C1 if RP.3 was set
+    and     C0, C1
+    eor     C1, C0
+    ;; Finally, add the power-of-two:  A[] += C[]
+    add     A0, C0
+    adc     A1, C1
+    ret
+ENDF  __addmask_2
+#endif /* L_addmask_2 */
+
+#ifdef L_round_s2
+
+;; R25:R24 = round (R23:R22, R24)
+;; Clobbers: R23, R22
+DEFUN  __roundhq3
+    subi    RP, __HQ_FBIT__ - __HA_FBIT__
+ENDF   __roundhq3
+DEFUN  __roundha3
+    subi    RP, __HA_FBIT__ - 1
+    neg     RP
+    ;; [ R25:R24  = 1 << (FBIT-1 - RP)
+    ;;   R23:R22 += 1 << (FBIT-1 - RP) ]
+    XCALL   __addmask_2
+    XJMP    __round_s2_const
+ENDF  __roundha3
+
+#endif /* L_round_s2 */
+
+#ifdef L_round_u2
+
+;; R25:R24 = round (R23:R22, R24)
+;; Clobbers: R23, R22
+DEFUN  __rounduhq3
+    subi    RP, __UHQ_FBIT__ - __UHA_FBIT__
+ENDF   __rounduhq3
+DEFUN  __rounduha3
+    subi    RP, __UHA_FBIT__ - 1
+    neg     RP
+    ;; [ R25:R24  = 1 << (FBIT-1 - RP)
+    ;;   R23:R22 += 1 << (FBIT-1 - RP) ]
+    XCALL   __addmask_2
+    XJMP    __round_u2_const 
+ENDF  __rounduha3
+
+#endif /* L_round_u2 */
+
+
+#ifdef L_round_2_const
+
+;; Helpers for 2 byte wide rounding
+
+DEFUN  __round_s2_const
+    brvc 2f
+    ldi     A1, 0x7f
+    rjmp 1f
+    ;; FALLTHRU (Barrier)
+ENDF  __round_s2_const
+
+DEFUN __round_u2_const
+    brcc 2f
+    ldi     A1, 0xff
+1:
+    ldi     A0, 0xff
+2:
+    ;; Saturation is performed now.
+    ;; Currently, we have C[] = 2^{-RP-1}
+    ;; C[] = 2^{-RP}
+    lsl     C0
+    rol     C1
+    ;;      
+    NEG2    C0
+    ;; Clear the bits beyond the rounding point.
+    and     C0, A0
+    and     C1, A1
+    ret
+ENDF  __round_u2_const
+
+#endif /* L_round_2_const */
+
+#undef A0
+#undef A1
+#undef C0
+#undef C1
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rounding, 4 Bytes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#define A0 18
+#define A1 A0 + 1
+#define A2 A0 + 2
+#define A3 A0 + 3
+
+#define C0 22
+#define C1 C0 + 1
+#define C2 C0 + 2
+#define C3 C0 + 3
+
+#ifdef L_addmask_4
+
+;; [ R25:R22 =  1 << (R24 & 31)
+;;   R21:R18 += 1 << (R24 & 31) ]
+;; SREG is set according to the addition
+DEFUN __addmask_4
+    ;; R25 = 1 << (R24 & 7)
+    XCALL   __mask1
+    cpi     RP, 1 << 4
+    sbc     C0, C0
+    sbc     C1, C1
+    ;; Swap C2 with C3 if RP.3 is not set
+    cpi     RP, 1 << 3
+    sbc     C2, C2
+    and     C2, C3
+    eor     C3, C2
+    ;; Swap C3:C2 with C1:C0 if RP.4 is not set
+    and     C0, C2  $  eor     C2, C0
+    and     C1, C3  $  eor     C3, C1
+    ;; Finally, add the power-of-two:  A[] += C[]
+    add     A0, C0
+    adc     A1, C1
+    adc     A2, C2
+    adc     A3, C3
+    ret
+ENDF  __addmask_4
+#endif /* L_addmask_4 */
+
+#ifdef L_round_s4
+
+;; R25:R22 = round (R21:R18, R24)
+;; Clobbers: R18...R21
+DEFUN  __roundsq3
+    subi    RP, __SQ_FBIT__ - __SA_FBIT__
+ENDF   __roundsq3
+DEFUN  __roundsa3
+    subi    RP, __SA_FBIT__ - 1
+    neg     RP
+    ;; [ R25:R22  = 1 << (FBIT-1 - RP)
+    ;;   R21:R18 += 1 << (FBIT-1 - RP) ]
+    XCALL   __addmask_4
+    XJMP    __round_s4_const
+ENDF  __roundsa3
+
+#endif /* L_round_s4 */
+
+#ifdef L_round_u4
+
+;; R25:R22 = round (R21:R18, R24)
+;; Clobbers: R18...R21
+DEFUN  __roundusq3
+    subi    RP, __USQ_FBIT__ - __USA_FBIT__
+ENDF   __roundusq3
+DEFUN  __roundusa3
+    subi    RP, __USA_FBIT__ - 1
+    neg     RP
+    ;; [ R25:R22  = 1 << (FBIT-1 - RP)
+    ;;   R21:R18 += 1 << (FBIT-1 - RP) ]
+    XCALL   __addmask_4
+    XJMP    __round_u4_const 
+ENDF  __roundusa3
+
+#endif /* L_round_u4 */
+
+
+#ifdef L_round_4_const
+
+;; Helpers for 4 byte wide rounding
+
+DEFUN  __round_s4_const
+    brvc 2f
+    ldi     A3, 0x7f
+    rjmp 1f
+    ;; FALLTHRU (Barrier)
+ENDF  __round_s4_const
+
+DEFUN __round_u4_const
+    brcc 2f
+    ldi     A3, 0xff
+1:
+    ldi     A2, 0xff
+    ldi     A1, 0xff
+    ldi     A0, 0xff
+2:
+    ;; Saturation is performed now.
+    ;; Currently, we have C[] = 2^{-RP-1}
+    ;; C[] = 2^{-RP}
+    lsl     C0
+    rol     C1
+    rol     C2
+    rol     C3
+    XCALL   __negsi2
+    ;; Clear the bits beyond the rounding point.
+    and     C0, A0
+    and     C1, A1
+    and     C2, A2
+    and     C3, A3
+    ret
+ENDF  __round_u4_const
+
+#endif /* L_round_4_const */
+
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+
+#undef RP
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rounding, 8 Bytes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#define RP     16
+#define FBITm1 31
+
+#define C0 18
+#define C1 C0 + 1
+#define C2 C0 + 2
+#define C3 C0 + 3
+#define C4 C0 + 4
+#define C5 C0 + 5
+#define C6 C0 + 6
+#define C7 C0 + 7
+
+#define A0 16
+#define A1 17
+#define A2 26
+#define A3 27
+#define A4 28
+#define A5 29
+#define A6 30
+#define A7 31
+
+
+#ifdef L_rounddq3
+;; R25:R18 = round (R25:R18, R16)
+;; Clobbers: ABI
+DEFUN  __rounddq3
+    ldi     FBITm1, __DQ_FBIT__ - 1
+    clt
+    XJMP    __round_x8
+ENDF  __rounddq3
+#endif /* L_rounddq3 */
+
+#ifdef L_roundudq3
+;; R25:R18 = round (R25:R18, R16)
+;; Clobbers: ABI
+DEFUN  __roundudq3
+    ldi     FBITm1, __UDQ_FBIT__ - 1
+    set
+    XJMP    __round_x8
+ENDF  __roundudq3
+#endif /* L_roundudq3 */
+
+#ifdef L_roundda3
+;; R25:R18 = round (R25:R18, R16)
+;; Clobbers: ABI
+DEFUN  __roundda3
+    ldi     FBITm1, __DA_FBIT__ - 1
+    clt
+    XJMP    __round_x8
+ENDF  __roundda3
+#endif /* L_roundda3 */
+
+#ifdef L_rounduda3
+;; R25:R18 = round (R25:R18, R16)
+;; Clobbers: ABI
+DEFUN  __rounduda3
+    ldi     FBITm1, __UDA_FBIT__ - 1
+    set
+    XJMP    __round_x8
+ENDF  __rounduda3
+#endif /* L_rounduda3 */
+
+#ifdef L_roundta3
+;; R25:R18 = round (R25:R18, R16)
+;; Clobbers: ABI
+DEFUN  __roundta3
+    ldi     FBITm1, __TA_FBIT__ - 1
+    clt
+    XJMP    __round_x8
+ENDF  __roundta3
+#endif /* L_roundta3 */
+
+#ifdef L_rounduta3
+;; R25:R18 = round (R25:R18, R16)
+;; Clobbers: ABI
+DEFUN  __rounduta3
+    ldi     FBITm1, __UTA_FBIT__ - 1
+    set
+    XJMP    __round_x8
+ENDF  __rounduta3
+#endif /* L_rounduta3 */
+
+
+#ifdef L_round_x8
+DEFUN __round_x8
+    push r16
+    push r17
+    push r28
+    push r29
+    ;; Compute log2 of addend from rounding point
+    sub     RP, FBITm1
+    neg     RP
+    ;; Move input to work register A[]
+    push    C0
+    mov     A1, C1
+    wmov    A2, C2
+    wmov    A4, C4
+    wmov    A6, C6
+    ;; C[] = 1 << (FBIT-1 - RP)
+    XCALL   __clr_8
+    inc     C0
+    XCALL   __ashldi3
+    pop     A0
+    ;; A[] += C[]
+    add     A0, C0
+    adc     A1, C1
+    adc     A2, C2
+    adc     A3, C3
+    adc     A4, C4
+    adc     A5, C5
+    adc     A6, C6
+    adc     A7, C7
+    brts    1f
+    ;; Signed
+    brvc    3f
+    ;; Signed overflow: A[] = 0x7f...
+    brvs    2f
+1:  ;; Unsigned
+    brcc    3f
+    ;; Unsigned overflow: A[] = 0xff...
+2:  ldi     A7, 0xff
+    ldi     A6, 0xff
+    wmov    A0, A6
+    wmov    A2, A6
+    wmov    A4, A6
+    bld     A7, 7
+3:
+    ;;  C[] = -C[] - C[]
+    push    A0
+    ldi     r16, 1
+    XCALL   __ashldi3
+    pop     A0
+    XCALL   __negdi2
+    ;; Clear the bits beyond the rounding point.
+    and     C0, A0
+    and     C1, A1
+    and     C2, A2
+    and     C3, A3
+    and     C4, A4
+    and     C5, A5
+    and     C6, A6
+    and     C7, A7
+    ;; Epilogue
+    pop r29
+    pop r28
+    pop r17
+    pop r16
+    ret
+ENDF  __round_x8
+
+#endif /* L_round_x8 */
+
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+#undef A4
+#undef A5
+#undef A6
+#undef A7
+
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+#undef C4
+#undef C5
+#undef C6
+#undef C7
+
+#undef RP
+#undef FBITm1
+
+
+;; Supply implementations / symbols for the bit-banging functions
+;; __builtin_avr_bitsfx and __builtin_avr_fxbits
+#ifdef L_ret
+DEFUN __ret
+    ret
+ENDF  __ret
+#endif /* L_ret */
