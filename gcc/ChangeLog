@@ -1,3 +1,11 @@
+2013-02-12  Jakub Jelinek  <jakub@redhat.com>
+	    Steven Bosscher   <steven@gcc.gnu.org>
+
+	PR rtl-optimization/56151
+	* optabs.c (add_equal_note): Don't return 0 if target is a MEM,
+	equal to op0 or op1, and last_insn pattern is CODE operation
+	with MEM dest and one of the operands matches that MEM.
+
 2013-02-11  Sriraman Tallam  <tmsriramgoogle.com>
 
 	* doc/extend.texi: Document Function Multiversioning and "default"
