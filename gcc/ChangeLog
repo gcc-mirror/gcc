@@ -1,3 +1,9 @@
+2013-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56297
+	* lto-streamer-out.c (write_symbol): Do not output symbols
+	for hard register variables.
+
 2013-02-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
