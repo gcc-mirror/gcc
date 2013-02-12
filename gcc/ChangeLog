@@ -1,3 +1,11 @@
+2013-02-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/56148
+	* lra-constraints.c (process_alt_operands): Match early clobber
+	operand with itself.  Check conflicts with earlyclobner only if
+	the operand is not reloaded.  Prefer to reload conflicting operand
+	if earlyclobber and matching operands are the same.
+
 2013-02-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56297
