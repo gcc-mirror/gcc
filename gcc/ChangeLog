@@ -1,3 +1,7 @@
+2013-02-13  David S. Miller  <davem@davemloft.net>
+
+	* expmed.c (expand_shift_1): Only strip scalar integer subregs.
+
 2013-02-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/56184
