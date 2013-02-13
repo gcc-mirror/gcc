@@ -1,3 +1,11 @@
+2013-02-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/56111
+	* include/std/complex (complex): Undefine.
+	* include/c_compatibility/complex.h (complex): Only undefine if
+	<complex> has been included.
+	* testsuite/26_numerics/complex/56111.cc: New testcase.
+
 2013-02-13  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Hash_code_base): Restore
