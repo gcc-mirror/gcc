@@ -9559,6 +9559,8 @@ maybe_add_lambda_conv_op (tree type)
   body = begin_function_body ();
   compound_stmt = begin_compound_stmt (0);
 
+  /* decl_needed_p needs to see that it's used.  */
+  TREE_USED (statfn) = 1;
   finish_return_stmt (decay_conversion (statfn, tf_warning_or_error));
 
   finish_compound_stmt (compound_stmt);
