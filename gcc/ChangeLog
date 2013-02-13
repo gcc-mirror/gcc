@@ -1,3 +1,34 @@
+2013-02-12  Dodji Seketeli  <dodji@redhat.com>
+
+	Avoid instrumenting duplicated memory access in the same basic block
+	* Makefile.in (asan.o): Add new dependency on hash-table.h
+	* asan.c (struct asan_mem_ref, struct mem_ref_hasher): New types.
+	(asan_mem_ref_init, asan_mem_ref_get_end, get_mem_ref_hash_table)
+	(has_stmt_been_instrumented_p, empty_mem_ref_hash_table)
+	(free_mem_ref_resources, has_mem_ref_been_instrumented)
+	(has_stmt_been_instrumented_p, update_mem_ref_hash_table)
+	(get_mem_ref_of_assignment): New functions.
+	(get_mem_refs_of_builtin_call): Extract from
+	instrument_builtin_call and tweak a little bit to make it fit with
+	the new signature.
+	(instrument_builtin_call): Use the new
+	get_mem_refs_of_builtin_call.  Use gimple_call_builtin_p instead
+	of is_gimple_builtin_call.
+	(instrument_derefs, instrument_mem_region_access): Insert the
+	instrumented memory reference into the hash table.
+	(maybe_instrument_assignment): Renamed instrument_assignment into
+	this, and change it to advance the iterator when instrumentation
+	actually happened and return true in that case.  This makes it
+	homogeneous with maybe_instrument_assignment, and thus give a
+	chance to callers to be more 'regular'.
+	(transform_statements): Clear the memory reference hash table
+	whenever we enter a new BB, when we cross a function call, or when
+	we are done transforming statements.  Use
+	maybe_instrument_assignment instead of instrumentation.  No more
+	need to special case maybe_instrument_assignment and advance the
+	iterator after calling it; it's now handled just like
+	maybe_instrument_call.  Update comment.
+
 2013-02-13  Richard Biener  <rguenther@suse.de>
 
 	* config/mn10300/mn10300.c (mn10300_scan_for_setlb_lcc):
