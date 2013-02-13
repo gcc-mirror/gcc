@@ -1,3 +1,9 @@
+2013-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56135
+	* pt.c (tsubst_copy_and_build): Don't forget any new
+	captures that arose from use of dependent names.
+
 2013-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56302
