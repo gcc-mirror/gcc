@@ -2116,8 +2116,8 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 		       % GET_MODE_BITSIZE (mode));
       else if (GET_CODE (op1) == SUBREG
 	       && subreg_lowpart_p (op1)
-	       && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (op1)))
-	       && INTEGRAL_MODE_P (GET_MODE (op1)))
+	       && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (op1)))
+	       && SCALAR_INT_MODE_P (GET_MODE (op1)))
 	op1 = SUBREG_REG (op1);
     }
 
