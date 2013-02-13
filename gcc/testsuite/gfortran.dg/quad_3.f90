@@ -25,6 +25,7 @@ program test_qp
      read (tmp, *) a, c
 !     print *, 'same value read again:   ', a, c
 !     print *, 'difference: looks OK now ', a-b(1)
-     if (a-b(1) /= 0.0_qp .or. c-b(1) /= 0.0_qp) call abort()
+     if (abs (a-b(1))/a > epsilon(0.0_qp) &
+         .or. abs (c-b(1))/c > epsilon (0.0_qp)) call abort()
    end if
 end program test_qp
