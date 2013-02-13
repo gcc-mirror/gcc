@@ -22,7 +22,7 @@
 // will co-exist in the source base for a while. The actual allocator is chosen
 // at build time by redefining this macro.
 #ifndef ASAN_ALLOCATOR_VERSION
-# if ASAN_LINUX && !ASAN_ANDROID
+# if (ASAN_LINUX && !ASAN_ANDROID) || ASAN_MAC || ASAN_WINDOWS
 #  define ASAN_ALLOCATOR_VERSION 2
 # else
 #  define ASAN_ALLOCATOR_VERSION 1
@@ -40,6 +40,8 @@ enum AllocType {
 static const uptr kNumberOfSizeClasses = 255;
 struct AsanChunk;
 
+void InitializeAllocator();
+
 class AsanChunkView {
  public:
   explicit AsanChunkView(AsanChunk *chunk) : chunk_(chunk) {}
@@ -51,14 +53,14 @@ class AsanChunkView {
   uptr FreeTid();
   void GetAllocStack(StackTrace *stack);
   void GetFreeStack(StackTrace *stack);
-  bool AddrIsInside(uptr addr, uptr access_size, uptr *offset) {
+  bool AddrIsInside(uptr addr, uptr access_size, sptr *offset) {
     if (addr >= Beg() && (addr + access_size) <= End()) {
       *offset = addr - Beg();
       return true;
     }
     return false;
   }
-  bool AddrIsAtLeft(uptr addr, uptr access_size, uptr *offset) {
+  bool AddrIsAtLeft(uptr addr, uptr access_size, sptr *offset) {
     (void)access_size;
     if (addr < Beg()) {
       *offset = Beg() - addr;
@@ -66,12 +68,9 @@ class AsanChunkView {
     }
     return false;
   }
-  bool AddrIsAtRight(uptr addr, uptr access_size, uptr *offset) {
-    if (addr + access_size >= End()) {
-      if (addr <= End())
-        *offset = 0;
-      else
-        *offset = addr - End();
+  bool AddrIsAtRight(uptr addr, uptr access_size, sptr *offset) {
+    if (addr + access_size > End()) {
+      *offset = addr - End();
       return true;
     }
     return false;
@@ -224,51 +223,6 @@ void asan_mz_force_lock();
 void asan_mz_force_unlock();
 
 void PrintInternalAllocatorStats();
-
-// Log2 and RoundUpToPowerOfTwo should be inlined for performance.
-#if defined(_WIN32) && !defined(__clang__)
-extern "C" {
-unsigned char _BitScanForward(unsigned long *index, unsigned long mask);  // NOLINT
-unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);  // NOLINT
-#if defined(_WIN64)
-unsigned char _BitScanForward64(unsigned long *index, unsigned __int64 mask);  // NOLINT
-unsigned char _BitScanReverse64(unsigned long *index, unsigned __int64 mask);  // NOLINT
-#endif
-}
-#endif
-
-static inline uptr Log2(uptr x) {
-  CHECK(IsPowerOfTwo(x));
-#if !defined(_WIN32) || defined(__clang__)
-  return __builtin_ctzl(x);
-#elif defined(_WIN64)
-  unsigned long ret;  // NOLINT
-  _BitScanForward64(&ret, x);
-  return ret;
-#else
-  unsigned long ret;  // NOLINT
-  _BitScanForward(&ret, x);
-  return ret;
-#endif
-}
-
-static inline uptr RoundUpToPowerOfTwo(uptr size) {
-  CHECK(size);
-  if (IsPowerOfTwo(size)) return size;
-
-  unsigned long up;  // NOLINT
-#if !defined(_WIN32) || defined(__clang__)
-  up = SANITIZER_WORDSIZE - 1 - __builtin_clzl(size);
-#elif defined(_WIN64)
-  _BitScanReverse64(&up, size);
-#else
-  _BitScanReverse(&up, size);
-#endif
-  CHECK(size < (1ULL << (up + 1)));
-  CHECK(size > (1ULL << up));
-  return 1UL << (up + 1);
-}
-
 
 }  // namespace __asan
 #endif  // ASAN_ALLOCATOR_H

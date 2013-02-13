@@ -17,6 +17,7 @@
 #include "sanitizer_common/sanitizer_platform_interceptors.h"
 
 #include <stdarg.h>
+#include <stddef.h>
 
 using __sanitizer::uptr;
 
@@ -64,9 +65,7 @@ using __sanitizer::uptr;
 # define ASAN_INTERCEPT_SIGNAL_AND_SIGACTION 0
 #endif
 
-// On Darwin siglongjmp tailcalls longjmp, so we don't want to intercept it
-// there.
-#if !defined(_WIN32) && (!defined(__APPLE__) || MAC_INTERPOSE_FUNCTIONS)
+#if !defined(_WIN32)
 # define ASAN_INTERCEPT_SIGLONGJMP 1
 #else
 # define ASAN_INTERCEPT_SIGLONGJMP 0
@@ -169,7 +168,8 @@ DECLARE_FUNCTION_AND_WRAPPER(SSIZE_T, pread64, int fd, void *buf,
 DECLARE_FUNCTION_AND_WRAPPER(SSIZE_T, write, int fd, void *ptr, SIZE_T count);
 # endif
 # if SANITIZER_INTERCEPT_PWRITE
-DECLARE_FUNCTION_AND_WRAPPER(SSIZE_T, pwrite, int fd, void *ptr, SIZE_T count);
+DECLARE_FUNCTION_AND_WRAPPER(SSIZE_T, pwrite,
+                             int fd, void *ptr, SIZE_T count, OFF_T offset);
 # endif
 
 # if ASAN_INTERCEPT_MLOCKX
@@ -193,6 +193,8 @@ DECLARE_FUNCTION_AND_WRAPPER(int, pthread_create,
                              void *(*start_routine)(void*), void *arg);
 # endif
 
+// stdio.h
+# if SANITIZER_INTERCEPT_SCANF
 DECLARE_FUNCTION_AND_WRAPPER(int, vscanf, const char *format, va_list ap);
 DECLARE_FUNCTION_AND_WRAPPER(int, vsscanf, const char *str, const char *format,
                              va_list ap);
@@ -203,6 +205,18 @@ DECLARE_FUNCTION_AND_WRAPPER(int, fscanf,
                              void* stream, const char *format, ...);
 DECLARE_FUNCTION_AND_WRAPPER(int, sscanf,  // NOLINT
                              const char *str, const char *format, ...);
+DECLARE_FUNCTION_AND_WRAPPER(int, __isoc99_vscanf, const char *format,
+                             va_list ap);
+DECLARE_FUNCTION_AND_WRAPPER(int, __isoc99_vsscanf, const char *str,
+                             const char *format, va_list ap);
+DECLARE_FUNCTION_AND_WRAPPER(int, __isoc99_vfscanf, void *stream,
+                             const char *format, va_list ap);
+DECLARE_FUNCTION_AND_WRAPPER(int, __isoc99_scanf, const char *format, ...);
+DECLARE_FUNCTION_AND_WRAPPER(int, __isoc99_fscanf,
+                             void* stream, const char *format, ...);
+DECLARE_FUNCTION_AND_WRAPPER(int, __isoc99_sscanf,  // NOLINT
+                             const char *str, const char *format, ...);
+# endif
 
 # if defined(__APPLE__)
 typedef void* pthread_workqueue_t;
@@ -231,7 +245,7 @@ DECLARE_FUNCTION_AND_WRAPPER(void, dispatch_group_async_f,
                              dispatch_group_t group, dispatch_queue_t dq,
                              void *ctxt, dispatch_function_t func);
 
-#  if MAC_INTERPOSE_FUNCTIONS && !defined(MISSING_BLOCKS_SUPPORT)
+#  if !defined(MISSING_BLOCKS_SUPPORT)
 DECLARE_FUNCTION_AND_WRAPPER(void, dispatch_group_async,
                              dispatch_group_t dg,
                              dispatch_queue_t dq, void (^work)(void));
@@ -243,7 +257,7 @@ DECLARE_FUNCTION_AND_WRAPPER(void, dispatch_source_set_event_handler,
                              dispatch_source_t ds, void (^work)(void));
 DECLARE_FUNCTION_AND_WRAPPER(void, dispatch_source_set_cancel_handler,
                              dispatch_source_t ds, void (^work)(void));
-#  endif  // MAC_INTERPOSE_FUNCTIONS
+#  endif  // MISSING_BLOCKS_SUPPORT
 
 typedef void malloc_zone_t;
 typedef size_t vm_size_t;

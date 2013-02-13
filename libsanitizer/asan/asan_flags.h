@@ -13,7 +13,7 @@
 #ifndef ASAN_FLAGS_H
 #define ASAN_FLAGS_H
 
-#include "sanitizer/common_interface_defs.h"
+#include "sanitizer_common/sanitizer_internal_defs.h"
 
 // ASan flag values can be defined in three ways:
 // 1) initialized with default values at startup.
@@ -50,8 +50,6 @@ struct Flags {
   bool replace_str;
   // If set, uses custom wrappers for memset/memcpy/memmove intinsics.
   bool replace_intrin;
-  // Used on Mac only. See comments in asan_mac.cc and asan_malloc_mac.cc.
-  bool replace_cfallocator;
   // Used on Mac only.
   bool mac_ignore_invalid_free;
   // ASan allocator flag. See asan_allocator.cc.
@@ -77,6 +75,10 @@ struct Flags {
   bool unmap_shadow_on_exit;
   // If set, calls abort() instead of _exit() after printing an error report.
   bool abort_on_error;
+  // Print various statistics after printing an error message or if atexit=1.
+  bool print_stats;
+  // Print the legend for the shadow bytes.
+  bool print_legend;
   // If set, prints ASan exit stats even after program terminates successfully.
   bool atexit;
   // By default, disable core dumper on 64-bit - it makes little sense

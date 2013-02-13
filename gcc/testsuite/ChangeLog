@@ -1,3 +1,9 @@
+2013-02-13  Kostya Serebryany  <kcc@google.com>
+
+	* c-c++-common/asan/strncpy-overflow-1.c: Update the test
+	to match the fresh asan run-time.
+	* c-c++-common/asan/rlimit-mmap-test-1.c: Ditto.
+
 2013-02-12  Dodji Seketeli  <dodji@redhat.com>
 
 	Avoid instrumenting duplicated memory access in the same basic block

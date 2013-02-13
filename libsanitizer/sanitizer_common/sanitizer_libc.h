@@ -9,14 +9,13 @@
 // run-time libraries.
 // These tools can not use some of the libc functions directly because those
 // functions are intercepted. Instead, we implement a tiny subset of libc here.
-// NOTE: This file may be included into user code.
 //===----------------------------------------------------------------------===//
 #ifndef SANITIZER_LIBC_H
 #define SANITIZER_LIBC_H
 
 // ----------- ATTENTION -------------
 // This header should NOT include any other headers from sanitizer runtime.
-#include "sanitizer/common_interface_defs.h"
+#include "sanitizer_internal_defs.h"
 
 namespace __sanitizer {
 
@@ -56,17 +55,24 @@ void *internal_mmap(void *addr, uptr length, int prot, int flags,
 int internal_munmap(void *addr, uptr length);
 
 // I/O
-typedef int fd_t;
 const fd_t kInvalidFd = -1;
 const fd_t kStdinFd = 0;
 const fd_t kStdoutFd = 1;
 const fd_t kStderrFd = 2;
 int internal_close(fd_t fd);
 int internal_isatty(fd_t fd);
-fd_t internal_open(const char *filename, bool write);
+
+// Use __sanitizer::OpenFile() instead.
+fd_t internal_open(const char *filename, int flags);
+fd_t internal_open(const char *filename, int flags, u32 mode);
+
 uptr internal_read(fd_t fd, void *buf, uptr count);
 uptr internal_write(fd_t fd, const void *buf, uptr count);
 uptr internal_filesize(fd_t fd);  // -1 on error.
+int internal_stat(const char *path, void *buf);
+int internal_lstat(const char *path, void *buf);
+int internal_fstat(fd_t fd, void *buf);
+
 int internal_dup2(int oldfd, int newfd);
 uptr internal_readlink(const char *path, char *buf, uptr bufsize);
 int internal_snprintf(char *buffer, uptr length, const char *format, ...);
