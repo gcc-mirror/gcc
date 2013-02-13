@@ -1,5 +1,9 @@
 2013-02-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56155
+	* decl.c (build_enumerator): Always convert the value to a
+	fixed underlying type.
+
 	PR c++/56135
 	* pt.c (tsubst_copy_and_build): Don't forget any new
 	captures that arose from use of dependent names.
