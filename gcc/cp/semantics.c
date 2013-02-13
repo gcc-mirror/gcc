@@ -1402,6 +1402,14 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  if (!cxx_mark_addressable (operand))
 		    operand = error_mark_node;
 		}
+	      else if (!allows_reg && !allows_mem)
+		{
+		  /* If constraint allows neither register nor memory,
+		     try harder to get a constant.  */
+		  tree constop = maybe_constant_value (operand);
+		  if (TREE_CONSTANT (constop))
+		    operand = constop;
+		}
 	    }
 	  else
 	    operand = error_mark_node;

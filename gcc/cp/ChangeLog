@@ -1,3 +1,10 @@
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56302
+	* semantics.c (finish_asm_stmt): If input constraints allow
+	neither register nor memory, try maybe_constant_value to get
+	a constant if possible.
+
 2013-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56285
