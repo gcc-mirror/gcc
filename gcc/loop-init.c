@@ -99,6 +99,9 @@ loop_optimizer_init (unsigned flags)
 #ifdef ENABLE_CHECKING
       verify_loop_structure ();
 #endif
+
+      /* Clear all flags.  */
+      loops_state_clear (~0U);
     }
 
   /* Apply flags to loops.  */

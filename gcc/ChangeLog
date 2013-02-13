@@ -1,3 +1,12 @@
+2013-02-13  Richard Biener  <rguenther@suse.de>
+
+	* loop-init.c (loop_optimizer_init): Clear loop state when
+	re-initializing preserved loops.
+	* loop-unswitch.c (unswitch_single_loop): Return whether
+	we unswitched the loop.  Do not verify loop state here.
+	(unswitch_loops): When we unswitched a loop discover new
+	loops.
+
 2013-02-13  Kostya Serebryany  <kcc@google.com>
 
 	* config/i386/i386.c: Use 0x7fff8000 as asan_shadow_offset on x86_64
