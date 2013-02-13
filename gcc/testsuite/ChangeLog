@@ -1,3 +1,10 @@
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56302
+	* g++.dg/torture/pr56302.C: New test.
+	* g++.dg/cpp0x/constexpr-56302.C: New test.
+	* c-c++-common/pr56302.c: New test.
+
 2013-02-13  Tobias Burnus  <burnus@net-b.de>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
