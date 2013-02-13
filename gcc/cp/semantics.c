@@ -7448,6 +7448,15 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      return build4_loc (loc, ARRAY_REF, type, op00, op01,
 				 NULL_TREE, NULL_TREE);
 	    }
+	  /* Also handle conversion to an empty base class, which
+	     is represented with a NOP_EXPR.  */
+	  else if (is_empty_class (type)
+		   && CLASS_TYPE_P (op00type)
+		   && DERIVED_FROM_P (type, op00type))
+	    {
+	      *empty_base = true;
+	      return op00;
+	    }
 	  /* ((foo *)&struct_with_foo_field)[1] => COMPONENT_REF */
 	  else if (RECORD_OR_UNION_TYPE_P (op00type))
 	    {
