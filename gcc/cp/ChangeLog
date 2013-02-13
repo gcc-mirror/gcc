@@ -1,5 +1,8 @@
 2013-02-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55879
+	* semantics.c (cxx_bind_parameters_in_call): Undo DECL_BY_REFERENCE.
+
 	PR c++/55993
 	* semantics.c (cxx_fold_indirect_ref): Handle empty bases at
 	non-zero offsets, too.
