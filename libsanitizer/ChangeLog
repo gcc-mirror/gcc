@@ -1,3 +1,10 @@
+2013-02-13  Kostya Serebryany  <kcc@google.com>
+
+        PR sanitizer/56128
+	* All source files: Merge from upstream r175049.
+	* interception/Makefile.am: added include path.
+	* interception/Makefile.in: Regenerated.
+
 2013-02-11  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* configure.tgt: Disable build on darwin9 and earlier.

@@ -18,7 +18,9 @@ namespace __tsan {
 const uptr kDefaultAlignment = 16;
 
 void InitializeAllocator();
-void AlloctorThreadFinish(ThreadState *thr);
+void AllocatorThreadStart(ThreadState *thr);
+void AllocatorThreadFinish(ThreadState *thr);
+void AllocatorPrintStats();
 
 // For user allocations.
 void *user_alloc(ThreadState *thr, uptr pc, uptr sz,

@@ -56,7 +56,7 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libinterception_la_LIBADD =
 am__objects_1 = interception_linux.lo interception_mac.lo \
-	interception_win.lo
+	interception_win.lo interception_type_test.lo
 am_libinterception_la_OBJECTS = $(am__objects_1)
 libinterception_la_OBJECTS = $(am_libinterception_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -208,7 +208,7 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I $(top_srcdir)/include 
+AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir)
 
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -221,7 +221,8 @@ noinst_LTLIBRARIES = libinterception.la
 interception_files = \
         interception_linux.cc \
         interception_mac.cc \
-        interception_win.cc
+        interception_win.cc \
+	interception_type_test.cc
 
 libinterception_la_SOURCES = $(interception_files)
 
@@ -318,6 +319,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interception_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interception_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interception_type_test.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interception_win.Plo@am__quote@
 
 .cc.o:

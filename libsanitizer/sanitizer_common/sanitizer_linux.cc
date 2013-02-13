@@ -28,11 +28,14 @@
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/prctl.h>
 #include <unistd.h>
 #include <unwind.h>
 #include <errno.h>
-#include <sys/prctl.h>
-#include <linux/futex.h>
+
+// <linux/futex.h> is broken on some linux distributions.
+const int FUTEX_WAIT = 0;
+const int FUTEX_WAKE = 1;
 
 // Are we using 32-bit or 64-bit syscalls?
 // x32 (which defines __x86_64__) has SANITIZER_WORDSIZE == 32
@@ -63,8 +66,16 @@ int internal_close(fd_t fd) {
   return syscall(__NR_close, fd);
 }
 
-fd_t internal_open(const char *filename, bool write) {
-  return syscall(__NR_open, filename,
+fd_t internal_open(const char *filename, int flags) {
+  return syscall(__NR_open, filename, flags);
+}
+
+fd_t internal_open(const char *filename, int flags, u32 mode) {
+  return syscall(__NR_open, filename, flags, mode);
+}
+
+fd_t OpenFile(const char *filename, bool write) {
+  return internal_open(filename,
       write ? O_WRONLY | O_CREAT /*| O_CLOEXEC*/ : O_RDONLY, 0660);
 }
 
@@ -80,16 +91,38 @@ uptr internal_write(fd_t fd, const void *buf, uptr count) {
   return res;
 }
 
+int internal_stat(const char *path, void *buf) {
+#if SANITIZER_LINUX_USES_64BIT_SYSCALLS
+  return syscall(__NR_stat, path, buf);
+#else
+  return syscall(__NR_stat64, path, buf);
+#endif
+}
+
+int internal_lstat(const char *path, void *buf) {
+#if SANITIZER_LINUX_USES_64BIT_SYSCALLS
+  return syscall(__NR_lstat, path, buf);
+#else
+  return syscall(__NR_lstat64, path, buf);
+#endif
+}
+
+int internal_fstat(fd_t fd, void *buf) {
+#if SANITIZER_LINUX_USES_64BIT_SYSCALLS
+  return syscall(__NR_fstat, fd, buf);
+#else
+  return syscall(__NR_fstat64, fd, buf);
+#endif
+}
+
 uptr internal_filesize(fd_t fd) {
 #if SANITIZER_LINUX_USES_64BIT_SYSCALLS
   struct stat st;
-  if (syscall(__NR_fstat, fd, &st))
-    return -1;
 #else
   struct stat64 st;
-  if (syscall(__NR_fstat64, fd, &st))
-    return -1;
 #endif
+  if (internal_fstat(fd, &st))
+    return -1;
   return (uptr)st.st_size;
 }
 

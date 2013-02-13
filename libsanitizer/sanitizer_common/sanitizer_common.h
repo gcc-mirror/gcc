@@ -17,6 +17,7 @@
 #include "sanitizer_internal_defs.h"
 
 namespace __sanitizer {
+struct StackTrace;
 
 // Constants.
 const uptr kWordSize = SANITIZER_WORDSIZE / 8;
@@ -27,6 +28,8 @@ const uptr kCacheLineSize = 128;
 #else
 const uptr kCacheLineSize = 64;
 #endif
+
+extern const char *SanitizerToolName;  // Can be changed by the tool.
 
 uptr GetPageSize();
 uptr GetPageSizeCached();
@@ -103,6 +106,7 @@ void Printf(const char *format, ...);
 void Report(const char *format, ...);
 void SetPrintfAndReportCallback(void (*callback)(const char *));
 
+fd_t OpenFile(const char *filename, bool write);
 // Opens the file 'file_name" and reads up to 'max_len' bytes.
 // The resulting buffer is mmaped and stored in '*buff'.
 // The size of the mmaped region is stored in '*buff_size',
@@ -152,20 +156,79 @@ typedef void (*CheckFailedCallbackType)(const char *, int, const char *,
                                        u64, u64);
 void SetCheckFailedCallback(CheckFailedCallbackType callback);
 
+// Construct a one-line string like
+//  SanitizerToolName: error_type file:line function
+// and call __sanitizer_report_error_summary on it.
+void ReportErrorSummary(const char *error_type, const char *file,
+                        int line, const char *function);
+
 // Math
+#if defined(_WIN32) && !defined(__clang__)
+extern "C" {
+unsigned char _BitScanForward(unsigned long *index, unsigned long mask);  // NOLINT
+unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);  // NOLINT
+#if defined(_WIN64)
+unsigned char _BitScanForward64(unsigned long *index, unsigned __int64 mask);  // NOLINT
+unsigned char _BitScanReverse64(unsigned long *index, unsigned __int64 mask);  // NOLINT
+#endif
+}
+#endif
+
+INLINE uptr MostSignificantSetBitIndex(uptr x) {
+  CHECK(x != 0);
+  unsigned long up;  // NOLINT
+#if !defined(_WIN32) || defined(__clang__)
+  up = SANITIZER_WORDSIZE - 1 - __builtin_clzl(x);
+#elif defined(_WIN64)
+  _BitScanReverse64(&up, x);
+#else
+  _BitScanReverse(&up, x);
+#endif
+  return up;
+}
+
 INLINE bool IsPowerOfTwo(uptr x) {
   return (x & (x - 1)) == 0;
 }
+
+INLINE uptr RoundUpToPowerOfTwo(uptr size) {
+  CHECK(size);
+  if (IsPowerOfTwo(size)) return size;
+
+  uptr up = MostSignificantSetBitIndex(size);
+  CHECK(size < (1ULL << (up + 1)));
+  CHECK(size > (1ULL << up));
+  return 1UL << (up + 1);
+}
+
 INLINE uptr RoundUpTo(uptr size, uptr boundary) {
   CHECK(IsPowerOfTwo(boundary));
   return (size + boundary - 1) & ~(boundary - 1);
 }
+
 INLINE uptr RoundDownTo(uptr x, uptr boundary) {
   return x & ~(boundary - 1);
 }
+
 INLINE bool IsAligned(uptr a, uptr alignment) {
   return (a & (alignment - 1)) == 0;
 }
+
+INLINE uptr Log2(uptr x) {
+  CHECK(IsPowerOfTwo(x));
+#if !defined(_WIN32) || defined(__clang__)
+  return __builtin_ctzl(x);
+#elif defined(_WIN64)
+  unsigned long ret;  // NOLINT
+  _BitScanForward64(&ret, x);
+  return ret;
+#else
+  unsigned long ret;  // NOLINT
+  _BitScanForward(&ret, x);
+  return ret;
+#endif
+}
+
 // Don't use std::min, std::max or std::swap, to minimize dependency
 // on libstdc++.
 template<class T> T Min(T a, T b) { return a < b ? a : b; }

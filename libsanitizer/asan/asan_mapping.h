@@ -1,5 +1,7 @@
 //===-- asan_mapping.h ------------------------------------------*- C++ -*-===//
 //
+//                     The LLVM Compiler Infrastructure
+//
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
 //
@@ -34,26 +36,19 @@ extern SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_mapping_offset;
 #   if defined(__powerpc64__)
 #    define SHADOW_OFFSET (1ULL << 41)
 #   else
-#    define SHADOW_OFFSET (1ULL << 44)
+#    if ASAN_MAC
+#     define SHADOW_OFFSET (1ULL << 44)
+#    else
+#     define SHADOW_OFFSET 0x7fff8000ULL
+#    endif
 #   endif
 #  endif
 # endif
 #endif  // ASAN_FLEXIBLE_MAPPING_AND_OFFSET
 
 #define SHADOW_GRANULARITY (1ULL << SHADOW_SCALE)
-#define MEM_TO_SHADOW(mem) (((mem) >> SHADOW_SCALE) | (SHADOW_OFFSET))
+#define MEM_TO_SHADOW(mem) (((mem) >> SHADOW_SCALE) + (SHADOW_OFFSET))
 #define SHADOW_TO_MEM(shadow) (((shadow) - SHADOW_OFFSET) << SHADOW_SCALE)
-
-#if SANITIZER_WORDSIZE == 64
-# if defined(__powerpc64__)
-  static const uptr kHighMemEnd = 0x00000fffffffffffUL;
-# else
-  static const uptr kHighMemEnd = 0x00007fffffffffffUL;
-# endif
-#else  // SANITIZER_WORDSIZE == 32
-  static const uptr kHighMemEnd = 0xffffffff;
-#endif  // SANITIZER_WORDSIZE
-
 
 #define kLowMemBeg      0
 #define kLowMemEnd      (SHADOW_OFFSET ? SHADOW_OFFSET - 1 : 0)
@@ -74,10 +69,10 @@ extern SANITIZER_INTERFACE_ATTRIBUTE uptr __asan_mapping_offset;
                                        : kZeroBaseShadowStart)
 #define kShadowGapEnd   (kHighShadowBeg - 1)
 
-#define kGlobalAndStackRedzone \
-      (SHADOW_GRANULARITY < 32 ? 32 : SHADOW_GRANULARITY)
-
 namespace __asan {
+
+SANITIZER_INTERFACE_ATTRIBUTE
+extern uptr kHighMemEnd;  // Initialized in __asan_init.
 
 static inline bool AddrIsInLowMem(uptr a) {
   return a < kLowMemEnd;

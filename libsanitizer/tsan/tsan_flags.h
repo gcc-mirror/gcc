@@ -41,6 +41,8 @@ struct Flags {
   // Report violations of async signal-safety
   // (e.g. malloc() call from a signal handler).
   bool report_signal_unsafe;
+  // Report races between atomic and plain memory accesses.
+  bool report_atomic_races;
   // If set, all atomics are effectively sequentially consistent (seq_cst),
   // regardless of what user actually specified.
   bool force_seq_cst_atomics;
@@ -84,6 +86,6 @@ struct Flags {
 
 Flags *flags();
 void InitializeFlags(Flags *flags, const char *env);
-}
+}  // namespace __tsan
 
 #endif  // TSAN_FLAGS_H

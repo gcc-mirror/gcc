@@ -30,9 +30,6 @@ DECLARE_REAL(int, sigaction, int signum, const struct sigaction *act,
 namespace __asan {
 
 void InitializeAsanInterceptors();
-#if defined(__APPLE__)
-void InitializeMacInterceptors();
-#endif  // __APPLE__
 
 }  // namespace __asan
 

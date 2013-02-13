@@ -18,7 +18,6 @@
 #include "asan_stats.h"
 #include "asan_thread.h"
 #include "asan_thread_registry.h"
-#include "sanitizer/asan_interface.h"
 #include "sanitizer_common/sanitizer_atomic.h"
 #include "sanitizer_common/sanitizer_flags.h"
 #include "sanitizer_common/sanitizer_libc.h"
@@ -83,7 +82,6 @@ static void ParseFlagsFromString(Flags *f, const char *str) {
 
   ParseFlag(str, &f->replace_str, "replace_str");
   ParseFlag(str, &f->replace_intrin, "replace_intrin");
-  ParseFlag(str, &f->replace_cfallocator, "replace_cfallocator");
   ParseFlag(str, &f->mac_ignore_invalid_free, "mac_ignore_invalid_free");
   ParseFlag(str, &f->use_fake_stack, "use_fake_stack");
   ParseFlag(str, &f->max_malloc_fill_size, "max_malloc_fill_size");
@@ -95,6 +93,8 @@ static void ParseFlagsFromString(Flags *f, const char *str) {
   ParseFlag(str, &f->check_malloc_usable_size, "check_malloc_usable_size");
   ParseFlag(str, &f->unmap_shadow_on_exit, "unmap_shadow_on_exit");
   ParseFlag(str, &f->abort_on_error, "abort_on_error");
+  ParseFlag(str, &f->print_stats, "print_stats");
+  ParseFlag(str, &f->print_legend, "print_legend");
   ParseFlag(str, &f->atexit, "atexit");
   ParseFlag(str, &f->disable_core, "disable_core");
   ParseFlag(str, &f->strip_path_prefix, "strip_path_prefix");
@@ -121,7 +121,6 @@ void InitializeFlags(Flags *f, const char *env) {
   f->malloc_context_size = kDeafultMallocContextSize;
   f->replace_str = true;
   f->replace_intrin = true;
-  f->replace_cfallocator = true;
   f->mac_ignore_invalid_free = false;
   f->use_fake_stack = true;
   f->max_malloc_fill_size = 0;
@@ -133,6 +132,8 @@ void InitializeFlags(Flags *f, const char *env) {
   f->check_malloc_usable_size = true;
   f->unmap_shadow_on_exit = false;
   f->abort_on_error = false;
+  f->print_stats = false;
+  f->print_legend = true;
   f->atexit = false;
   f->disable_core = (SANITIZER_WORDSIZE == 64);
   f->strip_path_prefix = "";
@@ -142,9 +143,7 @@ void InitializeFlags(Flags *f, const char *env) {
   f->fast_unwind_on_fatal = false;
   f->fast_unwind_on_malloc = true;
   f->poison_heap = true;
-  // Turn off alloc/dealloc mismatch checker on Mac for now.
-  // TODO(glider): Fix known issues and enable this back.
-  f->alloc_dealloc_mismatch = (ASAN_MAC == 0);
+  f->alloc_dealloc_mismatch = true;
   f->use_stack_depot = true;  // Only affects allocator2.
 
   // Override from user-specified string.
@@ -162,6 +161,7 @@ void InitializeFlags(Flags *f, const char *env) {
 int asan_inited;
 bool asan_init_is_running;
 void (*death_callback)(void);
+uptr kHighMemEnd;
 
 // -------------------------- Misc ---------------- {{{1
 void ShowStatsAndAbort() {
@@ -261,6 +261,24 @@ static void asan_atexit() {
   __asan_print_accumulated_stats();
 }
 
+static void InitializeHighMemEnd() {
+#if SANITIZER_WORDSIZE == 64
+# if defined(__powerpc64__)
+  // FIXME:
+  // On PowerPC64 we have two different address space layouts: 44- and 46-bit.
+  // We somehow need to figure our which one we are using now and choose
+  // one of 0x00000fffffffffffUL and 0x00003fffffffffffUL.
+  // Note that with 'ulimit -s unlimited' the stack is moved away from the top
+  // of the address space, so simply checking the stack address is not enough.
+  kHighMemEnd = (1ULL << 44) - 1;  // 0x00000fffffffffffUL
+# else
+  kHighMemEnd = (1ULL << 47) - 1;  // 0x00007fffffffffffUL;
+# endif
+#else  // SANITIZER_WORDSIZE == 32
+  kHighMemEnd = (1ULL << 32) - 1;  // 0xffffffff;
+#endif  // SANITIZER_WORDSIZE
+}
+
 }  // namespace __asan
 
 // ---------------------- Interface ---------------- {{{1
@@ -295,8 +313,10 @@ void NOINLINE __asan_set_death_callback(void (*callback)(void)) {
 
 void __asan_init() {
   if (asan_inited) return;
+  SanitizerToolName = "AddressSanitizer";
   CHECK(!asan_init_is_running && "ASan init calls itself!");
   asan_init_is_running = true;
+  InitializeHighMemEnd();
 
   // Make sure we are not statically linked.
   AsanDoesNotSupportStaticLinkage();
@@ -399,6 +419,8 @@ void __asan_init() {
   asanThreadRegistry().Init();
   asanThreadRegistry().GetMain()->ThreadStart();
   force_interface_symbols();  // no-op.
+
+  InitializeAllocator();
 
   if (flags()->verbosity) {
     Report("AddressSanitizer Init done\n");

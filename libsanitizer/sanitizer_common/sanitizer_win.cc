@@ -95,6 +95,11 @@ void *Mprotect(uptr fixed_addr, uptr size) {
                       MEM_RESERVE | MEM_COMMIT, PAGE_NOACCESS);
 }
 
+void FlushUnneededShadowMemory(uptr addr, uptr size) {
+  // This is almost useless on 32-bits.
+  // FIXME: add madvice-analog when we move to 64-bits.
+}
+
 bool MemoryRangeIsAvailable(uptr range_start, uptr range_end) {
   // FIXME: shall we do anything here on Windows?
   return true;
@@ -189,7 +194,15 @@ int internal_isatty(fd_t fd) {
   return _isatty(fd);
 }
 
-fd_t internal_open(const char *filename, bool write) {
+fd_t internal_open(const char *filename, int flags) {
+  UNIMPLEMENTED();
+}
+
+fd_t internal_open(const char *filename, int flags, u32 mode) {
+  UNIMPLEMENTED();
+}
+
+fd_t OpenFile(const char *filename, bool write) {
   UNIMPLEMENTED();
 }
 
@@ -207,6 +220,18 @@ uptr internal_write(fd_t fd, const void *buf, uptr count) {
   if (!WriteFile(err, buf, count, &ret, 0))
     return 0;
   return ret;
+}
+
+int internal_stat(const char *path, void *buf) {
+  UNIMPLEMENTED();
+}
+
+int internal_lstat(const char *path, void *buf) {
+  UNIMPLEMENTED();
+}
+
+int internal_fstat(fd_t fd, void *buf) {
+  UNIMPLEMENTED();
 }
 
 uptr internal_filesize(fd_t fd) {
@@ -227,10 +252,8 @@ int internal_sched_yield() {
 }
 
 // ---------------------- BlockingMutex ---------------- {{{1
-enum LockState {
-  LOCK_UNINITIALIZED = 0,
-  LOCK_READY = -1,
-};
+const uptr LOCK_UNINITIALIZED = 0;
+const uptr LOCK_READY = (uptr)-1;
 
 BlockingMutex::BlockingMutex(LinkerInitialized li) {
   // FIXME: see comments in BlockingMutex::Lock() for the details.
@@ -252,12 +275,12 @@ void BlockingMutex::Lock() {
     // locks while we're starting in one thread to avoid double-init races.
   }
   EnterCriticalSection((LPCRITICAL_SECTION)opaque_storage_);
-  CHECK(owner_ == LOCK_READY);
+  CHECK_EQ(owner_, LOCK_READY);
   owner_ = GetThreadSelf();
 }
 
 void BlockingMutex::Unlock() {
-  CHECK(owner_ == GetThreadSelf());
+  CHECK_EQ(owner_, GetThreadSelf());
   owner_ = LOCK_READY;
   LeaveCriticalSection((LPCRITICAL_SECTION)opaque_storage_);
 }

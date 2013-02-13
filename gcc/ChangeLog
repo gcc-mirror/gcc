@@ -1,3 +1,9 @@
+2013-02-13  Kostya Serebryany  <kcc@google.com>
+
+	* config/i386/i386.c: Use 0x7fff8000 as asan_shadow_offset on x86_64
+	linux.
+	* sanitizer.def: Rename __asan_init to __asan_init_v1.
+
 2013-02-12  Dodji Seketeli  <dodji@redhat.com>
 
 	Avoid instrumenting duplicated memory access in the same basic block

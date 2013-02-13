@@ -207,6 +207,9 @@ void ThreadStart(ThreadState *thr, int tid, uptr os_id) {
   thr->shadow_stack_pos = thr->shadow_stack;
   thr->shadow_stack_end = thr->shadow_stack + kInitStackSize;
 #endif
+#ifndef TSAN_GO
+  AllocatorThreadStart(thr);
+#endif
   tctx->thr = thr;
   thr->fast_synch_epoch = tctx->epoch0;
   thr->clock.set(tid, tctx->epoch0);
@@ -267,7 +270,7 @@ void ThreadFinish(ThreadState *thr) {
   tctx->epoch1 = thr->fast_state.epoch();
 
 #ifndef TSAN_GO
-  AlloctorThreadFinish(thr);
+  AllocatorThreadFinish(thr);
 #endif
   thr->~ThreadState();
   StatAggregate(ctx->stat, thr->stat);
@@ -392,7 +395,7 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
     Shadow cur(fast_state);
     cur.SetWrite(is_write);
     cur.SetAddr0AndSizeLog(addr & (kShadowCell - 1), kAccessSizeLog);
-    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write,
+    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write, false,
         shadow_mem, cur);
   }
   if (unaligned)
@@ -403,7 +406,7 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
     Shadow cur(fast_state);
     cur.SetWrite(is_write);
     cur.SetAddr0AndSizeLog(0, kAccessSizeLog);
-    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write,
+    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write, false,
         shadow_mem, cur);
     shadow_mem += kShadowCnt;
   }
@@ -413,24 +416,8 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
     Shadow cur(fast_state);
     cur.SetWrite(is_write);
     cur.SetAddr0AndSizeLog(addr & (kShadowCell - 1), kAccessSizeLog);
-    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write,
+    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write, false,
         shadow_mem, cur);
   }
-}
-
-void MemoryRead1Byte(ThreadState *thr, uptr pc, uptr addr) {
-  MemoryAccess(thr, pc, addr, 0, 0);
-}
-
-void MemoryWrite1Byte(ThreadState *thr, uptr pc, uptr addr) {
-  MemoryAccess(thr, pc, addr, 0, 1);
-}
-
-void MemoryRead8Byte(ThreadState *thr, uptr pc, uptr addr) {
-  MemoryAccess(thr, pc, addr, 3, 0);
-}
-
-void MemoryWrite8Byte(ThreadState *thr, uptr pc, uptr addr) {
-  MemoryAccess(thr, pc, addr, 3, 1);
 }
 }  // namespace __tsan

@@ -26,16 +26,19 @@ namespace __tsan {
 const bool kGoMode = true;
 const bool kCppMode = false;
 const char *const kTsanOptionsEnv = "GORACE";
+// Go linker does not support weak symbols.
+#define CPP_WEAK
 #else
 const bool kGoMode = false;
 const bool kCppMode = true;
 const char *const kTsanOptionsEnv = "TSAN_OPTIONS";
+#define CPP_WEAK WEAK
 #endif
 
 const int kTidBits = 13;
 const unsigned kMaxTid = 1 << kTidBits;
 const unsigned kMaxTidInClock = kMaxTid * 2;  // This includes msb 'freed' bit.
-const int kClkBits = 43;
+const int kClkBits = 42;
 #ifndef TSAN_GO
 const int kShadowStackSize = 4 * 1024;
 const int kTraceStackSize = 256;

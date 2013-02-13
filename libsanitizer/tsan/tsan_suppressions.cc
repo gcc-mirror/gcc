@@ -17,6 +17,13 @@
 #include "tsan_mman.h"
 #include "tsan_platform.h"
 
+// Can be overriden in frontend.
+#ifndef TSAN_GO
+extern "C" const char *WEAK __tsan_default_suppressions() {
+  return 0;
+}
+#endif
+
 namespace __tsan {
 
 static Suppression *g_suppressions;
@@ -29,7 +36,7 @@ static char *ReadFile(const char *filename) {
     internal_snprintf(tmp.data(), tmp.size(), "%s", filename);
   else
     internal_snprintf(tmp.data(), tmp.size(), "%s/%s", GetPwd(), filename);
-  fd_t fd = internal_open(tmp.data(), false);
+  fd_t fd = OpenFile(tmp.data(), false);
   if (fd == kInvalidFd) {
     Printf("ThreadSanitizer: failed to open suppressions file '%s'\n",
                tmp.data());
@@ -78,8 +85,7 @@ bool SuppressionMatch(char *templ, const char *str) {
   return true;
 }
 
-Suppression *SuppressionParse(const char* supp) {
-  Suppression *head = 0;
+Suppression *SuppressionParse(Suppression *head, const char* supp) {
   const char *line = supp;
   while (line) {
     while (line[0] == ' ' || line[0] == '\t')
@@ -128,8 +134,12 @@ Suppression *SuppressionParse(const char* supp) {
 }
 
 void InitializeSuppressions() {
-  char *supp = ReadFile(flags()->suppressions);
-  g_suppressions = SuppressionParse(supp);
+  const char *supp = ReadFile(flags()->suppressions);
+  g_suppressions = SuppressionParse(0, supp);
+#ifndef TSAN_GO
+  supp = __tsan_default_suppressions();
+  g_suppressions = SuppressionParse(0, supp);
+#endif
 }
 
 uptr IsSuppressed(ReportType typ, const ReportStack *stack) {
@@ -150,7 +160,8 @@ uptr IsSuppressed(ReportType typ, const ReportStack *stack) {
     for (Suppression *supp = g_suppressions; supp; supp = supp->next) {
       if (stype == supp->type &&
           (SuppressionMatch(supp->templ, frame->func) ||
-          SuppressionMatch(supp->templ, frame->file))) {
+           SuppressionMatch(supp->templ, frame->file) ||
+           SuppressionMatch(supp->templ, frame->module))) {
         DPrintf("ThreadSanitizer: matched suppression '%s'\n", supp->templ);
         return frame->pc;
       }
