@@ -1339,7 +1339,7 @@ add_or_mark_expr (basic_block bb, tree exp,
 
 /* Return true when CALL is a call stmt that definitely doesn't
    free any memory or makes it unavailable otherwise.  */
-static bool
+bool
 nonfreeing_call_p (gimple call)
 {
   if (gimple_call_builtin_p (call, BUILT_IN_NORMAL)

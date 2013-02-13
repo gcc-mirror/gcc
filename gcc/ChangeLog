@@ -1,3 +1,16 @@
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (create_cond_insert_point): Add create_then_fallthru_edge
+	argument.  If it is false, don't create edge from then_bb to
+	fallthru_bb.
+	(insert_if_then_before_iter): Pass true to it.
+	(build_check_stmt): Pass false to it.
+	(transform_statements): Flush hash table only on extended basic
+	block boundaries, rather than at the beginning of every bb.
+	Don't flush hash table on nonfreeing_call_p calls.
+	* tree-flow.h (nonfreeing_call_p): New prototype.
+	* tree-ssa-phiopt.c (nonfreeing_call_p): No longer static.
+
 2013-02-13  David S. Miller  <davem@davemloft.net>
 
 	* expmed.c (expand_shift_1): Only strip scalar integer subregs.

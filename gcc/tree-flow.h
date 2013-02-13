@@ -609,6 +609,7 @@ struct tree_niter_desc
 /* In tree-ssa-phiopt.c */
 bool empty_block_p (basic_block);
 basic_block *blocks_in_phiopt_order (void);
+bool nonfreeing_call_p (gimple);
 
 /* In tree-ssa-loop*.c  */
 
