@@ -1,3 +1,7 @@
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_asan_shadow_offset): Revert last change.
+
 2013-02-13  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56295
