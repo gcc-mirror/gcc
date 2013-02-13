@@ -1,3 +1,7 @@
+2013-02-13  Sriraman Tallam  <tmsriram@google.com>
+
+	* g++.dg/ext/mv12-aux.C: Add directives to match mv12.C.
+
 2013-02-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/56184
