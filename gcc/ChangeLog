@@ -1,5 +1,11 @@
 2013-02-13  Richard Biener  <rguenther@suse.de>
 
+	PR lto/56295
+	* gimple-streamer-out.c (output_gimple_stmt): Undo wrapping
+	globals in MEM_REFs.
+
+2013-02-13  Richard Biener  <rguenther@suse.de>
+
 	* loop-init.c (loop_optimizer_init): Clear loop state when
 	re-initializing preserved loops.
 	* loop-unswitch.c (unswitch_single_loop): Return whether
