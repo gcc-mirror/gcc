@@ -1185,6 +1185,9 @@ report_error_func (bool is_store, int size_in_bytes)
    'then block' of the condition statement to be inserted by the
    caller.
 
+   If CREATE_THEN_FALLTHRU_EDGE is false, no edge will be created from
+   *THEN_BLOCK to *FALLTHROUGH_BLOCK.
+
    Similarly, the function will set *FALLTRHOUGH_BLOCK to the 'else
    block' of the condition statement to be inserted by the caller.
 
@@ -1201,6 +1204,7 @@ static gimple_stmt_iterator
 create_cond_insert_point (gimple_stmt_iterator *iter,
 			  bool before_p,
 			  bool then_more_likely_p,
+			  bool create_then_fallthru_edge,
 			  basic_block *then_block,
 			  basic_block *fallthrough_block)
 {
@@ -1226,7 +1230,8 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
     ? PROB_VERY_UNLIKELY
     : PROB_ALWAYS - PROB_VERY_UNLIKELY;
   e->probability = PROB_ALWAYS - fallthrough_probability;
-  make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
+  if (create_then_fallthru_edge)
+    make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 
   /* Set up the fallthrough basic block.  */
   e = find_edge (cond_bb, fallthru_bb);
@@ -1277,6 +1282,7 @@ insert_if_then_before_iter (gimple cond,
     create_cond_insert_point (iter,
 			      /*before_p=*/true,
 			      then_more_likely_p,
+			      /*create_then_fallthru_edge=*/true,
 			      then_bb,
 			      fallthrough_bb);
   gsi_insert_after (&cond_insert_point, cond, GSI_NEW_STMT);
@@ -1314,6 +1320,7 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
      statement for the instrumentation.  */
   gsi = create_cond_insert_point (iter, before_p,
 				  /*then_more_likely_p=*/false,
+				  /*create_then_fallthru_edge=*/false,
 				  &then_bb,
 				  &else_bb);
 
@@ -1883,15 +1890,31 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 static void
 transform_statements (void)
 {
-  basic_block bb;
+  basic_block bb, last_bb = NULL;
   gimple_stmt_iterator i;
   int saved_last_basic_block = last_basic_block;
 
   FOR_EACH_BB (bb)
     {
-      empty_mem_ref_hash_table ();
+      basic_block prev_bb = bb;
 
       if (bb->index >= saved_last_basic_block) continue;
+
+      /* Flush the mem ref hash table, if current bb doesn't have
+	 exactly one predecessor, or if that predecessor (skipping
+	 over asan created basic blocks) isn't the last processed
+	 basic block.  Thus we effectively flush on extended basic
+	 block boundaries.  */
+      while (single_pred_p (prev_bb))
+	{
+	  prev_bb = single_pred (prev_bb);
+	  if (prev_bb->index < saved_last_basic_block)
+	    break;
+	}
+      if (prev_bb != last_bb)
+	empty_mem_ref_hash_table ();
+      last_bb = bb;
+
       for (i = gsi_start_bb (bb); !gsi_end_p (i);)
 	{
 	  gimple s = gsi_stmt (i);
@@ -1909,11 +1932,11 @@ transform_statements (void)
 	    {
 	      /* No instrumentation happened.
 
-		 If the current instruction is a function call, let's
-		 forget about the memory references that got
-		 instrumented.  Otherwise we might miss some
-		 instrumentation opportunities.  */
-	      if (is_gimple_call (s))
+		 If the current instruction is a function call that
+		 might free something, let's forget about the memory
+		 references that got instrumented.  Otherwise we might
+		 miss some instrumentation opportunities.  */
+	      if (is_gimple_call (s) && !nonfreeing_call_p (s))
 		empty_mem_ref_hash_table ();
 
 	      gsi_next (&i);
