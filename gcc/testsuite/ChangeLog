@@ -1,3 +1,11 @@
+2013-02-12  Dodji Seketeli  <dodji@redhat.com>
+
+	Avoid instrumenting duplicated memory access in the same basic block
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: New test.
+	* testsuite/c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
+	* testsuite/c-c++-common/asan/no-redundant-instrumentation-3.c: Likewise.
+	* testsuite/c-c++-common/asan/inc.c: Likewise.
+
 2013-02-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/56148
