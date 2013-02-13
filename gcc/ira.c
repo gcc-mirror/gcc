@@ -419,6 +419,11 @@ int ira_move_loops_num, ira_additional_jumps_num;
 
 HARD_REG_SET eliminable_regset;
 
+/* Value of max_reg_num () before IRA work start.  This value helps
+   us to recognize a situation when new pseudos were created during
+   IRA work.  */
+static int max_regno_before_ira;
+
 /* Temporary hard reg set used for a different calculation.  */
 static HARD_REG_SET temp_hard_regset;
 
@@ -2264,11 +2269,11 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx insns)
 static void
 fix_reg_equiv_init (void)
 {
-  unsigned int max_regno = max_reg_num ();
+  int max_regno = max_reg_num ();
   int i, new_regno, max;
   rtx x, prev, next, insn, set;
 
-  if (vec_safe_length (reg_equivs) < max_regno)
+  if (max_regno_before_ira < max_regno)
     {
       max = vec_safe_length (reg_equivs);
       grow_reg_equivs ();
@@ -4350,7 +4355,7 @@ static void
 ira (FILE *f)
 {
   bool loops_p;
-  int max_regno_before_ira, ira_max_point_before_emit;
+  int ira_max_point_before_emit;
   int rebuild_p;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
