@@ -1,3 +1,10 @@
+2013-02-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hash_code_base): Restore
+	default constructor protected.
+	* include/bits/hashtable.h: static assert that _Hash_code_base has
+	a default constructor available through inheritance.
+
 2013-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_std/cstdlib (at_quick_exit, quick_exit): Provide in
