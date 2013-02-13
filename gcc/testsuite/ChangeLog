@@ -1,3 +1,12 @@
+2012-02-13   Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2012-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/55852
+	* gfortran.dg/intrinsic_size_3.f90: Make scan-tree-dump-times
+	number matching more robust.
+
 2013-02-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
@@ -44,7 +53,7 @@
 	* gcc.dg/pr44061.c: New testcase.
 
 	2013-01-08  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR middle-end/55890
 	* gcc.dg/torture/pr55890-3.c: New test.
 
