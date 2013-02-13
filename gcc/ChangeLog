@@ -1,3 +1,11 @@
+2013-02-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/56184
+	* ira.c (max_regno_before_ira): Move from ...
+	(ira): ... here.
+	(fix_reg_equiv_init): Use max_regno_before_ira instead of
+	vec_safe_length.
+
 2013-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_asan_shadow_offset): Revert last change.
@@ -63,7 +71,7 @@
 
 	PR inline-asm/56148
 	* lra-constraints.c (process_alt_operands): Match early clobber
-	operand with itself.  Check conflicts with earlyclobner only if
+	operand with itself.  Check conflicts with earlyclobber only if
 	the operand is not reloaded.  Prefer to reload conflicting operand
 	if earlyclobber and matching operands are the same.
 
