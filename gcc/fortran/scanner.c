@@ -375,9 +375,10 @@ add_path_to_list (gfc_directorylist **list, const char *path,
 
 
 void
-gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir)
+gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir,
+		      bool warn)
 {
-  add_path_to_list (&include_dirs, path, use_for_modules, file_dir, true);
+  add_path_to_list (&include_dirs, path, use_for_modules, file_dir, warn);
 
   /* For '#include "..."' these directories are automatically searched.  */
   if (!file_dir)
