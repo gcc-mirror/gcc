@@ -229,7 +229,8 @@ struct external_syment
 /* Definitions required by collect2.  */
 #define C_EXT 2
 
-#define F_SHROBJ 0x2000
+#define F_SHROBJ    0x2000
+#define F_LOADONLY  0x4000
 
 #define N_UNDEF ((short) 0)
 #define N_TMASK 060
