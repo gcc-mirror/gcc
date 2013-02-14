@@ -1771,7 +1771,7 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
 
       if (get_mem_refs_of_builtin_call (call,
 					&src0, &src0_len, &src0_is_store,
-					&src1, &src0_len, &src1_is_store,
+					&src1, &src1_len, &src1_is_store,
 					&dest, &dest_len, &dest_is_store,
 					&dest_is_deref))
 	{

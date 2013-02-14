@@ -1,3 +1,9 @@
+2013-02-14  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix an asan crash
+	* asan.c (instrument_builtin_call):  Really put the length of the
+	second source argument into src1_len.
+
 2013-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c (create_cond_insert_point): Add create_then_fallthru_edge
