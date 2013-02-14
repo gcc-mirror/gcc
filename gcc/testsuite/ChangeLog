@@ -1,5 +1,9 @@
 2013-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.dg/debug/dwarf2/pr53948.c: Allow for more whitespace.
+
+2013-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.dg/debug/dwarf2/pr53948.c: Allow for / and ! as comment
 	characters.
 
