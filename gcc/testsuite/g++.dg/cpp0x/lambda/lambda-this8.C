@@ -3,8 +3,6 @@
 
 #include <functional>
 
-extern "C" void abort() throw();
-
 struct test {
   template<typename T>
   std::function<void()> broken(int x) {
@@ -26,7 +24,7 @@ struct test {
   }
 
   template<typename T>
-  void print() { if (this == NULL) abort (); }
+  void print() { if (this == NULL) __builtin_abort (); }
 };
 
 int main(void) {
