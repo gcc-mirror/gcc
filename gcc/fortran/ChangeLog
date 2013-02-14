@@ -1,3 +1,17 @@
+2013-02-14  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR testsuite/56138
+	* trans-decl.c (gfc_get_symbol_decl): Fix deferred-length
+	results for functions without extra result variable.
+
+	Revert:
+	2013-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56138
+	* trans-decl.c (gfc_trans_deferred_vars): Fix deferred-length
+	results for functions without extra result variable.
+
 2013-02-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46952

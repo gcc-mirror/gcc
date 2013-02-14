@@ -1205,6 +1205,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   tree attributes;
   int byref;
   bool intrinsic_array_parameter = false;
+  bool fun_or_res;
 
   gcc_assert (sym->attr.referenced
 	      || sym->attr.flavor == FL_PROCEDURE
@@ -1244,7 +1245,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       length = gfc_create_string_length (sym);
     }
 
-  if ((sym->attr.dummy && ! sym->attr.function) || (sym->attr.result && byref))
+  fun_or_res = byref && (sym->attr.result
+			 || (sym->attr.function && sym->ts.deferred));
+  if ((sym->attr.dummy && ! sym->attr.function) || fun_or_res)
     {
       /* Return via extra parameter.  */
       if (sym->attr.result && byref
@@ -1270,7 +1273,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	     (sym->ts.u.cl->passed_length == sym->ts.u.cl->backend_decl))
 	    sym->ts.u.cl->backend_decl = NULL_TREE;
 
-	  if (sym->ts.deferred && sym->attr.result
+	  if (sym->ts.deferred && fun_or_res
 		&& sym->ts.u.cl->passed_length == NULL
 		&& sym->ts.u.cl->backend_decl)
 	    {
@@ -3775,7 +3778,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					        null_pointer_node));
 		}
 
-	      if ((sym->attr.dummy || sym->attr.result || sym->result == sym)
+	      if ((sym->attr.dummy ||sym->attr.result)
 		    && sym->ts.type == BT_CHARACTER
 		    && sym->ts.deferred)
 		{
