@@ -1,3 +1,8 @@
+2013-02-14  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	PR target/52123
+	* tracebak.c: Cast from pointer via FARPROC.
+
 2013-02-07  Simon Wright  <simon@pushface.org>
 
 	PR target/50678
