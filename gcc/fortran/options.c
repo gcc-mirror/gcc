@@ -337,10 +337,10 @@ gfc_post_options (const char **pfilename)
       source_path = (char *) alloca (i + 1);
       memcpy (source_path, canon_source_file, i);
       source_path[i] = 0;
-      gfc_add_include_path (source_path, true, true);
+      gfc_add_include_path (source_path, true, true, true);
     }
   else
-    gfc_add_include_path (".", true, true);
+    gfc_add_include_path (".", true, true, true);
 
   if (canon_source_file != gfc_source_file)
     free (CONST_CAST (char *, canon_source_file));
@@ -498,7 +498,7 @@ gfc_handle_module_path_options (const char *arg)
   gfc_option.module_dir = XCNEWVEC (char, strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
 
-  gfc_add_include_path (gfc_option.module_dir, true, false);
+  gfc_add_include_path (gfc_option.module_dir, true, false, true);
 
   strcat (gfc_option.module_dir, "/");
 }
@@ -844,6 +844,13 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fintrinsic_modules_path:
     case OPT_fintrinsic_modules_path_:
+
+      /* This is needed because omp_lib.h is in a directory together
+	 with intrinsic modules.  Do no warn because during testing
+	 without an installed compiler, we would get lots of bogus
+	 warnings for a missing include directory.  */
+      gfc_add_include_path (arg, false, false, false);
+
       gfc_add_intrinsic_modules_path (arg);
       break;
 
@@ -978,7 +985,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_I:
-      gfc_add_include_path (arg, true, false);
+      gfc_add_include_path (arg, true, false, true);
       break;
 
     case OPT_J:
