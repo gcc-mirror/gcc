@@ -1,5 +1,9 @@
 2013-02-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55670
+	* parser.c (cp_parser_member_declaration): Check the declarator
+	form when detecting a function declaration via typedef.
+
 	PR c++/55680
 	* pt.c (maybe_process_partial_specialization): A lambda
 	isn't what's being specialized.
