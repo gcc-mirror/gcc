@@ -1,5 +1,9 @@
 2013-02-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55680
+	* pt.c (maybe_process_partial_specialization): A lambda
+	isn't what's being specialized.
+
 	PR c++/55710
 	* semantics.c (maybe_add_lambda_conv_op): Mark static thunk
 	TREE_USED.
