@@ -9,8 +9,29 @@
 //
 // Some globals in a separate file.
 //===----------------------------------------------------------------------===//
+#include "asan_test_utils.h"
 
-extern char glob5[5];
+char glob1[1];
+char glob2[2];
+char glob3[3];
+char glob4[4];
+char glob5[5];
+char glob6[6];
+char glob7[7];
+char glob8[8];
+char glob9[9];
+char glob10[10];
+char glob11[11];
+char glob12[12];
+char glob13[13];
+char glob14[14];
+char glob15[15];
+char glob16[16];
+char glob17[17];
+char glob1000[1000];
+char glob10000[10000];
+char glob100000[100000];
+
 static char static10[10];
 
 int GlobalsTest(int zero) {
