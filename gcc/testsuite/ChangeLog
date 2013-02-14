@@ -1,3 +1,20 @@
+2013-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/asan/dejagnu-gtest.h: Add multiple inclusion guards.
+	* asan_globals_test-wrapper.cc: New file.
+	* g++.dg/asan/asan_test.C: Use asan_globals_test-wrapper.cc
+	instead of asan_globals_test.cc as dg-additional-sources.
+	Include asan_mem_test.cc, asan_str_test.cc and asan_oob_test.cc.
+	* g++.dg/asan/asan_test_utils.h: Synced from upstream.  Include
+	"sanitizer_test_utils.h" instead of
+	"sanitizer_common/tests/sanitizer_test_utils.h".
+	* g++.dg/asan/asan_str_test.cc: New file, synced from upstream.
+	* g++.dg/asan/asan_mem_test.cc: New file, synced from upstream.
+	* g++.dg/asan/asan_oob_test.cc: New file, synced from upstream.
+	* g++.dg/asan/asan_globals_test.cc: Synced from upstream.
+	* g++.dg/asan/asan_test.cc: Synced from upstream.
+	* g++.dg/asan/sanitizer_test_utils.h: New file, synced from upstream.
+
 2013-02-14  Dodji Seketeli  <dodji@redhat.com>
 
 	Fix an asan crash

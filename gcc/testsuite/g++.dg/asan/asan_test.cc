@@ -8,76 +8,7 @@
 // This file is a part of AddressSanitizer, an address sanity checker.
 //
 //===----------------------------------------------------------------------===//
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <pthread.h>
-#include <stdint.h>
-#include <setjmp.h>
-#include <assert.h>
-#include <algorithm>
-
-#ifdef __linux__
-# include <sys/prctl.h>
-# include <sys/types.h>
-# include <sys/stat.h>
-# include <fcntl.h>
-#include <unistd.h>
-#endif
-
-#if defined(__i386__) || defined(__x86_64__)
-#include <emmintrin.h>
-#endif
-
 #include "asan_test_utils.h"
-
-#ifndef __APPLE__
-#include <malloc.h>
-#else
-#include <malloc/malloc.h>
-#include <AvailabilityMacros.h>  // For MAC_OS_X_VERSION_*
-#include <CoreFoundation/CFString.h>
-#endif  // __APPLE__
-
-#if ASAN_HAS_EXCEPTIONS
-# define ASAN_THROW(x) throw (x)
-#else
-# define ASAN_THROW(x)
-#endif
-
-#include <sys/mman.h>
-
-typedef uint8_t   U1;
-typedef uint16_t  U2;
-typedef uint32_t  U4;
-typedef uint64_t  U8;
-
-static const int kPageSize = 4096;
-
-// Simple stand-alone pseudorandom number generator.
-// Current algorithm is ANSI C linear congruential PRNG.
-static inline uint32_t my_rand(uint32_t* state) {
-  return (*state = *state * 1103515245 + 12345) >> 16;
-}
-
-static uint32_t global_seed = 0;
-
-const size_t kLargeMalloc = 1 << 24;
-
-template<typename T>
-NOINLINE void asan_write(T *a) {
-  *a = 0;
-}
-
-NOINLINE void asan_write_sized_aligned(uint8_t *p, size_t size) {
-  EXPECT_EQ(0U, ((uintptr_t)p % size));
-  if      (size == 1) asan_write((uint8_t*)p);
-  else if (size == 2) asan_write((uint16_t*)p);
-  else if (size == 4) asan_write((uint32_t*)p);
-  else if (size == 8) asan_write((uint64_t*)p);
-}
 
 NOINLINE void *malloc_fff(size_t size) {
   void *res = malloc/**/(size); break_optimization(0); return res;}
@@ -111,15 +42,6 @@ NOINLINE void *memalign_aaa(size_t alignment, size_t size) {
 NOINLINE void free_ccc(void *p) { free(p); break_optimization(0);}
 NOINLINE void free_bbb(void *p) { free_ccc(p); break_optimization(0);}
 NOINLINE void free_aaa(void *p) { free_bbb(p); break_optimization(0);}
-
-template<typename T>
-NOINLINE void oob_test(int size, int off) {
-  char *p = (char*)malloc_aaa(size);
-  // fprintf(stderr, "writing %d byte(s) into [%p,%p) with offset %d\n",
-  //        sizeof(T), p, p + size, off);
-  asan_write((T*)(p + off));
-  free_aaa(p);
-}
 
 
 template<typename T>
@@ -237,88 +159,6 @@ TEST(AddressSanitizer, DISABLED_TSDTest) {
   pthread_key_delete(test_key);
 }
 
-template<typename T>
-void OOBTest() {
-  char expected_str[100];
-  for (int size = sizeof(T); size < 20; size += 5) {
-    for (int i = -5; i < 0; i++) {
-      const char *str =
-          "is located.*%d byte.*to the left";
-      sprintf(expected_str, str, abs(i));
-      EXPECT_DEATH(oob_test<T>(size, i), expected_str);
-    }
-
-    for (int i = 0; i < (int)(size - sizeof(T) + 1); i++)
-      oob_test<T>(size, i);
-
-    for (int i = size - sizeof(T) + 1; i <= (int)(size + 2 * sizeof(T)); i++) {
-      const char *str =
-          "is located.*%d byte.*to the right";
-      int off = i >= size ? (i - size) : 0;
-      // we don't catch unaligned partially OOB accesses.
-      if (i % sizeof(T)) continue;
-      sprintf(expected_str, str, off);
-      EXPECT_DEATH(oob_test<T>(size, i), expected_str);
-    }
-  }
-
-  EXPECT_DEATH(oob_test<T>(kLargeMalloc, -1),
-          "is located.*1 byte.*to the left");
-  EXPECT_DEATH(oob_test<T>(kLargeMalloc, kLargeMalloc),
-          "is located.*0 byte.*to the right");
-}
-
-// TODO(glider): the following tests are EXTREMELY slow on Darwin:
-//   AddressSanitizer.OOB_char (125503 ms)
-//   AddressSanitizer.OOB_int (126890 ms)
-//   AddressSanitizer.OOBRightTest (315605 ms)
-//   AddressSanitizer.SimpleStackTest (366559 ms)
-
-TEST(AddressSanitizer, OOB_char) {
-  OOBTest<U1>();
-}
-
-TEST(AddressSanitizer, OOB_int) {
-  OOBTest<U4>();
-}
-
-TEST(AddressSanitizer, OOBRightTest) {
-  for (size_t access_size = 1; access_size <= 8; access_size *= 2) {
-    for (size_t alloc_size = 1; alloc_size <= 8; alloc_size++) {
-      for (size_t offset = 0; offset <= 8; offset += access_size) {
-        void *p = malloc(alloc_size);
-        // allocated: [p, p + alloc_size)
-        // accessed:  [p + offset, p + offset + access_size)
-        uint8_t *addr = (uint8_t*)p + offset;
-        if (offset + access_size <= alloc_size) {
-          asan_write_sized_aligned(addr, access_size);
-        } else {
-          int outside_bytes = offset > alloc_size ? (offset - alloc_size) : 0;
-          const char *str =
-              "is located.%d *byte.*to the right";
-          char expected_str[100];
-          sprintf(expected_str, str, outside_bytes);
-          EXPECT_DEATH(asan_write_sized_aligned(addr, access_size),
-                       expected_str);
-        }
-        free(p);
-      }
-    }
-  }
-}
-
-#if ASAN_ALLOCATOR_VERSION == 2  // Broken with the asan_allocator1
-TEST(AddressSanitizer, LargeOOBRightTest) {
-  size_t large_power_of_two = 1 << 19;
-  for (size_t i = 16; i <= 256; i *= 2) {
-    size_t size = large_power_of_two - i;
-    char *p = Ident(new char[size]);
-    EXPECT_DEATH(p[size] = 0, "is located 0 bytes to the right");
-    delete [] p;
-  }
-}
-#endif  // ASAN_ALLOCATOR_VERSION == 2
-
 TEST(AddressSanitizer, UAF_char) {
   const char *uaf_string = "AddressSanitizer:.*heap-use-after-free";
   EXPECT_DEATH(uaf_test<U1>(1, 0), uaf_string);
@@ -415,21 +255,21 @@ TEST(AddressSanitizer, SignalTest) {
 #endif
 
 static void MallocStress(size_t n) {
-  uint32_t seed = my_rand(&global_seed);
+  uint32_t seed = my_rand();
   for (size_t iter = 0; iter < 10; iter++) {
     vector<void *> vec;
     for (size_t i = 0; i < n; i++) {
       if ((i % 3) == 0) {
         if (vec.empty()) continue;
-        size_t idx = my_rand(&seed) % vec.size();
+        size_t idx = my_rand_r(&seed) % vec.size();
         void *ptr = vec[idx];
         vec[idx] = vec.back();
         vec.pop_back();
         free_aaa(ptr);
       } else {
-        size_t size = my_rand(&seed) % 1000 + 1;
+        size_t size = my_rand_r(&seed) % 1000 + 1;
 #ifndef __APPLE__
-        size_t alignment = 1 << (my_rand(&seed) % 7 + 3);
+        size_t alignment = 1 << (my_rand_r(&seed) % 7 + 3);
         char *ptr = (char*)memalign_aaa(alignment, size);
 #else
         char *ptr = (char*) malloc_aaa(size);
@@ -535,9 +375,36 @@ TEST(AddressSanitizer, ReallocTest) {
   ptr[3] = 3;
   for (int i = 0; i < 10000; i++) {
     ptr = (int*)realloc(ptr,
-        (my_rand(&global_seed) % 1000 + kMinElem) * sizeof(int));
+        (my_rand() % 1000 + kMinElem) * sizeof(int));
     EXPECT_EQ(3, ptr[3]);
   }
+  free(ptr);
+  // Realloc pointer returned by malloc(0).
+  int *ptr2 = Ident((int*)malloc(0));
+  ptr2 = Ident((int*)realloc(ptr2, sizeof(*ptr2)));
+  *ptr2 = 42;
+  EXPECT_EQ(42, *ptr2);
+  free(ptr2);
+}
+
+TEST(AddressSanitizer, ZeroSizeMallocTest) {
+  // Test that malloc(0) and similar functions don't return NULL.
+  void *ptr = Ident(malloc(0));
+  EXPECT_TRUE(NULL != ptr);
+  free(ptr);
+#if !defined(__APPLE__) && !defined(ANDROID) && !defined(__ANDROID__)
+  int pm_res = posix_memalign(&ptr, 1<<20, 0);
+  EXPECT_EQ(0, pm_res);
+  EXPECT_TRUE(NULL != ptr);
+  free(ptr);
+#endif
+  int *int_ptr = new int[0];
+  int *int_ptr2 = new int[0];
+  EXPECT_TRUE(NULL != int_ptr);
+  EXPECT_TRUE(NULL != int_ptr2);
+  EXPECT_NE(int_ptr, int_ptr2);
+  delete[] int_ptr;
+  delete[] int_ptr2;
 }
 
 #ifndef __APPLE__
@@ -823,7 +690,7 @@ TEST(AddressSanitizer, Store128Test) {
 }
 #endif
 
-static string RightOOBErrorMessage(int oob_distance, bool is_write) {
+string RightOOBErrorMessage(int oob_distance, bool is_write) {
   assert(oob_distance >= 0);
   char expected_str[100];
   sprintf(expected_str, ASAN_PCRE_DOTALL "%s.*located %d bytes to the right",
@@ -831,15 +698,15 @@ static string RightOOBErrorMessage(int oob_distance, bool is_write) {
   return string(expected_str);
 }
 
-static string RightOOBWriteMessage(int oob_distance) {
+string RightOOBWriteMessage(int oob_distance) {
   return RightOOBErrorMessage(oob_distance, /*is_write*/true);
 }
 
-static string RightOOBReadMessage(int oob_distance) {
+string RightOOBReadMessage(int oob_distance) {
   return RightOOBErrorMessage(oob_distance, /*is_write*/false);
 }
 
-static string LeftOOBErrorMessage(int oob_distance, bool is_write) {
+string LeftOOBErrorMessage(int oob_distance, bool is_write) {
   assert(oob_distance > 0);
   char expected_str[100];
   sprintf(expected_str, ASAN_PCRE_DOTALL "%s.*located %d bytes to the left",
@@ -847,869 +714,54 @@ static string LeftOOBErrorMessage(int oob_distance, bool is_write) {
   return string(expected_str);
 }
 
-static string LeftOOBWriteMessage(int oob_distance) {
+string LeftOOBWriteMessage(int oob_distance) {
   return LeftOOBErrorMessage(oob_distance, /*is_write*/true);
 }
 
-static string LeftOOBReadMessage(int oob_distance) {
+string LeftOOBReadMessage(int oob_distance) {
   return LeftOOBErrorMessage(oob_distance, /*is_write*/false);
 }
 
-static string LeftOOBAccessMessage(int oob_distance) {
+string LeftOOBAccessMessage(int oob_distance) {
   assert(oob_distance > 0);
   char expected_str[100];
   sprintf(expected_str, "located %d bytes to the left", oob_distance);
   return string(expected_str);
 }
 
-template<typename T>
-void MemSetOOBTestTemplate(size_t length) {
-  if (length == 0) return;
-  size_t size = Ident(sizeof(T) * length);
-  T *array = Ident((T*)malloc(size));
-  int element = Ident(42);
-  int zero = Ident(0);
-  void *(*MEMSET)(void *s, int c, size_t n) = Ident(memset);
-  // memset interval inside array
-  MEMSET(array, element, size);
-  MEMSET(array, element, size - 1);
-  MEMSET(array + length - 1, element, sizeof(T));
-  MEMSET(array, element, 1);
-
-  // memset 0 bytes
-  MEMSET(array - 10, element, zero);
-  MEMSET(array - 1, element, zero);
-  MEMSET(array, element, zero);
-  MEMSET(array + length, 0, zero);
-  MEMSET(array + length + 1, 0, zero);
-
-  // try to memset bytes to the right of array
-  EXPECT_DEATH(MEMSET(array, 0, size + 1),
-               RightOOBWriteMessage(0));
-  EXPECT_DEATH(MEMSET((char*)(array + length) - 1, element, 6),
-               RightOOBWriteMessage(0));
-  EXPECT_DEATH(MEMSET(array + 1, element, size + sizeof(T)),
-               RightOOBWriteMessage(0));
-  // whole interval is to the right
-  EXPECT_DEATH(MEMSET(array + length + 1, 0, 10),
-               RightOOBWriteMessage(sizeof(T)));
-
-  // try to memset bytes to the left of array
-  EXPECT_DEATH(MEMSET((char*)array - 1, element, size),
-               LeftOOBWriteMessage(1));
-  EXPECT_DEATH(MEMSET((char*)array - 5, 0, 6),
-               LeftOOBWriteMessage(5));
-  if (length >= 100) {
-    // Large OOB, we find it only if the redzone is large enough.
-    EXPECT_DEATH(memset(array - 5, element, size + 5 * sizeof(T)),
-                 LeftOOBWriteMessage(5 * sizeof(T)));
-  }
-  // whole interval is to the left
-  EXPECT_DEATH(MEMSET(array - 2, 0, sizeof(T)),
-               LeftOOBWriteMessage(2 * sizeof(T)));
-
-  // try to memset bytes both to the left & to the right
-  EXPECT_DEATH(MEMSET((char*)array - 2, element, size + 4),
-               LeftOOBWriteMessage(2));
-
-  free(array);
-}
-
-TEST(AddressSanitizer, MemSetOOBTest) {
-  MemSetOOBTestTemplate<char>(100);
-  MemSetOOBTestTemplate<int>(5);
-  MemSetOOBTestTemplate<double>(256);
-  // We can test arrays of structres/classes here, but what for?
-}
-
-// Try to allocate two arrays of 'size' bytes that are near each other.
-// Strictly speaking we are not guaranteed to find such two pointers,
-// but given the structure of asan's allocator we will.
-static bool AllocateTwoAdjacentArrays(char **x1, char **x2, size_t size) {
-  vector<char *> v;
-  bool res = false;
-  for (size_t i = 0; i < 1000U && !res; i++) {
-    v.push_back(new char[size]);
-    if (i == 0) continue;
-    sort(v.begin(), v.end());
-    for (size_t j = 1; j < v.size(); j++) {
-      assert(v[j] > v[j-1]);
-      if ((size_t)(v[j] - v[j-1]) < size * 2) {
-        *x2 = v[j];
-        *x1 = v[j-1];
-        res = true;
-        break;
-      }
-    }
-  }
-
-  for (size_t i = 0; i < v.size(); i++) {
-    if (res && v[i] == *x1) continue;
-    if (res && v[i] == *x2) continue;
-    delete [] v[i];
-  }
-  return res;
-}
-
-TEST(AddressSanitizer, LargeOOBInMemset) {
-  for (size_t size = 200; size < 100000; size += size / 2) {
-    char *x1, *x2;
-    if (!Ident(AllocateTwoAdjacentArrays)(&x1, &x2, size))
-      continue;
-    // fprintf(stderr, "  large oob memset: %p %p %zd\n", x1, x2, size);
-    // Do a memset on x1 with huge out-of-bound access that will end up in x2.
-    EXPECT_DEATH(Ident(memset)(x1, 0, size * 2),
-                 "is located 0 bytes to the right");
-    delete [] x1;
-    delete [] x2;
-    return;
-  }
-  assert(0 && "Did not find two adjacent malloc-ed pointers");
-}
-
-// Same test for memcpy and memmove functions
-template <typename T, class M>
-void MemTransferOOBTestTemplate(size_t length) {
-  if (length == 0) return;
-  size_t size = Ident(sizeof(T) * length);
-  T *src = Ident((T*)malloc(size));
-  T *dest = Ident((T*)malloc(size));
-  int zero = Ident(0);
-
-  // valid transfer of bytes between arrays
-  M::transfer(dest, src, size);
-  M::transfer(dest + 1, src, size - sizeof(T));
-  M::transfer(dest, src + length - 1, sizeof(T));
-  M::transfer(dest, src, 1);
-
-  // transfer zero bytes
-  M::transfer(dest - 1, src, 0);
-  M::transfer(dest + length, src, zero);
-  M::transfer(dest, src - 1, zero);
-  M::transfer(dest, src, zero);
-
-  // try to change mem to the right of dest
-  EXPECT_DEATH(M::transfer(dest + 1, src, size),
-               RightOOBWriteMessage(0));
-  EXPECT_DEATH(M::transfer((char*)(dest + length) - 1, src, 5),
-               RightOOBWriteMessage(0));
-
-  // try to change mem to the left of dest
-  EXPECT_DEATH(M::transfer(dest - 2, src, size),
-               LeftOOBWriteMessage(2 * sizeof(T)));
-  EXPECT_DEATH(M::transfer((char*)dest - 3, src, 4),
-               LeftOOBWriteMessage(3));
-
-  // try to access mem to the right of src
-  EXPECT_DEATH(M::transfer(dest, src + 2, size),
-               RightOOBReadMessage(0));
-  EXPECT_DEATH(M::transfer(dest, (char*)(src + length) - 3, 6),
-               RightOOBReadMessage(0));
-
-  // try to access mem to the left of src
-  EXPECT_DEATH(M::transfer(dest, src - 1, size),
-               LeftOOBReadMessage(sizeof(T)));
-  EXPECT_DEATH(M::transfer(dest, (char*)src - 6, 7),
-               LeftOOBReadMessage(6));
-
-  // Generally we don't need to test cases where both accessing src and writing
-  // to dest address to poisoned memory.
-
-  T *big_src = Ident((T*)malloc(size * 2));
-  T *big_dest = Ident((T*)malloc(size * 2));
-  // try to change mem to both sides of dest
-  EXPECT_DEATH(M::transfer(dest - 1, big_src, size * 2),
-               LeftOOBWriteMessage(sizeof(T)));
-  // try to access mem to both sides of src
-  EXPECT_DEATH(M::transfer(big_dest, src - 2, size * 2),
-               LeftOOBReadMessage(2 * sizeof(T)));
-
-  free(src);
-  free(dest);
-  free(big_src);
-  free(big_dest);
-}
-
-class MemCpyWrapper {
- public:
-  static void* transfer(void *to, const void *from, size_t size) {
-    return Ident(memcpy)(to, from, size);
-  }
-};
-TEST(AddressSanitizer, MemCpyOOBTest) {
-  MemTransferOOBTestTemplate<char, MemCpyWrapper>(100);
-  MemTransferOOBTestTemplate<int, MemCpyWrapper>(1024);
-}
-
-class MemMoveWrapper {
- public:
-  static void* transfer(void *to, const void *from, size_t size) {
-    return Ident(memmove)(to, from, size);
-  }
-};
-TEST(AddressSanitizer, MemMoveOOBTest) {
-  MemTransferOOBTestTemplate<char, MemMoveWrapper>(100);
-  MemTransferOOBTestTemplate<int, MemMoveWrapper>(1024);
-}
-
-// Tests for string functions
-
-// Used for string functions tests
-static char global_string[] = "global";
-static size_t global_string_length = 6;
-
-// Input to a test is a zero-terminated string str with given length
-// Accesses to the bytes to the left and to the right of str
-// are presumed to produce OOB errors
-void StrLenOOBTestTemplate(char *str, size_t length, bool is_global) {
-  // Normal strlen calls
-  EXPECT_EQ(strlen(str), length);
-  if (length > 0) {
-    EXPECT_EQ(length - 1, strlen(str + 1));
-    EXPECT_EQ(0U, strlen(str + length));
-  }
-  // Arg of strlen is not malloced, OOB access
-  if (!is_global) {
-    // We don't insert RedZones to the left of global variables
-    EXPECT_DEATH(Ident(strlen(str - 1)), LeftOOBReadMessage(1));
-    EXPECT_DEATH(Ident(strlen(str - 5)), LeftOOBReadMessage(5));
-  }
-  EXPECT_DEATH(Ident(strlen(str + length + 1)), RightOOBReadMessage(0));
-  // Overwrite terminator
-  str[length] = 'a';
-  // String is not zero-terminated, strlen will lead to OOB access
-  EXPECT_DEATH(Ident(strlen(str)), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(strlen(str + length)), RightOOBReadMessage(0));
-  // Restore terminator
-  str[length] = 0;
-}
-TEST(AddressSanitizer, StrLenOOBTest) {
-  // Check heap-allocated string
-  size_t length = Ident(10);
-  char *heap_string = Ident((char*)malloc(length + 1));
-  char stack_string[10 + 1];
-  break_optimization(&stack_string);
-  for (size_t i = 0; i < length; i++) {
-    heap_string[i] = 'a';
-    stack_string[i] = 'b';
-  }
-  heap_string[length] = 0;
-  stack_string[length] = 0;
-  StrLenOOBTestTemplate(heap_string, length, false);
-  // TODO(samsonov): Fix expected messages in StrLenOOBTestTemplate to
-  //      make test for stack_string work. Or move it to output tests.
-  // StrLenOOBTestTemplate(stack_string, length, false);
-  StrLenOOBTestTemplate(global_string, global_string_length, true);
-  free(heap_string);
-}
-
-static inline char* MallocAndMemsetString(size_t size, char ch) {
+char* MallocAndMemsetString(size_t size, char ch) {
   char *s = Ident((char*)malloc(size));
   memset(s, ch, size);
   return s;
 }
-static inline char* MallocAndMemsetString(size_t size) {
+
+char* MallocAndMemsetString(size_t size) {
   return MallocAndMemsetString(size, 'z');
 }
 
-#ifndef __APPLE__
-TEST(AddressSanitizer, StrNLenOOBTest) {
-  size_t size = Ident(123);
-  char *str = MallocAndMemsetString(size);
-  // Normal strnlen calls.
-  Ident(strnlen(str - 1, 0));
-  Ident(strnlen(str, size));
-  Ident(strnlen(str + size - 1, 1));
-  str[size - 1] = '\0';
-  Ident(strnlen(str, 2 * size));
-  // Argument points to not allocated memory.
-  EXPECT_DEATH(Ident(strnlen(str - 1, 1)), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(strnlen(str + size, 1)), RightOOBReadMessage(0));
-  // Overwrite the terminating '\0' and hit unallocated memory.
-  str[size - 1] = 'z';
-  EXPECT_DEATH(Ident(strnlen(str, size + 1)), RightOOBReadMessage(0));
-  free(str);
-}
-#endif
-
-TEST(AddressSanitizer, StrDupOOBTest) {
-  size_t size = Ident(42);
-  char *str = MallocAndMemsetString(size);
-  char *new_str;
-  // Normal strdup calls.
-  str[size - 1] = '\0';
-  new_str = strdup(str);
-  free(new_str);
-  new_str = strdup(str + size - 1);
-  free(new_str);
-  // Argument points to not allocated memory.
-  EXPECT_DEATH(Ident(strdup(str - 1)), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(strdup(str + size)), RightOOBReadMessage(0));
-  // Overwrite the terminating '\0' and hit unallocated memory.
-  str[size - 1] = 'z';
-  EXPECT_DEATH(Ident(strdup(str)), RightOOBReadMessage(0));
-  free(str);
-}
-
-TEST(AddressSanitizer, StrCpyOOBTest) {
-  size_t to_size = Ident(30);
-  size_t from_size = Ident(6);  // less than to_size
-  char *to = Ident((char*)malloc(to_size));
-  char *from = Ident((char*)malloc(from_size));
-  // Normal strcpy calls.
-  strcpy(from, "hello");
-  strcpy(to, from);
-  strcpy(to + to_size - from_size, from);
-  // Length of "from" is too small.
-  EXPECT_DEATH(Ident(strcpy(from, "hello2")), RightOOBWriteMessage(0));
-  // "to" or "from" points to not allocated memory.
-  EXPECT_DEATH(Ident(strcpy(to - 1, from)), LeftOOBWriteMessage(1));
-  EXPECT_DEATH(Ident(strcpy(to, from - 1)), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(strcpy(to, from + from_size)), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(strcpy(to + to_size, from)), RightOOBWriteMessage(0));
-  // Overwrite the terminating '\0' character and hit unallocated memory.
-  from[from_size - 1] = '!';
-  EXPECT_DEATH(Ident(strcpy(to, from)), RightOOBReadMessage(0));
-  free(to);
-  free(from);
-}
-
-TEST(AddressSanitizer, StrNCpyOOBTest) {
-  size_t to_size = Ident(20);
-  size_t from_size = Ident(6);  // less than to_size
-  char *to = Ident((char*)malloc(to_size));
-  // From is a zero-terminated string "hello\0" of length 6
-  char *from = Ident((char*)malloc(from_size));
-  strcpy(from, "hello");
-  // copy 0 bytes
-  strncpy(to, from, 0);
-  strncpy(to - 1, from - 1, 0);
-  // normal strncpy calls
-  strncpy(to, from, from_size);
-  strncpy(to, from, to_size);
-  strncpy(to, from + from_size - 1, to_size);
-  strncpy(to + to_size - 1, from, 1);
-  // One of {to, from} points to not allocated memory
-  EXPECT_DEATH(Ident(strncpy(to, from - 1, from_size)),
-               LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(strncpy(to - 1, from, from_size)),
-               LeftOOBWriteMessage(1));
-  EXPECT_DEATH(Ident(strncpy(to, from + from_size, 1)),
-               RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(strncpy(to + to_size, from, 1)),
-               RightOOBWriteMessage(0));
-  // Length of "to" is too small
-  EXPECT_DEATH(Ident(strncpy(to + to_size - from_size + 1, from, from_size)),
-               RightOOBWriteMessage(0));
-  EXPECT_DEATH(Ident(strncpy(to + 1, from, to_size)),
-               RightOOBWriteMessage(0));
-  // Overwrite terminator in from
-  from[from_size - 1] = '!';
-  // normal strncpy call
-  strncpy(to, from, from_size);
-  // Length of "from" is too small
-  EXPECT_DEATH(Ident(strncpy(to, from, to_size)),
-               RightOOBReadMessage(0));
-  free(to);
-  free(from);
-}
-
-// Users may have different definitions of "strchr" and "index", so provide
-// function pointer typedefs and overload RunStrChrTest implementation.
-// We can't use macro for RunStrChrTest body here, as this macro would
-// confuse EXPECT_DEATH gtest macro.
-typedef char*(*PointerToStrChr1)(const char*, int);
-typedef char*(*PointerToStrChr2)(char*, int);
-
-USED static void RunStrChrTest(PointerToStrChr1 StrChr) {
-  size_t size = Ident(100);
-  char *str = MallocAndMemsetString(size);
-  str[10] = 'q';
-  str[11] = '\0';
-  EXPECT_EQ(str, StrChr(str, 'z'));
-  EXPECT_EQ(str + 10, StrChr(str, 'q'));
-  EXPECT_EQ(NULL, StrChr(str, 'a'));
-  // StrChr argument points to not allocated memory.
-  EXPECT_DEATH(Ident(StrChr(str - 1, 'z')), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(StrChr(str + size, 'z')), RightOOBReadMessage(0));
-  // Overwrite the terminator and hit not allocated memory.
-  str[11] = 'z';
-  EXPECT_DEATH(Ident(StrChr(str, 'a')), RightOOBReadMessage(0));
-  free(str);
-}
-USED static void RunStrChrTest(PointerToStrChr2 StrChr) {
-  size_t size = Ident(100);
-  char *str = MallocAndMemsetString(size);
-  str[10] = 'q';
-  str[11] = '\0';
-  EXPECT_EQ(str, StrChr(str, 'z'));
-  EXPECT_EQ(str + 10, StrChr(str, 'q'));
-  EXPECT_EQ(NULL, StrChr(str, 'a'));
-  // StrChr argument points to not allocated memory.
-  EXPECT_DEATH(Ident(StrChr(str - 1, 'z')), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(StrChr(str + size, 'z')), RightOOBReadMessage(0));
-  // Overwrite the terminator and hit not allocated memory.
-  str[11] = 'z';
-  EXPECT_DEATH(Ident(StrChr(str, 'a')), RightOOBReadMessage(0));
-  free(str);
-}
-
-TEST(AddressSanitizer, StrChrAndIndexOOBTest) {
-  RunStrChrTest(&strchr);
-  RunStrChrTest(&index);
-}
-
-TEST(AddressSanitizer, StrCmpAndFriendsLogicTest) {
-  // strcmp
-  EXPECT_EQ(0, strcmp("", ""));
-  EXPECT_EQ(0, strcmp("abcd", "abcd"));
-  EXPECT_GT(0, strcmp("ab", "ac"));
-  EXPECT_GT(0, strcmp("abc", "abcd"));
-  EXPECT_LT(0, strcmp("acc", "abc"));
-  EXPECT_LT(0, strcmp("abcd", "abc"));
-
-  // strncmp
-  EXPECT_EQ(0, strncmp("a", "b", 0));
-  EXPECT_EQ(0, strncmp("abcd", "abcd", 10));
-  EXPECT_EQ(0, strncmp("abcd", "abcef", 3));
-  EXPECT_GT(0, strncmp("abcde", "abcfa", 4));
-  EXPECT_GT(0, strncmp("a", "b", 5));
-  EXPECT_GT(0, strncmp("bc", "bcde", 4));
-  EXPECT_LT(0, strncmp("xyz", "xyy", 10));
-  EXPECT_LT(0, strncmp("baa", "aaa", 1));
-  EXPECT_LT(0, strncmp("zyx", "", 2));
-
-  // strcasecmp
-  EXPECT_EQ(0, strcasecmp("", ""));
-  EXPECT_EQ(0, strcasecmp("zzz", "zzz"));
-  EXPECT_EQ(0, strcasecmp("abCD", "ABcd"));
-  EXPECT_GT(0, strcasecmp("aB", "Ac"));
-  EXPECT_GT(0, strcasecmp("ABC", "ABCd"));
-  EXPECT_LT(0, strcasecmp("acc", "abc"));
-  EXPECT_LT(0, strcasecmp("ABCd", "abc"));
-
-  // strncasecmp
-  EXPECT_EQ(0, strncasecmp("a", "b", 0));
-  EXPECT_EQ(0, strncasecmp("abCD", "ABcd", 10));
-  EXPECT_EQ(0, strncasecmp("abCd", "ABcef", 3));
-  EXPECT_GT(0, strncasecmp("abcde", "ABCfa", 4));
-  EXPECT_GT(0, strncasecmp("a", "B", 5));
-  EXPECT_GT(0, strncasecmp("bc", "BCde", 4));
-  EXPECT_LT(0, strncasecmp("xyz", "xyy", 10));
-  EXPECT_LT(0, strncasecmp("Baa", "aaa", 1));
-  EXPECT_LT(0, strncasecmp("zyx", "", 2));
-
-  // memcmp
-  EXPECT_EQ(0, memcmp("a", "b", 0));
-  EXPECT_EQ(0, memcmp("ab\0c", "ab\0c", 4));
-  EXPECT_GT(0, memcmp("\0ab", "\0ac", 3));
-  EXPECT_GT(0, memcmp("abb\0", "abba", 4));
-  EXPECT_LT(0, memcmp("ab\0cd", "ab\0c\0", 5));
-  EXPECT_LT(0, memcmp("zza", "zyx", 3));
-}
-
-typedef int(*PointerToStrCmp)(const char*, const char*);
-void RunStrCmpTest(PointerToStrCmp StrCmp) {
-  size_t size = Ident(100);
-  int fill = 'o';
-  char *s1 = MallocAndMemsetString(size, fill);
-  char *s2 = MallocAndMemsetString(size, fill);
-  s1[size - 1] = '\0';
-  s2[size - 1] = '\0';
-  // Normal StrCmp calls
-  Ident(StrCmp(s1, s2));
-  Ident(StrCmp(s1, s2 + size - 1));
-  Ident(StrCmp(s1 + size - 1, s2 + size - 1));
-  s1[size - 1] = 'z';
-  s2[size - 1] = 'x';
-  Ident(StrCmp(s1, s2));
-  // One of arguments points to not allocated memory.
-  EXPECT_DEATH(Ident(StrCmp)(s1 - 1, s2), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(StrCmp)(s1, s2 - 1), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(StrCmp)(s1 + size, s2), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(StrCmp)(s1, s2 + size), RightOOBReadMessage(0));
-  // Hit unallocated memory and die.
-  s1[size - 1] = fill;
-  EXPECT_DEATH(Ident(StrCmp)(s1, s1), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(StrCmp)(s1 + size - 1, s2), RightOOBReadMessage(0));
-  free(s1);
-  free(s2);
-}
-
-TEST(AddressSanitizer, StrCmpOOBTest) {
-  RunStrCmpTest(&strcmp);
-}
-
-TEST(AddressSanitizer, StrCaseCmpOOBTest) {
-  RunStrCmpTest(&strcasecmp);
-}
-
-typedef int(*PointerToStrNCmp)(const char*, const char*, size_t);
-void RunStrNCmpTest(PointerToStrNCmp StrNCmp) {
-  size_t size = Ident(100);
-  char *s1 = MallocAndMemsetString(size);
-  char *s2 = MallocAndMemsetString(size);
-  s1[size - 1] = '\0';
-  s2[size - 1] = '\0';
-  // Normal StrNCmp calls
-  Ident(StrNCmp(s1, s2, size + 2));
-  s1[size - 1] = 'z';
-  s2[size - 1] = 'x';
-  Ident(StrNCmp(s1 + size - 2, s2 + size - 2, size));
-  s2[size - 1] = 'z';
-  Ident(StrNCmp(s1 - 1, s2 - 1, 0));
-  Ident(StrNCmp(s1 + size - 1, s2 + size - 1, 1));
-  // One of arguments points to not allocated memory.
-  EXPECT_DEATH(Ident(StrNCmp)(s1 - 1, s2, 1), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(StrNCmp)(s1, s2 - 1, 1), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(StrNCmp)(s1 + size, s2, 1), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(StrNCmp)(s1, s2 + size, 1), RightOOBReadMessage(0));
-  // Hit unallocated memory and die.
-  EXPECT_DEATH(Ident(StrNCmp)(s1 + 1, s2 + 1, size), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(StrNCmp)(s1 + size - 1, s2, 2), RightOOBReadMessage(0));
-  free(s1);
-  free(s2);
-}
-
-TEST(AddressSanitizer, StrNCmpOOBTest) {
-  RunStrNCmpTest(&strncmp);
-}
-
-TEST(AddressSanitizer, StrNCaseCmpOOBTest) {
-  RunStrNCmpTest(&strncasecmp);
-}
-
-TEST(AddressSanitizer, MemCmpOOBTest) {
-  size_t size = Ident(100);
-  char *s1 = MallocAndMemsetString(size);
-  char *s2 = MallocAndMemsetString(size);
-  // Normal memcmp calls.
-  Ident(memcmp(s1, s2, size));
-  Ident(memcmp(s1 + size - 1, s2 + size - 1, 1));
-  Ident(memcmp(s1 - 1, s2 - 1, 0));
-  // One of arguments points to not allocated memory.
-  EXPECT_DEATH(Ident(memcmp)(s1 - 1, s2, 1), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(memcmp)(s1, s2 - 1, 1), LeftOOBReadMessage(1));
-  EXPECT_DEATH(Ident(memcmp)(s1 + size, s2, 1), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(memcmp)(s1, s2 + size, 1), RightOOBReadMessage(0));
-  // Hit unallocated memory and die.
-  EXPECT_DEATH(Ident(memcmp)(s1 + 1, s2 + 1, size), RightOOBReadMessage(0));
-  EXPECT_DEATH(Ident(memcmp)(s1 + size - 1, s2, 2), RightOOBReadMessage(0));
-  // Zero bytes are not terminators and don't prevent from OOB.
-  s1[size - 1] = '\0';
-  s2[size - 1] = '\0';
-  EXPECT_DEATH(Ident(memcmp)(s1, s2, size + 1), RightOOBReadMessage(0));
-  free(s1);
-  free(s2);
-}
-
-TEST(AddressSanitizer, StrCatOOBTest) {
-  // strcat() reads strlen(to) bytes from |to| before concatenating.
-  size_t to_size = Ident(100);
-  char *to = MallocAndMemsetString(to_size);
-  to[0] = '\0';
-  size_t from_size = Ident(20);
-  char *from = MallocAndMemsetString(from_size);
-  from[from_size - 1] = '\0';
-  // Normal strcat calls.
-  strcat(to, from);
-  strcat(to, from);
-  strcat(to + from_size, from + from_size - 2);
-  // Passing an invalid pointer is an error even when concatenating an empty
-  // string.
-  EXPECT_DEATH(strcat(to - 1, from + from_size - 1), LeftOOBAccessMessage(1));
-  // One of arguments points to not allocated memory.
-  EXPECT_DEATH(strcat(to - 1, from), LeftOOBAccessMessage(1));
-  EXPECT_DEATH(strcat(to, from - 1), LeftOOBReadMessage(1));
-  EXPECT_DEATH(strcat(to + to_size, from), RightOOBWriteMessage(0));
-  EXPECT_DEATH(strcat(to, from + from_size), RightOOBReadMessage(0));
-
-  // "from" is not zero-terminated.
-  from[from_size - 1] = 'z';
-  EXPECT_DEATH(strcat(to, from), RightOOBReadMessage(0));
-  from[from_size - 1] = '\0';
-  // "to" is not zero-terminated.
-  memset(to, 'z', to_size);
-  EXPECT_DEATH(strcat(to, from), RightOOBWriteMessage(0));
-  // "to" is too short to fit "from".
-  to[to_size - from_size + 1] = '\0';
-  EXPECT_DEATH(strcat(to, from), RightOOBWriteMessage(0));
-  // length of "to" is just enough.
-  strcat(to, from + 1);
-
-  free(to);
-  free(from);
-}
-
-TEST(AddressSanitizer, StrNCatOOBTest) {
-  // strncat() reads strlen(to) bytes from |to| before concatenating.
-  size_t to_size = Ident(100);
-  char *to = MallocAndMemsetString(to_size);
-  to[0] = '\0';
-  size_t from_size = Ident(20);
-  char *from = MallocAndMemsetString(from_size);
-  // Normal strncat calls.
-  strncat(to, from, 0);
-  strncat(to, from, from_size);
-  from[from_size - 1] = '\0';
-  strncat(to, from, 2 * from_size);
-  // Catenating empty string with an invalid string is still an error.
-  EXPECT_DEATH(strncat(to - 1, from, 0), LeftOOBAccessMessage(1));
-  strncat(to, from + from_size - 1, 10);
-  // One of arguments points to not allocated memory.
-  EXPECT_DEATH(strncat(to - 1, from, 2), LeftOOBAccessMessage(1));
-  EXPECT_DEATH(strncat(to, from - 1, 2), LeftOOBReadMessage(1));
-  EXPECT_DEATH(strncat(to + to_size, from, 2), RightOOBWriteMessage(0));
-  EXPECT_DEATH(strncat(to, from + from_size, 2), RightOOBReadMessage(0));
-
-  memset(from, 'z', from_size);
-  memset(to, 'z', to_size);
-  to[0] = '\0';
-  // "from" is too short.
-  EXPECT_DEATH(strncat(to, from, from_size + 1), RightOOBReadMessage(0));
-  // "to" is not zero-terminated.
-  EXPECT_DEATH(strncat(to + 1, from, 1), RightOOBWriteMessage(0));
-  // "to" is too short to fit "from".
-  to[0] = 'z';
-  to[to_size - from_size + 1] = '\0';
-  EXPECT_DEATH(strncat(to, from, from_size - 1), RightOOBWriteMessage(0));
-  // "to" is just enough.
-  strncat(to, from, from_size - 2);
-
-  free(to);
-  free(from);
-}
-
-static string OverlapErrorMessage(const string &func) {
-  return func + "-param-overlap";
-}
-
-TEST(AddressSanitizer, StrArgsOverlapTest) {
-  size_t size = Ident(100);
-  char *str = Ident((char*)malloc(size));
-
-// Do not check memcpy() on OS X 10.7 and later, where it actually aliases
-// memmove().
-#if !defined(__APPLE__) || !defined(MAC_OS_X_VERSION_10_7) || \
-    (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7)
-  // Check "memcpy". Use Ident() to avoid inlining.
-  memset(str, 'z', size);
-  Ident(memcpy)(str + 1, str + 11, 10);
-  Ident(memcpy)(str, str, 0);
-  EXPECT_DEATH(Ident(memcpy)(str, str + 14, 15), OverlapErrorMessage("memcpy"));
-  EXPECT_DEATH(Ident(memcpy)(str + 14, str, 15), OverlapErrorMessage("memcpy"));
-#endif
-
-  // We do not treat memcpy with to==from as a bug.
-  // See http://llvm.org/bugs/show_bug.cgi?id=11763.
-  // EXPECT_DEATH(Ident(memcpy)(str + 20, str + 20, 1),
-  //              OverlapErrorMessage("memcpy"));
-
-  // Check "strcpy".
-  memset(str, 'z', size);
-  str[9] = '\0';
-  strcpy(str + 10, str);
-  EXPECT_DEATH(strcpy(str + 9, str), OverlapErrorMessage("strcpy"));
-  EXPECT_DEATH(strcpy(str, str + 4), OverlapErrorMessage("strcpy"));
-  strcpy(str, str + 5);
-
-  // Check "strncpy".
-  memset(str, 'z', size);
-  strncpy(str, str + 10, 10);
-  EXPECT_DEATH(strncpy(str, str + 9, 10), OverlapErrorMessage("strncpy"));
-  EXPECT_DEATH(strncpy(str + 9, str, 10), OverlapErrorMessage("strncpy"));
-  str[10] = '\0';
-  strncpy(str + 11, str, 20);
-  EXPECT_DEATH(strncpy(str + 10, str, 20), OverlapErrorMessage("strncpy"));
-
-  // Check "strcat".
-  memset(str, 'z', size);
-  str[10] = '\0';
-  str[20] = '\0';
-  strcat(str, str + 10);
-  EXPECT_DEATH(strcat(str, str + 11), OverlapErrorMessage("strcat"));
-  str[10] = '\0';
-  strcat(str + 11, str);
-  EXPECT_DEATH(strcat(str, str + 9), OverlapErrorMessage("strcat"));
-  EXPECT_DEATH(strcat(str + 9, str), OverlapErrorMessage("strcat"));
-  EXPECT_DEATH(strcat(str + 10, str), OverlapErrorMessage("strcat"));
-
-  // Check "strncat".
-  memset(str, 'z', size);
-  str[10] = '\0';
-  strncat(str, str + 10, 10);  // from is empty
-  EXPECT_DEATH(strncat(str, str + 11, 10), OverlapErrorMessage("strncat"));
-  str[10] = '\0';
-  str[20] = '\0';
-  strncat(str + 5, str, 5);
-  str[10] = '\0';
-  EXPECT_DEATH(strncat(str + 5, str, 6), OverlapErrorMessage("strncat"));
-  EXPECT_DEATH(strncat(str, str + 9, 10), OverlapErrorMessage("strncat"));
-
-  free(str);
-}
-
-void CallAtoi(const char *nptr) {
-  Ident(atoi(nptr));
-}
-void CallAtol(const char *nptr) {
-  Ident(atol(nptr));
-}
-void CallAtoll(const char *nptr) {
-  Ident(atoll(nptr));
-}
-typedef void(*PointerToCallAtoi)(const char*);
-
-void RunAtoiOOBTest(PointerToCallAtoi Atoi) {
-  char *array = MallocAndMemsetString(10, '1');
-  // Invalid pointer to the string.
-  EXPECT_DEATH(Atoi(array + 11), RightOOBReadMessage(1));
-  EXPECT_DEATH(Atoi(array - 1), LeftOOBReadMessage(1));
-  // Die if a buffer doesn't have terminating NULL.
-  EXPECT_DEATH(Atoi(array), RightOOBReadMessage(0));
-  // Make last symbol a terminating NULL or other non-digit.
-  array[9] = '\0';
-  Atoi(array);
-  array[9] = 'a';
-  Atoi(array);
-  Atoi(array + 9);
-  // Sometimes we need to detect overflow if no digits are found.
-  memset(array, ' ', 10);
-  EXPECT_DEATH(Atoi(array), RightOOBReadMessage(0));
-  array[9] = '-';
-  EXPECT_DEATH(Atoi(array), RightOOBReadMessage(0));
-  EXPECT_DEATH(Atoi(array + 9), RightOOBReadMessage(0));
-  array[8] = '-';
-  Atoi(array);
-  free(array);
-}
-
-TEST(AddressSanitizer, AtoiAndFriendsOOBTest) {
-  RunAtoiOOBTest(&CallAtoi);
-  RunAtoiOOBTest(&CallAtol);
-  RunAtoiOOBTest(&CallAtoll);
-}
-
-void CallStrtol(const char *nptr, char **endptr, int base) {
-  Ident(strtol(nptr, endptr, base));
-}
-void CallStrtoll(const char *nptr, char **endptr, int base) {
-  Ident(strtoll(nptr, endptr, base));
-}
-typedef void(*PointerToCallStrtol)(const char*, char**, int);
-
-void RunStrtolOOBTest(PointerToCallStrtol Strtol) {
-  char *array = MallocAndMemsetString(3);
-  char *endptr = NULL;
-  array[0] = '1';
-  array[1] = '2';
-  array[2] = '3';
-  // Invalid pointer to the string.
-  EXPECT_DEATH(Strtol(array + 3, NULL, 0), RightOOBReadMessage(0));
-  EXPECT_DEATH(Strtol(array - 1, NULL, 0), LeftOOBReadMessage(1));
-  // Buffer overflow if there is no terminating null (depends on base).
-  Strtol(array, &endptr, 3);
-  EXPECT_EQ(array + 2, endptr);
-  EXPECT_DEATH(Strtol(array, NULL, 0), RightOOBReadMessage(0));
-  array[2] = 'z';
-  Strtol(array, &endptr, 35);
-  EXPECT_EQ(array + 2, endptr);
-  EXPECT_DEATH(Strtol(array, NULL, 36), RightOOBReadMessage(0));
-  // Add terminating zero to get rid of overflow.
-  array[2] = '\0';
-  Strtol(array, NULL, 36);
-  // Don't check for overflow if base is invalid.
-  Strtol(array - 1, NULL, -1);
-  Strtol(array + 3, NULL, 1);
-  // Sometimes we need to detect overflow if no digits are found.
-  array[0] = array[1] = array[2] = ' ';
-  EXPECT_DEATH(Strtol(array, NULL, 0), RightOOBReadMessage(0));
-  array[2] = '+';
-  EXPECT_DEATH(Strtol(array, NULL, 0), RightOOBReadMessage(0));
-  array[2] = '-';
-  EXPECT_DEATH(Strtol(array, NULL, 0), RightOOBReadMessage(0));
-  array[1] = '+';
-  Strtol(array, NULL, 0);
-  array[1] = array[2] = 'z';
-  Strtol(array, &endptr, 0);
-  EXPECT_EQ(array, endptr);
-  Strtol(array + 2, NULL, 0);
-  EXPECT_EQ(array, endptr);
-  free(array);
-}
-
-TEST(AddressSanitizer, StrtollOOBTest) {
-  RunStrtolOOBTest(&CallStrtoll);
-}
-TEST(AddressSanitizer, StrtolOOBTest) {
-  RunStrtolOOBTest(&CallStrtol);
-}
-
-// At the moment we instrument memcpy/memove/memset calls at compile time so we
-// can't handle OOB error if these functions are called by pointer, see disabled
-// MemIntrinsicCallByPointerTest below
-typedef void*(*PointerToMemTransfer)(void*, const void*, size_t);
-typedef void*(*PointerToMemSet)(void*, int, size_t);
-
-void CallMemSetByPointer(PointerToMemSet MemSet) {
-  size_t size = Ident(100);
-  char *array = Ident((char*)malloc(size));
-  EXPECT_DEATH(MemSet(array, 0, 101), RightOOBWriteMessage(0));
-  free(array);
-}
-
-void CallMemTransferByPointer(PointerToMemTransfer MemTransfer) {
-  size_t size = Ident(100);
-  char *src = Ident((char*)malloc(size));
-  char *dst = Ident((char*)malloc(size));
-  EXPECT_DEATH(MemTransfer(dst, src, 101), RightOOBWriteMessage(0));
-  free(src);
-  free(dst);
-}
-
-TEST(AddressSanitizer, DISABLED_MemIntrinsicCallByPointerTest) {
-  CallMemSetByPointer(&memset);
-  CallMemTransferByPointer(&memcpy);
-  CallMemTransferByPointer(&memmove);
-}
-
 #if defined(__linux__) && !defined(ANDROID) && !defined(__ANDROID__)
+#define READ_TEST(READ_N_BYTES)                                          \
+  char *x = new char[10];                                                \
+  int fd = open("/proc/self/stat", O_RDONLY);                            \
+  ASSERT_GT(fd, 0);                                                      \
+  EXPECT_DEATH(READ_N_BYTES,                                             \
+               ASAN_PCRE_DOTALL                                          \
+               "AddressSanitizer: heap-buffer-overflow"                  \
+               ".* is located 0 bytes to the right of 10-byte region");  \
+  close(fd);                                                             \
+  delete [] x;                                                           \
+
 TEST(AddressSanitizer, pread) {
-  char *x = new char[10];
-  int fd = open("/proc/self/stat", O_RDONLY);
-  ASSERT_GT(fd, 0);
-  EXPECT_DEATH(pread(fd, x, 15, 0),
-               ASAN_PCRE_DOTALL
-               "AddressSanitizer: heap-buffer-overflow"
-               ".* is located 0 bytes to the right of 10-byte region");
-  close(fd);
-  delete [] x;
+  READ_TEST(pread(fd, x, 15, 0));
 }
 
 TEST(AddressSanitizer, pread64) {
-  char *x = new char[10];
-  int fd = open("/proc/self/stat", O_RDONLY);
-  ASSERT_GT(fd, 0);
-  EXPECT_DEATH(pread64(fd, x, 15, 0),
-               ASAN_PCRE_DOTALL
-               "AddressSanitizer: heap-buffer-overflow"
-               ".* is located 0 bytes to the right of 10-byte region");
-  close(fd);
-  delete [] x;
+  READ_TEST(pread64(fd, x, 15, 0));
 }
 
 TEST(AddressSanitizer, read) {
-  char *x = new char[10];
-  int fd = open("/proc/self/stat", O_RDONLY);
-  ASSERT_GT(fd, 0);
-  EXPECT_DEATH(read(fd, x, 15),
-               ASAN_PCRE_DOTALL
-               "AddressSanitizer: heap-buffer-overflow"
-               ".* is located 0 bytes to the right of 10-byte region");
-  close(fd);
-  delete [] x;
+  READ_TEST(read(fd, x, 15));
 }
-
 #endif  // defined(__linux__) && !defined(ANDROID) && !defined(__ANDROID__)
 
 // This test case fails
@@ -1873,11 +925,9 @@ TEST(AddressSanitizer, StrDupTest) {
 }
 
 // Currently we create and poison redzone at right of global variables.
-char glob5[5];
 static char static110[110];
 const char ConstGlob[7] = {1, 2, 3, 4, 5, 6, 7};
 static const char StaticConstGlob[3] = {9, 8, 7};
-extern int GlobalsTest(int x);
 
 TEST(AddressSanitizer, GlobalTest) {
   static char func_static15[15];
@@ -2058,13 +1108,13 @@ TEST(AddressSanitizer, AttributeNoAddressSafetyTest) {
   Ident(NoAddressSafety)();
 }
 
+// It doesn't work on Android, as calls to new/delete go through malloc/free.
+#if !defined(ANDROID) && !defined(__ANDROID__)
 static string MismatchStr(const string &str) {
   return string("AddressSanitizer: alloc-dealloc-mismatch \\(") + str;
 }
 
-// This test is disabled until we enable alloc_dealloc_mismatch by default.
-// The feature is also tested by lit tests.
-TEST(AddressSanitizer, DISABLED_AllocDeallocMismatch) {
+TEST(AddressSanitizer, AllocDeallocMismatch) {
   EXPECT_DEATH(free(Ident(new int)),
                MismatchStr("operator new vs free"));
   EXPECT_DEATH(free(Ident(new int[2])),
@@ -2078,6 +1128,7 @@ TEST(AddressSanitizer, DISABLED_AllocDeallocMismatch) {
   EXPECT_DEATH(delete [] (Ident((int*)malloc(2 * sizeof(int)))),
                MismatchStr("malloc vs operator delete \\[\\]"));
 }
+#endif
 
 // ------------------ demo tests; run each one-by-one -------------
 // e.g. --gtest_filter=*DemoOOBLeftHigh --gtest_also_run_disabled_tests
@@ -2113,22 +1164,6 @@ TEST(AddressSanitizer, DISABLED_DemoUAFLowRight) {
 
 TEST(AddressSanitizer, DISABLED_DemoUAFHigh) {
   uaf_test<U1>(kLargeMalloc, 0);
-}
-
-TEST(AddressSanitizer, DISABLED_DemoOOBLeftLow) {
-  oob_test<U1>(10, -1);
-}
-
-TEST(AddressSanitizer, DISABLED_DemoOOBLeftHigh) {
-  oob_test<U1>(kLargeMalloc, -1);
-}
-
-TEST(AddressSanitizer, DISABLED_DemoOOBRightLow) {
-  oob_test<U1>(10, 10);
-}
-
-TEST(AddressSanitizer, DISABLED_DemoOOBRightHigh) {
-  oob_test<U1>(kLargeMalloc, kLargeMalloc);
 }
 
 TEST(AddressSanitizer, DISABLED_DemoOOM) {
@@ -2178,223 +1213,6 @@ TEST(AddressSanitizer, BufferOverflowAfterManyFrees) {
   delete [] Ident(x);
 }
 
-#ifdef __APPLE__
-#include "asan_mac_test.h"
-TEST(AddressSanitizerMac, CFAllocatorDefaultDoubleFree) {
-  EXPECT_DEATH(
-      CFAllocatorDefaultDoubleFree(NULL),
-      "attempting double-free");
-}
-
-void CFAllocator_DoubleFreeOnPthread() {
-  pthread_t child;
-  PTHREAD_CREATE(&child, NULL, CFAllocatorDefaultDoubleFree, NULL);
-  PTHREAD_JOIN(child, NULL);  // Shouldn't be reached.
-}
-
-TEST(AddressSanitizerMac, CFAllocatorDefaultDoubleFree_ChildPhread) {
-  EXPECT_DEATH(CFAllocator_DoubleFreeOnPthread(), "attempting double-free");
-}
-
-namespace {
-
-void *GLOB;
-
-void *CFAllocatorAllocateToGlob(void *unused) {
-  GLOB = CFAllocatorAllocate(NULL, 100, /*hint*/0);
-  return NULL;
-}
-
-void *CFAllocatorDeallocateFromGlob(void *unused) {
-  char *p = (char*)GLOB;
-  p[100] = 'A';  // ASan should report an error here.
-  CFAllocatorDeallocate(NULL, GLOB);
-  return NULL;
-}
-
-void CFAllocator_PassMemoryToAnotherThread() {
-  pthread_t th1, th2;
-  PTHREAD_CREATE(&th1, NULL, CFAllocatorAllocateToGlob, NULL);
-  PTHREAD_JOIN(th1, NULL);
-  PTHREAD_CREATE(&th2, NULL, CFAllocatorDeallocateFromGlob, NULL);
-  PTHREAD_JOIN(th2, NULL);
-}
-
-TEST(AddressSanitizerMac, CFAllocator_PassMemoryToAnotherThread) {
-  EXPECT_DEATH(CFAllocator_PassMemoryToAnotherThread(),
-               "heap-buffer-overflow");
-}
-
-}  // namespace
-
-// TODO(glider): figure out whether we still need these tests. Is it correct
-// to intercept the non-default CFAllocators?
-TEST(AddressSanitizerMac, DISABLED_CFAllocatorSystemDefaultDoubleFree) {
-  EXPECT_DEATH(
-      CFAllocatorSystemDefaultDoubleFree(),
-      "attempting double-free");
-}
-
-// We're intercepting malloc, so kCFAllocatorMalloc is routed to ASan.
-TEST(AddressSanitizerMac, CFAllocatorMallocDoubleFree) {
-  EXPECT_DEATH(CFAllocatorMallocDoubleFree(), "attempting double-free");
-}
-
-TEST(AddressSanitizerMac, DISABLED_CFAllocatorMallocZoneDoubleFree) {
-  EXPECT_DEATH(CFAllocatorMallocZoneDoubleFree(), "attempting double-free");
-}
-
-// For libdispatch tests below we check that ASan got to the shadow byte
-// legend, i.e. managed to print the thread stacks (this almost certainly
-// means that the libdispatch task creation has been intercepted correctly).
-TEST(AddressSanitizerMac, GCDDispatchAsync) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDDispatchAsync(), "Shadow byte legend");
-}
-
-TEST(AddressSanitizerMac, GCDDispatchSync) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDDispatchSync(), "Shadow byte legend");
-}
-
-
-TEST(AddressSanitizerMac, GCDReuseWqthreadsAsync) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDReuseWqthreadsAsync(), "Shadow byte legend");
-}
-
-TEST(AddressSanitizerMac, GCDReuseWqthreadsSync) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDReuseWqthreadsSync(), "Shadow byte legend");
-}
-
-TEST(AddressSanitizerMac, GCDDispatchAfter) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDDispatchAfter(), "Shadow byte legend");
-}
-
-TEST(AddressSanitizerMac, GCDSourceEvent) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDSourceEvent(), "Shadow byte legend");
-}
-
-TEST(AddressSanitizerMac, GCDSourceCancel) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDSourceCancel(), "Shadow byte legend");
-}
-
-TEST(AddressSanitizerMac, GCDGroupAsync) {
-  // Make sure the whole ASan report is printed, i.e. that we don't die
-  // on a CHECK.
-  EXPECT_DEATH(TestGCDGroupAsync(), "Shadow byte legend");
-}
-
-void *MallocIntrospectionLockWorker(void *_) {
-  const int kNumPointers = 100;
-  int i;
-  void *pointers[kNumPointers];
-  for (i = 0; i < kNumPointers; i++) {
-    pointers[i] = malloc(i + 1);
-  }
-  for (i = 0; i < kNumPointers; i++) {
-    free(pointers[i]);
-  }
-
-  return NULL;
-}
-
-void *MallocIntrospectionLockForker(void *_) {
-  pid_t result = fork();
-  if (result == -1) {
-    perror("fork");
-  }
-  assert(result != -1);
-  if (result == 0) {
-    // Call malloc in the child process to make sure we won't deadlock.
-    void *ptr = malloc(42);
-    free(ptr);
-    exit(0);
-  } else {
-    // Return in the parent process.
-    return NULL;
-  }
-}
-
-TEST(AddressSanitizerMac, MallocIntrospectionLock) {
-  // Incorrect implementation of force_lock and force_unlock in our malloc zone
-  // will cause forked processes to deadlock.
-  // TODO(glider): need to detect that none of the child processes deadlocked.
-  const int kNumWorkers = 5, kNumIterations = 100;
-  int i, iter;
-  for (iter = 0; iter < kNumIterations; iter++) {
-    pthread_t workers[kNumWorkers], forker;
-    for (i = 0; i < kNumWorkers; i++) {
-      PTHREAD_CREATE(&workers[i], 0, MallocIntrospectionLockWorker, 0);
-    }
-    PTHREAD_CREATE(&forker, 0, MallocIntrospectionLockForker, 0);
-    for (i = 0; i < kNumWorkers; i++) {
-      PTHREAD_JOIN(workers[i], 0);
-    }
-    PTHREAD_JOIN(forker, 0);
-  }
-}
-
-void *TSDAllocWorker(void *test_key) {
-  if (test_key) {
-    void *mem = malloc(10);
-    pthread_setspecific(*(pthread_key_t*)test_key, mem);
-  }
-  return NULL;
-}
-
-TEST(AddressSanitizerMac, DISABLED_TSDWorkqueueTest) {
-  pthread_t th;
-  pthread_key_t test_key;
-  pthread_key_create(&test_key, CallFreeOnWorkqueue);
-  PTHREAD_CREATE(&th, NULL, TSDAllocWorker, &test_key);
-  PTHREAD_JOIN(th, NULL);
-  pthread_key_delete(test_key);
-}
-
-// Test that CFStringCreateCopy does not copy constant strings.
-TEST(AddressSanitizerMac, CFStringCreateCopy) {
-  CFStringRef str = CFSTR("Hello world!\n");
-  CFStringRef str2 = CFStringCreateCopy(0, str);
-  EXPECT_EQ(str, str2);
-}
-
-TEST(AddressSanitizerMac, NSObjectOOB) {
-  // Make sure that our allocators are used for NSObjects.
-  EXPECT_DEATH(TestOOBNSObjects(), "heap-buffer-overflow");
-}
-
-// Make sure that correct pointer is passed to free() when deallocating a
-// NSURL object.
-// See http://code.google.com/p/address-sanitizer/issues/detail?id=70.
-TEST(AddressSanitizerMac, NSURLDeallocation) {
-  TestNSURLDeallocation();
-}
-
-// See http://code.google.com/p/address-sanitizer/issues/detail?id=109.
-TEST(AddressSanitizerMac, Mstats) {
-  malloc_statistics_t stats1, stats2;
-  malloc_zone_statistics(/*all zones*/NULL, &stats1);
-  const size_t kMallocSize = 100000;
-  void *alloc = Ident(malloc(kMallocSize));
-  malloc_zone_statistics(/*all zones*/NULL, &stats2);
-  EXPECT_GT(stats2.blocks_in_use, stats1.blocks_in_use);
-  EXPECT_GE(stats2.size_in_use - stats1.size_in_use, kMallocSize);
-  free(alloc);
-  // Even the default OSX allocator may not change the stats after free().
-}
-#endif  // __APPLE__
 
 // Test that instrumentation of stack allocations takes into account
 // AllocSize of a type, and not its StoreSize (16 vs 10 bytes for long double).
