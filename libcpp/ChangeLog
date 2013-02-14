@@ -1,3 +1,9 @@
+2013-02-13  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/55582
+	* libcpp/lex.c (lex_raw_string): Allow string literal with suffix
+	beginning with 's' to be parsed as a C++11 user-defined literal.
+
 2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years.
