@@ -1,3 +1,8 @@
+2013-02-14  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix an asan crash
+	* c-c++-common/asan/memcmp-2.c: New test.
+
 2013-02-13  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/55582
