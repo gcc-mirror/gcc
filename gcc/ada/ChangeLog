@@ -1,3 +1,20 @@
+2013-02-14  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	Back-port from mainline.
+	PR target/52123
+	* adaint.c (__gnat_check_OWNER_ACL): Cast from pointer via
+	SECURITY_DESCRIPTOR *.
+	(__gnat_set_OWNER_ACL): Cast from DWORD to ACCESS_MODE.
+	(__gnat_portable_spawn): Fix cast to char* const*.
+	(add_handle): Cast from pointer via void **.
+	(add_handle): Cast from pointer via int *.
+	(__gnat_locate_exec_on_path): Cast from pointer via TCHAR *.
+	(__gnat_locate_exec_on_path): Cast from pointer via char *.
+	* initialize.c (append_arg): Cast from pointer via LPWSTR.
+	(__gnat_initialize): Cast from pointer via LPWSTR.
+	* seh_init.c (__gnat_SEH_error_handler): Cast from pointer via FARPROC.
+	* tracebak.c: Cast from pointer via FARPROC.
+
 2013-02-07  Simon Wright  <simon@pushface.org>
 
 	PR target/50678

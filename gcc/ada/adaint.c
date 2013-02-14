@@ -1982,7 +1982,7 @@ __gnat_check_OWNER_ACL
      GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
      NULL, 0, &nLength);
 
-  if ((pSD = (PSECURITY_DESCRIPTOR) HeapAlloc
+  if ((pSD = (SECURITY_DESCRIPTOR *) HeapAlloc
        (GetProcessHeap (), HEAP_ZERO_MEMORY, nLength)) == NULL)
     return 0;
 
@@ -2059,7 +2059,7 @@ __gnat_set_OWNER_ACL
     return;
 
   BuildExplicitAccessWithName
-    (&ea, username, AccessPermissions, AccessMode, NO_INHERITANCE);
+    (&ea, username, AccessPermissions, (ACCESS_MODE) AccessMode, NO_INHERITANCE);
 
   if (AccessMode == SET_ACCESS)
     {
@@ -2384,7 +2384,7 @@ __gnat_portable_spawn (char *args[])
   strcat (args[0], args_0);
   strcat (args[0], "\"");
 
-  status = spawnvp (P_WAIT, args_0, (const char* const*)args);
+  status = spawnvp (P_WAIT, args_0, (char* const*)args);
 
   /* restore previous value */
   free (args[0]);
@@ -2544,9 +2544,9 @@ add_handle (HANDLE h, int pid)
     {
       plist_max_length += 1000;
       HANDLES_LIST =
-        xrealloc (HANDLES_LIST, sizeof (HANDLE) * plist_max_length);
+        (void **) xrealloc (HANDLES_LIST, sizeof (HANDLE) * plist_max_length);
       PID_LIST =
-        xrealloc (PID_LIST, sizeof (int) * plist_max_length);
+        (int *) xrealloc (PID_LIST, sizeof (int) * plist_max_length);
     }
 
   HANDLES_LIST[plist_length] = h;
@@ -2935,7 +2935,7 @@ __gnat_locate_exec_on_path (char *exec_name)
 
   #define EXPAND_BUFFER_SIZE 32767
 
-  wapath_val = alloca (EXPAND_BUFFER_SIZE);
+  wapath_val = (TCHAR *) alloca (EXPAND_BUFFER_SIZE);
 
   wapath_val [0] = '.';
   wapath_val [1] = ';';
@@ -2945,7 +2945,7 @@ __gnat_locate_exec_on_path (char *exec_name)
 
   if (!res) wapath_val [0] = _T('\0');
 
-  apath_val = alloca (EXPAND_BUFFER_SIZE);
+  apath_val = (char *) alloca (EXPAND_BUFFER_SIZE);
 
   WS2SC (apath_val, wapath_val, EXPAND_BUFFER_SIZE);
   return __gnat_locate_exec (exec_name, apath_val);

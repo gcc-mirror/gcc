@@ -326,7 +326,7 @@ struct layout
 
 #if defined (__WIN32)
 #include <windows.h>
-#define IS_BAD_PTR(ptr) (IsBadCodePtr((void *)ptr))
+#define IS_BAD_PTR(ptr) (IsBadCodePtr((FARPROC)ptr))
 #elif defined (sun)
 #define IS_BAD_PTR(ptr) ((unsigned long)ptr == -1UL)
 #else

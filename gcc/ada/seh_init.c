@@ -90,7 +90,7 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
       */
       if ((ExceptionRecord->ExceptionInformation[1] & 3) != 0
 	  || IsBadCodePtr
-	  ((void *)(ExceptionRecord->ExceptionInformation[1] + 4096)))
+	  ((FARPROC)(ExceptionRecord->ExceptionInformation[1] + 4096)))
 	{
 	  exception = &program_error;
 	  msg = "EXCEPTION_ACCESS_VIOLATION";
