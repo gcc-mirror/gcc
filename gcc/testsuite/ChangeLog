@@ -1,12 +1,17 @@
+2013-02-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54685
+	* gcc.target/sh/pr54685.c: Fix scanning of not insn.
+
 2013-02-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56348
 	* gcc.target/i386/pr56348.c: New test.
 
-2012-02-15  Greta Yorsh  <Greta.Yorsh@arm.com>
+2013-02-15  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * gcc.target/arm/interrupt-1.c: Fix for thumb mode.
-        * gcc.target/arm/interrupt-2.c: Likewise.
+	* gcc.target/arm/interrupt-1.c: Fix for thumb mode.
+	* gcc.target/arm/interrupt-2.c: Likewise.
 
 2013-02-15  Tobias Burnus  <burnus@net-b.de>
 
