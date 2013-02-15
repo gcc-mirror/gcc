@@ -1,3 +1,10 @@
+2013-02-15  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56318
+	* simplify.c (gfc_simplify_matmul): Fix result shape
+	and matmul result.
+
 2013-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
