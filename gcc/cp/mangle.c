@@ -802,7 +802,10 @@ write_name (tree decl, const int ignore_local_scope)
   if (context == NULL
       || context == global_namespace
       || DECL_NAMESPACE_STD_P (context)
-      || (ignore_local_scope && TREE_CODE (context) == FUNCTION_DECL))
+      || (ignore_local_scope
+	  && (TREE_CODE (context) == FUNCTION_DECL
+	      || (abi_version_at_least (7)
+		  && TREE_CODE (context) == PARM_DECL))))
     {
       tree template_info;
       /* Is this a template instance?  */

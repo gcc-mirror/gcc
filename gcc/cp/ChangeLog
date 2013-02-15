@@ -1,5 +1,10 @@
 2013-02-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55223
+	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Fix handling of
+	default argument scope.
+	* mangle.c (write_name): Likewise.
+
 	PR c++/55232
 	* error.c (find_typenames_r): Don't walk into a pack expansion.
 
