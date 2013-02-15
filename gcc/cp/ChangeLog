@@ -1,5 +1,9 @@
 2013-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52026
+	* semantics.c (finish_id_expression): In a template, return
+	the identifier for a constant variable.
+
 	PR c++/55710
 	* semantics.c (maybe_add_lambda_conv_op): Mark static thunk
 	TREE_USED.
