@@ -21,6 +21,7 @@
 
 // 18.5 - Start and termination
 
+#if defined(_GLIBCXX_HAVE_AT_QUICK_EXIT) && defined(_GLIBCXX_HAVE_QUICK_EXIT)
 #include <cstdlib>
 
 void handler()
@@ -35,9 +36,10 @@ void wrong_handler()
 
 int main()
 {
-#if defined(_GLIBCXX_HAVE_AT_QUICK_EXIT) && defined(_GLIBCXX_HAVE_QUICK_EXIT)
   std::at_quick_exit (handler);
   std::atexit (wrong_handler);
   std::quick_exit (1);
-#endif
 }
+#else
+int main() {}
+#endif
