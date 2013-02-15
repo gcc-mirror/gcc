@@ -1,3 +1,8 @@
+2013-02-14  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/18_support/quick_exit/quick_exit.cc: #if out the whole
+	test if unsupported.
+
 2013-02-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/56111
