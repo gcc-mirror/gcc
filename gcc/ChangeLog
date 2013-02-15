@@ -1,3 +1,8 @@
+2013-02-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* graph.c (start_graph_dump): Print dumpfile base as digraph label.
+	(clean_graph_dump_file): Pass base to start_graph_dump.
+
 2013-02-14  Richard Henderson  <rth@redhat.com>
 
 	PR target/55941
