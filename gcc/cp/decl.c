@@ -6111,6 +6111,15 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       tree d_init;
       if (init == NULL_TREE)
 	{
+	  if (DECL_TEMPLATE_INSTANTIATION (decl)
+	      && !DECL_TEMPLATE_INSTANTIATED (decl))
+	    {
+	      /* init is null because we're deferring instantiating the
+		 initializer until we need it.  Well, we need it now.  */
+	      instantiate_decl (decl, /*defer_ok*/true, /*expl*/false);
+	      return;
+	    }
+
 	  error ("declaration of %q#D has no initializer", decl);
 	  TREE_TYPE (decl) = error_mark_node;
 	  return;
