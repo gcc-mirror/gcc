@@ -707,6 +707,14 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_TLS_WRAPPER:
       printf ("tls wrapper function\n");
       break;
+    case DEMANGLE_COMPONENT_DEFAULT_ARG:
+      printf ("default argument %d\n", dc->u.s_unary_num.num);
+      d_dump (dc->u.s_unary_num.sub, indent+2);
+      return;
+    case DEMANGLE_COMPONENT_LAMBDA:
+      printf ("lambda %d\n", dc->u.s_unary_num.num);
+      d_dump (dc->u.s_unary_num.sub, indent+2);
+      return;
     }
 
   d_dump (d_left (dc), indent + 2);
@@ -3168,6 +3176,7 @@ d_expr_primary (struct d_info *di)
 
 /* <local-name> ::= Z <(function) encoding> E <(entity) name> [<discriminator>]
                 ::= Z <(function) encoding> E s [<discriminator>]
+                ::= Z <(function) encoding> E d [<parameter> number>] _ <entity name>
 */
 
 static struct demangle_component *
@@ -3869,7 +3878,17 @@ d_print_comp (struct d_print_info *dpi, int options,
 	d_append_string (dpi, "::");
       else
 	d_append_char (dpi, '.');
-      d_print_comp (dpi, options, d_right (dc));
+      {
+	struct demangle_component *local_name = d_right (dc);
+	if (local_name->type == DEMANGLE_COMPONENT_DEFAULT_ARG)
+	  {
+	    d_append_string (dpi, "{default arg#");
+	    d_append_num (dpi, local_name->u.s_unary_num.num + 1);
+	    d_append_string (dpi, "}::");
+	    local_name = local_name->u.s_unary_num.sub;
+	  }
+	d_print_comp (dpi, options, local_name);
+      }
       return;
 
     case DEMANGLE_COMPONENT_TYPED_NAME:

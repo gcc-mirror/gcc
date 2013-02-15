@@ -3951,6 +3951,9 @@ S::f(int, int)::{default arg#2}::{lambda()#2}::operator()() const
 _ZNK1SIiE1xMUlvE1_clEv
 S<int>::x::{lambda()#3}::operator()() const
 --format=gnu-v3
+_ZN8functionC1IZN1CIiE4testES_Ed_UliE_EET_
+function::function<C<int>::test(function)::{default arg#1}::{lambda(int)#1}>(C<int>::test(function)::{default arg#1}::{lambda(int)#1})
+--format=gnu-v3
 _Z1fN1SUt_E
 f(S::{unnamed type#1})
 --format=gnu-v3
