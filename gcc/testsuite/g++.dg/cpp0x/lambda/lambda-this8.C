@@ -24,7 +24,7 @@ struct test {
   }
 
   template<typename T>
-  void print() { if (this == NULL) __builtin_abort (); }
+  void print() { if (this == 0) __builtin_abort (); }
 };
 
 int main(void) {
