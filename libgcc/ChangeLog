@@ -1,3 +1,11 @@
+2013-02-16  Alan Modra  <amodra@gmail.com>
+
+	PR target/55431
+	* config/rs6000/linux-unwind.h (ppc_linux_aux_vector): Delete.
+	(ppc_fallback_frame_state): Always set up save locations for fp
+	and altivec.  Don't bother with non-callee-saved regs, r0-r13
+	except for r2 on ppc64, fr0-fr13, v0-v19, vscr.
+
 2013-02-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
