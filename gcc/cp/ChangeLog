@@ -1,5 +1,9 @@
 2013-02-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55003
+	* decl.c (cp_finish_decl): Force instantiation of an
+	auto static data member.
+
 	PR c++/55220
 	* pt.c (unify): A pack expansion that is not the last template
 	argument makes the entire template argument list non-deduced.
