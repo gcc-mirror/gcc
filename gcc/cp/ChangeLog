@@ -1,5 +1,12 @@
 2013-02-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56323
+	* name-lookup.c (do_class_using_decl): Handle typedefs with
+	inheriting constructors.
+	(push_class_level_binding_1): Allow inheriting from template
+	template parameter, too.
+	* pt.c (tsubst_decl) [USING_DECL]: Likewise.
+
 	PR c++/55223
 	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Fix handling of
 	default argument scope.

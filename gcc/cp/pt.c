@@ -10492,7 +10492,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  tree inst_scope = tsubst_copy (USING_DECL_SCOPE (t), args,
 					 complain, in_decl);
 	  tree name = tsubst_copy (DECL_NAME (t), args, complain, in_decl);
-	  if (TREE_CODE (scope) == TEMPLATE_TYPE_PARM
+	  /* Handle 'using T::T'.  */
+	  if (TYPE_NAME (scope)
 	      && name == TYPE_IDENTIFIER (scope))
 	    name = TYPE_IDENTIFIER (inst_scope);
 	  r = do_class_using_decl (inst_scope, name);
