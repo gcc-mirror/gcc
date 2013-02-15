@@ -3015,7 +3015,14 @@ finish_id_expression (tree id_expression,
 
 	     FIXME update for final resolution of core issue 696.  */
 	  if (decl_constant_var_p (decl))
-	    return integral_constant_value (decl);
+	    {
+	      if (processing_template_decl)
+		/* In a template, the constant value may not be in a usable
+		   form, so look it up again at instantiation time.  */
+		return id_expression;
+	      else
+		return integral_constant_value (decl);
+	    }
 
 	  /* If we are in a lambda function, we can move out until we hit
 	     1. the context,
