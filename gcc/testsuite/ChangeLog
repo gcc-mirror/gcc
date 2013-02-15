@@ -1,3 +1,8 @@
+2013-02-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56348
+	* gcc.target/i386/pr56348.c: New test.
+
 2012-02-15  Greta Yorsh  <Greta.Yorsh@arm.com>
 
         * gcc.target/arm/interrupt-1.c: Fix for thumb mode.
