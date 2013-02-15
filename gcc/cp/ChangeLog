@@ -1,5 +1,9 @@
 2013-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55710
+	* semantics.c (maybe_add_lambda_conv_op): Mark static thunk
+	TREE_USED.
+
 	PR c++/56135
 	* pt.c (tsubst_copy_and_build): Don't forget any new
 	captures that arose from use of dependent names.
