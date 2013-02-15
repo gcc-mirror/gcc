@@ -2876,16 +2876,24 @@ baselink_for_fns (tree fns)
   return build_baselink (cl, cl, fns, /*optype=*/NULL_TREE);
 }
 
-/* Returns true iff DECL is an automatic variable from a function outside
+/* Returns true iff DECL is a variable from a function outside
    the current one.  */
+
+static bool
+outer_var_p (tree decl)
+{
+  return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+	  && DECL_FUNCTION_SCOPE_P (decl)
+	  && DECL_CONTEXT (decl) != current_function_decl);
+}
+
+/* As above, but also checks that DECL is automatic.  */
 
 static bool
 outer_automatic_var_p (tree decl)
 {
-  return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
-	  && DECL_FUNCTION_SCOPE_P (decl)
-	  && !TREE_STATIC (decl)
-	  && DECL_CONTEXT (decl) != current_function_decl);
+  return (outer_var_p (decl)
+	  && !TREE_STATIC (decl));
 }
 
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
@@ -2994,9 +3002,18 @@ finish_id_expression (tree id_expression,
 
       /* Disallow uses of local variables from containing functions, except
 	 within lambda-expressions.  */
-      if (outer_automatic_var_p (decl)
+      if (!outer_var_p (decl)
 	  /* It's not a use (3.2) if we're in an unevaluated context.  */
-	  && !cp_unevaluated_operand)
+	  || cp_unevaluated_operand)
+	/* OK.  */;
+      else if (TREE_STATIC (decl))
+	{
+	  if (processing_template_decl)
+	    /* For a use of an outer static var, return the identifier so
+	       that we'll look it up again in the instantiation.  */
+	    return id_expression;
+	}
+      else
 	{
 	  tree context = DECL_CONTEXT (decl);
 	  tree containing_function = current_function_decl;
