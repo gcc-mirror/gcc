@@ -1,5 +1,9 @@
 2013-02-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54922
+	* semantics.c (build_anon_member_initialization): New.
+	(build_data_member_initialization): Use it.
+
 	PR c++/55003
 	* decl.c (cp_finish_decl): Force instantiation of an
 	auto static data member.
