@@ -1,3 +1,8 @@
+2013-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55232
+	* error.c (find_typenames_r): Don't walk into a pack expansion.
+
 2013-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55670
