@@ -1,5 +1,9 @@
 2013-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54276
+	* semantics.c (finish_id_expression): Also return the identifier
+	for an outer local static.
+
 	PR c++/56343
 	* class.c (check_bases_and_members): Deduce noexcept after
 	checking bases.
