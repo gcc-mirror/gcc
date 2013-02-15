@@ -1,3 +1,8 @@
+2013-02-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* configure.ac: Set libgloss_dir for the aarch64*-*-* targets.
+	* configure: Regenerated.
+
 2013-02-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* MAINTAINERS: Explicitly add myself as AIX maintainer.
