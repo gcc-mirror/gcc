@@ -1,3 +1,9 @@
+2013-02-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53818
+	* resolve.c (apply_default_init_local): Don't create an
+	initializer for a result variable.
+
 2013-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56224

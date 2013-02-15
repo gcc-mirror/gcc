@@ -11031,9 +11031,10 @@ apply_default_init_local (gfc_symbol *sym)
 
   /* For saved variables, we don't want to add an initializer at function
      entry, so we just add a static initializer. Note that automatic variables
-     are stack allocated even with -fno-automatic.  */
+     are stack allocated even with -fno-automatic; we have also to exclude
+     result variable, which are also nonstatic.  */
   if (sym->attr.save || sym->ns->save_all
-      || (gfc_option.flag_max_stack_var_size == 0
+      || (gfc_option.flag_max_stack_var_size == 0 && !sym->attr.result
 	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
     {
       /* Don't clobber an existing initializer!  */
