@@ -1,3 +1,8 @@
+2013-02-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56348
+	* lra-assigns.c (reload_pseudo_compare_func): Prefer bigger pseudos.
+
 2013-02-15  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* graph.c (start_graph_dump): Print dumpfile base as digraph label.
