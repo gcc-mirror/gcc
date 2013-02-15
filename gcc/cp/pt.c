@@ -16548,6 +16548,14 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
                 && PACK_EXPANSION_P (TREE_VEC_ELT (parmvec, len - 1)))
               parm_variadic_p = 1;
             
+             for (i = 0; i < len - parm_variadic_p; ++i)
+	       /* If the template argument list of P contains a pack
+		  expansion that is not the last template argument, the
+		  entire template argument list is a non-deduced
+		  context.  */
+	       if (PACK_EXPANSION_P (TREE_VEC_ELT (parmvec, i)))
+		 return unify_success (explain_p);
+
             if (TREE_VEC_LENGTH (argvec) < len - parm_variadic_p)
               return unify_too_few_arguments (explain_p,
 					      TREE_VEC_LENGTH (argvec), len);
