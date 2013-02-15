@@ -776,6 +776,9 @@ case "${target}" in
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     libgloss_dir=wince
     ;;
+  aarch64*-*-* )
+    libgloss_dir=aarch64
+    ;;
   arm*-*-*)
     libgloss_dir=arm
     ;;
