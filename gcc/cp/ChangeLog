@@ -1,5 +1,9 @@
 2013-02-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55220
+	* pt.c (unify): A pack expansion that is not the last template
+	argument makes the entire template argument list non-deduced.
+
 	PR c++/56323
 	* name-lookup.c (do_class_using_decl): Handle typedefs with
 	inheriting constructors.
