@@ -26,7 +26,6 @@
 #define R_CR2		70
 #define R_VR0		77
 #define R_VRSAVE	109
-#define R_VSCR		110
 
 struct gcc_vregs
 {
@@ -175,38 +174,6 @@ get_regs (struct _Unwind_Context *context)
 }
 #endif
 
-/* Find an entry in the process auxiliary vector.  The canonical way to
-   test for VMX is to look at AT_HWCAP.  */
-
-static long
-ppc_linux_aux_vector (long which)
-{
-  /* __libc_stack_end holds the original stack passed to a process.  */
-  extern long *__libc_stack_end;
-  long argc;
-  char **argv;
-  char **envp;
-  struct auxv
-  {
-    long a_type;
-    long a_val;
-  } *auxp;
-
-  /* The Linux kernel puts argc first on the stack.  */
-  argc = __libc_stack_end[0];
-  /* Followed by argv, NULL terminated.  */
-  argv = (char **) __libc_stack_end + 1;
-  /* Followed by environment string pointers, NULL terminated. */
-  envp = argv + argc + 1;
-  while (*envp++)
-    continue;
-  /* Followed by the aux vector, zero terminated.  */
-  for (auxp = (struct auxv *) envp; auxp->a_type != 0; ++auxp)
-    if (auxp->a_type == which)
-      return auxp->a_val;
-  return 0;
-}
-
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
@@ -216,8 +183,8 @@ static _Unwind_Reason_Code
 ppc_fallback_frame_state (struct _Unwind_Context *context,
 			  _Unwind_FrameState *fs)
 {
-  static long hwcap = 0;
   struct gcc_regs *regs = get_regs (context);
+  struct gcc_vregs *vregs;
   long new_cfa;
   int i;
 
@@ -229,12 +196,15 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_reg = STACK_POINTER_REGNUM;
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
-  for (i = 0; i < 32; i++)
-    if (i != STACK_POINTER_REGNUM)
-      {
-	fs->regs.reg[i].how = REG_SAVED_OFFSET;
-	fs->regs.reg[i].loc.offset = (long) &regs->gpr[i] - new_cfa;
-      }
+#ifdef __powerpc64__
+  fs->regs.reg[2].how = REG_SAVED_OFFSET;
+  fs->regs.reg[2].loc.offset = (long) &regs->gpr[2] - new_cfa;
+#endif
+  for (i = 14; i < 32; i++)
+    {
+      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.reg[i].loc.offset = (long) &regs->gpr[i] - new_cfa;
+    }
 
   fs->regs.reg[R_CR2].how = REG_SAVED_OFFSET;
   /* CR? regs are always 32-bit and PPC is big-endian, so in 64-bit
@@ -250,57 +220,35 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   fs->retaddr_column = ARG_POINTER_REGNUM;
   fs->signal_frame = 1;
 
-  if (hwcap == 0)
-    {
-      hwcap = ppc_linux_aux_vector (16);
-      /* These will already be set if we found AT_HWCAP.  A nonzero
-	 value stops us looking again if for some reason we couldn't
-	 find AT_HWCAP.  */
-#ifdef __powerpc64__
-      hwcap |= 0xc0000000;
-#else
-      hwcap |= 0x80000000;
-#endif
-    }
-
   /* If we have a FPU...  */
-  if (hwcap & 0x08000000)
-    for (i = 0; i < 32; i++)
-      {
-	fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
-	fs->regs.reg[i + 32].loc.offset = (long) &regs->fpr[i] - new_cfa;
-      }
+  for (i = 14; i < 32; i++)
+    {
+      fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
+      fs->regs.reg[i + 32].loc.offset = (long) &regs->fpr[i] - new_cfa;
+    }
 
   /* If we have a VMX unit...  */
-  if (hwcap & 0x10000000)
-    {
-      struct gcc_vregs *vregs;
 #ifdef __powerpc64__
-      vregs = regs->vp;
+  vregs = regs->vp;
 #else
-      vregs = &regs->vregs;
+  vregs = &regs->vregs;
 #endif
-      if (regs->msr & (1 << 25))
+  if (regs->msr & (1 << 25))
+    {
+      for (i = 20; i < 32; i++)
 	{
-	  for (i = 0; i < 32; i++)
-	    {
-	      fs->regs.reg[i + R_VR0].how = REG_SAVED_OFFSET;
-	      fs->regs.reg[i + R_VR0].loc.offset
-		= (long) &vregs->vr[i] - new_cfa;
-	    }
-
-	  fs->regs.reg[R_VSCR].how = REG_SAVED_OFFSET;
-	  fs->regs.reg[R_VSCR].loc.offset = (long) &vregs->vscr - new_cfa;
+	  fs->regs.reg[i + R_VR0].how = REG_SAVED_OFFSET;
+	  fs->regs.reg[i + R_VR0].loc.offset = (long) &vregs->vr[i] - new_cfa;
 	}
-
-      fs->regs.reg[R_VRSAVE].how = REG_SAVED_OFFSET;
-      fs->regs.reg[R_VRSAVE].loc.offset = (long) &vregs->vsave - new_cfa;
     }
+
+  fs->regs.reg[R_VRSAVE].how = REG_SAVED_OFFSET;
+  fs->regs.reg[R_VRSAVE].loc.offset = (long) &vregs->vsave - new_cfa;
 
   /* If we have SPE register high-parts... we check at compile-time to
      avoid expanding the code for all other PowerPC.  */
 #ifdef __SPE__
-  for (i = 0; i < 32; i++)
+  for (i = 14; i < 32; i++)
     {
       fs->regs.reg[i + FIRST_PSEUDO_REGISTER - 1].how = REG_SAVED_OFFSET;
       fs->regs.reg[i + FIRST_PSEUDO_REGISTER - 1].loc.offset
