@@ -1,5 +1,9 @@
 2013-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56343
+	* class.c (check_bases_and_members): Deduce noexcept after
+	checking bases.
+
 	PR c++/52026
 	* semantics.c (finish_id_expression): In a template, return
 	the identifier for a constant variable.

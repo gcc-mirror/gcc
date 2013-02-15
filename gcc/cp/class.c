@@ -5245,13 +5245,14 @@ check_bases_and_members (tree t)
   cant_have_const_ctor = 0;
   no_const_asn_ref = 0;
 
-  /* Deduce noexcept on destructors.  */
-  if (cxx_dialect >= cxx0x)
-    deduce_noexcept_on_destructors (t);
-
   /* Check all the base-classes.  */
   check_bases (t, &cant_have_const_ctor,
 	       &no_const_asn_ref);
+
+  /* Deduce noexcept on destructors.  This needs to happen after we've set
+     triviality flags appropriately for our bases.  */
+  if (cxx_dialect >= cxx0x)
+    deduce_noexcept_on_destructors (t);
 
   /* Check all the method declarations.  */
   check_methods (t);
