@@ -747,20 +747,17 @@ get_mem_refs_of_builtin_call (const gimple call,
 
       got_reference_p = true;
     }
-    else
-      {
-	if (dest)
-	  {
-	    dst->start = dest;
-	    dst->access_size = access_size;
-	    *dst_len = NULL_TREE;
-	    *dst_is_store = is_store;
-	    *dest_is_deref = true;
-	    got_reference_p = true;
-	  }
-      }
+  else if (dest)
+    {
+      dst->start = dest;
+      dst->access_size = access_size;
+      *dst_len = NULL_TREE;
+      *dst_is_store = is_store;
+      *dest_is_deref = true;
+      got_reference_p = true;
+    }
 
-    return got_reference_p;
+  return got_reference_p;
 }
 
 /* Return true iff a given gimple statement has been instrumented.
@@ -1535,8 +1532,15 @@ instrument_mem_region_access (tree base, tree len,
 
   /* If the beginning of the memory region has already been
      instrumented, do not instrument it.  */
-  if (has_mem_ref_been_instrumented (base, 1))
-    goto after_first_instrumentation;
+  bool start_instrumented = has_mem_ref_been_instrumented (base, 1);
+
+  /* If the end of the memory region has already been instrumented, do
+     not instrument it. */
+  tree end = asan_mem_ref_get_end (base, len);
+  bool end_instrumented = has_mem_ref_been_instrumented (end, 1);
+
+  if (start_instrumented && end_instrumented)
+    return;
 
   if (!is_gimple_constant (len))
     {
@@ -1562,36 +1566,38 @@ instrument_mem_region_access (tree base, tree len,
 
       /* The 'then block' of the 'if (len != 0) condition is where
 	 we'll generate the asan instrumentation code now.  */
-      gsi = gsi_start_bb (then_bb);
+      gsi = gsi_last_bb (then_bb);
     }
 
-  /* Instrument the beginning of the memory region to be accessed,
-     and arrange for the rest of the intrumentation code to be
-     inserted in the then block *after* the current gsi.  */
-  build_check_stmt (location, base, &gsi, /*before_p=*/true, is_store, 1);
+  if (!start_instrumented)
+    {
+      /* Instrument the beginning of the memory region to be accessed,
+	 and arrange for the rest of the intrumentation code to be
+	 inserted in the then block *after* the current gsi.  */
+      build_check_stmt (location, base, &gsi, /*before_p=*/true, is_store, 1);
 
-  if (then_bb)
-    /* We are in the case where the length of the region is not
-       constant; so instrumentation code is being generated in the
-       'then block' of the 'if (len != 0) condition.  Let's arrange
-       for the subsequent instrumentation statements to go in the
-       'then block'.  */
-    gsi = gsi_last_bb (then_bb);
-  else
-    *iter = gsi;
+      if (then_bb)
+	/* We are in the case where the length of the region is not
+	   constant; so instrumentation code is being generated in the
+	   'then block' of the 'if (len != 0) condition.  Let's arrange
+	   for the subsequent instrumentation statements to go in the
+	   'then block'.  */
+	gsi = gsi_last_bb (then_bb);
+      else
+        {
+          *iter = gsi;
+	  /* Don't remember this access as instrumented, if length
+	     is unknown.  It might be zero and not being actually
+	     instrumented, so we can't rely on it being instrumented.  */
+          update_mem_ref_hash_table (base, 1);
+	}
+    }
 
-  update_mem_ref_hash_table (base, 1);
-
- after_first_instrumentation:
+  if (end_instrumented)
+    return;
 
   /* We want to instrument the access at the end of the memory region,
      which is at (base + len - 1).  */
-
-  /* If the end of the memory region has already been instrumented, do
-     not instrument it. */
-  tree end = asan_mem_ref_get_end (base, len);
-  if (has_mem_ref_been_instrumented (end, 1))
-    return;
 
   /* offset = len - 1;  */
   len = unshare_expr (len);
@@ -1639,8 +1645,6 @@ instrument_mem_region_access (tree base, tree len,
 				  base, NULL);
   gimple_set_location (region_end, location);
   gimple_seq_add_stmt_without_update (&seq, region_end);
-  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
-  gsi_prev (&gsi);
 
   /* _2 = _1 + offset;  */
   region_end =
@@ -1649,13 +1653,18 @@ instrument_mem_region_access (tree base, tree len,
 				  gimple_assign_lhs (region_end),
 				  offset);
   gimple_set_location (region_end, location);
-  gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
+  gimple_seq_add_stmt_without_update (&seq, region_end);
+  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 
   /* instrument access at _2;  */
+  gsi = gsi_for_stmt (region_end);
   build_check_stmt (location, gimple_assign_lhs (region_end),
 		    &gsi, /*before_p=*/false, is_store, 1);
 
-  update_mem_ref_hash_table (end, 1);
+  if (then_bb == NULL)
+    update_mem_ref_hash_table (end, 1);
+
+  *iter = gsi_for_stmt (gsi_stmt (*iter));
 }
 
 /* Instrument the call (to the builtin strlen function) pointed to by
@@ -1783,7 +1792,7 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
 	    }
 	  else if (src0_len || src1_len || dest_len)
 	    {
-	      if (src0.start)
+	      if (src0.start != NULL_TREE)
 		instrument_mem_region_access (src0.start, src0_len,
 					      iter, loc, /*is_store=*/false);
 	      if (src1.start != NULL_TREE)
