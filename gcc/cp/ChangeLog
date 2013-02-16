@@ -1,5 +1,9 @@
 2013-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54276
+	* semantics.c (finish_id_expression): Also return the identifier
+	for an outer local static.
+
 	PR c++/52026
 	* semantics.c (finish_id_expression): In a template, return
 	the identifier for a constant variable.
