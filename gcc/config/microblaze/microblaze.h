@@ -499,7 +499,8 @@ typedef struct microblaze_args
 
 #define EXIT_IGNORE_STACK			1
 
-#define TRAMPOLINE_SIZE				(32 + 8)
+/* 4 insns + 2 words of data.  */
+#define TRAMPOLINE_SIZE				(6 * 4)
 
 #define TRAMPOLINE_ALIGNMENT			32
 
