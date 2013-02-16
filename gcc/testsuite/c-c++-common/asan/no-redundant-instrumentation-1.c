@@ -45,7 +45,7 @@ test1 ()
   /* There are 2 calls to __builtin___asan_report_store1 and 2 calls
      to __builtin___asan_report_load1 to instrument the store to
      (subset of) the memory region of tab.  */
-  __builtin_memcpy (&tab[1], foo, sizeof (tab) - 1);
+  __builtin_memcpy (&tab[1], foo, 3);
 
   /* This should not generate a __builtin___asan_report_load1 because
      the reference to tab[1] has been already instrumented above.  */

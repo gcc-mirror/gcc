@@ -1,3 +1,20 @@
+2013-02-16  Jakub Jelinek  <jakub@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	PR asan/56330
+	* asan.c (get_mem_refs_of_builtin_call): White space and style
+	cleanup.
+	(instrument_mem_region_access): Do not forget to always put
+	instrumentation of the of 'base' and 'base + len' in a "if (len !=
+	0) statement, even for cases where either 'base' or 'base + len'
+	are not instrumented -- because they have been previously
+	instrumented.  Simplify the logic by putting all the statements
+	instrument 'base + len' inside a sequence, and then insert that
+	sequence right before the current insertion point.  Then, to
+	instrument 'base + len', just get an iterator on that statement.
+	And do not forget to update the pointer to iterator the function
+	received as argument.
+
 2013-02-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56348
