@@ -1299,6 +1299,18 @@ microblaze_option_override (void)
 				  ? g_switch_value
 				  : MICROBLAZE_DEFAULT_GVALUE);
 
+  if (flag_pic)
+    {
+      /* Make sure it's 2, we only support one kind of PIC.  */
+      flag_pic = 2;
+      if (!TARGET_SUPPORTS_PIC)
+        {
+          error ("-fPIC/-fpic not supported for this target");
+          /* Clear it to avoid further errors.  */
+          flag_pic = 0;
+        }
+    }
+
   /* Check the MicroBlaze CPU version for any special action to be done.  */
   if (microblaze_select_cpu == NULL)
     microblaze_select_cpu = MICROBLAZE_DEFAULT_CPU;

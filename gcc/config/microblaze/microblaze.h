@@ -58,6 +58,9 @@ extern enum pipeline_type microblaze_pipe;
 #define TARGET_DEFAULT      (MASK_SOFT_MUL | MASK_SOFT_DIV | MASK_SOFT_FLOAT \
                              | TARGET_ENDIAN_DEFAULT)
 
+/* The default is to support PIC.  */
+#define TARGET_SUPPORTS_PIC 1
+
 /* What is the default setting for -mcpu= . We set it to v4.00.a even though 
    we are actually ahead. This is safest version that has generate code 
    compatible for the original ISA */

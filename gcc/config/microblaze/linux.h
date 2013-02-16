@@ -19,6 +19,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#undef TARGET_SUPPORTS_PIC
+#define TARGET_SUPPORTS_PIC 1
 
 #define DYNAMIC_LINKER "/lib/ld.so.1"
 #undef  SUBTARGET_EXTRA_SPECS

@@ -1,5 +1,12 @@
 2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
+	* config/microblaze/linux.h (TARGET_SUPPORTS_PIC): Define as 1.
+	* config/microblaze/microblaze.h (TARGET_SUPPORTS_PIC): Define as 1.
+	* config/microblaze/microblaze.c (microblaze_option_override):
+	Bail out early for PIC modes when target does not support PIC.
+
+2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
 	* config/microblaze/microblaze.c (microblaze_asm_trampoline_template): 
 	Replace with a microblaze version.
 	(microblaze_trampoline_init): Adapt for microblaze.
