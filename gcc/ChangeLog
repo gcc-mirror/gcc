@@ -1,3 +1,8 @@
+2013-02-17  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config/microblaze/microblaze.md (save_stack_block): Define.
+	(restore_stack_block): Likewise.
+
 2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config/microblaze/linux.h (TARGET_SUPPORTS_PIC): Define as 1.

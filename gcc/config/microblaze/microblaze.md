@@ -1860,6 +1860,32 @@
   }
 )
 
+(define_expand "save_stack_block"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "register_operand" "")]
+  ""
+  {
+    emit_move_insn (operands[0], operands[1]);
+    DONE;
+  }
+)
+
+(define_expand "restore_stack_block"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "register_operand" "")]
+  ""
+  {
+    rtx retaddr = gen_rtx_MEM (Pmode, stack_pointer_rtx);
+    rtx rtmp    = gen_rtx_REG (SImode, R_TMP);
+
+    /* Move the retaddr.  */
+    emit_move_insn (rtmp, retaddr);
+    emit_move_insn (operands[0], operands[1]);
+    emit_move_insn (gen_rtx_MEM (Pmode, operands[0]), rtmp);
+    DONE;
+  }
+)
+
 ;; Trivial return.  Make it look like a normal return insn as that
 ;; allows jump optimizations to work better .
 (define_expand "return"
