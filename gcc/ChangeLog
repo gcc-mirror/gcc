@@ -1,4 +1,8 @@
-2013-02-18  John David Anglin  <dave.anglin@nrc-cnrc.ca>
+2013-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/56347
+	* config/pa/pa.c (pa_conditional_register_usage): On HP-UX, mark
+	registers %fr12 and %fr12R as call used.
 
 	PR target/56214
 	* config/pa/predicates.md (base14_operand): Except for BLKmode, QImode
