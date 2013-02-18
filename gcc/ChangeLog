@@ -1,5 +1,11 @@
 2013-02-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56366
+	* tree-vect-loop.c (get_initial_def_for_induction): Properly
+	handle sign-conversion of outer-loop initial induction value.
+
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/56349
 	* cfghooks.c (merge_blocks): If we merge a latch into another
 	block adjust references to it.

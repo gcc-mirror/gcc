@@ -3203,6 +3203,21 @@ get_initial_def_for_induction (gimple iv_phi)
       tree iv_def = PHI_ARG_DEF_FROM_EDGE (iv_phi,
                                            loop_preheader_edge (iv_loop));
       vec_init = vect_get_vec_def_for_operand (iv_def, iv_phi, NULL);
+      /* If the initial value is not of proper type, convert it.  */
+      if (!useless_type_conversion_p (vectype, TREE_TYPE (vec_init)))
+	{
+	  new_stmt = gimple_build_assign_with_ops
+	      (VIEW_CONVERT_EXPR,
+	       vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_"),
+	       build1 (VIEW_CONVERT_EXPR, vectype, vec_init), NULL_TREE);
+	  vec_init = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
+	  gimple_assign_set_lhs (new_stmt, vec_init);
+	  new_bb = gsi_insert_on_edge_immediate (loop_preheader_edge (iv_loop),
+						 new_stmt);
+	  gcc_assert (!new_bb);
+	  set_vinfo_for_stmt (new_stmt,
+			      new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
+	}
     }
   else
     {
