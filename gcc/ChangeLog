@@ -1,5 +1,14 @@
 2013-02-18  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/56350
+	* cfghooks.c (merge_blocks): If we merge a latch into another
+	block adjust references to it.
+	* cfgloop.c (flow_loops_find): Reset latch before recomputing it.
+	(verify_loop_structure): Verify that a recorded latch is in fact
+	a latch.
+
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56321
 	* tree-ssa-reassoc.c (propagate_op_to_single_use): Properly
 	order SSA name release and virtual operand unlinking.
