@@ -945,6 +945,16 @@ c_common_post_options (const char **pfilename)
 	 because the default address space slot then can't be used
 	 for the output PCH file.  */
       if (pch_file)
+	{
+	  c_common_no_more_pch ();
+	  /* Only -g0 and -gdwarf* are supported with PCH, for other
+	     debug formats we warn here and refuse to load any PCH files.  */
+	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
+	    warning (OPT_Wdeprecated,
+		     "the \"%s\" debug format cannot be used with "
+		     "pre-compiled headers", debug_type_names[write_symbols]);
+	}
+      else if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
 	c_common_no_more_pch ();
 
       /* Yuk.  WTF is this?  I do know ObjC relies on it somewhere.  */
