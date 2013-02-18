@@ -1,3 +1,14 @@
+2013-02-18  John David Anglin  <dave.anglin@nrc-cnrc.ca>
+
+	PR target/56214
+	* config/pa/predicates.md (base14_operand): Except for BLKmode, QImode
+	and HImode, require all displacements to be an integer multiple of their
+	mode size.
+	* config/pa/pa.c (pa_legitimate_address_p): For REG+BASE addresses,
+	only allow QImode and HImode when reload is in progress and strict is
+	true.  Likewise for symbolic addresses.  Use base14_operand to check
+	displacements in REG+BASE addresses.
+
 2013-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56366

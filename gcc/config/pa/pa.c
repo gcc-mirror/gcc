@@ -10517,21 +10517,13 @@ pa_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 	     the majority of accesses will use floating point instructions
 	     that don't support 14-bit offsets.  */
 	  if (!INT14_OK_STRICT
-	      && (GET_MODE_CLASS (mode) == MODE_FLOAT
-		  || (reload_in_progress
-		      && strict
-		      && (mode == SImode || mode == DImode))))
-	   return false;
+	      && reload_in_progress
+	      && strict
+	      && mode != QImode
+	      && mode != HImode)
+	    return false;
 
-	  if (INT_14_BITS (index)
-	      && (mode == BLKmode
-		  || mode == QImode
-		  || mode == HImode
-		  /* Displacement must be a multiple of its size.  */
-		  || (INTVAL (index) % GET_MODE_SIZE (mode)) == 0))
-	    return true;
-
-	  return false;
+	  return base14_operand (index, mode);
 	}
 
       if (!TARGET_DISABLE_INDEXING
@@ -10586,11 +10578,11 @@ pa_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 	    return true;
 
 	  if (!INT14_OK_STRICT
-	      && (GET_MODE_CLASS (mode) == MODE_FLOAT
-		  || (reload_in_progress
-		      && strict
-		      && (mode == SImode || mode == DImode))))
-	   return false;
+	      && reload_in_progress
+	      && strict
+	      && mode != QImode
+	      && mode != HImode)
+	    return false;
 
 	  if (CONSTANT_P (XEXP (x, 1)))
 	    return true;
