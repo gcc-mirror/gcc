@@ -59,8 +59,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __distance_fw(__first, __last, _Tag());
     }
 
-  // Helper type used to detect when the hash functor is noexcept qualified or
-  // not
+  // Helper type used to detect whether the hash functor is noexcept.
   template <typename _Key, typename _Hash>
     struct __is_noexcept_hash : std::integral_constant<bool,
 	noexcept(declval<const _Hash&>()(declval<const _Key&>()))>

@@ -1,3 +1,8 @@
+2013-02-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/hashtable.h: Improve comments.
+	* include/bits/hashtable_policy.h: Likewise.
+
 2013-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/56085
