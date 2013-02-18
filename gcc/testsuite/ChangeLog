@@ -1,3 +1,21 @@
+2013-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/54117
+	* lib/dg-pch.exp (pch-init, pch-finish,
+	check_effective_target_pch_supported_debug): New procs.
+	(dg-flags-pch): If $pch_unsupported, make tests UNSUPPORTED.
+	Likewise if $pch_unsupported_debug and $flags include -g.
+	Skip FAILs about missing *.gch file if $pch_unsupported_debug
+	and dg-require-effective-target pch_unsupported_debug.
+	* g++.dg/pch/pch.exp: Call pch-init and pch-finish.
+	* objc.dg/pch/pch.exp: Likewise.
+	* gcc.dg/pch/pch.exp: Likewise.
+	* gcc.dg/pch/valid-1.c: Add dg-require-effective-target
+	pch_unsupported_debug.
+	* gcc.dg/pch/valid-1.hs: Likewise.
+	* gcc.dg/pch/valid-1b.c: Likewise.
+	* gcc.dg/pch/valid-1b.hs: Likewise.
+
 2013-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56366
