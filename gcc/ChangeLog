@@ -1,3 +1,9 @@
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56321
+	* tree-ssa-reassoc.c (propagate_op_to_single_use): Properly
+	order SSA name release and virtual operand unlinking.
+
 2013-02-17  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config/microblaze/microblaze.md (save_stack_block): Define.

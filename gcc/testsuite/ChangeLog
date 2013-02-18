@@ -1,3 +1,8 @@
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56321
+	* gcc.dg/torture/pr56321.c: New testcase.
+
 2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* gcc.dg/20020312-2.c: Define MicroBlaze PIC register
