@@ -1,3 +1,14 @@
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53844
+	* g++.dg/tree-ssa/pr53844.C: New testcase.
+
 2013-02-17  Tobias Burnus  <burnus@net-b.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

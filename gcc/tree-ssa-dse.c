@@ -94,7 +94,7 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
   temp = stmt;
   do
     {
-      gimple use_stmt, defvar_def;
+      gimple use_stmt;
       imm_use_iterator ui;
       bool fail = false;
       tree defvar;
@@ -108,7 +108,6 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 	defvar = PHI_RESULT (temp);
       else
 	defvar = gimple_vdef (temp);
-      defvar_def = temp;
       temp = NULL;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
@@ -140,14 +139,7 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 		  fail = true;
 		  BREAK_FROM_IMM_USE_STMT (ui);
 		}
-	      /* Do not consider the PHI as use if it dominates the 
-	         stmt defining the virtual operand we are processing,
-		 we have processed it already in this case.  */
-	      if (gimple_bb (defvar_def) != gimple_bb (use_stmt)
-		  && !dominated_by_p (CDI_DOMINATORS,
-				      gimple_bb (defvar_def),
-				      gimple_bb (use_stmt)))
-		temp = use_stmt;
+	      temp = use_stmt;
 	    }
 	  /* If the statement is a use the store is not dead.  */
 	  else if (ref_maybe_used_by_stmt_p (use_stmt,

@@ -1,3 +1,15 @@
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2013-02-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53844
+	* tree-ssa-dse.c (dse_possible_dead_store_p): Properly handle
+	the loop virtual PHI.
+
 2013-02-13  David S. Miller  <davem@davemloft.net>
 
 	* expmed.c (expand_shift_1): Only strip scalar integer subregs.
