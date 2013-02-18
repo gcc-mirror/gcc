@@ -1,5 +1,10 @@
 2013-02-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/functional (mem_fn): Qualify to prevent ADL.
+	* testsuite/20_util/function_objects/mem_fn/adl.cc: New.
+
+2013-02-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/hashtable.h: Improve comments.
 	* include/bits/hashtable_policy.h: Likewise.
 

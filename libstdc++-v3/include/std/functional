@@ -1,7 +1,7 @@
 // <functional> -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011, 2012 Free Software Foundation, Inc.
+// 2011, 2012, 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -245,7 +245,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
            >::type
     __invoke(_Functor& __f, _Args&&... __args)
     {
-      return mem_fn(__f)(std::forward<_Args>(__args)...);
+      return std::mem_fn(__f)(std::forward<_Args>(__args)...);
     }
 
   // To pick up function references (that will become function pointers)
@@ -1709,12 +1709,12 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   template<typename _Member, typename _Class>
     inline _Mem_fn<_Member _Class::*>
     __callable_functor(_Member _Class::* &__p)
-    { return mem_fn(__p); }
+    { return std::mem_fn(__p); }
 
   template<typename _Member, typename _Class>
     inline _Mem_fn<_Member _Class::*>
     __callable_functor(_Member _Class::* const &__p)
-    { return mem_fn(__p); }
+    { return std::mem_fn(__p); }
 
   template<typename _Signature>
     class function;
@@ -1969,7 +1969,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       static _Res
       _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
       {
-	return mem_fn(_Base::_M_get_pointer(__functor)->__value)(
+	return std::mem_fn(_Base::_M_get_pointer(__functor)->__value)(
 	    std::forward<_ArgTypes>(__args)...);
       }
     };
@@ -2009,7 +2009,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       static void
       _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
       {
-	mem_fn(_Base::_M_get_pointer(__functor)->__value)(
+	std::mem_fn(_Base::_M_get_pointer(__functor)->__value)(
 	    std::forward<_ArgTypes>(__args)...);
       }
     };
