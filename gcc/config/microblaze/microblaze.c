@@ -143,6 +143,9 @@ int microblaze_section_threshold = -1;
    delay slots.  -mcpu=v3.00.a or v4.00.a turns this on.  */
 int microblaze_no_unsafe_delay;
 
+/* Set to one if the targeted core has the CLZ insn.  */
+int microblaze_has_clz = 0;
+
 /* Which CPU pipeline do we use. We haven't really standardized on a CPU 
    version having only a particular type of pipeline. There can still be 
    options on the CPU to scale pipeline features up or down. :( 
@@ -1367,6 +1370,14 @@ microblaze_option_override (void)
       if (TARGET_MULTIPLY_HIGH)
 	warning (0,
 		 "-mxl-multiply-high can be used only with -mcpu=v6.00.a or greater");
+    }
+
+  ver = MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v8.10.a");
+  microblaze_has_clz = 1;
+  if (ver < 0)
+    {
+        /* MicroBlaze prior to 8.10.a didn't have clz.  */
+        microblaze_has_clz = 0;
     }
 
   if (TARGET_MULTIPLY_HIGH && TARGET_SOFT_MUL)

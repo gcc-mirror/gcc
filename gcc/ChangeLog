@@ -1,4 +1,11 @@
 2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+	* config/microblaze/microblaze.c: microblaze_has_clz = 0
+	Add version check for v8.10.a to enable microblaze_has_clz
+	* config/microblaze/microblaze.h: Add TARGET_HAS_CLZ as combined 
+	version and TARGET_PATTERN_COMPARE check
+	* config/microblaze/microblaze.md: New clzsi2 instruction
+	
+2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
 
 	*  config/microblaze/microblaze.md (call_value_intern): Check symbol is 
 	function before branching.
