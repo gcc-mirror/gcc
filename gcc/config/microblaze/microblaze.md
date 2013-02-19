@@ -2128,9 +2128,17 @@
     register rtx target = operands[1];
     register rtx target2=gen_rtx_REG (Pmode,GP_REG_FIRST + MB_ABI_SUB_RETURN_ADDR_REGNUM);
 
-    if (GET_CODE (target) == SYMBOL_REF){
-	gen_rtx_CLOBBER (VOIDmode,target2);
-	return "brlid\tr15,%1\;%#";
+    if (GET_CODE (target) == SYMBOL_REF)
+    {
+      gen_rtx_CLOBBER (VOIDmode,target2);
+      if (SYMBOL_REF_FLAGS (target) & SYMBOL_FLAG_FUNCTION)
+        {
+	  return "brlid\tr15,%1\;%#";
+        }
+      else
+        {
+	  return "bralid\tr15,%1\;%#";
+        }
     }
     else if (GET_CODE (target) == CONST_INT)
         return "la\t%@,r0,%1\;brald\tr15,%@\;%#";
