@@ -1,5 +1,11 @@
 2012-02-19  Andrey Belevantsev  <abel@ispras.ru>
 
+	* sel-sched-dump.c (dump_insn_rtx_flags): Explicitly set
+	DUMP_INSN_RTX_UID.
+	(dump_insn_rtx_1): Pass PATTERN (insn) to str_pattern_slim.
+
+2012-02-19  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR middle-end/55889
 
 	* sel-sched.c: Include ira.h.
