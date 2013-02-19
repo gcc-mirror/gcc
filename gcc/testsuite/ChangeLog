@@ -1,6 +1,11 @@
 2013-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56237
+	* g++.dg/abi/mangle61.C: New test.
+
 	2013-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56217
