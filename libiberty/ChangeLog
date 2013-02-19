@@ -1,3 +1,12 @@
+2013-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/56245
+	* regex.c (PTR_INT_TYPE): Define.
+	(EXTEND_BUFFER): Change incr type from int to PTR_INT_TYPE.
+
 2013-01-31  Kai Tietz  <ktietz@redhat.com>
 
 	Merged from trunk

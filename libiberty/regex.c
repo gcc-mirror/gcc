@@ -46,9 +46,11 @@
 
 # if defined STDC_HEADERS && !defined emacs
 #  include <stddef.h>
+#  define PTR_INT_TYPE ptrdiff_t
 # else
 /* We need this for `regex.h', and perhaps for the Emacs include files.  */
 #  include <sys/types.h>
+#  define PTR_INT_TYPE long
 # endif
 
 # define WIDE_CHAR_SUPPORT (HAVE_WCTYPE_H && HAVE_WCHAR_H && HAVE_BTOWC)
@@ -2045,7 +2047,7 @@ static reg_errcode_t byte_compile_range (unsigned int range_start,
     /* How many characters the new buffer can have?  */			\
     wchar_count = bufp->allocated / sizeof(UCHAR_T);			\
     if (wchar_count == 0) wchar_count = 1;				\
-    /* Truncate the buffer to CHAR_T align.  */			\
+    /* Truncate the buffer to CHAR_T align.  */				\
     bufp->allocated = wchar_count * sizeof(UCHAR_T);			\
     RETALLOC (COMPILED_BUFFER_VAR, wchar_count, UCHAR_T);		\
     bufp->buffer = (char*)COMPILED_BUFFER_VAR;				\
@@ -2054,7 +2056,7 @@ static reg_errcode_t byte_compile_range (unsigned int range_start,
     /* If the buffer moved, move all the pointers into it.  */		\
     if (old_buffer != COMPILED_BUFFER_VAR)				\
       {									\
-	int incr = COMPILED_BUFFER_VAR - old_buffer;			\
+	PTR_INT_TYPE incr = COMPILED_BUFFER_VAR - old_buffer;		\
 	MOVE_BUFFER_POINTER (b);					\
 	MOVE_BUFFER_POINTER (begalt);					\
 	if (fixup_alt_jump)						\
@@ -2082,7 +2084,7 @@ static reg_errcode_t byte_compile_range (unsigned int range_start,
     /* If the buffer moved, move all the pointers into it.  */		\
     if (old_buffer != COMPILED_BUFFER_VAR)				\
       {									\
-	int incr = COMPILED_BUFFER_VAR - old_buffer;			\
+	PTR_INT_TYPE incr = COMPILED_BUFFER_VAR - old_buffer;		\
 	MOVE_BUFFER_POINTER (b);					\
 	MOVE_BUFFER_POINTER (begalt);					\
 	if (fixup_alt_jump)						\
