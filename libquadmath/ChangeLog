@@ -1,3 +1,9 @@
+2013-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/56379
+	* strtod/strtod_l.c (mpn_lshift_1): Rewritten as function-like
+	macro.
+
 2013-02-17  Tobias Burnus  <burnus@net-b.de>
 
 	* math/cacoshq.c (cacoshq): Call signbitq instead of signbit.

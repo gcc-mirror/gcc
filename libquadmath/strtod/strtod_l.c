@@ -421,28 +421,30 @@ str_to_mpn (const STRING_TYPE *str, int digcnt, mp_limb_t *n, mp_size_t *nsize,
 /* Shift {PTR, SIZE} COUNT bits to the left, and fill the vacated bits
    with the COUNT most significant bits of LIMB.
 
-   Tege doesn't like this function so I have to write it here myself. :)
+   Implemented as a macro, so that __builtin_constant_p works even at -O0.
+
+   Tege doesn't like this macro so I have to write it here myself. :)
    --drepper */
-static inline void
-__attribute ((always_inline))
-mpn_lshift_1 (mp_limb_t *ptr, mp_size_t size, unsigned int count,
-	      mp_limb_t limb)
-{
-  if (__builtin_constant_p (count) && count == BITS_PER_MP_LIMB)
-    {
-      /* Optimize the case of shifting by exactly a word:
-	 just copy words, with no actual bit-shifting.  */
-      mp_size_t i;
-      for (i = size - 1; i > 0; --i)
-	ptr[i] = ptr[i - 1];
-      ptr[0] = limb;
-    }
-  else
-    {
-      (void) mpn_lshift (ptr, ptr, size, count);
-      ptr[0] |= limb >> (BITS_PER_MP_LIMB - count);
-    }
-}
+#define mpn_lshift_1(ptr, size, count, limb) \
+  do									\
+    {									\
+      mp_limb_t *__ptr = (ptr);						\
+      if (__builtin_constant_p (count) && count == BITS_PER_MP_LIMB)	\
+	{								\
+	  mp_size_t i;							\
+	  for (i = (size) - 1; i > 0; --i)				\
+	    __ptr[i] = __ptr[i - 1];					\
+	  __ptr[0] = (limb);						\
+	}								\
+      else								\
+	{								\
+	  /* We assume count > 0 && count < BITS_PER_MP_LIMB here.  */	\
+	  unsigned int __count = (count);				\
+	  (void) mpn_lshift (__ptr, __ptr, size, __count);		\
+	  __ptr[0] |= (limb) >> (BITS_PER_MP_LIMB - __count);		\
+	}								\
+    }									\
+  while (0)
 
 
 #define INTERNAL(x) INTERNAL1(x)
