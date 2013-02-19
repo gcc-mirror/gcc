@@ -76,6 +76,7 @@ struct target_optabs {
 };
 
 extern struct target_optabs default_target_optabs;
+extern struct target_optabs *this_fn_optabs;
 #if SWITCHABLE_TARGET
 extern struct target_optabs *this_target_optabs;
 #else

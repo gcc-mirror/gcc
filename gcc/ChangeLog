@@ -1,3 +1,27 @@
+2013-02-15  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/52555
+	* genopinit.c (raw_optab_handler): Use this_fn_optabs.
+	(swap_optab_enable): Same.
+	(init_all_optabs): Use argument instead of global.
+	* tree.h (struct tree_optimization_option): New field
+	target_optabs.
+	* expr.h (init_all_optabs): Add argument to prototype.
+	(TREE_OPTIMIZATION_OPTABS): New.
+	(save_optabs_if_changed): Protoize.
+	* optabs.h: Declare this_fn_optabs.
+	* optabs.c (save_optabs_if_changed): New.
+	Declare this_fn_optabs.
+	(init_optabs): Add argument to init_all_optabs() call.
+	* function.c (invoke_set_current_function_hook): Handle per
+	function optabs.
+	* function.h (struct function): New field optabs.
+	* config/mips/mips.c (mips_set_mips16_mode): Handle when
+	optimization_current_node has changed.
+	* target-globals.h (save_target_globals_default_opts): Protoize.
+	* target-globals.c (save_target_globals_default_opts): New.
+
 2013-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/56347
