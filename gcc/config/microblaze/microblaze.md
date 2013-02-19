@@ -2200,3 +2200,13 @@
   [(set_attr "type" "multi")
    (set_attr "length" "12")])
 
+;; This insn gives the count of leading number of zeros for the second
+;; operand and stores the result in first operand.
+(define_insn "clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (clz:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_HAS_CLZ"
+  "clz\t%0,%1"
+  [(set_attr "type"     "arith")
+  (set_attr "mode"      "SI")
+  (set_attr "length"    "4")])
