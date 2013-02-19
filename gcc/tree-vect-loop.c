@@ -4707,7 +4707,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
-  for (i = 0; i < op_type-1; i++)
+  for (i = 0; i < op_type - 1; i++)
     {
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
       if (i == 0 && code == COND_EXPR)
@@ -4739,11 +4739,18 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   if (!vectype_in)
     vectype_in = tem;
   gcc_assert (is_simple_use);
-  gcc_assert (dt == vect_reduction_def
-              || dt == vect_nested_cycle
-              || ((dt == vect_internal_def || dt == vect_external_def
-                   || dt == vect_constant_def || dt == vect_induction_def)
-                   && nested_cycle && found_nested_cycle_def));
+  if (!(dt == vect_reduction_def
+	|| dt == vect_nested_cycle
+	|| ((dt == vect_internal_def || dt == vect_external_def
+	     || dt == vect_constant_def || dt == vect_induction_def)
+	    && nested_cycle && found_nested_cycle_def)))
+    {
+      /* For pattern recognized stmts, orig_stmt might be a reduction,
+	 but some helper statements for the pattern might not, or
+	 might be COND_EXPRs with reduction uses in the condition.  */
+      gcc_assert (orig_stmt);
+      return false;
+    }
   if (!found_nested_cycle_def)
     reduc_def_stmt = def_stmt;
 
