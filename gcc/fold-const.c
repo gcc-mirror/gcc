@@ -5716,6 +5716,11 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
         break;
       /* FALLTHROUGH */
     case NEGATE_EXPR:
+      /* For division and modulus, type can't be unsigned, as e.g.
+	 (-(x / 2U)) / 2U isn't equal to -((x / 2U) / 2U) for x >= 2.
+	 For signed types, even with wrapping overflow, this is fine.  */
+      if (code != MULT_EXPR && TYPE_UNSIGNED (type))
+	break;
       if ((t1 = extract_muldiv (op0, c, code, wide_type, strict_overflow_p))
 	  != 0)
 	return fold_build1 (tcode, ctype, fold_convert (ctype, t1));

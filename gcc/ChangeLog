@@ -1,6 +1,12 @@
 2013-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56250
+	* fold-const.c (extract_muldiv_1) <case NEGATE_EXPR>: Don't optimize
+	if type is unsigned and code isn't MULT_EXPR.
+
 	2013-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56217
