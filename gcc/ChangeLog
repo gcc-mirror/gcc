@@ -1,3 +1,12 @@
+2012-02-19  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR middle-end/55889
+
+	* sel-sched.c: Include ira.h.
+	(implicit_clobber_conflict_p): New function.
+	(moveup_expr): Use it.
+	* Makefile.in (sel-sched.o): Depend on ira.h. 
+
 2013-02-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56384
