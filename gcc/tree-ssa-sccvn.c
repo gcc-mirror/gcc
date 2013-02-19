@@ -2401,10 +2401,8 @@ vn_phi_compute_hash (vn_phi_t vp1)
 
   /* If all PHI arguments are constants we need to distinguish
      the PHI node via its type.  */
-  type = TREE_TYPE (vp1->phiargs[0]);
-  result += (INTEGRAL_TYPE_P (type)
-	     + (INTEGRAL_TYPE_P (type)
-		? TYPE_PRECISION (type) + TYPE_UNSIGNED (type) : 0));
+  type = vp1->type;
+  result += vn_hash_type (type);
 
   FOR_EACH_VEC_ELT (vp1->phiargs, i, phi1op)
     {
@@ -2443,8 +2441,7 @@ vn_phi_eq (const void *p1, const void *p2)
 
       /* If the PHI nodes do not have compatible types
 	 they are not the same.  */
-      if (!types_compatible_p (TREE_TYPE (vp1->phiargs[0]),
-			       TREE_TYPE (vp2->phiargs[0])))
+      if (!types_compatible_p (vp1->type, vp2->type))
 	return false;
 
       /* Any phi in the same block will have it's arguments in the
@@ -2484,6 +2481,7 @@ vn_phi_lookup (gimple phi)
       def = TREE_CODE (def) == SSA_NAME ? SSA_VAL (def) : def;
       shared_lookup_phiargs.safe_push (def);
     }
+  vp1.type = TREE_TYPE (gimple_phi_result (phi));
   vp1.phiargs = shared_lookup_phiargs;
   vp1.block = gimple_bb (phi);
   vp1.hashcode = vn_phi_compute_hash (&vp1);
@@ -2516,6 +2514,7 @@ vn_phi_insert (gimple phi, tree result)
       args.safe_push (def);
     }
   vp1->value_id = VN_INFO (result)->value_id;
+  vp1->type = TREE_TYPE (gimple_phi_result (phi));
   vp1->phiargs = args;
   vp1->block = gimple_bb (phi);
   vp1->result = result;
