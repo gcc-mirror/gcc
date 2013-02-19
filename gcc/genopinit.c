@@ -422,8 +422,8 @@ main (int argc, char **argv)
     fprintf (s_file, "  { %#08x, CODE_FOR_%s },\n", p->sort_num, p->name);
   fprintf (s_file, "};\n\n");
 
-  fprintf (s_file, "void\ninit_all_optabs (void)\n{\n");
-  fprintf (s_file, "  bool *ena = this_target_optabs->pat_enable;\n");
+  fprintf (s_file, "void\ninit_all_optabs (struct target_optabs *optabs)\n{\n");
+  fprintf (s_file, "  bool *ena = optabs->pat_enable;\n");
   for (i = 0; patterns.iterate (i, &p); ++i)
     fprintf (s_file, "  ena[%u] = HAVE_%s;\n", i, p->name);
   fprintf (s_file, "}\n\n");
@@ -456,7 +456,7 @@ main (int argc, char **argv)
 	   "raw_optab_handler (unsigned scode)\n"
 	   "{\n"
 	   "  int i = lookup_handler (scode);\n"
-	   "  return (i >= 0 && this_target_optabs->pat_enable[i]\n"
+	   "  return (i >= 0 && this_fn_optabs->pat_enable[i]\n"
 	   "          ? pats[i].icode : CODE_FOR_nothing);\n"
 	   "}\n\n");
 
@@ -468,8 +468,8 @@ main (int argc, char **argv)
 	   "  int i = lookup_handler (scode);\n"
 	   "  if (i >= 0)\n"
 	   "    {\n"
-	   "      bool ret = this_target_optabs->pat_enable[i];\n"
-	   "      this_target_optabs->pat_enable[i] = set;\n"
+	   "      bool ret = this_fn_optabs->pat_enable[i];\n"
+	   "      this_fn_optabs->pat_enable[i] = set;\n"
 	   "      return ret;\n"
 	   "    }\n"
 	   "  else\n"

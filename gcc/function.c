@@ -4400,6 +4400,26 @@ invoke_set_current_function_hook (tree fndecl)
 	}
 
       targetm.set_current_function (fndecl);
+
+      if (opts == optimization_default_node)
+	this_fn_optabs = this_target_optabs;
+      else
+	{
+	  struct function *fn = DECL_STRUCT_FUNCTION (fndecl);
+	  if (fn->optabs == NULL)
+	    {
+	      if (this_target_optabs == &default_target_optabs)
+		fn->optabs = TREE_OPTIMIZATION_OPTABS (opts);
+	      else
+		{
+		  fn->optabs = (unsigned char *)
+		    ggc_alloc_atomic (sizeof (struct target_optabs));
+		  init_all_optabs ((struct target_optabs *) fn->optabs);
+		}
+	    }
+	  this_fn_optabs = fn->optabs ? (struct target_optabs *) fn->optabs
+	                              : this_target_optabs;
+	}
     }
 }
 

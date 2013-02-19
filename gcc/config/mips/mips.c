@@ -16313,7 +16313,7 @@ mips_set_mips16_mode (int mips16_p)
   if (mips16_p)
     {
       if (!mips16_globals)
-	mips16_globals = save_target_globals ();
+	mips16_globals = save_target_globals_default_opts ();
       else
 	restore_target_globals (mips16_globals);
     }

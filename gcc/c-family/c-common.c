@@ -8925,6 +8925,8 @@ handle_optimize_attribute (tree *node, tree name, tree args,
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node)
 	= build_optimization_node ();
 
+      save_optabs_if_changed (*node);
+
       /* Restore current options.  */
       cl_optimization_restore (&global_options, &cur_opts);
     }

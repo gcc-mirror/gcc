@@ -1,3 +1,9 @@
+2013-02-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR target/52555
+	* c-common.c (handle_optimize_attribute): Call
+	save_optabs_if_changed.
+
 2013-02-18  Jakub Jelinek  <jakub@redhat.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 

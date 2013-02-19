@@ -91,4 +91,33 @@ save_target_globals (void)
   return g;
 }
 
+/* Like save_target_globals() above, but set *this_target_optabs
+   correctly when a previous function has changed
+   *this_target_optabs.  */
+
+struct target_globals *
+save_target_globals_default_opts ()
+{
+  struct target_globals *globals;
+
+  if (optimization_current_node != optimization_default_node)
+    {
+      tree opts = optimization_current_node;
+      /* Temporarily switch to the default optimization node, so that
+	 *this_target_optabs is set to the default, not reflecting
+	 whatever a previous function used for the optimize
+	 attribute.  */
+      optimization_current_node = optimization_default_node;
+      cl_optimization_restore
+	(&global_options,
+	 TREE_OPTIMIZATION (optimization_default_node));
+      globals = save_target_globals ();
+      optimization_current_node = opts;
+      cl_optimization_restore (&global_options,
+			       TREE_OPTIMIZATION (opts));
+      return globals;
+    }
+  return save_target_globals ();
+}
+
 #endif
