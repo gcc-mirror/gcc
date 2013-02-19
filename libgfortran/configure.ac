@@ -468,9 +468,6 @@ LIBGFOR_CHECK_WORKING_STAT
 # Check whether __mingw_snprintf() is present
 LIBGFOR_CHECK_MINGW_SNPRINTF
 
-# Check for a broken powf implementation
-LIBGFOR_CHECK_FOR_BROKEN_POWF
-
 # Check whether libquadmath should be used
 AC_ARG_ENABLE(libquadmath-support,
 AS_HELP_STRING([--disable-libquadmath-support],
