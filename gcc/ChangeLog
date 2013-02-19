@@ -1,5 +1,10 @@
 2013-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/56350
+	* tree-vect-loop.c (vectorizable_reduction): If orig_stmt, return false
+	if haven't found reduction or nested cycle operand, rather than
+	asserting we must find it.
+
 	PR tree-optimization/56381
 	* tree-ssa-pre.c (create_expression_by_pieces): Fix up last argument
 	to fold_build3.
