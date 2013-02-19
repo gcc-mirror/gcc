@@ -758,12 +758,20 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
       if (TREE_ADDRESSABLE (decl))
 	return true;
 
+      /* lower_send_shared_vars only uses copy-in, but not copy-out
+	 for these.  */
+      if (TREE_READONLY (decl)
+	  || ((TREE_CODE (decl) == RESULT_DECL
+	       || TREE_CODE (decl) == PARM_DECL)
+	      && DECL_BY_REFERENCE (decl)))
+	return false;
+
       /* Disallow copy-in/out in nested parallel if
 	 decl is shared in outer parallel, otherwise
 	 each thread could store the shared variable
 	 in its own copy-in location, making the
 	 variable no longer really shared.  */
-      if (!TREE_READONLY (decl) && shared_ctx->is_nested)
+      if (shared_ctx->is_nested)
 	{
 	  omp_context *up;
 
@@ -786,11 +794,10 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 	    }
 	}
 
-      /* For tasks avoid using copy-in/out, unless they are readonly
-	 (in which case just copy-in is used).  As tasks can be
+      /* For tasks avoid using copy-in/out.  As tasks can be
 	 deferred or executed in different thread, when GOMP_task
 	 returns, the task hasn't necessarily terminated.  */
-      if (!TREE_READONLY (decl) && is_task_ctx (shared_ctx))
+      if (is_task_ctx (shared_ctx))
 	{
 	  tree outer;
 	maybe_mark_addressable_and_ret:

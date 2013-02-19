@@ -1,3 +1,11 @@
+2013-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56217
+	* testsuite/libgomp.c++/pr56217.C: New test.
+
 2013-01-22  Alan Modra  <amodra@gmail.com>
 
 	PR libgomp/51376
