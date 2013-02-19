@@ -1,4 +1,4 @@
-2013-02-11  Aldy Hernandez  <aldyh@redhat.com>
+2013-02-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR target/52555
 	* c-common.c (handle_optimize_attribute): Call

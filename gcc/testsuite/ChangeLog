@@ -1,3 +1,8 @@
+2013-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56381
+	* g++.dg/opt/pr56381.C: New test.
+
 2013-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/54117
