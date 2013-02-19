@@ -3103,7 +3103,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 		break;
 	      case 3:
 		folded = fold_build3 (nary->opcode, nary->type,
-				      genop[0], genop[1], genop[3]);
+				      genop[0], genop[1], genop[2]);
 		break;
 	      default:
 		gcc_unreachable ();

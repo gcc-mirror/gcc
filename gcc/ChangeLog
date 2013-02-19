@@ -1,6 +1,12 @@
 2013-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56381
+	* tree-ssa-pre.c (create_expression_by_pieces): Fix up last argument
+	to fold_build3.
+
 	2013-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56250
