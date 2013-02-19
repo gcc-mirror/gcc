@@ -1,3 +1,7 @@
+2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000 
+	as dividend.
+
 2013-02-16  Alan Modra  <amodra@gmail.com>
 
 	PR target/55431
