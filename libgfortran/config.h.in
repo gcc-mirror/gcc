@@ -81,9 +81,6 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
-/* Define if powf is broken. */
-#undef HAVE_BROKEN_POWF
-
 /* Define to 1 if you have the `cabs' function. */
 #undef HAVE_CABS
 
