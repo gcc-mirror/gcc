@@ -1,3 +1,11 @@
+2013-02-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2012-06-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/clearcapv2.map: New file.
+	* gcc.target/i386/i386.exp: Try it first before clearcap.map.
+
 2013-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
