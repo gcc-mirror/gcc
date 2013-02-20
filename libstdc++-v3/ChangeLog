@@ -1,5 +1,14 @@
 2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/html/faq.html: Fix spelling.
+	* doc/xml/faq.xml: Likewise.
+	* include/bits/basic_ios.h: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/streambuf: Likewise.
+
+2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/23_containers/unordered_set/55043.cc: Add missing
 	namespace qualification.
 	* testsuite/23_containers/unordered_multiset/55043.cc: Likewise.
