@@ -1,3 +1,9 @@
+2013-02-20  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/56265
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Fixup callgraph when target is
+	referenced for firs ttime.
+
 2013-02-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-call-cdce.c (tree_call_cdce): Do not remove unused locals.

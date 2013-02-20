@@ -2100,10 +2100,65 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
   if (TREE_CODE (target) == ADDR_EXPR)
     target = TREE_OPERAND (target, 0);
   if (TREE_CODE (target) != FUNCTION_DECL)
-    return NULL;
+    {
+      target = canonicalize_constructor_val (target, NULL);
+      if (!target || TREE_CODE (target) != FUNCTION_DECL)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Discovered direct call to non-function"
+				" in (%s/%i).\n",
+		     cgraph_node_name (ie->caller), ie->caller->uid);
+	  return NULL;
+	}
+    }
   callee = cgraph_get_node (target);
-  if (!callee)
-    return NULL;
+
+  /* Because may-edges are not explicitely represented and vtable may be external,
+     we may create the first reference to the object in the unit.  */
+  if (!callee || callee->global.inlined_to)
+    {
+      struct cgraph_node *first_clone = callee;
+
+      /* We are better to ensure we can refer to it.
+	 In the case of static functions we are out of luck, since we already	
+	 removed its body.  In the case of public functions we may or may
+	 not introduce the reference.  */
+      if (!canonicalize_constructor_val (target, NULL)
+	  || !TREE_PUBLIC (target))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Discovered call to a known target "
+		     "(%s/%i -> %s/%i) but can not refer to it. Giving up.\n",
+		     xstrdup (cgraph_node_name (ie->caller)), ie->caller->uid,
+		     xstrdup (cgraph_node_name (ie->callee)), ie->callee->uid);
+	  return NULL;
+	}
+
+      /* Create symbol table node.  Even if inline clone exists, we can not take
+	 it as a target of non-inlined call.  */
+      callee = cgraph_create_node (target);
+
+      /* OK, we previously inlined the function, then removed the offline copy and
+	 now we want it back for external call.  This can happen when devirtualizing
+	 while inlining function called once that happens after extern inlined and
+	 virtuals are already removed.  In this case introduce the external node
+	 and make it available for call.  */
+      if (first_clone)
+	{
+	  first_clone->clone_of = callee;
+	  callee->clones = first_clone;
+	  symtab_prevail_in_asm_name_hash ((symtab_node)callee);
+	  symtab_insert_node_to_hashtable ((symtab_node)callee);
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Introduced new external node "
+		     "(%s/%i) and turned into root of the clone tree.\n",
+		     xstrdup (cgraph_node_name (callee)), callee->uid);
+	}
+      else if (dump_file)
+	fprintf (dump_file, "ipa-prop: Introduced new external node "
+		 "(%s/%i).\n",
+		 xstrdup (cgraph_node_name (callee)), callee->uid);
+    }
   ipa_check_create_node_params ();
 
   /* We can not make edges to inline clones.  It is bug that someone removed
