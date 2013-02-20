@@ -1,3 +1,7 @@
+2013-02-20  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (initialize_node_lattices): Fix dumping condition.
+
 2013-02-20  Richard Biener  <rguenther@suse.de>
 
 	* genpreds.c (write_lookup_constraint): Do not compare first
