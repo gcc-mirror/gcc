@@ -266,7 +266,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // __hash_code_base above to compute node bucket index so it has to be
       // default constructible.
       static_assert(__if_hash_not_cached<
-		      is_default_constructible<__hash_code_base>>::value,
+		    is_default_constructible<
+		      // We use _Hashtable_ebo_helper to access the protected
+		      // default constructor.
+		      __detail::_Hashtable_ebo_helper<0, __hash_code_base>>>::value,
 		    "Cache the hash code or make functors involved in hash code"
 		    " and bucket index computation default constructible");
 

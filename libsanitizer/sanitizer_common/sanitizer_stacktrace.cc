@@ -15,8 +15,9 @@
 #include "sanitizer_symbolizer.h"
 
 namespace __sanitizer {
-static const char *StripPathPrefix(const char *filepath,
-                                   const char *strip_file_prefix) {
+const char *StripPathPrefix(const char *filepath,
+                            const char *strip_file_prefix) {
+  if (filepath == 0) return 0;
   if (filepath == internal_strstr(filepath, strip_file_prefix))
     return filepath + internal_strlen(strip_file_prefix);
   return filepath;

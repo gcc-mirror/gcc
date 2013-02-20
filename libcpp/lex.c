@@ -1561,8 +1561,10 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	 from inttypes.h, we generate a warning and treat the ud-suffix as a
 	 separate preprocessing token.  This approach is under discussion by
 	 the standards committee, and has been adopted as a conforming
-	 extension by other front ends such as clang. */
-      if (ISALPHA (*cur))
+	 extension by other front ends such as clang.
+         A special exception is made for the suffix 's' which will be
+	 standardized as a user-defined literal suffix for strings.  */
+      if (ISALPHA (*cur) && *cur != 's')
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix))
@@ -1572,7 +1574,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 				   "a space between literal and identifier");
 	}
       /* Grab user defined literal suffix.  */
-      else if (*cur == '_')
+      else if (ISIDST (*cur))
 	{
 	  type = cpp_userdef_string_add_type (type);
 	  ++cur;
@@ -1692,8 +1694,10 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	 from inttypes.h, we generate a warning and treat the ud-suffix as a
 	 separate preprocessing token.  This approach is under discussion by
 	 the standards committee, and has been adopted as a conforming
-	 extension by other front ends such as clang. */
-      if (ISALPHA (*cur))
+	 extension by other front ends such as clang.
+         A special exception is made for the suffix 's' which will be
+	 standardized as a user-defined literal suffix for strings.  */
+      if (ISALPHA (*cur) && *cur != 's')
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix))
@@ -1703,7 +1707,7 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 				   "a space between literal and identifier");
 	}
       /* Grab user defined literal suffix.  */
-      else if (*cur == '_')
+      else if (ISIDST (*cur))
 	{
 	  type = cpp_userdef_char_add_type (type);
 	  type = cpp_userdef_string_add_type (type);

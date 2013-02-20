@@ -1,6 +1,27 @@
+2013-02-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/56327
+	* interception/interception.h (OFF_T): Merged from upstream
+	r175140.
+
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_mapping.h (SHADOW_OFFSET): Set to (1ULL << 44) on x86-64.
+
+2013-02-13  Kostya Serebryany  <kcc@google.com>
+
+	PR sanitizer/56128
+	* All source files: Merge from upstream r175049.
+	* interception/Makefile.am: added include path.
+	* interception/Makefile.in: Regenerated.
+
+2013-02-11  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* configure.tgt: Disable build on darwin9 and earlier.
+
 2013-01-23  Kostya Serebryany  <kcc@google.com>
 
-        PR sanitizer/55989
+	PR sanitizer/55989
 	* All source files: Merge from upstream r173241.
 	* merge.sh: Support merging .inc files.
 

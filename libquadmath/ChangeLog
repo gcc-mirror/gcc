@@ -1,3 +1,7 @@
+2013-02-17  Tobias Burnus  <burnus@net-b.de>
+
+	* math/cacoshq.c (cacoshq): Call signbitq instead of signbit.
+
 2013-02-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Revert previous patch.

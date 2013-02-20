@@ -18,4 +18,4 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-/* { dg-output "AddressSanitizer is unable to mmap" } */
+/* { dg-output "ERROR: Failed to mmap" } */

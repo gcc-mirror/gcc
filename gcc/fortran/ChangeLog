@@ -1,3 +1,49 @@
+2013-02-15  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56318
+	* simplify.c (gfc_simplify_matmul): Fix result shape
+	and matmul result.
+
+2013-02-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53818
+	* resolve.c (apply_default_init_local): Don't create an
+	initializer for a result variable.
+
+2013-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56224
+	* gfortran.h (gfc_add_include_path):  Add boolean argument
+	for warn.
+	* scanner.c (gfc_add_include_path):  Pass along warn argument
+	to add_path_to_list.
+	* options.c (gfc_post_options):  Add true warn argument to
+	gfc_add_include_path.
+	(gfc_handle_module_path_options):  Likewise.
+	(gfc_handle_option): Also gfc_add_include_path for intrinsic
+	modules, without warning.
+
+2013-02-14  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR testsuite/56138
+	* trans-decl.c (gfc_get_symbol_decl): Fix deferred-length
+	results for functions without extra result variable.
+
+	Revert:
+	2013-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56138
+	* trans-decl.c (gfc_trans_deferred_vars): Fix deferred-length
+	results for functions without extra result variable.
+
+2013-02-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46952
+	* resolve.c (resolve_call): Do not check deferred procedures for
+	recursiveness.
+
 2013-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55362

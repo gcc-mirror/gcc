@@ -1,3 +1,9 @@
+2013-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/44938
+	* c-parser.c (c_parser_postfix_expression_after_primary): Initialize
+	origtypes to NULL.
+
 2013-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/56078

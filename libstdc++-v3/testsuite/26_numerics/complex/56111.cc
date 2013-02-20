@@ -1,8 +1,6 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=c++98" }
 
-// 2013-02-06  Edward Smith-Rowland <3dw4rd@verizon.net>
-//
 // Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -10,22 +8,29 @@
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
-//
+
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <iostream>
+// libstdc++/56111
+// In C++03, we try to keep the macro "complex" as long as it does not
+// conflict (std::complex).
+#include <bits/c++config.h>
+#if _GLIBCXX_HAVE_COMPLEX_H
+# include <complex.h>
+#endif
 
-// PR libstdc++/56193
-void
-test01()
+int main()
 {
-  std::cout << std::cout; // { dg-error "cannot bind" }
+#if _GLIBCXX_HAVE_COMPLEX_H
+  double complex x = .5;
+  double complex y = cacos (x);
+  (void)y;
+#endif
 }
-// { dg-error "initializing argument" "" { target *-*-* } 602 }

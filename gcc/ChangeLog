@@ -1,3 +1,272 @@
+2013-02-17  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config/microblaze/microblaze.md (save_stack_block): Define.
+	(restore_stack_block): Likewise.
+
+2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config/microblaze/linux.h (TARGET_SUPPORTS_PIC): Define as 1.
+	* config/microblaze/microblaze.h (TARGET_SUPPORTS_PIC): Define as 1.
+	* config/microblaze/microblaze.c (microblaze_option_override):
+	Bail out early for PIC modes when target does not support PIC.
+
+2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config/microblaze/microblaze.c (microblaze_asm_trampoline_template): 
+	Replace with a microblaze version.
+	(microblaze_trampoline_init): Adapt for microblaze.
+	* gcc/config/microblaze/microblaze.h (TRAMPOLINE_SIZE): Adapt for 
+	microblaze.
+
+2013-02-16  Jakub Jelinek  <jakub@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	PR asan/56330
+	* asan.c (get_mem_refs_of_builtin_call): White space and style
+	cleanup.
+	(instrument_mem_region_access): Do not forget to always put
+	instrumentation of the of 'base' and 'base + len' in a "if (len !=
+	0) statement, even for cases where either 'base' or 'base + len'
+	are not instrumented -- because they have been previously
+	instrumented.  Simplify the logic by putting all the statements
+	instrument 'base + len' inside a sequence, and then insert that
+	sequence right before the current insertion point.  Then, to
+	instrument 'base + len', just get an iterator on that statement.
+	And do not forget to update the pointer to iterator the function
+	received as argument.
+
+2013-02-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56348
+	* lra-assigns.c (reload_pseudo_compare_func): Prefer bigger pseudos.
+
+2013-02-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* graph.c (start_graph_dump): Print dumpfile base as digraph label.
+	(clean_graph_dump_file): Pass base to start_graph_dump.
+
+2013-02-14  Richard Henderson  <rth@redhat.com>
+
+	PR target/55941
+	* lower-subreg.c (simple_move): Check dest mode instead of src mode.
+
+2013-02-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* collect2-aix.h: Define F_LOADONLY.
+
+2013-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/50494
+	* varasm.c (output_constant_def_1): Get the decl representing
+	the constant as argument.
+	(output_constant_def): Wrap output_constant_def_1.
+	(make_decl_rtl): Use output_constant_def_1 with the decl
+	representing the constant.
+	(build_constant_desc): Optionally re-use a decl already
+	representing the constant.
+	(tree_output_constant_def): Adjust.
+
+2013-02-14  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix an asan crash
+	* asan.c (instrument_builtin_call):  Really put the length of the
+	second source argument into src1_len.
+
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (create_cond_insert_point): Add create_then_fallthru_edge
+	argument.  If it is false, don't create edge from then_bb to
+	fallthru_bb.
+	(insert_if_then_before_iter): Pass true to it.
+	(build_check_stmt): Pass false to it.
+	(transform_statements): Flush hash table only on extended basic
+	block boundaries, rather than at the beginning of every bb.
+	Don't flush hash table on nonfreeing_call_p calls.
+	* tree-flow.h (nonfreeing_call_p): New prototype.
+	* tree-ssa-phiopt.c (nonfreeing_call_p): No longer static.
+
+2013-02-13  David S. Miller  <davem@davemloft.net>
+
+	* expmed.c (expand_shift_1): Only strip scalar integer subregs.
+
+2013-02-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/56184
+	* ira.c (max_regno_before_ira): Move from ...
+	(ira): ... here.
+	(fix_reg_equiv_init): Use max_regno_before_ira instead of
+	vec_safe_length.
+
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_asan_shadow_offset): Revert last change.
+
+2013-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56295
+	* gimple-streamer-out.c (output_gimple_stmt): Undo wrapping
+	globals in MEM_REFs.
+
+2013-02-13  Richard Biener  <rguenther@suse.de>
+
+	* loop-init.c (loop_optimizer_init): Clear loop state when
+	re-initializing preserved loops.
+	* loop-unswitch.c (unswitch_single_loop): Return whether
+	we unswitched the loop.  Do not verify loop state here.
+	(unswitch_loops): When we unswitched a loop discover new
+	loops.
+
+2013-02-13  Kostya Serebryany  <kcc@google.com>
+
+	* config/i386/i386.c: Use 0x7fff8000 as asan_shadow_offset on x86_64
+	linux.
+	* sanitizer.def: Rename __asan_init to __asan_init_v1.
+
+2013-02-12  Dodji Seketeli  <dodji@redhat.com>
+
+	Avoid instrumenting duplicated memory access in the same basic block
+	* Makefile.in (asan.o): Add new dependency on hash-table.h
+	* asan.c (struct asan_mem_ref, struct mem_ref_hasher): New types.
+	(asan_mem_ref_init, asan_mem_ref_get_end, get_mem_ref_hash_table)
+	(has_stmt_been_instrumented_p, empty_mem_ref_hash_table)
+	(free_mem_ref_resources, has_mem_ref_been_instrumented)
+	(has_stmt_been_instrumented_p, update_mem_ref_hash_table)
+	(get_mem_ref_of_assignment): New functions.
+	(get_mem_refs_of_builtin_call): Extract from
+	instrument_builtin_call and tweak a little bit to make it fit with
+	the new signature.
+	(instrument_builtin_call): Use the new
+	get_mem_refs_of_builtin_call.  Use gimple_call_builtin_p instead
+	of is_gimple_builtin_call.
+	(instrument_derefs, instrument_mem_region_access): Insert the
+	instrumented memory reference into the hash table.
+	(maybe_instrument_assignment): Renamed instrument_assignment into
+	this, and change it to advance the iterator when instrumentation
+	actually happened and return true in that case.  This makes it
+	homogeneous with maybe_instrument_assignment, and thus give a
+	chance to callers to be more 'regular'.
+	(transform_statements): Clear the memory reference hash table
+	whenever we enter a new BB, when we cross a function call, or when
+	we are done transforming statements.  Use
+	maybe_instrument_assignment instead of instrumentation.  No more
+	need to special case maybe_instrument_assignment and advance the
+	iterator after calling it; it's now handled just like
+	maybe_instrument_call.  Update comment.
+
+2013-02-13  Richard Biener  <rguenther@suse.de>
+
+	* config/mn10300/mn10300.c (mn10300_scan_for_setlb_lcc):
+	Fix loop discovery code.
+
+2013-02-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/56148
+	* lra-constraints.c (process_alt_operands): Match early clobber
+	operand with itself.  Check conflicts with earlyclobber only if
+	the operand is not reloaded.  Prefer to reload conflicting operand
+	if earlyclobber and matching operands are the same.
+
+2013-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56297
+	* lto-streamer-out.c (write_symbol): Do not output symbols
+	for hard register variables.
+
+2013-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/avr-dimode.md (umulsidi3, mulsidi3): New expanders.
+	(umulsidi3_insn, mulsidi3_insn): New insns.
+
+2013-02-12  Christophe Lyon <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (struct cpu_vec_costs): New struct type.
+	(struct tune_params): Add vec_costs field.
+	* config/arm/arm.c (arm_builtin_vectorization_cost)
+	(arm_add_stmt_cost): New functions.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST)
+	(TARGET_VECTORIZE_ADD_STMT_COST): Define.
+	(arm_default_vec_cost): New struct of type cpu_vec_costs.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_strongarm_tune)
+	(arm_xscale_tune, arm_9e_tune, arm_v6t2_tune, arm_cortex_tune)
+	(arm_cortex_a15_tune, arm_cortex_a5_tune, arm_cortex_a9_tune)
+	(arm_v6m_tune, arm_fa726te_tune): Define new vec_costs field.
+
+2013-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56295
+	* gimple-streamer-in.c (input_gimple_stmt): Strip MEM_REFs off
+	decls again if possible.
+
+2013-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56288
+	* tree-ssa.c (verify_ssa_name): Fix check, move
+	SSA_NAME_IN_FREE_LIST check up.
+
+2013-02-12  Jakub Jelinek  <jakub@redhat.com>
+	    Steven Bosscher   <steven@gcc.gnu.org>
+
+	PR rtl-optimization/56151
+	* optabs.c (add_equal_note): Don't return 0 if target is a MEM,
+	equal to op0 or op1, and last_insn pattern is CODE operation
+	with MEM dest and one of the operands matches that MEM.
+
+2013-02-11  Sriraman Tallam  <tmsriramgoogle.com>
+
+	* doc/extend.texi: Document Function Multiversioning and "default"
+	parameter string to target attribute.
+	* config/i386/i386.c (get_builtin_code_for_version): Return 0 if
+	target attribute parameter is "default".
+	(ix86_compare_version_priority): Remove checks for target attribute.
+	(ix86_mangle_function_version_assembler_name): Change error to sorry.
+	Remove check for target attribute equal to NULL. Add assert.
+	(ix86_generate_version_dispatcher_body): Change error to sorry.
+
+2013-02-11  Iain Sandoe  <iain@codesourcery.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/55693
+	* config/darwin.h: Replace ENDFILE_SPEC with TM_DESTRUCTOR and
+	define ENDFILE_SPEC as TM_DESTRUCTOR.
+	* config/i386/darwin.h (ENDFILE_SPEC): Use TM_DESTRUCTOR.
+
+2013-02-11  Alexander Potapenko <glider@google.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55617
+	* config/darwin.c (cdtor_record): Rename ctor_record.
+	(sort_cdtor_records): Rename sort_ctor_records.
+	(finalize_dtors): New routine to sort destructors by
+	priority before use in assemble_integer.
+	(machopic_asm_out_destructor): Use finalize_dtors if needed.
+
+2013-02-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/56275
+	* simplify-rtx.c (avoid_constant_pool_reference): Check that
+	offset is non-negative and less than cmode size before
+	calling simplify_subreg.
+
+2013-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56264
+	* cfgloop.h (fix_loop_structure): Adjust prototype.
+	* loop-init.c (fix_loop_structure): Return the number of
+	newly discovered loops.
+	* tree-cfgcleanup.c (repair_loop_structures): When new loops
+	are discovered, do a full loop-closed SSA rewrite.
+
+2013-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* tree-vrp.c (simplify_cond_using_ranges): Disable for the
+	first VRP run.
+	(check_array_ref): Fix missing newline in dumps.
+	(search_for_addr_array): Likewise.
+
 2013-02-09  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix61.h (OS_MISSING_ALTIVEC): Undefine.

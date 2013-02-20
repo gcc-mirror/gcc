@@ -11,6 +11,12 @@
 //===----------------------------------------------------------------------===//
 
 #ifdef __APPLE__
+// Use 64-bit inodes in file operations. ASan does not support OS X 10.5, so
+// the clients will most certainly use 64-bit ones as well.
+#ifndef _DARWIN_USE_64_BIT_INODE
+#define _DARWIN_USE_64_BIT_INODE 1
+#endif
+#include <stdio.h>
 
 #include "sanitizer_common.h"
 #include "sanitizer_internal_defs.h"
@@ -46,9 +52,17 @@ int internal_close(fd_t fd) {
   return close(fd);
 }
 
-fd_t internal_open(const char *filename, bool write) {
-  return open(filename,
-              write ? O_WRONLY | O_CREAT : O_RDONLY, 0660);
+fd_t internal_open(const char *filename, int flags) {
+  return open(filename, flags);
+}
+
+fd_t internal_open(const char *filename, int flags, u32 mode) {
+  return open(filename, flags, mode);
+}
+
+fd_t OpenFile(const char *filename, bool write) {
+  return internal_open(filename,
+      write ? O_WRONLY | O_CREAT : O_RDONLY, 0660);
 }
 
 uptr internal_read(fd_t fd, void *buf, uptr count) {
@@ -59,9 +73,21 @@ uptr internal_write(fd_t fd, const void *buf, uptr count) {
   return write(fd, buf, count);
 }
 
+int internal_stat(const char *path, void *buf) {
+  return stat(path, (struct stat *)buf);
+}
+
+int internal_lstat(const char *path, void *buf) {
+  return lstat(path, (struct stat *)buf);
+}
+
+int internal_fstat(fd_t fd, void *buf) {
+  return fstat(fd, (struct stat *)buf);
+}
+
 uptr internal_filesize(fd_t fd) {
   struct stat st;
-  if (fstat(fd, &st))
+  if (internal_fstat(fd, &st))
     return -1;
   return (uptr)st.st_size;
 }

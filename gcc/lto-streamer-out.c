@@ -1166,7 +1166,8 @@ write_symbol (struct streamer_tree_cache_d *cache,
   if (!TREE_PUBLIC (t)
       || is_builtin_fn (t)
       || DECL_ABSTRACT (t)
-      || TREE_CODE (t) == RESULT_DECL)
+      || TREE_CODE (t) == RESULT_DECL
+      || (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t)))
     return;
 
   gcc_assert (TREE_CODE (t) == VAR_DECL

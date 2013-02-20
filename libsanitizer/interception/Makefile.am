@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I $(top_srcdir)/include 
+AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir)
  
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -13,7 +13,8 @@ noinst_LTLIBRARIES = libinterception.la
 interception_files = \
         interception_linux.cc \
         interception_mac.cc \
-        interception_win.cc
+        interception_win.cc \
+	interception_type_test.cc
 
 libinterception_la_SOURCES = $(interception_files)
 

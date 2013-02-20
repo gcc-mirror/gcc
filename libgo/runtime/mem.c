@@ -18,6 +18,10 @@
 #endif
 #endif
 
+#ifndef MAP_NORESERVE
+#define MAP_NORESERVE 0
+#endif
+
 #ifdef USE_DEV_ZERO
 static int dev_zero = -1;
 #endif
@@ -134,7 +138,11 @@ runtime_SysReserve(void *v, uintptr n)
 		return v;
 	}
 	
-	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
+	// Use the MAP_NORESERVE mmap() flag here because typically most of
+	// this reservation will never be used. It does not make sense
+	// reserve a huge amount of unneeded swap space. This is important on
+	// systems which do not overcommit memory by default.
+	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE|MAP_NORESERVE, fd, 0);
 	if(p == MAP_FAILED)
 		return nil;
 	return p;

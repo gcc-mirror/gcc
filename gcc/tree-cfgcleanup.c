@@ -707,18 +707,22 @@ static void
 repair_loop_structures (void)
 {
   bitmap changed_bbs;
+  unsigned n_new_loops;
 
   calculate_dominance_info (CDI_DOMINATORS);
 
   timevar_push (TV_REPAIR_LOOPS);
   changed_bbs = BITMAP_ALLOC (NULL);
-  fix_loop_structure (changed_bbs);
+  n_new_loops = fix_loop_structure (changed_bbs);
 
   /* This usually does nothing.  But sometimes parts of cfg that originally
      were inside a loop get out of it due to edge removal (since they
-     become unreachable by back edges from latch).  */
+     become unreachable by back edges from latch).  Also a former
+     irreducible loop can become reducible - in this case force a full
+     rewrite into loop-closed SSA form.  */
   if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
-    rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
+    rewrite_into_loop_closed_ssa (n_new_loops ? NULL : changed_bbs,
+				  TODO_update_ssa);
 
   BITMAP_FREE (changed_bbs);
 

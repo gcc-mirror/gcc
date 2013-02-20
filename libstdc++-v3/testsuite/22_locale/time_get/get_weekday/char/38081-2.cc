@@ -51,6 +51,15 @@ void test01()
   //             ios_base::iostate&, tm*) const
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 14)
+# if __GLIBC__ > 2 || __GLIBC_MINOR__ >= 17
+  const char* awdays[7] = { "\u0412\u0441",
+			    "\u041F\u043D",
+			    "\u0412\u0442",
+			    "\u0421\u0440",
+			    "\u0427\u0442",
+			    "\u041F\u0442",
+			    "\u0421\u0431" };
+# else
   const char* awdays[7] = { "\u0412\u0441\u002E",
 			    "\u041F\u043D\u002E",
 			    "\u0412\u0442\u002E",
@@ -58,6 +67,7 @@ void test01()
 			    "\u0427\u0442\u002E",
 			    "\u041F\u0442\u002E",
 			    "\u0421\u0431\u002E" };
+#endif
 #else
   const char* awdays[7] = { "\u0412\u0441\u043A",
 			    "\u041F\u043D\u0434",

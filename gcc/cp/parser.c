@@ -19366,6 +19366,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		  if (function_declarator_p (declarator)
 		      || (decl_specifiers.type
 			  && TREE_CODE (decl_specifiers.type) == TYPE_DECL
+			  && declarator->kind == cdk_id
 			  && (TREE_CODE (TREE_TYPE (decl_specifiers.type))
 			      == FUNCTION_TYPE)))
 		    initializer = cp_parser_pure_specifier (parser);

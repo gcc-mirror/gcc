@@ -1,3 +1,9 @@
+2013-02-13  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/52122
+	* Makefile.in (LN_S_RECURSIVE): New.
+	(adainclude, adalib): Use LN_S_RECURSIVE for copy.
+
 2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years.

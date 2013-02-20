@@ -20,7 +20,6 @@
 #include "asan_stats.h"
 #include "asan_thread_registry.h"
 #include "interception/interception.h"
-#include "sanitizer/asan_interface.h"
 #include "sanitizer_common/sanitizer_libc.h"
 
 namespace __asan {
@@ -30,12 +29,14 @@ namespace __asan {
 // that no extra frames are created, and stack trace contains
 // relevant information only.
 // We check all shadow bytes.
-#define ACCESS_MEMORY_RANGE(offset, size, isWrite) do {                  \
-  if (uptr __ptr = __asan_region_is_poisoned((uptr)(offset), size)) {    \
-    GET_CURRENT_PC_BP_SP;                                                \
-    __asan_report_error(pc, bp, sp, __ptr, isWrite, /* access_size */1); \
-  }                                                                      \
-} while (0)
+#define ACCESS_MEMORY_RANGE(offset, size, isWrite) do {                 \
+    uptr __offset = (uptr)(offset);                                     \
+    uptr __size = (uptr)(size);                                         \
+    if (__asan_region_is_poisoned(__offset, __size)) {                  \
+      GET_CURRENT_PC_BP_SP;                                             \
+      __asan_report_error(pc, bp, sp, __offset, isWrite, __size);       \
+    }                                                                   \
+  } while (0)
 
 #define ASAN_READ_RANGE(offset, size) ACCESS_MEMORY_RANGE(offset, size, false)
 #define ASAN_WRITE_RANGE(offset, size) ACCESS_MEMORY_RANGE(offset, size, true);
@@ -275,13 +276,9 @@ INTERCEPTOR(void*, memcpy, void *to, const void *from, uptr size) {
     ASAN_READ_RANGE(from, size);
     ASAN_WRITE_RANGE(to, size);
   }
-#if MAC_INTERPOSE_FUNCTIONS
   // Interposing of resolver functions is broken on Mac OS 10.7 and 10.8.
   // See also http://code.google.com/p/address-sanitizer/issues/detail?id=116.
   return internal_memcpy(to, from, size);
-#else
-  return REAL(memcpy)(to, from, size);
-#endif
 }
 
 INTERCEPTOR(void*, memmove, void *to, const void *from, uptr size) {
@@ -294,13 +291,9 @@ INTERCEPTOR(void*, memmove, void *to, const void *from, uptr size) {
     ASAN_READ_RANGE(from, size);
     ASAN_WRITE_RANGE(to, size);
   }
-#if MAC_INTERPOSE_FUNCTIONS
   // Interposing of resolver functions is broken on Mac OS 10.7 and 10.8.
   // See also http://code.google.com/p/address-sanitizer/issues/detail?id=116.
   return internal_memmove(to, from, size);
-#else
-  return REAL(memmove)(to, from, size);
-#endif
 }
 
 INTERCEPTOR(void*, memset, void *block, int c, uptr size) {
@@ -398,7 +391,7 @@ INTERCEPTOR(int, strcmp, const char *s1, const char *s2) {
 }
 
 INTERCEPTOR(char*, strcpy, char *to, const char *from) {  // NOLINT
-#if MAC_INTERPOSE_FUNCTIONS
+#if defined(__APPLE__)
   if (!asan_inited) return REAL(strcpy)(to, from);  // NOLINT
 #endif
   // strcpy is called from malloc_default_purgeable_zone()
@@ -418,7 +411,7 @@ INTERCEPTOR(char*, strcpy, char *to, const char *from) {  // NOLINT
 
 #if ASAN_INTERCEPT_STRDUP
 INTERCEPTOR(char*, strdup, const char *s) {
-#if MAC_INTERPOSE_FUNCTIONS
+#if defined(__APPLE__)
   // FIXME: because internal_strdup() uses InternalAlloc(), which currently
   // just calls malloc() on Mac, we can't use internal_strdup() with the
   // dynamic runtime. We can remove the call to REAL(strdup) once InternalAlloc
@@ -559,7 +552,7 @@ INTERCEPTOR(long, strtol, const char *nptr,  // NOLINT
 }
 
 INTERCEPTOR(int, atoi, const char *nptr) {
-#if MAC_INTERPOSE_FUNCTIONS
+#if defined(__APPLE__)
   if (!asan_inited) return REAL(atoi)(nptr);
 #endif
   ENSURE_ASAN_INITED();
@@ -578,7 +571,7 @@ INTERCEPTOR(int, atoi, const char *nptr) {
 }
 
 INTERCEPTOR(long, atol, const char *nptr) {  // NOLINT
-#if MAC_INTERPOSE_FUNCTIONS
+#if defined(__APPLE__)
   if (!asan_inited) return REAL(atol)(nptr);
 #endif
   ENSURE_ASAN_INITED();
@@ -659,10 +652,9 @@ void InitializeAsanInterceptors() {
   static bool was_called_once;
   CHECK(was_called_once == false);
   was_called_once = true;
-#if MAC_INTERPOSE_FUNCTIONS
+#if defined(__APPLE__)
   return;
-#endif
-
+#else
   SANITIZER_COMMON_INTERCEPTORS_INIT;
 
   // Intercept mem* functions.
@@ -671,12 +663,6 @@ void InitializeAsanInterceptors() {
   ASAN_INTERCEPT_FUNC(memset);
   if (PLATFORM_HAS_DIFFERENT_MEMCPY_AND_MEMMOVE) {
     ASAN_INTERCEPT_FUNC(memcpy);
-  } else {
-#if !MAC_INTERPOSE_FUNCTIONS
-    // If we're using dynamic interceptors on Mac, these two are just plain
-    // functions.
-    internal_memcpy(&REAL(memcpy), &REAL(memmove), sizeof(REAL(memmove)));
-#endif
   }
 
   // Intercept str* functions.
@@ -698,12 +684,8 @@ void InitializeAsanInterceptors() {
 #if ASAN_INTERCEPT_STRNLEN
   ASAN_INTERCEPT_FUNC(strnlen);
 #endif
-#if ASAN_INTERCEPT_INDEX
-# if ASAN_USE_ALIAS_ATTRIBUTE_FOR_INDEX
+#if ASAN_INTERCEPT_INDEX && ASAN_USE_ALIAS_ATTRIBUTE_FOR_INDEX
   ASAN_INTERCEPT_FUNC(index);
-# else
-  CHECK(OVERRIDE_FUNCTION(index, WRAP(strchr)));
-# endif
 #endif
 
   ASAN_INTERCEPT_FUNC(atoi);
@@ -753,14 +735,10 @@ void InitializeAsanInterceptors() {
   InitializeWindowsInterceptors();
 #endif
 
-  // Some Mac-specific interceptors.
-#if defined(__APPLE__)
-  InitializeMacInterceptors();
-#endif
-
   if (flags()->verbosity > 0) {
     Report("AddressSanitizer: libc interceptors initialized\n");
   }
+#endif  // __APPLE__
 }
 
 }  // namespace __asan

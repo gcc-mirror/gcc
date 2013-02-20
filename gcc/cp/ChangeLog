@@ -1,4 +1,103 @@
+2013-02-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51242
+	* decl2.c (grokbitfield): Allow scoped enumeration types.
+
+2013-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54276
+	* semantics.c (finish_id_expression): Also return the identifier
+	for an outer local static.
+
+	PR c++/56343
+	* class.c (check_bases_and_members): Deduce noexcept after
+	checking bases.
+
+	PR c++/52026
+	* semantics.c (finish_id_expression): In a template, return
+	the identifier for a constant variable.
+
+2013-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54922
+	* semantics.c (build_anon_member_initialization): New.
+	(build_data_member_initialization): Use it.
+
+	PR c++/55003
+	* decl.c (cp_finish_decl): Force instantiation of an
+	auto static data member.
+
+	PR c++/55220
+	* pt.c (unify): A pack expansion that is not the last template
+	argument makes the entire template argument list non-deduced.
+
+	PR c++/56323
+	* name-lookup.c (do_class_using_decl): Handle typedefs with
+	inheriting constructors.
+	(push_class_level_binding_1): Allow inheriting from template
+	template parameter, too.
+	* pt.c (tsubst_decl) [USING_DECL]: Likewise.
+
+	PR c++/55223
+	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Fix handling of
+	default argument scope.
+	* mangle.c (write_name): Likewise.
+
+	PR c++/55232
+	* error.c (find_typenames_r): Don't walk into a pack expansion.
+
+2013-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55670
+	* parser.c (cp_parser_member_declaration): Check the declarator
+	form when detecting a function declaration via typedef.
+
+	PR c++/55680
+	* pt.c (maybe_process_partial_specialization): A lambda
+	isn't what's being specialized.
+
+	PR c++/55710
+	* semantics.c (maybe_add_lambda_conv_op): Mark static thunk
+	TREE_USED.
+
+	PR c++/55879
+	* semantics.c (cxx_bind_parameters_in_call): Undo DECL_BY_REFERENCE.
+
+	PR c++/55993
+	* semantics.c (cxx_fold_indirect_ref): Handle empty bases at
+	non-zero offsets, too.
+
+	PR c++/56155
+	* decl.c (build_enumerator): Always convert the value to a
+	fixed underlying type.
+
+	PR c++/56135
+	* pt.c (tsubst_copy_and_build): Don't forget any new
+	captures that arose from use of dependent names.
+
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56302
+	* semantics.c (finish_asm_stmt): If input constraints allow
+	neither register nor memory, try maybe_constant_value to get
+	a constant if possible.
+
+2013-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56285
+	* method.c (add_one_base_init): Handle base constructor
+	taking rvalue reference parm.
+
+	PR c++/56291
+	* semantics.c (sort_constexpr_mem_initializers): Handle
+	vptr out of order.
+
 2013-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56268
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Call
+	maybe_instantiate_noexcept.
 
 	PR c++/56247
 	* pt.c (eq_specializations): Set comparing_specializations.

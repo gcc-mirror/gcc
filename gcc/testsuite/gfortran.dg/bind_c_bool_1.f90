@@ -16,7 +16,7 @@ end function sub4
 
 
 subroutine sub(x) bind(C) ! { dg-error "GNU Extension: LOGICAL dummy argument 'x' at .1. with non-C_Bool kind in BIND.C. procedure 'sub'" }
-  logical(kind=4) :: x
+  logical(kind=2) :: x
 end subroutine sub
 
 subroutine sub3(y) bind(C)

@@ -308,11 +308,16 @@ print_graph_cfg (const char *base, struct function *fun)
 
 /* Start the dump of a graph.  */
 static void
-start_graph_dump (FILE *fp)
+start_graph_dump (FILE *fp, const char *base)
 {
-  fputs ("digraph \"\" {\n"
-	 "overlap=false;\n",
-	 fp);
+  pretty_printer *pp = init_graph_slim_pretty_print (fp);
+  pp_string (pp, "digraph \"");
+  pp_write_text_to_stream (pp);
+  pp_string (pp, base);
+  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/false);
+  pp_string (pp, "\" {\n");
+  pp_string (pp, "overlap=false;\n");
+  pp_flush (pp);
 }
 
 /* End the dump of a graph.  */
@@ -327,7 +332,7 @@ void
 clean_graph_dump_file (const char *base)
 {
   FILE *fp = open_graph_file (base, "w");
-  start_graph_dump (fp);
+  start_graph_dump (fp, base);
   fclose (fp);
 }
 

@@ -14,6 +14,8 @@
 
 namespace __sanitizer {
 
+const char *SanitizerToolName = "SanitizerTool";
+
 uptr GetPageSizeCached() {
   static uptr PageSize;
   if (!PageSize)
@@ -64,7 +66,7 @@ static void MaybeOpenReportFile() {
   InternalScopedBuffer<char> report_path_full(4096);
   internal_snprintf(report_path_full.data(), report_path_full.size(),
                     "%s.%d", report_path_prefix, GetPid());
-  fd_t fd = internal_open(report_path_full.data(), true);
+  fd_t fd = OpenFile(report_path_full.data(), true);
   if (fd == kInvalidFd) {
     report_fd = kStderrFd;
     log_to_file = false;
@@ -103,7 +105,7 @@ uptr ReadFileToBuffer(const char *file_name, char **buff,
   *buff_size = 0;
   // The files we usually open are not seekable, so try different buffer sizes.
   for (uptr size = kMinFileLen; size <= max_len; size *= 2) {
-    fd_t fd = internal_open(file_name, /*write*/ false);
+    fd_t fd = OpenFile(file_name, /*write*/ false);
     if (fd == kInvalidFd) return 0;
     UnmapOrDie(*buff, *buff_size);
     *buff = (char*)MmapOrDie(size, __FUNCTION__);
@@ -188,6 +190,16 @@ void *MmapAlignedOrDie(uptr size, uptr alignment, const char *mem_type) {
   return (void*)res;
 }
 
+void ReportErrorSummary(const char *error_type, const char *file,
+                        int line, const char *function) {
+  const int kMaxSize = 1024;  // We don't want a summary too long.
+  InternalScopedBuffer<char> buff(kMaxSize);
+  internal_snprintf(buff.data(), kMaxSize, "%s: %s %s:%d %s",
+                    SanitizerToolName, error_type,
+                    file ? file : "??", line, function ? function : "??");
+  __sanitizer_report_error_summary(buff.data());
+}
+
 }  // namespace __sanitizer
 
 using namespace __sanitizer;  // NOLINT
@@ -219,5 +231,9 @@ void __sanitizer_set_report_fd(int fd) {
 void NOINLINE __sanitizer_sandbox_on_notify(void *reserved) {
   (void)reserved;
   PrepareForSandboxing();
+}
+
+void __sanitizer_report_error_summary(const char *error_summary) {
+  Printf("SUMMARY: %s\n", error_summary);
 }
 }  // extern "C"

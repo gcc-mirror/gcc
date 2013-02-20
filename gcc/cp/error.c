@@ -1283,7 +1283,7 @@ struct find_typenames_t
 };
 
 static tree
-find_typenames_r (tree *tp, int * /*walk_subtrees*/, void *data)
+find_typenames_r (tree *tp, int *walk_subtrees, void *data)
 {
   struct find_typenames_t *d = (struct find_typenames_t *)data;
   tree mv = NULL_TREE;
@@ -1295,6 +1295,14 @@ find_typenames_r (tree *tp, int * /*walk_subtrees*/, void *data)
 	   || TREE_CODE (*tp) == DECLTYPE_TYPE)
     /* Add the typename without any cv-qualifiers.  */
     mv = TYPE_MAIN_VARIANT (*tp);
+
+  if (TREE_CODE (*tp) == TYPE_PACK_EXPANSION)
+    {
+      /* Don't mess with parameter packs since we don't remember
+	 the pack expansion context for a particular typename.  */
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
 
   if (mv && (mv == *tp || !pointer_set_insert (d->p_set, mv)))
     vec_safe_push (d->typenames, mv);

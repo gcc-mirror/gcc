@@ -918,15 +918,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __ebo_extract_key = _Hashtable_ebo_helper<0, _ExtractKey>;
       using __ebo_hash = _Hashtable_ebo_helper<1, _Hash>;
 
-    public:
-      // We need the default constructor for the local iterators.
-      _Hash_code_base() = default;
-
     protected:
       typedef void* 					__hash_code;
       typedef _Hash_node<_Value, false>			__node_type;
 
-    protected:
+      // We need the default constructor for the local iterators.
+      _Hash_code_base() = default;
+
       _Hash_code_base(const _ExtractKey& __ex, const _H1&, const _H2&,
 		      const _Hash& __h)
       : __ebo_extract_key(__ex), __ebo_hash(__h) { }
@@ -1004,12 +1002,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       hash_function() const
       { return _M_h1(); }
 
-      // We need the default constructor for the local iterators.
-      _Hash_code_base() = default;
-
     protected:
       typedef std::size_t 				__hash_code;
       typedef _Hash_node<_Value, false>			__node_type;
+
+      // We need the default constructor for the local iterators.
+      _Hash_code_base() = default;
 
       _Hash_code_base(const _ExtractKey& __ex,
 		      const _H1& __h1, const _H2& __h2,

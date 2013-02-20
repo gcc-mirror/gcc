@@ -197,6 +197,12 @@ reload_pseudo_compare_func (const void *v1p, const void *v2p)
   if ((diff = (regno_assign_info[regno_assign_info[r2].first].freq
 	       - regno_assign_info[regno_assign_info[r1].first].freq)) != 0)
     return diff;
+  /* Allocate bigger pseudos first to avoid register file
+     fragmentation.  */
+  if ((diff
+       = (ira_reg_class_max_nregs[cl2][lra_reg_info[r2].biggest_mode]
+	  - ira_reg_class_max_nregs[cl1][lra_reg_info[r1].biggest_mode])) != 0)
+    return diff;
   /* Put pseudos from the thread nearby.  */
   if ((diff = regno_assign_info[r1].first - regno_assign_info[r2].first) != 0)
     return diff;

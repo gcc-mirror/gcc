@@ -1299,6 +1299,18 @@ microblaze_option_override (void)
 				  ? g_switch_value
 				  : MICROBLAZE_DEFAULT_GVALUE);
 
+  if (flag_pic)
+    {
+      /* Make sure it's 2, we only support one kind of PIC.  */
+      flag_pic = 2;
+      if (!TARGET_SUPPORTS_PIC)
+        {
+          error ("-fPIC/-fpic not supported for this target");
+          /* Clear it to avoid further errors.  */
+          flag_pic = 0;
+        }
+    }
+
   /* Check the MicroBlaze CPU version for any special action to be done.  */
   if (microblaze_select_cpu == NULL)
     microblaze_select_cpu = MICROBLAZE_DEFAULT_CPU;
@@ -2776,14 +2788,10 @@ microblaze_elf_asm_init_sections (void)
 static void
 microblaze_asm_trampoline_template (FILE *f)
 {
-  fprintf (f, "\t.word\t0x03e00821\t\t# move   $1,$31\n");
-  fprintf (f, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");
-  fprintf (f, "\t.word\t0x00000000\t\t# nop\n");
-  fprintf (f, "\t.word\t0x8fe30014\t\t# lw     $3,20($31)\n");
-  fprintf (f, "\t.word\t0x8fe20018\t\t# lw     $2,24($31)\n");
-  fprintf (f, "\t.word\t0x0060c821\t\t# move   $25,$3 (abicalls)\n");
-  fprintf (f, "\t.word\t0x00600008\t\t# jr     $3\n");
-  fprintf (f, "\t.word\t0x0020f821\t\t# move   $31,$1\n");
+  fprintf (f, "\tmfs r18, rpc\n");
+  fprintf (f, "\tlwi r3, r18, 16\n");
+  fprintf (f, "\tlwi r18, r18, 20\n");
+  fprintf (f, "\tbra r18\n");
   /* fprintf (f, "\t.word\t0x00000000\t\t# <function address>\n");  */
   /* fprintf (f, "\t.word\t0x00000000\t\t# <static chain value>\n");  */
 }
@@ -2797,11 +2805,11 @@ microblaze_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   rtx mem;
 
   emit_block_move (m_tramp, assemble_trampoline_template (),
-		   GEN_INT (8*UNITS_PER_WORD), BLOCK_OP_NORMAL);
+		   GEN_INT (6*UNITS_PER_WORD), BLOCK_OP_NORMAL);
 
-  mem = adjust_address (m_tramp, SImode, 8);
+  mem = adjust_address (m_tramp, SImode, 16);
   emit_move_insn (mem, chain_value);
-  mem = adjust_address (m_tramp, SImode, 12);
+  mem = adjust_address (m_tramp, SImode, 20);
   emit_move_insn (mem, fnaddr);
 }
 

@@ -1402,6 +1402,14 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  if (!cxx_mark_addressable (operand))
 		    operand = error_mark_node;
 		}
+	      else if (!allows_reg && !allows_mem)
+		{
+		  /* If constraint allows neither register nor memory,
+		     try harder to get a constant.  */
+		  tree constop = maybe_constant_value (operand);
+		  if (TREE_CONSTANT (constop))
+		    operand = constop;
+		}
 	    }
 	  else
 	    operand = error_mark_node;
@@ -2868,16 +2876,24 @@ baselink_for_fns (tree fns)
   return build_baselink (cl, cl, fns, /*optype=*/NULL_TREE);
 }
 
-/* Returns true iff DECL is an automatic variable from a function outside
+/* Returns true iff DECL is a variable from a function outside
    the current one.  */
+
+static bool
+outer_var_p (tree decl)
+{
+  return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+	  && DECL_FUNCTION_SCOPE_P (decl)
+	  && DECL_CONTEXT (decl) != current_function_decl);
+}
+
+/* As above, but also checks that DECL is automatic.  */
 
 static bool
 outer_automatic_var_p (tree decl)
 {
-  return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
-	  && DECL_FUNCTION_SCOPE_P (decl)
-	  && !TREE_STATIC (decl)
-	  && DECL_CONTEXT (decl) != current_function_decl);
+  return (outer_var_p (decl)
+	  && !TREE_STATIC (decl));
 }
 
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
@@ -2986,9 +3002,18 @@ finish_id_expression (tree id_expression,
 
       /* Disallow uses of local variables from containing functions, except
 	 within lambda-expressions.  */
-      if (outer_automatic_var_p (decl)
+      if (!outer_var_p (decl)
 	  /* It's not a use (3.2) if we're in an unevaluated context.  */
-	  && !cp_unevaluated_operand)
+	  || cp_unevaluated_operand)
+	/* OK.  */;
+      else if (TREE_STATIC (decl))
+	{
+	  if (processing_template_decl)
+	    /* For a use of an outer static var, return the identifier so
+	       that we'll look it up again in the instantiation.  */
+	    return id_expression;
+	}
+      else
 	{
 	  tree context = DECL_CONTEXT (decl);
 	  tree containing_function = current_function_decl;
@@ -3007,7 +3032,14 @@ finish_id_expression (tree id_expression,
 
 	     FIXME update for final resolution of core issue 696.  */
 	  if (decl_constant_var_p (decl))
-	    return integral_constant_value (decl);
+	    {
+	      if (processing_template_decl)
+		/* In a template, the constant value may not be in a usable
+		   form, so look it up again at instantiation time.  */
+		return id_expression;
+	      else
+		return integral_constant_value (decl);
+	    }
 
 	  /* If we are in a lambda function, we can move out until we hit
 	     1. the context,
@@ -5413,6 +5445,7 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
       else if (copy_fn_p (fn) <= 0)
 	continue;
 
+      maybe_instantiate_noexcept (fn);
       if (!TYPE_NOTHROW_P (TREE_TYPE (fn)))
 	return false;
     }
@@ -5806,6 +5839,59 @@ is_valid_constexpr_fn (tree fun, bool complain)
   return ret;
 }
 
+/* Subroutine of build_data_member_initialization.  MEMBER is a COMPONENT_REF
+   for a member of an anonymous aggregate, INIT is the initializer for that
+   member, and VEC_OUTER is the vector of constructor elements for the class
+   whose constructor we are processing.  Add the initializer to the vector
+   and return true to indicate success.  */
+
+static bool
+build_anon_member_initialization (tree member, tree init,
+				  vec<constructor_elt, va_gc> **vec_outer)
+{
+  /* MEMBER presents the relevant fields from the inside out, but we need
+     to build up the initializer from the outside in so that we can reuse
+     previously built CONSTRUCTORs if this is, say, the second field in an
+     anonymous struct.  So we use a vec as a stack.  */
+  vec<tree> fields;
+  fields.create (2);
+  do
+    {
+      fields.safe_push (TREE_OPERAND (member, 1));
+      member = TREE_OPERAND (member, 0);
+    }
+  while (ANON_AGGR_TYPE_P (TREE_TYPE (member)));
+
+  /* VEC has the constructor elements vector for the context of FIELD.
+     If FIELD is an anonymous aggregate, we will push inside it.  */
+  vec<constructor_elt, va_gc> **vec = vec_outer;
+  tree field;
+  while (field = fields.pop(),
+	 ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+    {
+      tree ctor;
+      /* If there is already an outer constructor entry for the anonymous
+	 aggregate FIELD, use it; otherwise, insert one.  */
+      if (vec_safe_is_empty (*vec)
+	  || (*vec)->last().index != field)
+	{
+	  ctor = build_constructor (TREE_TYPE (field), NULL);
+	  CONSTRUCTOR_APPEND_ELT (*vec, field, ctor);
+	}
+      else
+	ctor = (*vec)->last().value;
+      vec = &CONSTRUCTOR_ELTS (ctor);
+    }
+
+  /* Now we're at the innermost field, the one that isn't an anonymous
+     aggregate.  Add its initializer to the CONSTRUCTOR and we're done.  */
+  gcc_assert (fields.is_empty());
+  fields.release ();
+  CONSTRUCTOR_APPEND_ELT (*vec, field, init);
+
+  return true;
+}
+
 /* Subroutine of  build_constexpr_constructor_member_initializers.
    The expression tree T represents a data member initialization
    in a (constexpr) constructor definition.  Build a pairing of
@@ -5892,12 +5978,21 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
     }
   if (TREE_CODE (member) == ADDR_EXPR)
     member = TREE_OPERAND (member, 0);
-  if (TREE_CODE (member) == COMPONENT_REF
-      /* If we're initializing a member of a subaggregate, it's a vtable
-	 pointer.  Leave it as COMPONENT_REF so we remember the path to get
-	 to the vfield.  */
-      && TREE_CODE (TREE_OPERAND (member, 0)) != COMPONENT_REF)
-    member = TREE_OPERAND (member, 1);
+  if (TREE_CODE (member) == COMPONENT_REF)
+    {
+      tree aggr = TREE_OPERAND (member, 0);
+      if (TREE_CODE (aggr) != COMPONENT_REF)
+	/* Normal member initialization.  */
+	member = TREE_OPERAND (member, 1);
+      else if (ANON_AGGR_TYPE_P (TREE_TYPE (aggr)))
+	/* Initializing a member of an anonymous union.  */
+	return build_anon_member_initialization (member, init, vec);
+      else
+	/* We're initializing a vtable pointer in a base.  Leave it as
+	   COMPONENT_REF so we remember the path to get to the vfield.  */
+	gcc_assert (TREE_TYPE (member) == vtbl_ptr_type_node);
+    }
+
   CONSTRUCTOR_APPEND_ELT (*vec, member, init);
   return true;
 }
@@ -5947,31 +6042,39 @@ check_constexpr_ctor_body (tree last, tree list)
 /* V is a vector of constructor elements built up for the base and member
    initializers of a constructor for TYPE.  They need to be in increasing
    offset order, which they might not be yet if TYPE has a primary base
-   which is not first in the base-clause.  */
+   which is not first in the base-clause or a vptr and at least one base
+   all of which are non-primary.  */
 
 static vec<constructor_elt, va_gc> *
 sort_constexpr_mem_initializers (tree type, vec<constructor_elt, va_gc> *v)
 {
   tree pri = CLASSTYPE_PRIMARY_BINFO (type);
+  tree field_type;
   constructor_elt elt;
   int i;
 
-  if (pri == NULL_TREE
-      || pri == BINFO_BASE_BINFO (TYPE_BINFO (type), 0))
+  if (pri)
+    field_type = BINFO_TYPE (pri);
+  else if (TYPE_CONTAINS_VPTR_P (type))
+    field_type = vtbl_ptr_type_node;
+  else
     return v;
 
-  /* Find the element for the primary base and move it to the beginning of
-     the vec.  */
+  /* Find the element for the primary base or vptr and move it to the
+     beginning of the vec.  */
   vec<constructor_elt, va_gc> &vref = *v;
-  pri = BINFO_TYPE (pri);
-  for (i = 1; ; ++i)
-    if (TREE_TYPE (vref[i].index) == pri)
+  for (i = 0; ; ++i)
+    if (TREE_TYPE (vref[i].index) == field_type)
       break;
 
-  elt = vref[i];
-  for (; i > 0; --i)
-    vref[i] = vref[i-1];
-  vref[0] = elt;
+  if (i > 0)
+    {
+      elt = vref[i];
+      for (; i > 0; --i)
+	vref[i] = vref[i-1];
+      vref[0] = elt;
+    }
+
   return v;
 }
 
@@ -6503,6 +6606,15 @@ cxx_bind_parameters_in_call (const constexpr_call *old_call, tree t,
       if (i == 0 && DECL_CONSTRUCTOR_P (fun))
         goto next;
       x = get_nth_callarg (t, i);
+      if (parms && DECL_BY_REFERENCE (parms))
+	{
+	  /* cp_genericize made this a reference for argument passing, but
+	     we don't want to treat it like one for constexpr evaluation.  */
+	  gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+	  gcc_assert (TREE_CODE (TREE_TYPE (x)) == REFERENCE_TYPE);
+	  type = TREE_TYPE (type);
+	  x = convert_from_reference (x);
+	}
       arg = cxx_eval_constant_expression (old_call, x, allow_non_constant,
 					  TREE_CODE (type) == REFERENCE_TYPE,
 					  non_constant_p, overflow_p);
@@ -7430,6 +7542,15 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      op01 = size_binop_loc (loc, PLUS_EXPR, op01, min_val);
 	      return build4_loc (loc, ARRAY_REF, type, op00, op01,
 				 NULL_TREE, NULL_TREE);
+	    }
+	  /* Also handle conversion to an empty base class, which
+	     is represented with a NOP_EXPR.  */
+	  else if (is_empty_class (type)
+		   && CLASS_TYPE_P (op00type)
+		   && DERIVED_FROM_P (type, op00type))
+	    {
+	      *empty_base = true;
+	      return op00;
 	    }
 	  /* ((foo *)&struct_with_foo_field)[1] => COMPONENT_REF */
 	  else if (RECORD_OR_UNION_TYPE_P (op00type))
@@ -9524,6 +9645,8 @@ maybe_add_lambda_conv_op (tree type)
   body = begin_function_body ();
   compound_stmt = begin_compound_stmt (0);
 
+  /* decl_needed_p needs to see that it's used.  */
+  TREE_USED (statfn) = 1;
   finish_return_stmt (decay_conversion (statfn, tf_warning_or_error));
 
   finish_compound_stmt (compound_stmt);

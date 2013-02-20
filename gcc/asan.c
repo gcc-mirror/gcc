@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tm_p.h"
 #include "langhooks.h"
+#include "hash-table.h"
+#include "alloc-pool.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -211,6 +213,617 @@ alias_set_type asan_shadow_set = -1;
 /* Pointer types to 1 resp. 2 byte integers in shadow memory.  A separate
    alias set is used for all shadow memory accesses.  */
 static GTY(()) tree shadow_ptr_types[2];
+
+/* Hashtable support for memory references used by gimple
+   statements.  */
+
+/* This type represents a reference to a memory region.  */
+struct asan_mem_ref
+{
+  /* The expression of the begining of the memory region.  */
+  tree start;
+
+  /* The size of the access (can be 1, 2, 4, 8, 16 for now).  */
+  char access_size;
+};
+
+static alloc_pool asan_mem_ref_alloc_pool;
+
+/* This creates the alloc pool used to store the instances of
+   asan_mem_ref that are stored in the hash table asan_mem_ref_ht.  */
+
+static alloc_pool
+asan_mem_ref_get_alloc_pool ()
+{
+  if (asan_mem_ref_alloc_pool == NULL)
+    asan_mem_ref_alloc_pool = create_alloc_pool ("asan_mem_ref",
+						 sizeof (asan_mem_ref),
+						 10);
+  return asan_mem_ref_alloc_pool;
+    
+}
+
+/* Initializes an instance of asan_mem_ref.  */
+
+static void
+asan_mem_ref_init (asan_mem_ref *ref, tree start, char access_size)
+{
+  ref->start = start;
+  ref->access_size = access_size;
+}
+
+/* Allocates memory for an instance of asan_mem_ref into the memory
+   pool returned by asan_mem_ref_get_alloc_pool and initialize it.
+   START is the address of (or the expression pointing to) the
+   beginning of memory reference.  ACCESS_SIZE is the size of the
+   access to the referenced memory.  */
+
+static asan_mem_ref*
+asan_mem_ref_new (tree start, char access_size)
+{
+  asan_mem_ref *ref =
+    (asan_mem_ref *) pool_alloc (asan_mem_ref_get_alloc_pool ());
+
+  asan_mem_ref_init (ref, start, access_size);
+  return ref;
+}
+
+/* This builds and returns a pointer to the end of the memory region
+   that starts at START and of length LEN.  */
+
+tree
+asan_mem_ref_get_end (tree start, tree len)
+{
+  if (len == NULL_TREE || integer_zerop (len))
+    return start;
+
+  return fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (start), start, len);
+}
+
+/*  Return a tree expression that represents the end of the referenced
+    memory region.  Beware that this function can actually build a new
+    tree expression.  */
+
+tree
+asan_mem_ref_get_end (const asan_mem_ref *ref, tree len)
+{
+  return asan_mem_ref_get_end (ref->start, len);
+}
+
+struct asan_mem_ref_hasher
+  : typed_noop_remove <asan_mem_ref>
+{
+  typedef asan_mem_ref value_type;
+  typedef asan_mem_ref compare_type;
+
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Hash a memory reference.  */
+
+inline hashval_t
+asan_mem_ref_hasher::hash (const asan_mem_ref *mem_ref)
+{
+  hashval_t h = iterative_hash_expr (mem_ref->start, 0);
+  h = iterative_hash_hashval_t (h, mem_ref->access_size);
+  return h;
+}
+
+/* Compare two memory references.  We accept the length of either
+   memory references to be NULL_TREE.  */
+
+inline bool
+asan_mem_ref_hasher::equal (const asan_mem_ref *m1,
+			    const asan_mem_ref *m2)
+{
+  return (m1->access_size == m2->access_size
+	  && operand_equal_p (m1->start, m2->start, 0));
+}
+
+static hash_table <asan_mem_ref_hasher> asan_mem_ref_ht;
+
+/* Returns a reference to the hash table containing memory references.
+   This function ensures that the hash table is created.  Note that
+   this hash table is updated by the function
+   update_mem_ref_hash_table.  */
+
+static hash_table <asan_mem_ref_hasher> &
+get_mem_ref_hash_table ()
+{
+  if (!asan_mem_ref_ht.is_created ())
+    asan_mem_ref_ht.create (10);
+
+  return asan_mem_ref_ht;
+}
+
+/* Clear all entries from the memory references hash table.  */
+
+static void
+empty_mem_ref_hash_table ()
+{
+  if (asan_mem_ref_ht.is_created ())
+    asan_mem_ref_ht.empty ();
+}
+
+/* Free the memory references hash table.  */
+
+static void
+free_mem_ref_resources ()
+{
+  if (asan_mem_ref_ht.is_created ())
+    asan_mem_ref_ht.dispose ();
+
+  if (asan_mem_ref_alloc_pool)
+    {
+      free_alloc_pool (asan_mem_ref_alloc_pool);
+      asan_mem_ref_alloc_pool = NULL;
+    }
+}
+
+/* Return true iff the memory reference REF has been instrumented.  */
+
+static bool
+has_mem_ref_been_instrumented (tree ref, char access_size)
+{
+  asan_mem_ref r;
+  asan_mem_ref_init (&r, ref, access_size);
+
+  return (get_mem_ref_hash_table ().find (&r) != NULL);
+}
+
+/* Return true iff the memory reference REF has been instrumented.  */
+
+static bool
+has_mem_ref_been_instrumented (const asan_mem_ref *ref)
+{
+  return has_mem_ref_been_instrumented (ref->start, ref->access_size);
+}
+
+/* Return true iff access to memory region starting at REF and of
+   length LEN has been instrumented.  */
+
+static bool
+has_mem_ref_been_instrumented (const asan_mem_ref *ref, tree len)
+{
+  /* First let's see if the address of the beginning of REF has been
+     instrumented.  */
+  if (!has_mem_ref_been_instrumented (ref))
+    return false;
+
+  if (len != 0)
+    {
+      /* Let's see if the end of the region has been instrumented.  */
+      if (!has_mem_ref_been_instrumented (asan_mem_ref_get_end (ref, len),
+					  ref->access_size))
+	return false;
+    }
+  return true;
+}
+
+/* Set REF to the memory reference present in a gimple assignment
+   ASSIGNMENT.  Return true upon successful completion, false
+   otherwise.  */
+
+static bool
+get_mem_ref_of_assignment (const gimple assignment,
+			   asan_mem_ref *ref,
+			   bool *ref_is_store)
+{
+  gcc_assert (gimple_assign_single_p (assignment));
+
+  if (gimple_store_p (assignment))
+    {
+      ref->start = gimple_assign_lhs (assignment);
+      *ref_is_store = true;
+    }
+  else if (gimple_assign_load_p (assignment))
+    {
+      ref->start = gimple_assign_rhs1 (assignment);
+      *ref_is_store = false;
+    }
+  else
+    return false;
+
+  ref->access_size = int_size_in_bytes (TREE_TYPE (ref->start));
+  return true;
+}
+
+/* Return the memory references contained in a gimple statement
+   representing a builtin call that has to do with memory access.  */
+
+static bool
+get_mem_refs_of_builtin_call (const gimple call,
+			      asan_mem_ref *src0,
+			      tree *src0_len,
+			      bool *src0_is_store,
+			      asan_mem_ref *src1,
+			      tree *src1_len,
+			      bool *src1_is_store,
+			      asan_mem_ref *dst,
+			      tree *dst_len,
+			      bool *dst_is_store,
+			      bool *dest_is_deref)
+{
+  gcc_checking_assert (gimple_call_builtin_p (call, BUILT_IN_NORMAL));
+
+  tree callee = gimple_call_fndecl (call);
+  tree source0 = NULL_TREE, source1 = NULL_TREE,
+    dest = NULL_TREE, len = NULL_TREE;
+  bool is_store = true, got_reference_p = false;
+  char access_size = 1;
+
+  switch (DECL_FUNCTION_CODE (callee))
+    {
+      /* (s, s, n) style memops.  */
+    case BUILT_IN_BCMP:
+    case BUILT_IN_MEMCMP:
+      source0 = gimple_call_arg (call, 0);
+      source1 = gimple_call_arg (call, 1);
+      len = gimple_call_arg (call, 2);
+      break;
+
+      /* (src, dest, n) style memops.  */
+    case BUILT_IN_BCOPY:
+      source0 = gimple_call_arg (call, 0);
+      dest = gimple_call_arg (call, 1);
+      len = gimple_call_arg (call, 2);
+      break;
+
+      /* (dest, src, n) style memops.  */
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMCPY_CHK:
+    case BUILT_IN_MEMMOVE:
+    case BUILT_IN_MEMMOVE_CHK:
+    case BUILT_IN_MEMPCPY:
+    case BUILT_IN_MEMPCPY_CHK:
+      dest = gimple_call_arg (call, 0);
+      source0 = gimple_call_arg (call, 1);
+      len = gimple_call_arg (call, 2);
+      break;
+
+      /* (dest, n) style memops.  */
+    case BUILT_IN_BZERO:
+      dest = gimple_call_arg (call, 0);
+      len = gimple_call_arg (call, 1);
+      break;
+
+      /* (dest, x, n) style memops*/
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_MEMSET_CHK:
+      dest = gimple_call_arg (call, 0);
+      len = gimple_call_arg (call, 2);
+      break;
+
+    case BUILT_IN_STRLEN:
+      source0 = gimple_call_arg (call, 0);
+      len = gimple_call_lhs (call);
+      break ;
+
+    /* And now the __atomic* and __sync builtins.
+       These are handled differently from the classical memory memory
+       access builtins above.  */
+
+    case BUILT_IN_ATOMIC_LOAD_1:
+    case BUILT_IN_ATOMIC_LOAD_2:
+    case BUILT_IN_ATOMIC_LOAD_4:
+    case BUILT_IN_ATOMIC_LOAD_8:
+    case BUILT_IN_ATOMIC_LOAD_16:
+      is_store = false;
+      /* fall through.  */
+
+    case BUILT_IN_SYNC_FETCH_AND_ADD_1:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_2:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_4:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_8:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_SUB_1:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_2:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_4:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_8:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_OR_1:
+    case BUILT_IN_SYNC_FETCH_AND_OR_2:
+    case BUILT_IN_SYNC_FETCH_AND_OR_4:
+    case BUILT_IN_SYNC_FETCH_AND_OR_8:
+    case BUILT_IN_SYNC_FETCH_AND_OR_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_AND_1:
+    case BUILT_IN_SYNC_FETCH_AND_AND_2:
+    case BUILT_IN_SYNC_FETCH_AND_AND_4:
+    case BUILT_IN_SYNC_FETCH_AND_AND_8:
+    case BUILT_IN_SYNC_FETCH_AND_AND_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_XOR_1:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_2:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_4:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_8:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_NAND_1:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_2:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_4:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_8:
+
+    case BUILT_IN_SYNC_ADD_AND_FETCH_1:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_2:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_4:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_8:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_SUB_AND_FETCH_1:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_2:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_4:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_8:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_OR_AND_FETCH_1:
+    case BUILT_IN_SYNC_OR_AND_FETCH_2:
+    case BUILT_IN_SYNC_OR_AND_FETCH_4:
+    case BUILT_IN_SYNC_OR_AND_FETCH_8:
+    case BUILT_IN_SYNC_OR_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_AND_AND_FETCH_1:
+    case BUILT_IN_SYNC_AND_AND_FETCH_2:
+    case BUILT_IN_SYNC_AND_AND_FETCH_4:
+    case BUILT_IN_SYNC_AND_AND_FETCH_8:
+    case BUILT_IN_SYNC_AND_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_XOR_AND_FETCH_1:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_2:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_4:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_8:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_NAND_AND_FETCH_1:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_2:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_4:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_8:
+
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_16:
+
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_8:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_16:
+
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_1:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_2:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_4:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_8:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_16:
+
+    case BUILT_IN_SYNC_LOCK_RELEASE_1:
+    case BUILT_IN_SYNC_LOCK_RELEASE_2:
+    case BUILT_IN_SYNC_LOCK_RELEASE_4:
+    case BUILT_IN_SYNC_LOCK_RELEASE_8:
+    case BUILT_IN_SYNC_LOCK_RELEASE_16:
+
+    case BUILT_IN_ATOMIC_EXCHANGE_1:
+    case BUILT_IN_ATOMIC_EXCHANGE_2:
+    case BUILT_IN_ATOMIC_EXCHANGE_4:
+    case BUILT_IN_ATOMIC_EXCHANGE_8:
+    case BUILT_IN_ATOMIC_EXCHANGE_16:
+
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_2:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
+
+    case BUILT_IN_ATOMIC_STORE_1:
+    case BUILT_IN_ATOMIC_STORE_2:
+    case BUILT_IN_ATOMIC_STORE_4:
+    case BUILT_IN_ATOMIC_STORE_8:
+    case BUILT_IN_ATOMIC_STORE_16:
+
+    case BUILT_IN_ATOMIC_ADD_FETCH_1:
+    case BUILT_IN_ATOMIC_ADD_FETCH_2:
+    case BUILT_IN_ATOMIC_ADD_FETCH_4:
+    case BUILT_IN_ATOMIC_ADD_FETCH_8:
+    case BUILT_IN_ATOMIC_ADD_FETCH_16:
+
+    case BUILT_IN_ATOMIC_SUB_FETCH_1:
+    case BUILT_IN_ATOMIC_SUB_FETCH_2:
+    case BUILT_IN_ATOMIC_SUB_FETCH_4:
+    case BUILT_IN_ATOMIC_SUB_FETCH_8:
+    case BUILT_IN_ATOMIC_SUB_FETCH_16:
+
+    case BUILT_IN_ATOMIC_AND_FETCH_1:
+    case BUILT_IN_ATOMIC_AND_FETCH_2:
+    case BUILT_IN_ATOMIC_AND_FETCH_4:
+    case BUILT_IN_ATOMIC_AND_FETCH_8:
+    case BUILT_IN_ATOMIC_AND_FETCH_16:
+
+    case BUILT_IN_ATOMIC_NAND_FETCH_1:
+    case BUILT_IN_ATOMIC_NAND_FETCH_2:
+    case BUILT_IN_ATOMIC_NAND_FETCH_4:
+    case BUILT_IN_ATOMIC_NAND_FETCH_8:
+    case BUILT_IN_ATOMIC_NAND_FETCH_16:
+
+    case BUILT_IN_ATOMIC_XOR_FETCH_1:
+    case BUILT_IN_ATOMIC_XOR_FETCH_2:
+    case BUILT_IN_ATOMIC_XOR_FETCH_4:
+    case BUILT_IN_ATOMIC_XOR_FETCH_8:
+    case BUILT_IN_ATOMIC_XOR_FETCH_16:
+
+    case BUILT_IN_ATOMIC_OR_FETCH_1:
+    case BUILT_IN_ATOMIC_OR_FETCH_2:
+    case BUILT_IN_ATOMIC_OR_FETCH_4:
+    case BUILT_IN_ATOMIC_OR_FETCH_8:
+    case BUILT_IN_ATOMIC_OR_FETCH_16:
+
+    case BUILT_IN_ATOMIC_FETCH_ADD_1:
+    case BUILT_IN_ATOMIC_FETCH_ADD_2:
+    case BUILT_IN_ATOMIC_FETCH_ADD_4:
+    case BUILT_IN_ATOMIC_FETCH_ADD_8:
+    case BUILT_IN_ATOMIC_FETCH_ADD_16:
+
+    case BUILT_IN_ATOMIC_FETCH_SUB_1:
+    case BUILT_IN_ATOMIC_FETCH_SUB_2:
+    case BUILT_IN_ATOMIC_FETCH_SUB_4:
+    case BUILT_IN_ATOMIC_FETCH_SUB_8:
+    case BUILT_IN_ATOMIC_FETCH_SUB_16:
+
+    case BUILT_IN_ATOMIC_FETCH_AND_1:
+    case BUILT_IN_ATOMIC_FETCH_AND_2:
+    case BUILT_IN_ATOMIC_FETCH_AND_4:
+    case BUILT_IN_ATOMIC_FETCH_AND_8:
+    case BUILT_IN_ATOMIC_FETCH_AND_16:
+
+    case BUILT_IN_ATOMIC_FETCH_NAND_1:
+    case BUILT_IN_ATOMIC_FETCH_NAND_2:
+    case BUILT_IN_ATOMIC_FETCH_NAND_4:
+    case BUILT_IN_ATOMIC_FETCH_NAND_8:
+    case BUILT_IN_ATOMIC_FETCH_NAND_16:
+
+    case BUILT_IN_ATOMIC_FETCH_XOR_1:
+    case BUILT_IN_ATOMIC_FETCH_XOR_2:
+    case BUILT_IN_ATOMIC_FETCH_XOR_4:
+    case BUILT_IN_ATOMIC_FETCH_XOR_8:
+    case BUILT_IN_ATOMIC_FETCH_XOR_16:
+
+    case BUILT_IN_ATOMIC_FETCH_OR_1:
+    case BUILT_IN_ATOMIC_FETCH_OR_2:
+    case BUILT_IN_ATOMIC_FETCH_OR_4:
+    case BUILT_IN_ATOMIC_FETCH_OR_8:
+    case BUILT_IN_ATOMIC_FETCH_OR_16:
+      {
+	dest = gimple_call_arg (call, 0);
+	/* DEST represents the address of a memory location.
+	   instrument_derefs wants the memory location, so lets
+	   dereference the address DEST before handing it to
+	   instrument_derefs.  */
+	if (TREE_CODE (dest) == ADDR_EXPR)
+	  dest = TREE_OPERAND (dest, 0);
+	else if (TREE_CODE (dest) == SSA_NAME)
+	  dest = build2 (MEM_REF, TREE_TYPE (TREE_TYPE (dest)),
+			 dest, build_int_cst (TREE_TYPE (dest), 0));
+	else
+	  gcc_unreachable ();
+
+	access_size = int_size_in_bytes (TREE_TYPE (dest));
+      }
+
+    default:
+      /* The other builtins memory access are not instrumented in this
+	 function because they either don't have any length parameter,
+	 or their length parameter is just a limit.  */
+      break;
+    }
+
+  if (len != NULL_TREE)
+    {
+      if (source0 != NULL_TREE)
+	{
+	  src0->start = source0;
+	  src0->access_size = access_size;
+	  *src0_len = len;
+	  *src0_is_store = false;
+	}
+
+      if (source1 != NULL_TREE)
+	{
+	  src1->start = source1;
+	  src1->access_size = access_size;
+	  *src1_len = len;
+	  *src1_is_store = false;
+	}
+
+      if (dest != NULL_TREE)
+	{
+	  dst->start = dest;
+	  dst->access_size = access_size;
+	  *dst_len = len;
+	  *dst_is_store = true;
+	}
+
+      got_reference_p = true;
+    }
+  else if (dest)
+    {
+      dst->start = dest;
+      dst->access_size = access_size;
+      *dst_len = NULL_TREE;
+      *dst_is_store = is_store;
+      *dest_is_deref = true;
+      got_reference_p = true;
+    }
+
+  return got_reference_p;
+}
+
+/* Return true iff a given gimple statement has been instrumented.
+   Note that the statement is "defined" by the memory references it
+   contains.  */
+
+static bool
+has_stmt_been_instrumented_p (gimple stmt)
+{
+  if (gimple_assign_single_p (stmt))
+    {
+      bool r_is_store;
+      asan_mem_ref r;
+      asan_mem_ref_init (&r, NULL, 1);
+
+      if (get_mem_ref_of_assignment (stmt, &r, &r_is_store))
+	return has_mem_ref_been_instrumented (&r);
+    }
+  else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    {
+      asan_mem_ref src0, src1, dest;
+      asan_mem_ref_init (&src0, NULL, 1);
+      asan_mem_ref_init (&src1, NULL, 1);
+      asan_mem_ref_init (&dest, NULL, 1);
+
+      tree src0_len = NULL_TREE, src1_len = NULL_TREE, dest_len = NULL_TREE;
+      bool src0_is_store = false, src1_is_store = false,
+	dest_is_store = false, dest_is_deref = false;
+      if (get_mem_refs_of_builtin_call (stmt,
+					&src0, &src0_len, &src0_is_store,
+					&src1, &src1_len, &src1_is_store,
+					&dest, &dest_len, &dest_is_store,
+					&dest_is_deref))
+	{
+	  if (src0.start != NULL_TREE
+	      && !has_mem_ref_been_instrumented (&src0, src0_len))
+	    return false;
+
+	  if (src1.start != NULL_TREE
+	      && !has_mem_ref_been_instrumented (&src1, src1_len))
+	    return false;
+
+	  if (dest.start != NULL_TREE
+	      && !has_mem_ref_been_instrumented (&dest, dest_len))
+	    return false;
+
+	  return true;
+	}
+    }
+  return false;
+}
+
+/*  Insert a memory reference into the hash table.  */
+
+static void
+update_mem_ref_hash_table (tree ref, char access_size)
+{
+  hash_table <asan_mem_ref_hasher> ht = get_mem_ref_hash_table ();
+
+  asan_mem_ref r;
+  asan_mem_ref_init (&r, ref, access_size);
+
+  asan_mem_ref **slot = ht.find_slot (&r, INSERT);
+  if (*slot == NULL)
+    *slot = asan_mem_ref_new (ref, access_size);
+}
 
 /* Initialize shadow_ptr_types array.  */
 
@@ -569,6 +1182,9 @@ report_error_func (bool is_store, int size_in_bytes)
    'then block' of the condition statement to be inserted by the
    caller.
 
+   If CREATE_THEN_FALLTHRU_EDGE is false, no edge will be created from
+   *THEN_BLOCK to *FALLTHROUGH_BLOCK.
+
    Similarly, the function will set *FALLTRHOUGH_BLOCK to the 'else
    block' of the condition statement to be inserted by the caller.
 
@@ -585,6 +1201,7 @@ static gimple_stmt_iterator
 create_cond_insert_point (gimple_stmt_iterator *iter,
 			  bool before_p,
 			  bool then_more_likely_p,
+			  bool create_then_fallthru_edge,
 			  basic_block *then_block,
 			  basic_block *fallthrough_block)
 {
@@ -610,7 +1227,8 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
     ? PROB_VERY_UNLIKELY
     : PROB_ALWAYS - PROB_VERY_UNLIKELY;
   e->probability = PROB_ALWAYS - fallthrough_probability;
-  make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
+  if (create_then_fallthru_edge)
+    make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 
   /* Set up the fallthrough basic block.  */
   e = find_edge (cond_bb, fallthru_bb);
@@ -661,6 +1279,7 @@ insert_if_then_before_iter (gimple cond,
     create_cond_insert_point (iter,
 			      /*before_p=*/true,
 			      then_more_likely_p,
+			      /*create_then_fallthru_edge=*/true,
 			      then_bb,
 			      fallthrough_bb);
   gsi_insert_after (&cond_insert_point, cond, GSI_NEW_STMT);
@@ -698,6 +1317,7 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
      statement for the instrumentation.  */
   gsi = create_cond_insert_point (iter, before_p,
 				  /*then_more_likely_p=*/false,
+				  /*create_then_fallthru_edge=*/false,
 				  &then_bb,
 				  &else_bb);
 
@@ -835,7 +1455,7 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
 
 static void
 instrument_derefs (gimple_stmt_iterator *iter, tree t,
-		  location_t location, bool is_store)
+		   location_t location, bool is_store)
 {
   tree type, base;
   HOST_WIDE_INT size_in_bytes;
@@ -878,8 +1498,14 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     }
 
   base = build_fold_addr_expr (t);
-  build_check_stmt (location, base, iter, /*before_p=*/true,
-		    is_store, size_in_bytes);
+  if (!has_mem_ref_been_instrumented (base, size_in_bytes))
+    {
+      build_check_stmt (location, base, iter, /*before_p=*/true,
+			is_store, size_in_bytes);
+      update_mem_ref_hash_table (base, size_in_bytes);
+      update_mem_ref_hash_table (t, size_in_bytes);
+    }
+
 }
 
 /* Instrument an access to a contiguous memory region that starts at
@@ -903,6 +1529,19 @@ instrument_mem_region_access (tree base, tree len,
   gimple_stmt_iterator gsi = *iter;
 
   basic_block fallthrough_bb = NULL, then_bb = NULL;
+
+  /* If the beginning of the memory region has already been
+     instrumented, do not instrument it.  */
+  bool start_instrumented = has_mem_ref_been_instrumented (base, 1);
+
+  /* If the end of the memory region has already been instrumented, do
+     not instrument it. */
+  tree end = asan_mem_ref_get_end (base, len);
+  bool end_instrumented = has_mem_ref_been_instrumented (end, 1);
+
+  if (start_instrumented && end_instrumented)
+    return;
+
   if (!is_gimple_constant (len))
     {
       /* So, the length of the memory area to asan-protect is
@@ -927,23 +1566,35 @@ instrument_mem_region_access (tree base, tree len,
 
       /* The 'then block' of the 'if (len != 0) condition is where
 	 we'll generate the asan instrumentation code now.  */
-      gsi = gsi_start_bb (then_bb);
+      gsi = gsi_last_bb (then_bb);
     }
 
-  /* Instrument the beginning of the memory region to be accessed,
-     and arrange for the rest of the intrumentation code to be
-     inserted in the then block *after* the current gsi.  */
-  build_check_stmt (location, base, &gsi, /*before_p=*/true, is_store, 1);
+  if (!start_instrumented)
+    {
+      /* Instrument the beginning of the memory region to be accessed,
+	 and arrange for the rest of the intrumentation code to be
+	 inserted in the then block *after* the current gsi.  */
+      build_check_stmt (location, base, &gsi, /*before_p=*/true, is_store, 1);
 
-  if (then_bb)
-    /* We are in the case where the length of the region is not
-       constant; so instrumentation code is being generated in the
-       'then block' of the 'if (len != 0) condition.  Let's arrange
-       for the subsequent instrumentation statements to go in the
-       'then block'.  */
-    gsi = gsi_last_bb (then_bb);
-  else
-    *iter = gsi;
+      if (then_bb)
+	/* We are in the case where the length of the region is not
+	   constant; so instrumentation code is being generated in the
+	   'then block' of the 'if (len != 0) condition.  Let's arrange
+	   for the subsequent instrumentation statements to go in the
+	   'then block'.  */
+	gsi = gsi_last_bb (then_bb);
+      else
+        {
+          *iter = gsi;
+	  /* Don't remember this access as instrumented, if length
+	     is unknown.  It might be zero and not being actually
+	     instrumented, so we can't rely on it being instrumented.  */
+          update_mem_ref_hash_table (base, 1);
+	}
+    }
+
+  if (end_instrumented)
+    return;
 
   /* We want to instrument the access at the end of the memory region,
      which is at (base + len - 1).  */
@@ -994,8 +1645,6 @@ instrument_mem_region_access (tree base, tree len,
 				  base, NULL);
   gimple_set_location (region_end, location);
   gimple_seq_add_stmt_without_update (&seq, region_end);
-  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
-  gsi_prev (&gsi);
 
   /* _2 = _1 + offset;  */
   region_end =
@@ -1004,11 +1653,18 @@ instrument_mem_region_access (tree base, tree len,
 				  gimple_assign_lhs (region_end),
 				  offset);
   gimple_set_location (region_end, location);
-  gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
+  gimple_seq_add_stmt_without_update (&seq, region_end);
+  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 
   /* instrument access at _2;  */
+  gsi = gsi_for_stmt (region_end);
   build_check_stmt (location, gimple_assign_lhs (region_end),
 		    &gsi, /*before_p=*/false, is_store, 1);
+
+  if (then_bb == NULL)
+    update_mem_ref_hash_table (end, 1);
+
+  *iter = gsi_for_stmt (gsi_stmt (*iter));
 }
 
 /* Instrument the call (to the builtin strlen function) pointed to by
@@ -1101,315 +1757,100 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
 static bool
 instrument_builtin_call (gimple_stmt_iterator *iter)
 {
+  bool iter_advanced_p = false;
   gimple call = gsi_stmt (*iter);
 
-  gcc_checking_assert (is_gimple_builtin_call (call));
+  gcc_checking_assert (gimple_call_builtin_p (call, BUILT_IN_NORMAL));
 
   tree callee = gimple_call_fndecl (call);
   location_t loc = gimple_location (call);
-  tree source0 = NULL_TREE, source1 = NULL_TREE,
-    dest = NULL_TREE, len = NULL_TREE;
-  bool is_store = true;
 
-  switch (DECL_FUNCTION_CODE (callee))
+  if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STRLEN)
+    iter_advanced_p = instrument_strlen_call (iter);
+  else
     {
-      /* (s, s, n) style memops.  */
-    case BUILT_IN_BCMP:
-    case BUILT_IN_MEMCMP:
-      source0 = gimple_call_arg (call, 0);
-      source1 = gimple_call_arg (call, 1);
-      len = gimple_call_arg (call, 2);
-      break;
+      asan_mem_ref src0, src1, dest;
+      asan_mem_ref_init (&src0, NULL, 1);
+      asan_mem_ref_init (&src1, NULL, 1);
+      asan_mem_ref_init (&dest, NULL, 1);
 
-      /* (src, dest, n) style memops.  */
-    case BUILT_IN_BCOPY:
-      source0 = gimple_call_arg (call, 0);
-      dest = gimple_call_arg (call, 1);
-      len = gimple_call_arg (call, 2);
-      break;
+      tree src0_len = NULL_TREE, src1_len = NULL_TREE, dest_len = NULL_TREE;
+      bool src0_is_store = false, src1_is_store = false,
+	dest_is_store = false, dest_is_deref = false;
 
-      /* (dest, src, n) style memops.  */
-    case BUILT_IN_MEMCPY:
-    case BUILT_IN_MEMCPY_CHK:
-    case BUILT_IN_MEMMOVE:
-    case BUILT_IN_MEMMOVE_CHK:
-    case BUILT_IN_MEMPCPY:
-    case BUILT_IN_MEMPCPY_CHK:
-      dest = gimple_call_arg (call, 0);
-      source0 = gimple_call_arg (call, 1);
-      len = gimple_call_arg (call, 2);
-      break;
-
-      /* (dest, n) style memops.  */
-    case BUILT_IN_BZERO:
-      dest = gimple_call_arg (call, 0);
-      len = gimple_call_arg (call, 1);
-      break;
-
-      /* (dest, x, n) style memops*/
-    case BUILT_IN_MEMSET:
-    case BUILT_IN_MEMSET_CHK:
-      dest = gimple_call_arg (call, 0);
-      len = gimple_call_arg (call, 2);
-      break;
-
-    case BUILT_IN_STRLEN:
-      return instrument_strlen_call (iter);
-
-    /* And now the __atomic* and __sync builtins.
-       These are handled differently from the classical memory memory
-       access builtins above.  */
-
-    case BUILT_IN_ATOMIC_LOAD_1:
-    case BUILT_IN_ATOMIC_LOAD_2:
-    case BUILT_IN_ATOMIC_LOAD_4:
-    case BUILT_IN_ATOMIC_LOAD_8:
-    case BUILT_IN_ATOMIC_LOAD_16:
-      is_store = false;
-      /* fall through.  */
-
-    case BUILT_IN_SYNC_FETCH_AND_ADD_1:
-    case BUILT_IN_SYNC_FETCH_AND_ADD_2:
-    case BUILT_IN_SYNC_FETCH_AND_ADD_4:
-    case BUILT_IN_SYNC_FETCH_AND_ADD_8:
-    case BUILT_IN_SYNC_FETCH_AND_ADD_16:
-
-    case BUILT_IN_SYNC_FETCH_AND_SUB_1:
-    case BUILT_IN_SYNC_FETCH_AND_SUB_2:
-    case BUILT_IN_SYNC_FETCH_AND_SUB_4:
-    case BUILT_IN_SYNC_FETCH_AND_SUB_8:
-    case BUILT_IN_SYNC_FETCH_AND_SUB_16:
-
-    case BUILT_IN_SYNC_FETCH_AND_OR_1:
-    case BUILT_IN_SYNC_FETCH_AND_OR_2:
-    case BUILT_IN_SYNC_FETCH_AND_OR_4:
-    case BUILT_IN_SYNC_FETCH_AND_OR_8:
-    case BUILT_IN_SYNC_FETCH_AND_OR_16:
-
-    case BUILT_IN_SYNC_FETCH_AND_AND_1:
-    case BUILT_IN_SYNC_FETCH_AND_AND_2:
-    case BUILT_IN_SYNC_FETCH_AND_AND_4:
-    case BUILT_IN_SYNC_FETCH_AND_AND_8:
-    case BUILT_IN_SYNC_FETCH_AND_AND_16:
-
-    case BUILT_IN_SYNC_FETCH_AND_XOR_1:
-    case BUILT_IN_SYNC_FETCH_AND_XOR_2:
-    case BUILT_IN_SYNC_FETCH_AND_XOR_4:
-    case BUILT_IN_SYNC_FETCH_AND_XOR_8:
-    case BUILT_IN_SYNC_FETCH_AND_XOR_16:
-
-    case BUILT_IN_SYNC_FETCH_AND_NAND_1:
-    case BUILT_IN_SYNC_FETCH_AND_NAND_2:
-    case BUILT_IN_SYNC_FETCH_AND_NAND_4:
-    case BUILT_IN_SYNC_FETCH_AND_NAND_8:
-
-    case BUILT_IN_SYNC_ADD_AND_FETCH_1:
-    case BUILT_IN_SYNC_ADD_AND_FETCH_2:
-    case BUILT_IN_SYNC_ADD_AND_FETCH_4:
-    case BUILT_IN_SYNC_ADD_AND_FETCH_8:
-    case BUILT_IN_SYNC_ADD_AND_FETCH_16:
-
-    case BUILT_IN_SYNC_SUB_AND_FETCH_1:
-    case BUILT_IN_SYNC_SUB_AND_FETCH_2:
-    case BUILT_IN_SYNC_SUB_AND_FETCH_4:
-    case BUILT_IN_SYNC_SUB_AND_FETCH_8:
-    case BUILT_IN_SYNC_SUB_AND_FETCH_16:
-
-    case BUILT_IN_SYNC_OR_AND_FETCH_1:
-    case BUILT_IN_SYNC_OR_AND_FETCH_2:
-    case BUILT_IN_SYNC_OR_AND_FETCH_4:
-    case BUILT_IN_SYNC_OR_AND_FETCH_8:
-    case BUILT_IN_SYNC_OR_AND_FETCH_16:
-
-    case BUILT_IN_SYNC_AND_AND_FETCH_1:
-    case BUILT_IN_SYNC_AND_AND_FETCH_2:
-    case BUILT_IN_SYNC_AND_AND_FETCH_4:
-    case BUILT_IN_SYNC_AND_AND_FETCH_8:
-    case BUILT_IN_SYNC_AND_AND_FETCH_16:
-
-    case BUILT_IN_SYNC_XOR_AND_FETCH_1:
-    case BUILT_IN_SYNC_XOR_AND_FETCH_2:
-    case BUILT_IN_SYNC_XOR_AND_FETCH_4:
-    case BUILT_IN_SYNC_XOR_AND_FETCH_8:
-    case BUILT_IN_SYNC_XOR_AND_FETCH_16:
-
-    case BUILT_IN_SYNC_NAND_AND_FETCH_1:
-    case BUILT_IN_SYNC_NAND_AND_FETCH_2:
-    case BUILT_IN_SYNC_NAND_AND_FETCH_4:
-    case BUILT_IN_SYNC_NAND_AND_FETCH_8:
-
-    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_1:
-    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_2:
-    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4:
-    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8:
-    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_16:
-
-    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_1:
-    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_2:
-    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_4:
-    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_8:
-    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_16:
-
-    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_1:
-    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_2:
-    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_4:
-    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_8:
-    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_16:
-
-    case BUILT_IN_SYNC_LOCK_RELEASE_1:
-    case BUILT_IN_SYNC_LOCK_RELEASE_2:
-    case BUILT_IN_SYNC_LOCK_RELEASE_4:
-    case BUILT_IN_SYNC_LOCK_RELEASE_8:
-    case BUILT_IN_SYNC_LOCK_RELEASE_16:
-
-    case BUILT_IN_ATOMIC_EXCHANGE_1:
-    case BUILT_IN_ATOMIC_EXCHANGE_2:
-    case BUILT_IN_ATOMIC_EXCHANGE_4:
-    case BUILT_IN_ATOMIC_EXCHANGE_8:
-    case BUILT_IN_ATOMIC_EXCHANGE_16:
-
-    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1:
-    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_2:
-    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4:
-    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8:
-    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
-
-    case BUILT_IN_ATOMIC_STORE_1:
-    case BUILT_IN_ATOMIC_STORE_2:
-    case BUILT_IN_ATOMIC_STORE_4:
-    case BUILT_IN_ATOMIC_STORE_8:
-    case BUILT_IN_ATOMIC_STORE_16:
-
-    case BUILT_IN_ATOMIC_ADD_FETCH_1:
-    case BUILT_IN_ATOMIC_ADD_FETCH_2:
-    case BUILT_IN_ATOMIC_ADD_FETCH_4:
-    case BUILT_IN_ATOMIC_ADD_FETCH_8:
-    case BUILT_IN_ATOMIC_ADD_FETCH_16:
-
-    case BUILT_IN_ATOMIC_SUB_FETCH_1:
-    case BUILT_IN_ATOMIC_SUB_FETCH_2:
-    case BUILT_IN_ATOMIC_SUB_FETCH_4:
-    case BUILT_IN_ATOMIC_SUB_FETCH_8:
-    case BUILT_IN_ATOMIC_SUB_FETCH_16:
-
-    case BUILT_IN_ATOMIC_AND_FETCH_1:
-    case BUILT_IN_ATOMIC_AND_FETCH_2:
-    case BUILT_IN_ATOMIC_AND_FETCH_4:
-    case BUILT_IN_ATOMIC_AND_FETCH_8:
-    case BUILT_IN_ATOMIC_AND_FETCH_16:
-
-    case BUILT_IN_ATOMIC_NAND_FETCH_1:
-    case BUILT_IN_ATOMIC_NAND_FETCH_2:
-    case BUILT_IN_ATOMIC_NAND_FETCH_4:
-    case BUILT_IN_ATOMIC_NAND_FETCH_8:
-    case BUILT_IN_ATOMIC_NAND_FETCH_16:
-
-    case BUILT_IN_ATOMIC_XOR_FETCH_1:
-    case BUILT_IN_ATOMIC_XOR_FETCH_2:
-    case BUILT_IN_ATOMIC_XOR_FETCH_4:
-    case BUILT_IN_ATOMIC_XOR_FETCH_8:
-    case BUILT_IN_ATOMIC_XOR_FETCH_16:
-
-    case BUILT_IN_ATOMIC_OR_FETCH_1:
-    case BUILT_IN_ATOMIC_OR_FETCH_2:
-    case BUILT_IN_ATOMIC_OR_FETCH_4:
-    case BUILT_IN_ATOMIC_OR_FETCH_8:
-    case BUILT_IN_ATOMIC_OR_FETCH_16:
-
-    case BUILT_IN_ATOMIC_FETCH_ADD_1:
-    case BUILT_IN_ATOMIC_FETCH_ADD_2:
-    case BUILT_IN_ATOMIC_FETCH_ADD_4:
-    case BUILT_IN_ATOMIC_FETCH_ADD_8:
-    case BUILT_IN_ATOMIC_FETCH_ADD_16:
-
-    case BUILT_IN_ATOMIC_FETCH_SUB_1:
-    case BUILT_IN_ATOMIC_FETCH_SUB_2:
-    case BUILT_IN_ATOMIC_FETCH_SUB_4:
-    case BUILT_IN_ATOMIC_FETCH_SUB_8:
-    case BUILT_IN_ATOMIC_FETCH_SUB_16:
-
-    case BUILT_IN_ATOMIC_FETCH_AND_1:
-    case BUILT_IN_ATOMIC_FETCH_AND_2:
-    case BUILT_IN_ATOMIC_FETCH_AND_4:
-    case BUILT_IN_ATOMIC_FETCH_AND_8:
-    case BUILT_IN_ATOMIC_FETCH_AND_16:
-
-    case BUILT_IN_ATOMIC_FETCH_NAND_1:
-    case BUILT_IN_ATOMIC_FETCH_NAND_2:
-    case BUILT_IN_ATOMIC_FETCH_NAND_4:
-    case BUILT_IN_ATOMIC_FETCH_NAND_8:
-    case BUILT_IN_ATOMIC_FETCH_NAND_16:
-
-    case BUILT_IN_ATOMIC_FETCH_XOR_1:
-    case BUILT_IN_ATOMIC_FETCH_XOR_2:
-    case BUILT_IN_ATOMIC_FETCH_XOR_4:
-    case BUILT_IN_ATOMIC_FETCH_XOR_8:
-    case BUILT_IN_ATOMIC_FETCH_XOR_16:
-
-    case BUILT_IN_ATOMIC_FETCH_OR_1:
-    case BUILT_IN_ATOMIC_FETCH_OR_2:
-    case BUILT_IN_ATOMIC_FETCH_OR_4:
-    case BUILT_IN_ATOMIC_FETCH_OR_8:
-    case BUILT_IN_ATOMIC_FETCH_OR_16:
-      {
-	dest = gimple_call_arg (call, 0);
-	/* So DEST represents the address of a memory location.
-	   instrument_derefs wants the memory location, so lets
-	   dereference the address DEST before handing it to
-	   instrument_derefs.  */
-	if (TREE_CODE (dest) == ADDR_EXPR)
-	  dest = TREE_OPERAND (dest, 0);
-	else if (TREE_CODE (dest) == SSA_NAME)
-	  dest = build2 (MEM_REF, TREE_TYPE (TREE_TYPE (dest)),
-			 dest, build_int_cst (TREE_TYPE (dest), 0));
-	else
-	  gcc_unreachable ();
-
-	instrument_derefs (iter, dest, loc, is_store);
-	return false;
-      }
-
-    default:
-      /* The other builtins memory access are not instrumented in this
-	 function because they either don't have any length parameter,
-	 or their length parameter is just a limit.  */
-      break;
+      if (get_mem_refs_of_builtin_call (call,
+					&src0, &src0_len, &src0_is_store,
+					&src1, &src1_len, &src1_is_store,
+					&dest, &dest_len, &dest_is_store,
+					&dest_is_deref))
+	{
+	  if (dest_is_deref)
+	    {
+	      instrument_derefs (iter, dest.start, loc, dest_is_store);
+	      gsi_next (iter);
+	      iter_advanced_p = true;
+	    }
+	  else if (src0_len || src1_len || dest_len)
+	    {
+	      if (src0.start != NULL_TREE)
+		instrument_mem_region_access (src0.start, src0_len,
+					      iter, loc, /*is_store=*/false);
+	      if (src1.start != NULL_TREE)
+		instrument_mem_region_access (src1.start, src1_len,
+					      iter, loc, /*is_store=*/false);
+	      if (dest.start != NULL_TREE)
+		instrument_mem_region_access (dest.start, dest_len,
+					      iter, loc, /*is_store=*/true);
+	      *iter = gsi_for_stmt (call);
+	      gsi_next (iter);
+	      iter_advanced_p = true;
+	    }
+	}
     }
-
-  if (len != NULL_TREE)
-    {
-      if (source0 != NULL_TREE)
-	instrument_mem_region_access (source0, len, iter,
-				      loc, /*is_store=*/false);
-      if (source1 != NULL_TREE)
-	instrument_mem_region_access (source1, len, iter,
-				      loc, /*is_store=*/false);
-      else if (dest != NULL_TREE)
-	instrument_mem_region_access (dest, len, iter,
-				      loc, /*is_store=*/true);
-
-      *iter = gsi_for_stmt (call);
-      return false;
-    }
-  return false;
+  return iter_advanced_p;
 }
 
 /*  Instrument the assignment statement ITER if it is subject to
-    instrumentation.  */
+    instrumentation.  Return TRUE iff instrumentation actually
+    happened.  In that case, the iterator ITER is advanced to the next
+    logical expression following the one initially pointed to by ITER,
+    and the relevant memory reference that which access has been
+    instrumented is added to the memory references hash table.  */
 
-static void
-instrument_assignment (gimple_stmt_iterator *iter)
+static bool
+maybe_instrument_assignment (gimple_stmt_iterator *iter)
 {
   gimple s = gsi_stmt (*iter);
 
   gcc_assert (gimple_assign_single_p (s));
 
+  tree ref_expr = NULL_TREE;
+  bool is_store, is_instrumented = false;
+
   if (gimple_store_p (s))
-    instrument_derefs (iter, gimple_assign_lhs (s),
-		       gimple_location (s), true);
+    {
+      ref_expr = gimple_assign_lhs (s);
+      is_store = true;
+      instrument_derefs (iter, ref_expr,
+			 gimple_location (s),
+			 is_store);
+      is_instrumented = true;
+    }
+ 
   if (gimple_assign_load_p (s))
-    instrument_derefs (iter, gimple_assign_rhs1 (s),
-		       gimple_location (s), false);
+    {
+      ref_expr = gimple_assign_rhs1 (s);
+      is_store = false;
+      instrument_derefs (iter, ref_expr,
+			 gimple_location (s),
+			 is_store);
+      is_instrumented = true;
+    }
+
+  if (is_instrumented)
+    gsi_next (iter);
+
+  return is_instrumented;
 }
 
 /* Instrument the function call pointed to by the iterator ITER, if it
@@ -1424,10 +1865,11 @@ static bool
 maybe_instrument_call (gimple_stmt_iterator *iter)
 {
   gimple stmt = gsi_stmt (*iter);
-  bool is_builtin = is_gimple_builtin_call (stmt);
-  if (is_builtin
-      && instrument_builtin_call (iter))
+  bool is_builtin = gimple_call_builtin_p (stmt, BUILT_IN_NORMAL);
+
+  if (is_builtin && instrument_builtin_call (iter))
     return true;
+
   if (gimple_call_noreturn_p (stmt))
     {
       if (is_builtin)
@@ -1449,38 +1891,68 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
   return false;
 }
 
-/* asan: this looks too complex. Can this be done simpler? */
-/* Transform
-   1) Memory references.
-   2) BUILTIN_ALLOCA calls.
-*/
+/* Walk each instruction of all basic block and instrument those that
+   represent memory references: loads, stores, or function calls.
+   In a given basic block, this function avoids instrumenting memory
+   references that have already been instrumented.  */
 
 static void
 transform_statements (void)
 {
-  basic_block bb;
+  basic_block bb, last_bb = NULL;
   gimple_stmt_iterator i;
   int saved_last_basic_block = last_basic_block;
 
   FOR_EACH_BB (bb)
     {
+      basic_block prev_bb = bb;
+
       if (bb->index >= saved_last_basic_block) continue;
+
+      /* Flush the mem ref hash table, if current bb doesn't have
+	 exactly one predecessor, or if that predecessor (skipping
+	 over asan created basic blocks) isn't the last processed
+	 basic block.  Thus we effectively flush on extended basic
+	 block boundaries.  */
+      while (single_pred_p (prev_bb))
+	{
+	  prev_bb = single_pred (prev_bb);
+	  if (prev_bb->index < saved_last_basic_block)
+	    break;
+	}
+      if (prev_bb != last_bb)
+	empty_mem_ref_hash_table ();
+      last_bb = bb;
+
       for (i = gsi_start_bb (bb); !gsi_end_p (i);)
 	{
 	  gimple s = gsi_stmt (i);
 
-	  if (gimple_assign_single_p (s))
-	    instrument_assignment (&i);
-	  else if (is_gimple_call (s))
+	  if (has_stmt_been_instrumented_p (s))
+	    gsi_next (&i);
+	  else if (gimple_assign_single_p (s)
+		   && maybe_instrument_assignment (&i))
+	    /*  Nothing to do as maybe_instrument_assignment advanced
+		the iterator I.  */;
+	  else if (is_gimple_call (s) && maybe_instrument_call (&i))
+	    /*  Nothing to do as maybe_instrument_call
+		advanced the iterator I.  */;
+	  else
 	    {
-	      if (maybe_instrument_call (&i))
-		/* Avoid gsi_next (&i), because maybe_instrument_call
-		   advanced the I iterator already.  */
-		continue;
+	      /* No instrumentation happened.
+
+		 If the current instruction is a function call that
+		 might free something, let's forget about the memory
+		 references that got instrumented.  Otherwise we might
+		 miss some instrumentation opportunities.  */
+	      if (is_gimple_call (s) && !nonfreeing_call_p (s))
+		empty_mem_ref_hash_table ();
+
+	      gsi_next (&i);
 	    }
-	  gsi_next (&i);
 	}
     }
+  free_mem_ref_resources ();
 }
 
 /* Build

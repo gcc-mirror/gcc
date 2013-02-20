@@ -83,13 +83,14 @@ along with GCC; see the file COPYING3.  If not see
    kernel) the stubs might still be required, and this will be set true.  */
 int darwin_emit_branch_islands = false;
 
-typedef struct GTY(()) ctor_record {
+typedef struct GTY(()) cdtor_record {
   rtx symbol;
-  int priority;		/* constructor priority */
+  int priority;		/* [con/de]structor priority */
   int position;		/* original position */
-} ctor_record;
+} cdtor_record;
 
-static GTY(()) vec<ctor_record, va_gc> *ctors = NULL;
+static GTY(()) vec<cdtor_record, va_gc> *ctors = NULL;
+static GTY(()) vec<cdtor_record, va_gc> *dtors = NULL;
 
 /* A flag to determine whether we are running c++ or obj-c++.  This has to be
    settable from non-c-family contexts too (i.e. we can't use the c_dialect_
@@ -1716,7 +1717,7 @@ machopic_select_rtx_section (enum machine_mode mode, rtx x,
 void
 machopic_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
-  ctor_record new_elt = {symbol, priority, vec_safe_length (ctors)};
+  cdtor_record new_elt = {symbol, priority, vec_safe_length (ctors)};
 
   vec_safe_push (ctors, new_elt);
 
@@ -1724,27 +1725,38 @@ machopic_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
     fprintf (asm_out_file, ".reference .constructors_used\n");
 }
 
-static int
-sort_ctor_records (const void * a, const void * b)
+void
+machopic_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
-  const ctor_record *ca = (const ctor_record *)a;
-  const ctor_record *cb = (const ctor_record *)b;
-  if (ca->priority > cb->priority)
+  cdtor_record new_elt = {symbol, priority, vec_safe_length (dtors)};
+
+  vec_safe_push (dtors, new_elt);
+
+  if (! MACHOPIC_INDIRECT)
+    fprintf (asm_out_file, ".reference .destructors_used\n");
+}
+
+static int
+sort_cdtor_records (const void * a, const void * b)
+{
+  const cdtor_record *cda = (const cdtor_record *)a;
+  const cdtor_record *cdb = (const cdtor_record *)b;
+  if (cda->priority > cdb->priority)
     return 1;
-  if (ca->priority < cb->priority)
+  if (cda->priority < cdb->priority)
     return -1;
-  if (ca->position > cb->position)
+  if (cda->position > cdb->position)
     return 1;
-  if (ca->position < cb->position)
+  if (cda->position < cdb->position)
     return -1;
   return 0;
 }
 
 static void 
-finalize_ctors()
+finalize_ctors ()
 {
   unsigned int i;
-  ctor_record *elt;
+  cdtor_record *elt;
  
   if (MACHOPIC_INDIRECT)
     switch_to_section (darwin_sections[mod_init_section]);
@@ -1752,7 +1764,7 @@ finalize_ctors()
     switch_to_section (darwin_sections[constructor_section]);
 
   if (vec_safe_length (ctors) > 1)
-    ctors->qsort (sort_ctor_records);
+    ctors->qsort (sort_cdtor_records);
   FOR_EACH_VEC_SAFE_ELT (ctors, i, elt)
     {
       assemble_align (POINTER_SIZE);
@@ -1760,18 +1772,24 @@ finalize_ctors()
     }
 }
 
-void
-machopic_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
+static void
+finalize_dtors ()
 {
+  unsigned int i;
+  cdtor_record *elt;
+
   if (MACHOPIC_INDIRECT)
     switch_to_section (darwin_sections[mod_term_section]);
   else
     switch_to_section (darwin_sections[destructor_section]);
-  assemble_align (POINTER_SIZE);
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
-  if (! MACHOPIC_INDIRECT)
-    fprintf (asm_out_file, ".reference .destructors_used\n");
+  if (vec_safe_length (dtors) > 1)
+    dtors->qsort (sort_cdtor_records);
+  FOR_EACH_VEC_SAFE_ELT (dtors, i, elt)
+    {
+      assemble_align (POINTER_SIZE);
+      assemble_integer (elt->symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+    }
 }
 
 void
@@ -2804,7 +2822,9 @@ void
 darwin_file_end (void)
 {
   if (!vec_safe_is_empty (ctors))
-    finalize_ctors();
+    finalize_ctors ();
+  if (!vec_safe_is_empty (dtors))
+    finalize_dtors ();
   machopic_finish (asm_out_file);
   if (strcmp (lang_hooks.name, "GNU C++") == 0)
     {
