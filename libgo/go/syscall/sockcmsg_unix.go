@@ -8,7 +8,10 @@
 
 package syscall
 
-import "unsafe"
+import (
+	"runtime"
+	"unsafe"
+)
 
 // Round the length of a raw sockaddr up to align it propery.
 func cmsgAlignOf(salen int) int {
@@ -16,6 +19,11 @@ func cmsgAlignOf(salen int) int {
 	// NOTE: It seems like 64-bit Darwin kernel still requires 32-bit
 	// aligned access to BSD subsystem.
 	if darwinAMD64 {
+		salign = 4
+	}
+	// NOTE: Solaris always uses 32-bit alignment,
+	// cf. _CMSG_DATA_ALIGNMENT in <sys/socket.h>.
+	if runtime.GOOS == "solaris" {
 		salign = 4
 	}
 	if salen == 0 {

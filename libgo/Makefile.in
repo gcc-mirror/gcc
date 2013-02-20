@@ -1849,6 +1849,10 @@ go_unicode_utf8_files = \
 
 # Define socket sizes and types.
 @LIBGO_IS_LINUX_TRUE@syscall_socket_file = go/syscall/socket_linux.go epoll.go
+@LIBGO_IS_SOLARIS_FALSE@syscall_socket_os_file = go/syscall/socket_posix.go
+
+# Define socket functions.
+@LIBGO_IS_SOLARIS_TRUE@syscall_socket_os_file = go/syscall/socket_xnet.go
 @LIBGO_IS_386_FALSE@@LIBGO_IS_SOLARIS_TRUE@syscall_uname_file = go/syscall/libcall_uname.go
 
 # Support for uname.
@@ -1894,6 +1898,7 @@ go_base_syscall_files = \
 	$(syscall_errstr_file) \
 	$(syscall_size_file) \
 	$(syscall_socket_file) \
+	$(syscall_socket_os_file) \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
 	$(syscall_lsf_file) \
@@ -4448,11 +4453,18 @@ s-version: Makefile
 	$(STAMP) $@
 
 libcalls.go: s-libcalls; @true
-s-libcalls: Makefile go/syscall/mksyscall.awk $(go_base_syscall_files)
+s-libcalls: libcalls-list go/syscall/mksyscall.awk $(go_base_syscall_files)
 	rm -f libcalls.go.tmp
-	files=`echo $^ | sed -e 's/Makefile//' -e 's|[^ ]*go/syscall/mksyscall.awk||'`; \
+	files=`echo $^ | sed -e 's/libcalls-list//' -e 's|[^ ]*go/syscall/mksyscall.awk||'`; \
 	$(AWK) -f $(srcdir)/go/syscall/mksyscall.awk $${files} > libcalls.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change libcalls.go.tmp libcalls.go
+	$(STAMP) $@
+
+libcalls-list: s-libcalls-list; @true
+s-libcalls-list: Makefile
+	rm -f libcalls-list.tmp
+	echo $(go_base_syscall_files) > libcalls-list.tmp
+	$(SHELL) $(srcdir)/../move-if-change libcalls-list.tmp libcalls-list
 	$(STAMP) $@
 
 syscall_arch.go: s-syscall_arch; @true
