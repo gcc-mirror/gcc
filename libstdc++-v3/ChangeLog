@@ -1,5 +1,11 @@
 2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/streambuf (basic_streambuf): Use injected class name
+	instead of non-standard __streambuf_type typedef. Fix unclosed Doxygen
+	group.
+
+2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/html/faq.html: Fix spelling.
 	* doc/xml/faq.xml: Likewise.
 	* include/bits/basic_ios.h: Likewise.
