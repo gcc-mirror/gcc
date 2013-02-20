@@ -1,3 +1,10 @@
+2013-02-20  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.tgt: Add "-lpthread" if linking with
+	portals4 runtime.  Newer systems are linking with
+	the ld.gold which does no allow for linking to
+	required libraries through intermediate objects/libraries.
+
 2012-12-11  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: As libgupc is not built yet, make sure

@@ -95,9 +95,11 @@ LIBS="-lm $LIBS"
 if test "${upc_numa}" = "yes"; then
   LIBS="-lnuma $LIBS"
 fi
-if test "$upc_runtime_model" = "portals4" \
-   && test x"$portals4libs" != "x"; then
-  LIBS="$portals4libs $LIBS"
+if test "$upc_runtime_model" = "portals4"; then
+  LIBS="-lpthread $LIBS"
+  if test x"$portals4libs" != "x"; then
+    LIBS="$portals4libs $LIBS"
+  fi
 fi
 if test "x${have_rdynamic}" != "x"; then
   LIBS="-export-dynamic $LIBS"
