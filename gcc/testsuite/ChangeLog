@@ -1,3 +1,9 @@
+2013-02-20  Richard Biener  <rguenther@suse.de>
+	Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56396
+	* gcc.dg/pr56396.c: New testcase.
+
 2013-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56373

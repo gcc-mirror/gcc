@@ -1,3 +1,16 @@
+2013-02-20  Richard Biener  <rguenther@suse.de>
+	Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56396
+	* tree-ssa-ccp.c (n_const_val): New static variable.
+	(get_value): Return NULL for SSA names we don't have a lattice
+	entry for.
+	(ccp_initialize): Initialize n_const_val.
+	* tree-ssa-copy.c (n_copy_of): New static variable.
+	(init_copy_prop): Initialize n_copy_of.
+	(get_value): Return NULL_TREE for SSA names we don't have a
+	lattice entry for.
+
 2013-02-20  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (initialize_node_lattices): Fix dumping condition.
