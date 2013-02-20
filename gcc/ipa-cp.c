@@ -725,7 +725,7 @@ initialize_node_lattices (struct cgraph_node *node)
 	    set_all_contains_variable (plats);
 	}
       if (dump_file && (dump_flags & TDF_DETAILS)
-	  && node->alias && node->thunk.thunk_p)
+	  && !node->alias && !node->thunk.thunk_p)
 	fprintf (dump_file, "Marking all lattices of %s/%i as %s\n",
 		 cgraph_node_name (node), node->uid,
 		 disable ? "BOTTOM" : "VARIABLE");
