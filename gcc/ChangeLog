@@ -1,9 +1,17 @@
+2013-02-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivopts.c (alloc_use_cost_map): Use bitmap_count_bits
+	and ceil_log2.
+	(get_use_iv_cost): Terminate hashtable walk when coming across
+	an empty entry.
+
 2013-02-20  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	* config/i386/i386.c (initial_ix86_tune_features): Turn on fp
 	reassociation for avx2 targets.
 
 2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+
 	* config/microblaze/microblaze.c: microblaze_has_clz = 0
 	Add version check for v8.10.a to enable microblaze_has_clz
 	* config/microblaze/microblaze.h: Add TARGET_HAS_CLZ as combined 
