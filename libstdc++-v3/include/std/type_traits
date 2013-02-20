@@ -1,4 +1,4 @@
-// C++11 type_traits -*- C++ -*-
+// C++11 <type_traits> -*- C++ -*-
 
 // Copyright (C) 2007-2013 Free Software Foundation, Inc.
 //
@@ -42,7 +42,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   * @defgroup metaprogramming Metaprogramming and type traits
+   * @defgroup metaprogramming Metaprogramming
    * @ingroup utilities
    *
    * Template utilities for compile-time introspection and modification,
@@ -62,14 +62,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr operator value_type() { return value; }
     };
   
+  template<typename _Tp, _Tp __v>
+    constexpr _Tp integral_constant<_Tp, __v>::value;
+
   /// The type used as a compile-time boolean with true value.
   typedef integral_constant<bool, true>     true_type;
 
   /// The type used as a compile-time boolean with false value.
   typedef integral_constant<bool, false>    false_type;
-
-  template<typename _Tp, _Tp __v>
-    constexpr _Tp integral_constant<_Tp, __v>::value;
 
   // Meta programming helper types.
 
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __failure_type
   { };
 
-  // primary type categories.
+  // Primary type categories.
 
   template<typename>
     struct remove_cv;
@@ -426,7 +426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				      remove_cv<_Tp>::type>::value)>
     { };
 
-  // composite type categories.
+  // Composite type categories.
 
   /// is_reference
   template<typename _Tp>
@@ -484,7 +484,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				      typename remove_cv<_Tp>::type>::value)>
     { };
 
-  // type properties.
+  // Type properties.
 
   /// is_const
   template<typename>
@@ -577,7 +577,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 
-  // destructible and constructible type properties
+  // Destructible and constructible type properties.
 
   template<typename>
     struct add_rvalue_reference;
@@ -1271,7 +1271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 
-  // type relations.
+  // Type relations.
 
   /// is_same
   template<typename, typename>
@@ -1320,7 +1320,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 
-  // const-volatile modifications.
+  // Const-volatile modifications.
 
   /// remove_const
   template<typename _Tp>
@@ -1420,7 +1420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 
-  // sign modifications.
+  // Sign modifications.
 
   // Utility for constructing identically cv-qualified types.
   template<typename _Unqualified, bool _IsConst, bool _IsVol>
@@ -1617,7 +1617,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct make_signed<bool>;
 
 
-  // array modifications.
+  // Array modifications.
 
   /// remove_extent
   template<typename _Tp>
@@ -1646,7 +1646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef typename remove_all_extents<_Tp>::type     type; };
 
 
-  // pointer modifications.
+  // Pointer modifications.
 
   template<typename _Tp, typename>
     struct __remove_pointer_helper
@@ -1789,7 +1789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename... _Tp>
     struct common_type;
 
-  // sfinae-friendly common_type implementation:
+  // Sfinae-friendly common_type implementation:
 
   struct __do_common_type_impl
   {
@@ -1877,7 +1877,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Signature>
     class result_of;
 
-  // sfinae-friendly result_of implementation:
+  // Sfinae-friendly result_of implementation:
 
   // [func.require] paragraph 1 bullet 1:
   struct __result_of_memfun_ref_impl
@@ -2034,6 +2034,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _Functor, _ArgTypes...
       >::type
     { };
+
+  /// @} group metaprogramming
 	
   /**
    *  Use SFINAE to determine if the type _Tp has a publicly-accessible
@@ -2064,9 +2066,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			<typename remove_cv<_Tp>::type>::value>  \
     { };
 
-  /// @} group metaprogramming
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif  // C++11
 

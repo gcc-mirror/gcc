@@ -211,14 +211,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /** True if the type is signed.  */
     static _GLIBCXX_USE_CONSTEXPR bool is_signed = false;
 
-    /** True if the type is integer.
-     *  Is this supposed to be <em>if the type is integral?</em>  */
+    /** True if the type is integer.  */
     static _GLIBCXX_USE_CONSTEXPR bool is_integer = false;
 
-    /** True if the type uses an exact representation. <em>All integer types are
+    /** True if the type uses an exact representation. All integer types are
 	exact, but not all exact types are integer.  For example, rational and
-	fixed-exponent representations are exact but not integer.</em>
-	[18.2.1.2]/15  */
+	fixed-exponent representations are exact but not integer. */
     static _GLIBCXX_USE_CONSTEXPR bool is_exact = false;
 
     /** For integer types, specifies the base of the representation.  For
@@ -246,27 +244,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
 
     /** True if the type has a representation for a quiet (non-signaling)
-	<em>Not a Number</em>.  */
+	Not a Number.  */
     static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
 
     /** True if the type has a representation for a signaling
-	<em>Not a Number</em>.  */
+	Not a Number.  */
     static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
 
     /** See std::float_denorm_style for more information.  */
     static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm = denorm_absent;
 
-    /** <em>True if loss of accuracy is detected as a denormalization loss,
-	rather than as an inexact result.</em> [18.2.1.2]/42  */
+    /** True if loss of accuracy is detected as a denormalization loss,
+	rather than as an inexact result. */
     static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
     /** True if-and-only-if the type adheres to the IEC 559 standard, also
 	known as IEEE 754.  (Only makes sense for floating point types.)  */
     static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
 
-    /** <em>True if the set of values representable by the type is
+    /** True if the set of values representable by the type is
 	finite.  All built-in types are bounded, this member would be
-	false for arbitrary precision types.</em> [18.2.1.2]/54  */
+	false for arbitrary precision types. */
     static _GLIBCXX_USE_CONSTEXPR bool is_bounded = false;
 
     /** True if the type is @e modulo. A type is modulo if, for any
@@ -334,12 +332,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_CONSTEXPR _Tp
       infinity() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
-      /** The representation of a quiet <em>Not a Number</em>,
+      /** The representation of a quiet Not a Number,
 	  if @c has_quiet_NaN. */
       static _GLIBCXX_CONSTEXPR _Tp
       quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }
 
-      /** The representation of a signaling <em>Not a Number</em>, if
+      /** The representation of a signaling Not a Number, if
 	  @c has_signaling_NaN. */
       static _GLIBCXX_CONSTEXPR _Tp
       signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return _Tp(); }

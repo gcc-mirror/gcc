@@ -32,8 +32,8 @@
 
 #pragma GCC system_header
 
-#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  error TR1 header cannot be included from C++0x header
+#if defined(_GLIBCXX_INCLUDE_AS_CXX11)
+#  error TR1 header cannot be included from C++11 header
 #endif
 
 #include <memory>
