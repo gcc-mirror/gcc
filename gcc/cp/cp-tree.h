@@ -5834,6 +5834,7 @@ extern bool cast_valid_in_integral_constant_expression_p (tree);
 extern bool cxx_type_hash_eq			(const_tree, const_tree);
 
 extern void cxx_print_statistics		(void);
+extern bool maybe_warn_zero_as_null_pointer_constant (tree, location_t);
 
 /* in ptree.c */
 extern void cxx_print_xnode			(FILE *, tree, int);

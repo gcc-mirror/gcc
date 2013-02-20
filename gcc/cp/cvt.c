@@ -203,11 +203,8 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
 
   if (null_ptr_cst_p (expr))
     {
-      if ((complain & tf_warning)
-	  && c_inhibit_evaluation_warnings == 0
-	  && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
-	warning_at (loc, OPT_Wzero_as_null_pointer_constant,
-		    "zero as null pointer constant");
+      if (complain & tf_warning)
+	maybe_warn_zero_as_null_pointer_constant (expr, loc);
 
       if (TYPE_PTRMEMFUNC_P (type))
 	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
@@ -783,7 +780,11 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
       return ignore_overflows (converted, e);
     }
   if (NULLPTR_TYPE_P (type) && e && null_ptr_cst_p (e))
-    return nullptr_node;
+    {
+      if (complain & tf_warning)
+	maybe_warn_zero_as_null_pointer_constant (e, loc);
+      return nullptr_node;
+    }
   if (POINTER_TYPE_P (type) || TYPE_PTRMEM_P (type))
     return fold_if_not_in_template (cp_convert_to_pointer (type, e, complain));
   if (code == VECTOR_TYPE)
