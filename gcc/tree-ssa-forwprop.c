@@ -2936,7 +2936,6 @@ ssa_forward_propagate_and_combine (void)
 		  && forward_propagate_addr_expr (lhs, rhs))
 		{
 		  release_defs (stmt);
-		  todoflags |= TODO_remove_unused_locals;
 		  gsi_remove (&gsi, true);
 		}
 	      else
@@ -2961,7 +2960,6 @@ ssa_forward_propagate_and_combine (void)
 							       off)))))
 		{
 		  release_defs (stmt);
-		  todoflags |= TODO_remove_unused_locals;
 		  gsi_remove (&gsi, true);
 		}
 	      else if (is_gimple_min_invariant (rhs))

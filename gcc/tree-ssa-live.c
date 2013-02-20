@@ -889,7 +889,10 @@ remove_unused_locals (void)
       dstidx++;
     }
   if (dstidx != num)
-    cfun->local_decls->truncate (dstidx);
+    {
+      statistics_counter_event (cfun, "unused VAR_DECLs removed", num - dstidx);
+      cfun->local_decls->truncate (dstidx);
+    }
 
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
   clear_unused_block_pointer ();
