@@ -280,6 +280,7 @@ struct prop_value_d {
 typedef struct prop_value_d prop_value_t;
 
 static prop_value_t *copy_of;
+static unsigned n_copy_of;
 
 
 /* Return true if this statement may generate a useful copy.  */
@@ -664,7 +665,8 @@ init_copy_prop (void)
 {
   basic_block bb;
 
-  copy_of = XCNEWVEC (prop_value_t, num_ssa_names);
+  n_copy_of = num_ssa_names;
+  copy_of = XCNEWVEC (prop_value_t, n_copy_of);
 
   FOR_EACH_BB (bb)
     {
@@ -728,7 +730,10 @@ init_copy_prop (void)
 static tree
 get_value (tree name)
 {
-  tree val = copy_of[SSA_NAME_VERSION (name)].value;
+  tree val;
+  if (SSA_NAME_VERSION (name) >= n_copy_of)
+    return NULL_TREE;
+  val = copy_of[SSA_NAME_VERSION (name)].value;
   if (val && val != name)
     return val;
   return NULL_TREE;
