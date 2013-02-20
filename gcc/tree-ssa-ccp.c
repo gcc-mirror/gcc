@@ -2108,7 +2108,7 @@ do_ssa_ccp (void)
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
   if (ccp_finalize ())
-    todo = (TODO_cleanup_cfg | TODO_update_ssa | TODO_remove_unused_locals);
+    todo = (TODO_cleanup_cfg | TODO_update_ssa);
   free_dominance_info (CDI_DOMINATORS);
   return todo;
 }
