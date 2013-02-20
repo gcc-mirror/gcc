@@ -1,5 +1,10 @@
 2013-02-20  Richard Biener  <rguenther@suse.de>
 
+	* genpreds.c (write_lookup_constraint): Do not compare first
+	letter of the constraint again.
+
+2013-02-20  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-ivopts.c (alloc_use_cost_map): Use bitmap_count_bits
 	and ceil_log2.
 	(get_use_iv_cost): Terminate hashtable walk when coming across
