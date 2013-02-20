@@ -1,3 +1,12 @@
+2013-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/56271
+	Backport from mainline
+	2012-05-15  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/Make-lang.in (COMMON_FLAGS_TO_PASS): Use WARN_CFLAGS
+	instead of trying to mimic it.
+
 2013-02-14  Rainer Emrich  <rainer@emrich-ebersheim.de>
 
 	Back-port from mainline.
