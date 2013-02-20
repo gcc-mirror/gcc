@@ -685,7 +685,7 @@
     Short answer: Pretty much everything <emphasis>works</emphasis>
     except for some corner cases.  Support for localization
     in <classname>locale</classname> may be incomplete on non-GNU
-    platforms. Also dependant on the underlying platform is support
+    platforms. Also dependent on the underlying platform is support
     for <type>wchar_t</type> and <type>long
     long</type> specializations, and details of thread support.
     </para>
