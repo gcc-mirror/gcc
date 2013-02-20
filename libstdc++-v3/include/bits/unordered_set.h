@@ -1,6 +1,6 @@
 // unordered_set implementation -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +50,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
-			__cache_hash_code, true, true>
+			__cache_hash_code, true, true>,
+      __check_copy_constructible<_Alloc>
     {
       typedef _Hashtable<_Value, _Value, _Alloc,
 			 std::_Identity<_Value>, _Pred,
@@ -134,7 +135,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
-			__cache_hash_code, true, false>
+			__cache_hash_code, true, false>,
+      __check_copy_constructible<_Alloc>
     {
       typedef _Hashtable<_Value, _Value, _Alloc,
 			 std::_Identity<_Value>, _Pred,

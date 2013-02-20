@@ -1,6 +1,6 @@
 // unordered_map implementation -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +50,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
-			__cache_hash_code, false, true>
+			__cache_hash_code, false, true>,
+      __check_copy_constructible<_Alloc>
     {
       typedef _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
 			 std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
@@ -123,7 +124,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
-			__cache_hash_code, false, false>
+			__cache_hash_code, false, false>,
+      __check_copy_constructible<_Alloc>
     {
       typedef _Hashtable<_Key, std::pair<const _Key, _Tp>,
 			 _Alloc,
