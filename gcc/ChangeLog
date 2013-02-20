@@ -1,3 +1,9 @@
+2013-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56398
+	* tree-vect-loop-manip.c (adjust_debug_stmts): Skip
+	SSA default defs.
+
 2013-02-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55334

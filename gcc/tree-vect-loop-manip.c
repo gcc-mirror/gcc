@@ -187,6 +187,7 @@ adjust_debug_stmts (tree from, tree to, basic_block bb)
 
   if (MAY_HAVE_DEBUG_STMTS
       && TREE_CODE (from) == SSA_NAME
+      && ! SSA_NAME_IS_DEFAULT_DEF (from)
       && ! virtual_operand_p (from))
     {
       ai.from = from;
