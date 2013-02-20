@@ -1,3 +1,13 @@
+2013-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56373
+	* tree.c (maybe_warn_zero_as_null_pointer_constant): Add.
+	* cvt.c (ocp_convert): Use the latter.
+	(cp_convert_to_pointer): Likewise.
+	* decl.c (check_default_argument): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+	* cp-tree.h (maybe_warn_zero_as_null_pointer_constant): Declare.
+
 2013-02-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

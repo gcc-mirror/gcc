@@ -3939,6 +3939,21 @@ cp_tree_operand_length (const_tree t)
       return TREE_OPERAND_LENGTH (t);
     }
 }
+
+/* Implement -Wzero_as_null_pointer_constant.  Return true if the
+   conditions for the warning hold, false otherwise.  */
+bool
+maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
+{
+  if (c_inhibit_evaluation_warnings == 0
+      && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
+    {
+      warning_at (loc, OPT_Wzero_as_null_pointer_constant,
+		  "zero as null pointer constant");
+      return true;
+    }
+  return false;
+}
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 /* Complain that some language-specific thing hanging off a tree
