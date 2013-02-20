@@ -1,4 +1,4 @@
-// C++0x typeindex -*- C++ -*-
+// C++11 <typeindex> -*- C++ -*-
 
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //
@@ -42,9 +42,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-     @brief The class type_index provides a simple wrapper for type_info
-     which can be used as an index type in associative containers (23.6)
-     and in unordered associative containers (23.7).
+   * @brief Class type_index
+   * @ingroup utilities
+   *
+   *  The class type_index provides a simple wrapper for type_info
+   *  which can be used as an index type in associative containers
+   *  (23.6) and in unordered associative containers (23.7).
    */
   struct type_index
   {
@@ -102,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif  // C++11
 
