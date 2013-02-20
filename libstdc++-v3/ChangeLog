@@ -1,5 +1,9 @@
 2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/streambuf (basic_streambuf): Fix unclosed Doxygen group.
+
+2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/55043
 	* include/bits/alloc_traits.h (allocator_traits::construct): Disable
 	unless construction would be well-formed.

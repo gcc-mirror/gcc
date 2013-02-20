@@ -1,7 +1,7 @@
 // Stream buffer classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// 2006, 2007, 2008, 2009, 2010, 2011, 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -171,20 +171,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		basic_string<_CharT2, _Traits2, _Alloc>&, _CharT2);
 
     protected:
-      //@{
-      /**
+      /*
        *  This is based on _IO_FILE, just reordered to be more consistent,
        *  and is intended to be the most minimal abstraction for an
        *  internal buffer.
        *  -  get == input == read
        *  -  put == output == write
       */
-      char_type* 		_M_in_beg;     // Start of get area. 
-      char_type* 		_M_in_cur;     // Current read area. 
-      char_type* 		_M_in_end;     // End of get area. 
-      char_type* 		_M_out_beg;    // Start of put area. 
-      char_type* 		_M_out_cur;    // Current put area. 
-      char_type* 		_M_out_end;    // End of put area.
+      char_type* 		_M_in_beg;     ///< Start of get area.
+      char_type* 		_M_in_cur;     ///< Current read area.
+      char_type* 		_M_in_end;     ///< End of get area.
+      char_type* 		_M_out_beg;    ///< Start of put area.
+      char_type* 		_M_out_cur;    ///< Current put area.
+      char_type* 		_M_out_end;    ///< End of put area.
 
       /// Current locale setting.
       locale 			_M_buf_locale;	
