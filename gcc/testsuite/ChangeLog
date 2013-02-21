@@ -1,3 +1,8 @@
+2013-02-21  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56398
+	* g++.dg/torture/pr56398.C: New test. 
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/56405
