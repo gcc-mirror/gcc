@@ -16440,10 +16440,12 @@ Enable (disable) use of the floating-point multiply-accumulate
 instructions, when they are available.  The default is
 @option{-mfused-madd}.
 
-When multiply-accumulate instructions are used, the intermediate
-product is calculated to infinite precision and is not subject to
-the FCSR Flush to Zero bit.  This may be undesirable in some
-circumstances.
+On the R8000 CPU when multiply-accumulate instructions are used,
+the intermediate product is calculated to infinite precision
+and is not subject to the FCSR Flush to Zero bit.  This may be
+undesirable in some circumstances.  On other processors the result
+is numerically identical to the equivalent computation using
+separate multiply, add, subtract and negate instructions.
 
 @item -nocpp
 @opindex nocpp
