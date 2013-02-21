@@ -9551,6 +9551,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	set_mem_addr_space (temp, as);
 	align = get_object_alignment (exp);
 	if (modifier != EXPAND_WRITE
+	    && modifier != EXPAND_MEMORY
 	    && mode != BLKmode
 	    && align < GET_MODE_ALIGNMENT (mode)
 	    /* If the target does not have special handling for unaligned
@@ -9639,6 +9640,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	if (TREE_THIS_VOLATILE (exp))
 	  MEM_VOLATILE_P (temp) = 1;
 	if (modifier != EXPAND_WRITE
+	    && modifier != EXPAND_MEMORY
 	    && mode != BLKmode
 	    && align < GET_MODE_ALIGNMENT (mode))
 	  {

@@ -1,3 +1,8 @@
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/56405
+	* gcc.c-torture/compile/pr56405.c: New test.
+
 2013-02-20  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/56265
