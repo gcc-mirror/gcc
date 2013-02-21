@@ -1,3 +1,8 @@
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_rtl.cc (__asan_preinit): Don't add if PIC macro is
+	defined.  Add used attribute.
+
 2013-02-21  Kostya Serebryany  <kcc@google.com>
 
 	* All source files: Merge from upstream r175733.
