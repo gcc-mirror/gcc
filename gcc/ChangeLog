@@ -1,3 +1,8 @@
+2013-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (good_cloning_opportunity_p): Dump the real threshold
+	instead of hard-wired defaults.
+
 2013-02-21  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* doc/invoke.texi (MIPS Options): Update documentation of the
