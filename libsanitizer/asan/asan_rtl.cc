@@ -520,11 +520,11 @@ void __asan_init() {
   }
 }
 
-#if ASAN_USE_PREINIT_ARRAY
+#if ASAN_USE_PREINIT_ARRAY && !defined (PIC)
   // On Linux, we force __asan_init to be called before anyone else
   // by placing it into .preinit_array section.
   // FIXME: do we have anything like this on Mac?
-  __attribute__((section(".preinit_array")))
+  __attribute__((section(".preinit_array"), used))
   void (*__asan_preinit)(void) =__asan_init;
 #elif defined(_WIN32) && defined(_DLL)
   // On Windows, when using dynamic CRT (/MD), we can put a pointer
