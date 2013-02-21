@@ -1,4 +1,4 @@
-2013-02-23  Kostya Serebryany  <kcc@google.com>
+2013-02-21  Kostya Serebryany  <kcc@google.com>
 
 	* config/i386/i386.c (ix86_asan_shadow_offset): Use 0x7fff8000 as
 	asan_shadow_offset on x86_64 linux.
