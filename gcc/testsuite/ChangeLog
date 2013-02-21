@@ -1,3 +1,8 @@
+2013-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/56108
+	* gcc.dg/tm/memopt-1.c: Declare functions transaction_safe.
+
 2013-02-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/56310
