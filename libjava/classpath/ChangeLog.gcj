@@ -1,3 +1,9 @@
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/56258
+	* doc/cp-tools.texinfo (Virtual Machine Options): Use just
+	one @gccoptlist instead of 3 separate ones.
+
 2013-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/java/rmi/registry/RegistryImpl.java (version): Update

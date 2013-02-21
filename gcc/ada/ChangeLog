@@ -1,3 +1,10 @@
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/56258
+	* gnat-style.texi (@title): Remove @hfill.
+	* projects.texi: Avoid line wrapping inside of @pxref or
+	@xref.
+
 2013-02-14  Rainer Emrich  <rainer@emrich-ebersheim.de>
 
 	PR target/52123
