@@ -182,8 +182,8 @@ Part I: Invoking GNU Fortran
 Part II: Language Reference
 * Fortran 2003 and 2008 status::  Fortran 2003 and 2008 features supported by GNU Fortran.
 * Compiler Characteristics::      User-visible implementation details.
+* Extensions::                    Language extensions implemented by GNU Fortran.
 * Mixed-Language Programming::    Interoperability with C
-* Extensions::           Language extensions implemented by GNU Fortran.
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
 * Intrinsic Modules::    Intrinsic modules supported by GNU Fortran.
 
@@ -1348,8 +1348,8 @@ without warning.
 * Commas in FORMAT specifications::
 * Missing period in FORMAT specifications::
 * I/O item lists::
-* BOZ literal constants::
 * @code{Q} exponent-letter::
+* BOZ literal constants::
 * Real array indices::
 * Unary operators::
 * Implicitly convert LOGICAL and INTEGER values::
@@ -2698,8 +2698,8 @@ the same declaration part as the variable or procedure pointer.
 * _gfortran_set_options:: Set library option flags
 * _gfortran_set_convert:: Set endian conversion
 * _gfortran_set_record_marker:: Set length of record markers
-* _gfortran_set_max_subrecord_length:: Set subrecord length
 * _gfortran_set_fpe:: Set when a Floating Point Exception should be raised
+* _gfortran_set_max_subrecord_length:: Set subrecord length
 @end menu
 
 Even if you are doing mixed-language programming, it is very
