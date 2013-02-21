@@ -42,7 +42,7 @@ Texts.  A copy of the license is included in the section entitled
 @titlepage
 @titlefont{GNAT Coding Style:}
 @sp 1
-@title @hfill A Guide for GNAT Developers
+@title A Guide for GNAT Developers
 @subtitle GNAT, The GNU Ada Compiler
 @versionsubtitle
 @author Ada Core Technologies, Inc.
