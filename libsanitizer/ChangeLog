@@ -1,3 +1,10 @@
+2013-02-21  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* asan/Makefile.am (libasan_la_SOURCES): Remove deprecated
+	dynamic/asan_interceptors_dynamic.cc.
+	* asan/Makefile.in: Regenerated.
+	* merge.sh: Remove merge of deprecated lib/asan/dynamic.
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan/asan_rtl.cc (__asan_preinit): Don't add if PIC macro is

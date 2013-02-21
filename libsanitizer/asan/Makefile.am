@@ -37,7 +37,6 @@ asan_files = \
 
 libasan_la_SOURCES = $(asan_files)
 if USING_MAC_INTERPOSE
-libasan_la_SOURCES += dynamic/asan_interceptors_dynamic.cc
 libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 else
 libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
