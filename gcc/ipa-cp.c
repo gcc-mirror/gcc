@@ -1654,7 +1654,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 ") -> evaluation: " HOST_WIDEST_INT_PRINT_DEC
 		 ", threshold: %i\n",
 		 time_benefit, size_cost, (HOST_WIDE_INT) count_sum,
-		 evaluation, 500);
+		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
 
       return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
     }
@@ -1668,7 +1668,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 		 "size: %i, freq_sum: %i) -> evaluation: "
 		 HOST_WIDEST_INT_PRINT_DEC ", threshold: %i\n",
 		 time_benefit, size_cost, freq_sum, evaluation,
-		 CGRAPH_FREQ_BASE /2);
+		 PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
 
       return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
     }
