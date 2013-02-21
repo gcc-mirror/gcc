@@ -1,3 +1,8 @@
+2013-02-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/rtl.texi (vec_concat, vec_duplicate): Mention that
+	scalars are valid operands.
+
 2013-02-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/56310
