@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-tail-merge -fdump-tree-vrp2" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 extern void abort (void) __attribute__ ((__noreturn__));
 union tree_node;
@@ -27,5 +27,6 @@ gimplify_for_stmt (tree stmt)
     abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp2" } } */
-/* { dg-final { cleanup-tree-dump "vrp2" } } */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
+

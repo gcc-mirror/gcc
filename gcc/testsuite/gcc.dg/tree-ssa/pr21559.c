@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp-details" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 static int blocksize = 4096;
 
@@ -32,7 +32,7 @@ void foo (void)
 
 
 /* First, we should simplify the bits < 0 test within the loop.  */
-/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp2" } } */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
 
 /* Second, we should thread the edge out of the loop via the break
    statement.  We also realize that the final bytes == 0 test is useless,
@@ -40,4 +40,4 @@ void foo (void)
 /* { dg-final { scan-tree-dump-times "Threaded jump" 3 "vrp1" } } */
 
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp2" } } */
+
