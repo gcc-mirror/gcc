@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp2-details" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 blah (int code1, int code2)
 {
@@ -40,5 +40,6 @@ L8:
 /* The n_sets > 0 test can be simplified into n_sets == 1 since the
    only way to reach the test is when n_sets <= 1, and the only value
    which satisfies both conditions is n_sets == 1.  */
-/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp2" } } */
-/* { dg-final { cleanup-tree-dump "vrp2" } } */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
+
