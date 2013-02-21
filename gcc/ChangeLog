@@ -1,3 +1,9 @@
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/56405
+	* expr.c (expand_expr_real_1) <case TARGET_MEM_REF, MEM_REF>: Don't
+	use movmisalign or extract_bit_field for EXPAND_MEMORY modifier.
+
 2013-02-20  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/56265
