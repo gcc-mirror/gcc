@@ -2022,7 +2022,7 @@ Doclet, grouped by type.  Explanations are in the following sections.
 
 @item Virtual Machine Options
 @xref{Virtual Machine Options,,Options Controlling Gjdoc Behavior}.
-@gccoptlist{-classpath}  @gccoptlist{-bootclasspath}  @gccoptlist{-J}@var{vmopt}
+@gccoptlist{-classpath  -bootclasspath  -J @var{vmopt}}
 
 @end table
 
