@@ -1,5 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -153,8 +152,12 @@ static const st_option async_opt[] =
 static void
 test_endfile (gfc_unit * u)
 {
-  if (u->endfile == NO_ENDFILE && ssize (u->s) == stell (u->s))
-    u->endfile = AT_ENDFILE;
+  if (u->endfile == NO_ENDFILE)
+    { 
+      gfc_offset sz = ssize (u->s);
+      if (sz == 0 || sz == stell (u->s))
+	u->endfile = AT_ENDFILE;
+    }
 }
 
 
