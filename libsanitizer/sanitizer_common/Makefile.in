@@ -57,11 +57,12 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libsanitizer_common_la_LIBADD =
 am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
 	sanitizer_flags.lo sanitizer_libc.lo sanitizer_linux.lo \
-	sanitizer_mac.lo sanitizer_posix.lo sanitizer_printf.lo \
-	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
-	sanitizer_symbolizer.lo sanitizer_symbolizer_itanium.lo \
-	sanitizer_symbolizer_linux.lo sanitizer_symbolizer_mac.lo \
-	sanitizer_symbolizer_win.lo sanitizer_win.lo
+	sanitizer_mac.lo sanitizer_platform_limits_posix.lo \
+	sanitizer_posix.lo sanitizer_printf.lo sanitizer_stackdepot.lo \
+	sanitizer_stacktrace.lo sanitizer_symbolizer.lo \
+	sanitizer_symbolizer_itanium.lo sanitizer_symbolizer_linux.lo \
+	sanitizer_symbolizer_mac.lo sanitizer_symbolizer_win.lo \
+	sanitizer_win.lo
 am_libsanitizer_common_la_OBJECTS = $(am__objects_1)
 libsanitizer_common_la_OBJECTS = $(am_libsanitizer_common_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -230,6 +231,7 @@ sanitizer_common_files = \
         sanitizer_libc.cc \
         sanitizer_linux.cc \
         sanitizer_mac.cc \
+	sanitizer_platform_limits_posix.cc \
         sanitizer_posix.cc \
         sanitizer_printf.cc \
         sanitizer_stackdepot.cc \
@@ -340,6 +342,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_libc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_printf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@

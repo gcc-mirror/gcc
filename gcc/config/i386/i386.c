@@ -5436,7 +5436,8 @@ ix86_legitimate_combined_insn (rtx insn)
 static unsigned HOST_WIDE_INT
 ix86_asan_shadow_offset (void)
 {
-  return TARGET_LP64 ? (HOST_WIDE_INT_1 << 44)
+  return TARGET_LP64 ? (TARGET_MACHO ? (HOST_WIDE_INT_1 << 44)
+				     : HOST_WIDE_INT_C (0x7fff8000))
 		     : (HOST_WIDE_INT_1 << 29);
 }
 

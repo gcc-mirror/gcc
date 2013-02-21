@@ -17,6 +17,7 @@ sanitizer_common_files = \
         sanitizer_libc.cc \
         sanitizer_linux.cc \
         sanitizer_mac.cc \
+	sanitizer_platform_limits_posix.cc \
         sanitizer_posix.cc \
         sanitizer_printf.cc \
         sanitizer_stackdepot.cc \

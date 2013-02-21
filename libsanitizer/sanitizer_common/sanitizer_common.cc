@@ -43,7 +43,7 @@ void NORETURN Die() {
   if (DieCallback) {
     DieCallback();
   }
-  Exit(1);
+  internal__exit(1);
 }
 
 static CheckFailedCallbackType CheckFailedCallback;
