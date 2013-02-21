@@ -1,3 +1,8 @@
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56420
+	* gcc.dg/torture/pr56420.c: New test.
+
 2013-02-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/56108
