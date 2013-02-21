@@ -1,5 +1,14 @@
 2013-02-21  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/56310
+	* ipa-cp.c (agg_replacements_to_vector): New parameter index, copy
+	only matching indices and non-negative final offsets.
+	(intersect_aggregates_with_edge): Pass src_idx to
+	agg_replacements_to_vector.  Pass src_idx insstead of index to
+	intersect_with_agg_replacements.
+
+2013-02-21  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-cp.c (good_cloning_opportunity_p): Dump the real threshold
 	instead of hard-wired defaults.
 

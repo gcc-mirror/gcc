@@ -2807,12 +2807,15 @@ intersect_with_plats (struct ipcp_param_lattices *plats,
    vector result while subtracting OFFSET from the individual value offsets.  */
 
 static vec<ipa_agg_jf_item_t>
-agg_replacements_to_vector (struct cgraph_node *node, HOST_WIDE_INT offset)
+agg_replacements_to_vector (struct cgraph_node *node, int index,
+			    HOST_WIDE_INT offset)
 {
   struct ipa_agg_replacement_value *av;
   vec<ipa_agg_jf_item_t> res = vNULL;
 
   for (av = ipa_get_agg_replacements_for_node (node); av; av = av->next)
+    if (av->index == index
+	&& (av->offset - offset) >= 0)
     {
       struct ipa_agg_jf_item item;
       gcc_checking_assert (av->value);
@@ -2892,7 +2895,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	  if (agg_pass_through_permissible_p (orig_plats, jfunc))
 	    {
 	      if (!inter.exists ())
-		inter = agg_replacements_to_vector (cs->caller, 0);
+		inter = agg_replacements_to_vector (cs->caller, src_idx, 0);
 	      else
 		intersect_with_agg_replacements (cs->caller, src_idx,
 						 &inter, 0);
@@ -2925,9 +2928,9 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
       if (caller_info->ipcp_orig_node)
 	{
 	  if (!inter.exists ())
-	    inter = agg_replacements_to_vector (cs->caller, delta);
+	    inter = agg_replacements_to_vector (cs->caller, src_idx, delta);
 	  else
-	    intersect_with_agg_replacements (cs->caller, index, &inter,
+	    intersect_with_agg_replacements (cs->caller, src_idx, &inter,
 					     delta);
 	}
       else

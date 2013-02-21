@@ -1,3 +1,8 @@
+2013-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/56310
+	* g++.dg/ipa/pr56310.C: New test.
+
 2013-02-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56385
