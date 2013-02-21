@@ -1,5 +1,15 @@
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/56420
+	* expmed.c (EXACT_POWER_OF_2_OR_ZERO_P): Do subtraction in uhwi, to
+	avoid signed wrapping.
+	(expand_mult): Handle properly multiplication by
+	((dword_type) -1) << (BITS_PER_WORD - 1).  Improve multiplication by
+	((dword_type) 1) << (BITS_PER_WORD - 1).  Avoid undefined behavior
+	in the compiler if coeff is HOST_WIDE_INT_MIN.
+	(expand_divmod): Don't make ext_op1 static, change it's type to
+	uhwi.  Avoid undefined behavior in -INTVAL (op1).
+
 	PR rtl-optimization/50339
 	* lower-subreg.h (struct lower_subreg_choices): Add splitting_ashiftrt
 	field.

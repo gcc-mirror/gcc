@@ -64,7 +64,8 @@ static rtx expand_smod_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 
 /* Test whether a value is zero of a power of two.  */
-#define EXACT_POWER_OF_2_OR_ZERO_P(x) (((x) & ((x) - 1)) == 0)
+#define EXACT_POWER_OF_2_OR_ZERO_P(x) \
+  (((x) & ((x) - (unsigned HOST_WIDE_INT) 1)) == 0)
 
 struct init_expmed_rtl
 {
@@ -3079,7 +3080,10 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	  /* If we are multiplying in DImode, it may still be a win
 	     to try to work with shifts and adds.  */
 	  if (CONST_DOUBLE_HIGH (scalar_op1) == 0
-	      && CONST_DOUBLE_LOW (scalar_op1) > 0)
+	      && (CONST_DOUBLE_LOW (scalar_op1) > 0
+		  || (CONST_DOUBLE_LOW (scalar_op1) < 0
+		      && EXACT_POWER_OF_2_OR_ZERO_P
+			   (CONST_DOUBLE_LOW (scalar_op1)))))
 	    {
 	      coeff = CONST_DOUBLE_LOW (scalar_op1);
 	      is_neg = false;
@@ -3109,7 +3113,8 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	 use synth_mult.  */
 
       /* Special case powers of two.  */
-      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
+      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff)
+	  && !(is_neg && mode_bitsize > HOST_BITS_PER_WIDE_INT))
 	return expand_shift (LSHIFT_EXPR, mode, op0,
 			     floor_log2 (coeff), target, unsignedp);
 
@@ -3124,13 +3129,24 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	     result is interpreted as an unsigned coefficient.
 	     Exclude cost of op0 from max_cost to match the cost
 	     calculation of the synth_mult.  */
+	  coeff = -(unsigned HOST_WIDE_INT) coeff;
 	  max_cost = (set_src_cost (gen_rtx_MULT (mode, fake_reg, op1), speed)
 		      - neg_cost(speed, mode));
-	  if (max_cost > 0
-	      && choose_mult_variant (mode, -coeff, &algorithm,
-				      &variant, max_cost))
+	  if (max_cost <= 0)
+	    goto skip_synth;
+
+	  /* Special case powers of two.  */
+	  if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
 	    {
-	      rtx temp = expand_mult_const (mode, op0, -coeff, NULL_RTX,
+	      rtx temp = expand_shift (LSHIFT_EXPR, mode, op0,
+				       floor_log2 (coeff), target, unsignedp);
+	      return expand_unop (mode, neg_optab, temp, target, 0);
+	    }
+
+	  if (choose_mult_variant (mode, coeff, &algorithm, &variant,
+				   max_cost))
+	    {
+	      rtx temp = expand_mult_const (mode, op0, coeff, NULL_RTX,
 					    &algorithm, variant);
 	      return expand_unop (mode, neg_optab, temp, target, 0);
 	    }
@@ -3813,13 +3829,12 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
   int op1_is_constant, op1_is_pow2 = 0;
   int max_cost, extra_cost;
   static HOST_WIDE_INT last_div_const = 0;
-  static HOST_WIDE_INT ext_op1;
   bool speed = optimize_insn_for_speed_p ();
 
   op1_is_constant = CONST_INT_P (op1);
   if (op1_is_constant)
     {
-      ext_op1 = INTVAL (op1);
+      unsigned HOST_WIDE_INT ext_op1 = UINTVAL (op1);
       if (unsignedp)
 	ext_op1 &= GET_MODE_MASK (mode);
       op1_is_pow2 = ((EXACT_POWER_OF_2_OR_ZERO_P (ext_op1)
@@ -3967,7 +3982,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
       op1_is_pow2 = (op1_is_constant
 		     && ((EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
 			  || (! unsignedp
-			      && EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1)))))) ;
+			      && EXACT_POWER_OF_2_OR_ZERO_P (-UINTVAL (op1))))));
     }
 
   /* If one of the operands is a volatile MEM, copy it into a register.  */
