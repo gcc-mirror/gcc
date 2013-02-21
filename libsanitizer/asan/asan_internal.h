@@ -52,7 +52,7 @@
 
 #define ASAN_POSIX (ASAN_LINUX || ASAN_MAC)
 
-#if __has_feature(address_sanitizer)
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 # error "The AddressSanitizer run-time should not be"
         " instrumented by AddressSanitizer"
 #endif
@@ -87,6 +87,10 @@
 #else
 #  define ASAN_LOW_MEMORY 0
 # endif
+#endif
+
+#ifndef ASAN_USE_PREINIT_ARRAY
+# define ASAN_USE_PREINIT_ARRAY (ASAN_LINUX && !ASAN_ANDROID)
 #endif
 
 // All internal functions in asan reside inside the __asan namespace

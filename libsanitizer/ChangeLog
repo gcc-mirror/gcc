@@ -1,3 +1,9 @@
+2013-02-21  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r175733.
+	* sanitizer_common/Makefile.am: Added a new file.
+	* sanitizer_common/Makefile.in: Regenerated.
+
 2013-02-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/56327
