@@ -1,3 +1,9 @@
+2013-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56393
+	* config/gnu-user.h (LIBASAN_EARLY_SPEC): Link in libasan_preinit.o
+	if not linking a shared library.
+
 2013-02-22  Seth LaForge  <sethml@google.com>
 
 	* config.gcc (arm*-*-eabi*): Treat arm*eb as big-endian.

@@ -1,3 +1,9 @@
+2013-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56393
+	* lib/asan-dg.exp (asan_link_flags): Add
+	-B${gccpath}/libsanitizer/asan/ to flags.
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56420
