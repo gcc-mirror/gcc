@@ -8765,11 +8765,18 @@ can_convert_arg (tree to, tree from, tree arg, int flags,
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
+  /* We want to discard any access checks done for this test,
+     as we might not be in the appropriate access context and
+     we'll do the check again when we actually perform the
+     conversion.  */
+  push_deferring_access_checks (dk_deferred);
 
   t  = implicit_conversion (to, from, arg, /*c_cast_p=*/false,
 			    flags, complain);
   ok_p = (t && !t->bad_p);
 
+  /* Discard the access checks now.  */
+  pop_deferring_access_checks ();
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
 
