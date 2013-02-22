@@ -2052,7 +2052,7 @@ process_alt_operands (int only_alternative)
       curr_alt_dont_inherit_ops_num = 0;
       for (nop = 0; nop < early_clobbered_regs_num; nop++)
 	{
-	  int i, j, clobbered_hard_regno;
+	  int i, j, clobbered_hard_regno, first_conflict_j, last_conflict_j;
 	  HARD_REG_SET temp_set;
 
 	  i = early_clobbered_nops[nop];
@@ -2063,6 +2063,7 @@ process_alt_operands (int only_alternative)
 	  clobbered_hard_regno = hard_regno[i];
 	  CLEAR_HARD_REG_SET (temp_set);
 	  add_to_hard_reg_set (&temp_set, biggest_mode[i], clobbered_hard_regno);
+	  first_conflict_j = last_conflict_j = -1;
 	  for (j = 0; j < n_operands; j++)
 	    if (j == i
 		/* We don't want process insides of match_operator and
@@ -2077,19 +2078,26 @@ process_alt_operands (int only_alternative)
 	    /* If we don't reload j-th operand, check conflicts.  */
 	    else if ((curr_alt_win[j] || curr_alt_match_win[j])
 		     && uses_hard_regs_p (*curr_id->operand_loc[j], temp_set))
-	      break;
-	  if (j >= n_operands)
+	      {
+		if (first_conflict_j < 0)
+		  first_conflict_j = j;
+		last_conflict_j = j;
+	      }
+	  if (last_conflict_j < 0)
 	    continue;
 	  /* If earlyclobber operand conflicts with another
 	     non-matching operand which is actually the same register
 	     as the earlyclobber operand, it is better to reload the
 	     another operand as an operand matching the earlyclobber
 	     operand can be also the same.  */
-	  if (operand_reg[j] != NULL_RTX && ! curr_alt_match_win[j]
-	      && REGNO (operand_reg[i]) == REGNO (operand_reg[j]))
+	  if (first_conflict_j == last_conflict_j
+	      && operand_reg[last_conflict_j]
+	      != NULL_RTX && ! curr_alt_match_win[last_conflict_j]
+	      && REGNO (operand_reg[i]) == REGNO (operand_reg[last_conflict_j]))
 	    {
-	      curr_alt_win[j] = false;
-	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++] = j;
+	      curr_alt_win[last_conflict_j] = false;
+	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++]
+		= last_conflict_j;
 	      losers++;
 	      overall += LRA_LOSER_COST_FACTOR;
 	    }
