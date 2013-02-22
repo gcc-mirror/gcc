@@ -1,3 +1,9 @@
+2013-02-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56385
+	* trans-array.c (structure_alloc_comps): Handle procedure-pointer
+	components with allocatable result.
+
 2013-02-17  Tobias Burnus  <burnus@net-b.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

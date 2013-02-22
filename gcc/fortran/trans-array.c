@@ -7392,8 +7392,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  called_dealloc_with_status = false;
 	  gfc_init_block (&tmpblock);
 
-	  if (c->attr.allocatable
-	      && (c->attr.dimension || c->attr.codimension))
+	  if (c->attr.allocatable && (c->attr.dimension || c->attr.codimension)
+	      && !c->attr.proc_pointer)
 	    {
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
@@ -7575,7 +7575,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      continue;
 	    }
 
-	  if (c->attr.allocatable && !cmp_has_alloc_comps)
+	  if (c->attr.allocatable && !c->attr.proc_pointer
+	      && !cmp_has_alloc_comps)
 	    {
 	      rank = c->as ? c->as->rank : 0;
 	      tmp = gfc_duplicate_allocatable (dcmp, comp, ctype, rank);
