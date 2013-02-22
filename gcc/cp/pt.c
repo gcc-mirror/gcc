@@ -15008,8 +15008,10 @@ fn_type_unification (tree fn,
 
       processing_template_decl += incomplete;
       input_location = DECL_SOURCE_LOCATION (fn);
+      TREE_VALUE (tinst) = explicit_targs;
       fntype = tsubst (TREE_TYPE (fn), explicit_targs,
 		       complain | tf_partial, NULL_TREE);
+      TREE_VALUE (tinst) = targs;
       input_location = loc;
       processing_template_decl -= incomplete;
 
