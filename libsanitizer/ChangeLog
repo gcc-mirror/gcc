@@ -1,3 +1,13 @@
+2013-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56393
+	* asan/Makefile.am (nodist_toolexeclib_HEADERS): Set to
+	libasan_preinit.o.
+	(libasan_preinit.o): Depend on asan_preinit.o.
+	* asan/Makefile.in: Regenerated.
+	* asan/asan_preinit.cc: New file, synced from upstream.
+	* asan/asan_rtl.cc: Remove preinit stuff, synced from upstream.
+
 2013-02-21  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* asan/Makefile.am (libasan_la_SOURCES): Remove deprecated
