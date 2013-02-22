@@ -1,3 +1,7 @@
+2013-02-22  Seth LaForge  <sethml@google.com>
+
+	* config.gcc (arm*-*-eabi*): Treat arm*eb as big-endian.
+
 2013-02-22  Greta Yorsh  <Greta.Yorsh@arm.com>
 
         * config/arm/arm.md (split for extendsidi): Update condition.
