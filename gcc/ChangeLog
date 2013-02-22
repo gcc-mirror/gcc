@@ -1,3 +1,9 @@
+2013-02-22  James Grennahlgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add copyright header.
+	* config/aarch64/t-aarch64
+	(aarch64-builtins.o): Depend on aarch64-simd-builtins.def.
+
 2013-02-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/56148
