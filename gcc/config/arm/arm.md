@@ -4492,36 +4492,35 @@
 ;; Zero and sign extension instructions.
 
 (define_insn "zero_extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r")
+  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r,w")
         (zero_extend:DI (match_operand:QHSI 1 "<qhs_zextenddi_op>"
 					    "<qhs_zextenddi_cstr>")))]
   "TARGET_32BIT <qhs_zextenddi_cond>"
   "#"
-  [(set_attr "length" "8,4,8")
+  [(set_attr "length" "8,4,8,8")
+   (set_attr "arch" "neon_nota8,*,*,neon_onlya8")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")]
 )
 
 (define_insn "extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r,?r")
+  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r,?r,w")
         (sign_extend:DI (match_operand:QHSI 1 "<qhs_extenddi_op>"
 					    "<qhs_extenddi_cstr>")))]
   "TARGET_32BIT <qhs_sextenddi_cond>"
   "#"
-  [(set_attr "length" "8,4,8,8")
+  [(set_attr "length" "8,4,8,8,8")
    (set_attr "ce_count" "2")
    (set_attr "shift" "1")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "*,*,a,t")]
+   (set_attr "arch" "neon_nota8,*,a,t,neon_onlya8")]
 )
 
 ;; Splits for all extensions to DImode
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (zero_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT && (!TARGET_NEON
-		    || (reload_completed
-			&& !(IS_VFP_REGNUM (REGNO (operands[0])))))"
+  "TARGET_32BIT && reload_completed && !IS_VFP_REGNUM (REGNO (operands[0]))"
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
@@ -4547,9 +4546,7 @@
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (sign_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT && (!TARGET_NEON
-		    || (reload_completed
-			&& !(IS_VFP_REGNUM (REGNO (operands[0])))))"
+  "TARGET_32BIT && reload_completed && !IS_VFP_REGNUM (REGNO (operands[0]))"
   [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (const_int 31)))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
