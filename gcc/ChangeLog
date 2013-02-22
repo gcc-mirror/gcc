@@ -1,3 +1,10 @@
+2013-02-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/56148
+	* lra-constraints.c (process_alt_operands): Reload operand
+	conflicting with earlier clobber only if no more other conflicting
+	operands.
+
 2013-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/56393
