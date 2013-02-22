@@ -1,3 +1,10 @@
+2013-02-22  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/arm.md (split for extendsidi): Update condition.
+        (zero_extend<mode>di2,extend<mode>di2): Add an alternative.
+        * config/arm/iterators.md (qhs_extenddi_cstr): Likewise.
+        (qhs_zextenddi_cstr): Likewise.
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56420
