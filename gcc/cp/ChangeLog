@@ -1,3 +1,9 @@
+2013-02-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56395
+	* tree.c (strip_typedefs): Strip typedefs from TYPENAME_TYPE template
+	args.
+
 2013-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
