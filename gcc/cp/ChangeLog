@@ -1,5 +1,9 @@
 2013-02-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40405
+	* pt.c (push_template_decl_real): Set DECL_INTERFACE_KNOWN
+	if we got the wrong number of template parms.
+
 	PR c++/56377
 	* pt.c (fn_type_unification): Use explicit args in template
 	instantiation context.
