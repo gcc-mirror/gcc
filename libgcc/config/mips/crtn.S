@@ -31,6 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 	.section .init,"ax",@progbits
+init:	
 #ifdef __mips64
 	ld      RA,40($sp)
 	daddu	$sp,$sp,48
@@ -41,6 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	j	RA
 
 	.section .fini,"ax",@progbits
+fini:	
 #ifdef	__mips64
 	ld	RA,40($sp)
 	daddu	$sp,$sp,48

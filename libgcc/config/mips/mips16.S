@@ -21,6 +21,10 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#ifdef __mips_micromips
+  /* DO NOTHING */
+#else
+
 /* This file contains mips16 floating point support functions.  These
    functions are called by mips16 code to handle floating point when
    -msoft-float is not used.  They accept the arguments and return
@@ -718,3 +722,4 @@ CALL_STUB_RET (__mips16_call_stub_dc_10, 10, DC)
 #endif /* !__mips_single_float */
 
 #endif
+#endif /* __mips_micromips */

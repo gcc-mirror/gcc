@@ -16,8 +16,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64/mips64r2 mips16 msoft-float/mfp64 mcode-readable=no
-MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips64r2 mips16 sof f64 spram
+MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64/mips64r2 mips16/mmicromips msoft-float/mfp64 mcode-readable=no
+MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips64r2 mips16 micromips sof f64 spram
 MULTILIB_MATCHES = EL=mel EB=meb
 
 # The -mfp64 option is only valid in conjunction with -mips32r2.

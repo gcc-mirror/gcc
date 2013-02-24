@@ -59,7 +59,7 @@
 ;; Can be removed in favor of atomic_compare_and_swap below.
 (define_insn "sync_compare_and_swap<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(match_operand:GPR 1 "memory_operand" "+R,R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "dJ,dJ")
 			      (match_operand:GPR 3 "arith_operand" "I,d")]
@@ -89,7 +89,7 @@
 ;; Helper insn for mips_expand_atomic_qihi.
 (define_insn "compare_and_swap_12"
   [(set (match_operand:SI 0 "register_operand" "=&d,&d")
-	(match_operand:SI 1 "memory_operand" "+R,R"))
+	(match_operand:SI 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
 	(unspec_volatile:SI [(match_operand:SI 2 "register_operand" "d,d")
 			     (match_operand:SI 3 "register_operand" "d,d")
@@ -106,7 +106,7 @@
    (set_attr "sync_insn1_op2" "5")])
 
 (define_insn "sync_add<mode>"
-  [(set (match_operand:GPR 0 "memory_operand" "+R,R")
+  [(set (match_operand:GPR 0 "memory_operand" "+ZR,ZR")
 	(unspec_volatile:GPR
           [(plus:GPR (match_dup 0)
 		     (match_operand:GPR 1 "arith_operand" "I,d"))]
@@ -134,7 +134,7 @@
 
 ;; Helper insn for sync_<optab><mode>
 (define_insn "sync_<optab>_12"
-  [(set (match_operand:SI 0 "memory_operand" "+R")
+  [(set (match_operand:SI 0 "memory_operand" "+ZR")
 	(unspec_volatile:SI
           [(match_operand:SI 1 "register_operand" "d")
 	   (match_operand:SI 2 "register_operand" "d")
@@ -174,7 +174,7 @@
 ;; Helper insn for sync_old_<optab><mode>
 (define_insn "sync_old_<optab>_12"
   [(set (match_operand:SI 0 "register_operand" "=&d")
-	(match_operand:SI 1 "memory_operand" "+R"))
+	(match_operand:SI 1 "memory_operand" "+ZR"))
    (set (match_dup 1)
 	(unspec_volatile:SI
           [(match_operand:SI 2 "register_operand" "d")
@@ -217,7 +217,7 @@
 (define_insn "sync_new_<optab>_12"
   [(set (match_operand:SI 0 "register_operand" "=&d")
 	(unspec_volatile:SI
-          [(match_operand:SI 1 "memory_operand" "+R")
+          [(match_operand:SI 1 "memory_operand" "+ZR")
 	   (match_operand:SI 2 "register_operand" "d")
 	   (match_operand:SI 3 "register_operand" "d")
 	   (atomic_hiqi_op:SI (match_dup 0)
@@ -257,7 +257,7 @@
 
 ;; Helper insn for sync_nand<mode>
 (define_insn "sync_nand_12"
-  [(set (match_operand:SI 0 "memory_operand" "+R")
+  [(set (match_operand:SI 0 "memory_operand" "+ZR")
 	(unspec_volatile:SI
           [(match_operand:SI 1 "register_operand" "d")
 	   (match_operand:SI 2 "register_operand" "d")
@@ -296,7 +296,7 @@
 ;; Helper insn for sync_old_nand<mode>
 (define_insn "sync_old_nand_12"
   [(set (match_operand:SI 0 "register_operand" "=&d")
-	(match_operand:SI 1 "memory_operand" "+R"))
+	(match_operand:SI 1 "memory_operand" "+ZR"))
    (set (match_dup 1)
 	(unspec_volatile:SI
           [(match_operand:SI 2 "register_operand" "d")
@@ -337,7 +337,7 @@
 (define_insn "sync_new_nand_12"
   [(set (match_operand:SI 0 "register_operand" "=&d")
 	(unspec_volatile:SI
-          [(match_operand:SI 1 "memory_operand" "+R")
+          [(match_operand:SI 1 "memory_operand" "+ZR")
 	   (match_operand:SI 2 "register_operand" "d")
 	   (match_operand:SI 3 "register_operand" "d")
 	   (match_operand:SI 4 "reg_or_0_operand" "dJ")]
@@ -360,7 +360,7 @@
    (set_attr "sync_insn1_op2" "4")])
 
 (define_insn "sync_sub<mode>"
-  [(set (match_operand:GPR 0 "memory_operand" "+R")
+  [(set (match_operand:GPR 0 "memory_operand" "+ZR")
 	(unspec_volatile:GPR
           [(minus:GPR (match_dup 0)
 		      (match_operand:GPR 1 "register_operand" "d"))]
@@ -374,7 +374,7 @@
 ;; Can be removed in favor of atomic_fetch_add below.
 (define_insn "sync_old_add<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(match_operand:GPR 1 "memory_operand" "+R,R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
           [(plus:GPR (match_dup 1)
@@ -389,7 +389,7 @@
 
 (define_insn "sync_old_sub<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d")
-	(match_operand:GPR 1 "memory_operand" "+R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
           [(minus:GPR (match_dup 1)
@@ -404,7 +404,7 @@
 
 (define_insn "sync_new_add<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-        (plus:GPR (match_operand:GPR 1 "memory_operand" "+R,R")
+        (plus:GPR (match_operand:GPR 1 "memory_operand" "+ZR,ZR")
 		  (match_operand:GPR 2 "arith_operand" "I,d")))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -420,7 +420,7 @@
 
 (define_insn "sync_new_sub<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d")
-        (minus:GPR (match_operand:GPR 1 "memory_operand" "+R")
+        (minus:GPR (match_operand:GPR 1 "memory_operand" "+ZR")
 		   (match_operand:GPR 2 "register_operand" "d")))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -435,7 +435,7 @@
    (set_attr "sync_insn1_op2" "2")])
 
 (define_insn "sync_<optab><mode>"
-  [(set (match_operand:GPR 0 "memory_operand" "+R,R")
+  [(set (match_operand:GPR 0 "memory_operand" "+ZR,ZR")
 	(unspec_volatile:GPR
           [(fetchop_bit:GPR (match_operand:GPR 1 "uns_arith_operand" "K,d")
 			      (match_dup 0))]
@@ -448,7 +448,7 @@
 
 (define_insn "sync_old_<optab><mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(match_operand:GPR 1 "memory_operand" "+R,R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
           [(fetchop_bit:GPR (match_operand:GPR 2 "uns_arith_operand" "K,d")
@@ -463,7 +463,7 @@
 
 (define_insn "sync_new_<optab><mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(match_operand:GPR 1 "memory_operand" "+R,R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
           [(fetchop_bit:GPR (match_operand:GPR 2 "uns_arith_operand" "K,d")
@@ -478,7 +478,7 @@
    (set_attr "sync_insn1_op2" "2")])
 
 (define_insn "sync_nand<mode>"
-  [(set (match_operand:GPR 0 "memory_operand" "+R,R")
+  [(set (match_operand:GPR 0 "memory_operand" "+ZR,ZR")
 	(unspec_volatile:GPR [(match_operand:GPR 1 "uns_arith_operand" "K,d")]
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
@@ -490,7 +490,7 @@
 
 (define_insn "sync_old_nand<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(match_operand:GPR 1 "memory_operand" "+R,R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
         (unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
 	 UNSPEC_SYNC_OLD_OP))]
@@ -504,7 +504,7 @@
 
 (define_insn "sync_new_nand<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(match_operand:GPR 1 "memory_operand" "+R,R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
 	 UNSPEC_SYNC_NEW_OP))]
@@ -519,7 +519,7 @@
 
 (define_insn "sync_lock_test_and_set<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(match_operand:GPR 1 "memory_operand" "+R,R"))
+	(match_operand:GPR 1 "memory_operand" "+ZR,ZR"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "arith_operand" "I,d")]
 	 UNSPEC_SYNC_EXCHANGE))]
@@ -546,7 +546,7 @@
 
 (define_insn "test_and_set_12"
   [(set (match_operand:SI 0 "register_operand" "=&d")
-	(match_operand:SI 1 "memory_operand" "+R"))
+	(match_operand:SI 1 "memory_operand" "+ZR"))
    (set (match_dup 1)
 	(unspec_volatile:SI [(match_operand:SI 2 "register_operand" "d")
 			     (match_operand:SI 3 "register_operand" "d")
@@ -576,7 +576,7 @@
 	;; TODO: the obscuring unspec can be relaxed for permissive memory
 	;; models.
 	;; Same applies to other atomic_* patterns.
-	(unspec_volatile:GPR [(match_operand:GPR 2 "memory_operand" "+R,R")
+	(unspec_volatile:GPR [(match_operand:GPR 2 "memory_operand" "+ZR,ZR")
 			      (match_operand:GPR 3 "reg_or_0_operand" "dJ,dJ")]
 	 UNSPEC_ATOMIC_COMPARE_AND_SWAP))
    (set (match_operand:GPR 1 "register_operand" "=&d,&d")
@@ -629,7 +629,7 @@
 
 (define_insn "atomic_exchange<mode>_llsc"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(unspec_volatile:GPR [(match_operand:GPR 1 "memory_operand" "+R,R")]
+	(unspec_volatile:GPR [(match_operand:GPR 1 "memory_operand" "+ZR,ZR")]
 	 UNSPEC_ATOMIC_EXCHANGE))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "arith_operand" "I,d")]
@@ -684,7 +684,7 @@
 
 (define_insn "atomic_fetch_add<mode>_llsc"
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
-	(unspec_volatile:GPR [(match_operand:GPR 1 "memory_operand" "+R,R")]
+	(unspec_volatile:GPR [(match_operand:GPR 1 "memory_operand" "+ZR,ZR")]
 	 UNSPEC_ATOMIC_FETCH_OP))
    (set (match_dup 1)
 	(unspec_volatile:GPR
