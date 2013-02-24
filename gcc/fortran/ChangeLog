@@ -1,3 +1,8 @@
+2013-02-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* resolve.c (generate_component_assignments): Don't use UTF-8
+	ligature in diagnostic.
+
 2013-02-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56385
