@@ -9891,7 +9891,7 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 				      (*code)->expr1->rank ? 1 : 0);
   if (depth > 1)
     {
-      gfc_warning ("TODO: type-bound deﬁned assignment(s) at %L not "
+      gfc_warning ("TODO: type-bound defined assignment(s) at %L not "
 		   "done because multiple part array references would "
 		   "occur in intermediate expressions.", &(*code)->loc);
       return;
