@@ -2916,6 +2916,19 @@ Floating-point zero.
 
 @item R
 An address that can be used in a non-macro load or store.
+
+@item ZC
+When compiling microMIPS code, this constraint matches a memory operand
+whose address is formed from a base register and a 12-bit offset.  These
+operands can be used for microMIPS instructions such as @code{ll} and
+@code{sc}.  When not compiling for microMIPS code, @code{ZC} is
+equivalent to @code{R}.
+
+@item ZD
+When compiling microMIPS code, this constraint matches an address operand
+that is formed from a base register and a 12-bit offset.  These operands
+can be used for microMIPS instructions such as @code{prefetch}.  When
+not compiling for microMIPS code, @code{ZD} is equivalent to @code{p}.
 @end table
 
 @item Motorola 680x0---@file{config/m68k/constraints.md}

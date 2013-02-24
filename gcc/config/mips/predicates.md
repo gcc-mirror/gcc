@@ -122,6 +122,15 @@
 		    ? M16_REG_P (REGNO (op))
 		    : GP_REG_P (REGNO (op))")))
 
+(define_predicate "movep_src_register"
+  (and (match_code "reg")
+       (ior (match_test ("IN_RANGE (REGNO (op), 2, 3)"))
+	    (match_test ("IN_RANGE (REGNO (op), 16, 20)")))))
+
+(define_predicate "movep_src_operand"
+  (ior (match_operand 0 "const_0_operand")
+       (match_operand 0 "movep_src_register")))
+
 (define_predicate "lo_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == LO_REGNUM")))
@@ -371,3 +380,8 @@
 (define_predicate "mem_noofs_operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
+
+;; Return 1 if the operand is in non-volatile memory.
+(define_predicate "non_volatile_mem_operand"
+  (and (match_operand 0 "memory_operand")
+       (not (match_test "MEM_VOLATILE_P (op)"))))
