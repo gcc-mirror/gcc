@@ -1,3 +1,8 @@
+2013-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56403
+	* g++.dg/torture/pr56403.C: New test.
+
 2013-02-25  Catherine Moore  <clm@codesourcery.com>
 
 	Revert:

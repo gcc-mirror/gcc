@@ -1,3 +1,9 @@
+2013-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56403
+	* init.c (build_zero_init_1): Use RECORD_OR_UNION_CODE_P instead
+	of CLASS_TYPE_P.
+
 2013-02-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40405
