@@ -1,4 +1,8 @@
 2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	* sched-deps.c (sched_analyze_insn): Fix typo in comment.
+
+2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
 	    Alexander Monakov  <amonakov@ispras.ru>
 
 	PR middle-end/56077
