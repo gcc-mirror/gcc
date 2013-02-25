@@ -1,3 +1,7 @@
+2013-02-25  Matt Turner  <mattst88@gmail.com>
+
+	* doc/invoke.texi: Document r4700.
+
 2013-02-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56175
