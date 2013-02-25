@@ -1,3 +1,11 @@
+2013-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56175
+	* tree-ssa-forwprop.c (hoist_conversion_for_bitop_p): New predicate,
+	split out from ...
+	(simplify_bitwise_binary): ... here.  Also guard the conversion
+	of (type) X op CST to (type) (X op ((type-x) CST)) with it.
+
 2013-02-25  Catherine Moore  <clm@codesourcery.com>
 
 	Revert:
