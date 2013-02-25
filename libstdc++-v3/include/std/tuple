@@ -43,6 +43,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   *  @addtogroup utilities
+   *  @{
+   */
+
   // Adds a const reference to a non-reference type.
   template<typename _Tp>
     struct __add_c_ref
@@ -1018,6 +1023,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
+  /// tuple_cat
   template<typename... _Tpls, typename = typename
            enable_if<__and_<__is_tuple_like<_Tpls>...>::value>::type>
     constexpr auto
@@ -1030,11 +1036,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __concater::_S_do(std::forward<_Tpls>(__tpls)...);
     }
 
+  /// tie
   template<typename... _Elements>
     inline tuple<_Elements&...>
     tie(_Elements&... __args) noexcept
     { return tuple<_Elements&...>(__args...); }
 
+  /// swap
   template<typename... _Elements>
     inline void 
     swap(tuple<_Elements...>& __x, tuple<_Elements...>& __y)
@@ -1080,8 +1088,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         second(std::forward<_Args2>(std::get<_Indexes2>(__tuple2))...)
       { }
 
+  /// @}
+
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif // C++11
 

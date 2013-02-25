@@ -129,6 +129,10 @@ const char *GetPwd() {
   UNIMPLEMENTED();
 }
 
+u32 GetUid() {
+  UNIMPLEMENTED();
+}
+
 void DumpProcessMap() {
   UNIMPLEMENTED();
 }
@@ -159,10 +163,6 @@ void SleepForSeconds(int seconds) {
 
 void SleepForMillis(int millis) {
   Sleep(millis);
-}
-
-void Exit(int exitcode) {
-  _exit(exitcode);
 }
 
 void Abort() {
@@ -249,6 +249,10 @@ uptr internal_readlink(const char *path, char *buf, uptr bufsize) {
 int internal_sched_yield() {
   Sleep(0);
   return 0;
+}
+
+void internal__exit(int exitcode) {
+  _exit(exitcode);
 }
 
 // ---------------------- BlockingMutex ---------------- {{{1

@@ -42,6 +42,7 @@ extern int microblaze_section_threshold;
 extern int microblaze_dbx_regno[];
 
 extern int microblaze_no_unsafe_delay;
+extern int microblaze_has_clz;
 extern enum pipeline_type microblaze_pipe;
 
 #define OBJECT_FORMAT_ELF
@@ -57,6 +58,9 @@ extern enum pipeline_type microblaze_pipe;
 /* Default target_flags if no switches are specified  */
 #define TARGET_DEFAULT      (MASK_SOFT_MUL | MASK_SOFT_DIV | MASK_SOFT_FLOAT \
                              | TARGET_ENDIAN_DEFAULT)
+
+/* Do we have CLZ?  */
+#define TARGET_HAS_CLZ      (TARGET_PATTERN_COMPARE && microblaze_has_clz)
 
 /* The default is to support PIC.  */
 #define TARGET_SUPPORTS_PIC 1

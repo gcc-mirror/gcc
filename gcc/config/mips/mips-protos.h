@@ -350,6 +350,12 @@ extern void mips_expand_vec_reduc (rtx, rtx, rtx (*)(rtx, rtx, rtx));
 extern void mips_expand_vec_minmax (rtx, rtx, rtx,
 				    rtx (*) (rtx, rtx, rtx), bool);
 
+extern const char *umips_output_save_restore (bool, rtx);
+extern bool umips_save_restore_pattern_p (bool, rtx);
+extern bool umips_load_store_pair_p (bool, rtx *);
+extern void umips_output_load_store_pair (bool, rtx *);
+extern bool umips_movep_target_p (rtx, rtx);
+extern bool umips_12bit_offset_address_p (rtx, enum machine_mode);
 extern rtx mips_expand_thread_pointer (rtx);
 
 extern bool mips_eh_uses (unsigned int);

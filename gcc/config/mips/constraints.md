@@ -232,6 +232,27 @@
    "@internal"
    (match_operand 0 "low_bitmask_operand"))
 
+(define_memory_constraint "ZC"
+  "When compiling microMIPS code, this constraint matches a memory operand
+   whose address is formed from a base register and a 12-bit offset.  These
+   operands can be used for microMIPS instructions such as @code{ll} and
+   @code{sc}.  When not compiling for microMIPS code, @code{ZC} is
+   equivalent to @code{R}."
+  (and (match_code "mem")
+       (if_then_else
+	 (match_test "TARGET_MICROMIPS")
+	 (match_test "umips_12bit_offset_address_p (XEXP (op, 0), mode)")
+	 (match_test "mips_address_insns (XEXP (op, 0), mode, false)"))))
+
+(define_address_constraint "ZD"
+  "When compiling microMIPS code, this constraint matches an address operand
+   that is formed from a base register and a 12-bit offset.  These operands
+   can be used for microMIPS instructions such as @code{prefetch}.  When
+   not compiling for microMIPS code, @code{ZD} is equivalent to @code{p}."
+   (if_then_else (match_test "TARGET_MICROMIPS")
+		 (match_test "umips_12bit_offset_address_p (op, mode)")
+		 (match_test "mips_address_insns (op, mode, false)")))
+
 (define_memory_constraint "ZR"
  "@internal
   An address valid for loading/storing register exclusive"

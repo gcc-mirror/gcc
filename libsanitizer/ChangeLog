@@ -1,3 +1,31 @@
+2013-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56393
+	* asan/Makefile.am (nodist_toolexeclib_HEADERS): Set to
+	libasan_preinit.o.
+	(libasan_preinit.o): Depend on asan_preinit.o.
+	* asan/Makefile.in: Regenerated.
+	* asan/asan_preinit.cc: New file, synced from upstream.
+	* asan/asan_rtl.cc: Remove preinit stuff, synced from upstream.
+
+2013-02-21  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* asan/Makefile.am (libasan_la_SOURCES): Remove deprecated
+	dynamic/asan_interceptors_dynamic.cc.
+	* asan/Makefile.in: Regenerated.
+	* merge.sh: Remove merge of deprecated lib/asan/dynamic.
+
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_rtl.cc (__asan_preinit): Don't add if PIC macro is
+	defined.  Add used attribute.
+
+2013-02-21  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r175733.
+	* sanitizer_common/Makefile.am: Added a new file.
+	* sanitizer_common/Makefile.in: Regenerated.
+
 2013-02-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/56327

@@ -4782,6 +4782,8 @@ push_template_decl_real (tree decl, bool is_friend)
 		  error ("got %d template parameters for %q#T",
 			 TREE_VEC_LENGTH (a), current);
 		error ("  but %d required", TREE_VEC_LENGTH (t));
+		/* Avoid crash in import_export_decl.  */
+		DECL_INTERFACE_KNOWN (decl) = 1;
 		return error_mark_node;
 	      }
 
@@ -15008,8 +15010,10 @@ fn_type_unification (tree fn,
 
       processing_template_decl += incomplete;
       input_location = DECL_SOURCE_LOCATION (fn);
+      TREE_VALUE (tinst) = explicit_targs;
       fntype = tsubst (TREE_TYPE (fn), explicit_targs,
 		       complain | tf_partial, NULL_TREE);
+      TREE_VALUE (tinst) = targs;
       input_location = loc;
       processing_template_decl -= incomplete;
 

@@ -580,6 +580,9 @@ struct GTY(()) function {
      a string describing the reason for failure.  */
   const char * GTY((skip)) cannot_be_copied_reason;
 
+  /* Optabs for this function.  This is of type `struct target_optabs *'.  */
+  unsigned char *GTY ((atomic)) optabs;
+
   /* Collected bit flags.  */
 
   /* Number of units of general registers that need saving in stdarg

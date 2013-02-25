@@ -48,8 +48,7 @@ project files allow you to specify:
 @item Source file naming conventions; you can specify these either globally or for
   individual compilation units (@pxref{Naming Schemes}).
 @item Change any of the above settings depending on external values, thus enabling
-  the reuse of the projects in various @b{scenarios} (@pxref{Scenarios
-  in Projects}).
+  the reuse of the projects in various @b{scenarios} (@pxref{Scenarios in Projects}).
 @item Automatically build libraries as part of the build process
   (@pxref{Library Projects}).
 
@@ -360,8 +359,8 @@ locating the specified source files in the specified source directories.
 
 @item For various reasons, it is sometimes useful to have a project with no
   sources (most of the time because the attributes defined in the project
-  file will be reused in other projects, as explained in @pxref{Organizing
-  Projects into Subsystems}. To do this, the attribute
+  file will be reused in other projects, as explained in
+  @pxref{Organizing Projects into Subsystems}. To do this, the attribute
   @emph{Source_Files} is set to the empty list, i.e. @code{()}. Alternatively,
   @emph{Source_Dirs} can be set to the empty list, with the same
   result.
@@ -388,8 +387,9 @@ locating the specified source files in the specified source directories.
   This can be done thanks to the attribute @b{Excluded_Source_Files}
   (or its synonym @b{Locally_Removed_Files}).
   Its value is the list of file names that should not be taken into account.
-  This attribute is often used when extending a project, @xref{Project
-  Extension}. A similar attribute @b{Excluded_Source_List_File} plays the same
+  This attribute is often used when extending a project,
+  @xref{Project Extension}. A similar attribute
+  @b{Excluded_Source_List_File} plays the same
   role but takes the name of file containing file names similarly to
   @code{Source_List_File}.
 

@@ -518,10 +518,8 @@ nextafterf (float x, float y)
 #endif
 
 
-#if !defined(HAVE_POWF) || defined(HAVE_BROKEN_POWF)
 #ifndef HAVE_POWF
 #define HAVE_POWF 1
-#endif
 float powf (float x, float y);
 
 float

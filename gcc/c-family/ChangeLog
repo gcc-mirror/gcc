@@ -1,3 +1,17 @@
+2013-02-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR target/52555
+	* c-common.c (handle_optimize_attribute): Call
+	save_optabs_if_changed.
+
+2013-02-18  Jakub Jelinek  <jakub@redhat.com>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR pch/54117
+	* c-opts.c (c_common_post_options): If debug info is enabled
+	and non-dwarf*, refuse to load PCH files and when writing PCH
+	file warn.
+
 2013-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56167

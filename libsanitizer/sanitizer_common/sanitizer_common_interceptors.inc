@@ -124,8 +124,8 @@ INTERCEPTOR(SSIZE_T, pwrite64, int fd, void *ptr, OFF64_T count,
 #endif
 
 #if SANITIZER_INTERCEPT_PRCTL
-INTERCEPTOR(int, prctl, int option, unsigned long arg2,
-            unsigned long arg3,                       // NOLINT
+INTERCEPTOR(int, prctl, int option,
+            unsigned long arg2, unsigned long arg3,   // NOLINT
             unsigned long arg4, unsigned long arg5) { // NOLINT
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, prctl, option, arg2, arg3, arg4, arg5);
@@ -143,6 +143,100 @@ INTERCEPTOR(int, prctl, int option, unsigned long arg2,
 #else
 #define INIT_PRCTL
 #endif // SANITIZER_INTERCEPT_PRCTL
+
+#if SANITIZER_INTERCEPT_LOCALTIME_AND_FRIENDS
+INTERCEPTOR(void *, localtime, unsigned long *timep) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, localtime, timep);
+  void *res = REAL(localtime)(timep);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, timep, sizeof(*timep));
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, struct_tm_sz);
+  }
+  return res;
+}
+INTERCEPTOR(void *, localtime_r, unsigned long *timep, void *result) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, localtime_r, timep, result);
+  void *res = REAL(localtime_r)(timep, result);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, timep, sizeof(*timep));
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, struct_tm_sz);
+  }
+  return res;
+}
+INTERCEPTOR(void *, gmtime, unsigned long *timep) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, gmtime, timep);
+  void *res = REAL(gmtime)(timep);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, timep, sizeof(*timep));
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, struct_tm_sz);
+  }
+  return res;
+}
+INTERCEPTOR(void *, gmtime_r, unsigned long *timep, void *result) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, gmtime_r, timep, result);
+  void *res = REAL(gmtime_r)(timep, result);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, timep, sizeof(*timep));
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, struct_tm_sz);
+  }
+  return res;
+}
+INTERCEPTOR(char *, ctime, unsigned long *timep) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, ctime, timep);
+  char *res = REAL(ctime)(timep);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, timep, sizeof(*timep));
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, REAL(strlen)(res) + 1);
+  }
+  return res;
+}
+INTERCEPTOR(char *, ctime_r, unsigned long *timep, char *result) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, ctime_r, timep, result);
+  char *res = REAL(ctime_r)(timep, result);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, timep, sizeof(*timep));
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, REAL(strlen)(res) + 1);
+  }
+  return res;
+}
+INTERCEPTOR(char *, asctime, void *tm) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, asctime, tm);
+  char *res = REAL(asctime)(tm);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, tm, struct_tm_sz);
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, REAL(strlen)(res) + 1);
+  }
+  return res;
+}
+INTERCEPTOR(char *, asctime_r, void *tm, char *result) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, asctime_r, tm, result);
+  char *res = REAL(asctime_r)(tm, result);
+  if (res) {
+    COMMON_INTERCEPTOR_READ_RANGE(ctx, tm, struct_tm_sz);
+    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, REAL(strlen)(res) + 1);
+  }
+  return res;
+}
+#define INIT_LOCALTIME_AND_FRIENDS               \
+  INTERCEPT_FUNCTION(localtime);                 \
+  INTERCEPT_FUNCTION(localtime_r);               \
+  INTERCEPT_FUNCTION(gmtime);                    \
+  INTERCEPT_FUNCTION(gmtime_r);                  \
+  INTERCEPT_FUNCTION(ctime);                     \
+  INTERCEPT_FUNCTION(ctime_r);                   \
+  INTERCEPT_FUNCTION(asctime);                   \
+  INTERCEPT_FUNCTION(asctime_r);
+#else
+#define INIT_LOCALTIME_AND_FRIENDS
+#endif // SANITIZER_INTERCEPT_LOCALTIME_AND_FRIENDS
 
 #if SANITIZER_INTERCEPT_SCANF
 
@@ -170,6 +264,7 @@ VSCANF_INTERCEPTOR_IMPL(vsscanf, true, str, format, ap)
 INTERCEPTOR(int, vfscanf, void *stream, const char *format, va_list ap)
 VSCANF_INTERCEPTOR_IMPL(vfscanf, true, stream, format, ap)
 
+#if SANITIZER_INTERCEPT_ISOC99_SCANF
 INTERCEPTOR(int, __isoc99_vscanf, const char *format, va_list ap)
 VSCANF_INTERCEPTOR_IMPL(__isoc99_vscanf, false, format, ap)
 
@@ -179,6 +274,7 @@ VSCANF_INTERCEPTOR_IMPL(__isoc99_vsscanf, false, str, format, ap)
 
 INTERCEPTOR(int, __isoc99_vfscanf, void *stream, const char *format, va_list ap)
 VSCANF_INTERCEPTOR_IMPL(__isoc99_vfscanf, false, stream, format, ap)
+#endif  // SANITIZER_INTERCEPT_ISOC99_SCANF
 
 #define SCANF_INTERCEPTOR_IMPL(name, vname, ...)                               \
   {                                                                            \
@@ -200,6 +296,7 @@ SCANF_INTERCEPTOR_IMPL(fscanf, vfscanf, stream, format)
 INTERCEPTOR(int, sscanf, const char *str, const char *format, ...)
 SCANF_INTERCEPTOR_IMPL(sscanf, vsscanf, str, format)
 
+#if SANITIZER_INTERCEPT_ISOC99_SCANF
 INTERCEPTOR(int, __isoc99_scanf, const char *format, ...)
 SCANF_INTERCEPTOR_IMPL(__isoc99_scanf, __isoc99_vscanf, format)
 
@@ -208,6 +305,7 @@ SCANF_INTERCEPTOR_IMPL(__isoc99_fscanf, __isoc99_vfscanf, stream, format)
 
 INTERCEPTOR(int, __isoc99_sscanf, const char *str, const char *format, ...)
 SCANF_INTERCEPTOR_IMPL(__isoc99_sscanf, __isoc99_vsscanf, str, format)
+#endif
 
 #define INIT_SCANF                                                             \
   INTERCEPT_FUNCTION(scanf);                                                   \
@@ -235,4 +333,5 @@ SCANF_INTERCEPTOR_IMPL(__isoc99_sscanf, __isoc99_vsscanf, str, format)
   INIT_WRITE;                                                                  \
   INIT_PWRITE;                                                                 \
   INIT_PWRITE64;                                                               \
+  INIT_LOCALTIME_AND_FRIENDS;                                                  \
   INIT_SCANF;

@@ -1,3 +1,147 @@
+2013-02-24  Catherine Moore  <clm@codesourcery.com>
+	    Richard Sandiford <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp: Add microMIPS support.
+	* gcc.target/mips/umips-movep-2.c: New test.
+	* gcc.target/mips/umips-lwp-2.c: New test.
+	* gcc.target/mips/umips-swp-5.c: New test.
+	* gcc.target/mips/umips-constraints-1.c: New test.
+	* gcc.target/mips/umips-lwp-3.c: New test.
+	* gcc.target/mips/umips-swp-6.c: New test.
+	* gcc.target/mips/umips-constraints-2.c: New test.
+	* gcc.target/mips/umips-save-restore-1.c: New test.
+	* gcc.target/mips/umips-lwp-4.c: New test.
+	* gcc.target/mips/umips-swp-7.c: New test.
+	* gcc.target/mips/umips-save-restore-2.c: New test.
+	* gcc.target/mips/umips-lwp-swp-volatile.c: New test.
+	* gcc.target/mips/umips-lwp-5.c: New test.
+	* gcc.target/mips/umips-save-restore-3.c: New test.
+	* gcc.target/mips/umips-lwp-6.c: New test.
+	* gcc.target/mips/umips-swp-1.c: New test.
+	* gcc.target/mips/umips-lwp-7.c: New test.
+	* gcc.target/mips/umips-swp-2.c: New test.
+	* gcc.target/mips/umips-lwp-8.c: New test.
+	* gcc.target/mips/umips-swp-3.c: New test.
+	* gcc.target/mips/umips-movep-1.c: New test.
+	* gcc.target/mips/umips-lwp-1.c: New test.
+	* gcc.target/mips/umips-swp-4.c: New test.
+
+2013-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56393
+	* lib/asan-dg.exp (asan_link_flags): Add
+	-B${gccpath}/libsanitizer/asan/ to flags.
+
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56420
+	* gcc.dg/torture/pr56420.c: New test.
+
+2013-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/56108
+	* gcc.dg/tm/memopt-1.c: Declare functions transaction_safe.
+
+2013-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/56310
+	* g++.dg/ipa/pr56310.C: New test.
+
+2013-02-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56385
+	* gfortran.dg/proc_ptr_comp_37.f90: New.
+
+2013-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56415
+	Revert
+	2013-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* g++.dg/warn/Warray-bounds-6.C: New testcase.
+	* gcc.dg/tree-ssa/pr21559.c: Adjust.
+	* gcc.dg/tree-ssa/vrp17.c: Likewise.
+	* gcc.dg/tree-ssa/vrp18.c: Likewise.
+	* gcc.dg/tree-ssa/vrp23.c: Likewise.
+	* gcc.dg/tree-ssa/vrp24.c: Likewise.
+
+2013-02-21  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56398
+	* g++.dg/torture/pr56398.C: New test. 
+
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/56405
+	* gcc.c-torture/compile/pr56405.c: New test.
+
+2013-02-20  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/56265
+	* testsuite/g++.dg/ipa/devirt-11.C: New testcase.
+
+2013-02-20  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-8.c: Adjust.
+
+2013-02-20  Richard Biener  <rguenther@suse.de>
+	Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56396
+	* gcc.dg/pr56396.c: New testcase.
+
+2013-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56373
+	* g++.dg/cpp0x/Wzero-as-null-pointer-constant-2.C: New.
+
+2013-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56384
+	* gcc.dg/torture/pr56384.c: New testcase.
+
+2013-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56350
+	* gcc.dg/pr56350.c: New test.
+
+	PR tree-optimization/56381
+	* g++.dg/opt/pr56381.C: New test.
+
+2013-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/54117
+	* lib/dg-pch.exp (pch-init, pch-finish,
+	check_effective_target_pch_supported_debug): New procs.
+	(dg-flags-pch): If $pch_unsupported, make tests UNSUPPORTED.
+	Likewise if $pch_unsupported_debug and $flags include -g.
+	Skip FAILs about missing *.gch file if $pch_unsupported_debug
+	and dg-require-effective-target pch_unsupported_debug.
+	* g++.dg/pch/pch.exp: Call pch-init and pch-finish.
+	* objc.dg/pch/pch.exp: Likewise.
+	* gcc.dg/pch/pch.exp: Likewise.
+	* gcc.dg/pch/valid-1.c: Add dg-require-effective-target
+	pch_unsupported_debug.
+	* gcc.dg/pch/valid-1.hs: Likewise.
+	* gcc.dg/pch/valid-1b.c: Likewise.
+	* gcc.dg/pch/valid-1b.hs: Likewise.
+
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56366
+	* gcc.dg/torture/pr56366.c: New testcase.
+
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56349
+	* gcc.dg/torture/pr56349.c: New testcase.
+
+2013-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56321
+	* gcc.dg/torture/pr56321.c: New testcase.
+
 2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* gcc.dg/20020312-2.c: Define MicroBlaze PIC register

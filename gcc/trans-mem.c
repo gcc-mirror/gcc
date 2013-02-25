@@ -2859,8 +2859,23 @@ execute_tm_mark (void)
   // Expand memory operations into calls into the runtime.
   // This collects log entries as well.
   FOR_EACH_VEC_ELT (bb_regions, i, r)
-    if (r != NULL)
-      expand_block_tm (r, BASIC_BLOCK (i));
+    {
+      if (r != NULL)
+	{
+	  if (r->transaction_stmt)
+	    {
+	      unsigned sub = gimple_transaction_subcode (r->transaction_stmt);
+
+	      /* If we're sure to go irrevocable, there won't be
+		 anything to expand, since the run-time will go
+		 irrevocable right away.  */
+	      if (sub & GTMA_DOES_GO_IRREVOCABLE
+		  && sub & GTMA_MAY_ENTER_IRREVOCABLE)
+		continue;
+	    }
+	  expand_block_tm (r, BASIC_BLOCK (i));
+	}
+    }
 
   bb_regions.release ();
 

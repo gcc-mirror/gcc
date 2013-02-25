@@ -1607,10 +1607,8 @@ perform_tree_ssa_dce (bool aggressive)
   free_edge_list (el);
 
   if (something_changed)
-    return (TODO_update_ssa | TODO_cleanup_cfg | TODO_ggc_collect
-	    | TODO_remove_unused_locals);
-  else
-    return 0;
+    return TODO_update_ssa | TODO_cleanup_cfg;
+  return 0;
 }
 
 /* Pass entry points.  */

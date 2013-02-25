@@ -1,3 +1,20 @@
+2013-02-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/30162
+	* io/open.c (test_endfile): Call stell only if size != 0.
+	* io/unix.c (raw_tell): Revert r194679.
+	(raw_size): Return size field only for regular files, otherwise 0.
+
+2013-02-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/56347
+	* acinclude.m4 (LIBGFOR_CHECK_FOR_BROKEN_POWF): Remove check for
+	broken powf.
+	* configure.ac (LIBGFOR_CHECK_FOR_BROKEN_POWF): Likewise.
+	* intrinsics/c99_functions.c: Likewise.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+
 2013-02-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55978

@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //@{
       /**
        *  These are standard types.  They permit a standardized way of
-       *  referring to names of (or names dependant on) the template
+       *  referring to names of (or names dependent on) the template
        *  parameters, which are specific to the implementation.
       */
       typedef _CharT                                 char_type;

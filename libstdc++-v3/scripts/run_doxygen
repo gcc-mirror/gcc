@@ -205,6 +205,8 @@ if $do_html; then
   cd ${outdir}/${mode}
 
   #doxytag -t libstdc++.tag . > /dev/null 2>&1
+
+  # Strip pathnames from tag file.
   sed -e '/<path>/d' libstdc++.tag > TEMP
   mv TEMP libstdc++.tag
 

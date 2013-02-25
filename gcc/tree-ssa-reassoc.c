@@ -1062,11 +1062,9 @@ propagate_op_to_single_use (tree op, gimple stmt, tree *def)
   if (TREE_CODE (op) != SSA_NAME)
     update_stmt (use_stmt);
   gsi = gsi_for_stmt (stmt);
+  unlink_stmt_vdef (stmt);
   gsi_remove (&gsi, true);
   release_defs (stmt);
-
-  if (is_gimple_call (stmt))
-    unlink_stmt_vdef (stmt);
 }
 
 /* Walks the linear chain with result *DEF searching for an operation

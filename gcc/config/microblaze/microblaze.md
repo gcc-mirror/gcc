@@ -2128,9 +2128,17 @@
     register rtx target = operands[1];
     register rtx target2=gen_rtx_REG (Pmode,GP_REG_FIRST + MB_ABI_SUB_RETURN_ADDR_REGNUM);
 
-    if (GET_CODE (target) == SYMBOL_REF){
-	gen_rtx_CLOBBER (VOIDmode,target2);
-	return "brlid\tr15,%1\;%#";
+    if (GET_CODE (target) == SYMBOL_REF)
+    {
+      gen_rtx_CLOBBER (VOIDmode,target2);
+      if (SYMBOL_REF_FLAGS (target) & SYMBOL_FLAG_FUNCTION)
+        {
+	  return "brlid\tr15,%1\;%#";
+        }
+      else
+        {
+	  return "bralid\tr15,%1\;%#";
+        }
     }
     else if (GET_CODE (target) == CONST_INT)
         return "la\t%@,r0,%1\;brald\tr15,%@\;%#";
@@ -2192,3 +2200,13 @@
   [(set_attr "type" "multi")
    (set_attr "length" "12")])
 
+;; This insn gives the count of leading number of zeros for the second
+;; operand and stores the result in first operand.
+(define_insn "clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (clz:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_HAS_CLZ"
+  "clz\t%0,%1"
+  [(set_attr "type"     "arith")
+  (set_attr "mode"      "SI")
+  (set_attr "length"    "4")])

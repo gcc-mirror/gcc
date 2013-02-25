@@ -2627,17 +2627,18 @@ The result mode @var{m} is either the submode for a single element of
 with that element submode (if multiple subparts are selected).
 
 @findex vec_concat
-@item (vec_concat:@var{m} @var{vec1} @var{vec2})
+@item (vec_concat:@var{m} @var{x1} @var{x2})
 Describes a vector concat operation.  The result is a concatenation of the
-vectors @var{vec1} and @var{vec2}; its length is the sum of the lengths of
-the two inputs.
+vectors or scalars @var{x1} and @var{x2}; its length is the sum of the
+lengths of the two inputs.
 
 @findex vec_duplicate
-@item (vec_duplicate:@var{m} @var{vec})
-This operation converts a small vector into a larger one by duplicating the
-input values.  The output vector mode must have the same submodes as the
-input vector mode, and the number of output parts must be an integer multiple
-of the number of input parts.
+@item (vec_duplicate:@var{m} @var{x})
+This operation converts a scalar into a vector or a small vector into a
+larger one by duplicating the input values.  The output vector mode must have
+the same submodes as the input vector mode or the scalar modes, and the
+number of output parts must be an integer multiple of the number of input
+parts.
 
 @end table
 

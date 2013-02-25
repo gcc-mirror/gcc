@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 struct target_optabs default_target_optabs;
 struct target_libfuncs default_target_libfuncs;
+struct target_optabs *this_fn_optabs = &default_target_optabs;
 #if SWITCHABLE_TARGET
 struct target_optabs *this_target_optabs = &default_target_optabs;
 struct target_libfuncs *this_target_libfuncs = &default_target_libfuncs;
@@ -6150,7 +6151,7 @@ init_optabs (void)
     libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
 
   /* Fill in the optabs with the insns we support.  */
-  init_all_optabs ();
+  init_all_optabs (this_fn_optabs);
 
   /* The ffs function operates on `int'.  Fall back on it if we do not
      have a libgcc2 function for that width.  */
@@ -6205,6 +6206,38 @@ init_optabs (void)
 
   /* Allow the target to add more libcalls or rename some, etc.  */
   targetm.init_libfuncs ();
+}
+
+/* Recompute the optabs and save them if they have changed.  */
+
+void
+save_optabs_if_changed (tree fndecl)
+{
+  /* ?? If this fails, we should temporarily restore the default
+     target first (set_cfun (NULL) ??), do the rest of this function,
+     and then restore it.  */
+  gcc_assert (this_target_optabs == &default_target_optabs);
+
+  struct target_optabs *tmp_optabs = (struct target_optabs *)
+    ggc_alloc_atomic (sizeof (struct target_optabs));
+  tree optnode = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+
+  /* Generate a new set of optabs into tmp_optabs.  */
+  init_all_optabs (tmp_optabs);
+
+  /* If the optabs changed, record it.  */
+  if (memcmp (tmp_optabs, this_target_optabs, sizeof (struct target_optabs)))
+    {
+      if (TREE_OPTIMIZATION_OPTABS (optnode))
+	ggc_free (TREE_OPTIMIZATION_OPTABS (optnode));
+
+      TREE_OPTIMIZATION_OPTABS (optnode) = (unsigned char *) tmp_optabs;
+    }
+  else
+    {
+      TREE_OPTIMIZATION_OPTABS (optnode) = NULL;
+      ggc_free (tmp_optabs);
+    }
 }
 
 /* A helper function for init_sync_libfuncs.  Using the basename BASE,

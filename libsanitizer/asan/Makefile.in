@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -36,7 +37,6 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 @USING_MAC_INTERPOSE_TRUE@am__append_1 = -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
-@USING_MAC_INTERPOSE_TRUE@am__append_2 = dynamic/asan_interceptors_dynamic.cc
 subdir = asan
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -76,7 +76,8 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @USING_MAC_INTERPOSE_FALSE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
@@ -84,13 +85,6 @@ am__DEPENDENCIES_1 =
 @USING_MAC_INTERPOSE_FALSE@	$(am__DEPENDENCIES_1)
 @USING_MAC_INTERPOSE_TRUE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
 @USING_MAC_INTERPOSE_TRUE@	$(am__DEPENDENCIES_1)
-am__libasan_la_SOURCES_DIST = asan_allocator.cc asan_allocator2.cc \
-	asan_interceptors.cc asan_mac.cc asan_malloc_mac.cc \
-	asan_new_delete.cc asan_posix.cc asan_rtl.cc asan_stats.cc \
-	asan_thread_registry.cc asan_fake_stack.cc asan_globals.cc \
-	asan_linux.cc asan_malloc_linux.cc asan_malloc_win.cc \
-	asan_poisoning.cc asan_report.cc asan_stack.cc asan_thread.cc \
-	asan_win.cc dynamic/asan_interceptors_dynamic.cc
 am__objects_1 = asan_allocator.lo asan_allocator2.lo \
 	asan_interceptors.lo asan_mac.lo asan_malloc_mac.lo \
 	asan_new_delete.lo asan_posix.lo asan_rtl.lo asan_stats.lo \
@@ -98,9 +92,7 @@ am__objects_1 = asan_allocator.lo asan_allocator2.lo \
 	asan_linux.lo asan_malloc_linux.lo asan_malloc_win.lo \
 	asan_poisoning.lo asan_report.lo asan_stack.lo asan_thread.lo \
 	asan_win.lo
-@USING_MAC_INTERPOSE_TRUE@am__objects_2 =  \
-@USING_MAC_INTERPOSE_TRUE@	asan_interceptors_dynamic.lo
-am_libasan_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+am_libasan_la_OBJECTS = $(am__objects_1)
 libasan_la_OBJECTS = $(am_libasan_la_OBJECTS)
 libasan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -119,7 +111,8 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libasan_la_SOURCES)
-DIST_SOURCES = $(am__libasan_la_SOURCES_DIST)
+DIST_SOURCES = $(libasan_la_SOURCES)
+HEADERS = $(nodist_toolexeclib_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -267,6 +260,7 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-variadic-macros $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libasan.la
+nodist_toolexeclib_HEADERS = libasan_preinit.o
 asan_files = \
 	asan_allocator.cc \
 	asan_allocator2.cc \
@@ -289,7 +283,7 @@ asan_files = \
 	asan_thread.cc \
 	asan_win.cc
 
-libasan_la_SOURCES = $(asan_files) $(am__append_2)
+libasan_la_SOURCES = $(asan_files)
 @USING_MAC_INTERPOSE_FALSE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
 @USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la \
 @USING_MAC_INTERPOSE_FALSE@	$(LIBSTDCXX_RAW_CXX_LDFLAGS)
@@ -415,7 +409,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_fake_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_globals.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors_dynamic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_linux.Plo@am__quote@
@@ -453,18 +446,31 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
-asan_interceptors_dynamic.lo: dynamic/asan_interceptors_dynamic.cc
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT asan_interceptors_dynamic.lo -MD -MP -MF $(DEPDIR)/asan_interceptors_dynamic.Tpo -c -o asan_interceptors_dynamic.lo `test -f 'dynamic/asan_interceptors_dynamic.cc' || echo '$(srcdir)/'`dynamic/asan_interceptors_dynamic.cc
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/asan_interceptors_dynamic.Tpo $(DEPDIR)/asan_interceptors_dynamic.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='dynamic/asan_interceptors_dynamic.cc' object='asan_interceptors_dynamic.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o asan_interceptors_dynamic.lo `test -f 'dynamic/asan_interceptors_dynamic.cc' || echo '$(srcdir)/'`dynamic/asan_interceptors_dynamic.cc
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-nodist_toolexeclibHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibdir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -550,9 +556,9 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -609,7 +615,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-toolexeclibLTLIBRARIES
+install-exec-am: install-nodist_toolexeclibHEADERS \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -649,7 +656,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -660,13 +668,18 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-toolexeclibLTLIBRARIES installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-toolexeclibLTLIBRARIES
+	install-nodist_toolexeclibHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
+
+libasan_preinit.o: asan_preinit.o
+	cp $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

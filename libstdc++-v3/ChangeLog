@@ -1,3 +1,41 @@
+2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/streambuf (basic_streambuf): Use injected class name
+	instead of non-standard __streambuf_type typedef. Fix unclosed Doxygen
+	group.
+
+2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/html/faq.html: Fix spelling.
+	* doc/xml/faq.xml: Likewise.
+	* include/bits/basic_ios.h: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/streambuf: Likewise.
+
+2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/23_containers/unordered_set/55043.cc: Add missing
+	namespace qualification.
+	* testsuite/23_containers/unordered_multiset/55043.cc: Likewise.
+
+2013-02-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Set __cplusplus to 201103L. Change to
+	_GLIBCXX_INCLUDE_AS_CXX11. DIRECTORY_GRAPH, MARKDOWN_SUPPORT,
+	AUTOLINK_SUPPORT to NO. Update to doxygen 1.8.3.1.
+	* include/bits/stl_pair.h: Add to utilities group.
+	* include/std/tuple: Same.
+	* include/std/typeindex: Same.
+
+	* include/bits/stringfwd.h: Fix markup.
+	* include/std/limits: Same.
+	* include/std/type_traits: Same.
+	* include/tr1/memory: Same.
+	* include/tr1/regex: Same.
+	* scripts/run_doxygen: Comment.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Fixup line numbers.
+
 2013-02-14  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/18_support/quick_exit/quick_exit.cc: #if out the whole

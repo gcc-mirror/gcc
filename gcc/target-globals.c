@@ -67,6 +67,7 @@ struct target_globals *
 save_target_globals (void)
 {
   struct target_globals *g;
+  struct target_optabs *saved_this_fn_optabs = this_fn_optabs;
 
   g = ggc_alloc_target_globals ();
   g->flag_state = XCNEW (struct target_flag_state);
@@ -86,9 +87,40 @@ save_target_globals (void)
   g->bb_reorder = XCNEW (struct target_bb_reorder);
   g->lower_subreg = XCNEW (struct target_lower_subreg);
   restore_target_globals (g);
+  this_fn_optabs = this_target_optabs;
   init_reg_sets ();
   target_reinit ();
+  this_fn_optabs = saved_this_fn_optabs;
   return g;
+}
+
+/* Like save_target_globals() above, but set *this_target_optabs
+   correctly when a previous function has changed
+   *this_target_optabs.  */
+
+struct target_globals *
+save_target_globals_default_opts ()
+{
+  struct target_globals *globals;
+
+  if (optimization_current_node != optimization_default_node)
+    {
+      tree opts = optimization_current_node;
+      /* Temporarily switch to the default optimization node, so that
+	 *this_target_optabs is set to the default, not reflecting
+	 whatever a previous function used for the optimize
+	 attribute.  */
+      optimization_current_node = optimization_default_node;
+      cl_optimization_restore
+	(&global_options,
+	 TREE_OPTIMIZATION (optimization_default_node));
+      globals = save_target_globals ();
+      optimization_current_node = opts;
+      cl_optimization_restore (&global_options,
+			       TREE_OPTIMIZATION (opts));
+      return globals;
+    }
+  return save_target_globals ();
 }
 
 #endif

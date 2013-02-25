@@ -66,6 +66,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   *  @addtogroup utilities
+   *  @{
+   */
+
 #if __cplusplus >= 201103L
   /// piecewise_construct_t
   struct piecewise_construct_t { };
@@ -282,7 +287,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return pair<_T1, _T2>(__x, __y); }
 #endif
 
+  /// @}
+
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif /* _STL_PAIR_H */

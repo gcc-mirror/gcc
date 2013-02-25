@@ -138,6 +138,11 @@ int internal_sched_yield() {
   return syscall(__NR_sched_yield);
 }
 
+void internal__exit(int exitcode) {
+  syscall(__NR_exit_group, exitcode);
+  Die();  // Unreachable.
+}
+
 // ----------------- sanitizer_common.h
 bool FileExists(const char *filename) {
 #if SANITIZER_LINUX_USES_64BIT_SYSCALLS
@@ -232,6 +237,21 @@ const char *GetEnv(const char *name) {
   return 0;  // Not found.
 }
 
+#ifdef __GLIBC__
+
+extern "C" {
+  extern void *__libc_stack_end;
+}
+
+static void GetArgsAndEnv(char ***argv, char ***envp) {
+  uptr *stack_end = (uptr *)__libc_stack_end;
+  int argc = *stack_end;
+  *argv = (char**)(stack_end + 1);
+  *envp = (char**)(stack_end + argc + 2);
+}
+
+#else  // __GLIBC__
+
 static void ReadNullSepFileToArray(const char *path, char ***arr,
                                    int arr_size) {
   char *buff;
@@ -251,12 +271,20 @@ static void ReadNullSepFileToArray(const char *path, char ***arr,
   (*arr)[count] = 0;
 }
 
+static void GetArgsAndEnv(char ***argv, char ***envp) {
+  static const int kMaxArgv = 2000, kMaxEnvp = 2000;
+  ReadNullSepFileToArray("/proc/self/cmdline", argv, kMaxArgv);
+  ReadNullSepFileToArray("/proc/self/environ", envp, kMaxEnvp);
+}
+
+#endif  // __GLIBC__
+
 void ReExec() {
-  static const int kMaxArgv = 100, kMaxEnvp = 1000;
   char **argv, **envp;
-  ReadNullSepFileToArray("/proc/self/cmdline", &argv, kMaxArgv);
-  ReadNullSepFileToArray("/proc/self/environ", &envp, kMaxEnvp);
-  execve(argv[0], argv, envp);
+  GetArgsAndEnv(&argv, &envp);
+  execve("/proc/self/exe", argv, envp);
+  Printf("execve failed, errno %d\n", errno);
+  Die();
 }
 
 void PrepareForSandboxing() {

@@ -1,3 +1,22 @@
+2013-02-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* resolve.c (generate_component_assignments): Don't use UTF-8
+	ligature in diagnostic.
+
+2013-02-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56385
+	* trans-array.c (structure_alloc_comps): Handle procedure-pointer
+	components with allocatable result.
+
+2012-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56416
+	* gfortran.texi (Part II: Language Reference, Extensions,
+	Non-Fortran Main Program): Sort @menu to match actual section order.
+	* intrinsic.texi (Intrinsic Procedures): Ditto.
+	(C_F_POINTER, PRECISION): Move to the alphabetically correct place.
+
 2013-02-15  Tobias Burnus  <burnus@net-b.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

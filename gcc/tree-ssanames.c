@@ -455,7 +455,7 @@ struct gimple_opt_pass pass_release_ssa_names =
   PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0              			/* todo_flags_finish */
+  TODO_remove_unused_locals,		/* todo_flags_start */
+  0					/* todo_flags_finish */
  }
 };
