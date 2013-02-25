@@ -5033,6 +5033,18 @@ other options are processed, and it does so only once, no matter how
 many times it is given.  This is mainly intended to be used with
 @option{-fcompare-debug}.
 
+@item -fsanitize=address
+Enable AddressSanitizer, a fast memory error detector.
+Memory access instructions will be instrumented to detect
+out-of-bounds and use-after-free bugs.
+See @uref{http://code.google.com/p/address-sanitizer/} for more details.
+
+@item -fsanitize=thread
+Enable ThreadSanitizer, a fast data race detector.
+Memory access instructions will be instrumented to detect
+data race bugs.
+See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
+
 @item -fdump-final-insns@r{[}=@var{file}@r{]}
 @opindex fdump-final-insns
 Dump the final internal representation (RTL) to @var{file}.  If the
@@ -6865,18 +6877,6 @@ resulting executable can find the beginning of that section and/or make
 assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
-
-@item -fsanitize=address
-Enable AddressSanitizer, a fast memory error detector.
-Memory access instructions will be instrumented to detect
-out-of-bounds and use-after-free bugs.
-See @uref{http://code.google.com/p/address-sanitizer/} for more details.
-
-@item -fsanitize=thread
-Enable ThreadSanitizer, a fast data race detector.
-Memory access instructions will be instrumented to detect
-data race bugs. 
-See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
 
 @item -fmudflap -fmudflapth -fmudflapir
 @opindex fmudflap
