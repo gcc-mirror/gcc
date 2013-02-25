@@ -1772,6 +1772,29 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
   /* Ignore arg3 currently. */
 }
 
+/* Return true if a conversion of an operand from type FROM to type TO
+   should be applied after performing the operation instead.  */
+
+static bool
+hoist_conversion_for_bitop_p (tree to, tree from)
+{
+  /* That's a good idea if the conversion widens the operand, thus
+     after hoisting the conversion the operation will be narrower.  */
+  if (TYPE_PRECISION (from) < TYPE_PRECISION (to))
+    return true;
+
+  /* It's also a good idea if the conversion is to a non-integer mode.  */
+  if (GET_MODE_CLASS (TYPE_MODE (to)) != MODE_INT)
+    return true;
+
+  /* Or if the precision of TO is not the same as the precision
+     of its mode.  */
+  if (TYPE_PRECISION (to) != GET_MODE_PRECISION (TYPE_MODE (to)))
+    return true;
+
+  return false;
+}
+
 /* Simplify bitwise binary operations.
    Return true if a transformation applied, otherwise return false.  */
 
@@ -1789,9 +1812,11 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
   defcodefor_name (arg1, &def1_code, &def1_arg1, &def1_arg2);
   defcodefor_name (arg2, &def2_code, &def2_arg1, &def2_arg2);
 
-  /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST)).  */
+  /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
+     when profitable.  */
   if (TREE_CODE (arg2) == INTEGER_CST
       && CONVERT_EXPR_CODE_P (def1_code)
+      && hoist_conversion_for_bitop_p (TREE_TYPE (arg1), TREE_TYPE (def1_arg1))
       && INTEGRAL_TYPE_P (TREE_TYPE (def1_arg1))
       && int_fits_type_p (arg2, TREE_TYPE (def1_arg1)))
     {
@@ -1816,15 +1841,7 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
   if (CONVERT_EXPR_CODE_P (def1_code)
       && CONVERT_EXPR_CODE_P (def2_code)
       && types_compatible_p (TREE_TYPE (def1_arg1), TREE_TYPE (def2_arg1))
-      /* Make sure that the conversion widens the operands, or has same
-	 precision,  or that it changes the operation to a bitfield
-	 precision.  */
-      && ((TYPE_PRECISION (TREE_TYPE (def1_arg1))
-	   <= TYPE_PRECISION (TREE_TYPE (arg1)))
-	  || (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (arg1)))
-	      != MODE_INT)
-	  || (TYPE_PRECISION (TREE_TYPE (arg1))
-	      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg1))))))
+      && hoist_conversion_for_bitop_p (TREE_TYPE (arg1), TREE_TYPE (def1_arg1)))
     {
       gimple newop;
       tree tem = make_ssa_name (TREE_TYPE (def1_arg1), NULL);
