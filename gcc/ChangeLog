@@ -1,3 +1,8 @@
+2013-02-25  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fsanitize=): Move from optimization
+	to debugging options.
+
 2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
 
 	* sched-deps.c (sched_analyze_insn): Fix typo in comment.
@@ -36,7 +41,7 @@
 	* config/mips/mips.md (multimem): New type.
 	(length): Differentiate between 17-bit and 18-bit branch offsets.
 	(MOVEP1, MOVEP2): New mode iterator.
- 	(mov_<load>l): Use ZC constraint.
+	(mov_<load>l): Use ZC constraint.
 	(mov_<load>r): Likewise.
 	(mov_<store>l): Likewise.
 	(mov_<store>r): Likewise.
@@ -90,7 +95,7 @@
 	(mips_attribute_table): Add micromips, nomicromips and nocompression.
 	(mips_mips16_decl_p): Delete.
 	(mips_nomips16_decl_p): Delete.
- 	(mips_get_compress_on_flags): New function.
+	(mips_get_compress_on_flags): New function.
 	(mips_get_compress_off_flags): New function.
 	(mips_get_compress_mode): New function.
 	(mips_get_compress_on_name): New function.
@@ -167,10 +172,10 @@
 
 2013-02-22  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.md (split for extendsidi): Update condition.
-        (zero_extend<mode>di2,extend<mode>di2): Add an alternative.
-        * config/arm/iterators.md (qhs_extenddi_cstr): Likewise.
-        (qhs_zextenddi_cstr): Likewise.
+	* config/arm/arm.md (split for extendsidi): Update condition.
+	(zero_extend<mode>di2,extend<mode>di2): Add an alternative.
+	* config/arm/iterators.md (qhs_extenddi_cstr): Likewise.
+	(qhs_zextenddi_cstr): Likewise.
 
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
@@ -325,7 +330,7 @@
 	* config/microblaze/microblaze.h: Add TARGET_HAS_CLZ as combined 
 	version and TARGET_PATTERN_COMPARE check
 	* config/microblaze/microblaze.md: New clzsi2 instruction
-	
+
 2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
 
 	*  config/microblaze/microblaze.md (call_value_intern): Check symbol is 
