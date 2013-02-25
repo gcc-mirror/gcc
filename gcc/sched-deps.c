@@ -3317,7 +3317,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
             SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
           }
 
-      /* Don't flush pending lists on speculative checks and for
+      /* Don't flush pending lists on speculative checks for
 	 selective scheduling.  */
       if (!sel_sched_p () || !sel_insn_is_speculation_check (insn))
 	flush_pending_lists (deps, insn, true, true);
