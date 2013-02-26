@@ -1,3 +1,8 @@
+2013-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56443
+	* gcc.dg/torture/pr56443.c: New test.
+
 2013-02-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56385

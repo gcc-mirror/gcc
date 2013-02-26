@@ -5797,7 +5797,8 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
   /* We can't build a vector type of elements with alignment bigger than
      their size.  */
   else if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
-    scalar_type = lang_hooks.types.type_for_mode (inner_mode, 1);
+    scalar_type = lang_hooks.types.type_for_mode (inner_mode, 
+						  TYPE_UNSIGNED (scalar_type));
 
   /* If we felt back to using the mode fail if there was
      no scalar type for it.  */
