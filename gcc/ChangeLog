@@ -9,6 +9,10 @@
 	* config/c6x/c6x.c (dbx_register_map): Change to unsigned.
 	* config/c6x/c6x.h (dbx_register_map): Update declaration.
 
+	PR target/52501
+	* config/cr16/cr16-protos.h: Move end of RTX_CODE guard below end
+	of prologue/epilogue functions.
+
 2013-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/56426
