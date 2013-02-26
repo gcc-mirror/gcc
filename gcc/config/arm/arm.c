@@ -2607,7 +2607,7 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
 int
 const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
 {
-  HOST_WIDE_INT hi_val = (i >> 32) & 0xFFFFFFFF;
+  HOST_WIDE_INT hi_val = (i >> 16 >> 16) & 0xFFFFFFFF;
   HOST_WIDE_INT lo_val = i & 0xFFFFFFFF;
   rtx hi = GEN_INT (hi_val);
   rtx lo = GEN_INT (lo_val);
@@ -11347,10 +11347,10 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
   /* Use hard registers if we have aligned source or destination so we can use
      load/store multiple with contiguous registers.  */
   if (dst_aligned || src_aligned)
-    for (i = 0; i < interleave_factor; i++)
+    for (i = 0; i < (HOST_WIDE_INT) interleave_factor; i++)
       regs[i] = gen_rtx_REG (SImode, i);
   else
-    for (i = 0; i < interleave_factor; i++)
+    for (i = 0; i < (HOST_WIDE_INT) interleave_factor; i++)
       regs[i] = gen_reg_rtx (SImode);
 
   dst = copy_addr_to_reg (XEXP (dstbase, 0));
@@ -11362,7 +11362,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
      For copying the last bytes we want to subtract this offset again.  */
   src_autoinc = dst_autoinc = 0;
 
-  for (i = 0; i < interleave_factor; i++)
+  for (i = 0; i < (HOST_WIDE_INT) interleave_factor; i++)
     regnos[i] = i;
 
   /* Copy BLOCK_SIZE_BYTES chunks.  */
@@ -11378,7 +11378,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
 	}
       else
 	{
-	  for (j = 0; j < interleave_factor; j++)
+	  for (j = 0; j < (HOST_WIDE_INT) interleave_factor; j++)
 	    {
 	      addr = plus_constant (Pmode, src, (srcoffset + j * UNITS_PER_WORD
 						 - src_autoinc));
@@ -11398,7 +11398,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
 	}
       else
 	{
-	  for (j = 0; j < interleave_factor; j++)
+	  for (j = 0; j < (HOST_WIDE_INT) interleave_factor; j++)
 	    {
 	      addr = plus_constant (Pmode, dst, (dstoffset + j * UNITS_PER_WORD
 						 - dst_autoinc));
@@ -11417,7 +11417,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
   
   words = remaining / UNITS_PER_WORD;
 
-  gcc_assert (words < interleave_factor);
+  gcc_assert (words < (HOST_WIDE_INT) interleave_factor);
   
   if (src_aligned && words > 1)
     {
@@ -11555,7 +11555,8 @@ arm_adjust_block_mem (rtx mem, HOST_WIDE_INT length, rtx *loop_reg,
   /* Although the new mem does not refer to a known location,
      it does keep up to LENGTH bytes of alignment.  */
   *loop_mem = change_address (mem, BLKmode, *loop_reg);
-  set_mem_align (*loop_mem, MIN (MEM_ALIGN (mem), length * BITS_PER_UNIT));
+  set_mem_align (*loop_mem,
+		 MIN ((HOST_WIDE_INT) MEM_ALIGN (mem), length * BITS_PER_UNIT));
 }
 
 /* From mips_block_move_loop:
