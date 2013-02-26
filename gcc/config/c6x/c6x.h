@@ -521,7 +521,7 @@ struct GTY(()) machine_function
 
 #define DBX_REGISTER_NUMBER(N) (dbx_register_map[(N)])
 
-extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned const dbx_register_map[FIRST_PSEUDO_REGISTER];
 
 #define FINAL_PRESCAN_INSN c6x_final_prescan_insn
 
