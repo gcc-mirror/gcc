@@ -28,6 +28,10 @@
 	(arm_block_move_unaligned_straight): Likewise.
 	(arm_adjust_block_mem): Likewise.
 
+	PR target/54662
+	* config/mep/t-mep (mep-pragma.o): Use ALL_COMPILERFLAGS instead of
+	ALL_CFLAGS.
+
 2013-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/56426
