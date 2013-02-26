@@ -1,3 +1,14 @@
+2013-02-26  Nick Clifton  <nickc@redhat.com>
+
+	PR target/56453
+	Import this patch from the mainline:
+
+	2012-08-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/fr30/fr30.md (cbranchsi4): Remove mode from comparison.
+	(branch_true): Likewise.
+	(branch_false): Likewise.
+
 2013-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56443
