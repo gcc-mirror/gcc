@@ -1,3 +1,8 @@
+2013-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* lra-spills.c (lra_spill): Free spill_hard_reg at the end.
+
 2013-02-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arm/arm.c (const_ok_for_dimode_op): Back out last change.
