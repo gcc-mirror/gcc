@@ -1,5 +1,12 @@
 2013-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/56448
+	* fold-const.c (operand_equal_p) <case tcc_reference>: Don't look at
+	TREE_SIDE_EFFECTS if flags contain OEP_CONSTANT_ADDRESS_OF.
+	Clear OEP_CONSTANT_ADDRESS_OF from flags before recursing on second or
+	later operands of the references, or even first operand for
+	INDIRECT_REF, TARGET_MEM_REF or MEM_REF.
+
 	PR tree-optimization/56443
 	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): For
 	overaligned types, pass TYPE_UNSIGNED (scalar_type) as second argument
