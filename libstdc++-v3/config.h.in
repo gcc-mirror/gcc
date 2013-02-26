@@ -658,6 +658,9 @@
 /* Define to 1 if you have the `_tanl' function. */
 #undef HAVE__TANL
 
+/* Define to 1 if you have the `__cxa_thread_atexit_impl' function. */
+#undef HAVE___CXA_THREAD_ATEXIT_IMPL
+
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
 

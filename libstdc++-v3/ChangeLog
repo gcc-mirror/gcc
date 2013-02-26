@@ -1,3 +1,10 @@
+2013-02-25  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Check for __cxa_thread_atexit_impl.
+	* libsupc++/atexit_thread.cc (__cxa_thread_atexit): Just forward
+	to it if available.
+	* config.h.in, configure: Regenerate.
+
 2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/streambuf (basic_streambuf): Use injected class name
