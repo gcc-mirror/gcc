@@ -5,6 +5,10 @@
 	temp, cond and label.
 	* config/lm32/lm32.md (ashlsi3): Remove unused variable one.
 
+	PR target/52500
+	* config/c6x/c6x.c (dbx_register_map): Change to unsigned.
+	* config/c6x/c6x.h (dbx_register_map): Update declaration.
+
 2013-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/56426
