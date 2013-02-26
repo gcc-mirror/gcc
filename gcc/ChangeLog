@@ -1,3 +1,10 @@
+2013-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56443
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): For
+	overaligned types, pass TYPE_UNSIGNED (scalar_type) as second argument
+	to type_for_mode langhook.
+
 2013-02-25  Matt Turner  <mattst88@gmail.com>
 
 	* doc/invoke.texi: Document r4700.
