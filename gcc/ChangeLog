@@ -1,5 +1,11 @@
 2013-02-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
+	* config/arm/arm.c (const_ok_for_dimode_op): Back out last change.
+	(arm_block_move_unaligned_straight): Likewise.
+	(arm_adjust_block_mem): Likewise.
+
+2013-02-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
 	PR target/48901
 	* config/lm32/lm32.c (gen_int_relational): Remove unused variables
 	temp, cond and label.
