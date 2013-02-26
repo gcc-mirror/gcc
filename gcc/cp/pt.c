@@ -14900,19 +14900,6 @@ fn_type_unification (tree fn,
   tree tinst;
   tree r = error_mark_node;
 
-  /* Adjust any explicit template arguments before entering the
-     substitution context.  */
-  if (explicit_targs)
-    {
-      explicit_targs
-	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
-				  complain,
-				  /*require_all_args=*/false,
-				  /*use_default_args=*/false));
-      if (explicit_targs == error_mark_node)
-	return error_mark_node;
-    }
-
   /* In C++0x, it's possible to have a function template whose type depends
      on itself recursively.  This is most obvious with decltype, but can also
      occur with enumeration scope (c++/48969).  So we need to catch infinite
@@ -14926,13 +14913,7 @@ fn_type_unification (tree fn,
      This is, of course, not reentrant.  */
   if (excessive_deduction_depth)
     return error_mark_node;
-  tinst = build_tree_list (fn, targs);
-  if (!push_tinst_level (tinst))
-    {
-      excessive_deduction_depth = true;
-      ggc_free (tinst);
-      return error_mark_node;
-    }
+  tinst = build_tree_list (fn, NULL_TREE);
   ++deduction_depth;
   push_deferring_access_checks (dk_deferred);
 
@@ -14961,6 +14942,16 @@ fn_type_unification (tree fn,
       int i, len = TREE_VEC_LENGTH (tparms);
       location_t loc = input_location;
       bool incomplete = false;
+
+      /* Adjust any explicit template arguments before entering the
+	 substitution context.  */
+      explicit_targs
+	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
+				  complain,
+				  /*require_all_args=*/false,
+				  /*use_default_args=*/false));
+      if (explicit_targs == error_mark_node)
+	goto fail;
 
       /* Substitute the explicit args into the function type.  This is
 	 necessary so that, for instance, explicitly declared function
@@ -15008,14 +14999,19 @@ fn_type_unification (tree fn,
             }
         }
 
+      TREE_VALUE (tinst) = explicit_targs;
+      if (!push_tinst_level (tinst))
+	{
+	  excessive_deduction_depth = true;
+	  goto fail;
+	}
       processing_template_decl += incomplete;
       input_location = DECL_SOURCE_LOCATION (fn);
-      TREE_VALUE (tinst) = explicit_targs;
       fntype = tsubst (TREE_TYPE (fn), explicit_targs,
 		       complain | tf_partial, NULL_TREE);
-      TREE_VALUE (tinst) = targs;
       input_location = loc;
       processing_template_decl -= incomplete;
+      pop_tinst_level ();
 
       if (fntype == error_mark_node)
 	goto fail;
@@ -15051,11 +15047,9 @@ fn_type_unification (tree fn,
      callers must be ready to deal with unification failures in any
      event.  */
 
-  pop_tinst_level ();
   ok = !type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 			       targs, parms, args, nargs, /*subr=*/0,
 			       strict, flags, explain_p);
-  push_tinst_level (tinst);
   if (!ok)
     goto fail;
 
@@ -15096,7 +15090,15 @@ fn_type_unification (tree fn,
      the corresponding deduced argument values.  If the
      substitution results in an invalid type, as described above,
      type deduction fails.  */
+  TREE_VALUE (tinst) = targs;
+  if (!push_tinst_level (tinst))
+    {
+      excessive_deduction_depth = true;
+      goto fail;
+    }
   decl = instantiate_template (fn, targs, complain);
+  pop_tinst_level ();
+
   if (decl == error_mark_node)
     goto fail;
 
@@ -15141,7 +15143,6 @@ fn_type_unification (tree fn,
 	excessive_deduction_depth = false;
     }
 
-  pop_tinst_level ();
   /* We can't free this if a pending_template entry or last_error_tinst_level
      is pointing at it.  */
   if (last_pending_template == old_last_pend
