@@ -1,3 +1,9 @@
+2013-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56426
+	* tree-ssa-loop.c (tree_ssa_loop_init): Always call
+	scev_initialize.
+
 2013-02-26  Richard Biener  <rguenther@suse.de>
 
 	PR target/56444
