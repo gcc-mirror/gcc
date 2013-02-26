@@ -10634,9 +10634,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 	  }
 
-	/* Record presence of `static'.  */
+	/* Record whether the function is public.  */
 	publicp = (ctype != NULL_TREE
-		   || storage_class == sc_extern
 		   || storage_class != sc_static);
 
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
