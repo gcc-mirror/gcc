@@ -22,6 +22,12 @@
 	* config/mn10300/mn10300.c (mn10300_expand_epilogue): Avoid offset
 	type promotion to unsigned.
 
+	PR target/54640
+	* config/arm/arm.c (const_ok_for_dimode_op): Make code consistent
+	for HOST_WIDE_INT of 32 bit / same size as int.
+	(arm_block_move_unaligned_straight): Likewise.
+	(arm_adjust_block_mem): Likewise.
+
 2013-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/56426
