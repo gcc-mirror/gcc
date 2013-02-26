@@ -1,5 +1,9 @@
 2013-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56377
+	* pt.c (fn_type_unification): Wait to call push_tinst_level until
+	we know what args we're looking at.
+
 	PR c++/56438
 	* semantics.c (potential_constant_expression_1): In C++98, a cast
 	to non-integral type can't be a constant expression.
