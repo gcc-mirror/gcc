@@ -1,3 +1,8 @@
+2013-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56426
+	* gcc.dg/pr56436.c: New test.
+
 2013-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56448
