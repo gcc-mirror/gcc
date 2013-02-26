@@ -1,3 +1,9 @@
+2013-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/56444
+	* config/mn10300/mn10300.c (mn10300_scan_for_setlb_lcc): Remove
+	unused variable loops.
+
 2013-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56448

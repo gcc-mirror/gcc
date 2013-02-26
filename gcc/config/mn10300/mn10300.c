@@ -3225,7 +3225,6 @@ mn10300_loop_contains_call_insn (loop_p loop)
 static void
 mn10300_scan_for_setlb_lcc (void)
 {
-  struct loops loops;
   loop_iterator liter;
   loop_p loop;
 
