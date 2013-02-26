@@ -18,6 +18,10 @@
 	Remove unused variable cfa_offset.
 	* config/tilepro/tilepro.c (tilepro_expand_prologue): Likewise.
 
+	PR target/54639
+	* config/mn10300/mn10300.c (mn10300_expand_epilogue): Avoid offset
+	type promotion to unsigned.
+
 2013-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/56426
