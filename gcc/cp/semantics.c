@@ -5108,6 +5108,7 @@ begin_transaction_stmt (location_t loc, tree *pcompound, int flags)
 			 "transactional memory support enabled")));
 
   TRANSACTION_EXPR_BODY (r) = push_stmt_list ();
+  TREE_SIDE_EFFECTS (r) = 1;
   return r;
 }
 
@@ -5157,6 +5158,7 @@ build_transaction_expr (location_t loc, tree expr, int flags, tree noex)
   ret = build1 (TRANSACTION_EXPR, TREE_TYPE (expr), expr);
   if (flags & TM_STMT_ATTR_RELAXED)
 	TRANSACTION_EXPR_RELAXED (ret) = 1;
+  TREE_SIDE_EFFECTS (ret) = 1;
   SET_EXPR_LOCATION (ret, loc);
   return ret;
 }

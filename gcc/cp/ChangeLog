@@ -1,3 +1,9 @@
+2013-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c++/56419
+	* semantics.c (begin_transaction_stmt): Set TREE_SIDE_EFFECTS.
+	(build_transaction_expr): Same.
+
 2013-02-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56377
