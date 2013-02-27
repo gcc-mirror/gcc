@@ -1,10 +1,21 @@
+2013-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-flow.h (edge_var_map_vector): Change into va_heap, vl_embed
+	vector.
+	* tree-ssa.c (redirect_edge_var_map_add): Use vec_safe_reserve and
+	vec_safe_push, always update *slot.
+	(redirect_edge_var_map_clear): Use vec_free.
+	(redirect_edge_var_map_dup): Use vec_safe_copy and vec_safe_reserve.
+	(free_var_map_entry): Use vec_free.
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Use
+	FOR_EACH_VEC_SAFE_ELT instead of FOR_EACH_VEC_ELT.
+
 2013-02-27  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR middle-end/45472
-	
 	* sel-sched-ir.c (merge_expr): Also change vinsn of merged expr
 	when the may_trap_p bit of the exprs being merged differs.
-
 	Reorder tests for speculativeness in the logical and operator.
 
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>

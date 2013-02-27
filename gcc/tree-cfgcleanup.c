@@ -822,7 +822,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 		 redirection, replace it with the PHI argument that used
 		 to be on E.  */
 	      head = redirect_edge_var_map_vector (e);
-	      FOR_EACH_VEC_ELT (*head, i, vm)
+	      FOR_EACH_VEC_SAFE_ELT (head, i, vm)
 		{
 		  tree old_arg = redirect_edge_var_map_result (vm);
 		  tree new_arg = redirect_edge_var_map_def (vm);
