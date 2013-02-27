@@ -1,9 +1,14 @@
-2013-02-27  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
-	*  config/microblaze/microblaze.c (microblaze_emit_compare):
-	Use xor for EQ/NE comparisions
-	*  config/microblaze/microblaze.md (cstoresf4): Add constraints
-	(cbranchsf4): Adjust operator to comparison_operator
+	PR middle-end/56461
+	* ipa-reference.c (propagate): Free node_info even for alias nodes.
+
+2013-02-27  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config/microblaze/microblaze.c (microblaze_emit_compare):
+	Use xor for EQ/NE comparisions.
+	* config/microblaze/microblaze.md (cstoresf4): Add constraints
+	(cbranchsf4): Adjust operator to comparison_operator.
 
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
