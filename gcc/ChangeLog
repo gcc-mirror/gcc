@@ -1,6 +1,10 @@
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* tree-ssa-loop-niter.c (maybe_lower_iteration_bound): Call
+	pointer_set_destroy on not_executed_last_iteration.
+
+	PR middle-end/56461
 	* tree-vect-loop.c (vectorizable_reduction): Release vect_defs
 	vector.
 
