@@ -3027,13 +3027,6 @@ push_class_level_binding_1 (tree name, tree x)
       && TREE_TYPE (decl) == error_mark_node)
     decl = TREE_VALUE (decl);
 
-  if (TREE_CODE (decl) == USING_DECL
-      && TYPE_NAME (USING_DECL_SCOPE (decl))
-      && DECL_NAME (decl) == TYPE_IDENTIFIER (USING_DECL_SCOPE (decl)))
-    /* This using-declaration declares inheriting constructors; it does not
-       redeclare the name of a template parameter.  */
-    return true;
-
   if (!check_template_shadow (decl))
     return false;
 
@@ -3225,12 +3218,14 @@ do_class_using_decl (tree scope, tree name)
       error ("%<%T::%D%> names destructor", scope, name);
       return NULL_TREE;
     }
-  if (TYPE_NAME (scope) && name == TYPE_IDENTIFIER (scope))
-    /* 3.4.3.1 says that using B::B always names the constructor even if B
-       is a typedef; now replace the second B with the real name.  */
-    name = TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (scope));
-  if (MAYBE_CLASS_TYPE_P (scope) && constructor_name_p (name, scope))
-    maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
+  /* Using T::T declares inheriting ctors, even if T is a typedef.  */
+  if (MAYBE_CLASS_TYPE_P (scope)
+      && ((TYPE_NAME (scope) && name == TYPE_IDENTIFIER (scope))
+	  || constructor_name_p (name, scope)))
+    {
+      maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
+      name = ctor_identifier;
+    }
   if (constructor_name_p (name, current_class_type))
     {
       error ("%<%T::%D%> names constructor in %qT",
