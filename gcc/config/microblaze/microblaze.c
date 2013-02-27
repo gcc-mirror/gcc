@@ -2842,21 +2842,8 @@ microblaze_emit_compare (enum machine_mode mode, rtx cmp, enum rtx_code *cmp_cod
 
   if (code == EQ || code == NE)
     {
-      if (TARGET_PATTERN_COMPARE && GET_CODE(cmp_op1) == REG) 
-        {
-          if (code == EQ) 
-	    {
-	      emit_insn (gen_seq_internal_pat (comp_reg, cmp_op0, cmp_op1));
-	      *cmp_code = NE;
-	    }
-	  else
-	    {    
-	      emit_insn (gen_sne_internal_pat (comp_reg, cmp_op0, cmp_op1));
-	    }
-        }
-      else
-	/* Use xor for equal/not-equal comparison.  */
-	emit_insn (gen_xorsi3 (comp_reg, cmp_op0, cmp_op1));
+      /* Use xor for equal/not-equal comparison.  */
+      emit_insn (gen_xorsi3 (comp_reg, cmp_op0, cmp_op1));
     }
   else if (code == GT || code == GTU || code == LE || code == LEU)
     {

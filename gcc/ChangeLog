@@ -1,3 +1,10 @@
+2013-02-27  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+
+	*  config/microblaze/microblaze.c (microblaze_emit_compare):
+	Use xor for EQ/NE comparisions
+	*  config/microblaze/microblaze.md (cstoresf4): Add constraints
+	(cbranchsf4): Adjust operator to comparison_operator
+
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
