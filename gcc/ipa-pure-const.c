@@ -1479,7 +1479,7 @@ propagate (void)
   propagate_pure_const ();
 
   /* Cleanup. */
-  FOR_EACH_DEFINED_FUNCTION (node)
+  FOR_EACH_FUNCTION (node)
     if (has_function_state (node))
       free (get_function_state (node));
   funct_state_vec.release ();

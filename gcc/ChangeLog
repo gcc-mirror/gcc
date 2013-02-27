@@ -1,6 +1,10 @@
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* ipa-pure-const.c (propagate): Use FOR_EACH_FUNCTION instead of
+	FOR_EACH_DEFINED_FUNCTION when freeing state.
+
+	PR middle-end/56461
 	* df-scan.c (df_insn_delete): Use df_scan_free_mws_vec before
 	pool_free.
 	(df_insn_rescan_debug_internal): Use df_scan_free_mws_vec before
