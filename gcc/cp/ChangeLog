@@ -1,3 +1,13 @@
+2013-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56358
+	PR c++/56323
+	* name-lookup.c (do_class_using_decl): Use ctor_identifier instead
+	of the base name for inheriting ctors.
+	(push_class_level_binding_1): Remove inheriting ctor handling.
+	* pt.c (tsubst_decl) [USING_DECL]: Likewise.
+	* class.c (add_implicitly_declared_members): Adjust.
+
 2013-02-26  David Binderman  <dcb314@hotmail.com>
 
 	PR c++/55632
