@@ -1,3 +1,9 @@
+2013-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56455
+	* stmt.c (expand_switch_as_decision_tree_p): If flag_pic
+	and ASM_OUTPUT_ADDR_DIFF_ELT isn't defined, return true.
+
 2013-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
