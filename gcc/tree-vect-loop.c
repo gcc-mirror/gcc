@@ -5209,6 +5209,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
                                     double_reduc, slp_node);
 
   phis.release ();
+  vect_defs.release ();
   vec_oprnds0.release ();
   vec_oprnds1.release ();
 
