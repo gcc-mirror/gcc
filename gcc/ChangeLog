@@ -1,5 +1,18 @@
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* opts.h: Include obstack.h.
+	(opts_concat): New prototype.
+	(opts_obstack): New declaration.
+	* opts.c (opts_concat): New function.
+	(opts_obstack): New variable.
+	(init_options_struct): Call gcc_init_obstack on opts_obstack.
+	(finish_options): Use opts_concat instead of concat
+	and XOBNEWVEC instead of XNEWVEC.
+	* opts-common.c (generate_canonical_option, decode_cmdline_option,
+	generate_option): Likewise.
+	* Makefile.in (OPTS_H): Depend on $(OBSTACK_H).
+	* lto-wrapper.c (main): Call gcc_init_obstack on opts_obstack.
+
 	PR target/56455
 	* stmt.c (expand_switch_as_decision_tree_p): If flag_pic
 	and ASM_OUTPUT_ADDR_DIFF_ELT isn't defined, return true.
