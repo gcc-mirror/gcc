@@ -1,5 +1,8 @@
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* incpath.c (add_standard_paths): Use reconcat instead of concat
+	where appropriate and avoid leaking memory.
+
 	* opts.h: Include obstack.h.
 	(opts_concat): New prototype.
 	(opts_obstack): New declaration.
