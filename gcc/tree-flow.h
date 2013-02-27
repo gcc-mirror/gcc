@@ -481,7 +481,7 @@ typedef struct _edge_var_map edge_var_map;
 
 
 /* A vector of var maps.  */
-typedef vec<edge_var_map> edge_var_map_vector;
+typedef vec<edge_var_map, va_heap, vl_embed> edge_var_map_vector;
 
 extern void init_tree_ssa (struct function *);
 extern void redirect_edge_var_map_add (edge, tree, tree, source_location);
