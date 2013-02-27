@@ -1,6 +1,10 @@
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* tree-vect-loop.c (vectorizable_reduction): Release vect_defs
+	vector.
+
+	PR middle-end/56461
 	* ipa-pure-const.c (propagate): Use FOR_EACH_FUNCTION instead of
 	FOR_EACH_DEFINED_FUNCTION when freeing state.
 
