@@ -3406,6 +3406,9 @@ decide_whether_version_node (struct cgraph_node *node)
       info = IPA_NODE_REF (node);
       info->do_clone_for_all_contexts = false;
       IPA_NODE_REF (clone)->is_all_contexts_clone = true;
+      for (i = 0; i < count ; i++)
+	vec_free (known_aggs[i].items);
+      known_aggs.release ();
       ret = true;
     }
   else
