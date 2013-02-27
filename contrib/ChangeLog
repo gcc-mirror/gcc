@@ -1,3 +1,7 @@
+2013-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* make_sunver.pl: Enforce C locale.
+
 2013-02-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* update-copyright.py: Add libdecnumber to the default list.
