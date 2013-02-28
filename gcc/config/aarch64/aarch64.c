@@ -5986,7 +5986,7 @@ static aarch64_simd_mangle_map_entry aarch64_simd_mangle_map[] = {
 
 /* Implement TARGET_MANGLE_TYPE.  */
 
-const char *
+static const char *
 aarch64_mangle_type (const_tree type)
 {
   /* The AArch64 ABI documents say that "__va_list" has to be
