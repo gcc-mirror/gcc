@@ -1,5 +1,13 @@
 2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/56445
+	* config/avr/avr.c (avr_init_builtins): Use 'n' instead of empty
+	macro parameters with: FX_FTYPE_FX, FX_FTYPE_FX_INT, INT_FTYPE_FX,
+	INTX_FTYPE_FX, FX_FTYPE_INTX.
+	* config/avr/builtins.def: Adjust respective DEF_BUILTIN.
+
+2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
 	* avr/avr-mcus.def (ata5272, ata5505, attiny1634, ata6285)
 	(ata6286, atmega8a, atmega48pa, ata5790, ata5790n, ata5795)
 	(atmega164pa, atmega165pa, atmega168pa, atmega16hva, atmega16hvb)
