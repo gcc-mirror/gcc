@@ -1,5 +1,27 @@
 2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
+	* avr/avr-mcus.def (ata5272, ata5505, attiny1634, ata6285)
+	(ata6286, atmega8a, atmega48pa, ata5790, ata5790n, ata5795)
+	(atmega164pa, atmega165pa, atmega168pa, atmega16hva, atmega16hvb)
+	(atmega16hvbrevb, atmega16m1, atmega16u4, atmega26hvg, atmega32a)
+	(atmega32a, atmega3250pa, atmega3290pa, atmega32c1, atmega32m1)
+	(atmega32u4, atmega32u6, atmega64a, atmega6490a, atmega6490p)
+	(atmega64c1, atmega64m1, atmega64rfa2, atmega64rfr2, atmega32hvb)
+	(atmega32hvbrevb, atmega16hva2, atmega48hvf, at90pwm161)
+	(atmega128a, atmega1284, atmxt112sl, atmxt224, atmxt224e)
+	(atmxt336s, atxmega16a4u, atxmega16c4, atxmega32a4u, atxmega32c4)
+	(atxmega32e5, atxmega64a3u, atxmega64a4u, atxmega64b1, atxmega64b3)
+	(atxmega64c3, atxmega64d4, atxmega128a3u, atxmega128b1)
+	(atxmega128b3, atxmega128c3, atxmega128d4, atmxt540s, atmxt540sreva)
+	(atxmega192a3u, atxmega192c3, atxmega256a3u, atxmega256c3)
+	(atxmega384c3, atxmega384d3, atxmega128a4u): New AVR_MCU.
+	(avrxmega6): Increase max flash segments from 5 to 6.
+	* config/avr/t-multilib: Regenerate.
+	* config/avr/avr-tables.opt: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr.h (device_to_arch): Rename to device_to_ld.
 	(avr_device_to_arch): Rename to avr_device_to_ld.
 	(avr_device_to_as): New prototype.
