@@ -1,3 +1,15 @@
+2013-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-vectorizer.h (vect_get_slp_defs): Change 3rd argument
+	type to vec<vec<tree> > *.
+	* tree-vect-slp.c (vect_get_slp_defs): Likewise.  Change vec_defs
+	to be vec<tree> instead of vec<tree> *, set vec_defs
+	to vNULL and call vec_defs.create (number_of_vects), adjust other
+	uses of vec_defs.
+	* tree-vect-stmts.c (vect_get_vec_defs, vectorizable_call,
+	vectorizable_condition): Adjust vect_get_slp_defs callers.
+
 2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c
