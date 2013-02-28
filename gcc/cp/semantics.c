@@ -8683,10 +8683,12 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     case ROUND_MOD_EXPR:
       {
 	tree denom = TREE_OPERAND (t, 1);
-	/* We can't call maybe_constant_value on an expression
+	if (!potential_constant_expression_1 (denom, rval, flags))
+	  return false;
+	/* We can't call cxx_eval_outermost_constant_expr on an expression
 	   that hasn't been through fold_non_dependent_expr yet.  */
 	if (!processing_template_decl)
-	  denom = maybe_constant_value (denom);
+	  denom = cxx_eval_outermost_constant_expr (denom, true);
 	if (integer_zerop (denom))
 	  {
 	    if (flags & tf_error)
@@ -8696,7 +8698,8 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	else
 	  {
 	    want_rval = true;
-	    goto binary;
+	    return potential_constant_expression_1 (TREE_OPERAND (t, 0),
+						    want_rval, flags);
 	  }
       }
 
@@ -8731,7 +8734,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	if (!potential_constant_expression_1 (op, rval, flags))
 	  return false;
 	if (!processing_template_decl)
-	  op = maybe_constant_value (op);
+	  op = cxx_eval_outermost_constant_expr (op, true);
 	if (tree_int_cst_equal (op, tmp))
 	  return potential_constant_expression_1 (TREE_OPERAND (t, 1), rval, flags);
 	else
@@ -8793,7 +8796,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       if (!potential_constant_expression_1 (tmp, rval, flags))
 	return false;
       if (!processing_template_decl)
-	tmp = maybe_constant_value (tmp);
+	tmp = cxx_eval_outermost_constant_expr (tmp, true);
       if (integer_zerop (tmp))
 	return potential_constant_expression_1 (TREE_OPERAND (t, 2),
 						want_rval, flags);

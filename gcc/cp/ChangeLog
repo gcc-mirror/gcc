@@ -1,5 +1,9 @@
 2013-02-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56481
+	* semantics.c (potential_constant_expression_1): Use
+	cxx_eval_outermost_constant_expr rather than maybe_constant_value.
+
 	PR c++/56243
 	* call.c (build_over_call): Avoid virtual lookup in a template.
 
