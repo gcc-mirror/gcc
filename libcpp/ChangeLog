@@ -1,3 +1,17 @@
+2013-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Don't define ENABLE_CHECKING whenever
+	--enable-checking is seen, instead use similar --enable-checking=yes
+	vs. --enable-checking=release default as gcc/ subdir has and
+	define ENABLE_CHECKING if ENABLE_CHECKING is defined in gcc/.
+	Define ENABLE_VALGRIND_CHECKING if requested.
+	* lex.c (new_buff): If ENABLE_VALGRIND_CHECKING, put _cpp_buff
+	struct first in the allocated buffer and result->base after it.
+	(_cpp_free_buff): If ENABLE_VALGRIND_CHECKING, free buff itself
+	instead of buff->base.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
 2013-02-13  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/55582
