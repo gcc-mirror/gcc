@@ -2277,7 +2277,7 @@ static bool
 gate_asan (void)
 {
   return flag_asan != 0
-	  && !lookup_attribute ("no_address_safety_analysis",
+	  && !lookup_attribute ("no_sanitize_address",
 				DECL_ATTRIBUTES (current_function_decl));
 }
 
