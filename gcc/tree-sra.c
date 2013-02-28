@@ -2870,7 +2870,12 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 							    lacc->size);
 
 	      if (racc && racc->grp_to_be_replaced)
-		drhs = get_access_replacement (racc);
+		{
+		  if (racc->grp_write)
+		    drhs = get_access_replacement (racc);
+		  else
+		    drhs = NULL;
+		}
 	      else if (*refreshed == SRA_UDH_LEFT)
 		drhs = build_debug_ref_for_model (loc, lacc->base, lacc->offset,
 						  lacc);

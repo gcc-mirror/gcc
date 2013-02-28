@@ -1,5 +1,10 @@
 2013-02-28  Martin Jambor  <mjambor@suse.cz>
 
+	* tree-sra.c (load_assign_lhs_subreplacements): Do not put replacements
+	with no initialization to the RHS of debug statements.
+
+2013-02-28  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/56294
 	* tree-sra.c (analyze_access_subtree): Create replacement declarations.
 	Adjust dumping.
