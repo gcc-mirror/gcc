@@ -1,3 +1,8 @@
+2013-02-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_output_mi_thunk): Call final_start_function and
+	final_end_function.
+
 2013-02-28  Marek Polacek  <polacek@redhat.com>
 
 	PR rtl-optimization/56466
