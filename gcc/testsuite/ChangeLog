@@ -1,3 +1,9 @@
+2013-02-28  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.dg/tree-ssa/slsr-1.c: Allow widening multiplications.
+	* gcc.dg/tree-ssa/slsr-2.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-3.c: Likewise.
+
 2013-02-27  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR middle-end/45472
