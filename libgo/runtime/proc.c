@@ -1256,6 +1256,12 @@ runtime_newm(void)
 	// Block signals during pthread_create so that the new thread
 	// starts with signals disabled.  It will enable them in minit.
 	sigfillset(&clear);
+
+#ifdef SIGTRAP
+	// Blocking SIGTRAP reportedly breaks gdb on Alpha GNU/Linux.
+	sigdelset(&clear, SIGTRAP);
+#endif
+
 	sigemptyset(&old);
 	sigprocmask(SIG_BLOCK, &clear, &old);
 	ret = pthread_create(&tid, &attr, runtime_mstart, mp);
