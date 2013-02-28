@@ -486,14 +486,16 @@ typedef struct avr_args
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)                \
     (LENGTH = avr_adjust_insn_length (INSN, LENGTH))
 
-extern const char *avr_device_to_arch (int argc, const char **argv);
+extern const char *avr_device_to_as (int argc, const char **argv);
+extern const char *avr_device_to_ld (int argc, const char **argv);
 extern const char *avr_device_to_data_start (int argc, const char **argv);
 extern const char *avr_device_to_startfiles (int argc, const char **argv);
 extern const char *avr_device_to_devicelib (int argc, const char **argv);
 extern const char *avr_device_to_sp8 (int argc, const char **argv);
 
 #define EXTRA_SPEC_FUNCTIONS                            \
-  { "device_to_arch", avr_device_to_arch },             \
+  { "device_to_as", avr_device_to_as },                 \
+  { "device_to_ld", avr_device_to_ld },                 \
   { "device_to_data_start", avr_device_to_data_start }, \
   { "device_to_startfile", avr_device_to_startfiles },  \
   { "device_to_devicelib", avr_device_to_devicelib },   \
@@ -507,14 +509,9 @@ extern const char *avr_device_to_sp8 (int argc, const char **argv);
 #define CC1PLUS_SPEC "%{!frtti:-fno-rtti} \
     %{!fenforce-eh-specs:-fno-enforce-eh-specs} \
     %{!fexceptions:-fno-exceptions}"
-/* A C string constant that tells the GCC driver program options to
-   pass to `cc1plus'.  */
 
-#define ASM_SPEC "%{mmcu=avr25:-mmcu=avr2;mmcu=avr35:-mmcu=avr3;mmcu=avr31:-mmcu=avr3;mmcu=avr51:-mmcu=avr5;\
-mmcu=*:-mmcu=%*} \
-%{mmcu=*:%{!mmcu=avr2:%{!mmcu=at90s8515:%{!mmcu=avr31:%{!mmcu=atmega103:\
--mno-skip-bug}}}}}"
-
+#define ASM_SPEC "%:device_to_as(%{mmcu=*:%*}) "
+  
 #define LINK_SPEC "\
 %{mrelax:--relax\
          %{mpmem-wrap-around:%{mmcu=at90usb8*:--pmem-wrap-around=8k}\
@@ -524,7 +521,7 @@ mmcu=*:-mmcu=%*} \
                              %{mmcu=atmega64*|\
                                mmcu=at90can64*|\
                                mmcu=at90usb64*:--pmem-wrap-around=64k}}}\
-%:device_to_arch(%{mmcu=*:%*})\
+%:device_to_ld(%{mmcu=*:%*})\
 %:device_to_data_start(%{mmcu=*:%*})"
 
 #define LIB_SPEC \

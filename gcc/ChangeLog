@@ -1,3 +1,13 @@
+2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (device_to_arch): Rename to device_to_ld.
+	(avr_device_to_arch): Rename to avr_device_to_ld.
+	(avr_device_to_as): New prototype.
+	(EXTRA_SPEC_FUNCTIONS): Add device_to_as.
+	(ASM_SPEC): Use device_to_as to get -mmcu= and -mno-skip-bug=.
+	* config/avr/driver-avr.c (avr_device_to_as): New.
+	(avr_device_to_arch): Rename to avr_device_to_ld.
+
 2013-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
