@@ -11525,22 +11525,22 @@ avr_init_builtins (void)
     = build_function_type_list (node_##fx##k, ITYP (node_##fx##k), NULL)
 
   tree node_hr = short_fract_type_node;
-  tree node_r = fract_type_node;
+  tree node_nr = fract_type_node;
   tree node_lr = long_fract_type_node;
   tree node_llr = long_long_fract_type_node;
 
   tree node_uhr = unsigned_short_fract_type_node;
-  tree node_ur = unsigned_fract_type_node;
+  tree node_unr = unsigned_fract_type_node;
   tree node_ulr = unsigned_long_fract_type_node;
   tree node_ullr = unsigned_long_long_fract_type_node;
 
   tree node_hk = short_accum_type_node;
-  tree node_k = accum_type_node;
+  tree node_nk = accum_type_node;
   tree node_lk = long_accum_type_node;
   tree node_llk = long_long_accum_type_node;
 
   tree node_uhk = unsigned_short_accum_type_node;
-  tree node_uk = unsigned_accum_type_node;
+  tree node_unk = unsigned_accum_type_node;
   tree node_ulk = unsigned_long_accum_type_node;
   tree node_ullk = unsigned_long_long_accum_type_node;
 
@@ -11548,55 +11548,55 @@ avr_init_builtins (void)
   /* For absfx builtins.  */
 
   FX_FTYPE_FX (h);
-  FX_FTYPE_FX ();
+  FX_FTYPE_FX (n);
   FX_FTYPE_FX (l);
   FX_FTYPE_FX (ll);
 
   /* For roundfx builtins.  */
 
   FX_FTYPE_FX_INT (h);
-  FX_FTYPE_FX_INT ();
+  FX_FTYPE_FX_INT (n);
   FX_FTYPE_FX_INT (l);
   FX_FTYPE_FX_INT (ll);
 
   FX_FTYPE_FX_INT (uh);
-  FX_FTYPE_FX_INT (u);
+  FX_FTYPE_FX_INT (un);
   FX_FTYPE_FX_INT (ul);
   FX_FTYPE_FX_INT (ull);
 
   /* For countlsfx builtins.  */
 
   INT_FTYPE_FX (h);
-  INT_FTYPE_FX ();
+  INT_FTYPE_FX (n);
   INT_FTYPE_FX (l);
   INT_FTYPE_FX (ll);
 
   INT_FTYPE_FX (uh);
-  INT_FTYPE_FX (u);
+  INT_FTYPE_FX (un);
   INT_FTYPE_FX (ul);
   INT_FTYPE_FX (ull);
 
   /* For bitsfx builtins.  */
 
   INTX_FTYPE_FX (h);
-  INTX_FTYPE_FX ();
+  INTX_FTYPE_FX (n);
   INTX_FTYPE_FX (l);
   INTX_FTYPE_FX (ll);
 
   INTX_FTYPE_FX (uh);
-  INTX_FTYPE_FX (u);
+  INTX_FTYPE_FX (un);
   INTX_FTYPE_FX (ul);
   INTX_FTYPE_FX (ull);
 
   /* For fxbits builtins.  */
 
   FX_FTYPE_INTX (h);
-  FX_FTYPE_INTX ();
+  FX_FTYPE_INTX (n);
   FX_FTYPE_INTX (l);
   FX_FTYPE_INTX (ll);
 
   FX_FTYPE_INTX (uh);
-  FX_FTYPE_INTX (u);
+  FX_FTYPE_INTX (un);
   FX_FTYPE_INTX (ul);
   FX_FTYPE_INTX (ull);
 
