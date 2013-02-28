@@ -1,3 +1,9 @@
+2013-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_mapping.h (kMidMemEnd): Increase to 0x4fffffffffULL.
+	* asan/asan_rtl.cc (__asan_init): Increase kMidMemEnd to
+	0x4fffffffffULL.
+
 2013-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/56393
