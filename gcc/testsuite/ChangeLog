@@ -1,3 +1,8 @@
+2013-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/56294
+	* g++.dg/debug/pr56294.C: New test.
+
 2013-02-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* g++.old-deja/g++.pt/ptrmem6.C(main): Add xfail aarch64*-*-*.
