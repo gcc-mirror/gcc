@@ -6586,7 +6586,7 @@ aarch64_simd_dup_constant (rtx vals)
    constants (for vec_init) or CONST_VECTOR, efficiently into a
    register.  Returns an RTX to copy into the register, or NULL_RTX
    for a PARALLEL that can not be converted into a CONST_VECTOR.  */
-rtx
+static rtx
 aarch64_simd_make_constant (rtx vals)
 {
   enum machine_mode mode = GET_MODE (vals);

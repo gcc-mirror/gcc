@@ -1,3 +1,8 @@
+2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_simd_make_constant): Make static.
+
 2013-02-28  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (load_assign_lhs_subreplacements): Do not put replacements
