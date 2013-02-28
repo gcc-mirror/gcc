@@ -14,7 +14,7 @@ f (int *p, unsigned int n)
     foo (*(p + 48 + n * 4));
 }
 
-/* { dg-final { scan-tree-dump-times "\\+ 128" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\+ 64" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\+ 192" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\+ 128|\\, 128>" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\+ 64|\\, 64>" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\+ 192|\\, 192>" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
