@@ -2614,14 +2614,14 @@ vect_get_slp_vect_defs (slp_tree slp_node, vec<tree> *vec_oprnds)
 
 void
 vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
-                   vec<slp_void_p> *vec_oprnds, int reduc_index)
+		   vec<vec<tree> > *vec_oprnds, int reduc_index)
 {
   gimple first_stmt;
   int number_of_vects = 0, i;
   unsigned int child_index = 0;
   HOST_WIDE_INT lhs_size_unit, rhs_size_unit;
   slp_tree child = NULL;
-  vec<tree> *vec_defs;
+  vec<tree> vec_defs;
   tree oprnd;
   bool vectorized_defs;
 
@@ -2676,19 +2676,20 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
         }
 
       /* Allocate memory for vectorized defs.  */
-      vec_alloc (vec_defs, number_of_vects);
+      vec_defs = vNULL;
+      vec_defs.create (number_of_vects);
 
       /* For reduction defs we call vect_get_constant_vectors (), since we are
          looking for initial loop invariant values.  */
       if (vectorized_defs && reduc_index == -1)
         /* The defs are already vectorized.  */
-        vect_get_slp_vect_defs (child, vec_defs);
+	vect_get_slp_vect_defs (child, &vec_defs);
       else
         /* Build vectors from scalar defs.  */
-        vect_get_constant_vectors (oprnd, slp_node, vec_defs, i,
+	vect_get_constant_vectors (oprnd, slp_node, &vec_defs, i,
                                    number_of_vects, reduc_index);
 
-      vec_oprnds->quick_push ((slp_void_p) vec_defs);
+      vec_oprnds->quick_push (vec_defs);
 
       /* For reductions, we only need initial values.  */
       if (reduc_index != -1)
