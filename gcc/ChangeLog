@@ -1,5 +1,9 @@
 2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_mangle_type): Make static.
+
+2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_init_simd_builtins): Make static.
 
