@@ -1,3 +1,13 @@
+2013-02-28  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56454
+	* c-common.c (handle_no_sanitize_address_attribute): New function.
+	(c_common_attribute_table): Add no_sanitize_address attribute.
+	(handle_no_address_safety_analysis_attribute): Add
+	no_sanitize_address attribute, not no_address_safety_analysis
+	attribute.
+
 2013-02-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR target/52555
