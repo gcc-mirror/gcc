@@ -1,5 +1,10 @@
 2013-03-01  Tobias Burnus  <burnus@net-b.de>
 
+	* iresolve.c (resolve_bound): Use gfc_get_string instead of xstrdup.
+	* symbol.c (free_components): Free proc-pointer components.
+
+2013-03-01  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-decl.c (gfc_trans_deferred_vars): Free expr after use.
 	* trans-io.c (build_dt): Ditto.
 

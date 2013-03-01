@@ -2076,6 +2076,7 @@ free_components (gfc_component *p)
 
       gfc_free_array_spec (p->as);
       gfc_free_expr (p->initializer);
+      free (p->tb);
 
       free (p);
     }
