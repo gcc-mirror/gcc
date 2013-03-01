@@ -1,4 +1,4 @@
-@node Obstacks,Licenses,Functions,Top
+@node Obstacks
 @chapter Obstacks
 @cindex obstacks
 
