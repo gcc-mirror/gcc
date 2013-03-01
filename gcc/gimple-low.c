@@ -241,15 +241,17 @@ gimple_check_call_args (gimple stmt, tree fndecl)
 	   i < nargs;
 	   i++, p = DECL_CHAIN (p))
 	{
+	  tree arg;
 	  /* We cannot distinguish a varargs function from the case
 	     of excess parameters, still deferring the inlining decision
 	     to the callee is possible.  */
 	  if (!p)
 	    break;
+	  arg = gimple_call_arg (stmt, i);
 	  if (p == error_mark_node
-	      || gimple_call_arg (stmt, i) == error_mark_node
-	      || !fold_convertible_p (DECL_ARG_TYPE (p),
-				      gimple_call_arg (stmt, i)))
+	      || arg == error_mark_node
+	      || (!types_compatible_p (DECL_ARG_TYPE (p), TREE_TYPE (arg))
+		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))
             return false;
 	}
     }
@@ -257,15 +259,17 @@ gimple_check_call_args (gimple stmt, tree fndecl)
     {
       for (i = 0, p = parms; i < nargs; i++, p = TREE_CHAIN (p))
 	{
+	  tree arg;
 	  /* If this is a varargs function defer inlining decision
 	     to callee.  */
 	  if (!p)
 	    break;
+	  arg = gimple_call_arg (stmt, i);
 	  if (TREE_VALUE (p) == error_mark_node
-	      || gimple_call_arg (stmt, i) == error_mark_node
+	      || arg == error_mark_node
 	      || TREE_CODE (TREE_VALUE (p)) == VOID_TYPE
-	      || !fold_convertible_p (TREE_VALUE (p),
-				      gimple_call_arg (stmt, i)))
+	      || (!types_compatible_p (TREE_VALUE (p), TREE_TYPE (arg))
+		  && !fold_convertible_p (TREE_VALUE (p), arg)))
             return false;
 	}
     }

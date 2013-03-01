@@ -1,3 +1,12 @@
+2013-03-01  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-04-10  Richard Guenther  <rguenther@suse.de>
+ 
+	PR middle-end/52888
+	* gimple-low.c (gimple_check_call_args): Properly account for
+	compatible aggregate types.
+
 2013-02-26  Nick Clifton  <nickc@redhat.com>
 
 	PR target/56453
