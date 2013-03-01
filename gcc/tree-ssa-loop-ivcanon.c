@@ -207,7 +207,7 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
    EDGE_TO_CANCEL (if non-NULL) is an non-exit edge eliminated in the last iteration
    of loop.
    Return results in SIZE, estimate benefits for complete unrolling exiting by EXIT. 
-   Stop estimating after UPPER_BOUND is met. Return true in this case */
+   Stop estimating after UPPER_BOUND is met.  Return true in this case.  */
 
 static bool
 tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, struct loop_size *size,
@@ -321,6 +321,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	      - size->last_iteration_eliminated_by_peeling) > upper_bound)
 	    {
               free (body);
+	      path.release ();
 	      return true;
 	    }
 	}
