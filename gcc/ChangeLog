@@ -1,6 +1,12 @@
 2013-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* tree-vect-data-refs.c (vect_permute_store_chain): Avoid using copy
+	method on dr_chain and result_chain.
+	* tree-vect-stmts.c (vectorizable_store): Only call
+	result_chain.create if j == 0.
+
+	PR middle-end/56461
 	* tree-vect-stmts.c (vect_create_vectorized_promotion_stmts): Call
 	vec_oprnds0->release (); rather than vec_oprnds0->truncate (0)
 	before overwriting it.

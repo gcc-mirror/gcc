@@ -4151,7 +4151,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  new_stmt = NULL;
 	  if (grouped_store)
 	    {
-	      result_chain.create (group_size);
+	      if (j == 0)
+		result_chain.create (group_size);
 	      /* Permute.  */
 	      vect_permute_store_chain (dr_chain, group_size, stmt, gsi,
 					&result_chain);
