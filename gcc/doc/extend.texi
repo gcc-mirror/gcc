@@ -30,8 +30,8 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Constructing Calls::  Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
-* Long Long::           Double-word integers---@code{long long int}.
 * __int128::			128-bit integers---@code{__int128}.
+* Long Long::           Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
 * Floating Types::      Additional Floating Types.
 * Half-Precision::      Half-Precision Floating Point.
@@ -40,8 +40,8 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Fixed-Point::         Fixed-Point Types.
 * Named Address Spaces::Named address spaces.
 * Zero Length::         Zero-length arrays.
-* Variable Length::     Arrays whose length is computed at run time.
 * Empty Structures::    Structures with no members.
+* Variable Length::     Arrays whose length is computed at run time.
 * Variadic Macros::     Macros with a variable number of arguments.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
@@ -50,8 +50,8 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Compound Literals::   Compound literals give structures, unions
                         or arrays as values.
 * Designated Inits::    Labeling elements of initializers.
-* Cast to Union::       Casting to union type from any member of the union.
 * Case Ranges::         `case 1 ... 9' and such.
+* Cast to Union::       Casting to union type from any member of the union.
 * Mixed Declarations::  Mixing declarations and code.
 * Function Attributes:: Declaring that functions have no side effects,
                         or that they can never return.
@@ -11658,6 +11658,18 @@ else
 @end smallexample
 @end table
 
+@node Other MIPS Built-in Functions
+@subsection Other MIPS Built-in Functions
+
+GCC provides other MIPS-specific built-in functions:
+
+@table @code
+@item void __builtin_mips_cache (int @var{op}, const volatile void *@var{addr})
+Insert a @samp{cache} instruction with operands @var{op} and @var{addr}.
+GCC defines the preprocessor macro @code{___GCC_HAVE_BUILTIN_MIPS_CACHE}
+when this function is available.
+@end table
+
 @node picoChip Built-in Functions
 @subsection picoChip Built-in Functions
 
@@ -11692,18 +11704,6 @@ Saturating subtraction.  Return the result of subtracting @var{y} from
 Halt.  The processor stops execution.  This built-in is useful for
 implementing assertions.
 
-@end table
-
-@node Other MIPS Built-in Functions
-@subsection Other MIPS Built-in Functions
-
-GCC provides other MIPS-specific built-in functions:
-
-@table @code
-@item void __builtin_mips_cache (int @var{op}, const volatile void *@var{addr})
-Insert a @samp{cache} instruction with operands @var{op} and @var{addr}.
-GCC defines the preprocessor macro @code{___GCC_HAVE_BUILTIN_MIPS_CACHE}
-when this function is available.
 @end table
 
 @node PowerPC Built-in Functions
@@ -13796,41 +13796,6 @@ if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{vec_vsx_st} built-in functions always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
-@node SH Built-in Functions
-@subsection SH Built-in Functions
-The following built-in functions are supported on the SH1, SH2, SH3 and SH4
-families of processors:
-
-@deftypefn {Built-in Function} {void} __builtin_set_thread_pointer (void *@var{ptr})
-Sets the @samp{GBR} register to the specified value @var{ptr}.  This is usually
-used by system code that manages threads and execution contexts.  The compiler
-normally does not generate code that modifies the contents of @samp{GBR} and
-thus the value is preserved across function calls.  Changing the @samp{GBR}
-value in user code must be done with caution, since the compiler might use
-@samp{GBR} in order to access thread local variables.
-
-@end deftypefn
-
-@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
-Returns the value that is currently set in the @samp{GBR} register.
-Memory loads and stores that use the thread pointer as a base address are
-turned into @samp{GBR} based displacement loads and stores, if possible.
-For example:
-@smallexample
-struct my_tcb
-@{
-   int a, b, c, d, e;
-@};
-
-int get_tcb_value (void)
-@{
-  // Generate @samp{mov.l @@(8,gbr),r0} instruction
-  return ((my_tcb*)__builtin_thread_pointer ())->c;
-@}
-
-@end smallexample
-@end deftypefn
-
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
@@ -13944,6 +13909,41 @@ bit in the processor status word.
 
 @deftypefn {Built-in Function}  void __builtin_rx_wait (void)
 Generates the @code{wait} machine instruction.
+@end deftypefn
+
+@node SH Built-in Functions
+@subsection SH Built-in Functions
+The following built-in functions are supported on the SH1, SH2, SH3 and SH4
+families of processors:
+
+@deftypefn {Built-in Function} {void} __builtin_set_thread_pointer (void *@var{ptr})
+Sets the @samp{GBR} register to the specified value @var{ptr}.  This is usually
+used by system code that manages threads and execution contexts.  The compiler
+normally does not generate code that modifies the contents of @samp{GBR} and
+thus the value is preserved across function calls.  Changing the @samp{GBR}
+value in user code must be done with caution, since the compiler might use
+@samp{GBR} in order to access thread local variables.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
+Returns the value that is currently set in the @samp{GBR} register.
+Memory loads and stores that use the thread pointer as a base address are
+turned into @samp{GBR} based displacement loads and stores, if possible.
+For example:
+@smallexample
+struct my_tcb
+@{
+   int a, b, c, d, e;
+@};
+
+int get_tcb_value (void)
+@{
+  // Generate @samp{mov.l @@(8,gbr),r0} instruction
+  return ((my_tcb*)__builtin_thread_pointer ())->c;
+@}
+
+@end smallexample
 @end deftypefn
 
 @node SPARC VIS Built-in Functions

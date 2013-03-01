@@ -132,8 +132,8 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * Standards::       Language standards supported by GCC.
 * Invoking GCC::    Command options supported by @samp{gcc}.
 * C Implementation:: How GCC implements the ISO C specification.
-* C Extensions::    GNU extensions to the C language family.
 * C++ Implementation:: How GCC implements the ISO C++ specification.
+* C Extensions::    GNU extensions to the C language family.
 * C++ Extensions::  GNU extensions to the C++ language.
 * Objective-C::     GNU Objective-C runtime features.
 * Compatibility::   Binary Compatibility

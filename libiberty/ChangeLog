@@ -1,3 +1,9 @@
+2013-03-01  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* obstacks.texi (Obstacks): Trim @node to only contain the
+	node name.
+	* libiberty.texi (Obstacks): Lower section.
+
 2013-02-14  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_DEFAULT_ARG.

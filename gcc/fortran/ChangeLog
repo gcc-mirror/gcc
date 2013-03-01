@@ -1,5 +1,6 @@
 2013-03-01  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/56491
 	* iresolve.c (resolve_bound): Use gfc_get_string instead of xstrdup.
 	* symbol.c (free_components): Free proc-pointer components.
 

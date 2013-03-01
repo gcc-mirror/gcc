@@ -1,3 +1,19 @@
+2013-03-01  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/extended.texi (C Extensions): Change order in @menu
+	to match @node.
+	(Other MIPS Built-in Functions): Move last MIPS entry before
+	"picoChip Built-in Functions".
+	(SH Built-in Functions): Move after RX Built-in Functions.
+	* doc/gcc.texi (Introduction): Change order in @menu
+	to match @node.
+	* doc/md.texi (Constraints): Ditto.
+	* gty.texi (Type Information): Ditto.
+	(User-provided marking routines for template types): Make
+	subsection.
+	* doc/invoke.texi (AArch64 Options): Move before
+	"Adapteva Epiphany Options".
+
 2013-02-28  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
