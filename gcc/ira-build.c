@@ -57,6 +57,9 @@ ira_loop_tree_node_t ira_bb_nodes;
    array.  */
 ira_loop_tree_node_t ira_loop_nodes;
 
+/* And size of the ira_loop_nodes array.  */
+unsigned int ira_loop_nodes_count;
+
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
 ira_allocno_t *ira_regno_allocno_map;
@@ -142,14 +145,16 @@ create_loop_tree_nodes (void)
     }
   if (current_loops == NULL)
     {
+      ira_loop_nodes_count = 1;
       ira_loop_nodes = ((struct ira_loop_tree_node *)
 			ira_allocate (sizeof (struct ira_loop_tree_node)));
       init_loop_tree_node (ira_loop_nodes, 0);
       return;
     }
+  ira_loop_nodes_count = number_of_loops ();
   ira_loop_nodes = ((struct ira_loop_tree_node *)
 		    ira_allocate (sizeof (struct ira_loop_tree_node)
-				  * number_of_loops ()));
+				  * ira_loop_nodes_count));
   FOR_EACH_VEC_SAFE_ELT (get_loops (), i, loop)
     {
       if (loop_outer (loop) != NULL)
@@ -217,13 +222,9 @@ static void
 finish_loop_tree_nodes (void)
 {
   unsigned int i;
-  loop_p loop;
 
-  if (current_loops == NULL)
-    finish_loop_tree_node (&ira_loop_nodes[0]);
-  else
-    FOR_EACH_VEC_SAFE_ELT (get_loops (), i, loop)
-      finish_loop_tree_node (&ira_loop_nodes[i]);
+  for (i = 0; i < ira_loop_nodes_count; i++)
+    finish_loop_tree_node (&ira_loop_nodes[i]);
   ira_free (ira_loop_nodes);
   for (i = 0; i < (unsigned int) last_basic_block_before_change; i++)
     {
