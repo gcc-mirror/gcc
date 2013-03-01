@@ -1,3 +1,11 @@
+2013-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* files.c (_cpp_save_file_entries): Free result at the end.
+	* pch.c (cpp_string_free): New function.
+	(cpp_save_state): Use it in htab_create call.
+	(cpp_write_pch_deps): Free ss->defs.  Destroy ss->definedhash.
+
 2013-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* files.c (_cpp_find_file): If returning early, before storing

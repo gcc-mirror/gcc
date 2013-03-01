@@ -1771,6 +1771,7 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *fp)
   struct pchf_data *result;
   size_t result_size;
   _cpp_file *f;
+  bool ret;
 
   for (f = pfile->all_files; f; f = f->next_file)
     ++count;
@@ -1827,7 +1828,9 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *fp)
   qsort (result->entries, result->count, sizeof (struct pchf_entry),
 	 pchf_save_compare);
 
-  return fwrite (result, result_size, 1, fp) == 1;
+  ret = fwrite (result, result_size, 1, fp) == 1;
+  free (result);
+  return ret;
 }
 
 /* Read the pchf_data structure from F.  */
