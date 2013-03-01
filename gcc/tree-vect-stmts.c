@@ -2269,7 +2269,7 @@ vect_create_vectorized_promotion_stmts (vec<tree> *vec_oprnds0,
       vec_tmp.quick_push (new_tmp2);
     }
 
-  vec_oprnds0->truncate (0);
+  vec_oprnds0->release ();
   *vec_oprnds0 = vec_tmp;
 }
 

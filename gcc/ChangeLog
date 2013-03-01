@@ -1,3 +1,10 @@
+2013-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-vect-stmts.c (vect_create_vectorized_promotion_stmts): Call
+	vec_oprnds0->release (); rather than vec_oprnds0->truncate (0)
+	before overwriting it.
+
 2013-03-01  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/extended.texi (C Extensions): Change order in @menu
