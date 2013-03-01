@@ -1,6 +1,11 @@
 2013-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* ira-build.c (ira_loop_nodes_count): New variable.
+	(create_loop_tree_nodes): Initialize it.
+	(finish_loop_tree_nodes): Use it instead of looking at current_loops.
+
+	PR middle-end/56461
 	* tree-vect-data-refs.c (vect_permute_store_chain): Avoid using copy
 	method on dr_chain and result_chain.
 	* tree-vect-stmts.c (vectorizable_store): Only call
