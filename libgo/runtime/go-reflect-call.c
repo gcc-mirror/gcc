@@ -30,7 +30,7 @@ static ffi_type *go_struct_to_ffi (const struct __go_struct_type *)
 static ffi_type *go_string_to_ffi (void) __attribute__ ((no_split_stack));
 static ffi_type *go_interface_to_ffi (void) __attribute__ ((no_split_stack));
 static ffi_type *go_complex_to_ffi (ffi_type *)
-  __attribute__ ((no_split_stack));
+  __attribute__ ((no_split_stack, unused));
 static ffi_type *go_type_to_ffi (const struct __go_type_descriptor *)
   __attribute__ ((no_split_stack));
 static ffi_type *go_func_return_ffi (const struct __go_func_type *)
@@ -185,13 +185,23 @@ go_type_to_ffi (const struct __go_type_descriptor *descriptor)
 	return &ffi_type_double;
       abort ();
     case GO_COMPLEX64:
+#ifdef __alpha__
+      runtime_throw("the libffi library does not support Complex64 type with "
+		    "reflect.Call or runtime.SetFinalizer");
+#else
       if (sizeof (float) == 4)
 	return go_complex_to_ffi (&ffi_type_float);
       abort ();
+#endif
     case GO_COMPLEX128:
+#ifdef __alpha__
+      runtime_throw("the libffi library does not support Complex128 type with "
+		    "reflect.Call or runtime.SetFinalizer");
+#else
       if (sizeof (double) == 8)
 	return go_complex_to_ffi (&ffi_type_double);
       abort ();
+#endif
     case GO_INT16:
       return &ffi_type_sint16;
     case GO_INT32:
