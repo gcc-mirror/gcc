@@ -229,6 +229,7 @@ find_control_equiv_block (basic_block bb)
 
 #define MAX_NUM_CHAINS 8
 #define MAX_CHAIN_LEN 5
+#define MAX_POSTDOM_CHECK 8
 
 /* Computes the control dependence chains (paths of edges)
    for DEP_BB up to the dominating basic block BB (the head node of a
@@ -269,6 +270,7 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       basic_block cd_bb;
+      int post_dom_check = 0;
       if (e->flags & (EDGE_FAKE | EDGE_ABNORMAL))
         continue;
 
@@ -298,7 +300,8 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
             }
 
           cd_bb = find_pdom (cd_bb);
-          if (cd_bb == EXIT_BLOCK_PTR)
+          post_dom_check++;
+          if (cd_bb == EXIT_BLOCK_PTR || post_dom_check > MAX_POSTDOM_CHECK)
             break;
         }
       cur_cd_chain->pop ();

@@ -1,3 +1,8 @@
+2013-03-01  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-uninit.c (compute_control_dep_chain): Limit post-dom
+	walk length.
+
 2013-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
