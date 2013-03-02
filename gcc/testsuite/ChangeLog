@@ -1,3 +1,12 @@
+2013-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52688
+	* g++.dg/template/static33.C: New.
+	* g++.dg/template/static34.C: Likewise.
+
+	PR c++/10291
+	* g++.dg/template/static35.C: New.
+
 2013-03-01  Steve Ellcey  <sellcey@mips.com>
 
 	* gcc.dg/pr56396.c: Require pic support.
