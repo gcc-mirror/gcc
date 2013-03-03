@@ -327,7 +327,7 @@ $(F95_PARSER_OBJS): fortran/gfortran.h fortran/libgfortran.h \
 		fortran/intrinsic.h fortran/match.h fortran/constructor.h \
 		fortran/parse.h fortran/arith.h fortran/target-memory.h \
 		$(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TM_P_H) coretypes.h \
-		dumpfile.h $(TREE_H) dumpfile.h $(GGC_H) \
+		dumpfile.h $(TREE_H) dumpfile.h $(GGC_H) $(VEC_H) \
 		$(FLAGS_H) $(DIAGNOSTIC_H) errors.h $(FUNCTION_H) \
 		fortran/iso-c-binding.def fortran/iso-fortran-env.def
 fortran/openmp.o: pointer-set.h $(TARGET_H) toplev.h

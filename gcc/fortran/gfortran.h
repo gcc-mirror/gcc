@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "input.h"
 #include "splay-tree.h"
+#include "vec.h"
 
 /* Major control parameters.  */
 
@@ -1274,6 +1275,14 @@ typedef struct gfc_symbol
   struct gfc_association_list *assoc;
 }
 gfc_symbol;
+
+
+struct gfc_undo_change_set
+{
+  vec<gfc_symbol *> syms;
+  vec<gfc_typebound_proc *> tbps;
+};
+
 
 /* This structure is used to keep track of symbols in common blocks.  */
 typedef struct gfc_common_head
