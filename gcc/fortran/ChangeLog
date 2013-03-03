@@ -1,5 +1,9 @@
 2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* symbol.c (restore_old_symbol): Fix thinko.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* symbol.c (gfc_undo_symbols): Move code...
 	(restore_old_symbol): ... here as a new function.
 

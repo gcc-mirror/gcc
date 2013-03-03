@@ -2896,7 +2896,8 @@ restore_old_symbol (gfc_symbol *p)
 
   if (p->value != old->value)
     {
-      gfc_free_expr (old->value);
+      gcc_checking_assert (old->value == NULL);
+      gfc_free_expr (p->value);
       p->value = NULL;
     }
 
