@@ -1,6 +1,12 @@
 2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54730
+	* array.c (gfc_match_array_constructor): Set a checkpoint before
+	matching a typespec.  Drop it on success, restore it otherwise.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54730
 	* gfortran.h (struct gfc_undo_change_set): New field 'previous'.
 	(gfc_new_undo_checkpoint, gfc_drop_last_undo_checkpoint,
 	gfc_restore_last_undo_checkpoint): New prototypes.
