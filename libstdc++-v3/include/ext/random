@@ -37,6 +37,7 @@
 
 #include <random>
 #include <array>
+#include <ext/cmath>
 #ifdef __SSE2__
 # include <x86intrin.h>
 #endif
@@ -958,7 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_nu == __p2._M_nu
-              && __p1._M_sigma == __p2._M_sigma; }
+	      && __p1._M_sigma == __p2._M_sigma; }
 
       private:
 	void _M_initialize();
@@ -1055,7 +1056,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
 		   const param_type& __p)
-        {
+	{
 	  typename std::normal_distribution<result_type>::param_type
 	    __px(__p.nu(), __p.sigma()), __py(result_type(0), __p.sigma());
 	  result_type __x = this->_M_ndx(__px, __urng);
@@ -1200,7 +1201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_mu == __p2._M_mu
-              && __p1._M_omega == __p2._M_omega; }
+	      && __p1._M_omega == __p2._M_omega; }
 
       private:
 	void _M_initialize();
@@ -1284,7 +1285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
 		   const param_type& __p)
-        {
+	{
 	  typename std::gamma_distribution<result_type>::param_type
 	    __pg(__p.mu(), __p.omega() / __p.mu());
 	  return std::sqrt(this->_M_gd(__pg, __urng));
@@ -1521,7 +1522,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
 		   const param_type& __p)
-        {
+	{
 	  return __p.mu() * std::pow(this->_M_ud(__urng),
 					   -result_type(1) / __p.alpha());
 	}
@@ -1673,7 +1674,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_lambda == __p2._M_lambda
-              && __p1._M_mu == __p2._M_mu
+	      && __p1._M_mu == __p2._M_mu
 	      && __p1._M_nu == __p2._M_nu; }
 
       private:
@@ -1921,14 +1922,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   result_type __b = result_type(1))
       : _M_param(__a, __b),
 	_M_ud(-1.5707963267948966192313216916397514L,
- 	      +1.5707963267948966192313216916397514L)
+	      +1.5707963267948966192313216916397514L)
       { }
 
       explicit
       arcsine_distribution(const param_type& __p)
       : _M_param(__p),
 	_M_ud(-1.5707963267948966192313216916397514L,
- 	      +1.5707963267948966192313216916397514L)
+	      +1.5707963267948966192313216916397514L)
       { }
 
       /**
@@ -1994,7 +1995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
 		   const param_type& __p)
-        {
+	{
 	  result_type __x = std::sin(this->_M_ud(__urng));
 	  return (__x * (__p.b() - __p.a())
 		  + __p.a() + __p.b()) / result_type(2);
@@ -2142,7 +2143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_q == __p2._M_q
-              && __p1._M_omega == __p2._M_omega; }
+	      && __p1._M_omega == __p2._M_omega; }
 
       private:
 	void _M_initialize();
@@ -2321,6 +2322,528 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const hoyt_distribution<_RealType>& __d1,
 	       const hoyt_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
+
+
+  /**
+   * @brief A triangular distribution for random numbers.
+   *
+   * The formula for the triangular probability density function is
+   * @f[
+   *                  / 0                          for x < a
+   *     p(x|a,b,c) = | \frac{2(x-a)}{(c-a)(b-a)}  for a <= x <= b
+   *                  | \frac{2(c-x)}{(c-a)(c-b)}  for b < x <= c
+   *                  \ 0                          for c < x
+   * @f]
+   *
+   * <table border=1 cellpadding=10 cellspacing=0>
+   * <caption align=top>Distribution Statistics</caption>
+   * <tr><td>Mean</td><td>@f$ \frac{a+b+c}{2} @f$</td></tr>
+   * <tr><td>Variance</td><td>@f$ \frac{a^2+b^2+c^2-ab-ac-bc}
+   *                                   {18}@f$</td></tr>
+   * <tr><td>Range</td><td>@f$[a, c]@f$</td></tr>
+   * </table>
+   */
+  template<typename _RealType = double>
+    class triangular_distribution
+    {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef _RealType result_type;
+      /** Parameter type. */
+      struct param_type
+      {
+	friend class triangular_distribution<_RealType>;
+
+	explicit
+	param_type(_RealType __a = _RealType(0),
+		   _RealType __b = _RealType(0.5),
+		   _RealType __c = _RealType(1))
+	: _M_a(__a), _M_b(__b), _M_c(__c)
+	{
+	  _GLIBCXX_DEBUG_ASSERT(_M_a <= _M_b);
+	  _GLIBCXX_DEBUG_ASSERT(_M_b <= _M_c);
+	  _GLIBCXX_DEBUG_ASSERT(_M_a < _M_c);
+
+	  _M_r_ab = (_M_b - _M_a) / (_M_c - _M_a);
+	  _M_f_ab_ac = (_M_b - _M_a) * (_M_c - _M_a);
+	  _M_f_bc_ac = (_M_c - _M_b) * (_M_c - _M_a);
+	}
+
+	_RealType
+	a() const
+	{ return _M_a; }
+
+	_RealType
+	b() const
+	{ return _M_b; }
+
+	_RealType
+	c() const
+	{ return _M_c; }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return (__p1._M_a == __p2._M_a && __p1._M_b == __p2._M_b
+		  && __p1._M_c == __p2._M_c); }
+
+      private:
+
+	_RealType _M_a;
+	_RealType _M_b;
+	_RealType _M_c;
+	_RealType _M_r_ab;
+	_RealType _M_f_ab_ac;
+	_RealType _M_f_bc_ac;
+      };
+
+      /**
+       * @brief Constructs a triangle distribution with parameters
+       * @f$ a @f$, @f$ b @f$ and @f$ c @f$.
+       */
+      explicit
+      triangular_distribution(result_type __a = result_type(0),
+			      result_type __b = result_type(0.5),
+			      result_type __c = result_type(1))
+      : _M_param(__a, __b, __c)
+      { }
+
+      explicit
+      triangular_distribution(const param_type& __p)
+      : _M_param(__p)
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { }
+
+      /**
+       * @brief Returns the @f$ a @f$ of the distribution.
+       */
+      result_type
+      a() const
+      { return _M_param.a(); }
+
+      /**
+       * @brief Returns the @f$ b @f$ of the distribution.
+       */
+      result_type
+      b() const
+      { return _M_param.b(); }
+
+      /**
+       * @brief Returns the @f$ c @f$ of the distribution.
+       */
+      result_type
+      c() const
+      { return _M_param.c(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      { return _M_param._M_a; }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      { return _M_param._M_c; }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return this->operator()(__urng, _M_param); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{
+	  std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	    __aurng(__urng);
+	  result_type __rnd = __aurng();
+	  if (__rnd <= __p._M_r_ab)
+	    return __p.a() + std::sqrt(__rnd * __p._M_f_ab_ac);
+	  else
+	    return __p.c() - std::sqrt((result_type(1) - __rnd)
+				       * __p._M_f_bc_ac);
+	}
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ this->__generate(__f, __t, __urng, _M_param); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      template<typename _UniformRandomNumberGenerator>
+	void
+	__generate(result_type* __f, result_type* __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      /**
+       * @brief Return true if two triangle distributions have the same
+       *        parameters and the sequences that would be generated
+       *        are equal.
+       */
+      friend bool
+      operator==(const triangular_distribution& __d1,
+		 const triangular_distribution& __d2)
+      { return __d1._M_param == __d2._M_param; }
+
+      /**
+       * @brief Inserts a %triangular_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %triangular_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const __gnu_cxx::triangular_distribution<_RealType1>& __x);
+
+      /**
+       * @brief Extracts a %triangular_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %triangular_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   __gnu_cxx::triangular_distribution<_RealType1>& __x);
+
+    private:
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+    };
+
+  /**
+   * @brief Return true if two triangle distributions are different.
+   */
+  template<typename _RealType>
+    inline bool
+    operator!=(const __gnu_cxx::triangular_distribution<_RealType>& __d1,
+	       const __gnu_cxx::triangular_distribution<_RealType>& __d2)
+   { return !(__d1 == __d2); }
+
+
+  /**
+   * @brief A von Mises distribution for random numbers.
+   *
+   * The formula for the von Mises probability density function is
+   * @f[
+   *     p(x|\mu,\kappa) = \frac{e^{\kappa \cos(x-\mu)}}
+   *                            {2\pi I_0(\kappa)}
+   * @f]
+   *
+   * The generating functions use the method according to:
+   *
+   * D. J. Best and N. I. Fisher, 1979. "Efficient Simulation of the
+   * von Mises Distribution", Journal of the Royal Statistical Society.
+   * Series C (Applied Statistics), Vol. 28, No. 2, pp. 152-157.
+   *
+   * <table border=1 cellpadding=10 cellspacing=0>
+   * <caption align=top>Distribution Statistics</caption>
+   * <tr><td>Mean</td><td>@f$ \mu @f$</td></tr>
+   * <tr><td>Variance</td><td>@f$ 1-I_1(\kappa)/I_0(\kappa) @f$</td></tr>
+   * <tr><td>Range</td><td>@f$[-\pi, \pi]@f$</td></tr>
+   * </table>
+   */
+  template<typename _RealType = double>
+    class von_mises_distribution
+    {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef _RealType result_type;
+      /** Parameter type. */
+      struct param_type
+      {
+	friend class von_mises_distribution<_RealType>;
+
+	explicit
+	param_type(_RealType __mu = _RealType(0),
+		   _RealType __kappa = _RealType(1))
+	: _M_mu(__mu), _M_kappa(__kappa)
+	{
+	  const _RealType __pi = __gnu_cxx::__math_constants<_RealType>::__pi;
+	  _GLIBCXX_DEBUG_ASSERT(_M_mu >= -__pi && _M_mu <= __pi);
+	  _GLIBCXX_DEBUG_ASSERT(_M_kappa >= _RealType(0));
+	}
+
+	_RealType
+	mu() const
+	{ return _M_mu; }
+
+	_RealType
+	kappa() const
+	{ return _M_kappa; }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return __p1._M_kappa == __p2._M_kappa; }
+
+      private:
+
+	_RealType _M_mu;
+	_RealType _M_kappa;
+      };
+
+      /**
+       * @brief Constructs a beta distribution with parameters
+       * @f$\mu@f$ and @f$\kappa@f$.
+       */
+      explicit
+      von_mises_distribution(result_type __mu = result_type(0),
+			     result_type __kappa = result_type(1))
+	: _M_param(__mu, __kappa)
+      { }
+
+      explicit
+      von_mises_distribution(const param_type& __p)
+      : _M_param(__p)
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { }
+
+      /**
+       * @brief Returns the @f$ \mu @f$ of the distribution.
+       */
+      result_type
+      mu() const
+      { return _M_param.mu(); }
+
+      /**
+       * @brief Returns the @f$ \kappa @f$ of the distribution.
+       */
+      result_type
+      kappa() const
+      { return _M_param.kappa(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      {
+	return -__gnu_cxx::__math_constants<result_type>::__pi;
+      }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      {
+	return __gnu_cxx::__math_constants<result_type>::__pi;
+      }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return this->operator()(__urng, _M_param); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{
+	  const result_type __pi
+	    = __gnu_cxx::__math_constants<result_type>::__pi;
+	  std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	    __aurng(__urng);
+	  result_type __tau = (std::sqrt(result_type(4) * this->kappa()
+					 * this->kappa() + result_type(1))
+			       + result_type(1));
+	  result_type __rho = ((__tau - std::sqrt(result_type(2) * __tau))
+			       / (result_type(2) * this->kappa()));
+	  result_type __r = ((result_type(1) + __rho * __rho)
+			     / (result_type(2) * __rho));
+
+	  result_type __f;
+	  while (1)
+	    {
+	      result_type __rnd = std::cos(__pi * __aurng());
+	      __f = (result_type(1) + __r * __rnd) / (__r + __rnd);
+	      result_type __c = this->kappa() * (__r - __f);
+
+	      result_type __rnd2 = __aurng();
+	      if (__c * (result_type(2) - __c) > __rnd2)
+		break;
+	      if (std::log(__c / __rnd2) >= __c - result_type(1))
+		break;
+	    }
+
+	  result_type __res = std::acos(__f);
+#if _GLIBCXX_USE_C99_MATH_TR1
+	  __res = std::copysign(__res, __aurng() - result_type(0.5));
+#else
+	  if (__aurng() < result_type(0.5))
+	    __res = -__res;
+#endif
+	  __res += this->mu();
+	  if (__res > __pi)
+	    __res -= result_type(2) * __pi;
+	  else if (__res < -__pi)
+	    __res += result_type(2) * __pi;
+	  return __res;
+	}
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ this->__generate(__f, __t, __urng, _M_param); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      template<typename _UniformRandomNumberGenerator>
+	void
+	__generate(result_type* __f, result_type* __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      /**
+       * @brief Return true if two von Mises distributions have the same
+       *        parameters and the sequences that would be generated
+       *        are equal.
+       */
+      friend bool
+      operator==(const von_mises_distribution& __d1,
+		 const von_mises_distribution& __d2)
+      { return __d1._M_param == __d2._M_param; }
+
+      /**
+       * @brief Inserts a %von_mises_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %von_mises_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const __gnu_cxx::von_mises_distribution<_RealType1>& __x);
+
+      /**
+       * @brief Extracts a %von_mises_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %von_mises_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   __gnu_cxx::von_mises_distribution<_RealType1>& __x);
+
+    private:
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+    };
+
+  /**
+   * @brief Return true if two von Mises distributions are different.
+   */
+  template<typename _RealType>
+    inline bool
+    operator!=(const __gnu_cxx::von_mises_distribution<_RealType>& __d1,
+	       const __gnu_cxx::von_mises_distribution<_RealType>& __d2)
+   { return !(__d1 == __d2); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
