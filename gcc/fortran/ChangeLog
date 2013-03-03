@@ -1,5 +1,26 @@
 2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/54730
+	* gfortran.h (struct gfc_undo_change_set): New field 'previous'.
+	(gfc_new_undo_checkpoint, gfc_drop_last_undo_checkpoint,
+	gfc_restore_last_undo_checkpoint): New prototypes.
+	* symbol.c (default_undo_chgset_var): Update initialization.
+	(single_undo_checkpoint_p, gfc_new_undo_checkpoint,
+	free_undo_change_set_data, pop_undo_change_set,
+	gfc_drop_last_undo_checkpoint, enforce_single_undo_checkpoint):
+	New functions.
+	(save_symbol_data): Handle multiple change sets.  Make sure old_symbol
+	field's previous value is not overwritten.  Clear gfc_new field.
+	(restore_old_symbol): Restore previous old_symbol field.
+	(gfc_restore_last_undo_checkpoint): New function, using body renamed
+	from gfc_undo_symbols.  Restore the previous change set as current one.
+	(gfc_undo_symbols): New body.
+	(gfc_commit_symbols, gfc_commit_symbol, gfc_enforce_clean_symbol_state):
+	Call enforce_single_undo_checkpoint.
+	(gfc_symbol_done_2): Ditto.  Free change set data.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* symbol.c (restore_old_symbol): Fix thinko.
 
 2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>

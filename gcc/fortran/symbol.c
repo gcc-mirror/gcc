@@ -99,7 +99,7 @@ gfc_gsymbol *gfc_gsym_root = NULL;
 
 gfc_dt_list *gfc_derived_types;
 
-static gfc_undo_change_set default_undo_chgset_var = { vNULL, vNULL };
+static gfc_undo_change_set default_undo_chgset_var = { vNULL, vNULL, NULL };
 static gfc_undo_change_set *latest_undo_chgset = &default_undo_chgset_var;
 
 
@@ -2698,17 +2698,49 @@ gfc_find_symbol (const char *name, gfc_namespace *ns, int parent_flag,
 }
 
 
+/* Tells whether there is only one set of changes in the stack.  */
+
+static bool
+single_undo_checkpoint_p (void)
+{
+  if (latest_undo_chgset == &default_undo_chgset_var)
+    {
+      gcc_assert (latest_undo_chgset->previous == NULL);
+      return true;
+    }
+  else
+    {
+      gcc_assert (latest_undo_chgset->previous != NULL);
+      return false;
+    }
+}
+
 /* Save symbol with the information necessary to back it out.  */
 
 static void
 save_symbol_data (gfc_symbol *sym)
 {
+  gfc_symbol *s;
+  unsigned i;
 
-  if (sym->gfc_new || sym->old_symbol != NULL)
+  if (!single_undo_checkpoint_p ())
+    {
+      /* If there is more than one change set, look for the symbol in the
+         current one.  If it is found there, we can reuse it.  */
+      FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, s)
+	if (s == sym)
+	  {
+	    gcc_assert (sym->gfc_new || sym->old_symbol != NULL);
+	    return;
+	  }
+    }
+  else if (sym->gfc_new || sym->old_symbol != NULL)
     return;
 
-  sym->old_symbol = XCNEW (gfc_symbol);
-  *(sym->old_symbol) = *sym;
+  s = XCNEW (gfc_symbol);
+  *s = *sym;
+  sym->old_symbol = s;
+  sym->gfc_new = 0;
 
   latest_undo_chgset->syms.safe_push (sym);
 }
@@ -2879,6 +2911,22 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
 }
 
 
+/* Clear the given storage, and make it the current change set for registering
+   changed symbols.  Its contents are freed after a call to
+   gfc_restore_last_undo_checkpoint or gfc_drop_last_undo_checkpoint, but
+   it is up to the caller to free the storage itself.  It is usually a local
+   variable, so there is nothing to do anyway.  */
+
+void
+gfc_new_undo_checkpoint (gfc_undo_change_set &chg_syms)
+{
+  chg_syms.syms = vNULL;
+  chg_syms.tbps = vNULL;
+  chg_syms.previous = latest_undo_chgset;
+  latest_undo_chgset = &chg_syms;
+}
+
+
 /* Restore previous state of symbol.  Just copy simple stuff.  */
   
 static void
@@ -2933,17 +2981,88 @@ restore_old_symbol (gfc_symbol *p)
       p->formal = old->formal;
     }
 
-  free (p->old_symbol);
-  p->old_symbol = NULL;
+  p->old_symbol = old->old_symbol;
+  free (old);
 }
 
 
-/* Undoes all the changes made to symbols in the current statement.
+/* Frees the internal data of a gfc_undo_change_set structure.  Doesn't free
+   the structure itself.  */
+
+static void
+free_undo_change_set_data (gfc_undo_change_set &cs)
+{
+  cs.syms.release ();
+  cs.tbps.release ();
+}
+
+
+/* Given a change set pointer, free its target's contents and update it with
+   the address of the previous change set.  Note that only the contents are
+   freed, not the target itself (the contents' container).  It is not a problem
+   as the latter will be a local variable usually.  */
+
+static void
+pop_undo_change_set (gfc_undo_change_set *&cs)
+{
+  free_undo_change_set_data (*cs);
+  cs = cs->previous;
+}
+
+
+static void free_old_symbol (gfc_symbol *sym);
+
+
+/* Merges the current change set into the previous one.  The changes themselves
+   are left untouched; only one checkpoint is forgotten.  */
+
+void
+gfc_drop_last_undo_checkpoint (void)
+{
+  gfc_symbol *s, *t;
+  unsigned i, j;
+
+  FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, s)
+    {
+      /* No need to loop in this case.  */
+      if (s->old_symbol == NULL)
+        continue;
+
+      /* Remove the duplicate symbols.  */
+      FOR_EACH_VEC_ELT (latest_undo_chgset->previous->syms, j, t)
+	if (t == s)
+	  {
+	    latest_undo_chgset->previous->syms.unordered_remove (j);
+
+	    /* S->OLD_SYMBOL is the backup symbol for S as it was at the
+	       last checkpoint.  We drop that checkpoint, so S->OLD_SYMBOL
+	       shall contain from now on the backup symbol for S as it was
+	       at the checkpoint before.  */
+	    if (s->old_symbol->gfc_new)
+	      {
+		gcc_assert (s->old_symbol->old_symbol == NULL);
+		s->gfc_new = s->old_symbol->gfc_new;
+		free_old_symbol (s);
+	      }
+	    else
+	      restore_old_symbol (s->old_symbol);
+	    break;
+	  }
+    }
+
+  latest_undo_chgset->previous->syms.safe_splice (latest_undo_chgset->syms);
+  latest_undo_chgset->previous->tbps.safe_splice (latest_undo_chgset->tbps);
+
+  pop_undo_change_set (latest_undo_chgset);
+}
+
+
+/* Undoes all the changes made to symbols since the previous checkpoint.
    This subroutine is made simpler due to the fact that attributes are
    never removed once added.  */
 
 void
-gfc_undo_symbols (void)
+gfc_restore_last_undo_checkpoint (void)
 {
   gfc_symbol *p;
   unsigned i;
@@ -3011,6 +3130,30 @@ gfc_undo_symbols (void)
 
   latest_undo_chgset->syms.truncate (0);
   latest_undo_chgset->tbps.truncate (0);
+
+  if (!single_undo_checkpoint_p ())
+    pop_undo_change_set (latest_undo_chgset);
+}
+
+
+/* Makes sure that there is only one set of changes; in other words we haven't
+   forgotten to pair a call to gfc_new_checkpoint with a call to either
+   gfc_drop_last_undo_checkpoint or gfc_restore_last_undo_checkpoint.  */
+
+static void
+enforce_single_undo_checkpoint (void)
+{
+  gcc_checking_assert (single_undo_checkpoint_p ());
+}
+
+
+/* Undoes all the changes made to symbols in the current statement.  */
+
+void
+gfc_undo_symbols (void)
+{
+  enforce_single_undo_checkpoint ();
+  gfc_restore_last_undo_checkpoint ();
 }
 
 
@@ -3051,6 +3194,8 @@ gfc_commit_symbols (void)
   gfc_typebound_proc *tbp;
   unsigned i;
 
+  enforce_single_undo_checkpoint ();
+
   FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
     {
       p->mark = 0;
@@ -3073,6 +3218,8 @@ gfc_commit_symbol (gfc_symbol *sym)
 {
   gfc_symbol *p;
   unsigned i;
+
+  enforce_single_undo_checkpoint ();
 
   FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
     if (p == sym)
@@ -3357,10 +3504,12 @@ gfc_symbol_init_2 (void)
 void
 gfc_symbol_done_2 (void)
 {
-
   gfc_free_namespace (gfc_current_ns);
   gfc_current_ns = NULL;
   gfc_free_dt_list ();
+
+  enforce_single_undo_checkpoint ();
+  free_undo_change_set_data (*latest_undo_chgset);
 }
 
 
@@ -3525,6 +3674,7 @@ gfc_save_all (gfc_namespace *ns)
 void
 gfc_enforce_clean_symbol_state(void)
 {
+  enforce_single_undo_checkpoint ();
   gcc_assert (latest_undo_chgset->syms.is_empty ());
 }
 
