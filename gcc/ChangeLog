@@ -1,3 +1,13 @@
+2013-03-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* target.def (TARGET_OPTION_VALID_ATTRIBUTE_P): Update comments;
+	the attribute is now called "target" instead of "option".
+	(TARGET_OPTION_PRAGMA_PARSE): Likewise, for the pragma.
+	* doc/tm.texi.in (Target Attributes):  Likewise document the correct
+	attribute/pragma name for TARGET_OPTION_VALID_P and
+	TARGET_OPTION_PRAGMA_PARSE.  Also copy-edit and correct markup.
+	* doc/tm.texi: Regenerated.
+
 2013-03-02  David Holsgrove <david.holsgrove@xilinx.com>
 
 	*  config/microblaze/microblaze.c:
