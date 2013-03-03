@@ -1,3 +1,16 @@
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* Make-lang.in (F95_PARSER_OBJS): Add dependency to vec.h
+	* gfortran.h: Include vec.h
+	(gfc_undo_change_set): New struct.
+	* symbol.c (tentative_tbp): Remove struct.
+	(changed_syms, tentative_tbp_list): Remove variables.
+	(default_undo_chgset_var, latest_undo_chgset): New variables.
+	(save_symbol_data, gfc_get_sym_tree, gfc_undo_symbols,
+	gfc_commit_symbols, gfc_commit_symbol,
+	gfc_enforce_clean_symbol_state, gfc_get_typebound_proc):
+	Use latest_undo_chgset instead of changed_syms and tentative_tbp_list.
+
 2013-03-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56491

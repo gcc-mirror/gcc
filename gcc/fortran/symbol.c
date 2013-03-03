@@ -97,21 +97,10 @@ gfc_namespace *gfc_global_ns_list;
 
 gfc_gsymbol *gfc_gsym_root = NULL;
 
-static gfc_symbol *changed_syms = NULL;
-
 gfc_dt_list *gfc_derived_types;
 
-
-/* List of tentative typebound-procedures.  */
-
-typedef struct tentative_tbp
-{
-  gfc_typebound_proc *proc;
-  struct tentative_tbp *next;
-}
-tentative_tbp;
-
-static tentative_tbp *tentative_tbp_list = NULL;
+static gfc_undo_change_set default_undo_chgset_var = { vNULL, vNULL };
+static gfc_undo_change_set *latest_undo_chgset = &default_undo_chgset_var;
 
 
 /*********** IMPLICIT NONE and IMPLICIT statement handlers ***********/
@@ -2303,7 +2292,7 @@ done:
    undo changes made to a symbol table if the current interpretation
    of a statement is found to be incorrect.  Whenever a symbol is
    looked up, we make a copy of it and link to it.  All of these
-   symbols are kept in a singly linked list so that we can commit or
+   symbols are kept in a vector so that we can commit or
    undo the changes at a later time.
 
    A symtree may point to a symbol node outside of its namespace.  In
@@ -2721,8 +2710,7 @@ save_symbol_data (gfc_symbol *sym)
   sym->old_symbol = XCNEW (gfc_symbol);
   *(sym->old_symbol) = *sym;
 
-  sym->tlink = changed_syms;
-  changed_syms = sym;
+  latest_undo_chgset->syms.safe_push (sym);
 }
 
 
@@ -2758,10 +2746,9 @@ gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result,
 
       /* Add to the list of tentative symbols.  */
       p->old_symbol = NULL;
-      p->tlink = changed_syms;
       p->mark = 1;
       p->gfc_new = 1;
-      changed_syms = p;
+      latest_undo_chgset->syms.safe_push (p);
 
       st = gfc_new_symtree (&ns->sym_root, name);
       st->n.sym = p;
@@ -2899,13 +2886,11 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
 void
 gfc_undo_symbols (void)
 {
-  gfc_symbol *p, *q, *old;
-  tentative_tbp *tbp, *tbq;
+  gfc_symbol *p, *old;
+  unsigned i;
 
-  for (p = changed_syms; p; p = q)
+  FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
     {
-      q = p->tlink;
-
       if (p->gfc_new)
 	{
 	  /* Symbol was new.  */
@@ -3012,18 +2997,10 @@ gfc_undo_symbols (void)
 
       free (p->old_symbol);
       p->old_symbol = NULL;
-      p->tlink = NULL;
     }
 
-  changed_syms = NULL;
-
-  for (tbp = tentative_tbp_list; tbp; tbp = tbq)
-    {
-      tbq = tbp->next;
-      /* Procedure is already marked `error' by default.  */
-      free (tbp);
-    }
-  tentative_tbp_list = NULL;
+  latest_undo_chgset->syms.truncate (0);
+  latest_undo_chgset->tbps.truncate (0);
 }
 
 
@@ -3060,26 +3037,21 @@ free_old_symbol (gfc_symbol *sym)
 void
 gfc_commit_symbols (void)
 {
-  gfc_symbol *p, *q;
-  tentative_tbp *tbp, *tbq;
+  gfc_symbol *p;
+  gfc_typebound_proc *tbp;
+  unsigned i;
 
-  for (p = changed_syms; p; p = q)
+  FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
     {
-      q = p->tlink;
-      p->tlink = NULL;
       p->mark = 0;
       p->gfc_new = 0;
       free_old_symbol (p);
     }
-  changed_syms = NULL;
+  latest_undo_chgset->syms.truncate (0);
 
-  for (tbp = tentative_tbp_list; tbp; tbp = tbq)
-    {
-      tbq = tbp->next;
-      tbp->proc->error = 0;
-      free (tbp);
-    }
-  tentative_tbp_list = NULL;
+  FOR_EACH_VEC_ELT (latest_undo_chgset->tbps, i, tbp)
+    tbp->error = 0;
+  latest_undo_chgset->tbps.truncate (0);
 }
 
 
@@ -3090,20 +3062,15 @@ void
 gfc_commit_symbol (gfc_symbol *sym)
 {
   gfc_symbol *p;
+  unsigned i;
 
-  if (changed_syms == sym)
-    changed_syms = sym->tlink;
-  else
-    {
-      for (p = changed_syms; p; p = p->tlink)
-        if (p->tlink == sym)
-          {
-            p->tlink = sym->tlink;
-            break;
-          }
-    }
+  FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
+    if (p == sym)
+      {
+	latest_undo_chgset->syms.unordered_remove (i);
+	break;
+      }
 
-  sym->tlink = NULL;
   sym->mark = 0;
   sym->gfc_new = 0;
 
@@ -3548,7 +3515,7 @@ gfc_save_all (gfc_namespace *ns)
 void
 gfc_enforce_clean_symbol_state(void)
 {
-  gcc_assert (changed_syms == NULL);
+  gcc_assert (latest_undo_chgset->syms.is_empty ());
 }
 
 
@@ -4709,17 +4676,13 @@ gfc_typebound_proc*
 gfc_get_typebound_proc (gfc_typebound_proc *tb0)
 {
   gfc_typebound_proc *result;
-  tentative_tbp *list_node;
 
   result = XCNEW (gfc_typebound_proc);
   if (tb0)
     *result = *tb0;
   result->error = 1;
 
-  list_node = XCNEW (tentative_tbp);
-  list_node->next = tentative_tbp_list;
-  list_node->proc = result;
-  tentative_tbp_list = list_node;
+  latest_undo_chgset->tbps.safe_push (result);
 
   return result;
 }
