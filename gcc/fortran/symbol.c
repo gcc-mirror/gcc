@@ -2879,6 +2879,64 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
 }
 
 
+/* Restore previous state of symbol.  Just copy simple stuff.  */
+  
+static void
+restore_old_symbol (gfc_symbol *p)
+{
+  gfc_symbol *old;
+
+  p->mark = 0;
+  old = p->old_symbol;
+
+  p->ts.type = old->ts.type;
+  p->ts.kind = old->ts.kind;
+
+  p->attr = old->attr;
+
+  if (p->value != old->value)
+    {
+      gfc_free_expr (old->value);
+      p->value = NULL;
+    }
+
+  if (p->as != old->as)
+    {
+      if (p->as)
+	gfc_free_array_spec (p->as);
+      p->as = old->as;
+    }
+
+  p->generic = old->generic;
+  p->component_access = old->component_access;
+
+  if (p->namelist != NULL && old->namelist == NULL)
+    {
+      gfc_free_namelist (p->namelist);
+      p->namelist = NULL;
+    }
+  else
+    {
+      if (p->namelist_tail != old->namelist_tail)
+	{
+	  gfc_free_namelist (old->namelist_tail->next);
+	  old->namelist_tail->next = NULL;
+	}
+    }
+
+  p->namelist_tail = old->namelist_tail;
+
+  if (p->formal != old->formal)
+    {
+      gfc_free_formal_arglist (p->formal);
+      p->formal = old->formal;
+    }
+
+  free (p->old_symbol);
+  p->old_symbol = NULL;
+}
+
+
 /* Undoes all the changes made to symbols in the current statement.
    This subroutine is made simpler due to the fact that attributes are
    never removed once added.  */
@@ -2886,7 +2944,7 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
 void
 gfc_undo_symbols (void)
 {
-  gfc_symbol *p, *old;
+  gfc_symbol *p;
   unsigned i;
 
   FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
@@ -2945,58 +3003,9 @@ gfc_undo_symbols (void)
 	    gfc_delete_symtree (&p->ns->sym_root, p->name);
 
 	  gfc_release_symbol (p);
-	  continue;
-	}
-
-      /* Restore previous state of symbol.  Just copy simple stuff.  */
-      p->mark = 0;
-      old = p->old_symbol;
-
-      p->ts.type = old->ts.type;
-      p->ts.kind = old->ts.kind;
-
-      p->attr = old->attr;
-
-      if (p->value != old->value)
-	{
-	  gfc_free_expr (old->value);
-	  p->value = NULL;
-	}
-
-      if (p->as != old->as)
-	{
-	  if (p->as)
-	    gfc_free_array_spec (p->as);
-	  p->as = old->as;
-	}
-
-      p->generic = old->generic;
-      p->component_access = old->component_access;
-
-      if (p->namelist != NULL && old->namelist == NULL)
-	{
-	  gfc_free_namelist (p->namelist);
-	  p->namelist = NULL;
 	}
       else
-	{
-	  if (p->namelist_tail != old->namelist_tail)
-	    {
-	      gfc_free_namelist (old->namelist_tail->next);
-	      old->namelist_tail->next = NULL;
-	    }
-	}
-
-      p->namelist_tail = old->namelist_tail;
-
-      if (p->formal != old->formal)
-	{
-	  gfc_free_formal_arglist (p->formal);
-	  p->formal = old->formal;
-	}
-
-      free (p->old_symbol);
-      p->old_symbol = NULL;
+	restore_old_symbol (p);
     }
 
   latest_undo_chgset->syms.truncate (0);
