@@ -123,13 +123,51 @@ else
 fi
 AC_SUBST(MAINT)
 
-AC_ARG_ENABLE(checking,
-[  --enable-checking      enable expensive run-time checks],,
-enable_checking=no)
+# Enable expensive internal checks
+is_release=
+if test -f $srcdir/../gcc/DEV-PHASE \
+   && test x"`cat $srcdir/../gcc/DEV-PHASE`" != xexperimental; then
+  is_release=yes
+fi
 
-if test $enable_checking != no ; then
+AC_ARG_ENABLE(checking,
+[AS_HELP_STRING([[--enable-checking[=LIST]]],
+		[enable expensive run-time checks.  With LIST,
+		 enable only specific categories of checks.
+		 Categories are: yes,no,all,none,release.
+		 Flags are: misc,valgrind or other strings])],
+[ac_checking_flags="${enableval}"],[
+# Determine the default checks.
+if test x$is_release = x ; then
+  ac_checking_flags=yes
+else
+  ac_checking_flags=release
+fi])
+IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
+for check in release $ac_checking_flags
+do
+	case $check in
+	# these set all the flags to specific states
+	yes|all) ac_checking=1 ; ac_valgrind_checking= ;;
+	no|none|release) ac_checking= ; ac_valgrind_checking= ;;
+	# these enable particular checks
+	misc) ac_checking=1 ;;
+	valgrind) ac_valgrind_checking=1 ;;
+	# accept
+	*) ;;
+	esac
+done
+IFS="$ac_save_IFS"
+                
+if test x$ac_checking != x ; then
   AC_DEFINE(ENABLE_CHECKING, 1,
 [Define if you want more run-time sanity checks.])
+fi
+
+if test x$ac_valgrind_checking != x ; then
+  AC_DEFINE(ENABLE_VALGRIND_CHECKING, 1,
+[Define if you want to workaround valgrind (a memory checker) warnings about
+ possible memory leaks because of libcpp use of interior pointers.])
 fi
 
 AC_ARG_ENABLE(canonical-system-headers,

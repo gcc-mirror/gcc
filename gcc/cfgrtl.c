@@ -135,7 +135,7 @@ delete_insn (rtx insn)
       if (! can_delete_label_p (insn))
 	{
 	  const char *name = LABEL_NAME (insn);
-	  basic_block bb, label_bb = BLOCK_FOR_INSN (insn);
+	  basic_block bb = BLOCK_FOR_INSN (insn);
 	  rtx bb_note = NEXT_INSN (insn);
 
 	  really_delete = false;
@@ -144,15 +144,13 @@ delete_insn (rtx insn)
 	  NOTE_DELETED_LABEL_NAME (insn) = name;
 
 	  /* If the note following the label starts a basic block, and the
-	     label is a member of the same basic block, interchange the two.
-	     If the label is not marked with a bb, assume it's the same bb.  */
+	     label is a member of the same basic block, interchange the two.  */
 	  if (bb_note != NULL_RTX
 	      && NOTE_INSN_BASIC_BLOCK_P (bb_note)
-	      && (label_bb == NOTE_BASIC_BLOCK (bb_note)
-		  || label_bb == NULL))
+	      && bb != NULL
+	      && bb == BLOCK_FOR_INSN (bb_note))
 	    {
 	      reorder_insns_nobb (insn, insn, bb_note);
-	      bb = NOTE_BASIC_BLOCK (bb_note);
 	      BB_HEAD (bb) = bb_note;
 	      if (BB_END (bb) == bb_note)
 		BB_END (bb) = insn;

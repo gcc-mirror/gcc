@@ -21,6 +21,10 @@
    language is requested. */
 #undef ENABLE_NLS
 
+/* Define if you want to workaround valgrind (a memory checker) warnings about
+   possible memory leaks because of libcpp use of interior pointers. */
+#undef ENABLE_VALGRIND_CHECKING
+
 /* Define to 1 if you have `alloca', as a function or macro. */
 #undef HAVE_ALLOCA
 

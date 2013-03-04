@@ -1,3 +1,30 @@
+2013-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* files.c (_cpp_save_file_entries): Free result at the end.
+	* pch.c (cpp_string_free): New function.
+	(cpp_save_state): Use it in htab_create call.
+	(cpp_write_pch_deps): Free ss->defs.  Destroy ss->definedhash.
+
+2013-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* files.c (_cpp_find_file): If returning early, before storing
+	something to *hash_slot and *hash_slot is NULL, call htab_clear_slot
+	on it.  Access *hash_slot using void * type rather than
+	struct file_hash_entry * to avoid aliasing issues.
+
+	* configure.ac: Don't define ENABLE_CHECKING whenever
+	--enable-checking is seen, instead use similar --enable-checking=yes
+	vs. --enable-checking=release default as gcc/ subdir has and
+	define ENABLE_CHECKING if ENABLE_CHECKING is defined in gcc/.
+	Define ENABLE_VALGRIND_CHECKING if requested.
+	* lex.c (new_buff): If ENABLE_VALGRIND_CHECKING, put _cpp_buff
+	struct first in the allocated buffer and result->base after it.
+	(_cpp_free_buff): If ENABLE_VALGRIND_CHECKING, free buff itself
+	instead of buff->base.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
 2013-02-13  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/55582

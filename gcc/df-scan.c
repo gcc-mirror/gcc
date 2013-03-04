@@ -1153,6 +1153,7 @@ df_insn_delete (basic_block bb, unsigned int uid)
 	  df_ref_chain_delete (insn_info->defs);
 	  df_ref_chain_delete (insn_info->uses);
 	  df_ref_chain_delete (insn_info->eq_uses);
+	  df_scan_free_mws_vec (insn_info->mw_hardregs);
 	}
       pool_free (problem_data->insn_pool, insn_info);
       DF_INSN_UID_SET (uid, NULL);
@@ -1332,6 +1333,7 @@ df_insn_rescan_debug_internal (rtx insn)
   df_ref_chain_delete (insn_info->defs);
   df_ref_chain_delete (insn_info->uses);
   df_ref_chain_delete (insn_info->eq_uses);
+  df_scan_free_mws_vec (insn_info->mw_hardregs);
 
   insn_info->defs = df_null_ref_rec;
   insn_info->uses = df_null_ref_rec;

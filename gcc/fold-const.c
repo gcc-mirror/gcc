@@ -2542,19 +2542,25 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
     case tcc_reference:
       /* If either of the pointer (or reference) expressions we are
-	 dereferencing contain a side effect, these cannot be equal.  */
-      if (TREE_SIDE_EFFECTS (arg0)
-	  || TREE_SIDE_EFFECTS (arg1))
+	 dereferencing contain a side effect, these cannot be equal,
+	 but their addresses can be.  */
+      if ((flags & OEP_CONSTANT_ADDRESS_OF) == 0
+	  && (TREE_SIDE_EFFECTS (arg0)
+	      || TREE_SIDE_EFFECTS (arg1)))
 	return 0;
 
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
+	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  return OP_SAME (0);
+
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
 	  return OP_SAME (0);
 
 	case TARGET_MEM_REF:
+	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
 	  /* Require equal extra operands and then fall through to MEM_REF
 	     handling of the two common operands.  */
 	  if (!OP_SAME_WITH_NULL (2)
@@ -2563,6 +2569,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	    return 0;
 	  /* Fallthru.  */
 	case MEM_REF:
+	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
 	  /* Require equal access sizes, and similar pointer types.
 	     We can have incomplete types for array references of
 	     variable-sized arrays from the Fortran frontent
@@ -2581,22 +2588,28 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  /* Operands 2 and 3 may be null.
 	     Compare the array index by value if it is constant first as we
 	     may have different types but same value here.  */
-	  return (OP_SAME (0)
-		  && (tree_int_cst_equal (TREE_OPERAND (arg0, 1),
-					  TREE_OPERAND (arg1, 1))
-		      || OP_SAME (1))
+	  if (!OP_SAME (0))
+	    return 0;
+	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  return ((tree_int_cst_equal (TREE_OPERAND (arg0, 1),
+				       TREE_OPERAND (arg1, 1))
+		   || OP_SAME (1))
 		  && OP_SAME_WITH_NULL (2)
 		  && OP_SAME_WITH_NULL (3));
 
 	case COMPONENT_REF:
 	  /* Handle operand 2 the same as for ARRAY_REF.  Operand 0
 	     may be NULL when we're called to compare MEM_EXPRs.  */
-	  return OP_SAME_WITH_NULL (0)
-		 && OP_SAME (1)
-		 && OP_SAME_WITH_NULL (2);
+	  if (!OP_SAME_WITH_NULL (0))
+	    return 0;
+	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  return OP_SAME (1) && OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
-	  return OP_SAME (0) && OP_SAME (1) && OP_SAME (2);
+	  if (!OP_SAME (0))
+	    return 0;
+	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  return OP_SAME (1) && OP_SAME (2);
 
 	default:
 	  return 0;

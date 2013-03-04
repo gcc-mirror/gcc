@@ -568,6 +568,7 @@ lra_spill (void)
   free (slots);
   free (pseudo_slots);
   free (pseudo_regnos);
+  free (spill_hard_reg);
 }
 
 /* Apply alter_subreg for subregs of regs in *LOC.  Use FINAL_P for

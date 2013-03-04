@@ -48,10 +48,25 @@ avr_set_current_device (const char *name)
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
 }
 
-/* Returns command line parameters that describe the device architecture.  */
+/* Returns command line parameters to pass to as.  */
 
-const char *
-avr_device_to_arch (int argc, const char **argv)
+const char*
+avr_device_to_as (int argc, const char **argv)
+{
+  if (0 == argc)
+    return NULL;
+
+  avr_set_current_device (argv[0]);
+
+  return concat ("-mmcu=", avr_current_arch->arch_name,
+                 avr_current_device->errata_skip ? "" : " -mno-skip-bug",
+                 NULL);
+}
+
+/* Returns command line parameters to pass to ld.  */
+
+const char*
+avr_device_to_ld (int argc, const char **argv)
 {
   if (0 == argc)
     return NULL;

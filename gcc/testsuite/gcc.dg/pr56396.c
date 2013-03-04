@@ -1,5 +1,6 @@
 /* PR tree-optimization/56396 */
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic -g" } */
 
 struct S { char *s; int z; };

@@ -1380,6 +1380,21 @@ microblaze_option_override (void)
         microblaze_has_clz = 0;
     }
 
+  /* TARGET_REORDER defaults to 2 if -mxl-reorder not specified.  */
+  ver = MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v8.30.a");
+  if (ver < 0)
+    {
+        if (TARGET_REORDER == 1)
+          warning (0, "-mxl-reorder can be used only with -mcpu=v8.30.a or greater");
+        TARGET_REORDER = 0;
+    }
+  else if ((ver == 0) && !TARGET_PATTERN_COMPARE)
+    {
+        if (TARGET_REORDER == 1)
+          warning (0, "-mxl-reorder requires -mxl-pattern-compare for -mcpu=v8.30.a");
+        TARGET_REORDER = 0;
+    }
+
   if (TARGET_MULTIPLY_HIGH && TARGET_SOFT_MUL)
     error ("-mxl-multiply-high requires -mno-xl-soft-mul");
 
@@ -2842,21 +2857,8 @@ microblaze_emit_compare (enum machine_mode mode, rtx cmp, enum rtx_code *cmp_cod
 
   if (code == EQ || code == NE)
     {
-      if (TARGET_PATTERN_COMPARE && GET_CODE(cmp_op1) == REG) 
-        {
-          if (code == EQ) 
-	    {
-	      emit_insn (gen_seq_internal_pat (comp_reg, cmp_op0, cmp_op1));
-	      *cmp_code = NE;
-	    }
-	  else
-	    {    
-	      emit_insn (gen_sne_internal_pat (comp_reg, cmp_op0, cmp_op1));
-	    }
-        }
-      else
-	/* Use xor for equal/not-equal comparison.  */
-	emit_insn (gen_xorsi3 (comp_reg, cmp_op0, cmp_op1));
+      /* Use xor for equal/not-equal comparison.  */
+      emit_insn (gen_xorsi3 (comp_reg, cmp_op0, cmp_op1));
     }
   else if (code == GT || code == GTU || code == LE || code == LEU)
     {

@@ -168,9 +168,6 @@ gen_int_relational (enum rtx_code code,
 {
   enum machine_mode mode;
   int branch_p;
-  rtx temp;
-  rtx cond;
-  rtx label;
 
   mode = GET_MODE (cmp0);
   if (mode == VOIDmode)

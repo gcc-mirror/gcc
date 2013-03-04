@@ -1739,7 +1739,12 @@ AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
   AC_MSG_CHECKING([for "/dev/random" and "/dev/urandom" for TR1 random_device])
   AC_CACHE_VAL(glibcxx_cv_random_tr1, [
     if test -r /dev/random && test -r /dev/urandom; then
-      glibcxx_cv_random_tr1=yes;
+  ## For MSys environment the test above is detect as false-positive
+  ## on mingw-targets.  So disable it explicit for them.
+      case ${target_os} in
+	*mingw*) glibcxx_cv_random_tr1=no ;;
+	*) glibcxx_cv_random_tr1=yes ;;
+      esac
     else
       glibcxx_cv_random_tr1=no;
     fi

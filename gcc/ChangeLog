@@ -1,22 +1,353 @@
-2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
+2013-03-03  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* sched-deps.c (sched_analyze_insn): Fix typo in comment.
+	* target.def (TARGET_OPTION_VALID_ATTRIBUTE_P): Update comments;
+	the attribute is now called "target" instead of "option".
+	(TARGET_OPTION_PRAGMA_PARSE): Likewise, for the pragma.
+	* doc/tm.texi.in (Target Attributes):  Likewise document the correct
+	attribute/pragma name for TARGET_OPTION_VALID_P and
+	TARGET_OPTION_PRAGMA_PARSE.  Also copy-edit and correct markup.
+	* doc/tm.texi: Regenerated.
 
-2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
-	    Alexander Monakov  <amonakov@ispras.ru>
+2013-03-02  David Holsgrove <david.holsgrove@xilinx.com>
 
-	PR middle-end/56077
-	* sched-deps.c (sched_analyze_insn): When reg_pending_barrier,
-	flush pending lists also on non-jumps.  Adjust comment.
+	*  config/microblaze/microblaze.c:
+	Check mcpu, pcmp requirement and set TARGET_REORDER to 0 if not met.
+	*  config/microblaze/microblaze.h: Add -mxl-reorder to DRIVER_SELF_SPECS
+	*  config/microblaze/microblaze.md: New bswapsi2 and bswaphi2
+	instructions emitted if TARGET_REORDER
+	*  config/microblaze/microblaze.opt: New option -mxl-reorder set to 1 
+	or 0 for -m/-mno case, but initialises as 2 to detect default use case 
+	separately
 
-2013-02-24  Catherine Moore  <clm@codesourcery.com>
+2013-03-01  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-uninit.c (compute_control_dep_chain): Limit post-dom
+	walk length.
+
+2013-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Release path
+	vector even when returning true.  Fix up function comment formatting.
+
+	PR middle-end/56461
+	* ira-build.c (ira_loop_nodes_count): New variable.
+	(create_loop_tree_nodes): Initialize it.
+	(finish_loop_tree_nodes): Use it instead of looking at current_loops.
+
+	PR middle-end/56461
+	* tree-vect-data-refs.c (vect_permute_store_chain): Avoid using copy
+	method on dr_chain and result_chain.
+	* tree-vect-stmts.c (vectorizable_store): Only call
+	result_chain.create if j == 0.
+
+	PR middle-end/56461
+	* tree-vect-stmts.c (vect_create_vectorized_promotion_stmts): Call
+	vec_oprnds0->release (); rather than vec_oprnds0->truncate (0)
+	before overwriting it.
+
+2013-03-01  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/extended.texi (C Extensions): Change order in @menu
+	to match @node.
+	(Other MIPS Built-in Functions): Move last MIPS entry before
+	"picoChip Built-in Functions".
+	(SH Built-in Functions): Move after RX Built-in Functions.
+	* doc/gcc.texi (Introduction): Change order in @menu
+	to match @node.
+	* doc/md.texi (Constraints): Ditto.
+	* gty.texi (Type Information): Ditto.
+	(User-provided marking routines for template types): Make
+	subsection.
+	* doc/invoke.texi (AArch64 Options): Move before
+	"Adapteva Epiphany Options".
+
+2013-02-28  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56454
+	* asan.c (gate_asan): Lookup no_sanitize_address instead of
+	no_address_safety_analysis attribute.
+	* doc/extend.texi (no_address_safety_attribute): Rename to
+	no_sanitize_address attribute, mention no_address_safety_analysis
+	attribute as deprecated alias.
+
+2013-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-vectorizer.h (vect_get_slp_defs): Change 3rd argument
+	type to vec<vec<tree> > *.
+	* tree-vect-slp.c (vect_get_slp_defs): Likewise.  Change vec_defs
+	to be vec<tree> instead of vec<tree> *, set vec_defs
+	to vNULL and call vec_defs.create (number_of_vects), adjust other
+	uses of vec_defs.
+	* tree-vect-stmts.c (vect_get_vec_defs, vectorizable_call,
+	vectorizable_condition): Adjust vect_get_slp_defs callers.
+
+2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_float_const_representable): Remove unused variable.
+
+2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_mangle_type): Make static.
+
+2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_init_simd_builtins): Make static.
+
+2013-02-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_simd_make_constant): Make static.
+
+2013-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (load_assign_lhs_subreplacements): Do not put replacements
+	with no initialization to the RHS of debug statements.
+
+2013-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/56294
+	* tree-sra.c (analyze_access_subtree): Create replacement declarations.
+	Adjust dumping.
+	(get_access_replacement): Do not call create_access_replacement.
+	Assert a replacement exists.
+	(get_repl_default_def_ssa_name): Create the replacement declaration
+	itself.
+
+2013-02-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_output_mi_thunk): Call final_start_function and
+	final_end_function.
+
+2013-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/56466
+	* loop-unroll.c (unroll_and_peel_loops): Call fix_loop_structure
+	if we're changing a loop.
+	(peel_loops_completely): Likewise.
+
+2013-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55813
+	* doc/invoke.texi ([-Wctor-dtor-privacy]): Complete.
+
+2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/56445
+	* config/avr/avr.c (avr_init_builtins): Use 'n' instead of empty
+	macro parameters with: FX_FTYPE_FX, FX_FTYPE_FX_INT, INT_FTYPE_FX,
+	INTX_FTYPE_FX, FX_FTYPE_INTX.
+	* config/avr/builtins.def: Adjust respective DEF_BUILTIN.
+
+2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* avr/avr-mcus.def (ata5272, ata5505, attiny1634, ata6285)
+	(ata6286, atmega8a, atmega48pa, ata5790, ata5790n, ata5795)
+	(atmega164pa, atmega165pa, atmega168pa, atmega16hva, atmega16hvb)
+	(atmega16hvbrevb, atmega16m1, atmega16u4, atmega26hvg, atmega32a)
+	(atmega32a, atmega3250pa, atmega3290pa, atmega32c1, atmega32m1)
+	(atmega32u4, atmega32u6, atmega64a, atmega6490a, atmega6490p)
+	(atmega64c1, atmega64m1, atmega64rfa2, atmega64rfr2, atmega32hvb)
+	(atmega32hvbrevb, atmega16hva2, atmega48hvf, at90pwm161)
+	(atmega128a, atmega1284, atmxt112sl, atmxt224, atmxt224e)
+	(atmxt336s, atxmega16a4u, atxmega16c4, atxmega32a4u, atxmega32c4)
+	(atxmega32e5, atxmega64a3u, atxmega64a4u, atxmega64b1, atxmega64b3)
+	(atxmega64c3, atxmega64d4, atxmega128a3u, atxmega128b1)
+	(atxmega128b3, atxmega128c3, atxmega128d4, atmxt540s, atmxt540sreva)
+	(atxmega192a3u, atxmega192c3, atxmega256a3u, atxmega256c3)
+	(atxmega384c3, atxmega384d3, atxmega128a4u): New AVR_MCU.
+	(avrxmega6): Increase max flash segments from 5 to 6.
+	* config/avr/t-multilib: Regenerate.
+	* config/avr/avr-tables.opt: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2013-02-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.h (device_to_arch): Rename to device_to_ld.
+	(avr_device_to_arch): Rename to avr_device_to_ld.
+	(avr_device_to_as): New prototype.
+	(EXTRA_SPEC_FUNCTIONS): Add device_to_as.
+	(ASM_SPEC): Use device_to_as to get -mmcu= and -mno-skip-bug=.
+	* config/avr/driver-avr.c (avr_device_to_as): New.
+	(avr_device_to_arch): Rename to avr_device_to_ld.
+
+2013-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-vect-data-refs.c (vect_permute_load_chain): Avoid using copy
+	method on dr_chain and result_chain.
+
+	PR middle-end/56461
+	* tree-ssa-loop-niter.c (maybe_lower_iteration_bound): Call
+	pointer_set_destroy on not_executed_last_iteration.
+
+	PR middle-end/56461
+	* tree-vect-loop.c (vectorizable_reduction): Release vect_defs
+	vector.
+
+	PR middle-end/56461
+	* ipa-pure-const.c (propagate): Use FOR_EACH_FUNCTION instead of
+	FOR_EACH_DEFINED_FUNCTION when freeing state.
+
+	PR middle-end/56461
+	* df-scan.c (df_insn_delete): Use df_scan_free_mws_vec before
+	pool_free.
+	(df_insn_rescan_debug_internal): Use df_scan_free_mws_vec before
+	overwriting it.
+
+	PR middle-end/56461
+	* ipa-cp.c (decide_whether_version_node): Call vec_free on
+	known_aggs[i].items and release known_aggs vector.
+
+	PR middle-end/56461
+	* ipa-reference.c (propagate): Free node_info even for alias nodes.
+
+2013-02-27  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config/microblaze/microblaze.c (microblaze_emit_compare):
+	Use xor for EQ/NE comparisions.
+	* config/microblaze/microblaze.md (cstoresf4): Add constraints
+	(cbranchsf4): Adjust operator to comparison_operator.
+
+2013-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-flow.h (edge_var_map_vector): Change into va_heap, vl_embed
+	vector.
+	* tree-ssa.c (redirect_edge_var_map_add): Use vec_safe_reserve and
+	vec_safe_push, always update *slot.
+	(redirect_edge_var_map_clear): Use vec_free.
+	(redirect_edge_var_map_dup): Use vec_safe_copy and vec_safe_reserve.
+	(free_var_map_entry): Use vec_free.
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Use
+	FOR_EACH_VEC_SAFE_ELT instead of FOR_EACH_VEC_ELT.
+
+2013-02-27  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR middle-end/45472
+	* sel-sched-ir.c (merge_expr): Also change vinsn of merged expr
+	when the may_trap_p bit of the exprs being merged differs.
+	Reorder tests for speculativeness in the logical and operator.
+
+2013-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* incpath.c (add_standard_paths): Use reconcat instead of concat
+	where appropriate and avoid leaking memory.
+
+	* opts.h: Include obstack.h.
+	(opts_concat): New prototype.
+	(opts_obstack): New declaration.
+	* opts.c (opts_concat): New function.
+	(opts_obstack): New variable.
+	(init_options_struct): Call gcc_init_obstack on opts_obstack.
+	(finish_options): Use opts_concat instead of concat
+	and XOBNEWVEC instead of XNEWVEC.
+	* opts-common.c (generate_canonical_option, decode_cmdline_option,
+	generate_option): Likewise.
+	* Makefile.in (OPTS_H): Depend on $(OBSTACK_H).
+	* lto-wrapper.c (main): Call gcc_init_obstack on opts_obstack.
+
+	PR target/56455
+	* stmt.c (expand_switch_as_decision_tree_p): If flag_pic
+	and ASM_OUTPUT_ADDR_DIFF_ELT isn't defined, return true.
+
+2013-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* lra-spills.c (lra_spill): Free spill_hard_reg at the end.
+
+2013-02-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/arm/arm.c (const_ok_for_dimode_op): Back out last change.
+	(arm_block_move_unaligned_straight): Likewise.
+	(arm_adjust_block_mem): Likewise.
+
+2013-02-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR target/48901
+	* config/lm32/lm32.c (gen_int_relational): Remove unused variables
+	temp, cond and label.
+	* config/lm32/lm32.md (ashlsi3): Remove unused variable one.
+
+	PR target/52500
+	* config/c6x/c6x.c (dbx_register_map): Change to unsigned.
+	* config/c6x/c6x.h (dbx_register_map): Update declaration.
+
+	PR target/52501
+	* config/cr16/cr16-protos.h: Move end of RTX_CODE guard below end
+	of prologue/epilogue functions.
+
+	PR target/52550
+	* config/tilegx/tilegx.c (tilegx_expand_prologue):
+	Remove unused variable cfa_offset.
+	* config/tilepro/tilepro.c (tilepro_expand_prologue): Likewise.
+
+	PR target/54639
+	* config/mn10300/mn10300.c (mn10300_expand_epilogue): Avoid offset
+	type promotion to unsigned.
+
+	PR target/54640
+	* config/arm/arm.c (const_ok_for_dimode_op): Make code consistent
+	for HOST_WIDE_INT of 32 bit / same size as int.
+	(arm_block_move_unaligned_straight): Likewise.
+	(arm_adjust_block_mem): Likewise.
+
+	PR target/54662
+	* config/mep/t-mep (mep-pragma.o): Use ALL_COMPILERFLAGS instead of
+	ALL_CFLAGS.
+
+2013-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56426
+	* tree-ssa-loop.c (tree_ssa_loop_init): Always call
+	scev_initialize.
+
+2013-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/56444
+	* config/mn10300/mn10300.c (mn10300_scan_for_setlb_lcc): Remove
+	unused variable loops.
+
+2013-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56448
+	* fold-const.c (operand_equal_p) <case tcc_reference>: Don't look at
+	TREE_SIDE_EFFECTS if flags contain OEP_CONSTANT_ADDRESS_OF.
+	Clear OEP_CONSTANT_ADDRESS_OF from flags before recursing on second or
+	later operands of the references, or even first operand for
+	INDIRECT_REF, TARGET_MEM_REF or MEM_REF.
+
+	PR tree-optimization/56443
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): For
+	overaligned types, pass TYPE_UNSIGNED (scalar_type) as second argument
+	to type_for_mode langhook.
+
+2013-02-25  Matt Turner  <mattst88@gmail.com>
+
+	* doc/invoke.texi: Document r4700.
+
+2013-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56175
+	* tree-ssa-forwprop.c (hoist_conversion_for_bitop_p): New predicate,
+	split out from ...
+	(simplify_bitwise_binary): ... here.  Also guard the conversion
+	of (type) X op CST to (type) (X op ((type-x) CST)) with it.
+
+2013-02-25  Catherine Moore  <clm@codesourcery.com>
+
+	Revert:
+	2013-02-24  Catherine Moore  <clm@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
 	    Nathan Sidwell <nathan@codesourcery.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 	    Chao-ying Fu <fu@mips.com>
-
 	* doc/extend.texi: (micromips, nomicromips, nocompression):
 	Document new function attributes. 
 	* doc/invoke.texi (minterlink-compressed, mmicromips,
@@ -36,7 +367,7 @@
 	* config/mips/mips.md (multimem): New type.
 	(length): Differentiate between 17-bit and 18-bit branch offsets.
 	(MOVEP1, MOVEP2): New mode iterator.
- 	(mov_<load>l): Use ZC constraint.
+	(mov_<load>l): Use ZC constraint.
 	(mov_<load>r): Likewise.
 	(mov_<store>l): Likewise.
 	(mov_<store>r): Likewise.
@@ -90,7 +421,157 @@
 	(mips_attribute_table): Add micromips, nomicromips and nocompression.
 	(mips_mips16_decl_p): Delete.
 	(mips_nomips16_decl_p): Delete.
- 	(mips_get_compress_on_flags): New function.
+	(mips_get_compress_on_flags): New function.
+	(mips_get_compress_off_flags): New function.
+	(mips_get_compress_mode): New function.
+	(mips_get_compress_on_name): New function.
+	(mips_get_compress_off_name): New function.
+	(mips_insert_attributes): Support multiple compression types.
+	(mips_merge_decl_attributes): Likewise.
+	(umips_12bit_offset_address_p): New function.
+	(mips_start_function_definition): Emit .set micromips directive.
+	(mips_call_may_need_jalx_p): New function.
+	(mips_function_ok_for_sibcall): Add microMIPS support.
+	(mips_print_operand_punctuation): Support short delay slots and
+	compact jumps.
+	(umips_swm_mask, umips_swm_encoding): New.
+	(umips_build_save_restore): New function.
+	(mips_for_each_saved_gpr_and_fpr): Add microMIPS support.
+	(was_mips16_p): Remove.
+	(old_compression_mode): New.
+	(mips_set_compression_mode): New function.
+	(mips_set_current_function): Add microMIPS support.
+	(mips_option_override): Likewise.
+	(umips_save_restore_pattern_p): New function.
+	(umips_output_save_restore): New function.
+	(umips_load_store_pair_p_1): New function.
+	(umips_load_store_pair_p): New function.
+	(umips_output_load_store_pair_1): New function.
+	(umips_output_load_store_pair): New function.
+	(umips_movep_target_p) New function.
+	(mips_prepare_pch_save): Add microMIPS support.
+	* config/mips/mips.h (TARGET_COMPRESSION): New.
+	(TARGET_CPU_CPP_BUILTINS): Update macro
+	to use new compression flags and to support microMIPS.
+	(MIPS_ISA_LEVEL_SPEC): Add m14k processors.
+	(MIPS_ARCH_FLOAT_SPEC): Likewise.
+	(ISA_HAS_LWXS): Include TARGET_MICROMIPS.
+	(ISA_HAS_LOAD_DELAY): Exclude TARGET_MICROMIPS.
+	(ASM_SPEC): Support mmicromips and mno-micromips.
+	(M16STORE_REG_P): New macro.
+	(MIPS_CALL): Support TARGET_MICROMIPS.
+	(MICROMIPS_J): New macro.
+	(mips_base_mips16): Rename this...
+	(mips_base_compression_flags): ...to this.
+	(UMIPS_12BIT_OFFSET_P): New macro.
+	* config/mips/t-sde: (MULTILIB_OPTIONS): Add microMIPS.
+	(MULTILIB_DIRNAMES): Likewise.
+
+2013-02-25  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/56131
+	* insn-notes.def (INSN_NOTE_BASIC_BLOCK): Update comment.
+	* cfgrtl.c (delete_insn): Don't reorder NOTE_INSN_DELETED_LABEL and
+	NOTE_INSN_BASIC_BLOCK if BLOCK_FOR_INSN == NULL.
+
+2013-02-25  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fsanitize=): Move from optimization
+	to debugging options.
+
+2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	* sched-deps.c (sched_analyze_insn): Fix typo in comment.
+
+2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/56077
+	* sched-deps.c (sched_analyze_insn): When reg_pending_barrier,
+	flush pending lists also on non-jumps.  Adjust comment.
+
+2013-02-24  Catherine Moore  <clm@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Nathan Sidwell <nathan@codesourcery.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+	    Chao-ying Fu <fu@mips.com>
+
+	* doc/extend.texi: (micromips, nomicromips, nocompression):
+	Document new function attributes. 
+	* doc/invoke.texi (minterlink-compressed, mmicromips,
+	m14k, m14ke, m14kec): Document new options.
+	(minterlink-mips16): Update documentation.
+	* doc/md.texi (ZC, ZD): Document new constraints.
+	* configure.ac (gcc_cv_as_micromips): Check if linker
+	supports the .set micromips directive.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/micromips.md: New file.
+	* constraints.md (ZC, AD): New constraints.
+	* config/mips/predicates.md (movep_src_register): New predicate.
+	(movep_src_operand): New predicate.
+	(non_volatile_mem_operand): New predicate.
+	* config/mips/mips.md (multimem): New type.
+	(length): Differentiate between 17-bit and 18-bit branch offsets.
+	(MOVEP1, MOVEP2): New mode iterator.
+	(mov_<load>l): Use ZC constraint.
+	(mov_<load>r): Likewise.
+	(mov_<store>l): Likewise.
+	(mov_<store>r): Likewise.
+	(*branch_equality<mode>_inverted): Add microMIPS support.
+	(*branch_equality<mode>): Likewise.
+	(*jump_absolute): Likewise.
+	(indirect_jump_<mode>): Likewise.
+	(tablejump_<mode>): Likewise.
+	(<optab>_internal): Likewise.
+	(sibcall_internal): Likewise.
+	(sibcall_value_internal): Likewise.
+	(prefetch): Use constraint ZD.
+	* config/mips/mips.opt (minterlink-compressed): New option.
+	(minterlink-mips16): Now an alias for minterlink-compressed.
+	(mmicromips): New option.
+	* config/mips/sync.md (sync_compare_and_swap<mode>): Use ZR constraint.
+	(compare_and_swap_12): Likewise.
+	(sync_add<mode>): Likewise.
+	(sync_<optab>_12): Likewise.
+	(sync_old_<optab>_12): Likewise.
+	(sync_new_<optab>_12): Likewise.
+	(sync_nand_12): Likewise.
+	(sync_old_nand_12): Likewise.
+	(sync_new_nand_12): Likewise.
+	(sync_sub<mode>): Likewise.
+	(sync_old_add<mode>): Likewise.
+	(sync_old_sub<mode>): Likewise.
+	(sync_new_add<mode>): Likewise.
+	(sync_new_sub<mode>): Likewise.
+	(sync_<optab><mode>): Likewise.
+	(sync_old_<optab><mode>): Likewise.
+	(sync_new_<optab><mode>): Likewise.
+	(sync_nand<mode>): Likewise.
+	(sync_old_nand<mode>): Likewise.
+	(sync_new_nand<mode>): Likewise.
+	(sync_lock_test_and_set<mode>): Likewise.
+	(test_and_set_12): Likewise.
+	(atomic_compare_and_swap<mode>): Likewise.
+	(atomic_exchange<mode>_llsc): Likewise.
+	(atomic_fetch_add<mode>_llsc): Likewise.
+	* config/mips/mips-cpus.def (m14kc, m14k): New processors.
+	* config/mips/mips-protos.h (umips_output_save_restore): New prototype.
+	(umips_save_restore_pattern_p): Likewise.
+	(umips_load_store_pair_p): Likewise.
+	(umips_output_load_store_pair): Likewise.
+	(umips_movep_target_p): Likewise.
+	(umips_12bit_offset_address_p): Likewise.
+	* config/mips/mips.c (MIPS_MAX_FIRST_STEP): Update for microMIPS.
+	(mips_base_mips16): Rename this...
+	(mips_base_compression_flags): ...to this. Update all uses.
+	(mips_attribute_table): Add micromips, nomicromips and nocompression.
+	(mips_mips16_decl_p): Delete.
+	(mips_nomips16_decl_p): Delete.
+	(mips_get_compress_on_flags): New function.
 	(mips_get_compress_off_flags): New function.
 	(mips_get_compress_mode): New function.
 	(mips_get_compress_on_name): New function.
@@ -167,10 +648,10 @@
 
 2013-02-22  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.md (split for extendsidi): Update condition.
-        (zero_extend<mode>di2,extend<mode>di2): Add an alternative.
-        * config/arm/iterators.md (qhs_extenddi_cstr): Likewise.
-        (qhs_zextenddi_cstr): Likewise.
+	* config/arm/arm.md (split for extendsidi): Update condition.
+	(zero_extend<mode>di2,extend<mode>di2): Add an alternative.
+	* config/arm/iterators.md (qhs_extenddi_cstr): Likewise.
+	(qhs_zextenddi_cstr): Likewise.
 
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
@@ -325,7 +806,7 @@
 	* config/microblaze/microblaze.h: Add TARGET_HAS_CLZ as combined 
 	version and TARGET_PATTERN_COMPARE check
 	* config/microblaze/microblaze.md: New clzsi2 instruction
-	
+
 2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
 
 	*  config/microblaze/microblaze.md (call_value_intern): Check symbol is 

@@ -207,7 +207,7 @@ void
 unroll_and_peel_loops (int flags)
 {
   struct loop *loop;
-  bool check;
+  bool changed = false;
   loop_iterator li;
 
   /* First perform complete loop peeling (it is almost surely a win,
@@ -220,7 +220,6 @@ unroll_and_peel_loops (int flags)
   /* Scan the loops, inner ones first.  */
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      check = true;
       /* And perform the appropriate transformations.  */
       switch (loop->lpt_decision.decision)
 	{
@@ -229,29 +228,32 @@ unroll_and_peel_loops (int flags)
 	  gcc_unreachable ();
 	case LPT_PEEL_SIMPLE:
 	  peel_loop_simple (loop);
+	  changed = true;
 	  break;
 	case LPT_UNROLL_CONSTANT:
 	  unroll_loop_constant_iterations (loop);
+	  changed = true;
 	  break;
 	case LPT_UNROLL_RUNTIME:
 	  unroll_loop_runtime_iterations (loop);
+	  changed = true;
 	  break;
 	case LPT_UNROLL_STUPID:
 	  unroll_loop_stupid (loop);
+	  changed = true;
 	  break;
 	case LPT_NONE:
-	  check = false;
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
-      if (check)
-	{
-#ifdef ENABLE_CHECKING
-	  verify_loop_structure ();
-#endif
-	}
     }
+
+    if (changed)
+      {
+	calculate_dominance_info (CDI_DOMINATORS);
+	fix_loop_structure (NULL);
+      }
 
   iv_analysis_done ();
 }
@@ -283,6 +285,7 @@ peel_loops_completely (int flags)
 {
   struct loop *loop;
   loop_iterator li;
+  bool changed = false;
 
   /* Scan the loops, the inner ones first.  */
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
@@ -306,11 +309,15 @@ peel_loops_completely (int flags)
 	{
 	  report_unroll_peel (loop, locus);
 	  peel_loop_completely (loop);
-#ifdef ENABLE_CHECKING
-	  verify_loop_structure ();
-#endif
+	  changed = true;
 	}
     }
+
+    if (changed)
+      {
+	calculate_dominance_info (CDI_DOMINATORS);
+	fix_loop_structure (NULL);
+      }
 }
 
 /* Decide whether unroll or peel loops (depending on FLAGS) and how much.  */

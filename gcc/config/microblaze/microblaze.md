@@ -353,6 +353,20 @@
 (automata_option "time")
 (automata_option "progress")
 
+(define_insn "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (bswap:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_REORDER"
+  "swapb %0, %1"
+)
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (bswap:HI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_REORDER"
+  "swaph %0, %1"
+)
+
 ;;----------------------------------------------------------------
 ;; Microblaze delay slot description
 ;;----------------------------------------------------------------
@@ -1637,10 +1651,10 @@
 ;; Setting a register from an floating point comparison. 
 ;;----------------------------------------------------------------
 (define_insn "cstoresf4"
-   [(set (match_operand:SI 0 "register_operand")
-        (match_operator:SI 1 "ordered_comparison_operator"
-	      [(match_operand:SF 2 "register_operand")
-	       (match_operand:SF 3 "register_operand")]))]
+   [(set (match_operand:SI 0 "register_operand" "=r")
+        (match_operator 1 "comparison_operator"
+	      [(match_operand:SF 2 "register_operand" "r")
+	       (match_operand:SF 3 "register_operand" "r")]))]
   "TARGET_HARD_FLOAT"
   "fcmp.%C1\t%0,%3,%2"
   [(set_attr "type"     "fcmp")
@@ -1667,7 +1681,7 @@
 
 (define_expand "cbranchsf4"
   [(set (pc)
-	(if_then_else (match_operator:SI 0 "ordered_comparison_operator"
+	(if_then_else (match_operator 0 "comparison_operator"
 		       [(match_operand:SF 1 "register_operand")
 		        (match_operand:SF 2 "register_operand")])
 		      (label_ref (match_operand 3 ""))

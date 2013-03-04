@@ -1,3 +1,53 @@
+2013-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Remove dead code.
+
+2013-02-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56481
+	* semantics.c (potential_constant_expression_1): Use
+	cxx_eval_outermost_constant_expr rather than maybe_constant_value.
+
+	PR c++/56243
+	* call.c (build_over_call): Avoid virtual lookup in a template.
+
+2013-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56358
+	PR c++/56323
+	* name-lookup.c (do_class_using_decl): Use ctor_identifier instead
+	of the base name for inheriting ctors.
+	(push_class_level_binding_1): Remove inheriting ctor handling.
+	* pt.c (tsubst_decl) [USING_DECL]: Likewise.
+	* class.c (add_implicitly_declared_members): Adjust.
+
+2013-02-26  David Binderman  <dcb314@hotmail.com>
+
+	PR c++/55632
+	* decl.c (grokdeclarator): Tidy publicp assignment.
+
+2013-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c++/56419
+	* semantics.c (begin_transaction_stmt): Set TREE_SIDE_EFFECTS.
+	(build_transaction_expr): Same.
+
+2013-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56377
+	* pt.c (fn_type_unification): Wait to call push_tinst_level until
+	we know what args we're looking at.
+
+	PR c++/56438
+	* semantics.c (potential_constant_expression_1): In C++98, a cast
+	to non-integral type can't be a constant expression.
+
+2013-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56403
+	* init.c (build_zero_init_1): Use RECORD_OR_UNION_CODE_P instead
+	of CLASS_TYPE_P.
+
 2013-02-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40405

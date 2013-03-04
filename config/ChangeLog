@@ -1,3 +1,8 @@
+2013-02-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bootstrap-asan.mk (POSTSTAGE1_LDFLAGS): Add
+	-B$$r/prev-$(TARGET_SUBDIR)/libsanitizer/asan/.
+
 2013-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR other/55973

@@ -1,3 +1,67 @@
+2013-03-02  Ulrich Drepper  <drepper@gmail.com>
+
+	Add triangular and von Mises distributions.
+	* include/ext/random: Include <ext/cmath>.
+	Add __gnu_cxx::triangular_distribution<> and
+	__gnu_cxx::von_mises_distribution<> classes.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::triangular_distribution<> and
+	__gnu_cxx::von_mises_distribution<>.
+	* testsuite/ext/triangular_distribution/cons/default.cc: New file.
+	* testsuite/ext/triangular_distribution/cons/parms.cc: New file.
+	* testsuite/ext/triangular_distribution/operators/serialize.cc:
+	New file.
+	* testsuite/ext/triangular_distribution/operators/equal.cc:
+	New file.
+	* testsuite/ext/triangular_distribution/operators/inequal.cc:
+	New file.
+	* testsuite/ext/triangular_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/triangular_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+	* testsuite/ext/von_mises_distribution/cons/default.cc: New file.
+	* testsuite/ext/von_mises_distribution/cons/parms.cc: New file.
+	* testsuite/ext/von_mises_distribution/operators/serialize.cc:
+	New file.
+	* testsuite/ext/von_mises_distribution/operators/equal.cc: New file.
+	* testsuite/ext/von_mises_distribution/operators/inequal.cc:
+	New file.
+	* testsuite/ext/von_mises_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/von_mises_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
+	Add math constants.
+	* include/Makefile.am (ext_headers): Add cmath.
+	* include/Makefile.in: Regenerated.
+	* include/ext/cmath: New file.
+
+2013-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.9/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
+2013-02-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56012
+	* include/bits/atomic_base.h (atomic_flag): Fix narrowing conversion.
+	* testsuite/29_atomics/atomic/operators/56012.cc: New.
+
+	PR libstdc++/56011
+	* include/std/atomic (atomic<bool>::operator=(bool) volatile): Add
+	missing overload.
+	* testsuite/29_atomics/atomic/operators/56011.cc: New.
+
+2013-02-25  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Check for __cxa_thread_atexit_impl.
+	* libsupc++/atexit_thread.cc (__cxa_thread_atexit): Just forward
+	to it if available.
+	* config.h.in, configure: Regenerate.
+
 2013-02-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/streambuf (basic_streambuf): Use injected class name

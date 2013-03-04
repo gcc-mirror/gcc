@@ -740,7 +740,6 @@ Objective-C and Objective-C++ Dialects}.
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2 @gol
 -mips64  -mips64r2 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
--minterlink-compressed -mno-interlink-compressed @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
@@ -748,7 +747,6 @@ Objective-C and Objective-C++ Dialects}.
 -mno-float -msingle-float  -mdouble-float  @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
--mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -2457,7 +2455,9 @@ union U @{
 @opindex Wno-ctor-dtor-privacy
 Warn when a class seems unusable because all the constructors or
 destructors in that class are private, and it has neither friends nor
-public static member functions.
+public static member functions.  Also warn if there are no non-private
+methods, and there's at least one private member function that isn't
+a constructor or destructor.
 
 @item -Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wdelete-non-virtual-dtor
@@ -5033,6 +5033,18 @@ other options are processed, and it does so only once, no matter how
 many times it is given.  This is mainly intended to be used with
 @option{-fcompare-debug}.
 
+@item -fsanitize=address
+Enable AddressSanitizer, a fast memory error detector.
+Memory access instructions will be instrumented to detect
+out-of-bounds and use-after-free bugs.
+See @uref{http://code.google.com/p/address-sanitizer/} for more details.
+
+@item -fsanitize=thread
+Enable ThreadSanitizer, a fast data race detector.
+Memory access instructions will be instrumented to detect
+data race bugs.
+See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
+
 @item -fdump-final-insns@r{[}=@var{file}@r{]}
 @opindex fdump-final-insns
 Dump the final internal representation (RTL) to @var{file}.  If the
@@ -6865,18 +6877,6 @@ resulting executable can find the beginning of that section and/or make
 assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
-
-@item -fsanitize=address
-Enable AddressSanitizer, a fast memory error detector.
-Memory access instructions will be instrumented to detect
-out-of-bounds and use-after-free bugs.
-See @uref{http://code.google.com/p/address-sanitizer/} for more details.
-
-@item -fsanitize=thread
-Enable ThreadSanitizer, a fast data race detector.
-Memory access instructions will be instrumented to detect
-data race bugs. 
-See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
 
 @item -fmudflap -fmudflapth -fmudflapir
 @opindex fmudflap
@@ -10855,6 +10855,125 @@ platform.
 * zSeries Options::
 @end menu
 
+@node AArch64 Options
+@subsection AArch64 Options
+@cindex AArch64 Options
+
+These options are defined for AArch64 implementations:
+
+@table @gcctabopt
+
+@item -mbig-endian
+@opindex mbig-endian
+Generate big-endian code.  This is the default when GCC is configured for an
+@samp{aarch64_be-*-*} target.
+
+@item -mgeneral-regs-only
+@opindex mgeneral-regs-only
+Generate code which uses only the general registers.
+
+@item -mlittle-endian
+@opindex mlittle-endian
+Generate little-endian code.  This is the default when GCC is configured for an
+@samp{aarch64-*-*} but not an @samp{aarch64_be-*-*} target.
+
+@item -mcmodel=tiny
+@opindex mcmodel=tiny
+Generate code for the tiny code model.  The program and its statically defined
+symbols must be within 1GB of each other.  Pointers are 64 bits.  Programs can
+be statically or dynamically linked.  This model is not fully implemented and
+mostly treated as @samp{small}.
+
+@item -mcmodel=small
+@opindex mcmodel=small
+Generate code for the small code model.  The program and its statically defined
+symbols must be within 4GB of each other.  Pointers are 64 bits.  Programs can
+be statically or dynamically linked.  This is the default code model.
+
+@item -mcmodel=large
+@opindex mcmodel=large
+Generate code for the large code model.  This makes no assumptions about
+addresses and sizes of sections.  Pointers are 64 bits.  Programs can be
+statically linked only.
+
+@item -mstrict-align
+@opindex mstrict-align
+Do not assume that unaligned memory references will be handled by the system.
+
+@item -momit-leaf-frame-pointer
+@itemx -mno-omit-leaf-frame-pointer
+@opindex momit-leaf-frame-pointer
+@opindex mno-omit-leaf-frame-pointer
+Omit or keep the frame pointer in leaf functions.  The former behaviour is the
+default.
+
+@item -mtls-dialect=desc
+@opindex mtls-dialect=desc
+Use TLS descriptors as the thread-local storage mechanism for dynamic accesses
+of TLS variables.  This is the default.
+
+@item -mtls-dialect=traditional
+@opindex mtls-dialect=traditional
+Use traditional TLS as the thread-local storage mechanism for dynamic accesses
+of TLS variables.
+
+@item -march=@var{name}
+@opindex march
+Specify the name of the target architecture, optionally suffixed by one or
+more feature modifiers.  This option has the form
+@option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
+only value for @var{arch} is @samp{armv8-a}.  The possible values for
+@var{feature} are documented in the sub-section below.
+
+Where conflicting feature modifiers are specified, the right-most feature is
+used.
+
+GCC uses this name to determine what kind of instructions it can emit when
+generating assembly code.  This option can be used in conjunction with or
+instead of the @option{-mcpu=} option.
+
+@item -mcpu=@var{name}
+@opindex mcpu
+Specify the name of the target processor, optionally suffixed by one or more
+feature modifiers.  This option has the form
+@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
+possible values for @var{cpu} are @samp{generic}, @samp{large}.  The
+possible values for @var{feature} are documented in the sub-section
+below.
+
+Where conflicting feature modifiers are specified, the right-most feature is
+used.
+
+GCC uses this name to determine what kind of instructions it can emit when
+generating assembly code.
+
+@item -mtune=@var{name}
+@opindex mtune
+Specify the name of the processor to tune the performance for.  The code will
+be tuned as if the target processor were of the type specified in this option,
+but still using instructions compatible with the target processor specified
+by a @option{-mcpu=} option.  This option cannot be suffixed by feature
+modifiers.
+
+@end table
+
+@subsubsection @option{-march} and @option{-mcpu} feature modifiers
+@cindex @option{-march} feature modifiers
+@cindex @option{-mcpu} feature modifiers
+Feature modifiers used with @option{-march} and @option{-mcpu} can be one
+the following:
+
+@table @samp
+@item crypto
+Enable Crypto extension.  This implies Advanced SIMD is enabled.
+@item fp
+Enable floating-point instructions.
+@item simd
+Enable Advanced SIMD instructions.  This implies floating-point instructions
+are enabled.  This is the default for all current possible values for options
+@option{-march} and @option{-mcpu=}.
+@end table
+
 @node Adapteva Epiphany Options
 @subsection Adapteva Epiphany Options
 
@@ -11009,125 +11128,6 @@ which specify use of that register as a fixed register,
 and @samp{none}, which means that no register is used for this
 purpose.  The default is @option{-m1reg-none}.
 
-@end table
-
-@node AArch64 Options
-@subsection AArch64 Options
-@cindex AArch64 Options
-
-These options are defined for AArch64 implementations:
-
-@table @gcctabopt
-
-@item -mbig-endian
-@opindex mbig-endian
-Generate big-endian code.  This is the default when GCC is configured for an
-@samp{aarch64_be-*-*} target.
-
-@item -mgeneral-regs-only
-@opindex mgeneral-regs-only
-Generate code which uses only the general registers.
-
-@item -mlittle-endian
-@opindex mlittle-endian
-Generate little-endian code.  This is the default when GCC is configured for an
-@samp{aarch64-*-*} but not an @samp{aarch64_be-*-*} target.
-
-@item -mcmodel=tiny
-@opindex mcmodel=tiny
-Generate code for the tiny code model.  The program and its statically defined
-symbols must be within 1GB of each other.  Pointers are 64 bits.  Programs can
-be statically or dynamically linked.  This model is not fully implemented and
-mostly treated as @samp{small}.
-
-@item -mcmodel=small
-@opindex mcmodel=small
-Generate code for the small code model.  The program and its statically defined
-symbols must be within 4GB of each other.  Pointers are 64 bits.  Programs can
-be statically or dynamically linked.  This is the default code model.
-
-@item -mcmodel=large
-@opindex mcmodel=large
-Generate code for the large code model.  This makes no assumptions about
-addresses and sizes of sections.  Pointers are 64 bits.  Programs can be
-statically linked only.
-
-@item -mstrict-align
-@opindex mstrict-align
-Do not assume that unaligned memory references will be handled by the system.
-
-@item -momit-leaf-frame-pointer
-@itemx -mno-omit-leaf-frame-pointer
-@opindex momit-leaf-frame-pointer
-@opindex mno-omit-leaf-frame-pointer
-Omit or keep the frame pointer in leaf functions.  The former behaviour is the
-default.
-
-@item -mtls-dialect=desc
-@opindex mtls-dialect=desc
-Use TLS descriptors as the thread-local storage mechanism for dynamic accesses
-of TLS variables.  This is the default.
-
-@item -mtls-dialect=traditional
-@opindex mtls-dialect=traditional
-Use traditional TLS as the thread-local storage mechanism for dynamic accesses
-of TLS variables.
-
-@item -march=@var{name}
-@opindex march
-Specify the name of the target architecture, optionally suffixed by one or
-more feature modifiers.  This option has the form
-@option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-only value for @var{arch} is @samp{armv8-a}.  The possible values for
-@var{feature} are documented in the sub-section below.
-
-Where conflicting feature modifiers are specified, the right-most feature is
-used.
-
-GCC uses this name to determine what kind of instructions it can emit when
-generating assembly code.  This option can be used in conjunction with or
-instead of the @option{-mcpu=} option.
-
-@item -mcpu=@var{name}
-@opindex mcpu
-Specify the name of the target processor, optionally suffixed by one or more
-feature modifiers.  This option has the form
-@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-possible values for @var{cpu} are @samp{generic}, @samp{large}.  The
-possible values for @var{feature} are documented in the sub-section
-below.
-
-Where conflicting feature modifiers are specified, the right-most feature is
-used.
-
-GCC uses this name to determine what kind of instructions it can emit when
-generating assembly code.
-
-@item -mtune=@var{name}
-@opindex mtune
-Specify the name of the processor to tune the performance for.  The code will
-be tuned as if the target processor were of the type specified in this option,
-but still using instructions compatible with the target processor specified
-by a @option{-mcpu=} option.  This option cannot be suffixed by feature
-modifiers.
-
-@end table
-
-@subsubsection @option{-march} and @option{-mcpu} feature modifiers
-@cindex @option{-march} feature modifiers
-@cindex @option{-mcpu} feature modifiers
-Feature modifiers used with @option{-march} and @option{-mcpu} can be one
-the following:
-
-@table @samp
-@item crypto
-Enable Crypto extension.  This implies Advanced SIMD is enabled.
-@item fp
-Enable floating-point instructions.
-@item simd
-Enable Advanced SIMD instructions.  This implies floating-point instructions
-are enabled.  This is the default for all current possible values for options
-@option{-march} and @option{-mcpu=}.
 @end table
 
 @node ARM Options
@@ -15882,11 +15882,10 @@ The processor names are:
 @samp{1004kc}, @samp{1004kf2_1}, @samp{1004kf1_1},
 @samp{loongson2e}, @samp{loongson2f}, @samp{loongson3a},
 @samp{m4k},
-@samp{m14k}, @samp{m14ke}, @samp{m14kec},
 @samp{octeon}, @samp{octeon+}, @samp{octeon2},
 @samp{orion},
 @samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},
-@samp{r4600}, @samp{r4650}, @samp{r6000}, @samp{r8000},
+@samp{r4600}, @samp{r4650}, @samp{r4700}, @samp{r6000}, @samp{r8000},
 @samp{rm7000}, @samp{rm9000},
 @samp{r10000}, @samp{r12000}, @samp{r14000}, @samp{r16000},
 @samp{sb1},
@@ -15996,25 +15995,17 @@ Generate MIPS16 code on alternating functions.  This option is provided
 for regression testing of mixed MIPS16/non-MIPS16 code generation, and is
 not intended for ordinary use in compiling user code.
 
-@item -minterlink-compressed
-@item -mno-interlink-compressed
-@opindex minterlink-compressed
-@opindex mno-interlink-compressed
-Require (do not require) that code using the standard (uncompressed) MIPS ISA
-be link-compatible with MIPS16 and microMIPS code, and vice versa.
-
-For example, code using the standard ISA encoding cannot jump directly
-to MIPS16 or microMIPS code; it must either use a call or an indirect jump.
-@option{-minterlink-compressed} therefore disables direct jumps unless GCC
-knows that the target of the jump is not compressed.
-
 @item -minterlink-mips16
 @itemx -mno-interlink-mips16
 @opindex minterlink-mips16
 @opindex mno-interlink-mips16
-Aliases of @option{-minterlink-compressed} and
-@option{-mno-interlink-compressed}.  These options predate the microMIPS ASE
-and are retained for backwards compatiblity.
+Require (do not require) that non-MIPS16 code be link-compatible with
+MIPS16 code.
+
+For example, non-MIPS16 code cannot jump directly to MIPS16 code;
+it must either use a call or an indirect jump.  @option{-minterlink-mips16}
+therefore disables direct jumps unless GCC knows that the target of the
+jump is not MIPS16.
 
 @item -mabi=32
 @itemx -mabi=o64
@@ -16228,16 +16219,6 @@ hardware floating-point support to be enabled.
 @opindex mno-mips3d
 Use (do not use) the MIPS-3D ASE@.  @xref{MIPS-3D Built-in Functions}.
 The option @option{-mips3d} implies @option{-mpaired-single}.
-
-@item -mmicromips
-@itemx -mno-micromips
-@opindex mmicromips
-@opindex mno-mmicromips
-Generate (do not generate) microMIPS code.
-
-MicroMIPS code generation can also be controlled on a per-function basis
-by means of @code{micromips} and @code{nomicromips} attributes.
-@xref{Function Attributes}, for more information.
 
 @item -mmt
 @itemx -mno-mt

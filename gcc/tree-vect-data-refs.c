@@ -4218,7 +4218,9 @@ vect_permute_store_chain (vec<tree> dr_chain,
   unsigned int j, nelt = TYPE_VECTOR_SUBPARTS (vectype);
   unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
 
-  *result_chain = dr_chain.copy ();
+  result_chain->quick_grow (length);
+  memcpy (result_chain->address (), dr_chain.address (),
+	  length * sizeof (tree));
 
   for (i = 0, n = nelt / 2; i < n; i++)
     {
@@ -4259,7 +4261,8 @@ vect_permute_store_chain (vec<tree> dr_chain,
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  (*result_chain)[2*j+1] = low;
 	}
-      dr_chain = result_chain->copy ();
+      memcpy (dr_chain.address (), result_chain->address (),
+	      length * sizeof (tree));
     }
 }
 
@@ -4673,7 +4676,9 @@ vect_permute_load_chain (vec<tree> dr_chain,
   unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
   unsigned char *sel = XALLOCAVEC (unsigned char, nelt);
 
-  *result_chain = dr_chain.copy ();
+  result_chain->quick_grow (length);
+  memcpy (result_chain->address (), dr_chain.address (),
+	  length * sizeof (tree));
 
   for (i = 0; i < nelt; ++i)
     sel[i] = i * 2;
@@ -4708,7 +4713,8 @@ vect_permute_load_chain (vec<tree> dr_chain,
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  (*result_chain)[j/2+length/2] = data_ref;
 	}
-      dr_chain = result_chain->copy ();
+      memcpy (dr_chain.address (), result_chain->address (),
+	      length * sizeof (tree));
     }
 }
 

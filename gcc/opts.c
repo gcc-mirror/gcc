@@ -268,12 +268,48 @@ add_comma_separated_to_vector (void **pvec, const char *arg)
   *pvec = v;
 }
 
+/* Like libiberty concat, but allocate using opts_obstack.  */
+
+char *
+opts_concat (const char *first, ...)
+{
+  char *newstr, *end;
+  size_t length = 0;
+  const char *arg;
+  va_list ap;
+
+  /* First compute the size of the result and get sufficient memory.  */
+  va_start (ap, first);
+  for (arg = first; arg; arg = va_arg (ap, const char *))
+    length += strlen (arg);
+  newstr = XOBNEWVEC (&opts_obstack, char, length + 1);
+  va_end (ap);
+
+  /* Now copy the individual pieces to the result string. */
+  va_start (ap, first);
+  for (arg = first, end = newstr; arg; arg = va_arg (ap, const char *))
+    {
+      length = strlen (arg);
+      memcpy (end, arg, length);
+      end += length;
+    }
+  *end = '\0';
+  va_end (ap);
+  return newstr;
+}
+
+/* Obstack for option strings.  */
+
+struct obstack opts_obstack;
+
 /* Initialize OPTS and OPTS_SET before using them in parsing options.  */
 
 void
 init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 {
   size_t num_params = get_num_compiler_params ();
+
+  gcc_obstack_init (&opts_obstack);
 
   *opts = global_options_init;
   memset (opts_set, 0, sizeof (*opts_set));
@@ -638,8 +674,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	 directory, typically the directory to contain the object
 	 file.  */
       if (opts->x_dump_dir_name)
-	opts->x_dump_base_name = concat (opts->x_dump_dir_name,
-					 opts->x_dump_base_name, NULL);
+	opts->x_dump_base_name = opts_concat (opts->x_dump_dir_name,
+					      opts->x_dump_base_name, NULL);
       else if (opts->x_aux_base_name
 	       && strcmp (opts->x_aux_base_name, HOST_BIT_BUCKET) != 0)
 	{
@@ -649,8 +685,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	  if (opts->x_aux_base_name != aux_base)
 	    {
 	      int dir_len = aux_base - opts->x_aux_base_name;
-	      char *new_dump_base_name =
-		XNEWVEC (char, strlen (opts->x_dump_base_name) + dir_len + 1);
+	      char *new_dump_base_name
+		= XOBNEWVEC (&opts_obstack, char,
+			     strlen (opts->x_dump_base_name) + dir_len + 1);
 
 	      /* Copy directory component from OPTS->X_AUX_BASE_NAME.  */
 	      memcpy (new_dump_base_name, opts->x_aux_base_name, dir_len);

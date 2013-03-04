@@ -919,7 +919,7 @@ PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
 INPUT_H = $(srcdir)/../libcpp/include/line-map.h input.h
-OPTS_H = $(INPUT_H) $(VEC_H) opts.h
+OPTS_H = $(INPUT_H) $(VEC_H) opts.h $(OBSTACK_H)
 DECNUM_H = $(DECNUM)/decContext.h $(DECNUM)/decDPD.h $(DECNUM)/decNumber.h \
 	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h \
 	$(DECNUMFMT)/decimal128.h $(DECNUMFMT)/decimal128Local.h

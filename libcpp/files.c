@@ -492,7 +492,8 @@ _cpp_file *
 _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		bool fake, int angle_brackets, bool implicit_preinclude)
 {
-  struct file_hash_entry *entry, **hash_slot;
+  struct file_hash_entry *entry;
+  void **hash_slot;
   _cpp_file *file;
   bool invalid_pch = false;
   bool saw_bracket_include = false;
@@ -503,13 +504,12 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
   if (start_dir == NULL)
     cpp_error (pfile, CPP_DL_ICE, "NULL directory in find_file");
 
-  hash_slot = (struct file_hash_entry **)
-    htab_find_slot_with_hash (pfile->file_hash, fname,
-			      htab_hash_string (fname),
-			      INSERT);
+  hash_slot
+    = htab_find_slot_with_hash (pfile->file_hash, fname,
+				htab_hash_string (fname), INSERT);
 
   /* First check the cache before we resort to memory allocation.  */
-  entry = search_cache (*hash_slot, start_dir);
+  entry = search_cache ((struct file_hash_entry *) *hash_slot, start_dir);
   if (entry)
     return entry->u.file;
 
@@ -533,6 +533,17 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		 the list of all files so that #import works.  */
 	      file->next_file = pfile->all_files;
 	      pfile->all_files = file;
+	      if (*hash_slot == NULL)
+		{
+		  /* If *hash_slot is NULL, the above htab_find_slot_with_hash
+		     call just created the slot, but we aren't going to store
+		     there anything, so need to remove the newly created entry.
+		     htab_clear_slot requires that it is non-NULL, so store
+		     there some non-NULL pointer, htab_clear_slot will
+		     overwrite it immediately.  */
+		  *hash_slot = file;
+		  htab_clear_slot (pfile->file_hash, hash_slot);
+		}
 	      return file;
 	    }
 
@@ -548,6 +559,12 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 	    {
 	      free ((char *) file->name);
 	      free (file);
+	      if (*hash_slot == NULL)
+		{
+		  /* See comment on the above htab_clear_slot call.  */
+		  *hash_slot = file;
+		  htab_clear_slot (pfile->file_hash, hash_slot);
+		}
 	      return NULL;
 	    }
 	  else
@@ -565,7 +582,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
       else
 	continue;
 
-      entry = search_cache (*hash_slot, file->dir);
+      entry = search_cache ((struct file_hash_entry *) *hash_slot, file->dir);
       if (entry)
 	{
 	  found_in_cache = file->dir;
@@ -589,11 +606,11 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
   /* Store this new result in the hash table.  */
   entry = new_file_hash_entry (pfile);
-  entry->next = *hash_slot;
+  entry->next = (struct file_hash_entry *) *hash_slot;
   entry->start_dir = start_dir;
   entry->location = pfile->line_table->highest_location;
   entry->u.file = file;
-  *hash_slot = entry;
+  *hash_slot = (void *) entry;
 
   /* If we passed the quote or bracket chain heads, cache them also.
      This speeds up processing if there are lots of -I options.  */
@@ -602,22 +619,22 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
       && found_in_cache != pfile->bracket_include)
     {
       entry = new_file_hash_entry (pfile);
-      entry->next = *hash_slot;
+      entry->next = (struct file_hash_entry *) *hash_slot;
       entry->start_dir = pfile->bracket_include;
       entry->location = pfile->line_table->highest_location;
       entry->u.file = file;
-      *hash_slot = entry;
+      *hash_slot = (void *) entry;
     }
   if (saw_quote_include
       && pfile->quote_include != start_dir
       && found_in_cache != pfile->quote_include)
     {
       entry = new_file_hash_entry (pfile);
-      entry->next = *hash_slot;
+      entry->next = (struct file_hash_entry *) *hash_slot;
       entry->start_dir = pfile->quote_include;
       entry->location = pfile->line_table->highest_location;
       entry->u.file = file;
-      *hash_slot = entry;
+      *hash_slot = (void *) entry;
     }
 
   return file;
@@ -1754,6 +1771,7 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *fp)
   struct pchf_data *result;
   size_t result_size;
   _cpp_file *f;
+  bool ret;
 
   for (f = pfile->all_files; f; f = f->next_file)
     ++count;
@@ -1810,7 +1828,9 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *fp)
   qsort (result->entries, result->count, sizeof (struct pchf_entry),
 	 pchf_save_compare);
 
-  return fwrite (result, result_size, 1, fp) == 1;
+  ret = fwrite (result, result_size, 1, fp) == 1;
+  free (result);
+  return ret;
 }
 
 /* Read the pchf_data structure from F.  */

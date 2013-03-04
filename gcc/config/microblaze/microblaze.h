@@ -78,6 +78,7 @@ extern enum pipeline_type microblaze_pipe;
 	"%{mno-xl-barrel-shift:%<mxl-barrel-shift}", 	\
 	"%{mno-xl-pattern-compare:%<mxl-pattern-compare}", \
 	"%{mxl-soft-div:%<mno-xl-soft-div}", 		\
+	"%{mxl-reorder:%<mno-xl-reorder}", 		\
 	"%{msoft-float:%<mhard-float}"
 
 /* Tell collect what flags to pass to nm.  */

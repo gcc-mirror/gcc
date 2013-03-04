@@ -7033,7 +7033,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (!already_used)
     mark_used (fn);
 
-  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
+  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
+      /* Don't mess with virtual lookup in fold_non_dependent_expr; virtual
+	 functions can't be constexpr.  */
+      && !in_template_function ())
     {
       tree t;
       tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (argarray[0])),

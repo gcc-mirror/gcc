@@ -3732,7 +3732,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  && rvalue->symtree->n.sym->ns->proc_name->attr.flavor != FL_PROCEDURE
 	  && rvalue->symtree->n.sym->ns->proc_name->attr.flavor != FL_PROGRAM)
        for (ns = rvalue->symtree->n.sym->ns;
-	    ns->proc_name && ns->proc_name->attr.flavor != FL_PROCEDURE;
+	    ns && ns->proc_name && ns->proc_name->attr.flavor != FL_PROCEDURE;
 	    ns = ns->parent)
 	if (ns->parent == lvalue->symtree->n.sym->ns)
 	  warn = true;

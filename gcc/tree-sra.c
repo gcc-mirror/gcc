@@ -2000,8 +2000,7 @@ create_access_replacement (struct access *access)
 static inline tree
 get_access_replacement (struct access *access)
 {
-  if (!access->replacement_decl)
-    access->replacement_decl = create_access_replacement (access);
+  gcc_checking_assert (access->replacement_decl);
   return access->replacement_decl;
 }
 
@@ -2157,7 +2156,6 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  || ((root->grp_scalar_read || root->grp_assignment_read)
 	      && (root->grp_scalar_write || root->grp_assignment_write))))
     {
-      bool new_integer_type;
       /* Always create access replacements that cover the whole access.
          For integral types this means the precision has to match.
 	 Avoid assumptions based on the integral type kind, too.  */
@@ -2176,22 +2174,19 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  root->expr = build_ref_for_offset (UNKNOWN_LOCATION,
 					     root->base, root->offset,
 					     root->type, NULL, false);
-	  new_integer_type = true;
-	}
-      else
-	new_integer_type = false;
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Marking ");
-	  print_generic_expr (dump_file, root->base, 0);
-	  fprintf (dump_file, " offset: %u, size: %u ",
-		   (unsigned) root->offset, (unsigned) root->size);
-	  fprintf (dump_file, " to be replaced%s.\n",
-		   new_integer_type ? " with an integer": "");
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Changing the type of a replacement for ");
+	      print_generic_expr (dump_file, root->base, 0);
+	      fprintf (dump_file, " offset: %u, size: %u ",
+		       (unsigned) root->offset, (unsigned) root->size);
+	      fprintf (dump_file, " to an integer.\n");
+	    }
 	}
 
       root->grp_to_be_replaced = 1;
+      root->replacement_decl = create_access_replacement (root);
       sth_created = true;
       hole = false;
     }
@@ -2209,15 +2204,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  if (MAY_HAVE_DEBUG_STMTS)
 	    {
 	      root->grp_to_be_debug_replaced = 1;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "Marking ");
-		  print_generic_expr (dump_file, root->base, 0);
-		  fprintf (dump_file, " offset: %u, size: %u ",
-			   (unsigned) root->offset, (unsigned) root->size);
-		  fprintf (dump_file, " to be replaced with debug "
-			   "statements.\n");
-		}
+	      root->replacement_decl = create_access_replacement (root);
 	    }
 	}
 
@@ -2883,7 +2870,12 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 							    lacc->size);
 
 	      if (racc && racc->grp_to_be_replaced)
-		drhs = get_access_replacement (racc);
+		{
+		  if (racc->grp_write)
+		    drhs = get_access_replacement (racc);
+		  else
+		    drhs = NULL;
+		}
 	      else if (*refreshed == SRA_UDH_LEFT)
 		drhs = build_debug_ref_for_model (loc, lacc->base, lacc->offset,
 						  lacc);
@@ -2973,7 +2965,11 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 static tree
 get_repl_default_def_ssa_name (struct access *racc)
 {
-  return get_or_create_ssa_default_def (cfun, get_access_replacement (racc));
+  gcc_checking_assert (!racc->grp_to_be_replaced &&
+		       !racc->grp_to_be_debug_replaced);
+  if (!racc->replacement_decl)
+    racc->replacement_decl = create_access_replacement (racc);
+  return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
 }
 
 /* Return true if REF has a COMPONENT_REF with a bit-field field declaration
