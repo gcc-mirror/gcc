@@ -1,6 +1,12 @@
 2013-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* tree-vect-stmts.c (vectorizable_shift): Don't call create methods
+	on vec_oprnds0 or vec_oprnds1 before loop, only call it on
+	vec_oprnds1 right before pushing anything to it for
+	scalar_shift_arg.
+
+	PR middle-end/56461
 	* tree-vect-loop.c (destroy_loop_vec_info): For !clean_stmts, just
 	set nbbs to 0 instead of having separate code path.
 	(vect_analyze_loop_form): Call destroy_loop_vec_info with true
@@ -16,16 +22,17 @@
 	TARGET_OPTION_PRAGMA_PARSE.  Also copy-edit and correct markup.
 	* doc/tm.texi: Regenerated.
 
-2013-03-02  David Holsgrove <david.holsgrove@xilinx.com>
+2013-03-02  David Holsgrove  <david.holsgrove@xilinx.com>
 
-	*  config/microblaze/microblaze.c:
+	* config/microblaze/microblaze.c:
 	Check mcpu, pcmp requirement and set TARGET_REORDER to 0 if not met.
-	*  config/microblaze/microblaze.h: Add -mxl-reorder to DRIVER_SELF_SPECS
-	*  config/microblaze/microblaze.md: New bswapsi2 and bswaphi2
-	instructions emitted if TARGET_REORDER
-	*  config/microblaze/microblaze.opt: New option -mxl-reorder set to 1 
+	* config/microblaze/microblaze.h: Add -mxl-reorder to
+	DRIVER_SELF_SPECS.
+	* config/microblaze/microblaze.md: New bswapsi2 and bswaphi2.
+	instructions emitted if TARGET_REORDER.
+	* config/microblaze/microblaze.opt: New option -mxl-reorder set to 1 
 	or 0 for -m/-mno case, but initialises as 2 to detect default use case 
-	separately
+	separately.
 
 2013-03-01  Xinliang David Li  <davidxl@google.com>
 
