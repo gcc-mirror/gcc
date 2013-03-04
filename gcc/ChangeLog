@@ -1,3 +1,11 @@
+2013-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-vect-loop.c (destroy_loop_vec_info): For !clean_stmts, just
+	set nbbs to 0 instead of having separate code path.
+	(vect_analyze_loop_form): Call destroy_loop_vec_info with true
+	instead of false as last argument if returning NULL.
+
 2013-03-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* target.def (TARGET_OPTION_VALID_ATTRIBUTE_P): Update comments;
