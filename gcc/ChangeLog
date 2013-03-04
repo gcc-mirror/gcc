@@ -1,3 +1,12 @@
+2013-03-04  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.c (microblaze_valid_pic_const): New 
+	(microblaze_legitimate_pic_operand): Likewise
+	* config/microblaze/microblaze.h (LEGITIMATE_PIC_OPERAND_P): calls 
+	new function microblaze_legitimate_pic_operand
+	* config/microblaze/microblaze-protos.h
+	(microblaze_legitimate_pic_operand): Declare.
+
 2013-03-04  Edgar E. Iglesias <edgar.iglesias@gmail.com>
 
 	*  config/microblaze/predicates.md (call_insn_simple_operand):

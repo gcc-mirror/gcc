@@ -596,6 +596,32 @@ microblaze_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
   return microblaze_classify_address (&addr, x, mode, strict);
 }
 
+int
+microblaze_valid_pic_const (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+      return true;
+    default:
+      return false;
+    }
+}
+
+int
+microblaze_legitimate_pic_operand (rtx x)
+{
+  struct microblaze_address_info addr;
+
+  if (pic_address_needs_scratch (x))
+    return 0;
+  if (!microblaze_valid_pic_const(x))
+    return 0;
+
+  return 1;
+}
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.

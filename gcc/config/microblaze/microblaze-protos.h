@@ -49,6 +49,7 @@ extern HOST_WIDE_INT microblaze_initial_elimination_offset (int, int);
 extern void microblaze_declare_object (FILE *, const char *, const char *,
    const char *, int);
 extern void microblaze_asm_output_ident (const char *);
+extern int microblaze_legitimate_pic_operand (rtx);
 #endif  /* RTX_CODE */
 
 /* Declare functions in microblaze-c.c.  */
