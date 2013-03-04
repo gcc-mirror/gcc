@@ -2621,6 +2621,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const _RealType __pi = __gnu_cxx::__math_constants<_RealType>::__pi;
 	  _GLIBCXX_DEBUG_ASSERT(_M_mu >= -__pi && _M_mu <= __pi);
 	  _GLIBCXX_DEBUG_ASSERT(_M_kappa >= _RealType(0));
+
+	  auto __tau = std::sqrt(_RealType(4) * _M_kappa * _M_kappa
+				 + _RealType(1)) + _RealType(1);
+	  auto __rho = ((__tau - std::sqrt(_RealType(2) * __tau))
+			/ (_RealType(2) * _M_kappa));
+	  _M_r = (_RealType(1) + __rho * __rho) / (_RealType(2) * __rho);
 	}
 
 	_RealType
@@ -2633,16 +2639,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_kappa == __p2._M_kappa; }
+	{ return (__p1._M_mu == __p2._M_mu
+		  && __p1._M_kappa == __p2._M_kappa); }
 
       private:
-
 	_RealType _M_mu;
 	_RealType _M_kappa;
+	_RealType _M_r;
       };
 
       /**
-       * @brief Constructs a beta distribution with parameters
+       * @brief Constructs a von Mises distribution with parameters
        * @f$\mu@f$ and @f$\kappa@f$.
        */
       explicit
@@ -2727,20 +2734,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    = __gnu_cxx::__math_constants<result_type>::__pi;
 	  std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	    __aurng(__urng);
-	  result_type __tau = (std::sqrt(result_type(4) * this->kappa()
-					 * this->kappa() + result_type(1))
-			       + result_type(1));
-	  result_type __rho = ((__tau - std::sqrt(result_type(2) * __tau))
-			       / (result_type(2) * this->kappa()));
-	  result_type __r = ((result_type(1) + __rho * __rho)
-			     / (result_type(2) * __rho));
 
 	  result_type __f;
 	  while (1)
 	    {
 	      result_type __rnd = std::cos(__pi * __aurng());
-	      __f = (result_type(1) + __r * __rnd) / (__r + __rnd);
-	      result_type __c = this->kappa() * (__r - __f);
+	      __f = (result_type(1) + __p._M_r * __rnd) / (__p._M_r + __rnd);
+	      result_type __c = __p._M_kappa * (__p._M_r - __f);
 
 	      result_type __rnd2 = __aurng();
 	      if (__c * (result_type(2) - __c) > __rnd2)
@@ -2756,7 +2756,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__aurng() < result_type(0.5))
 	    __res = -__res;
 #endif
-	  __res += this->mu();
+	  __res += __p._M_mu;
 	  if (__res > __pi)
 	    __res -= result_type(2) * __pi;
 	  else if (__res < -__pi)
