@@ -1,3 +1,7 @@
+2013-03-04  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+
+	* config/microblaze/crti.S: Setup stack protection at entry
+
 2013-03-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S (__ashrdi3, __lshrdi3, __ashldi3)
