@@ -1,3 +1,9 @@
+2013-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/56424
+	* ipa-split.c (split_function): Do not set the RSO flag if result is
+	not by reference and its type is a register type.
+
 2013-03-04  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.c (microblaze_valid_pic_const): New 
