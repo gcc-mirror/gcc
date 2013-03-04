@@ -3335,21 +3335,6 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
-  /* Allocate VECs for vector operands.  In case of SLP, vector operands are
-     created in the previous stages of the recursion, so no allocation is
-     needed, except for the case of shift with scalar shift argument.  In that
-     case we store the scalar operand in VEC_OPRNDS1 for every vector stmt to
-     be created to vectorize the SLP group, i.e., SLP_NODE->VEC_STMTS_SIZE.
-     In case of loop-based vectorization we allocate VECs of size 1.  We
-     allocate VEC_OPRNDS1 only in case of binary operation.  */
-  if (!slp_node)
-    {
-      vec_oprnds0.create (1);
-      vec_oprnds1.create (1);
-    }
-  else if (scalar_shift_arg)
-    vec_oprnds1.create (slp_node->vec_stmts_size);
-
   prev_stmt_info = NULL;
   for (j = 0; j < ncopies; j++)
     {
@@ -3369,6 +3354,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                     dump_printf_loc (MSG_NOTE, vect_location,
                                      "operand 1 using scalar mode.");
                   vec_oprnd1 = op1;
+                  vec_oprnds1.create (slp_node ? slp_node->vec_stmts_size : 1);
                   vec_oprnds1.quick_push (vec_oprnd1);
                   if (slp_node)
                     {
