@@ -1,5 +1,10 @@
 2013-03-04  Georg-Johann Lay  <avr@gjlay.de>
 
+	* gcc.dg/pr55153.c: Add dg-require-effective-target scheduling.
+	* gcc.dg/pr56228.c <avr>: Skip.
+
+2013-03-04  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR testsuite/52641
 	PR tree-optimization/52631
 	* gcc.dg/tree-ssa/pr52631.c: Fix 16-bit int.
