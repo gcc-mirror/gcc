@@ -2616,15 +2616,13 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (!slp_node)
     {
-      if (modifier == NONE)
-	vec_oprnds0.create (1);
-      else if (modifier == WIDEN)
+      if (modifier == WIDEN)
 	{
 	  vec_oprnds0.create (multi_step_cvt ? vect_pow2(multi_step_cvt) : 1);
 	  if (op_type == binary_op)
 	    vec_oprnds1.create (1);
 	}
-      else
+      else if (modifier == NARROW)
 	vec_oprnds0.create (
 		   2 * (multi_step_cvt ? vect_pow2 (multi_step_cvt) : 1));
     }
