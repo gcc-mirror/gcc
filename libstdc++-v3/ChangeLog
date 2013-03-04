@@ -1,3 +1,10 @@
+2013-03-04  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random (__gnu_cxx::von_mises_distribution<>):
+	Optimize generation function by pulling computation of __r into the
+	constructor for param_type.  Also compare _M_mu in operator==.
+	Fix comment.
+
 2013-03-02  Ulrich Drepper  <drepper@gmail.com>
 
 	Add triangular and von Mises distributions.
