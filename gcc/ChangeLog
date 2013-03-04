@@ -1,6 +1,10 @@
 2013-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* tree-loop-distribution.c (ldist_gen): Call partition_free after each
+	partitions.ordered_remove.
+
+	PR middle-end/56461
 	* tree-vect-stmts.c (vectorizable_conversion): Don't call
 	vec_oprnds0.create (1) for modifier == NONE.
 

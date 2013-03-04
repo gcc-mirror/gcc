@@ -1306,6 +1306,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 		if (partition->kind == PKIND_REDUCTION)
 		  into->kind = PKIND_REDUCTION;
 		partitions.ordered_remove (i);
+		partition_free (partition);
 		i--;
 	      }
 	    else
@@ -1342,6 +1343,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 		  if (partition->kind == PKIND_REDUCTION)
 		    into->kind = PKIND_REDUCTION;
 		  partitions.ordered_remove (j);
+		  partition_free (partition);
 		  j--;
 		}
 	    }
@@ -1367,6 +1369,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	      bitmap_ior_into (into->stmts, what->stmts);
 	      into->kind = PKIND_REDUCTION;
 	      partitions.ordered_remove (i);
+	      partition_free (what);
 	    }
 	}
     }
