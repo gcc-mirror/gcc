@@ -1,3 +1,9 @@
+2013-03-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	PR tree-optimization/52631
+	* gcc.dg/tree-ssa/pr52631.c: Fix 16-bit int.
+
 2013-03-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/vect/vect-82_64.c: Skip on AIX.
