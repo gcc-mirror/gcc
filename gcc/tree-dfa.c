@@ -362,8 +362,8 @@ get_or_create_ssa_default_def (struct function *fn, tree var)
   tree ddef = ssa_default_def (fn, var);
   if (ddef == NULL_TREE)
     {
-      ddef = make_ssa_name (var, gimple_build_nop ());
-      set_ssa_default_def (cfun, var, ddef);
+      ddef = make_ssa_name_fn (fn, var, gimple_build_nop ());
+      set_ssa_default_def (fn, var, ddef);
     }
   return ddef;
 }

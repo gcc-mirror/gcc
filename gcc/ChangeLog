@@ -1,3 +1,8 @@
+2013-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-dfa.c (get_or_create_ssa_default_def): Use parameter fn in
+	all appropriate places.
+
 2013-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/56424
