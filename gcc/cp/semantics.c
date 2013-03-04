@@ -9442,41 +9442,62 @@ lambda_expr_this_capture (tree lambda)
   if (!this_capture
       && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE)
     {
-      tree containing_function = TYPE_CONTEXT (LAMBDA_EXPR_CLOSURE (lambda));
-      tree lambda_stack = tree_cons (NULL_TREE, lambda, NULL_TREE);
+      tree lambda_stack = NULL_TREE;
       tree init = NULL_TREE;
 
       /* If we are in a lambda function, we can move out until we hit:
-           1. a non-lambda function,
+           1. a non-lambda function or NSDMI,
            2. a lambda function capturing 'this', or
            3. a non-default capturing lambda function.  */
-      while (LAMBDA_FUNCTION_P (containing_function))
-        {
-          tree lambda
-            = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (containing_function));
+      for (tree tlambda = lambda; ;)
+	{
+          lambda_stack = tree_cons (NULL_TREE,
+                                    tlambda,
+                                    lambda_stack);
 
-          if (LAMBDA_EXPR_THIS_CAPTURE (lambda))
+	  if (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)
+	      && TREE_CODE (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)) == FIELD_DECL)
 	    {
-	      /* An outer lambda has already captured 'this'.  */
-	      init = LAMBDA_EXPR_THIS_CAPTURE (lambda);
+	      /* In an NSDMI, we don't have a function to look up the decl in,
+		 but the fake 'this' pointer that we're using for parsing is
+		 in scope_chain.  */
+	      init = scope_chain->x_current_class_ptr;
+	      gcc_checking_assert
+		(init && (TREE_TYPE (TREE_TYPE (init))
+			  == current_nonlambda_class_type ()));
 	      break;
 	    }
 
-	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_NONE)
-	    /* An outer lambda won't let us capture 'this'.  */
+	  tree closure_decl = TYPE_NAME (LAMBDA_EXPR_CLOSURE (tlambda));
+	  tree containing_function = decl_function_context (closure_decl);
+
+	  if (containing_function == NULL_TREE)
+	    /* We ran out of scopes; there's no 'this' to capture.  */
 	    break;
 
-          lambda_stack = tree_cons (NULL_TREE,
-                                    lambda,
-                                    lambda_stack);
+	  if (!LAMBDA_FUNCTION_P (containing_function))
+	    {
+	      /* We found a non-lambda function.  */
+	      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (containing_function))
+		/* First parameter is 'this'.  */
+		init = DECL_ARGUMENTS (containing_function);
+	      break;
+	    }
 
-          containing_function = decl_function_context (containing_function);
-        }
+	  tlambda
+            = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (containing_function));
 
-      if (!init && DECL_NONSTATIC_MEMBER_FUNCTION_P (containing_function)
-	  && !LAMBDA_FUNCTION_P (containing_function))
-	/* First parameter is 'this'.  */
-	init = DECL_ARGUMENTS (containing_function);
+          if (LAMBDA_EXPR_THIS_CAPTURE (tlambda))
+	    {
+	      /* An outer lambda has already captured 'this'.  */
+	      init = LAMBDA_EXPR_THIS_CAPTURE (tlambda);
+	      break;
+	    }
+
+	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (tlambda) == CPLD_NONE)
+	    /* An outer lambda won't let us capture 'this'.  */
+	    break;
+	}
 
       if (init)
 	this_capture = add_default_capture (lambda_stack,
