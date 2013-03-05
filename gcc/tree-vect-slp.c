@@ -1429,7 +1429,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
  
   for (j = 0; j < group_size; j++)
     if (!bitmap_bit_p (load_index, j))
-      return false;
+      {
+	sbitmap_free (load_index);
+	return false;
+      }
 
   sbitmap_free (load_index);
 
