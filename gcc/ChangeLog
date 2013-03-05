@@ -1,8 +1,19 @@
-2013-03-05  David Holsgrove <david.holsgrove@xilinx.com>
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
-	*  config/microblaze/microblaze-protos.h: Rename
+	PR debug/56510
+	* cfgexpand.c (expand_debug_parm_decl): Call copy_rtx on incoming.
+	(avoid_complex_debug_insns): New function.
+	(expand_debug_locations): Call it.
+
+	PR rtl-optimization/56484
+	* ifcvt.c (noce_process_if_block): If else_bb is NULL, avoid extending
+	lifetimes of hard registers on small register class machines.
+
+2013-03-05  David Holsgrove  <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze-protos.h: Rename
 	microblaze_is_interrupt_handler to microblaze_is_interrupt_variant.
-	*  config/microblaze/microblaze.c (microblaze_attribute_table): Add
+	* config/microblaze/microblaze.c (microblaze_attribute_table): Add
 	fast_interrupt.
 	(microblaze_fast_interrupt_function_p): New function.
 	(microblaze_is_interrupt_handler): Rename to
@@ -12,8 +23,8 @@
 	(compute_frame_size): Likewise.
 	(microblaze_function_prologue): Add FAST_INTERRUPT_NAME.
 	(microblaze_globalize_label): Likewise.
-	*  config/microblaze/microblaze.h: Define FAST_INTERRUPT_NAME.
-	*  config/microblaze/microblaze.md: Use wrapper
+	* config/microblaze/microblaze.h: Define FAST_INTERRUPT_NAME.
+	* config/microblaze/microblaze.md: Use wrapper
 	microblaze_is_interrupt_variant.
 
 2013-03-05  Kai Tietz  <ktietz@redhat.com>
