@@ -1,3 +1,21 @@
+2013-03-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c++/55135
+	* except.h (remove_unreachable_eh_regions): New prototype.
+	* except.c (remove_eh_handler_splicer): New function, split out
+	of remove_eh_handler.
+	(remove_eh_handler): Use remove_eh_handler_splicer.  Add comment
+	warning about running it on many EH regions one at a time.
+	(remove_unreachable_eh_regions_worker): New function, walk the
+	EH tree in depth-first order and remove non-marked regions.
+	(remove_unreachable_eh_regions): New function.
+	* tree-eh.c (mark_reachable_handlers): New function, split out
+	from remove_unreachable_handlers.
+	(remove_unreachable_handlers): Use mark_reachable_handlers and
+	remove_unreachable_eh_regions.
+	(remove_unreachable_handlers_no_lp): Use mark_reachable_handlers
+	and remove_unreachable_eh_regions.
+
 2013-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56525
