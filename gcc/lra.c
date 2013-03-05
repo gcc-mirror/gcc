@@ -2291,6 +2291,8 @@ lra (FILE *f)
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
 	    lra_inheritance ();
+	  if (live_p)
+	    lra_clear_live_ranges ();
 	  /* We need live ranges for lra_assign -- so build them.  */
 	  lra_create_live_ranges (true);
 	  live_p = true;
@@ -2308,6 +2310,8 @@ lra (FILE *f)
 		live_p = false;
 	      if (lra_undo_inheritance ())
 		live_p = false;
+	      if (! live_p)
+		lra_clear_live_ranges ();
 	    }
 	}
       bitmap_clear (&lra_optional_reload_pseudos);
@@ -2334,7 +2338,8 @@ lra (FILE *f)
   lra_eliminate (true);
   lra_final_code_change ();
   lra_in_progress = 0;
-  lra_clear_live_ranges ();
+  if (live_p)
+    lra_clear_live_ranges ();
   lra_live_ranges_finish ();
   lra_constraints_finish ();
   finish_reg_info ();

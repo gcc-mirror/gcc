@@ -1,6 +1,12 @@
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* lra.c (lra): Call lra_clear_live_ranges if live_p,
+	right before calling lra_create_live_ranges, also call it
+	when clearing live_p.  Only call lra_clear_live_ranges
+	at the end if live_p.
+
+	PR middle-end/56461
 	* sched-deps.c (delete_dep_node): Free DEP_REPLACE.
 
 2013-03-05  Richard Biener  <rguenther@suse.de>
