@@ -1,3 +1,10 @@
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56515
+	* tree-inline.c (remap_blocks_to_null): New function.
+	(expand_call_inline): When expanding a call stmt without
+	an associated block inline remap all callee blocks to NULL.
+
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/56494
