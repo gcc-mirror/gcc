@@ -1,3 +1,8 @@
+2013-03-05  Kai Tietz  <ktietz@redhat.com>
+
+	* sdbout.c (sdbout_one_type): Switch to current function's section
+	supporting cold/hot.
+
 2013-03-05  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* doc/invoke.texi (MicroBlaze): Add -mbig-endian, -mlittle-endian,
