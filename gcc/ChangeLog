@@ -1,3 +1,9 @@
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56270
+	* tree-vect-slp.c (vect_schedule_slp): Clear vectorized stmts
+	of loads after scheduling an SLP instance.
+
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (dg_target_exps): Add aarch64.exp, epiphany.exp and
