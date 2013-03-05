@@ -1,5 +1,11 @@
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (dg_target_exps): Add aarch64.exp, epiphany.exp and
+	tic6x.exp.
+	(check_gcc_parallelize): Run guality.exp as a separate job from
+	vect.exp with unsorted.exp and $(dg_target_exps) separately from
+	struct-layout-1.exp with stackalign.exp.
+
 	* alias.c (init_alias_analysis): Clear reg_known_equiv_p bitmap.
 
 	PR middle-end/56461
