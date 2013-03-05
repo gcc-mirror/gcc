@@ -5020,7 +5020,7 @@ free_sched_pools (void)
 
   free_alloc_pool (sched_lists_pool);
   gcc_assert (succs_info_pool.top == -1);
-  for (i = 0; i < succs_info_pool.max_top; i++)
+  for (i = 0; i <= succs_info_pool.max_top; i++)
     {
       succs_info_pool.stack[i].succs_ok.release ();
       succs_info_pool.stack[i].succs_other.release ();
