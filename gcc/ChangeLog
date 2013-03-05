@@ -1,6 +1,14 @@
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* tree-ssa-loop-niter.c (bb_queue): Remove typedef.
+	(discover_iteration_bound_by_body_walk): Change queues to
+	vec<vec<basic_block> > and queue to vec<basic_block>.  Fix up
+	spelling in comment.  Call safe_push on queues[bound_index] directly.
+	Release queues[queue_index] in every iteration unconditionally.
+	Release bounds vector.
+
+	PR middle-end/56461
 	* tree-vect-stmts.c (free_stmt_vec_info_vec): Call
 	free_stmt_vec_info on any left-over stmt_vec_info in the vector.
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Release
