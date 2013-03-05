@@ -692,6 +692,40 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   return result;
 }
 
+/* Obstack for option strings.  */
+
+struct obstack opts_obstack;
+
+/* Like libiberty concat, but allocate using opts_obstack.  */
+
+char *
+opts_concat (const char *first, ...)
+{
+  char *newstr, *end;
+  size_t length = 0;
+  const char *arg;
+  va_list ap;
+
+  /* First compute the size of the result and get sufficient memory.  */
+  va_start (ap, first);
+  for (arg = first; arg; arg = va_arg (ap, const char *))
+    length += strlen (arg);
+  newstr = XOBNEWVEC (&opts_obstack, char, length + 1);
+  va_end (ap);
+
+  /* Now copy the individual pieces to the result string. */
+  va_start (ap, first);
+  for (arg = first, end = newstr; arg; arg = va_arg (ap, const char *))
+    {
+      length = strlen (arg);
+      memcpy (end, arg, length);
+      end += length;
+    }
+  *end = '\0';
+  va_end (ap);
+  return newstr;
+}
+
 /* Decode command-line options (ARGC and ARGV being the arguments of
    main) into an array, setting *DECODED_OPTIONS to a pointer to that
    array and *DECODED_OPTIONS_COUNT to the number of entries in the

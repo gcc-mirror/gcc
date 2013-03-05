@@ -1,3 +1,9 @@
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/56509
+	* opts.c (opts_obstack, opts_concat): Moved to...
+	* opts-common.c (opts_obstack, opts_concat): ... here.
+
 2013-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
