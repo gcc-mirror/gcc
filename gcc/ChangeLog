@@ -1,3 +1,11 @@
+2013-03-05  Sterling Augustine  <saugustine@google.com>
+	    Cary Coutant  <ccoutant@google.com>
+
+	PR debug/55364
+	* dwarf2out.c (resolve_addr): Don't call
+	remove_loc_list_addr_table_entries a second time for the same
+	expression.
+
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/56510
