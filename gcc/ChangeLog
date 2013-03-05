@@ -1,3 +1,9 @@
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56521
+	* tree-ssa-sccvn.c (set_value_id_for_result): Always initialize
+	value-id.
+
 2013-03-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR c++/55135
