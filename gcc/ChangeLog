@@ -1,3 +1,9 @@
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56525
+	* loop-init.c (fix_loop_structure): Remove loops in two stages,
+	not freeing them until the end.
+
 2013-03-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.h: Define DWARF2_ASM_LINE_DEBUG_INFO.
