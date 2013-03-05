@@ -22691,8 +22691,6 @@ resolve_addr (dw_die_ref die)
 	    else
 	      {
 		loc->replaced = 1;
-                if (dwarf_split_debug_info)
-                  remove_loc_list_addr_table_entries (loc->expr);
 		loc->dw_loc_next = *start;
 	      }
 	  }
