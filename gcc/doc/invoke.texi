@@ -733,7 +733,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmemcpy -mxl-soft-mul -mxl-soft-div -mxl-barrel-shift @gol
 -mxl-pattern-compare -mxl-stack-check -mxl-gp-opt -mno-clearbss @gol
 -mxl-multiply-high -mxl-float-convert -mxl-float-sqrt @gol
--mxl-mode-@var{app-model}}
+-mbig-endian -mlittle-endian -mxl-reorder -mxl-mode-@var{app-model}}
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
@@ -15819,6 +15819,18 @@ Use hardware floating-point conversion instructions.
 @item -mxl-float-sqrt
 @opindex mxl-float-sqrt
 Use hardware floating-point square root instruction.
+
+@item -mbig-endian
+@opindex mbig-endian
+Generate code for a big-endian target.
+
+@item -mlittle-endian
+@opindex mlittle-endian
+Generate code for a little-endian target.
+
+@item -mxl-reorder
+@opindex mxl-reorder
+Use reorder instructions (swap and byte reversed load/store).
 
 @item -mxl-mode-@var{app-model}
 Select application model @var{app-model}.  Valid models are

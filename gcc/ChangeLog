@@ -1,3 +1,8 @@
+2013-03-05  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* doc/invoke.texi (MicroBlaze): Add -mbig-endian, -mlittle-endian,
+	-mxl-reorder.
+
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
