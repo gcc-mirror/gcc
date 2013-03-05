@@ -1,5 +1,10 @@
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/56461
+	* sel-sched-ir.c (free_sched_pools): Release
+	succs_info_pool.stack[succs_info_pool.max_top] vectors too
+	if succs_info_pool.max_top isn't -1.
+
 	PR bootstrap/56509
 	* opts.c (opts_obstack, opts_concat): Moved to...
 	* opts-common.c (opts_obstack, opts_concat): ... here.
