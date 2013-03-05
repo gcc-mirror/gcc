@@ -1,3 +1,11 @@
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-vect-stmts.c (free_stmt_vec_info_vec): Call
+	free_stmt_vec_info on any left-over stmt_vec_info in the vector.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Release
+	inner_phis vector.
+
 2013-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56515
