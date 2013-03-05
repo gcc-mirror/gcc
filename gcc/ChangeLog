@@ -1,3 +1,21 @@
+2013-03-05  David Holsgrove <david.holsgrove@xilinx.com>
+
+	*  config/microblaze/microblaze-protos.h: Rename
+	microblaze_is_interrupt_handler to microblaze_is_interrupt_variant.
+	*  config/microblaze/microblaze.c (microblaze_attribute_table): Add
+	fast_interrupt.
+	(microblaze_fast_interrupt_function_p): New function.
+	(microblaze_is_interrupt_handler): Rename to
+	microblaze_is_interrupt_variant and add fast_interrupt check.
+	(microblaze_must_save_register): Use microblaze_is_interrupt_variant.
+	(save_restore_insns): Likewise.
+	(compute_frame_size): Likewise.
+	(microblaze_function_prologue): Add FAST_INTERRUPT_NAME.
+	(microblaze_globalize_label): Likewise.
+	*  config/microblaze/microblaze.h: Define FAST_INTERRUPT_NAME.
+	*  config/microblaze/microblaze.md: Use wrapper
+	microblaze_is_interrupt_variant.
+
 2013-03-05  Kai Tietz  <ktietz@redhat.com>
 
 	* sdbout.c (sdbout_one_type): Switch to current function's section
