@@ -1,3 +1,7 @@
+2013-03-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.h: Define DWARF2_ASM_LINE_DEBUG_INFO.
+
 2013-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56270
