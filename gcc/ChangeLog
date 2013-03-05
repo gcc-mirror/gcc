@@ -1,5 +1,10 @@
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/56494
+	* simplify-rtx.c (simplify_truncation): If C is narrower than A,
+	optimize (truncate:A (subreg:B (truncate:C X) 0)) into
+	(subreg:A (truncate:C X) 0) instead of (truncate:A X).
+
 	PR middle-end/56461
 	* sel-sched-ir.c (free_sched_pools): Release
 	succs_info_pool.stack[succs_info_pool.max_top] vectors too

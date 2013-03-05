@@ -757,8 +757,17 @@ simplify_truncation (enum machine_mode mode, rtx op,
       && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (op)))
       && GET_CODE (SUBREG_REG (op)) == TRUNCATE
       && subreg_lowpart_p (op))
-    return simplify_gen_unary (TRUNCATE, mode, XEXP (SUBREG_REG (op), 0),
-			       GET_MODE (XEXP (SUBREG_REG (op), 0)));
+    {
+      rtx inner = XEXP (SUBREG_REG (op), 0);
+      if (GET_MODE_PRECISION (mode)
+	  <= GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op))))
+	return simplify_gen_unary (TRUNCATE, mode, inner, GET_MODE (inner));
+      else
+	/* If subreg above is paradoxical and C is narrower
+	   than A, return (subreg:A (truncate:C X) 0).  */
+	return simplify_gen_subreg (mode, SUBREG_REG (op),
+				    GET_MODE (SUBREG_REG (op)), 0);
+    }
 
   /* (truncate:A (truncate:B X)) is (truncate:A X).  */
   if (GET_CODE (op) == TRUNCATE)
