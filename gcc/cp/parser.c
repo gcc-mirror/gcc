@@ -17854,6 +17854,8 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
     }
+  else
+    *non_constant_p = false;
   /* Now, there should be a trailing `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
   TREE_TYPE (initializer) = init_list_type_node;
