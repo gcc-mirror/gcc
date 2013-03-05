@@ -1,6 +1,10 @@
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Free
+	load_index sbitmap even if some bit in it isn't set.
+
+	PR middle-end/56461
 	* tree-ssa-loop-niter.c (bb_queue): Remove typedef.
 	(discover_iteration_bound_by_body_walk): Change queues to
 	vec<vec<basic_block> > and queue to vec<basic_block>.  Fix up
