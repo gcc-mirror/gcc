@@ -432,7 +432,7 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
   size_t index_size;
   unsigned int n_wrapped_sects;
   size_t wrapper_sect_size;
-  off_t wrapper_sect_offset;
+  off_t wrapper_sect_offset = 0;
 
   fetch_32 = (omr->is_big_endian
 	      ? simple_object_fetch_big_32
