@@ -352,6 +352,8 @@ delete_dep_node (dep_node_t n)
   gcc_assert (dep_link_is_detached_p (DEP_NODE_BACK (n))
 	      && dep_link_is_detached_p (DEP_NODE_FORW (n)));
 
+  XDELETE (DEP_REPLACE (DEP_NODE_DEP (n)));
+
   --dn_pool_diff;
 
   pool_free (dn_pool, n);
