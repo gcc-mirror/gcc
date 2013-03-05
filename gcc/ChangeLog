@@ -1,3 +1,8 @@
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* sched-deps.c (delete_dep_node): Free DEP_REPLACE.
+
 2013-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56521
