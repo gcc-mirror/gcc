@@ -1,5 +1,7 @@
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* alias.c (init_alias_analysis): Clear reg_known_equiv_p bitmap.
+
 	PR middle-end/56461
 	* tree-vect-slp.c (vect_supported_load_permutation_p): Free
 	load_index sbitmap even if some bit in it isn't set.
