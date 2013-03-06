@@ -1,3 +1,12 @@
+2013-02-22  Sebastian Huber <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (arm*-*-rtemself*): New.
+	(arm*-*-rtems*): Removed.
+	(arm*-*-eabi* | arm*-*-symbianelf*): Add
+	(arm*-*-rtems*).
+	* config/arm/rtems-eabi.h: New file.
+	* config/arm/t-rtems-eabi: New file.
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/56258

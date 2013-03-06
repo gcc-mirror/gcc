@@ -1,0 +1,8 @@
+# Custom RTEMS EABI multilibs
+
+MULTILIB_OPTIONS    = mthumb march=armv6-m/march=armv7/march=armv7-m
+MULTILIB_DIRNAMES   = thumb armv6-m armv7 armv7-m
+MULTILIB_EXCEPTIONS = march=armv6-m march=armv7 march=armv7-m
+MULTILIB_MATCHES    =
+MULTILIB_EXCLUSIONS =
+MULTILIB_OSDIRNAMES =
