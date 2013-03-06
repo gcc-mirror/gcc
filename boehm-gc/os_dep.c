@@ -1008,13 +1008,62 @@ ptr_t GC_get_stack_base()
 
 #endif /* FREEBSD_STACKBOTTOM */
 
+#ifdef SOLARIS_STACKBOTTOM
+
+# include <thread.h>
+# include <signal.h>
+# include <pthread.h>
+
+  /* These variables are used to cache ss_sp value for the primordial   */
+  /* thread (it's better not to call thr_stksegment() twice for this    */
+  /* thread - see JDK bug #4352906).                                    */
+  static pthread_t stackbase_main_self = 0;
+                        /* 0 means stackbase_main_ss_sp value is unset. */
+  static void *stackbase_main_ss_sp = NULL;
+
+  ptr_t GC_solaris_stack_base(void)
+  {
+    stack_t s;
+    pthread_t self = pthread_self();
+    if (self == stackbase_main_self)
+      {
+        /* If the client calls GC_get_stack_base() from the main thread */
+        /* then just return the cached value.                           */
+        GC_ASSERT(stackbase_main_ss_sp != NULL);
+        return stackbase_main_ss_sp;
+      }
+
+    if (thr_stksegment(&s)) {
+      /* According to the manual, the only failure error code returned  */
+      /* is EAGAIN meaning "the information is not available due to the */
+      /* thread is not yet completely initialized or it is an internal  */
+      /* thread" - this shouldn't happen here.                          */
+      ABORT("thr_stksegment failed");
+    }
+    /* s.ss_sp holds the pointer to the stack bottom. */
+    GC_ASSERT((void *)&s HOTTER_THAN s.ss_sp);
+
+    if (!stackbase_main_self)
+      {
+        /* Cache the stack base value for the primordial thread (this   */
+        /* is done during GC_init, so there is no race).                */
+        stackbase_main_ss_sp = s.ss_sp;
+        stackbase_main_self = self;
+      }
+
+    return s.ss_sp;
+  }
+
+#endif /* GC_SOLARIS_THREADS */
+
 #if !defined(BEOS) && !defined(AMIGA) && !defined(MSWIN32) \
     && !defined(MSWINCE) && !defined(OS2) && !defined(NOSYS) && !defined(ECOS)
 
 ptr_t GC_get_stack_base()
 {
 #   if defined(HEURISTIC1) || defined(HEURISTIC2) || \
-       defined(LINUX_STACKBOTTOM) || defined(FREEBSD_STACKBOTTOM)
+       defined(LINUX_STACKBOTTOM) || defined(FREEBSD_STACKBOTTOM) || \
+       defined(SOLARIS_STACKBOTTOM)       
     word dummy;
     ptr_t result;
 #   endif
@@ -1039,6 +1088,9 @@ ptr_t GC_get_stack_base()
 #	endif
 #	ifdef FREEBSD_STACKBOTTOM
 	   result = GC_freebsd_stack_base();
+#	endif
+#	ifdef SOLARIS_STACKBOTTOM
+	   result = GC_solaris_stack_base();
 #	endif
 #	ifdef HEURISTIC2
 #	    ifdef STACK_GROWS_DOWN

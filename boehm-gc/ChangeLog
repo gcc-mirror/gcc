@@ -1,3 +1,16 @@
+2013-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* os_dep.c [SOLARIS_STACKBOTTOM] (GC_solaris_stack_base): New
+	function.
+	[!BEOS && !AMIGA && !MSWIN32 && !MSWINCE && !OS2 && !NOSYS &&
+	!ECOS] (GC_get_stack_base): Use it.
+	* include/private/gcconfig.h [SPARC && SUNOS5]
+	(SOLARIS_STACKBOTTOM): Define.
+	(STACKBOTTOM, HEURISTIC2): Remove.
+	[I386 && SUNOS5]
+	(SOLARIS_STACKBOTTOM): Define.
+	(STACKBOTTOM): Remove.
+
 2012-11-04  Samuel Thibault  <samuel.thibault@gnu.org>
 
 	* configure.ac: Add stanza for *-*-gnu* threads configuration.
