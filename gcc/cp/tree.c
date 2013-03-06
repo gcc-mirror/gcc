@@ -1209,7 +1209,8 @@ strip_typedefs (tree t)
     case TYPENAME_TYPE:
       {
 	tree fullname = TYPENAME_TYPE_FULLNAME (t);
-	if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR)
+	if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR
+	    && TREE_OPERAND (fullname, 1))
 	  {
 	    tree args = TREE_OPERAND (fullname, 1);
 	    tree new_args = copy_node (args);
