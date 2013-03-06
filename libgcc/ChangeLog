@@ -1,3 +1,9 @@
+2013-02-22  Sebastian Huber <sebastian.huber@embedded-brains.de>
+
+	* config.host (arm*-*-rtemself*): New.
+	(arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*): Rename
+	"arm*-*-rtemseabi*" to "arm*-*-rtems*".
+
 2012-12-18  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org
 
 	Backport from mainline.

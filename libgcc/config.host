@@ -354,11 +354,15 @@ arm*-*-ecos-elf)
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
-arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
+arm*-*-rtemself*)
+	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	extra_parts="$extra_parts crti.o crtn.o"
+	;;
+arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	tmake_file="${tmake_file} arm/t-arm arm/t-elf t-fixedpoint-gnu-prefix"
 	tm_file="$tm_file arm/bpabi-lib.h"
 	case ${host} in
-	arm*-*-eabi* | arm*-*-rtemseabi*)
+	arm*-*-eabi* | arm*-*-rtems*)
 	  tmake_file="${tmake_file} arm/t-bpabi"
 	  extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	  ;;
@@ -370,10 +374,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	esac
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	unwind_header=config/arm/unwind-arm.h
-	;;
-arm*-*-rtems*)
-	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-*-elf)
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
