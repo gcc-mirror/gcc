@@ -1,3 +1,8 @@
+2013-03-06  Tobias Burnus  <burnus@net-b.de>
+
+	* libiberty.texi: Update comment, remove lowersections.
+	* obstacks.texi: Regenerate.
+
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56526
