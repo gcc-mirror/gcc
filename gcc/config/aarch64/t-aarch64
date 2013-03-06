@@ -18,6 +18,9 @@
 #  along with GCC; see the file COPYING3.  If not see
 #  <http://www.gnu.org/licenses/>.
 
+TM_H += $(srcdir)/config/aarch64/aarch64-cores.def
+OPTIONS_H_EXTRA += $(srcdir)/config/aarch64/aarch64-cores.def
+
 $(srcdir)/config/aarch64/aarch64-tune.md: $(srcdir)/config/aarch64/gentune.sh \
 	$(srcdir)/config/aarch64/aarch64-cores.def
 	$(SHELL) $(srcdir)/config/aarch64/gentune.sh \

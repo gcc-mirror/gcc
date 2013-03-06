@@ -1,5 +1,8 @@
 2013-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/aarch64/t-aarch64 (TM_H, OPTIONS_H_EXTRA): Add
+	aarch64-cores.def.
+
 	PR middle-end/56548
 	* expr.c (expand_cond_expr_using_cmove): When expanding cmove in
 	promoted mode, convert the result back to the original mode.
