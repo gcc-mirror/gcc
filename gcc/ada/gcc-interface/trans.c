@@ -2066,13 +2066,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       break;
 
     default:
-      /* Say we have an unimplemented attribute.  Then set the value to be
-	 returned to be a zero and hope that's something we can convert to
-	 the type of this attribute.  */
-      post_error ("unimplemented attribute", gnat_node);
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
-      gnu_result = integer_zero_node;
-      break;
+      /* This abort means that we have an unimplemented attribute.  */
+      gcc_unreachable ();
     }
 
   /* If this is an attribute where the prefix was unused, force a use of it if
