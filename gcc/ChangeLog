@@ -1,3 +1,22 @@
+2013-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/50494
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p):
+	Do not adjust alignment of DECL_IN_CONSTANT_POOL decls.
+
+	Revert
+	2013-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/50494
+	* varasm.c (output_constant_def_1): Get the decl representing
+	the constant as argument.
+	(output_constant_def): Wrap output_constant_def_1.
+	(make_decl_rtl): Use output_constant_def_1 with the decl
+	representing the constant.
+	(build_constant_desc): Optionally re-use a decl already
+	representing the constant.
+	(tree_output_constant_def): Adjust.
+
 2013-03-06  Joey Ye  <joey.ye@arm.com>
 
 	PR lto/50293
