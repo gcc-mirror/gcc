@@ -1,4 +1,8 @@
-2013-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr6.ads: New test.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization15.ad[sb]: New test.
 

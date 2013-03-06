@@ -6619,6 +6619,13 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	       <= 0)
 	gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
+      /* Similarly if the field's type is a misaligned integral type, but
+	 there is no restriction on the size as there is no justification.  */
+      if (!needs_strict_alignment
+	  && TYPE_IS_PADDING_P (gnu_field_type)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (TYPE_FIELDS (gnu_field_type))))
+	gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
+
       gnu_field_type
 	= make_type_from_size (gnu_field_type, gnu_size,
 			       Has_Biased_Representation (gnat_field));
