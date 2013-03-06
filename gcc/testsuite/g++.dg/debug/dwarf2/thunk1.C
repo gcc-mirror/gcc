@@ -3,6 +3,9 @@
 // { dg-options "-g -fpic -fno-dwarf2-cfi-asm" }
 // { dg-final { scan-assembler-times "LFB3" 5 } }
 
+// Darwin doesn't use the thunk for PIC.
+// { dg-skip-if { target *-*-darwin* } }
+
 template <class T> void f(T t) { }
 
 int main()
