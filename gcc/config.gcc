@@ -257,7 +257,7 @@ case ${target} in
  | arm*-*-elf				\
  | arm*-*-freebsd*			\
  | arm*-*-linux*			\
- | arm*-*-rtems*			\
+ | arm*-*-rtemself*			\
  | arm*-*-uclinux*			\
  | arm*-wince-pe*			\
  | mips-sgi-irix6.5			\
@@ -899,7 +899,11 @@ arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	;;
-arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
+arm*-*-rtemself*)
+	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h newlib-stdint.h"
+	tmake_file="arm/t-arm arm/t-arm-elf t-rtems arm/t-rtems"
+	;;
+arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	# The BPABI long long divmod functions return a 128-bit value in
 	# registers r0-r3.  Correctly modeling that requires the use of
 	# TImode.
@@ -913,7 +917,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	  tmake_file="${tmake_file} arm/t-bpabi"
 	  use_gcc_stdint=wrap
 	  ;;
-	arm*-*-rtemseabi*)
+	arm*-*-rtems*)
 	  tm_file="${tm_file} rtems.h arm/rtems-eabi.h newlib-stdint.h"
 	  tmake_file="${tmake_file} arm/t-bpabi t-rtems arm/t-rtems-eabi"
 	  ;;
@@ -925,10 +929,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	  ;;
 	esac
 	tm_file="${tm_file} arm/aout.h arm/arm.h"
-	;;
-arm*-*-rtems*)
-	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h newlib-stdint.h"
-	tmake_file="arm/t-arm arm/t-arm-elf t-rtems arm/t-rtems"
 	;;
 arm*-*-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"

@@ -1,3 +1,10 @@
+2013-02-22  Sebastian Huber <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (arm*-*-rtemself*): New.
+	(arm*-*-rtems*): Removed.
+	(arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*): Rename
+	"arm*-*-rtemseabi*" to "arm*-*-rtems*".
+
 2013-03-01  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
