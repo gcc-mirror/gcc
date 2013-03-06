@@ -1,5 +1,10 @@
 2013-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/56539
+	* tree-tailcall.c (adjust_return_value_with_ops): Use GSI_SAME_STMT
+	instead of GSI_CONTINUE_LINKING as last argument to
+	force_gimple_operand_gsi.  Adjust function comment.
+
 	* config/aarch64/t-aarch64 (TM_H, OPTIONS_H_EXTRA): Add
 	aarch64-cores.def.
 
