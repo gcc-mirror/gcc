@@ -18749,8 +18749,8 @@ Set the cost to assume for a multiply insn.
 
 @item -mdiv=@var{strategy}
 @opindex mdiv=@var{strategy}
-Set the division strategy to use for SHmedia code.  @var{strategy} must be
-one of: 
+Set the division strategy to be used for integer division operations.
+For SHmedia @var{strategy} can be one of: 
 
 @table @samp
 
@@ -18807,6 +18807,36 @@ slows down the case of larger dividends.  @samp{inv20u} assumes the case of a su
 a small dividend to be unlikely, and @samp{inv20l} assumes it to be likely.
 
 @end table
+
+For targets other than SHmedia @var{strategy} can be one of:
+
+@table @samp
+
+@item call-div1
+Calls a library function that uses the single-step division instruction
+@code{div1} to perform the operation.  Division by zero calculates an
+unspecified result and does not trap.  This is the default except for SH4,
+SH2A and SHcompact.
+
+@item call-fp
+Calls a library function that performs the operation in double precision
+floating point.  Division by zero causes a floating-point exception.  This is
+the default for SHcompact with FPU.  Specifying this for targets that do not
+have a double precision FPU will default to @code{call-div1}.
+
+@item call-table
+Calls a library function that uses a lookup table for small divisors and
+the @code{div1} instruction with case distinction for larger divisors.  Division
+by zero calculates an unspecified result and does not trap.  This is the default
+for SH4.  Specifying this for targets that do not have dynamic shift
+instructions will default to @code{call-div1}.
+
+@end table
+
+When a division strategy has not been specified the default strategy will be
+selected based on the current target.  For SH2A the default strategy is to
+use the @code{divs} and @code{divu} instructions instead of library function
+calls.
 
 @item -maccumulate-outgoing-args
 @opindex maccumulate-outgoing-args
