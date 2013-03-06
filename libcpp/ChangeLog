@@ -1,3 +1,15 @@
+2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* internal.h (struct cpp_buffer): Add to_free field.
+	(_cpp_pop_file_buffer): Add third argument.
+	* files.c (_cpp_stack_file): Set buffer->to_free.
+	(_cpp_pop_file_buffer): Add to_free argument.  Free to_free
+	if non-NULL, and if equal to file->buffer_start, also clear
+	file->buffer{,_start,_valid}.
+	* directives.c (_cpp_pop_buffer): Pass buffer->to_free
+	to _cpp_pop_file_buffer.
+
 2013-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461

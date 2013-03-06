@@ -2558,6 +2558,7 @@ _cpp_pop_buffer (cpp_reader *pfile)
   cpp_buffer *buffer = pfile->buffer;
   struct _cpp_file *inc = buffer->file;
   struct if_stack *ifs;
+  const unsigned char *to_free;
 
   /* Walk back up the conditional stack till we reach its level at
      entry to this file, issuing error messages.  */
@@ -2571,6 +2572,7 @@ _cpp_pop_buffer (cpp_reader *pfile)
   /* _cpp_do_file_change expects pfile->buffer to be the new one.  */
   pfile->buffer = buffer->prev;
 
+  to_free = buffer->to_free;
   free (buffer->notes);
 
   /* Free the buffer object now; we may want to push a new buffer
@@ -2579,7 +2581,7 @@ _cpp_pop_buffer (cpp_reader *pfile)
 
   if (inc)
     {
-      _cpp_pop_file_buffer (pfile, inc);
+      _cpp_pop_file_buffer (pfile, inc, to_free);
 
       _cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
     }

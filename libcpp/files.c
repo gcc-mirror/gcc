@@ -894,6 +894,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 			    && !CPP_OPTION (pfile, directives_only));
   buffer->file = file;
   buffer->sysp = sysp;
+  buffer->to_free = file->buffer_start;
 
   /* Initialize controlling macro state.  */
   pfile->mi_valid = true;
@@ -1435,7 +1436,8 @@ cpp_push_default_include (cpp_reader *pfile, const char *fname)
 /* Do appropriate cleanup when a file INC's buffer is popped off the
    input stack.  */
 void
-_cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file)
+_cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file,
+		      const unsigned char *to_free)
 {
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
@@ -1445,12 +1447,15 @@ _cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file)
   /* Invalidate control macros in the #including file.  */
   pfile->mi_valid = false;
 
-  if (file->buffer_start)
+  if (to_free)
     {
-      free ((void *) file->buffer_start);
-      file->buffer_start = NULL;
-      file->buffer = NULL;
-      file->buffer_valid = false;
+      if (to_free == file->buffer_start)
+	{
+	  file->buffer_start = NULL;
+	  file->buffer = NULL;
+	  file->buffer_valid = false;
+	}
+      free ((void *) to_free);
     }
 }
 
