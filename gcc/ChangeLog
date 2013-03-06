@@ -1,5 +1,13 @@
 2013-03-06  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/56294
+	* tree-into-ssa.c (insert_phi_nodes_for): Add dumping.
+	(insert_updated_phi_nodes_compare_uids): New function.
+	(update_ssa): Sort symbols_to_rename after UID before
+	traversing it to insert PHI nodes.
+
+2013-03-06  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/50494
 	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p):
 	Do not adjust alignment of DECL_IN_CONSTANT_POOL decls.
