@@ -1,5 +1,10 @@
 2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu): Abort instead of erroring
+	out for an unimplemented attribute.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_field): Remove the wrapper around
 	a misaligned integral type if a size is specified for the field.
 
