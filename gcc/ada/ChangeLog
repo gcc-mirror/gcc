@@ -1,3 +1,8 @@
+2013-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Raise_Error_to_gnu) <CE_Index_Check_Failed>:
+	Record the unpadded type of the index type on the RCI stack.
+
 2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (emit_range_check): Assert that the range type

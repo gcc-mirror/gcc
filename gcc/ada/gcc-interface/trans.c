@@ -4944,7 +4944,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	    {
 	      rci->low_bound = gnu_low_bound;
 	      rci->high_bound = gnu_high_bound;
-	      rci->type = gnat_to_gnu_type (gnat_type);
+	      rci->type = get_unpadded_type (gnat_type);
 	      rci->invariant_cond = build1 (SAVE_EXPR, boolean_type_node,
 					    boolean_true_node);
 	      gnu_cond = build_binary_op (TRUTH_ANDIF_EXPR,
