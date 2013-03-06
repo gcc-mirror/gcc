@@ -1,3 +1,10 @@
+2013-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56534
+	* parser.c (cp_parser_elaborated_type_specifier): Don't call
+	check_elaborated_type_specifier when TREE_CODE (decl) != TYPE_DECL.
+	* decl.c (check_elaborated_type_specifier): Tidy.
+
 2013-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56543
