@@ -11712,9 +11712,6 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 {
   tree type;
 
-  if (decl == error_mark_node)
-    return error_mark_node;
-
   /* In the case of:
 
        struct S { struct S *p; };
