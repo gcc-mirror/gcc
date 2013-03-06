@@ -4829,9 +4829,12 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   /* We cannot change alignment of common or external symbols as another
      translation unit may contain a definition with lower alignment.  
      The rules of common symbol linking mean that the definition
-     will override the common symbol.  */
+     will override the common symbol.  The same is true for constant
+     pool entries which may be shared and are not properly merged
+     by LTO.  */
   if (DECL_EXTERNAL (decl)
-      || DECL_COMMON (decl))
+      || DECL_COMMON (decl)
+      || DECL_IN_CONSTANT_POOL (decl))
     return false;
 
   if (TREE_ASM_WRITTEN (decl))
