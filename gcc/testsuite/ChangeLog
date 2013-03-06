@@ -1,3 +1,8 @@
+2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56543
+	* g++.dg/template/typename20.C: New test.
+
 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/56510
