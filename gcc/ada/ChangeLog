@@ -1,3 +1,8 @@
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (emit_range_check): Assert that the range type
+	is a numerical type and remove useless local variables.
+
 2013-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h: Back out change accidentally committed.
@@ -6,8 +11,7 @@
 
 	PR bootstrap/56258
 	* gnat-style.texi (@title): Remove @hfill.
-	* projects.texi: Avoid line wrapping inside of @pxref or
-	@xref.
+	* projects.texi: Avoid line wrapping inside of @pxref or @xref.
 
 2013-02-14  Rainer Emrich  <rainer@emrich-ebersheim.de>
 

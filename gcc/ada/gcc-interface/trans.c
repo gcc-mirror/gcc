@@ -8119,14 +8119,16 @@ static tree
 emit_range_check (tree gnu_expr, Entity_Id gnat_range_type, Node_Id gnat_node)
 {
   tree gnu_range_type = get_unpadded_type (gnat_range_type);
-  tree gnu_low  = TYPE_MIN_VALUE (gnu_range_type);
-  tree gnu_high = TYPE_MAX_VALUE (gnu_range_type);
   tree gnu_compare_type = get_base_type (TREE_TYPE (gnu_expr));
 
   /* If GNU_EXPR has GNAT_RANGE_TYPE as its base type, no check is needed.
      This can for example happen when translating 'Val or 'Value.  */
   if (gnu_compare_type == gnu_range_type)
     return gnu_expr;
+
+  /* Range checks can only be applied to types with ranges.  */
+  gcc_assert (INTEGRAL_TYPE_P (gnu_range_type)
+              || SCALAR_FLOAT_TYPE_P (gnu_range_type));
 
   /* If GNU_EXPR has an integral type that is narrower than GNU_RANGE_TYPE,
      we can't do anything since we might be truncating the bounds.  No
@@ -8147,13 +8149,16 @@ emit_range_check (tree gnu_expr, Entity_Id gnat_range_type, Node_Id gnat_node)
     (build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
 		      invert_truthvalue
 		      (build_binary_op (GE_EXPR, boolean_type_node,
-				       convert (gnu_compare_type, gnu_expr),
-				       convert (gnu_compare_type, gnu_low))),
+				        convert (gnu_compare_type, gnu_expr),
+				        convert (gnu_compare_type,
+						 TYPE_MIN_VALUE
+						 (gnu_range_type)))),
 		      invert_truthvalue
 		      (build_binary_op (LE_EXPR, boolean_type_node,
 					convert (gnu_compare_type, gnu_expr),
 					convert (gnu_compare_type,
-						 gnu_high)))),
+						 TYPE_MAX_VALUE
+						 (gnu_range_type))))),
      gnu_expr, CE_Range_Check_Failed, gnat_node);
 }
 
