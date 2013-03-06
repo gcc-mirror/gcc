@@ -1,3 +1,9 @@
+2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56548
+	* expr.c (expand_cond_expr_using_cmove): When expanding cmove in
+	promoted mode, convert the result back to the original mode.
+
 2013-03-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56294
@@ -84,7 +90,7 @@
 	* sdbout.c (sdbout_one_type): Switch to current function's section
 	supporting cold/hot.
 
-2013-03-05  David Holsgrove <david.holsgrove@xilinx.com>
+2013-03-05  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* doc/invoke.texi (MicroBlaze): Add -mbig-endian, -mlittle-endian,
 	-mxl-reorder.
@@ -213,7 +219,7 @@
 	* ipa-split.c (split_function): Do not set the RSO flag if result is
 	not by reference and its type is a register type.
 
-2013-03-04  David Holsgrove <david.holsgrove@xilinx.com>
+2013-03-04  David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.c (microblaze_valid_pic_const): New 
 	(microblaze_legitimate_pic_operand): Likewise
@@ -222,11 +228,11 @@
 	* config/microblaze/microblaze-protos.h
 	(microblaze_legitimate_pic_operand): Declare.
 
-2013-03-04  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2013-03-04  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
-	*  config/microblaze/predicates.md (call_insn_simple_operand):
+	* config/microblaze/predicates.md (call_insn_simple_operand):
 	New predicate for supported rtx code types.
-	*  config/microblaze/microblaze.md (call_internal1): Use
+	* config/microblaze/microblaze.md (call_internal1): Use
 	call_insn_simple_operand predicate.
 
 2013-03-04  Jakub Jelinek  <jakub@redhat.com>
@@ -598,10 +604,10 @@
 	2013-02-24  Catherine Moore  <clm@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
-	    Nathan Sidwell <nathan@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
-	    Chao-ying Fu <fu@mips.com>
+	    Chao-ying Fu  <fu@mips.com>
 	* doc/extend.texi: (micromips, nomicromips, nocompression):
 	Document new function attributes. 
 	* doc/invoke.texi (minterlink-compressed, mmicromips,
@@ -747,10 +753,10 @@
 2013-02-24  Catherine Moore  <clm@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
-	    Nathan Sidwell <nathan@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
-	    Chao-ying Fu <fu@mips.com>
+	    Chao-ying Fu  <fu@mips.com>
 
 	* doc/extend.texi: (micromips, nomicromips, nocompression):
 	Document new function attributes. 
@@ -1053,7 +1059,7 @@
 	* config/i386/i386.c (initial_ix86_tune_features): Turn on fp
 	reassociation for avx2 targets.
 
-2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config/microblaze/microblaze.c: microblaze_has_clz = 0
 	Add version check for v8.10.a to enable microblaze_has_clz
@@ -1061,9 +1067,9 @@
 	version and TARGET_PATTERN_COMPARE check
 	* config/microblaze/microblaze.md: New clzsi2 instruction
 
-2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
-	*  config/microblaze/microblaze.md (call_value_intern): Check symbol is 
+	* config/microblaze/microblaze.md (call_value_intern): Check symbol is
 	function before branching.
 
 2012-02-19  Andrey Belevantsev  <abel@ispras.ru>
@@ -1343,7 +1349,7 @@
 	* config/avr/avr-dimode.md (umulsidi3, mulsidi3): New expanders.
 	(umulsidi3_insn, mulsidi3_insn): New insns.
 
-2013-02-12  Christophe Lyon <christophe.lyon@linaro.org>
+2013-02-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm-protos.h (struct cpu_vec_costs): New struct type.
 	(struct tune_params): Add vec_costs field.
@@ -1397,7 +1403,7 @@
 	define ENDFILE_SPEC as TM_DESTRUCTOR.
 	* config/i386/darwin.h (ENDFILE_SPEC): Use TM_DESTRUCTOR.
 
-2013-02-11  Alexander Potapenko <glider@google.com>
+2013-02-11  Alexander Potapenko  <glider@google.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jakub Jelinek  <jakub@redhat.com>
 

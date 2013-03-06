@@ -1,3 +1,8 @@
+2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56548
+	* gcc.dg/pr56548.c: New test.
+
 2013-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR debug/53363
@@ -147,7 +152,7 @@
 
 	Revert:
 	2013-02-24  Catherine Moore  <clm@codesourcery.com>
-	Richard Sandiford <rdsandiford@googlemail.com>
+	Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips.exp: Add microMIPS support.
 	* gcc.target/mips/umips-movep-2.c: New test.
@@ -175,7 +180,7 @@
 	* gcc.target/mips/umips-swp-4.c: New test.
 
 2013-02-24  Catherine Moore  <clm@codesourcery.com>
-	    Richard Sandiford <rdsandiford@googlemail.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips.exp: Add microMIPS support.
 	* gcc.target/mips/umips-movep-2.c: New test.
@@ -495,7 +500,7 @@
 	* gcc.target/powerpc/ppc-stackalign-1.c: Likewise.
 	* gcc.target/powerpc/ppc-ldstruct.c: Likewise.
 
-2013-02-11  Alexander Potapenko <glider@google.com>
+2013-02-11  Alexander Potapenko  <glider@google.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jakub Jelinek  <jakub@redhat.com>
 
@@ -720,7 +725,7 @@
 	PR fortran/47517
 	* gfortran.dg/realloc_on _assign_17.f90 : New test.
 
-2013-02-04  Alexander Potapenko <glider@google.com>
+2013-02-04  Alexander Potapenko  <glider@google.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jakub Jelinek  <jakub@redhat.com>
 
@@ -843,7 +848,7 @@
 	* gfortran.dg/allocatable_function_6.f90: New.
 
 2013-01-29  Janus Weil  <janus@gcc.gnu.org>
-	    Mikael Morin <mikael@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54107
 	* gfortran.dg/proc_ptr_comp_36.f90: New.
