@@ -599,8 +599,8 @@ add_successor_phi_arg (edge e, tree var, tree phi_arg)
 }
 
 /* Creates a GIMPLE statement which computes the operation specified by
-   CODE, OP0 and OP1 to a new variable with name LABEL and inserts the
-   statement in the position specified by GSI and UPDATE.  Returns the
+   CODE, ACC and OP1 to a new variable with name LABEL and inserts the
+   statement in the position specified by GSI.  Returns the
    tree node of the statement's result.  */
 
 static tree
@@ -622,7 +622,7 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
 					    fold_convert (TREE_TYPE (op1), acc),
 					    op1));
       rhs = force_gimple_operand_gsi (&gsi, rhs,
-				      false, NULL, true, GSI_CONTINUE_LINKING);
+				      false, NULL, true, GSI_SAME_STMT);
       stmt = gimple_build_assign (result, rhs);
     }
 
