@@ -3255,8 +3255,8 @@ GLOBAL(div_table):
 	.word	17136
 	.word	16639
 
-#elif defined (__SH3__) || defined (__SH3E__) || defined (__SH4__) || defined (__SH4_SINGLE__) || defined (__SH4_SINGLE_ONLY__) || defined (__SH4_NOFPU__)
-/* This code used shld, thus is not suitable for SH1 / SH2.  */
+#elif defined (__SH2A__) || defined (__SH3__) || defined (__SH3E__) || defined (__SH4__) || defined (__SH4_SINGLE__) || defined (__SH4_SINGLE_ONLY__) || defined (__SH4_NOFPU__)
+/* This code uses shld, thus is not suitable for SH1 / SH2.  */
 
 /* Signed / unsigned division without use of FPU, optimized for SH4.
    Uses a lookup table for divisors in the range -128 .. +128, and

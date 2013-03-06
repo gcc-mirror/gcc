@@ -18066,43 +18066,94 @@ Set the cost to assume for a multiply insn.
 
 @item -mdiv=@var{strategy}
 @opindex mdiv=@var{strategy}
-Set the division strategy to use for SHmedia code.  @var{strategy} must be
-one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call,
-inv:call2, inv:fp .
-"fp" performs the operation in floating point.  This has a very high latency,
+Set the division strategy to be used for integer division operations.
+For SHmedia @var{strategy} can be one of: 
+
+@table @samp
+
+@item fp 
+Performs the operation in floating point.  This has a very high latency,
 but needs only a few instructions, so it might be a good choice if
 your code has enough easily-exploitable ILP to allow the compiler to
 schedule the floating-point instructions together with other instructions.
 Division by zero causes a floating-point exception.
-"inv" uses integer operations to calculate the inverse of the divisor,
+
+@item inv
+Uses integer operations to calculate the inverse of the divisor,
 and then multiplies the dividend with the inverse.  This strategy allows
-cse and hoisting of the inverse calculation.  Division by zero calculates
+CSE and hoisting of the inverse calculation.  Division by zero calculates
 an unspecified result, but does not trap.
-"inv:minlat" is a variant of "inv" where if no cse / hoisting opportunities
+
+@item inv:minlat
+A variant of @samp{inv} where, if no CSE or hoisting opportunities
 have been found, or if the entire operation has been hoisted to the same
 place, the last stages of the inverse calculation are intertwined with the
 final multiply to reduce the overall latency, at the expense of using a few
 more instructions, and thus offering fewer scheduling opportunities with
 other code.
-"call" calls a library function that usually implements the inv:minlat
+
+@item call
+Calls a library function that usually implements the @samp{inv:minlat}
 strategy.
-This gives high code density for m5-*media-nofpu compilations.
-"call2" uses a different entry point of the same library function, where it
+This gives high code density for @code{m5-*media-nofpu} compilations.
+
+@item call2
+Uses a different entry point of the same library function, where it
 assumes that a pointer to a lookup table has already been set up, which
-exposes the pointer load to cse / code hoisting optimizations.
-"inv:call", "inv:call2" and "inv:fp" all use the "inv" algorithm for initial
-code generation, but if the code stays unoptimized, revert to the "call",
-"call2", or "fp" strategies, respectively.  Note that the
+exposes the pointer load to CSE and code hoisting optimizations.
+
+@item inv:call
+@itemx inv:call2
+@itemx inv:fp
+Use the @samp{inv} algorithm for initial
+code generation, but if the code stays unoptimized, revert to the @samp{call},
+@samp{call2}, or @samp{fp} strategies, respectively.  Note that the
 potentially-trapping side effect of division by zero is carried by a
 separate instruction, so it is possible that all the integer instructions
 are hoisted out, but the marker for the side effect stays where it is.
-A recombination to fp operations or a call is not possible in that case.
-"inv20u" and "inv20l" are variants of the "inv:minlat" strategy.  In the case
-that the inverse calculation was nor separated from the multiply, they speed
-up division where the dividend fits into 20 bits (plus sign where applicable),
+A recombination to floating-point operations or a call is not possible
+in that case.
+
+@item inv20u
+@itemx inv20l
+Variants of the @samp{inv:minlat} strategy.  In the case
+that the inverse calculation is not separated from the multiply, they speed
+up division where the dividend fits into 20 bits (plus sign where applicable)
 by inserting a test to skip a number of operations in this case; this test
-slows down the case of larger dividends.  inv20u assumes the case of a such
-a small dividend to be unlikely, and inv20l assumes it to be likely.
+slows down the case of larger dividends.  @samp{inv20u} assumes the case of a such
+a small dividend to be unlikely, and @samp{inv20l} assumes it to be likely.
+
+@end table
+
+For targets other than SHmedia @var{strategy} can be one of:
+
+@table @samp
+
+@item call-div1
+Calls a library function that uses the single-step division instruction
+@code{div1} to perform the operation.  Division by zero calculates an
+unspecified result and does not trap.  This is the default except for SH4,
+SH2A and SHcompact.
+
+@item call-fp
+Calls a library function that performs the operation in double precision
+floating point.  Division by zero causes a floating-point exception.  This is
+the default for SHcompact with FPU.  Specifying this for targets that do not
+have a double precision FPU will default to @code{call-div1}.
+
+@item call-table
+Calls a library function that uses a lookup table for small divisors and
+the @code{div1} instruction with case distinction for larger divisors.  Division
+by zero calculates an unspecified result and does not trap.  This is the default
+for SH4.  Specifying this for targets that do not have dynamic shift
+instructions will default to @code{call-div1}.
+
+@end table
+
+When a division strategy has not been specified the default strategy will be
+selected based on the current target.  For SH2A the default strategy is to
+use the @code{divs} and @code{divu} instructions instead of library function
+calls.
 
 @item -maccumulate-outgoing-args
 @opindex maccumulate-outgoing-args
