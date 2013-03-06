@@ -1,3 +1,9 @@
+2013-03-06  Joey Ye  <joey.ye@arm.com>
+
+	PR lto/50293
+	* gcc.c (convert_white_space): New function.
+	(main): Handles white space in function name.
+
 2013-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/56529
