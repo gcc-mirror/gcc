@@ -8168,15 +8168,11 @@ Enabled by default with @option{-funroll-loops}.
 Assume that the current compilation unit represents the whole program being
 compiled.  All public functions and variables with the exception of @code{main}
 and those merged by attribute @code{externally_visible} become static functions
-and in effect are optimized more aggressively by interprocedural optimizers. If @command{gold} is used as the linker plugin, @code{externally_visible} attributes are automatically added to functions (not variable yet due to a current @command{gold} issue) that are accessed outside of LTO objects according to resolution file produced by @command{gold}.  For other linkers that cannot generate resolution file, explicit @code{externally_visible} attributes are still necessary.
-While this option is equivalent to proper use of the @code{static} keyword for
-programs consisting of a single file, in combination with option
-@option{-flto} this flag can be used to
-compile many smaller scale programs since the functions and variables become
-local for the whole combined compilation unit, not for the single source file
-itself.
+and in effect are optimized more aggressively by interprocedural optimizers.
 
-This option implies @option{-fwhole-file} for Fortran programs.
+In combination with @code{-flto} using this option should not be used.
+Instead relying on a linker plugin should provide safer and more precise
+information.
 
 @item -flto[=@var{n}]
 @opindex flto

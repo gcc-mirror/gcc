@@ -1,3 +1,8 @@
+2013-03-07  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (fwhole-program): Discourage use in combination
+	with -flto.
+
 2013-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/arm/t-arm (TM_H, OPTIONS_H_EXTRA): Add arm-cores.def.
