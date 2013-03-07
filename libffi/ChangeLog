@@ -1,3 +1,8 @@
+2013-03-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* src/closures.c (is_emutramp_enabled [!FFI_MMAP_EXEC_EMUTRAMP_PAX]):
+	Move default definition outside enclosing #if scope.
+
 2013-02-06  Andreas Tobler  <andreast@fgznet.ch>
 
 	* src/powerpc/ffi.c (ffi_prep_cif_machdep): Fix case where
