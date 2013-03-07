@@ -7,7 +7,7 @@
 	* config/sh/lib1funcs.S (udivsi3_i4i, sdivsi3_i4i): Add __SH2A__ to
 	inclusion list.
 
-2013-02-22  Sebastian Huber <sebastian.huber@embedded-brains.de>
+2013-03-06  Sebastian Huber <sebastian.huber@embedded-brains.de>
 
 	* config.host (arm*-*-rtemself*): New.
 	(arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*): Rename

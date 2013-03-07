@@ -12,7 +12,7 @@
 	* doc/invoke.texi (SH options): Use table for mdiv= option.  Document
 	mdiv= call-div1, call-fp, call-table options.
 
-2013-02-22  Sebastian Huber <sebastian.huber@embedded-brains.de>
+2013-03-06  Sebastian Huber <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (arm*-*-rtemself*): New.
 	(arm*-*-rtems*): Removed.
