@@ -34,11 +34,11 @@ struct bitmap_descriptor_d
   const char *file;
   int line;
   int created;
-  HOST_WIDEST_INT allocated;
-  HOST_WIDEST_INT peak;
-  HOST_WIDEST_INT current;
-  int nsearches;
-  int search_iter;
+  unsigned HOST_WIDEST_INT allocated;
+  unsigned HOST_WIDEST_INT peak;
+  unsigned HOST_WIDEST_INT current;
+  unsigned HOST_WIDEST_INT nsearches;
+  unsigned HOST_WIDEST_INT search_iter;
 };
 
 typedef struct bitmap_descriptor_d *bitmap_descriptor;
@@ -121,7 +121,6 @@ register_overhead (bitmap b, int amount)
   desc->current += amount;
   if (amount > 0)
     desc->allocated += amount;
-  gcc_assert (desc->current >= 0);
   if (desc->peak < desc->current)
     desc->peak = desc->current;
 }
@@ -565,10 +564,15 @@ bitmap_find_bit (bitmap head, unsigned int bit)
   bitmap_element *element;
   unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
 
-  if (head->current == 0
+  if (head->current == NULL
       || head->indx == indx)
     return head->current;
+  if (head->current == head->first
+      && head->first->next == NULL)
+    return NULL;
 
+  /* This bitmap has more than one element, and we're going to look
+     through the elements list.  Count that as a search.  */
   if (GATHER_STATISTICS)
     bitmap_descriptors[head->descriptor_id]->nsearches++;
 
@@ -2132,8 +2136,8 @@ bitmap_print (FILE *file, const_bitmap head, const char *prefix, const char *suf
 /* Used to accumulate statistics about bitmap sizes.  */
 struct output_info
 {
-  HOST_WIDEST_INT size;
-  int count;
+  unsigned HOST_WIDEST_INT size;
+  unsigned HOST_WIDEST_INT count;
 };
 
 /* Called via htab_traverse.  Output bitmap descriptor pointed out by SLOT
@@ -2153,10 +2157,14 @@ print_statistics (void **slot, void *b)
 	s1 = s2 + 4;
       sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
       s[41] = 0;
-      fprintf (stderr, "%-41s %8d %15"HOST_WIDEST_INT_PRINT"d %15"
-	       HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d %10d %10d\n",
-	       s, d->created, d->allocated, d->peak, d->current, d->nsearches,
-	       d->search_iter);
+      fprintf (stderr,
+	       "%-41s %9u"
+	       " %15"HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d"
+	       " %15"HOST_WIDEST_INT_PRINT"d"
+	       " %10"HOST_WIDEST_INT_PRINT"d %10"HOST_WIDEST_INT_PRINT"d\n",
+	       s, d->created,
+	       d->allocated, d->peak, d->current,
+	       d->nsearches, d->search_iter);
       i->size += d->allocated;
       i->count += d->created;
     }
@@ -2175,15 +2183,18 @@ dump_bitmap_statistics (void)
   if (!bitmap_desc_hash)
     return;
 
-  fprintf (stderr, "\nBitmap                                     Overall "
-		   "      Allocated            Peak            Leak   searched "
-		   "  search itr\n");
+  fprintf (stderr,
+	   "\n%-41s %9s %15s %15s %15s %10s %10s\n",
+	   "Bitmap", "Overall",
+	   "Allocated", "Peak", "Leak",
+	   "searched", "search_itr");
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   info.count = 0;
   info.size = 0;
   htab_traverse (bitmap_desc_hash, print_statistics, &info);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
-  fprintf (stderr, "%-40s %9d %15"HOST_WIDEST_INT_PRINT"d\n",
+  fprintf (stderr,
+	   "%-41s %9"HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d\n",
 	   "Total", info.count, info.size);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
 }

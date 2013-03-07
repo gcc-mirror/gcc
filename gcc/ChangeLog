@@ -1,3 +1,15 @@
+2013-03-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.c (struct bitmap_descriptor_d): Use unsigned HOST_WIDEST_INT
+	for all counters.
+	(struct output_info): Likewise.
+	(register_overhead): Remove bad gcc_assert.
+	(bitmap_find_bit): If there is only a single bitmap element, do not
+	count a miss as a search.
+	(print_statistics): Update for counter type changes.
+	(dump_bitmap_statistics): Likewise.  Print headers such that they
+	are properly lined up with the printed counters.
+
 2013-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56559
