@@ -1,3 +1,7 @@
+2013-03-07  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/pr31490.c: Fix last change.
+
 2013-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56534
