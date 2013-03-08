@@ -48,10 +48,14 @@ void test01()
   typedef propagating_allocator<T, false> alloc_type;
   typedef std::forward_list<T, alloc_type> test_type;
   test_type v1(alloc_type(1));
+  v1.push_front(T());
   test_type v2(alloc_type(2));
+  v2.push_front(T());
   std::swap(v1, v2);
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(2 == v2.get_allocator().get_personality());
+  // swap back so assertions in uneq_allocator::deallocate don't fail
+  std::swap(v1, v2);
 }
 
 void test02()
@@ -60,7 +64,9 @@ void test02()
   typedef propagating_allocator<T, true> alloc_type;
   typedef std::forward_list<T, alloc_type> test_type;
   test_type v1(alloc_type(1));
+  v1.push_front(T());
   test_type v2(alloc_type(2));
+  v2.push_front(T());
   std::swap(v1, v2);
   VERIFY(2 == v1.get_allocator().get_personality());
   VERIFY(1 == v2.get_allocator().get_personality());
