@@ -1,3 +1,9 @@
+2013-03-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56567
+	* semantics.c (apply_deduced_return_type): Don't allow returning
+	std::initializer_list.
+
 2013-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56534
