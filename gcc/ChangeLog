@@ -1,3 +1,9 @@
+2013-03-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-ter.c (is_replaceable_p): Do not TER across location
+	or block changes with -Og.  Fix for location / block encoding
+	changes and PHI arguments with locations.
+
 2013-03-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* bitmap.c (struct bitmap_descriptor_d): Use unsigned HOST_WIDEST_INT
