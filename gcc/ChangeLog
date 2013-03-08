@@ -1,5 +1,11 @@
 2013-03-08  Richard Biener  <rguenther@suse.de>
 
+	* tree-inline.c (expand_call_inline): Do not associate
+	a BLOCK with the location in BLOCK_SOURCE_LOCATION.
+	* tree-cfg.c (verify_location): Verify BLOCK_SOURCE_LOCATION.
+
+2013-03-08  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-ter.c (is_replaceable_p): Do not TER across location
 	or block changes with -Og.  Fix for location / block encoding
 	changes and PHI arguments with locations.

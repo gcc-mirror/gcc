@@ -3929,7 +3929,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
     {
       id->block = make_node (BLOCK);
       BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
-      BLOCK_SOURCE_LOCATION (id->block) = input_location;
+      BLOCK_SOURCE_LOCATION (id->block) = LOCATION_LOCUS (input_location);
       prepend_lexical_block (gimple_block (stmt), id->block);
     }
 
