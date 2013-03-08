@@ -4511,6 +4511,8 @@ verify_location (pointer_set_t *blocks, location_t loc)
       error ("location references block not in block tree");
       return true;
     }
+  if (block != NULL_TREE)
+    return verify_location (blocks, BLOCK_SOURCE_LOCATION (block));
   return false;
 }
 
