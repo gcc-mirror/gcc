@@ -4523,6 +4523,15 @@ verify_expr_location_1 (tree *tp, int *walk_subtrees, void *data)
 {
   struct pointer_set_t *blocks = (struct pointer_set_t *) data;
 
+  if (TREE_CODE (*tp) == VAR_DECL
+      && DECL_DEBUG_EXPR_IS_FROM (*tp))
+    {
+      tree t = DECL_DEBUG_EXPR (*tp);
+      tree addr = walk_tree (&t, verify_expr_location_1, blocks, NULL);
+      if (addr)
+	return addr;
+    }
+
   if (!EXPR_P (*tp))
     {
       *walk_subtrees = false;
