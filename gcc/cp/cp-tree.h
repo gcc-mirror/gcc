@@ -5722,6 +5722,7 @@ extern bool is_capture_proxy			(tree);
 extern bool is_normal_capture_proxy             (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree);
+extern tree maybe_resolve_dummy			(tree);
 extern tree nonlambda_method_basetype		(void);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);

@@ -1544,6 +1544,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       object = maybe_dummy_object (scope, NULL);
     }
 
+  object = maybe_resolve_dummy (object);
   if (object == error_mark_node)
     return error_mark_node;
 
@@ -1778,15 +1779,14 @@ finish_qualified_id_expr (tree qualifying_class,
     }
   else if (BASELINK_P (expr) && !processing_template_decl)
     {
-      tree ob;
-
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
       if (!shared_member_p (expr)
-	  && (ob = maybe_dummy_object (qualifying_class, NULL),
-	      !is_dummy_object (ob)))
+	  && current_class_ptr
+	  && DERIVED_FROM_P (qualifying_class,
+			     current_nonlambda_class_type ()))
 	expr = (build_class_member_access_expr
-		(ob,
+		(maybe_dummy_object (qualifying_class, NULL),
 		 expr,
 		 BASELINK_ACCESS_BINFO (expr),
 		 /*preserve_reference=*/false,
@@ -9532,6 +9532,34 @@ lambda_expr_this_capture (tree lambda)
     }
 
   return result;
+}
+
+/* We don't want to capture 'this' until we know we need it, i.e. after
+   overload resolution has chosen a non-static member function.  At that
+   point we call this function to turn a dummy object into a use of the
+   'this' capture.  */
+
+tree
+maybe_resolve_dummy (tree object)
+{
+  if (!is_dummy_object (object))
+    return object;
+
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (object));
+  gcc_assert (TREE_CODE (type) != POINTER_TYPE);
+
+  if (type != current_class_type
+      && current_class_type
+      && LAMBDA_TYPE_P (current_class_type))
+    {
+      /* In a lambda, need to go through 'this' capture.  */
+      tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);
+      tree cap = lambda_expr_this_capture (lam);
+      object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
+				     RO_NULL, tf_warning_or_error);
+    }
+
+  return object;
 }
 
 /* Returns the method basetype of the innermost non-lambda function, or
