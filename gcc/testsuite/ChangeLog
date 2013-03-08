@@ -9,7 +9,7 @@
 	* gcc.dg/tree-ssa/vrp72.c: Likewise.
 	* gcc.dg/tree-ssa/vrp73.c: Likewise.
 	* gcc.dg/tree-ssa/vrp75.c: Likewise.
-	* gcc.dg/torture/pr53922.c: Skike for mingw-targets.
+	* gcc.dg/torture/pr53922.c: Skip test for mingw-targets.
 	* gcc.dg/weak/weak-1.c: Likewise.
 	* gcc.dg/weak/weak-2.c: Likewise.
 	* gcc.dg/weak/weak-3.c: Likewise.
