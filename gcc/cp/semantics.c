@@ -9513,6 +9513,11 @@ lambda_expr_this_capture (tree lambda)
 
   if (!this_capture)
     {
+      /* In unevaluated context this isn't an odr-use, so just return the
+	 nearest 'this'.  */
+      if (cp_unevaluated_operand)
+	return lookup_name (this_identifier);
+
       error ("%<this%> was not captured for this lambda function");
       result = error_mark_node;
     }
