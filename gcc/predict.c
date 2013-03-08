@@ -1028,13 +1028,13 @@ static bool
 is_comparison_with_loop_invariant_p (gimple stmt, struct loop *loop,
 				     tree *loop_invariant,
 				     enum tree_code *compare_code,
-				     int *loop_step,
+				     tree *loop_step,
 				     tree *loop_iv_base)
 {
   tree op0, op1, bound, base;
   affine_iv iv0, iv1;
   enum tree_code code;
-  int step;
+  tree step;
 
   code = gimple_cond_code (stmt);
   *loop_invariant = NULL;
@@ -1077,7 +1077,7 @@ is_comparison_with_loop_invariant_p (gimple stmt, struct loop *loop,
       bound = iv0.base;
       base = iv1.base;
       if (host_integerp (iv1.step, 0))
-	step = tree_low_cst (iv1.step, 0);
+	step = iv1.step;
       else
 	return false;
     }
@@ -1086,7 +1086,7 @@ is_comparison_with_loop_invariant_p (gimple stmt, struct loop *loop,
       bound = iv1.base;
       base = iv0.base;
       if (host_integerp (iv0.step, 0))
-	step = tree_low_cst (iv0.step, 0);  
+	step = iv0.step;
       else
 	return false;
     }
@@ -1178,7 +1178,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
   gimple stmt;
   tree compare_var, compare_base;
   enum tree_code compare_code;
-  int compare_step;
+  tree compare_step_var;
   edge then_edge;
   edge_iterator ei;
 
@@ -1192,7 +1192,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
     return;
   if (!is_comparison_with_loop_invariant_p (stmt, loop, &compare_var,
 					    &compare_code,
-					    &compare_step,
+					    &compare_step_var,
 					    &compare_base))
     return;
 
@@ -1224,34 +1224,78 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       && host_integerp (compare_base, 0))
     {
       int probability;
-      HOST_WIDE_INT compare_count;
-      HOST_WIDE_INT loop_bound = tree_low_cst (loop_bound_var, 0);
-      HOST_WIDE_INT compare_bound = tree_low_cst (compare_var, 0);
-      HOST_WIDE_INT base = tree_low_cst (compare_base, 0);
-      HOST_WIDE_INT loop_count = (loop_bound - base) / compare_step;
+      bool of, overflow = false;
+      double_int mod, compare_count, tem, loop_count;
 
-      if ((compare_step > 0)
+      double_int loop_bound = tree_to_double_int (loop_bound_var);
+      double_int compare_bound = tree_to_double_int (compare_var);
+      double_int base = tree_to_double_int (compare_base);
+      double_int compare_step = tree_to_double_int (compare_step_var);
+
+      /* (loop_bound - base) / compare_step */
+      tem = loop_bound.sub_with_overflow (base, &of);
+      overflow |= of;
+      loop_count = tem.divmod_with_overflow (compare_step,
+					      0, TRUNC_DIV_EXPR,
+					      &mod, &of);
+      overflow |= of;
+
+      if ((!compare_step.is_negative ())
           ^ (compare_code == LT_EXPR || compare_code == LE_EXPR))
-	compare_count = (loop_bound - compare_bound) / compare_step;
+	{
+	  /* (loop_bound - compare_bound) / compare_step */
+	  tem = loop_bound.sub_with_overflow (compare_bound, &of);
+	  overflow |= of;
+	  compare_count = tem.divmod_with_overflow (compare_step,
+						     0, TRUNC_DIV_EXPR,
+						     &mod, &of);
+	  overflow |= of;
+	}
       else
-	compare_count = (compare_bound - base) / compare_step;
-
+        {
+	  /* (compare_bound - base) / compare_step */
+	  tem = compare_bound.sub_with_overflow (base, &of);
+	  overflow |= of;
+          compare_count = tem.divmod_with_overflow (compare_step,
+						     0, TRUNC_DIV_EXPR,
+						     &mod, &of);
+	  overflow |= of;
+	}
       if (compare_code == LE_EXPR || compare_code == GE_EXPR)
-	compare_count ++;
+	++compare_count;
       if (loop_bound_code == LE_EXPR || loop_bound_code == GE_EXPR)
-	loop_count ++;
-      if (compare_count < 0)
-	compare_count = 0;
-      if (loop_count < 0)
-	loop_count = 0;
-
-      if (loop_count == 0)
+	++loop_count;
+      if (compare_count.is_negative ())
+        compare_count = double_int_zero;
+      if (loop_count.is_negative ())
+        loop_count = double_int_zero;
+      if (loop_count.is_zero ())
 	probability = 0;
-      else if (compare_count > loop_count)
+      else if (compare_count.scmp (loop_count) == 1)
 	probability = REG_BR_PROB_BASE;
       else
-	probability = (double) REG_BR_PROB_BASE * compare_count / loop_count;
-      predict_edge (then_edge, PRED_LOOP_IV_COMPARE, probability);
+        {
+	  /* If loop_count is too big, such that REG_BR_PROB_BASE * loop_count
+	     could overflow, shift both loop_count and compare_count right
+	     a bit so that it doesn't overflow.  Note both counts are known not
+	     to be negative at this point.  */
+	  int clz_bits = clz_hwi (loop_count.high);
+	  gcc_assert (REG_BR_PROB_BASE < 32768);
+	  if (clz_bits < 16)
+	    {
+	      loop_count.arshift (16 - clz_bits, HOST_BITS_PER_DOUBLE_INT);
+	      compare_count.arshift (16 - clz_bits, HOST_BITS_PER_DOUBLE_INT);
+	    }
+	  tem = compare_count.mul_with_sign (double_int::from_shwi
+					    (REG_BR_PROB_BASE), true, &of);
+	  gcc_assert (!of);
+	  tem = tem.divmod (loop_count, true, TRUNC_DIV_EXPR, &mod);
+	  probability = tem.to_uhwi ();
+	}
+
+      if (!overflow)
+        predict_edge (then_edge, PRED_LOOP_IV_COMPARE, probability);
+
       return;
     }
 
@@ -1402,7 +1446,7 @@ predict_loops (void)
       edge ex;
       struct nb_iter_bound *nb_iter;
       enum tree_code loop_bound_code = ERROR_MARK;
-      int loop_bound_step = 0;
+      tree loop_bound_step = NULL;
       tree loop_bound_var = NULL;
       tree loop_iv_base = NULL;
       gimple stmt = NULL;
@@ -1549,7 +1593,7 @@ predict_loops (void)
 	  if (loop_bound_var)
 	    predict_iv_comparison (loop, bb, loop_bound_var, loop_iv_base,
 				   loop_bound_code,
-				   loop_bound_step);
+				   tree_low_cst (loop_bound_step, 0));
 	}
 
       /* Free basic blocks from get_loop_body.  */

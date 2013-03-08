@@ -1,3 +1,8 @@
+2013-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56478
+	* gcc.dg/torture/pr56478.c: New test.
+
 2013-03-08  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.c-torture/execute/builtins/builtins.exp: Add for mingw

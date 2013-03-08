@@ -1,3 +1,12 @@
+2013-03-08  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56478
+	* predict.c (is_comparison_with_loop_invariant_p): Change the
+	type of loop_step to tree.
+	(predict_loops): Adjust.
+	(predict_iv_comparison): Perform the computations on double_ints.
+
 2013-03-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56570
