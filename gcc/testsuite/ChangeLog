@@ -1,3 +1,8 @@
+2013-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51412
+	* g++.dg/cpp0x/lambda/lambda-err3.C: New.
+
 2013-03-08  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/56478
