@@ -1,5 +1,23 @@
 2013-03-08  Kai Tietz  <ktietz@redhat.com>
 
+	* gcc.dg/pr14092-1.c: Mark intptr_t typedef to use extension.
+	* gcc.dg/pr24683.c: Avoid warning about casting constant string.
+	* gcc.dg/pr52549.c: Add LLP64 case.
+	* gcc.dg/pr53701.c: Use for uintptr_t typedef __UINTPTR_TYPE__.
+	* gcc.dg/pr56510.c: Adjust for LLP64 targets.
+	* gcc.dg/torture/pr51071-2.c: Likewise.
+	* gcc.dg/tree-ssa/vrp72.c: Likewise.
+	* gcc.dg/tree-ssa/vrp73.c: Likewise.
+	* gcc.dg/tree-ssa/vrp75.c: Likewise.
+	* gcc.dg/torture/pr53922.c: Skike for mingw-targets.
+	* gcc.dg/weak/weak-1.c: Likewise.
+	* gcc.dg/weak/weak-2.c: Likewise.
+	* gcc.dg/weak/weak-3.c: Likewise.
+	* gcc.dg/weak/weak-4.c: Likewise.
+	* gcc.dg/weak/weak-5.c: Likewise.
+	* gcc.dg/weak/weak-15.c: Likewise.
+	* gcc.dg/weak/weak-16.c: Likewise.
+
 	* c-c++-common/pr54486.c: Skip test for mingw-targets.
 
 2013-03-07  Jakub Jelinek  <jakub@redhat.com>

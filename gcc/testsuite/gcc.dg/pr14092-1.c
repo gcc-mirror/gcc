@@ -6,7 +6,7 @@
 
 /* Define this so that we are more portable.  The testcase in the
    PR failed on 64-bit hosts.  */
-typedef __INTPTR_TYPE__ intptr_t;
+__extension__ typedef __INTPTR_TYPE__ intptr_t;
 
 typedef struct _PLCI {
   unsigned char x;

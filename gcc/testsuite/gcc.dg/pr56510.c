@@ -2,11 +2,12 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -g" } */
 
+__extension__ typedef __INTPTR_TYPE__ intptr_t;
 struct S { unsigned long s1; void **s2[0]; };
 void **a, **b, **c, **d, **e, **f;
 
 static void **
-baz (long x, long y)
+baz (intptr_t x, intptr_t y)
 {
   void **s = f;
   *f = (void **) (y << 8 | (x & 0xff));
