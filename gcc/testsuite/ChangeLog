@@ -1,5 +1,8 @@
 2013-03-08  Kai Tietz  <ktietz@redhat.com>
 
+	* gcc.c-torture/execute/builtins/builtins.exp: Add for mingw
+	targets linker option --allow-multiple-definition.
+
 	* gcc.dg/pr14092-1.c: Mark intptr_t typedef to use extension.
 	* gcc.dg/pr24683.c: Avoid warning about casting constant string.
 	* gcc.dg/pr52549.c: Add LLP64 case.
