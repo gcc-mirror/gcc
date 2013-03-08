@@ -1,7 +1,7 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O3 -fselective-scheduling2 -fsel-sched-pipelining" } */
 typedef unsigned short int uint16_t;
-typedef unsigned long int uintptr_t;
+__extension__ typedef __UINTPTR_TYPE__ uintptr_t;
 typedef struct GFX_VTABLE
 {
   int color_depth;
