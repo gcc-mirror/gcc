@@ -1,3 +1,7 @@
+2013-03-08  Kai Tietz  <ktietz@redhat.com>
+
+	* c-c++-common/pr54486.c: Skip test for mingw-targets.
+
 2013-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56559
