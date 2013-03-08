@@ -1,3 +1,8 @@
+2013-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Don't link against
+	libasan_preinit.o.
+
 2013-03-08  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
