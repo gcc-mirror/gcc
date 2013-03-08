@@ -1399,6 +1399,11 @@ dump_gimple_transaction (pretty_printer *buffer, gimple gs, int spc, int flags)
 		  pp_string (buffer, "GTMA_DOES_GO_IRREVOCABLE ");
 		  subcode &= ~GTMA_DOES_GO_IRREVOCABLE;
 		}
+	      if (subcode & GTMA_HAS_NO_INSTRUMENTATION)
+		{
+		  pp_string (buffer, "GTMA_HAS_NO_INSTRUMENTATION ");
+		  subcode &= ~GTMA_HAS_NO_INSTRUMENTATION;
+		}
 	      if (subcode)
 		pp_printf (buffer, "0x%x ", subcode);
 	      pp_string (buffer, "]");

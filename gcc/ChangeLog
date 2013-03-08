@@ -1,3 +1,15 @@
+2013-02-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c (expand_transaction): Do not set PR_INSTRUMENTEDCODE
+	if GTMA_HAS_NO_INSTRUMENTATION.
+	(generate_tm_state): Keep GTMA_HAS_NO_INSTRUMENTATION bit.
+	(ipa_tm_transform_transaction): Set GTMA_HAS_NO_INSTRUMENTATION.
+	* gimple.h (GTMA_HAS_NO_INSTRUMENTATION): Define.
+	* gimple-pretty-print.c (dump_gimple_transaction): Handle
+	GTMA_HAS_NO_INSTRUMENTATION.
+
+2013-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
 2013-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Don't link against
