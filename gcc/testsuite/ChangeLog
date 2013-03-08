@@ -1,5 +1,10 @@
 2013-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/56565
+	* g++.dg/cpp0x/lambda/lambda-nsdmi2.C: New.
+
+2013-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51412
 	* g++.dg/cpp0x/lambda/lambda-err3.C: New.
 
