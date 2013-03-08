@@ -1,4 +1,4 @@
-// Versatile string forward -*- C++ -*-
+// <vstring.h> Forward declarations -*- C++ -*-
 
 // Copyright (C) 2005-2013 Free Software Foundation, Inc.
 //

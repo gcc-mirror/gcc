@@ -1,3 +1,26 @@
+2013-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/memoryfwd.h: New. Centralize forward declarations.
+	* include/bits/algorithmfwd.h: Consistent comments.
+	* include/bits/localefwd.h: Same.
+	* include/ext/vstring_fwd.h: Same.
+	* include/parallel/algorithmfwd.h: Same.
+	* include/parallel/numericfwd.h: Same.
+	* include/std/iosfwd: Same.
+
+	* include/bits/alloc_traits.h: Include memoryfwd.h, remove allocator
+	forward decl.
+	* include/ext/alloc_traits.h: Remove allocator forward decl.
+	* include/bits/stl_construct.h: Same.
+	* include/bits/stringfwd.h: Include memoryfwd.h, remove allocator
+	forward decl. Consistent comments.
+
+	* doc/doxygen/user.cfg.in (TEMPLATE_RELATIONS): To NO.
+
+	* include/Makefile.am (bits_headers): Add memoryfwd.h.
+	* include/Makefile.in: Regenerate.
+	* configure: Same.
+
 2013-03-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/vector.tcc (vector<>operator=(const vector<>&):

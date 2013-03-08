@@ -38,13 +38,6 @@
 # include <bits/allocator.h>  // for __alloc_swap
 #endif
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-  template<typename> struct allocator;
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -244,6 +237,6 @@ template<typename _Alloc>
   };
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif

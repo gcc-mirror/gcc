@@ -32,15 +32,13 @@
 
 #if __cplusplus >= 201103L
 
+#include <bits/memoryfwd.h>
 #include <bits/ptr_traits.h>
 #include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Tp>
-    class allocator;
 
   template<typename _Alloc, typename _Tp>
     class __alloctr_rebind_helper
