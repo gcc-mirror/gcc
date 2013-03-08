@@ -267,6 +267,7 @@ static const char *compare_debug_dump_opt_spec_function (int, const char **);
 static const char *compare_debug_self_opt_spec_function (int, const char **);
 static const char *compare_debug_auxbase_opt_spec_function (int, const char **);
 static const char *pass_through_libs_spec_func (int, const char **);
+static char *convert_white_space (char *);
 
 /* The Specs Language
 
@@ -6506,6 +6507,7 @@ main (int argc, char **argv)
 				    X_OK, false);
   if (lto_wrapper_file)
     {
+      lto_wrapper_file = convert_white_space (lto_wrapper_file);
       lto_wrapper_spec = lto_wrapper_file;
       obstack_init (&collect_obstack);
       obstack_grow (&collect_obstack, "COLLECT_LTO_WRAPPER=",
@@ -6916,12 +6918,13 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 			      + strlen (fuse_linker_plugin), 0))
 #endif
 	    {
-	      linker_plugin_file_spec = find_a_file (&exec_prefixes,
-						     LTOPLUGINSONAME, R_OK,
-						     false);
-	      if (!linker_plugin_file_spec)
+	      char *temp_spec = find_a_file (&exec_prefixes,
+					     LTOPLUGINSONAME, R_OK,
+					     false);
+	      if (!temp_spec)
 		fatal_error ("-fuse-linker-plugin, but %s not found",
 			     LTOPLUGINSONAME);
+	      linker_plugin_file_spec = convert_white_space (temp_spec);
 	    }
 #endif
 	  lto_gcc_spec = argv[0];
@@ -8375,4 +8378,52 @@ pass_through_libs_spec_func (int argc, const char **argv)
 	free (old);
     }
   return prepended;
+}
+
+/* Insert backslash before spaces in ORIG (usually a file path), to 
+   avoid being broken by spec parser.
+
+   This function is needed as do_spec_1 treats white space (' ' and '\t')
+   as the end of an argument. But in case of -plugin /usr/gcc install/xxx.so,
+   the file name should be treated as a single argument rather than being
+   broken into multiple. Solution is to insert '\\' before the space in a 
+   file name.
+   
+   This function converts and only converts all occurrence of ' ' 
+   to '\\' + ' ' and '\t' to '\\' + '\t'.  For example:
+   "a b"  -> "a\\ b"
+   "a  b" -> "a\\ \\ b"
+   "a\tb" -> "a\\\tb"
+   "a\\ b" -> "a\\\\ b"
+
+   orig: input null-terminating string that was allocated by xalloc. The
+   memory it points to might be freed in this function. Behavior undefined
+   if ORIG wasn't xalloced or was freed already at entry.
+
+   Return: ORIG if no conversion needed. Otherwise a newly allocated string
+   that was converted from ORIG.  */
+
+static char *
+convert_white_space (char *orig)
+{
+  int len, number_of_space = 0;
+
+  for (len = 0; orig[len]; len++)
+    if (orig[len] == ' ' || orig[len] == '\t') number_of_space++;
+
+  if (number_of_space)
+    {
+      char *new_spec = (char *) xmalloc (len + number_of_space + 1);
+      int j, k;
+      for (j = 0, k = 0; j <= len; j++, k++)
+	{
+	  if (orig[j] == ' ' || orig[j] == '\t')
+	    new_spec[k++] = '\\';
+	  new_spec[k] = orig[j];
+	}
+      free (orig);
+      return new_spec;
+  }
+  else
+    return orig;
 }
