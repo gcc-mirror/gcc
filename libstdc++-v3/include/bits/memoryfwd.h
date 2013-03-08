@@ -1,4 +1,4 @@
-// <string> Forward declarations -*- C++ -*-
+// <memory> Forward declarations -*- C++ -*-
 
 // Copyright (C) 2001-2013 Free Software Foundation, Inc.
 //
@@ -22,68 +22,57 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file bits/stringfwd.h
- *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{string}
+/*
+ * Copyright (c) 1996-1997
+ * Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, distribute and sell this software
+ * and its documentation for any purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and
+ * that both that copyright notice and this permission notice appear
+ * in supporting documentation.  Silicon Graphics makes no
+ * representations about the suitability of this software for any
+ * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-//
-// ISO C++ 14882: 21 Strings library
-//
+/** @file bits/memoryfwd.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{memory}
+ */
 
-#ifndef _STRINGFWD_H
-#define _STRINGFWD_H 1
+#ifndef _MEMORYFWD_H
+#define _MEMORYFWD_H 1
 
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/memoryfwd.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   *  @defgroup strings Strings
+   * @defgroup allocators Allocators
+   * @ingroup memory
    *
-   *  @{
-  */
+   * Classes encapsulating memory operations.
+   *
+   * @{
+   */
 
-  template<class _CharT>
-    struct char_traits;
+  template<typename>
+    class allocator;
 
-  template<typename _CharT, typename _Traits = char_traits<_CharT>,
-           typename _Alloc = allocator<_CharT> >
-    class basic_string;
+  template<>
+    class allocator<void>;
 
-  template<> struct char_traits<char>;
+  /// Declare uses_allocator so it can be specialized in \<queue\> etc.
+  template<typename, typename>
+    struct uses_allocator;
 
-  /// A string of @c char
-  typedef basic_string<char>    string;   
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<> struct char_traits<wchar_t>;
-
-  /// A string of @c wchar_t
-  typedef basic_string<wchar_t> wstring;   
-#endif
-
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
-
-  template<> struct char_traits<char16_t>;
-  template<> struct char_traits<char32_t>;
-
-  /// A string of @c char16_t
-  typedef basic_string<char16_t> u16string; 
-
-  /// A string of @c char32_t
-  typedef basic_string<char32_t> u32string; 
-
-#endif
-  /** @}  */
+  /// @} group memory
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif	// _STRINGFWD_H
+#endif

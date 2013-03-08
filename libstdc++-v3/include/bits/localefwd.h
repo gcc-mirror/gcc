@@ -1,4 +1,4 @@
-// Locale support -*- C++ -*-
+// <locale> Forward declarations -*- C++ -*-
 
 // Copyright (C) 1997-2013 Free Software Foundation, Inc.
 //
@@ -185,6 +185,6 @@ _GLIBCXX_END_NAMESPACE_LDBL
     class messages_byname;
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif
