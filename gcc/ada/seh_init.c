@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2005-2011, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2005-2013, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -60,7 +60,8 @@ extern struct Exception_Data _abort_signal;
 
 #define Raise_From_Signal_Handler \
                       ada__exceptions__raise_from_signal_handler
-extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *)
+  ATTRIBUTE_NORETURN;
 
 
 #if defined (_WIN32)
@@ -71,7 +72,7 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 extern void _global_unwind2 (void *);
 
 EXCEPTION_DISPOSITION __gnat_SEH_error_handler
-(struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
+(struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*) ATTRIBUTE_NORETURN;
 
 EXCEPTION_DISPOSITION
 __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
@@ -193,7 +194,6 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
 #endif
 
   Raise_From_Signal_Handler (exception, msg);
-  return 0; /* This is never reached, avoid compiler warning  */
 }
 
 #if defined (_WIN64)

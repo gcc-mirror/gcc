@@ -1,9 +1,14 @@
+2013-03-08  Cesar Strauss  <cestrauss@gmail.com>
+
+	PR ada/52123
+	* seh_init.c (Raise_From_Signal_Handler): Declare as no-return.
+	(__gnat_SEH_error_handler): Likewise.  Remove final return.
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/56258
 	* gnat-style.texi (@title): Remove @hfill.
-	* projects.texi: Avoid line wrapping inside of @pxref or
-	@xref.
+	* projects.texi: Avoid line wrapping inside of @pxref or @xref.
 
 2013-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
