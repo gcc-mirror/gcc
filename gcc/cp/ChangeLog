@@ -1,5 +1,15 @@
 2013-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51494
+	PR c++/51884
+	PR c++/56222
+	* tree.c (maybe_dummy_object): Don't capture 'this'.
+	* semantics.c (maybe_resolve_dummy): New.
+	(finish_non_static_data_member): Use it.
+	(finish_qualified_id_expr): Don't test is_dummy_object.
+	* cp-tree.h: Declare maybe_resolve_dummy.
+	* call.c (build_new_method_call_1): Use it.
+
 	PR c++/56567
 	* semantics.c (apply_deduced_return_type): Don't allow returning
 	std::initializer_list.
