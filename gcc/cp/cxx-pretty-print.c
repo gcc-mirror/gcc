@@ -1162,6 +1162,10 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
 	  }
       }
       break;
+      
+    case LAMBDA_EXPR:
+      pp_cxx_ws_string (pp, "<lambda>");
+      break;
 
     default:
       pp_c_expression (pp_c_base (pp), t);

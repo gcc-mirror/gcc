@@ -2494,6 +2494,10 @@ dump_expr (tree t, int flags)
       dump_expr (resolve_virtual_fun_from_obj_type_ref (t), flags);
       break;
 
+    case LAMBDA_EXPR:
+      pp_string (cxx_pp, M_("<lambda>"));
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */

@@ -1,3 +1,9 @@
+2013-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51412
+	* cxx-pretty-print.c (pp_cxx_expression): Handle LAMBDA_EXPR.
+	* error.c (dump_expr): Likewise.
+
 2013-03-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51884
