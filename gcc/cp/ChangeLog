@@ -8,7 +8,7 @@
 	just return the nearest 'this'.
 
 	PR c++/51494
-	PR c++/51884
+	PR c++/52183
 	PR c++/56222
 	* tree.c (maybe_dummy_object): Don't capture 'this'.
 	* semantics.c (maybe_resolve_dummy): New.
