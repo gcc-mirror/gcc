@@ -1,3 +1,22 @@
+2013-03-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/56524
+	* tree.h (tree_optimization_option): Rename target_optabs to optabs.
+	Add base_optabs.
+	(TREE_OPTIMIZATION_OPTABS): Update after previous field change.
+	(TREE_OPTIMIZATION_BASE_OPTABS): New macro.
+	(save_optabs_if_changed): Replace with...
+	(init_tree_optimization_optabs): ...this.
+	* optabs.c (save_optabs_if_changed): Rename to...
+	(init_tree_optimization_optabs): ...this.  Take the optimization node
+	as argument.  Do nothing if the base optabs are already correct.
+	Reuse the existing TREE_OPTIMIZATION_OPTABS memory if we need
+	to recompute optabs.
+	* function.h (function): Remove optabs field.
+	* function.c (invoke_set_current_function_hook): Call
+	init_tree_optimization_optabs.  Use the result to initialize
+	this_fn_optabs.
+
 2013-02-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-mem.c (expand_transaction): Do not set PR_INSTRUMENTEDCODE
