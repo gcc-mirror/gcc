@@ -2,14 +2,14 @@
 # Copyright © 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012, 2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.7-b20120128\n"
+"Project-Id-Version: cpplib 4.8-b20130224\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2013-02-24 01:05+0000\n"
-"PO-Revision-Date: 2012-01-29 23:11+0100\n"
+"PO-Revision-Date: 2013-03-09 17:11+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -341,10 +341,9 @@ msgid "current file is older than %s"
 msgstr "aktuelle Datei ist älter als %s"
 
 #: directives.c:1653
-#, fuzzy, c-format
-#| msgid "invalid #pragma GCC poison directive"
+#, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
-msgstr "ungültige #pragma GCC Poison Direktive"
+msgstr "ungültige »#pragma GCC %s« Direktive"
 
 #: directives.c:1847
 msgid "_Pragma takes a parenthesized string literal"
@@ -711,7 +710,7 @@ msgstr "unbeendete Roh-Zeichenkette"
 
 #: lex.c:1573 lex.c:1706
 msgid "invalid suffix on literal; C++11 requires a space between literal and identifier"
-msgstr ""
+msgstr "ungültiger Suffix an Literal; C++11 erfordert Leerzeichen zwischen Literal und Bezeichner"
 
 #: lex.c:1684
 msgid "null character(s) preserved in literal"
