@@ -174,6 +174,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  _M_deallocate(this->_M_impl._M_start,
 				this->_M_impl._M_end_of_storage
 				- this->_M_impl._M_start);
+		  this->_M_impl._M_start = nullptr;
+		  this->_M_impl._M_finish = nullptr;
+		  this->_M_impl._M_end_of_storage = nullptr;
 		}
 	      std::__alloc_on_copy(_M_get_Tp_allocator(),
 				   __x._M_get_Tp_allocator());
