@@ -14035,12 +14035,14 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 				   typename_type,
 				   /*complain=*/tf_error);
       /* If the `typename' keyword is in effect and DECL is not a type
-	 decl. Then type is non existant.   */
+	 decl, then type is non existent.   */
       else if (tag_type == typename_type && TREE_CODE (decl) != TYPE_DECL)
-        type = NULL_TREE; 
-      else 
-	type = check_elaborated_type_specifier (tag_type, decl,
+        ; 
+      else if (TREE_CODE (decl) == TYPE_DECL)
+        type = check_elaborated_type_specifier (tag_type, decl,
 						/*allow_template_p=*/true);
+      else if (decl == error_mark_node)
+	type = error_mark_node; 
     }
 
   if (!type)
