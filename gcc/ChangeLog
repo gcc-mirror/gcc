@@ -1,3 +1,11 @@
+2013-03-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dse.c (delete_dead_store_insn): Respect TDF_DETAILS.
+	(canon_address, record_store, replace_read, check_mem_read_rtx,
+	scan_insn, dse_step1, dse_step2_init, dse_step2_spill,
+	dse_step4, dse_step5_nospill, dse_step5_spill, dse_step6,
+	rest_of_handle_dse): Likewise.
+
 2013-03-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/56524
@@ -26,8 +34,6 @@
 	* gimple.h (GTMA_HAS_NO_INSTRUMENTATION): Define.
 	* gimple-pretty-print.c (dump_gimple_transaction): Handle
 	GTMA_HAS_NO_INSTRUMENTATION.
-
-2013-02-25  Aldy Hernandez  <aldyh@redhat.com>
 
 2013-03-08  Jakub Jelinek  <jakub@redhat.com>
 
