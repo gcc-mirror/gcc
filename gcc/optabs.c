@@ -6208,31 +6208,32 @@ init_optabs (void)
   targetm.init_libfuncs ();
 }
 
-/* Recompute the optabs and save them if they have changed.  */
+/* Use the current target and options to initialize
+   TREE_OPTIMIZATION_OPTABS (OPTNODE).  */
 
 void
-save_optabs_if_changed (tree fndecl)
+init_tree_optimization_optabs (tree optnode)
 {
-  /* ?? If this fails, we should temporarily restore the default
-     target first (set_cfun (NULL) ??), do the rest of this function,
-     and then restore it.  */
-  gcc_assert (this_target_optabs == &default_target_optabs);
+  /* Quick exit if we have already computed optabs for this target.  */
+  if (TREE_OPTIMIZATION_BASE_OPTABS (optnode) == this_target_optabs)
+    return;
 
+  /* Forget any previous information and set up for the current target.  */
+  TREE_OPTIMIZATION_BASE_OPTABS (optnode) = this_target_optabs;
   struct target_optabs *tmp_optabs = (struct target_optabs *)
-    ggc_alloc_atomic (sizeof (struct target_optabs));
-  tree optnode = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+    TREE_OPTIMIZATION_OPTABS (optnode);
+  if (tmp_optabs)
+    memset (tmp_optabs, 0, sizeof (struct target_optabs));
+  else
+    tmp_optabs = (struct target_optabs *)
+      ggc_alloc_atomic (sizeof (struct target_optabs));
 
   /* Generate a new set of optabs into tmp_optabs.  */
   init_all_optabs (tmp_optabs);
 
   /* If the optabs changed, record it.  */
   if (memcmp (tmp_optabs, this_target_optabs, sizeof (struct target_optabs)))
-    {
-      if (TREE_OPTIMIZATION_OPTABS (optnode))
-	ggc_free (TREE_OPTIMIZATION_OPTABS (optnode));
-
-      TREE_OPTIMIZATION_OPTABS (optnode) = (unsigned char *) tmp_optabs;
-    }
+    TREE_OPTIMIZATION_OPTABS (optnode) = (unsigned char *) tmp_optabs;
   else
     {
       TREE_OPTIMIZATION_OPTABS (optnode) = NULL;

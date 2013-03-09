@@ -3589,21 +3589,26 @@ struct GTY(()) tree_optimization_option {
 
   /* Target optabs for this set of optimization options.  This is of
      type `struct target_optabs *'.  */
-  unsigned char *GTY ((atomic)) target_optabs;
+  unsigned char *GTY ((atomic)) optabs;
+
+  /* The value of this_target_optabs against which the optabs above were
+     generated.  */
+  struct target_optabs *GTY ((skip)) base_optabs;
 };
 
 #define TREE_OPTIMIZATION(NODE) \
   (&OPTIMIZATION_NODE_CHECK (NODE)->optimization.opts)
 
 #define TREE_OPTIMIZATION_OPTABS(NODE) \
-  (OPTIMIZATION_NODE_CHECK (NODE)->optimization.target_optabs)
+  (OPTIMIZATION_NODE_CHECK (NODE)->optimization.optabs)
+
+#define TREE_OPTIMIZATION_BASE_OPTABS(NODE) \
+  (OPTIMIZATION_NODE_CHECK (NODE)->optimization.base_optabs)
 
 /* Return a tree node that encapsulates the current optimization options.  */
 extern tree build_optimization_node (void);
 
-/* Save a new set of target_optabs in a TREE_OPTIMIZATION node if the
-   current set of optabs has changed.  */
-extern void save_optabs_if_changed (tree);
+extern void init_tree_optimization_optabs (tree);
 
 /* Target options used by a function.  */
 
