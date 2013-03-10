@@ -265,7 +265,7 @@ logical_array_check (gfc_expr *array, int n)
 static gfc_try
 array_check (gfc_expr *e, int n)
 {
-  if (e->rank != 0 && e->ts.type != BT_PROCEDURE))
+  if (e->rank != 0 && e->ts.type != BT_PROCEDURE)
     return SUCCESS;
 
   gfc_error ("'%s' argument of '%s' intrinsic at %L must be an array",
