@@ -1,3 +1,11 @@
+2013-03-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56575
+	* expr.c (gfc_default_initializer): Check that a class declared
+	type has any components.
+	* resolve.c (resolve_fl_derived0): On failing the test for C437
+	set the type to BT_UNKNOWN to prevent repeat error messages.
+
 2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/56477
