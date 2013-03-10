@@ -1,3 +1,9 @@
+2013-03-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55362
+	* check.c (array_check): It is an error if a procedure is
+	passed.
+
 2013-02-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56385

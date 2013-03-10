@@ -256,7 +256,7 @@ array_check (gfc_expr *e, int n)
       return SUCCESS;
     }
 
-  if (e->rank != 0)
+  if (e->rank != 0 && e->ts.type != BT_PROCEDURE)
     return SUCCESS;
 
   gfc_error ("'%s' argument of '%s' intrinsic at %L must be an array",
