@@ -220,7 +220,7 @@ is_coarray (gfc_expr *e)
       if (ref->type == REF_COMPONENT)
 	coarray = ref->u.c.component->attr.codimension;
       else if (ref->type != REF_ARRAY || ref->u.ar.dimen != 0
-	       || ref->u.ar.codimen != 0) 
+	       || ref->u.ar.codimen != 0)
 	coarray = false;
     }
 
@@ -240,7 +240,7 @@ coarray_check (gfc_expr *e, int n)
     }
 
   return SUCCESS;
-} 
+}
 
 
 /* Make sure the expression is a logical array.  */
@@ -265,7 +265,7 @@ logical_array_check (gfc_expr *array, int n)
 static gfc_try
 array_check (gfc_expr *e, int n)
 {
-  if (e->rank != 0)
+  if (e->rank != 0 && e->ts.type != BT_PROCEDURE))
     return SUCCESS;
 
   gfc_error ("'%s' argument of '%s' intrinsic at %L must be an array",
@@ -346,7 +346,7 @@ less_than_bitsizekind (const char *arg, gfc_expr *expr, int k)
 
   if (expr->expr_type != EXPR_CONSTANT)
     return SUCCESS;
- 
+
   i = gfc_validate_kind (BT_INTEGER, k, false);
   gfc_extract_int (expr, &val);
 
@@ -501,7 +501,7 @@ variable_check (gfc_expr *e, int n, bool allow_proc)
 		  || (ref->u.c.component->ts.type != BT_CLASS
 		      && ref->u.c.component->attr.pointer)))
 	    break;
-	} 
+	}
 
       if (!ref)
 	{
@@ -651,7 +651,7 @@ identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
 	{
 	  if (mpz_cmp (a_size, b_size) != 0)
 	    ret = 0;
-  
+
 	  mpz_clear (b_size);
 	}
       mpz_clear (a_size);
@@ -824,7 +824,7 @@ gfc_check_allocated (gfc_expr *array)
     return FAILURE;
   if (allocatable_check (array, 0) == FAILURE)
     return FAILURE;
-  
+
   return SUCCESS;
 }
 
@@ -1752,7 +1752,7 @@ gfc_check_ichar_iachar (gfc_expr *c, gfc_expr *kind)
 		return SUCCESS;
 	      i = mpz_get_si (c->ts.u.cl->length->value.integer);
 	    }
-	  else 
+	  else
 	    return SUCCESS;
 	}
       else
@@ -1774,7 +1774,7 @@ gfc_check_ichar_iachar (gfc_expr *c, gfc_expr *kind)
 
   if (i != 1)
     {
-      gfc_error ("Argument of %s at %L must be of length one", 
+      gfc_error ("Argument of %s at %L must be of length one",
 		 gfc_current_intrinsic, &c->where);
       return FAILURE;
     }
@@ -3022,7 +3022,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	  if (order_size != shape_size)
 	    {
 	      gfc_error ("'%s' argument of '%s' intrinsic at %L "
-			 "has wrong number of elements (%d/%d)", 
+			 "has wrong number of elements (%d/%d)",
 			 gfc_current_intrinsic_arg[3]->name,
 			 gfc_current_intrinsic, &order->where,
 			 order_size, shape_size);
@@ -3040,7 +3040,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	      if (dim < 1 || dim > order_size)
 		{
 		  gfc_error ("'%s' argument of '%s' intrinsic at %L "
-			     "has out-of-range dimension (%d)", 
+			     "has out-of-range dimension (%d)",
 			     gfc_current_intrinsic_arg[3]->name,
 			     gfc_current_intrinsic, &e->where, dim);
 		  return FAILURE;
@@ -3072,7 +3072,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	  gfc_constructor *c;
 	  bool test;
 
-	  
+
 	  mpz_init_set_ui (size, 1);
 	  for (c = gfc_constructor_first (shape->value.constructor);
 	       c; c = gfc_constructor_next (c))
@@ -3434,7 +3434,7 @@ gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)
     return FAILURE;
 
   /* dim_rank_check() does not apply here.  */
-  if (dim 
+  if (dim
       && dim->expr_type == EXPR_CONSTANT
       && (mpz_cmp_ui (dim->value.integer, 1) < 0
 	  || mpz_cmp_ui (dim->value.integer, source->rank + 1) > 0))
@@ -3886,7 +3886,7 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
   if (mask->rank != field->rank && field->rank != 0)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must have "
-		 "the same rank as '%s' or be a scalar", 
+		 "the same rank as '%s' or be a scalar",
 		 gfc_current_intrinsic_arg[2]->name, gfc_current_intrinsic,
 		 &field->where, gfc_current_intrinsic_arg[1]->name);
       return FAILURE;
@@ -3899,7 +3899,7 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 	if (! identical_dimen_shape (mask, i, field, i))
 	{
 	  gfc_error ("'%s' and '%s' arguments of '%s' intrinsic at %L "
-		     "must have identical shape.", 
+		     "must have identical shape.",
 		     gfc_current_intrinsic_arg[2]->name,
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &field->where);
