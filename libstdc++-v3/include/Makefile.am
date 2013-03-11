@@ -113,6 +113,7 @@ bits_headers = \
 	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
+	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/move.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \

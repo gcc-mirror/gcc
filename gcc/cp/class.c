@@ -2541,6 +2541,10 @@ modify_all_vtables (tree t, tree virtuals)
   tree binfo = TYPE_BINFO (t);
   tree *fnsp;
 
+  /* Mangle the vtable name before entering dfs_walk (c++/51884).  */
+  if (TYPE_CONTAINS_VPTR_P (t))
+    get_vtable_decl (t, false);
+
   /* Update all of the vtables.  */
   dfs_walk_once (binfo, dfs_modify_vtables, NULL, t);
 

@@ -1,3 +1,29 @@
+2013-03-08  Cesar Strauss  <cestrauss@gmail.com>
+
+	PR ada/52123
+	* seh_init.c (Raise_From_Signal_Handler): Declare as no-return.
+	(__gnat_SEH_error_handler): Likewise.  Remove final return.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu): Abort instead of erroring
+	out for an unimplemented attribute.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Remove the wrapper around
+	a misaligned integral type if a size is specified for the field.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Raise_Error_to_gnu) <CE_Index_Check_Failed>:
+	Record the unpadded type of the index type on the RCI stack.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (emit_range_check): Assert that the range type
+	is a numerical type and remove useless local variables.
+
 2013-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h: Back out change accidentally committed.
@@ -6,8 +32,7 @@
 
 	PR bootstrap/56258
 	* gnat-style.texi (@title): Remove @hfill.
-	* projects.texi: Avoid line wrapping inside of @pxref or
-	@xref.
+	* projects.texi: Avoid line wrapping inside of @pxref or @xref.
 
 2013-02-14  Rainer Emrich  <rainer@emrich-ebersheim.de>
 

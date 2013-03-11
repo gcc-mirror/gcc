@@ -49,6 +49,10 @@
 (define_predicate "call_insn_operand"
   (match_test "CALL_INSN_OP (op)"))
 
+(define_predicate "call_insn_simple_operand"
+  (and (match_test "CALL_INSN_OP (op)")
+       (match_test "GET_CODE (op) == REG || GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST_INT")))
+
 ;; Return if OPERAND is valid as a source operand for a move instruction.
 (define_predicate "move_operand"
   (and (

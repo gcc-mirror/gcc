@@ -133,8 +133,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * destroy() even if _Tp has a trivial destructor.
    */
 
-  template <typename _Tp> class allocator;
-
   template<typename _ForwardIterator, typename _Allocator>
     void
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
@@ -154,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif /* _STL_CONSTRUCT_H */
 

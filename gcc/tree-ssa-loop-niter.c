@@ -3007,9 +3007,6 @@ bound_index (vec<double_int> bounds, double_int bound)
   gcc_unreachable ();
 }
 
-/* Used to hold vector of queues of basic blocks bellow.  */
-typedef vec<basic_block> bb_queue;
-
 /* We recorded loop bounds only for statements dominating loop latch (and thus
    executed each loop iteration).  If there are any bounds on statements not
    dominating the loop latch we can improve the estimate by walking the loop
@@ -3022,8 +3019,8 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
   pointer_map_t *bb_bounds;
   struct nb_iter_bound *elt;
   vec<double_int> bounds = vNULL;
-  vec<bb_queue> queues = vNULL;
-  bb_queue queue = bb_queue();
+  vec<vec<basic_block> > queues = vNULL;
+  vec<basic_block> queue = vNULL;
   ptrdiff_t queue_index;
   ptrdiff_t latch_index = 0;
   pointer_map_t *block_priority;
@@ -3096,7 +3093,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
      present in the path and we look for path with largest smallest bound
      on it.
 
-     To avoid the need for fibonaci heap on double ints we simply compress
+     To avoid the need for fibonacci heap on double ints we simply compress
      double ints into indexes to BOUNDS array and then represent the queue
      as arrays of queues for every index.
      Index of BOUNDS.length() means that the execution of given BB has
@@ -3162,16 +3159,11 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 		    }
 		    
 		  if (insert)
-		    {
-		      bb_queue queue2 = queues[bound_index];
-		      queue2.safe_push (e->dest);
-		      queues[bound_index] = queue2;
-		    }
+		    queues[bound_index].safe_push (e->dest);
 		}
 	    }
 	}
-      else
-	queues[queue_index].release ();
+      queues[queue_index].release ();
     }
 
   gcc_assert (latch_index >= 0);
@@ -3187,6 +3179,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
     }
 
   queues.release ();
+  bounds.release ();
   pointer_map_destroy (bb_bounds);
   pointer_map_destroy (block_priority);
 }

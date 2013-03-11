@@ -3030,64 +3030,73 @@ ENDF __bswapdi2
 ;; Arithmetic shift right
 ;; r25:r18 = ashr64 (r25:r18, r17:r16)
 DEFUN __ashrdi3
-    push r16
-    andi r16, 63
-    breq 2f
-1:  asr  r25
-    ror  r24
-    ror  r23
-    ror  r22
-    ror  r21
-    ror  r20
-    ror  r19
-    ror  r18
-    dec  r16
-    brne 1b
-2:  pop  r16
-    ret
-ENDF __ashrdi3
-#endif /* defined (L_ashrdi3) */
+    bst     r25, 7
+    bld     __zero_reg__, 0
+    ;; FALLTHRU
+ENDF  __ashrdi3
 
-#if defined (L_lshrdi3)
 ;; Logic shift right
 ;; r25:r18 = lshr64 (r25:r18, r17:r16)
 DEFUN __lshrdi3
-    push r16
-    andi r16, 63
-    breq 2f
-1:  lsr  r25
-    ror  r24
-    ror  r23
-    ror  r22
-    ror  r21
-    ror  r20
-    ror  r19
-    ror  r18
-    dec  r16
-    brne 1b
-2:  pop  r16
+    lsr     __zero_reg__
+    sbc     __tmp_reg__, __tmp_reg__
+    push    r16
+0:  cpi     r16, 8
+    brlo 2f
+    subi    r16, 8
+    mov     r18, r19
+    mov     r19, r20
+    mov     r20, r21
+    mov     r21, r22
+    mov     r22, r23
+    mov     r23, r24
+    mov     r24, r25
+    mov     r25, __tmp_reg__
+    rjmp 0b
+1:  asr     __tmp_reg__
+    ror     r25
+    ror     r24
+    ror     r23
+    ror     r22
+    ror     r21
+    ror     r20
+    ror     r19
+    ror     r18
+2:  dec     r16
+    brpl 1b
+    pop     r16
     ret
 ENDF __lshrdi3
-#endif /* defined (L_lshrdi3) */
+#endif /* defined (L_ashrdi3) */
 
 #if defined (L_ashldi3)
 ;; Shift left
 ;; r25:r18 = ashl64 (r25:r18, r17:r16)
 DEFUN __ashldi3
-    push r16
-    andi r16, 63
-    breq 2f
-1:  lsl  r18
-    rol  r19
-    rol  r20
-    rol  r21
-    rol  r22
-    rol  r23
-    rol  r24
-    rol  r25
-    dec  r16
-    brne 1b
-2:  pop  r16
+    push    r16
+0:  cpi     r16, 8
+    brlo 2f
+    mov     r25, r24
+    mov     r24, r23
+    mov     r23, r22
+    mov     r22, r21
+    mov     r21, r20
+    mov     r20, r19
+    mov     r19, r18
+    clr     r18
+    subi    r16, 8
+    rjmp 0b
+1:  lsl     r18
+    rol     r19
+    rol     r20
+    rol     r21
+    rol     r22
+    rol     r23
+    rol     r24
+    rol     r25
+2:  dec     r16
+    brpl 1b
+    pop     r16
     ret
 ENDF __ashldi3
 #endif /* defined (L_ashldi3) */
@@ -3096,21 +3105,32 @@ ENDF __ashldi3
 ;; Shift left
 ;; r25:r18 = rotl64 (r25:r18, r17:r16)
 DEFUN __rotldi3
-    push r16
-    andi r16, 63
-    breq 2f
-1:  lsl  r18
-    rol  r19
-    rol  r20
-    rol  r21
-    rol  r22
-    rol  r23
-    rol  r24
-    rol  r25
-    adc  r18, __zero_reg__
-    dec  r16
-    brne 1b
-2:  pop  r16
+    push    r16
+0:  cpi     r16, 8
+    brlo 2f
+    subi    r16, 8
+    mov     __tmp_reg__, r25
+    mov     r25, r24
+    mov     r24, r23
+    mov     r23, r22
+    mov     r22, r21
+    mov     r21, r20
+    mov     r20, r19
+    mov     r19, r18
+    mov     r18, __tmp_reg__
+    rjmp 0b
+1:  lsl     r18
+    rol     r19
+    rol     r20
+    rol     r21
+    rol     r22
+    rol     r23
+    rol     r24
+    rol     r25
+    adc     r18, __zero_reg__
+2:  dec     r16
+    brpl 1b
+    pop     r16
     ret
 ENDF __rotldi3
 #endif /* defined (L_rotldi3) */

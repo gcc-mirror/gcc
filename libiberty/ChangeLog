@@ -1,3 +1,14 @@
+2013-03-06  Tobias Burnus  <burnus@net-b.de>
+
+	* libiberty.texi: Update comment, remove lowersections.
+	* obstacks.texi: Regenerate.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56526
+	* simple-object-mach-o.c (simple_object_mach_o_segment): Initialize
+	wrapper_sect_offset to avoid a warning.
+
 2013-03-01  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* obstacks.texi (Obstacks): Trim @node to only contain the

@@ -3954,18 +3954,17 @@ free_scc_vn (void)
   XDELETE (optimistic_info);
 }
 
-/* Set *ID if we computed something useful in RESULT.  */
+/* Set *ID according to RESULT.  */
 
 static void
 set_value_id_for_result (tree result, unsigned int *id)
 {
-  if (result)
-    {
-      if (TREE_CODE (result) == SSA_NAME)
-	*id = VN_INFO (result)->value_id;
-      else if (is_gimple_min_invariant (result))
-	*id = get_or_alloc_constant_value_id (result);
-    }
+  if (result && TREE_CODE (result) == SSA_NAME)
+    *id = VN_INFO (result)->value_id;
+  else if (result && is_gimple_min_invariant (result))
+    *id = get_or_alloc_constant_value_id (result);
+  else
+    *id = get_next_value_id ();
 }
 
 /* Set the value ids in the valid hash tables.  */

@@ -241,13 +241,8 @@ central location from which to use, maintain, and distribute them.
 * Obstacks::                     Stacks of arbitrary objects.
 @end menu
 
-@c This is generated from the glibc manual using a make-obstacks-texi.sh
-@c script of Phil's.  Hope it's accurate.
-@lowersections
-@lowersections
+@c This is generated from the glibc manual using contrib/make-obstacks-texi.pl
 @include obstacks.texi
-@raisesections
-@raisesections
 
 @node Functions
 @chapter Function, Variable, and Macro Listing.

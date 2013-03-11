@@ -1,9 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-fno-delete-null-pointer-checks" } */
 
+__extension__ typedef __UINTPTR_TYPE__ uintptr_t;
+
 extern struct module __this_module;
 static inline void
-trace_module_get  (struct module *mod, unsigned long ip) { }
+trace_module_get  (struct module *mod, uintptr_t ip) { }
 struct module;
 static inline __attribute__((no_instrument_function))
 int try_module_get(struct module *module)
@@ -16,7 +18,7 @@ int try_module_get(struct module *module)
 	  __label__ __here;
 	  asm("");
 	  __here:
-	  trace_module_get(module, (unsigned long)&&__here);
+	  trace_module_get(module, (uintptr_t)&&__here);
 	}
       else
 	ret = 0;

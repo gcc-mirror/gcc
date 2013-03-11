@@ -1917,7 +1917,7 @@ create_access_replacement (struct access *access)
       && !DECL_ARTIFICIAL (access->base))
     {
       char *pretty_name = make_fancy_name (access->expr);
-      tree debug_expr = unshare_expr (access->expr), d;
+      tree debug_expr = unshare_expr_without_location (access->expr), d;
       bool fail = false;
 
       DECL_NAME (repl) = get_identifier (pretty_name);

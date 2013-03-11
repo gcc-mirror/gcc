@@ -1,4 +1,4 @@
-// String support -*- C++ -*-
+// <string> Forward declarations -*- C++ -*-
 
 // Copyright (C) 2001-2013 Free Software Foundation, Inc.
 //
@@ -37,13 +37,11 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/memoryfwd.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Alloc>
-    class allocator;
 
   /**
    *  @defgroup strings Strings

@@ -1,3 +1,18 @@
+2013-03-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/56524
+	* c-common.c (handle_optimize_attribute): Don't call
+	save_optabs_if_changed.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* c-pch.c (pch_init): Free target_validity at the end.
+
+2013-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pretty-print.c (pp_c_pretty_printer_init): Clear pp->flags.
+
 2013-02-28  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

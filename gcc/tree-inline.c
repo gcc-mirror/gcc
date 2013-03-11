@@ -651,6 +651,16 @@ remap_blocks (tree block, copy_body_data *id)
   return new_tree;
 }
 
+/* Remap the block tree rooted at BLOCK to nothing.  */
+static void
+remap_blocks_to_null (tree block, copy_body_data *id)
+{
+  tree t;
+  insert_decl_map (id, block, NULL_TREE);
+  for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
+    remap_blocks_to_null (t, id);
+}
+
 static void
 copy_statement_list (tree *tp)
 {
@@ -3908,12 +3918,20 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   /* Build a block containing code to initialize the arguments, the
      actual inline expansion of the body, and a label for the return
      statements within the function to jump to.  The type of the
-     statement expression is the return type of the function call.  */
-  id->block = make_node (BLOCK);
-  BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
-  BLOCK_SOURCE_LOCATION (id->block) = input_location;
+     statement expression is the return type of the function call.
+     ???  If the call does not have an associated block then we will
+     remap all callee blocks to NULL, effectively dropping most of
+     its debug information.  This should only happen for calls to
+     artificial decls inserted by the compiler itself.  We need to
+     either link the inlined blocks into the caller block tree or
+     not refer to them in any way to not break GC for locations.  */
   if (gimple_block (stmt))
-    prepend_lexical_block (gimple_block (stmt), id->block);
+    {
+      id->block = make_node (BLOCK);
+      BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
+      BLOCK_SOURCE_LOCATION (id->block) = LOCATION_LOCUS (input_location);
+      prepend_lexical_block (gimple_block (stmt), id->block);
+    }
 
   /* Local declarations will be replaced by their equivalents in this
      map.  */
@@ -3942,27 +3960,33 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 
   if (DECL_INITIAL (fn))
     {
-      tree *var;
+      if (gimple_block (stmt))
+	{
+	  tree *var;
 
-      prepend_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
-      gcc_checking_assert (BLOCK_SUBBLOCKS (id->block)
-			   && (BLOCK_CHAIN (BLOCK_SUBBLOCKS (id->block))
-			       == NULL_TREE));
-      /* Move vars for PARM_DECLs from DECL_INITIAL block to id->block,
-	 otherwise for DWARF DW_TAG_formal_parameter will not be children of
-	 DW_TAG_inlined_subroutine, but of a DW_TAG_lexical_block
-	 under it.  The parameters can be then evaluated in the debugger,
-	 but don't show in backtraces.  */
-      for (var = &BLOCK_VARS (BLOCK_SUBBLOCKS (id->block)); *var; )
-	if (TREE_CODE (DECL_ORIGIN (*var)) == PARM_DECL)
-	  {
-	    tree v = *var;
-	    *var = TREE_CHAIN (v);
-	    TREE_CHAIN (v) = BLOCK_VARS (id->block);
-	    BLOCK_VARS (id->block) = v;
-	  }
-	else
-	  var = &TREE_CHAIN (*var);
+	  prepend_lexical_block (id->block,
+				 remap_blocks (DECL_INITIAL (fn), id));
+	  gcc_checking_assert (BLOCK_SUBBLOCKS (id->block)
+			       && (BLOCK_CHAIN (BLOCK_SUBBLOCKS (id->block))
+				   == NULL_TREE));
+	  /* Move vars for PARM_DECLs from DECL_INITIAL block to id->block,
+	     otherwise for DWARF DW_TAG_formal_parameter will not be children of
+	     DW_TAG_inlined_subroutine, but of a DW_TAG_lexical_block
+	     under it.  The parameters can be then evaluated in the debugger,
+	     but don't show in backtraces.  */
+	  for (var = &BLOCK_VARS (BLOCK_SUBBLOCKS (id->block)); *var; )
+	    if (TREE_CODE (DECL_ORIGIN (*var)) == PARM_DECL)
+	      {
+		tree v = *var;
+		*var = TREE_CHAIN (v);
+		TREE_CHAIN (v) = BLOCK_VARS (id->block);
+		BLOCK_VARS (id->block) = v;
+	      }
+	    else
+	      var = &TREE_CHAIN (*var);
+	}
+      else
+	remap_blocks_to_null (DECL_INITIAL (fn), id);
     }
 
   /* Return statements in the function body will be replaced by jumps
@@ -4106,7 +4130,8 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
      inlined.  If we don't do this now, we can lose the information about the
      variables in the function when the blocks get blown away as soon as we
      remove the cgraph node.  */
-  (*debug_hooks->outlining_inline_function) (cg_edge->callee->symbol.decl);
+  if (gimple_block (stmt))
+    (*debug_hooks->outlining_inline_function) (cg_edge->callee->symbol.decl);
 
   /* Update callgraph if needed.  */
   cgraph_remove_node (cg_edge->callee);

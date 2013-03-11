@@ -2622,6 +2622,8 @@ expand_debug_parm_decl (tree decl)
 	      reg = gen_raw_REG (GET_MODE (reg), OUTGOING_REGNO (REGNO (reg)));
 	      incoming = replace_equiv_address_nv (incoming, reg);
 	    }
+	  else
+	    incoming = copy_rtx (incoming);
 	}
 #endif
 
@@ -2637,7 +2639,7 @@ expand_debug_parm_decl (tree decl)
 	  || (GET_CODE (XEXP (incoming, 0)) == PLUS
 	      && XEXP (XEXP (incoming, 0), 0) == virtual_incoming_args_rtx
 	      && CONST_INT_P (XEXP (XEXP (incoming, 0), 1)))))
-    return incoming;
+    return copy_rtx (incoming);
 
   return NULL_RTX;
 }
@@ -3704,6 +3706,56 @@ expand_debug_source_expr (tree exp)
   return op0;
 }
 
+/* Ensure INSN_VAR_LOCATION_LOC (insn) doesn't have unbound complexity.
+   Allow 4 levels of rtl nesting for most rtl codes, and if we see anything
+   deeper than that, create DEBUG_EXPRs and emit DEBUG_INSNs before INSN.  */
+
+static void
+avoid_complex_debug_insns (rtx insn, rtx *exp_p, int depth)
+{
+  rtx exp = *exp_p;
+
+  if (exp == NULL_RTX)
+    return;
+
+  if ((OBJECT_P (exp) && !MEM_P (exp)) || GET_CODE (exp) == CLOBBER)
+    return;
+
+  if (depth == 4)
+    {
+      /* Create DEBUG_EXPR (and DEBUG_EXPR_DECL).  */
+      rtx dval = make_debug_expr_from_rtl (exp);
+
+      /* Emit a debug bind insn before INSN.  */
+      rtx bind = gen_rtx_VAR_LOCATION (GET_MODE (exp),
+				       DEBUG_EXPR_TREE_DECL (dval), exp,
+				       VAR_INIT_STATUS_INITIALIZED);
+
+      emit_debug_insn_before (bind, insn);
+      *exp_p = dval;
+      return;
+    }
+
+  const char *format_ptr = GET_RTX_FORMAT (GET_CODE (exp));
+  int i, j;
+  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (exp)); i++)
+    switch (*format_ptr++)
+      {
+      case 'e':
+	avoid_complex_debug_insns (insn, &XEXP (exp, i), depth + 1);
+	break;
+
+      case 'E':
+      case 'V':
+	for (j = 0; j < XVECLEN (exp, i); j++)
+	  avoid_complex_debug_insns (insn, &XVECEXP (exp, i, j), depth + 1);
+	break;
+
+      default:
+	break;
+      }
+}
+
 /* Expand the _LOCs in debug insns.  We run this after expanding all
    regular insns, so that any variables referenced in the function
    will have their DECL_RTLs set.  */
@@ -3724,7 +3776,7 @@ expand_debug_locations (void)
     if (DEBUG_INSN_P (insn))
       {
 	tree value = (tree)INSN_VAR_LOCATION_LOC (insn);
-	rtx val;
+	rtx val, prev_insn, insn2;
 	enum machine_mode mode;
 
 	if (value == NULL_TREE)
@@ -3753,6 +3805,9 @@ expand_debug_locations (void)
 	  }
 
 	INSN_VAR_LOCATION_LOC (insn) = val;
+	prev_insn = PREV_INSN (insn);
+	for (insn2 = insn; insn2 != prev_insn; insn2 = PREV_INSN (insn2))
+	  avoid_complex_debug_insns (insn2, &INSN_VAR_LOCATION_LOC (insn2), 0);
       }
 
   flag_strict_aliasing = save_strict_alias;

@@ -1429,7 +1429,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
  
   for (j = 0; j < group_size; j++)
     if (!bitmap_bit_p (load_index, j))
-      return false;
+      {
+	sbitmap_free (load_index);
+	return false;
+      }
 
   sbitmap_free (load_index);
 
@@ -3138,7 +3141,8 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
   vec<slp_instance> slp_instances;
   slp_instance instance;
-  unsigned int i, vf;
+  slp_tree loads_node;
+  unsigned int i, j, vf;
   bool is_store = false;
 
   if (loop_vinfo)
@@ -3157,6 +3161,14 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       /* Schedule the tree of INSTANCE.  */
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
                                              instance, vf);
+
+      /* Clear STMT_VINFO_VEC_STMT of all loads.  With shared loads
+         between SLP instances we fail to properly initialize the
+	 vectorized SLP stmts and confuse different load permutations.  */
+      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, loads_node)
+	STMT_VINFO_VEC_STMT
+	  (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (loads_node)[0])) = NULL;
+
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.");

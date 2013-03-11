@@ -2491,6 +2491,12 @@ noce_process_if_block (struct noce_if_info *if_info)
 	  || ! noce_operand_ok (SET_SRC (set_b))
 	  || reg_overlap_mentioned_p (x, SET_SRC (set_b))
 	  || modified_between_p (SET_SRC (set_b), insn_b, jump)
+	  /* Avoid extending the lifetime of hard registers on small
+	     register class machines.  */
+	  || (REG_P (SET_SRC (set_b))
+	      && HARD_REGISTER_P (SET_SRC (set_b))
+	      && targetm.small_register_classes_for_mode_p
+		   (GET_MODE (SET_SRC (set_b))))
 	  /* Likewise with X.  In particular this can happen when
 	     noce_get_condition looks farther back in the instruction
 	     stream than one might expect.  */

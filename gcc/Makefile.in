@@ -494,10 +494,11 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-dg_target_exps:=alpha.exp,arm.exp,avr.exp,bfin.exp,cris.exp,frv.exp
-dg_target_exps:=$(dg_target_exps),i386.exp,ia64.exp,m68k.exp,microblaze.exp
-dg_target_exps:=$(dg_target_exps),mips.exp,powerpc.exp,rx.exp,s390.exp,sh.exp
-dg_target_exps:=$(dg_target_exps),sparc.exp,spu.exp,xstormy16.exp
+dg_target_exps:=aarch64.exp,alpha.exp,arm.exp,avr.exp,bfin.exp,cris.exp
+dg_target_exps:=$(dg_target_exps),epiphany.exp,frv.exp,i386.exp,ia64.exp
+dg_target_exps:=$(dg_target_exps),m68k.exp,microblaze.exp,mips.exp,powerpc.exp
+dg_target_exps:=$(dg_target_exps),rx.exp,s390.exp,sh.exp,sparc.exp,spu.exp
+dg_target_exps:=$(dg_target_exps),tic6x.exp,xstormy16.exp
 # This lists a couple of test files that take most time during check-gcc.
 # When doing parallelized check-gcc, these can run in parallel with the
 # remaining tests.  Each word in this variable stands for work for one
@@ -517,8 +518,10 @@ check_gcc_parallelize=execute.exp=execute/2* \
 		      compile.exp=compile/\[9pP\]*,builtins.exp \
 		      compile.exp=compile/\[013-8a-oq-zA-OQ-Z\]* \
 		      dg-torture.exp,ieee.exp \
-		      vect.exp,guality.exp,unsorted.exp \
-		      struct-layout-1.exp,stackalign.exp,$(dg_target_exps)
+		      vect.exp,unsorted.exp \
+		      guality.exp \
+		      struct-layout-1.exp,stackalign.exp \
+		      $(dg_target_exps)
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@

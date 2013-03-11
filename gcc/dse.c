@@ -959,7 +959,7 @@ delete_dead_store_insn (insn_info_t insn_info)
 
   if (!check_for_inc_dec_1 (insn_info))
     return;
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Locally deleting insn %d ",
 	       INSN_UID (insn_info->insn));
@@ -1196,7 +1196,7 @@ canon_address (rtx mem,
     {
       /* If this is a spill, do not do any further processing.  */
       alias_set_type alias_set = MEM_ALIAS_SET (mem);
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "found alias set %d\n", (int) alias_set);
       if (bitmap_bit_p (clear_alias_sets, alias_set))
 	{
@@ -1206,7 +1206,7 @@ canon_address (rtx mem,
 	  /* If the modes do not match, we cannot process this set.  */
 	  if (entry->mode != GET_MODE (mem))
 	    {
-	      if (dump_file)
+	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,
 			 "disqualifying alias set %d, (%s) != (%s)\n",
 			 (int) alias_set, GET_MODE_NAME (entry->mode),
@@ -1226,7 +1226,7 @@ canon_address (rtx mem,
 
   cselib_lookup (mem_address, address_mode, 1, GET_MODE (mem));
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  mem: ");
       print_inline_rtx (dump_file, mem_address, 0);
@@ -1266,7 +1266,7 @@ canon_address (rtx mem,
 
       *offset = 0;
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  if (expanded)
 	    {
@@ -1295,7 +1295,7 @@ canon_address (rtx mem,
 	{
 	  group_info_t group = get_group_info (address);
 
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  gid=%d offset=%d \n",
 		     group->id, (int)*offset);
 	  *base = NULL;
@@ -1309,11 +1309,11 @@ canon_address (rtx mem,
 
   if (*base == NULL)
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " no cselib val - should be a wild read.\n");
       return false;
     }
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  varying cselib base=%u:%u offset = %d\n",
 	     (*base)->uid, (*base)->hash, (int)*offset);
   return true;
@@ -1456,7 +1456,7 @@ record_store (rtx body, bb_info_t bb_info)
     {
       if (GET_CODE (XEXP (mem, 0)) == SCRATCH)
 	{
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, " adding wild read for (clobber (mem:BLK (scratch))\n");
 	  add_wild_read (bb_info);
 	  insn_info->cannot_delete = true;
@@ -1511,7 +1511,7 @@ record_store (rtx body, bb_info_t bb_info)
 
       store_info = (store_info_t) pool_alloc (rtx_store_info_pool);
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " processing spill store %d(%s)\n",
 		 (int) spill_alias_set, GET_MODE_NAME (GET_MODE (mem)));
     }
@@ -1527,7 +1527,7 @@ record_store (rtx body, bb_info_t bb_info)
       store_info = (store_info_t) pool_alloc (rtx_store_info_pool);
       set_usage_bits (group, offset, width, expr);
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " processing const base store gid=%d[%d..%d)\n",
 		 group_id, (int)offset, (int)(offset+width));
     }
@@ -1540,7 +1540,7 @@ record_store (rtx body, bb_info_t bb_info)
       store_info = (store_info_t) pool_alloc (cse_store_info_pool);
       group_id = -1;
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " processing cselib store [%d..%d)\n",
 		 (int)offset, (int)(offset+width));
     }
@@ -1627,7 +1627,7 @@ record_store (rtx body, bb_info_t bb_info)
 	      del = true;
 	      set_all_positions_unneeded (s_info);
 	    }
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "    trying spill store in insn=%d alias_set=%d\n",
 		     INSN_UID (ptr->insn), (int) s_info->alias_set);
 	}
@@ -1635,7 +1635,7 @@ record_store (rtx body, bb_info_t bb_info)
 	       && (s_info->cse_base == base))
 	{
 	  HOST_WIDE_INT i;
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "    trying store in insn=%d gid=%d[%d..%d)\n",
 		     INSN_UID (ptr->insn), s_info->group_id,
 		     (int)s_info->begin, (int)s_info->end);
@@ -2026,7 +2026,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
      in cache, so it is not going to be an expensive one.  Thus, we
      are not willing to do a multi insn shift or worse a subroutine
      call to get rid of the read.  */
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "trying to replace %smode load in insn %d"
 	     " from %smode store in insn %d\n",
 	     GET_MODE_NAME (read_mode), INSN_UID (read_insn->insn),
@@ -2039,7 +2039,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
   if (read_reg == NULL_RTX)
     {
       end_sequence ();
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " -- could not extract bits of stored value\n");
       return false;
     }
@@ -2064,7 +2064,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
       bitmap_and_into (regs_set, regs_live);
       if (!bitmap_empty_p (regs_set))
 	{
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
 		       "abandoning replacement because sequence clobbers live hardregs:");
@@ -2119,7 +2119,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
 	 rest of dse, play like this read never happened.  */
       read_insn->read_rec = read_info->next;
       pool_free (read_info_pool, read_info);
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " -- replaced the loaded MEM with ");
 	  print_simple_rtl (dump_file, read_reg);
@@ -2129,7 +2129,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
     }
   else
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " -- replacing the loaded MEM with ");
 	  print_simple_rtl (dump_file, read_reg);
@@ -2165,7 +2165,7 @@ check_mem_read_rtx (rtx *loc, void *data)
   if ((MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
       || (MEM_VOLATILE_P (mem)))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " adding wild read, volatile or barrier.\n");
       add_wild_read (bb_info);
       insn_info->cannot_delete = true;
@@ -2179,7 +2179,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 
   if (!canon_address (mem, &spill_alias_set, &group_id, &offset, &base))
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " adding wild read, canon_address failure.\n");
       add_wild_read (bb_info);
       return 0;
@@ -2223,7 +2223,7 @@ check_mem_read_rtx (rtx *loc, void *data)
       insn_info_t i_ptr = active_local_stores;
       insn_info_t last = NULL;
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " processing spill load %d\n",
 		 (int) spill_alias_set);
 
@@ -2237,7 +2237,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 
 	  if (store_info->alias_set == spill_alias_set)
 	    {
-	      if (dump_file)
+	      if (dump_file && (dump_flags & TDF_DETAILS))
 		dump_insn_info ("removing from active", i_ptr);
 
 	      active_local_stores_len--;
@@ -2258,7 +2258,7 @@ check_mem_read_rtx (rtx *loc, void *data)
       insn_info_t i_ptr = active_local_stores;
       insn_info_t last = NULL;
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  if (width == -1)
 	    fprintf (dump_file, " processing const load gid=%d[BLK]\n",
@@ -2327,7 +2327,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 
 	  if (remove)
 	    {
-	      if (dump_file)
+	      if (dump_file && (dump_flags & TDF_DETAILS))
 		dump_insn_info ("removing from active", i_ptr);
 
 	      active_local_stores_len--;
@@ -2345,7 +2345,7 @@ check_mem_read_rtx (rtx *loc, void *data)
     {
       insn_info_t i_ptr = active_local_stores;
       insn_info_t last = NULL;
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " processing cselib load mem:");
 	  print_inline_rtx (dump_file, mem, 0);
@@ -2357,7 +2357,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	  bool remove = false;
 	  store_info_t store_info = i_ptr->store_rec;
 
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, " processing cselib load against insn %d\n",
 		     INSN_UID (i_ptr->insn));
 
@@ -2387,7 +2387,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 
 	  if (remove)
 	    {
-	      if (dump_file)
+	      if (dump_file && (dump_flags & TDF_DETAILS))
 		dump_insn_info ("removing from active", i_ptr);
 
 	      active_local_stores_len--;
@@ -2501,7 +2501,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
   int mems_found = 0;
   memset (insn_info, 0, sizeof (struct insn_info));
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n**scanning insn=%d\n",
 	     INSN_UID (insn));
 
@@ -2563,7 +2563,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 	  insn_info_t i_ptr = active_local_stores;
 	  insn_info_t last = NULL;
 
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "%s call %d\n",
 		     const_call ? "const" : "memset", INSN_UID (insn));
 
@@ -2597,7 +2597,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 
 	      if (remove_store)
 		{
-		  if (dump_file)
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    dump_insn_info ("removing from active", i_ptr);
 
 		  active_local_stores_len--;
@@ -2624,7 +2624,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		  set_mem_size (mem, INTVAL (args[2]));
 		  body = gen_rtx_SET (VOIDmode, mem, args[1]);
 		  mems_found += record_store (body, bb_info);
-		  if (dump_file)
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "handling memset as BLKmode store\n");
 		  if (mems_found == 1)
 		    {
@@ -2670,7 +2670,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
   else
     mems_found += record_store (body, bb_info);
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "mems_found = %d, cannot_delete = %s\n",
 	     mems_found, insn_info->cannot_delete ? "true" : "false");
 
@@ -2856,7 +2856,7 @@ dse_step1 (void)
 		      && s_info->redundant_reason->insn
 		      && !ptr->cannot_delete)
 		    {
-		      if (dump_file)
+		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file, "Locally deleting insn %d "
 					    "because insn %d stores the "
 					    "same value and couldn't be "
@@ -2927,7 +2927,7 @@ dse_step2_init (void)
 	{
 	  bitmap_ior_into (group->store2_n, group->store1_n);
 	  bitmap_ior_into (group->store2_p, group->store1_p);
-	  if (dump_file)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "group %d is frame related ", i);
 	}
 
@@ -2938,7 +2938,7 @@ dse_step2_init (void)
       group->offset_map_p = XOBNEWVEC (&dse_obstack, int,
 				       group->offset_map_size_p);
       group->process_globally = false;
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "group %d(%d+%d): ", i,
 		   (int)bitmap_count_bits (group->store2_n),
@@ -3006,7 +3006,7 @@ dse_step2_spill (void)
      unused.  */
   current_position = 1;
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       bitmap_print (dump_file, clear_alias_sets,
 		    "clear alias sets              ", "\n");
@@ -3550,7 +3550,7 @@ dse_step4 (void)
 		      dse_confluence_n, dse_transfer_function,
 	   	      all_blocks, df_get_postorder (DF_BACKWARD),
 		      df_get_n_blocks (DF_BACKWARD));
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       basic_block bb;
 
@@ -3637,11 +3637,11 @@ dse_step5_nospill (void)
 		    {
 		      int index = get_bitmap_index (group_info, i);
 
-		      if (dump_file)
+		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file, "i = %d, index = %d\n", (int)i, index);
 		      if (index == 0 || !bitmap_bit_p (v, index))
 			{
-			  if (dump_file)
+			  if (dump_file && (dump_flags & TDF_DETAILS))
 			    fprintf (dump_file, "failing at i = %d\n", (int)i);
 			  deleted = false;
 			  break;
@@ -3669,7 +3669,7 @@ dse_step5_nospill (void)
 	      scan_stores_nospill (insn_info->store_rec, v, NULL);
 	      if (insn_info->wild_read)
 		{
-		  if (dump_file)
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "wild read\n");
 		  bitmap_clear (v);
 		}
@@ -3678,7 +3678,7 @@ dse_step5_nospill (void)
 		{
 		  if (dump_file && !insn_info->non_frame_wild_read)
 		    fprintf (dump_file, "regular read\n");
-                  else if (dump_file)
+                  else if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "non-frame wild read\n");
 		  scan_reads_nospill (insn_info, v, NULL);
 		}
@@ -3733,7 +3733,7 @@ dse_step5_spill (void)
 	      if (deleted && dbg_cnt (dse)
 		  && check_for_inc_dec_1 (insn_info))
 		{
-		  if (dump_file)
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Spill deleting insn %d\n",
 			     INSN_UID (insn_info->insn));
 		  delete_insn (insn_info->insn);
@@ -3792,7 +3792,7 @@ dse_step6 (void)
 		  && INSN_P (s_info->redundant_reason->insn))
 		{
 		  rtx rinsn = s_info->redundant_reason->insn;
-		  if (dump_file)
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Locally deleting insn %d "
 					"because insn %d stores the "
 					"same value and couldn't be "
@@ -3869,7 +3869,7 @@ rest_of_handle_dse (void)
       df_set_flags (DF_LR_RUN_DCE);
       df_analyze ();
       did_global = true;
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "doing global processing\n");
       dse_step3 (false);
       dse_step4 ();
@@ -3889,7 +3889,7 @@ rest_of_handle_dse (void)
 	  df_analyze ();
 	}
       did_global = true;
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "doing global spill processing\n");
       dse_step3 (true);
       dse_step4 ();

@@ -2616,15 +2616,13 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (!slp_node)
     {
-      if (modifier == NONE)
-	vec_oprnds0.create (1);
-      else if (modifier == WIDEN)
+      if (modifier == WIDEN)
 	{
 	  vec_oprnds0.create (multi_step_cvt ? vect_pow2(multi_step_cvt) : 1);
 	  if (op_type == binary_op)
 	    vec_oprnds1.create (1);
 	}
-      else
+      else if (modifier == NARROW)
 	vec_oprnds0.create (
 		   2 * (multi_step_cvt ? vect_pow2 (multi_step_cvt) : 1));
     }
@@ -3335,21 +3333,6 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
-  /* Allocate VECs for vector operands.  In case of SLP, vector operands are
-     created in the previous stages of the recursion, so no allocation is
-     needed, except for the case of shift with scalar shift argument.  In that
-     case we store the scalar operand in VEC_OPRNDS1 for every vector stmt to
-     be created to vectorize the SLP group, i.e., SLP_NODE->VEC_STMTS_SIZE.
-     In case of loop-based vectorization we allocate VECs of size 1.  We
-     allocate VEC_OPRNDS1 only in case of binary operation.  */
-  if (!slp_node)
-    {
-      vec_oprnds0.create (1);
-      vec_oprnds1.create (1);
-    }
-  else if (scalar_shift_arg)
-    vec_oprnds1.create (slp_node->vec_stmts_size);
-
   prev_stmt_info = NULL;
   for (j = 0; j < ncopies; j++)
     {
@@ -3369,6 +3352,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                     dump_printf_loc (MSG_NOTE, vect_location,
                                      "operand 1 using scalar mode.");
                   vec_oprnd1 = op1;
+                  vec_oprnds1.create (slp_node ? slp_node->vec_stmts_size : 1);
                   vec_oprnds1.quick_push (vec_oprnd1);
                   if (slp_node)
                     {
@@ -5985,6 +5969,11 @@ init_stmt_vec_info_vec (void)
 void
 free_stmt_vec_info_vec (void)
 {
+  unsigned int i;
+  vec_void_p info;
+  FOR_EACH_VEC_ELT (stmt_vec_info_vec, i, info)
+    if (info != NULL)
+      free_stmt_vec_info (STMT_VINFO_STMT ((stmt_vec_info) info));
   gcc_assert (stmt_vec_info_vec.exists ());
   stmt_vec_info_vec.release ();
 }

@@ -3886,7 +3886,8 @@ gfc_default_initializer (gfc_typespec *ts)
      types (otherwise we could use gfc_has_default_initializer()).  */
   for (comp = ts->u.derived->components; comp; comp = comp->next)
     if (comp->initializer || comp->attr.allocatable
-	|| (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->attr.allocatable))
+	|| (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+	    && CLASS_DATA (comp)->attr.allocatable))
       break;
 
   if (!comp)

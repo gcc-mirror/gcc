@@ -39,7 +39,7 @@ extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern void init_cumulative_args (CUMULATIVE_ARGS *,tree, rtx);
 extern bool microblaze_legitimate_address_p (enum machine_mode, rtx, bool);
-extern int microblaze_is_interrupt_handler (void);
+extern int microblaze_is_interrupt_variant (void);
 extern rtx microblaze_return_addr (int, rtx);
 extern int simple_memory_operand (rtx, enum machine_mode);
 extern int double_memory_operand (rtx, enum machine_mode);
@@ -49,6 +49,7 @@ extern HOST_WIDE_INT microblaze_initial_elimination_offset (int, int);
 extern void microblaze_declare_object (FILE *, const char *, const char *,
    const char *, int);
 extern void microblaze_asm_output_ident (const char *);
+extern int microblaze_legitimate_pic_operand (rtx);
 #endif  /* RTX_CODE */
 
 /* Declare functions in microblaze-c.c.  */

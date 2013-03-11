@@ -1,3 +1,56 @@
+2013-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51412
+	* cxx-pretty-print.c (pp_cxx_expression): Handle LAMBDA_EXPR.
+	* error.c (dump_expr): Likewise.
+
+2013-03-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51884
+	* class.c (modify_all_vtables): Mangle the vtable name before
+	entering dfs_walk.
+
+	* semantics.c (lambda_expr_this_capture): In unevaluated context,
+	just return the nearest 'this'.
+
+	PR c++/51494
+	PR c++/52183
+	PR c++/56222
+	* tree.c (maybe_dummy_object): Don't capture 'this'.
+	* semantics.c (maybe_resolve_dummy): New.
+	(finish_non_static_data_member): Use it.
+	(finish_qualified_id_expr): Don't test is_dummy_object.
+	* cp-tree.h: Declare maybe_resolve_dummy.
+	* call.c (build_new_method_call_1): Use it.
+
+	PR c++/56567
+	* semantics.c (apply_deduced_return_type): Don't allow returning
+	std::initializer_list.
+
+2013-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56534
+	* parser.c (cp_parser_elaborated_type_specifier): Don't call
+	check_elaborated_type_specifier when TREE_CODE (decl) != TYPE_DECL.
+	* decl.c (check_elaborated_type_specifier): Tidy.
+
+2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56543
+	* tree.c (strip_typedefs): Don't copy args if they are NULL.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_braced_list): For {} initialize
+	*non_constant_p to false.
+
+2013-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56464
+	PR c++/54383
+	* semantics.c (lambda_expr_this_capture): Handle NSDMI
+	and non-class scopes.
+
 2013-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Remove dead code.

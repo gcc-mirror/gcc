@@ -1,3 +1,88 @@
+2013-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/function_objects/mem_fn/55463.cc: Avoid
+	-Wunused warnings.
+
+2013-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/memoryfwd.h: New. Centralize forward declarations.
+	* include/bits/algorithmfwd.h: Consistent comments.
+	* include/bits/localefwd.h: Same.
+	* include/ext/vstring_fwd.h: Same.
+	* include/parallel/algorithmfwd.h: Same.
+	* include/parallel/numericfwd.h: Same.
+	* include/std/iosfwd: Same.
+
+	* include/bits/alloc_traits.h: Include memoryfwd.h, remove allocator
+	forward decl.
+	* include/ext/alloc_traits.h: Remove allocator forward decl.
+	* include/bits/stl_construct.h: Same.
+	* include/bits/stringfwd.h: Include memoryfwd.h, remove allocator
+	forward decl. Consistent comments.
+
+	* doc/doxygen/user.cfg.in (TEMPLATE_RELATIONS): To NO.
+
+	* include/Makefile.am (bits_headers): Add memoryfwd.h.
+	* include/Makefile.in: Regenerate.
+	* configure: Same.
+
+2013-03-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/vector.tcc (vector<>operator=(const vector<>&):
+	Reset pointers after deallocation when memory can be reused.
+	* testsuite/23_containers/vector/allocator/minimal.cc: Insert
+	elements to really challenge C++11 allocator integration.
+	* testsuite/23_containers/vector/allocator/copy.cc: Likewise.
+	* testsuite/23_containers/vector/allocator/copy_assign.cc:
+	Likewise.
+	* testsuite/23_containers/vector/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/vector/allocator/swap.cc: Likewise and
+	swap vector back before checks on memory/personality mapping are
+	performed.
+	* testsuite/23_containers/forward_list/allocator/minimal.cc:
+	Insert element to really challenge C++11 allocator integration.
+	* testsuite/23_containers/forward_list/allocator/copy.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/allocator/copy_assign.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/allocator/swap.cc: Likewise
+	and swap forward_list back before checks on memory/personality
+	mapping are performed.
+
+2013-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Likewise.
+
+2013-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* scripts/extract_symvers.pl: Omit symbols bound to base
+	versions.
+	* scripts/extract_symvers.in: Likewise.
+	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.9/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
+2013-03-04  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random (__gnu_cxx::von_mises_distribution<>):
+	Optimize generation function by pulling computation of __r into the
+	constructor for param_type.  Also compare _M_mu in operator==.
+	Fix comment.
+
 2013-03-02  Ulrich Drepper  <drepper@gmail.com>
 
 	Add triangular and von Mises distributions.

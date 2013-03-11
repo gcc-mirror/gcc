@@ -1107,7 +1107,8 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	 the operand might be hiding in the rightmost one.  */
       if (opcode == MULT_EXPR
 	  && gimple_assign_rhs_code (stmt) == opcode
-	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME)
+	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME
+	  && has_single_use (gimple_assign_rhs2 (stmt)))
 	{
 	  gimple stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt));
 	  if (stmt_is_power_of_op (stmt2, op))

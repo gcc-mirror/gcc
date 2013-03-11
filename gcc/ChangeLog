@@ -1,3 +1,376 @@
+2013-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/56347
+	* config/pa/pa.md (call_value): Check for calls to powf and direct to
+	new call patterns that clobber %fr12.
+	(call_val_powf, call_val_powf_pic, call_val_powf_64bit): New insn,
+	split and postreload patterns.
+	* config/pa/pa.c (pa_conditional_register_usage): Revert marking
+	registers %fr12 and %fr12R as call used.
+
+2013-03-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dse.c (delete_dead_store_insn): Respect TDF_DETAILS.
+	(canon_address, record_store, replace_read, check_mem_read_rtx,
+	scan_insn, dse_step1, dse_step2_init, dse_step2_spill,
+	dse_step4, dse_step5_nospill, dse_step5_spill, dse_step6,
+	rest_of_handle_dse): Likewise.
+
+2013-03-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/56524
+	* tree.h (tree_optimization_option): Rename target_optabs to optabs.
+	Add base_optabs.
+	(TREE_OPTIMIZATION_OPTABS): Update after previous field change.
+	(TREE_OPTIMIZATION_BASE_OPTABS): New macro.
+	(save_optabs_if_changed): Replace with...
+	(init_tree_optimization_optabs): ...this.
+	* optabs.c (save_optabs_if_changed): Rename to...
+	(init_tree_optimization_optabs): ...this.  Take the optimization node
+	as argument.  Do nothing if the base optabs are already correct.
+	Reuse the existing TREE_OPTIMIZATION_OPTABS memory if we need
+	to recompute optabs.
+	* function.h (function): Remove optabs field.
+	* function.c (invoke_set_current_function_hook): Call
+	init_tree_optimization_optabs.  Use the result to initialize
+	this_fn_optabs.
+
+2013-02-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c (expand_transaction): Do not set PR_INSTRUMENTEDCODE
+	if GTMA_HAS_NO_INSTRUMENTATION.
+	(generate_tm_state): Keep GTMA_HAS_NO_INSTRUMENTATION bit.
+	(ipa_tm_transform_transaction): Set GTMA_HAS_NO_INSTRUMENTATION.
+	* gimple.h (GTMA_HAS_NO_INSTRUMENTATION): Define.
+	* gimple-pretty-print.c (dump_gimple_transaction): Handle
+	GTMA_HAS_NO_INSTRUMENTATION.
+
+2013-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Don't link against
+	libasan_preinit.o.
+
+2013-03-08  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56478
+	* predict.c (is_comparison_with_loop_invariant_p): Change the
+	type of loop_step to tree.
+	(predict_loops): Adjust.
+	(predict_iv_comparison): Perform the computations on double_ints.
+
+2013-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56570
+	* tree-cfg.c (verify_expr_location_1): Verify locations for
+	DECL_DEBUG_EXPR.
+	* tree-sra.c (create_access_replacement): Strip locations
+	from DECL_DEBUG_EXPRs.
+
+2013-03-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (expand_call_inline): Do not associate
+	a BLOCK with the location in BLOCK_SOURCE_LOCATION.
+	* tree-cfg.c (verify_location): Verify BLOCK_SOURCE_LOCATION.
+
+2013-03-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-ter.c (is_replaceable_p): Do not TER across location
+	or block changes with -Og.  Fix for location / block encoding
+	changes and PHI arguments with locations.
+
+2013-03-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.c (struct bitmap_descriptor_d): Use unsigned HOST_WIDEST_INT
+	for all counters.
+	(struct output_info): Likewise.
+	(register_overhead): Remove bad gcc_assert.
+	(bitmap_find_bit): If there is only a single bitmap element, do not
+	count a miss as a search.
+	(print_statistics): Update for counter type changes.
+	(dump_bitmap_statistics): Likewise.  Print headers such that they
+	are properly lined up with the printed counters.
+
+2013-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56559
+	* tree-ssa-reassoc.c (zero_one_operation): When looking at rhs2,
+	check that it has only a single use.
+
+2013-03-07  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (fwhole-program): Discourage use in combination
+	with -flto.
+
+2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/t-arm (TM_H, OPTIONS_H_EXTRA): Add arm-cores.def.
+
+	PR tree-optimization/56539
+	* tree-tailcall.c (adjust_return_value_with_ops): Use GSI_SAME_STMT
+	instead of GSI_CONTINUE_LINKING as last argument to
+	force_gimple_operand_gsi.  Adjust function comment.
+
+	* config/aarch64/t-aarch64 (TM_H, OPTIONS_H_EXTRA): Add
+	aarch64-cores.def.
+
+	PR middle-end/56548
+	* expr.c (expand_cond_expr_using_cmove): When expanding cmove in
+	promoted mode, convert the result back to the original mode.
+
+2013-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56294
+	* tree-into-ssa.c (insert_phi_nodes_for): Add dumping.
+	(insert_updated_phi_nodes_compare_uids): New function.
+	(update_ssa): Sort symbols_to_rename after UID before
+	traversing it to insert PHI nodes.
+
+2013-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/50494
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p):
+	Do not adjust alignment of DECL_IN_CONSTANT_POOL decls.
+
+	Revert
+	2013-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/50494
+	* varasm.c (output_constant_def_1): Get the decl representing
+	the constant as argument.
+	(output_constant_def): Wrap output_constant_def_1.
+	(make_decl_rtl): Use output_constant_def_1 with the decl
+	representing the constant.
+	(build_constant_desc): Optionally re-use a decl already
+	representing the constant.
+	(tree_output_constant_def): Adjust.
+
+2013-03-06  Joey Ye  <joey.ye@arm.com>
+
+	PR lto/50293
+	* gcc.c (convert_white_space): New function.
+	(main): Handles white space in function name.
+
+2013-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/56529
+	* config/sh/sh.c (sh_option_override): Check for TARGET_DYNSHIFT
+	instead of TARGET_SH2 for call-table case.  Do not set sh_div_strategy
+	to SH_DIV_CALL_TABLE for TARGET_SH2.
+	* config.gcc (sh_multilibs): Add m2 and m2a to sh*-*-linux* multilib
+	list.
+	* doc/invoke.texi (SH options): Document mdiv= call-div1, call-fp,
+	call-table options.
+
+2013-03-05  Sterling Augustine  <saugustine@google.com>
+	    Cary Coutant  <ccoutant@google.com>
+
+	PR debug/55364
+	* dwarf2out.c (resolve_addr): Don't call
+	remove_loc_list_addr_table_entries a second time for the same
+	expression.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56510
+	* cfgexpand.c (expand_debug_parm_decl): Call copy_rtx on incoming.
+	(avoid_complex_debug_insns): New function.
+	(expand_debug_locations): Call it.
+
+	PR rtl-optimization/56484
+	* ifcvt.c (noce_process_if_block): If else_bb is NULL, avoid extending
+	lifetimes of hard registers on small register class machines.
+
+2013-03-05  David Holsgrove  <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze-protos.h: Rename
+	microblaze_is_interrupt_handler to microblaze_is_interrupt_variant.
+	* config/microblaze/microblaze.c (microblaze_attribute_table): Add
+	fast_interrupt.
+	(microblaze_fast_interrupt_function_p): New function.
+	(microblaze_is_interrupt_handler): Rename to
+	microblaze_is_interrupt_variant and add fast_interrupt check.
+	(microblaze_must_save_register): Use microblaze_is_interrupt_variant.
+	(save_restore_insns): Likewise.
+	(compute_frame_size): Likewise.
+	(microblaze_function_prologue): Add FAST_INTERRUPT_NAME.
+	(microblaze_globalize_label): Likewise.
+	* config/microblaze/microblaze.h: Define FAST_INTERRUPT_NAME.
+	* config/microblaze/microblaze.md: Use wrapper
+	microblaze_is_interrupt_variant.
+
+2013-03-05  Kai Tietz  <ktietz@redhat.com>
+
+	* sdbout.c (sdbout_one_type): Switch to current function's section
+	supporting cold/hot.
+
+2013-03-05  David Holsgrove  <david.holsgrove@xilinx.com>
+
+	* doc/invoke.texi (MicroBlaze): Add -mbig-endian, -mlittle-endian,
+	-mxl-reorder.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* ggc-common.c (gt_pch_save): For ENABLE_VALGRIND_CHECKING,
+	if VALGRIND_GET_VBITS is defined, temporarily make object
+	memory all defined, and restore previous valgrind addressability
+	and definability afterwards.  Free this_object at the end.
+
+	PR middle-end/56461
+	* lra.c (lra): Call lra_clear_live_ranges if live_p,
+	right before calling lra_create_live_ranges, also call it
+	when clearing live_p.  Only call lra_clear_live_ranges
+	at the end if live_p.
+
+	PR middle-end/56461
+	* sched-deps.c (delete_dep_node): Free DEP_REPLACE.
+
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56521
+	* tree-ssa-sccvn.c (set_value_id_for_result): Always initialize
+	value-id.
+
+2013-03-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c++/55135
+	* except.h (remove_unreachable_eh_regions): New prototype.
+	* except.c (remove_eh_handler_splicer): New function, split out
+	of remove_eh_handler.
+	(remove_eh_handler): Use remove_eh_handler_splicer.  Add comment
+	warning about running it on many EH regions one at a time.
+	(remove_unreachable_eh_regions_worker): New function, walk the
+	EH tree in depth-first order and remove non-marked regions.
+	(remove_unreachable_eh_regions): New function.
+	* tree-eh.c (mark_reachable_handlers): New function, split out
+	from remove_unreachable_handlers.
+	(remove_unreachable_handlers): Use mark_reachable_handlers and
+	remove_unreachable_eh_regions.
+	(remove_unreachable_handlers_no_lp): Use mark_reachable_handlers
+	and remove_unreachable_eh_regions.
+
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56525
+	* loop-init.c (fix_loop_structure): Remove loops in two stages,
+	not freeing them until the end.
+
+2013-03-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.h: Define DWARF2_ASM_LINE_DEBUG_INFO.
+
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56270
+	* tree-vect-slp.c (vect_schedule_slp): Clear vectorized stmts
+	of loads after scheduling an SLP instance.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (dg_target_exps): Add aarch64.exp, epiphany.exp and
+	tic6x.exp.
+	(check_gcc_parallelize): Run guality.exp as a separate job from
+	vect.exp with unsorted.exp and $(dg_target_exps) separately from
+	struct-layout-1.exp with stackalign.exp.
+
+	* alias.c (init_alias_analysis): Clear reg_known_equiv_p bitmap.
+
+	PR middle-end/56461
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Free
+	load_index sbitmap even if some bit in it isn't set.
+
+	PR middle-end/56461
+	* tree-ssa-loop-niter.c (bb_queue): Remove typedef.
+	(discover_iteration_bound_by_body_walk): Change queues to
+	vec<vec<basic_block> > and queue to vec<basic_block>.  Fix up
+	spelling in comment.  Call safe_push on queues[bound_index] directly.
+	Release queues[queue_index] in every iteration unconditionally.
+	Release bounds vector.
+
+	PR middle-end/56461
+	* tree-vect-stmts.c (free_stmt_vec_info_vec): Call
+	free_stmt_vec_info on any left-over stmt_vec_info in the vector.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Release
+	inner_phis vector.
+
+2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR lto/56515
+	* tree-inline.c (remap_blocks_to_null): New function.
+	(expand_call_inline): When expanding a call stmt without
+	an associated block inline remap all callee blocks to NULL.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56494
+	* simplify-rtx.c (simplify_truncation): If C is narrower than A,
+	optimize (truncate:A (subreg:B (truncate:C X) 0)) into
+	(subreg:A (truncate:C X) 0) instead of (truncate:A X).
+
+	PR middle-end/56461
+	* sel-sched-ir.c (free_sched_pools): Release
+	succs_info_pool.stack[succs_info_pool.max_top] vectors too
+	if succs_info_pool.max_top isn't -1.
+
+	PR bootstrap/56509
+	* opts.c (opts_obstack, opts_concat): Moved to...
+	* opts-common.c (opts_obstack, opts_concat): ... here.
+
+2013-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* diagnostic.c (diagnostic_append_note): Save and restore old prefix.
+
+2013-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-dfa.c (get_or_create_ssa_default_def): Use parameter fn in
+	all appropriate places.
+
+2013-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/56424
+	* ipa-split.c (split_function): Do not set the RSO flag if result is
+	not by reference and its type is a register type.
+
+2013-03-04  David Holsgrove  <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.c (microblaze_valid_pic_const): New 
+	(microblaze_legitimate_pic_operand): Likewise
+	* config/microblaze/microblaze.h (LEGITIMATE_PIC_OPERAND_P): calls 
+	new function microblaze_legitimate_pic_operand
+	* config/microblaze/microblaze-protos.h
+	(microblaze_legitimate_pic_operand): Declare.
+
+2013-03-04  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+
+	* config/microblaze/predicates.md (call_insn_simple_operand):
+	New predicate for supported rtx code types.
+	* config/microblaze/microblaze.md (call_internal1): Use
+	call_insn_simple_operand predicate.
+
+2013-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56461
+	* tree-loop-distribution.c (ldist_gen): Call partition_free after each
+	partitions.ordered_remove.
+
+	PR middle-end/56461
+	* tree-vect-stmts.c (vectorizable_conversion): Don't call
+	vec_oprnds0.create (1) for modifier == NONE.
+
+	PR middle-end/56461
+	* tree-vect-stmts.c (vectorizable_shift): Don't call create methods
+	on vec_oprnds0 or vec_oprnds1 before loop, only call it on
+	vec_oprnds1 right before pushing anything to it for
+	scalar_shift_arg.
+
+	PR middle-end/56461
+	* tree-vect-loop.c (destroy_loop_vec_info): For !clean_stmts, just
+	set nbbs to 0 instead of having separate code path.
+	(vect_analyze_loop_form): Call destroy_loop_vec_info with true
+	instead of false as last argument if returning NULL.
+
 2013-03-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* target.def (TARGET_OPTION_VALID_ATTRIBUTE_P): Update comments;
@@ -8,16 +381,17 @@
 	TARGET_OPTION_PRAGMA_PARSE.  Also copy-edit and correct markup.
 	* doc/tm.texi: Regenerated.
 
-2013-03-02  David Holsgrove <david.holsgrove@xilinx.com>
+2013-03-02  David Holsgrove  <david.holsgrove@xilinx.com>
 
-	*  config/microblaze/microblaze.c:
+	* config/microblaze/microblaze.c:
 	Check mcpu, pcmp requirement and set TARGET_REORDER to 0 if not met.
-	*  config/microblaze/microblaze.h: Add -mxl-reorder to DRIVER_SELF_SPECS
-	*  config/microblaze/microblaze.md: New bswapsi2 and bswaphi2
-	instructions emitted if TARGET_REORDER
-	*  config/microblaze/microblaze.opt: New option -mxl-reorder set to 1 
+	* config/microblaze/microblaze.h: Add -mxl-reorder to
+	DRIVER_SELF_SPECS.
+	* config/microblaze/microblaze.md: New bswapsi2 and bswaphi2.
+	instructions emitted if TARGET_REORDER.
+	* config/microblaze/microblaze.opt: New option -mxl-reorder set to 1 
 	or 0 for -m/-mno case, but initialises as 2 to detect default use case 
-	separately
+	separately.
 
 2013-03-01  Xinliang David Li  <davidxl@google.com>
 
@@ -344,10 +718,10 @@
 	2013-02-24  Catherine Moore  <clm@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
-	    Nathan Sidwell <nathan@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
-	    Chao-ying Fu <fu@mips.com>
+	    Chao-ying Fu  <fu@mips.com>
 	* doc/extend.texi: (micromips, nomicromips, nocompression):
 	Document new function attributes. 
 	* doc/invoke.texi (minterlink-compressed, mmicromips,
@@ -493,10 +867,10 @@
 2013-02-24  Catherine Moore  <clm@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
-	    Nathan Sidwell <nathan@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
-	    Chao-ying Fu <fu@mips.com>
+	    Chao-ying Fu  <fu@mips.com>
 
 	* doc/extend.texi: (micromips, nomicromips, nocompression):
 	Document new function attributes. 
@@ -799,7 +1173,7 @@
 	* config/i386/i386.c (initial_ix86_tune_features): Turn on fp
 	reassociation for avx2 targets.
 
-2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
 	* config/microblaze/microblaze.c: microblaze_has_clz = 0
 	Add version check for v8.10.a to enable microblaze_has_clz
@@ -807,9 +1181,9 @@
 	version and TARGET_PATTERN_COMPARE check
 	* config/microblaze/microblaze.md: New clzsi2 instruction
 
-2012-02-19  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
-	*  config/microblaze/microblaze.md (call_value_intern): Check symbol is 
+	* config/microblaze/microblaze.md (call_value_intern): Check symbol is
 	function before branching.
 
 2012-02-19  Andrey Belevantsev  <abel@ispras.ru>
@@ -1089,7 +1463,7 @@
 	* config/avr/avr-dimode.md (umulsidi3, mulsidi3): New expanders.
 	(umulsidi3_insn, mulsidi3_insn): New insns.
 
-2013-02-12  Christophe Lyon <christophe.lyon@linaro.org>
+2013-02-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm-protos.h (struct cpu_vec_costs): New struct type.
 	(struct tune_params): Add vec_costs field.
@@ -1143,7 +1517,7 @@
 	define ENDFILE_SPEC as TM_DESTRUCTOR.
 	* config/i386/darwin.h (ENDFILE_SPEC): Use TM_DESTRUCTOR.
 
-2013-02-11  Alexander Potapenko <glider@google.com>
+2013-02-11  Alexander Potapenko  <glider@google.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jakub Jelinek  <jakub@redhat.com>
 

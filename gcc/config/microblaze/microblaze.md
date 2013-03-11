@@ -961,7 +961,7 @@
 (define_insn "movsi_status"
   [(set (match_operand:SI 0 "register_operand" "=d,d,z")
         (match_operand:SI 1 "register_operand" "z,d,d"))]
-  "interrupt_handler"
+  "microblaze_is_interrupt_variant ()"
   "@
 	mfs\t%0,%1  #mfs
 	addk\t%0,%1,r0 #add movsi
@@ -1918,7 +1918,7 @@
   [(any_return)]
   ""
   { 
-    if (microblaze_is_interrupt_handler ())
+    if (microblaze_is_interrupt_variant ())
         return "rtid\tr14, 0\;%#";
     else
         return "rtsd\tr15, 8\;%#";
@@ -1935,7 +1935,7 @@
    (use (match_operand:SI 0 "register_operand" ""))]
   ""
   {	
-    if (microblaze_is_interrupt_handler ())
+    if (microblaze_is_interrupt_variant ())
         return "rtid\tr14,0 \;%#";
     else
         return "rtsd\tr15,8 \;%#";
@@ -2031,7 +2031,7 @@
   (set_attr "length"	"4")])
 
 (define_insn "call_internal1"
-  [(call (mem (match_operand:SI 0 "call_insn_operand" "ri"))
+  [(call (mem (match_operand:SI 0 "call_insn_simple_operand" "ri"))
 	 (match_operand:SI 1 "" "i"))
   (clobber (reg:SI R_SR))]
   ""

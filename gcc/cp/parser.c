@@ -14248,12 +14248,14 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 				   typename_type,
 				   /*complain=*/tf_error);
       /* If the `typename' keyword is in effect and DECL is not a type
-	 decl. Then type is non existant.   */
+	 decl, then type is non existent.   */
       else if (tag_type == typename_type && TREE_CODE (decl) != TYPE_DECL)
-        type = NULL_TREE; 
-      else 
-	type = check_elaborated_type_specifier (tag_type, decl,
+        ; 
+      else if (TREE_CODE (decl) == TYPE_DECL)
+        type = check_elaborated_type_specifier (tag_type, decl,
 						/*allow_template_p=*/true);
+      else if (decl == error_mark_node)
+	type = error_mark_node; 
     }
 
   if (!type)
@@ -17854,6 +17856,8 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
     }
+  else
+    *non_constant_p = false;
   /* Now, there should be a trailing `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
   TREE_TYPE (initializer) = init_list_type_node;
