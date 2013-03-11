@@ -1,3 +1,8 @@
+2013-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (STRUCTURE and RECORD): State more clearly how
+	to convert them into derived types.
+
 2013-03-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/56575
