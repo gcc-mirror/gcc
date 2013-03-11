@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the gcc package.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
 # Philipp Thomas <pth@suse.de>, 1999, 2000, 2001, 2011.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012, 2013.
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 4.8-b20130224\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2013-02-24 01:09+0000\n"
-"PO-Revision-Date: 2013-03-09 17:18+0200\n"
+"PO-Revision-Date: 2013-03-09 18:08+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -760,9 +760,9 @@ msgid "Removing '%s'\n"
 msgstr "»%s« wird gelöscht\n"
 
 #: gcov.c:979
-#, fuzzy, c-format
+#, c-format
 msgid "%s:source file is newer than notes file '%s'\n"
-msgstr "%s: Quelldatei ist neuer als Graphen-Datei »%s«\n"
+msgstr "%s:Quelldatei ist neuer als Hinweis-Datei »%s«\n"
 
 #: gcov.c:984
 #, c-format
@@ -770,14 +770,14 @@ msgid "(the message is only displayed one per source file)\n"
 msgstr "(die Meldung wird für jede Quelldatei nur einmal angezeigt)\n"
 
 #: gcov.c:1009
-#, fuzzy, c-format
+#, c-format
 msgid "%s:cannot open notes file\n"
-msgstr "%s: Graphen-Datei kann nicht geöffnet werden\n"
+msgstr "%s:Hinweis-Datei kann nicht geöffnet werden\n"
 
 #: gcov.c:1015
-#, fuzzy, c-format
+#, c-format
 msgid "%s:not a gcov notes file\n"
-msgstr "%s: keine gcov-Datei\n"
+msgstr "%s:keine gcov-Hinweis-Datei\n"
 
 #: gcov.c:1028
 #, c-format
@@ -815,9 +815,9 @@ msgid "%s:version '%.4s', prefer version '%.4s'\n"
 msgstr "%s: Version »%.4s«, aber Version »%.4s« wird bevorzugt\n"
 
 #: gcov.c:1251
-#, fuzzy, c-format
+#, c-format
 msgid "%s:stamp mismatch with notes file\n"
-msgstr "%s: Marke passt nicht zur Graph-Datei\n"
+msgstr "%s: Marke passt nicht zur Hinweis-Datei\n"
 
 #: gcov.c:1286
 #, c-format
@@ -1682,9 +1682,8 @@ msgid "The maximum number of peelings of a single loop"
 msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife"
 
 #: params.def:300
-#, fuzzy
 msgid "The maximum number of branches on the path through the peeled sequence"
-msgstr "Höchstzahl der Iterationen durch CFG zur Regionserweiterung"
+msgstr "Höchstzahl der Zweige auf dem Pfad durch die geschälte Sequenz"
 
 #: params.def:305
 msgid "The maximum number of insns of a completely peeled loop"
@@ -1987,9 +1986,8 @@ msgid "Maximum size of a SCC before SCCVN stops processing a function"
 msgstr "Maximalgröße eines SCC bevor SCCVN zur Bearbeitung einer Funktion anhält"
 
 #: params.def:777
-#, fuzzy
 msgid "Maximum number of disambiguations to perform per memory access"
-msgstr "Höchstzahl von bedingten Speicherpaaren, die ausgegeben werden können"
+msgstr "Höchstzahl der Auflösungen von Mehrdeutigkeiten, um Speicherzugriff durchzuführen"
 
 #: params.def:782
 msgid "Max loops number for regional RA"
@@ -2457,14 +2455,14 @@ msgstr "<unbekannt>"
 #: config/aarch64/aarch64.c:3277 config/aarch64/aarch64.c:3288
 #: config/aarch64/aarch64.c:3298 config/aarch64/aarch64.c:3313
 #: config/aarch64/aarch64.c:3332
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand for '%%%c'"
-msgstr "ungültiger Operand für Code »%c«"
+msgstr "ungültiger Operand für »%%%c«"
 
 #: config/aarch64/aarch64.c:3348 config/aarch64/aarch64.c:3361
 #, c-format
 msgid "incompatible floating point / vector register operand for '%%%c'"
-msgstr ""
+msgstr "unverträglicher Gleitkomma- / Vektorregisteroperand für »%%%c«"
 
 #: config/aarch64/aarch64.c:3399 config/arm/arm.c:18223
 #, c-format
@@ -2472,92 +2470,92 @@ msgid "missing operand"
 msgstr "fehlender Operand"
 
 #: config/aarch64/aarch64.c:3462
-#, fuzzy, c-format
+#, c-format
 msgid "invalid constant"
-msgstr "Ungültiger Befehl:"
+msgstr "ungültige Konstante"
 
 #: config/aarch64/aarch64.c:3465
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand"
-msgstr "ungültiger %%d-Operand"
+msgstr "ungültiger Operand"
 
 #: config/aarch64/aarch64.c:3545
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand prefix '%%%c'"
-msgstr "ungültiger Operandencode »%c«"
+msgstr "ungültiger Operandenpräfix »%%%c«"
 
 #: config/alpha/alpha.c:5065
 #, c-format
 msgid "invalid %%H value"
-msgstr "Ungültiger %%H-Wert"
+msgstr "ungültiger %%H-Wert"
 
 #: config/alpha/alpha.c:5086 config/bfin/bfin.c:1426
 #, c-format
 msgid "invalid %%J value"
-msgstr "Ungültiger %%J-Wert"
+msgstr "ungültiger %%J-Wert"
 
 #: config/alpha/alpha.c:5116 config/ia64/ia64.c:5442
 #, c-format
 msgid "invalid %%r value"
-msgstr "Ungültiger %%r-Wert"
+msgstr "ungültiger %%r-Wert"
 
 #: config/alpha/alpha.c:5126 config/ia64/ia64.c:5396
 #: config/rs6000/rs6000.c:15113 config/xtensa/xtensa.c:2356
 #, c-format
 msgid "invalid %%R value"
-msgstr "Ungültiger %%R-Wert"
+msgstr "ungültiger %%R-Wert"
 
 #: config/alpha/alpha.c:5132 config/rs6000/rs6000.c:15033
 #: config/xtensa/xtensa.c:2323
 #, c-format
 msgid "invalid %%N value"
-msgstr "Ungültiger %%N-Wert"
+msgstr "ungültiger %%N-Wert"
 
 #: config/alpha/alpha.c:5140 config/rs6000/rs6000.c:15061
 #, c-format
 msgid "invalid %%P value"
-msgstr "Ungültiger %%P-Wert"
+msgstr "ungültiger %%P-Wert"
 
 #: config/alpha/alpha.c:5148
 #, c-format
 msgid "invalid %%h value"
-msgstr "Ungültiger %%h-Wert"
+msgstr "ungültiger %%h-Wert"
 
 #: config/alpha/alpha.c:5156 config/xtensa/xtensa.c:2349
 #, c-format
 msgid "invalid %%L value"
-msgstr "Ungültiger %%L-Wert"
+msgstr "ungültiger %%L-Wert"
 
 #: config/alpha/alpha.c:5195 config/rs6000/rs6000.c:15015
 #, c-format
 msgid "invalid %%m value"
-msgstr "Ungültiger %%m-Wert"
+msgstr "ungültiger %%m-Wert"
 
 #: config/alpha/alpha.c:5203 config/rs6000/rs6000.c:15023
 #, c-format
 msgid "invalid %%M value"
-msgstr "Ungültiger %%M-Wert"
+msgstr "ungültiger %%M-Wert"
 
 #: config/alpha/alpha.c:5247
 #, c-format
 msgid "invalid %%U value"
-msgstr "Ungültiger %%U-Wert"
+msgstr "ungültiger %%U-Wert"
 
 #: config/alpha/alpha.c:5255 config/alpha/alpha.c:5266
 #: config/rs6000/rs6000.c:15121
 #, c-format
 msgid "invalid %%s value"
-msgstr "Ungültiger %%s-Wert"
+msgstr "ungültiger %%s-Wert"
 
 #: config/alpha/alpha.c:5277
 #, c-format
 msgid "invalid %%C value"
-msgstr "Ungültiger %%C-Wert"
+msgstr "ungültiger %%C-Wert"
 
 #: config/alpha/alpha.c:5314 config/rs6000/rs6000.c:14880
 #, c-format
 msgid "invalid %%E value"
-msgstr "Ungültiger %%E-Wert"
+msgstr "ungültiger %%E-Wert"
 
 #: config/alpha/alpha.c:5339 config/alpha/alpha.c:5387
 #, c-format
@@ -2568,7 +2566,7 @@ msgstr "Unbekanntes relocation unspec"
 #: config/rs6000/rs6000.c:15470 config/spu/spu.c:1447
 #, c-format
 msgid "invalid %%xn code"
-msgstr "Ungültiger %%xn-Code"
+msgstr "ungültiger %%xn-Code"
 
 #: config/arm/arm.c:17560 config/arm/arm.c:17578
 #, c-format
@@ -2611,9 +2609,9 @@ msgstr "Anweisung wird niemals ausgeführt"
 
 #. Former Maverick support, removed after GCC-4.7.
 #: config/arm/arm.c:17930
-#, fuzzy, c-format
+#, c-format
 msgid "obsolete Maverick format code '%c'"
-msgstr "Operand für Code »%c« nicht unterstützt"
+msgstr "veralteter Maverick-Formatcode »%c«"
 
 #: config/arm/arm.c:20988
 msgid "function parameters cannot have __fp16 type"
@@ -2653,9 +2651,9 @@ msgid "internal compiler error.  Bad address:"
 msgstr "Interner Compiler-Fehler. Falsche Adresse:"
 
 #: config/avr/avr.c:2234
-#, fuzzy, c-format
+#, c-format
 msgid "Unsupported code '%c'for fixed-point:"
-msgstr "Operand für Code »%c« nicht unterstützt"
+msgstr "Code »%c« für Festkomma nicht unterstützt:"
 
 #: config/avr/avr.c:2243
 msgid "internal compiler error.  Unknown mode:"
@@ -2687,9 +2685,8 @@ msgid "internal compiler error.  Incorrect shift:"
 msgstr "Interner Compiler-Fehler. Falsche Verschiebung:"
 
 #: config/avr/avr.c:7071
-#, fuzzy
 msgid "unsupported fixed-point conversion"
-msgstr "nicht unterstützte Version"
+msgstr "Festkommaumwandlung nicht unterstützt"
 
 #: config/bfin/bfin.c:1388
 #, c-format
@@ -2939,24 +2936,24 @@ msgid "invalid UNSPEC as operand"
 msgstr "ungültiges UNSPEC als Operand"
 
 #: config/i386/i386.c:14164
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand size for operand code 'O'"
-msgstr "ungültige Operandengröße für Operandencode »%c«"
+msgstr "ungültige Operandengröße für Operandencode »O«"
 
 #: config/i386/i386.c:14199
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand size for operand code 'z'"
-msgstr "ungültige Operandengröße für Operandencode »%c«"
+msgstr "ungültige Operandengröße für Operandencode »z«"
 
 #: config/i386/i386.c:14269
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand type used with operand code 'Z'"
-msgstr "ungültiger Operandentyp mit Operandencode »%c« verwendet"
+msgstr "ungültiger Operandentyp mit Operandencode »Z« verwendet"
 
 #: config/i386/i386.c:14274
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand size for operand code 'Z'"
-msgstr "ungültige Operandengröße für Operandencode »%c«"
+msgstr "ungültige Operandengröße für Operandencode »Z«"
 
 #: config/i386/i386.c:14349
 #, c-format
@@ -2969,9 +2966,9 @@ msgid "operand is not a condition code, invalid operand code 'D'"
 msgstr "Operand ist kein Bedingungscode, ungültiger Operandencode »D«"
 
 #: config/i386/i386.c:14439
-#, fuzzy, c-format
+#, c-format
 msgid "operand is not a condition code, invalid operand code '%c'"
-msgstr "Operand ist kein Bedingungscode, ungültiger Operandencode »D«"
+msgstr "Operand ist kein Bedingungscode, ungültiger Operandencode »%c«"
 
 #: config/i386/i386.c:14452
 #, c-format
@@ -3890,9 +3887,8 @@ msgid "{anonymous}"
 msgstr "{anonym}"
 
 #: cp/error.c:1035
-#, fuzzy
 msgid "(anonymous namespace)"
-msgstr "(anonym)"
+msgstr "(anonymer Namensraum)"
 
 #: cp/error.c:1133
 msgid "<template arguments error>"
@@ -4014,14 +4010,14 @@ msgid "required from here"
 msgstr "von hier erfordert"
 
 #: cp/error.c:3158
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d:   [ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
-msgstr "%s:%d:%d:   [ %d Instanziierungskontexte werden übersprungen ]\n"
+msgstr "%s:%d:%d:   [ %d Instanziierungskontexte werden übersprungen, -ftemplate-backtrace-limit=0 zum Deaktivieren verwenden ]\n"
 
 #: cp/error.c:3163
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:   [ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
-msgstr "%s:%d:   [ %d Instanziierungskontexte werden übersprungen ]\n"
+msgstr "%s:%d:   [ %d Instanziierungskontexte werden übersprungen, -ftemplate-backtrace-limit=0 zum Deaktivieren verwenden ]\n"
 
 #: cp/error.c:3227
 #, c-format
@@ -4186,27 +4182,24 @@ msgid "Error:"
 msgstr "Fehler:"
 
 #: fortran/error.c:842
-#, fuzzy
 msgid "Fortran 2008 obsolescent feature:"
-msgstr "Fortran 2008: Veraltete Funktion: ENTRY-Anweisung bei %C"
+msgstr "Fortran 2008: Veraltete Funktion:"
 
 #: fortran/error.c:851
 msgid "GNU Extension:"
-msgstr ""
+msgstr "GNU-Erweiterung"
 
 #: fortran/error.c:854
 msgid "Legacy Extension:"
-msgstr ""
+msgstr "Alte Erweiterung:"
 
 #: fortran/error.c:857
-#, fuzzy
 msgid "Obsolescent feature:"
-msgstr "Veraltet: Berechnetes GOTO bei %C"
+msgstr "Veraltete Funktion:"
 
 #: fortran/error.c:860
-#, fuzzy
 msgid "Deleted feature:"
-msgstr "Operator erwartet"
+msgstr "Gelöschte Funktion:"
 
 #: fortran/error.c:1035
 msgid "Fatal Error:"
@@ -4869,9 +4862,8 @@ msgid "-c required for gnat2why"
 msgstr "Für gnat2why wird -c benötigt"
 
 #: ada/gcc-interface/lang-specs.h:65
-#, fuzzy
 msgid "-c required for gnat2scil"
-msgstr "Für gnat2why wird -c benötigt"
+msgstr "Für gnat2scil wird -c benötigt"
 
 #: config/mcore/mcore.h:53
 msgid "the m210 does not have little endian support"
@@ -5091,19 +5083,16 @@ msgid "Warn about real-literal-constants with 'q' exponent-letter"
 msgstr "Bei literalen Realkonstanten mit »q«-Exponentenbuchstaben warnen"
 
 #: fortran/lang.opt:262
-#, fuzzy
 msgid "Warn when a left-hand-side array variable is reallocated"
-msgstr "Warnen, wenn Registervariable als »volatile« deklariert ist"
+msgstr "Warnen, wenn Feldvariable auf linker Seite wiederholt reserviert wird"
 
 #: fortran/lang.opt:266
-#, fuzzy
 msgid "Warn when a left-hand-side variable is reallocated"
-msgstr "Warnen, wenn Registervariable als »volatile« deklariert ist"
+msgstr "Warnen, wenn Variable auf linker Seite wiederholt reserviert wird"
 
 #: fortran/lang.opt:270
-#, fuzzy
 msgid "Warn if the pointer in a pointer assignment might outlive its target"
-msgstr "Zielausdruck in Zeigerzuweisung bei %L muss ein Zeigerergebnis liefern"
+msgstr "Warnen, wenn der Zeiger in Zeigerzuweisung sein Ziel überleben könnte"
 
 #: fortran/lang.opt:278
 msgid "Warn about \"suspicious\" constructs"
@@ -5879,9 +5868,8 @@ msgid "Warn when the compiler reorders code"
 msgstr "Warnen, wenn der Compiler Code umsortiert"
 
 #: c-family/c.opt:654
-#, fuzzy
 msgid "Warn about returning a pointer/reference to a local or temporary variable."
-msgstr "Referenz auf temporären Wert wird zurückgegeben"
+msgstr "Bei Rückgabe eines Zeigers/Referenz an lokale oder temporäre Variable warnen."
 
 #: c-family/c.opt:658
 msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)"
@@ -5968,13 +5956,12 @@ msgid "Warn if a caller of a function, marked with attribute warn_unused_result,
 msgstr "Warnen, wenn der Rückgabewert der mit dem Attribut warn_unused_result definierten Funktion ignoriert wird"
 
 #: c-family/c.opt:770
-#, fuzzy
 msgid "Warn about using variadic macros"
-msgstr "Nicht bei Verwendung variadischer Makros bei -pedantic warnen"
+msgstr "Bei Verwendung variadischer Makros warnen"
 
 #: c-family/c.opt:774
 msgid "Warn about questionable usage of the macros used to retrieve variable arguments"
-msgstr ""
+msgstr "Bei fraglicher Verwendung der Makros, die variable Argumente ermitteln, warnen"
 
 #: c-family/c.opt:778
 msgid "Warn if a variable length array is used"
@@ -5985,9 +5972,8 @@ msgid "Warn when a register variable is declared volatile"
 msgstr "Warnen, wenn Registervariable als »volatile« deklariert ist"
 
 #: c-family/c.opt:786
-#, fuzzy
 msgid "Warn if a virtual base has a non-trivial move assignment operator"
-msgstr "%qT hat virtuelle Basen, Standard-Zuweisungsoperator (move) kann nicht erzeugt werden"
+msgstr "Warnen, wenn virtuelle Basis einen nicht trivialen Zuweisungsoperator (move) hat"
 
 #: c-family/c.opt:790
 msgid "In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard."
@@ -5998,9 +5984,8 @@ msgid "Warn when a literal '0' is used as null pointer"
 msgstr "Warnen, wenn ein Literal '0' als NULL-Zeiger verwendet wird"
 
 #: c-family/c.opt:798
-#, fuzzy
 msgid "Warn about useless casts"
-msgstr "Bei Pragmamissbrauch warnen"
+msgstr "Bei unnützen Umwandlungen warnen"
 
 #: c-family/c.opt:802
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)"
@@ -6012,7 +5997,7 @@ msgstr "Semantik der Zugriffskontrolle für Klassenelemente erzwingen"
 
 #: c-family/c.opt:814
 msgid "-fada-spec-parent=unit  Dump Ada specs as child units of given parent"
-msgstr ""
+msgstr "-fada-spec-parent=Einheit Ada-Spezifikationen als Kind-Einheiten der angegebenen Elterneinheit ausgeben"
 
 #: c-family/c.opt:817 c-family/c.opt:824 c-family/c.opt:902 c-family/c.opt:921
 #: c-family/c.opt:944 c-family/c.opt:950 c-family/c.opt:957 c-family/c.opt:981
@@ -6306,9 +6291,8 @@ msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
 msgstr "-ftabstop=<Zahl>\tTabulatorentfernungen für Spaltenmeldungen"
 
 #: c-family/c.opt:1159
-#, fuzzy
 msgid "Set the maximum number of template instantiation notes for a single warning or error"
-msgstr "Höchstzahl der Iterationen für RPTS auf N setzen"
+msgstr "Höchstzahl der Template-Instanziierungshinweise für einzelne Warnung oder Fehler setzen"
 
 #: c-family/c.opt:1166
 msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth"
@@ -6447,9 +6431,8 @@ msgid "Deprecated in favor of -std=c++11"
 msgstr "Veraltet zugunsten von -std=c++11"
 
 #: c-family/c.opt:1336
-#, fuzzy
 msgid "Conform to the ISO 201y(7?) C++ draft standard (experimental and incomplete support)"
-msgstr "Mit dem Standard ISO 2011 C++ (experimentelle und unvollständige Unterstützung) übereinstimmen"
+msgstr "Mit dem Standardentwurf ISO 201y(7?) C++ (experimentelle und unvollständige Unterstützung) übereinstimmen"
 
 #: c-family/c.opt:1340 c-family/c.opt:1426
 msgid "Conform to the ISO 2011 C standard (experimental and incomplete support)"
@@ -6484,9 +6467,8 @@ msgid "Deprecated in favor of -std=gnu++11"
 msgstr "Veraltet zugunsten von -std=gnu++11"
 
 #: c-family/c.opt:1382
-#, fuzzy
 msgid "Conform to the ISO 201y(7?) C++ draft standard with GNU extensions (experimental and incomplete support)"
-msgstr "Mit dem Standard ISO 2011 C++ mit GNU-Erweiterungen (experimentelle und unvollstänndige Unterstützung) übereinstimmen"
+msgstr "Mit dem Standardentwurf ISO 201y(7?) C++ mit GNU-Erweiterungen (experimentelle und unvollstänndige Unterstützung) übereinstimmen"
 
 #: c-family/c.opt:1386
 msgid "Conform to the ISO 2011 C standard with GNU extensions (experimental and incomplete support)"
@@ -6601,9 +6583,9 @@ msgid "-mpointer-size=[no,32,short,64,long]\tSet the default pointer size"
 msgstr ""
 
 #: config/vms/vms.opt:42
-#, fuzzy, c-format
+#, c-format
 msgid "unknown pointer size model %qs"
-msgstr "unbekanntes TLS-Modell %qs"
+msgstr "unbekanntes Zeigergrößenmodell %qs"
 
 #: config/mcore/mcore.opt:23
 msgid "Generate code for the M*Core M210"
@@ -7082,9 +7064,8 @@ msgid "Assume target CPU is configured as big endian"
 msgstr "Ziel-CPU als »big endian«-konfiguriert annehmen"
 
 #: config/aarch64/aarch64.opt:68
-#, fuzzy
 msgid "Generate code which uses only the general registers"
-msgstr "FPU verwendenden Code erzeugen"
+msgstr "Nur die allgemeinen Register verwendenden Code erzeugen"
 
 #: config/aarch64/aarch64.opt:72 config/arm/arm.opt:151
 #: config/microblaze/microblaze.opt:64
@@ -7092,9 +7073,8 @@ msgid "Assume target CPU is configured as little endian"
 msgstr "Ziel-CPU als »little endian«-konfiguriert annehmen"
 
 #: config/aarch64/aarch64.opt:76
-#, fuzzy
 msgid "Specify the code model"
-msgstr "Codemodell auswählen"
+msgstr "Codemodell angeben"
 
 #: config/aarch64/aarch64.opt:80
 msgid "Don't assume that unaligned accesses are handled by the system"
@@ -7106,21 +7086,19 @@ msgstr "Rahmenzeiger in Blattfunktionen auslassen"
 
 #: config/aarch64/aarch64.opt:88
 msgid "Specify TLS dialect"
-msgstr ""
+msgstr "TLS-Dialekt angeben"
 
 #: config/aarch64/aarch64.opt:92
-#, fuzzy
 msgid "-march=ARCH\tUse features of architecture ARCH"
-msgstr "-mcpu=CPU\tEigenschaften der angegebenen CPU verwenden und entsprechend Code planen"
+msgstr "-march=ARCH\tEigenschaften der angegebenen Architektur ARCH verwenden"
 
 #: config/aarch64/aarch64.opt:96
-#, fuzzy
 msgid "-mcpu=CPU\tUse features of and optimize for CPU"
-msgstr "-mcpu=CPU\tEigenschaften der angegebenen CPU verwenden und entsprechend Code planen"
+msgstr "-mcpu=CPU\tEigenschaften der angegebenen CPU verwenden und dafür optimieren"
 
 #: config/aarch64/aarch64.opt:100
 msgid "-mtune=CPU\tOptimize for CPU"
-msgstr ""
+msgstr "-mtune=CPU\tFür CPU optimieren"
 
 #: config/linux.opt:24
 msgid "Use Bionic C library"
@@ -7450,9 +7428,8 @@ msgid "Split unaligned 8 byte vector moves before post-modify address generation
 msgstr "Nicht ausgerichtete 8-Byte-Vektor-Bewegungen vor Nach-Bewegungs-Adresserzeugung aufteilen"
 
 #: config/epiphany/epiphany.opt:132
-#, fuzzy
 msgid "Use the floating point unit for integer add/subtract."
-msgstr "Hardware-Gleitkommakonvertierungbefehle verwenden"
+msgstr "Gleitkommaeinheit für Ganzzahladdition und -subtraktion verwenden"
 
 #: config/epiphany/epiphany.opt:136
 msgid "Set register to hold -1."
@@ -7684,9 +7661,8 @@ msgid "sizeof(long double) is 12"
 msgstr "sizeof(long double) ist 12"
 
 #: config/i386/i386.opt:90
-#, fuzzy
 msgid "Use 80-bit long double"
-msgstr "128-bit long double verwenden"
+msgstr "80-bit long double verwenden"
 
 #: config/i386/i386.opt:94 config/s390/s390.opt:105
 #: config/sparc/long-double-switch.opt:27 config/alpha/alpha.opt:102
@@ -7743,9 +7719,8 @@ msgid "Known code models (for use with the -mcmodel= option):"
 msgstr "Bekannte Codemodelle (für Verwendung mit Option -mcmodel=):"
 
 #: config/i386/i386.opt:171
-#, fuzzy
 msgid "Use given address mode"
-msgstr "Komplexe Adressierungsmodi verwenden"
+msgstr "Angegebenen Adressierungsmodus verwenden"
 
 #: config/i386/i386.opt:175
 #, fuzzy
