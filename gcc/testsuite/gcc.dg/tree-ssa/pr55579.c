@@ -11,5 +11,5 @@ foo (int x)
   return x;
 }
 
-/* { dg-final { scan-tree-dump "Created a debug-only replacement for s" "esra" } } */
+/* { dg-final { scan-tree-dump "Created a debug-only replacement for s" "esra" {xfail { hppa*-*-hpux* && { ! lp64 } } } } } */
 /* { dg-final { cleanup-tree-dump "esra" } } */
