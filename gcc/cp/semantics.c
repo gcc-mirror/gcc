@@ -9061,12 +9061,6 @@ apply_deduced_return_type (tree fco, tree return_type)
   if (return_type == error_mark_node)
     return;
 
-  if (is_std_init_list (return_type))
-    {
-      error ("returning %qT", return_type);
-      return_type = void_type_node;
-    }
-
   if (LAMBDA_FUNCTION_P (fco))
     {
       tree lambda = CLASSTYPE_LAMBDA_EXPR (current_class_type);

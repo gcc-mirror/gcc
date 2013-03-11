@@ -5,7 +5,7 @@
 
 int main()
 {
-  []{ return { 1, 2 }; }();	// { dg-error "initializer_list" }
+  []{ return { 1, 2 }; }();	// { dg-error "initializer.list" }
 }
 
 // { dg-prune-output "return-statement with a value" }

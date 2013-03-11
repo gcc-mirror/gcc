@@ -8136,6 +8136,11 @@ check_return_expr (tree retval, bool *no_warning)
 		  "deduced to %<void%>");
 	  type = error_mark_node;
 	}
+      else if (retval && BRACE_ENCLOSED_INITIALIZER_P (retval))
+	{
+	  error ("returning initializer list");
+	  type = error_mark_node;
+	}
       else
 	{
 	  if (!retval)
