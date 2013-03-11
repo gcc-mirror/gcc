@@ -2231,7 +2231,7 @@ avr_print_operand (FILE *file, rtx x, int code)
     {
       HOST_WIDE_INT ival = INTVAL (avr_to_int_mode (x));
       if (code != 0)
-        output_operand_lossage ("Unsupported code '%c'for fixed-point:",
+        output_operand_lossage ("Unsupported code '%c' for fixed-point:",
                                 code);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
     }

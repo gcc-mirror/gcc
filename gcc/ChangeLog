@@ -1,3 +1,9 @@
+2013-03-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/56591
+	* config/avr/avr.c (avr_print_operand): Add space after '%c' in
+	output_operand_lossage message.
+	
 2013-03-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/56470
