@@ -1,3 +1,9 @@
+2013-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56567
+	* typeck.c (check_return_expr): Disallow returning init list here.
+	* semantics.c (apply_deduced_return_type): Not here.
+
 2013-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51412
