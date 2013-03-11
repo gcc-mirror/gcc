@@ -2004,10 +2004,19 @@ code that uses them running with the GNU Fortran compiler.
 @cindex @code{STRUCTURE}
 @cindex @code{RECORD}
 
-Structures are user-defined aggregate data types; this functionality was
-standardized in Fortran 90 with an different syntax, under the name of
-``derived types''.  Here is an example of code using the non portable
-structure syntax:
+Record structures are a pre-Fortran-90 vendor extension to create
+user-defined aggregate data types.  GNU Fortran does not support
+record structures, only Fortran 90's ``derived types'', which have
+a different syntax.
+
+In many cases, record structures can easily be converted to derived types.
+To convert, replace @code{STRUCTURE /}@var{structure-name}@code{/}
+by @code{TYPE} @var{type-name}.  Additionally, replace
+@code{RECORD /}@var{structure-name}@code{/} by
+@code{TYPE(}@var{type-name}@code{)}. Finally, in the component access,
+replace the period (@code{.}) by the percent sign (@code{%}).
+
+Here is an example of code using the non portable record structure syntax:
 
 @example
 ! Declaring a structure named ``item'' and containing three fields:
