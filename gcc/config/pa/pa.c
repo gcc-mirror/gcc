@@ -10313,21 +10313,6 @@ pa_conditional_register_usage (void)
 {
   int i;
 
-  if (TARGET_HPUX)
-    {
-      /* Work around powf bug in libm.  */
-      if (TARGET_64BIT)
-	{
-	  /* Mark %fr12 as call used.  */
-	  call_used_regs[40] = 1;
-	}
-      else
-	{
-	  /* Mark %fr12 and %fr12R as call used.  */
-	  call_used_regs[48] = 1;
-	  call_used_regs[49] = 1;
-	}
-    }
   if (!TARGET_64BIT && !TARGET_PA_11)
     {
       for (i = 56; i <= FP_REG_LAST; i++)
