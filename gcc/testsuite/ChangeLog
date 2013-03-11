@@ -1,5 +1,8 @@
 2013-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR testsuite/54119
+	* gcc.dg/tree-ssa/vector-4.c: xfail on 32-bit hppa*-*-*.
+
 	PR debug/56307
 	* gcc.dg/tree-ssa/pr55579.c: xfail 32-bit hppa*-*-hpux*.
 
