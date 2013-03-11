@@ -1,3 +1,11 @@
+2013-03-11  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gcc.dg/inline_3.c: Remove target and dg-excess-errors.
+	* gcc.dg/inline_4.c: Likewise.
+	* gcc.dg/unroll_2.c: Likewise.
+	* gcc.dg/unroll_3.c: Likewise.
+	* gcc.dg/unroll_4.c: Likewise.
+
 2013-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/54119
