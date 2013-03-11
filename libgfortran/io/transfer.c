@@ -641,7 +641,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
 
       have_read_subrecord = sread (dtp->u.p.current_unit->s, 
 				   buf + have_read_record, to_read_subrecord);
-      if (unlikely (have_read_subrecord) < 0)
+      if (unlikely (have_read_subrecord < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
 	  return;
