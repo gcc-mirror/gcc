@@ -1,3 +1,9 @@
+2013-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	* io/transfer.c (read_block_direct): Correct condition.
+	* intrinsics/execute_command_line.c (execute_command_line):
+	Remove dead code for the HAVE_FORK case.
+
 2013-02-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/30162
