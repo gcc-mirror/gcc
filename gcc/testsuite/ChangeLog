@@ -1,3 +1,8 @@
+2013-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR debug/56307
+	* gcc.dg/tree-ssa/pr55579.c: xfail 32-bit hppa*-*-hpux*.
+
 2013-03-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/40797
