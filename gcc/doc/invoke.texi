@@ -514,7 +514,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
 -mcall-prologues -mint8 -mno-interrupts -mrelax @gol
--mstrict-X -mtiny-stack}
+-mstrict-X -mtiny-stack -Waddr-space-convert}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -11648,6 +11648,11 @@ when @code{EICALL} or @code{EIJMP} instructions are used.
 
 Indirect jumps and calls on these devices are handled as follows by
 the compiler and are subject to some limitations:
+
+@item -Waddr-space-convert
+@opindex Waddr-space-convert
+Warn about conversions between address spaces in the case where the
+resulting address space is not contained in the incoming address space.
 
 @itemize @bullet
 
