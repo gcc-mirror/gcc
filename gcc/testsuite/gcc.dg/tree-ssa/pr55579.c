@@ -11,5 +11,6 @@ foo (int x)
   return x;
 }
 
-/* { dg-final { scan-tree-dump "Created a debug-only replacement for s" "esra" {xfail { hppa*-*-hpux* && { ! lp64 } } } } } */
+/* Test fails on 32-bit hppa*-*-hpux*.  See PR debug/56307.  */
+/* { dg-final { scan-tree-dump "Created a debug-only replacement for s" "esra" { xfail { hppa*-*-hpux* && { ! lp64 } } } } } */
 /* { dg-final { cleanup-tree-dump "esra" } } */
