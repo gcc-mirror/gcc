@@ -1,5 +1,11 @@
 2013-03-11  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/56557
+	* lto-streamer-out.c (output_symbol_p): Skip references from
+	constructors of external variables.
+
+2013-03-11  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/56571
 	* valtrack.c (cleanup_auto_inc_dec): Unshare clobbers originating
 	from pseudos.
