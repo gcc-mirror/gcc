@@ -11632,6 +11632,11 @@ sbiw r26, const   ; X -= const
 @item -mtiny-stack
 @opindex mtiny-stack
 Only change the lower 8@tie{}bits of the stack pointer.
+
+@item -Waddr-space-convert
+@opindex Waddr-space-convert
+Warn about conversions between address spaces in the case where the
+resulting address space is not contained in the incoming address space.
 @end table
 
 @subsubsection @code{EIND} and Devices with more than 128 Ki Bytes of Flash
@@ -11648,11 +11653,6 @@ when @code{EICALL} or @code{EIJMP} instructions are used.
 
 Indirect jumps and calls on these devices are handled as follows by
 the compiler and are subject to some limitations:
-
-@item -Waddr-space-convert
-@opindex Waddr-space-convert
-Warn about conversions between address spaces in the case where the
-resulting address space is not contained in the incoming address space.
 
 @itemize @bullet
 

@@ -1,3 +1,7 @@
+2013-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Waddr-space-convert): Move into the table earlier.
+
 2013-03-11  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/56557
