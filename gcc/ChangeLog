@@ -1,3 +1,12 @@
+2013-03-11  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/56571
+	* valtrack.c (cleanup_auto_inc_dec): Unshare clobbers originating
+	from pseudos.
+	* emit-rtl.c (verify_rtx_sharing): Likewise.
+	(copy_insn_1): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+
 2013-03-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/56591
