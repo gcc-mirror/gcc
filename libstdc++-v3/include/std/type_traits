@@ -444,7 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_fundamental
   template<typename _Tp>
     struct is_fundamental
-    : public __or_<is_arithmetic<_Tp>, is_void<_Tp>>::type
+    : public __or_<is_arithmetic<_Tp>, is_void<_Tp>, __is_nullptr_t<_Tp>>::type
     { };
 
   /// is_object

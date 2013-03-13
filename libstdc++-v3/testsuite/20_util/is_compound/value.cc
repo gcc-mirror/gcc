@@ -46,6 +46,9 @@ void test01()
   VERIFY( (test_category<is_compound, double>(false)) );
   VERIFY( (test_category<is_compound, long double>(false)) );
 
+  // libstdc++/56609
+  VERIFY( (test_category<is_compound, std::nullptr_t>(false)) );
+
   // Sanity check.
   VERIFY( (test_category<is_compound, ClassType>(true)) );
 }
