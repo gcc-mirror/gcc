@@ -1,3 +1,7 @@
+2013-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/alias-decl-32.C: Remove redundant bits.
+
 2013-03-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56608

@@ -8,11 +8,6 @@ template<class T> T declval() { return T(); }
 int f(int, int){return 0;}
 struct Func{};
 
-template<class... Args> struct result1
-{
-  typedef decltype(f(declval<typename remove_reference<Args>::type>()...)) type;
-};
-
 template<class... Args> using result2
 = decltype(f(declval<typename remove_reference<Args>::type>()...));
 
