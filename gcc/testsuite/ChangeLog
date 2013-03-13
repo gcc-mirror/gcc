@@ -1,3 +1,8 @@
+2013-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56608
+	* gcc.dg/vect/fast-math-bb-slp-call-3.c: New testcase.
+
 2013-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56611
