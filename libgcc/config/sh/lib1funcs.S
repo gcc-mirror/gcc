@@ -1006,7 +1006,7 @@ hiset:	sts	macl,r0		! r0 = bb*dd
 #ifdef L_sdivsi3_i4
 	.title "SH DIVIDE"
 !! 4 byte integer Divide code for the Renesas SH
-#ifdef __SH4__
+#if defined (__SH4__) || defined (__SH2A__)
 !! args in r4 and r5, result in fpul, clobber dr0, dr2
 
 	.global	GLOBAL(sdivsi3_i4)
@@ -1021,7 +1021,7 @@ GLOBAL(sdivsi3_i4):
 	ftrc dr0,fpul
 
 	ENDFUNC(GLOBAL(sdivsi3_i4))
-#elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__) || (defined (__SH5__) && ! defined __SH4_NOFPU__)
+#elif defined (__SH2A_SINGLE__) || defined (__SH2A_SINGLE_ONLY__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__) || (defined (__SH5__) && ! defined __SH4_NOFPU__)
 !! args in r4 and r5, result in fpul, clobber r2, dr0, dr2
 
 #if ! __SH5__ || __SH5__ == 32
@@ -1046,13 +1046,12 @@ GLOBAL(sdivsi3_i4):
 
 	ENDFUNC(GLOBAL(sdivsi3_i4))
 #endif /* ! __SH5__ || __SH5__ == 32 */
-#endif /* ! __SH4__ */
+#endif /* ! __SH4__ || __SH2A__  */
 #endif
 
 #ifdef L_sdivsi3
 /* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
    sh2e/sh3e code.  */
-#if (! defined(__SH4__) && ! defined (__SH4_SINGLE__)) || defined (__linux__)
 !!
 !! Steve Chamberlain
 !! sac@cygnus.com
@@ -1369,13 +1368,12 @@ div0:	rts
 
 	ENDFUNC(GLOBAL(sdivsi3))
 #endif /* ! __SHMEDIA__ */
-#endif /* ! __SH4__ */
 #endif
 #ifdef L_udivsi3_i4
 
 	.title "SH DIVIDE"
 !! 4 byte integer Divide code for the Renesas SH
-#ifdef __SH4__
+#if defined (__SH4__) || defined (__SH2A__)
 !! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4,
 !! and t bit
 
@@ -1417,7 +1415,7 @@ L1:
 	.double 2147483648
 
 	ENDFUNC(GLOBAL(udivsi3_i4))
-#elif defined (__SH5__) && ! defined (__SH4_NOFPU__)
+#elif defined (__SH5__) && ! defined (__SH4_NOFPU__) && ! defined (__SH2A_NOFPU__)
 #if ! __SH5__ || __SH5__ == 32
 !! args in r4 and r5, result in fpul, clobber r20, r21, dr0, fr33
 	.mode	SHmedia
@@ -1438,7 +1436,7 @@ GLOBAL(udivsi3_i4):
 
 	ENDFUNC(GLOBAL(udivsi3_i4))
 #endif /* ! __SH5__ || __SH5__ == 32 */
-#elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
+#elif defined (__SH2A_SINGLE__) || defined (__SH2A_SINGLE_ONLY__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
 !! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4
 
 	.global	GLOBAL(udivsi3_i4)
@@ -1493,7 +1491,6 @@ L1:
 #ifdef L_udivsi3
 /* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
    sh2e/sh3e code.  */
-#if (! defined(__SH4__) && ! defined (__SH4_SINGLE__)) || defined (__linux__)
 
 !! args in r4 and r5, result in r0, clobbers r4, pr, and t bit
 	.global	GLOBAL(udivsi3)
@@ -1688,7 +1685,6 @@ LOCAL(large_divisor):
 
 	ENDFUNC(GLOBAL(udivsi3))
 #endif /* ! __SHMEDIA__ */
-#endif /* __SH4__ */
 #endif /* L_udivsi3 */
 
 #ifdef L_udivdi3

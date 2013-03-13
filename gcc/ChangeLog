@@ -1,3 +1,19 @@
+2013-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49880
+	* config/sh/sh.opt (FPU_SINGLE_ONLY): New mask.
+	(musermode): Convert to Var(TARGET_USERMODE).
+	* config/sh/sh.h (SELECT_SH2A_SINGLE_ONLY, SELECT_SH4_SINGLE_ONLY,
+	MASK_ARCH): Add MASK_FPU_SINGLE_ONLY.
+	* config/sh/sh.c (sh_option_override): Use
+	TARGET_FPU_DOUBLE || TARGET_FPU_SINGLE_ONLY for call-fp case.
+	* config/sh/sh.md (udivsi3_i1, divsi3_i1): Remove ! TARGET_SH4
+	condition.
+	(udivsi3_i4, divsi3_i4): Use TARGET_FPU_DOUBLE condition instead of
+	TARGET_SH4.
+	(udivsi3_i4_single, divsi3_i4_single): Use
+	TARGET_FPU_SINGLE_ONLY || TARGET_FPU_DOUBLE instead of TARGET_HARD_SH4.
+
 2013-03-13  Dave Korn  <dave.korn.cygwin@....>
 
 	* config/i386/cygwin.h (SHARED_LIBGCC_SPEC): Make shared libgcc the
