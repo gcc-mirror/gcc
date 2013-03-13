@@ -1,3 +1,12 @@
+2013-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49880
+	* gcc.target/sh/pr49880-1.c: New.
+	* gcc.target/sh/pr49880-2.c: New.
+	* gcc.target/sh/pr49880-3.c: New.
+	* gcc.target/sh/pr49880-4.c: New.
+	* gcc.target/sh/pr49880-5.c: New.
+
 2013-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/alias-decl-32.C: Remove redundant bits.
