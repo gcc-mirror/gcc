@@ -1,3 +1,8 @@
+2013-03-13  Dave Korn  <dave.korn.cygwin@....>
+
+	* config/i386/cygwin.h (SHARED_LIBGCC_SPEC): Make shared libgcc the
+	default setting.
+
 2013-03-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56608
