@@ -1,3 +1,9 @@
+2013-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56608
+	* tree-vect-slp.c (vect_schedule_slp): Do not remove scalar
+	calls when vectorizing basic-blocks.
+
 2013-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR plugins/45078
