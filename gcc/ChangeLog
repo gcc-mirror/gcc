@@ -1,3 +1,41 @@
+2013-03-14  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
+	    David Holsgrove <david.holsgrove@xilinx.com>
+
+	* configure.ac: Add MicroBlaze TLS support detection.
+	* configure: Regenerate.
+	* config/microblaze/microblaze-protos.h: (microblaze_cannot_force_const_mem,
+	microblaze_tls_referenced_p, symbol_mentioned_p, label_mentioned_p): 
+	Add prototypes.
+	* config/microblaze/microblaze.c (microblaze_address_type): Add ADDRESS_TLS
+	and tls_reloc address types.
+	(microblaze_address_info): Add tls_reloc.
+	(TARGET_HAVE_TLS): Define.
+	(get_tls_get_addr, microblaze_tls_symbol_p, microblaze_tls_operand_p_1,
+	 microblaze_tls_referenced_p, microblaze_cannot_force_const_mem,
+	 symbol_mentioned_p, label_mentioned_p, tls_mentioned_p, load_tls_operand,
+	 microblaze_call_tls_get_addr, microblaze_legitimize_tls_address): New functions.
+	(microblaze_classify_unspec): Handle UNSPEC_TLS.
+	(get_base_reg): Use microblaze_tls_symbol_p.
+	(microblaze_classify_address): Handle TLS.
+	(microblaze_legitimate_pic_operand): Use symbol_mentioned_p, label_mentioned_p
+	and microblaze_tls_referenced_p.
+	(microblaze_legitimize_address): Handle TLS.
+	(microblaze_address_insns): Handle ADDRESS_TLS.
+	(pic_address_needs_scratch): Handle TLS.
+	(print_operand_address): Handle TLS.
+	(microblaze_expand_prologue): Check TLS_NEEDS_GOT.
+	(microblaze_expand_move): Handle TLS.
+	(microblaze_legitimate_constant_p): Check microblaze_cannot_force_const_mem
+	and microblaze_tls_symbol_p.
+	(TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	* config/microblaze/microblaze.h (TLS_NEEDS_GOT): Define
+	(PIC_OFFSET_TABLE_REGNUM): Set.
+	* config/microblaze/linux.h (TLS_NEEDS_GOT): Define.
+	* config/microblaze/microblaze.md (UNSPEC_TLS): Define.
+	(addsi3, movsi_internal2, movdf_internal): Update constraints
+	* config/microblaze/predicates.md (arith_plus_operand): Define
+	(move_operand): Redefine as move_src_operand, check microblaze_tls_referenced_p.
+
 2013-03-14  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md: (*and<mode>3nr_compare0): Use CC_NZ.
