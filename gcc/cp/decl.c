@@ -6758,10 +6758,9 @@ register_dtor_fn (tree decl)
      "__aeabi_atexit"), and DECL is a class object, we can just pass the
      destructor to "__cxa_atexit"; we don't have to build a temporary
      function to do the cleanup.  */
-  ob_parm = (DECL_THREAD_LOCAL_P (decl)
-	     || (flag_use_cxa_atexit
-		 && !targetm.cxx.use_atexit_for_cxa_atexit ()));
-  dso_parm = ob_parm;
+  dso_parm = (flag_use_cxa_atexit
+	      && !targetm.cxx.use_atexit_for_cxa_atexit ());
+  ob_parm = (DECL_THREAD_LOCAL_P (decl) || dso_parm);
   use_dtor = ob_parm && CLASS_TYPE_P (type);
   if (use_dtor)
     {
@@ -6825,7 +6824,7 @@ register_dtor_fn (tree decl)
 	 before passing it in, to avoid spurious errors.  */
       addr = build_nop (ptr_type_node, addr);
     }
-  else if (ob_parm)
+  else
     /* Since the cleanup functions we build ignore the address
        they're given, there's no reason to pass the actual address
        in, and, in general, it's cheaper to pass NULL than any
@@ -6835,6 +6834,10 @@ register_dtor_fn (tree decl)
   if (dso_parm)
     arg2 = cp_build_addr_expr (get_dso_handle_node (),
 			       tf_warning_or_error);
+  else if (ob_parm)
+    /* Just pass NULL to the dso handle parm if we don't actually
+       have a DSO handle on this target.  */
+    arg2 = null_pointer_node;
   else
     arg2 = NULL_TREE;
 
