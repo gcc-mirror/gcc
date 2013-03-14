@@ -2547,8 +2547,8 @@
 )
 
 (define_insn "*and<mode>3nr_compare0"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:GPI (match_operand:GPI 0 "register_operand" "%r,r")
 		  (match_operand:GPI 1 "aarch64_logical_operand" "r,<lconst>"))
 	 (const_int 0)))]
@@ -2558,8 +2558,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*and_<SHIFT:optab><mode>3nr_compare0"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:GPI (SHIFT:GPI
 		   (match_operand:GPI 0 "register_operand" "r")
 		   (match_operand:QI 1 "aarch64_shift_imm_<mode>" "n"))
