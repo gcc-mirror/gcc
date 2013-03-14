@@ -1,3 +1,11 @@
+2013-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/aarch64/t-aarch64-linux (MULTARCH_DIRNAME): Remove.
+	(MULTILIB_OSDIRNAMES): Set.
+	* genmultilib: If defaultosdirname doesn't start with :: , set
+	defaultosdirname2 instead, clear it and emit two . multilib_raw
+	entries instead of just one.
+
 2013-03-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (TARGET_DEFAULT): Remove MASK_USERMODE.
