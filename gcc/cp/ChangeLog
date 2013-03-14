@@ -1,3 +1,9 @@
+2013-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56346
+	* decl.c (register_dtor_fn): Pass null to __cxa_thread_atexit
+	dso_handle parm on targets without __cxa_atexit.
+
 2013-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56567
