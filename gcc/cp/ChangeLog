@@ -1,3 +1,8 @@
+2013-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56614
+	* decl.c (local_variable_p_walkfn): Check DECL_ARTIFICIAL again.
+
 2013-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56403
