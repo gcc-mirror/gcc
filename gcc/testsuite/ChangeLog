@@ -1,6 +1,13 @@
 2013-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53265
+	* gcc.dg/graphite/scop-3.c (toto): Increase array size to avoid
+	undefined behavior.
+	* gcc.dg/graphite/id-6.c (test): Likewise.
+	* gcc.dg/graphite/pr35356-2.c: Adjust regexp patterns to only look for
+	MIN_EXPR and MAX_EXPR in GIMPLE stmts.
+
+	PR tree-optimization/53265
 	* gcc.dg/pr53265.c: New test.
 	* gcc.dg/torture/pr49518.c: Add -Wno-aggressive-loop-optimizations
 	to dg-options.
