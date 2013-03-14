@@ -50,6 +50,10 @@ extern void microblaze_declare_object (FILE *, const char *, const char *,
    const char *, int);
 extern void microblaze_asm_output_ident (const char *);
 extern int microblaze_legitimate_pic_operand (rtx);
+extern bool microblaze_tls_referenced_p (rtx);
+extern int symbol_mentioned_p (rtx);
+extern int label_mentioned_p (rtx);
+extern bool microblaze_cannot_force_const_mem (enum machine_mode, rtx);
 #endif  /* RTX_CODE */
 
 /* Declare functions in microblaze-c.c.  */

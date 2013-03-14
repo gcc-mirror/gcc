@@ -65,6 +65,9 @@ extern enum pipeline_type microblaze_pipe;
 /* The default is to support PIC.  */
 #define TARGET_SUPPORTS_PIC 1
 
+/* The default is to not need GOT for TLS.  */
+#define TLS_NEEDS_GOT 0
+
 /* What is the default setting for -mcpu= . We set it to v4.00.a even though 
    we are actually ahead. This is safest version that has generate code 
    compatible for the original ISA */
@@ -326,9 +329,7 @@ extern char microblaze_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 #define NO_FUNCTION_CSE                 1
 
-#define PIC_OFFSET_TABLE_REGNUM         \
-        (flag_pic ? (GP_REG_FIRST + MB_ABI_PIC_ADDR_REGNUM) : \
-        INVALID_REGNUM)
+#define PIC_OFFSET_TABLE_REGNUM   (GP_REG_FIRST + MB_ABI_PIC_ADDR_REGNUM)
 
 enum reg_class
 {

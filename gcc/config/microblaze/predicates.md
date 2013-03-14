@@ -30,6 +30,52 @@
        (and (match_code "const_int,const_double")
 	    (match_test "LARGE_INT (op)"))))
 
+(define_predicate "arith_plus_operand"
+ (match_operand 0 "general_operand")
+{
+  switch (GET_CODE (op))
+    {
+      default:
+        return 0;
+      case CONST_INT:
+      case REG:
+        return 1;
+      case SYMBOL_REF:
+      case LABEL_REF:
+        if (flag_pic || microblaze_tls_referenced_p(op))
+          return 0;
+        return 1;
+      case CONST:
+        {
+          rtx const0;
+          const0 = XEXP (op, 0);
+
+          switch (GET_CODE(const0))
+            {
+              default:
+                return 0;
+              case UNSPEC :
+                return 1;
+
+              case PLUS :
+                {
+                  rtx p0, p1;
+                  p0 = XEXP (const0, 0);
+                  p1 = XEXP (const0, 1);
+
+                  if ((GET_CODE(p0) == SYMBOL_REF
+                       || GET_CODE (p0) == LABEL_REF)
+                      && GET_CODE(p1) == CONST_INT)
+                    {
+                      return arith_plus_operand (p0, GET_MODE(p0));
+                    }
+                }
+            }
+        }
+    }
+  return 0;
+})
+
 (define_predicate "const_0_operand"
   (and (match_code "const_int,const_double")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
@@ -54,14 +100,21 @@
        (match_test "GET_CODE (op) == REG || GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST_INT")))
 
 ;; Return if OPERAND is valid as a source operand for a move instruction.
-(define_predicate "move_operand"
+(define_predicate "move_src_operand"
   (and (
      not (
        and (match_code "plus")
            (not (match_test "(GET_CODE (XEXP (op, 0)) == REG) ^ (GET_CODE (XEXP (op,1)) == REG)"))
 	 )
        )
-       (match_operand 0 "general_operand")))
+       (match_operand 0 "general_operand"))
+{
+  if (microblaze_tls_referenced_p(op)
+      || (flag_pic && (symbol_mentioned_p(op) || label_mentioned_p(op))))
+    return false;
+
+  return true;
+})
 
 ;; Test for valid PIC call operand
 (define_predicate "call_insn_plt_operand"
