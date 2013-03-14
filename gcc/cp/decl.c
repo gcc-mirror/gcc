@@ -10803,9 +10803,8 @@ static tree
 local_variable_p_walkfn (tree *tp, int *walk_subtrees,
 			 void * /*data*/)
 {
-  /* Check DECL_NAME to avoid including temporaries.  We don't check
-     DECL_ARTIFICIAL because we do want to complain about 'this'.  */
-  if (local_variable_p (*tp) && DECL_NAME (*tp))
+  if (local_variable_p (*tp)
+      && (!DECL_ARTIFICIAL (*tp) || DECL_NAME (*tp) == this_identifier))
     return *tp;
   else if (TYPE_P (*tp))
     *walk_subtrees = 0;
