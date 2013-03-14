@@ -1126,11 +1126,18 @@ enum reg_class
 /* FPA registers can't do subreg as all values are reformatted to internal
    precision.  In VFPv1, VFP registers could only be accessed in the mode
    they were set, so subregs would be invalid there too.  However, we don't
-   support VFPv1 at the moment, and the restriction was lifted in VFPv2.  */
+   support VFPv1 at the moment, and the restriction was lifted in VFPv2.
+   In big-endian mode, modes greater than word size (i.e. DFmode) are stored in
+   VFP registers in little-endian order.  We can't describe that accurately to
+   GCC, so avoid taking subregs of such values.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
-   ? reg_classes_intersect_p (FPA_REGS, (CLASS))		\
-   : 0)
+  (TARGET_VFP							\
+  ? TARGET_BIG_END						\
+    && (GET_MODE_SIZE (FROM) > UNITS_PER_WORD			\
+       || GET_MODE_SIZE (TO) > UNITS_PER_WORD)			\
+    && reg_classes_intersect_p (VFP_REGS, (CLASS))		\
+  : GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
+    && reg_classes_intersect_p (FPA_REGS, (CLASS)))
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB1 ? LO_REGS : GENERAL_REGS)
