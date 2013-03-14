@@ -1,3 +1,10 @@
+2013-03-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (TARGET_DEFAULT): Remove MASK_USERMODE.
+	(SUBTARGET_OVERRIDE_OPTIONS): Set TARGET_USERMODE as default.
+	* config/sh/netbsd-elf.h (TARGET_DEFAULT): Remove MASK_USERMODE.
+	(SUBTARGET_OVERRIDE_OPTIONS): New.
+
 2013-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/49880
