@@ -15,8 +15,8 @@ public:
 
 class EBCOTLut : public JKeeper {
   unsigned char a1[1<<8];   
-  unsigned char a2[1<<8];
-  unsigned char a3[1<<8];
+  unsigned char a2[1<<9];
+  unsigned char a3[1<<9];
   long          a4[1<<9];
 public:
   EBCOTLut(void);

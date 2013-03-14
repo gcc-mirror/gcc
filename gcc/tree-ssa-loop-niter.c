@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic-core.h"
 #include "tree-inline.h"
+#include "tree-pass.h"
 
 #define SWAP(X, Y) do { affine_iv *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
 
@@ -2525,6 +2526,40 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
     loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
+/* Emit a -Waggressive-loop-optimizations warning if needed.  */
+
+static void
+do_warn_aggressive_loop_optimizations (struct loop *loop,
+				       double_int i_bound, gimple stmt)
+{
+  /* Don't warn if the loop doesn't have known constant bound.  */
+  if (!loop->nb_iterations
+      || TREE_CODE (loop->nb_iterations) != INTEGER_CST
+      || !warn_aggressive_loop_optimizations
+      /* To avoid warning multiple times for the same loop,
+	 only start warning when we preserve loops.  */
+      || (cfun->curr_properties & PROP_loops) == 0
+      /* Only warn once per loop.  */
+      || loop->warned_aggressive_loop_optimizations
+      /* Only warn if undefined behavior gives us lower estimate than the
+	 known constant bound.  */
+      || i_bound.ucmp (tree_to_double_int (loop->nb_iterations)) >= 0
+      /* And undefined behavior happens unconditionally.  */
+      || !dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (stmt)))
+    return;
+
+  edge e = single_exit (loop);
+  if (e == NULL)
+    return;
+
+  gimple estmt = last_stmt (e->src);
+  warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
+	      "iteration %E invokes undefined behavior",
+	      double_int_to_tree (TREE_TYPE (loop->nb_iterations), i_bound));
+  inform (gimple_location (estmt), "containing loop");
+  loop->warned_aggressive_loop_optimizations = true;
+}
+
 /* Records that AT_STMT is executed at most BOUND + 1 times in LOOP.  IS_EXIT
    is true if the loop is exited immediately after STMT, and this exit
    is taken at last when the STMT is executed BOUND + 1 times.
@@ -2560,8 +2595,12 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
     return;
 
   /* If we have a guaranteed upper bound, record it in the appropriate
-     list.  */
-  if (upper)
+     list, unless this is an !is_exit bound (i.e. undefined behavior in
+     at_stmt) in a loop with known constant number of iterations.  */
+  if (upper
+      && (is_exit
+	  || loop->nb_iterations == NULL_TREE
+	  || TREE_CODE (loop->nb_iterations) != INTEGER_CST))
     {
       struct nb_iter_bound *elt = ggc_alloc_nb_iter_bound ();
 
@@ -2591,6 +2630,8 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
   if (i_bound.ult (delta))
     return;
 
+  if (upper && !is_exit)
+    do_warn_aggressive_loop_optimizations (loop, i_bound, at_stmt);
   record_niter_bound (loop, i_bound, realistic, upper);
 }
 
@@ -3311,6 +3352,11 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   /* Force estimate compuation but leave any existing upper bound in place.  */
   loop->any_estimate = false;
 
+  /* Ensure that loop->nb_iterations is computed if possible.  If it turns out
+     to be constant, we avoid undefined behavior implied bounds and instead
+     diagnose those loops with -Waggressive-loop-optimizations.  */
+  number_of_latch_executions (loop);
+
   exits = get_loop_exit_edges (loop);
   likely_exit = single_likely_exit (loop);
   FOR_EACH_VEC_ELT (exits, i, ex)
@@ -3344,6 +3390,17 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
       gcov_type nit = expected_loop_iterations_unbounded (loop) + 1;
       bound = gcov_type_to_double_int (nit);
       record_niter_bound (loop, bound, true, false);
+    }
+
+  /* If we know the exact number of iterations of this loop, try to
+     not break code with undefined behavior by not recording smaller
+     maximum number of iterations.  */
+  if (loop->nb_iterations
+      && TREE_CODE (loop->nb_iterations) == INTEGER_CST)
+    {
+      loop->any_upper_bound = true;
+      loop->nb_iterations_upper_bound
+	= tree_to_double_int (loop->nb_iterations);
     }
 }
 

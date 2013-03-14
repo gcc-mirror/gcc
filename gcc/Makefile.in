@@ -2446,7 +2446,7 @@ tree-ssa-loop-niter.o : tree-ssa-loop-niter.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(PARAMS_H) \
    $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h dumpfile.h \
    $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(TREE_DATA_REF_H) \
-   $(BASIC_BLOCK_H) $(GGC_H) intl.h $(GIMPLE_PRETTY_PRINT_H)
+   $(BASIC_BLOCK_H) $(GGC_H) intl.h $(GIMPLE_PRETTY_PRINT_H) $(TREE_PASS_H)
 tree-ssa-loop-ivcanon.o : tree-ssa-loop-ivcanon.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(PARAMS_H) \
    $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h \
