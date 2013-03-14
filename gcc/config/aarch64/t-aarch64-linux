@@ -22,4 +22,4 @@ LIB1ASMSRC   = aarch64/lib1funcs.asm
 LIB1ASMFUNCS = _aarch64_sync_cache_range
 
 AARCH_BE = $(if $(findstring TARGET_BIG_ENDIAN_DEFAULT=1, $(tm_defines)),_be)
-MULTIARCH_DIRNAME = $(call if_multiarch,aarch64$(AARCH_BE)-linux-gnu)
+MULTILIB_OSDIRNAMES = .=../lib64$(call if_multiarch,:aarch64$(AARCH_BE)-linux-gnu)
