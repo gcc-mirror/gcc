@@ -159,6 +159,10 @@ struct GTY ((chain_next ("%h.next"))) loop {
   /* True if the loop can be parallel.  */
   bool can_be_parallel;
 
+  /* True if -Waggressive-loop-optimizations warned about this loop
+     already.  */
+  bool warned_aggressive_loop_optimizations;
+
   /* An integer estimation of the number of iterations.  Estimate_state
      describes what is the state of the estimation.  */
   enum loop_estimation estimate_state;

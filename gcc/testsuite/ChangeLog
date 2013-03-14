@@ -1,3 +1,14 @@
+2013-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53265
+	* gcc.dg/pr53265.c: New test.
+	* gcc.dg/torture/pr49518.c: Add -Wno-aggressive-loop-optimizations
+	to dg-options.
+	* g++.dg/opt/longbranch2.C (EBCOTLut): Double sizes of a2 and a3
+	arrays.
+	* gcc.dg/tree-ssa/cunroll-10.c (main): Rename to foo.  Add argument
+	n, use it as high bound instead of 4.
+
 2013-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/49880
