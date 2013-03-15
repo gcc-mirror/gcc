@@ -1,3 +1,8 @@
+2013-03-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56615                                                                                                                
+	* gfortran.dg/transfer_intrinsic_5.f90: New.                                                                                    
+
 2013-03-15  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.target/i386/movti.c: Don't test for x64 mingw.
