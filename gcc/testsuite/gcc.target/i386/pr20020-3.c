@@ -1,5 +1,6 @@
 /* Check that 128-bit struct's are represented as TImode values.  */
 /* { dg-do compile { target int128 } } */
+/* { dg-skip-if "different ABI" { x86_64-*-mingw* } } */
 /* { dg-options "-O2 -fdump-rtl-expand" } */
 
 struct shared_ptr_struct

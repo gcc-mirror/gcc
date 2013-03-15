@@ -1,3 +1,14 @@
+2013-03-15  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.target/i386/movti.c: Don't test for x64 mingw.
+	* gcc.target/i386/pr20020-1.c: Likewise.
+	* gcc.target/i386/pr20020-2.c: Likewise.
+	* gcc.target/i386/pr20020-3.c: Likewise.
+	* gcc.target/i386/pr53425-1.c: Likewise.
+	* gcc.target/i386/pr53425-2.c: Likewise.
+	* gcc.target/i386/pr55093.c: Likewise.
+	* gcc.target/i386/pr53907.c: Adjust test for LLP64 targets.
+
 2013-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/56307
