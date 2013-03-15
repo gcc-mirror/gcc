@@ -79,6 +79,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
 * __sync Builtins::     Legacy built-in functions for atomic memory access.
 * __atomic Builtins::   Atomic built-in functions with memory model.
+* x86 specific memory model extensions for transactional memory:: x86 memory models.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
 * Other Builtins::      Other built-in functions.
@@ -7474,6 +7475,37 @@ alignment.  A value of 0 indicates typical alignment should be used.  The
 compiler may also ignore this parameter.
 @end deftypefn
 
+@node x86 specific memory model extensions for transactional memory
+@section x86 specific memory model extensions for transactional memory
+
+The i386 architecture supports additional memory ordering flags
+to mark lock critical sections for hardware lock elision. 
+These must be specified in addition to an existing memory model to 
+atomic intrinsics.
+
+@table @code
+@item __ATOMIC_HLE_ACQUIRE
+Start lock elision on a lock variable.
+Memory model must be @code{__ATOMIC_ACQUIRE} or stronger.
+@item __ATOMIC_HLE_RELEASE
+End lock elision on a lock variable.
+Memory model must be @code{__ATOMIC_RELEASE} or stronger.
+@end table
+
+When a lock acquire fails it's required for good performance to abort
+the transaction quickly. This can be done with a @code{_mm_pause}
+
+@smallexample
+#include <immintrin.h> // For _mm_pause
+
+/* Acquire lock with lock elision */
+while (__atomic_exchange_n(&lockvar, 1, __ATOMIC_ACQUIRE|__ATOMIC_HLE_ACQUIRE))
+    _mm_pause(); /* Abort failed transaction */
+...
+/* Free lock with lock elision */
+__atomic_clear(&lockvar, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
+@end smallexample
+
 @node Object Size Checking
 @section Object Size Checking Built-in Functions
 @findex __builtin_object_size
@@ -8745,6 +8777,7 @@ instructions, but allow the compiler to schedule those calls.
 * Blackfin Built-in Functions::
 * FR-V Built-in Functions::
 * X86 Built-in Functions::
+* X86 transactional memory intrinsics::
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
 * MIPS Loongson Built-in Functions::
@@ -10924,6 +10957,88 @@ v2sf __builtin_ia32_pi2fw (v2si)
 v2sf __builtin_ia32_pswapdsf (v2sf)
 v2si __builtin_ia32_pswapdsi (v2si)
 @end smallexample
+
+The following built-in functions are available when @option{-mrtm} is used
+They are used for restricted transactional memory. These are the internal
+low level functions. Normally the functions in 
+@ref{X86 transactional memory intrinsics} should be used instead.
+
+@smallexample
+int __builtin_ia32_xbegin ()
+void __builtin_ia32_xend ()
+void __builtin_ia32_xabort (status)
+int __builtin_ia32_xtest ()
+@end smallexample
+
+@node X86 transactional memory intrinsics
+@subsection X86 transaction memory intrinsics
+
+Hardware transactional memory intrinsics for i386. These allow to use
+memory transactions with RTM (Restricted Transactional Memory).
+For using HLE (Hardware Lock Elision) see @ref{x86 specific memory model extensions for transactional memory} instead.
+This support is enabled with the @option{-mrtm} option.
+
+A memory transaction commits all changes to memory in an atomic way,
+as visible to other threads. If the transaction fails it is rolled back
+and all side effects discarded.
+
+Generally there is no guarantee that a memory transaction ever suceeds
+and suitable fallback code always needs to be supplied.
+
+@deftypefn {RTM Function} {unsigned} _xbegin ()
+Start a RTM (Restricted Transactional Memory) transaction. 
+Returns _XBEGIN_STARTED when the transaction
+started successfully (note this is not 0, so the constant has to be 
+explicitely tested). When the transaction aborts all side effects
+are undone and an abort code is returned. There is no guarantee
+any transaction ever succeeds, so there always needs to be a valid
+tested fallback path.
+@end deftypefn
+
+@smallexample
+#include <immintrin.h>
+
+if ((status = _xbegin ()) == _XBEGIN_STARTED) @{
+    ... transaction code...
+    _xend ();
+@} else @{
+    ... non transactional fallback path...
+@}
+@end smallexample
+
+Valid abort status bits (when the value is not @code{_XBEGIN_STARTED}) are:
+
+@table @code
+@item _XABORT_EXPLICIT
+Transaction explicitely aborted with @code{_xabort}. The parameter passed
+to @code{_xabort} is available with @code{_XABORT_CODE(status)}
+@item _XABORT_RETRY
+Transaction retry is possible.
+@item _XABORT_CONFLICT
+Transaction abort due to a memory conflict with another thread
+@item _XABORT_CAPACITY
+Transaction abort due to the transaction using too much memory
+@item _XABORT_DEBUG
+Transaction abort due to a debug trap
+@item _XABORT_NESTED
+Transaction abort in a inner nested transaction
+@end table
+
+@deftypefn {RTM Function} {void} _xend ()
+Commit the current transaction. When no transaction is active this will
+fault. All memory side effects of the transactions will become visible
+to other threads in an atomic matter.
+@end deftypefn
+
+@deftypefn {RTM Function} {int} _xtest ()
+Return a value not zero when a transaction is currently active, otherwise 0.
+@end deftypefn
+
+@deftypefn {RTM Function} {void} _xabort (status)
+Abort the current transaction. When no transaction is active this is a no-op.
+status must be a 8bit constant, that is included in the status code returned
+by @code{_xbegin}
+@end deftypefn
 
 @node MIPS DSP Built-in Functions
 @subsection MIPS DSP Built-in Functions

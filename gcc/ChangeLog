@@ -1,3 +1,10 @@
+2013-03-14  Andi Kleen  <ak@linux.intel.com>
+
+	PR target/56619
+	* doc/extend.texi: Document __ATOMIC_HLE_ACQUIRE,
+	__ATOMIC_HLE_RELEASE. Document __builtin_ia32 TSX intrincs.
+	Document _x* TSX intrinsics.
+
 2013-03-14  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
 	    David Holsgrove <david.holsgrove@xilinx.com>
 
