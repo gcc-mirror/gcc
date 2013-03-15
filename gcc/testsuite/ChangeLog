@@ -1,3 +1,9 @@
+2013-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56307
+	* gcc.dg/tree-ssa/pr55579.c: Add -fvar-tracking-assignments to
+	dg-options.  Remove 32-bit hppa*-*-hpux* xfail.
+
 2013-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53265
