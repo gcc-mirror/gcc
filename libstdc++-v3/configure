@@ -20417,7 +20417,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 for ac_header in endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \
 locale.h machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
 strings.h sys/ipc.h sys/isa_defs.h sys/machine.h sys/param.h \
-sys/resource.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
+sys/resource.h sys/sdt.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
 wchar.h wctype.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
