@@ -1,3 +1,9 @@
+2013-03-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56615
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Pack arrays
+	if they are not simply contiguous.
+
 2013-03-11  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (STRUCTURE and RECORD): State more clearly how
