@@ -1,3 +1,12 @@
+2013-03-15  Tom Tromey  <tromey@redhat.com>
+
+	* libsupc++/unwind-cxx.h: Include sys/sdt.h if detected.
+	(PROBE2): New macro.
+	* libsupc++/eh_throw.cc (__cxa_throw, __cxa_rethrow): Add probe.
+	* libsupc++/eh_catch.cc (__cxa_begin_catch): Add probe.
+	* configure.ac: Check for sys/sdt.h.
+	* configure, config.h.in: Rebuild.
+
 2013-03-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/56613

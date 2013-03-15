@@ -37,6 +37,19 @@
 #include <bits/atomic_word.h>
 #include <cxxabi.h>
 
+#ifdef _GLIBCXX_HAVE_SYS_SDT_H
+#include <sys/sdt.h>
+/* We only want to use stap probes starting with v3.  Earlier versions
+   added too much startup cost.  */
+#if defined (STAP_PROBE2) && _SDT_NOTE_TYPE >= 3
+#define PROBE2(name, arg1, arg2) STAP_PROBE2 (libstdcxx, name, arg1, arg2)
+#endif
+#endif
+
+#ifndef PROBE2
+#define PROBE2(name, arg1, arg2)
+#endif
+
 #pragma GCC visibility push(default)
 
 namespace __cxxabiv1
