@@ -5412,9 +5412,8 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
       source = gfc_conv_descriptor_data_get (argse.expr);
       source_type = gfc_get_element_type (TREE_TYPE (argse.expr));
 
-      /* Repack the source if not a full variable array.  */
-      if (arg->expr->expr_type == EXPR_VARIABLE
-	      && arg->expr->ref->u.ar.type != AR_FULL)
+      /* Repack the source if not simply contiguous.  */
+      if (!gfc_is_simply_contiguous (arg->expr, false))
 	{
 	  tmp = gfc_build_addr_expr (NULL_TREE, argse.expr);
 
