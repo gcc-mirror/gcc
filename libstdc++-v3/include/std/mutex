@@ -1,6 +1,6 @@
 // <mutex> -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -46,12 +46,13 @@
 #include <bits/gthr.h>
 #include <bits/move.h> // for std::swap
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#ifdef _GLIBCXX_HAS_GTHREADS
   // Common base class for std::mutex and std::timed_mutex
   class __mutex_base
   {
@@ -420,6 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   };
 #endif
+#endif // _GLIBCXX_HAS_GTHREADS
 
   /// Do not acquire ownership of the mutex.
   struct defer_lock_t { };
@@ -755,6 +757,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         }
     }
 
+#ifdef _GLIBCXX_HAS_GTHREADS
   /// once_flag
   struct once_flag
   {
@@ -826,12 +829,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__e)
 	__throw_system_error(__e);
     }
+#endif // _GLIBCXX_HAS_GTHREADS
 
   // @} group mutexes
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

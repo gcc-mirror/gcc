@@ -1,3 +1,10 @@
+2013-03-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56002
+	* include/std/mutex (lock_guard, unique_lock, lock): Define without
+	depending on _GLIBCXX_HAS_GTHREADS.
+	* testsuite/30_threads/lock_guard/cons/1.cc: Run on all targets.
+
 2013-03-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/vector.tcc (vector<>operator=(const vector<>&):
