@@ -1,9 +1,6 @@
-// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
+// { dg-do run }
+// { dg-options " -std=gnu++11 " }
 // { dg-require-cstdint "" }
-// { dg-require-gthreads "" }
 
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //
