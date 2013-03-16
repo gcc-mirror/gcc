@@ -1,3 +1,24 @@
+2013-03-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56492
+	* include/std/future (__future_base::_Result): Add result_type
+	typedef.
+	(__future_base::_S_allocate_result): Overload for std::allocator.
+	(__future_base::_Task_setter): Use _Result::result_type instead of
+	deducing the type from the task.
+	(__future_base::_Task_state): Store allocator to allow shared state
+	to be reset.  Replace std::function with member of target object type
+	accessed via ...
+	(__future_base::_Task_state_base): New abstract base class.
+	(__future_base::_Task_state_base::_M_run): New virtual function to
+	invoke type-erased target object.
+	(__future_base::_Task_state_base::_M_reset): New virtual function to
+	create new shared_state using same target object and allocator.
+	(__future_base::__create_task_state): Allocate a new _Task_state.
+	(packaged_task::packaged_task): Use __create_task_state.
+	(packaged_task::reset): Use _Task_state_base::_M_reset.
+	* testsuite/30_threads/packaged_task/cons/56492.cc: New.
+
 2013-03-15  Tom Tromey  <tromey@redhat.com>
 
 	* libsupc++/unwind-cxx.h: Include sys/sdt.h if detected.
