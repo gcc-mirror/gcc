@@ -1,5 +1,10 @@
 2013-03-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/56468
+	* libsupc++/exception_ptr.h (type_info): Declare.
+
+2013-03-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/56002
 	* include/std/mutex (lock_guard, unique_lock, lock): Define without
 	depending on _GLIBCXX_HAS_GTHREADS.
