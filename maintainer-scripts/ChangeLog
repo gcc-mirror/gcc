@@ -1,3 +1,7 @@
+2013-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Enable snapshots from gcc-4_8-branch.
+
 2012-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* crontab: Disable snapshots from gcc-4_5-branch.
