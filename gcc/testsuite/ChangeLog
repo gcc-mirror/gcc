@@ -1,3 +1,9 @@
+2013-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56607
+	* g++.dg/warn/Wdiv-by-zero-2.C: New test.
+	* c-c++-common/pr56607.c: New test.
+
 2013-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56582
