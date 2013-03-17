@@ -3559,21 +3559,20 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
       unsigned int ix;
       bool found = true;
       tree fn = OVL_CURRENT (fns);
-      tree argtypes = NULL_TREE;
-      argtypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
-      if (argtypes != NULL_TREE)
+      tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
+      if (parmtypes != NULL_TREE)
 	{
-	  for (ix = 0; ix < vec_safe_length (args) && argtypes != NULL_TREE;
-	       ++ix, argtypes = TREE_CHAIN (argtypes))
+	  for (ix = 0; ix < vec_safe_length (args) && parmtypes != NULL_TREE;
+	       ++ix, parmtypes = TREE_CHAIN (parmtypes))
 	    {
-	      tree targ = TREE_VALUE (argtypes);
-	      tree tparm = TREE_TYPE ((*args)[ix]);
-	      bool ptr = TREE_CODE (targ) == POINTER_TYPE;
-	      bool arr = TREE_CODE (tparm) == ARRAY_TYPE;
-	      if ((ptr || arr || !same_type_p (targ, tparm))
+	      tree tparm = TREE_VALUE (parmtypes);
+	      tree targ = TREE_TYPE ((*args)[ix]);
+	      bool ptr = TREE_CODE (tparm) == POINTER_TYPE;
+	      bool arr = TREE_CODE (targ) == ARRAY_TYPE;
+	      if ((ptr || arr || !same_type_p (tparm, targ))
 		  && (!ptr || !arr
-		      || !same_type_p (TREE_TYPE (targ),
-				       TREE_TYPE (tparm))))
+		      || !same_type_p (TREE_TYPE (tparm),
+				       TREE_TYPE (targ))))
 		found = false;
 	    }
 	  if (found
@@ -3582,7 +3581,7 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 		 depending on how exactly should user-defined literals
 		 work in presence of default arguments on the literal
 		 operator parameters.  */
-	      && argtypes == void_list_node)
+	      && parmtypes == void_list_node)
 	    return fn;
 	}
     }
