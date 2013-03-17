@@ -407,8 +407,10 @@ struct lang_hooks
 
   struct lang_hooks_for_lto lto;
 
-  /* Returns the generic parameters of an instantiation of
-     a generic type or decl, e.g. C++ template instantiation.  */
+  /* Returns a TREE_VEC of the generic parameters of an instantiation of
+     a generic type or decl, e.g. C++ template instantiation.  If
+     TREE_CHAIN of the return value is set, it is an INTEGER_CST
+     indicating how many of the elements are non-default.  */
   tree (*get_innermost_generic_parms) (const_tree);
 
   /* Returns the TREE_VEC of arguments of an instantiation
