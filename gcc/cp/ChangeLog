@@ -1,5 +1,10 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56481
+	* semantics.c (potential_constant_expression_1): Use of 'this' in
+	a non-constexpr function makes the expression not potentially
+	constant.
+
 	N3276
 	PR c++/52748
 	* cp-tree.h (tsubst_flags): Add tf_decltype.
