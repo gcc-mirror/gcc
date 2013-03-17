@@ -6238,6 +6238,12 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
   if (TREE_CODE (type) == VOID_TYPE)
     return convert_to_void (expr, ICV_CAST, complain);
 
+  /* [class.abstract]
+     An abstract class shall not be used ... as the type of an explicit
+     conversion.  */
+  if (abstract_virtuals_error_sfinae (ACU_CAST, type, complain))
+    return error_mark_node;
+
   /* [expr.static.cast]
 
      An expression e can be explicitly converted to a type T using a

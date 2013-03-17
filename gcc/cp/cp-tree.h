@@ -463,6 +463,19 @@ typedef enum impl_conv_void {
   ICV_THIRD_IN_FOR     /* for increment expression */
 } impl_conv_void;
 
+/* Possible invalid uses of an abstract class that might not have a
+   specific associated declaration.  */
+typedef enum abstract_class_use {
+  ACU_UNKNOWN,			/* unknown or decl provided */
+  ACU_CAST,			/* cast to abstract class */
+  ACU_NEW,			/* new-expression of abstract class */
+  ACU_THROW,			/* throw-expression of abstract class */
+  ACU_CATCH,			/* catch-parameter of abstract class */
+  ACU_ARRAY,			/* array of abstract class */
+  ACU_RETURN,			/* return type of abstract class */
+  ACU_PARM			/* parameter type of abstract class */
+} abstract_class_use;
+
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
@@ -5983,7 +5996,9 @@ extern tree binfo_or_else			(tree, tree);
 extern void cxx_readonly_error			(tree, enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
+extern int abstract_virtuals_error		(abstract_class_use, tree);
 extern int abstract_virtuals_error_sfinae	(tree, tree, tsubst_flags_t);
+extern int abstract_virtuals_error_sfinae	(abstract_class_use, tree, tsubst_flags_t);
 
 extern tree store_init_value			(tree, tree, vec<tree, va_gc>**, int);
 extern void check_narrowing			(tree, tree);
