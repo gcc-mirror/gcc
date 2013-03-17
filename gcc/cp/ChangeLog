@@ -1,5 +1,11 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56447
+	PR c++/55532
+	* pt.c (instantiate_class_template_1): Instantiate lambda capture
+	list here.
+	(tsubst_copy_and_build): Not here.
+
 	PR c++/55017
 	* method.c (walk_field_subobs): Disallow copy of rvalue ref.
 
