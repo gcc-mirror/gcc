@@ -1,5 +1,9 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	DR 657
+	* pt.c (tsubst_function_type): Call abstract_virtuals_error_sfinae.
+	(tsubst_arg_types): Likewise.
+
 	DR 1518
 	PR c++/54835
 	* call.c (convert_like_real): Check for explicit constructors
