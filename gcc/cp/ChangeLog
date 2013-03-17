@@ -1,5 +1,7 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_lambda_expression): Use nreverse.
+
 	PR c++/56447
 	PR c++/55532
 	* pt.c (instantiate_class_template_1): Instantiate lambda capture
