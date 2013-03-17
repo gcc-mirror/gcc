@@ -8991,12 +8991,26 @@ instantiate_class_template_1 (tree type)
 	}
     }
 
-  if (CLASSTYPE_LAMBDA_EXPR (type))
+  if (tree expr = CLASSTYPE_LAMBDA_EXPR (type))
     {
       tree decl = lambda_function (type);
       if (decl)
 	{
 	  instantiate_decl (decl, false, false);
+
+	  /* We need to instantiate the capture list from the template
+	     after we've instantiated the closure members, but before we
+	     consider adding the conversion op.  Also keep any captures
+	     that may have been added during instantiation of the op().  */
+	  tree tmpl_expr = CLASSTYPE_LAMBDA_EXPR (pattern);
+	  tree tmpl_cap
+	    = tsubst_copy_and_build (LAMBDA_EXPR_CAPTURE_LIST (tmpl_expr),
+				     args, tf_warning_or_error, NULL_TREE,
+				     false, false);
+
+	  LAMBDA_EXPR_CAPTURE_LIST (expr)
+	    = chainon (tmpl_cap, nreverse (LAMBDA_EXPR_CAPTURE_LIST (expr)));
+
 	  maybe_add_lambda_conv_op (type);
 	}
       else
@@ -14470,12 +14484,6 @@ tsubst_copy_and_build (tree t,
 	   declaration of the op() for later calls to lambda_function.  */
 	complete_type (type);
 
-	/* The capture list refers to closure members, so this needs to
-	   wait until after we finish instantiating the type.  Also keep
-	   any captures that may have been added during instantiation.  */
-	LAMBDA_EXPR_CAPTURE_LIST (r)
-	  = chainon (RECUR (LAMBDA_EXPR_CAPTURE_LIST (t)),
-		     LAMBDA_EXPR_CAPTURE_LIST (r));
 	LAMBDA_EXPR_THIS_CAPTURE (r) = NULL_TREE;
 
 	RETURN (build_lambda_object (r));
