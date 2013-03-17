@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56039
+	* tree.c (strip_typedefs_expr): Complain about lambda, don't abort.
+
 	PR c++/54359
 	* parser.c (cp_parser_direct_declarator): Fix late return
 	for out-of-class defn of member function.
