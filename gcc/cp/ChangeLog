@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (lookup_literal_operator): Correct parm/arg naming
+	mixup.
+
 	PR c++/56238
 	* pt.c (fold_non_dependent_expr_sfinae): Check
 	instantiation_dependent_expression_p.
