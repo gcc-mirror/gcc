@@ -6693,6 +6693,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* else continue to get conversion error.  */
     }
 
+  /* N3276 magic doesn't apply to nested calls.  */
+  int decltype_flag = (complain & tf_decltype);
+  complain &= ~tf_decltype;
+
   /* Find maximum size of vector to hold converted arguments.  */
   parmlen = list_length (parm);
   nargs = vec_safe_length (args) + (first_arg != NULL_TREE ? 1 : 0);
@@ -7064,7 +7068,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	return error_mark_node;
     }
 
-  return build_cxx_call (fn, nargs, argarray, complain);
+  return build_cxx_call (fn, nargs, argarray, complain|decltype_flag);
 }
 
 /* Build and return a call to FN, using NARGS arguments in ARGARRAY.
@@ -7106,12 +7110,20 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
   if (VOID_TYPE_P (TREE_TYPE (fn)))
     return fn;
 
-  fn = require_complete_type_sfinae (fn, complain);
-  if (fn == error_mark_node)
-    return error_mark_node;
+  /* 5.2.2/11: If a function call is a prvalue of object type: if the
+     function call is either the operand of a decltype-specifier or the
+     right operand of a comma operator that is the operand of a
+     decltype-specifier, a temporary object is not introduced for the
+     prvalue. The type of the prvalue may be incomplete.  */
+  if (!(complain & tf_decltype))
+    {
+      fn = require_complete_type_sfinae (fn, complain);
+      if (fn == error_mark_node)
+	return error_mark_node;
 
-  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
-    fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+      if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
+	fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+    }
   return convert_from_reference (fn);
 }
 

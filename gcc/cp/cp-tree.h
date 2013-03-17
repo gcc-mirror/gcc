@@ -4203,6 +4203,9 @@ enum tsubst_flags {
 				    conversion might be permissible,
 				    not actually performing the
 				    conversion.  */
+  tf_decltype = 1 << 7,          /* We are the operand of decltype.
+				    Used to implement the special rules
+				    for calls in decltype (5.2.2/11).  */
   tf_partial = 1 << 8,		 /* Doing initial explicit argument
 				    substitution in fn_type_unification.  */
   /* Convenient substitution flags combinations.  */
