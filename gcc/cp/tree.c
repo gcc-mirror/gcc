@@ -1421,7 +1421,8 @@ strip_typedefs_expr (tree t)
       }
 
     case LAMBDA_EXPR:
-      gcc_unreachable ();
+      error ("lambda-expression in a constant expression");
+      return error_mark_node;
 
     default:
       break;
