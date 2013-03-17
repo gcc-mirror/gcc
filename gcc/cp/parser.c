@@ -8195,19 +8195,8 @@ cp_parser_lambda_expression (cp_parser* parser)
       cp_parser_skip_to_end_of_block_or_statement (parser);
 
     /* The capture list was built up in reverse order; fix that now.  */
-    {
-      tree newlist = NULL_TREE;
-      tree elt, next;
-
-      for (elt = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr);
-	   elt; elt = next)
-	{
-	  next = TREE_CHAIN (elt);
-	  TREE_CHAIN (elt) = newlist;
-	  newlist = elt;
-	}
-      LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) = newlist;
-    }
+    LAMBDA_EXPR_CAPTURE_LIST (lambda_expr)
+      = nreverse (LAMBDA_EXPR_CAPTURE_LIST (lambda_expr));
 
     if (ok)
       maybe_add_lambda_conv_op (type);
