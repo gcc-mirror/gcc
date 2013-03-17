@@ -5856,6 +5856,17 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	tree convfn = cand->fn;
 	unsigned i;
 
+	/* When converting from an init list we consider explicit
+	   constructors, but actually trying to call one is an error.  */
+	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
+	    /* Unless this is for direct-list-initialization.  */
+	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
+		 && CONSTRUCTOR_IS_DIRECT_INIT (expr)))
+	  {
+	    error ("converting to %qT from initializer list would use "
+		   "explicit constructor %qD", totype, convfn);
+	  }
+
 	/* If we're initializing from {}, it's value-initialization.  */
 	if (BRACE_ENCLOSED_INITIALIZER_P (expr)
 	    && CONSTRUCTOR_NELTS (expr) == 0
@@ -5873,20 +5884,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  }
 
 	expr = mark_rvalue_use (expr);
-
-	/* When converting from an init list we consider explicit
-	   constructors, but actually trying to call one is an error.  */
-	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
-	    /* Unless this is for direct-list-initialization.  */
-	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
-		 && CONSTRUCTOR_IS_DIRECT_INIT (expr))
-	    /* Unless we're calling it for value-initialization from an
-	       empty list, since that is handled separately in 8.5.4.  */
-	    && cand->num_convs > 0)
-	  {
-	    error ("converting to %qT from initializer list would use "
-		   "explicit constructor %qD", totype, convfn);
-	  }
 
 	/* Set user_conv_p on the argument conversions, so rvalue/base
 	   handling knows not to allow any more UDCs.  */

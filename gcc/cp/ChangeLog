@@ -1,5 +1,10 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	DR 1518
+	PR c++/54835
+	* call.c (convert_like_real): Check for explicit constructors
+	even for value-initialization.
+
 	PR c++/54946
 	* pt.c (convert_nontype_argument): Handle invalid pointer.
 
