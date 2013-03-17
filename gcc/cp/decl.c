@@ -9630,9 +9630,11 @@ grokdeclarator (const cp_declarator *declarator,
 	     but to the target of the pointer.  */
 	  type_quals = TYPE_UNQUALIFIED;
 
+	  /* This code used to handle METHOD_TYPE, but I don't think it's
+	     possible to get it here anymore.  */
+	  gcc_assert (TREE_CODE (type) != METHOD_TYPE);
 	  if (declarator->kind == cdk_ptrmem
-	      && (TREE_CODE (type) == FUNCTION_TYPE
-		  || (memfn_quals && TREE_CODE (type) == METHOD_TYPE)))
+	      && TREE_CODE (type) == FUNCTION_TYPE)
 	    {
 	      memfn_quals |= type_memfn_quals (type);
 	      type = build_memfn_type (type,
