@@ -2884,7 +2884,8 @@ outer_var_p (tree decl)
 {
   return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
 	  && DECL_FUNCTION_SCOPE_P (decl)
-	  && DECL_CONTEXT (decl) != current_function_decl);
+	  && (DECL_CONTEXT (decl) != current_function_decl
+	      || parsing_nsdmi ()));
 }
 
 /* As above, but also checks that DECL is automatic.  */
@@ -3041,12 +3042,14 @@ finish_id_expression (tree id_expression,
 		return integral_constant_value (decl);
 	    }
 
+	  if (parsing_nsdmi ())
+	    containing_function = NULL_TREE;
 	  /* If we are in a lambda function, we can move out until we hit
 	     1. the context,
 	     2. a non-lambda function, or
 	     3. a non-default capturing lambda function.  */
-	  while (context != containing_function
-		 && LAMBDA_FUNCTION_P (containing_function))
+	  else while (context != containing_function
+		      && LAMBDA_FUNCTION_P (containing_function))
 	    {
 	      lambda_expr = CLASSTYPE_LAMBDA_EXPR
 		(DECL_CONTEXT (containing_function));

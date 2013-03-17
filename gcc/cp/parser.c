@@ -16938,6 +16938,19 @@ inject_this_parameter (tree ctype, cp_cv_quals quals)
   current_class_ptr = this_parm;
 }
 
+/* Return true iff our current scope is a non-static data member
+   initializer.  */
+
+bool
+parsing_nsdmi (void)
+{
+  /* We recognize NSDMI context by the context-less 'this' pointer set up
+     by the function above.  */
+  if (current_class_ptr && DECL_CONTEXT (current_class_ptr) == NULL_TREE)
+    return true;
+  return false;
+}
+
 /* Parse a late-specified return type, if any.  This is not a separate
    non-terminal, but part of a function declarator, which looks like
 

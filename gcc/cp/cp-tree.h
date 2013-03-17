@@ -4259,6 +4259,7 @@ extern int comparing_specializations;
 
 extern int cp_unevaluated_operand;
 extern tree cp_convert_range_for (tree, tree, tree);
+extern bool parsing_nsdmi (void);
 
 /* in pt.c  */
 
