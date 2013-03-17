@@ -16367,6 +16367,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree exception_specification;
 		  tree late_return;
 		  tree attrs;
+		  bool memfn = (member_p || (pushed_scope
+					     && CLASS_TYPE_P (pushed_scope)));
 
 		  is_declarator = true;
 
@@ -16383,7 +16385,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 
 		  late_return = (cp_parser_late_return_type_opt
-				 (parser, member_p ? cv_quals : -1));
+				 (parser, memfn ? cv_quals : -1));
 
 		  /* Parse the virt-specifier-seq.  */
 		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
