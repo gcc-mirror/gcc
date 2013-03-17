@@ -1,3 +1,10 @@
+2013-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/17232
+	PR c++/56642
+	* typeck2.c (abstract_virtuals_error_sfinae): Revert complete_type
+	change for now.
+
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (grokdeclarator): Assert that we won't see a pointer to
