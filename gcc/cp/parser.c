@@ -12818,7 +12818,7 @@ cp_parser_template_id (cp_parser *parser,
 	error_at (token->location, "parse error in template argument list");
     }
 
-  pop_deferring_access_checks ();
+  pop_to_parent_deferring_access_checks ();
   return template_id;
 }
 
