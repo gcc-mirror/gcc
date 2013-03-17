@@ -5553,15 +5553,19 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      qualification conversion. Let's strip everything.  */
   else if (TREE_CODE (expr) == NOP_EXPR && TYPE_PTROBV_P (type))
     {
-      STRIP_NOPS (expr);
-      gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
-      gcc_assert (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE);
-      /* Skip the ADDR_EXPR only if it is part of the decay for
-	 an array. Otherwise, it is part of the original argument
-	 in the source code.  */
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == ARRAY_TYPE)
-	expr = TREE_OPERAND (expr, 0);
-      expr_type = TREE_TYPE (expr);
+      tree probe = expr;
+      STRIP_NOPS (probe);
+      if (TREE_CODE (probe) == ADDR_EXPR
+	  && TREE_CODE (TREE_TYPE (probe)) == POINTER_TYPE)
+	{
+	  /* Skip the ADDR_EXPR only if it is part of the decay for
+	     an array. Otherwise, it is part of the original argument
+	     in the source code.  */
+	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (probe, 0))) == ARRAY_TYPE)
+	    probe = TREE_OPERAND (probe, 0);
+	  expr = probe;
+	  expr_type = TREE_TYPE (expr);
+	}
     }
 
   /* [temp.arg.nontype]/5, bullet 1
@@ -5638,6 +5642,13 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		     "because %qD is a variable, not the address of "
 		     "a variable",
 		     expr, expr);
+	      return NULL_TREE;
+	    }
+	  if (POINTER_TYPE_P (expr_type))
+	    {
+	      error ("%qE is not a valid template argument for %qT"
+		     "because it is not the address of a variable",
+		     expr, type);
 	      return NULL_TREE;
 	    }
 	  /* Other values, like integer constants, might be valid
