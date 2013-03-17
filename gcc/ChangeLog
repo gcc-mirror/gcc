@@ -1,5 +1,21 @@
 2013-03-17  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (isa): Add x64 and nox64.
+	(enabled): Define x64 for TARGET_64BIT and nox64 for !TARGET_64BIT.
+	(*pushtf): Enable *roF alternative for x64 isa only.
+	(*pushxf): Merge with *pushxf_nointeger.  Use Yx*r constraint. Set
+	mode attribute of integer alternatives to DImode for TARGET_64BIT.
+	(*pushdf): Merge with *pushdf_rex64.  Use x64 and nox64 isa attributes.
+	(*movtf_internal): Merge from *movtf_internal_rex64 and
+	*movtf_internal_sse.  Use x64 and nox64 isa attributes.
+	(*movxf_internal): Merge with *movxf_internal_rex64.  Use x64 and
+	nox64 isa attributes.
+	(*movdf_internal): Merge with *movdf_internal_rex64.  Use x64 and
+	nox64 isa attributes.
+	* config/i386/constraints.md (Yd): Do not set for TARGET_64BIT.
+
+2013-03-17  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/alpha/alpha.c (TARGET_LRA_P): New define.
 
 2013-03-17  Jakub Jelinek  <jakub@redhat.com>
