@@ -265,10 +265,6 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
     return 0;
   type = TYPE_MAIN_VARIANT (type);
 
-  /* In SFINAE context, force instantiation.  */
-  if (!(complain & tf_error))
-    complete_type (type);
-
   /* If the type is incomplete, we register it within a hash table,
      so that we can check again once it is completed. This makes sense
      only for objects for which we have a declaration or at least a
