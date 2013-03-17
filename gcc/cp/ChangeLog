@@ -1,5 +1,10 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	DR 337
+	PR c++/17232
+	* pt.c (tsubst) [ARRAY_TYPE]: Use abstract_virtuals_error_sfinae.
+	* typeck2.c (abstract_virtuals_error_sfinae): Call complete_type.
+
 	DR 657
 	* pt.c (tsubst_function_type): Call abstract_virtuals_error_sfinae.
 	(tsubst_arg_types): Likewise.
