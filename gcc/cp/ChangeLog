@@ -1,5 +1,11 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55240
+	* parser.c (parsing_nsdmi): New.
+	* semantics.c (outer_automatic_var_p): Check it.
+	(finish_id_expression): Likewise.
+	* cp-tree.h: Declare it.
+
 	PR c++/55241
 	* error.c (dump_expr) [SIZEOF_EXPR]: Print sizeof... properly.
 
