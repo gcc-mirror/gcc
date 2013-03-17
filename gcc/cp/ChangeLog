@@ -1,5 +1,14 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54764
+	PR c++/55972
+	* name-lookup.h (tag_scope): Add ts_lambda.
+	* semantics.c (begin_lambda_type): Use it.
+	* decl.c (xref_tag_1): Set CLASSTYPE_LAMBDA_EXPR.
+	* pt.c (check_default_tmpl_args): Ignore lambdas.
+	(push_template_decl_real): Handle lambdas.
+	* tree.c (no_linkage_check): Adjust lambda check.
+
 	PR c++/56039
 	* tree.c (strip_typedefs_expr): Complain about lambda, don't abort.
 
