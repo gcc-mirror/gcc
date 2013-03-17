@@ -11781,7 +11781,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	++c_inhibit_evaluation_warnings;
 
 	type = tsubst_expr (DECLTYPE_TYPE_EXPR (t), args,
-			    complain, in_decl,
+			    complain|tf_decltype, in_decl,
 			    /*integral_constant_expression_p=*/false);
 
 	--cp_unevaluated_operand;
@@ -13417,6 +13417,12 @@ tsubst_copy_and_build (tree t,
   if (EXPR_HAS_LOCATION (t))
     input_location = EXPR_LOCATION (t);
 
+  /* N3276 decltype magic only applies to calls at the top level or on the
+     right side of a comma.  */
+  if (TREE_CODE (t) != CALL_EXPR
+      && TREE_CODE (t) != COMPOUND_EXPR)
+    complain &= ~tf_decltype;
+
   switch (TREE_CODE (t))
     {
     case USING_DECL:
@@ -13848,10 +13854,16 @@ tsubst_copy_and_build (tree t,
 	complain));
 
     case COMPOUND_EXPR:
-      RETURN (build_x_compound_expr (EXPR_LOCATION (t),
-				    RECUR (TREE_OPERAND (t, 0)),
-				    RECUR (TREE_OPERAND (t, 1)),
-                                    complain));
+      {
+	tree op0 = tsubst_copy_and_build (TREE_OPERAND (t, 0), args,
+					  complain & ~tf_decltype, in_decl,
+					  /*function_p=*/false,
+					  integral_constant_expression_p);
+	RETURN (build_x_compound_expr (EXPR_LOCATION (t),
+				       op0,
+				       RECUR (TREE_OPERAND (t, 1)),
+				       complain));
+      }
 
     case CALL_EXPR:
       {
@@ -13861,6 +13873,10 @@ tsubst_copy_and_build (tree t,
 	bool qualified_p;
 	bool koenig_p;
 	tree ret;
+
+	/* Don't pass tf_decltype down to subexpressions.  */
+	tsubst_flags_t decltype_flag = (complain & tf_decltype);
+	complain &= ~tf_decltype;
 
 	function = CALL_EXPR_FN (t);
 	/* When we parsed the expression,  we determined whether or
@@ -14027,6 +14043,9 @@ tsubst_copy_and_build (tree t,
 	/* Remember that there was a reference to this entity.  */
 	if (DECL_P (function))
 	  mark_used (function);
+
+	/* Put back tf_decltype for the actual call.  */
+	complain |= decltype_flag;
 
 	if (TREE_CODE (function) == OFFSET_REF)
 	  ret = build_offset_ref_call_from_tree (function, &call_args,

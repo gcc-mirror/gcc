@@ -1,5 +1,24 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	N3276
+	PR c++/52748
+	* cp-tree.h (tsubst_flags): Add tf_decltype.
+	* call.c (build_cxx_call): Don't build a temporary if it's set.
+	(build_over_call): Make sure it's only passed to build_cxx_call.
+	* parser.c (cp_parser_primary_expression): Add decltype_p parm.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_binary_expression): Likewise.
+	(cp_parser_assignment_expression): Likewise.
+	(cp_parser_postfix_expression): Likewise.  Pass tf_decltype.
+	(cp_parser_explicit_instantiation): Add decltype_p.  Force a
+	temporary for a call on the LHS of a comma.
+	(cp_parser_decltype): Pass true to decltype_p parms.
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Pass tf_decltype.
+	(tsubst_copy_and_build): Pass tf_decltype down only for
+	CALL_EXPR and the RHS of COMPOUND_EXPR.
+	* tree.c (build_cplus_new): Call complete_type_or_maybe_complain.
+
 	* cp-tree.h (abstract_class_use): New enum.
 	* typeck2.c (pending_abstract_type): Add use field.
 	(abstract_virtuals_error_sfinae): Add overloads taking
