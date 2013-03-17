@@ -8554,7 +8554,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
         {
           cp_lexer_consume_token (parser->lexer);
-          LAMBDA_EXPR_RETURN_TYPE (lambda_expr) = cp_parser_type_id (parser);
+          LAMBDA_EXPR_RETURN_TYPE (lambda_expr)
+	    = cp_parser_trailing_type_id (parser);
         }
 
       /* The function parameters must be in scope all the way until after the
