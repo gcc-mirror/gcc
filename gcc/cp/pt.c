@@ -5788,7 +5788,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  return NULL_TREE;
 	}
 
-      expr = convert_nontype_argument_function (TREE_TYPE (type), expr);
+      expr = convert_nontype_argument_function (type, expr);
       if (!expr || expr == error_mark_node)
 	return expr;
 

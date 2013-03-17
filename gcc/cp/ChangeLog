@@ -1,3 +1,12 @@
+2013-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56095
+	* class.c (resolve_address_of_overloaded_function): Accept a
+	reference to function for target_type.
+	(instantiate_type): Likewise.
+	* pt.c (convert_nontype_argument): Pass it to
+	convert_nontype_argument_function.
+
 2013-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (cp_tree_equal): Fix a pasto.
