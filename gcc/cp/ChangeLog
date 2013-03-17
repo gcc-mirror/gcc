@@ -1,5 +1,9 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54359
+	* parser.c (cp_parser_direct_declarator): Fix late return
+	for out-of-class defn of member function.
+
 	PR c++/55357
 	* semantics.c (maybe_add_lambda_conv_op): Clear DECL_NAME of copied
 	parms to avoid duplicate -Wshadow warnings.
