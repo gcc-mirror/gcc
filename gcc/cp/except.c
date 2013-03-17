@@ -972,16 +972,8 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
   /* 10.4/3 An abstract class shall not be used as a parameter type,
 	    as a function return type or as type of an explicit
 	    conversion.  */
-  else if (ABSTRACT_CLASS_TYPE_P (type))
-    {
-      if (is_throw)
-	error ("expression %qE of abstract class type %qT cannot "
-	       "be used in throw-expression", expr, type);
-      else
-	error ("cannot declare catch parameter to be of abstract "
-	       "class type %qT", type);
-      return false;
-    }
+  else if (abstract_virtuals_error (is_throw ? ACU_THROW : ACU_CATCH, type))
+    return false;
   else if (!is_throw
 	   && TREE_CODE (type) == REFERENCE_TYPE
 	   && TYPE_REF_IS_RVALUE (type))

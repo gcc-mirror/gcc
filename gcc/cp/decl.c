@@ -6434,11 +6434,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       /* Check for abstractness of the type. Notice that there is no
 	 need to strip array types here since the check for those types
 	 is already done within create_array_type_for_decl.  */
-      if (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE)
-	abstract_virtuals_error (decl, TREE_TYPE (type));
-      else
-	abstract_virtuals_error (decl, type);
+      abstract_virtuals_error (decl, type);
 
       if (TREE_TYPE (decl) == error_mark_node)
 	/* No initialization required.  */
@@ -8656,6 +8652,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool template_type_arg = false;
   bool template_parm_flag = false;
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
+  source_location saved_loc = input_location;
   const char *errmsg;
 
   signed_p = decl_spec_seq_has_spec_p (declspecs, ds_signed);
@@ -9340,7 +9337,6 @@ grokdeclarator (const cp_declarator *declarator,
   if (declspecs->std_attributes)
     {
       /* Apply the c++11 attributes to the type preceding them.  */
-      source_location saved_loc = input_location;
       input_location = declspecs->locations[ds_std_attribute];
       decl_attributes (&type, declspecs->std_attributes, 0);
       input_location = saved_loc;
@@ -9428,11 +9424,10 @@ grokdeclarator (const cp_declarator *declarator,
 		error ("%qs declared as function returning an array", name);
 		return error_mark_node;
 	      }
-	    /* When decl_context == NORMAL we emit a better error message
-	       later in abstract_virtuals_error.  */
-	    if (decl_context == TYPENAME && ABSTRACT_CLASS_TYPE_P (type))
-	      error ("%qs declared as function returning an abstract "
-		     "class type", name);
+
+	    input_location = declspecs->locations[ds_type_spec];
+	    abstract_virtuals_error (ACU_RETURN, type);
+	    input_location = saved_loc;
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;

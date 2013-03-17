@@ -1,5 +1,16 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (abstract_class_use): New enum.
+	* typeck2.c (pending_abstract_type): Add use field.
+	(abstract_virtuals_error_sfinae): Add overloads taking
+	abstract_class_use instead of tree.
+	* typeck.c (build_static_cast_1): Call it.
+	* except.c (is_admissible_throw_operand_or_catch_parameter): Call it.
+	* pt.c: Adjust calls.
+	* decl.c (cp_finish_decl): Don't handle functions specially.
+	(grokdeclarator): Always check return type.
+	* init.c (build_new_1): Adjust call.
+
 	DR 337
 	PR c++/17232
 	* pt.c (tsubst) [ARRAY_TYPE]: Use abstract_virtuals_error_sfinae.
