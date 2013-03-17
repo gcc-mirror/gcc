@@ -1,3 +1,9 @@
+2013-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56640
+	* config/arm/arm.h (REG_CLASS_NAMES): Add "SFP_REG" and "AFP_REG"
+	class names.  Remove trailing comma after "ALL_REGS".
+
 2013-03-16  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_get_create_real_symbol_node): Declare.
