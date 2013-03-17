@@ -1,5 +1,14 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54277
+	* cp-tree.h (WILDCARD_TYPE_P): Split out from...
+	(MAYBE_CLASS_TYPE_P): ...here.
+	* semantics.c (lambda_capture_field_type): Only build a
+	magic decltype for wildcard types.
+	(lambda_proxy_type): Likewise.
+	(finish_non_static_data_member): Get the quals from
+	the object.
+
 	PR c++/55931
 	* parser.c (cp_parser_template_argument): Don't
 	fold_non_dependent_expr.
