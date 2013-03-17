@@ -1,5 +1,10 @@
 2013-03-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/56468
+	* libsupc++/exception_ptr.h (type_info): Declare.
+
+2013-03-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/56492
 	* include/std/future (__future_base::_Result): Add result_type
 	typedef.
