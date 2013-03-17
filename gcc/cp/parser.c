@@ -13335,7 +13335,6 @@ cp_parser_template_argument (cp_parser* parser)
   argument = cp_parser_constant_expression (parser,
 					    /*allow_non_constant_p=*/false,
 					    /*non_constant_p=*/NULL);
-  argument = fold_non_dependent_expr (argument);
   if (!maybe_type_id)
     return argument;
   if (!cp_parser_next_token_ends_template_argument_p (parser))
