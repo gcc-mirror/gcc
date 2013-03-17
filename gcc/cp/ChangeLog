@@ -1,5 +1,9 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56238
+	* pt.c (fold_non_dependent_expr_sfinae): Check
+	instantiation_dependent_expression_p.
+
 	PR c++/56095
 	* class.c (resolve_address_of_overloaded_function): Accept a
 	reference to function for target_type.

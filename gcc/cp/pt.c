@@ -5044,9 +5044,8 @@ fold_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
 
      as two declarations of the same function, for example.  */
   if (processing_template_decl
-      && !type_dependent_expression_p (expr)
-      && potential_constant_expression (expr)
-      && !value_dependent_expression_p (expr))
+      && !instantiation_dependent_expression_p (expr)
+      && potential_constant_expression (expr))
     {
       HOST_WIDE_INT saved_processing_template_decl;
 
