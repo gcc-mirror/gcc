@@ -9678,7 +9678,11 @@ maybe_add_lambda_conv_op (tree type)
   DECL_STATIC_FUNCTION_P (fn) = 1;
   DECL_ARGUMENTS (fn) = copy_list (DECL_CHAIN (DECL_ARGUMENTS (callop)));
   for (arg = DECL_ARGUMENTS (fn); arg; arg = DECL_CHAIN (arg))
-    DECL_CONTEXT (arg) = fn;
+    {
+      /* Avoid duplicate -Wshadow warnings.  */
+      DECL_NAME (arg) = NULL_TREE;
+      DECL_CONTEXT (arg) = fn;
+    }
   if (nested)
     DECL_INTERFACE_KNOWN (fn) = 1;
 
