@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52374
+	* pt.c (tsubst_qualified_id): Use current_nonlambda_class_type.
+
 	PR c++/54764
 	PR c++/55972
 	* name-lookup.h (tag_scope): Add ts_lambda.
