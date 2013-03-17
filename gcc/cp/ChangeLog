@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54946
+	* pt.c (convert_nontype_argument): Handle invalid pointer.
+
 	* parser.c (cp_parser_lambda_expression): Use nreverse.
 
 	PR c++/56447
