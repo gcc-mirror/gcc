@@ -1574,9 +1574,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       else
 	{
 	  /* Set the cv qualifiers.  */
-	  int quals = (current_class_ref
-		       ? cp_type_quals (TREE_TYPE (current_class_ref))
-		       : TYPE_UNQUALIFIED);
+	  int quals = cp_type_quals (TREE_TYPE (object));
 
 	  if (DECL_MUTABLE_P (decl))
 	    quals &= ~TYPE_QUAL_CONST;
@@ -9056,7 +9054,7 @@ tree
 lambda_capture_field_type (tree expr)
 {
   tree type;
-  if (type_dependent_expression_p (expr))
+  if (!TREE_TYPE (expr) || WILDCARD_TYPE_P (TREE_TYPE (expr)))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -9265,7 +9263,7 @@ lambda_proxy_type (tree ref)
   if (REFERENCE_REF_P (ref))
     ref = TREE_OPERAND (ref, 0);
   type = TREE_TYPE (ref);
-  if (!dependent_type_p (type))
+  if (type && !WILDCARD_TYPE_P (type))
     return type;
   type = cxx_make_type (DECLTYPE_TYPE);
   DECLTYPE_TYPE_EXPR (type) = ref;
