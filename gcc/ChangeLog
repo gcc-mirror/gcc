@@ -1,3 +1,11 @@
+2013-03-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_get_create_real_symbol_node): Declare.
+	* cgraph.c (cgraph_get_create_real_symbol_node): New function.
+	* cgrpahbuild.c: Use cgraph_get_create_real_symbol_node instead
+	of cgraph_get_create_node.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Likewise.
+
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR debug/49090
