@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (grokdeclarator): Assert that we won't see a pointer to
+	METHOD_TYPE.
+
 	PR c++/54277
 	* cp-tree.h (WILDCARD_TYPE_P): Split out from...
 	(MAYBE_CLASS_TYPE_P): ...here.
