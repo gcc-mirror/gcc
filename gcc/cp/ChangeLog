@@ -1,5 +1,9 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55931
+	* parser.c (cp_parser_template_argument): Don't
+	fold_non_dependent_expr.
+
 	* parser.c (cp_parser_lambda_declarator_opt): Use
 	cp_parser_trailing_type_id.
 
