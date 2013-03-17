@@ -51,7 +51,8 @@ struct Default
 void test01(std::tuple<NoCon&, NoCon&&> t1,
             std::tuple<NoCon&, NoCon&&, NoCon&> t2)
 {
-  std::pair<RefCheck1, RefCheck2>(std::piecewise_construct, t1, t2);
+  std::pair<RefCheck1, RefCheck2>(std::piecewise_construct,
+				  std::move(t1), std::move(t2));
 }
 
 void test02(std::tuple<> t1, std::tuple<int> t2)

@@ -1115,6 +1115,19 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 			"initialize %q+#D", field);
 	    }
 	}
+      else if (sfk == sfk_copy_constructor)
+	{
+	  /* 12.8p11b5 */
+	  if (TREE_CODE (mem_type) == REFERENCE_TYPE
+	      && TYPE_REF_IS_RVALUE (mem_type))
+	    {
+	      if (diag)
+		error ("copying non-static data member %q#D of rvalue "
+		       "reference type", field);
+	      if (deleted_p)
+		*deleted_p = true;
+	    }
+	}
 
       if (!CLASS_TYPE_P (mem_type))
 	continue;

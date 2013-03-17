@@ -1,3 +1,8 @@
+2013-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55017
+	* testsuite/20_util/pair/piecewise2.cc (test01): Use std::move.
+
 2013-03-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/56468

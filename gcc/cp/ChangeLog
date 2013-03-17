@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55017
+	* method.c (walk_field_subobs): Disallow copy of rvalue ref.
+
 	PR c++/55240
 	* parser.c (parsing_nsdmi): New.
 	* semantics.c (outer_automatic_var_p): Check it.
