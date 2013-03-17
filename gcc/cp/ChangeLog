@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45917
+	* parser.c (cp_parser_template_id): Don't forget access checks.
+
 	PR c++/52374
 	* pt.c (tsubst_qualified_id): Use current_nonlambda_class_type.
 
