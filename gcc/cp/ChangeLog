@@ -1,5 +1,8 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55241
+	* error.c (dump_expr) [SIZEOF_EXPR]: Print sizeof... properly.
+
 	* parser.c (lookup_literal_operator): Correct parm/arg naming
 	mixup.
 

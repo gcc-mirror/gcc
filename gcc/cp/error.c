@@ -1783,6 +1783,8 @@ resolve_virtual_fun_from_obj_type_ref (tree ref)
 static void
 dump_expr (tree t, int flags)
 {
+  tree op;
+
   if (t == 0)
     return;
 
@@ -2316,14 +2318,20 @@ dump_expr (tree t, int flags)
 	  gcc_assert (TREE_CODE (t) == ALIGNOF_EXPR);
 	  pp_cxx_ws_string (cxx_pp, "__alignof__");
 	}
+      op = TREE_OPERAND (t, 0);
+      if (PACK_EXPANSION_P (op))
+	{
+	  pp_string (cxx_pp, "...");
+	  op = PACK_EXPANSION_PATTERN (op);
+	}
       pp_cxx_whitespace (cxx_pp);
       pp_cxx_left_paren (cxx_pp);
       if (TREE_CODE (t) == SIZEOF_EXPR && SIZEOF_EXPR_TYPE_P (t))
-	dump_type (TREE_TYPE (TREE_OPERAND (t, 0)), flags);
+	dump_type (TREE_TYPE (op), flags);
       else if (TYPE_P (TREE_OPERAND (t, 0)))
-	dump_type (TREE_OPERAND (t, 0), flags);
+	dump_type (op, flags);
       else
-	dump_expr (TREE_OPERAND (t, 0), flags);
+	dump_expr (op, flags);
       pp_cxx_right_paren (cxx_pp);
       break;
 
