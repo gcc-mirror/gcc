@@ -1,5 +1,7 @@
 2013-03-16  Jason Merrill  <jason@redhat.com>
 
+	* search.c (lookup_base): Handle NULL_TREE.
+
 	PR c++/56481
 	* semantics.c (potential_constant_expression_1): Use of 'this' in
 	a non-constexpr function makes the expression not potentially
