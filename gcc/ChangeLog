@@ -1,3 +1,8 @@
+2013-03-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_get_live_callee_saved_regs):
+	Add missing line to comment describing function.
+
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56210
