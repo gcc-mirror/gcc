@@ -1,3 +1,10 @@
+2013-03-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/56470
+	* arm.c (shift_op): Validate RTL pattern on the fly.
+	(arm_print_operand, case 'S'): Don't use shift_operator to validate
+	the RTL.
+
 2013-03-14  Seth LaForge  <sethml@google.com>
 
 	PR target/56351
