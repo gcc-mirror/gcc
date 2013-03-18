@@ -2370,19 +2370,16 @@ gfc_get_derived_type (gfc_symbol * derived)
     }
 
   /* If use associated, use the module type for this one.  */
-  if (gfc_option.flag_whole_file
-	&& derived->backend_decl == NULL
-	&& derived->attr.use_assoc
-	&& derived->module
-	&& gfc_get_module_backend_decl (derived))
+  if (derived->backend_decl == NULL
+      && derived->attr.use_assoc
+      && derived->module
+      && gfc_get_module_backend_decl (derived))
     goto copy_derived_types;
 
-  /* If a whole file compilation, the derived types from an earlier
-     namespace can be used as the canonical type.  */
-  if (gfc_option.flag_whole_file
-	&& derived->backend_decl == NULL
-	&& !derived->attr.use_assoc
-	&& gfc_global_ns_list)
+  /* The derived types from an earlier namespace can be used as the
+     canonical type.  */
+  if (derived->backend_decl == NULL && !derived->attr.use_assoc
+      && gfc_global_ns_list)
     {
       for (ns = gfc_global_ns_list;
 	   ns->translated && !got_canonical;

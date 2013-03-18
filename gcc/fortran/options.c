@@ -124,7 +124,6 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_real8_kind = 0;
   gfc_option.flag_dollar_ok = 0;
   gfc_option.flag_underscoring = 1;
-  gfc_option.flag_whole_file = 1;
   gfc_option.flag_f2c = 0;
   gfc_option.flag_second_underscore = -1;
   gfc_option.flag_implicit_none = 0;
@@ -263,14 +262,6 @@ gfc_post_options (const char **pfilename)
       && TARGET_FLT_EVAL_METHOD_NON_DEFAULT)
     sorry ("-fexcess-precision=standard for Fortran");
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
-
-  /* Whole program needs whole file mode.  */
-  if (flag_whole_program)
-    gfc_option.flag_whole_file = 1;
-
-  /* Enable whole-file mode if LTO is in effect.  */
-  if (flag_lto)
-    gfc_option.flag_whole_file = 1;
 
   /* Fortran allows associative math - but we cannot reassociate if
      we want traps or signed zeros. Cf. also flag_protect_parens.  */
@@ -429,9 +420,6 @@ gfc_post_options (const char **pfilename)
       gfc_option.warn_ampersand = 1;
       gfc_option.warn_tabs = 0;
     }
-
-  if (pedantic && gfc_option.flag_whole_file)
-    gfc_option.flag_whole_file = 2;
 
   /* Optimization implies front end optimization, unless the user
      specified it directly.  */
@@ -821,10 +809,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_funderscoring:
       gfc_option.flag_underscoring = value;
-      break;
-
-    case OPT_fwhole_file:
-      gfc_option.flag_whole_file = value;
       break;
 
     case OPT_fsecond_underscore:

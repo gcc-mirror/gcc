@@ -1341,15 +1341,14 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && sym->attr.flavor == FL_PARAMETER)
     intrinsic_array_parameter = true;
 
-  /* If use associated and whole file compilation, use the module
+  /* If use associated compilation, use the module
      declaration.  */
-  if (gfc_option.flag_whole_file
-	&& (sym->attr.flavor == FL_VARIABLE
-	    || sym->attr.flavor == FL_PARAMETER)
-	&& sym->attr.use_assoc
-	&& !intrinsic_array_parameter
-	&& sym->module
-	&& gfc_get_module_backend_decl (sym))
+  if ((sym->attr.flavor == FL_VARIABLE
+       || sym->attr.flavor == FL_PARAMETER)
+      && sym->attr.use_assoc
+      && !intrinsic_array_parameter
+      && sym->module
+      && gfc_get_module_backend_decl (sym))
     {
       if (sym->ts.type == BT_CLASS && sym->backend_decl)
 	GFC_DECL_CLASS(sym->backend_decl) = 1;
@@ -1646,12 +1645,11 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
      return the backend_decl.  */
   gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->name);
 
-  if (gfc_option.flag_whole_file
-	&& (!sym->attr.use_assoc || sym->attr.if_source != IFSRC_DECL)
-	&& !sym->backend_decl
-	&& gsym && gsym->ns
-	&& ((gsym->type == GSYM_SUBROUTINE) || (gsym->type == GSYM_FUNCTION))
-	&& (gsym->ns->proc_name->backend_decl || !sym->attr.intrinsic))
+  if ((!sym->attr.use_assoc || sym->attr.if_source != IFSRC_DECL)
+      && !sym->backend_decl
+      && gsym && gsym->ns
+      && ((gsym->type == GSYM_SUBROUTINE) || (gsym->type == GSYM_FUNCTION))
+      && (gsym->ns->proc_name->backend_decl || !sym->attr.intrinsic))
     {
       if (!gsym->ns->proc_name->backend_decl)
 	{
@@ -1703,9 +1701,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   if (sym->module)
     gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->module);
 
-  if (gfc_option.flag_whole_file
-	&& gsym && gsym->ns
-	&& gsym->type == GSYM_MODULE)
+  if (gsym && gsym->ns && gsym->type == GSYM_MODULE)
     {
       gfc_symbol *s;
 
@@ -4047,8 +4043,7 @@ gfc_create_module_variable (gfc_symbol * sym)
       decl = sym->backend_decl;
       gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
 
-      /* -fwhole-file mixes up the contexts so these asserts are unnecessary.  */
-      if (!(gfc_option.flag_whole_file && sym->attr.use_assoc))
+      if (!sym->attr.use_assoc)
 	{
 	  gcc_assert (TYPE_CONTEXT (decl) == NULL_TREE
 		      || TYPE_CONTEXT (decl) == sym->ns->proc_name->backend_decl);

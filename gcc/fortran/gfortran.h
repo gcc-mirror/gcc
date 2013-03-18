@@ -2297,7 +2297,6 @@ typedef struct
   int flag_init_character;
   char flag_init_character_value;
   int flag_align_commons;
-  int flag_whole_file;
   int flag_protect_parens;
   int flag_realloc_lhs;
   int flag_aggressive_function_elimination;
