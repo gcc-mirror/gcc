@@ -2750,23 +2750,6 @@ gimple_cond_false_p (const_gimple gs)
   return false;
 }
 
-/* Check if conditional statement GS is of the form 'if (var != 0)' or
-   'if (var == 1)' */
-
-static inline bool
-gimple_cond_single_var_p (gimple gs)
-{
-  if (gimple_cond_code (gs) == NE_EXPR
-      && gimple_cond_rhs (gs) == boolean_false_node)
-    return true;
-
-  if (gimple_cond_code (gs) == EQ_EXPR
-      && gimple_cond_rhs (gs) == boolean_true_node)
-    return true;
-
-  return false;
-}
-
 /* Set the code, LHS and RHS of GIMPLE_COND STMT from CODE, LHS and RHS.  */
 
 static inline void

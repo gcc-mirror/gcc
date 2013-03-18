@@ -1,5 +1,12 @@
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/56483
+	* cfgexpand.c (expand_gimple_cond): Inline gimple_cond_single_var_p
+	and implement properly.
+	* gimple.h (gimple_cond_single_var_p): Remove.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-data-ref.h (find_data_references_in_loop): Declare.
 	* tree-data-ref.c (get_references_in_stmt): Use a stack
 	vector pre-allocated in the callers.
