@@ -1,5 +1,14 @@
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-loop-manip.c (find_uses_to_rename): Do not scan the
+	whole function when there is nothing to do.
+	* tree-ssa-loop.c (pass_vectorize): Remove TODO_update_ssa.
+	* tree-vectorizer.c (vectorize_loops): Update virtual and
+	loop-closed SSA once.
+	* tree-vect-loop.c (vect_transform_loop): Do not update SSA here.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/56113
 	* domwalk.c (bb_postorder): New global static.
 	(cmp_bb_postorder): New function.
