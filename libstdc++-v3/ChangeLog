@@ -1,3 +1,17 @@
+2013-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/55977 (partial, std::vector and std::deque bits)
+	* include/bits/stl_vector.h (_M_range_initialize(_InputIterator,
+	_InputIterator, std::input_iterator_tag)): Use emplace_back.
+	* include/bits/deque.tcc (_M_range_initialize(_InputIterator,
+	_InputIterator, std::input_iterator_tag)): Likewise.
+	* testsuite/23_containers/vector/cons/55977.cc: New.
+	* testsuite/23_containers/deque/cons/55977.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-03-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55979
