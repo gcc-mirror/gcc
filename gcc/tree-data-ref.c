@@ -4257,11 +4257,11 @@ compute_all_dependences (vec<data_reference_p> datarefs,
 
 typedef struct data_ref_loc_d
 {
-    /* Position of the memory reference.  */
-    tree *pos;
+  /* Position of the memory reference.  */
+  tree *pos;
 
-      /* True if the memory reference is read.  */
-      bool is_read;
+  /* True if the memory reference is read.  */
+  bool is_read;
 } data_ref_loc;
 
 
@@ -4269,14 +4269,12 @@ typedef struct data_ref_loc_d
    true if STMT clobbers memory, false otherwise.  */
 
 static bool
-get_references_in_stmt (gimple stmt, vec<data_ref_loc> *references)
+get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_stack> *references)
 {
   bool clobbers_memory = false;
   data_ref_loc ref;
   tree *op0, *op1;
   enum gimple_code stmt_code = gimple_code (stmt);
-
-  references->create (0);
 
   /* ASM_EXPR and CALL_EXPR may embed arbitrary side effects.
      As we cannot model data-references to not spelled out
@@ -4348,11 +4346,12 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
 			      vec<data_reference_p> *datarefs)
 {
   unsigned i;
-  vec<data_ref_loc> references;
+  vec<data_ref_loc, va_stack> references;
   data_ref_loc *ref;
   bool ret = true;
   data_reference_p dr;
 
+  vec_stack_alloc (data_ref_loc, references, 2);
   if (get_references_in_stmt (stmt, &references))
     {
       references.release ();
@@ -4381,11 +4380,12 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple stmt,
 				       vec<data_reference_p> *datarefs)
 {
   unsigned i;
-  vec<data_ref_loc> references;
+  vec<data_ref_loc, va_stack> references;
   data_ref_loc *ref;
   bool ret = true;
   data_reference_p dr;
 
+  vec_stack_alloc (data_ref_loc, references, 2);
   if (get_references_in_stmt (stmt, &references))
     {
       references.release ();
@@ -4437,7 +4437,7 @@ find_data_references_in_bb (struct loop *loop, basic_block bb,
    TODO: This function should be made smarter so that it can handle address
    arithmetic as if they were array accesses, etc.  */
 
-static tree
+tree
 find_data_references_in_loop (struct loop *loop,
 			      vec<data_reference_p> *datarefs)
 {
@@ -5005,7 +5005,7 @@ create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop)
 
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
-      vec<data_ref_loc> references;
+      vec<data_ref_loc, va_stack> references;
       data_ref_loc *ref;
       struct vertex *v = &(rdg->vertices[i]);
 
@@ -5020,6 +5020,7 @@ create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop)
       if (gimple_code (stmt) == GIMPLE_PHI)
 	continue;
 
+      vec_stack_alloc (data_ref_loc, references, 2);
       get_references_in_stmt (stmt, &references);
       FOR_EACH_VEC_ELT (references, j, ref)
 	{
