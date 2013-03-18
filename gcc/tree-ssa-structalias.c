@@ -581,7 +581,7 @@ static constraint_graph_t graph;
 static unsigned int
 find (unsigned int node)
 {
-  gcc_assert (node < graph->size);
+  gcc_checking_assert (node < graph->size);
   if (graph->rep[node] != node)
     return graph->rep[node] = find (graph->rep[node]);
   return node;
@@ -595,7 +595,7 @@ find (unsigned int node)
 static bool
 unite (unsigned int to, unsigned int from)
 {
-  gcc_assert (to < graph->size && from < graph->size);
+  gcc_checking_assert (to < graph->size && from < graph->size);
   if (to != from && graph->rep[from] != to)
     {
       graph->rep[from] = to;
@@ -1023,7 +1023,7 @@ merge_node_constraints (constraint_graph_t graph, unsigned int to,
   unsigned int i;
   constraint_t c;
 
-  gcc_assert (find (from) == to);
+  gcc_checking_assert (find (from) == to);
 
   /* Move all complex constraints from src node into to node  */
   FOR_EACH_VEC_ELT (graph->complex[from], i, c)
@@ -1142,16 +1142,6 @@ add_graph_edge (constraint_graph_t graph, unsigned int to,
     }
 }
 
-
-/* Return true if {DEST.SRC} is an existing graph edge in GRAPH.  */
-
-static bool
-valid_graph_edge (constraint_graph_t graph, unsigned int src,
-		  unsigned int dest)
-{
-  return (graph->succs[dest]
-	  && bitmap_bit_p (graph->succs[dest], src));
-}
 
 /* Initialize the constraint graph structure to contain SIZE nodes.  */
 
@@ -1319,7 +1309,7 @@ build_succ_graph (void)
       else if (rhs.type == ADDRESSOF)
 	{
 	  /* x = &y */
-	  gcc_assert (find (rhs.var) == rhs.var);
+	  gcc_checking_assert (find (rhs.var) == rhs.var);
 	  bitmap_set_bit (get_varinfo (lhsvar)->solution, rhsvar);
 	}
       else if (lhsvar > anything_id
@@ -1396,14 +1386,11 @@ scc_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 
       if (!bitmap_bit_p (si->visited, w))
 	scc_visit (graph, si, w);
-      {
-	unsigned int t = find (w);
-	unsigned int nnode = find (n);
-	gcc_assert (nnode == n);
 
-	if (si->dfs[t] < si->dfs[nnode])
-	  si->dfs[n] = si->dfs[t];
-      }
+      unsigned int t = find (w);
+      gcc_checking_assert (find (n) == n);
+      if (si->dfs[t] < si->dfs[n])
+	si->dfs[n] = si->dfs[t];
     }
 
   /* See if any components have been identified.  */
@@ -1458,8 +1445,8 @@ static void
 unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 	     bool update_changed)
 {
+  gcc_checking_assert (to != from && find (to) == to);
 
-  gcc_assert (to != from && find (to) == to);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Unifying %s to %s\n",
 	     get_varinfo (from)->name,
@@ -1477,35 +1464,30 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
      as changed, decrease the changed count.  */
 
   if (update_changed
-      && bitmap_bit_p (changed, from))
-    {
-      bitmap_clear_bit (changed, from);
-      bitmap_set_bit (changed, to);
-    }
-  if (get_varinfo (from)->solution)
+      && bitmap_clear_bit (changed, from))
+    bitmap_set_bit (changed, to);
+  varinfo_t fromvi = get_varinfo (from);
+  if (fromvi->solution)
     {
       /* If the solution changes because of the merging, we need to mark
 	 the variable as changed.  */
-      if (bitmap_ior_into (get_varinfo (to)->solution,
-			   get_varinfo (from)->solution))
+      varinfo_t tovi = get_varinfo (to);
+      if (bitmap_ior_into (tovi->solution, fromvi->solution))
 	{
 	  if (update_changed)
 	    bitmap_set_bit (changed, to);
 	}
 
-      BITMAP_FREE (get_varinfo (from)->solution);
-      if (get_varinfo (from)->oldsolution)
-	BITMAP_FREE (get_varinfo (from)->oldsolution);
+      BITMAP_FREE (fromvi->solution);
+      if (fromvi->oldsolution)
+	BITMAP_FREE (fromvi->oldsolution);
 
       if (stats.iterations > 0
-	  && get_varinfo (to)->oldsolution)
-	BITMAP_FREE (get_varinfo (to)->oldsolution);
+	  && tovi->oldsolution)
+	BITMAP_FREE (tovi->oldsolution);
     }
-  if (valid_graph_edge (graph, to, to))
-    {
-      if (graph->succs[to])
-	bitmap_clear_bit (graph->succs[to], to);
-    }
+  if (graph->succs[to])
+    bitmap_clear_bit (graph->succs[to], to);
 }
 
 /* Information needed to compute the topological ordering of a graph.  */
@@ -1581,7 +1563,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
   HOST_WIDE_INT roffset = c->rhs.offset;
 
   /* Our IL does not allow this.  */
-  gcc_assert (c->lhs.offset == 0);
+  gcc_checking_assert (c->lhs.offset == 0);
 
   /* If the solution of Y contains anything it is good enough to transfer
      this to the LHS.  */
@@ -1668,7 +1650,7 @@ do_ds_constraint (constraint_t c, bitmap delta)
   bool escaped_p = false;
 
   /* Our IL does not allow this.  */
-  gcc_assert (c->rhs.offset == 0);
+  gcc_checking_assert (c->rhs.offset == 0);
 
   /* If the solution of y contains ANYTHING simply use the ANYTHING
      solution.  This avoids needlessly increasing the points-to sets.  */
@@ -1782,7 +1764,7 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
       bitmap solution;
       bool flag = false;
 
-      gcc_assert (c->rhs.type == SCALAR && c->lhs.type == SCALAR);
+      gcc_checking_assert (c->rhs.type == SCALAR && c->lhs.type == SCALAR);
       solution = get_varinfo (c->rhs.var)->solution;
       tmp = get_varinfo (c->lhs.var)->solution;
 
@@ -1992,7 +1974,7 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
   bitmap_iterator bi;
   unsigned int my_dfs;
 
-  gcc_assert (si->node_mapping[n] == n);
+  gcc_checking_assert (si->node_mapping[n] == n);
   bitmap_set_bit (si->visited, n);
   si->dfs[n] = si->current_index ++;
   my_dfs = si->dfs[n];
@@ -2007,14 +1989,11 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 
       if (!bitmap_bit_p (si->visited, w))
 	condense_visit (graph, si, w);
-      {
-	unsigned int t = si->node_mapping[w];
-	unsigned int nnode = si->node_mapping[n];
-	gcc_assert (nnode == n);
 
-	if (si->dfs[t] < si->dfs[nnode])
-	  si->dfs[n] = si->dfs[t];
-      }
+      unsigned int t = si->node_mapping[w];
+      gcc_checking_assert (si->node_mapping[n] == n);
+      if (si->dfs[t] < si->dfs[n])
+	si->dfs[n] = si->dfs[t];
     }
 
   /* Visit all the implicit predecessors.  */
@@ -2027,14 +2006,11 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 
       if (!bitmap_bit_p (si->visited, w))
 	condense_visit (graph, si, w);
-      {
-	unsigned int t = si->node_mapping[w];
-	unsigned int nnode = si->node_mapping[n];
-	gcc_assert (nnode == n);
 
-	if (si->dfs[t] < si->dfs[nnode])
-	  si->dfs[n] = si->dfs[t];
-      }
+      unsigned int t = si->node_mapping[w];
+      gcc_assert (si->node_mapping[n] == n);
+      if (si->dfs[t] < si->dfs[n])
+	si->dfs[n] = si->dfs[t];
     }
 
   /* See if any components have been identified.  */
@@ -2164,6 +2140,75 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
     }
 }
 
+/* Print the pred graph in dot format.  */
+
+static void
+dump_pred_graph (struct scc_info *si, FILE *file)
+{
+  unsigned int i;
+
+  /* Only print the graph if it has already been initialized:  */
+  if (!graph)
+    return;
+
+  /* Prints the header of the dot file:  */
+  fprintf (file, "strict digraph {\n");
+  fprintf (file, "  node [\n    shape = box\n  ]\n");
+  fprintf (file, "  edge [\n    fontsize = \"12\"\n  ]\n");
+  fprintf (file, "\n  // List of nodes and complex constraints in "
+	   "the constraint graph:\n");
+
+  /* The next lines print the nodes in the graph together with the
+     complex constraints attached to them.  */
+  for (i = 0; i < graph->size; i++)
+    {
+      if (si->node_mapping[i] != i)
+	continue;
+      if (i < FIRST_REF_NODE)
+	fprintf (file, "\"%s\"", get_varinfo (i)->name);
+      else
+	fprintf (file, "\"*%s\"", get_varinfo (i - FIRST_REF_NODE)->name);
+      if (graph->points_to[i]
+	  && !bitmap_empty_p (graph->points_to[i]))
+	{
+	  fprintf (file, "[label=\"%s = {", get_varinfo (i)->name);
+	  unsigned j;
+	  bitmap_iterator bi;
+	  EXECUTE_IF_SET_IN_BITMAP (graph->points_to[i], 0, j, bi)
+	    fprintf (file, " %d", j);
+	  fprintf (file, " }\"]");
+	}
+      fprintf (file, ";\n");
+    }
+
+  /* Go over the edges.  */
+  fprintf (file, "\n  // Edges in the constraint graph:\n");
+  for (i = 0; i < graph->size; i++)
+    {
+      unsigned j;
+      bitmap_iterator bi;
+      if (si->node_mapping[i] != i)
+	continue;
+      EXECUTE_IF_IN_NONNULL_BITMAP (graph->preds[i], 0, j, bi)
+	{
+	  unsigned from = si->node_mapping[j];
+	  if (from < FIRST_REF_NODE)
+	    fprintf (file, "\"%s\"", get_varinfo (from)->name);
+	  else
+	    fprintf (file, "\"*%s\"", get_varinfo (from - FIRST_REF_NODE)->name);
+	  fprintf (file, " -> ");
+	  if (i < FIRST_REF_NODE)
+	    fprintf (file, "\"%s\"", get_varinfo (i)->name);
+	  else
+	    fprintf (file, "\"*%s\"", get_varinfo (i - FIRST_REF_NODE)->name);
+	  fprintf (file, ";\n");
+	}
+    }
+
+  /* Prints the tail of the dot file.  */
+  fprintf (file, "}\n");
+}
+
 /* Perform offline variable substitution, discovering equivalence
    classes, and eliminating non-pointer variables.  */
 
@@ -2187,6 +2232,14 @@ perform_var_substitution (constraint_graph_t graph)
   for (i = 0; i < FIRST_REF_NODE; i++)
     if (!bitmap_bit_p (si->visited, si->node_mapping[i]))
       condense_visit (graph, si, si->node_mapping[i]);
+
+  if (dump_file && (dump_flags & TDF_GRAPH))
+    {
+      fprintf (dump_file, "\n\n// The constraint graph before var-substitution "
+	       "in dot format:\n");
+      dump_pred_graph (si, dump_file);
+      fprintf (dump_file, "\n\n");
+    }
 
   bitmap_clear (si->visited);
   /* Actually the label the nodes for pointer equivalences  */
@@ -2303,7 +2356,7 @@ find_equivalent_node (constraint_graph_t graph,
 
   if (!bitmap_bit_p (graph->address_taken, node))
     {
-      gcc_assert (label < graph->size);
+      gcc_checking_assert (label < graph->size);
 
       if (graph->eq_rep[label] != -1)
 	{
@@ -2320,7 +2373,7 @@ find_equivalent_node (constraint_graph_t graph,
     }
   else
     {
-      gcc_assert (label < graph->size);
+      gcc_checking_assert (label < graph->size);
       graph->pe[node] = label;
       if (graph->pe_rep[label] == -1)
 	graph->pe_rep[label] = node;
@@ -2400,11 +2453,12 @@ rewrite_constraints (constraint_graph_t graph,
 		     struct scc_info *si)
 {
   int i;
-  unsigned int j;
   constraint_t c;
 
-  for (j = 0; j < graph->size; j++)
+#ifdef ENABLE_CHECKING
+  for (unsigned int j = 0; j < graph->size; j++)
     gcc_assert (find (j) == j);
+#endif
 
   FOR_EACH_VEC_ELT (constraints, i, c)
     {
@@ -2456,7 +2510,6 @@ rewrite_constraints (constraint_graph_t graph,
       rhsvar = find_equivalent_node (graph, rhsvar, rhslabel);
       c->lhs.var = lhsvar;
       c->rhs.var = rhsvar;
-
     }
 }
 

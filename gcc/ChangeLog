@@ -1,5 +1,25 @@
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (find): Use gcc_checking_assert.
+	(unite): Likewise.
+	(merge_node_constraints): Likewise.
+	(build_succ_graph): Likewise.
+	(valid_graph_edge): Inline into single caller.
+	(unify_nodes): Likewise.  Use bitmap_set_bit return value
+	and cache varinfo.
+	(scc_visit): Fix formatting and variable use.
+	(do_sd_constraint): Use gcc_checking_assert.
+	(do_ds_constraint): Likewise.
+	(do_complex_constraint): Likewise.
+	(condense_visit): Likewise.  Cleanup.
+	(dump_pred_graph): New function.
+	(perform_var_substitution): Dump the pred-graph before
+	variable substitution.
+	(find_equivalent_node): Use gcc_checking_assert.
+	(rewrite_constraints): Guard checking loop with ENABLE_CHECKING.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
 	Remove cond_expr_stmt_list argument and do not gimplify the
 	built expression.
