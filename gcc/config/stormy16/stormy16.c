@@ -1082,7 +1082,7 @@ xstormy16_expand_prologue (void)
 					     gen_rtx_MEM (Pmode, stack_pointer_rtx),
 					     reg);
 	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
-					     plus_constant (Pmode, \
+					     plus_constant (Pmode,
 							    stack_pointer_rtx,
 							    GET_MODE_SIZE (Pmode)));
 	add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
