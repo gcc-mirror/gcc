@@ -2572,13 +2572,14 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
 	  /* Require equal access sizes, and similar pointer types.
 	     We can have incomplete types for array references of
-	     variable-sized arrays from the Fortran frontent
-	     though.  */
+	     variable-sized arrays from the Fortran frontend
+	     though.  Also verify the types are compatible.  */
 	  return ((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
 		   || (TYPE_SIZE (TREE_TYPE (arg0))
 		       && TYPE_SIZE (TREE_TYPE (arg1))
 		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 					   TYPE_SIZE (TREE_TYPE (arg1)), flags)))
+		  && types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1))
 		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg0, 1)))
 		      == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg1, 1))))
 		  && OP_SAME (0) && OP_SAME (1));
