@@ -1,3 +1,9 @@
+2013-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/56566
+	* tree.c (tree_int_cst_min_precision): For integer_zerop (value)
+	return 1 even for !unsignedp.
+
 2013-03-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (isa): Add x64 and nox64.
