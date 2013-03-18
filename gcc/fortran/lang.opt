@@ -594,8 +594,8 @@ Fortran
 Append underscores to externally visible names
 
 fwhole-file
-Fortran
-Compile all program units at once and check all interfaces
+Fortran Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fworking-directory
 Fortran

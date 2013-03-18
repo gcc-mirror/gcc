@@ -2145,15 +2145,14 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
   if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
     gfc_global_used (gsym, where);
 
-  if (gfc_option.flag_whole_file
-	&& (sym->attr.if_source == IFSRC_UNKNOWN
-	    || sym->attr.if_source == IFSRC_IFBODY)
-	&& gsym->type != GSYM_UNKNOWN
-	&& gsym->ns
-	&& gsym->ns->resolved != -1
-	&& gsym->ns->proc_name
-	&& not_in_recursive (sym, gsym->ns)
-	&& not_entry_self_reference (sym, gsym->ns))
+  if ((sym->attr.if_source == IFSRC_UNKNOWN
+       || sym->attr.if_source == IFSRC_IFBODY)
+      && gsym->type != GSYM_UNKNOWN
+      && gsym->ns
+      && gsym->ns->resolved != -1
+      && gsym->ns->proc_name
+      && not_in_recursive (sym, gsym->ns)
+      && not_entry_self_reference (sym, gsym->ns))
     {
       gfc_symbol *def_sym;
 
@@ -2364,7 +2363,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 		     "an explicit interface", sym->name, &sym->declared_at);
 	}
 
-      if (gfc_option.flag_whole_file == 1
+      if (!pedantic
 	  || ((gfc_option.warn_std & GFC_STD_LEGACY)
 	      && !(gfc_option.warn_std & GFC_STD_GNU)))
 	gfc_errors_to_warnings (1);

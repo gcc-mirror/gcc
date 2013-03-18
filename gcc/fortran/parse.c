@@ -4382,8 +4382,7 @@ add_global_program (void)
 }
 
 
-/* Resolve all the program units when whole file scope option
-   is active. */
+/* Resolve all the program units. */
 static void
 resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
 {
@@ -4424,9 +4423,8 @@ clean_up_modules (gfc_gsymbol *gsym)
 }
 
 
-/* Translate all the program units when whole file scope option
-   is active. This could be in a different order to resolution if
-   there are forward references in the file.  */
+/* Translate all the program units. This could be in a different order
+   to resolution if there are forward references in the file.  */
 static void
 translate_all_program_units (gfc_namespace *gfc_global_ns_list,
 			     bool main_in_tu)
@@ -4551,8 +4549,7 @@ loop:
       accept_statement (st);
       add_global_program ();
       parse_progunit (ST_NONE);
-      if (gfc_option.flag_whole_file)
-	goto prog_units;
+      goto prog_units;
       break;
 
     case ST_SUBROUTINE:
@@ -4560,8 +4557,7 @@ loop:
       push_state (&s, COMP_SUBROUTINE, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);
-      if (gfc_option.flag_whole_file)
-	goto prog_units;
+      goto prog_units;
       break;
 
     case ST_FUNCTION:
@@ -4569,8 +4565,7 @@ loop:
       push_state (&s, COMP_FUNCTION, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);
-      if (gfc_option.flag_whole_file)
-	goto prog_units;
+      goto prog_units;
       break;
 
     case ST_BLOCK_DATA:
@@ -4597,8 +4592,7 @@ loop:
       push_state (&s, COMP_PROGRAM, gfc_new_block);
       main_program_symbol (gfc_current_ns, "MAIN__");
       parse_progunit (st);
-      if (gfc_option.flag_whole_file)
-	goto prog_units;
+      goto prog_units;
       break;
     }
 
@@ -4615,19 +4609,9 @@ loop:
   if (s.state == COMP_MODULE)
     {
       gfc_dump_module (s.sym->name, errors_before == errors);
-      if (!gfc_option.flag_whole_file)
-	{
-	  if (errors == 0)
-	    gfc_generate_module_code (gfc_current_ns);
-	  pop_state ();
-	  gfc_done_2 ();
-	}
-      else
-	{
-	  gfc_current_ns->derived_types = gfc_derived_types;
-	  gfc_derived_types = NULL;
-	  goto prog_units;
-	}
+      gfc_current_ns->derived_types = gfc_derived_types;
+      gfc_derived_types = NULL;
+      goto prog_units;
     }
   else
     {
@@ -4660,9 +4644,6 @@ prog_units:
 
   done:
 
-  if (!gfc_option.flag_whole_file)
-    goto termination;
-
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
 
@@ -4680,8 +4661,6 @@ prog_units:
 
   /* Do the translation.  */
   translate_all_program_units (gfc_global_ns_list, seen_program);
-
-termination:
 
   gfc_end_source_files ();
   return SUCCESS;
