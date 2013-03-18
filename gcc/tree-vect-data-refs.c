@@ -3470,19 +3470,16 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree data_ref_base = unshare_expr (DR_BASE_ADDRESS (dr));
+  tree data_ref_base;
   const char *base_name;
-  tree data_ref_base_var;
-  tree vec_stmt;
-  tree addr_base, addr_expr;
+  tree addr_base;
   tree dest;
   gimple_seq seq = NULL;
-  tree base_offset = unshare_expr (DR_OFFSET (dr));
-  tree init = unshare_expr (DR_INIT (dr));
+  tree base_offset;
+  tree init;
   tree vect_ptr_type;
   tree step = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  tree base;
 
   if (loop_vinfo && loop && loop != (gimple_bb (stmt))->loop_father)
     {
@@ -3494,6 +3491,12 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
       base_offset = unshare_expr (STMT_VINFO_DR_OFFSET (stmt_info));
       init = unshare_expr (STMT_VINFO_DR_INIT (stmt_info));
     }
+  else
+    {
+      data_ref_base = unshare_expr (DR_BASE_ADDRESS (dr));
+      base_offset = unshare_expr (DR_OFFSET (dr));
+      init = unshare_expr (DR_INIT (dr));
+    }
 
   if (loop_vinfo)
     base_name = get_name (data_ref_base);
@@ -3504,29 +3507,17 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
       base_name = get_name (DR_REF (dr));
     }
 
-  data_ref_base_var = create_tmp_var (TREE_TYPE (data_ref_base), "batmp");
-  data_ref_base = force_gimple_operand (data_ref_base, &seq, true,
-					data_ref_base_var);
-  gimple_seq_add_seq (new_stmt_list, seq);
-
   /* Create base_offset */
   base_offset = size_binop (PLUS_EXPR,
 			    fold_convert (sizetype, base_offset),
 			    fold_convert (sizetype, init));
-  dest = create_tmp_var (sizetype, "base_off");
-  base_offset = force_gimple_operand (base_offset, &seq, true, dest);
-  gimple_seq_add_seq (new_stmt_list, seq);
 
   if (offset)
     {
-      tree tmp = create_tmp_var (sizetype, "offset");
-
       offset = fold_build2 (MULT_EXPR, sizetype,
 			    fold_convert (sizetype, offset), step);
       base_offset = fold_build2 (PLUS_EXPR, sizetype,
 				 base_offset, offset);
-      base_offset = force_gimple_operand (base_offset, &seq, false, tmp);
-      gimple_seq_add_seq (new_stmt_list, seq);
     }
 
   /* base + base_offset */
@@ -3540,34 +3531,26 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
     }
 
   vect_ptr_type = build_pointer_type (STMT_VINFO_VECTYPE (stmt_info));
-  base = get_base_address (DR_REF (dr));
-  if (base
-      && TREE_CODE (base) == MEM_REF)
-    vect_ptr_type
-      = build_qualified_type (vect_ptr_type,
-			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
-
-  vec_stmt = fold_convert (vect_ptr_type, addr_base);
-  addr_expr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
-                                     base_name);
-  vec_stmt = force_gimple_operand (vec_stmt, &seq, false, addr_expr);
+  addr_base = fold_convert (vect_ptr_type, addr_base);
+  dest = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var, base_name);
+  addr_base = force_gimple_operand (addr_base, &seq, false, dest);
   gimple_seq_add_seq (new_stmt_list, seq);
 
   if (DR_PTR_INFO (dr)
-      && TREE_CODE (vec_stmt) == SSA_NAME)
+      && TREE_CODE (addr_base) == SSA_NAME)
     {
-      duplicate_ssa_name_ptr_info (vec_stmt, DR_PTR_INFO (dr));
+      duplicate_ssa_name_ptr_info (addr_base, DR_PTR_INFO (dr));
       if (offset)
-	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (vec_stmt));
+	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (addr_base));
     }
 
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "created ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, vec_stmt);
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, addr_base);
     }
 
-  return vec_stmt;
+  return addr_base;
 }
 
 
@@ -3647,7 +3630,6 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
   gimple incr;
   tree step;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  tree base;
 
   gcc_assert (TREE_CODE (aggr_type) == ARRAY_TYPE
 	      || TREE_CODE (aggr_type) == VECTOR_TYPE);
@@ -3699,53 +3681,37 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
       dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_BASE_OBJECT (dr));
     }
 
-  /* (1) Create the new aggregate-pointer variable.  */
-  aggr_ptr_type = build_pointer_type (aggr_type);
-  base = get_base_address (DR_REF (dr));
-  if (base
-      && TREE_CODE (base) == MEM_REF)
-    aggr_ptr_type
-      = build_qualified_type (aggr_ptr_type,
-			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
-  aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var, base_name);
-
-  /* Vector and array types inherit the alias set of their component
+  /* (1) Create the new aggregate-pointer variable.
+     Vector and array types inherit the alias set of their component
      type by default so we need to use a ref-all pointer if the data
      reference does not conflict with the created aggregated data
      reference because it is not addressable.  */
-  if (!alias_sets_conflict_p (get_deref_alias_set (aggr_ptr),
+  bool need_ref_all = false;
+  if (!alias_sets_conflict_p (get_alias_set (aggr_type),
 			      get_alias_set (DR_REF (dr))))
-    {
-      aggr_ptr_type
-	= build_pointer_type_for_mode (aggr_type,
-				       TYPE_MODE (aggr_ptr_type), true);
-      aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
-					base_name);
-    }
-
+    need_ref_all = true;
   /* Likewise for any of the data references in the stmt group.  */
   else if (STMT_VINFO_GROUP_SIZE (stmt_info) > 1)
     {
       gimple orig_stmt = STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_info);
       do
 	{
-	  tree lhs = gimple_assign_lhs (orig_stmt);
-	  if (!alias_sets_conflict_p (get_deref_alias_set (aggr_ptr),
-				      get_alias_set (lhs)))
+	  stmt_vec_info sinfo = vinfo_for_stmt (orig_stmt);
+	  struct data_reference *sdr = STMT_VINFO_DATA_REF (sinfo);
+	  if (!alias_sets_conflict_p (get_alias_set (aggr_type),
+				      get_alias_set (DR_REF (sdr))))
 	    {
-	      aggr_ptr_type
-		= build_pointer_type_for_mode (aggr_type,
-					       TYPE_MODE (aggr_ptr_type), true);
-	      aggr_ptr
-		= vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
-					 base_name);
+	      need_ref_all = true;
 	      break;
 	    }
-
-	  orig_stmt = STMT_VINFO_GROUP_NEXT_ELEMENT (vinfo_for_stmt (orig_stmt));
+	  orig_stmt = STMT_VINFO_GROUP_NEXT_ELEMENT (sinfo);
 	}
       while (orig_stmt);
     }
+  aggr_ptr_type = build_pointer_type_for_mode (aggr_type, ptr_mode,
+					       need_ref_all);
+  aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var, base_name);
+
 
   /* Note: If the dataref is in an inner-loop nested in LOOP, and we are
      vectorizing LOOP (i.e., outer-loop vectorization), we need to create two

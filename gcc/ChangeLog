@@ -1,3 +1,13 @@
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
+	Remove cond_expr_stmt_list argument and do not gimplify the
+	built expression.
+	(vect_loop_versioning): Adjust.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Cleanup to use less temporaries.
+	(vect_create_data_ref_ptr): Cleanup.
+
 2013-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56635
