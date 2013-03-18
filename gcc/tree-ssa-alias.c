@@ -1314,6 +1314,43 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 					   size);
 	    return refs_may_alias_p_1 (&dref, ref, false);
 	  }
+	/* These read memory pointed to by the first argument.  */
+	case BUILT_IN_INDEX:
+	case BUILT_IN_STRCHR:
+	case BUILT_IN_STRRCHR:
+	  {
+	    ao_ref dref;
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 0),
+					   NULL_TREE);
+	    return refs_may_alias_p_1 (&dref, ref, false);
+	  }
+	/* These read memory pointed to by the first argument with size
+	   in the third argument.  */
+	case BUILT_IN_MEMCHR:
+	  {
+	    ao_ref dref;
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 0),
+					   gimple_call_arg (call, 2));
+	    return refs_may_alias_p_1 (&dref, ref, false);
+	  }
+	/* These read memory pointed to by the first and second arguments.  */
+	case BUILT_IN_STRSTR:
+	case BUILT_IN_STRPBRK:
+	  {
+	    ao_ref dref;
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 0),
+					   NULL_TREE);
+	    if (refs_may_alias_p_1 (&dref, ref, false))
+	      return true;
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 1),
+					   NULL_TREE);
+	    return refs_may_alias_p_1 (&dref, ref, false);
+	  }
+
 	/* The following builtins do not read from memory.  */
 	case BUILT_IN_FREE:
 	case BUILT_IN_MALLOC:
