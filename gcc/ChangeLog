@@ -1,5 +1,23 @@
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-data-ref.h (find_data_references_in_loop): Declare.
+	* tree-data-ref.c (get_references_in_stmt): Use a stack
+	vector pre-allocated in the callers.
+	(find_data_references_in_stmt): Adjust.
+	(graphite_find_data_references_in_stmt): Likewise.
+	(create_rdg_vertices): Likewise.
+	(find_data_references_in_loop): Export.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences):
+	Compute dependences here...
+	(vect_analyze_data_refs): ...not here.  When we encounter
+	a non-vectorizable data reference in basic-block vectorization
+	truncate the data reference vector.  Do not bother to
+	fixup data-dependence information for gather loads.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Check the number
+	of data references, as reported.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/3713
 	* tree-ssa-sccvn.c (visit_copy): Simplify.  Always propagate
 	has_constants and expr.

@@ -798,9 +798,21 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
     dump_printf_loc (MSG_NOTE, vect_location,
                      "=== vect_analyze_dependences ===");
   if (loop_vinfo)
-    ddrs = LOOP_VINFO_DDRS (loop_vinfo);
+    {
+      if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
+				    &LOOP_VINFO_DDRS (loop_vinfo),
+				    LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
+	return false;
+      ddrs = LOOP_VINFO_DDRS (loop_vinfo);
+    }
   else
-    ddrs = BB_VINFO_DDRS (bb_vinfo);
+    {
+      if (!compute_all_dependences (BB_VINFO_DATAREFS (bb_vinfo),
+				    &BB_VINFO_DDRS (bb_vinfo),
+				    vNULL, true))
+	return false;
+      ddrs = BB_VINFO_DDRS (bb_vinfo);
+    }
 
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
     if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
@@ -2941,7 +2953,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
   vec<data_reference_p> datarefs;
   struct data_reference *dr;
   tree scalar_type;
-  bool res, stop_bb_analysis = false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2950,13 +2961,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
   if (loop_vinfo)
     {
       loop = LOOP_VINFO_LOOP (loop_vinfo);
-      res = compute_data_dependences_for_loop
-	(loop, true,
-	 &LOOP_VINFO_LOOP_NEST (loop_vinfo),
-	 &LOOP_VINFO_DATAREFS (loop_vinfo),
-	 &LOOP_VINFO_DDRS (loop_vinfo));
-
-      if (!res)
+      if (!find_loop_nest (loop, &LOOP_VINFO_LOOP_NEST (loop_vinfo))
+	  || find_data_references_in_loop
+	       (loop, &LOOP_VINFO_DATAREFS (loop_vinfo)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
@@ -2987,17 +2994,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	      break;
 	    }
 	}
-      if (!compute_all_dependences (BB_VINFO_DATAREFS (bb_vinfo),
-				    &BB_VINFO_DDRS (bb_vinfo),
-				    vNULL, true))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-                             "not vectorized: basic block contains function"
-                             " calls or data references that cannot be"
-                             " analyzed");
-	  return false;
-	}
 
       datarefs = BB_VINFO_DATAREFS (bb_vinfo);
     }
@@ -3023,12 +3019,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
-
-      if (stop_bb_analysis)
-        {
-          STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-          continue;
-        }
 
       /* Check that analysis of the data-ref succeeded.  */
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
@@ -3070,11 +3060,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 		}
 
 	      if (bb_vinfo)
-		{
-		  STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-		  stop_bb_analysis = true;
-		  continue;
-		}
+		break;
 
 	      return false;
 	    }
@@ -3088,11 +3074,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
                              "constant");
 
           if (bb_vinfo)
-            {
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              stop_bb_analysis = true;
-              continue;
-            }
+	    break;
 
 	  if (gather)
 	    free_data_ref (dr);
@@ -3109,11 +3091,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
             }
 
           if (bb_vinfo)
-            {
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              stop_bb_analysis = true;
-              continue;
-            }
+	    break;
 
           return false;
         }
@@ -3129,11 +3107,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
             }
 
           if (bb_vinfo)
-            {
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              stop_bb_analysis = true;
-              continue;
-            }
+	    break;
 
 	  if (gather)
 	    free_data_ref (dr);
@@ -3152,11 +3126,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
             }
 
           if (bb_vinfo)
-            {
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              stop_bb_analysis = true;
-              continue;
-            }
+	    break;
 
 	  if (gather)
 	    free_data_ref (dr);
@@ -3177,11 +3147,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	    }
 
 	  if (bb_vinfo)
-	    {
-	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-	      stop_bb_analysis = true;
-	      continue;
-	    }
+	    break;
 
 	  if (gather)
 	    free_data_ref (dr);
@@ -3316,11 +3282,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
             }
 
           if (bb_vinfo)
-            {
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              stop_bb_analysis = true;
-              continue;
-            }
+	    break;
 
 	  if (gather)
 	    free_data_ref (dr);
@@ -3346,12 +3308,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
             }
 
           if (bb_vinfo)
-            {
-              /* Mark the statement as not vectorizable.  */
-              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-              stop_bb_analysis = true;
-              continue;
-            }
+	    break;
 
 	  if (gather)
 	    {
@@ -3369,14 +3326,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       if (gather)
 	{
-	  unsigned int j, k, n;
-	  struct data_reference *olddr
-	    = datarefs[i];
-	  vec<ddr_p> ddrs = LOOP_VINFO_DDRS (loop_vinfo);
-	  struct data_dependence_relation *ddr, *newddr;
-	  bool bad = false;
 	  tree off;
-	  vec<loop_p> nest = LOOP_VINFO_LOOP_NEST (loop_vinfo);
 
 	  gather = 0 != vect_check_gather (stmt, loop_vinfo, NULL, &off, NULL);
 	  if (gather
@@ -3396,59 +3346,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	      return false;
 	    }
 
-	  n = datarefs.length () - 1;
-	  for (j = 0, k = i - 1; j < i; j++)
-	    {
-	      ddr = ddrs[k];
-	      gcc_assert (DDR_B (ddr) == olddr);
-	      newddr = initialize_data_dependence_relation (DDR_A (ddr), dr,
-							    nest);
-	      ddrs[k] = newddr;
-	      free_dependence_relation (ddr);
-	      if (!bad
-		  && DR_IS_WRITE (DDR_A (newddr))
-		  && DDR_ARE_DEPENDENT (newddr) != chrec_known)
-		bad = true;
-	      k += --n;
-	    }
-
-	  k++;
-	  n = k + datarefs.length () - i - 1;
-	  for (; k < n; k++)
-	    {
-	      ddr = ddrs[k];
-	      gcc_assert (DDR_A (ddr) == olddr);
-	      newddr = initialize_data_dependence_relation (dr, DDR_B (ddr),
-							    nest);
-	      ddrs[k] = newddr;
-	      free_dependence_relation (ddr);
-	      if (!bad
-		  && DR_IS_WRITE (DDR_B (newddr))
-		  && DDR_ARE_DEPENDENT (newddr) != chrec_known)
-		bad = true;
-	    }
-
-	  k = ddrs.length ()
-	      - datarefs.length () + i;
-	  ddr = ddrs[k];
-	  gcc_assert (DDR_A (ddr) == olddr && DDR_B (ddr) == olddr);
-	  newddr = initialize_data_dependence_relation (dr, dr, nest);
-	  ddrs[k] = newddr;
-	  free_dependence_relation (ddr);
 	  datarefs[i] = dr;
-
-	  if (bad)
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-                                   "not vectorized: data dependence conflict"
-                                   " prevents gather load");
-		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-		}
-	      return false;
-	    }
-
 	  STMT_VINFO_GATHER_P (stmt_info) = true;
 	}
       else if (loop_vinfo
@@ -3470,6 +3368,22 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	    }
 	  STMT_VINFO_STRIDE_LOAD_P (stmt_info) = true;
 	}
+    }
+
+  /* If we stopped analysis at the first dataref we could not analyze
+     when trying to vectorize a basic-block mark the rest of the datarefs
+     as not vectorizable and truncate the vector of datarefs.  That
+     avoids spending useless time in analyzing their dependence.  */
+  if (i != datarefs.length ())
+    {
+      gcc_assert (bb_vinfo != NULL);
+      for (unsigned j = i; j < datarefs.length (); ++j)
+	{
+	  data_reference_p dr = datarefs[j];
+          STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) = false;
+	  free_data_ref (dr);
+	}
+      datarefs.truncate (i);
     }
 
   return true;

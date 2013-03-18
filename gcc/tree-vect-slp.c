@@ -2078,7 +2078,6 @@ static bb_vec_info
 vect_slp_analyze_bb_1 (basic_block bb)
 {
   bb_vec_info bb_vinfo;
-  vec<ddr_p> ddrs;
   vec<slp_instance> slp_instances;
   slp_instance instance;
   int i;
@@ -2100,8 +2099,7 @@ vect_slp_analyze_bb_1 (basic_block bb)
       return NULL;
     }
 
-  ddrs = BB_VINFO_DDRS (bb_vinfo);
-  if (!ddrs.length ())
+  if (BB_VINFO_DATAREFS (bb_vinfo).length () < 2)
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
