@@ -1,3 +1,19 @@
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39326
+	* tree-ssa-loop-im.c (refs_independent_p): Exploit symmetry.
+	(struct mem_ref): Replace mem member with ao_ref typed member.
+	(MEM_ANALYZABLE): Adjust.
+	(memref_eq): Likewise.
+	(mem_ref_alloc): Likewise.
+	(gather_mem_refs_stmt): Likewise.
+	(mem_refs_may_alias_p): Use the ao_ref to query the alias oracle.
+	(execute_sm_if_changed_flag_set): Adjust.
+	(execute_sm): Likewise.
+	(ref_always_accessed_p): Likewise.
+	(refs_independent_p): Likewise.
+	(can_sm_ref_p): Likewise.
+
 2013-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/56566
