@@ -1,5 +1,13 @@
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/3713
+	* tree-ssa-sccvn.c (visit_copy): Simplify.  Always propagate
+	has_constants and expr.
+	(stmt_has_constants): Properly valueize SSA names when deciding
+	whether the stmt has constants.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-manip.c (find_uses_to_rename): Do not scan the
 	whole function when there is nothing to do.
 	* tree-ssa-loop.c (pass_vectorize): Remove TODO_update_ssa.
