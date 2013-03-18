@@ -1,3 +1,8 @@
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/3713
+	* g++.dg/ipa/devirt-12.C: New testcase.
+
 2013-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/56566
