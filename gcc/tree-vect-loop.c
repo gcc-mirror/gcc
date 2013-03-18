@@ -5773,11 +5773,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	 loop->nb_iterations_estimate = loop->nb_iterations_estimate - double_int_one;
     }
 
-  /* The memory tags and pointers in vectorized statements need to
-     have their SSA forms updated.  FIXME, why can't this be delayed
-     until all the loops have been transformed?  */
-  update_ssa (TODO_update_ssa);
-
   if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, "LOOP VECTORIZED.");
   if (loop->inner && dump_enabled_p ())

@@ -149,7 +149,16 @@ vectorize_loops (void)
 
   free_stmt_vec_info_vec ();
 
-  return num_vectorized_loops > 0 ? TODO_cleanup_cfg : 0;
+  if (num_vectorized_loops > 0)
+    {
+      /* If we vectorized any loop only virtual SSA form needs to be updated.
+	 ???  Also while we try hard to update loop-closed SSA form we fail
+	 to properly do this in some corner-cases (see PR56286).  */
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_only_virtuals);
+      return TODO_cleanup_cfg;
+    }
+
+  return 0;
 }
 
 
