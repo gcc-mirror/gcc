@@ -1886,9 +1886,14 @@ expand_gimple_cond (basic_block bb, gimple stmt)
      be cleaned up by combine.  But some pattern matchers like if-conversion
      work better when there's only one compare, so make up for this
      here as special exception if TER would have made the same change.  */
-  if (gimple_cond_single_var_p (stmt)
-      && SA.values
+  if (SA.values
       && TREE_CODE (op0) == SSA_NAME
+      && TREE_CODE (TREE_TYPE (op0)) == BOOLEAN_TYPE
+      && TREE_CODE (op1) == INTEGER_CST
+      && ((gimple_cond_code (stmt) == NE_EXPR
+	   && integer_zerop (op1))
+	  || (gimple_cond_code (stmt) == EQ_EXPR
+	      && integer_onep (op1)))
       && bitmap_bit_p (SA.values, SSA_NAME_VERSION (op0)))
     {
       gimple second = SSA_NAME_DEF_STMT (op0);
