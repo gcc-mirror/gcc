@@ -1,5 +1,10 @@
 2013-03-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54359
+	PR c++/56639
+	* parser.c (cp_parser_direct_declarator): Bail if we see a
+	qualified-id not at namespace scope.
+
 	PR c++/17232
 	PR c++/56642
 	* typeck2.c (abstract_virtuals_error_sfinae): Revert complete_type
