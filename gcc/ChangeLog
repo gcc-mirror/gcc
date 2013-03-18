@@ -1,5 +1,14 @@
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/56113
+	* domwalk.c (bb_postorder): New global static.
+	(cmp_bb_postorder): New function.
+	(walk_dominator_tree): Replace scheme imposing an order for
+	visiting dominator sons by one sorting them at the time they
+	are pushed on the stack.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/39326
 	* tree-ssa-loop-im.c (refs_independent_p): Exploit symmetry.
 	(struct mem_ref): Replace mem member with ao_ref typed member.
