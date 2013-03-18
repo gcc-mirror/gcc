@@ -1,3 +1,9 @@
+2013-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56635
+	* fold-const.c (operand_equal_p): For MEM_REF and TARGET_MEM_REF,
+	require types_compatible_p types.
+
 2013-03-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Remove
