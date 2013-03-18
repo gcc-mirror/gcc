@@ -4196,6 +4196,29 @@ find_func_aliases_for_builtin_call (gimple t)
 	    return true;
 	  }
 	break;
+      /* String / character search functions return a pointer into the
+         source string or NULL.  */
+      case BUILT_IN_INDEX:
+      case BUILT_IN_STRCHR:
+      case BUILT_IN_STRRCHR:
+      case BUILT_IN_MEMCHR:
+      case BUILT_IN_STRSTR:
+      case BUILT_IN_STRPBRK:
+	if (gimple_call_lhs (t))
+	  {
+	    tree src = gimple_call_arg (t, 0);
+	    get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
+	    constraint_expr nul;
+	    nul.var = nothing_id;
+	    nul.offset = 0;
+	    nul.type = ADDRESSOF;
+	    rhsc.safe_push (nul);
+	    get_constraint_for (gimple_call_lhs (t), &lhsc);
+	    process_all_all_constraints (lhsc, rhsc);
+	    lhsc.release();
+	    rhsc.release();
+	  }
+	return true;
       /* Trampolines are special - they set up passing the static
 	 frame.  */
       case BUILT_IN_INIT_TRAMPOLINE:

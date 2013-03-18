@@ -1,5 +1,12 @@
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56210
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Handle string / character search functions.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Likewise.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/56483
 	* cfgexpand.c (expand_gimple_cond): Inline gimple_cond_single_var_p
 	and implement properly.
