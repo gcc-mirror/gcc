@@ -401,7 +401,7 @@ read_sf (st_parameter_dt *dtp, int * length)
 
 
 /* Function for reading the next couple of bytes from the current
-   file, advancing the current position. We return FAILURE on end of record or
+   file, advancing the current position. We return NULL on end of record or
    end of file. This function is only for formatted I/O, unformatted uses
    read_block_direct.
 
@@ -774,7 +774,7 @@ write_block (st_parameter_dt *dtp, int length)
    called for unformatted files.  There are three cases to consider:
    Stream I/O, unformatted direct, unformatted sequential.  */
 
-static try
+static bool
 write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 {
 
@@ -790,12 +790,12 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
       if (unlikely (have_written < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
-	  return FAILURE;
+	  return false;
 	}
 
       dtp->u.p.current_unit->strm_pos += (gfc_offset) have_written; 
 
-      return SUCCESS;
+      return true;
     }
 
   /* Unformatted direct access.  */
@@ -805,23 +805,23 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
       if (unlikely (dtp->u.p.current_unit->bytes_left < (gfc_offset) nbytes))
 	{
 	  generate_error (&dtp->common, LIBERROR_DIRECT_EOR, NULL);
-	  return FAILURE;
+	  return false;
 	}
 
       if (buf == NULL && nbytes == 0)
-	return SUCCESS;
+	return true;
 
       have_written = swrite (dtp->u.p.current_unit->s, buf, nbytes); 
       if (unlikely (have_written < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
-	  return FAILURE;
+	  return false;
 	}
 
       dtp->u.p.current_unit->strm_pos += (gfc_offset) have_written;
       dtp->u.p.current_unit->bytes_left -= (gfc_offset) have_written;
 
-      return SUCCESS;
+      return true;
     }
 
   /* Unformatted sequential.  */
@@ -854,7 +854,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
       if (unlikely (to_write_subrecord < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
-	  return FAILURE;
+	  return false;
 	}
 
       dtp->u.p.current_unit->strm_pos += (gfc_offset) to_write_subrecord; 
@@ -871,9 +871,9 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
   if (unlikely (short_record))
     {
       generate_error (&dtp->common, LIBERROR_SHORT_RECORD, NULL);
-      return FAILURE;
+      return false;
     }
-  return SUCCESS;
+  return true;
 }
 
 

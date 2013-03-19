@@ -1,3 +1,21 @@
+2013-03-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h: Include stdbool.h.
+	(enum try): Remove.
+	(notify_std): Change return type to bool.
+	* intrinsics/chmod.c: Don't include stdbool.h.
+	* intrinsics/execute_command_line.c: Likewise.
+	* io/format.c: Likewise.
+	* io/list_read.c (nml_parse_qualifier): Change return type to bool.
+	(nml_read_obj): Likewise.
+	(nml_get_obj_data): Likewise.
+	* io/transfer.c (read_block_form): Fix comment.
+	(write_buf): Change return type to bool.
+	* io/write.c: Don't include stdbool.h.
+	* io/write_float.def (output_float): Change return type to bool.
+	(output_float_FMT_G_ ## x): Change type of result variable.
+	* runtime/error.c (notify_std): Change return type to bool.
+
 2013-03-11  Tobias Burnus  <burnus@net-b.de>
 
 	* io/transfer.c (read_block_direct): Correct condition.
