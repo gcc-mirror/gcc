@@ -180,8 +180,8 @@
 	__ATOMIC_HLE_RELEASE. Document __builtin_ia32 TSX intrincs.
 	Document _x* TSX intrinsics.
 
-2013-03-14  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
-	    David Holsgrove <david.holsgrove@xilinx.com>
+2013-03-14  Edgar E. Iglesias  <edgar.iglesias@xilinx.com>
+	    David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* configure.ac: Add MicroBlaze TLS support detection.
 	* configure: Regenerate.
