@@ -1,3 +1,9 @@
+2013-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* gcc.dg/tree-ssa/vrp47.c: Adjust.
+	* c-c++-common/uninit-17.c: Likewise.
+
 2013-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56635
