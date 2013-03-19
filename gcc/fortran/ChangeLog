@@ -232,7 +232,7 @@
 	results for functions without extra result variable.
 
 2013-01-29  Janus Weil  <janus@gcc.gnu.org>
-	    Mikael Morin <mikael@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54107
 	* gfortran.h (gfc_component): Delete members 'formal' and 'formal_ns'.
