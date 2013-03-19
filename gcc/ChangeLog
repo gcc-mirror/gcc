@@ -1,3 +1,8 @@
+2013-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* passes.c (init_optimization_passes): Move second VRP after DOM.
+
 2013-03-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movti_internal): Merge from

@@ -4,7 +4,7 @@
    jumps when evaluating an && condition.  VRP is not able to optimize
    this.  */
 /* { dg-do compile { target { ! "mips*-*-* s390*-*-*  avr-*-* mn10300-*-*" } } } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-dom1 -fdump-tree-dom2" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-dom1 -fdump-tree-vrp2" } */
 /* { dg-additional-options "-march=i586" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* Skip on ARM Cortex-M0, where LOGICAL_OP_NON_SHORT_CIRCUIT is set to false,
    leading to two conditional jumps when evaluating an && condition.  VRP is
@@ -40,15 +40,14 @@ int f(int x)
    0 or 1.  */
 /* { dg-final { scan-tree-dump-times "\[xy\]\[^ \]* !=" 0 "vrp1" } } */
 
-/* This one needs more copy propagation that only happens in dom1.  */
-/* { dg-final { scan-tree-dump-times "x\[^ \]* & y" 1 "dom1" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "x\[^ \]* & y" 1 "dom2" } } */
-/* { dg-final { scan-tree-dump-times "x\[^ \]* & y" 1 "vrp1" { xfail *-*-* } } } */
-
-/* These two are fully simplified by VRP.  */
+/* These two are fully simplified by VRP1.  */
 /* { dg-final { scan-tree-dump-times "x\[^ \]* \[|\] y" 1 "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "x\[^ \]* \\^ 1" 1 "vrp1" } } */
 
+/* VRP2 gets rid of the remaining & 1 operations, x and y are always
+   either 0 or 1.  */
+/* { dg-final { scan-tree-dump-times " & 1;" 0 "vrp2" } } */
+
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "dom1" } } */
-/* { dg-final { cleanup-tree-dump "dom2" } } */
+/* { dg-final { cleanup-tree-dump "vrp2" } } */
