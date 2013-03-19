@@ -1,3 +1,8 @@
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*extr<mode>5_insn): New pattern.
+	(*extrsi5_insn_uxtw): Likewise.
+
 2013-03-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56273
