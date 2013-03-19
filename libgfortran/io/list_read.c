@@ -2052,7 +2052,7 @@ calls:
 /* Inputs a rank-dimensional qualifier, which can contain
    singlets, doublets, triplets or ':' with the standard meanings.  */
 
-static try
+static bool
 nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		     array_loop_spec *ls, int rank, char *parse_err_msg,
 		     size_t parse_err_msg_size,
@@ -2079,7 +2079,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
   /* The next character in the stream should be the '('.  */
 
   if ((c = next_char (dtp)) == EOF)
-    return FAILURE;
+    return false;
 
   /* Process the qualifier, by dimension and triplet.  */
 
@@ -2093,7 +2093,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 
 	  /* Process a potential sign.  */
 	  if ((c = next_char (dtp)) == EOF)
-	    return FAILURE;
+	    return false;
 	  switch (c)
 	    {
 	    case '-':
@@ -2112,7 +2112,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	  for (;;)
 	    {
 	      if ((c = next_char (dtp)) == EOF)
-		return FAILURE;
+		return false;
 
 	      switch (c)
 		{
@@ -2141,7 +2141,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		case ' ': case '\t':
 		  eat_spaces (dtp);
 		  if ((c = next_char (dtp) == EOF))
-		    return FAILURE;
+		    return false;
 		  break;
 
 		default:
@@ -2279,11 +2279,11 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
       ls[dim].idx = ls[dim].start;
     }
   eat_spaces (dtp);
-  return SUCCESS;
+  return true;
 
 err_ret:
 
-  return FAILURE;
+  return false;
 }
 
 static namelist_info *
@@ -2467,7 +2467,7 @@ query_return:
    little data to be available.  On the other hand, too much data is an
    error.  */
 
-static try
+static bool
 nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	      namelist_info **pprev_nl, char *nml_err_msg,
 	      size_t nml_err_msg_size, index_type clow, index_type chigh)
@@ -2485,7 +2485,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
   /* This object not touched in name parsing.  */
 
   if (!nl->touched)
-    return SUCCESS;
+    return true;
 
   dtp->u.p.repeat_count = 0;
   eat_spaces (dtp);
@@ -2532,11 +2532,11 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
       if (--dtp->u.p.repeat_count <= 0)
 	{
 	  if (dtp->u.p.input_complete)
-	    return SUCCESS;
+	    return true;
 	  if (dtp->u.p.at_eol)
 	    finish_separator (dtp);
 	  if (dtp->u.p.input_complete)
-	    return SUCCESS;
+	    return true;
 
 	  dtp->u.p.saved_type = BT_UNKNOWN;
 	  free_saved (dtp);
@@ -2590,18 +2590,18 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 		 cmp = cmp->next)
 	      {
 
-		if (nml_read_obj (dtp, cmp, (index_type)(pdata - nl->mem_pos),
+		if (!nml_read_obj (dtp, cmp, (index_type)(pdata - nl->mem_pos),
 				  pprev_nl, nml_err_msg, nml_err_msg_size,
-				  clow, chigh) == FAILURE)
+				  clow, chigh))
 		  {
 		    free (obj_name);
-		    return FAILURE;
+		    return false;
 		  }
 
 		if (dtp->u.p.input_complete)
 		  {
 		    free (obj_name);
-		    return SUCCESS;
+		    return true;
 		  }
 	      }
 
@@ -2625,7 +2625,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
       if (dtp->u.p.nml_read_error)
 	{
 	  dtp->u.p.expanded_read = 0;
-	  return SUCCESS;
+	  return true;
 	}
 
       if (dtp->u.p.saved_type == BT_UNKNOWN)
@@ -2711,11 +2711,11 @@ incr_idx:
 		"Repeat count too large for namelist object %s", nl->var_name);
       goto nml_err_ret;
     }
-  return SUCCESS;
+  return true;
 
 nml_err_ret:
 
-  return FAILURE;
+  return false;
 }
 
 /* Parses the object name, including array and substring qualifiers.  It
@@ -2725,7 +2725,7 @@ nml_err_ret:
    touched.  nml_read_obj is called at the end and this reads the data in
    the manner specified by the object name.  */
 
-static try
+static bool
 nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
 		  char *nml_err_msg, size_t nml_err_msg_size)
 {
@@ -2743,20 +2743,20 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
 
   eat_separator (dtp);
   if (dtp->u.p.input_complete)
-    return SUCCESS;
+    return true;
 
   if (dtp->u.p.at_eol)
     finish_separator (dtp);
   if (dtp->u.p.input_complete)
-    return SUCCESS;
+    return true;
 
   if ((c = next_char (dtp)) == EOF)
-    return FAILURE;
+    return false;
   switch (c)
     {
     case '=':
       if ((c = next_char (dtp)) == EOF)
-	return FAILURE;
+	return false;
       if (c != '?')
 	{
 	  snprintf (nml_err_msg, nml_err_msg_size, 
@@ -2764,11 +2764,11 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
 	  goto nml_err_ret;
 	}
       nml_query (dtp, '=');
-      return SUCCESS;
+      return true;
 
     case '?':
       nml_query (dtp, '?');
-      return SUCCESS;
+      return true;
 
     case '$':
     case '&':
@@ -2781,7 +2781,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
 	}
     case '/':
       dtp->u.p.input_complete = 1;
-      return SUCCESS;
+      return true;
 
     default :
       break;
@@ -2806,7 +2806,7 @@ get_name:
       if (!is_separator (c))
 	push_char (dtp, tolower(c));
       if ((c = next_char (dtp)) == EOF)
-	return FAILURE;
+	return false;
     } while (!( c=='=' || c==' ' || c=='\t' || c =='(' || c =='%' ));
 
   unget_char (dtp, c);
@@ -2866,9 +2866,9 @@ get_name:
   if (c == '(' && nl->var_rank)
     {
       parsed_rank = 0;
-      if (nml_parse_qualifier (dtp, nl->dim, nl->ls, nl->var_rank,
+      if (!nml_parse_qualifier (dtp, nl->dim, nl->ls, nl->var_rank,
 			       nml_err_msg, nml_err_msg_size, 
-			       &parsed_rank) == FAILURE)
+			       &parsed_rank))
 	{
 	  char *nml_err_msg_end = strchr (nml_err_msg, '\0');
 	  snprintf (nml_err_msg_end,
@@ -2882,7 +2882,7 @@ get_name:
       qualifier_flag = 1;
 
       if ((c = next_char (dtp)) == EOF)
-	return FAILURE;
+	return false;
       unget_char (dtp, c);
     }
   else if (nl->var_rank > 0)
@@ -2908,7 +2908,7 @@ get_name:
 
       component_flag = 1;
       if ((c = next_char (dtp)) == EOF)
-	return FAILURE;
+	return false;
       goto get_name;
     }
 
@@ -2923,9 +2923,8 @@ get_name:
       descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
       array_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
 
-      if (nml_parse_qualifier (dtp, chd, ind, -1, nml_err_msg, 
-			       nml_err_msg_size, &parsed_rank)
-	  == FAILURE)
+      if (!nml_parse_qualifier (dtp, chd, ind, -1, nml_err_msg, 
+				nml_err_msg_size, &parsed_rank))
 	{
 	  char *nml_err_msg_end = strchr (nml_err_msg, '\0');
 	  snprintf (nml_err_msg_end,
@@ -2946,7 +2945,7 @@ get_name:
 	}
 
       if ((c = next_char (dtp)) == EOF)
-	return FAILURE;
+	return false;
       unget_char (dtp, c);
     }
 
@@ -2978,15 +2977,15 @@ get_name:
 
   eat_separator (dtp);
   if (dtp->u.p.input_complete)
-    return SUCCESS;
+    return true;
 
   if (dtp->u.p.at_eol)
     finish_separator (dtp);
   if (dtp->u.p.input_complete)
-    return SUCCESS;
+    return true;
 
   if ((c = next_char (dtp)) == EOF)
-    return FAILURE;
+    return false;
 
   if (c != '=')
     {
@@ -3013,15 +3012,15 @@ get_name:
 	nl = first_nl;
     }
 
-  if (nml_read_obj (dtp, nl, 0, pprev_nl, nml_err_msg, nml_err_msg_size,
-		    clow, chigh) == FAILURE)
+  if (!nml_read_obj (dtp, nl, 0, pprev_nl, nml_err_msg, nml_err_msg_size,
+		    clow, chigh))
     goto nml_err_ret;
 
-  return SUCCESS;
+  return true;
 
 nml_err_ret:
 
-  return FAILURE;
+  return false;
 }
 
 /* Entry point for namelist input.  Goes through input until namelist name
@@ -3104,8 +3103,7 @@ find_nml_name:
 
   while (!dtp->u.p.input_complete)
     {
-      if (nml_get_obj_data (dtp, &prev_nl, nml_err_msg, sizeof nml_err_msg)
-			    == FAILURE)
+      if (!nml_get_obj_data (dtp, &prev_nl, nml_err_msg, sizeof nml_err_msg))
 	{
 	  if (dtp->u.p.current_unit->unit_number != options.stdin_unit)
 	    goto nml_err_ret;

@@ -43,6 +43,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stddef.h>
 #include <float.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #if HAVE_COMPLEX_H
 /* Must appear before math.h on VMS systems.  */
@@ -561,10 +562,6 @@ typedef enum
 { NOTIFICATION_SILENT, NOTIFICATION_WARNING, NOTIFICATION_ERROR }
 notification;
 
-/* This is returned by notify_std and several io functions.  */
-typedef enum
-{ SUCCESS = 1, FAILURE }
-try;
 
 /* The filename and line number don't go inside the globals structure.
    They are set by the rest of the program and must be linked to.  */
@@ -732,7 +729,7 @@ iexport_proto(generate_error);
 extern void generate_warning (st_parameter_common *, const char *);
 internal_proto(generate_warning);
 
-extern try notify_std (st_parameter_common *, int, const char *);
+extern bool notify_std (st_parameter_common *, int, const char *);
 internal_proto(notify_std);
 
 extern notification notification_std(int);

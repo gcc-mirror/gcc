@@ -31,7 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "format.h"
 #include <ctype.h>
 #include <string.h>
-#include <stdbool.h>
 #include <stdlib.h>
 
 
