@@ -2731,6 +2731,34 @@
    (set_attr "mode" "SI")]
 )
 
+(define_insn "*ror<mode>3_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(rotate:GPI (match_operand:GPI 1 "register_operand" "r")
+		    (match_operand 2 "const_int_operand" "n")))]
+  "UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+{
+  operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "ror\\t%<w>0, %<w>1, %3";
+}
+  [(set_attr "v8type" "shift")
+   (set_attr "mode" "<MODE>")]
+)
+
+;; zero_extend version of the above
+(define_insn "*rorsi3_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (rotate:SI (match_operand:SI 1 "register_operand" "r")
+		    (match_operand 2 "const_int_operand" "n"))))]
+  "UINTVAL (operands[2]) < 32"
+{
+  operands[3] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "ror\\t%w0, %w1, %3";
+}
+  [(set_attr "v8type" "shift")
+   (set_attr "mode" "SI")]
+)
+
 (define_insn "*<ANY_EXTEND:optab><GPI:mode>_ashl<SHORT:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(ANY_EXTEND:GPI
