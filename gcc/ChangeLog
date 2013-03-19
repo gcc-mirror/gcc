@@ -1,3 +1,10 @@
+2013-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal): Merge from
+	*movti_internal_rex64 and *movti_internal_sse.  Use x64 isa attribute.
+	(*movdi_internal): Merge with *movdi_internal_rex64.  Use x64 and
+	nox64 isa attributes.
+
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find): Use gcc_checking_assert.
