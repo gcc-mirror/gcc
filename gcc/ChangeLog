@@ -1,5 +1,10 @@
 2013-03-19  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.md (*sub<mode>3_carryin): New pattern.
+	(*subsi3_carryin_uxtw): Likewise.
+
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/aarch64/aarch64.md (*ror<mode>3_insn): New pattern.
 	(*rorsi3_insn_uxtw): Likewise.
 

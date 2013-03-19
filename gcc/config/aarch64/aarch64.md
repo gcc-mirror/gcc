@@ -1790,6 +1790,34 @@
    (set_attr "mode" "SI")]
 )
 
+(define_insn "*sub<mode>3_carryin"
+  [(set
+    (match_operand:GPI 0 "register_operand" "=r")
+    (minus:GPI (minus:GPI
+		(match_operand:GPI 1 "register_operand" "r")
+		(ltu:GPI (reg:CC CC_REGNUM) (const_int 0)))
+	       (match_operand:GPI 2 "register_operand" "r")))]
+   ""
+   "sbc\\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "v8type" "adc")
+   (set_attr "mode" "<MODE>")]
+)
+
+;; zero_extend version of the above
+(define_insn "*subsi3_carryin_uxtw"
+  [(set
+    (match_operand:DI 0 "register_operand" "=r")
+    (zero_extend:DI
+     (minus:SI (minus:SI
+		(match_operand:SI 1 "register_operand" "r")
+		(ltu:SI (reg:CC CC_REGNUM) (const_int 0)))
+	       (match_operand:SI 2 "register_operand" "r"))))]
+   ""
+   "sbc\\t%w0, %w1, %w2"
+  [(set_attr "v8type" "adc")
+   (set_attr "mode" "SI")]
+)
+
 (define_insn "*sub_uxt<mode>_multp2"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(minus:GPI (match_operand:GPI 4 "register_operand" "r")
