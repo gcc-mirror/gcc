@@ -848,9 +848,6 @@ slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
   gimple orig_cond = get_loop_exit_condition (loop);
   gimple_stmt_iterator loop_exit_gsi = gsi_last_bb (exit_e->src);
 
-  if (need_ssa_update_p (cfun))
-    return false;
-
   if (loop->inner
       /* All loops have an outer scope; the only case loop->outer is NULL is for
          the function itself.  */
