@@ -1,3 +1,8 @@
+2013-03-20  Tobias Burnus  <burnus@net-b.de>
+
+	* i-fortra.ads: Update comment, add Ada 2012's optional
+	Star and Kind data types for enhanced interoperability.
+
 2013-03-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Library_Version): Bump to 4.9.
