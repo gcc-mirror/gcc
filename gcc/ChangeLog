@@ -1,3 +1,18 @@
+2013-03-20  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR bootstrap/56258
+	* doc/generic.texi (POINTER_PLUS_EXPR): Use @item instead of @itemx.
+	(PLUS_EXPR): Likewise.
+	* doc/cppopts.texi (--help): Likewise.
+	* doc/invoke.texi (-fenable-@var{kind}-@var{pass}): Likewise
+	(-fdump-rtl-cprop_hardreg): Likewise.
+	(-fdump-rtl-csa): Likewise.
+	(-fdump-rtl-dce): Likewise.
+	(-fdump-rtl-dbr): Likewise.
+	(-fdump-rtl-into_cfglayout): Likewise.
+	(-fdump-rtl-outof_cfglayout): Likewise.
+	(@gccoptlist): Move misplaced bracket.
+
 2013-03-06  Sebastian Huber <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (arm*-*-rtemself*): New.
