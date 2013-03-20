@@ -5010,8 +5010,36 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
     }
   if (!dependent_p)
     {
+      bool swapped = false;
+      if (rhs1 && cp_tree_equal (lhs, rhs))
+	{
+	  tree tem = rhs;
+	  rhs = rhs1;
+	  rhs1 = tem;
+	  swapped = !commutative_tree_code (opcode);
+	}
+      if (rhs1 && !cp_tree_equal (lhs, rhs1))
+	{
+	  if (code == OMP_ATOMIC)
+	    error ("%<#pragma omp atomic update%> uses two different "
+		   "expressions for memory");
+	  else
+	    error ("%<#pragma omp atomic capture%> uses two different "
+		   "expressions for memory");
+	  return;
+	}
+      if (lhs1 && !cp_tree_equal (lhs, lhs1))
+	{
+	  if (code == OMP_ATOMIC)
+	    error ("%<#pragma omp atomic update%> uses two different "
+		   "expressions for memory");
+	  else
+	    error ("%<#pragma omp atomic capture%> uses two different "
+		   "expressions for memory");
+	  return;
+	}
       stmt = c_finish_omp_atomic (input_location, code, opcode, lhs, rhs,
-				  v, lhs1, rhs1);
+				  v, lhs1, rhs1, swapped);
       if (stmt == error_mark_node)
 	return;
     }

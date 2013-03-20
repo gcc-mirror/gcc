@@ -13301,6 +13301,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      lhs = RECUR (TREE_OPERAND (op11, 0));
 	      rhs = RECUR (TREE_OPERAND (op11, 1));
 	      opcode = TREE_CODE (op11);
+	      if (opcode == MODIFY_EXPR)
+		opcode = NOP_EXPR;
 	    }
 	  else
 	    {

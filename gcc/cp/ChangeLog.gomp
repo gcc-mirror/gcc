@@ -1,0 +1,15 @@
+2013-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_binary_expression): Handle no_toplevel_fold_p
+	even for binary operations other than comparison.
+	(cp_parser_omp_atomic): Handle parsing OpenMP 4.0 atomics.
+	* pt.c (tsubst_expr) <case OMP_ATOMIC>: Handle atomic exchange.
+	* semantics.c (finish_omp_atomic): Use cp_tree_equal to diagnose
+	expression mismatches and to find out if c_finish_omp_atomic
+	should be called with swapped set to true or false.
+
+Copyright (C) 2013 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

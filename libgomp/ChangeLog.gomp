@@ -1,0 +1,12 @@
+2013-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/atomic-10.C: New test.
+	* testsuite/libgomp.c++/atomic-11.C: New test.
+	* testsuite/libgomp.c++/atomic-12.C: New test.
+	* testsuite/libgomp.c++/atomic-13.C: New test.
+
+Copyright (C) 2013 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

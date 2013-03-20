@@ -7509,9 +7509,11 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
       */
       if (no_toplevel_fold_p
 	  && lookahead_prec <= current.prec
-	  && sp == stack
-	  && TREE_CODE_CLASS (current.tree_type) == tcc_comparison)
-	current.lhs = build2 (current.tree_type, boolean_type_node,
+	  && sp == stack)
+	current.lhs = build2 (current.tree_type,
+			      TREE_CODE_CLASS (current.tree_type)
+			      == tcc_comparison
+			      ? boolean_type_node : TREE_TYPE (current.lhs),
 			      current.lhs, rhs);
       else
 	current.lhs = build_x_binary_op (current.loc, current.tree_type,
@@ -26518,9 +26520,17 @@ cp_parser_omp_structured_block (cp_parser *parser)
    update-stmt:
      expression-stmt | x = x binop expr
    capture-stmt:
-     v = x binop= expr | v = x++ | v = ++x | v = x-- | v = --x
+     v = expression-stmt
    capture-block:
      { v = x; update-stmt; } | { update-stmt; v = x; }
+
+   OpenMP 4.0:
+   update-stmt:
+     expression-stmt | x = x binop expr | x = expr binop x
+   capture-stmt:
+     v = update-stmt
+   capture-block:
+     { v = x; update-stmt; } | { update-stmt; v = x; } | { v = x; x = expr; }
 
   where x and v are lvalue expressions with scalar type.  */
 
@@ -26688,75 +26698,139 @@ restart:
 	  opcode = BIT_XOR_EXPR;
 	  break;
 	case CPP_EQ:
-	  if (structured_block || code == OMP_ATOMIC)
+	  enum cp_parser_prec oprec;
+	  cp_token *token;
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_parse_tentatively (parser);
+	  rhs1 = cp_parser_simple_cast_expression (parser);
+	  if (rhs1 == error_mark_node)
 	    {
-	      enum cp_parser_prec oprec;
-	      cp_token *token;
-	      cp_lexer_consume_token (parser->lexer);
-	      rhs1 = cp_parser_unary_expression (parser, /*address_p=*/false,
-						 /*cast_p=*/false, NULL);
-	      if (rhs1 == error_mark_node)
-		goto saw_error;
-	      token = cp_lexer_peek_token (parser->lexer);
-	      switch (token->type)
+	      cp_parser_abort_tentative_parse (parser);
+	      cp_parser_simple_cast_expression (parser);
+	      goto saw_error;
+	    }
+	  token = cp_lexer_peek_token (parser->lexer);
+	  if (token->type != CPP_SEMICOLON && !cp_tree_equal (lhs, rhs1))
+	    {
+	      cp_parser_abort_tentative_parse (parser);
+	      cp_parser_parse_tentatively (parser);
+	      rhs = cp_parser_binary_expression (parser, false, true,
+						 PREC_NOT_OPERATOR, NULL);
+	      if (rhs == error_mark_node)
 		{
-		case CPP_SEMICOLON:
-		  if (code == OMP_ATOMIC_CAPTURE_NEW)
-		    {
-		      code = OMP_ATOMIC_CAPTURE_OLD;
-		      v = lhs;
-		      lhs = NULL_TREE;
-		      lhs1 = rhs1;
-		      rhs1 = NULL_TREE;
-		      cp_lexer_consume_token (parser->lexer);
-		      goto restart;
-		    }
-		  cp_parser_error (parser,
-				   "invalid form of %<#pragma omp atomic%>");
-		  goto saw_error;
-		case CPP_MULT:
-		  opcode = MULT_EXPR;
-		  break;
-		case CPP_DIV:
-		  opcode = TRUNC_DIV_EXPR;
-		  break;
-		case CPP_PLUS:
-		  opcode = PLUS_EXPR;
-		  break;
-		case CPP_MINUS:
-		  opcode = MINUS_EXPR;
-		  break;
-		case CPP_LSHIFT:
-		  opcode = LSHIFT_EXPR;
-		  break;
-		case CPP_RSHIFT:
-		  opcode = RSHIFT_EXPR;
-		  break;
-		case CPP_AND:
-		  opcode = BIT_AND_EXPR;
-		  break;
-		case CPP_OR:
-		  opcode = BIT_IOR_EXPR;
-		  break;
-		case CPP_XOR:
-		  opcode = BIT_XOR_EXPR;
-		  break;
-		default:
-		  cp_parser_error (parser,
-				   "invalid operator for %<#pragma omp atomic%>");
+		  cp_parser_abort_tentative_parse (parser);
+		  cp_parser_binary_expression (parser, false, true,
+					       PREC_NOT_OPERATOR, NULL);
 		  goto saw_error;
 		}
-	      oprec = TOKEN_PRECEDENCE (token);
-	      gcc_assert (oprec != PREC_NOT_OPERATOR);
-	      if (commutative_tree_code (opcode))
-		oprec = (enum cp_parser_prec) (oprec - 1);
-	      cp_lexer_consume_token (parser->lexer);
-	      rhs = cp_parser_binary_expression (parser, false, false,
-						 oprec, NULL);
-	      if (rhs == error_mark_node)
-		goto saw_error;
-	      goto stmt_done;
+	      switch (TREE_CODE (rhs))
+		{
+		case MULT_EXPR:
+		case TRUNC_DIV_EXPR:
+		case PLUS_EXPR:
+		case MINUS_EXPR:
+		case LSHIFT_EXPR:
+		case RSHIFT_EXPR:
+		case BIT_AND_EXPR:
+		case BIT_IOR_EXPR:
+		case BIT_XOR_EXPR:
+		  if (cp_tree_equal (lhs, TREE_OPERAND (rhs, 1)))
+		    {
+		      if (cp_parser_parse_definitely (parser))
+			{
+			  opcode = TREE_CODE (rhs);
+			  rhs1 = TREE_OPERAND (rhs, 0);
+			  rhs = TREE_OPERAND (rhs, 1);
+			  goto stmt_done;
+			}
+		      else
+			goto saw_error;
+		    }
+		  break;
+		default:
+		  break;
+		}
+	      cp_parser_abort_tentative_parse (parser);
+	      if (structured_block && code == OMP_ATOMIC_CAPTURE_OLD)
+		{
+		  rhs = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+		  if (rhs == error_mark_node)
+		    goto saw_error;
+		  opcode = NOP_EXPR;
+		  rhs1 = NULL_TREE;
+		  goto stmt_done;
+		}
+	      cp_parser_error (parser,
+			       "invalid form of %<#pragma omp atomic%>");
+	      goto saw_error;
 	    }
+	  if (!cp_parser_parse_definitely (parser))
+	    goto saw_error;
+	  switch (token->type)
+	    {
+	    case CPP_SEMICOLON:
+	      if (code == OMP_ATOMIC_CAPTURE_NEW)
+		{
+		  code = OMP_ATOMIC_CAPTURE_OLD;
+		  v = lhs;
+		  lhs = NULL_TREE;
+		  lhs1 = rhs1;
+		  rhs1 = NULL_TREE;
+		  cp_lexer_consume_token (parser->lexer);
+		  goto restart;
+		}
+	      else if (structured_block)
+		{
+		  opcode = NOP_EXPR;
+		  rhs = rhs1;
+		  rhs1 = NULL_TREE;
+		  goto stmt_done;
+		}
+	      cp_parser_error (parser,
+			       "invalid form of %<#pragma omp atomic%>");
+	      goto saw_error;
+	    case CPP_MULT:
+	      opcode = MULT_EXPR;
+	      break;
+	    case CPP_DIV:
+	      opcode = TRUNC_DIV_EXPR;
+	      break;
+	    case CPP_PLUS:
+	      opcode = PLUS_EXPR;
+	      break;
+	    case CPP_MINUS:
+	      opcode = MINUS_EXPR;
+	      break;
+	    case CPP_LSHIFT:
+	      opcode = LSHIFT_EXPR;
+	      break;
+	    case CPP_RSHIFT:
+	      opcode = RSHIFT_EXPR;
+	      break;
+	    case CPP_AND:
+	      opcode = BIT_AND_EXPR;
+	      break;
+	    case CPP_OR:
+	      opcode = BIT_IOR_EXPR;
+	      break;
+	    case CPP_XOR:
+	      opcode = BIT_XOR_EXPR;
+	      break;
+	    default:
+	      cp_parser_error (parser,
+			       "invalid operator for %<#pragma omp atomic%>");
+	      goto saw_error;
+	    }
+	  oprec = TOKEN_PRECEDENCE (token);
+	  gcc_assert (oprec != PREC_NOT_OPERATOR);
+	  if (commutative_tree_code (opcode))
+	    oprec = (enum cp_parser_prec) (oprec - 1);
+	  cp_lexer_consume_token (parser->lexer);
+	  rhs = cp_parser_binary_expression (parser, false, false,
+					     oprec, NULL);
+	  if (rhs == error_mark_node)
+	    goto saw_error;
+	  goto stmt_done;
 	  /* FALLTHROUGH */
 	default:
 	  cp_parser_error (parser,

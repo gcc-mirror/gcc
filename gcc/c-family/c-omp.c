@@ -122,7 +122,7 @@ c_finish_omp_taskyield (location_t loc)
 tree
 c_finish_omp_atomic (location_t loc, enum tree_code code,
 		     enum tree_code opcode, tree lhs, tree rhs,
-		     tree v, tree lhs1, tree rhs1)
+		     tree v, tree lhs1, tree rhs1, bool swapped)
 {
   tree x, type, addr;
 
@@ -176,8 +176,12 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   /* There are lots of warnings, errors, and conversions that need to happen
      in the course of interpreting a statement.  Use the normal mechanisms
      to do this, and then take it apart again.  */
-  x = build_modify_expr (input_location, lhs, NULL_TREE, opcode,
-      			 input_location, rhs, NULL_TREE);
+  if (swapped)
+    {
+      rhs = build2_loc (loc, opcode, TREE_TYPE (lhs), rhs, lhs);
+      opcode = NOP_EXPR;
+    }
+  x = build_modify_expr (loc, lhs, NULL_TREE, opcode, loc, rhs, NULL_TREE);
   if (x == error_mark_node)
     return error_mark_node;
   gcc_assert (TREE_CODE (x) == MODIFY_EXPR);

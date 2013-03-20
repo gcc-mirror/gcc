@@ -9500,9 +9500,17 @@ c_parser_omp_structured_block (c_parser *parser)
    update-stmt:
      expression-stmt | x = x binop expr
    capture-stmt:
-     v = x binop= expr | v = x++ | v = ++x | v = x-- | v = --x
+     v = expression-stmt
    capture-block:
      { v = x; update-stmt; } | { update-stmt; v = x; }
+
+   OpenMP 4.0:
+   update-stmt:
+     expression-stmt | x = x binop expr | x = expr binop x
+   capture-stmt:
+     v = update-stmt
+   capture-block:
+     { v = x; update-stmt; } | { update-stmt; v = x; } | { v = x; x = expr; }
 
   where x and v are lvalue expressions with scalar type.
 
@@ -9826,7 +9834,8 @@ stmt_done:
       c_parser_require (parser, CPP_CLOSE_BRACE, "expected %<}%>");
     }
 done:
-  stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1);
+  stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1,
+			      false);
   if (stmt != error_mark_node)
     add_stmt (stmt);
 

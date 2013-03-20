@@ -20,8 +20,6 @@ main ()
   #pragma omp atomic
     x = x / 7 / 2;	/* { dg-error "expected" } */
   #pragma omp atomic capture
-    v = x = x | 6;	/* { dg-error "invalid operator" } */
-  #pragma omp atomic capture
     { v = x; x = x * 7 + 6; }	/* { dg-error "expected" } */
   #pragma omp atomic capture
     { v = x; x = x * 7 ^ 6; }	/* { dg-error "expected" } */

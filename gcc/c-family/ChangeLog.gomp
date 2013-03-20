@@ -1,0 +1,12 @@
+2013-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_finish_omp_atomic): Add swapped argument, if true,
+	build the operation first with rhs, lhs arguments and use NOP_EXPR
+	build_modify_expr.
+	* c-common.h (c_finish_omp_atomic): Adjust prototype.
+
+Copyright (C) 2013 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
