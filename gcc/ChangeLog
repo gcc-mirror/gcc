@@ -1,5 +1,11 @@
 2013-03-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56661
+	* tree-ssa-sccvn.c (visit_use): Only value-number calls if
+	the result does not have to be distinct.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
 	* tree-inline.c (copy_tree_body_r): Sync MEM_REF code with
 	remap_gimple_op_r.
 
