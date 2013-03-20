@@ -3498,8 +3498,13 @@ visit_use (tree use)
 		     We can value number 2 calls to the same function with the
 		     same vuse and the same operands which are not subsequent
 		     the same, because there is no code in the program that can
-		     compare the 2 values.  */
-		  || gimple_vdef (stmt)))
+		     compare the 2 values...  */
+		  || (gimple_vdef (stmt)
+		      /* ... unless the call returns a pointer which does
+		         not alias with anything else.  In which case the
+			 information that the values are distinct are encoded
+			 in the IL.  */
+		      && !(gimple_call_return_flags (stmt) & ERF_NOALIAS))))
 	    changed = visit_reference_op_call (lhs, stmt);
 	  else
 	    changed = defs_to_varying (stmt);

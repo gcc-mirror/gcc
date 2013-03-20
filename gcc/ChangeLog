@@ -1,3 +1,9 @@
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56661
+	* tree-ssa-sccvn.c (visit_use): Only value-number calls if
+	the result does not have to be distinct.
+
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56635
