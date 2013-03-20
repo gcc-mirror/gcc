@@ -1,3 +1,8 @@
+2013-03-20  Tobias Burnus  <burnus@net-b.de>
+
+	* env.c (handle_omp_display_env): New function.
+	(initialize_env): Use it.
+
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/atomic-14.c: Add parens to make it valid.

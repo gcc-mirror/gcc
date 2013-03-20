@@ -29,6 +29,10 @@
 #include "libgomp_f.h"
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdio.h>
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>	/* For PRIu64.  */
+#endif
 #ifdef STRING_WITH_STRINGS
 # include <string.h>
 # include <strings.h>
@@ -565,6 +569,122 @@ parse_affinity (void)
   return false;
 }
 
+
+static void
+handle_omp_display_env (bool proc_bind, unsigned long stacksize,
+			int wait_policy)
+{
+  const char *env;
+  bool display = false;
+  bool verbose = false;
+  int i;
+
+  env = getenv ("OMP_DISPLAY_ENV");
+  if (env == NULL)
+    return;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "true", 4) == 0)
+    {
+      env += 4;
+    }
+  else if (strncasecmp (env, "false", 5) == 0)
+    {
+      display = false;
+      env += 5;
+    }
+  else if (strncasecmp (env, "verbose", 7) == 0)
+    {
+      display = true;
+      verbose = true;
+      env += 7;
+    }
+  else
+    env = "X";
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env != '\0')
+    gomp_error ("Invalid value for environment variable OMP_DISPLAY_ENV");
+
+  if (!display)
+    return;
+
+  fputs ("\nOPENMP DISPLAY ENVIRONMENT BEGIN\n", stderr);
+
+  fputs ("  _OPENMP = '201107'\n", stderr);
+  fprintf (stderr, "  OMP_DYNAMIC = '%s'\n",
+	   gomp_global_icv.dyn_var ? "TRUE" : "FALSE");
+  fprintf (stderr, "  OMP_NESTED = '%s'\n",
+	   gomp_global_icv.nest_var ? "TRUE" : "FALSE");
+
+  fprintf (stderr, "  OMP_NUM_THREADS = '%lu", gomp_global_icv.nthreads_var);
+  for (i = 1; i < gomp_nthreads_var_list_len; i++)
+    fprintf (stderr, ",%lu", gomp_nthreads_var_list[i]);
+  fputs ("'\n", stderr);
+
+  fprintf (stderr, "  OMP_SCHEDULE = '");
+  switch (gomp_global_icv.run_sched_var)
+    {
+    case GFS_RUNTIME:
+      fputs ("RUNTIME", stderr);
+      break;
+    case GFS_STATIC:
+      fputs ("STATIC", stderr);
+      break;
+    case GFS_DYNAMIC:
+      fputs ("DYNAMIC", stderr);
+      break;
+    case GFS_GUIDED:
+      fputs ("GUIDED", stderr);
+      break;
+    case GFS_AUTO:
+      fputs ("AUTO", stderr);
+      break;
+    }
+  fputs ("'\n", stderr);
+
+  fprintf (stderr, "  OMP_PROC_BIND = '%s'\n",
+	   proc_bind ? "TRUE" : "FALSE");
+  fprintf (stderr, "  OMP_STACKSIZE = '%lu'\n", stacksize);
+
+  /* GOMP's default value is actually neither active nor passive.  */
+  fprintf (stderr, "  OMP_WAIT_POLICY = '%s'\n",
+	   wait_policy > 0 ? "ACTIVE" : "PASSIVE");
+  fprintf (stderr, "  OMP_THREAD_LIMIT = '%lu'\n",
+	   gomp_thread_limit_var);
+  fprintf (stderr, "  OMP_MAX_ACTIVE_LEVELS = '%lu'\n",
+	   gomp_max_active_levels_var);
+
+/* FIXME: Unimplemented OpenMP 4.0 environment variables.
+  fprintf (stderr, "  OMP_PLACES = ''\n");
+  fprintf (stderr, "  OMP_CANCELLATION = ''\n");
+  fprintf (stderr, "  OMP_DEFAULT_DEVICE = ''\n"); */
+
+  if (verbose)
+    {
+      fputs ("  GOMP_CPU_AFFINITY = '", stderr);
+      if (gomp_cpu_affinity_len)
+	{
+	  fprintf (stderr, "%d", gomp_cpu_affinity[0]);
+	  for (i = 1; i < gomp_cpu_affinity_len; i++)
+	    fprintf (stderr, " %d", gomp_cpu_affinity[i]);
+	}
+      fputs ("'\n", stderr);
+      fprintf (stderr, "  GOMP_STACKSIZE = '%lu'\n", stacksize);
+#ifdef HAVE_INTTYPES_H
+      fprintf (stderr, "  GOMP_SPINCOUNT = '%"PRIu64"'\n",
+	       (uint64_t) gomp_spin_count_var);
+#else
+      fprintf (stderr, "  GOMP_SPINCOUNT = '%lu'\n",
+	       (unsigned long) gomp_spin_count_var);
+#endif
+    }
+
+  fputs ("OPENMP DISPLAY ENVIRONMENT END\n", stderr);
+}
+
+
 static void __attribute__((constructor))
 initialize_env (void)
 {
@@ -645,6 +765,8 @@ initialize_env (void)
       if (err != 0)
 	gomp_error ("Stack size change failed: %s", strerror (err));
     }
+
+  handle_omp_display_env (bind_var, stacksize, wait_policy);
 }
 
 
