@@ -1,5 +1,19 @@
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-parser.c (c_parser_expr_no_commas): Add omp_atomic_lhs argument
+	with default value, pass it down to c_parser_conditional_expression.
+	(c_parser_conditional_expression): Add omp_atomic_lhs argument, pass
+	it down to c_parser_binary_expression.  Don't pass PREC_NONE to
+	it.  Adjust recursive call.
+	(c_parser_binary_expression): Remove prec argument, add omp_atomic_lhs
+	argument.  Always start from PREC_NONE, if omp_atomic_lhs is non-NULL
+	and one of the arguments of toplevel binop matches it, use build2
+	instead of parser_build_binary_op.
+	(c_parser_omp_atomic): Handle OpenMP 4.0 atomics.
+	(c_parser_omp_for_loop): Adjust c_parser_binary_expression caller.
+	* c-tree.h (c_tree_equal): New prototype.
+	* c-typeck.c (c_tree_equal): New function.
+
 	* c-parser.c (c_parser_omp_atomic): Adjust comment.
 	Add another argument to c_finish_omp_atomic.
 

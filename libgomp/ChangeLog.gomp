@@ -1,5 +1,9 @@
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c/atomic-14.c: Add parens to make it valid.
+	* testsuite/libgomp.c/atomic-15.c: New test.
+	* testsuite/libgomp.c/atomic-16.c: New test.
+
 	* testsuite/libgomp.c++/atomic-10.C: New test.
 	* testsuite/libgomp.c++/atomic-11.C: New test.
 	* testsuite/libgomp.c++/atomic-12.C: New test.

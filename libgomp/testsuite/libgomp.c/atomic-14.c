@@ -16,7 +16,7 @@ main ()
   #pragma omp atomic update
     x = x + 7;
   #pragma omp atomic
-    x = x + 7 + 6;
+    x = x + (7 + 6);
   #pragma omp atomic update
     x = x + 2 * 3;
   #pragma omp atomic
@@ -65,7 +65,7 @@ main ()
   if (v != -8)
     abort ();
   #pragma omp atomic
-    x = x * -4 / 2;
+    x = x * (-4 / 2);
   #pragma omp atomic read
     v = x;
   if (v != 16)

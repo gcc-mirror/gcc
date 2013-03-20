@@ -10897,3 +10897,205 @@ c_build_va_arg (location_t loc, tree expr, tree type)
 		"C++ requires promoted type, not enum type, in %<va_arg%>");
   return build_va_arg (loc, expr, type);
 }
+
+/* Return truthvalue of whether T1 is the same tree structure as T2.
+   Return 1 if they are the same. Return 0 if they are different.  */
+
+bool
+c_tree_equal (tree t1, tree t2)
+{
+  enum tree_code code1, code2;
+
+  if (t1 == t2)
+    return true;
+  if (!t1 || !t2)
+    return false;
+
+  for (code1 = TREE_CODE (t1);
+       CONVERT_EXPR_CODE_P (code1)
+	 || code1 == NON_LVALUE_EXPR;
+       code1 = TREE_CODE (t1))
+    t1 = TREE_OPERAND (t1, 0);
+  for (code2 = TREE_CODE (t2);
+       CONVERT_EXPR_CODE_P (code2)
+	 || code2 == NON_LVALUE_EXPR;
+       code2 = TREE_CODE (t2))
+    t2 = TREE_OPERAND (t2, 0);
+
+  /* They might have become equal now.  */
+  if (t1 == t2)
+    return true;
+
+  if (code1 != code2)
+    return false;
+
+  switch (code1)
+    {
+    case INTEGER_CST:
+      return TREE_INT_CST_LOW (t1) == TREE_INT_CST_LOW (t2)
+	&& TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2);
+
+    case REAL_CST:
+      return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
+
+    case STRING_CST:
+      return TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
+	&& !memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+		    TREE_STRING_LENGTH (t1));
+
+    case FIXED_CST:
+      return FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1),
+				     TREE_FIXED_CST (t2));
+
+    case COMPLEX_CST:
+      return c_tree_equal (TREE_REALPART (t1), TREE_REALPART (t2))
+	     && c_tree_equal (TREE_IMAGPART (t1), TREE_IMAGPART (t2));
+
+    case VECTOR_CST:
+      return operand_equal_p (t1, t2, OEP_ONLY_CONST);
+
+    case CONSTRUCTOR:
+      /* We need to do this when determining whether or not two
+	 non-type pointer to member function template arguments
+	 are the same.  */
+      if (!comptypes (TREE_TYPE (t1), TREE_TYPE (t2))
+	  || CONSTRUCTOR_NELTS (t1) != CONSTRUCTOR_NELTS (t2))
+	return false;
+      {
+	tree field, value;
+	unsigned int i;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t1), i, field, value)
+	  {
+	    constructor_elt *elt2 = CONSTRUCTOR_ELT (t2, i);
+	    if (!c_tree_equal (field, elt2->index)
+		|| !c_tree_equal (value, elt2->value))
+	      return false;
+	  }
+      }
+      return true;
+
+    case TREE_LIST:
+      if (!c_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2)))
+	return false;
+      if (!c_tree_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
+	return false;
+      return c_tree_equal (TREE_CHAIN (t1), TREE_CHAIN (t2));
+
+    case SAVE_EXPR:
+      return c_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+
+    case CALL_EXPR:
+      {
+	tree arg1, arg2;
+	call_expr_arg_iterator iter1, iter2;
+	if (!c_tree_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	  return false;
+	for (arg1 = first_call_expr_arg (t1, &iter1),
+	       arg2 = first_call_expr_arg (t2, &iter2);
+	     arg1 && arg2;
+	     arg1 = next_call_expr_arg (&iter1),
+	       arg2 = next_call_expr_arg (&iter2))
+	  if (!c_tree_equal (arg1, arg2))
+	    return false;
+	if (arg1 || arg2)
+	  return false;
+	return true;
+      }
+
+    case TARGET_EXPR:
+      {
+	tree o1 = TREE_OPERAND (t1, 0);
+	tree o2 = TREE_OPERAND (t2, 0);
+
+	/* Special case: if either target is an unallocated VAR_DECL,
+	   it means that it's going to be unified with whatever the
+	   TARGET_EXPR is really supposed to initialize, so treat it
+	   as being equivalent to anything.  */
+	if (TREE_CODE (o1) == VAR_DECL && DECL_NAME (o1) == NULL_TREE
+	    && !DECL_RTL_SET_P (o1))
+	  /*Nop*/;
+	else if (TREE_CODE (o2) == VAR_DECL && DECL_NAME (o2) == NULL_TREE
+		 && !DECL_RTL_SET_P (o2))
+	  /*Nop*/;
+	else if (!c_tree_equal (o1, o2))
+	  return false;
+
+	return c_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
+      }
+
+    case COMPONENT_REF:
+      if (TREE_OPERAND (t1, 1) != TREE_OPERAND (t2, 1))
+	return false;
+      return c_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+
+    case PARM_DECL:
+    case VAR_DECL:
+    case CONST_DECL:
+    case FIELD_DECL:
+    case FUNCTION_DECL:
+    case IDENTIFIER_NODE:
+    case SSA_NAME:
+      return false;
+
+    case TREE_VEC:
+      {
+	unsigned ix;
+	if (TREE_VEC_LENGTH (t1) != TREE_VEC_LENGTH (t2))
+	  return false;
+	for (ix = TREE_VEC_LENGTH (t1); ix--;)
+	  if (!c_tree_equal (TREE_VEC_ELT (t1, ix),
+			     TREE_VEC_ELT (t2, ix)))
+	    return false;
+	return true;
+      }
+
+    default:
+      break;
+    }
+
+  switch (TREE_CODE_CLASS (code1))
+    {
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_comparison:
+    case tcc_expression:
+    case tcc_vl_exp:
+    case tcc_reference:
+    case tcc_statement:
+      {
+	int i, n = TREE_OPERAND_LENGTH (t1);
+
+	switch (code1)
+	  {
+	  case PREINCREMENT_EXPR:
+	  case PREDECREMENT_EXPR:
+	  case POSTINCREMENT_EXPR:
+	  case POSTDECREMENT_EXPR:
+	    n = 1;
+	    break;
+	  case ARRAY_REF:
+	    n = 2;
+	    break;
+	  default:
+	    break;
+	  }
+
+	if (TREE_CODE_CLASS (code1) == tcc_vl_exp
+	    && n != TREE_OPERAND_LENGTH (t2))
+	  return false;
+
+	for (i = 0; i < n; ++i)
+	  if (!c_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i)))
+	    return false;
+
+	return true;
+      }
+
+    case tcc_type:
+      return comptypes (t1, t2);
+    default:
+      gcc_unreachable ();
+    }
+  /* We can get here with --disable-checking.  */
+  return false;
+}

@@ -1155,11 +1155,12 @@ static tree c_parser_asm_statement (c_parser *);
 static tree c_parser_asm_operands (c_parser *);
 static tree c_parser_asm_goto_operands (c_parser *);
 static tree c_parser_asm_clobbers (c_parser *);
-static struct c_expr c_parser_expr_no_commas (c_parser *, struct c_expr *);
+static struct c_expr c_parser_expr_no_commas (c_parser *, struct c_expr *,
+					      tree = NULL_TREE);
 static struct c_expr c_parser_conditional_expression (c_parser *,
-						      struct c_expr *);
+						      struct c_expr *, tree);
 static struct c_expr c_parser_binary_expression (c_parser *, struct c_expr *,
-						 enum c_parser_prec);
+						 tree);
 static struct c_expr c_parser_cast_expression (c_parser *, struct c_expr *);
 static struct c_expr c_parser_unary_expression (c_parser *);
 static struct c_expr c_parser_sizeof_expression (c_parser *);
@@ -5338,13 +5339,14 @@ c_parser_asm_goto_operands (c_parser *parser)
    error.  */
 
 static struct c_expr
-c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
+c_parser_expr_no_commas (c_parser *parser, struct c_expr *after,
+			 tree omp_atomic_lhs)
 {
   struct c_expr lhs, rhs, ret;
   enum tree_code code;
   location_t op_location, exp_location;
   gcc_assert (!after || c_dialect_objc ());
-  lhs = c_parser_conditional_expression (parser, after);
+  lhs = c_parser_conditional_expression (parser, after, omp_atomic_lhs);
   op_location = c_parser_peek_token (parser)->location;
   switch (c_parser_peek_token (parser)->type)
     {
@@ -5417,14 +5419,15 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
 */
 
 static struct c_expr
-c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
+c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
+				 tree omp_atomic_lhs)
 {
   struct c_expr cond, exp1, exp2, ret;
   location_t cond_loc, colon_loc, middle_loc;
 
   gcc_assert (!after || c_dialect_objc ());
 
-  cond = c_parser_binary_expression (parser, after, PREC_NONE);
+  cond = c_parser_binary_expression (parser, after, omp_atomic_lhs);
 
   if (c_parser_next_token_is_not (parser, CPP_QUERY))
     return cond;
@@ -5476,7 +5479,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
     }
   {
     location_t exp2_loc = c_parser_peek_token (parser)->location;
-    exp2 = c_parser_conditional_expression (parser, NULL);
+    exp2 = c_parser_conditional_expression (parser, NULL, NULL_TREE);
     exp2 = default_function_array_read_conversion (exp2_loc, exp2);
   }
   c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
@@ -5563,7 +5566,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 
 static struct c_expr
 c_parser_binary_expression (c_parser *parser, struct c_expr *after,
-			    enum c_parser_prec prec)
+			    tree omp_atomic_lhs)
 {
   /* A binary expression is parsed using operator-precedence parsing,
      with the operands being cast expressions.  All the binary
@@ -5621,16 +5624,30 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
     stack[sp].expr							      \
       = default_function_array_read_conversion (stack[sp].loc,		      \
 						stack[sp].expr);	      \
-    stack[sp - 1].expr = parser_build_binary_op (stack[sp].loc,		      \
-						 stack[sp].op,		      \
-						 stack[sp - 1].expr,	      \
-						 stack[sp].expr);	      \
+    if (__builtin_expect (omp_atomic_lhs != NULL_TREE, 0) && sp == 1	      \
+	&& c_parser_peek_token (parser)->type == CPP_SEMICOLON		      \
+	&& ((1 << stack[sp].prec)					      \
+	    & (1 << (PREC_BITOR | PREC_BITXOR | PREC_BITAND | PREC_SHIFT      \
+		     | PREC_ADD | PREC_MULT)))				      \
+	&& stack[sp].op != TRUNC_MOD_EXPR				      \
+	&& stack[0].expr.value != error_mark_node			      \
+	&& stack[1].expr.value != error_mark_node			      \
+	&& (c_tree_equal (stack[0].expr.value, omp_atomic_lhs)		      \
+	    || c_tree_equal (stack[1].expr.value, omp_atomic_lhs)))	      \
+      stack[0].expr.value						      \
+	= build2 (stack[1].op, TREE_TYPE (stack[0].expr.value),		      \
+		  stack[0].expr.value, stack[1].expr.value);		      \
+    else								      \
+      stack[sp - 1].expr = parser_build_binary_op (stack[sp].loc,	      \
+						   stack[sp].op,	      \
+						   stack[sp - 1].expr,	      \
+						   stack[sp].expr);	      \
     sp--;								      \
   } while (0)
   gcc_assert (!after || c_dialect_objc ());
   stack[0].loc = c_parser_peek_token (parser)->location;
   stack[0].expr = c_parser_cast_expression (parser, after);
-  stack[0].prec = prec;
+  stack[0].prec = PREC_NONE;
   sp = 0;
   while (true)
     {
@@ -5719,11 +5736,7 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
 	}
       binary_loc = c_parser_peek_token (parser)->location;
       while (oprec <= stack[sp].prec)
-	{
-	  if (sp == 0)
-	    goto out;
-	  POP;
-	}
+	POP;
       c_parser_consume_token (parser);
       switch (ocode)
 	{
@@ -9521,10 +9534,12 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 {
   tree lhs = NULL_TREE, rhs = NULL_TREE, v = NULL_TREE;
   tree lhs1 = NULL_TREE, rhs1 = NULL_TREE;
-  tree stmt, orig_lhs;
+  tree stmt, orig_lhs, unfolded_lhs = NULL_TREE, unfolded_lhs1 = NULL_TREE;
   enum tree_code code = OMP_ATOMIC, opcode = NOP_EXPR;
-  struct c_expr rhs_expr;
+  struct c_expr expr;
+  location_t eloc;
   bool structured_block = false;
+  bool swapped = false;
 
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
@@ -9596,7 +9611,11 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
   /* For structured_block case we don't know yet whether
      old or new x should be captured.  */
 restart:
-  lhs = c_parser_unary_expression (parser).value;
+  eloc = c_parser_peek_token (parser)->location;
+  expr = c_parser_unary_expression (parser);
+  lhs = expr.value;
+  expr = default_function_array_conversion (eloc, expr);
+  unfolded_lhs = expr.value;
   lhs = c_fully_fold (lhs, false, NULL);
   orig_lhs = lhs;
   switch (TREE_CODE (lhs))
@@ -9623,6 +9642,7 @@ restart:
       /* FALLTHROUGH */
     case PREINCREMENT_EXPR:
       lhs = TREE_OPERAND (lhs, 0);
+      unfolded_lhs = NULL_TREE;
       opcode = PLUS_EXPR;
       rhs = integer_one_node;
       break;
@@ -9633,6 +9653,7 @@ restart:
       /* FALLTHROUGH */
     case PREDECREMENT_EXPR:
       lhs = TREE_OPERAND (lhs, 0);
+      unfolded_lhs = NULL_TREE;
       opcode = MINUS_EXPR;
       rhs = integer_one_node;
       break;
@@ -9658,6 +9679,7 @@ restart:
 	      /* This is pre or post increment.  */
 	      rhs = TREE_OPERAND (lhs, 1);
 	      lhs = TREE_OPERAND (lhs, 0);
+	      unfolded_lhs = NULL_TREE;
 	      opcode = NOP_EXPR;
 	      if (code == OMP_ATOMIC_CAPTURE_NEW
 		  && !structured_block
@@ -9672,6 +9694,7 @@ restart:
 	      /* This is pre or post decrement.  */
 	      rhs = TREE_OPERAND (lhs, 1);
 	      lhs = TREE_OPERAND (lhs, 0);
+	      unfolded_lhs = NULL_TREE;
 	      opcode = NOP_EXPR;
 	      if (code == OMP_ATOMIC_CAPTURE_NEW
 		  && !structured_block
@@ -9712,87 +9735,67 @@ restart:
 	  opcode = BIT_XOR_EXPR;
 	  break;
 	case CPP_EQ:
-	  if (structured_block || code == OMP_ATOMIC)
+	  c_parser_consume_token (parser);
+	  eloc = c_parser_peek_token (parser)->location;
+	  expr = c_parser_expr_no_commas (parser, NULL, unfolded_lhs);
+	  rhs1 = expr.value;
+	  switch (TREE_CODE (rhs1))
 	    {
-	      location_t aloc = c_parser_peek_token (parser)->location;
-	      location_t rhs_loc;
-	      enum c_parser_prec oprec = PREC_NONE;
-
-	      c_parser_consume_token (parser);
-	      rhs1 = c_parser_unary_expression (parser).value;
-	      rhs1 = c_fully_fold (rhs1, false, NULL);
-	      if (rhs1 == error_mark_node)
-		goto saw_error;
-	      switch (c_parser_peek_token (parser)->type)
+	    case MULT_EXPR:
+	    case TRUNC_DIV_EXPR:
+	    case PLUS_EXPR:
+	    case MINUS_EXPR:
+	    case LSHIFT_EXPR:
+	    case RSHIFT_EXPR:
+	    case BIT_AND_EXPR:
+	    case BIT_IOR_EXPR:
+	    case BIT_XOR_EXPR:
+	      if (c_tree_equal (TREE_OPERAND (rhs1, 0), unfolded_lhs))
 		{
-		case CPP_SEMICOLON:
-		  if (code == OMP_ATOMIC_CAPTURE_NEW)
-		    {
-		      code = OMP_ATOMIC_CAPTURE_OLD;
-		      v = lhs;
-		      lhs = NULL_TREE;
-		      lhs1 = rhs1;
-		      rhs1 = NULL_TREE;
-		      c_parser_consume_token (parser);
-		      goto restart;
-		    }
-		  c_parser_error (parser,
-				  "invalid form of %<#pragma omp atomic%>");
-		  goto saw_error;
-		case CPP_MULT:
-		  opcode = MULT_EXPR;
-		  oprec = PREC_MULT;
-		  break;
-		case CPP_DIV:
-		  opcode = TRUNC_DIV_EXPR;
-		  oprec = PREC_MULT;
-		  break;
-		case CPP_PLUS:
-		  opcode = PLUS_EXPR;
-		  oprec = PREC_ADD;
-		  break;
-		case CPP_MINUS:
-		  opcode = MINUS_EXPR;
-		  oprec = PREC_ADD;
-		  break;
-		case CPP_LSHIFT:
-		  opcode = LSHIFT_EXPR;
-		  oprec = PREC_SHIFT;
-		  break;
-		case CPP_RSHIFT:
-		  opcode = RSHIFT_EXPR;
-		  oprec = PREC_SHIFT;
-		  break;
-		case CPP_AND:
-		  opcode = BIT_AND_EXPR;
-		  oprec = PREC_BITAND;
-		  break;
-		case CPP_OR:
-		  opcode = BIT_IOR_EXPR;
-		  oprec = PREC_BITOR;
-		  break;
-		case CPP_XOR:
-		  opcode = BIT_XOR_EXPR;
-		  oprec = PREC_BITXOR;
-		  break;
-		default:
-		  c_parser_error (parser,
-				  "invalid operator for %<#pragma omp atomic%>");
-		  goto saw_error;
+		  opcode = TREE_CODE (rhs1);
+		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL);
+		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL);
+		  goto stmt_done;
 		}
-	      loc = aloc;
-	      c_parser_consume_token (parser);
-	      rhs_loc = c_parser_peek_token (parser)->location;
-	      if (commutative_tree_code (opcode))
-		oprec = (enum c_parser_prec) (oprec - 1);
-	      rhs_expr = c_parser_binary_expression (parser, NULL, oprec);
-	      rhs_expr = default_function_array_read_conversion (rhs_loc,
-								 rhs_expr);
-	      rhs = rhs_expr.value;
-	      rhs = c_fully_fold (rhs, false, NULL);
-	      goto stmt_done; 
+	      if (c_tree_equal (TREE_OPERAND (rhs1, 1), unfolded_lhs))
+		{
+		  opcode = TREE_CODE (rhs1);
+		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL);
+		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL);
+		  swapped = !commutative_tree_code (opcode);
+		  goto stmt_done;
+		}
+	      break;
+	    case ERROR_MARK:
+	      goto saw_error;
+	    default:
+	      break;
 	    }
-	  /* FALLTHROUGH */
+	  if (c_parser_peek_token (parser)->type == CPP_SEMICOLON)
+	    {
+	      if (structured_block && code == OMP_ATOMIC_CAPTURE_NEW)
+		{
+		  code = OMP_ATOMIC_CAPTURE_OLD;
+		  v = lhs;
+		  lhs = NULL_TREE;
+		  expr = default_function_array_read_conversion (eloc, expr);
+		  unfolded_lhs1 = expr.value;
+		  lhs1 = c_fully_fold (unfolded_lhs1, false, NULL);
+		  rhs1 = NULL_TREE;
+		  c_parser_consume_token (parser);
+		  goto restart;
+		}
+	      if (structured_block)
+		{
+		  opcode = NOP_EXPR;
+		  expr = default_function_array_read_conversion (eloc, expr);
+		  rhs = c_fully_fold (expr.value, false, NULL);
+		  rhs1 = NULL_TREE;
+		  goto stmt_done;
+		}
+	    }
+	  c_parser_error (parser, "invalid form of %<#pragma omp atomic%>");
+	  goto saw_error;
 	default:
 	  c_parser_error (parser,
 			  "invalid operator for %<#pragma omp atomic%>");
@@ -9803,12 +9806,10 @@ restart:
 	 c_finish_omp_atomic.  */
       loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
-      {
-	location_t rhs_loc = c_parser_peek_token (parser)->location;
-	rhs_expr = c_parser_expression (parser);
-	rhs_expr = default_function_array_read_conversion (rhs_loc, rhs_expr);
-      }
-      rhs = rhs_expr.value;
+      eloc = c_parser_peek_token (parser)->location;
+      expr = c_parser_expression (parser);
+      expr = default_function_array_read_conversion (eloc, expr);
+      rhs = expr.value;
       rhs = c_fully_fold (rhs, false, NULL);
       break;
     }
@@ -9823,7 +9824,11 @@ stmt_done:
 	goto saw_error;
       if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
 	goto saw_error;
-      lhs1 = c_parser_unary_expression (parser).value;
+      eloc = c_parser_peek_token (parser)->location;
+      expr = c_parser_unary_expression (parser);
+      lhs1 = expr.value;
+      expr = default_function_array_read_conversion (eloc, expr);
+      unfolded_lhs1 = expr.value;
       lhs1 = c_fully_fold (lhs1, false, NULL);
       if (lhs1 == error_mark_node)
 	goto saw_error;
@@ -9834,8 +9839,16 @@ stmt_done:
       c_parser_require (parser, CPP_CLOSE_BRACE, "expected %<}%>");
     }
 done:
-  stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1,
-			      false);
+  if (unfolded_lhs && unfolded_lhs1
+      && !c_tree_equal (unfolded_lhs, unfolded_lhs1))
+    {
+      error ("%<#pragma omp atomic capture%> uses two different "
+	     "expressions for memory");
+      stmt = error_mark_node;
+    }
+  else
+    stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1,
+				swapped);
   if (stmt != error_mark_node)
     add_stmt (stmt);
 
@@ -10003,8 +10016,8 @@ c_parser_omp_for_loop (location_t loc,
       if (c_parser_next_token_is_not (parser, CPP_SEMICOLON))
 	{
 	  location_t cond_loc = c_parser_peek_token (parser)->location;
-	  struct c_expr cond_expr = c_parser_binary_expression (parser, NULL,
-								PREC_NONE);
+	  struct c_expr cond_expr
+	    = c_parser_binary_expression (parser, NULL, NULL_TREE);
 
 	  cond = cond_expr.value;
 	  cond = c_objc_common_truthvalue_conversion (cond_loc, cond);

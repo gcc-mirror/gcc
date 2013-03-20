@@ -26769,7 +26769,7 @@ restart:
 	  switch (token->type)
 	    {
 	    case CPP_SEMICOLON:
-	      if (code == OMP_ATOMIC_CAPTURE_NEW)
+	      if (structured_block && code == OMP_ATOMIC_CAPTURE_NEW)
 		{
 		  code = OMP_ATOMIC_CAPTURE_OLD;
 		  v = lhs;

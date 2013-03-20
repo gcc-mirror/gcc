@@ -1,5 +1,8 @@
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_omp_atomic): Never restart unless
+	structured_block is true.
+
 	* parser.c (cp_parser_binary_expression): Handle no_toplevel_fold_p
 	even for binary operations other than comparison.
 	(cp_parser_omp_atomic): Handle parsing OpenMP 4.0 atomics.

@@ -1,5 +1,7 @@
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/atomic-15.c: Adjust for C diagnostics.
+
 	* c-c++-common/gomp/atomic-15.c: Remove error test that is now
 	valid in OpenMP 4.0.
 
