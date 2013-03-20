@@ -2578,17 +2578,17 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	       since a single object can have multiple reads.  */
 	    dtp->u.p.expanded_read = 0;
 
-	    /* Now loop over the components. Update the component pointer
-	       with the return value from nml_write_obj.  This loop jumps
-	       past nested derived types by testing if the potential
-	       component name contains '%'.  */
+	    /* Now loop over the components.  */
 
 	    for (cmp = nl->next;
 		 cmp &&
-		   !strncmp (cmp->var_name, obj_name, obj_name_len) &&
-		   !strchr (cmp->var_name + obj_name_len, '%');
+		   !strncmp (cmp->var_name, obj_name, obj_name_len);
 		 cmp = cmp->next)
 	      {
+		/* Jump over nested derived type by testing if the potential
+		   component name contains '%'.  */
+		if (strchr (cmp->var_name + obj_name_len, '%'))
+		    continue;
 
 		if (!nml_read_obj (dtp, cmp, (index_type)(pdata - nl->mem_pos),
 				  pprev_nl, nml_err_msg, nml_err_msg_size,
@@ -2901,7 +2901,8 @@ get_name:
 	  goto nml_err_ret;
 	}
 
-      if (*pprev_nl == NULL || !component_flag)
+      /* Don't move first_nl further in the list if a qualifier was found.  */
+      if ((*pprev_nl == NULL && !qualifier_flag) || !component_flag)
 	first_nl = nl;
 
       root_nl = nl;
