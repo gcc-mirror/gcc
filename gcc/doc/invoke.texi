@@ -741,6 +741,7 @@ Objective-C and Objective-C++ Dialects}.
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2 @gol
 -mips64  -mips64r2 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
+-minterlink-compressed -mno-interlink-compressed @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
@@ -748,6 +749,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-float -msingle-float  -mdouble-float  @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
+-mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -15902,6 +15904,7 @@ The processor names are:
 @samp{1004kc}, @samp{1004kf2_1}, @samp{1004kf1_1},
 @samp{loongson2e}, @samp{loongson2f}, @samp{loongson3a},
 @samp{m4k},
+@samp{m14k}, @samp{m14ke}, @samp{m14kec},
 @samp{octeon}, @samp{octeon+}, @samp{octeon2},
 @samp{orion},
 @samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},
@@ -16015,17 +16018,25 @@ Generate MIPS16 code on alternating functions.  This option is provided
 for regression testing of mixed MIPS16/non-MIPS16 code generation, and is
 not intended for ordinary use in compiling user code.
 
+@item -minterlink-compressed
+@item -mno-interlink-compressed
+@opindex minterlink-compressed
+@opindex mno-interlink-compressed
+Require (do not require) that code using the standard (uncompressed) MIPS ISA
+be link-compatible with MIPS16 and microMIPS code, and vice versa.
+
+For example, code using the standard ISA encoding cannot jump directly
+to MIPS16 or microMIPS code; it must either use a call or an indirect jump.
+@option{-minterlink-compressed} therefore disables direct jumps unless GCC
+knows that the target of the jump is not compressed.
+
 @item -minterlink-mips16
 @itemx -mno-interlink-mips16
 @opindex minterlink-mips16
 @opindex mno-interlink-mips16
-Require (do not require) that non-MIPS16 code be link-compatible with
-MIPS16 code.
-
-For example, non-MIPS16 code cannot jump directly to MIPS16 code;
-it must either use a call or an indirect jump.  @option{-minterlink-mips16}
-therefore disables direct jumps unless GCC knows that the target of the
-jump is not MIPS16.
+Aliases of @option{-minterlink-compressed} and
+@option{-mno-interlink-compressed}.  These options predate the microMIPS ASE
+and are retained for backwards compatiblity.
 
 @item -mabi=32
 @itemx -mabi=o64
@@ -16239,6 +16250,16 @@ hardware floating-point support to be enabled.
 @opindex mno-mips3d
 Use (do not use) the MIPS-3D ASE@.  @xref{MIPS-3D Built-in Functions}.
 The option @option{-mips3d} implies @option{-mpaired-single}.
+
+@item -mmicromips
+@itemx -mno-micromips
+@opindex mmicromips
+@opindex mno-mmicromips
+Generate (do not generate) microMIPS code.
+
+MicroMIPS code generation can also be controlled on a per-function basis
+by means of @code{micromips} and @code{nomicromips} attributes.
+@xref{Function Attributes}, for more information.
 
 @item -mmt
 @itemx -mno-mt

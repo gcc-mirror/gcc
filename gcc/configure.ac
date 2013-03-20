@@ -4048,6 +4048,12 @@ LCF0:
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
 
+    gcc_GAS_CHECK_FEATURE([.micromips support],
+      gcc_cv_as_micromips_support,,,
+      [.set micromips],,
+      [AC_DEFINE(HAVE_GAS_MICROMIPS, 1,
+          [Define if your assembler supports the .set micromips directive])])
+
     gcc_GAS_CHECK_FEATURE([.dtprelword support],
       gcc_cv_as_mips_dtprelword, [2,18,0],,
       [.section .tdata,"awT",@progbits
