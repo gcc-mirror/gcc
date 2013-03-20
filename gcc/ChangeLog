@@ -1,5 +1,15 @@
 2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*movoi_internal_avx): Emit insn template
+	depending on type attribute.
+	(*movti_internal): Ditto.
+	(*movtf_internal): Ditto.
+	(*movxf_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+
+2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*movti_internal): Set prefix attribute to
 	maybe_vex for sselog1 and ssemov types.
 	(*movdi_internal): Reorder operand constraints.
