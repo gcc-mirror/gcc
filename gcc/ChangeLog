@@ -1,5 +1,12 @@
 2013-03-20  Richard Biener  <rguenther@suse.de>
 
+	* cfgloop.c (verify_loop_structure): Streamline and avoid
+	ICEing on corrupt loop tree.
+	* graph.c (draw_cfg_nodes_for_loop): Avoid ICEing on corrupt
+	loop tree.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-loop-manip.c (slpeel_can_duplicate_loop_p): Do not
 	check whether an SSA update is needed.
 
