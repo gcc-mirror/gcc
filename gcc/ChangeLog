@@ -1,3 +1,9 @@
+2013-03-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Steven Bosscher <steven@gcc.gnu.org>
+
+	PR rtl-optimization/56605
+	* loop-iv.c (implies_p): Handle equal RTXs and subregs.
+
 2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/56656
