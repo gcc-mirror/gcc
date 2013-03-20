@@ -1,5 +1,31 @@
 2013-03-20  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (struct variable_info): Add pointer
+	to the first field of an aggregate with sub-vars.  Make
+	this and the pointer to the next subfield its ID.
+	(vi_next): New function.
+	(nothing_id, anything_id, readonly_id, escaped_id, nonlocal_id,
+	storedanything_id, integer_id): Increment by one.
+	(new_var_info, get_call_vi, lookup_call_clobber_vi,
+	get_call_clobber_vi): Adjust.
+	(solution_set_expand): Simplify and speedup.
+	(solution_set_add): Inline into ...
+	(set_union_with_increment): ... this.  Adjust accordingly.
+	(do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+	(do_complex_constraint): Simplify.
+	(build_pred_graph): Adjust.
+	(solve_graph): Likewise.  Simplify and speedup.
+	(get_constraint_for_ssa_var, get_constraint_for_ptr_offset,
+	get_constraint_for_component_ref, get_constraint_for_1,
+	first_vi_for_offset, first_or_preceding_vi_for_offset,
+	create_function_info_for, create_variable_info_for_1,
+	create_variable_info_for, intra_create_variable_infos): Adjust.
+	(init_base_vars): Push NULL for ID zero.
+	(compute_points_to_sets): Adjust.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
 	* cfgloop.c (verify_loop_structure): Streamline and avoid
 	ICEing on corrupt loop tree.
 	* graph.c (draw_cfg_nodes_for_loop): Avoid ICEing on corrupt
