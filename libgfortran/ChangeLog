@@ -1,5 +1,13 @@
 2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
 
+	PR libfortran/51825
+	* io/list_read.c (nml_read_obj): Don't end the component loop on a
+	nested derived type, but continue with the next loop iteration.
+	(nml_get_obj_data): Don't move the first_nl pointer further in the
+	list if a qualifier was found.
+
+2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
 	PR libfortran/48618
 	* io/open.c (st_open): Raise error for unit number < 0 only if
 	unit number does not exist already.
