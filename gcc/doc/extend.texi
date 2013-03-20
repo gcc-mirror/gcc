@@ -3055,6 +3055,25 @@ not that within individual functions.  Mixed MIPS16 and non-MIPS16 code
 may interact badly with some GCC extensions such as @code{__builtin_apply}
 (@pxref{Constructing Calls}).
 
+@item micromips/nomicromips
+@cindex @code{micromips} attribute
+@cindex @code{nomicromips} attribute
+
+On MIPS targets, you can use the @code{micromips} and @code{nomicromips}
+function attributes to locally select or turn off microMIPS code generation.
+A function with the @code{micromips} attribute is emitted as microMIPS code,
+while microMIPS code generation is disabled for functions with the
+@code{nomicromips} attribute.  These attributes override the
+@option{-mmicromips} and @option{-mno-micromips} options on the command line
+(@pxref{MIPS Options}).
+
+When compiling files containing mixed microMIPS and non-microMIPS code, the
+preprocessor symbol @code{__mips_micromips} reflects the setting on the
+command line,
+not that within individual functions.  Mixed microMIPS and non-microMIPS code
+may interact badly with some GCC extensions such as @code{__builtin_apply}
+(@pxref{Constructing Calls}).
+
 @item model (@var{model-name})
 @cindex function addressability on the M32R/D
 @cindex variable addressability on the IA-64
@@ -3156,6 +3175,13 @@ Use this attribute on the Blackfin to indicate that the specified function
 is an NMI handler.  The compiler generates function entry and
 exit sequences suitable for use in an NMI handler when this
 attribute is present.
+
+@item nocompression
+@cindex @code{nocompression} attribute
+On MIPS targets, you can use the @code{nocompression} function attribute
+to locally turn off MIPS16 and microMIPS code generation.  This attribute
+overrides the @option{-mips16} and @option{-mmicromips} options on the
+command line (@pxref{MIPS Options}).
 
 @item no_instrument_function
 @cindex @code{no_instrument_function} function attribute

@@ -51,6 +51,11 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
   _Unwind_Ptr new_cfa, reg_offset;
   int i;
 
+  /* A MIPS16 or microMIPS frame.  Signal frames always use the standard
+     ISA encoding.  */
+  if ((_Unwind_Ptr) pc & 3)
+    return _URC_END_OF_STACK;
+
   /* 24021061 li v0, 0x1061 (rt_sigreturn)*/
   /* 0000000c syscall    */
   /*    or */

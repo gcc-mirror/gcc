@@ -1,3 +1,31 @@
+2013-03-20  Catherine Moore  <clm@codesourcery.com>
+	    Richard Sandiford <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp: Add microMIPS support.
+	* gcc.target/mips/umips-movep-2.c: New test.
+	* gcc.target/mips/umips-lwp-2.c: New test.
+	* gcc.target/mips/umips-swp-5.c: New test.
+	* gcc.target/mips/umips-constraints-1.c: New test.
+	* gcc.target/mips/umips-lwp-3.c: New test.
+	* gcc.target/mips/umips-swp-6.c: New test.
+	* gcc.target/mips/umips-constraints-2.c: New test.
+	* gcc.target/mips/umips-save-restore-1.c: New test.
+	* gcc.target/mips/umips-lwp-4.c: New test.
+	* gcc.target/mips/umips-swp-7.c: New test.
+	* gcc.target/mips/umips-save-restore-2.c: New test.
+	* gcc.target/mips/umips-lwp-swp-volatile.c: New test.
+	* gcc.target/mips/umips-lwp-5.c: New test.
+	* gcc.target/mips/umips-save-restore-3.c: New test.
+	* gcc.target/mips/umips-lwp-6.c: New test.
+	* gcc.target/mips/umips-swp-1.c: New test.
+	* gcc.target/mips/umips-lwp-7.c: New test.
+	* gcc.target/mips/umips-swp-2.c: New test.
+	* gcc.target/mips/umips-lwp-8.c: New test.
+	* gcc.target/mips/umips-swp-3.c: New test.
+	* gcc.target/mips/umips-movep-1.c: New test.
+	* gcc.target/mips/umips-lwp-1.c: New test.
+	* gcc.target/mips/umips-swp-4.c: New test.
+
 2013-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56661

@@ -1,3 +1,11 @@
+2013-03-20  Catherine Moore  <clm@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips16.S:  Don't build for microMIPS.
+	* config/mips/linux-unwind.h: Handle microMIPS frame.
+	* config/mips/crtn.S (fini, init): New labels.
+
 2013-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53265
