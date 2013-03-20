@@ -329,6 +329,11 @@
       && mode != DImode)
     return 1;
 
+  /* The constant 0.0 is easy under VSX.  */
+  if ((mode == SFmode || mode == DFmode || mode == SDmode || mode == DDmode)
+      && VECTOR_UNIT_VSX_P (DFmode) && op == CONST0_RTX (mode))
+    return 1;
+
   if (DECIMAL_FLOAT_MODE_P (mode))
     return 0;
 
@@ -551,6 +556,28 @@
 			/* Omit testing REG_P (XEXP (op, 0)).  */
 			&& REG_P (XEXP (op, 1)))")
        (match_operand 0 "address_operand")))
+
+;; Return 1 if the operand is an index-form address.
+(define_special_predicate "indexed_address"
+  (match_test "(GET_CODE (op) == PLUS
+		&& REG_P (XEXP (op, 0))
+		&& REG_P (XEXP (op, 1)))"))
+
+;; Return 1 if the operand is a MEM with an update-form address. This may
+;; also include update-indexed form.
+(define_special_predicate "update_address_mem"
+  (match_test "(MEM_P (op)
+		&& (GET_CODE (XEXP (op, 0)) == PRE_INC
+		    || GET_CODE (XEXP (op, 0)) == PRE_DEC
+		    || GET_CODE (XEXP (op, 0)) == PRE_MODIFY))"))
+
+;; Return 1 if the operand is a MEM with an update-indexed-form address. Note
+;; that PRE_INC/PRE_DEC will always be non-indexed (i.e. non X-form) since the
+;; increment is based on the mode size and will therefor always be a const.
+(define_special_predicate "update_indexed_address_mem"
+  (match_test "(MEM_P (op)
+		&& GET_CODE (XEXP (op, 0)) == PRE_MODIFY
+		&& indexed_address (XEXP (XEXP (op, 0), 1), mode))"))
 
 ;; Used for the destination of the fix_truncdfsi2 expander.
 ;; If stfiwx will be used, the result goes to memory; otherwise,

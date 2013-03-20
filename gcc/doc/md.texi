@@ -2075,8 +2075,23 @@ VSX vector register to hold vector double data
 @item wf
 VSX vector register to hold vector float data
 
+@item wg
+If @option{-mmfpgpr} was used, a floating point register
+
+@item wl
+If the LFIWAX instruction is enabled, a floating point register
+
 @item ws
 VSX vector register to hold scalar float data
+
+@item wt
+VSX vector register to hold 128 bit integer
+
+@item wx
+If the STFIWX instruction is enabled, a floating point register
+
+@item wz
+If the LFIWZX instruction is enabled, a floating point register
 
 @item wa
 Any VSX register
