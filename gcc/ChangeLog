@@ -1,3 +1,9 @@
+2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56656
+	* config/i386/i386.md (*movdi_internal): Handle broken assemblers
+	that require movd instead of movq.
+
 2013-03-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (struct variable_info): Add pointer
