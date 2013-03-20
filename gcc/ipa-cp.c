@@ -1622,9 +1622,12 @@ devirtualization_time_bonus (struct cgraph_node *node,
 static int
 hint_time_bonus (inline_hints hints)
 {
+  int result = 0;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
-    return PARAM_VALUE (PARAM_IPA_CP_LOOP_HINT_BONUS);
-  return 0;
+    result += PARAM_VALUE (PARAM_IPA_CP_LOOP_HINT_BONUS);
+  if (hints & INLINE_HINT_array_index)
+    result += PARAM_VALUE (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS);
+  return result;
 }
 
 /* Return true if cloning NODE is a good idea, given the estimated TIME_BENEFIT
