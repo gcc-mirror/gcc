@@ -1,5 +1,12 @@
 2013-03-20  Tobias Burnus  <burnus@net-b.de>
 
+	* libgomp.texi (Environment Variables): Minor cleanup,
+	update section refs to OpenMP 4.0rc2.
+	(OMP_DISPLAY_ENV, GOMP_SPINCOUNT): Document these
+	environment variables.
+
+2013-03-20  Tobias Burnus  <burnus@net-b.de>
+
 	* env.c (handle_omp_display_env): New function.
 	(initialize_env): Use it.
 
