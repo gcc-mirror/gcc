@@ -1,3 +1,9 @@
+2013-03-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/56355
+	* fold-const.c (tree_binary_nonnegative_warnv_p) <MULT_EXPR>:
+	Also handle integers with undefined overflow.
+
 2013-03-20  Catherine Moore  <clm@codesourcery.com>
 	    Maciej W. Rozycki  <macro@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>

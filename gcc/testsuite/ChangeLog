@@ -1,3 +1,8 @@
+2013-03-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/56355
+	* gcc.dg/pr56355-1.c: New file.
+
 2013-03-20  Catherine Moore  <clm@codesourcery.com>
 	    Richard Sandiford <rdsandiford@googlemail.com>
 
