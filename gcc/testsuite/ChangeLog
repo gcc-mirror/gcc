@@ -1,3 +1,8 @@
+2013-03-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR rtl-optimization/56605
+	* gcc.target/powerpc/pr56605.c: New.
+
 2013-03-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR fortran/54932
