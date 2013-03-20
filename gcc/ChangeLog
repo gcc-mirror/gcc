@@ -1,3 +1,9 @@
+2013-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56635
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement_1): Give up
+	if lhs of then_assign and else_assign don't have compatible types.
+
 2013-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56640
