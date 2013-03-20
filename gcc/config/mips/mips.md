@@ -4268,7 +4268,7 @@
 
 (define_insn "*movdi_64bit"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*d,*m,*a,*d,*B*C*D,*B*C*D,*d,*m")
-	(match_operand:DI 1 "move_operand" "d,U,T,m,dJ,*d*J,*m,*f,*f,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
+	(match_operand:DI 1 "move_operand" "d,Yd,Yf,m,dJ,*d*J,*m,*f,*f,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
   "TARGET_64BIT && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -4278,7 +4278,7 @@
 
 (define_insn "*movdi_64bit_mips16"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,d,m,*d")
-	(match_operand:DI 1 "move_operand" "d,d,y,K,N,U,kf,m,d,*a"))]
+	(match_operand:DI 1 "move_operand" "d,d,y,K,N,Yd,kf,m,d,*a"))]
   "TARGET_64BIT && TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
@@ -4346,7 +4346,7 @@
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:IMOVE32 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*d,*m,*d,*z,*a,*d,*B*C*D,*B*C*D,*d,*m")
-	(match_operand:IMOVE32 1 "move_operand" "d,U,T,m,dJ,*d*J,*m,*f,*f,*z,*d,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
+	(match_operand:IMOVE32 1 "move_operand" "d,Yd,Yf,m,dJ,*d*J,*m,*f,*f,*z,*d,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], <MODE>mode)
        || reg_or_0_operand (operands[1], <MODE>mode))"
@@ -4356,7 +4356,7 @@
 
 (define_insn "*mov<mode>_mips16"
   [(set (match_operand:IMOVE32 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,d,m,*d")
-	(match_operand:IMOVE32 1 "move_operand" "d,d,y,K,N,U,kf,m,d,*a"))]
+	(match_operand:IMOVE32 1 "move_operand" "d,d,y,K,N,Yd,kf,m,d,*a"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"

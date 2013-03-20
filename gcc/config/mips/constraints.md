@@ -170,22 +170,6 @@
   (and (match_operand 0 "call_insn_operand")
        (match_test "CONSTANT_P (op)")))
 
-(define_constraint "T"
-  "@internal
-   A constant @code{move_operand} that cannot be safely loaded into @code{$25}
-   using @code{la}."
-  (and (match_operand 0 "move_operand")
-       (match_test "CONSTANT_P (op)")
-       (match_test "mips_dangerous_for_la25_p (op)")))
-
-(define_constraint "U"
-  "@internal
-   A constant @code{move_operand} that can be safely loaded into @code{$25}
-   using @code{la}."
-  (and (match_operand 0 "move_operand")
-       (match_test "CONSTANT_P (op)")
-       (not (match_test "mips_dangerous_for_la25_p (op)"))))
-
 (define_memory_constraint "W"
   "@internal
    A memory address based on a member of @code{BASE_REG_CLASS}.  This is
@@ -219,6 +203,22 @@
 (define_constraint "Yb"
    "@internal"
    (match_operand 0 "qi_mask_operand"))
+
+(define_constraint "Yd"
+  "@internal
+   A constant @code{move_operand} that can be safely loaded into @code{$25}
+   using @code{la}."
+  (and (match_operand 0 "move_operand")
+       (match_test "CONSTANT_P (op)")
+       (not (match_test "mips_dangerous_for_la25_p (op)"))))
+
+(define_constraint "Yf"
+  "@internal
+   A constant @code{move_operand} that cannot be safely loaded into @code{$25}
+   using @code{la}."
+  (and (match_operand 0 "move_operand")
+       (match_test "CONSTANT_P (op)")
+       (match_test "mips_dangerous_for_la25_p (op)")))
 
 (define_constraint "Yh"
    "@internal"

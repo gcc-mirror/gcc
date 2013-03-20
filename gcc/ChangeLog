@@ -1,3 +1,12 @@
+2013-03-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/constraints.md (T): Rename to...
+	(Yf): ...this.
+	(U): Rename to...
+	(Yd): ...this.
+	* config/mips/mips.md (*movdi_64bit, *movdi_64bit_mips16)
+	(*mov<mode>_internal, *mov<mode>_mips16): Update accordingly.
+
 2013-03-19  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (*sub<mode>3_carryin): New pattern.
