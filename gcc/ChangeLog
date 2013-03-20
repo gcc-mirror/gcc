@@ -1,3 +1,309 @@
+2013-03-20  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/predicates.md (indexed_address, update_address_mem
+	update_indexed_address_mem): New predicates.
+	* config/rs6000/vsx.md (vsx_extract_<mode>_zero): Set correct "type"
+	attribute for load/store instructions.
+	* config/rs6000/dfp.md (movsd_store): Likewise.
+	(movsd_load): Likewise.
+	* config/rs6000/rs6000.md (zero_extend<mode>di2_internal1): Likewise.
+	(unnamed HI->DI extend define_insn): Likewise.
+	(unnamed SI->DI extend define_insn): Likewise.
+	(unnamed QI->SI extend define_insn): Likewise.
+	(unnamed QI->HI extend define_insn): Likewise.
+	(unnamed HI->SI extend define_insn): Likewise.
+	(unnamed HI->SI extend define_insn): Likewise.
+	(extendsfdf2_fpr): Likewise.
+	(movsi_internal1): Likewise.
+	(movsi_internal1_single): Likewise.
+	(movhi_internal): Likewise.
+	(movqi_internal): Likewise.
+	(movcc_internal1): Correct mnemonic for stw insn. Set correct "type"
+	attribute for load/store instructions.
+	(mov<mode>_hardfloat): Set correct "type" attribute for load/store
+	instructions.
+	(mov<mode>_softfloat): Likewise.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+	(mov<mode>_softfloat64): Likewise.
+	(movdi_internal32): Likewise.
+	(movdi_internal64): Likewise.
+	(probe_stack_<mode>): Likewise.
+
+2013-03-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (VEC_R): Add 32-bit integer, binary
+	floating point, and decimal floating point to reload iterator.
+
+	* config/rs6000/constraints.md (wl constraint): New constraints to
+	return FLOAT_REGS if certain options are used to reduce the number
+	of separate patterns that exist in the file.
+	(wx constraint): Likewise.
+	(wz constraint): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): If
+	-mdebug=reg, print wg, wl, wx, and wz constraints.
+	(rs6000_init_hard_regno_mode_ok): Initialize new constraints.
+	Initialize the reload functions for 64-bit binary/decimal floating
+	point types.
+	(reg_offset_addressing_ok_p): If we are on a power7 or later, use
+	LFIWZX and STFIWX to load/store 32-bit decimal types, and don't
+	create the buffer on the stack to overcome not having a 32-bit
+	load and store.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_memory_needed_rtx): Likewise.
+	(rs6000_alloc_sdmode_stack_slot): Likewise.
+	(rs6000_preferred_reload_class): On VSX, we can create SFmode 0.0f
+	via xxlxor, just like DFmode 0.0.
+
+	* config/rs6000/rs6000.h (TARGET_NO_SDMODE_STACK): New macro,
+	define as 1 if we are running on a power7 or newer.
+	(enum r6000_reg_class_enum): Add new constraints.
+
+	* config/rs6000/dfp.md (movsd): Delete, combine with binary
+	floating point moves in rs6000.md.  Combine power6x (mfpgpr) moves
+	with other moves by using conditional constraits (wg).  Use LFIWZX
+	and STFIWX for loading SDmode on power7.  Use xxlxor to create
+	0.0f.
+	(movsd splitter): Likewise.
+	(movsd_hardfloat): Likewise.
+	(movsd_softfloat): Likewise.
+
+	* config/rs6000/rs6000.md (FMOVE32): New iterators to combine
+	binary and decimal floating point moves.
+	(fmove_ok): New attributes to combine binary and decimal floating
+	point moves, and to combine power6x (mfpgpr) moves along normal
+	floating moves.
+	(real_value_to_target): Likewise.
+	(f32_lr): Likewise.
+	(f32_lm): Likewise.
+	(f32_li): Likewise.
+	(f32_sr): Likewise.
+	(f32_sm): Likewise.
+	(f32_si): Likewise.
+	(movsf): Combine binary and decimal floating point moves.  Combine
+	power6x (mfpgpr) moves with other moves by using conditional
+	constraits (wg).  Use LFIWZX and STFIWX for loading SDmode on
+	power7.
+	(mov<mode> for SFmode/SDmode); Likewise.
+	(SFmode/SDmode splitters): Likewise.
+	(movsf_hardfloat): Likewise.
+	(mov<mode>_hardfloat for SFmode/SDmode): Likewise.
+	(movsf_softfloat): Likewise.
+	(mov<mode>_softfloat for SFmode/SDmode): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wl,
+	wx and wz constraints.
+
+	* config/rs6000/constraints.md (wg constraint): New constraint to
+	return FLOAT_REGS if -mmfpgpr (power6x) was used.
+
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add wg
+	constraint.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): If
+	-mdebug=reg, print wg, wl, wx, and wz constraints.
+	(rs6000_init_hard_regno_mode_ok): Initialize new constraints.
+	Initialize the reload functions for 64-bit binary/decimal floating
+	point types.
+	(reg_offset_addressing_ok_p): If we are on a power7 or later, use
+	LFIWZX and STFIWX to load/store 32-bit decimal types, and don't
+	create the buffer on the stack to overcome not having a 32-bit
+	load and store.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_memory_needed_rtx): Likewise.
+	(rs6000_alloc_sdmode_stack_slot): Likewise.
+	(rs6000_preferred_reload_class): On VSX, we can create SFmode 0.0f
+	via xxlxor, just like DFmode 0.0.
+
+
+	* config/rs6000/dfp.md (movdd): Delete, combine with binary
+	floating point moves in rs6000.md.  Combine power6x (mfpgpr) moves
+	with other moves by using conditional constraits (wg).  Use LFIWZX
+	and STFIWX for loading SDmode on power7.
+	(movdd splitters): Likewise.
+	(movdd_hardfloat32): Likewise.
+	(movdd_softfloat32): Likewise.
+	(movdd_hardfloat64_mfpgpr): Likewise.
+	(movdd_hardfloat64): Likewise.
+	(movdd_softfloat64): Likewise.
+
+	* config/rs6000/rs6000.md (FMOVE64): New iterators to combine
+	64-bit binary and decimal floating point moves.
+	(FMOVE64X): Likewise.
+	(movdf): Combine 64-bit binary and decimal floating point moves.
+	Combine power6x (mfpgpr) moves with other moves by using
+	conditional constraits (wg).
+	(mov<mode> for DFmode/DDmode): Likewise.
+	(DFmode/DDmode splitters): Likewise.
+	(movdf_hardfloat32): Likewise.
+	(mov<mode>_hardfloat32 for DFmode/DDmode): Likewise.
+	(movdf_softfloat32): Likewise.
+	(movdf_hardfloat64_mfpgpr): Likewise.
+	(movdf_hardfloat64): Likewise.
+	(mov<mode>_hardfloat64 for DFmode/DDmode): Likewise.
+	(movdf_softfloat64): Likewise.
+	(mov<mode>_softfloat64 for DFmode/DDmode): Likewise.
+	(reload_<mode>_load): Move to later in the file so they aren't in
+	the middle of the floating point move insns.
+	(reload_<mode>_store): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wg
+	constraint.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print out wg
+	constraint if -mdebug=reg.
+	(rs6000_initi_hard_regno_mode_ok): Enable wg constraint if
+	-mfpgpr.  Enable using dd reload support if needed.
+
+	* config/rs6000/dfp.md (movtd): Delete, combine with 128-bit
+	binary and decimal floating point moves in rs6000.md.
+	(movtd_internal): Likewise.
+
+	* config/rs6000/rs6000.md (FMOVE128): Combine 128-bit binary and
+	decimal floating point moves.
+	(movtf): Likewise.
+	(movtf_internal): Likewise.
+	(mov<mode>_internal, TDmode/TFmode): Likewise.
+	(movtf_softfloat): Likewise.
+	(mov<mode>_softfloat, TDmode/TFmode): Likewise.
+
+	* config/rs6000/rs6000.md (movdi_mfpgpr): Delete, combine with
+	movdi_internal64, using wg constraint for move direct operations.
+	(movdi_internal64): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print
+	MODES_TIEABLE_P for selected modes.  Print the numerical value of
+	the various virtual registers. Use GPR/FPR first/last values,
+	instead of hard coding the register numbers.  Print which modes
+	have reload functions registered.
+	(rs6000_option_override_internal): If -mdebug=reg, trace the
+	options settings before/after setting cpu, target and subtarget
+	settings.
+	(rs6000_secondary_reload_trace): Improve the RTL dump for
+	-mdebug=addr and for secondary reload failures in
+	rs6000_secondary_reload_inner.
+	(rs6000_secondary_reload_fail): Likewise.
+	(rs6000_secondary_reload_inner): Likewise.
+
+	* config/rs6000/rs6000.md (FIRST_GPR_REGNO): Add convenience
+	macros for first/last GPR and FPR registers.
+	(LAST_GPR_REGNO): Likewise.
+	(FIRST_FPR_REGNO): Likewise.
+	(LAST_FPR_REGNO): Likewise.
+
+	* config/rs6000/vector.md (mul<mode>3): Use the combined macro
+	VECTOR_UNIT_ALTIVEC_OR_VSX_P instead of separate calls to
+	VECTOR_UNIT_ALTIVEC_P and VECTOR_UNIT_VSX_P.
+	(vcond<mode><mode>): Likewise.
+	(vcondu<mode><mode>): Likewise.
+	(vector_gtu<mode>): Likewise.
+	(vector_gte<mode>): Likewise.
+	(xor<mode>3): Don't allow logical operations on TImode in 32-bit
+	to prevent the compiler from converting DImode operations to
+	TImode.
+	(ior<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(nor<mode>3): Likewise.
+	(andc<mode>3): Likewise.
+
+	* config/rs6000/constraints.md (wt constraint): New constraint
+	that returns VSX_REGS if TImode is allowed in VSX registers.
+
+	* config/rs6000/predicates.md (easy_fp_constant): 0.0f is an easy
+	constant under VSX.
+
+	* config/rs6000/rs6000-modes.def (PTImode): Define, PTImode is
+	similar to TImode, but it is restricted to being in the GPRs.
+
+	* config/rs6000/rs6000.opt (-mvsx-timode): New switch to allow
+	TImode to occupy a single VSX register.
+
+	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Default to
+	-mvsx-timode for power7/power8.
+	(power7 cpu): Likewise.
+	(power8 cpu): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_nregs_internal): Make
+	sure that TFmode/TDmode take up two registers if they are ever
+	allowed in the upper VSX registers.
+	(rs6000_hard_regno_mode_ok): If -mvsx-timode, allow TImode in VSX
+	registers.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_debug_reg_global): Add debugging for PTImode and wt
+	constraint.  Print if LRA is turned on.
+	(rs6000_option_override_internal): Give an error if -mvsx-timode
+	and VSX is not enabled.
+	(invalid_e500_subreg): Handle PTImode, restricting it to GPRs.  If
+	-mvsx-timode, restrict TImode to reg+reg addressing, and PTImode
+	to reg+offset addressing.  Use PTImode when checking offset
+	addresses for validity.
+	(reg_offset_addressing_ok_p): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_legitimate_address_p): Likewise.
+	(rs6000_eliminate_indexed_memrefs): Likewise.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_reload): Likewise.
+	(rs6000_secondary_reload_inner): Handle PTImode.  Allow 64-bit
+	reloads to fpr registers to continue to use reg+offset addressing,
+	but 64-bit reloads to altivec registers need reg+reg addressing.
+	Drop test for PRE_MODIFY, since VSX loads/stores no longer support
+	it.  Treat LO_SUM like a PLUS operation.
+	(rs6000_secondary_reload_class): If type is 64-bit, prefer to use
+	FLOAT_REGS instead of VSX_RGS to allow use of reg+offset
+	addressing.
+	(rs6000_cannot_change_mode_class): Do not allow TImode in VSX
+	registers to share a register with a smaller sized type, since VSX
+	puts scalars in the upper 64-bits.
+	(print_operand): Add support for PTImode.
+	(rs6000_register_move_cost): Use VECTOR_MEM_VSX_P instead of
+	VECTOR_UNIT_VSX_P to catch types that can be loaded in VSX
+	registers, but don't have arithmetic support.
+	(rs6000_memory_move_cost): Add test for VSX.
+	(rs6000_opt_masks): Add -mvsx-timode.
+
+	* config/rs6000/vsx.md (VSm): Change to use 64-bit aligned moves
+	for TImode.
+	(VSs): Likewise.
+	(VSr): Use wt constraint for TImode.
+	(VSv): Drop TImode support.
+	(vsx_movti): Delete, replace with versions for 32-bit and 64-bit.
+	(vsx_movti_64bit): Likewise.
+	(vsx_movti_32bit): Likewise.
+	(vec_store_<mode>): Use VSX iterator instead of vector iterator.
+	(vsx_and<mode>3): Delete use of '?' constraint on inputs, just put
+	one '?' on the appropriate output constraint.  Do not allow TImode
+	logical operations on 32-bit systems.
+	(vsx_ior<mode>3): Likewise.
+	(vsx_xor<mode>3): Likewise.
+	(vsx_one_cmpl<mode>2): Likewise.
+	(vsx_nor<mode>3): Likewise.
+	(vsx_andc<mode>3): Likewise.
+	(vsx_concat_<mode>): Likewise.
+	(vsx_xxpermdi_<mode>): Fix thinko for non V2DF/V2DI modes.
+
+	* config/rs6000/rs6000.h (MASK_VSX_TIMODE): Map from
+	OPTION_MASK_VSX_TIMODE.
+	(enum rs6000_reg_class_enum): Add RS6000_CONSTRAINT_wt.
+	(STACK_SAVEAREA_MODE): Use PTImode instead of TImode.
+
+	* config/rs6000/rs6000.md (INT mode attribute): Add PTImode.
+	(TI2 iterator): New iterator for TImode, PTImode.
+	(wd mode attribute): Add values for vector types.
+	(movti_string): Replace TI move operations with operations for
+	TImode and PTImode.  Add support for TImode being allowed in VSX
+	registers.
+	(mov<mode>_string, TImode/PTImode): Likewise.
+	(movti_ppc64): Likewise.
+	(mov<mode>_ppc64, TImode/PTImode): Likewise.
+	(TI mode splitters): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wt
+	constraint.
+
 2013-03-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/56355

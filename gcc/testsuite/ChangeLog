@@ -1,3 +1,10 @@
+2013-03-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/mmfpgpr.c: New test.
+	* gcc.target/powerpc/sd-vsx.c: Likewise.
+	* gcc.target/powerpc/sd-pwr6.c: Likewise.
+	* gcc.target/powerpc/vsx-float0.c: Likewise.
+
 2013-03-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/56355
