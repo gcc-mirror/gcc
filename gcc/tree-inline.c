@@ -1092,22 +1092,22 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	}
       else if (TREE_CODE (*tp) == MEM_REF)
 	{
-	  /* We need to re-canonicalize MEM_REFs from inline substitutions
-	     that can happen when a pointer argument is an ADDR_EXPR.  */
-	  tree decl = TREE_OPERAND (*tp, 0);
-	  tree *n;
+	  tree ptr = TREE_OPERAND (*tp, 0);
+	  tree type = remap_type (TREE_TYPE (*tp), id);
+	  tree old = *tp;
 
-	  n = (tree *) pointer_map_contains (id->decl_map, decl);
-	  if (n)
-	    {
-	      tree old = *tp;
-	      *tp = fold_build2 (MEM_REF, TREE_TYPE (*tp),
-				 unshare_expr (*n), TREE_OPERAND (*tp, 1));
-	      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
-	      TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
-	      *walk_subtrees = 0;
-	      return NULL;
-	    }
+	  /* We need to re-canonicalize MEM_REFs from inline substitutions
+	     that can happen when a pointer argument is an ADDR_EXPR.
+	     Recurse here manually to allow that.  */
+	  walk_tree (&ptr, copy_tree_body_r, data, NULL);
+	  *tp = fold_build2 (MEM_REF, type,
+			     ptr, TREE_OPERAND (*tp, 1));
+	  TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
+	  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
+	  TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
+	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
+	  *walk_subtrees = 0;
+	  return NULL;
 	}
 
       /* Here is the "usual case".  Copy this tree node, and then
