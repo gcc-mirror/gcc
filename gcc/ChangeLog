@@ -1,3 +1,8 @@
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (copy_tree_body_r): Sync MEM_REF code with
+	remap_gimple_op_r.
+
 2013-03-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Steven Bosscher <steven@gcc.gnu.org>
 
