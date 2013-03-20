@@ -1,3 +1,8 @@
+2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/48618
+	* gfortran.dg/open_negative_unit_1.f90: New.
+
 2013-03-19  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/sbc.c: New test.
