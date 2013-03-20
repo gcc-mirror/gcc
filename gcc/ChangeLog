@@ -1,3 +1,8 @@
+2013-03-20  Martin Jambor  <mjambor@suse.cz>
+
+	* params.def (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS): New parameter.
+	* ipa-cp.c (hint_time_bonus): Add abonus for known array indices.
+
 2013-03-20  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/predicates.md (indexed_address, update_address_mem
