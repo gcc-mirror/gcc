@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -1164,9 +1164,11 @@ find_dummy_types (const void *ptr, void *adata)
   struct godump_container *data = (struct godump_container *) adata;
   const char *type = (const char *) ptr;
   void **slot;
+  void **islot;
 
   slot = htab_find_slot (data->type_hash, type, NO_INSERT);
-  if (slot == NULL)
+  islot = htab_find_slot (data->invalid_hash, type, NO_INSERT);
+  if (slot == NULL || islot != NULL)
     fprintf (go_dump_file, "type _%s struct {}\n", type);
   return true;
 }

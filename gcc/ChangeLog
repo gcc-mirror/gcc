@@ -1,3 +1,11 @@
+2013-03-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2012-12-04  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (find_dummy_types): Output a dummy type if we couldn't
+	output the real type.
+
 2013-03-20  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR bootstrap/56258
