@@ -1,3 +1,18 @@
+2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal): Set prefix attribute to
+	maybe_vex for sselog1 and ssemov types.
+	(*movdi_internal): Reorder operand constraints.
+	(*movsi_internal): Ditto.  Set prefix attribute to
+	maybe_vex for sselog1 and ssemov types.
+	(*movtf_internal): Set prefix attribute to maybe_vex
+	for sselog1 and ssemov types.
+	(*movdf_internal): Ditto.  Set prefix_data16 attribute for
+	DImode ssemov types.  Reorder operand constraints.
+	(*movsf_internal): Set type of alternatives 3,4 to imov.  Set prefix
+	attribute to maybe_vex for sselog1 and ssemov types.  Set prefix_data16
+	attribute for SImode ssemov types.  Reorder operand constraints.
+
 2013-03-20  Martin Jambor  <mjambor@suse.cz>
 
 	* params.def (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS): New parameter.
@@ -324,7 +339,7 @@
 	    Chao-ying Fu <fu@mips.com>
 
 	* doc/extend.texi: (micromips, nomicromips, nocompression):
-	Document new function attributes. 
+	Document new function attributes.
 	* doc/invoke.texi (minterlink-compressed, mmicromips,
 	m14k, m14ke, m14kec): Document new options.
 	(minterlink-mips16): Update documentation.
