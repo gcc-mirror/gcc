@@ -61,14 +61,14 @@
 	movd instead of movq mnemonic for interunit moves.
 	(*movdi_internal): Ditto.
 
-2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-03-21  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64-simd.md (simd_fabd): New Attribute.
 	(abd<mode>_3): New pattern.
 	(aba<mode>_3): New pattern.
 	(fabd<mode>_3): New pattern.
 
-2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-03-21  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64-elf.h (REGISTER_PREFIX): Remove.
 	* config/aarch64/aarch64.c (aarch64_print_operand): Remove all
@@ -179,8 +179,7 @@
 	* config/rs6000/dfp.md (movsd): Delete, combine with binary
 	floating point moves in rs6000.md.  Combine power6x (mfpgpr) moves
 	with other moves by using conditional constraits (wg).  Use LFIWZX
-	and STFIWX for loading SDmode on power7.  Use xxlxor to create
-	0.0f.
+	and STFIWX for loading SDmode on power7.  Use xxlxor to create 0.0f.
 	(movsd splitter): Likewise.
 	(movsd_hardfloat): Likewise.
 	(movsd_softfloat): Likewise.
@@ -199,8 +198,7 @@
 	(f32_si): Likewise.
 	(movsf): Combine binary and decimal floating point moves.  Combine
 	power6x (mfpgpr) moves with other moves by using conditional
-	constraits (wg).  Use LFIWZX and STFIWX for loading SDmode on
-	power7.
+	constraits (wg).  Use LFIWZX and STFIWX for loading SDmode on power7.
 	(mov<mode> for SFmode/SDmode); Likewise.
 	(SFmode/SDmode splitters): Likewise.
 	(movsf_hardfloat): Likewise.
@@ -231,7 +229,6 @@
 	(rs6000_alloc_sdmode_stack_slot): Likewise.
 	(rs6000_preferred_reload_class): On VSX, we can create SFmode 0.0f
 	via xxlxor, just like DFmode 0.0.
-
 
 	* config/rs6000/dfp.md (movdd): Delete, combine with binary
 	floating point moves in rs6000.md.  Combine power6x (mfpgpr) moves
@@ -269,8 +266,8 @@
 
 	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print out wg
 	constraint if -mdebug=reg.
-	(rs6000_initi_hard_regno_mode_ok): Enable wg constraint if
-	-mfpgpr.  Enable using dd reload support if needed.
+	(rs6000_initi_hard_regno_mode_ok): Enable wg constraint if -mfpgpr.
+	Enable using dd reload support if needed.
 
 	* config/rs6000/dfp.md (movtd): Delete, combine with 128-bit
 	binary and decimal floating point moves in rs6000.md.
@@ -293,12 +290,10 @@
 	the various virtual registers. Use GPR/FPR first/last values,
 	instead of hard coding the register numbers.  Print which modes
 	have reload functions registered.
-	(rs6000_option_override_internal): If -mdebug=reg, trace the
-	options settings before/after setting cpu, target and subtarget
-	settings.
-	(rs6000_secondary_reload_trace): Improve the RTL dump for
-	-mdebug=addr and for secondary reload failures in
-	rs6000_secondary_reload_inner.
+	(rs6000_option_override_internal): If -mdebug=reg, trace the options
+	settings before/after setting cpu, target and subtarget settings.
+	(rs6000_secondary_reload_trace): Improve the RTL dump for -mdebug=addr
+	and for secondary reload failures in rs6000_secondary_reload_inner.
 	(rs6000_secondary_reload_fail): Likewise.
 	(rs6000_secondary_reload_inner): Likewise.
 
@@ -316,8 +311,7 @@
 	(vector_gtu<mode>): Likewise.
 	(vector_gte<mode>): Likewise.
 	(xor<mode>3): Don't allow logical operations on TImode in 32-bit
-	to prevent the compiler from converting DImode operations to
-	TImode.
+	to prevent the compiler from converting DImode operations to TImode.
 	(ior<mode>3): Likewise.
 	(and<mode>3): Likewise.
 	(one_cmpl<mode>2): Likewise.
@@ -369,8 +363,7 @@
 	Drop test for PRE_MODIFY, since VSX loads/stores no longer support
 	it.  Treat LO_SUM like a PLUS operation.
 	(rs6000_secondary_reload_class): If type is 64-bit, prefer to use
-	FLOAT_REGS instead of VSX_RGS to allow use of reg+offset
-	addressing.
+	FLOAT_REGS instead of VSX_RGS to allow use of reg+offset addressing.
 	(rs6000_cannot_change_mode_class): Do not allow TImode in VSX
 	registers to share a register with a smaller sized type, since VSX
 	puts scalars in the upper 64-bits.
@@ -409,9 +402,8 @@
 	* config/rs6000/rs6000.md (INT mode attribute): Add PTImode.
 	(TI2 iterator): New iterator for TImode, PTImode.
 	(wd mode attribute): Add values for vector types.
-	(movti_string): Replace TI move operations with operations for
-	TImode and PTImode.  Add support for TImode being allowed in VSX
-	registers.
+	(movti_string): Replace TI move operations with operations for TImode
+	and PTImode.  Add support for TImode being allowed in VSX registers.
 	(mov<mode>_string, TImode/PTImode): Likewise.
 	(movti_ppc64): Likewise.
 	(mov<mode>_ppc64, TImode/PTImode): Likewise.
