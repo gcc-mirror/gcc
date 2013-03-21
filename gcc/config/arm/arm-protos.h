@@ -269,6 +269,8 @@ struct tune_params
   bool logical_op_non_short_circuit[2];
   /* Vectorizer costs.  */
   const struct cpu_vec_costs* vec_costs;
+  /* Prefer Neon for 64-bit bitops.  */
+  bool prefer_neon_for_64bits;
 };
 
 extern const struct tune_params *current_tune;
