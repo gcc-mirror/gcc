@@ -1,5 +1,14 @@
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
+	* tree-cfg.c (verify_expr_no_block): New function.
+	(verify_expr_location_1): Verify that neither DECL_DEBUG_EXPR
+	nor DECL_VALUE_EXPR have locations with associated blocks.
+	* tree-ssa-live.c (clear_unused_block_pointer_1): Remove.
+	(clear_unused_block_pointer): Remove code dealing with
+	blocks in DECL_DEBUG_EXPR locations.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
 	* tree.h (DECL_DEBUG_EXPR_IS_FROM): Rename to ...
 	(DECL_HAS_DEBUG_EXPR_P): ... this.  Guard properly.
 	* tree.c (copy_node_stat): Do not copy DECL_HAS_DEBUG_EXPR_P.
