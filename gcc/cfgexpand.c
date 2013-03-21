@@ -4858,7 +4858,8 @@ struct rtl_opt_pass pass_expand =
   0,                                    /* static_pass_number */
   TV_EXPAND,				/* tv_id */
   PROP_ssa | PROP_gimple_leh | PROP_cfg
-    | PROP_gimple_lcx,			/* properties_required */
+    | PROP_gimple_lcx
+    | PROP_gimple_lvec,			/* properties_required */
   PROP_rtl,                             /* properties_provided */
   PROP_ssa | PROP_trees,		/* properties_destroyed */
   TODO_verify_ssa | TODO_verify_flow

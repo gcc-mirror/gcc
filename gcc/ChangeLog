@@ -1,3 +1,14 @@
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-pass.h (PROP_gimple_lvec): New.
+	* passes.c (dump_properties): Handle PROP_gimple_lvec.
+	(init_optimization_passes): Move pass_lower_vector.
+	* tree-vect-generic.c (gate_expand_vector_operations_ssa): Test
+	PROP_gimple_lvec.
+	(pass_lower_vector): Provide PROP_gimple_lvec.
+	(pass_lower_vector_ssa): Likewise.
+	* cfgexpand.c (pass_expand): Require PROP_gimple_lvec.
+
 2013-03-21  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (size_of_aranges): Skip DECL_IGNORED_P functions.

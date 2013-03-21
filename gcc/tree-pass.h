@@ -148,6 +148,7 @@ struct simple_ipa_opt_pass
 #define PROP_cfglayout	 	(1 << 9)	/* cfglayout mode on RTL */
 #define PROP_gimple_lcx		(1 << 10)       /* lowered complex */
 #define PROP_loops		(1 << 11)	/* preserve loop structures */
+#define PROP_gimple_lvec	(1 << 12)       /* lowered vector */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
