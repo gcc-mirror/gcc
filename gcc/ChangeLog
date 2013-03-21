@@ -1,3 +1,7 @@
+2013-03-20  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/sync.md (atomic_test_and_set): New pattern.
+
 2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movoi_internal_avx): Emit insn template
