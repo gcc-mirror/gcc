@@ -109,7 +109,7 @@
 	(cp_parser_binary_expression): Likewise.
 	(cp_parser_assignment_expression): Likewise.
 	(cp_parser_postfix_expression): Likewise.  Pass tf_decltype.
-	(cp_parser_explicit_instantiation): Add decltype_p.  Force a
+	(cp_parser_expression): Add decltype_p.  Force a
 	temporary for a call on the LHS of a comma.
 	(cp_parser_decltype): Pass true to decltype_p parms.
 	* pt.c (tsubst) [DECLTYPE_TYPE]: Pass tf_decltype.
