@@ -15527,6 +15527,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	      add_AT_vec (die, DW_AT_const_value, size, 1, array);
 	      return true;
 	    }
+	  ggc_free (array);
 	}
     }
   return false;
@@ -22494,6 +22495,10 @@ resolve_one_addr (rtx *addr, void *data ATTRIBUTE_UNUSED)
       if (!rtl || !MEM_P (rtl))
 	return 1;
       rtl = XEXP (rtl, 0);
+      if (GET_CODE (rtl) == SYMBOL_REF
+	  && SYMBOL_REF_DECL (rtl)
+	  && !TREE_ASM_WRITTEN (SYMBOL_REF_DECL (rtl)))
+	return 1;
       vec_safe_push (used_rtx_array, rtl);
       *addr = rtl;
       return 0;
@@ -22518,6 +22523,103 @@ resolve_one_addr (rtx *addr, void *data ATTRIBUTE_UNUSED)
   return 0;
 }
 
+/* For STRING_CST, return SYMBOL_REF of its constant pool entry,
+   if possible, and create DW_TAG_dwarf_procedure that can be referenced
+   from DW_OP_GNU_implicit_pointer if the string hasn't been seen yet.  */
+
+static rtx
+string_cst_pool_decl (tree t)
+{
+  rtx rtl = output_constant_def (t, 1);
+  unsigned char *array;
+  dw_loc_descr_ref l;
+  tree decl;
+  size_t len;
+  dw_die_ref ref;
+
+  if (!rtl || !MEM_P (rtl))
+    return NULL_RTX;
+  rtl = XEXP (rtl, 0);
+  if (GET_CODE (rtl) != SYMBOL_REF
+      || SYMBOL_REF_DECL (rtl) == NULL_TREE)
+    return NULL_RTX;
+
+  decl = SYMBOL_REF_DECL (rtl);
+  if (!lookup_decl_die (decl))
+    {
+      len = TREE_STRING_LENGTH (t);
+      vec_safe_push (used_rtx_array, rtl);
+      ref = new_die (DW_TAG_dwarf_procedure, comp_unit_die (), decl);
+      array = (unsigned char *) ggc_alloc_atomic (len);
+      memcpy (array, TREE_STRING_POINTER (t), len);
+      l = new_loc_descr (DW_OP_implicit_value, len, 0);
+      l->dw_loc_oprnd2.val_class = dw_val_class_vec;
+      l->dw_loc_oprnd2.v.val_vec.length = len;
+      l->dw_loc_oprnd2.v.val_vec.elt_size = 1;
+      l->dw_loc_oprnd2.v.val_vec.array = array;
+      add_AT_loc (ref, DW_AT_location, l);
+      equate_decl_number_to_die (decl, ref);
+    }
+  return rtl;
+}
+
+/* Helper function of resolve_addr_in_expr.  LOC is
+   a DW_OP_addr followed by DW_OP_stack_value, either at the start
+   of exprloc or after DW_OP_{,bit_}piece, and val_addr can't be
+   resolved.  Replace it (both DW_OP_addr and DW_OP_stack_value)
+   with DW_OP_GNU_implicit_pointer if possible
+   and return true, if unsuccesful, return false.  */
+
+static bool
+optimize_one_addr_into_implicit_ptr (dw_loc_descr_ref loc)
+{
+  rtx rtl = loc->dw_loc_oprnd1.v.val_addr;
+  HOST_WIDE_INT offset = 0;
+  dw_die_ref ref = NULL;
+  tree decl;
+
+  if (GET_CODE (rtl) == CONST
+      && GET_CODE (XEXP (rtl, 0)) == PLUS
+      && CONST_INT_P (XEXP (XEXP (rtl, 0), 1)))
+    {
+      offset = INTVAL (XEXP (XEXP (rtl, 0), 1));
+      rtl = XEXP (XEXP (rtl, 0), 0);
+    }
+  if (GET_CODE (rtl) == CONST_STRING)
+    {
+      size_t len = strlen (XSTR (rtl, 0)) + 1;
+      tree t = build_string (len, XSTR (rtl, 0));
+      tree tlen = size_int (len - 1);
+
+      TREE_TYPE (t)
+	= build_array_type (char_type_node, build_index_type (tlen));
+      rtl = string_cst_pool_decl (t);
+      if (!rtl)
+	return false;
+    }
+  if (GET_CODE (rtl) == SYMBOL_REF && SYMBOL_REF_DECL (rtl))
+    {
+      decl = SYMBOL_REF_DECL (rtl);
+      if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+	{
+	  ref = lookup_decl_die (decl);
+	  if (ref && (get_AT (ref, DW_AT_location)
+		      || get_AT (ref, DW_AT_const_value)))
+	    {
+	      loc->dw_loc_opc = DW_OP_GNU_implicit_pointer;
+	      loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	      loc->dw_loc_oprnd1.val_entry = NULL;
+	      loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
+	      loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	      loc->dw_loc_next = loc->dw_loc_next->dw_loc_next;
+	      loc->dw_loc_oprnd2.v.val_int = offset;
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
 /* Helper function for resolve_addr, handle one location
    expression, return false if at least one CONST_STRING or SYMBOL_REF in
    the location list couldn't be resolved.  */
@@ -22526,23 +22628,31 @@ static bool
 resolve_addr_in_expr (dw_loc_descr_ref loc)
 {
   dw_loc_descr_ref keep = NULL;
-  for (; loc; loc = loc->dw_loc_next)
+  for (dw_loc_descr_ref prev = NULL; loc; prev = loc, loc = loc->dw_loc_next)
     switch (loc->dw_loc_opc)
       {
       case DW_OP_addr:
 	if (resolve_one_addr (&loc->dw_loc_oprnd1.v.val_addr, NULL))
-	  return false;
+	  {
+	    if ((prev == NULL
+		 || prev->dw_loc_opc == DW_OP_piece
+		 || prev->dw_loc_opc == DW_OP_bit_piece)
+		&& loc->dw_loc_next
+		&& loc->dw_loc_next->dw_loc_opc == DW_OP_stack_value
+		&& !dwarf_strict
+		&& optimize_one_addr_into_implicit_ptr (loc))
+	      break;
+	    return false;
+	  }
 	break;
       case DW_OP_GNU_addr_index:
       case DW_OP_GNU_const_index:
-        {
-          if ((loc->dw_loc_opc == DW_OP_GNU_addr_index
-               || (loc->dw_loc_opc == DW_OP_GNU_const_index && loc->dtprel))
-              && resolve_one_addr (&loc->dw_loc_oprnd1.val_entry->addr.rtl,
-                                   NULL))
-            return false;
-        }
-       break;
+	if ((loc->dw_loc_opc == DW_OP_GNU_addr_index
+	     || (loc->dw_loc_opc == DW_OP_GNU_const_index && loc->dtprel))
+	    && resolve_one_addr (&loc->dw_loc_oprnd1.val_entry->addr.rtl,
+				 NULL))
+	  return false;
+	break;
       case DW_OP_const4u:
       case DW_OP_const8u:
 	if (loc->dtprel
@@ -22637,6 +22747,80 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
   return true;
 }
 
+/* Helper function of resolve_addr.  DIE had DW_AT_location of
+   DW_OP_addr alone, which referred to DECL in DW_OP_addr's operand
+   and DW_OP_addr couldn't be resolved.  resolve_addr has already
+   removed the DW_AT_location attribute.  This function attempts to
+   add a new DW_AT_location attribute with DW_OP_GNU_implicit_pointer
+   to it or DW_AT_const_value attribute, if possible.  */
+
+static void
+optimize_location_into_implicit_ptr (dw_die_ref die, tree decl)
+{
+  if (TREE_CODE (decl) != VAR_DECL
+      || lookup_decl_die (decl) != die
+      || DECL_EXTERNAL (decl)
+      || !TREE_STATIC (decl)
+      || DECL_INITIAL (decl) == NULL_TREE
+      || DECL_P (DECL_INITIAL (decl))
+      || get_AT (die, DW_AT_const_value))
+    return;
+
+  tree init = DECL_INITIAL (decl);
+  HOST_WIDE_INT offset = 0;
+  /* For variables that have been optimized away and thus
+     don't have a memory location, see if we can emit
+     DW_AT_const_value instead.  */
+  if (tree_add_const_value_attribute (die, init))
+    return;
+  if (dwarf_strict)
+    return;
+  /* If init is ADDR_EXPR or POINTER_PLUS_EXPR of ADDR_EXPR,
+     and ADDR_EXPR refers to a decl that has DW_AT_location or
+     DW_AT_const_value (but isn't addressable, otherwise
+     resolving the original DW_OP_addr wouldn't fail), see if
+     we can add DW_OP_GNU_implicit_pointer.  */
+  STRIP_NOPS (init);
+  if (TREE_CODE (init) == POINTER_PLUS_EXPR
+      && host_integerp (TREE_OPERAND (init, 1), 0))
+    {
+      offset = tree_low_cst (TREE_OPERAND (init, 1), 0);
+      init = TREE_OPERAND (init, 0);
+      STRIP_NOPS (init);
+    }
+  if (TREE_CODE (init) != ADDR_EXPR)
+    return;
+  if ((TREE_CODE (TREE_OPERAND (init, 0)) == STRING_CST
+       && !TREE_ASM_WRITTEN (TREE_OPERAND (init, 0)))
+      || (TREE_CODE (TREE_OPERAND (init, 0)) == VAR_DECL
+	  && !DECL_EXTERNAL (TREE_OPERAND (init, 0))
+	  && TREE_OPERAND (init, 0) != decl))
+    {
+      dw_die_ref ref;
+      dw_loc_descr_ref l;
+
+      if (TREE_CODE (TREE_OPERAND (init, 0)) == STRING_CST)
+	{
+	  rtx rtl = string_cst_pool_decl (TREE_OPERAND (init, 0));
+	  if (!rtl)
+	    return;
+	  decl = SYMBOL_REF_DECL (rtl);
+	}
+      else
+	decl = TREE_OPERAND (init, 0);
+      ref = lookup_decl_die (decl);
+      if (ref == NULL
+	  || (!get_AT (ref, DW_AT_location)
+	      && !get_AT (ref, DW_AT_const_value)))
+	return;
+      l = new_loc_descr (DW_OP_GNU_implicit_pointer, 0, offset);
+      l->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+      l->dw_loc_oprnd1.v.val_die_ref.die = ref;
+      l->dw_loc_oprnd1.v.val_die_ref.external = 0;
+      add_AT_loc (die, DW_AT_location, l);
+    }
+}
+
 /* Resolve DW_OP_addr and DW_AT_const_value CONST_STRING arguments to
    an address in .rodata section if the string literal is emitted there,
    or remove the containing location list or replace DW_AT_const_value
@@ -22723,8 +22907,21 @@ resolve_addr (dw_die_ref die)
 	       || l->dw_loc_next != NULL)
 	      && !resolve_addr_in_expr (l))
 	    {
-              if (dwarf_split_debug_info)
-                remove_loc_list_addr_table_entries (l);
+	      if (dwarf_split_debug_info)
+		remove_loc_list_addr_table_entries (l);
+	      if (l != NULL
+		  && l->dw_loc_next == NULL
+		  && l->dw_loc_opc == DW_OP_addr
+		  && GET_CODE (l->dw_loc_oprnd1.v.val_addr) == SYMBOL_REF
+		  && SYMBOL_REF_DECL (l->dw_loc_oprnd1.v.val_addr)
+		  && a->dw_attr == DW_AT_location)
+		{
+		  tree decl = SYMBOL_REF_DECL (l->dw_loc_oprnd1.v.val_addr);
+		  remove_AT (die, a->dw_attr);
+		  ix--;
+		  optimize_location_into_implicit_ptr (die, decl);
+		  break;
+		}
 	      remove_AT (die, a->dw_attr);
 	      ix--;
 	    }

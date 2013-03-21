@@ -1,3 +1,21 @@
+2013-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/55608
+	* dwarf2out.c (tree_add_const_value_attribute): Call ggc_free (array)
+	on failure.
+	(resolve_one_addr): Fail if referenced STRING_CST hasn't been written.
+	(string_cst_pool_decl): New function.
+	(optimize_one_addr_into_implicit_ptr): New function.
+	(resolve_addr_in_expr): Optimize DWARF location expression
+	DW_OP_addr DW_OP_stack_value where DW_OP_addr refers to some variable
+	which doesn't live in memory, but has DW_AT_location or
+	DW_AT_const_value, or refers to a string literal, into
+	DW_OP_GNU_implicit_pointer.
+	(optimize_location_into_implicit_ptr): New function.
+	(resolve_addr): If removing DW_AT_location of a variable because
+	it was DW_OP_addr of address of the variable, but the variable doesn't
+	live in memory, try to emit const value attribute for the initializer.
+
 2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree.h (VECTOR_TYPE_P): New macro.
