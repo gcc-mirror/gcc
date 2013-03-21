@@ -1,5 +1,8 @@
 2013-03-20  Jason Merrill  <jason@redhat.com>
 
+	* name-lookup.c (get_anonymous_namespace_name): Never use
+	get_file_function_name.
+
 	* pt.c (retrieve_specialization): Handle null tmpl argument.
 
 	PR c++/17232
