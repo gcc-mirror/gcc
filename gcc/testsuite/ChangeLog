@@ -1,3 +1,16 @@
+2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/vect.c: Test and result vector added
+	for sabd and saba instructions.
+	* gcc.target/aarch64/vect-compile.c: Check for sabd and saba
+	instructions in assembly.
+	* gcc.target/aarch64/vect.x: Add sabd and saba test functions.
+	* gcc.target/aarch64/vect-fp.c: Test and result vector added
+	for fabd instruction.
+	* gcc.target/aarch64/vect-fp-compile.c: Check for fabd
+	instruction in assembly.
+	* gcc.target/aarch64/vect-fp.x: Add fabd test function.
+
 2013-03-20  Jeff Law  <law@redhat.com>
 
 	* g++.dg/tree-ssa/ssa-dom.C: New test.

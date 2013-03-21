@@ -44,6 +44,7 @@
 ; simd_dup              duplicate element.
 ; simd_dupgp            duplicate general purpose register.
 ; simd_ext              bitwise extract from pair.
+; simd_fabd             floating absolute difference and accumulate.
 ; simd_fadd             floating point add/sub.
 ; simd_fcmp             floating point compare.
 ; simd_fcvti            floating point convert to integer.
@@ -147,6 +148,7 @@
    simd_dup,\
    simd_dupgp,\
    simd_ext,\
+   simd_fabd,\
    simd_fadd,\
    simd_fcmp,\
    simd_fcvti,\
@@ -517,6 +519,40 @@
   "TARGET_SIMD"
   "abs\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_negabs")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "abd<mode>_3"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
+	(abs:VDQ_BHSI (minus:VDQ_BHSI
+		       (match_operand:VDQ_BHSI 1 "register_operand" "w")
+		       (match_operand:VDQ_BHSI 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "sabd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_abd")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aba<mode>_3"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
+	(plus:VDQ_BHSI (abs:VDQ_BHSI (minus:VDQ_BHSI
+			 (match_operand:VDQ_BHSI 1 "register_operand" "w")
+			 (match_operand:VDQ_BHSI 2 "register_operand" "w")))
+		       (match_operand:VDQ_BHSI 3 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "saba\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_abd")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "fabd<mode>_3"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(abs:VDQF (minus:VDQF
+		   (match_operand:VDQF 1 "register_operand" "w")
+		   (match_operand:VDQF 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "fabd\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_fabd")
    (set_attr "simd_mode" "<MODE>")]
 )
 
