@@ -6838,6 +6838,9 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 bool
 reduced_constant_expression_p (tree t)
 {
+  if (TREE_CODE (t) == PTRMEM_CST)
+    /* Even if we can't lower this yet, it's constant.  */
+    return true;
   /* FIXME are we calling this too much?  */
   return initializer_constant_valid_p (t, TREE_TYPE (t)) != NULL_TREE;
 }

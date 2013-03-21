@@ -792,7 +792,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      will perform the dynamic initialization.  */
   if (value != error_mark_node
       && (TREE_SIDE_EFFECTS (value)
-	   || ! initializer_constant_valid_p (value, TREE_TYPE (value))))
+	  || ! reduced_constant_expression_p (value)))
     {
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))

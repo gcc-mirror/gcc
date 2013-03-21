@@ -1,5 +1,13 @@
 2013-03-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54532
+	* expr.c (cplus_expand_constant): Do nothing if the class is
+	incomplete.
+	* semantics.c (reduced_constant_expression_p): Allow PTRMEM_CST.
+	* typeck2.c (store_init_value): Use reduced_constant_expression_p.
+	* decl.c (maybe_register_incomplete_var): Handle PTRMEM_CST.
+	(complete_vars): Likewise.
+
 	* name-lookup.c (get_anonymous_namespace_name): Never use
 	get_file_function_name.
 
