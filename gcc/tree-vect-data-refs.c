@@ -154,328 +154,6 @@ vect_get_place_in_interleaving_chain (gimple stmt, gimple first_stmt)
 }
 
 
-/* Function vect_insert_into_interleaving_chain.
-
-   Insert DRA into the interleaving chain of DRB according to DRA's INIT.  */
-
-static void
-vect_insert_into_interleaving_chain (struct data_reference *dra,
-				     struct data_reference *drb)
-{
-  gimple prev, next;
-  tree next_init;
-  stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
-  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
-
-  prev = GROUP_FIRST_ELEMENT (stmtinfo_b);
-  next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev));
-  while (next)
-    {
-      next_init = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (next)));
-      if (tree_int_cst_compare (next_init, DR_INIT (dra)) > 0)
-	{
-	  /* Insert here.  */
-	  GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev)) = DR_STMT (dra);
-	  GROUP_NEXT_ELEMENT (stmtinfo_a) = next;
-	  return;
-	}
-      prev = next;
-      next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev));
-    }
-
-  /* We got to the end of the list. Insert here.  */
-  GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev)) = DR_STMT (dra);
-  GROUP_NEXT_ELEMENT (stmtinfo_a) = NULL;
-}
-
-
-/* Function vect_update_interleaving_chain.
-
-   For two data-refs DRA and DRB that are a part of a chain interleaved data
-   accesses, update the interleaving chain.  DRB's INIT is smaller than DRA's.
-
-   There are four possible cases:
-   1. New stmts - both DRA and DRB are not a part of any chain:
-      FIRST_DR = DRB
-      NEXT_DR (DRB) = DRA
-   2. DRB is a part of a chain and DRA is not:
-      no need to update FIRST_DR
-      no need to insert DRB
-      insert DRA according to init
-   3. DRA is a part of a chain and DRB is not:
-      if (init of FIRST_DR > init of DRB)
-          FIRST_DR = DRB
-	  NEXT(FIRST_DR) = previous FIRST_DR
-      else
-          insert DRB according to its init
-   4. both DRA and DRB are in some interleaving chains:
-      choose the chain with the smallest init of FIRST_DR
-      insert the nodes of the second chain into the first one.  */
-
-static void
-vect_update_interleaving_chain (struct data_reference *drb,
-				struct data_reference *dra)
-{
-  stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
-  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
-  tree next_init, init_dra_chain, init_drb_chain;
-  gimple first_a, first_b;
-  tree node_init;
-  gimple node, prev, next, first_stmt;
-
-  /* 1. New stmts - both DRA and DRB are not a part of any chain.   */
-  if (!GROUP_FIRST_ELEMENT (stmtinfo_a) && !GROUP_FIRST_ELEMENT (stmtinfo_b))
-    {
-      GROUP_FIRST_ELEMENT (stmtinfo_a) = DR_STMT (drb);
-      GROUP_FIRST_ELEMENT (stmtinfo_b) = DR_STMT (drb);
-      GROUP_NEXT_ELEMENT (stmtinfo_b) = DR_STMT (dra);
-      return;
-    }
-
-  /* 2. DRB is a part of a chain and DRA is not.  */
-  if (!GROUP_FIRST_ELEMENT (stmtinfo_a) && GROUP_FIRST_ELEMENT (stmtinfo_b))
-    {
-      GROUP_FIRST_ELEMENT (stmtinfo_a) = GROUP_FIRST_ELEMENT (stmtinfo_b);
-      /* Insert DRA into the chain of DRB.  */
-      vect_insert_into_interleaving_chain (dra, drb);
-      return;
-    }
-
-  /* 3. DRA is a part of a chain and DRB is not.  */
-  if (GROUP_FIRST_ELEMENT (stmtinfo_a) && !GROUP_FIRST_ELEMENT (stmtinfo_b))
-    {
-      gimple old_first_stmt = GROUP_FIRST_ELEMENT (stmtinfo_a);
-      tree init_old = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (
-							      old_first_stmt)));
-      gimple tmp;
-
-      if (tree_int_cst_compare (init_old, DR_INIT (drb)) > 0)
-	{
-	  /* DRB's init is smaller than the init of the stmt previously marked
-	     as the first stmt of the interleaving chain of DRA.  Therefore, we
-	     update FIRST_STMT and put DRB in the head of the list.  */
-	  GROUP_FIRST_ELEMENT (stmtinfo_b) = DR_STMT (drb);
-	  GROUP_NEXT_ELEMENT (stmtinfo_b) = old_first_stmt;
-
-	  /* Update all the stmts in the list to point to the new FIRST_STMT.  */
-	  tmp = old_first_stmt;
-	  while (tmp)
-	    {
-	      GROUP_FIRST_ELEMENT (vinfo_for_stmt (tmp)) = DR_STMT (drb);
-	      tmp = GROUP_NEXT_ELEMENT (vinfo_for_stmt (tmp));
-	    }
-	}
-      else
-	{
-	  /* Insert DRB in the list of DRA.  */
-	  vect_insert_into_interleaving_chain (drb, dra);
-	  GROUP_FIRST_ELEMENT (stmtinfo_b) = GROUP_FIRST_ELEMENT (stmtinfo_a);
-	}
-      return;
-    }
-
-  /* 4. both DRA and DRB are in some interleaving chains.  */
-  first_a = GROUP_FIRST_ELEMENT (stmtinfo_a);
-  first_b = GROUP_FIRST_ELEMENT (stmtinfo_b);
-  if (first_a == first_b)
-    return;
-  init_dra_chain = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (first_a)));
-  init_drb_chain = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (first_b)));
-
-  if (tree_int_cst_compare (init_dra_chain, init_drb_chain) > 0)
-    {
-      /* Insert the nodes of DRA chain into the DRB chain.
-	 After inserting a node, continue from this node of the DRB chain (don't
-         start from the beginning.  */
-      node = GROUP_FIRST_ELEMENT (stmtinfo_a);
-      prev = GROUP_FIRST_ELEMENT (stmtinfo_b);
-      first_stmt = first_b;
-    }
-  else
-    {
-      /* Insert the nodes of DRB chain into the DRA chain.
-	 After inserting a node, continue from this node of the DRA chain (don't
-         start from the beginning.  */
-      node = GROUP_FIRST_ELEMENT (stmtinfo_b);
-      prev = GROUP_FIRST_ELEMENT (stmtinfo_a);
-      first_stmt = first_a;
-    }
-
-  while (node)
-    {
-      node_init = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (node)));
-      next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev));
-      while (next)
-	{
-	  next_init = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (next)));
-	  if (tree_int_cst_compare (next_init, node_init) > 0)
-	    {
-	      /* Insert here.  */
-	      GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev)) = node;
-	      GROUP_NEXT_ELEMENT (vinfo_for_stmt (node)) = next;
-	      prev = node;
-	      break;
-	    }
-	  prev = next;
-	  next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev));
-	}
-      if (!next)
-	{
-	  /* We got to the end of the list. Insert here.  */
-	  GROUP_NEXT_ELEMENT (vinfo_for_stmt (prev)) = node;
-	  GROUP_NEXT_ELEMENT (vinfo_for_stmt (node)) = NULL;
-	  prev = node;
-	}
-      GROUP_FIRST_ELEMENT (vinfo_for_stmt (node)) = first_stmt;
-      node = GROUP_NEXT_ELEMENT (vinfo_for_stmt (node));
-    }
-}
-
-/* Check dependence between DRA and DRB for basic block vectorization.
-   If the accesses share same bases and offsets, we can compare their initial
-   constant offsets to decide whether they differ or not.  In case of a read-
-   write dependence we check that the load is before the store to ensure that
-   vectorization will not change the order of the accesses.  */
-
-static bool
-vect_drs_dependent_in_basic_block (struct data_reference *dra,
-                                   struct data_reference *drb)
-{
-  HOST_WIDE_INT type_size_a, type_size_b, init_a, init_b;
-  gimple earlier_stmt;
-
-  /* We only call this function for pairs of loads and stores, but we verify
-     it here.  */
-  if (DR_IS_READ (dra) == DR_IS_READ (drb))
-    {
-      if (DR_IS_READ (dra))
-        return false;
-      else
-        return true;
-    }
-
-  /* Check that the data-refs have same bases and offsets.  If not, we can't
-     determine if they are dependent.  */
-  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
-      || !dr_equal_offsets_p (dra, drb))
-    return true;
-
-  /* Check the types.  */
-  type_size_a = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
-  type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
-
-  if (type_size_a != type_size_b
-      || !types_compatible_p (TREE_TYPE (DR_REF (dra)),
-                              TREE_TYPE (DR_REF (drb))))
-    return true;
-
-  init_a = TREE_INT_CST_LOW (DR_INIT (dra));
-  init_b = TREE_INT_CST_LOW (DR_INIT (drb));
-
-  /* Two different locations - no dependence.  */
-  if (init_a != init_b)
-    return false;
-
-  /* We have a read-write dependence.  Check that the load is before the store.
-     When we vectorize basic blocks, vector load can be only before 
-     corresponding scalar load, and vector store can be only after its
-     corresponding scalar store.  So the order of the acceses is preserved in
-     case the load is before the store.  */
-  earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));   
-  if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
-    return false;
-
-  return true;
-}
-
-
-/* Function vect_check_interleaving.
-
-   Check if DRA and DRB are a part of interleaving.  In case they are, insert
-   DRA and DRB in an interleaving chain.  */
-
-static bool
-vect_check_interleaving (struct data_reference *dra,
-			 struct data_reference *drb)
-{
-  HOST_WIDE_INT type_size_a, type_size_b, diff_mod_size, step, init_a, init_b;
-
-  /* Check that the data-refs have same first location (except init) and they
-     are both either store or load (not load and store).  */
-  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
-      || !dr_equal_offsets_p (dra, drb)
-      || !tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb))
-      || DR_IS_READ (dra) != DR_IS_READ (drb))
-    return false;
-
-  /* Check:
-     1. data-refs are of the same type
-     2. their steps are equal
-     3. the step (if greater than zero) is greater than the difference between
-        data-refs' inits.  */
-  type_size_a = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
-  type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
-
-  if (type_size_a != type_size_b
-      || tree_int_cst_compare (DR_STEP (dra), DR_STEP (drb))
-      || !types_compatible_p (TREE_TYPE (DR_REF (dra)),
-                              TREE_TYPE (DR_REF (drb))))
-    return false;
-
-  init_a = TREE_INT_CST_LOW (DR_INIT (dra));
-  init_b = TREE_INT_CST_LOW (DR_INIT (drb));
-  step = TREE_INT_CST_LOW (DR_STEP (dra));
-
-  if (init_a > init_b)
-    {
-      /* If init_a == init_b + the size of the type * k, we have an interleaving,
-	 and DRB is accessed before DRA.  */
-      diff_mod_size = (init_a - init_b) % type_size_a;
-
-      if (step && (init_a - init_b) > step)
-         return false;
-
-      if (diff_mod_size == 0)
-	{
-	  vect_update_interleaving_chain (drb, dra);
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-                               "Detected interleaving ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
-	    }
-	  return true;
-	}
-    }
-  else
-    {
-      /* If init_b == init_a + the size of the type * k, we have an
-	 interleaving, and DRA is accessed before DRB.  */
-      diff_mod_size = (init_b - init_a) % type_size_a;
-
-      if (step && (init_b - init_a) > step)
-         return false;
-
-      if (diff_mod_size == 0)
-	{
-	  vect_update_interleaving_chain (dra, drb);
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-                               "Detected interleaving ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
-	    }
-	  return true;
-	}
-    }
-
-  return false;
-}
-
 /* Check if data references pointed by DR_I and DR_J are same or
    belong to same interleaving group.  Return FALSE if drs are
    different, otherwise return TRUE.  */
@@ -578,7 +256,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
                                   loop_vec_info loop_vinfo, int *max_vf)
 {
   unsigned int i;
-  struct loop *loop = NULL;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
   stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
@@ -586,103 +264,39 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   lambda_vector dist_v;
   unsigned int loop_depth;
 
-  /* Don't bother to analyze statements marked as unvectorizable.  */
+  /* In loop analysis all data references should be vectorizable.  */
   if (!STMT_VINFO_VECTORIZABLE (stmtinfo_a)
       || !STMT_VINFO_VECTORIZABLE (stmtinfo_b))
-    return false;
+    gcc_unreachable ();
 
+  /* Independent data accesses.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
-    {
-      /* Independent data accesses.  */
-      vect_check_interleaving (dra, drb);
-      return false;
-    }
-
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
-
-  if ((DR_IS_READ (dra) && DR_IS_READ (drb) && loop_vinfo) || dra == drb)
     return false;
 
+  if (dra == drb
+      || (DR_IS_READ (dra) && DR_IS_READ (drb)))
+    return false;
+
+  /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
-      gimple earlier_stmt;
-
-      if (loop_vinfo)
-        {
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                               "versioning for alias required: "
-                               "can't determine dependence between ");
-              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                 DR_REF (dra));
-              dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
-              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                 DR_REF (drb));
-            }
-
-          /* Add to list of ddrs that need to be tested at run-time.  */
-          return !vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
-        }
-
-      /* When vectorizing a basic block unknown depnedence can still mean
-	 grouped access.  */
-      if (vect_check_interleaving (dra, drb))
-         return false;
-
-      /* Read-read is OK (we need this check here, after checking for
-         interleaving).  */
-      if (DR_IS_READ (dra) && DR_IS_READ (drb))
-        return false;
-
       if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "can't determine dependence between ");
-          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (dra));
-          dump_printf (MSG_MISSED_OPTIMIZATION,  " and ");
-          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (drb));
-        }
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "versioning for alias required: "
+			   "can't determine dependence between ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+			     DR_REF (dra));
+	  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+			     DR_REF (drb));
+	}
 
-      /* We do not vectorize basic blocks with write-write dependencies.  */
-      if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
-        return true;
-
-      /* Check that it's not a load-after-store dependence.  */
-      earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
-      if (DR_IS_WRITE (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
-        return true;
-
-      return false;
+      /* Add to list of ddrs that need to be tested at run-time.  */
+      return !vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
     }
 
-  /* Versioning for alias is not yet supported for basic block SLP, and
-     dependence distance is unapplicable, hence, in case of known data
-     dependence, basic block vectorization is impossible for now.  */
-  if (!loop_vinfo)
-    {
-      if (dra != drb && vect_check_interleaving (dra, drb))
-        return false;
-
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-                           "determined dependence between ");
-          dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
-          dump_printf (MSG_NOTE, " and ");
-          dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
-        }
-
-      /* Do not vectorize basic blcoks with write-write dependences.  */
-      if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
-        return true;
-
-      /* Check if this dependence is allowed in basic block vectorization.  */
-      return vect_drs_dependent_in_basic_block (dra, drb);
-    }
-
-  /* Loop-based vectorization and known data dependence.  */
+  /* Known data dependence.  */
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
       if (dump_enabled_p ())
@@ -719,7 +333,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	    }
 
           /* For interleaving, mark that there is a read-write dependency if
-             necessary. We check before that one of the data-refs is store.  */
+             necessary.  We check before that one of the data-refs is store.  */
           if (DR_IS_READ (dra))
             GROUP_READ_WRITE_DEPENDENCE (stmtinfo_a) = true;
 	  else
@@ -787,35 +401,161 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
    the maximum vectorization factor the data dependences allow.  */
 
 bool
-vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
-                                   bb_vec_info bb_vinfo, int *max_vf)
+vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo, int *max_vf)
 {
   unsigned int i;
-  vec<ddr_p> ddrs = vNULL;
   struct data_dependence_relation *ddr;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_analyze_dependences ===");
-  if (loop_vinfo)
+                     "=== vect_analyze_data_ref_dependences ===");
+
+  if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
+				&LOOP_VINFO_DDRS (loop_vinfo),
+				LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
+    return false;
+
+  FOR_EACH_VEC_ELT (LOOP_VINFO_DDRS (loop_vinfo), i, ddr)
+    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
+      return false;
+
+  return true;
+}
+
+
+/* Function vect_slp_analyze_data_ref_dependence.
+
+   Return TRUE if there (might) exist a dependence between a memory-reference
+   DRA and a memory-reference DRB.  When versioning for alias may check a
+   dependence at run-time, return FALSE.  Adjust *MAX_VF according to
+   the data dependence.  */
+
+static bool
+vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
+{
+  struct data_reference *dra = DDR_A (ddr);
+  struct data_reference *drb = DDR_B (ddr);
+
+  /* We need to check dependences of statements marked as unvectorizable
+     as well, they still can prohibit vectorization.  */
+
+  /* Independent data accesses.  */
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
+    return false;
+
+  if (dra == drb)
+    return false;
+
+  /* Read-read is OK.  */
+  if (DR_IS_READ (dra) && DR_IS_READ (drb))
+    return false;
+
+  /* Unknown data dependence.  */
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
-      if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
-				    &LOOP_VINFO_DDRS (loop_vinfo),
-				    LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
-	return false;
-      ddrs = LOOP_VINFO_DDRS (loop_vinfo);
-    }
-  else
-    {
-      if (!compute_all_dependences (BB_VINFO_DATAREFS (bb_vinfo),
-				    &BB_VINFO_DDRS (bb_vinfo),
-				    vNULL, true))
-	return false;
-      ddrs = BB_VINFO_DDRS (bb_vinfo);
+      gimple earlier_stmt;
+
+      if (dump_enabled_p ())
+        {
+          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                           "can't determine dependence between ");
+          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (dra));
+          dump_printf (MSG_MISSED_OPTIMIZATION,  " and ");
+          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (drb));
+        }
+
+      /* We do not vectorize basic blocks with write-write dependencies.  */
+      if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
+        return true;
+
+      /* Check that it's not a load-after-store dependence.  */
+      earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
+      if (DR_IS_WRITE (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
+        return true;
+
+      return false;
     }
 
-  FOR_EACH_VEC_ELT (ddrs, i, ddr)
-    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "determined dependence between ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+      dump_printf (MSG_NOTE, " and ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
+    }
+
+  /* Do not vectorize basic blocks with write-write dependences.  */
+  if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
+    return true;
+
+  /* Check dependence between DRA and DRB for basic block vectorization.
+     If the accesses share same bases and offsets, we can compare their initial
+     constant offsets to decide whether they differ or not.  In case of a read-
+     write dependence we check that the load is before the store to ensure that
+     vectorization will not change the order of the accesses.  */
+
+  HOST_WIDE_INT type_size_a, type_size_b, init_a, init_b;
+  gimple earlier_stmt;
+
+  /* Check that the data-refs have same bases and offsets.  If not, we can't
+     determine if they are dependent.  */
+  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
+      || !dr_equal_offsets_p (dra, drb))
+    return true;
+
+  /* Check the types.  */
+  type_size_a = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
+  type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+
+  if (type_size_a != type_size_b
+      || !types_compatible_p (TREE_TYPE (DR_REF (dra)),
+                              TREE_TYPE (DR_REF (drb))))
+    return true;
+
+  init_a = TREE_INT_CST_LOW (DR_INIT (dra));
+  init_b = TREE_INT_CST_LOW (DR_INIT (drb));
+
+  /* Two different locations - no dependence.  */
+  if (init_a != init_b)
+    return false;
+
+  /* We have a read-write dependence.  Check that the load is before the store.
+     When we vectorize basic blocks, vector load can be only before
+     corresponding scalar load, and vector store can be only after its
+     corresponding scalar store.  So the order of the acceses is preserved in
+     case the load is before the store.  */
+  earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
+  if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
+    return false;
+
+  return true;
+}
+
+
+/* Function vect_analyze_data_ref_dependences.
+
+   Examine all the data references in the basic-block, and make sure there
+   do not exist any data dependences between them.  Set *MAX_VF according to
+   the maximum vectorization factor the data dependences allow.  */
+
+bool
+vect_slp_analyze_data_ref_dependences (bb_vec_info bb_vinfo)
+{
+  struct data_dependence_relation *ddr;
+  unsigned int i;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_slp_analyze_data_ref_dependences ===");
+
+  if (!compute_all_dependences (BB_VINFO_DATAREFS (bb_vinfo),
+				&BB_VINFO_DDRS (bb_vinfo),
+				vNULL, true))
+    return false;
+
+  FOR_EACH_VEC_ELT (BB_VINFO_DDRS (bb_vinfo), i, ddr)
+    if (vect_slp_analyze_data_ref_dependence (ddr))
       return false;
 
   return true;
@@ -2567,6 +2307,68 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   return vect_analyze_group_access (dr);
 }
 
+/* Compare two data-references DRA and DRB to group them into chunks
+   suitable for grouping.  */
+
+static int
+dr_group_sort_cmp (const void *dra_, const void *drb_)
+{
+  data_reference_p dra = *(data_reference_p *)const_cast<void *>(dra_);
+  data_reference_p drb = *(data_reference_p *)const_cast<void *>(drb_);
+  hashval_t h1, h2;
+  int cmp;
+
+  /* Stabilize sort.  */
+  if (dra == drb)
+    return 0;
+
+  /* Ordering of DRs according to base.  */
+  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0))
+    {
+      h1 = iterative_hash_expr (DR_BASE_ADDRESS (dra), 0);
+      h2 = iterative_hash_expr (DR_BASE_ADDRESS (drb), 0);
+      if (h1 != h2)
+	return h1 < h2 ? -1 : 1;
+    }
+
+  /* And according to DR_OFFSET.  */
+  if (!dr_equal_offsets_p (dra, drb))
+    {
+      h1 = iterative_hash_expr (DR_OFFSET (dra), 0);
+      h2 = iterative_hash_expr (DR_OFFSET (drb), 0);
+      if (h1 != h2)
+	return h1 < h2 ? -1 : 1;
+    }
+
+  /* Put reads before writes.  */
+  if (DR_IS_READ (dra) != DR_IS_READ (drb))
+    return DR_IS_READ (dra) ? -1 : 1;
+
+  /* Then sort after access size.  */
+  if (!operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
+			TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))), 0))
+    {
+      h1 = iterative_hash_expr (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))), 0);
+      h2 = iterative_hash_expr (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))), 0);
+      if (h1 != h2)
+	return h1 < h2 ? -1 : 1;
+    }
+
+  /* And after step.  */
+  if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
+    {
+      h1 = iterative_hash_expr (DR_STEP (dra), 0);
+      h2 = iterative_hash_expr (DR_STEP (drb), 0);
+      if (h1 != h2)
+	return h1 < h2 ? -1 : 1;
+    }
+
+  /* Then sort after DR_INIT.  In case of identical DRs sort after stmt UID.  */
+  cmp = tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb));
+  if (cmp == 0)
+    return gimple_uid (DR_STMT (dra)) < gimple_uid (DR_STMT (drb)) ? -1 : 1;
+  return cmp;
+}
 
 /* Function vect_analyze_data_ref_accesses.
 
@@ -2592,6 +2394,98 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   else
     datarefs = BB_VINFO_DATAREFS (bb_vinfo);
+
+  if (datarefs.is_empty ())
+    return true;
+
+  /* Sort the array of datarefs to make building the interleaving chains
+     linear.  */
+  qsort (datarefs.address(), datarefs.length (),
+	 sizeof (data_reference_p), dr_group_sort_cmp);
+
+  /* Build the interleaving chains.  */
+  for (i = 0; i < datarefs.length () - 1;)
+    {
+      data_reference_p dra = datarefs[i];
+      stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
+      stmt_vec_info lastinfo = NULL;
+      for (i = i + 1; i < datarefs.length (); ++i)
+	{
+	  data_reference_p drb = datarefs[i];
+	  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
+
+	  /* ???  Imperfect sorting (non-compatible types, non-modulo
+	     accesses, same accesses) can lead to a group to be artificially
+	     split here as we don't just skip over those.  If it really
+	     matters we can push those to a worklist and re-iterate
+	     over them.  The we can just skip ahead to the next DR here.  */
+
+	  /* Check that the data-refs have same first location (except init)
+	     and they are both either store or load (not load and store).  */
+	  if (DR_IS_READ (dra) != DR_IS_READ (drb)
+	      || !operand_equal_p (DR_BASE_ADDRESS (dra),
+				   DR_BASE_ADDRESS (drb), 0)
+	      || !dr_equal_offsets_p (dra, drb))
+	    break;
+
+	  /* Check that the data-refs have the same constant size and step.  */
+	  tree sza = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra)));
+	  tree szb = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb)));
+	  if (!host_integerp (sza, 1)
+	      || !host_integerp (szb, 1)
+	      || !tree_int_cst_equal (sza, szb)
+	      || !host_integerp (DR_STEP (dra), 0)
+	      || !host_integerp (DR_STEP (drb), 0)
+	      || !tree_int_cst_equal (DR_STEP (dra), DR_STEP (drb)))
+	    break;
+
+	  /* Do not place the same access in the interleaving chain twice.  */
+	  if (tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb)) == 0)
+	    break;
+
+	  /* Check the types are compatible.
+	     ???  We don't distinguish this during sorting.  */
+	  if (!types_compatible_p (TREE_TYPE (DR_REF (dra)),
+				   TREE_TYPE (DR_REF (drb))))
+	    break;
+
+	  /* Sorting has ensured that DR_INIT (dra) <= DR_INIT (drb).  */
+	  HOST_WIDE_INT init_a = TREE_INT_CST_LOW (DR_INIT (dra));
+	  HOST_WIDE_INT init_b = TREE_INT_CST_LOW (DR_INIT (drb));
+	  gcc_assert (init_a < init_b);
+
+	  /* If init_b == init_a + the size of the type * k, we have an
+	     interleaving, and DRA is accessed before DRB.  */
+	  HOST_WIDE_INT type_size_a = TREE_INT_CST_LOW (sza);
+	  if ((init_b - init_a) % type_size_a != 0)
+	    break;
+
+	  /* The step (if not zero) is greater than the difference between
+	     data-refs' inits.  This splits groups into suitable sizes.  */
+	  HOST_WIDE_INT step = TREE_INT_CST_LOW (DR_STEP (dra));
+	  if (step != 0 && step <= (init_b - init_a))
+	    break;
+
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "Detected interleaving ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+	      dump_printf (MSG_NOTE,  " and ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
+	    }
+
+	  /* Link the found element into the group list.  */
+	  if (!GROUP_FIRST_ELEMENT (stmtinfo_a))
+	    {
+	      GROUP_FIRST_ELEMENT (stmtinfo_a) = DR_STMT (dra);
+	      lastinfo = stmtinfo_a;
+	    }
+	  GROUP_FIRST_ELEMENT (stmtinfo_b) = DR_STMT (dra);
+	  GROUP_NEXT_ELEMENT (lastinfo) = DR_STMT (drb);
+	  lastinfo = stmtinfo_b;
+	}
+    }
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     if (STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) 

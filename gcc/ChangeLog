@@ -1,5 +1,27 @@
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-data-refs.c (vect_update_interleaving_chain): Remove.
+	(vect_insert_into_interleaving_chain): Likewise.
+	(vect_drs_dependent_in_basic_block): Inline ...
+	(vect_slp_analyze_data_ref_dependence): ... here.  New function,
+	split out from ...
+	(vect_analyze_data_ref_dependence): ... here.  Simplify.
+	(vect_check_interleaving): Simplify.
+	(vect_analyze_data_ref_dependences): Likewise.  Split out ...
+	(vect_slp_analyze_data_ref_dependences): ... this new function.
+	(dr_group_sort_cmp): New function.
+	(vect_analyze_data_ref_accesses): Compute data-reference groups
+	here instead of in vect_analyze_data_ref_dependence.  Use
+	a more efficient algorithm.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Use
+	vect_slp_analyze_data_ref_dependences.  Call
+	vect_analyze_data_ref_accesses earlier.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	* tree-vectorizer.h (vect_analyze_data_ref_dependences): Adjust.
+	(vect_slp_analyze_data_ref_dependences): New prototype.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (can_sm_ref_p): Do not test whether
 	ref is stored in the loop.
 	(find_refs_for_sm): Walk only over all stores.
