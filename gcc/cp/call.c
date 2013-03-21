@@ -5709,12 +5709,12 @@ build_temp (tree expr, tree type, int flags,
   int savew, savee;
   vec<tree, va_gc> *args;
 
-  savew = warningcount, savee = errorcount;
+  savew = warningcount + werrorcount, savee = errorcount;
   args = make_tree_vector_single (expr);
   expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    &args, type, flags, complain);
   release_tree_vector (args);
-  if (warningcount > savew)
+  if (warningcount + werrorcount > savew)
     *diagnostic_kind = DK_WARNING;
   else if (errorcount > savee)
     *diagnostic_kind = DK_ERROR;

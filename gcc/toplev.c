@@ -1951,7 +1951,7 @@ toplev_main (int argc, char **argv)
   if (!exit_after_options)
     do_compile ();
 
-  if (warningcount || errorcount)
+  if (warningcount || errorcount || werrorcount)
     print_ignored_options ();
   diagnostic_finish (global_dc);
 
@@ -1960,7 +1960,7 @@ toplev_main (int argc, char **argv)
 
   finalize_plugins ();
   location_adhoc_data_fini (line_table);
-  if (seen_error ())
+  if (seen_error () || werrorcount)
     return (FATAL_EXIT_CODE);
 
   return (SUCCESS_EXIT_CODE);

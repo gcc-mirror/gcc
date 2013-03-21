@@ -729,7 +729,10 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 				    diagnostic->message.format_spec,
 				    diagnostic->message.args_ptr);
     }
-  ++diagnostic_kind_count (context, diagnostic->kind);
+  if (diagnostic->kind == DK_ERROR && orig_diag_kind == DK_WARNING)
+    ++diagnostic_kind_count (context, DK_WERROR);
+  else
+    ++diagnostic_kind_count (context, diagnostic->kind);
 
   saved_format_spec = diagnostic->message.format_spec;
   if (context->show_option_requested)

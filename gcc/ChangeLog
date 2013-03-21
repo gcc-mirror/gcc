@@ -1,5 +1,15 @@
 2013-03-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/48087
+	* diagnostic.def (DK_WERROR): New kind.
+	* diagnostic.h (werrorcount): Define.
+	* diagnostic.c (diagnostic_report_diagnostic): For DK_WARNING
+	promoted to DK_ERROR, increment DK_WERROR counter instead of
+	DK_ERROR counter.
+	* toplev.c (toplev_main): Call print_ignored_options even if
+	just werrorcount is non-zero.  Exit with FATAL_EXIT_CODE
+	even if just werrorcount is non-zero.
+
 	PR debug/55608
 	* dwarf2out.c (tree_add_const_value_attribute): Call ggc_free (array)
 	on failure.
