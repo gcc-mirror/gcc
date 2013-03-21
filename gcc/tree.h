@@ -2709,8 +2709,6 @@ struct GTY(()) tree_decl_minimal {
    checked before any access to the former.  */
 #define DECL_FUNCTION_CODE(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.function_code)
-#define DECL_DEBUG_EXPR_IS_FROM(NODE) \
-  (DECL_COMMON_CHECK (NODE)->decl_common.debug_expr_is_from)
 
 #define DECL_FUNCTION_PERSONALITY(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.personality)
@@ -3223,9 +3221,9 @@ struct GTY(()) tree_decl_with_vis {
 
 extern tree decl_debug_expr_lookup (tree);
 extern void decl_debug_expr_insert (tree, tree);
-/* For VAR_DECL, this is set to either an expression that it was split
-   from (if DECL_DEBUG_EXPR_IS_FROM is true), otherwise a tree_list of
-   subexpressions that it was split into.  */
+/* For VAR_DECL, this is set to an expression that it was split from.  */
+#define DECL_HAS_DEBUG_EXPR_P(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl_common.debug_expr_is_from)
 #define DECL_DEBUG_EXPR(NODE) \
   (decl_debug_expr_lookup (VAR_DECL_CHECK (NODE)))
 

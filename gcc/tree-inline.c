@@ -3762,7 +3762,7 @@ add_local_variables (struct function *callee, struct function *caller,
 
         /* Remap debug-expressions.  */
 	if (TREE_CODE (new_var) == VAR_DECL
-	    && DECL_DEBUG_EXPR_IS_FROM (new_var)
+	    && DECL_HAS_DEBUG_EXPR_P (var)
 	    && new_var != var)
 	  {
 	    tree tem = DECL_DEBUG_EXPR (var);
@@ -3772,6 +3772,7 @@ add_local_variables (struct function *callee, struct function *caller,
 	    id->remapping_type_depth--;
 	    id->regimplify = old_regimplify;
 	    SET_DECL_DEBUG_EXPR (new_var, tem);
+	    DECL_HAS_DEBUG_EXPR_P (new_var) = 1;
 	  }
 	add_local_decl (caller, new_var);
       }
