@@ -1,3 +1,16 @@
+2013-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53265
+	* unwind-dw2.c (execute_cfa_program): Avoid
+	-Waggressive-array-optimizations warnings for DW_CFA_GNU_window_save
+	on targets with DWARF_FRAME_REGISTERS < 32.
+
+2013-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49880
+	* config/sh/lib1funcs.S (sdivsi3_i4, udivsi3_i4): Enable for SH2A.
+	(sdivsi3, udivsi3): Remove SH4 check and always compile these functions.
+
 2013-03-07  Sriraman Tallam  <tmsriram@google.com>
 
 	* config/i386/cpuinfo.c (get_intel_cpu): Fix cpuid codes for

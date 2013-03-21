@@ -13,7 +13,11 @@ main ()
 {
   int i;
   for (i = 0; i < 5; i++)
-    x.s[i].f = 0;
+    {
+      /* Optimization barrier.  Prevent gcc from seeing the undefined behavior.  */
+      __asm ("" : "+r" (i));
+      x.s[i].f = 0;
+    }
   exit (0);
 }
 /* { dg-output "mudflap violation 1.*" } */

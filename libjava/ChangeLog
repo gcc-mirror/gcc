@@ -1,3 +1,9 @@
+2013-03-12  Andrew John Hughes  <gnu.andrew@redhat.com>
+
+	* include/posix-threads.h:
+	(_Jv_MutexCheckMonitor(_Jv_Mutex_t)): Use
+	pthread_equal rather than !=.
+
 2013-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.am (lib_gnu_awt_xlib_la_LDFLAGS): Replace

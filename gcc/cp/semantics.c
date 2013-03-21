@@ -1574,9 +1574,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       else
 	{
 	  /* Set the cv qualifiers.  */
-	  int quals = (current_class_ref
-		       ? cp_type_quals (TREE_TYPE (current_class_ref))
-		       : TYPE_UNQUALIFIED);
+	  int quals = cp_type_quals (TREE_TYPE (object));
 
 	  if (DECL_MUTABLE_P (decl))
 	    quals &= ~TYPE_QUAL_CONST;
@@ -2884,7 +2882,8 @@ outer_var_p (tree decl)
 {
   return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
 	  && DECL_FUNCTION_SCOPE_P (decl)
-	  && DECL_CONTEXT (decl) != current_function_decl);
+	  && (DECL_CONTEXT (decl) != current_function_decl
+	      || parsing_nsdmi ()));
 }
 
 /* As above, but also checks that DECL is automatic.  */
@@ -3041,12 +3040,14 @@ finish_id_expression (tree id_expression,
 		return integral_constant_value (decl);
 	    }
 
+	  if (parsing_nsdmi ())
+	    containing_function = NULL_TREE;
 	  /* If we are in a lambda function, we can move out until we hit
 	     1. the context,
 	     2. a non-lambda function, or
 	     3. a non-default capturing lambda function.  */
-	  while (context != containing_function
-		 && LAMBDA_FUNCTION_P (containing_function))
+	  else while (context != containing_function
+		      && LAMBDA_FUNCTION_P (containing_function))
 	    {
 	      lambda_expr = CLASSTYPE_LAMBDA_EXPR
 		(DECL_CONTEXT (containing_function));
@@ -7007,6 +7008,13 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
       *non_constant_p = true;
       return t;
     }
+  else if (tree_int_cst_lt (index, integer_zero_node))
+    {
+      if (!allow_non_constant)
+	error ("negative array subscript");
+      *non_constant_p = true;
+      return t;
+    }
   i = tree_low_cst (index, 0);
   if (TREE_CODE (ary) == CONSTRUCTOR)
     return (*CONSTRUCTOR_ELTS (ary))[i].value;
@@ -8487,6 +8495,13 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
         STRIP_NOPS (x);
         if (is_this_parameter (x))
 	  {
+	    if (DECL_CONTEXT (x)
+		&& !DECL_DECLARED_CONSTEXPR_P (DECL_CONTEXT (x)))
+	      {
+		if (flags & tf_error)
+		  error ("use of %<this%> in a constant expression");
+		return false;
+	      }
 	    if (want_rval && DECL_CONTEXT (x)
 		&& DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)))
 	      {
@@ -8967,7 +8982,7 @@ begin_lambda_type (tree lambda)
     /* Create the new RECORD_TYPE for this lambda.  */
     type = xref_tag (/*tag_code=*/record_type,
                      name,
-                     /*scope=*/ts_within_enclosing_non_class,
+                     /*scope=*/ts_lambda,
                      /*template_header_p=*/false);
   }
 
@@ -9039,7 +9054,7 @@ tree
 lambda_capture_field_type (tree expr)
 {
   tree type;
-  if (type_dependent_expression_p (expr))
+  if (!TREE_TYPE (expr) || WILDCARD_TYPE_P (TREE_TYPE (expr)))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -9060,12 +9075,6 @@ apply_deduced_return_type (tree fco, tree return_type)
 
   if (return_type == error_mark_node)
     return;
-
-  if (is_std_init_list (return_type))
-    {
-      error ("returning %qT", return_type);
-      return_type = void_type_node;
-    }
 
   if (LAMBDA_FUNCTION_P (fco))
     {
@@ -9254,7 +9263,7 @@ lambda_proxy_type (tree ref)
   if (REFERENCE_REF_P (ref))
     ref = TREE_OPERAND (ref, 0);
   type = TREE_TYPE (ref);
-  if (!dependent_type_p (type))
+  if (type && !WILDCARD_TYPE_P (type))
     return type;
   type = cxx_make_type (DECLTYPE_TYPE);
   DECLTYPE_TYPE_EXPR (type) = ref;
@@ -9667,7 +9676,11 @@ maybe_add_lambda_conv_op (tree type)
   DECL_STATIC_FUNCTION_P (fn) = 1;
   DECL_ARGUMENTS (fn) = copy_list (DECL_CHAIN (DECL_ARGUMENTS (callop)));
   for (arg = DECL_ARGUMENTS (fn); arg; arg = DECL_CHAIN (arg))
-    DECL_CONTEXT (arg) = fn;
+    {
+      /* Avoid duplicate -Wshadow warnings.  */
+      DECL_NAME (arg) = NULL_TREE;
+      DECL_CONTEXT (arg) = fn;
+    }
   if (nested)
     DECL_INTERFACE_KNOWN (fn) = 1;
 

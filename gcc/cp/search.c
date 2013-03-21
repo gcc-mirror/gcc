@@ -188,6 +188,14 @@ lookup_base (tree t, tree base, base_access access,
   tree t_binfo;
   base_kind bk;
 
+  /* "Nothing" is definitely not derived from Base.  */
+  if (t == NULL_TREE)
+    {
+      if (kind_ptr)
+	*kind_ptr = bk_not_base;
+      return NULL_TREE;
+    }
+
   if (t == error_mark_node || base == error_mark_node)
     {
       if (kind_ptr)

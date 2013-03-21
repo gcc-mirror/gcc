@@ -536,6 +536,9 @@ x86_64-*-*)
 	fi
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
+arm*-*-* | mips*-*-* | sh*-*-* | sparc*-*-*)
+	tm_file="vxworks-dummy.h ${tm_file}"
+	;;
 esac
 
 # On a.out targets, we need to use collect2.
@@ -861,7 +864,7 @@ arm-wrs-vxworks)
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
 	;;
 arm*-*-netbsdelf*)
-	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
+	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
 	;;
@@ -873,7 +876,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	    ;;
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
-	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
+	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
 	# Define multilib configuration for arm-linux-androideabi.
 	case ${target} in
 	*-androideabi)
@@ -891,7 +894,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
 	tmake_file="arm/t-arm arm/t-arm-elf arm/t-bpabi"
-	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h arm/arm.h"
+	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
 	# The BPABI long long divmod functions return a 128-bit value in
 	# registers r0-r3.  Correctly modeling that requires the use of
 	# TImode.
@@ -928,7 +931,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  tmake_file="${tmake_file} arm/t-symbian"
 	  ;;
 	esac
-	tm_file="${tm_file} arm/aout.h arm/arm.h"
+	tm_file="${tm_file} arm/aout.h vxworks-dummy.h arm/arm.h"
 	;;
 avr-*-rtems*)
 	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"

@@ -1,3 +1,178 @@
+2013-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54359
+	PR c++/56639
+	* parser.c (cp_parser_direct_declarator): Bail if we see a
+	qualified-id not at namespace scope.
+
+	PR c++/17232
+	PR c++/56642
+	* typeck2.c (abstract_virtuals_error_sfinae): Revert complete_type
+	change for now.
+
+2013-03-16  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Assert that we won't see a pointer to
+	METHOD_TYPE.
+
+	PR c++/54277
+	* cp-tree.h (WILDCARD_TYPE_P): Split out from...
+	(MAYBE_CLASS_TYPE_P): ...here.
+	* semantics.c (lambda_capture_field_type): Only build a
+	magic decltype for wildcard types.
+	(lambda_proxy_type): Likewise.
+	(finish_non_static_data_member): Get the quals from
+	the object.
+
+	PR c++/55931
+	* parser.c (cp_parser_template_argument): Don't
+	fold_non_dependent_expr.
+
+	* parser.c (cp_parser_lambda_declarator_opt): Use
+	cp_parser_trailing_type_id.
+
+	PR c++/45917
+	* parser.c (cp_parser_template_id): Don't forget access checks.
+
+	PR c++/52374
+	* pt.c (tsubst_qualified_id): Use current_nonlambda_class_type.
+
+	PR c++/54764
+	PR c++/55972
+	* name-lookup.h (tag_scope): Add ts_lambda.
+	* semantics.c (begin_lambda_type): Use it.
+	* decl.c (xref_tag_1): Set CLASSTYPE_LAMBDA_EXPR.
+	* pt.c (check_default_tmpl_args): Ignore lambdas.
+	(push_template_decl_real): Handle lambdas.
+	* tree.c (no_linkage_check): Adjust lambda check.
+
+	PR c++/56039
+	* tree.c (strip_typedefs_expr): Complain about lambda, don't abort.
+
+	PR c++/54359
+	* parser.c (cp_parser_direct_declarator): Fix late return
+	for out-of-class defn of member function.
+
+	PR c++/55357
+	* semantics.c (maybe_add_lambda_conv_op): Clear DECL_NAME of copied
+	parms to avoid duplicate -Wshadow warnings.
+
+	* search.c (lookup_base): Handle NULL_TREE.
+
+	PR c++/56481
+	* semantics.c (potential_constant_expression_1): Use of 'this' in
+	a non-constexpr function makes the expression not potentially
+	constant.
+
+	N3276
+	PR c++/52748
+	* cp-tree.h (tsubst_flags): Add tf_decltype.
+	* call.c (build_cxx_call): Don't build a temporary if it's set.
+	(build_over_call): Make sure it's only passed to build_cxx_call.
+	* parser.c (cp_parser_primary_expression): Add decltype_p parm.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_binary_expression): Likewise.
+	(cp_parser_assignment_expression): Likewise.
+	(cp_parser_postfix_expression): Likewise.  Pass tf_decltype.
+	(cp_parser_explicit_instantiation): Add decltype_p.  Force a
+	temporary for a call on the LHS of a comma.
+	(cp_parser_decltype): Pass true to decltype_p parms.
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Pass tf_decltype.
+	(tsubst_copy_and_build): Pass tf_decltype down only for
+	CALL_EXPR and the RHS of COMPOUND_EXPR.
+	* tree.c (build_cplus_new): Call complete_type_or_maybe_complain.
+
+	* cp-tree.h (abstract_class_use): New enum.
+	* typeck2.c (pending_abstract_type): Add use field.
+	(abstract_virtuals_error_sfinae): Add overloads taking
+	abstract_class_use instead of tree.
+	* typeck.c (build_static_cast_1): Call it.
+	* except.c (is_admissible_throw_operand_or_catch_parameter): Call it.
+	* pt.c: Adjust calls.
+	* decl.c (cp_finish_decl): Don't handle functions specially.
+	(grokdeclarator): Always check return type.
+	* init.c (build_new_1): Adjust call.
+
+	DR 337
+	PR c++/17232
+	* pt.c (tsubst) [ARRAY_TYPE]: Use abstract_virtuals_error_sfinae.
+	* typeck2.c (abstract_virtuals_error_sfinae): Call complete_type.
+
+	DR 657
+	* pt.c (tsubst_function_type): Call abstract_virtuals_error_sfinae.
+	(tsubst_arg_types): Likewise.
+
+	DR 1518
+	PR c++/54835
+	* call.c (convert_like_real): Check for explicit constructors
+	even for value-initialization.
+
+	PR c++/54946
+	* pt.c (convert_nontype_argument): Handle invalid pointer.
+
+	* parser.c (cp_parser_lambda_expression): Use nreverse.
+
+	PR c++/56447
+	PR c++/55532
+	* pt.c (instantiate_class_template_1): Instantiate lambda capture
+	list here.
+	(tsubst_copy_and_build): Not here.
+
+	PR c++/55017
+	* method.c (walk_field_subobs): Disallow copy of rvalue ref.
+
+	PR c++/55240
+	* parser.c (parsing_nsdmi): New.
+	* semantics.c (outer_automatic_var_p): Check it.
+	(finish_id_expression): Likewise.
+	* cp-tree.h: Declare it.
+
+	PR c++/55241
+	* error.c (dump_expr) [SIZEOF_EXPR]: Print sizeof... properly.
+
+	* parser.c (lookup_literal_operator): Correct parm/arg naming
+	mixup.
+
+	PR c++/56238
+	* pt.c (fold_non_dependent_expr_sfinae): Check
+	instantiation_dependent_expression_p.
+
+	PR c++/56095
+	* class.c (resolve_address_of_overloaded_function): Accept a
+	reference to function for target_type.
+	(instantiate_type): Likewise.
+	* pt.c (convert_nontype_argument): Pass it to
+	convert_nontype_argument_function.
+
+2013-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (cp_tree_equal): Fix a pasto.
+
+	PR c++/56607
+	* typeck.c (cp_build_binary_op): When calling warn_for_div_by_zero,
+	pass op1 through maybe_constant_value first.
+
+2013-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56582
+	* semantics.c (cxx_eval_array_reference): Check for negative index.
+
+2013-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56614
+	* decl.c (local_variable_p_walkfn): Check DECL_ARTIFICIAL again.
+
+	PR c++/56346
+	* decl.c (register_dtor_fn): Pass null to __cxa_thread_atexit
+	dso_handle parm on targets without __cxa_atexit.
+
+2013-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56567
+	* typeck.c (check_return_expr): Disallow returning init list here.
+	* semantics.c (apply_deduced_return_type): Not here.
+
 2013-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51412

@@ -1,4 +1,4 @@
-/* { dg-do compile  { target i?86-*-linux* x86_64-*-linux* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-rtl-loop2_unroll -fno-peel-loops -fdisable-tree-cunroll -fdisable-tree-cunrolli -fenable-rtl-loop2_unroll=foo" } */
 
 unsigned a[100], b[100];
@@ -30,4 +30,3 @@ int foo2(void)
 
 /* { dg-final { scan-rtl-dump-times "Turned loop into non-loop; it never loops" 1 "loop2_unroll" } } */
 /* { dg-final { cleanup-rtl-dump "loop2_unroll" } } */
-/* { dg-excess-errors "extra notes" } */

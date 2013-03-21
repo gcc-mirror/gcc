@@ -2231,7 +2231,7 @@ avr_print_operand (FILE *file, rtx x, int code)
     {
       HOST_WIDE_INT ival = INTVAL (avr_to_int_mode (x));
       if (code != 0)
-        output_operand_lossage ("Unsupported code '%c'for fixed-point:",
+        output_operand_lossage ("Unsupported code '%c' for fixed-point:",
                                 code);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
     }
@@ -10765,6 +10765,66 @@ avr_addr_space_subset_p (addr_space_t subset ATTRIBUTE_UNUSED,
 }
 
 
+/* Implement `TARGET_CONVERT_TO_TYPE'.  */
+
+static tree
+avr_convert_to_type (tree type, tree expr)
+{
+  /* Print a diagnose for pointer conversion that changes the address
+     space of the pointer target to a non-enclosing address space,
+     provided -Waddr-space-convert is on.
+
+     FIXME: Filter out cases where the target object is known to
+            be located in the right memory, like in
+
+                (const __flash*) PSTR ("text")
+
+            Also try to distinguish between explicit casts requested by
+            the user and implicit casts like
+
+                void f (const __flash char*);
+
+                void g (const char *p)
+                {
+                    f ((const __flash*) p);
+                }
+
+            under the assumption that an explicit casts means that the user
+            knows what he is doing, e.g. interface with PSTR or old style
+            code with progmem and pgm_read_xxx.
+  */
+
+  if (avr_warn_addr_space_convert
+      && expr != error_mark_node
+      && POINTER_TYPE_P (type)
+      && POINTER_TYPE_P (TREE_TYPE (expr)))
+    {
+      addr_space_t as_old = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (expr)));
+      addr_space_t as_new = TYPE_ADDR_SPACE (TREE_TYPE (type));
+        
+      if (avr_log.progmem)
+        avr_edump ("%?: type = %t\nexpr = %t\n\n", type, expr);
+
+      if (as_new != ADDR_SPACE_MEMX
+          && as_new != as_old)
+        {
+          location_t loc = EXPR_LOCATION (expr);
+          const char *name_old = avr_addrspace[as_old].name;
+          const char *name_new = avr_addrspace[as_new].name;
+
+          warning (OPT_Waddr_space_convert,
+                   "conversion from address space %qs to address space %qs",
+                   ADDR_SPACE_GENERIC_P (as_old) ? "generic" : name_old,
+                   ADDR_SPACE_GENERIC_P (as_new) ? "generic" : name_new);
+
+          return fold_build1_loc (loc, ADDR_SPACE_CONVERT_EXPR, type, expr);
+        }
+    }
+
+  return NULL_TREE;
+}
+
+
 /* Worker function for movmemhi expander.
    XOP[0]  Destination as MEM:BLK
    XOP[1]  Source      "     "
@@ -12148,6 +12208,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_FIXED_POINT_SUPPORTED_P
 #define TARGET_FIXED_POINT_SUPPORTED_P hook_bool_void_true
+
+#undef  TARGET_CONVERT_TO_TYPE
+#define TARGET_CONVERT_TO_TYPE avr_convert_to_type
 
 #undef  TARGET_ADDR_SPACE_SUBSET_P
 #define TARGET_ADDR_SPACE_SUBSET_P avr_addr_space_subset_p

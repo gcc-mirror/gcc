@@ -1,3 +1,109 @@
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/3713
+	* g++.dg/ipa/devirt-12.C: New testcase.
+
+2013-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/56566
+	* c-c++-common/pr56566.c: New test.
+
+2013-03-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/abstract-dr337.C: XFAIL.
+
+2013-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56607
+	* g++.dg/warn/Wdiv-by-zero-2.C: New test.
+	* c-c++-common/pr56607.c: New test.
+
+2013-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56582
+	* g++.dg/cpp0x/constexpr-array5.C: New.
+
+2013-03-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56615
+	* gfortran.dg/transfer_intrinsic_5.f90: New.
+
+2013-03-15  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.target/i386/movti.c: Don't test for x64 mingw.
+	* gcc.target/i386/pr20020-1.c: Likewise.
+	* gcc.target/i386/pr20020-2.c: Likewise.
+	* gcc.target/i386/pr20020-3.c: Likewise.
+	* gcc.target/i386/pr53425-1.c: Likewise.
+	* gcc.target/i386/pr53425-2.c: Likewise.
+	* gcc.target/i386/pr55093.c: Likewise.
+	* gcc.target/i386/pr53907.c: Adjust test for LLP64 targets.
+
+2013-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56307
+	* gcc.dg/tree-ssa/pr55579.c: Add -fvar-tracking-assignments to
+	dg-options.  Remove 32-bit hppa*-*-hpux* xfail.
+
+2013-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53265
+	* gcc.dg/graphite/scop-3.c (toto): Increase array size to avoid
+	undefined behavior.
+	* gcc.dg/graphite/id-6.c (test): Likewise.
+	* gcc.dg/graphite/pr35356-2.c: Adjust regexp patterns to only look for
+	MIN_EXPR and MAX_EXPR in GIMPLE stmts.
+
+	PR tree-optimization/53265
+	* gcc.dg/pr53265.c: New test.
+	* gcc.dg/torture/pr49518.c: Add -Wno-aggressive-loop-optimizations
+	to dg-options.
+	* g++.dg/opt/longbranch2.C (EBCOTLut): Double sizes of a2 and a3
+	arrays.
+	* gcc.dg/tree-ssa/cunroll-10.c (main): Rename to foo.  Add argument
+	n, use it as high bound instead of 4.
+
+2013-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49880
+	* gcc.target/sh/pr49880-1.c: New.
+	* gcc.target/sh/pr49880-2.c: New.
+	* gcc.target/sh/pr49880-3.c: New.
+	* gcc.target/sh/pr49880-4.c: New.
+	* gcc.target/sh/pr49880-5.c: New.
+
+2013-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/alias-decl-32.C: Remove redundant bits.
+
+2013-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56608
+	* gcc.dg/vect/fast-math-bb-slp-call-3.c: New testcase.
+
+2013-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56611
+	* g++.dg/cpp0x/alias-decl-32.C: New.
+
+2013-03-11  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/56571
+	* gcc.c-torture/compile/pr56571.c: New testcase.
+
+2013-03-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/tree-ssa/vector-4.c: Add comment regarding xfail.
+	* gcc.dg/tree-ssa/pr55579.c: Likewise.
+
+2013-03-11  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gcc.dg/inline_3.c: Remove target and dg-excess-errors.
+	* gcc.dg/inline_4.c: Likewise.
+	* gcc.dg/unroll_2.c: Likewise.
+	* gcc.dg/unroll_3.c: Likewise.
+	* gcc.dg/unroll_4.c: Likewise.
+
 2013-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/54119

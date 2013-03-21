@@ -128,6 +128,21 @@ along with GCC; see the file COPYING3.  If not see
     which is currently an abstraction over walking tree statements.  Thus
     the dominator walker is currently only useful for trees.  */
 
+static int *bb_postorder;
+
+static int
+cmp_bb_postorder (const void *a, const void *b)
+{
+  basic_block bb1 = *(basic_block *)const_cast<void *>(a);
+  basic_block bb2 = *(basic_block *)const_cast<void *>(b);
+  if (bb1->index == bb2->index)
+    return 0;
+  /* Place higher completion number first (pop off lower number first).  */
+  if (bb_postorder[bb1->index] > bb_postorder[bb2->index])
+    return -1;
+  return 1;
+}
+
 /* Recursively walk the dominator tree.
 
    WALK_DATA contains a set of callbacks to perform pass-specific
@@ -143,9 +158,17 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
   basic_block dest;
   basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks * 2);
   int sp = 0;
-  sbitmap visited = sbitmap_alloc (last_basic_block + 1);
-  bitmap_clear (visited);
-  bitmap_set_bit (visited, ENTRY_BLOCK_PTR->index);
+  int *postorder, postorder_num;
+
+  if (walk_data->dom_direction == CDI_DOMINATORS)
+    {
+      postorder = XNEWVEC (int, n_basic_blocks);
+      postorder_num = inverted_post_order_compute (postorder);
+      bb_postorder = XNEWVEC (int, last_basic_block);
+      for (int i = 0; i < postorder_num; ++i)
+	bb_postorder[postorder[i]] = i;
+      free (postorder);
+    }
 
   while (true)
     {
@@ -186,16 +209,25 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  if (walk_data->before_dom_children)
 	    (*walk_data->before_dom_children) (walk_data, bb);
 
-	  bitmap_set_bit (visited, bb->index);
-
 	  /* Mark the current BB to be popped out of the recursion stack
 	     once children are processed.  */
 	  worklist[sp++] = bb;
 	  worklist[sp++] = NULL;
 
+	  int saved_sp = sp;
 	  for (dest = first_dom_son (walk_data->dom_direction, bb);
 	       dest; dest = next_dom_son (walk_data->dom_direction, dest))
 	    worklist[sp++] = dest;
+	  if (walk_data->dom_direction == CDI_DOMINATORS)
+	    switch (sp - saved_sp)
+	      {
+	      case 0:
+	      case 1:
+		break;
+	      default:
+		qsort (&worklist[saved_sp], sp - saved_sp,
+		       sizeof (basic_block), cmp_bb_postorder);
+	      }
 	}
       /* NULL is used to mark pop operations in the recursion stack.  */
       while (sp > 0 && !worklist[sp - 1])
@@ -217,44 +249,16 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	    }
 	}
       if (sp)
-	{
-	  int spp;
-	  spp = sp - 1;
-	  if (walk_data->dom_direction == CDI_DOMINATORS)
-	    /* Find the dominator son that has all its predecessors
-	       visited and continue with that.  */
-	    while (1)
-	      {
-		edge_iterator ei;
-		edge e;
-		bool found = true;
-		bb = worklist[spp];
-		FOR_EACH_EDGE (e, ei, bb->preds)
-		  {
-		    if (!dominated_by_p (CDI_DOMINATORS, e->src, e->dest)
-			&& !bitmap_bit_p (visited, e->src->index))
-		      {
-			found = false;
-			break;
-		      }
-		  }
-		if (found)
-		  break;
-		/* If we didn't find a dom child with all visited
-		   predecessors just use the candidate we were checking.
-		   This happens for candidates in irreducible loops.  */
-		if (!worklist[spp - 1])
-		  break;
-		--spp;
-	      }
-	  bb = worklist[spp];
-	  worklist[spp] = worklist[--sp];
-	}
+	bb = worklist[--sp];
       else
 	break;
     }
+  if (walk_data->dom_direction == CDI_DOMINATORS)
+    {
+      free (bb_postorder);
+      bb_postorder = NULL;
+    }
   free (worklist);
-  sbitmap_free (visited);
 }
 
 void

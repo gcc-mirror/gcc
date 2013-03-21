@@ -232,7 +232,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
--w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
+-w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
+-Waggressive-loop-optimizations -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
@@ -514,7 +515,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
 -mcall-prologues -mint8 -mno-interrupts -mrelax @gol
--mstrict-X -mtiny-stack}
+-mstrict-X -mtiny-stack -Waddr-space-convert}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -4422,6 +4423,12 @@ bit-wise operator is likely to be expected.
 Warn if any functions that return structures or unions are defined or
 called.  (In languages where you can return an array, this also elicits
 a warning.)
+
+@item -Wno-aggressive-loop-optimizations
+@opindex Wno-aggressive-loop-optimizations
+@opindex Waggressive-loop-optimizations
+Warn if in a loop with constant number of iterations the compiler detects
+undefined behavior in some statement during one or more of the iterations.
 
 @item -Wno-attributes
 @opindex Wno-attributes
@@ -11632,6 +11639,11 @@ sbiw r26, const   ; X -= const
 @item -mtiny-stack
 @opindex mtiny-stack
 Only change the lower 8@tie{}bits of the stack pointer.
+
+@item -Waddr-space-convert
+@opindex Waddr-space-convert
+Warn about conversions between address spaces in the case where the
+resulting address space is not contained in the incoming address space.
 @end table
 
 @subsubsection @code{EIND} and Devices with more than 128 Ki Bytes of Flash

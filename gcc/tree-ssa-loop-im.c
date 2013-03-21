@@ -117,10 +117,14 @@ typedef struct mem_ref_locs
 
 typedef struct mem_ref
 {
-  tree mem;			/* The memory itself.  */
   unsigned id;			/* ID assigned to the memory reference
 				   (its index in memory_accesses.refs_list)  */
   hashval_t hash;		/* Its hash value.  */
+
+  /* The memory access itself and associated caching of alias-oracle
+     query meta-data.  */
+  ao_ref mem;
+
   bitmap stored;		/* The set of loops in that this memory location
 				   is stored to.  */
   vec<mem_ref_locs_p> accesses_in_loop;
@@ -186,7 +190,7 @@ static bool ref_indep_loop_p (struct loop *, mem_ref_p);
 #define SET_ALWAYS_EXECUTED_IN(BB, VAL) ((BB)->aux = (void *) (VAL))
 
 /* Whether the reference was analyzable.  */
-#define MEM_ANALYZABLE(REF) ((REF)->mem != error_mark_node)
+#define MEM_ANALYZABLE(REF) ((REF)->mem.ref != error_mark_node)
 
 static struct lim_aux_data *
 init_lim_data (gimple stmt)
@@ -1449,7 +1453,7 @@ memref_eq (const void *obj1, const void *obj2)
 {
   const struct mem_ref *const mem1 = (const struct mem_ref *) obj1;
 
-  return operand_equal_p (mem1->mem, (const_tree) obj2, 0);
+  return operand_equal_p (mem1->mem.ref, (const_tree) obj2, 0);
 }
 
 /* Releases list of memory reference locations ACCS.  */
@@ -1491,7 +1495,7 @@ static mem_ref_p
 mem_ref_alloc (tree mem, unsigned hash, unsigned id)
 {
   mem_ref_p ref = XNEW (struct mem_ref);
-  ref->mem = mem;
+  ao_ref_init (&ref->mem, mem);
   ref->id = id;
   ref->hash = hash;
   ref->stored = BITMAP_ALLOC (&lim_bitmap_obstack);
@@ -1606,7 +1610,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Memory reference %u: ", id);
-	  print_generic_expr (dump_file, ref->mem, TDF_SLIM);
+	  print_generic_expr (dump_file, ref->mem.ref, TDF_SLIM);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -1730,7 +1734,8 @@ analyze_memory_references (void)
    tree_to_aff_combination_expand.  */
 
 static bool
-mem_refs_may_alias_p (tree mem1, tree mem2, struct pointer_map_t **ttae_cache)
+mem_refs_may_alias_p (mem_ref_p mem1, mem_ref_p mem2,
+		      struct pointer_map_t **ttae_cache)
 {
   /* Perform BASE + OFFSET analysis -- if MEM1 and MEM2 are based on the same
      object and their offset differ in such a way that the locations cannot
@@ -1739,7 +1744,7 @@ mem_refs_may_alias_p (tree mem1, tree mem2, struct pointer_map_t **ttae_cache)
   aff_tree off1, off2;
 
   /* Perform basic offset and type-based disambiguation.  */
-  if (!refs_may_alias_p (mem1, mem2))
+  if (!refs_may_alias_p_1 (&mem1->mem, &mem2->mem, true))
     return false;
 
   /* The expansion of addresses may be a bit expensive, thus we only do
@@ -1747,8 +1752,8 @@ mem_refs_may_alias_p (tree mem1, tree mem2, struct pointer_map_t **ttae_cache)
   if (optimize < 2)
     return true;
 
-  get_inner_reference_aff (mem1, &off1, &size1);
-  get_inner_reference_aff (mem2, &off2, &size2);
+  get_inner_reference_aff (mem1->mem.ref, &off1, &size1);
+  get_inner_reference_aff (mem2->mem.ref, &off2, &size2);
   aff_combination_expand (&off1, ttae_cache);
   aff_combination_expand (&off2, ttae_cache);
   aff_combination_scale (&off1, double_int_minus_one);
@@ -2079,7 +2084,7 @@ execute_sm_if_changed_flag_set (struct loop *loop, mem_ref_p ref)
   mem_ref_loc_p loc;
   tree flag;
   vec<mem_ref_loc_p> locs = vNULL;
-  char *str = get_lsm_tmp_name (ref->mem, ~0);
+  char *str = get_lsm_tmp_name (ref->mem.ref, ~0);
 
   lsm_tmp_name_add ("_flag");
   flag = create_tmp_reg (boolean_type_node, str);
@@ -2121,16 +2126,16 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Executing store motion of ");
-      print_generic_expr (dump_file, ref->mem, 0);
+      print_generic_expr (dump_file, ref->mem.ref, 0);
       fprintf (dump_file, " from loop %d\n", loop->num);
     }
 
-  tmp_var = create_tmp_reg (TREE_TYPE (ref->mem),
-			      get_lsm_tmp_name (ref->mem, ~0));
+  tmp_var = create_tmp_reg (TREE_TYPE (ref->mem.ref),
+			    get_lsm_tmp_name (ref->mem.ref, ~0));
 
   fmt_data.loop = loop;
   fmt_data.orig_loop = loop;
-  for_each_index (&ref->mem, force_move_till, &fmt_data);
+  for_each_index (&ref->mem.ref, force_move_till, &fmt_data);
 
   if (block_in_transaction (loop_preheader_edge (loop)->src)
       || !PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES))
@@ -2148,7 +2153,7 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
   /* FIXME/TODO: For the multi-threaded variant, we could avoid this
      load altogether, since the store is predicated by a flag.  We
      could, do the load only if it was originally in the loop.  */
-  load = gimple_build_assign (tmp_var, unshare_expr (ref->mem));
+  load = gimple_build_assign (tmp_var, unshare_expr (ref->mem.ref));
   lim_data = init_lim_data (load);
   lim_data->max_loop = loop;
   lim_data->tgt_loop = loop;
@@ -2168,11 +2173,11 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
     if (!multi_threaded_model_p)
       {
 	gimple store;
-	store = gimple_build_assign (unshare_expr (ref->mem), tmp_var);
+	store = gimple_build_assign (unshare_expr (ref->mem.ref), tmp_var);
 	gsi_insert_on_edge (ex, store);
       }
     else
-      execute_sm_if_changed (ex, ref->mem, tmp_var, store_flag);
+      execute_sm_if_changed (ex, ref->mem.ref, tmp_var, store_flag);
 }
 
 /* Hoists memory references MEM_REFS out of LOOP.  EXITS is the list of exit
@@ -2206,9 +2211,8 @@ ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
   struct loop *must_exec;
   tree base;
 
-  base = get_base_address (ref->mem);
-  if (INDIRECT_REF_P (base)
-      || TREE_CODE (base) == MEM_REF)
+  base = ao_ref_base (&ref->mem);
+  if (TREE_CODE (base) == MEM_REF)
     base = TREE_OPERAND (base, 0);
 
   get_all_locs_in_loop (loop, ref, &locs);
@@ -2255,24 +2259,33 @@ ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
 static bool
 refs_independent_p (mem_ref_p ref1, mem_ref_p ref2)
 {
-  if (ref1 == ref2
-      || bitmap_bit_p (ref1->indep_ref, ref2->id))
+  if (ref1 == ref2)
     return true;
-  if (bitmap_bit_p (ref1->dep_ref, ref2->id))
-    return false;
+
   if (!MEM_ANALYZABLE (ref1)
       || !MEM_ANALYZABLE (ref2))
+    return false;
+
+  /* Reference dependence in a loop is symmetric.  */
+  if (ref1->id > ref2->id)
+    {
+      mem_ref_p tem = ref1;
+      ref1 = ref2;
+      ref2 = tem;
+    }
+
+  if (bitmap_bit_p (ref1->indep_ref, ref2->id))
+    return true;
+  if (bitmap_bit_p (ref1->dep_ref, ref2->id))
     return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Querying dependency of refs %u and %u: ",
 	     ref1->id, ref2->id);
 
-  if (mem_refs_may_alias_p (ref1->mem, ref2->mem,
-			    &memory_accesses.ttae_cache))
+  if (mem_refs_may_alias_p (ref1, ref2, &memory_accesses.ttae_cache))
     {
       bitmap_set_bit (ref1->dep_ref, ref2->id);
-      bitmap_set_bit (ref2->dep_ref, ref1->id);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "dependent.\n");
       return false;
@@ -2280,7 +2293,6 @@ refs_independent_p (mem_ref_p ref1, mem_ref_p ref2)
   else
     {
       bitmap_set_bit (ref1->indep_ref, ref2->id);
-      bitmap_set_bit (ref2->indep_ref, ref1->id);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "independent.\n");
       return true;
@@ -2371,21 +2383,21 @@ can_sm_ref_p (struct loop *loop, mem_ref_p ref)
     return false;
 
   /* It should be movable.  */
-  if (!is_gimple_reg_type (TREE_TYPE (ref->mem))
-      || TREE_THIS_VOLATILE (ref->mem)
-      || !for_each_index (&ref->mem, may_move_till, loop))
+  if (!is_gimple_reg_type (TREE_TYPE (ref->mem.ref))
+      || TREE_THIS_VOLATILE (ref->mem.ref)
+      || !for_each_index (&ref->mem.ref, may_move_till, loop))
     return false;
 
   /* If it can throw fail, we do not properly update EH info.  */
-  if (tree_could_throw_p (ref->mem))
+  if (tree_could_throw_p (ref->mem.ref))
     return false;
 
   /* If it can trap, it must be always executed in LOOP.
      Readonly memory locations may trap when storing to them, but
      tree_could_trap_p is a predicate for rvalues, so check that
      explicitly.  */
-  base = get_base_address (ref->mem);
-  if ((tree_could_trap_p (ref->mem)
+  base = get_base_address (ref->mem.ref);
+  if ((tree_could_trap_p (ref->mem.ref)
        || (DECL_P (base) && TREE_READONLY (base)))
       && !ref_always_accessed_p (loop, ref, true))
     return false;

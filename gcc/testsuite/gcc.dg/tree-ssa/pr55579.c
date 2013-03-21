@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -g -fdump-tree-esra" } */
+/* { dg-options "-O2 -g -fdump-tree-esra -fvar-tracking-assignments" } */
 
 struct S { int a; char b; char c; short d; };
 
@@ -11,5 +11,5 @@ foo (int x)
   return x;
 }
 
-/* { dg-final { scan-tree-dump "Created a debug-only replacement for s" "esra" {xfail { hppa*-*-hpux* && { ! lp64 } } } } } */
+/* { dg-final { scan-tree-dump "Created a debug-only replacement for s" "esra" } } */
 /* { dg-final { cleanup-tree-dump "esra" } } */

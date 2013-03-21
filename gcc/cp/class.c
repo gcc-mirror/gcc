@@ -7148,7 +7148,8 @@ resolve_address_of_overloaded_function (tree target_type,
   gcc_assert (is_overloaded_fn (overload));
 
   /* Check that the TARGET_TYPE is reasonable.  */
-  if (TYPE_PTRFN_P (target_type))
+  if (TYPE_PTRFN_P (target_type)
+      || TYPE_REFFN_P (target_type))
     /* This is OK.  */;
   else if (TYPE_PTRMEMFUNC_P (target_type))
     /* This is OK, too.  */
@@ -7419,10 +7420,11 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
   if (TREE_TYPE (rhs) != NULL_TREE && ! (type_unknown_p (rhs)))
     {
-      if (same_type_p (lhstype, TREE_TYPE (rhs)))
+      tree fntype = non_reference (lhstype);
+      if (same_type_p (fntype, TREE_TYPE (rhs)))
 	return rhs;
       if (flag_ms_extensions
-	  && TYPE_PTRMEMFUNC_P (lhstype)
+	  && TYPE_PTRMEMFUNC_P (fntype)
 	  && !TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
 	/* Microsoft allows `A::f' to be resolved to a
 	   pointer-to-member.  */
@@ -7431,7 +7433,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 	{
 	  if (flags & tf_error)
 	    error ("cannot convert %qE from type %qT to type %qT",
-		   rhs, TREE_TYPE (rhs), lhstype);
+		   rhs, TREE_TYPE (rhs), fntype);
 	  return error_mark_node;
 	}
     }

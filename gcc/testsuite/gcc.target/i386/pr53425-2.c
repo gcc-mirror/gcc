@@ -1,6 +1,7 @@
 /* PR target/53425 */
 /* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-O2 -mno-sse" } */
+/* { dg-skip-if "no SSE vector" { x86_64-*-mingw* } } */
 
 typedef float __v2sf __attribute__ ((__vector_size__ (8)));
 

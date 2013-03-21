@@ -5856,6 +5856,17 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	tree convfn = cand->fn;
 	unsigned i;
 
+	/* When converting from an init list we consider explicit
+	   constructors, but actually trying to call one is an error.  */
+	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
+	    /* Unless this is for direct-list-initialization.  */
+	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
+		 && CONSTRUCTOR_IS_DIRECT_INIT (expr)))
+	  {
+	    error ("converting to %qT from initializer list would use "
+		   "explicit constructor %qD", totype, convfn);
+	  }
+
 	/* If we're initializing from {}, it's value-initialization.  */
 	if (BRACE_ENCLOSED_INITIALIZER_P (expr)
 	    && CONSTRUCTOR_NELTS (expr) == 0
@@ -5873,20 +5884,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  }
 
 	expr = mark_rvalue_use (expr);
-
-	/* When converting from an init list we consider explicit
-	   constructors, but actually trying to call one is an error.  */
-	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
-	    /* Unless this is for direct-list-initialization.  */
-	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
-		 && CONSTRUCTOR_IS_DIRECT_INIT (expr))
-	    /* Unless we're calling it for value-initialization from an
-	       empty list, since that is handled separately in 8.5.4.  */
-	    && cand->num_convs > 0)
-	  {
-	    error ("converting to %qT from initializer list would use "
-		   "explicit constructor %qD", totype, convfn);
-	  }
 
 	/* Set user_conv_p on the argument conversions, so rvalue/base
 	   handling knows not to allow any more UDCs.  */
@@ -6696,6 +6693,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* else continue to get conversion error.  */
     }
 
+  /* N3276 magic doesn't apply to nested calls.  */
+  int decltype_flag = (complain & tf_decltype);
+  complain &= ~tf_decltype;
+
   /* Find maximum size of vector to hold converted arguments.  */
   parmlen = list_length (parm);
   nargs = vec_safe_length (args) + (first_arg != NULL_TREE ? 1 : 0);
@@ -7067,7 +7068,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	return error_mark_node;
     }
 
-  return build_cxx_call (fn, nargs, argarray, complain);
+  return build_cxx_call (fn, nargs, argarray, complain|decltype_flag);
 }
 
 /* Build and return a call to FN, using NARGS arguments in ARGARRAY.
@@ -7109,12 +7110,20 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
   if (VOID_TYPE_P (TREE_TYPE (fn)))
     return fn;
 
-  fn = require_complete_type_sfinae (fn, complain);
-  if (fn == error_mark_node)
-    return error_mark_node;
+  /* 5.2.2/11: If a function call is a prvalue of object type: if the
+     function call is either the operand of a decltype-specifier or the
+     right operand of a comma operator that is the operand of a
+     decltype-specifier, a temporary object is not introduced for the
+     prvalue. The type of the prvalue may be incomplete.  */
+  if (!(complain & tf_decltype))
+    {
+      fn = require_complete_type_sfinae (fn, complain);
+      if (fn == error_mark_node)
+	return error_mark_node;
 
-  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
-    fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+      if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
+	fn = build_cplus_new (TREE_TYPE (fn), fn, complain);
+    }
   return convert_from_reference (fn);
 }
 

@@ -9872,6 +9872,9 @@ alpha_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P alpha_legitimate_address_p
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_true
+
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE alpha_conditional_register_usage
 

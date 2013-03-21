@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2013-02-24 01:05+0000\n"
+"POT-Creation-Date: 2013-03-15 17:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -409,7 +409,7 @@ msgstr ""
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2566
+#: directives.c:2567
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
@@ -585,39 +585,39 @@ msgstr ""
 msgid "division by zero in #if"
 msgstr ""
 
-#: files.c:504
+#: files.c:505
 msgid "NULL directory in find_file"
 msgstr ""
 
-#: files.c:542
+#: files.c:553
 msgid "one or more PCH files were found, but they were invalid"
 msgstr ""
 
-#: files.c:545
+#: files.c:556
 msgid "use -Winvalid-pch for more information"
-msgstr ""
-
-#: files.c:643
-#, c-format
-msgid "%s is a block device"
 msgstr ""
 
 #: files.c:660
 #, c-format
+msgid "%s is a block device"
+msgstr ""
+
+#: files.c:677
+#, c-format
 msgid "%s is too large"
 msgstr ""
 
-#: files.c:700
+#: files.c:717
 #, c-format
 msgid "%s is shorter than expected"
 msgstr ""
 
-#: files.c:935
+#: files.c:953
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.c:1363
+#: files.c:1381
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
@@ -894,42 +894,42 @@ msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
 
 #: pch.c:87
-#: pch.c:335
-#: pch.c:347
-#: pch.c:365
-#: pch.c:371
-#: pch.c:380
-#: pch.c:387
+#: pch.c:345
+#: pch.c:359
+#: pch.c:377
+#: pch.c:383
+#: pch.c:392
+#: pch.c:399
 msgid "while writing precompiled header"
 msgstr ""
 
-#: pch.c:607
+#: pch.c:619
 #, c-format
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr ""
 
-#: pch.c:629
+#: pch.c:641
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr ""
 
-#: pch.c:641
+#: pch.c:653
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr ""
 
-#: pch.c:682
+#: pch.c:694
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr ""
 
-#: pch.c:702
+#: pch.c:714
 #, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr ""
 
-#: pch.c:711
-#: pch.c:886
+#: pch.c:723
+#: pch.c:898
 msgid "while reading precompiled header"
 msgstr ""
 

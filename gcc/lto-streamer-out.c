@@ -1265,17 +1265,36 @@ bool
 output_symbol_p (symtab_node node)
 {
   struct cgraph_node *cnode;
-  struct ipa_ref *ref;
-
   if (!symtab_real_symbol_p (node))
     return false;
   /* We keep external functions in symtab for sake of inlining
      and devirtualization.  We do not want to see them in symbol table as
-     references.  */
+     references unless they are really used.  */
   cnode = dyn_cast <cgraph_node> (node);
-  if (cnode && DECL_EXTERNAL (cnode->symbol.decl))
-    return (cnode->callers
-	    || ipa_ref_list_referring_iterate (&cnode->symbol.ref_list, 0, ref));
+  if (cnode && DECL_EXTERNAL (cnode->symbol.decl)
+      && cnode->callers)
+    return true;
+
+ /* Ignore all references from external vars initializers - they are not really
+    part of the compilation unit until they are used by folding.  Some symbols,
+    like references to external construction vtables can not be referred to at all.
+    We decide this at can_refer_decl_in_current_unit_p.  */
+ if (DECL_EXTERNAL (node->symbol.decl))
+    {
+      int i;
+      struct ipa_ref *ref;
+      for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list,
+					          i, ref); i++)
+	{
+	  if (ref->use == IPA_REF_ALIAS)
+	    continue;
+          if (is_a <cgraph_node> (ref->referring))
+	    return true;
+	  if (!DECL_EXTERNAL (ref->referring->symbol.decl))
+	    return true;
+	}
+      return false;
+    }
   return true;
 }
 

@@ -245,8 +245,7 @@ struct gimple_opt_pass pass_vectorize =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_update_ssa
-    | TODO_ggc_collect			/* todo_flags_finish */
+  TODO_ggc_collect			/* todo_flags_finish */
  }
 };
 

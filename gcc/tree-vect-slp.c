@@ -3181,7 +3181,15 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       unsigned int j;
       gimple_stmt_iterator gsi;
 
-      vect_remove_slp_scalar_calls (root);
+      /* Remove scalar call stmts.  Do not do this for basic-block
+	 vectorization as not all uses may be vectorized.
+	 ???  Why should this be necessary?  DCE should be able to
+	 remove the stmts itself.
+	 ???  For BB vectorization we can as well remove scalar
+	 stmts starting from the SLP tree root if they have no
+	 uses.  */
+      if (loop_vinfo)
+	vect_remove_slp_scalar_calls (root);
 
       for (j = 0; SLP_TREE_SCALAR_STMTS (root).iterate (j, &store)
                   && j < SLP_INSTANCE_GROUP_SIZE (instance); j++)

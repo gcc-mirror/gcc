@@ -267,6 +267,7 @@ fi
 # names.
 toosdirnames=
 defaultosdirname=
+defaultosdirname2=
 if [ -n "${multiarch}" ]; then
   defaultosdirname=::${multiarch}
 fi
@@ -280,6 +281,13 @@ if [ -n "${osdirnames}" ]; then
 	if [ -n "${multiarch}" ]; then
 	  defaultosdirname=${defaultosdirname}:${multiarch}
 	fi
+	case "$defaultosdirname" in
+	  ::*) ;;
+	  *)
+	    defaultosdirname2=${defaultosdirname}
+	    defaultosdirname=
+	    ;;
+	esac
 	shift
 	;;
       *=*)
@@ -352,6 +360,7 @@ for set in ${options}; do
 done
 optout=`echo ${optout} | sed -e 's/^ //'`
 echo "\".${defaultosdirname} ${optout};\","
+[ -n "${defaultosdirname2}" ] && echo "\".${defaultosdirname2} ${optout};\","
 
 # This part of code convert an option combination to
 # its corresponding directory names.

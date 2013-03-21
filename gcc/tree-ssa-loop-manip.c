@@ -443,21 +443,12 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
   unsigned index;
   bitmap_iterator bi;
 
-  /* ??? If CHANGED_BBS is empty we rewrite the whole function -- why?  */
-  if (changed_bbs && !bitmap_empty_p (changed_bbs))
-    {
-      EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
-	{
-	  find_uses_to_rename_bb (BASIC_BLOCK (index), use_blocks, need_phis);
-	}
-    }
+  if (changed_bbs)
+    EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
+      find_uses_to_rename_bb (BASIC_BLOCK (index), use_blocks, need_phis);
   else
-    {
-      FOR_EACH_BB (bb)
-	{
-	  find_uses_to_rename_bb (bb, use_blocks, need_phis);
-	}
-    }
+    FOR_EACH_BB (bb)
+      find_uses_to_rename_bb (bb, use_blocks, need_phis);
 }
 
 /* Rewrites the program into a loop closed ssa form -- i.e. inserts extra

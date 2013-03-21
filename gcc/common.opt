@@ -505,6 +505,10 @@ Waggregate-return
 Common Var(warn_aggregate_return) Warning
 Warn about returning structures, unions or arrays
 
+Waggressive-loop-optimizations
+Common Var(warn_aggressive_loop_optimizations) Init(1) Warning
+Warn if a loop with constant number of iterations triggers undefined behavior
+
 Warray-bounds
 Common Var(warn_array_bounds) Warning
 Warn if an array is accessed out of bounds

@@ -1,3 +1,8 @@
+2013-03-18 Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 196771 into gupc branch.
+	* DEV-PHASE: Bump release identifier to 4.9.0-1.
+
 2013-03-11 Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 196592 into gupc branch.

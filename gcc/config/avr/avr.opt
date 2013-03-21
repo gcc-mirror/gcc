@@ -74,3 +74,7 @@ When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decremen
 msp8
 Target Report RejectNegative Var(avr_sp8) Init(0)
 The device has no SPH special function register. This option will be overridden by the compiler driver with the correct setting if presence/absence of SPH can be deduced from -mmcu=MCU.
+
+Waddr-space-convert
+Warning C Report Var(avr_warn_addr_space_convert) Init(0)
+Warn if the address space of an address is change.

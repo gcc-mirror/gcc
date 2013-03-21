@@ -141,6 +141,9 @@ struct GTY((chain_next ("%h.next"))) pending_abstract_type {
   /* Type which will be checked for abstractness.  */
   tree type;
 
+  /* Kind of use in an unnamed declarator.  */
+  abstract_class_use use;
+
   /* Position of the declaration. This is only needed for IDENTIFIER_NODEs,
      because DECLs already carry locus information.  */
   location_t locus;
@@ -181,6 +184,7 @@ pat_compare (const void* val1, const void* val2)
 static GTY ((param_is (struct pending_abstract_type)))
 htab_t abstract_pending_vars = NULL;
 
+static int abstract_virtuals_error_sfinae (tree, tree, abstract_class_use, tsubst_flags_t);
 
 /* This function is called after TYPE is completed, and will check if there
    are pending declarations for which we still need to verify the abstractness
@@ -231,7 +235,8 @@ complete_type_check_abstract (tree type)
 	    location. Notice that this is only needed if the decl is an
 	    IDENTIFIER_NODE.  */
 	  input_location = pat->locus;
-	  abstract_virtuals_error (pat->decl, pat->type);
+	  abstract_virtuals_error_sfinae (pat->decl, pat->type, pat->use,
+					  tf_warning_or_error);
 	  pat = pat->next;
 	}
     }
@@ -244,11 +249,13 @@ complete_type_check_abstract (tree type)
 
 /* If TYPE has abstract virtual functions, issue an error about trying
    to create an object of that type.  DECL is the object declared, or
-   NULL_TREE if the declaration is unavailable.  Returns 1 if an error
-   occurred; zero if all was well.  */
+   NULL_TREE if the declaration is unavailable, in which case USE specifies
+   the kind of invalid use.  Returns 1 if an error occurred; zero if
+   all was well.  */
 
-int
-abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
+static int
+abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
+				tsubst_flags_t complain)
 {
   vec<tree, va_gc> *pure;
 
@@ -280,6 +287,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
       pat = ggc_alloc_pending_abstract_type ();
       pat->type = type;
       pat->decl = decl;
+      pat->use = use;
       pat->locus = ((decl && DECL_P (decl))
 		    ? DECL_SOURCE_LOCATION (decl)
 		    : input_location);
@@ -308,8 +316,14 @@ abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
 	error ("cannot declare variable %q+D to be of abstract "
 	       "type %qT", decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
-	error ("cannot declare parameter %q+D to be of abstract type %qT",
-	       decl, type);
+	{
+	  if (DECL_NAME (decl))
+	    error ("cannot declare parameter %q+D to be of abstract type %qT",
+		   decl, type);
+	  else
+	    error ("cannot declare parameter to be of abstract type %qT",
+		   type);
+	}
       else if (TREE_CODE (decl) == FIELD_DECL)
 	error ("cannot declare field %q+D to be of abstract type %qT",
 	       decl, type);
@@ -324,8 +338,34 @@ abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
       else
 	error ("invalid abstract type for %q+D", decl);
     }
-  else
-    error ("cannot allocate an object of abstract type %qT", type);
+  else switch (use)
+    {
+    case ACU_ARRAY:
+      error ("creating array of %qT, which is an abstract class type", type);
+      break;
+    case ACU_CAST:
+      error ("invalid cast to abstract class type %qT", type);
+      break;
+    case ACU_NEW:
+      error ("invalid new-expression of abstract class type %qT", type);
+      break;
+    case ACU_RETURN:
+      error ("invalid abstract return type %qT", type);
+      break;
+    case ACU_PARM:
+      error ("invalid abstract parameter type %qT", type);
+      break;
+    case ACU_THROW:
+      error ("expression of abstract class type %qT cannot "
+	     "be used in throw-expression", type);
+      break;
+    case ACU_CATCH:
+      error ("cannot declare catch parameter to be of abstract "
+	     "class type %qT", type);
+      break;
+    default:
+      error ("cannot allocate an object of abstract type %qT", type);
+    }
 
   /* Only go through this once.  */
   if (pure->length ())
@@ -347,13 +387,23 @@ abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
 	 again.  */
       pure->truncate (0);
     }
-  else
-    inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-	    "  since type %qT has pure virtual functions",
-	    type);
 
   return 1;
 }
+
+int
+abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
+{
+  return abstract_virtuals_error_sfinae (decl, type, ACU_UNKNOWN, complain);
+}
+
+int
+abstract_virtuals_error_sfinae (abstract_class_use use, tree type,
+				tsubst_flags_t complain)
+{
+  return abstract_virtuals_error_sfinae (NULL_TREE, type, use, complain);
+}
+
 
 /* Wrapper for the above function in the common case of wanting errors.  */
 
@@ -361,6 +411,12 @@ int
 abstract_virtuals_error (tree decl, tree type)
 {
   return abstract_virtuals_error_sfinae (decl, type, tf_warning_or_error);
+}
+
+int
+abstract_virtuals_error (abstract_class_use use, tree type)
+{
+  return abstract_virtuals_error_sfinae (use, type, tf_warning_or_error);
 }
 
 /* Print an error message for invalid use of an incomplete type.
@@ -1729,7 +1785,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 
   if (!complete_type_or_maybe_complain (type, NULL_TREE, complain))
     return error_mark_node;
-  if (abstract_virtuals_error_sfinae (NULL_TREE, type, complain))
+  if (abstract_virtuals_error_sfinae (ACU_CAST, type, complain))
     return error_mark_node;
 
   /* [expr.type.conv]
