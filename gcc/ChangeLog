@@ -1,3 +1,9 @@
+2013-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal): Disparage slightly
+	all MMX moves to/from memory.  Use Yi instead of x for SSE-MMX
+	conversion alternatives.
+
 2013-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48087
@@ -53,8 +59,7 @@
 	(refs_independent_p): Do not test for unanalyzed mems here.
 	(ref_indep_loop_p_1): Special-case disambiguation against
 	the unanalyzed ref.
-	(ref_indep_loop_p): Assert we are not queried for the
-	unanalyzed mem.
+	(ref_indep_loop_p): Assert we are not queried for the unanalyzed mem.
 
 2013-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
@@ -70,8 +75,7 @@
 	* config/arm/arm.h (TARGET_PREFER_NEON_64BITS): New macro.
 	(prefer_neon_for_64bits): Declare new variable.
 	* config/arm/arm.md (arch): Rename neon_onlya8 and neon_nota8 to
-	avoid_neon_for_64bits and neon_for_64bits. Remove onlya8 and
-	nota8.
+	avoid_neon_for_64bits and neon_for_64bits. Remove onlya8 and nota8.
 	(arch_enabled): Handle new arch types. Remove support for onlya8
 	and nota8.
 	(one_cmpldi2): Use new arch names.
@@ -88,8 +92,7 @@
 	PR tree-optimization/39326
 	* tree-ssa-loop-im.c (bb_loop_postorder): New global static.
 	(sort_bbs_in_loop_postorder_cmp): New function.
-	(gather_mem_refs_in_loops): Assign mem-ref IDs in loop
-	postorder.
+	(gather_mem_refs_in_loops): Assign mem-ref IDs in loop postorder.
 
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
