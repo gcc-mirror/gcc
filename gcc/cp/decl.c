@@ -14018,7 +14018,10 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
 
 /* VAR is a VAR_DECL.  If its type is incomplete, remember VAR so that
-   we can lay it out later, when and if its type becomes complete.  */
+   we can lay it out later, when and if its type becomes complete.
+
+   Also handle constexpr pointer to member variables where the initializer
+   is an unlowered PTRMEM_CST because the class isn't complete yet.  */
 
 void
 maybe_register_incomplete_var (tree var)
@@ -14043,6 +14046,15 @@ maybe_register_incomplete_var (tree var)
 	  incomplete_var iv = {var, inner_type};
 	  vec_safe_push (incomplete_vars, iv);
 	}
+      else if (TYPE_PTRMEM_P (inner_type)
+	       && DECL_INITIAL (var)
+	       && TREE_CODE (DECL_INITIAL (var)) == PTRMEM_CST)
+	{
+	  tree context = TYPE_PTRMEM_CLASS_TYPE (inner_type);
+	  gcc_assert (TYPE_BEING_DEFINED (context));
+	  incomplete_var iv = {var, context};
+	  vec_safe_push (incomplete_vars, iv);
+	}
     }
 }
 
@@ -14062,10 +14074,17 @@ complete_vars (tree type)
 	{
 	  tree var = iv->decl;
 	  tree type = TREE_TYPE (var);
-	  /* Complete the type of the variable.  The VAR_DECL itself
-	     will be laid out in expand_expr.  */
-	  complete_type (type);
-	  cp_apply_type_quals_to_decl (cp_type_quals (type), var);
+
+	  if (TYPE_PTRMEM_P (type))
+	    DECL_INITIAL (var) = cplus_expand_constant (DECL_INITIAL (var));
+	  else
+	    {
+	      /* Complete the type of the variable.  The VAR_DECL itself
+		 will be laid out in expand_expr.  */
+	      complete_type (type);
+	      cp_apply_type_quals_to_decl (cp_type_quals (type), var);
+	    }
+
 	  /* Remove this entry from the list.  */
 	  incomplete_vars->unordered_remove (ix);
 	}
