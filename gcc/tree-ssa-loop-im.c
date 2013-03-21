@@ -2378,10 +2378,6 @@ can_sm_ref_p (struct loop *loop, mem_ref_p ref)
   if (!MEM_ANALYZABLE (ref))
     return false;
 
-  /* Unless the reference is stored in the loop, there is nothing to do.  */
-  if (!bitmap_bit_p (ref->stored, loop->num))
-    return false;
-
   /* It should be movable.  */
   if (!is_gimple_reg_type (TREE_TYPE (ref->mem.ref))
       || TREE_THIS_VOLATILE (ref->mem.ref)
@@ -2417,7 +2413,7 @@ can_sm_ref_p (struct loop *loop, mem_ref_p ref)
 static void
 find_refs_for_sm (struct loop *loop, bitmap sm_executed, bitmap refs_to_sm)
 {
-  bitmap refs = memory_accesses.all_refs_in_loop[loop->num];
+  bitmap refs = memory_accesses.all_refs_stored_in_loop[loop->num];
   unsigned i;
   bitmap_iterator bi;
   mem_ref_p ref;
@@ -2457,7 +2453,7 @@ store_motion_loop (struct loop *loop, bitmap sm_executed)
 {
   vec<edge> exits = get_loop_exit_edges (loop);
   struct loop *subloop;
-  bitmap sm_in_loop = BITMAP_ALLOC (NULL);
+  bitmap sm_in_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
 
   if (loop_suitable_for_sm (loop, exits))
     {
@@ -2480,7 +2476,7 @@ static void
 store_motion (void)
 {
   struct loop *loop;
-  bitmap sm_executed = BITMAP_ALLOC (NULL);
+  bitmap sm_executed = BITMAP_ALLOC (&lim_bitmap_obstack);
 
   for (loop = current_loops->tree_root->inner; loop != NULL; loop = loop->next)
     store_motion_loop (loop, sm_executed);
