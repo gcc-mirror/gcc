@@ -1,3 +1,8 @@
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-outer-3a-big-array.c: Adjust.
+	* gcc.dg/vect/vect-outer-3a.c: Likewise.
+
 2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/vect.c: Test and result vector added
