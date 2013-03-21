@@ -1,3 +1,8 @@
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <VEC_CONCAT>:
+	Restrict the transformation to equal modes.
+
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/39326
