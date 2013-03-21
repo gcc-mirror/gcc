@@ -7977,11 +7977,11 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
       int savew = 0, savee = 0;
 
       if (fndecl)
-	savew = warningcount, savee = errorcount;
+	savew = warningcount + werrorcount, savee = errorcount;
       rhs = initialize_reference (type, rhs, flags, complain);
       if (fndecl)
 	{
-	  if (warningcount > savew)
+	  if (warningcount + werrorcount > savew)
 	    warning (0, "in passing argument %P of %q+D", parmnum, fndecl);
 	  else if (errorcount > savee)
 	    error ("in passing argument %P of %q+D", parmnum, fndecl);

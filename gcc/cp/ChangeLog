@@ -1,3 +1,11 @@
+2013-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48087
+	* pt.c (convert_nontype_argument): Count werrorcount as warnings.
+	* call.c (build_temp): Likewise.
+	* method.c (synthesize_method): Likewise.
+	* typeck.c (convert_for_initialization): Likewise.
+
 2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* call.c (build_conditional_expr_1): Fold VEC_COND_EXPR.

@@ -5601,12 +5601,12 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  if (complain & tf_error)
 	    {
-	      int errs = errorcount, warns = warningcount;
+	      int errs = errorcount, warns = warningcount + werrorcount;
 	      if (processing_template_decl
 		  && !require_potential_constant_expression (expr))
 		return NULL_TREE;
 	      expr = cxx_constant_value (expr);
-	      if (errorcount > errs || warningcount > warns)
+	      if (errorcount > errs || warningcount + werrorcount > warns)
 		inform (EXPR_LOC_OR_HERE (expr),
 			"in template argument for type %qT ", type);
 	      if (expr == error_mark_node)
