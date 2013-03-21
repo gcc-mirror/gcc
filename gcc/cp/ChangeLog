@@ -1,5 +1,9 @@
 2013-03-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56646
+	* parser.c (cp_parser_late_return_type_opt): Save and restore
+	current_class_ptr/ref.
+
 	PR c++/54532
 	* expr.c (cplus_expand_constant): Do nothing if the class is
 	incomplete.
