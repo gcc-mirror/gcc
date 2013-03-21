@@ -1,3 +1,8 @@
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge):
+	Update virtual SSA form.
+
 2013-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_eh_frame_ciev3): New test.
