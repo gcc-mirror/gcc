@@ -1,3 +1,9 @@
+2013-03-20  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Record
+	addititional equivalences for equality comparisons between an SSA_NAME
+	and a constant where the SSA_NAME was set from a widening conversion.
+
 2013-03-20  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/sync.md (atomic_test_and_set): New pattern.

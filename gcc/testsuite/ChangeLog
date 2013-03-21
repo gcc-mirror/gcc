@@ -1,3 +1,8 @@
+2013-03-20  Jeff Law  <law@redhat.com>
+
+	* g++.dg/tree-ssa/ssa-dom.C: New test.
+	
+
 2013-03-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/mmfpgpr.c: New test.
