@@ -1,5 +1,14 @@
 2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
 
+	* tree.h (VECTOR_TYPE_P): New macro.
+	(VECTOR_INTEGER_TYPE_P, VECTOR_FLOAT_TYPE_P, FLOAT_TYPE_P,
+	TYPE_MODE): Use it.
+	* fold-const.c (fold_cond_expr_with_comparison): Use build_zero_cst.
+	VEC_COND_EXPR cannot be lvalues.
+	(fold_ternary_loc) <VEC_COND_EXPR>: Merge with the COND_EXPR case.
+
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
 	* simplify-rtx.c (simplify_binary_operation_1) <VEC_CONCAT>:
 	Restrict the transformation to equal modes.
 

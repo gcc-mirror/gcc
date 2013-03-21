@@ -1,3 +1,7 @@
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* call.c (build_conditional_expr_1): Fold VEC_COND_EXPR.
+
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
 	* error.c (cp_printer): Use DECL_HAS_DEBUG_EXPR_P instead of

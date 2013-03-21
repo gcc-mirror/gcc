@@ -4437,9 +4437,9 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	}
 
       if (!COMPARISON_CLASS_P (arg1))
-	arg1 = build2 (NE_EXPR, signed_type_for (arg1_type), arg1,
+	arg1 = fold_build2 (NE_EXPR, signed_type_for (arg1_type), arg1,
 		       build_zero_cst (arg1_type));
-      return build3 (VEC_COND_EXPR, arg2_type, arg1, arg2, arg3);
+      return fold_build3 (VEC_COND_EXPR, arg2_type, arg1, arg2, arg3);
     }
 
   /* [expr.cond]
