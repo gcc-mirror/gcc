@@ -1,3 +1,7 @@
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/ext/vector21.C: New testcase.
+
 2013-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/neon-for-64bits-1.c: New tests.
