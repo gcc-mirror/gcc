@@ -1,5 +1,13 @@
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/39326
+	* tree-ssa-loop-im.c (bb_loop_postorder): New global static.
+	(sort_bbs_in_loop_postorder_cmp): New function.
+	(gather_mem_refs_in_loops): Assign mem-ref IDs in loop
+	postorder.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_update_interleaving_chain): Remove.
 	(vect_insert_into_interleaving_chain): Likewise.
 	(vect_drs_dependent_in_basic_block): Inline ...

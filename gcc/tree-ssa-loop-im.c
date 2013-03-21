@@ -1622,26 +1622,61 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
   return;
 }
 
+static unsigned *bb_loop_postorder;
+
+/* qsort sort function to sort blocks after their loop fathers postorder.  */
+
+static int
+sort_bbs_in_loop_postorder_cmp (const void *bb1_, const void *bb2_)
+{
+  basic_block bb1 = *(basic_block *)const_cast<void *>(bb1_);
+  basic_block bb2 = *(basic_block *)const_cast<void *>(bb2_);
+  struct loop *loop1 = bb1->loop_father;
+  struct loop *loop2 = bb2->loop_father;
+  if (loop1->num == loop2->num)
+    return 0;
+  return bb_loop_postorder[loop1->num] < bb_loop_postorder[loop2->num] ? -1 : 1;
+}
+
 /* Gathers memory references in loops.  */
 
 static void
 gather_mem_refs_in_loops (void)
 {
   gimple_stmt_iterator bsi;
-  basic_block bb;
+  basic_block bb, *bbs;
   struct loop *loop;
   loop_iterator li;
   bitmap lrefs, alrefs, alrefso;
+  unsigned i, n;
 
+  /* Initialize bb_loop_postorder with a mapping from loop->num to
+     its postorder index.  */
+  i = 0;
+  bb_loop_postorder = XNEWVEC (unsigned, number_of_loops ());
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+    bb_loop_postorder[loop->num] = i++;
+  /* Collect all basic-blocks in loops and sort them after their
+     loops postorder.  */
+  i = 0;
+  bbs = XNEWVEC (basic_block, n_basic_blocks - NUM_FIXED_BLOCKS);
   FOR_EACH_BB (bb)
-    {
-      loop = bb->loop_father;
-      if (loop == current_loops->tree_root)
-	continue;
+    if (bb->loop_father != current_loops->tree_root)
+      bbs[i++] = bb;
+  n = i;
+  qsort (bbs, n, sizeof (basic_block), sort_bbs_in_loop_postorder_cmp);
+  free (bb_loop_postorder);
 
+  /* Visit blocks in loop postorder and assign mem-ref IDs in that order.
+     That results in better locality for all the bitmaps.  */
+  for (i = 0; i < n; ++i)
+    {
+      basic_block bb = bbs[i];
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	gather_mem_refs_stmt (loop, gsi_stmt (bsi));
+        gather_mem_refs_stmt (bb->loop_father, gsi_stmt (bsi));
     }
+
+  free (bbs);
 
   /* Propagate the information about accessed memory references up
      the loop hierarchy.  */
