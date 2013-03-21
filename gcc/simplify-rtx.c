@@ -3623,10 +3623,13 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    return gen_rtx_CONST_VECTOR (mode, v);
 	  }
 
-	/* Try to merge VEC_SELECTs from the same vector into a single one.  */
+	/* Try to merge two VEC_SELECTs from the same vector into a single one.
+	   Restrict the transformation to avoid generating a VEC_SELECT with a
+	   mode unrelated to its operand.  */
 	if (GET_CODE (trueop0) == VEC_SELECT
 	    && GET_CODE (trueop1) == VEC_SELECT
-	    && rtx_equal_p (XEXP (trueop0, 0), XEXP (trueop1, 0)))
+	    && rtx_equal_p (XEXP (trueop0, 0), XEXP (trueop1, 0))
+	    && GET_MODE (XEXP (trueop0, 0)) == mode)
 	  {
 	    rtx par0 = XEXP (trueop0, 1);
 	    rtx par1 = XEXP (trueop1, 1);
