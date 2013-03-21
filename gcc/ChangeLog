@@ -1,3 +1,29 @@
+2013-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (tune_params): Add
+	prefer_neon_for_64bits field.
+	* config/arm/arm.c (prefer_neon_for_64bits): New variable.
+	(arm_slowmul_tune): Default prefer_neon_for_64bits to false.
+	(arm_fastmul_tune, arm_strongarm_tune, arm_xscale_tune): Ditto.
+	(arm_9e_tune, arm_v6t2_tune, arm_cortex_tune): Ditto.
+	(arm_cortex_a15_tune, arm_cortex_a5_tune): Ditto.
+	(arm_cortex_a9_tune, arm_v6m_tune, arm_fa726te_tune): Ditto.
+	(arm_option_override): Handle -mneon-for-64bits new option.
+	* config/arm/arm.h (TARGET_PREFER_NEON_64BITS): New macro.
+	(prefer_neon_for_64bits): Declare new variable.
+	* config/arm/arm.md (arch): Rename neon_onlya8 and neon_nota8 to
+	avoid_neon_for_64bits and neon_for_64bits. Remove onlya8 and
+	nota8.
+	(arch_enabled): Handle new arch types. Remove support for onlya8
+	and nota8.
+	(one_cmpldi2): Use new arch names.
+	* config/arm/arm.opt (mneon-for-64bits): Add option.
+	* config/arm/neon.md (adddi3_neon, subdi3_neon, iordi3_neon)
+	(anddi3_neon, xordi3_neon, ashldi3_neon, <shift>di3_neon): Use
+	neon_for_64bits instead of nota8 and avoid_neon_for_64bits instead
+	of onlya8.
+	* doc/invoke.texi (-mneon-for-64bits): Document.
+
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/39326

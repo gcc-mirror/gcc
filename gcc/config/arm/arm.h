@@ -354,6 +354,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_IDIV		((TARGET_ARM && arm_arch_arm_hwdiv) \
 				 || (TARGET_THUMB2 && arm_arch_thumb_hwdiv))
 
+/* Should NEON be used for 64-bits bitops.  */
+#define TARGET_PREFER_NEON_64BITS (prefer_neon_for_64bits)
+
 /* True iff the full BPABI is being used.  If TARGET_BPABI is true,
    then TARGET_AAPCS_BASED must be true -- but the converse does not
    hold.  TARGET_BPABI implies the use of the BPABI runtime library,
@@ -538,6 +541,10 @@ extern int arm_arch_arm_hwdiv;
 
 /* Nonzero if chip supports integer division instruction in Thumb mode.  */
 extern int arm_arch_thumb_hwdiv;
+
+/* Nonzero if we should use Neon to handle 64-bits operations rather
+   than core registers.  */
+extern int prefer_neon_for_64bits;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)
