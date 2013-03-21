@@ -189,8 +189,11 @@ static bool ref_indep_loop_p (struct loop *, mem_ref_p);
 #define ALWAYS_EXECUTED_IN(BB) ((struct loop *) (BB)->aux)
 #define SET_ALWAYS_EXECUTED_IN(BB, VAL) ((BB)->aux = (void *) (VAL))
 
+/* ID of the shared unanalyzable mem.  */
+#define UNANALYZABLE_MEM_ID 0
+
 /* Whether the reference was analyzable.  */
-#define MEM_ANALYZABLE(REF) ((REF)->mem.ref != error_mark_node)
+#define MEM_ANALYZABLE(REF) ((REF)->id != UNANALYZABLE_MEM_ID)
 
 static struct lim_aux_data *
 init_lim_data (gimple stmt)
@@ -1526,7 +1529,6 @@ record_mem_ref_loc (mem_ref_p ref, struct loop *loop, gimple stmt, tree *loc)
 {
   mem_ref_loc_p aref = XNEW (struct mem_ref_loc);
   mem_ref_locs_p accs;
-  bitmap ril = memory_accesses.refs_in_loop[loop->num];
 
   if (ref->accesses_in_loop.length ()
       <= (unsigned) loop->num)
@@ -1542,7 +1544,6 @@ record_mem_ref_loc (mem_ref_p ref, struct loop *loop, gimple stmt, tree *loc)
   aref->ref = loc;
 
   accs->locs.safe_push (aref);
-  bitmap_set_bit (ril, ref->id);
 }
 
 /* Marks reference REF as stored in LOOP.  */
@@ -1578,47 +1579,46 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
   mem = simple_mem_ref_in_stmt (stmt, &is_stored);
   if (!mem)
     {
-      id = memory_accesses.refs_list.length ();
-      ref = mem_ref_alloc (error_mark_node, 0, id);
-      memory_accesses.refs_list.safe_push (ref);
+      /* We use the shared mem_ref for all unanalyzable refs.  */
+      id = UNANALYZABLE_MEM_ID;
+      ref = memory_accesses.refs_list[id];
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Unanalyzed memory reference %u: ", id);
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
-      if (gimple_vdef (stmt))
-	mark_ref_stored (ref, loop);
-      record_mem_ref_loc (ref, loop, stmt, mem);
-      return;
-    }
-
-  hash = iterative_hash_expr (*mem, 0);
-  slot = htab_find_slot_with_hash (memory_accesses.refs, *mem, hash, INSERT);
-
-  if (*slot)
-    {
-      ref = (mem_ref_p) *slot;
-      id = ref->id;
+      is_stored = gimple_vdef (stmt);
     }
   else
     {
-      id = memory_accesses.refs_list.length ();
-      ref = mem_ref_alloc (*mem, hash, id);
-      memory_accesses.refs_list.safe_push (ref);
-      *slot = ref;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
+      hash = iterative_hash_expr (*mem, 0);
+      slot = htab_find_slot_with_hash (memory_accesses.refs,
+				       *mem, hash, INSERT);
+      if (*slot)
 	{
-	  fprintf (dump_file, "Memory reference %u: ", id);
-	  print_generic_expr (dump_file, ref->mem.ref, TDF_SLIM);
-	  fprintf (dump_file, "\n");
+	  ref = (mem_ref_p) *slot;
+	  id = ref->id;
 	}
-    }
+      else
+	{
+	  id = memory_accesses.refs_list.length ();
+	  ref = mem_ref_alloc (*mem, hash, id);
+	  memory_accesses.refs_list.safe_push (ref);
+	  *slot = ref;
 
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Memory reference %u: ", id);
+	      print_generic_expr (dump_file, ref->mem.ref, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+
+      record_mem_ref_loc (ref, loop, stmt, mem);
+    }
+  bitmap_set_bit (memory_accesses.refs_in_loop[loop->num], ref->id);
   if (is_stored)
     mark_ref_stored (ref, loop);
-
-  record_mem_ref_loc (ref, loop, stmt, mem);
   return;
 }
 
@@ -1744,7 +1744,11 @@ analyze_memory_references (void)
   bitmap empty;
 
   memory_accesses.refs = htab_create (100, memref_hash, memref_eq, NULL);
-  memory_accesses.refs_list.create (0);
+  memory_accesses.refs_list.create (100);
+  /* Allocate a special, unanalyzable mem-ref with ID zero.  */
+  memory_accesses.refs_list.quick_push
+    (mem_ref_alloc (error_mark_node, 0, UNANALYZABLE_MEM_ID));
+
   memory_accesses.refs_in_loop.create (number_of_loops ());
   memory_accesses.all_refs_in_loop.create (number_of_loops ());
   memory_accesses.all_refs_stored_in_loop.create (number_of_loops ());
@@ -2297,10 +2301,6 @@ refs_independent_p (mem_ref_p ref1, mem_ref_p ref2)
   if (ref1 == ref2)
     return true;
 
-  if (!MEM_ANALYZABLE (ref1)
-      || !MEM_ANALYZABLE (ref2))
-    return false;
-
   /* Reference dependence in a loop is symmetric.  */
   if (ref1->id > ref2->id)
     {
@@ -2363,11 +2363,13 @@ ref_indep_loop_p_1 (struct loop *loop, mem_ref_p ref)
   else
     refs_to_check = memory_accesses.all_refs_stored_in_loop[loop->num];
 
+  if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
+    return false;
+
   EXECUTE_IF_SET_IN_BITMAP (refs_to_check, 0, i, bi)
     {
       aref = memory_accesses.refs_list[i];
-      if (!MEM_ANALYZABLE (aref)
-	  || !refs_independent_p (ref, aref))
+      if (!refs_independent_p (ref, aref))
 	{
 	  ret = false;
 	  record_indep_loop (loop, aref, false);
@@ -2385,6 +2387,8 @@ static bool
 ref_indep_loop_p (struct loop *loop, mem_ref_p ref)
 {
   bool ret;
+
+  gcc_checking_assert (MEM_ANALYZABLE (ref));
 
   if (bitmap_bit_p (ref->indep_loop, loop->num))
     return true;

@@ -1,3 +1,19 @@
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39326
+	* tree-ssa-loop-im.c (UNANALYZABLE_MEM_ID): New define.
+	(MEM_ANALYZABLE): Adjust.
+	(record_mem_ref_loc): Move bitmap ops ...
+	(gather_mem_refs_stmt): ... here.  Use the shared mem-ref for
+	unanalyzable refs, do not record locations for it.
+	(analyze_memory_references): Allocate ref zero as shared
+	unanalyzable ref.
+	(refs_independent_p): Do not test for unanalyzed mems here.
+	(ref_indep_loop_p_1): Special-case disambiguation against
+	the unanalyzed ref.
+	(ref_indep_loop_p): Assert we are not queried for the
+	unanalyzed mem.
+
 2013-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm-protos.h (tune_params): Add
