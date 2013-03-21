@@ -33,6 +33,7 @@
 	(arch_enabled): Handle new arch types. Remove support for onlya8
 	and nota8.
 	(one_cmpldi2): Use new arch names.
+	(zero_extend<mode>di2, extend<mode>di2): Ditto.
 	* config/arm/arm.opt (mneon-for-64bits): Add option.
 	* config/arm/neon.md (adddi3_neon, subdi3_neon, iordi3_neon)
 	(anddi3_neon, xordi3_neon, ashldi3_neon, <shift>di3_neon): Use
