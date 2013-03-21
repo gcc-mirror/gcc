@@ -1,3 +1,14 @@
+2013-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56656
+	* configure.ac (HAVE_AS_IX86_INTERUNIT_MOVQ): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/i386.md (*movdf_internal): Use
+	HAVE_AS_IX86_INTERUNIT_MOVQ to handle broken assemblers that require
+	movd instead of movq mnemonic for interunit moves.
+	(*movdi_internal): Ditto.
+
 2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64-simd.md (simd_fabd): New Attribute.
