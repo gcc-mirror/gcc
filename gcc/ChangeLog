@@ -1,3 +1,9 @@
+2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64-elf.h (REGISTER_PREFIX): Remove.
+	* config/aarch64/aarch64.c (aarch64_print_operand): Remove all
+	occurrence of REGISTER_PREFIX as its empty string.
+
 2013-03-20  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Record
