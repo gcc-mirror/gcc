@@ -1,3 +1,7 @@
+2013-03-21  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/sync.md (atomic_test_and_set): New pattern.
+
 2013-03-21  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (size_of_aranges): Skip DECL_IGNORED_P functions.
