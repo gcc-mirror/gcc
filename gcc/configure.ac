@@ -3723,6 +3723,14 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_IX86_SAHF, 1,
         [Define if your assembler supports the sahf mnemonic in 64bit mode.])])
 
+    gcc_GAS_CHECK_FEATURE([interunit movq mnemonic],
+      gcc_cv_as_ix86_interunit_movq,,,
+      [.code64
+       movq %mm0, %rax
+       movq %rax, %xmm0],,
+      [AC_DEFINE(HAVE_AS_IX86_INTERUNIT_MOVQ, 1,
+        [Define if your assembler supports interunit movq mnemonic.])])
+
     gcc_GAS_CHECK_FEATURE([hle prefixes],
       gcc_cv_as_ix86_hle,,,
       [lock xacquire cmpxchg %esi, (%ecx)],,
