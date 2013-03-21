@@ -1,5 +1,7 @@
 2013-03-20  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (retrieve_specialization): Handle null tmpl argument.
+
 	PR c++/17232
 	PR c++/56642
 	* pt.c (tsubst_decl): Check return value of register_specialization.
