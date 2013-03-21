@@ -1,3 +1,7 @@
+2013-03-21  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (size_of_aranges): Skip DECL_IGNORED_P functions.
+
 2013-03-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdi_internal): Disparage slightly

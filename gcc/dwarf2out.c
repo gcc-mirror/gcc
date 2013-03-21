@@ -7848,6 +7848,8 @@ size_of_aranges (void)
 
       FOR_EACH_VEC_ELT (*fde_vec, fde_idx, fde)
 	{
+	  if (DECL_IGNORED_P (fde->decl))
+	    continue;
 	  if (!fde->in_std_section)
 	    size += 2 * DWARF2_ADDR_SIZE;
 	  if (fde->dw_fde_second_begin && !fde->second_in_std_section)
