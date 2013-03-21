@@ -1,3 +1,11 @@
+2013-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/17232
+	PR c++/56642
+	* pt.c (tsubst_decl): Check return value of register_specialization.
+	* typeck2.c (abstract_virtuals_error_sfinae): Re-apply complete_type
+	change.
+
 2013-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54359

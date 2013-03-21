@@ -10285,7 +10285,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_TEMPLATE_INFO (r)
 	      = build_template_info (gen_tmpl, argvec);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
-	    register_specialization (r, gen_tmpl, argvec, false, hash);
+
+	    tree new_r
+	      = register_specialization (r, gen_tmpl, argvec, false, hash);
+	    if (new_r != r)
+	      /* We instantiated this while substituting into
+		 the type earlier (template/friend54.C).  */
+	      RETURN (new_r);
 
 	    /* We're not supposed to instantiate default arguments
 	       until they are called, for a template.  But, for a
