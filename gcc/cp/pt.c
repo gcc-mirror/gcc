@@ -1009,6 +1009,9 @@ optimize_specialization_lookup_p (tree tmpl)
 static tree
 retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 {
+  if (tmpl == NULL_TREE)
+    return NULL_TREE;
+
   if (args == error_mark_node)
     return NULL_TREE;
 
