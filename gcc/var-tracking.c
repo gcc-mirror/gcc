@@ -1780,11 +1780,11 @@ vars_copy (htab_t dst, htab_t src)
 static inline tree
 var_debug_decl (tree decl)
 {
-  if (decl && DECL_P (decl)
-      && DECL_DEBUG_EXPR_IS_FROM (decl))
+  if (decl && TREE_CODE (decl) == VAR_DECL
+      && DECL_HAS_DEBUG_EXPR_P (decl))
     {
       tree debugdecl = DECL_DEBUG_EXPR (decl);
-      if (debugdecl && DECL_P (debugdecl))
+      if (DECL_P (debugdecl))
 	decl = debugdecl;
     }
 
@@ -5041,12 +5041,10 @@ track_expr_p (tree expr, bool need_rtl)
      don't need to track this expression if the ultimate declaration is
      ignored.  */
   realdecl = expr;
-  if (DECL_DEBUG_EXPR_IS_FROM (realdecl))
+  if (TREE_CODE (realdecl) == VAR_DECL && DECL_HAS_DEBUG_EXPR_P (realdecl))
     {
       realdecl = DECL_DEBUG_EXPR (realdecl);
-      if (realdecl == NULL_TREE)
-	realdecl = expr;
-      else if (!DECL_P (realdecl))
+      if (!DECL_P (realdecl))
 	{
 	  if (handled_component_p (realdecl)
 	      || (TREE_CODE (realdecl) == MEM_REF

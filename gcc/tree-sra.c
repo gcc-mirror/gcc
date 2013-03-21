@@ -1961,7 +1961,7 @@ create_access_replacement (struct access *access)
       if (!fail)
 	{
 	  SET_DECL_DEBUG_EXPR (repl, debug_expr);
-	  DECL_DEBUG_EXPR_IS_FROM (repl) = 1;
+	  DECL_HAS_DEBUG_EXPR_P (repl) = 1;
 	}
       if (access->grp_no_warning)
 	TREE_NO_WARNING (repl) = 1;

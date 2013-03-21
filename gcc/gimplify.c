@@ -4947,7 +4947,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       if (!DECL_NAME (*from_p) && DECL_NAME (*to_p))
 	DECL_NAME (*from_p)
 	  = create_tmp_var_name (IDENTIFIER_POINTER (DECL_NAME (*to_p)));
-      DECL_DEBUG_EXPR_IS_FROM (*from_p) = 1;
+      DECL_HAS_DEBUG_EXPR_P (*from_p) = 1;
       SET_DECL_DEBUG_EXPR (*from_p, *to_p);
    }
 

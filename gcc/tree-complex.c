@@ -428,7 +428,7 @@ create_one_component_var (tree type, tree orig, const char *prefix,
       DECL_NAME (r) = get_identifier (ACONCAT ((name, suffix, NULL)));
 
       SET_DECL_DEBUG_EXPR (r, build1 (code, type, orig));
-      DECL_DEBUG_EXPR_IS_FROM (r) = 1;
+      DECL_HAS_DEBUG_EXPR_P (r) = 1;
       DECL_IGNORED_P (r) = 0;
       TREE_NO_WARNING (r) = TREE_NO_WARNING (orig);
     }

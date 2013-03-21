@@ -1,3 +1,8 @@
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* c-objc-common.c (c_tree_printer): Use DECL_HAS_DEBUG_EXPR_P
+	instead of DECL_DEBUG_EXPR_IS_FROM.  Guard properly.
+
 2013-02-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/44938

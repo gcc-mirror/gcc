@@ -1,3 +1,25 @@
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (DECL_DEBUG_EXPR_IS_FROM): Rename to ...
+	(DECL_HAS_DEBUG_EXPR_P): ... this.  Guard properly.
+	* tree.c (copy_node_stat): Do not copy DECL_HAS_DEBUG_EXPR_P.
+	* dwarf2out.c (add_var_loc_to_decl): Use DECL_HAS_DEBUG_EXPR_P
+	instead of DECL_DEBUG_EXPR_IS_FROM.
+	* gimplify.c (gimplify_modify_expr): Likewise.
+	* tree-cfg.c (verify_expr_location_1): Likewise.
+	* tree-complex.c (create_one_component_var): Likewise.
+	* tree-sra.c (create_access_replacement): Likewise.
+	* tree-ssa-live.c (clear_unused_block_pointer_1): Likewise.
+	(clear_unused_block_pointer): Likewise.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Likewise.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Likewise.
+	* var-tracking.c (var_debug_decl): Likewise.
+	(track_expr_p): Likewise.
+	* tree-inline.c (add_local_variables): Likewise.  Set
+	DECL_HAS_DEBUG_EXPR_P after copying it.
+	* tree-diagnostic.c (default_tree_printer): Use DECL_HAS_DEBUG_EXPR_P
+	instead of DECL_DEBUG_EXPR_IS_FROM.  Guard properly.
+
 2013-03-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/56656
