@@ -1,3 +1,7 @@
+2013-03-21  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (size_of_aranges): Skip DECL_IGNORED_P functions.
+
 2013-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56661
