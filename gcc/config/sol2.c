@@ -286,8 +286,8 @@ solaris_file_end (void)
 void
 solaris_override_options (void)
 {
-  /* Don't emit DWARF3/4 unless specifically selected.  Solaris ld cannot
-     handle CIE version 3 in .eh_frame.  */
-  if (!global_options_set.x_dwarf_version)
+  /* Older versions of Solaris ld cannot handle CIE version 3 in .eh_frame.
+     Don't emit DWARF3/4 unless specifically selected if so.  */
+  if (!HAVE_LD_EH_FRAME_CIEV3 && !global_options_set.x_dwarf_version)
     dwarf_version = 2;
 }

@@ -1,3 +1,11 @@
+2013-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_eh_frame_ciev3): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.c (solaris_override_options): Only enforce DWARF 2
+	if !HAVE_LD_EH_FRAME_CIEV3.
+
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_expr_no_block): New function.
