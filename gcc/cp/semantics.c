@@ -536,7 +536,7 @@ simplify_loop_decl_cond (tree *cond_p, tree body)
 tree
 finish_goto_stmt (tree destination)
 {
-  if (TREE_CODE (destination) == IDENTIFIER_NODE)
+  if (identifier_p (destination))
     destination = lookup_label (destination);
 
   /* We warn about unused labels with -Wunused.  That means we have to
@@ -1999,7 +1999,7 @@ perform_koenig_lookup (tree fn, vec<tree, va_gc> *args, bool include_std,
     }
 
   /* Find the name of the overloaded function.  */
-  if (TREE_CODE (fn) == IDENTIFIER_NODE)
+  if (identifier_p (fn))
     identifier = fn;
   else if (is_overloaded_fn (fn))
     {
@@ -2966,7 +2966,7 @@ finish_id_expression (tree id_expression,
 	  if (scope
 	      && (!TYPE_P (scope)
 		  || (!dependent_type_p (scope)
-		      && !(TREE_CODE (id_expression) == IDENTIFIER_NODE
+		      && !(identifier_p (id_expression)
 			   && IDENTIFIER_TYPENAME_P (id_expression)
 			   && dependent_type_p (TREE_TYPE (id_expression))))))
 	    {
@@ -2995,8 +2995,7 @@ finish_id_expression (tree id_expression,
 	 the current class so that we can check later to see if
 	 the meaning would have been different after the class
 	 was entirely defined.  */
-      if (!scope && decl != error_mark_node
-	  && TREE_CODE (id_expression) == IDENTIFIER_NODE)
+      if (!scope && decl != error_mark_node && identifier_p (id_expression))
 	maybe_note_name_used_in_class (id_expression, decl);
 
       /* Disallow uses of local variables from containing functions, except
@@ -3169,8 +3168,7 @@ finish_id_expression (tree id_expression,
       /* A template-id where the name of the template was not resolved
 	 is definitely dependent.  */
       else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
-	       && (TREE_CODE (TREE_OPERAND (decl, 0))
-		   == IDENTIFIER_NODE))
+	       && (identifier_p (TREE_OPERAND (decl, 0))))
 	dependent_p = true;
       /* For anything except an overloaded function, just check its
 	 type.  */
@@ -5301,7 +5299,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
          [expr.ref]), decltype(e) is defined as the type of the entity
          named by e. If there is no such entity, or e names a set of
          overloaded functions, the program is ill-formed.  */
-      if (TREE_CODE (expr) == IDENTIFIER_NODE)
+      if (identifier_p (expr))
         expr = lookup_name (expr);
 
       if (TREE_CODE (expr) == INDIRECT_REF)

@@ -1,3 +1,21 @@
+2013-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (identifier_p): New.
+	* call.c: Throughout, call identifier_p insstead of direct
+	comparaison of TREE_CODE against IDENTIFIER_NODE.
+	* decl.c: Likewisse.
+	* decl2.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2013-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48087

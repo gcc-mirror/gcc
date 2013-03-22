@@ -1416,7 +1416,7 @@ expand_member_init (tree name)
     }
   else
     {
-      if (TREE_CODE (name) == IDENTIFIER_NODE)
+      if (identifier_p (name))
 	field = lookup_field (current_class_type, name, 1, false);
       else
 	field = name;
