@@ -1,4 +1,4 @@
-2013-02-22  Jakub Jelinek  <jakub@redhat.com>
+2013-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620
 	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
