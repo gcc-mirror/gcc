@@ -142,6 +142,8 @@ static void df_install_ref (df_ref, struct df_reg_info *,
 static int df_ref_compare (const void *, const void *);
 static int df_mw_compare (const void *, const void *);
 
+static void df_insn_info_delete (unsigned int);
+
 /* Indexed by hardware reg number, is true if that register is ever
    used in the current function.
 
@@ -277,8 +279,7 @@ df_scan_free_bb_info (basic_block bb, void *vbb_info)
       FOR_BB_INSNS (bb, insn)
 	{
 	  if (INSN_P (insn))
-	    /* Record defs within INSN.  */
-	    df_insn_delete (bb, INSN_UID (insn));
+	    df_insn_info_delete (INSN_UID (insn));
 	}
 
       if (bb_index < df_scan->block_info_size)
@@ -1087,44 +1088,15 @@ df_mw_hardreg_chain_delete (struct df_mw_hardreg **hardregs)
 }
 
 
-/* Delete all of the refs information from INSN.  BB must be passed in
-   except when called from df_process_deferred_rescans to mark the block
-   as dirty.  */
+/* Delete all of the refs information from the insn with UID.
+   Internal helper for df_insn_delete, df_insn_rescan, and other
+   df-scan routines that don't have to work in deferred mode
+   and do not have to mark basic blocks for re-processing.  */
 
-void
-df_insn_delete (basic_block bb, unsigned int uid)
+static void
+df_insn_info_delete (unsigned int uid)
 {
-  struct df_insn_info *insn_info = NULL;
-  if (!df)
-    return;
-
-  df_grow_bb_info (df_scan);
-  df_grow_reg_info ();
-
-  /* The block must be marked as dirty now, rather than later as in
-     df_insn_rescan and df_notes_rescan because it may not be there at
-     rescanning time and the mark would blow up.  */
-  if (bb)
-    df_set_bb_dirty (bb);
-
-  insn_info = DF_INSN_UID_SAFE_GET (uid);
-
-  /* The client has deferred rescanning.  */
-  if (df->changeable_flags & DF_DEFER_INSN_RESCAN)
-    {
-      if (insn_info)
-	{
-	  bitmap_clear_bit (&df->insns_to_rescan, uid);
-	  bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
-	  bitmap_set_bit (&df->insns_to_delete, uid);
-	}
-      if (dump_file)
-	fprintf (dump_file, "deferring deletion of insn with uid = %d.\n", uid);
-      return;
-    }
-
-  if (dump_file)
-    fprintf (dump_file, "deleting insn with uid = %d.\n", uid);
+  struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
 
   bitmap_clear_bit (&df->insns_to_delete, uid);
   bitmap_clear_bit (&df->insns_to_rescan, uid);
@@ -1158,6 +1130,67 @@ df_insn_delete (basic_block bb, unsigned int uid)
       pool_free (problem_data->insn_pool, insn_info);
       DF_INSN_UID_SET (uid, NULL);
     }
+}
+
+/* Delete all of the refs information from INSN, either right now
+   or marked for later in deferred mode.  */
+
+void
+df_insn_delete (rtx insn)
+{
+  unsigned int uid;
+  basic_block bb;
+
+  gcc_checking_assert (INSN_P (insn));
+
+  if (!df)
+    return;
+
+  uid = INSN_UID (insn);
+  bb = BLOCK_FOR_INSN (insn);
+
+  /* ??? bb can be NULL after pass_free_cfg.  At that point, DF should
+     not exist anymore (as mentioned in df-core.c: "The only requirement
+     [for DF] is that there be a correct control flow graph."  Clearly
+     that isn't the case after pass_free_cfg.  But DF is freed much later
+     because some back-ends want to use DF info even though the CFG is
+     already gone.  It's not clear to me whether that is safe, actually.
+     In any case, we expect BB to be non-NULL at least up to register
+     allocation, so disallow a non-NULL BB up to there.  Not perfect
+     but better than nothing...  */
+
+  gcc_checking_assert (bb != NULL || reload_completed);
+
+  df_grow_bb_info (df_scan);
+  df_grow_reg_info ();
+
+  /* The block must be marked as dirty now, rather than later as in
+     df_insn_rescan and df_notes_rescan because it may not be there at
+     rescanning time and the mark would blow up.
+     DEBUG_INSNs do not make a block's data flow solution dirty (at
+     worst the LUIDs are no longer contiguous).  */
+  if (bb != NULL && NONDEBUG_INSN_P (insn))
+    df_set_bb_dirty (bb);
+
+  /* The client has deferred rescanning.  */
+  if (df->changeable_flags & DF_DEFER_INSN_RESCAN)
+    {
+      struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
+      if (insn_info)
+	{
+	  bitmap_clear_bit (&df->insns_to_rescan, uid);
+	  bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
+	  bitmap_set_bit (&df->insns_to_delete, uid);
+	}
+      if (dump_file)
+	fprintf (dump_file, "deferring deletion of insn with uid = %d.\n", uid);
+      return;
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "deleting insn with uid = %d.\n", uid);
+
+  df_insn_info_delete (uid);
 }
 
 
@@ -1262,7 +1295,7 @@ df_insn_rescan (rtx insn)
       /* There's change - we need to delete the existing info.
 	 Since the insn isn't moved, we can salvage its LUID.  */
       luid = DF_INSN_LUID (insn);
-      df_insn_delete (NULL, uid);
+      df_insn_info_delete (uid);
       df_insn_create_insn_record (insn);
       DF_INSN_LUID (insn) = luid;
     }
@@ -1345,7 +1378,7 @@ df_insn_rescan_debug_internal (rtx insn)
 
 
 /* Rescan all of the insns in the function.  Note that the artificial
-   uses and defs are not touched.  This function will destroy def-se
+   uses and defs are not touched.  This function will destroy def-use
    or use-def chains.  */
 
 void
@@ -1377,7 +1410,7 @@ df_insn_rescan_all (void)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
-	df_insn_delete (NULL, uid);
+	df_insn_info_delete (uid);
     }
 
   bitmap_clear (&tmp);
@@ -1434,7 +1467,7 @@ df_process_deferred_rescans (void)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
-	df_insn_delete (NULL, uid);
+	df_insn_info_delete (uid);
     }
 
   bitmap_copy (&tmp, &df->insns_to_rescan);
