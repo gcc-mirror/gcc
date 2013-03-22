@@ -3,6 +3,10 @@
 	Backported from mainline
 	2013-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/56607
+	* typeck.c (cp_build_binary_op): When calling warn_for_div_by_zero,
+	pass op1 through maybe_constant_value first.
+
 	* tree.c (cp_tree_equal): Fix a pasto.
 
 2013-03-22  Release Manager
