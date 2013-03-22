@@ -1,3 +1,16 @@
+2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*mov<mode>_internal): Merge with
+	*mov<mode>_internal_rex64.  Use x64 and nox64 isa attributes.
+	Emit insn template depending on type attribute.  Use
+	HAVE_AS_IX86_INTERUNIT_MOVQ to handle broken assemblers that require
+	movd instead of movq mnemonic for interunit moves.  Rewrite mode
+	attribute calculation.  Remove unit attribute calculation.
+	Set prefix attribute to maybe_vex for sselog1 and ssemov types.
+	Set prefix_data16 attribute for DImode ssemov types.
+	Use Ym instead of y for SSE-MMX conversion alternatives.
+	Reorder operand constraints.
+
 2013-03-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* df.h (df_insn_delete): Adjust prototype.
@@ -31,7 +44,7 @@
 2013-03-22  Richard Biener  <rguenther@suse.de>
 
 	* is-a.h (as_a): Use gcc_checking_assert.
- 
+
 2013-03-22  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): New
@@ -47,8 +60,7 @@
 	(create_vop_ref_mapping_loop): Remove.
 	(create_vop_ref_mapping): Likewise.
 	(analyze_memory_references): Initialize refs_stored_in_loop.
-	(LOOP_DEP_BIT): New define to map to bits in (in)dep_loop
-	bitmaps.
+	(LOOP_DEP_BIT): New define to map to bits in (in)dep_loop bitmaps.
 	(record_indep_loop): Remove.
 	(record_dep_loop): New function.
 	(ref_indep_loop_p_1): Adjust to only walk over references
