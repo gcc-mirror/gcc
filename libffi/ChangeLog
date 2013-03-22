@@ -1,3 +1,7 @@
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2013-03-07  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* src/closures.c (is_emutramp_enabled [!FFI_MMAP_EXEC_EMUTRAMP_PAX]):
