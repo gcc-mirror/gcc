@@ -44,13 +44,13 @@ target_triplet = @target@
 @CREATE_WRAPPERS_TRUE@@INSTALL_BINARIES_FALSE@	$(am__EXEEXT_2)
 @CREATE_GJDOC_TRUE@@CREATE_WRAPPERS_FALSE@am__append_2 = gjdoc
 subdir = tools
-DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/gappletviewer.in $(srcdir)/gjar.in \
-	$(srcdir)/gjarsigner.in $(srcdir)/gjavah.in $(srcdir)/gjdoc.in \
-	$(srcdir)/gkeytool.in $(srcdir)/gnative2ascii.in \
-	$(srcdir)/gorbd.in $(srcdir)/grmic.in $(srcdir)/grmid.in \
-	$(srcdir)/grmiregistry.in $(srcdir)/gserialver.in \
-	$(srcdir)/gtnameserv.in
+DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+	$(srcdir)/gappletviewer.in $(srcdir)/gjarsigner.in \
+	$(srcdir)/gkeytool.in $(srcdir)/gjar.in \
+	$(srcdir)/gnative2ascii.in $(srcdir)/gserialver.in \
+	$(srcdir)/grmiregistry.in $(srcdir)/gtnameserv.in \
+	$(srcdir)/gorbd.in $(srcdir)/grmid.in $(srcdir)/grmic.in \
+	$(srcdir)/gjavah.in $(srcdir)/gjdoc.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
@@ -95,7 +95,6 @@ CONFIG_CLEAN_VPATH_FILES =
 @CREATE_WRAPPERS_TRUE@	$(am__EXEEXT_1)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am__gappletviewer_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gappletviewer_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gappletviewer-toolwrapper.$(OBJEXT)
 gappletviewer_OBJECTS = $(am_gappletviewer_OBJECTS)
@@ -103,14 +102,12 @@ gappletviewer_LDADD = $(LDADD)
 gappletviewer_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(gappletviewer_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__gjar_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gjar_OBJECTS = gjar-toolwrapper.$(OBJEXT)
 gjar_OBJECTS = $(am_gjar_OBJECTS)
 gjar_LDADD = $(LDADD)
 gjar_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(gjar_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__gjarsigner_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gjarsigner_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gjarsigner-toolwrapper.$(OBJEXT)
 gjarsigner_OBJECTS = $(am_gjarsigner_OBJECTS)
@@ -118,7 +115,6 @@ gjarsigner_LDADD = $(LDADD)
 gjarsigner_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(gjarsigner_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__gjavah_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gjavah_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gjavah-toolwrapper.$(OBJEXT)
 gjavah_OBJECTS = $(am_gjavah_OBJECTS)
@@ -126,14 +122,12 @@ gjavah_LDADD = $(LDADD)
 gjavah_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(gjavah_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__gjdoc_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gjdoc_OBJECTS = gjdoc-toolwrapper.$(OBJEXT)
 gjdoc_OBJECTS = $(am_gjdoc_OBJECTS)
 gjdoc_LDADD = $(LDADD)
 gjdoc_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(gjdoc_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__gkeytool_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gkeytool_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gkeytool-toolwrapper.$(OBJEXT)
 gkeytool_OBJECTS = $(am_gkeytool_OBJECTS)
@@ -141,7 +135,6 @@ gkeytool_LDADD = $(LDADD)
 gkeytool_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(gkeytool_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__gnative2ascii_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gnative2ascii_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gnative2ascii-toolwrapper.$(OBJEXT)
 gnative2ascii_OBJECTS = $(am_gnative2ascii_OBJECTS)
@@ -149,28 +142,24 @@ gnative2ascii_LDADD = $(LDADD)
 gnative2ascii_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(gnative2ascii_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__gorbd_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gorbd_OBJECTS = gorbd-toolwrapper.$(OBJEXT)
 gorbd_OBJECTS = $(am_gorbd_OBJECTS)
 gorbd_LDADD = $(LDADD)
 gorbd_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(gorbd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__grmic_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_grmic_OBJECTS = grmic-toolwrapper.$(OBJEXT)
 grmic_OBJECTS = $(am_grmic_OBJECTS)
 grmic_LDADD = $(LDADD)
 grmic_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(grmic_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__grmid_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_grmid_OBJECTS = grmid-toolwrapper.$(OBJEXT)
 grmid_OBJECTS = $(am_grmid_OBJECTS)
 grmid_LDADD = $(LDADD)
 grmid_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(grmid_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__grmiregistry_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_grmiregistry_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	grmiregistry-toolwrapper.$(OBJEXT)
 grmiregistry_OBJECTS = $(am_grmiregistry_OBJECTS)
@@ -178,7 +167,6 @@ grmiregistry_LDADD = $(LDADD)
 grmiregistry_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(grmiregistry_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__gserialver_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gserialver_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gserialver-toolwrapper.$(OBJEXT)
 gserialver_OBJECTS = $(am_gserialver_OBJECTS)
@@ -186,7 +174,6 @@ gserialver_LDADD = $(LDADD)
 gserialver_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(gserialver_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__gtnameserv_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gtnameserv_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gtnameserv-toolwrapper.$(OBJEXT)
 gtnameserv_OBJECTS = $(am_gtnameserv_OBJECTS)
@@ -234,17 +221,9 @@ SOURCES = $(gappletviewer_SOURCES) $(gjar_SOURCES) \
 	$(gkeytool_SOURCES) $(gnative2ascii_SOURCES) $(gorbd_SOURCES) \
 	$(grmic_SOURCES) $(grmid_SOURCES) $(grmiregistry_SOURCES) \
 	$(gserialver_SOURCES) $(gtnameserv_SOURCES)
-DIST_SOURCES = $(am__gappletviewer_SOURCES_DIST) \
-	$(am__gjar_SOURCES_DIST) $(am__gjarsigner_SOURCES_DIST) \
-	$(am__gjavah_SOURCES_DIST) $(am__gjdoc_SOURCES_DIST) \
-	$(am__gkeytool_SOURCES_DIST) $(am__gnative2ascii_SOURCES_DIST) \
-	$(am__gorbd_SOURCES_DIST) $(am__grmic_SOURCES_DIST) \
-	$(am__grmid_SOURCES_DIST) $(am__grmiregistry_SOURCES_DIST) \
-	$(am__gserialver_SOURCES_DIST) $(am__gtnameserv_SOURCES_DIST)
 DATA = $(noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 ANTLR = @ANTLR@
@@ -1199,40 +1178,6 @@ GTAGS:
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
-
-distdir: $(DISTFILES)
-	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	list='$(DISTFILES)'; \
-	  dist_files=`for file in $$list; do echo $$file; done | \
-	  sed -e "s|^$$srcdirstrip/||;t" \
-	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t"`; \
-	case $$dist_files in \
-	  */*) $(MKDIR_P) `echo "$$dist_files" | \
-			   sed '/\//!d;s|^|$(distdir)/|;s,/[^/]*$$,,' | \
-			   sort -u` ;; \
-	esac; \
-	for file in $$dist_files; do \
-	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
-	  if test -d $$d/$$file; then \
-	    dir=`echo "/$$file" | sed -e 's,/[^/]*$$,,'`; \
-	    if test -d "$(distdir)/$$file"; then \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
-	      cp -fpR $(srcdir)/$$file "$(distdir)$$dir" || exit 1; \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    cp -fpR $$d/$$file "$(distdir)$$dir" || exit 1; \
-	  else \
-	    test -f "$(distdir)/$$file" \
-	    || cp -p $$d/$$file "$(distdir)/$$file" \
-	    || exit 1; \
-	  fi; \
-	done
-	$(MAKE) $(AM_MAKEFLAGS) \
-	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
-	  dist-hook
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
@@ -1343,9 +1288,9 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
 	clean-generic clean-libtool clean-local clean-noinstPROGRAMS \
-	ctags dist-hook distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
+	ctags distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags dvi dvi-am html html-am info \
+	info-am install install-am install-binPROGRAMS \
 	install-binSCRIPTS install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \

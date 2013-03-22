@@ -1,3 +1,41 @@
+2013-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43620
+	* Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* doc/api/Makefile.in: Regenerated.
+	* examples/Makefile.in: Regenerated.
+	* external/Makefile.in: Regenerated.
+	* external/jsr166/Makefile.in: Regenerated.
+	* external/relaxngDatatype/Makefile.in: Regenerated.
+	* external/sax/Makefile.in: Regenerated.
+	* external/w3c_dom/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* lib/Makefile.in: Regenerated.
+	* native/Makefile.in: Regenerated.
+	* native/fdlibm/Makefile.in: Regenerated.
+	* native/jawt/Makefile.in: Regenerated.
+	* native/jni/Makefile.in: Regenerated.
+	* native/jni/classpath/Makefile.in: Regenerated.
+	* native/jni/gconf-peer/Makefile.in: Regenerated.
+	* native/jni/gstreamer-peer/Makefile.in: Regenerated.
+	* native/jni/gtk-peer/Makefile.in: Regenerated.
+	* native/jni/java-io/Makefile.in: Regenerated.
+	* native/jni/java-lang/Makefile.in: Regenerated.
+	* native/jni/java-math/Makefile.in: Regenerated.
+	* native/jni/java-net/Makefile.in: Regenerated.
+	* native/jni/java-nio/Makefile.in: Regenerated.
+	* native/jni/java-util/Makefile.in: Regenerated.
+	* native/jni/midi-alsa/Makefile.in: Regenerated.
+	* native/jni/midi-dssi/Makefile.in: Regenerated.
+	* native/jni/native-lib/Makefile.in: Regenerated.
+	* native/jni/qt-peer/Makefile.in: Regenerated.
+	* native/jni/xmlj/Makefile.in: Regenerated.
+	* native/plugin/Makefile.in: Regenerated.
+	* resource/Makefile.in: Regenerated.
+	* scripts/Makefile.in: Regenerated.
+	* tools/Makefile.in: Regenerated.
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/56258
