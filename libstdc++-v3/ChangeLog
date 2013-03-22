@@ -1,3 +1,8 @@
+2013-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56678
+	* include/std/chrono (__is_ratio): Uglify T.
+
 2013-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55977 (partial, std::vector and std::deque bits)
