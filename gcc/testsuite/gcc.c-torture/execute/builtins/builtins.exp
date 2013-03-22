@@ -43,6 +43,7 @@ if [istarget "powerpc-*-darwin*"] {
 }
 if { [istarget *-*-eabi*]
      || [istarget *-*-elf]
+     || [istarget *-*-rtems*]
      || [istarget *-*-mingw*] } {
    lappend additional_flags "-Wl,--allow-multiple-definition"
 }
