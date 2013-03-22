@@ -134,10 +134,6 @@ typedef struct mem_ref
 				   If it is only loaded, then it is independent
 				     on all stores in the loop.  */
   bitmap dep_loop;		/* The complement of INDEP_LOOP.  */
-
-  bitmap indep_ref;		/* The set of memory references on that
-				   this reference is independent.  */
-  bitmap dep_ref;		/* The complement of INDEP_REF.  */
 } *mem_ref_p;
 
 /* We use two bits per loop in the ref->{in,}dep_loop bitmaps, the first
@@ -1482,8 +1478,6 @@ mem_ref_alloc (tree mem, unsigned hash, unsigned id)
   ref->stored = BITMAP_ALLOC (&lim_bitmap_obstack);
   ref->indep_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
   ref->dep_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
-  ref->indep_ref = BITMAP_ALLOC (&lim_bitmap_obstack);
-  ref->dep_ref = BITMAP_ALLOC (&lim_bitmap_obstack);
   ref->accesses_in_loop.create (0);
 
   return ref;
@@ -2228,33 +2222,18 @@ refs_independent_p (mem_ref_p ref1, mem_ref_p ref2)
   if (ref1 == ref2)
     return true;
 
-  /* Reference dependence in a loop is symmetric.  */
-  if (ref1->id > ref2->id)
-    {
-      mem_ref_p tem = ref1;
-      ref1 = ref2;
-      ref2 = tem;
-    }
-
-  if (bitmap_bit_p (ref1->indep_ref, ref2->id))
-    return true;
-  if (bitmap_bit_p (ref1->dep_ref, ref2->id))
-    return false;
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Querying dependency of refs %u and %u: ",
 	     ref1->id, ref2->id);
 
   if (mem_refs_may_alias_p (ref1, ref2, &memory_accesses.ttae_cache))
     {
-      bitmap_set_bit (ref1->dep_ref, ref2->id);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "dependent.\n");
       return false;
     }
   else
     {
-      bitmap_set_bit (ref1->indep_ref, ref2->id);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "independent.\n");
       return true;
