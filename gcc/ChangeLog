@@ -1,3 +1,14 @@
+2013-03-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/56560
+	* config/i386/i386.c (init_cumulative_args): Also set
+	cum->callee_return_avx256_p.
+	(ix86_function_arg): Set cum->callee_pass_avx256_p.  Set
+	cfun->machine->callee_pass_avx256_p only when MODE == VOIDmode.
+
+	* config/i386/i386.h (ix86_args): Add callee_pass_avx256_p and
+	callee_return_avx256_p.
+
 2013-03-20  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR bootstrap/56258

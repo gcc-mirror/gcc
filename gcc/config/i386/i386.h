@@ -1494,6 +1494,7 @@ enum reg_class
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(N) ix86_function_arg_regno_p (N)
 
+#ifndef USED_FOR_TARGET
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
@@ -1522,7 +1523,12 @@ typedef struct ix86_args {
 				   in SSE registers.  Otherwise 0.  */
   enum calling_abi call_abi;	/* Set to SYSV_ABI for sysv abi. Otherwise
  				   MS_ABI for ms abi.  */
+  /* Nonzero if it passes 256bit AVX modes.  */
+  BOOL_BITFIELD callee_pass_avx256_p : 1;
+  /* Nonzero if it returns 256bit AVX modes.  */
+  BOOL_BITFIELD callee_return_avx256_p : 1;
 } CUMULATIVE_ARGS;
+#endif
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
