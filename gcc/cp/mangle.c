@@ -1189,7 +1189,7 @@ write_unqualified_name (const tree decl)
 {
   MANGLE_TRACE_TREE ("unqualified-name", decl);
 
-  if (TREE_CODE (decl) == IDENTIFIER_NODE)
+  if (identifier_p (decl))
     {
       write_unqualified_id (decl);
       return;
@@ -2519,7 +2519,7 @@ write_template_args (tree args)
 static void
 write_member_name (tree member)
 {
-  if (TREE_CODE (member) == IDENTIFIER_NODE)
+  if (identifier_p (member))
     write_unqualified_id (member);
   else if (DECL_P (member))
     write_unqualified_name (member);
@@ -2697,7 +2697,7 @@ write_expression (tree expr)
     {
       write_expression (TREE_OPERAND (expr, 0));
     }
-  else if (TREE_CODE (expr) == IDENTIFIER_NODE)
+  else if (identifier_p (expr))
     {
       /* An operator name appearing as a dependent name needs to be
 	 specially marked to disambiguate between a use of the operator

@@ -1734,7 +1734,7 @@ is_overloaded_fn (tree x)
 tree
 dependent_name (tree x)
 {
-  if (TREE_CODE (x) == IDENTIFIER_NODE)
+  if (identifier_p (x))
     return x;
   if (TREE_CODE (x) != COMPONENT_REF
       && TREE_CODE (x) != OFFSET_REF

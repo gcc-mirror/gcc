@@ -233,7 +233,7 @@ check_dtor_name (tree basetype, tree name)
     name = TREE_TYPE (name);
   else if (TYPE_P (name))
     /* OK */;
-  else if (TREE_CODE (name) == IDENTIFIER_NODE)
+  else if (identifier_p (name))
     {
       if ((MAYBE_CLASS_TYPE_P (basetype)
 	   && name == constructor_name (basetype))
@@ -3147,7 +3147,7 @@ print_z_candidate (location_t loc, const char *msgstr,
 		     : ACONCAT ((msgstr, " ", NULL)));
   location_t cloc = location_of (candidate->fn);
 
-  if (TREE_CODE (candidate->fn) == IDENTIFIER_NODE)
+  if (identifier_p (candidate->fn))
     {
       cloc = loc;
       if (candidate->num_convs == 3)
@@ -8563,8 +8563,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
      - do not have the same parameter type list as any non-template
        non-member candidate.  */
 
-  if (TREE_CODE (cand1->fn) == IDENTIFIER_NODE
-      || TREE_CODE (cand2->fn) == IDENTIFIER_NODE)
+  if (identifier_p (cand1->fn) || identifier_p (cand2->fn))
     {
       for (i = 0; i < len; ++i)
 	if (!same_type_p (cand1->convs[i]->type,
@@ -8575,7 +8574,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  if (cand1->fn == cand2->fn)
 	    /* Two built-in candidates; arbitrarily pick one.  */
 	    return 1;
-	  else if (TREE_CODE (cand1->fn) == IDENTIFIER_NODE)
+	  else if (identifier_p (cand1->fn))
 	    /* cand1 is built-in; prefer cand2.  */
 	    return -1;
 	  else
