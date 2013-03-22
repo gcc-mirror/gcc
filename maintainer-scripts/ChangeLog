@@ -1,3 +1,7 @@
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2012-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* crontab: Disable snapshots from gcc-4_5-branch.
