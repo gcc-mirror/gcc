@@ -1,5 +1,25 @@
 2013-03-22  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-loop-im.c (memory_references): Add refs_stored_in_loop
+	bitmaps.
+	(gather_mem_refs_in_loops): Perform store accumulation here.
+	(create_vop_ref_mapping_loop): Remove.
+	(create_vop_ref_mapping): Likewise.
+	(analyze_memory_references): Initialize refs_stored_in_loop.
+	(LOOP_DEP_BIT): New define to map to bits in (in)dep_loop
+	bitmaps.
+	(record_indep_loop): Remove.
+	(record_dep_loop): New function.
+	(ref_indep_loop_p_1): Adjust to only walk over references
+	in the loop, not its subloops.
+	(ref_indep_loop_p): Rename to ...
+	(ref_indep_loop_p_2): ... this and recurse over the loop tree,
+	maintaining a more fine-grained cache.
+	(ref_indep_loop_p): Wrap ref_indep_loop_p_2.
+	(tree_ssa_lim_finalize): Free refs_stored_in_loop.
+
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (struct mem_ref_locs): Remove.
 	(struct mem_ref): Make accesses_in_loop a vec of a vec of
 	aggregate mem_ref_loc.

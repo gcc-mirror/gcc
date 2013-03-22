@@ -140,6 +140,11 @@ typedef struct mem_ref
   bitmap dep_ref;		/* The complement of INDEP_REF.  */
 } *mem_ref_p;
 
+/* We use two bits per loop in the ref->{in,}dep_loop bitmaps, the first
+   to record (in)dependence against stores in the loop and its subloops, the
+   second to record (in)dependence against all references in the loop
+   and its subloops.  */
+#define LOOP_DEP_BIT(loopnum, storedp) (2 * (loopnum) + (storedp ? 1 : 0))
 
 
 
@@ -156,12 +161,14 @@ static struct
   /* The set of memory references accessed in each loop.  */
   vec<bitmap> refs_in_loop;
 
+  /* The set of memory references stored in each loop.  */
+  vec<bitmap> refs_stored_in_loop;
+
   /* The set of memory references accessed in each loop, including
      subloops.  */
   vec<bitmap> all_refs_in_loop;
 
-  /* The set of memory references stored in each loop, including
-     subloops.  */
+  /* The set of memory references stored in each loop, including subloops .  */
   vec<bitmap> all_refs_stored_in_loop;
 
   /* Cache for expanding memory addresses.  */
@@ -1575,7 +1582,10 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
     }
   bitmap_set_bit (memory_accesses.refs_in_loop[loop->num], ref->id);
   if (is_stored)
-    mark_ref_stored (ref, loop);
+    {
+      bitmap_set_bit (memory_accesses.refs_stored_in_loop[loop->num], ref->id);
+      mark_ref_stored (ref, loop);
+    }
   return;
 }
 
@@ -1602,9 +1612,8 @@ gather_mem_refs_in_loops (void)
 {
   gimple_stmt_iterator bsi;
   basic_block bb, *bbs;
-  struct loop *loop;
+  struct loop *loop, *outer;
   loop_iterator li;
-  bitmap lrefs, alrefs, alrefso;
   unsigned i, n;
 
   /* Initialize bb_loop_postorder with a mapping from loop->num to
@@ -1639,56 +1648,22 @@ gather_mem_refs_in_loops (void)
      the loop hierarchy.  */
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      lrefs = memory_accesses.refs_in_loop[loop->num];
-      alrefs = memory_accesses.all_refs_in_loop[loop->num];
-      bitmap_ior_into (alrefs, lrefs);
+      /* Finalize the overall touched references (including subloops).  */
+      bitmap_ior_into (memory_accesses.all_refs_in_loop[loop->num],
+		       memory_accesses.refs_in_loop[loop->num]);
+      bitmap_ior_into (memory_accesses.all_refs_stored_in_loop[loop->num],
+		       memory_accesses.refs_stored_in_loop[loop->num]);
 
-      if (loop_outer (loop) == current_loops->tree_root)
+      /* Propagate the information about accessed memory references up
+	 the loop hierarchy.  */
+      outer = loop_outer (loop);
+      if (outer == current_loops->tree_root)
 	continue;
 
-      alrefso = memory_accesses.all_refs_in_loop[loop_outer (loop)->num];
-      bitmap_ior_into (alrefso, alrefs);
-    }
-}
-
-/* Create a mapping from virtual operands to references that touch them
-   in LOOP.  */
-
-static void
-create_vop_ref_mapping_loop (struct loop *loop)
-{
-  bitmap refs = memory_accesses.refs_in_loop[loop->num];
-  struct loop *sloop;
-  bitmap_iterator bi;
-  unsigned i;
-  mem_ref_p ref;
-
-  EXECUTE_IF_SET_IN_BITMAP (refs, 0, i, bi)
-    {
-      ref = memory_accesses.refs_list[i];
-      for (sloop = loop; sloop != current_loops->tree_root;
-	   sloop = loop_outer (sloop))
-	if (bitmap_bit_p (ref->stored, loop->num))
-	  {
-	    bitmap refs_stored
-	      = memory_accesses.all_refs_stored_in_loop[sloop->num];
-	    bitmap_set_bit (refs_stored, ref->id);
-	  }
-    }
-}
-
-/* For each non-clobbered virtual operand and each loop, record the memory
-   references in this loop that touch the operand.  */
-
-static void
-create_vop_ref_mapping (void)
-{
-  loop_iterator li;
-  struct loop *loop;
-
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      create_vop_ref_mapping_loop (loop);
+      bitmap_ior_into (memory_accesses.all_refs_in_loop[outer->num],
+		       memory_accesses.all_refs_in_loop[loop->num]);
+      bitmap_ior_into (memory_accesses.all_refs_stored_in_loop[outer->num],
+		       memory_accesses.all_refs_stored_in_loop[loop->num]);
     }
 }
 
@@ -1707,6 +1682,7 @@ analyze_memory_references (void)
     (mem_ref_alloc (error_mark_node, 0, UNANALYZABLE_MEM_ID));
 
   memory_accesses.refs_in_loop.create (number_of_loops ());
+  memory_accesses.refs_stored_in_loop.create (number_of_loops ());
   memory_accesses.all_refs_in_loop.create (number_of_loops ());
   memory_accesses.all_refs_stored_in_loop.create (number_of_loops ());
 
@@ -1714,6 +1690,8 @@ analyze_memory_references (void)
     {
       empty = BITMAP_ALLOC (&lim_bitmap_obstack);
       memory_accesses.refs_in_loop.quick_push (empty);
+      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
+      memory_accesses.refs_stored_in_loop.quick_push (empty);
       empty = BITMAP_ALLOC (&lim_bitmap_obstack);
       memory_accesses.all_refs_in_loop.quick_push (empty);
       empty = BITMAP_ALLOC (&lim_bitmap_obstack);
@@ -1723,7 +1701,6 @@ analyze_memory_references (void)
   memory_accesses.ttae_cache = NULL;
 
   gather_mem_refs_in_loops ();
-  create_vop_ref_mapping ();
 }
 
 /* Returns true if MEM1 and MEM2 may alias.  TTAE_CACHE is used as a cache in
@@ -2299,34 +2276,34 @@ refs_independent_p (mem_ref_p ref1, mem_ref_p ref2)
     }
 }
 
-/* Records the information whether REF is independent in LOOP (according
-   to INDEP).  */
+/* Mark REF dependent on stores or loads (according to STORED_P) in LOOP
+   and its super-loops.  */
 
 static void
-record_indep_loop (struct loop *loop, mem_ref_p ref, bool indep)
+record_dep_loop (struct loop *loop, mem_ref_p ref, bool stored_p)
 {
-  if (indep)
-    bitmap_set_bit (ref->indep_loop, loop->num);
-  else
-    bitmap_set_bit (ref->dep_loop, loop->num);
+  /* We can propagate dependent-in-loop bits up the loop
+     hierarchy to all outer loops.  */
+  while (loop != current_loops->tree_root
+	 && bitmap_set_bit (ref->dep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
+    loop = loop_outer (loop);
 }
 
 /* Returns true if REF is independent on all other memory references in
    LOOP.  */
 
 static bool
-ref_indep_loop_p_1 (struct loop *loop, mem_ref_p ref)
+ref_indep_loop_p_1 (struct loop *loop, mem_ref_p ref, bool stored_p)
 {
   bitmap refs_to_check;
   unsigned i;
   bitmap_iterator bi;
-  bool ret = true, stored = bitmap_bit_p (ref->stored, loop->num);
   mem_ref_p aref;
 
-  if (stored)
-    refs_to_check = memory_accesses.all_refs_in_loop[loop->num];
+  if (stored_p)
+    refs_to_check = memory_accesses.refs_in_loop[loop->num];
   else
-    refs_to_check = memory_accesses.all_refs_stored_in_loop[loop->num];
+    refs_to_check = memory_accesses.refs_stored_in_loop[loop->num];
 
   if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
     return false;
@@ -2335,40 +2312,73 @@ ref_indep_loop_p_1 (struct loop *loop, mem_ref_p ref)
     {
       aref = memory_accesses.refs_list[i];
       if (!refs_independent_p (ref, aref))
-	{
-	  ret = false;
-	  record_indep_loop (loop, aref, false);
-	  break;
-	}
+	return false;
     }
 
-  return ret;
+  return true;
 }
 
 /* Returns true if REF is independent on all other memory references in
    LOOP.  Wrapper over ref_indep_loop_p_1, caching its results.  */
 
 static bool
-ref_indep_loop_p (struct loop *loop, mem_ref_p ref)
+ref_indep_loop_p_2 (struct loop *loop, mem_ref_p ref, bool stored_p)
 {
-  bool ret;
+  stored_p |= bitmap_bit_p (ref->stored, loop->num);
 
-  gcc_checking_assert (MEM_ANALYZABLE (ref));
-
-  if (bitmap_bit_p (ref->indep_loop, loop->num))
+  if (bitmap_bit_p (ref->indep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
     return true;
-  if (bitmap_bit_p (ref->dep_loop, loop->num))
+  if (bitmap_bit_p (ref->dep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
     return false;
 
-  ret = ref_indep_loop_p_1 (loop, ref);
+  struct loop *inner = loop->inner;
+  while (inner)
+    {
+      if (!ref_indep_loop_p_2 (inner, ref, stored_p))
+	return false;
+      inner = inner->next;
+    }
+
+  bool indep_p = ref_indep_loop_p_1 (loop, ref, stored_p);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Querying dependencies of ref %u in loop %d: %s\n",
-	     ref->id, loop->num, ret ? "independent" : "dependent");
+	     ref->id, loop->num, indep_p ? "independent" : "dependent");
 
-  record_indep_loop (loop, ref, ret);
+  /* Record the computed result in the cache.  */
+  if (indep_p)
+    {
+      if (bitmap_set_bit (ref->indep_loop, LOOP_DEP_BIT (loop->num, stored_p))
+	  && stored_p)
+	{
+	  /* If it's independend against all refs then it's independent
+	     against stores, too.  */
+	  bitmap_set_bit (ref->indep_loop, LOOP_DEP_BIT (loop->num, false));
+	}
+    }
+  else
+    {
+      record_dep_loop (loop, ref, stored_p);
+      if (!stored_p)
+	{
+	  /* If it's dependent against stores it's dependent against
+	     all refs, too.  */
+	  record_dep_loop (loop, ref, true);
+	}
+    }
 
-  return ret;
+  return indep_p;
+}
+
+/* Returns true if REF is independent on all other memory references in
+   LOOP.  */
+
+static bool
+ref_indep_loop_p (struct loop *loop, mem_ref_p ref)
+{
+  gcc_checking_assert (MEM_ANALYZABLE (ref));
+
+  return ref_indep_loop_p_2 (loop, ref, false);
 }
 
 /* Returns true if we can perform store motion of REF from LOOP.  */
@@ -2619,6 +2629,7 @@ tree_ssa_lim_finalize (void)
   memory_accesses.refs_list.release ();
 
   memory_accesses.refs_in_loop.release ();
+  memory_accesses.refs_stored_in_loop.release ();
   memory_accesses.all_refs_in_loop.release ();
   memory_accesses.all_refs_stored_in_loop.release ();
 
