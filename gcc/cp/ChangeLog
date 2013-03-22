@@ -1,3 +1,9 @@
+2013-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56684
+	* pt.c (instantiation_dependent_r): Check DECL_INITIAL of VAR_DECL
+	and CONST_DECL.
+
 2013-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (identifier_p): New.
