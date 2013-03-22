@@ -1,5 +1,10 @@
 2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*movdi_internal): Set prefix_rex attribute
+	also for alternatives 16 and 17.
+
+2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/sse.md (*mov<mode>_internal): Merge with
 	*mov<mode>_internal_rex64.  Use x64 and nox64 isa attributes.
 	Emit insn template depending on type attribute.  Use
