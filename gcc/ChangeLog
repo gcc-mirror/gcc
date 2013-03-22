@@ -1,3 +1,22 @@
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct mem_ref_locs): Remove.
+	(struct mem_ref): Make accesses_in_loop a vec of a vec of
+	aggregate mem_ref_loc.
+	(free_mem_ref_locs): Inline into ...
+	(memref_free): ... this and adjust.
+	(mem_ref_alloc): Adjust.
+	(mem_ref_locs_alloc): Remove.
+	(record_mem_ref_loc): Adjust.
+	(get_all_locs_in_loop): Rewrite into ...
+	(for_all_locs_in_loop): ... this iterator.
+	(rewrite_mem_ref_loc): New functor.
+	(rewrite_mem_refs): Use for_all_locs_in_loop.
+	(sm_set_flag_if_changed): New functor.
+	(execute_sm_if_changed_flag_set): Use for_all_locs_in_loop.
+	(ref_always_accessed): New functor.
+	(ref_always_accessed_p): Use for_all_locs_in_loop.
+
 2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-pass.h (PROP_gimple_lvec): New.
