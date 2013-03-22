@@ -1,3 +1,8 @@
+2013-03-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/56560
+	* gcc.target/i386/pr56560.c: New file.
+
 2013-03-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR testsuite/55994
