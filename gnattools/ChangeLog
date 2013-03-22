@@ -1,3 +1,7 @@
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (mips-sgi-irix*): Remove.
