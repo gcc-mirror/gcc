@@ -1,3 +1,18 @@
+2013-03-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* df.h (df_insn_delete): Adjust prototype.
+	* emit-rtl.c (remove_insn): Pass a basic block to df_insn_delete
+	and let it decide whether mark the basic block dirty.
+	(set_insn_deleted): Only pass INSN_P insns to df_insn_delete.
+	* df-scan.c (df_insn_info_delete): New helper function, split
+	off from df_insn_delete.
+	(df_scan_free_bb_info): Use it.
+	(df_insn_rescan, df_insn_rescan_all, df_process_deferred_rescans):
+	Likewise.
+	(df_insn_delete): Likewise.  Take insn rtx as argument.  Verify
+	that the insn is actually an insn and it has a non-NULL basic block.
+	Do not mark basic block dirty if only deleting a DEBUG_INSN.
+
 2013-03-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop-im.c (struct mem_ref): Remove indep_ref and
