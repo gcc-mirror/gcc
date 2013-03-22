@@ -1,3 +1,9 @@
+2013-03-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR testsuite/55994
+	* gcc.c-torture/execute/builtins/builtins.exp: Add
+	-Wl,--allow-multiple-definition for RTEMS targets.
+
 2013-03-22  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/movk.c: New test.
