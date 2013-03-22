@@ -1,3 +1,7 @@
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2013-02-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* bootstrap-asan.mk (POSTSTAGE1_LDFLAGS): Add
