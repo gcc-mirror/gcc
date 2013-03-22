@@ -1,5 +1,12 @@
 2013-03-22  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-loop-im.c (struct mem_ref): Remove indep_ref and
+	dep_ref members.
+	(mem_ref_alloc): Do not allocate them.
+	(refs_independent_p): Do not query or maintain a cache.
+
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (memory_references): Drop all_refs_in_loop.
 	(gather_mem_refs_in_loops): Do not compute it.
 	(analyze_memory_references): Do not allocate it.
