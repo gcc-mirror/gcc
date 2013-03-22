@@ -1502,6 +1502,10 @@ typedef struct ix86_args {
 				   in SSE registers.  Otherwise 0.  */
   enum calling_abi call_abi;	/* Set to SYSV_ABI for sysv abi. Otherwise
  				   MS_ABI for ms abi.  */
+  /* Nonzero if it passes 256bit AVX modes.  */
+  BOOL_BITFIELD callee_pass_avx256_p : 1;
+  /* Nonzero if it returns 256bit AVX modes.  */
+  BOOL_BITFIELD callee_return_avx256_p : 1;
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
