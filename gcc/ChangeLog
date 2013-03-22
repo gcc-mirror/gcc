@@ -1,3 +1,7 @@
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
+	* is-a.h (as_a): Use gcc_checking_assert.
+ 
 2013-03-22  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): New
