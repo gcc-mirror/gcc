@@ -3364,6 +3364,16 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       asm_fprintf (f, "v%d", REGNO (x) - V0_REGNUM + (code - 'S'));
       break;
 
+    case 'X':
+      /* Print integer constant in hex.  */
+      if (GET_CODE (x) != CONST_INT)
+	{
+	  output_operand_lossage ("invalid operand for '%%%c'", code);
+	  return;
+	}
+      asm_fprintf (f, "0x%x", UINTVAL (x));
+      break;
+
     case 'w':
     case 'x':
       /* Print a general register name or the zero register (32-bit or
