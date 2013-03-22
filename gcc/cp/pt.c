@@ -19942,6 +19942,13 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
     case TREE_VEC:
       return NULL_TREE;
 
+    case VAR_DECL:
+    case CONST_DECL:
+      /* A constant with a dependent initializer is dependent.  */
+      if (value_dependent_expression_p (*tp))
+	return *tp;
+      break;
+
     case TEMPLATE_PARM_INDEX:
       return *tp;
 
