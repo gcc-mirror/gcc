@@ -1,3 +1,7 @@
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2012-06-02  Jason Merrill  <jason@redhat.com>
 
 	* objcp-decl.c (objcp_start_struct): Adjust for change in
