@@ -1,3 +1,9 @@
+2013-03-21 Gary Funck  <gary@intrepid.com>
+
+	Released GUPC 4.8.0.3 based on version 196601.
+	This release version was committed on 2013-03-11.
+	* DATESTAMP: Bump date stamp.
+
 2013-03-18 Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 196771 into gupc branch.
