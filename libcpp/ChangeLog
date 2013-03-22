@@ -1,3 +1,7 @@
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2013-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461
