@@ -1,3 +1,10 @@
+2013-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (cp_tree_equal): Fix a pasto.
+
 2013-03-22  Release Manager
 
 	* GCC 4.8.0 released.
