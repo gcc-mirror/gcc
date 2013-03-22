@@ -164,10 +164,6 @@ static struct
   /* The set of memory references stored in each loop.  */
   vec<bitmap> refs_stored_in_loop;
 
-  /* The set of memory references accessed in each loop, including
-     subloops.  */
-  vec<bitmap> all_refs_in_loop;
-
   /* The set of memory references stored in each loop, including subloops .  */
   vec<bitmap> all_refs_stored_in_loop;
 
@@ -1649,8 +1645,6 @@ gather_mem_refs_in_loops (void)
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       /* Finalize the overall touched references (including subloops).  */
-      bitmap_ior_into (memory_accesses.all_refs_in_loop[loop->num],
-		       memory_accesses.refs_in_loop[loop->num]);
       bitmap_ior_into (memory_accesses.all_refs_stored_in_loop[loop->num],
 		       memory_accesses.refs_stored_in_loop[loop->num]);
 
@@ -1660,8 +1654,6 @@ gather_mem_refs_in_loops (void)
       if (outer == current_loops->tree_root)
 	continue;
 
-      bitmap_ior_into (memory_accesses.all_refs_in_loop[outer->num],
-		       memory_accesses.all_refs_in_loop[loop->num]);
       bitmap_ior_into (memory_accesses.all_refs_stored_in_loop[outer->num],
 		       memory_accesses.all_refs_stored_in_loop[loop->num]);
     }
@@ -1683,7 +1675,6 @@ analyze_memory_references (void)
 
   memory_accesses.refs_in_loop.create (number_of_loops ());
   memory_accesses.refs_stored_in_loop.create (number_of_loops ());
-  memory_accesses.all_refs_in_loop.create (number_of_loops ());
   memory_accesses.all_refs_stored_in_loop.create (number_of_loops ());
 
   for (i = 0; i < number_of_loops (); i++)
@@ -1692,8 +1683,6 @@ analyze_memory_references (void)
       memory_accesses.refs_in_loop.quick_push (empty);
       empty = BITMAP_ALLOC (&lim_bitmap_obstack);
       memory_accesses.refs_stored_in_loop.quick_push (empty);
-      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
-      memory_accesses.all_refs_in_loop.quick_push (empty);
       empty = BITMAP_ALLOC (&lim_bitmap_obstack);
       memory_accesses.all_refs_stored_in_loop.quick_push (empty);
     }
@@ -1749,11 +1738,7 @@ for_all_locs_in_loop (struct loop *loop, mem_ref_p ref, FN fn)
 {
   unsigned i;
   mem_ref_loc_p loc;
-  bitmap refs = memory_accesses.all_refs_in_loop[loop->num];
   struct loop *subloop;
-
-  if (!bitmap_bit_p (refs, ref->id))
-    return false;
 
   if (ref->accesses_in_loop.length () > (unsigned) loop->num)
     FOR_EACH_VEC_ELT (ref->accesses_in_loop[loop->num], i, loc)
@@ -2630,7 +2615,6 @@ tree_ssa_lim_finalize (void)
 
   memory_accesses.refs_in_loop.release ();
   memory_accesses.refs_stored_in_loop.release ();
-  memory_accesses.all_refs_in_loop.release ();
   memory_accesses.all_refs_stored_in_loop.release ();
 
   if (memory_accesses.ttae_cache)
