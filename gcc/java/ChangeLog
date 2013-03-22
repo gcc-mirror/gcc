@@ -1,3 +1,7 @@
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2013-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.
