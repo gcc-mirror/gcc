@@ -1,3 +1,8 @@
+2013-03-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.c-torture/execute/builtins/builtins.exp: Sort targets
+	alphabetically.
+
 2013-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56582
