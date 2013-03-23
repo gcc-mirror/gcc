@@ -1,5 +1,10 @@
 2013-03-22  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.h (ix86_args): Define only if USED_FOR_TARGET
+	isn't defined.
+
+2013-03-22  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/56560
 	* config/i386/i386.c (init_cumulative_args): Also set
 	cum->callee_return_avx256_p.
