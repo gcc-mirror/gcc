@@ -1,5 +1,8 @@
 2013-03-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56039
+	* tree.c (strip_typedefs_expr): Complain about lambda, don't abort.
+
 	PR c++/56447
 	PR c++/55532
 	* pt.c (instantiate_class_template_1): Instantiate lambda capture
