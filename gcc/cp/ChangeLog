@@ -1,3 +1,12 @@
+2013-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54277
+	* semantics.c (lambda_capture_field_type): Don't build a
+	magic decltype for pointer types.
+	(lambda_proxy_type): Likewise.
+	(finish_non_static_data_member): Get the quals from
+	the object.
+
 2013-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56646
