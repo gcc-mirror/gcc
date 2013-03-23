@@ -4777,7 +4777,7 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
 	 until it is equal to ROUNDED_SIZE.  */
 
-      if (TARGET_64BIT)
+      if (TARGET_ARCH64)
 	emit_insn (gen_probe_stack_rangedi (g1, g1, g4));
       else
 	emit_insn (gen_probe_stack_rangesi (g1, g1, g4));
