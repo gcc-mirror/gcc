@@ -469,6 +469,9 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
   tree rval = build_aggr_init_expr (type, init);
   tree slot;
 
+  if (!complete_type_or_maybe_complain (type, init, complain))
+    return error_mark_node;
+
   /* Make sure that we're not trying to create an instance of an
      abstract class.  */
   if (abstract_virtuals_error_sfinae (NULL_TREE, type, complain))
