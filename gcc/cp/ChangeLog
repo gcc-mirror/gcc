@@ -1,3 +1,11 @@
+2013-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56447
+	PR c++/55532
+	* pt.c (instantiate_class_template_1): Instantiate lambda capture
+	list here.
+	(tsubst_copy_and_build): Not here.
+
 2013-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
