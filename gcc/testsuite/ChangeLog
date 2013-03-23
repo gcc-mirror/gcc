@@ -1,3 +1,8 @@
+2013-03-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.c-torture/execute/builtins/builtins.exp: Sort targets
+	alphabetically.
+
 2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr22152.c (dg-options): Add -mtune=core2.
