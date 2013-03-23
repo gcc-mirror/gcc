@@ -3063,10 +3063,10 @@ emit_cbcond_nop (rtx insn)
   if (!next)
     return 1;
 
-  if (GET_CODE (next) == INSN
+  if (NONJUMP_INSN_P (next)
       && GET_CODE (PATTERN (next)) == SEQUENCE)
     next = XVECEXP (PATTERN (next), 0, 0);
-  else if (GET_CODE (next) == CALL_INSN
+  else if (CALL_P (next)
 	   && GET_CODE (PATTERN (next)) == PARALLEL)
     {
       rtx delay = XVECEXP (PATTERN (next), 0, 1);
@@ -3222,7 +3222,7 @@ eligible_for_return_delay (rtx trial)
   int regno;
   rtx pat;
 
-  if (GET_CODE (trial) != INSN)
+  if (! NONJUMP_INSN_P (trial))
     return 0;
 
   if (get_attr_length (trial) != 1)
@@ -3293,7 +3293,7 @@ eligible_for_sibcall_delay (rtx trial)
 {
   rtx pat;
 
-  if (GET_CODE (trial) != INSN || GET_CODE (PATTERN (trial)) != SET)
+  if (! NONJUMP_INSN_P (trial) || GET_CODE (PATTERN (trial)) != SET)
     return 0;
 
   if (get_attr_length (trial) != 1)
@@ -5424,7 +5424,7 @@ sparc_asm_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
   last_real_insn = prev_real_insn (insn);
   if (last_real_insn
-      && GET_CODE (last_real_insn) == INSN
+      && NONJUMP_INSN_P (last_real_insn)
       && GET_CODE (PATTERN (last_real_insn)) == SEQUENCE)
     last_real_insn = XVECEXP (PATTERN (last_real_insn), 0, 0);
 

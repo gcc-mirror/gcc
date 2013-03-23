@@ -1650,7 +1650,7 @@ xtensa_emit_loop_end (rtx insn, rtx *operands)
 	  {
 	    rtx body = PATTERN (insn);
 
-	    if (GET_CODE (body) == JUMP_INSN)
+	    if (JUMP_P (body))
 	      {
 		output_asm_insn (TARGET_DENSITY ? "nop.n" : "nop", operands);
 		done = 1;

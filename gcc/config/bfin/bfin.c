@@ -3887,8 +3887,7 @@ gen_one_bundle (rtx slot[3])
       rtx t = NEXT_INSN (slot[0]);
       while (t != slot[1])
 	{
-	  if (GET_CODE (t) != NOTE
-	      || NOTE_KIND (t) != NOTE_INSN_DELETED)
+	  if (! NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_DELETED)
 	    return false;
 	  t = NEXT_INSN (t);
 	}
@@ -3898,8 +3897,7 @@ gen_one_bundle (rtx slot[3])
       rtx t = NEXT_INSN (slot[1]);
       while (t != slot[2])
 	{
-	  if (GET_CODE (t) != NOTE
-	      || NOTE_KIND (t) != NOTE_INSN_DELETED)
+	  if (! NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_DELETED)
 	    return false;
 	  t = NEXT_INSN (t);
 	}
