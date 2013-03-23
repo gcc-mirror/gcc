@@ -1,5 +1,9 @@
 2013-03-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56646
+	* parser.c (cp_parser_late_return_type_opt): Save and restore
+	current_class_ptr/ref.
+
 	N3276
 	PR c++/52748
 	* cp-tree.h (tsubst_flags): Add tf_decltype.
