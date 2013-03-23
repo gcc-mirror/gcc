@@ -17843,9 +17843,8 @@ compute_save_world_info (rs6000_stack_t *info_ptr)
   if (WORLD_SAVE_P (info_ptr))
     {
       rtx insn;
-      for ( insn = get_last_insn_anywhere (); insn; insn = PREV_INSN (insn))
-	if ( GET_CODE (insn) == CALL_INSN
-	     && SIBLING_CALL_P (insn))
+      for (insn = get_last_insn_anywhere (); insn; insn = PREV_INSN (insn))
+	if (CALL_P (insn) && SIBLING_CALL_P (insn))
 	  {
 	    info_ptr->world_save_p = 0;
 	    break;
@@ -23837,7 +23836,7 @@ is_load_insn (rtx insn, rtx *load_mem)
   if (!insn || !INSN_P (insn))
     return false;
 
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     return false;
 
   return is_load_insn1 (PATTERN (insn), load_mem);
@@ -24232,7 +24231,7 @@ insn_must_be_first_in_group (rtx insn)
   enum attr_type type;
 
   if (!insn
-      || GET_CODE (insn) == NOTE
+      || NOTE_P (insn)
       || DEBUG_INSN_P (insn)
       || GET_CODE (PATTERN (insn)) == USE
       || GET_CODE (PATTERN (insn)) == CLOBBER)
@@ -24363,7 +24362,7 @@ insn_must_be_last_in_group (rtx insn)
   enum attr_type type;
 
   if (!insn
-      || GET_CODE (insn) == NOTE
+      || NOTE_P (insn)
       || DEBUG_INSN_P (insn)
       || GET_CODE (PATTERN (insn)) == USE
       || GET_CODE (PATTERN (insn)) == CLOBBER)

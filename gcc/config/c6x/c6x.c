@@ -4848,7 +4848,7 @@ reorg_split_calls (rtx *call_labels)
 {
   unsigned int reservation_mask = 0;
   rtx insn = get_insns ();
-  gcc_assert (GET_CODE (insn) == NOTE);
+  gcc_assert (NOTE_P (insn));
   insn = next_real_insn (insn);
   while (insn)
     {

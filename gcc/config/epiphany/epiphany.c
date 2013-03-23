@@ -2386,7 +2386,7 @@ epiphany_mode_after (int entity, int last_mode, rtx insn)
      calls.  */
   if (entity == EPIPHANY_MSW_ENTITY_AND || entity == EPIPHANY_MSW_ENTITY_OR)
     {
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	return 0;
       return last_mode;
     }

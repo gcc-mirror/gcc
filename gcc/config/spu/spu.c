@@ -1962,7 +1962,7 @@ struct spu_bb_info
 static struct spu_bb_info *spu_bb_info;
 
 #define STOP_HINT_P(INSN) \
-		(GET_CODE(INSN) == CALL_INSN \
+		(CALL_P(INSN) \
 		 || INSN_CODE(INSN) == CODE_FOR_divmodsi4 \
 		 || INSN_CODE(INSN) == CODE_FOR_udivmodsi4)
 
@@ -2163,7 +2163,7 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
 static rtx
 get_branch_target (rtx branch)
 {
-  if (GET_CODE (branch) == JUMP_INSN)
+  if (JUMP_P (branch))
     {
       rtx set, src;
 
@@ -2212,7 +2212,7 @@ get_branch_target (rtx branch)
 
       return src;
     }
-  else if (GET_CODE (branch) == CALL_INSN)
+  else if (CALL_P (branch))
     {
       rtx call;
       /* All of our call patterns are in a PARALLEL and the CALL is

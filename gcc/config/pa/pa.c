@@ -3320,7 +3320,7 @@ remove_useless_addtr_insns (int check_notes)
 	  rtx tmp;
 
 	  /* Ignore anything that isn't an INSN or a JUMP_INSN.  */
-	  if (GET_CODE (insn) != INSN && GET_CODE (insn) != JUMP_INSN)
+	  if (! NONJUMP_INSN_P (insn) && ! JUMP_P (insn))
 	    continue;
 
 	  tmp = PATTERN (insn);
@@ -3359,7 +3359,7 @@ remove_useless_addtr_insns (int check_notes)
 	  rtx tmp, next;
 
 	  /* Ignore anything that isn't an INSN.  */
-	  if (GET_CODE (insn) != INSN)
+	  if (! NONJUMP_INSN_P (insn))
 	    continue;
 
 	  tmp = PATTERN (insn);
@@ -3382,13 +3382,11 @@ remove_useless_addtr_insns (int check_notes)
 	  while (next)
 	    {
 	      /* Jumps, calls and labels stop our search.  */
-	      if (GET_CODE (next) == JUMP_INSN
-		  || GET_CODE (next) == CALL_INSN
-		  || GET_CODE (next) == CODE_LABEL)
+	      if (JUMP_P (next) || CALL_P (next) || LABEL_P (next))
 		break;
 
 	      /* As does another fcmp insn.  */
-	      if (GET_CODE (next) == INSN
+	      if (NONJUMP_INSN_P (next)
 		  && GET_CODE (PATTERN (next)) == SET
 		  && GET_CODE (SET_DEST (PATTERN (next))) == REG
 		  && REGNO (SET_DEST (PATTERN (next))) == 0)
@@ -3398,8 +3396,7 @@ remove_useless_addtr_insns (int check_notes)
 	    }
 
 	  /* Is NEXT_INSN a branch?  */
-	  if (next
-	      && GET_CODE (next) == JUMP_INSN)
+	  if (next && JUMP_P (next))
 	    {
 	      rtx pattern = PATTERN (next);
 
@@ -4160,16 +4157,16 @@ pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      always point to a valid instruction in the current function.  */
 
   /* Get the last real insn.  */
-  if (GET_CODE (insn) == NOTE)
+  if (NOTE_P (insn))
     insn = prev_real_insn (insn);
 
   /* If it is a sequence, then look inside.  */
-  if (insn && GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (insn && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
 
   /* If insn is a CALL_INSN, then it must be a call to a volatile
      function (otherwise there would be epilogue insns).  */
-  if (insn && GET_CODE (insn) == CALL_INSN)
+  if (insn && CALL_P (insn))
     {
       fputs ("\tnop\n", file);
       last_address += 4;
@@ -4930,12 +4927,12 @@ pa_adjust_insn_length (rtx insn, int length)
 
   /* Jumps inside switch tables which have unfilled delay slots need
      adjustment.  */
-  if (GET_CODE (insn) == JUMP_INSN
+  if (JUMP_P (insn)
       && GET_CODE (pat) == PARALLEL
       && get_attr_type (insn) == TYPE_BTABLE_BRANCH)
     length += 4;
   /* Block move pattern.  */
-  else if (GET_CODE (insn) == INSN
+  else if (NONJUMP_INSN_P (insn)
 	   && GET_CODE (pat) == PARALLEL
 	   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
@@ -4944,7 +4941,7 @@ pa_adjust_insn_length (rtx insn, int length)
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
     length += compute_movmem_length (insn) - 4;
   /* Block clear pattern.  */
-  else if (GET_CODE (insn) == INSN
+  else if (NONJUMP_INSN_P (insn)
 	   && GET_CODE (pat) == PARALLEL
 	   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
@@ -4952,7 +4949,7 @@ pa_adjust_insn_length (rtx insn, int length)
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode)
     length += compute_clrmem_length (insn) - 4;
   /* Conditional branch with an unfilled delay slot.  */
-  else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn))
+  else if (JUMP_P (insn) && ! simplejump_p (insn))
     {
       /* Adjust a short backwards conditional with an unfilled delay slot.  */
       if (GET_CODE (pat) == SET
@@ -5846,7 +5843,7 @@ pa_output_arg_descriptor (rtx call_insn)
       return;
     }
 
-  gcc_assert (GET_CODE (call_insn) == CALL_INSN);
+  gcc_assert (CALL_P (call_insn));
   for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
        link; link = XEXP (link, 1))
     {
@@ -6641,7 +6638,7 @@ pa_output_lbranch (rtx dest, rtx insn, int xdelay)
   if (xdelay && dbr_sequence_length () != 0)
     {
       /* We can't handle a jump in the delay slot.  */
-      gcc_assert (GET_CODE (NEXT_INSN (insn)) != JUMP_INSN);
+      gcc_assert (! JUMP_P (NEXT_INSN (insn)));
 
       final_scan_insn (NEXT_INSN (insn), asm_out_file,
 		       optimize, 0, NULL);
@@ -7650,7 +7647,7 @@ pa_output_millicode_call (rtx insn, rtx call_dest)
     output_asm_insn ("nop", xoperands);
 
   /* We are done if there isn't a jump in the delay slot.  */
-  if (seq_length == 0 || GET_CODE (NEXT_INSN (insn)) != JUMP_INSN)
+  if (seq_length == 0 || ! JUMP_P (NEXT_INSN (insn)))
     return "";
 
   /* This call has an unconditional jump in its delay slot.  */
@@ -7708,7 +7705,7 @@ pa_attr_length_call (rtx insn, int sibcall)
   rtx pat = PATTERN (insn);
   unsigned long distance = -1;
 
-  gcc_assert (GET_CODE (insn) == CALL_INSN);
+  gcc_assert (CALL_P (insn));
 
   if (INSN_ADDRESSES_SET_P ())
     {
@@ -7822,7 +7819,7 @@ pa_output_call (rtx insn, rtx call_dest, int sibcall)
 	     delay slot.  We can't do this in a sibcall as we don't
 	     have a second call-clobbered scratch register available.  */
 	  if (seq_length != 0
-	      && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN
+	      && ! JUMP_P (NEXT_INSN (insn))
 	      && !sibcall)
 	    {
 	      final_scan_insn (NEXT_INSN (insn), asm_out_file,
@@ -7866,7 +7863,7 @@ pa_output_call (rtx insn, rtx call_dest, int sibcall)
 	    indirect_call = 1;
 
 	  if (seq_length != 0
-	      && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN
+	      && ! JUMP_P (NEXT_INSN (insn))
 	      && !sibcall
 	      && (!TARGET_PA_20
 		  || indirect_call
@@ -8032,7 +8029,7 @@ pa_output_call (rtx insn, rtx call_dest, int sibcall)
   /* We are done if there isn't a jump in the delay slot.  */
   if (seq_length == 0
       || delay_insn_deleted
-      || GET_CODE (NEXT_INSN (insn)) != JUMP_INSN)
+      || ! JUMP_P (NEXT_INSN (insn)))
     return "";
 
   /* A sibcall should never have a branch in the delay slot.  */
@@ -8826,12 +8823,12 @@ int
 pa_jump_in_call_delay (rtx insn)
 {
 
-  if (GET_CODE (insn) != JUMP_INSN)
+  if (! JUMP_P (insn))
     return 0;
 
   if (PREV_INSN (insn)
       && PREV_INSN (PREV_INSN (insn))
-      && GET_CODE (next_real_insn (PREV_INSN (PREV_INSN (insn)))) == INSN)
+      && NONJUMP_INSN_P (next_real_insn (PREV_INSN (PREV_INSN (insn)))))
     {
       rtx test_insn = next_real_insn (PREV_INSN (PREV_INSN (insn)));
 
@@ -8928,14 +8925,14 @@ pa_following_call (rtx insn)
 
   /* Find the previous real insn, skipping NOTEs.  */
   insn = PREV_INSN (insn);
-  while (insn && GET_CODE (insn) == NOTE)
+  while (insn && NOTE_P (insn))
     insn = PREV_INSN (insn);
 
   /* Check for CALL_INSNs and millicode calls.  */
   if (insn
-      && ((GET_CODE (insn) == CALL_INSN
+      && ((CALL_P (insn)
 	   && get_attr_type (insn) != TYPE_DYNCALL)
-	  || (GET_CODE (insn) == INSN
+	  || (NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) != SEQUENCE
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && GET_CODE (PATTERN (insn)) != CLOBBER
@@ -9000,7 +8997,7 @@ pa_reorg (void)
 	  unsigned int length, i;
 
 	  /* Find an ADDR_VEC or ADDR_DIFF_VEC insn to explode.  */
-	  if (GET_CODE (insn) != JUMP_INSN
+	  if (! JUMP_P (insn)
 	      || (GET_CODE (PATTERN (insn)) != ADDR_VEC
 		  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC))
 	    continue;
@@ -9059,7 +9056,7 @@ pa_reorg (void)
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
 	  /* Find an ADDR_VEC insn.  */
-	  if (GET_CODE (insn) != JUMP_INSN
+	  if (! JUMP_P (insn)
 	      || (GET_CODE (PATTERN (insn)) != ADDR_VEC
 		  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC))
 	    continue;
@@ -9140,9 +9137,7 @@ pa_combine_instructions (void)
 
       /* We only care about INSNs, JUMP_INSNs, and CALL_INSNs.
 	 Also ignore any special USE insns.  */
-      if ((GET_CODE (anchor) != INSN
-	  && GET_CODE (anchor) != JUMP_INSN
-	  && GET_CODE (anchor) != CALL_INSN)
+      if ((! NONJUMP_INSN_P (anchor) && ! JUMP_P (anchor) && ! CALL_P (anchor))
 	  || GET_CODE (PATTERN (anchor)) == USE
 	  || GET_CODE (PATTERN (anchor)) == CLOBBER
 	  || GET_CODE (PATTERN (anchor)) == ADDR_VEC
@@ -9162,14 +9157,14 @@ pa_combine_instructions (void)
 	       floater;
 	       floater = PREV_INSN (floater))
 	    {
-	      if (GET_CODE (floater) == NOTE
-		  || (GET_CODE (floater) == INSN
+	      if (NOTE_P (floater)
+		  || (NONJUMP_INSN_P (floater)
 		      && (GET_CODE (PATTERN (floater)) == USE
 			  || GET_CODE (PATTERN (floater)) == CLOBBER)))
 		continue;
 
 	      /* Anything except a regular INSN will stop our search.  */
-	      if (GET_CODE (floater) != INSN
+	      if (! NONJUMP_INSN_P (floater)
 		  || GET_CODE (PATTERN (floater)) == ADDR_VEC
 		  || GET_CODE (PATTERN (floater)) == ADDR_DIFF_VEC)
 		{
@@ -9223,15 +9218,15 @@ pa_combine_instructions (void)
 	    {
 	      for (floater = anchor; floater; floater = NEXT_INSN (floater))
 		{
-		  if (GET_CODE (floater) == NOTE
-		      || (GET_CODE (floater) == INSN
+		  if (NOTE_P (floater)
+		      || (NONJUMP_INSN_P (floater)
 			  && (GET_CODE (PATTERN (floater)) == USE
 			      || GET_CODE (PATTERN (floater)) == CLOBBER)))
 
 		    continue;
 
 		  /* Anything except a regular INSN will stop our search.  */
-		  if (GET_CODE (floater) != INSN
+		  if (! NONJUMP_INSN_P (floater)
 		      || GET_CODE (PATTERN (floater)) == ADDR_VEC
 		      || GET_CODE (PATTERN (floater)) == ADDR_DIFF_VEC)
 		    {
@@ -9386,7 +9381,7 @@ pa_can_combine_p (rtx new_rtx, rtx anchor, rtx floater, int reversed, rtx dest,
 int
 pa_insn_refs_are_delayed (rtx insn)
 {
-  return ((GET_CODE (insn) == INSN
+  return ((NONJUMP_INSN_P (insn)
 	   && GET_CODE (PATTERN (insn)) != SEQUENCE
 	   && GET_CODE (PATTERN (insn)) != USE
 	   && GET_CODE (PATTERN (insn)) != CLOBBER

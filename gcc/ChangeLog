@@ -1,3 +1,15 @@
+2013-03-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/avr/avr.c, config/bfin/bfin.c, config/c6x/c6x.c,
+	config/epiphany/epiphany.c, config/frv/frv.c, config/ia64/ia64.c,
+	config/iq2000/iq2000.c, config/mcore/mcore.c, config/mep/mep.c,
+	config/mmix/mmix.c, config/pa/pa.c, config/rs6000/rs6000.c,
+	config/s390/s390.c, config/sparc/sparc.c, config/spu/spu.c,
+	config/stormy16/stormy16.c, config/v850/v850.c, config/xtensa/xtensa.c,
+	dwarf2out.c, hw-doloop.c, resource.c, rtl.h : Where applicable, use
+	the predicates NOTE_P, NONJUMP_INSN_P, JUMP_P, CALL_P, LABEL_P, and
+	BARRIER_P instead of GET_CODE.
+
 2013-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_emit_probe_stack_range): Fix small

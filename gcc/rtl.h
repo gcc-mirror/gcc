@@ -960,9 +960,8 @@ extern const char * const reg_note_name[];
 #define NOTE_KIND(INSN) XCINT (INSN, 5, NOTE)
 
 /* Nonzero if INSN is a note marking the beginning of a basic block.  */
-#define NOTE_INSN_BASIC_BLOCK_P(INSN)			\
-  (GET_CODE (INSN) == NOTE				\
-   && NOTE_KIND (INSN) == NOTE_INSN_BASIC_BLOCK)
+#define NOTE_INSN_BASIC_BLOCK_P(INSN) \
+  (NOTE_P (INSN) && NOTE_KIND (INSN) == NOTE_INSN_BASIC_BLOCK)
 
 /* Variable declaration and the location of a variable.  */
 #define PAT_VAR_LOCATION_DECL(PAT) (XCTREE ((PAT), 0, VAR_LOCATION))
@@ -1063,7 +1062,7 @@ enum label_kind
 /* Retrieve the kind of LABEL.  */
 #define LABEL_KIND(LABEL) __extension__					\
 ({ __typeof (LABEL) const _label = (LABEL);				\
-   if (GET_CODE (_label) != CODE_LABEL)					\
+   if (! LABEL_P (_label))						\
      rtl_check_failed_flag ("LABEL_KIND", _label, __FILE__, __LINE__,	\
 			    __FUNCTION__);				\
    (enum label_kind) ((_label->jump << 1) | _label->call); })
@@ -1072,7 +1071,7 @@ enum label_kind
 #define SET_LABEL_KIND(LABEL, KIND) do {				\
    __typeof (LABEL) const _label = (LABEL);				\
    const unsigned int _kind = (KIND);					\
-   if (GET_CODE (_label) != CODE_LABEL)					\
+   if (! LABEL_P (_label))						\
      rtl_check_failed_flag ("SET_LABEL_KIND", _label, __FILE__, __LINE__, \
 			    __FUNCTION__);				\
    _label->jump = ((_kind >> 1) & 1);					\

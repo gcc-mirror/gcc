@@ -2441,8 +2441,7 @@ combine_bnp (rtx insn)
 	  if (reg_mentioned_p (reg, and_insn))
 	    return;
 
-	  if (GET_CODE (and_insn) != NOTE
-	      && GET_CODE (and_insn) != INSN)
+	  if (! NOTE_P (and_insn) && ! NONJUMP_INSN_P (and_insn))
 	    return;
 	}
     }
@@ -2461,8 +2460,7 @@ combine_bnp (rtx insn)
 	  if (reg_mentioned_p (reg, and_insn))
 	    return;
 
-	  if (GET_CODE (and_insn) != NOTE
-	      && GET_CODE (and_insn) != INSN)
+	  if (! NOTE_P (and_insn) && ! NONJUMP_INSN_P (and_insn))
 	    return;
 	}
 
@@ -2486,8 +2484,7 @@ combine_bnp (rtx insn)
 		break;
 
 	      if (reg_mentioned_p (reg, shift)
-		  || (GET_CODE (shift) != NOTE
-		      && GET_CODE (shift) != INSN))
+		  || (! NOTE_P (shift) && ! NONJUMP_INSN_P (shift)))
 		{
 		  shift = NULL_RTX;
 		  break;
@@ -2534,8 +2531,7 @@ combine_bnp (rtx insn)
       if (reg_mentioned_p (reg, load))
 	return;
 
-      if (GET_CODE (load) != NOTE
-	  && GET_CODE (load) != INSN)
+      if (! NOTE_P (load) && ! NONJUMP_INSN_P (load))
 	return;
     }
   if (!load)

@@ -7629,9 +7629,9 @@ _reg_unused_after (rtx insn, rtx reg)
 	      rtx this_insn = XVECEXP (PATTERN (insn), 0, i);
 	      rtx set = single_set (this_insn);
 
-	      if (GET_CODE (this_insn) == CALL_INSN)
+	      if (CALL_P (this_insn))
 		code = CALL_INSN;
-	      else if (GET_CODE (this_insn) == JUMP_INSN)
+	      else if (JUMP_P (this_insn))
 		{
 		  if (INSN_ANNULLED_BRANCH_P (this_insn))
 		    return 0;

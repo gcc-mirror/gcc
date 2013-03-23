@@ -175,14 +175,12 @@ next_insn_no_annul (rtx insn)
 	  && NEXT_INSN (PREV_INSN (insn)) != insn)
 	{
 	  rtx next = NEXT_INSN (insn);
-	  enum rtx_code code = GET_CODE (next);
 
-	  while ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
+	  while ((NONJUMP_INSN_P (next) || JUMP_P (next) || CALL_P (next))
 		 && INSN_FROM_TARGET_P (next))
 	    {
 	      insn = next;
 	      next = NEXT_INSN (insn);
-	      code = GET_CODE (next);
 	    }
 	}
 
