@@ -1,3 +1,9 @@
+2013-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (try_combine): Adjust comment.  Do not add the set of
+	insn #0 if the destination indirectly is set or dies in insn #2.
+	Tidy up code to distribute a new note.
+
 2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdi_internal): Set prefix_rex attribute
