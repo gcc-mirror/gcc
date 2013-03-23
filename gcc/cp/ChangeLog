@@ -1,5 +1,9 @@
 2013-03-22  Jason Merrill  <jason@redhat.com>
 
+	DR 657
+	* pt.c (tsubst_function_type): Call abstract_virtuals_error_sfinae.
+	(tsubst_arg_types): Likewise.
+
 	PR c++/54277
 	* semantics.c (lambda_capture_field_type): Don't build a
 	magic decltype for pointer types.
