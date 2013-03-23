@@ -1,5 +1,13 @@
 2013-03-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.c (sparc_emit_probe_stack_range): Fix small
+	inaccuracy in the probing code.
+
+	* config/sparc/sparc.md (ctrapsi4): Add predicate for operand #3.
+	(ctrapdi4): Likewise.
+
+2013-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* calls.c (expand_call): Add missing guard to code handling return
 	of non-BLKmode structures in MSB.
 	* function.c (expand_function_end): Likewise.
