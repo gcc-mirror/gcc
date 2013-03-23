@@ -1,3 +1,8 @@
+2013-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56582
+	* g++.dg/cpp0x/constexpr-array5.C: New.
+
 2013-03-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/56560
