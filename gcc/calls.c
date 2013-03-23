@@ -3171,7 +3171,9 @@ expand_call (tree exp, rtx target, int ignore)
 	 group load/store machinery below.  */
       if (!structure_value_addr
 	  && !pcc_struct_value
+	  && TYPE_MODE (rettype) != VOIDmode
 	  && TYPE_MODE (rettype) != BLKmode
+	  && REG_P (valreg)
 	  && targetm.calls.return_in_msb (rettype))
 	{
 	  if (shift_return_value (TYPE_MODE (rettype), false, valreg))

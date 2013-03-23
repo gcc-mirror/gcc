@@ -5093,6 +5093,7 @@ expand_function_end (void)
 	     amount.  BLKmode results are handled using the group load/store
 	     machinery.  */
 	  if (TYPE_MODE (TREE_TYPE (decl_result)) != BLKmode
+	      && REG_P (real_decl_rtl)
 	      && targetm.calls.return_in_msb (TREE_TYPE (decl_result)))
 	    {
 	      emit_move_insn (gen_rtx_REG (GET_MODE (decl_rtl),
