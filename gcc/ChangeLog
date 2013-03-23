@@ -1,5 +1,8 @@
 2013-03-23  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* gcse.c (oprs_unchanged_p): Respect flag_gcse_lm.
+	(record_last_mem_set_info): Likewise.
+
 	* df-core.c (rest_of_handle_df_initialize): Use XCNEWVEC instead
 	of XNEWVEC followed by memset.
 	(df_worklist_dataflow): Use XNEWVEC instead of xmalloc with a cast.
