@@ -890,8 +890,9 @@ oprs_unchanged_p (const_rtx x, const_rtx insn, int avail_p)
       }
 
     case MEM:
-      if (load_killed_in_block_p (current_bb, DF_INSN_LUID (insn),
-				  x, avail_p))
+      if (! flag_gcse_lm
+	  || load_killed_in_block_p (current_bb, DF_INSN_LUID (insn),
+				     x, avail_p))
 	return 0;
       else
 	return oprs_unchanged_p (XEXP (x, 0), insn, avail_p);
@@ -1471,10 +1472,14 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
 static void
 record_last_mem_set_info (rtx insn)
 {
-  int bb = BLOCK_FOR_INSN (insn)->index;
+  int bb;
+
+  if (! flag_gcse_lm)
+    return;
 
   /* load_killed_in_block_p will handle the case of calls clobbering
      everything.  */
+  bb = BLOCK_FOR_INSN (insn)->index;
   modify_mem_list[bb].safe_push (insn);
   bitmap_set_bit (modify_mem_list_set, bb);
 
