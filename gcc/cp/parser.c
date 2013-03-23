@@ -16699,17 +16699,21 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
   /* Consume the ->.  */
   cp_lexer_consume_token (parser->lexer);
 
+  tree save_ccp = current_class_ptr;
+  tree save_ccr = current_class_ref;
   if (quals >= 0)
     {
       /* DR 1207: 'this' is in scope in the trailing return type.  */
-      gcc_assert (current_class_ptr == NULL_TREE);
       inject_this_parameter (current_class_type, quals);
     }
 
   type = cp_parser_trailing_type_id (parser);
 
   if (quals >= 0)
-    current_class_ptr = current_class_ref = NULL_TREE;
+    {
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
+    }
 
   return type;
 }
