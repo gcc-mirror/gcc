@@ -1,3 +1,9 @@
+2013-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54359
+	* parser.c (cp_parser_direct_declarator): Fix late return
+	for out-of-class defn of member function.
+
 2013-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56582
