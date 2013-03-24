@@ -32,7 +32,7 @@
 # define EXACT_INLINE(N)					\
   if (C2(HAVE_ATOMIC_CAS_,N))					\
     return __atomic_compare_exchange_n				\
-      (PTR(N,mptr), PTR(N,eptr), *PTR(N,dptr), false, smodel, fmodel)
+      (PTR(N,mptr), PTR(N,eptr), *PTR(N,dptr), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
 #else
 # define EXACT_INLINE(N)
 #endif
