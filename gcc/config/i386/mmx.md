@@ -78,9 +78,9 @@
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand"
-	 "=r ,o ,r,r ,m ,!?y,!y,!?y,m  ,x,x,x,m,*x,*x,*x,m ,r ,Yi,!Ym,*Yi")
+    "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r   ,?!Ym,x,x,x,m,*x,*x,*x,m ,r ,Yi,!Ym,*Yi")
 	(match_operand:MMXMODE 1 "vector_move_operand"
-	 "rCo,rC,C,rm,rC,C  ,!y,m  ,!?y,C,x,m,x,C ,*x,m ,*x,Yi,r ,*Yi,!Ym"))]
+    "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!Ym,r   ,C,x,m,x,C ,*x,m ,*x,Yi,r ,*Yi,!Ym"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
@@ -146,7 +146,7 @@
   [(set (attr "isa")
      (cond [(eq_attr "alternative" "0,1")
 	      (const_string "nox64")
-	    (eq_attr "alternative" "2,3,4,9,10,11,12,17,18")
+	    (eq_attr "alternative" "2,3,4,9,10,11,12,13,14,19,20")
 	      (const_string "x64")
 	   ]
 	   (const_string "*")))
@@ -157,16 +157,16 @@
 	      (const_string "imov")
 	    (eq_attr "alternative" "5")
 	      (const_string "mmx")
-	    (eq_attr "alternative" "6,7,8")
+	    (eq_attr "alternative" "6,7,8,9,10")
 	      (const_string "mmxmov")
-	    (eq_attr "alternative" "9,13")
+	    (eq_attr "alternative" "11,15")
 	      (const_string "sselog1")
-	    (eq_attr "alternative" "19,20")
+	    (eq_attr "alternative" "21,22")
 	      (const_string "ssecvt")
 	   ]
 	   (const_string "ssemov")))
    (set (attr "prefix_rex")
-     (if_then_else (eq_attr "alternative" "17,18")
+     (if_then_else (eq_attr "alternative" "9,10,19,20")
        (const_string "1")
        (const_string "*")))
    (set (attr "prefix")
@@ -181,7 +181,7 @@
    (set (attr "mode")
      (cond [(eq_attr "alternative" "2")
 	      (const_string "SI")
-	    (eq_attr "alternative" "9,10,13,14")
+	    (eq_attr "alternative" "11,12,15,16")
 	      (cond [(match_test "<MODE>mode == V2SFmode")
 		       (const_string "V4SF")
 		     (ior (not (match_test "TARGET_SSE2"))
@@ -194,7 +194,7 @@
 		    ]
 		    (const_string "TI"))
 
-	    (and (eq_attr "alternative" "11,12,15,16")
+	    (and (eq_attr "alternative" "13,14,17,18")
 	    	 (ior (match_test "<MODE>mode == V2SFmode")
 		      (not (match_test "TARGET_SSE2"))))
 	      (const_string "V2SF")

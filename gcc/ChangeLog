@@ -1,6 +1,10 @@
 2013-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/sse.md (mov<mode>): Merge with movv2sf expander
+	* config/i386/mmx.md (mov<mode>): Add ?!Ym,r and r,?!Ym alternatives.
+
+2013-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mov<mode>): Merge with movv2sf expander
 	using MMXMODE mode iterator.
 	(*move<mode>_internal): Merge with *movv2sf_internal and
 	*movv2sf_internal_rex64 using MMXMODE mode iterator.
