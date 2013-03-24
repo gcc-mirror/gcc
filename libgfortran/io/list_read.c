@@ -1433,7 +1433,6 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
       goto got_sign;
 
     CASE_SEPARATORS:
-    case EOF:
       unget_char (dtp, c);		/* Single null.  */
       eat_separator (dtp);
       return;
