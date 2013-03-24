@@ -68,8 +68,8 @@
 ;; This is essential for maintaining stable calling conventions.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand")
-	(match_operand:MMXMODEI8 1 "nonimmediate_operand"))]
+  [(set (match_operand:MMXMODE 0 "nonimmediate_operand")
+	(match_operand:MMXMODE 1 "nonimmediate_operand"))]
   "TARGET_MMX"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
@@ -77,9 +77,9 @@
 })
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
+  [(set (match_operand:MMXMODE 0 "nonimmediate_operand"
 	 "=r ,o ,r,r ,m ,!?y,!y,!?y,m  ,x,x,x,m,*x,*x,*x,m ,r ,Yi,!Ym,*Yi")
-	(match_operand:MMXMODEI8 1 "vector_move_operand"
+	(match_operand:MMXMODE 1 "vector_move_operand"
 	 "rCo,rC,C,rm,rC,C  ,!y,m  ,!?y,C,x,m,x,C ,*x,m ,*x,Yi,r ,*Yi,!Ym"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
@@ -129,8 +129,9 @@
 	  return "%vmovdqa\t{%1, %0|%0, %1}";
 
 	case MODE_V2SF:
-	  gcc_assert (!TARGET_AVX);
-	  return "movlps\t{%1, %0|%0, %1}";
+	  if (TARGET_AVX && REG_P (operands[0]))
+	    return "vmovlps\t{%1, %0, %0|%0, %0, %1}";
+	  return "%vmovlps\t{%1, %0|%0, %1}";
 	case MODE_V4SF:
 	  return "%vmovaps\t{%1, %0|%0, %1}";
 
@@ -181,7 +182,9 @@
      (cond [(eq_attr "alternative" "2")
 	      (const_string "SI")
 	    (eq_attr "alternative" "9,10,13,14")
-	      (cond [(ior (not (match_test "TARGET_SSE2"))
+	      (cond [(match_test "<MODE>mode == V2SFmode")
+		       (const_string "V4SF")
+		     (ior (not (match_test "TARGET_SSE2"))
 			  (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
 		       (const_string "V4SF")
 		     (match_test "TARGET_AVX")
@@ -192,134 +195,18 @@
 		    (const_string "TI"))
 
 	    (and (eq_attr "alternative" "11,12,15,16")
-		 (not (match_test "TARGET_SSE2")))
+	    	 (ior (match_test "<MODE>mode == V2SFmode")
+		      (not (match_test "TARGET_SSE2"))))
 	      (const_string "V2SF")
 	   ]
 	   (const_string "DI")))])
 
-(define_expand "movv2sf"
-  [(set (match_operand:V2SF 0 "nonimmediate_operand")
-	(match_operand:V2SF 1 "nonimmediate_operand"))]
-  "TARGET_MMX"
-{
-  ix86_expand_vector_move (V2SFmode, operands);
-  DONE;
-})
-
-;; movd instead of movq is required to handle broken assemblers.
-(define_insn "*movv2sf_internal_rex64"
-  [(set (match_operand:V2SF 0 "nonimmediate_operand"
-	 "=rm,r,!?y,!y,!?y,m  ,!y,*x,x,x,x,m,r ,Yi")
-        (match_operand:V2SF 1 "vector_move_operand"
-	 "Cr ,m,C  ,!y,m  ,!?y,*x,!y,C,x,m,x,Yi,r"))]
-  "TARGET_64BIT && TARGET_MMX
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "@
-    mov{q}\t{%1, %0|%0, %1}
-    mov{q}\t{%1, %0|%0, %1}
-    pxor\t%0, %0
-    movq\t{%1, %0|%0, %1}
-    movq\t{%1, %0|%0, %1}
-    movq\t{%1, %0|%0, %1}
-    movdq2q\t{%1, %0|%0, %1}
-    movq2dq\t{%1, %0|%0, %1}
-    %vxorps\t%0, %d0
-    %vmovaps\t{%1, %0|%0, %1}
-    %vmovlps\t{%1, %d0|%d0, %1}
-    %vmovlps\t{%1, %0|%0, %1}
-    %vmovd\t{%1, %0|%0, %1}
-    %vmovd\t{%1, %0|%0, %1}"
-  [(set (attr "type")
-     (cond [(eq_attr "alternative" "0,1")
-	      (const_string "imov")
-	    (eq_attr "alternative" "2")
-	      (const_string "mmx")
-	    (eq_attr "alternative" "3,4,5")
-	      (const_string "mmxmov")
-	    (eq_attr "alternative" "6,7")
-	      (const_string "ssecvt")
-	    (eq_attr "alternative" "9")
-	      (const_string "sselog1")
-	   ]
-	   (const_string "ssemov")))
-   (set (attr "unit")
-     (if_then_else (eq_attr "alternative" "6,7")
-       (const_string "mmx")
-       (const_string "*")))
-   (set (attr "prefix_rep")
-     (if_then_else (eq_attr "alternative" "6,7")
-       (const_string "1")
-       (const_string "*")))
-   (set (attr "length_vex")
-     (if_then_else
-       (and (eq_attr "alternative" "12,13")
-	    (match_test "TARGET_AVX"))
-       (const_string "4")
-       (const_string "*")))
-   (set (attr "prefix")
-     (if_then_else (eq_attr "alternative" "8,9,10,11,12,13")
-       (const_string "maybe_vex")
-       (const_string "orig")))
-   (set_attr "mode" "DI,DI,DI,DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
-
-(define_insn "*movv2sf_internal"
-  [(set (match_operand:V2SF 0 "nonimmediate_operand"
-	 "=!?y,!y,!?y,m  ,!y,*x,*x,*x,*x,m ,r  ,m")
-        (match_operand:V2SF 1 "vector_move_operand"
-	 "C   ,!y,m  ,!?y,*x,!y,C ,*x,m ,*x,irm,r"))]
-  "!TARGET_64BIT && TARGET_MMX
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "@
-    pxor\t%0, %0
-    movq\t{%1, %0|%0, %1}
-    movq\t{%1, %0|%0, %1}
-    movq\t{%1, %0|%0, %1}
-    movdq2q\t{%1, %0|%0, %1}
-    movq2dq\t{%1, %0|%0, %1}
-    %vxorps\t%0, %d0
-    %vmovaps\t{%1, %0|%0, %1}
-    %vmovlps\t{%1, %d0|%d0, %1}
-    %vmovlps\t{%1, %0|%0, %1}
-    #
-    #"
-  [(set (attr "isa")
-     (if_then_else (eq_attr "alternative" "4,5")
-       (const_string "sse2")
-       (const_string "*")))
-   (set (attr "type")
-     (cond [(eq_attr "alternative" "0")
-	      (const_string "mmx")
-	    (eq_attr "alternative" "1,2,3")
-	      (const_string "mmxmov")
-	    (eq_attr "alternative" "4,5")
-	      (const_string "ssecvt")
-	    (eq_attr "alternative" "6")
-	      (const_string "sselog1")
-	    (eq_attr "alternative" "10,11")
-	      (const_string "multi")
-	   ]
-	   (const_string "ssemov")))
-   (set (attr "unit")
-     (if_then_else (eq_attr "alternative" "4,5")
-       (const_string "mmx")
-       (const_string "*")))
-   (set (attr "prefix_rep")
-     (if_then_else (eq_attr "alternative" "4,5")
-       (const_string "1")
-       (const_string "*")))
-   (set (attr "prefix")
-     (if_then_else (eq_attr "alternative" "6,7,8,9")
-       (const_string "maybe_vex")
-       (const_string "orig")))
-   (set_attr "mode" "DI,DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
-
-;; %%% This multiword shite has got to go.
 (define_split
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand")
         (match_operand:MMXMODE 1 "general_operand"))]
   "!TARGET_64BIT && reload_completed
-   && !(MMX_REG_P (operands[0]) || SSE_REG_P (operands[0])
-	|| MMX_REG_P (operands[1]) || SSE_REG_P (operands[1]))"
+   && !(MMX_REG_P (operands[0]) || SSE_REG_P (operands[0]))
+   && !(MMX_REG_P (operands[1]) || SSE_REG_P (operands[1]))"
   [(const_int 0)]
   "ix86_split_long_move (operands); DONE;")
 
