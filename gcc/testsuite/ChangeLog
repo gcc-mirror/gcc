@@ -1,3 +1,8 @@
+2013-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56696
+	* gfortran.dg/eof_5.f90: New.
+
 2013-03-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* gcc.c-torture/execute/builtins/builtins.exp: Sort targets
