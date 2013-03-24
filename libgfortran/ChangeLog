@@ -1,3 +1,8 @@
+2013-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56696
+	* io/list_read.c (read_real): Fix EOF diagnostic.
+
 2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
 
 	PR libfortran/51825
