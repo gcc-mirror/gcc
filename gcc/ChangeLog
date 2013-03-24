@@ -1,3 +1,10 @@
+2013-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (mov<mode>): Merge with movv2sf expander
+	using MMXMODE mode iterator.
+	(*move<mode>_internal): Merge with *movv2sf_internal and
+	*movv2sf_internal_rex64 using MMXMODE mode iterator.
+
 2013-03-23  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcse.c (oprs_unchanged_p): Respect flag_gcse_lm.
