@@ -32,7 +32,7 @@
 # define cfi_adjust_cfa_offset(X) 	.cfi_adjust_cfa_offset X
 # define cfi_def_cfa_register(X)	.cfi_def_cfa_register X
 # define cfi_register(D,S)		.cfi_register D, S
-# ifdef _WIN64
+# ifdef __x86_64__
 #  define cfi_push(X)		.cfi_adjust_cfa_offset 8; .cfi_rel_offset X, 0
 #  define cfi_pop(X)		.cfi_adjust_cfa_offset -8; .cfi_restore X
 # else
@@ -57,7 +57,7 @@
 
 	.global ___chkstk
 	.global	__alloca
-#ifdef _WIN64
+#ifdef __x86_64__
 /* __alloca is a normal function call, which uses %rcx as the argument.  */
 	cfi_startproc()
 __alloca:
@@ -123,7 +123,7 @@ __alloca:
 	pushl	4(%eax)
 	ret
 	cfi_endproc()
-#endif /* _WIN64 */
+#endif /* __x86_64__ */
 #endif /* L_chkstk */
 
 #ifdef L_chkstk_ms
@@ -131,7 +131,7 @@ __alloca:
    We avoid clobbering any registers.  Unlike ___chkstk, it just probes the
    stack and does no stack allocation.  */
 	.global ___chkstk_ms
-#ifdef _WIN64
+#ifdef __x86_64__
 	cfi_startproc()
 ___chkstk_ms:
 	pushq	%rcx			/* save temps */
@@ -183,5 +183,5 @@ ___chkstk_ms:
 	cfi_pop(%ecx)
 	ret
 	cfi_endproc()
-#endif /* _WIN64 */
+#endif /* __x86_64__ */
 #endif /* L_chkstk_ms */

@@ -1,3 +1,7 @@
+2013-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/cygwin.S: Replace use of _WIN64 by __x86_64__.
+
 2013-03-20  Robert Mason  <rbmj@verizon.net>
 
 	* config/vxlib-tls.c (__gthread_get_tsd_data,)
