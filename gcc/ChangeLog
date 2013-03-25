@@ -1,3 +1,41 @@
+2013-03-25  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/constraints.md (u, Udb7 Uead, Uean, Uesp, Uib3,
+	Uuw6, Usb4, ZS, ZT, ZU, ZV, ZW): New constraints.
+	* config/mip/predicates.md (lwsp_swsp_operand,
+	lw16_sw16_operand, lhu16_sh16_operand, lbu16_operand,
+	sb16_operand, db4_operand, db7_operand, ib3_operand,
+	sb4_operand, ub4_operand, uh4_operand, uw4_operand,
+	uw5_operand, uw6_operand, addiur2_operand, addiusp_operand,
+	andi16_operand): New predicates.
+	* config/mips/mips.md (compression): New attribute.
+	(enabled): New attribute.
+	(length): Consider compression in computing length.
+	(shift_compression): New code attribute.
+	(*add<mode>3): New operands. Record compression.
+	(sub<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(*and<mode>3): Likewise.
+	(*ior<mode>3): Likewise.
+	(unnamed pattern for xor): Likewise.
+	(*zero_extend<SHORT:mode><GPR:mode>2): Likewise.
+	(*<optab><mode>3): Likewise.
+	(*mov<mode>_internal: Likewise.
+	* config/mips/mips-protos.h (mips_signed_immediate_p): New.
+	(mips_unsigned_immediate_p): New.
+	(umips_lwsp_swsp_address_p): New.
+	(m16_based_address_p): New.
+	* config/mips/mips-protos.h (mips_signed_immediate_p): New prototype.
+	(mips_unsigned_immediate_p): New prototype.
+	(lwsp_swsp_address_p): New prototype.
+	(m16_based_address_p): New prototype.
+	* config/mips/mips.c (mips_unsigned_immediate_p): New function.
+	(mips_signed_immediate_p): New function.
+	(m16_based_address_p): New function.
+	(lwsp_swsp_address_p): New function.
+	(mips_print_operand_punctuation): Recognize short delay slot insns
+	for microMIPS.add<mode>3"
+
 2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 	PR target/56720
 	* config/arm/iterators.md (v_cmp_result): New mode attribute.

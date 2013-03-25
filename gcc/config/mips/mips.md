@@ -412,11 +412,26 @@
 		(const_string "yes")
 		(const_string "no")))
 
+(define_attr "compression" "none,all,micromips"
+  (const_string "none"))
+
+(define_attr "enabled" "no,yes"
+  (if_then_else (ior (eq_attr "compression" "all,none")
+		     (and (eq_attr "compression" "micromips")
+	                  (match_test "TARGET_MICROMIPS")))
+	        (const_string "yes")
+	        (const_string "no")))
+  
 ;; Length of instruction in bytes.
 (define_attr "length" ""
    (cond [(and (eq_attr "extended_mips16" "yes")
 	       (match_test "TARGET_MIPS16"))
 	  (const_int 8)
+
+	  (and (eq_attr "compression" "micromips,all")
+	       (eq_attr "dword_mode" "no")
+	       (match_test "TARGET_MICROMIPS"))
+	  (const_int 2)
 
 	  ;; Direct microMIPS branch instructions have a range of
 	  ;; [-0x10000,0xfffe], otherwise the range is [-0x20000,0x1fffc].
@@ -964,6 +979,10 @@
 				  (xor "xori")
 				  (and "andi")])
 
+(define_code_attr shift_compression [(ashift "micromips")
+				     (lshiftrt "micromips")
+				     (ashiftrt "none")])
+
 ;; <fcond> is the c.cond.fmt condition associated with a particular code.
 (define_code_attr fcond [(unordered "un")
 			 (uneq "ueq")
@@ -1131,14 +1150,19 @@
   "")
 
 (define_insn "*add<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d")
-	(plus:GPR (match_operand:GPR 1 "register_operand" "d,d")
-		  (match_operand:GPR 2 "arith_operand" "d,Q")))]
+  [(set (match_operand:GPR 0 "register_operand" "=!u,d,!u,!u,!ks,!d,d")
+	(plus:GPR (match_operand:GPR 1 "register_operand" "!u,d,!u,!ks,!ks,0,d")
+		  (match_operand:GPR 2 "arith_operand" "!u,d,Uead,Uuw6,Uesp,Usb4,Q")))]
   "!TARGET_MIPS16"
-  "@
-    <d>addu\t%0,%1,%2
-    <d>addiu\t%0,%1,%2"
+{
+  if (which_alternative == 0 
+      || which_alternative == 1)
+    return "<d>addu\t%0,%1,%2";
+  else
+    return "<d>addiu\t%0,%1,%2";
+}
   [(set_attr "alu_type" "add")
+   (set_attr "compression" "micromips,*,micromips,micromips,micromips,micromips,*")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*add<mode>3_mips16"
@@ -1347,12 +1371,13 @@
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "sub<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(minus:GPR (match_operand:GPR 1 "register_operand" "d")
-		   (match_operand:GPR 2 "register_operand" "d")))]
+  [(set (match_operand:GPR 0 "register_operand" "=!u,d")
+	(minus:GPR (match_operand:GPR 1 "register_operand" "!u,d")
+		   (match_operand:GPR 2 "register_operand" "!u,d")))]
   ""
   "<d>subu\t%0,%1,%2"
   [(set_attr "alu_type" "sub")
+   (set_attr "compression" "micromips,*")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*subsi3_extended"
@@ -2828,8 +2853,8 @@
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "one_cmpl<mode>2"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(not:GPR (match_operand:GPR 1 "register_operand" "d")))]
+  [(set (match_operand:GPR 0 "register_operand" "=!u,d")
+	(not:GPR (match_operand:GPR 1 "register_operand" "!u,d")))]
   ""
 {
   if (TARGET_MIPS16)
@@ -2838,6 +2863,7 @@
     return "nor\t%0,%.,%1";
 }
   [(set_attr "alu_type" "not")
+   (set_attr "compression" "micromips,*")
    (set_attr "mode" "<MODE>")])
 
 ;;
@@ -2878,9 +2904,9 @@
 ;;  register =op1                      x
 
 (define_insn "*and<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d,d,d,d")
-	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "o,o,W,d,d,d,d")
-		 (match_operand:GPR 2 "and_operand" "Yb,Yh,Yw,K,Yx,Yw,d")))]
+  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,!u,d,d,d,!u,d")
+	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "o,o,W,!u,d,d,d,0,d")
+		 (match_operand:GPR 2 "and_operand" "Yb,Yh,Yw,Uean,K,Yx,Yw,!u,d")))]
   "!TARGET_MIPS16 && and_operands_ok (<MODE>mode, operands[1], operands[2])"
 {
   int len;
@@ -2897,20 +2923,23 @@
       operands[1] = gen_lowpart (SImode, operands[1]);
       return "lwu\t%0,%1";
     case 3:
-      return "andi\t%0,%1,%x2";
     case 4:
+      return "andi\t%0,%1,%x2";
+    case 5:
       len = low_bitmask_len (<MODE>mode, INTVAL (operands[2]));
       operands[2] = GEN_INT (len);
       return "<d>ext\t%0,%1,0,%2";
-    case 5:
-      return "#";
     case 6:
+      return "#";
+    case 7:
+    case 8:
       return "and\t%0,%1,%2";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "move_type" "load,load,load,andi,ext_ins,shift_shift,logical")
+  [(set_attr "move_type" "load,load,load,andi,andi,ext_ins,shift_shift,logical,logical")
+   (set_attr "compression" "*,*,*,micromips,*,*,*,micromips,*")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*and<mode>3_mips16"
@@ -2952,14 +2981,16 @@
 })
 
 (define_insn "*ior<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d")
-	(ior:GPR (match_operand:GPR 1 "register_operand" "%d,d")
-		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
+  [(set (match_operand:GPR 0 "register_operand" "=!u,d,d")
+	(ior:GPR (match_operand:GPR 1 "register_operand" "%0,d,d")
+		 (match_operand:GPR 2 "uns_arith_operand" "!u,d,K")))]
   "!TARGET_MIPS16"
   "@
    or\t%0,%1,%2
+   or\t%0,%1,%2
    ori\t%0,%1,%x2"
   [(set_attr "alu_type" "or")
+   (set_attr "compression" "micromips,*,*")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*ior<mode>3_mips16"
@@ -2979,14 +3010,16 @@
   "")
 
 (define_insn ""
-  [(set (match_operand:GPR 0 "register_operand" "=d,d")
-	(xor:GPR (match_operand:GPR 1 "register_operand" "%d,d")
-		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
+  [(set (match_operand:GPR 0 "register_operand" "=!u,d,d")
+	(xor:GPR (match_operand:GPR 1 "register_operand" "%0,d,d")
+		 (match_operand:GPR 2 "uns_arith_operand" "!u,d,K")))]
   "!TARGET_MIPS16"
   "@
    xor\t%0,%1,%2
+   xor\t%0,%1,%2
    xori\t%0,%1,%x2"
   [(set_attr "alu_type" "xor")
+   (set_attr "compression" "micromips,*,*")
    (set_attr "mode" "<MODE>")])
 
 (define_insn ""
@@ -3162,14 +3195,16 @@
 })
 
 (define_insn "*zero_extend<SHORT:mode><GPR:mode>2"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=!u,d,d")
         (zero_extend:GPR
-	     (match_operand:SHORT 1 "nonimmediate_operand" "d,m")))]
+	     (match_operand:SHORT 1 "nonimmediate_operand" "!u,d,m")))]
   "!TARGET_MIPS16"
   "@
    andi\t%0,%1,<SHORT:mask>
+   andi\t%0,%1,<SHORT:mask>
    l<SHORT:size>u\t%0,%1"
-  [(set_attr "move_type" "andi,load")
+  [(set_attr "move_type" "andi,andi,load")
+   (set_attr "compression" "micromips,*,*")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*zero_extend<SHORT:mode><GPR:mode>2_mips16e"
@@ -4362,13 +4397,14 @@
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:IMOVE32 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*d,*m,*d,*z,*a,*d,*B*C*D,*B*C*D,*d,*m")
-	(match_operand:IMOVE32 1 "move_operand" "d,Yd,Yf,m,dJ,*d*J,*m,*f,*f,*z,*d,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
+  [(set (match_operand:IMOVE32 0 "nonimmediate_operand" "=d,!u,!u,d,e,!u,!ks,d,ZS,ZT,m,*f,*f,*d,*m,*d,*z,*a,*d,*B*C*D,*B*C*D,*d,*m")
+	(match_operand:IMOVE32 1 "move_operand" "d,J,Udb7,Yd,Yf,ZT,ZS,m,!ks,!u,dJ,*d*J,*m,*f,*f,*z,*d,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], <MODE>mode)
        || reg_or_0_operand (operands[1], <MODE>mode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,const,load,store,mtc,fpload,mfc,fpstore,mfc,mtc,mtlo,mflo,mtc,fpload,mfc,fpstore")
+  [(set_attr "move_type" "move,move,const,const,const,load,load,load,store,store,store,mtc,fpload,mfc,fpstore,mfc,mtc,mtlo,mflo,mtc,fpload,mfc,fpstore")
+   (set_attr "compression" "all,micromips,micromips,*,*,micromips,micromips,*,micromips,micromips,*,*,*,*,*,*,*,*,*,*,*,*,*")
    (set_attr "mode" "SI")])
 
 (define_insn "*mov<mode>_mips16"
@@ -5225,9 +5261,9 @@
 })
 
 (define_insn "*<optab><mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(any_shift:GPR (match_operand:GPR 1 "register_operand" "d")
-		       (match_operand:SI 2 "arith_operand" "dI")))]
+  [(set (match_operand:GPR 0 "register_operand" "=!u,d")
+	(any_shift:GPR (match_operand:GPR 1 "register_operand" "!u,d")
+		       (match_operand:SI 2 "arith_operand" "Uib3,dI")))]
   "!TARGET_MIPS16"
 {
   if (CONST_INT_P (operands[2]))
@@ -5237,6 +5273,7 @@
   return "<d><insn>\t%0,%1,%2";
 }
   [(set_attr "type" "shift")
+   (set_attr "compression" "<shift_compression>,none")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*<optab>si3_extend"
