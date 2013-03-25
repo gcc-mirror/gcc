@@ -1,3 +1,8 @@
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56689
+	* gcc.dg/torture/pr56689.c: New testcase.
+
 2013-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* g++.dg/torture/20121105-1.C: Adjust for LLP64 targets.
