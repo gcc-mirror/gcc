@@ -1,3 +1,11 @@
+2013-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2013-03-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR fortran/54932
+	* gfortran.dg/do_1.f90: Don't xfail.
+
 2013-03-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56696
