@@ -1,3 +1,11 @@
+2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/52512
+	* io/list_read.c (nml_parse_qualifier): To check for a derived type
+	don't use the namelist head element type but the current element type.
+	(nml_get_obj_data): Add current namelist element type to
+	nml_parse_qualifier call.
+
 2013-03-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56696

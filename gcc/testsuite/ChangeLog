@@ -1,3 +1,8 @@
+2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/52512
+	* gfortran.dg/namelist_79.f90: New.
+
 2013-03-25  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/ipcp-agg-9.c: New test.
