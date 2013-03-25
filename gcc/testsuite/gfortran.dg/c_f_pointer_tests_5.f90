@@ -9,5 +9,5 @@ type :: nc
 end type
 type(c_ptr) :: cSelf
 class(nc), pointer :: self
-call c_f_pointer(cSelf, self)  ! { dg-error "must not be polymorphic" }
+call c_f_pointer(cSelf, self)  ! { dg-error "shall not be polymorphic" }
 end

@@ -1,3 +1,61 @@
+2013-03-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38536
+	PR fortran/38813
+	PR fortran/38894
+	PR fortran/39288
+	PR fortran/40963
+	PR fortran/45824
+	PR fortran/47023
+	PR fortran/47034
+	PR fortran/49023
+	PR fortran/50269
+	PR fortran/50612
+	PR fortran/52426
+	PR fortran/54263
+	PR fortran/55343
+	PR fortran/55444
+	PR fortran/55574
+	PR fortran/56079
+	PR fortran/56378
+	* gfortran.dg/c_assoc_2.f03: Update dg-error wording.
+	* gfortran.dg/c_f_pointer_shape_test.f90: Ditto.
+	* gfortran.dg/c_f_pointer_shape_tests_3.f03: Ditto.
+	* gfortran.dg/c_f_pointer_tests_5.f90: Ditto.
+	* gfortran.dg/c_funloc_tests_2.f03: Ditto.
+	* gfortran.dg/c_funloc_tests_5.f03: Ditto.
+	* gfortran.dg/c_funloc_tests_6.f90: Ditto.
+	* gfortran.dg/c_loc_tests_10.f03: Add -std=f2008.
+	* gfortran.dg/c_loc_tests_11.f03: Ditto, update dg-error.
+	* gfortran.dg/c_loc_tests_16.f90: Ditto.
+	* gfortran.dg/c_loc_tests_4.f03: Ditto.
+	* gfortran.dg/c_loc_tests_15.f90: Update dg-error wording.
+	* gfortran.dg/c_loc_tests_3.f03: Valid since F2003 TC5.
+	* gfortran.dg/c_loc_tests_8.f03: Ditto.
+	* gfortran.dg/c_ptr_tests_14.f90: Update scan-tree-dump-times.
+	* gfortran.dg/c_ptr_tests_15.f90: Ditto.
+	* gfortran.dg/c_sizeof_1.f90: Fix invalid code.
+	* gfortran.dg/iso_c_binding_init_expr.f03: Update dg-error wording.
+	* gfortran.dg/pr32601_1.f03: Ditto.
+	* gfortran.dg/storage_size_2.f08: Remove dg-error.
+	* gfortran.dg/blockdata_7.f90: New.
+	* gfortran.dg/c_assoc_4.f90: New.
+	* gfortran.dg/c_f_pointer_tests_6.f90: New.
+	* gfortran.dg/c_f_pointer_tests_7.f90: New.
+	* gfortran.dg/c_funloc_tests_8.f90: New.
+	* gfortran.dg/c_loc_test_17.f90: New.
+	* gfortran.dg/c_loc_test_18.f90: New.
+	* gfortran.dg/c_loc_test_19.f90: New.
+	* gfortran.dg/c_loc_test_20.f90: New.
+	* gfortran.dg/c_sizeof_5.f90: New.
+	* gfortran.dg/iso_c_binding_rename_3.f90: New.
+	* gfortran.dg/transfer_resolve_2.f90: New.
+	* gfortran.dg/transfer_resolve_3.f90: New.
+	* gfortran.dg/transfer_resolve_4.f90: New.
+	* gfortran.dg/pr32601.f03: Update dg-error.
+	* gfortran.dg/c_ptr_tests_13.f03: Update dg-error.
+	* gfortran.dg/c_ptr_tests_9.f03: Fix test case.
+
 2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/vseleqdf.c: New test.

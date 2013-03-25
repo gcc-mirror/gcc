@@ -338,12 +338,11 @@ gfc_init_c_interop_kinds (void)
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_DERIVED; \
   c_interop_kinds_table[a].value = c;
-#define PROCEDURE(a,b) \
+#define NAMED_FUNCTION(a,b,c,d) \
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_PROCEDURE; \
-  c_interop_kinds_table[a].value = 0;
-#include "iso-c-binding.def"
-#define NAMED_FUNCTION(a,b,c,d) \
+  c_interop_kinds_table[a].value = c;
+#define NAMED_SUBROUTINE(a,b,c,d) \
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_PROCEDURE; \
   c_interop_kinds_table[a].value = c;
@@ -1111,11 +1110,11 @@ gfc_typenode_for_spec (gfc_typespec * spec)
          type and kind to fit a (void *) and the basetype returned was a
          ptr_type_node.  We need to pass up this new information to the
          symbol that was declared of type C_PTR or C_FUNPTR.  */
-      if (spec->u.derived->attr.is_iso_c)
+      if (spec->u.derived->ts.f90_type == BT_VOID)
         {
-          spec->type = spec->u.derived->ts.type;
-          spec->kind = spec->u.derived->ts.kind;
-          spec->f90_type = spec->u.derived->ts.f90_type;
+          spec->type = BT_INTEGER;
+          spec->kind = gfc_index_integer_kind;
+          spec->f90_type = BT_VOID;
         }
       break;
     case BT_VOID:
@@ -2349,7 +2348,7 @@ gfc_get_derived_type (gfc_symbol * derived)
     derived = gfc_find_dt_in_generic (derived);
 
   /* See if it's one of the iso_c_binding derived types.  */
-  if (derived->attr.is_iso_c == 1)
+  if (derived->attr.is_iso_c == 1 || derived->ts.f90_type == BT_VOID)
     {
       if (derived->backend_decl)
 	return derived->backend_decl;
