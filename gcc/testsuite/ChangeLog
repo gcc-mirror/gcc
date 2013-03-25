@@ -1,3 +1,8 @@
+2013-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56722
+	* g++.dg/cpp0x/range-for23.C: New.
+
 2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
 
 	PR libfortran/52512
