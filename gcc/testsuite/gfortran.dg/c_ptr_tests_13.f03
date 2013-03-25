@@ -10,6 +10,6 @@ program main
    integer(C_INTPTR_T) p
    type(C_PTR) cptr
    p = 0
-   cptr = C_PTR(p+1) ! { dg-error "Components of structure constructor" }
-   cptr = C_PTR(1) ! { dg-error "Components of structure constructor" } 
+   cptr = C_PTR(p+1) ! { dg-error "is a PRIVATE component of 'c_ptr'" }
+   cptr = C_PTR(1) ! { dg-error "is a PRIVATE component of 'c_ptr'" }
 end program main

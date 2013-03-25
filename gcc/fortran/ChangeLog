@@ -1,3 +1,86 @@
+2013-03-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38536
+	PR fortran/38813
+	PR fortran/38894
+	PR fortran/39288
+	PR fortran/40963
+	PR fortran/45824
+	PR fortran/47023
+	PR fortran/47034
+	PR fortran/49023
+	PR fortran/50269
+	PR fortran/50612
+	PR fortran/52426
+	PR fortran/54263
+	PR fortran/55343
+	PR fortran/55444
+	PR fortran/55574
+	PR fortran/56079
+	PR fortran/56378
+	* check.c (gfc_var_strlen): Properly handle 0-sized string.
+	(gfc_check_c_sizeof): Use is_c_interoperable, add checks.
+	(is_c_interoperable, gfc_check_c_associated, gfc_check_c_f_pointer,
+	gfc_check_c_f_procpointer, gfc_check_c_funloc, gfc_check_c_loc): New
+	functions.
+	* expr.c (check_inquiry): Add c_sizeof, compiler_version and
+	compiler_options.
+	(gfc_check_pointer_assign): Refine function result check.
+	gfortran.h (gfc_isym_id): Add GFC_ISYM_C_ASSOCIATED,
+	GFC_ISYM_C_F_POINTER, GFC_ISYM_C_F_PROCPOINTER, GFC_ISYM_C_FUNLOC,
+	GFC_ISYM_C_LOC.
+	(iso_fortran_env_symbol, iso_c_binding_symbol): Handle
+	NAMED_SUBROUTINE.
+	(generate_isocbinding_symbol): Update prototype.
+	(get_iso_c_sym): Remove.
+	(gfc_isym_id_by_intmod, gfc_isym_id_by_intmod_sym): New prototypes.
+	* intrinsic.c (gfc_intrinsic_subroutine_by_id): New function.
+	(gfc_intrinsic_sub_interface): Use it.
+	(add_functions, add_subroutines): Add missing C-binding intrinsics.
+	(gfc_intrinsic_func_interface): Add special case for c_loc.
+	gfc_isym_id_by_intmod, gfc_isym_id_by_intmod_sym): New functions.
+	(gfc_intrinsic_func_interface, gfc_intrinsic_sub_interface): Use them.
+	* intrinsic.h (gfc_check_c_associated, gfc_check_c_f_pointer,
+	gfc_check_c_f_procpointer, gfc_check_c_funloc, gfc_check_c_loc,
+	gfc_resolve_c_loc, gfc_resolve_c_funloc): New prototypes.
+	* iresolve.c (gfc_resolve_c_loc, gfc_resolve_c_funloc): New
+	functions.
+	* iso-c-binding.def: Split PROCEDURE into NAMED_SUBROUTINE and
+	NAMED_FUNCTION.
+	* iso-fortran-env.def: Add NAMED_SUBROUTINE for completeness.
+	* module.c (create_intrinsic_function): Support subroutines and
+	derived-type results.
+	(use_iso_fortran_env_module): Update calls.
+	(import_iso_c_binding_module): Ditto; update calls to
+	generate_isocbinding_symbol.
+	* resolve.c (find_arglists): Skip for intrinsic symbols.
+	(gfc_resolve_intrinsic): Find intrinsic subs via id.
+	(is_scalar_expr_ptr, gfc_iso_c_func_interface,
+	set_name_and_label, gfc_iso_c_sub_interface): Remove.
+	(resolve_function, resolve_specific_s0): Remove calls to those.
+	(resolve_structure_cons): Fix handling.
+	* symbol.c (gen_special_c_interop_ptr): Update c_ptr/c_funptr
+	generation.
+	(gen_cptr_param, gen_fptr_param, gen_shape_param,
+	build_formal_args, get_iso_c_sym): Remove.
+	(std_for_isocbinding_symbol): Handle NAMED_SUBROUTINE.
+	(generate_isocbinding_symbol): Support hidden symbols and
+	using c_ptr/c_funptr symtrees for nullptr defs.
+	* target-memory.c (gfc_target_encode_expr): Fix handling
+	of c_ptr/c_funptr.
+	* trans-expr.c (conv_isocbinding_procedure): Remove.
+	(gfc_conv_procedure_call): Remove call to it.
+	(gfc_trans_subcomponent_assign, gfc_conv_expr): Update handling
+	of c_ptr/c_funptr.
+	* trans-intrinsic.c (conv_isocbinding_function,
+	conv_isocbinding_subroutine): New.
+	(gfc_conv_intrinsic_function, gfc_conv_intrinsic_subroutine):
+	Call them.
+	* trans-io.c (transfer_expr): Fix handling of c_ptr/c_funptr.
+	* trans-types.c (gfc_typenode_for_spec,
+	gfc_get_derived_type): Ditto.
+	(gfc_init_c_interop_kinds): Handle NAMED_SUBROUTINE.
+
 2013-03-18  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.h (gfc_option_t): Remove flag_whole_file.

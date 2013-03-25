@@ -316,6 +316,17 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 	}
 
     case BT_DERIVED:
+      if (source->ts.u.derived->ts.f90_type == BT_VOID)
+	{
+	  gfc_constructor *c;
+	  gcc_assert (source->expr_type == EXPR_STRUCTURE);
+	  c = gfc_constructor_first (source->value.constructor);
+	  gcc_assert (c->expr->expr_type == EXPR_CONSTANT
+		      && c->expr->ts.type == BT_INTEGER);
+	  return encode_integer (gfc_index_integer_kind, c->expr->value.integer,
+				 buffer, buffer_size);
+	}
+
       return encode_derived (source, buffer, buffer_size);
     default:
       gfc_internal_error ("Invalid expression in gfc_target_encode_expr.");

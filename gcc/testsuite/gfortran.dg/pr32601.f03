@@ -19,9 +19,9 @@ type(c_ptr) :: t
 t = c_null_ptr
 
 ! Next two lines should be errors if -pedantic or -std=f2003
-print *, c_null_ptr, t  ! { dg-error "has PRIVATE components" }
-print *, t ! { dg-error "has PRIVATE components" }
+print *, c_null_ptr, t  ! { dg-error "cannot have PRIVATE components" }
+print *, t ! { dg-error "cannot have PRIVATE components" }
 
-print *, c_loc(get_ptr()) ! { dg-error "has PRIVATE components" }
+print *, c_loc(get_ptr()) ! { dg-error "cannot have PRIVATE components" }
 
 end

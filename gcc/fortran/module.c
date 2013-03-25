@@ -5570,8 +5570,9 @@ gfc_dump_module (const char *name, int dump_flag)
 
 
 static void
-create_intrinsic_function (const char *name, gfc_isym_id id,
-			   const char *modname, intmod_id module)
+create_intrinsic_function (const char *name, int id,
+			   const char *modname, intmod_id module,
+			   bool subroutine, gfc_symbol *result_type)
 {
   gfc_intrinsic_sym *isym;
   gfc_symtree *tmp_symtree;
@@ -5588,7 +5589,30 @@ create_intrinsic_function (const char *name, gfc_isym_id id,
   gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
   sym = tmp_symtree->n.sym;
 
-  isym = gfc_intrinsic_function_by_id (id);
+  if (subroutine)
+    {
+      gfc_isym_id isym_id = gfc_isym_id_by_intmod (module, id);
+      isym = gfc_intrinsic_subroutine_by_id (isym_id);
+      sym->attr.subroutine = 1;
+    }
+  else
+    {
+      gfc_isym_id isym_id = gfc_isym_id_by_intmod (module, id);
+      isym = gfc_intrinsic_function_by_id (isym_id);
+
+      sym->attr.function = 1;
+      if (result_type)
+	{
+	  sym->ts.type = BT_DERIVED;
+	  sym->ts.u.derived = result_type;
+	  sym->ts.is_c_interop = 1;
+	  isym->ts.f90_type = BT_VOID;
+	  isym->ts.type = BT_DERIVED;
+	  isym->ts.f90_type = BT_VOID;
+	  isym->ts.u.derived = result_type;
+	  isym->ts.is_c_interop = 1;
+	}
+    }
   gcc_assert (isym);
 
   sym->attr.flavor = FL_PROCEDURE;
@@ -5609,11 +5633,13 @@ create_intrinsic_function (const char *name, gfc_isym_id id,
 static void
 import_iso_c_binding_module (void)
 {
-  gfc_symbol *mod_sym = NULL;
-  gfc_symtree *mod_symtree = NULL;
+  gfc_symbol *mod_sym = NULL, *return_type;
+  gfc_symtree *mod_symtree = NULL, *tmp_symtree;
+  gfc_symtree *c_ptr = NULL, *c_funptr = NULL;
   const char *iso_c_module_name = "__iso_c_binding";
   gfc_use_rename *u;
   int i;
+  bool want_c_ptr = false, want_c_funptr = false;
 
   /* Look only in the current namespace.  */
   mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, iso_c_module_name);
@@ -5636,6 +5662,57 @@ import_iso_c_binding_module (void)
       mod_sym->from_intmod = INTMOD_ISO_C_BINDING;
     }
 
+  /* Check whether C_PTR or C_FUNPTR are in the include list, if so, load it;
+     check also whether C_NULL_(FUN)PTR or C_(FUN)LOC are requested, which
+     need C_(FUN)PTR.  */
+  for (u = gfc_rename_list; u; u = u->next)
+    {
+      if (strcmp (c_interop_kinds_table[ISOCBINDING_NULL_PTR].name,
+		  u->use_name) == 0)
+        want_c_ptr = true;
+      else if (strcmp (c_interop_kinds_table[ISOCBINDING_LOC].name,
+		       u->use_name) == 0)
+        want_c_ptr = true;
+      else if (strcmp (c_interop_kinds_table[ISOCBINDING_NULL_FUNPTR].name,
+		       u->use_name) == 0)
+        want_c_funptr = true;
+      else if (strcmp (c_interop_kinds_table[ISOCBINDING_FUNLOC].name,
+		       u->use_name) == 0)
+        want_c_funptr = true;
+      else if (strcmp (c_interop_kinds_table[ISOCBINDING_PTR].name,
+                       u->use_name) == 0)
+	{
+	  c_ptr = generate_isocbinding_symbol (iso_c_module_name,
+                                               (iso_c_binding_symbol)
+							ISOCBINDING_PTR,
+                                               u->local_name[0] ? u->local_name
+                                                                : u->use_name,
+                                               NULL, false);
+	}
+      else if (strcmp (c_interop_kinds_table[ISOCBINDING_FUNPTR].name,
+                       u->use_name) == 0)
+	{
+	  c_funptr
+	     = generate_isocbinding_symbol (iso_c_module_name,
+					    (iso_c_binding_symbol)
+							ISOCBINDING_FUNPTR,
+					     u->local_name[0] ? u->local_name
+							      : u->use_name,
+					     NULL, false);
+	}
+    }
+
+  if ((want_c_ptr || !only_flag) && !c_ptr)
+    c_ptr = generate_isocbinding_symbol (iso_c_module_name,
+					 (iso_c_binding_symbol)
+							ISOCBINDING_PTR,
+					 NULL, NULL, only_flag);
+  if ((want_c_funptr || !only_flag) && !c_funptr)
+    c_funptr = generate_isocbinding_symbol (iso_c_module_name,
+					    (iso_c_binding_symbol)
+							ISOCBINDING_FUNPTR,
+					    NULL, NULL, only_flag);
+
   /* Generate the symbols for the named constants representing
      the kinds for intrinsic data types.  */
   for (i = 0; i < ISOCBINDING_NUMBER; i++)
@@ -5656,29 +5733,27 @@ import_iso_c_binding_module (void)
 		  not_in_std = (gfc_option.allow_std & d) == 0; \
 		  name = b; \
 		  break;
-#include "iso-c-binding.def"
-#undef NAMED_FUNCTION
+#define NAMED_SUBROUTINE(a,b,c,d) \
+	        case a: \
+		  not_in_std = (gfc_option.allow_std & d) == 0; \
+		  name = b; \
+		  break;
 #define NAMED_INTCST(a,b,c,d) \
 	        case a: \
 		  not_in_std = (gfc_option.allow_std & d) == 0; \
 		  name = b; \
 		  break;
-#include "iso-c-binding.def"
-#undef NAMED_INTCST
 #define NAMED_REALCST(a,b,c,d) \
 	        case a: \
 		  not_in_std = (gfc_option.allow_std & d) == 0; \
 		  name = b; \
 		  break;
-#include "iso-c-binding.def"
-#undef NAMED_REALCST
 #define NAMED_CMPXCST(a,b,c,d) \
 	        case a: \
 		  not_in_std = (gfc_option.allow_std & d) == 0; \
 		  name = b; \
 		  break;
 #include "iso-c-binding.def"
-#undef NAMED_CMPXCST
 		default:
 		  not_in_std = false;
 		  name = "";
@@ -5695,20 +5770,43 @@ import_iso_c_binding_module (void)
 	      {
 #define NAMED_FUNCTION(a,b,c,d) \
 	        case a: \
+		  if (a == ISOCBINDING_LOC) \
+		    return_type = c_ptr->n.sym; \
+		  else if (a == ISOCBINDING_FUNLOC) \
+		    return_type = c_funptr->n.sym; \
+		  else \
+		    return_type = NULL; \
+		  create_intrinsic_function (u->local_name[0] \
+					     ? u->local_name : u->use_name, \
+					     a, iso_c_module_name, \
+					     INTMOD_ISO_C_BINDING, false, \
+					     return_type); \
+		  break;
+#define NAMED_SUBROUTINE(a,b,c,d) \
+	        case a: \
 		  create_intrinsic_function (u->local_name[0] ? u->local_name \
 							      : u->use_name, \
-					     (gfc_isym_id) c, \
-                                             iso_c_module_name, \
-                                             INTMOD_ISO_C_BINDING); \
+                                             a, iso_c_module_name, \
+                                             INTMOD_ISO_C_BINDING, true, NULL); \
 		  break;
 #include "iso-c-binding.def"
-#undef NAMED_FUNCTION
 
+		case ISOCBINDING_PTR:
+		case ISOCBINDING_FUNPTR:
+		  /* Already handled above.  */
+		  break;
 		default:
+		  if (i == ISOCBINDING_NULL_PTR)
+		    tmp_symtree = c_ptr;
+		  else if (i == ISOCBINDING_NULL_FUNPTR)
+		    tmp_symtree = c_funptr;
+		  else
+		    tmp_symtree = NULL;
 		  generate_isocbinding_symbol (iso_c_module_name,
 					       (iso_c_binding_symbol) i,
-					       u->local_name[0] ? u->local_name
-								: u->use_name);
+					       u->local_name[0]
+					       ? u->local_name : u->use_name,
+					       tmp_symtree, false);
 	      }
 	  }
 
@@ -5722,30 +5820,27 @@ import_iso_c_binding_module (void)
 		if ((gfc_option.allow_std & d) == 0) \
 		  continue; \
 		break;
-#include "iso-c-binding.def"
-#undef NAMED_FUNCTION
-
+#define NAMED_SUBROUTINE(a,b,c,d) \
+	      case a: \
+		if ((gfc_option.allow_std & d) == 0) \
+		  continue; \
+		break;
 #define NAMED_INTCST(a,b,c,d) \
 	      case a: \
 		if ((gfc_option.allow_std & d) == 0) \
 		  continue; \
 		break;
-#include "iso-c-binding.def"
-#undef NAMED_INTCST
 #define NAMED_REALCST(a,b,c,d) \
 	      case a: \
 		if ((gfc_option.allow_std & d) == 0) \
 		  continue; \
 		break;
-#include "iso-c-binding.def"
-#undef NAMED_REALCST
 #define NAMED_CMPXCST(a,b,c,d) \
 	      case a: \
 		if ((gfc_option.allow_std & d) == 0) \
 		  continue; \
 		break;
 #include "iso-c-binding.def"
-#undef NAMED_CMPXCST
 	      default:
 		; /* Not GFC_STD_* versioned. */
 	    }
@@ -5754,16 +5849,37 @@ import_iso_c_binding_module (void)
 	    {
 #define NAMED_FUNCTION(a,b,c,d) \
 	      case a: \
-		create_intrinsic_function (b, (gfc_isym_id) c, \
-					   iso_c_module_name, \
-					   INTMOD_ISO_C_BINDING); \
+		if (a == ISOCBINDING_LOC) \
+		  return_type = c_ptr->n.sym; \
+		else if (a == ISOCBINDING_FUNLOC) \
+		  return_type = c_funptr->n.sym; \
+		else \
+		  return_type = NULL; \
+		create_intrinsic_function (b, a, iso_c_module_name, \
+					   INTMOD_ISO_C_BINDING, false, \
+					   return_type); \
+		break;
+#define NAMED_SUBROUTINE(a,b,c,d) \
+	      case a: \
+		create_intrinsic_function (b, a, iso_c_module_name, \
+					   INTMOD_ISO_C_BINDING, true, NULL); \
 		  break;
 #include "iso-c-binding.def"
-#undef NAMED_FUNCTION
 
+	      case ISOCBINDING_PTR:
+	      case ISOCBINDING_FUNPTR:
+		/* Already handled above.  */
+		break;
 	      default:
+		if (i == ISOCBINDING_NULL_PTR)
+		  tmp_symtree = c_ptr;
+		else if (i == ISOCBINDING_NULL_FUNPTR)
+		  tmp_symtree = c_funptr;
+		else
+		  tmp_symtree = NULL;
 		generate_isocbinding_symbol (iso_c_module_name,
-					     (iso_c_binding_symbol) i, NULL);
+					     (iso_c_binding_symbol) i, NULL,
+					     tmp_symtree, false);
 	    }
 	}
    }
@@ -5917,23 +6033,16 @@ use_iso_fortran_env_module (void)
 
   intmod_sym symbol[] = {
 #define NAMED_INTCST(a,b,c,d) { a, b, 0, d },
-#include "iso-fortran-env.def"
-#undef NAMED_INTCST
 #define NAMED_KINDARRAY(a,b,c,d) { a, b, 0, d },
-#include "iso-fortran-env.def"
-#undef NAMED_KINDARRAY
 #define NAMED_DERIVED_TYPE(a,b,c,d) { a, b, 0, d },
-#include "iso-fortran-env.def"
-#undef NAMED_DERIVED_TYPE
 #define NAMED_FUNCTION(a,b,c,d) { a, b, c, d },
+#define NAMED_SUBROUTINE(a,b,c,d) { a, b, c, d },
 #include "iso-fortran-env.def"
-#undef NAMED_FUNCTION
     { ISOFORTRANENV_INVALID, NULL, -1234, 0 } };
 
   i = 0;
 #define NAMED_INTCST(a,b,c,d) symbol[i++].value = c;
 #include "iso-fortran-env.def"
-#undef NAMED_INTCST
 
   /* Generate the symbol for the module itself.  */
   mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, mod);
@@ -5985,7 +6094,6 @@ use_iso_fortran_env_module (void)
 #define NAMED_INTCST(a,b,c,d) \
 		case a:
 #include "iso-fortran-env.def"
-#undef NAMED_INTCST
 		  create_int_parameter (u->local_name[0] ? u->local_name
 							 : u->use_name,
 					symbol[i].value, mod,
@@ -6008,7 +6116,6 @@ use_iso_fortran_env_module (void)
 					      symbol[i].id); \
 		  break;
 #include "iso-fortran-env.def"
-#undef NAMED_KINDARRAY
 
 #define NAMED_DERIVED_TYPE(a,b,TYPE,STD) \
 		case a:
@@ -6018,16 +6125,15 @@ use_iso_fortran_env_module (void)
 				       mod, INTMOD_ISO_FORTRAN_ENV,
 				       symbol[i].id);
 		  break;
-#undef NAMED_DERIVED_TYPE
 
 #define NAMED_FUNCTION(a,b,c,d) \
 		case a:
 #include "iso-fortran-env.def"
-#undef NAMED_FUNCTION
 		  create_intrinsic_function (u->local_name[0] ? u->local_name
 							      : u->use_name,
-					     (gfc_isym_id) symbol[i].value, mod,
-					     INTMOD_ISO_FORTRAN_ENV);
+					     symbol[i].id, mod,
+					     INTMOD_ISO_FORTRAN_ENV, false,
+					     NULL);
 		  break;
 
 		default:
@@ -6054,7 +6160,6 @@ use_iso_fortran_env_module (void)
 #define NAMED_INTCST(a,b,c,d) \
 	    case a:
 #include "iso-fortran-env.def"
-#undef NAMED_INTCST
 	      create_int_parameter (symbol[i].name, symbol[i].value, mod,
 				    INTMOD_ISO_FORTRAN_ENV, symbol[i].id);
 	      break;
@@ -6071,7 +6176,6 @@ use_iso_fortran_env_module (void)
                                         INTMOD_ISO_FORTRAN_ENV, symbol[i].id);\
             break;
 #include "iso-fortran-env.def"
-#undef NAMED_KINDARRAY
 
 #define NAMED_DERIVED_TYPE(a,b,TYPE,STD) \
 	  case a:
@@ -6079,15 +6183,13 @@ use_iso_fortran_env_module (void)
 	    create_derived_type (symbol[i].name, mod, INTMOD_ISO_FORTRAN_ENV,
 				 symbol[i].id);
 	    break;
-#undef NAMED_DERIVED_TYPE
 
 #define NAMED_FUNCTION(a,b,c,d) \
 		case a:
 #include "iso-fortran-env.def"
-#undef NAMED_FUNCTION
-		  create_intrinsic_function (symbol[i].name,
-					     (gfc_isym_id) symbol[i].value, mod,
-					     INTMOD_ISO_FORTRAN_ENV);
+		  create_intrinsic_function (symbol[i].name, symbol[i].id, mod,
+					     INTMOD_ISO_FORTRAN_ENV, false,
+					     NULL);
 		  break;
 
 	  default:

@@ -3695,229 +3695,6 @@ conv_arglist_function (gfc_se *se, gfc_expr *expr, const char *name)
 }
 
 
-/* The following routine generates code for the intrinsic
-   procedures from the ISO_C_BINDING module:
-    * C_LOC           (function)
-    * C_FUNLOC        (function)
-    * C_F_POINTER     (subroutine)
-    * C_F_PROCPOINTER (subroutine)
-    * C_ASSOCIATED    (function)
-   One exception which is not handled here is C_F_POINTER with non-scalar
-   arguments. Returns 1 if the call was replaced by inline code (else: 0).  */
-
-static int
-conv_isocbinding_procedure (gfc_se * se, gfc_symbol * sym,
-			    gfc_actual_arglist * arg)
-{
-  gfc_symbol *fsym;
-
-  if (sym->intmod_sym_id == ISOCBINDING_LOC)
-    {
-      if (arg->expr->rank == 0)
-	gfc_conv_expr_reference (se, arg->expr);
-      else
-	{
-	  int f;
-	  /* This is really the actual arg because no formal arglist is
-	     created for C_LOC.	 */
-	  fsym = arg->expr->symtree->n.sym;
-
-	  /* We should want it to do g77 calling convention.  */
-	  f = (fsym != NULL)
-	    && !(fsym->attr.pointer || fsym->attr.allocatable)
-	    && fsym->as->type != AS_ASSUMED_SHAPE;
-	  f = f || !sym->attr.always_explicit;
-
-	  gfc_conv_array_parameter (se, arg->expr, f, NULL, NULL, NULL);
-	}
-
-      /* TODO -- the following two lines shouldn't be necessary, but if
-	 they're removed, a bug is exposed later in the code path.
-	 This workaround was thus introduced, but will have to be
-	 removed; please see PR 35150 for details about the issue.  */
-      se->expr = convert (pvoid_type_node, se->expr);
-      se->expr = gfc_evaluate_now (se->expr, &se->pre);
-
-      return 1;
-    }
-  else if (sym->intmod_sym_id == ISOCBINDING_FUNLOC)
-    {
-      arg->expr->ts.type = sym->ts.u.derived->ts.type;
-      arg->expr->ts.f90_type = sym->ts.u.derived->ts.f90_type;
-      arg->expr->ts.kind = sym->ts.u.derived->ts.kind;
-      gfc_conv_expr_reference (se, arg->expr);
-
-      return 1;
-    }
-  else if (sym->intmod_sym_id == ISOCBINDING_F_POINTER
-	   || sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER)
-    {
-      /* Convert c_f_pointer and c_f_procpointer.  */
-      gfc_se cptrse;
-      gfc_se fptrse;
-      gfc_se shapese;
-      gfc_ss *shape_ss;
-      tree desc, dim, tmp, stride, offset;
-      stmtblock_t body, block;
-      gfc_loopinfo loop;
-
-      gfc_init_se (&cptrse, NULL);
-      gfc_conv_expr (&cptrse, arg->expr);
-      gfc_add_block_to_block (&se->pre, &cptrse.pre);
-      gfc_add_block_to_block (&se->post, &cptrse.post);
-
-      gfc_init_se (&fptrse, NULL);
-      if (arg->next->expr->rank == 0)
-	{
-	  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER
-	      || gfc_is_proc_ptr_comp (arg->next->expr))
-	    fptrse.want_pointer = 1;
-
-	  gfc_conv_expr (&fptrse, arg->next->expr);
-	  gfc_add_block_to_block (&se->pre, &fptrse.pre);
-	  gfc_add_block_to_block (&se->post, &fptrse.post);
-	  if (arg->next->expr->symtree->n.sym->attr.proc_pointer
-	      && arg->next->expr->symtree->n.sym->attr.dummy)
-	    fptrse.expr = build_fold_indirect_ref_loc (input_location,
-						       fptrse.expr);
-     	  se->expr = fold_build2_loc (input_location, MODIFY_EXPR,
-				      TREE_TYPE (fptrse.expr),
-				      fptrse.expr,
-				      fold_convert (TREE_TYPE (fptrse.expr),
-						    cptrse.expr));
-	  return 1;
-	}
-
-      gfc_start_block (&block);
-
-      /* Get the descriptor of the Fortran pointer.  */
-      fptrse.descriptor_only = 1;
-      gfc_conv_expr_descriptor (&fptrse, arg->next->expr);
-      gfc_add_block_to_block (&block, &fptrse.pre);
-      desc = fptrse.expr;
-
-      /* Set data value, dtype, and offset.  */
-      tmp = GFC_TYPE_ARRAY_DATAPTR_TYPE (TREE_TYPE (desc));
-      gfc_conv_descriptor_data_set (&block, desc,
-				    fold_convert (tmp, cptrse.expr));
-      gfc_add_modify (&block, gfc_conv_descriptor_dtype (desc),
-		      gfc_get_dtype (TREE_TYPE (desc)));
-
-      /* Start scalarization of the bounds, using the shape argument.  */
-
-      shape_ss = gfc_walk_expr (arg->next->next->expr);
-      gcc_assert (shape_ss != gfc_ss_terminator);
-      gfc_init_se (&shapese, NULL);
-
-      gfc_init_loopinfo (&loop);
-      gfc_add_ss_to_loop (&loop, shape_ss);
-      gfc_conv_ss_startstride (&loop);
-      gfc_conv_loop_setup (&loop, &arg->next->expr->where);
-      gfc_mark_ss_chain_used (shape_ss, 1);
-
-      gfc_copy_loopinfo_to_se (&shapese, &loop);
-      shapese.ss = shape_ss;
-
-      stride = gfc_create_var (gfc_array_index_type, "stride");
-      offset = gfc_create_var (gfc_array_index_type, "offset");
-      gfc_add_modify (&block, stride, gfc_index_one_node);
-      gfc_add_modify (&block, offset, gfc_index_zero_node);
-
-      /* Loop body.  */
-      gfc_start_scalarized_body (&loop, &body);
-
-      dim = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
-			     loop.loopvar[0], loop.from[0]);
-
-      /* Set bounds and stride. */
-      gfc_conv_descriptor_lbound_set (&body, desc, dim, gfc_index_one_node);
-      gfc_conv_descriptor_stride_set (&body, desc, dim, stride);
-
-      gfc_conv_expr (&shapese, arg->next->next->expr);
-      gfc_add_block_to_block (&body, &shapese.pre);
-      gfc_conv_descriptor_ubound_set (&body, desc, dim, shapese.expr);
-      gfc_add_block_to_block (&body, &shapese.post);
-
-      /* Calculate offset. */
-      gfc_add_modify (&body, offset,
-		      fold_build2_loc (input_location, PLUS_EXPR,
-				       gfc_array_index_type, offset, stride));
-      /* Update stride.  */
-      gfc_add_modify (&body, stride,
-		      fold_build2_loc (input_location, MULT_EXPR,
-				       gfc_array_index_type, stride,
-				       fold_convert (gfc_array_index_type,
-						     shapese.expr)));
-      /* Finish scalarization loop.  */
-      gfc_trans_scalarizing_loops (&loop, &body);
-      gfc_add_block_to_block (&block, &loop.pre);
-      gfc_add_block_to_block (&block, &loop.post);
-      gfc_add_block_to_block (&block, &fptrse.post);
-      gfc_cleanup_loop (&loop);
-
-      gfc_add_modify (&block, offset,
-		      fold_build1_loc (input_location, NEGATE_EXPR,
-				       gfc_array_index_type, offset));
-      gfc_conv_descriptor_offset_set (&block, desc, offset);
-
-      se->expr = gfc_finish_block (&block);
-      return 1;
-    }
-  else if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
-    {
-      gfc_se arg1se;
-      gfc_se arg2se;
-
-      /* Build the addr_expr for the first argument.  The argument is
-	 already an *address* so we don't need to set want_pointer in
-	 the gfc_se.  */
-      gfc_init_se (&arg1se, NULL);
-      gfc_conv_expr (&arg1se, arg->expr);
-      gfc_add_block_to_block (&se->pre, &arg1se.pre);
-      gfc_add_block_to_block (&se->post, &arg1se.post);
-
-      /* See if we were given two arguments.  */
-      if (arg->next == NULL)
-	/* Only given one arg so generate a null and do a
-	   not-equal comparison against the first arg.  */
-	se->expr = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
-				    arg1se.expr,
-				    fold_convert (TREE_TYPE (arg1se.expr),
-						  null_pointer_node));
-      else
-	{
-	  tree eq_expr;
-	  tree not_null_expr;
-
-	  /* Given two arguments so build the arg2se from second arg.  */
-	  gfc_init_se (&arg2se, NULL);
-	  gfc_conv_expr (&arg2se, arg->next->expr);
-	  gfc_add_block_to_block (&se->pre, &arg2se.pre);
-	  gfc_add_block_to_block (&se->post, &arg2se.post);
-
-	  /* Generate test to compare that the two args are equal.  */
-	  eq_expr = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
-				     arg1se.expr, arg2se.expr);
-	  /* Generate test to ensure that the first arg is not null.  */
-	  not_null_expr = fold_build2_loc (input_location, NE_EXPR,
-					   boolean_type_node,
-					   arg1se.expr, null_pointer_node);
-
-	  /* Finally, the generated test must check that both arg1 is not
-	     NULL and that it is equal to the second arg.  */
-	  se->expr = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-				      boolean_type_node,
-				      not_null_expr, eq_expr);
-	}
-
-      return 1;
-    }
-
-  /* Nothing was done.  */
-  return 0;
-}
-
-
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
    Return nonzero, if the call has alternate specifiers.
@@ -3963,10 +3740,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   var = NULL_TREE;
   len = NULL_TREE;
   gfc_clear_ts (&ts);
-
-  if (sym->from_intmod == INTMOD_ISO_C_BINDING
-      && conv_isocbinding_procedure (se, sym, args))
-    return 0;
 
   comp = gfc_get_proc_ptr_comp (expr);
 
@@ -6013,7 +5786,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }
-  else if (expr->ts.type == BT_DERIVED)
+  else if (expr->ts.type == BT_DERIVED && expr->ts.f90_type != BT_VOID)
     {
       if (expr->expr_type != EXPR_STRUCTURE)
 	{
@@ -6224,8 +5997,7 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
      null_pointer_node.  C_PTR and C_FUNPTR are converted to match the
      typespec for the C_PTR and C_FUNPTR symbols, which has already been
      updated to be an integer with a kind equal to the size of a (void *).  */
-  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
-      && expr->ts.u.derived->attr.is_iso_c)
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->ts.f90_type == BT_VOID)
     {
       if (expr->expr_type == EXPR_VARIABLE
 	  && (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR
@@ -6240,9 +6012,9 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
         {
           /* Update the type/kind of the expression to be what the new
              type/kind are for the updated symbols of C_PTR/C_FUNPTR.  */
-          expr->ts.type = expr->ts.u.derived->ts.type;
-          expr->ts.f90_type = expr->ts.u.derived->ts.f90_type;
-          expr->ts.kind = expr->ts.u.derived->ts.kind;
+          expr->ts.type = BT_INTEGER;
+          expr->ts.f90_type = BT_VOID;
+          expr->ts.kind = gfc_index_integer_kind;
         }
     }
 
