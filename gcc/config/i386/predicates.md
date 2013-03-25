@@ -436,6 +436,9 @@
   if (SYMBOL_REF_TLS_MODEL (op))
     return false;
 
+  /* Dll-imported symbols are always external.  */
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES && SYMBOL_REF_DLLIMPORT_P (op))
+    return false;
   if (SYMBOL_REF_LOCAL_P (op))
     return true;
 
