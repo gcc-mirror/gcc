@@ -1493,14 +1493,16 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 }
 
 /* If an indirect edge IE can be turned into a direct one based on KNOWN_VALS
-   (which can contain both constants and binfos) or KNOWN_BINFOS (which can be
-   NULL) return the destination.  */
+   (which can contain both constants and binfos), KNOWN_BINFOS, KNOWN_AGGS or
+   AGG_REPS return the destination.  The latter three can be NULL.  If AGG_REPS
+   is not NULL, KNOWN_AGGS is ignored.  */
 
-tree
-ipa_get_indirect_edge_target (struct cgraph_edge *ie,
-			      vec<tree> known_vals,
-			      vec<tree> known_binfos,
-			      vec<ipa_agg_jump_function_p> known_aggs)
+static tree
+ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
+				vec<tree> known_vals,
+				vec<tree> known_binfos,
+				vec<ipa_agg_jump_function_p> known_aggs,
+				struct ipa_agg_replacement_value *agg_reps)
 {
   int param_index = ie->indirect_info->param_index;
   HOST_WIDE_INT token, anc_offset;
@@ -1516,8 +1518,21 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 
       if (ie->indirect_info->agg_contents)
 	{
-	  if (known_aggs.length ()
-	      > (unsigned int) param_index)
+	  if (agg_reps)
+	    {
+	      t = NULL;
+	      while (agg_reps)
+		{
+		  if (agg_reps->index == param_index
+		      && agg_reps->offset == ie->indirect_info->offset)
+		    {
+		      t = agg_reps->value;
+		      break;
+		    }
+		  agg_reps = agg_reps->next;
+		}
+	    }
+	  else if (known_aggs.length () > (unsigned int) param_index)
 	    {
 	      struct ipa_agg_jump_function *agg;
 	      agg = known_aggs[param_index];
@@ -1572,13 +1587,29 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
     }
 }
 
+
+/* If an indirect edge IE can be turned into a direct one based on KNOWN_VALS
+   (which can contain both constants and binfos), KNOWN_BINFOS (which can be
+   NULL) or KNOWN_AGGS (which also can be NULL) return the destination.  */
+
+tree
+ipa_get_indirect_edge_target (struct cgraph_edge *ie,
+			      vec<tree> known_vals,
+			      vec<tree> known_binfos,
+			      vec<ipa_agg_jump_function_p> known_aggs)
+{
+  return ipa_get_indirect_edge_target_1 (ie, known_vals, known_binfos,
+					 known_aggs, NULL);
+}
+
 /* Calculate devirtualization time bonus for NODE, assuming we know KNOWN_CSTS
    and KNOWN_BINFOS.  */
 
 static int
 devirtualization_time_bonus (struct cgraph_node *node,
 			     vec<tree> known_csts,
-			     vec<tree> known_binfos)
+			     vec<tree> known_binfos,
+			     vec<ipa_agg_jump_function_p> known_aggs)
 {
   struct cgraph_edge *ie;
   int res = 0;
@@ -1590,7 +1621,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       tree target;
 
       target = ipa_get_indirect_edge_target (ie, known_csts, known_binfos,
-					vNULL);
+					     known_aggs);
       if (!target)
 	continue;
 
@@ -1834,7 +1865,8 @@ estimate_local_effects (struct cgraph_node *node)
       cgraph_for_node_and_aliases (node, gather_caller_stats, &stats, false);
       estimate_ipcp_clone_size_and_time (node, known_csts, known_binfos,
 					 known_aggs_ptrs, &size, &time, &hints);
-      time -= devirtualization_time_bonus (node, known_csts, known_binfos);
+      time -= devirtualization_time_bonus (node, known_csts, known_binfos,
+					   known_aggs_ptrs);
       time -= hint_time_bonus (hints);
       time -= removable_params_cost;
       size -= stats.n_calls * removable_params_cost;
@@ -1911,7 +1943,8 @@ estimate_local_effects (struct cgraph_node *node)
 					     known_aggs_ptrs, &size, &time,
 					     &hints);
 	  time_benefit = base_time - time
-	    + devirtualization_time_bonus (node, known_csts, known_binfos)
+	    + devirtualization_time_bonus (node, known_csts, known_binfos,
+					   known_aggs_ptrs)
 	    + hint_time_bonus (hints)
 	    + removable_params_cost + emc;
 
@@ -1973,7 +2006,8 @@ estimate_local_effects (struct cgraph_node *node)
 						 known_aggs_ptrs, &size, &time,
 						 &hints);
 	      time_benefit = base_time - time
-		+ devirtualization_time_bonus (node, known_csts, known_binfos)
+		+ devirtualization_time_bonus (node, known_csts, known_binfos,
+					       known_aggs_ptrs)
 		+ hint_time_bonus (hints);
 	      gcc_checking_assert (size >=0);
 	      if (size == 0)
@@ -2256,7 +2290,8 @@ ipcp_propagate_stage (struct topo_info *topo)
 
 static void
 ipcp_discover_new_direct_edges (struct cgraph_node *node,
-				vec<tree> known_vals)
+				vec<tree> known_vals,
+				struct ipa_agg_replacement_value *aggvals)
 {
   struct cgraph_edge *ie, *next_ie;
   bool found = false;
@@ -2266,7 +2301,8 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
       tree target;
 
       next_ie = ie->next_callee;
-      target = ipa_get_indirect_edge_target (ie, known_vals, vNULL, vNULL);
+      target = ipa_get_indirect_edge_target_1 (ie, known_vals, vNULL, vNULL,
+					       aggvals);
       if (target)
 	{
 	  ipa_make_edge_direct_to_target (ie, target);
@@ -2676,7 +2712,7 @@ create_specialized_node (struct cgraph_node *node,
   new_info->ipcp_orig_node = node;
   new_info->known_vals = known_vals;
 
-  ipcp_discover_new_direct_edges (new_node, known_vals);
+  ipcp_discover_new_direct_edges (new_node, known_vals, aggvals);
 
   callers.release ();
   return new_node;
