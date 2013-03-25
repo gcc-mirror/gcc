@@ -1,3 +1,11 @@
+2013-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*zero_extendsidi2): Merge with
+	*zero_extendsidi2_rex64.  Use x64 and nox64 isa attributes.
+	* config/i386/predicates.md (x86_64_zext_operand): Rename from
+	x86_64_zext_general_operand.  Use nonimmediate_operand on 32bit
+	targets.  Clarify comment.
+
 2013-03-25  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_write_jump_function): Stream simple and aritmetic
