@@ -1,3 +1,8 @@
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	PR target/56720
+	* config/arm/iterators.md (v_cmp_result): New mode attribute.
+	* config/arm/neon.md (vcond<mode><mode>): Handle unordered cases.
+
 2013-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56689

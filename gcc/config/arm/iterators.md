@@ -314,6 +314,12 @@
                                 (V2SF "V2SI") (V4SF  "V4SI")
                                 (DI   "DI")   (V2DI  "V2DI")])
 
+(define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
+				(V4HI "v4hi") (V8HI  "v8hi")
+				(V2SI "v2si") (V4SI  "v4si")
+				(DI   "di")   (V2DI  "v2di")
+				(V2SF "v2si") (V4SF  "v4si")])
+
 ;; Get element type from double-width mode, for operations where we 
 ;; don't care about signedness.
 (define_mode_attr V_if_elem [(V8QI "i8")  (V16QI "i8")
