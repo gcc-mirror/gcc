@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
 // { dg-require-cstdint "" }
 
 // 2009-11-30  Benjamin Kosnik  <benjamin@redhat.com>

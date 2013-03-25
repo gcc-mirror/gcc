@@ -1,3 +1,20 @@
+2013-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* testsuite/18_support/50594.cc: For mingw-targets use only static
+	libstdc++-version.
+	* testsuite/19_diagnostics/error_category/operators/equal.cc
+	* testsuite/19_diagnostics/error_code/cons/1.cc
+	* testsuite/19_diagnostics/error_code/operators/bool.cc
+	* testsuite/19_diagnostics/error_code/operators/equal.cc
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc
+	* testsuite/19_diagnostics/error_condition/cons/1.cc
+	* testsuite/19_diagnostics/error_condition/operators/bool.cc
+	* testsuite/19_diagnostics/error_condition/operators/equal.cc
+	* testsuite/19_diagnostics/error_condition/operators/not_equal.cc
+	* testsuite/23_containers/set/requirements/exception/basic.cc
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc
+	* testsuite/lib/dg-options.exp (dg-additional-options): New option.
+
 2013-03-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/56170

@@ -1,4 +1,5 @@
 // { dg-options "-fwhole-program" }
+// { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
 
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
