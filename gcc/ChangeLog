@@ -1,3 +1,21 @@
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct mem_ref): Use bitmap_head instead
+	of bitmap.
+	(memory_references): Likewise.
+	(outermost_indep_loop, mem_ref_alloc, mark_ref_stored,
+	gather_mem_refs_stmt, record_dep_loop, ref_indep_loop_p_1,
+	ref_indep_loop_p_2, find_refs_for_sm): Adjust.
+	(gather_mem_refs_in_loops): Fold into ...
+	(analyze_memory_references): ... this.  Move initialization
+	to tree_ssa_lim_initialize.
+	(fill_always_executed_in): Rename to ...
+	(fill_always_executed_in_1): ... this.
+	(fill_always_executed_in): Move contains_call computation to
+	this new function from ...
+	(tree_ssa_lim_initialize): ... here.
+	(tree_ssa_lim): Call fill_always_executed_in.
+
 2013-03-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* postreload.c (reload_combine): Fix code detecting returns.
