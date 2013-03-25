@@ -108,7 +108,7 @@ typedef struct mem_ref
      query meta-data.  */
   ao_ref mem;
 
-  bitmap stored;		/* The set of loops in that this memory location
+  bitmap_head stored;		/* The set of loops in that this memory location
 				   is stored to.  */
   vec<vec<mem_ref_loc> > accesses_in_loop;
 				/* The locations of the accesses.  Vector
@@ -117,14 +117,14 @@ typedef struct mem_ref
   /* The following sets are computed on demand.  We keep both set and
      its complement, so that we know whether the information was
      already computed or not.  */
-  bitmap indep_loop;		/* The set of loops in that the memory
+  bitmap_head indep_loop;	/* The set of loops in that the memory
 				   reference is independent, meaning:
 				   If it is stored in the loop, this store
 				     is independent on all other loads and
 				     stores.
 				   If it is only loaded, then it is independent
 				     on all stores in the loop.  */
-  bitmap dep_loop;		/* The complement of INDEP_LOOP.  */
+  bitmap_head dep_loop;		/* The complement of INDEP_LOOP.  */
 } *mem_ref_p;
 
 /* We use two bits per loop in the ref->{in,}dep_loop bitmaps, the first
@@ -146,13 +146,13 @@ static struct
   vec<mem_ref_p> refs_list;
 
   /* The set of memory references accessed in each loop.  */
-  vec<bitmap> refs_in_loop;
+  vec<bitmap_head> refs_in_loop;
 
   /* The set of memory references stored in each loop.  */
-  vec<bitmap> refs_stored_in_loop;
+  vec<bitmap_head> refs_stored_in_loop;
 
   /* The set of memory references stored in each loop, including subloops .  */
-  vec<bitmap> all_refs_stored_in_loop;
+  vec<bitmap_head> all_refs_stored_in_loop;
 
   /* Cache for expanding memory addresses.  */
   struct pointer_map_t *ttae_cache;
@@ -584,13 +584,13 @@ outermost_indep_loop (struct loop *outer, struct loop *loop, mem_ref_p ref)
 {
   struct loop *aloop;
 
-  if (bitmap_bit_p (ref->stored, loop->num))
+  if (bitmap_bit_p (&ref->stored, loop->num))
     return NULL;
 
   for (aloop = outer;
        aloop != loop;
        aloop = superloop_at_depth (loop, loop_depth (aloop) + 1))
-    if (!bitmap_bit_p (ref->stored, aloop->num)
+    if (!bitmap_bit_p (&ref->stored, aloop->num)
 	&& ref_indep_loop_p (aloop, ref))
       return aloop;
 
@@ -1457,9 +1457,9 @@ mem_ref_alloc (tree mem, unsigned hash, unsigned id)
   ao_ref_init (&ref->mem, mem);
   ref->id = id;
   ref->hash = hash;
-  ref->stored = BITMAP_ALLOC (&lim_bitmap_obstack);
-  ref->indep_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
-  ref->dep_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
+  bitmap_initialize (&ref->stored, &lim_bitmap_obstack);
+  bitmap_initialize (&ref->indep_loop, &lim_bitmap_obstack);
+  bitmap_initialize (&ref->dep_loop, &lim_bitmap_obstack);
   ref->accesses_in_loop.create (0);
 
   return ref;
@@ -1487,11 +1487,9 @@ record_mem_ref_loc (mem_ref_p ref, struct loop *loop, gimple stmt, tree *loc)
 static void
 mark_ref_stored (mem_ref_p ref, struct loop *loop)
 {
-  for (;
-       loop != current_loops->tree_root
-       && !bitmap_bit_p (ref->stored, loop->num);
-       loop = loop_outer (loop))
-    bitmap_set_bit (ref->stored, loop->num);
+  while (loop != current_loops->tree_root
+	 && bitmap_set_bit (&ref->stored, loop->num))
+    loop = loop_outer (loop);
 }
 
 /* Gathers memory references in statement STMT in LOOP, storing the
@@ -1552,10 +1550,10 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
 
       record_mem_ref_loc (ref, loop, stmt, mem);
     }
-  bitmap_set_bit (memory_accesses.refs_in_loop[loop->num], ref->id);
+  bitmap_set_bit (&memory_accesses.refs_in_loop[loop->num], ref->id);
   if (is_stored)
     {
-      bitmap_set_bit (memory_accesses.refs_stored_in_loop[loop->num], ref->id);
+      bitmap_set_bit (&memory_accesses.refs_stored_in_loop[loop->num], ref->id);
       mark_ref_stored (ref, loop);
     }
   return;
@@ -1580,7 +1578,7 @@ sort_bbs_in_loop_postorder_cmp (const void *bb1_, const void *bb2_)
 /* Gathers memory references in loops.  */
 
 static void
-gather_mem_refs_in_loops (void)
+analyze_memory_references (void)
 {
   gimple_stmt_iterator bsi;
   basic_block bb, *bbs;
@@ -1621,8 +1619,8 @@ gather_mem_refs_in_loops (void)
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       /* Finalize the overall touched references (including subloops).  */
-      bitmap_ior_into (memory_accesses.all_refs_stored_in_loop[loop->num],
-		       memory_accesses.refs_stored_in_loop[loop->num]);
+      bitmap_ior_into (&memory_accesses.all_refs_stored_in_loop[loop->num],
+		       &memory_accesses.refs_stored_in_loop[loop->num]);
 
       /* Propagate the information about accessed memory references up
 	 the loop hierarchy.  */
@@ -1630,42 +1628,9 @@ gather_mem_refs_in_loops (void)
       if (outer == current_loops->tree_root)
 	continue;
 
-      bitmap_ior_into (memory_accesses.all_refs_stored_in_loop[outer->num],
-		       memory_accesses.all_refs_stored_in_loop[loop->num]);
+      bitmap_ior_into (&memory_accesses.all_refs_stored_in_loop[outer->num],
+		       &memory_accesses.all_refs_stored_in_loop[loop->num]);
     }
-}
-
-/* Gathers information about memory accesses in the loops.  */
-
-static void
-analyze_memory_references (void)
-{
-  unsigned i;
-  bitmap empty;
-
-  memory_accesses.refs = htab_create (100, memref_hash, memref_eq, NULL);
-  memory_accesses.refs_list.create (100);
-  /* Allocate a special, unanalyzable mem-ref with ID zero.  */
-  memory_accesses.refs_list.quick_push
-    (mem_ref_alloc (error_mark_node, 0, UNANALYZABLE_MEM_ID));
-
-  memory_accesses.refs_in_loop.create (number_of_loops ());
-  memory_accesses.refs_stored_in_loop.create (number_of_loops ());
-  memory_accesses.all_refs_stored_in_loop.create (number_of_loops ());
-
-  for (i = 0; i < number_of_loops (); i++)
-    {
-      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
-      memory_accesses.refs_in_loop.quick_push (empty);
-      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
-      memory_accesses.refs_stored_in_loop.quick_push (empty);
-      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
-      memory_accesses.all_refs_stored_in_loop.quick_push (empty);
-    }
-
-  memory_accesses.ttae_cache = NULL;
-
-  gather_mem_refs_in_loops ();
 }
 
 /* Returns true if MEM1 and MEM2 may alias.  TTAE_CACHE is used as a cache in
@@ -2231,7 +2196,7 @@ record_dep_loop (struct loop *loop, mem_ref_p ref, bool stored_p)
   /* We can propagate dependent-in-loop bits up the loop
      hierarchy to all outer loops.  */
   while (loop != current_loops->tree_root
-	 && bitmap_set_bit (ref->dep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
+	 && bitmap_set_bit (&ref->dep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
     loop = loop_outer (loop);
 }
 
@@ -2247,9 +2212,9 @@ ref_indep_loop_p_1 (struct loop *loop, mem_ref_p ref, bool stored_p)
   mem_ref_p aref;
 
   if (stored_p)
-    refs_to_check = memory_accesses.refs_in_loop[loop->num];
+    refs_to_check = &memory_accesses.refs_in_loop[loop->num];
   else
-    refs_to_check = memory_accesses.refs_stored_in_loop[loop->num];
+    refs_to_check = &memory_accesses.refs_stored_in_loop[loop->num];
 
   if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
     return false;
@@ -2270,11 +2235,11 @@ ref_indep_loop_p_1 (struct loop *loop, mem_ref_p ref, bool stored_p)
 static bool
 ref_indep_loop_p_2 (struct loop *loop, mem_ref_p ref, bool stored_p)
 {
-  stored_p |= bitmap_bit_p (ref->stored, loop->num);
+  stored_p |= bitmap_bit_p (&ref->stored, loop->num);
 
-  if (bitmap_bit_p (ref->indep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
+  if (bitmap_bit_p (&ref->indep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
     return true;
-  if (bitmap_bit_p (ref->dep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
+  if (bitmap_bit_p (&ref->dep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
     return false;
 
   struct loop *inner = loop->inner;
@@ -2294,12 +2259,12 @@ ref_indep_loop_p_2 (struct loop *loop, mem_ref_p ref, bool stored_p)
   /* Record the computed result in the cache.  */
   if (indep_p)
     {
-      if (bitmap_set_bit (ref->indep_loop, LOOP_DEP_BIT (loop->num, stored_p))
+      if (bitmap_set_bit (&ref->indep_loop, LOOP_DEP_BIT (loop->num, stored_p))
 	  && stored_p)
 	{
 	  /* If it's independend against all refs then it's independent
 	     against stores, too.  */
-	  bitmap_set_bit (ref->indep_loop, LOOP_DEP_BIT (loop->num, false));
+	  bitmap_set_bit (&ref->indep_loop, LOOP_DEP_BIT (loop->num, false));
 	}
     }
   else
@@ -2373,7 +2338,7 @@ can_sm_ref_p (struct loop *loop, mem_ref_p ref)
 static void
 find_refs_for_sm (struct loop *loop, bitmap sm_executed, bitmap refs_to_sm)
 {
-  bitmap refs = memory_accesses.all_refs_stored_in_loop[loop->num];
+  bitmap refs = &memory_accesses.all_refs_stored_in_loop[loop->num];
   unsigned i;
   bitmap_iterator bi;
   mem_ref_p ref;
@@ -2451,7 +2416,7 @@ store_motion (void)
    blocks that contain a nonpure call.  */
 
 static void
-fill_always_executed_in (struct loop *loop, sbitmap contains_call)
+fill_always_executed_in_1 (struct loop *loop, sbitmap contains_call)
 {
   basic_block bb = NULL, *bbs, last = NULL;
   unsigned i;
@@ -2510,45 +2475,80 @@ fill_always_executed_in (struct loop *loop, sbitmap contains_call)
     }
 
   for (loop = loop->inner; loop; loop = loop->next)
-    fill_always_executed_in (loop, contains_call);
+    fill_always_executed_in_1 (loop, contains_call);
 }
+
+/* Fills ALWAYS_EXECUTED_IN information for basic blocks, i.e.
+   for each such basic block bb records the outermost loop for that execution
+   of its header implies execution of bb.  */
+
+static void
+fill_always_executed_in (void)
+{
+  sbitmap contains_call = sbitmap_alloc (last_basic_block);
+  basic_block bb;
+  struct loop *loop;
+
+  bitmap_clear (contains_call);
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  if (nonpure_call_p (gsi_stmt (gsi)))
+	    break;
+	}
+
+      if (!gsi_end_p (gsi))
+	bitmap_set_bit (contains_call, bb->index);
+    }
+
+  for (loop = current_loops->tree_root->inner; loop; loop = loop->next)
+    fill_always_executed_in_1 (loop, contains_call);
+
+  sbitmap_free (contains_call);
+}
+
 
 /* Compute the global information needed by the loop invariant motion pass.  */
 
 static void
 tree_ssa_lim_initialize (void)
 {
-  sbitmap contains_call = sbitmap_alloc (last_basic_block);
-  gimple_stmt_iterator bsi;
-  struct loop *loop;
-  basic_block bb;
+  unsigned i;
 
   bitmap_obstack_initialize (&lim_bitmap_obstack);
-
-  bitmap_clear (contains_call);
-  FOR_EACH_BB (bb)
-    {
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	{
-	  if (nonpure_call_p (gsi_stmt (bsi)))
-	    break;
-	}
-
-      if (!gsi_end_p (bsi))
-	bitmap_set_bit (contains_call, bb->index);
-    }
-
-  for (loop = current_loops->tree_root->inner; loop; loop = loop->next)
-    fill_always_executed_in (loop, contains_call);
-
-  sbitmap_free (contains_call);
-
   lim_aux_data_map = pointer_map_create ();
 
   if (flag_tm)
     compute_transaction_bits ();
 
   alloc_aux_for_edges (0);
+
+  memory_accesses.refs = htab_create (100, memref_hash, memref_eq, NULL);
+  memory_accesses.refs_list.create (100);
+  /* Allocate a special, unanalyzable mem-ref with ID zero.  */
+  memory_accesses.refs_list.quick_push
+    (mem_ref_alloc (error_mark_node, 0, UNANALYZABLE_MEM_ID));
+
+  memory_accesses.refs_in_loop.create (number_of_loops ());
+  memory_accesses.refs_in_loop.quick_grow (number_of_loops ());
+  memory_accesses.refs_stored_in_loop.create (number_of_loops ());
+  memory_accesses.refs_stored_in_loop.quick_grow (number_of_loops ());
+  memory_accesses.all_refs_stored_in_loop.create (number_of_loops ());
+  memory_accesses.all_refs_stored_in_loop.quick_grow (number_of_loops ());
+
+  for (i = 0; i < number_of_loops (); i++)
+    {
+      bitmap_initialize (&memory_accesses.refs_in_loop[i],
+			 &lim_bitmap_obstack);
+      bitmap_initialize (&memory_accesses.refs_stored_in_loop[i],
+			 &lim_bitmap_obstack);
+      bitmap_initialize (&memory_accesses.all_refs_stored_in_loop[i],
+			 &lim_bitmap_obstack);
+    }
+
+  memory_accesses.ttae_cache = NULL;
 }
 
 /* Cleans up after the invariant motion pass.  */
@@ -2594,6 +2594,9 @@ tree_ssa_lim (void)
 
   /* Gathers information about memory accesses in the loops.  */
   analyze_memory_references ();
+
+  /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
+  fill_always_executed_in ();
 
   /* For each statement determine the outermost loop in that it is
      invariant and cost for computing the invariant.  */
