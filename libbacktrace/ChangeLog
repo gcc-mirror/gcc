@@ -1,3 +1,8 @@
+2013-03-25  Ian Lance Taylor  <iant@google.com>
+
+	* alloc.c: #include <sys/types.h>.
+	* mmap.c: Likewise.
+
 2013-03-22  Release Manager
 
 	* GCC 4.8.0 released.
