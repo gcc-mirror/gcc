@@ -1,3 +1,8 @@
+2013-03-25  Kai Tietz  <ktietz@redhat.com>
+
+        * config/i386/predicates.md (local_symbolic_operand): Interpret
+        dll-imported symbols as none-local.
+
 2013-03-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop-im.c (struct depend): Remove.
