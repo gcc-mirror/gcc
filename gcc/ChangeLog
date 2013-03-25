@@ -1,5 +1,9 @@
 2013-03-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* postreload.c (reload_combine): Fix code detecting returns.
+
+2013-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* function.c (emit_use_return_register_into_block): On cc0 targets,
 	do not emit the sequence between cc0 setter and user.
 
