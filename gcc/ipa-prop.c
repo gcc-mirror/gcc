@@ -3277,12 +3277,19 @@ ipa_write_jump_function (struct output_block *ob,
       stream_write_tree (ob, jump_func->value.constant, true);
       break;
     case IPA_JF_PASS_THROUGH:
-      stream_write_tree (ob, jump_func->value.pass_through.operand, true);
-      streamer_write_uhwi (ob, jump_func->value.pass_through.formal_id);
       streamer_write_uhwi (ob, jump_func->value.pass_through.operation);
-      bp = bitpack_create (ob->main_stream);
-      bp_pack_value (&bp, jump_func->value.pass_through.agg_preserved, 1);
-      streamer_write_bitpack (&bp);
+      if (jump_func->value.pass_through.operation == NOP_EXPR)
+	{
+	  streamer_write_uhwi (ob, jump_func->value.pass_through.formal_id);
+	  bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, jump_func->value.pass_through.agg_preserved, 1);
+	  streamer_write_bitpack (&bp);
+	}
+      else
+	{
+	  stream_write_tree (ob, jump_func->value.pass_through.operand, true);
+	  streamer_write_uhwi (ob, jump_func->value.pass_through.formal_id);
+	}
       break;
     case IPA_JF_ANCESTOR:
       streamer_write_uhwi (ob, jump_func->value.ancestor.offset);
@@ -3317,45 +3324,63 @@ ipa_read_jump_function (struct lto_input_block *ib,
 			struct ipa_jump_func *jump_func,
 			struct data_in *data_in)
 {
-  struct bitpack_d bp;
+  enum jump_func_type jftype;
+  enum tree_code operation;
   int i, count;
 
-  jump_func->type = (enum jump_func_type) streamer_read_uhwi (ib);
-  switch (jump_func->type)
+  jftype = (enum jump_func_type) streamer_read_uhwi (ib);
+  switch (jftype)
     {
     case IPA_JF_UNKNOWN:
+      jump_func->type = IPA_JF_UNKNOWN;
       break;
     case IPA_JF_KNOWN_TYPE:
-      jump_func->value.known_type.offset = streamer_read_uhwi (ib);
-      jump_func->value.known_type.base_type = stream_read_tree (ib, data_in);
-      jump_func->value.known_type.component_type = stream_read_tree (ib,
-								     data_in);
-      break;
+      {
+	HOST_WIDE_INT offset = streamer_read_uhwi (ib);
+	tree base_type = stream_read_tree (ib, data_in);
+	tree component_type = stream_read_tree (ib, data_in);
+
+	ipa_set_jf_known_type (jump_func, offset, base_type, component_type);
+	break;
+      }
     case IPA_JF_CONST:
-      jump_func->value.constant = stream_read_tree (ib, data_in);
+      ipa_set_jf_constant (jump_func, stream_read_tree (ib, data_in));
       break;
     case IPA_JF_PASS_THROUGH:
-      jump_func->value.pass_through.operand = stream_read_tree (ib, data_in);
-      jump_func->value.pass_through.formal_id = streamer_read_uhwi (ib);
-      jump_func->value.pass_through.operation
-	= (enum tree_code) streamer_read_uhwi (ib);
-      bp = streamer_read_bitpack (ib);
-      jump_func->value.pass_through.agg_preserved = bp_unpack_value (&bp, 1);
+      operation = (enum tree_code) streamer_read_uhwi (ib);
+      if (operation == NOP_EXPR)
+	{
+	  int formal_id =  streamer_read_uhwi (ib);
+	  struct bitpack_d bp = streamer_read_bitpack (ib);
+	  bool agg_preserved = bp_unpack_value (&bp, 1);
+	  ipa_set_jf_simple_pass_through (jump_func, formal_id, agg_preserved);
+	}
+      else
+	{
+	  tree operand = stream_read_tree (ib, data_in);
+	  int formal_id =  streamer_read_uhwi (ib);
+	  ipa_set_jf_arith_pass_through (jump_func, formal_id, operand,
+					 operation);
+	}
       break;
     case IPA_JF_ANCESTOR:
-      jump_func->value.ancestor.offset = streamer_read_uhwi (ib);
-      jump_func->value.ancestor.type = stream_read_tree (ib, data_in);
-      jump_func->value.ancestor.formal_id = streamer_read_uhwi (ib);
-      bp = streamer_read_bitpack (ib);
-      jump_func->value.ancestor.agg_preserved = bp_unpack_value (&bp, 1);
-      break;
+      {
+	HOST_WIDE_INT offset = streamer_read_uhwi (ib);
+	tree type = stream_read_tree (ib, data_in);
+	int formal_id = streamer_read_uhwi (ib);
+	struct bitpack_d bp = streamer_read_bitpack (ib);
+	bool agg_preserved = bp_unpack_value (&bp, 1);
+
+	ipa_set_ancestor_jf (jump_func, offset, type, formal_id, agg_preserved);
+	break;
+      }
     }
 
   count = streamer_read_uhwi (ib);
   vec_alloc (jump_func->agg.items, count);
   if (count)
     {
-      bp = streamer_read_bitpack (ib);
+      struct bitpack_d bp = streamer_read_bitpack (ib);
       jump_func->agg.by_ref = bp_unpack_value (&bp, 1);
     }
   for (i = 0; i < count; i++)

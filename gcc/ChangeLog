@@ -1,5 +1,12 @@
 2013-03-25  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.c (ipa_write_jump_function): Stream simple and aritmetic
+	pass-through jump functions differently.
+	(ipa_read_jump_function): Likewise.  Also use setter functions to set
+	up jump functions.
+
+2013-03-25  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-cp.c (ipa_get_indirect_edge_target): Renamed to
 	ipa_get_indirect_edge_target_1, added parameter agg_reps and ability to
 	process it.
