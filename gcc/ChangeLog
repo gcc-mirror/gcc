@@ -1,5 +1,13 @@
 2013-03-25  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-loop-im.c (struct depend): Remove.
+	(struct lim_aux_data): Make depends a vec of gimples.
+	(free_lim_aux_data): Adjust.
+	(add_dependency): Likewise.
+	(set_level): Likewise.
+
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/56434
 	* calls.c (expand_call): Use MALLOC_ABI_ALIGNMENT to annotate
 	the pointer returned by calls with ECF_MALLOC set.

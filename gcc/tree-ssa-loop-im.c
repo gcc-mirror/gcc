@@ -58,15 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 	 something;
      }  */
 
-/* A type for the list of statements that have to be moved in order to be able
-   to hoist an invariant computation.  */
-
-struct depend
-{
-  gimple stmt;
-  struct depend *next;
-};
-
 /* The auxiliary data kept for each statement.  */
 
 struct lim_aux_data
@@ -85,11 +76,11 @@ struct lim_aux_data
   unsigned cost;		/* Cost of the computation performed by the
 				   statement.  */
 
-  struct depend *depends;	/* List of statements that must be also hoisted
-				   out of the loop when this statement is
-				   hoisted; i.e. those that define the operands
-				   of the statement and are inside of the
-				   MAX_LOOP loop.  */
+  vec<gimple> depends;		/* Vector of statements that must be also
+				   hoisted out of the loop when this statement
+				   is hoisted; i.e. those that define the
+				   operands of the statement and are inside of
+				   the MAX_LOOP loop.  */
 };
 
 /* Maps statements to their lim_aux_data.  */
@@ -210,13 +201,7 @@ get_lim_data (gimple stmt)
 static void
 free_lim_aux_data (struct lim_aux_data *data)
 {
-  struct depend *dep, *next;
-
-  for (dep = data->depends; dep; dep = next)
-    {
-      next = dep->next;
-      free (dep);
-    }
+  data->depends.release();
   free (data);
 }
 
@@ -481,7 +466,6 @@ add_dependency (tree def, struct lim_aux_data *data, struct loop *loop,
   gimple def_stmt = SSA_NAME_DEF_STMT (def);
   basic_block def_bb = gimple_bb (def_stmt);
   struct loop *max_loop;
-  struct depend *dep;
   struct lim_aux_data *def_data;
 
   if (!def_bb)
@@ -506,10 +490,7 @@ add_dependency (tree def, struct lim_aux_data *data, struct loop *loop,
       && def_bb->loop_father == loop)
     data->cost += def_data->cost;
 
-  dep = XNEW (struct depend);
-  dep->stmt = def_stmt;
-  dep->next = data->depends;
-  data->depends = dep;
+  data->depends.safe_push (def_stmt);
 
   return true;
 }
@@ -872,8 +853,9 @@ static void
 set_level (gimple stmt, struct loop *orig_loop, struct loop *level)
 {
   struct loop *stmt_loop = gimple_bb (stmt)->loop_father;
-  struct depend *dep;
   struct lim_aux_data *lim_data;
+  gimple dep_stmt;
+  unsigned i;
 
   stmt_loop = find_common_loop (orig_loop, stmt_loop);
   lim_data = get_lim_data (stmt);
@@ -887,8 +869,8 @@ set_level (gimple stmt, struct loop *orig_loop, struct loop *level)
 	      || flow_loop_nested_p (lim_data->max_loop, level));
 
   lim_data->tgt_loop = level;
-  for (dep = lim_data->depends; dep; dep = dep->next)
-    set_level (dep->stmt, orig_loop, level);
+  FOR_EACH_VEC_ELT (lim_data->depends, i, dep_stmt)
+    set_level (dep_stmt, orig_loop, level);
 }
 
 /* Determines an outermost loop from that we want to hoist the statement STMT.
