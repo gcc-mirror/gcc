@@ -1,3 +1,8 @@
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56694
+	* g++.dg/torture/pr56694.C: New testcase.
+
 2013-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

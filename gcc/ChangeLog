@@ -1,3 +1,9 @@
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56694
+	* tree-eh.c (lower_eh_must_not_throw): Strip BLOCKs from the
+	must-not-throw stmt location.
+
 2012-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.8.1.
