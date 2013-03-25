@@ -213,7 +213,8 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
   unsigned int i;
   const char *fillcolors[3] = { "grey88", "grey77", "grey66" };
 
-  if (loop->latch != EXIT_BLOCK_PTR)
+  if (loop->header != NULL
+      && loop->latch != EXIT_BLOCK_PTR)
     pp_printf (pp,
 	       "\tsubgraph cluster_%d_%d {\n"
 	       "\tstyle=\"filled\";\n"
@@ -228,6 +229,9 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
 
   for (struct loop *inner = loop->inner; inner; inner = inner->next)
     draw_cfg_nodes_for_loop (pp, funcdef_no, inner);
+
+  if (loop->header == NULL)
+    return;
 
   if (loop->latch == EXIT_BLOCK_PTR)
     body = get_loop_body (loop);

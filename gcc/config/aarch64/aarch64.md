@@ -844,8 +844,8 @@
 	(match_operand:GPI 2 "const_int_operand" "n"))]
   "INTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
    && INTVAL (operands[1]) % 16 == 0
-   && INTVAL (operands[2]) <= 0xffff"
-  "movk\\t%<w>0, %2, lsl %1"
+   && UINTVAL (operands[2]) <= 0xffff"
+  "movk\\t%<w>0, %X2, lsl %1"
   [(set_attr "v8type" "movk")
    (set_attr "mode" "<MODE>")]
 )
@@ -1790,6 +1790,34 @@
    (set_attr "mode" "SI")]
 )
 
+(define_insn "*sub<mode>3_carryin"
+  [(set
+    (match_operand:GPI 0 "register_operand" "=r")
+    (minus:GPI (minus:GPI
+		(match_operand:GPI 1 "register_operand" "r")
+		(ltu:GPI (reg:CC CC_REGNUM) (const_int 0)))
+	       (match_operand:GPI 2 "register_operand" "r")))]
+   ""
+   "sbc\\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "v8type" "adc")
+   (set_attr "mode" "<MODE>")]
+)
+
+;; zero_extend version of the above
+(define_insn "*subsi3_carryin_uxtw"
+  [(set
+    (match_operand:DI 0 "register_operand" "=r")
+    (zero_extend:DI
+     (minus:SI (minus:SI
+		(match_operand:SI 1 "register_operand" "r")
+		(ltu:SI (reg:CC CC_REGNUM) (const_int 0)))
+	       (match_operand:SI 2 "register_operand" "r"))))]
+   ""
+   "sbc\\t%w0, %w1, %w2"
+  [(set_attr "v8type" "adc")
+   (set_attr "mode" "SI")]
+)
+
 (define_insn "*sub_uxt<mode>_multp2"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(minus:GPI (match_operand:GPI 4 "register_operand" "r")
@@ -2701,6 +2729,62 @@
 }
   [(set_attr "v8type" "bfm")
    (set_attr "mode" "<MODE>")]
+)
+
+(define_insn "*extr<mode>5_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(ior:GPI (ashift:GPI (match_operand:GPI 1 "register_operand" "r")
+			     (match_operand 3 "const_int_operand" "n"))
+		 (lshiftrt:GPI (match_operand:GPI 2 "register_operand" "r")
+			       (match_operand 4 "const_int_operand" "n"))))]
+  "UINTVAL (operands[3]) < GET_MODE_BITSIZE (<MODE>mode) &&
+   (UINTVAL (operands[3]) + UINTVAL (operands[4]) == GET_MODE_BITSIZE (<MODE>mode))"
+  "extr\\t%<w>0, %<w>1, %<w>2, %4"
+  [(set_attr "v8type" "shift")
+   (set_attr "mode" "<MODE>")]
+)
+
+;; zero_extend version of the above
+(define_insn "*extrsi5_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (ior:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+			    (match_operand 3 "const_int_operand" "n"))
+		 (lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
+			      (match_operand 4 "const_int_operand" "n")))))]
+  "UINTVAL (operands[3]) < 32 &&
+   (UINTVAL (operands[3]) + UINTVAL (operands[4]) == 32)"
+  "extr\\t%w0, %w1, %w2, %4"
+  [(set_attr "v8type" "shift")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "*ror<mode>3_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(rotate:GPI (match_operand:GPI 1 "register_operand" "r")
+		    (match_operand 2 "const_int_operand" "n")))]
+  "UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+{
+  operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "ror\\t%<w>0, %<w>1, %3";
+}
+  [(set_attr "v8type" "shift")
+   (set_attr "mode" "<MODE>")]
+)
+
+;; zero_extend version of the above
+(define_insn "*rorsi3_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (rotate:SI (match_operand:SI 1 "register_operand" "r")
+		    (match_operand 2 "const_int_operand" "n"))))]
+  "UINTVAL (operands[2]) < 32"
+{
+  operands[3] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "ror\\t%w0, %w1, %3";
+}
+  [(set_attr "v8type" "shift")
+   (set_attr "mode" "SI")]
 )
 
 (define_insn "*<ANY_EXTEND:optab><GPI:mode>_ashl<SHORT:mode>"

@@ -180,7 +180,7 @@ and warnings}.
 -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
 -fmax-array-constructor=@var{n} -fmax-stack-var-size=@var{n}
 -fno-align-commons @gol
--fno-automatic -fno-protect-parens -fno-underscoring -fno-whole-file @gol
+-fno-automatic -fno-protect-parens -fno-underscoring @gol
 -fsecond-underscore -fpack-derived -frealloc-lhs -frecursive @gol
 -frepack-arrays -fshort-enums -fstack-arrays
 }
@@ -1290,22 +1290,6 @@ issues so that debugging always involves using the names as they appear
 in the source, even if the names as seen by the linker are mangled to
 prevent accidental linking between procedures with incompatible
 interfaces.
-
-@item -fno-whole-file
-@opindex @code{fno-whole-file}
-This flag causes the compiler to resolve and translate each procedure in
-a file separately. 
-
-By default, the whole file is parsed and placed in a single front-end tree.
-During resolution, in addition to all the usual checks and fixups, references
-to external procedures that are in the same file effect resolution of
-that procedure, if not already done, and a check of the interfaces.  The
-dependences are resolved by changing the order in which the file is
-translated into the backend tree.  Thus, a procedure that is referenced
-is translated before the reference and the duplication of backend tree
-declarations eliminated.
-
-The @option{-fno-whole-file} option is deprecated and may lead to wrong code.
 
 @item -fsecond-underscore
 @opindex @code{fsecond-underscore}

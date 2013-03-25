@@ -327,6 +327,12 @@
 #endif
 
 
+/* Define if your assembler supports interunit movq mnemonic. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_INTERUNIT_MOVQ
+#endif
+
+
 /* Define if your assembler supports the .quad directive. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_QUAD
@@ -1034,6 +1040,12 @@
 #endif
 
 
+/* Define if your assembler supports the .set micromips directive */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_MICROMIPS
+#endif
+
+
 /* Define if your assembler supports .nsubspa comdat option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_NSUBSPA_COMDAT
@@ -1208,6 +1220,12 @@
 /* Define if your linker supports --demangle option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_DEMANGLE
+#endif
+
+
+/* Define 0/1 if your linker supports CIE v3 in .eh_frame. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_EH_FRAME_CIEV3
 #endif
 
 

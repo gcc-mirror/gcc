@@ -1,3 +1,7 @@
+2013-03-22  Kai Tietz  <ktietz@redhat.com>
+
+	* lang.c (put_decl_node): Don't iterate over end_params_node.
+
 2013-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.

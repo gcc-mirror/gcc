@@ -419,7 +419,8 @@ put_decl_node (tree node, int verbosity)
 	      if (TREE_CODE (TREE_TYPE (node)) == METHOD_TYPE)
 		args = TREE_CHAIN (args);
 	      put_decl_string ("(", 1);
-	      for ( ; args != end_params_node;  args = TREE_CHAIN (args), i++)
+	      for ( ; args != NULL_TREE && args != end_params_node;
+		   args = TREE_CHAIN (args), i++)
 		{
 		  if (i > 0)
 		    put_decl_string (",", 1);

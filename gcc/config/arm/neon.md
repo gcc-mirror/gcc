@@ -487,7 +487,7 @@
   [(set_attr "neon_type" "neon_int_1,*,*,neon_int_1,*,*,*")
    (set_attr "conds" "*,clob,clob,*,clob,clob,clob")
    (set_attr "length" "*,8,8,*,8,8,8")
-   (set_attr "arch" "nota8,*,*,onlya8,*,*,*")]
+   (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits,*,*,*")]
 )
 
 (define_insn "*sub<mode>3_neon"
@@ -524,7 +524,7 @@
   [(set_attr "neon_type" "neon_int_2,*,*,*,neon_int_2")
    (set_attr "conds" "*,clob,clob,clob,*")
    (set_attr "length" "*,8,8,8,*")
-   (set_attr "arch" "nota8,*,*,*,onlya8")]
+   (set_attr "arch" "neon_for_64bits,*,*,*,avoid_neon_for_64bits")]
 )
 
 (define_insn "*mul<mode>3_neon"
@@ -699,7 +699,7 @@
 }
   [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*,neon_int_1,neon_int_1")
    (set_attr "length" "*,*,8,8,*,*")
-   (set_attr "arch" "nota8,nota8,*,*,onlya8,onlya8")]
+   (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")]
 )
 
 ;; The concrete forms of the Neon immediate-logic instructions are vbic and
@@ -744,7 +744,7 @@
 }
   [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*,neon_int_1,neon_int_1")
    (set_attr "length" "*,*,8,8,*,*")
-   (set_attr "arch" "nota8,nota8,*,*,onlya8,onlya8")]
+   (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")]
 )
 
 (define_insn "orn<mode>3_neon"
@@ -840,7 +840,7 @@
    veor\t%P0, %P1, %P2"
   [(set_attr "neon_type" "neon_int_1,*,*,neon_int_1")
    (set_attr "length" "*,8,8,*")
-   (set_attr "arch" "nota8,*,*,onlya8")]
+   (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits")]
 )
 
 (define_insn "one_cmpl<mode>2"
@@ -1162,7 +1162,7 @@
       }
     DONE;
   }"
-  [(set_attr "arch" "nota8,nota8,*,*,onlya8,onlya8")
+  [(set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")
    (set_attr "opt" "*,*,speed,speed,*,*")]
 )
 
@@ -1263,7 +1263,7 @@
 
     DONE;
   }"
-  [(set_attr "arch" "nota8,nota8,*,*,onlya8,onlya8")
+  [(set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")
    (set_attr "opt" "*,*,speed,speed,*,*")]
 )
 

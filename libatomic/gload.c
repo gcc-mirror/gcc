@@ -32,7 +32,7 @@
 # define EXACT_INLINE(N, DEST, SRC, DONE)			\
   if (C2(HAVE_ATOMIC_LDST_,N))					\
     {								\
-      DEST = __atomic_load_n (SRC, smodel);			\
+      DEST = __atomic_load_n (SRC, __ATOMIC_SEQ_CST);		\
       DONE;							\
     }
 #else

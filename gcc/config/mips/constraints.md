@@ -170,22 +170,6 @@
   (and (match_operand 0 "call_insn_operand")
        (match_test "CONSTANT_P (op)")))
 
-(define_constraint "T"
-  "@internal
-   A constant @code{move_operand} that cannot be safely loaded into @code{$25}
-   using @code{la}."
-  (and (match_operand 0 "move_operand")
-       (match_test "CONSTANT_P (op)")
-       (match_test "mips_dangerous_for_la25_p (op)")))
-
-(define_constraint "U"
-  "@internal
-   A constant @code{move_operand} that can be safely loaded into @code{$25}
-   using @code{la}."
-  (and (match_operand 0 "move_operand")
-       (match_test "CONSTANT_P (op)")
-       (not (match_test "mips_dangerous_for_la25_p (op)"))))
-
 (define_memory_constraint "W"
   "@internal
    A memory address based on a member of @code{BASE_REG_CLASS}.  This is
@@ -220,6 +204,22 @@
    "@internal"
    (match_operand 0 "qi_mask_operand"))
 
+(define_constraint "Yd"
+  "@internal
+   A constant @code{move_operand} that can be safely loaded into @code{$25}
+   using @code{la}."
+  (and (match_operand 0 "move_operand")
+       (match_test "CONSTANT_P (op)")
+       (not (match_test "mips_dangerous_for_la25_p (op)"))))
+
+(define_constraint "Yf"
+  "@internal
+   A constant @code{move_operand} that cannot be safely loaded into @code{$25}
+   using @code{la}."
+  (and (match_operand 0 "move_operand")
+       (match_test "CONSTANT_P (op)")
+       (match_test "mips_dangerous_for_la25_p (op)")))
+
 (define_constraint "Yh"
    "@internal"
     (match_operand 0 "hi_mask_operand"))
@@ -231,6 +231,27 @@
 (define_constraint "Yx"
    "@internal"
    (match_operand 0 "low_bitmask_operand"))
+
+(define_memory_constraint "ZC"
+  "When compiling microMIPS code, this constraint matches a memory operand
+   whose address is formed from a base register and a 12-bit offset.  These
+   operands can be used for microMIPS instructions such as @code{ll} and
+   @code{sc}.  When not compiling for microMIPS code, @code{ZC} is
+   equivalent to @code{R}."
+  (and (match_code "mem")
+       (if_then_else
+	 (match_test "TARGET_MICROMIPS")
+	 (match_test "umips_12bit_offset_address_p (XEXP (op, 0), mode)")
+	 (match_test "mips_address_insns (XEXP (op, 0), mode, false)"))))
+
+(define_address_constraint "ZD"
+  "When compiling microMIPS code, this constraint matches an address operand
+   that is formed from a base register and a 12-bit offset.  These operands
+   can be used for microMIPS instructions such as @code{prefetch}.  When
+   not compiling for microMIPS code, @code{ZD} is equivalent to @code{p}."
+   (if_then_else (match_test "TARGET_MICROMIPS")
+		 (match_test "umips_12bit_offset_address_p (op, mode)")
+		 (match_test "mips_address_insns (op, mode, false)")))
 
 (define_memory_constraint "ZR"
  "@internal

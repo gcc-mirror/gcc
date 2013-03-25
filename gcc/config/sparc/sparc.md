@@ -7217,7 +7217,7 @@
   [(trap_if (match_operator 0 "noov_compare_operator"
 	     [(match_operand:SI 1 "compare_operand" "")
 	      (match_operand:SI 2 "arith_operand" "")])
-	   (match_operand 3 ""))]
+	   (match_operand 3 "arith_operand"))]
   ""
   "operands[1] = gen_compare_reg (operands[0]);
    if (GET_MODE (operands[1]) != CCmode && GET_MODE (operands[1]) != CCXmode)
@@ -7228,7 +7228,7 @@
   [(trap_if (match_operator 0 "noov_compare_operator"
 	     [(match_operand:DI 1 "compare_operand" "")
 	      (match_operand:DI 2 "arith_operand" "")])
-	   (match_operand 3 ""))]
+	   (match_operand 3 "arith_operand"))]
   "TARGET_ARCH64"
   "operands[1] = gen_compare_reg (operands[0]);
    if (GET_MODE (operands[1]) != CCmode && GET_MODE (operands[1]) != CCXmode)

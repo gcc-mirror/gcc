@@ -1,3 +1,147 @@
+2013-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56696
+	* gfortran.dg/eof_5.f90: New.
+
+2013-03-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.c-torture/execute/builtins/builtins.exp: Sort targets
+	alphabetically.
+
+2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr22152.c (dg-options): Add -mtune=core2.
+
+2013-03-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR testsuite/55994
+	* gcc.c-torture/execute/builtins/builtins.exp: Add
+	-Wl,--allow-multiple-definition for RTEMS targets.
+
+2013-03-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/movk.c: New test.
+
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/ext/vector21.C: New testcase.
+
+2013-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/neon-for-64bits-1.c: New tests.
+	* gcc.target/arm/neon-for-64bits-2.c: Likewise.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-outer-3a-big-array.c: Adjust.
+	* gcc.dg/vect/vect-outer-3a.c: Likewise.
+
+2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/vect.c: Test and result vector added
+	for sabd and saba instructions.
+	* gcc.target/aarch64/vect-compile.c: Check for sabd and saba
+	instructions in assembly.
+	* gcc.target/aarch64/vect.x: Add sabd and saba test functions.
+	* gcc.target/aarch64/vect-fp.c: Test and result vector added
+	for fabd instruction.
+	* gcc.target/aarch64/vect-fp-compile.c: Check for fabd
+	instruction in assembly.
+	* gcc.target/aarch64/vect-fp.x: Add fabd test function.
+
+2013-03-20  Jeff Law  <law@redhat.com>
+
+	* g++.dg/tree-ssa/ssa-dom.C: New test.
+
+2013-03-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/mmfpgpr.c: New test.
+	* gcc.target/powerpc/sd-vsx.c: Likewise.
+	* gcc.target/powerpc/sd-pwr6.c: Likewise.
+	* gcc.target/powerpc/vsx-float0.c: Likewise.
+
+2013-03-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/56355
+	* gcc.dg/pr56355-1.c: New file.
+
+2013-03-20  Catherine Moore  <clm@codesourcery.com>
+	    Richard Sandiford <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp: Add microMIPS support.
+	* gcc.target/mips/umips-movep-2.c: New test.
+	* gcc.target/mips/umips-lwp-2.c: New test.
+	* gcc.target/mips/umips-swp-5.c: New test.
+	* gcc.target/mips/umips-constraints-1.c: New test.
+	* gcc.target/mips/umips-lwp-3.c: New test.
+	* gcc.target/mips/umips-swp-6.c: New test.
+	* gcc.target/mips/umips-constraints-2.c: New test.
+	* gcc.target/mips/umips-save-restore-1.c: New test.
+	* gcc.target/mips/umips-lwp-4.c: New test.
+	* gcc.target/mips/umips-swp-7.c: New test.
+	* gcc.target/mips/umips-save-restore-2.c: New test.
+	* gcc.target/mips/umips-lwp-swp-volatile.c: New test.
+	* gcc.target/mips/umips-lwp-5.c: New test.
+	* gcc.target/mips/umips-save-restore-3.c: New test.
+	* gcc.target/mips/umips-lwp-6.c: New test.
+	* gcc.target/mips/umips-swp-1.c: New test.
+	* gcc.target/mips/umips-lwp-7.c: New test.
+	* gcc.target/mips/umips-swp-2.c: New test.
+	* gcc.target/mips/umips-lwp-8.c: New test.
+	* gcc.target/mips/umips-swp-3.c: New test.
+	* gcc.target/mips/umips-movep-1.c: New test.
+	* gcc.target/mips/umips-lwp-1.c: New test.
+	* gcc.target/mips/umips-swp-4.c: New test.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56661
+	* gcc.dg/torture/pr56661.c: New testcase.
+
+2013-03-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR rtl-optimization/56605
+	* gcc.target/powerpc/pr56605.c: New.
+
+2013-03-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR fortran/54932
+	* gfortran.dg/do_1.f90: Don't xfail.
+
+2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/51825
+	* gfortran.dg/namelist_77.f90: New.
+	* gfortran.dg/namelist_78.f90: New.
+
+2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/48618
+	* gfortran.dg/open_negative_unit_1.f90: New.
+
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/sbc.c: New test.
+
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/ror.c: New test.
+
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/extr.c: New test.
+
+2013-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* gcc.dg/tree-ssa/vrp47.c: Adjust.
+	* c-c++-common/uninit-17.c: Likewise.
+
+2013-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56635
+	* g++.dg/torture/pr56635.C: New test.
+
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/3713
@@ -468,7 +612,7 @@
 2013-02-20  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/56265
-	* testsuite/g++.dg/ipa/devirt-11.C: New testcase.
+	* g++.dg/ipa/devirt-11.C: New testcase.
 
 2013-02-20  Richard Biener  <rguenther@suse.de>
 
@@ -572,7 +716,7 @@
 2013-02-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56318
-	* gcc/testsuite/gfortran.dg/matmul_9.f90: New.
+	* gfortran.dg/matmul_9.f90: New.
 
 2013-02-15  Tobias Burnus  <burnus@net-b.de>
 
@@ -655,9 +799,9 @@
 
 	Avoid instrumenting duplicated memory access in the same basic block
 	* c-c++-common/asan/no-redundant-instrumentation-1.c: New test.
-	* testsuite/c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
-	* testsuite/c-c++-common/asan/no-redundant-instrumentation-3.c: Likewise.
-	* testsuite/c-c++-common/asan/inc.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-3.c: Likewise.
+	* c-c++-common/asan/inc.c: Likewise.
 
 2013-02-12  Vladimir Makarov  <vmakarov@redhat.com>
 

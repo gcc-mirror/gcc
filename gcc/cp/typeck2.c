@@ -265,6 +265,10 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
     return 0;
   type = TYPE_MAIN_VARIANT (type);
 
+  /* In SFINAE context, force instantiation.  */
+  if (!(complain & tf_error))
+    complete_type (type);
+
   /* If the type is incomplete, we register it within a hash table,
      so that we can check again once it is completed. This makes sense
      only for objects for which we have a declaration or at least a
@@ -274,8 +278,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
       void **slot;
       struct pending_abstract_type *pat;
 
-      gcc_assert (!decl || DECL_P (decl)
-		  || TREE_CODE (decl) == IDENTIFIER_NODE);
+      gcc_assert (!decl || DECL_P (decl) || identifier_p (decl));
 
       if (!abstract_pending_vars)
 	abstract_pending_vars = htab_create_ggc (31, &pat_calc_hash,
@@ -332,7 +335,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
 	error ("invalid abstract return type for member function %q+#D", decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
 	error ("invalid abstract return type for function %q+#D", decl);
-      else if (TREE_CODE (decl) == IDENTIFIER_NODE)
+      else if (identifier_p (decl))
 	/* Here we do not have location information.  */
 	error ("invalid abstract type %qT for %qE", type, decl);
       else
@@ -788,7 +791,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      will perform the dynamic initialization.  */
   if (value != error_mark_node
       && (TREE_SIDE_EFFECTS (value)
-	   || ! initializer_constant_valid_p (value, TREE_TYPE (value))))
+	  || ! reduced_constant_expression_p (value)))
     {
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))
@@ -1237,7 +1240,7 @@ process_init_constructor_record (tree type, tree init,
 		 latter case can happen in templates where lookup has to be
 		 deferred.  */
 	      gcc_assert (TREE_CODE (ce->index) == FIELD_DECL
-			  || TREE_CODE (ce->index) == IDENTIFIER_NODE);
+			  || identifier_p (ce->index));
 	      if (ce->index != field
 		  && ce->index != DECL_NAME (field))
 		{
@@ -1363,7 +1366,7 @@ process_init_constructor_union (tree type, tree init,
     {
       if (TREE_CODE (ce->index) == FIELD_DECL)
 	;
-      else if (TREE_CODE (ce->index) == IDENTIFIER_NODE)
+      else if (identifier_p (ce->index))
 	{
 	  /* This can happen within a cast, see g++.dg/opt/cse2.C.  */
 	  tree name = ce->index;

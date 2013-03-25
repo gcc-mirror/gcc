@@ -1472,7 +1472,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 static bool
 gate_expand_vector_operations_ssa (void)
 {
-  return optimize == 0;
+  return !(cfun->curr_properties & PROP_gimple_lvec);
 }
 
 static unsigned int
@@ -1513,7 +1513,7 @@ struct gimple_opt_pass pass_lower_vector =
   0,					/* static_pass_number */
   TV_NONE,				/* tv_id */
   PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
+  PROP_gimple_lvec,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa	                /* todo_flags_finish */
@@ -1536,7 +1536,7 @@ struct gimple_opt_pass pass_lower_vector_ssa =
   0,					/* static_pass_number */
   TV_NONE,				/* tv_id */
   PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
+  PROP_gimple_lvec,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa	                /* todo_flags_finish */

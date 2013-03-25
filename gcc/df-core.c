@@ -727,9 +727,7 @@ rest_of_handle_df_initialize (void)
   df->n_blocks_inverted = inverted_post_order_compute (df->postorder_inverted);
   gcc_assert (df->n_blocks == df->n_blocks_inverted);
 
-  df->hard_regs_live_count = XNEWVEC (unsigned int, FIRST_PSEUDO_REGISTER);
-  memset (df->hard_regs_live_count, 0,
-	  sizeof (unsigned int) * FIRST_PSEUDO_REGISTER);
+  df->hard_regs_live_count = XCNEWVEC (unsigned int, FIRST_PSEUDO_REGISTER);
 
   df_hard_reg_init ();
   /* After reload, some ports add certain bits to regs_ever_live so
@@ -1074,8 +1072,7 @@ df_worklist_dataflow (struct dataflow *dataflow,
   gcc_assert (dir != DF_NONE);
 
   /* BBINDEX_TO_POSTORDER maps the bb->index to the reverse postorder.  */
-  bbindex_to_postorder =
-    (unsigned int *)xmalloc (last_basic_block * sizeof (unsigned int));
+  bbindex_to_postorder = XNEWVEC (unsigned int, last_basic_block);
 
   /* Initialize the array to an out-of-bound value.  */
   for (i = 0; i < last_basic_block; i++)

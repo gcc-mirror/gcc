@@ -240,6 +240,8 @@ extern diagnostic_context *global_dc;
 #define errorcount diagnostic_kind_count (global_dc, DK_ERROR)
 /* Similarly, but for warnings.  */
 #define warningcount diagnostic_kind_count (global_dc, DK_WARNING)
+/* Similarly, but for warnings promoted to errors.  */
+#define werrorcount diagnostic_kind_count (global_dc, DK_WERROR)
 /* Similarly, but for sorrys.  */
 #define sorrycount diagnostic_kind_count (global_dc, DK_SORRY)
 

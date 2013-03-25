@@ -4516,6 +4516,24 @@ verify_location (pointer_set_t *blocks, location_t loc)
   return false;
 }
 
+/* Called via walk_tree.  Verify that expressions have no blocks.  */
+
+static tree
+verify_expr_no_block (tree *tp, int *walk_subtrees, void *)
+{
+  if (!EXPR_P (*tp))
+    {
+      *walk_subtrees = false;
+      return NULL;
+    }
+
+  location_t loc = EXPR_LOCATION (*tp);
+  if (LOCATION_BLOCK (loc) != NULL)
+    return *tp;
+
+  return NULL;
+}
+
 /* Called via walk_tree.  Verify locations of expressions.  */
 
 static tree
@@ -4524,10 +4542,20 @@ verify_expr_location_1 (tree *tp, int *walk_subtrees, void *data)
   struct pointer_set_t *blocks = (struct pointer_set_t *) data;
 
   if (TREE_CODE (*tp) == VAR_DECL
-      && DECL_DEBUG_EXPR_IS_FROM (*tp))
+      && DECL_HAS_DEBUG_EXPR_P (*tp))
     {
       tree t = DECL_DEBUG_EXPR (*tp);
-      tree addr = walk_tree (&t, verify_expr_location_1, blocks, NULL);
+      tree addr = walk_tree (&t, verify_expr_no_block, NULL, NULL);
+      if (addr)
+	return addr;
+    }
+  if ((TREE_CODE (*tp) == VAR_DECL
+       || TREE_CODE (*tp) == PARM_DECL
+       || TREE_CODE (*tp) == RESULT_DECL)
+      && DECL_HAS_VALUE_EXPR_P (*tp))
+    {
+      tree t = DECL_VALUE_EXPR (*tp);
+      tree addr = walk_tree (&t, verify_expr_no_block, NULL, NULL);
       if (addr)
 	return addr;
     }

@@ -620,11 +620,6 @@ clear_unused_block_pointer_1 (tree *tp, int *, void *)
   if (EXPR_P (*tp) && TREE_BLOCK (*tp)
       && !TREE_USED (TREE_BLOCK (*tp)))
     TREE_SET_BLOCK (*tp, NULL);
-  if (TREE_CODE (*tp) == VAR_DECL && DECL_DEBUG_EXPR_IS_FROM (*tp))
-    {
-      tree debug_expr = DECL_DEBUG_EXPR (*tp);
-      walk_tree (&debug_expr, clear_unused_block_pointer_1, NULL, NULL);
-    }
   return NULL_TREE;
 }
 
@@ -636,15 +631,6 @@ clear_unused_block_pointer (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
-  tree t;
-  unsigned i;
-
-  FOR_EACH_LOCAL_DECL (cfun, i, t)
-    if (TREE_CODE (t) == VAR_DECL && DECL_DEBUG_EXPR_IS_FROM (t))
-      {
-	tree debug_expr = DECL_DEBUG_EXPR (t);
-	walk_tree (&debug_expr, clear_unused_block_pointer_1, NULL, NULL);
-      }
 
   FOR_EACH_BB (bb)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

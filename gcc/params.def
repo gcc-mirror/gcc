@@ -919,6 +919,12 @@ DEFPARAM (PARAM_IPA_CP_LOOP_HINT_BONUS,
 	  "bounds or strides known.",
 	  64, 0, 0)
 
+DEFPARAM (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS,
+	  "ipa-cp-array-index-hint-bonus",
+	  "Compile-time bonus IPA-CP assigns to candidates which make an array "
+	  "index known.",
+	  48, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,

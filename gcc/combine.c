@@ -2845,13 +2845,13 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
   /* See if the SETs in I1 or I2 need to be kept around in the merged
      instruction: whenever the value set there is still needed past I3.
-     For the SETs in I2, this is easy: we see if I2DEST dies or is set in I3.
+     For the SET in I2, this is easy: we see if I2DEST dies or is set in I3.
 
-     For the SET in I1, we have two cases:  If I1 and I2 independently
-     feed into I3, the set in I1 needs to be kept around if I1DEST dies
+     For the SET in I1, we have two cases: if I1 and I2 independently feed
+     into I3, the set in I1 needs to be kept around unless I1DEST dies
      or is set in I3.  Otherwise (if I1 feeds I2 which feeds I3), the set
      in I1 needs to be kept around unless I1DEST dies or is set in either
-     I2 or I3.  The same consideration applies to I0.  */
+     I2 or I3.  The same considerations apply to I0.  */
 
   added_sets_2 = !dead_or_set_p (i3, i2dest);
 
@@ -2863,8 +2863,9 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
   if (i0)
     added_sets_0 =  !(dead_or_set_p (i3, i0dest)
-		      || (i0_feeds_i2_n && dead_or_set_p (i2, i0dest))
-		      || (i0_feeds_i1_n && dead_or_set_p (i1, i0dest)));
+		      || (i0_feeds_i1_n && dead_or_set_p (i1, i0dest))
+		      || ((i0_feeds_i2_n || (i0_feeds_i1_n && i1_feeds_i2_n))
+			  && dead_or_set_p (i2, i0dest)));
   else
     added_sets_0 = 0;
 
@@ -4158,14 +4159,12 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
     if (i3dest_killed)
       {
+	rtx new_note = alloc_reg_note (REG_DEAD, i3dest_killed, NULL_RTX);
 	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
-	  distribute_notes (alloc_reg_note (REG_DEAD, i3dest_killed,
-					    NULL_RTX),
-			    NULL_RTX, i2, NULL_RTX, elim_i2, elim_i1, elim_i0);
+	  distribute_notes (new_note, NULL_RTX, i2, NULL_RTX, elim_i2,
+			    elim_i1, elim_i0);
 	else
-	  distribute_notes (alloc_reg_note (REG_DEAD, i3dest_killed,
-					    NULL_RTX),
-			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+	  distribute_notes (new_note, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
 			    elim_i2, elim_i1, elim_i0);
       }
 

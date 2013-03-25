@@ -1135,6 +1135,33 @@ record_equivalences_from_incoming_edge (basic_block bb)
 	  if (lhs)
 	    record_equality (lhs, rhs);
 
+	  /* If LHS is an SSA_NAME and RHS is a constant and LHS was set
+	     via a widening type conversion, then we may be able to record
+	     additional equivalences.  */
+	  if (lhs
+	      && TREE_CODE (lhs) == SSA_NAME
+	      && is_gimple_constant (rhs))
+	    {
+	      gimple defstmt = SSA_NAME_DEF_STMT (lhs);
+
+	      if (defstmt
+		  && is_gimple_assign (defstmt)
+		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (defstmt)))
+		{
+		  tree old_rhs = gimple_assign_rhs1 (defstmt);
+		  tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
+
+		  /* If this was a widening conversion and if RHS is converted
+		     to the type of OLD_RHS and has the same value, then we
+		     can record an equivalence between OLD_RHS and the
+		     converted representation of RHS.  */
+		  if ((TYPE_PRECISION (TREE_TYPE (lhs))
+		       > TYPE_PRECISION (TREE_TYPE (old_rhs)))
+		      && operand_equal_p (rhs, newval, 0))
+		    record_equality (old_rhs, newval);
+		}
+	    }
+
 	  for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
 	    record_cond (eq);
 	}

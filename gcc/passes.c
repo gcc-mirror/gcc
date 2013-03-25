@@ -1310,7 +1310,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_expand_omp);
 
       NEXT_PASS (pass_build_ssa);
-      NEXT_PASS (pass_lower_vector);
       NEXT_PASS (pass_early_warn_uninitialized);
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_inline_parameters);
@@ -1488,7 +1487,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc);
-      NEXT_PASS (pass_vrp);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_dominator);
       /* The only const/copy propagation opportunities left after
@@ -1497,6 +1495,7 @@ init_optimization_passes (void)
 	 only examines PHIs to discover const/copy propagation
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
+      NEXT_PASS (pass_vrp);
       NEXT_PASS (pass_cd_dce);
       NEXT_PASS (pass_tracer);
 
@@ -1554,6 +1553,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_tm_memopt);
       NEXT_PASS (pass_tm_edges);
     }
+  NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_asan_O0);
   NEXT_PASS (pass_tsan_O0);
@@ -2771,6 +2771,8 @@ dump_properties (FILE *dump, unsigned int props)
     fprintf (dump, "PROP_gimple_lomp\n");
   if (props & PROP_gimple_lcx)
     fprintf (dump, "PROP_gimple_lcx\n");
+  if (props & PROP_gimple_lvec)
+    fprintf (dump, "PROP_gimple_lvec\n");
   if (props & PROP_cfglayout)
     fprintf (dump, "PROP_cfglayout\n");
 }

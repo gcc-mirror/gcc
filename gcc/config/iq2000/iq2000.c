@@ -381,8 +381,7 @@ iq2000_fill_delay_slot (const char *ret, enum delay_type type, rtx operands[],
   /* Make sure that we don't put nop's after labels.  */
   next_insn = NEXT_INSN (cur_insn);
   while (next_insn != 0
-	 && (GET_CODE (next_insn) == NOTE
-	     || GET_CODE (next_insn) == CODE_LABEL))
+	 && (NOTE_P (next_insn) || LABEL_P (next_insn)))
     next_insn = NEXT_INSN (next_insn);
 
   dslots_load_total += num_nops;
@@ -391,7 +390,7 @@ iq2000_fill_delay_slot (const char *ret, enum delay_type type, rtx operands[],
       || operands == 0
       || cur_insn == 0
       || next_insn == 0
-      || GET_CODE (next_insn) == CODE_LABEL
+      || LABEL_P (next_insn)
       || (set_reg = operands[0]) == 0)
     {
       dslots_number_nops = 0;
@@ -1533,8 +1532,8 @@ final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
       iq2000_load_reg4 = 0;
     }
 
-  if (   (GET_CODE (insn) == JUMP_INSN
-       || GET_CODE (insn) == CALL_INSN
+  if (   (JUMP_P (insn)
+       || CALL_P (insn)
        || (GET_CODE (PATTERN (insn)) == RETURN))
 	   && NEXT_INSN (PREV_INSN (insn)) == insn)
     {
@@ -1544,7 +1543,7 @@ final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
     }
   
   if (TARGET_STATS
-      && (GET_CODE (insn) == JUMP_INSN || GET_CODE (insn) == CALL_INSN))
+      && (JUMP_P (insn) || CALL_P (insn)))
     dslots_jump_total ++;
 }
 
@@ -2285,8 +2284,8 @@ iq2000_adjust_insn_length (rtx insn, int length)
   /* A unconditional jump has an unfilled delay slot if it is not part
      of a sequence.  A conditional jump normally has a delay slot.  */
   if (simplejump_p (insn)
-      || (   (GET_CODE (insn) == JUMP_INSN
-	   || GET_CODE (insn) == CALL_INSN)))
+      || (   (JUMP_P (insn)
+	   || CALL_P (insn))))
     length += 4;
 
   return length;

@@ -984,6 +984,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define STRIP_USELESS_TYPE_CONVERSION(EXP) \
   (EXP) = tree_ssa_strip_useless_type_conversions (EXP)
 
+/* Nonzero if TYPE represents a vector type.  */
+
+#define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
+
 /* Nonzero if TYPE represents an integral type.  Note that we do not
    include COMPLEX types here.  Keep these checks in ascending code
    order.  */
@@ -1019,15 +1023,15 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Nonzero if TYPE represents a vector integer type.  */
                 
-#define VECTOR_INTEGER_TYPE_P(TYPE)                   \
-             (TREE_CODE (TYPE) == VECTOR_TYPE      \
-                 && TREE_CODE (TREE_TYPE (TYPE)) == INTEGER_TYPE)
+#define VECTOR_INTEGER_TYPE_P(TYPE)			\
+  (VECTOR_TYPE_P (TYPE)					\
+   && TREE_CODE (TREE_TYPE (TYPE)) == INTEGER_TYPE)
 
 
 /* Nonzero if TYPE represents a vector floating-point type.  */
 
 #define VECTOR_FLOAT_TYPE_P(TYPE)	\
-  (TREE_CODE (TYPE) == VECTOR_TYPE	\
+  (VECTOR_TYPE_P (TYPE)			\
    && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE)
 
 /* Nonzero if TYPE represents a floating-point type, including complex
@@ -1037,7 +1041,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define FLOAT_TYPE_P(TYPE)			\
   (SCALAR_FLOAT_TYPE_P (TYPE)			\
    || ((TREE_CODE (TYPE) == COMPLEX_TYPE 	\
-        || TREE_CODE (TYPE) == VECTOR_TYPE)	\
+        || VECTOR_TYPE_P (TYPE))		\
        && SCALAR_FLOAT_TYPE_P (TREE_TYPE (TYPE))))
 
 /* Nonzero if TYPE represents a decimal floating-point type.  */
@@ -2211,7 +2215,7 @@ struct GTY(()) tree_block {
 /* Vector types need to check target flags to determine type.  */
 extern enum machine_mode vector_type_mode (const_tree);
 #define TYPE_MODE(NODE) \
-  (TREE_CODE (TYPE_CHECK (NODE)) == VECTOR_TYPE \
+  (VECTOR_TYPE_P (TYPE_CHECK (NODE)) \
    ? vector_type_mode (NODE) : (NODE)->type_common.mode)
 #define SET_TYPE_MODE(NODE, MODE) \
   (TYPE_CHECK (NODE)->type_common.mode = (MODE))
@@ -2828,8 +2832,6 @@ struct GTY(()) tree_decl_minimal {
    checked before any access to the former.  */
 #define DECL_FUNCTION_CODE(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.function_code)
-#define DECL_DEBUG_EXPR_IS_FROM(NODE) \
-  (DECL_COMMON_CHECK (NODE)->decl_common.debug_expr_is_from)
 
 #define DECL_FUNCTION_PERSONALITY(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.personality)
@@ -3342,9 +3344,9 @@ struct GTY(()) tree_decl_with_vis {
 
 extern tree decl_debug_expr_lookup (tree);
 extern void decl_debug_expr_insert (tree, tree);
-/* For VAR_DECL, this is set to either an expression that it was split
-   from (if DECL_DEBUG_EXPR_IS_FROM is true), otherwise a tree_list of
-   subexpressions that it was split into.  */
+/* For VAR_DECL, this is set to an expression that it was split from.  */
+#define DECL_HAS_DEBUG_EXPR_P(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl_common.debug_expr_is_from)
 #define DECL_DEBUG_EXPR(NODE) \
   (decl_debug_expr_lookup (VAR_DECL_CHECK (NODE)))
 

@@ -1,3 +1,13 @@
+2013-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* Makefile.in: Regenerated.
+	* asan/Makefile.in: Regenerated.
+	* interception/Makefile.in: Regenerated.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* tsan/Makefile.in: Regenerated.
+
 2013-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan/asan_mapping.h (kMidMemEnd): Increase to 0x4fffffffffULL.

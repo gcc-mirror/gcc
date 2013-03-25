@@ -3283,8 +3283,8 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'D':
       {
 	tree temp = next_tree;
-	if (DECL_P (temp)
-	    && DECL_DEBUG_EXPR_IS_FROM (temp) && DECL_DEBUG_EXPR (temp))
+	if (TREE_CODE (temp) == VAR_DECL
+	    && DECL_HAS_DEBUG_EXPR_P (temp))
 	  {
 	    temp = DECL_DEBUG_EXPR (temp);
 	    if (!DECL_P (temp))

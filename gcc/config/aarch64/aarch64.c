@@ -3348,7 +3348,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "%s%c%d", REGISTER_PREFIX, code, REGNO (x) - V0_REGNUM);
+      asm_fprintf (f, "%c%d", code, REGNO (x) - V0_REGNUM);
       break;
 
     case 'S':
@@ -3361,8 +3361,17 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "%sv%d", REGISTER_PREFIX,
-			       REGNO (x) - V0_REGNUM + (code - 'S'));
+      asm_fprintf (f, "v%d", REGNO (x) - V0_REGNUM + (code - 'S'));
+      break;
+
+    case 'X':
+      /* Print integer constant in hex.  */
+      if (GET_CODE (x) != CONST_INT)
+	{
+	  output_operand_lossage ("invalid operand for '%%%c'", code);
+	  return;
+	}
+      asm_fprintf (f, "0x%x", UINTVAL (x));
       break;
 
     case 'w':
@@ -3372,20 +3381,19 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       if (x == const0_rtx
 	  || (CONST_DOUBLE_P (x) && aarch64_float_const_zero_rtx_p (x)))
 	{
-	  asm_fprintf (f, "%s%czr", REGISTER_PREFIX, code);
+	  asm_fprintf (f, "%czr", code);
 	  break;
 	}
 
       if (REG_P (x) && GP_REGNUM_P (REGNO (x)))
 	{
-	  asm_fprintf (f, "%s%c%d", REGISTER_PREFIX, code,
-		       REGNO (x) - R0_REGNUM);
+	  asm_fprintf (f, "%c%d", code, REGNO (x) - R0_REGNUM);
 	  break;
 	}
 
       if (REG_P (x) && REGNO (x) == SP_REGNUM)
 	{
-	  asm_fprintf (f, "%s%ssp", REGISTER_PREFIX, code == 'w' ? "w" : "");
+	  asm_fprintf (f, "%ssp", code == 'w' ? "w" : "");
 	  break;
 	}
 

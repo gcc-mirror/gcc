@@ -622,6 +622,7 @@ mn10300_can_use_rets_insn (void)
 
 /* Returns the set of live, callee-saved registers as a bitmask.  The
    callee-saved extended registers cannot be stored individually, so
+   all of them will be included in the mask if any one of them is used.
    Also returns the number of bytes in the registers in the mask if
    BYTES_SAVED is not NULL.  */
 

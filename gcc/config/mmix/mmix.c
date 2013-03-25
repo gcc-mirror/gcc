@@ -1728,7 +1728,7 @@ mmix_print_operand (FILE *stream, rtx x, int code)
       if (CONSTANT_P (modified_x)
 	  /* Strangely enough, this is not included in CONSTANT_P.
 	     FIXME: Ask/check about sanity here.  */
-	  || GET_CODE (modified_x) == CODE_LABEL)
+	  || LABEL_P (modified_x))
 	{
 	  output_addr_const (stream, modified_x);
 	  return;

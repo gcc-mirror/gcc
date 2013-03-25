@@ -1319,7 +1319,7 @@ verify_loop_structure (void)
 {
   unsigned *sizes, i, j;
   sbitmap irreds;
-  basic_block bb;
+  basic_block bb, *bbs;
   struct loop *loop;
   int err = 0;
   edge e;
@@ -1335,43 +1335,51 @@ verify_loop_structure (void)
   else
     verify_dominators (CDI_DOMINATORS);
 
-  /* Check sizes.  */
-  sizes = XCNEWVEC (unsigned, num);
-  sizes[0] = 2;
-
-  FOR_EACH_BB (bb)
-    for (loop = bb->loop_father; loop; loop = loop_outer (loop))
-      sizes[loop->num]++;
-
-  FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
-    {
-      i = loop->num;
-
-      if (loop->num_nodes != sizes[i])
-	{
-	  error ("size of loop %d should be %d, not %d",
-		   i, sizes[i], loop->num_nodes);
-	  err = 1;
-	}
-    }
-
   /* Check the headers.  */
   FOR_EACH_BB (bb)
-    if (bb_loop_header_p (bb)
-	&& bb->loop_father->header != bb)
+    if (bb_loop_header_p (bb))
       {
-	error ("loop with header %d not in loop tree", bb->index);
+	if (bb->loop_father->header == NULL)
+	  {
+	    error ("loop with header %d marked for removal", bb->index);
+	    err = 1;
+	  }
+	else if (bb->loop_father->header != bb)
+	  {
+	    error ("loop with header %d not in loop tree", bb->index);
+	    err = 1;
+	  }
+      }
+    else if (bb->loop_father->header == bb)
+      {
+	error ("non-loop with header %d not marked for removal", bb->index);
 	err = 1;
       }
 
-  /* Check get_loop_body.  */
+  /* Check the recorded loop father and sizes of loops.  */
   visited = sbitmap_alloc (last_basic_block);
   bitmap_clear (visited);
+  bbs = XNEWVEC (basic_block, n_basic_blocks);
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      basic_block *bbs = get_loop_body (loop);
+      unsigned n;
 
-      for (j = 0; j < loop->num_nodes; j++)
+      if (loop->header == NULL)
+	{
+	  error ("removed loop %d in loop tree", loop->num);
+	  err = 1;
+	  continue;
+	}
+
+      n = get_loop_body_with_size (loop, bbs, n_basic_blocks);
+      if (loop->num_nodes != n)
+	{
+	  error ("size of loop %d should be %d, not %d",
+		 loop->num, n, loop->num_nodes);
+	  err = 1;
+	}
+
+      for (j = 0; j < n; j++)
 	{
 	  bb = bbs[j];
 
@@ -1394,16 +1402,16 @@ verify_loop_structure (void)
 	      err = 1;
 	    }
 	}
-
-      free (bbs);
     }
+  free (bbs);
   sbitmap_free (visited);
 
   /* Check headers and latches.  */
   FOR_EACH_LOOP (li, loop, 0)
     {
       i = loop->num;
-
+      if (loop->header == NULL)
+	continue;
       if (!bb_loop_header_p (loop->header))
 	{
 	  error ("loop %d%'s header is not a loop header", i);
@@ -1561,6 +1569,7 @@ verify_loop_structure (void)
     {
       unsigned n_exits = 0, eloops;
 
+      sizes = XCNEWVEC (unsigned, num);
       memset (sizes, 0, sizeof (unsigned) * num);
       FOR_EACH_BB (bb)
 	{
@@ -1624,11 +1633,12 @@ verify_loop_structure (void)
 	      err = 1;
 	    }
 	}
+
+      free (sizes);
     }
 
   gcc_assert (!err);
 
-  free (sizes);
   if (!dom_available)
     free_dominance_info (CDI_DOMINATORS);
 }

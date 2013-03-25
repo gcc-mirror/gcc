@@ -1110,7 +1110,7 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
     case CPP_KEYWORD:
       /* Some keywords have a value that is not an IDENTIFIER_NODE.
 	 For example, `struct' is mapped to an INTEGER_CST.  */
-      if (TREE_CODE (token->u.value) != IDENTIFIER_NODE)
+      if (!identifier_p (token->u.value))
 	break;
       /* else fall through */
     case CPP_NAME:
@@ -1259,7 +1259,7 @@ make_id_declarator (tree qualifying_scope, tree unqualified_name,
   if (qualifying_scope && TYPE_P (qualifying_scope))
     qualifying_scope = TYPE_MAIN_VARIANT (qualifying_scope);
 
-  gcc_assert (TREE_CODE (unqualified_name) == IDENTIFIER_NODE
+  gcc_assert (identifier_p (unqualified_name)
 	      || TREE_CODE (unqualified_name) == BIT_NOT_EXPR
 	      || TREE_CODE (unqualified_name) == TEMPLATE_ID_EXPR);
 
@@ -2587,7 +2587,7 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
     {
       if (TYPE_P (type))
 	error_at (location, "%qT is not a template", type);
-      else if (TREE_CODE (type) == IDENTIFIER_NODE)
+      else if (identifier_p (type))
 	{
 	  if (tag_type != none_type)
 	    error_at (location, "%qE is not a class template", type);
@@ -3193,7 +3193,7 @@ cp_parser_make_typename_type (cp_parser *parser, tree scope,
 			      tree id, location_t id_location)
 {
   tree result;
-  if (TREE_CODE (id) == IDENTIFIER_NODE)
+  if (identifier_p (id))
     {
       result = make_typename_type (scope, id, typename_type,
 				   /*complain=*/tf_none);
@@ -5654,7 +5654,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
   while (true)
     {
       if (idk == CP_ID_KIND_UNQUALIFIED
-	  && TREE_CODE (postfix_expression) == IDENTIFIER_NODE
+	  && identifier_p (postfix_expression)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
 	/* It is not a Koenig lookup function call.  */
 	postfix_expression
@@ -5741,7 +5741,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    if (idk == CP_ID_KIND_UNQUALIFIED
 		|| idk == CP_ID_KIND_TEMPLATE_ID)
 	      {
-		if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
+		if (identifier_p (postfix_expression))
 		  {
 		    if (!args->is_empty ())
 		      {
@@ -11310,7 +11310,7 @@ cp_parser_decltype (cp_parser *parser)
       cp_id_kind idk;
       const char *error_msg;
 
-      if (TREE_CODE (expr) == IDENTIFIER_NODE)
+      if (identifier_p (expr))
 	/* Lookup the name we got back from the id-expression.  */
 	expr = cp_parser_lookup_name (parser, expr,
 				      none_type,
@@ -12759,7 +12759,7 @@ cp_parser_template_id (cp_parser *parser,
     }
 
   /* Build a representation of the specialization.  */
-  if (TREE_CODE (templ) == IDENTIFIER_NODE)
+  if (identifier_p (templ))
     template_id = build_min_nt_loc (next_token->location,
 				    TEMPLATE_ID_EXPR,
 				    templ, arguments);
@@ -13980,7 +13980,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	  && !global_p
 	  && !qualified_p
 	  && TREE_CODE (type) == TYPE_DECL
-	  && TREE_CODE (DECL_NAME (type)) == IDENTIFIER_NODE)
+	  && identifier_p (DECL_NAME (type)))
 	maybe_note_name_used_in_class (DECL_NAME (type), type);
       /* If it didn't work out, we don't have a TYPE.  */
       if ((flags & CP_PARSER_FLAGS_OPTIONAL)
@@ -15279,7 +15279,7 @@ cp_parser_using_declaration (cp_parser* parser,
      depending on what scope we are in.  */
   if (qscope == error_mark_node || identifier == error_mark_node)
     ;
-  else if (TREE_CODE (identifier) != IDENTIFIER_NODE
+  else if (!identifier_p (identifier)
 	   && TREE_CODE (identifier) != BIT_NOT_EXPR)
     /* [namespace.udecl]
 
@@ -16562,8 +16562,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  unqualified_name = error_mark_node;
 		else if (unqualified_name
 			 && (qualifying_scope
-			     || (TREE_CODE (unqualified_name)
-				 != IDENTIFIER_NODE)))
+			     || (!identifier_p (unqualified_name))))
 		  {
 		    cp_parser_error (parser, "expected unqualified-id");
 		    unqualified_name = error_mark_node;
@@ -17056,17 +17055,21 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
   /* Consume the ->.  */
   cp_lexer_consume_token (parser->lexer);
 
+  tree save_ccp = current_class_ptr;
+  tree save_ccr = current_class_ref;
   if (quals >= 0)
     {
       /* DR 1207: 'this' is in scope in the trailing return type.  */
-      gcc_assert (current_class_ptr == NULL_TREE);
       inject_this_parameter (current_class_type, quals);
     }
 
   type = cp_parser_trailing_type_id (parser);
 
   if (quals >= 0)
-    current_class_ptr = current_class_ref = NULL_TREE;
+    {
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
+    }
 
   return type;
 }
@@ -18222,7 +18225,7 @@ cp_parser_class_name (cp_parser *parser,
 
   /* Check to see that it is really the name of a class.  */
   if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
-      && TREE_CODE (TREE_OPERAND (decl, 0)) == IDENTIFIER_NODE
+      && identifier_p (TREE_OPERAND (decl, 0))
       && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
     /* Situations like this:
 
@@ -21116,7 +21119,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   /* By this point, the NAME should be an ordinary identifier.  If
      the id-expression was a qualified name, the qualifying scope is
      stored in PARSER->SCOPE at this point.  */
-  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  gcc_assert (identifier_p (name));
 
   /* Perform the lookup.  */
   if (parser->scope)
@@ -24286,7 +24289,7 @@ cp_parser_objc_protocol_qualifiers (cp_parser* parser)
 
   node = token->u.value;
 
-  while (node && TREE_CODE (node) == IDENTIFIER_NODE
+  while (node && identifier_p (node)
 	 && (node == ridpointers [(int) RID_IN]
 	     || node == ridpointers [(int) RID_OUT]
 	     || node == ridpointers [(int) RID_INOUT]

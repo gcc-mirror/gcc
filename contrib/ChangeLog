@@ -1,3 +1,7 @@
+2013-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 4.8.
+
 2013-03-06  Tobias Burnus  <burnus@net-b.de>
 
 	* make-obstacks-texi.pl: New.
@@ -33,7 +37,7 @@
 
 	* update-copyright.py: New file.
 
-2013-01-15  David Blaikie <dblaikie@gmail.com>
+2013-01-15  David Blaikie  <dblaikie@gmail.com>
 
 	* dg-extract-results.sh: Handle KPASSes.
 
@@ -289,8 +293,8 @@
 
 	* repro_fail: Add --debug and --debug-tui flags.
 
-2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
-	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
+2012-02-02  Sumanth G  <sumanth.gundapaneni@kpitcummins.com>
+	    Jayant R Sonar  <jayant.sonar@kpitcummins.com>
 
 	* config-list.mk (LIST): Add cr16-elf.
 
@@ -708,7 +712,7 @@
 	* compare-debug: New.
 
 2007-08-16  H.J. Lu  <hongjiu.lu@intel.com>
-	    Andreas Schwab <schwab@suse.de>
+	    Andreas Schwab  <schwab@suse.de>
 
 	* gcc_update: Use "svn info" for revision number.  Create
 	gcc/REVISION with branch name and revision number.
@@ -849,7 +853,7 @@
 	* gcc_build: Remove -d from the call to gcc_update.
 
 2005-10-28  Daniel Berlin  <dberlin@dberlin.org>
-	    Ben Elliston <bje@au1.ibm.com>
+	    Ben Elliston  <bje@au1.ibm.com>
 	
 	* gcc_update: Update for svn.
 	* newcvsroot: Ditto.
@@ -951,7 +955,7 @@
 
 	* gcc_update: libjava/configure.in -> configure.ac.
 
-2004-08-03  Richard Earnshaw <rearnsha@arm.com>
+2004-08-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc_update: gcc/config/arm/arm-tune.md -> arm-cores.def gentune.sh.
 
@@ -1118,7 +1122,7 @@
 	gcc/testsuite/gcc.dg/cpp/_Pragma3.c depends on
 	gcc/testsuite/gcc.dg/cpp/mi1c.h.
 
-2003-05-23  Nathanael Nerode <neroden@gcc.gnu.org>
+2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* paranoia.cc: Fix spelling error.
 
@@ -1133,7 +1137,7 @@
 
 	* test_summary:  Add -h, print existing comments as help.
 
-2003-03-03  H.J. Lu <hjl@gnu.org>
+2003-03-03  H.J. Lu  <hjl@gnu.org>
 
 	* gcc_build: Use $GCC_CVS/$CVS instead of cvs.
 	* gcc_update: Likewise.
@@ -1216,7 +1220,7 @@
 
 	* enquire.c: Move from gcc.
 
-2002-07-16  H.J. Lu <hjl@gnu.org>
+2002-07-16  H.J. Lu  <hjl@gnu.org>
 
 	* gcc_update (touch_files): Pass -s to ${MAKE}.
 
@@ -1289,7 +1293,7 @@
 	and @center.  Allow [a-z] after @enumerate.  Handle 0 and numbers
 	greater than 9 in enumerations.
 
-2001-11-07  Laurent Guerby <guerby@acm.org>
+2001-11-07  Laurent Guerby  <guerby@acm.org>
 
 	* gcc_update (files_and_dependencies): Add Ada dependencies.
 
@@ -1304,7 +1308,7 @@
 	gcc/java/parse-scan.c and gcc/java/keyword.h to list of files to
 	touch.
 
-2001-09-04  David.Billinghurst <David.Billinghurst@riotinto.com>
+2001-09-04  David.Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* gcc_update: (files_and_dependencies) Add gcc/java/parse.c
 	gcc/java/parse-scan.c and gcc/java/keyword.h to list of files to
@@ -1331,7 +1335,7 @@ Fri Jul 27 18:01:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* gcc_update: Dump timestamp in LAST_UPDATED.
 
 2001-07-26  Andreas Jaeger  <aj@suse.de>,
-	    Hans-Peter Nilsson <hp@bitrange.com>
+	    Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* analyze_brprob: Fix documentation.
 
@@ -1355,7 +1359,7 @@ Mon Jul 23 15:47:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcc_update: Remove entries for gcc.1, cpp.1, gcov.1.
 
-2001-07-01  Zoltan Felleg <zfelleg@telnet.hu>
+2001-07-01  Zoltan Felleg  <zfelleg@telnet.hu>
 
 	* warn_summary: Fix typo in a comment.
 
@@ -1630,7 +1634,7 @@ Sun Jul 16 12:04:33 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* index-prop: Use a single pattern.  Also support *** cdiffs.
 
-2000-04-28  Pavel Roskin <pavel_roskin@geocities.com>
+2000-04-28  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* index-prop: Don't change /dev/null.
 
@@ -1656,7 +1660,7 @@ Sun Nov 28 00:41:44 1999  William Bader (william@nscs.fast.net)
 
 	* gcc_update: Allow patches compressed by bzip2.
 
-1999-10-11  Martin v. Löwis <loewis@informatik.hu-berlin.de>
+1999-10-11  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* newcvsroot: New file.
 
@@ -1693,7 +1697,7 @@ Sun Nov 28 00:41:44 1999  William Bader (william@nscs.fast.net)
 	* test_summary: Replace egcs with gcc.  Update e-mail address.
 
 1999-07-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	    Jerry Quinn <jquinn@nortelnetworks.com>
+	    Jerry Quinn  <jquinn@nortelnetworks.com>
 
 	* egcs_update (touch_files, apply_patch): New functions.
 	Use them.  New command-line option --patch.  Split test of local
@@ -1789,7 +1793,7 @@ Fri Oct 30 00:39:27 1998  Jeffrey A Law  (law@cygnus.com)
 	* egcs_update: Do touch java/parse.c and java/parse-scan.c. They're
 	in the repo again.
 
-Fri Oct 16 07:35:00 1998  Bruce Korb <korb@datadesign.com>
+Fri Oct 16 07:35:00 1998  Bruce Korb  <korb@datadesign.com>
 
 	* egcs_update:  Added gcc/fixinc/* generated files to touch list.
 
@@ -1812,7 +1816,7 @@ Mon Oct  5 14:19:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	keywords that are preserved in the "warning type" summary and
 	tighten up the "arg ???" regexp.
 
-Tue Sep 22 07:30 Bruce Korb <korb@datadesign.com>
+Tue Sep 22 07:30  Bruce Korb  <korb@datadesign.com>
 
 	* fixinc/inclhack.def:  Not all C++ comments in C headers
 	were treated alike.  They are now.  Also fixed syntax
@@ -1826,7 +1830,7 @@ Wed Sep 16 16:06:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* egcs_update: Additionally touch gcc/java/parse.[ch].
 
-Thu Sep  9 16:48 Bruce Korb <korb@datadesign.com>
+Thu Sep  9 16:48  Bruce Korb <korb@datadesign.com>
 
 	* fixinc/inclhack.def:  Added two files required by
 	SCO's Open Server 5's avoid_bool fix.
@@ -1857,7 +1861,7 @@ Tue Aug 11 17:33:19 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* egcs_update: New script.
 
-1998-08-05  Bruce Korb <korbb@datadesign.com>
+1998-08-05  Bruce Korb  <korbb@datadesign.com>
 
 	* fixinc/Makefile
 	Added define for target machine so machine-specific tests
@@ -1890,7 +1894,7 @@ Mon Jul 27 20:33:02 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	* test_summary: Corrected script name in comments providing
 	documentation.  Added linebreaks for lines with > 80 characters.
 
-Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
+Fri Jun 19 02:36:59 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary: New switch, -i, and environment variable,
 	append_logs, for including files in the report.
@@ -1900,7 +1904,7 @@ Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 	* warn_summary: Update to Kaveh's latest version allowing to
 	specify the last stage built.
 
-1998-05-29  Bruce Korb <korbb@datadesign.com>
+1998-05-29  Bruce Korb  <korbb@datadesign.com>
 
 	* fixinc/mkfixinc.sh
 	Changes to make it easier to invoke on platforms that
@@ -1910,7 +1914,7 @@ Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 	Applied fixes from egcs/gcc/fixincludes from the past several
 	months.
 
-1998-05-28  Bruce Korb <korbb@datadesign.com>
+1998-05-28  Bruce Korb  <korbb@datadesign.com>
 
 	* fixinc/*: Updated most everything for a first real
 	try at getting "fast_fixincludes" working.

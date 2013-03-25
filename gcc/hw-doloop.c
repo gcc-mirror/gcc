@@ -365,7 +365,7 @@ discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
       rtx tail = BB_END (bb);
       rtx insn, reg;
 
-      while (tail && GET_CODE (tail) == NOTE && tail != BB_HEAD (bb))
+      while (tail && NOTE_P (tail) && tail != BB_HEAD (bb))
 	tail = PREV_INSN (tail);
 
       if (tail == NULL_RTX)

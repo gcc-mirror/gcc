@@ -2078,12 +2078,10 @@ static bb_vec_info
 vect_slp_analyze_bb_1 (basic_block bb)
 {
   bb_vec_info bb_vinfo;
-  vec<ddr_p> ddrs;
   vec<slp_instance> slp_instances;
   slp_instance instance;
   int i;
   int min_vf = 2;
-  int max_vf = MAX_VECTORIZATION_FACTOR;
 
   bb_vinfo = new_bb_vec_info (bb);
   if (!bb_vinfo)
@@ -2100,8 +2098,7 @@ vect_slp_analyze_bb_1 (basic_block bb)
       return NULL;
     }
 
-  ddrs = BB_VINFO_DDRS (bb_vinfo);
-  if (!ddrs.length ())
+  if (BB_VINFO_DATAREFS (bb_vinfo).length () < 2)
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2112,10 +2109,20 @@ vect_slp_analyze_bb_1 (basic_block bb)
       return NULL;
     }
 
+  if (!vect_analyze_data_ref_accesses (NULL, bb_vinfo))
+    {
+     if (dump_enabled_p ())
+       dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			"not vectorized: unhandled data access in "
+			"basic block.\n");
+
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
   vect_pattern_recog (NULL, bb_vinfo);
 
-  if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo, &max_vf)
-       || min_vf > max_vf)
+  if (!vect_slp_analyze_data_ref_dependences (bb_vinfo))
      {
        if (dump_enabled_p ())
 	 dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2132,17 +2139,6 @@ vect_slp_analyze_bb_1 (basic_block bb)
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: bad data alignment in basic "
 			 "block.\n");
-
-      destroy_bb_vec_info (bb_vinfo);
-      return NULL;
-    }
-
-  if (!vect_analyze_data_ref_accesses (NULL, bb_vinfo))
-    {
-     if (dump_enabled_p ())
-       dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			"not vectorized: unhandled data access in "
-			"basic block.\n");
 
       destroy_bb_vec_info (bb_vinfo);
       return NULL;

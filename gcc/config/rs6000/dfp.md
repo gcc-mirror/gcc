@@ -29,77 +29,6 @@
   ])
 
 
-(define_expand "movsd"
-  [(set (match_operand:SD 0 "nonimmediate_operand" "")
-	(match_operand:SD 1 "any_operand" ""))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
-  "{ rs6000_emit_move (operands[0], operands[1], SDmode); DONE; }")
-
-(define_split
-  [(set (match_operand:SD 0 "gpc_reg_operand" "")
-	(match_operand:SD 1 "const_double_operand" ""))]
-  "reload_completed
-   && ((GET_CODE (operands[0]) == REG && REGNO (operands[0]) <= 31)
-       || (GET_CODE (operands[0]) == SUBREG
-	   && GET_CODE (SUBREG_REG (operands[0])) == REG
-	   && REGNO (SUBREG_REG (operands[0])) <= 31))"
-  [(set (match_dup 2) (match_dup 3))]
-  "
-{
-  long l;
-  REAL_VALUE_TYPE rv;
-
-  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
-  REAL_VALUE_TO_TARGET_DECIMAL32 (rv, l);
-
-  if (! TARGET_POWERPC64)
-    operands[2] = operand_subword (operands[0], 0, 0, SDmode);
-  else
-    operands[2] = gen_lowpart (SImode, operands[0]);
-
-  operands[3] = gen_int_mode (l, SImode);
-}")
-
-(define_insn "movsd_hardfloat"
-  [(set (match_operand:SD 0 "nonimmediate_operand" "=r,r,m,f,*c*l,!r,*h,!r,!r")
-	(match_operand:SD 1 "input_operand"        "r,m,r,f,r,h,0,G,Fn"))]
-  "(gpc_reg_operand (operands[0], SDmode)
-   || gpc_reg_operand (operands[1], SDmode))
-   && (TARGET_HARD_FLOAT && TARGET_FPRS)"
-  "@
-   mr %0,%1
-   lwz%U1%X1 %0,%1
-   stw%U0%X0 %1,%0
-   fmr %0,%1
-   mt%0 %1
-   mf%1 %0
-   nop
-   #
-   #"
-  [(set_attr "type" "*,load,store,fp,mtjmpr,mfjmpr,*,*,*")
-   (set_attr "length" "4,4,4,4,4,4,4,4,8")])
-
-(define_insn "movsd_softfloat"
-  [(set (match_operand:SD 0 "nonimmediate_operand" "=r,cl,r,r,m,r,r,r,r,r,*h")
-	(match_operand:SD 1 "input_operand" "r,r,h,m,r,I,L,R,G,Fn,0"))]
-  "(gpc_reg_operand (operands[0], SDmode)
-   || gpc_reg_operand (operands[1], SDmode))
-   && (TARGET_SOFT_FLOAT || !TARGET_FPRS)"
-  "@
-   mr %0,%1
-   mt%0 %1
-   mf%1 %0
-   lwz%U1%X1 %0,%1
-   stw%U0%X0 %1,%0
-   li %0,%1
-   lis %0,%v1
-   la %0,%a1
-   #
-   #
-   nop"
-  [(set_attr "type" "*,mtjmpr,mfjmpr,load,store,*,*,*,*,*,*")
-   (set_attr "length" "4,4,4,4,4,4,4,4,4,8,4")])
-
 (define_insn "movsd_store"
   [(set (match_operand:DD 0 "nonimmediate_operand" "=m")
 	(unspec:DD [(match_operand:SD 1 "input_operand" "d")]
@@ -108,7 +37,14 @@
    || gpc_reg_operand (operands[1], SDmode))
    && TARGET_HARD_FLOAT && TARGET_FPRS"
   "stfd%U0%X0 %1,%0"
-  [(set_attr "type" "fpstore")
+  [(set (attr "type")
+      (if_then_else
+	(match_test "update_indexed_address_mem (operands[0], VOIDmode)")
+	(const_string "fpstore_ux")
+	(if_then_else
+	  (match_test "update_address_mem (operands[0], VOIDmode)")
+	  (const_string "fpstore_u")
+	  (const_string "fpstore"))))
    (set_attr "length" "4")])
 
 (define_insn "movsd_load"
@@ -119,7 +55,14 @@
    || gpc_reg_operand (operands[1], DDmode))
    && TARGET_HARD_FLOAT && TARGET_FPRS"
   "lfd%U1%X1 %0,%1"
-  [(set_attr "type" "fpload")
+  [(set (attr "type")
+      (if_then_else
+	(match_test "update_indexed_address_mem (operands[1], VOIDmode)")
+	(const_string "fpload_ux")
+	(if_then_else
+	  (match_test "update_address_mem (operands[1], VOIDmode)")
+	  (const_string "fpload_u")
+	  (const_string "fpload"))))
    (set_attr "length" "4")])
 
 ;; Hardware support for decimal floating point operations.
@@ -182,211 +125,6 @@
   "fnabs %0,%1"
   [(set_attr "type" "fp")])
 
-(define_expand "movdd"
-  [(set (match_operand:DD 0 "nonimmediate_operand" "")
-	(match_operand:DD 1 "any_operand" ""))]
-  ""
-  "{ rs6000_emit_move (operands[0], operands[1], DDmode); DONE; }")
-
-(define_split
-  [(set (match_operand:DD 0 "gpc_reg_operand" "")
-	(match_operand:DD 1 "const_int_operand" ""))]
-  "! TARGET_POWERPC64 && reload_completed
-   && ((GET_CODE (operands[0]) == REG && REGNO (operands[0]) <= 31)
-       || (GET_CODE (operands[0]) == SUBREG
-	   && GET_CODE (SUBREG_REG (operands[0])) == REG
-	   && REGNO (SUBREG_REG (operands[0])) <= 31))"
-  [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 1))]
-  "
-{
-  int endian = (WORDS_BIG_ENDIAN == 0);
-  HOST_WIDE_INT value = INTVAL (operands[1]);
-
-  operands[2] = operand_subword (operands[0], endian, 0, DDmode);
-  operands[3] = operand_subword (operands[0], 1 - endian, 0, DDmode);
-#if HOST_BITS_PER_WIDE_INT == 32
-  operands[4] = (value & 0x80000000) ? constm1_rtx : const0_rtx;
-#else
-  operands[4] = GEN_INT (value >> 32);
-  operands[1] = GEN_INT (((value & 0xffffffff) ^ 0x80000000) - 0x80000000);
-#endif
-}")
-
-(define_split
-  [(set (match_operand:DD 0 "gpc_reg_operand" "")
-	(match_operand:DD 1 "const_double_operand" ""))]
-  "! TARGET_POWERPC64 && reload_completed
-   && ((GET_CODE (operands[0]) == REG && REGNO (operands[0]) <= 31)
-       || (GET_CODE (operands[0]) == SUBREG
-	   && GET_CODE (SUBREG_REG (operands[0])) == REG
-	   && REGNO (SUBREG_REG (operands[0])) <= 31))"
-  [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 5))]
-  "
-{
-  int endian = (WORDS_BIG_ENDIAN == 0);
-  long l[2];
-  REAL_VALUE_TYPE rv;
-
-  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
-  REAL_VALUE_TO_TARGET_DECIMAL64 (rv, l);
-
-  operands[2] = operand_subword (operands[0], endian, 0, DDmode);
-  operands[3] = operand_subword (operands[0], 1 - endian, 0, DDmode);
-  operands[4] = gen_int_mode (l[endian], SImode);
-  operands[5] = gen_int_mode (l[1 - endian], SImode);
-}")
-
-(define_split
-  [(set (match_operand:DD 0 "gpc_reg_operand" "")
-	(match_operand:DD 1 "const_double_operand" ""))]
-  "TARGET_POWERPC64 && reload_completed
-   && ((GET_CODE (operands[0]) == REG && REGNO (operands[0]) <= 31)
-       || (GET_CODE (operands[0]) == SUBREG
-	   && GET_CODE (SUBREG_REG (operands[0])) == REG
-	   && REGNO (SUBREG_REG (operands[0])) <= 31))"
-  [(set (match_dup 2) (match_dup 3))]
-  "
-{
-  int endian = (WORDS_BIG_ENDIAN == 0);
-  long l[2];
-  REAL_VALUE_TYPE rv;
-#if HOST_BITS_PER_WIDE_INT >= 64
-  HOST_WIDE_INT val;
-#endif
-
-  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
-  REAL_VALUE_TO_TARGET_DECIMAL64 (rv, l);
-
-  operands[2] = gen_lowpart (DImode, operands[0]);
-  /* HIGHPART is lower memory address when WORDS_BIG_ENDIAN.  */
-#if HOST_BITS_PER_WIDE_INT >= 64
-  val = ((HOST_WIDE_INT)(unsigned long)l[endian] << 32
-	 | ((HOST_WIDE_INT)(unsigned long)l[1 - endian]));
-
-  operands[3] = gen_int_mode (val, DImode);
-#else
-  operands[3] = immed_double_const (l[1 - endian], l[endian], DImode);
-#endif
-}")
-
-;; Don't have reload use general registers to load a constant.  First,
-;; it might not work if the output operand is the equivalent of
-;; a non-offsettable memref, but also it is less efficient than loading
-;; the constant into an FP register, since it will probably be used there.
-;; The "??" is a kludge until we can figure out a more reasonable way
-;; of handling these non-offsettable values.
-(define_insn "*movdd_hardfloat32"
-  [(set (match_operand:DD 0 "nonimmediate_operand" "=!r,??r,m,d,d,m,!r,!r,!r")
-	(match_operand:DD 1 "input_operand" "r,m,r,d,m,d,G,H,F"))]
-  "! TARGET_POWERPC64 && TARGET_HARD_FLOAT && TARGET_FPRS
-   && (gpc_reg_operand (operands[0], DDmode)
-       || gpc_reg_operand (operands[1], DDmode))"
-  "*
-{
-  switch (which_alternative)
-    {
-    default:
-      gcc_unreachable ();
-    case 0:
-    case 1:
-    case 2:
-      return \"#\";
-    case 3:
-      return \"fmr %0,%1\";
-    case 4:
-      return \"lfd%U1%X1 %0,%1\";
-    case 5:
-      return \"stfd%U0%X0 %1,%0\";
-    case 6:
-    case 7:
-    case 8:
-      return \"#\";
-    }
-}"
-  [(set_attr "type" "two,load,store,fp,fpload,fpstore,*,*,*")
-   (set_attr "length" "8,16,16,4,4,4,8,12,16")])
-
-(define_insn "*movdd_softfloat32"
-  [(set (match_operand:DD 0 "nonimmediate_operand" "=r,r,m,r,r,r")
-	(match_operand:DD 1 "input_operand" "r,m,r,G,H,F"))]
-  "! TARGET_POWERPC64 && (TARGET_SOFT_FLOAT || !TARGET_FPRS)
-   && (gpc_reg_operand (operands[0], DDmode)
-       || gpc_reg_operand (operands[1], DDmode))"
-  "#"
-  [(set_attr "type" "two,load,store,*,*,*")
-   (set_attr "length" "8,8,8,8,12,16")])
-
-; ld/std require word-aligned displacements -> 'Y' constraint.
-; List Y->r and r->Y before r->r for reload.
-(define_insn "*movdd_hardfloat64_mfpgpr"
-  [(set (match_operand:DD 0 "nonimmediate_operand" "=Y,r,!r,d,d,m,*c*l,!r,*h,!r,!r,!r,r,d")
-	(match_operand:DD 1 "input_operand" "r,Y,r,d,m,d,r,h,0,G,H,F,d,r"))]
-  "TARGET_POWERPC64 && TARGET_MFPGPR && TARGET_HARD_FLOAT && TARGET_FPRS
-   && (gpc_reg_operand (operands[0], DDmode)
-       || gpc_reg_operand (operands[1], DDmode))"
-  "@
-   std%U0%X0 %1,%0
-   ld%U1%X1 %0,%1
-   mr %0,%1
-   fmr %0,%1
-   lfd%U1%X1 %0,%1
-   stfd%U0%X0 %1,%0
-   mt%0 %1
-   mf%1 %0
-   nop
-   #
-   #
-   #
-   mftgpr %0,%1
-   mffgpr %0,%1"
-  [(set_attr "type" "store,load,*,fp,fpload,fpstore,mtjmpr,mfjmpr,*,*,*,*,mftgpr,mffgpr")
-   (set_attr "length" "4,4,4,4,4,4,4,4,4,8,12,16,4,4")])
-
-; ld/std require word-aligned displacements -> 'Y' constraint.
-; List Y->r and r->Y before r->r for reload.
-(define_insn "*movdd_hardfloat64"
-  [(set (match_operand:DD 0 "nonimmediate_operand" "=Y,r,!r,d,d,m,*c*l,!r,*h,!r,!r,!r")
-	(match_operand:DD 1 "input_operand" "r,Y,r,d,m,d,r,h,0,G,H,F"))]
-  "TARGET_POWERPC64 && !TARGET_MFPGPR && TARGET_HARD_FLOAT && TARGET_FPRS
-   && (gpc_reg_operand (operands[0], DDmode)
-       || gpc_reg_operand (operands[1], DDmode))"
-  "@
-   std%U0%X0 %1,%0
-   ld%U1%X1 %0,%1
-   mr %0,%1
-   fmr %0,%1
-   lfd%U1%X1 %0,%1
-   stfd%U0%X0 %1,%0
-   mt%0 %1
-   mf%1 %0
-   nop
-   #
-   #
-   #"
-  [(set_attr "type" "store,load,*,fp,fpload,fpstore,mtjmpr,mfjmpr,*,*,*,*")
-   (set_attr "length" "4,4,4,4,4,4,4,4,4,8,12,16")])
-
-(define_insn "*movdd_softfloat64"
-  [(set (match_operand:DD 0 "nonimmediate_operand" "=r,Y,r,cl,r,r,r,r,*h")
-	(match_operand:DD 1 "input_operand" "Y,r,r,r,h,G,H,F,0"))]
-  "TARGET_POWERPC64 && (TARGET_SOFT_FLOAT || !TARGET_FPRS)
-   && (gpc_reg_operand (operands[0], DDmode)
-       || gpc_reg_operand (operands[1], DDmode))"
-  "@
-   ld%U1%X1 %0,%1
-   std%U0%X0 %1,%0
-   mr %0,%1
-   mt%0 %1
-   mf%1 %0
-   #
-   #
-   #
-   nop"
-  [(set_attr "type" "load,store,*,mtjmpr,mfjmpr,*,*,*,*")
-   (set_attr "length" "4,4,4,4,4,8,12,16,4")])
-
 (define_expand "negtd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "")
 	(neg:TD (match_operand:TD 1 "gpc_reg_operand" "")))]
@@ -419,27 +157,6 @@
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "fnabs %0,%1"
   [(set_attr "type" "fp")])
-
-(define_expand "movtd"
-  [(set (match_operand:TD 0 "general_operand" "")
-	(match_operand:TD 1 "any_operand" ""))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS"
-  "{ rs6000_emit_move (operands[0], operands[1], TDmode); DONE; }")
-
-; It's important to list the Y->r and r->Y moves before r->r because
-; otherwise reload, given m->r, will try to pick r->r and reload it,
-; which doesn't make progress.
-(define_insn_and_split "*movtd_internal"
-  [(set (match_operand:TD 0 "nonimmediate_operand" "=m,d,d,Y,r,r")
-	(match_operand:TD 1 "input_operand"         "d,m,d,r,YGHF,r"))]
-  "TARGET_HARD_FLOAT && TARGET_FPRS
-   && (gpc_reg_operand (operands[0], TDmode)
-       || gpc_reg_operand (operands[1], TDmode))"
-  "#"
-  "&& reload_completed"
-  [(pc)]
-{ rs6000_split_multireg_move (operands[0], operands[1]); DONE; }
-  [(set_attr "length" "8,8,8,20,20,16")])
 
 ;; Hardware support for decimal floating point operations.
 

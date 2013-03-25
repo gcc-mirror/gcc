@@ -914,10 +914,10 @@ mcore_is_dead (rtx first, rtx reg)
      to assume that it is live.  */
   for (insn = NEXT_INSN (first); insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	return 0;	/* We lose track, assume it is alive.  */
 
-      else if (GET_CODE(insn) == CALL_INSN)
+      else if (CALL_P (insn))
 	{
 	  /* Call's might use it for target or register parms.  */
 	  if (reg_referenced_p (reg, PATTERN (insn))
@@ -926,7 +926,7 @@ mcore_is_dead (rtx first, rtx reg)
 	  else if (dead_or_set_p (insn, reg))
             return 1;
 	}
-      else if (GET_CODE (insn) == INSN)
+      else if (NONJUMP_INSN_P (insn))
 	{
 	  if (reg_referenced_p (reg, PATTERN (insn)))
             return 0;
@@ -2254,7 +2254,7 @@ is_cond_candidate (rtx insn)
      changed into a conditional.  Only bother with SImode items.  If 
      we wanted to be a little more aggressive, we could also do other
      modes such as DImode with reg-reg move or load 0.  */
-  if (GET_CODE (insn) == INSN)
+  if (NONJUMP_INSN_P (insn))
     {
       rtx pat = PATTERN (insn);
       rtx src, dst;
@@ -2305,9 +2305,9 @@ is_cond_candidate (rtx insn)
       */            
 
     }
-  else if (GET_CODE (insn) == JUMP_INSN &&
-	   GET_CODE (PATTERN (insn)) == SET &&
-	   GET_CODE (XEXP (PATTERN (insn), 1)) == LABEL_REF)
+  else if (JUMP_P (insn)
+	   && GET_CODE (PATTERN (insn)) == SET
+	   && GET_CODE (XEXP (PATTERN (insn), 1)) == LABEL_REF)
     return COND_BRANCH_INSN;
 
   return COND_NO;
@@ -2328,7 +2328,7 @@ emit_new_cond_insn (rtx insn, int cond)
 
   pat = PATTERN (insn);
 
-  if (GET_CODE (insn) == INSN)
+  if (NONJUMP_INSN_P (insn))
     {
       dst = SET_DEST (pat);
       src = SET_SRC (pat);
@@ -2449,9 +2449,9 @@ conditionalize_block (rtx first)
   /* Check that the first insn is a candidate conditional jump.  This is
      the one that we'll eliminate.  If not, advance to the next insn to
      try.  */
-  if (GET_CODE (first) != JUMP_INSN ||
-      GET_CODE (PATTERN (first)) != SET ||
-      GET_CODE (XEXP (PATTERN (first), 1)) != IF_THEN_ELSE)
+  if (! JUMP_P (first)
+      || GET_CODE (PATTERN (first)) != SET
+      || GET_CODE (XEXP (PATTERN (first), 1)) != IF_THEN_ELSE)
     return NEXT_INSN (first);
 
   /* Extract some information we need.  */

@@ -1,3 +1,1004 @@
+2013-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mov<mode>): Add ?!Ym,r and r,?!Ym alternatives.
+
+2013-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mov<mode>): Merge with movv2sf expander
+	using MMXMODE mode iterator.
+	(*move<mode>_internal): Merge with *movv2sf_internal and
+	*movv2sf_internal_rex64 using MMXMODE mode iterator.
+
+2013-03-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcse.c (oprs_unchanged_p): Respect flag_gcse_lm.
+	(record_last_mem_set_info): Likewise.
+
+	* df-core.c (rest_of_handle_df_initialize): Use XCNEWVEC instead
+	of XNEWVEC followed by memset.
+	(df_worklist_dataflow): Use XNEWVEC instead of xmalloc with a cast.
+
+2013-03-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/avr/avr.c, config/bfin/bfin.c, config/c6x/c6x.c,
+	config/epiphany/epiphany.c, config/frv/frv.c, config/ia64/ia64.c,
+	config/iq2000/iq2000.c, config/mcore/mcore.c, config/mep/mep.c,
+	config/mmix/mmix.c, config/pa/pa.c, config/rs6000/rs6000.c,
+	config/s390/s390.c, config/sparc/sparc.c, config/spu/spu.c,
+	config/stormy16/stormy16.c, config/v850/v850.c, config/xtensa/xtensa.c,
+	dwarf2out.c, hw-doloop.c, resource.c, rtl.h : Where applicable, use
+	the predicates NOTE_P, NONJUMP_INSN_P, JUMP_P, CALL_P, LABEL_P, and
+	BARRIER_P instead of GET_CODE.
+
+2013-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_emit_probe_stack_range): Fix small
+	inaccuracy in the probing code.
+
+	* config/sparc/sparc.md (ctrapsi4): Add predicate for operand #3.
+	(ctrapdi4): Likewise.
+
+2013-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* calls.c (expand_call): Add missing guard to code handling return
+	of non-BLKmode structures in MSB.
+	* function.c (expand_function_end): Likewise.
+
+2013-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (try_combine): Adjust comment.  Do not add the set of
+	insn #0 if the destination indirectly is set or dies in insn #2.
+	Tidy up code to distribute a new note.
+
+2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal): Set prefix_rex attribute
+	also for alternatives 16 and 17.
+
+2013-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*mov<mode>_internal): Merge with
+	*mov<mode>_internal_rex64.  Use x64 and nox64 isa attributes.
+	Emit insn template depending on type attribute.  Use
+	HAVE_AS_IX86_INTERUNIT_MOVQ to handle broken assemblers that require
+	movd instead of movq mnemonic for interunit moves.  Rewrite mode
+	attribute calculation.  Remove unit attribute calculation.
+	Set prefix attribute to maybe_vex for sselog1 and ssemov types.
+	Set prefix_data16 attribute for DImode ssemov types.
+	Use Ym instead of y for SSE-MMX conversion alternatives.
+	Reorder operand constraints.
+
+2013-03-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* df.h (df_insn_delete): Adjust prototype.
+	* emit-rtl.c (remove_insn): Pass a basic block to df_insn_delete
+	and let it decide whether mark the basic block dirty.
+	(set_insn_deleted): Only pass INSN_P insns to df_insn_delete.
+	* df-scan.c (df_insn_info_delete): New helper function, split
+	off from df_insn_delete.
+	(df_scan_free_bb_info): Use it.
+	(df_insn_rescan, df_insn_rescan_all, df_process_deferred_rescans):
+	Likewise.
+	(df_insn_delete): Likewise.  Take insn rtx as argument.  Verify
+	that the insn is actually an insn and it has a non-NULL basic block.
+	Do not mark basic block dirty if only deleting a DEBUG_INSN.
+
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct mem_ref): Remove indep_ref and
+	dep_ref members.
+	(mem_ref_alloc): Do not allocate them.
+	(refs_independent_p): Do not query or maintain a cache.
+
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (memory_references): Drop all_refs_in_loop.
+	(gather_mem_refs_in_loops): Do not compute it.
+	(analyze_memory_references): Do not allocate it.
+	(tree_ssa_lim_finalize): Do not free it.
+	(for_all_locs_in_loop): Do not query all_refs_in_loop.
+
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
+	* is-a.h (as_a): Use gcc_checking_assert.
+
+2013-03-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): New
+	format specifier for printing a constant in hex.
+	* config/aarch64/aarch64.md (insv_imm<mode>): Use the X
+	format specifier for printing second operand.
+
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (memory_references): Add refs_stored_in_loop
+	bitmaps.
+	(gather_mem_refs_in_loops): Perform store accumulation here.
+	(create_vop_ref_mapping_loop): Remove.
+	(create_vop_ref_mapping): Likewise.
+	(analyze_memory_references): Initialize refs_stored_in_loop.
+	(LOOP_DEP_BIT): New define to map to bits in (in)dep_loop bitmaps.
+	(record_indep_loop): Remove.
+	(record_dep_loop): New function.
+	(ref_indep_loop_p_1): Adjust to only walk over references
+	in the loop, not its subloops.
+	(ref_indep_loop_p): Rename to ...
+	(ref_indep_loop_p_2): ... this and recurse over the loop tree,
+	maintaining a more fine-grained cache.
+	(ref_indep_loop_p): Wrap ref_indep_loop_p_2.
+	(tree_ssa_lim_finalize): Free refs_stored_in_loop.
+
+2013-03-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct mem_ref_locs): Remove.
+	(struct mem_ref): Make accesses_in_loop a vec of a vec of
+	aggregate mem_ref_loc.
+	(free_mem_ref_locs): Inline into ...
+	(memref_free): ... this and adjust.
+	(mem_ref_alloc): Adjust.
+	(mem_ref_locs_alloc): Remove.
+	(record_mem_ref_loc): Adjust.
+	(get_all_locs_in_loop): Rewrite into ...
+	(for_all_locs_in_loop): ... this iterator.
+	(rewrite_mem_ref_loc): New functor.
+	(rewrite_mem_refs): Use for_all_locs_in_loop.
+	(sm_set_flag_if_changed): New functor.
+	(execute_sm_if_changed_flag_set): Use for_all_locs_in_loop.
+	(ref_always_accessed): New functor.
+	(ref_always_accessed_p): Use for_all_locs_in_loop.
+
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-pass.h (PROP_gimple_lvec): New.
+	* passes.c (dump_properties): Handle PROP_gimple_lvec.
+	(init_optimization_passes): Move pass_lower_vector.
+	* tree-vect-generic.c (gate_expand_vector_operations_ssa): Test
+	PROP_gimple_lvec.
+	(pass_lower_vector): Provide PROP_gimple_lvec.
+	(pass_lower_vector_ssa): Likewise.
+	* cfgexpand.c (pass_expand): Require PROP_gimple_lvec.
+
+2013-03-21  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (size_of_aranges): Skip DECL_IGNORED_P functions.
+
+2013-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal): Disparage slightly
+	all MMX moves to/from memory.  Use Yi instead of x for SSE-MMX
+	conversion alternatives.
+
+2013-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48087
+	* diagnostic.def (DK_WERROR): New kind.
+	* diagnostic.h (werrorcount): Define.
+	* diagnostic.c (diagnostic_report_diagnostic): For DK_WARNING
+	promoted to DK_ERROR, increment DK_WERROR counter instead of
+	DK_ERROR counter.
+	* toplev.c (toplev_main): Call print_ignored_options even if
+	just werrorcount is non-zero.  Exit with FATAL_EXIT_CODE
+	even if just werrorcount is non-zero.
+
+	PR debug/55608
+	* dwarf2out.c (tree_add_const_value_attribute): Call ggc_free (array)
+	on failure.
+	(resolve_one_addr): Fail if referenced STRING_CST hasn't been written.
+	(string_cst_pool_decl): New function.
+	(optimize_one_addr_into_implicit_ptr): New function.
+	(resolve_addr_in_expr): Optimize DWARF location expression
+	DW_OP_addr DW_OP_stack_value where DW_OP_addr refers to some variable
+	which doesn't live in memory, but has DW_AT_location or
+	DW_AT_const_value, or refers to a string literal, into
+	DW_OP_GNU_implicit_pointer.
+	(optimize_location_into_implicit_ptr): New function.
+	(resolve_addr): If removing DW_AT_location of a variable because
+	it was DW_OP_addr of address of the variable, but the variable doesn't
+	live in memory, try to emit const value attribute for the initializer.
+
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.h (VECTOR_TYPE_P): New macro.
+	(VECTOR_INTEGER_TYPE_P, VECTOR_FLOAT_TYPE_P, FLOAT_TYPE_P,
+	TYPE_MODE): Use it.
+	* fold-const.c (fold_cond_expr_with_comparison): Use build_zero_cst.
+	VEC_COND_EXPR cannot be lvalues.
+	(fold_ternary_loc) <VEC_COND_EXPR>: Merge with the COND_EXPR case.
+
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <VEC_CONCAT>:
+	Restrict the transformation to equal modes.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39326
+	* tree-ssa-loop-im.c (UNANALYZABLE_MEM_ID): New define.
+	(MEM_ANALYZABLE): Adjust.
+	(record_mem_ref_loc): Move bitmap ops ...
+	(gather_mem_refs_stmt): ... here.  Use the shared mem-ref for
+	unanalyzable refs, do not record locations for it.
+	(analyze_memory_references): Allocate ref zero as shared
+	unanalyzable ref.
+	(refs_independent_p): Do not test for unanalyzed mems here.
+	(ref_indep_loop_p_1): Special-case disambiguation against
+	the unanalyzed ref.
+	(ref_indep_loop_p): Assert we are not queried for the unanalyzed mem.
+
+2013-03-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (tune_params): Add
+	prefer_neon_for_64bits field.
+	* config/arm/arm.c (prefer_neon_for_64bits): New variable.
+	(arm_slowmul_tune): Default prefer_neon_for_64bits to false.
+	(arm_fastmul_tune, arm_strongarm_tune, arm_xscale_tune): Ditto.
+	(arm_9e_tune, arm_v6t2_tune, arm_cortex_tune): Ditto.
+	(arm_cortex_a15_tune, arm_cortex_a5_tune): Ditto.
+	(arm_cortex_a9_tune, arm_v6m_tune, arm_fa726te_tune): Ditto.
+	(arm_option_override): Handle -mneon-for-64bits new option.
+	* config/arm/arm.h (TARGET_PREFER_NEON_64BITS): New macro.
+	(prefer_neon_for_64bits): Declare new variable.
+	* config/arm/arm.md (arch): Rename neon_onlya8 and neon_nota8 to
+	avoid_neon_for_64bits and neon_for_64bits. Remove onlya8 and nota8.
+	(arch_enabled): Handle new arch types. Remove support for onlya8
+	and nota8.
+	(one_cmpldi2): Use new arch names.
+	(zero_extend<mode>di2, extend<mode>di2): Ditto.
+	* config/arm/arm.opt (mneon-for-64bits): Add option.
+	* config/arm/neon.md (adddi3_neon, subdi3_neon, iordi3_neon)
+	(anddi3_neon, xordi3_neon, ashldi3_neon, <shift>di3_neon): Use
+	neon_for_64bits instead of nota8 and avoid_neon_for_64bits instead
+	of onlya8.
+	* doc/invoke.texi (-mneon-for-64bits): Document.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39326
+	* tree-ssa-loop-im.c (bb_loop_postorder): New global static.
+	(sort_bbs_in_loop_postorder_cmp): New function.
+	(gather_mem_refs_in_loops): Assign mem-ref IDs in loop postorder.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_update_interleaving_chain): Remove.
+	(vect_insert_into_interleaving_chain): Likewise.
+	(vect_drs_dependent_in_basic_block): Inline ...
+	(vect_slp_analyze_data_ref_dependence): ... here.  New function,
+	split out from ...
+	(vect_analyze_data_ref_dependence): ... here.  Simplify.
+	(vect_check_interleaving): Simplify.
+	(vect_analyze_data_ref_dependences): Likewise.  Split out ...
+	(vect_slp_analyze_data_ref_dependences): ... this new function.
+	(dr_group_sort_cmp): New function.
+	(vect_analyze_data_ref_accesses): Compute data-reference groups
+	here instead of in vect_analyze_data_ref_dependence.  Use
+	a more efficient algorithm.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Use
+	vect_slp_analyze_data_ref_dependences.  Call
+	vect_analyze_data_ref_accesses earlier.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	* tree-vectorizer.h (vect_analyze_data_ref_dependences): Adjust.
+	(vect_slp_analyze_data_ref_dependences): New prototype.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (can_sm_ref_p): Do not test whether
+	ref is stored in the loop.
+	(find_refs_for_sm): Walk only over all stores.
+	(store_motion_loop): Allocate from lim_bitmap_obstack.
+	(store_motion): Likewise.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge):
+	Update virtual SSA form.
+
+2013-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_eh_frame_ciev3): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.c (solaris_override_options): Only enforce DWARF 2
+	if !HAVE_LD_EH_FRAME_CIEV3.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_expr_no_block): New function.
+	(verify_expr_location_1): Verify that neither DECL_DEBUG_EXPR
+	nor DECL_VALUE_EXPR have locations with associated blocks.
+	* tree-ssa-live.c (clear_unused_block_pointer_1): Remove.
+	(clear_unused_block_pointer): Remove code dealing with
+	blocks in DECL_DEBUG_EXPR locations.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (DECL_DEBUG_EXPR_IS_FROM): Rename to ...
+	(DECL_HAS_DEBUG_EXPR_P): ... this.  Guard properly.
+	* tree.c (copy_node_stat): Do not copy DECL_HAS_DEBUG_EXPR_P.
+	* dwarf2out.c (add_var_loc_to_decl): Use DECL_HAS_DEBUG_EXPR_P
+	instead of DECL_DEBUG_EXPR_IS_FROM.
+	* gimplify.c (gimplify_modify_expr): Likewise.
+	* tree-cfg.c (verify_expr_location_1): Likewise.
+	* tree-complex.c (create_one_component_var): Likewise.
+	* tree-sra.c (create_access_replacement): Likewise.
+	* tree-ssa-live.c (clear_unused_block_pointer_1): Likewise.
+	(clear_unused_block_pointer): Likewise.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Likewise.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Likewise.
+	* var-tracking.c (var_debug_decl): Likewise.
+	(track_expr_p): Likewise.
+	* tree-inline.c (add_local_variables): Likewise.  Set
+	DECL_HAS_DEBUG_EXPR_P after copying it.
+	* tree-diagnostic.c (default_tree_printer): Use DECL_HAS_DEBUG_EXPR_P
+	instead of DECL_DEBUG_EXPR_IS_FROM.  Guard properly.
+
+2013-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56656
+	* configure.ac (HAVE_AS_IX86_INTERUNIT_MOVQ): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/i386.md (*movdf_internal): Use
+	HAVE_AS_IX86_INTERUNIT_MOVQ to handle broken assemblers that require
+	movd instead of movq mnemonic for interunit moves.
+	(*movdi_internal): Ditto.
+
+2013-03-21  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64-simd.md (simd_fabd): New Attribute.
+	(abd<mode>_3): New pattern.
+	(aba<mode>_3): New pattern.
+	(fabd<mode>_3): New pattern.
+
+2013-03-21  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64-elf.h (REGISTER_PREFIX): Remove.
+	* config/aarch64/aarch64.c (aarch64_print_operand): Remove all
+	occurrence of REGISTER_PREFIX as its empty string.
+
+2013-03-20  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Record
+	addititional equivalences for equality comparisons between an SSA_NAME
+	and a constant where the SSA_NAME was set from a widening conversion.
+
+2013-03-20  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/sync.md (atomic_test_and_set): New pattern.
+
+2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movoi_internal_avx): Emit insn template
+	depending on type attribute.
+	(*movti_internal): Ditto.
+	(*movtf_internal): Ditto.
+	(*movxf_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+
+2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal): Set prefix attribute to
+	maybe_vex for sselog1 and ssemov types.
+	(*movdi_internal): Reorder operand constraints.
+	(*movsi_internal): Ditto.  Set prefix attribute to
+	maybe_vex for sselog1 and ssemov types.
+	(*movtf_internal): Set prefix attribute to maybe_vex
+	for sselog1 and ssemov types.
+	(*movdf_internal): Ditto.  Set prefix_data16 attribute for
+	DImode ssemov types.  Reorder operand constraints.
+	(*movsf_internal): Set type of alternatives 3,4 to imov.  Set prefix
+	attribute to maybe_vex for sselog1 and ssemov types.  Set prefix_data16
+	attribute for SImode ssemov types.  Reorder operand constraints.
+
+2013-03-20  Martin Jambor  <mjambor@suse.cz>
+
+	* params.def (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS): New parameter.
+	* ipa-cp.c (hint_time_bonus): Add abonus for known array indices.
+
+2013-03-20  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/predicates.md (indexed_address, update_address_mem
+	update_indexed_address_mem): New predicates.
+	* config/rs6000/vsx.md (vsx_extract_<mode>_zero): Set correct "type"
+	attribute for load/store instructions.
+	* config/rs6000/dfp.md (movsd_store): Likewise.
+	(movsd_load): Likewise.
+	* config/rs6000/rs6000.md (zero_extend<mode>di2_internal1): Likewise.
+	(unnamed HI->DI extend define_insn): Likewise.
+	(unnamed SI->DI extend define_insn): Likewise.
+	(unnamed QI->SI extend define_insn): Likewise.
+	(unnamed QI->HI extend define_insn): Likewise.
+	(unnamed HI->SI extend define_insn): Likewise.
+	(unnamed HI->SI extend define_insn): Likewise.
+	(extendsfdf2_fpr): Likewise.
+	(movsi_internal1): Likewise.
+	(movsi_internal1_single): Likewise.
+	(movhi_internal): Likewise.
+	(movqi_internal): Likewise.
+	(movcc_internal1): Correct mnemonic for stw insn. Set correct "type"
+	attribute for load/store instructions.
+	(mov<mode>_hardfloat): Set correct "type" attribute for load/store
+	instructions.
+	(mov<mode>_softfloat): Likewise.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+	(mov<mode>_softfloat64): Likewise.
+	(movdi_internal32): Likewise.
+	(movdi_internal64): Likewise.
+	(probe_stack_<mode>): Likewise.
+
+2013-03-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (VEC_R): Add 32-bit integer, binary
+	floating point, and decimal floating point to reload iterator.
+
+	* config/rs6000/constraints.md (wl constraint): New constraints to
+	return FLOAT_REGS if certain options are used to reduce the number
+	of separate patterns that exist in the file.
+	(wx constraint): Likewise.
+	(wz constraint): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): If
+	-mdebug=reg, print wg, wl, wx, and wz constraints.
+	(rs6000_init_hard_regno_mode_ok): Initialize new constraints.
+	Initialize the reload functions for 64-bit binary/decimal floating
+	point types.
+	(reg_offset_addressing_ok_p): If we are on a power7 or later, use
+	LFIWZX and STFIWX to load/store 32-bit decimal types, and don't
+	create the buffer on the stack to overcome not having a 32-bit
+	load and store.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_memory_needed_rtx): Likewise.
+	(rs6000_alloc_sdmode_stack_slot): Likewise.
+	(rs6000_preferred_reload_class): On VSX, we can create SFmode 0.0f
+	via xxlxor, just like DFmode 0.0.
+
+	* config/rs6000/rs6000.h (TARGET_NO_SDMODE_STACK): New macro,
+	define as 1 if we are running on a power7 or newer.
+	(enum r6000_reg_class_enum): Add new constraints.
+
+	* config/rs6000/dfp.md (movsd): Delete, combine with binary
+	floating point moves in rs6000.md.  Combine power6x (mfpgpr) moves
+	with other moves by using conditional constraits (wg).  Use LFIWZX
+	and STFIWX for loading SDmode on power7.  Use xxlxor to create 0.0f.
+	(movsd splitter): Likewise.
+	(movsd_hardfloat): Likewise.
+	(movsd_softfloat): Likewise.
+
+	* config/rs6000/rs6000.md (FMOVE32): New iterators to combine
+	binary and decimal floating point moves.
+	(fmove_ok): New attributes to combine binary and decimal floating
+	point moves, and to combine power6x (mfpgpr) moves along normal
+	floating moves.
+	(real_value_to_target): Likewise.
+	(f32_lr): Likewise.
+	(f32_lm): Likewise.
+	(f32_li): Likewise.
+	(f32_sr): Likewise.
+	(f32_sm): Likewise.
+	(f32_si): Likewise.
+	(movsf): Combine binary and decimal floating point moves.  Combine
+	power6x (mfpgpr) moves with other moves by using conditional
+	constraits (wg).  Use LFIWZX and STFIWX for loading SDmode on power7.
+	(mov<mode> for SFmode/SDmode); Likewise.
+	(SFmode/SDmode splitters): Likewise.
+	(movsf_hardfloat): Likewise.
+	(mov<mode>_hardfloat for SFmode/SDmode): Likewise.
+	(movsf_softfloat): Likewise.
+	(mov<mode>_softfloat for SFmode/SDmode): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wl,
+	wx and wz constraints.
+
+	* config/rs6000/constraints.md (wg constraint): New constraint to
+	return FLOAT_REGS if -mmfpgpr (power6x) was used.
+
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add wg
+	constraint.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): If
+	-mdebug=reg, print wg, wl, wx, and wz constraints.
+	(rs6000_init_hard_regno_mode_ok): Initialize new constraints.
+	Initialize the reload functions for 64-bit binary/decimal floating
+	point types.
+	(reg_offset_addressing_ok_p): If we are on a power7 or later, use
+	LFIWZX and STFIWX to load/store 32-bit decimal types, and don't
+	create the buffer on the stack to overcome not having a 32-bit
+	load and store.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_memory_needed_rtx): Likewise.
+	(rs6000_alloc_sdmode_stack_slot): Likewise.
+	(rs6000_preferred_reload_class): On VSX, we can create SFmode 0.0f
+	via xxlxor, just like DFmode 0.0.
+
+	* config/rs6000/dfp.md (movdd): Delete, combine with binary
+	floating point moves in rs6000.md.  Combine power6x (mfpgpr) moves
+	with other moves by using conditional constraits (wg).  Use LFIWZX
+	and STFIWX for loading SDmode on power7.
+	(movdd splitters): Likewise.
+	(movdd_hardfloat32): Likewise.
+	(movdd_softfloat32): Likewise.
+	(movdd_hardfloat64_mfpgpr): Likewise.
+	(movdd_hardfloat64): Likewise.
+	(movdd_softfloat64): Likewise.
+
+	* config/rs6000/rs6000.md (FMOVE64): New iterators to combine
+	64-bit binary and decimal floating point moves.
+	(FMOVE64X): Likewise.
+	(movdf): Combine 64-bit binary and decimal floating point moves.
+	Combine power6x (mfpgpr) moves with other moves by using
+	conditional constraits (wg).
+	(mov<mode> for DFmode/DDmode): Likewise.
+	(DFmode/DDmode splitters): Likewise.
+	(movdf_hardfloat32): Likewise.
+	(mov<mode>_hardfloat32 for DFmode/DDmode): Likewise.
+	(movdf_softfloat32): Likewise.
+	(movdf_hardfloat64_mfpgpr): Likewise.
+	(movdf_hardfloat64): Likewise.
+	(mov<mode>_hardfloat64 for DFmode/DDmode): Likewise.
+	(movdf_softfloat64): Likewise.
+	(mov<mode>_softfloat64 for DFmode/DDmode): Likewise.
+	(reload_<mode>_load): Move to later in the file so they aren't in
+	the middle of the floating point move insns.
+	(reload_<mode>_store): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wg
+	constraint.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print out wg
+	constraint if -mdebug=reg.
+	(rs6000_initi_hard_regno_mode_ok): Enable wg constraint if -mfpgpr.
+	Enable using dd reload support if needed.
+
+	* config/rs6000/dfp.md (movtd): Delete, combine with 128-bit
+	binary and decimal floating point moves in rs6000.md.
+	(movtd_internal): Likewise.
+
+	* config/rs6000/rs6000.md (FMOVE128): Combine 128-bit binary and
+	decimal floating point moves.
+	(movtf): Likewise.
+	(movtf_internal): Likewise.
+	(mov<mode>_internal, TDmode/TFmode): Likewise.
+	(movtf_softfloat): Likewise.
+	(mov<mode>_softfloat, TDmode/TFmode): Likewise.
+
+	* config/rs6000/rs6000.md (movdi_mfpgpr): Delete, combine with
+	movdi_internal64, using wg constraint for move direct operations.
+	(movdi_internal64): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print
+	MODES_TIEABLE_P for selected modes.  Print the numerical value of
+	the various virtual registers. Use GPR/FPR first/last values,
+	instead of hard coding the register numbers.  Print which modes
+	have reload functions registered.
+	(rs6000_option_override_internal): If -mdebug=reg, trace the options
+	settings before/after setting cpu, target and subtarget settings.
+	(rs6000_secondary_reload_trace): Improve the RTL dump for -mdebug=addr
+	and for secondary reload failures in rs6000_secondary_reload_inner.
+	(rs6000_secondary_reload_fail): Likewise.
+	(rs6000_secondary_reload_inner): Likewise.
+
+	* config/rs6000/rs6000.md (FIRST_GPR_REGNO): Add convenience
+	macros for first/last GPR and FPR registers.
+	(LAST_GPR_REGNO): Likewise.
+	(FIRST_FPR_REGNO): Likewise.
+	(LAST_FPR_REGNO): Likewise.
+
+	* config/rs6000/vector.md (mul<mode>3): Use the combined macro
+	VECTOR_UNIT_ALTIVEC_OR_VSX_P instead of separate calls to
+	VECTOR_UNIT_ALTIVEC_P and VECTOR_UNIT_VSX_P.
+	(vcond<mode><mode>): Likewise.
+	(vcondu<mode><mode>): Likewise.
+	(vector_gtu<mode>): Likewise.
+	(vector_gte<mode>): Likewise.
+	(xor<mode>3): Don't allow logical operations on TImode in 32-bit
+	to prevent the compiler from converting DImode operations to TImode.
+	(ior<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(nor<mode>3): Likewise.
+	(andc<mode>3): Likewise.
+
+	* config/rs6000/constraints.md (wt constraint): New constraint
+	that returns VSX_REGS if TImode is allowed in VSX registers.
+
+	* config/rs6000/predicates.md (easy_fp_constant): 0.0f is an easy
+	constant under VSX.
+
+	* config/rs6000/rs6000-modes.def (PTImode): Define, PTImode is
+	similar to TImode, but it is restricted to being in the GPRs.
+
+	* config/rs6000/rs6000.opt (-mvsx-timode): New switch to allow
+	TImode to occupy a single VSX register.
+
+	* config/rs6000/rs6000-cpus.def (ISA_2_6_MASKS_SERVER): Default to
+	-mvsx-timode for power7/power8.
+	(power7 cpu): Likewise.
+	(power8 cpu): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_nregs_internal): Make
+	sure that TFmode/TDmode take up two registers if they are ever
+	allowed in the upper VSX registers.
+	(rs6000_hard_regno_mode_ok): If -mvsx-timode, allow TImode in VSX
+	registers.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_debug_reg_global): Add debugging for PTImode and wt
+	constraint.  Print if LRA is turned on.
+	(rs6000_option_override_internal): Give an error if -mvsx-timode
+	and VSX is not enabled.
+	(invalid_e500_subreg): Handle PTImode, restricting it to GPRs.  If
+	-mvsx-timode, restrict TImode to reg+reg addressing, and PTImode
+	to reg+offset addressing.  Use PTImode when checking offset
+	addresses for validity.
+	(reg_offset_addressing_ok_p): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_legitimate_address_p): Likewise.
+	(rs6000_eliminate_indexed_memrefs): Likewise.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_reload): Likewise.
+	(rs6000_secondary_reload_inner): Handle PTImode.  Allow 64-bit
+	reloads to fpr registers to continue to use reg+offset addressing,
+	but 64-bit reloads to altivec registers need reg+reg addressing.
+	Drop test for PRE_MODIFY, since VSX loads/stores no longer support
+	it.  Treat LO_SUM like a PLUS operation.
+	(rs6000_secondary_reload_class): If type is 64-bit, prefer to use
+	FLOAT_REGS instead of VSX_RGS to allow use of reg+offset addressing.
+	(rs6000_cannot_change_mode_class): Do not allow TImode in VSX
+	registers to share a register with a smaller sized type, since VSX
+	puts scalars in the upper 64-bits.
+	(print_operand): Add support for PTImode.
+	(rs6000_register_move_cost): Use VECTOR_MEM_VSX_P instead of
+	VECTOR_UNIT_VSX_P to catch types that can be loaded in VSX
+	registers, but don't have arithmetic support.
+	(rs6000_memory_move_cost): Add test for VSX.
+	(rs6000_opt_masks): Add -mvsx-timode.
+
+	* config/rs6000/vsx.md (VSm): Change to use 64-bit aligned moves
+	for TImode.
+	(VSs): Likewise.
+	(VSr): Use wt constraint for TImode.
+	(VSv): Drop TImode support.
+	(vsx_movti): Delete, replace with versions for 32-bit and 64-bit.
+	(vsx_movti_64bit): Likewise.
+	(vsx_movti_32bit): Likewise.
+	(vec_store_<mode>): Use VSX iterator instead of vector iterator.
+	(vsx_and<mode>3): Delete use of '?' constraint on inputs, just put
+	one '?' on the appropriate output constraint.  Do not allow TImode
+	logical operations on 32-bit systems.
+	(vsx_ior<mode>3): Likewise.
+	(vsx_xor<mode>3): Likewise.
+	(vsx_one_cmpl<mode>2): Likewise.
+	(vsx_nor<mode>3): Likewise.
+	(vsx_andc<mode>3): Likewise.
+	(vsx_concat_<mode>): Likewise.
+	(vsx_xxpermdi_<mode>): Fix thinko for non V2DF/V2DI modes.
+
+	* config/rs6000/rs6000.h (MASK_VSX_TIMODE): Map from
+	OPTION_MASK_VSX_TIMODE.
+	(enum rs6000_reg_class_enum): Add RS6000_CONSTRAINT_wt.
+	(STACK_SAVEAREA_MODE): Use PTImode instead of TImode.
+
+	* config/rs6000/rs6000.md (INT mode attribute): Add PTImode.
+	(TI2 iterator): New iterator for TImode, PTImode.
+	(wd mode attribute): Add values for vector types.
+	(movti_string): Replace TI move operations with operations for TImode
+	and PTImode.  Add support for TImode being allowed in VSX registers.
+	(mov<mode>_string, TImode/PTImode): Likewise.
+	(movti_ppc64): Likewise.
+	(mov<mode>_ppc64, TImode/PTImode): Likewise.
+	(TI mode splitters): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document wt
+	constraint.
+
+2013-03-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/56355
+	* fold-const.c (tree_binary_nonnegative_warnv_p) <MULT_EXPR>:
+	Also handle integers with undefined overflow.
+
+2013-03-20  Catherine Moore  <clm@codesourcery.com>
+	    Maciej W. Rozycki  <macro@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Nathan Sidwell <nathan@codesourcery.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+	    Chao-ying Fu <fu@mips.com>
+
+	* doc/extend.texi: (micromips, nomicromips, nocompression):
+	Document new function attributes.
+	* doc/invoke.texi (minterlink-compressed, mmicromips,
+	m14k, m14ke, m14kec): Document new options.
+	(minterlink-mips16): Update documentation.
+	* doc/md.texi (ZC, ZD): Document new constraints.
+	* configure.ac (gcc_cv_as_micromips): Check if linker
+	supports the .set micromips directive.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/micromips.md: New file.
+	* constraints.md (ZC, ZD): New constraints.
+	* config/mips/predicates.md (movep_src_register): New predicate.
+	(movep_src_operand): New predicate.
+	(non_volatile_mem_operand): New predicate.
+	* config/mips/mips.md (multimem): New type.
+	(length): Differentiate between 17-bit and 18-bit branch offsets.
+	(MOVEP1, MOVEP2): New mode iterator.
+ 	(mov_<load>l): Use ZC constraint.
+	(mov_<load>r): Likewise.
+	(mov_<store>l): Likewise.
+	(mov_<store>r): Likewise.
+	(*branch_equality<mode>_inverted): Add microMIPS support.
+	(*branch_equality<mode>): Likewise.
+	(*jump_absolute): Likewise.
+	(indirect_jump_<mode>): Likewise.
+	(tablejump_<mode>): Likewise.
+	(<optab>_internal): Likewise.
+	(sibcall_internal): Likewise.
+	(sibcall_value_internal): Likewise.
+	(prefetch): Use constraint ZD.
+	* config/mips/mips.opt (minterlink-compressed): New option.
+	(minterlink-mips16): Now an alias for minterlink-compressed.
+	(mmicromips): New option.
+	* config/mips/sync.md (sync_compare_and_swap<mode>): Use ZR constraint.
+	(compare_and_swap_12): Likewise.
+	(sync_add<mode>): Likewise.
+	(sync_<optab>_12): Likewise.
+	(sync_old_<optab>_12): Likewise.
+	(sync_new_<optab>_12): Likewise.
+	(sync_nand_12): Likewise.
+	(sync_old_nand_12): Likewise.
+	(sync_new_nand_12): Likewise.
+	(sync_sub<mode>): Likewise.
+	(sync_old_add<mode>): Likewise.
+	(sync_old_sub<mode>): Likewise.
+	(sync_new_add<mode>): Likewise.
+	(sync_new_sub<mode>): Likewise.
+	(sync_<optab><mode>): Likewise.
+	(sync_old_<optab><mode>): Likewise.
+	(sync_new_<optab><mode>): Likewise.
+	(sync_nand<mode>): Likewise.
+	(sync_old_nand<mode>): Likewise.
+	(sync_new_nand<mode>): Likewise.
+	(sync_lock_test_and_set<mode>): Likewise.
+	(test_and_set_12): Likewise.
+	(atomic_compare_and_swap<mode>): Likewise.
+	(atomic_exchange<mode>_llsc): Likewise.
+	(atomic_fetch_add<mode>_llsc): Likewise.
+	* config/mips/mips-cpus.def (m14kc, m14k): New processors.
+	* config/mips/mips-protos.h (umips_output_save_restore): New prototype.
+	(umips_save_restore_pattern_p): Likewise.
+	(umips_load_store_pair_p): Likewise.
+	(umips_output_load_store_pair): Likewise.
+	(umips_movep_target_p): Likewise.
+	(umips_12bit_offset_address_p): Likewise.
+	* config/mips/mips.c (MIPS_MAX_FIRST_STEP): Update for microMIPS.
+	(mips_base_mips16): Rename this...
+	(mips_base_compression_flags): ...to this. Update all uses.
+	(mips_attribute_table): Add micromips, nomicromips and nocompression.
+	(mips_mips16_decl_p): Delete.
+	(mips_nomips16_decl_p): Delete.
+ 	(mips_get_compress_on_flags): New function.
+	(mips_get_compress_off_flags): New function.
+	(mips_get_compress_mode): New function.
+	(mips_get_compress_on_name): New function.
+	(mips_get_compress_off_name): New function.
+	(mips_insert_attributes): Support multiple compression types.
+	(mips_merge_decl_attributes): Likewise.
+	(umips_12bit_offset_address_p): New function.
+	(mips_start_function_definition): Emit .set micromips directive.
+	(mips_call_may_need_jalx_p): New function.
+	(mips_function_ok_for_sibcall): Add microMIPS support.
+	(mips_print_operand_punctuation): Support short delay slots and
+	compact jumps.
+	(umips_swm_mask, umips_swm_encoding): New.
+	(umips_build_save_restore): New function.
+	(mips_for_each_saved_gpr_and_fpr): Add microMIPS support.
+	(was_mips16_p): Remove.
+	(old_compression_mode): New.
+	(mips_set_compression_mode): New function.
+	(mips_set_current_function): Add microMIPS support.
+	(mips_option_override): Likewise.
+	(umips_save_restore_pattern_p): New function.
+	(umips_output_save_restore): New function.
+	(umips_load_store_pair_p_1): New function.
+	(umips_load_store_pair_p): New function.
+	(umips_output_load_store_pair_1): New function.
+	(umips_output_load_store_pair): New function.
+	(umips_movep_target_p) New function.
+	(mips_prepare_pch_save): Add microMIPS support.
+	* config/mips/mips.h (TARGET_COMPRESSION): New.
+	(TARGET_CPU_CPP_BUILTINS): Update macro
+	to use new compression flags and to support microMIPS.
+	(MIPS_ISA_LEVEL_SPEC): Add m14k processors.
+	(MIPS_ARCH_FLOAT_SPEC): Likewise.
+	(ISA_HAS_LWXS): Include TARGET_MICROMIPS.
+	(ISA_HAS_LOAD_DELAY): Exclude TARGET_MICROMIPS.
+	(ASM_SPEC): Support mmicromips and mno-micromips.
+	(M16STORE_REG_P): New macro.
+	(MIPS_CALL): Support TARGET_MICROMIPS.
+	(MICROMIPS_J): New macro.
+	(mips_base_mips16): Rename this...
+	(mips_base_compression_flags): ...to this.
+	(UMIPS_12BIT_OFFSET_P): New macro.
+	* config/mips/t-sde: (MULTILIB_OPTIONS): Add microMIPS.
+	(MULTILIB_DIRNAMES): Likewise.
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56661
+	* tree-ssa-sccvn.c (visit_use): Only value-number calls if
+	the result does not have to be distinct.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (copy_tree_body_r): Sync MEM_REF code with
+	remap_gimple_op_r.
+
+2013-03-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Steven Bosscher <steven@gcc.gnu.org>
+
+	PR rtl-optimization/56605
+	* loop-iv.c (implies_p): Handle equal RTXs and subregs.
+
+2013-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/56656
+	* config/i386/i386.md (*movdi_internal): Handle broken assemblers
+	that require movd instead of movq.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (struct variable_info): Add pointer
+	to the first field of an aggregate with sub-vars.  Make
+	this and the pointer to the next subfield its ID.
+	(vi_next): New function.
+	(nothing_id, anything_id, readonly_id, escaped_id, nonlocal_id,
+	storedanything_id, integer_id): Increment by one.
+	(new_var_info, get_call_vi, lookup_call_clobber_vi,
+	get_call_clobber_vi): Adjust.
+	(solution_set_expand): Simplify and speedup.
+	(solution_set_add): Inline into ...
+	(set_union_with_increment): ... this.  Adjust accordingly.
+	(do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+	(do_complex_constraint): Simplify.
+	(build_pred_graph): Adjust.
+	(solve_graph): Likewise.  Simplify and speedup.
+	(get_constraint_for_ssa_var, get_constraint_for_ptr_offset,
+	get_constraint_for_component_ref, get_constraint_for_1,
+	first_vi_for_offset, first_or_preceding_vi_for_offset,
+	create_function_info_for, create_variable_info_for_1,
+	create_variable_info_for, intra_create_variable_infos): Adjust.
+	(init_base_vars): Push NULL for ID zero.
+	(compute_points_to_sets): Adjust.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	* cfgloop.c (verify_loop_structure): Streamline and avoid
+	ICEing on corrupt loop tree.
+	* graph.c (draw_cfg_nodes_for_loop): Avoid ICEing on corrupt
+	loop tree.
+
+2013-03-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (slpeel_can_duplicate_loop_p): Do not
+	check whether an SSA update is needed.
+
+2013-03-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/constraints.md (T): Rename to...
+	(Yf): ...this.
+	(U): Rename to...
+	(Yd): ...this.
+	* config/mips/mips.md (*movdi_64bit, *movdi_64bit_mips16)
+	(*mov<mode>_internal, *mov<mode>_mips16): Update accordingly.
+
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*sub<mode>3_carryin): New pattern.
+	(*subsi3_carryin_uxtw): Likewise.
+
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*ror<mode>3_insn): New pattern.
+	(*rorsi3_insn_uxtw): Likewise.
+
+2013-03-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*extr<mode>5_insn): New pattern.
+	(*extrsi5_insn_uxtw): Likewise.
+
+2013-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	* passes.c (init_optimization_passes): Move second VRP after DOM.
+
+2013-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_internal): Merge from
+	*movti_internal_rex64 and *movti_internal_sse.  Use x64 isa attribute.
+	(*movdi_internal): Merge with *movdi_internal_rex64.  Use x64 and
+	nox64 isa attributes.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (find): Use gcc_checking_assert.
+	(unite): Likewise.
+	(merge_node_constraints): Likewise.
+	(build_succ_graph): Likewise.
+	(valid_graph_edge): Inline into single caller.
+	(unify_nodes): Likewise.  Use bitmap_set_bit return value
+	and cache varinfo.
+	(scc_visit): Fix formatting and variable use.
+	(do_sd_constraint): Use gcc_checking_assert.
+	(do_ds_constraint): Likewise.
+	(do_complex_constraint): Likewise.
+	(condense_visit): Likewise.  Cleanup.
+	(dump_pred_graph): New function.
+	(perform_var_substitution): Dump the pred-graph before
+	variable substitution.
+	(find_equivalent_node): Use gcc_checking_assert.
+	(rewrite_constraints): Guard checking loop with ENABLE_CHECKING.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
+	Remove cond_expr_stmt_list argument and do not gimplify the
+	built expression.
+	(vect_loop_versioning): Adjust.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Cleanup to use less temporaries.
+	(vect_create_data_ref_ptr): Cleanup.
+
+2013-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56635
+	* fold-const.c (operand_equal_p): For MEM_REF and TARGET_MEM_REF,
+	require types_compatible_p types.
+
+2013-03-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Remove
+	spurious backslash.
+
+	* config/mn10300/mn10300.c (mn10300_get_live_callee_saved_regs):
+	Add missing line to comment describing function.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56210
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Handle string / character search functions.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Likewise.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56483
+	* cfgexpand.c (expand_gimple_cond): Inline gimple_cond_single_var_p
+	and implement properly.
+	* gimple.h (gimple_cond_single_var_p): Remove.
+
+2013-03-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.h (find_data_references_in_loop): Declare.
+	* tree-data-ref.c (get_references_in_stmt): Use a stack
+	vector pre-allocated in the callers.
+	(find_data_references_in_stmt): Adjust.
+	(graphite_find_data_references_in_stmt): Likewise.
+	(create_rdg_vertices): Likewise.
+	(find_data_references_in_loop): Export.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences):
+	Compute dependences here...
+	(vect_analyze_data_refs): ...not here.  When we encounter
+	a non-vectorizable data reference in basic-block vectorization
+	truncate the data reference vector.  Do not bother to
+	fixup data-dependence information for gather loads.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Check the number
+	of data references, as reported.
+
 2013-03-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/3713
@@ -97,8 +1098,8 @@
 	__ATOMIC_HLE_RELEASE. Document __builtin_ia32 TSX intrincs.
 	Document _x* TSX intrinsics.
 
-2013-03-14  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
-	    David Holsgrove <david.holsgrove@xilinx.com>
+2013-03-14  Edgar E. Iglesias  <edgar.iglesias@xilinx.com>
+	    David Holsgrove  <david.holsgrove@xilinx.com>
 
 	* configure.ac: Add MicroBlaze TLS support detection.
 	* configure: Regenerate.
@@ -1538,7 +2539,7 @@
 	* config/microblaze/microblaze.c (microblaze_asm_trampoline_template):
 	Replace with a microblaze version.
 	(microblaze_trampoline_init): Adapt for microblaze.
-	* gcc/config/microblaze/microblaze.h (TRAMPOLINE_SIZE): Adapt for
+	* config/microblaze/microblaze.h (TRAMPOLINE_SIZE): Adapt for
 	microblaze.
 
 2013-02-16  Jakub Jelinek  <jakub@redhat.com>

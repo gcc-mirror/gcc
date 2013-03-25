@@ -2572,13 +2572,14 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
 	  /* Require equal access sizes, and similar pointer types.
 	     We can have incomplete types for array references of
-	     variable-sized arrays from the Fortran frontent
-	     though.  */
+	     variable-sized arrays from the Fortran frontend
+	     though.  Also verify the types are compatible.  */
 	  return ((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
 		   || (TYPE_SIZE (TREE_TYPE (arg0))
 		       && TYPE_SIZE (TREE_TYPE (arg1))
 		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 					   TYPE_SIZE (TREE_TYPE (arg1)), flags)))
+		  && types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1))
 		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg0, 1)))
 		      == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg1, 1))))
 		  && OP_SAME (0) && OP_SAME (1));
@@ -4632,7 +4633,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
       if (comp_code == NE_EXPR)
 	return pedantic_non_lvalue_loc (loc, fold_convert_loc (loc, type, arg1));
       else if (comp_code == EQ_EXPR)
-	return build_int_cst (type, 0);
+	return build_zero_cst (type);
     }
 
   /* Try some transformations of A op B ? A : B.
@@ -4666,6 +4667,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
       /* Avoid these transformations if the COND_EXPR may be used
 	 as an lvalue in the C++ front-end.  PR c++/19199.  */
       && (in_gimple_form
+	  || VECTOR_TYPE_P (type)
 	  || (strcmp (lang_hooks.name, "GNU C++") != 0
 	      && strcmp (lang_hooks.name, "GNU Objective-C++") != 0)
 	  || ! maybe_lvalue_p (arg1)
@@ -13946,6 +13948,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       return NULL_TREE;
 
     case COND_EXPR:
+    case VEC_COND_EXPR:
       /* Pedantic ANSI C says that a conditional expression is never an lvalue,
 	 so all simple results must be passed through pedantic_non_lvalue.  */
       if (TREE_CODE (arg0) == INTEGER_CST)
@@ -13963,6 +13966,14 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	    return pedantic_non_lvalue_loc (loc, tem);
 	  return NULL_TREE;
 	}
+      else if (TREE_CODE (arg0) == VECTOR_CST)
+	{
+	  if (integer_all_onesp (arg0))
+	    return pedantic_omit_one_operand_loc (loc, type, arg1, arg2);
+	  if (integer_zerop (arg0))
+	    return pedantic_omit_one_operand_loc (loc, type, arg2, arg1);
+	}
+
       if (operand_equal_p (arg1, op2, 0))
 	return pedantic_omit_one_operand_loc (loc, type, arg1, arg0);
 
@@ -13997,6 +14008,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		return tem;
 	    }
 	}
+
+      /* ???  Fixup the code below for VEC_COND_EXPR.  */
+      if (code == VEC_COND_EXPR)
+	return NULL_TREE;
 
       /* If the second operand is simpler than the third, swap them
 	 since that produces better jump optimization results.  */
@@ -14183,16 +14198,6 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 			    fold_convert_loc (loc, type, arg0),
 			    op2);
 
-      return NULL_TREE;
-
-    case VEC_COND_EXPR:
-      if (TREE_CODE (arg0) == VECTOR_CST)
-	{
-	  if (integer_all_onesp (arg0) && !TREE_SIDE_EFFECTS (op2))
-	    return pedantic_non_lvalue_loc (loc, op1);
-	  if (integer_zerop (arg0) && !TREE_SIDE_EFFECTS (op1))
-	    return pedantic_non_lvalue_loc (loc, op2);
-	}
       return NULL_TREE;
 
     case CALL_EXPR:
@@ -15341,15 +15346,18 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
       break;
 
     case MULT_EXPR:
-      if (FLOAT_TYPE_P (type))
+      if (FLOAT_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
 	{
-	  /* x * x for floating point x is always non-negative.  */
-	  if (operand_equal_p (op0, op1, 0))
-	    return true;
-	  return (tree_expr_nonnegative_warnv_p (op0,
-						 strict_overflow_p)
-		  && tree_expr_nonnegative_warnv_p (op1,
-						    strict_overflow_p));
+	  /* x * x is always non-negative for floating point x
+	     or without overflow.  */
+	  if (operand_equal_p (op0, op1, 0)
+	      || (tree_expr_nonnegative_warnv_p (op0, strict_overflow_p)
+		  && tree_expr_nonnegative_warnv_p (op1, strict_overflow_p)))
+	    {
+	      if (TYPE_OVERFLOW_UNDEFINED (type))
+		*strict_overflow_p = true;
+	      return true;
+	    }
 	}
 
       /* zero_extend(x) * zero_extend(y) is non-negative if x and y are

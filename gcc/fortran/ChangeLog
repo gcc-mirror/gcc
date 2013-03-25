@@ -1,3 +1,17 @@
+2013-03-18  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Remove flag_whole_file.
+	* invoke.texi (-fno-whole-file): Remove.
+	* lang.opt (fwhole-file): Change to Ignore.
+	* options.c (gfc_init_options, gfc_post_options,
+	gfc_handle_option): Remove !flag_whole_file handling
+	* parse.c (resolve_all_program_units, translate_all_program_units,
+	gfc_parse_file): Ditto.
+	* resolve.c (resolve_global_procedure): Ditto.
+	* trans-decl.c (gfc_get_symbol_decl, gfc_get_extern_function_decl,
+	gfc_create_module_variable): Ditto.
+	* trans-types.c (gfc_get_derived_type): Ditto.
+
 2013-03-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56615
@@ -218,7 +232,7 @@
 	results for functions without extra result variable.
 
 2013-01-29  Janus Weil  <janus@gcc.gnu.org>
-	    Mikael Morin <mikael@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54107
 	* gfortran.h (gfc_component): Delete members 'formal' and 'formal_ns'.

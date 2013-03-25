@@ -1,3 +1,69 @@
+2013-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56684
+	* pt.c (instantiation_dependent_r): Check DECL_INITIAL of VAR_DECL
+	and CONST_DECL.
+
+2013-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (identifier_p): New.
+	* call.c: Throughout, call identifier_p insstead of direct
+	comparaison of TREE_CODE against IDENTIFIER_NODE.
+	* decl.c: Likewisse.
+	* decl2.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
+2013-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48087
+	* pt.c (convert_nontype_argument): Count werrorcount as warnings.
+	* call.c (build_temp): Likewise.
+	* method.c (synthesize_method): Likewise.
+	* typeck.c (convert_for_initialization): Likewise.
+
+2013-03-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* call.c (build_conditional_expr_1): Fold VEC_COND_EXPR.
+
+2013-03-21  Richard Biener  <rguenther@suse.de>
+
+	* error.c (cp_printer): Use DECL_HAS_DEBUG_EXPR_P instead of
+	DECL_DEBUG_EXPR_IS_FROM.  Guard properly.
+
+2013-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56646
+	* parser.c (cp_parser_late_return_type_opt): Save and restore
+	current_class_ptr/ref.
+
+	PR c++/54532
+	* expr.c (cplus_expand_constant): Do nothing if the class is
+	incomplete.
+	* semantics.c (reduced_constant_expression_p): Allow PTRMEM_CST.
+	* typeck2.c (store_init_value): Use reduced_constant_expression_p.
+	* decl.c (maybe_register_incomplete_var): Handle PTRMEM_CST.
+	(complete_vars): Likewise.
+
+	* name-lookup.c (get_anonymous_namespace_name): Never use
+	get_file_function_name.
+
+	* pt.c (retrieve_specialization): Handle null tmpl argument.
+
+	PR c++/17232
+	PR c++/56642
+	* pt.c (tsubst_decl): Check return value of register_specialization.
+	* typeck2.c (abstract_virtuals_error_sfinae): Re-apply complete_type
+	change.
+
 2013-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54359
@@ -75,7 +141,7 @@
 	(cp_parser_binary_expression): Likewise.
 	(cp_parser_assignment_expression): Likewise.
 	(cp_parser_postfix_expression): Likewise.  Pass tf_decltype.
-	(cp_parser_explicit_instantiation): Add decltype_p.  Force a
+	(cp_parser_expression): Add decltype_p.  Force a
 	temporary for a call on the LHS of a comma.
 	(cp_parser_decltype): Pass true to decltype_p parms.
 	* pt.c (tsubst) [DECLTYPE_TYPE]: Pass tf_decltype.

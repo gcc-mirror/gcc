@@ -11,3 +11,4 @@
 /* { dg-final { scan-assembler "fdiv\\tv" } } */
 /* { dg-final { scan-assembler "fneg\\tv" } } */
 /* { dg-final { scan-assembler "fabs\\tv" } } */
+/* { dg-final { scan-assembler "fabd\\tv" } } */
