@@ -1,5 +1,11 @@
 2013-03-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56689
+	* tree-vrp.c (execute_vrp): Mark loops for fixup if we removed
+	any edge.
+
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (struct mem_ref): Use bitmap_head instead
 	of bitmap.
 	(memory_references): Likewise.
