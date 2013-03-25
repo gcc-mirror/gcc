@@ -65,6 +65,42 @@
    (set_attr "conds" "unconditional")
    (set_attr "predicable" "no")])
 
+(define_insn "atomic_load<mode>"
+  [(set (match_operand:QHSI 0 "register_operand" "=r")
+    (unspec_volatile:QHSI
+      [(match_operand:QHSI 1 "arm_sync_memory_operand" "Q")
+       (match_operand:SI 2 "const_int_operand")]		;; model
+      VUNSPEC_LDA))]
+  "TARGET_HAVE_LDACQ"
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+    if (model == MEMMODEL_RELAXED
+        || model == MEMMODEL_CONSUME
+        || model == MEMMODEL_RELEASE)
+      return \"ldr<sync_sfx>\\t%0, %1\";
+    else
+      return \"lda<sync_sfx>\\t%0, %1\";
+  }
+)
+
+(define_insn "atomic_store<mode>"
+  [(set (match_operand:QHSI 0 "memory_operand" "=Q")
+    (unspec_volatile:QHSI
+      [(match_operand:QHSI 1 "general_operand" "r")
+       (match_operand:SI 2 "const_int_operand")]		;; model
+      VUNSPEC_STL))]
+  "TARGET_HAVE_LDACQ"
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+    if (model == MEMMODEL_RELAXED
+        || model == MEMMODEL_CONSUME
+        || model == MEMMODEL_ACQUIRE)
+      return \"str<sync_sfx>\t%1, %0\";
+    else
+      return \"stl<sync_sfx>\t%1, %0\";
+  }
+)
+
 ;; Note that ldrd and vldr are *not* guaranteed to be single-copy atomic,
 ;; even for a 64-bit aligned address.  Instead we use a ldrexd unparied
 ;; with a store.
@@ -327,6 +363,16 @@
   "ldrex<sync_sfx>%?\t%0, %C1"
   [(set_attr "predicable" "yes")])
 
+(define_insn "arm_load_acquire_exclusive<mode>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (zero_extend:SI
+	  (unspec_volatile:NARROW
+	    [(match_operand:NARROW 1 "mem_noofs_operand" "Ua")]
+	    VUNSPEC_LAX)))]
+  "TARGET_HAVE_LDACQ"
+  "ldaex<sync_sfx>%?\\t%0, %C1"
+  [(set_attr "predicable" "yes")])
+
 (define_insn "arm_load_exclusivesi"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec_volatile:SI
@@ -336,6 +382,15 @@
   "ldrex%?\t%0, %C1"
   [(set_attr "predicable" "yes")])
 
+(define_insn "arm_load_acquire_exclusivesi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec_volatile:SI
+	  [(match_operand:SI 1 "mem_noofs_operand" "Ua")]
+	  VUNSPEC_LAX))]
+  "TARGET_HAVE_LDACQ"
+  "ldaex%?\t%0, %C1"
+  [(set_attr "predicable" "yes")])
+
 (define_insn "arm_load_exclusivedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec_volatile:DI
@@ -343,6 +398,15 @@
 	  VUNSPEC_LL))]
   "TARGET_HAVE_LDREXD"
   "ldrexd%?\t%0, %H0, %C1"
+  [(set_attr "predicable" "yes")])
+
+(define_insn "arm_load_acquire_exclusivedi"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(unspec_volatile:DI
+	  [(match_operand:DI 1 "mem_noofs_operand" "Ua")]
+	  VUNSPEC_LAX))]
+  "TARGET_HAVE_LDACQ && ARM_DOUBLEWORD_ALIGN"
+  "ldaexd%?\t%0, %H0, %C1"
   [(set_attr "predicable" "yes")])
 
 (define_insn "arm_store_exclusive<mode>"
@@ -367,4 +431,32 @@
       }
     return "strex<sync_sfx>%?\t%0, %2, %C1";
   }
+  [(set_attr "predicable" "yes")])
+
+(define_insn "arm_store_release_exclusivedi"
+  [(set (match_operand:SI 0 "s_register_operand" "=&r")
+	(unspec_volatile:SI [(const_int 0)] VUNSPEC_SLX))
+   (set (match_operand:DI 1 "mem_noofs_operand" "=Ua")
+	(unspec_volatile:DI
+	  [(match_operand:DI 2 "s_register_operand" "r")]
+	  VUNSPEC_SLX))]
+  "TARGET_HAVE_LDACQ && ARM_DOUBLEWORD_ALIGN"
+  {
+    rtx value = operands[2];
+    /* See comment in arm_store_exclusive<mode> above.  */
+    gcc_assert ((REGNO (value) & 1) == 0 || TARGET_THUMB2);
+    operands[3] = gen_rtx_REG (SImode, REGNO (value) + 1);
+    return "stlexd%?\t%0, %2, %3, %C1";
+  }
+  [(set_attr "predicable" "yes")])
+
+(define_insn "arm_store_release_exclusive<mode>"
+  [(set (match_operand:SI 0 "s_register_operand" "=&r")
+	(unspec_volatile:SI [(const_int 0)] VUNSPEC_SLX))
+   (set (match_operand:QHSI 1 "mem_noofs_operand" "=Ua")
+	(unspec_volatile:QHSI
+	  [(match_operand:QHSI 2 "s_register_operand" "r")]
+	  VUNSPEC_SLX))]
+  "TARGET_HAVE_LDACQ"
+  "stlex<sync_sfx>%?\t%0, %2, %C1"
   [(set_attr "predicable" "yes")])
