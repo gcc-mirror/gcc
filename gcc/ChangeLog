@@ -1,7 +1,12 @@
+2013-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (emit_use_return_register_into_block): On cc0 targets,
+	do not emit the sequence between cc0 setter and user.
+
 2013-03-25  Kai Tietz  <ktietz@redhat.com>
 
-        * config/i386/predicates.md (local_symbolic_operand): Interpret
-        dll-imported symbols as none-local.
+	* config/i386/predicates.md (local_symbolic_operand): Interpret
+	dll-imported symbols as none-local.
 
 2013-03-25  Richard Biener  <rguenther@suse.de>
 
