@@ -1,3 +1,10 @@
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (f_sels, f_seld): New types.
+	(*cmov<mode>): New pattern.
+	* config/arm/predicates.md (arm_vsel_comparison_operator): New
+	predicate.
+
 2013-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/xm-mingw32.h (__USE_MINGW_ANSI_STDIO): Enable
