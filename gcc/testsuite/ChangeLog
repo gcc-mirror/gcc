@@ -1,3 +1,37 @@
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov at arm.com>
+
+	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: Move test
+	body from here...
+	* gcc.target/aarch64/atomic-comp-swap-release-acquire.x: ... to here.
+	* gcc.target/aarch64/atomic-op-acq_rel.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-acq_rel.x: ... to here.
+	* gcc.target/aarch64/atomic-op-acquire.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-acquire.x: ... to here.
+	* gcc.target/aarch64/atomic-op-char.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-char.x: ... to here.
+	* gcc.target/aarch64/atomic-op-consume.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-consume.x: ... to here.
+	* gcc.target/aarch64/atomic-op-int.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-int.x: ... to here.
+	* gcc.target/aarch64/atomic-op-relaxed.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-relaxed.x: ... to here.
+	* gcc.target/aarch64/atomic-op-release.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-release.x: ... to here.
+	* gcc.target/aarch64/atomic-op-seq_cst.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-seq_cst.x: ... to here.
+	* gcc.target/aarch64/atomic-op-short.c: Move test body from here...
+	* gcc.target/aarch64/atomic-op-short.x: ... to here.
+	* gcc.target/arm/atomic-comp-swap-release-acquire.c: New test.
+	* gcc.target/arm/atomic-op-acq_rel.c: Likewise.
+	* gcc.target/arm/atomic-op-acquire.c: Likewise.
+	* gcc.target/arm/atomic-op-char.c: Likewise.
+	* gcc.target/arm/atomic-op-consume.c: Likewise.
+	* gcc.target/arm/atomic-op-int.c: Likewise.
+	* gcc.target/arm/atomic-op-relaxed.c: Likewise.
+	* gcc.target/arm/atomic-op-release.c: Likewise.
+	* gcc.target/arm/atomic-op-seq_cst.c: Likewise.
+	* gcc.target/arm/atomic-op-short.c: Likewise.
+
 2013-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56694
