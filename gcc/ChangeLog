@@ -1,3 +1,9 @@
+2013-03-25  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Rework
+	slightly to avoid creating and folding useless trees.  Simplify
+	slightly by restricting to INTEGER_CSTs and using int_fits_type_p.
+
 2013-03-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*zero_extendsidi2): Merge with
