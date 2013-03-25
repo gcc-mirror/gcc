@@ -1,3 +1,25 @@
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_emit_load_exclusive): Add acq parameter.
+	Emit load-acquire versions when acq is true.
+	(arm_emit_store_exclusive): Add rel parameter.
+	Emit store-release versions when rel is true.
+	(arm_split_compare_and_swap): Use acquire-release instructions
+	instead.
+	of barriers when appropriate.
+	(arm_split_atomic_op): Likewise.
+	* config/arm/arm.h (TARGET_HAVE_LDACQ): New macro.
+	* config/arm/unspecs.md (VUNSPEC_LAX): New unspec.
+	(VUNSPEC_SLX): Likewise.
+	(VUNSPEC_LDA): Likewise.
+	(VUNSPEC_STL): Likewise.
+	* config/arm/sync.md (atomic_load<mode>): New pattern.
+	(atomic_store<mode>): Likewise.
+	(arm_load_acquire_exclusive<mode>): Likewise.
+	(arm_load_acquire_exclusivesi): Likewise.
+	(arm_load_acquire_exclusivedi): Likewise.
+	(arm_store_release_exclusive<mode>): Likewise.
+
 2013-03-25  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/constraints.md (u, Udb7 Uead, Uean, Uesp, Uib3,

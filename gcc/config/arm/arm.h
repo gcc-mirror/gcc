@@ -350,6 +350,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HAVE_LDREXD	(((arm_arch6k && TARGET_ARM) || arm_arch7) \
 				 && arm_arch_notm)
 
+/* Nonzero if this chip supports load-acquire and store-release.  */
+#define TARGET_HAVE_LDACQ	(TARGET_ARM_ARCH >= 8)
+
 /* Nonzero if integer division instructions supported.  */
 #define TARGET_IDIV		((TARGET_ARM && arm_arch_arm_hwdiv) \
 				 || (TARGET_THUMB2 && arm_arch_thumb_hwdiv))
