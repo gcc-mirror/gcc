@@ -1,3 +1,7 @@
+2013-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/torture/20121105-1.C: Adjust for LLP64 targets.
+
 2013-03-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56696

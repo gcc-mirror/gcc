@@ -2,6 +2,8 @@
 // Reported by Remi Vanicat <vanicat@debian.org>
 // Reduced testcase by Markus Trippelsdorf <markus@trippelsdorf.de> 
 
+__extension__ typedef __INTPTR_TYPE__ intptr_t;
+
 struct A;
 struct B
 {
@@ -25,7 +27,7 @@ struct D
 };
 
 D c(0);
-const long d = (long)&c;
+const intptr_t d = (intptr_t)&c;
 B *const   e = (B *)&d;
 
 static bool
