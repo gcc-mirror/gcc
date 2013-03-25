@@ -1,5 +1,10 @@
 2013-03-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.c (expand_set_cint64_one_inst): Inline
+	tests for constraint J, K, N, P.
+
+2013-03-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.c (tilegx_asm_preferred_eh_data_format):
 	Use indirect/pcrel encoding.
 	* config/tilepro/tilepro.c (tilepro_asm_preferred_eh_data_format):
