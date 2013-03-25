@@ -6111,7 +6111,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       tree d_init;
       if (init == NULL_TREE)
 	{
-	  if (DECL_TEMPLATE_INSTANTIATION (decl)
+	  if (DECL_LANG_SPECIFIC (decl)
+	      && DECL_TEMPLATE_INSTANTIATION (decl)
 	      && !DECL_TEMPLATE_INSTANTIATED (decl))
 	    {
 	      /* init is null because we're deferring instantiating the
