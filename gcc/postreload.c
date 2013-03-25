@@ -1387,7 +1387,7 @@ reload_combine (void)
 	     }
 	}
 
-      if (control_flow_insn && GET_CODE (PATTERN (insn)) != RETURN)
+      if (control_flow_insn && !ANY_RETURN_P (PATTERN (insn)))
 	{
 	  /* Non-spill registers might be used at the call destination in
 	     some unknown fashion, so we have to mark the unknown use.  */
@@ -1395,13 +1395,19 @@ reload_combine (void)
 
 	  if ((condjump_p (insn) || condjump_in_parallel_p (insn))
 	      && JUMP_LABEL (insn))
-	    live = &LABEL_LIVE (JUMP_LABEL (insn));
+	    {
+	      if (ANY_RETURN_P (JUMP_LABEL (insn)))
+		live = NULL;
+	      else
+		live = &LABEL_LIVE (JUMP_LABEL (insn));
+	    }
 	  else
 	    live = &ever_live_at_start;
 
-	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-	    if (TEST_HARD_REG_BIT (*live, r))
-	      reg_state[r].use_index = -1;
+	  if (live)
+	    for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+	      if (TEST_HARD_REG_BIT (*live, r))
+		reg_state[r].use_index = -1;
 	}
 
       reload_combine_note_use (&PATTERN (insn), insn, reload_combine_ruid,
