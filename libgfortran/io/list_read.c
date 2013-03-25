@@ -2053,8 +2053,8 @@ calls:
 
 static bool
 nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
-		     array_loop_spec *ls, int rank, char *parse_err_msg,
-		     size_t parse_err_msg_size,
+		     array_loop_spec *ls, int rank, bt nml_elem_type,
+		     char *parse_err_msg, size_t parse_err_msg_size,
 		     int *parsed_rank)
 {
   int dim;
@@ -2229,7 +2229,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		      do not allow excess data to be processed.  */
 		  if (is_array_section == 1
 		      || !(compile_options.allow_std & GFC_STD_GNU)
-		      || dtp->u.p.ionml->type == BT_DERIVED)
+		      || nml_elem_type == BT_DERIVED)
 		    ls[dim].end = ls[dim].start;
 		  else
 		    dtp->u.p.expanded_read = 1;
@@ -2866,7 +2866,7 @@ get_name:
     {
       parsed_rank = 0;
       if (!nml_parse_qualifier (dtp, nl->dim, nl->ls, nl->var_rank,
-			       nml_err_msg, nml_err_msg_size, 
+			       nl->type, nml_err_msg, nml_err_msg_size,
 			       &parsed_rank))
 	{
 	  char *nml_err_msg_end = strchr (nml_err_msg, '\0');
@@ -2923,8 +2923,8 @@ get_name:
       descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
       array_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
 
-      if (!nml_parse_qualifier (dtp, chd, ind, -1, nml_err_msg, 
-				nml_err_msg_size, &parsed_rank))
+      if (!nml_parse_qualifier (dtp, chd, ind, -1, nl->type,
+				nml_err_msg, nml_err_msg_size, &parsed_rank))
 	{
 	  char *nml_err_msg_end = strchr (nml_err_msg, '\0');
 	  snprintf (nml_err_msg_end,
