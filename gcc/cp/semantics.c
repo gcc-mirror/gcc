@@ -9565,7 +9565,8 @@ maybe_resolve_dummy (tree object)
 
   if (type != current_class_type
       && current_class_type
-      && LAMBDA_TYPE_P (current_class_type))
+      && LAMBDA_TYPE_P (current_class_type)
+      && DERIVED_FROM_P (type, current_nonlambda_class_type ()))
     {
       /* In a lambda, need to go through 'this' capture.  */
       tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);

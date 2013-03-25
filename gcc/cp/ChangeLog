@@ -1,4 +1,8 @@
-2013-03-23  Jason Merrill  <jason@redhat.com>
+2013-03-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56699
+	* semantics.c (maybe_resolve_dummy): Make sure that the enclosing
+	class is derived from the type of the object.
 
 	PR c++/52014
 	* semantics.c (lambda_expr_this_capture): Don't capture 'this' in
