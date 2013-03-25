@@ -1,3 +1,9 @@
+2013-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56722
+	* decl.c (cp_finish_decl): Check DECL_LANG_SPECIFIC before
+	DECL_TEMPLATE_INSTANTIATION.
+
 2013-03-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56684
