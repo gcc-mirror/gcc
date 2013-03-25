@@ -1,3 +1,17 @@
+2013-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipa_get_indirect_edge_target): Renamed to
+	ipa_get_indirect_edge_target_1, added parameter agg_reps and ability to
+	process it.
+	(ipa_get_indirect_edge_target): New function.
+	(devirtualization_time_bonus): New parameter known_aggs, pass it to
+	ipa_get_indirect_edge_target.  Update all callers.
+	(ipcp_discover_new_direct_edges): New parameter aggvals.  Pass it to
+	ipa_get_indirect_edge_target_1 instead of calling
+	ipa_get_indirect_edge_target.
+	(create_specialized_node): Pass aggvlas to
+	ipcp_discover_new_direct_edges.
+
 2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (f_sels, f_seld): New types.

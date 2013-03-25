@@ -1,3 +1,7 @@
+2013-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-agg-9.c: New test.
+
 2013-03-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38536
