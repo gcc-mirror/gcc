@@ -1,3 +1,14 @@
+2013-03-25  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mmips-cpus.def (74kc, 74kf2_1, 74kf, 74kf, 74kf1_1,
+	74kfx, 74kx, 74kf3_2): Add PTF_AVOID_IMADD.
+	* config/mips/mips.c (mips_option_override): Set IMADD default.
+	* config/mips/mips.h (PTF_AVOID_IMADD): New.
+	(ISA_HAS_MADD_MSUB): Remove MIPS16 check.
+	(GENERATE_MADD_MSUB): Remove TUNE_74K check, add MIPS16 check.
+	* config/mips/mips.md (mimadd): New flag for integer madd/msub.
+	* doc/invoke.texi (-mimadd/-mno-imadd): New.
+
 2013-03-25  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Rework

@@ -766,7 +766,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mdivide-traps  -mdivide-breaks @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
--mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
+-mmad -mno-mad -mimadd -mno-imadd -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-24k -mno-fix-24k @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
 -mfix-r10000 -mno-fix-r10000  -mfix-vr4120  -mno-fix-vr4120 @gol
@@ -16480,6 +16480,15 @@ This option has no effect on abicalls code.  The default is
 @opindex mno-mad
 Enable (disable) use of the @code{mad}, @code{madu} and @code{mul}
 instructions, as provided by the R4650 ISA@.
+
+@item -mimadd
+@itemx -mno-imadd
+@opindex mimadd
+@opindex mno-imadd
+Enable (disable) use of the @code{madd} and @code{msub} integer
+instructions.  The default is @option{-mimadd} on architectures
+that support @code{madd} and @code{msub} except for the 74k 
+architecture where it was found to generate slower code.
 
 @item -mfused-madd
 @itemx -mno-fused-madd

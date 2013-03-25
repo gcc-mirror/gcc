@@ -47,8 +47,15 @@ extern int target_flags_explicit;
    PTF_AVOID_BRANCHLIKELY
 	Set if it is usually not profitable to use branch-likely instructions
 	for this target, typically because the branches are always predicted
-	taken and so incur a large overhead when not taken.  */
-#define PTF_AVOID_BRANCHLIKELY 0x1
+	taken and so incur a large overhead when not taken.
+
+   PTF_AVOID_IMADD
+	Set if it is usually not profitable to use the integer MADD or MSUB
+	instructions because of the overhead of getting the result out of
+	the HI/LO registers.  */
+
+#define PTF_AVOID_BRANCHLIKELY	0x1
+#define PTF_AVOID_IMADD		0x2
 
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
@@ -874,14 +881,13 @@ struct mips_cpu_info {
 				 && !TARGET_MIPS16)
 
 /* ISA has integer multiply-accumulate instructions, madd and msub.  */
-#define ISA_HAS_MADD_MSUB	((ISA_MIPS32				\
-				  || ISA_MIPS32R2			\
-				  || ISA_MIPS64				\
-				  || ISA_MIPS64R2)			\
-				 && !TARGET_MIPS16)
+#define ISA_HAS_MADD_MSUB	(ISA_MIPS32				\
+				 || ISA_MIPS32R2			\
+				 || ISA_MIPS64				\
+				 || ISA_MIPS64R2)
 
 /* Integer multiply-accumulate instructions should be generated.  */
-#define GENERATE_MADD_MSUB      (ISA_HAS_MADD_MSUB && !TUNE_74K)
+#define GENERATE_MADD_MSUB	(TARGET_IMADD && !TARGET_MIPS16)
 
 /* ISA has floating-point madd and msub instructions 'd = a * b [+-] c'.  */
 #define ISA_HAS_FP_MADD4_MSUB4  ISA_HAS_FP4

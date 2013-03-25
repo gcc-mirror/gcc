@@ -16912,6 +16912,21 @@ mips_option_override (void)
     warning (0, "the %qs architecture does not support branch-likely"
 	     " instructions", mips_arch_info->name);
 
+  /* If the user hasn't specified -mimadd or -mno-imadd set
+     MASK_IMADD based on the target architecture and tuning
+     flags.  */
+  if ((target_flags_explicit & MASK_IMADD) == 0)
+    {
+      if (ISA_HAS_MADD_MSUB &&
+          (mips_tune_info->tune_flags & PTF_AVOID_IMADD) == 0)
+	target_flags |= MASK_IMADD;
+      else
+	target_flags &= ~MASK_IMADD;
+    }
+  else if (TARGET_IMADD && !ISA_HAS_MADD_MSUB)
+    warning (0, "the %qs architecture does not support madd or msub"
+	     " instructions", mips_arch_info->name);
+
   /* The effect of -mabicalls isn't defined for the EABI.  */
   if (mips_abi == ABI_EABI && TARGET_ABICALLS)
     {

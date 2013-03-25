@@ -58,6 +58,10 @@ mmad
 Target Report Var(TARGET_MAD)
 Use PMC-style 'mad' instructions
 
+mimadd
+Target Report Mask(IMADD)
+Use integer madd/msub instructions
+
 march=
 Target RejectNegative Joined Var(mips_arch_option) ToLower Enum(mips_arch_opt_value)
 -march=ISA	Generate code for the given ISA
