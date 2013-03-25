@@ -3188,7 +3188,7 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  /* The return value from a malloc-like function is a pointer.  */
 	  if (TREE_CODE (rettype) == POINTER_TYPE)
-	    mark_reg_pointer (temp, BIGGEST_ALIGNMENT);
+	    mark_reg_pointer (temp, MALLOC_ABI_ALIGNMENT);
 
 	  emit_move_insn (temp, valreg);
 

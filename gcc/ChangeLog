@@ -1,3 +1,9 @@
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56434
+	* calls.c (expand_call): Use MALLOC_ABI_ALIGNMENT to annotate
+	the pointer returned by calls with ECF_MALLOC set.
+
 2013-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (mov<mode>): Add ?!Ym,r and r,?!Ym alternatives.
