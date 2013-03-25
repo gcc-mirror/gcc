@@ -1,3 +1,9 @@
+2013-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52014
+	* semantics.c (lambda_expr_this_capture): Don't capture 'this' in
+	unevaluated context.
+
 2013-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56722
