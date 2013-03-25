@@ -25,6 +25,10 @@ Mask(SH_E)
 ;; Set if the default precision of th FPU is single.
 Mask(FPU_SINGLE)
 
+;; Set if the a double-precision FPU is present but is restricted to
+;; single precision usage only.
+Mask(FPU_SINGLE_ONLY)
+
 ;; Set if we should generate code using type 2A insns.
 Mask(HARD_SH2A)
 
@@ -332,7 +336,7 @@ Target RejectNegative Joined UInteger Var(sh_multcost) Init(-1)
 Cost to assume for a multiply insn
 
 musermode
-Target Report RejectNegative Mask(USERMODE)
+Target Report RejectNegative Var(TARGET_USERMODE)
 Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode.
 
 ;; We might want to enable this by default for TARGET_HARD_SH4, because

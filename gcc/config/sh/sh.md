@@ -1753,7 +1753,7 @@
    (clobber (reg:SI PR_REG))
    (clobber (reg:SI R4_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "TARGET_SH1 && (! TARGET_SH4 || TARGET_DIVIDE_CALL_DIV1)"
+  "TARGET_SH1 && TARGET_DIVIDE_CALL_DIV1"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
@@ -1817,7 +1817,7 @@
    (clobber (reg:SI R5_REG))
    (use (reg:PSI FPSCR_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "TARGET_SH4 && ! TARGET_FPU_SINGLE"
+  "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "fp_mode" "double")
@@ -1836,7 +1836,8 @@
    (clobber (reg:SI R4_REG))
    (clobber (reg:SI R5_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "(TARGET_HARD_SH4 || TARGET_SHCOMPACT) && TARGET_FPU_SINGLE"
+  "(TARGET_FPU_SINGLE_ONLY || TARGET_FPU_DOUBLE || TARGET_SHCOMPACT)
+   && TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
@@ -1959,7 +1960,7 @@
    (clobber (reg:SI R2_REG))
    (clobber (reg:SI R3_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "TARGET_SH1 && (! TARGET_SH4 || TARGET_DIVIDE_CALL_DIV1)"
+  "TARGET_SH1 && TARGET_DIVIDE_CALL_DIV1"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
@@ -2090,7 +2091,7 @@
    (clobber (reg:DF DR2_REG))
    (use (reg:PSI FPSCR_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "TARGET_SH4 && ! TARGET_FPU_SINGLE"
+  "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "fp_mode" "double")
@@ -2104,7 +2105,8 @@
    (clobber (reg:DF DR2_REG))
    (clobber (reg:SI R2_REG))
    (use (match_operand:SI 1 "arith_reg_operand" "r"))]
-  "(TARGET_HARD_SH4 || TARGET_SHCOMPACT) && TARGET_FPU_SINGLE"
+  "(TARGET_FPU_SINGLE_ONLY || TARGET_FPU_DOUBLE || TARGET_SHCOMPACT)
+   && TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
