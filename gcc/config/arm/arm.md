@@ -288,6 +288,8 @@
   f_2_r,\
   r_2_f,\
   f_cvt,\
+  f_sels,\
+  f_seld,\
   branch,\
   call,\
   load_byte,\
@@ -8100,6 +8102,39 @@
 				 XEXP (operands[1], 1), NULL_RTX);
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }"
+)
+
+(define_insn "*cmov<mode>"
+    [(set (match_operand:SDF 0 "s_register_operand" "=<F_constraint>")
+	(if_then_else:SDF (match_operator 1 "arm_vsel_comparison_operator"
+			  [(match_operand 2 "cc_register" "") (const_int 0)])
+			  (match_operand:SDF 3 "s_register_operand"
+			                      "<F_constraint>")
+			  (match_operand:SDF 4 "s_register_operand"
+			                      "<F_constraint>")))]
+  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "*
+  {
+    enum arm_cond_code code = maybe_get_arm_condition_code (operands[1]);
+    switch (code)
+      {
+      case ARM_GE:
+      case ARM_GT:
+      case ARM_EQ:
+      case ARM_VS:
+        return \"vsel%d1.<V_if_elem>\\t%<V_reg>0, %<V_reg>3, %<V_reg>4\";
+      case ARM_LT:
+      case ARM_LE:
+      case ARM_NE:
+      case ARM_VC:
+        return \"vsel%D1.<V_if_elem>\\t%<V_reg>0, %<V_reg>4, %<V_reg>3\";
+      default:
+        gcc_unreachable ();
+      }
+    return \"\";
+  }"
+  [(set_attr "conds" "use")
+   (set_attr "type" "f_sel<vfp_type>")]
 )
 
 (define_insn "*movsicc_insn"

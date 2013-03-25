@@ -270,6 +270,18 @@
 (define_special_predicate "lt_ge_comparison_operator"
   (match_code "lt,ge"))
 
+;; The vsel instruction only accepts the ARM condition codes listed below.
+(define_special_predicate "arm_vsel_comparison_operator"
+  (and (match_operand 0 "expandable_comparison_operator")
+       (match_test "maybe_get_arm_condition_code (op) == ARM_GE
+                    || maybe_get_arm_condition_code (op) == ARM_GT
+                    || maybe_get_arm_condition_code (op) == ARM_EQ
+                    || maybe_get_arm_condition_code (op) == ARM_VS
+                    || maybe_get_arm_condition_code (op) == ARM_LT
+                    || maybe_get_arm_condition_code (op) == ARM_LE
+                    || maybe_get_arm_condition_code (op) == ARM_NE
+                    || maybe_get_arm_condition_code (op) == ARM_VC")))
+
 (define_special_predicate "noov_comparison_operator"
   (match_code "lt,ge,eq,ne"))
 
