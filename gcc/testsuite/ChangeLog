@@ -1,3 +1,9 @@
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	PR target/56720
+	* gcc.target/arm/neon-vcond-gt.c: New test.
+	* gcc.target/arm/neon-vcond-ltgt.c: Likewise.
+	* gcc.target/arm/neon-vcond-unordered.c: Likewise.
+
 2013-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56689
