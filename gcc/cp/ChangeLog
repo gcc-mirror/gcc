@@ -1,5 +1,9 @@
 2013-03-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56699
+	* semantics.c (maybe_resolve_dummy): Make sure that the enclosing
+	class is derived from the type of the object.
+
 	PR c++/56692
 	* search.c (lookup_base): Handle NULL_TREE.
 
