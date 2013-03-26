@@ -3959,6 +3959,15 @@
   "shufflebytes\t%0, %r2, %r3"
   [(set_attr "type" "X0")])
 
+(define_insn "insn_shufflebytes1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand:DI 1 "reg_or_0_operand" "rO")
+                    (match_operand:DI 2 "reg_or_0_operand" "rO")]
+                   UNSPEC_INSN_SHUFFLEBYTES))]
+  ""
+  "shufflebytes\t%0, %r1, %r2"
+  [(set_attr "type" "X0")])
+
 ;; stores
 
 (define_expand "insn_st"
