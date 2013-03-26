@@ -1,3 +1,8 @@
+2013-03-26  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_address): Support
+	PC-relative load in SI modes and above only.
+
 2013-03-26  Xinyu Qi  <xyqi@marvell.com>
 
 	* config/arm/arm.h (FIRST_IWMMXT_GR_REGNUM): Add comment.
