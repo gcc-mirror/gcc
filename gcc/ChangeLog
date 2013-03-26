@@ -1,5 +1,12 @@
 2013-03-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.md (floatsisf2): New pattern.
+        (floatunssisf2): New pattern.
+        (floatsidf2): New pattern.
+        (floatunssidf2): New pattern.
+
+2013-03-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.c (expand_set_cint64_one_inst): Inline
 	tests for constraint J, K, N, P.
 
