@@ -4786,13 +4786,8 @@ tilegx_reorg (void)
 int
 tilegx_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
 {
-  if (flag_pic)
-    {
-      int type = TARGET_32BIT ? DW_EH_PE_sdata4 : DW_EH_PE_sdata8;
-      return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
-    }
-  else
-    return DW_EH_PE_absptr;
+  int type = TARGET_32BIT ? DW_EH_PE_sdata4 : DW_EH_PE_sdata8;
+  return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
 }
 
 
