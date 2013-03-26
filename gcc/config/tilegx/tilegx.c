@@ -2897,6 +2897,7 @@ static struct tile_builtin_info tilegx_builtin_info[TILEGX_BUILTIN_max] = {
   { CODE_FOR_lshrdi3,                   NULL }, /* shru */
   { CODE_FOR_lshrsi3,                   NULL }, /* shrux */
   { CODE_FOR_insn_shufflebytes,         NULL }, /* shufflebytes */
+  { CODE_FOR_insn_shufflebytes1,        NULL }, /* shufflebytes1 */
   { CODE_FOR_insn_st,                   NULL }, /* st */
   { CODE_FOR_insn_st1,                  NULL }, /* st1 */
   { CODE_FOR_insn_st2,                  NULL }, /* st2 */
@@ -3225,6 +3226,7 @@ static const struct tilegx_builtin_def tilegx_builtins[] = {
   { "__insn_shrux",              TILEGX_INSN_SHRUX,              true,  "iii"  },
   { "__insn_shruxi",             TILEGX_INSN_SHRUX,              true,  "iii"  },
   { "__insn_shufflebytes",       TILEGX_INSN_SHUFFLEBYTES,       true,  "llll" },
+  { "__insn_shufflebytes1",      TILEGX_INSN_SHUFFLEBYTES1,      true,  "lll"  },
   { "__insn_st",                 TILEGX_INSN_ST,                 false, "vpl"  },
   { "__insn_st1",                TILEGX_INSN_ST1,                false, "vpl"  },
   { "__insn_st2",                TILEGX_INSN_ST2,                false, "vpl"  },
