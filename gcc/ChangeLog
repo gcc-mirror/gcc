@@ -1,3 +1,8 @@
+2013-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdfcc_1): Merge with *movdfcc_1_rex64.
+	Use x64 and nox64 isa attributes.
+
 2013-03-26  Richard Biener  <rguenther@suse.de>
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove
