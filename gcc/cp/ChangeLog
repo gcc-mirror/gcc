@@ -1,5 +1,11 @@
 2013-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/55951
+	* decl.c (check_array_designated_initializer): Handle CONST_DECL
+	as ce->index.
+
+2013-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* decl.c (grokfndecl): Handle separately <inline> and <constexpr>
 	error messages.
 

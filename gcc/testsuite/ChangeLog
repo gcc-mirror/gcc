@@ -1,3 +1,8 @@
+2013-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55951
+	* g++.dg/ext/desig5.C: New.
+
 2013-03-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56649
