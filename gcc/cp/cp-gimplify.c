@@ -857,7 +857,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   /* Map block scope extern declarations to visible declarations with the
      same name and type in outer scopes if any.  */
   if (cp_function_chain->extern_decl_map
-      && (TREE_CODE (stmt) == FUNCTION_DECL || TREE_CODE (stmt) == VAR_DECL)
+      && VAR_OR_FUNCTION_DECL_P (stmt)
       && DECL_EXTERNAL (stmt))
     {
       struct cxx_int_tree_map *h, in;

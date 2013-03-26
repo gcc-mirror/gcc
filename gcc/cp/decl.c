@@ -1620,8 +1620,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  warning_at (DECL_SOURCE_LOCATION (olddecl), 0,
 		      "follows non-prototype definition here");
 	}
-      else if ((TREE_CODE (olddecl) == FUNCTION_DECL
-		|| TREE_CODE (olddecl) == VAR_DECL)
+      else if (VAR_OR_FUNCTION_DECL_P (olddecl)
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
 	{
 	  /* [dcl.link]
@@ -6408,8 +6407,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   /* Let the middle end know about variables and functions -- but not
      static data members in uninstantiated class templates.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      || TREE_CODE (decl) == FUNCTION_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (decl))
     {
       if (TREE_CODE (decl) == VAR_DECL)
 	{
@@ -7230,8 +7228,7 @@ check_class_member_definition_namespace (tree decl)
 {
   /* These checks only apply to member functions and static data
      members.  */
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-	      || TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
   /* We check for problems with specializations in pt.c in
      check_specialization_namespace, where we can issue better
      diagnostics.  */
