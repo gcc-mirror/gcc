@@ -3976,12 +3976,47 @@ gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
 gfc_expr *
 gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 {
-  if (tsource->expr_type != EXPR_CONSTANT
-      || fsource->expr_type != EXPR_CONSTANT
-      || mask->expr_type != EXPR_CONSTANT)
+  gfc_expr * result;
+  gfc_constructor *tsource_ctor, *fsource_ctor, *mask_ctor;
+
+  if (mask->expr_type == EXPR_CONSTANT)
+    return gfc_get_parentheses (gfc_copy_expr (mask->value.logical
+					       ? tsource : fsource));
+
+  if (!mask->rank || !is_constant_array_expr (mask)
+      || !is_constant_array_expr (tsource) || !is_constant_array_expr (fsource))
     return NULL;
 
-  return gfc_copy_expr (mask->value.logical ? tsource : fsource);
+  result = gfc_get_array_expr (tsource->ts.type, tsource->ts.kind,
+			       &tsource->where);
+  if (tsource->ts.type == BT_DERIVED)
+    result->ts.u.derived = tsource->ts.u.derived;
+  else if (tsource->ts.type == BT_CHARACTER)
+    result->ts.u.cl = tsource->ts.u.cl;
+
+  tsource_ctor = gfc_constructor_first (tsource->value.constructor);
+  fsource_ctor = gfc_constructor_first (fsource->value.constructor);
+  mask_ctor = gfc_constructor_first (mask->value.constructor);
+
+  while (mask_ctor)
+    {
+      if (mask_ctor->expr->value.logical)
+	gfc_constructor_append_expr (&result->value.constructor,
+				     gfc_copy_expr (tsource_ctor->expr),
+				     NULL);
+      else
+	gfc_constructor_append_expr (&result->value.constructor,
+				     gfc_copy_expr (fsource_ctor->expr),
+				     NULL);
+      tsource_ctor = gfc_constructor_next (tsource_ctor);
+      fsource_ctor = gfc_constructor_next (fsource_ctor);
+      mask_ctor = gfc_constructor_next (mask_ctor);
+    }
+
+  result->shape = gfc_get_shape (1);
+  gfc_array_size (result, &result->shape[0]);
+
+  return result;
 }
 
 

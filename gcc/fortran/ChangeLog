@@ -1,3 +1,8 @@
+2013-03-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56649
+	* simplify.c (gfc_simplify_merge): Simplify more.
+
 2013-03-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38536
