@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.8-b20130224\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2013-02-24 01:09+0000\n"
-"PO-Revision-Date: 2013-03-09 18:08+0200\n"
+"PO-Revision-Date: 2013-03-23 13:08+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -7723,9 +7723,8 @@ msgid "Use given address mode"
 msgstr "Angegebenen Adressierungsmodus verwenden"
 
 #: config/i386/i386.opt:175
-#, fuzzy
 msgid "Known address mode (for use with the -maddress-mode= option):"
-msgstr "Bekannte Codemodelle (für Verwendung mit Option -mcmodel=):"
+msgstr "Bekannter Adressmodus (für Verwendung mit Option -maddress-mode=):"
 
 #: config/i386/i386.opt:184
 msgid "%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead"
@@ -7873,9 +7872,8 @@ msgid "Generate vzeroupper instruction before a transfer of control flow out of"
 msgstr "Befehl vzeroupper erzeugen vor Übergabe der Abarbeitung aus"
 
 #: config/i386/i386.opt:421
-#, fuzzy
 msgid "Do dispatch scheduling if processor is bdver1 or bdver2 or bdver3 and Haifa scheduling"
-msgstr "Bericht-Planung durchführen, wenn Prozessor bdver1 oder bdver2 und Haifa-Planung"
+msgstr "Bericht-Planung durchführen, wenn Prozessor bdver1, bdver2, oder bdver3 und Haifa-Planung"
 
 #: config/i386/i386.opt:426
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
@@ -7987,36 +7985,31 @@ msgstr "Eingebaute LZCNT-Funktion und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:540
 msgid "Support Hardware Lock Elision prefixes"
-msgstr ""
+msgstr "Präfixe für Hardware-Lock-Auslassung unterstützen"
 
 #: config/i386/i386.opt:544
-#, fuzzy
 msgid "Support RDSEED instruction"
-msgstr "keine Unterstützung für Induktion"
+msgstr "Anweisung RDSEED unterstützen"
 
 #: config/i386/i386.opt:548
-#, fuzzy
 msgid "Support PREFETCHW instruction"
-msgstr "keine Unterstützung für Induktion"
+msgstr "Anweisung PREFETCHW unterstützen"
 
 #: config/i386/i386.opt:552
-#, fuzzy
 msgid "Support flag-preserving add-carry instructions"
-msgstr "Codeerzeugung von crc32-Befehlen unterstützen."
+msgstr "Flag-erhaltende Add-Carry-Anweisungen unterstützen."
 
 #: config/i386/i386.opt:556
 msgid "Support FXSAVE and FXRSTOR instructions"
-msgstr ""
+msgstr "Anweisungen FXSAVE und FXRSTOR unterstützen"
 
 #: config/i386/i386.opt:560
-#, fuzzy
 msgid "Support XSAVE and XRSTOR instructions"
-msgstr "Aufrufe zwischen Thumb- und ARM-Befehlssätzen unterstützen"
+msgstr "Anweisungen XSAVE und XRSTOR unterstützen"
 
 #: config/i386/i386.opt:564
-#, fuzzy
 msgid "Support XSAVEOPT instruction"
-msgstr "Eingebaute MMX-Funktionen unterstützen"
+msgstr "Anweisung XSAVEOPT unterstützen"
 
 #: config/i386/i386.opt:568
 msgid "Support TBM built-in functions and code generation"
@@ -8079,9 +8072,8 @@ msgid "Split 32-byte AVX unaligned store"
 msgstr "Nicht ausgerichtetes 32-Byte AVX-Speichern auftrennen"
 
 #: config/i386/i386.opt:628
-#, fuzzy
 msgid "Support RTM built-in functions and code generation"
-msgstr "Eingebaute TBM-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute RTM-Funktionen und Codeerzeugung unterstützen"
 
 #: config/pa/pa64-hpux.opt:23
 msgid "Assume code will be linked by GNU ld"
@@ -8185,9 +8177,8 @@ msgid "Enable backend debugging"
 msgstr "Backend-Fehlersuche einschalten"
 
 #: config/v850/v850.opt:41
-#, fuzzy
 msgid "Do not use the callt instruction (default)"
-msgstr "Den callt-Befehl nicht verwenden"
+msgstr "Die callt-Anweisung nicht verwenden (Standard)"
 
 #: config/v850/v850.opt:45
 msgid "Reuse r30 on a per function basis"
@@ -8250,52 +8241,44 @@ msgid "Compile for the v850e2v3 processor"
 msgstr "Für v850e2v3-Prozessor übersetzen"
 
 #: config/v850/v850.opt:117
-#, fuzzy
 msgid "Compile for the v850e3v5 processor"
-msgstr "Für v850e-Prozessor übersetzen"
+msgstr "Für v850e3v5-Prozessor übersetzen"
 
 #: config/v850/v850.opt:124
-#, fuzzy
 msgid "Enable v850e3v5 loop instructions"
-msgstr "Clip-Befehle einschalten"
+msgstr "Schleifenbefehle für v850e3v5 einschalten"
 
 #: config/v850/v850.opt:128
 msgid "Set the max size of data eligible for the ZDA area"
 msgstr "Maximalgröße der für den ZDA-Bereich geeigneten Daten setzen"
 
 #: config/v850/v850.opt:135
-#, fuzzy
 msgid "Enable relaxing in the assembler"
-msgstr "Verträglichkeit mit ic960-Assembler einschalten"
+msgstr "Lockerung im Assembler einschalten"
 
 #: config/v850/v850.opt:139
-#, fuzzy
 msgid "Prohibit PC relative jumps"
-msgstr "PC-relative Funktionsaufrufe verbieten"
+msgstr "PC-relative Sprünge verbieten"
 
 #: config/v850/v850.opt:143
-#, fuzzy
 msgid "Inhibit the use of hardware floating point instructions"
-msgstr "Verwendung aller Hardware-Gleitkommabefehle verhindern"
+msgstr "Verwendung von Hardware-Gleitkommaanweisungen unterdrücken"
 
 #: config/v850/v850.opt:147
-#, fuzzy
 msgid "Allow the use of hardware floating point instructions for V850E2V3 and up"
-msgstr "Verwendung von Hardware-Gleitkomma-ABI und -befehlen erlauben"
+msgstr "Verwendung von Hardware-Gleitkommaanweisungen für V850E2V3 und aufwärts erlauben"
 
 #: config/v850/v850.opt:151
-#, fuzzy
 msgid "Enable support for the RH850 ABI.  This is the default"
-msgstr "Verwendung des RX-FPU-Befehls einschalten. Dies ist Standard."
+msgstr "Unterstützung für RH850 ABI einschalten. Dies ist der Standard."
 
 #: config/v850/v850.opt:155
-#, fuzzy
 msgid "Enable support for the old GCC ABI"
-msgstr "Unterstützung für große Objekte einschalten"
+msgstr "Unterstützung für altes GCC ABI einschalten"
 
 #: config/v850/v850.opt:159
 msgid "Support alignments of up to 64-bits"
-msgstr ""
+msgstr "Ausrichtungen von bis zu 64 Bits unterstützen"
 
 #: config/g.opt:27
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
@@ -8747,9 +8730,8 @@ msgid "Use UltraSPARC Visual Instruction Set version 3.0 extensions"
 msgstr "Visuelle Befehlssatzerweiterungen Version 3.0 für UltraSPARC verwenden"
 
 #: config/sparc/sparc.opt:78
-#, fuzzy
 msgid "Use UltraSPARC Compare-and-Branch extensions"
-msgstr "Multiplizier-Addier-Erweiterungen für UltraSPARC verwenden"
+msgstr "Vergleich-und-Sprung-Erweiterungen für UltraSPARC verwenden"
 
 #: config/sparc/sparc.opt:82
 msgid "Use UltraSPARC Fused Multiply-Add extensions"
@@ -9378,9 +9360,8 @@ msgid "Maximum size of global and static variables which can be placed into the 
 msgstr "Maximalgröße der globalen und statischen Variable, die in kleine Datenbereiche gelegt werden."
 
 #: config/rx/rx.opt:90
-#, fuzzy
 msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax."
-msgstr "Assemblerausgabe erzeugen, die mit Renesas AS100-Assembler verträglich ist. Dies schränkt einige Kompilerfähigkeiten ein. Standard: GAS-verträgliche Syntax"
+msgstr "Assemblerausgabe erzeugen, die mit Renesas AS100-Assembler verträglich ist. Dies schränkt einige Kompilerfähigkeiten ein. Standard: GAS-verträgliche Syntax."
 
 #: config/rx/rx.opt:96
 msgid "Enable linker relaxation."
@@ -10102,16 +10083,15 @@ msgstr "Beim Binden Adressreferenzen verkürzen"
 
 #: config/sh/sh.opt:323
 msgid "Deprecated.  Use -matomic= instead to select the atomic model"
-msgstr ""
+msgstr "Veraltet. Stattdessen -matomic= verwenden, um atomares Modell zu verwenden"
 
 #: config/sh/sh.opt:327
-#, fuzzy
 msgid "Specify the model for atomic operations"
-msgstr "Code für eingebaute atomare Operationen erzeugen"
+msgstr "Das Modell für atomare Operationen angeben"
 
 #: config/sh/sh.opt:331
 msgid "Use tas.b instruction for __atomic_test_and_set"
-msgstr ""
+msgstr "Anweisung tas.b für __atomic_test_and_set verwenden"
 
 #: config/sh/sh.opt:335
 msgid "Deprecated.  Use -Os instead"
@@ -10130,14 +10110,12 @@ msgid "Pretend a branch-around-a-move is a conditional move."
 msgstr "Vorgeben, dass Sprung-um-Sprung ein bedingter Sprung ist"
 
 #: config/sh/sh.opt:353
-#, fuzzy
 msgid "Enable the use of the fsca instruction"
-msgstr "Verwendung der kurzen Ladebefehle einschalten"
+msgstr "Verwendung der Anweisung fsca einschalten"
 
 #: config/sh/sh.opt:357
-#, fuzzy
 msgid "Enable the use of the fsrra instruction"
-msgstr "Verwendung der kurzen Ladebefehle einschalten"
+msgstr "Verwendung der Anweisung fsrra einschalten"
 
 #: config/fr30/fr30.opt:23
 msgid "Assume small address space"
@@ -10456,9 +10434,8 @@ msgid "Prevent the use of all floating-point operations"
 msgstr "Verwendung aller Gleitkommaoperationen verhindern"
 
 #: config/mips/mips.opt:274
-#, fuzzy
 msgid "Use MCU instructions"
-msgstr "MIPS-3D-Befehle verwenden"
+msgstr "MCU-Anweisungen verwenden"
 
 #: config/mips/mips.opt:278
 msgid "Do not use a cache-flushing function before calling stack trampolines"
@@ -10553,9 +10530,8 @@ msgid "Compile with 64 bit longs and pointers."
 msgstr "Mit 64-Bit Longs und Zeigern kompilieren"
 
 #: config/tilegx/tilegx.opt:45
-#, fuzzy
 msgid "Use given TILE-Gx code model"
-msgstr "Gegebenes x86-64-Codemodell verwenden"
+msgstr "Gegebenes Codemodell TILE-Gx verwenden"
 
 #: java/lang.opt:122
 msgid "Warn if deprecated empty statements are found"
@@ -10710,9 +10686,8 @@ msgid "Optimize for speed disregarding exact standards compliance"
 msgstr "Optimiert auf Geschwindigkeit unter Missachtung genauer Standardkonformität"
 
 #: common.opt:453
-#, fuzzy
 msgid "Optimize for debugging experience rather than speed or size"
-msgstr "Auf Größe statt Geschwindigkeit optimieren"
+msgstr "Auf Fehlersuchmöglichkeiten statt Geschwindigkeit oder Größe optimieren"
 
 #: common.opt:493
 msgid "This switch is deprecated; use -Wextra instead"
@@ -11221,9 +11196,8 @@ msgid "Enable Graphite Identity transformation"
 msgstr "Transformation der Graphite Identität einschalten"
 
 #: common.opt:1202
-#, fuzzy
 msgid "Enable hoisting adjacent loads to encourage generating conditional move"
-msgstr "Herausziehen von Ladeoperationen aus bedingten Zeigern einschalten"
+msgstr "Herausziehen aufeinanderfolgender Ladeoperationen einschalten, um Erzeugung bedingter Kopieroperationen zu fördern"
 
 #: common.opt:1207
 msgid "Mark all loops as parallel"
@@ -11271,12 +11245,12 @@ msgstr "Umwandlung bedingter Sprünge in bedingte Ausführung durchführen"
 
 #: common.opt:1259
 msgid "-fstack-reuse=[all|named_vars|none] Set stack reuse level for local variables."
-msgstr ""
+msgstr "-fstack-reuse=[all|named_vars|none] Stufe der Stack-Wiederverwendung für lokale Variablen setzen"
 
 #: common.opt:1262
-#, fuzzy, c-format
+#, c-format
 msgid "unknown Stack Reuse Level %qs"
-msgstr "Unbekannte Architektur »%s«"
+msgstr "Unbekannte Stufe %qs für Stack-Wiederverwendung"
 
 #: common.opt:1275
 msgid "Convert conditional jumps in innermost loops to branchless equivalents"
@@ -11417,18 +11391,16 @@ msgid "Link-time optimization with number of parallel jobs or jobserver."
 msgstr "Optimierungen zur Linkzeit mit Anzahl paralleler Jobs oder Jobserver."
 
 #: common.opt:1451
-#, fuzzy
 msgid "Partition symbols and vars at linktime based on object files they originate from"
-msgstr "Funktionen und Variablen zum Linkzeitpunkt aufgrund ihrer Objektdatei-Herkunft partitionieren"
+msgstr "Symbole und Variablen zum Linkzeitpunkt aufgrund ihrer Objektdatei-Herkunft partitionieren"
 
 #: common.opt:1455
 msgid "Partition functions and vars at linktime into approximately same sized buckets"
 msgstr "Funktionen und Variablen zum Linkzeitpunkt in ungefähr gleich große Gruppen partitionieren"
 
 #: common.opt:1459
-#, fuzzy
 msgid "Put every symbol into separate partition"
-msgstr "Zeichendaten in gesonderten Zeichenabschnitt legen"
+msgstr "Jedes Symbol in gesonderten Abschnitt legen"
 
 #: common.opt:1463
 msgid "Disable partioning and streaming"
@@ -11455,9 +11427,8 @@ msgid "Report on permanent memory allocation"
 msgstr "Über dauerhafte Speicherreservierung berichten"
 
 #: common.opt:1488
-#, fuzzy
 msgid "Report on permanent memory allocation in WPA only"
-msgstr "Über dauerhafte Speicherreservierung berichten"
+msgstr "Nur in WPA über dauerhafte Speicherreservierung berichten"
 
 #: common.opt:1495
 msgid "Attempt to merge identical constants and constant variables"
@@ -11508,13 +11479,12 @@ msgid "When possible do not generate stack frames"
 msgstr "Wenn möglich, keine Stapelrahmen erzeugen"
 
 #: common.opt:1543
-#, fuzzy
 msgid "Enable all optimization info dumps on stderr"
-msgstr "Schleifenoptimierungen auf Baumebene einschalten"
+msgstr "Alle Informationen über Optimierungen auf stderr einschalten"
 
 #: common.opt:1547
 msgid "-fopt-info[-<type>=filename]\tDump compiler optimization details"
-msgstr ""
+msgstr "-fopt-info[-<Typ>=Dateiname]\tOptimierungsdetails des Compilers ausgeben"
 
 #: common.opt:1551
 msgid "Do the full register move optimization pass"
@@ -11625,9 +11595,8 @@ msgid "Insert code to profile values of expressions"
 msgstr "Code in Profilwerte von Ausdrücken einfügen"
 
 #: common.opt:1664
-#, fuzzy
 msgid "Report on consistency of profile"
-msgstr "internes Konsistenzproblem"
+msgstr "Über Konsistenz des Profils berichten"
 
 #: common.opt:1671
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>"
@@ -11903,13 +11872,12 @@ msgid "Enable loop header copying on trees"
 msgstr "Kopieren des Schleifenkopfes auf Bäumen einschalten"
 
 #: common.opt:2004
-#, fuzzy
 msgid "Enable coalescing of copy-related user variables that are inlined"
-msgstr "Variablenverfolgung durchführen und auch Variablen markieren, die uninitialisiert sind"
+msgstr "Verbinden kopierbezogener »inline«-Benutzervariablen einschalten"
 
 #: common.opt:2008
 msgid "Enable coalescing of all copy-related user variables"
-msgstr ""
+msgstr "Verbinden kopierbezogener Benutzervariablen einschalten"
 
 #: common.opt:2012
 msgid "Replace SSA temporaries with better names in copies"
@@ -12064,14 +12032,12 @@ msgid "Just generate unwind tables for exception handling"
 msgstr "Einfach Abwicklungstabellen für Ausnahmebehandlung erzeugen"
 
 #: common.opt:2180
-#, fuzzy
 msgid "Use the bfd linker instead of the default linker"
-msgstr "Verwendet den Hardware-Berrelshifter statt der Emulation"
+msgstr "BFD-Linker statt Standardlinker verwenden"
 
 #: common.opt:2184
-#, fuzzy
 msgid "Use the gold linker instead of the default linker"
-msgstr "Verwendet den Hardware-Berrelshifter statt der Emulation"
+msgstr "Gold-Linker statt Standardlinker verwenden"
 
 #: common.opt:2196
 msgid "Perform variable tracking"
@@ -12094,9 +12060,8 @@ msgid "Enable loop vectorization on trees"
 msgstr "Schleifenvektorisierung auf Bäumen einschalten"
 
 #: common.opt:2226
-#, fuzzy
 msgid "-ftree-vectorizer-verbose=<number>\tThis switch is deprecated. Use -fopt-info instead."
-msgstr "-ftree-vectorizer-verbose=<Zahl>\tStufe der Wortfülle des Vektorisierers setzen"
+msgstr "-ftree-vectorizer-verbose=<Zahl>\tVeralteter Schalter. Stattdessen -fopt-info verwenden."
 
 #: common.opt:2230
 msgid "Enable basic block vectorization (SLP) on trees"
@@ -12168,13 +12133,12 @@ msgid "Generate debug information in default extended format"
 msgstr "Fehlersuchinformationen im erweiterten Standardformat erzeugen"
 
 #: common.opt:2315
-#, fuzzy
 msgid "Don't generate DWARF pubnames and pubtypes sections."
-msgstr "Keine verschmolzenen Multiplizier-/Addier-Befehle erzeugen"
+msgstr "Keine DWARF-Abschnitte für Pubnames und Pubtypes erzeugen"
 
 #: common.opt:2319
 msgid "Generate DWARF pubnames and pubtypes sections."
-msgstr ""
+msgstr "DWARF-Abschnitte für Pubnames und Pubtypes erzeugen"
 
 #: common.opt:2323
 msgid "Don't record gcc command line switches in DWARF DW_AT_producer."
@@ -12185,14 +12149,12 @@ msgid "Record gcc command line switches in DWARF DW_AT_producer."
 msgstr "GCC-Kommandozeilenschalter in DWARF DW_AT_producer aufzeichnen."
 
 #: common.opt:2331
-#, fuzzy
 msgid "Don't generate debug information in separate .dwo files"
-msgstr "Fehlersuchinformationen im Standardformat erzeugen"
+msgstr "Keine Fehlersuchinformationen in eigenen .dwo-Dateien erzeugen"
 
 #: common.opt:2335
-#, fuzzy
 msgid "Generate debug information in separate .dwo files"
-msgstr "Fehlersuchinformationen im Standardformat erzeugen"
+msgstr "Fehlersuchinformationen in eigenen .dwo-Dateien erzeugen"
 
 #: common.opt:2339
 msgid "Generate debug information in STABS format"
@@ -12231,9 +12193,8 @@ msgid "-iplugindir=<dir>\tSet <dir> to be the default plugin directory"
 msgstr "-iplugindir=<Verz>\t<Verz> als Standard-Plugin-Verzeichnis setzen"
 
 #: common.opt:2378
-#, fuzzy
 msgid "-imultiarch <dir>\tSet <dir> to be the multiarch include subdirectory"
-msgstr "-imultilib <Verzeichnis>\t<Verzeichnis> als Multilib-include-Verzeichnis setzen"
+msgstr "-imultiarch <Verzeichnis>\t<Verzeichnis> als Multiarch-include-Verzeichnis setzen"
 
 #: common.opt:2400
 msgid "-o <file>\tPlace output into <file>"
@@ -12307,9 +12268,8 @@ msgid "expected pointer"
 msgstr "Zeiger erwartet"
 
 #: go/gofrontend/expressions.cc:5610
-#, fuzzy
 msgid "invalid comparison of nil with nil"
-msgstr "ungültiger Vergleichscode in GIMPLE-Bedingung"
+msgstr "ungültiger Vergleich von nil mit nil"
 
 #: go/gofrontend/expressions.cc:5616 go/gofrontend/expressions.cc:5634
 msgid "incompatible types in binary expression"
@@ -12501,7 +12461,6 @@ msgid "invalid receive on send-only channel"
 msgstr "ungültiges Empfangen auf Nur-Sende-Kanal"
 
 #: go/gofrontend/parse.cc:2982
-#, fuzzy
 msgid "parentheses required around this composite literal to avoid parsing ambiguity"
 msgstr "Um dieses zusammengesetzte Literal sind Klammern erforderlich, um Mehrdeutigkeit zu vermeiden"
 
@@ -12587,7 +12546,6 @@ msgid "invalid comparison of non-comparable array"
 msgstr "ungültiger Vergleich eines nicht-vergleichbaren Feldes"
 
 #: go/gofrontend/types.cc:627
-#, fuzzy
 msgid "multiple-value function call in single-value context"
 msgstr "Funktionsaufruf mit mehreren Werten in Kontext mit einem Wert"
 
@@ -12665,14 +12623,14 @@ msgid "missing method %s%s%s"
 msgstr "fehlende Methode %s%s%s"
 
 #: go/gofrontend/types.cc:6966
-#, fuzzy, c-format
+#, c-format
 msgid "method %s%s%s requires a pointer receiver"
-msgstr "Methode %s%s%s erfordert einen Zeiger"
+msgstr "Methode %s%s%s erfordert einen Zeigerempfänger"
 
 #: go/gofrontend/types.cc:6984
-#, fuzzy, c-format
+#, c-format
 msgid "method %s%s%s is marked go:nointerface"
-msgstr "Methode %s%s%s erfordert einen Zeiger"
+msgstr "Methode %s%s%s ist als go:nointerface gekennzeichnet"
 
 #. Warn about and ignore all others for now, but store them.
 #: attribs.c:426 c-family/c-common.c:8019 objc/objc-act.c:4952
@@ -12682,9 +12640,9 @@ msgid "%qE attribute directive ignored"
 msgstr "Attribut-Anweisung %qE ignoriert"
 
 #: attribs.c:430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%E::%E%> scoped attribute directive ignored"
-msgstr "Attribut-Anweisung %qE ignoriert"
+msgstr "Attribut-Anweisung im Bereich %<%E::%E%> ignoriert"
 
 #: attribs.c:439
 #, gcc-internal-format
@@ -12695,14 +12653,14 @@ msgstr "Falsche Anzahl an Argumenten für das Attribut %qE angegeben"
 #. type-specifier, outside of the definition of, a class
 #. type.  Ignore it.
 #: attribs.c:452
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "attribute ignored"
-msgstr "Attribut %qE wird ignoriert"
+msgstr "Attribut wird ignoriert"
 
 #: attribs.c:454
 #, gcc-internal-format
 msgid "an attribute that appertains to a type-specifier is ignored"
-msgstr ""
+msgstr "ein Attribut, das sich auf eine Typspezifizierung bezieht, wird ignoriert"
 
 #: attribs.c:471
 #, gcc-internal-format
@@ -12862,14 +12820,14 @@ msgid "non-integer argument 1 to __atomic_is_lock_free"
 msgstr "nicht-ganzzahliges Argument 1 für __atomic_is_lock_free"
 
 #: builtins.c:5764
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__builtin_thread_pointer is not supported on this target"
-msgstr "__builtin_eh_return für dieses Ziel nicht unterstützt"
+msgstr "__builtin_thread_pointer wird für dieses Ziel nicht unterstützt"
 
 #: builtins.c:5784
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__builtin_set_thread_pointer is not supported on this target"
-msgstr "__builtin_eh_return für dieses Ziel nicht unterstützt"
+msgstr "__builtin_set_thread_pointer wird für dieses Ziel nicht unterstützt"
 
 #. All valid uses of __builtin_va_arg_pack () are removed during
 #. inlining.
@@ -13051,9 +13009,9 @@ msgid "verify_flow_info failed"
 msgstr "verify_flow_info gescheitert"
 
 #: cfghooks.c:293
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support dump_bb_for_graph"
-msgstr "%s unterstützt nicht duplicate_block"
+msgstr "%s unterstützt nicht dump_bb_for_graph"
 
 #: cfghooks.c:330
 #, gcc-internal-format, gfc-internal-format
@@ -13156,24 +13114,24 @@ msgid "size of loop %d should be %d, not %d"
 msgstr "Größe der Schleife %d sollte %d sein, nicht %d"
 
 #: cfgloop.c:1363
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "loop with header %d not in loop tree"
-msgstr "Kopieren des Schleifenkopfes auf Bäumen einschalten"
+msgstr "Schleife mit Kopf %d nicht in Schleifenbaum"
 
 #: cfgloop.c:1380
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bb %d does not belong to loop %d"
 msgstr "BB %d gehört nicht zur Schleife %d"
 
 #: cfgloop.c:1392
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bb %d has father loop %d, should be loop %d"
-msgstr "Größe der Schleife %d sollte %d sein, nicht %d"
+msgstr "BB %d hat Vaterschleife %d, sollte Schleife %d sein"
 
 #: cfgloop.c:1409
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s header is not a loop header"
-msgstr "Kopf der Schleife %d hat nicht genau 2 Einträge"
+msgstr "Kopf der Schleife %d ist kein Schleifenkopf"
 
 #: cfgloop.c:1415
 #, gcc-internal-format
@@ -13181,14 +13139,14 @@ msgid "loop %d%'s header does not have exactly 2 entries"
 msgstr "Kopf der Schleife %d hat nicht genau 2 Einträge"
 
 #: cfgloop.c:1422
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s latch does not have an edge to its header"
-msgstr "Falle der Schleife %d hat nicht den Kopf als Nachfolger"
+msgstr "Falle der Schleife %d hat keine Kante zu ihrem Kopf"
 
 #: cfgloop.c:1427
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "loop %d%'s latch is not dominated by its header"
-msgstr "Falle der Schleife %d hat nicht den Kopf als Nachfolger"
+msgstr "Falle der Schleife %d wird nicht durch ihren Kopf bestimmt"
 
 #: cfgloop.c:1435
 #, gcc-internal-format
@@ -13301,14 +13259,14 @@ msgid "EDGE_CROSSING incorrectly set across same section"
 msgstr "EDGE_CROSSING falsch gesetzt im selben Abschnitt"
 
 #: cfgrtl.c:2165
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge crosses section boundary in bb %i"
-msgstr "Fall-Through-Kante überschreitet Abschnittsgrenze (bb %i)"
+msgstr "Fall-Through-Kante überschreitet Abschnittsgrenze in BB %i"
 
 #: cfgrtl.c:2171
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "EH edge crosses section boundary in bb %i"
-msgstr "EH-Kante überschneidet Abschnittsgrenze (bb %i)"
+msgstr "EH-Kante überschneidet Abschnittsgrenze in BB %i"
 
 #: cfgrtl.c:2178
 #, gcc-internal-format
@@ -13316,14 +13274,14 @@ msgid "EDGE_CROSSING missing across section boundary"
 msgstr "EDGE_CROSSING fehlt bei Übertretung von Abschnittsgrenze"
 
 #: cfgrtl.c:2205
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "missing REG_EH_REGION note at the end of bb %i"
 msgstr "fehlender Vermerk von REG_EH_REGION am Ende vom bb %i"
 
 #: cfgrtl.c:2210
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "too many exception handling edges in bb %i"
-msgstr "zu viele abgehende Zweig-Kanten vom bb %i"
+msgstr "zu viele Ausnahmebehandlungskanten in BB %i"
 
 #: cfgrtl.c:2218
 #, gcc-internal-format, gfc-internal-format
@@ -13331,34 +13289,34 @@ msgid "too many outgoing branch edges from bb %i"
 msgstr "zu viele abgehende Zweig-Kanten vom bb %i"
 
 #: cfgrtl.c:2223
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge after unconditional jump in bb %i"
-msgstr "Fallthru-Kante nach unbedingtem Sprung %i"
+msgstr "Fallthru-Kante nach bedingungslosem Sprung in BB %i"
 
 #: cfgrtl.c:2228
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong number of branch edges after unconditional jump in bb %i"
-msgstr "falsche Anzahl der Zweig-Kanten nach unbedingtem Sprung %i"
+msgstr "falsche Anzahl der Zweig-Kanten nach unbedingtem Sprung in BB %i"
 
 #: cfgrtl.c:2235
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong amount of branch edges after conditional jump in bb %i"
-msgstr "falsche Summe der Zweig-Kanten nach bedingtem Sprung %i"
+msgstr "falsche Anzahl der Zweig-Kanten nach bedingtem Sprung in BB %i"
 
 #: cfgrtl.c:2241
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "abnormal call edges for non-call insn in bb %i"
-msgstr "Ruf-Kanten für Nicht-Aufruf-Befehl im bb %i"
+msgstr "unpassende Ruf-Kanten für Nicht-Aufruf-Anweisung in BB %i"
 
 #: cfgrtl.c:2246
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "sibcall edges for non-call insn in bb %i"
-msgstr "Ruf-Kanten für Nicht-Aufruf-Befehl im bb %i"
+msgstr "Sibcall-Kanten für Nicht-Aufruf-Befehl in BB %i"
 
 #: cfgrtl.c:2256
 #, gcc-internal-format, gfc-internal-format
 msgid "abnormal edges for no purpose in bb %i"
-msgstr "abnormale Kanten ohne Zweck in bb %i"
+msgstr "abnormale Kanten ohne Zweck in BB %i"
 
 #: cfgrtl.c:2268
 #, gcc-internal-format, gfc-internal-format
@@ -13461,9 +13419,9 @@ msgid "execution count is negative"
 msgstr "Ausführungszähler ist negativ"
 
 #: cgraph.c:2328
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inline clone in same comdat group list"
-msgstr "Knoten ist allein in einer Comdat-Gruppe"
+msgstr "»inline«-Clone in gleicher Comdat-Gruppenliste"
 
 #: cgraph.c:2333
 #, gcc-internal-format
