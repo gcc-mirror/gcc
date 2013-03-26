@@ -1,3 +1,15 @@
+2013-03-26  Robert Mason  <rbmj@verizon.net>
+
+	PR target/54805
+
+	Backport from mainline:
+	2013-03-20  Robert Mason  <rbmj@verizon.net>
+
+	* config/vxlib-tls.c (__gthread_get_tsd_data,)
+	(__gthread_set_tsd_data, __gthread_enter_tsd_dtor_context,)
+	(__gthread_leave_tsd_dtor_context): Add prototypes.
+	(tls_delete_hook): Update.
+
 2013-03-26  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline:
