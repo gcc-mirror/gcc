@@ -71,6 +71,18 @@
 	  && (REGNO (op) > LAST_VIRTUAL_REGISTER || REGNO (op) <= BX_REG));
 })
 
+;; Match nonimmediate operands, but exclude memory operands on 64bit targets.
+(define_predicate "nonimmediate_x64nomem_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "register_operand")
+    (match_operand 0 "nonimmediate_operand")))
+
+;; Match general operands, but exclude memory operands on 64bit targets.
+(define_predicate "general_x64nomem_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "nonmemory_operand")
+    (match_operand 0 "general_operand")))
+
 ;; Return true if op is the AX register.
 (define_predicate "ax_reg_operand"
   (and (match_code "reg")

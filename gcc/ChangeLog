@@ -1,13 +1,37 @@
+2013-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpqi_ext_1): Merge with *cmpqi_ext_1_rex64
+	using nox64 isa attribute.  Use nonimmediate_x86nomem_operand as
+	operand 0 predicate.
+	(*cmpqi_ext_3): Merge with *cmpqi_ext_3_rex64 using nox64 isa
+	attribute.  Use general_x64nomem_operand as operand 1 predicate.
+	(*movqi_extv_1): Merge with *movqi_extv_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 0 predicate.
+	(*movqi_extzv_2): Merge with *movqi_extzv_2_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 0 predicate.
+	(mov<mode>_insv_1): Remove expander.  Merge insn with
+	movsi_insv_1 using SWI48 mode iterator and nox64 isa attribute.
+	Use general_x64nomem_operand as operand 1 predicate.
+	(addqi_ext_1): Merge with *addqi_ext_1_rex64 using nox64 isa attribute.
+	(*testqi_ext_1): Merge with *testqi_ext_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 1 predicate.
+	(*andqi_ext_1): Merge with *andqi_ext_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 2 predicate.
+	(*<code>qi_ext_1): Merge with *<code>qi_ext_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 1 predicate.
+	(*xorqi_cc_ext_1): Merge with *xorqi_cc_ext_1_rex64 using nox64
+	isa attribute.  Use general_x64nomem_operand as operand 2 predicate.
+	* config/i386/predicates.md (nonimmediate_x64nomem_operand): New.
+	(general_x64nomem_operand): Ditto.
+
 2013-03-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rtems.opt: Add -pthread option.
 
 2013-03-26  Richard Biener  <rguenther@suse.de>
 
-	* alias.c (find_base_term): Avoid redundant and not used
-	recursion.
-	(base_alias_check): Get the initial base term from the
-	caller.
+	* alias.c (find_base_term): Avoid redundant and not used recursion.
+	(base_alias_check): Get the initial base term from the caller.
 	(true_dependence_1): Compute and pass base terms to base_alias_check.
 	(write_dependence_p): Likewise.
 	(may_alias_p): Likewise.
