@@ -955,8 +955,7 @@ grokfield (const cp_declarator *declarator,
 	}
     }
 
-  if (processing_template_decl
-      && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
+  if (processing_template_decl && VAR_OR_FUNCTION_DECL_P (value))
     {
       value = push_template_decl (value);
       if (error_operand_p (value))
@@ -1799,8 +1798,7 @@ mark_needed (tree decl)
 bool
 decl_needed_p (tree decl)
 {
-  gcc_assert (TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == FUNCTION_DECL);
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
   /* This function should only be called at the end of the translation
      unit.  We cannot be sure of whether or not something will be
      COMDAT until that point.  */
@@ -2002,8 +2000,7 @@ constrain_visibility_for_template (tree decl, tree targs)
 	  STRIP_NOPS (arg);
 	  if (TREE_CODE (arg) == ADDR_EXPR)
 	    arg = TREE_OPERAND (arg, 0);
-	  if (TREE_CODE (arg) == VAR_DECL
-	      || TREE_CODE (arg) == FUNCTION_DECL)
+	  if (VAR_OR_FUNCTION_DECL_P (arg))
 	    {
 	      if (! TREE_PUBLIC (arg))
 		vis = VISIBILITY_ANON;
@@ -2419,8 +2416,7 @@ import_export_decl (tree decl)
      definition available in this translation unit.
 
      The following assertions check these conditions.  */
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-	      || TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
   /* Any code that creates entities with TREE_PUBLIC cleared should
      also set DECL_INTERFACE_KNOWN.  */
   gcc_assert (TREE_PUBLIC (decl));
@@ -4528,7 +4524,7 @@ mark_used (tree decl)
   /* We can only check DECL_ODR_USED on variables or functions with
      DECL_LANG_SPECIFIC set, and these are also the only decls that we
      might need special handling for.  */
-  if ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
+  if (!VAR_OR_FUNCTION_DECL_P (decl)
       || DECL_LANG_SPECIFIC (decl) == NULL
       || DECL_THUNK_P (decl))
     {
@@ -4664,7 +4660,7 @@ mark_used (tree decl)
       /* If this is a synthesized method we don't need to
 	 do the instantiation test below.  */
     }
-  else if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_OR_FUNCTION_DECL_P (decl)
 	   && DECL_TEMPLATE_INFO (decl)
 	   && (!DECL_EXPLICIT_INSTANTIATION (decl)
 	       || always_instantiate_p (decl)))

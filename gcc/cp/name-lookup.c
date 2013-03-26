@@ -678,7 +678,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	 block scope declaration declares that same entity and
 	 receives the linkage of the previous declaration.  */
       if (! t && current_function_decl && x != current_function_decl
-	  && (TREE_CODE (x) == FUNCTION_DECL || TREE_CODE (x) == VAR_DECL)
+	  && VAR_OR_FUNCTION_DECL_P (x)
 	  && DECL_EXTERNAL (x))
 	{
 	  /* Look in block scope.  */

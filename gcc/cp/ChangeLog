@@ -1,3 +1,21 @@
+2013-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-gimplify.c (cp_genericize_r): Use VAR_OR_FUNCTION_DECL_P.
+	* decl.c (duplicate_decls): Likewise.
+	(cp_finish_decl): Likewise.
+	(check_class_member_definition_namespace): Likewise.
+	* decl2.c (grokfield): Likewise.
+	(decl_needed_p): Likewise.
+	(import_export_decl): Likewise.
+	(mark_used): Likewise.
+	* name-lookup.c (pushdecl_maybe_friend_1): Likewise.
+	* pt.c (push_access_scope): Likewise.
+	(instantiate_decl): Likewise.
+	* ptree.c (cxx_print_decl): Likewise.
+	* repo.c (repo_emit_p): Likewise.
+	* semantics.c (note_decl_for_pch): Likewise.
+	* tree.c (decl_linkage): Likewise.
+
 2013-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55951
