@@ -1153,7 +1153,8 @@ record_equivalences_from_incoming_edge (basic_block bb)
 
 		  /* If the constant is in the range of the type of OLD_RHS,
 		     then convert the constant and record the equivalence.  */
-		  if (int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
+		  if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
+		      && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
 		    {
 		      tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
 		      record_equality (old_rhs, newval);
