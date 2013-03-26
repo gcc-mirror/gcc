@@ -1,3 +1,7 @@
+2013-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC options): Remove -mlittle-endian.
+
 2013-03-26  Roland McGrath  <mcgrathr@google.com>
 
 	* config/arm/arm.c (arm_print_operand: case 'w'): Use fputs rather
