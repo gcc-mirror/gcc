@@ -1429,14 +1429,16 @@ expand_set_cint64_one_inst (rtx dest_reg,
     }
   else if (!three_wide_only)
     {
-      rtx imm_op = GEN_INT (val);
-
-      if (satisfies_constraint_J (imm_op)
-	  || satisfies_constraint_K (imm_op)
-	  || satisfies_constraint_N (imm_op)
-	  || satisfies_constraint_P (imm_op))
+      /* Test for the following constraints: J, K, N, P.  We avoid
+	 generating an rtx and using existing predicates because we
+	 can be testing and rejecting a lot of constants, and GEN_INT
+	 is O(N).  */
+      if ((val >= -32768 && val <= 65535)
+	  || ((val == (val & 0xFF) * 0x0101010101010101LL))
+	  || (val == ((trunc_int_for_mode (val, QImode) & 0xFFFF)
+		      * 0x0001000100010001LL)))
 	{
-	  emit_move_insn (dest_reg, imm_op);
+	  emit_move_insn (dest_reg, GEN_INT (val));
 	  return true;
 	}
     }
