@@ -1,3 +1,7 @@
+2013-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20011008-3.c: Cap VLEN with STACK_SIZE too.
+
 2013-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55951

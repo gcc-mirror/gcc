@@ -81,10 +81,10 @@ __db_txnlist_lsnadd(int val, DB_TXNLIST *elp, DB_LSN *lsnp, u_int32_t flags)
    return val;
 }
 
-#ifndef STACK_SIZE
-#define	VLEN	1235
-#else
+#if defined (STACK_SIZE) && STACK_SIZE < 12350
 #define VLEN (STACK_SIZE/10)
+#else
+#define VLEN 1235
 #endif
 
 int main (void)
