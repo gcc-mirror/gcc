@@ -1,3 +1,10 @@
+2013-03-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Handle separately <inline> and <constexpr>
+	error messages.
+
+	* decl.c (grokdeclarator): Declare typedef_p and use it everywhere.
+
 2013-03-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56699
