@@ -1,3 +1,10 @@
+2013-03-26  Richard Biener  <rguenther@suse.de>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove
+	alignment computations and rely on get_object_alignment_1
+	for the !TYPE_P case.
+	Commonize DECL/COMPONENT_REF handling in the ARRAY_REF path.
+
 2013-03-26  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.h (PROFILE_BEFORE_PROLOGUE): Define.

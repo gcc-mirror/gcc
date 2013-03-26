@@ -1653,51 +1653,17 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
     attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
 
-  else if (TREE_CODE (t) == MEM_REF)
-    {
-      tree op0 = TREE_OPERAND (t, 0);
-      if (TREE_CODE (op0) == ADDR_EXPR
-	  && (DECL_P (TREE_OPERAND (op0, 0))
-	      || CONSTANT_CLASS_P (TREE_OPERAND (op0, 0))))
-	{
-	  if (DECL_P (TREE_OPERAND (op0, 0)))
-	    attrs.align = DECL_ALIGN (TREE_OPERAND (op0, 0));
-	  else if (CONSTANT_CLASS_P (TREE_OPERAND (op0, 0)))
-	    {
-	      attrs.align = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (op0, 0)));
-#ifdef CONSTANT_ALIGNMENT
-	      attrs.align = CONSTANT_ALIGNMENT (TREE_OPERAND (op0, 0),
-						attrs.align);
-#endif
-	    }
-	  if (TREE_INT_CST_LOW (TREE_OPERAND (t, 1)) != 0)
-	    {
-	      unsigned HOST_WIDE_INT ioff
-		= TREE_INT_CST_LOW (TREE_OPERAND (t, 1));
-	      unsigned HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
-	      attrs.align = MIN (aoff, attrs.align);
-	    }
-	}
-      else
-	/* ??? This isn't fully correct, we can't set the alignment from the
-	   type in all cases.  */
-	attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
-    }
-
-  else if (TREE_CODE (t) == TARGET_MEM_REF)
-    /* ??? This isn't fully correct, we can't set the alignment from the
-       type in all cases.  */
-    attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
-
   /* If the size is known, we can set that.  */
   tree new_size = TYPE_SIZE_UNIT (type);
+
+  /* The address-space is that of the type.  */
+  as = TYPE_ADDR_SPACE (type);
 
   /* If T is not a type, we may be able to deduce some more information about
      the expression.  */
   if (! TYPE_P (t))
     {
       tree base;
-      bool align_computed = false;
 
       if (TREE_THIS_VOLATILE (t))
 	MEM_VOLATILE_P (ref) = 1;
@@ -1727,6 +1693,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      && TREE_STATIC (base))
 	    MEM_READONLY_P (ref) = 1;
 
+	  /* Address-space information is on the base object.  */
 	  if (TREE_CODE (base) == MEM_REF
 	      || TREE_CODE (base) == TARGET_MEM_REF)
 	    as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (base,
@@ -1734,8 +1701,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  else
 	    as = TYPE_ADDR_SPACE (TREE_TYPE (base));
 	}
-      else
-	as = TYPE_ADDR_SPACE (type);
 
       /* If this expression uses it's parent's alias set, mark it such
 	 that we won't change it.  */
@@ -1750,19 +1715,11 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  attrs.offset = 0;
 	  apply_bitpos = bitpos;
 	  new_size = DECL_SIZE_UNIT (t);
-	  attrs.align = DECL_ALIGN (t);
-	  align_computed = true;
 	}
 
-      /* If this is a constant, we know the alignment.  */
+      /* ???  If we end up with a constant here do record a MEM_EXPR.  */
       else if (CONSTANT_CLASS_P (t))
-	{
-	  attrs.align = TYPE_ALIGN (type);
-#ifdef CONSTANT_ALIGNMENT
-	  attrs.align = CONSTANT_ALIGNMENT (t, attrs.align);
-#endif
-	  align_computed = true;
-	}
+	;
 
       /* If this is a field reference, record it.  */
       else if (TREE_CODE (t) == COMPONENT_REF)
@@ -1807,24 +1764,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    }
 	  while (TREE_CODE (t2) == ARRAY_REF);
 
-	  if (DECL_P (t2))
-	    {
-	      attrs.expr = t2;
-	      attrs.offset_known_p = false;
-	      if (host_integerp (off_tree, 1))
-		{
-		  HOST_WIDE_INT ioff = tree_low_cst (off_tree, 1);
-		  HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
-		  attrs.align = DECL_ALIGN (t2);
-		  if (aoff && (unsigned HOST_WIDE_INT) aoff < attrs.align)
-	            attrs.align = aoff;
-		  align_computed = true;
-		  attrs.offset_known_p = true;
-		  attrs.offset = ioff;
-		  apply_bitpos = bitpos;
-		}
-	    }
-	  else if (TREE_CODE (t2) == COMPONENT_REF)
+	  if (DECL_P (t2)
+	      || TREE_CODE (t2) == COMPONENT_REF)
 	    {
 	      attrs.expr = t2;
 	      attrs.offset_known_p = false;
@@ -1834,9 +1775,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		  attrs.offset = tree_low_cst (off_tree, 1);
 		  apply_bitpos = bitpos;
 		}
-	      /* ??? Any reason the field size would be different than
-		 the size we got from the type?  */
 	    }
+	  /* Else do not record a MEM_EXPR.  */
 	}
 
       /* If this is an indirect reference, record it.  */
@@ -1849,19 +1789,15 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  apply_bitpos = bitpos;
 	}
 
-      if (!align_computed)
-	{
-	  unsigned int obj_align;
-	  unsigned HOST_WIDE_INT obj_bitpos;
-	  get_object_alignment_1 (t, &obj_align, &obj_bitpos);
-	  obj_bitpos = (obj_bitpos - bitpos) & (obj_align - 1);
-	  if (obj_bitpos != 0)
-	    obj_align = (obj_bitpos & -obj_bitpos);
-	  attrs.align = MAX (attrs.align, obj_align);
-	}
+      /* Compute the alignment.  */
+      unsigned int obj_align;
+      unsigned HOST_WIDE_INT obj_bitpos;
+      get_object_alignment_1 (t, &obj_align, &obj_bitpos);
+      obj_bitpos = (obj_bitpos - bitpos) & (obj_align - 1);
+      if (obj_bitpos != 0)
+	obj_align = (obj_bitpos & -obj_bitpos);
+      attrs.align = MAX (attrs.align, obj_align);
     }
-  else
-    as = TYPE_ADDR_SPACE (type);
 
   if (host_integerp (new_size, 1))
     {
