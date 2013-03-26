@@ -12,7 +12,8 @@ subroutine foo(a)
 implicit none
 character(len=*) :: a
 character(len=3) :: b
-print *, merge(a,b,.true.)  ! Unequal character lengths
+logical :: ll = .true.
+print *, merge(a,b,ll)  ! Unequal character lengths
 end subroutine foo
 
 call foo("ab")
