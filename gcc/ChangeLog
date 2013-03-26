@@ -1,3 +1,7 @@
+2013-01-29  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.opt: Add -pthread option.
+
 2013-03-26  Richard Biener  <rguenther@suse.de>
 
 	* alias.c (find_base_term): Avoid redundant and not used
