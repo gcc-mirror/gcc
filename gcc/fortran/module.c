@@ -88,7 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct
 {
   int column, line;
-  fpos_t pos;
+  long pos;
 }
 module_locus;
 
@@ -190,8 +190,12 @@ static struct md5_ctx ctx;
 static const char *module_name;
 static gfc_use_list *module_list;
 
+/* Content of module.  */
+static char* module_content;
+
+static long module_pos;
 static int module_line, module_column, only_flag;
-static int prev_module_line, prev_module_column, prev_character;
+static int prev_module_line, prev_module_column;
 
 static enum
 { IO_INPUT, IO_OUTPUT }
@@ -1004,7 +1008,8 @@ static void bad_module (const char *) ATTRIBUTE_NORETURN;
 static void
 bad_module (const char *msgid)
 {
-  fclose (module_fp);
+  XDELETEVEC (module_content);
+  module_content = NULL;
 
   switch (iomode)
     {
@@ -1031,7 +1036,7 @@ set_module_locus (module_locus *m)
 {
   module_column = m->column;
   module_line = m->line;
-  fsetpos (module_fp, &m->pos);
+  module_pos = m->pos;
 }
 
 
@@ -1042,7 +1047,7 @@ get_module_locus (module_locus *m)
 {
   m->column = module_column;
   m->line = module_line;
-  fgetpos (module_fp, &m->pos);
+  m->pos = module_pos;
 }
 
 
@@ -1052,16 +1057,12 @@ get_module_locus (module_locus *m)
 static int
 module_char (void)
 {
-  int c;
-
-  c = getc (module_fp);
-
-  if (c == EOF)
+  const char c = module_content[module_pos++];
+  if (c == '\0')
     bad_module ("Unexpected EOF");
 
   prev_module_line = module_line;
   prev_module_column = module_column;
-  prev_character = c;
 
   if (c == '\n')
     {
@@ -1081,7 +1082,7 @@ module_unget_char (void)
 {
   module_line = prev_module_line;
   module_column = prev_module_column;
-  ungetc (prev_character, module_fp);
+  module_pos--;
 }
 
 /* Parse a string constant.  The delimiter is guaranteed to be a
@@ -6019,6 +6020,27 @@ create_derived_type (const char *name, const char *modname,
 }
 
 
+/* Read the contents of the module file into a temporary buffer.  */
+
+static void
+read_module_to_tmpbuf ()
+{
+  /* Find out the size of the file and reserve space.  Assume we're at
+     the beginning.  */
+  fseek (module_fp, 0, SEEK_END);
+  long file_size = ftell (module_fp);
+  fseek (module_fp, 0, SEEK_SET);
+
+  /* An extra byte for the terminating NULL.  */
+  module_content = XNEWVEC (char, file_size + 1);
+
+  fread (module_content, 1, file_size, module_fp);
+  module_content[file_size] = '\0';
+
+  module_pos = 0;
+}
+
+
 /* USE the ISO_FORTRAN_ENV intrinsic module.  */
 
 static void
@@ -6289,6 +6311,9 @@ gfc_use_module (gfc_use_list *module)
   module_column = 1;
   start = 0;
 
+  read_module_to_tmpbuf ();
+  fclose (module_fp);
+
   /* Skip the first two lines of the module, after checking that this is
      a gfortran module file.  */
   line = 0;
@@ -6336,7 +6361,8 @@ gfc_use_module (gfc_use_list *module)
   free_pi_tree (pi_root);
   pi_root = NULL;
 
-  fclose (module_fp);
+  XDELETEVEC (module_content);
+  module_content = NULL;
 
   use_stmt = gfc_get_use_list ();
   *use_stmt = *module;
