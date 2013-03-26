@@ -4340,10 +4340,7 @@ tilepro_reorg (void)
 int
 tilepro_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
 {
-  if (flag_pic)
-    return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4;
-  else
-    return DW_EH_PE_absptr;
+  return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4;
 }
 
 
