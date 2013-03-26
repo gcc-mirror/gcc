@@ -2981,7 +2981,8 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
   VEC (slp_instance, heap) *slp_instances;
   slp_instance instance;
-  unsigned int i, vf;
+  slp_tree loads_node;
+  unsigned int i, j, vf;
   bool is_store = false;
 
   if (loop_vinfo)
@@ -3000,6 +3001,15 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       /* Schedule the tree of INSTANCE.  */
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
                                              instance, vf);
+
+      /* Clear STMT_VINFO_VEC_STMT of all loads.  With shared loads
+	 between SLP instances we fail to properly initialize the
+	 vectorized SLP stmts and confuse different load permutations.  */
+      FOR_EACH_VEC_ELT (slp_tree, SLP_INSTANCE_LOADS (instance), j, loads_node)
+	STMT_VINFO_VEC_STMT
+	  (vinfo_for_stmt
+	    (VEC_index (gimple, SLP_TREE_SCALAR_STMTS (loads_node), 0))) = NULL;
+
       if (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS)
 	  || vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	fprintf (vect_dump, "vectorizing stmts using SLP.");
@@ -3012,7 +3022,15 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       unsigned int j;
       gimple_stmt_iterator gsi;
 
-      vect_remove_slp_scalar_calls (root);
+      /* Remove scalar call stmts.  Do not do this for basic-block
+	 vectorization as not all uses may be vectorized.
+	 ???  Why should this be necessary?  DCE should be able to
+	 remove the stmts itself.
+	 ???  For BB vectorization we can as well remove scalar
+	 stmts starting from the SLP tree root if they have no
+	 uses.  */
+      if (loop_vinfo)
+	vect_remove_slp_scalar_calls (root);
 
       for (j = 0; VEC_iterate (gimple, SLP_TREE_SCALAR_STMTS (root), j, store)
                   && j < SLP_INSTANCE_GROUP_SIZE (instance); j++)

@@ -1,3 +1,18 @@
+2013-03-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline:
+	2013-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56608
+	* tree-vect-slp.c (vect_schedule_slp): Do not remove scalar
+	calls when vectorizing basic-blocks.
+
+	2013-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56270
+	* tree-vect-slp.c (vect_schedule_slp): Clear vectorized stmts
+	of loads after scheduling an SLP instance.
+
 2013-03-26  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline:
