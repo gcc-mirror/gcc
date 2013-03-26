@@ -1,3 +1,8 @@
+2013-03-26  Roland McGrath  <mcgrathr@google.com>
+
+	* config/arm/arm.c (arm_print_operand: case 'w'): Use fputs rather
+	than fprintf with a non-constant, non-format string.
+
 2013-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*cmpqi_ext_1): Merge with *cmpqi_ext_1_rex64
