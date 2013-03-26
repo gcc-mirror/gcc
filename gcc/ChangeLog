@@ -1,3 +1,8 @@
+2013-03-25  Jeff Law  <law@redhat.com>
+        * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Add missing
+        check for INTEGRAL_TYPE_P that was missing due to checking in
+	wrong version of prior patch.
+
 2013-03-25  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx-builtins.h (enum tilegx_builtin): Add
