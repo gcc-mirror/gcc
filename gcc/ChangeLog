@@ -1,6 +1,14 @@
 2013-03-26  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline:
+	2013-03-26  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.h (PROFILE_BEFORE_PROLOGUE): Define.
+	* config/tilegx/tilepro.h (PROFILE_BEFORE_PROLOGUE): Define.
+
+2013-03-26  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline:
 	2013-03-25  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx-builtins.h (enum tilegx_builtin): Add
