@@ -1,3 +1,9 @@
+2013-03-26  Xinyu Qi  <xyqi@marvell.com>
+
+	* config/arm/arm.h (FIRST_IWMMXT_GR_REGNUM): Add comment.
+        * config/arm/iwmmxt.md (WCGR0): Update.
+        (WCGR1, WCGR2, WCGR3): Likewise.
+
 2013-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdfcc_1): Merge with *movdfcc_1_rex64.

@@ -955,6 +955,8 @@ extern int prefer_neon_for_64bits;
 
 #define FIRST_IWMMXT_REGNUM	(LAST_HI_VFP_REGNUM + 1)
 #define LAST_IWMMXT_REGNUM	(FIRST_IWMMXT_REGNUM + 15)
+
+/* Need to sync with WCGR in iwmmxt.md.  */
 #define FIRST_IWMMXT_GR_REGNUM	(LAST_IWMMXT_REGNUM + 1)
 #define LAST_IWMMXT_GR_REGNUM	(FIRST_IWMMXT_GR_REGNUM + 3)
 
