@@ -1,4 +1,4 @@
-2013-01-29  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+2013-03-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rtems.opt: Add -pthread option.
 
