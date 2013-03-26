@@ -1,3 +1,7 @@
+2013-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC options): Remove -mlittle-endian.
+
 2013-03-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rtems.opt: Add -pthread option.
