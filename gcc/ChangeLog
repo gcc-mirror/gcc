@@ -2,6 +2,17 @@
 
 	Backport from mainline:
 	2013-03-25  Walter Lee  <walt@tilera.com>
+	* config/tilegx/tilegx-builtins.h (enum tilegx_builtin): Add
+	TILEGX_INSN_SHUFFLEBYTES1.
+	* config/tilegx/tilegx.c (tilegx_builtin_info): Add entry for
+	shufflebytes1.
+	(tilegx_builtins): Ditto.
+	* config/tilegx/tilegx.md (insn_shufflebytes1): New pattern.
+
+2013-03-26  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline:
+	2013-03-25  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.c (expand_set_cint64_one_inst): Inline
 	tests for constraint J, K, N, P.
