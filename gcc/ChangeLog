@@ -1,3 +1,13 @@
+2013-03-26  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (find_base_term): Avoid redundant and not used
+	recursion.
+	(base_alias_check): Get the initial base term from the
+	caller.
+	(true_dependence_1): Compute and pass base terms to base_alias_check.
+	(write_dependence_p): Likewise.
+	(may_alias_p): Likewise.
+
 2013-03-26  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_address): Support
