@@ -1671,7 +1671,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 
   if (TYPE_PTRDATAMEM_P (ptrmem_type))
     {
-      bool is_lval = real_lvalue_p (datum);
+      cp_lvalue_kind kind = lvalue_kind (datum);
       tree ptype;
 
       /* Compute the type of the field, as described in [expr.ref].
@@ -1701,7 +1701,9 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	return error_mark_node;
 
       /* If the object expression was an rvalue, return an rvalue.  */
-      if (!is_lval)
+      if (kind & clk_class)
+	datum = rvalue (datum);
+      else if (kind & clk_rvalueref)
 	datum = move (datum);
       return datum;
     }
