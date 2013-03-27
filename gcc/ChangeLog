@@ -1,3 +1,10 @@
+2013-03-27  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm-cores.def: Added core cortex-r7.
+	* config/arm/arm-tune.md: Regenerated.
+	* config/arm/arm-tables.opt: Regenerated.
+	* doc/invoke.texi: Added entry for core cortex-r7.
+
 2013-03-27  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.c (tilegx_expand_prologue): Avoid
