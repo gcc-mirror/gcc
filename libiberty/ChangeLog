@@ -1,3 +1,7 @@
+2013-03-27  Kai Tietz  <ktietz@redhat.com>
+
+	* configure: Regenerated.
+
 2013-03-06  Tobias Burnus  <burnus@net-b.de>
 
 	* libiberty.texi: Update comment, remove lowersections.
