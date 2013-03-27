@@ -314,11 +314,20 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
     case OMP_CLAUSE_COPYPRIVATE:
       name = "copyprivate";
       goto print_remap;
+    case OMP_CLAUSE_FROM:
+      name = "from";
+      goto print_remap;
+    case OMP_CLAUSE_TO:
+      name = "to";
+      goto print_remap;
+    case OMP_CLAUSE_UNIFORM:
+      name = "uniform";
+      goto print_remap;
   print_remap:
       pp_string (buffer, name);
       pp_character (buffer, '(');
       dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
-	  spc, flags, false);
+			 spc, flags, false);
       pp_character (buffer, ')');
       break;
 
@@ -327,21 +336,21 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_string (buffer, op_symbol_code (OMP_CLAUSE_REDUCTION_CODE (clause)));
       pp_character (buffer, ':');
       dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
-	  spc, flags, false);
+			 spc, flags, false);
       pp_character (buffer, ')');
       break;
 
     case OMP_CLAUSE_IF:
       pp_string (buffer, "if(");
       dump_generic_node (buffer, OMP_CLAUSE_IF_EXPR (clause),
-	  spc, flags, false);
+			 spc, flags, false);
       pp_character (buffer, ')');
       break;
 
     case OMP_CLAUSE_NUM_THREADS:
       pp_string (buffer, "num_threads(");
       dump_generic_node (buffer, OMP_CLAUSE_NUM_THREADS_EXPR (clause),
-	  spc, flags, false);
+			 spc, flags, false);
       pp_character (buffer, ')');
       break;
 
@@ -380,30 +389,29 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_string (buffer, "schedule(");
       switch (OMP_CLAUSE_SCHEDULE_KIND (clause))
 	{
-      case OMP_CLAUSE_SCHEDULE_STATIC:
-	pp_string (buffer, "static");
-	break;
-      case OMP_CLAUSE_SCHEDULE_DYNAMIC:
-	pp_string (buffer, "dynamic");
-	break;
-      case OMP_CLAUSE_SCHEDULE_GUIDED:
-	pp_string (buffer, "guided");
-	break;
-      case OMP_CLAUSE_SCHEDULE_RUNTIME:
-	pp_string (buffer, "runtime");
-	break;
-      case OMP_CLAUSE_SCHEDULE_AUTO:
-	pp_string (buffer, "auto");
-	break;
-      default:
-	gcc_unreachable ();
+	case OMP_CLAUSE_SCHEDULE_STATIC:
+	  pp_string (buffer, "static");
+	  break;
+	case OMP_CLAUSE_SCHEDULE_DYNAMIC:
+	  pp_string (buffer, "dynamic");
+	  break;
+	case OMP_CLAUSE_SCHEDULE_GUIDED:
+	  pp_string (buffer, "guided");
+	  break;
+	case OMP_CLAUSE_SCHEDULE_RUNTIME:
+	  pp_string (buffer, "runtime");
+	  break;
+	case OMP_CLAUSE_SCHEDULE_AUTO:
+	  pp_string (buffer, "auto");
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
       if (OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (clause))
 	{
 	  pp_character (buffer, ',');
-	  dump_generic_node (buffer,
-	      OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (clause),
-	      spc, flags, false);
+	  dump_generic_node (buffer, OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (clause),
+			     spc, flags, false);
 	}
       pp_character (buffer, ')');
       break;
@@ -414,8 +422,7 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
 
     case OMP_CLAUSE_COLLAPSE:
       pp_string (buffer, "collapse(");
-      dump_generic_node (buffer,
-			 OMP_CLAUSE_COLLAPSE_EXPR (clause),
+      dump_generic_node (buffer, OMP_CLAUSE_COLLAPSE_EXPR (clause),
 			 spc, flags, false);
       pp_character (buffer, ')');
       break;
@@ -423,12 +430,160 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
     case OMP_CLAUSE_FINAL:
       pp_string (buffer, "final(");
       dump_generic_node (buffer, OMP_CLAUSE_FINAL_EXPR (clause),
-	  spc, flags, false);
+			 spc, flags, false);
       pp_character (buffer, ')');
       break;
 
     case OMP_CLAUSE_MERGEABLE:
       pp_string (buffer, "mergeable");
+      break;
+
+    case OMP_CLAUSE_LINEAR:
+      pp_string (buffer, "linear(");
+      dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_character (buffer, ':');
+      dump_generic_node (buffer, OMP_CLAUSE_LINEAR_STEP (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_ALIGNED:
+      pp_string (buffer, "aligned(");
+      dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      if (OMP_CLAUSE_ALIGNED_ALIGNMENT (clause))
+	{
+	  pp_character (buffer, ':');
+	  dump_generic_node (buffer, OMP_CLAUSE_ALIGNED_ALIGNMENT (clause),
+			     spc, flags, false);
+	}
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_DEPEND:
+      pp_string (buffer, "depend(");
+      switch (OMP_CLAUSE_DEPEND_KIND (clause))
+	{
+	case OMP_CLAUSE_DEPEND_IN:
+	  pp_string (buffer, "in");
+	  break;
+	case OMP_CLAUSE_DEPEND_OUT:
+	  pp_string (buffer, "out");
+	  break;
+	case OMP_CLAUSE_DEPEND_INOUT:
+	  pp_string (buffer, "inout");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_character (buffer, ':');
+      dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_MAP:
+      pp_string (buffer, "map(");
+      switch (OMP_CLAUSE_MAP_KIND (clause))
+	{
+	case OMP_CLAUSE_MAP_ALLOC:
+	  pp_string (buffer, "alloc");
+	  break;
+	case OMP_CLAUSE_MAP_TO:
+	  pp_string (buffer, "to");
+	  break;
+	case OMP_CLAUSE_MAP_FROM:
+	  pp_string (buffer, "from");
+	  break;
+	case OMP_CLAUSE_MAP_TOFROM:
+	  pp_string (buffer, "tofrom");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_character (buffer, ':');
+      dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_NUM_TEAMS:
+      pp_string (buffer, "num_teams(");
+      dump_generic_node (buffer, OMP_CLAUSE_NUM_TEAMS_EXPR (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_DEVICE:
+      pp_string (buffer, "device(");
+      dump_generic_node (buffer, OMP_CLAUSE_DEVICE_ID (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_DIST_SCHEDULE:
+      pp_string (buffer, "dist_schedule(static");
+      if (OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR (clause))
+	{
+	  pp_character (buffer, ',');
+	  dump_generic_node (buffer,
+			     OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR (clause),
+			     spc, flags, false);
+	}
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_PROC_BIND:
+      pp_string (buffer, "proc_bind(");
+      switch (OMP_CLAUSE_PROC_BIND_KIND (clause))
+	{
+	case OMP_CLAUSE_PROC_BIND_MASTER:
+	  pp_string (buffer, "master");
+	  break;
+	case OMP_CLAUSE_PROC_BIND_CLOSE:
+	  pp_string (buffer, "close");
+	  break;
+	case OMP_CLAUSE_PROC_BIND_SPREAD:
+	  pp_string (buffer, "spread");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_SAFELEN:
+      pp_string (buffer, "safelen(");
+      dump_generic_node (buffer, OMP_CLAUSE_SAFELEN_EXPR (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_SIMDLEN:
+      pp_string (buffer, "simdlen(");
+      dump_generic_node (buffer, OMP_CLAUSE_SIMDLEN_EXPR (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE_INBRANCH:
+      pp_string (buffer, "inbranch");
+      break;
+    case OMP_CLAUSE_NOTINBRANCH:
+      pp_string (buffer, "notinbranch");
+      break;
+    case OMP_CLAUSE_FOR:
+      pp_string (buffer, "for");
+      break;
+    case OMP_CLAUSE_PARALLEL:
+      pp_string (buffer, "parallel");
+      break;
+    case OMP_CLAUSE_SECTIONS:
+      pp_string (buffer, "sections");
+      break;
+    case OMP_CLAUSE_TASKGROUP:
+      pp_string (buffer, "taskgroup");
       break;
 
     default:
@@ -2178,6 +2333,21 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case OMP_FOR:
       pp_string (buffer, "#pragma omp for");
+      goto dump_omp_loop;
+
+    case OMP_SIMD:
+      pp_string (buffer, "#pragma omp simd");
+      goto dump_omp_loop;
+
+    case OMP_FOR_SIMD:
+      pp_string (buffer, "#pragma omp for simd");
+      goto dump_omp_loop;
+
+    case OMP_DISTRIBUTE:
+      pp_string (buffer, "#pragma omp distribute");
+      goto dump_omp_loop;
+
+    dump_omp_loop:
       dump_omp_clauses (buffer, OMP_FOR_CLAUSES (node), spc, flags);
 
       if (!(flags & TDF_SLIM))

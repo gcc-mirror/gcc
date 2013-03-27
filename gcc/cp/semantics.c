@@ -4025,6 +4025,7 @@ tree
 finish_omp_clauses (tree clauses)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
+  bitmap_head aligned_head;
   tree c, t, *pc = &clauses;
   const char *name;
 
@@ -4032,6 +4033,7 @@ finish_omp_clauses (tree clauses)
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
   bitmap_initialize (&firstprivate_head, &bitmap_default_obstack);
   bitmap_initialize (&lastprivate_head, &bitmap_default_obstack);
+  bitmap_initialize (&aligned_head, &bitmap_default_obstack);
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
@@ -4053,6 +4055,27 @@ finish_omp_clauses (tree clauses)
 	  goto check_dup_generic;
 	case OMP_CLAUSE_COPYIN:
 	  name = "copyin";
+	  goto check_dup_generic;
+	case OMP_CLAUSE_LINEAR:
+	  name = "linear";
+	  t = OMP_CLAUSE_LINEAR_STEP (c);
+	  if (t == NULL_TREE)
+	    t = integer_one_node;
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error ("linear step expression must be integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      OMP_CLAUSE_LINEAR_STEP (c) = t;
+	    }
 	  goto check_dup_generic;
 	check_dup_generic:
 	  t = OMP_CLAUSE_DECL (c);
@@ -4181,12 +4204,210 @@ finish_omp_clauses (tree clauses)
 	    }
 	  break;
 
+	case OMP_CLAUSE_SIMDLEN:
+	case OMP_CLAUSE_SAFELEN:
+	  t = OMP_CLAUSE_OPERAND (c, 0);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error ("%qs length expression must be integral",
+		     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      t = maybe_constant_value (t);
+	      if (!processing_template_decl)
+		{
+		  if (TREE_CODE (t) != INTEGER_CST
+		      || tree_int_cst_sgn (t) == -1)
+		    {
+		      error ("%qs length expression must be positive constant"
+			     " integer expression",
+			     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      remove = true;
+		    }
+		}
+	      OMP_CLAUSE_OPERAND (c, 0) = t;
+	    }
+	  break;
+
+	case OMP_CLAUSE_NUM_TEAMS:
+	  t = OMP_CLAUSE_NUM_TEAMS_EXPR (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error ("%<num_teams%> expression must be integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      OMP_CLAUSE_NUM_TEAMS_EXPR (c) = t;
+	    }
+	  break;
+
+	case OMP_CLAUSE_DEVICE:
+	  t = OMP_CLAUSE_DEVICE_ID (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error ("%<device%> id must be integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      OMP_CLAUSE_DEVICE_ID (c) = t;
+	    }
+	  break;
+
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	  t = OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR (c);
+	  if (t == NULL)
+	    ;
+	  else if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error ("%<dist_schedule%> chunk size expression must be "
+		     "integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR (c) = t;
+	    }
+	  break;
+
+	case OMP_CLAUSE_ALIGNED:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	    {
+	      if (processing_template_decl)
+		break;
+	      if (DECL_P (t))
+		error ("%qD is not a variable in %<aligned%> clause", t);
+	      else
+		error ("%qE is not a variable in %<aligned%> clause", t);
+	      remove = true;
+	    }
+	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
+	    {
+	      error ("%qD appears more than once in %<aligned%> clauses", t);
+	      remove = true;
+	    }
+	  else
+	    bitmap_set_bit (&aligned_head, DECL_UID (t));
+	  t = OMP_CLAUSE_ALIGNED_ALIGNMENT (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error ("%<aligned%> clause alignment expression must "
+		     "be integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      t = maybe_constant_value (t);
+	      if (!processing_template_decl)
+		{
+		  if (TREE_CODE (t) != INTEGER_CST
+		      || tree_int_cst_sgn (t) == -1)
+		    {
+		      error ("%<aligned%> clause alignment expression must be "
+			     "positive constant integer expression");
+		      remove = true;
+		    }
+		}
+	      OMP_CLAUSE_ALIGNED_ALIGNMENT (c) = t;
+	    }
+	  break;
+
+	case OMP_CLAUSE_DEPEND:
+	  t = OMP_CLAUSE_DECL (c);
+	  /* FIXME: depend clause argument may be also array section.  */
+	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	    {
+	      if (processing_template_decl)
+		break;
+	      if (DECL_P (t))
+		error ("%qD is not a variable in %<depend%> clause", t);
+	      else
+		error ("%qE is not a variable in %<depend%> clause", t);
+	      remove = true;
+	    }
+	  break;
+
+	case OMP_CLAUSE_MAP:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_FROM:
+	  t = OMP_CLAUSE_DECL (c);
+	  /* FIXME: map clause argument may be also array section.  */
+	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	    {
+	      if (processing_template_decl)
+		break;
+	      if (DECL_P (t))
+		error ("%qD is not a variable in %qs clause", t,
+		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      else
+		error ("%qE is not a variable in %qs clause", t,
+		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else if (TREE_CODE (t) == VAR_DECL && DECL_THREAD_LOCAL_P (t))
+	    {
+	      error ("%qD is threadprivate variable in %qs clause", t,
+		     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  break;
+
+	case OMP_CLAUSE_UNIFORM:
+	  if (TREE_CODE (t) != PARM_DECL)
+	    {
+	      if (processing_template_decl)
+		break;
+	      if (DECL_P (t))
+		error ("%qD is not an argument in %<uniform%> clause", t);
+	      else
+		error ("%qE is not an argument in %<uniform%> clause", t);
+	      remove = true;
+	    }
+	  break;
+
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	case OMP_CLAUSE_PARALLEL:
+	case OMP_CLAUSE_FOR:
+	case OMP_CLAUSE_SECTIONS:
+	case OMP_CLAUSE_TASKGROUP:
+	case OMP_CLAUSE_PROC_BIND:
 	  break;
 
 	default:
@@ -4741,8 +4962,8 @@ handle_omp_for_class_iterator (int i, location_t locus, tree declv, tree initv,
    sk_omp scope.  */
 
 tree
-finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
-		tree incrv, tree body, tree pre_body, tree clauses)
+finish_omp_for (location_t locus, enum tree_code code, tree declv, tree initv,
+		tree condv, tree incrv, tree body, tree pre_body, tree clauses)
 {
   tree omp_for = NULL, orig_incr = NULL;
   tree decl, init, cond, incr;
@@ -4811,7 +5032,7 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
     {
       tree stmt;
 
-      stmt = make_node (OMP_FOR);
+      stmt = make_node (code);
 
       for (i = 0; i < TREE_VEC_LENGTH (declv); i++)
 	{
@@ -4923,7 +5144,7 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
   if (IS_EMPTY_STMT (pre_body))
     pre_body = NULL;
 
-  omp_for = c_finish_omp_for (locus, declv, initv, condv, incrv,
+  omp_for = c_finish_omp_for (locus, code, declv, initv, condv, incrv,
 			      body, pre_body);
 
   if (omp_for == NULL)
@@ -5107,6 +5328,62 @@ finish_omp_taskyield (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKYIELD);
   vec<tree, va_gc> *vec = make_tree_vector ();
+  tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+  release_tree_vector (vec);
+  finish_expr_stmt (stmt);
+}
+
+void
+finish_omp_cancel (tree clauses)
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);
+  int mask = 0;
+  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+    mask = 1;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+    mask = 2;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+    mask = 4;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+    mask = 8;
+  else
+    {
+      error ("%<#pragma omp cancellation point must specify one of "
+	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
+      return;
+    }
+  vec<tree, va_gc> *vec
+    = make_tree_vector_single (build_int_cst (integer_type_node, mask));
+  tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+  release_tree_vector (vec);
+  tree ifc = find_omp_clause (clauses, OMP_CLAUSE_IF);
+  if (ifc != NULL_TREE)
+    stmt = build3 (COND_EXPR, void_type_node, OMP_CLAUSE_IF_EXPR (ifc),
+		   stmt, NULL_TREE);
+  finish_expr_stmt (stmt);
+}
+
+void
+finish_omp_cancellation_point (tree clauses)
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCELLATION_POINT);
+  int mask = 0;
+  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+    mask = 1;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+    mask = 2;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+    mask = 4;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+    mask = 8;
+  else
+    {
+      error ("%<#pragma omp cancellation point must specify one of "
+	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
+      return;
+    }
+  vec<tree, va_gc> *vec
+    = make_tree_vector_single (build_int_cst (integer_type_node, mask));
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
   release_tree_vector (vec);
   finish_expr_stmt (stmt);

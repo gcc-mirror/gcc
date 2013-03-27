@@ -531,7 +531,8 @@ gfc_builtin_function (tree decl)
   return decl;
 }
 
-/* So far we need just these 4 attribute types.  */
+/* So far we need just these 6 attribute types.  */
+#define ATTR_NULL			0
 #define ATTR_NOTHROW_LEAF_LIST		(ECF_NOTHROW | ECF_LEAF)
 #define ATTR_NOTHROW_LEAF_MALLOC_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_MALLOC)
 #define ATTR_CONST_NOTHROW_LEAF_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_CONST)

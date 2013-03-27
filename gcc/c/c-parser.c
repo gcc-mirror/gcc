@@ -9350,7 +9350,7 @@ c_parser_omp_clause_untied (c_parser *parser ATTRIBUTE_UNUSED, tree list)
    of clause default goes in *pdefault.  */
 
 static tree
-c_parser_omp_all_clauses (c_parser *parser, unsigned int mask,
+c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 			  const char *where)
 {
   tree clauses = NULL;
@@ -10156,7 +10156,8 @@ c_parser_omp_for_loop (location_t loc,
      an error from the initialization parsing.  */
   if (!fail)
     {
-      stmt = c_finish_omp_for (loc, declv, initv, condv, incrv, body, NULL);
+      stmt = c_finish_omp_for (loc, OMP_FOR, declv, initv, condv,
+			       incrv, body, NULL);
       if (stmt)
 	{
 	  if (par_clauses != NULL)
@@ -10218,15 +10219,15 @@ pop_scopes:
    LOC is the location of the #pragma token.
 */
 
-#define OMP_FOR_CLAUSE_MASK				\
-	( (1u << PRAGMA_OMP_CLAUSE_PRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
-	| (1u << PRAGMA_OMP_CLAUSE_LASTPRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_REDUCTION)		\
-	| (1u << PRAGMA_OMP_CLAUSE_ORDERED)		\
-	| (1u << PRAGMA_OMP_CLAUSE_SCHEDULE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_COLLAPSE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_NOWAIT))
+#define OMP_FOR_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDERED)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static tree
 c_parser_omp_for (location_t loc, c_parser *parser)
@@ -10367,12 +10368,12 @@ c_parser_omp_sections_scope (location_t sections_loc, c_parser *parser)
    LOC is the location of the #pragma token.
 */
 
-#define OMP_SECTIONS_CLAUSE_MASK			\
-	( (1u << PRAGMA_OMP_CLAUSE_PRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
-	| (1u << PRAGMA_OMP_CLAUSE_LASTPRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_REDUCTION)		\
-	| (1u << PRAGMA_OMP_CLAUSE_NOWAIT))
+#define OMP_SECTIONS_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static tree
 c_parser_omp_sections (location_t loc, c_parser *parser)
@@ -10400,15 +10401,15 @@ c_parser_omp_sections (location_t loc, c_parser *parser)
    LOC is the location of the #pragma token.
 */
 
-#define OMP_PARALLEL_CLAUSE_MASK			\
-	( (1u << PRAGMA_OMP_CLAUSE_IF)			\
-	| (1u << PRAGMA_OMP_CLAUSE_PRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
-	| (1u << PRAGMA_OMP_CLAUSE_DEFAULT)		\
-	| (1u << PRAGMA_OMP_CLAUSE_SHARED)		\
-	| (1u << PRAGMA_OMP_CLAUSE_COPYIN)		\
-	| (1u << PRAGMA_OMP_CLAUSE_REDUCTION)		\
-	| (1u << PRAGMA_OMP_CLAUSE_NUM_THREADS))
+#define OMP_PARALLEL_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULT)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SHARED)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COPYIN)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS))
 
 static tree
 c_parser_omp_parallel (location_t loc, c_parser *parser)
@@ -10416,7 +10417,7 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
   enum pragma_kind p_kind = PRAGMA_OMP_PARALLEL;
   const char *p_name = "#pragma omp parallel";
   tree stmt, clauses, par_clause, ws_clause, block;
-  unsigned int mask = OMP_PARALLEL_CLAUSE_MASK;
+  omp_clause_mask mask = OMP_PARALLEL_CLAUSE_MASK;
 
   if (c_parser_next_token_is_keyword (parser, RID_FOR))
     {
@@ -10424,7 +10425,7 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
       p_kind = PRAGMA_OMP_PARALLEL_FOR;
       p_name = "#pragma omp parallel for";
       mask |= OMP_FOR_CLAUSE_MASK;
-      mask &= ~(1u << PRAGMA_OMP_CLAUSE_NOWAIT);
+      mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT);
     }
   else if (c_parser_next_token_is (parser, CPP_NAME))
     {
@@ -10435,7 +10436,7 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
 	  p_kind = PRAGMA_OMP_PARALLEL_SECTIONS;
 	  p_name = "#pragma omp parallel sections";
 	  mask |= OMP_SECTIONS_CLAUSE_MASK;
-	  mask &= ~(1u << PRAGMA_OMP_CLAUSE_NOWAIT);
+	  mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT);
 	}
     }
 
@@ -10481,11 +10482,11 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
    LOC is the location of the #pragma.
 */
 
-#define OMP_SINGLE_CLAUSE_MASK				\
-	( (1u << PRAGMA_OMP_CLAUSE_PRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
-	| (1u << PRAGMA_OMP_CLAUSE_COPYPRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_NOWAIT))
+#define OMP_SINGLE_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COPYPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static tree
 c_parser_omp_single (location_t loc, c_parser *parser)
@@ -10508,15 +10509,15 @@ c_parser_omp_single (location_t loc, c_parser *parser)
    LOC is the location of the #pragma.
 */
 
-#define OMP_TASK_CLAUSE_MASK				\
-	( (1u << PRAGMA_OMP_CLAUSE_IF)			\
-	| (1u << PRAGMA_OMP_CLAUSE_UNTIED)		\
-	| (1u << PRAGMA_OMP_CLAUSE_DEFAULT)		\
-	| (1u << PRAGMA_OMP_CLAUSE_PRIVATE)		\
-	| (1u << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
-	| (1u << PRAGMA_OMP_CLAUSE_SHARED)		\
-	| (1u << PRAGMA_OMP_CLAUSE_FINAL)		\
-	| (1u << PRAGMA_OMP_CLAUSE_MERGEABLE))
+#define OMP_TASK_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_UNTIED)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULT)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SHARED)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FINAL)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MERGEABLE))
 
 static tree
 c_parser_omp_task (location_t loc, c_parser *parser)

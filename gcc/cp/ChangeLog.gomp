@@ -1,3 +1,51 @@
+2013-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Use OMP_LOOP_CHECK instead of
+	OMP_FOR_CHECK.
+	(finish_omp_for): Add enum tree_code second argument.
+	(finish_omp_cancel, finish_omp_cancellation_point): New prototypes.
+	* cp-gimplify.c (cp_gimplify_expr, cp_genericize_r): Handle
+	OMP_SIMD, OMP_FOR_SIMD and OMP_DISTRIBUTE.
+	* semantics.c (finish_omp_clauses): Handle new OpenMP 4.0 clauses.
+	(finish_omp_for): Add code argument, pass it down to make_node
+	or c_finish_omp_for.
+	(finish_omp_cancel, finish_omp_cancellation_point): New functions.
+	* parser.c (cp_parser_omp_clause_name): Add parsing of new
+	OpenMP 4.0 clauses.
+	(cp_parser_omp_var_list_no_open): Add COLON argument, if non-NULL,
+	accept termination by colon instead of closing paren.
+	(cp_parser_omp_var_list, cp_parser_omp_clause_reduction): Adjust
+	callers.
+	(cp_parser_omp_clause_branch, cp_parser_omp_clause_cancelkind,
+	cp_parser_omp_clause_num_teams, cp_parser_omp_clause_aligned,
+	cp_parser_omp_clause_linear, cp_parser_omp_clause_depend,
+	cp_parser_omp_clause_map, cp_parser_omp_clause_device,
+	cp_parser_omp_clause_dist_schedule, cp_parser_omp_clause_proc_bind):
+	New functions.
+	(cp_parser_omp_all_clauses): Change mask argument's type to
+	omp_clause_mask from unsigned.  Fix c_name for
+	PRAGMA_OMP_CLAUSE_UNTIED.  Handle new OpenMP 4.0 clauses.
+	(cp_parser_omp_for_loop): Add code argument.  Pass it down to
+	finish_omp_for.
+	(OMP_SIMD_CLAUSE_MASK): Define.
+	(cp_parser_omp_simd): New function.
+	(OMP_FOR_CLAUSE_MASK, OMP_SECTIONS_CLAUSE_MASK,
+	OMP_PARALLEL_CLAUSE_MASK, OMP_SINGLE_CLAUSE_MASK,
+	OMP_TASK_CLAUSE_MASK): Use OMP_CLAUSE_MASK_1 instead of 1.
+	(cp_parser_omp_for): Handle parsing of #pragma omp for simd.
+	(cp_parser_omp_parallel): Handle parsing of
+	#pragma omp parallel for simd.  Use omp_clause_mask type
+	instead of unsigned for mask, use OMP_CLAUSE_MASK_1 instead
+	of 1 for masks.
+	(OMP_CANCEL_CLAUSE_MASK, OMP_CANCELLATION_POINT_CLAUSE_MASK): Define.
+	(cp_parser_omp_cancel, cp_parser_omp_cancellation_point): New
+	functions.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_SIMD, PRAGMA_OMP_CANCEL
+	and PRAGMA_OMP_CANCELLATION_POINT.
+	(cp_parser_pragma): Handle PRAGMA_OMP_SIMD.
+	* pt.c (tsubst_expr): Handle OMP_SIMD, OMP_FOR_SIMD and
+	OMP_DISTRIBUTE.  Pass down TREE_CODE to finish_omp_for.
+
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_atomic): Never restart unless

@@ -1,0 +1,47 @@
+2013-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_for): Handle different
+	GIMPLE_OMP_FOR kinds.
+	* tree.def (OMP_SIMD, OMP_FOR_SIMD, OMP_DISTRIBUTE): New tree codes.
+	* gimple.h (enum gf_mask): Add GF_OMP_FOR_KIND_MASK,
+	GF_OMP_FOR_KIND_FOR, GF_OMP_FOR_KIND_SIMD, GF_OMP_FOR_KIND_FOR_SIMD
+	and GF_OMP_FOR_KIND_DISTRIBUTE.
+	(gimple_omp_for_kind, gimple_omp_for_set_kind): New inline functions.
+	* gimplify.c (is_gimple_stmt, gimplify_omp_for, gimplify_expr): Handle
+	OMP_SIMD, OMP_FOR_SIMD and OMP_DISTRIBUTE.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name, walk_tree_1):
+	Handle new OpenMP 4.0 clauses.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	(dump_generic_node): Handle OMP_SIMD, OMP_FOR_SIMD and OMP_DISTRIBUTE.
+	* tree.h (enum omp_clause_code): Add OMP_CLAUSE_LINEAR,
+	OMP_CLAUSE_ALIGNED, OMP_CLAUSE_DEPEND, OMP_CLAUSE_FROM, OMP_CLAUSE_TO,
+	OMP_CLAUSE_UNIFORM, OMP_CLAUSE_MAP, OMP_CLAUSE_DEVICE,
+	OMP_CLAUSE_DIST_SCHEDULE, OMP_CLAUSE_INBRANCH, OMP_CLAUSE_NOTINBRANCH,
+	OMP_CLAUSE_NUM_TEAMS, OMP_CLAUSE_PROC_BIND, OMP_CLAUSE_SAFELEN,
+	OMP_CLAUSE_SIMDLEN, OMP_CLAUSE_FOR, OMP_CLAUSE_PARALLEL,
+	OMP_CLAUSE_SECTIONS and OMP_CLAUSE_TASKGROUP.
+	(OMP_LOOP_CHECK): Define.
+	(OMP_FOR_BODY, OMP_FOR_CLAUSES, OMP_FOR_INIT, OMP_FOR_COND,
+	OMP_FOR_INCR, OMP_FOR_PRE_BODY): Use OMP_LOOP_CHECK instead of
+	OMP_FOR_CHECK.
+	(OMP_CLAUSE_DECL): Extend check range up to OMP_CLAUSE_MAP.
+	(OMP_CLAUSE_LINEAR_STEP, OMP_CLAUSE_ALIGNED_ALIGNMENT,
+	OMP_CLAUSE_NUM_TEAMS_EXPR, OMP_CLAUSE_DEVICE_ID,
+	OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR, OMP_CLAUSE_SAFELEN_EXPR,
+	OMP_CLAUSE_SIMDLEN_EXPR): Define.
+	(enum omp_clause_depend_kind, enum omp_clause_map_kind,
+	enum omp_clause_proc_bind_kind): New enums.
+	(OMP_CLAUSE_DEPEND_KIND, OMP_CLAUSE_MAP_KIND,
+	OMP_CLAUSE_PROC_BIND_KIND): Define.
+	(struct tree_omp_clause): Add subcode.depend_kind, subcode.map_kind
+	and subcode.proc_bind_kind.
+	(find_omp_clause): New prototype.
+	* omp-builtins.def (BUILT_IN_GOMP_CANCEL,
+	BUILT_IN_GOMP_CANCELLATION_POINT): New built-ins.
+	* tree-flow.h (find_omp_clause): Remove prototype.
+
+Copyright (C) 2013 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

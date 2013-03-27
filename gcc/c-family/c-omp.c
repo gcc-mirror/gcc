@@ -343,8 +343,8 @@ check_omp_for_incr_expr (location_t loc, tree exp, tree decl)
    the loop.  */
 
 tree
-c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
-		  tree incrv, tree body, tree pre_body)
+c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
+		  tree initv, tree condv, tree incrv, tree body, tree pre_body)
 {
   location_t elocus;
   bool fail = false;
@@ -569,7 +569,7 @@ c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
     return NULL;
   else
     {
-      tree t = make_node (OMP_FOR);
+      tree t = make_node (code);
 
       TREE_TYPE (t) = void_type_node;
       OMP_FOR_INIT (t) = initv;
@@ -621,6 +621,9 @@ c_split_parallel_clauses (location_t loc, tree clauses,
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_SAFELEN:
+	case OMP_CLAUSE_ALIGNED:
+	case OMP_CLAUSE_LINEAR:
 	  OMP_CLAUSE_CHAIN (clauses) = *ws_clauses;
 	  *ws_clauses = clauses;
 	  break;

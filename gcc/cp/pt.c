@@ -13198,6 +13198,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_FOR:
+    case OMP_SIMD:
+    case OMP_FOR_SIMD:
+    case OMP_DISTRIBUTE:
       {
 	tree clauses, body, pre_body;
 	tree declv, initv, condv, incrv;
@@ -13225,8 +13228,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	RECUR (OMP_FOR_BODY (t));
 	body = pop_stmt_list (body);
 
-	t = finish_omp_for (EXPR_LOCATION (t), declv, initv, condv, incrv,
-			    body, pre_body, clauses);
+	t = finish_omp_for (EXPR_LOCATION (t), TREE_CODE (t), declv, initv,
+			    condv, incrv, body, pre_body, clauses);
 
 	add_stmt (finish_omp_structured_block (stmt));
       }

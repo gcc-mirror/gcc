@@ -100,6 +100,11 @@ enum gf_mask {
     GF_CALL_ALLOCA_FOR_VAR	= 1 << 5,
     GF_CALL_INTERNAL		= 1 << 6,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
+    GF_OMP_FOR_KIND_MASK	= 3 << 0,
+    GF_OMP_FOR_KIND_FOR		= 0 << 0,
+    GF_OMP_FOR_KIND_SIMD	= 1 << 0,
+    GF_OMP_FOR_KIND_FOR_SIMD	= 2 << 0,
+    GF_OMP_FOR_KIND_DISTRIBUTE	= 3 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -3874,6 +3879,27 @@ gimple_omp_critical_set_name (gimple gs, tree name)
 {
   GIMPLE_CHECK (gs, GIMPLE_OMP_CRITICAL);
   gs->gimple_omp_critical.name = name;
+}
+
+
+/* Return the kind of OMP for statemement.  */
+
+static inline int
+gimple_omp_for_kind (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  return (gimple_omp_subcode (g) & GF_OMP_FOR_KIND_MASK);
+}
+
+
+/* Set the OMP for kind.  */
+
+static inline void
+gimple_omp_for_set_kind (gimple g, int kind)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  g->gsbase.subcode = (g->gsbase.subcode & ~GF_OMP_FOR_KIND_MASK)
+		      | (kind & GF_OMP_FOR_KIND_MASK);
 }
 
 

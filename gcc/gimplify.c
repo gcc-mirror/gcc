@@ -4742,6 +4742,9 @@ is_gimple_stmt (tree t)
     case STATEMENT_LIST:
     case OMP_PARALLEL:
     case OMP_FOR:
+    case OMP_SIMD:
+    case OMP_FOR_SIMD:
+    case OMP_DISTRIBUTE:
     case OMP_SECTIONS:
     case OMP_SECTION:
     case OMP_SINGLE:
@@ -6689,6 +6692,22 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   gfor = gimple_build_omp_for (for_body, OMP_FOR_CLAUSES (for_stmt),
 			       TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)),
 			       for_pre_body);
+  switch (TREE_CODE (for_stmt))
+    {
+    case OMP_FOR:
+      break;
+    case OMP_SIMD:
+      gimple_omp_for_set_kind (gfor, GF_OMP_FOR_KIND_SIMD);
+      break;
+    case OMP_FOR_SIMD:
+      gimple_omp_for_set_kind (gfor, GF_OMP_FOR_KIND_FOR_SIMD);
+      break;
+    case OMP_DISTRIBUTE:
+      gimple_omp_for_set_kind (gfor, GF_OMP_FOR_KIND_DISTRIBUTE);
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
     {
@@ -7621,6 +7640,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case OMP_FOR:
+	case OMP_SIMD:
+	case OMP_FOR_SIMD:
+	case OMP_DISTRIBUTE:
 	  ret = gimplify_omp_for (expr_p, pre_p);
 	  break;
 

@@ -361,6 +361,27 @@ enum omp_clause_code
   /* OpenMP clause: copyprivate (variable_list).  */
   OMP_CLAUSE_COPYPRIVATE,
 
+  /* OpenMP clause: linear (variable-list[:linear-step]).  */
+  OMP_CLAUSE_LINEAR,
+
+  /* OpenMP clause: aligned (variable-list[:alignment]).  */
+  OMP_CLAUSE_ALIGNED,
+
+  /* OpenMP clause: depend ({in,out,inout}:variable-list).  */
+  OMP_CLAUSE_DEPEND,
+
+  /* OpenMP clause: from (variable-list).  */
+  OMP_CLAUSE_FROM,
+
+  /* OpenMP clause: to (variable-list).  */
+  OMP_CLAUSE_TO,
+
+  /* OpenMP clause: uniform (argument-list).  */
+  OMP_CLAUSE_UNIFORM,
+
+  /* OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
+  OMP_CLAUSE_MAP,
+
   /* OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
@@ -389,7 +410,43 @@ enum omp_clause_code
   OMP_CLAUSE_FINAL,
 
   /* OpenMP clause: mergeable.  */
-  OMP_CLAUSE_MERGEABLE
+  OMP_CLAUSE_MERGEABLE,
+
+  /* OpenMP clause: device (integer-expression).  */
+  OMP_CLAUSE_DEVICE,
+
+  /* OpenMP clause: dist_schedule (static[:chunk-size]).  */
+  OMP_CLAUSE_DIST_SCHEDULE,
+
+  /* OpenMP clause: inbranch.  */
+  OMP_CLAUSE_INBRANCH,
+
+  /* OpenMP clause: notinbranch.  */
+  OMP_CLAUSE_NOTINBRANCH,
+
+  /* OpenMP clause: num_teams(integer-expression).  */
+  OMP_CLAUSE_NUM_TEAMS,
+
+  /* OpenMP clause: proc_bind ({master,close,spread}).  */
+  OMP_CLAUSE_PROC_BIND,
+
+  /* OpenMP clause: safelen (constant-integer-expression).  */
+  OMP_CLAUSE_SAFELEN,
+
+  /* OpenMP clause: simdlen (constant-integer-expression).  */
+  OMP_CLAUSE_SIMDLEN,
+
+  /* OpenMP clause: for.  */
+  OMP_CLAUSE_FOR,
+
+  /* OpenMP clause: parallel.  */
+  OMP_CLAUSE_PARALLEL,
+
+  /* OpenMP clause: sections.  */
+  OMP_CLAUSE_SECTIONS,
+
+  /* OpenMP clause: taskgroup.  */
+  OMP_CLAUSE_TASKGROUP
 };
 
 /* The definition of tree nodes fills the next several pages.  */
@@ -1766,12 +1823,13 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_TASKREG_BODY(NODE)    TREE_OPERAND (OMP_TASKREG_CHECK (NODE), 0)
 #define OMP_TASKREG_CLAUSES(NODE) TREE_OPERAND (OMP_TASKREG_CHECK (NODE), 1)
 
-#define OMP_FOR_BODY(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 0)
-#define OMP_FOR_CLAUSES(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 1)
-#define OMP_FOR_INIT(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 2)
-#define OMP_FOR_COND(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 3)
-#define OMP_FOR_INCR(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 4)
-#define OMP_FOR_PRE_BODY(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 5)
+#define OMP_LOOP_CHECK(NODE) TREE_RANGE_CHECK (NODE, OMP_FOR, OMP_DISTRIBUTE)
+#define OMP_FOR_BODY(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 0)
+#define OMP_FOR_CLAUSES(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 1)
+#define OMP_FOR_INIT(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 2)
+#define OMP_FOR_COND(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 3)
+#define OMP_FOR_INCR(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 4)
+#define OMP_FOR_PRE_BODY(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 5)
 
 #define OMP_SECTIONS_BODY(NODE)    TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 0)
 #define OMP_SECTIONS_CLAUSES(NODE) TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 1)
@@ -1792,7 +1850,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_DECL(NODE)      					\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
-	                                      OMP_CLAUSE_COPYPRIVATE), 0)
+					      OMP_CLAUSE_MAP), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
   != UNKNOWN_LOCATION)
@@ -1859,6 +1917,28 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_REDUCTION_PLACEHOLDER(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 3)
 
+#define OMP_CLAUSE_LINEAR_STEP(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR), 1)
+
+#define OMP_CLAUSE_ALIGNED_ALIGNMENT(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALIGNED), 1)
+
+#define OMP_CLAUSE_NUM_TEAMS_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TEAMS), 0)
+
+#define OMP_CLAUSE_DEVICE_ID(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEVICE), 0)
+
+#define OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, \
+						OMP_CLAUSE_DIST_SCHEDULE), 0)
+
+#define OMP_CLAUSE_SAFELEN_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SAFELEN), 0)
+
+#define OMP_CLAUSE_SIMDLEN_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SIMDLEN), 0)
+
 enum omp_clause_schedule_kind
 {
   OMP_CLAUSE_SCHEDULE_STATIC,
@@ -1882,6 +1962,40 @@ enum omp_clause_default_kind
 
 #define OMP_CLAUSE_DEFAULT_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEFAULT)->omp_clause.subcode.default_kind)
+
+enum omp_clause_depend_kind
+{
+  OMP_CLAUSE_DEPEND_IN,
+  OMP_CLAUSE_DEPEND_OUT,
+  OMP_CLAUSE_DEPEND_INOUT
+};
+
+#define OMP_CLAUSE_DEPEND_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEPEND)->omp_clause.subcode.depend_kind)
+
+enum omp_clause_map_kind
+{
+  OMP_CLAUSE_MAP_ALLOC,
+  OMP_CLAUSE_MAP_TO,
+  OMP_CLAUSE_MAP_FROM,
+  OMP_CLAUSE_MAP_TOFROM
+};
+
+#define OMP_CLAUSE_MAP_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind)
+
+enum omp_clause_proc_bind_kind
+{
+  /* Numbers should match omp_proc_bind_t enum in omp.h.  */
+  OMP_CLAUSE_PROC_BIND_FALSE = 0,
+  OMP_CLAUSE_PROC_BIND_TRUE = 1,
+  OMP_CLAUSE_PROC_BIND_MASTER = 2,
+  OMP_CLAUSE_PROC_BIND_CLOSE = 3,
+  OMP_CLAUSE_PROC_BIND_SPREAD = 4
+};
+
+#define OMP_CLAUSE_PROC_BIND_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PROC_BIND)->omp_clause.subcode.proc_bind_kind)
 
 struct GTY(()) tree_exp {
   struct tree_typed typed;
@@ -2006,9 +2120,12 @@ struct GTY(()) tree_omp_clause {
   location_t locus;
   enum omp_clause_code code;
   union omp_clause_subcode {
-    enum omp_clause_default_kind  default_kind;
-    enum omp_clause_schedule_kind schedule_kind;
-    enum tree_code                reduction_code;
+    enum omp_clause_default_kind   default_kind;
+    enum omp_clause_schedule_kind  schedule_kind;
+    enum omp_clause_depend_kind    depend_kind;
+    enum omp_clause_map_kind       map_kind;
+    enum omp_clause_proc_bind_kind proc_bind_kind;
+    enum tree_code                 reduction_code;
   } GTY ((skip)) subcode;
 
   /* The gimplification of OMP_CLAUSE_REDUCTION_{INIT,MERGE} for omp-low's
@@ -4774,6 +4891,7 @@ extern tree build_translation_unit_decl (tree);
 extern tree build_block (tree, tree, tree, tree);
 extern tree build_empty_stmt (location_t);
 extern tree build_omp_clause (location_t, enum omp_clause_code);
+extern tree find_omp_clause (tree, enum omp_clause_code);
 
 extern tree build_vl_exp_stat (enum tree_code, int MEM_STAT_DECL);
 #define build_vl_exp(c,n) build_vl_exp_stat (c,n MEM_STAT_INFO)

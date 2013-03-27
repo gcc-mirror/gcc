@@ -1,3 +1,14 @@
+2013-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_all_clauses): Change mask argument type
+	from unsigned to omp_clause_mask.
+	(c_parser_omp_for_loop): Adjust c_finish_omp_for caller.
+	(OMP_FOR_CLAUSE_MASK, OMP_SECTIONS_CLAUSE_MASK,
+	OMP_PARALLEL_CLAUSE_MASK, OMP_SINGLE_CLAUSE_MASK,
+	OMP_TASK_CLAUSE_MASK): Use OMP_CLAUSE_MASK_1 instead of 1.
+	(c_parser_omp_parallel): Use omp_clause_mask type instead of unsigned
+	for mask, use OMP_CLAUSE_MASK_1 instead of 1 for masks.
+
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_expr_no_commas): Add omp_atomic_lhs argument
