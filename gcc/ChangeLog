@@ -1,3 +1,9 @@
+2013-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56716
+	* tree-ssa-structalias.c (perform_var_substitution): Adjust
+	dumping for ref nodes.
+
 2013-03-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55334
