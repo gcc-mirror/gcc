@@ -2691,7 +2691,7 @@ write_expression (tree expr)
 	  write_member_name (member);
 	}
     }
-  else if (TREE_CODE (expr) == INDIRECT_REF
+  else if (INDIRECT_REF_P (expr)
 	   && TREE_TYPE (TREE_OPERAND (expr, 0))
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == REFERENCE_TYPE)
     {

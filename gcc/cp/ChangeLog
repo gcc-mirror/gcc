@@ -1,3 +1,24 @@
+2013-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* call.c (build_new_method_call_1): Use INDIRECT_REF_P.
+	* cvt.c (convert_to_void): Likewise.
+	* error.c (dump_expr): Likewise.
+	* mangle.c (write_expression): Likewise.
+	* parser.c (cp_parser_template_argument): Likewise.
+	* pt.c (convert_nontype_argument): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	* rtti.c (build_typeid): Likewise.
+	* semantics.c (finish_call_expr): Likewise.
+	(finish_decltype_type): Likewise.
+	(build_data_member_initialization): Likewise.
+	* tree.c (is_dummy_object): Likewise.
+	* typeck.c (decay_conversion): Likewise.
+	(build_class_member_access_expr): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	(unary_complex_lvalue): Likewise.
+	(check_return_expr): Likewise.
+	* typeck2.c (cxx_readonly_error): Likewise.
+
 2013-03-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52597

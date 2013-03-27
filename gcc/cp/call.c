@@ -7730,7 +7730,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	  cast_to_void = true;
 	  call = TREE_OPERAND (call, 0);
 	}
-      if (TREE_CODE (call) == INDIRECT_REF)
+      if (INDIRECT_REF_P (call))
 	call = TREE_OPERAND (call, 0);
       call = (build_min_non_dep_call_vec
 	      (call,

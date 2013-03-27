@@ -13274,7 +13274,7 @@ cp_parser_template_argument (cp_parser* parser)
 	{
 	  tree probe;
 
-	  if (TREE_CODE (argument) == INDIRECT_REF)
+	  if (INDIRECT_REF_P (argument))
 	    {
 	      gcc_assert (REFERENCE_REF_P (argument));
 	      argument = TREE_OPERAND (argument, 0);
