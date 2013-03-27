@@ -1,3 +1,9 @@
+2013-03-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55334
+	* ipa-cp.c (initialize_node_lattices): Allow IPA-CP through and to
+	restricted pointers to arrays.
+
 2013-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* Makefile.in (.SUFFIXES): Add .cc.
