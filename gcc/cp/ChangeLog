@@ -1,3 +1,8 @@
+2013-03-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45282
+	* typeck2.c (build_m_component_ref): Handle prvalue object.
+
 2013-03-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56699
