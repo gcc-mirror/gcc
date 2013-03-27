@@ -730,22 +730,6 @@ initialize_node_lattices (struct cgraph_node *node)
 		 cgraph_node_name (node), node->uid,
 		 disable ? "BOTTOM" : "VARIABLE");
     }
-  if (!disable)
-    for (i = 0; i < ipa_get_param_count (info) ; i++)
-      {
-	struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-	tree t = TREE_TYPE (ipa_get_param(info, i));
-
-	if (POINTER_TYPE_P (t) && TYPE_RESTRICT (t)
-	    && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
-	  {
-	    set_lattice_to_bottom (&plats->itself);
-	    if (dump_file && (dump_flags & TDF_DETAILS)
-		&& !node->alias && !node->thunk.thunk_p)
-	      fprintf (dump_file, "Going to ignore param %i of of %s/%i.\n",
-		       i, cgraph_node_name (node), node->uid);
-	  }
-      }
 
   for (ie = node->indirect_calls; ie; ie = ie->next_callee)
     if (ie->indirect_info->polymorphic)
