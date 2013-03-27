@@ -11177,3 +11177,5 @@ memory model bits are allowed.
 @end deftypefn
 
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
+
+@hook TARGET_HAS_IFUNC_P

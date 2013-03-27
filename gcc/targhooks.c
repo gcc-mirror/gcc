@@ -450,6 +450,14 @@ default_fixed_point_supported_p (void)
   return ENABLE_FIXED_POINT;
 }
 
+/* True if the target supports GNU indirect functions.  */
+
+bool
+default_has_ifunc_p (void)
+{
+  return HAVE_GNU_INDIRECT_FUNCTION;
+}
+
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
 

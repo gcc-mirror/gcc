@@ -1518,6 +1518,15 @@ DEFHOOK
  bool, (const_rtx x),
  default_use_anchors_for_symbol_p)
 
+/* True if target supports indirect functions.  */
+DEFHOOK
+(has_ifunc_p,
+ "It returns true if the target supports GNU indirect functions.\n\
+The support includes the assembler, linker and dynamic linker.\n\
+The default value of this hook is based on target's libc.",
+ bool, (void),
+ default_has_ifunc_p)
+
 /* True if it is OK to do sibling call optimization for the specified
    call expression EXP.  DECL will be the called function, or NULL if
    this is an indirect call.  */
