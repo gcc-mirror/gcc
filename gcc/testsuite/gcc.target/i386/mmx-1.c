@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-do compile { target { nonpic } } } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -mmmx" } */
 
 /* Test that the intrinsics compile with optimization.  All of them are

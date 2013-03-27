@@ -1,3 +1,22 @@
+2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* g++.dg/ipa/ivinline-1.C: Add target nonpic.
+	* g++.dg/ipa/ivinline-2.C: Likewise.
+	* g++.dg/ipa/ivinline-3.C: Likewise.
+	* g++.dg/ipa/ivinline-4.C: Likewise.
+	* g++.dg/ipa/ivinline-5.C: Likewise.
+	* g++.dg/ipa/ivinline-7.C: Likewise.
+	* g++.dg/ipa/ivinline-8.C: Likewise.
+	* g++.dg/ipa/ivinline-9.C: Likewise.
+	* g++.dg/cpp0x/noexcept03.C: Likewise.
+	* gcc.dg/const-1.c: Likewise.
+	* gcc.dg/ipa/pure-const-1.c: Likewise.
+	* gcc.dg/noreturn-8.c: Likewise.
+	* gcc.target/i386/mmx-1.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-split-5.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre6.c: Likewise.
+	* gcc.c-torture/execute/pr33992.x: New file.
+
 2013-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20011008-3.c: Cap VLEN with STACK_SIZE too.
