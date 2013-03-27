@@ -1,5 +1,10 @@
 2013-03-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52597
+	* typeck.c (invalid_nonstatic_memfn_p): Use get_first_fn.  Take tree.
+	* semantics.c (finish_decltype_type): Check it before type_unknown_p.
+	* cp-tree.h: Adjust prototype.
+
 	PR c++/45282
 	* typeck2.c (build_m_component_ref): Handle prvalue object.
 
