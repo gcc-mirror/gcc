@@ -3999,11 +3999,10 @@ tilegx_expand_prologue (void)
 
 	if (r == NULL_RTX)
 	  {
-	    rtx p = compute_frame_addr (offset, &next_scratch_regno);
-	    r = gen_rtx_REG (Pmode, next_scratch_regno--);
-	    reg_save_addr[which_scratch] = r;
-
-	    emit_insn (gen_rtx_SET (VOIDmode, r, p));
+	    int prev_scratch_regno = next_scratch_regno;
+	    r = compute_frame_addr (offset, &next_scratch_regno);
+	    if (prev_scratch_regno != next_scratch_regno)
+	      reg_save_addr[which_scratch] = r;
 	  }
 	else
 	  {

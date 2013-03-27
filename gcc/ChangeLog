@@ -1,5 +1,10 @@
 2013-03-27  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.c (tilegx_expand_prologue): Avoid
+	double-decrement of next_scratch_regno.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.md (insn_v1mulu): Fix constraints on
 	input operands.
 	(insn_v1mulus): Ditto.
