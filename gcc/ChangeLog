@@ -1,3 +1,11 @@
+2013-03-27  Kai Tietz  <ktietz@redhat.com>
+
+        * config.build: Add support for cygwin x64 target.
+        * config.gcc: Likewise.
+        * config.host: Likewise.
+        * configure.ac: Likewise
+        * configure: Regenerated.
+
 2013-03-27 Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/cygwin-stdint.h: Add support for cygwin x64 target.
