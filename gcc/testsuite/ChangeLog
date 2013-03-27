@@ -1,3 +1,11 @@
+2013-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56650
+	PR fortran/36437
+	* gfortran.dg/sizeof_2.f90: New.
+	* gfortran.dg/sizeof_3.f90: New.
+	* gfortran.dg/sizeof_proc.f90: Update dg-error.
+
 2013-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/37021

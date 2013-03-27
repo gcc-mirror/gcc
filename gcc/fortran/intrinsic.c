@@ -2698,7 +2698,7 @@ add_functions (void)
   make_from_module();
 
   add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER, ii,
-	     GFC_STD_GNU, gfc_check_sizeof, NULL, NULL,
+	     GFC_STD_GNU, gfc_check_sizeof, gfc_simplify_sizeof, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);
@@ -2724,7 +2724,7 @@ add_functions (void)
 
   add_sym_1 ("c_sizeof", GFC_ISYM_C_SIZEOF, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_INTEGER, gfc_index_integer_kind, GFC_STD_F2008,
-	     gfc_check_c_sizeof, NULL, NULL,
+	     gfc_check_c_sizeof, gfc_simplify_sizeof, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
   make_from_module();
 
@@ -2782,7 +2782,8 @@ add_functions (void)
 
   add_sym_2 ("storage_size", GFC_ISYM_STORAGE_SIZE, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_storage_size, NULL, gfc_resolve_storage_size,
+	     gfc_check_storage_size, gfc_simplify_storage_size,
+	     gfc_resolve_storage_size,
 	     a, BT_UNKNOWN, 0, REQUIRED,
 	     kind, BT_INTEGER, di, OPTIONAL);
   

@@ -9,11 +9,11 @@ procedure(real) :: proc
 procedure(real), pointer :: pp
 pp => sin
 
-print *,sizeof(proc)    ! { dg-error "may not be a procedure" }
-print *,sizeof(pp)      ! { dg-error "may not be a procedure" }
+print *,sizeof(proc)    ! { dg-error "shall not be a procedure" }
+print *,sizeof(pp)      ! { dg-error "shall not be a procedure" }
 print *,sizeof(pp(0.))
-print *,sizeof(sub)     ! { dg-error "may not be a procedure" }
-print *,sizeof(func)    ! { dg-error "may not be a procedure" }
+print *,sizeof(sub)     ! { dg-error "shall not be a procedure" }
+print *,sizeof(func)    ! { dg-error "shall not be a procedure" }
 print *,sizeof(func())
 
 contains
