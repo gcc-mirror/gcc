@@ -1,3 +1,14 @@
+2013-03-27 Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/cygwin-stdint.h: Add support for cygwin x64 target.
+	* config/i386/t-cygwin-w64: New file.
+	* config/i386/cygwin-w64.h: New file.
+	* config/i386/cygwin.h (EXTRA_OS_CPP_BUILTINS): Extend
+	and add support for x64-cygwin target.
+	(CPP_SPEC): Likewise.
+	(CXX_WRAP_SPEC_LIST): Undefine before define.
+	(LIBGCJ_SONAME): Use 15 as version.
+
 2013-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56716
