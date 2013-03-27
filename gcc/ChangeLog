@@ -1,3 +1,7 @@
+2013-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.h (TARGET_FLT_EVAL_METHOD): Define.
+
 2013-03-27  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm-cores.def: Added core cortex-r7.
