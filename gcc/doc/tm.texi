@@ -11341,3 +11341,9 @@ memory model bits are allowed.
 @deftypevr {Target Hook} {unsigned char} TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 This value should be set if the result written by @code{atomic_test_and_set} is not exactly 1, i.e. the @code{bool} @code{true}.
 @end deftypevr
+
+@deftypefn {Target Hook} bool TARGET_HAS_IFUNC_P (void)
+It returns true if the target supports GNU indirect functions.
+The support includes the assembler, linker and dynamic linker.
+The default value of this hook is based on target's libc.
+@end deftypefn

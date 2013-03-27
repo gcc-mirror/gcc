@@ -1,3 +1,24 @@
+2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* gcc/target.def (TARGET_HAS_IFUNC_P): New target hook.
+	* gcc/doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
+	* gcc/doc/tm.texi: Regenerate.
+	* gcc/targhooks.h (default_has_ifunc_p): New.
+	* gcc/targhooks.c (default_has_ifunc_p): Ditto.
+	* gcc/config/linux-protos.h: New file.
+	* gcc/config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
+	this hook for linux which disables support of indirect functions in
+	android.
+	* gcc/config/linux-android.c: New file.
+	* gcc/config/t-linux-android.c: Ditto.
+	* gcc/config.gcc: Added new object file linux-android.o.
+	* gcc/config/i386/i386.c (ix86_get_function_versions_dispatcher):
+	Using TARGET_HAS_IFUNC hook instead of HAVE_GNU_INDIRECT_FUNCTION.
+	* gcc/varasm.c (do_assemble_alias): Likewise.
+	* configure.ac: Define HAVE_GNU_INDIRECT_FUNCTION as zero if the target
+	doesn't support indirect functions.
+	* configure: Regenerate.
+
 2013-03-27  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/56102

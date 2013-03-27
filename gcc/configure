@@ -22055,11 +22055,14 @@ else
   enable_gnu_indirect_function="$default_gnu_indirect_function"
 fi
 
-if test x$enable_gnu_indirect_function = xyes; then
 
-$as_echo "#define HAVE_GNU_INDIRECT_FUNCTION 1" >>confdefs.h
+gif=`if test x$enable_gnu_indirect_function = xyes; then echo 1; else echo 0; fi`
 
-fi
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GNU_INDIRECT_FUNCTION $gif
+_ACEOF
+
+
 
 if test $in_tree_ld != yes ; then
   ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
