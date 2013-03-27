@@ -571,6 +571,23 @@ i[34567]86-*-cygwin*)
 	fi
 	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-cygwin i386/t-crtfm i386/t-chkstk t-dfprules"
 	;;
+x86_64-*-cygwin*)
+	extra_parts="crtbegin.o crtend.o crtfastmath.o"
+	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
+	if test x$enable_sjlj_exceptions = xyes; then
+		tmake_eh_file="i386/t-sjlj-eh"
+	else
+		tmake_eh_file="i386/t-seh-eh"
+	fi
+	# Shared libgcc DLL install dir depends on cross/native build.
+	if test x${build} = x${host} ; then
+		tmake_dlldir_file="i386/t-dlldir"
+	else
+		tmake_dlldir_file="i386/t-dlldir-x"
+	fi
+	# FIXME - dj - t-chkstk used to be in here, need a 64-bit version of that
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-slibgcc-cygming i386/t-cygming i386/t-cygwin i386/t-crtfm t-dfprules i386/t-chkstk"
+	;;
 i[34567]86-*-mingw*)
 	extra_parts="crtbegin.o crtend.o crtfastmath.o"
 	case ${target_thread_file} in
@@ -1143,7 +1160,8 @@ i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-linux* | x86_64-*-linux* | \
   i[34567]86-*-gnu* | \
   i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]* | \
-  i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw* | \
+  i[34567]86-*-cygwin* | x86_64-*-cygwin* | \
+  i[34567]86-*-mingw* | x86_64-*-mingw* | \
   i[34567]86-*-freebsd* | x86_64-*-freebsd* | \
   i[34567]86-*-openbsd* | x86_64-*-openbsd*)
   	tmake_file="${tmake_file} t-softfp-tf"
