@@ -11,7 +11,7 @@
 	Backport from mainline:
 	2013-03-27  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx.md (insn_v1mulu): Fix constraints on
+	* config/tilegx/tilegx.md (insn_v1mulu): Fix predicates on
 	input operands.
 	(insn_v1mulus): Ditto.
 	(insn_v2muls): Ditto.
