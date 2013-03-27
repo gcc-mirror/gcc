@@ -4762,8 +4762,8 @@
 
 (define_expand "insn_v1mulu"
   [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
-   (match_operand:DI 2 "reg_or_0_operand" "")]
+   (match_operand:DI 1 "register_operand" "")
+   (match_operand:DI 2 "register_operand" "")]
   ""
 {
   tilegx_expand_builtin_vector_binop (gen_vec_widen_umult_lo_v8qi, V4HImode,
@@ -4792,8 +4792,8 @@
 
 (define_expand "insn_v1mulus"
   [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
-   (match_operand:DI 2 "reg_or_0_operand" "")]
+   (match_operand:DI 1 "register_operand" "")
+   (match_operand:DI 2 "register_operand" "")]
   ""
 {
   tilegx_expand_builtin_vector_binop (gen_vec_widen_usmult_lo_v8qi, V4HImode,
@@ -4820,8 +4820,8 @@
 
 (define_expand "insn_v2muls"
   [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
-   (match_operand:DI 2 "reg_or_0_operand" "")]
+   (match_operand:DI 1 "register_operand" "")
+   (match_operand:DI 2 "register_operand" "")]
   ""
 {
   tilegx_expand_builtin_vector_binop (gen_vec_widen_smult_lo_v4qi, V2SImode,

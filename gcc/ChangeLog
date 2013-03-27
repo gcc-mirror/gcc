@@ -1,5 +1,12 @@
 2013-03-27  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.md (insn_v1mulu): Fix constraints on
+	input operands.
+	(insn_v1mulus): Ditto.
+	(insn_v2muls): Ditto.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.h (ASM_OUTPUT_ADDR_VEC_ELT): Delete
 	extra tab.
 	(ASM_OUTPUT_ADDR_DIFF_ELT): Ditto.
