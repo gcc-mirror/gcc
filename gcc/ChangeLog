@@ -1,3 +1,11 @@
+2013-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/37021
+	* tree-vect-data-refs.c (vect_check_strided_load): Allow
+	REALPART/IMAGPART_EXPRs around the supported refs.
+	* tree-ssa-structalias.c (find_func_aliases): Assume that
+	floating-point values are not used to transfer pointers.
+
 2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* gcc/target.def (TARGET_HAS_IFUNC_P): New target hook.
