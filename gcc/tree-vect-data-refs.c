@@ -2798,6 +2798,10 @@ vect_check_strided_load (gimple stmt, loop_vec_info loop_vinfo)
 
   base = DR_REF (dr);
 
+  if (TREE_CODE (base) == REALPART_EXPR
+      || TREE_CODE (base) == IMAGPART_EXPR)
+    base = TREE_OPERAND (base, 0);
+
   if (TREE_CODE (base) == ARRAY_REF)
     {
       off = TREE_OPERAND (base, 1);

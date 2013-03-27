@@ -4631,7 +4631,11 @@ find_func_aliases (gimple origt)
 
 	  get_constraint_for (lhsop, &lhsc);
 
-	  if (code == POINTER_PLUS_EXPR)
+	  if (FLOAT_TYPE_P (TREE_TYPE (lhsop)))
+	    /* If the operation produces a floating point result then
+	       assume the value is not produced to transfer a pointer.  */
+	    ;
+	  else if (code == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
 	  else if (code == BIT_AND_EXPR
