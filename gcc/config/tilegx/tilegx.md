@@ -2592,7 +2592,7 @@
   "@
    jr\t%r0
    j\t%p0"
-  [(set_attr "type" "X1,X1")])
+  [(set_attr "type" "Y1,X1")])
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -2611,7 +2611,7 @@
   "@
    jr\t%r1
    j\t%p1"
-  [(set_attr "type" "X1,X1")])
+  [(set_attr "type" "Y1,X1")])
 
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
