@@ -1,5 +1,11 @@
 2013-03-27  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.md (*sibcall_insn): Fix type atribute
+	for jr.
+	(*sibcall_value): Ditto.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.md (insn_mnz_<mode>): Replaced by ...
 	(insn_mnz_v8qi): ... this ...
 	(insn_mnz_v4hi): ... and this.  Replace (const_int 0) with the
