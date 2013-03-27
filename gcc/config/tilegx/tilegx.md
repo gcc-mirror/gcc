@@ -4597,57 +4597,147 @@
 ;; insn_v1mz
 ;; insn_v2mnz
 ;; insn_v2mz
-(define_insn "insn_mnz_<mode>"
-  [(set (match_operand:VEC48MODE 0 "register_operand" "=r")
-	(if_then_else:VEC48MODE
-         (ne:VEC48MODE
-	  (match_operand:VEC48MODE 1 "reg_or_0_operand" "rO")
-	  (const_int 0))
-         (match_operand:VEC48MODE 2 "reg_or_0_operand" "rO")
-         (const_int 0)))]
+(define_insn "insn_mnz_v8qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
+	(if_then_else:V8QI
+         (ne:V8QI
+	  (match_operand:V8QI 1 "reg_or_0_operand" "rO")
+	  (const_vector:V8QI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)]))
+         (match_operand:V8QI 2 "reg_or_0_operand" "rO")
+	 (const_vector:V8QI [(const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)])))]
   ""
-  "v<n>mnz\t%0, %r1, %r2"
+  "v1mnz\t%0, %r1, %r2"
   [(set_attr "type" "X01")])
 
-(define_expand "insn_v<n>mnz"
+(define_expand "insn_v1mnz"
   [(set (match_operand:DI 0 "register_operand" "")
-	(if_then_else:VEC48MODE
-         (ne:VEC48MODE
+	(if_then_else:V8QI
+         (ne:V8QI
 	  (match_operand:DI 1 "reg_or_0_operand" "")
-	  (const_int 0))
+	  (const_vector:V8QI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)])
+	  )
          (match_operand:DI 2 "reg_or_0_operand" "")
-         (const_int 0)))]
+	 (const_vector:V8QI [(const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)])))]
   ""
 {
-  tilegx_expand_builtin_vector_binop (gen_insn_mnz_<mode>, <MODE>mode,
-                                      operands[0], <MODE>mode, operands[1],
+  tilegx_expand_builtin_vector_binop (gen_insn_mnz_v8qi, V8QImode,
+                                      operands[0], V8QImode, operands[1],
 				      operands[2], true);
   DONE;
 })
 
-(define_insn "insn_mz_<mode>"
-  [(set (match_operand:VEC48MODE 0 "register_operand" "=r")
-	(if_then_else:VEC48MODE
-         (ne:VEC48MODE
-	  (match_operand:VEC48MODE 1 "reg_or_0_operand" "rO")
-	  (const_int 0))
-         (const_int 0)
-         (match_operand:VEC48MODE 2 "reg_or_0_operand" "rO")))]
+(define_insn "insn_mz_v8qi"
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
+	(if_then_else:V8QI
+         (ne:V8QI
+	  (match_operand:V8QI 1 "reg_or_0_operand" "rO")
+	  (const_vector:V8QI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)]))
+	 (const_vector:V8QI [(const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)])
+         (match_operand:V8QI 2 "reg_or_0_operand" "rO")))]
   ""
-  "v<n>mz\t%0, %r1, %r2"
+  "v1mz\t%0, %r1, %r2"
   [(set_attr "type" "X01")])
-(define_expand "insn_v<n>mz"
+
+(define_expand "insn_v1mz"
   [(set (match_operand:DI 0 "register_operand" "")
-	(if_then_else:VEC48MODE
-         (ne:VEC48MODE
+	(if_then_else:V8QI
+         (ne:V8QI
 	  (match_operand:DI 1 "reg_or_0_operand" "")
-	  (const_int 0))
-         (const_int 0)
+	  (const_vector:V8QI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)]))
+	 (const_vector:V8QI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)])
          (match_operand:DI 2 "reg_or_0_operand" "")))]
   ""
 {
-  tilegx_expand_builtin_vector_binop (gen_insn_mz_<mode>, <MODE>mode,
-                                      operands[0], <MODE>mode, operands[1],
+  tilegx_expand_builtin_vector_binop (gen_insn_mz_v8qi, V8QImode,
+                                      operands[0], V8QImode, operands[1],
+				      operands[2], true);
+  DONE;
+})
+
+(define_insn "insn_mnz_v4hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(if_then_else:V4HI
+         (ne:V4HI
+	  (match_operand:V4HI 1 "reg_or_0_operand" "rO")
+	  (const_vector:V4HI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)]))
+         (match_operand:V4HI 2 "reg_or_0_operand" "rO")
+	 (const_vector:V4HI [(const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)])))]
+  ""
+  "v2mnz\t%0, %r1, %r2"
+  [(set_attr "type" "X01")])
+
+(define_expand "insn_v2mnz"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(if_then_else:V4HI
+         (ne:V4HI
+	  (match_operand:DI 1 "reg_or_0_operand" "")
+	  (const_vector:V4HI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)]))
+         (match_operand:DI 2 "reg_or_0_operand" "")
+	 (const_vector:V4HI [(const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)])))]
+  ""
+{
+  tilegx_expand_builtin_vector_binop (gen_insn_mnz_v4hi, V4HImode,
+                                      operands[0], V4HImode, operands[1],
+				      operands[2], true);
+  DONE;
+})
+
+(define_insn "insn_mz_v4hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(if_then_else:V4HI
+         (ne:V4HI
+	  (match_operand:V4HI 1 "reg_or_0_operand" "rO")
+	  (const_vector:V4HI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)]))
+	 (const_vector:V4HI [(const_int 0) (const_int 0)
+			     (const_int 0) (const_int 0)])
+         (match_operand:V4HI 2 "reg_or_0_operand" "rO")))]
+  ""
+  "v2mz\t%0, %r1, %r2"
+  [(set_attr "type" "X01")])
+
+(define_expand "insn_v2mz"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(if_then_else:V4HI
+         (ne:V4HI
+	  (match_operand:DI 1 "reg_or_0_operand" "")
+	  (const_vector:V4HI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)]))
+	 (const_vector:V4HI [(const_int 0) (const_int 0)
+			      (const_int 0) (const_int 0)])
+         (match_operand:DI 2 "reg_or_0_operand" "")))]
+  ""
+{
+  tilegx_expand_builtin_vector_binop (gen_insn_mz_v4hi, V4HImode,
+                                      operands[0], V4HImode, operands[1],
 				      operands[2], true);
   DONE;
 })
