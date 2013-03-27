@@ -448,7 +448,7 @@ enum reg_class
     {								\
       char label[256];						\
       ASM_GENERATE_INTERNAL_LABEL (label, "L", (VALUE));	\
-      fprintf (FILE, "\t%s ",					\
+      fprintf (FILE, "%s ",					\
                integer_asm_op (GET_MODE_SIZE (Pmode), TRUE));	\
       assemble_name (FILE, label);				\
       fprintf (FILE, "\n");					\
@@ -460,7 +460,7 @@ enum reg_class
     {								\
       char label[256];						\
       ASM_GENERATE_INTERNAL_LABEL (label, "L", (VALUE));	\
-      fprintf (FILE, "\t%s ", 					\
+      fprintf (FILE, "%s ", 					\
                integer_asm_op (GET_MODE_SIZE (Pmode), TRUE));	\
       assemble_name (FILE, label);				\
       ASM_GENERATE_INTERNAL_LABEL (label, "L", (REL));		\
