@@ -1988,7 +1988,7 @@ dump_expr (tree t, int flags)
     case COMPONENT_REF:
       {
 	tree ob = TREE_OPERAND (t, 0);
-	if (TREE_CODE (ob) == INDIRECT_REF)
+	if (INDIRECT_REF_P (ob))
 	  {
 	    ob = TREE_OPERAND (ob, 0);
 	    if (TREE_CODE (ob) != PARM_DECL
@@ -2243,7 +2243,7 @@ dump_expr (tree t, int flags)
 	  }
 	else
 	  {
-	    if (TREE_CODE (ob) == INDIRECT_REF)
+	    if (INDIRECT_REF_P (ob))
 	      {
 		dump_expr (TREE_OPERAND (ob, 0), flags | TFF_EXPR_IN_PARENS);
 		pp_cxx_arrow (cxx_pp);

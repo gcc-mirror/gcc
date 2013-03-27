@@ -2236,7 +2236,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
   if (processing_template_decl && result != error_mark_node)
     {
-      if (TREE_CODE (result) == INDIRECT_REF)
+      if (INDIRECT_REF_P (result))
 	result = TREE_OPERAND (result, 0);
       result = build_call_vec (TREE_TYPE (result), orig_fn, orig_args);
       SET_EXPR_LOCATION (result, input_location);
@@ -5301,7 +5301,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (identifier_p (expr))
         expr = lookup_name (expr);
 
-      if (TREE_CODE (expr) == INDIRECT_REF)
+      if (INDIRECT_REF_P (expr))
         /* This can happen when the expression is, e.g., "a.b". Just
            look at the underlying operand.  */
         expr = TREE_OPERAND (expr, 0);
@@ -5948,7 +5948,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
     return true;
   else
     gcc_unreachable ();
-  if (TREE_CODE (member) == INDIRECT_REF)
+  if (INDIRECT_REF_P (member))
     member = TREE_OPERAND (member, 0);
   if (TREE_CODE (member) == NOP_EXPR)
     {

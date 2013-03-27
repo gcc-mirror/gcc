@@ -326,7 +326,7 @@ build_typeid (tree exp, tsubst_flags_t complain)
 
   /* FIXME when integrating with c_fully_fold, mark
      resolves_to_fixed_type_p case as a non-constant expression.  */
-  if (TREE_CODE (exp) == INDIRECT_REF
+  if (INDIRECT_REF_P (exp)
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
       && TYPE_POLYMORPHIC_P (TREE_TYPE (exp))
       && ! resolves_to_fixed_type_p (exp, &nonnull)

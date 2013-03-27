@@ -2879,7 +2879,7 @@ maybe_dummy_object (tree type, tree* binfop)
 int
 is_dummy_object (const_tree ob)
 {
-  if (TREE_CODE (ob) == INDIRECT_REF)
+  if (INDIRECT_REF_P (ob))
     ob = TREE_OPERAND (ob, 0);
   return (TREE_CODE (ob) == NOP_EXPR
 	  && TREE_OPERAND (ob, 0) == void_zero_node);

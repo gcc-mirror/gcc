@@ -916,7 +916,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	exprv = TREE_OPERAND (exprv, 1);
       if (DECL_P (exprv)
 	  || handled_component_p (exprv)
-	  || TREE_CODE (exprv) == INDIRECT_REF)
+	  || INDIRECT_REF_P (exprv))
 	/* Expr is not being 'used' here, otherwise we whould have
 	   called mark_{rl}value_use use here, which would have in turn
 	   called mark_exp_read.  Rather, we call mark_exp_read directly
