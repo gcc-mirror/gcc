@@ -1,3 +1,9 @@
+2013-03-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56749
+	* semantics.c (finish_qualified_id_expr): Return early
+	for enum scope.
+
 2013-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* call.c (build_new_method_call_1): Use INDIRECT_REF_P.
