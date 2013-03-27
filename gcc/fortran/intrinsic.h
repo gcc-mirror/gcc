@@ -376,6 +376,8 @@ gfc_expr *gfc_simplify_shiftr (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_sin (gfc_expr *);
 gfc_expr *gfc_simplify_sinh (gfc_expr *);
 gfc_expr *gfc_simplify_size (gfc_expr *, gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_sizeof (gfc_expr *);
+gfc_expr *gfc_simplify_storage_size (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_sngl (gfc_expr *);
 gfc_expr *gfc_simplify_spacing (gfc_expr *);
 gfc_expr *gfc_simplify_spread (gfc_expr *, gfc_expr *, gfc_expr *);

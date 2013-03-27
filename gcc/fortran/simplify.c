@@ -27,7 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intrinsic.h"
 #include "target-memory.h"
 #include "constructor.h"
-#include "version.h"  /* For version_string.  */
+#include "tm.h"		/* For BITS_PER_UNIT.  */
+#include "version.h"	/* For version_string.  */
 
 
 gfc_expr gfc_bad_expr;
@@ -5646,6 +5647,82 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
   return_value = gfc_get_int_expr (k, &array->where, mpz_get_si (size));
   mpz_clear (size);
   return return_value;
+}
+
+
+/* SIZEOF and C_SIZEOF return the size in bytes of an array element
+   multiplied by the array size.  */
+
+gfc_expr *
+gfc_simplify_sizeof (gfc_expr *x)
+{
+  gfc_expr *result = NULL;
+  mpz_t array_size;
+
+  if (x->ts.type == BT_CLASS || x->ts.deferred)
+    return NULL;
+
+  if (x->ts.type == BT_CHARACTER
+      && (!x->ts.u.cl || !x->ts.u.cl->length
+	  || x->ts.u.cl->length->expr_type != EXPR_CONSTANT))
+    return NULL;
+
+  if (x->rank && x->expr_type != EXPR_ARRAY
+      && gfc_array_size (x, &array_size) == FAILURE)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
+				  &x->where);
+  mpz_set_si (result->value.integer, gfc_target_expr_size (x));
+
+  /* gfc_target_expr_size already takes the array size for array constructors
+     into account.  */
+  if (x->rank && x->expr_type != EXPR_ARRAY)
+    {
+      mpz_mul (result->value.integer, result->value.integer, array_size);
+      mpz_clear (array_size);
+    }
+
+  return result;
+}
+
+
+/* STORAGE_SIZE returns the size in bits of a single array element.  */
+
+gfc_expr *
+gfc_simplify_storage_size (gfc_expr *x,
+			   gfc_expr *kind)
+{
+  gfc_expr *result = NULL;
+  int k;
+  size_t elt_size;
+
+  if (x->ts.type == BT_CLASS || x->ts.deferred)
+    return NULL;
+
+  if (x->ts.type == BT_CHARACTER
+      && (!x->ts.u.cl || !x->ts.u.cl->length
+	  || x->ts.u.cl->length->expr_type != EXPR_CONSTANT))
+    return NULL;
+
+  k = get_kind (BT_INTEGER, kind, "STORAGE_SIZE", gfc_default_integer_kind);
+  if (k == -1)
+    return &gfc_bad_expr;
+
+  if (x->expr_type == EXPR_ARRAY)
+    {
+      gfc_constructor *c = gfc_constructor_first (x->value.constructor);
+      elt_size = gfc_target_expr_size (c->expr);
+    }
+  else
+    elt_size = gfc_target_expr_size (x);
+
+  result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
+				  &x->where);
+  mpz_set_si (result->value.integer, elt_size);
+
+  mpz_mul_ui (result->value.integer, result->value.integer, BITS_PER_UNIT);
+  return result;
 }
 
 

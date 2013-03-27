@@ -3617,11 +3617,31 @@ gfc_check_sizeof (gfc_expr *arg)
 {
   if (arg->ts.type == BT_PROCEDURE)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L may not be a procedure",
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be a procedure",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where);
       return FAILURE;
     }
+
+  if (arg->ts.type == BT_ASSUMED)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be TYPE(*)",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &arg->where);
+      return FAILURE;
+    }
+
+  if (arg->rank && arg->expr_type == EXPR_VARIABLE
+      && arg->symtree->n.sym->as != NULL
+      && arg->symtree->n.sym->as->type == AS_ASSUMED_SIZE && arg->ref
+      && arg->ref->type == REF_ARRAY && arg->ref->u.ar.type == AR_FULL)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be an "
+		 "assumed-size array", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &arg->where);
+      return FAILURE;
+    }
+
   return SUCCESS;
 }
 
@@ -3736,6 +3756,15 @@ gfc_check_c_sizeof (gfc_expr *arg)
 		 "interoperable data entity: %s",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where, msg);
+      return FAILURE;
+    }
+
+  if (arg->ts.type == BT_ASSUMED)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "TYPE(*)",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &arg->where);
       return FAILURE;
     }
 
@@ -5593,8 +5622,24 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 
 
 gfc_try
-gfc_check_storage_size (gfc_expr *a ATTRIBUTE_UNUSED, gfc_expr *kind)
+gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 {
+  if (a->ts.type == BT_ASSUMED)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be TYPE(*)",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &a->where);
+      return FAILURE;
+    }
+
+  if (a->ts.type == BT_PROCEDURE)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be a "
+		 "procedure", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &a->where);
+      return FAILURE;
+    }
+
   if (kind == NULL)
     return SUCCESS;
 

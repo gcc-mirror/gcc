@@ -1,17 +1,30 @@
+2013-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56650
+	PR fortran/36437
+	* check.c (gfc_check_sizeof, gfc_check_c_sizeof,
+	gfc_check_storage_size): Update checks.
+	* intrinsic.texi (SIZEOF): Correct class.
+	* intrinsic.h (gfc_simplify_sizeof,
+	gfc_simplify_storage_size): New prototypes.
+	* intrinsic.c (add_functions): Use them.
+	* simplify.c (gfc_simplify_sizeof,
+	gfc_simplify_storage_size): New functions.
+
 2013-03-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/25708
-        * module.c (module_locus): Use long for position.
-        (module_content): New variable.
-        (module_pos): Likewise.
-        (prev_character): Remove.
-        (bad_module): Free data instead of closing mod file.
-        (set_module_locus): Use module_pos.
-        (get_module_locus): Likewise.
-        (module_char): use buffer rather than stdio file.
-        (module_unget_char): Likewise.
-        (read_module_to_tmpbuf): New function.
-        (gfc_use_module): Call read_module_to_tmpbuf.
+	* module.c (module_locus): Use long for position.
+	(module_content): New variable.
+	(module_pos): Likewise.
+	(prev_character): Remove.
+	(bad_module): Free data instead of closing mod file.
+	(set_module_locus): Use module_pos.
+	(get_module_locus): Likewise.
+	(module_char): use buffer rather than stdio file.
+	(module_unget_char): Likewise.
+	(read_module_to_tmpbuf): New function.
+	(gfc_use_module): Call read_module_to_tmpbuf.
 
 2013-03-26  Tobias Burnus  <burnus@net-b.de>
 
