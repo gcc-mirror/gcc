@@ -1,3 +1,8 @@
+2013-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* Makefile.in (.SUFFIXES): Add .cc.
+	(.c.o): Apply same recipe for implicit rule .cc.o.
+
 2013-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/37021

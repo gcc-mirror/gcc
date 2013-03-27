@@ -48,7 +48,7 @@ MAKEOVERRIDES =
 # This must come before the language makefile fragments to allow them to
 # add suffixes and rules of their own.
 .SUFFIXES:
-.SUFFIXES: .c .o .po .pox .gmo
+.SUFFIXES: .c .cc .o .po .pox .gmo
 
 # -------------------------------
 # Standard autoconf-set variables
@@ -1054,7 +1054,7 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   $(CPPINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
 	   $(CLOOGINC) $(ISLINC)
 
-.c.o:
+.cc.o .c.o:
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
 
 #
