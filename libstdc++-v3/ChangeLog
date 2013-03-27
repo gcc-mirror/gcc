@@ -1,3 +1,8 @@
+2013-03-27  Kai Tietz  <ktietz@redhat.com>
+
+	* crossconfig.m4: Add support for cygwin x64 target.
+	* configure: Regenerated.
+
 2013-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	* testsuite/18_support/50594.cc: For mingw-targets use only static
