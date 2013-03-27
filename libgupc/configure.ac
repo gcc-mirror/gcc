@@ -993,7 +993,7 @@ if test "$upc_runtime_model" = "portals4"; then
   use_generic_collectives="no"
 
   # Check for Portals4 libs
-  portals4libs="-lportals -lportals_runtime"
+  portals4libs="-lportals"
   portals4inc=
   have_portals4=no
   AC_ARG_WITH(portals4,
@@ -1231,6 +1231,46 @@ if test "$upc_runtime_model" = "portals4"; then
         [Define to 1 if UPC node local access uses mmap-ed file.])
     fi
     # END - check for shared memory type
+  fi
+
+  # Check for portals job launcher
+  AC_CHECK_HEADER([slurm/slurm.h],[have_slurm=yes],[have_slurm=no])
+  AC_MSG_CHECKING([for UPC runtime Portals4 job launcher])
+  AC_ARG_WITH(upc-job-launcher,
+  [AS_HELP_STRING([--with-upc-job-launcher],
+		  [Select UPC Portals4 job launcher.
+		   [default=slurm]])],
+  [
+    case $withval in
+    slurm | yod)
+      upc_job_launcher=$withval
+      ;;
+    *)
+      AC_MSG_ERROR([--with-upc-job-launcher accepts only slurm or yod.])
+    esac
+  ],
+  [
+    if test "$have_slurm" = "yes"; then
+      upc_job_launcher=slurm
+    else
+      upc_job_launcher=yod
+    fi
+  ])
+  AC_MSG_RESULT($upc_job_launcher)
+
+  if test "$upc_job_launcher" = "slurm"; then
+    if test "$have_slurm" = "yes"; then
+      AC_DEFINE(GUPCR_JOB_LAUNCHER_SLURM, 1,
+      [Use SLURM for UPC Portals4 job launcher])
+      portals4libs="$portals4libs -lpmi"
+    else
+      AC_MSG_ERROR([--with-upc-job-launcher specified slurm,
+                    but slurm is not available.])
+    fi
+  else
+    AC_DEFINE(GUPCR_JOB_LAUNCHER_YOD, 1,
+    [Use YOD for UPC Portals4 job launcher])
+    portals4libs="$portals4libs -lportals_runtime"
   fi
 
   AC_DEFINE(GUPCR_GLOBAL_EXIT_TIMEOUT, [2],

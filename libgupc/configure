@@ -883,6 +883,7 @@ with_upc_runtime_bounce_buffer_size
 enable_upc_runtime_triggered_ops
 enable_upc_node_local_mem
 with_upc_node_local_mem
+with_upc_job_launcher
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1658,6 +1659,7 @@ Optional Packages:
   --with-upc-node-local-mem=SHMEM
                           specify type of shared memory used for node local
                           memory accesses (posix or mmap). [default=posix]
+  --with-upc-job-launcher Select UPC Portals4 job launcher. [default=slurm]
 
 Some influential environment variables:
   CC          C compiler command
@@ -11655,7 +11657,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11658 "configure"
+#line 11660 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11761,7 +11763,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11764 "configure"
+#line 11766 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17766,7 +17768,7 @@ if test "$upc_runtime_model" = "portals4"; then
   use_generic_collectives="no"
 
   # Check for Portals4 libs
-  portals4libs="-lportals -lportals_runtime"
+  portals4libs="-lportals"
   portals4inc=
   have_portals4=no
 
@@ -18107,6 +18109,59 @@ $as_echo "#define GUPCR_NODE_LOCAL_MEM_MMAP 1" >>confdefs.h
 
     fi
     # END - check for shared memory type
+  fi
+
+  # Check for portals job launcher
+  ac_fn_c_check_header_mongrel "$LINENO" "slurm/slurm.h" "ac_cv_header_slurm_slurm_h" "$ac_includes_default"
+if test "x$ac_cv_header_slurm_slurm_h" = x""yes; then :
+  have_slurm=yes
+else
+  have_slurm=no
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC runtime Portals4 job launcher" >&5
+$as_echo_n "checking for UPC runtime Portals4 job launcher... " >&6; }
+
+# Check whether --with-upc-job-launcher was given.
+if test "${with_upc_job_launcher+set}" = set; then :
+  withval=$with_upc_job_launcher;
+    case $withval in
+    slurm | yod)
+      upc_job_launcher=$withval
+      ;;
+    *)
+      as_fn_error "--with-upc-job-launcher accepts only slurm or yod." "$LINENO" 5
+    esac
+
+else
+
+    if test "$have_slurm" = "yes"; then
+      upc_job_launcher=slurm
+    else
+      upc_job_launcher=yod
+    fi
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_job_launcher" >&5
+$as_echo "$upc_job_launcher" >&6; }
+
+  if test "$upc_job_launcher" = "slurm"; then
+    if test "$have_slurm" = "yes"; then
+
+$as_echo "#define GUPCR_JOB_LAUNCHER_SLURM 1" >>confdefs.h
+
+      portals4libs="$portals4libs -lpmi"
+    else
+      as_fn_error "--with-upc-job-launcher specified slurm,
+                    but slurm is not available." "$LINENO" 5
+    fi
+  else
+
+$as_echo "#define GUPCR_JOB_LAUNCHER_YOD 1" >>confdefs.h
+
+    portals4libs="$portals4libs -lportals_runtime"
   fi
 
 

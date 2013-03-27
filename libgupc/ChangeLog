@@ -1,3 +1,12 @@
+2013-03-27  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Add configuration option for selecting a job
+	launcher (slurm, yod).  Default is slurm.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* portals4/gupcr_runtime.c: Select the right pmi.h based on
+	the job launcher configuration.
+
 2013-02-20  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.tgt: Add "-lpthread" if linking with

@@ -59,6 +59,12 @@
 /* Define to 1 if UPC runtime tracing is supported. */
 #undef GUPCR_HAVE_TRACE
 
+/* Use SLURM for UPC Portals4 job launcher */
+#undef GUPCR_JOB_LAUNCHER_SLURM
+
+/* Use YOD for UPC Portals4 job launcher */
+#undef GUPCR_JOB_LAUNCHER_YOD
+
 /* Maximum number of locks held per thread */
 #undef GUPCR_MAX_LOCKS
 
