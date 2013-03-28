@@ -2297,7 +2297,6 @@ finish_this_expr (void)
         result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type));
       else
         result = current_class_ptr;
-
     }
   else if (current_function_decl
 	   && DECL_STATIC_FUNCTION_P (current_function_decl))
@@ -2313,6 +2312,9 @@ finish_this_expr (void)
 	error ("invalid use of %<this%> at top level");
       result = error_mark_node;
     }
+
+  /* The keyword 'this' is a prvalue expression.  */
+  result = rvalue (result);
 
   return result;
 }
