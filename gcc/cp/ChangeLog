@@ -1,3 +1,9 @@
+2013-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56728
+	* semantics.c (cxx_eval_indirect_ref): Use the folded operand if
+	we still think this might be constant.
+
 2013-03-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56749

@@ -7658,6 +7658,8 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
 
   if (r == NULL_TREE)
     {
+      if (addr && op0 != orig_op0)
+	return build1 (INDIRECT_REF, TREE_TYPE (t), op0);
       if (!addr)
 	VERIFY_CONSTANT (t);
       return t;
