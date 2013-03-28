@@ -1,6 +1,12 @@
 2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	* combine.c (try_combine): Removed useless assert. 
+   	* genmodes.c (emit_max_int): New function.
+	(emit_insn_modes_h): Added call to emit_max_function.
+	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_INT, MAX_BITSIZE_MODE_ANY_MODE): Added doc.
+	* machmode.def: Fixed comment.
+2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* combine.c (try_combine): Removed useless assert.
 	* cselib.c (rtx_equal_for_cselib_1): Removed unnecessary parens.
 
 2013-03-28  Marek Polacek  <polacek@redhat.com>

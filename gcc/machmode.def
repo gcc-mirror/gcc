@@ -179,8 +179,11 @@ RANDOM_MODE (BLK);
 FRACTIONAL_INT_MODE (BI, 1, 1);
 
 /* Basic integer modes.  We go up to TI in generic code (128 bits).
-   The name OI is reserved for a 256-bit type (needed by some back ends).
-   FIXME TI shouldn't be generically available either.  */
+   TImode is needed here because the some front ends now genericly
+   support __int128.  If the front ends decide to generically support
+   larger types, then corresponding modes must be added here.  The
+   name OI is reserved for a 256-bit type (needed by some back ends).
+    */
 INT_MODE (QI, 1);
 INT_MODE (HI, 2);
 INT_MODE (SI, 4);
