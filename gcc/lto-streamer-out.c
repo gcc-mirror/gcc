@@ -644,7 +644,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 	{
 	  streamer_write_uhwi (ob, e->dest->index);
 	  streamer_write_hwi (ob, e->probability);
-	  streamer_write_hwi (ob, e->count);
+	  streamer_write_gcov_count (ob, e->count);
 	  streamer_write_uhwi (ob, e->flags);
 	}
     }

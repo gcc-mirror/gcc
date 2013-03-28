@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "tree-streamer.h"
 #include "gimple-streamer.h"
+#include "value-prof.h"
 
 /* Read a PHI function for basic block BB in function FN.  DATA_IN is
    the file being read.  IB is the input block to use for reading.  */
@@ -86,6 +87,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   unsigned HOST_WIDE_INT num_ops;
   size_t i;
   struct bitpack_d bp;
+  bool has_hist;
 
   code = lto_tag_to_gimple_code (tag);
 
@@ -97,6 +99,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   if (is_gimple_assign (stmt))
     stmt->gsbase.nontemporal_move = bp_unpack_value (&bp, 1);
   stmt->gsbase.has_volatile_ops = bp_unpack_value (&bp, 1);
+  has_hist = bp_unpack_value (&bp, 1);
   stmt->gsbase.subcode = bp_unpack_var_len_unsigned (&bp);
 
   /* Read location information.  */
@@ -300,6 +303,8 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 
   /* Mark the statement modified so its operand vectors can be filled in.  */
   gimple_set_modified (stmt, true);
+  if (has_hist)
+    stream_in_histogram_value (ib, stmt);
 
   return stmt;
 }
@@ -324,7 +329,7 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
   index = streamer_read_uhwi (ib);
   bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
 
-  bb->count = (streamer_read_hwi (ib) * count_materialization_scale
+  bb->count = (streamer_read_gcov_count (ib) * count_materialization_scale
 	       + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
   bb->frequency = streamer_read_hwi (ib);
   bb->flags = streamer_read_hwi (ib);

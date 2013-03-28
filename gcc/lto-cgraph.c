@@ -267,7 +267,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
       streamer_write_hwi_stream (ob->main_stream, ref);
     }
 
-  streamer_write_hwi_stream (ob->main_stream, edge->count);
+  streamer_write_gcov_count_stream (ob->main_stream, edge->count);
 
   bp = bitpack_create (ob->main_stream);
   uid = (!gimple_has_body_p (edge->caller->symbol.decl)
@@ -429,7 +429,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
 
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->symbol.decl);
-  streamer_write_hwi_stream (ob->main_stream, node->count);
+  streamer_write_gcov_count_stream (ob->main_stream, node->count);
   streamer_write_hwi_stream (ob->main_stream, node->count_materialization_scale);
 
   streamer_write_hwi_stream (ob->main_stream,
@@ -948,7 +948,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (order >= symtab_order)
     symtab_order = order + 1;
 
-  node->count = streamer_read_hwi (ib);
+  node->count = streamer_read_gcov_count (ib);
   node->count_materialization_scale = streamer_read_hwi (ib);
 
   count = streamer_read_hwi (ib);
@@ -1109,7 +1109,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node> nodes,
   else
     callee = NULL;
 
-  count = (gcov_type) streamer_read_hwi (ib);
+  count = streamer_read_gcov_count (ib);
 
   bp = streamer_read_bitpack (ib);
   inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_enum, CIF_N_REASONS);
