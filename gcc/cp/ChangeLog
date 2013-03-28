@@ -1,5 +1,9 @@
 2013-03-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56679
+	* parser.c (cp_parser_sizeof_pack): Split out from...
+	(cp_parser_sizeof_operand): ...here.  Require (id).
+
 	PR c++/56701
 	* semantics.c (finish_this_expr): 'this' is an rvalue.
 	* typeck.c (cp_build_indirect_ref): Handle NOP_EXPR of 'this'.
