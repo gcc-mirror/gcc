@@ -1,3 +1,11 @@
+2013-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/37021
+	* tree-vect-slp.c (vect_build_slp_tree): When not unrolling
+	do not restrict gaps between groups.
+	* tree-vect-stmts.c (vectorizable_load): Properly account for
+	a gap between groups.
+
 2013-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* toplev.c (process_options): Do not disable -fomit-frame-pointer on a

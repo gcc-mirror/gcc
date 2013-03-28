@@ -4316,7 +4316,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   gimple ptr_incr;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
-  int i, j, group_size;
+  int i, j, group_size, group_gap;
   tree msq = NULL_TREE, lsq;
   tree offset = NULL_TREE;
   tree realignment_token = NULL_TREE;
@@ -4766,15 +4766,20 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
           if (SLP_INSTANCE_LOAD_PERMUTATION (slp_node_instance).exists ())
             slp_perm = true;
+	  group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
     	}
       else
-	vec_num = group_size;
+	{
+	  vec_num = group_size;
+	  group_gap = 0;
+	}
     }
   else
     {
       first_stmt = stmt;
       first_dr = dr;
       group_size = vec_num = 1;
+      group_gap = 0;
     }
 
   alignment_support_scheme = vect_supportable_dr_alignment (first_dr, false);
@@ -5133,6 +5138,15 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      /* Store vector loads in the corresponding SLP_NODE.  */
 	      if (slp && !slp_perm)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    }
+	  /* Bump the vector pointer to account for a gap.  */
+	  if (slp && group_gap != 0)
+	    {
+	      tree bump = size_binop (MULT_EXPR,
+				      TYPE_SIZE_UNIT (elem_type),
+				      size_int (group_gap));
+	      dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
+					     stmt, bump);
 	    }
 	}
 
