@@ -1456,6 +1456,20 @@ Returns the number of units contained in a mode, i.e.,
 Returns the narrowest mode in mode class @var{c}.
 @end table
 
+The following 4 variables are defined on every target.   They can be
+used to allocate buffers that are guaranteed to be large enough to
+hold any value that can be represented on the target.   
+
+@table @code
+@findex MAX_BITSIZE_MODE_ANY_INT
+@item MAX_BITSIZE_MODE_ANY_INT
+The maximum of MAX_BITSIZE_MODE_INT and MAX_BITSIZE_MODE_PARTIAL_INT.
+
+@findex MAX_BITSIZE_MODE_ANY_MODE
+@item MAX_BITSIZE_MODE_ANY_MODE
+The bitsize of the largest mode on the target.   
+@end table
+
 @findex byte_mode
 @findex word_mode
 The global variables @code{byte_mode} and @code{word_mode} contain modes
