@@ -8650,13 +8650,15 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 		{
 		  if (complain & tf_error)
 		    {
-		      permerror (input_location,
-				 "default argument mismatch in "
-				 "overload resolution");
-		      inform (input_location,
-			      " candidate 1: %q+#F", cand1->fn);
-		      inform (input_location,
-			      " candidate 2: %q+#F", cand2->fn);
+		      if (permerror (input_location,
+				     "default argument mismatch in "
+				     "overload resolution"))
+			{
+			  inform (input_location,
+				  " candidate 1: %q+#F", cand1->fn);
+			  inform (input_location,
+				  " candidate 2: %q+#F", cand2->fn);
+			}
 		    }
 		  else
 		    return 0;

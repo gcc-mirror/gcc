@@ -14019,30 +14019,32 @@ tsubst_copy_and_build (tree t,
 		      fn = TREE_OPERAND (fn, 1);
 		    if (is_overloaded_fn (fn))
 		      fn = get_first_fn (fn);
-		    permerror (EXPR_LOC_OR_HERE (t),
-			       "%qD was not declared in this scope, "
-			       "and no declarations were found by "
-			       "argument-dependent lookup at the point "
-			       "of instantiation", function);
-		    if (!DECL_P (fn))
-		      /* Can't say anything more.  */;
-		    else if (DECL_CLASS_SCOPE_P (fn))
+		    if (permerror (EXPR_LOC_OR_HERE (t),
+				   "%qD was not declared in this scope, "
+				   "and no declarations were found by "
+				   "argument-dependent lookup at the point "
+				   "of instantiation", function))
 		      {
-			inform (EXPR_LOC_OR_HERE (t),
-				"declarations in dependent base %qT are "
-				"not found by unqualified lookup",
-				DECL_CLASS_CONTEXT (fn));
-			if (current_class_ptr)
-			  inform (EXPR_LOC_OR_HERE (t),
-				  "use %<this->%D%> instead", function);
+			if (!DECL_P (fn))
+			  /* Can't say anything more.  */;
+			else if (DECL_CLASS_SCOPE_P (fn))
+			  {
+			    inform (EXPR_LOC_OR_HERE (t),
+				    "declarations in dependent base %qT are "
+				    "not found by unqualified lookup",
+				    DECL_CLASS_CONTEXT (fn));
+			    if (current_class_ptr)
+			      inform (EXPR_LOC_OR_HERE (t),
+				      "use %<this->%D%> instead", function);
+			    else
+			      inform (EXPR_LOC_OR_HERE (t),
+				      "use %<%T::%D%> instead",
+				      current_class_name, function);
+			  }
 			else
-			  inform (EXPR_LOC_OR_HERE (t),
-				  "use %<%T::%D%> instead",
-				  current_class_name, function);
+			  inform (0, "%q+D declared here, later in the "
+				  "translation unit", fn);
 		      }
-		    else
-		      inform (0, "%q+D declared here, later in the "
-				"translation unit", fn);
 		    function = unq;
 		  }
 	      }
