@@ -1,3 +1,9 @@
+2013-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (process_options): Do not disable -fomit-frame-pointer on a
+	general basis if unwind info is requested and ACCUMULATE_OUTGOING_ARGS
+	is not enabled.
+
 2013-03-27  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline:
