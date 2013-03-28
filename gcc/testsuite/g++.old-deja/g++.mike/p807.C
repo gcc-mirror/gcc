@@ -24,7 +24,7 @@ class B
 };
 
 
-int foo(B& b);			// { dg-error "" } referenced below
+int foo(B& b);			// { dg-message "" } referenced below
 
 
 int main()

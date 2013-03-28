@@ -1,7 +1,32 @@
+2013-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56725
+	* g++.dg/conversion/op4.C: Adjust.
+	* g++.dg/cpp0x/rv1n.C: Likewise.
+	* g++.dg/cpp0x/rv2n.C: Likewise.
+	* g++.dg/cpp0x/template_deduction.C: Likewise.
+	* g++.dg/expr/cond8.C: Likewise.
+	* g++.dg/other/error4.C: Likewise.
+	* g++.old-deja/g++.bugs/900514_03.C: Likewise.
+	* g++.old-deja/g++.bugs/900519_02.C: Likewise.
+	* g++.old-deja/g++.bugs/900519_03.C: Likewise.
+	* g++.old-deja/g++.bugs/900520_02.C: Likewise.
+	* g++.old-deja/g++.jason/conversion2.C: Likewise.
+	* g++.old-deja/g++.law/cvt20.C: Likewise.
+	* g++.old-deja/g++.law/cvt8.C: Likewise.
+	* g++.old-deja/g++.law/init8.C: Likewise.
+	* g++.old-deja/g++.mike/net12.C: Likewise.
+	* g++.old-deja/g++.mike/net8.C: Likewise.
+	* g++.old-deja/g++.mike/p2793.C: Likewise.
+	* g++.old-deja/g++.mike/p3836.C: Likewise.
+	* g++.old-deja/g++.mike/p418.C: Likewise.
+	* g++.old-deja/g++.mike/p701.C: Likewise.
+	* g++.old-deja/g++.mike/p807.C: Likewise.
+
 2013-03-28  Tejas Belagod  <tejas.belagod@arm.com>
 
 	PR middle-end/56694
-	* g++.dg/torture/pr56694.C: Fix test case to build on bare-metal 
+	* g++.dg/torture/pr56694.C: Fix test case to build on bare-metal
 	targets.
 
 2013-03-28  Marek Polacek  <polacek@redhat.com>
