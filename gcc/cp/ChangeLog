@@ -1,3 +1,13 @@
+2013-03-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (next_aggr_init_expr_arg): Remove static specifier.
+	(first_aggr_init_expr): Likewise.
+	(more_aggr_init_expr_args_p): Likewise.
+	(type_of_this_parm): Likewise.
+	(class_of_this_parm): Likewise.
+	* name-lookup.h (get_global_value_if_present): Likewise.
+	(is_typename_at_global_scope): Likewise.
+
 2013-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* call.c (joust): Don't call inform for a permerror returning false.
