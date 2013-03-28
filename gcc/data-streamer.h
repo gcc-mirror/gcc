@@ -63,6 +63,7 @@ HOST_WIDE_INT bp_unpack_var_len_int (struct bitpack_d *);
 void streamer_write_zero (struct output_block *);
 void streamer_write_uhwi (struct output_block *, unsigned HOST_WIDE_INT);
 void streamer_write_hwi (struct output_block *, HOST_WIDE_INT);
+void streamer_write_gcov_count (struct output_block *, gcov_type);
 void streamer_write_string (struct output_block *, struct lto_output_stream *,
 			    const char *, bool);
 unsigned streamer_string_index (struct output_block *, const char *,
@@ -77,6 +78,7 @@ void bp_pack_string (struct output_block *, struct bitpack_d *,
 void streamer_write_uhwi_stream (struct lto_output_stream *,
 				 unsigned HOST_WIDE_INT);
 void streamer_write_hwi_stream (struct lto_output_stream *, HOST_WIDE_INT);
+void streamer_write_gcov_count_stream (struct lto_output_stream *, gcov_type);
 
 /* In data-streamer-in.c  */
 const char *string_for_index (struct data_in *, unsigned int, unsigned int *);
@@ -89,6 +91,7 @@ const char *bp_unpack_indexed_string (struct data_in *, struct bitpack_d *,
 const char *bp_unpack_string (struct data_in *, struct bitpack_d *);
 unsigned HOST_WIDE_INT streamer_read_uhwi (struct lto_input_block *);
 HOST_WIDE_INT streamer_read_hwi (struct lto_input_block *);
+gcov_type streamer_read_gcov_count (struct lto_input_block *);
 
 /* Returns a hash code for P.  Adapted from libiberty's htab_hash_string
    to support strings that may not end in '\0'.  */

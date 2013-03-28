@@ -2137,9 +2137,9 @@ lto-compress.o: lto-compress.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) langhooks.h $(LTO_STREAMER_H) $(LTO_SECTION_H) \
 	lto-compress.h $(DIAGNOSTIC_CORE_H) $(DIAGNOSTIC_CORE_H)
 data-streamer-in.o: data-streamer-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-    $(DATA_STREAMER_H) $(DIAGNOSTIC_H)
+    $(DATA_STREAMER_H) $(DIAGNOSTIC_H) value-prof.h
 data-streamer-out.o: data-streamer-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-    $(DATA_STREAMER_H)
+    $(DATA_STREAMER_H) value-prof.h
 data-streamer.o: data-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
     $(DATA_STREAMER_H)
 gimple-streamer-in.o: gimple-streamer-in.c $(CONFIG_H) $(SYSTEM_H) \
@@ -3088,7 +3088,7 @@ value-prof.o : value-prof.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(TM_
    $(RECOG_H) insn-config.h $(OPTABS_H) $(REGS_H) $(GGC_H) $(DIAGNOSTIC_H) \
    $(TREE_H) $(COVERAGE_H) $(RTL_H) $(GCOV_IO_H) $(TREE_FLOW_H) \
    tree-flow-inline.h $(TIMEVAR_H) $(DIAGNOSTIC_CORE_H) pointer-set.h \
-   $(GIMPLE_PRETTY_PRINT_H)
+   $(GIMPLE_PRETTY_PRINT_H) $(DATA_STREAMER_H)
 loop-doloop.o : loop-doloop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(TM_H) \
    $(RTL_H) $(FLAGS_H) $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H) \
    $(DIAGNOSTIC_CORE_H) $(CFGLOOP_H) $(PARAMS_H) $(TARGET_H)

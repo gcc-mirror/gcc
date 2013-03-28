@@ -1,9 +1,35 @@
+2013-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* data-streamer-in.c (streamer_read_gcov_count): New function.
+	* gimple-streamer-out.c: Include value-prof.h.
+	(output_gimple_stmt): Output histogram.
+	(output_bb): Use streamer_write_gcov_count.
+	* value-prof.c: Include data-streamer.h
+	(dump_histogram_value): Add HIST_TYPE_MAX.
+	(stream_out_histogram_value): New function.
+	(stream_in_histogram_value): New function.
+	* value-prof.h (enum hist_type): Add HIST_TYPE_MAX.
+	(stream_out_histogram_value, stream_in_histogram_value): Declare.
+	* data-streamer-out.c (streamer_write_gcov_count): New function.
+	(streamer_write_gcov_count_stream): New function.
+	* lto-cgraph.c (lto_output_edge): Update counter streaming.
+	(lto_output_node): Likewise.
+	(input_node, input_edge): Likewise.
+	* lto-streamer-out.c (output_cfg): Update streaming.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* data-streamer.h (streamer_write_gcov_count,
+	streamer_write_gcov_count_stream, streamer_read_gcov_count): Declare.
+	* gimple-streamer-in.c: Include value-prof.h
+	(input_gimple_stmt): Input histograms.
+	(input_bb): Update profile streaming.
+
 2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
    	* genmodes.c (emit_max_int): New function.
 	(emit_insn_modes_h): Added call to emit_max_function.
 	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_INT, MAX_BITSIZE_MODE_ANY_MODE): Added doc.
 	* machmode.def: Fixed comment.
+
 2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* combine.c (try_combine): Removed useless assert.

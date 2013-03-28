@@ -622,7 +622,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 
 	  dest_index = streamer_read_uhwi (ib);
 	  probability = (int) streamer_read_hwi (ib);
-	  count = ((gcov_type) streamer_read_hwi (ib) * count_materialization_scale
+	  count = ((gcov_type) streamer_read_gcov_count (ib) * count_materialization_scale
 		   + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
 	  edge_flags = streamer_read_uhwi (ib);
 
