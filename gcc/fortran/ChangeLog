@@ -1,5 +1,17 @@
 2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/45159
+	* gfortran.h (gfc_dep_difference):  Add prototype.
+	* dependency.c (discard_nops):  New function.
+	(gfc_dep_difference):  New function.
+	(check_section_vs_section):  Use gfc_dep_difference
+	to calculate the difference of starting indices.
+	* trans-expr.c (gfc_conv_substring):  Use
+	gfc_dep_difference to calculate the length of
+	substrings where possible.
+
+2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/55806
 	* frontend-passes.c (optimize_code):  Keep track of
 	current code to make code insertion possible.
