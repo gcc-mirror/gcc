@@ -1,5 +1,11 @@
 2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/45159
+	* gfortran.dg/string_length_2.f90:  New test.
+	* gfortran.dg/dependency_41.f90:  New test.
+
+2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/55806
 	* gfortran.dg/array_constructor_43.f90:  New test.
 	* gfortran.dg/random_seed_3.f90:  New test.

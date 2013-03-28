@@ -501,6 +501,272 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 }
 
 
+/* Helper function to look through parens and unary plus.  */
+
+static gfc_expr*
+discard_nops (gfc_expr *e)
+{
+
+  while (e && e->expr_type == EXPR_OP
+	 && (e->value.op.op == INTRINSIC_UPLUS
+	     || e->value.op.op == INTRINSIC_PARENTHESES))
+    e = e->value.op.op1;
+
+  return e;
+}
+
+
+/* Return the difference between two expressions.  Integer expressions of
+   the form 
+
+   X + constant, X - constant and constant + X
+
+   are handled.  Return true on success, false on failure. result is assumed
+   to be uninitialized on entry, and will be initialized on success.
+*/
+
+bool
+gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
+{
+  gfc_expr *e1_op1, *e1_op2, *e2_op1, *e2_op2;
+
+  if (e1 == NULL || e2 == NULL)
+    return false;
+
+  if (e1->ts.type != BT_INTEGER || e2->ts.type != BT_INTEGER)
+    return false;
+
+  e1 = discard_nops (e1);
+  e2 = discard_nops (e2);
+
+  /* Inizialize tentatively, clear if we don't return anything.  */
+  mpz_init (*result);
+
+  /* Case 1: c1 - c2 = c1 - c2, trivially.  */
+
+  if (e1->expr_type == EXPR_CONSTANT && e2->expr_type == EXPR_CONSTANT)
+    {
+      mpz_sub (*result, e1->value.integer, e2->value.integer);
+      return true;
+    }
+
+  if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_PLUS)
+    {
+      e1_op1 = discard_nops (e1->value.op.op1);
+      e1_op2 = discard_nops (e1->value.op.op2);
+
+      /* Case 2: (X + c1) - X = c1.  */
+      if (e1_op2->expr_type == EXPR_CONSTANT
+	  && gfc_dep_compare_expr (e1_op1, e2) == 0)
+	{
+	  mpz_set (*result, e1_op2->value.integer);
+	  return true;
+	}
+
+      /* Case 3: (c1 + X) - X = c1. */
+      if (e1_op1->expr_type == EXPR_CONSTANT
+	  && gfc_dep_compare_expr (e1_op2, e2) == 0)
+	{
+	  mpz_set (*result, e1_op1->value.integer);
+	  return true;
+	}
+
+      if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
+	{
+	  e2_op1 = discard_nops (e2->value.op.op1);
+	  e2_op2 = discard_nops (e2->value.op.op2);
+
+	  if (e1_op2->expr_type == EXPR_CONSTANT)
+	    {
+	      /* Case 4: X + c1 - (X + c2) = c1 - c2.  */
+	      if (e2_op2->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op1, e2_op1) == 0)
+		{
+		  mpz_sub (*result, e1_op2->value.integer,
+			   e2_op2->value.integer);
+		  return true;
+		}
+	      /* Case 5: X + c1 - (c2 + X) = c1 - c2.  */
+	      if (e2_op1->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op1, e2_op2) == 0)
+		{
+		  mpz_sub (*result, e1_op2->value.integer,
+			   e2_op1->value.integer);
+		  return true;
+		}
+	    }
+	  else if (e1_op1->expr_type == EXPR_CONSTANT)
+	    {
+	      /* Case 6: c1 + X - (X + c2) = c1 - c2.  */
+	      if (e2_op2->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op2, e2_op1) == 0)
+		{
+		  mpz_sub (*result, e1_op1->value.integer,
+			   e2_op2->value.integer);
+		  return true;
+		}
+	      /* Case 7: c1 + X - (c2 + X) = c1 - c2.  */
+	      if (e2_op1->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op2, e2_op2) == 0)
+		{
+		  mpz_sub (*result, e1_op1->value.integer,
+			   e2_op1->value.integer);
+		  return true;
+		}
+	    }
+	}
+
+      if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
+	{
+	  e2_op1 = discard_nops (e2->value.op.op1);
+	  e2_op2 = discard_nops (e2->value.op.op2);
+
+	  if (e1_op2->expr_type == EXPR_CONSTANT)
+	    {
+	      /* Case 8: X + c1 - (X - c2) = c1 + c2.  */
+	      if (e2_op2->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op1, e2_op1) == 0)
+		{
+		  mpz_add (*result, e1_op2->value.integer,
+			   e2_op2->value.integer);
+		  return true;
+		}
+	    }
+	  if (e1_op1->expr_type == EXPR_CONSTANT)
+	    {
+	      /* Case 9: c1 + X - (X - c2) = c1 + c2.  */
+	      if (e2_op2->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op2, e2_op1) == 0)
+		{
+		  mpz_add (*result, e1_op1->value.integer,
+			   e2_op2->value.integer);
+		  return true;
+		}
+	    }
+	}
+    }
+
+  if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_MINUS)
+    {
+      e1_op1 = discard_nops (e1->value.op.op1);
+      e1_op2 = discard_nops (e1->value.op.op2);
+
+      if (e1_op2->expr_type == EXPR_CONSTANT)
+	{
+	  /* Case 10: (X - c1) - X = -c1  */
+
+	  if (gfc_dep_compare_expr (e1_op1, e2) == 0)
+	    {
+	      mpz_neg (*result, e1_op2->value.integer);
+	      return true;
+	    }
+
+	  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
+	    {
+	      e2_op1 = discard_nops (e2->value.op.op1);
+	      e2_op2 = discard_nops (e2->value.op.op2);
+
+	      /* Case 11: (X - c1) - (X + c2) = -( c1 + c2).  */
+	      if (e2_op2->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op1, e2_op1) == 0)
+		{
+		  mpz_add (*result, e1_op2->value.integer,
+			   e2_op2->value.integer);
+		  mpz_neg (*result, *result);
+		  return true;
+		}
+
+	      /* Case 12: X - c1 - (c2 + X) = - (c1 + c2).  */
+	      if (e2_op1->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op1, e2_op2) == 0)
+		{
+		  mpz_add (*result, e1_op2->value.integer,
+			   e2_op1->value.integer);
+		  mpz_neg (*result, *result);
+		  return true;
+		}
+	    }
+
+	  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
+	    {
+	      e2_op1 = discard_nops (e2->value.op.op1);
+	      e2_op2 = discard_nops (e2->value.op.op2);
+
+	      /* Case 13: (X - c1) - (X - c2) = c2 - c1.  */
+	      if (e2_op2->expr_type == EXPR_CONSTANT
+		  && gfc_dep_compare_expr (e1_op1, e2_op1) == 0)
+		{
+		  mpz_sub (*result, e2_op2->value.integer,
+			   e1_op2->value.integer);
+		  return true;
+		}
+	    }
+	}
+      if (e1_op1->expr_type == EXPR_CONSTANT)
+	{
+	  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
+	    {
+	      e2_op1 = discard_nops (e2->value.op.op1);
+	      e2_op2 = discard_nops (e2->value.op.op2);
+	      
+	      /* Case 14: (c1 - X) - (c2 - X) == c1 - c2.  */
+	      if (gfc_dep_compare_expr (e1_op2, e2_op2) == 0)
+		{
+		  mpz_sub (*result, e1_op1->value.integer,
+			   e2_op1->value.integer);
+		    return true;
+		}
+	    }
+
+	}
+    }
+
+  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
+    {
+      e2_op1 = discard_nops (e2->value.op.op1);
+      e2_op2 = discard_nops (e2->value.op.op2);
+
+      /* Case 15: X - (X + c2) = -c2.  */
+      if (e2_op2->expr_type == EXPR_CONSTANT
+	  && gfc_dep_compare_expr (e1, e2_op1) == 0)
+	{
+	  mpz_neg (*result, e2_op2->value.integer);
+	  return true;
+	}
+      /* Case 16: X - (c2 + X) = -c2.  */
+      if (e2_op1->expr_type == EXPR_CONSTANT
+	  && gfc_dep_compare_expr (e1, e2_op2) == 0)
+	{
+	  mpz_neg (*result, e2_op1->value.integer);
+	  return true;
+	}
+    }
+
+  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
+    {
+      e2_op1 = discard_nops (e2->value.op.op1);
+      e2_op2 = discard_nops (e2->value.op.op2);
+
+      /* Case 17: X - (X - c2) = c2.  */
+      if (e2_op2->expr_type == EXPR_CONSTANT
+	  && gfc_dep_compare_expr (e1, e2_op1) == 0)
+	{
+	  mpz_set (*result, e2_op2->value.integer);
+	  return true;
+	}
+    }
+
+  if (gfc_dep_compare_expr(e1, e2) == 0)
+    {
+      /* Case 18: X - X = 0.  */
+      mpz_set_si (*result, 0);
+      return true;
+    }
+
+  mpz_clear (*result);
+  return false;
+}
+
 /* Returns 1 if the two ranges are the same and 0 if they are not (or if the
    results are indeterminate). 'n' is the dimension to compare.  */
 
@@ -1140,6 +1406,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
   int r_dir;
   int stride_comparison;
   int start_comparison;
+  mpz_t tmp;
 
   /* If they are the same range, return without more ado.  */
   if (is_same_range (l_ar, r_ar, n))
@@ -1275,24 +1542,20 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
      (l_start - r_start) / gcd(l_stride, r_stride) is
      nonzero.
      TODO:
-       - Handle cases where x is an expression.
        - Cases like a(1:4:2) = a(2:3) are still not handled.
   */
 
 #define IS_CONSTANT_INTEGER(a) ((a) && ((a)->expr_type == EXPR_CONSTANT) \
 			      && (a)->ts.type == BT_INTEGER)
 
-  if (IS_CONSTANT_INTEGER(l_start) && IS_CONSTANT_INTEGER(r_start)
-      && IS_CONSTANT_INTEGER(l_stride) && IS_CONSTANT_INTEGER(r_stride))
+  if (IS_CONSTANT_INTEGER(l_stride) && IS_CONSTANT_INTEGER(r_stride)
+      && gfc_dep_difference (l_start, r_start, &tmp))
     {
-      mpz_t gcd, tmp;
+      mpz_t gcd;
       int result;
 
       mpz_init (gcd);
-      mpz_init (tmp);
-
       mpz_gcd (gcd, l_stride->value.integer, r_stride->value.integer);
-      mpz_sub (tmp, l_start->value.integer, r_start->value.integer);
 
       mpz_fdiv_r (tmp, tmp, gcd);
       result = mpz_cmp_si (tmp, 0L);

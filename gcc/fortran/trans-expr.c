@@ -1437,6 +1437,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
   gfc_se start;
   gfc_se end;
   char *msg;
+  mpz_t length;
 
   type = gfc_get_character_type (kind, ref->u.ss.length);
   type = build_pointer_type (type);
@@ -1520,10 +1521,19 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       free (msg);
     }
 
-  /* If the start and end expressions are equal, the length is one.  */
+  /* Try to calculate the length from the start and end expressions.  */
   if (ref->u.ss.end
-      && gfc_dep_compare_expr (ref->u.ss.start, ref->u.ss.end) == 0)
-    tmp = build_int_cst (gfc_charlen_type_node, 1);
+      && gfc_dep_difference (ref->u.ss.end, ref->u.ss.start, &length))
+    {
+      int i_len;
+
+      i_len = mpz_get_si (length) + 1;
+      if (i_len < 0)
+	i_len = 0;
+
+      tmp = build_int_cst (gfc_charlen_type_node, i_len);
+      mpz_clear (length);  /* Was initialized by gfc_dep_difference.  */
+    }
   else
     {
       tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_charlen_type_node,

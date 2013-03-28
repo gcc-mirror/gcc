@@ -2969,6 +2969,7 @@ gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 /* dependency.c */
 int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);
 int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
+bool gfc_dep_difference (gfc_expr *, gfc_expr *, mpz_t *);
 
 /* check.c */
 gfc_try gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);
