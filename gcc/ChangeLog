@@ -1,3 +1,8 @@
+2013-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*vec_extract2vdi_1): Merge with
+	*vec_extractv2di_1_rex64.  Use x64 isa attribute.
+
 2013-03-28   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.md (*and<mode>3_compare0): New pattern.
