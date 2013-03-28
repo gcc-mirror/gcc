@@ -1,3 +1,9 @@
+2013-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (process_options): Do not disable -fomit-frame-pointer on a
+	general basis if unwind info is requested and ACCUMULATE_OUTGOING_ARGS
+	is not enabled.
+
 2013-03-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (AVR Options): Tweak link for AVR-LibC user manual.
