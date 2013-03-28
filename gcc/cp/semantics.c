@@ -7661,6 +7661,8 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
 
   if (r == NULL_TREE)
     {
+      if (addr && op0 != orig_op0)
+	return build1 (INDIRECT_REF, TREE_TYPE (t), op0);
       if (!addr)
 	VERIFY_CONSTANT (t);
       return t;
@@ -8056,6 +8058,16 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 						non_constant_p, overflow_p);
 	if (*non_constant_p)
 	  return t;
+	if (POINTER_TYPE_P (TREE_TYPE (t))
+	    && TREE_CODE (op) == INTEGER_CST
+	    && !integer_zerop (op))
+	  {
+	    if (!allow_non_constant)
+	      error_at (EXPR_LOC_OR_HERE (t),
+			"reinterpret_cast from integer to pointer");
+	    *non_constant_p = true;
+	    return t;
+	  }
 	if (op == oldop)
 	  /* We didn't fold at the top so we could check for ptr-int
 	     conversion.  */
@@ -8452,6 +8464,15 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	 may change to something more specific to type-punning (DR 1312).  */
       {
         tree from = TREE_OPERAND (t, 0);
+	if (POINTER_TYPE_P (TREE_TYPE (t))
+	    && TREE_CODE (from) == INTEGER_CST
+	    && !integer_zerop (from))
+	  {
+	    if (flags & tf_error)
+	      error_at (EXPR_LOC_OR_HERE (t),
+			"reinterpret_cast from integer to pointer");
+	    return false;
+	  }
         return (potential_constant_expression_1
 		(from, TREE_CODE (t) != VIEW_CONVERT_EXPR, flags));
       }
