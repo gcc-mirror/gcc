@@ -1,3 +1,8 @@
+2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* combine.c (try_combine): Removed useless assert. 
+	* cselib.c (rtx_equal_for_cselib_1): Removed unnecessary parens.
+
 2013-03-28  Marek Polacek  <polacek@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
