@@ -7253,7 +7253,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  instantiation = fn_type_unification (fn, explicit_targs, targs, args,
 					      nargs, target_ret_type,
 					      DEDUCE_EXACT, LOOKUP_NORMAL,
-					       false);
+					       false, false);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;

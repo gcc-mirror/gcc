@@ -14935,7 +14935,8 @@ fn_type_unification (tree fn,
 		     tree return_type,
 		     unification_kind_t strict,
 		     int flags,
-		     bool explain_p)
+		     bool explain_p,
+		     bool decltype_p)
 {
   tree parms;
   tree fntype;
@@ -14948,6 +14949,9 @@ fn_type_unification (tree fn,
   tree tparms = DECL_INNERMOST_TEMPLATE_PARMS (fn);
   tree tinst;
   tree r = error_mark_node;
+
+  if (decltype_p)
+    complain |= tf_decltype;
 
   /* In C++0x, it's possible to have a function template whose type depends
      on itself recursively.  This is most obvious with decltype, but can also
@@ -17626,7 +17630,8 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
 			   args, ix,
 			   (check_rettype || DECL_CONV_FN_P (fn)
 			    ? TREE_TYPE (decl_type) : NULL_TREE),
-			   DEDUCE_EXACT, LOOKUP_NORMAL, /*explain_p=*/false)
+			   DEDUCE_EXACT, LOOKUP_NORMAL, /*explain_p=*/false,
+			   /*decltype*/false)
       == error_mark_node)
     return NULL_TREE;
 

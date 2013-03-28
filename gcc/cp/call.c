@@ -2905,7 +2905,8 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   fn = fn_type_unification (tmpl, explicit_targs, targs,
 			    args_without_in_chrg,
 			    nargs_without_in_chrg,
-			    return_type, strict, flags, false);
+			    return_type, strict, flags, false,
+			    complain & tf_decltype);
 
   if (fn == error_mark_node)
     {
@@ -3221,7 +3222,7 @@ print_z_candidate (location_t loc, const char *msgstr,
 			       r->u.template_unification.return_type,
 			       r->u.template_unification.strict,
 			       r->u.template_unification.flags,
-			       true);
+			       true, false);
 	  break;
 	case rr_invalid_copy:
 	  inform (cloc,
