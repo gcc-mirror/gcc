@@ -1,5 +1,9 @@
 2013-03-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56710
+	* semantics.c (finish_member_declaration): Don't push closure
+	members.
+
 	* name-lookup.c (pushdecl_maybe_friend_1): Use
 	nonlambda_method_basetype and current_nonlambda_class_type.
 
