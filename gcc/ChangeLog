@@ -1,3 +1,10 @@
+2013-03-28   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.md (*and<mode>3_compare0): New pattern.
+	(*andsi3_compare0_uxtw): New pattern.
+	(*and_<SHIFT:optab><mode>3_compare0): New pattern.
+	(*and_<SHIFT:optab>si3_compare0_uxtw): New pattern.
+
 2013-03-28  Jan Hubicka  <jh@suse.cz>
 
 	* data-streamer-in.c (streamer_read_gcov_count): New function.
