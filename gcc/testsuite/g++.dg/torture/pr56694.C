@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fopenmp" }
+// { dg-require-effective-target fopenmp }
 
 class GException {
 public:
