@@ -1,5 +1,15 @@
 2013-03-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/17232
+	PR c++/52748
+	* typeck2.c (abstract_virtuals_error_sfinae): Don't complete
+	the type if tf_decltype is set.
+	* pt.c (fn_type_unification): Add decltype_p parm.
+	(get_bindings): Adjust.
+	* cp-tree.h: Adjust.
+	* class.c (resolve_address_of_overloaded_function): Adjust.
+	* call.c (add_template_candidate_real, print_z_candidate): Adjust.
+
 	PR c++/56679
 	* parser.c (cp_parser_sizeof_pack): Split out from...
 	(cp_parser_sizeof_operand): ...here.  Require (id).

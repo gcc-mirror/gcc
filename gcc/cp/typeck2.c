@@ -265,15 +265,15 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
     return 0;
   type = TYPE_MAIN_VARIANT (type);
 
-  /* In SFINAE context, force instantiation.  */
-  if (!(complain & tf_error))
+  /* In SFINAE, non-N3276 context, force instantiation.  */
+  if (!(complain & (tf_error|tf_decltype)))
     complete_type (type);
 
   /* If the type is incomplete, we register it within a hash table,
      so that we can check again once it is completed. This makes sense
      only for objects for which we have a declaration or at least a
      name.  */
-  if (!COMPLETE_TYPE_P (type))
+  if (!COMPLETE_TYPE_P (type) && (complain & tf_error))
     {
       void **slot;
       struct pending_abstract_type *pat;
