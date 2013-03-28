@@ -23363,12 +23363,12 @@ cp_parser_check_class_key (enum tag_types class_key, tree type)
     return;
   if ((TREE_CODE (type) == UNION_TYPE) != (class_key == union_type))
     {
-      permerror (input_location, "%qs tag used in naming %q#T",
-		 class_key == union_type ? "union"
-		 : class_key == record_type ? "struct" : "class",
-		 type);
-      inform (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
-	      "%q#T was previously declared here", type);
+      if (permerror (input_location, "%qs tag used in naming %q#T",
+		     class_key == union_type ? "union"
+		     : class_key == record_type ? "struct" : "class",
+		     type))
+	inform (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
+		"%q#T was previously declared here", type);
     }
 }
 

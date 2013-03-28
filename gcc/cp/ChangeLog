@@ -1,3 +1,9 @@
+2013-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (joust): Don't call inform for a permerror returning false.
+	* parser.c (cp_parser_check_class_key): Likewise.
+	* pt.c (tsubst_copy_and_build): Likewise.
+
 2013-03-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56749
