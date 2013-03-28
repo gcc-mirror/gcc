@@ -1,3 +1,12 @@
+2013-03-28  Marek Polacek  <polacek@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56695
+	* tree-vect-stmts.c (vectorizable_condition): Unconditionally
+	build signed result of a vector comparison.
+	* tree-cfg.c (verify_gimple_comparison): Check that a result
+	of a vector comparison has signed type.
+
 2013-03-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/37021
