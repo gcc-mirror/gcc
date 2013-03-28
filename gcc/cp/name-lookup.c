@@ -1163,8 +1163,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    {
 	      tree member;
 
-	      if (current_class_ptr)
-		member = lookup_member (current_class_type,
+	      if (nonlambda_method_basetype ())
+		member = lookup_member (current_nonlambda_class_type (),
 					name,
 					/*protect=*/0,
 					/*want_type=*/false,
