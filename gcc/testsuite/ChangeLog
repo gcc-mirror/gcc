@@ -1,3 +1,8 @@
+2013-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/56695
+	* gcc.dg/vect/pr56695.c: New test.
+
 2013-03-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/37021

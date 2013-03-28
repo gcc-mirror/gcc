@@ -5279,7 +5279,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   vec<tree> vec_oprnds1 = vNULL;
   vec<tree> vec_oprnds2 = vNULL;
   vec<tree> vec_oprnds3 = vNULL;
-  tree vec_cmp_type = vectype;
+  tree vec_cmp_type;
 
   if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
@@ -5352,14 +5352,12 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 	   && TREE_CODE (else_clause) != FIXED_CST)
     return false;
 
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
-    {
-      unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype)));
-      tree cmp_type = build_nonstandard_integer_type (prec, 1);
-      vec_cmp_type = get_same_sized_vectype (cmp_type, vectype);
-      if (vec_cmp_type == NULL_TREE)
-	return false;
-    }
+  unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype)));
+  /* The result of a vector comparison should be signed type.  */
+  tree cmp_type = build_nonstandard_integer_type (prec, 0);
+  vec_cmp_type = get_same_sized_vectype (cmp_type, vectype);
+  if (vec_cmp_type == NULL_TREE)
+    return false;
 
   if (!vec_stmt)
     {

@@ -3191,7 +3191,10 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
 
       if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type)
 	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type)))
-	      != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0_type)))))
+	      != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0_type))))
+	  /* The result of a vector comparison is of signed
+	     integral type.  */
+	  || TYPE_UNSIGNED (TREE_TYPE (type)))
         {
           error ("invalid vector comparison resulting type");
           debug_generic_expr (type);
