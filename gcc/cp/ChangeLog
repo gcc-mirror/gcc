@@ -1,3 +1,13 @@
+2013-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/56725
+	* call.c (convert_like_real): Change series of two permerrors
+	to permerror + inform (and likewise for two errors).
+	(build_new_method_call_1): Likewise.
+	* typeck.c (convert_for_initialization): Change additional
+	warning or error to inform.
+
 2013-03-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (next_aggr_init_expr_arg): Remove static specifier.

@@ -7984,13 +7984,12 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
       if (fndecl)
 	savew = warningcount + werrorcount, savee = errorcount;
       rhs = initialize_reference (type, rhs, flags, complain);
-      if (fndecl)
-	{
-	  if (warningcount + werrorcount > savew)
-	    warning (0, "in passing argument %P of %q+D", parmnum, fndecl);
-	  else if (errorcount > savee)
-	    error ("in passing argument %P of %q+D", parmnum, fndecl);
-	}
+
+      if (fndecl
+	  && (warningcount + werrorcount > savew || errorcount > savee))
+	inform (input_location,
+		"in passing argument %P of %q+D", parmnum, fndecl);
+
       return rhs;
     }
 

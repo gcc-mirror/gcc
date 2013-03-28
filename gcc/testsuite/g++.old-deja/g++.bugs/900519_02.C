@@ -10,7 +10,7 @@
 extern const int cint_obj = 9;
 volatile int vint_obj = 9;
 
-void take_int_ref (int& arg) { } // { dg-error "" } referenced by errors below
+void take_int_ref (int& arg) { } // { dg-message "" } referenced by errors below
 
 int& global_int_ref0 = cint_obj;		// { dg-error "" } 
 int& global_int_ref1 = vint_obj;		// { dg-error "" } 

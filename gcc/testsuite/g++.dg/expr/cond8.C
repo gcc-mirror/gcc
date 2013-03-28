@@ -3,7 +3,7 @@
 
 struct A
 {
-  A(void*);			// { dg-error "initializing" }
+  A(void*);			// { dg-message "initializing" }
   ~A();
 };
 
