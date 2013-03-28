@@ -3026,7 +3026,7 @@ typedef struct aggr_init_expr_arg_iterator_d {
 
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from AGGR_INIT_EXPR node EXP.  */
-static inline void
+inline void
 init_aggr_init_expr_arg_iterator (tree exp,
 				       aggr_init_expr_arg_iterator *iter)
 {
@@ -3037,7 +3037,7 @@ init_aggr_init_expr_arg_iterator (tree exp,
 
 /* Return the next argument from abstract argument list iterator object ITER,
    and advance its state.  Return NULL_TREE if there are no more arguments.  */
-static inline tree
+inline tree
 next_aggr_init_expr_arg (aggr_init_expr_arg_iterator *iter)
 {
   tree result;
@@ -3052,7 +3052,7 @@ next_aggr_init_expr_arg (aggr_init_expr_arg_iterator *iter)
    past and return the first argument.  Useful in for expressions, e.g.
      for (arg = first_aggr_init_expr_arg (exp, &iter); arg;
           arg = next_aggr_init_expr_arg (&iter))   */
-static inline tree
+inline tree
 first_aggr_init_expr_arg (tree exp, aggr_init_expr_arg_iterator *iter)
 {
   init_aggr_init_expr_arg_iterator (exp, iter);
@@ -3061,7 +3061,7 @@ first_aggr_init_expr_arg (tree exp, aggr_init_expr_arg_iterator *iter)
 
 /* Test whether there are more arguments in abstract argument list iterator
    ITER, without changing its state.  */
-static inline bool
+inline bool
 more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 {
   return (iter->i < iter->n);
@@ -4905,7 +4905,7 @@ bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
 
 /* Return the type of the `this' parameter of FNTYPE.  */
 
-static inline tree
+inline tree
 type_of_this_parm (const_tree fntype)
 {
   function_args_iterator iter;
@@ -4916,7 +4916,7 @@ type_of_this_parm (const_tree fntype)
 
 /* Return the class of the `this' parameter of FNTYPE.  */
 
-static inline tree
+inline tree
 class_of_this_parm (const_tree fntype)
 {
   return TREE_TYPE (type_of_this_parm (fntype));
