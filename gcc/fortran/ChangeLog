@@ -1,3 +1,11 @@
+2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55806
+	* frontend-passes.c (optimize_code):  Keep track of
+	current code to make code insertion possible.
+	(combine_array_constructor):  New function.
+	(optimize_op):  Call it.
+
 2013-03-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56650
