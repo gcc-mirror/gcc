@@ -22618,6 +22618,44 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
   pop_unparsed_function_queues (parser);
 }
 
+/* Subroutine of cp_parser_sizeof_operand, for handling C++11
+
+     sizeof ... ( identifier )
+
+   where the 'sizeof' token has already been consumed.  */
+
+static tree
+cp_parser_sizeof_pack (cp_parser *parser)
+{
+  /* Consume the `...'.  */
+  cp_lexer_consume_token (parser->lexer);
+  maybe_warn_variadic_templates ();
+
+  bool paren = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN);
+  if (paren)
+    cp_lexer_consume_token (parser->lexer);
+  else
+    permerror (cp_lexer_peek_token (parser->lexer)->location,
+	       "%<sizeof...%> argument must be surrounded by parentheses");
+
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  tree name = cp_parser_identifier (parser);
+  tree expr = cp_parser_lookup_name_simple (parser, name, token->location);
+  if (expr == error_mark_node)
+    cp_parser_name_lookup_error (parser, name, expr, NLE_NULL,
+				 token->location);
+  if (TREE_CODE (expr) == TYPE_DECL)
+    expr = TREE_TYPE (expr);
+  else if (TREE_CODE (expr) == CONST_DECL)
+    expr = DECL_INITIAL (expr);
+  expr = make_pack_expansion (expr);
+
+  if (paren)
+    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+
+  return expr;
+}
+
 /* Parse the operand of `sizeof' (or a similar operator).  Returns
    either a TYPE or an expression, depending on the form of the
    input.  The KEYWORD indicates which kind of expression we have
@@ -22631,7 +22669,12 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   char *tmp;
   bool saved_integral_constant_expression_p;
   bool saved_non_integral_constant_expression_p;
-  bool pack_expansion_p = false;
+
+  /* If it's a `...', then we are computing the length of a parameter
+     pack.  */
+  if (keyword == RID_SIZEOF
+      && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+    return cp_parser_sizeof_pack (parser);
 
   /* Types cannot be defined in a `sizeof' expression.  Save away the
      old message.  */
@@ -22649,19 +22692,6 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   saved_non_integral_constant_expression_p
     = parser->non_integral_constant_expression_p;
   parser->integral_constant_expression_p = false;
-
-  /* If it's a `...', then we are computing the length of a parameter
-     pack.  */
-  if (keyword == RID_SIZEOF
-      && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
-    {
-      /* Consume the `...'.  */
-      cp_lexer_consume_token (parser->lexer);
-      maybe_warn_variadic_templates ();
-
-      /* Note that this is an expansion.  */
-      pack_expansion_p = true;
-    }
 
   /* Do not actually evaluate the expression.  */
   ++cp_unevaluated_operand;
@@ -22702,19 +22732,12 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
 				 /*attrlist=*/NULL);
 	}
     }
-  else if (pack_expansion_p)
-    permerror (cp_lexer_peek_token (parser->lexer)->location,
-	       "%<sizeof...%> argument must be surrounded by parentheses");
 
   /* If the type-id production did not work out, then we must be
      looking at the unary-expression production.  */
   if (!expr)
     expr = cp_parser_unary_expression (parser, /*address_p=*/false,
 				       /*cast_p=*/false, NULL);
-
-  if (pack_expansion_p)
-    /* Build a pack expansion. */
-    expr = make_pack_expansion (expr);
 
   /* Go back to evaluating expressions.  */
   --cp_unevaluated_operand;

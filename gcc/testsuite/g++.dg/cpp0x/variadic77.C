@@ -12,7 +12,7 @@ template<int... M> struct S
 {
   template<int... N> static int foo ()
   {
-    return sizeof... (pair<M, N>);	// { dg-error "mismatched argument pack lengths" }
+    return sizeof... (pair<M, N>);	// { dg-error "" }
   }
 };
 
