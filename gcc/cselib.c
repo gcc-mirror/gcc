@@ -1026,7 +1026,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
 static rtx
 wrap_constant (enum machine_mode mode, rtx x)
 {
-  if ((!CONST_SCALAR_INT_P (x)) && GET_CODE (x) != CONST_FIXED)
+  if (!CONST_SCALAR_INT_P (x) && GET_CODE (x) != CONST_FIXED)
     return x;
   gcc_assert (mode != VOIDmode);
   return gen_rtx_CONST (mode, x);

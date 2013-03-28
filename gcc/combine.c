@@ -2635,11 +2635,6 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       int offset = -1;
       int width = 0;
       
-      /* There are not explicit tests to make sure that this is not a
-	 float, but there is code here that would not be correct if it
-	 was.  */
-      gcc_assert (GET_MODE_CLASS (GET_MODE (SET_SRC (temp))) != MODE_FLOAT);
-
       if (GET_CODE (dest) == ZERO_EXTRACT)
 	{
 	  if (CONST_INT_P (XEXP (dest, 1))
