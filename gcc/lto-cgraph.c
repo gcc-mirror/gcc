@@ -1362,8 +1362,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
     {
       /* Scale up the min value as we did the corresponding sum_all
          above. Use that to find the new histogram index.  */
-      int scaled_min = RDIV (saved_profile_info->histogram[h_ix].min_value
-                             * saved_scale, REG_BR_PROB_BASE);
+      gcov_type scaled_min = RDIV (saved_profile_info->histogram[h_ix].min_value
+                                   * saved_scale, REG_BR_PROB_BASE);
       /* The new index may be shared with another scaled histogram entry,
          so we need to account for a non-zero histogram entry at new_ix.  */
       unsigned new_ix = gcov_histo_index (scaled_min);

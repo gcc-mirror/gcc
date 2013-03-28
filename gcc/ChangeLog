@@ -1,3 +1,7 @@
+2013-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (merge_profile_summaries): Fix overflows.
+
 2013-03-28  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (aarch64_can_eliminate): Keep frame
