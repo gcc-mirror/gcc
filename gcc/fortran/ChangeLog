@@ -1,3 +1,11 @@
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35203
+	* trans-decl.c (create_function_arglist): Pass hidden argument
+	for passed-by-value optional+value dummies.
+	* trans-expr.c (gfc_conv_expr_present,
+	gfc_conv_procedure_call): Handle those.
+
 2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159

@@ -5,6 +5,11 @@
 
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/35203
+	* gfortran.dg/optional_absent_3.f90: New.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/56737
 	* testsuite/gfortran.dg/fmt_cache_3.f90: New.
 

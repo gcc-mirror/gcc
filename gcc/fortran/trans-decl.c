@@ -2142,6 +2142,27 @@ create_function_arglist (gfc_symbol * sym)
 		type = gfc_sym_type (f->sym);
 	    }
 	}
+      /* For noncharacter scalar intrinsic types, VALUE passes the value,
+	 hence, the optional status cannot be transfered via a NULL pointer.
+	 Thus, we will use a hidden argument in that case.  */
+      else if (f->sym->attr.optional && f->sym->attr.value
+	       && !f->sym->attr.dimension && !f->sym->ts.type != BT_CLASS
+	       && f->sym->ts.type != BT_DERIVED)
+	{
+          tree tmp;
+          strcpy (&name[1], f->sym->name);
+          name[0] = '_';
+          tmp = build_decl (input_location,
+			    PARM_DECL, get_identifier (name),
+			    boolean_type_node);
+
+          hidden_arglist = chainon (hidden_arglist, tmp);
+          DECL_CONTEXT (tmp) = fndecl;
+          DECL_ARTIFICIAL (tmp) = 1;
+          DECL_ARG_TYPE (tmp) = boolean_type_node;
+          TREE_READONLY (tmp) = 1;
+          gfc_finish_decl (tmp);
+	}
 
       /* For non-constant length array arguments, make sure they use
 	 a different type node from TYPE_ARG_TYPES type.  */
