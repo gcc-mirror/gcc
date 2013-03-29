@@ -2285,7 +2285,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     T&      operator*(T*);  */
 
     case INDIRECT_REF:
-      if (TREE_CODE (type1) == POINTER_TYPE
+      if (TYPE_PTR_P (type1)
 	  && !uses_template_parms (TREE_TYPE (type1))
 	  && (TYPE_PTROB_P (type1)
 	      || TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE))
@@ -2301,7 +2301,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     T       operator-(T);  */
 
     case UNARY_PLUS_EXPR: /* unary + */
-      if (TREE_CODE (type1) == POINTER_TYPE)
+      if (TYPE_PTR_P (type1))
 	break;
     case NEGATE_EXPR:
       if (ARITHMETIC_TYPE_P (type1))
@@ -2325,8 +2325,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
      where CV12 is the union of CV1 and CV2.  */
 
     case MEMBER_REF:
-      if (TREE_CODE (type1) == POINTER_TYPE
-	  && TYPE_PTRMEM_P (type2))
+      if (TYPE_PTR_P (type1) && TYPE_PTRMEM_P (type2))
 	{
 	  tree c1 = TREE_TYPE (type1);
 	  tree c2 = TYPE_PTRMEM_CLASS_TYPE (type2);
@@ -2546,7 +2545,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	      || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
 	      || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2))
 	      || ((TYPE_PTRMEMFUNC_P (type1)
-		   || TREE_CODE (type1) == POINTER_TYPE)
+		   || TYPE_PTR_P (type1))
 		  && null_ptr_cst_p (args[1])))
 	    {
 	      type2 = type1;
@@ -4083,12 +4082,12 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
       tree fns = TREE_VALUE (convs);
       tree totype = TREE_TYPE (convs);
 
-      if ((TREE_CODE (totype) == POINTER_TYPE
+      if ((TYPE_PTR_P (totype)
 	   && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
 	  || (TREE_CODE (totype) == REFERENCE_TYPE
 	      && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
 	  || (TREE_CODE (totype) == REFERENCE_TYPE
-	      && TREE_CODE (TREE_TYPE (totype)) == POINTER_TYPE
+	      && TYPE_PTR_P (TREE_TYPE (totype))
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (totype))) == FUNCTION_TYPE))
 	for (; fns; fns = OVL_NEXT (fns))
 	  {
@@ -6766,7 +6765,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
 	 So we can assume that anything passed as 'this' is non-null, and
 	 optimize accordingly.  */
-      gcc_assert (TREE_CODE (parmtype) == POINTER_TYPE);
+      gcc_assert (TYPE_PTR_P (parmtype));
       /* Convert to the base in which the function was declared.  */
       gcc_assert (cand->conversion_path != NULL_TREE);
       converted_arg = build_base_path (PLUS_EXPR,
@@ -8136,8 +8135,8 @@ compare_ics (conversion *ics1, conversion *ics2)
 	   conversion of B* to A* is better than conversion of B* to
 	   void*, and conversion of A* to void* is better than
 	   conversion of B* to void*.  */
-      if (TREE_CODE (deref_to_type1) == VOID_TYPE
-	  && TREE_CODE (deref_to_type2) == VOID_TYPE)
+      if (VOID_TYPE_P (deref_to_type1)
+	  && VOID_TYPE_P (deref_to_type2))
 	{
 	  if (is_properly_derived_from (deref_from_type1,
 					deref_from_type2))
@@ -8146,12 +8145,12 @@ compare_ics (conversion *ics1, conversion *ics2)
 					     deref_from_type1))
 	    return 1;
 	}
-      else if (TREE_CODE (deref_to_type1) == VOID_TYPE
-	       || TREE_CODE (deref_to_type2) == VOID_TYPE)
+      else if (VOID_TYPE_P (deref_to_type1)
+	       || VOID_TYPE_P (deref_to_type2))
 	{
 	  if (same_type_p (deref_from_type1, deref_from_type2))
 	    {
-	      if (TREE_CODE (deref_to_type2) == VOID_TYPE)
+	      if (VOID_TYPE_P (deref_to_type2))
 		{
 		  if (is_properly_derived_from (deref_from_type1,
 						deref_to_type1))

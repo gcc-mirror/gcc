@@ -1,3 +1,73 @@
+2013-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (add_builtin_candidate): Use TYPE_PTR_P and VOID_TYPE_P.
+	(build_op_call_1): Likewise.
+	(build_over_call): Likewise.
+	(compare_ics): Likewise.
+	* class.c (build_base_path): Likewise.
+	(resolve_address_of_overloaded_function): Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_reference): Likewise.
+	(ocp_convert): Likewise.
+	(convert_force): Likewise, tidy.
+	* cxx-pretty-print.c (pp_cxx_postfix_expression): Likewise.
+	(pp_cxx_ptr_operator): Likewise.
+	* decl.c (duplicate_decls): Likewise.
+	(start_decl): Likewise.
+	(grok_op_properties): Likewise.
+	(start_preparsed_function): Likewise.
+	(store_parm_decls): Likewise.
+	(finish_function): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+	(acceptable_java_type): Likewise.
+	(grokbitfield): Likewise.
+	(cp_reconstruct_complex_type): Likewise.
+	* error.c (dump_type_prefix): Likewise.
+	(dump_expr): Likewise.
+	* except.c (push_eh_cleanup): Likewise.
+	(complete_ptr_ref_or_void_ptr_p): Likewise.
+	(can_convert_eh): Likewise.
+	* init.c (build_new_1): Likewise.
+	(build_delete): Likewise.
+	(build_vec_delete): Likewise.
+	* mangle.c (write_type): Likewise.
+	* parser.c (lookup_literal_operator): Likewise.
+	* pt.c (convert_nontype_argument_function): Likewise.
+	(convert_nontype_argument): Likewise.
+	(tsubst): Likewise.
+	(unify): Likewise.
+	(dependent_type_p_r): Likewise.
+	* rtti.c (build_headof): Likewise.
+	(build_typeid): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	(target_incomplete_p): Likewise.
+	(typeinfo_in_lib_p): Likewise.
+	* semantics.c (finish_omp_for): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	(maybe_resolve_dummy): Likewise.
+	* tree.c (build_target_expr): Likewise.
+	(cp_build_qualified_type_real): Likewise.
+	* typeck.c (composite_pointer_type_r): Likewise.
+	(composite_pointer_type): Likewise.
+	(comp_except_types): Likewise.
+	(cxx_sizeof_nowarn): Likewise.
+	(string_conv_p): Likewise.
+	(cp_build_array_ref): Likewise.
+	(cp_build_function_call_vec): Likewise, also use TYPE_PTRFN_P.
+	(pointer_diff): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	(cp_build_unary_op): Likewise.
+	(build_static_cast_1): Likewise.
+	(cp_build_c_cast): Likewise.
+	(comp_ptr_ttypes_real): Likewise.
+	(ptr_reasonably_similar): Likewise.
+	(comp_ptr_ttypes_const): Likewise.
+	(casts_away_constness): Likewise.
+	(check_literal_operator_args): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+	(add_exception_specifier): Likewise.
+
 2013-03-29  Jason Merrill  <jason@redhat.com>
 
 	N3582

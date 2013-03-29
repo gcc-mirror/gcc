@@ -4915,7 +4915,7 @@ finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 	}
 
       if (!INTEGRAL_TYPE_P (TREE_TYPE (decl))
-	  && TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE)
+	  && !TYPE_PTR_P (TREE_TYPE (decl)))
 	{
 	  error_at (elocus, "invalid type for iteration variable %qE", decl);
 	  return NULL;
@@ -6859,7 +6859,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 	    {
 	      tree ob_arg = get_nth_callarg (t, 0);
 	      STRIP_NOPS (ob_arg);
-	      gcc_assert (TREE_CODE (TREE_TYPE (ob_arg)) == POINTER_TYPE
+	      gcc_assert (TYPE_PTR_P (TREE_TYPE (ob_arg))
 			  && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (ob_arg))));
 	      result = adjust_temp_type (TREE_TYPE (TREE_TYPE (ob_arg)),
 					 result);
@@ -9623,7 +9623,7 @@ maybe_resolve_dummy (tree object)
     return object;
 
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (object));
-  gcc_assert (TREE_CODE (type) != POINTER_TYPE);
+  gcc_assert (!TYPE_PTR_P (type));
 
   if (type != current_class_type
       && current_class_type

@@ -309,7 +309,7 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
   gcc_assert (VOID_TYPE_P (TREE_TYPE (value))
 	      || TREE_TYPE (decl) == TREE_TYPE (value)
 	      /* On ARM ctors return 'this'.  */
-	      || (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
+	      || (TYPE_PTR_P (TREE_TYPE (value))
 		  && TREE_CODE (value) == CALL_EXPR)
 	      || useless_type_conversion_p (TREE_TYPE (decl),
 					    TREE_TYPE (value)));
@@ -1086,7 +1086,7 @@ cp_build_qualified_type_real (tree type,
      pointer-to-member-function type, because these will be distinct
      between the unqualified and qualified types.  */
   if (result != type
-      && TREE_CODE (type) == POINTER_TYPE
+      && TYPE_PTR_P (type)
       && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
       && TYPE_LANG_SPECIFIC (result) == TYPE_LANG_SPECIFIC (type))
     TYPE_LANG_SPECIFIC (result) = NULL;
@@ -1095,7 +1095,7 @@ cp_build_qualified_type_real (tree type,
      type of a pointer-to-method type, which could have the same
      sharing problem described above.  */
   if (TYPE_CANONICAL (result) != TYPE_CANONICAL (type)
-      && TREE_CODE (type) == POINTER_TYPE
+      && TYPE_PTR_P (type)
       && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
       && (TYPE_LANG_SPECIFIC (TYPE_CANONICAL (result)) 
           == TYPE_LANG_SPECIFIC (TYPE_CANONICAL (type))))

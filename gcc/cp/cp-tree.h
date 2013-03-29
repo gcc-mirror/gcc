@@ -3450,7 +3450,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    Keep these checks in ascending order, for speed.  */
 #define TYPE_OBJ_P(NODE)			\
   (TREE_CODE (NODE) != REFERENCE_TYPE		\
-   && TREE_CODE (NODE) != VOID_TYPE		\
+   && !VOID_TYPE_P (NODE)  		        \
    && TREE_CODE (NODE) != FUNCTION_TYPE		\
    && TREE_CODE (NODE) != METHOD_TYPE)
 
@@ -3473,7 +3473,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Returns true if NODE is a pointer to function.  */
 #define TYPE_PTRFN_P(NODE)				\
-  (TREE_CODE (NODE) == POINTER_TYPE			\
+  (TYPE_PTR_P (NODE)			                \
    && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
 
 /* Returns true if NODE is a reference to function.  */

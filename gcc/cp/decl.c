@@ -1348,7 +1348,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		  {
 		    tree t = TREE_VALUE (t1);
 
-		    if (TREE_CODE (t) == POINTER_TYPE
+		    if (TYPE_PTR_P (t)
 			&& TYPE_NAME (TREE_TYPE (t))
 			&& DECL_NAME (TYPE_NAME (TREE_TYPE (t)))
 			   == get_identifier ("FILE")
@@ -4451,7 +4451,7 @@ start_decl (const cp_declarator *declarator,
 
   deprecated_state = DEPRECATED_NORMAL;
 
-  if (decl == NULL_TREE || TREE_CODE (decl) == VOID_TYPE
+  if (decl == NULL_TREE || VOID_TYPE_P (decl)
       || decl == error_mark_node)
     return error_mark_node;
 
@@ -11487,7 +11487,7 @@ grok_op_properties (tree decl, bool complain)
 	  if (ref)
 	    t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 
-	  if (TREE_CODE (t) == VOID_TYPE)
+	  if (VOID_TYPE_P (t))
             warning (OPT_Wconversion,
                      ref
                      ? G_("conversion to a reference to void "
@@ -12951,7 +12951,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   bool honor_interface;
 
   /* Sanity check.  */
-  gcc_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE);
+  gcc_assert (VOID_TYPE_P (TREE_VALUE (void_list_node)));
   gcc_assert (TREE_CHAIN (void_list_node) == NULL_TREE);
 
   fntype = TREE_TYPE (decl1);
@@ -13016,7 +13016,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* Effective C++ rule 15.  */
   if (warn_ecpp
       && DECL_OVERLOADED_OPERATOR_P (decl1) == NOP_EXPR
-      && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
+      && VOID_TYPE_P (TREE_TYPE (fntype)))
     warning (OPT_Weffc__, "%<operator=%> should return a reference to %<*this%>");
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
@@ -13187,7 +13187,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       tree t = DECL_ARGUMENTS (decl1);
 
       gcc_assert (t != NULL_TREE && TREE_CODE (t) == PARM_DECL);
-      gcc_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE);
+      gcc_assert (TYPE_PTR_P (TREE_TYPE (t)));
 
       cp_function_chain->x_current_class_ref
 	= cp_build_indirect_ref (t, RO_NULL, tf_warning_or_error);
@@ -13415,7 +13415,7 @@ store_parm_decls (tree current_function_parms)
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
 	      if (DECL_NAME (parm) == NULL_TREE
-		  || TREE_CODE (parm) != VOID_TYPE)
+		  || !VOID_TYPE_P (parm))
 		pushdecl (parm);
 	      else
 		error ("parameter %qD declared void", parm);
@@ -13838,7 +13838,7 @@ finish_function (int flags)
 
   /* Complain if there's just no return statement.  */
   if (warn_return_type
-      && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE
+      && !VOID_TYPE_P (TREE_TYPE (fntype))
       && !dependent_type_p (TREE_TYPE (fntype))
       && !current_function_returns_value && !current_function_returns_null
       /* Don't complain if we abort or throw.  */

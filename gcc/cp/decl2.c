@@ -460,7 +460,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
     }
 
   /* Deleting ptr to void is undefined behavior [expr.delete/3].  */
-  if (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE)
+  if (VOID_TYPE_P (TREE_TYPE (type)))
     {
       warning (0, "deleting %qT is undefined", type);
       doing_vec = 0;
@@ -518,9 +518,9 @@ acceptable_java_type (tree type)
   if (type == error_mark_node)
     return false;
 
-  if (TREE_CODE (type) == VOID_TYPE || TYPE_FOR_JAVA (type))
+  if (VOID_TYPE_P (type) || TYPE_FOR_JAVA (type))
     return true;
-  if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_PTR_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
     {
       type = TREE_TYPE (type);
       if (TREE_CODE (type) == RECORD_TYPE)
@@ -535,7 +535,7 @@ acceptable_java_type (tree type)
 	  while (--i >= 0)
 	    {
 	      type = TREE_VEC_ELT (args, i);
-	      if (TREE_CODE (type) == POINTER_TYPE)
+	      if (TYPE_PTR_P (type))
 		type = TREE_TYPE (type);
 	      if (! TYPE_FOR_JAVA (type))
 		return false;
@@ -1024,7 +1024,7 @@ grokbitfield (const cp_declarator *declarator,
     return NULL_TREE; /* friends went bad.  */
 
   /* Pass friendly classes back.  */
-  if (TREE_CODE (value) == VOID_TYPE)
+  if (VOID_TYPE_P (value))
     return void_type_node;
 
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value))
@@ -1234,7 +1234,7 @@ cp_reconstruct_complex_type (tree type, tree bottom)
 {
   tree inner, outer;
 
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TYPE_PTR_P (type))
     {
       inner = cp_reconstruct_complex_type (TREE_TYPE (type), bottom);
       outer = build_pointer_type_for_mode (inner, TYPE_MODE (type),

@@ -3615,7 +3615,7 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 	    {
 	      tree tparm = TREE_VALUE (parmtypes);
 	      tree targ = TREE_TYPE ((*args)[ix]);
-	      bool ptr = TREE_CODE (tparm) == POINTER_TYPE;
+	      bool ptr = TYPE_PTR_P (tparm);
 	      bool arr = TREE_CODE (targ) == ARRAY_TYPE;
 	      if ((ptr || arr || !same_type_p (tparm, targ))
 		  && (!ptr || !arr

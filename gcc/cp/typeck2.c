@@ -1585,7 +1585,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
   else
     last_rval = decay_conversion (expr, complain);
 
-  if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
+  if (TYPE_PTR_P (TREE_TYPE (last_rval)))
     {
       if (processing_template_decl)
 	{
@@ -1851,7 +1851,7 @@ add_exception_specifier (tree list, tree spec, int complain)
   /* [except.spec] 1, type in an exception specifier shall not be
      incomplete, or pointer or ref to incomplete other than pointer
      to cv void.  */
-  is_ptr = TREE_CODE (core) == POINTER_TYPE;
+  is_ptr = TYPE_PTR_P (core);
   if (is_ptr || TREE_CODE (core) == REFERENCE_TYPE)
     core = TREE_TYPE (core);
   if (complain < 0)

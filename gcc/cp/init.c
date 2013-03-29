@@ -2294,7 +2294,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	return error_mark_node;
     }
 
-  if (TREE_CODE (elt_type) == VOID_TYPE)
+  if (VOID_TYPE_P (elt_type))
     {
       if (complain & tf_error)
         error ("invalid type %<void%> for new");
@@ -2399,7 +2399,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      this now, since PLACEMENT will change in the calls below.  */
   placement_first = NULL_TREE;
   if (vec_safe_length (*placement) == 1
-      && (TREE_CODE (TREE_TYPE ((**placement)[0])) == POINTER_TYPE))
+      && (TYPE_PTR_P (TREE_TYPE ((**placement)[0]))))
     placement_first = (**placement)[0];
 
   /* Allocate the object.  */
@@ -2523,7 +2523,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       && TREE_CODE (alloc_call) == CALL_EXPR
       && call_expr_nargs (alloc_call) == 2
       && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 0))) == INTEGER_TYPE
-      && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 1))) == POINTER_TYPE)
+      && TYPE_PTR_P (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 1))))
     {
       tree placement_arg = CALL_EXPR_ARG (alloc_call, 1);
 
@@ -3742,7 +3742,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 
   addr = mark_rvalue_use (addr);
 
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TYPE_PTR_P (type))
     {
       bool complete_p = true;
 
@@ -4045,7 +4045,7 @@ build_vec_delete (tree base, tree maxindex,
 
   type = TREE_TYPE (base);
 
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TYPE_PTR_P (type))
     {
       /* Step back one from start of vector, and read dimension.  */
       tree cookie_addr;
