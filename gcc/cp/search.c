@@ -983,7 +983,7 @@ struct lookup_field_info {
 int
 shared_member_p (tree t)
 {
-  if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == TYPE_DECL \
+  if (VAR_P (t) || TREE_CODE (t) == TYPE_DECL \
       || TREE_CODE (t) == CONST_DECL)
     return 1;
   if (is_overloaded_fn (t))

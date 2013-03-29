@@ -7162,7 +7162,7 @@ build_java_interface_fn_ref (tree fn, tree instance)
   /* Get the java.lang.Class pointer for the interface being called.  */
   iface = DECL_CONTEXT (fn);
   iface_ref = lookup_field (iface, get_identifier ("class$"), 0, false);
-  if (!iface_ref || TREE_CODE (iface_ref) != VAR_DECL
+  if (!iface_ref || !VAR_P (iface_ref)
       || DECL_CONTEXT (iface_ref) != iface)
     {
       error ("could not find class$ field in java interface type %qT",
@@ -9009,7 +9009,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
   var = create_temporary_var (type);
 
   /* Register the variable.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && (TREE_STATIC (decl) || DECL_THREAD_LOCAL_P (decl)))
     {
       /* Namespace-scope or local static; give it a mangled name.  */

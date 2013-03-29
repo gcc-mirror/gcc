@@ -622,7 +622,7 @@ poplevel (int keep, int reverse, int functionbody)
 	   push_local_binding where the list of decls returned by
 	   getdecls is built.  */
 	decl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
-	if (TREE_CODE (decl) == VAR_DECL
+	if (VAR_P (decl)
 	    && (! TREE_USED (decl) || !DECL_READ_P (decl))
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
 	    && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
@@ -646,7 +646,7 @@ poplevel (int keep, int reverse, int functionbody)
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
     {
-      if (leaving_for_scope && TREE_CODE (link) == VAR_DECL
+      if (leaving_for_scope && VAR_P (link)
 	  /* It's hard to make this ARM compatibility hack play nicely with
 	     lambdas, and it really isn't necessary in C++11 mode.  */
 	  && cxx_dialect < cxx0x
@@ -1084,7 +1084,7 @@ decls_match (tree newdecl, tree olddecl)
     {
       /* Need to check scope for variable declaration (VAR_DECL).
 	 For typedef (TYPE_DECL), scope is ignored.  */
-      if (TREE_CODE (newdecl) == VAR_DECL
+      if (VAR_P (newdecl)
 	  && CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl)
 	  /* [dcl.link]
 	     Two declarations for an object with C language linkage
@@ -1866,7 +1866,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  && newtype == DECL_ORIGINAL_TYPE (newdecl))
 	newtype = oldtype;
 
-      if (TREE_CODE (newdecl) == VAR_DECL)
+      if (VAR_P (newdecl))
 	{
 	  DECL_THIS_EXTERN (newdecl) |= DECL_THIS_EXTERN (olddecl);
 	  DECL_INITIALIZED_P (newdecl) |= DECL_INITIALIZED_P (olddecl);
@@ -1903,7 +1903,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  && !(processing_template_decl && uses_template_parms (newdecl)))
 	layout_type (TREE_TYPE (newdecl));
 
-      if ((TREE_CODE (newdecl) == VAR_DECL
+      if ((VAR_P (newdecl)
 	   || TREE_CODE (newdecl) == PARM_DECL
 	   || TREE_CODE (newdecl) == RESULT_DECL
 	   || TREE_CODE (newdecl) == FIELD_DECL
@@ -1973,7 +1973,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  /* Keep the old RTL.  */
 	  COPY_DECL_RTL (olddecl, newdecl);
 	}
-      else if (TREE_CODE (newdecl) == VAR_DECL
+      else if (VAR_P (newdecl)
 	       && (DECL_SIZE (olddecl) || !DECL_SIZE (newdecl)))
 	{
 	  /* Keep the old RTL.  We cannot keep the old RTL if the old
@@ -2080,7 +2080,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    SET_DECL_THUNKS (newdecl, DECL_THUNKS (olddecl));
 	}
       /* Only variables have this field.  */
-      else if (TREE_CODE (newdecl) == VAR_DECL
+      else if (VAR_P (newdecl)
 	       && VAR_HAD_UNKNOWN_BOUND (olddecl))
 	SET_VAR_HAD_UNKNOWN_BOUND (newdecl);
     }
@@ -2256,7 +2256,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     }
   /* Init priority used to be merged from newdecl to olddecl by the memcpy,
      so keep this behavior.  */
-  if (TREE_CODE (newdecl) == VAR_DECL && DECL_HAS_INIT_PRIORITY_P (newdecl))
+  if (VAR_P (newdecl) && DECL_HAS_INIT_PRIORITY_P (newdecl))
     {
       SET_DECL_INIT_PRIORITY (olddecl, DECL_INIT_PRIORITY (newdecl));
       DECL_HAS_INIT_PRIORITY_P (olddecl) = 1;
@@ -2285,7 +2285,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     TREE_USED (newdecl) = 1;
   else if (TREE_USED (newdecl))
     TREE_USED (olddecl) = 1;
-  if (TREE_CODE (newdecl) == VAR_DECL)
+  if (VAR_P (newdecl))
     {
       if (DECL_READ_P (olddecl))
 	DECL_READ_P (newdecl) = 1;
@@ -2396,7 +2396,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     flags and attributes.  */
   if (DECL_RTL_SET_P (olddecl)
       && (TREE_CODE (olddecl) == FUNCTION_DECL
-	  || (TREE_CODE (olddecl) == VAR_DECL
+	  || (VAR_P (olddecl)
 	      && TREE_STATIC (olddecl))))
     make_decl_rtl (olddecl);
 
@@ -2539,7 +2539,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 
       return NULL;
     }
-  else if (TREE_CODE (newdecl) == VAR_DECL
+  else if (VAR_P (newdecl)
 	   && DECL_THREAD_LOCAL_P (newdecl) != DECL_THREAD_LOCAL_P (olddecl)
 	   && (! DECL_LANG_SPECIFIC (olddecl)
 	       || ! CP_DECL_THREADPRIVATE_P (olddecl)
@@ -2564,8 +2564,8 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	   union { int i; };
 
 	   is invalid.  */
-      if ((TREE_CODE (newdecl) == VAR_DECL && DECL_ANON_UNION_VAR_P (newdecl))
-	  || (TREE_CODE (olddecl) == VAR_DECL && DECL_ANON_UNION_VAR_P (olddecl)))
+      if ((VAR_P (newdecl) && DECL_ANON_UNION_VAR_P (newdecl))
+	  || (VAR_P (olddecl) && DECL_ANON_UNION_VAR_P (olddecl)))
 	return G_("redeclaration of %q#D");
       /* If at least one declaration is a reference, there is no
 	 conflict.  For example:
@@ -2717,7 +2717,7 @@ decl_jump_unsafe (tree decl)
      preceding types and is declared without an initializer (8.5).  */
   tree type = TREE_TYPE (decl);
 
-  if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl)
+  if (!VAR_P (decl) || TREE_STATIC (decl)
       || type == error_mark_node)
     return 0;
 
@@ -4529,10 +4529,10 @@ start_decl (const cp_declarator *declarator,
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
-      if (TREE_CODE (decl) == VAR_DECL)
+      if (VAR_P (decl))
 	{
 	  tree field = lookup_field (context, DECL_NAME (decl), 0, false);
-	  if (field == NULL_TREE || TREE_CODE (field) != VAR_DECL)
+	  if (field == NULL_TREE || !VAR_P (field))
 	    error ("%q#D is not a static member of %q#T", decl, context);
 	  else
 	    {
@@ -4609,7 +4609,7 @@ start_decl (const cp_declarator *declarator,
   if (decl == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && DECL_NAMESPACE_SCOPE_P (decl) && !TREE_PUBLIC (decl) && !was_public
       && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl))
     {
@@ -4620,7 +4620,7 @@ start_decl (const cp_declarator *declarator,
       DECL_THIS_STATIC (decl) = 1;
     }
 
-  if (!processing_template_decl && TREE_CODE (decl) == VAR_DECL)
+  if (!processing_template_decl && VAR_P (decl))
     start_decl_1 (decl, initialized);
 
   return decl;
@@ -4645,7 +4645,7 @@ start_decl_1 (tree decl, bool initialized)
   if (error_operand_p (decl))
     return;
 
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
 
   type = TREE_TYPE (decl);
   complete_p = COMPLETE_TYPE_P (type);
@@ -4991,7 +4991,7 @@ check_for_uninitialized_const_var (tree decl)
   /* ``Unless explicitly declared extern, a const object does not have
      external linkage and must be initialized. ($8.4; $12.1)'' ARM
      7.1.6 */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && TREE_CODE (type) != REFERENCE_TYPE
       && CP_TYPE_CONST_P (type)
       && !DECL_INITIAL (decl))
@@ -5778,7 +5778,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       /* The `register' keyword, when used together with an
 	 asm-specification, indicates that the variable should be
 	 placed in a particular register.  */
-      if (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
+      if (VAR_P (decl) && DECL_REGISTER (decl))
 	{
 	  set_user_assembler_name (decl, asmspec);
 	  DECL_HARD_REGISTER (decl) = 1;
@@ -5793,7 +5793,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
     }
 
   /* Handle non-variables up front.  */
-  if (TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_P (decl))
     {
       rest_of_decl_compilation (decl, toplev, at_eof);
       return;
@@ -5911,7 +5911,7 @@ initialize_local_var (tree decl, tree init)
   tree cleanup;
   int already_used;
 
-  gcc_assert (TREE_CODE (decl) == VAR_DECL
+  gcc_assert (VAR_P (decl)
 	      || TREE_CODE (decl) == RESULT_DECL);
   gcc_assert (!TREE_STATIC (decl));
 
@@ -6147,7 +6147,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (!ensure_literal_type_for_constexpr_object (decl))
     DECL_DECLARED_CONSTEXPR_P (decl) = 0;
 
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && DECL_CLASS_SCOPE_P (decl)
       && DECL_INITIALIZED_IN_CLASS_P (decl))
     check_static_variable_definition (decl, type);
@@ -6178,7 +6178,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
     }
 
-  if (init && TREE_CODE (decl) == VAR_DECL)
+  if (init && VAR_P (decl))
     {
       DECL_NONTRIVIALLY_INITIALIZED_P (decl) = 1;
       /* If DECL is a reference, then we want to know whether init is a
@@ -6217,7 +6217,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 then it can be used in future constant expressions, so its value
 	 must be available. */
 
-      if (TREE_CODE (decl) != VAR_DECL || dependent_type_p (type))
+      if (!VAR_P (decl) || dependent_type_p (type))
 	/* We can't do anything if the decl has dependent type.  */;
       else if (init
 	       && init_const_expr_p
@@ -6288,7 +6288,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       TREE_READONLY (decl) = 0;
     }
 
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
@@ -6409,7 +6409,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
      static data members in uninstantiated class templates.  */
   if (VAR_OR_FUNCTION_DECL_P (decl))
     {
-      if (TREE_CODE (decl) == VAR_DECL)
+      if (VAR_P (decl))
 	{
 	  layout_var_decl (decl);
 	  maybe_commonize_var (decl);
@@ -6875,7 +6875,7 @@ register_dtor_fn (tree decl)
 static void
 expand_static_init (tree decl, tree init)
 {
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
   gcc_assert (TREE_STATIC (decl));
 
   /* Some variables require no dynamic initialization.  */
@@ -10749,7 +10749,7 @@ grokdeclarator (const cp_declarator *declarator,
       DECL_THIS_STATIC (decl) = 1;
 
     /* Set constexpr flag on vars (functions got it in grokfndecl).  */
-    if (constexpr_p && TREE_CODE (decl) == VAR_DECL)
+    if (constexpr_p && VAR_P (decl))
       DECL_DECLARED_CONSTEXPR_P (decl) = true;
 
     /* Record constancy and volatility on the DECL itself .  There's
@@ -10791,7 +10791,7 @@ require_complete_types_for_parms (tree parms)
 int
 local_variable_p (const_tree t)
 {
-  if ((TREE_CODE (t) == VAR_DECL
+  if ((VAR_P (t)
        /* A VAR_DECL with a context that is a _TYPE is a static data
 	  member.  */
        && !TYPE_P (CP_DECL_CONTEXT (t))
@@ -14036,7 +14036,7 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 void
 maybe_register_incomplete_var (tree var)
 {
-  gcc_assert (TREE_CODE (var) == VAR_DECL);
+  gcc_assert (VAR_P (var));
 
   /* Keep track of variables with incomplete types.  */
   if (!processing_template_decl && TREE_TYPE (var) != error_mark_node
@@ -14295,7 +14295,7 @@ cxx_comdat_group (tree decl)
   /* Virtual tables, construction virtual tables, and virtual table
      tables all go in a single COMDAT group, named after the primary
      virtual table.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl))
+  if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
     name = DECL_ASSEMBLER_NAME (CLASSTYPE_VTABLES (DECL_CONTEXT (decl)));
   /* For all other DECLs, the COMDAT group is the mangled name of the
      declaration itself.  */

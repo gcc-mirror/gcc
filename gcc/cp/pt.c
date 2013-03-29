@@ -5646,7 +5646,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       else if (TREE_CODE (expr) != ADDR_EXPR
 	       && TREE_CODE (expr_type) != ARRAY_TYPE)
 	{
-	  if (TREE_CODE (expr) == VAR_DECL)
+	  if (VAR_P (expr))
 	    {
 	      error ("%qD is not a valid template argument "
 		     "because %qD is a variable, not the address of "
@@ -5671,7 +5671,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
 	  decl = ((TREE_CODE (expr) == ADDR_EXPR)
 		  ? TREE_OPERAND (expr, 0) : expr);
-	  if (TREE_CODE (decl) != VAR_DECL)
+	  if (!VAR_P (decl))
 	    {
 	      error ("%qE is not a valid template argument of type %qT "
 		     "because %qE is not a variable",
@@ -8837,7 +8837,7 @@ instantiate_class_template_1 (tree type)
 		  r = tsubst (t, args, tf_warning_or_error, NULL_TREE);
 		  if (TREE_CODE (t) == TEMPLATE_DECL)
 		    --processing_template_decl;
-		  if (TREE_CODE (r) == VAR_DECL)
+		  if (VAR_P (r))
 		    {
 		      /* In [temp.inst]:
 
@@ -10639,7 +10639,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    break;
 	  }
 
-	if (TREE_CODE (t) == VAR_DECL && DECL_ANON_UNION_VAR_P (t))
+	if (VAR_P (t) && DECL_ANON_UNION_VAR_P (t))
 	  {
 	    /* Just use name lookup to find a member alias for an anonymous
 	       union, but then add it to the hash table.  */
@@ -10657,13 +10657,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      type = DECL_ORIGINAL_TYPE (t);
 	    else
 	      type = TREE_TYPE (t);
-	    if (TREE_CODE (t) == VAR_DECL
+	    if (VAR_P (t)
 		&& VAR_HAD_UNKNOWN_BOUND (t)
 		&& type != error_mark_node)
 	      type = strip_array_domain (type);
 	    type = tsubst (type, args, complain, in_decl);
 	  }
-	if (TREE_CODE (r) == VAR_DECL)
+	if (VAR_P (r))
 	  {
 	    /* Even if the original location is out of scope, the
 	       newly substituted one is not.  */
@@ -10727,7 +10727,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
 	  SET_DECL_RTL (r, NULL);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
-	if (TREE_CODE (r) == VAR_DECL)
+	if (VAR_P (r))
 	  {
 	    /* Possibly limit visibility based on template args.  */
 	    DECL_VISIBILITY (r) = VISIBILITY_DEFAULT;
@@ -12897,9 +12897,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		   handle local variables, and since we've already done
 		   all that needs to be done, that's the right thing to
 		   do.  */
-		if (TREE_CODE (decl) == VAR_DECL)
+		if (VAR_P (decl))
 		  DECL_TEMPLATE_INSTANTIATED (decl) = 1;
-		if (TREE_CODE (decl) == VAR_DECL
+		if (VAR_P (decl)
 		    && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
 		  /* Anonymous aggregates are a special case.  */
 		  finish_anon_union (decl);
@@ -12920,7 +12920,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		  {
 		    int const_init = false;
 		    maybe_push_decl (decl);
-		    if (TREE_CODE (decl) == VAR_DECL
+		    if (VAR_P (decl)
 			&& DECL_PRETTY_FUNCTION_P (decl))
 		      {
 			/* For __PRETTY_FUNCTION__ we have to adjust the
@@ -12951,7 +12951,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			  init = t;
 		      }
 
-		    if (TREE_CODE (decl) == VAR_DECL)
+		    if (VAR_P (decl))
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
 				    (pattern_decl));
 		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
@@ -18008,7 +18008,7 @@ do_decl_instantiation (tree decl, tree storage)
       error ("explicit instantiation of non-template %q#D", decl);
       return;
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       /* There is an asymmetry here in the way VAR_DECLs and
 	 FUNCTION_DECLs are handled by grokdeclarator.  In the case of
@@ -18024,7 +18024,7 @@ do_decl_instantiation (tree decl, tree storage)
 	  return;
 	}
       result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, false);
-      if (!result || TREE_CODE (result) != VAR_DECL)
+      if (!result || !VAR_P (result))
 	{
 	  error ("no matching template for %qD found", decl);
 	  return;
@@ -18286,7 +18286,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	  instantiate_class_member (tmp, extern_p);
 
     for (tmp = TYPE_FIELDS (t); tmp; tmp = DECL_CHAIN (tmp))
-      if (TREE_CODE (tmp) == VAR_DECL && DECL_TEMPLATE_INSTANTIATION (tmp))
+      if (VAR_P (tmp) && DECL_TEMPLATE_INSTANTIATION (tmp))
 	instantiate_class_member (tmp, extern_p);
 
     if (CLASSTYPE_NESTED_UTDS (t))
@@ -18415,7 +18415,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
 	  && !DECL_DECLARED_INLINE_P (decl))
 	DECL_DECLARED_INLINE_P (decl) = 1;
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       DECL_INITIAL (decl) =
 	tsubst_expr (DECL_INITIAL (code_pattern), args,
@@ -18479,7 +18479,7 @@ template_for_substitution (tree decl)
 	 cannot restructure the loop to just keep going until we find
 	 a template with a definition, since that might go too far if
 	 a specialization was declared, but not defined.  */
-      gcc_assert (TREE_CODE (decl) != VAR_DECL
+      gcc_assert (!VAR_P (decl)
 		  || DECL_IN_AGGR_P (DECL_TEMPLATE_RESULT (tmpl)));
 
       /* Fetch the more general template.  */
@@ -18507,7 +18507,7 @@ always_instantiate_p (tree decl)
 	  /* And we need to instantiate static data members so that
 	     their initializers are available in integral constant
 	     expressions.  */
-	  || (TREE_CODE (decl) == VAR_DECL
+	  || (VAR_P (decl)
 	      && decl_maybe_constant_var_p (decl)));
 }
 
@@ -18611,7 +18611,7 @@ instantiate_decl (tree d, int defer_ok,
      case that an expression refers to the value of the variable --
      if the variable has a constant value the referring expression can
      take advantage of that fact.  */
-  if (TREE_CODE (d) == VAR_DECL
+  if (VAR_P (d)
       || DECL_DECLARED_CONSTEXPR_P (d))
     defer_ok = 0;
 
@@ -18730,11 +18730,11 @@ instantiate_decl (tree d, int defer_ok,
 	 elsewhere, we don't want to instantiate the entire data
 	 member, but we do want to instantiate the initializer so that
 	 we can substitute that elsewhere.  */
-      || (external_p && TREE_CODE (d) == VAR_DECL))
+      || (external_p && VAR_P (d)))
     {
       /* The definition of the static data member is now required so
 	 we must substitute the initializer.  */
-      if (TREE_CODE (d) == VAR_DECL
+      if (VAR_P (d)
 	  && !DECL_INITIAL (d)
 	  && DECL_INITIAL (code_pattern))
 	{
@@ -18784,7 +18784,7 @@ instantiate_decl (tree d, int defer_ok,
 	goto out;
       /* ??? Historically, we have instantiated inline functions, even
 	 when marked as "extern template".  */
-      if (!(external_p && TREE_CODE (d) == VAR_DECL))
+      if (!(external_p && VAR_P (d)))
 	add_pending_template (d);
       goto out;
     }
@@ -18824,7 +18824,7 @@ instantiate_decl (tree d, int defer_ok,
      they changed as a result of calling regenerate_decl_from_template.  */
   input_location = DECL_SOURCE_LOCATION (d);
 
-  if (TREE_CODE (d) == VAR_DECL)
+  if (VAR_P (d))
     {
       tree init;
       bool const_init = false;
@@ -19873,7 +19873,7 @@ type_dependent_expression_p (tree expression)
   /* A static data member of the current instantiation with incomplete
      array type is type-dependent, as the definition and specializations
      can have different bounds.  */
-  if (TREE_CODE (expression) == VAR_DECL
+  if (VAR_P (expression)
       && DECL_CLASS_SCOPE_P (expression)
       && dependent_type_p (DECL_CONTEXT (expression))
       && VAR_HAD_UNKNOWN_BOUND (expression))
@@ -20467,7 +20467,7 @@ build_non_dependent_expr (tree expr)
       || TREE_CODE (inner_expr) == OFFSET_REF)
     return expr;
   /* There is no need to return a proxy for a variable.  */
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     return expr;
   /* Preserve string constants; conversions from string constants to
      "char *" are allowed, even though normally a "const char *"

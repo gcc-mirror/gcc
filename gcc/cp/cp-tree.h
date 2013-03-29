@@ -1918,9 +1918,8 @@ struct GTY(()) lang_decl_base {
 
 /* True for DECL codes which have template info and access.  */
 #define LANG_DECL_HAS_MIN(NODE)			\
-  (TREE_CODE (NODE) == FUNCTION_DECL		\
+  (VAR_OR_FUNCTION_DECL_P (NODE)		\
    || TREE_CODE (NODE) == FIELD_DECL		\
-   || TREE_CODE (NODE) == VAR_DECL		\
    || TREE_CODE (NODE) == CONST_DECL		\
    || TREE_CODE (NODE) == TYPE_DECL		\
    || TREE_CODE (NODE) == TEMPLATE_DECL		\
@@ -2200,8 +2199,7 @@ struct GTY((variable_size)) lang_decl {
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
 #define DECL_DISCRIMINATOR_P(NODE)	\
-  (TREE_CODE (NODE) == VAR_DECL		\
-   && DECL_FUNCTION_SCOPE_P (NODE))
+  (VAR_P (NODE) && DECL_FUNCTION_SCOPE_P (NODE))
 
 /* Discriminator for name mangling.  */
 #define DECL_DISCRIMINATOR(NODE) (LANG_DECL_U2_CHECK (NODE, 1)->discriminator)

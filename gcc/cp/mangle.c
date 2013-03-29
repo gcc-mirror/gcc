@@ -663,7 +663,7 @@ write_mangled_name (const tree decl, bool top_level)
 	  write_source_name (DECL_NAME (decl));
 	}
     }
-  else if (TREE_CODE (decl) == VAR_DECL
+  else if (VAR_P (decl)
 	   /* The names of non-static global variables aren't mangled.  */
 	   && DECL_EXTERNAL_LINKAGE_P (decl)
 	   && (CP_DECL_CONTEXT (decl) == global_namespace
@@ -1042,7 +1042,7 @@ write_prefix (const tree node)
     {
       write_prefix (decl_mangling_context (decl));
       write_unqualified_name (decl);
-      if (TREE_CODE (decl) == VAR_DECL
+      if (VAR_P (decl)
 	  || TREE_CODE (decl) == FIELD_DECL)
 	{
 	  /* <data-member-prefix> := <member source-name> M */

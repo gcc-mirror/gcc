@@ -635,7 +635,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  /* if b is an object, dynamic_cast<void *>(&b) == (void *)&b.  */
 	  if (TREE_CODE (expr) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (expr, 0)) == VAR_DECL
+	      && VAR_P (TREE_OPERAND (expr, 0))
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == RECORD_TYPE)
 	    return build1 (NOP_EXPR, type, expr);
 
@@ -658,7 +658,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
 	  if (tc == REFERENCE_TYPE)
 	    {
-	      if (TREE_CODE (old_expr) == VAR_DECL
+	      if (VAR_P (old_expr)
 		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
 		{
 		  tree expr = throw_bad_cast ();
@@ -674,7 +674,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  else if (TREE_CODE (expr) == ADDR_EXPR)
 	    {
 	      tree op = TREE_OPERAND (expr, 0);
-	      if (TREE_CODE (op) == VAR_DECL
+	      if (VAR_P (op)
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
                   if (complain & tf_warning)

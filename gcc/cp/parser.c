@@ -8479,7 +8479,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	      continue;
 	    }
 	  else if (DECL_P (capture_init_expr)
-		   && (TREE_CODE (capture_init_expr) != VAR_DECL
+		   && (!VAR_P (capture_init_expr)
 		       && TREE_CODE (capture_init_expr) != PARM_DECL))
 	    {
 	      error_at (capture_token->location,
@@ -8488,7 +8488,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	      inform (0, "%q+#D declared here", capture_init_expr);
 	      continue;
 	    }
-	  if (TREE_CODE (capture_init_expr) == VAR_DECL
+	  if (VAR_P (capture_init_expr)
 	      && decl_storage_duration (capture_init_expr) != dk_auto)
 	    {
 	      pedwarn (capture_token->location, 0, "capture of variable "
@@ -13332,7 +13332,7 @@ cp_parser_template_argument (cp_parser* parser)
 	  probe = argument;
 	  if (TREE_CODE (probe) == SCOPE_REF)
 	    probe = TREE_OPERAND (probe, 1);
-	  if (TREE_CODE (probe) == VAR_DECL)
+	  if (VAR_P (probe))
 	    {
 	      /* A variable without external linkage might still be a
 		 valid constant-expression, so no error is issued here
@@ -22146,7 +22146,7 @@ cp_parser_single_declaration (cp_parser* parser,
         decl = error_mark_node;
       }
 
-    if (decl && TREE_CODE (decl) == VAR_DECL)
+    if (decl && VAR_P (decl))
       check_template_variable (decl);
     }
 

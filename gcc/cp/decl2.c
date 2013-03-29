@@ -931,7 +931,7 @@ grokfield (const cp_declarator *declarator,
 	}
       else if (TREE_CODE (value) == FIELD_DECL)
 	/* C++11 NSDMI, keep going.  */;
-      else if (TREE_CODE (value) != VAR_DECL)
+      else if (!VAR_P (value))
 	gcc_unreachable ();
       else if (!processing_template_decl)
 	{
@@ -1603,7 +1603,7 @@ comdat_linkage (tree decl)
   if (flag_weak)
     make_decl_one_only (decl, cxx_comdat_group (decl));
   else if (TREE_CODE (decl) == FUNCTION_DECL
-	   || (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl)))
+	   || (VAR_P (decl) && DECL_ARTIFICIAL (decl)))
     /* We can just emit function and compiler-generated variables
        statically; having multiple copies is (for the most part) only
        a waste of space.
@@ -1674,7 +1674,7 @@ maybe_make_one_only (tree decl)
     {
       make_decl_one_only (decl, cxx_comdat_group (decl));
 
-      if (TREE_CODE (decl) == VAR_DECL)
+      if (VAR_P (decl))
 	{
 	  DECL_COMDAT (decl) = 1;
 	  /* Mark it needed so we don't forget to emit it.  */
@@ -2075,7 +2075,7 @@ determine_visibility (tree decl)
 
       /* Virtual tables have DECL_CONTEXT set to their associated class,
 	 so they are automatically handled above.  */
-      gcc_assert (TREE_CODE (decl) != VAR_DECL
+      gcc_assert (!VAR_P (decl)
 		  || !DECL_VTABLE_OR_VTT_P (decl));
 
       if (DECL_FUNCTION_SCOPE_P (decl) && ! DECL_VISIBILITY_SPECIFIED (decl))
@@ -2112,7 +2112,7 @@ determine_visibility (tree decl)
 	     but have no TEMPLATE_INFO, so don't try to check it.  */
 	  use_template = 0;
 	}
-      else if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl)
+      else if (VAR_P (decl) && DECL_TINFO_P (decl)
 	       && flag_visibility_ms_compat)
 	{
 	  /* Under -fvisibility-ms-compat, types are visible by default,
@@ -2126,7 +2126,7 @@ determine_visibility (tree decl)
 	  else
 	    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
 	}
-      else if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl))
+      else if (VAR_P (decl) && DECL_TINFO_P (decl))
 	{
 	  /* tinfo visibility is based on the type it's for.  */
 	  constrain_visibility
@@ -2244,7 +2244,7 @@ determine_visibility (tree decl)
      symbol flags are updated.  */
   if ((DECL_VISIBILITY (decl) != orig_visibility
        || DECL_VISIBILITY_SPECIFIED (decl) != orig_visibility_specified)
-      && ((TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+      && ((VAR_P (decl) && TREE_STATIC (decl))
 	  || TREE_CODE (decl) == FUNCTION_DECL)
       && DECL_RTL_SET_P (decl))
     make_decl_rtl (decl);
@@ -2271,7 +2271,7 @@ determine_visibility_from_class (tree decl, tree class_type)
 
   /* Give the target a chance to override the visibility associated
      with DECL.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && (DECL_TINFO_P (decl)
 	  || (DECL_VTABLE_OR_VTT_P (decl)
 	      /* Construction virtual tables are not exported because
@@ -2447,7 +2447,7 @@ import_export_decl (tree decl)
     {
       /* The repository indicates that this entity should be defined
 	 here.  Make sure the back end honors that request.  */
-      if (TREE_CODE (decl) == VAR_DECL)
+      if (VAR_P (decl))
 	mark_needed (decl);
       else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
 	       || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
@@ -2468,7 +2468,7 @@ import_export_decl (tree decl)
     /* We have already decided what to do with this DECL; there is no
        need to check anything further.  */
     ;
-  else if (TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl))
+  else if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
     {
       class_type = DECL_CONTEXT (decl);
       import_export_class (class_type);
@@ -2534,7 +2534,7 @@ import_export_decl (tree decl)
       else
 	comdat_p = true;
     }
-  else if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl))
+  else if (VAR_P (decl) && DECL_TINFO_P (decl))
     {
       tree type = TREE_TYPE (DECL_NAME (decl));
       if (CLASS_TYPE_P (type))
@@ -3267,7 +3267,7 @@ fix_temporary_vars_context_r (tree *node,
       tree var;
 
       for (var = BIND_EXPR_VARS (*node); var; var = DECL_CHAIN (var))
-	if (TREE_CODE (var) == VAR_DECL
+	if (VAR_P (var)
 	  && !DECL_NAME (var)
 	  && DECL_ARTIFICIAL (var)
 	  && !DECL_CONTEXT (var))
@@ -3516,7 +3516,7 @@ prune_vars_needing_no_initialization (tree *vars)
 	}
 
       /* The only things that can be initialized are variables.  */
-      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      gcc_assert (VAR_P (decl));
 
       /* If this object is not defined, we don't need to do anything
 	 here.  */
@@ -3796,7 +3796,7 @@ decl_defined_p (tree decl)
     return (DECL_INITIAL (decl) != NULL_TREE);
   else
     {
-      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      gcc_assert (VAR_P (decl));
       return !DECL_EXTERNAL (decl);
     }
 }
@@ -3838,7 +3838,7 @@ bool
 decl_maybe_constant_var_p (tree decl)
 {
   tree type = TREE_TYPE (decl);
-  if (TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_P (decl))
     return false;
   if (DECL_DECLARED_CONSTEXPR_P (decl))
     return true;

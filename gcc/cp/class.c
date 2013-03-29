@@ -3327,7 +3327,7 @@ check_field_decls (tree t, tree *access_decls,
 
 	     If a union contains a static data member, or a member of
 	     reference type, the program is ill-formed.  */
-	  if (TREE_CODE (x) == VAR_DECL)
+	  if (VAR_P (x))
 	    {
 	      error ("%q+D may not be static because it is a member of a union", x);
 	      continue;
@@ -3359,7 +3359,7 @@ check_field_decls (tree t, tree *access_decls,
       if (type == error_mark_node)
 	continue;
 
-      if (TREE_CODE (x) == CONST_DECL || TREE_CODE (x) == VAR_DECL)
+      if (TREE_CODE (x) == CONST_DECL || VAR_P (x))
 	continue;
 
       /* Now it can only be a FIELD_DECL.  */
@@ -5826,7 +5826,7 @@ layout_class_type (tree t, tree *virtuals_p)
 
 	     At this point, finish_record_layout will be called, but
 	     S1 is still incomplete.)  */
-	  if (TREE_CODE (field) == VAR_DECL)
+	  if (VAR_P (field))
 	    {
 	      maybe_register_incomplete_var (field);
 	      /* The visibility of static data members is determined
@@ -6327,7 +6327,7 @@ finish_struct_1 (tree t)
   /* Complete the rtl for any static member objects of the type we're
      working on.  */
   for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-    if (TREE_CODE (x) == VAR_DECL && TREE_STATIC (x)
+    if (VAR_P (x) && TREE_STATIC (x)
         && TREE_TYPE (x) != error_mark_node
 	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       DECL_MODE (x) = TYPE_MODE (t);
@@ -6700,7 +6700,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	  /* Enter the INSTANCE in a table to prevent recursion; a
 	     variable's initializer may refer to the variable
 	     itself.  */
-	  if (TREE_CODE (instance) == VAR_DECL
+	  if (VAR_P (instance)
 	      && DECL_INITIAL (instance)
 	      && !type_dependent_expression_p_push (DECL_INITIAL (instance))
 	      && !fixed_type_or_null_ref_ht.find (instance))
@@ -7766,7 +7766,7 @@ get_vtbl_decl_for_binfo (tree binfo)
       decl = TREE_OPERAND (TREE_OPERAND (decl, 0), 0);
     }
   if (decl)
-    gcc_assert (TREE_CODE (decl) == VAR_DECL);
+    gcc_assert (VAR_P (decl));
   return decl;
 }
 

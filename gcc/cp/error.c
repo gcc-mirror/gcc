@@ -916,7 +916,7 @@ dump_simple_decl (tree t, tree type, int flags)
 {
   if (flags & TFF_DECL_SPECIFIERS)
     {
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && DECL_DECLARED_CONSTEXPR_P (t))
 	pp_cxx_ws_string (cxx_pp, "constexpr");
       dump_type_prefix (type, flags & ~TFF_UNQUALIFIED_NAME);
@@ -1249,7 +1249,7 @@ dump_template_decl (tree t, int flags)
 	       ((flags & ~TFF_CLASS_KEY_OR_ENUM) | TFF_TEMPLATE_NAME
 		| (flags & TFF_DECL_SPECIFIERS ? TFF_CLASS_KEY_OR_ENUM : 0)));
   else if (DECL_TEMPLATE_RESULT (t)
-           && (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == VAR_DECL
+           && (VAR_P (DECL_TEMPLATE_RESULT (t))
 	       /* Alias template.  */
 	       || DECL_TYPE_TEMPLATE_P (t)))
     dump_decl (DECL_TEMPLATE_RESULT (t), flags | TFF_TEMPLATE_NAME);
@@ -3283,7 +3283,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'D':
       {
 	tree temp = next_tree;
-	if (TREE_CODE (temp) == VAR_DECL
+	if (VAR_P (temp)
 	    && DECL_HAS_DEBUG_EXPR_P (temp))
 	  {
 	    temp = DECL_DEBUG_EXPR (temp);

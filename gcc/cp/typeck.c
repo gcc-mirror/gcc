@@ -1581,7 +1581,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
 
   /* To get the size of a static data member declared as an array of
      unknown bound, we need to instantiate it.  */
-  if (TREE_CODE (e) == VAR_DECL
+  if (VAR_P (e)
       && VAR_HAD_UNKNOWN_BOUND (e)
       && DECL_TEMPLATE_INSTANTIATION (e))
     instantiate_decl (e, /*defer_ok*/true, /*expl_inst_mem*/false);
@@ -1645,7 +1645,7 @@ cxx_alignof_expr (tree e, tsubst_flags_t complain)
 
   e = mark_type_use (e);
 
-  if (TREE_CODE (e) == VAR_DECL)
+  if (VAR_P (e))
     t = size_int (DECL_ALIGN_UNIT (e));
   else if (TREE_CODE (e) == COMPONENT_REF
 	   && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL
@@ -1950,7 +1950,7 @@ decay_conversion (tree exp, tsubst_flags_t complain)
 
       ptrtype = build_pointer_type (TREE_TYPE (type));
 
-      if (TREE_CODE (exp) == VAR_DECL)
+      if (VAR_P (exp))
 	{
 	  if (!cxx_mark_addressable (exp))
 	    return error_mark_node;
@@ -2280,7 +2280,7 @@ build_class_member_access_expr (tree object, tree member,
 
   /* In [expr.ref], there is an explicit list of the valid choices for
      MEMBER.  We check for each of those cases here.  */
-  if (TREE_CODE (member) == VAR_DECL)
+  if (VAR_P (member))
     {
       /* A static data member.  */
       result = member;
@@ -3054,7 +3054,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	  tree foo = array;
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
-	  if (TREE_CODE (foo) == VAR_DECL && DECL_REGISTER (foo)
+	  if (VAR_P (foo) && DECL_REGISTER (foo)
 	      && (complain & tf_warning))
 	    warning_at (loc, OPT_Wextra,
 			"subscripting array declared %<register%>");
@@ -5772,7 +5772,7 @@ cxx_mark_addressable (tree exp)
 	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
 	    && !DECL_ARTIFICIAL (x))
 	  {
-	    if (TREE_CODE (x) == VAR_DECL && DECL_HARD_REGISTER (x))
+	    if (VAR_P (x) && DECL_HARD_REGISTER (x))
 	      {
 		error
 		  ("address of explicit register variable %qD requested", x);
@@ -8050,7 +8050,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  warning (OPT_Wreturn_local_addr, "returning reference to temporary");
 	  return;
 	}
-      if (TREE_CODE (whats_returned) == VAR_DECL
+      if (VAR_P (whats_returned)
 	  && DECL_NAME (whats_returned)
 	  && TEMP_NAME_P (DECL_NAME (whats_returned)))
 	{
@@ -8288,7 +8288,7 @@ check_return_expr (tree retval, bool *no_warning)
   named_return_value_okay_p = 
     (retval != NULL_TREE
      /* Must be a local, automatic variable.  */
-     && TREE_CODE (retval) == VAR_DECL
+     && VAR_P (retval)
      && DECL_CONTEXT (retval) == current_function_decl
      && ! TREE_STATIC (retval)
      && ! DECL_ANON_UNION_VAR_P (retval)
@@ -8336,7 +8336,7 @@ check_return_expr (tree retval, bool *no_warning)
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
       if ((cxx_dialect != cxx98)
-          && (TREE_CODE (retval) == VAR_DECL
+          && (VAR_P (retval)
 	      || TREE_CODE (retval) == PARM_DECL)
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && !TREE_STATIC (retval)
