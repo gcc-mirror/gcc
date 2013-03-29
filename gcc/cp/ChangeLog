@@ -1,3 +1,9 @@
+2013-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56774
+	PR c++/35722
+	* pt.c (unify_pack_expansion): Fix indexing.
+
 2013-03-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* call.c (build_java_interface_fn_ref): Likewise.
