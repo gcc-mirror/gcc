@@ -1,3 +1,8 @@
+2013-03-29  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Fix intrinsic name.
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Ditto.
+
 2013-03-28  Tejas Belagod  <tejas.belagod@arm.com>
 
 	PR middle-end/56694
