@@ -58,8 +58,6 @@ extern void build_sese_loop_nests (sese);
 extern edge copy_bb_and_scalar_dependences (basic_block, sese, edge,
 					    vec<tree> , bool *);
 extern struct loop *outermost_loop_in_sese (sese, basic_block);
-extern void insert_loop_close_phis (htab_t, loop_p);
-extern void insert_guard_phis (basic_block, edge, edge, htab_t, htab_t);
 extern tree scalar_evolution_in_region (sese, loop_p, tree);
 
 /* Check that SESE contains LOOP.  */
@@ -286,22 +284,7 @@ typedef struct ivtype_map_elt_s
 } *ivtype_map_elt;
 
 extern void debug_ivtype_map (htab_t);
-extern hashval_t ivtype_map_elt_info (const void *);
 extern int eq_ivtype_map_elts (const void *, const void *);
-
-/* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
-
-static inline ivtype_map_elt
-new_ivtype_map_elt (const char *cloog_iv, tree type)
-{
-  ivtype_map_elt res;
-
-  res = XNEW (struct ivtype_map_elt_s);
-  res->cloog_iv = cloog_iv;
-  res->type = type;
-
-  return res;
-}
 
 /* Free and compute again all the dominators information.  */
 

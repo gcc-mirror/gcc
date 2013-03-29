@@ -1,5 +1,16 @@
 2013-03-28  Lawrence Crowl  <crowl@google.com>
 
+	* graphds.h (struct graph.indicies): Remove unused.
+	* graphite-poly.h (struct graph.original_pddrs): Remove unused.
+	(SCOP_ORIGINAL_PDDRS): Remove unused.
+	* sese.h (extern insert_loop_close_phis): Removed unused.
+	(extern insert_guard_phis): Removed unused.
+	(extern ivtype_map_elt_info): Removed unused.
+	(new_ivtype_map_elt): Removed unused.
+	* sese.c (ivtype_map_elt_info): Removed unused.
+
+2013-03-28  Lawrence Crowl  <crowl@google.com>
+
 	* Makefile.in: Add several missing include dependences.
 	(DUMPFILE_H): New.
 	(test-dump.o): New.  This object is not added to any executable,

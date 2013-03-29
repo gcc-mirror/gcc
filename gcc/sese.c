@@ -111,14 +111,6 @@ debug_ivtype_map (htab_t map)
   htab_traverse (map, debug_ivtype_map_1, NULL);
 }
 
-/* Computes a hash function for database element ELT.  */
-
-hashval_t
-ivtype_map_elt_info (const void *elt)
-{
-  return htab_hash_pointer (((const struct ivtype_map_elt_s *) elt)->cloog_iv);
-}
-
 /* Compares database elements E1 and E2.  */
 
 int
