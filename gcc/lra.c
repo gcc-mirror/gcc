@@ -1997,10 +1997,9 @@ check_rtl (bool final_p)
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
     if (NONDEBUG_INSN_P (insn)
+	&& ! JUMP_TABLE_DATA_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
 	&& GET_CODE (PATTERN (insn)) != CLOBBER
-	&& GET_CODE (PATTERN (insn)) != ADDR_VEC
-	&& GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
 	&& GET_CODE (PATTERN (insn)) != ASM_INPUT)
       {
 	if (final_p)

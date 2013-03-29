@@ -1,3 +1,46 @@
+2013-03-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgbuild.c (inside_basic_block_p): Use JUMP_TABLE_DATA_P in lieu
+	of tests for JUMP_P and a ADDR_DIFF_VEC or ADDR_VEC pattern.
+	(control_flow_insn_p): Likewise.
+	* cfgrtl.c (duplicate_insn_chain): Likewise.
+	* final.c (get_attr_length_1): Likewise.
+	(shorten_branches): Likewise.
+	(final_scan_insn): Likewise.
+	* function.c (instantiate_virtual_regs): Likewise.
+	* gcse.c (insert_insn_end_basic_block): Likewise.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* lra-eliminations.c (eliminate_regs_in_insn): Likewise.
+	* lra.c (check_rtl): Likewise.
+	* reload1.c (elimination_costs_in_insn): Likewise.
+	* reorg.c (follow_jumps): Likewise.
+
+	* config/arm/arm.c (is_jump_table): Use JUMP_TABLE_DATA_P in lieu
+	of tests for JUMP_P and a ADDR_DIFF_VEC or ADDR_VEC pattern.
+	(thumb_far_jump_used_p): Likewise.
+	* config/bfin/bfin.c (workaround_rts_anomaly): Likewise.
+	(workaround_speculation): Likewise.
+	(add_sched_insns_for_speculation): Likewise.
+	* config/c6x/c6x.c (reorg_emit_nops): Likewise.
+	* config/frv/frv.c (frv_function_contains_far_jump): Likewise.
+	(frv_for_each_packet): Likewise.
+	* config/i386/i386.c (ix86_avoid_jump_mispredicts): Likewise.
+	* config/ia64/ia64.c (emit_all_insn_group_barriers): Likewise.
+	(final_emit_insn_group_barriers): Likewise.
+	* config/m32r/m32r.c (m32r_is_insn): Likewise.
+	* config/mips/mips.c (USEFUL_INSN_P): Likewise.
+	(mips16_insn_length): Likewise.
+	* config/pa/pa.c (pa_reorg): Likewise.
+	(pa_combine_instructions): Likewise.
+	* config/rs6000/rs6000.c (rs6000_invalid_within_doloop): Likewise.
+	* config/sh/sh.c (fixup_addr_diff_vecs): Likewise.
+	(sh_reorg): Likewise.
+	(split_branches): Likewise.
+	* config/spu/spu.c (get_branch_target): Likewise.
+
+	* config/s390/s390.c (s390_chunkify_start): Simplify logic using
+	JUMP_TABLE_DATA_P.
+
 2013-03-29  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc/config/i386/avx2intrin.h (_mm256_broadcastsi128_si256):

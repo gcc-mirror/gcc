@@ -1410,8 +1410,7 @@ frv_function_contains_far_jump (void)
   while (insn != NULL
 	 && !(JUMP_P (insn)
 	      /* Ignore tablejump patterns.  */
-	      && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	      && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
+	      && ! JUMP_TABLE_DATA_P (insn)
 	      && get_attr_far_jump (insn) == FAR_JUMP_YES))
     insn = NEXT_INSN (insn);
   return (insn != NULL);
@@ -7481,13 +7480,11 @@ frv_for_each_packet (void (*handle_packet) (void))
 	  frv_start_packet_block ();
 	}
 
-      if (INSN_P (insn))
+      if (INSN_P (insn) && ! JUMP_TABLE_DATA_P (insn))
 	switch (GET_CODE (PATTERN (insn)))
 	  {
 	  case USE:
 	  case CLOBBER:
-	  case ADDR_VEC:
-	  case ADDR_DIFF_VEC:
 	    break;
 
 	  default:

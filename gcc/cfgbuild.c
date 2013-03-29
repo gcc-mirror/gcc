@@ -51,13 +51,10 @@ inside_basic_block_p (const_rtx insn)
     case CODE_LABEL:
       /* Avoid creating of basic block for jumptables.  */
       return (NEXT_INSN (insn) == 0
-	      || !JUMP_P (NEXT_INSN (insn))
-	      || (GET_CODE (PATTERN (NEXT_INSN (insn))) != ADDR_VEC
-		  && GET_CODE (PATTERN (NEXT_INSN (insn))) != ADDR_DIFF_VEC));
+	      || ! JUMP_TABLE_DATA_P (insn));
 
     case JUMP_INSN:
-      return (GET_CODE (PATTERN (insn)) != ADDR_VEC
-	      && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC);
+      return (! JUMP_TABLE_DATA_P (insn));
 
     case CALL_INSN:
     case INSN:
@@ -88,8 +85,7 @@ control_flow_insn_p (const_rtx insn)
 
     case JUMP_INSN:
       /* Jump insn always causes control transfer except for tablejumps.  */
-      return (GET_CODE (PATTERN (insn)) != ADDR_VEC
-	      && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC);
+      return (! JUMP_TABLE_DATA_P (insn));
 
     case CALL_INSN:
       /* Noreturn and sibling call instructions terminate the basic blocks

@@ -2155,8 +2155,7 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb)
       /* If this is a jump table, then we can't insert stuff here.  Since
 	 we know the previous real insn must be the tablejump, we insert
 	 the new instruction just before the tablejump.  */
-      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+      if (JUMP_TABLE_DATA_P (insn))
 	insn = prev_active_insn (insn);
 
 #ifdef HAVE_cc0

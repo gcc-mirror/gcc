@@ -18788,9 +18788,7 @@ rs6000_invalid_within_doloop (const_rtx insn)
   if (CALL_P (insn))
     return "Function call in the loop.";
 
-  if (JUMP_P (insn)
-      && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-	  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
+  if (JUMP_TABLE_DATA_P (insn))
     return "Computed branch in the loop.";
 
   return NULL;

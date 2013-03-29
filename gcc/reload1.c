@@ -3234,10 +3234,9 @@ eliminate_regs_in_insn (rtx insn, int replace)
 
   if (! insn_is_asm && icode < 0)
     {
-      gcc_assert (GET_CODE (PATTERN (insn)) == USE
+      gcc_assert (JUMP_TABLE_DATA_P (insn)
+		  || GET_CODE (PATTERN (insn)) == USE
 		  || GET_CODE (PATTERN (insn)) == CLOBBER
-		  || GET_CODE (PATTERN (insn)) == ADDR_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 		  || GET_CODE (PATTERN (insn)) == ASM_INPUT
 		  || DEBUG_INSN_P (insn));
       if (DEBUG_INSN_P (insn))
@@ -3645,10 +3644,9 @@ elimination_costs_in_insn (rtx insn)
 
   if (! insn_is_asm && icode < 0)
     {
-      gcc_assert (GET_CODE (PATTERN (insn)) == USE
+      gcc_assert (JUMP_TABLE_DATA_P (insn)
+		  || GET_CODE (PATTERN (insn)) == USE
 		  || GET_CODE (PATTERN (insn)) == CLOBBER
-		  || GET_CODE (PATTERN (insn)) == ADDR_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 		  || GET_CODE (PATTERN (insn)) == ASM_INPUT
 		  || DEBUG_INSN_P (insn));
       return;

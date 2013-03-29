@@ -12824,9 +12824,7 @@ is_jump_table (rtx insn)
       && ((table = next_real_insn (JUMP_LABEL (insn)))
 	  == next_real_insn (insn))
       && table != NULL
-      && JUMP_P (table)
-      && (GET_CODE (PATTERN (table)) == ADDR_VEC
-	  || GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC))
+      && JUMP_TABLE_DATA_P (table))
     return table;
 
   return NULL_RTX;
@@ -22658,8 +22656,7 @@ thumb_far_jump_used_p (void)
     {
       if (JUMP_P (insn)
 	  /* Ignore tablejump patterns.  */
-	  && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
+	  && ! JUMP_TABLE_DATA_P (insn)
 	  && get_attr_far_jump (insn) == FAR_JUMP_YES
 	  )
 	{

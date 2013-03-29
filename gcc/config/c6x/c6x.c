@@ -5052,9 +5052,7 @@ reorg_emit_nops (rtx *call_labels)
 	  || GET_CODE (PATTERN (insn)) == USE
 	  || GET_CODE (PATTERN (insn)) == CLOBBER
 	  || shadow_or_blockage_p (insn)
-	  || (JUMP_P (insn)
-	      && (GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_VEC)))
+	  || JUMP_TABLE_DATA_P (insn))
 	goto next_insn;
 
       if (!c6x_flag_schedule_insns2)

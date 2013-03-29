@@ -3627,8 +3627,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	  /* Avoid copying of dispatch tables.  We never duplicate
 	     tablejumps, so this can hit only in case the table got
 	     moved far from original jump.  */
-	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+	  if (JUMP_TABLE_DATA_P (insn))
 	    {
 	      /* Avoid copying following barrier as well if any
 		 (and debug insns in between).  */
