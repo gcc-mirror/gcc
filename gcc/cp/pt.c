@@ -5140,7 +5140,7 @@ convert_nontype_argument_function (tree type, tree expr)
   if (TREE_CODE (fn_no_ptr) != FUNCTION_DECL)
     {
       error ("%qE is not a valid template argument for type %qT", expr, type);
-      if (TREE_CODE (type) == POINTER_TYPE)
+      if (TYPE_PTR_P (type))
 	error ("it must be the address of a function with external linkage");
       else
 	error ("it must be the name of a function with external linkage");
@@ -5547,7 +5547,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  tree addr = TREE_OPERAND (probe, 0);
 	  if (TREE_CODE (probe_type) == REFERENCE_TYPE
 	      && TREE_CODE (addr) == ADDR_EXPR
-	      && TREE_CODE (TREE_TYPE (addr)) == POINTER_TYPE
+	      && TYPE_PTR_P (TREE_TYPE (addr))
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (TREE_TYPE (probe_type),
 		   TREE_TYPE (TREE_TYPE (addr)))))
@@ -5566,7 +5566,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       tree probe = expr;
       STRIP_NOPS (probe);
       if (TREE_CODE (probe) == ADDR_EXPR
-	  && TREE_CODE (TREE_TYPE (probe)) == POINTER_TYPE)
+	  && TYPE_PTR_P (TREE_TYPE (probe)))
 	{
 	  /* Skip the ADDR_EXPR only if it is part of the decay for
 	     an array. Otherwise, it is part of the original argument
@@ -11527,7 +11527,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  only enforce this check in strict C++98 mode.  */
 	if ((TREE_CODE (type) == REFERENCE_TYPE
 	     && (((cxx_dialect == cxx98) && flag_iso) || code != REFERENCE_TYPE))
-	    || (code == REFERENCE_TYPE && TREE_CODE (type) == VOID_TYPE))
+	    || (code == REFERENCE_TYPE && VOID_TYPE_P (type)))
 	  {
 	    static location_t last_loc;
 
@@ -11537,7 +11537,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (complain & tf_error
 		&& last_loc != input_location)
 	      {
-		if (TREE_CODE (type) == VOID_TYPE)
+		if (VOID_TYPE_P (type))
 		  error ("forming reference to void");
                else if (code == POINTER_TYPE)
                  error ("forming pointer to reference type %qT", type);
@@ -11600,7 +11600,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      error ("creating pointer to member reference type %qT", type);
 	    return error_mark_node;
 	  }
-	if (TREE_CODE (type) == VOID_TYPE)
+	if (VOID_TYPE_P (type))
 	  {
 	    if (complain & tf_error)
 	      error ("creating pointer to member of type void");
@@ -11660,7 +11660,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   -- Attempting to create an array with an element type that
 	      is void, a function type, or a reference type, or [DR337]
 	      an abstract class type.  */
-	if (TREE_CODE (type) == VOID_TYPE
+	if (VOID_TYPE_P (type)
 	    || TREE_CODE (type) == FUNCTION_TYPE
 	    || TREE_CODE (type) == REFERENCE_TYPE)
 	  {
@@ -16797,7 +16797,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
     case POINTER_TYPE:
       {
-	if (TREE_CODE (arg) != POINTER_TYPE)
+	if (!TYPE_PTR_P (arg))
 	  return unify_type_mismatch (explain_p, parm, arg);
 
 	/* [temp.deduct.call]
@@ -19382,7 +19382,7 @@ dependent_type_p_r (tree type)
     return (dependent_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
 	    || dependent_type_p (TYPE_PTRMEM_POINTED_TO_TYPE
 					   (type)));
-  else if (TREE_CODE (type) == POINTER_TYPE
+  else if (TYPE_PTR_P (type)
 	   || TREE_CODE (type) == REFERENCE_TYPE)
     return dependent_type_p (TREE_TYPE (type));
   else if (TREE_CODE (type) == FUNCTION_TYPE

@@ -708,7 +708,7 @@ dump_type_prefix (tree t, int flags)
 	    pp_c_attributes_display (pp_c_base (cxx_pp),
 				     TYPE_ATTRIBUTES (sub));
 	  }
-	if (TREE_CODE (t) == POINTER_TYPE)
+	if (TYPE_PTR_P (t))
 	  pp_character(cxx_pp, '*');
 	else if (TREE_CODE (t) == REFERENCE_TYPE)
 	{
@@ -2108,7 +2108,7 @@ dump_expr (tree t, int flags)
 	{
 	  tree next = TREE_TYPE (TREE_TYPE (t));
 
-	  while (TREE_CODE (next) == POINTER_TYPE)
+	  while (TYPE_PTR_P (next))
 	    next = TREE_TYPE (next);
 
 	  if (TREE_CODE (next) == FUNCTION_TYPE)

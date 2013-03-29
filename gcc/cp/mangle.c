@@ -1912,7 +1912,7 @@ write_type (tree type)
 	      write_string (target_mangling);
 	      /* Add substitutions for types other than fundamental
 		 types.  */
-	      if (TREE_CODE (type) != VOID_TYPE
+	      if (!VOID_TYPE_P (type)
 		  && TREE_CODE (type) != INTEGER_TYPE
 		  && TREE_CODE (type) != REAL_TYPE
 		  && TREE_CODE (type) != BOOLEAN_TYPE)
@@ -1966,7 +1966,7 @@ write_type (tree type)
 
 	    case POINTER_TYPE:
 	    case REFERENCE_TYPE:
-	      if (TREE_CODE (type) == POINTER_TYPE)
+	      if (TYPE_PTR_P (type))
 		write_char ('P');
 	      else if (TYPE_REF_IS_RVALUE (type))
 		write_char ('O');

@@ -530,7 +530,7 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
 	    if (TREE_CODE (object) == ADDR_EXPR)
 	      object = TREE_OPERAND (object, 0);
 
-	    if (TREE_CODE (TREE_TYPE (object)) != POINTER_TYPE)
+	    if (!TYPE_PTR_P (TREE_TYPE (object)))
 	      {
 		pp_cxx_postfix_expression (pp, object);
 		pp_cxx_dot (pp);
@@ -1364,7 +1364,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
 	pp_cxx_ptr_operator (pp, TREE_TYPE (t));
       pp_c_attributes_display (pp_c_base (pp),
 			       TYPE_ATTRIBUTES (TREE_TYPE (t)));
-      if (TREE_CODE (t) == POINTER_TYPE)
+      if (TYPE_PTR_P (t))
 	{
 	  pp_star (pp);
 	  pp_cxx_cv_qualifier_seq (pp, t);
