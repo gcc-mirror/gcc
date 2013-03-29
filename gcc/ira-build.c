@@ -1321,6 +1321,21 @@ print_copy (FILE *f, ira_copy_t cp)
 	   ? "move" : cp->constraint_p ? "constraint" : "shuffle");
 }
 
+DEBUG_FUNCTION void
+debug (ira_allocno_copy &ref)
+{
+  print_copy (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (ira_allocno_copy *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 /* Print info about copy CP into stderr.  */
 void
 ira_debug_copy (ira_copy_t cp)
@@ -1373,6 +1388,22 @@ print_allocno_copies (FILE *f, ira_allocno_t a)
     }
   fprintf (f, "\n");
 }
+
+DEBUG_FUNCTION void
+debug (ira_allocno &ref)
+{
+  print_allocno_copies (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (ira_allocno *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 /* Print info about copies involving allocno A into stderr.  */
 void

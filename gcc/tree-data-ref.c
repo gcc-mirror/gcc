@@ -149,6 +149,24 @@ dump_data_references (FILE *file, vec<data_reference_p> datarefs)
     dump_data_reference (file, dr);
 }
 
+/* Unified dump into FILE all the data references from DATAREFS.  */
+
+DEBUG_FUNCTION void
+debug (vec<data_reference_p> &ref)
+{
+  dump_data_references (stderr, ref);
+}
+
+DEBUG_FUNCTION void
+debug (vec<data_reference_p> *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 /* Dump into STDERR all the data references from DATAREFS.  */
 
 DEBUG_FUNCTION void
@@ -189,6 +207,24 @@ dump_data_reference (FILE *outf,
     }
   fprintf (outf, "#)\n");
 }
+
+/* Unified dump function for a DATA_REFERENCE structure.  */
+
+DEBUG_FUNCTION void
+debug (data_reference &ref)
+{
+  dump_data_reference (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (data_reference *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 /* Dumps the affine function described by FN to the file OUTF.  */
 
@@ -441,6 +477,22 @@ dump_data_dependence_relations (FILE *file,
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
     dump_data_dependence_relation (file, ddr);
 }
+
+DEBUG_FUNCTION void
+debug (vec<ddr_p> &ref)
+{
+  dump_data_dependence_relations (stderr, ref);
+}
+
+DEBUG_FUNCTION void
+debug (vec<ddr_p> *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 /* Dump to STDERR all the dependence relations from DDRS.  */
 

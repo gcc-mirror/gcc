@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_CP_PARSER_H
 
 #include "tree.h"
+#include "cp/cp-tree.h"
 #include "c-family/c-pragma.h"
 
 /* A token's value and its associated deferred access checks and
@@ -343,7 +344,13 @@ typedef struct GTY(()) cp_parser {
 } cp_parser;
 
 /* In parser.c  */
+extern void debug (cp_token &ref);
+extern void debug (cp_token *ptr);
 extern void cp_lexer_debug_tokens (vec<cp_token, va_gc> *);
+extern void debug (vec<cp_token, va_gc> &ref);
+extern void debug (vec<cp_token, va_gc> *ptr);
 extern void cp_debug_parser (FILE *, cp_parser *);
+extern void debug (cp_parser &ref);
+extern void debug (cp_parser *ptr);
 
 #endif  /* GCC_CP_PARSER_H  */

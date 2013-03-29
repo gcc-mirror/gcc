@@ -504,6 +504,23 @@ dump_edge_info (FILE *file, edge e, int flags, int do_succ)
       fputc (')', file);
     }
 }
+
+DEBUG_FUNCTION void
+debug (edge_def &ref)
+{
+  /* FIXME (crowl): Is this desireable?  */
+  dump_edge_info (stderr, &ref, 0, false);
+  dump_edge_info (stderr, &ref, 0, true);
+}
+
+DEBUG_FUNCTION void
+debug (edge_def *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
 
 /* Simple routines to easily allocate AUX fields of basic blocks.  */
 

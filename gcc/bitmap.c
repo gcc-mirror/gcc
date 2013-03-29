@@ -2117,7 +2117,8 @@ debug_bitmap (const_bitmap head)
    it does not print anything but the bits.  */
 
 DEBUG_FUNCTION void
-bitmap_print (FILE *file, const_bitmap head, const char *prefix, const char *suffix)
+bitmap_print (FILE *file, const_bitmap head, const char *prefix,
+	      const char *suffix)
 {
   const char *comma = "";
   unsigned i;
@@ -2198,5 +2199,21 @@ dump_bitmap_statistics (void)
 	   "Total", info.count, info.size);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
 }
+
+DEBUG_FUNCTION void
+debug (const bitmap_head_def &ref)
+{
+  dump_bitmap (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (const bitmap_head_def *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 #include "gt-bitmap.h"

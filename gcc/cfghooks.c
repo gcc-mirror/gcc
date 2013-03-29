@@ -279,6 +279,22 @@ dump_bb (FILE *outf, basic_block bb, int indent, int flags)
   fputc ('\n', outf);
 }
 
+DEBUG_FUNCTION void
+debug (basic_block_def &ref)
+{
+  dump_bb (stderr, &ref, 0, 0);
+}
+
+DEBUG_FUNCTION void
+debug (basic_block_def *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 /* Dumps basic block BB to pretty-printer PP, for use as a label of
    a DOT graph record-node.  The implementation of this hook is
    expected to write the label to the stream that is attached to PP.
