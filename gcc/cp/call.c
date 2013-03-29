@@ -4082,13 +4082,10 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
       tree fns = TREE_VALUE (convs);
       tree totype = TREE_TYPE (convs);
 
-      if ((TYPE_PTR_P (totype)
-	   && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
+      if (TYPE_PTRFN_P (totype)
+	  || TYPE_REFFN_P (totype)
 	  || (TREE_CODE (totype) == REFERENCE_TYPE
-	      && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
-	  || (TREE_CODE (totype) == REFERENCE_TYPE
-	      && TYPE_PTR_P (TREE_TYPE (totype))
-	      && TREE_CODE (TREE_TYPE (TREE_TYPE (totype))) == FUNCTION_TYPE))
+	      && TYPE_PTRFN_P (TREE_TYPE (totype))))
 	for (; fns; fns = OVL_NEXT (fns))
 	  {
 	    tree fn = OVL_CURRENT (fns);
