@@ -1,3 +1,14 @@
+2012-03-29  Gary Funck  <gary@intrepid.com>
+
+	Implement and use upc_types.h (per UPC 1.3 spec.)
+	* Makefile.am: Add upc_types.h as an exported header file.
+	* Makefile.in: Re-generate.
+	* collectives/upc_coll_err.upc: Fix check for out-of-range
+	collective operation op code.  Use UPC_MAX_COLL_OP.
+	* include/upc_collective.h: #include upc_types.h
+	Define UPC_MAX_COLL_OP, the maximum collectives opcode value.
+	* include/upc_types.h: New.
+
 2013-03-27  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Add configuration option for selecting a job

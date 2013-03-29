@@ -29,36 +29,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef _UPC_COLLECTIVE_H_
 #define _UPC_COLLECTIVE_H_
 
-/* Flag type for synchronization semantics
-   (and potentially other uses) */
+#include <upc_types.h>
 
-#define upc_flag_t		int
-
-/* Synchronization flags */
-
-#define UPC_IN_NOSYNC		1
-#define UPC_IN_MYSYNC		2
-#define UPC_IN_ALLSYNC		0
-#define UPC_OUT_NOSYNC		4
-#define UPC_OUT_MYSYNC		8
-#define UPC_OUT_ALLSYNC		0
-
-/* Operation type for upc_all_reduceT()
-   and upc_all_prefix_reduceT() */
-
-#define upc_op_t		int
-
-#define UPC_ADD			0
-#define UPC_MULT		1
-#define UPC_AND			2
-#define UPC_OR			3
-#define UPC_XOR			4
-#define UPC_LOGAND		5
-#define UPC_LOGOR		6
-#define UPC_MIN			7
-#define UPC_MAX			8
-#define UPC_FUNC		9
-#define UPC_NONCOMM_FUNC	10
+/* Per the UPC collectives library specification, the following
+   operations are defined in addition to those defined in upc_types.h.
+   Values below 2^16 are reserved.  */
+#define UPC_FUNC		(1UL<<16)
+#define UPC_NONCOMM_FUNC	(1UL<<17)
+#define UPC_MAX_COLL_OP		UPC_NONCOMM_FUNC
 
 /* Function codes for error checking  */
 

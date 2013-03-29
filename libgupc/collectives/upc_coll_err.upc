@@ -308,7 +308,7 @@ upc_coll_chk_op (void)
       }
 
   for (i = 0; i < THREADS; ++i)
-    if (coll_arg_list[i].op < 0 || coll_arg_list[i].op > 10)
+    if (coll_arg_list[i].op > UPC_MAX_COLL_OP)
       {
 	printf ("%s: Illegal operation specified in thread %d.\n",
 		upc_coll_op_name (coll_arg_list[i].upc_coll_op), i);
