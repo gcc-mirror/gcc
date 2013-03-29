@@ -1,3 +1,8 @@
+2013-03-29  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc/config/i386/avx2intrin.h (_mm256_broadcastsi128_si256):
+	Fix declaration name.
+
 2013-03-28  Lawrence Crowl  <crowl@google.com>
 
 	* graphds.h (struct graph.indicies): Remove unused.
