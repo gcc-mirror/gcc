@@ -4845,6 +4845,8 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	 lvalue, we must add a NON_LVALUE_EXPR.  */
       result = rvalue (result);
     }
+  else
+    result = force_paren_expr (result);
 
   return result;
 }

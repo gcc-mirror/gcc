@@ -2555,6 +2555,8 @@ write_expression (tree expr)
      is converted (via qualification conversions) to another
      type.  */
   while (TREE_CODE (expr) == NOP_EXPR
+	 /* Parentheses aren't mangled.  */
+	 || code == PAREN_EXPR
 	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
     {
       expr = TREE_OPERAND (expr, 0);

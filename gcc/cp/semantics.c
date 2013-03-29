@@ -1507,6 +1507,38 @@ finish_mem_initializers (tree mem_inits)
     emit_mem_initializers (mem_inits);
 }
 
+/* Obfuscate EXPR if it looks like an id-expression or member access so
+   that the call to finish_decltype in do_auto_deduction will give the
+   right result.  */
+
+tree
+force_paren_expr (tree expr)
+{
+  /* This is only needed for decltype(auto) in C++14.  */
+  if (cxx_dialect < cxx1y)
+    return expr;
+
+  if (!DECL_P (expr) && TREE_CODE (expr) != COMPONENT_REF
+      && TREE_CODE (expr) != SCOPE_REF)
+    return expr;
+
+  if (processing_template_decl)
+    expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
+  else
+    {
+      cp_lvalue_kind kind = lvalue_kind (expr);
+      if ((kind & ~clk_class) != clk_none)
+	{
+	  tree type = unlowered_expr_type (expr);
+	  bool rval = !!(kind & clk_rvalueref);
+	  type = cp_build_reference_type (type, rval);
+	  expr = build_static_cast (type, expr, tf_warning_or_error);
+	}
+    }
+
+  return expr;
+}
+
 /* Finish a parenthesized expression EXPR.  */
 
 tree
@@ -1524,6 +1556,8 @@ finish_parenthesized_expr (tree expr)
 
   if (TREE_CODE (expr) == STRING_CST)
     PAREN_STRING_LITERAL_P (expr) = 1;
+
+  expr = force_paren_expr (expr);
 
   return expr;
 }

@@ -1,5 +1,23 @@
 2013-03-29  Jason Merrill  <jason@redhat.com>
 
+	N3582
+	* cp-tree.h (AUTO_IS_DECLTYPE): New.
+	* parser.c (cp_parser_decltype): Handle decltype(auto).
+	(cp_parser_type_id_1): Allow auto without a late-specified
+	return in C++1y.
+	(cp_parser_primary_expression): Use the return value of
+	finish_parenthesized_expr.
+	(cp_parser_transaction_expression): Likewise.
+	* semantics.c (force_paren_expr): New.
+	(finish_parenthesized_expr): Use it.
+	* call.c (build_conditional_expr_1): Likewise.
+	* pt.c (do_auto_deduction): Handle decltype(auto).
+	(tsubst_copy): Handle PAREN_EXPR.
+	(tsubst_copy_and_build): Likewise.
+	* error.c (dump_expr): Handle PAREN_EXPR.
+	* cxx-pretty-print.c (pp_cxx_expression): Likewise.
+	* mangle.c (write_expression): Ignore PAREN_EXPR.
+
 	* parser.c (cp_parser_decltype_expr): Split out...
 	(cp_parser_decltype): ...from here.
 
