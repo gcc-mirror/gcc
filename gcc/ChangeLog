@@ -1,3 +1,7 @@
+2013-03-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* tree.h (VAR_P): New.
+
 2013-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR lto/56777

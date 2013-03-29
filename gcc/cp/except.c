@@ -828,7 +828,7 @@ build_throw (tree exp)
 	     treated as an rvalue for the purposes of overload resolution
 	     to favor move constructors over copy constructors.  */
 	  if (/* Must be a local, automatic variable.  */
-	      TREE_CODE (exp) == VAR_DECL
+	      VAR_P (exp)
 	      && DECL_CONTEXT (exp) == current_function_decl
 	      && ! TREE_STATIC (exp)
 	      /* The variable must not have the `volatile' qualifier.  */

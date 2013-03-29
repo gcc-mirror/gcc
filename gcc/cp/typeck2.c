@@ -98,7 +98,7 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
 
   /* Handle C++-specific things first.  */
 
-  if (TREE_CODE (arg) == VAR_DECL
+  if (VAR_P (arg)
       && DECL_LANG_SPECIFIC (arg)
       && DECL_IN_AGGR_P (arg)
       && !TREE_STATIC (arg))
@@ -113,7 +113,7 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
 			  arg);
   else if (INDIRECT_REF_P (arg)
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
-	   && (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
+	   && (VAR_P (TREE_OPERAND (arg, 0))
 	       || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
     ERROR_FOR_ASSIGNMENT (G_("assignment of "
                              "read-only reference %qD"),
@@ -315,7 +315,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
 
   if (decl)
     {
-      if (TREE_CODE (decl) == VAR_DECL)
+      if (VAR_P (decl))
 	error ("cannot declare variable %q+D to be of abstract "
 	       "type %qT", decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
@@ -441,7 +441,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
-  if (value != 0 && (TREE_CODE (value) == VAR_DECL
+  if (value != 0 && (VAR_P (value)
 		     || TREE_CODE (value) == PARM_DECL
 		     || TREE_CODE (value) == FIELD_DECL))
     {

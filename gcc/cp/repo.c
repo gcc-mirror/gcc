@@ -302,7 +302,7 @@ repo_emit_p (tree decl)
      is an artificial restriction; the code in the prelinker and here
      will work fine if all entities with vague linkage are managed by
      the repository.  */
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       tree type = NULL_TREE;
       if (DECL_VTABLE_OR_VTT_P (decl))

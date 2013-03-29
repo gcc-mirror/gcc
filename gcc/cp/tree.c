@@ -70,7 +70,7 @@ lvalue_kind (const_tree ref)
       /* unnamed rvalue references are rvalues */
       if (TYPE_REF_IS_RVALUE (TREE_TYPE (ref))
 	  && TREE_CODE (ref) != PARM_DECL
-	  && TREE_CODE (ref) != VAR_DECL
+	  && !VAR_P (ref)
 	  && TREE_CODE (ref) != COMPONENT_REF
 	  /* Functions are always lvalues.  */
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (ref))) != FUNCTION_TYPE)
@@ -2219,7 +2219,7 @@ bot_replace (tree* t, int* /*walk_subtrees*/, void* data)
 {
   splay_tree target_remap = ((splay_tree) data);
 
-  if (TREE_CODE (*t) == VAR_DECL)
+  if (VAR_P (*t))
     {
       splay_tree_node n = splay_tree_lookup (target_remap,
 					     (splay_tree_key) *t);
@@ -2584,10 +2584,10 @@ cp_tree_equal (tree t1, tree t2)
 	   it means that it's going to be unified with whatever the
 	   TARGET_EXPR is really supposed to initialize, so treat it
 	   as being equivalent to anything.  */
-	if (TREE_CODE (o1) == VAR_DECL && DECL_NAME (o1) == NULL_TREE
+	if (VAR_P (o1) && DECL_NAME (o1) == NULL_TREE
 	    && !DECL_RTL_SET_P (o1))
 	  /*Nop*/;
-	else if (TREE_CODE (o2) == VAR_DECL && DECL_NAME (o2) == NULL_TREE
+	else if (VAR_P (o2) && DECL_NAME (o2) == NULL_TREE
 		 && !DECL_RTL_SET_P (o2))
 	  /*Nop*/;
 	else if (!cp_tree_equal (o1, o2))
@@ -3149,7 +3149,7 @@ handle_init_priority_attribute (tree* node,
   type = strip_array_types (type);
 
   if (decl == NULL_TREE
-      || TREE_CODE (decl) != VAR_DECL
+      || !VAR_P (decl)
       || !TREE_STATIC (decl)
       || DECL_EXTERNAL (decl)
       || (TREE_CODE (type) != RECORD_TYPE
@@ -3618,7 +3618,7 @@ decl_storage_duration (tree decl)
     return dk_auto;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return dk_static;
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
   if (!TREE_STATIC (decl)
       && !DECL_EXTERNAL (decl))
     return dk_auto;

@@ -62,7 +62,7 @@ cxx_warn_unused_global_decl (const_tree decl)
     return false;
 
   /* Const variables take the place of #defines in C++.  */
-  if (TREE_CODE (decl) == VAR_DECL && TREE_READONLY (decl))
+  if (VAR_P (decl) && TREE_READONLY (decl))
     return false;
 
   return true;
