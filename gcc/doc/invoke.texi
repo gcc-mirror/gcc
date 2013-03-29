@@ -8179,7 +8179,7 @@ compiled.  All public functions and variables with the exception of @code{main}
 and those merged by attribute @code{externally_visible} become static functions
 and in effect are optimized more aggressively by interprocedural optimizers.
 
-In combination with @code{-flto} using this option should not be used.
+This option should not be used in combination with @code{-flto}.
 Instead relying on a linker plugin should provide safer and more precise
 information.
 

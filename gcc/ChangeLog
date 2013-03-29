@@ -1,3 +1,8 @@
+2013-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR lto/56777
+	* doc/invoke.texi ([-fwhole-program]): Fix typo.
+
 2013-03-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfgbuild.c (inside_basic_block_p): Use JUMP_TABLE_DATA_P in lieu
@@ -43,7 +48,7 @@
 
 2013-03-29  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/i386/avx2intrin.h (_mm256_broadcastsi128_si256):
+	* config/i386/avx2intrin.h (_mm256_broadcastsi128_si256):
 	Fix declaration name.
 
 2013-03-28  Lawrence Crowl  <crowl@google.com>
@@ -281,7 +286,8 @@
 
    	* genmodes.c (emit_max_int): New function.
 	(emit_insn_modes_h): Added call to emit_max_function.
-	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_INT, MAX_BITSIZE_MODE_ANY_MODE): Added doc.
+	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_INT, MAX_BITSIZE_MODE_ANY_MODE):
+	Added doc.
 	* machmode.def: Fixed comment.
 
 2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -364,21 +370,21 @@
 
 2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
-	* gcc/target.def (TARGET_HAS_IFUNC_P): New target hook.
-	* gcc/doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
-	* gcc/doc/tm.texi: Regenerate.
-	* gcc/targhooks.h (default_has_ifunc_p): New.
-	* gcc/targhooks.c (default_has_ifunc_p): Ditto.
-	* gcc/config/linux-protos.h: New file.
-	* gcc/config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
+	* target.def (TARGET_HAS_IFUNC_P): New target hook.
+	* doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_has_ifunc_p): New.
+	* targhooks.c (default_has_ifunc_p): Ditto.
+	* config/linux-protos.h: New file.
+	* config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
 	this hook for linux which disables support of indirect functions in
 	android.
-	* gcc/config/linux-android.c: New file.
-	* gcc/config/t-linux-android.c: Ditto.
-	* gcc/config.gcc: Added new object file linux-android.o.
-	* gcc/config/i386/i386.c (ix86_get_function_versions_dispatcher):
+	* config/linux-android.c: New file.
+	* config/t-linux-android.c: Ditto.
+	* config.gcc: Added new object file linux-android.o.
+	* config/i386/i386.c (ix86_get_function_versions_dispatcher):
 	Using TARGET_HAS_IFUNC hook instead of HAVE_GNU_INDIRECT_FUNCTION.
-	* gcc/varasm.c (do_assemble_alias): Likewise.
+	* varasm.c (do_assemble_alias): Likewise.
 	* configure.ac: Define HAVE_GNU_INDIRECT_FUNCTION as zero if the target
 	doesn't support indirect functions.
 	* configure: Regenerate.
