@@ -1126,8 +1126,32 @@ gfc_conv_expr_present (gfc_symbol * sym)
   tree decl, cond;
 
   gcc_assert (sym->attr.dummy);
-
   decl = gfc_get_symbol_decl (sym);
+
+  /* Intrinsic scalars with VALUE attribute which are passed by value
+     use a hidden argument to denote the present status.  */
+  if (sym->attr.value && sym->ts.type != BT_CHARACTER
+      && sym->ts.type != BT_CLASS && sym->ts.type != BT_DERIVED
+      && !sym->attr.dimension)
+    {
+      char name[GFC_MAX_SYMBOL_LEN + 2];
+      tree tree_name;
+
+      gcc_assert (TREE_CODE (decl) == PARM_DECL);
+      name[0] = '_';
+      strcpy (&name[1], sym->name);
+      tree_name = get_identifier (name);
+
+      /* Walk function argument list to find hidden arg.  */
+      cond = DECL_ARGUMENTS (DECL_CONTEXT (decl));
+      for ( ; cond != NULL_TREE; cond = TREE_CHAIN (cond))
+	if (DECL_NAME (cond) == tree_name)
+	  break;
+
+      gcc_assert (cond);
+      return cond;
+    }
+
   if (TREE_CODE (decl) != PARM_DECL)
     {
       /* Array parameters use a temporary descriptor, we want the real
@@ -3729,6 +3753,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   tree len;
   tree base_object;
   vec<tree, va_gc> *stringargs;
+  vec<tree, va_gc> *optionalargs;
   tree result = NULL;
   gfc_formal_arglist *formal;
   gfc_actual_arglist *arg;
@@ -3747,6 +3772,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   arglist = NULL;
   retargs = NULL;
   stringargs = NULL;
+  optionalargs = NULL;
   var = NULL_TREE;
   len = NULL_TREE;
   gfc_clear_ts (&ts);
@@ -3835,11 +3861,27 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	  else
 	    {
-	      /* Pass a NULL pointer for an absent arg.  */
 	      gfc_init_se (&parmse, NULL);
-	      parmse.expr = null_pointer_node;
-	      if (arg->missing_arg_type == BT_CHARACTER)
-		parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
+
+	      /* For scalar arguments with VALUE attribute which are passed by
+		 value, pass "0" and a hidden argument gives the optional
+		 status.  */
+	      if (fsym && fsym->attr.optional && fsym->attr.value
+		  && !fsym->attr.dimension && fsym->ts.type != BT_CHARACTER
+		  && fsym->ts.type != BT_CLASS && fsym->ts.type != BT_DERIVED)
+		{
+		  parmse.expr = fold_convert (gfc_sym_type (fsym),
+					      integer_zero_node);
+		  vec_safe_push (optionalargs, boolean_false_node);
+		}
+	      else
+		{
+		  /* Pass a NULL pointer for an absent arg.  */
+		  parmse.expr = null_pointer_node;
+		  if (arg->missing_arg_type == BT_CHARACTER)
+		    parmse.string_length = build_int_cst (gfc_charlen_type_node,
+							  0);
+		}
 	    }
 	}
       else if (arg->expr->expr_type == EXPR_NULL
@@ -4010,7 +4052,31 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			gfc_conv_expr (&parmse, e);
 		    }
 		  else
+		    {
 		    gfc_conv_expr (&parmse, e);
+		    if (fsym->attr.optional
+			&& fsym->ts.type != BT_CLASS
+			&& fsym->ts.type != BT_DERIVED)
+		      {
+			if (e->expr_type != EXPR_VARIABLE
+			    || !e->symtree->n.sym->attr.optional
+			    || e->ref != NULL)
+			  vec_safe_push (optionalargs, boolean_true_node);
+			else
+			  {
+			    tmp = gfc_conv_expr_present (e->symtree->n.sym);
+			    if (!e->symtree->n.sym->attr.value)
+			      parmse.expr
+				= fold_build3_loc (input_location, COND_EXPR,
+					TREE_TYPE (parmse.expr),
+					tmp, parmse.expr,
+					fold_convert (TREE_TYPE (parmse.expr),
+						      integer_zero_node));
+
+			    vec_safe_push (optionalargs, tmp);
+			  }
+		      }
+		    }
 		}
 	      else if (arg->name && arg->name[0] == '%')
 		/* Argument list functions %VAL, %LOC and %REF are signalled
@@ -4844,12 +4910,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_free_interface_mapping (&mapping);
 
   /* We need to glom RETARGS + ARGLIST + STRINGARGS + APPEND_ARGS.  */
-  arglen = (vec_safe_length (arglist) + vec_safe_length (stringargs)
-	    + vec_safe_length (append_args));
+  arglen = (vec_safe_length (arglist) + vec_safe_length (optionalargs)
+	    + vec_safe_length (stringargs) + vec_safe_length (append_args));
   vec_safe_reserve (retargs, arglen);
 
   /* Add the return arguments.  */
   retargs->splice (arglist);
+
+  /* Add the hidden present status for optional+value to the arguments.  */
+  retargs->splice (optionalargs);
 
   /* Add the hidden string length parameters to the arguments.  */
   retargs->splice (stringargs);
