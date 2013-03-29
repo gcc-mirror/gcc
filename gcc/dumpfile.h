@@ -125,7 +125,6 @@ extern FILE *dump_begin (int, int *);
 extern void dump_end (int, FILE *);
 extern int dump_start (int, int *);
 extern void dump_finish (int);
-extern void dump_node (const_tree, int, FILE *);
 extern int dump_switch_p (const char *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
@@ -141,6 +140,9 @@ extern void print_combine_total_stats (void);
 extern unsigned int dump_register (const char *, const char *, const char *,
                                    int, int);
 extern bool enable_rtl_dump_file (void);
+
+/* In tree-dump.c  */
+extern void dump_node (const_tree, int, FILE *);
 
 /* In combine.c  */
 extern void dump_combine_total_stats (FILE *);

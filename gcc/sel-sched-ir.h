@@ -530,7 +530,7 @@ typedef _list_iterator av_set_iterator;
 #define FOR_EACH_EXPR(EXPR, I, AV) _FOR_EACH (expr, (EXPR), (I), (AV))
 #define FOR_EACH_EXPR_1(EXPR, I, AV) _FOR_EACH_1 (expr, (EXPR), (I), (AV))
 
-static bool
+inline bool
 _list_iter_cond_expr (av_set_t av, expr_t *exprp)
 {
   if (av)

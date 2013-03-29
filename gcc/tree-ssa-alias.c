@@ -454,6 +454,25 @@ dump_points_to_solution (FILE *file, struct pt_solution *pt)
     }
 }
 
+
+/* Unified dump function for pt_solution.  */
+
+DEBUG_FUNCTION void
+debug (pt_solution &ref)
+{
+  dump_points_to_solution (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (pt_solution *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 /* Dump points-to information for SSA_NAME PTR into FILE.  */
 
 void

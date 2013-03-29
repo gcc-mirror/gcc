@@ -223,7 +223,11 @@ inline void sbitmap_vector_free (sbitmap * vec)
 }
 
 extern void dump_bitmap (FILE *, const_sbitmap);
+extern void debug_raw (const simple_bitmap_def &ref);
+extern void debug_raw (const simple_bitmap_def *ptr);
 extern void dump_bitmap_file (FILE *, const_sbitmap);
+extern void debug (const simple_bitmap_def &ref);
+extern void debug (const simple_bitmap_def *ptr);
 extern void dump_bitmap_vector (FILE *, const char *, const char *, sbitmap *,
 				 int);
 extern sbitmap sbitmap_alloc (unsigned int);

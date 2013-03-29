@@ -327,6 +327,21 @@ cp_lexer_debug_tokens (vec<cp_token, va_gc> *buffer)
   cp_lexer_dump_tokens (stderr, buffer, NULL, 0, NULL);
 }
 
+DEBUG_FUNCTION void
+debug (vec<cp_token, va_gc> &ref)
+{
+  cp_lexer_dump_tokens (stderr, &ref, NULL, 0, NULL);
+}
+
+DEBUG_FUNCTION void
+debug (vec<cp_token, va_gc> *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 /* Dump the cp_parser tree field T to FILE if T is non-NULL.  DESC is the
    description for T.  */
@@ -545,6 +560,20 @@ cp_debug_parser (FILE *file, cp_parser *parser)
   fprintf (file, "\tColumn: %d\n", eloc.column);
 }
 
+DEBUG_FUNCTION void
+debug (cp_parser &ref)
+{
+  cp_debug_parser (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (cp_parser *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
 
 /* Allocate memory for a new lexer object and return it.  */
 
@@ -1139,6 +1168,23 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
       break;
     }
 }
+
+DEBUG_FUNCTION void
+debug (cp_token &ref)
+{
+  cp_lexer_print_token (stderr, &ref);
+  fprintf (stderr, "\n");
+}
+
+DEBUG_FUNCTION void
+debug (cp_token *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 /* Start emitting debugging information.  */
 

@@ -5351,6 +5351,22 @@ debug_dwarf_die (dw_die_ref die)
   print_die (die, stderr);
 }
 
+DEBUG_FUNCTION void
+debug (die_struct &ref)
+{
+  print_die (&ref, stderr);
+}
+
+DEBUG_FUNCTION void
+debug (die_struct *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 /* Print all DWARF information collected for the compilation unit.
    This routine is a debugging aid only.  */
 

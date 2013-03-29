@@ -1,3 +1,28 @@
+2013-03-28  Lawrence Crowl  <crowl@google.com>
+
+	* Make-lang.in
+	(CXX_PARSER_H): Add header dependence.
+	* cp-tree.h
+	(extern debug (cp_binding_level &)): New.
+	(extern debug (cp_binding_level *)): New.
+	* name-lookup.h
+	(debug (cp_binding_level &)): New.
+	(debug (cp_binding_level *)): New.
+	* parser.c
+	(debug (cp_parser &)): New.
+	(debug (cp_parser *)): New.
+	(debug (cp_token &)): New.
+	(debug (cp_token *)): New.
+	(debug (vec<cp_token, va_gc> &)): New.
+	(debug (vec<cp_token, va_gc> *)): New.
+	* parser.c: Add header dependence.
+	(extern debug (cp_parser &)): New.
+	(extern debug (cp_parser *)): New.
+	(extern debug (cp_token &)): New.
+	(extern debug (cp_token *)): New.
+	(extern debug (vec<cp_token, va_gc> &)): New.
+	(extern debug (vec<cp_token, va_gc> *)): New.
+
 2013-03-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/17232

@@ -2586,6 +2586,8 @@ extern void sel_sched_fix_param (const char *param, const char *val);
 
 /* In print-rtl.c */
 extern const char *print_rtx_head;
+extern void debug (const rtx_def &ref);
+extern void debug (const rtx_def *ptr);
 extern void debug_rtx (const_rtx);
 extern void debug_rtx_list (const_rtx, int);
 extern void debug_rtx_range (const_rtx, const_rtx);

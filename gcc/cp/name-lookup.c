@@ -1800,6 +1800,22 @@ print_binding_level (cp_binding_level* lvl)
     }
 }
 
+DEBUG_FUNCTION void
+debug (cp_binding_level &ref)
+{
+  print_binding_level (&ref);
+}
+
+DEBUG_FUNCTION void
+debug (cp_binding_level *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 void
 print_other_binding_stack (cp_binding_level *stack)
 {

@@ -1,3 +1,177 @@
+2013-03-28  Lawrence Crowl  <crowl@google.com>
+
+	* Makefile.in: Add several missing include dependences.
+	(DUMPFILE_H): New.
+	(test-dump.o): New.  This object is not added to any executable,
+	but is present for ad-hoc testing.
+	* bitmap.c
+	(debug (const bitmap_head_def &)): New.
+	(debug (const bitmap_head_def *)): New.
+	* bitmap.h
+	(extern debug (const bitmap_head_def &)): New.
+	(extern debug (const bitmap_head_def *)): New.
+	* cfg.c
+	(debug (edge_def &)): New.
+	(debug (edge_def *)): New.
+	* cfghooks.c
+	(debug (basic_block_def &)): New.
+	(debug (basic_block_def *)): New.
+	* dumpfile.h
+	(dump_node (const_tree, int, FILE *)): Correct source file.
+	* dwarf2out.c
+	(debug (die_struct &)): New.
+	(debug (die_struct *)): New.
+	* dwarf2out.h
+	(extern debug (die_struct &)): New.
+	(extern debug (die_struct *)): New.
+	* gimple-pretty-print.c
+	(debug (gimple_statement_d &)): New.
+	(debug (gimple_statement_d *)): New.
+	* gimple-pretty-print.h
+	(extern debug (gimple_statement_d &)): New.
+	(extern debug (gimple_statement_d *)): New.
+	* ira-build.c
+	(debug (ira_allocno_copy &)): New.
+	(debug (ira_allocno_copy *)): New.
+	(debug (ira_allocno &)): New.
+	(debug (ira_allocno *)): New.
+	* ira-int.h
+	(extern debug (ira_allocno_copy &)): New.
+	(extern debug (ira_allocno_copy *)): New.
+	(extern debug (ira_allocno &)): New.
+	(extern debug (ira_allocno *)): New.
+	* ira-lives.c
+	(debug (live_range &)): New.
+	(debug (live_range *)): New.
+	* lra-int.h
+	(debug (lra_live_range &)): New.
+	(debug (lra_live_range *)): New.
+	* lra-lives.c
+	(debug (lra_live_range &)): New.
+	(debug (lra_live_range *)): New.
+	* omega.c
+	(debug (omega_pb_d &)): New.
+	(debug (omega_pb_d *)): New.
+	* omega.h
+	(extern debug (omega_pb_d &)): New.
+	(extern debug (omega_pb_d *)): New.
+	* print-rtl.c
+	(debug (const rtx_def &)): New.
+	(debug (const rtx_def *)): New.
+	* print-tree.c
+	(debug_tree (tree): Move within file.
+	(debug_raw (const tree_node &)): New.
+	(debug_raw (const tree_node *)): New.
+	(dump_tree_via_hooks (const tree_node *, int)): New.
+	(debug (const tree_node &)): New.
+	(debug (const tree_node *)): New.
+	(debug_verbose (const tree_node &)): New.
+	(debug_verbose (const tree_node *)): New.
+	(debug_head (const tree_node &)): New.
+	(debug_head (const tree_node *)): New.
+	(debug_body (const tree_node &)): New.
+	(debug_body (const tree_node *)): New.
+	(debug_vec_tree (tree): Move and reimplement in terms of dump.
+	(debug (vec<tree, va_gc> &)): New.
+	(debug (vec<tree, va_gc> *)): New.
+	* rtl.h
+	(extern debug (const rtx_def &)): New.
+	(extern debug (const rtx_def *)): New.
+	* sbitmap.c
+	(debug_raw (simple_bitmap_def &)): New.
+	(debug_raw (simple_bitmap_def *)): New.
+	(debug (simple_bitmap_def &)): New.
+	(debug (simple_bitmap_def *)): New.
+	* sbitmap.h
+	(extern debug (simple_bitmap_def &)): New.
+	(extern debug (simple_bitmap_def *)): New.
+	(extern debug_raw (simple_bitmap_def &)): New.
+	(extern debug_raw (simple_bitmap_def *)): New.
+	* sel-sched-dump.c
+	(debug (vinsn_def &)): New.
+	(debug (vinsn_def *)): New.
+	(debug_verbose (vinsn_def &)): New.
+	(debug_verbose (vinsn_def *)): New.
+	(debug (expr_def &)): New.
+	(debug (expr_def *)): New.
+	(debug_verbose (expr_def &)): New.
+	(debug_verbose (expr_def *)): New.
+	(debug (vec<rtx> &)): New.
+	(debug (vec<rtx> *)): New.
+	* sel-sched-dump.h
+	(extern debug (vinsn_def &)): New.
+	(extern debug (vinsn_def *)): New.
+	(extern debug_verbose (vinsn_def &)): New.
+	(extern debug_verbose (vinsn_def *)): New.
+	(extern debug (expr_def &)): New.
+	(extern debug (expr_def *)): New.
+	(extern debug_verbose (expr_def &)): New.
+	(extern debug_verbose (expr_def *)): New.
+	(extern debug (vec<rtx> &)): New.
+	(extern debug (vec<rtx> *)): New.
+	* sel-sched-ir.h
+	(_list_iter_cond_expr): Make inline instead of static.
+	* sreal.c
+	(debug (sreal &)): New.
+	(debug (sreal *)): New.
+	* sreal.h
+	(extern debug (sreal &)): New.
+	(extern debug (sreal *)): New.
+	* tree.h
+	(extern debug_raw (const tree_node &)): New.
+	(extern debug_raw (const tree_node *)): New.
+	(extern debug (const tree_node &)): New.
+	(extern debug (const tree_node *)): New.
+	(extern debug_verbose (const tree_node &)): New.
+	(extern debug_verbose (const tree_node *)): New.
+	(extern debug_head (const tree_node &)): New.
+	(extern debug_head (const tree_node *)): New.
+	(extern debug_body (const tree_node &)): New.
+	(extern debug_body (const tree_node *)): New.
+	(extern debug (vec<tree, va_gc> &)): New.
+	(extern debug (vec<tree, va_gc> *)): New.
+	* tree-cfg.c
+	(debug (struct loop &)): New.
+	(debug (struct loop *)): New.
+	(debug_verbose (struct loop &)): New.
+	(debug_verbose (struct loop *)): New.
+	* tree-dump.c: Add header dependence.
+	* tree-flow.h
+	(extern debug (struct loop &)): New.
+	(extern debug (struct loop *)): New.
+	(extern debug_verbose (struct loop &)): New.
+	(extern debug_verbose (struct loop *)): New.
+	* tree-data-ref.c
+	(debug (data_reference &)): New.
+	(debug (data_reference *)): New.
+	(debug (vec<data_reference_p> &)): New.
+	(debug (vec<data_reference_p> *)): New.
+	(debug (vec<ddr_p> &)): New.
+	(debug (vec<ddr_p> *)): New.
+	* tree-data-ref.h
+	(extern debug (data_reference &)): New.
+	(extern debug (data_reference *)): New.
+	(extern debug (vec<data_reference_p> &)): New.
+	(extern debug (vec<data_reference_p> *)): New.
+	(extern debug (vec<ddr_p> &)): New.
+	(extern debug (vec<ddr_p> *)): New.
+	* tree-ssa-alias.c
+	(debug (pt_solution &)): New.
+	(debug (pt_solution *)): New.
+	* tree-ssa-alias.h
+	(extern debug (pt_solution &)): New.
+	(extern debug (pt_solution *)): New.
+	* tree-ssa-alias.c
+	(debug (_var_map &)): New.
+	(debug (_var_map *)): New.
+	(debug (tree_live_info_d &)): New.
+	(debug (tree_live_info_d *)): New.
+	* tree-ssa-alias.h
+	(extern debug (_var_map &)): New.
+	(extern debug (_var_map *)): New.
+	(extern debug (tree_live_info_d &)): New.
+	(extern debug (tree_live_info_d *)): New.
+
 2013-03-28  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (merge_profile_summaries): Fix overflows.
