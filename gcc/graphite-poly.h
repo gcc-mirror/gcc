@@ -1376,10 +1376,6 @@ struct scop
     *must_war, *may_war, *must_war_no_source, *may_war_no_source,
     *must_waw, *may_waw, *must_waw_no_source, *may_waw_no_source;
 
-  /* A hashtable of the data dependence relations for the original
-     scattering.  */
-  htab_t original_pddrs;
-
   /* True when the scop has been converted to its polyhedral
      representation.  */
   bool poly_scop_p;
@@ -1388,7 +1384,6 @@ struct scop
 #define SCOP_BBS(S) (S->bbs)
 #define SCOP_REGION(S) ((sese) S->region)
 #define SCOP_CONTEXT(S) (NULL)
-#define SCOP_ORIGINAL_PDDRS(S) (S->original_pddrs)
 #define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
 #define SCOP_TRANSFORMED_SCHEDULE(S) (S->transformed_schedule)
 #define SCOP_SAVED_SCHEDULE(S) (S->saved_schedule)
