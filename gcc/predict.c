@@ -128,25 +128,42 @@ maybe_hot_frequency_p (struct function *fun, int freq)
   return true;
 }
 
-/* Return TRUE if frequency FREQ is considered to be hot.  */
+static gcov_type min_count = -1;
 
-static inline bool
-maybe_hot_count_p (struct function *fun, gcov_type count)
+/* Determine the threshold for hot BB counts.  */
+
+gcov_type
+get_hot_bb_threshold ()
 {
   gcov_working_set_t *ws;
-  static gcov_type min_count = -1;
-  if (fun && profile_status_for_function (fun) != PROFILE_READ)
-    return true;
-  /* Code executed at most once is not hot.  */
-  if (profile_info->runs >= count)
-    return false;
   if (min_count == -1)
     {
       ws = find_working_set (PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE));
       gcc_assert (ws);
       min_count = ws->min_counter;
     }
-  return (count >= min_count);
+  return min_count;
+}
+
+/* Set the threshold for hot BB counts.  */
+
+void
+set_hot_bb_threshold (gcov_type min)
+{
+  min_count = min;
+}
+
+/* Return TRUE if frequency FREQ is considered to be hot.  */
+
+static inline bool
+maybe_hot_count_p (struct function *fun, gcov_type count)
+{
+  if (fun && profile_status_for_function (fun) != PROFILE_READ)
+    return true;
+  /* Code executed at most once is not hot.  */
+  if (profile_info->runs >= count)
+    return false;
+  return (count >= get_hot_bb_threshold ());
 }
 
 /* Return true in case BB can be CPU intensive and should be optimized

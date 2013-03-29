@@ -1,3 +1,30 @@
+2013-03-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (output_profile_summary, input_profile_summary): Use
+	gcov streaming; stream hot bb threshold to ltrans.
+	* predict.c (get_hot_bb_threshold): Break out from ....
+	(maybe_hot_count_p): ... here.
+	(set_hot_bb_threshold): New function.
+	* lto-section-in.c (lto_section_name): Add profile.
+	* profile.h (get_hot_bb_threshold, set_hot_bb_threshold): Declare.
+	* ipa.c: Include hash-table.h, tree-inline.h, profile.h, lto-streamer.h
+	and data-streamer.h
+	(histogram_entry): New structure.
+	(histogram, histogram_pool): New global vars.
+	(histogram_hash): New structure.
+	(histogram_hash::hash): New method.
+	(histogram_hash::equal): Likewise.
+	(account_time_size): New function.
+	(cmp_counts): New function.
+	(dump_histogram): New function.
+	(ipa_profile_generate_summary): New function.
+	(ipa_profile_write_summary): New function.
+	(ipa_profile_read_summary): New function.
+	(ipa_profile): Decide on threshold.
+	(pass_ipa_profile): Add ipa_profile_write_summary and ipa_profile_read_summary.
+	* Makefile.in (ipa.o): Update dependencies.
+	* lto-streamer.h (LTO_section_ipa_profile): New section.
+
 2013-03-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* tree.h (VAR_P): New.
