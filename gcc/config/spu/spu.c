@@ -2172,8 +2172,7 @@ get_branch_target (rtx branch)
 	return gen_rtx_REG (SImode, LINK_REGISTER_REGNUM);
 
       /* jump table */
-      if (GET_CODE (PATTERN (branch)) == ADDR_VEC
-	  || GET_CODE (PATTERN (branch)) == ADDR_DIFF_VEC)
+      if (JUMP_TABLE_DATA_P (branch))
 	return 0;
 
      /* ASM GOTOs. */

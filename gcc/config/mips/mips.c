@@ -95,12 +95,13 @@ along with GCC; see the file COPYING3.  If not see
    : TARGET_64BIT ? 0x100 : 0x400)
 
 /* True if INSN is a mips.md pattern or asm statement.  */
+/* ???	This test exists through the compiler, perhaps it should be
+	moved to rtl.h.  */
 #define USEFUL_INSN_P(INSN)						\
   (NONDEBUG_INSN_P (INSN)						\
+   && ! JUMP_TABLE_DATA_P (INSN)					\
    && GET_CODE (PATTERN (INSN)) != USE					\
-   && GET_CODE (PATTERN (INSN)) != CLOBBER				\
-   && GET_CODE (PATTERN (INSN)) != ADDR_VEC				\
-   && GET_CODE (PATTERN (INSN)) != ADDR_DIFF_VEC)
+   && GET_CODE (PATTERN (INSN)) != CLOBBER)
 
 /* If INSN is a delayed branch sequence, return the first instruction
    in the sequence, otherwise return INSN itself.  */
@@ -14648,7 +14649,7 @@ mips16_emit_constants (struct mips16_constant *constants, rtx insn)
 static int
 mips16_insn_length (rtx insn)
 {
-  if (JUMP_P (insn))
+  if (JUMP_TABLE_DATA_P (insn))
     {
       rtx body = PATTERN (insn);
       if (GET_CODE (body) == ADDR_VEC)

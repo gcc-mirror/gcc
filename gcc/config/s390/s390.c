@@ -5739,7 +5739,7 @@ addr_generation_dependency_p (rtx dep_rtx, rtx insn)
   rtx target, pat;
 
   if (NONJUMP_INSN_P (dep_rtx))
-      dep_rtx = PATTERN (dep_rtx);
+    dep_rtx = PATTERN (dep_rtx);
 
   if (GET_CODE (dep_rtx) == SET)
     {
@@ -7013,11 +7013,7 @@ s390_chunkify_start (void)
 	  && (LABEL_PRESERVE_P (insn) || LABEL_NAME (insn)))
 	{
 	  rtx vec_insn = next_real_insn (insn);
-	  rtx vec_pat = vec_insn && JUMP_P (vec_insn) ?
-			PATTERN (vec_insn) : NULL_RTX;
-	  if (!vec_pat
-	      || !(GET_CODE (vec_pat) == ADDR_VEC
-		   || GET_CODE (vec_pat) == ADDR_DIFF_VEC))
+	  if (! vec_insn || ! JUMP_TABLE_DATA_P (vec_insn))
 	    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (insn));
 	}
 
@@ -7048,12 +7044,9 @@ s390_chunkify_start (void)
 	      /* Find the jump table used by this casesi jump.  */
 	      rtx vec_label = XEXP (XEXP (XVECEXP (pat, 0, 1), 0), 0);
 	      rtx vec_insn = next_real_insn (vec_label);
-	      rtx vec_pat = vec_insn && JUMP_P (vec_insn) ?
-			    PATTERN (vec_insn) : NULL_RTX;
-	      if (vec_pat
-		  && (GET_CODE (vec_pat) == ADDR_VEC
-		      || GET_CODE (vec_pat) == ADDR_DIFF_VEC))
+	      if (vec_insn && JUMP_TABLE_DATA_P (vec_insn))
 		{
+		  rtx vec_pat = PATTERN (vec_insn);
 		  int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
 
 		  for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)

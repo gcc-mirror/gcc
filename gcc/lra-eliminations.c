@@ -767,10 +767,9 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 
   if (icode < 0 && asm_noperands (PATTERN (insn)) < 0 && ! DEBUG_INSN_P (insn))
     {
-      lra_assert (GET_CODE (PATTERN (insn)) == USE
+      lra_assert (JUMP_TABLE_DATA_P (insn)
+		  || GET_CODE (PATTERN (insn)) == USE
 		  || GET_CODE (PATTERN (insn)) == CLOBBER
-		  || GET_CODE (PATTERN (insn)) == ADDR_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 		  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
       return;
     }

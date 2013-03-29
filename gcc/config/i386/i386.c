@@ -35209,8 +35209,7 @@ ix86_avoid_jump_mispredicts (void)
 		{
 		  start = NEXT_INSN (start);
 		  if ((JUMP_P (start)
-		       && GET_CODE (PATTERN (start)) != ADDR_VEC
-		       && GET_CODE (PATTERN (start)) != ADDR_DIFF_VEC)
+		       && ! JUMP_TABLE_DATA_P (start))
 		      || CALL_P (start))
 		    njumps--, isjump = 1;
 		  else
@@ -35227,8 +35226,7 @@ ix86_avoid_jump_mispredicts (void)
 	fprintf (dump_file, "Insn %i estimated to %i bytes\n",
 		 INSN_UID (insn), min_size);
       if ((JUMP_P (insn)
-	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
+	   && ! JUMP_TABLE_DATA_P (insn))
 	  || CALL_P (insn))
 	njumps++;
       else
@@ -35238,8 +35236,7 @@ ix86_avoid_jump_mispredicts (void)
 	{
 	  start = NEXT_INSN (start);
 	  if ((JUMP_P (start)
-	       && GET_CODE (PATTERN (start)) != ADDR_VEC
-	       && GET_CODE (PATTERN (start)) != ADDR_DIFF_VEC)
+	       && ! JUMP_TABLE_DATA_P (start))
 	      || CALL_P (start))
 	    njumps--, isjump = 1;
 	  else
