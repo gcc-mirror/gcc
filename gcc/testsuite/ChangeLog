@@ -1,3 +1,8 @@
+2013-03-27  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Fix intrinsic name.
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Ditto.
+
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56737
