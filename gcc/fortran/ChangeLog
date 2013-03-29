@@ -1,3 +1,10 @@
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* io/list_read.c (nml_query): Only abort when
+	an error occured.
+	(namelist_read): Add goto instead of falling through.
+
 2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
