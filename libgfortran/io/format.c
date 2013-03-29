@@ -586,16 +586,15 @@ format_lex (format_data *fmt)
  * parenthesis node which contains the rest of the list. */
 
 static fnode *
-parse_format_list (st_parameter_dt *dtp, bool *save_ok, bool *seen_dd)
+parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 {
   fnode *head, *tail;
   format_token t, u, t2;
   int repeat;
   format_data *fmt = dtp->u.p.fmt;
-  bool saveit, seen_data_desc = false;
+  bool seen_data_desc = false;
 
   head = tail = NULL;
-  saveit = *save_ok;
 
   /* Get the next format item */
  format_item:
@@ -612,7 +611,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok, bool *seen_dd)
 	}
       get_fnode (fmt, &head, &tail, FMT_LPAREN);
       tail->repeat = -2;  /* Signifies unlimited format.  */
-      tail->u.child = parse_format_list (dtp, &saveit, &seen_data_desc);
+      tail->u.child = parse_format_list (dtp, &seen_data_desc);
       if (fmt->error != NULL)
 	goto finished;
       if (!seen_data_desc)
@@ -631,7 +630,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok, bool *seen_dd)
 	case FMT_LPAREN:
 	  get_fnode (fmt, &head, &tail, FMT_LPAREN);
 	  tail->repeat = repeat;
-	  tail->u.child = parse_format_list (dtp, &saveit, &seen_data_desc);
+	  tail->u.child = parse_format_list (dtp, &seen_data_desc);
 	  *seen_dd = seen_data_desc;
 	  if (fmt->error != NULL)
 	    goto finished;
@@ -659,7 +658,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok, bool *seen_dd)
     case FMT_LPAREN:
       get_fnode (fmt, &head, &tail, FMT_LPAREN);
       tail->repeat = 1;
-      tail->u.child = parse_format_list (dtp, &saveit, &seen_data_desc);
+      tail->u.child = parse_format_list (dtp, &seen_data_desc);
       *seen_dd = seen_data_desc;
       if (fmt->error != NULL)
 	goto finished;
@@ -723,8 +722,6 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok, bool *seen_dd)
       goto between_desc;
 
     case FMT_STRING:
-      /* TODO: Find out why it is necessary to turn off format caching.  */
-      saveit = false;
       get_fnode (fmt, &head, &tail, FMT_STRING);
       tail->u.string.p = fmt->string;
       tail->u.string.length = fmt->value;
@@ -1104,8 +1101,6 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok, bool *seen_dd)
 
  finished:
 
-  *save_ok = saveit;
-  
   return head;
 }
 
@@ -1255,8 +1250,7 @@ parse_format (st_parameter_dt *dtp)
   fmt->avail++;
 
   if (format_lex (fmt) == FMT_LPAREN)
-    fmt->array.array[0].u.child = parse_format_list (dtp, &format_cache_ok,
-						     &seen_data_desc);
+    fmt->array.array[0].u.child = parse_format_list (dtp, &seen_data_desc);
   else
     fmt->error = "Missing initial left parenthesis in format";
 

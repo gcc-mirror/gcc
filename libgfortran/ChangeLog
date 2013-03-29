@@ -1,3 +1,9 @@
+2012-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format_list): Also cache FMT_STRING.
+	(parse_format): Update call.
+
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56737
