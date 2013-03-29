@@ -148,8 +148,7 @@ save_parsed_format (st_parameter_dt *dtp)
   u->format_hash_table[hash].hashed_fmt = NULL;
 
   free (u->format_hash_table[hash].key);
-  u->format_hash_table[hash].key = xmalloc (dtp->format_len);
-  memcpy (u->format_hash_table[hash].key, dtp->format, dtp->format_len);
+  u->format_hash_table[hash].key = dtp->format;
 
   u->format_hash_table[hash].key_len = dtp->format_len;
   u->format_hash_table[hash].hashed_fmt = dtp->u.p.fmt;
@@ -1223,6 +1222,13 @@ parse_format (st_parameter_dt *dtp)
 
   /* Not found so proceed as follows.  */
 
+  if (format_cache_ok)
+    {
+      char *fmt_string = xmalloc (dtp->format_len);
+      memcpy (fmt_string, dtp->format, dtp->format_len);
+      dtp->format = fmt_string;
+    }
+
   dtp->u.p.fmt = fmt = xmalloc (sizeof (format_data));
   fmt->format_string = dtp->format;
   fmt->format_string_len = dtp->format_len;
@@ -1257,6 +1263,8 @@ parse_format (st_parameter_dt *dtp)
   if (fmt->error)
     {
       format_error (dtp, NULL, fmt->error);
+      if (format_cache_ok)
+	free (dtp->format);
       free_format_hash_table (dtp->u.p.current_unit);
       return;
     }
