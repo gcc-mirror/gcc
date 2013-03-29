@@ -1,6 +1,11 @@
+2013-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR lto/56777
+	* doc/invoke.texi ([-fwhole-program]): Fix typo.
+
 2013-03-29  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/i386/avx2intrin.h (_mm256_broadcastsi128_si256):
+	* config/i386/avx2intrin.h (_mm256_broadcastsi128_si256):
 	Fix declaration name.
 
 2013-03-28  Gerald Pfeifer  <gerald@pfeifer.com>
@@ -1617,10 +1622,10 @@
 
 2013-02-16  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
 
-	* config/microblaze/microblaze.c (microblaze_asm_trampoline_template): 
+	* config/microblaze/microblaze.c (microblaze_asm_trampoline_template):
 	Replace with a microblaze version.
 	(microblaze_trampoline_init): Adapt for microblaze.
-	* gcc/config/microblaze/microblaze.h (TRAMPOLINE_SIZE): Adapt for 
+	* config/microblaze/microblaze.h (TRAMPOLINE_SIZE): Adapt for
 	microblaze.
 
 2013-02-16  Jakub Jelinek  <jakub@redhat.com>
