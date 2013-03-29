@@ -1,3 +1,8 @@
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* gfortran.dg/namelist_80.f90: New.
+
 2013-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
