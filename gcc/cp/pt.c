@@ -12303,6 +12303,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TYPEID_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case PAREN_EXPR:
       return build1
 	(code, tsubst (TREE_TYPE (t), args, complain, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl));
@@ -14548,6 +14549,9 @@ tsubst_copy_and_build (tree t,
     case TRANSACTION_EXPR:
       RETURN (tsubst_expr(t, args, complain, in_decl,
 	     integral_constant_expression_p));
+
+    case PAREN_EXPR:
+      RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
@@ -20593,9 +20597,7 @@ listify_autos (tree type, tree auto_node)
 tree
 do_auto_deduction (tree type, tree init, tree auto_node)
 {
-  tree parms, tparms, targs;
-  tree args[1];
-  int val;
+  tree targs;
 
   if (init == error_mark_node)
     return error_mark_node;
@@ -20614,32 +20616,42 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 
   init = resolve_nondeduced_context (init);
 
-  parms = build_tree_list (NULL_TREE, type);
-  args[0] = init;
-  tparms = make_tree_vec (1);
   targs = make_tree_vec (1);
-  TREE_VEC_ELT (tparms, 0)
-    = build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
-  val = type_unification_real (tparms, targs, parms, args, 1, 0,
-			       DEDUCE_CALL, LOOKUP_NORMAL,
-			       /*explain_p=*/false);
-  if (val > 0)
+  if (AUTO_IS_DECLTYPE (auto_node))
     {
-      if (processing_template_decl)
-	/* Try again at instantiation time.  */
-	return type;
-      if (type && type != error_mark_node)
-	/* If type is error_mark_node a diagnostic must have been
-	   emitted by now.  Also, having a mention to '<type error>'
-	   in the diagnostic is not really useful to the user.  */
+      bool id = (DECL_P (init) || TREE_CODE (init) == COMPONENT_REF);
+      TREE_VEC_ELT (targs, 0)
+	= finish_decltype_type (init, id, tf_warning_or_error);
+    }
+  else
+    {
+      tree parms = build_tree_list (NULL_TREE, type);
+      tree tparms = make_tree_vec (1);
+      int val;
+
+      TREE_VEC_ELT (tparms, 0)
+	= build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
+      val = type_unification_real (tparms, targs, parms, &init, 1, 0,
+				   DEDUCE_CALL, LOOKUP_NORMAL,
+				   /*explain_p=*/false);
+      if (val > 0)
 	{
-	  if (cfun && auto_node == current_function_auto_return_pattern
-	      && LAMBDA_FUNCTION_P (current_function_decl))
-	    error ("unable to deduce lambda return type from %qE", init);
-	  else
-	    error ("unable to deduce %qT from %qE", type, init);
+	  if (processing_template_decl)
+	    /* Try again at instantiation time.  */
+	    return type;
+	  if (type && type != error_mark_node)
+	    /* If type is error_mark_node a diagnostic must have been
+	       emitted by now.  Also, having a mention to '<type error>'
+	       in the diagnostic is not really useful to the user.  */
+	    {
+	      if (cfun && auto_node == current_function_auto_return_pattern
+		  && LAMBDA_FUNCTION_P (current_function_decl))
+		error ("unable to deduce lambda return type from %qE", init);
+	      else
+		error ("unable to deduce %qT from %qE", type, init);
+	    }
+	  return error_mark_node;
 	}
-      return error_mark_node;
     }
 
   /* If the list of declarators contains more than one declarator, the type

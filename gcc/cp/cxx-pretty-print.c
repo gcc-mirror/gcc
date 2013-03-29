@@ -1167,6 +1167,12 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_ws_string (pp, "<lambda>");
       break;
 
+    case PAREN_EXPR:
+      pp_cxx_left_paren (pp);
+      pp_cxx_expression (pp, TREE_OPERAND (t, 0));
+      pp_cxx_right_paren (pp);
+      break;
+
     default:
       pp_c_expression (pp_c_base (pp), t);
       break;

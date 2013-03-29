@@ -2506,6 +2506,12 @@ dump_expr (tree t, int flags)
       pp_string (cxx_pp, M_("<lambda>"));
       break;
 
+    case PAREN_EXPR:
+      pp_cxx_left_paren (cxx_pp);
+      dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
+      pp_cxx_right_paren (cxx_pp);
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */

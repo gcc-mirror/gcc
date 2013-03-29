@@ -4106,7 +4106,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	       example, the expression is of the form `A::B', since
 	       `&A::B' might be a pointer-to-member, but `&(A::B)' is
 	       not.  */
-	    finish_parenthesized_expr (expr);
+	    expr = finish_parenthesized_expr (expr);
 	    /* DR 705: Wrapping an unqualified name in parentheses
 	       suppresses arg-dependent lookup.  We want to pass back
 	       CP_ID_KIND_QUALIFIED for suppressing vtable lookup
@@ -11399,7 +11399,9 @@ cp_parser_decltype_expr (cp_parser *parser,
 /* Parse a `decltype' type. Returns the type.
 
    simple-type-specifier:
-     decltype ( expression )  */
+     decltype ( expression )
+   C++14 proposal:
+     decltype ( auto )  */
 
 static tree
 cp_parser_decltype (cp_parser *parser)
@@ -11426,6 +11428,18 @@ cp_parser_decltype (cp_parser *parser)
   /* Parse the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return error_mark_node;
+
+  /* decltype (auto) */
+  if (cxx_dialect >= cxx1y
+      && cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+	return error_mark_node;
+      expr = make_auto ();
+      AUTO_IS_DECLTYPE (expr) = true;
+      goto rewrite;
+    }
 
   /* Types cannot be defined in a `decltype' expression.  Save away the
      old message.  */
@@ -11485,6 +11499,7 @@ cp_parser_decltype (cp_parser *parser)
   expr = finish_decltype_type (expr, id_expression_or_member_access_p,
 			       tf_warning_or_error);
 
+ rewrite:
   /* Replace the decltype with a CPP_DECLTYPE so we don't need to parse
      it again.  */
   start_token->type = CPP_DECLTYPE;
@@ -17207,6 +17222,7 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
     abstract_declarator = NULL;
 
   if (type_specifier_seq.type
+      && cxx_dialect < cxx1y
       && type_uses_auto (type_specifier_seq.type))
     {
       /* A type-id with type 'auto' is only ok if the abstract declarator
@@ -28003,7 +28019,7 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
       cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 
       expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
-      finish_parenthesized_expr (expr);
+      expr = finish_parenthesized_expr (expr);
 
       cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
     }
