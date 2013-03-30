@@ -1,3 +1,16 @@
+2013-03-30  Lawrence Crowl  <crowl@google.com>
+
+	* dse.c (clear_alias_sets): Remove never set.
+	(disqualified_clear_alias_sets): Remove never set.
+	(clear_alias_mode_pool): Remove never set.
+	(dse_step0): Remove condition that is never true.
+	(canon_address): Remove condition that is never true.
+	(dse_step7): Remove condition that is never true.
+	(rest_of_handle_dse): Remove condition that is never true.
+	(rest_of_handle_dse::did_global): Remove never read from above.
+	(dse_step2_spill): Remove never called from above.
+	(dse_step5_spill): Remove never called from above.
+
 2013-03-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/md.texi (Standard Names) <casesi>: Update documentation for
