@@ -22654,11 +22654,7 @@ thumb_far_jump_used_p (void)
      insn with the far jump attribute set.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (JUMP_P (insn)
-	  /* Ignore tablejump patterns.  */
-	  && ! JUMP_TABLE_DATA_P (insn)
-	  && get_attr_far_jump (insn) == FAR_JUMP_YES
-	  )
+      if (JUMP_P (insn) && get_attr_far_jump (insn) == FAR_JUMP_YES)
 	{
 	  /* Record the fact that we have decided that
 	     the function does use far jumps.  */

@@ -391,18 +391,8 @@ get_attr_length_1 (rtx insn, int (*fallback_fn) (rtx))
 	return 0;
 
       case CALL_INSN:
-	length = fallback_fn (insn);
-	break;
-
       case JUMP_INSN:
-	body = PATTERN (insn);
-	if (JUMP_TABLE_DATA_P (insn))
-	  {
-	    /* Alignment is machine-dependent and should be handled by
-	       ADDR_VEC_ALIGN.  */
-	  }
-	else
-	  length = fallback_fn (insn);
+	length = fallback_fn (insn);
 	break;
 
       case INSN:

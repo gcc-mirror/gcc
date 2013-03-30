@@ -1269,8 +1269,7 @@ scan_one_insn (rtx insn)
   int i, k;
   bool counted_mem;
 
-  if (!NONDEBUG_INSN_P (insn)
-      || JUMP_TABLE_DATA_P (insn))
+  if (!NONDEBUG_INSN_P (insn))
     return insn;
 
   pat_code = GET_CODE (PATTERN (insn));

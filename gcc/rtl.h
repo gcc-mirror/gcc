@@ -363,6 +363,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
  */
 #define RTX_PREV(X) ((INSN_P (X)       			\
                       || NOTE_P (X)       		\
+                      || JUMP_TABLE_DATA_P (X)		\
                       || BARRIER_P (X)        		\
                       || LABEL_P (X))    		\
                      && PREV_INSN (X) != NULL           \
@@ -469,9 +470,7 @@ struct GTY((variable_size)) rtvec_def {
 #define BARRIER_P(X) (GET_CODE (X) == BARRIER)
 
 /* Predicate yielding nonzero iff X is a data for a jump table.  */
-#define JUMP_TABLE_DATA_P(INSN) \
-  (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
-		     GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC))
+#define JUMP_TABLE_DATA_P(INSN) (GET_CODE (INSN) == JUMP_TABLE_DATA)
 
 /* Predicate yielding nonzero iff X is a return or simple_return.  */
 #define ANY_RETURN_P(X) \
@@ -849,8 +848,8 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* 1 if RTX is an insn that has been deleted.  */
 #define INSN_DELETED_P(RTX)						\
-  (RTL_FLAG_CHECK7("INSN_DELETED_P", (RTX), DEBUG_INSN, INSN,		\
-		   CALL_INSN, JUMP_INSN,				\
+  (RTL_FLAG_CHECK8("INSN_DELETED_P", (RTX), DEBUG_INSN, INSN,		\
+		   CALL_INSN, JUMP_INSN, JUMP_TABLE_DATA,		\
 		   CODE_LABEL, BARRIER, NOTE)->volatil)
 
 /* 1 if RTX is a call to a const function.  Built from ECF_CONST and
@@ -869,7 +868,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* 1 if RTX is a call to a looping const or pure function.  Built from
    ECF_LOOPING_CONST_OR_PURE and DECL_LOOPING_CONST_OR_PURE_P.  */
-#define RTL_LOOPING_CONST_OR_PURE_CALL_P(RTX)					\
+#define RTL_LOOPING_CONST_OR_PURE_CALL_P(RTX)				\
   (RTL_FLAG_CHECK1("CONST_OR_PURE_CALL_P", (RTX), CALL_INSN)->call)
 
 /* 1 if RTX is a call_insn for a sibling call.  */
@@ -1881,6 +1880,7 @@ extern rtx emit_debug_insn (rtx);
 extern rtx emit_jump_insn (rtx);
 extern rtx emit_call_insn (rtx);
 extern rtx emit_label (rtx);
+extern rtx emit_jump_table_data (rtx);
 extern rtx emit_barrier (void);
 extern rtx emit_note (enum insn_note);
 extern rtx emit_note_copy (rtx);

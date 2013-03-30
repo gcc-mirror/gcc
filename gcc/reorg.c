@@ -3700,13 +3700,13 @@ dbr_schedule (rtx first)
     {
       rtx target;
 
-      if (JUMP_P (insn))
-        INSN_ANNULLED_BRANCH_P (insn) = 0;
-      INSN_FROM_TARGET_P (insn) = 0;
-
       /* Skip vector tables.  We can't get attributes for them.  */
       if (JUMP_TABLE_DATA_P (insn))
 	continue;
+
+      if (JUMP_P (insn))
+        INSN_ANNULLED_BRANCH_P (insn) = 0;
+      INSN_FROM_TARGET_P (insn) = 0;
 
       if (num_delay_slots (insn) > 0)
 	obstack_ptr_grow (&unfilled_slots_obstack, insn);

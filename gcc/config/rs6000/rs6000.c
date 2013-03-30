@@ -1290,9 +1290,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL rs6000_function_ok_for_sibcall
 
-#undef TARGET_INVALID_WITHIN_DOLOOP
-#define TARGET_INVALID_WITHIN_DOLOOP rs6000_invalid_within_doloop
-
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST rs6000_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
@@ -18778,22 +18775,6 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp)
   return false;
 }
 
-/* NULL if INSN insn is valid within a low-overhead loop.
-   Otherwise return why doloop cannot be applied.
-   PowerPC uses the COUNT register for branch on table instructions.  */
-
-static const char *
-rs6000_invalid_within_doloop (const_rtx insn)
-{
-  if (CALL_P (insn))
-    return "Function call in the loop.";
-
-  if (JUMP_TABLE_DATA_P (insn))
-    return "Computed branch in the loop.";
-
-  return NULL;
-}
-
 static int
 rs6000_ra_ever_killed (void)
 {
@@ -23940,7 +23921,7 @@ get_next_active_insn (rtx insn, rtx tail)
 	return NULL_RTX;
 
       if (CALL_P (insn)
-	  || JUMP_P (insn)
+	  || JUMP_P (insn) || JUMP_TABLE_DATA_P (insn)
 	  || (NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && GET_CODE (PATTERN (insn)) != CLOBBER

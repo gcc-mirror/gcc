@@ -1409,8 +1409,6 @@ frv_function_contains_far_jump (void)
   rtx insn = get_insns ();
   while (insn != NULL
 	 && !(JUMP_P (insn)
-	      /* Ignore tablejump patterns.  */
-	      && ! JUMP_TABLE_DATA_P (insn)
 	      && get_attr_far_jump (insn) == FAR_JUMP_YES))
     insn = NEXT_INSN (insn);
   return (insn != NULL);
@@ -7480,7 +7478,7 @@ frv_for_each_packet (void (*handle_packet) (void))
 	  frv_start_packet_block ();
 	}
 
-      if (INSN_P (insn) && ! JUMP_TABLE_DATA_P (insn))
+      if (INSN_P (insn))
 	switch (GET_CODE (PATTERN (insn)))
 	  {
 	  case USE:

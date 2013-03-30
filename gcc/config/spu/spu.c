@@ -2171,10 +2171,6 @@ get_branch_target (rtx branch)
       if (GET_CODE (PATTERN (branch)) == RETURN)
 	return gen_rtx_REG (SImode, LINK_REGISTER_REGNUM);
 
-      /* jump table */
-      if (JUMP_TABLE_DATA_P (branch))
-	return 0;
-
      /* ASM GOTOs. */
      if (extract_asm_operands (PATTERN (branch)) != NULL)
 	return NULL;

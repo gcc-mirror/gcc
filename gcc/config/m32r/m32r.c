@@ -1308,7 +1308,6 @@ static int
 m32r_is_insn (rtx insn)
 {
   return (NONDEBUG_INSN_P (insn)
-	  && ! JUMP_TABLE_DATA_P (insn)
 	  && GET_CODE (PATTERN (insn)) != USE
 	  && GET_CODE (PATTERN (insn)) != CLOBBER);
 }
