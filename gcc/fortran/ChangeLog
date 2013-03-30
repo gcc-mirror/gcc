@@ -1,3 +1,11 @@
+2013-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* trans-expr.c (build_memcmp_call):  New function.
+	(gfc_build_compare_string):  If the strings
+	compared have constant and equal lengths and
+	the strings are kind=1, or, for kind=4 strings,
+	the test is for (in)equality, use memcmp().
+
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35203
