@@ -1332,7 +1332,7 @@ locates data in flash but
 accesses to these data will read from generic address space, i.e.@:
 from RAM,
 so that you need special accessors like @code{pgm_read_byte}
-from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}}
+from @w{@uref{http://nongnu.org/avr-libc/user-manual/,AVR-LibC}}
 together with attribute @code{progmem}.
 
 @b{Limitations and caveats}
@@ -4822,7 +4822,7 @@ of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
 (inline) assembler must be used.
 @example
-/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}} */
+/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual/,AVR-LibC}} */
 #include <avr/pgmspace.h> 
 
 /* Locate var in flash memory */
