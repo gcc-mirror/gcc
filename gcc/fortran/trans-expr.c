@@ -2689,6 +2689,32 @@ gfc_optimize_len_trim (tree len, tree str, int kind)
   return -1;
 }
 
+/* Helper to build a call to memcmp.  */
+
+static tree
+build_memcmp_call (tree s1, tree s2, tree n)
+{
+  tree tmp;
+
+  if (!POINTER_TYPE_P (TREE_TYPE (s1)))
+    s1 = gfc_build_addr_expr (pvoid_type_node, s1);
+  else
+    s1 = fold_convert (pvoid_type_node, s1);
+
+  if (!POINTER_TYPE_P (TREE_TYPE (s2)))
+    s2 = gfc_build_addr_expr (pvoid_type_node, s2);
+  else
+    s2 = fold_convert (pvoid_type_node, s2);
+
+  n = fold_convert (size_type_node, n);
+
+  tmp = build_call_expr_loc (input_location,
+			     builtin_decl_explicit (BUILT_IN_MEMCMP),
+			     3, s1, s2, n);
+
+  return fold_convert (integer_type_node, tmp);
+}
+
 /* Compare two strings. If they are all single characters, the result is the
    subtraction of them. Otherwise, we build a library call.  */
 
@@ -2728,6 +2754,26 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind,
       len = gfc_optimize_len_trim (len2, str2, kind);
       if (len > 0 && compare_tree_int (len1, len) < 0)
 	return integer_one_node;
+    }
+
+  /* We can compare via memcpy if the strings are known to be equal
+     in length and they are
+     - kind=1
+     - kind=4 and the comparision is for (in)equality.  */
+
+  if (INTEGER_CST_P (len1) && INTEGER_CST_P (len2)
+      && tree_int_cst_equal (len1, len2)
+      && (kind == 1 || code == EQ_EXPR || code == NE_EXPR))
+    {
+      tree tmp;
+      tree chartype;
+
+      chartype = gfc_get_char_type (kind);
+      tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE(len1),
+			     fold_convert (TREE_TYPE(len1),
+					   TYPE_SIZE_UNIT(chartype)),
+			     len1);
+      return build_memcmp_call (str1, str2, tmp);
     }
 
   /* Build a call for the comparison.  */

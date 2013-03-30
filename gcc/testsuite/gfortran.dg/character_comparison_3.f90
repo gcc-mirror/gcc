@@ -25,6 +25,7 @@ program main
   if (c(:k3) == c(:k44)) call abort
 end program main
 
-! { dg-final { scan-tree-dump-times "gfortran_compare_string" 8 "original" } }
+! { dg-final { scan-tree-dump-times "gfortran_compare_string" 6 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_memcmp" 2 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 
