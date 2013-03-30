@@ -5641,7 +5641,7 @@ A label to jump to if the index has a value outside the bounds.
 @end enumerate
 
 The table is an @code{addr_vec} or @code{addr_diff_vec} inside of a
-@code{jump_insn}.  The number of elements in the table is one plus the
+@code{jump_table_data}.  The number of elements in the table is one plus the
 difference between the upper bound and the lower bound.
 
 @cindex @code{tablejump} instruction pattern
