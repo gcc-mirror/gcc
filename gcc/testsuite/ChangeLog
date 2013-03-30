@@ -1,3 +1,10 @@
+2013-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/character_comparison_3.f90:  Adjust for use of memcmp
+	for constant and equal string lengths.
+	* gfortran.dg/character_comparison_5.f90:  Likewise.
+	* gfortran.dg/character_comparison_9.f90:  New test.
+
 2013-03-27  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Fix intrinsic name.
