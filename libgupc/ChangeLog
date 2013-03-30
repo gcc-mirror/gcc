@@ -1,3 +1,10 @@
+2012-03-30  Gary Funck  <gary@intrepid.com>
+
+	* portals4/gupcr_coll_reduce.in: Change printf format in
+	error message to match the type of upc_op_t, which is
+	now 'unsigned long'.
+	* portals4/gupcr_coll_reduce.upc: Re-generate.
+
 2012-03-29  Gary Funck  <gary@intrepid.com>
 
 	Implement and use upc_types.h (per UPC 1.3 spec.)
