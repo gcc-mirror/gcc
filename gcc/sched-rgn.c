@@ -2449,7 +2449,7 @@ add_branch_dependences (rtx head, rtx tail)
   insn = tail;
   last = 0;
   while (CALL_P (insn)
-	 || JUMP_P (insn)
+	 || JUMP_P (insn) || JUMP_TABLE_DATA_P (insn)
 	 || (NONJUMP_INSN_P (insn)
 	     && (GET_CODE (PATTERN (insn)) == USE
 		 || GET_CODE (PATTERN (insn)) == CLOBBER
@@ -2536,7 +2536,7 @@ add_branch_dependences (rtx head, rtx tail)
      possible improvement for handling COND_EXECs in this scheduler: it
      could remove always-true predicates.  */
 
-  if (!reload_completed || ! JUMP_P (tail))
+  if (!reload_completed || ! (JUMP_P (tail) || JUMP_TABLE_DATA_P (tail)))
     return;
 
   insn = tail;

@@ -274,17 +274,11 @@ mark_all_labels (rtx f)
 	     basic blocks.  If those non-insns represent tablejump data,
 	     they contain label references that we must record.  */
 	  for (insn = BB_HEADER (bb); insn; insn = NEXT_INSN (insn))
-	    if (INSN_P (insn))
-	      {
-		gcc_assert (JUMP_TABLE_DATA_P (insn));
-		mark_jump_label (PATTERN (insn), insn, 0);
-	      }
+	    if (JUMP_TABLE_DATA_P (insn))
+	      mark_jump_label (PATTERN (insn), insn, 0);
 	  for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
-	    if (INSN_P (insn))
-	      {
-		gcc_assert (JUMP_TABLE_DATA_P (insn));
-		mark_jump_label (PATTERN (insn), insn, 0);
-	      }
+	    if (JUMP_TABLE_DATA_P (insn))
+	      mark_jump_label (PATTERN (insn), insn, 0);
 	}
     }
   else
@@ -296,6 +290,8 @@ mark_all_labels (rtx f)
 	    ;
 	  else if (LABEL_P (insn))
 	    prev_nonjump_insn = NULL;
+	  else if (JUMP_TABLE_DATA_P (insn))
+	    mark_jump_label (PATTERN (insn), insn, 0);
 	  else if (NONDEBUG_INSN_P (insn))
 	    {
 	      mark_jump_label (PATTERN (insn), insn, 0);
@@ -1163,8 +1159,8 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 	return;
       }
 
-  /* Do walk the labels in a vector, but not the first operand of an
-     ADDR_DIFF_VEC.  Don't set the JUMP_LABEL of a vector.  */
+    /* Do walk the labels in a vector, but not the first operand of an
+       ADDR_DIFF_VEC.  Don't set the JUMP_LABEL of a vector.  */
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
       if (! INSN_DELETED_P (insn))

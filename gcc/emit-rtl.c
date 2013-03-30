@@ -3268,6 +3268,7 @@ int
 active_insn_p (const_rtx insn)
 {
   return (CALL_P (insn) || JUMP_P (insn)
+	  || JUMP_TABLE_DATA_P (insn) /* FIXME */
 	  || (NONJUMP_INSN_P (insn)
 	      && (! reload_completed
 		  || (GET_CODE (PATTERN (insn)) != USE
@@ -3900,7 +3901,7 @@ add_insn_before (rtx insn, rtx before, basic_block bb)
 void
 set_insn_deleted (rtx insn)
 {
-  if (INSN_P (insn) && !JUMP_TABLE_DATA_P (insn))
+  if (INSN_P (insn))
     df_insn_delete (insn);
   PUT_CODE (insn, NOTE);
   NOTE_KIND (insn) = NOTE_INSN_DELETED;
@@ -3968,7 +3969,7 @@ remove_insn (rtx insn)
     }
 
   /* Invalidate data flow information associated with INSN.  */
-  if (INSN_P (insn) && !JUMP_TABLE_DATA_P (insn))
+  if (INSN_P (insn))
     df_insn_delete (insn);
 
   /* Fix up basic block boundaries, if necessary.  */
@@ -4661,6 +4662,7 @@ emit_insn (rtx x)
       break;
 
 #ifdef ENABLE_RTL_CHECKING
+    case JUMP_TABLE_DATA:
     case SEQUENCE:
       gcc_unreachable ();
       break;
@@ -4707,6 +4709,7 @@ emit_debug_insn (rtx x)
       break;
 
 #ifdef ENABLE_RTL_CHECKING
+    case JUMP_TABLE_DATA:
     case SEQUENCE:
       gcc_unreachable ();
       break;
@@ -4749,6 +4752,7 @@ emit_jump_insn (rtx x)
       break;
 
 #ifdef ENABLE_RTL_CHECKING
+    case JUMP_TABLE_DATA:
     case SEQUENCE:
       gcc_unreachable ();
       break;
@@ -4785,6 +4789,7 @@ emit_call_insn (rtx x)
 
 #ifdef ENABLE_RTL_CHECKING
     case SEQUENCE:
+    case JUMP_TABLE_DATA:
       gcc_unreachable ();
       break;
 #endif
@@ -4807,6 +4812,20 @@ emit_label (rtx label)
   INSN_UID (label) = cur_insn_uid++;
   add_insn (label);
   return label;
+}
+
+/* Make an insn of code JUMP_TABLE_DATA
+   and add it to the end of the doubly-linked list.  */
+
+rtx
+emit_jump_table_data (rtx table)
+{
+  rtx jump_table_data = rtx_alloc (JUMP_TABLE_DATA);
+  INSN_UID (jump_table_data) = cur_insn_uid++;
+  PATTERN (jump_table_data) = table;
+  BLOCK_FOR_INSN (jump_table_data) = NULL;
+  add_insn (jump_table_data);
+  return jump_table_data;
 }
 
 /* Make an insn of code BARRIER

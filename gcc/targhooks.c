@@ -474,7 +474,7 @@ default_invalid_within_doloop (const_rtx insn)
   if (CALL_P (insn))
     return "Function call in loop.";
 
-  if (JUMP_TABLE_DATA_P (insn))
+  if (tablejump_p (insn, NULL, NULL) || computed_jump_p (insn))
     return "Computed branch in the loop.";
 
   return NULL;

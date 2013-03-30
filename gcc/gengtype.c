@@ -1219,6 +1219,8 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == SYMBOL_REF && aindex == 2)
 		t = symbol_union_tp, subname = "";
+	      else if (i == JUMP_TABLE_DATA && aindex >= 5)
+		t = scalar_tp, subname = "rt_int";
 	      else if (i == BARRIER && aindex >= 3)
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == ENTRY_VALUE && aindex == 0)

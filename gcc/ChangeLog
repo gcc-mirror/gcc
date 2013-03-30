@@ -1,3 +1,91 @@
+2013-03-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgrtl.c (fixup_reorder_chain): Do not emit barriers to BB_FOOTER.
+
+	* postreload-gcse.c (bb_has_well_behaved_predecessors): Correct test
+	for table jump at the end of a basic block using tablejump_p.
+	* targhooks.c (default_invalid_within_doloop): Likewise.
+	* config/rs6000/rs6000.c (TARGET_INVALID_WITHIN_DOLOOP): Remove
+	target hook implementation that is identical to the default hook.
+	(rs6000_invalid_within_doloop): Remove.
+
+	* bb-reorder.c (fix_crossing_unconditional_branches): Remove set but
+	unused variable from tablejump_p call.
+
+	* rtl.def (JUMP_TABLE_DATA): New RTX_INSN object.
+	* rtl.h (RTX_PREV, RTX_NEXT): Adjust for new JUMP_TABLE_DATA.
+	(INSN_DELETED_P): Likewise.
+	(emit_jump_table_data): New prototype.
+	* gengtype.c (adjust_field_rtx_def): Handle JUMP_TABLE_DATA fields
+	after 4th as unused.
+	* print-rtl.c (print_rtl): Handle JUMP_TABLE_DATA.
+	* sched-vis.c (print_insn): Likewise.
+	* emit-rtl.c (active_insn_p): Consider JUMP_TABLE_DATA an active
+	insn for compatibility with back ends that use next_active_insn to
+	identify jump table data.
+	(set_insn_deleted): Remove no longer useful JUMP_TABLE_DATA_P check.
+	(remove_insn): Likewise.
+	(emit_insn): Do not accept JUMP_TABLE_DATA objects in insn chains
+	to be emitted.
+	(emit_debug_insn, emit_jump_insn, emit_call_insn, emit_label): Idem.
+	(emit_jump_table_data): New function.
+
+	* cfgbuild.c (inside_basic_block_p): A JUMP_INSN is always inside a
+	basic block, a JUMP_TABLE_DATA never is.
+	(control_flow_insn_p): JUMP_TABLE_DATA is not a control flow insn.
+	* cfgrtl.c (duplicate_insn_chain): Split handling of JUMP_TABLE_DATA
+	off from code handling real insns.
+	* final.c (get_attr_length_1): Simplify for JUMP_INSNs.
+	* function.c (instantiate_virtual_regs): Remove JUMP_TABLE_DATA_P
+	test, now redundant because JUMP_TABLE_DATA is not an INSN_P insn.
+	* gcse.c (insert_insn_end_basic_block): Likewise, JUMP_TABLE_DATA_P
+	is not a NONDEBUG_INSN_P.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* jump.c (mark_all_labels): Likewise.
+	(mark_jump_label_1): Likewise.
+	* lra-eliminations.c (eliminate_regs_in_insn): Likewise.
+	* lra.c (get_insn_freq): Expect all insns reaching here to be in
+	a basic block.
+	(check_rtl): Remove JUMP_TABLE_DATA_P test, not a NONDEBUG_INSN_P insn.
+	* predict.c (expensive_function_p): Use FOR_BB_INSNS.
+	* reload1.c (calculate_needs_all_insns): Call set_label_offsets for
+	JUMP_TABLE_DATA_P insns.
+	(calculate_elim_costs_all_insns): Likewise.
+	(set_label_offsets): Recurse on the PATTERN of JUMP_TABLE_DATA insns.
+	(elimination_costs_in_insn): Remove redundant JUMP_TABLE_DATA_P test.
+	(delete_output_reload): Code style fixups.
+	* reorg.c (dbr_schedule): Move JUMP_TABLE_DATA_P up to avoid setting
+	insn flags on this non-insn.
+	* sched-rgn.c (add_branch_dependences): Treat JUMP_TABLE_DATA insns
+	as scheduling barriers, for pre-change compatibility.
+	* stmt.c (emit_case_dispatch_table): Emit jump table data not as
+	JUMP_INSN objects but instead as JUMP_TABLE_DATA objects.
+
+	* config/alpha/alpha.c (alpha_does_function_need_gp): Remove
+	redundant JUMP_TABLE_DATA_P test.
+	* config/arm/arm.c (thumb_far_jump_used_p): Likewise.
+	* config/frv/frv.c (frv_function_contains_far_jump): Likewise.
+	(frv_for_each_packet): Likewise.
+	* config/i386/i386.c (min_insn_size): Likewise.
+	(ix86_avoid_jump_mispredicts): Likewise.
+	* config/m32r/m32r.c (m32r_is_insn): Likewise.
+	* config/mep/mep.c (mep_reorg_erepeat): Likewise.
+	* config/mips/mips.c (USEFUL_INSN_P): Likewise.
+	(mips16_insn_length): Robustify.
+	(mips_has_long_branch_p): Remove redundant JUMP_TABLE_DATA_P test.
+	(mips16_split_long_branches): Likewise.
+	* config/pa/pa.c (pa_combine_instructions): Likewise.
+	* config/rs6000/rs6000.c (get_next_active_insn): Treat
+	JUMP_TABLE_DATA objects as active insns, like in active_insn_p.
+	* config/s390/s390.c (s390_chunkify_start): Treat JUMP_TABLE_DATA
+	as contributing to pool range lengths.
+	* config/sh/sh.c (find_barrier): Restore check for ADDR_DIFF_VEC.
+	Remove redundant JUMP_TABLE_DATA_P test.
+	(sh_loop_align): Likewise.
+	(split_branches): Likewise.
+	(sh_insn_length_adjustment): Likewise.
+	* config/spu/spu.c (get_branch_target): Likewise.
+
 2013-03-29  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (output_profile_summary, input_profile_summary): Use

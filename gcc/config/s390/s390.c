@@ -6867,7 +6867,7 @@ s390_chunkify_start (void)
 	    }
 	}
 
-      if (JUMP_P (insn) || LABEL_P (insn))
+      if (JUMP_P (insn) || JUMP_TABLE_DATA_P (insn) || LABEL_P (insn))
 	{
 	  if (curr_pool)
 	    s390_add_pool_insn (curr_pool, insn);

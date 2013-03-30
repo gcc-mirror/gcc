@@ -778,6 +778,7 @@ print_rtl (FILE *outf, const_rtx rtx_first)
       case CALL_INSN:
       case NOTE:
       case CODE_LABEL:
+      case JUMP_TABLE_DATA:
       case BARRIER:
 	for (tmp_rtx = rtx_first; tmp_rtx != 0; tmp_rtx = NEXT_INSN (tmp_rtx))
 	  {

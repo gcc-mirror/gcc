@@ -35116,8 +35116,6 @@ min_insn_size (rtx insn)
   if (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPECV_ALIGN)
     return 0;
-  if (JUMP_TABLE_DATA_P (insn))
-    return 0;
 
   /* Important case - calls are always 5 bytes.
      It is common to have many calls in the row.  */
@@ -35208,9 +35206,7 @@ ix86_avoid_jump_mispredicts (void)
 	      while (nbytes + max_skip >= 16)
 		{
 		  start = NEXT_INSN (start);
-		  if ((JUMP_P (start)
-		       && ! JUMP_TABLE_DATA_P (start))
-		      || CALL_P (start))
+		  if (JUMP_P (start) || CALL_P (start))
 		    njumps--, isjump = 1;
 		  else
 		    isjump = 0;
@@ -35225,9 +35221,7 @@ ix86_avoid_jump_mispredicts (void)
       if (dump_file)
 	fprintf (dump_file, "Insn %i estimated to %i bytes\n",
 		 INSN_UID (insn), min_size);
-      if ((JUMP_P (insn)
-	   && ! JUMP_TABLE_DATA_P (insn))
-	  || CALL_P (insn))
+      if (JUMP_P (insn) || CALL_P (insn))
 	njumps++;
       else
 	continue;
@@ -35235,9 +35229,7 @@ ix86_avoid_jump_mispredicts (void)
       while (njumps > 3)
 	{
 	  start = NEXT_INSN (start);
-	  if ((JUMP_P (start)
-	       && ! JUMP_TABLE_DATA_P (start))
-	      || CALL_P (start))
+	  if (JUMP_P (start) || CALL_P (start))
 	    njumps--, isjump = 1;
 	  else
 	    isjump = 0;

@@ -2748,8 +2748,7 @@ expensive_function_p (int threshold)
     {
       rtx insn;
 
-      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
-	   insn = NEXT_INSN (insn))
+      FOR_BB_INSNS (bb, insn)
 	if (active_insn_p (insn))
 	  {
 	    sum += bb->frequency;

@@ -54,13 +54,12 @@ inside_basic_block_p (const_rtx insn)
 	      || ! JUMP_TABLE_DATA_P (insn));
 
     case JUMP_INSN:
-      return (! JUMP_TABLE_DATA_P (insn));
-
     case CALL_INSN:
     case INSN:
     case DEBUG_INSN:
       return true;
 
+    case JUMP_TABLE_DATA:
     case BARRIER:
     case NOTE:
       return false;
@@ -84,8 +83,7 @@ control_flow_insn_p (const_rtx insn)
       return false;
 
     case JUMP_INSN:
-      /* Jump insn always causes control transfer except for tablejumps.  */
-      return (! JUMP_TABLE_DATA_P (insn));
+      return true;
 
     case CALL_INSN:
       /* Noreturn and sibling call instructions terminate the basic blocks
@@ -109,8 +107,9 @@ control_flow_insn_p (const_rtx insn)
 	return false;
       break;
 
+    case JUMP_TABLE_DATA:
     case BARRIER:
-      /* It is nonsense to reach barrier when looking for the
+      /* It is nonsense to reach this when looking for the
 	 end of basic block, but before dead code is eliminated
 	 this may happen.  */
       return false;

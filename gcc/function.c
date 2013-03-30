@@ -1915,8 +1915,7 @@ instantiate_virtual_regs (void)
       {
 	/* These patterns in the instruction stream can never be recognized.
 	   Fortunately, they shouldn't contain virtual registers either.  */
-        if (JUMP_TABLE_DATA_P (insn)
-	    || GET_CODE (PATTERN (insn)) == USE
+        if (GET_CODE (PATTERN (insn)) == USE
 	    || GET_CODE (PATTERN (insn)) == CLOBBER
 	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
 	  continue;
