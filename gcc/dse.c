@@ -572,20 +572,6 @@ static alloc_pool deferred_change_pool;
 
 static deferred_change_t deferred_change_list = NULL;
 
-/* This are used to hold the alias sets of spill variables.  Since
-   these are never aliased and there may be a lot of them, it makes
-   sense to treat them specially.  This bitvector is only allocated in
-   calls from dse_record_singleton_alias_set which currently is only
-   made during reload1.  So when dse is called before reload this
-   mechanism does nothing.  */
-
-static bitmap clear_alias_sets = NULL;
-
-/* The set of clear_alias_sets that have been disqualified because
-   there are loads or stores using a different mode than the alias set
-   was registered with.  */
-static bitmap disqualified_clear_alias_sets = NULL;
-
 /* The group that holds all of the clear_alias_sets.  */
 static group_info_t clear_alias_group;
 
@@ -598,8 +584,6 @@ struct clear_alias_mode_holder
   alias_set_type alias_set;
   enum machine_mode mode;
 };
-
-static alloc_pool clear_alias_mode_pool;
 
 /* This is true except if cfun->stdarg -- i.e. we cannot do
    this for vararg functions because they play games with the frame.  */
@@ -788,10 +772,7 @@ dse_step0 (void)
 
   init_alias_analysis ();
 
-  if (clear_alias_sets)
-    clear_alias_group = get_group_info (NULL);
-  else
-    clear_alias_group = NULL;
+  clear_alias_group = NULL;
 }
 
 
@@ -1188,39 +1169,6 @@ canon_address (rtx mem,
   rtx mem_address = XEXP (mem, 0);
   rtx expanded_address, address;
   int expanded;
-
-  /* Make sure that cselib is has initialized all of the operands of
-     the address before asking it to do the subst.  */
-
-  if (clear_alias_sets)
-    {
-      /* If this is a spill, do not do any further processing.  */
-      alias_set_type alias_set = MEM_ALIAS_SET (mem);
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "found alias set %d\n", (int) alias_set);
-      if (bitmap_bit_p (clear_alias_sets, alias_set))
-	{
-	  struct clear_alias_mode_holder *entry
-	    = clear_alias_set_lookup (alias_set);
-
-	  /* If the modes do not match, we cannot process this set.  */
-	  if (entry->mode != GET_MODE (mem))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file,
-			 "disqualifying alias set %d, (%s) != (%s)\n",
-			 (int) alias_set, GET_MODE_NAME (entry->mode),
-			 GET_MODE_NAME (GET_MODE (mem)));
-
-	      bitmap_set_bit (disqualified_clear_alias_sets, alias_set);
-	      return false;
-	    }
-
-	  *alias_set_out = alias_set;
-	  *group_id = clear_alias_group->id;
-	  return true;
-	}
-    }
 
   *alias_set_out = 0;
 
@@ -2993,47 +2941,6 @@ dse_step2_nospill (void)
 }
 
 
-/* Init the offset tables for the spill case.  */
-
-static bool
-dse_step2_spill (void)
-{
-  unsigned int j;
-  group_info_t group = clear_alias_group;
-  bitmap_iterator bi;
-
-  /* Position 0 is unused because 0 is used in the maps to mean
-     unused.  */
-  current_position = 1;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      bitmap_print (dump_file, clear_alias_sets,
-		    "clear alias sets              ", "\n");
-      bitmap_print (dump_file, disqualified_clear_alias_sets,
-		    "disqualified clear alias sets ", "\n");
-    }
-
-  memset (group->offset_map_n, 0, sizeof(int) * group->offset_map_size_n);
-  memset (group->offset_map_p, 0, sizeof(int) * group->offset_map_size_p);
-  bitmap_clear (group->group_kill);
-
-  /* Remove the disqualified positions from the store2_p set.  */
-  bitmap_and_compl_into (group->store2_p, disqualified_clear_alias_sets);
-
-  /* We do not need to process the store2_n set because
-     alias_sets are always positive.  */
-  EXECUTE_IF_SET_IN_BITMAP (group->store2_p, 0, j, bi)
-    {
-      bitmap_set_bit (group->group_kill, current_position);
-      group->offset_map_p[j] = current_position++;
-      group->process_globally = true;
-    }
-
-  return current_position != 1;
-}
-
-
 
 /*----------------------------------------------------------------------------
   Third step.
@@ -3690,72 +3597,6 @@ dse_step5_nospill (void)
 }
 
 
-static void
-dse_step5_spill (void)
-{
-  basic_block bb;
-  FOR_EACH_BB (bb)
-    {
-      bb_info_t bb_info = bb_table[bb->index];
-      insn_info_t insn_info = bb_info->last_insn;
-      bitmap v = bb_info->out;
-
-      while (insn_info)
-	{
-	  bool deleted = false;
-	  /* There may have been code deleted by the dce pass run before
-	     this phase.  */
-	  if (insn_info->insn
-	      && INSN_P (insn_info->insn)
-	      && (!insn_info->cannot_delete)
-	      && (!bitmap_empty_p (v)))
-	    {
-	      /* Try to delete the current insn.  */
-	      store_info_t store_info = insn_info->store_rec;
-	      deleted = true;
-
-	      while (store_info)
-		{
-		  if (store_info->alias_set)
-		    {
-		      int index = get_bitmap_index (clear_alias_group,
-						    store_info->alias_set);
-		      if (index == 0 || !bitmap_bit_p (v, index))
-			{
-			  deleted = false;
-			  break;
-			}
-		    }
-		  else
-		    deleted = false;
-		  store_info = store_info->next;
-		}
-	      if (deleted && dbg_cnt (dse)
-		  && check_for_inc_dec_1 (insn_info))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "Spill deleting insn %d\n",
-			     INSN_UID (insn_info->insn));
-		  delete_insn (insn_info->insn);
-		  spill_deleted++;
-		  insn_info->insn = NULL;
-		}
-	    }
-
-	  if (insn_info->insn
-	      && INSN_P (insn_info->insn)
-	      && (!deleted))
-	    {
-	      scan_stores_spill (insn_info->store_rec, v, NULL);
-	      scan_reads_spill (insn_info->read_rec, v, NULL);
-	    }
-
-	  insn_info = insn_info->prev_insn;
-	}
-    }
-}
-
-
 
 /*----------------------------------------------------------------------------
    Sixth step.
@@ -3819,14 +3660,6 @@ dse_step7 (void)
   bitmap_obstack_release (&dse_bitmap_obstack);
   obstack_free (&dse_obstack, NULL);
 
-  if (clear_alias_sets)
-    {
-      BITMAP_FREE (clear_alias_sets);
-      BITMAP_FREE (disqualified_clear_alias_sets);
-      free_alloc_pool (clear_alias_mode_pool);
-      htab_delete (clear_alias_mode_table);
-    }
-
   end_alias_analysis ();
   free (bb_table);
   rtx_group_table.dispose ();
@@ -3852,8 +3685,6 @@ dse_step7 (void)
 static unsigned int
 rest_of_handle_dse (void)
 {
-  bool did_global = false;
-
   df_set_flags (DF_DEFER_INSN_RESCAN);
 
   /* Need the notes since we must track live hardregs in the forwards
@@ -3868,32 +3699,11 @@ rest_of_handle_dse (void)
     {
       df_set_flags (DF_LR_RUN_DCE);
       df_analyze ();
-      did_global = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "doing global processing\n");
       dse_step3 (false);
       dse_step4 ();
       dse_step5_nospill ();
-    }
-
-  /* For the instance of dse that runs after reload, we make a special
-     pass to process the spills.  These are special in that they are
-     totally transparent, i.e, there is no aliasing issues that need
-     to be considered.  This means that the wild reads that kill
-     everything else do not apply here.  */
-  if (clear_alias_sets && dse_step2_spill ())
-    {
-      if (!did_global)
-	{
-	  df_set_flags (DF_LR_RUN_DCE);
-	  df_analyze ();
-	}
-      did_global = true;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "doing global spill processing\n");
-      dse_step3 (true);
-      dse_step4 ();
-      dse_step5_spill ();
     }
 
   dse_step6 ();
