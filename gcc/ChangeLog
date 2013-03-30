@@ -1,5 +1,12 @@
 2013-03-30  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* doc/md.texi (Standard Names) <casesi>: Update documentation for
+	JUMP_TABLE_DATA changes.
+	* doc/tm.texi.in (Dispatch Tables) <ASM_OUTPUT_CASE_LABEL>: Likewise.
+	* doc/rtl.texi (Flags) <INSN_DELETED_P, SCHED_GROUP_P>: Likewise.
+	(Insns) <jump_table_data>: New entry.
+	* doc/tm.texi: Regenerate.
+
 	* cfgrtl.c (fixup_reorder_chain): Do not emit barriers to BB_FOOTER.
 
 	* postreload-gcse.c (bb_has_well_behaved_predecessors): Correct test

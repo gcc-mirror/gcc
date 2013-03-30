@@ -8673,7 +8673,7 @@ fprintf (@var{stream}, "\t.word L%d\n", @var{value})
 Define this if the label before a jump-table needs to be output
 specially.  The first three arguments are the same as for
 @code{(*targetm.asm_out.internal_label)}; the fourth argument is the
-jump-table which follows (a @code{jump_insn} containing an
+jump-table which follows (a @code{jump_table_data} containing an
 @code{addr_vec} or @code{addr_diff_vec}).
 
 This feature is used on system V to output a @code{swbeg} statement

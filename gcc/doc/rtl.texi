@@ -623,12 +623,13 @@ printed as @samp{/u}.
 @cindex @code{call_insn} and @samp{/v}
 @cindex @code{jump_insn} and @samp{/v}
 @cindex @code{code_label} and @samp{/v}
+@cindex @code{jump_table_data} and @samp{/v}
 @cindex @code{barrier} and @samp{/v}
 @cindex @code{note} and @samp{/v}
-@cindex @code{volatil}, in @code{insn}, @code{call_insn}, @code{jump_insn}, @code{code_label}, @code{barrier}, and @code{note}
+@cindex @code{volatil}, in @code{insn}, @code{call_insn}, @code{jump_insn}, @code{code_label}, @code{jump_table_data}, @code{barrier}, and @code{note}
 @item INSN_DELETED_P (@var{x})
 In an @code{insn}, @code{call_insn}, @code{jump_insn}, @code{code_label},
-@code{barrier}, or @code{note},
+@code{jump_table_data}, @code{barrier}, or @code{note},
 nonzero if the insn has been deleted.  Stored in the
 @code{volatil} field and printed as @samp{/v}.
 
@@ -782,10 +783,11 @@ Stored in the @code{unchanging} field and printed as @samp{/u}.
 @cindex @code{insn} and @samp{/s}
 @cindex @code{call_insn} and @samp{/s}
 @cindex @code{jump_insn} and @samp{/s}
-@cindex @code{in_struct}, in @code{insn}, @code{jump_insn} and @code{call_insn}
+@cindex @code{jump_table_data} and @samp{/s}
+@cindex @code{in_struct}, in @code{insn}, @code{call_insn}, @code{jump_insn} and @code{jump_table_data}
 @item SCHED_GROUP_P (@var{x})
-During instruction scheduling, in an @code{insn}, @code{call_insn} or
-@code{jump_insn}, indicates that the
+During instruction scheduling, in an @code{insn}, @code{call_insn},
+@code{jump_insn} or @code{jump_table_data}, indicates that the
 previous insn must be scheduled together with this insn.  This is used to
 ensure that certain groups of instructions will not be split up by the
 instruction scheduling pass, for example, @code{use} insns before
@@ -3536,6 +3538,18 @@ them, is the function @code{output_alternate_entry_point}, in
 @file{final.c}.
 
 To set the kind of a label, use the @code{SET_LABEL_KIND} macro.
+
+@findex jump_table_data
+@item jump_table_data
+A @code{jump_table_data} insn is a placeholder for the jump-table data
+of a @code{casesi} or @code{tablejump} insn.  They are placed after
+a @code{tablejump_p} insn.  A @code{jump_table_data} insn is not part o
+a basic blockm but it is associated with the basic block that ends with
+the @code{tablejump_p} insn.  The @code{PATTERN} of a @code{jump_table_data}
+is always either an @code{addr_vec} or an @code{addr_diff_vec}, and a
+@code{jump_table_data} insn is always preceded by a @code{code_label}.
+The @code{tablejump_p} insn refers to that @code{code_label} via its
+@code{JUMP_LABEL}.
 
 @findex barrier
 @item barrier
