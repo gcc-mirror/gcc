@@ -1,3 +1,7 @@
+2013-03-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pt.c (template_parms_to_args): Fix typo in comment.
+
 2013-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* call.c (build_op_call_1): Use TYPE_PTRFN_P and TYPE_REFFN_P.

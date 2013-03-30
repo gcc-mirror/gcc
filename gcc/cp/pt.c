@@ -3874,10 +3874,10 @@ template_parms_to_args (tree parms)
 	 Consider the level of the parms of TT; T and U both have
 	 level 2; TT has no template parm of level 1. So in this case
 	 the first element of full_template_args is NULL_TREE. If we
-	 leave it like this TMPL_ARG_DEPTH on args returns 1 instead
+	 leave it like this TMPL_ARGS_DEPTH on args returns 1 instead
 	 of 2. This will make tsubst wrongly consider that T and U
 	 have level 1. Instead, let's create a dummy vector as the
-	 first element of full_template_args so that TMPL_ARG_DEPTH
+	 first element of full_template_args so that TMPL_ARGS_DEPTH
 	 returns the correct depth for args.  */
       TREE_VEC_ELT (args, 0) = make_tree_vec (1);
   return args;
