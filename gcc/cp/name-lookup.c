@@ -887,7 +887,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    add_decl_to_level (x, NAMESPACE_LEVEL (CP_DECL_CONTEXT (t)));
 	}
 
-      if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
+      if (DECL_DECLARES_FUNCTION_P (t))
 	check_default_args (t);
 
       if (t != x || DECL_FUNCTION_TEMPLATE_P (t))
@@ -5823,8 +5823,7 @@ pushtag_1 (tree name, tree type, tag_scope scope)
 	 convenient way.  (It's otherwise tricky to find a member
 	 function definition it's only pointed to from within a local
 	 class.)  */
-      if (TYPE_CONTEXT (type)
-	  && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
+      if (TYPE_FUNCTION_SCOPE_P (type))
 	{
 	  if (processing_template_decl)
 	    {

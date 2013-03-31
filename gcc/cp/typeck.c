@@ -7963,8 +7963,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
        && (TREE_CODE (type) != REFERENCE_TYPE
 	   || TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE))
       || (TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE
-	  && (TREE_CODE (type) != REFERENCE_TYPE
-	      || TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE))
+	  && !TYPE_REFFN_P (type))
       || TREE_CODE (TREE_TYPE (rhs)) == METHOD_TYPE)
     rhs = decay_conversion (rhs, complain);
 

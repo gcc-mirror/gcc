@@ -1,3 +1,20 @@
+2013-03-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (collect_candidates_for_java_method_aliases): Use
+	DECL_CLASS_SCOPE_P.
+	* name-lookup.c (pushtag_1) Use TYPE_FUNCTION_SCOPE_P.
+	(pushdecl_maybe_friend_1): Use DECL_DECLARES_FUNCTION_P.
+	* decl.c (duplicate_decls): Likewise.
+	* parser.c (cp_parser_template_declaration_after_export): Likewise,
+	also DECL_DECLARES_TYPE_P.
+	* pt.c (instantiate_class_template_1): Likewise.
+	* search.c (lookup_field_1): Use DECL_DECLARES_TYPE_P.
+	(lookup_field_r): Likewise.
+	(friend_accessible_p): Use DECL_DECLARES_FUNCTION_P.
+	(lookup_fnfields_slot_nolazy): Likewise.
+	* semantics.c (finish_member_declaration): Likewise.
+	* typeck.c (convert_for_initialization): Use TYPE_REFFN_P.
+
 2013-03-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pt.c (template_parms_to_args): Fix typo in comment.

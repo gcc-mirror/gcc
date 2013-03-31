@@ -2063,8 +2063,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
       /* Only functions have these fields.  */
-      if (TREE_CODE (newdecl) == FUNCTION_DECL
-	  || DECL_FUNCTION_TEMPLATE_P (newdecl))
+      if (DECL_DECLARES_FUNCTION_P (newdecl))
 	{
 	  DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
 	  olddecl_friend = DECL_FRIEND_P (olddecl);
