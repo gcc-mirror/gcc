@@ -1,3 +1,8 @@
+2013-03-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/56786
+	* gfortran.dg/namelist_81.f90:  New test.
+
 2013-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/character_comparison_3.f90:  Adjust for use of memcmp
