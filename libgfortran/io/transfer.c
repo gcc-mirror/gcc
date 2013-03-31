@@ -3840,7 +3840,7 @@ hit_eof (st_parameter_dt * dtp)
       case NO_ENDFILE:
       case AT_ENDFILE:
         generate_error (&dtp->common, LIBERROR_END, NULL);
-	if (!is_internal_unit (dtp))
+	if (!is_internal_unit (dtp) && !dtp->u.p.namelist_mode)
 	  {
 	    dtp->u.p.current_unit->endfile = AFTER_ENDFILE;
 	    dtp->u.p.current_unit->current_record = 0;
