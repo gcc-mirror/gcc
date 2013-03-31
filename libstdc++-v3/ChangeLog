@@ -1,3 +1,31 @@
+2013-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Adjust link to Dr.Dobb's article.q
+
+	* doc/xml/manual/appendix_contributing.xml: Adjust link to GNU
+	Coding Standards.
+
+	* doc/xml/manual/debug.xml: Adjust link for ThreadSanitizer.
+
+	* doc/xml/manual/debug_mode.xml: Adjust link for SafeSTL.
+
+	* doc/xml/manual/documentation_hacking.xml: Adjust Doxygen link.
+
+	* doc/xml/manual/messages.xml: Adjust link to Java API specs.
+
+	* doc/xml/manual/policy_data_structures: Remove direct link to
+	IBM Haifa Research Labs.
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust links
+	for biblio.maverik_lowerbounds and biblio.nelson96stlpq.
+	Remove direct link to IBM Haifa Research Labs.
+
+	* doc/xml/manual/profile_mode.xml: Adjust two links to acm.org
+	papers.
+
+	* doc/xml/manual/shared_ptr.xml: Use canonical address for
+	www.boost.org.
+
 2013-03-27  Kai Tietz  <ktietz@redhat.com>
 
 	* crossconfig.m4: Add support for cygwin x64 target.

@@ -443,9 +443,8 @@
 
       <para>
 	Some commentary to accompany
-	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/docblocks.html">Special
-	Documentation Blocks</link> section of
-	the Doxygen manual:
+	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html">Special
+	Documentation Blocks</link> section of the Doxygen manual:
       </para>
 
       <orderedlist inheritnum="ignore" continuation="restarts">
