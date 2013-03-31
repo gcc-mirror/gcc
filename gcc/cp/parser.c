@@ -21983,8 +21983,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 	  decl = finish_member_template_decl (decl);
 	}
       else if (friend_p && decl
-	       && (TREE_CODE (decl) == TYPE_DECL
-		   || DECL_TYPE_TEMPLATE_P (decl)))
+	       && DECL_DECLARES_TYPE_P (decl))
 	make_friend_class (current_class_type, TREE_TYPE (decl),
 			   /*complain=*/true);
     }
@@ -21998,7 +21997,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 
   /* Check the template arguments for a literal operator template.  */
   if (decl
-      && (TREE_CODE (decl) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (decl))
+      && DECL_DECLARES_FUNCTION_P (decl)
       && UDLIT_OPER_P (DECL_NAME (decl)))
     {
       bool ok = true;
@@ -22034,8 +22033,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
      (Even though there is no definition, there might be default
      arguments that need handling.)  */
   if (member_p && decl
-      && (TREE_CODE (decl) == FUNCTION_DECL
-	  || DECL_FUNCTION_TEMPLATE_P (decl)))
+      && DECL_DECLARES_FUNCTION_P (decl))
     vec_safe_push (unparsed_funs_with_definitions, decl);
 }
 
