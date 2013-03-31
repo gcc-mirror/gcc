@@ -1,5 +1,16 @@
 2012-03-30  Gary Funck  <gary@intrepid.com>
 
+	Implement upc_castable library support (per UPC 1.3 spec.)
+	* Makefile.am: Add upc_castable.h as an exported header file.
+	Add smp/upc_castable.upc and portals4/gupcr_castable.upc
+	to list of runtime source fies.
+	* Makefile.in: Re-generate.
+	* include/upc_castable.h: New.
+	* portals4/gupcr_castable.upc: New.
+	* smp/upc_castable.upc: New.
+
+2012-03-30  Gary Funck  <gary@intrepid.com>
+
 	* portals4/gupcr_coll_reduce.in: Change printf format in
 	error message to match the type of upc_op_t, which is
 	now 'unsigned long'.

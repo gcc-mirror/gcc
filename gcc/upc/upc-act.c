@@ -193,6 +193,8 @@ upc_cpp_builtins (cpp_reader * pfile)
     {
       cpp_define (pfile, "__UPC_PTHREADS_MODEL_TLS__=1");
     }
+  /* UPC castability library is supported.  */
+  cpp_define (parse_in, "__UPC_CASTABLE__=1");
   /* Collectives are supported. */
   cpp_define (parse_in, "__UPC_COLLECTIVE__=1");
   /* Wall-clock timers are supported. */

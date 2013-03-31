@@ -31,7 +31,8 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
         $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
-UPC_HDRS = include/gasp.h include/gasp_upc.h include/gcc-upc.h \
+UPC_HDRS = include/upc_castable.h \
+           include/gasp.h include/gasp_upc.h include/gcc-upc.h \
            include/pupc.h include/upc_collective.h include/upc.h \
            include/upc_relaxed.h include/upc_strict.h \
            include/upc_tick.h include/upc_types.h
@@ -121,8 +122,9 @@ endif
 
 UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
-	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.upc \
-	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
+	smp/upc_allocg.upc smp/upc_alloc.upc \
+	$(UPC_BACKTRACE_SUP) \
+	smp/upc_barrier.upc smp/upc_castable.upc smp/upc_config.h \
 	smp/upc_debug.h smp/upc_debug.c \
 	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
 	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
@@ -148,6 +150,7 @@ UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
 	portals4/gupcr_alloc.upc portals4/gupcr_alloc.h \
 	portals4/gupcr_barrier.h portals4/gupcr_barrier.c \
 	portals4/gupcr_broadcast.h portals4/gupcr_broadcast.c \
+	portals4/gupcr_castable.upc \
 	portals4/gupcr_clock.c \
 	portals4/gupcr_coll_sup.h portals4/gupcr_coll_sup.c \
 	portals4/gupcr_config.h portals4/gupcr_defs.h \

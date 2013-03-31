@@ -49,8 +49,9 @@ target_triplet = @target@
 @LIBGUPC_BACKTRACE_SUP_TRUE@@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__append_5 = smp/upc_backtrace_sup.c
 @LIBGUPC_SMP_RUNTIME_TRUE@am__append_6 = smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
-@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.upc \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_allocg.upc smp/upc_alloc.upc \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(UPC_BACKTRACE_SUP) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_barrier.upc smp/upc_castable.upc smp/upc_config.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_debug.h smp/upc_debug.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
@@ -71,6 +72,7 @@ target_triplet = @target@
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	portals4/gupcr_alloc.upc portals4/gupcr_alloc.h \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	portals4/gupcr_barrier.h portals4/gupcr_barrier.c \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	portals4/gupcr_broadcast.h portals4/gupcr_broadcast.c \
+@LIBGUPC_PORTALS4_RUNTIME_TRUE@	portals4/gupcr_castable.upc \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	portals4/gupcr_clock.c \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	portals4/gupcr_coll_sup.h portals4/gupcr_coll_sup.c \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	portals4/gupcr_config.h portals4/gupcr_defs.h \
@@ -166,20 +168,21 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 	smp/upc_access.h smp/upc_addr.c smp/upc_affinity.h \
 	smp/upc_affinity_stub.c smp/upc_affinity.c smp/upc_allocg.upc \
-	smp/upc_alloc.upc smp/upc_barrier.upc smp/upc_backtrace.h \
-	smp/upc_backtrace.c smp/upc_backtrace_sup.c smp/upc_config.h \
-	smp/upc_debug.h smp/upc_debug.c smp/upc_defs.h smp/upc_gasp.c \
-	smp/upc_gum.c smp/upc_libg.c smp/upc_lib.h smp/upc_lock.upc \
-	smp/upc_lock.h smp/upc_lock_sup.h smp/upc_lock_sup.c \
-	smp/upc_main.c smp/upc_mem.c smp/upc_mem.h smp/upc_numa.h \
-	smp/upc_numa_stub.c smp/upc_numa.c smp/upc_pgm_info.c \
-	smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
-	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h \
-	smp/upc_tick.c smp/upc_vm.c portals4/gupcr_access.c \
-	portals4/gupcr_access.h portals4/gupcr_addr.c \
-	portals4/gupcr_alloc.upc portals4/gupcr_alloc.h \
-	portals4/gupcr_barrier.h portals4/gupcr_barrier.c \
-	portals4/gupcr_broadcast.h portals4/gupcr_broadcast.c \
+	smp/upc_alloc.upc smp/upc_backtrace.h smp/upc_backtrace.c \
+	smp/upc_backtrace_sup.c smp/upc_barrier.upc \
+	smp/upc_castable.upc smp/upc_config.h smp/upc_debug.h \
+	smp/upc_debug.c smp/upc_defs.h smp/upc_gasp.c smp/upc_gum.c \
+	smp/upc_libg.c smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h \
+	smp/upc_lock_sup.h smp/upc_lock_sup.c smp/upc_main.c \
+	smp/upc_mem.c smp/upc_mem.h smp/upc_numa.h smp/upc_numa_stub.c \
+	smp/upc_numa.c smp/upc_pgm_info.c smp/upc_pts.h smp/upc_pupc.c \
+	smp/upc_pupc.h smp/upc_sup.h smp/upc_sync.h smp/upc_sysdep.c \
+	smp/upc_sysdep.h smp/upc_tick.c smp/upc_vm.c \
+	portals4/gupcr_access.c portals4/gupcr_access.h \
+	portals4/gupcr_addr.c portals4/gupcr_alloc.upc \
+	portals4/gupcr_alloc.h portals4/gupcr_barrier.h \
+	portals4/gupcr_barrier.c portals4/gupcr_broadcast.h \
+	portals4/gupcr_broadcast.c portals4/gupcr_castable.upc \
 	portals4/gupcr_clock.c portals4/gupcr_coll_sup.h \
 	portals4/gupcr_coll_sup.c portals4/gupcr_config.h \
 	portals4/gupcr_defs.h portals4/gupcr_env.c \
@@ -220,18 +223,19 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@am__objects_7 = upc_access.lo upc_accessg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_addr.lo $(am__objects_1) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_allocg.lo upc_alloc.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_barrier.lo $(am__objects_4) \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_debug.lo upc_gasp.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_5) upc_libg.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_lock.lo upc_lock_sup.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_main.lo upc_mem.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_6) upc_pgm_info.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_pupc.lo upc_sysdep.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_tick.lo upc_vm.lo
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_4) upc_barrier.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_castable.lo upc_debug.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_gasp.lo $(am__objects_5) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_libg.lo upc_lock.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_lock_sup.lo upc_main.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_mem.lo $(am__objects_6) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_pgm_info.lo upc_pupc.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_sysdep.lo upc_tick.lo upc_vm.lo
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@am__objects_8 = gupcr_access.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	gupcr_addr.lo gupcr_alloc.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	gupcr_barrier.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	gupcr_broadcast.lo \
+@LIBGUPC_PORTALS4_RUNTIME_TRUE@	gupcr_castable.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	gupcr_clock.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	gupcr_coll_sup.lo gupcr_env.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	gupcr_gmem.lo gupcr_lock.lo \
@@ -295,8 +299,9 @@ libgupc_la_OBJECTS = $(am_libgupc_la_OBJECTS)
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_17) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_allocg.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_alloc.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_barrier.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_20) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_barrier.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_castable.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_debug.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_gasp.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_21) \
@@ -317,6 +322,7 @@ libgupc_la_OBJECTS = $(am_libgupc_la_OBJECTS)
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	libgupc_pt_la-gupcr_alloc.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	libgupc_pt_la-gupcr_barrier.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	libgupc_pt_la-gupcr_broadcast.lo \
+@LIBGUPC_PORTALS4_RUNTIME_TRUE@	libgupc_pt_la-gupcr_castable.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	libgupc_pt_la-gupcr_clock.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	libgupc_pt_la-gupcr_coll_sup.lo \
 @LIBGUPC_PORTALS4_RUNTIME_TRUE@	libgupc_pt_la-gupcr_env.lo \
@@ -651,7 +657,8 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
         $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
-UPC_HDRS = include/gasp.h include/gasp_upc.h include/gcc-upc.h \
+UPC_HDRS = include/upc_castable.h \
+           include/gasp.h include/gasp_upc.h include/gcc-upc.h \
            include/pupc.h include/upc_collective.h include/upc.h \
            include/upc_relaxed.h include/upc_strict.h \
            include/upc_tick.h include/upc_types.h
@@ -934,6 +941,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gupcr_alloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gupcr_barrier.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gupcr_broadcast.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gupcr_castable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gupcr_clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gupcr_coll_broadcast.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gupcr_coll_init.Plo@am__quote@
@@ -959,6 +967,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-gupcr_alloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-gupcr_barrier.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-gupcr_broadcast.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-gupcr_castable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-gupcr_clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-gupcr_coll_broadcast.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-gupcr_coll_init.Plo@am__quote@
@@ -989,6 +998,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_backtrace_sup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_barrier.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_castable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_coll_broadcast.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_coll_err.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_coll_exchange.Plo@am__quote@
@@ -1025,6 +1035,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_backtrace_sup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_barrier.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_castable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_coll_broadcast.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_coll_err.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_coll_exchange.Plo@am__quote@
@@ -1689,6 +1700,13 @@ upc_barrier.lo: smp/upc_barrier.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o upc_barrier.lo `test -f 'smp/upc_barrier.upc' || echo '$(srcdir)/'`smp/upc_barrier.upc
 
+upc_castable.lo: smp/upc_castable.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT upc_castable.lo -MD -MP -MF $(DEPDIR)/upc_castable.Tpo -c -o upc_castable.lo `test -f 'smp/upc_castable.upc' || echo '$(srcdir)/'`smp/upc_castable.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/upc_castable.Tpo $(DEPDIR)/upc_castable.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_castable.upc' object='upc_castable.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o upc_castable.lo `test -f 'smp/upc_castable.upc' || echo '$(srcdir)/'`smp/upc_castable.upc
+
 upc_lock.lo: smp/upc_lock.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT upc_lock.lo -MD -MP -MF $(DEPDIR)/upc_lock.Tpo -c -o upc_lock.lo `test -f 'smp/upc_lock.upc' || echo '$(srcdir)/'`smp/upc_lock.upc
 @am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/upc_lock.Tpo $(DEPDIR)/upc_lock.Plo
@@ -1702,6 +1720,13 @@ gupcr_alloc.lo: portals4/gupcr_alloc.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='portals4/gupcr_alloc.upc' object='gupcr_alloc.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o gupcr_alloc.lo `test -f 'portals4/gupcr_alloc.upc' || echo '$(srcdir)/'`portals4/gupcr_alloc.upc
+
+gupcr_castable.lo: portals4/gupcr_castable.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT gupcr_castable.lo -MD -MP -MF $(DEPDIR)/gupcr_castable.Tpo -c -o gupcr_castable.lo `test -f 'portals4/gupcr_castable.upc' || echo '$(srcdir)/'`portals4/gupcr_castable.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/gupcr_castable.Tpo $(DEPDIR)/gupcr_castable.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='portals4/gupcr_castable.upc' object='gupcr_castable.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o gupcr_castable.lo `test -f 'portals4/gupcr_castable.upc' || echo '$(srcdir)/'`portals4/gupcr_castable.upc
 
 gupcr_lock.lo: portals4/gupcr_lock.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT gupcr_lock.lo -MD -MP -MF $(DEPDIR)/gupcr_lock.Tpo -c -o gupcr_lock.lo `test -f 'portals4/gupcr_lock.upc' || echo '$(srcdir)/'`portals4/gupcr_lock.upc
@@ -1829,6 +1854,13 @@ libgupc_pt_la-upc_barrier.lo: smp/upc_barrier.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-upc_barrier.lo `test -f 'smp/upc_barrier.upc' || echo '$(srcdir)/'`smp/upc_barrier.upc
 
+libgupc_pt_la-upc_castable.lo: smp/upc_castable.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-upc_castable.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_castable.Tpo -c -o libgupc_pt_la-upc_castable.lo `test -f 'smp/upc_castable.upc' || echo '$(srcdir)/'`smp/upc_castable.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-upc_castable.Tpo $(DEPDIR)/libgupc_pt_la-upc_castable.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_castable.upc' object='libgupc_pt_la-upc_castable.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-upc_castable.lo `test -f 'smp/upc_castable.upc' || echo '$(srcdir)/'`smp/upc_castable.upc
+
 libgupc_pt_la-upc_lock.lo: smp/upc_lock.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-upc_lock.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_lock.Tpo -c -o libgupc_pt_la-upc_lock.lo `test -f 'smp/upc_lock.upc' || echo '$(srcdir)/'`smp/upc_lock.upc
 @am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-upc_lock.Tpo $(DEPDIR)/libgupc_pt_la-upc_lock.Plo
@@ -1842,6 +1874,13 @@ libgupc_pt_la-gupcr_alloc.lo: portals4/gupcr_alloc.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='portals4/gupcr_alloc.upc' object='libgupc_pt_la-gupcr_alloc.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-gupcr_alloc.lo `test -f 'portals4/gupcr_alloc.upc' || echo '$(srcdir)/'`portals4/gupcr_alloc.upc
+
+libgupc_pt_la-gupcr_castable.lo: portals4/gupcr_castable.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-gupcr_castable.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-gupcr_castable.Tpo -c -o libgupc_pt_la-gupcr_castable.lo `test -f 'portals4/gupcr_castable.upc' || echo '$(srcdir)/'`portals4/gupcr_castable.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-gupcr_castable.Tpo $(DEPDIR)/libgupc_pt_la-gupcr_castable.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='portals4/gupcr_castable.upc' object='libgupc_pt_la-gupcr_castable.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-gupcr_castable.lo `test -f 'portals4/gupcr_castable.upc' || echo '$(srcdir)/'`portals4/gupcr_castable.upc
 
 libgupc_pt_la-gupcr_lock.lo: portals4/gupcr_lock.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-gupcr_lock.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-gupcr_lock.Tpo -c -o libgupc_pt_la-gupcr_lock.lo `test -f 'portals4/gupcr_lock.upc' || echo '$(srcdir)/'`portals4/gupcr_lock.upc
