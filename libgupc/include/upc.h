@@ -45,9 +45,6 @@ extern shared void *upc_all_allocg (size_t, size_t, const char *, int);
 extern shared void *upc_allocg (size_t, const char *, int);
 extern void upc_freeg (shared void *, const char *, int);
 extern void upc_all_freeg (shared void *, const char *, int);
-/* upc_local_alloc is deprecated and removed in the 1.3 specification.  */
-extern shared void *upc_local_allocg (size_t, size_t, const char *, int)
-                   __attribute__((deprecated));
 #endif /* IN_TARGET_LIBS || __UPC_PUPC_INST__ */
 
 #ifdef __UPC_PUPC_INST__
