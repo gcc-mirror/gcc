@@ -813,7 +813,9 @@ find_sym (gfc_intrinsic_sym *start, int n, const char *name)
 gfc_isym_id
 gfc_isym_id_by_intmod (intmod_id from_intmod, int intmod_sym_id)
 {
-  if (from_intmod == INTMOD_ISO_C_BINDING)
+  if (from_intmod == INTMOD_NONE)
+    return (gfc_isym_id) intmod_sym_id;
+  else if (from_intmod == INTMOD_ISO_C_BINDING)
     return (gfc_isym_id) c_interop_kinds_table[intmod_sym_id].value;
   else if (from_intmod == INTMOD_ISO_FORTRAN_ENV)
     switch (intmod_sym_id)
@@ -829,9 +831,7 @@ gfc_isym_id_by_intmod (intmod_id from_intmod, int intmod_sym_id)
 	gcc_unreachable ();
       }
   else
-    {
-      gcc_unreachable ();
-    }
+    gcc_unreachable ();
   return (gfc_isym_id) 0;
 }
 
