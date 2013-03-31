@@ -1,3 +1,12 @@
+2013-03-31  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (finalization_scalarizer, finalizer_insert_packed_call,
+	generate_finalization_wrapper): Avoid segfault with absent SIZE=
+	argment to TRANSFER and use correct result kind for SIZE.
+	* intrinsic.c (gfc_isym_id_by_intmod): Also handle ids of
+	nonmodules.
+	* trans.c (gfc_build_final_call): Handle coarrays.
+
 2013-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* trans-expr.c (build_memcmp_call):  New function.
