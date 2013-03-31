@@ -1,4 +1,15 @@
-2012-03-29  Tobias Burnus  <burnus@net-b.de>
+2013-03-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56786
+	* io/list_read.c (nml_parse_qualifier): Remove spurious next_char call
+	when checking for EOF. Use error return mechanism when EOF detected.
+	Do not return false unless parse_err_msg and parse_err_msg_size have
+	been set. Use hit_eof.
+	(nml_get_obj_data): Likewise use the correct error mechanism.
+	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
+	mode.
+	
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56737
 	* io/format.c (parse_format_list): Also cache FMT_STRING.
