@@ -1,3 +1,10 @@
+2013-04-01  Wei Mi  <wmi@google.com>
+
+	* config/i386/i386.md (*ashl<mode>3_mask): Rewrite as define_insn.
+	Truncate operand 2 using %b asm operand modifier.
+	(*<shift_insn><mode>3_mask): Ditto.
+	(*<rotate_insn><mode>3_mask): Ditto.
+
 2013-04-01  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/56798
