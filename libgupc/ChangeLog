@@ -1,5 +1,18 @@
 2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
 
+	portals4/gupcr_env.c (gupcr_env_boolean): Rename from gupcr_env_switch.
+	Change options to NO/no/0 or YES/yes/1.
+	(gupcr_env_init): New names for node memory and forcetouch options
+	set routines.
+	portals4/gupcr_node.c (gupcr_node_local_alloc): Ditto.
+	(gupcr_node_init): Ditto.
+	portals4/gupcr_utils.c (gupcr_set_node_local_memory): Rename from
+	gupcr_set_node_local_mem_enabled.
+	(gupcr_set_forcetouch): Rename from gupcr_set_forcetouch_enabled.
+	portals4/gupcr_utils.h: Ditto.
+
+2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
+
 	configure.ac: Add --with-upc-memory-page-size switch.
 	config.h.in: Re-generate.
 	configure: Re-generate.

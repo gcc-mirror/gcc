@@ -73,8 +73,8 @@ static char gupcr_pid_string[13];
 static int gupcr_inform_user = 1;
 static int gupcr_warn_user = 1;
 static size_t gupcr_shared_heap_size;
-static int gupcr_node_local_mem_enabled = 1;
-static int gupcr_forcetouch_enabled = 1;
+static int gupcr_node_local_memory = 1;
+static int gupcr_forcetouch = 1;
 
 static gupcr_open_file_ref gupcr_open_files_list;
 static int gupcr_debug_enabled;
@@ -248,27 +248,27 @@ gupcr_get_shared_heap_size (void)
 }
 
 void
-gupcr_set_node_local_mem_enabled (int value)
+gupcr_set_node_local_memory (int value)
 {
-  gupcr_node_local_mem_enabled = value;
+  gupcr_node_local_memory = value;
 }
 
 int
-gupcr_is_node_local_mem_enabled (void)
+gupcr_is_node_local_memory (void)
 {
-  return gupcr_node_local_mem_enabled;
+  return gupcr_node_local_memory;
 }
 
 void
-gupcr_set_forcetouch_enabled (int value)
+gupcr_set_forcetouch (int value)
 {
-  gupcr_forcetouch_enabled = value;
+  gupcr_forcetouch = value;
 }
 
 int
 gupcr_is_forcetouch_enabled (void)
 {
-  return gupcr_forcetouch_enabled;
+  return gupcr_forcetouch;
 }
 
 /** Node local unique name.  */

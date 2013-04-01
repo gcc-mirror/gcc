@@ -203,7 +203,7 @@ gupcr_node_local_alloc (size_t size)
 
 #if GUPCR_NODE_LOCAL_MEM
   /* Node Local Memory can be disabled by env variable.  */
-  if (gupcr_is_node_local_mem_enabled ())
+  if (gupcr_is_node_local_memory_enabled ())
     {
       int i;
       /* Create mapping for this thread.  */
@@ -253,7 +253,7 @@ void
 gupcr_node_init (void)
 {
 #if GUPCR_NODE_LOCAL_MEM
-  if (gupcr_is_node_local_mem_enabled ())
+  if (gupcr_is_node_local_memory_enabled ())
     gupcr_mem_local_init ();
 #endif
 }

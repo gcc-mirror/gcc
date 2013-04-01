@@ -361,7 +361,7 @@ gupcr_env_size (const char *const env_var_arg, long long int val_max)
 }
 
 static int
-gupcr_env_switch (const char *const env_var_arg)
+gupcr_env_boolean (const char *const env_var_arg)
 {
   int value = 0;
   char *env_var, *env_var_name, *switch_str;
@@ -370,18 +370,22 @@ gupcr_env_switch (const char *const env_var_arg)
     {
       if ((switch_str = strtok (NULL, "")))
 	{
-	  if (!strcmp (switch_str, "OFF") || !strcmp (switch_str, "off"))
+	  if (!strcmp (switch_str, "NO") || \
+	      !strcmp (switch_str, "no") || \
+	      !strcmp (switch_str, "0"))
 	    value = 0;
-	  else if (!strcmp (switch_str, "ON") || !strcmp (switch_str, "on"))
+	  else if (!strcmp (switch_str, "YES") || \
+		   !strcmp (switch_str, "yes") || \
+		   !strcmp (switch_str, "1"))
 	    value = 1;
 	  else
 	    {
-	      gupcr_error ("invalid option specifier in UPC environment "
+	      gupcr_error ("invalid value specifier in UPC environment "
 			   "variable: `%s'", env_var_arg);
 	    }
 	}
       else
-	gupcr_error ("missing option specifier in UPC environment "
+	gupcr_error ("missing value specifier in UPC environment "
 		     "variable: `%s'", env_var_arg);
     }
   else
@@ -423,7 +427,7 @@ gupcr_env_init (void)
 		gupcr_set_debug_filename (filename);
 	      break;
 	    case ENV_UPC_FORCETOUCH:
-	      gupcr_set_forcetouch_enabled (gupcr_env_switch (env_var));
+	      gupcr_set_forcetouch (gupcr_env_boolean (env_var));
 	      break;
 	    case ENV_UPC_LOG:
 	      facility_mask = gupcr_env_facility_list (env_var);
@@ -439,7 +443,7 @@ gupcr_env_init (void)
 	      gupcr_no_warn ();
 	      break;
 	    case ENV_UPC_NODE_LOCAL_MEM:
-	      gupcr_set_node_local_mem_enabled (gupcr_env_switch (env_var));
+	      gupcr_set_node_local_memory (gupcr_env_boolean (env_var));
 	      break;
 	    case ENV_UPC_NODES:
 	      /* no-op */
