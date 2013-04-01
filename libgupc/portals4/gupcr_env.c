@@ -46,6 +46,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 	Path of log file where UPC runtime debug logs are written.
 
+ UPC_FORCETOUCH
+
+	Force the thread to touch every memory page in its own shared
+	memory space on startup. This ensures the correct NUMA memory
+	allocation. By default it is "ON".
+
  UPC_LOG
 
 	If set, specifies a list of "facilities" that
@@ -158,6 +164,7 @@ typedef enum
   ENV_NONE = 0,
   ENV_UPC_DEBUG,
   ENV_UPC_DEBUGFILE,
+  ENV_UPC_FORCETOUCH,
   ENV_UPC_LOG,
   ENV_UPC_LOGFILE,
   ENV_UPC_NO_WARN,
@@ -182,6 +189,7 @@ gupcr_env_var_table[] =
 {
   {"UPC_DEBUG", ENV_UPC_DEBUG},
   {"UPC_DEBUGFILE", ENV_UPC_DEBUGFILE},
+  {"UPC_FORCETOUCH", ENV_UPC_FORCETOUCH},
   {"UPC_LOG", ENV_UPC_LOG},
   {"UPC_LOGFILE", ENV_UPC_LOGFILE},
   {"UPC_NO_WARN", ENV_UPC_NO_WARN},
@@ -413,6 +421,9 @@ gupcr_env_init (void)
 	      filename = gupcr_env_filename (env_var);
 	      if (filename)
 		gupcr_set_debug_filename (filename);
+	      break;
+	    case ENV_UPC_FORCETOUCH:
+	      gupcr_set_forcetouch_enabled (gupcr_env_switch (env_var));
 	      break;
 	    case ENV_UPC_LOG:
 	      facility_mask = gupcr_env_facility_list (env_var);

@@ -884,6 +884,7 @@ enable_upc_runtime_triggered_ops
 enable_upc_node_local_mem
 with_upc_node_local_mem
 with_upc_job_launcher
+with_upc_memory_page_size
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1660,6 +1661,8 @@ Optional Packages:
                           specify type of shared memory used for node local
                           memory accesses (posix or mmap). [default=posix]
   --with-upc-job-launcher Select UPC Portals4 job launcher. [default=slurm]
+  --with-upc-memory-page-size
+                          Select target memory page size. [default=4096]
 
 Some influential environment variables:
   CC          C compiler command
@@ -11657,7 +11660,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11660 "configure"
+#line 11663 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11763,7 +11766,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11766 "configure"
+#line 11769 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17875,7 +17878,7 @@ if test "${with_upc_runtime_bounce_buffer_size+set}" = set; then :
     # $withval must be a decimal integer
     if ! echo "$withval" | grep -i '^[0-9][0-9]*[kmg]$' >/dev/null 2>&1; then
       as_fn_error "$withval is an invalid option to
---with-upc-runtime-bounce-buffer-size" "$LINENO" 5
+			--with-upc-runtime-bounce-buffer-size" "$LINENO" 5
     fi
     bb_size="$withval"
 
@@ -17905,7 +17908,7 @@ if test "${with_upc_runtime_tree_fanout+set}" = set; then :
     # $withval must be a decimal integer
     if ! echo "$withval" | grep '^[0-9][0-9]*$' >/dev/null 2>&1; then
       as_fn_error "$withval is an invalid option to
---with-upc-runtime-tree-fanout" "$LINENO" 5
+			--with-upc-runtime-tree-fanout" "$LINENO" 5
     fi
     upc_runtime_tree_fanout="$withval"
 
@@ -18163,6 +18166,33 @@ $as_echo "#define GUPCR_JOB_LAUNCHER_YOD 1" >>confdefs.h
 
     portals4libs="$portals4libs -lportals_runtime"
   fi
+
+  # Check for target memory page size
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for memory page size" >&5
+$as_echo_n "checking for memory page size... " >&6; }
+
+# Check whether --with-upc-memory-page-size was given.
+if test "${with_upc_memory_page_size+set}" = set; then :
+  withval=$with_upc_memory_page_size;
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[0-9][0-9]*$' >/dev/null 2>&1; then
+      as_fn_error "$withval is an invalid option to --with-upc-memory-page-size" "$LINENO" 5
+    fi
+    memory_page_size="$withval"
+
+else
+
+    memory_page_size="4096"
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $memory_page_size" >&5
+$as_echo "$memory_page_size" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define GUPCR_MEMORY_PAGE_SIZE $memory_page_size
+_ACEOF
+
 
 
 $as_echo "#define GUPCR_GLOBAL_EXIT_TIMEOUT 2" >>confdefs.h

@@ -1,5 +1,20 @@
 2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
 
+	configure.ac: Add --with-upc-memory-page-size switch.
+	config.h.in: Re-generate.
+	configure: Re-generate.
+	portals4/gupcr_env.c: Add UPC_FORCETOUCH env variable. Set to
+	1 (one) by default.
+	(gupcr_env_init): Decode UPC_FORCETOUCH env variable.
+	portals4/gupcr_node.c (gupcr_mem_check): Touch each page
+	of the local shared memory to make sure that memory is NUMA local.
+	portals4/gupcr_utils.c (gupcr_set_forcetouch_enabled): Add.
+	(gupcr_is_forcetouch_enabled): Add.
+	portals4/gupcr_utils.h (gupcr_set_forcetouch_enabled): Add.
+	(gupcr_is_forcetouch_enabled): Add.
+
+2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
+
 	* portals4/gupcr_main.c (gupcr_init): Initialize runtime
 	interface first and set MYTHREAD right after, making sure that
 	MYTHREAD is valid while going through the Portals runtime

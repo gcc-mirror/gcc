@@ -68,6 +68,9 @@
 /* Maximum number of locks held per thread */
 #undef GUPCR_MAX_LOCKS
 
+/* Target system memory page size. */
+#undef GUPCR_MEMORY_PAGE_SIZE
+
 /* Define to 1 if UPC runtime will use node local memory accesses. */
 #undef GUPCR_NODE_LOCAL_MEM
 

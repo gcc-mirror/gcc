@@ -1080,7 +1080,7 @@ if test "$upc_runtime_model" = "portals4"; then
     # $withval must be a decimal integer
     if ! echo "$withval" | grep -i '^[[0-9]][[0-9]]*[[kmg]]$' >/dev/null 2>&1; then
       AC_MSG_ERROR([$withval is an invalid option to
---with-upc-runtime-bounce-buffer-size])
+			--with-upc-runtime-bounce-buffer-size])
     fi
     bb_size="$withval"
   ],
@@ -1105,7 +1105,7 @@ if test "$upc_runtime_model" = "portals4"; then
     # $withval must be a decimal integer
     if ! echo "$withval" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
       AC_MSG_ERROR([$withval is an invalid option to
---with-upc-runtime-tree-fanout])
+			--with-upc-runtime-tree-fanout])
     fi
     upc_runtime_tree_fanout="$withval"
   ],
@@ -1272,6 +1272,26 @@ if test "$upc_runtime_model" = "portals4"; then
     [Use YOD for UPC Portals4 job launcher])
     portals4libs="$portals4libs -lportals_runtime"
   fi
+
+  # Check for target memory page size
+  AC_MSG_CHECKING([for memory page size])
+  AC_ARG_WITH(upc-memory-page-size,
+  [AS_HELP_STRING([--with-upc-memory-page-size],
+		  [Select target memory page size.
+		   [default=4096]])],
+  [
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
+      AC_MSG_ERROR([$withval is an invalid option to --with-upc-memory-page-size])
+    fi
+    memory_page_size="$withval"
+  ],
+  [
+    memory_page_size="4096"
+  ])
+  AC_MSG_RESULT($memory_page_size)
+  AC_DEFINE_UNQUOTED(GUPCR_MEMORY_PAGE_SIZE, [$memory_page_size],
+    [Target system memory page size.])
 
   AC_DEFINE(GUPCR_GLOBAL_EXIT_TIMEOUT, [2],
     [upc_global_exit() timeout in seconds.])

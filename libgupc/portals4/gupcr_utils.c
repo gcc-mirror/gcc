@@ -74,6 +74,7 @@ static int gupcr_inform_user = 1;
 static int gupcr_warn_user = 1;
 static size_t gupcr_shared_heap_size;
 static int gupcr_node_local_mem_enabled = 1;
+static int gupcr_forcetouch_enabled = 1;
 
 static gupcr_open_file_ref gupcr_open_files_list;
 static int gupcr_debug_enabled;
@@ -256,6 +257,18 @@ int
 gupcr_is_node_local_mem_enabled (void)
 {
   return gupcr_node_local_mem_enabled;
+}
+
+void
+gupcr_set_forcetouch_enabled (int value)
+{
+  gupcr_forcetouch_enabled = value;
+}
+
+int
+gupcr_is_forcetouch_enabled (void)
+{
+  return gupcr_forcetouch_enabled;
 }
 
 /** Node local unique name.  */

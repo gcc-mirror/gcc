@@ -123,7 +123,7 @@ gupcr_mem_sigbus (int sig __attribute__ ((unused)))
 static void
 gupcr_mem_check (char *mem, size_t size, int thread)
 {
-  int temp;
+  char temp;
   struct sigaction action;
   struct sigaction old_action;
 
@@ -136,13 +136,26 @@ gupcr_mem_check (char *mem, size_t size, int thread)
   action.sa_flags = 0;
   sigaction (SIGBUS, &action, &old_action);
 
-  /* Only check the first and the last page.  */
-  temp = *(volatile int *) mem;
-  *(volatile int *) mem = temp;
-  temp = *(volatile int *) (mem + size - 16);
-  *(volatile int *) (mem + size - 16) = temp;
+  if (gupcr_is_forcetouch_enabled ())
+    {
+      volatile char *memp = (volatile char *) mem;
+      while (memp < mem + size)
+	{
+	  temp = *memp;
+	  *memp = temp;
+	  memp += GUPCR_MEMORY_PAGE_SIZE;
+	}
+    }
+  else
+    {
+      /* Only check the first and the last page.  */
+      temp = *(volatile char *) mem;
+      *(volatile char *) mem = temp;
+      temp = *(volatile char *) (mem + size - 16);
+      *(volatile char *) (mem + size - 16) = temp;
+    }
 
-  /* Restore the SIGBUS handler.  */
+  /* Restore SIGBUS handler.  */
   sigaction (SIGBUS, &old_action, NULL);
 }
 
