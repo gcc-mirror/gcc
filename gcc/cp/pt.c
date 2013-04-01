@@ -10942,7 +10942,9 @@ tsubst_function_type (tree t,
   if (TREE_CODE (t) == FUNCTION_TYPE)
     {
       fntype = build_function_type (return_type, arg_types);
-      fntype = apply_memfn_quals (fntype, type_memfn_quals (t));
+      fntype = apply_memfn_quals (fntype,
+				  type_memfn_quals (t),
+				  type_memfn_rqual (t));
     }
   else
     {
@@ -10964,6 +10966,7 @@ tsubst_function_type (tree t,
 
       fntype = build_method_type_directly (r, return_type,
 					   TREE_CHAIN (arg_types));
+      fntype = build_ref_qualified_type (fntype, type_memfn_rqual (t));
     }
   fntype = cp_build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
 
@@ -11596,7 +11599,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    /* The type of the implicit object parameter gets its
 	       cv-qualifiers from the FUNCTION_TYPE. */
 	    tree memptr;
-	    tree method_type = build_memfn_type (type, r, type_memfn_quals (type));
+	    tree method_type
+	      = build_memfn_type (type, r, type_memfn_quals (type),
+				  type_memfn_rqual (type));
 	    memptr = build_ptrmemfunc_type (build_pointer_type (method_type));
 	    return cp_build_qualified_type_real (memptr, cp_type_quals (t),
 						 complain);
@@ -17079,10 +17084,12 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	    build_function_type (TREE_TYPE (method_type),
 				 TREE_CHAIN (TYPE_ARG_TYPES (method_type)));
 
-	  /* Extract the cv-qualifiers of the member function from the
-	     implicit object parameter and place them on the function
-	     type to be restored later. */
-	  fntype = apply_memfn_quals (fntype, type_memfn_quals (method_type));
+	  /* Extract the cv-qualifiers and ref-qualifier of the member
+	     function from the implicit object parameter and place them
+	     on the function type to be restored later. */
+	  fntype = apply_memfn_quals (fntype,
+				      type_memfn_quals (method_type),
+				      type_memfn_rqual (method_type));
 	  return unify (tparms, targs, TREE_TYPE (parm), fntype, strict, explain_p);
 	}
 

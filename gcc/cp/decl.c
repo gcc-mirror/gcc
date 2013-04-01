@@ -7318,6 +7318,7 @@ grokfndecl (tree ctype,
 	    int virtualp,
 	    enum overload_flags flags,
 	    cp_cv_quals quals,
+	    cp_ref_qualifier rqual,
 	    tree raises,
 	    int check,
 	    int friendp,
@@ -7334,6 +7335,8 @@ grokfndecl (tree ctype,
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
   tree t;
 
+  if (rqual)
+    type = build_ref_qualified_type (type, rqual);
   if (raises)
     type = build_exception_variant (type, raises);
 
@@ -7537,13 +7540,25 @@ grokfndecl (tree ctype,
     DECL_DECLARED_CONSTEXPR_P (decl) = true;
 
   DECL_EXTERNAL (decl) = 1;
-  if (quals && TREE_CODE (type) == FUNCTION_TYPE)
+  if (TREE_CODE (type) == FUNCTION_TYPE)
     {
-      error (ctype
-             ? G_("static member function %qD cannot have cv-qualifier")
-             : G_("non-member function %qD cannot have cv-qualifier"),
-	     decl);
-      quals = TYPE_UNQUALIFIED;
+      if (quals)
+	{
+	  error (ctype
+		 ? G_("static member function %qD cannot have cv-qualifier")
+		 : G_("non-member function %qD cannot have cv-qualifier"),
+		 decl);
+	  quals = TYPE_UNQUALIFIED;
+	}
+
+      if (rqual)
+	{
+	  error (ctype
+		 ? G_("static member function %qD cannot have ref-qualifier")
+		 : G_("non-member function %qD cannot have ref-qualifier"),
+		 decl);
+	  rqual = REF_QUAL_NONE;
+	}
     }
 
   if (IDENTIFIER_OPNAME_P (DECL_NAME (decl))
@@ -7981,7 +7996,8 @@ build_ptrmem_type (tree class_type, tree member_type)
   if (TREE_CODE (member_type) == METHOD_TYPE)
     {
       cp_cv_quals quals = type_memfn_quals (member_type);
-      member_type = build_memfn_type (member_type, class_type, quals);
+      cp_ref_qualifier rqual = type_memfn_rqual (member_type);
+      member_type = build_memfn_type (member_type, class_type, quals, rqual);
       return build_ptrmemfunc_type (build_pointer_type (member_type));
     }
   else
@@ -8630,6 +8646,9 @@ grokdeclarator (const cp_declarator *declarator,
   /* virt-specifiers that apply to the declarator, for a declaration of
      a member function.  */
   cp_virt_specifiers virt_specifiers = VIRT_SPEC_UNSPECIFIED;
+  /* ref-qualifier that applies to the declarator, for a declaration of
+     a member function.  */
+  cp_ref_qualifier rqual = REF_QUAL_NONE;
   /* cv-qualifiers that apply to the type specified by the DECLSPECS.  */
   int type_quals;
   tree raises = NULL_TREE;
@@ -9439,6 +9458,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    memfn_quals = declarator->u.function.qualifiers;
 	    /* Pick up virt-specifiers.  */
             virt_specifiers = declarator->u.function.virt_specifiers;
+	    /* And ref-qualifier, too */
+	    rqual = declarator->u.function.ref_qualifier;
 	    /* Pick up the exception specifications.  */
 	    raises = declarator->u.function.exception_specification;
 	    /* If the exception-specification is ill-formed, let's pretend
@@ -9506,12 +9527,13 @@ grokdeclarator (const cp_declarator *declarator,
 		   therefore returns a void type.  */
 
 		/* ISO C++ 12.4/2.  A destructor may not be declared
-		   const or volatile.  A destructor may not be
-		   static.
+		   const or volatile.  A destructor may not be static.
+		   A destructor may not be declared with ref-qualifier.
 
 		   ISO C++ 12.1.  A constructor may not be declared
 		   const or volatile.  A constructor may not be
-		   virtual.  A constructor may not be static.  */
+		   virtual.  A constructor may not be static.
+		   A constructor may not be declared with ref-qualifier. */
 		if (staticp == 2)
 		  error ((flags == DTOR_FLAG)
 			 ? G_("destructor cannot be static member function")
@@ -9522,6 +9544,14 @@ grokdeclarator (const cp_declarator *declarator,
 			   ? G_("destructors may not be cv-qualified")
 			   : G_("constructors may not be cv-qualified"));
 		    memfn_quals = TYPE_UNQUALIFIED;
+		  }
+
+		if (rqual)
+		  {
+		    error ((flags == DTOR_FLAG)
+			   ? "destructors may not be ref-qualified"
+			   : "constructors may not be ref-qualified");
+		    rqual = REF_QUAL_NONE;
 		  }
 
 		if (decl_context == FIELD
@@ -9643,14 +9673,18 @@ grokdeclarator (const cp_declarator *declarator,
 	      memfn_quals |= type_memfn_quals (type);
 	      type = build_memfn_type (type,
 				       declarator->u.pointer.class_type,
-				       memfn_quals);
+				       memfn_quals,
+				       rqual);
 	      if (type == error_mark_node)
 		return error_mark_node;
+
+	      rqual = REF_QUAL_NONE;
 	      memfn_quals = TYPE_UNQUALIFIED;
 	    }
 
 	  if (TREE_CODE (type) == FUNCTION_TYPE
-	      && type_memfn_quals (type) != TYPE_UNQUALIFIED)
+	      && (type_memfn_quals (type) != TYPE_UNQUALIFIED
+		  || type_memfn_rqual (type) != REF_QUAL_NONE))
             error (declarator->kind == cdk_reference
                    ? G_("cannot declare reference to qualified function type %qT")
                    : G_("cannot declare pointer to qualified function type %qT"),
@@ -9997,12 +10031,13 @@ grokdeclarator (const cp_declarator *declarator,
 	 example "f S::*" declares a pointer to a const-qualified
 	 member function of S.  We record the cv-qualification in the
 	 function type.  */
-      if (memfn_quals && TREE_CODE (type) == FUNCTION_TYPE)
+      if ((rqual || memfn_quals) && TREE_CODE (type) == FUNCTION_TYPE)
         {
-          type = apply_memfn_quals (type, memfn_quals);
+          type = apply_memfn_quals (type, memfn_quals, rqual);
           
           /* We have now dealt with these qualifiers.  */
           memfn_quals = TYPE_UNQUALIFIED;
+	  rqual = REF_QUAL_NONE;
         }
 
       if (type_uses_auto (type))
@@ -10132,8 +10167,10 @@ grokdeclarator (const cp_declarator *declarator,
       if (decl_context != TYPENAME)
 	{
 	  /* A cv-qualifier-seq shall only be part of the function type
-	     for a non-static member function. [8.3.5/4 dcl.fct] */
-	  if (type_memfn_quals (type) != TYPE_UNQUALIFIED
+	     for a non-static member function. A ref-qualifier shall only
+	     .... /same as above/ [dcl.fct] */
+	  if ((type_memfn_quals (type) != TYPE_UNQUALIFIED
+	       || type_memfn_rqual (type) != REF_QUAL_NONE)
 	      && (current_class_type == NULL_TREE || staticp) )
 	    {
 	      error (staticp
@@ -10147,6 +10184,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  /* The qualifiers on the function type become the qualifiers on
 	     the non-static member function. */
 	  memfn_quals |= type_memfn_quals (type);
+	  rqual = type_memfn_rqual (type);
 	  type_quals = TYPE_UNQUALIFIED;
 	}
     }
@@ -10211,10 +10249,10 @@ grokdeclarator (const cp_declarator *declarator,
 	    ctype = TYPE_METHOD_BASETYPE (type);
 
 	  if (ctype)
-	    type = build_memfn_type (type, ctype, memfn_quals);
+	    type = build_memfn_type (type, ctype, memfn_quals, rqual);
 	  /* Core issue #547: need to allow this in template type args.  */
 	  else if (template_type_arg && TREE_CODE (type) == FUNCTION_TYPE)
-	    type = apply_memfn_quals (type, memfn_quals);
+	    type = apply_memfn_quals (type, memfn_quals, rqual);
 	  else
 	    error ("invalid qualifiers on non-member function type");
 	}
@@ -10283,7 +10321,7 @@ grokdeclarator (const cp_declarator *declarator,
       cp_cv_quals real_quals = memfn_quals;
       if (constexpr_p && sfk != sfk_constructor && sfk != sfk_destructor)
 	real_quals |= TYPE_QUAL_CONST;
-      type = build_memfn_type (type, ctype, real_quals);
+      type = build_memfn_type (type, ctype, real_quals, rqual);
     }
 
   {
@@ -10415,7 +10453,7 @@ grokdeclarator (const cp_declarator *declarator,
 			       ? unqualified_id : dname,
 			       parms,
 			       unqualified_id,
-			       virtualp, flags, memfn_quals, raises,
+			       virtualp, flags, memfn_quals, rqual, raises,
 			       friendp ? -1 : 0, friendp, publicp,
                                inlinep | (2 * constexpr_p),
 			       sfk,
@@ -10636,7 +10674,7 @@ grokdeclarator (const cp_declarator *declarator,
 		   || storage_class != sc_static);
 
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
-			   virtualp, flags, memfn_quals, raises,
+			   virtualp, flags, memfn_quals, rqual, raises,
 			   1, friendp,
 			   publicp, inlinep | (2 * constexpr_p), sfk,
                            funcdef_flag,
@@ -14192,8 +14230,9 @@ static_fn_type (tree memfntype)
     return memfntype;
   gcc_assert (TREE_CODE (memfntype) == METHOD_TYPE);
   args = TYPE_ARG_TYPES (memfntype);
+  cp_ref_qualifier rqual = type_memfn_rqual (memfntype);
   fntype = build_function_type (TREE_TYPE (memfntype), TREE_CHAIN (args));
-  fntype = apply_memfn_quals (fntype, type_memfn_quals (memfntype));
+  fntype = apply_memfn_quals (fntype, type_memfn_quals (memfntype), rqual);
   fntype = (cp_build_type_attribute_variant
 	    (fntype, TYPE_ATTRIBUTES (memfntype)));
   fntype = (build_exception_variant
@@ -14209,9 +14248,10 @@ revert_static_member_fn (tree decl)
 {
   tree stype = static_fn_type (decl);
   cp_cv_quals quals = type_memfn_quals (stype);
+  cp_ref_qualifier rqual = type_memfn_rqual (stype);
 
-  if (quals != TYPE_UNQUALIFIED)
-    stype = apply_memfn_quals (stype, TYPE_UNQUALIFIED);
+  if (quals != TYPE_UNQUALIFIED || rqual != REF_QUAL_NONE)
+    stype = apply_memfn_quals (stype, TYPE_UNQUALIFIED, REF_QUAL_NONE);
 
   TREE_TYPE (decl) = stype;
 
