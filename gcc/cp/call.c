@@ -1959,11 +1959,13 @@ add_function_candidate (struct z_candidate **candidates,
 		     object parameter has reference type.  */
 		  bool rv = FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (fn));
 		  parmtype = cp_build_reference_type (parmtype, rv);
-		  arg = build_fold_indirect_ref (arg);
-		  argtype = lvalue_type (arg);
 		}
 	      else
-		parmtype = build_pointer_type (parmtype);
+		{
+		  parmtype = build_pointer_type (parmtype);
+		  arg = build_this (arg);
+		  argtype = lvalue_type (arg);
+		}
 	    }
 
 	  /* Core issue 899: When [copy-]initializing a temporary to be bound
@@ -3460,6 +3462,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
       int ctorflags = flags;
 
       first_arg = build_int_cst (build_pointer_type (totype), 0);
+      first_arg = build_fold_indirect_ref (first_arg);
 
       /* We should never try to call the abstract or base constructor
 	 from here.  */
@@ -3501,7 +3504,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     }
 
   if (conv_fns)
-    first_arg = build_this (expr);
+    first_arg = expr;
 
   for (; conv_fns; conv_fns = TREE_CHAIN (conv_fns))
     {
@@ -4079,7 +4082,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
   if (fns)
     {
-      first_mem_arg = build_this (obj);
+      first_mem_arg = obj;
 
       add_candidates (BASELINK_FUNCTIONS (fns),
 		      first_mem_arg, *args, NULL_TREE,
@@ -4936,7 +4939,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	 is considered to be a member of the class of the implicit
 	 object argument for the purpose of defining the type of
 	 the implicit object parameter.  */
-      ctype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (first_arg)));
+      ctype = TYPE_MAIN_VARIANT (TREE_TYPE (first_arg));
     }
   else
     {
@@ -4990,7 +4993,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	      for (ix = 1; args->iterate (ix, &arg); ++ix)
 		tempvec->quick_push (arg);
 	      non_static_args = tempvec;
-	      first_arg = build_this ((*args)[0]);
+	      first_arg = (*args)[0];
 	    }
 
 	  fn_first_arg = first_arg;
@@ -6722,16 +6725,18 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      resolution, and must be of the proper type.  */
   if (DECL_CONSTRUCTOR_P (fn))
     {
+      tree object_arg;
       if (first_arg != NULL_TREE)
 	{
-	  argarray[j++] = first_arg;
+	  object_arg = first_arg;
 	  first_arg = NULL_TREE;
 	}
       else
 	{
-	  argarray[j++] = (*args)[arg_index];
+	  object_arg = (*args)[arg_index];
 	  ++arg_index;
 	}
+      argarray[j++] = build_this (object_arg);
       parm = TREE_CHAIN (parm);
       /* We should never try to call the abstract constructor.  */
       gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (fn));
@@ -6747,9 +6752,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   else if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
     {
       tree parmtype = TREE_VALUE (parm);
-      tree arg = (first_arg != NULL_TREE
-		  ? first_arg
-		  : (*args)[arg_index]);
+      tree arg = build_this (first_arg != NULL_TREE
+			     ? first_arg
+			     : (*args)[arg_index]);
       tree argtype = TREE_TYPE (arg);
       tree converted_arg;
       tree base_binfo;
@@ -7411,7 +7416,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   tree access_binfo;
   tree optype;
   tree first_mem_arg = NULL_TREE;
-  tree instance_ptr;
   tree name;
   bool skip_first_for_error;
   vec<tree, va_gc> *user_args;
@@ -7519,22 +7523,27 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	return error_mark_node;
     }
 
-  instance_ptr = build_this (instance);
+  /* Consider the object argument to be used even if we end up selecting a
+     static member function.  */
+  instance = mark_type_use (instance);
 
   /* It's OK to call destructors and constructors on cv-qualified objects.
-     Therefore, convert the INSTANCE_PTR to the unqualified type, if
+     Therefore, convert the INSTANCE to the unqualified type, if
      necessary.  */
   if (DECL_DESTRUCTOR_P (fn)
       || DECL_CONSTRUCTOR_P (fn))
     {
-      tree type = build_pointer_type (basetype);
-      if (!same_type_p (type, TREE_TYPE (instance_ptr)))
-	instance_ptr = build_nop (type, instance_ptr);
+      if (!same_type_p (basetype, TREE_TYPE (instance)))
+	{
+	  instance = build_this (instance);
+	  instance = build_nop (build_pointer_type (basetype), instance);
+	  instance = build_fold_indirect_ref (instance);
+	}
     }
   if (DECL_DESTRUCTOR_P (fn))
     name = complete_dtor_identifier;
 
-  first_mem_arg = instance_ptr;
+  first_mem_arg = instance;
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
@@ -7570,11 +7579,10 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
       if (init)
 	{
-	  tree ob;
-	  if (integer_zerop (instance_ptr))
+	  if (TREE_CODE (instance) == INDIRECT_REF
+	      && integer_zerop (TREE_OPERAND (instance, 0)))
 	    return get_target_expr_sfinae (init, complain);
-	  ob = build_fold_indirect_ref (instance_ptr);
-	  init = build2 (INIT_EXPR, TREE_TYPE (ob), ob, init);
+	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
 	  TREE_SIDE_EFFECTS (init) = true;
 	  return init;
 	}
@@ -7599,11 +7607,11 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
       if (complain & tf_error)
 	{
 	  if (!COMPLETE_OR_OPEN_TYPE_P (basetype))
-	    cxx_incomplete_type_error (instance_ptr, basetype);
+	    cxx_incomplete_type_error (instance, basetype);
 	  else if (optype)
 	    error ("no matching function for call to %<%T::operator %T(%A)%#V%>",
 		   basetype, optype, build_tree_list_vec (user_args),
-		   TREE_TYPE (TREE_TYPE (instance_ptr)));
+		   TREE_TYPE (instance));
 	  else
 	    {
 	      char *pretty_name;
@@ -7616,7 +7624,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		arglist = TREE_CHAIN (arglist);
 	      error ("no matching function for call to %<%T::%s(%A)%#V%>",
 		     basetype, pretty_name, arglist,
-		     TREE_TYPE (TREE_TYPE (instance_ptr)));
+		     TREE_TYPE (instance));
 	      if (free_p)
 		free (pretty_name);
 	    }
@@ -7666,7 +7674,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		     fn);
 
 	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
-	      && is_dummy_object (instance_ptr))
+	      && is_dummy_object (instance))
 	    {
 	      instance = maybe_resolve_dummy (instance);
 	      if (instance == error_mark_node)
@@ -7675,8 +7683,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		{
 		  /* We captured 'this' in the current lambda now that
 		     we know we really need it.  */
-		  instance_ptr = build_this (instance);
-		  cand->first_arg = instance_ptr;
+		  cand->first_arg = instance;
 		}
 	      else
 		{
@@ -7711,10 +7718,10 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		 out to be a static member function, `a' is
 		 none-the-less evaluated.  */
 	      if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
-		  && !is_dummy_object (instance_ptr)
-		  && TREE_SIDE_EFFECTS (instance_ptr))
+		  && !is_dummy_object (instance)
+		  && TREE_SIDE_EFFECTS (instance))
 		call = build2 (COMPOUND_EXPR, TREE_TYPE (call),
-			       instance_ptr, call);
+			       instance, call);
 	      else if (call != error_mark_node
 		       && DECL_DESTRUCTOR_P (cand->fn)
 		       && !VOID_TYPE_P (TREE_TYPE (call)))
