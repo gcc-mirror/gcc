@@ -1,4 +1,4 @@
-/* Copyright (C) 2012
+/* Copyright (C) 2012-2013
    Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -88,17 +88,24 @@ gupcr_init (void)
   upc_shared_ptr_t heap_region_base;
   size_t heap_region_size;
 
+  /* Initialize Runtime.  */
+  if (gupcr_runtime_init ())
+    {
+      /* Report an error to stderr as the GUPC error reporting
+	 is not initialized yet. Note: all threads report
+	 this error. */
+      fprintf (stderr, "Unable to initialize runtime.\n");
+      abort ();
+    }
+
+  /* Get the thread number.  */
+  MYTHREAD = gupcr_runtime_get_rank ();
+
   /* Set up debugging, tracing, statistics, and timing support.  */
   gupcr_utils_init ();
 
-  /* Initialize Runtime.  */
-  gupcr_runtime_init ();
-
   /* Initialize Portals.  */
   gupcr_portals_init ();
-
-  /* Get the thread number.  */
-  MYTHREAD = gupcr_get_rank ();
 
   /* Validate program info.  */
   gupcr_validate_pgm_info ();
@@ -113,7 +120,7 @@ gupcr_init (void)
   else if (THREADS != run_threads_count)
     gupcr_abort_with_msg ("number of running threads (%d) is "
 			  "not equal to compiled threads (%d)",
-			  THREADS, run_threads_count);
+			  run_threads_count, THREADS);
   gupcr_assert (THREADS >= 1);
 
   /* Initialize the Portals Network Interface.  */

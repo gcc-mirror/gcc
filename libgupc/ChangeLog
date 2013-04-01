@@ -1,3 +1,11 @@
+2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_main.c (gupcr_init): Initialize runtime
+	interface first and set MYTHREAD right after, making sure that
+	MYTHREAD is valid while going through the Portals runtime
+	initialization.
+	Fix the error reporting on threads number mismatch.
+
 2013-03-30  Gary Funck  <gary@intrepid.com>
 
 	* include/upc.h: Delete (deprecated) declaration
