@@ -1,3 +1,8 @@
+2013-04-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/56798
+	* cfgbuild.c (inside_basic_block_p): Restore check broken at r197234.
+
 2013-03-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (casesi_worker_1): Use next_active_insn instead
