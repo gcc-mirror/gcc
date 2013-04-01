@@ -4803,9 +4803,7 @@ push_template_decl_real (tree decl, bool is_friend)
 	      /* Can happen in erroneous input.  */
 	      break;
 	    else
-	      current = (TYPE_P (current)
-			 ? TYPE_CONTEXT (current)
-			 : DECL_CONTEXT (current));
+	      current = get_containing_scope (current);
 	  }
 
       /* Check that the parms are used in the appropriate qualifying scopes
@@ -16750,8 +16748,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       else if (same_type_p (TREE_TYPE (arg), tparm))
 	/* OK */;
       else if ((strict & UNIFY_ALLOW_INTEGER)
-	       && (TREE_CODE (tparm) == INTEGER_TYPE
-		   || TREE_CODE (tparm) == BOOLEAN_TYPE))
+	       && CP_INTEGRAL_TYPE_P (tparm))
 	/* Convert the ARG to the type of PARM; the deduced non-type
 	   template argument must exactly match the types of the
 	   corresponding parameter.  */

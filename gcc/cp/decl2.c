@@ -2572,8 +2572,7 @@ import_export_decl (tree decl)
       else
 	comdat_p = true;
     }
-  else if (DECL_TEMPLATE_INSTANTIATION (decl)
-	   || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
+  else if (DECL_TEMPLOID_INSTANTIATION (decl))
     {
       /* DECL is an implicit instantiation of a function or static
 	 data member.  */
