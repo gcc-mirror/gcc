@@ -1,3 +1,16 @@
+2013-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (DECL_UNBOUND_CLASS_TEMPLATE_P): Remove.
+	(DECL_FUNCTION_TEMPLATE_P): Adjust.
+
+	* cxx-pretty-print.c (pp_cxx_nested_name_specifier,
+	pp_cxx_qualified_id): Use get_containing_scope.
+	* parser.c (cp_parser_class_head): Likewise.
+	* pt.c (push_template_decl_real): Likewise.
+
+	* decl2.c (import_export_decl): Use DECL_TEMPLOID_INSTANTIATION.
+	* pt.c (unify): Use CP_INTEGRAL_TYPE_P.
+
 2013-03-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl2.c (collect_candidates_for_java_method_aliases): Use

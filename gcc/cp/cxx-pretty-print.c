@@ -260,7 +260,7 @@ pp_cxx_nested_name_specifier (cxx_pretty_printer *pp, tree t)
 {
   if (!SCOPE_FILE_SCOPE_P (t) && t != pp->enclosing_scope)
     {
-      tree scope = TYPE_P (t) ? TYPE_CONTEXT (t) : DECL_CONTEXT (t);
+      tree scope = get_containing_scope (t);
       pp_cxx_nested_name_specifier (pp, scope);
       pp_cxx_template_keyword_if_needed (pp, scope, t);
       pp_cxx_unqualified_id (pp, t);
@@ -308,7 +308,7 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 
     default:
       {
-	tree scope = TYPE_P (t) ? TYPE_CONTEXT (t) : DECL_CONTEXT (t);
+	tree scope = get_containing_scope (t);
 	if (scope != pp->enclosing_scope)
 	  {
 	    pp_cxx_nested_name_specifier (pp, scope);

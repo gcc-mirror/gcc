@@ -18773,9 +18773,7 @@ cp_parser_class_head (cp_parser* parser,
 
 	  for (scope = TREE_TYPE (type);
 	       scope && TREE_CODE (scope) != NAMESPACE_DECL;
-	       scope = (TYPE_P (scope)
-			? TYPE_CONTEXT (scope)
-			: DECL_CONTEXT (scope)))
+	       scope = get_containing_scope (scope))
 	    if (TYPE_P (scope)
 		&& CLASS_TYPE_P (scope)
 		&& CLASSTYPE_TEMPLATE_INFO (scope)
