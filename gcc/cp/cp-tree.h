@@ -1888,7 +1888,8 @@ struct GTY((variable_size)) lang_type {
    a deferred noexcept-specification, TREE_PURPOSE is a DEFERRED_NOEXCEPT
    (for templates) or an OVERLOAD list of functions (for implicitly
    declared functions).  */
-#define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_LANG_SLOT_1 (NODE)
+#define TYPE_RAISES_EXCEPTIONS(NODE) \
+  TYPE_LANG_SLOT_1 (FUNCTION_OR_METHOD_TYPE_CHECK (NODE))
 
 /* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'
    or noexcept(true).  */

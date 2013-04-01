@@ -829,10 +829,8 @@ dump_type_suffix (tree t, int flags)
 	   anyway; they may in g++, but we'll just pretend otherwise.  */
 	dump_parameters (arg, flags & ~TFF_FUNCTION_DEFAULT_ARGUMENTS);
 
-	if (TREE_CODE (t) == METHOD_TYPE)
-	  pp_cxx_cv_qualifier_seq (cxx_pp, class_of_this_parm (t));
-	else
-	  pp_cxx_cv_qualifier_seq (cxx_pp, t);
+	pp_base (cxx_pp)->padding = pp_before;
+	pp_cxx_cv_qualifiers (cxx_pp, type_memfn_quals (t));
 	dump_ref_qualifier (t, flags);
 	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (TREE_TYPE (t), flags);
