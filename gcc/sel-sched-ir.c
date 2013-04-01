@@ -1862,8 +1862,12 @@ merge_expr (expr_t to, expr_t from, insn_t split_point)
   /* Make sure that speculative pattern is propagated into exprs that
      have non-speculative one.  This will provide us with consistent
      speculative bits and speculative patterns inside expr.  */
-  if (EXPR_SPEC_DONE_DS (to) == 0
-      && EXPR_SPEC_DONE_DS (from) != 0)
+  if ((EXPR_SPEC_DONE_DS (from) != 0
+       && EXPR_SPEC_DONE_DS (to) == 0)
+      /* Do likewise for volatile insns, so that we always retain
+	 the may_trap_p bit on the resulting expression.  */
+      || (VINSN_MAY_TRAP_P (EXPR_VINSN (from))
+	  && !VINSN_MAY_TRAP_P (EXPR_VINSN (to))))
     change_vinsn_in_expr (to, EXPR_VINSN (from));
 
   merge_expr_data (to, from, split_point);
@@ -5019,7 +5023,7 @@ free_sched_pools (void)
 
   free_alloc_pool (sched_lists_pool);
   gcc_assert (succs_info_pool.top == -1);
-  for (i = 0; i < succs_info_pool.max_top; i++)
+  for (i = 0; i <= succs_info_pool.max_top; i++)
     {
       VEC_free (rtx, heap, succs_info_pool.stack[i].succs_ok);
       VEC_free (rtx, heap, succs_info_pool.stack[i].succs_other);
