@@ -2490,9 +2490,9 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
   size_t obj_name_len;
   void * pdata;
 
-  /* This object not touched in name parsing.  */
-
-  if (!nl->touched)
+  /* If we have encountered a previous read error or this object has not been
+     touched in name parsing, just return.  */
+  if (dtp->u.p.nml_read_error || !nl->touched)
     return true;
 
   dtp->u.p.repeat_count = 0;
@@ -2532,10 +2532,8 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 				 - GFC_DESCRIPTOR_LBOUND(nl,dim))
 			* GFC_DESCRIPTOR_STRIDE(nl,dim) * nl->size);
 
-      /* Reset the error flag and try to read next value, if
-	 dtp->u.p.repeat_count=0  */
+      /* If we are finished with the repeat count, try to read next value.  */
 
-      dtp->u.p.nml_read_error = 0;
       nml_carry = 0;
       if (--dtp->u.p.repeat_count <= 0)
 	{
@@ -2564,8 +2562,8 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	    break;
 
 	  case BT_REAL:
-	    /* Need to copy data back from the real location to the temp in order
-	       to handle nml reads into arrays.  */
+	    /* Need to copy data back from the real location to the temp in
+	       order to handle nml reads into arrays.  */
 	    read_real (dtp, pdata, len);
 	    memcpy (dtp->u.p.value, pdata, dlen);
 	    break;
@@ -3022,6 +3020,7 @@ get_name:
 	nl = first_nl;
     }
 
+  dtp->u.p.nml_read_error = 0;
   if (!nml_read_obj (dtp, nl, 0, pprev_nl, nml_err_msg, nml_err_msg_size,
 		    clow, chigh))
     goto nml_err_ret;
