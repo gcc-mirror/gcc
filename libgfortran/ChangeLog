@@ -1,3 +1,12 @@
+2013-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56660
+	* io/list_read.c (nml_read_obj): Do not reset the read error flag
+	inside nml_read_obj. If the read error flag is found set just exit.
+	Fix some whitespace on comments.
+	(nml_read_obj_data): Reset the read error flag before the first call
+	to nml_read_object.
+
 2013-03-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/56786
