@@ -261,6 +261,10 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 
   if (ts->type == BT_CHARACTER && ts->u.cl)
     sym->ts.u.cl = gfc_new_charlen (sym->ns, ts->u.cl);
+  else if (ts->type == BT_CLASS
+	   && gfc_build_class_symbol (&sym->ts, &sym->attr,
+				      &sym->as, false) == FAILURE)
+    return FAILURE;
 
   if (sym->attr.is_bind_c == 1 && gfc_option.warn_c_binding_type)
     {

@@ -1,3 +1,9 @@
+2013-04-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56500
+	* symbol.c (gfc_set_default_type): Build class container for
+	IMPLICIT CLASS.
+
 2013-03-31  Tobias Burnus  <burnus@net-b.de>
 
 	* class.c (finalization_scalarizer, finalizer_insert_packed_call,
