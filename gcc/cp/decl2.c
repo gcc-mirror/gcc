@@ -109,7 +109,8 @@ int at_eof;
    that apply to the function).  */
 
 tree
-build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals)
+build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals,
+		  cp_ref_qualifier rqual)
 {
   tree raises;
   tree attrs;
@@ -129,10 +130,12 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals)
 				       (TREE_CODE (fntype) == METHOD_TYPE
 					? TREE_CHAIN (TYPE_ARG_TYPES (fntype))
 					: TYPE_ARG_TYPES (fntype)));
-  if (raises)
-    fntype = build_exception_variant (fntype, raises);
   if (attrs)
     fntype = cp_build_type_attribute_variant (fntype, attrs);
+  if (rqual)
+    fntype = build_ref_qualified_type (fntype, rqual);
+  if (raises)
+    fntype = build_exception_variant (fntype, raises);
 
   return fntype;
 }
@@ -157,7 +160,9 @@ change_return_type (tree new_ret, tree fntype)
   if (TREE_CODE (fntype) == FUNCTION_TYPE)
     {
       newtype = build_function_type (new_ret, args);
-      newtype = apply_memfn_quals (newtype, type_memfn_quals (fntype));
+      newtype = apply_memfn_quals (newtype,
+				   type_memfn_quals (fntype),
+				   type_memfn_rqual (fntype));
     }
   else
     newtype = build_method_type_directly
@@ -670,6 +675,11 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  /* A member template definition only matches a member template
 	     declaration.  */
 	  if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
+	    continue;
+
+	  /* ref-qualifier or absence of same must match.  */
+	  if (type_memfn_rqual (TREE_TYPE (function))
+	      != type_memfn_rqual (TREE_TYPE (fndecl)))
 	    continue;
 
 	  /* While finding a match, same types and params are not enough
@@ -1260,7 +1270,9 @@ cp_reconstruct_complex_type (tree type, tree bottom)
     {
       inner = cp_reconstruct_complex_type (TREE_TYPE (type), bottom);
       outer = build_function_type (inner, TYPE_ARG_TYPES (type));
-      outer = apply_memfn_quals (outer, type_memfn_quals (type));
+      outer = apply_memfn_quals (outer,
+				 type_memfn_quals (type),
+				 type_memfn_rqual (type));
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
     {

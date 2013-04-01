@@ -1276,7 +1276,10 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 			   static_fn_type (tofn)))
 	return NULL;
 
-      from = build_memfn_type (fromfn, tbase, cp_type_quals (tbase));
+      from = build_memfn_type (fromfn,
+                               tbase,
+                               cp_type_quals (tbase),
+                               type_memfn_rqual (tofn));
       from = build_ptrmemfunc_type (build_pointer_type (from));
       conv = build_conv (ck_pmem, from, conv);
       conv->base_p = true;
@@ -1950,7 +1953,17 @@ add_function_candidate (struct z_candidate **candidates,
 	    {
 	      parmtype = cp_build_qualified_type
 		(ctype, cp_type_quals (TREE_TYPE (parmtype)));
-	      parmtype = build_pointer_type (parmtype);
+	      if (FUNCTION_REF_QUALIFIED (TREE_TYPE (fn)))
+		{
+		  /* If the function has a ref-qualifier, the implicit
+		     object parameter has reference type.  */
+		  bool rv = FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (fn));
+		  parmtype = cp_build_reference_type (parmtype, rv);
+		  arg = build_fold_indirect_ref (arg);
+		  argtype = lvalue_type (arg);
+		}
+	      else
+		parmtype = build_pointer_type (parmtype);
 	    }
 
 	  /* Core issue 899: When [copy-]initializing a temporary to be bound

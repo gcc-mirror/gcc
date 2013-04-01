@@ -832,7 +832,10 @@ merge_types (tree t1, tree t2)
 
 	rval = build_function_type (valtype, parms);
 	gcc_assert (type_memfn_quals (t1) == type_memfn_quals (t2));
-	rval = apply_memfn_quals (rval, type_memfn_quals (t1));
+	gcc_assert (type_memfn_rqual (t1) == type_memfn_rqual (t2));
+	rval = apply_memfn_quals (rval,
+				  type_memfn_quals (t1),
+				  type_memfn_rqual (t1));
 	raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
 					     TYPE_RAISES_EXCEPTIONS (t2),
 					     NULL_TREE);
@@ -1183,6 +1186,12 @@ structural_comptypes (tree t1, tree t2, int strict)
     return false;
   if (TREE_CODE (t1) == FUNCTION_TYPE
       && type_memfn_quals (t1) != type_memfn_quals (t2))
+    return false;
+  /* Need to check this before TYPE_MAIN_VARIANT.
+     FIXME function qualifiers should really change the main variant.  */
+  if ((TREE_CODE (t1) == FUNCTION_TYPE
+       || TREE_CODE (t1) == METHOD_TYPE)
+      && type_memfn_rqual (t1) != type_memfn_rqual (t2))
     return false;
   if (TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
     return false;
@@ -8563,6 +8572,22 @@ cp_type_quals (const_tree type)
   return quals;
 }
 
+/* Returns the function-ref-qualifier for TYPE */
+
+cp_ref_qualifier
+type_memfn_rqual (const_tree type)
+{
+  gcc_assert (TREE_CODE (type) == FUNCTION_TYPE
+              || TREE_CODE (type) == METHOD_TYPE);
+
+  if (!FUNCTION_REF_QUALIFIED (type))
+    return REF_QUAL_NONE;
+  else if (FUNCTION_RVALUE_QUALIFIED (type))
+    return REF_QUAL_RVALUE;
+  else
+    return REF_QUAL_LVALUE;
+}
+
 /* Returns the function-cv-quals for TYPE, which must be a FUNCTION_TYPE or
    METHOD_TYPE.  */
 
@@ -8578,18 +8603,22 @@ type_memfn_quals (const_tree type)
 }
 
 /* Returns the FUNCTION_TYPE TYPE with its function-cv-quals changed to
-   MEMFN_QUALS.  */
+   MEMFN_QUALS and its ref-qualifier to RQUAL. */
 
 tree
-apply_memfn_quals (tree type, cp_cv_quals memfn_quals)
+apply_memfn_quals (tree type, cp_cv_quals memfn_quals, cp_ref_qualifier rqual)
 {
   /* Could handle METHOD_TYPE here if necessary.  */
   gcc_assert (TREE_CODE (type) == FUNCTION_TYPE);
-  if (TYPE_QUALS (type) == memfn_quals)
+  if (TYPE_QUALS (type) == memfn_quals
+      && type_memfn_rqual (type) == rqual)
     return type;
+
   /* This should really have a different TYPE_MAIN_VARIANT, but that gets
      complex.  */
-  return build_qualified_type (type, memfn_quals);
+  tree result = build_qualified_type (type, memfn_quals);
+  result = build_exception_variant (result, TYPE_RAISES_EXCEPTIONS (type));
+  return build_ref_qualified_type (result, rqual);
 }
 
 /* Returns nonzero if TYPE is const or volatile.  */
