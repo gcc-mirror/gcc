@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtlhooks-def.h"
 #include "output.h"
 #include "emit-rtl.h"
+#include "ira.h"
 
 #ifdef INSN_SCHEDULING
 #include "sel-sched-ir.h"
@@ -2113,6 +2114,61 @@ moving_insn_creates_bookkeeping_block_p (insn_t insn,
   return TRUE;
 }
 
+/* Return true when the conflict with newly created implicit clobbers
+   between EXPR and THROUGH_INSN is found because of renaming.  */
+static bool
+implicit_clobber_conflict_p (insn_t through_insn, expr_t expr)
+{
+  HARD_REG_SET temp;
+  rtx insn, reg, rhs, pat;
+  hard_reg_set_iterator hrsi;
+  unsigned regno;
+  bool valid;
+
+  /* Make a new pseudo register.  */
+  reg = gen_reg_rtx (GET_MODE (EXPR_LHS (expr)));
+  max_regno = max_reg_num ();
+  maybe_extend_reg_info_p ();
+
+  /* Validate a change and bail out early.  */
+  insn = EXPR_INSN_RTX (expr);
+  validate_change (insn, &SET_DEST (PATTERN (insn)), reg, true);
+  valid = verify_changes (0);
+  cancel_changes (0);
+  if (!valid)
+    {
+      if (sched_verbose >= 6)
+	sel_print ("implicit clobbers failed validation, ");
+      return true;
+    }
+
+  /* Make a new insn with it.  */
+  rhs = copy_rtx (VINSN_RHS (EXPR_VINSN (expr)));
+  pat = gen_rtx_SET (VOIDmode, reg, rhs);
+  start_sequence ();
+  insn = emit_insn (pat);
+  end_sequence ();
+
+  /* Calculate implicit clobbers.  */
+  extract_insn (insn);
+  preprocess_constraints ();
+  ira_implicitly_set_insn_hard_regs (&temp);
+  AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
+
+  /* If any implicit clobber registers intersect with regular ones in
+     through_insn, we have a dependency and thus bail out.  */
+  EXECUTE_IF_SET_IN_HARD_REG_SET (temp, 0, regno, hrsi)
+    {
+      vinsn_t vi = INSN_VINSN (through_insn);
+      if (bitmap_bit_p (VINSN_REG_SETS (vi), regno)
+	  || bitmap_bit_p (VINSN_REG_CLOBBERS (vi), regno)
+	  || bitmap_bit_p (VINSN_REG_USES (vi), regno))
+	return true;
+    }
+
+  return false;
+}
+
 /* Modifies EXPR so it can be moved through the THROUGH_INSN,
    performing necessary transformations.  Record the type of transformation
    made in PTRANS_TYPE, when it is not NULL.  When INSIDE_INSN_GROUP,
@@ -2245,6 +2301,17 @@ moveup_expr (expr_t expr, insn_t through_insn, bool inside_insn_group,
       if (!enable_schedule_as_rhs_p || !EXPR_SEPARABLE_P (expr))
         return MOVEUP_EXPR_NULL;
 
+      /* When renaming a hard register to a pseudo before reload, extra
+	 dependencies can occur from the implicit clobbers of the insn.
+	 Filter out such cases here.  */
+      if (!reload_completed && REG_P (EXPR_LHS (expr))
+	  && HARD_REGISTER_P (EXPR_LHS (expr))
+	  && implicit_clobber_conflict_p (through_insn, expr))
+	{
+	  if (sched_verbose >= 6)
+	    sel_print ("implicit clobbers conflict detected, ");
+	  return MOVEUP_EXPR_NULL;
+	}
       EXPR_TARGET_AVAILABLE (expr) = false;
       was_target_conflict = true;
       as_rhs = true;
