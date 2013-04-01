@@ -1,3 +1,12 @@
+2013-04-01  Jason Merrill  <jason@redhat.com>
+
+	* cxx-pretty-print.h (pp_cxx_cv_qualifiers): New.
+	* class.c (same_signature_p): Use type_memfn_quals.
+	* cp-tree.h (TYPE_RAISES_EXCEPTIONS): Use
+	FUNCTION_OR_METHOD_TYPE_CHECK.
+	* error.c (dump_type_suffix): Add padding before cv-qualifiers.
+	* pt.c (unify): Use static_fn_type.
+
 2013-04-01  Bronek Kozicki <b.kozicki@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

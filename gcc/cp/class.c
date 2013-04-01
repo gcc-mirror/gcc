@@ -2066,14 +2066,12 @@ same_signature_p (const_tree fndecl, const_tree base_fndecl)
 	  && same_type_p (DECL_CONV_FN_TYPE (fndecl),
 			  DECL_CONV_FN_TYPE (base_fndecl))))
     {
-      tree types, base_types;
-      types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-      base_types = TYPE_ARG_TYPES (TREE_TYPE (base_fndecl));
-      if ((cp_type_quals (TREE_TYPE (TREE_VALUE (base_types)))
-	   == cp_type_quals (TREE_TYPE (TREE_VALUE (types))))
-	  && (type_memfn_rqual (TREE_TYPE (fndecl))
-	      == type_memfn_rqual (TREE_TYPE (base_fndecl)))
-	  && compparms (TREE_CHAIN (base_types), TREE_CHAIN (types)))
+      tree fntype = TREE_TYPE (fndecl);
+      tree base_fntype = TREE_TYPE (base_fndecl);
+      if (type_memfn_quals (fntype) == type_memfn_quals (base_fntype)
+	  && type_memfn_rqual (fntype) == type_memfn_rqual (base_fntype)
+	  && compparms (FUNCTION_FIRST_USER_PARMTYPE (fndecl),
+			FUNCTION_FIRST_USER_PARMTYPE (base_fndecl)))
 	return 1;
     }
   return 0;

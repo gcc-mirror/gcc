@@ -17085,9 +17085,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	 deduces the type of the member as a function type. */
       if (TYPE_PTRMEMFUNC_P (arg))
 	{
-	  tree method_type;
-	  tree fntype;
-
 	  /* Check top-level cv qualifiers */
 	  if (!check_cv_quals_for_unify (UNIFY_ALLOW_NONE, arg, parm))
 	    return unify_cv_qual_mismatch (explain_p, parm, arg);
@@ -17097,17 +17094,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 				   UNIFY_ALLOW_NONE, explain_p);
 
 	  /* Determine the type of the function we are unifying against. */
-	  method_type = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (arg));
-	  fntype =
-	    build_function_type (TREE_TYPE (method_type),
-				 TREE_CHAIN (TYPE_ARG_TYPES (method_type)));
+	  tree fntype = static_fn_type (arg);
 
-	  /* Extract the cv-qualifiers and ref-qualifier of the member
-	     function from the implicit object parameter and place them
-	     on the function type to be restored later. */
-	  fntype = apply_memfn_quals (fntype,
-				      type_memfn_quals (method_type),
-				      type_memfn_rqual (method_type));
 	  return unify (tparms, targs, TREE_TYPE (parm), fntype, strict, explain_p);
 	}
 
