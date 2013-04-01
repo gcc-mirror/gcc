@@ -1,3 +1,43 @@
+2013-04-01  Bronek Kozicki <b.kozicki@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Implement N2439 (ref-qualifiers for 'this')
+	* cp-tree.h (FUNCTION_REF_QUALIFIED): New.
+	(FUNCTION_RVALUE_QUALIFIED): New.
+	(FUNCTION_OR_METHOD_TYPE_CHECK): New.
+	(cpp0x_warn_str): Add CPP0X_REF_QUALIFIER.
+	(cp_ref_qualifier): New enum.
+	(cp_declarator): Add ref_qualifier.
+	* parser.c (cp_parser_ref_qualifier_seq_opt): New.
+	(cp_parser_direct_declarator): Use it.
+	(make_call_declarator): Adjust.
+	(cp_parser_lambda_declarator_opt): Adjust.
+	* call.c (add_function_candidate): Handle ref-qualifier overload
+	resolution semantics.
+	(standard_conversion): Adjust.
+	* class.c (add_method, same_signature_p): Compare ref-qualifiers.
+	* decl.c (grokdeclarator): Handle ref-qualifiers.
+	(grokfndecl): Check for invalid ref-qualifiers.
+	(static_fn_type, revert_static_member_fn): Adjust.
+	* decl2.c (build_memfn_type): Handle ref-qualifiers.
+	(check_classfn): Check them.
+	(cp_reconstruct_complex_type): Retain them.
+	* error.c (dump_ref_qualifier): New.
+	(dump_type_suffix, dump_function_decl): Use it.
+	(maybe_warn_cpp0x): Handle CPP0X_REF_QUALIFIER.
+	* pt.c (tsubst, tsubst_function_type): Instantiate ref-quals.
+	(unify): Retain them.
+	* tree.c (cp_check_qualified_type): New.
+	(cp_build_qualified_type_real): Keep exception spec and ref-qual.
+	(build_ref_qualified_type): New.
+	(strip_typedefs, build_exception_variant): Keep ref-qualifier.
+	(cp_build_type_attribute_variant): Keep ref-qualifier.
+	* typeck.c (merge_types): Keep ref-qualifier.
+	(structural_comptypes): Compare ref-qualifier.
+	(type_memfn_rqual): New.
+	(apply_memfn_quals): Take ref-qual argument.
+	* typeck2.c (build_m_component_ref): Check ref-qualifier.
+
 2013-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (DECL_UNBOUND_CLASS_TEMPLATE_P): Remove.

@@ -1708,7 +1708,24 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
       return datum;
     }
   else
-    return build2 (OFFSET_REF, type, datum, component);
+    {
+      /* 5.5/6: In a .* expression whose object expression is an rvalue, the
+	 program is ill-formed if the second operand is a pointer to member
+	 function with ref-qualifier &. In a .* expression whose object
+	 expression is an lvalue, the program is ill-formed if the second
+	 operand is a pointer to member function with ref-qualifier &&.  */
+      if (FUNCTION_REF_QUALIFIED (type))
+	{
+	  bool lval = real_lvalue_p (datum);
+	  if (lval && FUNCTION_RVALUE_QUALIFIED (type))
+	    error ("pointer-to-member-function type %qT requires an rvalue",
+		   ptrmem_type);
+	  else if (!lval && !FUNCTION_RVALUE_QUALIFIED (type))
+	    error ("pointer-to-member-function type %qT requires an lvalue",
+		   ptrmem_type);
+	}
+      return build2 (OFFSET_REF, type, datum, component);
+    }
 }
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
