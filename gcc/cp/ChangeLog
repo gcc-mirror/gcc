@@ -1,3 +1,9 @@
+2013-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56794
+	* parser.c (cp_parser_range_for): Don't try to do auto deduction
+	in a template if the type of the range is incomplete.
+
 2013-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56774
