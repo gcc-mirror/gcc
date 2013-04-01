@@ -1,5 +1,9 @@
 2013-04-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56772
+	* init.c (build_new): Don't try to process an array initializer
+	at template definition time.
+
 	PR c++/56793
 	* typeck.c (finish_class_member_access_expr): Handle enum scope.
 
