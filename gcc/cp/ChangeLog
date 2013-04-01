@@ -1,5 +1,9 @@
 2013-04-01  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (maybe_constant_value): Check
+	instantiation_dependent_expression_p.
+	* pt.c (build_non_dependent_expr): Don't check it here.
+
 	PR c++/56772
 	* init.c (build_new): Don't try to process an array initializer
 	at template definition time.
