@@ -4,14 +4,13 @@
 	2013-02-27  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR middle-end/45472
-	
 	* sel-sched-ir.c (merge_expr): Also change vinsn of merged expr
 	when the may_trap_p bit of the exprs being merged differs.
 	Reorder tests for speculativeness in the logical and operator.
 
 	Backport from mainline
 	 2013-03-05  Jakub Jelinek  <jakub@redhat.com>
-	 
+
 	PR middle-end/56461
 	* sel-sched-ir.c (free_sched_pools): Release
 	succs_info_pool.stack[succs_info_pool.max_top] vectors too
@@ -23,11 +22,10 @@
 	2012-02-19  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR middle-end/55889
-
 	* sel-sched.c: Include ira.h.
 	(implicit_clobber_conflict_p): New function.
 	(moveup_expr): Use it.
-	* Makefile.in (sel-sched.o): Depend on ira.h. 
+	* Makefile.in (sel-sched.o): Depend on ira.h.
 
 2013-04-01  Andrey Belevantsev  <abel@ispras.ru>
 
