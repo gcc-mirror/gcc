@@ -2920,6 +2920,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (dependent_type_p (type)
 	  || any_type_dependent_arguments_p (*placement)
 	  || (nelts && type_dependent_expression_p (nelts))
+	  || (nelts && *init)
 	  || any_type_dependent_arguments_p (*init))
 	return build_raw_new_expr (*placement, type, nelts, *init,
 				   use_global_new);
