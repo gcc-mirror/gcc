@@ -1,5 +1,11 @@
 2013-04-01  Jason Merrill  <jason@redhat.com>
 
+	* call.c (add_function_candidate): Take the address of 'this' here.
+	(build_over_call): And here.
+	(build_new_method_call_1, build_op_call_1): Not here.
+	(build_user_type_conversion_1): Or here.
+	(add_candidates): Adjust.
+
 	* cxx-pretty-print.h (pp_cxx_cv_qualifiers): New.
 	* class.c (same_signature_p): Use type_memfn_quals.
 	* cp-tree.h (TYPE_RAISES_EXCEPTIONS): Use
