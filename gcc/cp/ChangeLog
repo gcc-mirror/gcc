@@ -1,5 +1,8 @@
 2013-04-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56793
+	* typeck.c (finish_class_member_access_expr): Handle enum scope.
+
 	PR c++/56794
 	* parser.c (cp_parser_range_for): Don't try to do auto deduction
 	in a template if the type of the range is incomplete.
