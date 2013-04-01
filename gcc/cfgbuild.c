@@ -51,7 +51,7 @@ inside_basic_block_p (const_rtx insn)
     case CODE_LABEL:
       /* Avoid creating of basic block for jumptables.  */
       return (NEXT_INSN (insn) == 0
-	      || ! JUMP_TABLE_DATA_P (insn));
+	      || ! JUMP_TABLE_DATA_P (NEXT_INSN (insn)));
 
     case JUMP_INSN:
     case CALL_INSN:
