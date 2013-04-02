@@ -3058,10 +3058,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
   bool parameter_pack_p = false;
 
   /* Handle type aliases/typedefs.  */
-  if (TYPE_P (t)
-      && TYPE_NAME (t)
-      && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
-      && TYPE_DECL_ALIAS_P (TYPE_NAME (t)))
+  if (TYPE_ALIAS_P (t))
     {
       if (TYPE_TEMPLATE_INFO (t))
 	cp_walk_tree (&TYPE_TI_ARGS (t),
@@ -3146,7 +3143,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (TYPE_TEMPLATE_INFO (t))
-	cp_walk_tree (&TI_ARGS (TYPE_TEMPLATE_INFO (t)),
+	cp_walk_tree (&TYPE_TI_ARGS (t),
 		      &find_parameter_packs_r, ppd, ppd->visited);
 
       *walk_subtrees = 0;
@@ -7619,7 +7616,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
     case ENUMERAL_TYPE:
       if (!TYPE_TEMPLATE_INFO (t))
 	*walk_subtrees = 0;
-      else if (for_each_template_parm (TI_ARGS (TYPE_TEMPLATE_INFO (t)),
+      else if (for_each_template_parm (TYPE_TI_ARGS (t),
 				       fn, data, pfd->visited, 
 				       pfd->include_nondeduced_p))
 	return error_mark_node;
