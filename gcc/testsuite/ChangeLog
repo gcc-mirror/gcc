@@ -1,3 +1,7 @@
+2013-04-02  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
+
+	* gcc.dg/tree-ssa/sra-13.c: Fix for 16 bit int.
+
 2013-04-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56778
