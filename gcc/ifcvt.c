@@ -3473,7 +3473,7 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
      code processing.  ??? we should fix this in the future.  */
   if (EDGE_COUNT (then_bb->succs) == 0)
     {
-      if (single_pred_p (else_bb))
+      if (single_pred_p (else_bb) && else_bb != EXIT_BLOCK_PTR)
 	{
 	  rtx last_insn = BB_END (then_bb);
 
