@@ -95,7 +95,7 @@ main (void)
   b = 0;
   gu1.b.l = 20000000;
   s = bar ();
-  if (s != 20000000)
+  if (s != (int)20000000)
     __builtin_abort ();
   if (gu2.b.l != 20000000)
     __builtin_abort ();
