@@ -1,3 +1,7 @@
+2013-04-02  Jason Merrill  <jason@redhat.com>
+
+	* gdbinit.in (pbb): Use debug fn.
+
 2013-04-02  Lawrence Crowl  <crowl@google.com>
 
 	* sese.h (struct ivtype_map_elt_s): Remove unused.
