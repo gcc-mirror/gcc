@@ -1,5 +1,9 @@
 2013-04-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/56745
+	* ifcvt.c (cond_exec_find_if_block): Don't try to optimize
+	if then_bb has no successors and else_bb is EXIT_BLOCK_PTR.
+
 	PR c++/34949
 	* tree-ssa-alias.c (stmt_kills_ref_p_1): If base != ref->base
 	and both of them are MEM_REFs, just compare first argument for
