@@ -763,19 +763,21 @@
 )
 
 (define_insn "*mov<mode>_aarch64"
-  [(set (match_operand:SHORT 0 "nonimmediate_operand" "=r,r,r,m,  r,*w")
-        (match_operand:SHORT 1 "general_operand"      " r,M,m,rZ,*w,r"))]
+  [(set (match_operand:SHORT 0 "nonimmediate_operand" "=r,r,   *w,r, m, r,*w,*w")
+        (match_operand:SHORT 1 "general_operand"      " r,M,D<hq>,m,rZ,*w, r,*w"))]
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
   "@
    mov\\t%w0, %w1
    mov\\t%w0, %1
+   movi\\t%0.<Vallxd>, %1
    ldr<size>\\t%w0, %1
    str<size>\\t%w1, %0
    umov\\t%w0, %1.<v>[0]
-   dup\\t%0.<Vallxd>, %w1"
-  [(set_attr "v8type" "move,alu,load1,store1,*,*")
-   (set_attr "simd_type" "*,*,*,*,simd_movgp,simd_dupgp")
+   dup\\t%0.<Vallxd>, %w1
+   dup\\t%0, %1.<v>[0]"
+  [(set_attr "v8type" "move,alu,alu,load1,store1,*,*,*")
+   (set_attr "simd_type" "*,*,simd_move_imm,*,*,simd_movgp,simd_dupgp,simd_dup")
    (set_attr "mode" "<MODE>")
    (set_attr "simd_mode" "<MODE>")]
 )
