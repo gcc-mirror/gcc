@@ -1,3 +1,8 @@
+2013-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*testqi_ext_3): Merge with *testqi_ext_3_rex64
+	using SWI48 mode attribute.
+
 2013-04-02  Wei Mi  <wmi@google.com>
 
 	* config/i386/i386.c (ix86_rtx_costs): Set proper rtx cost for
@@ -20,14 +25,14 @@
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm-arches.def (armv8-a): Default to cortex-a53.
-        * config/arm/t-arm (MD_INCLUDES): Depend on cortex-a53.md.
-        * config/arm/cortex-a53.md: New file.
-        * config/arm/bpabi.h (BE8_LINK_SPEC): Handle cortex-a53.
-        * config/arm/arm.md (generic_sched, generic_vfp): Handle cortex-a53.
-        * config/arm/arm.c (arm_issue_rate): Likewise.
-        * config/arm/arm-tune.md: Regenerate
-        * config/arm/arm-tables.opt: Regenerate.
-        * config/arm/arm-cores.def: Add cortex-a53.
+	* config/arm/t-arm (MD_INCLUDES): Depend on cortex-a53.md.
+	* config/arm/cortex-a53.md: New file.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Handle cortex-a53.
+	* config/arm/arm.md (generic_sched, generic_vfp): Handle cortex-a53.
+	* config/arm/arm.c (arm_issue_rate): Likewise.
+	* config/arm/arm-tune.md: Regenerate
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-cores.def: Add cortex-a53.
 
 2013-04-02  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
@@ -205,7 +210,8 @@
 	(ipa_profile_write_summary): New function.
 	(ipa_profile_read_summary): New function.
 	(ipa_profile): Decide on threshold.
-	(pass_ipa_profile): Add ipa_profile_write_summary and ipa_profile_read_summary.
+	(pass_ipa_profile): Add ipa_profile_write_summary and
+	ipa_profile_read_summary.
 	* Makefile.in (ipa.o): Update dependencies.
 	* lto-streamer.h (LTO_section_ipa_profile): New section.
 
@@ -497,7 +503,7 @@
 	(input_gimple_stmt): Input histograms.
 	(input_bb): Update profile streaming.
 
-2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+2013-03-28  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
    	* genmodes.c (emit_max_int): New function.
 	(emit_insn_modes_h): Added call to emit_max_function.
@@ -505,7 +511,7 @@
 	Added doc.
 	* machmode.def: Fixed comment.
 
-2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+2013-03-28  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* combine.c (try_combine): Removed useless assert.
 	* cselib.c (rtx_equal_for_cselib_1): Removed unnecessary parens.
@@ -636,14 +642,12 @@
 
 2013-03-27  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx.h (ASM_OUTPUT_ADDR_VEC_ELT): Delete
-	extra tab.
+	* config/tilegx/tilegx.h (ASM_OUTPUT_ADDR_VEC_ELT): Delete extra tab.
 	(ASM_OUTPUT_ADDR_DIFF_ELT): Ditto.
 
 2013-03-27  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx.md (*sibcall_insn): Fix type atribute
-	for jr.
+	* config/tilegx/tilegx.md (*sibcall_insn): Fix type atribute for jr.
 	(*sibcall_value): Ditto.
 
 2013-03-27  Walter Lee  <walt@tilera.com>
