@@ -2965,8 +2965,8 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 static tree
 get_repl_default_def_ssa_name (struct access *racc)
 {
-  gcc_checking_assert (!racc->grp_to_be_replaced &&
-		       !racc->grp_to_be_debug_replaced);
+  gcc_checking_assert (!racc->grp_to_be_replaced
+		       && !racc->grp_to_be_debug_replaced);
   if (!racc->replacement_decl)
     racc->replacement_decl = create_access_replacement (racc);
   return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
@@ -4462,8 +4462,8 @@ sra_ipa_modify_expr (tree *expr, bool convert,
     {
       adj = &adjustments[i];
 
-      if (adj->base == base &&
-	  (adj->offset == offset || adj->remove_param))
+      if (adj->base == base
+	  && (adj->offset == offset || adj->remove_param))
 	{
 	  cand = adj;
 	  break;
@@ -4676,6 +4676,14 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
       if (name)
 	FOR_EACH_IMM_USE_STMT (stmt, ui, name)
 	  {
+	    if (gimple_clobber_p (stmt))
+	      {
+		gimple_stmt_iterator cgsi = gsi_for_stmt (stmt);
+		unlink_stmt_vdef (stmt);
+		gsi_remove (&cgsi, true);
+		release_defs (stmt);
+		continue;
+	      }
 	    /* All other users must have been removed by
 	       ipa_sra_modify_function_body.  */
 	    gcc_assert (is_gimple_debug (stmt));
