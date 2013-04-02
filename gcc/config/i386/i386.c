@@ -64,6 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);
+static rtx legitimize_pe_coff_extern_decl (rtx, bool);
+static rtx legitimize_pe_coff_symbol (rtx, bool);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -3233,9 +3235,7 @@ ix86_option_override_internal (bool main_args_p)
 	 use of rip-relative addressing.  This eliminates fixups that
 	 would otherwise be needed if this object is to be placed in a
 	 DLL, and is essentially just as efficient as direct addressing.  */
-      if (TARGET_64BIT && DEFAULT_ABI == MS_ABI)
-	ix86_cmodel = CM_SMALL_PIC, flag_pic = 1;
-      else if (TARGET_64BIT && TARGET_RDOS)
+      if (TARGET_64BIT && (TARGET_RDOS || DEFAULT_ABI == MS_ABI))
 	ix86_cmodel = CM_MEDIUM_PIC, flag_pic = 1;
       else if (TARGET_64BIT)
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
@@ -10575,7 +10575,9 @@ ix86_expand_prologue (void)
     ix86_emit_save_sse_regs_using_mov (frame.sse_reg_save_offset);
 
   pic_reg_used = false;
+  /* We don't use pic-register for pe-coff target.  */
   if (pic_offset_table_rtx
+      && DEFAULT_ABI != MS_ABI
       && (df_regs_ever_live_p (REAL_PIC_OFFSET_TABLE_REGNUM)
 	  || crtl->profile))
     {
@@ -11380,7 +11382,8 @@ ix86_expand_split_stack_prologue (void)
 	  use_reg (&call_fusage, rax);
 	}
 
-      if (ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+      if ((ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+          && DEFAULT_ABI != MS_ABI)
 	{
 	  HOST_WIDE_INT argval;
 
@@ -11998,6 +12001,19 @@ ix86_cannot_force_const_mem (enum machine_mode mode, rtx x)
   return !ix86_legitimate_constant_p (mode, x);
 }
 
+/*  Nonzero if the symbol is marked as dllimport, or as stub-variable,
+    otherwise zero.  */
+
+static bool
+is_imported_p (rtx x)
+{
+  if (!TARGET_DLLIMPORT_DECL_ATTRIBUTES
+      || GET_CODE (x) != SYMBOL_REF)
+    return false;
+
+  return SYMBOL_REF_DLLIMPORT_P (x) || SYMBOL_REF_STUBVAR_P (x);
+}
+
 
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and
@@ -12086,11 +12102,39 @@ legitimate_pic_address_disp_p (rtx disp)
 	  /* FALLTHRU */
 
 	case SYMBOL_REF:
-	  /* TLS references should always be enclosed in UNSPEC.  */
-	  if (SYMBOL_REF_TLS_MODEL (op0))
+	  /* TLS references should always be enclosed in UNSPEC.
+	     The dllimported symbol needs always to be resolved.  */
+	  if (SYMBOL_REF_TLS_MODEL (op0)
+	      || (TARGET_DLLIMPORT_DECL_ATTRIBUTES && SYMBOL_REF_DLLIMPORT_P (op0)))
 	    return false;
-	  if (!SYMBOL_REF_FAR_ADDR_P (op0) && SYMBOL_REF_LOCAL_P (op0)
-	      && ix86_cmodel != CM_LARGE_PIC)
+
+	  if (DEFAULT_ABI == MS_ABI)
+	    {
+	      if (is_imported_p (op0))
+		return true;
+
+	      if (SYMBOL_REF_FAR_ADDR_P (op0)
+		  || !SYMBOL_REF_LOCAL_P (op0))
+		break;
+
+	      /* Function-symbols need to be resolved only for
+	         large-model.
+	         For the small-model we don't need to resolve anything
+	         here.  */
+	      if ((ix86_cmodel != CM_LARGE_PIC
+	           && SYMBOL_REF_FUNCTION_P (op0))
+		  || ix86_cmodel == CM_SMALL_PIC)
+		return true;
+	      /* Non-external symbols don't need to be resolved for
+	         large, and medium-model.  */
+	      if ((ix86_cmodel == CM_LARGE_PIC
+		   || ix86_cmodel == CM_MEDIUM_PIC)
+		  && !SYMBOL_REF_EXTERNAL_P (op0))
+		return true;
+	    }
+	  else if (!SYMBOL_REF_FAR_ADDR_P (op0)
+		   && SYMBOL_REF_LOCAL_P (op0)
+		   && ix86_cmodel != CM_LARGE_PIC)
 	    return true;
 	  break;
 
@@ -12151,7 +12195,7 @@ legitimate_pic_address_disp_p (rtx disp)
       if ((GET_CODE (XVECEXP (disp, 0, 0)) == SYMBOL_REF
 	   || GET_CODE (XVECEXP (disp, 0, 0)) == LABEL_REF)
 	  && !TARGET_64BIT)
-        return gotoff_operand (XVECEXP (disp, 0, 0), Pmode);
+        return DEFAULT_ABI != MS_ABI && gotoff_operand (XVECEXP (disp, 0, 0), Pmode);
       return false;
     case UNSPEC_GOTTPOFF:
     case UNSPEC_GOTNTPOFF:
@@ -12486,11 +12530,17 @@ legitimize_pic_address (rtx orig, rtx reg)
     }
 #endif
 
+  if (TARGET_64BIT && TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+    {
+      rtx tmp = legitimize_pe_coff_symbol (addr, true);
+      if (tmp)
+        return tmp;
+    }
+
   if (TARGET_64BIT && legitimate_pic_address_disp_p (addr))
     new_rtx = addr;
-  else if (TARGET_64BIT
-	   && ix86_cmodel != CM_SMALL_PIC
-	   && gotoff_operand (addr, Pmode))
+  else if (TARGET_64BIT && DEFAULT_ABI != MS_ABI
+	   && ix86_cmodel != CM_SMALL_PIC && gotoff_operand (addr, Pmode))
     {
       rtx tmpreg;
       /* This symbol may be referenced via a displacement from the PIC
@@ -12521,9 +12571,10 @@ legitimize_pic_address (rtx orig, rtx reg)
 					 tmpreg, 1, OPTAB_DIRECT);
 	  new_rtx = reg;
 	}
-      else new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
+      else
+        new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
     }
-  else if (!TARGET_64BIT && gotoff_operand (addr, Pmode))
+  else if (!TARGET_64BIT && DEFAULT_ABI != MS_ABI && gotoff_operand (addr, Pmode))
     {
       /* This symbol may be referenced via a displacement from the PIC
 	 base address (@GOTOFF).  */
@@ -12554,31 +12605,22 @@ legitimize_pic_address (rtx orig, rtx reg)
 	      see gotoff_operand.  */
 	   || (TARGET_VXWORKS_RTP && GET_CODE (addr) == LABEL_REF))
     {
-      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
-        {
-          if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_DLLIMPORT_P (addr))
-            return legitimize_dllimport_symbol (addr, true);
-          if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == PLUS
-              && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
-              && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
-            {
-              rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), true);
-              return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
-            }
-        }
+      rtx tmp = legitimize_pe_coff_symbol (addr, true);
+      if (tmp)
+        return tmp;
 
       /* For x64 PE-COFF there is no GOT table.  So we use address
          directly.  */
       if (TARGET_64BIT && DEFAULT_ABI == MS_ABI)
-      {
+	{
 	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_PCREL);
 	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 
 	  if (reg == 0)
 	    reg = gen_reg_rtx (Pmode);
-  	  emit_move_insn (reg, new_rtx);
+	  emit_move_insn (reg, new_rtx);
 	  new_rtx = reg;
-      }
+	}
       else if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
 	{
 	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
@@ -12647,7 +12689,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 
 	  /* Check first to see if this is a constant offset from a @GOTOFF
 	     symbol reference.  */
-	  if (gotoff_operand (op0, Pmode)
+	  if (DEFAULT_ABI != MS_ABI && gotoff_operand (op0, Pmode)
 	      && CONST_INT_P (op1))
 	    {
 	      if (!TARGET_64BIT)
@@ -12791,7 +12833,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
       if (!TARGET_64BIT)
 	{
-	  if (flag_pic)
+	  if (flag_pic && DEFAULT_ABI != MS_ABI)
 	    pic = pic_offset_table_rtx;
 	  else
 	    {
@@ -13000,13 +13042,14 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 }
 
 /* Create or return the unique __imp_DECL dllimport symbol corresponding
-   to symbol DECL.  */
+   to symbol DECL if BEIMPORT is true.  Otherwise create or return the
+   unique refptr-DECL symbol corresponding to symbol DECL.  */
 
 static GTY((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
   htab_t dllimport_map;
 
 static tree
-get_dllimport_decl (tree decl)
+get_dllimport_decl (tree decl, bool beimport)
 {
   struct tree_map *h, in;
   void **loc;
@@ -13039,8 +13082,11 @@ get_dllimport_decl (tree decl)
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   name = targetm.strip_name_encoding (name);
-  prefix = name[0] == FASTCALL_PREFIX || user_label_prefix[0] == 0
-    ? "*__imp_" : "*__imp__";
+  if (beimport)
+    prefix = name[0] == FASTCALL_PREFIX || user_label_prefix[0] == 0
+      ? "*__imp_" : "*__imp__";
+  else
+    prefix = user_label_prefix[0] == 0 ? "*.refptr." : "*refptr.";
   namelen = strlen (name);
   prefixlen = strlen (prefix);
   imp_name = (char *) alloca (namelen + prefixlen + 1);
@@ -13050,7 +13096,14 @@ get_dllimport_decl (tree decl)
   name = ggc_alloc_string (imp_name, namelen + prefixlen);
   rtl = gen_rtx_SYMBOL_REF (Pmode, name);
   SET_SYMBOL_REF_DECL (rtl, to);
-  SYMBOL_REF_FLAGS (rtl) = SYMBOL_FLAG_LOCAL;
+  SYMBOL_REF_FLAGS (rtl) = SYMBOL_FLAG_LOCAL | SYMBOL_FLAG_STUBVAR;
+  if (!beimport)
+    {
+      SYMBOL_REF_FLAGS (rtl) |= SYMBOL_FLAG_EXTERNAL;
+#ifdef SUB_TARGET_RECORD_STUB
+      SUB_TARGET_RECORD_STUB (name);
+#endif
+    }      
 
   rtl = gen_const_mem (Pmode, rtl);
   set_mem_alias_set (rtl, ix86_GOT_alias_set ());
@@ -13059,6 +13112,24 @@ get_dllimport_decl (tree decl)
   SET_DECL_ASSEMBLER_NAME (to, get_identifier (name));
 
   return to;
+}
+
+/* Expand SYMBOL into its corresponding far-addresse symbol.
+   WANT_REG is true if we require the result be a register.  */
+
+static rtx
+legitimize_pe_coff_extern_decl (rtx symbol, bool want_reg)
+{
+  tree imp_decl;
+  rtx x;
+
+  gcc_assert (SYMBOL_REF_DECL (symbol));
+  imp_decl = get_dllimport_decl (SYMBOL_REF_DECL (symbol), false);
+
+  x = DECL_RTL (imp_decl);
+  if (want_reg)
+    x = force_reg (Pmode, x);
+  return x;
 }
 
 /* Expand SYMBOL into its corresponding dllimport symbol.  WANT_REG is
@@ -13071,12 +13142,56 @@ legitimize_dllimport_symbol (rtx symbol, bool want_reg)
   rtx x;
 
   gcc_assert (SYMBOL_REF_DECL (symbol));
-  imp_decl = get_dllimport_decl (SYMBOL_REF_DECL (symbol));
+  imp_decl = get_dllimport_decl (SYMBOL_REF_DECL (symbol), true);
 
   x = DECL_RTL (imp_decl);
   if (want_reg)
     x = force_reg (Pmode, x);
   return x;
+}
+
+/* Expand SYMBOL into its corresponding dllimport or refptr symbol.  WANT_REG 
+   is true if we require the result be a register.  */
+
+static rtx
+legitimize_pe_coff_symbol (rtx addr, bool inreg)
+{
+  if (DEFAULT_ABI != MS_ABI)
+    return NULL_RTX;
+
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+    {
+      if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_DLLIMPORT_P (addr))
+	return legitimize_dllimport_symbol (addr, inreg);
+      if (GET_CODE (addr) == CONST
+	  && GET_CODE (XEXP (addr, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
+	  && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
+	{
+	  rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), inreg);
+	  return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
+	}
+    }
+
+  if (ix86_cmodel != CM_LARGE_PIC && ix86_cmodel != CM_MEDIUM_PIC)
+    return NULL_RTX;
+  if (GET_CODE (addr) == SYMBOL_REF
+      && !is_imported_p (addr)
+      && SYMBOL_REF_EXTERNAL_P (addr)
+      && SYMBOL_REF_DECL (addr))
+    return legitimize_pe_coff_extern_decl (addr, inreg);
+
+  if (GET_CODE (addr) == CONST
+      && GET_CODE (XEXP (addr, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
+      && !is_imported_p (XEXP (XEXP (addr, 0), 0))
+      && SYMBOL_REF_EXTERNAL_P (XEXP (XEXP (addr, 0), 0))
+      && SYMBOL_REF_DECL (XEXP (XEXP (addr, 0), 0)))
+    {
+      rtx t = legitimize_pe_coff_extern_decl (XEXP (XEXP (addr, 0), 0), inreg);
+      return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
+    }
+  return NULL_RTX;
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address
@@ -13119,16 +13234,9 @@ ix86_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
     {
-      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_DLLIMPORT_P (x))
-	return legitimize_dllimport_symbol (x, true);
-      if (GET_CODE (x) == CONST
-	  && GET_CODE (XEXP (x, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
-	  && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (x, 0), 0)))
-	{
-	  rtx t = legitimize_dllimport_symbol (XEXP (XEXP (x, 0), 0), true);
-	  return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (x, 0), 1));
-	}
+      rtx tmp = legitimize_pe_coff_symbol (x, true);
+      if (tmp)
+        return tmp;
     }
 
   if (flag_pic && SYMBOLIC_CONST (x))
@@ -15944,6 +16052,8 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 
   if (GET_CODE (op1) == SYMBOL_REF)
     {
+      rtx tmp;
+
       model = SYMBOL_REF_TLS_MODEL (op1);
       if (model)
 	{
@@ -15953,9 +16063,8 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	    return;
 	  op1 = convert_to_mode (mode, op1, 1);
 	}
-      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-	       && SYMBOL_REF_DLLIMPORT_P (op1))
-	op1 = legitimize_dllimport_symbol (op1, false);
+      else if ((tmp = legitimize_pe_coff_symbol (op1, false)) != NULL_RTX)
+	op1 = tmp;
     }
   else if (GET_CODE (op1) == CONST
 	   && GET_CODE (XEXP (op1, 0)) == PLUS
@@ -15963,14 +16072,13 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
     {
       rtx addend = XEXP (XEXP (op1, 0), 1);
       rtx symbol = XEXP (XEXP (op1, 0), 0);
-      rtx tmp = NULL;
+      rtx tmp;
 
       model = SYMBOL_REF_TLS_MODEL (symbol);
       if (model)
 	tmp = legitimize_tls_address (symbol, model, true);
-      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-	       && SYMBOL_REF_DLLIMPORT_P (symbol))
-	tmp = legitimize_dllimport_symbol (symbol, true);
+      else
+        tmp = legitimize_pe_coff_symbol (symbol, true);
 
       if (tmp)
 	{
@@ -23576,7 +23684,7 @@ construct_plt_address (rtx symbol)
   rtx tmp, unspec;
 
   gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
-  gcc_assert (ix86_cmodel == CM_LARGE_PIC);
+  gcc_assert (ix86_cmodel == CM_LARGE_PIC && DEFAULT_ABI != MS_ABI);
   gcc_assert (Pmode == DImode);
 
   tmp = gen_reg_rtx (Pmode);
@@ -23618,7 +23726,8 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   else
     {
       /* Static functions and indirect calls don't need the pic register.  */
-      if (flag_pic && (!TARGET_64BIT || ix86_cmodel == CM_LARGE_PIC)
+      if (flag_pic && (!TARGET_64BIT
+                       || (ix86_cmodel == CM_LARGE_PIC && DEFAULT_ABI != MS_ABI))
 	  && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
 	  && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
 	use_reg (&use, pic_offset_table_rtx);
@@ -23632,6 +23741,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     }
 
   if (ix86_cmodel == CM_LARGE_PIC
+      && DEFAULT_ABI != MS_ABI
       && MEM_P (fnaddr)
       && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
       && !local_symbolic_operand (XEXP (fnaddr, 0), VOIDmode))
@@ -34970,7 +35080,7 @@ x86_output_mi_thunk (FILE *file,
   if (TARGET_64BIT)
     {
       if (!flag_pic || targetm.binds_local_p (function)
-	  || cfun->machine->call_abi == MS_ABI)
+	  || DEFAULT_ABI == MS_ABI)
 	;
       else
 	{
