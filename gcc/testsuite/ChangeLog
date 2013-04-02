@@ -1,3 +1,8 @@
+2013-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56768
+	* g++.dg/torture/pr56768.C: New testcase.
+
 2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* obj-c++.dg/try-catch-13.mm: Update per PR56725.
