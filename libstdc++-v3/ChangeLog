@@ -1,6 +1,12 @@
+2013-04-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Remove broken link and
+	defer to general documentation on contributing to GCC.
+	* doc/html/*: Regenerate.
+
 2013-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* doc/xml/manual/allocator.xml: Adjust link to Dr.Dobb's article.q
+	* doc/xml/manual/allocator.xml: Adjust link to Dr.Dobb's article.
 
 	* doc/xml/manual/appendix_contributing.xml: Adjust link to GNU
 	Coding Standards.
