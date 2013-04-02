@@ -1,3 +1,14 @@
+2013-04-02  Lawrence Crowl  <crowl@google.com>
+
+	* sese.h (struct ivtype_map_elt_s): Remove unused.
+	(extern debug_ivtype_map): Remove unused.
+	(extern eq_ivtype_map_elts): Remove unused.
+	* sese.c (debug_ivtype_map): Removed unused.
+	(debug_ivtype_map_1): Removed unused.
+	(debug_ivtype_elt): Remove unused.
+	(eq_ivtype_map_elts): Remove unused.
+
+
 2013-04-02  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/52790

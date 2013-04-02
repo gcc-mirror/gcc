@@ -275,17 +275,6 @@ new_rename_map_elt (tree old_name, tree expr)
   return res;
 }
 
-/* Structure containing the mapping between the CLooG's induction
-   variable and the type of the old induction variable.  */
-typedef struct ivtype_map_elt_s
-{
-  tree type;
-  const char *cloog_iv;
-} *ivtype_map_elt;
-
-extern void debug_ivtype_map (htab_t);
-extern int eq_ivtype_map_elts (const void *, const void *);
-
 /* Free and compute again all the dominators information.  */
 
 static inline void
