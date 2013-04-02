@@ -878,7 +878,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	    tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 	    ;;
 	esac
-	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi t-linux-android"
+	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
 	extra_objs="$extra_objs linux-android.o"
 	# Define multilib configuration for arm-linux-androideabi.
