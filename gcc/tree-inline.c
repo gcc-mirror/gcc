@@ -2983,10 +2983,15 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       if (gimple_in_ssa_p (id->src_cfun))
 	add_referenced_var (temp);
       insert_decl_map (id, result, temp);
-      /* When RESULT_DECL is in SSA form, we need to use it's default_def
-	 SSA_NAME.  */
-      if (gimple_in_ssa_p (id->src_cfun) && gimple_default_def (id->src_cfun, result))
-        temp = remap_ssa_name (gimple_default_def (id->src_cfun, result), id);
+      /* When RESULT_DECL is in SSA form, we need to remap and initialize
+	 it's default_def SSA_NAME.  */
+      if (gimple_in_ssa_p (id->src_cfun)
+	  && is_gimple_reg (result))
+	{
+	  temp = make_ssa_name (temp, NULL);
+	  insert_decl_map (id, gimple_default_def (id->src_cfun, result),
+			   temp);
+	}
       insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
     }
   else
