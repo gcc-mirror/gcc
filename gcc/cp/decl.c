@@ -13555,6 +13555,14 @@ begin_destructor_body (void)
       initialize_vtbl_ptrs (current_class_ptr);
       finish_compound_stmt (compound_stmt);
 
+      /* Insert a cleanup to let the back end know that the object is dead
+	 when we exit the destructor, either normally or via exception.  */
+      tree clobber = build_constructor (current_class_type, NULL);
+      TREE_THIS_VOLATILE (clobber) = true;
+      tree exprstmt = build2 (MODIFY_EXPR, current_class_type,
+			      current_class_ref, clobber);
+      finish_decl_cleanup (NULL_TREE, exprstmt);
+
       /* And insert cleanups for our bases and members so that they
 	 will be properly destroyed if we throw.  */
       push_base_cleanups ();
