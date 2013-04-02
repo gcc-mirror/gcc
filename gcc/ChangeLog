@@ -1,5 +1,11 @@
 2013-04-02  Sofiane Naci  <sofiane.naci@arm.com>
 
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add variants for scalar
+	load/store operations using B/H registers.
+	(*zero_extend<SHORT:mode><GPI:mode>2_aarch64): Likewise.
+
+2013-04-02  Sofiane Naci  <sofiane.naci@arm.com>
+
 	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add alternatives for
 	scalar move.
 	* config/aarch64/aarch64.c
