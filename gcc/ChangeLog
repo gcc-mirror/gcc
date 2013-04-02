@@ -1,6 +1,11 @@
 2013-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34949
+	* tree-ssa-alias.c (stmt_kills_ref_p_1): If base != ref->base
+	and both of them are MEM_REFs, just compare first argument for
+	equality and attempt to deal even with differing offsets.
+
+	PR c++/34949
 	* tree-cfg.c (verify_gimple_assign_single): Allow lhs
 	of gimple_clobber_p to be MEM_REF.
 	* gimplify.c (gimplify_modify_expr): Gimplify *to_p of
