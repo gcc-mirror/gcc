@@ -1319,7 +1319,7 @@ struct abi_tag_data
 static tree
 find_abi_tags_r (tree *tp, int */*walk_subtrees*/, void *data)
 {
-  if (!TAGGED_TYPE_P (*tp))
+  if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
   if (tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (*tp)))
