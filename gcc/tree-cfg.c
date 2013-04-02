@@ -3815,9 +3815,9 @@ verify_gimple_assign_single (gimple stmt)
     }
 
   if (gimple_clobber_p (stmt)
-      && !DECL_P (lhs))
+      && !(DECL_P (lhs) || TREE_CODE (lhs) == MEM_REF))
     {
-      error ("non-decl LHS in clobber statement");
+      error ("non-decl/MEM_REF LHS in clobber statement");
       debug_generic_expr (lhs);
       return true;
     }

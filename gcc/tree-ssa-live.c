@@ -623,8 +623,8 @@ clear_unused_block_pointer_1 (tree *tp, int *, void *)
   return NULL_TREE;
 }
 
-/* Set all block pointer in debug stmt to NULL if the block is unused,
-   so that they will not be streamed out.  */
+/* Set all block pointer in debug or clobber stmt to NULL if the block
+   is unused, so that they will not be streamed out.  */
 
 static void
 clear_unused_block_pointer (void)
@@ -639,7 +639,7 @@ clear_unused_block_pointer (void)
 	tree b;
 	gimple stmt = gsi_stmt (gsi);
 
-	if (!is_gimple_debug (stmt))
+	if (!is_gimple_debug (stmt) && !gimple_clobber_p (stmt))
 	  continue;
 	b = gimple_block (stmt);
 	if (b && !TREE_USED (b))
@@ -827,7 +827,15 @@ remove_unused_locals (void)
 	    if (gimple_clobber_p (stmt))
 	      {
 		tree lhs = gimple_assign_lhs (stmt);
-		if (TREE_CODE (lhs) == VAR_DECL && !is_used_p (lhs))
+		tree base = get_base_address (lhs);
+		/* Remove clobbers referencing unused vars, or clobbers
+		   with MEM_REF lhs referencing uninitialized pointers.  */
+		if ((TREE_CODE (base) == VAR_DECL && !is_used_p (base))
+		    || (TREE_CODE (lhs) == MEM_REF
+			&& TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
+			&& SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (lhs, 0))
+			&& (TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))
+			    != PARM_DECL)))
 		  {
 		    unlink_stmt_vdef (stmt);
 		    gsi_remove (&gsi, true);

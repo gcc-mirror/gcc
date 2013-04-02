@@ -412,7 +412,8 @@ get_mem_ref_of_assignment (const gimple assignment,
 {
   gcc_assert (gimple_assign_single_p (assignment));
 
-  if (gimple_store_p (assignment))
+  if (gimple_store_p (assignment)
+      && !gimple_clobber_p (assignment))
     {
       ref->start = gimple_assign_lhs (assignment);
       *ref_is_store = true;

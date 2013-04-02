@@ -4840,7 +4840,12 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      so handle it here.  */
   if (TREE_CLOBBER_P (*from_p))
     {
-      gcc_assert (!want_value && TREE_CODE (*to_p) == VAR_DECL);
+      ret = gimplify_expr (to_p, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
+      if (ret == GS_ERROR)
+	return ret;
+      gcc_assert (!want_value
+		  && (TREE_CODE (*to_p) == VAR_DECL
+		      || TREE_CODE (*to_p) == MEM_REF));
       gimplify_seq_add_stmt (pre_p, gimple_build_assign (*to_p, *from_p));
       *expr_p = NULL;
       return GS_ALL_DONE;
