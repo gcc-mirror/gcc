@@ -1,3 +1,16 @@
+2013-04-02  Ian Caulfield  <ian.caulfield@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm-arches.def (armv8-a): Default to cortex-a53.
+        * config/arm/t-arm (MD_INCLUDES): Depend on cortex-a53.md.
+        * config/arm/cortex-a53.md: New file.
+        * config/arm/bpabi.h (BE8_LINK_SPEC): Handle cortex-a53.
+        * config/arm/arm.md (generic_sched, generic_vfp): Handle cortex-a53.
+        * config/arm/arm.c (arm_issue_rate): Likewise.
+        * config/arm/arm-tune.md: Regenerate
+        * config/arm/arm-tables.opt: Regenerate.
+        * config/arm/arm-cores.def: Add cortex-a53.
+
 2013-04-02  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* config/arm/uclinux-elf.h: Add %L to LINK_GCC_C_SEQUENCE_SPEC for
@@ -5,8 +18,8 @@
 
 2013-04-02  Sofiane Naci  <sofiane.naci@arm.com>
 
-	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add variants for scalar
-	load/store operations using B/H registers.
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add variants for
+	scalar load/store operations using B/H registers.
 	(*zero_extend<SHORT:mode><GPI:mode>2_aarch64): Likewise.
 
 2013-04-02  Sofiane Naci  <sofiane.naci@arm.com>
