@@ -324,7 +324,7 @@ get_template_info (const_tree t)
   if (!tinfo && DECL_IMPLICIT_TYPEDEF_P (t))
     t = TREE_TYPE (t);
 
-  if (TAGGED_TYPE_P (t))
+  if (OVERLOAD_TYPE_P (t))
     tinfo = TYPE_TEMPLATE_INFO (t);
   else if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
     tinfo = TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t);

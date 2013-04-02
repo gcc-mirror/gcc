@@ -1233,7 +1233,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Nonzero if NODE has no name for linkage purposes.  */
 #define TYPE_ANONYMOUS_P(NODE) \
-  (TAGGED_TYPE_P (NODE) && ANON_AGGRNAME_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+  (OVERLOAD_TYPE_P (NODE) && ANON_AGGRNAME_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
 
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
@@ -1270,9 +1270,8 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* Keep these checks in ascending code order.  */
 #define RECORD_OR_UNION_CODE_P(T)	\
   ((T) == RECORD_TYPE || (T) == UNION_TYPE)
-#define TAGGED_TYPE_P(T) \
+#define OVERLOAD_TYPE_P(T) \
   (CLASS_TYPE_P (T) || TREE_CODE (T) == ENUMERAL_TYPE)
-#define IS_OVERLOAD_TYPE(T) TAGGED_TYPE_P (T)
 
 /* True if this a "Java" type, defined in 'extern "Java"'.  */
 #define TYPE_FOR_JAVA(NODE) TYPE_LANG_FLAG_3 (NODE)

@@ -1,3 +1,16 @@
+2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (TAGGED_TYPE_P): Remove.
+	(IS_OVERLOAD_TYPE): Rename to OVERLOAD_TYPE_P, adjust.
+	(TYPE_ANONYMOUS_P): Adjust.
+	* call.c (build_new_op_1): Likewise.
+	* class.c (find_abi_tags_r): Likewise.
+	* decl.c (warn_misplaced_attr_for_class_type, start_decl,
+	type_is_deprecated): Likewise.
+	* decl2.c (grokfield, min_vis_r): Likewise.
+	* pt.c (get_template_info): Likewise.
+	* tree.c (handle_abi_tag_attribute): Likewise.
+
 2013-04-01  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (maybe_constant_value): Check

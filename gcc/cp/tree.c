@@ -3306,7 +3306,7 @@ handle_abi_tag_attribute (tree* node, tree name, tree args,
 {
   if (TYPE_P (*node))
     {
-      if (!TAGGED_TYPE_P (*node))
+      if (!OVERLOAD_TYPE_P (*node))
 	{
 	  error ("%qE attribute applied to non-class, non-enum type %qT",
 		 name, *node);
