@@ -1,3 +1,9 @@
+2013-04-02  Wei Mi  <wmi@google.com>
+
+	* config/i386/i386.c (ix86_rtx_costs): Set proper rtx cost for
+	ashl<mode>3_mask, *<shift_insn><mode>3_mask and
+	*<rotate_insn><mode>3_mask in i386.md.
+
 2013-04-02  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* config.gcc (arm*-*-linux-*): Remove duplicate t-linux-android.
