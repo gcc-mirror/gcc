@@ -22,7 +22,7 @@ extern void some_func (int *);
       typeof(q) k = 66;
       some_func (&j);
 /* { dg-error "invalid conversion" "" { target *-*-* } 23 } */ 
-/* { dg-error "initializing argument" "" { target *-*-* } 12 } */
+/* { dg-message "initializing argument" "" { target *-*-* } 12 } */
       some_func (&k);
     }
     @catch (id exc) {
@@ -39,7 +39,7 @@ extern void some_func (int *);
 /* { dg-error "invalid conversion" "" { target *-*-* } 38 } */
 /* The following is disabled as it is already checked above and the testsuites seems 
    to count multiple different identical errors on the same line only once */
-/*  dg-error "initializing argument" "" { target *-*-* } 12  */
+/*  dg-message "initializing argument" "" { target *-*-* } 12  */
     }
     @catch (id exc) {
       @throw;
@@ -54,7 +54,7 @@ extern void some_func (int *);
 /* { dg-error "invalid conversion" "" { target *-*-* } 53 } */
 /* The following is disabled as it is already checked above and the testsuites seems 
    to count multiple different identical errors on the same line only once */
-/*  dg-error "initializing argument" "" { target *-*-* } 12  */
+/*  dg-message "initializing argument" "" { target *-*-* } 12  */
       some_func (&k);
     }
     @catch (id exc) {
