@@ -2476,11 +2476,11 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
   /* End loop-exit-fixes after versioning.  */
 
-  update_ssa (TODO_update_ssa);
   if (cond_expr_stmt_list)
     {
       cond_exp_gsi = gsi_last_bb (condition_bb);
       gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list,
 			     GSI_SAME_STMT);
     }
+  update_ssa (TODO_update_ssa);
 }

@@ -280,6 +280,23 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
+      if (STMT_VINFO_GATHER_P (stmtinfo_a)
+	  || STMT_VINFO_GATHER_P (stmtinfo_b))
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "versioning for alias not supported for: "
+			       "can't determine dependence between ");
+	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				 DR_REF (dra));
+	      dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				 DR_REF (drb));
+	    }
+	  return false;
+	}
+
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -299,6 +316,23 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   /* Known data dependence.  */
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
+      if (STMT_VINFO_GATHER_P (stmtinfo_a)
+	  || STMT_VINFO_GATHER_P (stmtinfo_b))
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "versioning for alias not supported for: "
+			       "bad dist vector for ");
+	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				 DR_REF (dra));
+	      dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				 DR_REF (drb));
+	    }
+	  return false;
+	}
+
       if (dump_enabled_p ())
         {
           dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 

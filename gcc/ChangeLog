@@ -1,3 +1,11 @@
+2013-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56778
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Runtime alias tests are not supported for gather loads.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Insert
+	stmts referenced from SSA operands before updating SSA form.
+
 2013-04-02  Ian Caulfield  <ian.caulfield@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
