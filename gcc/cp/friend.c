@@ -485,8 +485,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	 to be a friend, so we do lookup here even if CTYPE is in
 	 the process of being defined.  */
       if (class_template_depth
-	  || COMPLETE_TYPE_P (ctype)
-	  || (CLASS_TYPE_P (ctype) && TYPE_BEING_DEFINED (ctype)))
+	  || COMPLETE_OR_OPEN_TYPE_P (ctype))
 	{
 	  if (DECL_TEMPLATE_INFO (decl))
 	    /* DECL is a template specialization.  No need to

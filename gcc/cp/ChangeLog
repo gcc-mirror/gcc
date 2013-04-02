@@ -1,5 +1,11 @@
 2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* friend.c (do_friend): Use COMPLETE_OR_OPEN_TYPE_P.
+	* pt.c (find_parameter_packs_r): Use TYPE_ALIAS_P and TYPE_TI_ARGS.
+	(for_each_template_parm_r): Use TYPE_TI_ARGS.
+
+2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* cp-tree.h (TAGGED_TYPE_P): Remove.
 	(IS_OVERLOAD_TYPE): Rename to OVERLOAD_TYPE_P, adjust.
 	(TYPE_ANONYMOUS_P): Adjust.
