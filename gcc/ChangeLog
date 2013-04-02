@@ -1,3 +1,14 @@
+2013-04-02  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add alternatives for
+	scalar move.
+	* config/aarch64/aarch64.c
+	(aarch64_simd_scalar_immediate_valid_for_move): New.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_simd_scalar_immediate_valid_for_move): New.
+	* config/aarch64/constraints.md (Dh, Dq): New.
+	* config/aarch64/iterators.md (hq): New.
+
 2013-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (get_branch_condition): Deal with conditional returns.

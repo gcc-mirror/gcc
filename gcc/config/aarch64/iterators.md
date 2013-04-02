@@ -249,6 +249,9 @@
 ;; 32-bit version and "%x0" in the 64-bit version.
 (define_mode_attr w [(QI "w") (HI "w") (SI "w") (DI "x") (SF "s") (DF "d")])
 
+;; For constraints used in scalar immediate vector moves
+(define_mode_attr hq [(HI "h") (QI "q")])
+
 ;; For scalar usage of vector/FP registers
 (define_mode_attr v [(QI "b") (HI "h") (SI "s") (DI "d")
 		    (V8QI "") (V16QI "")

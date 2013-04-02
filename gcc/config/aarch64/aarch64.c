@@ -6407,6 +6407,21 @@ aarch64_simd_gen_const_vector_dup (enum machine_mode mode, int val)
   return gen_rtx_CONST_VECTOR (mode, v);
 }
 
+/* Check OP is a legal scalar immediate for the MOVI instruction.  */
+
+bool
+aarch64_simd_scalar_immediate_valid_for_move (rtx op, enum machine_mode mode)
+{
+  enum machine_mode vmode;
+
+  gcc_assert (!VECTOR_MODE_P (mode));
+  vmode = aarch64_preferred_simd_mode (mode);
+  rtx op_v = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (op));
+  int retval = aarch64_simd_immediate_valid_for_move (op_v, vmode, 0,
+						      NULL, NULL, NULL, NULL);
+  return retval;
+}
+
 /* Construct and return a PARALLEL RTX vector.  */
 rtx
 aarch64_simd_vect_par_cnst_half (enum machine_mode mode, bool high)
