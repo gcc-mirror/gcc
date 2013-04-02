@@ -1,3 +1,32 @@
+2013-04-02  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/52790
+	* config/i386/cygming.h (SUB_TARGET_RECORD_STUB): New sub-target macro.
+	* config/i386/i386-protos.h (i386_pe_record_stub): Add new prototype.
+	* config/i386/i386.c (legitimize_pe_coff_extern_decl): New static function.
+	(legitimize_pe_coff_symbol): Likewise.
+	(is_imported_p): New helper-function.
+	(ix86_option_override_internal): Make MEDIUM_PIC the default code-model
+	for Windows x64 targets.
+	(ix86_expand_prologue): Optimize for pe-coff targets.
+	(ix86_expand_split_stack_prologue): Adjust for pe-coff targets.
+	(legitimate_pic_address_disp_p): Adjust for x64 pe-coff to support
+	medium/large code-model.
+	(legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	(ix86_expand_call): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(get_dllimport_decl): Add new beimport argument.
+	(construct_plt_address): Don't assert for x64 pe-coff targets.
+	* config/i386/i386.h (PIC_OFFSET_TABLE_REGNUM): Adjust for x64 pe-coff
+	targets.
+	(SYMBOL_FLAG_STUBVAR): New macro.
+	(SYMBOL_REF_STUBVAR_P): Likewise.
+	* config/i386/winnt.c (stub_list): New structure.
+	(stub_head): New local variable.
+	(i386_pe_record_stub): New function.
+	(i386_pe_file_end): Emit refptr-stubs.
+
 2013-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/56745
