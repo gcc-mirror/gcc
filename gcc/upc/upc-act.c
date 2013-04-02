@@ -575,10 +575,17 @@ upc_get_block_factor (const tree type)
 /* Lookup the UPC block size of TYPE, and return it if we find one.  */
 
 tree
-upc_block_factor_lookup (tree type)
+upc_block_factor_lookup (const_tree type)
 {
   struct tree_map *h, in;
-  in.base.from = type;
+  union
+    {
+      const_tree ct;
+      tree t;
+    } ct_to_t;
+  ct_to_t.ct = type;
+  /* Drop the const qualifier, avoid the warning.  */
+  in.base.from = ct_to_t.t;
 
   h = (struct tree_map *)
       htab_find_with_hash (upc_block_factor_for_type, &in, TYPE_HASH (type));

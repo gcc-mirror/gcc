@@ -152,7 +152,7 @@ upc_block_factor_insert (tree ARG_UNUSED(type),
 }
 
 tree
-upc_block_factor_lookup (tree ARG_UNUSED(type))
+upc_block_factor_lookup (const_tree ARG_UNUSED(type))
 {
   return NULL_TREE;
 }
