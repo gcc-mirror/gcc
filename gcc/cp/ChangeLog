@@ -1,3 +1,8 @@
+2013-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34949
+	* decl.c (begin_destructor_body): Clobber the object in a cleanup.
+
 2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* friend.c (do_friend): Use COMPLETE_OR_OPEN_TYPE_P.
