@@ -681,7 +681,8 @@ instrument_func_exit (void)
     {
       gsi = gsi_last_bb (e->src);
       stmt = gsi_stmt (gsi);
-      gcc_assert (gimple_code (stmt) == GIMPLE_RETURN);
+      gcc_assert (gimple_code (stmt) == GIMPLE_RETURN
+		  || gimple_call_builtin_p (stmt, BUILT_IN_RETURN));
       loc = gimple_location (stmt);
       builtin_decl = builtin_decl_implicit (BUILT_IN_TSAN_FUNC_EXIT);
       g = gimple_build_call (builtin_decl, 0);
