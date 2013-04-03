@@ -6114,11 +6114,13 @@ c_parser_alignof_expression (c_parser *parser)
    stores the arguments in CEXPR_LIST.  */
 static bool
 c_parser_get_builtin_args (c_parser *parser, const char *bname,
-			   vec<c_expr_t, va_gc> **ret_cexpr_list)
+			   vec<c_expr_t, va_gc> **ret_cexpr_list,
+			   bool choose_expr_p)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   vec<c_expr_t, va_gc> *cexpr_list;
   c_expr_t expr;
+  bool saved_force_folding_builtin_constant_p;
 
   *ret_cexpr_list = NULL;
   if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
@@ -6135,7 +6137,12 @@ c_parser_get_builtin_args (c_parser *parser, const char *bname,
       return true;
     }
 
+  saved_force_folding_builtin_constant_p
+    = force_folding_builtin_constant_p;
+  force_folding_builtin_constant_p |= choose_expr_p;
   expr = c_parser_expr_no_commas (parser, NULL);
+  force_folding_builtin_constant_p
+    = saved_force_folding_builtin_constant_p;
   vec_alloc (cexpr_list, 1);
   C_EXPR_APPEND (cexpr_list, expr);
   while (c_parser_next_token_is (parser, CPP_COMMA))
@@ -6509,7 +6516,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser,
 					    "__builtin_choose_expr",
-					    &cexpr_list))
+					    &cexpr_list, true))
 	      {
 		expr.value = error_mark_node;
 		break;
@@ -6591,7 +6598,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser,
 					    "__builtin_complex",
-					    &cexpr_list))
+					    &cexpr_list, false))
 	      {
 		expr.value = error_mark_node;
 		break;
@@ -6653,7 +6660,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser,
 					    "__builtin_shuffle",
-					    &cexpr_list))
+					    &cexpr_list, false))
 	      {
 		expr.value = error_mark_node;
 		break;
