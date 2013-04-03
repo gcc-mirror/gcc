@@ -1,3 +1,8 @@
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34949
+	* g++.dg/tree-ssa/ehcleanup-1.C: Adjust unreachable count.
+
 2013-04-03  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/vect/slp-pr56812.cc: Use dg-additional-options.
