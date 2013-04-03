@@ -1,3 +1,11 @@
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56819
+	* tree.c (strip_typedefs): Copy NON_DEFAULT_TEMPLATE_ARGS_COUNT
+	from args to new_args.
+	(strip_typedefs_expr): Copy NON_DEFAULT_TEMPLATE_ARGS_COUNT from t to
+	r instead of doing {S,G}ET_NON_DEFAULT_TEMPLATE_ARGS_COUNT.
+
 2013-04-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56794
