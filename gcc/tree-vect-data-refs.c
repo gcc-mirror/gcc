@@ -3613,6 +3613,8 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
       dump_generic_expr (MSG_NOTE, TDF_SLIM, aggr_type);
       if (TREE_CODE (dr_base_type) == ARRAY_TYPE)
         dump_printf (MSG_NOTE, "  vectorizing an array ref: ");
+      else if (TREE_CODE (dr_base_type) == VECTOR_TYPE)
+        dump_printf (MSG_NOTE, "  vectorizing a vector ref: ");
       else if (TREE_CODE (dr_base_type) == RECORD_TYPE)
         dump_printf (MSG_NOTE, "  vectorizing a record based array ref: ");
       else

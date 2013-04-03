@@ -667,6 +667,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		  || rhs_code != IMAGPART_EXPR)
               && !(STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (stmt))
                    && (first_stmt_code == ARRAY_REF
+                       || first_stmt_code == BIT_FIELD_REF
                        || first_stmt_code == INDIRECT_REF
                        || first_stmt_code == COMPONENT_REF
                        || first_stmt_code == MEM_REF)))

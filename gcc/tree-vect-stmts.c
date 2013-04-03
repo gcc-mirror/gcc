@@ -3851,6 +3851,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       && is_pattern_stmt_p (stmt_info))
     scalar_dest = TREE_OPERAND (scalar_dest, 0);
   if (TREE_CODE (scalar_dest) != ARRAY_REF
+      && TREE_CODE (scalar_dest) != BIT_FIELD_REF
       && TREE_CODE (scalar_dest) != INDIRECT_REF
       && TREE_CODE (scalar_dest) != COMPONENT_REF
       && TREE_CODE (scalar_dest) != IMAGPART_EXPR
@@ -4385,6 +4386,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   code = gimple_assign_rhs_code (stmt);
   if (code != ARRAY_REF
+      && code != BIT_FIELD_REF
       && code != INDIRECT_REF
       && code != COMPONENT_REF
       && code != IMAGPART_EXPR
