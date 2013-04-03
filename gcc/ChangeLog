@@ -1,3 +1,10 @@
+2013-04-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/56799
+        * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Bring
+	back test for widening conversion erroneously dropped in prior
+	change.
+
 2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/56809
@@ -896,6 +903,7 @@
 	* config/tilegx/tilepro.h (PROFILE_BEFORE_PROLOGUE): Define.
 
 2013-03-25  Jeff Law  <law@redhat.com>
+
         * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Add missing
         check for INTEGRAL_TYPE_P that was missing due to checking in
 	wrong version of prior patch.

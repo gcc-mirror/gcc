@@ -1151,9 +1151,15 @@ record_equivalences_from_incoming_edge (basic_block bb)
 		{
 		  tree old_rhs = gimple_assign_rhs1 (defstmt);
 
-		  /* If the constant is in the range of the type of OLD_RHS,
-		     then convert the constant and record the equivalence.  */
+		  /* If the conversion widens the original value and
+		     the constant is in the range of the type of OLD_RHS,
+		     then convert the constant and record the equivalence. 
+
+		     Note that int_fits_type_p does not check the precision
+		     if the upper and lower bounds are OK.  */
 		  if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
+		      && (TYPE_PRECISION (TREE_TYPE (lhs))
+			  > TYPE_PRECISION (TREE_TYPE (old_rhs)))
 		      && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
 		    {
 		      tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
