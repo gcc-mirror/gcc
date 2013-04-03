@@ -1,3 +1,7 @@
+2013-04-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* rtl.h (AUTO_INC_DEC): Fix typo of HAVE_POST_MODIFY_DISP.
+
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/56790
