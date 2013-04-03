@@ -1,3 +1,11 @@
+2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56809
+	* config/arm/arm.c (is_jump_table): Use next_active_insn instead of
+	next_real_insn.
+	(thumb1_output_casesi): Likewise.
+	(thumb2_output_casesi): Likewise.
+
 2013-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56817
