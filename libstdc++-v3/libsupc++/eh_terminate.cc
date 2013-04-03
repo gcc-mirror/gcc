@@ -45,7 +45,7 @@ __cxxabiv1::__terminate (std::terminate_handler handler) throw ()
 void
 std::terminate () throw()
 {
-  __terminate (__terminate_handler);
+  __terminate (get_terminate ());
 }
 
 void
@@ -58,21 +58,37 @@ __cxxabiv1::__unexpected (std::unexpected_handler handler)
 void
 std::unexpected ()
 {
-  __unexpected (__unexpected_handler);
+  __unexpected (get_unexpected ());
 }
 
 std::terminate_handler
 std::set_terminate (std::terminate_handler func) throw()
 {
-  std::terminate_handler old = __terminate_handler;
-  __terminate_handler = func;
+  std::terminate_handler old;
+  __atomic_exchange (&__terminate_handler, &func, &old, __ATOMIC_ACQ_REL);
   return old;
+}
+
+std::terminate_handler
+std::get_terminate () noexcept
+{
+  std::terminate_handler func;
+  __atomic_load (&__terminate_handler, &func, __ATOMIC_ACQUIRE);
+  return func;
 }
 
 std::unexpected_handler
 std::set_unexpected (std::unexpected_handler func) throw()
 {
-  std::unexpected_handler old = __unexpected_handler;
-  __unexpected_handler = func;
+  std::unexpected_handler old;
+  __atomic_exchange (&__unexpected_handler, &func, &old, __ATOMIC_ACQ_REL);
   return old;
+}
+
+std::unexpected_handler
+std::get_unexpected () noexcept
+{
+  std::unexpected_handler func;
+  __atomic_load (&__unexpected_handler, &func, __ATOMIC_ACQUIRE);
+  return func;
 }

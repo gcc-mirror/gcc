@@ -1,3 +1,29 @@
+2013-04-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* libsupc++/exception (get_terminate(), get_unexpected()): Declare.
+	* libsupc++/eh_terminate.cc (get_terminate() , set_unexpected()):
+	Define.
+	(set_terminate(terminate_handler)): Set atomically.
+	(set_unexpected(terminate_handler)): Likewise.
+	* libsupc++/new (get_new_handler()): Declare.
+	* libsupc++/new_handler.cc (get_new_handler()): Define.
+	(set_new_handler(new_handler)): Set atomically.
+	(__new_handler): Use internal linkage.
+	* libsupc++/new_op.cc (operator new): Use get_new_handler().
+	* libsupc++/new_opnt.cc (operator new): Likewise.
+	* acinclude.m4: Bump libtool_VERSION to 6:19:0.
+	* configure: Regenerate.
+	* libsupc++/Makefile.am: Compile above files with -std=gnu++11.
+	* libsupc++/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add new exports.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* testsuite/18_support/headers/exception/synopsis.cc: Check accessors
+	for handlers.
+	* testsuite/18_support/headers/new/synopsis.cc: Likewise.
+	* testsuite/18_support/new_handler.cc: New.
+	* testsuite/18_support/terminate_handler.cc: New.
+	* testsuite/18_support/unexpected_handler.cc: New.
+
 2013-04-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Remove broken link and

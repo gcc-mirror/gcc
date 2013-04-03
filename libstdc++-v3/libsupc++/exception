@@ -92,12 +92,22 @@ namespace std
   /// Takes a new handler function as an argument, returns the old function.
   terminate_handler set_terminate(terminate_handler) _GLIBCXX_USE_NOEXCEPT;
 
+#if __cplusplus >= 201103L
+  /// Return the current terminate handler.
+  terminate_handler get_terminate() noexcept;
+#endif
+
   /** The runtime will call this function if %exception handling must be
    *  abandoned for any reason.  It can also be called by the user.  */
   void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__));
 
   /// Takes a new handler function as an argument, returns the old function.
   unexpected_handler set_unexpected(unexpected_handler) _GLIBCXX_USE_NOEXCEPT;
+
+#if __cplusplus >= 201103L
+  /// Return the current unexpected handler.
+  unexpected_handler get_unexpected() noexcept;
+#endif
 
   /** The runtime will call this function if an %exception is thrown which
    *  violates the function's %exception specification.  */
