@@ -1,3 +1,22 @@
+2013-04-03  Teresa Johnson  <tejohnson@google.com>
+
+	* gcov-io.c (compute_working_sets): Moved most of body of old
+        compute_working_sets here from profile.c.
+	* gcov-io.h (NUM_GCOV_WORKING_SETS): Moved here from profile.c.
+        (gcov_working_set_t): Moved typedef here from basic-block.h
+        (compute_working_set): Declare.
+	* profile.c (NUM_GCOV_WORKING_SETS): Moved to gcov-io.h.
+	(get_working_sets): Renamed from compute_working_set,
+        replace most of body with call to new compute_working_sets.
+	(get_exec_counts): Replace call to compute_working_sets
+        to get_working_sets.
+	* profile.h (get_working_sets): Renamed from
+        compute_working_set.
+	* lto-cgraph.c (input_symtab): Replace call to compute_working_sets
+        to get_working_sets.
+	* basic-block.h (gcov_working_set_t): Moved to gcov-io.h.
+	* gcov-dump.c (dump_working_sets): New function.
+
 2013-04-03  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* hwint.c (sext_hwi, zext_hwi): New functions.
