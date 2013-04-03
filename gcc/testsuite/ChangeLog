@@ -1,3 +1,8 @@
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56819
+	* g++.dg/debug/pr56819.C: New test.
+
 2013-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56817
