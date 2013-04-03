@@ -75,6 +75,9 @@ const char * built_in_names[(int) END_BUILTINS] =
    initialized to NULL_TREE.  */
 builtin_info_type builtin_info;
 
+/* Non-zero if __builtin_constant_p should be folded right away.  */
+bool force_folding_builtin_constant_p;
+
 static const char *c_getstr (tree);
 static rtx c_readstr (const char *, enum machine_mode);
 static int target_char_cast (tree, char *);
@@ -6974,7 +6977,8 @@ fold_builtin_constant_p (tree arg)
       || AGGREGATE_TYPE_P (TREE_TYPE (arg))
       || POINTER_TYPE_P (TREE_TYPE (arg))
       || cfun == 0
-      || folding_initializer)
+      || folding_initializer
+      || force_folding_builtin_constant_p)
     return integer_zero_node;
 
   return NULL_TREE;

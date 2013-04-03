@@ -5855,6 +5855,10 @@ fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off)
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
 
 /* In builtins.c */
+
+/* Non-zero if __builtin_constant_p should be folded right away.  */
+extern bool force_folding_builtin_constant_p;
+
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_fputs (location_t, tree, tree, bool, bool, tree);

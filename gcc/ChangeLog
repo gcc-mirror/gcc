@@ -1,3 +1,11 @@
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/19449
+	* tree.h (force_folding_builtin_constant_p): New decl.
+	* builtins.c (force_folding_builtin_constant_p): New variable.
+	(fold_builtin_constant_p): Fold immediately also if
+	force_folding_builtin_constant_p.
+
 2013-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56812
