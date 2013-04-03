@@ -484,6 +484,13 @@ vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
   if (DR_IS_READ (dra) && DR_IS_READ (drb))
     return false;
 
+  /* If dra and drb are part of the same interleaving chain consider
+     them independent.  */
+  if (STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (DR_STMT (dra)))
+      && (GROUP_FIRST_ELEMENT (vinfo_for_stmt (DR_STMT (dra)))
+	  == GROUP_FIRST_ELEMENT (vinfo_for_stmt (DR_STMT (drb)))))
+    return false;
+
   /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
