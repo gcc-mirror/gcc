@@ -1,5 +1,11 @@
 2013-04-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56821
+	* mangle.c (write_function_type): Mangle ref-qualifier.
+	(write_nested_name): Likewise.
+	(canonicalize_for_substitution): Preserve ref-qualifier.
+	(write_type): Likewise.
+
 	PR c++/34949
 	* decl.c (begin_destructor_body): Clobber the object in a cleanup.
 
