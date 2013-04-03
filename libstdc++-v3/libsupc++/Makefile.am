@@ -106,31 +106,51 @@ cp-demangle.o: cp-demangle.c
 	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
 
 
-# Use special rules for the C++0x sources so that the proper flags are passed.
+# Use special rules for the C++11 sources so that the proper flags are passed.
 eh_ptr.lo: eh_ptr.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 eh_ptr.o: eh_ptr.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+eh_terminate.lo: eh_terminate.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+eh_terminate.o: eh_terminate.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 eh_throw.lo: eh_throw.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 eh_throw.o: eh_throw.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
+	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 guard.lo: guard.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 guard.o: guard.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
+	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 atexit_thread.lo: atexit_thread.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 atexit_thread.o: atexit_thread.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
+	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 nested_exception.lo: nested_exception.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 nested_exception.o: nested_exception.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+new_handler.lo: new_handler.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+new_handler.o: new_handler.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+new_op.lo: new_op.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+new_op.o: new_op.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+new_opnt.lo: new_opnt.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+new_opnt.o: new_opnt.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

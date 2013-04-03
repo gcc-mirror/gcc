@@ -1344,6 +1344,19 @@ GLIBCXX_3.4.18 {
 
 } GLIBCXX_3.4.17;
 
+GLIBCXX_3.4.19 {
+
+    # std::get_new_handler()
+    _ZSt15get_new_handlerv;
+
+    # std::get_terminate()
+    _ZSt13get_terminatev;
+
+    # std::get_unexpected()
+    _ZSt14get_unexpectedv;
+
+} GLIBCXX_3.4.18;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 

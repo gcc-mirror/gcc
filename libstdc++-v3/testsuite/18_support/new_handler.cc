@@ -1,7 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
-
-// Copyright (C) 2007-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,21 +15,25 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <exception>
+// { dg-options "-std=gnu++11" }
 
-namespace std {
-  class exception;
-  class bad_exception;
+// 18.6.2 Storage allocation errors
 
-  typedef void (*unexpected_handler)();
-  unexpected_handler set_unexpected(unexpected_handler  f ) throw();
-  unexpected_handler get_unexpected() noexcept;
-  void unexpected();
+#include <new>
+#include <testsuite_hooks.h>
 
-  typedef void (*terminate_handler)();
-  terminate_handler set_terminate(terminate_handler  f ) throw();
-  terminate_handler get_terminate() noexcept;
-  void terminate() throw();
+void handler() { throw std::bad_alloc(); }
 
-  bool uncaught_exception() throw();
+void test01()
+{
+  auto prev = std::set_new_handler(handler);
+  VERIFY( prev == nullptr );
+  auto curr = std::get_new_handler();
+  VERIFY( curr == handler );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }

@@ -28,12 +28,24 @@
 const std::nothrow_t std::nothrow = { };
 
 using std::new_handler;
-new_handler __new_handler;
+namespace
+{
+  new_handler __new_handler;
+}
 
 new_handler
 std::set_new_handler (new_handler handler) throw()
 {
-  new_handler prev_handler = __new_handler;
-  __new_handler = handler;
+  new_handler prev_handler;
+  __atomic_exchange (&__new_handler, &handler, &prev_handler,
+		     __ATOMIC_ACQ_REL);
   return prev_handler;
+}
+
+new_handler
+std::get_new_handler () noexcept
+{
+  new_handler handler;
+  __atomic_load (&__new_handler, &handler, __ATOMIC_ACQUIRE);
+  return handler;
 }
