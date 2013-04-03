@@ -1,3 +1,11 @@
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <VEC_SELECT>:
+	Handle VEC_MERGE.
+	(simplify_ternary_operation) <VEC_MERGE>: Use unsigned HOST_WIDE_INT
+	for masks. Test for side effects. Handle nested VEC_MERGE. Handle
+	equal arguments.
+
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/19449
