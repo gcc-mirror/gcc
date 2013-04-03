@@ -1,6 +1,11 @@
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-05-03  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR debug/53174
+	* gcc.dg/pr53174.c: New test.
+
 	2012-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/52445
