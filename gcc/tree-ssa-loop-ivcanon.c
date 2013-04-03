@@ -1097,6 +1097,63 @@ propagate_constants_for_unrolling (basic_block bb)
     }
 }
 
+/* Process loops from innermost to outer, stopping at the innermost
+   loop we unrolled.  */
+
+static bool
+tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
+				vec<loop_p, va_stack>& father_stack,
+				struct loop *loop)
+{
+  struct loop *loop_father;
+  bool changed = false;
+  struct loop *inner;
+  enum unroll_level ul;
+
+  /* Process inner loops first.  */
+  for (inner = loop->inner; inner != NULL; inner = inner->next)
+    changed |= tree_unroll_loops_completely_1 (may_increase_size,
+					       unroll_outer, father_stack,
+					       inner);
+ 
+  /* If we changed an inner loop we cannot process outer loops in this
+     iteration because SSA form is not up-to-date.  Continue with
+     siblings of outer loops instead.  */
+  if (changed)
+    return true;
+
+  /* Try to unroll this loop.  */
+  loop_father = loop_outer (loop);
+  if (!loop_father)
+    return false;
+
+  if (may_increase_size && optimize_loop_nest_for_speed_p (loop)
+      /* Unroll outermost loops only if asked to do so or they do
+	 not cause code growth.  */
+      && (unroll_outer || loop_outer (loop_father)))
+    ul = UL_ALL;
+  else
+    ul = UL_NO_GROWTH;
+
+  if (canonicalize_loop_induction_variables
+        (loop, false, ul, !flag_tree_loop_ivcanon))
+    {
+      /* If we'll continue unrolling, we need to propagate constants
+	 within the new basic blocks to fold away induction variable
+	 computations; otherwise, the size might blow up before the
+	 iteration is complete and the IR eventually cleaned up.  */
+      if (loop_outer (loop_father) && !loop_father->aux)
+	{
+	  father_stack.safe_push (loop_father);
+	  loop_father->aux = loop_father;
+	}
+
+      return true;
+    }
+
+  return false;
+}
+
 /* Unroll LOOPS completely if they iterate just few times.  Unless
    MAY_INCREASE_SIZE is true, perform the unrolling only if the
    size of the code does not increase.  */
@@ -1105,10 +1162,7 @@ unsigned int
 tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
   vec<loop_p, va_stack> father_stack;
-  loop_iterator li;
-  struct loop *loop;
   bool changed;
-  enum unroll_level ul;
   int iteration = 0;
   bool irred_invalidated = false;
 
@@ -1124,34 +1178,9 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
       free_numbers_of_iterations_estimates ();
       estimate_numbers_of_iterations ();
 
-      FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
-	{
-	  struct loop *loop_father = loop_outer (loop);
-
-	  if (may_increase_size && optimize_loop_nest_for_speed_p (loop)
-	      /* Unroll outermost loops only if asked to do so or they do
-		 not cause code growth.  */
-	      && (unroll_outer || loop_outer (loop_father)))
-	    ul = UL_ALL;
-	  else
-	    ul = UL_NO_GROWTH;
-
-	  if (canonicalize_loop_induction_variables
-		 (loop, false, ul, !flag_tree_loop_ivcanon))
-	    {
-	      changed = true;
-	      /* If we'll continue unrolling, we need to propagate constants
-		 within the new basic blocks to fold away induction variable
-		 computations; otherwise, the size might blow up before the
-		 iteration is complete and the IR eventually cleaned up.  */
-	      if (loop_outer (loop_father) && !loop_father->aux)
-	        {
-		  father_stack.safe_push (loop_father);
-		  loop_father->aux = loop_father;
-		}
-	    }
-	}
-
+      changed = tree_unroll_loops_completely_1 (may_increase_size,
+						unroll_outer, father_stack,
+						current_loops->tree_root);
       if (changed)
 	{
 	  struct loop **iter;
