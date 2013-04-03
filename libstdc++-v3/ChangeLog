@@ -1,3 +1,11 @@
+2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56834
+	* include/debug/array (tuple_size, tuple_element): Do not declare.
+	* include/profile/array: Likewise.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Adjust dg-error line number.
+
 2013-04-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* libsupc++/exception (get_terminate(), get_unexpected()): Declare.
