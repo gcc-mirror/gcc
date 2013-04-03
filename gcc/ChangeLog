@@ -1,3 +1,8 @@
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (*<shiftrt_insn><mode>3_mask): Use
+	<shiftrt> instead of <shift>.
+
 2013-04-02  Wei Mi  <wmi@google.com>
 
 	* config/i386/i386.c (ix86_rtx_costs): Set proper rtx cost for
