@@ -1,3 +1,8 @@
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56407
+	* gcc.dg/torture/pr56407.c: New testcase.
+
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/56790
