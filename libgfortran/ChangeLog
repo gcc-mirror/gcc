@@ -1,3 +1,13 @@
+2013-04-03  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline:
+	2013-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* io/list_read.c (nml_query): Only abort when
+	an error occured.
+	(namelist_read): Add goto instead of falling through.
+
 2013-02-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/30162
@@ -34,9 +44,9 @@
 
 2012-05-31  Benjamin Kosnik  <bkoz@redhat.com>
 
-        PR libstdc++/52007
-        * configure.ac: Allow gnu, gnu* variants for --enable-symvers argument.
-        * configure: Regenerated.
+	PR libstdc++/52007
+	* configure.ac: Allow gnu, gnu* variants for --enable-symvers argument.
+	* configure: Regenerated.
 
 2012-05-12  Tobias Burnus  <burnus@net-b.de>
 

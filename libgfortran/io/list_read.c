@@ -2355,11 +2355,11 @@ nml_query (st_parameter_dt *dtp, char c)
   index_type len;
   char * p;
 #ifdef HAVE_CRLF
-  static const index_type endlen = 3;
+  static const index_type endlen = 2;
   static const char endl[] = "\r\n";
   static const char nmlend[] = "&end\r\n";
 #else
-  static const index_type endlen = 2;
+  static const index_type endlen = 1;
   static const char endl[] = "\n";
   static const char nmlend[] = "&end\n";
 #endif
@@ -2389,12 +2389,12 @@ nml_query (st_parameter_dt *dtp, char c)
 	  /* "&namelist_name\n"  */
 
 	  len = dtp->namelist_name_len;
-	  p = write_block (dtp, len + endlen);
+	  p = write_block (dtp, len - 1 + endlen);
           if (!p)
             goto query_return;
 	  memcpy (p, "&", 1);
 	  memcpy ((char*)(p + 1), dtp->namelist_name, len);
-	  memcpy ((char*)(p + len + 1), &endl, endlen - 1);
+	  memcpy ((char*)(p + len + 1), &endl, endlen);
 	  for (nl = dtp->u.p.ionml; nl; nl = nl->next)
 	    {
 	      /* " var_name\n"  */
@@ -2405,14 +2405,15 @@ nml_query (st_parameter_dt *dtp, char c)
 		goto query_return;
 	      memcpy (p, " ", 1);
 	      memcpy ((char*)(p + 1), nl->var_name, len);
-	      memcpy ((char*)(p + len + 1), &endl, endlen - 1);
+	      memcpy ((char*)(p + len + 1), &endl, endlen);
 	    }
 
 	  /* "&end\n"  */
 
-          p = write_block (dtp, endlen + 3);
+          p = write_block (dtp, endlen + 4);
+	  if (!p)
 	    goto query_return;
-          memcpy (p, &nmlend, endlen + 3);
+          memcpy (p, &nmlend, endlen + 4);
 	}
 
       /* Flush the stream to force immediate output.  */
@@ -3047,6 +3048,7 @@ find_nml_name:
 
     case '?':
       nml_query (dtp, '?');
+      goto find_nml_name;
 
     case EOF:
       return;
