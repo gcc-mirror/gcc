@@ -4290,12 +4290,6 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 	       "pointer to a function used in arithmetic");
       size_exp = integer_one_node;
     }
-  else if (TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
-    {
-      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
-	       "pointer to member function used in arithmetic");
-      size_exp = integer_one_node;
-    }
   else
     size_exp = size_in_bytes (TREE_TYPE (result_type));
 
