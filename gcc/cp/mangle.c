@@ -350,6 +350,7 @@ canonicalize_for_substitution (tree node)
       && TYPE_CANONICAL (node) != node
       && TYPE_MAIN_VARIANT (node) != node)
     {
+      tree orig = node;
       /* Here we want to strip the topmost typedef only.
          We need to do that so is_std_substitution can do proper
          name matching.  */
@@ -361,6 +362,9 @@ canonicalize_for_substitution (tree node)
       else
 	node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
 					cp_type_quals (node));
+      if (TREE_CODE (node) == FUNCTION_TYPE
+	  || TREE_CODE (node) == METHOD_TYPE)
+	node = build_ref_qualified_type (node, type_memfn_rqual (orig));
     }
   return node;
 }
@@ -904,9 +908,11 @@ write_unscoped_template_name (const tree decl)
 
 /* Write the nested name, including CV-qualifiers, of DECL.
 
-   <nested-name> ::= N [<CV-qualifiers>] <prefix> <unqualified-name> E
-		 ::= N [<CV-qualifiers>] <template-prefix> <template-args> E
+   <nested-name> ::= N [<CV-qualifiers>] [<ref-qualifier>] <prefix> <unqualified-name> E
+		 ::= N [<CV-qualifiers>] [<ref-qualifier>] <template-prefix> <template-args> E
 
+   <ref-qualifier> ::= R # & ref-qualifier
+                   ::= O # && ref-qualifier
    <CV-qualifiers> ::= [r] [V] [K]  */
 
 static void
@@ -926,6 +932,13 @@ write_nested_name (const tree decl)
 	write_char ('V');
       if (DECL_CONST_MEMFUNC_P (decl))
 	write_char ('K');
+      if (FUNCTION_REF_QUALIFIED (TREE_TYPE (decl)))
+	{
+	  if (FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (decl)))
+	    write_char ('O');
+	  else
+	    write_char ('R');
+	}
     }
 
   /* Is this a template instance?  */
@@ -1880,7 +1893,13 @@ write_type (tree type)
        mangle the unqualified type.  The recursive call is needed here
        since both the qualified and unqualified types are substitution
        candidates.  */
-    write_type (TYPE_MAIN_VARIANT (type));
+    {
+      tree t = TYPE_MAIN_VARIANT (type);
+      if (TREE_CODE (t) == FUNCTION_TYPE
+	  || TREE_CODE (t) == METHOD_TYPE)
+	t = build_ref_qualified_type (t, type_memfn_rqual (type));
+      write_type (t);
+    }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     /* It is important not to use the TYPE_MAIN_VARIANT of TYPE here
        so that the cv-qualification of the element type is available
@@ -1892,6 +1911,9 @@ write_type (tree type)
 
       /* See through any typedefs.  */
       type = TYPE_MAIN_VARIANT (type);
+      if (TREE_CODE (type) == FUNCTION_TYPE
+	  || TREE_CODE (type) == METHOD_TYPE)
+	type = build_ref_qualified_type (type, type_memfn_rqual (type_orig));
 
       /* According to the C++ ABI, some library classes are passed the
 	 same as the scalar type of their single member and use the same
@@ -2327,7 +2349,7 @@ write_builtin_type (tree type)
    METHOD_TYPE.  The return type is mangled before the parameter
    types.
 
-     <function-type> ::= F [Y] <bare-function-type> E   */
+     <function-type> ::= F [Y] <bare-function-type> [<ref-qualifier>] E   */
 
 static void
 write_function_type (const tree type)
@@ -2360,6 +2382,13 @@ write_function_type (const tree type)
      See [dcl.link].  */
   write_bare_function_type (type, /*include_return_type_p=*/1,
 			    /*decl=*/NULL);
+  if (FUNCTION_REF_QUALIFIED (type))
+    {
+      if (FUNCTION_RVALUE_QUALIFIED (type))
+	write_char ('O');
+      else
+	write_char ('R');
+    }
   write_char ('E');
 }
 
