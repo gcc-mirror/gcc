@@ -1,3 +1,9 @@
+2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56815
+	* g++.dg/warn/Wpointer-arith-1.C: New.
+	* g++.dg/gomp/for-19.C: Adjust.
+
 2013-04-03  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/55702
