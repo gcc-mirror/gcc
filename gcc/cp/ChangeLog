@@ -1,3 +1,11 @@
+2013-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56821
+	* mangle.c (write_function_type): Mangle ref-qualifier.
+	(write_nested_name): Likewise.
+	(canonicalize_for_substitution): Preserve ref-qualifier.
+	(write_type): Likewise.
+
 2013-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55951
