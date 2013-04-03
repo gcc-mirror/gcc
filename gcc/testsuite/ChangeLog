@@ -1,5 +1,9 @@
 2013-04-03  Richard Biener  <rguenther@suse.de>
 
+	* g++.dg/vect/slp-pr56812.cc: Use dg-additional-options.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55964
 	* gcc.dg/torture/pr55964-2.c: New testcase.
 

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
-/* { dg-options "-O3 -funroll-loops -fdump-tree-slp-details" } */
+/* { dg-additional-options "-O3 -funroll-loops -fvect-cost-model" } */
 
 class mydata {
 public:
