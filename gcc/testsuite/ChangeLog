@@ -1,3 +1,8 @@
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56812
+	* g++.dg/vect/slp-pr56812.cc: New testcase.
+
 2013-04-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56284

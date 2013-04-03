@@ -1,3 +1,9 @@
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56812
+	* tree-vect-data-refs.c (vect_slp_analyze_data_ref_dependence):
+	DRs of the same interleaving chain are independent.
+
 2013-04-02  Jason Merrill  <jason@redhat.com>
 
 	* gdbinit.in (pbb): Use debug fn.
