@@ -1,6 +1,11 @@
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56539
+	* gcc.c-torture/compile/pr56539.c: New test.
+
 	2013-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56239

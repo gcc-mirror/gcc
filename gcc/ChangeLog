@@ -1,6 +1,13 @@
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56539
+	* tree-tailcall.c (adjust_return_value_with_ops): Use GSI_SAME_STMT
+	instead of GSI_CONTINUE_LINKING as last argument to
+	force_gimple_operand_gsi.  Adjust function comment.
+
 	2013-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56098
