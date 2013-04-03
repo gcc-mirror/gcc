@@ -1400,6 +1400,36 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
   update_stmt (stmt);
 }
 
+/* Expand inline asm that sets some complex SSA_NAMEs.  */
+
+static void
+expand_complex_asm (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  unsigned int i;
+
+  for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+    {
+      tree link = gimple_asm_output_op (stmt, i);
+      tree op = TREE_VALUE (link);
+      if (TREE_CODE (op) == SSA_NAME
+	  && TREE_CODE (TREE_TYPE (op)) == COMPLEX_TYPE)
+	{
+	  tree type = TREE_TYPE (op);
+	  tree inner_type = TREE_TYPE (type);
+	  tree r = build1 (REALPART_EXPR, inner_type, op);
+	  tree i = build1 (IMAGPART_EXPR, inner_type, op);
+	  gimple_seq list = set_component_ssa_name (op, false, r);
+
+	  if (list)
+	    gsi_insert_seq_after (gsi, list, GSI_CONTINUE_LINKING);
+
+	  list = set_component_ssa_name (op, true, i);
+	  if (list)
+	    gsi_insert_seq_after (gsi, list, GSI_CONTINUE_LINKING);
+	}
+    }
+}
 
 /* Process one statement.  If we identify a complex operation, expand it.  */
 
@@ -1411,6 +1441,12 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
   tree ac, ar, ai, bc, br, bi;
   complex_lattice_t al, bl;
   enum tree_code code;
+
+  if (gimple_code (stmt) == GIMPLE_ASM)
+    {
+      expand_complex_asm (gsi);
+      return;
+    }
 
   lhs = gimple_get_lhs (stmt);
   if (!lhs && gimple_code (stmt) != GIMPLE_COND)
