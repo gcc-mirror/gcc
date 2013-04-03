@@ -1,3 +1,8 @@
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56817
+	* g++.dg/torture/pr56817.C: New testcase.
+
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/vect/bb-slp-31.c: New file.

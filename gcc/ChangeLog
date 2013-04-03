@@ -1,3 +1,12 @@
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56817
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely):
+	Split out ...
+	(tree_unroll_loops_completely_1): ... new function to manually
+	walk the loop tree, properly defering outer loops of unrolled
+	loops to later iterations.
+
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-vect-stmts.c (vectorizable_store): Accept BIT_FIELD_REF.
