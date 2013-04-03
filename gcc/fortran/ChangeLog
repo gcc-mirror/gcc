@@ -1,3 +1,11 @@
+2013-04-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56284
+	PR fortran/40881
+	* decl.c (gfc_match_formal_arglist): Warn about alternate-return
+	arguments.
+	* interface.c (check_dummy_characteristics): Return if symbols are NULL.
+
 2013-04-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56500

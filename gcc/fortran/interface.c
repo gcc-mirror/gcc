@@ -1023,6 +1023,9 @@ static gfc_try
 check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 			     bool type_must_agree, char *errmsg, int err_len)
 {
+  if (s1 == NULL || s2 == NULL)
+    return s1 == s2 ? SUCCESS : FAILURE;
+
   /* Check type and rank.  */
   if (type_must_agree && !compare_type_rank (s2, s1))
     {
