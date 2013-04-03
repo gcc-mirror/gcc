@@ -382,6 +382,9 @@ static struct demangle_component **
 d_cv_qualifiers (struct d_info *, struct demangle_component **, int);
 
 static struct demangle_component *
+d_ref_qualifier (struct d_info *, struct demangle_component *);
+
+static struct demangle_component *
 d_function_type (struct d_info *);
 
 static struct demangle_component *
@@ -613,6 +616,12 @@ d_dump (struct demangle_component *dc, int indent)
       break;
     case DEMANGLE_COMPONENT_CONST_THIS:
       printf ("const this\n");
+      break;
+    case DEMANGLE_COMPONENT_REFERENCE_THIS:
+      printf ("reference this\n");
+      break;
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+      printf ("rvalue reference this\n");
       break;
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
       printf ("vendor type qualifier\n");
@@ -893,6 +902,8 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_RESTRICT_THIS:
     case DEMANGLE_COMPONENT_VOLATILE_THIS:
     case DEMANGLE_COMPONENT_CONST_THIS:
+    case DEMANGLE_COMPONENT_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
       break;
@@ -1131,6 +1142,8 @@ has_return_type (struct demangle_component *dc)
     case DEMANGLE_COMPONENT_RESTRICT_THIS:
     case DEMANGLE_COMPONENT_VOLATILE_THIS:
     case DEMANGLE_COMPONENT_CONST_THIS:
+    case DEMANGLE_COMPONENT_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
       return has_return_type (d_left (dc));
     }
 }
@@ -1186,7 +1199,9 @@ d_encoding (struct d_info *di, int top_level)
 	     v2 demangler without DMGL_PARAMS.  */
 	  while (dc->type == DEMANGLE_COMPONENT_RESTRICT_THIS
 		 || dc->type == DEMANGLE_COMPONENT_VOLATILE_THIS
-		 || dc->type == DEMANGLE_COMPONENT_CONST_THIS)
+		 || dc->type == DEMANGLE_COMPONENT_CONST_THIS
+		 || dc->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+		 || dc->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS)
 	    dc = d_left (dc);
 
 	  /* If the top level is a DEMANGLE_COMPONENT_LOCAL_NAME, then
@@ -1200,7 +1215,9 @@ d_encoding (struct d_info *di, int top_level)
 	      dcr = d_right (dc);
 	      while (dcr->type == DEMANGLE_COMPONENT_RESTRICT_THIS
 		     || dcr->type == DEMANGLE_COMPONENT_VOLATILE_THIS
-		     || dcr->type == DEMANGLE_COMPONENT_CONST_THIS)
+		     || dcr->type == DEMANGLE_COMPONENT_CONST_THIS
+		     || dcr->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+		     || dcr->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS)
 		dcr = d_left (dcr);
 	      dc->u.s_binary.right = dcr;
 	    }
@@ -1322,8 +1339,8 @@ d_name (struct d_info *di)
     }
 }
 
-/* <nested-name> ::= N [<CV-qualifiers>] <prefix> <unqualified-name> E
-                 ::= N [<CV-qualifiers>] <template-prefix> <template-args> E
+/* <nested-name> ::= N [<CV-qualifiers>] [<ref-qualifier>] <prefix> <unqualified-name> E
+                 ::= N [<CV-qualifiers>] [<ref-qualifier>] <template-prefix> <template-args> E
 */
 
 static struct demangle_component *
@@ -1331,6 +1348,7 @@ d_nested_name (struct d_info *di)
 {
   struct demangle_component *ret;
   struct demangle_component **pret;
+  struct demangle_component *rqual;
 
   if (! d_check_char (di, 'N'))
     return NULL;
@@ -1339,9 +1357,19 @@ d_nested_name (struct d_info *di)
   if (pret == NULL)
     return NULL;
 
+  /* Parse the ref-qualifier now and then attach it
+     once we have something to attach it to.  */
+  rqual = d_ref_qualifier (di, NULL);
+
   *pret = d_prefix (di);
   if (*pret == NULL)
     return NULL;
+
+  if (rqual)
+    {
+      d_left (rqual) = ret;
+      ret = rqual;
+    }
 
   if (! d_check_char (di, 'E'))
     return NULL;
@@ -2171,7 +2199,19 @@ cplus_demangle_type (struct d_info *di)
       if (pret == NULL)
 	return NULL;
       *pret = cplus_demangle_type (di);
-      if (! *pret || ! d_add_substitution (di, ret))
+      if (! *pret)
+	return NULL;
+      if ((*pret)->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS
+	  || (*pret)->type == DEMANGLE_COMPONENT_REFERENCE_THIS)
+	{
+	  /* Move the ref-qualifier outside the cv-qualifiers so that
+	     they are printed in the right order.  */
+	  struct demangle_component *fn = d_left (*pret);
+	  d_left (*pret) = ret;
+	  ret = *pret;
+	  *pret = fn;
+	}
+      if (! d_add_substitution (di, ret))
 	return NULL;
       return ret;
     }
@@ -2474,7 +2514,38 @@ d_cv_qualifiers (struct d_info *di,
   return pret;
 }
 
-/* <function-type> ::= F [Y] <bare-function-type> E  */
+/* <ref-qualifier> ::= R
+                   ::= O */
+
+static struct demangle_component *
+d_ref_qualifier (struct d_info *di, struct demangle_component *sub)
+{
+  struct demangle_component *ret = sub;
+  char peek;
+
+  peek = d_peek_char (di);
+  if (peek == 'R' || peek == 'O')
+    {
+      enum demangle_component_type t;
+      if (peek == 'R')
+	{
+	  t = DEMANGLE_COMPONENT_REFERENCE_THIS;
+	  di->expansion += sizeof "&";
+	}
+      else
+	{
+	  t = DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS;
+	  di->expansion += sizeof "&&";
+	}
+      d_advance (di, 1);
+
+      ret = d_make_comp (di, t, ret, NULL);
+    }
+
+  return ret;
+}
+
+/* <function-type> ::= F [Y] <bare-function-type> [<ref-qualifier>] E  */
 
 static struct demangle_component *
 d_function_type (struct d_info *di)
@@ -2490,6 +2561,8 @@ d_function_type (struct d_info *di)
       d_advance (di, 1);
     }
   ret = d_bare_function_type (di, 1);
+  ret = d_ref_qualifier (di, ret);
+
   if (! d_check_char (di, 'E'))
     return NULL;
   return ret;
@@ -2511,6 +2584,10 @@ d_parmlist (struct d_info *di)
 
       char peek = d_peek_char (di);
       if (peek == '\0' || peek == 'E' || peek == '.')
+	break;
+      if ((peek == 'R' || peek == 'O')
+	  && d_peek_next_char (di) == 'E')
+	/* Function ref-qualifier, not a ref prefix for a parameter type.  */
 	break;
       type = cplus_demangle_type (di);
       if (type == NULL)
@@ -2691,6 +2768,18 @@ d_pointer_to_member_type (struct d_info *di)
   *pmem = cplus_demangle_type (di);
   if (*pmem == NULL)
     return NULL;
+
+  if (pmem != &mem
+      && ((*pmem)->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS
+	  || (*pmem)->type == DEMANGLE_COMPONENT_REFERENCE_THIS))
+    {
+      /* Move the ref-qualifier outside the cv-qualifiers so that
+	 they are printed in the right order.  */
+      struct demangle_component *fn = d_left (*pmem);
+      d_left (*pmem) = mem;
+      mem = *pmem;
+      *pmem = fn;
+    }
 
   if (pmem != &mem && (*pmem)->type != DEMANGLE_COMPONENT_FUNCTION_TYPE)
     {
@@ -3923,7 +4012,9 @@ d_print_comp (struct d_print_info *dpi, int options,
 
 	    if (typed_name->type != DEMANGLE_COMPONENT_RESTRICT_THIS
 		&& typed_name->type != DEMANGLE_COMPONENT_VOLATILE_THIS
-		&& typed_name->type != DEMANGLE_COMPONENT_CONST_THIS)
+		&& typed_name->type != DEMANGLE_COMPONENT_CONST_THIS
+		&& typed_name->type != DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS
+		&& typed_name->type != DEMANGLE_COMPONENT_REFERENCE_THIS)
 	      break;
 
 	    typed_name = d_left (typed_name);
@@ -3957,7 +4048,10 @@ d_print_comp (struct d_print_info *dpi, int options,
 	      local_name = local_name->u.s_unary_num.sub;
 	    while (local_name->type == DEMANGLE_COMPONENT_RESTRICT_THIS
 		   || local_name->type == DEMANGLE_COMPONENT_VOLATILE_THIS
-		   || local_name->type == DEMANGLE_COMPONENT_CONST_THIS)
+		   || local_name->type == DEMANGLE_COMPONENT_CONST_THIS
+		   || local_name->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+		   || (local_name->type
+		       == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS))
 	      {
 		if (i >= sizeof adpm / sizeof adpm[0])
 		  {
@@ -4234,6 +4328,8 @@ d_print_comp (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_RESTRICT_THIS:
     case DEMANGLE_COMPONENT_VOLATILE_THIS:
     case DEMANGLE_COMPONENT_CONST_THIS:
+    case DEMANGLE_COMPONENT_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
     case DEMANGLE_COMPONENT_POINTER:
     case DEMANGLE_COMPONENT_COMPLEX:
@@ -4906,7 +5002,10 @@ d_print_mod_list (struct d_print_info *dpi, int options,
       || (! suffix
 	  && (mods->mod->type == DEMANGLE_COMPONENT_RESTRICT_THIS
 	      || mods->mod->type == DEMANGLE_COMPONENT_VOLATILE_THIS
-	      || mods->mod->type == DEMANGLE_COMPONENT_CONST_THIS)))
+	      || mods->mod->type == DEMANGLE_COMPONENT_CONST_THIS
+	      || mods->mod->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+	      || (mods->mod->type
+		  == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS))))
     {
       d_print_mod_list (dpi, options, mods->next, suffix);
       return;
@@ -4961,7 +5060,9 @@ d_print_mod_list (struct d_print_info *dpi, int options,
 
       while (dc->type == DEMANGLE_COMPONENT_RESTRICT_THIS
 	     || dc->type == DEMANGLE_COMPONENT_VOLATILE_THIS
-	     || dc->type == DEMANGLE_COMPONENT_CONST_THIS)
+	     || dc->type == DEMANGLE_COMPONENT_CONST_THIS
+	     || dc->type == DEMANGLE_COMPONENT_REFERENCE_THIS
+	     || dc->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS)
 	dc = d_left (dc);
 
       d_print_comp (dpi, options, dc);
@@ -5006,9 +5107,14 @@ d_print_mod (struct d_print_info *dpi, int options,
       if ((options & DMGL_JAVA) == 0)
 	d_append_char (dpi, '*');
       return;
+    case DEMANGLE_COMPONENT_REFERENCE_THIS:
+      /* For the ref-qualifier, put a space before the &.  */
+      d_append_char (dpi, ' ');
     case DEMANGLE_COMPONENT_REFERENCE:
       d_append_char (dpi, '&');
       return;
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+      d_append_char (dpi, ' ');
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
       d_append_string (dpi, "&&");
       return;
@@ -5080,6 +5186,8 @@ d_print_function_type (struct d_print_info *dpi, int options,
 	case DEMANGLE_COMPONENT_RESTRICT_THIS:
 	case DEMANGLE_COMPONENT_VOLATILE_THIS:
 	case DEMANGLE_COMPONENT_CONST_THIS:
+	case DEMANGLE_COMPONENT_REFERENCE_THIS:
+	case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
 	  break;
 	default:
 	  break;
@@ -5600,14 +5708,17 @@ is_ctor_or_dtor (const char *mangled,
       {
 	switch (dc->type)
 	  {
+	    /* These cannot appear on a constructor or destructor.  */
+	  case DEMANGLE_COMPONENT_RESTRICT_THIS:
+	  case DEMANGLE_COMPONENT_VOLATILE_THIS:
+	  case DEMANGLE_COMPONENT_CONST_THIS:
+	  case DEMANGLE_COMPONENT_REFERENCE_THIS:
+	  case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
 	  default:
 	    dc = NULL;
 	    break;
 	  case DEMANGLE_COMPONENT_TYPED_NAME:
 	  case DEMANGLE_COMPONENT_TEMPLATE:
-	  case DEMANGLE_COMPONENT_RESTRICT_THIS:
-	  case DEMANGLE_COMPONENT_VOLATILE_THIS:
-	  case DEMANGLE_COMPONENT_CONST_THIS:
 	    dc = d_left (dc);
 	    break;
 	  case DEMANGLE_COMPONENT_QUAL_NAME:

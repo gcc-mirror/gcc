@@ -1,3 +1,17 @@
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	Demangle C++11 ref-qualifier.
+	* cp-demangle.c (d_ref_qualifier): New.
+	(d_nested_name, d_function_type): Use it.
+	(d_parmlist): Don't get confused by a ref-qualifier.
+	(cplus_demangle_type): Reorder ref-qualifier.
+	(d_pointer_to_member_type): Likewise.
+	(d_dump): Handle DEMANGLE_COMPONENT_REFERENCE_THIS and
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS.
+	(d_make_comp, has_return_type, d_encoding): Likewise.
+	(d_print_comp, d_print_mod_list, d_print_mod): Likewise.
+	(d_print_function_type, is_ctor_or_dtor): Likewise.
+
 2013-03-22  Release Manager
 
 	* GCC 4.8.0 released.
