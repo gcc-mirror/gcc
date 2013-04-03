@@ -1978,13 +1978,22 @@ static struct spu_bb_info *spu_bb_info;
 /* Emit a nop for INSN such that the two will dual issue.  This assumes
    INSN is 8-byte aligned.  When INSN is inline asm we emit an lnop.
    We check for TImode to handle a MULTI1 insn which has dual issued its
-   first instruction.  get_pipe returns -1 for MULTI0, inline asm, or
-   ADDR_VEC insns. */
+   first instruction.  get_pipe returns -1 for MULTI0 or inline asm.  */
 static void
 emit_nop_for_insn (rtx insn)
 {
   int p;
   rtx new_insn;
+
+  /* We need to handle JUMP_TABLE_DATA separately.  */
+  if (JUMP_TABLE_DATA_P (insn))
+    {
+      new_insn = emit_insn_after (gen_lnop(), insn);
+      recog_memoized (new_insn);
+      INSN_LOCATION (new_insn) = UNKNOWN_LOCATION;
+      return;
+    }
+
   p = get_pipe (insn);
   if ((CALL_P (insn) || JUMP_P (insn)) && SCHED_ON_EVEN_P (insn))
     new_insn = emit_insn_after (gen_lnop (), insn);
