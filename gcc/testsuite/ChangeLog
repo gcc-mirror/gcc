@@ -1,3 +1,8 @@
+2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56809
+	* gcc.dg/pr56809.c: New testcase.
+
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/56819
