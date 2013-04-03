@@ -1,3 +1,13 @@
+2013-04-03  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* hwint.c (sext_hwi, zext_hwi): New functions.
+	* hwint.h (HOST_BITS_PER_HALF_WIDE_INT, HOST_HALF_WIDE_INT,
+	HOST_HALF_WIDE_INT_PRINT, HOST_HALF_WIDE_INT_PRINT_C,
+	HOST_HALF_WIDE_INT_PRINT_DEC, HOST_HALF_WIDE_INT_PRINT_DEC_C,
+	HOST_HALF_WIDE_INT_PRINT_UNSIGNED, HOST_HALF_WIDE_INT_PRINT_HEX,
+	HOST_HALF_WIDE_INT_PRINT_HEX_PURE): New symbols.
+	(sext_hwi, zext_hwi): New functions.
+	
 2013-04-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/56799
