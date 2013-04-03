@@ -9329,7 +9329,11 @@ execute_vrp (void)
     }
 
   if (to_remove_edges.length () > 0)
-    free_dominance_info (CDI_DOMINATORS);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      if (current_loops)
+	loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   to_remove_edges.release ();
   to_update_switch_stmts.release ();

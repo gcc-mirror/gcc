@@ -5213,7 +5213,8 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	  if (found_si > count_si)
 	    count_si = found_si;
 	}
-      else if (JUMP_TABLE_DATA_P (from))
+      else if (JUMP_TABLE_DATA_P (from)
+	       && GET_CODE (PATTERN (from)) == ADDR_DIFF_VEC)
 	{
 	  if ((num_mova > 1 && GET_MODE (prev_nonnote_insn (from)) == VOIDmode)
 	      || (num_mova
@@ -5247,7 +5248,7 @@ find_barrier (int num_mova, rtx mova, rtx from)
 
       /* There is a possibility that a bf is transformed into a bf/s by the
 	 delay slot scheduler.  */
-      if (JUMP_P (from) && !JUMP_TABLE_DATA_P (from) 
+      if (JUMP_P (from)
 	  && get_attr_type (from) == TYPE_CBRANCH
 	  && ! sequence_insn_p (from))
 	inc += 2;
@@ -5799,7 +5800,7 @@ fixup_addr_diff_vecs (rtx first)
     {
       rtx vec_lab, pat, prev, prevpat, x, braf_label;
 
-      if (!JUMP_P (insn)
+      if (! JUMP_TABLE_DATA_P (insn)
 	  || GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
 	continue;
       pat = PATTERN (insn);
@@ -5973,7 +5974,6 @@ sh_loop_align (rtx label)
 
   if (! next
       || ! INSN_P (next)
-      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC
       || recog_memoized (next) == CODE_FOR_consttable_2)
     return 0;
 
@@ -6233,7 +6233,7 @@ sh_reorg (void)
 	      num_mova = 0;
 	    }
 	}
-      else if (JUMP_P (insn)
+      else if (JUMP_TABLE_DATA_P (insn)
 	       && GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 	       && num_mova
 	       /* ??? loop invariant motion can also move a mova out of a
@@ -6494,10 +6494,7 @@ split_branches (rtx first)
 	   so transform it into a note.  */
 	SET_INSN_DELETED (insn);
       }
-    else if (JUMP_P (insn)
-	     /* Don't mess with ADDR_DIFF_VEC */
-	     && (GET_CODE (PATTERN (insn)) == SET
-		 || GET_CODE (PATTERN (insn)) == RETURN))
+    else if (JUMP_P (insn))
       {
 	enum attr_type type = get_attr_type (insn);
 	if (type == TYPE_CBRANCH)
@@ -10123,8 +10120,7 @@ sh_insn_length_adjustment (rtx insn)
   if (((NONJUMP_INSN_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
 	&& GET_CODE (PATTERN (insn)) != CLOBBER)
-       || CALL_P (insn)
-       || (JUMP_P (insn) && !JUMP_TABLE_DATA_P (insn)))
+       || CALL_P (insn) || JUMP_P (insn))
       && ! sequence_insn_p (insn)
       && get_attr_needs_delay_slot (insn) == NEEDS_DELAY_SLOT_YES)
     return 2;
@@ -10132,7 +10128,7 @@ sh_insn_length_adjustment (rtx insn)
   /* SH2e has a bug that prevents the use of annulled branches, so if
      the delay slot is not filled, we'll have to put a NOP in it.  */
   if (sh_cpu_attr == CPU_SH2E
-      && JUMP_P (insn) && !JUMP_TABLE_DATA_P (insn)
+      && JUMP_P (insn)
       && get_attr_type (insn) == TYPE_CBRANCH
       && ! sequence_insn_p (insn))
     return 2;

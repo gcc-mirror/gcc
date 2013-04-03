@@ -27,6 +27,10 @@ along with GCC; see the file COPYING3.  If not see
 # define NAMED_KINDARRAY(a,b,c,d)
 #endif
 
+#ifndef NAMED_SUBROUTINE
+# define NAMED_SUBROUTINE(a,b,c,d)
+#endif
+
 #ifndef NAMED_FUNCTION
 # define NAMED_FUNCTION(a,b,c,d)
 #endif
@@ -120,4 +124,5 @@ NAMED_DERIVED_TYPE (ISOFORTRAN_LOCK_TYPE, "lock_type", \
 #undef NAMED_INTCST
 #undef NAMED_KINDARRAY
 #undef NAMED_FUNCTION
+#undef NAMED_SUBROUTINE
 #undef NAMED_DERIVED_TYPE

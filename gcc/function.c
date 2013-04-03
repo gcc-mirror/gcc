@@ -1915,10 +1915,8 @@ instantiate_virtual_regs (void)
       {
 	/* These patterns in the instruction stream can never be recognized.
 	   Fortunately, they shouldn't contain virtual registers either.  */
-	if (GET_CODE (PATTERN (insn)) == USE
+        if (GET_CODE (PATTERN (insn)) == USE
 	    || GET_CODE (PATTERN (insn)) == CLOBBER
-	    || GET_CODE (PATTERN (insn)) == ADDR_VEC
-	    || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
 	  continue;
 	else if (DEBUG_INSN_P (insn))
@@ -5609,12 +5607,17 @@ prepare_shrink_wrap (basic_block entry_block)
 static void
 emit_use_return_register_into_block (basic_block bb)
 {
-  rtx seq;
+  rtx seq, insn;
   start_sequence ();
   use_return_register ();
   seq = get_insns ();
   end_sequence ();
-  emit_insn_before (seq, BB_END (bb));
+  insn = BB_END (bb);
+#ifdef HAVE_cc0
+  if (reg_mentioned_p (cc0_rtx, PATTERN (insn)))
+    insn = prev_cc0_setter (insn);
+#endif
+  emit_insn_before (seq, insn);
 }
 
 

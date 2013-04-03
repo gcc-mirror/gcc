@@ -122,6 +122,89 @@
 		    ? M16_REG_P (REGNO (op))
 		    : GP_REG_P (REGNO (op))")))
 
+(define_predicate "lwsp_swsp_operand"
+  (and (match_code "mem")
+       (match_test "lwsp_swsp_address_p (XEXP (op, 0), mode)")))
+
+(define_predicate "lw16_sw16_operand"
+  (and (match_code "mem")
+       (match_test "m16_based_address_p (XEXP (op, 0), mode, uw4_operand)")))
+
+(define_predicate "lhu16_sh16_operand"
+  (and (match_code "mem")
+       (match_test "m16_based_address_p (XEXP (op, 0), mode, uh4_operand)")))
+
+(define_predicate "lbu16_operand"
+  (and (match_code "mem")
+       (match_test "m16_based_address_p (XEXP (op, 0), mode, db4_operand)")))
+
+(define_predicate "sb16_operand"
+  (and (match_code "mem")
+       (match_test "m16_based_address_p (XEXP (op, 0), mode, ub4_operand)")))
+
+(define_predicate "db4_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op) + 1, 4, 0)")))
+
+(define_predicate "db7_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op) + 1, 7, 0)")))
+
+(define_predicate "ib3_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op) - 1, 3, 0)")))
+
+(define_predicate "sb4_operand"
+  (and (match_code "const_int")
+       (match_test "mips_signed_immediate_p (INTVAL (op), 4, 0)")))
+
+(define_predicate "ub4_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op), 4, 0)")))
+
+(define_predicate "uh4_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op), 4, 1)")))
+
+(define_predicate "uw4_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op), 4, 2)")))
+
+(define_predicate "uw5_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op), 5, 2)")))
+
+(define_predicate "uw6_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op), 6, 2)")))
+
+(define_predicate "addiur2_operand"
+  (and (match_code "const_int")
+	(ior (match_test "INTVAL (op) == -1")
+	     (match_test "INTVAL (op) == 1")
+	     (match_test "INTVAL (op) == 4")
+	     (match_test "INTVAL (op) == 8")
+	     (match_test "INTVAL (op) == 12")
+	     (match_test "INTVAL (op) == 16")
+	     (match_test "INTVAL (op) == 20")
+	     (match_test "INTVAL (op) == 24"))))
+
+(define_predicate "addiusp_operand"
+  (and (match_code "const_int")
+       (ior (match_test "(IN_RANGE (INTVAL (op), 2, 257))")
+	    (match_test "(IN_RANGE (INTVAL (op), -258, -3))"))))
+
+(define_predicate "andi16_operand"
+  (and (match_code "const_int")
+	(ior (match_test "IN_RANGE (INTVAL (op), 1, 4)")
+	     (match_test "IN_RANGE (INTVAL (op), 7, 8)")
+	     (match_test "IN_RANGE (INTVAL (op), 15, 16)")
+	     (match_test "IN_RANGE (INTVAL (op), 31, 32)")
+	     (match_test "IN_RANGE (INTVAL (op), 63, 64)")
+	     (match_test "INTVAL (op) == 255")
+	     (match_test "INTVAL (op) == 32768")
+	     (match_test "INTVAL (op) == 65535"))))
+
 (define_predicate "movep_src_register"
   (and (match_code "reg")
        (ior (match_test ("IN_RANGE (REGNO (op), 2, 3)"))

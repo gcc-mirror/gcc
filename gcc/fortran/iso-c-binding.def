@@ -43,6 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 # define NAMED_FUNCTION(a,b,c,d)
 #endif
 
+#ifndef NAMED_SUBROUTINE
+# define NAMED_SUBROUTINE(a,b,c,d)
+#endif
+
 /* The arguments to NAMED_*CST are:
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
@@ -165,25 +169,25 @@ DERIVED_TYPE (ISOCBINDING_FUNPTR, "c_funptr", \
 DERIVED_TYPE (ISOCBINDING_NULL_FUNPTR, "c_null_funptr", \
               get_int_kind_from_node (ptr_type_node))
 
-  
-#ifndef PROCEDURE
-# define PROCEDURE(a,b) 
-#endif
-
-PROCEDURE (ISOCBINDING_F_POINTER, "c_f_pointer")
-PROCEDURE (ISOCBINDING_ASSOCIATED, "c_associated")
-PROCEDURE (ISOCBINDING_LOC, "c_loc")
-PROCEDURE (ISOCBINDING_FUNLOC, "c_funloc")
-PROCEDURE (ISOCBINDING_F_PROCPOINTER, "c_f_procpointer")
-
-/* The arguments to NAMED_FUNCTIONS are:
+/* The arguments to NAMED_FUNCTIONS and NAMED_SUBROUTINES are:
      -- the ISYM
      -- the symbol name in the module, as seen by Fortran code
      -- the Fortran standard  */
 
+NAMED_SUBROUTINE (ISOCBINDING_F_POINTER, "c_f_pointer",
+                  GFC_ISYM_C_F_POINTER, GFC_STD_F2003)
+NAMED_SUBROUTINE (ISOCBINDING_F_PROCPOINTER, "c_f_procpointer",
+                  GFC_ISYM_C_F_PROCPOINTER, GFC_STD_F2003)
+
+NAMED_FUNCTION (ISOCBINDING_ASSOCIATED, "c_associated",
+		GFC_ISYM_C_ASSOCIATED, GFC_STD_F2003)
+NAMED_FUNCTION (ISOCBINDING_FUNLOC, "c_funloc",
+                GFC_ISYM_C_FUNLOC, GFC_STD_F2003)
+NAMED_FUNCTION (ISOCBINDING_LOC, "c_loc",
+                GFC_ISYM_C_LOC, GFC_STD_F2003)
+
 NAMED_FUNCTION (ISOCBINDING_C_SIZEOF, "c_sizeof", \
                 GFC_ISYM_C_SIZEOF, GFC_STD_F2008)
-
 
 #undef NAMED_INTCST
 #undef NAMED_REALCST
@@ -192,5 +196,5 @@ NAMED_FUNCTION (ISOCBINDING_C_SIZEOF, "c_sizeof", \
 #undef NAMED_CHARCST
 #undef NAMED_CHARKNDCST
 #undef DERIVED_TYPE
-#undef PROCEDURE
 #undef NAMED_FUNCTION
+#undef NAMED_SUBROUTINE

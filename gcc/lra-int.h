@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.	If not see
 #include "recog.h"
 #include "insn-attr.h"
 #include "insn-codes.h"
+#include "insn-config.h"
+#include "regs.h"
 
 #define lra_assert(c) gcc_checking_assert (c)
 
@@ -350,6 +352,8 @@ extern lra_live_range_t lra_merge_live_ranges (lra_live_range_t,
 extern bool lra_intersected_live_ranges_p (lra_live_range_t,
 					   lra_live_range_t);
 extern void lra_print_live_range_list (FILE *, lra_live_range_t);
+extern void debug (lra_live_range &ref);
+extern void debug (lra_live_range *ptr);
 extern void lra_debug_live_range_list (lra_live_range_t);
 extern void lra_debug_pseudo_live_ranges (int);
 extern void lra_debug_live_ranges (void);

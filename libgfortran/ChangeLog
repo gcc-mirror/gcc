@@ -1,3 +1,52 @@
+2013-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56660
+	* io/list_read.c (nml_read_obj): Do not reset the read error flag
+	inside nml_read_obj. If the read error flag is found set just exit.
+	Fix some whitespace on comments.
+	(nml_read_obj_data): Reset the read error flag before the first call
+	to nml_read_object.
+
+2013-03-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56786
+	* io/list_read.c (nml_parse_qualifier): Remove spurious next_char call
+	when checking for EOF. Use error return mechanism when EOF detected.
+	Do not return false unless parse_err_msg and parse_err_msg_size have
+	been set. Use hit_eof.
+	(nml_get_obj_data): Likewise use the correct error mechanism.
+	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
+	mode.
+	
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format_list): Also cache FMT_STRING.
+	(parse_format): Update call.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format): With caching, copy
+	dtp->format string.
+	(save_parsed_format): Use dtp->format directy without
+	copying.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* io/list_read.c (nml_query): Only abort when
+	an error occured.
+	(namelist_read): Add goto instead of falling through.
+
+2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/52512
+	* io/list_read.c (nml_parse_qualifier): To check for a derived type
+	don't use the namelist head element type but the current element type.
+	(nml_get_obj_data): Add current namelist element type to
+	nml_parse_qualifier call.
+
 2013-03-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56696

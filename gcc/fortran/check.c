@@ -693,14 +693,19 @@ gfc_var_strlen (const gfc_expr *a)
     {
       long start_a, end_a;
 
-      if (ra->u.ss.start->expr_type == EXPR_CONSTANT
+      if (!ra->u.ss.end)
+	return -1;
+
+      if ((!ra->u.ss.start || ra->u.ss.start->expr_type == EXPR_CONSTANT)
 	  && ra->u.ss.end->expr_type == EXPR_CONSTANT)
 	{
-	  start_a = mpz_get_si (ra->u.ss.start->value.integer);
+	  start_a = ra->u.ss.start ? mpz_get_si (ra->u.ss.start->value.integer)
+				   : 1;
 	  end_a = mpz_get_si (ra->u.ss.end->value.integer);
-	  return end_a - start_a + 1;
+	  return (end_a < start_a) ? 0 : end_a - start_a + 1;
 	}
-      else if (gfc_dep_compare_expr (ra->u.ss.start, ra->u.ss.end) == 0)
+      else if (ra->u.ss.start
+	       && gfc_dep_compare_expr (ra->u.ss.start, ra->u.ss.end) == 0)
 	return 1;
       else
 	return -1;
@@ -3612,26 +3617,433 @@ gfc_check_sizeof (gfc_expr *arg)
 {
   if (arg->ts.type == BT_PROCEDURE)
     {
-      gfc_error ("'%s' argument of '%s' intrinsic at %L may not be a procedure",
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be a procedure",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where);
       return FAILURE;
     }
+
+  if (arg->ts.type == BT_ASSUMED)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be TYPE(*)",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &arg->where);
+      return FAILURE;
+    }
+
+  if (arg->rank && arg->expr_type == EXPR_VARIABLE
+      && arg->symtree->n.sym->as != NULL
+      && arg->symtree->n.sym->as->type == AS_ASSUMED_SIZE && arg->ref
+      && arg->ref->type == REF_ARRAY && arg->ref->u.ar.type == AR_FULL)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be an "
+		 "assumed-size array", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &arg->where);
+      return FAILURE;
+    }
+
   return SUCCESS;
+}
+
+
+/* Check whether an expression is interoperable.  When returning false,
+   msg is set to a string telling why the expression is not interoperable,
+   otherwise, it is set to NULL.  The msg string can be used in diagnostics.
+   If all_len_okay is true, all length-type parameters (for character) are
+   allowed.  Required for C_LOC (cf. Fortran 2003corr5 or Fortran 2008).  */
+
+static bool
+is_c_interoperable (gfc_expr *expr, const char **msg, bool all_len_okay)
+{
+  *msg = NULL;
+
+  if (expr->ts.type == BT_CLASS)
+    {
+      *msg = "Expression is polymorphic";
+      return false;
+    }
+
+  if (expr->ts.type == BT_DERIVED && !expr->ts.u.derived->attr.is_bind_c
+      && !expr->ts.u.derived->ts.is_iso_c)
+    {
+      *msg = "Expression is a noninteroperable derived type";
+      return false;
+    }
+
+  if (expr->ts.type == BT_PROCEDURE)
+    {
+      *msg = "Procedure unexpected as argument";
+      return false;
+    }
+
+  if (gfc_notification_std (GFC_STD_GNU) && expr->ts.type == BT_LOGICAL)
+    {
+      int i;
+      for (i = 0; gfc_logical_kinds[i].kind; i++)
+        if (gfc_logical_kinds[i].kind == expr->ts.kind)
+          return true;
+      *msg = "Extension to use a non-C_Bool-kind LOGICAL";
+      return false;
+    }
+
+  if (gfc_notification_std (GFC_STD_GNU) && expr->ts.type == BT_CHARACTER
+      && expr->ts.kind != 1)
+    {
+      *msg = "Extension to use a non-C_CHAR-kind CHARACTER";
+      return false;
+    }
+
+  if (expr->ts.type == BT_CHARACTER) {
+    if (expr->ts.deferred)
+      {
+	/* TS 29113 allows deferred-length strings as dummy arguments,
+	   but it is not an interoperable type. */
+	*msg = "Expression shall not be a deferred-length string";
+	return false;
+      }
+
+    if (expr->ts.u.cl && expr->ts.u.cl->length
+	&& gfc_simplify_expr (expr, 0) == FAILURE)
+      gfc_internal_error ("is_c_interoperable(): gfc_simplify_expr failed");
+
+    if (!all_len_okay && expr->ts.u.cl
+	&& (!expr->ts.u.cl->length
+	    || expr->ts.u.cl->length->expr_type != EXPR_CONSTANT
+	    || mpz_cmp_si (expr->ts.u.cl->length->value.integer, 1) != 0))
+      {
+	*msg = "Type shall have a character length of 1";
+	return false;
+      }
+    }
+
+  /* Note: The following checks are about interoperatable variables, Fortran
+     15.3.5/15.3.6.  In intrinsics like C_LOC or in procedure interface, more
+     is allowed, e.g. assumed-shape arrays with TS 29113.  */
+
+  if (gfc_is_coarray (expr))
+    {
+      *msg = "Coarrays are not interoperable";
+      return false;
+    }
+
+  if (expr->rank > 0 && expr->expr_type != EXPR_ARRAY)
+    {
+      gfc_array_ref *ar = gfc_find_array_ref (expr);
+      if (ar->type != AR_FULL)
+	{
+	  *msg = "Only whole-arrays are interoperable";
+	  return false;
+	}
+      if (ar->as->type != AS_EXPLICIT && ar->as->type != AS_ASSUMED_SIZE)
+	{
+	  *msg = "Only explicit-size and assumed-size arrays are interoperable";
+	  return false;
+	}
+    }
+
+  return true;
 }
 
 
 gfc_try
 gfc_check_c_sizeof (gfc_expr *arg)
 {
-  if (gfc_verify_c_interop (&arg->ts) != SUCCESS)
+  const char *msg;
+
+  if (is_c_interoperable (arg, &msg, false) != SUCCESS)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be an "
-		 "interoperable data entity",
+		 "interoperable data entity: %s",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &arg->where, msg);
+      return FAILURE;
+    }
+
+  if (arg->ts.type == BT_ASSUMED)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "TYPE(*)",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
 		 &arg->where);
       return FAILURE;
     }
+
+  if (arg->rank && arg->expr_type == EXPR_VARIABLE
+      && arg->symtree->n.sym->as != NULL
+      && arg->symtree->n.sym->as->type == AS_ASSUMED_SIZE && arg->ref
+      && arg->ref->type == REF_ARRAY && arg->ref->u.ar.type == AR_FULL)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be an "
+		 "assumed-size array", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &arg->where);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_c_associated (gfc_expr *c_ptr_1, gfc_expr *c_ptr_2)
+{
+  if (c_ptr_1->ts.type != BT_DERIVED
+      || c_ptr_1->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
+      || (c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR
+	  && c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_FUNPTR))
+    {
+      gfc_error ("Argument C_PTR_1 at %L to C_ASSOCIATED shall have the "
+		 "type TYPE(C_PTR) or TYPE(C_FUNPTR)", &c_ptr_1->where);
+      return FAILURE;
+    }
+
+  if (scalar_check (c_ptr_1, 0) == FAILURE)
+    return FAILURE;
+
+  if (c_ptr_2
+      && (c_ptr_2->ts.type != BT_DERIVED
+	  || c_ptr_2->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
+	  || (c_ptr_1->ts.u.derived->intmod_sym_id
+	      != c_ptr_2->ts.u.derived->intmod_sym_id)))
+    {
+      gfc_error ("Argument C_PTR_2 at %L to C_ASSOCIATED shall have the "
+		 "same type as C_PTR_1: %s instead of %s", &c_ptr_1->where,
+		 gfc_typename (&c_ptr_1->ts),
+		 gfc_typename (&c_ptr_2->ts));
+      return FAILURE;
+    }
+
+  if (c_ptr_2 && scalar_check (c_ptr_2, 1) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
+{
+  symbol_attribute attr;
+  const char *msg;
+
+  if (cptr->ts.type != BT_DERIVED
+      || cptr->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
+      || cptr->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR)
+    {
+      gfc_error ("Argument CPTR at %L to C_F_POINTER shall have the "
+		 "type TYPE(C_PTR)", &cptr->where);
+      return FAILURE;
+    }
+
+  if (scalar_check (cptr, 0) == FAILURE)
+    return FAILURE;
+
+  attr = gfc_expr_attr (fptr);
+
+  if (!attr.pointer)
+    {
+      gfc_error ("Argument FPTR at %L to C_F_POINTER must be a pointer",
+		 &fptr->where);
+      return FAILURE;
+    }
+
+  if (fptr->ts.type == BT_CLASS)
+    {
+      gfc_error ("FPTR argument at %L to C_F_POINTER shall not be polymorphic",
+		 &fptr->where);
+      return FAILURE;
+    }
+
+  if (gfc_is_coindexed (fptr))
+    {
+      gfc_error ("Argument FPTR at %L to C_F_POINTER shall not be "
+		 "coindexed", &fptr->where);
+      return FAILURE;
+    }
+
+  if (fptr->rank == 0 && shape)
+    {
+      gfc_error ("Unexpected SHAPE argument at %L to C_F_POINTER with scalar "
+		 "FPTR", &fptr->where);
+      return FAILURE;
+    }
+  else if (fptr->rank && !shape)
+    {
+      gfc_error ("Expected SHAPE argument to C_F_POINTER with array "
+		 "FPTR at %L", &fptr->where);
+      return FAILURE;
+    }
+
+  if (shape && rank_check (shape, 2, 1) == FAILURE)
+    return FAILURE;
+
+  if (shape && type_check (shape, 2, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (shape)
+    {
+      mpz_t size;
+
+      if (gfc_array_size (shape, &size) == SUCCESS
+	  && mpz_cmp_ui (size, fptr->rank) != 0)
+	{
+	  mpz_clear (size);
+	  gfc_error ("SHAPE argument at %L to C_F_POINTER must have the same "
+		     "size as the RANK of FPTR", &shape->where);
+	  return FAILURE;
+	}
+      mpz_clear (size);
+    }
+
+  if (fptr->ts.type == BT_CLASS)
+    {
+      gfc_error ("Polymorphic FPTR at %L to C_F_POINTER", &fptr->where);
+      return FAILURE;
+    }
+
+  if (!is_c_interoperable (fptr, &msg, false) && fptr->rank)
+    return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable array FPTR "
+			   "at %L to C_F_POINTER: %s", &fptr->where, msg);
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_c_f_procpointer (gfc_expr *cptr, gfc_expr *fptr)
+{
+  symbol_attribute attr;
+
+  if (cptr->ts.type != BT_DERIVED
+      || cptr->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
+      || cptr->ts.u.derived->intmod_sym_id != ISOCBINDING_FUNPTR)
+    {
+      gfc_error ("Argument CPTR at %L to C_F_PROCPOINTER shall have the "
+		 "type TYPE(C_FUNPTR)", &cptr->where);
+      return FAILURE;
+    }
+
+  if (scalar_check (cptr, 0) == FAILURE)
+    return FAILURE;
+
+  attr = gfc_expr_attr (fptr);
+
+  if (!attr.proc_pointer)
+    {
+      gfc_error ("Argument FPTR at %L to C_F_PROCPOINTER shall be a procedure "
+		 "pointer", &fptr->where);
+      return FAILURE;
+    }
+
+  if (gfc_is_coindexed (fptr))
+    {
+      gfc_error ("Argument FPTR at %L to C_F_PROCPOINTER shall not be "
+		 "coindexed", &fptr->where);
+      return FAILURE;
+    }
+
+  if (!attr.is_bind_c)
+    return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable procedure "
+			   "pointer at %L to C_F_PROCPOINTER", &fptr->where);
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_c_funloc (gfc_expr *x)
+{
+  symbol_attribute attr;
+
+  if (gfc_is_coindexed (x))
+    {
+      gfc_error ("Argument X at %L to C_FUNLOC shall not be "
+		 "coindexed", &x->where);
+      return FAILURE;
+    }
+
+  attr = gfc_expr_attr (x);
+
+  if (attr.function && !attr.proc_pointer && x->expr_type == EXPR_VARIABLE
+      && x->symtree->n.sym == x->symtree->n.sym->result)
+    {
+      gfc_namespace *ns = gfc_current_ns;
+
+      for (ns = gfc_current_ns; ns; ns = ns->parent)
+	if (x->symtree->n.sym == ns->proc_name)
+	  {
+	    gfc_error ("Function result '%s' at %L is invalid as X argument "
+		       "to C_FUNLOC", x->symtree->n.sym->name, &x->where);
+	    return FAILURE;
+	  }
+    }
+
+  if (attr.flavor != FL_PROCEDURE)
+    {
+      gfc_error ("Argument X at %L to C_FUNLOC shall be a procedure "
+		 "or a procedure pointer", &x->where);
+      return FAILURE;
+    }
+
+  if (!attr.is_bind_c)
+    return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable procedure "
+			   "at %L to C_FUNLOC", &x->where);
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_c_loc (gfc_expr *x)
+{
+  symbol_attribute attr;
+  const char *msg;
+
+  if (gfc_is_coindexed (x))
+    {
+      gfc_error ("Argument X at %L to C_LOC shall not be coindexed", &x->where);
+      return FAILURE;
+    }
+
+  if (x->ts.type == BT_CLASS)
+    {
+      gfc_error ("X argument at %L to C_LOC shall not be polymorphic",
+		 &x->where);
+      return FAILURE;
+    }
+
+  attr = gfc_expr_attr (x);
+
+  if (!attr.pointer
+      && (x->expr_type != EXPR_VARIABLE || !attr.target
+	  || attr.flavor == FL_PARAMETER))
+    {
+      gfc_error ("Argument X at %L to C_LOC shall have either "
+		 "the POINTER or the TARGET attribute", &x->where);
+      return FAILURE;
+    }
+
+  if (x->ts.type == BT_CHARACTER
+      && gfc_var_strlen (x) == 0)
+    {
+      gfc_error ("Argument X at %L to C_LOC shall be not be a zero-sized "
+		 "string", &x->where);
+      return FAILURE;
+    }
+
+  if (!is_c_interoperable (x, &msg, true))
+    {
+      if (x->ts.type == BT_CLASS)
+	{
+	  gfc_error ("Argument at %L to C_LOC shall not be polymorphic",
+		     &x->where);
+	  return FAILURE;
+	}
+     
+      if (x->rank
+	  && gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable array at %L as"
+			 " argument to C_LOC: %s", &x->where, msg) == FAILURE)
+	  return FAILURE;
+    }
+
   return SUCCESS;
 }
 
@@ -5210,8 +5622,24 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 
 
 gfc_try
-gfc_check_storage_size (gfc_expr *a ATTRIBUTE_UNUSED, gfc_expr *kind)
+gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 {
+  if (a->ts.type == BT_ASSUMED)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be TYPE(*)",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &a->where);
+      return FAILURE;
+    }
+
+  if (a->ts.type == BT_PROCEDURE)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be a "
+		 "procedure", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &a->where);
+      return FAILURE;
+    }
+
   if (kind == NULL)
     return SUCCESS;
 

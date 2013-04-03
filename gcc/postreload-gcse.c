@@ -918,7 +918,7 @@ bb_has_well_behaved_predecessors (basic_block bb)
       if ((pred->flags & EDGE_ABNORMAL_CALL) && cfun->has_nonlocal_label)
 	return false;
 
-      if (JUMP_TABLE_DATA_P (BB_END (pred->src)))
+      if (tablejump_p (BB_END (pred->src), NULL, NULL))
 	return false;
     }
   return true;

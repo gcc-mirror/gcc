@@ -7,7 +7,7 @@ contains
 SUBROUTINE glutInit_f03()
   TYPE(C_PTR), DIMENSION(1), TARGET :: argv=C_NULL_PTR
   character(kind=c_char, len=5), target :: string="hello"
-  argv(1)=C_LOC(string) ! { dg-error "must have a length of 1" }
+  argv(1)=C_LOC(string) ! OK since Fortran 2003, Tech Corrigenda 5; IR F03/0129
 END SUBROUTINE
 end module x
 

@@ -5511,7 +5511,6 @@ mep_reorg_erepeat (rtx insns)
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (JUMP_P (insn)
-	&& ! JUMP_TABLE_DATA_P (insn)
 	&& mep_invertable_branch_p (insn))
       {
 	if (dump_file)

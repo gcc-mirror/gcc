@@ -759,7 +759,7 @@ omp_var_to_track (tree decl)
     type = TREE_TYPE (type);
   if (type == error_mark_node || !CLASS_TYPE_P (type))
     return false;
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+  if (VAR_P (decl) && DECL_THREAD_LOCAL_P (decl))
     return false;
   if (cxx_omp_predetermined_sharing (decl) != OMP_CLAUSE_DEFAULT_UNSPECIFIED)
     return false;
@@ -838,7 +838,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   /* If in an OpenMP context, note var uses.  */
   if (__builtin_expect (wtd->omp_ctx != NULL, 0)
-      && (TREE_CODE (stmt) == VAR_DECL
+      && (VAR_P (stmt)
 	  || TREE_CODE (stmt) == PARM_DECL
 	  || TREE_CODE (stmt) == RESULT_DECL)
       && omp_var_to_track (stmt))
@@ -857,7 +857,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   /* Map block scope extern declarations to visible declarations with the
      same name and type in outer scopes if any.  */
   if (cp_function_chain->extern_decl_map
-      && (TREE_CODE (stmt) == FUNCTION_DECL || TREE_CODE (stmt) == VAR_DECL)
+      && VAR_OR_FUNCTION_DECL_P (stmt)
       && DECL_EXTERNAL (stmt))
     {
       struct cxx_int_tree_map *h, in;
@@ -998,7 +998,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	{
 	  tree decl;
 	  for (decl = BIND_EXPR_VARS (stmt); decl; decl = DECL_CHAIN (decl))
-	    if (TREE_CODE (decl) == VAR_DECL
+	    if (VAR_P (decl)
 		&& !DECL_EXTERNAL (decl)
 		&& omp_var_to_track (decl))
 	      {

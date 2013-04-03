@@ -6987,8 +6987,7 @@ emit_all_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 
 	  if (! last)
 	    continue;
-	  if (JUMP_P (last)
-	      && GET_CODE (PATTERN (last)) == ADDR_DIFF_VEC)
+	  if (JUMP_TABLE_DATA_P (last))
 	    last = prev_active_insn (last);
 	  if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
 	    emit_insn_after (gen_insn_group_barrier (GEN_INT (3)), last);
@@ -9376,8 +9375,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 
 	  if (! last)
 	    continue;
-	  if (JUMP_P (last)
-	      && GET_CODE (PATTERN (last)) == ADDR_DIFF_VEC)
+	  if (JUMP_TABLE_DATA_P (last))
 	    last = prev_active_insn (last);
 	  if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
 	    emit_insn_after (gen_insn_group_barrier (GEN_INT (3)), last);

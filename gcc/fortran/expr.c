@@ -2256,7 +2256,7 @@ check_inquiry (gfc_expr *e, int not_restricted)
     "new_line", NULL
   };
 
-  int i;
+  int i = 0;
   gfc_actual_arglist *ap;
 
   if (!e->value.function.isym
@@ -2267,17 +2267,31 @@ check_inquiry (gfc_expr *e, int not_restricted)
   if (e->symtree == NULL)
     return MATCH_NO;
 
-  name = e->symtree->n.sym->name;
+  if (e->symtree->n.sym->from_intmod)
+    {
+      if (e->symtree->n.sym->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	  && e->symtree->n.sym->intmod_sym_id != ISOFORTRAN_COMPILER_OPTIONS
+	  && e->symtree->n.sym->intmod_sym_id != ISOFORTRAN_COMPILER_VERSION)
+	return MATCH_NO;
 
-  functions = (gfc_option.warn_std & GFC_STD_F2003)
+      if (e->symtree->n.sym->from_intmod == INTMOD_ISO_C_BINDING
+	  && e->symtree->n.sym->intmod_sym_id != ISOCBINDING_C_SIZEOF)
+	return MATCH_NO;
+    }
+  else
+    {
+      name = e->symtree->n.sym->name;
+
+      functions = (gfc_option.warn_std & GFC_STD_F2003)
 		? inquiry_func_f2003 : inquiry_func_f95;
 
-  for (i = 0; functions[i]; i++)
-    if (strcmp (functions[i], name) == 0)
-      break;
+      for (i = 0; functions[i]; i++)
+	if (strcmp (functions[i], name) == 0)
+	  break;
 
-  if (functions[i] == NULL)
-    return MATCH_ERROR;
+	if (functions[i] == NULL)
+	  return MATCH_ERROR;
+    }
 
   /* At this point we have an inquiry function with a variable argument.  The
      type of the variable might be undefined, but we need it now, because the
@@ -3429,13 +3443,18 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	      attr = gfc_expr_attr (rvalue);
 	    }
 	  /* Check for result of embracing function.  */
-	  if (sym == gfc_current_ns->proc_name
-	      && sym->attr.function && sym->result == sym)
+	  if (sym->attr.function && sym->result == sym)
 	    {
-	      gfc_error ("Function result '%s' is invalid as proc-target "
-			 "in procedure pointer assignment at %L",
-			 sym->name, &rvalue->where);
-	      return FAILURE;
+	      gfc_namespace *ns;
+
+	      for (ns = gfc_current_ns; ns; ns = ns->parent)
+		if (sym == ns->proc_name)
+		  {
+		    gfc_error ("Function result '%s' is invalid as proc-target "
+			       "in procedure pointer assignment at %L",
+			       sym->name, &rvalue->where);
+		    return FAILURE;
+		  }
 	    }
 	}
       if (attr.abstract)

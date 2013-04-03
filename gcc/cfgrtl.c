@@ -2488,7 +2488,7 @@ rtl_verify_flow_info (void)
 	      break;
 
 	    case CODE_LABEL:
-	      /* An addr_vec is placed outside any basic block.  */
+	      /* An ADDR_VEC is placed outside any basic block.  */
 	      if (NEXT_INSN (x)
 		  && JUMP_TABLE_DATA_P (NEXT_INSN (x)))
 		x = NEXT_INSN (x);
@@ -3244,7 +3244,7 @@ fixup_reorder_chain (void)
 		{
 		  gcc_assert (!onlyjump_p (bb_end_insn)
 			      || returnjump_p (bb_end_insn));
-		  BB_FOOTER (bb) = emit_barrier_after (bb_end_insn);
+		  emit_barrier_after (bb_end_insn);
 		  continue;
 		}
 
@@ -3604,7 +3604,7 @@ cfg_layout_can_duplicate_bb_p (const_basic_block bb)
 rtx
 duplicate_insn_chain (rtx from, rtx to)
 {
-  rtx insn, last, copy;
+  rtx insn, next, last, copy;
 
   /* Avoid updating of boundaries of previous basic block.  The
      note will get removed from insn stream in fixup.  */
@@ -3624,30 +3624,26 @@ duplicate_insn_chain (rtx from, rtx to)
 	case INSN:
 	case CALL_INSN:
 	case JUMP_INSN:
-	  /* Avoid copying of dispatch tables.  We never duplicate
-	     tablejumps, so this can hit only in case the table got
-	     moved far from original jump.  */
-	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-	    {
-	      /* Avoid copying following barrier as well if any
-		 (and debug insns in between).  */
-	      rtx next;
-
-	      for (next = NEXT_INSN (insn);
-		   next != NEXT_INSN (to);
-		   next = NEXT_INSN (next))
-		if (!DEBUG_INSN_P (next))
-		  break;
-	      if (next != NEXT_INSN (to) && BARRIER_P (next))
-		insn = next;
-	      break;
-	    }
 	  copy = emit_copy_of_insn_after (insn, get_last_insn ());
 	  if (JUMP_P (insn) && JUMP_LABEL (insn) != NULL_RTX
 	      && ANY_RETURN_P (JUMP_LABEL (insn)))
 	    JUMP_LABEL (copy) = JUMP_LABEL (insn);
           maybe_copy_prologue_epilogue_insn (insn, copy);
+	  break;
+
+	case JUMP_TABLE_DATA:
+	  /* Avoid copying of dispatch tables.  We never duplicate
+	     tablejumps, so this can hit only in case the table got
+	     moved far from original jump.
+	     Avoid copying following barrier as well if any
+	     (and debug insns in between).  */
+	  for (next = NEXT_INSN (insn);
+	       next != NEXT_INSN (to);
+	       next = NEXT_INSN (next))
+	    if (!DEBUG_INSN_P (next))
+	      break;
+	  if (next != NEXT_INSN (to) && BARRIER_P (next))
+	    insn = next;
 	  break;
 
 	case CODE_LABEL:

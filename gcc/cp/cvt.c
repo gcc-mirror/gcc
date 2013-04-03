@@ -105,14 +105,14 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
     }
 
   /* Handle anachronistic conversions from (::*)() to cv void* or (*)().  */
-  if (TREE_CODE (type) == POINTER_TYPE
+  if (TYPE_PTR_P (type)
       && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
 	  || VOID_TYPE_P (TREE_TYPE (type))))
     {
       if (TYPE_PTRMEMFUNC_P (intype)
 	  || TREE_CODE (intype) == METHOD_TYPE)
 	return convert_member_func_to_ptr (type, expr, complain);
-      if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
+      if (TYPE_PTR_P (TREE_TYPE (expr)))
 	return build_nop (type, expr);
       intype = TREE_TYPE (expr);
     }
@@ -127,7 +127,7 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
       intype = TYPE_MAIN_VARIANT (intype);
 
       if (TYPE_MAIN_VARIANT (type) != intype
-	  && TREE_CODE (type) == POINTER_TYPE
+	  && TYPE_PTR_P (type)
 	  && TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE
 	  && MAYBE_CLASS_TYPE_P (TREE_TYPE (type))
 	  && MAYBE_CLASS_TYPE_P (TREE_TYPE (intype))
@@ -483,7 +483,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
       /* B* bp; A& ar = (A&)bp; is valid, but it's probably not what they
 	 meant.  */
       if ((complain & tf_warning)
-	  && TREE_CODE (intype) == POINTER_TYPE
+	  && TYPE_PTR_P (intype)
 	  && (comptypes (TREE_TYPE (intype), type,
 			 COMPARE_BASE | COMPARE_DERIVED)))
 	warning_at (loc, 0, "casting %qT to %qT does not dereference pointer",
@@ -723,7 +723,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	  if (((INTEGRAL_OR_ENUMERATION_TYPE_P (intype)
 		|| TREE_CODE (intype) == REAL_TYPE)
 	       && ! (convtype & CONV_STATIC))
-	      || TREE_CODE (intype) == POINTER_TYPE)
+	      || TYPE_PTR_P (intype))
 	    {
 	      if (complain & tf_error)
 		permerror (loc, "conversion from %q#T to %q#T", intype, type);
@@ -758,7 +758,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	}
       if (code == BOOLEAN_TYPE)
 	{
-	  if (TREE_CODE (intype) == VOID_TYPE)
+	  if (VOID_TYPE_P (intype))
 	    {
 	      if (complain & tf_error)
 		error_at (loc,
@@ -916,7 +916,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	exprv = TREE_OPERAND (exprv, 1);
       if (DECL_P (exprv)
 	  || handled_component_p (exprv)
-	  || TREE_CODE (exprv) == INDIRECT_REF)
+	  || INDIRECT_REF_P (exprv))
 	/* Expr is not being 'used' here, otherwise we whould have
 	   called mark_{rl}value_use use here, which would have in turn
 	   called mark_exp_read.  Rather, we call mark_exp_read directly
@@ -1457,8 +1457,7 @@ convert_force (tree type, tree expr, int convtype, tsubst_flags_t complain)
 							      complain));
 
   /* From typeck.c convert_for_assignment */
-  if (((TREE_CODE (TREE_TYPE (e)) == POINTER_TYPE && TREE_CODE (e) == ADDR_EXPR
-	&& TREE_CODE (TREE_TYPE (e)) == POINTER_TYPE
+  if (((TYPE_PTR_P (TREE_TYPE (e)) && TREE_CODE (e) == ADDR_EXPR
 	&& TREE_CODE (TREE_TYPE (TREE_TYPE (e))) == METHOD_TYPE)
        || integer_zerop (e)
        || TYPE_PTRMEMFUNC_P (TREE_TYPE (e)))

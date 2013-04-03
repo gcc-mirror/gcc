@@ -267,7 +267,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
       streamer_write_hwi_stream (ob->main_stream, ref);
     }
 
-  streamer_write_hwi_stream (ob->main_stream, edge->count);
+  streamer_write_gcov_count_stream (ob->main_stream, edge->count);
 
   bp = bitpack_create (ob->main_stream);
   uid = (!gimple_has_body_p (edge->caller->symbol.decl)
@@ -429,7 +429,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
 
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->symbol.decl);
-  streamer_write_hwi_stream (ob->main_stream, node->count);
+  streamer_write_gcov_count_stream (ob->main_stream, node->count);
   streamer_write_hwi_stream (ob->main_stream, node->count_materialization_scale);
 
   streamer_write_hwi_stream (ob->main_stream,
@@ -604,11 +604,11 @@ output_profile_summary (struct lto_simple_output_block *ob)
          units.  */
       gcc_assert (profile_info->runs);
       streamer_write_uhwi_stream (ob->main_stream, profile_info->runs);
-      streamer_write_uhwi_stream (ob->main_stream, profile_info->sum_max);
+      streamer_write_gcov_count_stream (ob->main_stream, profile_info->sum_max);
 
       /* sum_all is needed for computing the working set with the
          histogram.  */
-      streamer_write_uhwi_stream (ob->main_stream, profile_info->sum_all);
+      streamer_write_gcov_count_stream (ob->main_stream, profile_info->sum_all);
 
       /* Create and output a bitpack of non-zero histogram entries indices.  */
       bp = bitpack_create (ob->main_stream);
@@ -620,13 +620,18 @@ output_profile_summary (struct lto_simple_output_block *ob)
         {
           if (!profile_info->histogram[h_ix].num_counters)
             continue;
-          streamer_write_uhwi_stream (ob->main_stream,
+          streamer_write_gcov_count_stream (ob->main_stream,
                                       profile_info->histogram[h_ix].num_counters);
-          streamer_write_uhwi_stream (ob->main_stream,
+          streamer_write_gcov_count_stream (ob->main_stream,
                                       profile_info->histogram[h_ix].min_value);
-          streamer_write_uhwi_stream (ob->main_stream,
+          streamer_write_gcov_count_stream (ob->main_stream,
                                       profile_info->histogram[h_ix].cum_value);
-        }
+         }
+      /* IPA-profile computes hot bb threshold based on cumulated
+	 whole program profile.  We need to stream it down to ltrans.  */
+       if (flag_wpa)
+         streamer_write_gcov_count_stream (ob->main_stream,
+					   get_hot_bb_threshold ());
     }
   else
     streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -948,7 +953,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (order >= symtab_order)
     symtab_order = order + 1;
 
-  node->count = streamer_read_hwi (ib);
+  node->count = streamer_read_gcov_count (ib);
   node->count_materialization_scale = streamer_read_hwi (ib);
 
   count = streamer_read_hwi (ib);
@@ -1109,7 +1114,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node> nodes,
   else
     callee = NULL;
 
-  count = (gcov_type) streamer_read_hwi (ib);
+  count = streamer_read_gcov_count (ib);
 
   bp = streamer_read_bitpack (ib);
   inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_enum, CIF_N_REASONS);
@@ -1259,8 +1264,8 @@ input_profile_summary (struct lto_input_block *ib,
   if (runs)
     {
       file_data->profile_info.runs = runs;
-      file_data->profile_info.sum_max = streamer_read_uhwi (ib);
-      file_data->profile_info.sum_all = streamer_read_uhwi (ib);
+      file_data->profile_info.sum_max = streamer_read_gcov_count (ib);
+      file_data->profile_info.sum_all = streamer_read_gcov_count (ib);
 
       memset (file_data->profile_info.histogram, 0,
               sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
@@ -1279,12 +1284,16 @@ input_profile_summary (struct lto_input_block *ib,
             continue;
 
           file_data->profile_info.histogram[h_ix].num_counters
-              = streamer_read_uhwi (ib);
+              = streamer_read_gcov_count (ib);
           file_data->profile_info.histogram[h_ix].min_value
-              = streamer_read_uhwi (ib);
+              = streamer_read_gcov_count (ib);
           file_data->profile_info.histogram[h_ix].cum_value
-              = streamer_read_uhwi (ib);
+              = streamer_read_gcov_count (ib);
         }
+      /* IPA-profile computes hot bb threshold based on cumulated
+	 whole program profile.  We need to stream it down to ltrans.  */
+      if (flag_ltrans)
+	set_hot_bb_threshold (streamer_read_gcov_count (ib));
     }
 
 }
@@ -1362,8 +1371,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
     {
       /* Scale up the min value as we did the corresponding sum_all
          above. Use that to find the new histogram index.  */
-      int scaled_min = RDIV (saved_profile_info->histogram[h_ix].min_value
-                             * saved_scale, REG_BR_PROB_BASE);
+      gcov_type scaled_min = RDIV (saved_profile_info->histogram[h_ix].min_value
+                                   * saved_scale, REG_BR_PROB_BASE);
       /* The new index may be shared with another scaled histogram entry,
          so we need to account for a non-zero histogram entry at new_ix.  */
       unsigned new_ix = gcov_histo_index (scaled_min);

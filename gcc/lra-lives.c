@@ -848,6 +848,21 @@ lra_print_live_range_list (FILE *f, lra_live_range_t r)
   fprintf (f, "\n");
 }
 
+DEBUG_FUNCTION void
+debug (lra_live_range &ref)
+{
+  lra_print_live_range_list (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (lra_live_range *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 /* Print live ranges R to stderr.  */
 void
 lra_debug_live_range_list (lra_live_range_t r)

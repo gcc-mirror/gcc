@@ -1131,7 +1131,7 @@ build_vtbl_address (tree binfo)
 
   /* Now compute the address to use when initializing the vptr.  */
   vtbl = unshare_expr (BINFO_VTABLE (binfo_for));
-  if (TREE_CODE (vtbl) == VAR_DECL)
+  if (VAR_P (vtbl))
     vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
 
   return vtbl;
@@ -1293,7 +1293,7 @@ member_init_ok_or_else (tree field, tree type, tree member_name)
 	     member_name);
       return 0;
     }
-  if (TREE_CODE (field) == VAR_DECL)
+  if (VAR_P (field))
     {
       error ("%q#D is a static data member; it can only be "
 	     "initialized at its definition",
@@ -1515,7 +1515,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       return stmt_expr;
     }
 
-  if (TREE_CODE (exp) == VAR_DECL || TREE_CODE (exp) == PARM_DECL)
+  if (VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
     /* Just know that we've seen something for this node.  */
     TREE_USED (exp) = 1;
 
@@ -1728,7 +1728,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
      in and expand the constructor.  Constructors now come
      as TARGET_EXPRs.  */
 
-  if (init && TREE_CODE (exp) == VAR_DECL
+  if (init && VAR_P (exp)
       && COMPOUND_LITERAL_P (init))
     {
       vec<tree, va_gc> *cleanups = NULL;
@@ -1849,7 +1849,7 @@ build_offset_ref (tree type, tree member, bool address_p)
      processing.  */
   if (TREE_CODE (member) == TYPE_DECL)
     return member;
-  if (TREE_CODE (member) == VAR_DECL || TREE_CODE (member) == CONST_DECL)
+  if (VAR_P (member) || TREE_CODE (member) == CONST_DECL)
     return convert_from_reference (member);
 
   if (TREE_CODE (member) == FIELD_DECL && DECL_C_BIT_FIELD (member))
@@ -1964,7 +1964,7 @@ constant_value_1 (tree decl, bool integral_p, bool return_aggregate_cst_ok_p)
   while (TREE_CODE (decl) == CONST_DECL
 	 || (integral_p
 	     ? decl_constant_var_p (decl)
-	     : (TREE_CODE (decl) == VAR_DECL
+	     : (VAR_P (decl)
 		&& CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))))
     {
       tree init;
@@ -2294,7 +2294,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	return error_mark_node;
     }
 
-  if (TREE_CODE (elt_type) == VOID_TYPE)
+  if (VOID_TYPE_P (elt_type))
     {
       if (complain & tf_error)
         error ("invalid type %<void%> for new");
@@ -2399,7 +2399,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      this now, since PLACEMENT will change in the calls below.  */
   placement_first = NULL_TREE;
   if (vec_safe_length (*placement) == 1
-      && (TREE_CODE (TREE_TYPE ((**placement)[0])) == POINTER_TYPE))
+      && (TYPE_PTR_P (TREE_TYPE ((**placement)[0]))))
     placement_first = (**placement)[0];
 
   /* Allocate the object.  */
@@ -2523,7 +2523,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       && TREE_CODE (alloc_call) == CALL_EXPR
       && call_expr_nargs (alloc_call) == 2
       && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 0))) == INTEGER_TYPE
-      && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 1))) == POINTER_TYPE)
+      && TYPE_PTR_P (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 1))))
     {
       tree placement_arg = CALL_EXPR_ARG (alloc_call, 1);
 
@@ -2920,6 +2920,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (dependent_type_p (type)
 	  || any_type_dependent_arguments_p (*placement)
 	  || (nelts && type_dependent_expression_p (nelts))
+	  || (nelts && *init)
 	  || any_type_dependent_arguments_p (*init))
 	return build_raw_new_expr (*placement, type, nelts, *init,
 				   use_global_new);
@@ -3742,7 +3743,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 
   addr = mark_rvalue_use (addr);
 
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TYPE_PTR_P (type))
     {
       bool complete_p = true;
 
@@ -4045,7 +4046,7 @@ build_vec_delete (tree base, tree maxindex,
 
   type = TREE_TYPE (base);
 
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TYPE_PTR_P (type))
     {
       /* Step back one from start of vector, and read dimension.  */
       tree cookie_addr;

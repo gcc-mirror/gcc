@@ -921,8 +921,8 @@ get_branch_condition (rtx insn, rtx target)
   if (condjump_in_parallel_p (insn))
     pat = XVECEXP (pat, 0, 0);
 
-  if (ANY_RETURN_P (pat))
-    return pat == target ? const_true_rtx : 0;
+  if (ANY_RETURN_P (pat) && pat == target)
+    return const_true_rtx;
 
   if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
     return 0;
@@ -933,14 +933,16 @@ get_branch_condition (rtx insn, rtx target)
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 2) == pc_rtx
-	   && GET_CODE (XEXP (src, 1)) == LABEL_REF
-	   && XEXP (XEXP (src, 1), 0) == target)
+	   && ((GET_CODE (XEXP (src, 1)) == LABEL_REF
+	        && XEXP (XEXP (src, 1), 0) == target)
+	       || (ANY_RETURN_P (XEXP (src, 1)) && XEXP (src, 1) == target)))
     return XEXP (src, 0);
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 1) == pc_rtx
-	   && GET_CODE (XEXP (src, 2)) == LABEL_REF
-	   && XEXP (XEXP (src, 2), 0) == target)
+	   && ((GET_CODE (XEXP (src, 2)) == LABEL_REF
+		&& XEXP (XEXP (src, 2), 0) == target)
+	       || (ANY_RETURN_P (XEXP (src, 2)) && XEXP (src, 2) == target)))
     {
       enum rtx_code rev;
       rev = reversed_comparison_code (XEXP (src, 0), insn);
@@ -2129,35 +2131,19 @@ fill_simple_delay_slots (int non_jumps_p)
 	     Presumably, we should also check to see if we could get
 	     back to this function via `setjmp'.  */
 	  && ! can_throw_internal (insn)
-	  && (!JUMP_P (insn)
-	      || ((condjump_p (insn) || condjump_in_parallel_p (insn))
-		  && ! simplejump_p (insn)
-		  && !ANY_RETURN_P (JUMP_LABEL (insn)))))
+	  && !JUMP_P (insn))
 	{
-	  /* Invariant: If insn is a JUMP_INSN, the insn's jump
-	     label.  Otherwise, zero.  */
-	  rtx target = 0;
 	  int maybe_never = 0;
 	  rtx pat, trial_delay;
 
 	  CLEAR_RESOURCE (&needed);
 	  CLEAR_RESOURCE (&set);
+	  mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
+	  mark_referenced_resources (insn, &needed, true);
 
 	  if (CALL_P (insn))
-	    {
-	      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
-	      mark_referenced_resources (insn, &needed, true);
-	      maybe_never = 1;
-	    }
-	  else
-	    {
-	      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
-	      mark_referenced_resources (insn, &needed, true);
-	      if (JUMP_P (insn))
-		target = JUMP_LABEL (insn);
-	    }
+	    maybe_never = 1;
 
-	  if (target == 0 || ANY_RETURN_P (target))
 	    for (trial = next_nonnote_insn (insn); !stop_search_p (trial, 1);
 		 trial = next_trial)
 	      {
@@ -2217,9 +2203,8 @@ fill_simple_delay_slots (int non_jumps_p)
 		   slot since these insns could clobber the condition code.  */
 		set.cc = 1;
 
-		/* If this is a call or jump, we might not get here.  */
-		if (CALL_P (trial_delay)
-		    || JUMP_P (trial_delay))
+		/* If this is a call, we might not get here.  */
+		if (CALL_P (trial_delay))
 		  maybe_never = 1;
 	      }
 
@@ -2232,7 +2217,6 @@ fill_simple_delay_slots (int non_jumps_p)
 	      && trial
 	      && jump_to_label_p (trial)
 	      && simplejump_p (trial)
-	      && (target == 0 || JUMP_LABEL (trial) == target)
 	      && (next_trial = next_active_insn (JUMP_LABEL (trial))) != 0
 	      && ! (NONJUMP_INSN_P (next_trial)
 		    && GET_CODE (PATTERN (next_trial)) == SEQUENCE)
@@ -2264,11 +2248,6 @@ fill_simple_delay_slots (int non_jumps_p)
 					 delay_list);
 		  slots_filled++;
 		  reorg_redirect_jump (trial, new_label);
-
-		  /* If we merged because we both jumped to the same place,
-		     redirect the original insn also.  */
-		  if (target)
-		    reorg_redirect_jump (insn, new_label);
 		}
 	    }
 	}
@@ -2339,9 +2318,7 @@ follow_jumps (rtx label, rtx jump, bool *crossing)
       if (ANY_RETURN_P (this_label))
 	return this_label;
       tem = next_active_insn (this_label);
-      if (tem
-	  && (GET_CODE (PATTERN (tem)) == ADDR_VEC
-	      || GET_CODE (PATTERN (tem)) == ADDR_DIFF_VEC))
+      if (tem && JUMP_TABLE_DATA_P (tem))
 	break;
 
       if (!targetm.can_follow_jump (jump, insn))
@@ -3702,13 +3679,13 @@ dbr_schedule (rtx first)
     {
       rtx target;
 
-      if (JUMP_P (insn))
-        INSN_ANNULLED_BRANCH_P (insn) = 0;
-      INSN_FROM_TARGET_P (insn) = 0;
-
       /* Skip vector tables.  We can't get attributes for them.  */
       if (JUMP_TABLE_DATA_P (insn))
 	continue;
+
+      if (JUMP_P (insn))
+        INSN_ANNULLED_BRANCH_P (insn) = 0;
+      INSN_FROM_TARGET_P (insn) = 0;
 
       if (num_delay_slots (insn) > 0)
 	obstack_ptr_grow (&unfilled_slots_obstack, insn);

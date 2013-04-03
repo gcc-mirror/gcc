@@ -437,6 +437,8 @@ extern basic_block create_basic_block_structure (rtx, rtx, rtx, basic_block);
 extern void clear_bb_flags (void);
 extern void dump_bb_info (FILE *, basic_block, int, int, bool, bool);
 extern void dump_edge_info (FILE *, edge, int, int);
+extern void debug (edge_def &ref);
+extern void debug (edge_def *ptr);
 extern void brief_dump_cfg (FILE *, int);
 extern void clear_edges (void);
 extern void scale_bbs_frequencies_int (basic_block *, int, int, int);

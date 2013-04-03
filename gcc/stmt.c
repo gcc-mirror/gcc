@@ -2025,13 +2025,14 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
   emit_label (table_label);
 
   if (CASE_VECTOR_PC_RELATIVE || flag_pic)
-    emit_jump_insn (gen_rtx_ADDR_DIFF_VEC (CASE_VECTOR_MODE,
-					   gen_rtx_LABEL_REF (Pmode, table_label),
-					   gen_rtvec_v (ncases, labelvec),
-					   const0_rtx, const0_rtx));
+    emit_jump_table_data (gen_rtx_ADDR_DIFF_VEC (CASE_VECTOR_MODE,
+						 gen_rtx_LABEL_REF (Pmode,
+								    table_label),
+						 gen_rtvec_v (ncases, labelvec),
+						 const0_rtx, const0_rtx));
   else
-    emit_jump_insn (gen_rtx_ADDR_VEC (CASE_VECTOR_MODE,
-				      gen_rtvec_v (ncases, labelvec)));
+    emit_jump_table_data (gen_rtx_ADDR_VEC (CASE_VECTOR_MODE,
+					    gen_rtvec_v (ncases, labelvec)));
 
   /* Record no drop-through after the table.  */
   emit_barrier ();

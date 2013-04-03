@@ -5061,8 +5061,7 @@
     </para>
 
     <para>
-      This library was partially written at
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.haifa.il.ibm.com/">IBM's Haifa Research Labs</link>.
+      This library was partially written at IBM's Haifa Research Labs.
       It is based heavily on policy-based design and uses many useful
       techniques from Modern C++ Design: Generic Programming and Design
       Patterns Applied by Andrei Alexandrescu.

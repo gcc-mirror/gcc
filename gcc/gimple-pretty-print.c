@@ -99,6 +99,21 @@ print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
   pp_newline_and_flush (&buffer);
 }
 
+DEBUG_FUNCTION void
+debug (gimple_statement_d &ref)
+{
+  print_gimple_stmt (stderr, &ref, 0, 0);
+}
+
+DEBUG_FUNCTION void
+debug (gimple_statement_d *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 /* Print GIMPLE statement G to FILE using SPC indentation spaces and
    FLAGS as in pp_gimple_stmt_1.  Print only the right-hand side

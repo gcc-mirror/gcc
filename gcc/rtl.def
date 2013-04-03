@@ -64,7 +64,8 @@ along with GCC; see the file COPYING3.  If not see
      RTX_BITFIELD_OPS
          an rtx code for a bit-field operation (ZERO_EXTRACT, SIGN_EXTRACT)
      RTX_INSN
-         an rtx code for a machine insn (INSN, JUMP_INSN, CALL_INSN)
+         an rtx code for a machine insn (INSN, JUMP_INSN, CALL_INSN) or
+	 data that will be output as assembly pseudo-ops (DEBUG_INSN)
      RTX_MATCH
          an rtx code for something that matches in insns (e.g, MATCH_DUP)
      RTX_AUTOINC
@@ -136,6 +137,13 @@ DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBeiie0", RTX_INSN)
    Field ( rtx->u.fld[8] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
 DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBeiiee", RTX_INSN)
+
+/* Placeholder for tablejump JUMP_INSNs.  The pattern of this kind
+   of rtx is always either an ADDR_VEC or an ADDR_DIFF_VEC.  These
+   placeholders do not appear as real instructions inside a basic
+   block, but are considered active_insn_p instructions for historical
+   reasons, when jump table data was represented with JUMP_INSNs.  */
+DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "iuuBe0000", RTX_INSN)
 
 /* A marker that indicates that control will not flow through.  */
 DEF_RTL_EXPR(BARRIER, "barrier", "iuu00000", RTX_EXTRA)
@@ -214,8 +222,12 @@ DEF_RTL_EXPR(UNSPEC, "unspec", "Ei", RTX_EXTRA)
 /* Similar, but a volatile operation and one which may trap.  */
 DEF_RTL_EXPR(UNSPEC_VOLATILE, "unspec_volatile", "Ei", RTX_EXTRA)
 
-/* Vector of addresses, stored as full words.  */
-/* Each element is a LABEL_REF to a CODE_LABEL whose address we want.  */
+/* ----------------------------------------------------------------------
+   Table jump addresses.
+   ---------------------------------------------------------------------- */
+
+/* Vector of addresses, stored as full words.
+   Each element is a LABEL_REF to a CODE_LABEL whose address we want.  */
 DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", RTX_EXTRA)
 
 /* Vector of address differences X0 - BASE, X1 - BASE, ...
@@ -240,7 +252,6 @@ DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", RTX_EXTRA)
    The third, fourth and fifth operands are only valid when
    CASE_VECTOR_SHORTEN_MODE is defined, and only in an optimizing
    compilation.  */
-
 DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEee0", RTX_EXTRA)
 
 /* Memory prefetch, with attributes supported on some targets.

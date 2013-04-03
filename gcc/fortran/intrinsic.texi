@@ -11492,7 +11492,7 @@ expression @code{X} occupies.
 GNU extension
 
 @item @emph{Class}:
-Intrinsic function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{N = SIZEOF(X)}

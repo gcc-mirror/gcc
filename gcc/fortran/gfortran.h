@@ -343,6 +343,11 @@ enum gfc_isym_id
   GFC_ISYM_CPU_TIME,
   GFC_ISYM_CSHIFT,
   GFC_ISYM_CTIME,
+  GFC_ISYM_C_ASSOCIATED,
+  GFC_ISYM_C_F_POINTER,
+  GFC_ISYM_C_F_PROCPOINTER,
+  GFC_ISYM_C_FUNLOC,
+  GFC_ISYM_C_LOC,
   GFC_ISYM_C_SIZEOF,
   GFC_ISYM_DATE_AND_TIME,
   GFC_ISYM_DBLE,
@@ -610,6 +615,7 @@ gfc_reverse;
 #define NAMED_INTCST(a,b,c,d) a,
 #define NAMED_KINDARRAY(a,b,c,d) a,
 #define NAMED_FUNCTION(a,b,c,d) a,
+#define NAMED_SUBROUTINE(a,b,c,d) a,
 #define NAMED_DERIVED_TYPE(a,b,c,d) a,
 typedef enum
 {
@@ -621,6 +627,7 @@ iso_fortran_env_symbol;
 #undef NAMED_INTCST
 #undef NAMED_KINDARRAY
 #undef NAMED_FUNCTION
+#undef NAMED_SUBROUTINE
 #undef NAMED_DERIVED_TYPE
 
 #define NAMED_INTCST(a,b,c,d) a,
@@ -630,8 +637,8 @@ iso_fortran_env_symbol;
 #define NAMED_CHARKNDCST(a,b,c) a,
 #define NAMED_CHARCST(a,b,c) a,
 #define DERIVED_TYPE(a,b,c) a,
-#define PROCEDURE(a,b) a,
 #define NAMED_FUNCTION(a,b,c,d) a,
+#define NAMED_SUBROUTINE(a,b,c,d) a,
 typedef enum
 {
   ISOCBINDING_INVALID = -1,
@@ -647,8 +654,8 @@ iso_c_binding_symbol;
 #undef NAMED_CHARKNDCST
 #undef NAMED_CHARCST
 #undef DERIVED_TYPE
-#undef PROCEDURE
 #undef NAMED_FUNCTION
+#undef NAMED_SUBROUTINE
 
 typedef enum
 {
@@ -2635,8 +2642,8 @@ gfc_try gfc_verify_c_interop_param (gfc_symbol *);
 gfc_try verify_bind_c_sym (gfc_symbol *, gfc_typespec *, int, gfc_common_head *);
 gfc_try verify_bind_c_derived_type (gfc_symbol *);
 gfc_try verify_com_block_vars_c_interop (gfc_common_head *);
-void generate_isocbinding_symbol (const char *, iso_c_binding_symbol, const char *);
-gfc_symbol *get_iso_c_sym (gfc_symbol *, char *, const char *, int);
+gfc_symtree *generate_isocbinding_symbol (const char *, iso_c_binding_symbol,
+					  const char *, gfc_symtree *, bool);
 int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);
@@ -2707,6 +2714,10 @@ int gfc_intrinsic_actual_ok (const char *, const bool);
 gfc_intrinsic_sym *gfc_find_function (const char *);
 gfc_intrinsic_sym *gfc_find_subroutine (const char *);
 gfc_intrinsic_sym *gfc_intrinsic_function_by_id (gfc_isym_id);
+gfc_intrinsic_sym *gfc_intrinsic_subroutine_by_id (gfc_isym_id);
+gfc_isym_id gfc_isym_id_by_intmod (intmod_id, int);
+gfc_isym_id gfc_isym_id_by_intmod_sym (gfc_symbol *);
+
 
 match gfc_intrinsic_func_interface (gfc_expr *, int);
 match gfc_intrinsic_sub_interface (gfc_code *, int);
@@ -2958,6 +2969,7 @@ gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 /* dependency.c */
 int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);
 int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
+bool gfc_dep_difference (gfc_expr *, gfc_expr *, mpz_t *);
 
 /* check.c */
 gfc_try gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);

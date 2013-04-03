@@ -6301,6 +6301,208 @@ gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
   se->expr = temp_var;
 }
 
+
+/* The following routine generates code for the intrinsic
+   functions from the ISO_C_BINDING module:
+    * C_LOC
+    * C_FUNLOC
+    * C_ASSOCIATED  */
+
+static void
+conv_isocbinding_function (gfc_se *se, gfc_expr *expr)
+{
+  gfc_actual_arglist *arg = expr->value.function.actual;
+
+  if (expr->value.function.isym->id == GFC_ISYM_C_LOC)
+    {
+      if (arg->expr->rank == 0)
+	gfc_conv_expr_reference (se, arg->expr);
+      else
+	gfc_conv_array_parameter (se, arg->expr, true, NULL, NULL, NULL);
+
+      /* TODO -- the following two lines shouldn't be necessary, but if
+	 they're removed, a bug is exposed later in the code path.
+	 This workaround was thus introduced, but will have to be
+	 removed; please see PR 35150 for details about the issue.  */
+      se->expr = convert (pvoid_type_node, se->expr);
+      se->expr = gfc_evaluate_now (se->expr, &se->pre);
+    }
+  else if (expr->value.function.isym->id == GFC_ISYM_C_FUNLOC)
+    gfc_conv_expr_reference (se, arg->expr);
+  else if (expr->value.function.isym->id == GFC_ISYM_C_ASSOCIATED)
+    {
+      gfc_se arg1se;
+      gfc_se arg2se;
+
+      /* Build the addr_expr for the first argument.  The argument is
+	 already an *address* so we don't need to set want_pointer in
+	 the gfc_se.  */
+      gfc_init_se (&arg1se, NULL);
+      gfc_conv_expr (&arg1se, arg->expr);
+      gfc_add_block_to_block (&se->pre, &arg1se.pre);
+      gfc_add_block_to_block (&se->post, &arg1se.post);
+
+      /* See if we were given two arguments.  */
+      if (arg->next->expr == NULL)
+	/* Only given one arg so generate a null and do a
+	   not-equal comparison against the first arg.  */
+	se->expr = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+				    arg1se.expr,
+				    fold_convert (TREE_TYPE (arg1se.expr),
+						  null_pointer_node));
+      else
+	{
+	  tree eq_expr;
+	  tree not_null_expr;
+
+	  /* Given two arguments so build the arg2se from second arg.  */
+	  gfc_init_se (&arg2se, NULL);
+	  gfc_conv_expr (&arg2se, arg->next->expr);
+	  gfc_add_block_to_block (&se->pre, &arg2se.pre);
+	  gfc_add_block_to_block (&se->post, &arg2se.post);
+
+	  /* Generate test to compare that the two args are equal.  */
+	  eq_expr = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				     arg1se.expr, arg2se.expr);
+	  /* Generate test to ensure that the first arg is not null.  */
+	  not_null_expr = fold_build2_loc (input_location, NE_EXPR,
+					   boolean_type_node,
+					   arg1se.expr, null_pointer_node);
+
+	  /* Finally, the generated test must check that both arg1 is not
+	     NULL and that it is equal to the second arg.  */
+	  se->expr = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+				      boolean_type_node,
+				      not_null_expr, eq_expr);
+	}
+    }
+  else
+    gcc_unreachable ();
+}
+
+
+/* The following routine generates code for the intrinsic
+   subroutines from the ISO_C_BINDING module:
+    * C_F_POINTER
+    * C_F_PROCPOINTER.  */
+
+static tree
+conv_isocbinding_subroutine (gfc_code *code)
+{
+  gfc_se se;
+  gfc_se cptrse;
+  gfc_se fptrse;
+  gfc_se shapese;
+  gfc_ss *shape_ss;
+  tree desc, dim, tmp, stride, offset;
+  stmtblock_t body, block;
+  gfc_loopinfo loop;
+  gfc_actual_arglist *arg = code->ext.actual;
+
+  gfc_init_se (&se, NULL);
+  gfc_init_se (&cptrse, NULL);
+  gfc_conv_expr (&cptrse, arg->expr);
+  gfc_add_block_to_block (&se.pre, &cptrse.pre);
+  gfc_add_block_to_block (&se.post, &cptrse.post);
+
+  gfc_init_se (&fptrse, NULL);
+  if (arg->next->expr->rank == 0)
+    {
+      fptrse.want_pointer = 1;
+      gfc_conv_expr (&fptrse, arg->next->expr);
+      gfc_add_block_to_block (&se.pre, &fptrse.pre);
+      gfc_add_block_to_block (&se.post, &fptrse.post);
+      if (arg->next->expr->symtree->n.sym->attr.proc_pointer
+	  && arg->next->expr->symtree->n.sym->attr.dummy)
+	fptrse.expr = build_fold_indirect_ref_loc (input_location,
+						       fptrse.expr);
+      se.expr = fold_build2_loc (input_location, MODIFY_EXPR,
+				 TREE_TYPE (fptrse.expr),
+				 fptrse.expr,
+				 fold_convert (TREE_TYPE (fptrse.expr),
+					       cptrse.expr));
+      gfc_add_expr_to_block (&se.pre, se.expr);
+      gfc_add_block_to_block (&se.pre, &se.post);
+      return gfc_finish_block (&se.pre);
+    }
+
+  gfc_start_block (&block);
+
+  /* Get the descriptor of the Fortran pointer.  */
+  fptrse.descriptor_only = 1;
+  gfc_conv_expr_descriptor (&fptrse, arg->next->expr);
+  gfc_add_block_to_block (&block, &fptrse.pre);
+  desc = fptrse.expr;
+
+  /* Set data value, dtype, and offset.  */
+  tmp = GFC_TYPE_ARRAY_DATAPTR_TYPE (TREE_TYPE (desc));
+  gfc_conv_descriptor_data_set (&block, desc, fold_convert (tmp, cptrse.expr));
+  gfc_add_modify (&block, gfc_conv_descriptor_dtype (desc),
+		  gfc_get_dtype (TREE_TYPE (desc)));
+
+  /* Start scalarization of the bounds, using the shape argument.  */
+
+  shape_ss = gfc_walk_expr (arg->next->next->expr);
+  gcc_assert (shape_ss != gfc_ss_terminator);
+  gfc_init_se (&shapese, NULL);
+
+  gfc_init_loopinfo (&loop);
+  gfc_add_ss_to_loop (&loop, shape_ss);
+  gfc_conv_ss_startstride (&loop);
+  gfc_conv_loop_setup (&loop, &arg->next->expr->where);
+  gfc_mark_ss_chain_used (shape_ss, 1);
+
+  gfc_copy_loopinfo_to_se (&shapese, &loop);
+  shapese.ss = shape_ss;
+
+  stride = gfc_create_var (gfc_array_index_type, "stride");
+  offset = gfc_create_var (gfc_array_index_type, "offset");
+  gfc_add_modify (&block, stride, gfc_index_one_node);
+  gfc_add_modify (&block, offset, gfc_index_zero_node);
+
+  /* Loop body.  */
+  gfc_start_scalarized_body (&loop, &body);
+
+  dim = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			     loop.loopvar[0], loop.from[0]);
+
+  /* Set bounds and stride. */
+  gfc_conv_descriptor_lbound_set (&body, desc, dim, gfc_index_one_node);
+  gfc_conv_descriptor_stride_set (&body, desc, dim, stride);
+
+  gfc_conv_expr (&shapese, arg->next->next->expr);
+  gfc_add_block_to_block (&body, &shapese.pre);
+  gfc_conv_descriptor_ubound_set (&body, desc, dim, shapese.expr);
+  gfc_add_block_to_block (&body, &shapese.post);
+
+  /* Calculate offset. */
+  gfc_add_modify (&body, offset,
+		  fold_build2_loc (input_location, PLUS_EXPR,
+				   gfc_array_index_type, offset, stride));
+  /* Update stride.  */
+  gfc_add_modify (&body, stride,
+		  fold_build2_loc (input_location, MULT_EXPR,
+				   gfc_array_index_type, stride,
+				   fold_convert (gfc_array_index_type,
+						 shapese.expr)));
+  /* Finish scalarization loop.  */
+  gfc_trans_scalarizing_loops (&loop, &body);
+  gfc_add_block_to_block (&block, &loop.pre);
+  gfc_add_block_to_block (&block, &loop.post);
+  gfc_add_block_to_block (&block, &fptrse.post);
+  gfc_cleanup_loop (&loop);
+
+  gfc_add_modify (&block, offset,
+		  fold_build1_loc (input_location, NEGATE_EXPR,
+				   gfc_array_index_type, offset));
+  gfc_conv_descriptor_offset_set (&block, desc, offset);
+
+  gfc_add_expr_to_block (&se.pre, gfc_finish_block (&block));
+  gfc_add_block_to_block (&se.pre, &se.post);
+  return gfc_finish_block (&se.pre);
+}
+
+
 /* Generate code for an intrinsic function.  Some map directly to library
    calls, others get special handling.  In some cases the name of the function
    used depends on the type specifiers.  */
@@ -6474,6 +6676,12 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_BLT:
       gfc_conv_intrinsic_bitcomp (se, expr, LT_EXPR);
+      break;
+
+    case GFC_ISYM_C_ASSOCIATED:
+    case GFC_ISYM_C_FUNLOC:
+    case GFC_ISYM_C_LOC:
+      conv_isocbinding_function (se, expr);
       break;
 
     case GFC_ISYM_ACHAR:
@@ -7584,6 +7792,12 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
     case GFC_ISYM_ATOMIC_REF:
       res = conv_intrinsic_atomic_ref (code);
       break;
+
+    case GFC_ISYM_C_F_POINTER:
+    case GFC_ISYM_C_F_PROCPOINTER:
+      res = conv_isocbinding_subroutine (code);
+      break;
+
 
     default:
       res = NULL_TREE;

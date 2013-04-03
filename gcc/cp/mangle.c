@@ -663,7 +663,7 @@ write_mangled_name (const tree decl, bool top_level)
 	  write_source_name (DECL_NAME (decl));
 	}
     }
-  else if (TREE_CODE (decl) == VAR_DECL
+  else if (VAR_P (decl)
 	   /* The names of non-static global variables aren't mangled.  */
 	   && DECL_EXTERNAL_LINKAGE_P (decl)
 	   && (CP_DECL_CONTEXT (decl) == global_namespace
@@ -1042,7 +1042,7 @@ write_prefix (const tree node)
     {
       write_prefix (decl_mangling_context (decl));
       write_unqualified_name (decl);
-      if (TREE_CODE (decl) == VAR_DECL
+      if (VAR_P (decl)
 	  || TREE_CODE (decl) == FIELD_DECL)
 	{
 	  /* <data-member-prefix> := <member source-name> M */
@@ -1912,7 +1912,7 @@ write_type (tree type)
 	      write_string (target_mangling);
 	      /* Add substitutions for types other than fundamental
 		 types.  */
-	      if (TREE_CODE (type) != VOID_TYPE
+	      if (!VOID_TYPE_P (type)
 		  && TREE_CODE (type) != INTEGER_TYPE
 		  && TREE_CODE (type) != REAL_TYPE
 		  && TREE_CODE (type) != BOOLEAN_TYPE)
@@ -1966,7 +1966,7 @@ write_type (tree type)
 
 	    case POINTER_TYPE:
 	    case REFERENCE_TYPE:
-	      if (TREE_CODE (type) == POINTER_TYPE)
+	      if (TYPE_PTR_P (type))
 		write_char ('P');
 	      else if (TYPE_REF_IS_RVALUE (type))
 		write_char ('O');
@@ -2555,6 +2555,8 @@ write_expression (tree expr)
      is converted (via qualification conversions) to another
      type.  */
   while (TREE_CODE (expr) == NOP_EXPR
+	 /* Parentheses aren't mangled.  */
+	 || code == PAREN_EXPR
 	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
     {
       expr = TREE_OPERAND (expr, 0);
@@ -2691,7 +2693,7 @@ write_expression (tree expr)
 	  write_member_name (member);
 	}
     }
-  else if (TREE_CODE (expr) == INDIRECT_REF
+  else if (INDIRECT_REF_P (expr)
 	   && TREE_TYPE (TREE_OPERAND (expr, 0))
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == REFERENCE_TYPE)
     {

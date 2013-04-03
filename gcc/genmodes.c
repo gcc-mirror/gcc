@@ -848,6 +848,36 @@ calc_wider_mode (void)
 
 #define print_closer() puts ("};")
 
+/* Compute the max bitsize of some of the classes of integers.  It may
+   be that there are needs for the other integer classes, and this
+   code is easy to extend.  */
+static void
+emit_max_int (void)
+{
+  unsigned int max, mmax;
+  struct mode_data *i;
+  int j;
+
+  puts ("");
+  for (max = 1, i = modes[MODE_INT]; i; i = i->next)
+    if (max < i->bytesize)
+	max = i->bytesize;
+  mmax = max;
+  for (max = 1, i = modes[MODE_PARTIAL_INT]; i; i = i->next)
+    if (max < i->bytesize)
+	max = i->bytesize;
+  if (max > mmax)
+    mmax = max;
+  printf ("#define MAX_BITSIZE_MODE_ANY_INT %d*BITS_PER_UNIT\n", mmax);
+
+  mmax = 0;
+  for (j = 0; j < MAX_MODE_CLASS; j++)
+    for (i = modes[j]; i; i = i->next)
+      if (mmax < i->bytesize)
+	mmax = i->bytesize;
+  printf ("#define MAX_BITSIZE_MODE_ANY_MODE %d*BITS_PER_UNIT\n", mmax);
+}
+
 static void
 emit_insn_modes_h (void)
 {
@@ -912,6 +942,7 @@ enum machine_mode\n{");
 #endif
   printf ("#define CONST_MODE_IBIT%s\n", adj_ibit ? "" : " const");
   printf ("#define CONST_MODE_FBIT%s\n", adj_fbit ? "" : " const");
+  emit_max_int ();
   puts ("\
 \n\
 #endif /* insn-modes.h */");

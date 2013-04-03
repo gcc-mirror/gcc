@@ -7116,7 +7116,7 @@ static inline int
 thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 {
   enum machine_mode mode = GET_MODE (x);
-  int total;
+  int total, words;
 
   switch (code)
     {
@@ -7124,6 +7124,8 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     case ASHIFTRT:
     case LSHIFTRT:
     case ROTATERT:
+      return (mode == SImode) ? COSTS_N_INSNS (1) : COSTS_N_INSNS (2);
+
     case PLUS:
     case MINUS:
     case COMPARE:
@@ -7147,7 +7149,10 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       return COSTS_N_INSNS (1) + 16;
 
     case SET:
-      return (COSTS_N_INSNS (1)
+      /* A SET doesn't have a mode, so let's look at the SET_DEST to get
+	 the mode.  */
+      words = ARM_NUM_INTS (GET_MODE_SIZE (GET_MODE (SET_DEST (x))));
+      return (COSTS_N_INSNS (words)
 	      + 4 * ((MEM_P (SET_SRC (x)))
 		     + MEM_P (SET_DEST (x))));
 
@@ -7844,6 +7849,7 @@ static inline int
 thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 {
   enum machine_mode mode = GET_MODE (x);
+  int words;
 
   switch (code)
     {
@@ -7851,6 +7857,8 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     case ASHIFTRT:
     case LSHIFTRT:
     case ROTATERT:
+      return (mode == SImode) ? COSTS_N_INSNS (1) : COSTS_N_INSNS (2);
+
     case PLUS:
     case MINUS:
     case COMPARE:
@@ -7869,7 +7877,10 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       return COSTS_N_INSNS (1);
 
     case SET:
-      return (COSTS_N_INSNS (1)
+      /* A SET doesn't have a mode, so let's look at the SET_DEST to get
+	 the mode.  */
+      words = ARM_NUM_INTS (GET_MODE_SIZE (GET_MODE (SET_DEST (x))));
+      return (COSTS_N_INSNS (words)
               + 4 * ((MEM_P (SET_SRC (x)))
                      + MEM_P (SET_DEST (x))));
 
@@ -12813,9 +12824,7 @@ is_jump_table (rtx insn)
       && ((table = next_real_insn (JUMP_LABEL (insn)))
 	  == next_real_insn (insn))
       && table != NULL
-      && JUMP_P (table)
-      && (GET_CODE (PATTERN (table)) == ADDR_VEC
-	  || GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC))
+      && JUMP_TABLE_DATA_P (table))
     return table;
 
   return NULL_RTX;
@@ -17997,7 +18006,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	      "wC12",  "wC13",  "wC14",  "wC15"
 	    };
 
-	  fprintf (stream, wc_reg_names [INTVAL (x)]);
+	  fputs (wc_reg_names [INTVAL (x)], stream);
 	}
       return;
 
@@ -22645,12 +22654,7 @@ thumb_far_jump_used_p (void)
      insn with the far jump attribute set.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (JUMP_P (insn)
-	  /* Ignore tablejump patterns.  */
-	  && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
-	  && get_attr_far_jump (insn) == FAR_JUMP_YES
-	  )
+      if (JUMP_P (insn) && get_attr_far_jump (insn) == FAR_JUMP_YES)
 	{
 	  /* Record the fact that we have decided that
 	     the function does use far jumps.  */
@@ -26225,39 +26229,71 @@ arm_post_atomic_barrier (enum memmodel model)
     emit_insn (gen_memory_barrier ());
 }
 
-/* Emit the load-exclusive and store-exclusive instructions.  */
+/* Emit the load-exclusive and store-exclusive instructions.
+   Use acquire and release versions if necessary.  */
 
 static void
-arm_emit_load_exclusive (enum machine_mode mode, rtx rval, rtx mem)
+arm_emit_load_exclusive (enum machine_mode mode, rtx rval, rtx mem, bool acq)
 {
   rtx (*gen) (rtx, rtx);
 
-  switch (mode)
+  if (acq)
     {
-    case QImode: gen = gen_arm_load_exclusiveqi; break;
-    case HImode: gen = gen_arm_load_exclusivehi; break;
-    case SImode: gen = gen_arm_load_exclusivesi; break;
-    case DImode: gen = gen_arm_load_exclusivedi; break;
-    default:
-      gcc_unreachable ();
+      switch (mode)
+        {
+        case QImode: gen = gen_arm_load_acquire_exclusiveqi; break;
+        case HImode: gen = gen_arm_load_acquire_exclusivehi; break;
+        case SImode: gen = gen_arm_load_acquire_exclusivesi; break;
+        case DImode: gen = gen_arm_load_acquire_exclusivedi; break;
+        default:
+          gcc_unreachable ();
+        }
+    }
+  else
+    {
+      switch (mode)
+        {
+        case QImode: gen = gen_arm_load_exclusiveqi; break;
+        case HImode: gen = gen_arm_load_exclusivehi; break;
+        case SImode: gen = gen_arm_load_exclusivesi; break;
+        case DImode: gen = gen_arm_load_exclusivedi; break;
+        default:
+          gcc_unreachable ();
+        }
     }
 
   emit_insn (gen (rval, mem));
 }
 
 static void
-arm_emit_store_exclusive (enum machine_mode mode, rtx bval, rtx rval, rtx mem)
+arm_emit_store_exclusive (enum machine_mode mode, rtx bval, rtx rval,
+                          rtx mem, bool rel)
 {
   rtx (*gen) (rtx, rtx, rtx);
 
-  switch (mode)
+  if (rel)
     {
-    case QImode: gen = gen_arm_store_exclusiveqi; break;
-    case HImode: gen = gen_arm_store_exclusivehi; break;
-    case SImode: gen = gen_arm_store_exclusivesi; break;
-    case DImode: gen = gen_arm_store_exclusivedi; break;
-    default:
-      gcc_unreachable ();
+      switch (mode)
+        {
+        case QImode: gen = gen_arm_store_release_exclusiveqi; break;
+        case HImode: gen = gen_arm_store_release_exclusivehi; break;
+        case SImode: gen = gen_arm_store_release_exclusivesi; break;
+        case DImode: gen = gen_arm_store_release_exclusivedi; break;
+        default:
+          gcc_unreachable ();
+        }
+    }
+  else
+    {
+      switch (mode)
+        {
+        case QImode: gen = gen_arm_store_exclusiveqi; break;
+        case HImode: gen = gen_arm_store_exclusivehi; break;
+        case SImode: gen = gen_arm_store_exclusivesi; break;
+        case DImode: gen = gen_arm_store_exclusivedi; break;
+        default:
+          gcc_unreachable ();
+        }
     }
 
   emit_insn (gen (bval, rval, mem));
@@ -26292,6 +26328,15 @@ arm_expand_compare_and_swap (rtx operands[])
   mod_s = operands[6];
   mod_f = operands[7];
   mode = GET_MODE (mem);
+
+  /* Normally the succ memory model must be stronger than fail, but in the
+     unlikely event of fail being ACQUIRE and succ being RELEASE we need to
+     promote succ to ACQ_REL so that we don't lose the acquire semantics.  */
+
+  if (TARGET_HAVE_LDACQ
+      && INTVAL (mod_f) == MEMMODEL_ACQUIRE
+      && INTVAL (mod_s) == MEMMODEL_RELEASE)
+    mod_s = GEN_INT (MEMMODEL_ACQ_REL);
 
   switch (mode)
     {
@@ -26367,7 +26412,19 @@ arm_split_compare_and_swap (rtx operands[])
   scratch = operands[7];
   mode = GET_MODE (mem);
 
-  arm_pre_atomic_barrier (mod_s);
+  bool use_acquire = TARGET_HAVE_LDACQ
+                     && !(mod_s == MEMMODEL_RELAXED
+                          || mod_s == MEMMODEL_CONSUME
+                          || mod_s == MEMMODEL_RELEASE);
+
+  bool use_release = TARGET_HAVE_LDACQ
+                     && !(mod_s == MEMMODEL_RELAXED
+                          || mod_s == MEMMODEL_CONSUME
+                          || mod_s == MEMMODEL_ACQUIRE);
+
+  /* Checks whether a barrier is needed and emits one accordingly.  */
+  if (!(use_acquire || use_release))
+    arm_pre_atomic_barrier (mod_s);
 
   label1 = NULL_RTX;
   if (!is_weak)
@@ -26377,7 +26434,7 @@ arm_split_compare_and_swap (rtx operands[])
     }
   label2 = gen_label_rtx ();
 
-  arm_emit_load_exclusive (mode, rval, mem);
+  arm_emit_load_exclusive (mode, rval, mem, use_acquire);
 
   cond = arm_gen_compare_reg (NE, rval, oldval, scratch);
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
@@ -26385,7 +26442,7 @@ arm_split_compare_and_swap (rtx operands[])
 			    gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
   emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
 
-  arm_emit_store_exclusive (mode, scratch, mem, newval);
+  arm_emit_store_exclusive (mode, scratch, mem, newval, use_release);
 
   /* Weak or strong, we want EQ to be true for success, so that we
      match the flags that we got from the compare above.  */
@@ -26404,7 +26461,9 @@ arm_split_compare_and_swap (rtx operands[])
   if (mod_f != MEMMODEL_RELAXED)
     emit_label (label2);
 
-  arm_post_atomic_barrier (mod_s);
+  /* Checks whether a barrier is needed and emits one accordingly.  */
+  if (!(use_acquire || use_release))
+    arm_post_atomic_barrier (mod_s);
 
   if (mod_f == MEMMODEL_RELAXED)
     emit_label (label2);
@@ -26419,7 +26478,19 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   enum machine_mode wmode = (mode == DImode ? DImode : SImode);
   rtx label, x;
 
-  arm_pre_atomic_barrier (model);
+  bool use_acquire = TARGET_HAVE_LDACQ
+                     && !(model == MEMMODEL_RELAXED
+                          || model == MEMMODEL_CONSUME
+                          || model == MEMMODEL_RELEASE);
+
+  bool use_release = TARGET_HAVE_LDACQ
+                     && !(model == MEMMODEL_RELAXED
+                          || model == MEMMODEL_CONSUME
+                          || model == MEMMODEL_ACQUIRE);
+
+  /* Checks whether a barrier is needed and emits one accordingly.  */
+  if (!(use_acquire || use_release))
+    arm_pre_atomic_barrier (model);
 
   label = gen_label_rtx ();
   emit_label (label);
@@ -26432,7 +26503,7 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
     old_out = new_out;
   value = simplify_gen_subreg (wmode, value, mode, 0);
 
-  arm_emit_load_exclusive (mode, old_out, mem);
+  arm_emit_load_exclusive (mode, old_out, mem, use_acquire);
 
   switch (code)
     {
@@ -26480,12 +26551,15 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
       break;
     }
 
-  arm_emit_store_exclusive (mode, cond, mem, gen_lowpart (mode, new_out));
+  arm_emit_store_exclusive (mode, cond, mem, gen_lowpart (mode, new_out),
+                            use_release);
 
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
   emit_unlikely_jump (gen_cbranchsi4 (x, cond, const0_rtx, label));
 
-  arm_post_atomic_barrier (model);
+  /* Checks whether a barrier is needed and emits one accordingly.  */
+  if (!(use_acquire || use_release))
+    arm_post_atomic_barrier (model);
 }
 
 #define MAX_VECT_LEN 16

@@ -135,6 +135,10 @@ optimize_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   else
     count_arglist = 0;
 
+  current_code = c;
+  inserted_block = NULL;
+  changed_statement = NULL;
+
   if (op == EXEC_ASSIGN)
     optimize_assignment (*c);
   return 0;
@@ -991,12 +995,97 @@ optimize_lexical_comparison (gfc_expr *e)
   return false;
 }
 
+/* Combine stuff like [a]>b into [a>b], for easier optimization later.  Do not
+   do CHARACTER because of possible pessimization involving character
+   lengths.  */
+
+static bool
+combine_array_constructor (gfc_expr *e)
+{
+
+  gfc_expr *op1, *op2;
+  gfc_expr *scalar;
+  gfc_expr *new_expr;
+  gfc_constructor *c, *new_c;
+  gfc_constructor_base oldbase, newbase;
+  bool scalar_first;
+
+  /* Array constructors have rank one.  */
+  if (e->rank != 1)
+    return false;
+
+  op1 = e->value.op.op1;
+  op2 = e->value.op.op2;
+
+  if (op1->expr_type == EXPR_ARRAY && op2->rank == 0)
+    scalar_first = false;
+  else if (op2->expr_type == EXPR_ARRAY && op1->rank == 0)
+    {
+      scalar_first = true;
+      op1 = e->value.op.op2;
+      op2 = e->value.op.op1;
+    }
+  else
+    return false;
+
+  if (op2->ts.type == BT_CHARACTER)
+    return false;
+
+  if (op2->expr_type == EXPR_CONSTANT)
+    scalar = gfc_copy_expr (op2);
+  else
+    scalar = create_var (gfc_copy_expr (op2));
+
+  oldbase = op1->value.constructor;
+  newbase = NULL;
+  e->expr_type = EXPR_ARRAY;
+
+  c = gfc_constructor_first (oldbase);
+
+  for (c = gfc_constructor_first (oldbase); c;
+       c = gfc_constructor_next (c))
+    {
+      new_expr = gfc_get_expr ();
+      new_expr->ts = e->ts;
+      new_expr->expr_type = EXPR_OP;
+      new_expr->rank = c->expr->rank;
+      new_expr->where = c->where;
+      new_expr->value.op.op = e->value.op.op;
+
+      if (scalar_first)
+	{
+	  new_expr->value.op.op1 = gfc_copy_expr (scalar);
+	  new_expr->value.op.op2 = gfc_copy_expr (c->expr);
+	}
+      else
+	{
+	  new_expr->value.op.op1 = gfc_copy_expr (c->expr);
+	  new_expr->value.op.op2 = gfc_copy_expr (scalar);
+	}
+
+      new_c = gfc_constructor_append_expr (&newbase, new_expr, &(e->where));
+      new_c->iterator = c->iterator;
+      c->iterator = NULL;
+    }
+
+  gfc_free_expr (op1);
+  gfc_free_expr (op2);
+
+  e->value.constructor = newbase;
+  return true;
+}
+
+
 /* Recursive optimization of operators.  */
 
 static bool
 optimize_op (gfc_expr *e)
 {
+  bool changed;
+
   gfc_intrinsic_op op = e->value.op.op;
+
+  changed = false;
 
   /* Only use new-style comparisons.  */
   switch(op)
@@ -1037,7 +1126,15 @@ optimize_op (gfc_expr *e)
     case INTRINSIC_NE:
     case INTRINSIC_GT:
     case INTRINSIC_LT:
-      return optimize_comparison (e, op);
+      changed = optimize_comparison (e, op);
+
+      /* Fall through */
+      /* Look at array constructors.  */
+    case INTRINSIC_PLUS:
+    case INTRINSIC_MINUS:
+    case INTRINSIC_TIMES:
+    case INTRINSIC_DIVIDE:
+      return combine_array_constructor (e) || changed;
 
     default:
       break;

@@ -10,5 +10,5 @@ __m128i y;
 void extern
 avx2_test (void)
 {
-  x = _mm_broadcastsi128_si256 (y);
+  x = _mm256_broadcastsi128_si256 (y);
 }

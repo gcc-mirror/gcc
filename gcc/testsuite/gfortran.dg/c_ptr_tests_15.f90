@@ -41,8 +41,10 @@ program test
   if(c_associated(file%gsl_func)) call abort()
 end program test
 
-! { dg-final { scan-tree-dump-times "gsl_file = 0B" 1 "original" } }
-! { dg-final { scan-tree-dump-times "gsl_func = 0B" 1 "original" } }
+! { dg-final { scan-tree-dump-times "c_funptr.\[0-9\]+ = 0B;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "fgsl_file.\[0-9\]+.gsl_func = c_funptr.\[0-9\]+;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "c_ptr.\[0-9\]+ = 0B;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "fgsl_file.\[0-9\]+.gsl_file = c_ptr.\[0-9\]+;" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "NIptr = 0B"    0 "original" } }
 ! { dg-final { scan-tree-dump-times "NIfunptr = 0B" 0 "original" } }

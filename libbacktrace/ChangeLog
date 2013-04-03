@@ -1,3 +1,8 @@
+2013-03-25  Ian Lance Taylor  <iant@google.com>
+
+	* alloc.c: #include <sys/types.h>.
+	* mmap.c: Likewise.
+
 2013-01-31  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf.c (read_function_info): Permit fvec parameter to be NULL.

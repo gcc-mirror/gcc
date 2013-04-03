@@ -261,6 +261,10 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 
   if (ts->type == BT_CHARACTER && ts->u.cl)
     sym->ts.u.cl = gfc_new_charlen (sym->ns, ts->u.cl);
+  else if (ts->type == BT_CLASS
+	   && gfc_build_class_symbol (&sym->ts, &sym->attr,
+				      &sym->as, false) == FAILURE)
+    return FAILURE;
 
   if (sym->attr.is_bind_c == 1 && gfc_option.warn_c_binding_type)
     {
@@ -3939,75 +3943,32 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 /* Generate symbols for the named constants c_null_ptr and c_null_funptr.  */
 
 static gfc_try
-gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
-                           const char *module_name)
+gen_special_c_interop_ptr (gfc_symbol *tmp_sym, gfc_symtree *dt_symtree)
 {
-  gfc_symtree *tmp_symtree;
-  gfc_symbol *tmp_sym;
   gfc_constructor *c;
 
-  tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, ptr_name);
-	 
-  if (tmp_symtree != NULL)
-    tmp_sym = tmp_symtree->n.sym;
-  else
-    {
-      tmp_sym = NULL;
-      gfc_internal_error ("gen_special_c_interop_ptr(): Unable to "
-                          "create symbol for %s", ptr_name);
-    }
+  gcc_assert (tmp_sym && dt_symtree && dt_symtree->n.sym);
+  dt_symtree->n.sym->attr.referenced = 1;
 
-  tmp_sym->ts.is_c_interop = 1;
   tmp_sym->attr.is_c_interop = 1;
+  tmp_sym->attr.is_bind_c = 1;
+  tmp_sym->ts.is_c_interop = 1;
   tmp_sym->ts.is_iso_c = 1;
   tmp_sym->ts.type = BT_DERIVED;
+  tmp_sym->ts.f90_type = BT_VOID;
   tmp_sym->attr.flavor = FL_PARAMETER;
-
-  /* The c_ptr and c_funptr derived types will provide the
-     definition for c_null_ptr and c_null_funptr, respectively.  */
-  if (ptr_id == ISOCBINDING_NULL_PTR)
-    tmp_sym->ts.u.derived = get_iso_c_binding_dt (ISOCBINDING_PTR);
-  else
-    tmp_sym->ts.u.derived = get_iso_c_binding_dt (ISOCBINDING_FUNPTR);
-  if (tmp_sym->ts.u.derived == NULL)
-    {
-      /* This can occur if the user forgot to declare c_ptr or
-         c_funptr and they're trying to use one of the procedures
-         that has arg(s) of the missing type.  In this case, a
-         regular version of the thing should have been put in the
-         current ns.  */
-
-      generate_isocbinding_symbol (module_name, ptr_id == ISOCBINDING_NULL_PTR 
-                                   ? ISOCBINDING_PTR : ISOCBINDING_FUNPTR,
-                                   (const char *) (ptr_id == ISOCBINDING_NULL_PTR 
-				   ? "c_ptr"
-				   : "c_funptr"));
-      tmp_sym->ts.u.derived =
-	get_iso_c_binding_dt (ptr_id == ISOCBINDING_NULL_PTR
-			      ? ISOCBINDING_PTR : ISOCBINDING_FUNPTR);
-    }
-
-  /* Module name is some mangled version of iso_c_binding.  */
-  tmp_sym->module = gfc_get_string (module_name);
-  
-  /* Say it's from the iso_c_binding module.  */
-  tmp_sym->attr.is_iso_c = 1;
-  
-  tmp_sym->attr.use_assoc = 1;
-  tmp_sym->attr.is_bind_c = 1;
-  /* Since we never generate a call to this symbol, don't set the
-     binding_label.  */
+  tmp_sym->ts.u.derived = dt_symtree->n.sym;
   
   /* Set the c_address field of c_null_ptr and c_null_funptr to
      the value of NULL.	 */
   tmp_sym->value = gfc_get_expr ();
   tmp_sym->value->expr_type = EXPR_STRUCTURE;
   tmp_sym->value->ts.type = BT_DERIVED;
+  tmp_sym->value->ts.f90_type = BT_VOID;
   tmp_sym->value->ts.u.derived = tmp_sym->ts.u.derived;
   gfc_constructor_append_expr (&tmp_sym->value->value.constructor, NULL, NULL);
   c = gfc_constructor_first (tmp_sym->value->value.constructor);
-  c->expr = gfc_get_expr ();
-  c->expr->expr_type = EXPR_NULL;
+  c->expr = gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
   c->expr->ts.is_iso_c = 1;
 
   return SUCCESS;
@@ -4037,200 +3998,6 @@ add_formal_arg (gfc_formal_arglist **head,
   (*tail)->next = NULL;
    
   return;
-}
-
-
-/* Generates a symbol representing the CPTR argument to an
-   iso_c_binding procedure.  Also, create a gfc_formal_arglist for the
-   CPTR and add it to the provided argument list.  */
-
-static void
-gen_cptr_param (gfc_formal_arglist **head,
-                gfc_formal_arglist **tail,
-                const char *module_name,
-                gfc_namespace *ns, const char *c_ptr_name,
-                int iso_c_sym_id)
-{
-  gfc_symbol *param_sym = NULL;
-  gfc_symbol *c_ptr_sym = NULL;
-  gfc_symtree *param_symtree = NULL;
-  gfc_formal_arglist *formal_arg = NULL;
-  const char *c_ptr_in;
-  const char *c_ptr_type = NULL;
-
-  if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
-    c_ptr_type = "c_funptr";
-  else
-    c_ptr_type = "c_ptr";
-
-  if(c_ptr_name == NULL)
-    c_ptr_in = "gfc_cptr__";
-  else
-    c_ptr_in = c_ptr_name;
-  gfc_get_sym_tree (c_ptr_in, ns, &param_symtree, false);
-  if (param_symtree != NULL)
-    param_sym = param_symtree->n.sym;
-  else
-    gfc_internal_error ("gen_cptr_param(): Unable to "
-			"create symbol for %s", c_ptr_in);
-
-  /* Set up the appropriate fields for the new c_ptr param sym.  */
-  param_sym->refs++;
-  param_sym->attr.flavor = FL_DERIVED;
-  param_sym->ts.type = BT_DERIVED;
-  param_sym->attr.intent = INTENT_IN;
-  param_sym->attr.dummy = 1;
-
-  /* This will pass the ptr to the iso_c routines as a (void *).  */
-  param_sym->attr.value = 1;
-  param_sym->attr.use_assoc = 1;
-
-  /* Get the symbol for c_ptr or c_funptr, no matter what it's name is 
-     (user renamed).  */
-  if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
-    c_ptr_sym = get_iso_c_binding_dt (ISOCBINDING_FUNPTR);
-  else
-    c_ptr_sym = get_iso_c_binding_dt (ISOCBINDING_PTR);
-  if (c_ptr_sym == NULL)
-    {
-      /* This can happen if the user did not define c_ptr but they are
-         trying to use one of the iso_c_binding functions that need it.  */
-      if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
-	generate_isocbinding_symbol (module_name, ISOCBINDING_FUNPTR,
-				     (const char *)c_ptr_type);
-      else
-	generate_isocbinding_symbol (module_name, ISOCBINDING_PTR,
-				     (const char *)c_ptr_type);
-
-      gfc_get_ha_symbol (c_ptr_type, &(c_ptr_sym));
-    }
-
-  param_sym->ts.u.derived = c_ptr_sym;
-  param_sym->module = gfc_get_string (module_name);
-
-  /* Make new formal arg.  */
-  formal_arg = gfc_get_formal_arglist ();
-  /* Add arg to list of formal args (the CPTR arg).  */
-  add_formal_arg (head, tail, formal_arg, param_sym);
-
-  /* Validate changes.  */
-  gfc_commit_symbol (param_sym);
-}
-
-
-/* Generates a symbol representing the FPTR argument to an
-   iso_c_binding procedure.  Also, create a gfc_formal_arglist for the
-   FPTR and add it to the provided argument list.  */
-
-static void
-gen_fptr_param (gfc_formal_arglist **head,
-                gfc_formal_arglist **tail,
-                const char *module_name,
-                gfc_namespace *ns, const char *f_ptr_name, int proc)
-{
-  gfc_symbol *param_sym = NULL;
-  gfc_symtree *param_symtree = NULL;
-  gfc_formal_arglist *formal_arg = NULL;
-  const char *f_ptr_out = "gfc_fptr__";
-
-  if (f_ptr_name != NULL)
-    f_ptr_out = f_ptr_name;
-
-  gfc_get_sym_tree (f_ptr_out, ns, &param_symtree, false);
-  if (param_symtree != NULL)
-    param_sym = param_symtree->n.sym;
-  else
-    gfc_internal_error ("generateFPtrParam(): Unable to "
-			"create symbol for %s", f_ptr_out);
-
-  /* Set up the necessary fields for the fptr output param sym.  */
-  param_sym->refs++;
-  if (proc)
-    param_sym->attr.proc_pointer = 1;
-  else
-    param_sym->attr.pointer = 1;
-  param_sym->attr.dummy = 1;
-  param_sym->attr.use_assoc = 1;
-
-  /* ISO C Binding type to allow any pointer type as actual param.  */
-  param_sym->ts.type = BT_VOID;
-  param_sym->module = gfc_get_string (module_name);
-   
-  /* Make the arg.  */
-  formal_arg = gfc_get_formal_arglist ();
-  /* Add arg to list of formal args.  */
-  add_formal_arg (head, tail, formal_arg, param_sym);
-
-  /* Validate changes.  */
-  gfc_commit_symbol (param_sym);
-}
-
-
-/* Generates a symbol representing the optional SHAPE argument for the
-   iso_c_binding c_f_pointer() procedure.  Also, create a
-   gfc_formal_arglist for the SHAPE and add it to the provided
-   argument list.  */
-
-static void
-gen_shape_param (gfc_formal_arglist **head,
-                 gfc_formal_arglist **tail,
-                 const char *module_name,
-                 gfc_namespace *ns, const char *shape_param_name)
-{
-  gfc_symbol *param_sym = NULL;
-  gfc_symtree *param_symtree = NULL;
-  gfc_formal_arglist *formal_arg = NULL;
-  const char *shape_param = "gfc_shape_array__";
-
-  if (shape_param_name != NULL)
-    shape_param = shape_param_name;
-
-  gfc_get_sym_tree (shape_param, ns, &param_symtree, false);
-  if (param_symtree != NULL)
-    param_sym = param_symtree->n.sym;
-  else
-    gfc_internal_error ("generateShapeParam(): Unable to "
-			"create symbol for %s", shape_param);
-   
-  /* Set up the necessary fields for the shape input param sym.  */
-  param_sym->refs++;
-  param_sym->attr.dummy = 1;
-  param_sym->attr.use_assoc = 1;
-
-  /* Integer array, rank 1, describing the shape of the object.  Make it's
-     type BT_VOID initially so we can accept any type/kind combination of
-     integer.  During gfc_iso_c_sub_interface (resolve.c), we'll make it
-     of BT_INTEGER type.  */
-  param_sym->ts.type = BT_VOID;
-
-  /* Initialize the kind to default integer.  However, it will be overridden
-     during resolution to match the kind of the SHAPE parameter given as
-     the actual argument (to allow for any valid integer kind).  */
-  param_sym->ts.kind = gfc_default_integer_kind;
-  param_sym->as = gfc_get_array_spec ();
-
-  param_sym->as->rank = 1;
-  param_sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
-					      NULL, 1);
-
-  /* The extent is unknown until we get it.  The length give us
-     the rank the incoming pointer.  */
-  param_sym->as->type = AS_ASSUMED_SHAPE;
-
-  /* The arg is also optional; it is required iff the second arg
-     (fptr) is to an array, otherwise, it's ignored.  */
-  param_sym->attr.optional = 1;
-  param_sym->attr.intent = INTENT_IN;
-  param_sym->attr.dimension = 1;
-  param_sym->module = gfc_get_string (module_name);
-   
-  /* Make the arg.  */
-  formal_arg = gfc_get_formal_arglist ();
-  /* Add arg to list of formal args.  */
-  add_formal_arg (head, tail, formal_arg, param_sym);
-
-  /* Validate changes.  */
-  gfc_commit_symbol (param_sym);
 }
 
 
@@ -4314,74 +4081,6 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
 }
 
 
-/* Builds the parameter list for the iso_c_binding procedure
-   c_f_pointer or c_f_procpointer.  The old_sym typically refers to a
-   generic version of either the c_f_pointer or c_f_procpointer
-   functions.  The new_proc_sym represents a "resolved" version of the
-   symbol.  The functions are resolved to match the types of their
-   parameters; for example, c_f_pointer(cptr, fptr) would resolve to
-   something similar to c_f_pointer_i4 if the type of data object fptr
-   pointed to was a default integer.  The actual name of the resolved
-   procedure symbol is further mangled with the module name, etc., but
-   the idea holds true.  */
-
-static void
-build_formal_args (gfc_symbol *new_proc_sym,
-                   gfc_symbol *old_sym, int add_optional_arg)
-{
-  gfc_formal_arglist *head = NULL, *tail = NULL;
-  gfc_namespace *parent_ns = NULL;
-
-  parent_ns = gfc_current_ns;
-  /* Create a new namespace, which will be the formal ns (namespace
-     of the formal args).  */
-  gfc_current_ns = gfc_get_namespace(parent_ns, 0);
-  gfc_current_ns->proc_name = new_proc_sym;
-
-  /* Generate the params.  */
-  if (old_sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER)
-    {
-      gen_cptr_param (&head, &tail, (const char *) new_proc_sym->module,
-		      gfc_current_ns, "cptr", old_sym->intmod_sym_id);
-      gen_fptr_param (&head, &tail, (const char *) new_proc_sym->module,
-		      gfc_current_ns, "fptr", 1);
-    }
-  else if (old_sym->intmod_sym_id == ISOCBINDING_F_POINTER)
-    {
-      gen_cptr_param (&head, &tail, (const char *) new_proc_sym->module,
-		      gfc_current_ns, "cptr", old_sym->intmod_sym_id);
-      gen_fptr_param (&head, &tail, (const char *) new_proc_sym->module,
-		      gfc_current_ns, "fptr", 0);
-      /* If we're dealing with c_f_pointer, it has an optional third arg.  */
-      gen_shape_param (&head, &tail,(const char *) new_proc_sym->module,
-		       gfc_current_ns, "shape");
-
-    }
-  else if (old_sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
-    {
-      /* c_associated has one required arg and one optional; both
-	 are c_ptrs.  */
-      gen_cptr_param (&head, &tail, (const char *) new_proc_sym->module,
-		      gfc_current_ns, "c_ptr_1", ISOCBINDING_ASSOCIATED);
-      if (add_optional_arg)
-	{
-	  gen_cptr_param (&head, &tail, (const char *) new_proc_sym->module,
-			  gfc_current_ns, "c_ptr_2", ISOCBINDING_ASSOCIATED);
-	  /* The last param is optional so mark it as such.  */
-	  tail->sym->attr.optional = 1;
-	}
-    }
-
-  /* Add the interface (store formal args to new_proc_sym).  */
-  add_proc_interface (new_proc_sym, IFSRC_DECL, head);
-
-  /* Set up the formal_ns pointer to the one created for the
-     new procedure so it'll get cleaned up during gfc_free_symbol().  */
-  new_proc_sym->formal_ns = gfc_current_ns;
-
-  gfc_current_ns = parent_ns;
-}
-
 static int
 std_for_isocbinding_symbol (int id)
 {
@@ -4396,8 +4095,12 @@ std_for_isocbinding_symbol (int id)
 #define NAMED_FUNCTION(a,b,c,d) \
       case a:\
         return d;
+#define NAMED_SUBROUTINE(a,b,c,d) \
+      case a:\
+        return d;
 #include "iso-c-binding.def"
 #undef NAMED_FUNCTION
+#undef NAMED_SUBROUTINE
 
        default:
          return GFC_STD_F2003;
@@ -4412,23 +4115,29 @@ std_for_isocbinding_symbol (int id)
    reported.  If the user does not give an 'only' clause, all
    iso_c_binding symbols are generated.  If a list of specific kinds
    is given, it must have a NULL in the first empty spot to mark the
-   end of the list.  */
+   end of the list. For C_null_(fun)ptr, dt_symtree has to be set and
+   point to the symtree for c_(fun)ptr.  */
 
-
-void
+gfc_symtree *
 generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
-			     const char *local_name)
+			     const char *local_name, gfc_symtree *dt_symtree,
+			     bool hidden)
 {
-  const char *const name = (local_name && local_name[0]) ? local_name
-					     : c_interop_kinds_table[s].name;
-  gfc_symtree *tmp_symtree = NULL;
+  const char *const name = (local_name && local_name[0])
+			   ? local_name : c_interop_kinds_table[s].name;
+  gfc_symtree *tmp_symtree;
   gfc_symbol *tmp_sym = NULL;
   int index;
 
   if (gfc_notification_std (std_for_isocbinding_symbol (s)) == ERROR)
-    return;
+    return NULL;
 
   tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
+  if (hidden
+      && (!tmp_symtree || !tmp_symtree->n.sym
+	  || tmp_symtree->n.sym->from_intmod != INTMOD_ISO_C_BINDING
+	  || tmp_symtree->n.sym->intmod_sym_id != s))
+    tmp_symtree = NULL;
 
   /* Already exists in this scope so don't re-add it. */
   if (tmp_symtree != NULL && (tmp_sym = tmp_symtree->n.sym) != NULL
@@ -4446,21 +4155,40 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
   	  gfc_derived_types = dt_list;
         }
 
-      return;
+      return tmp_symtree;
     }
 
   /* Create the sym tree in the current ns.  */
-  gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
-  if (tmp_symtree)
-    tmp_sym = tmp_symtree->n.sym;
+  if (hidden)
+    {
+      tmp_symtree = gfc_get_unique_symtree (gfc_current_ns);
+      tmp_sym = gfc_new_symbol (name, gfc_current_ns);
+
+      /* Add to the list of tentative symbols.  */
+      latest_undo_chgset->syms.safe_push (tmp_sym);
+      tmp_sym->old_symbol = NULL;
+      tmp_sym->mark = 1;
+      tmp_sym->gfc_new = 1;
+
+      tmp_symtree->n.sym = tmp_sym;
+      tmp_sym->refs++;
+    }
   else
-    gfc_internal_error ("generate_isocbinding_symbol(): Unable to "
-			"create symbol");
+    {
+      gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
+      gcc_assert (tmp_symtree);
+      tmp_sym = tmp_symtree->n.sym;
+    }
 
   /* Say what module this symbol belongs to.  */
   tmp_sym->module = gfc_get_string (mod_name);
   tmp_sym->from_intmod = INTMOD_ISO_C_BINDING;
   tmp_sym->intmod_sym_id = s;
+  tmp_sym->attr.is_iso_c = 1;
+  tmp_sym->attr.use_assoc = 1;
+
+  gcc_assert (dt_symtree == NULL || s == ISOCBINDING_NULL_FUNPTR
+	      || s == ISOCBINDING_NULL_PTR);
 
   switch (s)
     {
@@ -4490,11 +4218,6 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	/* Tell what f90 type this c interop kind is valid.  */
 	tmp_sym->ts.f90_type = c_interop_kinds_table[s].f90_type;
 
-	/* Say it's from the iso_c_binding module.  */
-	tmp_sym->attr.is_iso_c = 1;
-
-	/* Make it use associated.  */
-	tmp_sym->attr.use_assoc = 1;
 	break;
 
 
@@ -4531,70 +4254,69 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	/* Tell what f90 type this c interop kind is valid.  */
 	tmp_sym->ts.f90_type = BT_CHARACTER;
 
-	/* Say it's from the iso_c_binding module.  */
-	tmp_sym->attr.is_iso_c = 1;
-
-	/* Make it use associated.  */
-	tmp_sym->attr.use_assoc = 1;
 	break;
 
       case ISOCBINDING_PTR:
       case ISOCBINDING_FUNPTR:
 	{
-	  gfc_interface *intr, *head;
 	  gfc_symbol *dt_sym;
-	  const char *hidden_name;
 	  gfc_dt_list **dt_list_ptr = NULL;
 	  gfc_component *tmp_comp = NULL;
-	  char comp_name[(GFC_MAX_SYMBOL_LEN * 2) + 1];
-
-	  hidden_name = gfc_get_string ("%c%s",
-			    (char) TOUPPER ((unsigned char) tmp_sym->name[0]),
-                            &tmp_sym->name[1]);
 
 	  /* Generate real derived type.  */
-	  tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root,
-					  hidden_name);
-
-	  if (tmp_symtree != NULL)
-	    gcc_unreachable ();
-	  gfc_get_sym_tree (hidden_name, gfc_current_ns, &tmp_symtree, false);
-	  if (tmp_symtree)
-	    dt_sym = tmp_symtree->n.sym;
+	  if (hidden)
+	    dt_sym = tmp_sym;
 	  else
-	    gcc_unreachable ();
+	    {
+	      const char *hidden_name;
+	      gfc_interface *intr, *head;
 
-	  /* Generate an artificial generic function.  */
-	  dt_sym->name = gfc_get_string (tmp_sym->name);
-	  head = tmp_sym->generic;
-	  intr = gfc_get_interface ();
-	  intr->sym = dt_sym;
-	  intr->where = gfc_current_locus;
-	  intr->next = head;
-	  tmp_sym->generic = intr;
+	      hidden_name = gfc_get_string ("%c%s",
+					    (char) TOUPPER ((unsigned char)
+							      tmp_sym->name[0]),
+					    &tmp_sym->name[1]);
+	      tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root,
+					      hidden_name);
+	      gcc_assert (tmp_symtree == NULL);
+	      gfc_get_sym_tree (hidden_name, gfc_current_ns, &tmp_symtree, false);
+	      dt_sym = tmp_symtree->n.sym;
+	      dt_sym->name = gfc_get_string (s == ISOCBINDING_PTR
+					    ? "c_ptr" : "c_funptr");
 
-	  if (!tmp_sym->attr.generic
-	      && gfc_add_generic (&tmp_sym->attr, tmp_sym->name, NULL)
-		 == FAILURE)
-	    return;
+	      /* Generate an artificial generic function.  */
+	      head = tmp_sym->generic;
+	      intr = gfc_get_interface ();
+	      intr->sym = dt_sym;
+	      intr->where = gfc_current_locus;
+	      intr->next = head;
+	      tmp_sym->generic = intr;
 
-	  if (!tmp_sym->attr.function
-	      && gfc_add_function (&tmp_sym->attr, tmp_sym->name, NULL)
-		 == FAILURE)
-	    return;
+	      if (!tmp_sym->attr.generic
+		  && gfc_add_generic (&tmp_sym->attr, tmp_sym->name, NULL)
+		     == FAILURE)
+		return NULL;
+
+	      if (!tmp_sym->attr.function
+		  && gfc_add_function (&tmp_sym->attr, tmp_sym->name, NULL)
+		     == FAILURE)
+		return NULL;
+	    }
 
 	  /* Say what module this symbol belongs to.  */
 	  dt_sym->module = gfc_get_string (mod_name);
 	  dt_sym->from_intmod = INTMOD_ISO_C_BINDING;
 	  dt_sym->intmod_sym_id = s;
+          dt_sym->attr.use_assoc = 1;
 
 	  /* Initialize an integer constant expression node.  */
 	  dt_sym->attr.flavor = FL_DERIVED;
 	  dt_sym->ts.is_c_interop = 1;
 	  dt_sym->attr.is_c_interop = 1;
-	  dt_sym->attr.is_iso_c = 1;
+	  dt_sym->attr.private_comp = 1;
+	  dt_sym->component_access = ACCESS_PRIVATE;
 	  dt_sym->ts.is_iso_c = 1;
 	  dt_sym->ts.type = BT_DERIVED;
+	  dt_sym->ts.f90_type = BT_VOID;
 
 	  /* A derived type must have the bind attribute to be
 	     interoperable (J3/04-007, Section 15.2.3), even though
@@ -4617,15 +4339,9 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	  (*dt_list_ptr)->derived = dt_sym;
 	  (*dt_list_ptr)->next = NULL;
 
-	  /* Set up the component of the derived type, which will be
-	     an integer with kind equal to c_ptr_size.  Mangle the name of
-	     the field for the c_address to prevent the curious user from
-	     trying to access it from Fortran.  */
-	  sprintf (comp_name, "__%s_%s", dt_sym->name, "c_address");
-	  gfc_add_component (dt_sym, comp_name, &tmp_comp);
+	  gfc_add_component (dt_sym, "c_address", &tmp_comp);
 	  if (tmp_comp == NULL)
-          gfc_internal_error ("generate_isocbinding_symbol(): Unable to "
-			      "create component for c_address");
+	    gcc_unreachable ();
 
 	  tmp_comp->ts.type = BT_INTEGER;
 
@@ -4635,163 +4351,24 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	  /* The kinds for c_ptr and c_funptr are the same.  */
 	  index = get_c_kind ("c_ptr", c_interop_kinds_table);
 	  tmp_comp->ts.kind = c_interop_kinds_table[index].value;
-
-	  tmp_comp->attr.pointer = 0;
-	  tmp_comp->attr.dimension = 0;
+	  tmp_comp->attr.access = ACCESS_PRIVATE;
 
 	  /* Mark the component as C interoperable.  */
 	  tmp_comp->ts.is_c_interop = 1;
-
-	  /* Make it use associated (iso_c_binding module).  */
-	  dt_sym->attr.use_assoc = 1;
 	}
 
 	break;
 
       case ISOCBINDING_NULL_PTR:
       case ISOCBINDING_NULL_FUNPTR:
-        gen_special_c_interop_ptr (s, name, mod_name);
+        gen_special_c_interop_ptr (tmp_sym, dt_symtree);
         break;
-
-      case ISOCBINDING_F_POINTER:
-      case ISOCBINDING_ASSOCIATED:
-      case ISOCBINDING_LOC:
-      case ISOCBINDING_FUNLOC:
-      case ISOCBINDING_F_PROCPOINTER:
-
-	tmp_sym->attr.proc = PROC_MODULE;
-
-        /* Use the procedure's name as it is in the iso_c_binding module for
-           setting the binding label in case the user renamed the symbol.  */
-	tmp_sym->binding_label = 
-	  gfc_get_string ("%s_%s", mod_name, 
-			  c_interop_kinds_table[s].name);
-	tmp_sym->attr.is_iso_c = 1;
-	if (s == ISOCBINDING_F_POINTER || s == ISOCBINDING_F_PROCPOINTER)
-	  tmp_sym->attr.subroutine = 1;
-	else
-	  {
-            /* TODO!  This needs to be finished more for the expr of the
-               function or something!
-               This may not need to be here, because trying to do c_loc
-               as an external.  */
-	    if (s == ISOCBINDING_ASSOCIATED)
-	      {
-		tmp_sym->attr.function = 1;
-		tmp_sym->ts.type = BT_LOGICAL;
-		tmp_sym->ts.kind = gfc_default_logical_kind;
-		tmp_sym->result = tmp_sym;
-	      }
-	    else
-	      {
-               /* Here, we're taking the simple approach.  We're defining
-                  c_loc as an external identifier so the compiler will put
-                  what we expect on the stack for the address we want the
-                  C address of.  */
-		tmp_sym->ts.type = BT_DERIVED;
-                if (s == ISOCBINDING_LOC)
-                  tmp_sym->ts.u.derived =
-                    get_iso_c_binding_dt (ISOCBINDING_PTR);
-                else
-                  tmp_sym->ts.u.derived =
-                    get_iso_c_binding_dt (ISOCBINDING_FUNPTR);
-
-		if (tmp_sym->ts.u.derived == NULL)
-		  {
-                    /* Create the necessary derived type so we can continue
-                       processing the file.  */
-		    generate_isocbinding_symbol
-		      (mod_name, s == ISOCBINDING_FUNLOC
-				? ISOCBINDING_FUNPTR : ISOCBINDING_PTR,
-		      (const char *)(s == ISOCBINDING_FUNLOC
-				? "c_funptr" : "c_ptr"));
-                    tmp_sym->ts.u.derived =
-		    get_iso_c_binding_dt (s == ISOCBINDING_FUNLOC
-					    ? ISOCBINDING_FUNPTR
-					    : ISOCBINDING_PTR);
-		  }
-
-		/* The function result is itself (no result clause).  */
-		tmp_sym->result = tmp_sym;
-		tmp_sym->attr.external = 1;
-		tmp_sym->attr.use_assoc = 0;
-		tmp_sym->attr.pure = 1;
-		tmp_sym->attr.if_source = IFSRC_UNKNOWN;
-		tmp_sym->attr.proc = PROC_UNKNOWN;
-	      }
-	  }
-
-	tmp_sym->attr.flavor = FL_PROCEDURE;
-	tmp_sym->attr.contained = 0;
-	
-       /* Try using this builder routine, with the new and old symbols
-          both being the generic iso_c proc sym being created.  This
-          will create the formal args (and the new namespace for them).
-          Don't build an arg list for c_loc because we're going to treat
-          c_loc as an external procedure.  */
-	if (s != ISOCBINDING_LOC && s != ISOCBINDING_FUNLOC)
-          /* The 1 says to add any optional args, if applicable.  */
-	  build_formal_args (tmp_sym, tmp_sym, 1);
-
-        /* Set this after setting up the symbol, to prevent error messages.  */
-	tmp_sym->attr.use_assoc = 1;
-
-        /* This symbol will not be referenced directly.  It will be
-           resolved to the implementation for the given f90 kind.  */
-	tmp_sym->attr.referenced = 0;
-
-	break;
 
       default:
 	gcc_unreachable ();
     }
   gfc_commit_symbol (tmp_sym);
-}
-
-
-/* Creates a new symbol based off of an old iso_c symbol, with a new
-   binding label.  This function can be used to create a new,
-   resolved, version of a procedure symbol for c_f_pointer or
-   c_f_procpointer that is based on the generic symbols.  A new
-   parameter list is created for the new symbol using
-   build_formal_args().  The add_optional_flag specifies whether the
-   to add the optional SHAPE argument.  The new symbol is
-   returned.  */
-
-gfc_symbol *
-get_iso_c_sym (gfc_symbol *old_sym, char *new_name,
-               const char *new_binding_label, int add_optional_arg)
-{
-  gfc_symtree *new_symtree = NULL;
-
-  /* See if we have a symbol by that name already available, looking
-     through any parent namespaces.  */
-  gfc_find_sym_tree (new_name, gfc_current_ns, 1, &new_symtree);
-  if (new_symtree != NULL)
-    /* Return the existing symbol.  */
-    return new_symtree->n.sym;
-
-  /* Create the symtree/symbol, with attempted host association.  */
-  gfc_get_ha_sym_tree (new_name, &new_symtree);
-  if (new_symtree == NULL)
-    gfc_internal_error ("get_iso_c_sym(): Unable to create "
-			"symtree for '%s'", new_name);
-
-  /* Now fill in the fields of the resolved symbol with the old sym.  */
-  new_symtree->n.sym->binding_label = new_binding_label;
-  new_symtree->n.sym->attr = old_sym->attr;
-  new_symtree->n.sym->ts = old_sym->ts;
-  new_symtree->n.sym->module = gfc_get_string (old_sym->module);
-  new_symtree->n.sym->from_intmod = old_sym->from_intmod;
-  new_symtree->n.sym->intmod_sym_id = old_sym->intmod_sym_id;
-  if (old_sym->attr.function)
-    new_symtree->n.sym->result = new_symtree->n.sym;
-  /* Build the formal arg list.  */
-  build_formal_args (new_symtree->n.sym, old_sym, add_optional_arg);
-
-  gfc_commit_symbol (new_symtree->n.sym);
-
-  return new_symtree->n.sym;
+  return tmp_symtree;
 }
 
 

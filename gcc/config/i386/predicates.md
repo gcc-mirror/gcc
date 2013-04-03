@@ -71,6 +71,18 @@
 	  && (REGNO (op) > LAST_VIRTUAL_REGISTER || REGNO (op) <= BX_REG));
 })
 
+;; Match nonimmediate operands, but exclude memory operands on 64bit targets.
+(define_predicate "nonimmediate_x64nomem_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "register_operand")
+    (match_operand 0 "nonimmediate_operand")))
+
+;; Match general operands, but exclude memory operands on 64bit targets.
+(define_predicate "general_x64nomem_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "nonmemory_operand")
+    (match_operand 0 "general_operand")))
+
 ;; Return true if op is the AX register.
 (define_predicate "ax_reg_operand"
   (and (match_code "reg")
@@ -311,15 +323,15 @@
 	 (match_operand 0 "x86_64_immediate_operand"))
     (match_operand 0 "general_operand")))
 
-;; Return true if OP is general operand representable on x86_64
-;; as zero extended constant.  This predicate is used in zero-extending
-;; conversion operations that require non-VOIDmode immediate operands.
-(define_predicate "x86_64_zext_general_operand"
+;; Return true if OP is representable on x86_64 as zero-extended operand.
+;; This predicate is used in zero-extending conversion operations that
+;; require non-VOIDmode immediate operands.
+(define_predicate "x86_64_zext_operand"
   (if_then_else (match_test "TARGET_64BIT")
     (ior (match_operand 0 "nonimmediate_operand")
 	 (and (match_operand 0 "x86_64_zext_immediate_operand")
 	      (match_test "GET_MODE (op) != VOIDmode")))
-    (match_operand 0 "general_operand")))
+    (match_operand 0 "nonimmediate_operand")))
 
 ;; Return true if OP is general operand representable on x86_64
 ;; as either sign extended or zero extended constant.
@@ -436,6 +448,9 @@
   if (SYMBOL_REF_TLS_MODEL (op))
     return false;
 
+  /* Dll-imported symbols are always external.  */
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES && SYMBOL_REF_DLLIMPORT_P (op))
+    return false;
   if (SYMBOL_REF_LOCAL_P (op))
     return true;
 

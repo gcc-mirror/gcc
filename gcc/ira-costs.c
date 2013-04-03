@@ -1273,8 +1273,7 @@ scan_one_insn (rtx insn)
     return insn;
 
   pat_code = GET_CODE (PATTERN (insn));
-  if (pat_code == USE || pat_code == CLOBBER || pat_code == ASM_INPUT
-      || pat_code == ADDR_VEC || pat_code == ADDR_DIFF_VEC)
+  if (pat_code == USE || pat_code == CLOBBER || pat_code == ASM_INPUT)
     return insn;
 
   counted_mem = false;

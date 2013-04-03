@@ -3191,7 +3191,10 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
 
       if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type)
 	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type)))
-	      != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0_type)))))
+	      != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0_type))))
+	  /* The result of a vector comparison is of signed
+	     integral type.  */
+	  || TYPE_UNSIGNED (TREE_TYPE (type)))
         {
           error ("invalid vector comparison resulting type");
           debug_generic_expr (type);
@@ -7059,7 +7062,8 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
    loop, or just its structure.  */
 
 static void
-print_loop_and_siblings (FILE *file, struct loop *loop, int indent, int verbosity)
+print_loop_and_siblings (FILE *file, struct loop *loop, int indent,
+			 int verbosity)
 {
   if (loop == NULL)
     return;
@@ -7079,6 +7083,40 @@ print_loops (FILE *file, int verbosity)
   bb = ENTRY_BLOCK_PTR;
   if (bb && bb->loop_father)
     print_loop_and_siblings (file, bb->loop_father, 0, verbosity);
+}
+
+/* Dump a loop.  */
+
+DEBUG_FUNCTION void
+debug (struct loop &ref)
+{
+  print_loop (stderr, &ref, 0, /*verbosity*/0);
+}
+
+DEBUG_FUNCTION void
+debug (struct loop *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+/* Dump a loop verbosely.  */
+
+DEBUG_FUNCTION void
+debug_verbose (struct loop &ref)
+{
+  print_loop (stderr, &ref, 0, /*verbosity*/3);
+}
+
+DEBUG_FUNCTION void
+debug_verbose (struct loop *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
 }
 
 

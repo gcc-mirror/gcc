@@ -18,9 +18,12 @@
 
 
 <para>
-  The GNU C++ Library follows an open development model. Active
-  contributors are assigned maintainer-ship responsibility, and given
-  write access to the source repository. First time contributors
+  The GNU C++ Library is part of GCC and follows the same development model,
+  so the general rules for
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/contribute.html">contributing
+  to GCC</link> apply. Active
+  contributors are assigned maintainership responsibility, and given
+  write access to the source repository. First-time contributors
   should follow this procedure:
 </para>
 
@@ -44,7 +47,7 @@
 	  organization is
 	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.ansi.org">ANSI</link>.
 	  (And if you've already registered with them you can
-	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://webstore.ansi.org/RecordDetail.aspx?sku=INCITS%2fISO%2fIEC+14882-2003">buy the standard on-line</link>.)
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://webstore.ansi.org/RecordDetail.aspx?sku=INCITS%2fISO%2fIEC+14882-2012">buy the standard on-line</link>.)
 	</para>
       </listitem>
 
@@ -58,17 +61,8 @@
 
       <listitem>
 	<para>
-	  The newsgroup dedicated to standardization issues is
-	  comp.std.c++: the
-	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.comeaucomputing.com/csc/faq.html">FAQ</link>
-          for this group is quite useful.
-      </para>
-      </listitem>
-
-      <listitem>
-	<para>
 	  Peruse
-	  the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/standards">GNU
+	  the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/standards/">GNU
 	  Coding Standards</link>, and chuckle when you hit the part
 	  about <quote>Using Languages Other Than C</quote>.
 	</para>
@@ -95,10 +89,7 @@
   <section xml:id="list.copyright"><info><title>Assignment</title></info>
     
     <para>
-      Small changes can be accepted without a copyright assignment form on
-      file. New code and additions to the library need completed copyright
-      assignment form on file at the FSF. Note: your employer may be required
-      to fill out appropriate disclaimer forms as well.
+      See the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/contribute.html#legal">legal prerequisites</link> for all GCC contributions.
     </para>
 
     <para>
@@ -116,12 +107,6 @@
     <para>
       While not strictly necessary, humoring the maintainers and answering
       this question would be appreciated.
-    </para>
-
-    <para>
-      For more information about getting a copyright assignment, please see
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/maintain/html_node/Legal-Matters.html">Legal
-	Matters</link>.
     </para>
 
     <para>

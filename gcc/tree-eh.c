@@ -1855,7 +1855,8 @@ lower_eh_must_not_throw (struct leh_state *state, gimple tp)
       this_region = gen_eh_region_must_not_throw (state->cur_region);
       this_region->u.must_not_throw.failure_decl
 	= gimple_eh_must_not_throw_fndecl (inner);
-      this_region->u.must_not_throw.failure_loc = gimple_location (tp);
+      this_region->u.must_not_throw.failure_loc
+	= LOCATION_LOCUS (gimple_location (tp));
 
       /* In order to get mangling applied to this decl, we must mark it
 	 used now.  Otherwise, pass_ipa_free_lang_data won't think it

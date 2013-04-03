@@ -501,6 +501,20 @@ gfc_resolve_btest (gfc_expr *f, gfc_expr *i, gfc_expr *pos)
 
 
 void
+gfc_resolve_c_loc (gfc_expr *f, gfc_expr *x ATTRIBUTE_UNUSED)
+{
+  f->ts = f->value.function.isym->ts;
+}
+
+
+void
+gfc_resolve_c_funloc (gfc_expr *f, gfc_expr *x ATTRIBUTE_UNUSED)
+{
+  f->ts = f->value.function.isym->ts;
+}
+
+
+void
 gfc_resolve_ceiling (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;

@@ -1214,6 +1214,24 @@ dump_var_map (FILE *f, var_map map)
 }
 
 
+/* Generic dump for the above.  */
+
+DEBUG_FUNCTION void
+debug (_var_map &ref)
+{
+  dump_var_map (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (_var_map *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 /* Output live range info LIVE to file F, controlled by FLAG.  */
 
 void
@@ -1252,6 +1270,25 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
 	}
     }
 }
+
+
+/* Generic dump for the above.  */
+
+DEBUG_FUNCTION void
+debug (tree_live_info_d &ref)
+{
+  dump_live_info (stderr, &ref, 0);
+}
+
+DEBUG_FUNCTION void
+debug (tree_live_info_d *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 #ifdef ENABLE_CHECKING
 /* Verify that SSA_VAR is a non-virtual SSA_NAME.  */

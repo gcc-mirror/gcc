@@ -98,7 +98,7 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
 
   /* Handle C++-specific things first.  */
 
-  if (TREE_CODE (arg) == VAR_DECL
+  if (VAR_P (arg)
       && DECL_LANG_SPECIFIC (arg)
       && DECL_IN_AGGR_P (arg)
       && !TREE_STATIC (arg))
@@ -111,9 +111,9 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
 			  G_("decrement of "
 			     "constant field %qD"),
 			  arg);
-  else if (TREE_CODE (arg) == INDIRECT_REF
+  else if (INDIRECT_REF_P (arg)
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
-	   && (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
+	   && (VAR_P (TREE_OPERAND (arg, 0))
 	       || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
     ERROR_FOR_ASSIGNMENT (G_("assignment of "
                              "read-only reference %qD"),
@@ -265,15 +265,15 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
     return 0;
   type = TYPE_MAIN_VARIANT (type);
 
-  /* In SFINAE context, force instantiation.  */
-  if (!(complain & tf_error))
+  /* In SFINAE, non-N3276 context, force instantiation.  */
+  if (!(complain & (tf_error|tf_decltype)))
     complete_type (type);
 
   /* If the type is incomplete, we register it within a hash table,
      so that we can check again once it is completed. This makes sense
      only for objects for which we have a declaration or at least a
      name.  */
-  if (!COMPLETE_TYPE_P (type))
+  if (!COMPLETE_TYPE_P (type) && (complain & tf_error))
     {
       void **slot;
       struct pending_abstract_type *pat;
@@ -315,7 +315,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
 
   if (decl)
     {
-      if (TREE_CODE (decl) == VAR_DECL)
+      if (VAR_P (decl))
 	error ("cannot declare variable %q+D to be of abstract "
 	       "type %qT", decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
@@ -441,7 +441,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
-  if (value != 0 && (TREE_CODE (value) == VAR_DECL
+  if (value != 0 && (VAR_P (value)
 		     || TREE_CODE (value) == PARM_DECL
 		     || TREE_CODE (value) == FIELD_DECL))
     {
@@ -1585,7 +1585,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
   else
     last_rval = decay_conversion (expr, complain);
 
-  if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
+  if (TYPE_PTR_P (TREE_TYPE (last_rval)))
     {
       if (processing_template_decl)
 	{
@@ -1671,7 +1671,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 
   if (TYPE_PTRDATAMEM_P (ptrmem_type))
     {
-      bool is_lval = real_lvalue_p (datum);
+      cp_lvalue_kind kind = lvalue_kind (datum);
       tree ptype;
 
       /* Compute the type of the field, as described in [expr.ref].
@@ -1701,12 +1701,31 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	return error_mark_node;
 
       /* If the object expression was an rvalue, return an rvalue.  */
-      if (!is_lval)
+      if (kind & clk_class)
+	datum = rvalue (datum);
+      else if (kind & clk_rvalueref)
 	datum = move (datum);
       return datum;
     }
   else
-    return build2 (OFFSET_REF, type, datum, component);
+    {
+      /* 5.5/6: In a .* expression whose object expression is an rvalue, the
+	 program is ill-formed if the second operand is a pointer to member
+	 function with ref-qualifier &. In a .* expression whose object
+	 expression is an lvalue, the program is ill-formed if the second
+	 operand is a pointer to member function with ref-qualifier &&.  */
+      if (FUNCTION_REF_QUALIFIED (type))
+	{
+	  bool lval = real_lvalue_p (datum);
+	  if (lval && FUNCTION_RVALUE_QUALIFIED (type))
+	    error ("pointer-to-member-function type %qT requires an rvalue",
+		   ptrmem_type);
+	  else if (!lval && !FUNCTION_RVALUE_QUALIFIED (type))
+	    error ("pointer-to-member-function type %qT requires an lvalue",
+		   ptrmem_type);
+	}
+      return build2 (OFFSET_REF, type, datum, component);
+    }
 }
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
@@ -1849,7 +1868,7 @@ add_exception_specifier (tree list, tree spec, int complain)
   /* [except.spec] 1, type in an exception specifier shall not be
      incomplete, or pointer or ref to incomplete other than pointer
      to cv void.  */
-  is_ptr = TREE_CODE (core) == POINTER_TYPE;
+  is_ptr = TYPE_PTR_P (core);
   if (is_ptr || TREE_CODE (core) == REFERENCE_TYPE)
     core = TREE_TYPE (core);
   if (complain < 0)

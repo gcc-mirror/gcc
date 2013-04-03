@@ -664,8 +664,11 @@ case ${target} in
   # Add Android userspace support to Linux targets.
   case $target in
     *linux*)
+      tm_p_file="${tm_p_file} linux-protos.h"
+      tmake_file="${tmake_file} t-linux-android"
       tm_file="$tm_file linux-android.h"
       extra_options="$extra_options linux-android.opt"
+      extra_objs="$extra_objs linux-android.o"
       ;;
   esac
   # Enable compilation for Android by default for *android* targets.
@@ -875,8 +878,9 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	    tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 	    ;;
 	esac
-	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
-	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
+	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi t-linux-android"
+	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
+	extra_objs="$extra_objs linux-android.o"
 	# Define multilib configuration for arm-linux-androideabi.
 	case ${target} in
 	*-androideabi)
@@ -1451,6 +1455,22 @@ i[34567]86-*-cygwin*)
 		thread_file='posix'
 	fi
 	use_gcc_stdint=wrap
+	;;
+x86_64-*-cygwin*)
+	need_64bit_isa=yes
+	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h i386/cygwin-w64.h i386/cygwin-stdint.h"
+	xm_file=i386/xm-cygwin.h
+	tmake_file="${tmake_file} i386/t-cygming t-slibgcc i386/t-cygwin-w64"
+	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
+	extra_options="${extra_options} i386/cygming.opt"
+	extra_objs="winnt.o winnt-stubs.o"
+	c_target_objs="${c_target_objs} msformat-c.o"
+	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	use_gcc_stdint=wrap
+	tm_defines="${tm_defines} TARGET_CYGWIN64=1"
 	;;
 i[34567]86-*-mingw* | x86_64-*-mingw*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h"

@@ -740,11 +740,16 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  else
 	    {
 	      /* Load.  */
-              /* FORNOW: Check that there is no gap between the loads.  */
-              if ((GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
-                   && GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
-                  || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != stmt
-                      && GROUP_GAP (vinfo_for_stmt (stmt)) != 1))
+              /* FORNOW: Check that there is no gap between the loads
+		 and no gap between the groups when we need to load
+		 multiple groups at once.
+		 ???  We should enhance this to only disallow gaps
+		 inside vectors.  */
+              if ((ncopies > 1
+		   && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
+		   && GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
+		  || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != stmt
+		      && GROUP_GAP (vinfo_for_stmt (stmt)) != 1))
                 {
                   if (dump_enabled_p ())
                     {
@@ -762,7 +767,10 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
               /* Check that the size of interleaved loads group is not
                  greater than the SLP group size.  */
               if (loop_vinfo
-                  && GROUP_SIZE (vinfo_for_stmt (stmt)) > ncopies * group_size)
+		  && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
+                  && ((GROUP_SIZE (vinfo_for_stmt (stmt))
+		       - GROUP_GAP (vinfo_for_stmt (stmt)))
+		      > ncopies * group_size))
                 {
                   if (dump_enabled_p ())
                     {

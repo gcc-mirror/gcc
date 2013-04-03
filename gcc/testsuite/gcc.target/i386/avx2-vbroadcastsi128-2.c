@@ -19,7 +19,7 @@ avx2_test (void)
       for (j = 0; j < 2; j++)
 	s1.a[j] = j * i;
 
-      res.x = _mm_broadcastsi128_si256 (s1.x);
+      res.x = _mm256_broadcastsi128_si256 (s1.x);
 
       memcpy (res_ref, s1.a, 16);
       memcpy (res_ref + 2, s1.a, 16);

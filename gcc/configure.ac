@@ -2475,10 +2475,11 @@ AC_ARG_ENABLE(gnu-indirect-function,
 Valid choices are 'yes' and 'no'.]) ;;
   esac],
  [enable_gnu_indirect_function="$default_gnu_indirect_function"])
-if test x$enable_gnu_indirect_function = xyes; then
-  AC_DEFINE(HAVE_GNU_INDIRECT_FUNCTION, 1,
-   [Define if your system supports gnu indirect functions.])
-fi
+
+gif=`if test x$enable_gnu_indirect_function = xyes; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(HAVE_GNU_INDIRECT_FUNCTION, $gif,
+[Define if your system supports gnu indirect functions.])
+
 
 changequote(,)dnl
 if test $in_tree_ld != yes ; then
@@ -3799,7 +3800,7 @@ changequote([,])dnl
 	# wrappers to aid in interposing and redirecting operators new, delete,
 	# etc., as per n2800 #17.6.4.6 [replacement.functions].  Check if we
 	# are configuring for a version of Cygwin that exports the wrappers.
-	if test x$host = x$target; then
+	if test x$host = x$target && test x$host_cpu = xi686; then
 	  AC_CHECK_FUNC([__wrap__Znaj],[gcc_ac_cygwin_dll_wrappers=yes],[gcc_ac_cygwin_dll_wrappers=no])
 	else
 	  # Can't check presence of libc functions during cross-compile, so

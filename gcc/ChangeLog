@@ -1,3 +1,907 @@
+2013-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reorg.c (get_branch_condition): Deal with conditional returns.
+	(fill_simple_delay_slots): Remove dead code dealing with jumps.
+
+2013-04-01  Wei Mi  <wmi@google.com>
+
+	* config/i386/i386.md (*ashl<mode>3_mask): Rewrite as define_insn.
+	Truncate operand 2 using %b asm operand modifier.
+	(*<shift_insn><mode>3_mask): Ditto.
+	(*<rotate_insn><mode>3_mask): Ditto.
+
+2013-04-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/56798
+	* cfgbuild.c (inside_basic_block_p): Restore check broken at r197234.
+
+2013-03-31  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (casesi_worker_1): Use next_active_insn instead
+	of next_real_insn.
+	(casesi_worker_2, casesi_shift_media, casesi_load_media): Likewise.
+
+2013-03-30  Lawrence Crowl  <crowl@google.com>
+
+	* dse.c (clear_alias_sets): Remove never set.
+	(disqualified_clear_alias_sets): Remove never set.
+	(clear_alias_mode_pool): Remove never set.
+	(dse_step0): Remove condition that is never true.
+	(canon_address): Remove condition that is never true.
+	(dse_step7): Remove condition that is never true.
+	(rest_of_handle_dse): Remove condition that is never true.
+	(rest_of_handle_dse::did_global): Remove never read from above.
+	(dse_step2_spill): Remove never called from above.
+	(dse_step5_spill): Remove never called from above.
+
+2013-03-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/md.texi (Standard Names) <casesi>: Update documentation for
+	JUMP_TABLE_DATA changes.
+	* doc/tm.texi.in (Dispatch Tables) <ASM_OUTPUT_CASE_LABEL>: Likewise.
+	* doc/rtl.texi (Flags) <INSN_DELETED_P, SCHED_GROUP_P>: Likewise.
+	(Insns) <jump_table_data>: New entry.
+	* doc/tm.texi: Regenerate.
+
+	* cfgrtl.c (fixup_reorder_chain): Do not emit barriers to BB_FOOTER.
+
+	* postreload-gcse.c (bb_has_well_behaved_predecessors): Correct test
+	for table jump at the end of a basic block using tablejump_p.
+	* targhooks.c (default_invalid_within_doloop): Likewise.
+	* config/rs6000/rs6000.c (TARGET_INVALID_WITHIN_DOLOOP): Remove
+	target hook implementation that is identical to the default hook.
+	(rs6000_invalid_within_doloop): Remove.
+
+	* bb-reorder.c (fix_crossing_unconditional_branches): Remove set but
+	unused variable from tablejump_p call.
+
+	* rtl.def (JUMP_TABLE_DATA): New RTX_INSN object.
+	* rtl.h (RTX_PREV, RTX_NEXT): Adjust for new JUMP_TABLE_DATA.
+	(INSN_DELETED_P): Likewise.
+	(emit_jump_table_data): New prototype.
+	* gengtype.c (adjust_field_rtx_def): Handle JUMP_TABLE_DATA fields
+	after 4th as unused.
+	* print-rtl.c (print_rtl): Handle JUMP_TABLE_DATA.
+	* sched-vis.c (print_insn): Likewise.
+	* emit-rtl.c (active_insn_p): Consider JUMP_TABLE_DATA an active
+	insn for compatibility with back ends that use next_active_insn to
+	identify jump table data.
+	(set_insn_deleted): Remove no longer useful JUMP_TABLE_DATA_P check.
+	(remove_insn): Likewise.
+	(emit_insn): Do not accept JUMP_TABLE_DATA objects in insn chains
+	to be emitted.
+	(emit_debug_insn, emit_jump_insn, emit_call_insn, emit_label): Idem.
+	(emit_jump_table_data): New function.
+
+	* cfgbuild.c (inside_basic_block_p): A JUMP_INSN is always inside a
+	basic block, a JUMP_TABLE_DATA never is.
+	(control_flow_insn_p): JUMP_TABLE_DATA is not a control flow insn.
+	* cfgrtl.c (duplicate_insn_chain): Split handling of JUMP_TABLE_DATA
+	off from code handling real insns.
+	* final.c (get_attr_length_1): Simplify for JUMP_INSNs.
+	* function.c (instantiate_virtual_regs): Remove JUMP_TABLE_DATA_P
+	test, now redundant because JUMP_TABLE_DATA is not an INSN_P insn.
+	* gcse.c (insert_insn_end_basic_block): Likewise, JUMP_TABLE_DATA_P
+	is not a NONDEBUG_INSN_P.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* jump.c (mark_all_labels): Likewise.
+	(mark_jump_label_1): Likewise.
+	* lra-eliminations.c (eliminate_regs_in_insn): Likewise.
+	* lra.c (get_insn_freq): Expect all insns reaching here to be in
+	a basic block.
+	(check_rtl): Remove JUMP_TABLE_DATA_P test, not a NONDEBUG_INSN_P insn.
+	* predict.c (expensive_function_p): Use FOR_BB_INSNS.
+	* reload1.c (calculate_needs_all_insns): Call set_label_offsets for
+	JUMP_TABLE_DATA_P insns.
+	(calculate_elim_costs_all_insns): Likewise.
+	(set_label_offsets): Recurse on the PATTERN of JUMP_TABLE_DATA insns.
+	(elimination_costs_in_insn): Remove redundant JUMP_TABLE_DATA_P test.
+	(delete_output_reload): Code style fixups.
+	* reorg.c (dbr_schedule): Move JUMP_TABLE_DATA_P up to avoid setting
+	insn flags on this non-insn.
+	* sched-rgn.c (add_branch_dependences): Treat JUMP_TABLE_DATA insns
+	as scheduling barriers, for pre-change compatibility.
+	* stmt.c (emit_case_dispatch_table): Emit jump table data not as
+	JUMP_INSN objects but instead as JUMP_TABLE_DATA objects.
+
+	* config/alpha/alpha.c (alpha_does_function_need_gp): Remove
+	redundant JUMP_TABLE_DATA_P test.
+	* config/arm/arm.c (thumb_far_jump_used_p): Likewise.
+	* config/frv/frv.c (frv_function_contains_far_jump): Likewise.
+	(frv_for_each_packet): Likewise.
+	* config/i386/i386.c (min_insn_size): Likewise.
+	(ix86_avoid_jump_mispredicts): Likewise.
+	* config/m32r/m32r.c (m32r_is_insn): Likewise.
+	* config/mep/mep.c (mep_reorg_erepeat): Likewise.
+	* config/mips/mips.c (USEFUL_INSN_P): Likewise.
+	(mips16_insn_length): Robustify.
+	(mips_has_long_branch_p): Remove redundant JUMP_TABLE_DATA_P test.
+	(mips16_split_long_branches): Likewise.
+	* config/pa/pa.c (pa_combine_instructions): Likewise.
+	* config/rs6000/rs6000.c (get_next_active_insn): Treat
+	JUMP_TABLE_DATA objects as active insns, like in active_insn_p.
+	* config/s390/s390.c (s390_chunkify_start): Treat JUMP_TABLE_DATA
+	as contributing to pool range lengths.
+	* config/sh/sh.c (find_barrier): Restore check for ADDR_DIFF_VEC.
+	Remove redundant JUMP_TABLE_DATA_P test.
+	(sh_loop_align): Likewise.
+	(split_branches): Likewise.
+	(sh_insn_length_adjustment): Likewise.
+	* config/spu/spu.c (get_branch_target): Likewise.
+
+2013-03-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (output_profile_summary, input_profile_summary): Use
+	gcov streaming; stream hot bb threshold to ltrans.
+	* predict.c (get_hot_bb_threshold): Break out from ....
+	(maybe_hot_count_p): ... here.
+	(set_hot_bb_threshold): New function.
+	* lto-section-in.c (lto_section_name): Add profile.
+	* profile.h (get_hot_bb_threshold, set_hot_bb_threshold): Declare.
+	* ipa.c: Include hash-table.h, tree-inline.h, profile.h, lto-streamer.h
+	and data-streamer.h
+	(histogram_entry): New structure.
+	(histogram, histogram_pool): New global vars.
+	(histogram_hash): New structure.
+	(histogram_hash::hash): New method.
+	(histogram_hash::equal): Likewise.
+	(account_time_size): New function.
+	(cmp_counts): New function.
+	(dump_histogram): New function.
+	(ipa_profile_generate_summary): New function.
+	(ipa_profile_write_summary): New function.
+	(ipa_profile_read_summary): New function.
+	(ipa_profile): Decide on threshold.
+	(pass_ipa_profile): Add ipa_profile_write_summary and ipa_profile_read_summary.
+	* Makefile.in (ipa.o): Update dependencies.
+	* lto-streamer.h (LTO_section_ipa_profile): New section.
+
+2013-03-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* tree.h (VAR_P): New.
+
+2013-03-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR lto/56777
+	* doc/invoke.texi ([-fwhole-program]): Fix typo.
+
+2013-03-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgbuild.c (inside_basic_block_p): Use JUMP_TABLE_DATA_P in lieu
+	of tests for JUMP_P and a ADDR_DIFF_VEC or ADDR_VEC pattern.
+	(control_flow_insn_p): Likewise.
+	* cfgrtl.c (duplicate_insn_chain): Likewise.
+	* final.c (get_attr_length_1): Likewise.
+	(shorten_branches): Likewise.
+	(final_scan_insn): Likewise.
+	* function.c (instantiate_virtual_regs): Likewise.
+	* gcse.c (insert_insn_end_basic_block): Likewise.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* lra-eliminations.c (eliminate_regs_in_insn): Likewise.
+	* lra.c (check_rtl): Likewise.
+	* reload1.c (elimination_costs_in_insn): Likewise.
+	* reorg.c (follow_jumps): Likewise.
+
+	* config/arm/arm.c (is_jump_table): Use JUMP_TABLE_DATA_P in lieu
+	of tests for JUMP_P and a ADDR_DIFF_VEC or ADDR_VEC pattern.
+	(thumb_far_jump_used_p): Likewise.
+	* config/bfin/bfin.c (workaround_rts_anomaly): Likewise.
+	(workaround_speculation): Likewise.
+	(add_sched_insns_for_speculation): Likewise.
+	* config/c6x/c6x.c (reorg_emit_nops): Likewise.
+	* config/frv/frv.c (frv_function_contains_far_jump): Likewise.
+	(frv_for_each_packet): Likewise.
+	* config/i386/i386.c (ix86_avoid_jump_mispredicts): Likewise.
+	* config/ia64/ia64.c (emit_all_insn_group_barriers): Likewise.
+	(final_emit_insn_group_barriers): Likewise.
+	* config/m32r/m32r.c (m32r_is_insn): Likewise.
+	* config/mips/mips.c (USEFUL_INSN_P): Likewise.
+	(mips16_insn_length): Likewise.
+	* config/pa/pa.c (pa_reorg): Likewise.
+	(pa_combine_instructions): Likewise.
+	* config/rs6000/rs6000.c (rs6000_invalid_within_doloop): Likewise.
+	* config/sh/sh.c (fixup_addr_diff_vecs): Likewise.
+	(sh_reorg): Likewise.
+	(split_branches): Likewise.
+	* config/spu/spu.c (get_branch_target): Likewise.
+
+	* config/s390/s390.c (s390_chunkify_start): Simplify logic using
+	JUMP_TABLE_DATA_P.
+
+2013-03-29  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/avx2intrin.h (_mm256_broadcastsi128_si256):
+	Fix declaration name.
+
+2013-03-28  Lawrence Crowl  <crowl@google.com>
+
+	* graphds.h (struct graph.indicies): Remove unused.
+	* graphite-poly.h (struct graph.original_pddrs): Remove unused.
+	(SCOP_ORIGINAL_PDDRS): Remove unused.
+	* sese.h (extern insert_loop_close_phis): Removed unused.
+	(extern insert_guard_phis): Removed unused.
+	(extern ivtype_map_elt_info): Removed unused.
+	(new_ivtype_map_elt): Removed unused.
+	* sese.c (ivtype_map_elt_info): Removed unused.
+
+2013-03-28  Lawrence Crowl  <crowl@google.com>
+
+	* Makefile.in: Add several missing include dependences.
+	(DUMPFILE_H): New.
+	(test-dump.o): New.  This object is not added to any executable,
+	but is present for ad-hoc testing.
+	* bitmap.c
+	(debug (const bitmap_head_def &)): New.
+	(debug (const bitmap_head_def *)): New.
+	* bitmap.h
+	(extern debug (const bitmap_head_def &)): New.
+	(extern debug (const bitmap_head_def *)): New.
+	* cfg.c
+	(debug (edge_def &)): New.
+	(debug (edge_def *)): New.
+	* cfghooks.c
+	(debug (basic_block_def &)): New.
+	(debug (basic_block_def *)): New.
+	* dumpfile.h
+	(dump_node (const_tree, int, FILE *)): Correct source file.
+	* dwarf2out.c
+	(debug (die_struct &)): New.
+	(debug (die_struct *)): New.
+	* dwarf2out.h
+	(extern debug (die_struct &)): New.
+	(extern debug (die_struct *)): New.
+	* gimple-pretty-print.c
+	(debug (gimple_statement_d &)): New.
+	(debug (gimple_statement_d *)): New.
+	* gimple-pretty-print.h
+	(extern debug (gimple_statement_d &)): New.
+	(extern debug (gimple_statement_d *)): New.
+	* ira-build.c
+	(debug (ira_allocno_copy &)): New.
+	(debug (ira_allocno_copy *)): New.
+	(debug (ira_allocno &)): New.
+	(debug (ira_allocno *)): New.
+	* ira-int.h
+	(extern debug (ira_allocno_copy &)): New.
+	(extern debug (ira_allocno_copy *)): New.
+	(extern debug (ira_allocno &)): New.
+	(extern debug (ira_allocno *)): New.
+	* ira-lives.c
+	(debug (live_range &)): New.
+	(debug (live_range *)): New.
+	* lra-int.h
+	(debug (lra_live_range &)): New.
+	(debug (lra_live_range *)): New.
+	* lra-lives.c
+	(debug (lra_live_range &)): New.
+	(debug (lra_live_range *)): New.
+	* omega.c
+	(debug (omega_pb_d &)): New.
+	(debug (omega_pb_d *)): New.
+	* omega.h
+	(extern debug (omega_pb_d &)): New.
+	(extern debug (omega_pb_d *)): New.
+	* print-rtl.c
+	(debug (const rtx_def &)): New.
+	(debug (const rtx_def *)): New.
+	* print-tree.c
+	(debug_tree (tree): Move within file.
+	(debug_raw (const tree_node &)): New.
+	(debug_raw (const tree_node *)): New.
+	(dump_tree_via_hooks (const tree_node *, int)): New.
+	(debug (const tree_node &)): New.
+	(debug (const tree_node *)): New.
+	(debug_verbose (const tree_node &)): New.
+	(debug_verbose (const tree_node *)): New.
+	(debug_head (const tree_node &)): New.
+	(debug_head (const tree_node *)): New.
+	(debug_body (const tree_node &)): New.
+	(debug_body (const tree_node *)): New.
+	(debug_vec_tree (tree): Move and reimplement in terms of dump.
+	(debug (vec<tree, va_gc> &)): New.
+	(debug (vec<tree, va_gc> *)): New.
+	* rtl.h
+	(extern debug (const rtx_def &)): New.
+	(extern debug (const rtx_def *)): New.
+	* sbitmap.c
+	(debug_raw (simple_bitmap_def &)): New.
+	(debug_raw (simple_bitmap_def *)): New.
+	(debug (simple_bitmap_def &)): New.
+	(debug (simple_bitmap_def *)): New.
+	* sbitmap.h
+	(extern debug (simple_bitmap_def &)): New.
+	(extern debug (simple_bitmap_def *)): New.
+	(extern debug_raw (simple_bitmap_def &)): New.
+	(extern debug_raw (simple_bitmap_def *)): New.
+	* sel-sched-dump.c
+	(debug (vinsn_def &)): New.
+	(debug (vinsn_def *)): New.
+	(debug_verbose (vinsn_def &)): New.
+	(debug_verbose (vinsn_def *)): New.
+	(debug (expr_def &)): New.
+	(debug (expr_def *)): New.
+	(debug_verbose (expr_def &)): New.
+	(debug_verbose (expr_def *)): New.
+	(debug (vec<rtx> &)): New.
+	(debug (vec<rtx> *)): New.
+	* sel-sched-dump.h
+	(extern debug (vinsn_def &)): New.
+	(extern debug (vinsn_def *)): New.
+	(extern debug_verbose (vinsn_def &)): New.
+	(extern debug_verbose (vinsn_def *)): New.
+	(extern debug (expr_def &)): New.
+	(extern debug (expr_def *)): New.
+	(extern debug_verbose (expr_def &)): New.
+	(extern debug_verbose (expr_def *)): New.
+	(extern debug (vec<rtx> &)): New.
+	(extern debug (vec<rtx> *)): New.
+	* sel-sched-ir.h
+	(_list_iter_cond_expr): Make inline instead of static.
+	* sreal.c
+	(debug (sreal &)): New.
+	(debug (sreal *)): New.
+	* sreal.h
+	(extern debug (sreal &)): New.
+	(extern debug (sreal *)): New.
+	* tree.h
+	(extern debug_raw (const tree_node &)): New.
+	(extern debug_raw (const tree_node *)): New.
+	(extern debug (const tree_node &)): New.
+	(extern debug (const tree_node *)): New.
+	(extern debug_verbose (const tree_node &)): New.
+	(extern debug_verbose (const tree_node *)): New.
+	(extern debug_head (const tree_node &)): New.
+	(extern debug_head (const tree_node *)): New.
+	(extern debug_body (const tree_node &)): New.
+	(extern debug_body (const tree_node *)): New.
+	(extern debug (vec<tree, va_gc> &)): New.
+	(extern debug (vec<tree, va_gc> *)): New.
+	* tree-cfg.c
+	(debug (struct loop &)): New.
+	(debug (struct loop *)): New.
+	(debug_verbose (struct loop &)): New.
+	(debug_verbose (struct loop *)): New.
+	* tree-dump.c: Add header dependence.
+	* tree-flow.h
+	(extern debug (struct loop &)): New.
+	(extern debug (struct loop *)): New.
+	(extern debug_verbose (struct loop &)): New.
+	(extern debug_verbose (struct loop *)): New.
+	* tree-data-ref.c
+	(debug (data_reference &)): New.
+	(debug (data_reference *)): New.
+	(debug (vec<data_reference_p> &)): New.
+	(debug (vec<data_reference_p> *)): New.
+	(debug (vec<ddr_p> &)): New.
+	(debug (vec<ddr_p> *)): New.
+	* tree-data-ref.h
+	(extern debug (data_reference &)): New.
+	(extern debug (data_reference *)): New.
+	(extern debug (vec<data_reference_p> &)): New.
+	(extern debug (vec<data_reference_p> *)): New.
+	(extern debug (vec<ddr_p> &)): New.
+	(extern debug (vec<ddr_p> *)): New.
+	* tree-ssa-alias.c
+	(debug (pt_solution &)): New.
+	(debug (pt_solution *)): New.
+	* tree-ssa-alias.h
+	(extern debug (pt_solution &)): New.
+	(extern debug (pt_solution *)): New.
+	* tree-ssa-alias.c
+	(debug (_var_map &)): New.
+	(debug (_var_map *)): New.
+	(debug (tree_live_info_d &)): New.
+	(debug (tree_live_info_d *)): New.
+	* tree-ssa-alias.h
+	(extern debug (_var_map &)): New.
+	(extern debug (_var_map *)): New.
+	(extern debug (tree_live_info_d &)): New.
+	(extern debug (tree_live_info_d *)): New.
+
+2013-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (merge_profile_summaries): Fix overflows.
+
+2013-03-28  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_can_eliminate): Keep frame
+	record only when desired or required.
+
+2013-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*vec_extract2vdi_1): Merge with
+	*vec_extractv2di_1_rex64.  Use x64 isa attribute.
+
+2013-03-28   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.md (*and<mode>3_compare0): New pattern.
+	(*andsi3_compare0_uxtw): New pattern.
+	(*and_<SHIFT:optab><mode>3_compare0): New pattern.
+	(*and_<SHIFT:optab>si3_compare0_uxtw): New pattern.
+
+2013-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* data-streamer-in.c (streamer_read_gcov_count): New function.
+	* gimple-streamer-out.c: Include value-prof.h.
+	(output_gimple_stmt): Output histogram.
+	(output_bb): Use streamer_write_gcov_count.
+	* value-prof.c: Include data-streamer.h
+	(dump_histogram_value): Add HIST_TYPE_MAX.
+	(stream_out_histogram_value): New function.
+	(stream_in_histogram_value): New function.
+	* value-prof.h (enum hist_type): Add HIST_TYPE_MAX.
+	(stream_out_histogram_value, stream_in_histogram_value): Declare.
+	* data-streamer-out.c (streamer_write_gcov_count): New function.
+	(streamer_write_gcov_count_stream): New function.
+	* lto-cgraph.c (lto_output_edge): Update counter streaming.
+	(lto_output_node): Likewise.
+	(input_node, input_edge): Likewise.
+	* lto-streamer-out.c (output_cfg): Update streaming.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* data-streamer.h (streamer_write_gcov_count,
+	streamer_write_gcov_count_stream, streamer_read_gcov_count): Declare.
+	* gimple-streamer-in.c: Include value-prof.h
+	(input_gimple_stmt): Input histograms.
+	(input_bb): Update profile streaming.
+
+2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+   	* genmodes.c (emit_max_int): New function.
+	(emit_insn_modes_h): Added call to emit_max_function.
+	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_INT, MAX_BITSIZE_MODE_ANY_MODE):
+	Added doc.
+	* machmode.def: Fixed comment.
+
+2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* combine.c (try_combine): Removed useless assert.
+	* cselib.c (rtx_equal_for_cselib_1): Removed unnecessary parens.
+
+2013-03-28  Marek Polacek  <polacek@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56695
+	* tree-vect-stmts.c (vectorizable_condition): Unconditionally
+	build signed result of a vector comparison.
+	* tree-cfg.c (verify_gimple_comparison): Check that a result
+	of a vector comparison has signed type.
+
+2013-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/37021
+	* tree-vect-slp.c (vect_build_slp_tree): When not unrolling
+	do not restrict gaps between groups.
+	* tree-vect-stmts.c (vectorizable_load): Properly account for
+	a gap between groups.
+
+2013-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (process_options): Do not disable -fomit-frame-pointer on a
+	general basis if unwind info is requested and ACCUMULATE_OUTGOING_ARGS
+	is not enabled.
+
+2013-03-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (AVR Options): Tweak link for AVR-LibC user manual.
+	* doc/extend.texi (Named Address Spaces): Ditto.
+	(Variable Attributes): Ditto.
+
+2013-03-27  Kai Tietz  <ktietz@redhat.com>
+
+	* config.build: Add support for cygwin x64 target.
+	* config.gcc: Likewise.
+	* config.host: Likewise.
+	* configure.ac: Likewise
+	* configure: Regenerated.
+
+2013-03-27 Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/cygwin-stdint.h: Add support for cygwin x64 target.
+	* config/i386/t-cygwin-w64: New file.
+	* config/i386/cygwin-w64.h: New file.
+	* config/i386/cygwin.h (EXTRA_OS_CPP_BUILTINS): Extend
+	and add support for x64-cygwin target.
+	(CPP_SPEC): Likewise.
+	(CXX_WRAP_SPEC_LIST): Undefine before define.
+	(LIBGCJ_SONAME): Use 15 as version.
+
+2013-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56716
+	* tree-ssa-structalias.c (perform_var_substitution): Adjust
+	dumping for ref nodes.
+
+2013-03-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55334
+	* ipa-cp.c (initialize_node_lattices): Allow IPA-CP through and to
+	restricted pointers to arrays.
+
+2013-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* Makefile.in (.SUFFIXES): Add .cc.
+	(.c.o): Apply same recipe for implicit rule .cc.o.
+
+2013-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/37021
+	* tree-vect-data-refs.c (vect_check_strided_load): Allow
+	REALPART/IMAGPART_EXPRs around the supported refs.
+	* tree-ssa-structalias.c (find_func_aliases): Assume that
+	floating-point values are not used to transfer pointers.
+
+2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* target.def (TARGET_HAS_IFUNC_P): New target hook.
+	* doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_has_ifunc_p): New.
+	* targhooks.c (default_has_ifunc_p): Ditto.
+	* config/linux-protos.h: New file.
+	* config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
+	this hook for linux which disables support of indirect functions in
+	android.
+	* config/linux-android.c: New file.
+	* config/t-linux-android.c: Ditto.
+	* config.gcc: Added new object file linux-android.o.
+	* config/i386/i386.c (ix86_get_function_versions_dispatcher):
+	Using TARGET_HAS_IFUNC hook instead of HAVE_GNU_INDIRECT_FUNCTION.
+	* varasm.c (do_assemble_alias): Likewise.
+	* configure.ac: Define HAVE_GNU_INDIRECT_FUNCTION as zero if the target
+	doesn't support indirect functions.
+	* configure: Regenerate.
+
+2013-03-27  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/56102
+	* config/arm/arm.c (thumb1_rtx_costs, thumb1_size_rtx_costs): Fix
+	rtx costs for SET/ASHIFT/ASHIFTRT/LSHIFTRT/ROTATERT patterns with
+	mult-word mode.
+
+2013-03-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.h (TARGET_FLT_EVAL_METHOD): Define.
+
+2013-03-27  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm-cores.def: Added core cortex-r7.
+	* config/arm/arm-tune.md: Regenerated.
+	* config/arm/arm-tables.opt: Regenerated.
+	* doc/invoke.texi: Added entry for core cortex-r7.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (tilegx_expand_prologue): Avoid
+	double-decrement of next_scratch_regno.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.md (insn_v1mulu): Fix predicates on
+	input operands.
+	(insn_v1mulus): Ditto.
+	(insn_v2muls): Ditto.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.h (ASM_OUTPUT_ADDR_VEC_ELT): Delete
+	extra tab.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Ditto.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.md (*sibcall_insn): Fix type atribute
+	for jr.
+	(*sibcall_value): Ditto.
+
+2013-03-27  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.md (insn_mnz_<mode>): Replaced by ...
+	(insn_mnz_v8qi): ... this ...
+	(insn_mnz_v4hi): ... and this.  Replace (const_int 0) with the
+	vector equivalent.
+	(insn_v<n>mnz): Replaced by ...
+	(insn_v1mnz): ... this ...
+	(insn_v2mnz): ... and this.  Replace (const_int 0) with the vector
+	equivalent.
+	(insn_mz_<mode>): Replaced by ...
+	(insn_mz_v8qi): ... this ...
+	(insn_mz_v4hi): ... and this.  Replace (const_int 0) with the
+	vector equivalent.
+	(insn_v<n>mz): Replaced by ...
+	(insn_v1mz): ... this ...
+	(insn_v2mz): ... and this.  Replace (const_int 0) with the vector
+	equivalent.
+
+2013-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC options): Remove -mlittle-endian.
+
+2013-03-26  Roland McGrath  <mcgrathr@google.com>
+
+	* config/arm/arm.c (arm_print_operand: case 'w'): Use fputs rather
+	than fprintf with a non-constant, non-format string.
+
+2013-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpqi_ext_1): Merge with *cmpqi_ext_1_rex64
+	using nox64 isa attribute.  Use nonimmediate_x86nomem_operand as
+	operand 0 predicate.
+	(*cmpqi_ext_3): Merge with *cmpqi_ext_3_rex64 using nox64 isa
+	attribute.  Use general_x64nomem_operand as operand 1 predicate.
+	(*movqi_extv_1): Merge with *movqi_extv_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 0 predicate.
+	(*movqi_extzv_2): Merge with *movqi_extzv_2_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 0 predicate.
+	(mov<mode>_insv_1): Remove expander.  Merge insn with
+	movsi_insv_1 using SWI48 mode iterator and nox64 isa attribute.
+	Use general_x64nomem_operand as operand 1 predicate.
+	(addqi_ext_1): Merge with *addqi_ext_1_rex64 using nox64 isa attribute.
+	(*testqi_ext_1): Merge with *testqi_ext_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 1 predicate.
+	(*andqi_ext_1): Merge with *andqi_ext_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 2 predicate.
+	(*<code>qi_ext_1): Merge with *<code>qi_ext_1_rex64 using nox64 isa
+	attribute.  Use nonimmediate_x64nomem_operand as operand 1 predicate.
+	(*xorqi_cc_ext_1): Merge with *xorqi_cc_ext_1_rex64 using nox64
+	isa attribute.  Use general_x64nomem_operand as operand 2 predicate.
+	* config/i386/predicates.md (nonimmediate_x64nomem_operand): New.
+	(general_x64nomem_operand): Ditto.
+
+2013-03-26  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.opt: Add -pthread option.
+
+2013-03-26  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (find_base_term): Avoid redundant and not used recursion.
+	(base_alias_check): Get the initial base term from the caller.
+	(true_dependence_1): Compute and pass base terms to base_alias_check.
+	(write_dependence_p): Likewise.
+	(may_alias_p): Likewise.
+
+2013-03-26  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_address): Support
+	PC-relative load in SI modes and above only.
+
+2013-03-26  Xinyu Qi  <xyqi@marvell.com>
+
+	* config/arm/arm.h (FIRST_IWMMXT_GR_REGNUM): Add comment.
+        * config/arm/iwmmxt.md (WCGR0): Update.
+        (WCGR1, WCGR2, WCGR3): Likewise.
+
+2013-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdfcc_1): Merge with *movdfcc_1_rex64.
+	Use x64 and nox64 isa attributes.
+
+2013-03-26  Richard Biener  <rguenther@suse.de>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove
+	alignment computations and rely on get_object_alignment_1
+	for the !TYPE_P case.
+	Commonize DECL/COMPONENT_REF handling in the ARRAY_REF path.
+
+2013-03-26  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.h (PROFILE_BEFORE_PROLOGUE): Define.
+	* config/tilegx/tilepro.h (PROFILE_BEFORE_PROLOGUE): Define.
+
+2013-03-25  Jeff Law  <law@redhat.com>
+        * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Add missing
+        check for INTEGRAL_TYPE_P that was missing due to checking in
+	wrong version of prior patch.
+
+2013-03-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx-builtins.h (enum tilegx_builtin): Add
+	TILEGX_INSN_SHUFFLEBYTES1.
+	* config/tilegx/tilegx.c (tilegx_builtin_info): Add entry for
+	shufflebytes1.
+	(tilegx_builtins): Ditto.
+	* config/tilegx/tilegx.md (insn_shufflebytes1): New pattern.
+
+2013-03-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.md (floatsisf2): New pattern.
+	(floatunssisf2): New pattern.
+	(floatsidf2): New pattern.
+	(floatunssidf2): New pattern.
+
+2013-03-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (expand_set_cint64_one_inst): Inline
+	tests for constraint J, K, N, P.
+
+2013-03-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (tilegx_asm_preferred_eh_data_format):
+	Use indirect/pcrel encoding.
+	* config/tilepro/tilepro.c (tilepro_asm_preferred_eh_data_format):
+	Ditto.
+
+2013-03-25  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mmips-cpus.def (74kc, 74kf2_1, 74kf, 74kf, 74kf1_1,
+	74kfx, 74kx, 74kf3_2): Add PTF_AVOID_IMADD.
+	* config/mips/mips.c (mips_option_override): Set IMADD default.
+	* config/mips/mips.h (PTF_AVOID_IMADD): New.
+	(ISA_HAS_MADD_MSUB): Remove MIPS16 check.
+	(GENERATE_MADD_MSUB): Remove TUNE_74K check, add MIPS16 check.
+	* config/mips/mips.md (mimadd): New flag for integer madd/msub.
+	* doc/invoke.texi (-mimadd/-mno-imadd): New.
+
+2013-03-25  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Rework
+	slightly to avoid creating and folding useless trees.  Simplify
+	slightly by restricting to INTEGER_CSTs and using int_fits_type_p.
+
+2013-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*zero_extendsidi2): Merge with
+	*zero_extendsidi2_rex64.  Use x64 and nox64 isa attributes.
+	* config/i386/predicates.md (x86_64_zext_operand): Rename from
+	x86_64_zext_general_operand.  Use nonimmediate_operand on 32bit
+	targets.  Clarify comment.
+
+2013-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_write_jump_function): Stream simple and aritmetic
+	pass-through jump functions differently.
+	(ipa_read_jump_function): Likewise.  Also use setter functions to set
+	up jump functions.
+
+2013-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipa_get_indirect_edge_target): Renamed to
+	ipa_get_indirect_edge_target_1, added parameter agg_reps and ability to
+	process it.
+	(ipa_get_indirect_edge_target): New function.
+	(devirtualization_time_bonus): New parameter known_aggs, pass it to
+	ipa_get_indirect_edge_target.  Update all callers.
+	(ipcp_discover_new_direct_edges): New parameter aggvals.  Pass it to
+	ipa_get_indirect_edge_target_1 instead of calling
+	ipa_get_indirect_edge_target.
+	(create_specialized_node): Pass aggvlas to
+	ipcp_discover_new_direct_edges.
+
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (f_sels, f_seld): New types.
+	(*cmov<mode>): New pattern.
+	* config/arm/predicates.md (arm_vsel_comparison_operator): New
+	predicate.
+
+2013-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/xm-mingw32.h (__USE_MINGW_ANSI_STDIO): Enable
+	POSIX-printf for mingw-hosted  builds.
+
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56694
+	* tree-eh.c (lower_eh_must_not_throw): Strip BLOCKs from the
+	must-not-throw stmt location.
+
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_emit_load_exclusive): Add acq parameter.
+	Emit load-acquire versions when acq is true.
+	(arm_emit_store_exclusive): Add rel parameter.
+	Emit store-release versions when rel is true.
+	(arm_split_compare_and_swap): Use acquire-release instructions
+	instead.
+	of barriers when appropriate.
+	(arm_split_atomic_op): Likewise.
+	* config/arm/arm.h (TARGET_HAVE_LDACQ): New macro.
+	* config/arm/unspecs.md (VUNSPEC_LAX): New unspec.
+	(VUNSPEC_SLX): Likewise.
+	(VUNSPEC_LDA): Likewise.
+	(VUNSPEC_STL): Likewise.
+	* config/arm/sync.md (atomic_load<mode>): New pattern.
+	(atomic_store<mode>): Likewise.
+	(arm_load_acquire_exclusive<mode>): Likewise.
+	(arm_load_acquire_exclusivesi): Likewise.
+	(arm_load_acquire_exclusivedi): Likewise.
+	(arm_store_release_exclusive<mode>): Likewise.
+
+2013-03-25  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/constraints.md (u, Udb7 Uead, Uean, Uesp, Uib3,
+	Uuw6, Usb4, ZS, ZT, ZU, ZV, ZW): New constraints.
+	* config/mip/predicates.md (lwsp_swsp_operand,
+	lw16_sw16_operand, lhu16_sh16_operand, lbu16_operand,
+	sb16_operand, db4_operand, db7_operand, ib3_operand,
+	sb4_operand, ub4_operand, uh4_operand, uw4_operand,
+	uw5_operand, uw6_operand, addiur2_operand, addiusp_operand,
+	andi16_operand): New predicates.
+	* config/mips/mips.md (compression): New attribute.
+	(enabled): New attribute.
+	(length): Consider compression in computing length.
+	(shift_compression): New code attribute.
+	(*add<mode>3): New operands. Record compression.
+	(sub<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(*and<mode>3): Likewise.
+	(*ior<mode>3): Likewise.
+	(unnamed pattern for xor): Likewise.
+	(*zero_extend<SHORT:mode><GPR:mode>2): Likewise.
+	(*<optab><mode>3): Likewise.
+	(*mov<mode>_internal: Likewise.
+	* config/mips/mips-protos.h (mips_signed_immediate_p): New.
+	(mips_unsigned_immediate_p): New.
+	(umips_lwsp_swsp_address_p): New.
+	(m16_based_address_p): New.
+	* config/mips/mips-protos.h (mips_signed_immediate_p): New prototype.
+	(mips_unsigned_immediate_p): New prototype.
+	(lwsp_swsp_address_p): New prototype.
+	(m16_based_address_p): New prototype.
+	* config/mips/mips.c (mips_unsigned_immediate_p): New function.
+	(mips_signed_immediate_p): New function.
+	(m16_based_address_p): New function.
+	(lwsp_swsp_address_p): New function.
+	(mips_print_operand_punctuation): Recognize short delay slot insns
+	for microMIPS.add<mode>3"
+
+2013-03-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56720
+	* config/arm/iterators.md (v_cmp_result): New mode attribute.
+	* config/arm/neon.md (vcond<mode><mode>): Handle unordered cases.
+
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56689
+	* tree-vrp.c (execute_vrp): Mark loops for fixup if we removed
+	any edge.
+
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct mem_ref): Use bitmap_head instead
+	of bitmap.
+	(memory_references): Likewise.
+	(outermost_indep_loop, mem_ref_alloc, mark_ref_stored,
+	gather_mem_refs_stmt, record_dep_loop, ref_indep_loop_p_1,
+	ref_indep_loop_p_2, find_refs_for_sm): Adjust.
+	(gather_mem_refs_in_loops): Fold into ...
+	(analyze_memory_references): ... this.  Move initialization
+	to tree_ssa_lim_initialize.
+	(fill_always_executed_in): Rename to ...
+	(fill_always_executed_in_1): ... this.
+	(fill_always_executed_in): Move contains_call computation to
+	this new function from ...
+	(tree_ssa_lim_initialize): ... here.
+	(tree_ssa_lim): Call fill_always_executed_in.
+
+2013-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* postreload.c (reload_combine): Fix code detecting returns.
+
+2013-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (emit_use_return_register_into_block): On cc0 targets,
+	do not emit the sequence between cc0 setter and user.
+
+2013-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/predicates.md (local_symbolic_operand): Interpret
+	dll-imported symbols as none-local.
+
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct depend): Remove.
+	(struct lim_aux_data): Make depends a vec of gimples.
+	(free_lim_aux_data): Adjust.
+	(add_dependency): Likewise.
+	(set_level): Likewise.
+
+2013-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56434
+	* calls.c (expand_call): Use MALLOC_ABI_ALIGNMENT to annotate
+	the pointer returned by calls with ECF_MALLOC set.
+
 2013-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (mov<mode>): Add ?!Ym,r and r,?!Ym alternatives.

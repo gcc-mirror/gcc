@@ -810,6 +810,57 @@ find_sym (gfc_intrinsic_sym *start, int n, const char *name)
 }
 
 
+gfc_isym_id
+gfc_isym_id_by_intmod (intmod_id from_intmod, int intmod_sym_id)
+{
+  if (from_intmod == INTMOD_NONE)
+    return (gfc_isym_id) intmod_sym_id;
+  else if (from_intmod == INTMOD_ISO_C_BINDING)
+    return (gfc_isym_id) c_interop_kinds_table[intmod_sym_id].value;
+  else if (from_intmod == INTMOD_ISO_FORTRAN_ENV)
+    switch (intmod_sym_id)
+      {
+#define NAMED_SUBROUTINE(a,b,c,d) \
+      case a: \
+	return (gfc_isym_id) c;
+#define NAMED_FUNCTION(a,b,c,d) \
+      case a: \
+	return (gfc_isym_id) c;
+#include "iso-fortran-env.def"
+      default:
+	gcc_unreachable ();
+      }
+  else
+    gcc_unreachable ();
+  return (gfc_isym_id) 0;
+}
+
+
+gfc_isym_id
+gfc_isym_id_by_intmod_sym (gfc_symbol *sym)
+{
+  return gfc_isym_id_by_intmod (sym->from_intmod, sym->intmod_sym_id);
+}
+
+
+gfc_intrinsic_sym *
+gfc_intrinsic_subroutine_by_id (gfc_isym_id id)
+{
+  gfc_intrinsic_sym *start = subroutines;
+  int n = nsub;
+
+  while (true)
+    {
+      gcc_assert (n > 0);
+      if (id == start->id)
+	return start;
+
+      start++;
+      n--;
+    }
+}
+
+
 gfc_intrinsic_sym *
 gfc_intrinsic_function_by_id (gfc_isym_id id)
 {
@@ -2647,14 +2698,33 @@ add_functions (void)
   make_from_module();
 
   add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER, ii,
-	     GFC_STD_GNU, gfc_check_sizeof, NULL, NULL,
+	     GFC_STD_GNU, gfc_check_sizeof, gfc_simplify_sizeof, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);
 
-  /* C_SIZEOF is part of ISO_C_BINDING.  */
+  /* The following functions are part of ISO_C_BINDING.  */
+  add_sym_2 ("c_associated", GFC_ISYM_C_ASSOCIATED, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2003, gfc_check_c_associated, NULL, NULL,
+	     "C_PTR_1", BT_VOID, 0, REQUIRED,
+	     "C_PTR_2", BT_VOID, 0, OPTIONAL);
+  make_from_module();
+
+  add_sym_1 ("c_loc", GFC_ISYM_C_LOC, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_VOID, 0, GFC_STD_F2003,
+	     gfc_check_c_loc, NULL, gfc_resolve_c_loc,
+	     x, BT_UNKNOWN, 0, REQUIRED);
+  make_from_module();
+
+  add_sym_1 ("c_funloc", GFC_ISYM_C_FUNLOC, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_VOID, 0, GFC_STD_F2003,
+	     gfc_check_c_funloc, NULL, gfc_resolve_c_funloc,
+	     x, BT_UNKNOWN, 0, REQUIRED);
+  make_from_module();
+
   add_sym_1 ("c_sizeof", GFC_ISYM_C_SIZEOF, CLASS_INQUIRY, ACTUAL_NO,
-	     BT_INTEGER, ii, GFC_STD_F2008, gfc_check_c_sizeof, NULL, NULL,
+	     BT_INTEGER, gfc_index_integer_kind, GFC_STD_F2008,
+	     gfc_check_c_sizeof, gfc_simplify_sizeof, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
   make_from_module();
 
@@ -2712,7 +2782,8 @@ add_functions (void)
 
   add_sym_2 ("storage_size", GFC_ISYM_STORAGE_SIZE, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_storage_size, NULL, gfc_resolve_storage_size,
+	     gfc_check_storage_size, gfc_simplify_storage_size,
+	     gfc_resolve_storage_size,
 	     a, BT_UNKNOWN, 0, REQUIRED,
 	     kind, BT_INTEGER, di, OPTIONAL);
   
@@ -3055,6 +3126,22 @@ add_subroutines (void)
 	      sz, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
 	      pt, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      gt, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  /* The following subroutines are part of ISO_C_BINDING.  */
+
+  add_sym_3s ("c_f_pointer", GFC_ISYM_C_F_POINTER, CLASS_IMPURE, BT_UNKNOWN, 0,
+	      GFC_STD_F2003, gfc_check_c_f_pointer, NULL, NULL,
+	      "cptr", BT_VOID, 0, REQUIRED, INTENT_IN,
+	      "fptr", BT_UNKNOWN, 0, REQUIRED, INTENT_OUT,
+	      "shape", BT_INTEGER, di, OPTIONAL, INTENT_IN);
+  make_from_module();
+
+  add_sym_2s ("c_f_procpointer", GFC_ISYM_C_F_PROCPOINTER, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2003, gfc_check_c_f_procpointer,
+	      NULL, NULL,
+	      "cptr", BT_VOID, 0, REQUIRED, INTENT_IN,
+	      "fptr", BT_UNKNOWN, 0, REQUIRED, INTENT_OUT);
+  make_from_module();
 
   /* More G77 compatibility garbage.  */
   add_sym_3s ("alarm", GFC_ISYM_ALARM, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
@@ -4078,8 +4165,8 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 
   if (expr->symtree->n.sym->intmod_sym_id)
     {
-      int id = expr->symtree->n.sym->intmod_sym_id;
-      isym = specific = gfc_intrinsic_function_by_id ((gfc_isym_id) id);
+      gfc_isym_id id = gfc_isym_id_by_intmod_sym (expr->symtree->n.sym);
+      isym = specific = gfc_intrinsic_function_by_id (id);
     }
   else
     isym = specific = gfc_find_function (name);
@@ -4105,12 +4192,12 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 
   gfc_current_intrinsic_where = &expr->where;
 
-  /* Bypass the generic list for min and max.  */
+  /* Bypass the generic list for min, max and ISO_C_Binding's c_loc.  */
   if (isym->check.f1m == gfc_check_min_max)
     {
       init_arglist (isym);
 
-      if (gfc_check_min_max (expr->value.function.actual) == SUCCESS)
+      if (isym->check.f1m (expr->value.function.actual) == SUCCESS)
 	goto got_specific;
 
       if (!error_flag)
@@ -4192,7 +4279,14 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
 
   name = c->symtree->n.sym->name;
 
-  isym = gfc_find_subroutine (name);
+  if (c->symtree->n.sym->intmod_sym_id)
+    {
+      gfc_isym_id id;
+      id = gfc_isym_id_by_intmod_sym (c->symtree->n.sym);
+      isym = gfc_intrinsic_subroutine_by_id (id);
+    }
+  else
+    isym = gfc_find_subroutine (name);
   if (isym == NULL)
     return MATCH_NO;
 

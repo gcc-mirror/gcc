@@ -78,6 +78,7 @@ static void dump_aggr_init_expr_args (tree, int, bool);
 static void dump_expr_list (tree, int);
 static void dump_global_iord (tree);
 static void dump_parameters (tree, int);
+static void dump_ref_qualifier (tree, int);
 static void dump_exception_spec (tree, int);
 static void dump_template_argument (tree, int);
 static void dump_template_argument_list (tree, int);
@@ -708,7 +709,7 @@ dump_type_prefix (tree t, int flags)
 	    pp_c_attributes_display (pp_c_base (cxx_pp),
 				     TYPE_ATTRIBUTES (sub));
 	  }
-	if (TREE_CODE (t) == POINTER_TYPE)
+	if (TYPE_PTR_P (t))
 	  pp_character(cxx_pp, '*');
 	else if (TREE_CODE (t) == REFERENCE_TYPE)
 	{
@@ -828,10 +829,9 @@ dump_type_suffix (tree t, int flags)
 	   anyway; they may in g++, but we'll just pretend otherwise.  */
 	dump_parameters (arg, flags & ~TFF_FUNCTION_DEFAULT_ARGUMENTS);
 
-	if (TREE_CODE (t) == METHOD_TYPE)
-	  pp_cxx_cv_qualifier_seq (cxx_pp, class_of_this_parm (t));
-	else
-	  pp_cxx_cv_qualifier_seq (cxx_pp, t);
+	pp_base (cxx_pp)->padding = pp_before;
+	pp_cxx_cv_qualifiers (cxx_pp, type_memfn_quals (t));
+	dump_ref_qualifier (t, flags);
 	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (TREE_TYPE (t), flags);
 	break;
@@ -916,7 +916,7 @@ dump_simple_decl (tree t, tree type, int flags)
 {
   if (flags & TFF_DECL_SPECIFIERS)
     {
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && DECL_DECLARED_CONSTEXPR_P (t))
 	pp_cxx_ws_string (cxx_pp, "constexpr");
       dump_type_prefix (type, flags & ~TFF_UNQUALIFIED_NAME);
@@ -1249,7 +1249,7 @@ dump_template_decl (tree t, int flags)
 	       ((flags & ~TFF_CLASS_KEY_OR_ENUM) | TFF_TEMPLATE_NAME
 		| (flags & TFF_DECL_SPECIFIERS ? TFF_CLASS_KEY_OR_ENUM : 0)));
   else if (DECL_TEMPLATE_RESULT (t)
-           && (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == VAR_DECL
+           && (VAR_P (DECL_TEMPLATE_RESULT (t))
 	       /* Alias template.  */
 	       || DECL_TYPE_TEMPLATE_P (t)))
     dump_decl (DECL_TEMPLATE_RESULT (t), flags | TFF_TEMPLATE_NAME);
@@ -1426,6 +1426,7 @@ dump_function_decl (tree t, int flags)
 	{
 	  pp_base (cxx_pp)->padding = pp_before;
 	  pp_cxx_cv_qualifier_seq (cxx_pp, class_of_this_parm (fntype));
+	  dump_ref_qualifier (fntype, flags);
 	}
 
       if (flags & TFF_EXCEPTION_SPECIFICATION)
@@ -1505,6 +1506,21 @@ dump_parameters (tree parmtypes, int flags)
     }
 
   pp_cxx_right_paren (cxx_pp);
+}
+
+/* Print ref-qualifier of a FUNCTION_TYPE or METHOD_TYPE. FLAGS are ignored. */
+
+static void
+dump_ref_qualifier (tree t, int flags ATTRIBUTE_UNUSED)
+{
+  if (FUNCTION_REF_QUALIFIED (t))
+    {
+      pp_base (cxx_pp)->padding = pp_before;
+      if (FUNCTION_RVALUE_QUALIFIED (t))
+        pp_cxx_ws_string (cxx_pp, "&&");
+      else
+        pp_cxx_ws_string (cxx_pp, "&");
+    }
 }
 
 /* Print an exception specification. T is the exception specification.  */
@@ -1988,7 +2004,7 @@ dump_expr (tree t, int flags)
     case COMPONENT_REF:
       {
 	tree ob = TREE_OPERAND (t, 0);
-	if (TREE_CODE (ob) == INDIRECT_REF)
+	if (INDIRECT_REF_P (ob))
 	  {
 	    ob = TREE_OPERAND (ob, 0);
 	    if (TREE_CODE (ob) != PARM_DECL
@@ -2108,7 +2124,7 @@ dump_expr (tree t, int flags)
 	{
 	  tree next = TREE_TYPE (TREE_TYPE (t));
 
-	  while (TREE_CODE (next) == POINTER_TYPE)
+	  while (TYPE_PTR_P (next))
 	    next = TREE_TYPE (next);
 
 	  if (TREE_CODE (next) == FUNCTION_TYPE)
@@ -2243,7 +2259,7 @@ dump_expr (tree t, int flags)
 	  }
 	else
 	  {
-	    if (TREE_CODE (ob) == INDIRECT_REF)
+	    if (INDIRECT_REF_P (ob))
 	      {
 		dump_expr (TREE_OPERAND (ob, 0), flags | TFF_EXPR_IN_PARENS);
 		pp_cxx_arrow (cxx_pp);
@@ -2504,6 +2520,12 @@ dump_expr (tree t, int flags)
 
     case LAMBDA_EXPR:
       pp_string (cxx_pp, M_("<lambda>"));
+      break;
+
+    case PAREN_EXPR:
+      pp_cxx_left_paren (cxx_pp);
+      dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
+      pp_cxx_right_paren (cxx_pp);
       break;
 
       /*  This list is incomplete, but should suffice for now.
@@ -3283,7 +3305,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'D':
       {
 	tree temp = next_tree;
-	if (TREE_CODE (temp) == VAR_DECL
+	if (VAR_P (temp)
 	    && DECL_HAS_DEBUG_EXPR_P (temp))
 	  {
 	    temp = DECL_DEBUG_EXPR (temp);
@@ -3401,6 +3423,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 	pedwarn (input_location, 0,
 		 "c++11 attributes "
 		 "only available with -std=c++11 or -std=gnu++11");
+	break;
+      case CPP0X_REF_QUALIFIER:
+	pedwarn (input_location, 0,
+		 "ref-qualifiers "
+		 "only available with -std=c++0x or -std=gnu++0x");
 	break;
       default:
 	gcc_unreachable ();

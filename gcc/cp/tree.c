@@ -70,7 +70,7 @@ lvalue_kind (const_tree ref)
       /* unnamed rvalue references are rvalues */
       if (TYPE_REF_IS_RVALUE (TREE_TYPE (ref))
 	  && TREE_CODE (ref) != PARM_DECL
-	  && TREE_CODE (ref) != VAR_DECL
+	  && !VAR_P (ref)
 	  && TREE_CODE (ref) != COMPONENT_REF
 	  /* Functions are always lvalues.  */
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (ref))) != FUNCTION_TYPE)
@@ -309,7 +309,7 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
   gcc_assert (VOID_TYPE_P (TREE_TYPE (value))
 	      || TREE_TYPE (decl) == TREE_TYPE (value)
 	      /* On ARM ctors return 'this'.  */
-	      || (TREE_CODE (TREE_TYPE (value)) == POINTER_TYPE
+	      || (TYPE_PTR_P (TREE_TYPE (value))
 		  && TREE_CODE (value) == CALL_EXPR)
 	      || useless_type_conversion_p (TREE_TYPE (decl),
 					    TREE_TYPE (value)));
@@ -1081,12 +1081,21 @@ cp_build_qualified_type_real (tree type,
   /* Retrieve (or create) the appropriately qualified variant.  */
   result = build_qualified_type (type, type_quals);
 
+  /* Preserve exception specs and ref-qualifier since build_qualified_type
+     doesn't know about them.  */
+  if (TREE_CODE (result) == FUNCTION_TYPE
+      || TREE_CODE (result) == METHOD_TYPE)
+    {
+      result = build_exception_variant (result, TYPE_RAISES_EXCEPTIONS (type));
+      result = build_ref_qualified_type (result, type_memfn_rqual (type));
+    }
+
   /* If this was a pointer-to-method type, and we just made a copy,
      then we need to unshare the record that holds the cached
      pointer-to-member-function type, because these will be distinct
      between the unqualified and qualified types.  */
   if (result != type
-      && TREE_CODE (type) == POINTER_TYPE
+      && TYPE_PTR_P (type)
       && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
       && TYPE_LANG_SPECIFIC (result) == TYPE_LANG_SPECIFIC (type))
     TYPE_LANG_SPECIFIC (result) = NULL;
@@ -1095,7 +1104,7 @@ cp_build_qualified_type_real (tree type,
      type of a pointer-to-method type, which could have the same
      sharing problem described above.  */
   if (TYPE_CANONICAL (result) != TYPE_CANONICAL (type)
-      && TREE_CODE (type) == POINTER_TYPE
+      && TYPE_PTR_P (type)
       && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
       && (TYPE_LANG_SPECIFIC (TYPE_CANONICAL (result)) 
           == TYPE_LANG_SPECIFIC (TYPE_CANONICAL (type))))
@@ -1214,7 +1223,9 @@ strip_typedefs (tree t)
 	  {
 	    result = build_function_type (type,
 					  arg_types);
-	    result = apply_memfn_quals (result, type_memfn_quals (t));
+	    result = apply_memfn_quals (result,
+					type_memfn_quals (t),
+					type_memfn_rqual (t));
 	  }
 
 	if (TYPE_RAISES_EXCEPTIONS (t))
@@ -1702,6 +1713,64 @@ build_qualified_name (tree type, tree scope, tree name, bool template_p)
   return t;
 }
 
+/* Like check_qualified_type, but also check ref-qualifier and exception
+   specification.  */
+
+static bool
+cp_check_qualified_type (const_tree cand, const_tree base, int type_quals,
+			 cp_ref_qualifier rqual, tree raises)
+{
+  return (check_qualified_type (cand, base, type_quals, NULL_TREE)
+	  && comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (cand),
+				ce_exact)
+	  && type_memfn_rqual (cand) == rqual);
+}
+
+/* Build the FUNCTION_TYPE or METHOD_TYPE with the ref-qualifier RQUAL.  */
+
+tree
+build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
+{
+  tree t;
+
+  if (rqual == type_memfn_rqual (type))
+    return type;
+
+  int type_quals = TYPE_QUALS (type);
+  tree raises = TYPE_RAISES_EXCEPTIONS (type);
+  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+    if (cp_check_qualified_type (t, type, type_quals, rqual, raises))
+      return t;
+
+  t = build_variant_type_copy (type);
+  switch (rqual)
+    {
+    case REF_QUAL_RVALUE:
+      FUNCTION_RVALUE_QUALIFIED (t) = 1;
+      /* Intentional fall through */
+    case REF_QUAL_LVALUE:
+      FUNCTION_REF_QUALIFIED (t) = 1;
+      break;
+    default:
+      FUNCTION_REF_QUALIFIED (t) = 0;
+      break;
+    }
+
+  if (TYPE_STRUCTURAL_EQUALITY_P (type))
+    /* Propagate structural equality. */
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+  else if (TYPE_CANONICAL (type) != type)
+    /* Build the underlying canonical type, since it is different
+       from TYPE. */
+    TYPE_CANONICAL (t) = build_ref_qualified_type (TYPE_CANONICAL (type),
+						   rqual);
+  else
+    /* T is its own canonical type. */
+    TYPE_CANONICAL (t) = t;
+
+  return t;
+}
+
 /* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
@@ -1907,9 +1976,9 @@ build_exception_variant (tree type, tree raises)
     return type;
 
   type_quals = TYPE_QUALS (type);
+  cp_ref_qualifier rqual = type_memfn_rqual (type);
   for (v = TYPE_MAIN_VARIANT (type); v; v = TYPE_NEXT_VARIANT (v))
-    if (check_qualified_type (v, type, type_quals, 0)
-	&& comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (v), ce_exact))
+    if (cp_check_qualified_type (v, type, type_quals, rqual, raises))
       return v;
 
   /* Need to build a new variant.  */
@@ -2219,7 +2288,7 @@ bot_replace (tree* t, int* /*walk_subtrees*/, void* data)
 {
   splay_tree target_remap = ((splay_tree) data);
 
-  if (TREE_CODE (*t) == VAR_DECL)
+  if (VAR_P (*t))
     {
       splay_tree_node n = splay_tree_lookup (target_remap,
 					     (splay_tree_key) *t);
@@ -2584,10 +2653,10 @@ cp_tree_equal (tree t1, tree t2)
 	   it means that it's going to be unified with whatever the
 	   TARGET_EXPR is really supposed to initialize, so treat it
 	   as being equivalent to anything.  */
-	if (TREE_CODE (o1) == VAR_DECL && DECL_NAME (o1) == NULL_TREE
+	if (VAR_P (o1) && DECL_NAME (o1) == NULL_TREE
 	    && !DECL_RTL_SET_P (o1))
 	  /*Nop*/;
-	else if (TREE_CODE (o2) == VAR_DECL && DECL_NAME (o2) == NULL_TREE
+	else if (VAR_P (o2) && DECL_NAME (o2) == NULL_TREE
 		 && !DECL_RTL_SET_P (o2))
 	  /*Nop*/;
 	else if (!cp_tree_equal (o1, o2))
@@ -2879,7 +2948,7 @@ maybe_dummy_object (tree type, tree* binfop)
 int
 is_dummy_object (const_tree ob)
 {
-  if (TREE_CODE (ob) == INDIRECT_REF)
+  if (INDIRECT_REF_P (ob))
     ob = TREE_OPERAND (ob, 0);
   return (TREE_CODE (ob) == NOP_EXPR
 	  && TREE_OPERAND (ob, 0) == void_zero_node);
@@ -3149,7 +3218,7 @@ handle_init_priority_attribute (tree* node,
   type = strip_array_types (type);
 
   if (decl == NULL_TREE
-      || TREE_CODE (decl) != VAR_DECL
+      || !VAR_P (decl)
       || !TREE_STATIC (decl)
       || DECL_EXTERNAL (decl)
       || (TREE_CODE (type) != RECORD_TYPE
@@ -3308,8 +3377,12 @@ cp_build_type_attribute_variant (tree type, tree attributes)
   new_type = build_type_attribute_variant (type, attributes);
   if (TREE_CODE (new_type) == FUNCTION_TYPE
       || TREE_CODE (new_type) == METHOD_TYPE)
-    new_type = build_exception_variant (new_type,
-					TYPE_RAISES_EXCEPTIONS (type));
+    {
+      new_type = build_exception_variant (new_type,
+					  TYPE_RAISES_EXCEPTIONS (type));
+      new_type = build_ref_qualified_type (new_type,
+					   type_memfn_rqual (type));
+    }
 
   /* Making a new main variant of a class type is broken.  */
   gcc_assert (!CLASS_TYPE_P (type) || new_type == type);
@@ -3579,8 +3652,7 @@ decl_linkage (tree decl)
      template instantiations have internal linkage (in the object
      file), but the symbols should still be treated as having external
      linkage from the point of view of the language.  */
-  if ((TREE_CODE (decl) == FUNCTION_DECL
-       || TREE_CODE (decl) == VAR_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (decl)
       && DECL_COMDAT (decl))
     return lk_external;
 
@@ -3594,7 +3666,7 @@ decl_linkage (tree decl)
      really meant to have internal linkage have DECL_THIS_STATIC set.  */
   if (TREE_CODE (decl) == TYPE_DECL)
     return lk_external;
-  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (decl))
     {
       if (!DECL_THIS_STATIC (decl))
 	return lk_external;
@@ -3619,7 +3691,7 @@ decl_storage_duration (tree decl)
     return dk_auto;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return dk_static;
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
   if (!TREE_STATIC (decl)
       && !DECL_EXTERNAL (decl))
     return dk_auto;

@@ -63,7 +63,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
       && DECL_PENDING_INLINE_INFO (node))
     fprintf (file, " pending-inline-info %p",
 	     (void *) DECL_PENDING_INLINE_INFO (node));
-  if ((TREE_CODE (node) == FUNCTION_DECL || TREE_CODE (node) == VAR_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (node)
       && DECL_TEMPLATE_INFO (node))
     fprintf (file, " template-info %p",
 	     (void *) DECL_TEMPLATE_INFO (node));

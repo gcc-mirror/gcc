@@ -277,7 +277,7 @@ push_eh_cleanup (tree type)
 static bool
 decl_is_java_type (tree decl, int err)
 {
-  bool r = (TREE_CODE (decl) == POINTER_TYPE
+  bool r = (TYPE_PTR_P (decl)
 	    && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
 	    && TYPE_FOR_JAVA (TREE_TYPE (decl)));
 
@@ -828,7 +828,7 @@ build_throw (tree exp)
 	     treated as an rvalue for the purposes of overload resolution
 	     to favor move constructors over copy constructors.  */
 	  if (/* Must be a local, automatic variable.  */
-	      TREE_CODE (exp) == VAR_DECL
+	      VAR_P (exp)
 	      && DECL_CONTEXT (exp) == current_function_decl
 	      && ! TREE_STATIC (exp)
 	      /* The variable must not have the `volatile' qualifier.  */
@@ -930,7 +930,7 @@ complete_ptr_ref_or_void_ptr_p (tree type, tree from)
     return 0;
 
   /* Or a pointer or ref to one, or cv void *.  */
-  is_ptr = TREE_CODE (type) == POINTER_TYPE;
+  is_ptr = TYPE_PTR_P (type);
   if (is_ptr || TREE_CODE (type) == REFERENCE_TYPE)
     {
       tree core = TREE_TYPE (type);
@@ -1026,7 +1026,7 @@ can_convert_eh (tree to, tree from)
   to = non_reference (to);
   from = non_reference (from);
 
-  if (TREE_CODE (to) == POINTER_TYPE && TREE_CODE (from) == POINTER_TYPE)
+  if (TYPE_PTR_P (to) && TYPE_PTR_P (from))
     {
       to = TREE_TYPE (to);
       from = TREE_TYPE (from);
@@ -1034,7 +1034,7 @@ can_convert_eh (tree to, tree from)
       if (! at_least_as_qualified_p (to, from))
 	return 0;
 
-      if (TREE_CODE (to) == VOID_TYPE)
+      if (VOID_TYPE_P (to))
 	return 1;
 
       /* Else fall through.  */

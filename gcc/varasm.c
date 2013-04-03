@@ -5489,14 +5489,15 @@ do_assemble_alias (tree decl, tree target)
     }
   if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
     {
-#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
-      ASM_OUTPUT_TYPE_DIRECTIVE
-	(asm_out_file, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-	 IFUNC_ASM_TYPE);
-#else
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"ifunc is not supported in this configuration");
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE)
+      if (targetm.has_ifunc_p ())
+	ASM_OUTPUT_TYPE_DIRECTIVE
+	  (asm_out_file, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+	   IFUNC_ASM_TYPE);
+      else
 #endif
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "ifunc is not supported on this target");
     }
 
 # ifdef ASM_OUTPUT_DEF_FROM_DECLS

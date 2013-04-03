@@ -1619,18 +1619,10 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
 static int
 get_insn_freq (rtx insn)
 {
-  basic_block bb;
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
-  if ((bb = BLOCK_FOR_INSN (insn)) != NULL)
-    return REG_FREQ_FROM_BB (bb);
-  else
-    {
-      lra_assert (lra_insn_recog_data[INSN_UID (insn)]
-		  ->insn_static_data->n_operands == 0);
-      /* We don't care about such insn, e.g. it might be jump with
-	 addr_vec.  */
-      return 1;
-    }
+  gcc_checking_assert (bb != NULL);
+  return REG_FREQ_FROM_BB (bb);
 }
 
 /* Invalidate all reg info of INSN with DATA and execution frequency
@@ -1999,8 +1991,6 @@ check_rtl (bool final_p)
     if (NONDEBUG_INSN_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
 	&& GET_CODE (PATTERN (insn)) != CLOBBER
-	&& GET_CODE (PATTERN (insn)) != ADDR_VEC
-	&& GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
 	&& GET_CODE (PATTERN (insn)) != ASM_INPUT)
       {
 	if (final_p)

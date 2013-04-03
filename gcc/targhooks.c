@@ -450,6 +450,14 @@ default_fixed_point_supported_p (void)
   return ENABLE_FIXED_POINT;
 }
 
+/* True if the target supports GNU indirect functions.  */
+
+bool
+default_has_ifunc_p (void)
+{
+  return HAVE_GNU_INDIRECT_FUNCTION;
+}
+
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
 
@@ -466,7 +474,7 @@ default_invalid_within_doloop (const_rtx insn)
   if (CALL_P (insn))
     return "Function call in loop.";
 
-  if (JUMP_TABLE_DATA_P (insn))
+  if (tablejump_p (insn, NULL, NULL) || computed_jump_p (insn))
     return "Computed branch in the loop.";
 
   return NULL;

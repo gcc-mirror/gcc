@@ -11,6 +11,6 @@
 
   type(c_ptr) :: tt_cptr
   class(t), pointer :: tt_fptr
-  if (associated(tt_fptr)) tt_cptr = c_loc(tt_fptr)  ! { dg-error "must not be polymorphic" }
+  if (associated(tt_fptr)) tt_cptr = c_loc(tt_fptr)  ! { dg-error "shall not be polymorphic" }
 
 end

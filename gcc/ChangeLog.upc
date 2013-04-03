@@ -1,5 +1,9 @@
 2013-04-02 Gary Funck  <gary@intrepid.com>
 
+        Merge trunk version 197340 into gupc branch.
+
+2013-04-02 Gary Funck  <gary@intrepid.com>
+
 	Revert revision 178346 (2011-08-30)
 	which changed the prototype of check_qualified_type and related
 	functions so that their parameters were just 'tree' and not
@@ -10,7 +14,7 @@
 	that removes this restriction.
 	* c/c-typeck.c: Revert.
 	* tree.c: Revert.
-	* tree.h: Revert. Change prototype of upc_block_factor_lookup()
+	* tree.h: Revert.  Change prototype of upc_block_factor_lookup()
 	to accept a 'const_tree' pointer to a type node.
 	* c-family/stub-upc.c (upc_block_factor_lookup): Update prototype.
 	* upc/upc-act.c (upc_block_factor_lookup): Accept const_tree

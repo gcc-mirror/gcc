@@ -29221,7 +29221,7 @@ make_name (tree decl, const char *suffix, bool make_unique)
   return global_var_name;
 }
 
-#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE)
 
 /* Make a dispatcher declaration for the multi-versioned function DECL.
    Calls to DECL function will be replaced with calls to the dispatcher
@@ -29292,12 +29292,6 @@ ix86_get_function_versions_dispatcher (void *decl)
 
   tree dispatch_decl = NULL;
 
-#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
-  struct cgraph_function_version_info *it_v = NULL;
-  struct cgraph_node *dispatcher_node = NULL;
-  struct cgraph_function_version_info *dispatcher_version_info = NULL;
-#endif
-
   struct cgraph_function_version_info *default_version_info = NULL;
  
   gcc_assert (fn != NULL && DECL_FUNCTION_VERSIONED (fn));
@@ -29342,30 +29336,40 @@ ix86_get_function_versions_dispatcher (void *decl)
 
   default_node = default_version_info->this_node;
 
-#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
-  /* Right now, the dispatching is done via ifunc.  */
-  dispatch_decl = make_dispatcher_decl (default_node->symbol.decl); 
-
-  dispatcher_node = cgraph_get_create_node (dispatch_decl);
-  gcc_assert (dispatcher_node != NULL);
-  dispatcher_node->dispatcher_function = 1;
-  dispatcher_version_info
-    = insert_new_cgraph_node_version (dispatcher_node);
-  dispatcher_version_info->next = default_version_info;
-  dispatcher_node->local.finalized = 1;
- 
-  /* Set the dispatcher for all the versions.  */ 
-  it_v = default_version_info;
-  while (it_v != NULL)
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE)
+  if (targetm.has_ifunc_p ())
     {
-      it_v->dispatcher_resolver = dispatch_decl;
-      it_v = it_v->next;
+      struct cgraph_function_version_info *it_v = NULL;
+      struct cgraph_node *dispatcher_node = NULL;
+      struct cgraph_function_version_info *dispatcher_version_info = NULL;
+
+      /* Right now, the dispatching is done via ifunc.  */
+      dispatch_decl = make_dispatcher_decl (default_node->symbol.decl);
+
+      dispatcher_node = cgraph_get_create_node (dispatch_decl);
+      gcc_assert (dispatcher_node != NULL);
+      dispatcher_node->dispatcher_function = 1;
+      dispatcher_version_info
+	= insert_new_cgraph_node_version (dispatcher_node);
+      dispatcher_version_info->next = default_version_info;
+      dispatcher_node->local.finalized = 1;
+
+      /* Set the dispatcher for all the versions.  */
+      it_v = default_version_info;
+      while (it_v != NULL)
+	{
+	  it_v->dispatcher_resolver = dispatch_decl;
+	  it_v = it_v->next;
+	}
     }
-#else
-  error_at (DECL_SOURCE_LOCATION (default_node->symbol.decl),
-	    "multiversioning needs ifunc which is not supported "
-	    "in this configuration");
+  else
 #endif
+    {
+      error_at (DECL_SOURCE_LOCATION (default_node->symbol.decl),
+		"multiversioning needs ifunc which is not supported "
+		"on this target");
+    }
+
   return dispatch_decl;
 }
 
@@ -35127,8 +35131,6 @@ min_insn_size (rtx insn)
   if (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPECV_ALIGN)
     return 0;
-  if (JUMP_TABLE_DATA_P (insn))
-    return 0;
 
   /* Important case - calls are always 5 bytes.
      It is common to have many calls in the row.  */
@@ -35219,10 +35221,7 @@ ix86_avoid_jump_mispredicts (void)
 	      while (nbytes + max_skip >= 16)
 		{
 		  start = NEXT_INSN (start);
-		  if ((JUMP_P (start)
-		       && GET_CODE (PATTERN (start)) != ADDR_VEC
-		       && GET_CODE (PATTERN (start)) != ADDR_DIFF_VEC)
-		      || CALL_P (start))
+		  if (JUMP_P (start) || CALL_P (start))
 		    njumps--, isjump = 1;
 		  else
 		    isjump = 0;
@@ -35237,10 +35236,7 @@ ix86_avoid_jump_mispredicts (void)
       if (dump_file)
 	fprintf (dump_file, "Insn %i estimated to %i bytes\n",
 		 INSN_UID (insn), min_size);
-      if ((JUMP_P (insn)
-	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
-	  || CALL_P (insn))
+      if (JUMP_P (insn) || CALL_P (insn))
 	njumps++;
       else
 	continue;
@@ -35248,10 +35244,7 @@ ix86_avoid_jump_mispredicts (void)
       while (njumps > 3)
 	{
 	  start = NEXT_INSN (start);
-	  if ((JUMP_P (start)
-	       && GET_CODE (PATTERN (start)) != ADDR_VEC
-	       && GET_CODE (PATTERN (start)) != ADDR_DIFF_VEC)
-	      || CALL_P (start))
+	  if (JUMP_P (start) || CALL_P (start))
 	    njumps--, isjump = 1;
 	  else
 	    isjump = 0;

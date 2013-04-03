@@ -1409,9 +1409,6 @@ frv_function_contains_far_jump (void)
   rtx insn = get_insns ();
   while (insn != NULL
 	 && !(JUMP_P (insn)
-	      /* Ignore tablejump patterns.  */
-	      && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	      && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
 	      && get_attr_far_jump (insn) == FAR_JUMP_YES))
     insn = NEXT_INSN (insn);
   return (insn != NULL);
@@ -7486,8 +7483,6 @@ frv_for_each_packet (void (*handle_packet) (void))
 	  {
 	  case USE:
 	  case CLOBBER:
-	  case ADDR_VEC:
-	  case ADDR_DIFF_VEC:
 	    break;
 
 	  default:

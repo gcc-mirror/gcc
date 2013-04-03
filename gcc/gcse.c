@@ -2149,20 +2149,9 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 	      || single_succ_edge (bb)->flags & EDGE_ABNORMAL)))
     {
 #ifdef HAVE_cc0
-      rtx note;
-#endif
-
-      /* If this is a jump table, then we can't insert stuff here.  Since
-	 we know the previous real insn must be the tablejump, we insert
-	 the new instruction just before the tablejump.  */
-      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-	insn = prev_active_insn (insn);
-
-#ifdef HAVE_cc0
       /* FIXME: 'twould be nice to call prev_cc0_setter here but it aborts
 	 if cc0 isn't set.  */
-      note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
+      rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
       if (note)
 	insn = XEXP (note, 0);
       else

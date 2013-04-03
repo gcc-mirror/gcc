@@ -173,7 +173,7 @@ build_headof (tree exp)
   tree offset;
   tree index;
 
-  gcc_assert (TREE_CODE (type) == POINTER_TYPE);
+  gcc_assert (TYPE_PTR_P (type));
   type = TREE_TYPE (type);
 
   if (!TYPE_POLYMORPHIC_P (type))
@@ -326,8 +326,8 @@ build_typeid (tree exp, tsubst_flags_t complain)
 
   /* FIXME when integrating with c_fully_fold, mark
      resolves_to_fixed_type_p case as a non-constant expression.  */
-  if (TREE_CODE (exp) == INDIRECT_REF
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
+  if (INDIRECT_REF_P (exp)
+      && TYPE_PTR_P (TREE_TYPE (TREE_OPERAND (exp, 0)))
       && TYPE_POLYMORPHIC_P (TREE_TYPE (exp))
       && ! resolves_to_fixed_type_p (exp, &nonnull)
       && ! nonnull)
@@ -528,7 +528,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
   switch (tc)
     {
     case POINTER_TYPE:
-      if (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE)
+      if (VOID_TYPE_P (TREE_TYPE (type)))
 	break;
       /* Fall through.  */
     case REFERENCE_TYPE:
@@ -559,7 +559,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
       expr = mark_rvalue_use (expr);
 
-      if (TREE_CODE (exprtype) != POINTER_TYPE)
+      if (!TYPE_PTR_P (exprtype))
 	{
 	  errstr = _("source is not a pointer");
 	  goto fail;
@@ -620,7 +620,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
       {
 	expr = build_base_path (PLUS_EXPR, convert_from_reference (expr),
 				binfo, 0, complain);
-	if (TREE_CODE (exprtype) == POINTER_TYPE)
+	if (TYPE_PTR_P (exprtype))
 	  expr = rvalue (expr);
 	return expr;
       }
@@ -635,7 +635,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  /* if b is an object, dynamic_cast<void *>(&b) == (void *)&b.  */
 	  if (TREE_CODE (expr) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (expr, 0)) == VAR_DECL
+	      && VAR_P (TREE_OPERAND (expr, 0))
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == RECORD_TYPE)
 	    return build1 (NOP_EXPR, type, expr);
 
@@ -658,7 +658,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
 	  if (tc == REFERENCE_TYPE)
 	    {
-	      if (TREE_CODE (old_expr) == VAR_DECL
+	      if (VAR_P (old_expr)
 		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
 		{
 		  tree expr = throw_bad_cast ();
@@ -674,7 +674,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  else if (TREE_CODE (expr) == ADDR_EXPR)
 	    {
 	      tree op = TREE_OPERAND (expr, 0);
-	      if (TREE_CODE (op) == VAR_DECL
+	      if (VAR_P (op)
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
                   if (complain & tf_warning)
@@ -822,7 +822,7 @@ target_incomplete_p (tree type)
 	  return true;
 	type = TYPE_PTRMEM_POINTED_TO_TYPE (type);
       }
-    else if (TREE_CODE (type) == POINTER_TYPE)
+    else if (TYPE_PTR_P (type))
       type = TREE_TYPE (type);
     else
       return !COMPLETE_OR_VOID_TYPE_P (type);
@@ -1053,7 +1053,7 @@ typeinfo_in_lib_p (tree type)
 {
   /* The typeinfo objects for `T*' and `const T*' are in the runtime
      library for simple types T.  */
-  if (TREE_CODE (type) == POINTER_TYPE
+  if (TYPE_PTR_P (type)
       && (cp_type_quals (TREE_TYPE (type)) == TYPE_QUAL_CONST
 	  || cp_type_quals (TREE_TYPE (type)) == TYPE_UNQUALIFIED))
     type = TREE_TYPE (type);

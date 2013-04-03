@@ -53,6 +53,8 @@ typedef struct sreal
 } sreal;
 
 extern void dump_sreal (FILE *, sreal *);
+extern void debug (sreal &ref);
+extern void debug (sreal *ptr);
 extern sreal *sreal_init (sreal *, unsigned HOST_WIDE_INT, signed int);
 extern HOST_WIDE_INT sreal_to_int (sreal *);
 extern int sreal_compare (sreal *, sreal *);

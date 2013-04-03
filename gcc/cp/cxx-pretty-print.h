@@ -42,6 +42,8 @@ typedef struct
 
 #define pp_cxx_cv_qualifier_seq(PP, T)   \
    pp_c_type_qualifier_list (pp_c_base (PP), T)
+#define pp_cxx_cv_qualifiers(PP, CV)   \
+   pp_c_cv_qualifiers (pp_c_base (PP), CV, false)
 
 #define pp_cxx_whitespace(PP)		pp_c_whitespace (pp_c_base (PP))
 #define pp_cxx_left_paren(PP)		pp_c_left_paren (pp_c_base (PP))
