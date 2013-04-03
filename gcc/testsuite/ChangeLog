@@ -1,3 +1,8 @@
+2013-04-03  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/55702
+	* gcc.dg/pr55702.c: New test.
+
 2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/56809
