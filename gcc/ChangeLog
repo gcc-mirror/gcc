@@ -1,5 +1,12 @@
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
+	* tree-vect-stmts.c (vectorizable_store): Accept BIT_FIELD_REF.
+	(vectorizable_load): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree): Likewise.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Handle VECTOR_TYPE.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
 	* tree-flow-inline.h (get_addr_base_and_unit_offset_1): Handle
 	BIT_FIELD_REF.
 

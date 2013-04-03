@@ -1,3 +1,7 @@
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/vect/bb-slp-31.c: New file.
+
 2013-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34949
