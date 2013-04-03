@@ -1,5 +1,10 @@
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR tree-optimization/56790
+	* fold-const.c (fold_ternary_loc) <VEC_COND_EXPR>: Add constant folding.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
 	* simplify-rtx.c (simplify_binary_operation_1) <VEC_SELECT>:
 	Handle VEC_MERGE.
 	(simplify_ternary_operation) <VEC_MERGE>: Use unsigned HOST_WIDE_INT

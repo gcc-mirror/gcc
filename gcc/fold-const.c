@@ -13924,6 +13924,29 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	    return pedantic_omit_one_operand_loc (loc, type, arg1, arg2);
 	  if (integer_zerop (arg0))
 	    return pedantic_omit_one_operand_loc (loc, type, arg2, arg1);
+
+	  if ((TREE_CODE (arg1) == VECTOR_CST
+	       || TREE_CODE (arg1) == CONSTRUCTOR)
+	      && (TREE_CODE (arg2) == VECTOR_CST
+		  || TREE_CODE (arg2) == CONSTRUCTOR))
+	    {
+	      unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	      unsigned char *sel = XALLOCAVEC (unsigned char, nelts);
+	      gcc_assert (nelts == VECTOR_CST_NELTS (arg0));
+	      for (i = 0; i < nelts; i++)
+		{
+		  tree val = VECTOR_CST_ELT (arg0, i);
+		  if (integer_all_onesp (val))
+		    sel[i] = i;
+		  else if (integer_zerop (val))
+		    sel[i] = nelts + i;
+		  else /* Currently unreachable.  */
+		    return NULL_TREE;
+		}
+	      tree t = fold_vec_perm (type, arg1, arg2, sel);
+	      if (t != NULL_TREE)
+		return t;
+	    }
 	}
 
       if (operand_equal_p (arg1, op2, 0))

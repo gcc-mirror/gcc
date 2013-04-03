@@ -1,5 +1,10 @@
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR tree-optimization/56790
+	* g++.dg/ext/pr56790-1.C: New testcase.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.target/i386/merge-1.c: New testcase.
 	* gcc.target/i386/avx2-vpblendd128-1.c: Make it non-trivial.
 
