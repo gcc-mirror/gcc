@@ -1,3 +1,9 @@
+2013-04-02  Nenad Vukicevic  <nenad@intrepid.com>
+
+	portals4/gupcr_utils.c (gupcr_is_node_local_memory_enabled); Rename
+	from gupcr_is_node_local_memory.  Fixing error from the previous
+	update.
+
 2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
 
 	portals4/gupcr_env.c (gupcr_env_boolean): Rename from gupcr_env_switch.
@@ -13,6 +19,7 @@
 
 2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
 
+	Add shared memory page by page touch on startup.
 	configure.ac: Add --with-upc-memory-page-size switch.
 	config.h.in: Re-generate.
 	configure: Re-generate.

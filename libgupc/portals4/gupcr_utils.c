@@ -254,7 +254,7 @@ gupcr_set_node_local_memory (int value)
 }
 
 int
-gupcr_is_node_local_memory (void)
+gupcr_is_node_local_memory_enabled (void)
 {
   return gupcr_node_local_memory;
 }
