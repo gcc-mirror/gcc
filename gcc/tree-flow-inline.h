@@ -1246,7 +1246,13 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  return NULL_TREE;
+	  {
+	    HOST_WIDE_INT this_off = TREE_INT_CST_LOW (TREE_OPERAND (exp, 2));
+	    if (this_off % BITS_PER_UNIT)
+	      return NULL_TREE;
+	    byte_offset += this_off / BITS_PER_UNIT;
+	  }
+	  break;
 
 	case COMPONENT_REF:
 	  {
