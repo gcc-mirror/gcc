@@ -1,3 +1,9 @@
+2013-04-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/56771
+	* configure.ac: Require 64-bit int for arm*-*-rtems[.0-9]*.
+	* configure: Regenerate.
+
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
