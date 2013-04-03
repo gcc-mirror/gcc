@@ -1,6 +1,11 @@
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54363
+	* gcc.dg/pr54363.c: New test.
+
 	2012-05-03  Jakub Jelinek  <jakub@redhat.com>
  
 	PR debug/53174
