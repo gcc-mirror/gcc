@@ -283,7 +283,12 @@ check_process_case (tree cs)
 	  return false;
 	}
 
-      e = single_succ_edge (label_bb);
+      if (!single_succ_p (label_bb))
+	{
+	  info.reason
+	    = "  Bad case - a non-final BB without a single successor\n";
+	  return false;
+	}
       following_bb = single_succ (label_bb);
     }
 

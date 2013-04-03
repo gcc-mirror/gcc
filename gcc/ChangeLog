@@ -1,3 +1,9 @@
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56501
+	* tree-switch-conversion.c (check_process_case): Properly
+	handle !single_succ_p case.
+
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

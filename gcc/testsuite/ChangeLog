@@ -1,3 +1,8 @@
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56501
+	* gcc.dg/torture/pr56501.c: New testcase.
+
 2013-04-03  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline:
