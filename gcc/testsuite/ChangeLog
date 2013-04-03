@@ -1,3 +1,12 @@
+2013-04-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56284
+	PR fortran/40881
+	* gfortran.dg/altreturn_8.f90: New.
+	* gfortran.dg/altreturn_2.f90: Add -std=legacy.
+	* gfortran.dg/intrinsic_actual_3.f90: Ditto.
+	* gfortran.dg/invalid_interface_assignment.f90: Ditto.
+
 2013-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/56745

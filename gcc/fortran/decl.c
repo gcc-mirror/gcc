@@ -4487,7 +4487,15 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag, int null_flag)
   for (;;)
     {
       if (gfc_match_char ('*') == MATCH_YES)
-	sym = NULL;
+	{
+	  sym = NULL;
+	  if (gfc_notify_std (GFC_STD_F95_OBS, "Alternate-return argument "
+			      "at %C") == FAILURE)
+	    {
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
+	}
       else
 	{
 	  m = gfc_match_name (name);
