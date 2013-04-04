@@ -223,9 +223,6 @@ c-common.h, not after.
 #define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE) \
   TREE_CHECK(NODE,BOUND_TEMPLATE_TEMPLATE_PARM)
 
-#define FUNCTION_OR_METHOD_TYPE_CHECK(NODE) \
-  TREE_CHECK2(NODE,FUNCTION_TYPE,METHOD_TYPE)
-
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 #define THUNK_FUNCTION_CHECK(NODE) __extension__			\
 ({  __typeof (NODE) const __t = (NODE);					\
@@ -1888,7 +1885,7 @@ struct GTY((variable_size)) lang_type {
    (for templates) or an OVERLOAD list of functions (for implicitly
    declared functions).  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) \
-  TYPE_LANG_SLOT_1 (FUNCTION_OR_METHOD_TYPE_CHECK (NODE))
+  TYPE_LANG_SLOT_1 (FUNC_OR_METHOD_CHECK (NODE))
 
 /* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'
    or noexcept(true).  */
@@ -2536,11 +2533,11 @@ struct GTY((variable_size)) lang_decl {
 
 /* 1 iff FUNCTION_TYPE or METHOD_TYPE has a ref-qualifier (either & or &&). */
 #define FUNCTION_REF_QUALIFIED(NODE) \
-  TREE_LANG_FLAG_4 (FUNCTION_OR_METHOD_TYPE_CHECK (NODE))
+  TREE_LANG_FLAG_4 (FUNC_OR_METHOD_CHECK (NODE))
 
 /* 1 iff FUNCTION_TYPE or METHOD_TYPE has &&-ref-qualifier.  */
 #define FUNCTION_RVALUE_QUALIFIED(NODE) \
-  TREE_LANG_FLAG_5 (FUNCTION_OR_METHOD_TYPE_CHECK (NODE))
+  TREE_LANG_FLAG_5 (FUNC_OR_METHOD_CHECK (NODE))
 
 /* Returns 1 iff VAR_DECL is a construction virtual table.
    DECL_VTABLE_OR_VTT_P will be true in this case and must be checked
