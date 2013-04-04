@@ -1,5 +1,12 @@
 2013-04-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56213
+	* tree-vect-data-refs.c (vect_check_strided_load): Remove.
+	(vect_analyze_data_refs): Allow all non-nested loads as
+	strided loads.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56837
 	* tree-loop-distribution.c (classify_partition): For non-zero
 	values require that the value has the same precision as its
