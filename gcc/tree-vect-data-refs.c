@@ -2816,56 +2816,6 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
   return decl;
 }
 
-/* Check wether a non-affine load in STMT (being in the loop referred to
-   in LOOP_VINFO) is suitable for handling as strided load.  That is the case
-   if its address is a simple induction variable.  If so return the base
-   of that induction variable in *BASEP and the (loop-invariant) step
-   in *STEPP, both only when that pointer is non-zero.
-
-   This handles ARRAY_REFs (with variant index) and MEM_REFs (with variant
-   base pointer) only.  */
-
-static bool
-vect_check_strided_load (gimple stmt, loop_vec_info loop_vinfo)
-{
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree base, off;
-  affine_iv iv;
-
-  if (!DR_IS_READ (dr))
-    return false;
-
-  base = DR_REF (dr);
-
-  if (TREE_CODE (base) == REALPART_EXPR
-      || TREE_CODE (base) == IMAGPART_EXPR)
-    base = TREE_OPERAND (base, 0);
-
-  if (TREE_CODE (base) == ARRAY_REF)
-    {
-      off = TREE_OPERAND (base, 1);
-      base = TREE_OPERAND (base, 0);
-    }
-  else if (TREE_CODE (base) == MEM_REF)
-    {
-      off = TREE_OPERAND (base, 0);
-      base = TREE_OPERAND (base, 1);
-    }
-  else
-    return false;
-
-  if (TREE_CODE (off) != SSA_NAME)
-    return false;
-
-  if (!expr_invariant_in_loop_p (loop, base)
-      || !simple_iv (loop, loop_containing_stmt (stmt), off, &iv, true))
-    return false;
-
-  return true;
-}
-
 /* Function vect_analyze_data_refs.
 
   Find all the data references in the loop or basic block.
@@ -3291,10 +3241,8 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       else if (loop_vinfo
 	       && TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
 	{
-	  bool strided_load = false;
-	  if (!nested_in_vect_loop_p (loop, stmt))
-	    strided_load = vect_check_strided_load (stmt, loop_vinfo);
-	  if (!strided_load)
+	  if (nested_in_vect_loop_p (loop, stmt)
+	      || !DR_IS_READ (dr))
 	    {
 	      if (dump_enabled_p ())
 		{

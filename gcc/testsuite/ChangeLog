@@ -1,3 +1,8 @@
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56213
+	* gcc.dg/vect/vect-123.c: New testcase.
+
 2013-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56810
