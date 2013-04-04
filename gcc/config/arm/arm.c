@@ -19483,7 +19483,8 @@ typedef struct {
   VAR9 (T, N, A, B, C, D, E, F, G, H, I), \
   {#N, NEON_##T, UP (J), CF (N, J), 0}
 
-/* The mode entries in the following table correspond to the "key" type of the
+/* The NEON builtin data can be found in arm_neon_builtins.def.
+   The mode entries in the following table correspond to the "key" type of the
    instruction variant, i.e. equivalent to that which would be specified after
    the assembler mnemonic, which usually refers to the last vector operand.
    (Signed/unsigned/polynomial types are not differentiated between though, and
@@ -19493,196 +19494,7 @@ typedef struct {
 
 static neon_builtin_datum neon_builtin_data[] =
 {
-  VAR10 (BINOP, vadd,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR3 (BINOP, vaddl, v8qi, v4hi, v2si),
-  VAR3 (BINOP, vaddw, v8qi, v4hi, v2si),
-  VAR6 (BINOP, vhadd, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR8 (BINOP, vqadd, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR3 (BINOP, vaddhn, v8hi, v4si, v2di),
-  VAR8 (BINOP, vmul, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR8 (TERNOP, vmla, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR3 (TERNOP, vmlal, v8qi, v4hi, v2si),
-  VAR2 (TERNOP, vfma, v2sf, v4sf),
-  VAR2 (TERNOP, vfms, v2sf, v4sf),
-  VAR8 (TERNOP, vmls, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR3 (TERNOP, vmlsl, v8qi, v4hi, v2si),
-  VAR4 (BINOP, vqdmulh, v4hi, v2si, v8hi, v4si),
-  VAR2 (TERNOP, vqdmlal, v4hi, v2si),
-  VAR2 (TERNOP, vqdmlsl, v4hi, v2si),
-  VAR3 (BINOP, vmull, v8qi, v4hi, v2si),
-  VAR2 (SCALARMULL, vmull_n, v4hi, v2si),
-  VAR2 (LANEMULL, vmull_lane, v4hi, v2si),
-  VAR2 (SCALARMULL, vqdmull_n, v4hi, v2si),
-  VAR2 (LANEMULL, vqdmull_lane, v4hi, v2si),
-  VAR4 (SCALARMULH, vqdmulh_n, v4hi, v2si, v8hi, v4si),
-  VAR4 (LANEMULH, vqdmulh_lane, v4hi, v2si, v8hi, v4si),
-  VAR2 (BINOP, vqdmull, v4hi, v2si),
-  VAR8 (BINOP, vshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR8 (BINOP, vqshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR8 (SHIFTIMM, vshr_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR3 (SHIFTIMM, vshrn_n, v8hi, v4si, v2di),
-  VAR3 (SHIFTIMM, vqshrn_n, v8hi, v4si, v2di),
-  VAR3 (SHIFTIMM, vqshrun_n, v8hi, v4si, v2di),
-  VAR8 (SHIFTIMM, vshl_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR8 (SHIFTIMM, vqshl_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR8 (SHIFTIMM, vqshlu_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR3 (SHIFTIMM, vshll_n, v8qi, v4hi, v2si),
-  VAR8 (SHIFTACC, vsra_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR10 (BINOP, vsub,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR3 (BINOP, vsubl, v8qi, v4hi, v2si),
-  VAR3 (BINOP, vsubw, v8qi, v4hi, v2si),
-  VAR8 (BINOP, vqsub, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR6 (BINOP, vhsub, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR3 (BINOP, vsubhn, v8hi, v4si, v2di),
-  VAR8 (BINOP, vceq, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR8 (BINOP, vcge, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR6 (BINOP, vcgeu, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR8 (BINOP, vcgt, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR6 (BINOP, vcgtu, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR2 (BINOP, vcage, v2sf, v4sf),
-  VAR2 (BINOP, vcagt, v2sf, v4sf),
-  VAR6 (BINOP, vtst, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR8 (BINOP, vabd, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR3 (BINOP, vabdl, v8qi, v4hi, v2si),
-  VAR6 (TERNOP, vaba, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR3 (TERNOP, vabal, v8qi, v4hi, v2si),
-  VAR8 (BINOP, vmax, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR8 (BINOP, vmin, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR4 (BINOP, vpadd, v8qi, v4hi, v2si, v2sf),
-  VAR6 (UNOP, vpaddl, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR6 (BINOP, vpadal, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR4 (BINOP, vpmax, v8qi, v4hi, v2si, v2sf),
-  VAR4 (BINOP, vpmin, v8qi, v4hi, v2si, v2sf),
-  VAR2 (BINOP, vrecps, v2sf, v4sf),
-  VAR2 (BINOP, vrsqrts, v2sf, v4sf),
-  VAR8 (SHIFTINSERT, vsri_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR8 (SHIFTINSERT, vsli_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di),
-  VAR8 (UNOP, vabs, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR6 (UNOP, vqabs, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR8 (UNOP, vneg, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR6 (UNOP, vqneg, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR6 (UNOP, vcls, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR6 (UNOP, vclz, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  VAR2 (UNOP, vcnt, v8qi, v16qi),
-  VAR4 (UNOP, vrecpe, v2si, v2sf, v4si, v4sf),
-  VAR4 (UNOP, vrsqrte, v2si, v2sf, v4si, v4sf),
-  VAR6 (UNOP, vmvn, v8qi, v4hi, v2si, v16qi, v8hi, v4si),
-  /* FIXME: vget_lane supports more variants than this!  */
-  VAR10 (GETLANE, vget_lane,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (SETLANE, vset_lane,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR5 (CREATE, vcreate, v8qi, v4hi, v2si, v2sf, di),
-  VAR10 (DUP, vdup_n,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (DUPLANE, vdup_lane,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR5 (COMBINE, vcombine, v8qi, v4hi, v2si, v2sf, di),
-  VAR5 (SPLIT, vget_high, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR5 (SPLIT, vget_low, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR3 (UNOP, vmovn, v8hi, v4si, v2di),
-  VAR3 (UNOP, vqmovn, v8hi, v4si, v2di),
-  VAR3 (UNOP, vqmovun, v8hi, v4si, v2di),
-  VAR3 (UNOP, vmovl, v8qi, v4hi, v2si),
-  VAR6 (LANEMUL, vmul_lane, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR6 (LANEMAC, vmla_lane, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR2 (LANEMAC, vmlal_lane, v4hi, v2si),
-  VAR2 (LANEMAC, vqdmlal_lane, v4hi, v2si),
-  VAR6 (LANEMAC, vmls_lane, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR2 (LANEMAC, vmlsl_lane, v4hi, v2si),
-  VAR2 (LANEMAC, vqdmlsl_lane, v4hi, v2si),
-  VAR6 (SCALARMUL, vmul_n, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR6 (SCALARMAC, vmla_n, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR2 (SCALARMAC, vmlal_n, v4hi, v2si),
-  VAR2 (SCALARMAC, vqdmlal_n, v4hi, v2si),
-  VAR6 (SCALARMAC, vmls_n, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR2 (SCALARMAC, vmlsl_n, v4hi, v2si),
-  VAR2 (SCALARMAC, vqdmlsl_n, v4hi, v2si),
-  VAR10 (BINOP, vext,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR8 (UNOP, vrev64, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR4 (UNOP, vrev32, v8qi, v4hi, v16qi, v8hi),
-  VAR2 (UNOP, vrev16, v8qi, v16qi),
-  VAR4 (CONVERT, vcvt, v2si, v2sf, v4si, v4sf),
-  VAR4 (FIXCONV, vcvt_n, v2si, v2sf, v4si, v4sf),
-  VAR10 (SELECT, vbsl,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR2 (RINT, vrintn, v2sf, v4sf),
-  VAR2 (RINT, vrinta, v2sf, v4sf),
-  VAR2 (RINT, vrintp, v2sf, v4sf),
-  VAR2 (RINT, vrintm, v2sf, v4sf),
-  VAR2 (RINT, vrintz, v2sf, v4sf),
-  VAR2 (RINT, vrintx, v2sf, v4sf),
-  VAR1 (VTBL, vtbl1, v8qi),
-  VAR1 (VTBL, vtbl2, v8qi),
-  VAR1 (VTBL, vtbl3, v8qi),
-  VAR1 (VTBL, vtbl4, v8qi),
-  VAR1 (VTBX, vtbx1, v8qi),
-  VAR1 (VTBX, vtbx2, v8qi),
-  VAR1 (VTBX, vtbx3, v8qi),
-  VAR1 (VTBX, vtbx4, v8qi),
-  VAR8 (RESULTPAIR, vtrn, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR8 (RESULTPAIR, vzip, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR8 (RESULTPAIR, vuzp, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
-  VAR5 (REINTERP, vreinterpretv8qi, v8qi, v4hi, v2si, v2sf, di),
-  VAR5 (REINTERP, vreinterpretv4hi, v8qi, v4hi, v2si, v2sf, di),
-  VAR5 (REINTERP, vreinterpretv2si, v8qi, v4hi, v2si, v2sf, di),
-  VAR5 (REINTERP, vreinterpretv2sf, v8qi, v4hi, v2si, v2sf, di),
-  VAR5 (REINTERP, vreinterpretdi, v8qi, v4hi, v2si, v2sf, di),
-  VAR5 (REINTERP, vreinterpretv16qi, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR5 (REINTERP, vreinterpretv8hi, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR5 (REINTERP, vreinterpretv4si, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR5 (REINTERP, vreinterpretv4sf, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR5 (REINTERP, vreinterpretv2di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (LOAD1, vld1,
-         v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (LOAD1LANE, vld1_lane,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (LOAD1, vld1_dup,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (STORE1, vst1,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (STORE1LANE, vst1_lane,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR9 (LOADSTRUCT,
-	vld2, v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf),
-  VAR7 (LOADSTRUCTLANE, vld2_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR5 (LOADSTRUCT, vld2_dup, v8qi, v4hi, v2si, v2sf, di),
-  VAR9 (STORESTRUCT, vst2,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf),
-  VAR7 (STORESTRUCTLANE, vst2_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR9 (LOADSTRUCT,
-	vld3, v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf),
-  VAR7 (LOADSTRUCTLANE, vld3_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR5 (LOADSTRUCT, vld3_dup, v8qi, v4hi, v2si, v2sf, di),
-  VAR9 (STORESTRUCT, vst3,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf),
-  VAR7 (STORESTRUCTLANE, vst3_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR9 (LOADSTRUCT, vld4,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf),
-  VAR7 (LOADSTRUCTLANE, vld4_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR5 (LOADSTRUCT, vld4_dup, v8qi, v4hi, v2si, v2sf, di),
-  VAR9 (STORESTRUCT, vst4,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf),
-  VAR7 (STORESTRUCTLANE, vst4_lane,
-	v8qi, v4hi, v2si, v2sf, v8hi, v4si, v4sf),
-  VAR10 (LOGICBINOP, vand,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (LOGICBINOP, vorr,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (BINOP, veor,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (LOGICBINOP, vbic,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
-  VAR10 (LOGICBINOP, vorn,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
+#include "arm_neon_builtins.def"
 };
 
 #undef CF
@@ -19697,9 +19509,36 @@ static neon_builtin_datum neon_builtin_data[] =
 #undef VAR9
 #undef VAR10
 
-/* Neon defines builtins from ARM_BUILTIN_MAX upwards, though they don't have
-   symbolic names defined here (which would require too much duplication).
-   FIXME?  */
+#define CF(N,X) ARM_BUILTIN_NEON_##N##X
+#define VAR1(T, N, A) \
+  CF (N, A)
+#define VAR2(T, N, A, B) \
+  VAR1 (T, N, A), \
+  CF (N, B)
+#define VAR3(T, N, A, B, C) \
+  VAR2 (T, N, A, B), \
+  CF (N, C)
+#define VAR4(T, N, A, B, C, D) \
+  VAR3 (T, N, A, B, C), \
+  CF (N, D)
+#define VAR5(T, N, A, B, C, D, E) \
+  VAR4 (T, N, A, B, C, D), \
+  CF (N, E)
+#define VAR6(T, N, A, B, C, D, E, F) \
+  VAR5 (T, N, A, B, C, D, E), \
+  CF (N, F)
+#define VAR7(T, N, A, B, C, D, E, F, G) \
+  VAR6 (T, N, A, B, C, D, E, F), \
+  CF (N, G)
+#define VAR8(T, N, A, B, C, D, E, F, G, H) \
+  VAR7 (T, N, A, B, C, D, E, F, G), \
+  CF (N, H)
+#define VAR9(T, N, A, B, C, D, E, F, G, H, I) \
+  VAR8 (T, N, A, B, C, D, E, F, G, H), \
+  CF (N, I)
+#define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
+  VAR9 (T, N, A, B, C, D, E, F, G, H, I), \
+  CF (N, J)
 enum arm_builtins
 {
   ARM_BUILTIN_GETWCGR0,
@@ -19948,10 +19787,24 @@ enum arm_builtins
 
   ARM_BUILTIN_WMERGE,
 
-  ARM_BUILTIN_NEON_BASE,
+#include "arm_neon_builtins.def"
 
-  ARM_BUILTIN_MAX = ARM_BUILTIN_NEON_BASE + ARRAY_SIZE (neon_builtin_data)
+  ,ARM_BUILTIN_MAX
 };
+
+#define ARM_BUILTIN_NEON_BASE (ARM_BUILTIN_MAX - ARRAY_SIZE (neon_builtin_data))
+
+#undef CF
+#undef VAR1
+#undef VAR2
+#undef VAR3
+#undef VAR4
+#undef VAR5
+#undef VAR6
+#undef VAR7
+#undef VAR8
+#undef VAR9
+#undef VAR10
 
 static GTY(()) tree arm_builtin_decls[ARM_BUILTIN_MAX];
 
