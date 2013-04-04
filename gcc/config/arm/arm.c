@@ -620,6 +620,13 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P arm_class_likely_spilled_p
 
+#undef TARGET_VECTORIZE_BUILTINS
+#define TARGET_VECTORIZE_BUILTINS
+
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
+  arm_builtin_vectorized_function
+
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT arm_vector_alignment
 
@@ -25852,6 +25859,60 @@ arm_have_conditional_execution (void)
 {
   return !TARGET_THUMB1;
 }
+
+tree
+arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
+{
+  enum machine_mode in_mode, out_mode;
+  int in_n, out_n;
+
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE
+      || !(TARGET_NEON && TARGET_FPU_ARMV8 && flag_unsafe_math_optimizations))
+    return NULL_TREE;
+
+  out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+
+/* ARM_CHECK_BUILTIN_MODE and ARM_FIND_VRINT_VARIANT are used to find the
+   decl of the vectorized builtin for the appropriate vector mode.
+   NULL_TREE is returned if no such builtin is available.  */
+#undef ARM_CHECK_BUILTIN_MODE
+#define ARM_CHECK_BUILTIN_MODE(C) \
+  (out_mode == SFmode && out_n == C \
+   && in_mode == SFmode && in_n == C)
+
+#undef ARM_FIND_VRINT_VARIANT
+#define ARM_FIND_VRINT_VARIANT(N) \
+  (ARM_CHECK_BUILTIN_MODE (2) \
+    ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v2sf, false) \
+    : (ARM_CHECK_BUILTIN_MODE (4) \
+      ? arm_builtin_decl(ARM_BUILTIN_NEON_##N##v4sf, false) \
+      : NULL_TREE))
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
+      switch (fn)
+        {
+          case BUILT_IN_FLOORF:
+            return ARM_FIND_VRINT_VARIANT (vrintm);
+          case BUILT_IN_CEILF:
+            return ARM_FIND_VRINT_VARIANT (vrintp);
+          case BUILT_IN_TRUNCF:
+            return ARM_FIND_VRINT_VARIANT (vrintz);
+          case BUILT_IN_ROUNDF:
+            return ARM_FIND_VRINT_VARIANT (vrinta);
+          default:
+            return NULL_TREE;
+        }
+    }
+  return NULL_TREE;
+}
+#undef ARM_CHECK_BUILTIN_MODE
+#undef ARM_FIND_VRINT_VARIANT
 
 /* The AAPCS sets the maximum alignment of a vector to 64 bits.  */
 static HOST_WIDE_INT
