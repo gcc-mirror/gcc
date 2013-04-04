@@ -1,3 +1,8 @@
+2013-04-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/56729
+	* df-scan.c (df_insn_delete): Disable failing assert.
+
 2013-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-protos.h (arm_builtin_vectorized_function):
