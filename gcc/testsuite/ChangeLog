@@ -1,3 +1,8 @@
+2013-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/48186
+	* gcc.dg/pr48186.c: New test.
+
 2013-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56826

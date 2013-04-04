@@ -1,3 +1,10 @@
+2013-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/48186
+	* predict.c (maybe_hot_frequency_p): Return false if
+	HOT_BB_FREQUENCY_FRACTION is 0.
+	(cgraph_maybe_hot_edge_p): Likewise.
+
 2013-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56826
