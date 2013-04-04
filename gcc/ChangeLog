@@ -1,5 +1,11 @@
 2013-04-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56826
+	* tree-vect-slp.c (vect_build_slp_tree): Compute ncopies
+	more accurately.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56213
 	* tree-vect-data-refs.c (vect_check_strided_load): Remove.
 	(vect_analyze_data_refs): Allow all non-nested loads as
