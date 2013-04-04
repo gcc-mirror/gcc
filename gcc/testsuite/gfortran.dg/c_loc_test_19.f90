@@ -12,6 +12,6 @@ Contains
      Real( c_double ), Dimension( : ), Target :: aa
      Type( c_ptr ), Pointer :: b
      b = c_loc( aa( 1 ) )  ! was rejected before.
-     b = c_loc( aa ) ! { dg-error "TS 29113: Noninteroperable array at .1. as argument to C_LOC: Only explicit-size and assumed-size arrays are interoperable" }
+     b = c_loc( aa ) ! { dg-error "Fortran 2008: Array of interoperable type at .1. to C_LOC which is nonallocatable and neither assumed size nor explicit size" }
    End Subroutine test
 End Program gf

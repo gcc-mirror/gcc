@@ -19,7 +19,7 @@
   type(C_PTR) :: p
 
   p = c_loc(tt%t%i(1))
-  p = c_loc(n(1:2))  ! { dg-error "TS 29113: Noninteroperable array at .1. as argument to C_LOC: Only whole-arrays are interoperable" }
-  p = c_loc(ttt%t(5,1:2)%i(1)) ! { dg-error "TS 29113: Noninteroperable array at .1. as argument to C_LOC: Only whole-arrays are interoperable" }
+  p = c_loc(n(1:2))  ! OK: interop type + contiguous
+  p = c_loc(ttt%t(5,1:2)%i(1)) ! FIXME: Noncontiguous (invalid) - compile-time testable
   p = c_loc(x[1]) ! { dg-error "shall not be coindexed" }
   end

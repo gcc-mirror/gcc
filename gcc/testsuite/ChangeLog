@@ -1,3 +1,13 @@
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50269
+	* gfortran.dg/c_loc_test_21.f90: New.
+	* gfortran.dg/c_loc_test_19.f90: Update dg-error.
+	* gfortran.dg/c_loc_tests_10.f03: Update dg-error.
+	* gfortran.dg/c_loc_tests_11.f03: Update dg-error.
+	* gfortran.dg/c_loc_tests_4.f03: Update dg-error.
+	* gfortran.dg/c_loc_tests_16.f90:  Update dg-error.
+
 2013-04-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/56799

@@ -31,9 +31,9 @@ contains
     integer(c_int), intent(in) :: handle
     
     if (.true.) then   ! The ultimate component is an allocatable target 
-      get_double_vector_address = c_loc(dbv_pool(handle)%v)  ! { dg-error "TS 29113: Noninteroperable array at .1. as argument to C_LOC: Only explicit-size and assumed-size arrays are interoperable" }
+      get_double_vector_address = c_loc(dbv_pool(handle)%v)  ! OK: Interop type and allocatable
     else
-      get_double_vector_address = c_loc(vv)  ! { dg-error "TS 29113: Noninteroperable array at .1. as argument to C_LOC: Only explicit-size and assumed-size arrays are interoperable" }
+      get_double_vector_address = c_loc(vv)  ! OK: Interop type and allocatable
     endif
     
   end function get_double_vector_address
