@@ -1,3 +1,13 @@
+2013-04-04  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline:
+	2013-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/48186
+	* predict.c (maybe_hot_frequency_p): Return false if
+	HOT_BB_FREQUENCY_FRACTION is 0.
+	(cgraph_maybe_hot_edge_p): Likewise.
+
 2013-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline:
