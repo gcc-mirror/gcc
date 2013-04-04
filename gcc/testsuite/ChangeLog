@@ -1,3 +1,9 @@
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56826
+	* gcc.dg/vect/pr56826.c: New testcase.
+	* gcc.dg/vect/O3-pr36098.c: Adjust.
+
 2013-04-04  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.target/aarch64/inc/asm-adder-clobber-lr.c: Remove duplication.

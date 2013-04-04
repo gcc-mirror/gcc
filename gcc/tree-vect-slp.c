@@ -470,7 +470,6 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   tree lhs;
   bool stop_recursion = false, need_same_oprnds = false;
   tree vectype, scalar_type, first_op1 = NULL_TREE;
-  unsigned int ncopies;
   optab optab;
   int icode;
   enum machine_mode optab_op2_mode;
@@ -576,8 +575,6 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
           if (bb_vinfo)
             vectorization_factor = *max_nunits;
         }
-
-      ncopies = vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
 
       if (is_gimple_call (stmt))
 	{
@@ -741,12 +738,15 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  else
 	    {
 	      /* Load.  */
+	      unsigned unrolling_factor
+		= least_common_multiple
+		    (*max_nunits, group_size) / group_size;
               /* FORNOW: Check that there is no gap between the loads
 		 and no gap between the groups when we need to load
 		 multiple groups at once.
 		 ???  We should enhance this to only disallow gaps
 		 inside vectors.  */
-              if ((ncopies > 1
+              if ((unrolling_factor > 1
 		   && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
 		   && GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
 		  || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != stmt
@@ -767,6 +767,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
               /* Check that the size of interleaved loads group is not
                  greater than the SLP group size.  */
+	      unsigned ncopies
+		= vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
               if (loop_vinfo
 		  && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
                   && ((GROUP_SIZE (vinfo_for_stmt (stmt))
