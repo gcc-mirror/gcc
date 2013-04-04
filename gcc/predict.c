@@ -1,6 +1,6 @@
 /* Branch prediction routines for the GNU compiler.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   2011, 2012, 2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -966,7 +966,8 @@ predict_loops (void)
 	  if (TREE_CODE (niter) == INTEGER_CST)
 	    {
 	      if (host_integerp (niter, 1)
-		  && compare_tree_int (niter, max-1) == -1)
+		  && max
+		  && compare_tree_int (niter, max - 1) == -1)
 		nitercst = tree_low_cst (niter, 1) + 1;
 	      else
 		nitercst = max;
@@ -986,6 +987,11 @@ predict_loops (void)
 	      predictor = PRED_LOOP_ITERATIONS_GUESSED;
 	    }
 	  else
+	    continue;
+
+	  /* If the prediction for number of iterations is zero, do not
+	     predict the exit edges.  */
+	  if (nitercst == 0)
 	    continue;
 
 	  probability = ((REG_BR_PROB_BASE + nitercst / 2) / nitercst);

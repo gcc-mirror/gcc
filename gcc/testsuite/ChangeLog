@@ -1,3 +1,11 @@
+2013-04-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48189
+	* gcc.dg/pr48189.c: New test.
+
 2013-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline:
