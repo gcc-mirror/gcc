@@ -3649,11 +3649,12 @@ gfc_check_sizeof (gfc_expr *arg)
 /* Check whether an expression is interoperable.  When returning false,
    msg is set to a string telling why the expression is not interoperable,
    otherwise, it is set to NULL.  The msg string can be used in diagnostics.
-   If all_len_okay is true, all length-type parameters (for character) are
-   allowed.  Required for C_LOC (cf. Fortran 2003corr5 or Fortran 2008).  */
+   If c_loc is true, character with len > 1 are allowed (cf. Fortran
+   2003corr5); additionally, assumed-shape/assumed-rank/deferred-shape
+   arrays are permitted.  */
 
 static bool
-is_c_interoperable (gfc_expr *expr, const char **msg, bool all_len_okay)
+is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc)
 {
   *msg = NULL;
 
@@ -3706,7 +3707,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool all_len_okay)
 	&& gfc_simplify_expr (expr, 0) == FAILURE)
       gfc_internal_error ("is_c_interoperable(): gfc_simplify_expr failed");
 
-    if (!all_len_okay && expr->ts.u.cl
+    if (!c_loc && expr->ts.u.cl
 	&& (!expr->ts.u.cl->length
 	    || expr->ts.u.cl->length->expr_type != EXPR_CONSTANT
 	    || mpz_cmp_si (expr->ts.u.cl->length->value.integer, 1) != 0))
@@ -3726,7 +3727,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool all_len_okay)
       return false;
     }
 
-  if (expr->rank > 0 && expr->expr_type != EXPR_ARRAY)
+  if (!c_loc && expr->rank > 0 && expr->expr_type != EXPR_ARRAY)
     {
       gfc_array_ref *ar = gfc_find_array_ref (expr);
       if (ar->type != AR_FULL)
@@ -4042,6 +4043,22 @@ gfc_check_c_loc (gfc_expr *x)
 	  && gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable array at %L as"
 			 " argument to C_LOC: %s", &x->where, msg) == FAILURE)
 	  return FAILURE;
+    }
+  else if (x->rank > 0 && gfc_notification_std (GFC_STD_F2008))
+    {
+      gfc_array_ref *ar = gfc_find_array_ref (x);
+
+      if (ar->as->type != AS_EXPLICIT && ar->as->type != AS_ASSUMED_SIZE
+	  && !attr.allocatable
+	  && gfc_notify_std (GFC_STD_F2008, "Array of interoperable type at %L "
+			     "to C_LOC which is nonallocatable and neither "
+			     "assumed size nor explicit size", &x->where)
+	     == FAILURE)
+	return FAILURE;
+      else if (ar->type != AR_FULL
+	       && gfc_notify_std (GFC_STD_F2008, "Array section at %L "
+				  "to C_LOC", &x->where) == FAILURE)
+	return FAILURE;
     }
 
   return SUCCESS;

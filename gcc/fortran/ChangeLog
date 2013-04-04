@@ -1,3 +1,10 @@
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50269
+	* gcc/fortran/check.c (is_c_interoperable,
+	gfc_check_c_loc): Correct c_loc array checking
+	for Fortran 2003 and Fortran 2008.
+
 2013-04-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56284
@@ -282,7 +289,7 @@
 	* trans-array.c (structure_alloc_comps): Handle procedure-pointer
 	components with allocatable result.
 
-2012-02-21  Tobias Burnus  <burnus@net-b.de>
+2013-02-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56416
 	* gfortran.texi (Part II: Language Reference, Extensions,
