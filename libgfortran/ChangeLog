@@ -1,3 +1,8 @@
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56810
+	* io/list_read.c (check_type): Fix kind checking for COMPLEX.
+
 2013-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/56660

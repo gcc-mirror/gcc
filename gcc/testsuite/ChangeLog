@@ -1,3 +1,8 @@
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56810
+	* gfortran.dg/read_repeat_2.f90: New.
+
 2013-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56837
