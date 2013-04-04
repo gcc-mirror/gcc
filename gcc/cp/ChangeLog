@@ -1,5 +1,9 @@
 2013-04-03  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (FUNCTION_OR_METHOD_TYPE_CHECK): Remove.
+	(TYPE_RAISES_EXCEPTIONS): Use FUNC_OR_METHOD_CHECK instead.
+	(FUNCTION_REF_QUALIFIED, FUNCTION_RVALUE_QUALIFIED): Likewise.
+
 	* mangle.c (write_type): When writing a function type with
 	function-cv-quals, don't add the unqualified type as a
 	substitution candidate.
