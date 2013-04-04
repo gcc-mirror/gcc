@@ -1,3 +1,13 @@
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline:
+	2013-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* io/list_read.c (nml_query): Only abort when
+	an error occured.
+	(namelist_read): Add goto instead of falling through.
+
 2012-10-21  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/54736
