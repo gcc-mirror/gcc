@@ -1,3 +1,11 @@
+2013-04-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850e3v5.md (fmasf4): Use fmaf.s on E3V5
+	architectures.
+	(fmssf4): Use fmsf.s on E3V5 architectures.
+	(fnmasf4): Use fnmaf.s on E3V5 architectures.
+	(fnmssf4): Use fnmsf.s on E3V5 architectures.
+
 2013-04-03  Jeff Law  <law@redhat.com>
 
 	* Makefile.in (lra-constraints.o): Depend on $(OPTABS_H).
@@ -31,7 +39,7 @@
 	HOST_HALF_WIDE_INT_PRINT_UNSIGNED, HOST_HALF_WIDE_INT_PRINT_HEX,
 	HOST_HALF_WIDE_INT_PRINT_HEX_PURE): New symbols.
 	(sext_hwi, zext_hwi): New functions.
-	
+
 2013-04-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/56799
