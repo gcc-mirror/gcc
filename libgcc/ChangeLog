@@ -1,3 +1,9 @@
+2013-04-04  Meador Inge  <meadori@codesourcery.com>
+
+	* config/arm/bpabi.S (aeabi_ldivmod): Add DWARF information for
+	computing the location of the link register.
+	(aeabi_uldivmod): Ditto.
+
 2013-03-27  Kai Tietz  <ktietz@redhat.com>
 
 	* config.host: Add support for cygwin x64 target.
