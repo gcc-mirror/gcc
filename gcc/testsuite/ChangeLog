@@ -1,3 +1,16 @@
+2013-04-04  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/inc/asm-adder-clobber-lr.c: Remove duplication.
+	* gcc.target/aarch64/inc/asm-adder-no-clobber-lr.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-1.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-2.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-3.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-4.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-5.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-6.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-7.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-8.c: Likewise.
+
 2013-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56213
