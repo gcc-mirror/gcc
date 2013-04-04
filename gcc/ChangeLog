@@ -1,3 +1,10 @@
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56837
+	* tree-loop-distribution.c (classify_partition): For non-zero
+	values require that the value has the same precision as its
+	mode to be useful as memset value.
+
 2013-04-03  Roland McGrath  <mcgrathr@google.com>
 
 	Backport from mainline:

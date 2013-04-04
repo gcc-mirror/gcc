@@ -942,13 +942,17 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       gimple stmt = DR_STMT (single_store);
       tree rhs = gimple_assign_rhs1 (stmt);
       if (!(integer_zerop (rhs)
-	    || integer_all_onesp (rhs)
 	    || real_zerop (rhs)
 	    || (TREE_CODE (rhs) == CONSTRUCTOR
 		&& !TREE_CLOBBER_P (rhs))
-	    || (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
-		&& (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)))
-		    == TYPE_MODE (unsigned_char_type_node)))))
+	    || ((integer_all_onesp (rhs)
+		 || (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+		     && (TYPE_MODE (TREE_TYPE (rhs))
+			 == TYPE_MODE (unsigned_char_type_node))))
+		/* For stores of a non-zero value require that the precision
+		   of the value matches its actual size.  */
+		&& (TYPE_PRECISION (TREE_TYPE (rhs))
+		    == GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs)))))))
 	return;
       if (TREE_CODE (rhs) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (rhs)
