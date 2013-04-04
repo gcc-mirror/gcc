@@ -1,3 +1,10 @@
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56837
+	* tree-loop-distribution.c (classify_partition): For non-zero
+	values require that the value has the same precision as its
+	mode to be useful as memset value.
+
 2013-04-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850e3v5.md (fmasf4): Use fmaf.s on E3V5
