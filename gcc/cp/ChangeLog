@@ -1,3 +1,9 @@
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_type): When writing a function type with
+	function-cv-quals, don't add the unqualified type as a
+	substitution candidate.
+
 2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56815

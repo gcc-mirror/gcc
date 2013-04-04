@@ -1897,8 +1897,16 @@ write_type (tree type)
       tree t = TYPE_MAIN_VARIANT (type);
       if (TREE_CODE (t) == FUNCTION_TYPE
 	  || TREE_CODE (t) == METHOD_TYPE)
-	t = build_ref_qualified_type (t, type_memfn_rqual (type));
-      write_type (t);
+	{
+	  t = build_ref_qualified_type (t, type_memfn_rqual (type));
+	  if (abi_version_at_least (8))
+	    /* Avoid adding the unqualified function type as a substitution.  */
+	    write_function_type (t);
+	  else
+	    write_type (t);
+	}
+      else
+	write_type (t);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     /* It is important not to use the TYPE_MAIN_VARIANT of TYPE here
