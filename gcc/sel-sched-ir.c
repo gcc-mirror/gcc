@@ -3110,7 +3110,7 @@ has_dependence_note_reg_set (int regno)
 	  || reg_last->clobbers != NULL)
 	*dsp = (*dsp & ~SPECULATIVE) | DEP_OUTPUT;
 
-      if (reg_last->uses)
+      if (reg_last->uses || reg_last->implicit_sets)
 	*dsp = (*dsp & ~SPECULATIVE) | DEP_ANTI;
     }
 }
@@ -3130,7 +3130,7 @@ has_dependence_note_reg_clobber (int regno)
       if (reg_last->sets)
 	*dsp = (*dsp & ~SPECULATIVE) | DEP_OUTPUT;
 
-      if (reg_last->uses)
+      if (reg_last->uses || reg_last->implicit_sets)
 	*dsp = (*dsp & ~SPECULATIVE) | DEP_ANTI;
     }
 }
@@ -3150,7 +3150,7 @@ has_dependence_note_reg_use (int regno)
       if (reg_last->sets)
 	*dsp = (*dsp & ~SPECULATIVE) | DEP_TRUE;
 
-      if (reg_last->clobbers)
+      if (reg_last->clobbers || reg_last->implicit_sets)
 	*dsp = (*dsp & ~SPECULATIVE) | DEP_ANTI;
 
       /* Handle BE_IN_SPEC.  */

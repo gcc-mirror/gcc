@@ -1,3 +1,13 @@
+2013-04-04  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2012-11-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/54472
+	* sel-sched-ir.c (has_dependence_note_reg_set): Handle implicit sets.
+	(has_dependence_note_reg_clobber,
+	as_dependence_note_reg_use): Likewise.
+
 2013-04-04  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
