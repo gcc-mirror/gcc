@@ -792,6 +792,11 @@ Driver Undocumented
 ; 7: The version of the ABI that treats nullptr_t as a builtin type and
 ;    corrects the mangling of lambdas in default argument scope.
 ;    First selectable in G++ 4.8.
+;
+; 8: The version of the ABI that corrects the substitution behavior of
+;    function types with function-cv-qualifiers.
+;    First selectable in G++ 4.9.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=

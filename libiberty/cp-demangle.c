@@ -2198,8 +2198,16 @@ cplus_demangle_type (struct d_info *di)
       pret = d_cv_qualifiers (di, &ret, 0);
       if (pret == NULL)
 	return NULL;
-      *pret = cplus_demangle_type (di);
-      if (! *pret)
+      if (d_peek_char (di) == 'F')
+	{
+	  /* cv-qualifiers before a function type apply to 'this',
+	     so avoid adding the unqualified function type to
+	     the substitution list.  */
+	  *pret = d_function_type (di);
+	}
+      else
+	*pret = cplus_demangle_type (di);
+      if (!*pret)
 	return NULL;
       if ((*pret)->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS
 	  || (*pret)->type == DEMANGLE_COMPONENT_REFERENCE_THIS)
@@ -2739,53 +2747,32 @@ d_pointer_to_member_type (struct d_info *di)
 {
   struct demangle_component *cl;
   struct demangle_component *mem;
-  struct demangle_component **pmem;
 
   if (! d_check_char (di, 'M'))
     return NULL;
 
   cl = cplus_demangle_type (di);
-
-  /* The ABI specifies that any type can be a substitution source, and
-     that M is followed by two types, and that when a CV-qualified
-     type is seen both the base type and the CV-qualified types are
-     substitution sources.  The ABI also specifies that for a pointer
-     to a CV-qualified member function, the qualifiers are attached to
-     the second type.  Given the grammar, a plain reading of the ABI
-     suggests that both the CV-qualified member function and the
-     non-qualified member function are substitution sources.  However,
-     g++ does not work that way.  g++ treats only the CV-qualified
-     member function as a substitution source.  FIXME.  So to work
-     with g++, we need to pull off the CV-qualifiers here, in order to
-     avoid calling add_substitution() in cplus_demangle_type().  But
-     for a CV-qualified member which is not a function, g++ does
-     follow the ABI, so we need to handle that case here by calling
-     d_add_substitution ourselves.  */
-
-  pmem = d_cv_qualifiers (di, &mem, 1);
-  if (pmem == NULL)
-    return NULL;
-  *pmem = cplus_demangle_type (di);
-  if (*pmem == NULL)
+  if (cl == NULL)
     return NULL;
 
-  if (pmem != &mem
-      && ((*pmem)->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS
-	  || (*pmem)->type == DEMANGLE_COMPONENT_REFERENCE_THIS))
-    {
-      /* Move the ref-qualifier outside the cv-qualifiers so that
-	 they are printed in the right order.  */
-      struct demangle_component *fn = d_left (*pmem);
-      d_left (*pmem) = mem;
-      mem = *pmem;
-      *pmem = fn;
-    }
+  /* The ABI says, "The type of a non-static member function is considered
+     to be different, for the purposes of substitution, from the type of a
+     namespace-scope or static member function whose type appears
+     similar. The types of two non-static member functions are considered
+     to be different, for the purposes of substitution, if the functions
+     are members of different classes. In other words, for the purposes of
+     substitution, the class of which the function is a member is
+     considered part of the type of function."
 
-  if (pmem != &mem && (*pmem)->type != DEMANGLE_COMPONENT_FUNCTION_TYPE)
-    {
-      if (! d_add_substitution (di, mem))
-	return NULL;
-    }
+     For a pointer to member function, this call to cplus_demangle_type
+     will end up adding a (possibly qualified) non-member function type to
+     the substitution table, which is not correct; however, the member
+     function type will never be used in a substitution, so putting the
+     wrong type in the substitution table is harmless.  */
+
+  mem = cplus_demangle_type (di);
+  if (mem == NULL)
+    return NULL;
 
   return d_make_comp (di, DEMANGLE_COMPONENT_PTRMEM_TYPE, cl, mem);
 }
