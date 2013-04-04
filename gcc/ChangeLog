@@ -1,3 +1,8 @@
+2013-04-03  Jeff Law  <law@redhat.com>
+
+	* Makefile.in (lra-constraints.o): Depend on $(OPTABS_H).
+	(lra-eliminations.o): Likewise.
+
 2013-04-03  Teresa Johnson  <tejohnson@google.com>
 
 	* gcov-io.c (compute_working_sets): Moved most of body of old

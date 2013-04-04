@@ -3301,12 +3301,12 @@ lra-constraints.o : lra-constraints.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(REGS_H) insn-config.h insn-codes.h $(DF_H) \
    $(RECOG_H) output.h addresses.h $(REGS_H) hard-reg-set.h $(FLAGS_H) \
    $(FUNCTION_H) $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) \
-   ira.h rtl-error.h $(LRA_INT_H)
+   ira.h rtl-error.h $(LRA_INT_H) $(OPTABS_H)
 lra-eliminations.o : lra-eliminations.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
    $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) ira.h \
-   rtl-error.h $(LRA_INT_H)
+   rtl-error.h $(LRA_INT_H) $(OPTABS_H)
 lra-lives.o : lra-lives.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
