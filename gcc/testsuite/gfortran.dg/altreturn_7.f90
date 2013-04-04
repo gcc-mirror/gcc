@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=legacy" }
+! { dg-options "-std=gnu" }
 !
 ! PR 40848: [4.5 Regression] ICE with alternate returns
 !

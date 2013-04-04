@@ -1,3 +1,9 @@
+2013-04-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40881
+	* match.c (gfc_match_return): Remove standard notification.
+	* primary.c (gfc_match_actual_arglist): Add standard notification.
+
 2013-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50269

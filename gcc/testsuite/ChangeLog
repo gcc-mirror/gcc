@@ -1,3 +1,13 @@
+2013-04-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40881
+	* gfortran.dg/altreturn_1.f90: Add -std=gnu.
+	* gfortran.dg/altreturn_4.f90: Ditto.
+	* gfortran.dg/altreturn_3.f90: Replace -std=legacy by -std=gnu.
+	* gfortran.dg/altreturn_5.f90: Ditto.
+	* gfortran.dg/altreturn_6.f90: Ditto.
+	* gfortran.dg/altreturn_7.f90: Ditto.
+
 2013-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_v8_neon_hw):
