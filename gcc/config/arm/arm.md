@@ -3215,13 +3215,17 @@
   ""
 )
 
-(define_insn "*andsi_iorsi3_notsi"
+(define_insn_and_split "*andsi_iorsi3_notsi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r")
 	(and:SI (ior:SI (match_operand:SI 1 "s_register_operand" "%0,r,r")
 			(match_operand:SI 2 "arm_rhs_operand" "rI,0,rI"))
 		(not:SI (match_operand:SI 3 "arm_rhs_operand" "rI,rI,rI"))))]
   "TARGET_32BIT"
-  "orr%?\\t%0, %1, %2\;bic%?\\t%0, %0, %3"
+  "#"   ; "orr%?\\t%0, %1, %2\;bic%?\\t%0, %0, %3"
+  "&& reload_completed"
+  [(set (match_dup 0) (ior:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (and:SI (not:SI (match_dup 3)) (match_dup 0)))]
+  ""
   [(set_attr "length" "8")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")]
@@ -4273,12 +4277,24 @@
 
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
 ;; The first alternative allows the common case of a *full* overlap.
-(define_insn "*arm_negdi2"
+(define_insn_and_split "*arm_negdi2"
   [(set (match_operand:DI         0 "s_register_operand" "=r,&r")
 	(neg:DI (match_operand:DI 1 "s_register_operand"  "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
+  "#"   ; "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+		   (compare:CC (const_int 0) (match_dup 1)))
+	      (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1)))])
+   (set (match_dup 2) (minus:SI (minus:SI (const_int 0) (match_dup 3))
+                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[3] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
@@ -4346,14 +4362,67 @@
     operands[2] = gen_rtx_REG (CCmode, CC_REGNUM);
 ")
 
-(define_insn "*arm_abssi2"
+(define_insn_and_split "*arm_abssi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(abs:SI (match_operand:SI 1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "@
-   cmp\\t%0, #0\;rsblt\\t%0, %0, #0
-   eor%?\\t%0, %1, %1, asr #31\;sub%?\\t%0, %0, %1, asr #31"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+   /* if (which_alternative == 0) */
+   if (REGNO(operands[0]) == REGNO(operands[1]))
+     {
+      /* Emit the pattern:
+         cmp\\t%0, #0\;rsblt\\t%0, %0, #0
+         [(set (reg:CC CC_REGNUM)
+               (compare:CC (match_dup 0) (const_int 0)))
+          (cond_exec (lt:CC (reg:CC CC_REGNUM) (const_int 0))
+                     (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1))))]
+      */
+      emit_insn (gen_rtx_SET (VOIDmode,
+                              gen_rtx_REG (CCmode, CC_REGNUM),
+                              gen_rtx_COMPARE (CCmode, operands[0], const0_rtx)));
+      emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+                                    (gen_rtx_LT (SImode,
+                                                 gen_rtx_REG (CCmode, CC_REGNUM),
+                                                 const0_rtx)),
+                                    (gen_rtx_SET (VOIDmode,
+                                                  operands[0],
+                                                  (gen_rtx_MINUS (SImode,
+                                                                  const0_rtx,
+                                                                  operands[1]))))));
+      DONE;
+     }
+   else
+     {
+      /* Emit the pattern:
+         alt1: eor%?\\t%0, %1, %1, asr #31\;sub%?\\t%0, %0, %1, asr #31
+         [(set (match_dup 0)
+               (xor:SI (match_dup 1)
+                       (ashiftrt:SI (match_dup 1) (const_int 31))))
+          (set (match_dup 0)
+               (minus:SI (match_dup 0)
+                      (ashiftrt:SI (match_dup 1) (const_int 31))))]
+      */
+      emit_insn (gen_rtx_SET (VOIDmode,
+                              operands[0],
+                              gen_rtx_XOR (SImode,
+                                           gen_rtx_ASHIFTRT (SImode,
+                                                             operands[1],
+                                                             GEN_INT (31)),
+                                           operands[1])));
+      emit_insn (gen_rtx_SET (VOIDmode,
+                              operands[0],
+                              gen_rtx_MINUS (SImode,
+                                             operands[0],
+                                             gen_rtx_ASHIFTRT (SImode,
+                                                               operands[1],
+                                                               GEN_INT (31)))));
+      DONE;
+     }
+  }
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
    (set_attr "predicable" "no, yes")
@@ -4374,14 +4443,56 @@
   [(set_attr "length" "6")]
 )
 
-(define_insn "*arm_neg_abssi2"
+(define_insn_and_split "*arm_neg_abssi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(neg:SI (abs:SI (match_operand:SI 1 "s_register_operand" "0,r"))))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "@
-   cmp\\t%0, #0\;rsbgt\\t%0, %0, #0
-   eor%?\\t%0, %1, %1, asr #31\;rsb%?\\t%0, %0, %1, asr #31"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+   /* if (which_alternative == 0) */
+   if (REGNO (operands[0]) == REGNO (operands[1]))
+     {
+      /* Emit the pattern:
+         cmp\\t%0, #0\;rsbgt\\t%0, %0, #0
+      */
+      emit_insn (gen_rtx_SET (VOIDmode,
+                              gen_rtx_REG (CCmode, CC_REGNUM),
+                              gen_rtx_COMPARE (CCmode, operands[0], const0_rtx)));
+      emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+                                    gen_rtx_GT (SImode,
+                                                gen_rtx_REG (CCmode, CC_REGNUM),
+                                                const0_rtx),
+                                    gen_rtx_SET (VOIDmode,
+                                                 operands[0],
+                                                 (gen_rtx_MINUS (SImode,
+                                                                 const0_rtx,
+                                                                 operands[1])))));
+     }
+   else
+     {
+      /* Emit the pattern:
+         eor%?\\t%0, %1, %1, asr #31\;rsb%?\\t%0, %0, %1, asr #31
+      */
+      emit_insn (gen_rtx_SET (VOIDmode,
+                              operands[0],
+                              gen_rtx_XOR (SImode,
+                                           gen_rtx_ASHIFTRT (SImode,
+                                                             operands[1],
+                                                             GEN_INT (31)),
+                                           operands[1])));
+      emit_insn (gen_rtx_SET (VOIDmode,
+                              operands[0],
+                              gen_rtx_MINUS (SImode,
+                                             gen_rtx_ASHIFTRT (SImode,
+                                                               operands[1],
+                                                               GEN_INT (31)),
+                                             operands[0])));
+     }
+   DONE;
+  }
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
    (set_attr "predicable" "no, yes")
@@ -7736,23 +7847,64 @@
 ;; if-conversion can not reduce to a conditional compare, so we do
 ;; that directly.
 
-(define_insn "*arm_cmpdi_insn"
+(define_insn_and_split "*arm_cmpdi_insn"
   [(set (reg:CC_NCV CC_REGNUM)
 	(compare:CC_NCV (match_operand:DI 0 "s_register_operand" "r")
 			(match_operand:DI 1 "arm_di_operand"	   "rDi")))
    (clobber (match_scratch:SI 2 "=r"))]
   "TARGET_32BIT"
-  "cmp\\t%Q0, %Q1\;sbcs\\t%2, %R0, %R1"
+  "#"   ; "cmp\\t%Q0, %Q1\;sbcs\\t%2, %R0, %R1"
+  "&& reload_completed"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 0) (match_dup 1)))
+   (parallel [(set (reg:CC CC_REGNUM)
+                   (compare:CC (match_dup 3) (match_dup 4)))
+              (set (match_dup 2)
+                   (minus:SI (match_dup 5)
+                            (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    if (CONST_INT_P (operands[1]))
+      {
+        operands[4] = GEN_INT (~INTVAL (gen_highpart_mode (SImode,
+                                                           DImode,
+                                                           operands[1])));
+        operands[5] = gen_rtx_PLUS (SImode, operands[3], operands[4]);
+      }
+    else
+      {
+        operands[4] = gen_highpart (SImode, operands[1]);
+        operands[5] = gen_rtx_MINUS (SImode, operands[3], operands[4]);
+      }
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+  }
   [(set_attr "conds" "set")
    (set_attr "length" "8")]
 )
 
-(define_insn "*arm_cmpdi_unsigned"
+(define_insn_and_split "*arm_cmpdi_unsigned"
   [(set (reg:CC_CZ CC_REGNUM)
 	(compare:CC_CZ (match_operand:DI 0 "s_register_operand" "r")
 		       (match_operand:DI 1 "arm_di_operand"	"rDi")))]
   "TARGET_32BIT"
-  "cmp\\t%R0, %R1\;it eq\;cmpeq\\t%Q0, %Q1"
+  "#"   ; "cmp\\t%R0, %R1\;it eq\;cmpeq\\t%Q0, %Q1"
+  "&& reload_completed"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 2) (match_dup 3)))
+   (cond_exec (eq:SI (reg:CC CC_REGNUM) (const_int 0))
+              (set (reg:CC CC_REGNUM)
+                   (compare:CC (match_dup 0) (match_dup 1))))]
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    if (CONST_INT_P (operands[1]))
+      operands[3] = gen_highpart_mode (SImode, DImode, operands[1]);
+    else
+      operands[3] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }
   [(set_attr "conds" "set")
    (set_attr "length" "8")]
 )
