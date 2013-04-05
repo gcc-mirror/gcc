@@ -1,3 +1,8 @@
+2013-04-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_expand_builtin): Change fcode
+	type to unsigned int.
+
 2013-04-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* doc/invoke.texi (ARM Options): Document cortex-a53 support.
