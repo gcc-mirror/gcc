@@ -1,3 +1,8 @@
+2013-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_for): Disallow class iterators for
+	OMP_SIMD and OMP_FOR_SIMD loops.
+
 2013-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Use OMP_LOOP_CHECK instead of
