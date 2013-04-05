@@ -1,3 +1,8 @@
+2013-04-04  Ian Lance Taylor  <iant@google.com>
+
+	* doc/standards.texi (Standards): The Go frontend supports the Go
+	1 language standard.
+
 2013-04-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/56729
