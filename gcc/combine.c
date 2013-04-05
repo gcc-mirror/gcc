@@ -341,14 +341,14 @@ static int nonzero_sign_valid;
 /* Record one modification to rtl structure
    to be undone by storing old_contents into *where.  */
 
-enum undo_kind { UNDO_RTX, UNDO_INT, UNDO_MODE };
+enum undo_kind { UNDO_RTX, UNDO_INT, UNDO_MODE, UNDO_LINKS };
 
 struct undo
 {
   struct undo *next;
   enum undo_kind kind;
   union { rtx r; int i; enum machine_mode m; } old_contents;
-  union { rtx *r; int *i; } where;
+  union { rtx *r; int *i;  } where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -671,7 +671,8 @@ do_SUBST (rtx *into, rtx newval)
      that are perfectly valid, so we'd waste too much effort for
      little gain doing the checks here.  Focus on catching invalid
      transformations involving integer constants.  */
-  if (GET_MODE_CLASS (GET_MODE (oldval)) == MODE_INT
+  if (oldval
+      && GET_MODE_CLASS (GET_MODE (oldval)) == MODE_INT
       && CONST_INT_P (newval))
     {
       /* Sanity check that we're replacing oldval with a CONST_INT
@@ -762,6 +763,34 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
 }
 
 #define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE(&(INTO), (NEWVAL))
+
+#ifndef HAVE_cc0
+
+/* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
+
+static void
+do_SUBST_LINK (rtx *into, rtx newval)
+{
+  struct undo *buf;
+  rtx oldval = *into;
+  if (oldval == newval)
+    return;
+
+  if (undobuf.frees)
+    buf = undobuf.frees, undobuf.frees = buf->next;
+  else
+    buf = XNEW (struct undo);
+  
+  buf->kind = UNDO_LINKS;
+  buf->where.r = into;
+  buf->old_contents.r = oldval;
+  *into = newval;
+  
+  buf->next = undobuf.undos, undobuf.undos = buf;
+}
+
+#define SUBST_LINK(oldval, newval) do_SUBST_LINK (&oldval, newval)
+#endif
 
 /* Subroutine of try_combine.  Determine whether the combine replacement
    patterns NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to
@@ -2871,6 +2900,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
 	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
 		 SET_DEST (PATTERN (i1)));
+	  SUBST_LINK (LOG_LINKS (i2), alloc_INSN_LIST (i1, LOG_LINKS (i2)));
 	}
     }
 #endif
@@ -4474,6 +4504,11 @@ undo_all (void)
 	case UNDO_MODE:
 	  adjust_reg_mode (*undo->where.r, undo->old_contents.m);
 	  break;
+
+	case UNDO_LINKS:
+	  *undo->where.r = undo->old_contents.r;
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
