@@ -1260,7 +1260,10 @@ cgraph_node_remove_callers (struct cgraph_node *node)
   node->callers = NULL;
 }
 
-/* Release memory used to represent body of function NODE.  */
+/* Release memory used to represent body of function NODE.
+   Use this only for functions that are released before being translated to
+   target code (i.e. RTL).  Functions that are compiled to RTL and beyond
+   are free'd in final.c via free_after_compilation().  */
 
 void
 cgraph_release_function_body (struct cgraph_node *node)
@@ -1285,6 +1288,7 @@ cgraph_release_function_body (struct cgraph_node *node)
 	  gcc_assert (dom_computed[0] == DOM_NONE);
 	  gcc_assert (dom_computed[1] == DOM_NONE);
 	  clear_edges ();
+	  cfun->cfg = NULL;
 	}
       if (cfun->value_histograms)
 	free_histograms ();

@@ -1290,8 +1290,41 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", RTX_EXTRA)
    true, the second operand will be used as the value of the conditional.  */
 DEF_RTL_EXPR(COND, "cond", "Ee", RTX_EXTRA)
 
+/* Definition of a pattern substitution meta operation on a DEFINE_EXPAND
+   or a DEFINE_INSN.  Automatically generates new instances of DEFINE_INSNs
+   that match the substitution pattern.
+
+   Operand:
+   0: The name of the substitition template.
+   1: Input template to match to see if a substitution is applicable.
+   2: A C expression giving an additional condition for the generated
+      new define_expand or define_insn.
+   3: Output tempalate to generate via substitution.
+
+   Within a DEFINE_SUBST template, the meaning of some RTL expressions is
+   different from their usual interpretation: a MATCH_OPERAND matches any
+   expression tree with matching machine mode or with VOIDmode.  Likewise,
+   MATCH_OP_DUP and MATCH_DUP match more liberally in a DEFINE_SUBST than
+   in other RTL expressions.  MATCH_OPERATOR matches all common operators
+   but also UNSPEC, UNSPEC_VOLATILE, and MATCH_OPERATORS from the input
+   DEFINE_EXPAND or DEFINE_INSN.  */
 DEF_RTL_EXPR(DEFINE_SUBST, "define_subst", "sEsE", RTX_EXTRA)
+
+/* Substitution attribute to apply a DEFINE_SUBST to a pattern.
+
+   Operand:
+   0: The name of the subst-attribute.
+   1: The name of the DEFINE_SUBST to be applied for this attribute.
+   2: String to substitute for the subst-attribute name in the pattern
+      name, for the case that the DEFINE_SUBST is not applied (i.e. the
+      unmodified version of the pattern).
+   3: String to substitute for the subst-attribute name in the pattern
+      name, for the case that the DEFINE_SUBST is applied to the patten.
+      
+   The use of DEFINE_SUBST and DEFINE_SUBST_ATTR is explained in the
+   GCC internals manual, under "RTL Templates Transformations".  */
 DEF_RTL_EXPR(DEFINE_SUBST_ATTR, "define_subst_attr", "ssss", RTX_EXTRA)
+
 #endif /* GENERATOR_FILE */
 
 /*
