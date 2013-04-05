@@ -16,7 +16,7 @@
 
 2013-04-02 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 197340 into gupc branch.
+	Merge trunk version 197340 into gupc branch.
 
 2013-04-02 Gary Funck  <gary@intrepid.com>
 
@@ -38,7 +38,7 @@
 
 2013-03-25 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 197029 into gupc branch.
+	Merge trunk version 197029 into gupc branch.
 
 2013-03-21 Gary Funck  <gary@intrepid.com>
 
@@ -48,64 +48,64 @@
 
 2013-03-18 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 196771 into gupc branch.
+	Merge trunk version 196771 into gupc branch.
 	* DEV-PHASE: Bump release identifier to 4.9.0-1.
 
 2013-03-11 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 196592 into gupc branch.
+	Merge trunk version 196592 into gupc branch.
 
 2013-03-04 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 196422 into gupc branch.
+	Merge trunk version 196422 into gupc branch.
 
 2013-02-25 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 196253 into gupc branch.
+	Merge trunk version 196253 into gupc branch.
 
 2013-02-18 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 196115 into gupc branch.
+	Merge trunk version 196115 into gupc branch.
 
 2013-02-11 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 195937 into gupc branch.
+	Merge trunk version 195937 into gupc branch.
 
 2013-02-04 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 195707 into gupc branch.
+	Merge trunk version 195707 into gupc branch.
 
 2013-01-28 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 195502 into gupc branch.
+	Merge trunk version 195502 into gupc branch.
 
 2013-01-21 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 195330 into gupc branch.
+	Merge trunk version 195330 into gupc branch.
 
 2013-01-14 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 195164 into gupc branch.
+	Merge trunk version 195164 into gupc branch.
 
 2013-01-07 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 194962 into gupc branch.
+	Merge trunk version 194962 into gupc branch.
 
 2012-12-24 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 194709 into gupc branch.
+	Merge trunk version 194709 into gupc branch.
 
 2012-12-17 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 194552 into gupc branch.
+	Merge trunk version 194552 into gupc branch.
 
 2012-12-10 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 194351 into gupc branch.
+	Merge trunk version 194351 into gupc branch.
 
 2012-12-03 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 194076 into gupc branch.
+	Merge trunk version 194076 into gupc branch.
 
 2012-11-30  Gary Funck  <gary@intrepid.com>
 
@@ -116,19 +116,19 @@
 
 2012-11-26 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 193807 into gupc branch.
+	Merge trunk version 193807 into gupc branch.
 
 2012-11-20 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 193672 into gupc branch.
+	Merge trunk version 193672 into gupc branch.
 
 2012-11-19 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 193617 into gupc branch.
+	Merge trunk version 193617 into gupc branch.
 
 2012-11-15 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 193426 into gupc branch.
+	Merge trunk version 193426 into gupc branch.
 
 2012-11-12  Gary Funck  <gary@intrepid.com>
 
@@ -139,11 +139,11 @@
 
 2012-11-05 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 193152 into gupc branch.
+	Merge trunk version 193152 into gupc branch.
 
 2012-10-29 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 192909 into gupc branch.
+	Merge trunk version 192909 into gupc branch.
 
 2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
 
@@ -171,19 +171,19 @@
 
 2012-10-22 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 192673 into gupc branch.
+	Merge trunk version 192673 into gupc branch.
 
 2012-10-15 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 192449 into gupc branch.
+	Merge trunk version 192449 into gupc branch.
 
 2012-10-08 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 192198 into gupc branch.
+	Merge trunk version 192198 into gupc branch.
 
 2012-10-01 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 191931 into gupc branch.
+	Merge trunk version 191931 into gupc branch.
 
 2012-09-26  Gary Funck  <gary@intrepid.com>
 
@@ -197,7 +197,7 @@
 
 2012-09-24 Gary Funck  <gary@intrepid.com>
 
-        Merge trunk version 191658 into gupc branch.
+	Merge trunk version 191658 into gupc branch.
 
 2012-09-17  Gary Funck  <gary@intrepid.com>
 
