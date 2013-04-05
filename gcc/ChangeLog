@@ -1,5 +1,12 @@
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.md (arm_subdi3): Convert define_insn into
+	define_insn_and_split.
+	(subdi_di_zesidi,subdi_di_sesidi): Likewise.
+	(subdi_zesidi_di,subdi_sesidi_di,subdi_zesidi_zesidi): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.md (subsi3_carryin): New pattern.
 	(subsi3_carryin_const): Likewise.
 	(subsi3_carryin_compare,subsi3_carryin_compare_const): Likewise.
