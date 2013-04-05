@@ -68,8 +68,8 @@ __cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
   header->referenceCount = 1;
   header->exc.exceptionType = tinfo;
   header->exc.exceptionDestructor = dest;
-  header->exc.unexpectedHandler = __unexpected_handler;
-  header->exc.terminateHandler = __terminate_handler;
+  header->exc.unexpectedHandler = std::get_unexpected ();
+  header->exc.terminateHandler = std::get_terminate ();
   __GXX_INIT_PRIMARY_EXCEPTION_CLASS(header->exc.unwindHeader.exception_class);
   header->exc.unwindHeader.exception_cleanup = __gxx_exception_cleanup;
 

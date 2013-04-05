@@ -1,3 +1,13 @@
+2013-04-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56841
+	* libsupc++/eh_ptr.cc (rethrow_exception): Use get_unexpected() and
+	get_terminate() accessors.
+	* libsupc++/eh_throw.cc (__cxa_throw): Likewise.
+	* libsupc++/eh_terminate.cc: Use mutex when atomic builtins not
+	available.
+	* libsupc++/new_handler.cc: Likewise.
+
 2013-04-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.19 version.
