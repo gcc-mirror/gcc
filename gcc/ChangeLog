@@ -1,3 +1,16 @@
+2013-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bb-reorder.c (fix_crossing_unconditional_branches): Remove a
+	set-but-unused variable.
+
+	* cgraph.c (cgraph_release_function_body): Clear cfun->cfg to make
+	basic blocks of released function bodies garbage-collectable.
+
+	* ree.c (find_and_remove_re): Do not call df_finish_pass here.
+	(struct rtl_opt_pass): Add TODO_df_finish.
+
+	* rtl.def (DEFINE_SUBST, DEFINE_SUBST_ATTR): Add documentation.
+
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/constraints.md (q): New constraint.

@@ -919,8 +919,6 @@ find_and_remove_re (void)
   if (dump_file && num_re_opportunities > 0)
     fprintf (dump_file, "Elimination opportunities = %d realized = %d\n",
 	     num_re_opportunities, num_realized);
-
-  df_finish_pass (false);
 }
 
 /* Find and remove redundant extensions.  */
@@ -958,7 +956,8 @@ struct rtl_opt_pass pass_ree =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect |
-  TODO_verify_rtl_sharing,              /* todo_flags_finish */
+  TODO_df_finish
+    | TODO_ggc_collect
+    | TODO_verify_rtl_sharing,          /* todo_flags_finish */
  }
 };
