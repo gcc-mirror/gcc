@@ -1147,13 +1147,27 @@
   "
 )
 
-(define_insn "*arm_subdi3"
+(define_insn_and_split "*arm_subdi3"
   [(set (match_operand:DI           0 "s_register_operand" "=&r,&r,&r")
 	(minus:DI (match_operand:DI 1 "s_register_operand" "0,r,0")
 		  (match_operand:DI 2 "s_register_operand" "r,0,0")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !TARGET_NEON"
-  "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
+  "#"  ; "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+		   (compare:CC (match_dup 1) (match_dup 2)))
+	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (minus:SI (minus:SI (match_dup 4) (match_dup 5))
+			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[5] = gen_highpart (SImode, operands[2]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+   }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
@@ -1168,55 +1182,113 @@
   [(set_attr "length" "4")]
 )
 
-(define_insn "*subdi_di_zesidi"
+(define_insn_and_split "*subdi_di_zesidi"
   [(set (match_operand:DI           0 "s_register_operand" "=&r,&r")
 	(minus:DI (match_operand:DI 1 "s_register_operand"  "0,r")
 		  (zero_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT"
-  "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, #0"
+  "#"   ; "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, #0"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+		   (compare:CC (match_dup 1) (match_dup 2)))
+	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (minus:SI (plus:SI (match_dup 4) (match_dup 5))
+                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[5] = GEN_INT (~0);
+   }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
 
-(define_insn "*subdi_di_sesidi"
+(define_insn_and_split "*subdi_di_sesidi"
   [(set (match_operand:DI            0 "s_register_operand" "=&r,&r")
 	(minus:DI (match_operand:DI  1 "s_register_operand"  "0,r")
 		  (sign_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT"
-  "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, %2, asr #31"
+  "#"   ; "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, %2, asr #31"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+		   (compare:CC (match_dup 1) (match_dup 2)))
+	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (minus:SI (minus:SI (match_dup 4)
+                                         (ashiftrt:SI (match_dup 2)
+                                                      (const_int 31)))
+                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
 
-(define_insn "*subdi_zesidi_di"
+(define_insn_and_split "*subdi_zesidi_di"
   [(set (match_operand:DI            0 "s_register_operand" "=&r,&r")
 	(minus:DI (zero_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))
 		  (match_operand:DI  1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, #0"
+  "#"   ; "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, #0"
+        ; is equivalent to:
+        ; "subs\\t%Q0, %2, %Q1\;rsc\\t%R0, %R1, #0"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+		   (compare:CC (match_dup 2) (match_dup 1)))
+	      (set (match_dup 0) (minus:SI (match_dup 2) (match_dup 1)))])
+   (set (match_dup 3) (minus:SI (minus:SI (const_int 0) (match_dup 4))
+			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
 
-(define_insn "*subdi_sesidi_di"
+(define_insn_and_split "*subdi_sesidi_di"
   [(set (match_operand:DI            0 "s_register_operand" "=&r,&r")
 	(minus:DI (sign_extend:DI
 		   (match_operand:SI 2 "s_register_operand"   "r,r"))
 		  (match_operand:DI  1 "s_register_operand"  "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, %2, asr #31"
+  "#"   ; "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, %2, asr #31"
+        ; is equivalent to:
+        ; "subs\\t%Q0, %2, %Q1\;rsc\\t%R0, %R1, %2, asr #31"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+		   (compare:CC (match_dup 2) (match_dup 1)))
+	      (set (match_dup 0) (minus:SI (match_dup 2) (match_dup 1)))])
+   (set (match_dup 3) (minus:SI (minus:SI
+                                (ashiftrt:SI (match_dup 2)
+                                             (const_int 31))
+                                (match_dup 4))
+			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
 
-(define_insn "*subdi_zesidi_zesidi"
+(define_insn_and_split "*subdi_zesidi_zesidi"
   [(set (match_operand:DI            0 "s_register_operand" "=r")
 	(minus:DI (zero_extend:DI
 		   (match_operand:SI 1 "s_register_operand"  "r"))
@@ -1224,7 +1296,17 @@
 		   (match_operand:SI 2 "s_register_operand"  "r"))))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT"
-  "subs\\t%Q0, %1, %2\;sbc\\t%R0, %1, %1"
+  "#"   ; "subs\\t%Q0, %1, %2\;sbc\\t%R0, %1, %1"
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+		   (compare:CC (match_dup 1) (match_dup 2)))
+	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (minus:SI (minus:SI (match_dup 1) (match_dup 1))
+			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+       operands[3] = gen_highpart (SImode, operands[0]);
+       operands[0] = gen_lowpart (SImode, operands[0]);
+  }
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
