@@ -1,3 +1,8 @@
+2013-04-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* parser.c (cp_parser_ref_qualifier_seq_opt): Move to
+	cp_parser_ref_qualifier_opt.  Error if more than one ref-qual found.
+
 2013-04-03  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (FUNCTION_OR_METHOD_TYPE_CHECK): Remove.
