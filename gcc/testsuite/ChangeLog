@@ -1,3 +1,7 @@
+2013-04-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/ref-qual-multi-neg.C: New test.
+
 2013-04-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40881

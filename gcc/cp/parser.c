@@ -2020,7 +2020,7 @@ static cp_cv_quals cp_parser_cv_qualifier_seq_opt
   (cp_parser *);
 static cp_virt_specifiers cp_parser_virt_specifier_seq_opt
   (cp_parser *);
-static cp_ref_qualifier cp_parser_ref_qualifier_seq_opt
+static cp_ref_qualifier cp_parser_ref_qualifier_opt
   (cp_parser *);
 static tree cp_parser_late_return_type_opt
   (cp_parser *, cp_cv_quals);
@@ -16463,7 +16463,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* Parse the cv-qualifier-seq.  */
 		  cv_quals = cp_parser_cv_qualifier_seq_opt (parser);
 		  /* Parse the ref-qualifier. */
-		  ref_qual = cp_parser_ref_qualifier_seq_opt (parser);
+		  ref_qual = cp_parser_ref_qualifier_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser);
@@ -17031,25 +17031,46 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
    Returns cp_ref_qualifier representing ref-qualifier. */
 
 static cp_ref_qualifier
-cp_parser_ref_qualifier_seq_opt (cp_parser* parser)
+cp_parser_ref_qualifier_opt (cp_parser* parser)
 {
   cp_ref_qualifier ref_qual = REF_QUAL_NONE;
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-  switch (token->type)
+
+  while (true)
     {
-    case CPP_AND:
-      ref_qual = REF_QUAL_LVALUE;
-      break;
-    case CPP_AND_AND:
-      ref_qual = REF_QUAL_RVALUE;
-      break;
+      cp_ref_qualifier curr_ref_qual = REF_QUAL_NONE;
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+
+      switch (token->type)
+	{
+	case CPP_AND:
+	  curr_ref_qual = REF_QUAL_LVALUE;
+	  break;
+
+	case CPP_AND_AND:
+	  curr_ref_qual = REF_QUAL_RVALUE;
+	  break;
+
+	default:
+	  curr_ref_qual = REF_QUAL_NONE;
+	  break;
+	}
+
+      if (!curr_ref_qual)
+	break;
+      else if (ref_qual)
+	{
+	  error_at (token->location, "multiple ref-qualifiers");
+	  cp_lexer_purge_token (parser->lexer);
+	}
+      else
+	{
+	  ref_qual = curr_ref_qual;
+	  cp_lexer_consume_token (parser->lexer);
+	}
     }
 
   if (ref_qual)
-    {
-      maybe_warn_cpp0x (CPP0X_REF_QUALIFIER);
-      cp_lexer_consume_token (parser->lexer);
-    }
+    maybe_warn_cpp0x (CPP0X_REF_QUALIFIER);
 
   return ref_qual;
 }
