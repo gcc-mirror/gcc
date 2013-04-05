@@ -118,6 +118,7 @@ extern rtx arm_gen_load_multiple (int *, int, rtx, int, rtx, HOST_WIDE_INT *);
 extern rtx arm_gen_store_multiple (int *, int, rtx, int, rtx, HOST_WIDE_INT *);
 extern bool offset_ok_for_ldrd_strd (HOST_WIDE_INT);
 extern bool operands_ok_ldrd_strd (rtx, rtx, rtx, HOST_WIDE_INT, bool, bool);
+extern bool gen_operands_ldrd_strd (rtx *, bool, bool, bool);
 extern int arm_gen_movmemqi (rtx *);
 extern enum machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
 extern enum machine_mode arm_select_dominance_cc_mode (rtx, rtx,

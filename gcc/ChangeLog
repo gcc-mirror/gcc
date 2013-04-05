@@ -1,5 +1,20 @@
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/constraints.md (q): New constraint.
+	* config/arm/ldrdstrd.md: New file.
+	* config/arm/arm.md (ldrdstrd.md) New include.
+	(arm_movdi): Use "q" instead of "r" constraint
+	for double-word memory access.
+	(movdf_soft_insn): Likewise.
+	* config/arm/vfp.md (movdi_vfp): Likewise.
+	* config/arm/t-arm (MD_INCLUDES): Add ldrdstrd.md.
+        * config/arm/arm-protos.h (gen_operands_ldrd_strd): New declaration.
+	* config/arm/arm.c (gen_operands_ldrd_strd): New function.
+	(mem_ok_for_ldrd_strd): Likewise.
+	(output_move_double): Update assertion.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.md: Comment on splitting Thumb1 patterns.
 
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>

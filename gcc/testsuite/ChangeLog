@@ -1,5 +1,10 @@
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* gcc.target/arm/peep-ldrd-1.c: New test.
+	* gcc.target/arm/peep-strd-1.c: Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* gcc.target/arm/negdi-1.c: New test.
 	* gcc.target/arm/negdi-2.c: Likewise.
 	* gcc.target/arm/negdi-3.c: Likewise.

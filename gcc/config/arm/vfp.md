@@ -132,8 +132,8 @@
 ;; DImode moves
 
 (define_insn "*movdi_vfp"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,r,r,m,w,r,w,w, Uv")
-       (match_operand:DI 1 "di_operand"              "r,rDa,Db,Dc,mi,mi,r,r,w,w,Uvi,w"))]
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,q,q,m,w,r,w,w, Uv")
+       (match_operand:DI 1 "di_operand"              "r,rDa,Db,Dc,mi,mi,q,r,w,w,Uvi,w"))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP && arm_tune != cortexa8
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))

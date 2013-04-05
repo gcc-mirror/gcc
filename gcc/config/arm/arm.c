@@ -12636,6 +12636,277 @@ operands_ok_ldrd_strd (rtx rt, rtx rt2, rtx rn, HOST_WIDE_INT offset,
   return true;
 }
 
+/* Helper for gen_operands_ldrd_strd.  Returns true iff the memory
+   operand ADDR is an immediate offset from the base register and is
+   not volatile, in which case it sets BASE and OFFSET
+   accordingly.  */
+bool
+mem_ok_for_ldrd_strd (rtx addr, rtx *base, rtx *offset)
+{
+  /* TODO: Handle more general memory operand patterns, such as
+     PRE_DEC and PRE_INC.  */
+
+  /* Convert a subreg of mem into mem itself.  */
+  if (GET_CODE (addr) == SUBREG)
+    addr = alter_subreg (&addr, true);
+
+  gcc_assert (MEM_P (addr));
+
+  /* Don't modify volatile memory accesses.  */
+  if (MEM_VOLATILE_P (addr))
+    return false;
+
+  *offset = const0_rtx;
+
+  addr = XEXP (addr, 0);
+  if (REG_P (addr))
+    {
+      *base = addr;
+      return true;
+    }
+  else if (GET_CODE (addr) == PLUS || GET_CODE (addr) == MINUS)
+    {
+      *base = XEXP (addr, 0);
+      *offset = XEXP (addr, 1);
+      return (REG_P (*base) && CONST_INT_P (*offset));
+    }
+
+  return false;
+}
+
+#define SWAP_RTX(x,y) do { rtx tmp = x; x = y; y = tmp; } while (0)
+
+/* Called from a peephole2 to replace two word-size accesses with a
+   single LDRD/STRD instruction.  Returns true iff we can generate a
+   new instruction sequence.  That is, both accesses use the same base
+   register and the gap between constant offsets is 4.  This function
+   may reorder its operands to match ldrd/strd RTL templates.
+   OPERANDS are the operands found by the peephole matcher;
+   OPERANDS[0,1] are register operands, and OPERANDS[2,3] are the
+   corresponding memory operands.  LOAD indicaates whether the access
+   is load or store.  CONST_STORE indicates a store of constant
+   integer values held in OPERANDS[4,5] and assumes that the pattern
+   is of length 4 insn, for the purpose of checking dead registers.
+   COMMUTE indicates that register operands may be reordered.  */
+bool
+gen_operands_ldrd_strd (rtx *operands, bool load,
+                        bool const_store, bool commute)
+{
+  int nops = 2;
+  HOST_WIDE_INT offsets[2], offset;
+  rtx base;
+  rtx cur_base, cur_offset, tmp;
+  int i, gap;
+  HARD_REG_SET regset;
+
+  gcc_assert (!const_store || !load);
+  /* Check that the memory references are immediate offsets from the
+     same base register.  Extract the base register, the destination
+     registers, and the corresponding memory offsets.  */
+  for (i = 0; i < nops; i++)
+    {
+      if (!mem_ok_for_ldrd_strd (operands[nops+i], &cur_base, &cur_offset))
+        return false;
+
+      if (i == 0)
+        base = cur_base;
+      else if (REGNO (base) != REGNO (cur_base))
+        return false;
+
+      offsets[i] = INTVAL (cur_offset);
+      if (GET_CODE (operands[i]) == SUBREG)
+        {
+          tmp = SUBREG_REG (operands[i]);
+          gcc_assert (GET_MODE (operands[i]) == GET_MODE (tmp));
+          operands[i] = tmp;
+        }
+    }
+
+  /* Make sure there is no dependency between the individual loads.  */
+  if (load && REGNO (operands[0]) == REGNO (base))
+    return false; /* RAW */
+
+  if (load && REGNO (operands[0]) == REGNO (operands[1]))
+    return false; /* WAW */
+
+  /* If the same input register is used in both stores
+     when storing different constants, try to find a free register.
+     For example, the code
+        mov r0, 0
+        str r0, [r2]
+        mov r0, 1
+        str r0, [r2, #4]
+     can be transformed into
+        mov r1, 0
+        strd r1, r0, [r2]
+     in Thumb mode assuming that r1 is free.  */
+  if (const_store
+      && REGNO (operands[0]) == REGNO (operands[1])
+      && INTVAL (operands[4]) != INTVAL (operands[5]))
+    {
+    if (TARGET_THUMB2)
+      {
+        CLEAR_HARD_REG_SET (regset);
+        tmp = peep2_find_free_register (0, 4, "r", SImode, &regset);
+        if (tmp == NULL_RTX)
+          return false;
+
+        /* Use the new register in the first load to ensure that
+           if the original input register is not dead after peephole,
+           then it will have the correct constant value.  */
+        operands[0] = tmp;
+      }
+    else if (TARGET_ARM)
+      {
+        return false;
+        int regno = REGNO (operands[0]);
+        if (!peep2_reg_dead_p (4, operands[0]))
+          {
+            /* When the input register is even and is not dead after the
+               pattern, it has to hold the second constant but we cannot
+               form a legal STRD in ARM mode with this register as the second
+               register.  */
+            if (regno % 2 == 0)
+              return false;
+
+            /* Is regno-1 free? */
+            SET_HARD_REG_SET (regset);
+            CLEAR_HARD_REG_BIT(regset, regno - 1);
+            tmp = peep2_find_free_register (0, 4, "r", SImode, &regset);
+            if (tmp == NULL_RTX)
+              return false;
+
+            operands[0] = tmp;
+          }
+        else
+          {
+            /* Find a DImode register.  */
+            CLEAR_HARD_REG_SET (regset);
+            tmp = peep2_find_free_register (0, 4, "r", DImode, &regset);
+            if (tmp != NULL_RTX)
+              {
+                operands[0] = simplify_gen_subreg (SImode, tmp, DImode, 0);
+                operands[1] = simplify_gen_subreg (SImode, tmp, DImode, 4);
+              }
+            else
+              {
+                /* Can we use the input register to form a DI register?  */
+                SET_HARD_REG_SET (regset);
+                CLEAR_HARD_REG_BIT(regset,
+                                   regno % 2 == 0 ? regno + 1 : regno - 1);
+                tmp = peep2_find_free_register (0, 4, "r", SImode, &regset);
+                if (tmp == NULL_RTX)
+                  return false;
+                operands[regno % 2 == 1 ? 0 : 1] = tmp;
+              }
+          }
+
+        gcc_assert (operands[0] != NULL_RTX);
+        gcc_assert (operands[1] != NULL_RTX);
+        gcc_assert (REGNO (operands[0]) % 2 == 0);
+        gcc_assert (REGNO (operands[1]) == REGNO (operands[0]) + 1);
+      }
+    }
+
+  /* Make sure the instructions are ordered with lower memory access first.  */
+  if (offsets[0] > offsets[1])
+    {
+      gap = offsets[0] - offsets[1];
+      offset = offsets[1];
+
+      /* Swap the instructions such that lower memory is accessed first.  */
+      SWAP_RTX (operands[0], operands[1]);
+      SWAP_RTX (operands[2], operands[3]);
+      if (const_store)
+        SWAP_RTX (operands[4], operands[5]);
+    }
+  else
+    {
+      gap = offsets[1] - offsets[0];
+      offset = offsets[0];
+    }
+
+  /* Make sure accesses are to consecutive memory locations.  */
+  if (gap != 4)
+    return false;
+
+  /* Make sure we generate legal instructions.  */
+  if (operands_ok_ldrd_strd (operands[0], operands[1], base, offset,
+                             false, load))
+    return true;
+
+  /* In Thumb state, where registers are almost unconstrained, there
+     is little hope to fix it.  */
+  if (TARGET_THUMB2)
+    return false;
+
+  if (load && commute)
+    {
+      /* Try reordering registers.  */
+      SWAP_RTX (operands[0], operands[1]);
+      if (operands_ok_ldrd_strd (operands[0], operands[1], base, offset,
+                                 false, load))
+        return true;
+    }
+
+  if (const_store)
+    {
+      /* If input registers are dead after this pattern, they can be
+         reordered or replaced by other registers that are free in the
+         current pattern.  */
+      if (!peep2_reg_dead_p (4, operands[0])
+          || !peep2_reg_dead_p (4, operands[1]))
+        return false;
+
+      /* Try to reorder the input registers.  */
+      /* For example, the code
+           mov r0, 0
+           mov r1, 1
+           str r1, [r2]
+           str r0, [r2, #4]
+         can be transformed into
+           mov r1, 0
+           mov r0, 1
+           strd r0, [r2]
+      */
+      if (operands_ok_ldrd_strd (operands[1], operands[0], base, offset,
+                                  false, false))
+        {
+          SWAP_RTX (operands[0], operands[1]);
+          return true;
+        }
+
+      /* Try to find a free DI register.  */
+      CLEAR_HARD_REG_SET (regset);
+      add_to_hard_reg_set (&regset, SImode, REGNO (operands[0]));
+      add_to_hard_reg_set (&regset, SImode, REGNO (operands[1]));
+      while (true)
+        {
+          tmp = peep2_find_free_register (0, 4, "r", DImode, &regset);
+          if (tmp == NULL_RTX)
+            return false;
+
+          /* DREG must be an even-numbered register in DImode.
+             Split it into SI registers.  */
+          operands[0] = simplify_gen_subreg (SImode, tmp, DImode, 0);
+          operands[1] = simplify_gen_subreg (SImode, tmp, DImode, 4);
+          gcc_assert (operands[0] != NULL_RTX);
+          gcc_assert (operands[1] != NULL_RTX);
+          gcc_assert (REGNO (operands[0]) % 2 == 0);
+          gcc_assert (REGNO (operands[0]) + 1 == REGNO (operands[1]));
+
+          return (operands_ok_ldrd_strd (operands[0], operands[1],
+                                         base, offset,
+                                         false, load));
+        }
+    }
+
+  return false;
+}
+#undef SWAP_RTX
+
+
+
 
 /* Print a symbolic form of X to the debug file, F.  */
 static void
@@ -14825,7 +15096,8 @@ output_move_double (rtx *operands, bool emit, int *count)
     {
       /* Constraints should ensure this.  */
       gcc_assert (code0 == MEM && code1 == REG);
-      gcc_assert (REGNO (operands[1]) != IP_REGNUM);
+      gcc_assert ((REGNO (operands[1]) != IP_REGNUM)
+                  || (TARGET_ARM && TARGET_LDRD));
 
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
