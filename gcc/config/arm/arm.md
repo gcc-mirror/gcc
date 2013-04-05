@@ -970,7 +970,8 @@
   "@
    adc%?\\t%0, %1, %2
    sbc%?\\t%0, %1, #%B2"
-  [(set_attr "conds" "use")]
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*addsi3_carryin_alt2_<optab>"
@@ -982,7 +983,8 @@
   "@
    adc%?\\t%0, %1, %2
    sbc%?\\t%0, %1, #%B2"
-  [(set_attr "conds" "use")]
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*addsi3_carryin_shift_<optab>"
@@ -996,6 +998,7 @@
   "TARGET_32BIT"
   "adc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
    (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
 		      (const_string "alu_shift")
 		      (const_string "alu_shift_reg")))]

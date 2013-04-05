@@ -1,3 +1,8 @@
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (addsi3_carryin_<optab>): Set attribute predicable.
+ 	(addsi3_carryin_alt2_<optab>,addsi3_carryin_shift_<optab>): Likewise.
+
 2013-04-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_expand_builtin): Change fcode
