@@ -1,5 +1,12 @@
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.md (andsi_iorsi3_notsi): Convert define_insn into
+	define_insn_and_split.
+	(arm_negdi2,arm_abssi2,arm_neg_abssi2): Likewise.
+	(arm_cmpdi_insn,arm_cmpdi_unsigned): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.md (arm_subdi3): Convert define_insn into
 	define_insn_and_split.
 	(subdi_di_zesidi,subdi_di_sesidi): Likewise.
