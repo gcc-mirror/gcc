@@ -1015,28 +1015,6 @@
    [(set_attr "conds" "set")]
 )
 
-(define_expand "incscc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-        (plus:SI (match_operator:SI 2 "arm_comparison_operator"
-                    [(match_operand:CC 3 "cc_register" "") (const_int 0)])
-                 (match_operand:SI 1 "s_register_operand" "0,?r")))]
-  "TARGET_32BIT"
-  ""
-)
-
-(define_insn "*arm_incscc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-        (plus:SI (match_operator:SI 2 "arm_comparison_operator"
-                    [(match_operand:CC 3 "cc_register" "") (const_int 0)])
-                 (match_operand:SI 1 "s_register_operand" "0,?r")))]
-  "TARGET_ARM"
-  "@
-  add%d2\\t%0, %1, #1
-  mov%D2\\t%0, %1\;add%d2\\t%0, %1, #1"
-  [(set_attr "conds" "use")
-   (set_attr "length" "4,8")]
-)
-
 ; transform ((x << y) - 1) to ~(~(x-1) << y)  Where X is a constant.
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -1265,29 +1243,6 @@
    rsb%.\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "type" "simple_alu_imm,*,*")]
-)
-
-(define_expand "decscc"
-  [(set (match_operand:SI            0 "s_register_operand" "=r,r")
-        (minus:SI (match_operand:SI  1 "s_register_operand" "0,?r")
-		  (match_operator:SI 2 "arm_comparison_operator"
-                   [(match_operand   3 "cc_register" "") (const_int 0)])))]
-  "TARGET_32BIT"
-  ""
-)
-
-(define_insn "*arm_decscc"
-  [(set (match_operand:SI            0 "s_register_operand" "=r,r")
-        (minus:SI (match_operand:SI  1 "s_register_operand" "0,?r")
-		  (match_operator:SI 2 "arm_comparison_operator"
-                   [(match_operand   3 "cc_register" "") (const_int 0)])))]
-  "TARGET_ARM"
-  "@
-   sub%d2\\t%0, %1, #1
-   mov%D2\\t%0, %1\;sub%d2\\t%0, %1, #1"
-  [(set_attr "conds" "use")
-   (set_attr "length" "*,8")
-   (set_attr "type" "simple_alu_imm,*")]
 )
 
 (define_expand "subsf3"
