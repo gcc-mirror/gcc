@@ -1,3 +1,10 @@
+2013-04-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sd-vsx.c: Skip on AIX.
+	* gcc.target/powerpc/sd-pwr6.c: Same.
+	* gcc.dg/stack-usage-1.c: Define SIZE on AIX.
+	* g++.dg/debug/pr56294.C: XFAIL on AIX.
+
 2013-04-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* g++.dg/cpp0x/ref-qual-multi-neg.C: New test.
