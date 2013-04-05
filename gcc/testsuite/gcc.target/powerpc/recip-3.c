@@ -7,8 +7,8 @@
 /* { dg-final { scan-assembler-times "xsnmsub.dp\|fnmsub\ " 2 } } */
 /* { dg-final { scan-assembler-times "frsqrtes" 1 } } */
 /* { dg-final { scan-assembler-times "fmsubs" 1 } } */
-/* { dg-final { scan-assembler-times "fmuls" 4 } } */
-/* { dg-final { scan-assembler-times "fnmsubs" 2 } } */
+/* { dg-final { scan-assembler-times "fmuls" 2 } } */
+/* { dg-final { scan-assembler-times "fnmsubs" 1 } } */
 
 double
 rsqrt_d (double a)
