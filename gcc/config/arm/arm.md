@@ -3376,15 +3376,23 @@
   [(set_attr "predicable" "yes")]
 )
 
-(define_insn "*arm_smax_insn"
+(define_insn_and_split "*arm_smax_insn"
   [(set (match_operand:SI          0 "s_register_operand" "=r,r")
 	(smax:SI (match_operand:SI 1 "s_register_operand"  "%0,?r")
 		 (match_operand:SI 2 "arm_rhs_operand"    "rI,rI")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "@
-   cmp\\t%1, %2\;movlt\\t%0, %2
-   cmp\\t%1, %2\;movge\\t%0, %1\;movlt\\t%0, %2"
+  "#"
+   ; cmp\\t%1, %2\;movlt\\t%0, %2
+   ; cmp\\t%1, %2\;movge\\t%0, %1\;movlt\\t%0, %2"
+  "TARGET_ARM"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+        (if_then_else:SI (ge:SI (reg:CC CC_REGNUM) (const_int 0))
+                         (match_dup 1)
+                         (match_dup 2)))]
+  ""
   [(set_attr "conds" "clob")
    (set_attr "length" "8,12")]
 )
@@ -3416,15 +3424,23 @@
   [(set_attr "predicable" "yes")]
 )
 
-(define_insn "*arm_smin_insn"
+(define_insn_and_split "*arm_smin_insn"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(smin:SI (match_operand:SI 1 "s_register_operand" "%0,?r")
 		 (match_operand:SI 2 "arm_rhs_operand" "rI,rI")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "@
-   cmp\\t%1, %2\;movge\\t%0, %2
-   cmp\\t%1, %2\;movlt\\t%0, %1\;movge\\t%0, %2"
+  "#"
+    ; cmp\\t%1, %2\;movge\\t%0, %2
+    ; cmp\\t%1, %2\;movlt\\t%0, %1\;movge\\t%0, %2"
+  "TARGET_ARM"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+        (if_then_else:SI (lt:SI (reg:CC CC_REGNUM) (const_int 0))
+                         (match_dup 1)
+                         (match_dup 2)))]
+  ""
   [(set_attr "conds" "clob")
    (set_attr "length" "8,12")]
 )
@@ -3439,16 +3455,24 @@
   ""
 )
 
-(define_insn "*arm_umaxsi3"
+(define_insn_and_split "*arm_umaxsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(umax:SI (match_operand:SI 1 "s_register_operand" "0,r,?r")
 		 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "@
-   cmp\\t%1, %2\;movcc\\t%0, %2
-   cmp\\t%1, %2\;movcs\\t%0, %1
-   cmp\\t%1, %2\;movcs\\t%0, %1\;movcc\\t%0, %2"
+  "#"
+    ; cmp\\t%1, %2\;movcc\\t%0, %2
+    ; cmp\\t%1, %2\;movcs\\t%0, %1
+    ; cmp\\t%1, %2\;movcs\\t%0, %1\;movcc\\t%0, %2"
+  "TARGET_ARM"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+        (if_then_else:SI (geu:SI (reg:CC CC_REGNUM) (const_int 0))
+                         (match_dup 1)
+                         (match_dup 2)))]
+  ""
   [(set_attr "conds" "clob")
    (set_attr "length" "8,8,12")]
 )
@@ -3463,16 +3487,24 @@
   ""
 )
 
-(define_insn "*arm_uminsi3"
+(define_insn_and_split "*arm_uminsi3"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(umin:SI (match_operand:SI 1 "s_register_operand" "0,r,?r")
 		 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "@
-   cmp\\t%1, %2\;movcs\\t%0, %2
-   cmp\\t%1, %2\;movcc\\t%0, %1
-   cmp\\t%1, %2\;movcc\\t%0, %1\;movcs\\t%0, %2"
+  "#"
+   ; cmp\\t%1, %2\;movcs\\t%0, %2
+   ; cmp\\t%1, %2\;movcc\\t%0, %1
+   ; cmp\\t%1, %2\;movcc\\t%0, %1\;movcs\\t%0, %2"
+  "TARGET_ARM"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+        (if_then_else:SI (ltu:SI (reg:CC CC_REGNUM) (const_int 0))
+                         (match_dup 1)
+                         (match_dup 2)))]
+  ""
   [(set_attr "conds" "clob")
    (set_attr "length" "8,8,12")]
 )

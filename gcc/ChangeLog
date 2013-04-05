@@ -1,5 +1,11 @@
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.md (arm_smax_insn): Convert define_insn into
+	define_insn_and_split.
+	(arm_smin_insn,arm_umaxsi3,arm_uminsi3): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.md (arm_ashldi3_1bit): Convert define_insn into
 	define_insn_and_split.
         (arm_ashrdi3_1bit,arm_lshrdi3_1bit): Likewise.
