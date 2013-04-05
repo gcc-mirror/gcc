@@ -1,3 +1,7 @@
+2013-04-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* doc/invoke.texi (ARM Options): Document cortex-a53 support.
+
 2013-04-04  Ian Lance Taylor  <iant@google.com>
 
 	* doc/standards.texi (Standards): The Go frontend supports the Go
