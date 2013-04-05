@@ -4792,7 +4792,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && POINTER_TYPE_P (otype)
 	  && !upc_shared_type_p (TREE_TYPE (otype)))
 	{
-          error ("UPC does not allow casts from a local pointer to a pointer-to-shared");
+          error_at (loc, "UPC does not allow casts from a local pointer to a pointer-to-shared");
           return error_mark_node;
 	}
 
@@ -4801,7 +4801,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && upc_shared_type_p (TREE_TYPE (type))
 	  && !integer_zerop (value))
         {
-	  error ("UPC does not allow casts from an integer to a pointer-to-shared");
+	  error_at (loc, "UPC does not allow casts from an integer to a pointer-to-shared");
           return error_mark_node;
 	}
 
@@ -4809,7 +4809,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && upc_shared_type_p (TREE_TYPE (otype)))
         {
-	  error ("UPC does not allow casts from a pointer-to-shared to an integer");
+	  error_at (loc, "UPC does not allow casts from a pointer-to-shared to an integer");
 	  return error_mark_node;
 	}
 
@@ -9036,6 +9036,19 @@ c_finish_return (location_t loc, tree retval, tree origtype)
   ret_stmt = build_stmt (loc, RETURN_EXPR, retval);
   TREE_NO_WARNING (ret_stmt) |= no_warning;
   return add_stmt (ret_stmt);
+}
+
+/* Convert EXPR to TYPE if the type of EXPR is
+   assignment compatible with TYPE.
+   Otherwise, issue an error (or warning) as appropriate.  */
+
+tree
+c_cvt_expr_for_assign (location_t loc, tree type, tree expr)
+{
+  if (expr == NULL_TREE || expr == error_mark_node)
+    return expr;
+  return convert_for_assignment (loc, type, expr, TREE_TYPE (expr),
+				 ic_assign, false, NULL_TREE, NULL_TREE, 0);
 }
 
 struct c_switch {

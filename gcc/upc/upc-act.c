@@ -288,11 +288,26 @@ upc_build_pointer_type (tree to_type)
    or UPC_SYNC_BARRIER_OP), build a UPC_SYNC_STMT tree node,
    and add it to the current statement list.  The value of
    SYNC_EXPR will be non-null if an expression is present
-   in the UPC statement being compiled.  */
+   in the UPC statement being compiled.
+
+   If SYNC_EXPR is supplied, it must be assignment compatible
+   with type 'int'.  */
 
 tree
 upc_build_sync_stmt (location_t loc, tree sync_kind, tree sync_expr)
 {
+  if (sync_expr != NULL_TREE)
+    {
+      tree sync_expr_type = TREE_TYPE (sync_expr);
+      mark_exp_read (sync_expr);
+      sync_expr = c_cvt_expr_for_assign (loc, integer_type_node, sync_expr);
+      if (sync_expr == error_mark_node)
+        {
+	  inform (loc, "UPC synchronization statement expressions "
+	               "must be assignment compatible with type `int'");
+          sync_expr = NULL_TREE;
+        }
+    }
   return add_stmt (build_stmt (loc, UPC_SYNC_STMT, sync_kind, sync_expr));
 }
 

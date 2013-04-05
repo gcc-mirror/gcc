@@ -1,3 +1,19 @@
+2013-04-04 Gary Funck  <gary@intrepid.com>
+
+	Per the UPC 1.3 specification, the type of the
+	optional barrier/notify/wait expression is not constrained to
+	'int'. Instead, any type that is assignment compatible
+	with an 'int' type is permitted.
+	* c/c-parser.c (c_parser_upc_sync_statement): Do not check
+	the optional expression type here.  Let upc_build_sync_stmt()
+	handle it.
+	* c/c-tree.h (c_cvt_expr_for_assign): Declare prototype.
+	* c/c-typeck.c (c_cvt_expr_for_assign): New.  Also, call
+	error_at() in lieu of error() when the source location is known.
+	* upc/upc-act.c (upc_build_sync_stmt): Call c_cvt_expr_for_assign()
+	to check/convert the optional synchronization statement
+	expression.
+
 2013-04-02 Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 197340 into gupc branch.
@@ -131,7 +147,7 @@
 
 2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
 
-	Remove unused --upc-pthreads-per-process compile switch. 
+	Remove unused --upc-pthreads-per-process compile switch.
 	* c-family/c.opt: Remove --upc-pthreads-per-process switch
 	that compiler/runtime do not use.
 	* c-family/c-opts.c (c_common_handle_option): Remove support for

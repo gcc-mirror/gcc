@@ -8986,14 +8986,10 @@ c_parser_upc_sync_statement (c_parser *parser, int sync_kind)
   c_parser_consume_token (parser);
   if (c_parser_peek_token (parser)->type != CPP_SEMICOLON)
     {
+      loc = c_parser_peek_token (parser)->location;
       expr = c_parser_expression (parser).value;
       if (expr == error_mark_node)
-        expr = NULL;
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (expr)))
-        {
-	  c_parser_error (parser, "expected integer expression");
-	  expr = NULL;
-	}
+         expr = NULL;
     }
   stmt = size_int (sync_kind);
   (void) upc_build_sync_stmt (loc, stmt, expr);

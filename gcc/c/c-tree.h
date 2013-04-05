@@ -652,6 +652,7 @@ extern tree c_finish_omp_task (location_t, tree, tree);
 extern tree c_finish_omp_clauses (tree);
 extern tree c_build_va_arg (location_t, tree, tree);
 extern tree c_finish_transaction (location_t, tree, int);
+extern tree c_cvt_expr_for_assign (location_t, tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
