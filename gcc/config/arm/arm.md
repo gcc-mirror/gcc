@@ -1015,6 +1015,90 @@
    [(set_attr "conds" "set")]
 )
 
+(define_insn "*subsi3_carryin"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+        (minus:SI (minus:SI (match_operand:SI 1 "reg_or_int_operand" "r,I")
+                            (match_operand:SI 2 "s_register_operand" "r,r"))
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "@
+   sbc%?\\t%0, %1, %2
+   rsc%?\\t%0, %2, %1"
+  [(set_attr "conds" "use")
+   (set_attr "arch" "*,a")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "*subsi3_carryin_const"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (plus:SI (match_operand:SI 1 "reg_or_int_operand" "r")
+                           (match_operand:SI 2 "arm_not_operand" "K"))
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "sbc\\t%0, %1, #%B2"
+  [(set_attr "conds" "use")]
+)
+
+(define_insn "*subsi3_carryin_compare"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "s_register_operand" "r")
+                    (match_operand:SI 2 "s_register_operand" "r")))
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (minus:SI (match_dup 1)
+                            (match_dup 2))
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "sbcs\\t%0, %1, %2"
+  [(set_attr "conds" "set")]
+)
+
+(define_insn "*subsi3_carryin_compare_const"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
+                    (match_operand:SI 2 "arm_not_operand" "K")))
+   (set (match_operand:SI 0 "s_register_operand" "=r")
+        (minus:SI (plus:SI (match_dup 1)
+                           (match_dup 2))
+                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "sbcs\\t%0, %1, #%B2"
+  [(set_attr "conds" "set")]
+)
+
+(define_insn "*subsi3_carryin_shift"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI (minus:SI
+		  (match_operand:SI 1 "s_register_operand" "r")
+                  (match_operator:SI 2 "shift_operator"
+                   [(match_operand:SI 3 "s_register_operand" "r")
+                    (match_operand:SI 4 "reg_or_int_operand" "rM")]))
+                 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_32BIT"
+  "sbc%?\\t%0, %1, %3%S2"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
+		      (const_string "alu_shift")
+                     (const_string "alu_shift_reg")))]
+)
+
+(define_insn "*rsbsi3_carryin_shift"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI (minus:SI
+                  (match_operator:SI 2 "shift_operator"
+                   [(match_operand:SI 3 "s_register_operand" "r")
+                    (match_operand:SI 4 "reg_or_int_operand" "rM")])
+		   (match_operand:SI 1 "s_register_operand" "r"))
+                 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  "TARGET_ARM"
+  "rsc%?\\t%0, %1, %3%S2"
+  [(set_attr "conds" "use")
+   (set_attr "predicable" "yes")
+   (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
+		      (const_string "alu_shift")
+		      (const_string "alu_shift_reg")))]
+)
+
 ; transform ((x << y) - 1) to ~(~(x-1) << y)  Where X is a constant.
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")

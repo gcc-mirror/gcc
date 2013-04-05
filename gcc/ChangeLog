@@ -1,11 +1,18 @@
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.md (subsi3_carryin): New pattern.
+	(subsi3_carryin_const): Likewise.
+	(subsi3_carryin_compare,subsi3_carryin_compare_const): Likewise.
+	(subsi3_carryin_shift,rsbsi3_carryin_shift): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.md (incscc,arm_incscc,decscc,arm_decscc): Delete.
 
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.md (addsi3_carryin_<optab>): Set attribute predicable.
- 	(addsi3_carryin_alt2_<optab>,addsi3_carryin_shift_<optab>): Likewise.
+	(addsi3_carryin_alt2_<optab>,addsi3_carryin_shift_<optab>): Likewise.
 
 2013-04-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
