@@ -2211,7 +2211,7 @@ proc add_options_for_arm_v8_neon { flags } {
         return "$flags"
     }
     global et_arm_v8_neon_flags
-    return "$flags $et_arm_v8_neon_flags"
+    return "$flags $et_arm_v8_neon_flags -march=armv8-a"
 }
 
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
@@ -4082,9 +4082,7 @@ proc check_effective_target_vect_call_btruncf { } {
 	verbose "check_effective_target_vect_call_btruncf: using cached result" 2
     } else {
 	set et_vect_call_btruncf_saved 0
-	if { [istarget aarch64*-*-*]
-	     || ([istarget arm*-*-*]
-	         && [check_effective_target_arm_v8_neon_ok]) } {
+	if { [istarget aarch64*-*-*] } {
 	  set et_vect_call_btruncf_saved 1
 	}
     }
@@ -4120,9 +4118,7 @@ proc check_effective_target_vect_call_ceilf { } {
 	verbose "check_effective_target_vect_call_ceilf: using cached result" 2
     } else {
 	set et_vect_call_ceilf_saved 0
-	if { [istarget aarch64*-*-*]
-	     || ([istarget arm*-*-*]
-	         && [check_effective_target_arm_v8_neon_ok]) } {
+	if { [istarget aarch64*-*-*] } {
 	  set et_vect_call_ceilf_saved 1
 	}
     }
@@ -4158,9 +4154,7 @@ proc check_effective_target_vect_call_floorf { } {
 	verbose "check_effective_target_vect_call_floorf: using cached result" 2
     } else {
 	set et_vect_call_floorf_saved 0
-	if { [istarget aarch64*-*-*]
-	     || ([istarget arm*-*-*]
-	         && [check_effective_target_arm_v8_neon_ok]) } {
+	if { [istarget aarch64*-*-*] } {
 	  set et_vect_call_floorf_saved 1
 	}
     }
@@ -4268,9 +4262,7 @@ proc check_effective_target_vect_call_roundf { } {
 	verbose "check_effective_target_vect_call_roundf: using cached result" 2
     } else {
 	set et_vect_call_roundf_saved 0
-	if { [istarget aarch64*-*-*]
-	     || ([istarget arm*-*-*]
-	         && [check_effective_target_arm_v8_neon_ok]) } {
+	if { [istarget aarch64*-*-*] } {
 	  set et_vect_call_roundf_saved 1
 	}
     }
@@ -5172,14 +5164,6 @@ proc check_vect_support_and_set_flags { } {
         }
     } elseif [istarget ia64-*-*] {
         set dg-do-what-default run
-    } elseif [is-effective-target arm_v8_neon_ok] {
-        eval lappend DEFAULT_VECTCFLAGS [add_options_for_arm_v8_neon ""]
-        lappend DEFAULT_VECTCFLAGS "-ffast-math"
-        if [is-effective-target arm_v8_neon_hw] {
-            set dg-do-what-default run
-        } else {
-            set dg-do-what-default compile
-        }
     } elseif [is-effective-target arm_neon_ok] {
         eval lappend DEFAULT_VECTCFLAGS [add_options_for_arm_neon ""]
         # NEON does not support denormals, so is not used for vectorization by
