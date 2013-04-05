@@ -4344,6 +4344,73 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
+;; Negate an extended 32-bit value.
+(define_insn_and_split "*negdi_extendsidi"
+  [(set (match_operand:DI 0 "s_register_operand" "=r,&r,l,&l")
+	(neg:DI (sign_extend:DI (match_operand:SI 1 "s_register_operand" "0,r,0,l"))))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT"
+  "#" ; rsb\\t%Q0, %1, #0\;asr\\t%R0, %Q0, #31
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+     operands[2] = gen_highpart (SImode, operands[0]);
+     operands[0] = gen_lowpart (SImode, operands[0]);
+     rtx tmp = gen_rtx_SET (VOIDmode,
+                            operands[0],
+                            gen_rtx_MINUS (SImode,
+                                           const0_rtx,
+                                           operands[1]));
+     if (TARGET_ARM)
+       {
+         emit_insn (tmp);
+       }
+     else
+       {
+         /* Set the flags, to emit the short encoding in Thumb2.  */
+         rtx flags = gen_rtx_SET (VOIDmode,
+                                  gen_rtx_REG (CCmode, CC_REGNUM),
+                                  gen_rtx_COMPARE (CCmode,
+                                                   const0_rtx,
+                                                   operands[1]));
+         emit_insn (gen_rtx_PARALLEL (VOIDmode,
+                                      gen_rtvec (2,
+                                                 flags,
+                                                 tmp)));
+       }
+       emit_insn (gen_rtx_SET (VOIDmode,
+                              operands[2],
+                              gen_rtx_ASHIFTRT (SImode,
+                                                operands[0],
+                                                GEN_INT (31))));
+     DONE;
+  }
+  [(set_attr "length" "8,8,4,4")
+   (set_attr "arch" "a,a,t2,t2")]
+)
+
+(define_insn_and_split "*negdi_zero_extendsidi"
+  [(set (match_operand:DI 0 "s_register_operand" "=r,&r")
+	(neg:DI (zero_extend:DI (match_operand:SI 1 "s_register_operand" "0,r"))))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT"
+  "#" ; "rsbs\\t%Q0, %1, #0\;sbc\\t%R0,%R0,%R0"
+      ;; Don't care what register is input to sbc,
+      ;; since we just just need to propagate the carry.
+  "&& reload_completed"
+  [(parallel [(set (reg:CC CC_REGNUM)
+                   (compare:CC (const_int 0) (match_dup 1)))
+              (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1)))])
+   (set (match_dup 2) (minus:SI (minus:SI (match_dup 2) (match_dup 2))
+                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+  }
+  [(set_attr "conds" "clob")
+   (set_attr "length" "8")]   ;; length in thumb is 4
+)
+
 ;; abssi2 doesn't really clobber the condition codes if a different register
 ;; is being set.  To keep things simple, assume during rtl manipulations that
 ;; it does, but tell the final scan operator the truth.  Similarly for
