@@ -1,5 +1,10 @@
 2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.md (negdi_extendsidi): New pattern.
+	(negdi_zero_extendsidi): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.md (andsi_iorsi3_notsi): Convert define_insn into
 	define_insn_and_split.
 	(arm_negdi2,arm_abssi2,arm_neg_abssi2): Likewise.
