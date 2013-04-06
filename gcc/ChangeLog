@@ -1,3 +1,9 @@
+2013-04-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/55487
+	* config/pa/pa.c (legitimize_pic_address): Before incrementing label
+	nuses, make sure we have a label.
+
 2013-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/56843
