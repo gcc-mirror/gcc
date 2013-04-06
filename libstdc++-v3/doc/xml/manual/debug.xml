@@ -237,7 +237,7 @@
   xlink:href="http://valgrind.org/docs/manual/hg-manual.html"> 
   Helgrind</link>, and
   <link xmlns:xlink="http://www.w3.org/1999/xlink" 
-  xlink:href="http://code.google.com/p/data-race-test"> 
+  xlink:href="http://code.google.com/p/data-race-test/"> 
   ThreadSanitizer</link>.
 </para>
 

@@ -163,7 +163,7 @@ deprecated in C++11 mode.
     
 <para>
 The
-<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://boost.org/libs/smart_ptr/shared_ptr.htm#ThreadSafety">Thread
+<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm#ThreadSafety">Thread
 Safety</link> section of the Boost shared_ptr documentation says "shared_ptr
 objects offer the same level of thread safety as built-in types."
 The implementation must ensure that concurrent updates to separate shared_ptr

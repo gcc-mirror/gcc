@@ -859,7 +859,7 @@ test02()
   supports debugging for programs using libstdc++. The existing
   implementations include:</para>
 <itemizedlist>
-  <listitem><para><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.mathcs.sjsu.edu/faculty/horstman/safestl.html">SafeSTL</link>:
+  <listitem><para><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.cs.sjsu.edu/faculty/horstman/safestl.html">SafeSTL</link>:
   SafeSTL was the original debugging version of the Standard Template
   Library (STL), implemented by Cay S. Horstmann on top of the
   Hewlett-Packard STL. Though it inspired much work in this area, it
