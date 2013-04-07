@@ -1,3 +1,9 @@
+2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/forward_list.h: Only include required headers.
+	(forward_list::reference): Define directly, not using __alloc_traits.
+	(forward_list::const_reference): Likewise.
+
 2013-04-07  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/std/functional (_Derives_from_unary_function): Remove.
