@@ -1,3 +1,7 @@
+2013-04-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-pragma.c (add_to_renaming_pragma_list): Fix leading comment.
+
 2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-common.c (pointer_int_sum): Remove dead code.
