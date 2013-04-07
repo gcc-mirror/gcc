@@ -1,3 +1,8 @@
+2013-04-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56849
+	* gfortran.dg/reshape_5.f90: New.
+
 2013-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/56843

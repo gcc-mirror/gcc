@@ -1,3 +1,9 @@
+2013-04-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56849
+	* iresolve.c (gfc_resolve_reshape): Set shape also
+	with order=.
+
 2013-04-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40881
