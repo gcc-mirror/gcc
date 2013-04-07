@@ -32,10 +32,13 @@
 
 #pragma GCC system_header
 
-#include <memory>
-#if __cplusplus >= 201103L
 #include <initializer_list>
-#endif
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator.h>
+#include <bits/stl_algobase.h>
+#include <bits/stl_function.h>
+#include <bits/allocator.h>
+#include <ext/alloc_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -421,8 +424,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Tp                                          value_type;
       typedef typename _Alloc_traits::pointer              pointer;
       typedef typename _Alloc_traits::const_pointer        const_pointer;
-      typedef typename _Alloc_traits::reference            reference;
-      typedef typename _Alloc_traits::const_reference      const_reference;
+      typedef value_type&				   reference;
+      typedef const value_type&				   const_reference;
  
       typedef _Fwd_list_iterator<_Tp>                      iterator;
       typedef _Fwd_list_const_iterator<_Tp>                const_iterator;
