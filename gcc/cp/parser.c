@@ -20908,8 +20908,13 @@ cp_parser_std_attribute (cp_parser *parser)
       token = cp_lexer_peek_token (parser->lexer);
     }
   else
-    attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
-				 NULL_TREE);
+    {
+      attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
+				   NULL_TREE);
+      /* C++11 noreturn attribute is equivalent to GNU's.  */
+      if (is_attribute_p ("noreturn", attr_id))
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+    }
 
   /* Now parse the optional argument clause of the attribute.  */
 

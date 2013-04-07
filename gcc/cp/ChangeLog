@@ -1,3 +1,8 @@
+2013-04-06  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_std_attribute): Treat [[noreturn]] like GNU
+	noreturn attribute.
+
 2013-04-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* parser.c (cp_parser_ref_qualifier_seq_opt): Move to
