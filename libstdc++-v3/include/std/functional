@@ -185,38 +185,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
     { };
 
-  /// Determines if the type _Tp derives from unary_function.
-  template<typename _Tp>
-    struct _Derives_from_unary_function : __sfinae_types
-    {
-    private:
-      template<typename _T1, typename _Res>
-	static __one __test(const volatile unary_function<_T1, _Res>*);
-
-      // It's tempting to change "..." to const volatile void*, but
-      // that fails when _Tp is a function type.
-      static __two __test(...);
-
-    public:
-      static const bool value = sizeof(__test((_Tp*)0)) == 1;
-    };
-
-  /// Determines if the type _Tp derives from binary_function.
-  template<typename _Tp>
-    struct _Derives_from_binary_function : __sfinae_types
-    {
-    private:
-      template<typename _T1, typename _T2, typename _Res>
-	static __one __test(const volatile binary_function<_T1, _T2, _Res>*);
-
-      // It's tempting to change "..." to const volatile void*, but
-      // that fails when _Tp is a function type.
-      static __two __test(...);
-
-    public:
-      static const bool value = sizeof(__test((_Tp*)0)) == 1;
-    };
-
   /**
    * Invoke a function object, which may be either a member pointer or a
    * function object. The first parameter will tell which.

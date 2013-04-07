@@ -127,12 +127,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, !_Pp::value>
     { };
 
-  struct __sfinae_types
-  {
-    typedef char __one;
-    typedef struct { char __arr[2]; } __two;
-  };
-
   // For several sfinae-friendly trait implementations we transport both the
   // result information (as the member type) and the failure information (no
   // member type). This is very similar to std::enable_if, but we cannot use
@@ -161,8 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_void
   template<typename _Tp>
     struct is_void
-    : public integral_constant<bool, (__is_void_helper<typename
-				      remove_cv<_Tp>::type>::value)>
+    : public __is_void_helper<typename remove_cv<_Tp>::type>::type
     { };
 
   template<typename>
@@ -244,8 +237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_integral
   template<typename _Tp>
     struct is_integral
-    : public integral_constant<bool, (__is_integral_helper<typename
-				      remove_cv<_Tp>::type>::value)>
+    : public __is_integral_helper<typename remove_cv<_Tp>::type>::type
     { };
 
   template<typename>
@@ -273,8 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_floating_point
   template<typename _Tp>
     struct is_floating_point
-    : public integral_constant<bool, (__is_floating_point_helper<typename
-				      remove_cv<_Tp>::type>::value)>
+    : public __is_floating_point_helper<typename remove_cv<_Tp>::type>::type
     { };
 
   /// is_array
@@ -301,8 +292,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_pointer
   template<typename _Tp>
     struct is_pointer
-    : public integral_constant<bool, (__is_pointer_helper<typename
-				      remove_cv<_Tp>::type>::value)>
+    : public __is_pointer_helper<typename remove_cv<_Tp>::type>::type
     { };
 
   /// is_lvalue_reference
@@ -337,8 +327,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_member_object_pointer
   template<typename _Tp>
     struct is_member_object_pointer
-    : public integral_constant<bool, (__is_member_object_pointer_helper<
-				      typename remove_cv<_Tp>::type>::value)>
+    : public __is_member_object_pointer_helper<
+				typename remove_cv<_Tp>::type>::type
     { };
 
   template<typename>
@@ -352,8 +342,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_member_function_pointer
   template<typename _Tp>
     struct is_member_function_pointer
-    : public integral_constant<bool, (__is_member_function_pointer_helper<
-				      typename remove_cv<_Tp>::type>::value)>
+    : public __is_member_function_pointer_helper<
+				typename remove_cv<_Tp>::type>::type
     { };
 
   /// is_enum
@@ -422,8 +412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __is_nullptr_t (extension).
   template<typename _Tp>
     struct __is_nullptr_t
-    : public integral_constant<bool, (__is_nullptr_t_helper<typename
-				      remove_cv<_Tp>::type>::value)>
+    : public __is_nullptr_t_helper<typename remove_cv<_Tp>::type>::type
     { };
 
   // Composite type categories.
@@ -480,8 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_member_pointer
   template<typename _Tp>
     struct is_member_pointer
-    : public integral_constant<bool, (__is_member_pointer_helper<
-				      typename remove_cv<_Tp>::type>::value)>
+    : public __is_member_pointer_helper<typename remove_cv<_Tp>::type>::type
     { };
 
   // Type properties.
@@ -567,7 +555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_signed
   template<typename _Tp>
     struct is_signed
-    : public integral_constant<bool, __is_signed_helper<_Tp>::value>
+    : public __is_signed_helper<_Tp>::type
     { };
 
   /// is_unsigned
@@ -650,7 +638,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_destructible
   template<typename _Tp>
     struct is_destructible
-    : public integral_constant<bool, (__is_destructible_safe<_Tp>::value)>
+    : public __is_destructible_safe<_Tp>::type
     { };
 
   // is_nothrow_destructible requires that is_destructible is
@@ -698,7 +686,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_nothrow_destructible
   template<typename _Tp>
     struct is_nothrow_destructible
-    : public integral_constant<bool, (__is_nt_destructible_safe<_Tp>::value)>
+    : public __is_nt_destructible_safe<_Tp>::type
     { };
 
   struct __do_is_default_constructible_impl
@@ -746,8 +734,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_default_constructible
   template<typename _Tp>
     struct is_default_constructible
-    : public integral_constant<bool, (__is_default_constructible_safe<
-				      _Tp>::value)>
+    : public __is_default_constructible_safe<_Tp>::type
     { };
 
 
@@ -901,8 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Arg>
     struct __is_direct_constructible
-    : public integral_constant<bool, (__is_direct_constructible_new<
-				      _Tp, _Arg>::value)>
+    : public __is_direct_constructible_new<_Tp, _Arg>::type
     { };
 
   // Since default-construction and binary direct-initialization have
@@ -953,8 +939,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_constructible
   template<typename _Tp, typename... _Args>
     struct is_constructible
-    : public integral_constant<bool, (__is_constructible_impl<_Tp,
-				      _Args...>::value)>
+    : public __is_constructible_impl<_Tp, _Args...>::type
     { };
 
   template<typename _Tp, bool = is_void<_Tp>::value>
@@ -1081,24 +1066,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Up>
     class __is_assignable_helper
-    : public __sfinae_types
     {
-      template<typename _Tp1, typename _Up1>
-        static decltype(declval<_Tp1>() = declval<_Up1>(), __one())
+      template<typename _Tp1, typename _Up1,
+	       typename = decltype(declval<_Tp1>() = declval<_Up1>())>
+	static true_type
 	__test(int);
 
       template<typename, typename>
-        static __two __test(...);
+	static false_type
+	__test(...);
 
     public:
-      static constexpr bool value = sizeof(__test<_Tp, _Up>(0)) == 1;
+      typedef decltype(__test<_Tp, _Up>(0)) type;
     };
 
   /// is_assignable
   template<typename _Tp, typename _Up>
     struct is_assignable
-    : public integral_constant<bool,
-                               __is_assignable_helper<_Tp, _Up>::value>
+      : public __is_assignable_helper<_Tp, _Up>::type
     { };
 
   template<typename _Tp, bool = is_void<_Tp>::value>
@@ -1292,31 +1277,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
     struct __is_convertible_helper
-    { static constexpr bool value = is_void<_To>::value; };
+    { typedef typename is_void<_To>::type type; };
 
   template<typename _From, typename _To>
     class __is_convertible_helper<_From, _To, false>
-    : public __sfinae_types
     {
-      template<typename _To1>
-        static void __test_aux(_To1);
+       template<typename _To1>
+	static void __test_aux(_To1);
 
-      template<typename _From1, typename _To1>
-        static decltype(__test_aux<_To1>(std::declval<_From1>()), __one())
+      template<typename _From1, typename _To1,
+	       typename = decltype(__test_aux<_To1>(std::declval<_From1>()))>
+	static true_type
 	__test(int);
 
       template<typename, typename>
-        static __two __test(...);
+	static false_type
+	__test(...);
 
     public:
-      static constexpr bool value = sizeof(__test<_From, _To>(0)) == 1;
+      typedef decltype(__test<_From, _To>(0)) type;
     };
+
 
   /// is_convertible
   template<typename _From, typename _To>
     struct is_convertible
-    : public integral_constant<bool,
-			       __is_convertible_helper<_From, _To>::value>
+    : public __is_convertible_helper<_From, _To>::type
     { };
 
 
@@ -2041,29 +2027,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Use SFINAE to determine if the type _Tp has a publicly-accessible
    *  member type _NTYPE.
    */
-#define _GLIBCXX_HAS_NESTED_TYPE(_NTYPE)                         \
-  template<typename _Tp>                                         \
-    class __has_##_NTYPE##_helper                                \
-    : __sfinae_types                                             \
-    {                                                            \
-      template<typename _Up>                                     \
-        struct _Wrap_type                                        \
-	{ };                                                     \
-                                                                 \
-      template<typename _Up>                                     \
-        static __one __test(_Wrap_type<typename _Up::_NTYPE>*);  \
-                                                                 \
-      template<typename _Up>                                     \
-        static __two __test(...);                                \
-                                                                 \
-    public:                                                      \
-      static constexpr bool value = sizeof(__test<_Tp>(0)) == 1; \
-    };                                                           \
-                                                                 \
-  template<typename _Tp>                                         \
-    struct __has_##_NTYPE                                        \
-    : integral_constant<bool, __has_##_NTYPE##_helper            \
-			<typename remove_cv<_Tp>::type>::value>  \
+#define _GLIBCXX_HAS_NESTED_TYPE(_NTYPE)				\
+  template<typename _Tp>						\
+    class __has_##_NTYPE##_helper					\
+    {									\
+      template<typename _Up>						\
+	struct _Wrap_type						\
+	{ };								\
+									\
+      template<typename _Up>						\
+	static true_type __test(_Wrap_type<typename _Up::_NTYPE>*);	\
+									\
+      template<typename _Up>						\
+	static false_type __test(...);					\
+									\
+    public:								\
+      typedef decltype(__test<_Tp>(0)) type;				\
+    };									\
+									\
+  template<typename _Tp>						\
+    struct __has_##_NTYPE						\
+    : public __has_##_NTYPE##_helper					\
+			<typename remove_cv<_Tp>::type>::type		\
     { };
 
 _GLIBCXX_END_NAMESPACE_VERSION

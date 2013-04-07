@@ -44,7 +44,8 @@ struct S12 : S1, S2 { };
 
 struct S012 : S0, S1, S2 { };
 
-using std::__sfinae_types;
+using std::true_type;
+using std::false_type;
 using std::integral_constant;
 using std::remove_cv;
 
