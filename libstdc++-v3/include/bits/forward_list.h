@@ -39,6 +39,7 @@
 #include <bits/stl_function.h>
 #include <bits/allocator.h>
 #include <ext/alloc_traits.h>
+#include <ext/aligned_buffer.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -99,20 +100,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Fwd_list_node() = default;
 
-      typename aligned_storage<sizeof(_Tp), alignment_of<_Tp>::value>::type
-	_M_storage;
+      __gnu_cxx::__aligned_buffer<_Tp> _M_storage;
 
       _Tp*
       _M_valptr() noexcept
-      {
-	return static_cast<_Tp*>(static_cast<void*>(&_M_storage));
-      }
+      { return _M_storage._M_ptr(); }
 
       const _Tp*
       _M_valptr() const noexcept
-      {
-	return static_cast<const _Tp*>(static_cast<const void*>(&_M_storage));
-      }
+      { return _M_storage._M_ptr(); }
     };
 
   /**

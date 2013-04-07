@@ -49,6 +49,8 @@
 #ifndef _SHARED_PTR_BASE_H
 #define _SHARED_PTR_BASE_H 1
 
+#include <ext/aligned_buffer.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -393,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Sp_counted_ptr_inplace(_Alloc __a, _Args&&... __args)
 	: _M_impl(__a), _M_storage()
 	{
-	  _M_impl._M_ptr = static_cast<_Tp*>(static_cast<void*>(&_M_storage));
+	  _M_impl._M_ptr = _M_storage._M_ptr();
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 2070.  allocate_shared should use allocator_traits<A>::construct
 	  allocator_traits<_Alloc>::construct(__a, _M_impl._M_ptr,
@@ -422,9 +424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_get_deleter(const std::type_info& __ti) noexcept
       {
 #ifdef __GXX_RTTI
-	return __ti == typeid(_Sp_make_shared_tag)
-	       ? static_cast<void*>(&_M_storage)
-	       : 0;
+	return __ti == typeid(_Sp_make_shared_tag) ? _M_storage._M_addr() : 0;
 #else
         return 0;
 #endif
@@ -432,8 +432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Impl _M_impl;
-      typename aligned_storage<sizeof(_Tp), alignment_of<_Tp>::value>::type
-	_M_storage;
+      __gnu_cxx::__aligned_buffer<_Tp> _M_storage;
     };
 
   template<_Lock_policy _Lp>

@@ -46,6 +46,7 @@
 #include <bits/shared_ptr.h>
 #include <bits/uses_allocator.h>
 #include <bits/alloc_traits.h>
+#include <ext/aligned_buffer.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -206,12 +207,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct _Result : _Result_base
       {
       private:
-	typedef alignment_of<_Res>				__a_of;
-	typedef aligned_storage<sizeof(_Res), __a_of::value>	__align_storage;
-	typedef typename __align_storage::type			__align_type;
-
-	__align_type		_M_storage;
-	bool 			_M_initialized;
+	__gnu_cxx::__aligned_buffer<_Res>	_M_storage;
+	bool 					_M_initialized;
 
       public:
 	typedef _Res result_type;
@@ -226,26 +223,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// Return lvalue, future will add const or rvalue-reference
 	_Res&
-	_M_value() noexcept { return *static_cast<_Res*>(_M_addr()); }
+	_M_value() noexcept { return *_M_storage._M_ptr(); }
 
 	void
 	_M_set(const _Res& __res)
 	{
-	  ::new (_M_addr()) _Res(__res);
+	  ::new (_M_storage._M_addr()) _Res(__res);
 	  _M_initialized = true;
 	}
 
 	void
 	_M_set(_Res&& __res)
 	{
-	  ::new (_M_addr()) _Res(std::move(__res));
+	  ::new (_M_storage._M_addr()) _Res(std::move(__res));
 	  _M_initialized = true;
 	}
 
       private:
 	void _M_destroy() { delete this; }
-
-	void* _M_addr() noexcept { return static_cast<void*>(&_M_storage); }
     };
 
     /// A unique_ptr based on the instantiating type.
