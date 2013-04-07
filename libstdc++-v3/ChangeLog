@@ -1,5 +1,16 @@
 2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/Makefile.am: Add ext/aligned_buffer.h
+	* include/Makefile.in: Regenerate.
+	* include/ext/aligned_buffer.h: New.
+	* include/std/future (_Result): Use __aligned_buffer.
+	* include/bits/forward_list.h (_Fwd_list_node): Likewise.
+	* include/bits/shared_ptr_base.h (_Sp_counted_ptr_inplace): Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error line
+	number.
+
+2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/forward_list.h: Only include required headers.
 	(forward_list::reference): Define directly, not using __alloc_traits.
 	(forward_list::const_reference): Likewise.
