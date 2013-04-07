@@ -1,3 +1,9 @@
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (FUNCTION_OR_METHOD_TYPE_CHECK): Remove.
+	(FUNCTION_REF_QUALIFIED): Use FUNC_OR_METHOD_CHECK instead.
+	(FUNCTION_RVALUE_QUALIFIED): Likewise.
+
 2013-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/56819
