@@ -2429,6 +2429,11 @@
   [(plus "add") (minus "sub") (mult "mul") (div "div")
    (and "and") (ior "ior") (xor "xor")])
 
+; The addsi3 / subsi3 do checks that we don't want when splitting V2SImode
+; operations into two SImode operations.
+(define_code_attr si_pattern_suffix
+  [(plus "_i") (minus "_i") (and "") (ior "") (xor "")])
+
 ; You might think that this would work better as a define_expand, but
 ; again lower_subreg pessimizes the code if it sees indiviudual operations.
 ; We need to keep inputs and outputs as register pairs if we want to
@@ -2455,8 +2460,8 @@
     o1h = copy_to_mode_reg (SImode, o1h);
   if (reg_overlap_mentioned_p (o0l, o2h))
     o2h = copy_to_mode_reg (SImode, o2h);
-  emit_insn (gen_<insn_opname>si3 (o0l, o1l, o2l));
-  emit_insn (gen_<insn_opname>si3 (o0h, o1h, o2h));
+  emit_insn (gen_<insn_opname>si3<si_pattern_suffix> (o0l, o1l, o2l));
+  emit_insn (gen_<insn_opname>si3<si_pattern_suffix> (o0h, o1h, o2h));
   DONE;
 }
   [(set_attr "length" "8")])
