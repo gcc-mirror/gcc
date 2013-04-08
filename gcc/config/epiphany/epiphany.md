@@ -1721,6 +1721,110 @@
   "sub %0,%1,%2"
   [(set_attr "type" "compare")])
 
+(define_code_iterator logical_op
+  [and ior xor])
+
+(define_code_attr op_mnc
+  [(plus "add") (minus "sub") (and "and") (ior "orr") (xor "eor")])
+
+(define_insn "*<op_mnc>_f"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (logical_op:SI (match_operand:SI 1 "gpr_operand" "%r")
+				   (match_operand:SI 2 "gpr_operand"  "r"))
+                    (const_int 0)))
+   (set (match_operand:SI 0 "gpr_operand" "=r")
+        (logical_op:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "<op_mnc> %0,%1,%2"
+  [(set_attr "type" "compare")])
+
+(define_insn_and_split "*mov_f"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "gpr_operand"  "r") (const_int 0)))
+   (set (match_operand:SI 0 "gpr_operand" "=r") (match_dup 1))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (and:SI (match_dup 1) (match_dup 1)) (const_int 0)))
+     (set (match_operand:SI 0 "gpr_operand" "=r")
+	  (and:SI (match_dup 1) (match_dup 1)))])]
+  ""
+  [(set_attr "type" "compare")])
+
+(define_peephole2
+  [(parallel
+    [(set (match_operand:SI 0 "gpr_operand" "=r")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
+			 (match_operand:SI 2 "gpr_operand" "%r")))
+     (clobber (reg:CC CC_REGNUM))])
+   (parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (and:SI (match_dup 0) (match_dup 0)) (const_int 0)))
+     (set (match_operand:SI 3 "gpr_operand" "=r")
+	  (and:SI (match_dup 0) (match_dup 0)))])]
+  "peep2_reg_dead_p (2, operands[0])"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (logical_op:SI (match_dup 1) (match_dup 2))
+		      (const_int 0)))
+     (set (match_dup 3) (logical_op:SI (match_dup 1) (match_dup 2)))])])
+
+(define_peephole2
+  [(parallel
+    [(set (match_operand:SI 0 "gpr_operand" "=r")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
+			 (match_operand:SI 2 "gpr_operand" "%r")))
+     (clobber (reg:CC CC_REGNUM))])
+   (parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (and:SI (match_dup 0) (match_dup 0)) (const_int 0)))
+     (set (match_operand:SI 3 "gpr_operand" "=r")
+	  (and:SI (match_dup 0) (match_dup 0)))])]
+  "peep2_reg_dead_p (2, operands[3])"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (logical_op:SI (match_dup 1) (match_dup 2))
+		      (const_int 0)))
+     (set (match_dup 0) (logical_op:SI (match_dup 1) (match_dup 2)))])])
+
+(define_expand "cstoresi4"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+          (match_operand:SI 1 "comparison_operator"))
+     (set (match_operand:SI 0 "gpr_operand" "=r")
+	  (match_operand:SI 2 "" ""))])
+   (set (match_dup 0) (match_operand:SI 3 "arith_operand" ""))
+   (set (match_dup 0)
+	(if_then_else:SI (match_dup 4) (match_dup 5) (match_dup 0)))]
+  ""
+{
+  enum rtx_code o2_code = GET_CODE (operands[2]);
+  enum rtx_code cmp_code = GET_CODE (operands[1]);
+
+  if ((o2_code == AND || o2_code == IOR || o2_code == XOR)
+      && operands[3] == const0_rtx)
+    {
+      operands[2] = copy_rtx(operands[2]);
+      XEXP (operands[2], 0) = force_reg (SImode, XEXP (operands[2], 0));
+      XEXP (operands[2], 1) = force_reg (SImode, XEXP (operands[2], 1));
+    }
+  else
+    operands[2] = force_reg (SImode, operands[2]);
+  operands[1] = gen_rtx_COMPARE (CCmode, operands[2], operands[3]);
+  if (operands[3] != const0_rtx)
+    operands[2] = gen_rtx_MINUS (SImode, operands[2], operands[3]);
+  if (cmp_code != NE || operands[3] != const0_rtx)
+    operands[3] = const0_rtx;
+  else
+    operands[3] = operands[0];
+  operands[4] = gen_rtx_fmt_ee (cmp_code, SImode,
+				gen_rtx_REG (CCmode, CC_REGNUM), const0_rtx);
+  operands[5] = force_reg (SImode, GEN_INT (STORE_FLAG_VALUE));
+})
+
+
 ; floating point comparisons
 
 (define_insn "*cmpsf_cc_insn"

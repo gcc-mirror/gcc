@@ -20,6 +20,11 @@
 	* config/epiphany/epiphany.md (addsi3_i): Add r/r/CnL alternative.
 	* config/epiphany/predicates.md (add_operand): Allow 1024.
 
+	* config/epiphany/epiphany.md (logical_op): New code iterator.
+	(op_mnc): New code attribute.
+	(<op_mnc>_f, mov_f, cstoresi4): New patterns.
+	(mov_f+1, mov_f+2): New peephole2 patterns.
+
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34949
