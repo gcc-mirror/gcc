@@ -1,3 +1,7 @@
+2013-04-08  Jeff Law  <law@redhat.com>
+
+	* gimple.c (canonicalize_cond_expr_cond): Rewrite x ^ y into x != y.
+		        
 2013-04-08  Richard Biener  <rguenther@suse.de>
 
 	* gimple-pretty-print.c (debug_gimple_stmt): Do not print

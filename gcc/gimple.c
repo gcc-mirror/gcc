@@ -2958,7 +2958,11 @@ canonicalize_cond_expr_cond (tree t)
       t = build2 (TREE_CODE (top0), TREE_TYPE (t),
 		  TREE_OPERAND (top0, 0), TREE_OPERAND (top0, 1));
     }
-
+  /* For x ^ y use x != y.  */
+  else if (TREE_CODE (t) == BIT_XOR_EXPR)
+    t = build2 (NE_EXPR, TREE_TYPE (t),
+		TREE_OPERAND (t, 0), TREE_OPERAND (t, 1));
+  
   if (is_gimple_condexpr (t))
     return t;
 
