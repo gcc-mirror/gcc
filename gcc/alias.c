@@ -1687,16 +1687,16 @@ find_base_term (rtx x)
 	   term is from a pointer or is a named object or a special address
 	   (like an argument or stack reference), then use it for the
 	   base term.  */
-	tmp1 = find_base_term (tmp1);
-	if (tmp1 != NULL_RTX
+	rtx base = find_base_term (tmp1);
+	if (base != NULL_RTX
 	    && ((REG_P (tmp1) && REG_POINTER (tmp1))
-		 || known_base_value_p (tmp1)))
-	  return tmp1;
-	tmp2 = find_base_term (tmp2);
-	if (tmp2 != NULL_RTX
+		 || known_base_value_p (base)))
+	  return base;
+	base = find_base_term (tmp2);
+	if (base != NULL_RTX
 	    && ((REG_P (tmp2) && REG_POINTER (tmp2))
-		 || known_base_value_p (tmp2)))
-	  return tmp2;
+		 || known_base_value_p (base)))
+	  return base;
 
 	/* We could not determine which of the two operands was the
 	   base register and which was the index.  So we can determine
