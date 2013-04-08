@@ -1,3 +1,9 @@
+2013-04-08  Xinyu Qi  <xyqi@marvell.com>
+
+ 	PR target/54338
+ 	* config/arm/arm.h (REG_CLASS_CONTENTS): Include IWMMXT_GR_REGS
+	in ALL_REGS.
+
 2013-04-08  Richard Biener  <rguenther@suse.de>
 
 	* alias.c (find_base_term): Fix thinko in previous change.
