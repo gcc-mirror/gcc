@@ -545,8 +545,7 @@ compute_outgoing_frequencies (basic_block b)
 	  probability = INTVAL (XEXP (note, 0));
 	  e = BRANCH_EDGE (b);
 	  e->probability = probability;
-	  e->count = ((b->count * probability + REG_BR_PROB_BASE / 2)
-		      / REG_BR_PROB_BASE);
+	  e->count = apply_probability (b->count, probability);
 	  f = FALLTHRU_EDGE (b);
 	  f->probability = REG_BR_PROB_BASE - probability;
 	  f->count = b->count - e->count;
@@ -583,8 +582,7 @@ compute_outgoing_frequencies (basic_block b)
 
   if (b->count)
     FOR_EACH_EDGE (e, ei, b->succs)
-      e->count = ((b->count * e->probability + REG_BR_PROB_BASE / 2)
-		  / REG_BR_PROB_BASE);
+      e->count = apply_probability (b->count, e->probability);
 }
 
 /* Assume that some pass has inserted labels or control flow

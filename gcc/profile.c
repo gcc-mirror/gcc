@@ -752,7 +752,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       if (bb->count)
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    e->probability = (e->count * REG_BR_PROB_BASE + bb->count / 2) / bb->count;
+	    e->probability = GCOV_COMPUTE_SCALE (e->count, bb->count);
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)
 	      && EDGE_COUNT (bb->succs) >= 2)

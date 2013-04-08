@@ -1,3 +1,49 @@
+2013-04-08  Teresa Johnson  <tejohnson@google.com>
+
+	* basic-block.h (GCOV_COMPUTE_SCALE): Define.
+	* ipa-inline-analysis.c (param_change_prob): Use helper rounding divide
+        methods.
+	(estimate_edge_size_and_time): Add comment to suggest using rounding
+	methods.
+	(estimate_node_size_and_time): Ditto.
+	(remap_edge_change_prob): Use helper rounding divide methods.
+	* value-prof.c (gimple_divmod_fixed_value_transform): Ditto.
+	(gimple_mod_pow2_value_transform): Ditto.
+	(gimple_mod_subtract_transform): Ditto.
+	(gimple_ic_transform): Ditto.
+	(gimple_stringops_transform): Ditto.
+	* stmt.c (conditional_probability): Ditto.
+	(emit_case_dispatch_table): Ditto.
+	* lto-cgraph.c (merge_profile_summaries): Ditto.
+	* tree-optimize.c (execute_fixup_cfg): Ditto.
+	* cfgcleanup.c (try_forward_edges): Ditto.
+	* cfgloopmanip.c (scale_loop_profile): Ditto.
+	(loopify): Ditto.
+	(duplicate_loop_to_header_edge): Ditto.
+	(lv_adjust_loop_entry_edge): Ditto.
+	* tree-vect-loop.c (vect_transform_loop): Ditto.
+	* profile.c (compute_branch_probabilities): Ditto.
+	* cfgbuild.c (compute_outgoing_frequencies): Ditto.
+	* lto-streamer-in.c (input_cfg): Ditto.
+	* gimple-streamer-in.c (input_bb): Ditto.
+	* ipa-cp.c (update_profiling_info): Ditto.
+	(update_specialized_profile): Ditto.
+	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge): Ditto.
+	* cfg.c (update_bb_profile_for_threading): Add comment to suggest using
+        rounding methods.
+	* sched-rgn.c (compute_dom_prob_ps): Ditto.
+	(compute_trg_info): Ditto.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Ditto.
+	(purge_dead_edges): Ditto.
+	* loop-unswitch.c (unswitch_loop): Ditto.
+	* cgraphclones.c (cgraph_clone_edge): Ditto.
+	(cgraph_clone_node): Ditto.
+	* tree-inline.c (copy_bb): Ditto.
+	(copy_edges_for_bb): Ditto.
+	(initialize_cfun): Ditto.
+	(copy_cfg_body): Ditto.
+	(expand_call_inline): Ditto.
+
 2013-04-08  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/cygwin.h (EXTRA_OS_CPP_BUILTINS): Replaced

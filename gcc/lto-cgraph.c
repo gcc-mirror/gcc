@@ -1343,14 +1343,14 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
   for (j = 0; (file_data = file_data_vec[j]) != NULL; j++)
     if (file_data->profile_info.runs)
       {
-	int scale = RDIV (REG_BR_PROB_BASE * max_runs,
-                          file_data->profile_info.runs);
-	lto_gcov_summary.sum_max = MAX (lto_gcov_summary.sum_max,
-					RDIV (file_data->profile_info.sum_max
-                                              * scale, REG_BR_PROB_BASE));
-	lto_gcov_summary.sum_all = MAX (lto_gcov_summary.sum_all,
-					RDIV (file_data->profile_info.sum_all
-                                              * scale, REG_BR_PROB_BASE));
+	int scale = GCOV_COMPUTE_SCALE (max_runs,
+                                        file_data->profile_info.runs);
+	lto_gcov_summary.sum_max
+            = MAX (lto_gcov_summary.sum_max,
+                   apply_probability (file_data->profile_info.sum_max, scale));
+	lto_gcov_summary.sum_all
+            = MAX (lto_gcov_summary.sum_all,
+                   apply_probability (file_data->profile_info.sum_all, scale));
         /* Save a pointer to the profile_info with the largest
            scaled sum_all and the scale for use in merging the
            histogram.  */
@@ -1371,8 +1371,9 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
     {
       /* Scale up the min value as we did the corresponding sum_all
          above. Use that to find the new histogram index.  */
-      gcov_type scaled_min = RDIV (saved_profile_info->histogram[h_ix].min_value
-                                   * saved_scale, REG_BR_PROB_BASE);
+      gcov_type scaled_min
+          = apply_probability (saved_profile_info->histogram[h_ix].min_value,
+                               saved_scale);
       /* The new index may be shared with another scaled histogram entry,
          so we need to account for a non-zero histogram entry at new_ix.  */
       unsigned new_ix = gcov_histo_index (scaled_min);
@@ -1385,8 +1386,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
          here and place the scaled cumulative counter value in the bucket
          corresponding to the scaled minimum counter value.  */
       lto_gcov_summary.histogram[new_ix].cum_value
-          += RDIV (saved_profile_info->histogram[h_ix].cum_value
-                   * saved_scale, REG_BR_PROB_BASE);
+          += apply_probability (saved_profile_info->histogram[h_ix].cum_value,
+                                saved_scale);
       lto_gcov_summary.histogram[new_ix].num_counters
           += saved_profile_info->histogram[h_ix].num_counters;
     }
@@ -1418,8 +1419,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
 	if (scale == REG_BR_PROB_BASE)
 	  continue;
 	for (edge = node->callees; edge; edge = edge->next_callee)
-	  edge->count = RDIV (edge->count * scale, REG_BR_PROB_BASE);
-	node->count = RDIV (node->count * scale, REG_BR_PROB_BASE);
+	  edge->count = apply_probability (edge->count, scale);
+	node->count = apply_probability (node->count, scale);
       }
 }
 

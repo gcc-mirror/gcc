@@ -499,6 +499,11 @@ struct edge_list
 #define EDGE_FREQUENCY(e)		RDIV ((e)->src->frequency * (e)->probability, \
 					      REG_BR_PROB_BASE)
 
+/* Compute a scale factor (or probability) suitable for scaling of
+   gcov_type values via apply_probability().  */
+#define GCOV_COMPUTE_SCALE(num,den) \
+  ((den) ? RDIV ((num) * REG_BR_PROB_BASE, (den)) : REG_BR_PROB_BASE)
+
 /* Return nonzero if edge is critical.  */
 #define EDGE_CRITICAL_P(e)		(EDGE_COUNT ((e)->src->succs) >= 2 \
 					 && EDGE_COUNT ((e)->dest->preds) >= 2)

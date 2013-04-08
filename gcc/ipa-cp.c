@@ -2572,14 +2572,16 @@ update_profiling_info (struct cgraph_node *orig_node,
 
   for (cs = new_node->callees; cs ; cs = cs->next_callee)
     if (cs->frequency)
-      cs->count = cs->count * (new_sum * REG_BR_PROB_BASE
-			       / orig_node_count) / REG_BR_PROB_BASE;
+      cs->count = apply_probability (cs->count,
+                                     GCOV_COMPUTE_SCALE (new_sum,
+                                                         orig_node_count));
     else
       cs->count = 0;
 
   for (cs = orig_node->callees; cs ; cs = cs->next_callee)
-    cs->count = cs->count * (remainder * REG_BR_PROB_BASE
-			     / orig_node_count) / REG_BR_PROB_BASE;
+    cs->count = apply_probability (cs->count,
+                                   GCOV_COMPUTE_SCALE (remainder,
+                                                       orig_node_count));
 
   if (dump_file)
     dump_profile_updates (orig_node, new_node);
@@ -2611,14 +2613,17 @@ update_specialized_profile (struct cgraph_node *new_node,
 
   for (cs = new_node->callees; cs ; cs = cs->next_callee)
     if (cs->frequency)
-      cs->count += cs->count * redirected_sum / new_node_count;
+      cs->count += apply_probability (cs->count,
+                                      GCOV_COMPUTE_SCALE (redirected_sum,
+                                                          new_node_count));
     else
       cs->count = 0;
 
   for (cs = orig_node->callees; cs ; cs = cs->next_callee)
     {
-      gcov_type dec = cs->count * (redirected_sum * REG_BR_PROB_BASE
-				   / orig_node_count) / REG_BR_PROB_BASE;
+      gcov_type dec = apply_probability (cs->count,
+                                         GCOV_COMPUTE_SCALE (redirected_sum,
+                                                             orig_node_count));
       if (dec < cs->count)
 	cs->count -= dec;
       else
