@@ -1,3 +1,14 @@
+2013-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-loop-distribution.c (const_with_all_bytes_same): New function.
+	(generate_memset_builtin): Only handle integer_all_onesp as -1 val if
+	TYPE_PRECISION is equal to mode bitsize.  Use const_with_all_bytes_same
+	if possible to compute val.
+	(classify_partition): Verify CONSTRUCTOR doesn't have any elts.
+	For QImode integers don't require anything about precision.  Use
+	const_with_all_bytes_same to find out if the constant doesn't have
+	repeated bytes in it.
+
 2013-04-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_insv): Only accept insertions
