@@ -1890,7 +1890,7 @@ conditional_probability (int target_prob, int base_prob)
     {
       gcc_assert (target_prob >= 0);
       gcc_assert (target_prob <= base_prob);
-      return RDIV (target_prob * REG_BR_PROB_BASE, base_prob);
+      return GCOV_COMPUTE_SCALE (target_prob, base_prob);
     }
   return -1;
 }
@@ -2012,7 +2012,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
       edge e;
       edge_iterator ei;
       FOR_EACH_EDGE (e, ei, stmt_bb->succs)
-        e->probability = RDIV (e->probability * REG_BR_PROB_BASE,  base);
+        e->probability = GCOV_COMPUTE_SCALE (e->probability,  base);
     }
 
   if (try_with_tablejump)

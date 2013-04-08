@@ -595,9 +595,7 @@ try_forward_edges (int mode, basic_block b)
 	  /* We successfully forwarded the edge.  Now update profile
 	     data: for each edge we traversed in the chain, remove
 	     the original edge's execution count.  */
-	  edge_frequency = ((edge_probability * b->frequency
-			     + REG_BR_PROB_BASE / 2)
-			    / REG_BR_PROB_BASE);
+	  edge_frequency = apply_probability (b->frequency, edge_probability);
 
 	  do
 	    {

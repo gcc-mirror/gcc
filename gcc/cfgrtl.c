@@ -1362,6 +1362,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  int prob = INTVAL (XEXP (note, 0));
 
 	  b->probability = prob;
+          /* Update this to use GCOV_COMPUTE_SCALE.  */
 	  b->count = e->count * prob / REG_BR_PROB_BASE;
 	  e->probability -= e->probability;
 	  e->count -= b->count;
@@ -2675,6 +2676,7 @@ purge_dead_edges (basic_block bb)
 	  f = FALLTHRU_EDGE (bb);
 	  b->probability = INTVAL (XEXP (note, 0));
 	  f->probability = REG_BR_PROB_BASE - b->probability;
+          /* Update these to use GCOV_COMPUTE_SCALE.  */
 	  b->count = bb->count * b->probability / REG_BR_PROB_BASE;
 	  f->count = bb->count * f->probability / REG_BR_PROB_BASE;
 	}
