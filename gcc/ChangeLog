@@ -1,3 +1,19 @@
+2013-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34949
+	PR c++/50243
+	* tree-eh.c (optimize_clobbers): Only remove clobbers if bb doesn't
+	contain anything but clobbers, at most one __builtin_stack_restore,
+	optionally debug stmts and final resx, and if it has at least one
+	incoming EH edge.  Don't check for SSA_NAME on LHS of a clobber.
+	(sink_clobbers): Don't check for SSA_NAME on LHS of a clobber.
+	Instead of moving clobbers with MEM_REF LHS with SSA_NAME address
+	which isn't defaut definition, remove them.
+	(unsplit_eh, cleanup_empty_eh): Use single_{pred,succ}_{p,edge}
+	instead of EDGE_COUNT comparisons or EDGE_{PRED,SUCC}.
+	* tree-ssa-ccp.c (execute_fold_all_builtins): Remove clobbers
+	with MEM_REF LHS with SSA_NAME address.
+
 2013-04-08  Jeff Law  <law@redhat.com>
 
 	* gimple.c (canonicalize_cond_expr_cond): Rewrite x ^ y into x != y.

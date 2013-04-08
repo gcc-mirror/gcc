@@ -1,6 +1,13 @@
+2013-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34949
+	PR c++/50243
+	* g++.dg/opt/vt3.C: New test.
+	* g++.dg/opt/vt4.C: New test.
+
 2013-04-08  Jeff Law  <law@redhat.com>
 
-	* gcc.dg/tree-ssa/forwprop-25.c: New test
+	* gcc.dg/tree-ssa/forwprop-25.c: New test.
 
 2013-04-08  Richard Biener  <rguenther@suse.de>
 

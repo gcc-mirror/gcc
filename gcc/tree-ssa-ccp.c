@@ -2396,6 +2396,21 @@ execute_fold_all_builtins (void)
 
           if (gimple_code (stmt) != GIMPLE_CALL)
 	    {
+	      /* Remove all *ssaname_N ={v} {CLOBBER}; stmts,
+		 after the last GIMPLE DSE they aren't needed and might
+		 unnecessarily keep the SSA_NAMEs live.  */
+	      if (gimple_clobber_p (stmt))
+		{
+		  tree lhs = gimple_assign_lhs (stmt);
+		  if (TREE_CODE (lhs) == MEM_REF
+		      && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME)
+		    {
+		      unlink_stmt_vdef (stmt);
+		      gsi_remove (&i, true);
+		      release_defs (stmt);
+		      continue;
+		    }
+		}
 	      gsi_next (&i);
 	      continue;
 	    }
