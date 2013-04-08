@@ -1,3 +1,7 @@
+2013-04-08  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-25.c: New test
+
 2013-04-08  Richard Biener  <rguenther@suse.de>
 
 	* gfortran.dg/vect/fast-math-mgrid-resid.f: Adjust.
