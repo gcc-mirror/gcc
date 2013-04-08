@@ -1,3 +1,9 @@
+2013-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr56837.c: New test.
+	* gcc.dg/tree-ssa/ldist-19.c: Don't check for
+	"generated memset minus one".
+
 2013-04-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56849
