@@ -1,3 +1,7 @@
+2013-04-08 Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 197571 into gupc branch.
+
 2013-04-04 Gary Funck  <gary@intrepid.com>
 
 	Per the UPC 1.3 specification, the type of the

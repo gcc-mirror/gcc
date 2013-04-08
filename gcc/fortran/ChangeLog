@@ -1,3 +1,30 @@
+2013-04-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56849
+	* iresolve.c (gfc_resolve_reshape): Set shape also
+	with order=.
+
+2013-04-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40881
+	* match.c (gfc_match_return): Remove standard notification.
+	* primary.c (gfc_match_actual_arglist): Add standard notification.
+
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50269
+	* gcc/fortran/check.c (is_c_interoperable,
+	gfc_check_c_loc): Correct c_loc array checking
+	for Fortran 2003 and Fortran 2008.
+
+2013-04-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56284
+	PR fortran/40881
+	* decl.c (gfc_match_formal_arglist): Warn about alternate-return
+	arguments.
+	* interface.c (check_dummy_characteristics): Return if symbols are NULL.
+
 2013-04-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56500
@@ -274,7 +301,7 @@
 	* trans-array.c (structure_alloc_comps): Handle procedure-pointer
 	components with allocatable result.
 
-2012-02-21  Tobias Burnus  <burnus@net-b.de>
+2013-02-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56416
 	* gfortran.texi (Part II: Language Reference, Extensions,

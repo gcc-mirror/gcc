@@ -1889,20 +1889,50 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
       && !stmt_can_throw_internal (stmt))
     {
       tree base, lhs = gimple_get_lhs (stmt);
-      HOST_WIDE_INT size, offset, max_size;
+      HOST_WIDE_INT size, offset, max_size, ref_offset = ref->offset;
       base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == ref->base does not always hold.  */
-      if (base == ref->base)
+      if (base != ref->base)
 	{
-	  /* For a must-alias check we need to be able to constrain
-	     the access properly.  */
-	  if (size != -1 && size == max_size)
+	  /* If both base and ref->base are MEM_REFs, only compare the
+	     first operand, and if the second operand isn't equal constant,
+	     try to add the offsets into offset and ref_offset.  */
+	  if (TREE_CODE (base) == MEM_REF && TREE_CODE (ref->base) == MEM_REF
+	      && TREE_OPERAND (base, 0) == TREE_OPERAND (ref->base, 0))
 	    {
-	      if (offset <= ref->offset
-		  && offset + size >= ref->offset + ref->max_size)
-		return true;
+	      if (!tree_int_cst_equal (TREE_OPERAND (base, 0),
+				       TREE_OPERAND (ref->base, 0)))
+		{
+		  double_int off1 = mem_ref_offset (base);
+		  off1 = off1.alshift (BITS_PER_UNIT == 8
+				       ? 3 : exact_log2 (BITS_PER_UNIT),
+				       HOST_BITS_PER_DOUBLE_INT);
+		  off1 = off1 + double_int::from_shwi (offset);
+		  double_int off2 = mem_ref_offset (ref->base);
+		  off2 = off2.alshift (BITS_PER_UNIT == 8
+				       ? 3 : exact_log2 (BITS_PER_UNIT),
+				       HOST_BITS_PER_DOUBLE_INT);
+		  off2 = off2 + double_int::from_shwi (ref_offset);
+		  if (off1.fits_shwi () && off2.fits_shwi ())
+		    {
+		      offset = off1.to_shwi ();
+		      ref_offset = off2.to_shwi ();
+		    }
+		  else
+		    size = -1;
+		}
 	    }
+	  else
+	    size = -1;
+	}
+      /* For a must-alias check we need to be able to constrain
+	 the access properly.  */
+      if (size != -1 && size == max_size)
+	{
+	  if (offset <= ref_offset
+	      && offset + size >= ref_offset + ref->max_size)
+	    return true;
 	}
     }
 

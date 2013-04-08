@@ -151,6 +151,7 @@ bool aarch64_regno_ok_for_base_p (int, bool);
 bool aarch64_regno_ok_for_index_p (int, bool);
 bool aarch64_simd_imm_scalar_p (rtx x, enum machine_mode mode);
 bool aarch64_simd_imm_zero_p (rtx, enum machine_mode);
+bool aarch64_simd_scalar_immediate_valid_for_move (rtx, enum machine_mode);
 bool aarch64_simd_shift_imm_p (rtx, enum machine_mode, bool);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_symbolic_constant_p (rtx, enum aarch64_symbol_context,

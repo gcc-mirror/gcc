@@ -1,3 +1,85 @@
+2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/Makefile.am: Add ext/aligned_buffer.h
+	* include/Makefile.in: Regenerate.
+	* include/ext/aligned_buffer.h: New.
+	* include/std/future (_Result): Use __aligned_buffer.
+	* include/bits/forward_list.h (_Fwd_list_node): Likewise.
+	* include/bits/shared_ptr_base.h (_Sp_counted_ptr_inplace): Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error line
+	number.
+
+2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/forward_list.h: Only include required headers.
+	(forward_list::reference): Define directly, not using __alloc_traits.
+	(forward_list::const_reference): Likewise.
+
+2013-04-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/functional (_Derives_from_unary_function): Remove.
+	(_Derives_from_binary_function): Remove.
+	* include/std/type_traits (__sfinae_types): Remove.
+	(__is_assignable_helper): Adapt.
+	(__is_convertible_helper): Adapt.
+	(_GLIBCXX_HAS_NESTED_TYPE): Adapt.
+	Remove several explicit instantiations of integral_constant.
+	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Adapt.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adapt dg-error line number.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/bind/ref_neg.cc: Likewise.
+
+2013-04-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56841
+	* libsupc++/eh_ptr.cc (rethrow_exception): Use get_unexpected() and
+	get_terminate() accessors.
+	* libsupc++/eh_throw.cc (__cxa_throw): Likewise.
+	* libsupc++/eh_terminate.cc: Use mutex when atomic builtins not
+	available.
+	* libsupc++/new_handler.cc: Likewise.
+
+2013-04-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.19 version.
+
+2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56834
+	* include/debug/array (tuple_size, tuple_element): Do not declare.
+	* include/profile/array: Likewise.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Adjust dg-error line number.
+
+2013-04-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* libsupc++/exception (get_terminate(), get_unexpected()): Declare.
+	* libsupc++/eh_terminate.cc (get_terminate() , set_unexpected()):
+	Define.
+	(set_terminate(terminate_handler)): Set atomically.
+	(set_unexpected(terminate_handler)): Likewise.
+	* libsupc++/new (get_new_handler()): Declare.
+	* libsupc++/new_handler.cc (get_new_handler()): Define.
+	(set_new_handler(new_handler)): Set atomically.
+	(__new_handler): Use internal linkage.
+	* libsupc++/new_op.cc (operator new): Use get_new_handler().
+	* libsupc++/new_opnt.cc (operator new): Likewise.
+	* acinclude.m4: Bump libtool_VERSION to 6:19:0.
+	* configure: Regenerate.
+	* libsupc++/Makefile.am: Compile above files with -std=gnu++11.
+	* libsupc++/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add new exports.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* testsuite/18_support/headers/exception/synopsis.cc: Check accessors
+	for handlers.
+	* testsuite/18_support/headers/new/synopsis.cc: Likewise.
+	* testsuite/18_support/new_handler.cc: New.
+	* testsuite/18_support/terminate_handler.cc: New.
+	* testsuite/18_support/unexpected_handler.cc: New.
+
 2013-04-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Remove broken link and

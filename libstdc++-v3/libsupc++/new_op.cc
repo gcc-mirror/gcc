@@ -38,8 +38,6 @@ using std::malloc;
 extern "C" void *malloc (std::size_t);
 #endif
 
-extern new_handler __new_handler;
-
 _GLIBCXX_WEAK_DEFINITION void *
 operator new (std::size_t sz) _GLIBCXX_THROW (std::bad_alloc)
 {
@@ -51,7 +49,7 @@ operator new (std::size_t sz) _GLIBCXX_THROW (std::bad_alloc)
   p = (void *) malloc (sz);
   while (p == 0)
     {
-      new_handler handler = __new_handler;
+      new_handler handler = std::get_new_handler ();
       if (! handler)
 	_GLIBCXX_THROW_OR_ABORT(bad_alloc());
       handler ();

@@ -1719,6 +1719,10 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp)
 	  if (m != MATCH_YES)
 	    goto cleanup;
 
+	  if (gfc_notify_std (GFC_STD_F95_OBS, "Alternate-return argument "
+	      "at %C") == FAILURE)
+	    goto cleanup;
+
 	  tail->label = label;
 	  goto next;
 	}

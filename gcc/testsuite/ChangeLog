@@ -1,8 +1,260 @@
+2013-04-08  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/vect/fast-math-pr37021.f90: Adjust.
+
+2013-04-08  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr56812.cc: Adjust.
+
+2013-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr56837.c: New test.
+	* gcc.dg/tree-ssa/ldist-19.c: Don't check for
+	"generated memset minus one".
+
+2013-04-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56849
+	* gfortran.dg/reshape_5.f90: New.
+
+2013-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/56843
+	* gcc.target/powerpc/recip-1.c: Modify expected output.
+	* gcc.target/powerpc/recip-3.c: Likewise.
+	* gcc.target/powerpc/recip-4.c: Likewise.
+	* gcc.target/powerpc/recip-5.c: Add expected output for iterations.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.target/arm/peep-ldrd-1.c: New test.
+	* gcc.target/arm/peep-strd-1.c: Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.target/arm/negdi-1.c: New test.
+	* gcc.target/arm/negdi-2.c: Likewise.
+	* gcc.target/arm/negdi-3.c: Likewise.
+	* gcc.target/arm/negdi-4.c: Likewise.
+
+2013-04-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (add_options_for_arm_v8_neon):
+	Add -march=armv8-a when we use v8 NEON.
+	(check_effective_target_vect_call_btruncf): Remove arm-*-*-*.
+	(check_effective_target_vect_call_ceilf): Likewise.
+	(check_effective_target_vect_call_floorf): Likewise.
+	(check_effective_target_vect_call_roundf): Likewise.
+	(check_vect_support_and_set_flags): Remove check for arm_v8_neon.
+	* gcc.target/arm/vect-rounding-btruncf.c: New testcase.
+	* gcc.target/arm/vect-rounding-ceilf.c: Likewise.
+	* gcc.target/arm/vect-rounding-floorf.c: Likewise.
+	* gcc.target/arm/vect-rounding-roundf.c: Likewise.
+
+2013-04-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sd-vsx.c: Skip on AIX.
+	* gcc.target/powerpc/sd-pwr6.c: Same.
+	* gcc.dg/stack-usage-1.c: Define SIZE on AIX.
+	* g++.dg/debug/pr56294.C: XFAIL on AIX.
+
+2013-04-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/ref-qual-multi-neg.C: New test.
+
+2013-04-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40881
+	* gfortran.dg/altreturn_1.f90: Add -std=gnu.
+	* gfortran.dg/altreturn_4.f90: Ditto.
+	* gfortran.dg/altreturn_3.f90: Replace -std=legacy by -std=gnu.
+	* gfortran.dg/altreturn_5.f90: Ditto.
+	* gfortran.dg/altreturn_6.f90: Ditto.
+	* gfortran.dg/altreturn_7.f90: Ditto.
+
+2013-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_v8_neon_hw):
+	New procedure.
+	(check_effective_target_arm_v8_neon_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_v8_neon_ok): Change to use
+	check_effective_target_arm_v8_neon_ok_nocache.
+	(add_options_for_arm_v8_neon): Use et_arm_v8_neon_flags to set ARMv8
+	NEON flags.
+	(check_effective_target_vect_call_btruncf):
+	Enable for arm and ARMv8 NEON.
+	(check_effective_target_vect_call_ceilf): Likewise.
+	(check_effective_target_vect_call_floorf): Likewise.
+	(check_effective_target_vect_call_roundf): Likewise.
+	(check_vect_support_and_set_flags): Handle ARMv8 NEON effective
+	target.
+
+2013-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/48186
+	* gcc.dg/pr48186.c: New test.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56826
+	* gcc.dg/vect/pr56826.c: New testcase.
+	* gcc.dg/vect/O3-pr36098.c: Adjust.
+
+2013-04-04  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/inc/asm-adder-clobber-lr.c: Remove duplication.
+	* gcc.target/aarch64/inc/asm-adder-no-clobber-lr.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-1.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-2.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-3.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-4.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-5.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-6.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-7.c: Likewise.
+	* gcc.target/aarch64/test-framepointer-8.c: Likewise.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56213
+	* gcc.dg/vect/vect-123.c: New testcase.
+
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56810
+	* gfortran.dg/read_repeat_2.f90: New.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56837
+	* g++.dg/torture/pr56837.C: New testcase.
+
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50269
+	* gfortran.dg/c_loc_test_21.f90: New.
+	* gfortran.dg/c_loc_test_19.f90: Update dg-error.
+	* gfortran.dg/c_loc_tests_10.f03: Update dg-error.
+	* gfortran.dg/c_loc_tests_11.f03: Update dg-error.
+	* gfortran.dg/c_loc_tests_4.f03: Update dg-error.
+	* gfortran.dg/c_loc_tests_16.f90:  Update dg-error.
+
+2013-04-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/56799
+	* gcc.c-torture/execute/pr56799.c: New test.
+
+2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56815
+	* g++.dg/warn/Wpointer-arith-1.C: New.
+	* g++.dg/gomp/for-19.C: Adjust.
+
+2013-04-03  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/55702
+	* gcc.dg/pr55702.c: New test.
+
+2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56809
+	* gcc.dg/pr56809.c: New testcase.
+
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56819
+	* g++.dg/debug/pr56819.C: New test.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56817
+	* g++.dg/torture/pr56817.C: New testcase.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/vect/bb-slp-31.c: New file.
+
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34949
+	* g++.dg/tree-ssa/ehcleanup-1.C: Adjust unreachable count.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr56812.cc: Use dg-additional-options.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55964
+	* gcc.dg/torture/pr55964-2.c: New testcase.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56501
+	* gcc.dg/torture/pr56501.c: New testcase.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56407
+	* gcc.dg/torture/pr56407.c: New testcase.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/56790
+	* g++.dg/ext/pr56790-1.C: New testcase.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.target/i386/merge-1.c: New testcase.
+	* gcc.target/i386/avx2-vpblendd128-1.c: Make it non-trivial.
+
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/19449
+	* gcc.c-torture/execute/pr19449.c: New test.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56812
+	* g++.dg/vect/slp-pr56812.cc: New testcase.
+
+2013-04-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56284
+	PR fortran/40881
+	* gfortran.dg/altreturn_8.f90: New.
+	* gfortran.dg/altreturn_2.f90: Add -std=legacy.
+	* gfortran.dg/intrinsic_actual_3.f90: Ditto.
+	* gfortran.dg/invalid_interface_assignment.f90: Ditto.
+
+2013-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56745
+	* gcc.c-torture/compile/pr56745.c: New test.
+
+2013-04-02  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	* gcc.dg/tree-ssa/sra-13.c: Fix for 16 bit int.
+
+2013-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56778
+	* gcc.dg/torture/pr56778.c: New testcase.
+
+2013-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56768
+	* g++.dg/torture/pr56768.C: New testcase.
+
+2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* obj-c++.dg/try-catch-13.mm: Update per PR56725.
+
 2013-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/56660
 	* gfortran.dg/namelist_82.f90:  New test.
-	
+
 2013-04-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56500

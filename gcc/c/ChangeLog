@@ -1,3 +1,11 @@
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/19449
+	* c-parser.c (c_parser_get_builtin_args): Add choose_expr_p
+	argument.  If set, or it temporarily for parsing of the first
+	argument into force_folding_builtin_constant_p.
+	(c_parser_postfix_expression): Adjust callers.
+
 2013-03-21  Richard Biener  <rguenther@suse.de>
 
 	* c-objc-common.c (c_tree_printer): Use DECL_HAS_DEBUG_EXPR_P

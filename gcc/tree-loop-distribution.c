@@ -297,6 +297,36 @@ build_addr_arg_loc (location_t loc, data_reference_p dr, tree nb_bytes)
   return fold_build_pointer_plus_loc (loc, DR_BASE_ADDRESS (dr), addr_base);
 }
 
+/* If VAL memory representation contains the same value in all bytes,
+   return that value, otherwise return -1.
+   E.g. for 0x24242424 return 0x24, for IEEE double
+   747708026454360457216.0 return 0x44, etc.  */
+
+static int
+const_with_all_bytes_same (tree val)
+{
+  unsigned char buf[64];
+  int i, len;
+
+  if (integer_zerop (val)
+      || real_zerop (val)
+      || (TREE_CODE (val) == CONSTRUCTOR
+          && !TREE_CLOBBER_P (val)
+          && CONSTRUCTOR_NELTS (val) == 0))
+    return 0;
+
+  if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
+    return -1;
+
+  len = native_encode_expr (val, buf, sizeof (buf));
+  if (len == 0)
+    return -1;
+  for (i = 1; i < len; i++)
+    if (buf[i] != buf[0])
+      return -1;
+  return buf[0];
+}
+
 /* Generate a call to memset for PARTITION in LOOP.  */
 
 static void
@@ -327,24 +357,20 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
 
   /* This exactly matches the pattern recognition in classify_partition.  */
   val = gimple_assign_rhs1 (stmt);
-  if (integer_zerop (val)
-      || real_zerop (val)
-      || TREE_CODE (val) == CONSTRUCTOR)
-    val = integer_zero_node;
-  else if (integer_all_onesp (val))
-    val = build_int_cst (integer_type_node, -1);
-  else
+  /* Handle constants like 0x15151515 and similarly
+     floating point constants etc. where all bytes are the same.  */
+  int bytev = const_with_all_bytes_same (val);
+  if (bytev != -1)
+    val = build_int_cst (integer_type_node, bytev);
+  else if (TREE_CODE (val) == INTEGER_CST)
+    val = fold_convert (integer_type_node, val);
+  else if (!useless_type_conversion_p (integer_type_node, TREE_TYPE (val)))
     {
-      if (TREE_CODE (val) == INTEGER_CST)
-	val = fold_convert (integer_type_node, val);
-      else if (!useless_type_conversion_p (integer_type_node, TREE_TYPE (val)))
-	{
-	  gimple cstmt;
-	  tree tem = make_ssa_name (integer_type_node, NULL);
-	  cstmt = gimple_build_assign_with_ops (NOP_EXPR, tem, val, NULL_TREE);
-	  gsi_insert_after (&gsi, cstmt, GSI_CONTINUE_LINKING);
-	  val = tem;
-	}
+      gimple cstmt;
+      tree tem = make_ssa_name (integer_type_node, NULL);
+      cstmt = gimple_build_assign_with_ops (NOP_EXPR, tem, val, NULL_TREE);
+      gsi_insert_after (&gsi, cstmt, GSI_CONTINUE_LINKING);
+      val = tem;
     }
 
   fn = build_fold_addr_expr (builtin_decl_implicit (BUILT_IN_MEMSET));
@@ -354,10 +380,8 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "generated memset");
-      if (integer_zerop (val))
+      if (bytev == 0)
 	fprintf (dump_file, " zero\n");
-      else if (integer_all_onesp (val))
-	fprintf (dump_file, " minus one\n");
       else
 	fprintf (dump_file, "\n");
     }
@@ -941,14 +965,10 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
     {
       gimple stmt = DR_STMT (single_store);
       tree rhs = gimple_assign_rhs1 (stmt);
-      if (!(integer_zerop (rhs)
-	    || integer_all_onesp (rhs)
-	    || real_zerop (rhs)
-	    || (TREE_CODE (rhs) == CONSTRUCTOR
-		&& !TREE_CLOBBER_P (rhs))
-	    || (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
-		&& (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)))
-		    == TYPE_MODE (unsigned_char_type_node)))))
+      if (const_with_all_bytes_same (rhs) == -1
+	  && (!INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+	      || (TYPE_MODE (TREE_TYPE (rhs))
+		  != TYPE_MODE (unsigned_char_type_node))))
 	return;
       if (TREE_CODE (rhs) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (rhs)

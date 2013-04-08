@@ -39,6 +39,7 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/cortex-a8-neon.md \
 		$(srcdir)/config/arm/cortex-a9.md \
 		$(srcdir)/config/arm/cortex-a9-neon.md \
+		$(srcdir)/config/arm/cortex-a53.md \
 		$(srcdir)/config/arm/cortex-m4-fpu.md \
 		$(srcdir)/config/arm/cortex-m4.md \
 		$(srcdir)/config/arm/cortex-r4f.md \
@@ -52,6 +53,7 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/iwmmxt.md \
 		$(srcdir)/config/arm/iwmmxt2.md \
 		$(srcdir)/config/arm/ldmstm.md \
+		$(srcdir)/config/arm/ldrdstrd.md \
 		$(srcdir)/config/arm/marvell-f-iwmmxt.md \
 		$(srcdir)/config/arm/neon.md \
 		$(srcdir)/config/arm/predicates.md \
@@ -84,7 +86,8 @@ arm.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H) $(srcdir)/config/arm/arm-cores.def \
-  $(srcdir)/config/arm/arm-arches.def $(srcdir)/config/arm/arm-fpus.def
+  $(srcdir)/config/arm/arm-arches.def $(srcdir)/config/arm/arm-fpus.def \
+  $(srcdir)/config/arm/arm_neon_builtins.def
 
 arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)

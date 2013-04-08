@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=gnu" }
+!
 ! Tests the fix for PR30237 in which alternate returns in intrinsic
 ! actual arglists were quietly ignored.
 !

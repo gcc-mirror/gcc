@@ -5097,8 +5097,8 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
   if (code == COND_EXPR)
     /* Use build_conditional_expr instead.  */
     gcc_unreachable ();
-  else if (! IS_OVERLOAD_TYPE (TREE_TYPE (arg1))
-	   && (! arg2 || ! IS_OVERLOAD_TYPE (TREE_TYPE (arg2))))
+  else if (! OVERLOAD_TYPE_P (TREE_TYPE (arg1))
+	   && (! arg2 || ! OVERLOAD_TYPE_P (TREE_TYPE (arg2))))
     goto builtin;
 
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)

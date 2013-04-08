@@ -83,47 +83,6 @@ eq_rename_map_elts (const void *e1, const void *e2)
 
 
 
-/* Print to stderr the element ELT.  */
-
-static void
-debug_ivtype_elt (ivtype_map_elt elt)
-{
-  fprintf (stderr, "(%s, ", elt->cloog_iv);
-  print_generic_expr (stderr, elt->type, 0);
-  fprintf (stderr, ")\n");
-}
-
-/* Helper function for debug_ivtype_map.  */
-
-static int
-debug_ivtype_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
-{
-  struct ivtype_map_elt_s *entry = (struct ivtype_map_elt_s *) *slot;
-  debug_ivtype_elt (entry);
-  return 1;
-}
-
-/* Print to stderr all the elements of MAP.  */
-
-DEBUG_FUNCTION void
-debug_ivtype_map (htab_t map)
-{
-  htab_traverse (map, debug_ivtype_map_1, NULL);
-}
-
-/* Compares database elements E1 and E2.  */
-
-int
-eq_ivtype_map_elts (const void *e1, const void *e2)
-{
-  const struct ivtype_map_elt_s *elt1 = (const struct ivtype_map_elt_s *) e1;
-  const struct ivtype_map_elt_s *elt2 = (const struct ivtype_map_elt_s *) e2;
-
-  return (elt1->cloog_iv == elt2->cloog_iv);
-}
-
-
-
 /* Record LOOP as occurring in REGION.  */
 
 static void

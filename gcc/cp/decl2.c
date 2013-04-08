@@ -868,7 +868,7 @@ grokfield (const cp_declarator *declarator,
 
 	  /* If this is a typedef that names the class for linkage purposes
 	     (7.1.3p8), apply any attributes directly to the type.  */
-	  if (TAGGED_TYPE_P (TREE_TYPE (value))
+	  if (OVERLOAD_TYPE_P (TREE_TYPE (value))
 	      && value == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (value))))
 	    attrflags = ATTR_FLAG_TYPE_IN_PLACE;
 
@@ -1934,7 +1934,7 @@ min_vis_r (tree *tp, int *walk_subtrees, void *data)
     {
       *walk_subtrees = 0;
     }
-  else if (TAGGED_TYPE_P (*tp)
+  else if (OVERLOAD_TYPE_P (*tp)
 	   && !TREE_PUBLIC (TYPE_MAIN_DECL (*tp)))
     {
       *vis_p = VISIBILITY_ANON;

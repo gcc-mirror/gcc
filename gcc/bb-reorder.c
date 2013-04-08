@@ -1998,14 +1998,12 @@ fix_crossing_unconditional_branches (void)
       if (JUMP_P (last_insn)
 	  && (succ->flags & EDGE_CROSSING))
 	{
-	  rtx label2;
-
 	  gcc_assert (!any_condjump_p (last_insn));
 
 	  /* Make sure the jump is not already an indirect or table jump.  */
 
 	  if (!computed_jump_p (last_insn)
-	      && !tablejump_p (last_insn, &label2, NULL))
+	      && !tablejump_p (last_insn, NULL, NULL))
 	    {
 	      /* We have found a "crossing" unconditional branch.  Now
 		 we must convert it to an indirect jump.  First create

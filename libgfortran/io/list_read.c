@@ -1784,7 +1784,7 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
    compatible.  Returns nonzero if incompatible.  */
 
 static int
-check_type (st_parameter_dt *dtp, bt type, int len)
+check_type (st_parameter_dt *dtp, bt type, int kind)
 {
   char message[MSGLEN];
 
@@ -1801,11 +1801,14 @@ check_type (st_parameter_dt *dtp, bt type, int len)
   if (dtp->u.p.saved_type == BT_UNKNOWN || dtp->u.p.saved_type == BT_CHARACTER)
     return 0;
 
-  if (dtp->u.p.saved_length != len)
+  if ((type != BT_COMPLEX && dtp->u.p.saved_length != kind)
+      || (type == BT_COMPLEX && dtp->u.p.saved_length != kind*2))
     {
       snprintf (message, MSGLEN,
 		  "Read kind %d %s where kind %d is required for item %d",
-		  dtp->u.p.saved_length, type_name (dtp->u.p.saved_type), len,
+		  type == BT_COMPLEX ? dtp->u.p.saved_length / 2
+				     : dtp->u.p.saved_length,
+		  type_name (dtp->u.p.saved_type), kind,
 		  dtp->u.p.item_count);
       generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
       return 1;

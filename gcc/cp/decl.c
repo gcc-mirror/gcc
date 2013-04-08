@@ -4182,7 +4182,7 @@ void
 warn_misplaced_attr_for_class_type (source_location location,
 				    tree class_type)
 {
-  gcc_assert (TAGGED_TYPE_P (class_type));
+  gcc_assert (OVERLOAD_TYPE_P (class_type));
 
   warning_at (location, OPT_Wattributes,
 	      "attribute ignored in declaration "
@@ -4497,7 +4497,7 @@ start_decl (const cp_declarator *declarator,
   /* If this is a typedef that names the class for linkage purposes
      (7.1.3p8), apply any attributes directly to the type.  */
   if (TREE_CODE (decl) == TYPE_DECL
-      && TAGGED_TYPE_P (TREE_TYPE (decl))
+      && OVERLOAD_TYPE_P (TREE_TYPE (decl))
       && decl == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
     flags = ATTR_FLAG_TYPE_IN_PLACE;
   else
@@ -10938,7 +10938,7 @@ type_is_deprecated (tree type)
     return type;
 
   /* Do warn about using typedefs to a deprecated class.  */
-  if (TAGGED_TYPE_P (type) && type != TYPE_MAIN_VARIANT (type))
+  if (OVERLOAD_TYPE_P (type) && type != TYPE_MAIN_VARIANT (type))
     return type_is_deprecated (TYPE_MAIN_VARIANT (type));
 
   code = TREE_CODE (type);
@@ -13554,6 +13554,14 @@ begin_destructor_body (void)
 	 tables.  */
       initialize_vtbl_ptrs (current_class_ptr);
       finish_compound_stmt (compound_stmt);
+
+      /* Insert a cleanup to let the back end know that the object is dead
+	 when we exit the destructor, either normally or via exception.  */
+      tree clobber = build_constructor (current_class_type, NULL);
+      TREE_THIS_VOLATILE (clobber) = true;
+      tree exprstmt = build2 (MODIFY_EXPR, current_class_type,
+			      current_class_ref, clobber);
+      finish_decl_cleanup (NULL_TREE, exprstmt);
 
       /* And insert cleanups for our bases and members so that they
 	 will be properly destroyed if we throw.  */

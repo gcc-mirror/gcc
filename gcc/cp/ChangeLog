@@ -1,3 +1,67 @@
+2013-04-06  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_std_attribute): Treat [[noreturn]] like GNU
+	noreturn attribute.
+
+2013-04-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* parser.c (cp_parser_ref_qualifier_seq_opt): Move to
+	cp_parser_ref_qualifier_opt.  Error if more than one ref-qual found.
+
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (FUNCTION_OR_METHOD_TYPE_CHECK): Remove.
+	(TYPE_RAISES_EXCEPTIONS): Use FUNC_OR_METHOD_CHECK instead.
+	(FUNCTION_REF_QUALIFIED, FUNCTION_RVALUE_QUALIFIED): Likewise.
+
+	* mangle.c (write_type): When writing a function type with
+	function-cv-quals, don't add the unqualified type as a
+	substitution candidate.
+
+2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56815
+	* typeck.c (cp_build_unary_op): Change -Wpointer-arith permerror to
+	pedwarn.
+
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56819
+	* tree.c (strip_typedefs): Copy NON_DEFAULT_TEMPLATE_ARGS_COUNT
+	from args to new_args.
+	(strip_typedefs_expr): Copy NON_DEFAULT_TEMPLATE_ARGS_COUNT from t to
+	r instead of doing {S,G}ET_NON_DEFAULT_TEMPLATE_ARGS_COUNT.
+
+2013-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56821
+	* mangle.c (write_function_type): Mangle ref-qualifier.
+	(write_nested_name): Likewise.
+	(canonicalize_for_substitution): Preserve ref-qualifier.
+	(write_type): Likewise.
+
+	PR c++/34949
+	* decl.c (begin_destructor_body): Clobber the object in a cleanup.
+
+2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* friend.c (do_friend): Use COMPLETE_OR_OPEN_TYPE_P.
+	* pt.c (find_parameter_packs_r): Use TYPE_ALIAS_P and TYPE_TI_ARGS.
+	(for_each_template_parm_r): Use TYPE_TI_ARGS.
+
+2013-04-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (TAGGED_TYPE_P): Remove.
+	(IS_OVERLOAD_TYPE): Rename to OVERLOAD_TYPE_P, adjust.
+	(TYPE_ANONYMOUS_P): Adjust.
+	* call.c (build_new_op_1): Likewise.
+	* class.c (find_abi_tags_r): Likewise.
+	* decl.c (warn_misplaced_attr_for_class_type, start_decl,
+	type_is_deprecated): Likewise.
+	* decl2.c (grokfield, min_vis_r): Likewise.
+	* pt.c (get_template_info): Likewise.
+	* tree.c (handle_abi_tag_attribute): Likewise.
+
 2013-04-01  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (maybe_constant_value): Check

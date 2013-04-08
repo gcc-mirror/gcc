@@ -1,3 +1,9 @@
+2013-04-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/56771
+	* configure.ac: Require 64-bit int for arm*-*-rtems*.
+	* configure: Regenerate.
+
 2013-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56461

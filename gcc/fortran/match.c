@@ -4040,10 +4040,6 @@ gfc_match_return (void)
       goto cleanup;
     }
 
-  if (gfc_notify_std (GFC_STD_F95_OBS, "Alternate RETURN "
-		      "at %C") == FAILURE)
-    return MATCH_ERROR;
-
   if (gfc_current_form == FORM_FREE)
     {
       /* The following are valid, so we can't require a blank after the

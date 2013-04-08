@@ -1,3 +1,445 @@
+2013-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-loop-distribution.c (const_with_all_bytes_same): New function.
+	(generate_memset_builtin): Only handle integer_all_onesp as -1 val if
+	TYPE_PRECISION is equal to mode bitsize.  Use const_with_all_bytes_same
+	if possible to compute val.
+	(classify_partition): Verify CONSTRUCTOR doesn't have any elts.
+	For QImode integers don't require anything about precision.  Use
+	const_with_all_bytes_same to find out if the constant doesn't have
+	repeated bytes in it.
+
+2013-04-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_insv): Only accept insertions
+	within mode size.
+
+2013-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/48182
+	* params.def (PARAM_MIN_CROSSJUMP_INSNS): Increase the minimum
+	value to 1.
+
+2013-04-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/55487
+	* config/pa/pa.c (legitimize_pic_address): Before incrementing label
+	nuses, make sure we have a label.
+
+2013-04-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/56843
+	* config/rs6000/rs6000.c (rs6000_emit_swdiv_high_precision): Remove.
+	(rs6000_emit_swdiv_low_precision): Remove.
+	(rs6000_emit_swdiv): Rewrite to handle between one and four
+	iterations of Newton-Raphson generally; modify required number of
+	iterations for some cases.
+	* config/rs6000/rs6000.h (RS6000_RECIP_HIGH_PRECISION_P): Remove.
+
+2013-04-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bb-reorder.c (fix_crossing_unconditional_branches): Remove a
+	set-but-unused variable.
+
+	* cgraph.c (cgraph_release_function_body): Clear cfun->cfg to make
+	basic blocks of released function bodies garbage-collectable.
+
+	* ree.c (find_and_remove_re): Do not call df_finish_pass here.
+	(struct rtl_opt_pass): Add TODO_df_finish.
+
+	* rtl.def (DEFINE_SUBST, DEFINE_SUBST_ATTR): Add documentation.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/constraints.md (q): New constraint.
+	* config/arm/ldrdstrd.md: New file.
+	* config/arm/arm.md (ldrdstrd.md) New include.
+	(arm_movdi): Use "q" instead of "r" constraint
+	for double-word memory access.
+	(movdf_soft_insn): Likewise.
+	* config/arm/vfp.md (movdi_vfp): Likewise.
+	* config/arm/t-arm (MD_INCLUDES): Add ldrdstrd.md.
+        * config/arm/arm-protos.h (gen_operands_ldrd_strd): New declaration.
+	* config/arm/arm.c (gen_operands_ldrd_strd): New function.
+	(mem_ok_for_ldrd_strd): Likewise.
+	(output_move_double): Update assertion.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md: Comment on splitting Thumb1 patterns.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (arm_smax_insn): Convert define_insn into
+	define_insn_and_split.
+	(arm_smin_insn,arm_umaxsi3,arm_uminsi3): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (arm_ashldi3_1bit): Convert define_insn into
+	define_insn_and_split.
+        (arm_ashrdi3_1bit,arm_lshrdi3_1bit): Likewise.
+	(shiftsi3_compare): New pattern.
+	(rrx): New pattern.
+	* config/arm/unspecs.md (UNSPEC_RRX): New.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (negdi_extendsidi): New pattern.
+	(negdi_zero_extendsidi): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (andsi_iorsi3_notsi): Convert define_insn into
+	define_insn_and_split.
+	(arm_negdi2,arm_abssi2,arm_neg_abssi2): Likewise.
+	(arm_cmpdi_insn,arm_cmpdi_unsigned): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (arm_subdi3): Convert define_insn into
+	define_insn_and_split.
+	(subdi_di_zesidi,subdi_di_sesidi): Likewise.
+	(subdi_zesidi_di,subdi_sesidi_di,subdi_zesidi_zesidi): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (subsi3_carryin): New pattern.
+	(subsi3_carryin_const): Likewise.
+	(subsi3_carryin_compare,subsi3_carryin_compare_const): Likewise.
+	(subsi3_carryin_shift,rsbsi3_carryin_shift): Likewise.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (incscc,arm_incscc,decscc,arm_decscc): Delete.
+
+2013-04-05  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (addsi3_carryin_<optab>): Set attribute predicable.
+	(addsi3_carryin_alt2_<optab>,addsi3_carryin_shift_<optab>): Likewise.
+
+2013-04-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_expand_builtin): Change fcode
+	type to unsigned int.
+
+2013-04-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* doc/invoke.texi (ARM Options): Document cortex-a53 support.
+
+2013-04-04  Ian Lance Taylor  <iant@google.com>
+
+	* doc/standards.texi (Standards): The Go frontend supports the Go
+	1 language standard.
+
+2013-04-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/56729
+	* df-scan.c (df_insn_delete): Disable failing assert.
+
+2013-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-protos.h (arm_builtin_vectorized_function):
+	New function prototype.
+	* config/arm/arm.c (TARGET_VECTORIZE_BUILTINS): Define.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Likewise.
+	(arm_builtin_vectorized_function): New function.
+
+2013-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm_neon_builtins.def: New file.
+	* config/arm/arm.c (neon_builtin_data): Move contents to
+	arm_neon_builtins.def.
+	(enum arm_builtins): Include neon builtin definitions.
+	(ARM_BUILTIN_NEON_BASE): Move from enum to macro.
+	* config/arm/t-arm (arm.o): Add dependency on
+	arm_neon_builtins.def.
+
+2013-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/48186
+	* predict.c (maybe_hot_frequency_p): Return false if
+	HOT_BB_FREQUENCY_FRACTION is 0.
+	(cgraph_maybe_hot_edge_p): Likewise.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56826
+	* tree-vect-slp.c (vect_build_slp_tree): Compute ncopies
+	more accurately.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56213
+	* tree-vect-data-refs.c (vect_check_strided_load): Remove.
+	(vect_analyze_data_refs): Allow all non-nested loads as
+	strided loads.
+
+2013-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56837
+	* tree-loop-distribution.c (classify_partition): For non-zero
+	values require that the value has the same precision as its
+	mode to be useful as memset value.
+
+2013-04-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850e3v5.md (fmasf4): Use fmaf.s on E3V5
+	architectures.
+	(fmssf4): Use fmsf.s on E3V5 architectures.
+	(fnmasf4): Use fnmaf.s on E3V5 architectures.
+	(fnmssf4): Use fnmsf.s on E3V5 architectures.
+
+2013-04-03  Jeff Law  <law@redhat.com>
+
+	* Makefile.in (lra-constraints.o): Depend on $(OPTABS_H).
+	(lra-eliminations.o): Likewise.
+
+2013-04-03  Teresa Johnson  <tejohnson@google.com>
+
+	* gcov-io.c (compute_working_sets): Moved most of body of old
+        compute_working_sets here from profile.c.
+	* gcov-io.h (NUM_GCOV_WORKING_SETS): Moved here from profile.c.
+        (gcov_working_set_t): Moved typedef here from basic-block.h
+        (compute_working_set): Declare.
+	* profile.c (NUM_GCOV_WORKING_SETS): Moved to gcov-io.h.
+	(get_working_sets): Renamed from compute_working_set,
+        replace most of body with call to new compute_working_sets.
+	(get_exec_counts): Replace call to compute_working_sets
+        to get_working_sets.
+	* profile.h (get_working_sets): Renamed from
+        compute_working_set.
+	* lto-cgraph.c (input_symtab): Replace call to compute_working_sets
+        to get_working_sets.
+	* basic-block.h (gcov_working_set_t): Moved to gcov-io.h.
+	* gcov-dump.c (dump_working_sets): New function.
+
+2013-04-03  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* hwint.c (sext_hwi, zext_hwi): New functions.
+	* hwint.h (HOST_BITS_PER_HALF_WIDE_INT, HOST_HALF_WIDE_INT,
+	HOST_HALF_WIDE_INT_PRINT, HOST_HALF_WIDE_INT_PRINT_C,
+	HOST_HALF_WIDE_INT_PRINT_DEC, HOST_HALF_WIDE_INT_PRINT_DEC_C,
+	HOST_HALF_WIDE_INT_PRINT_UNSIGNED, HOST_HALF_WIDE_INT_PRINT_HEX,
+	HOST_HALF_WIDE_INT_PRINT_HEX_PURE): New symbols.
+	(sext_hwi, zext_hwi): New functions.
+
+2013-04-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/56799
+        * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Bring
+	back test for widening conversion erroneously dropped in prior
+	change.
+
+2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56809
+	* config/aarch64/aarch64.c (is_jump_table): Use next_active_insn
+	instead of next_real_insn.
+
+2013-04-03  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/55702
+	* tsan.c (instrument_func_exit): Allow BUILT_IN_RETURN
+	functions.
+
+2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56809
+	* config/arm/arm.c (is_jump_table): Use next_active_insn instead of
+	next_real_insn.
+	(thumb1_output_casesi): Likewise.
+	(thumb2_output_casesi): Likewise.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56817
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely):
+	Split out ...
+	(tree_unroll_loops_completely_1): ... new function to manually
+	walk the loop tree, properly defering outer loops of unrolled
+	loops to later iterations.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-vect-stmts.c (vectorizable_store): Accept BIT_FIELD_REF.
+	(vectorizable_load): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree): Likewise.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Handle VECTOR_TYPE.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-flow-inline.h (get_addr_base_and_unit_offset_1): Handle
+	BIT_FIELD_REF.
+
+2013-04-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (emit_nop_for_insn): Handle JUMP_TABLE_DATA.
+
+2013-04-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* rtl.h (AUTO_INC_DEC): Fix typo of HAVE_POST_MODIFY_DISP.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/56790
+	* fold-const.c (fold_ternary_loc) <VEC_COND_EXPR>: Add constant folding.
+
+2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <VEC_SELECT>:
+	Handle VEC_MERGE.
+	(simplify_ternary_operation) <VEC_MERGE>: Use unsigned HOST_WIDE_INT
+	for masks. Test for side effects. Handle nested VEC_MERGE. Handle
+	equal arguments.
+
+2013-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/19449
+	* tree.h (force_folding_builtin_constant_p): New decl.
+	* builtins.c (force_folding_builtin_constant_p): New variable.
+	(fold_builtin_constant_p): Fold immediately also if
+	force_folding_builtin_constant_p.
+
+2013-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56812
+	* tree-vect-data-refs.c (vect_slp_analyze_data_ref_dependence):
+	DRs of the same interleaving chain are independent.
+
+2013-04-02  Jason Merrill  <jason@redhat.com>
+
+	* gdbinit.in (pbb): Use debug fn.
+
+2013-04-02  Lawrence Crowl  <crowl@google.com>
+
+	* sese.h (struct ivtype_map_elt_s): Remove unused.
+	(extern debug_ivtype_map): Remove unused.
+	(extern eq_ivtype_map_elts): Remove unused.
+	* sese.c (debug_ivtype_map): Removed unused.
+	(debug_ivtype_map_1): Removed unused.
+	(debug_ivtype_elt): Remove unused.
+	(eq_ivtype_map_elts): Remove unused.
+
+
+2013-04-02  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/52790
+	* config/i386/cygming.h (SUB_TARGET_RECORD_STUB): New sub-target macro.
+	* config/i386/i386-protos.h (i386_pe_record_stub): Add new prototype.
+	* config/i386/i386.c (legitimize_pe_coff_extern_decl): New static function.
+	(legitimize_pe_coff_symbol): Likewise.
+	(is_imported_p): New helper-function.
+	(ix86_option_override_internal): Make MEDIUM_PIC the default code-model
+	for Windows x64 targets.
+	(ix86_expand_prologue): Optimize for pe-coff targets.
+	(ix86_expand_split_stack_prologue): Adjust for pe-coff targets.
+	(legitimate_pic_address_disp_p): Adjust for x64 pe-coff to support
+	medium/large code-model.
+	(legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	(ix86_expand_call): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(get_dllimport_decl): Add new beimport argument.
+	(construct_plt_address): Don't assert for x64 pe-coff targets.
+	* config/i386/i386.h (PIC_OFFSET_TABLE_REGNUM): Adjust for x64 pe-coff
+	targets.
+	(SYMBOL_FLAG_STUBVAR): New macro.
+	(SYMBOL_REF_STUBVAR_P): Likewise.
+	* config/i386/winnt.c (stub_list): New structure.
+	(stub_head): New local variable.
+	(i386_pe_record_stub): New function.
+	(i386_pe_file_end): Emit refptr-stubs.
+
+2013-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56745
+	* ifcvt.c (cond_exec_find_if_block): Don't try to optimize
+	if then_bb has no successors and else_bb is EXIT_BLOCK_PTR.
+
+	PR c++/34949
+	* tree-ssa-alias.c (stmt_kills_ref_p_1): If base != ref->base
+	and both of them are MEM_REFs, just compare first argument for
+	equality and attempt to deal even with differing offsets.
+
+	PR c++/34949
+	* tree-cfg.c (verify_gimple_assign_single): Allow lhs
+	of gimple_clobber_p to be MEM_REF.
+	* gimplify.c (gimplify_modify_expr): Gimplify *to_p of
+	an assignment from TREE_CLOBBER_P.  Allow it to be MEM_REF
+	after gimplification.
+	* asan.c (get_mem_ref_of_assignment): Don't instrument
+	gimple_clobber_p stmts.
+	* tree-ssa-dse.c (dse_optimize_stmt): Allow DSE of
+	gimple_clobber_p stmt if they have MEM_REF lhs and
+	are dead because of another gimple_clobber_p stmt.
+	* tree-ssa-live.c (clear_unused_block_pointer): Treat
+	gimple_clobber_p stmts like debug stmts.
+	(remove_unused_locals): Remove clobbers with MEM_REF lhs
+	that refer to unused VAR_DECLs or uninitialized values.
+	* tree-sra.c (sra_ipa_reset_debug_stmts): Also remove
+	gimple_clobber_p stmts if they refer to removed parameters.
+	(get_repl_default_def_ssa_name, sra_ipa_modify_expr): Fix up
+	formatting.
+
+2013-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*testqi_ext_3): Merge with *testqi_ext_3_rex64
+	using SWI48 mode attribute.
+
+2013-04-02  Wei Mi  <wmi@google.com>
+
+	* config/i386/i386.c (ix86_rtx_costs): Set proper rtx cost for
+	ashl<mode>3_mask, *<shift_insn><mode>3_mask and
+	*<rotate_insn><mode>3_mask in i386.md.
+
+2013-04-02  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* config.gcc (arm*-*-linux-*): Remove duplicate t-linux-android.
+
+2013-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56778
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Runtime alias tests are not supported for gather loads.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Insert
+	stmts referenced from SSA operands before updating SSA form.
+
+2013-04-02  Ian Caulfield  <ian.caulfield@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm-arches.def (armv8-a): Default to cortex-a53.
+	* config/arm/t-arm (MD_INCLUDES): Depend on cortex-a53.md.
+	* config/arm/cortex-a53.md: New file.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Handle cortex-a53.
+	* config/arm/arm.md (generic_sched, generic_vfp): Handle cortex-a53.
+	* config/arm/arm.c (arm_issue_rate): Likewise.
+	* config/arm/arm-tune.md: Regenerate
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-cores.def: Add cortex-a53.
+
+2013-04-02  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* config/arm/uclinux-elf.h: Add %L to LINK_GCC_C_SEQUENCE_SPEC for
+	non-static link.
+
+2013-04-02  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add variants for
+	scalar load/store operations using B/H registers.
+	(*zero_extend<SHORT:mode><GPI:mode>2_aarch64): Likewise.
+
+2013-04-02  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add alternatives for
+	scalar move.
+	* config/aarch64/aarch64.c
+	(aarch64_simd_scalar_immediate_valid_for_move): New.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_simd_scalar_immediate_valid_for_move): New.
+	* config/aarch64/constraints.md (Dh, Dq): New.
+	* config/aarch64/iterators.md (hq): New.
+
 2013-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (get_branch_condition): Deal with conditional returns.
@@ -152,7 +594,8 @@
 	(ipa_profile_write_summary): New function.
 	(ipa_profile_read_summary): New function.
 	(ipa_profile): Decide on threshold.
-	(pass_ipa_profile): Add ipa_profile_write_summary and ipa_profile_read_summary.
+	(pass_ipa_profile): Add ipa_profile_write_summary and
+	ipa_profile_read_summary.
 	* Makefile.in (ipa.o): Update dependencies.
 	* lto-streamer.h (LTO_section_ipa_profile): New section.
 
@@ -444,7 +887,7 @@
 	(input_gimple_stmt): Input histograms.
 	(input_bb): Update profile streaming.
 
-2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+2013-03-28  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
    	* genmodes.c (emit_max_int): New function.
 	(emit_insn_modes_h): Added call to emit_max_function.
@@ -452,7 +895,7 @@
 	Added doc.
 	* machmode.def: Fixed comment.
 
-2013-03-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+2013-03-28  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* combine.c (try_combine): Removed useless assert.
 	* cselib.c (rtx_equal_for_cselib_1): Removed unnecessary parens.
@@ -583,14 +1026,12 @@
 
 2013-03-27  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx.h (ASM_OUTPUT_ADDR_VEC_ELT): Delete
-	extra tab.
+	* config/tilegx/tilegx.h (ASM_OUTPUT_ADDR_VEC_ELT): Delete extra tab.
 	(ASM_OUTPUT_ADDR_DIFF_ELT): Ditto.
 
 2013-03-27  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx.md (*sibcall_insn): Fix type atribute
-	for jr.
+	* config/tilegx/tilegx.md (*sibcall_insn): Fix type atribute for jr.
 	(*sibcall_value): Ditto.
 
 2013-03-27  Walter Lee  <walt@tilera.com>
@@ -688,6 +1129,7 @@
 	* config/tilegx/tilepro.h (PROFILE_BEFORE_PROLOGUE): Define.
 
 2013-03-25  Jeff Law  <law@redhat.com>
+
         * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Add missing
         check for INTEGRAL_TYPE_P that was missing due to checking in
 	wrong version of prior patch.

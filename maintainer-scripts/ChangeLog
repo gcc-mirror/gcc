@@ -1,3 +1,9 @@
+2013-04-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_libstdcxx_svn: No longer ignore all output from
+	the actual copy process.
+	Check the exit code of the actual copy process; diagnose problems.
+
 2013-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Enable snapshots from gcc-4_8-branch.

@@ -5574,15 +5574,16 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
                 else
                   return error_mark_node;
               }
-	    else if ((pedantic || warn_pointer_arith)
-		     && !TYPE_PTROB_P (argtype)) 
+	    else if (!TYPE_PTROB_P (argtype)) 
               {
                 if (complain & tf_error)
-                  permerror (input_location, (code == PREINCREMENT_EXPR
+                  pedwarn (input_location,
+			   pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
+			   (code == PREINCREMENT_EXPR
                               || code == POSTINCREMENT_EXPR)
-                             ? G_("ISO C++ forbids incrementing a pointer of type %qT")
-                             : G_("ISO C++ forbids decrementing a pointer of type %qT"),
-                             argtype);
+			   ? G_("ISO C++ forbids incrementing a pointer of type %qT")
+			   : G_("ISO C++ forbids decrementing a pointer of type %qT"),
+			   argtype);
                 else
                   return error_mark_node;
               }

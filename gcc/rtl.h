@@ -1657,7 +1657,7 @@ do {									\
 
 #if (defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT) \
      || defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT) \
-     || defined (HAVE_PRE_MODIFY_DISP) || defined (HAVE_PRE_MODIFY_DISP) \
+     || defined (HAVE_PRE_MODIFY_DISP) || defined (HAVE_POST_MODIFY_DISP) \
      || defined (HAVE_PRE_MODIFY_REG) || defined (HAVE_POST_MODIFY_REG))
 #define AUTO_INC_DEC
 #endif

@@ -3,8 +3,8 @@
 /* { dg-options "-O2 -mrecip -ffast-math -mcpu=power6" } */
 /* { dg-final { scan-assembler-times "frsqrte" 2 } } */
 /* { dg-final { scan-assembler-times "fmsub" 2 } } */
-/* { dg-final { scan-assembler-times "fmul" 8 } } */
-/* { dg-final { scan-assembler-times "fnmsub" 4 } } */
+/* { dg-final { scan-assembler-times "fmul" 6 } } */
+/* { dg-final { scan-assembler-times "fnmsub" 3 } } */
 
 double
 rsqrt_d (double a)

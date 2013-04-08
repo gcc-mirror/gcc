@@ -1466,7 +1466,7 @@ input_symtab (void)
     }
 
   merge_profile_summaries (file_data_vec);
-  compute_working_sets ();
+  get_working_sets ();
 
 
   /* Clear out the aux field that was used to store enough state to

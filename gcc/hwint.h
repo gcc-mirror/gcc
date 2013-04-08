@@ -76,6 +76,40 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # endif
 #endif
 
+/* Print support for half a host wide int.  */
+#define HOST_BITS_PER_HALF_WIDE_INT (HOST_BITS_PER_WIDE_INT / 2)
+#if HOST_BITS_PER_HALF_WIDE_INT == HOST_BITS_PER_LONG
+# define HOST_HALF_WIDE_INT long
+# define HOST_HALF_WIDE_INT_PRINT HOST_LONG_FORMAT
+# define HOST_HALF_WIDE_INT_PRINT_C "L"
+# define HOST_HALF_WIDE_INT_PRINT_DEC "%" HOST_HALF_WIDE_INT_PRINT "d"
+# define HOST_HALF_WIDE_INT_PRINT_DEC_C HOST_HALF_WIDE_INT_PRINT_DEC HOST_HALF_WIDE_INT_PRINT_C
+# define HOST_HALF_WIDE_INT_PRINT_UNSIGNED "%" HOST_HALF_WIDE_INT_PRINT "u"
+# define HOST_HALF_WIDE_INT_PRINT_HEX "%#" HOST_HALF_WIDE_INT_PRINT "x"
+# define HOST_HALF_WIDE_INT_PRINT_HEX_PURE "%" HOST_HALF_WIDE_INT_PRINT "x"
+#elif HOST_BITS_PER_HALF_WIDE_INT == HOST_BITS_PER_INT
+# define HOST_HALF_WIDE_INT int
+# define HOST_HALF_WIDE_INT_PRINT ""
+# define HOST_HALF_WIDE_INT_PRINT_C ""
+# define HOST_HALF_WIDE_INT_PRINT_DEC "%" HOST_HALF_WIDE_INT_PRINT "d"
+# define HOST_HALF_WIDE_INT_PRINT_DEC_C HOST_HALF_WIDE_INT_PRINT_DEC HOST_HALF_WIDE_INT_PRINT_C
+# define HOST_HALF_WIDE_INT_PRINT_UNSIGNED "%" HOST_HALF_WIDE_INT_PRINT "u"
+# define HOST_HALF_WIDE_INT_PRINT_HEX "%#" HOST_HALF_WIDE_INT_PRINT "x"
+# define HOST_HALF_WIDE_INT_PRINT_HEX_PURE "%" HOST_HALF_WIDE_INT_PRINT "x"
+#elif HOST_BITS_PER_HALF_WIDE_INT == HOST_BITS_PER_SHORT
+# define HOST_HALF_WIDE_INT short
+# define HOST_HALF_WIDE_INT_PRINT ""
+# define HOST_HALF_WIDE_INT_PRINT_C ""
+# define HOST_HALF_WIDE_INT_PRINT_DEC "%" HOST_HALF_WIDE_INT_PRINT "d"
+# define HOST_HALF_WIDE_INT_PRINT_DEC_C HOST_HALF_WIDE_INT_PRINT_DEC HOST_HALF_WIDE_INT_PRINT_C
+# define HOST_HALF_WIDE_INT_PRINT_UNSIGNED "%" HOST_HALF_WIDE_INT_PRINT "u"
+# define HOST_HALF_WIDE_INT_PRINT_HEX "%#" HOST_HALF_WIDE_INT_PRINT "x"
+# define HOST_HALF_WIDE_INT_PRINT_HEX_PURE "%" HOST_HALF_WIDE_INT_PRINT "x"
+#else
+#error Please add support for HOST_HALF_WIDE_INT
+#endif
+
+
 #define HOST_WIDE_INT_1 HOST_WIDE_INT_C(1)
 
 /* This is a magic identifier which allows GCC to figure out the type
@@ -93,9 +127,13 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 # if HOST_BITS_PER_WIDE_INT == 64
 #  define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
      "0x%" HOST_LONG_FORMAT "x%016" HOST_LONG_FORMAT "x"
+#  define HOST_WIDE_INT_PRINT_PADDED_HEX \
+     "%016" HOST_LONG_FORMAT "x"
 # else
 #  define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
      "0x%" HOST_LONG_FORMAT "x%08" HOST_LONG_FORMAT "x"
+#  define HOST_WIDE_INT_PRINT_PADDED_HEX \
+     "%08" HOST_LONG_FORMAT "x"
 # endif
 #else
 # define HOST_WIDE_INT_PRINT HOST_LONG_LONG_FORMAT
@@ -103,6 +141,8 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
   /* We can assume that 'long long' is at least 64 bits.  */
 # define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
     "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
+# define HOST_WIDE_INT_PRINT_PADDED_HEX \
+    "%016" HOST_LONG_LONG_FORMAT "x"
 #endif /* HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG */
 
 #define HOST_WIDE_INT_PRINT_DEC "%" HOST_WIDE_INT_PRINT "d"
@@ -275,5 +315,37 @@ extern HOST_WIDE_INT gcd (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT pos_mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT least_common_multiple (HOST_WIDE_INT, HOST_WIDE_INT);
+
+/* Sign extend SRC starting from PREC.  */
+
+#ifdef ENABLE_CHECKING
+extern HOST_WIDE_INT sext_hwi (HOST_WIDE_INT, unsigned int);
+#else
+static inline HOST_WIDE_INT
+sext_hwi (HOST_WIDE_INT src, unsigned int prec)
+{
+  if (prec == HOST_BITS_PER_WIDE_INT)
+    return src;
+  else
+    {
+      int shift = HOST_BITS_PER_WIDE_INT - prec;
+      return (src << shift) >> shift;
+    }
+}
+#endif
+
+/* Zero extend SRC starting from PREC.  */
+#ifdef ENABLE_CHECKING
+extern unsigned HOST_WIDE_INT zext_hwi (unsigned HOST_WIDE_INT, unsigned int);
+#else
+static inline unsigned HOST_WIDE_INT
+zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
+{
+  if (prec == HOST_BITS_PER_WIDE_INT)
+    return src;
+  else
+    return src & (((HOST_WIDE_INT)1 << prec) - 1);
+}
+#endif
 
 #endif /* ! GCC_HWINT_H */
