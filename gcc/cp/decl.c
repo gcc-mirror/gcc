@@ -1196,12 +1196,21 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
   if (DECL_DECLARED_CONSTEXPR_P (old_decl)
       == DECL_DECLARED_CONSTEXPR_P (new_decl))
     return true;
-  if (TREE_CODE (old_decl) == FUNCTION_DECL && DECL_BUILT_IN (old_decl))
+  if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
-      /* Hide a built-in declaration.  */
-      DECL_DECLARED_CONSTEXPR_P (old_decl)
-	= DECL_DECLARED_CONSTEXPR_P (new_decl);
-      return true;
+      if (DECL_BUILT_IN (old_decl))
+	{
+	  /* Hide a built-in declaration.  */
+	  DECL_DECLARED_CONSTEXPR_P (old_decl)
+	    = DECL_DECLARED_CONSTEXPR_P (new_decl);
+	  return true;
+	}
+      /* 7.1.5 [dcl.constexpr]
+	 Note: An explicit specialization can differ from the template
+	 declaration with respect to the constexpr specifier.  */
+      if (! DECL_TEMPLATE_SPECIALIZATION (old_decl)
+	  && DECL_TEMPLATE_SPECIALIZATION (new_decl))
+	return true;
     }
   error ("redeclaration %qD differs in %<constexpr%>", new_decl);
   error ("from previous declaration %q+D", old_decl);
