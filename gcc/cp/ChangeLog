@@ -1,3 +1,9 @@
+2013-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56871
+	* decl.c (validate_constexpr_redeclaration): Allow an explicit
+	specialization to be different wrt the constexpr specifier.
+
 2013-04-06  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_std_attribute): Treat [[noreturn]] like GNU
