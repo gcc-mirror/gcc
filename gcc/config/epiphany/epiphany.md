@@ -1789,14 +1789,30 @@
 		      (const_int 0)))
      (set (match_dup 0) (logical_op:SI (match_dup 1) (match_dup 2)))])])
 
+(define_peephole2
+  [(parallel
+    [(set (match_operand:SI 0 "gpr_operand" "=r")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
+			 (match_operand:SI 2 "gpr_operand" "%r")))
+     (clobber (reg:CC CC_REGNUM))])
+   (parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (match_dup 0) (const_int 0)))
+     (clobber (match_operand:SI 3 "gpr_operand" "=r"))])]
+  ""
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (logical_op:SI (match_dup 1) (match_dup 2))
+		      (const_int 0)))
+     (set (match_dup 0) (logical_op:SI (match_dup 1) (match_dup 2)))])])
+
 (define_expand "cstoresi4"
   [(parallel
     [(set (reg:CC CC_REGNUM)
           (match_operand:SI 1 "comparison_operator"))
-     (set (match_operand:SI 0 "gpr_operand" "=r")
-	  (match_operand:SI 2 "" ""))])
+     (match_operand:SI 2 "" "")])
    (set (match_dup 0) (match_operand:SI 3 "arith_operand" ""))
-   (set (match_dup 0)
+   (set (match_operand:SI 0 "gpr_operand" "=r")
 	(if_then_else:SI (match_dup 4) (match_dup 5) (match_dup 0)))]
   ""
 {
@@ -1813,12 +1829,18 @@
   else
     operands[2] = force_reg (SImode, operands[2]);
   operands[1] = gen_rtx_COMPARE (CCmode, operands[2], operands[3]);
-  if (operands[3] != const0_rtx)
-    operands[2] = gen_rtx_MINUS (SImode, operands[2], operands[3]);
-  if (cmp_code != NE || operands[3] != const0_rtx)
-    operands[3] = const0_rtx;
+  if (cmp_code != NE)
+    {
+      operands[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (SImode));
+      operands[3] = const0_rtx;
+    }
   else
-    operands[3] = operands[0];
+    {
+      if (operands[3] != const0_rtx)
+	operands[2] = gen_rtx_MINUS (SImode, operands[2], operands[3]);
+      operands[2] = gen_rtx_SET (VOIDmode, operands[0], operands[2]);
+      operands[3] = operands[0];
+    }
   operands[4] = gen_rtx_fmt_ee (cmp_code, SImode,
 				gen_rtx_REG (CCmode, CC_REGNUM), const0_rtx);
   operands[5] = force_reg (SImode, GEN_INT (STORE_FLAG_VALUE));
