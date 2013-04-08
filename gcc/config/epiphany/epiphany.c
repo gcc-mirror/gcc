@@ -335,7 +335,8 @@ epiphany_select_cc_mode (enum rtx_code op,
 {
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
     {
-      if (TARGET_SOFT_CMPSF)
+      if (TARGET_SOFT_CMPSF
+	  || op == ORDERED || op == UNORDERED)
 	{
 	  if (op == EQ || op == NE)
 	    return CC_FP_EQmode;

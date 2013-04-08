@@ -11,6 +11,11 @@
 	(epiphany_compute_frame_size, epiphany_expand_prologue): Use GPR_1.
 	(epiphany_expand_epilogue): Likewise.
 
+	* config/epiphany/epiphany.c (epiphany_select_cc_mode):
+	Don't use CC_FPmode for ORDERED / UNORDERED.
+	* config/epiphany/epiphany.md (cmpsf_ord): Make pattern
+	unconditional.
+
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34949
