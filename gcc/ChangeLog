@@ -1,3 +1,9 @@
+2013-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR rtl-optimization/48182
+	* params.def (PARAM_MIN_CROSSJUMP_INSNS): Increase the minimum
+	value to 1.
+
 2013-04-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/55487
