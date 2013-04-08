@@ -3230,14 +3230,48 @@ static void
 optimize_clobbers (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  bool any_clobbers = false;
+  bool seen_stack_restore = false;
+  edge_iterator ei;
+  edge e;
+
+  /* Only optimize anything if the bb contains at least one clobber,
+     ends with resx (checked by caller), optionally contains some
+     debug stmts or labels, or at most one __builtin_stack_restore
+     call, and has an incoming EH edge.  */
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
       if (is_gimple_debug (stmt))
 	continue;
-      if (!gimple_clobber_p (stmt)
-	  || TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
-	return;
+      if (gimple_clobber_p (stmt))
+	{
+	  any_clobbers = true;
+	  continue;
+	}
+      if (!seen_stack_restore
+	  && gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
+	{
+	  seen_stack_restore = true;
+	  continue;
+	}
+      if (gimple_code (stmt) == GIMPLE_LABEL)
+	break;
+      return;
+    }
+  if (!any_clobbers)
+    return;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_EH)
+      break;
+  if (e == NULL)
+    return;
+  gsi = gsi_last_bb (bb);
+  for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (!gimple_clobber_p (stmt))
+	continue;
       unlink_stmt_vdef (stmt);
       gsi_remove (&gsi, true);
       release_defs (stmt);
@@ -3278,8 +3312,7 @@ sink_clobbers (basic_block bb)
 	continue;
       if (gimple_code (stmt) == GIMPLE_LABEL)
 	break;
-      if (!gimple_clobber_p (stmt)
-	  || TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
+      if (!gimple_clobber_p (stmt))
 	return 0;
       any_clobbers = true;
     }
@@ -3292,11 +3325,27 @@ sink_clobbers (basic_block bb)
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
+      tree lhs;
       if (is_gimple_debug (stmt))
 	continue;
       if (gimple_code (stmt) == GIMPLE_LABEL)
 	break;
       unlink_stmt_vdef (stmt);
+      lhs = gimple_assign_lhs (stmt);
+      /* Unfortunately we don't have dominance info updated at this
+	 point, so checking if
+	 dominated_by_p (CDI_DOMINATORS, succbb,
+			 gimple_bb (SSA_NAME_DEF_STMT (TREE_OPERAND (lhs, 0)))
+	 would be too costly.  Thus, avoid sinking any clobbers that
+	 refer to non-(D) SSA_NAMEs.  */
+      if (TREE_CODE (lhs) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (lhs, 0)))
+	{
+	  gsi_remove (&gsi, true);
+	  release_defs (stmt);
+	  continue;
+	}
       gsi_remove (&gsi, false);
       /* Trigger the operand scanner to cause renaming for virtual
          operands for this statement.
@@ -3737,10 +3786,10 @@ unsplit_eh (eh_landing_pad lp)
   edge e_in, e_out;
 
   /* Quickly check the edge counts on BB for singularity.  */
-  if (EDGE_COUNT (bb->preds) != 1 || EDGE_COUNT (bb->succs) != 1)
+  if (!single_pred_p (bb) || !single_succ_p (bb))
     return false;
-  e_in = EDGE_PRED (bb, 0);
-  e_out = EDGE_SUCC (bb, 0);
+  e_in = single_pred_edge (bb);
+  e_out = single_succ_edge (bb);
 
   /* Input edge must be EH and output edge must be normal.  */
   if ((e_in->flags & EDGE_EH) == 0 || (e_out->flags & EDGE_EH) != 0)
@@ -4142,7 +4191,7 @@ cleanup_empty_eh (eh_landing_pad lp)
       e_out = NULL;
       break;
     case 1:
-      e_out = EDGE_SUCC (bb, 0);
+      e_out = single_succ_edge (bb);
       break;
     default:
       return false;
