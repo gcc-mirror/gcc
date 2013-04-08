@@ -1,5 +1,7 @@
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/execute/pr56837.c: New test.
+
 	PR c++/34949
 	PR c++/50243
 	* g++.dg/opt/vt3.C: New test.
