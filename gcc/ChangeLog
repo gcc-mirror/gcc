@@ -1,3 +1,8 @@
+2013-04-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_insv): Only accept insertions
+	within mode size.
+
 2013-04-08  Marek Polacek  <polacek@redhat.com>
 
 	PR rtl-optimization/48182
