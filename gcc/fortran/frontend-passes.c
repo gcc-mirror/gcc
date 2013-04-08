@@ -296,7 +296,12 @@ callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   c = gfc_constructor_first (arg->value.constructor);
 
-  if (c == NULL)
+  /* Don't do any simplififcation if we have
+     - no element in the constructor or
+     - only have a single element in the array which contains an
+     iterator.  */
+
+  if (c == NULL || (c->iterator != NULL && gfc_constructor_next (c) == NULL))
     return 0;
 
   res = copy_walk_reduction_arg (c->expr, fn);

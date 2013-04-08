@@ -1,3 +1,11 @@
+2013-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56782
+	Backport fron trunk.
+	* frontend-passes.c (callback_reduction):  Dont't do
+	any simplification if there is only a single element
+	which has an iterator.
+
 2013-03-22  Release Manager
 
 	* GCC 4.8.0 released.
