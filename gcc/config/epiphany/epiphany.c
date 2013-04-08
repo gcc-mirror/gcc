@@ -537,24 +537,47 @@ gen_compare_reg (enum machine_mode cmode, enum rtx_code code,
       if (mode == CC_FP_GTEmode
 	  && (code == LE || code == LT || code == UNGT || code == UNGE))
 	{
-	  rtx tmp = x; x = y; y = tmp;
-	  code = swap_condition (code);
+	  if (flag_finite_math_only
+	      && ((REG_P (x) && REGNO (x) == GPR_0)
+		  || (REG_P (y) && REGNO (y) == GPR_1)))
+	    switch (code)
+	      {
+	      case LE: code = UNLE; break;
+	      case LT: code = UNLT; break;
+	      case UNGT: code = GT; break;
+	      case UNGE: code = GE; break;
+	      default: gcc_unreachable ();
+	      }
+	  else
+	    {
+	      rtx tmp = x; x = y; y = tmp;
+	      code = swap_condition (code);
+	    }
 	}
       cc_reg = gen_rtx_REG (mode, CC_REGNUM);
     }
   if ((mode == CC_FP_EQmode || mode == CC_FP_GTEmode
        || mode == CC_FP_ORDmode || mode == CC_FP_UNEQmode)
       /* mov<mode>cc might want to re-emit a comparison during ifcvt.  */
-      && (!REG_P (x) || REGNO (x) != 0 || !REG_P (y) || REGNO (y) != 1))
+      && (!REG_P (x) || REGNO (x) != GPR_0
+	  || !REG_P (y) || REGNO (y) != GPR_1))
     {
       rtx reg;
 
+#if 0
+      /* ??? We should really do the r0/r1 clobber only during rtl expansion,
+	 but just like the flag clobber of movsicc, we have to allow
+	 this for ifcvt to work, on the assumption that we'll only want
+	 to do this if these registers have been used before by the
+	 pre-ifcvt  code.  */
       gcc_assert (currently_expanding_to_rtl);
-      reg = gen_rtx_REG (in_mode, 0);
-      gcc_assert (!reg_overlap_mentioned_p (reg, y));
+#endif
+      reg = gen_rtx_REG (in_mode, GPR_0);
+      if (reg_overlap_mentioned_p (reg, y))
+	return 0;
       emit_move_insn (reg, x);
       x = reg;
-      reg = gen_rtx_REG (in_mode, 1);
+      reg = gen_rtx_REG (in_mode, GPR_1);
       emit_move_insn (reg, y);
       y = reg;
     }
@@ -1020,7 +1043,7 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
 	    first_slot = regno;
 	  else if (last_slot < 0
 		   && (first_slot ^ regno) != 1
-		   && (!interrupt_p || regno > GPR_0 + 1))
+		   && (!interrupt_p || regno > GPR_1))
 	    last_slot = regno;
 	}
     }
@@ -1665,7 +1688,7 @@ epiphany_expand_prologue (void)
 			 gen_rtx_REG (DImode, GPR_0));
       frame_move_insn (gen_rtx_REG (SImode, GPR_0),
 		       gen_rtx_REG (word_mode, STATUS_REGNUM));
-      frame_move_insn (gen_rtx_REG (SImode, GPR_0+1),
+      frame_move_insn (gen_rtx_REG (SImode, GPR_1),
 		       gen_rtx_REG (word_mode, IRET_REGNUM));
       mem = gen_frame_mem (BLKmode, stack_pointer_rtx);
       off = GEN_INT (-current_frame_info.first_slot_offset);
@@ -1841,7 +1864,7 @@ epiphany_expand_epilogue (int sibcall_p)
       emit_move_insn (gen_rtx_REG (word_mode, STATUS_REGNUM),
 		      gen_rtx_REG (SImode, GPR_0));
       emit_move_insn (gen_rtx_REG (word_mode, IRET_REGNUM),
-		      gen_rtx_REG (SImode, GPR_0+1));
+		      gen_rtx_REG (SImode, GPR_1));
       addr = plus_constant (Pmode, stack_pointer_rtx,
 			    - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
       emit_move_insn (gen_rtx_REG (DImode, GPR_0),

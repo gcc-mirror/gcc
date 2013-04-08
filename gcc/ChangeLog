@@ -1,3 +1,16 @@
+2013-04-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.md (GPR_1): New constant.
+	(define_expand "mov<mode>cc): FAIL if gen_compare_reg returned 0.
+	* config/epiphany/epiphany.c (gen_compare_reg):
+	For flag_finite_math_only, avoid swapping operands when r0 and/or r1
+	is already in place.
+	Use GPR_0 / GPR_1 instead of 0/1 for r0/r1 register numbers.
+	Don't require being called during rtl expansion; If y operlaps r0,
+	return 0.
+	(epiphany_compute_frame_size, epiphany_expand_prologue): Use GPR_1.
+	(epiphany_expand_epilogue): Likewise.
+
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34949
