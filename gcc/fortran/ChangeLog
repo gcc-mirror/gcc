@@ -1,3 +1,10 @@
+2013-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56782
+	* frontend-passes.c (callback_reduction):  Dont't do
+	any simplification if there is only a single element
+	which has an iterator.
+
 2013-04-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56849
