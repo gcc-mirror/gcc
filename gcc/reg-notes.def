@@ -172,11 +172,6 @@ REG_NOTE (CFA_WINDOW_SAVE)
    the rest of the compiler as a CALL_INSN.  */
 REG_NOTE (CFA_FLUSH_QUEUE)
 
-/* Indicates that REG holds the exception context for the function.
-   This context is shared by inline functions, so the code to acquire
-   the real exception context is delayed until after inlining.  */
-REG_NOTE (EH_CONTEXT)
-
 /* Indicates what exception region an INSN belongs in.  This is used
    to indicate what region to which a call may throw.  REGION 0
    indicates that a call cannot throw at all.  REGION -1 indicates
