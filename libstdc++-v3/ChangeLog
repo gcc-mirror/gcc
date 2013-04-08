@@ -1,3 +1,7 @@
+2013-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Include <memory>.
+
 2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/Makefile.am: Add ext/aligned_buffer.h
