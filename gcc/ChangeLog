@@ -1,3 +1,7 @@
+2013-04-08  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (find_base_term): Fix thinko in previous change.
+
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-loop-distribution.c (const_with_all_bytes_same): New function.
