@@ -28,7 +28,7 @@
 	* config/epiphany/epiphany.md (mov_f+2): New peephole2 pattern.
 	(cstoresi4): Also allow re-use of zero result when doing a NE
 	comparison to a non-zero operand.
-	Use (clobber (sratch)) for first insn if the gpr output is not needed.
+	Use (clobber (scratch)) for first insn if the gpr output is not needed.
 
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
