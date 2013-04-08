@@ -1,5 +1,9 @@
 2013-04-08  Richard Biener  <rguenther@suse.de>
 
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Adjust.
+
+2013-04-08  Richard Biener  <rguenther@suse.de>
+
 	* gfortran.dg/vect/fast-math-pr37021.f90: Adjust.
 
 2013-04-08  Richard Biener  <rguenther@suse.de>

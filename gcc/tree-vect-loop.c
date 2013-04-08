@@ -409,6 +409,12 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		}
 
 	      STMT_VINFO_VECTYPE (stmt_info) = vectype;
+
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
+		}
             }
 
 	  /* The vectorization factor is according to the smallest

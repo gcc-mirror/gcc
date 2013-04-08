@@ -84,7 +84,6 @@ DEBUG_FUNCTION void
 debug_gimple_stmt (gimple gs)
 {
   print_gimple_stmt (stderr, gs, 0, TDF_VOPS|TDF_MEMSYMS);
-  fprintf (stderr, "\n");
 }
 
 

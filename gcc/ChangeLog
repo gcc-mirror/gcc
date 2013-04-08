@@ -1,3 +1,15 @@
+2013-04-08  Richard Biener  <rguenther@suse.de>
+
+	* gimple-pretty-print.c (debug_gimple_stmt): Do not print
+	extra newline.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Dump
+	determined vector type.
+	(vect_analyze_data_refs): Likewise.
+	(vect_get_new_vect_var): Adjust.
+	(vect_create_destination_var): Preserve SSA name versions.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): Do
+	not dump anything here.
+
 2013-04-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.h (struct GTY (()) machine_function):
