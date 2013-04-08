@@ -1,3 +1,10 @@
+2013-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56838
+	PR c++/17232
+	* typeck2.c (abstract_virtuals_error_sfinae): Disable
+	complete_type again.
+
 2013-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56871

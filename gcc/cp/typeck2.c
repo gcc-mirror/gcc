@@ -265,9 +265,13 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
     return 0;
   type = TYPE_MAIN_VARIANT (type);
 
+#if 0
+  /* Instantiation here seems to be required by the standard,
+     but breaks e.g. boost::bind.  FIXME!  */
   /* In SFINAE, non-N3276 context, force instantiation.  */
   if (!(complain & (tf_error|tf_decltype)))
     complete_type (type);
+#endif
 
   /* If the type is incomplete, we register it within a hash table,
      so that we can check again once it is completed. This makes sense
