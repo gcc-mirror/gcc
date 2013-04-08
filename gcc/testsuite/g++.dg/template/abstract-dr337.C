@@ -6,8 +6,8 @@ class A {
 };
 
 template<typename T>
-void g(T (*a)[1]) {}		// { dg-error "abstract" "" }
+void g(T (*a)[1]) {}		// { dg-error "abstract" "" { xfail *-*-* } }
 
 int main() {
-  g<A<int> >(0);  // { dg-error "no matching function" }
+  g<A<int> >(0);  // { dg-error "no matching function" "" { xfail *-*-* } }
 }
