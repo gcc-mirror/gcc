@@ -1757,7 +1757,7 @@
    (clobber (reg:SI GPR_IP))
    (clobber (reg:SI GPR_16))
    (clobber (reg:SI GPR_LR))]
-  "TARGET_SOFT_CMPSF"
+  ""
   "%f0"
   [(set_attr "type" "sfunc")])
 
