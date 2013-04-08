@@ -30,6 +30,9 @@
 	comparison to a non-zero operand.
 	Use (clobber (scratch)) for first insn if the gpr output is not needed.
 
+	* config/epiphany/epiphany.md (<insn_opname>v2si3):
+	Use gen_addsi3_i / gen_subsi3_i.
+
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34949
