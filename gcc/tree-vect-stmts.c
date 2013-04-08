@@ -6094,30 +6094,10 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
     return NULL_TREE;
 
   vectype = build_vector_type (scalar_type, nunits);
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "get vectype with %d units of type ", nunits);
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-    }
-
-  if (!vectype)
-    return NULL_TREE;
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-    }
 
   if (!VECTOR_MODE_P (TYPE_MODE (vectype))
       && !INTEGRAL_MODE_P (TYPE_MODE (vectype)))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "mode not supported by target.");
-      return NULL_TREE;
-    }
+    return NULL_TREE;
 
   return vectype;
 }

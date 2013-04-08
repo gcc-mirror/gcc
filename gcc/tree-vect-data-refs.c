@@ -3206,6 +3206,17 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	    }
 	  return false;
         }
+      else
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "got vectype for stmt: ");
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				 STMT_VINFO_VECTYPE (stmt_info));
+	    }
+	}
 
       /* Adjust the minimal vectorization factor according to the
 	 vector type.  */
@@ -3293,13 +3304,13 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
   switch (var_kind)
   {
   case vect_simple_var:
-    prefix = "vect_";
+    prefix = "vect";
     break;
   case vect_scalar_var:
-    prefix = "stmp_";
+    prefix = "stmp";
     break;
   case vect_pointer_var:
-    prefix = "vect_p";
+    prefix = "vectp";
     break;
   default:
     gcc_unreachable ();
@@ -3307,7 +3318,7 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
 
   if (name)
     {
-      char* tmp = concat (prefix, name, NULL);
+      char* tmp = concat (prefix, "_", name, NULL);
       new_vect_var = create_tmp_reg (type, tmp);
       free (tmp);
     }
@@ -3836,7 +3847,8 @@ tree
 vect_create_destination_var (tree scalar_dest, tree vectype)
 {
   tree vec_dest;
-  const char *new_name;
+  const char *name;
+  char *new_name;
   tree type;
   enum vect_var_kind kind;
 
@@ -3845,10 +3857,13 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
 
   gcc_assert (TREE_CODE (scalar_dest) == SSA_NAME);
 
-  new_name = get_name (scalar_dest);
-  if (!new_name)
-    new_name = "var_";
+  name = get_name (scalar_dest);
+  if (name)
+    asprintf (&new_name, "%s_%u", name, SSA_NAME_VERSION (scalar_dest));
+  else
+    asprintf (&new_name, "_%u", SSA_NAME_VERSION (scalar_dest));
   vec_dest = vect_get_new_vect_var (type, kind, new_name);
+  free (new_name);
 
   return vec_dest;
 }
