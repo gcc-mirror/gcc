@@ -16,6 +16,10 @@
 	* config/epiphany/epiphany.md (cmpsf_ord): Make pattern
 	unconditional.
 
+	* config/epiphany/constraints.md (CnL): New constraint.
+	* config/epiphany/epiphany.md (addsi3_i): Add r/r/CnL alternative.
+	* config/epiphany/predicates.md (add_operand): Allow 1024.
+
 2013-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34949
