@@ -102,10 +102,24 @@ DEF_RTL_EXPR(EXPR_LIST, "expr_list", "ee", RTX_EXTRA)
    The insns are represented in print by their uids.  */
 DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", RTX_EXTRA)
 
-/* SEQUENCE appears in the result of a `gen_...' function
-   for a DEFINE_EXPAND that wants to make several insns.
-   Its elements are the bodies of the insns that should be made.
-   `emit_insn' takes the SEQUENCE apart and makes separate insns.  */
+/* SEQUENCE is used in late passes of the compiler to group insns for
+   one reason or another.
+
+   For example, after delay slot filling, branch instructions with filled
+   delay slots are represented as a SEQUENCE of length 1 + n_delay_slots,
+   with the branch instruction in XEXPVEC(seq, 0, 0) and the instructions
+   occupying the delay slots in the remaining XEXPVEC slots.
+
+   Another place where a SEQUENCE may appear, is in REG_FRAME_RELATED_EXPR
+   notes, to express complex operations that are not obvious from the insn
+   to which the REG_FRAME_RELATED_EXPR note is attached.  In this usage of
+   SEQUENCE, the sequence vector slots do not hold real instructions but
+   only pseudo-instructions that can be translated to DWARF CFA expressions.
+
+   Some back ends also use SEQUENCE to group insns in bundles.
+
+   Much of the compiler infrastructure is not prepared to handle SEQUENCE
+   objects.  Only passes after pass_free_cfg are expected to handle them.  */
 DEF_RTL_EXPR(SEQUENCE, "sequence", "E", RTX_EXTRA)
 
 /* Represents a non-global base address.  This is only used in alias.c.  */

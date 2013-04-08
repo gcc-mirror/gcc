@@ -1,3 +1,16 @@
+2013-04-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/rtl.texi (sequence): Rewrite documentation to match the
+	current use of SEQUENCE rtl objects.
+	* rtl.def (SEQUENCE): Likewise.
+
+	* doc/rtl.texi (NOTE_INSN_EH_REGION_BEG, NOTE_INSN_EH_REGION_END):
+	Update documentation.
+	(NOTE_INSN_LOOP_BEG, NOTE_INSN_LOOP_END, NOTE_INSN_LOOP_CONT,
+	NOTE_INSN_LOOP_VTOP): Remove documentation for non-existing notes.
+
+	* reg-notes.def (REG_EH_CONTEXT): Remove unused note.
+
 2013-04-08  Teresa Johnson  <tejohnson@google.com>
 
 	* basic-block.h (GCOV_COMPUTE_SCALE): Define.
