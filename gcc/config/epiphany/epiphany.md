@@ -264,6 +264,15 @@
   rtx addr
     = (frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx);
 
+  if (!MACHINE_FUNCTION (cfun)->lr_slot_known)
+    {
+      start_sequence ();
+      epiphany_expand_prologue ();
+      if (!MACHINE_FUNCTION (cfun)->lr_slot_known)
+        epiphany_expand_epilogue (0);
+      end_sequence ();
+      gcc_assert (MACHINE_FUNCTION (cfun)->lr_slot_known);
+    }
   addr = plus_constant (Pmode, addr, MACHINE_FUNCTION (cfun)->lr_slot_offset);
   operands[1] = gen_frame_mem (SImode, addr);
 })

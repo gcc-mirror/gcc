@@ -1,3 +1,15 @@
+2013-04-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.h (struct GTY (()) machine_function):
+	Add member lr_slot_known.
+	* config/epiphany/epiphany.md (reload_insi_ra): Compute lr_slot_offs
+	if necessary.
+	* config/epiphany/epiphany.c (epiphany_compute_frame_size):
+	Remove code that sets lr_slot_offset according to what a previous
+	version of epiphany_emit_save_restore used to do.
+	(epiphany_emit_save_restore): When doing an lr save or restore,
+	set/verify lr_slot_known and lr_slot_offset.
+
 2013-04-08  Xinyu Qi  <xyqi@marvell.com>
 
  	PR target/54338

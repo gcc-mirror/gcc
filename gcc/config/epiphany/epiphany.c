@@ -964,7 +964,6 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
   int first_slot, last_slot, first_slot_offset, last_slot_offset;
   int first_slot_size;
   int small_slots = 0;
-  long lr_slot_offset;
 
   var_size	= size;
   args_size	= crtl->outgoing_args_size;
@@ -1116,28 +1115,6 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
     }
   total_size = first_slot_offset + last_slot_offset;
 
-  lr_slot_offset
-    = (frame_pointer_needed ? first_slot_offset : (long) total_size);
-  if (first_slot != GPR_LR)
-    {
-      int stack_offset = epiphany_stack_offset - UNITS_PER_WORD;
-
-      for (regno = 0; ; regno++)
-	{
-	  if (stack_offset + UNITS_PER_WORD - first_slot_size == 0
-	      && first_slot >= 0)
-	    {
-	      stack_offset -= first_slot_size;
-	      regno--;
-	    }
-	  else if (regno == GPR_LR)
-	    break;
-	  else if TEST_HARD_REG_BIT (gmask, regno)
-	    stack_offset -= UNITS_PER_WORD;
-	}
-      lr_slot_offset += stack_offset;
-    }
-
   /* Save computed information.  */
   current_frame_info.total_size   = total_size;
   current_frame_info.pretend_size = pretend_size;
@@ -1150,7 +1127,6 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
   current_frame_info.first_slot_offset	= first_slot_offset;
   current_frame_info.first_slot_size	= first_slot_size;
   current_frame_info.last_slot_offset	= last_slot_offset;
-  MACHINE_FUNCTION (cfun)->lr_slot_offset = lr_slot_offset;
 
   current_frame_info.initialized  = reload_completed;
 
@@ -1622,6 +1598,28 @@ epiphany_emit_save_restore (int min, int limit, rtx addr, int epilogue_p)
 	mem = skipped_mem;
       else
 	mem = gen_mem (mode, addr);
+
+      /* If we are loading / storing LR, note the offset that
+	 gen_reload_insi_ra requires.  Since GPR_LR is even,
+	 we only need to test n, even if mode is DImode.  */
+      gcc_assert ((GPR_LR & 1) == 0);
+      if (n == GPR_LR)
+	{
+	  long lr_slot_offset = 0;
+	  rtx m_addr = XEXP (mem, 0);
+
+	  if (GET_CODE (m_addr) == PLUS)
+	    lr_slot_offset = INTVAL (XEXP (m_addr, 1));
+	  if (frame_pointer_needed)
+	    lr_slot_offset += (current_frame_info.first_slot_offset
+			       - current_frame_info.total_size);
+	  if (MACHINE_FUNCTION (cfun)->lr_slot_known)
+	    gcc_assert (MACHINE_FUNCTION (cfun)->lr_slot_offset
+			== lr_slot_offset);
+	  MACHINE_FUNCTION (cfun)->lr_slot_offset = lr_slot_offset;
+	  MACHINE_FUNCTION (cfun)->lr_slot_known = 1;
+	}
+
       if (!epilogue_p)
 	frame_move_insn (mem, reg);
       else if (n >= MAX_EPIPHANY_PARM_REGS || !crtl->args.pretend_args_size)

@@ -450,6 +450,7 @@ typedef struct GTY (()) machine_function
   unsigned pretend_args_odd : 1;
   unsigned lr_clobbered : 1;
   unsigned control_use_inserted : 1;
+  unsigned lr_slot_known : 1;
   unsigned sw_entities_processed : 6;
   long lr_slot_offset;
   rtx and_mask;
