@@ -1,3 +1,8 @@
+2013-04-08  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/cygwin.h (EXTRA_OS_CPP_BUILTINS): Replaced
+	TARGET_CYGWIN64 by TARGET_64BIT.
+
 2013-04-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.md (GPR_1): New constant.

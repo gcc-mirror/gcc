@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
   do								\
     {								\
       builtin_define ("__CYGWIN__");				\
-      if (!TARGET_CYGWIN64)					\
+      if (!TARGET_64BIT)					\
 	builtin_define ("__CYGWIN32__");			\
       builtin_define ("__unix__");				\
       builtin_define ("__unix");				\
