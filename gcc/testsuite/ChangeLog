@@ -1,3 +1,8 @@
+2013-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56883
+	* c-c++-common/gomp/pr56883.c: New test.
+
 2013-04-09  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp87.c: New test.
