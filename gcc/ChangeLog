@@ -1,3 +1,10 @@
+2013-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56854
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Don't
+	forward into clobber stmts if it would change MEM_REF lhs into
+	non-MEM_REF.
+
 2013-04-09  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
 	* tree.c (type_hash_lookup, type_hash_add): Make static.
