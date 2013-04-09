@@ -97,13 +97,13 @@ add_stmt_info_to_vec (stmt_vector_for_cost *stmt_cost_vec, int count,
 /************************************************************************
   SLP
  ************************************************************************/
-typedef void *slp_void_p;
+typedef struct _slp_tree *slp_tree;
 
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
-typedef struct _slp_tree {
+struct _slp_tree {
   /* Nodes that contain def-stmts of this node statements operands.  */
-  vec<slp_void_p> children;
+  vec<slp_tree> children;
   /* A group of scalar stmts to be vectorized together.  */
   vec<gimple> stmts;
   /* Vectorized stmt/s.  */
@@ -113,7 +113,7 @@ typedef struct _slp_tree {
      scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
      divided by vector size.  */
   unsigned int vec_stmts_size;
-} *slp_tree;
+};
 
 
 /* SLP instance is a sequence of stmts in a loop that can be packed into
@@ -941,7 +941,6 @@ extern tree vect_setup_realignment (gimple, gimple_stmt_iterator *, tree *,
 extern void vect_transform_grouped_load (gimple, vec<tree> , int,
                                          gimple_stmt_iterator *);
 extern void vect_record_grouped_load_vectors (gimple, vec<tree> );
-extern int vect_get_place_in_interleaving_chain (gimple, gimple);
 extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
 extern tree vect_create_addr_base_for_vector_ref (gimple, gimple_seq *,
                                                   tree, struct loop *);

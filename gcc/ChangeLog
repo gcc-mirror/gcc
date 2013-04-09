@@ -1,5 +1,21 @@
 2013-04-09  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (slp_void_p): Remove.
+	(slp_tree): Typedef before _slp_tree declaration.
+	(struct _slp_tree): Use a vector of slp_tree as children.
+	(vect_get_place_in_interleaving_chain): Remove.
+	* tree-vect-data-refs.c (vect_get_place_in_interleaving_chain):
+	Move ...
+	* tree-vect-slp.c (vect_get_place_in_interleaving_chain): ... here
+	and make static.
+	(vect_free_slp_tree, vect_print_slp_tree, vect_mark_slp_stmts,
+	vect_mark_slp_stmts_relevant, vect_slp_rearrange_stmts,
+	vect_detect_hybrid_slp_stmts, vect_slp_analyze_node_operations,
+	vect_schedule_slp_instance, vect_remove_slp_scalar_calls):
+	Use slp_node instead of slp_void_p and adjust.
+
+2013-04-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa): Avoid
 	work that is not necessary.
 

@@ -129,31 +129,6 @@ vect_get_smallest_scalar_type (gimple stmt, HOST_WIDE_INT *lhs_size_unit,
 }
 
 
-/* Find the place of the data-ref in STMT in the interleaving chain that starts
-   from FIRST_STMT.  Return -1 if the data-ref is not a part of the chain.  */
-
-int
-vect_get_place_in_interleaving_chain (gimple stmt, gimple first_stmt)
-{
-  gimple next_stmt = first_stmt;
-  int result = 0;
-
-  if (first_stmt != GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
-    return -1;
-
-  while (next_stmt && next_stmt != stmt)
-    {
-      result++;
-      next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
-    }
-
-  if (next_stmt)
-    return result;
-  else
-    return -1;
-}
-
-
 /* Check if data references pointed by DR_I and DR_J are same or
    belong to same interleaving group.  Return FALSE if drs are
    different, otherwise return TRUE.  */
