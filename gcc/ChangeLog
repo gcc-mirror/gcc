@@ -1,3 +1,7 @@
+2013-04-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/sparc/sparc.md: Use define_c_enum for "unspec" and "unspecv".
+
 2013-04-09  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/48762
