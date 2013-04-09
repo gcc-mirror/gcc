@@ -826,7 +826,11 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	       && integer_zerop (TREE_OPERAND (lhs, 1))
 	       && useless_type_conversion_p
 	            (TREE_TYPE (TREE_OPERAND (def_rhs, 0)),
-		     TREE_TYPE (gimple_assign_rhs1 (use_stmt))))
+		     TREE_TYPE (gimple_assign_rhs1 (use_stmt)))
+	       /* Don't forward anything into clobber stmts if it would result
+		  in the lhs no longer being a MEM_REF.  */
+	       && (!gimple_clobber_p (use_stmt)
+		   || TREE_CODE (TREE_OPERAND (def_rhs, 0)) == MEM_REF))
 	{
 	  tree *def_rhs_basep = &TREE_OPERAND (def_rhs, 0);
 	  tree new_offset, new_base, saved, new_lhs;
