@@ -1,3 +1,13 @@
+2013-04-09  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (unsave_expr_now): Remove.
+	* tree-inline.c (mark_local_for_remap_r): Remove.
+	(unsave_expr_1): Likewise.
+	(unsave_r): Likewise.
+	(unsave_expr_now): Likewise.
+	* tree-ssa-copy.c (replace_exp_1): Use unshare_expr.
+	(propagate_tree_value): Likewise.
+
 2013-04-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/rtl.texi (sequence): Rewrite documentation to match the
