@@ -1,3 +1,7 @@
+2013-04-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (minmax_arithsi_non_canon): New pattern.
+
 2013-04-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sched-vis.c (print_pattern): Print SEQUENCE of insns as insns.

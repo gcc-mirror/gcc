@@ -1,3 +1,7 @@
+2013-04-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/minmax_minus.c: New test.
+
 2013-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56883
