@@ -1,3 +1,7 @@
+2013-04-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
 2013-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/libstdc++-prettyprinters/cxx11.cc: Include <memory>.
