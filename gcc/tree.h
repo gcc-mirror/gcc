@@ -6018,7 +6018,6 @@ extern void indent_to (FILE *, int);
 extern bool debug_find_tree (tree, tree);
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */
-extern tree unsave_expr_now (tree);
 extern tree build_duplicate_type (tree);
 
 /* In calls.c */
