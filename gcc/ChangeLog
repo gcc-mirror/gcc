@@ -1,3 +1,13 @@
+2013-04-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove code
+	dealing with cost.
+	(vect_build_slp_tree): Likewise.
+	(vect_analyze_slp_cost_1, vect_analyze_slp_cost): New functions
+	calculating the cost of a SLP instance.
+	(vect_analyze_slp_instance): Use it from here, after building
+	the SLP tree.
+
 2013-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56883
