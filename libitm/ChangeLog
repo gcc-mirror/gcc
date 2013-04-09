@@ -1,3 +1,12 @@
+2013-03-23  Andi Kleen  <ak@linux.intel.com>
+
+	* local_atomic (__always_inline): Add.
+	(__calculate_memory_order, atomic_thread_fence,
+	 atomic_signal_fence, test_and_set, clear, store, load,
+	 exchange, compare_exchange_weak, compare_exchange_strong,
+	 fetch_add, fetch_sub, fetch_and, fetch_or, fetch_xor):
+	Add __always_inline to force inlining.
+
 2013-02-11  Iain Sandoe  <iain@codesourcery.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Patrick Marlier  <patrick.marlier@gmail.com>
