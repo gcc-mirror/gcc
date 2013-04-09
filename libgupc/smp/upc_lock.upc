@@ -368,6 +368,7 @@ upc_unlock (upc_lock_t *lock)
     __upc_fatal ("Trying to release a NULL lock");
   if (NULL_LOCK_REF (link_ref))
     __upc_fatal ("Trying to release a lock that is not locked");
+  upc_fence;
   link = (upc_lock_link_t *) upc_from_link_ref (link_ref);
 
   /* Try to release the lock by trying to write a NULL into lock

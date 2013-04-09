@@ -504,6 +504,7 @@ upc_unlock (upc_lock_t *lock)
 	       (long unsigned) upc_addrfield (lock));
   if (lock == NULL)
     gupcr_fatal_error ("[%d]: NULL lock pointer", MYTHREAD);
+  upc_fence;
   /* Try to release the lock: write NULL into lock->last
      if it contains a pointer to our own link block. If it fails then
      some other thread is on the waiting list.  */
