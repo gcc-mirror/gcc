@@ -1,3 +1,9 @@
+2013-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/48762
+	* params.def (PARAM_MAX_CSE_INSNS): Increase the minimum
+	value to 1.
+
 2013-04-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove code
