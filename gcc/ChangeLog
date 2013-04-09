@@ -1,3 +1,8 @@
+2013-04-09  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
+	* tree.c (type_hash_lookup, type_hash_add): Make static.
+	* tree.h (type_hash_lookup, type_hash_add): Remove global declarations.
+
 2013-04-09  Richard Biener  <rguenther@suse.de>
 
 	* tree.h (unsave_expr_now): Remove.
