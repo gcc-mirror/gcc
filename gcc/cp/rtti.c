@@ -326,18 +326,16 @@ build_typeid (tree exp, tsubst_flags_t complain)
 
   /* FIXME when integrating with c_fully_fold, mark
      resolves_to_fixed_type_p case as a non-constant expression.  */
-  if (INDIRECT_REF_P (exp)
-      && TYPE_PTR_P (TREE_TYPE (TREE_OPERAND (exp, 0)))
-      && TYPE_POLYMORPHIC_P (TREE_TYPE (exp))
+  if (TYPE_POLYMORPHIC_P (TREE_TYPE (exp))
       && ! resolves_to_fixed_type_p (exp, &nonnull)
       && ! nonnull)
     {
       /* So we need to look into the vtable of the type of exp.
-         This is an lvalue use of expr then.  */
-      exp = mark_lvalue_use (exp);
+         Make sure it isn't a null lvalue.  */
+      exp = cp_build_addr_expr (exp, complain);
       exp = stabilize_reference (exp);
-      cond = cp_convert (boolean_type_node, TREE_OPERAND (exp, 0),
-			 complain);
+      cond = cp_convert (boolean_type_node, exp, complain);
+      exp = cp_build_indirect_ref (exp, RO_NULL, complain);
     }
 
   exp = get_tinfo_decl_dynamic (exp, complain);

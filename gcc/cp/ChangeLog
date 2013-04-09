@@ -1,3 +1,9 @@
+2013-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25466
+	* rtti.c (build_typeid): Check the address of the argument
+	rather than looking for an INDIRECT_REF.
+
 2013-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56838
