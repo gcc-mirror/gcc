@@ -1,3 +1,8 @@
+2013-04-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa): Avoid
+	work that is not necessary.
+
 2013-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56854

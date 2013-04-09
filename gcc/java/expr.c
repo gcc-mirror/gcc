@@ -1531,7 +1531,7 @@ build_java_binop (enum tree_code op, tree type, tree arg1, tree arg2)
       }
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
-      mask = build_int_cst (NULL_TREE,
+      mask = build_int_cst (int_type_node,
 			    TYPE_PRECISION (TREE_TYPE (arg1)) - 1);
       arg2 = fold_build2 (BIT_AND_EXPR, int_type_node, arg2, mask);
       break;
