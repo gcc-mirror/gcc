@@ -1,5 +1,7 @@
 2013-04-09  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* sched-vis.c (print_pattern): Print SEQUENCE of insns as insns.
+
 	* config/sparc/sparc.md: Use define_c_enum for "unspec" and "unspecv".
 
 2013-04-09  Marek Polacek  <polacek@redhat.com>
