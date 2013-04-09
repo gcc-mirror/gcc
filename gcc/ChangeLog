@@ -1,3 +1,9 @@
+2013-04-09  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (simplify_cond_using_ranges): Simplify test of boolean
+	when the boolean was created by converting a wider object which
+	had a boolean range.
+
 2013-04-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (slp_void_p): Remove.
@@ -159,7 +165,7 @@
 2013-04-08  Jeff Law  <law@redhat.com>
 
 	* gimple.c (canonicalize_cond_expr_cond): Rewrite x ^ y into x != y.
-		        
+
 2013-04-08  Richard Biener  <rguenther@suse.de>
 
 	* gimple-pretty-print.c (debug_gimple_stmt): Do not print
