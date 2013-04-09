@@ -3660,6 +3660,36 @@ AC_DEFUN([GLIBCXX_ENABLE_WERROR], [
 ])
 
 
+dnl
+dnl Check to see if sys/sdt.h exists and that it is suitable for use.
+dnl Some versions of sdt.h were not compatible with C++11.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_SDT_H], [
+  AC_MSG_RESULT([for suitable sys/sdt.h])
+  # Note that this test has to be run with the C language.
+  # Otherwise, sdt.h will try to include some headers from
+  # libstdc++ itself.
+  AC_LANG_SAVE
+  AC_LANG_C
+  AC_CACHE_VAL(glibcxx_cv_sys_sdt_h, [
+    # Because we have to run the test in C, we use grep rather
+    # than the compiler to check for the bug.  The bug is that
+    # were strings without trailing whitespace, causing g++
+    # to look for operator"".  The pattern searches for the fixed
+    # output.
+    AC_EGREP_CPP([ \",\" ], [
+      #include <sys/sdt.h>
+      int f() { STAP_PROBE(hi, bob); }
+    ], [glibcxx_cv_sys_sdt_h=yes], [glibcxx_cv_sys_sdt_h=no])
+  ])
+  AC_LANG_RESTORE
+  if test $glibcxx_cv_sys_sdt_h = yes; then
+    AC_DEFINE(HAVE_SYS_SDT_H, 1,
+              [Define to 1 if you have a suitable <sys/sdt.h> header file])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_sys_sdt_h)
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

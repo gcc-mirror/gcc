@@ -1,3 +1,10 @@
+2013-04-09  Tom Tromey  <tromey@redhat.com>
+
+	* configure, config.h.in: Rebuild.
+	* configure.ac: Use GLIBCXX_CHECK_SDT_H.  Don't check for
+	sys/sdt.h.
+	* acinclude.m4 (GLIBCXX_CHECK_SDT_H): New defun.
+
 2013-04-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/allocator.xml: Adjust link to Dr.Dobb's article.q
