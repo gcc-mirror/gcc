@@ -1,3 +1,10 @@
+2013-04-09  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (KIND Type Parameters,
+	Internal representation of LOGICAL variables): Add crossrefs.
+	(Intrinsic Types): Mention issues with _Bool interop.
+	(Naming and argument-passing conventions): New section.
+
 2013-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56782

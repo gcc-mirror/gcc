@@ -1166,7 +1166,8 @@ parameters of the @code{ISO_FORTRAN_ENV} module instead of the concrete values.
 The available kind parameters can be found in the constant arrays
 @code{CHARACTER_KINDS}, @code{INTEGER_KINDS}, @code{LOGICAL_KINDS} and
 @code{REAL_KINDS} in the @code{ISO_FORTRAN_ENV} module
-(see @ref{ISO_FORTRAN_ENV}).
+(see @ref{ISO_FORTRAN_ENV}).  For C interoperability, the kind parameters of
+the @code{ISO_C_BINDING} module should be used (see @ref{ISO_C_BINDING}).
 
 
 @node Internal representation of LOGICAL variables
@@ -1184,16 +1185,7 @@ A @code{LOGICAL(KIND=N)} variable is represented as an
 values: @code{1} for @code{.TRUE.} and @code{0} for
 @code{.FALSE.}.  Any other integer value results in undefined behavior.
 
-Note that for mixed-language programming using the
-@code{ISO_C_BINDING} feature, there is a @code{C_BOOL} kind that can
-be used to create @code{LOGICAL(KIND=C_BOOL)} variables which are
-interoperable with the C99 _Bool type.  The C99 _Bool type has an
-internal representation described in the C99 standard, which is
-identical to the above description, i.e. with 1 for true and 0 for
-false being the only permissible values.  Thus the internal
-representation of @code{LOGICAL} variables in GNU Fortran is identical
-to C99 _Bool, except for a possible difference in storage size
-depending on the kind.
+See also @ref{Argument passing conventions} and @ref{Interoperability with C}.
 
 
 @node Thread-safety of the runtime library
@@ -2204,6 +2196,7 @@ common, but not the former.
 * Interoperability with C::
 * GNU Fortran Compiler Directives::
 * Non-Fortran Main Program::
+* Naming and argument-passing conventions::
 @end menu
 
 This chapter is about mixed-language interoperability, but also applies
@@ -2249,6 +2242,16 @@ in C and Fortran, the named constants shall be used which are defined in the
 @code{ISO_C_BINDING} intrinsic module.  That module contains named constants
 for kind parameters and character named constants for the escape sequences
 in C.  For a list of the constants, see @ref{ISO_C_BINDING}.
+
+For logical types, please note that the Fortran standard only guarantees
+interoperability between C99's @code{_Bool} and Fortran's @code{C_Bool}-kind
+logicals and C99 defines that @code{true} has the value 1 and @code{false}
+the value 0.  Using any other integer value with GNU Fortran's @code{LOGICAL}
+(with any kind parameter) gives an undefined result.  (Passing other integer
+values than 0 and 1 to GCC's @code{_Bool} is also undefined, unless the
+integer is explicitly or implicitly casted to @code{_Bool}.)
+
+
 
 @node Derived Types and struct
 @subsection Derived Types and struct
@@ -2973,6 +2976,144 @@ int main (int argc, char *argv[])
 @}
 @end smallexample
 @end table
+
+
+@node Naming and argument-passing conventions
+@section Naming and argument-passing conventions
+
+This section gives an overview about the naming convention of procedures
+and global variables and about the argument passing conventions used by
+GNU Fortran.  If a C binding has been specified, the naming convention
+and some of the argument-passing conventions change.  If possible,
+mixed-language and mixed-compiler projects should use the better defined
+C binding for interoperability.  See @pxref{Interoperability with C}.
+
+@menu
+* Naming conventions::
+* Argument passing conventions::
+@end menu
+
+
+@node Naming conventions
+@subsection Naming conventions
+
+According the Fortran standard, valid Fortran names consist of a letter
+between @code{A} to @code{Z}, @code{a} to @code{z}, digits @code{0},
+@code{1} to @code{9} and underscores (@code{_}) with the restriction
+that names may only start with a letter.  As vendor extension, the
+dollar sign (@code{$}) is additionally permitted with the option
+@option{-fdollar-ok}, but not as first character and only if the
+target system supports it.
+
+By default, the procedure name is the lower-cased Fortran name with an
+appended underscore (@code{_}); using @option{-fno-underscoring} no
+underscore is appended while @code{-fsecond-underscore} appends two
+underscores.  Depending on the target system and the calling convention,
+the procedure might be additionally dressed; for instance, on 32bit
+Windows with @code{stdcall}, an at-sign @code{@@} followed by an integer
+number is appended.  For the changing the calling convention, see
+@pxref{GNU Fortran Compiler Directives}.
+
+For common blocks, the same convention is used, i.e. by default an
+underscore is appended to the lower-cased Fortran name.  Blank commons
+have the name @code{__BLNK__}.
+
+For procedures and variables declared in the specification space of a
+module, the name is formed by @code{__}, followed by the lower-cased
+module name, @code{_MOD_}, and the lower-cased Fortran name.  Note that
+no underscore is appended.
+
+
+@node Argument passing conventions
+@subsection Argument passing conventions
+
+Subroutines do not return a value (matching C99's @code{void}) while
+functions either return a value as specified in the platform ABI or
+the result variable is passed as hidden argument to the function and
+no result is returned.  A hidden result variable is used when the
+result variable is an array or of type @code{CHARACTER}.
+
+Arguments are passed according to the platform ABI. In particular,
+complex arguments might not be compatible to a struct with two real
+components for the real and imaginary part. The argument passing
+matches the one of C99's @code{_Complex}.  Functions with scalar
+complex result variables return their value and do not use a
+by-reference argument.  Note that with the @option{-ff2c} option,
+the argument passing is modified and no longer completely matches
+the platform ABI.  Some other Fortran compilers use @code{f2c}
+semantic by default; this might cause problems with
+interoperablility. 
+
+GNU Fortran passes most arguments by reference, i.e. by passing a
+pointer to the data.  Note that the compiler might use a temporary
+variable into which the actual argument has been copied, if required
+semantically (copy-in/copy-out).
+
+For arguments with @code{ALLOCATABLE} and @code{POINTER}
+attribute (including procedure pointers), a pointer to the pointer
+is passed such that the pointer address can be modified in the
+procedure.
+
+For dummy arguments with the @code{VALUE} attribute: Scalar arguments
+of the type @code{INTEGER}, @code{LOGICAL}, @code{REAL} and
+@code{COMPLEX} are passed by value according to the platform ABI.
+(As vendor extension and not recommended, using @code{%VAL()} in the
+call to a procedure has the same effect.) For @code{TYPE(C_PTR)} and
+procedure pointers, the pointer itself is passed such that it can be
+modified without affecting the caller.
+@c FIXME: Document how VALUE is handled for CHARACTER, TYPE,
+@c CLASS and arrays, i.e. whether the copy-in is done in the caller
+@c or in the callee.
+
+For Boolean (@code{LOGICAL}) arguments, please note that GCC expects
+only the integer value 0 and 1.  If a GNU Fortran @code{LOGICAL}
+variable contains another integer value, the result is undefined.
+As some other Fortran compilers use @math{-1} for @code{.TRUE.},
+extra care has to be taken -- such as passing the value as
+@code{INTEGER}.  (The same value restriction also applies to other
+front ends of GCC, e.g. to GCC's C99 compiler for @code{_Bool}
+or GCC's Ada compiler for @code{Boolean}.)
+
+For arguments of @code{CHARACTER} type, the character length is passed
+as hidden argument.  For deferred-length strings, the value is passed
+by reference, otherwise by value.  The character length has the type
+@code{INTEGER(kind=4)}.  Note with C binding, @code{CHARACTER(len=1)}
+result variables are returned according to the platform ABI and no
+hidden length argument is used for dummy arguments; with @code{VALUE},
+those variables are passed by value.
+
+For @code{OPTIONAL} dummy arguments, an absent argument is denoted
+by a NULL pointer, except for scalar dummy arguments of type
+@code{INTEGER}, @code{LOGICAL}, @code{REAL} and @code{COMPLEX}
+which have the @code{VALUE} attribute.  For those, a hidden Boolean
+argument (@code{logical(kind=C_bool),value}) is used to indicate
+whether the argument is present.
+
+Arguments which are assumed-shape, assumed-rank or deferred-rank
+arrays or, with @option{-fcoarray=lib}, allocatable scalar coarrays use
+an array descriptor.  All other arrays pass the address of the
+first element of the array.  With @option{-fcoarray=lib}, the token
+and the offset belonging to nonallocatable coarrays dummy arguments
+are passed as hidden argument along the character length hidden
+arguments.  The token is an oparque pointer identifying the coarray
+and the offset is a passed-by-value integer of kind @code{C_PTRDIFF_T},
+denoting the byte offset between the base address of the coarray and
+the passed scalar or first element of the passed array.
+
+The arguments are passed in the following order
+@itemize @bullet
+@item Result variable, when the function result is passed by reference
+@item Character length of the function result, if it is a of type
+@code{CHARACTER} and no C binding is used
+@item The arguments in the order in which they appear in the Fortran
+declaration
+@item The the present status for optional arguments with value attribute,
+which are internally passed by value
+@item The character length and/or coarray token and offset for the first
+argument which is a @code{CHARACTER} or a nonallocatable coarray dummy
+argument, followed by the hidden arguments of the next dummy argument
+of such a type
+@end itemize
 
 
 
