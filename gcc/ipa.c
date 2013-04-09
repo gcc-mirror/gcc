@@ -573,7 +573,7 @@ cgraph_comdat_can_be_unshared_p (struct cgraph_node *node)
 
 static bool
 cgraph_externally_visible_p (struct cgraph_node *node,
-			     bool whole_program, bool aliased)
+			     bool whole_program)
 {
   if (!node->local.finalized)
     return false;
@@ -581,11 +581,6 @@ cgraph_externally_visible_p (struct cgraph_node *node,
       && (!TREE_PUBLIC (node->symbol.decl)
 	  || DECL_EXTERNAL (node->symbol.decl)))
     return false;
-
-  /* Do not even try to be smart about aliased nodes.  Until we properly
-     represent everything by same body alias, these are just evil.  */
-  if (aliased)
-    return true;
 
   /* Do not try to localize built-in functions yet.  One of problems is that we
      end up mangling their asm for WHOPR that makes it impossible to call them
@@ -638,7 +633,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 /* Return true when variable VNODE should be considered externally visible.  */
 
 bool
-varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
+varpool_externally_visible_p (struct varpool_node *vnode)
 {
   /* Do not touch weakrefs; while they are not externally visible,
      dropping their DECL_EXTERNAL flags confuse most
@@ -651,11 +646,6 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 
   if (!DECL_COMDAT (vnode->symbol.decl) && !TREE_PUBLIC (vnode->symbol.decl))
     return false;
-
-  /* Do not even try to be smart about aliased nodes.  Until we properly
-     represent everything by same body alias, these are just evil.  */
-  if (aliased)
-    return true;
 
   /* If linker counts on us, we must preserve the function.  */
   if (symtab_used_from_object_file_p ((symtab_node) vnode))
@@ -733,42 +723,9 @@ function_and_variable_visibility (bool whole_program)
 {
   struct cgraph_node *node;
   struct varpool_node *vnode;
-  struct pointer_set_t *aliased_nodes = pointer_set_create ();
-  struct pointer_set_t *aliased_vnodes = pointer_set_create ();
-  unsigned i;
-  alias_pair *p;
 
-  /* Discover aliased nodes.  */
-  FOR_EACH_VEC_SAFE_ELT (alias_pairs, i, p)
-    {
-      if (dump_file)
-      fprintf (dump_file, "Alias %s->%s",
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p->decl)),
-	       IDENTIFIER_POINTER (p->target));
-		
-      if ((node = cgraph_node_for_asm (p->target)) != NULL
-	   && !DECL_EXTERNAL (node->symbol.decl))
-	{
-	  if (!node->analyzed)
-	    continue;
-	  cgraph_mark_force_output_node (node);
-	  pointer_set_insert (aliased_nodes, node);
-	  if (dump_file)
-	    fprintf (dump_file, "  node %s/%i",
-		     cgraph_node_name (node), node->uid);
-	}
-      else if ((vnode = varpool_node_for_asm (p->target)) != NULL
-	       && !DECL_EXTERNAL (vnode->symbol.decl))
-	{
-	  vnode->symbol.force_output = 1;
-	  pointer_set_insert (aliased_vnodes, vnode);
-	  if (dump_file)
-	    fprintf (dump_file, "  varpool node %s",
-		     varpool_node_name (vnode));
-	}
-      if (dump_file)
-	fprintf (dump_file, "\n");
-    }
+  /* All aliases should be procssed at this point.  */
+  gcc_checking_assert (!alias_pairs || !alias_pairs->length());
 
   FOR_EACH_FUNCTION (node)
     {
@@ -817,9 +774,7 @@ function_and_variable_visibility (bool whole_program)
 		  && !DECL_COMDAT (node->symbol.decl))
       	          || TREE_PUBLIC (node->symbol.decl)
 		  || DECL_EXTERNAL (node->symbol.decl));
-      if (cgraph_externally_visible_p (node, whole_program,
-				       pointer_set_contains (aliased_nodes,
-							     node)))
+      if (cgraph_externally_visible_p (node, whole_program))
         {
 	  gcc_assert (!node->global.inlined_to);
 	  node->symbol.externally_visible = true;
@@ -898,9 +853,7 @@ function_and_variable_visibility (bool whole_program)
     {
       if (!vnode->finalized)
         continue;
-      if (varpool_externally_visible_p
-	    (vnode, 
-	     pointer_set_contains (aliased_vnodes, vnode)))
+      if (varpool_externally_visible_p (vnode))
 	vnode->symbol.externally_visible = true;
       else
         vnode->symbol.externally_visible = false;
@@ -913,8 +866,6 @@ function_and_variable_visibility (bool whole_program)
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
     }
-  pointer_set_destroy (aliased_nodes);
-  pointer_set_destroy (aliased_vnodes);
 
   if (dump_file)
     {

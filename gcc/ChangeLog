@@ -1,3 +1,11 @@
+2013-04-09  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (cgraph_externally_visible_p, varpool_externally_visible_p): Drop
+	aliased parameter.
+	(function_and_variable_visibility): Do not handle alias pairs.
+	* cgraph.c (varpool_externally_visible_p): Update prototype.
+	* varpool.c (varpool_add_new_variable): Update.
+
 2013-04-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (minmax_arithsi_non_canon): New pattern.
