@@ -3597,6 +3597,50 @@
 		      (const_int 12)))]
 )
 
+; Reject the frame pointer in operand[1], since reloading this after
+; it has been eliminated can cause carnage.
+(define_insn_and_split "*minmax_arithsi_non_canon"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(minus:SI
+	 (match_operand:SI 1 "s_register_operand" "0,?r")
+	  (match_operator:SI 4 "minmax_operator"
+	   [(match_operand:SI 2 "s_register_operand" "r,r")
+	    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT && !arm_eliminable_register (operands[1])"
+  "#"
+  "TARGET_32BIT && !arm_eliminable_register (operands[1]) && reload_completed"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 2) (match_dup 3)))
+
+   (cond_exec (match_op_dup 4 [(reg:CC CC_REGNUM) (const_int 0)])
+              (set (match_dup 0)
+                   (minus:SI (match_dup 1)
+                             (match_dup 2))))
+   (cond_exec (match_op_dup 5 [(reg:CC CC_REGNUM) (const_int 0)])
+              (set (match_dup 0)
+                   (minus:SI (match_dup 1)
+                             (match_dup 3))))]
+  {
+  enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+                                           operands[2], operands[3]);
+  enum rtx_code rc = minmax_code (operands[4]);
+  operands[4] = gen_rtx_fmt_ee (rc, VOIDmode,
+                                operands[2], operands[3]);
+
+  if (mode == CCFPmode || mode == CCFPEmode)
+    rc = reverse_condition_maybe_unordered (rc);
+  else
+    rc = reverse_condition (rc);
+  operands[5] = gen_rtx_fmt_ee (rc, SImode, operands[2], operands[3]);
+  }
+  [(set_attr "conds" "clob")
+   (set (attr "length")
+	(if_then_else (eq_attr "is_thumb" "yes")
+		      (const_int 14)
+		      (const_int 12)))]
+)
+
 (define_code_iterator SAT [smin smax])
 (define_code_iterator SATrev [smin smax])
 (define_code_attr SATlo [(smin "1") (smax "2")])
