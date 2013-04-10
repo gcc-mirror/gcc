@@ -1,3 +1,11 @@
+2013-04-10  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR tree-optimization/55524
+	* tree-ssa-math-opts.c
+	(convert_mult_to_fma): Don't use an fms construct
+	when we don't have an fms operation, but fnma, and it looks
+	likely that we'll be able to use the latter.
+
 2013-04-10  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
 	* cif-code.def (OVERWRITABLE): Correct the comment for overwritable
