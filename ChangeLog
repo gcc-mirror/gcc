@@ -1,3 +1,7 @@
+2013-04-10  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2013-03-30  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.def (target_modules): Don't install libffi.
