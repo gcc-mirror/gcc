@@ -5842,7 +5842,7 @@ fixup_addr_diff_vecs (rtx first)
 int
 barrier_align (rtx barrier_or_label)
 {
-  rtx next = next_real_insn (barrier_or_label), pat, prev;
+  rtx next = next_active_insn (barrier_or_label), pat, prev;
 
   if (! next)
     return 0;
@@ -5856,7 +5856,7 @@ barrier_align (rtx barrier_or_label)
     /* This is a barrier in front of a constant table.  */
     return 0;
 
-  prev = prev_real_insn (barrier_or_label);
+  prev = prev_active_insn (barrier_or_label);
   if (GET_CODE (PATTERN (prev)) == ADDR_DIFF_VEC)
     {
       pat = PATTERN (prev);
