@@ -1,3 +1,7 @@
+2013-04-10  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* gcc.dg/tree-ssa/inline-11.c: New test
+
 2013-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56895

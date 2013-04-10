@@ -1,3 +1,10 @@
+2013-04-10  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* cif-code.def (OVERWRITABLE): Correct the comment for overwritable
+	function.
+	* ipa-inline.c (can_inline_edge_p): Let dump mechanism report the
+	inline fail caused by overwritable functions.
+
 2013-04-10  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* combine.c (simplify_compare_const): Use GET_MODE_MASK to filter out

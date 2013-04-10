@@ -266,7 +266,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
   else if (avail <= AVAIL_OVERWRITABLE)
     {
       e->inline_failed = CIF_OVERWRITABLE;
-      return false;
+      inlinable = false;
     }
   else if (e->call_stmt_cannot_inline_p)
     {
