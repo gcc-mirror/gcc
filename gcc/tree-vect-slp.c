@@ -140,8 +140,7 @@ vect_create_oprnd_info (int nops, int group_size)
       oprnd_info = XNEW (struct _slp_oprnd_info);
       oprnd_info->def_stmts.create (group_size);
       oprnd_info->first_dt = vect_uninitialized_def;
-      oprnd_info->first_def_type = NULL_TREE;
-      oprnd_info->first_const_oprnd = NULL_TREE;
+      oprnd_info->first_op_type = NULL_TREE;
       oprnd_info->first_pattern = false;
       oprnds_info.quick_push (oprnd_info);
     }
@@ -321,16 +320,7 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	{
 	  oprnd_info->first_dt = dt;
 	  oprnd_info->first_pattern = pattern;
-	  if (def)
-	    {
-	      oprnd_info->first_def_type = TREE_TYPE (def);
-	      oprnd_info->first_const_oprnd = NULL_TREE;
-	    }
-	  else
-            {
-              oprnd_info->first_def_type = NULL_TREE;
-              oprnd_info->first_const_oprnd = oprnd;
-            }
+	  oprnd_info->first_op_type = TREE_TYPE (oprnd);
 	}
       else
 	{
@@ -341,14 +331,13 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	     vect_internal_def.  */
 	  if (((oprnd_info->first_dt != dt
                 && !(oprnd_info->first_dt == vect_reduction_def
-                     && dt == vect_internal_def))
-               || (oprnd_info->first_def_type != NULL_TREE
-		   && def
-		   && !types_compatible_p (oprnd_info->first_def_type,
-					   TREE_TYPE (def))))
-	       || (!def
-		   && !types_compatible_p (TREE_TYPE (oprnd_info->first_const_oprnd),
-					   TREE_TYPE (oprnd))))
+                     && dt == vect_internal_def)
+		&& !((oprnd_info->first_dt == vect_external_def
+		      || oprnd_info->first_dt == vect_constant_def)
+		     && (dt == vect_external_def
+			 || dt == vect_constant_def)))
+               || !types_compatible_p (oprnd_info->first_op_type,
+				       TREE_TYPE (oprnd))))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2471,7 +2460,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		       the lhs, so make sure the scalar is the right type if
 		       we are dealing with vectors of
 		       long long/long/short/char.  */
-		    if (op_num == 1 && constant_p)
+		    if (op_num == 1 && TREE_CODE (op) == INTEGER_CST)
 		      op = fold_convert (TREE_TYPE (vector_type), op);
 		    break;
 
@@ -2504,7 +2493,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
           number_of_places_left_in_vector--;
 	  if (!types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
 	    {
-	      if (constant_p)
+	      if (CONSTANT_CLASS_P (op))
 		{
 		  op = fold_unary (VIEW_CONVERT_EXPR,
 				   TREE_TYPE (vector_type), op);
@@ -2525,6 +2514,8 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		}
 	    }
 	  elts[number_of_places_left_in_vector] = op;
+	  if (!CONSTANT_CLASS_P (op))
+	    constant_p = false;
 
           if (number_of_places_left_in_vector == 0)
             {
