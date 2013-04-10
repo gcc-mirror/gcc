@@ -597,6 +597,7 @@ static void sparc_print_operand_address (FILE *, rtx);
 static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 					   enum machine_mode,
 					   secondary_reload_info *);
+static enum machine_mode sparc_cstore_mode (enum insn_code icode);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -801,6 +802,9 @@ char sparc_hard_reg_printed[8];
 /* The value stored by LDSTUB.  */
 #undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 #define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 0xff
+
+#undef TARGET_CSTORE_MODE
+#define TARGET_CSTORE_MODE sparc_cstore_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2572,7 +2576,11 @@ emit_scc_insn (rtx operands[])
     {
       if (GET_MODE (x) == SImode)
         {
-          rtx pat = gen_seqsi_special (operands[0], x, y);
+	  rtx pat;
+	  if (TARGET_ARCH64)
+	    pat = gen_seqsidi_special (operands[0], x, y);
+	  else
+	    pat = gen_seqsisi_special (operands[0], x, y);
           emit_insn (pat);
           return true;
         }
@@ -2588,7 +2596,11 @@ emit_scc_insn (rtx operands[])
     {
       if (GET_MODE (x) == SImode)
         {
-          rtx pat = gen_snesi_special (operands[0], x, y);
+          rtx pat;
+	  if (TARGET_ARCH64)
+	    pat = gen_snesidi_special (operands[0], x, y);
+	  else
+	    pat = gen_snesisi_special (operands[0], x, y);
           emit_insn (pat);
           return true;
         }
@@ -2631,7 +2643,7 @@ emit_scc_insn (rtx operands[])
       || (!TARGET_VIS3 && code == GEU))
     {
       emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			      gen_rtx_fmt_ee (code, SImode,
+			      gen_rtx_fmt_ee (code, GET_MODE (operands[0]),
 					      gen_compare_reg_1 (code, x, y),
 					      const0_rtx)));
       return true;
@@ -12102,6 +12114,11 @@ sparc_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
     return false;
 
   return true;
+}
+
+static enum machine_mode sparc_cstore_mode (enum insn_code icode ATTRIBUTE_UNUSED)
+{
+  return (TARGET_ARCH64 ? DImode : SImode);
 }
 
 #include "gt-sparc.h"

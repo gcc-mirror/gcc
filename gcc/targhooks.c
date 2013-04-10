@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree-flow.h"
 #include "tree-ssa-alias.h"
+#include "insn-codes.h"
 
 
 bool
@@ -1535,6 +1536,14 @@ default_pch_valid_p (const void *data_p, size_t len)
       }
 
   return NULL;
+}
+
+/* Default version of cstore_mode.  */
+
+enum machine_mode
+default_cstore_mode (enum insn_code icode)
+{
+  return insn_data[(int) icode].operand[0].mode;
 }
 
 /* Default version of member_type_forces_blk.  */

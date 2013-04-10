@@ -2873,6 +2873,8 @@ as below:
 
 @hook TARGET_SPILL_CLASS
 
+@hook TARGET_CSTORE_MODE
+
 @node Old Constraints
 @section Obsolete Macros for Defining Constraints
 @cindex defining constraints, obsolete method

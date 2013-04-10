@@ -5081,7 +5081,7 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
 {
   struct expand_operand ops[4];
   rtx op0, last, comparison, subtarget;
-  enum machine_mode result_mode = insn_data[(int) icode].operand[0].mode;
+  enum machine_mode result_mode = targetm.cstore_mode (icode);
 
   last = get_last_insn ();
   x = prepare_operand (icode, x, 2, mode, compare_mode, unsignedp);
