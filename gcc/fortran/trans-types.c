@@ -132,7 +132,7 @@ int gfc_numeric_storage_size;
 int gfc_character_storage_size;
 
 
-gfc_try
+bool
 gfc_check_any_c_kind (gfc_typespec *ts)
 {
   int i;
@@ -144,10 +144,10 @@ gfc_check_any_c_kind (gfc_typespec *ts)
          Fortran kind being used exists in at least some form for C.  */
       if (c_interop_kinds_table[i].f90_type == ts->type &&
           c_interop_kinds_table[i].value == ts->kind)
-        return SUCCESS;
+        return true;
     }
 
-  return FAILURE;
+  return false;
 }
 
 

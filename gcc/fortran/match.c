@@ -505,8 +505,8 @@ gfc_match_label (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_add_flavor (&gfc_new_block->attr, FL_LABEL,
-		      gfc_new_block->name, NULL) == FAILURE)
+  if (!gfc_add_flavor (&gfc_new_block->attr, FL_LABEL, 
+		       gfc_new_block->name, NULL))
     return MATCH_ERROR;
 
   return MATCH_YES;
@@ -531,7 +531,7 @@ gfc_match_name (char *buffer)
   c = gfc_next_ascii_char ();
   if (!(ISALPHA (c) || (c == '_' && gfc_option.flag_allow_leading_underscore)))
     {
-      if (gfc_error_flag_test() == 0 && c != '(')
+      if (gfc_error_flag_test () == 0 && c != '(')
 	gfc_error ("Invalid character in name at %C");
       gfc_current_locus = old_loc;
       return MATCH_NO;
@@ -1268,7 +1268,7 @@ gfc_match_program (void)
   if (m == MATCH_ERROR)
     return m;
 
-  if (gfc_add_flavor (&sym->attr, FL_PROGRAM, sym->name, NULL) == FAILURE)
+  if (!gfc_add_flavor (&sym->attr, FL_PROGRAM, sym->name, NULL))
     return MATCH_ERROR;
 
   gfc_new_block = sym;
@@ -1383,16 +1383,15 @@ match_arithmetic_if (void)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_reference_st_label (l1, ST_LABEL_TARGET) == FAILURE
-      || gfc_reference_st_label (l2, ST_LABEL_TARGET) == FAILURE
-      || gfc_reference_st_label (l3, ST_LABEL_TARGET) == FAILURE)
+  if (!gfc_reference_st_label (l1, ST_LABEL_TARGET)
+      || !gfc_reference_st_label (l2, ST_LABEL_TARGET)
+      || !gfc_reference_st_label (l3, ST_LABEL_TARGET))
     {
       gfc_free_expr (expr);
       return MATCH_ERROR;
     }
 
-  if (gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF "
-		      "statement at %C") == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF statement at %C"))
     return MATCH_ERROR;
 
   new_st.op = EXEC_ARITHMETIC_IF;
@@ -1464,16 +1463,15 @@ gfc_match_if (gfc_statement *if_type)
 	  return MATCH_ERROR;
 	}
 
-      if (gfc_reference_st_label (l1, ST_LABEL_TARGET) == FAILURE
-	  || gfc_reference_st_label (l2, ST_LABEL_TARGET) == FAILURE
-	  || gfc_reference_st_label (l3, ST_LABEL_TARGET) == FAILURE)
+      if (!gfc_reference_st_label (l1, ST_LABEL_TARGET)
+	  || !gfc_reference_st_label (l2, ST_LABEL_TARGET)
+	  || !gfc_reference_st_label (l3, ST_LABEL_TARGET))
 	{
 	  gfc_free_expr (expr);
 	  return MATCH_ERROR;
 	}
 
-      if (gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF "
-			  "statement at %C") == FAILURE)
+      if (!gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF statement at %C"))
 	return MATCH_ERROR;
 
       new_st.op = EXEC_ARITHMETIC_IF;
@@ -1539,7 +1537,7 @@ gfc_match_if (gfc_statement *if_type)
      restore between tries.  */
 
 #define match(string, subr, statement) \
-  if (gfc_match(string) == MATCH_YES) { m = subr(); goto got_match; }
+  if (gfc_match (string) == MATCH_YES) { m = subr(); goto got_match; }
 
   gfc_clear_error ();
 
@@ -1746,7 +1744,7 @@ gfc_match_critical (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS)
+  if (gfc_find_state (COMP_DO_CONCURRENT))
     {
       gfc_error ("Image control statement CRITICAL at %C in DO CONCURRENT "
 		 "block");
@@ -1756,8 +1754,7 @@ gfc_match_critical (void)
   if (gfc_implicit_pure (NULL))
     gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
-  if (gfc_notify_std (GFC_STD_F2008, "CRITICAL statement at %C")
-      == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F2008, "CRITICAL statement at %C"))
     return MATCH_ERROR;
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
@@ -1766,7 +1763,7 @@ gfc_match_critical (void)
        return MATCH_ERROR;
     }
 
-  if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
+  if (gfc_find_state (COMP_CRITICAL))
     {
       gfc_error ("Nested CRITICAL block at %C");
       return MATCH_ERROR;
@@ -1775,7 +1772,7 @@ gfc_match_critical (void)
   new_st.op = EXEC_CRITICAL;
 
   if (label != NULL
-      && gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
+      && !gfc_reference_st_label (label, ST_LABEL_TARGET))
     return MATCH_ERROR;
 
   return MATCH_YES;
@@ -2380,8 +2377,7 @@ gfc_match_do (void)
       gfc_forall_iterator *head;
       gfc_expr *mask;
 
-      if (gfc_notify_std (GFC_STD_F2008, "DO CONCURRENT "
-			   "construct at %C") == FAILURE)
+      if (!gfc_notify_std (GFC_STD_F2008, "DO CONCURRENT construct at %C"))
 	return MATCH_ERROR;
 
 
@@ -2398,7 +2394,7 @@ gfc_match_do (void)
 	goto concurr_cleanup;
 
       if (label != NULL
-	   && gfc_reference_st_label (label, ST_LABEL_DO_TARGET) == FAILURE)
+	   && !gfc_reference_st_label (label, ST_LABEL_DO_TARGET))
 	goto concurr_cleanup;
 
       new_st.label1 = label;
@@ -2452,7 +2448,7 @@ concurr_cleanup:
 
 done:
   if (label != NULL
-      && gfc_reference_st_label (label, ST_LABEL_DO_TARGET) == FAILURE)
+      && !gfc_reference_st_label (label, ST_LABEL_DO_TARGET))
     goto cleanup;
 
   new_st.label1 = label;
@@ -2579,8 +2575,8 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	  return MATCH_ERROR;
 	}
       gcc_assert (op == EXEC_EXIT);
-      if (gfc_notify_std (GFC_STD_F2008, "EXIT statement with no"
-			  " do-construct-name at %C") == FAILURE)
+      if (!gfc_notify_std (GFC_STD_F2008, "EXIT statement with no"
+			   " do-construct-name at %C"))
 	return MATCH_ERROR;
       break;
 
@@ -2686,12 +2682,12 @@ gfc_match_stopcode (gfc_statement st)
   if (gfc_implicit_pure (NULL))
     gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
-  if (st == ST_STOP && gfc_find_state (COMP_CRITICAL) == SUCCESS)
+  if (st == ST_STOP && gfc_find_state (COMP_CRITICAL))
     {
       gfc_error ("Image control statement STOP at %C in CRITICAL block");
       goto cleanup;
     }
-  if (st == ST_STOP && gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS)
+  if (st == ST_STOP && gfc_find_state (COMP_DO_CONCURRENT))
     {
       gfc_error ("Image control statement STOP at %C in DO CONCURRENT block");
       goto cleanup;
@@ -2770,9 +2766,7 @@ gfc_match_pause (void)
   m = gfc_match_stopcode (ST_PAUSE);
   if (m == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F95_DEL, "PAUSE statement"
-	  " at %C")
-	  == FAILURE)
+      if (!gfc_notify_std (GFC_STD_F95_DEL, "PAUSE statement at %C"))
 	m = MATCH_ERROR;
     }
   return m;
@@ -2793,8 +2787,7 @@ gfc_match_stop (void)
 match
 gfc_match_error_stop (void)
 {
-  if (gfc_notify_std (GFC_STD_F2008, "ERROR STOP statement at %C")
-      == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F2008, "ERROR STOP statement at %C"))
     return MATCH_ERROR;
 
   return gfc_match_stopcode (ST_ERROR_STOP);
@@ -2833,14 +2826,14 @@ lock_unlock_statement (gfc_statement st)
        return MATCH_ERROR;
     }
 
-  if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
+  if (gfc_find_state (COMP_CRITICAL))
     {
       gfc_error ("Image control statement %s at %C in CRITICAL block",
 		 st == ST_LOCK ? "LOCK" : "UNLOCK");
       return MATCH_ERROR;
     }
 
-  if (gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS)
+  if (gfc_find_state (COMP_DO_CONCURRENT))
     {
       gfc_error ("Image control statement %s at %C in DO CONCURRENT block",
 		 st == ST_LOCK ? "LOCK" : "UNLOCK");
@@ -2979,8 +2972,7 @@ cleanup:
 match
 gfc_match_lock (void)
 {
-  if (gfc_notify_std (GFC_STD_F2008, "LOCK statement at %C")
-      == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F2008, "LOCK statement at %C"))
     return MATCH_ERROR;
 
   return lock_unlock_statement (ST_LOCK);
@@ -2990,8 +2982,7 @@ gfc_match_lock (void)
 match
 gfc_match_unlock (void)
 {
-  if (gfc_notify_std (GFC_STD_F2008, "UNLOCK statement at %C")
-      == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F2008, "UNLOCK statement at %C"))
     return MATCH_ERROR;
 
   return lock_unlock_statement (ST_UNLOCK);
@@ -3023,8 +3014,7 @@ sync_statement (gfc_statement st)
   if (gfc_implicit_pure (NULL))
     gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
-  if (gfc_notify_std (GFC_STD_F2008, "SYNC statement at %C")
-      == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F2008, "SYNC statement at %C"))
     return MATCH_ERROR;
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
@@ -3033,13 +3023,13 @@ sync_statement (gfc_statement st)
        return MATCH_ERROR;
     }
 
-  if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
+  if (gfc_find_state (COMP_CRITICAL))
     {
       gfc_error ("Image control statement SYNC at %C in CRITICAL block");
       return MATCH_ERROR;
     }
 
-  if (gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS)
+  if (gfc_find_state (COMP_DO_CONCURRENT))
     {
       gfc_error ("Image control statement SYNC at %C in DO CONCURRENT block");
       return MATCH_ERROR;
@@ -3217,13 +3207,11 @@ gfc_match_assign (void)
 
   if (gfc_match (" %l", &label) == MATCH_YES)
     {
-      if (gfc_reference_st_label (label, ST_LABEL_UNKNOWN) == FAILURE)
+      if (!gfc_reference_st_label (label, ST_LABEL_UNKNOWN))
 	return MATCH_ERROR;
       if (gfc_match (" to %v%t", &expr) == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F95_DEL, "ASSIGN "
-			      "statement at %C")
-	      == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F95_DEL, "ASSIGN statement at %C"))
 	    return MATCH_ERROR;
 
 	  expr->symtree->n.sym->attr.assign = 1;
@@ -3255,7 +3243,7 @@ gfc_match_goto (void)
 
   if (gfc_match (" %l%t", &label) == MATCH_YES)
     {
-      if (gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
+      if (!gfc_reference_st_label (label, ST_LABEL_TARGET))
 	return MATCH_ERROR;
 
       new_st.op = EXEC_GOTO;
@@ -3267,9 +3255,7 @@ gfc_match_goto (void)
 
   if (gfc_match_variable (&expr, 0) == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F95_DEL, "Assigned GOTO "
-			  "statement at %C")
-	  == FAILURE)
+      if (!gfc_notify_std (GFC_STD_F95_DEL, "Assigned GOTO statement at %C"))
 	return MATCH_ERROR;
 
       new_st.op = EXEC_GOTO;
@@ -3293,7 +3279,7 @@ gfc_match_goto (void)
 	  if (m != MATCH_YES)
 	    goto syntax;
 
-	  if (gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
+	  if (!gfc_reference_st_label (label, ST_LABEL_TARGET))
 	    goto cleanup;
 
 	  if (head == NULL)
@@ -3338,7 +3324,7 @@ gfc_match_goto (void)
       if (m != MATCH_YES)
 	goto syntax;
 
-      if (gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
+      if (!gfc_reference_st_label (label, ST_LABEL_TARGET))
 	goto cleanup;
 
       if (head == NULL)
@@ -3377,8 +3363,7 @@ gfc_match_goto (void)
   if (gfc_match (" %e%t", &expr) != MATCH_YES)
     goto syntax;
 
-  if (gfc_notify_std (GFC_STD_F95_OBS, "Computed GOTO "
-		      "at %C") == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F95_OBS, "Computed GOTO at %C"))
     return MATCH_ERROR;
 
   /* At this point, a computed GOTO has been fully matched and an
@@ -3460,8 +3445,8 @@ gfc_match_allocate (void)
     {
       if (gfc_match (" :: ") == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "typespec in "
-			      "ALLOCATE at %L", &old_locus) == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "typespec in ALLOCATE at %L", 
+			       &old_locus))
 	    goto cleanup;
 
 	  if (ts.deferred)
@@ -3516,8 +3501,8 @@ gfc_match_allocate (void)
 	  deferred_locus = tail->expr->where;
 	}
 
-      if (gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS
-	  || gfc_find_state (COMP_CRITICAL) == SUCCESS)
+      if (gfc_find_state (COMP_DO_CONCURRENT)
+	  || gfc_find_state (COMP_CRITICAL))
 	{
 	  gfc_ref *ref;
 	  bool coarray = tail->expr->symtree->n.sym->attr.codimension;
@@ -3525,12 +3510,12 @@ gfc_match_allocate (void)
 	    if (ref->type == REF_COMPONENT)
 	      coarray = ref->u.c.component->attr.codimension;
 
-	  if (coarray && gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS)
+	  if (coarray && gfc_find_state (COMP_DO_CONCURRENT))
 	    {
 	      gfc_error ("ALLOCATE of coarray at %C in DO CONCURRENT block");
 	      goto cleanup;
 	    }
-	  if (coarray && gfc_find_state (COMP_CRITICAL) == SUCCESS)
+	  if (coarray && gfc_find_state (COMP_CRITICAL))
 	    {
 	      gfc_error ("ALLOCATE of coarray at %C in CRITICAL block");
 	      goto cleanup;
@@ -3625,8 +3610,7 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "ERRMSG tag at %L",
-			      &tmp->where) == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "ERRMSG tag at %L", &tmp->where))
 	    goto cleanup;
 
 	  /* Enforce C630.  */
@@ -3649,8 +3633,7 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "SOURCE tag at %L",
-			      &tmp->where) == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "SOURCE tag at %L", &tmp->where))
 	    goto cleanup;
 
 	  /* Enforce C630.  */
@@ -3669,9 +3652,9 @@ alloc_opt_list:
 	    }
 
 	  if (head->next
-	      && gfc_notify_std (GFC_STD_F2008, "SOURCE tag at %L"
-				 " with more than a single allocate object",
-				 &tmp->where) == FAILURE)
+	      && !gfc_notify_std (GFC_STD_F2008, "SOURCE tag at %L"
+				  " with more than a single allocate object", 
+				  &tmp->where))
 	    goto cleanup;
 
 	  source = tmp;
@@ -3687,8 +3670,7 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2008, "MOLD tag at %L",
-			      &tmp->where) == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2008, "MOLD tag at %L", &tmp->where))
 	    goto cleanup;
 
 	  /* Check F08:C636.  */
@@ -3900,14 +3882,14 @@ gfc_match_deallocate (void)
 	gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
       if (gfc_is_coarray (tail->expr)
-	  && gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS)
+	  && gfc_find_state (COMP_DO_CONCURRENT))
 	{
 	  gfc_error ("DEALLOCATE of coarray at %C in DO CONCURRENT block");
 	  goto cleanup;
 	}
 
       if (gfc_is_coarray (tail->expr)
-	  && gfc_find_state (COMP_CRITICAL) == SUCCESS)
+	  && gfc_find_state (COMP_CRITICAL))
 	{
 	  gfc_error ("DEALLOCATE of coarray at %C in CRITICAL block");
 	  goto cleanup;
@@ -3962,8 +3944,7 @@ dealloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "ERRMSG at %L",
-			      &tmp->where) == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "ERRMSG at %L", &tmp->where))
 	    goto cleanup;
 
 	  if (saw_errmsg)
@@ -4018,13 +3999,13 @@ gfc_match_return (void)
 
   e = NULL;
 
-  if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
+  if (gfc_find_state (COMP_CRITICAL))
     {
       gfc_error ("Image control statement RETURN at %C in CRITICAL block");
       return MATCH_ERROR;
     }
 
-  if (gfc_find_state (COMP_DO_CONCURRENT) == SUCCESS)
+  if (gfc_find_state (COMP_DO_CONCURRENT))
     {
       gfc_error ("Image control statement RETURN at %C in DO CONCURRENT block");
       return MATCH_ERROR;
@@ -4033,7 +4014,7 @@ gfc_match_return (void)
   if (gfc_match_eos () == MATCH_YES)
     goto done;
 
-  if (gfc_find_state (COMP_SUBROUTINE) == FAILURE)
+  if (!gfc_find_state (COMP_SUBROUTINE))
     {
       gfc_error ("Alternate RETURN statement at %C is only allowed within "
 		 "a SUBROUTINE");
@@ -4066,8 +4047,8 @@ cleanup:
 done:
   gfc_enclosing_unit (&s);
   if (s == COMP_PROGRAM
-      && gfc_notify_std (GFC_STD_GNU, "RETURN statement in "
-			"main program at %C") == FAILURE)
+      && !gfc_notify_std (GFC_STD_GNU, "RETURN statement in "
+			  "main program at %C"))
       return MATCH_ERROR;
 
   new_st.op = EXEC_RETURN;
@@ -4178,7 +4159,7 @@ gfc_match_call (void)
 	}
 
       /* ...and then to try to make the symbol into a subroutine.  */
-      if (gfc_add_subroutine (&sym->attr, sym->name, NULL) == FAILURE)
+      if (!gfc_add_subroutine (&sym->attr, sym->name, NULL))
 	return MATCH_ERROR;
     }
 
@@ -4231,7 +4212,7 @@ gfc_match_call (void)
 	  if (a->expr != NULL)
 	    continue;
 
-	  if (gfc_reference_st_label (a->label, ST_LABEL_TARGET) == FAILURE)
+	  if (!gfc_reference_st_label (a->label, ST_LABEL_TARGET))
 	    continue;
 
 	  i++;
@@ -4450,14 +4431,13 @@ gfc_match_common (void)
 	  if (((sym->value != NULL && sym->value->expr_type != EXPR_NULL)
 	       || sym->attr.data) && gfc_current_state () != COMP_BLOCK_DATA)
 	    {
-	      if (gfc_notify_std (GFC_STD_GNU, "Initialized symbol '%s' at %C "
-					       "can only be COMMON in "
-					       "BLOCK DATA", sym->name)
-		  == FAILURE)
+	      if (!gfc_notify_std (GFC_STD_GNU, "Initialized symbol '%s' at "
+				   "%C can only be COMMON in BLOCK DATA", 
+				   sym->name))
 		goto cleanup;
 	    }
 
-	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE)
+	  if (!gfc_add_in_common (&sym->attr, sym->name, NULL))
 	    goto cleanup;
 
 	  if (tail != NULL)
@@ -4482,7 +4462,7 @@ gfc_match_common (void)
 		  goto cleanup;
 		}
 
-	      if (gfc_add_dimension (&sym->attr, sym->name, NULL) == FAILURE)
+	      if (!gfc_add_dimension (&sym->attr, sym->name, NULL))
 		goto cleanup;
 
 	      if (sym->attr.pointer)
@@ -4584,7 +4564,7 @@ gfc_match_block_data (void)
   if (gfc_get_symbol (name, NULL, &sym))
     return MATCH_ERROR;
 
-  if (gfc_add_flavor (&sym->attr, FL_BLOCK_DATA, sym->name, NULL) == FAILURE)
+  if (!gfc_add_flavor (&sym->attr, FL_BLOCK_DATA, sym->name, NULL))
     return MATCH_ERROR;
 
   gfc_new_block = sym;
@@ -4635,15 +4615,14 @@ gfc_match_namelist (void)
 
       if (group_name->attr.flavor == FL_NAMELIST
 	  && group_name->attr.use_assoc
-	  && gfc_notify_std (GFC_STD_GNU, "Namelist group name '%s' "
-			     "at %C already is USE associated and can"
-			     "not be respecified.", group_name->name)
-	     == FAILURE)
+	  && !gfc_notify_std (GFC_STD_GNU, "Namelist group name '%s' "
+			      "at %C already is USE associated and can"
+			      "not be respecified.", group_name->name))
 	return MATCH_ERROR;
 
       if (group_name->attr.flavor != FL_NAMELIST
-	  && gfc_add_flavor (&group_name->attr, FL_NAMELIST,
-			     group_name->name, NULL) == FAILURE)
+	  && !gfc_add_flavor (&group_name->attr, FL_NAMELIST, 
+			      group_name->name, NULL))
 	return MATCH_ERROR;
 
       for (;;)
@@ -4655,7 +4634,7 @@ gfc_match_namelist (void)
 	    goto error;
 
 	  if (sym->attr.in_namelist == 0
-	      && gfc_add_in_namelist (&sym->attr, sym->name, NULL) == FAILURE)
+	      && !gfc_add_in_namelist (&sym->attr, sym->name, NULL))
 	    goto error;
 
 	  /* Use gfc_error_check here, rather than goto error, so that
@@ -4721,8 +4700,8 @@ gfc_match_module (void)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_add_flavor (&gfc_new_block->attr, FL_MODULE,
-		      gfc_new_block->name, NULL) == FAILURE)
+  if (!gfc_add_flavor (&gfc_new_block->attr, FL_MODULE, 
+		       gfc_new_block->name, NULL))
     return MATCH_ERROR;
 
   return MATCH_YES;
@@ -4811,7 +4790,7 @@ gfc_match_equivalence (void)
 
 	  sym = set->expr->symtree->n.sym;
 
-	  if (gfc_add_in_equivalence (&sym->attr, sym->name, NULL) == FAILURE)
+	  if (!gfc_add_in_equivalence (&sym->attr, sym->name, NULL))
 	    goto cleanup;
 
 	  if (sym->attr.in_common)
@@ -4958,8 +4937,7 @@ gfc_match_st_function (void)
 
   gfc_push_error (&old_error);
 
-  if (gfc_add_procedure (&sym->attr, PROC_ST_FUNCTION,
-			 sym->name, NULL) == FAILURE)
+  if (!gfc_add_procedure (&sym->attr, PROC_ST_FUNCTION, sym->name, NULL))
     goto undo_error;
 
   if (gfc_match_formal_arglist (sym, 1, 0) != MATCH_YES)
@@ -4981,8 +4959,7 @@ gfc_match_st_function (void)
 
   sym->value = expr;
 
-  if (gfc_notify_std (GFC_STD_F95_OBS,
-		      "Statement function at %C") == FAILURE)
+  if (!gfc_notify_std (GFC_STD_F95_OBS, "Statement function at %C"))
     return MATCH_ERROR;
 
   return MATCH_YES;

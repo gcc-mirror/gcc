@@ -2192,9 +2192,9 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
     minmax (a1, a2, a3, ...)
     {
       mvar = a1;
-      if (a2 .op. mvar || isnan(mvar))
+      if (a2 .op. mvar || isnan (mvar))
         mvar = a2;
-      if (a3 .op. mvar || isnan(mvar))
+      if (a3 .op. mvar || isnan (mvar))
         mvar = a3;
       ...
       return mvar
@@ -2749,7 +2749,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
 
   if (norm2)
     {
-      /* if (x(i) != 0.0)
+      /* if (x (i) != 0.0)
 	   {
 	     absX = abs(x(i))
 	     if (absX > scale)
@@ -3104,7 +3104,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   else
     {
       mpz_t asize;
-      if (gfc_array_size (arrayexpr, &asize) == SUCCESS)
+      if (gfc_array_size (arrayexpr, &asize))
 	{
 	  nonempty = gfc_conv_mpz_to_tree (asize, gfc_index_integer_kind);
 	  mpz_clear (asize);
@@ -3594,7 +3594,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   else
     {
       mpz_t asize;
-      if (gfc_array_size (arrayexpr, &asize) == SUCCESS)
+      if (gfc_array_size (arrayexpr, &asize))
 	{
 	  nonempty = gfc_conv_mpz_to_tree (asize, gfc_index_integer_kind);
 	  mpz_clear (asize);

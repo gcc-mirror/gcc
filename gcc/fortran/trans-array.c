@@ -7582,7 +7582,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      comp = fold_build3_loc (input_location, COMPONENT_REF,
 				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);
 
-	      if (GFC_DESCRIPTOR_TYPE_P(TREE_TYPE (comp)))
+	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)))
 	        tmp = gfc_trans_dealloc_allocated (comp,
 					CLASS_DATA (c)->attr.codimension);
 	      else
@@ -7647,7 +7647,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      tmp = CLASS_DATA (c)->backend_decl;
 	      comp = fold_build3_loc (input_location, COMPONENT_REF,
 				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);
-	      if (GFC_DESCRIPTOR_TYPE_P(TREE_TYPE (comp)))
+	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)))
 		gfc_conv_descriptor_data_set (&fnblock, comp, null_pointer_node);
 	      else
 		{
