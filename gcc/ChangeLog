@@ -1,3 +1,8 @@
+2013-04-10  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* combine.c (simplify_compare_const): Use GET_MODE_MASK to filter out
+	unnecessary bits in the constant power of two case.
+
 2013-04-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove

@@ -10759,8 +10759,9 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
       && (code == EQ || code == NE || code == GE || code == GEU
 	  || code == LT || code == LTU)
       && mode_width <= HOST_BITS_PER_WIDE_INT
-      && exact_log2 (const_op) >= 0
-      && nonzero_bits (op0, mode) == (unsigned HOST_WIDE_INT) const_op)
+      && exact_log2 (const_op & GET_MODE_MASK (mode)) >= 0
+      && (nonzero_bits (op0, mode)
+	  == (unsigned HOST_WIDE_INT) (const_op & GET_MODE_MASK (mode))))
     {
       code = (code == EQ || code == GE || code == GEU ? NE : EQ);
       const_op = 0;
