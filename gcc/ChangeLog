@@ -1,3 +1,11 @@
+2013-04-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove
+	broken code swapping operands.
+	(vect_build_slp_tree): Do not compute load permutations here.
+	(vect_analyze_slp_instance): Compute load permutations here,
+	after building the SLP tree.
+
 2013-04-09  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.md (barrier_align): Use next/prev_active_insn instead
@@ -5,8 +13,8 @@
 
 2013-04-09  Jan Hubicka  <jh@suse.cz>
 
-	* ipa.c (cgraph_externally_visible_p, varpool_externally_visible_p): Drop
-	aliased parameter.
+	* ipa.c (cgraph_externally_visible_p, varpool_externally_visible_p):
+	Drop aliased parameter.
 	(function_and_variable_visibility): Do not handle alias pairs.
 	* cgraph.c (varpool_externally_visible_p): Update prototype.
 	* varpool.c (varpool_add_new_variable): Update.
