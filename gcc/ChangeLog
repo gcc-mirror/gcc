@@ -1,3 +1,16 @@
+2013-04-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/sparc/sparc.c: Include tree-pass.h.
+	(TARGET_MACHINE_DEPENDENT_REORG): Do not redefine.
+	(sparc_reorg): Rename to sparc_do_work_around_errata.  Move to
+	head of file.  Change return type.  Split off gate function.
+	(sparc_gate_work_around_errata): New function.
+	(pass_work_around_errata): New pass definition.
+	(insert_pass_work_around_errata) New pass insert definition to
+	insert pass_work_around_errata just after delayed-branch scheduling.
+	(sparc_option_override): Insert the pass.
+	* config/sparc/t-sparc (sparc.o): Add TREE_PASS_H dependence.
+
 2013-04-10  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=supersparc
