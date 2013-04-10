@@ -1,3 +1,45 @@
+2013-04-10  David S. Miller  <davem@davemloft.net>
+
+	* target.def (cstore_mode): New hook.
+	* target.h: Include insn-codes.h
+	* targhooks.c: Likewise.
+	(default_cstore_mode): New function.
+	* targhooks.h: Declare it.
+	* doc/tm.texi.in: New hook slot for TARGET_CSTORE_MODE.
+	* doc/tm.texi: Rebuild.
+	* expmed.c (emit_cstore): Obtain cstore boolean result mode using
+	target hook, rather than inspecting the insn_data.
+	* config/sparc/sparc.c (sparc_cstore_mode): New function.
+	(TARGET_CSTORE_MODE): Redefine.
+	(emit_scc_insn): When TARGET_ARCH64, emit new 64-bit boolean
+	result patterns.
+	* config/sparc/predicates.md (cstore_result_operand): New special
+	predicate.
+	* config/sparc/sparc.md (cstoresi4, cstoredi4, cstore<F:mode>4):
+	Use it for operand 0.
+	(*seqsi_special): Rewrite using 'P' mode iterator on operand 0.
+	(*snesi_special): Likewise.
+	(*snesi_zero): Likewise.
+	(*seqsi_zero): Likewise.
+	(*sltu_insn): Likewise.
+	(*sgeu_insn): Likewise.
+	(*seqdi_special): Make operand 0 and comparison operation be of
+	DImode.
+	(*snedi_special): Likewise.
+	(*snedi_special_vis3): Likewise.
+	(*neg_snesi_zero): Rename to *neg_snesisi_zero.
+	(*neg_snesi_sign_extend): Rename to *neg_snesidi_zero.
+	(*snesi_zero_extend): Delete, covered by 'P' mode iterator.
+	(*neg_seqsi_zero): Rename to *neg_seqsisi_zero.
+	(*neg_seqsi_sign_extend): Rename to *neg_seqsidi_zero.
+	(*seqsi_zero_extend): Delete, covered by 'P' mode iterator.
+	(*sltu_extend_sp64): Likewise.
+	(*neg_sltu_insn): Rename to *neg_sltusi_insn.
+	(*neg_sltu_extend_sp64): Rename to *neg_sltudi_insn.
+	(*sgeu_extend_sp64): Delete, covered by 'P' mode iterator.
+	(*neg_sgeu_insn): Rename to *neg_sgeusi_insn.
+	(*neg_sgeu_extend_sp64): Rename to *neg_sgeudi_insn.
+
 2013-04-10  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_extension): New function.
