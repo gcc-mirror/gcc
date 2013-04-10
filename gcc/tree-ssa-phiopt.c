@@ -2013,8 +2013,7 @@ struct gimple_opt_pass pass_phiopt =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect
-    | TODO_verify_ssa
+  TODO_verify_ssa
     | TODO_verify_flow
     | TODO_verify_stmts	 		/* todo_flags_finish */
  }
@@ -2042,8 +2041,7 @@ struct gimple_opt_pass pass_cselim =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect
-    | TODO_verify_ssa
+  TODO_verify_ssa
     | TODO_verify_flow
     | TODO_verify_stmts	 		/* todo_flags_finish */
  }

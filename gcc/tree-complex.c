@@ -1648,9 +1648,8 @@ struct gimple_opt_pass pass_lower_complex =
   PROP_gimple_lcx,			/* properties_provided */
   0,                       		/* properties_destroyed */
   0,					/* todo_flags_start */
-    TODO_ggc_collect
-    | TODO_update_ssa
-    | TODO_verify_stmts	 		/* todo_flags_finish */
+  TODO_update_ssa
+  | TODO_verify_stmts	 		/* todo_flags_finish */
  }
 };
 
@@ -1679,8 +1678,7 @@ struct gimple_opt_pass pass_lower_complex_O0 =
   PROP_gimple_lcx,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect
-    | TODO_update_ssa
-    | TODO_verify_stmts	 		/* todo_flags_finish */
+  TODO_update_ssa
+  | TODO_verify_stmts	 		/* todo_flags_finish */
  }
 };

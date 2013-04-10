@@ -4864,6 +4864,6 @@ struct rtl_opt_pass pass_expand =
   PROP_ssa | PROP_trees,		/* properties_destroyed */
   TODO_verify_ssa | TODO_verify_flow
     | TODO_verify_stmts,		/* todo_flags_start */
-  TODO_ggc_collect			/* todo_flags_finish */
+  0					/* todo_flags_finish */
  }
 };

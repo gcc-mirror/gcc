@@ -406,7 +406,7 @@ static struct rtl_opt_pass pass_rest_of_compilation =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect                      /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -432,7 +432,7 @@ static struct rtl_opt_pass pass_postreload =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect | TODO_verify_rtl_sharing /* todo_flags_finish */
+  TODO_verify_rtl_sharing               /* todo_flags_finish */
  }
 };
 
@@ -1620,7 +1620,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_sms);
       NEXT_PASS (pass_sched);
       NEXT_PASS (pass_ira);
-      NEXT_PASS (pass_reload);
       NEXT_PASS (pass_postreload);
 	{
 	  struct opt_pass **p = &pass_postreload.pass.sub;
@@ -2014,9 +2013,6 @@ execute_todo (unsigned int flags)
       fflush (dump_file);
     }
 
-  if (flags & TODO_ggc_collect)
-    ggc_collect ();
-
   /* Now that the dumping has been done, we can get rid of the optional
      df problems.  */
   if (flags & TODO_df_finish)
@@ -2188,6 +2184,9 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   pass_fini_dump_file (pass);
 
   current_pass = NULL;
+
+  /* Signal this is a suitable GC collection point.  */
+  ggc_collect ();
 }
 
 /* For the current function, execute all ipa transforms. */
@@ -2364,6 +2363,9 @@ execute_one_pass (struct opt_pass *pass)
 		|| pass->type != RTL_PASS);
 
   current_pass = NULL;
+
+  /* Signal this is a suitable GC collection point.  */
+  ggc_collect ();
 
   return true;
 }

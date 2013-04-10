@@ -1,5 +1,22 @@
 2013-04-10  Richard Biener  <rguenther@suse.de>
 
+	* passes.c (execute_todo): Do not call ggc_collect conditional here.
+	(execute_one_ipa_transform_pass): But unconditionally here.
+	(execute_one_pass): And here.
+	(init_optimization_passes): Remove reload pass.
+	* tree-pass.h (TODO_ggc_collect): Remove.
+	(pass_reload): Likewise.
+	* ira.c (do_reload): Merge into ...
+	(ira): ... this.
+	(rest_of_handle_reload): Remove.
+	(pass_reload): Likewise.
+	* config/i386/i386.c (ix86_option_override): Refer to ira instead
+	of reload for vzeroupper pass placement.
+	* <everywhere>: Remove TODO_ggc_collect from todo_flags_start
+	and todo_flags_finish of all passes.
+
+2013-04-10  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (struct _slp_oprnd_info): Remove
 	first_const_oprnd field, rename first_def_type to first_op_type.
 	* tree-vect-slp.c (vect_create_oprnd_info): Adjust.

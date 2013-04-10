@@ -4788,7 +4788,7 @@ struct gimple_opt_pass pass_pre =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   TODO_rebuild_alias,			/* todo_flags_start */
-  TODO_ggc_collect | TODO_verify_ssa	/* todo_flags_finish */
+  TODO_verify_ssa			/* todo_flags_finish */
  }
 };
 
@@ -4840,6 +4840,6 @@ struct gimple_opt_pass pass_fre =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect | TODO_verify_ssa /* todo_flags_finish */
+  TODO_verify_ssa			/* todo_flags_finish */
  }
 };

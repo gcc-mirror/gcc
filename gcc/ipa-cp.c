@@ -3660,7 +3660,7 @@ struct ipa_opt_pass_d pass_ipa_cp =
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
   TODO_dump_symtab |
-  TODO_remove_functions | TODO_ggc_collect /* todo_flags_finish */
+  TODO_remove_functions         /* todo_flags_finish */
  },
  ipcp_generate_summary,			/* generate_summary */
  ipcp_write_summary,			/* write_summary */

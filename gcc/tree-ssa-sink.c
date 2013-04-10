@@ -597,7 +597,6 @@ struct gimple_opt_pass pass_sink_code =
   0,					/* todo_flags_start */
   TODO_update_ssa
     | TODO_verify_ssa
-    | TODO_verify_flow
-    | TODO_ggc_collect			/* todo_flags_finish */
+    | TODO_verify_flow			/* todo_flags_finish */
  }
 };
