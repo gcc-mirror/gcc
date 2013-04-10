@@ -555,8 +555,8 @@ gfc_match_use (void)
     {
       if ((m = gfc_match (" %n ::", module_nature)) == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "module "
-			      "nature in USE statement at %C") == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "module "
+			       "nature in USE statement at %C"))
 	    goto cleanup;
 
 	  if (strcmp (module_nature, "intrinsic") == 0)
@@ -590,8 +590,7 @@ gfc_match_use (void)
     {
       m = gfc_match (" ::");
       if (m == MATCH_YES &&
-	  gfc_notify_std (GFC_STD_F2003,
-			  "\"USE :: module\" at %C") == FAILURE)
+	  !gfc_notify_std(GFC_STD_F2003, "\"USE :: module\" at %C"))
 	goto cleanup;
 
       if (m != MATCH_YES)
@@ -658,9 +657,8 @@ gfc_match_use (void)
 	  m = gfc_match (" =>");
 
 	  if (type == INTERFACE_USER_OP && m == MATCH_YES
-	      && (gfc_notify_std (GFC_STD_F2003, "Renaming "
-				  "operators in USE statements at %C")
-		 == FAILURE))
+	      && (!gfc_notify_std(GFC_STD_F2003, "Renaming "
+				  "operators in USE statements at %C")))
 	    goto cleanup;
 
 	  if (type == INTERFACE_USER_OP)
@@ -4089,7 +4087,7 @@ load_generic_interfaces (void)
 	      if (st && !sym->attr.generic
 		     && !st->ambiguous
 		     && sym->module
-		     && strcmp(module, sym->module))
+		     && strcmp (module, sym->module))
 		{
 		  ambiguous_set = true;
 		  st->ambiguous = 1;
@@ -6096,10 +6094,9 @@ use_iso_fortran_env_module (void)
 	      found = true;
 	      u->found = 1;
 
-	      if (gfc_notify_std (symbol[i].standard, "The symbol '%s', "
-				  "referenced at %L, is not in the selected "
-				  "standard", symbol[i].name,
-				  &u->where) == FAILURE)
+	      if (!gfc_notify_std (symbol[i].standard, "The symbol '%s', "
+				   "referenced at %L, is not in the selected "
+				   "standard", symbol[i].name, &u->where))
 	        continue;
 
 	      if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
@@ -6265,7 +6262,7 @@ gfc_use_module (gfc_use_list *module)
     {
       if (strcmp (module_name, "iso_fortran_env") == 0
 	  && gfc_notify_std (GFC_STD_F2003, "ISO_FORTRAN_ENV "
-			     "intrinsic module at %C") != FAILURE)
+			     "intrinsic module at %C"))
        {
 	 use_iso_fortran_env_module ();
 	 free_rename (module->rename);
@@ -6276,8 +6273,7 @@ gfc_use_module (gfc_use_list *module)
        }
 
       if (strcmp (module_name, "iso_c_binding") == 0
-	  && gfc_notify_std (GFC_STD_F2003,
-			     "ISO_C_BINDING module at %C") != FAILURE)
+	  && gfc_notify_std (GFC_STD_F2003, "ISO_C_BINDING module at %C"))
 	{
 	  import_iso_c_binding_module();
 	  free_rename (module->rename);

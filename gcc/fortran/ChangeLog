@@ -1,3 +1,38 @@
+2013-04-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * gfortran.h: Remove enum gfc_try, replace gfc_try with bool type.
+        * arith.c: Replace gfc_try with bool type.
+        * array.c: Likewise.
+        * check.c: Likewise.
+        * class.c: Likewise.
+        * cpp.c: Likewise.
+        * cpp.h: Likewise.
+        * data.c: Likewise.
+        * data.h: Likewise.
+        * decl.c: Likewise.
+        * error.c: Likewise.
+        * expr.c: Likewise.
+        * f95-lang.c: Likewise.
+        * interface.c: Likewise.
+        * intrinsic.c: Likewise.
+        * intrinsic.h: Likewise.
+        * io.c: Likewise.
+        * match.c: Likewise.
+        * match.h: Likewise.
+        * module.c: Likewise.
+        * openmp.c: Likewise.
+        * parse.c: Likewise.
+        * parse.h: Likewise.
+        * primary.c: Likewise.
+        * resolve.c: Likewise.
+        * scanner.c: Likewise.
+        * simplify.c: Likewise.
+        * symbol.c: Likewise.
+        * trans-intrinsic.c: Likewise.
+        * trans-openmp.c: Likewise.
+        * trans-stmt.c: Likewise.
+        * trans-types.c: Likewise.
+
 2013-04-09  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (KIND Type Parameters,

@@ -588,7 +588,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
       newvar = NULL;
       for (j=0; j<i; j++)
 	{
-	  if (gfc_dep_compare_functions(*(expr_array[i]),
+	  if (gfc_dep_compare_functions (*(expr_array[i]),
 					*(expr_array[j]), true)	== 0)
 	    {
 	      if (newvar == NULL)
@@ -936,7 +936,7 @@ optimize_assignment (gfc_code * c)
       remove_trim (rhs);
 
       /* Replace a = '   ' by a = '' to optimize away a memcpy.  */
-      if (is_empty_string(rhs))
+      if (is_empty_string (rhs))
 	rhs->value.character.length = 0;
     }
 

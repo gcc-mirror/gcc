@@ -100,7 +100,7 @@ use_modules (void)
 
 #define match(keyword, subr, st)				\
     do {							\
-      if (match_word(keyword, subr, &old_locus) == MATCH_YES)	\
+      if (match_word (keyword, subr, &old_locus) == MATCH_YES)	\
 	return st;						\
       else							\
 	undo_new_statement ();				  \
@@ -1068,7 +1068,7 @@ pop_state (void)
 
 /* Try to find the given state in the state stack.  */
 
-gfc_try
+bool
 gfc_find_state (gfc_compile_state state)
 {
   gfc_state_data *p;
@@ -1077,7 +1077,7 @@ gfc_find_state (gfc_compile_state state)
     if (p->state == state)
       break;
 
-  return (p == NULL) ? FAILURE : SUCCESS;
+  return (p == NULL) ? false : true;
 }
 
 
@@ -1763,7 +1763,7 @@ unexpected_statement (gfc_statement st)
 /* Given the next statement seen by the matcher, make sure that it is
    in proper order with the last.  This subroutine is initialized by
    calling it with an argument of ST_NONE.  If there is a problem, we
-   issue an error and return FAILURE.  Otherwise we return SUCCESS.
+   issue an error and return false.  Otherwise we return true.
 
    Individual parsers need to verify that the statements seen are
    valid before calling here, i.e., ENTRY statements are not allowed in
@@ -1815,7 +1815,7 @@ typedef struct
 }
 st_state;
 
-static gfc_try
+static bool
 verify_st_order (st_state *p, gfc_statement st, bool silent)
 {
 
@@ -1897,7 +1897,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
   /* All is well, record the statement in case we need it next time.  */
   p->where = gfc_current_locus;
   p->last_statement = st;
-  return SUCCESS;
+  return true;
 
 order:
   if (!silent)
@@ -1905,7 +1905,7 @@ order:
 	       gfc_ascii_statement (st),
 	       gfc_ascii_statement (p->last_statement), &p->where);
 
-  return FAILURE;
+  return false;
 }
 
 
@@ -1977,8 +1977,7 @@ parse_derived_contains (void)
 	  goto error;
 
 	case ST_PROCEDURE:
-	  if (gfc_notify_std (GFC_STD_F2003, "Type-bound"
-					     " procedure at %C") == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "Type-bound procedure at %C"))
 	    goto error;
 
 	  accept_statement (ST_PROCEDURE);
@@ -1986,8 +1985,7 @@ parse_derived_contains (void)
 	  break;
 
 	case ST_GENERIC:
-	  if (gfc_notify_std (GFC_STD_F2003, "GENERIC binding"
-					     " at %C") == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "GENERIC binding at %C"))
 	    goto error;
 
 	  accept_statement (ST_GENERIC);
@@ -1995,9 +1993,8 @@ parse_derived_contains (void)
 	  break;
 
 	case ST_FINAL:
-	  if (gfc_notify_std (GFC_STD_F2003,
-			      "FINAL procedure declaration"
-			      " at %C") == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "FINAL procedure declaration"
+			       " at %C"))
 	    goto error;
 
 	  accept_statement (ST_FINAL);
@@ -2008,16 +2005,15 @@ parse_derived_contains (void)
 	  to_finish = true;
 
 	  if (!seen_comps
-	      && (gfc_notify_std (GFC_STD_F2008, "Derived type "
-				  "definition at %C with empty CONTAINS "
-				  "section") == FAILURE))
+	      && (!gfc_notify_std(GFC_STD_F2008, "Derived type definition "
+				  "at %C with empty CONTAINS section")))
 	    goto error;
 
 	  /* ST_END_TYPE is accepted by parse_derived after return.  */
 	  break;
 
 	case ST_PRIVATE:
-	  if (gfc_find_state (COMP_MODULE) == FAILURE)
+	  if (!gfc_find_state (COMP_MODULE))
 	    {
 	      gfc_error ("PRIVATE statement in TYPE at %C must be inside "
 			 "a MODULE");
@@ -2120,7 +2116,7 @@ endType:
 	  break;
 
 	case ST_PRIVATE:
-	  if (gfc_find_state (COMP_MODULE) == FAILURE)
+	  if (!gfc_find_state (COMP_MODULE))
 	    {
 	      gfc_error ("PRIVATE statement in TYPE at %C must be inside "
 			 "a MODULE");
@@ -2395,8 +2391,8 @@ loop:
 	  gfc_new_block->attr.pointer = 0;
 	  gfc_new_block->attr.proc_pointer = 1;
 	}
-      if (gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
-				  gfc_new_block->formal, NULL) == FAILURE)
+      if (!gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY, 
+				       gfc_new_block->formal, NULL))
 	{
 	  reject_statement ();
 	  gfc_free_namespace (gfc_current_ns);
@@ -2642,7 +2638,7 @@ loop:
 	  verify_st_order (&dummyss, ST_NONE, false);
 	  verify_st_order (&dummyss, st, false);
 
-	  if (verify_st_order (&dummyss, ST_IMPLICIT, true) == FAILURE)
+	  if (!verify_st_order (&dummyss, ST_IMPLICIT, true))
 	    verify_now = true;
 	}
 
@@ -2683,7 +2679,7 @@ loop:
     case ST_DERIVED_DECL:
     case_decl:
 declSt:
-      if (verify_st_order (&ss, st, false) == FAILURE)
+      if (!verify_st_order (&ss, st, false))
 	{
 	  reject_statement ();
 	  st = next_statement ();
@@ -3313,14 +3309,14 @@ gfc_build_block_ns (gfc_namespace *parent_ns)
     my_ns->proc_name = gfc_new_block;
   else
     {
-      gfc_try t;
+      bool t;
       char buffer[20];  /* Enough to hold "block@2147483648\n".  */
 
       snprintf(buffer, sizeof(buffer), "block@%d", numblock++);
       gfc_get_symbol (buffer, my_ns, &my_ns->proc_name);
       t = gfc_add_flavor (&my_ns->proc_name->attr, FL_LABEL,
 			  my_ns->proc_name->name, NULL);
-      gcc_assert (t == SUCCESS);
+      gcc_assert (t);
       gfc_commit_symbol (my_ns->proc_name);
     }
 
@@ -4026,9 +4022,9 @@ parse_contained (int module)
 			   "ambiguous", gfc_new_block->name);
 	      else
 		{
-		  if (gfc_add_procedure (&sym->attr, PROC_INTERNAL, sym->name,
-					 &gfc_new_block->declared_at) ==
-		      SUCCESS)
+		  if (gfc_add_procedure (&sym->attr, PROC_INTERNAL, 
+					 sym->name, 
+					 &gfc_new_block->declared_at))
 		    {
 		      if (st == ST_FUNCTION)
 			gfc_add_function (&sym->attr, sym->name,
@@ -4174,7 +4170,7 @@ contains:
     if (p->state == COMP_CONTAINS)
       n++;
 
-  if (gfc_find_state (COMP_MODULE) == SUCCESS)
+  if (gfc_find_state (COMP_MODULE) == true)
     n--;
 
   if (n > 0)
@@ -4492,7 +4488,7 @@ translate_all_program_units (gfc_namespace *gfc_global_ns_list,
 
 /* Top level parser.  */
 
-gfc_try
+bool
 gfc_parse_file (void)
 {
   int seen_program, errors_before, errors;
@@ -4516,7 +4512,7 @@ gfc_parse_file (void)
   gfc_statement_label = NULL;
 
   if (setjmp (eof_buf))
-    return FAILURE;	/* Come here on unexpected EOF */
+    return false;	/* Come here on unexpected EOF */
 
   /* Prepare the global namespace that will contain the
      program units.  */
@@ -4663,7 +4659,7 @@ prog_units:
   translate_all_program_units (gfc_global_ns_list, seen_program);
 
   gfc_end_source_files ();
-  return SUCCESS;
+  return true;
 
 duplicate_main:
   /* If we see a duplicate main program, shut down.  If the second
@@ -4672,5 +4668,5 @@ duplicate_main:
   gfc_error ("Two main PROGRAMs at %L and %C", &prog_locus);
   reject_statement ();
   gfc_done_2 ();
-  return SUCCESS;
+  return true;
 }
