@@ -1699,6 +1699,18 @@ common_handle_option (struct gcc_options *opts,
       set_debug_level (SDB_DEBUG, false, arg, opts, opts_set, loc);
       break;
 
+    case OPT_gdwarf:
+      if (arg && strlen(arg) != 0)
+        {
+          error_at (loc, "%<-gdwarf%s%> is ambiguous; "
+                    "use %<-gdwarf-%s%> for DWARF version "
+                    "or %<-gdwarf -g%s%> for debug level", arg, arg, arg);
+          break;
+        }
+      else
+        {
+          value = opts->x_dwarf_version;
+        }
     case OPT_gdwarf_:
       if (value < 2 || value > 4)
 	error_at (loc, "dwarf version %d is not supported", value);

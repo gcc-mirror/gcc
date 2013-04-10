@@ -1,3 +1,10 @@
+2013-04-10  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+            Jason Merrill  <jason@redhat.com>
+
+	* common.opt: Add -gdwarf.
+	* opts.c (common_handle_option): Handle it.
+	* gcc.c (ASM_DEBUG_SPEC): Don't expect "-2" for DWARF.
+
 2013-04-10  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (execute_todo): Do not call ggc_collect conditional here.
