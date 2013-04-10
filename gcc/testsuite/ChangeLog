@@ -1,3 +1,8 @@
+2013-04-10  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR tree-optimization/55524
+	* gcc.target/epiphany/fnma-1.c: New test.
+
 2013-04-10  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
 	* gcc.dg/tree-ssa/inline-11.c: New test
