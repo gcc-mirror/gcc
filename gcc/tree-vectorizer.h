@@ -169,8 +169,7 @@ typedef struct _slp_oprnd_info
      operand itself in case it's constant, and an indication if it's a pattern
      stmt.  */
   enum vect_def_type first_dt;
-  tree first_def_type;
-  tree first_const_oprnd;
+  tree first_op_type;
   bool first_pattern;
 } *slp_oprnd_info;
 

@@ -1,3 +1,13 @@
+2013-04-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _slp_oprnd_info): Remove
+	first_const_oprnd field, rename first_def_type to first_op_type.
+	* tree-vect-slp.c (vect_create_oprnd_info): Adjust.
+	(vect_get_and_check_slp_defs): Always use the type of the
+	operand.  Allow mixed vect_external_def, vect_constant_def types.
+	(vect_get_constant_vectors): Handle mixed vect_external_def,
+	vect_constant_def types.
+
 2013-04-10  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR tree-optimization/55524
