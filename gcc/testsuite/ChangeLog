@@ -1,3 +1,8 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* g++.dg/template/arrow3.C: New test.
+
 2013-04-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/minmax_minus.c: New test.
