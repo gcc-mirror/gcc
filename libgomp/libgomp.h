@@ -580,11 +580,19 @@ extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 #endif
 
 #ifdef HAVE_ATTRIBUTE_ALIAS
+# define ialias_ulp	ialias_str1(__USER_LABEL_PREFIX__)
+# define ialias_str1(x)	ialias_str2(x)
+# define ialias_str2(x)	#x
 # define ialias(fn) \
   extern __typeof (fn) gomp_ialias_##fn \
     __attribute__ ((alias (#fn))) attribute_hidden;
+# define ialias_redirect(fn) \
+  extern __typeof (fn) fn __asm__ (ialias_ulp "gomp_ialias_" #fn) attribute_hidden;
+# define ialias_call(fn) gomp_ialias_ ## fn
 #else
 # define ialias(fn)
+# define ialias_redirect(fn)
+# define ialias_call(fn) fn
 #endif
 
 #endif /* LIBGOMP_H */

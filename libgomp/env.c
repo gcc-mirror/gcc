@@ -866,6 +866,48 @@ omp_get_max_active_levels (void)
   return gomp_max_active_levels_var;
 }
 
+int
+omp_get_cancellation (void)
+{
+  return 0;
+}
+
+omp_proc_bind_t
+omp_get_proc_bind (void)
+{
+  return omp_proc_bind_false;
+}
+
+void
+omp_set_default_device (int device_num)
+{
+  (void) device_num;
+}
+
+int
+omp_get_default_device (void)
+{
+  return 0;
+}
+
+int
+omp_get_num_devices (void)
+{
+  return 0;
+}
+
+int
+omp_get_num_teams (void)
+{
+  return 1;
+}
+
+int
+omp_get_team_num (void)
+{
+  return 0;
+}
+
 ialias (omp_set_dynamic)
 ialias (omp_set_nested)
 ialias (omp_set_num_threads)
@@ -877,3 +919,10 @@ ialias (omp_get_max_threads)
 ialias (omp_get_thread_limit)
 ialias (omp_set_max_active_levels)
 ialias (omp_get_max_active_levels)
+ialias (omp_get_cancellation)
+ialias (omp_get_proc_bind)
+ialias (omp_set_default_device)
+ialias (omp_get_default_device)
+ialias (omp_get_num_devices)
+ialias (omp_get_num_teams)
+ialias (omp_get_team_num)

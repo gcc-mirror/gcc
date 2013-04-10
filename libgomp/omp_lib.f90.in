@@ -27,16 +27,22 @@
         integer, parameter :: omp_lock_kind = @OMP_LOCK_KIND@
         integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
         integer, parameter :: omp_sched_kind = 4
+        integer, parameter :: omp_proc_bind_kind = 4
+        integer (omp_sched_kind), parameter :: omp_sched_static = 1
+        integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
+        integer (omp_sched_kind), parameter :: omp_sched_guided = 3
+        integer (omp_sched_kind), parameter :: omp_sched_auto = 4
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_false = 0
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_true = 1
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_master = 2
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_close = 3
+        integer (omp_proc_bind_kind), parameter :: omp_proc_bind_spread = 4
       end module
 
       module omp_lib
         use omp_lib_kinds
         implicit none
         integer, parameter :: openmp_version = 201107
-        integer (omp_sched_kind), parameter :: omp_sched_static = 1
-        integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
-        integer (omp_sched_kind), parameter :: omp_sched_guided = 3
-        integer (omp_sched_kind), parameter :: omp_sched_auto = 4
 
         interface
           subroutine omp_init_lock (lock)
@@ -294,6 +300,57 @@
             use omp_lib_kinds
             logical (4) :: omp_in_final
           end function omp_in_final
+        end interface
+
+        interface
+          function omp_get_cancellation ()
+            use omp_lib_kinds
+            logical (4) :: omp_get_cancellation
+          end function omp_get_cancellation
+        end interface
+
+        interface
+          function omp_get_proc_bind ()
+            use omp_lib_kinds
+            integer (omp_proc_bind_kind) :: omp_get_proc_bind
+          end function omp_get_proc_bind
+        end interface
+
+        interface omp_set_default_device
+          subroutine omp_set_default_device (device_num)
+            integer (4), intent (in) :: device_num
+          end subroutine omp_set_default_device
+          subroutine omp_set_default_device_8 (device_num)
+            integer (8), intent (in) :: device_num
+          end subroutine omp_set_default_device_8
+        end interface
+
+        interface
+          function omp_get_default_device ()
+            use omp_lib_kinds
+            integer (4) :: omp_get_default_device
+          end function omp_get_default_device
+        end interface
+
+        interface
+          function omp_get_num_devices ()
+            use omp_lib_kinds
+            integer (4) :: omp_get_num_devices
+          end function omp_get_num_devices
+        end interface
+
+        interface
+          function omp_get_num_teams ()
+            use omp_lib_kinds
+            integer (4) :: omp_get_num_teams
+          end function omp_get_num_teams
+        end interface
+
+        interface
+          function omp_get_team_num ()
+            use omp_lib_kinds
+            integer (4) :: omp_get_team_num
+          end function omp_get_team_num
         end interface
 
       end module omp_lib

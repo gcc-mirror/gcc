@@ -142,6 +142,23 @@ GOMP_parallel_sections_start (void (*fn) (void *), void *data,
   gomp_team_start (fn, data, num_threads, team);
 }
 
+ialias_redirect (GOMP_parallel_end)
+
+void
+GOMP_parallel_sections (void (*fn) (void *), void *data,
+			unsigned num_threads, unsigned count, unsigned flags)
+{
+  struct gomp_team *team;
+
+  (void) flags;
+  num_threads = gomp_resolve_num_threads (num_threads, count);
+  team = gomp_new_team (num_threads);
+  gomp_sections_init (&team->work_shares[0], count);
+  gomp_team_start (fn, data, num_threads, team);
+  fn (data);
+  GOMP_parallel_end ();
+}
+
 /* The GOMP_section_end* routines are called after the thread is told
    that all sections are complete.  This first version synchronizes
    all threads; the nowait version does not.  */

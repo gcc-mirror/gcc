@@ -398,6 +398,16 @@ GOMP_taskyield (void)
   /* Nothing at the moment.  */
 }
 
+void
+GOMP_taskgroup_start (void)
+{
+}
+
+void
+GOMP_taskgroup_end (void)
+{
+}
+
 int
 omp_in_final (void)
 {

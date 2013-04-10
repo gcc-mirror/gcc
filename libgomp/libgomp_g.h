@@ -76,6 +76,18 @@ extern void GOMP_parallel_loop_guided_start (void (*)(void *), void *,
 					     unsigned, long, long, long, long);
 extern void GOMP_parallel_loop_runtime_start (void (*)(void *), void *,
 					      unsigned, long, long, long);
+extern void GOMP_parallel_loop_static (void (*)(void *), void *,
+				       unsigned, long, long, long, long,
+				       unsigned);
+extern void GOMP_parallel_loop_dynamic (void (*)(void *), void *,
+					unsigned, long, long, long, long,
+					unsigned);
+extern void GOMP_parallel_loop_guided (void (*)(void *), void *,
+				       unsigned, long, long, long, long,
+				       unsigned);
+extern void GOMP_parallel_loop_runtime (void (*)(void *), void *,
+					unsigned, long, long, long,
+					unsigned);
 
 extern void GOMP_loop_end (void);
 extern void GOMP_loop_end_nowait (void);
@@ -157,6 +169,9 @@ extern void GOMP_ordered_end (void);
 
 extern void GOMP_parallel_start (void (*) (void *), void *, unsigned);
 extern void GOMP_parallel_end (void);
+extern void GOMP_parallel (void (*) (void *), void *, unsigned, unsigned);
+extern void GOMP_cancel (void);
+extern void GOMP_cancellation_point (void);
 
 /* task.c */
 
@@ -164,6 +179,8 @@ extern void GOMP_task (void (*) (void *), void *, void (*) (void *, void *),
 		       long, long, bool, unsigned);
 extern void GOMP_taskwait (void);
 extern void GOMP_taskyield (void);
+extern void GOMP_taskgroup_start (void);
+extern void GOMP_taskgroup_end (void);
 
 /* sections.c */
 
@@ -171,6 +188,8 @@ extern unsigned GOMP_sections_start (unsigned);
 extern unsigned GOMP_sections_next (void);
 extern void GOMP_parallel_sections_start (void (*) (void *), void *,
 					  unsigned, unsigned);
+extern void GOMP_parallel_sections (void (*) (void *), void *,
+				    unsigned, unsigned, unsigned);
 extern void GOMP_sections_end (void);
 extern void GOMP_sections_end_nowait (void);
 

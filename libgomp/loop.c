@@ -486,6 +486,57 @@ GOMP_parallel_loop_runtime_start (void (*fn) (void *), void *data,
 			    icv->run_sched_var, icv->run_sched_modifier);
 }
 
+ialias_redirect (GOMP_parallel_end)
+
+void
+GOMP_parallel_loop_static (void (*fn) (void *), void *data,
+			   unsigned num_threads, long start, long end,
+			   long incr, long chunk_size, unsigned flags)
+{
+  (void) flags;
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    GFS_STATIC, chunk_size);
+  fn (data);
+  GOMP_parallel_end ();
+}
+
+void
+GOMP_parallel_loop_dynamic (void (*fn) (void *), void *data,
+			    unsigned num_threads, long start, long end,
+			    long incr, long chunk_size, unsigned flags)
+{
+  (void) flags;
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    GFS_DYNAMIC, chunk_size);
+  fn (data);
+  GOMP_parallel_end ();
+}
+
+void
+GOMP_parallel_loop_guided (void (*fn) (void *), void *data,
+			  unsigned num_threads, long start, long end,
+			  long incr, long chunk_size, unsigned flags)
+{
+  (void) flags;
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    GFS_GUIDED, chunk_size);
+  fn (data);
+  GOMP_parallel_end ();
+}
+
+void
+GOMP_parallel_loop_runtime (void (*fn) (void *), void *data,
+			    unsigned num_threads, long start, long end,
+			    long incr, unsigned flags)
+{
+  (void) flags;
+  struct gomp_task_icv *icv = gomp_icv (false);
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    icv->run_sched_var, icv->run_sched_modifier);
+  fn (data);
+  GOMP_parallel_end ();
+}
+
 /* The GOMP_loop_end* routines are called after the thread is told that
    all loop iterations are complete.  This first version synchronizes
    all threads; the nowait version does not.  */

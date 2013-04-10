@@ -129,7 +129,28 @@ GOMP_parallel_end (void)
     }
   gomp_team_end ();
 }
+ialias (GOMP_parallel_end)
 
+void
+GOMP_parallel (void (*fn) (void *), void *data, unsigned num_threads, unsigned int flags)
+{
+  (void) flags;
+  num_threads = gomp_resolve_num_threads (num_threads, 0);
+  gomp_team_start (fn, data, num_threads, gomp_new_team (num_threads));
+  fn (data);
+  ialias_call (GOMP_parallel_end) ();
+}
+
+void
+GOMP_cancel (void)
+{
+  /* Nothing so far.  */
+}
+
+void
+GOMP_cancellation_point (void)
+{
+}
 
 /* The public OpenMP API for thread and team related inquiries.  */
 

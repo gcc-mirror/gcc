@@ -1,3 +1,56 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.map (omp_get_cancellation, omp_get_cancellation_,
+	omp_get_proc_bind, omp_get_proc_bind_, omp_set_default_device,
+	omp_set_default_device_, omp_set_default_device_8_,
+	omp_get_default_device, omp_get_default_device_,
+	omp_get_num_devices, omp_get_num_devices_, omp_get_num_teams,
+	omp_get_num_teams_, omp_get_team_num, omp_get_team_num_): Export
+	@@OMP_4.0.
+	(GOMP_cancel, GOMP_cancellation_point, GOMP_parallel_loop_dynamic,
+	GOMP_parallel_loop_guided, GOMP_parallel_loop_runtime,
+	GOMP_parallel_loop_static, GOMP_parallel_sections, GOMP_parallel,
+	GOMP_taskgroup_start, GOMP_taskgroup_end): Export @@GOMP_4.0.
+	* parallel.c (GOMP_parallel_end): Add ialias.
+	(GOMP_parallel, GOMP_cancel, GOMP_cancellation_point): New
+	functions.
+	* omp.h.in (omp_proc_bind_t): New typedef.
+	(omp_get_cancellation, omp_get_proc_bind, omp_set_default_device,
+	omp_get_default_device, omp_get_num_devices, omp_get_num_teams,
+	omp_get_team_num): New prototypes.
+	* env.c (omp_get_cancellation, omp_get_proc_bind,
+	omp_set_default_device, omp_get_default_device, omp_get_num_devices,
+	omp_get_num_teams, omp_get_team_num): New functions.
+	* fortran.c (ULP, STR1, STR2, ialias_redirect): Removed.
+	(omp_get_cancellation_, omp_get_proc_bind_, omp_set_default_device_,
+	omp_set_default_device_8_, omp_get_default_device_,
+	omp_get_num_devices_, omp_get_num_teams_, omp_get_team_num_): New
+	functions.
+	* libgomp.h (ialias_ulp, ialias_str1, ialias_str2, ialias_redirect,
+	ialias_call): Define.
+	* libgomp_g.h (GOMP_parallel_loop_static, GOMP_parallel_loop_dynamic,
+	GOMP_parallel_loop_guided, GOMP_parallel_loop_runtime, GOMP_parallel,
+	GOMP_cancel, GOMP_cancellation_point, GOMP_taskgroup_start,
+	GOMP_taskgroup_end, GOMP_parallel_sections): New prototypes.
+	* task.c (GOMP_taskgroup_start, GOMP_taskgroup_end): New functions.
+	* sections.c (GOMP_parallel_sections): New function.
+	* loop.c (GOMP_parallel_loop_static, GOMP_parallel_loop_dynamic,
+	GOMP_parallel_loop_guided, GOMP_parallel_loop_runtime): New
+	functions.
+	(GOMP_parallel_end): Add ialias_redirect.
+	* omp_lib.f90.in (omp_proc_bind_kind, omp_proc_bind_false,
+	omp_proc_bind_true, omp_proc_bind_master, omp_proc_bind_close,
+	omp_proc_bind_spread): New params.
+	(omp_get_cancellation, omp_get_proc_bind, omp_set_default_device,
+	omp_get_default_device, omp_get_num_devices, omp_get_num_teams,
+	omp_get_team_num): New interfaces.
+	* omp_lib.h.in (omp_proc_bind_kind, omp_proc_bind_false,
+	omp_proc_bind_true, omp_proc_bind_master, omp_proc_bind_close,
+	omp_proc_bind_spread): New params.
+	(omp_get_cancellation, omp_get_proc_bind, omp_set_default_device,
+	omp_get_default_device, omp_get_num_devices, omp_get_num_teams,
+	omp_get_team_num): New externals.
+
 2013-03-20  Tobias Burnus  <burnus@net-b.de>
 
 	* libgomp.texi (Environment Variables): Minor cleanup,
