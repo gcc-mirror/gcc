@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-rtl-reload" } */
+/* { dg-options "-O -fdump-rtl-ira" } */
 
 main ()
 {
@@ -8,4 +8,4 @@ main ()
   __builtin_printf ("%d %s\n", t, s);
 }
 
-/* { dg-final { cleanup-rtl-dump "reload" } } */
+/* { dg-final { cleanup-rtl-dump "ira" } } */

@@ -375,7 +375,6 @@ struct gimple_opt_pass pass_dse =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_ggc_collect
-    | TODO_verify_ssa		/* todo_flags_finish */
+  TODO_verify_ssa		/* todo_flags_finish */
  }
 };

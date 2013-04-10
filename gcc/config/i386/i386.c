@@ -3930,7 +3930,7 @@ static void
 ix86_option_override (void)
 {
   static struct register_pass_info insert_vzeroupper_info
-    = { &pass_insert_vzeroupper.pass, "reload",
+    = { &pass_insert_vzeroupper.pass, "ira",
 	1, PASS_POS_INSERT_AFTER
       };
 

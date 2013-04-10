@@ -3152,8 +3152,7 @@ struct gimple_opt_pass pass_forwprop =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_ggc_collect
-  | TODO_update_ssa
+  TODO_update_ssa
   | TODO_verify_ssa		/* todo_flags_finish */
  }
 };

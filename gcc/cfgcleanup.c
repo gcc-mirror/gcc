@@ -3055,7 +3055,7 @@ struct rtl_opt_pass pass_jump =
   0,					/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
-  TODO_ggc_collect,			/* todo_flags_start */
+  0,					/* todo_flags_start */
   TODO_verify_rtl_sharing,		/* todo_flags_finish */
  }
 };
@@ -3082,7 +3082,7 @@ struct rtl_opt_pass pass_jump2 =
   0,					/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
-  TODO_ggc_collect,			/* todo_flags_start */
+  0,					/* todo_flags_start */
   TODO_verify_rtl_sharing,		/* todo_flags_finish */
  }
 };
