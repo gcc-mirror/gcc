@@ -1,3 +1,13 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (finish_omp_taskgroup): New prototype.
+	* parser.c (cp_parser_omp_clause_proc_bind): Require ) instead of
+	colon at the end of the clause.
+	(cp_parser_omp_taskgroup): New function.
+	(cp_parser_omp_construct, cp_parser_pragma): Handle
+	PRAGMA_OMP_TASKGROUP.
+	* semantics.c (finish_omp_taskgroup): New function.
+
 2013-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (finish_omp_for): Disallow class iterators for

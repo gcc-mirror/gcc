@@ -1471,6 +1471,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_PROC_BIND:
 	  break;
 
 	default:
@@ -1523,6 +1524,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_PROC_BIND:
 	  break;
 
 	default:
@@ -2945,7 +2947,7 @@ static void
 expand_parallel_call (struct omp_region *region, basic_block bb,
 		      gimple entry_stmt, vec<tree, va_gc> *ws_args)
 {
-  tree t, t1, t2, val, cond, c, clauses;
+  tree t, t1, t2, val, cond, c, clauses, flags;
   gimple_stmt_iterator gsi;
   gimple stmt;
   enum built_in_function start_ix;
@@ -2955,23 +2957,23 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 
   clauses = gimple_omp_parallel_clauses (entry_stmt);
 
-  /* Determine what flavor of GOMP_parallel_start we will be
+  /* Determine what flavor of GOMP_parallel we will be
      emitting.  */
-  start_ix = BUILT_IN_GOMP_PARALLEL_START;
+  start_ix = BUILT_IN_GOMP_PARALLEL;
   if (is_combined_parallel (region))
     {
       switch (region->inner->type)
 	{
 	case GIMPLE_OMP_FOR:
 	  gcc_assert (region->inner->sched_kind != OMP_CLAUSE_SCHEDULE_AUTO);
-	  start_ix2 = ((int)BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START
+	  start_ix2 = ((int)BUILT_IN_GOMP_PARALLEL_LOOP_STATIC
 		       + (region->inner->sched_kind
 			  == OMP_CLAUSE_SCHEDULE_RUNTIME
 			  ? 3 : region->inner->sched_kind));
 	  start_ix = (enum built_in_function)start_ix2;
 	  break;
 	case GIMPLE_OMP_SECTIONS:
-	  start_ix = BUILT_IN_GOMP_PARALLEL_SECTIONS_START;
+	  start_ix = BUILT_IN_GOMP_PARALLEL_SECTIONS;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -2982,6 +2984,7 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
      and there is no conditional.  */
   cond = NULL_TREE;
   val = build_int_cst (unsigned_type_node, 0);
+  flags = build_int_cst (unsigned_type_node, 0);
 
   c = find_omp_clause (clauses, OMP_CLAUSE_IF);
   if (c)
@@ -2995,6 +2998,10 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
     }
   else
     clause_loc = gimple_location (entry_stmt);
+
+  c = find_omp_clause (clauses, OMP_CLAUSE_PROC_BIND);
+  if (c)
+    flags = build_int_cst (unsigned_type_node, OMP_CLAUSE_PROC_BIND_KIND (c));
 
   /* Ensure 'val' is of the correct type.  */
   val = fold_convert_loc (clause_loc, unsigned_type_node, val);
@@ -3082,32 +3089,17 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
     t1 = build_fold_addr_expr (t);
   t2 = build_fold_addr_expr (gimple_omp_parallel_child_fn (entry_stmt));
 
-  vec_alloc (args, 3 + vec_safe_length (ws_args));
+  vec_alloc (args, 4 + vec_safe_length (ws_args));
   args->quick_push (t2);
   args->quick_push (t1);
   args->quick_push (val);
   if (ws_args)
     args->splice (*ws_args);
+  args->quick_push (flags);
 
   t = build_call_expr_loc_vec (UNKNOWN_LOCATION,
 			       builtin_decl_explicit (start_ix), args);
 
-  force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-			    false, GSI_CONTINUE_LINKING);
-
-  t = gimple_omp_parallel_data_arg (entry_stmt);
-  if (t == NULL)
-    t = null_pointer_node;
-  else
-    t = build_fold_addr_expr (t);
-  t = build_call_expr_loc (gimple_location (entry_stmt),
-			   gimple_omp_parallel_child_fn (entry_stmt), 1, t);
-  force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-			    false, GSI_CONTINUE_LINKING);
-
-  t = build_call_expr_loc (gimple_location (entry_stmt),
-			   builtin_decl_explicit (BUILT_IN_GOMP_PARALLEL_END),
-			   0);
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);
 }

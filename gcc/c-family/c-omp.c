@@ -614,6 +614,7 @@ c_split_parallel_clauses (location_t loc, tree clauses,
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_DEFAULT:
+	case OMP_CLAUSE_PROC_BIND:
 	  OMP_CLAUSE_CHAIN (clauses) = *par_clauses;
 	  *par_clauses = clauses;
 	  break;

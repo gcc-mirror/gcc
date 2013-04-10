@@ -1,3 +1,34 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-types.def (DEF_FUNCTION_TYPE_8): Document.
+	(BT_FN_VOID_OMPFN_PTR_UINT, BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_LONG): Remove.
+	(BT_FN_VOID_OMPFN_PTR_UINT_UINT_UINT,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_UINT,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_LONG_UINT): New.
+	* gimplify.c (gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses):
+	Handle OMP_CLAUSE_PROC_BIND.
+	* omp-builtins.def (BUILT_IN_GOMP_TASKGROUP_START,
+	BUILT_IN_GOMP_TASKGROUP_END, BUILT_IN_GOMP_PARALLEL_LOOP_STATIC,
+	BUILT_IN_GOMP_PARALLEL_LOOP_DYNAMIC,
+	BUILT_IN_GOMP_PARALLEL_LOOP_GUIDED,
+	BUILT_IN_GOMP_PARALLEL_LOOP_RUNTIME, BUILT_IN_GOMP_PARALLEL,
+	BUILT_IN_GOMP_PARALLEL_SECTIONS): New built-ins.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_DYNAMIC_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_GUIDED_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_RUNTIME_START,
+	BUILT_IN_GOMP_PARALLEL_START, BUILT_IN_GOMP_PARALLEL_END,
+	BUILT_IN_GOMP_PARALLEL_SECTIONS_START): Remove.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_PROC_BIND.
+	(expand_parallel_call): Expand #pragma omp parallel* as
+	calls to the new GOMP_parallel_* APIs without _start at the end,
+	instead of GOMP_parallel_*_start followed by fn.omp_fn.N call,
+	followed by GOMP_parallel_end.  Handle OMP_CLAUSE_PROC_BIND.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1,
+	call_may_clobber_ref_p_1): Handle BUILT_IN_GOMP_TASKGROUP_END
+	instead of BUILT_IN_GOMP_PARALLEL_END.
+
 2013-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-pretty-print.c (dump_gimple_omp_for): Handle different

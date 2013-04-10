@@ -1,0 +1,9 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_8): Define.
+
+Copyright (C) 2013 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

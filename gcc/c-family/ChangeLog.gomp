@@ -1,3 +1,8 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (DEF_FUNCTION_TYPE_8): Define.
+	* c-omp.c (c_split_parallel_clauses): Handle OMP_CLAUSE_PROC_BIND.
+
 2013-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_finish_omp_for): Add code argument, pass it down to

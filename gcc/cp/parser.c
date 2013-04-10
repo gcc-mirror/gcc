@@ -26736,7 +26736,7 @@ cp_parser_omp_clause_proc_bind (cp_parser *parser, tree list,
     goto invalid_kind;
 
   cp_lexer_consume_token (parser->lexer);
-  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_COMMA_CLOSE_PAREN))
     goto resync_fail;
 
   c = build_omp_clause (location, OMP_CLAUSE_PROC_BIND);
@@ -28389,6 +28389,30 @@ cp_parser_omp_taskyield (cp_parser *parser, cp_token *pragma_tok)
   finish_omp_taskyield ();
 }
 
+/* OpenMP 4.0:
+   # pragma omp taskgroup new-line
+     structured-block  */
+
+static void
+cp_parser_omp_taskgroup (cp_parser *parser, cp_token *pragma_tok)
+{
+  tree sb;
+  unsigned int save;
+  location_t saved_loc;
+
+  cp_parser_require_pragma_eol (parser, pragma_tok);
+  sb = begin_omp_structured_block ();
+  save = cp_parser_begin_omp_structured_block (parser);
+  cp_parser_statement (parser, NULL_TREE, false, NULL);
+  cp_parser_end_omp_structured_block (parser, save);
+  saved_loc = input_location;
+  input_location = pragma_tok->location;
+  finish_omp_taskgroup (finish_omp_structured_block (sb));
+  input_location = saved_loc;
+}
+
+
+
 /* OpenMP 2.5:
    # pragma omp threadprivate (variable-list) */
 
@@ -28499,6 +28523,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
     case PRAGMA_OMP_TASK:
       stmt = cp_parser_omp_task (parser, pragma_tok);
       break;
+    case PRAGMA_OMP_TASKGROUP:
+      cp_parser_omp_taskgroup (parser, pragma_tok);
+      return;
     default:
       gcc_unreachable ();
     }
@@ -28971,6 +28998,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
     case PRAGMA_OMP_SIMD:
     case PRAGMA_OMP_SINGLE:
     case PRAGMA_OMP_TASK:
+    case PRAGMA_OMP_TASKGROUP:
       if (context == pragma_external)
 	goto bad_stmt;
       cp_parser_omp_construct (parser, pragma_tok);

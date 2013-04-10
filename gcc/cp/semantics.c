@@ -5341,6 +5341,20 @@ finish_omp_taskyield (void)
 }
 
 void
+finish_omp_taskgroup (tree block_stmt)
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKGROUP_START);
+  vec<tree, va_gc> *vec = make_tree_vector ();
+  tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+  finish_expr_stmt (stmt);
+  finish_expr_stmt (block_stmt);
+  fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKGROUP_END);
+  stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+  finish_expr_stmt (stmt);
+  release_tree_vector (vec);
+}
+
+void
 finish_omp_cancel (tree clauses)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);

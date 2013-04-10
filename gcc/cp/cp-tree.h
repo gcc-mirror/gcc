@@ -5718,6 +5718,7 @@ extern void finish_omp_barrier			(void);
 extern void finish_omp_flush			(void);
 extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);
+extern void finish_omp_taskgroup		(tree);
 extern void finish_omp_cancel			(tree);
 extern void finish_omp_cancellation_point	(tree);
 extern tree begin_transaction_stmt		(location_t, tree *, int);

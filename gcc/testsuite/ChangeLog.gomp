@@ -1,3 +1,8 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/combined-1.c: Look for GOMP_parallel_loop_runtime
+	instead of GOMP_parallel_loop_runtime_start.
+
 2013-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-15.c: Adjust for C diagnostics.
