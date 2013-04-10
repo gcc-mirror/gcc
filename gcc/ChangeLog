@@ -1,3 +1,8 @@
+2013-04-10  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_extension): New function.
+	(aarch64_start_file): Use the new function.
+
 2013-04-10  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
             Jason Merrill  <jason@redhat.com>
 
