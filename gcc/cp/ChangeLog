@@ -1,3 +1,10 @@
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* typeck.c (cp_build_binary_op): Call fold_non_dependent_expr_sfinae
+	first before calling maybe_constant_value for warn_for_div_by_zero
+	or invalid shift count warning purposes.
+
 2013-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25466
