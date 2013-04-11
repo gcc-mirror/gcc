@@ -1450,7 +1450,15 @@ package body Exp_Ch11 is
       --     do
       --       raise X [with string]
       --     in
-      --       raise Consraint_Error;
+      --       raise Constraint_Error;
+
+      --  unless the flag Convert_To_Return_False is set, in which case
+      --  the transformation is to:
+
+      --     do
+      --       return False;
+      --     in
+      --       raise Constraint_Error;
 
       --  The raise constraint error can never be executed. It is just a dummy
       --  node that can be labeled with an arbitrary type.
@@ -1458,13 +1466,23 @@ package body Exp_Ch11 is
       RCE := Make_Raise_Constraint_Error (Loc, Reason => CE_Explicit_Raise);
       Set_Etype (RCE, Typ);
 
-      Rewrite (N,
-        Make_Expression_With_Actions (Loc,
-          Actions     => New_List (
-            Make_Raise_Statement (Loc,
-              Name       => Name (N),
-              Expression => Expression (N))),
-           Expression => RCE));
+      if Convert_To_Return_False (N) then
+         Rewrite (N,
+           Make_Expression_With_Actions (Loc,
+             Actions     => New_List (
+               Make_Simple_Return_Statement (Loc,
+                 Expression => New_Occurrence_Of (Standard_False, Loc))),
+              Expression => RCE));
+
+      else
+         Rewrite (N,
+           Make_Expression_With_Actions (Loc,
+             Actions     => New_List (
+               Make_Raise_Statement (Loc,
+                 Name       => Name (N),
+                 Expression => Expression (N))),
+              Expression => RCE));
+      end if;
 
       Analyze_And_Resolve (N, Typ);
    end Expand_N_Raise_Expression;

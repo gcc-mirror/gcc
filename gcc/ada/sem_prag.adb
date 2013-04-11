@@ -7896,12 +7896,11 @@ package body Sem_Prag is
                end if;
             end if;
 
-            --  Now you might think we could just do the same with the
-            --  Boolean expression if checks are off (and expansion is on)
-            --  and then rewrite the check as a null
-            --  statement. This would work but we would lose the useful
-            --  warnings about an assertion being bound to fail even if
-            --  assertions are turned off.
+            --  Now you might think we could just do the same with the Boolean
+            --  expression if checks are off (and expansion is on) and then
+            --  rewrite the check as a null statement. This would work but we
+            --  would lose the useful warnings about an assertion being bound
+            --  to fail even if assertions are turned off.
 
             --  So instead we wrap the boolean expression in an if statement
             --  that looks like:

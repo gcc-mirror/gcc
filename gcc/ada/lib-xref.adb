@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2047,8 +2047,8 @@ package body Lib.Xref is
                      Ctyp := '*';
                   end if;
 
-                  --  Special handling for access parameters and objects of
-                  --  an anonymous access type.
+                  --  Special handling for access parameters and objects and
+                  --  components of an anonymous access type.
 
                   if Ekind_In (Etype (XE.Key.Ent),
                                E_Anonymous_Access_Type,
@@ -2056,7 +2056,9 @@ package body Lib.Xref is
                                E_Anonymous_Access_Protected_Subprogram_Type)
                   then
                      if Is_Formal (XE.Key.Ent)
-                       or else Ekind_In (XE.Key.Ent, E_Variable, E_Constant)
+                       or else
+                         Ekind_In
+                           (XE.Key.Ent, E_Variable, E_Constant, E_Component)
                      then
                         Ctyp := 'p';
                      end if;

@@ -6338,7 +6338,7 @@ package body Exp_Ch4 is
             Rewrite (N,
               Make_And_Then (Loc,
                 Left_Opnd  => Relocate_Node (N),
-                Right_Opnd => Make_Predicate_Call (Rtyp, Lop)));
+                Right_Opnd => Make_Predicate_Call (Rtyp, Lop, Mem => True)));
 
             --  Analyze new expression, mark left operand as analyzed to
             --  avoid infinite recursion adding predicate calls. Similarly,

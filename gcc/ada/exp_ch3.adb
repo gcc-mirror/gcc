@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7675,7 +7675,7 @@ package body Exp_Ch3 is
 
          if not Has_Invariants (Typ) then
             Set_Has_Invariants (Typ);
-            Set_Has_Invariants (Proc_Id);
+            Set_Is_Invariant_Procedure (Proc_Id);
             Set_Invariant_Procedure (Typ, Proc_Id);
             Insert_After (N, Proc);
             Analyze (Proc);

@@ -720,6 +720,12 @@ package Sinfo is
    --    direct conversion of the underlying integer result, with no regard to
    --    the small operand.
 
+   --  Convert_To_Return_False (Flag13-Sem)
+   --    Present in N_Raise_Expression nodes that appear in the body of the
+   --    special predicateM function used to test a predicate in the context
+   --    of a membership test, where raise expression results in returning a
+   --    value of False rather than raising an exception.
+
    --  Corresponding_Aspect (Node3-Sem)
    --    Present in N_Pragma node. Used to point back to the source aspect from
    --    the corresponding pragma. This field is Empty for source pragmas.
@@ -6139,6 +6145,7 @@ package Sinfo is
       --  Sloc points to RAISE
       --  Name (Node2) (always present)
       --  Expression (Node3) (set to Empty if no expression present)
+      --  Convert_To_Return_False (Flag13-Sem)
       --  plus fields for expression
 
       -------------------------------
@@ -8299,6 +8306,9 @@ package Sinfo is
    function Conversion_OK
      (N : Node_Id) return Boolean;    -- Flag14
 
+   function Convert_To_Return_False
+     (N : Node_Id) return Boolean;    -- Flag13
+
    function Corresponding_Aspect
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -9279,6 +9289,9 @@ package Sinfo is
 
    procedure Set_Conversion_OK
      (N : Node_Id; Val : Boolean := True);    -- Flag14
+
+   procedure Set_Convert_To_Return_False
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
 
    procedure Set_Corresponding_Aspect
      (N : Node_Id; Val : Node_Id);            -- Node3
@@ -11880,6 +11893,7 @@ package Sinfo is
    pragma Inline (Context_Items);
    pragma Inline (Context_Pending);
    pragma Inline (Controlling_Argument);
+   pragma Inline (Convert_To_Return_False);
    pragma Inline (Conversion_OK);
    pragma Inline (Corresponding_Aspect);
    pragma Inline (Corresponding_Body);
@@ -12204,6 +12218,7 @@ package Sinfo is
    pragma Inline (Set_Context_Items);
    pragma Inline (Set_Context_Pending);
    pragma Inline (Set_Controlling_Argument);
+   pragma Inline (Set_Convert_To_Return_False);
    pragma Inline (Set_Conversion_OK);
    pragma Inline (Set_Corresponding_Aspect);
    pragma Inline (Set_Corresponding_Body);

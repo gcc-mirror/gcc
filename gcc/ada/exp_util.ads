@@ -647,9 +647,12 @@ package Exp_Util is
 
    function Make_Predicate_Call
      (Typ  : Entity_Id;
-      Expr : Node_Id) return Node_Id;
+      Expr : Node_Id;
+      Mem  : Boolean := False) return Node_Id;
    --  Typ is a type with Predicate_Function set. This routine builds a call to
    --  this function passing Expr as the argument, and returns it unanalyzed.
+   --  If Mem is set True, this is the special call for the membership case,
+   --  and the function called is the Predicate_Function_M if present.
 
    function Make_Predicate_Check
      (Typ  : Entity_Id;

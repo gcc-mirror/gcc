@@ -5520,18 +5520,36 @@ package body Exp_Util is
 
    function Make_Predicate_Call
      (Typ  : Entity_Id;
-      Expr : Node_Id) return Node_Id
+      Expr : Node_Id;
+      Mem  : Boolean := False) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
    begin
       pragma Assert (Present (Predicate_Function (Typ)));
 
+      --  Call special membership version if requested and available
+
+      if Mem then
+         declare
+            PFM : constant Entity_Id := Predicate_Function_M (Typ);
+         begin
+            if Present (PFM) then
+               return
+                 Make_Function_Call (Loc,
+                   Name                   => New_Occurrence_Of (PFM, Loc),
+                   Parameter_Associations => New_List (Relocate_Node (Expr)));
+            end if;
+         end;
+      end if;
+
+      --  Case of calling normal predicate function
+
       return
-        Make_Function_Call (Loc,
-          Name                   =>
-            New_Occurrence_Of (Predicate_Function (Typ), Loc),
-          Parameter_Associations => New_List (Relocate_Node (Expr)));
+          Make_Function_Call (Loc,
+            Name                   =>
+              New_Occurrence_Of (Predicate_Function (Typ), Loc),
+            Parameter_Associations => New_List (Relocate_Node (Expr)));
    end Make_Predicate_Call;
 
    --------------------------
