@@ -302,6 +302,18 @@ procedure Gnat1drv is
             Strict_Alfa_Mode := True;
          end if;
 
+         --  Distinguish between the two modes of gnat2why: frame condition
+         --  generation (generation of ALI files) and translation of Why (no
+         --  ALI files generated). This is done with the switch -gnatd.G,
+         --  which activates frame condition mode. The other changes in
+         --  behavior depending on this switch are done in gnat2why directly.
+
+         if Debug_Flag_Dot_GG then
+            Frame_Condition_Mode := True;
+         else
+            Opt.Disable_ALI_File := True;
+         end if;
+
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.
 
@@ -408,16 +420,6 @@ procedure Gnat1drv is
          --  which is more complex to formally verify than the original source.
 
          Tagged_Type_Expansion := False;
-
-         --  Distinguish between the two modes of gnat2why: frame condition
-         --  generation (generation of ALI files) and translation of Why (no
-         --  ALI files generated). This is done with the switch -gnatd.G,
-         --  which activates frame condition mode. The other changes in
-         --  behavior depending on this switch are done in gnat2why directly.
-
-         if not Debug_Flag_Dot_GG then
-            Opt.Disable_ALI_File := True;
-         end if;
 
       end if;
 
@@ -1041,10 +1043,11 @@ begin
       elsif Main_Kind in N_Generic_Renaming_Declaration then
          Back_End_Mode := Generate_Object;
 
-      --  It is not an error to analyze (in CodePeer or Alfa modes) a spec
-      --  which requires a body, when the body is not available.
+      --  It is not an error to analyze (in CodePeer mode or Alfa mode with
+      --  generation of Why) a spec which requires a body, when the body is
+      --  not available.
 
-      elsif CodePeer_Mode or Alfa_Mode then
+      elsif CodePeer_Mode or (Alfa_Mode and not Frame_Condition_Mode) then
          Back_End_Mode := Generate_Object;
 
       --  In all other cases (specs which have bodies, generics, and bodies

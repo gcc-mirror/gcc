@@ -1984,6 +1984,12 @@ package Opt is
    --  generation of Why code for those parts of the input code that belong to
    --  the Alfa subset of Ada. Set by debug flag -gnatd.F.
 
+   Frame_Condition_Mode : Boolean := False;
+   --  Specific mode to be used in combination with Alfa_Mode. If set to
+   --  true, ALI files containing the frame conditions (global effects) are
+   --  generated, and Why files are *not* generated. If not true, Why files
+   --  are generated. Set by debug flag -gnatd.G.
+
    Strict_Alfa_Mode : Boolean := False;
    --  Interpret compiler permissions as strictly as possible. E.g. base ranges
    --  for integers are limited to the strict minimum with this option. Set by

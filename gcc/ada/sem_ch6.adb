@@ -444,7 +444,12 @@ package body Sem_Ch6 is
             Insert_After (Last (Decls), New_Body);
             Push_Scope (Id);
             Install_Formals (Id);
-            Preanalyze_Spec_Expression (Expression  (Ret), Etype (Id));
+
+            --  Do a preanalysis of the expression on a separate copy, to
+            --  prevent visibility issues later with operators in instances.
+
+            Preanalyze_Spec_Expression
+              (New_Copy_Tree (Expression  (Ret)), Etype (Id));
             End_Scope;
          end;
       end if;
