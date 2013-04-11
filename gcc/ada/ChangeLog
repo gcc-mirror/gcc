@@ -1,3 +1,10 @@
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: remove spurious warning from non-empty loop.
+	* sem_ch8.adb (Enclosing_Instance): Make public to other routines
+	in the package, in order to suppress redundant semantic checks
+	on subprogram renamings in nested instantiations.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* errout.ads: Minor reformatting.
