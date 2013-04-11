@@ -1592,7 +1592,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
 endif
 
 # *-elf
-ifeq ($(strip $(filter-out avr none powerpc% eabispe leon% erc32% unknown elf,$(targ))),)
+ifeq ($(strip $(filter-out lmp avr none powerpc% eabispe leon% erc32% unknown elf,$(targ))),)
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-xi.adb \
   indepsw.adb<indepsw-gnu.adb
