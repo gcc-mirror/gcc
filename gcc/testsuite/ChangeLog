@@ -1,3 +1,7 @@
+2013-04-11  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp87.c: Do not run test on various targets.
+
 2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56913
