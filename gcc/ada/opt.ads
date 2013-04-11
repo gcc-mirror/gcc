@@ -1982,7 +1982,7 @@ package Opt is
    Alfa_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
-   --  the Alfa subset of Ada. Set by debug flag -gnatd.F.
+   --  the Alfa subset of Ada. Set by the gnat2why executable.
 
    Frame_Condition_Mode : Boolean := False;
    --  Specific mode to be used in combination with Alfa_Mode. If set to
