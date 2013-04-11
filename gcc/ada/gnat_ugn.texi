@@ -7002,6 +7002,12 @@ year). The compiler will generate code based on the assumption that
 the condition being checked is true, which can result in disaster if
 that assumption is wrong.
 
+The checks subject to suppression include all the checks defined by
+the Ada standard, the additional implementation defined checks
+@code{Alignment_Check}, @code{Atomic_Synchronization}, and
+@code{Validity_Check}, as well as any checks introduced using
+@code{pragma Check_Name}.
+
 The @option{-gnatp} switch has no effect if a subsequent
 @option{-gnat-p} switch appears.
 

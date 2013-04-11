@@ -4226,8 +4226,7 @@ package body Exp_Ch4 is
 
          --  Regardless of the anonymous-to-named access type conversion, the
          --  lifetime of the object must be associated with the named access
-         --  type. Use the finalization-related attributes of the named access
-         --  type.
+         --  type. Use the finalization-related attributes of this type.
 
          if Nkind_In (Parent (N), N_Type_Conversion,
                                   N_Unchecked_Type_Conversion)

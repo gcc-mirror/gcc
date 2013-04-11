@@ -10299,12 +10299,12 @@ package body Exp_Dist is
             is
                Constructed_TC : constant Node_Id :=
                  Make_Function_Call (Loc,
-                   Name =>
+                   Name                   =>
                      New_Occurrence_Of (RTE (RE_Build_Complex_TC), Loc),
                    Parameter_Associations => New_List (
                      New_Occurrence_Of (Kind, Loc),
                      Make_Aggregate (Loc,
-                        Expressions => Parameters)));
+                       Expressions => Parameters)));
             begin
                Set_Etype (Constructed_TC, RTE (RE_TypeCode));
                return Constructed_TC;
