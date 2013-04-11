@@ -1,3 +1,8 @@
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada/acats/run_all.sh: Remove special handling of -gnat95 switch.
+	* ada/acats/ada95.lst: Remove special handling of -gnat95 switch.
+
 2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54216
