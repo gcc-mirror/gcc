@@ -1,3 +1,38 @@
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (RETURN_ADDR_OFFSET): Delete as unused.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* a-crbtgk.adb, a-ciorse.adb, a-crbtgo.adb, a-coorse.adb, a-rbtgbo.adb,
+	a-cborse.adb, a-rbtgso.adb, exp_ch3.adb: Minor reformatting.
+
+2013-04-11  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Selected_Component): Do not expand
+	discriminant check for Unchecked_Union.
+	* sem_res.adb (Resolve_Selected_Component): Set flag
+	Do_Discriminant_Check even when expansion is not performed.
+	* sinfo.ads (Do_Discriminant_Check): Update documentation for the case
+	of Unchecked_Union.
+
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Same_Representation): Two types with different scalar
+	storage order never have the same representation.
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* xgnatugn.adb (Push_Conditional): Simplify handling,
+	no longer need to keep track of "excluding" sections.
+	(Currently_Excluding): Removed.
+	(Process_Source_File):
+	Set unw/vms flag so that texinfo can do the whole handling of
+	@ifset/@ifclear sections.  Fix handling of nested @ifset/@ifclear
+	sections.
+	* gnat_ugn.texi: Add a section on performing unassisted install
+	on Windows.
+
 2013-04-11  Johannes Kanig  <kanig@adacore.com>
 
 	* debug.adb: Document usage of -gnatd.Q switch.

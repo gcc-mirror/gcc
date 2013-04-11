@@ -65,6 +65,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       L := L - 1;
 
       return Y;
+
    exception
       when others =>
          B := B - 1;
@@ -116,6 +117,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       L := L - 1;
 
       return Result;
+
    exception
       when others =>
          B := B - 1;
@@ -155,6 +157,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       L := L - 1;
 
       return Y;
+
    exception
       when others =>
          B := B - 1;
@@ -214,6 +217,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -258,6 +262,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -321,11 +326,12 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             B := B + 1;
             L := L + 1;
 
-            Compare := Tree.Last = null
-                         or else Is_Greater_Key_Node (Key, Tree.Last);
+            Compare :=
+              Tree.Last = null or else Is_Greater_Key_Node (Key, Tree.Last);
 
             L := L - 1;
             B := B - 1;
+
          exception
             when others =>
                L := L - 1;
@@ -370,6 +376,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -395,6 +402,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
             L := L - 1;
             B := B - 1;
+
          exception
             when others =>
                L := L - 1;
@@ -418,11 +426,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          return;
       end if;
 
-      --  We know that Key isn't less than the hint so we try again,
-      --  this time to see if it's greater than the hint. If so we
-      --  compare Key to the node that follows the hint. If Key is both
-      --  greater than the hint and less than the hint's next neighbor,
-      --  then we're done; otherwise we must search.
+      --  We know that Key isn't less than the hint so we try again, this time
+      --  to see if it's greater than the hint. If so we compare Key to the
+      --  node that follows the hint. If Key is both greater than the hint and
+      --  less than the hint's next neighbor, then we're done; otherwise we
+      --  must search.
 
       begin
          B := B + 1;
@@ -432,6 +440,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -457,6 +466,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
             L := L - 1;
             B := B - 1;
+
          exception
             when others =>
                L := L - 1;
@@ -480,10 +490,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          return;
       end if;
 
-      --  We know that Key is neither less than the hint nor greater
-      --  than the hint, and that's the definition of equivalence.
-      --  There's nothing else we need to do, since a search would just
-      --  reach the same conclusion.
+      --  We know that Key is neither less than the hint nor greater than the
+      --  hint, and that's the definition of equivalence. There's nothing else
+      --  we need to do, since a search would just reach the same conclusion.
 
       Node := Position;
       Inserted := False;

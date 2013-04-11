@@ -9448,12 +9448,16 @@ package body Sem_Ch13 is
          return False;
       end if;
 
-      --  Representations are different if component alignments differ
+      --  Representations are different if component alignments or scalar
+      --  storage orders differ.
 
       if (Is_Record_Type (T1) or else Is_Array_Type (T1))
         and then
          (Is_Record_Type (T2) or else Is_Array_Type (T2))
-        and then Component_Alignment (T1) /= Component_Alignment (T2)
+        and then
+         (Component_Alignment (T1) /= Component_Alignment (T2)
+            or else
+          Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
       then
          return False;
       end if;
@@ -9530,7 +9534,7 @@ package body Sem_Ch13 is
 
                function Same_Rep return Boolean;
                --  CD1 and CD2 are either components or discriminants. This
-               --  function tests whether the two have the same representation
+               --  function tests whether they have the same representation.
 
                --------------
                -- Same_Rep --
@@ -9540,8 +9544,11 @@ package body Sem_Ch13 is
                begin
                   if No (Component_Clause (CD1)) then
                      return No (Component_Clause (CD2));
-
                   else
+                     --  Note: at this point, component clauses have been
+                     --  normalized to the default bit order, so that the
+                     --  comparison of Component_Bit_Offsets is meaningful.
+
                      return
                         Present (Component_Clause (CD2))
                           and then

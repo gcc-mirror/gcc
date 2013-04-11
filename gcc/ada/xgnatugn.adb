@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,6 +129,7 @@ procedure Xgnatugn is
    procedure Put_Line (F : Sfile; S : String);
    --  Local version of Put_Line ensures Unix style line endings
 
+   First_Time         : Boolean := True;
    Number_Of_Warnings : Natural := 0;
    Number_Of_Errors   : Natural := 0;
    Warnings_Enabled   : Boolean;
@@ -237,14 +238,10 @@ procedure Xgnatugn is
    --  It relies on information in Source_File to generate error messages.
 
    type Conditional is (Set, Clear);
-   procedure Push_Conditional (Cond : Conditional; Flag : Target_Type);
+   procedure Push_Conditional (Cond : Conditional; Flag : Flag_Type);
    procedure Pop_Conditional  (Cond : Conditional);
    --  These subprograms deal with conditional processing (@ifset/@ifclear).
    --  They rely on information in Source_File to generate error messages.
-
-   function Currently_Excluding return Boolean;
-   --  Returns true if conditional processing directives imply that the
-   --  current line should not be included in the output.
 
    function VMS_Context_Determined return Boolean;
    --  Returns true if, in the current conditional preprocessing context, we
@@ -266,7 +263,6 @@ procedure Xgnatugn is
       Starting_Line : Positive;
       Cond          : Conditional;
       Flag          : Flag_Type;
-      Excluding     : Boolean;
    end record;
 
    Conditional_Stack_Depth : constant := 3;
@@ -972,6 +968,14 @@ procedure Xgnatugn is
                            Error (Source_File, "flag has to be lowercase");
                         end if;
 
+                        --  Set unw/vms flag in the output file so that
+                        --  @ifset/@ifclear will work as expected.
+
+                        if First_Time then
+                           Put_Line (Output_File, "@set " & Argument (1));
+                           First_Time := False;
+                        end if;
+
                      when Edition_Type =>
                         null;
                   end case;
@@ -1002,6 +1006,14 @@ procedure Xgnatugn is
                            Error (Source_File, "flag has to be lowercase");
                         end if;
 
+                        --  Set unw/vms flag in the output file so that
+                        --  @ifset/@ifclear will work as expected.
+
+                        if First_Time then
+                           Put_Line (Output_File, "@set " & Argument (1));
+                           First_Time := False;
+                        end if;
+
                      when Edition_Type =>
                         null;
                   end case;
@@ -1011,8 +1023,7 @@ procedure Xgnatugn is
                end;
             end if;
 
-            if Have_Conditional and (Flag in Target_Type) then
-
+            if Have_Conditional then
                --  We create a new conditional context and suppress the
                --  directive in the output.
 
@@ -1020,7 +1031,6 @@ procedure Xgnatugn is
 
             elsif Line'Length >= Endsetclear'Length
               and then Line (1 .. Endsetclear'Length) = Endsetclear
-              and then (Flag in Target_Type)
             then
                --  The '@end ifset'/'@end ifclear' case is handled here. We
                --  have to pop the conditional context.
@@ -1049,6 +1059,10 @@ procedure Xgnatugn is
 
                      if Have_Conditional then
                         Pop_Conditional (Cond);
+
+                        if Conditional_TOS > 0 then
+                           Flag := Conditional_Stack (Conditional_TOS).Flag;
+                        end if;
                      end if;
 
                      --  We fall through to the ordinary case for other @end
@@ -1058,14 +1072,7 @@ procedure Xgnatugn is
                end;
             end if;                     --  Have_Conditional
 
-            if (not Have_Conditional) or (Flag in Edition_Type) then
-
-               --  The ordinary case
-
-               if not Currently_Excluding then
-                  Put_Line (Output_File, Rewritten);
-               end if;
-            end if;
+            Put_Line (Output_File, Rewritten);
          end;
       end loop;
 
@@ -1156,42 +1163,27 @@ procedure Xgnatugn is
    -- Push_Conditional --
    ----------------------
 
-   procedure Push_Conditional (Cond : Conditional; Flag : Target_Type) is
-      Will_Exclude : Boolean;
-
+   procedure Push_Conditional (Cond : Conditional; Flag : Flag_Type) is
    begin
-      --  If we are already in an excluding context, inherit this property,
-      --  otherwise calculate it from scratch.
+      if Flag in Target_Type then
 
-      if Conditional_TOS > 0
-        and then Conditional_Stack (Conditional_TOS).Excluding
-      then
-         Will_Exclude := True;
-      else
-         case Cond is
-            when Set =>
-               Will_Exclude := Flag /= Target;
-            when Clear =>
-               Will_Exclude := Flag = Target;
-         end case;
+         --  Check if the current directive is pointless because of a previous,
+         --  enclosing directive.
+
+         for J in 1 .. Conditional_TOS loop
+            if Conditional_Stack (J).Flag = Flag then
+               Warning
+                 (Source_File, "directive without effect because of line"
+                 & Integer'Image (Conditional_Stack (J).Starting_Line));
+            end if;
+         end loop;
       end if;
-
-      --  Check if the current directive is pointless because of a previous,
-      --  enclosing directive.
-
-      for J in 1 .. Conditional_TOS loop
-         if Conditional_Stack (J).Flag = Flag then
-            Warning (Source_File, "directive without effect because of line"
-                     & Integer'Image (Conditional_Stack (J).Starting_Line));
-         end if;
-      end loop;
 
       Conditional_TOS := Conditional_TOS + 1;
       Conditional_Stack (Conditional_TOS) :=
         (Starting_Line => Source_File.Line,
          Cond          => Cond,
-         Flag          => Flag,
-         Excluding     => Will_Exclude);
+         Flag          => Flag);
    end Push_Conditional;
 
    ---------------------
@@ -1233,16 +1225,6 @@ procedure Xgnatugn is
          end case;
       end if;
    end Pop_Conditional;
-
-   -------------------------
-   -- Currently_Excluding --
-   -------------------------
-
-   function Currently_Excluding return Boolean is
-   begin
-      return Conditional_TOS > 0
-        and then Conditional_Stack (Conditional_TOS).Excluding;
-   end Currently_Excluding;
 
    ----------------------------
    -- VMS_Context_Determined --

@@ -675,6 +675,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
       LR := LR - 1;
 
       return Result;
+
    exception
       when others =>
          BL := BL - 1;

@@ -1768,6 +1768,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -1776,6 +1777,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       end;
 
       if Compare then
+
          --  Item is equivalent to the node's element, so we will not have to
          --  move the node.
 
@@ -1808,6 +1810,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
             L := L - 1;
             B := B - 1;
+
          exception
             when others =>
                L := L - 1;
@@ -1815,7 +1818,10 @@ package body Ada.Containers.Bounded_Ordered_Sets is
                raise;
          end;
 
-         if not Compare then  -- Item is equivalent to Nodes (Hint).Element
+         --  Item is equivalent to Nodes (Hint).Element
+
+         if not Compare then
+
             --  Ceiling returns an element that is equivalent or greater than
             --  Item. If Item is "not less than" the element, then by
             --  elimination we know that Item is equivalent to the element.
