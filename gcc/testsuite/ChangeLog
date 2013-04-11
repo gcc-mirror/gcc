@@ -1,5 +1,6 @@
 2013-04-11  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/56900
 	* gcc.dg/tree-ssa/vrp87.c: Do not run test on various targets.
 
 2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
