@@ -135,6 +135,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       LR := LR - 1;
 
       return Result;
+
    exception
       when others =>
          BL := BL - 1;
@@ -404,6 +405,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
          Free (X);
       end loop;
 
+      --  The following comment is unacceptable, more detail needed ???
+
       Position := No_Element;  --  Post-York behavior
    end Delete;
 
@@ -432,7 +435,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
            "attempt to tamper with cursors (list is busy)";
       end if;
 
-      for I in 1 .. Count loop
+      for J in 1 .. Count loop
          X := Container.First;
          pragma Assert (X.Next.Prev = Container.First);
 
@@ -470,7 +473,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
            "attempt to tamper with cursors (list is busy)";
       end if;
 
-      for I in 1 .. Count loop
+      for J in 1 .. Count loop
          X := Container.Last;
          pragma Assert (X.Prev.Next = Container.Last);
 
@@ -492,11 +495,11 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Position.Node = null then
          raise Constraint_Error with
            "Position cursor has no element";
+      else
+         pragma Assert (Vet (Position), "bad cursor in Element");
+
+         return Position.Node.Element;
       end if;
-
-      pragma Assert (Vet (Position), "bad cursor in Element");
-
-      return Position.Node.Element;
    end Element;
 
    --------------
@@ -549,9 +552,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if Position.Container /= Container'Unrestricted_Access then
             raise Program_Error with
               "Position cursor designates wrong container";
+         else
+            pragma Assert (Vet (Position), "bad cursor in Find");
          end if;
-
-         pragma Assert (Vet (Position), "bad cursor in Find");
       end if;
 
       --  Per AI05-0022, the container implementation is required to detect
@@ -572,9 +575,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
             if Node.Element = Item then
                Result := Node;
                exit;
+            else
+               Node := Node.Next;
             end if;
-
-            Node := Node.Next;
          end loop;
 
          B := B - 1;
@@ -585,6 +588,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
          else
             return Cursor'(Container'Unrestricted_Access, Result);
          end if;
+
       exception
          when others =>
             B := B - 1;
@@ -601,9 +605,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Container.First = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Container.First);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Container.First);
    end First;
 
    function First (Object : Iterator) return Cursor is
@@ -636,9 +640,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Container.First = null then
          raise Constraint_Error with "list is empty";
+      else
+         return Container.First.Element;
       end if;
-
-      return Container.First.Element;
    end First_Element;
 
    ----------
@@ -647,7 +651,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    procedure Free (X : in out Node_Access) is
       procedure Deallocate is
-         new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+        new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+
    begin
       --  While a node is in use, as an active link in a list, its Previous and
       --  Next components must be null, or designate a different node; this is
@@ -708,6 +713,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
          L := L - 1;
 
          return Result;
+
       exception
          when others =>
             B := B - 1;
@@ -803,6 +809,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
             SB := SB - 1;
             SL := SL - 1;
+
          exception
             when others =>
                TB := TB - 1;
@@ -830,9 +837,10 @@ package body Ada.Containers.Doubly_Linked_Lists is
          ---------------
 
          procedure Partition (Pivot : Node_Access; Back : Node_Access) is
-            Node : Node_Access := Pivot.Next;
+            Node : Node_Access;
 
          begin
+            Node := Pivot.Next;
             while Node /= Back loop
                if Node.Element < Pivot.Element then
                   declare
@@ -913,6 +921,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
             B := B - 1;
             L := L - 1;
+
          exception
             when others =>
                B := B - 1;
@@ -954,34 +963,33 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if Before.Container /= Container'Unrestricted_Access then
             raise Program_Error with
               "Before cursor designates wrong list";
+         else
+            pragma Assert (Vet (Before), "bad cursor in Insert");
          end if;
-
-         pragma Assert (Vet (Before), "bad cursor in Insert");
       end if;
 
       if Count = 0 then
          Position := Before;
          return;
-      end if;
 
-      if Container.Length > Count_Type'Last - Count then
+      elsif Container.Length > Count_Type'Last - Count then
          raise Constraint_Error with "new length exceeds maximum";
-      end if;
 
-      if Container.Busy > 0 then
+      elsif Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors (list is busy)";
-      end if;
 
-      New_Node := new Node_Type'(New_Item, null, null);
-      Insert_Internal (Container, Before.Node, New_Node);
-
-      Position := Cursor'(Container'Unchecked_Access, New_Node);
-
-      for J in Count_Type'(2) .. Count loop
+      else
          New_Node := new Node_Type'(New_Item, null, null);
          Insert_Internal (Container, Before.Node, New_Node);
-      end loop;
+
+         Position := Cursor'(Container'Unchecked_Access, New_Node);
+
+         for J in 2 .. Count loop
+            New_Node := new Node_Type'(New_Item, null, null);
+            Insert_Internal (Container, Before.Node, New_Node);
+         end loop;
+      end if;
    end Insert;
 
    procedure Insert
@@ -1009,9 +1017,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if Before.Container /= Container'Unrestricted_Access then
             raise Program_Error with
               "Before cursor designates wrong list";
+         else
+            pragma Assert (Vet (Before), "bad cursor in Insert");
          end if;
-
-         pragma Assert (Vet (Before), "bad cursor in Insert");
       end if;
 
       if Count = 0 then
@@ -1021,22 +1029,22 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       if Container.Length > Count_Type'Last - Count then
          raise Constraint_Error with "new length exceeds maximum";
-      end if;
 
-      if Container.Busy > 0 then
+      elsif Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors (list is busy)";
-      end if;
 
-      New_Node := new Node_Type;
-      Insert_Internal (Container, Before.Node, New_Node);
-
-      Position := Cursor'(Container'Unchecked_Access, New_Node);
-
-      for J in Count_Type'(2) .. Count loop
+      else
          New_Node := new Node_Type;
          Insert_Internal (Container, Before.Node, New_Node);
-      end loop;
+
+         Position := Cursor'(Container'Unchecked_Access, New_Node);
+
+         for J in 2 .. Count loop
+            New_Node := new Node_Type;
+            Insert_Internal (Container, Before.Node, New_Node);
+         end loop;
+      end if;
    end Insert;
 
    ---------------------
@@ -1141,9 +1149,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-        Iterator'(Limited_Controlled with
-                    Container => Container'Unrestricted_Access,
-                    Node      => null)
+                    Iterator'(Limited_Controlled with
+                                Container => Container'Unrestricted_Access,
+                                Node      => null)
       do
          B := B + 1;
       end return;
@@ -1169,31 +1177,31 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Start = No_Element then
          raise Constraint_Error with
            "Start position for iterator equals No_Element";
-      end if;
 
-      if Start.Container /= Container'Unrestricted_Access then
+      elsif Start.Container /= Container'Unrestricted_Access then
          raise Program_Error with
            "Start cursor of Iterate designates wrong list";
+
+      else
+         pragma Assert (Vet (Start), "Start cursor of Iterate is bad");
+
+         --  The value of the Node component influences the behavior of the
+         --  First and Last selector functions of the iterator object. When
+         --  the Node component is non-null (as is the case here), it means
+         --  that this is a partial iteration, over a subset of the complete
+         --  sequence of items. The iterator object was constructed with
+         --  a start expression, indicating the position from which the
+         --  iteration begins. Note that the start position has the same value
+         --  irrespective of whether this is a forward or reverse iteration.
+
+         return It : constant Iterator :=
+                       Iterator'(Limited_Controlled with
+                                   Container => Container'Unrestricted_Access,
+                                 Node      => Start.Node)
+         do
+            B := B + 1;
+         end return;
       end if;
-
-      pragma Assert (Vet (Start), "Start cursor of Iterate is bad");
-
-      --  The value of the Node component influences the behavior of the First
-      --  and Last selector functions of the iterator object. When the Node
-      --  component is non-null (as is the case here), it means that this
-      --  is a partial iteration, over a subset of the complete sequence of
-      --  items. The iterator object was constructed with a start expression,
-      --  indicating the position from which the iteration begins. Note that
-      --  the start position has the same value irrespective of whether this
-      --  is a forward or reverse iteration.
-
-      return It : constant Iterator :=
-        Iterator'(Limited_Controlled with
-                    Container => Container'Unrestricted_Access,
-                    Node      => Start.Node)
-      do
-         B := B + 1;
-      end return;
    end Iterate;
 
    ----------
@@ -1204,9 +1212,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Container.Last = null then
          return No_Element;
+      else
+         return Cursor'(Container'Unrestricted_Access, Container.Last);
       end if;
-
-      return Cursor'(Container'Unrestricted_Access, Container.Last);
    end Last;
 
    function Last (Object : Iterator) return Cursor is
@@ -1239,9 +1247,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Container.Last = null then
          raise Constraint_Error with "list is empty";
+      else
+         return Container.Last.Element;
       end if;
-
-      return Container.Last.Element;
    end Last_Element;
 
    ------------
@@ -1264,23 +1272,23 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Target'Address = Source'Address then
          return;
-      end if;
 
-      if Source.Busy > 0 then
+      elsif Source.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors of Source (list is busy)";
+
+      else
+         Clear (Target);
+
+         Target.First := Source.First;
+         Source.First := null;
+
+         Target.Last := Source.Last;
+         Source.Last := null;
+
+         Target.Length := Source.Length;
+         Source.Length := 0;
       end if;
-
-      Clear (Target);
-
-      Target.First := Source.First;
-      Source.First := null;
-
-      Target.Last := Source.Last;
-      Source.Last := null;
-
-      Target.Length := Source.Length;
-      Source.Length := 0;
    end Move;
 
    ----------
@@ -1296,20 +1304,20 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Position.Node = null then
          return No_Element;
+
+      else
+         pragma Assert (Vet (Position), "bad cursor in Next");
+
+         declare
+            Next_Node : constant Node_Access := Position.Node.Next;
+         begin
+            if Next_Node = null then
+               return No_Element;
+            else
+               return Cursor'(Position.Container, Next_Node);
+            end if;
+         end;
       end if;
-
-      pragma Assert (Vet (Position), "bad cursor in Next");
-
-      declare
-         Next_Node : constant Node_Access := Position.Node.Next;
-
-      begin
-         if Next_Node = null then
-            return No_Element;
-         end if;
-
-         return Cursor'(Position.Container, Next_Node);
-      end;
    end Next;
 
    function Next
@@ -1319,14 +1327,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Position.Container = null then
          return No_Element;
-      end if;
-
-      if Position.Container /= Object.Container then
+      elsif Position.Container /= Object.Container then
          raise Program_Error with
            "Position cursor of Next designates wrong list";
+      else
+         return Next (Position);
       end if;
-
-      return Next (Position);
    end Next;
 
    -------------
@@ -1355,20 +1361,20 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Position.Node = null then
          return No_Element;
+
+      else
+         pragma Assert (Vet (Position), "bad cursor in Previous");
+
+         declare
+            Prev_Node : constant Node_Access := Position.Node.Prev;
+         begin
+            if Prev_Node = null then
+               return No_Element;
+            else
+               return Cursor'(Position.Container, Prev_Node);
+            end if;
+         end;
       end if;
-
-      pragma Assert (Vet (Position), "bad cursor in Previous");
-
-      declare
-         Prev_Node : constant Node_Access := Position.Node.Prev;
-
-      begin
-         if Prev_Node = null then
-            return No_Element;
-         end if;
-
-         return Cursor'(Position.Container, Prev_Node);
-      end;
    end Previous;
 
    function Previous
@@ -1378,14 +1384,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Position.Container = null then
          return No_Element;
-      end if;
-
-      if Position.Container /= Object.Container then
+      elsif Position.Container /= Object.Container then
          raise Program_Error with
            "Position cursor of Previous designates wrong list";
+      else
+         return Previous (Position);
       end if;
-
-      return Previous (Position);
    end Previous;
 
    -------------------
@@ -1514,28 +1518,28 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
-      end if;
 
-      if Position.Container /= Container'Unchecked_Access then
+      elsif Position.Container /= Container'Unchecked_Access then
          raise Program_Error with
            "Position cursor designates wrong container";
+
+      else
+         pragma Assert (Vet (Position), "bad cursor in function Reference");
+
+         declare
+            C : List renames Position.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            return R : constant Reference_Type :=
+                         (Element => Position.Node.Element'Access,
+                          Control => (Controlled with Position.Container))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end if;
-
-      pragma Assert (Vet (Position), "bad cursor in function Reference");
-
-      declare
-         C : List renames Position.Container.all;
-         B : Natural renames C.Busy;
-         L : Natural renames C.Lock;
-      begin
-         return R : constant Reference_Type :=
-           (Element => Position.Node.Element'Access,
-            Control => (Controlled with Position.Container))
-         do
-            B := B + 1;
-            L := L + 1;
-         end return;
-      end;
    end Reference;
 
    ---------------------
@@ -1550,21 +1554,20 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";
-      end if;
 
-      if Position.Container /= Container'Unchecked_Access then
+      elsif Position.Container /= Container'Unchecked_Access then
          raise Program_Error with
            "Position cursor designates wrong container";
-      end if;
 
-      if Container.Lock > 0 then
+      elsif Container.Lock > 0 then
          raise Program_Error with
            "attempt to tamper with elements (list is locked)";
+
+      else
+         pragma Assert (Vet (Position), "bad cursor in Replace_Element");
+
+         Position.Node.Element := New_Item;
       end if;
-
-      pragma Assert (Vet (Position), "bad cursor in Replace_Element");
-
-      Position.Node.Element := New_Item;
    end Replace_Element;
 
    ----------------------
@@ -1673,9 +1676,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if Position.Container /= Container'Unrestricted_Access then
             raise Program_Error with
               "Position cursor designates wrong container";
+         else
+            pragma Assert (Vet (Position), "bad cursor in Reverse_Find");
          end if;
-
-         pragma Assert (Vet (Position), "bad cursor in Reverse_Find");
       end if;
 
       --  Per AI05-0022, the container implementation is required to detect
@@ -1709,6 +1712,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
          else
             return Cursor'(Container'Unrestricted_Access, Result);
          end if;
+
       exception
          when others =>
             B := B - 1;
@@ -1738,7 +1742,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
             Process (Cursor'(Container'Unrestricted_Access, Node));
             Node := Node.Prev;
          end loop;
-
       exception
          when others =>
             B := B - 1;
@@ -1762,32 +1765,28 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if Before.Container /= Target'Unrestricted_Access then
             raise Program_Error with
               "Before cursor designates wrong container";
+         else
+            pragma Assert (Vet (Before), "bad cursor in Splice");
          end if;
-
-         pragma Assert (Vet (Before), "bad cursor in Splice");
       end if;
 
-      if Target'Address = Source'Address
-        or else Source.Length = 0
-      then
+      if Target'Address = Source'Address or else Source.Length = 0 then
          return;
-      end if;
 
-      if Target.Length > Count_Type'Last - Source.Length then
+      elsif Target.Length > Count_Type'Last - Source.Length then
          raise Constraint_Error with "new length exceeds maximum";
-      end if;
 
-      if Target.Busy > 0 then
+      elsif Target.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors of Target (list is busy)";
-      end if;
 
-      if Source.Busy > 0 then
+      elsif Source.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors of Source (list is busy)";
-      end if;
 
-      Splice_Internal (Target, Before.Node, Source);
+      else
+         Splice_Internal (Target, Before.Node, Source);
+      end if;
    end Splice;
 
    procedure Splice
@@ -1800,9 +1799,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if Before.Container /= Container'Unchecked_Access then
             raise Program_Error with
               "Before cursor designates wrong container";
+         else
+            pragma Assert (Vet (Before), "bad Before cursor in Splice");
          end if;
-
-         pragma Assert (Vet (Before), "bad Before cursor in Splice");
       end if;
 
       if Position.Node = null then
@@ -1908,38 +1907,37 @@ package body Ada.Containers.Doubly_Linked_Lists is
          if Before.Container /= Target'Unrestricted_Access then
             raise Program_Error with
               "Before cursor designates wrong container";
+         else
+            pragma Assert (Vet (Before), "bad Before cursor in Splice");
          end if;
-
-         pragma Assert (Vet (Before), "bad Before cursor in Splice");
       end if;
 
       if Position.Node = null then
          raise Constraint_Error with "Position cursor has no element";
-      end if;
 
-      if Position.Container /= Source'Unrestricted_Access then
+      elsif Position.Container /= Source'Unrestricted_Access then
          raise Program_Error with
            "Position cursor designates wrong container";
+
+      else
+         pragma Assert (Vet (Position), "bad Position cursor in Splice");
+
+         if Target.Length = Count_Type'Last then
+            raise Constraint_Error with "Target is full";
+
+         elsif Target.Busy > 0 then
+            raise Program_Error with
+              "attempt to tamper with cursors of Target (list is busy)";
+
+         elsif Source.Busy > 0 then
+            raise Program_Error with
+              "attempt to tamper with cursors of Source (list is busy)";
+
+         else
+            Splice_Internal (Target, Before.Node, Source, Position.Node);
+            Position.Container := Target'Unchecked_Access;
+         end if;
       end if;
-
-      pragma Assert (Vet (Position), "bad Position cursor in Splice");
-
-      if Target.Length = Count_Type'Last then
-         raise Constraint_Error with "Target is full";
-      end if;
-
-      if Target.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Target (list is busy)";
-      end if;
-
-      if Source.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Source (list is busy)";
-      end if;
-
-      Splice_Internal (Target, Before.Node, Source, Position.Node);
-      Position.Container := Target'Unchecked_Access;
    end Splice;
 
    ---------------------
@@ -2210,35 +2208,35 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Position.Node = null then
          raise Constraint_Error with "Position cursor has no element";
-      end if;
 
-      if Position.Container /= Container'Unchecked_Access then
+      elsif Position.Container /= Container'Unchecked_Access then
          raise Program_Error with
            "Position cursor designates wrong container";
-      end if;
 
-      pragma Assert (Vet (Position), "bad cursor in Update_Element");
+      else
+         pragma Assert (Vet (Position), "bad cursor in Update_Element");
 
-      declare
-         B : Natural renames Container.Busy;
-         L : Natural renames Container.Lock;
-
-      begin
-         B := B + 1;
-         L := L + 1;
+         declare
+            B : Natural renames Container.Busy;
+            L : Natural renames Container.Lock;
 
          begin
-            Process (Position.Node.Element);
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-               raise;
-         end;
+            B := B + 1;
+            L := L + 1;
 
-         L := L - 1;
-         B := B - 1;
-      end;
+            begin
+               Process (Position.Node.Element);
+            exception
+               when others =>
+                  L := L - 1;
+                  B := B - 1;
+                  raise;
+            end;
+
+            L := L - 1;
+            B := B - 1;
+         end;
+      end if;
    end Update_Element;
 
    ---------
@@ -2305,8 +2303,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
          end if;
 
          pragma Assert
-           (Position.Node.Prev /= null
-             or else Position.Node = L.First);
+           (Position.Node.Prev /= null or else Position.Node = L.First);
 
          if Position.Node.Next = null and then Position.Node /= L.Last then
             return False;
