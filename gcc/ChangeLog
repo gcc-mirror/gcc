@@ -1,3 +1,7 @@
+2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.h (REVERSIBLE_CC_MODE): Define.
+
 2013-04-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (get_initial_def_for_induction): Properly

@@ -709,6 +709,8 @@ do {									     \
 
 #define SELECT_CC_MODE(OP, X, Y)	aarch64_select_cc_mode (OP, X, Y)
 
+#define REVERSIBLE_CC_MODE(MODE) 1
+
 #define REVERSE_CONDITION(CODE, MODE)		\
   (((MODE) == CCFPmode || (MODE) == CCFPEmode)	\
    ? reverse_condition_maybe_unordered (CODE)	\
