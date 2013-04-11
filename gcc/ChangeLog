@@ -1,3 +1,9 @@
+2013-04-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/56124
+	* ira-costs.c (scan_one_insn): Check whether the source rtx of
+	loading has side effect.
+
 2013-04-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/sparc/sparc.c: Include tree-pass.h.
