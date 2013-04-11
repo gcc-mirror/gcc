@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,6 +114,18 @@ package body Sem_Case is
       Others_Present : Boolean;
       Case_Node      : Node_Id)
    is
+      procedure Check_Against_Predicate
+        (Pred    : in out Node_Id;
+         Choice  : Choice_Bounds;
+         Prev_Lo : in out Uint;
+         Prev_Hi : in out Uint;
+         Error   : in out Boolean);
+      --  Determine whether a choice covers legal values as defined by a static
+      --  predicate set. Pred is a static predicate range. Choice is the choice
+      --  to be examined. Prev_Lo and Prev_Hi are the bounds of the previous
+      --  choice that covered a predicate set. Error denotes whether the check
+      --  found an illegal intersection.
+
       procedure Explain_Non_Static_Bound;
       --  Called when we find a non-static bound, requiring the base type to
       --  be covered. Provides where possible a helpful explanation of why the
@@ -123,53 +135,387 @@ package body Sem_Case is
       --  Comparison routine for comparing Choice_Table entries. Use the lower
       --  bound of each Choice as the key.
 
+      procedure Missing_Choice (Value1 : Node_Id; Value2 : Node_Id);
+      procedure Missing_Choice (Value1 : Node_Id; Value2 : Uint);
+      procedure Missing_Choice (Value1 : Uint;    Value2 : Node_Id);
+      procedure Missing_Choice (Value1 : Uint;    Value2 : Uint);
+      --  Issue an error message indicating that there are missing choices,
+      --  followed by the image of the missing choices themselves which lie
+      --  between Value1 and Value2 inclusive.
+
+      procedure Missing_Choices (Pred : Node_Id; Prev_Hi : Uint);
+      --  Emit an error message for each non-covered static predicate set.
+      --  Prev_Hi denotes the upper bound of the last choice that covered a
+      --  set.
+
       procedure Move_Choice (From : Natural; To : Natural);
       --  Move routine for sorting the Choice_Table
 
       package Sorting is new GNAT.Heap_Sort_G (Move_Choice, Lt_Choice);
 
-      procedure Issue_Msg (Value1 : Node_Id; Value2 : Node_Id);
-      procedure Issue_Msg (Value1 : Node_Id; Value2 : Uint);
-      procedure Issue_Msg (Value1 : Uint;    Value2 : Node_Id);
-      procedure Issue_Msg (Value1 : Uint;    Value2 : Uint);
-      --  Issue an error message indicating that there are missing choices,
-      --  followed by the image of the missing choices themselves which lie
-      --  between Value1 and Value2 inclusive.
+      -----------------------------
+      -- Check_Against_Predicate --
+      -----------------------------
 
-      ---------------
-      -- Issue_Msg --
-      ---------------
+      procedure Check_Against_Predicate
+        (Pred    : in out Node_Id;
+         Choice  : Choice_Bounds;
+         Prev_Lo : in out Uint;
+         Prev_Hi : in out Uint;
+         Error   : in out Boolean)
+      is
+         procedure Illegal_Range
+           (Loc : Source_Ptr;
+            Lo  : Uint;
+            Hi  : Uint);
+         --  Emit an error message regarding a choice that clashes with the
+         --  legal static predicate sets. Loc is the location of the choice
+         --  that introduced the illegal range. Lo .. Hi is the range.
 
-      procedure Issue_Msg (Value1 : Node_Id; Value2 : Node_Id) is
+         function Inside_Range
+           (Lo  : Uint;
+            Hi  : Uint;
+            Val : Uint) return Boolean;
+         --  Determine whether position Val within a discrete type is within
+         --  the range Lo .. Hi inclusive.
+
+         -------------------
+         -- Illegal_Range --
+         -------------------
+
+         procedure Illegal_Range
+           (Loc : Source_Ptr;
+            Lo  : Uint;
+            Hi  : Uint)
+         is
+         begin
+            Error_Msg_Name_1 := Chars (Bounds_Type);
+
+            --  Single value
+
+            if Lo = Hi then
+               if Is_Integer_Type (Bounds_Type) then
+                  Error_Msg_Uint_1 := Lo;
+                  Error_Msg ("static predicate on % excludes value ^!", Loc);
+               else
+                  Error_Msg_Name_2 := Choice_Image (Lo, Bounds_Type);
+                  Error_Msg ("static predicate on % excludes value %!", Loc);
+               end if;
+
+            --  Range
+
+            else
+               if Is_Integer_Type (Bounds_Type) then
+                  Error_Msg_Uint_1 := Lo;
+                  Error_Msg_Uint_2 := Hi;
+                  Error_Msg
+                    ("static predicate on % excludes range ^ .. ^!", Loc);
+               else
+                  Error_Msg_Name_2 := Choice_Image (Lo, Bounds_Type);
+                  Error_Msg_Name_3 := Choice_Image (Hi, Bounds_Type);
+                  Error_Msg
+                    ("static predicate on % excludes range % .. %!", Loc);
+               end if;
+            end if;
+         end Illegal_Range;
+
+         ------------------
+         -- Inside_Range --
+         ------------------
+
+         function Inside_Range
+           (Lo  : Uint;
+            Hi  : Uint;
+            Val : Uint) return Boolean
+         is
+         begin
+            return
+              Val = Lo or else Val = Hi or else (Lo < Val and then Val < Hi);
+         end Inside_Range;
+
+         --  Local variables
+
+         Choice_Hi : constant Uint := Expr_Value (Choice.Hi);
+         Choice_Lo : constant Uint := Expr_Value (Choice.Lo);
+         Loc       : Source_Ptr;
+         Next_Hi   : Uint;
+         Next_Lo   : Uint;
+         Pred_Hi   : Uint;
+         Pred_Lo   : Uint;
+
+      --  Start of processing for Check_Against_Predicate
+
       begin
-         Issue_Msg (Expr_Value (Value1), Expr_Value (Value2));
-      end Issue_Msg;
+         --  Find the proper error message location
 
-      procedure Issue_Msg (Value1 : Node_Id; Value2 : Uint) is
-      begin
-         Issue_Msg (Expr_Value (Value1), Value2);
-      end Issue_Msg;
+         if Present (Choice.Node) then
+            Loc := Sloc (Choice.Node);
+         else
+            Loc := Sloc (Case_Node);
+         end if;
 
-      procedure Issue_Msg (Value1 : Uint; Value2 : Node_Id) is
-      begin
-         Issue_Msg (Value1, Expr_Value (Value2));
-      end Issue_Msg;
+         if Present (Pred) then
+            Pred_Lo := Expr_Value (Low_Bound  (Pred));
+            Pred_Hi := Expr_Value (High_Bound (Pred));
 
-      procedure Issue_Msg (Value1 : Uint; Value2 : Uint) is
-         Msg_Sloc : constant Source_Ptr := Sloc (Case_Node);
+         --  Previous choices managed to satisfy all static predicate sets
 
-      begin
-         --  AI05-0188 : within an instance the non-others choices do not
-         --  have to belong to the actual subtype.
+         else
+            Illegal_Range (Loc, Choice_Lo, Choice_Hi);
+            Error := True;
 
-         if Ada_Version >= Ada_2012 and then In_Instance then
             return;
          end if;
 
-         --  In some situations, we call this with a null range, and
-         --  obviously we don't want to complain in this case!
+         --  Step 1: Detect duplicate choices
 
-         if Value1 > Value2 then
+         if Inside_Range (Choice_Lo, Choice_Hi, Prev_Lo)
+           or else Inside_Range (Choice_Lo, Choice_Hi, Prev_Hi)
+         then
+            Error_Msg ("duplication of choice value", Loc);
+            Error := True;
+
+         --  Step 2: Detect full coverage
+
+         --  Choice_Lo    Choice_Hi
+         --  +============+
+         --  Pred_Lo      Pred_Hi
+
+         elsif Choice_Lo = Pred_Lo and then Choice_Hi = Pred_Hi then
+            Prev_Lo := Choice_Lo;
+            Prev_Hi := Choice_Hi;
+            Next (Pred);
+
+         --  Step 3: Detect all cases where a choice mentions values that are
+         --  not part of the static predicate sets.
+
+         --  Choice_Lo   Choice_Hi   Pred_Lo   Pred_Hi
+         --  +-----------+ . . . . . +=========+
+         --   ^ illegal ^
+
+         elsif Choice_Lo < Pred_Lo and then Choice_Hi < Pred_Lo then
+            Illegal_Range (Loc, Choice_Lo, Choice_Hi);
+            Error := True;
+
+         --  Choice_Lo   Pred_Lo   Choice_Hi   Pred_Hi
+         --  +-----------+=========+===========+
+         --   ^ illegal ^
+
+         elsif Choice_Lo < Pred_Lo
+           and then Inside_Range (Pred_Lo, Pred_Hi, Choice_Hi)
+         then
+            Illegal_Range (Loc, Choice_Lo, Pred_Lo - 1);
+            Error := True;
+
+         --  Pred_Lo   Pred_Hi   Choice_Lo   Choice_Hi
+         --  +=========+ . . . . +-----------+
+         --                       ^ illegal ^
+
+         elsif Pred_Lo < Choice_Lo and then Pred_Hi < Choice_Lo then
+            Missing_Choice (Pred_Lo, Pred_Hi);
+            Error := True;
+
+            --  There may be several static predicate sets between the current
+            --  one and the choice. Inspect the next static predicate set.
+
+            Next (Pred);
+            Check_Against_Predicate
+              (Pred    => Pred,
+               Choice  => Choice,
+               Prev_Lo => Prev_Lo,
+               Prev_Hi => Prev_Hi,
+               Error   => Error);
+
+         --  Pred_Lo   Choice_Lo   Pred_Hi     Choice_Hi
+         --  +=========+===========+-----------+
+         --                         ^ illegal ^
+
+         elsif Pred_Hi < Choice_Hi
+           and then Inside_Range (Pred_Lo, Pred_Hi, Choice_Lo)
+         then
+            Next (Pred);
+
+            --  The choice may fall in a static predicate set. If this is the
+            --  case, avoid mentioning legal values in the error message.
+
+            if Present (Pred) then
+               Next_Lo := Expr_Value (Low_Bound  (Pred));
+               Next_Hi := Expr_Value (High_Bound (Pred));
+
+               --  The next static predicate set is to the right of the choice
+
+               if Choice_Hi < Next_Lo and then Choice_Hi < Next_Hi then
+                  Illegal_Range (Loc, Pred_Hi + 1, Choice_Hi);
+               else
+                  Illegal_Range (Loc, Pred_Hi + 1, Next_Lo - 1);
+               end if;
+            else
+               Illegal_Range (Loc, Pred_Hi + 1, Choice_Hi);
+            end if;
+
+            Error := True;
+
+         --  Choice_Lo   Pred_Lo   Pred_Hi     Choice_Hi
+         --  +-----------+=========+-----------+
+         --   ^ illegal ^           ^ illegal ^
+
+         --  Emit an error on the low gap, disregard the upper gap
+
+         elsif Choice_Lo < Pred_Lo and then Pred_Hi < Choice_Hi then
+            Illegal_Range (Loc, Choice_Lo, Pred_Lo - 1);
+            Error := True;
+
+         --  Step 4: Detect all cases of partial or missing coverage
+
+         --  Pred_Lo   Choice_Lo  Choice_Hi   Pred_Hi
+         --  +=========+==========+===========+
+         --   ^  gap  ^            ^   gap   ^
+
+         else
+            --  An "others" choice covers all gaps
+
+            if Others_Present then
+               Prev_Lo := Choice_Lo;
+               Prev_Hi := Choice_Hi;
+               Next (Pred);
+
+            --  Choice_Lo   Choice_Hi   Pred_Hi
+            --  +===========+===========+
+            --  Pred_Lo      ^   gap   ^
+
+            --  The upper gap may be covered by a subsequent choice
+
+            elsif Pred_Lo = Choice_Lo then
+               Prev_Lo := Choice_Lo;
+               Prev_Hi := Choice_Hi;
+
+            --  Pred_Lo     Prev_Hi   Choice_Lo   Choice_Hi   Pred_Hi
+            --  +===========+=========+===========+===========+
+            --   ^ covered ^ ^  gap  ^
+
+            else pragma Assert (Pred_Lo < Choice_Lo);
+
+               --  A previous choice covered the gap up to the current choice
+
+               if Prev_Hi = Choice_Lo - 1 then
+                  Prev_Lo := Choice_Lo;
+                  Prev_Hi := Choice_Hi;
+
+                  if Choice_Hi = Pred_Hi then
+                     Next (Pred);
+                  end if;
+
+               --  The previous choice did not intersect with the current
+               --  static predicate set.
+
+               elsif Prev_Hi < Pred_Lo then
+                  Missing_Choice (Pred_Lo, Choice_Lo - 1);
+                  Error := True;
+
+               --  The previous choice covered part of the static predicate set
+
+               else
+                  Missing_Choice (Prev_Hi, Choice_Lo - 1);
+                  Error := True;
+               end if;
+            end if;
+         end if;
+      end Check_Against_Predicate;
+
+      ------------------------------
+      -- Explain_Non_Static_Bound --
+      ------------------------------
+
+      procedure Explain_Non_Static_Bound is
+         Expr : Node_Id;
+
+      begin
+         if Nkind (Case_Node) = N_Variant_Part then
+            Expr := Name (Case_Node);
+         else
+            Expr := Expression (Case_Node);
+         end if;
+
+         if Bounds_Type /= Subtyp then
+
+            --  If the case is a variant part, the expression is given by the
+            --  discriminant itself, and the bounds are the culprits.
+
+            if Nkind (Case_Node) = N_Variant_Part then
+               Error_Msg_NE
+                 ("bounds of & are not static," &
+                     " alternatives must cover base type", Expr, Expr);
+
+            --  If this is a case statement, the expression may be non-static
+            --  or else the subtype may be at fault.
+
+            elsif Is_Entity_Name (Expr) then
+               Error_Msg_NE
+                 ("bounds of & are not static," &
+                    " alternatives must cover base type", Expr, Expr);
+
+            else
+               Error_Msg_N
+                 ("subtype of expression is not static,"
+                  & " alternatives must cover base type!", Expr);
+            end if;
+
+         --  Otherwise the expression is not static, even if the bounds of the
+         --  type are, or else there are missing alternatives. If both, the
+         --  additional information may be redundant but harmless.
+
+         elsif not Is_Entity_Name (Expr) then
+            Error_Msg_N
+              ("subtype of expression is not static, "
+               & "alternatives must cover base type!", Expr);
+         end if;
+      end Explain_Non_Static_Bound;
+
+      ---------------
+      -- Lt_Choice --
+      ---------------
+
+      function Lt_Choice (C1, C2 : Natural) return Boolean is
+      begin
+         return
+           Expr_Value (Choice_Table (Nat (C1)).Lo)
+             <
+           Expr_Value (Choice_Table (Nat (C2)).Lo);
+      end Lt_Choice;
+
+      --------------------
+      -- Missing_Choice --
+      --------------------
+
+      procedure Missing_Choice (Value1 : Node_Id; Value2 : Node_Id) is
+      begin
+         Missing_Choice (Expr_Value (Value1), Expr_Value (Value2));
+      end Missing_Choice;
+
+      procedure Missing_Choice (Value1 : Node_Id; Value2 : Uint) is
+      begin
+         Missing_Choice (Expr_Value (Value1), Value2);
+      end Missing_Choice;
+
+      procedure Missing_Choice (Value1 : Uint; Value2 : Node_Id) is
+      begin
+         Missing_Choice (Value1, Expr_Value (Value2));
+      end Missing_Choice;
+
+      procedure Missing_Choice (Value1 : Uint; Value2 : Uint) is
+         Msg_Sloc : constant Source_Ptr := Sloc (Case_Node);
+
+      begin
+         --  AI05-0188 : within an instance the non-others choices do not have
+         --  to belong to the actual subtype.
+
+         if Ada_Version >= Ada_2012 and then In_Instance then
+            return;
+
+         --  In some situations, we call this with a null range, and obviously
+         --  we don't want to complain in this case.
+
+         elsif Value1 > Value2 then
             return;
          end if;
 
@@ -197,19 +543,35 @@ package body Sem_Case is
                Error_Msg ("missing case values: % .. %!", Msg_Sloc);
             end if;
          end if;
-      end Issue_Msg;
+      end Missing_Choice;
 
-      ---------------
-      -- Lt_Choice --
-      ---------------
+      ---------------------
+      -- Missing_Choices --
+      ---------------------
 
-      function Lt_Choice (C1, C2 : Natural) return Boolean is
+      procedure Missing_Choices (Pred : Node_Id; Prev_Hi : Uint) is
+         Hi  : Uint;
+         Lo  : Uint;
+         Set : Node_Id;
+
       begin
-         return
-           Expr_Value (Choice_Table (Nat (C1)).Lo)
-             <
-           Expr_Value (Choice_Table (Nat (C2)).Lo);
-      end Lt_Choice;
+         Set := Pred;
+         while Present (Set) loop
+            Lo := Expr_Value (Low_Bound (Set));
+            Hi := Expr_Value (High_Bound (Set));
+
+            --  A choice covered part of a static predicate set
+
+            if Lo <= Prev_Hi and then Prev_Hi < Hi then
+               Missing_Choice (Prev_Hi + 1, Hi);
+
+            else
+               Missing_Choice (Lo, Hi);
+            end if;
+
+            Next (Set);
+         end loop;
+      end Missing_Choices;
 
       -----------------
       -- Move_Choice --
@@ -220,79 +582,39 @@ package body Sem_Case is
          Choice_Table (Nat (To)) := Choice_Table (Nat (From));
       end Move_Choice;
 
-      ------------------------------
-      -- Explain_Non_Static_Bound --
-      ------------------------------
+      --  Local variables
 
-      procedure Explain_Non_Static_Bound is
-         Expr : Node_Id;
+      Bounds_Hi     : constant Node_Id := Type_High_Bound (Bounds_Type);
+      Bounds_Lo     : constant Node_Id := Type_Low_Bound  (Bounds_Type);
+      Has_Predicate : constant Boolean :=
+                        Is_Static_Subtype (Bounds_Type)
+                          and then Present (Static_Predicate (Bounds_Type));
+      Num_Choices   : constant Nat     := Choice_Table'Last;
 
-      begin
-         if Nkind (Case_Node) = N_Variant_Part then
-            Expr := Name (Case_Node);
-         else
-            Expr := Expression (Case_Node);
-         end if;
-
-         if Bounds_Type /= Subtyp then
-
-            --  If the case is a variant part, the expression is given by
-            --  the discriminant itself, and the bounds are the culprits.
-
-            if Nkind (Case_Node) = N_Variant_Part then
-               Error_Msg_NE
-                 ("bounds of & are not static," &
-                     " alternatives must cover base type", Expr, Expr);
-
-            --  If this is a case statement, the expression may be
-            --  non-static or else the subtype may be at fault.
-
-            elsif Is_Entity_Name (Expr) then
-               Error_Msg_NE
-                 ("bounds of & are not static," &
-                    " alternatives must cover base type", Expr, Expr);
-
-            else
-               Error_Msg_N
-                 ("subtype of expression is not static,"
-                  & " alternatives must cover base type!", Expr);
-            end if;
-
-         --  Otherwise the expression is not static, even if the bounds of the
-         --  type are, or else there are missing alternatives. If both, the
-         --  additional information may be redundant but harmless.
-
-         elsif not Is_Entity_Name (Expr) then
-            Error_Msg_N
-              ("subtype of expression is not static, "
-               & "alternatives must cover base type!", Expr);
-         end if;
-      end Explain_Non_Static_Bound;
-
-      --  Variables local to Check_Choices
-
-      Choice    : Node_Id;
-      Bounds_Lo : constant Node_Id := Type_Low_Bound  (Bounds_Type);
-      Bounds_Hi : constant Node_Id := Type_High_Bound (Bounds_Type);
-
+      Choice      : Node_Id;
+      Choice_Hi   : Uint;
+      Choice_Lo   : Uint;
+      Error       : Boolean;
+      Pred        : Node_Id;
       Prev_Choice : Node_Id;
-
-      Hi      : Uint;
-      Lo      : Uint;
-      Prev_Hi : Uint;
+      Prev_Lo     : Uint;
+      Prev_Hi     : Uint;
 
    --  Start of processing for Check_Choices
 
    begin
-      --  Choice_Table must start at 0 which is an unused location used
-      --  by the sorting algorithm. However the first valid position for
-      --  a discrete choice is 1.
+      --  Choice_Table must start at 0 which is an unused location used by the
+      --  sorting algorithm. However the first valid position for a discrete
+      --  choice is 1.
 
       pragma Assert (Choice_Table'First = 0);
 
-      if Choice_Table'Last = 0 then
+      --  The choices do not cover the base range. Emit an error if "others" is
+      --  not available and return as there is no need for further processing.
+
+      if Num_Choices = 0 then
          if not Others_Present then
-            Issue_Msg (Bounds_Lo, Bounds_Hi);
+            Missing_Choice (Bounds_Lo, Bounds_Hi);
          end if;
 
          return;
@@ -300,59 +622,98 @@ package body Sem_Case is
 
       Sorting.Sort (Positive (Choice_Table'Last));
 
-      Lo      := Expr_Value (Choice_Table (1).Lo);
-      Hi      := Expr_Value (Choice_Table (1).Hi);
-      Prev_Hi := Hi;
+      --  The type covered by the list of choices is actually a static subtype
+      --  subject to a static predicate. The predicate defines subsets of legal
+      --  values and requires finer grained analysis.
 
-      if not Others_Present and then Expr_Value (Bounds_Lo) < Lo then
-         Issue_Msg (Bounds_Lo, Lo - 1);
+      if Has_Predicate then
+         Pred    := First (Static_Predicate (Bounds_Type));
+         Prev_Lo := Uint_Minus_1;
+         Prev_Hi := Uint_Minus_1;
+         Error   := False;
 
-         --  If values are missing outside of the subtype, add explanation.
-         --  No additional message if only one value is missing.
+         for Index in 1 .. Num_Choices loop
+            Check_Against_Predicate
+              (Pred    => Pred,
+               Choice  => Choice_Table (Index),
+               Prev_Lo => Prev_Lo,
+               Prev_Hi => Prev_Hi,
+               Error   => Error);
 
-         if Expr_Value (Bounds_Lo) < Lo - 1 then
-            Explain_Non_Static_Bound;
+            --  The analysis detected an illegal intersection between a choice
+            --  and a static predicate set.
+
+            if Error then
+               return;
+            end if;
+         end loop;
+
+         --  The choices may legally cover some of the static predicate sets,
+         --  but not all. Emit an error for each non-covered set.
+
+         if not Others_Present then
+            Missing_Choices (Pred, Prev_Hi);
          end if;
-      end if;
 
-      for J in 2 .. Choice_Table'Last loop
-         Lo := Expr_Value (Choice_Table (J).Lo);
-         Hi := Expr_Value (Choice_Table (J).Hi);
+      --  Default analysis
 
-         if Lo <= Prev_Hi then
-            Choice := Choice_Table (J).Node;
+      else
+         Choice_Lo := Expr_Value (Choice_Table (1).Lo);
+         Choice_Hi := Expr_Value (Choice_Table (1).Hi);
+         Prev_Hi   := Choice_Hi;
 
-            --  Find first previous choice that overlaps
+         if not Others_Present and then Expr_Value (Bounds_Lo) < Choice_Lo then
+            Missing_Choice (Bounds_Lo, Choice_Lo - 1);
 
-            for K in 1 .. J - 1 loop
-               if Lo <= Expr_Value (Choice_Table (K).Hi) then
-                  Prev_Choice := Choice_Table (K).Node;
-                  exit;
+            --  If values are missing outside of the subtype, add explanation.
+            --  No additional message if only one value is missing.
+
+            if Expr_Value (Bounds_Lo) < Choice_Lo - 1 then
+               Explain_Non_Static_Bound;
+            end if;
+         end if;
+
+         for Outer_Index in 2 .. Num_Choices loop
+            Choice_Lo := Expr_Value (Choice_Table (Outer_Index).Lo);
+            Choice_Hi := Expr_Value (Choice_Table (Outer_Index).Hi);
+
+            if Choice_Lo <= Prev_Hi then
+               Choice := Choice_Table (Outer_Index).Node;
+
+               --  Find first previous choice that overlaps
+
+               for Inner_Index in 1 .. Outer_Index - 1 loop
+                  if Choice_Lo <=
+                       Expr_Value (Choice_Table (Inner_Index).Hi)
+                  then
+                     Prev_Choice := Choice_Table (Inner_Index).Node;
+                     exit;
+                  end if;
+               end loop;
+
+               if Sloc (Prev_Choice) <= Sloc (Choice) then
+                  Error_Msg_Sloc := Sloc (Prev_Choice);
+                  Error_Msg_N ("duplication of choice value#", Choice);
+               else
+                  Error_Msg_Sloc := Sloc (Choice);
+                  Error_Msg_N ("duplication of choice value#", Prev_Choice);
                end if;
-            end loop;
 
-            if Sloc (Prev_Choice) <= Sloc (Choice) then
-               Error_Msg_Sloc := Sloc (Prev_Choice);
-               Error_Msg_N ("duplication of choice value#", Choice);
-            else
-               Error_Msg_Sloc := Sloc (Choice);
-               Error_Msg_N ("duplication of choice value#", Prev_Choice);
+            elsif not Others_Present and then Choice_Lo /= Prev_Hi + 1 then
+               Missing_Choice (Prev_Hi + 1, Choice_Lo - 1);
             end if;
 
-         elsif not Others_Present and then Lo /= Prev_Hi + 1 then
-            Issue_Msg (Prev_Hi + 1, Lo - 1);
-         end if;
+            if Choice_Hi > Prev_Hi then
+               Prev_Hi := Choice_Hi;
+            end if;
+         end loop;
 
-         if Hi > Prev_Hi then
-            Prev_Hi := Hi;
-         end if;
-      end loop;
+         if not Others_Present and then Expr_Value (Bounds_Hi) > Choice_Hi then
+            Missing_Choice (Choice_Hi + 1, Bounds_Hi);
 
-      if not Others_Present and then Expr_Value (Bounds_Hi) > Hi then
-         Issue_Msg (Hi + 1, Bounds_Hi);
-
-         if Expr_Value (Bounds_Hi) > Hi + 1 then
-            Explain_Non_Static_Bound;
+            if Expr_Value (Bounds_Hi) > Choice_Hi + 1 then
+               Explain_Non_Static_Bound;
+            end if;
          end if;
       end if;
    end Check_Choices;

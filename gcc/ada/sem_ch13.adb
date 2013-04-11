@@ -93,7 +93,7 @@ package body Sem_Ch13 is
    --  the function is inserted before the freeze node, and the body of the
    --  function is inserted after the freeze node. If the predicate expression
    --  has at least one Raise_Expression, then this procedure also builds the
-   --  M version of the predicate function for ue in membership tests.
+   --  M version of the predicate function for use in membership tests.
 
    procedure Build_Static_Predicate
      (Typ  : Entity_Id;
@@ -6188,15 +6188,15 @@ package body Sem_Ch13 is
       type REnt is record
          Lo, Hi : Uint;
       end record;
-      --  One entry in a Rlist value, a single REnt (range entry) value
-      --  denotes one range from Lo to Hi. To represent a single value
-      --  range Lo = Hi = value.
+      --  One entry in a Rlist value, a single REnt (range entry) value denotes
+      --  one range from Lo to Hi. To represent a single value range Lo = Hi =
+      --  value.
 
       type RList is array (Nat range <>) of REnt;
-      --  A list of ranges. The ranges are sorted in increasing order,
-      --  and are disjoint (there is a gap of at least one value between
-      --  each range in the table). A value is in the set of ranges in
-      --  Rlist if it lies within one of these ranges
+      --  A list of ranges. The ranges are sorted in increasing order, and are
+      --  disjoint (there is a gap of at least one value between each range in
+      --  the table). A value is in the set of ranges in Rlist if it lies
+      --  within one of these ranges.
 
       False_Range : constant RList :=
                       RList'(1 .. 0 => REnt'(No_Uint, No_Uint));
@@ -6210,41 +6210,41 @@ package body Sem_Ch13 is
       True_Range : constant RList := RList'(1 => REnt'(BLo, BHi));
       --  Range representing True, value must be in the base range
 
-      function "and" (Left, Right : RList) return RList;
-      --  And's together two range lists, returning a range list. This is
-      --  a set intersection operation.
+      function "and" (Left : RList; Right : RList) return RList;
+      --  And's together two range lists, returning a range list. This is a set
+      --  intersection operation.
 
-      function "or" (Left, Right : RList) return RList;
-      --  Or's together two range lists, returning a range list. This is a
-      --  set union operation.
+      function "or" (Left : RList; Right : RList) return RList;
+      --  Or's together two range lists, returning a range list. This is a set
+      --  union operation.
 
       function "not" (Right : RList) return RList;
       --  Returns complement of a given range list, i.e. a range list
-      --  representing all the values in TLo .. THi that are not in the
-      --  input operand Right.
+      --  representing all the values in TLo .. THi that are not in the input
+      --  operand Right.
 
       function Build_Val (V : Uint) return Node_Id;
       --  Return an analyzed N_Identifier node referencing this value, suitable
       --  for use as an entry in the Static_Predicate list. This node is typed
       --  with the base type.
 
-      function Build_Range (Lo, Hi : Uint) return Node_Id;
-      --  Return an analyzed N_Range node referencing this range, suitable
-      --  for use as an entry in the Static_Predicate list. This node is typed
-      --  with the base type.
+      function Build_Range (Lo : Uint; Hi : Uint) return Node_Id;
+      --  Return an analyzed N_Range node referencing this range, suitable for
+      --  use as an entry in the Static_Predicate list. This node is typed with
+      --  the base type.
 
       function Get_RList (Exp : Node_Id) return RList;
-      --  This is a recursive routine that converts the given expression into
-      --  a list of ranges, suitable for use in building the static predicate.
+      --  This is a recursive routine that converts the given expression into a
+      --  list of ranges, suitable for use in building the static predicate.
 
       function Is_False (R : RList) return Boolean;
       pragma Inline (Is_False);
-      --  Returns True if the given range list is empty, and thus represents
-      --  a False list of ranges that can never be satisfied.
+      --  Returns True if the given range list is empty, and thus represents a
+      --  False list of ranges that can never be satisfied.
 
       function Is_True (R : RList) return Boolean;
-      --  Returns True if R trivially represents the True predicate by having
-      --  a single range from BLo to BHi.
+      --  Returns True if R trivially represents the True predicate by having a
+      --  single range from BLo to BHi.
 
       function Is_Type_Ref (N : Node_Id) return Boolean;
       pragma Inline (Is_Type_Ref);
@@ -6277,7 +6277,7 @@ package body Sem_Ch13 is
       -- "and" --
       -----------
 
-      function "and" (Left, Right : RList) return RList is
+      function "and" (Left : RList; Right : RList) return RList is
          FEnt : REnt;
          --  First range of result
 
@@ -6302,8 +6302,8 @@ package body Sem_Ch13 is
             return False_Range;
          end if;
 
-         --  Loop to remove entries at start that are disjoint, and thus
-         --  just get discarded from the result entirely.
+         --  Loop to remove entries at start that are disjoint, and thus just
+         --  get discarded from the result entirely.
 
          loop
             --  If no operands left in either operand, result is false
@@ -6328,15 +6328,15 @@ package body Sem_Ch13 is
             end if;
          end loop;
 
-         --  Now we have two non-null operands, and first entries overlap.
-         --  The first entry in the result will be the overlapping part of
-         --  these two entries.
+         --  Now we have two non-null operands, and first entries overlap. The
+         --  first entry in the result will be the overlapping part of these
+         --  two entries.
 
          FEnt := REnt'(Lo => UI_Max (Left (SLeft).Lo, Right (SRight).Lo),
                        Hi => UI_Min (Left (SLeft).Hi, Right (SRight).Hi));
 
-         --  Now we can remove the entry that ended at a lower value, since
-         --  its contribution is entirely contained in Fent.
+         --  Now we can remove the entry that ended at a lower value, since its
+         --  contribution is entirely contained in Fent.
 
          if Left (SLeft).Hi <= Right (SRight).Hi then
             SLeft := SLeft + 1;
@@ -6344,10 +6344,10 @@ package body Sem_Ch13 is
             SRight := SRight + 1;
          end if;
 
-         --  Compute result by concatenating this first entry with the "and"
-         --  of the remaining parts of the left and right operands. Note that
-         --  if either of these is empty, "and" will yield empty, so that we
-         --  will end up with just Fent, which is what we want in that case.
+         --  Compute result by concatenating this first entry with the "and" of
+         --  the remaining parts of the left and right operands. Note that if
+         --  either of these is empty, "and" will yield empty, so that we will
+         --  end up with just Fent, which is what we want in that case.
 
          return
            FEnt & (Left (SLeft .. Left'Last) and Right (SRight .. Right'Last));
@@ -6411,7 +6411,7 @@ package body Sem_Ch13 is
       -- "or" --
       ----------
 
-      function "or" (Left, Right : RList) return RList is
+      function "or" (Left : RList; Right : RList) return RList is
          FEnt : REnt;
          --  First range of result
 
@@ -6436,8 +6436,8 @@ package body Sem_Ch13 is
             return Left;
          end if;
 
-         --  Initialize result first entry from left or right operand
-         --  depending on which starts with the lower range.
+         --  Initialize result first entry from left or right operand depending
+         --  on which starts with the lower range.
 
          if Left (SLeft).Lo < Right (SRight).Lo then
             FEnt := Left (SLeft);
@@ -6447,12 +6447,12 @@ package body Sem_Ch13 is
             SRight := SRight + 1;
          end if;
 
-         --  This loop eats ranges from left and right operands that
-         --  are contiguous with the first range we are gathering.
+         --  This loop eats ranges from left and right operands that are
+         --  contiguous with the first range we are gathering.
 
          loop
-            --  Eat first entry in left operand if contiguous or
-            --  overlapped by gathered first operand of result.
+            --  Eat first entry in left operand if contiguous or overlapped by
+            --  gathered first operand of result.
 
             if SLeft <= Left'Last
               and then Left (SLeft).Lo <= FEnt.Hi + 1
@@ -6460,8 +6460,8 @@ package body Sem_Ch13 is
                FEnt.Hi := UI_Max (FEnt.Hi, Left (SLeft).Hi);
                SLeft := SLeft + 1;
 
-               --  Eat first entry in right operand if contiguous or
-               --  overlapped by gathered right operand of result.
+            --  Eat first entry in right operand if contiguous or overlapped by
+            --  gathered right operand of result.
 
             elsif SRight <= Right'Last
               and then Right (SRight).Lo <= FEnt.Hi + 1
@@ -6469,7 +6469,7 @@ package body Sem_Ch13 is
                FEnt.Hi := UI_Max (FEnt.Hi, Right (SRight).Hi);
                SRight := SRight + 1;
 
-               --  All done if no more entries to eat!
+            --  All done if no more entries to eat
 
             else
                exit;
@@ -6488,20 +6488,18 @@ package body Sem_Ch13 is
       -- Build_Range --
       -----------------
 
-      function Build_Range (Lo, Hi : Uint) return Node_Id is
+      function Build_Range (Lo : Uint; Hi : Uint) return Node_Id is
          Result : Node_Id;
+
       begin
-         if Lo = Hi then
-            return Build_Val (Hi);
-         else
-            Result :=
-              Make_Range (Loc,
-                Low_Bound  => Build_Val (Lo),
-                High_Bound => Build_Val (Hi));
-            Set_Etype (Result, Btyp);
-            Set_Analyzed (Result);
-            return Result;
-         end if;
+         Result :=
+           Make_Range (Loc,
+             Low_Bound  => Build_Val (Lo),
+             High_Bound => Build_Val (Hi));
+         Set_Etype (Result, Btyp);
+         Set_Analyzed (Result);
+
+         return Result;
       end Build_Range;
 
       ---------------
@@ -6911,11 +6909,7 @@ package body Sem_Ch13 is
 
                   --  Convert range into required form
 
-                  if Lo = Hi then
-                     Append_To (Plist, Build_Val (Lo));
-                  else
-                     Append_To (Plist, Build_Range (Lo, Hi));
-                  end if;
+                  Append_To (Plist, Build_Range (Lo, Hi));
                end if;
             end;
          end loop;
@@ -9452,12 +9446,12 @@ package body Sem_Ch13 is
       --  storage orders differ.
 
       if (Is_Record_Type (T1) or else Is_Array_Type (T1))
-        and then
+            and then
          (Is_Record_Type (T2) or else Is_Array_Type (T2))
         and then
          (Component_Alignment (T1) /= Component_Alignment (T2)
             or else
-          Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
+              Reverse_Storage_Order (T1) /= Reverse_Storage_Order (T2))
       then
          return False;
       end if;
