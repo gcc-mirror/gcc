@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -603,14 +603,6 @@ __gnat_install_handler (void)
      handled properly, avoiding a SEGV generation from stack usage by the
      handler itself.  */
 
-#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
-  stack_t stack;
-  stack.ss_sp = __gnat_alternate_stack;
-  stack.ss_size = sizeof (__gnat_alternate_stack);
-  stack.ss_flags = 0;
-  sigaltstack (&stack, NULL);
-#endif
-
   act.sa_sigaction = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
   sigemptyset (&act.sa_mask);
@@ -624,11 +616,23 @@ __gnat_install_handler (void)
     sigaction (SIGILL,  &act, NULL);
   if (__gnat_get_interrupt_state (SIGBUS) != 's')
     sigaction (SIGBUS,  &act, NULL);
-#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
-  act.sa_flags |= SA_ONSTACK;
-#endif
   if (__gnat_get_interrupt_state (SIGSEGV) != 's')
-    sigaction (SIGSEGV, &act, NULL);
+    {
+#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
+      /* Setup an alternate stack region for the handler execution so that
+	 stack overflows can be handled properly, avoiding a SEGV generation
+	 from stack usage by the handler itself.  */
+      stack_t stack;
+
+      stack.ss_sp = __gnat_alternate_stack;
+      stack.ss_size = sizeof (__gnat_alternate_stack);
+      stack.ss_flags = 0;
+      sigaltstack (&stack, NULL);
+
+      act.sa_flags |= SA_ONSTACK;
+#endif
+      sigaction (SIGSEGV, &act, NULL);
+    }
 
   __gnat_handler_installed = 1;
 }

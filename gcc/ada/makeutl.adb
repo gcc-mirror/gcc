@@ -390,7 +390,10 @@ package body Makeutl is
 
             Unit := Source.Unit;
 
-            if Unit = No_Unit_Index or else Unit.Name = No_Name then
+            if Source.Replaced_By /= No_Source
+              or else Unit = No_Unit_Index
+              or else Unit.Name = No_Name
+            then
                ALI_Name := No_File;
 
             --  If this is a body, put it in the mapping

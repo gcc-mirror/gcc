@@ -582,6 +582,12 @@ package Sem_Util is
    --  Returns the true generic entity in an instantiation. If the name in the
    --  instantiation is a renaming, the function returns the renamed generic.
 
+   function Get_Incomplete_View_Of_Ancestor (E : Entity_Id) return Entity_Id;
+   --  Implements the notion introduced ever-so briefly in RM 7.3.1 (5.2/3):
+   --  in a child unit a derived type is within the derivation class of an
+   --  ancestor declared in a parent unit, even if there is an intermediate
+   --  derivation that does not see the full view of that ancestor.
+
    procedure Get_Index_Bounds (N : Node_Id; L, H : out Node_Id);
    --  This procedure assigns to L and H respectively the values of the low and
    --  high bounds of node N, which must be a range, subtype indication, or the

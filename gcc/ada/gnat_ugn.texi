@@ -12315,6 +12315,9 @@ specified, no switch @option{^-P^/PROJECT_FILE^} may be specified (see below).
 @cindex @option{^-d^/SOURCE_DIRS^} (@code{gnatname})
 Look for source files in directory @file{dir}. There may be zero, one or more
 spaces between @option{^-d^/SOURCE_DIRS=^} and @file{dir}.
+@file{dir} may end with @code{/**}, that is it may be of the form
+@code{root_dir/**}. In this case, the directory @code{root_dir} and all of its
+subdirectories, recursively, have to be searched for sources.
 When a switch @option{^-d^/SOURCE_DIRS^}
 is specified, the current working directory will not be searched for source
 files, unless it is explicitly specified with a @option{^-d^/SOURCE_DIRS^}

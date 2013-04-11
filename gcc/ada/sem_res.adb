@@ -10504,8 +10504,9 @@ package body Sem_Res is
       Operand     : Node_Id;
       Report_Errs : Boolean := True) return Boolean
    is
-      Target_Type : constant Entity_Id := Base_Type (Target);
-      Opnd_Type   : Entity_Id          := Etype (Operand);
+      Target_Type  : constant Entity_Id := Base_Type (Target);
+      Opnd_Type    : Entity_Id          := Etype (Operand);
+      Inc_Ancestor : Entity_Id;
 
       function Conversion_Check
         (Valid : Boolean;
@@ -10883,6 +10884,13 @@ package body Sem_Res is
          end;
       end if;
 
+      --  If we are within a child unit, check whether the type of the
+      --  expression has an ancestor in a parent unit, in which case it
+      --  belongs to its derivation class even if the ancestor is private.
+      --  See RM 7.3.1 (5.2/3).
+
+      Inc_Ancestor := Get_Incomplete_View_Of_Ancestor (Opnd_Type);
+
       --  Numeric types
 
       if Is_Numeric_Type (Target_Type)  then
@@ -10911,7 +10919,10 @@ package body Sem_Res is
 
          else
             return Conversion_Check
-                    (Is_Numeric_Type (Opnd_Type),
+                    (Is_Numeric_Type (Opnd_Type)
+                       or else
+                         (Present (Inc_Ancestor)
+                           and then Is_Numeric_Type (Inc_Ancestor)),
                      "illegal operand for numeric conversion");
          end if;
 
