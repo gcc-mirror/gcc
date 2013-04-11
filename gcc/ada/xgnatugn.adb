@@ -181,8 +181,7 @@ procedure Xgnatugn is
    Target : Target_Type;
    --  The Target variable is initialized using the command line
 
-   Valid_Characters : constant Character_Set :=
-                        To_Set (Span => (' ',  '~'));
+   Valid_Characters : constant Character_Set := To_Set (Span => (' ',  '~'));
    --  This array controls which characters are permitted in the input
    --  file (after line breaks have been removed). Valid characters
    --  are all printable ASCII characters and the space character.
@@ -190,7 +189,7 @@ procedure Xgnatugn is
    Word_Characters : constant Character_Set :=
                        (To_Set (Ranges =>
                                   (('0', '9'), ('a', 'z'), ('A', 'Z')))
-                        or To_Set ("?-_~"));
+                         or To_Set ("?-_~"));
    --  The characters which are permitted in words. Other (valid)
    --  characters are assumed to be delimiters between words. Note that
    --  this set has to include all characters of the source words of the
@@ -432,8 +431,9 @@ procedure Xgnatugn is
                              Trim (Line (1 .. Split - 1), Both);
                   Target : constant String :=
                              Trim (Line (Split + 1 .. Line'Last), Both);
-                  Two_Spaces : constant Natural :=
-                                 Index (Source, "  ");
+
+                  Two_Spaces : constant Natural := Index (Source, "  ");
+
                   Non_Word_Character : constant Natural :=
                                          Index (Source,
                                                 Word_Characters or
@@ -469,7 +469,6 @@ procedure Xgnatugn is
                            declare
                               Prefix : String renames
                                          Source (Source'First .. J - 1);
-
                            begin
                               if not Is_Known_Word (Prefix) then
                                  Error (Dictionary_File,
@@ -623,7 +622,7 @@ procedure Xgnatugn is
                          (VMS_Second_Character + 1, VMS_Third_Character - 1));
                return;
             end;
-         end if;                        --  VMS_Alternative
+         end if;
 
          --  The Word case. Search for characters not in Word_Characters.
          --  We have found a word if the first non-word character is not
@@ -663,7 +662,7 @@ procedure Xgnatugn is
 
       procedure Rewrite_Word is
          First_Word : String
-           renames Line (Token.Span.First .. Token.Span.Last);
+                        renames Line (Token.Span.First .. Token.Span.Last);
 
       begin
          --  We do not perform any error checking below, so we can just skip
@@ -681,7 +680,7 @@ procedure Xgnatugn is
             --  longest possible sequence we can rewrite.
 
             declare
-               Seq : Token_Span := Token.Span;
+               Seq        : Token_Span := Token.Span;
                Lost_Space : Boolean := False;
 
             begin
@@ -691,23 +690,25 @@ procedure Xgnatugn is
                     and then Line (Token.Span.First .. Token.Span.Last) = " "
                   then
                      Next_Token;
+
                      if Token.Kind /= Word
                        or else not Is_Known_Word (Line (Seq.First
                                                         .. Token.Span.Last))
                      then
-                        --  When we reach this point, the following
-                        --  conditions are true:
-                        --
-                        --  Seq is a known word.
-                        --  The previous token was a space character.
-                        --  Seq extended to the current token is not a
-                        --  known word.
+                        --  When we reach this point, the following conditions
+                        --  are true:
+
+                        --    Seq is a known word
+
+                        --    The previous token was a space character
+
+                        --    Seq extended to the current token is not a
+                        --    known word.
 
                         Lost_Space := True;
                         exit;
 
                      else
-
                         --  Extend Seq to cover the current (known) word
 
                         Seq.Last := Token.Span.Last;
@@ -717,10 +718,12 @@ procedure Xgnatugn is
                   else
                      --  When we reach this point, the following conditions
                      --  are true:
-                     --
-                     --  Seq is a known word.
-                     --  The previous token was a word.
-                     --  The current token is not a space character.
+
+                     --    Seq is a known word
+
+                     --    The previous token was a word
+
+                     --    The current token is not a space character.
 
                      exit;
                   end if;
@@ -749,8 +752,8 @@ procedure Xgnatugn is
 
             Next_Token;
             if Token.Kind = Word
-              and then Is_Extension (Line (Token.Span.First
-                                           .. Token.Span.Last))
+              and then
+                Is_Extension (Line (Token.Span.First .. Token.Span.Last))
             then
                --  We have discovered a file extension. Convert the file
                --  name to upper case.
@@ -793,6 +796,7 @@ procedure Xgnatugn is
             --  Rewrite_Word would have handled it.
 
             Next_Token;
+
             if Token.Kind = Word
               and then Is_Extension (Line (Token.Span.First
                                            .. Token.Span.Last))
@@ -803,6 +807,7 @@ procedure Xgnatugn is
             else
                Append (Rewritten_Line, '.');
             end if;
+
          else
             Append (Rewritten_Line, Line (Token.Span.First
                                           .. Token.Span.Last));
@@ -839,6 +844,7 @@ procedure Xgnatugn is
                   Append (Rewritten_Line, Line (Token.Non_VMS.First
                                                 .. Token.Non_VMS.Last));
                end if;
+
                Next_Token;
 
             when VMS_Error =>
@@ -859,6 +865,7 @@ procedure Xgnatugn is
       while not End_Of_File (Source_File.Data) loop
          declare
             Line      : constant String := Get_Line (Source_File'Access);
+
             Rewritten : constant String := Rewrite_Source_Line (Line);
             --  We unconditionally rewrite the line so that we can check the
             --  syntax of all lines, and not only those which are actually
@@ -884,8 +891,7 @@ procedure Xgnatugn is
    procedure Initialize_Extensions is
 
       procedure Add (Extension : String);
-      --  Adds an extension which is replaced with itself (in upper
-      --  case).
+      --  Adds an extension which is replaced with itself (in upper case)
 
       procedure Add (Extension, Replacement : String);
       --  Adds an extension with a custom replacement

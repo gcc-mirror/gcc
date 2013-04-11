@@ -2843,7 +2843,7 @@ package Einfo is
 --       Applies to all entities. True for task types and subtypes
 
 --    Is_Thunk (Flag225)
---       Applies to all entities. True for subprograms that are thunks: that is
+--       Defined in all entities. True for subprograms that are thunks: that is
 --       small subprograms built by the expander for tagged types that cover
 --       interface types. As part of the runtime call to an interface, thunks
 --       displace the pointer to the object (pointer named "this" in the C++
@@ -4831,7 +4831,7 @@ package Einfo is
    --  non-synthesized attributes, of the corresponding set procedures) are
    --  in the Einfo body.
 
-   --  The following attributes apply to all entities
+   --  The following attributes are defined in all entities
 
    --    Ekind                               (Ekind)
 
@@ -4912,6 +4912,7 @@ package Einfo is
    --    Is_Shared_Passive                   (Flag60)
    --    Is_Statically_Allocated             (Flag28)
    --    Is_Tagged_Type                      (Flag55)
+   --    Is_Thunk                            (Flag225)
    --    Is_Trivial_Subprogram               (Flag235)
    --    Is_Unchecked_Union                  (Flag117)
    --    Is_Visible_Formal                   (Flag206)
@@ -5388,7 +5389,6 @@ package Einfo is
    --    Is_Private_Descendant               (Flag53)
    --    Is_Private_Primitive                (Flag245)  (non-generic case only)
    --    Is_Pure                             (Flag44)
-   --    Is_Thunk                            (Flag225)
    --    Is_Visible_Lib_Unit                 (Flag116)
    --    Needs_No_Actuals                    (Flag22)
    --    Requires_Overriding                 (Flag213)  (non-generic case only)
@@ -5513,7 +5513,6 @@ package Einfo is
    --    Is_Pure                             (Flag44)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Primitive                        (Flag218)
-   --    Is_Thunk                            (Flag225)
    --    Default_Expressions_Processed       (Flag108)
    --    Aren't there more flags and fields? seems like this list should be
    --    more similar to the E_Function list, which is much longer ???
@@ -5661,7 +5660,6 @@ package Einfo is
    --    Is_Private_Descendant               (Flag53)
    --    Is_Private_Primitive                (Flag245)  (non-generic case only)
    --    Is_Pure                             (Flag44)
-   --    Is_Thunk                            (Flag225)
    --    Is_Valued_Procedure                 (Flag127)
    --    Is_Visible_Lib_Unit                 (Flag116)
    --    Needs_No_Actuals                    (Flag22)
