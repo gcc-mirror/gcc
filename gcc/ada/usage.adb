@@ -167,10 +167,7 @@ begin
    Write_Switch_Char ("Dnn");
    Write_Line ("Debug expanded generated code (max line length = nn)");
 
-   --  Line for -gnatea switch
-
-   Write_Switch_Char ("ea");
-   Write_Line ("Delimiter for automatically added switches (internal switch)");
+   --  No line for -gnatea : internal switch
 
    --  Line for -gnateA switch
 
@@ -227,10 +224,7 @@ begin
    Write_Switch_Char ("em=?");
    Write_Line ("Specify mapping file, e.g. -gnatem=mapping");
 
-   --  Line for -gnateO=?
-
-   Write_Switch_Char ("eO=?");
-   Write_Line ("Specify an object path file (internal switch)");
+   --  No line for -gnateO=? : internal switch
 
    --  Line for -gnatep switch
 
@@ -262,10 +256,7 @@ begin
    Write_Switch_Char ("eY");
    Write_Line ("Ignore all Style_Checks pragmas in source");
 
-   --  Line for -gnatez switch
-
-   Write_Switch_Char ("ez");
-   Write_Line ("Delimiter for automatically added switches (internal switch)");
+   --  No line for -gnatez : internal switch
 
    --  Line for -gnatE switch
 
@@ -355,10 +346,7 @@ begin
    Write_Line
      ("Set mode for general/assertion expressions separately");
 
-   --  Line for -gnatO switch
-
-   Write_Switch_Char ("O nm ");
-   Write_Line ("Set name of output ali file (internal switch)");
+   --  No line for -gnatO : internal switch
 
    --  Line for -gnatp switch
 
