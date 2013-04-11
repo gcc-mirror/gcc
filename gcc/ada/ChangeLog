@@ -1,5 +1,17 @@
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
+	* stand.ads: Minor reformatting.
+
+2013-04-11  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb, a-coinve.adb, a-cobove.adb ("="): Increment lock
+	counts before entering loop.
+	(Find, Find_Index): Ditto.
+	(Is_Sorted, Merge, Sort): Ditto.
+	(Reverse_Find, Reverse_Find_Index): Ditto.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch11.ads, exp_ch11.adb (Expand_N_Raise_Expression): New procedure.
 	* exp_util.adb (Insert_Actions): Add entry for N_Raise_Expression.
 	* expander.adb: Add call to Expand_N_Raise_Expression.
