@@ -6732,7 +6732,7 @@ package body Sem_Prag is
 
          --  PROPERTY_LIST              ::= PROPERTY {, PROPERTY}
          --  PROPERTY                   ::= SIMPLE_PROPERTY
-         --                                 | NAME_VALUE_PROPERTY
+         --                               | NAME_VALUE_PROPERTY
          --  SIMPLE_PROPERTY            ::= IDENTIFIER
          --  NAME_VALUE_PROPERTY        ::= IDENTIFIER => EXPRESSION
          --  STATE_NAME                 ::= DEFINING_IDENTIFIER
@@ -8872,6 +8872,706 @@ package body Sem_Prag is
             Debug_Pragmas_Disabled :=
               Chars (Get_Pragma_Arg (Arg1)) = Name_Disable;
 
+         -------------
+         -- Depends --
+         -------------
+
+         --  pragma Depends (DEPENDENCY_RELATION);
+
+         --  DEPENDENCY_RELATION ::= null
+         --                        | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
+         --  DEPENDENCY_CLAUSE   ::= OUTPUT_LIST =>[+] INPUT_LIST
+         --  OUTPUT_LIST         ::= null
+         --                        | OUTPUT
+         --                        | (OUTPUT {, OUTPUT})
+         --  INPUT_LIST          ::= null
+         --                        | INPUT
+         --                        | (INPUT {, INPUT})
+         --  OUTPUT              ::= NAME | FUNCTION_RESULT
+         --  INPUT               ::= NAME
+
+         --  where FUNCTION_RESULT is a function Result attribute_reference
+
+         when Pragma_Depends => Depends : declare
+            Subp_Decl : Node_Id;
+            Subp_Id   : Entity_Id;
+
+            All_Inputs_Seen : Elist_Id := No_Elist;
+            --  A list containing the entities of all the inputs processed so
+            --  far. This Elist is populated with unique entities because the
+            --  same input may appear in multiple input lists.
+
+            Outputs_Seen : Elist_Id := No_Elist;
+            --  A list containing the entities of all the outputs processed so
+            --  far. The elements of this list may come from different output
+            --  lists.
+
+            Null_Output_Seen : Boolean := False;
+            --  A flag used to track the legality of a null output
+
+            procedure Analyze_Dependency_Clause
+              (Clause  : Node_Id;
+               Is_Last : Boolean);
+            --  Verify the legality of a single dependency clause. Flag Is_Last
+            --  denotes whether Clause is the last clause in the relation.
+
+            function Entity_Of (N : Node_Id) return Entity_Id;
+            --  Return the entity of N or Empty. If N is a renaming, find the
+            --  entity of the root renamed object.
+
+            procedure Normalize_Clause (Clause : Node_Id);
+            --  Remove a self-dependency "+" from the input list of a clause.
+            --  Depending on the contents of the relation, either split the
+            --  the clause into multiple smaller clauses or perform the
+            --  normalization in place.
+
+            -------------------------------
+            -- Analyze_Dependency_Clause --
+            -------------------------------
+
+            procedure Analyze_Dependency_Clause
+              (Clause  : Node_Id;
+               Is_Last : Boolean)
+            is
+               procedure Analyze_Input_List (Inputs : Node_Id);
+               --  Verify the legality of a single input list
+
+               procedure Analyze_Input_Output
+                 (Item      : Node_Id;
+                  Is_Input  : Boolean;
+                  Top_Level : Boolean;
+                  Seen      : in out Elist_Id;
+                  Null_Seen : in out Boolean);
+               --  Verify the legality of a single input or output item. Flag
+               --  Is_Input should be set whenever Item is an input, False when
+               --  it denotes an output. Flag Top_Level should be set whenever
+               --  Item appears immediately within an input or output list.
+               --  Seen is a collection of all abstract states, variables and
+               --  formals processed so far. Flag Null_Seen denotes whether a
+               --  null input or output has been encountered.
+
+               ------------------------
+               -- Analyze_Input_List --
+               ------------------------
+
+               procedure Analyze_Input_List (Inputs : Node_Id) is
+                  Inputs_Seen : Elist_Id := No_Elist;
+                  --  A list containing the entities of all inputs that appear
+                  --  in the current input list.
+
+                  Null_Input_Seen : Boolean := False;
+                  --  A flag used to track the legality of a null input
+
+                  Input : Node_Id;
+
+               begin
+                  --  Multiple inputs appear as an aggregate
+
+                  if Nkind (Inputs) = N_Aggregate then
+                     if Present (Component_Associations (Inputs)) then
+                        Error_Msg_N
+                          ("nested dependency relations not allowed", Inputs);
+
+                     elsif Present (Expressions (Inputs)) then
+                        Input := First (Expressions (Inputs));
+                        while Present (Input) loop
+                           Analyze_Input_Output
+                             (Item      => Input,
+                              Is_Input  => True,
+                              Top_Level => False,
+                              Seen      => Inputs_Seen,
+                              Null_Seen => Null_Input_Seen);
+
+                           Next (Input);
+                        end loop;
+
+                     else
+                        Error_Msg_N
+                          ("malformed input dependency list", Inputs);
+                     end if;
+
+                  --  Process a solitary input
+
+                  else
+                     Analyze_Input_Output
+                       (Item      => Inputs,
+                        Is_Input  => True,
+                        Top_Level => False,
+                        Seen      => Inputs_Seen,
+                        Null_Seen => Null_Input_Seen);
+                  end if;
+               end Analyze_Input_List;
+
+               --------------------------
+               -- Analyze_Input_Output --
+               --------------------------
+
+               procedure Analyze_Input_Output
+                 (Item      : Node_Id;
+                  Is_Input  : Boolean;
+                  Top_Level : Boolean;
+                  Seen      : in out Elist_Id;
+                  Null_Seen : in out Boolean)
+               is
+                  Is_Output : constant Boolean := not Is_Input;
+                  Item_Id   : Entity_Id;
+                  Grouped   : Node_Id;
+
+               begin
+                  --  Multiple input or output items appear as an aggregate
+
+                  if Nkind (Item) = N_Aggregate then
+                     if not Top_Level then
+                        Error_Msg_N
+                          ("nested grouping of items not allowed", Item);
+
+                     elsif Present (Component_Associations (Item)) then
+                        Error_Msg_N
+                          ("nested dependency relations not allowed", Item);
+
+                     --  Recursively analyze the grouped items
+
+                     elsif Present (Expressions (Item)) then
+                        Grouped := First (Expressions (Item));
+                        while Present (Grouped) loop
+                           Analyze_Input_Output
+                             (Item      => Grouped,
+                              Is_Input  => Is_Input,
+                              Top_Level => False,
+                              Seen      => Seen,
+                              Null_Seen => Null_Seen);
+
+                           Next (Grouped);
+                        end loop;
+
+                     else
+                        Error_Msg_N ("malformed dependency list", Item);
+                     end if;
+
+                  --  Process Function'Result in the context of a dependency
+                  --  clause.
+
+                  elsif Nkind (Item) = N_Attribute_Reference
+                    and then Attribute_Name (Item) = Name_Result
+                  then
+                     --  It is sufficent to analyze the prefix of 'Result in
+                     --  order to establish legality of the attribute.
+
+                     Analyze (Prefix (Item));
+
+                     --  The prefix of 'Result must denote the function for
+                     --  which aspect/pragma Depends applies.
+
+                     if not Is_Entity_Name (Prefix (Item))
+                       or else Ekind (Subp_Id) /= E_Function
+                       or else Entity (Prefix (Item)) /= Subp_Id
+                     then
+                        Error_Msg_Name_1 := Name_Result;
+                        Error_Msg_N
+                          ("prefix of attribute % must denote the enclosing " &
+                           "function", Item);
+
+                     --  Function'Result is allowed to appear on the output
+                     --  side of a dependency clause.
+
+                     elsif Is_Input then
+                        Error_Msg_N
+                          ("function result cannot act as input", Item);
+                     end if;
+
+                  --  Detect multiple uses of null in a single dependency list
+                  --  or throughout the whole relation. Verify the placement of
+                  --  a null output list relative to the other clauses.
+
+                  elsif Nkind (Item) = N_Null then
+                     if Null_Seen then
+                        Error_Msg_N
+                          ("multiple null dependency relations not allowed",
+                           Item);
+                     else
+                        Null_Seen := True;
+
+                        if Is_Output and then not Is_Last then
+                           Error_Msg_N
+                             ("null output list must be the last clause in " &
+                              "a dependency relation", Item);
+                        end if;
+                     end if;
+
+                  --  Default case
+
+                  else
+                     Analyze (Item);
+
+                     if Is_Entity_Name (Item) then
+                        Item_Id := Entity_Of (Item);
+
+                        if Present (Item_Id)
+                          and then Ekind_In (Item_Id, E_Abstract_State,
+                                                      E_In_Parameter,
+                                                      E_In_Out_Parameter,
+                                                      E_Out_Parameter,
+                                                      E_Variable)
+                        then
+                           --  Detect multiple uses of the same state, variable
+                           --  or formal parameter. If this is not the case,
+                           --  add the item to the list of processed relations.
+
+                           if Contains (Seen, Item_Id) then
+                              Error_Msg_N ("duplicate use of item", Item);
+                           else
+                              if No (Seen) then
+                                 Seen := New_Elmt_List;
+                              end if;
+
+                              Append_Elmt (Item_Id, Seen);
+                           end if;
+
+                           --  Detect an illegal use of an input related to a
+                           --  null output. Such input items cannot appear in
+                           --  other input lists.
+
+                           if Null_Output_Seen
+                             and then Contains (All_Inputs_Seen, Item_Id)
+                           then
+                              Error_Msg_N
+                                ("input of a null output list appears in " &
+                                 "multiple input lists", Item);
+                           else
+                              if No (All_Inputs_Seen) then
+                                 All_Inputs_Seen := New_Elmt_List;
+                              end if;
+
+                              Append_Unique_Elmt (Item_Id, All_Inputs_Seen);
+                           end if;
+
+                        --  All other input/output items are illegal
+
+                        else
+                           Error_Msg_N
+                             ("item must denote variable, state or formal " &
+                              "parameter", Item);
+                        end if;
+
+                     --  All other input/output items are illegal
+
+                     else
+                        Error_Msg_N
+                          ("item must denote variable, state or formal " &
+                           "parameter", Item);
+                     end if;
+                  end if;
+               end Analyze_Input_Output;
+
+               --  Local variables
+
+               Inputs : Node_Id;
+               Output : Node_Id;
+
+            --  Start of processing for Analyze_Dependency_Clause
+
+            begin
+               --  Process the output_list of a dependency_clause
+
+               Output := First (Choices (Clause));
+               while Present (Output) loop
+                  Analyze_Input_Output
+                    (Item      => Output,
+                     Is_Input  => False,
+                     Top_Level => True,
+                     Seen      => Outputs_Seen,
+                     Null_Seen => Null_Output_Seen);
+
+                  Next (Output);
+               end loop;
+
+               --  Process the input_list of a dependency_clause
+
+               Inputs := Expression (Clause);
+
+               --  An input list with a self-dependency appears as operator "+"
+               --  where the actuals inputs are the right operand.
+
+               if Nkind (Inputs) = N_Op_Plus then
+                  Inputs := Right_Opnd (Inputs);
+               end if;
+
+               Analyze_Input_List (Inputs);
+            end Analyze_Dependency_Clause;
+
+            ---------------
+            -- Entity_Of --
+            ---------------
+
+            function Entity_Of (N : Node_Id) return Entity_Id is
+               Id : Entity_Id := Entity (N);
+
+            begin
+               --  Follow a possible chain of renamings to reach the root
+               --  renamed object.
+
+               while Present (Renamed_Object (Id)) loop
+                  if Is_Entity_Name (Renamed_Object (Id)) then
+                     Id := Entity (Renamed_Object (Id));
+
+                  --  The root of the renaming is not an entire object or
+                  --  variable, return Empty.
+
+                  else
+                     Id := Empty;
+                     exit;
+                  end if;
+               end loop;
+
+               return Id;
+            end Entity_Of;
+
+            ----------------------
+            -- Normalize_Clause --
+            ----------------------
+
+            procedure Normalize_Clause (Clause : Node_Id) is
+               procedure Create_Or_Modify_Clause
+                 (Output   : Node_Id;
+                  Outputs  : Node_Id;
+                  Inputs   : Node_Id;
+                  After    : Node_Id;
+                  In_Place : Boolean;
+                  Multiple : Boolean);
+               --  Create a brand new clause to represent the self-reference
+               --  or modify the input and/or output lists of an existing
+               --  clause. Output denotes a self-referencial output. Outputs
+               --  is the output list of a clause. Inputs is the input list
+               --  of a clause. After denotes the clause after which the new
+               --  clause is to be inserted. Flag In_Place should be set when
+               --  normalizing the last output of an output list. Flag Multiple
+               --  should be set when Output comes from a list with multiple
+               --  items.
+
+               -----------------------------
+               -- Create_Or_Modify_Clause --
+               -----------------------------
+
+               procedure Create_Or_Modify_Clause
+                 (Output   : Node_Id;
+                  Outputs  : Node_Id;
+                  Inputs   : Node_Id;
+                  After    : Node_Id;
+                  In_Place : Boolean;
+                  Multiple : Boolean)
+               is
+                  procedure Propagate_Output
+                    (Output : Node_Id;
+                     Inputs : Node_Id);
+                  --  Handle the various cases of output propagation to the
+                  --  input list. Output denotes a self-referencial output
+                  --  item. Inputs is the input list of a clause.
+
+                  ----------------------
+                  -- Propagate_Output --
+                  ----------------------
+
+                  procedure Propagate_Output
+                    (Output : Node_Id;
+                     Inputs : Node_Id)
+                  is
+                     function Contains
+                       (List : List_Id;
+                        Id   : Entity_Id) return Boolean;
+                     --  Determine whether List contains element Id
+
+                     --------------
+                     -- Contains --
+                     --------------
+
+                     function Contains
+                       (List : List_Id;
+                        Id   : Entity_Id) return Boolean
+                     is
+                        Elmt : Node_Id;
+
+                     begin
+                        Elmt := First (List);
+                        while Present (Elmt) loop
+                           if Entity_Of (Elmt) = Id then
+                              return True;
+                           end if;
+
+                           Next (Elmt);
+                        end loop;
+
+                        return False;
+                     end Contains;
+
+                     --  Local variables
+
+                     Grouped : List_Id;
+
+                  --  Start of processing for Propagate_Output
+
+                  begin
+                     --  The clause is of the form:
+
+                     --    (Output =>+ null)
+
+                     --  Remove the null input and replace it with a copy of
+                     --  the output:
+
+                     --    (Output => Output)
+
+                     if Nkind (Inputs) = N_Null then
+                        Rewrite (Inputs, New_Copy_Tree (Output));
+
+                     --  The clause is of the form:
+
+                     --    (Output =>+ (Input1, ..., InputN))
+
+                     --  Determine whether the output is not already mentioned
+                     --  in the input list and if not, add it to the list of
+                     --  inputs:
+
+                     --    (Output => (Output, Input1, ..., InputN))
+
+                     elsif Nkind (Inputs) = N_Aggregate then
+                        Grouped := Expressions (Inputs);
+
+                        if not Contains (Grouped, Entity_Of (Output)) then
+                           Prepend_To (Grouped, New_Copy_Tree (Output));
+                        end if;
+
+                     --  The clause is of the form:
+
+                     --    (Output =>+ Input)
+
+                     --  If the input does not mention the output, group the
+                     --  two together:
+
+                     --    (Output => (Output, Input))
+
+                     elsif Entity_Of (Output) /= Entity_Of (Inputs) then
+                        Rewrite (Inputs,
+                          Make_Aggregate (Loc,
+                            Expressions => New_List (
+                              New_Copy_Tree (Output),
+                              New_Copy_Tree (Inputs))));
+                     end if;
+                  end Propagate_Output;
+
+                  --  Local variables
+
+                  Loc    : constant Source_Ptr := Sloc (Output);
+                  Clause : Node_Id;
+
+               --  Start of processing for Create_Or_Modify_Clause
+
+               begin
+                  --  A function result cannot depend on itself because it
+                  --  cannot appear in the input list of a relation.
+
+                  if Nkind (Output) = N_Attribute_Reference
+                    and then Attribute_Name (Output) = Name_Result
+                  then
+                     Error_Msg_N
+                       ("function result cannot depend on itself", Output);
+                     return;
+
+                  --  A null output depending on itself does not require any
+                  --  normalization.
+
+                  elsif Nkind (Output) = N_Null then
+                     return;
+                  end if;
+
+                  --  When performing the transformation in place, simply add
+                  --  the output to the list of inputs (if not already there).
+                  --  This case arises when dealing with the last output of an
+                  --  output list - we perform the normalization in place to
+                  --  avoid generating a malformed tree.
+
+                  if In_Place then
+                     Propagate_Output (Output, Inputs);
+
+                     --  A list with multiple outputs is slowly trimmed until
+                     --  only one element remains. When this happens, replace
+                     --  the aggregate with the element itself.
+
+                     if Multiple then
+                        Remove  (Output);
+                        Rewrite (Outputs, Output);
+                     end if;
+
+                  --  Default case
+
+                  else
+                     --  Unchain the output from its output list as it will
+                     --  appear in a new clause. Note that we cannot simply
+                     --  rewrite the output as null because this will violate
+                     --  the semantics of aspect/pragma Depends.
+
+                     Remove (Output);
+
+                     --  Create a new clause of the form:
+
+                     --    (Output => Inputs)
+
+                     Clause :=
+                       Make_Component_Association (Loc,
+                         Choices    => New_List (Output),
+                         Expression => New_Copy_Tree (Inputs));
+
+                     --  The new clause contains replicated content that has
+                     --  already been analyzed. There is not need to reanalyze
+                     --  it or renormalize it again.
+
+                     Set_Analyzed (Clause);
+
+                     Propagate_Output
+                       (Output => First (Choices (Clause)),
+                        Inputs => Expression (Clause));
+
+                     Insert_After (After, Clause);
+                  end if;
+               end Create_Or_Modify_Clause;
+
+               --  Local variables
+
+               Outputs     : constant Node_Id := First (Choices (Clause));
+               Inputs      : Node_Id;
+               Last_Output : Node_Id;
+               Next_Output : Node_Id;
+               Output      : Node_Id;
+
+            --  Start of processing for Normalize_Clause
+
+            begin
+               --  A self-dependency appears as operator "+". Remove the "+"
+               --  from the tree by moving the real inputs to their proper
+               --  place.
+
+               if Nkind (Expression (Clause)) = N_Op_Plus then
+                  Rewrite
+                    (Expression (Clause), Right_Opnd (Expression (Clause)));
+                  Inputs := Expression (Clause);
+
+                  --  Multiple outputs appear as an aggregate
+
+                  if Nkind (Outputs) = N_Aggregate then
+                     Last_Output := Last (Expressions (Outputs));
+
+                     Output := First (Expressions (Outputs));
+                     while Present (Output) loop
+
+                        --  Normalization may remove an output from its list,
+                        --  preserve the subsequent output now.
+
+                        Next_Output := Next (Output);
+
+                        Create_Or_Modify_Clause
+                          (Output   => Output,
+                           Outputs  => Outputs,
+                           Inputs   => Inputs,
+                           After    => Clause,
+                           In_Place => Output = Last_Output,
+                           Multiple => True);
+
+                        Output := Next_Output;
+                     end loop;
+
+                  --  Solitary output
+
+                  else
+                     Create_Or_Modify_Clause
+                       (Output   => Outputs,
+                        Outputs  => Empty,
+                        Inputs   => Inputs,
+                        After    => Empty,
+                        In_Place => True,
+                        Multiple => False);
+                  end if;
+               end if;
+            end Normalize_Clause;
+
+            --  Local variables
+
+            Clause      : Node_Id;
+            Errors      : Nat;
+            Last_Clause : Node_Id;
+
+         --  Start of processing for Depends
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Depends must be
+            --  associated with a subprogram declaration.
+
+            Subp_Decl := Parent (Corresponding_Aspect (N));
+
+            if Nkind (Subp_Decl) /= N_Subprogram_Declaration then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
+            Clause  := Expression (Arg1);
+
+            --  There is nothing to be done for a null dependency relation
+
+            if Nkind (Clause) = N_Null then
+               null;
+
+            --  Dependency clauses appear as component associations of an
+            --  aggregate.
+
+            elsif Nkind (Clause) = N_Aggregate
+              and then Present (Component_Associations (Clause))
+            then
+               Last_Clause := Last (Component_Associations (Clause));
+
+               --  Ensure that the formal parameters are visible when analyzing
+               --  all clauses. This falls out of the general rule of aspects
+               --  pertaining to subprogram declarations.
+
+               Push_Scope (Subp_Id);
+               Install_Formals (Subp_Id);
+
+               Clause := First (Component_Associations (Clause));
+               while Present (Clause) loop
+                  Errors := Serious_Errors_Detected;
+
+                  --  Normalization may create extra clauses that contain
+                  --  replicated input and output names. There is no need
+                  --  to reanalyze or renormalize these extra clauses.
+
+                  if not Analyzed (Clause) then
+                     Set_Analyzed (Clause);
+
+                     Analyze_Dependency_Clause
+                       (Clause  => Clause,
+                        Is_Last => Clause = Last_Clause);
+
+                     --  Do not normalize an erroneous clause because the
+                     --  inputs or outputs may denote illegal items.
+
+                     if Errors = Serious_Errors_Detected then
+                        Normalize_Clause (Clause);
+                     end if;
+                  end if;
+
+                  Next (Clause);
+               end loop;
+
+               End_Scope;
+
+            --  The top level dependency relation is malformed
+
+            else
+               Error_Msg_N ("malformed dependency relation", Clause);
+            end if;
+         end Depends;
+
          ---------------------
          -- Detect_Blocking --
          ---------------------
@@ -10064,13 +10764,13 @@ package body Sem_Prag is
 
          --  pragma Global (GLOBAL_SPECIFICATION)
 
-         --  GLOBAL_SPECIFICATION ::= MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
-         --                           | GLOBAL_LIST
-         --                           | null
+         --  GLOBAL_SPECIFICATION ::= null
+         --                         | GLOBAL_LIST
+         --                         | MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
          --  MODED_GLOBAL_LIST    ::= MODE_SELECTOR => GLOBAL_LIST
          --  MODE_SELECTOR        ::= Input | Output | In_Out | Contract_In
          --  GLOBAL_LIST          ::= GLOBAL_ITEM
-         --                           | (GLOBAL_ITEM {, GLOBAL_ITEM})
+         --                         | (GLOBAL_ITEM {, GLOBAL_ITEM})
          --  GLOBAL_ITEM          ::= NAME
 
          when Pragma_Global => Global : declare
@@ -10127,36 +10827,7 @@ package body Sem_Prag is
                  (Item        : Node_Id;
                   Global_Mode : Name_Id)
                is
-                  function Is_Duplicate_Item (Id : Entity_Id) return Boolean;
-                  --  Determine whether Id has already been processed
-
-                  -----------------------
-                  -- Is_Duplicate_Item --
-                  -----------------------
-
-                  function Is_Duplicate_Item (Id : Entity_Id) return Boolean is
-                     Item_Elmt : Elmt_Id;
-
-                  begin
-                     if Present (Seen) then
-                        Item_Elmt := First_Elmt (Seen);
-                        while Present (Item_Elmt) loop
-                           if Node (Item_Elmt) = Id then
-                              return True;
-                           end if;
-
-                           Next_Elmt (Item_Elmt);
-                        end loop;
-                     end if;
-
-                     return False;
-                  end Is_Duplicate_Item;
-
-                  --  Local declarations
-
                   Id : Entity_Id;
-
-               --  Start of processing for Analyze_Global_Item
 
                begin
                   --  Detect one of the following cases
@@ -10207,7 +10878,7 @@ package body Sem_Prag is
                   --  The same entity might be referenced through various way.
                   --  Check the entity of the item rather than the item itself.
 
-                  if Is_Duplicate_Item (Id) then
+                  if Contains (Seen, Id) then
                      Error_Msg_N ("duplicate global item", Item);
 
                   --  Add the entity of the current item to the list of
@@ -10421,7 +11092,7 @@ package body Sem_Prag is
 
                Analyze_Global_List (List);
 
-               Pop_Scope;
+               End_Scope;
             end if;
          end Global;
 
@@ -16624,6 +17295,7 @@ package body Sem_Prag is
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                => -1,
       Pragma_Default_Storage_Pool           => -1,
+      Pragma_Depends                        => -1,
       Pragma_Disable_Atomic_Synchronization => -1,
       Pragma_Discard_Names                  =>  0,
       Pragma_Dispatching_Domain             => -1,

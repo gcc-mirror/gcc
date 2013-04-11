@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,6 +157,28 @@ package body Elists is
          end if;
       end loop;
    end Append_Unique_Elmt;
+
+   --------------
+   -- Contains --
+   --------------
+
+   function Contains (List : Elist_Id; N : Node_Or_Entity_Id) return Boolean is
+      Elmt : Elmt_Id;
+
+   begin
+      if Present (List) then
+         Elmt := First_Elmt (List);
+         while Present (Elmt) loop
+            if Node (Elmt) = N then
+               return True;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      return False;
+   end Contains;
 
    --------------------
    -- Elists_Address --

@@ -570,6 +570,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
          B := B + 1;
          L := L + 1;
 
+         pragma Warnings (Off);
+         --  Deal with junk infinite loop warning from below loop
+
          Result := null;
          while Node /= null loop
             if Node.Element = Item then
@@ -579,6 +582,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
                Node := Node.Next;
             end if;
          end loop;
+
+         pragma Warnings (On);
+         --  End of section dealing with junk infinite loop warning
 
          B := B - 1;
          L := L - 1;

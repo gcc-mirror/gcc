@@ -1,3 +1,31 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* a-cdlili.adb: Minor addition of pragma Warnings (Off).
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* hostparm.ads: Minor reformatting.
+
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.ads, aspects.adb: Add Aspect_Depends to all the relevant
+	tables.
+	* elists.ads, elists.adb (Contains): New routine.
+	* par-prag.adb: Pragma Depends does not need any special treatment
+	by the parser.
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Transform aspect Depends into a corresponding pragma.
+	(Check_Aspect_At_Freeze_Point): Aspect Depends does not need
+	inspection at its freeze point.
+	* sem_prag.adb (Analyze_Pragma): Perform analysis and
+	normalization of pragma Depends. Remove the use of function
+	Is_Duplicate_Item. Use End_Scope to uninstalle the formal
+	parameters of a subprogram. Add a value for pragma Depends in
+	table Sig_Flags.
+	(Is_Duplicate_Item): Removed.
+	* snames.ads-tmpl: Add predefined name for Depends as well as
+	a pragma identifier.
+
 2013-04-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb: Minor code clean up.
