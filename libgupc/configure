@@ -14865,7 +14865,7 @@ $as_echo "$as_me: not updating unwritable cache $cache_file" >&6;}
 fi
 rm -f confcache
 
-if test ${multilib} = yes; then
+if test "x${multilib}" = xyes; then
   multilib_arg="--enable-multilib"
 else
   multilib_arg=
@@ -17876,7 +17876,7 @@ $as_echo_n "checking for UPC runtime bounce buffer size... " >&6; }
 if test "${with_upc_runtime_bounce_buffer_size+set}" = set; then :
   withval=$with_upc_runtime_bounce_buffer_size;
     # $withval must be a decimal integer
-    if ! echo "$withval" | grep -i '^[0-9][0-9]*[kmg]$' >/dev/null 2>&1; then
+    if ! echo "$withval" | egrep -i '^[0-9]+[kmg]?$' >/dev/null 2>&1; then
       as_fn_error "$withval is an invalid option to
 			--with-upc-runtime-bounce-buffer-size" "$LINENO" 5
     fi

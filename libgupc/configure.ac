@@ -401,7 +401,7 @@ XCFLAGS="$XCFLAGS"
 CFLAGS="$save_CFLAGS"
 AC_CACHE_SAVE
 
-if test ${multilib} = yes; then
+if test "x${multilib}" = xyes; then
   multilib_arg="--enable-multilib"
 else
   multilib_arg=
@@ -1078,7 +1078,7 @@ if test "$upc_runtime_model" = "portals4"; then
 		   network data [default=256K]])],
   [
     # $withval must be a decimal integer
-    if ! echo "$withval" | grep -i '^[[0-9]][[0-9]]*[[kmg]]$' >/dev/null 2>&1; then
+    if ! echo "$withval" | egrep -i '^[[0-9]]+[[kmg]]?$' >/dev/null 2>&1; then
       AC_MSG_ERROR([$withval is an invalid option to
 			--with-upc-runtime-bounce-buffer-size])
     fi

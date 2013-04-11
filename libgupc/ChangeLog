@@ -1,3 +1,10 @@
+2013-04-11  Nenad Vukicevic  <nenad@intrepid.com>
+
+	configure.ac: Fix check for correct bounce buffer size value where
+	suffix multiplier (e.g. "k") was always expected.  Small fix for
+	correct checking of the "multilib" setting.
+	configure: Re-generate.
+
 2013-04-09  Nenad Vukicevic  <nenad@intrepid.com>
 
 	portals4/gupcr_lock.upc (upc_unlock): Add missing upc_fence.
