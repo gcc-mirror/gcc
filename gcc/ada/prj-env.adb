@@ -23,8 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 with Fmap;
 with Hostparm;
 with Makeutl;  use Makeutl;
@@ -34,6 +32,8 @@ with Output;   use Output;
 with Prj.Com;  use Prj.Com;
 with Sdefault;
 with Tempdir;
+
+with Ada.Text_IO; use Ada.Text_IO;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 

@@ -487,22 +487,40 @@ begin
       pragma Import (C, save_argv);
       --  Saved value of argv (argument pointers), imported from misc.c
 
+      function Len_Arg (Arg : Pos) return Nat;
+      --  Determine length of argument number Arg on original gnat1 command
+      --  line.
+
+      -------------
+      -- Len_Arg --
+      -------------
+
+      function Len_Arg (Arg : Pos) return Nat is
+      begin
+         for J in 1 .. Nat'Last loop
+            if save_argv (Arg).all (Natural (J)) = ASCII.NUL then
+               return J - 1;
+            end if;
+         end loop;
+
+         raise Program_Error;
+      end Len_Arg;
+
    begin
       --  Loop through arguments looking for -gnateT, also look for -gnatd.b
 
       for Arg in 1 .. save_argc - 1 loop
          declare
             Argv_Ptr : constant Big_String_Ptr := save_argv (Arg);
+            Argv_Len : constant Nat            := Len_Arg (Arg);
          begin
-
-            --  ??? Is there no problem accessing at indices 1 to 7 or 8
-            --  without first checking if the length of the underlying string
-            --  may be smaller? See back_end.adb for an example where function
-            --  Len_Arg is used to retrieve this length.
-
-            if Argv_Ptr (1 .. 7) = "-gnateT" then
+            if Argv_Len = 7
+              and then Argv_Ptr (1 .. 7) = "-gnateT"
+            then
                Opt.Target_Dependent_Info_Read := True;
-            elsif Argv_Ptr (1 .. 8) = "-gnatd.b" then
+            elsif Argv_Len >= 8
+              and then Argv_Ptr (1 .. 8) = "-gnatd.b"
+            then
                Debug_Flag_Dot_B := True;
             end if;
          end;
