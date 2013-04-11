@@ -169,9 +169,9 @@ AdaCore@*
 * About This Guide::
 * Getting Started with GNAT::
 * The GNAT Compilation Model::
-* Compiling Using gcc::
-* Binding Using gnatbind::
-* Linking Using gnatlink::
+* Compiling With gcc::
+* Binding With gnatbind::
+* Linking With gnatlink::
 * The GNAT Make Program gnatmake::
 * Improving Performance::
 * Renaming Files Using gnatchop::
@@ -198,10 +198,10 @@ AdaCore@*
 * Performing Dimensionality Analysis in GNAT::
 * Generating Ada Bindings for C and C++ headers::
 * Other Utility Programs::
-* Running and Debugging Ada Programs::
 @ifclear vms
 * Code Coverage and Profiling::
 @end ifclear
+* Running and Debugging Ada Programs::
 @ifset vms
 * Compatibility with HP Ada::
 @end ifset
@@ -217,17 +217,15 @@ AdaCore@*
 * GNU Free Documentation License::
 * Index::
 
- --- The Detailed Node Listing ---
+ --- Detailed Contents ---
 
 About This Guide
-
 * What This Guide Contains::
 * What You Should Know before Reading This Guide::
 * Related Information::
 * Conventions::
 
 Getting Started with GNAT
-
 * Running GNAT::
 * Running a Simple Ada Program::
 * Running a Program with Multiple Units::
@@ -240,7 +238,6 @@ Getting Started with GNAT
 @end ifclear
 
 The GNAT Compilation Model
-
 * Source Representation::
 * Foreign Language Representation::
 * File Naming Rules::
@@ -260,67 +257,25 @@ The GNAT Compilation Model
 * Placement of temporary files::
 @end ifset
 
-Foreign Language Representation
-
-* Latin-1::
-* Other 8-Bit Codes::
-* Wide Character Encodings::
-
-Compiling Ada Programs With gcc
-
+Compiling With gcc
 * Compiling Programs::
 * Switches for gcc::
 * Search Paths and the Run-Time Library (RTL)::
 * Order of Compilation Issues::
 * Examples::
 
-Switches for gcc
-
-* Output and Error Message Control::
-* Warning Message Control::
-* Debugging and Assertion Control::
-* Validity Checking::
-* Style Checking::
-* Run-Time Checks::
-* Using gcc for Syntax Checking::
-* Using gcc for Semantic Checking::
-* Compiling Different Versions of Ada::
-* Character Set Control::
-* File Naming Control::
-* Subprogram Inlining Control::
-* Auxiliary Output Control::
-* Debugging Control::
-* Exception Handling Control::
-* Units to Sources Mapping Files::
-* Integrated Preprocessing::
-@ifset vms
-* Return Codes::
-@end ifset
-
-Binding Ada Programs With gnatbind
-
+Binding With gnatbind
 * Running gnatbind::
 * Switches for gnatbind::
 * Command-Line Access::
 * Search Paths for gnatbind::
 * Examples of gnatbind Usage::
 
-Switches for gnatbind
-
-* Consistency-Checking Modes::
-* Binder Error Message Control::
-* Elaboration Control::
-* Output Control::
-* Binding with Non-Ada Main Programs::
-* Binding Programs with No Main Subprogram::
-
-Linking Using gnatlink
-
+Linking With gnatlink
 * Running gnatlink::
 * Switches for gnatlink::
 
 The GNAT Make Program gnatmake
-
 * Running gnatmake::
 * Switches for gnatmake::
 * Mode Switches for gnatmake::
@@ -334,33 +289,7 @@ Improving Performance
 * Reducing Size of Ada Executables with gnatelim::
 * Reducing Size of Executables with unused subprogram/data elimination::
 
-Performance Considerations
-* Controlling Run-Time Checks::
-* Use of Restrictions::
-* Optimization Levels::
-* Debugging Optimized Code::
-* Inlining of Subprograms::
-* Vectorization of loops::
-* Other Optimization Switches::
-* Optimization and Strict Aliasing::
-@ifset vms
-* Coverage Analysis::
-@end ifset
-
-Reducing Size of Ada Executables with gnatelim
-* About gnatelim::
-* Running gnatelim::
-* Processing Precompiled Libraries::
-* Correcting the List of Eliminate Pragmas::
-* Making Your Executables Smaller::
-* Summary of the gnatelim Usage Cycle::
-
-Reducing Size of Executables with unused subprogram/data elimination
-* About unused subprogram/data elimination::
-* Compilation options::
-
 Renaming Files Using gnatchop
-
 * Handling Files with Multiple Units::
 * Operating gnatchop in Compilation Mode::
 * Command Line for gnatchop::
@@ -368,19 +297,34 @@ Renaming Files Using gnatchop
 * Examples of gnatchop Usage::
 
 Configuration Pragmas
-
 * Handling of Configuration Pragmas::
 * The Configuration Pragmas Files::
 
 Handling Arbitrary File Naming Conventions Using gnatname
-
 * Arbitrary File Naming Conventions::
 * Running gnatname::
 * Switches for gnatname::
 * Examples of gnatname Usage::
 
-The Cross-Referencing Tools gnatxref and gnatfind
+GNAT Project Manager
+* Introduction::
+* Building With Projects::
+* Organizing Projects into Subsystems::
+* Scenarios in Projects::
+* Library Projects::
+* Project Extension::
+* Aggregate Projects::
+* Aggregate Library Projects::
+* Project File Reference::
 
+Tools Supporting Project Files
+* Switches Related to Project Files::
+* Switches and Project Files::
+* Specifying Configuration Pragmas::
+* Project Files and Main Subprograms::
+* Library Project Files::
+
+The Cross-Referencing Tools gnatxref and gnatfind
 * Switches for gnatxref::
 * Switches for gnatfind::
 * Project Files for gnatxref and gnatfind::
@@ -389,16 +333,13 @@ The Cross-Referencing Tools gnatxref and gnatfind
 * Examples of gnatfind Usage::
 
 The GNAT Pretty-Printer gnatpp
-
 * Switches for gnatpp::
 * Formatting Rules::
 
 The GNAT Metrics Tool gnatmetric
-
 * Switches for gnatmetric::
 
 File Name Krunching Using gnatkr
-
 * About gnatkr::
 * Using gnatkr::
 * Krunching Method::
@@ -412,28 +353,23 @@ Preprocessing Using gnatprep
 * Form of Input Text for gnatprep::
 
 The GNAT Library Browser gnatls
-
 * Running gnatls::
 * Switches for gnatls::
 * Examples of gnatls Usage::
 
 Cleaning Up Using gnatclean
-
 * Running gnatclean::
 * Switches for gnatclean::
 @c * Examples of gnatclean Usage::
 
 @ifclear vms
-
 GNAT and Libraries
-
 * Introduction to Libraries in GNAT::
 * General Ada Libraries::
 * Stand-alone Ada Libraries::
 * Rebuilding the GNAT Run-Time Library::
 
 Using the GNU make Utility
-
 * Using gnatmake in a Makefile::
 * Automatically Creating a List of Directories::
 * Generating the Command Line Switches::
@@ -441,7 +377,6 @@ Using the GNU make Utility
 @end ifclear
 
 Memory Management Issues
-
 * Some Useful Memory Pools::
 * The GNAT Debug Pool Facility::
 @ifclear vms
@@ -449,20 +384,17 @@ Memory Management Issues
 @end ifclear
 
 Stack Related Facilities
-
 * Stack Overflow Checking::
 * Static Stack Usage Analysis::
 * Dynamic Stack Usage Analysis::
 
 Verifying Properties Using gnatcheck
 
-Sample Bodies Using gnatstub
-
+Creating Sample Bodies Using gnatstub
 * Running gnatstub::
 * Switches for gnatstub::
 
 Creating Unit Tests Using gnattest
-
 * Running gnattest::
 * Switches for gnattest::
 * Project Attributes for gnattest::
@@ -480,21 +412,30 @@ Creating Unit Tests Using gnattest
 @end ifclear
 * Current Limitations::
 
-Other Utility Programs
+Performing Dimensionality Analysis in GNAT
 
+Generating Ada Bindings for C and C++ headers
+* Running the binding generator::
+* Generating bindings for C++ headers::
+* Switches::
+
+Other Utility Programs
 * Using Other Utility Programs with GNAT::
 * The External Symbol Naming Scheme of GNAT::
 * Converting Ada Files to html with gnathtml::
+* Installing gnathtml::
+@ifset vms
+* LSE::
+* Profiling::
+@end ifset
 
 @ifclear vms
 Code Coverage and Profiling
-
 * Code Coverage of Ada Programs using gcov::
 * Profiling an Ada Program using gprof::
 @end ifclear
 
 Running and Debugging Ada Programs
-
 * The GNAT Debugger GDB::
 * Running GDB::
 * Introduction to GDB Commands::
@@ -511,12 +452,7 @@ Running and Debugging Ada Programs
 * Stack Traceback::
 
 @ifset vms
-* LSE::
-@end ifset
-
-@ifset vms
 Compatibility with HP Ada
-
 * Ada Language Compatibility::
 * Differences in the Definition of Package System::
 * Language-Related Features::
@@ -535,7 +471,6 @@ Compatibility with HP Ada
 * Tools and Utilities::
 
 Language-Related Features
-
 * Integer Types and Representations::
 * Floating-Point Types and Representations::
 * Pragmas Float_Representation and Long_Float::
@@ -545,7 +480,6 @@ Language-Related Features
 * Other Representation Clauses::
 
 Tasking and Task-Related Features
-
 * Implementation of Tasks in HP Ada for OpenVMS Alpha Systems::
 * Assigning Task IDs::
 * Task IDs and Delays::
@@ -555,23 +489,19 @@ Tasking and Task-Related Features
 * External Interrupts::
 
 Pragmas and Pragma-Related Features
-
 * Restrictions on the Pragma INLINE::
 * Restrictions on the Pragma INTERFACE::
 * Restrictions on the Pragma SYSTEM_NAME::
 
 Library of Predefined Units
-
 * Changes to DECLIB::
 
 Bindings
-
 * Shared Libraries and Options Files::
 * Interfaces to C::
 @end ifset
 
 Platform-Specific Information for the Run-Time Libraries
-
 * Summary of Run-Time Configurations::
 * Specifying a Run-Time Library::
 * Choosing the Scheduling Policy::
@@ -584,7 +514,6 @@ Platform-Specific Information for the Run-Time Libraries
 Example of Binder Output File
 
 Elaboration Order Handling in GNAT
-
 * Elaboration Code::
 * Checking the Elaboration Order::
 * Controlling the Elaboration Order::
@@ -614,7 +543,6 @@ Conditional Compilation
 * Preprocessing::
 
 Inline Assembler
-
 * Basic Assembler Syntax::
 * A Simple Example of Inline Assembler::
 * Output Variables in Inline Assembler::
@@ -623,7 +551,6 @@ Inline Assembler
 * Other Asm Functionality::
 
 Compatibility and Porting Guide
-
 * Compatibility with Ada 83::
 * Compatibility between Ada 95 and Ada 2005::
 * Implementation-dependent characteristics::
@@ -639,7 +566,6 @@ Compatibility and Porting Guide
 @end ifset
 
 Microsoft Windows Topics
-
 @ifclear FSFEDITION
 * Installing from the Command Line::
 @end ifclear
@@ -658,10 +584,11 @@ Microsoft Windows Topics
 * Setting Heap Size from gnatlink::
 
 Mac OS Topics
-
 * Codesigning the Debugger::
 
-* Index::
+GNU Free Documentation License
+
+Index
 @end menu
 @end ifnottex
 
@@ -723,16 +650,16 @@ and running Ada programs with the GNAT Ada programming environment.
 by GNAT.
 
 @item
-@ref{Compiling Using gcc}, describes how to compile
+@ref{Compiling With gcc}, describes how to compile
 Ada programs with @command{gcc}, the Ada compiler.
 
 @item
-@ref{Binding Using gnatbind}, describes how to
+@ref{Binding With gnatbind}, describes how to
 perform binding of Ada programs with @code{gnatbind}, the GNAT binding
 utility.
 
 @item
-@ref{Linking Using gnatlink},
+@ref{Linking With gnatlink},
 describes @command{gnatlink}, a
 program that provides for linking using the GNAT run-time library to
 construct a program. @command{gnatlink} can also incorporate foreign language
@@ -3798,8 +3725,8 @@ GNAT uses the current directory for temporary files.
 @end ifset
 
 @c *************************
-@node Compiling Using gcc
-@chapter Compiling Using @command{gcc}
+@node Compiling With gcc
+@chapter Compiling With @command{gcc}
 
 @noindent
 This chapter discusses how to compile Ada programs using the @command{gcc}
@@ -7088,7 +7015,7 @@ on subprogram calls and generic instantiations.
 Note that @option{-gnatE} is not necessary for safety, because in the
 default mode, GNAT ensures statically that the checks would not fail.
 For full details of the effect and use of this switch,
-@xref{Compiling Using gcc}.
+@xref{Compiling With gcc}.
 
 @item -fstack-check
 @cindex @option{-fstack-check} (@command{gcc})
@@ -8280,8 +8207,8 @@ Compile the subunit in file @file{abc-def.adb} in semantic-checking-only
 mode.
 @end table
 
-@node Binding Using gnatbind
-@chapter Binding Using @code{gnatbind}
+@node Binding With gnatbind
+@chapter Binding With @code{gnatbind}
 @findex gnatbind
 
 @menu
@@ -9276,8 +9203,8 @@ since gnatlink will not be able to find the generated file.
 @end table
 
 @c ------------------------------------
-@node Linking Using gnatlink
-@chapter Linking Using @command{gnatlink}
+@node Linking With gnatlink
+@chapter Linking With @command{gnatlink}
 @c ------------------------------------
 @findex gnatlink
 
@@ -29728,6 +29655,12 @@ end API;
 @end cartouche
 @end group
 @end smallexample
+
+@noindent
+Note that a variable is
+@strong{always imported with a DLL convention}. A function
+can have @code{C} or @code{Stdcall} convention.
+(@pxref{Windows Calling Conventions}).
 
 @node Creating an Import Library
 @subsection Creating an Import Library

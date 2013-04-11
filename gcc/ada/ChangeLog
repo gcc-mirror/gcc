@@ -1,3 +1,15 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, prj-env.adb: Minor reformatting.
+
+2013-04-11  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Clean ups.
+
+2013-04-11  Yannick Moy  <moy@adacore.com>
+
+	* set_targ.adb: Minor comment update.
+
 2013-04-11  Pascal Obry  <obry@adacore.com>
 
 	* gnat_ugn.texi: Remove obsolete comment about DLL calling

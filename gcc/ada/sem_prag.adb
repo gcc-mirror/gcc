@@ -401,9 +401,8 @@ package body Sem_Prag is
                Error_Msg_Name_2 := Name_Class;
 
                Error_Msg_N
-                 ("aspect `%''%` can only be specified for a primitive " &
-                  "operation of a tagged type",
-                  Corresponding_Aspect (N));
+                 ("aspect `%''%` can only be specified for a primitive "
+                  & "operation of a tagged type", Corresponding_Aspect (N));
             end if;
 
             Replace_Type (Get_Pragma_Arg (Arg1));
@@ -1430,8 +1429,8 @@ package body Sem_Prag is
            and then not Is_Unchecked_Union (Etype (Subtype_Mark (Sindic)))
          then
             Error_Msg_N
-              ("component subtype subject to per-object constraint " &
-               "must be an Unchecked_Union", Comp);
+              ("component subtype subject to per-object constraint "
+               & "must be an Unchecked_Union", Comp);
 
          --  Ada 2012 (AI05-0026): For an unchecked union type declared within
          --  the body of a generic unit, or within the body of any of its
@@ -1948,12 +1947,12 @@ package body Sem_Prag is
          begin
             if Nkind (Constr) = N_Pragma then
                Error_Pragma
-                 ("pragma % must appear immediately within the statements " &
-                  "of a loop");
+                 ("pragma % must appear immediately within the statements "
+                  & "of a loop");
             else
                Error_Pragma_Arg
-                 ("block containing pragma % must appear immediately within " &
-                  "the statements of a loop", Constr);
+                 ("block containing pragma % must appear immediately within "
+                  & "the statements of a loop", Constr);
             end if;
          end Placement_Error;
 
@@ -3482,9 +3481,8 @@ package body Sem_Prag is
               and then C /= Convention (Overridden_Operation (E))
             then
                Error_Pragma_Arg
-                 ("cannot change convention for " &
-                  "overridden dispatching operation",
-                  Arg1);
+                 ("cannot change convention for overridden "
+                  & "dispatching operation", Arg1);
             end if;
 
             --  Set the convention
@@ -4796,8 +4794,8 @@ package body Sem_Prag is
                      then
                         Error_Msg_Sloc := Sloc (Def_Id);
                         Error_Msg_NE
-                          ("cannot import&, renaming already provided for " &
-                           "declaration #", N, Def_Id);
+                          ("cannot import&, renaming already provided for "
+                           & "declaration #", N, Def_Id);
                      end if;
                   end;
 
@@ -6878,8 +6876,8 @@ package body Sem_Prag is
                        (not Input_Seen and then not Output_Seen))  --  none
                   then
                      Error_Msg_N
-                       ("property Volatile requires exactly one Input or " &
-                        "Output", State);
+                       ("property Volatile requires exactly one Input or "
+                        & "Output", State);
                   end if;
 
                   --  Either Input or Output require Volatile
@@ -7606,8 +7604,7 @@ package body Sem_Prag is
                --  unit (RM E.4.1(4)).
 
                Error_Pragma
-                 ("pragma% not in Remote_Call_Interface or " &
-                  "Remote_Types unit");
+                 ("pragma% not in Remote_Call_Interface or Remote_Types unit");
             end if;
 
             if Ekind (Nm) = E_Procedure
@@ -8238,8 +8235,8 @@ package body Sem_Prag is
                  and then not Is_Array_Type (Typ)
                then
                   Error_Pragma_Arg
-                    ("Name parameter of pragma% must identify record or " &
-                     "array type", Name);
+                    ("Name parameter of pragma% must identify record or "
+                     & "array type", Name);
                end if;
 
                --  An explicit Component_Alignment pragma overrides an
@@ -8525,10 +8522,9 @@ package body Sem_Prag is
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
-               --  Following message is obsolete ???
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_class is now obsolete and has no " &
-                  "effect; replace it by pragma import?j?", N);
+                 ("'G'N'A'T pragma cpp'_class is now obsolete and has no "
+                  & "effect; replace it by pragma import?j?", N);
             end if;
 
             Check_Arg_Count (1);
@@ -8591,8 +8587,8 @@ package body Sem_Prag is
             then
                if Scope (Def_Id) /= Scope (Etype (Def_Id)) then
                   Error_Msg_N
-                    ("'C'P'P constructor must be defined in the scope of " &
-                     "its returned type", Arg1);
+                    ("'C'P'P constructor must be defined in the scope of "
+                     & "its returned type", Arg1);
                end if;
 
                if Arg_Count >= 2 then
@@ -8652,8 +8648,8 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has " &
-                  "no effect?j?", N);
+                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has "
+                  & "no effect?j?", N);
             end if;
          end CPP_Virtual;
 
@@ -8667,8 +8663,8 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has " &
-                  "no effect?j?", N);
+                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has "
+                  & "no effect?j?", N);
             end if;
          end CPP_Vtable;
 
@@ -9071,8 +9067,8 @@ package body Sem_Prag is
                      then
                         Error_Msg_Name_1 := Name_Result;
                         Error_Msg_N
-                          ("prefix of attribute % must denote the enclosing " &
-                           "function", Item);
+                          ("prefix of attribute % must denote the enclosing "
+                           & "function", Item);
 
                      --  Function'Result is allowed to appear on the output
                      --  side of a dependency clause.
@@ -9096,8 +9092,8 @@ package body Sem_Prag is
 
                         if Is_Output and then not Is_Last then
                            Error_Msg_N
-                             ("null output list must be the last clause in " &
-                              "a dependency relation", Item);
+                             ("null output list must be the last clause in "
+                              & "a dependency relation", Item);
                         end if;
                      end if;
 
@@ -9142,8 +9138,8 @@ package body Sem_Prag is
                              and then Contains (All_Inputs_Seen, Item_Id)
                            then
                               Error_Msg_N
-                                ("input of a null output list appears in " &
-                                 "multiple input lists", Item);
+                                ("input of a null output list appears in "
+                                 & "multiple input lists", Item);
                            else
                               if No (All_Inputs_Seen) then
                                  All_Inputs_Seen := New_Elmt_List;
@@ -9165,16 +9161,16 @@ package body Sem_Prag is
 
                         else
                            Error_Msg_N
-                             ("item must denote variable, state or formal " &
-                              "parameter", Item);
+                             ("item must denote variable, state or formal "
+                              & "parameter", Item);
                         end if;
 
                      --  All other input/output items are illegal
 
                      else
                         Error_Msg_N
-                          ("item must denote variable, state or formal " &
-                           "parameter", Item);
+                          ("item must denote variable, state or formal "
+                           & "parameter", Item);
                      end if;
                   end if;
                end Analyze_Input_Output;
@@ -10047,8 +10043,8 @@ package body Sem_Prag is
                 Present (Source_Location)
             then
                Error_Pragma
-                 ("parameter profile and source location cannot " &
-                  "be used together in pragma%");
+                 ("parameter profile and source location cannot "
+                  & "be used together in pragma%");
             end if;
 
             Process_Eliminate_Pragma
@@ -10904,8 +10900,8 @@ package body Sem_Prag is
                   if Ekind (Item_Id) = E_Abstract_State
                     and then Is_Volatile_State (Item_Id)
                   then
-                     --  A global item of mode In_Out or Output cannot denote a
-                     --  volatile Input state.
+                     --  A global item of mode In_Out or Output cannot denote
+                     --  a volatile Input state.
 
                      if Is_Input_State (Item_Id)
                        and then (Global_Mode = Name_In_Out
@@ -10913,8 +10909,8 @@ package body Sem_Prag is
                                  Global_Mode = Name_Output)
                      then
                         Error_Msg_N
-                          ("global item of mode In_Out or Output cannot " &
-                           "reference Volatile Input state", Item);
+                          ("global item of mode In_Out or Output cannot "
+                           & "reference Volatile Input state", Item);
 
                      --  A global item of mode In_Out or Input cannot reference
                      --  a volatile Output state.
@@ -11316,8 +11312,8 @@ package body Sem_Prag is
                   null;
                else
                   Error_Pragma_Arg
-                    ("controlling formal must be of synchronized " &
-                     "tagged type", Arg1);
+                    ("controlling formal must be of synchronized "
+                     & "tagged type", Arg1);
                   return;
                end if;
 
@@ -11345,8 +11341,8 @@ package body Sem_Prag is
               and then Is_Task_Interface (Typ)
             then
                Error_Pragma_Arg
-                 ("implementation kind By_Protected_Procedure cannot be " &
-                  "applied to a task interface primitive", Arg2);
+                 ("implementation kind By_Protected_Procedure cannot be "
+                  & "applied to a task interface primitive", Arg2);
                return;
             end if;
 
@@ -12168,8 +12164,8 @@ package body Sem_Prag is
                   Int_Val > Expr_Value (Type_High_Bound (Int_Id))
                then
                   Error_Pragma_Arg
-                    ("value not in range of type " &
-                     """Ada.Interrupts.Interrupt_'I'D""", Arg1);
+                    ("value not in range of type "
+                     & """Ada.Interrupts.Interrupt_'I'D""", Arg1);
                end if;
             end if;
 
@@ -12275,8 +12271,8 @@ package body Sem_Prag is
 
             elsif In_Private_Part (Current_Scope) then
                Error_Pragma_Arg
-                 ("pragma% only allowed for private type " &
-                  "declared in visible part", Arg1);
+                 ("pragma% only allowed for private type "
+                  & "declared in visible part", Arg1);
 
             else
                Error_Pragma_Arg
@@ -12369,12 +12365,12 @@ package body Sem_Prag is
                if Ekind (Def_Id) /= E_Function then
                   if VM_Target = JVM_Target then
                      Error_Pragma_Arg
-                       ("pragma% requires function returning a " &
-                        "'Java access type", Def_Id);
+                       ("pragma% requires function returning a "
+                        & "'Java access type", Def_Id);
                   else
                      Error_Pragma_Arg
-                       ("pragma% requires function returning a " &
-                        "'C'I'L access type", Def_Id);
+                       ("pragma% requires function returning a "
+                        & "'C'I'L access type", Def_Id);
                   end if;
                end if;
 
@@ -12470,8 +12466,8 @@ package body Sem_Prag is
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
-                       ("first formal of % function must be a named access" &
-                        " to subprogram type",
+                       ("first formal of % function must be a named access "
+                        & "to subprogram type",
                         Parameter_Type (Parent (This_Formal)));
 
                   --  Warning: We should reject anonymous access types because
@@ -12487,9 +12483,8 @@ package body Sem_Prag is
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
-                       ("first formal of % function must be a named access" &
-                        " type",
-                        Parameter_Type (Parent (This_Formal)));
+                       ("first formal of % function must be a named access "
+                        & " type", Parameter_Type (Parent (This_Formal)));
 
                   elsif Atree.Convention
                          (Designated_Type (Etype (This_Formal))) /= Convention
@@ -12498,14 +12493,12 @@ package body Sem_Prag is
 
                      if Convention = Convention_Java then
                         Error_Msg_N
-                          ("pragma% requires convention 'Cil in designated" &
-                           " type",
-                           Parameter_Type (Parent (This_Formal)));
+                          ("pragma% requires convention 'Cil in designated "
+                           & "type", Parameter_Type (Parent (This_Formal)));
                      else
                         Error_Msg_N
-                          ("pragma% requires convention 'Java in designated" &
-                           " type",
-                           Parameter_Type (Parent (This_Formal)));
+                          ("pragma% requires convention 'Java in designated "
+                           & "type", Parameter_Type (Parent (This_Formal)));
                      end if;
 
                   elsif No (Expression (Parent (This_Formal)))
@@ -12534,13 +12527,13 @@ package body Sem_Prag is
                   if Atree.Convention (Etype (Def_Id)) /= Convention then
                      if Convention = Convention_Java then
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a " &
-                           "'Java access type", Arg1);
+                          ("pragma% requires function returning a "
+                           & "'Java access type", Arg1);
                      else
                         pragma Assert (Convention = Convention_CIL);
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a " &
-                           "'C'I'L access type", Arg1);
+                          ("pragma% requires function returning a "
+                           & "'C'I'L access type", Arg1);
                      end if;
                   end if;
 
@@ -12555,12 +12548,12 @@ package body Sem_Prag is
 
                      if Convention = Convention_Java then
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a named" &
-                           "'Java access type", Arg1);
+                          ("pragma% requires function returning a named "
+                           & "'Java access type", Arg1);
                      else
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a named" &
-                           "'C'I'L access type", Arg1);
+                          ("pragma% requires function returning a named "
+                           & "'C'I'L access type", Arg1);
                      end if;
                   end if;
                end if;
@@ -13585,8 +13578,8 @@ package body Sem_Prag is
                      loop
                         if No (Ent) then
                            Error_Pragma
-                             ("pragma % entity name does not match any " &
-                              "enumeration literal");
+                             ("pragma % entity name does not match any "
+                              & "enumeration literal");
 
                         elsif Chars (Ent) = Chars (Ename) then
                            Set_Entity (Ename, Ent);
@@ -14154,8 +14147,8 @@ package body Sem_Prag is
               and then not Has_Preelaborable_Initialization (Ent)
             then
                Error_Msg_N
-                 ("protected type & does not have preelaborable " &
-                  "initialization", Ent);
+                 ("protected type & does not have preelaborable "
+                  & "initialization", Ent);
 
             --  Otherwise mark the type as definitely having preelaborable
             --  initialization.
@@ -14614,8 +14607,8 @@ package body Sem_Prag is
 
             elsif Lower_Val > Upper_Val then
                Error_Pragma
-                 ("last_priority_expression must be greater than" &
-                  " or equal to first_priority_expression");
+                 ("last_priority_expression must be greater than "
+                  & "or equal to first_priority_expression");
 
             --  Store the new policy, but always preserve System_Location since
             --  we like the error message with the run-time name.
@@ -15457,8 +15450,8 @@ package body Sem_Prag is
               or else In_Package_Body (Current_Scope)
             then
                Error_Pragma
-                 ("pragma% can only apply to type declared immediately " &
-                  "within a package declaration");
+                 ("pragma% can only apply to type declared immediately"
+                  & " within a package declaration");
             end if;
 
             --  A simple storage pool type must be an immutably limited record
@@ -15696,8 +15689,8 @@ package body Sem_Prag is
                  or else Present (Next_Formal (First_Formal (Ent)))
                then
                   Error_Pragma_Arg
-                    ("argument for pragma% must be" &
-                     " function of one argument", Arg);
+                   ("argument for pragma% must be function of one argument",
+                     Arg);
                end if;
             end Check_OK_Stream_Convert_Function;
 
@@ -16831,8 +16824,8 @@ package body Sem_Prag is
 
                   elsif not Is_Static_String_Expression (Arg1) then
                      Error_Pragma_Arg
-                       ("argument of pragma% must be On/Off or " &
-                        "static string expression", Arg1);
+                       ("argument of pragma% must be On/Off or "
+                        & "static string expression", Arg1);
 
                   --  One argument string expression case
 
@@ -16876,8 +16869,8 @@ package body Sem_Prag is
 
                                  if not Set_Dot_Warning_Switch (Chr) then
                                     Error_Pragma_Arg
-                                      ("invalid warning switch character " &
-                                       '.' & Chr, Arg1);
+                                      ("invalid warning switch character "
+                                       & '.' & Chr, Arg1);
                                  end if;
 
                               --  Non-Dot case
@@ -16970,8 +16963,8 @@ package body Sem_Prag is
 
                      elsif not Is_Static_String_Expression (Arg2) then
                         Error_Pragma_Arg
-                          ("second argument of pragma% must be entity " &
-                           "name or static string expression", Arg2);
+                          ("second argument of pragma% must be entity "
+                           & "name or static string expression", Arg2);
 
                      --  String literal case
 
@@ -17010,8 +17003,8 @@ package body Sem_Prag is
 
                            if Err then
                               Error_Msg
-                                ("??pragma Warnings On with no " &
-                                 "matching Warnings Off",
+                                ("??pragma Warnings On with no "
+                                 & "matching Warnings Off",
                                  Loc);
                            end if;
                         end if;
