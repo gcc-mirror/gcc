@@ -1,3 +1,11 @@
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Priority): pre-analyze
+	expression with type Any_Priority.
+	* exp_ch9.adb (Initialize_Protection): Check that the value
+	of the priority expression is within the bounds of the proper
+	priority type.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, prj-env.adb: Minor reformatting.
