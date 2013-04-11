@@ -1,3 +1,7 @@
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2013-04-11  Yannick Moy  <moy@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Allow missing body in Alfa
