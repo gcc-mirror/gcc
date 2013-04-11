@@ -1069,9 +1069,7 @@ package body Exp_Attr is
 
                         begin
                            Subp := Current_Scope;
-                           while Ekind (Subp) = E_Loop
-                             or else Ekind (Subp) = E_Block
-                           loop
+                           while Ekind_In (Subp, E_Loop, E_Block) loop
                               Subp := Scope (Subp);
                            end loop;
 
@@ -1095,8 +1093,8 @@ package body Exp_Attr is
                                 Unchecked_Convert_To (Typ,
                                   Make_Attribute_Reference (Loc,
                                     Attribute_Name => Name_Unrestricted_Access,
-                                    Prefix =>
-                                       New_Occurrence_Of (Formal, Loc))));
+                                    Prefix         =>
+                                      New_Occurrence_Of (Formal, Loc))));
                               Analyze_And_Resolve (N);
                            end if;
                         end;

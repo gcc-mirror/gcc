@@ -3853,6 +3853,10 @@ package Einfo is
 --       The last sentence is odd??? Why not have Task_Body_Procedure go to the
 --       Underlying_Type of the Root_Type???
 
+--    Thunk_Entity (Node31)
+--       Defined in functions and procedures which have been classified as
+--       Is_Thunk. Set to the target entity called by the thunk.
+
 --    Treat_As_Volatile (Flag41)
 --       Defined in all type entities, and also in constants, components and
 --       variables. Set if this entity is to be treated as volatile for code
@@ -5358,6 +5362,7 @@ package Einfo is
    --    Extra_Formals                       (Node28)
    --    Subprograms_For_Type                (Node29)
    --    Corresponding_Equality              (Node30)   (implicit /= only)
+   --    Thunk_Entity                        (Node31)   (thunk case only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Elaboration_Entity_Required         (Flag174)
    --    Default_Expressions_Processed       (Flag108)
@@ -5628,6 +5633,7 @@ package Einfo is
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
    --    Extra_Formals                       (Node28)
    --    Static_Initialization               (Node30)   (init_proc only)
+   --    Thunk_Entity                        (Node31)   (thunk case only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
@@ -6502,6 +6508,7 @@ package Einfo is
    function Suppress_Style_Checks               (Id : E) return B;
    function Suppress_Value_Tracking_On_Call     (Id : E) return B;
    function Task_Body_Procedure                 (Id : E) return N;
+   function Thunk_Entity                        (Id : E) return E;
    function Treat_As_Volatile                   (Id : E) return B;
    function Underlying_Full_View                (Id : E) return E;
    function Underlying_Record_View              (Id : E) return E;
@@ -7112,6 +7119,7 @@ package Einfo is
    procedure Set_Suppress_Style_Checks           (Id : E; V : B := True);
    procedure Set_Suppress_Value_Tracking_On_Call (Id : E; V : B := True);
    procedure Set_Task_Body_Procedure             (Id : E; V : N);
+   procedure Set_Thunk_Entity                    (Id : E; V : E);
    procedure Set_Treat_As_Volatile               (Id : E; V : B := True);
    procedure Set_Underlying_Full_View            (Id : E; V : E);
    procedure Set_Underlying_Record_View          (Id : E; V : E);
@@ -7850,6 +7858,7 @@ package Einfo is
    pragma Inline (Suppress_Style_Checks);
    pragma Inline (Suppress_Value_Tracking_On_Call);
    pragma Inline (Task_Body_Procedure);
+   pragma Inline (Thunk_Entity);
    pragma Inline (Treat_As_Volatile);
    pragma Inline (Underlying_Full_View);
    pragma Inline (Underlying_Record_View);
@@ -8261,6 +8270,7 @@ package Einfo is
    pragma Inline (Set_Suppress_Style_Checks);
    pragma Inline (Set_Suppress_Value_Tracking_On_Call);
    pragma Inline (Set_Task_Body_Procedure);
+   pragma Inline (Set_Thunk_Entity);
    pragma Inline (Set_Treat_As_Volatile);
    pragma Inline (Set_Underlying_Full_View);
    pragma Inline (Set_Underlying_Record_View);

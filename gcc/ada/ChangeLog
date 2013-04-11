@@ -1,5 +1,22 @@
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb, sem_res.adb, sem_attr.adb: Minor reformatting.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* atree.adb, atree.ads (Node31): New function.
+	(Set_Node31): New procedure.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Minor typo correction.
+
+2013-04-11  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ad[sb] (Thunk_Entity/Set_Thunk_Entity): New attribute.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
 	* back_end.adb (Register_Back_End_Types): Moved to Get_Targ
 	* back_end.ads (C_String): Moved to Get_Targ
 	(Register_Type_Proc): Moved to Get_Targ (Register_Back_End_Types):

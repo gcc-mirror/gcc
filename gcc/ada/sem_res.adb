@@ -6859,13 +6859,13 @@ package body Sem_Res is
          S   : Entity_Id;
 
       begin
-         if Ekind (Etype (R)) =  E_Allocator_Type
-           or else Ekind (Etype (R)) = E_Access_Attribute_Type
+         if Ekind_In (Etype (R), E_Allocator_Type,
+                                 E_Access_Attribute_Type)
          then
             Acc := Designated_Type (Etype (R));
 
-         elsif Ekind (Etype (L)) =  E_Allocator_Type
-           or else Ekind (Etype (L)) = E_Access_Attribute_Type
+         elsif Ekind_In (Etype (L), E_Allocator_Type,
+                                    E_Access_Attribute_Type)
          then
             Acc := Designated_Type (Etype (L));
          else
