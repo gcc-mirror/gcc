@@ -1,3 +1,7 @@
+2013-04-11  Release Manager
+
+	* GCC 4.7.3 released.
+
 2012-10-30  Ian Lance Taylor  <iant@google.com>
 
 	* lang.opt (-fgo-relative-import-path): New option.
