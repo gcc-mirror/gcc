@@ -60,6 +60,13 @@
 # endif
 
 /* Determine the machine type: */
+#if defined(__aarch64__)
+#    define AARCH64
+#    if !defined(LINUX)
+#      define NOSYS
+#      define mach_type_known
+#    endif
+# endif
 # if defined(__arm__) || defined(__thumb__)
 #    define ARM32
 #    if !defined(LINUX) && !defined(NETBSD)
@@ -237,6 +244,10 @@
 # endif
 # if defined(LINUX) && (defined(__ia64__) || defined(__ia64))
 #    define IA64
+#    define mach_type_known
+# endif
+# if defined(LINUX) && defined(__aarch64__)
+#    define AARCH64
 #    define mach_type_known
 # endif
 # if defined(LINUX) && defined(__arm__)
@@ -500,6 +511,7 @@
 		    /* 			running Amdahl UTS4		*/
                     /*             S390       ==> 390-like machine      */
 		    /*                  running LINUX                   */
+                    /*             AARCH64    ==> ARM AArch64           */
 		    /* 		   ARM32      ==> Intel StrongARM	*/
 		    /* 		   IA64	      ==> Intel IPF		*/
 		    /*				  (e.g. Itanium)	*/
@@ -1831,6 +1843,32 @@
     extern int _etext[];
 #   define DATASTART ((ptr_t)(_etext))
 #   define HEURISTIC1
+# endif
+
+# ifdef AARCH64
+#   define CPP_WORDSZ 64
+#   define MACH_TYPE "AARCH64"
+#   define ALIGNMENT 8
+#   ifndef HBLKSIZE
+#     define HBLKSIZE 4096
+#   endif
+#   ifdef LINUX
+#     define OS_TYPE "LINUX"
+#     define LINUX_STACKBOTTOM
+#     define USE_GENERIC_PUSH_REGS
+#     define DYNAMIC_LOADING
+      extern int __data_start[];
+#     define DATASTART ((ptr_t)__data_start)
+      extern char _end[];
+#     define DATAEND ((ptr_t)(&_end))
+#   endif
+#   ifdef NOSYS
+      /* __data_start is usually defined in the target linker script.   */
+      extern int __data_start[];
+#     define DATASTART ((ptr_t)__data_start)
+      extern void *__stack_base__;
+#     define STACKBOTTOM ((ptr_t)__stack_base__)
+#   endif
 # endif
 
 # ifdef ARM32
