@@ -1271,6 +1271,15 @@ package body Prj.Makr is
                              new String'(Get_Name_String (Tmp_File));
                         end if;
 
+                        --  On VMS, a file created with Create_Temp_File cannot
+                        --  be used to redirect output.
+
+                        if Hostparm.OpenVMS then
+                           Close (FD);
+                           Delete_File (Temp_File_Name.all, Success);
+                           FD := Create_Output_Text_File (Temp_File_Name.all);
+                        end if;
+
                         Args (Args'Last) := new String'
                           (Dir_Name &
                            Directory_Separator &

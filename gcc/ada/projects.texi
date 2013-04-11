@@ -1101,31 +1101,6 @@ The following attributes can be defined in package @code{Remote}:
 
 @table @asis
 
-@item @b{Build_Slaves}
-@cindex @code{Build_Slaves}
-
-A list of string referencing the remote build slaves to use for the
-compilation phase. The format is:
-@code{[protocol://]name.domain[:port]}.
-
-Where @code{protocol} is one of:
-
-@table @asis
-
-@item rsync
-@cindex @code{rsync}
-
-The sources are copied using the external @code{rsync} tool.
-
-@item file
-
-The sources are accessed via a shared directory or mount point.
-
-@end table
-
-The default port used to communicate with @command{gprslave} is
-@code{8484}.
-
 @item @b{Root_Dir}:
 @cindex @code{Root_Dir}
 

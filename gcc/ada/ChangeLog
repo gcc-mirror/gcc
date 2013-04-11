@@ -1,3 +1,55 @@
+2013-04-11  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: Document usage of -gnatd.Q switch.
+
+2013-04-11  Matthew Heaney  <heaney@adacore.com>
+
+	* a-crbtgk.adb (Ceiling, Find, Floor): Adjust locks
+	before element comparisons.
+	(Generic_Conditional_Insert, Generic_Conditional_Insert_With_Hint):
+	Ditto.
+	* a-crbtgo.adb, a-rbtgbo.adb (Generic_Equal): Adjust locks before
+	element comparisons.
+	* a-rbtgso.adb (Difference, Intersection): Adjust locks
+	before element comparisons.
+	(Is_Subset, Overlap): Ditto
+	(Symmetric_Difference, Union): Ditto
+	* a-btgbso.adb (Set_Difference, Set_Intersection): Adjust locks
+	before element comparisons.
+	(Set_Subset, Set_Overlap): Ditto
+	(Set_Symmetric_Difference, Set_Union): Ditto
+	* a-coorse.adb, a-ciorse.adb, a-cborse.adb
+	(Update_Element_Preserving_Key): Adjust locks before element
+	comparisons (Replace_Element): Ditto
+
+2013-04-11  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, projects.texi, snames.ads-tmpl: Remove Build_Slaves
+	attribute.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Equivalent_Aggregate): Subsidiary of
+	Expand_N_Object_Declaration, used to construct an aggregate
+	with static components whenever possible, so that objects of a
+	discriminated type can be initialized without calling the init.
+	proc for the type.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* prj-makr.adb (Process_Directory): On VMS, always delete,
+	then recreate the temporary file with Create_Output_Text_File,
+	otherwise the output redirection does not work properly.
+
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* urealp.ads: Fix minor typo.
+
+2013-04-11  Fabien Chouteau  <chouteau@adacore.com>
+
+	* cio.c (mktemp): Don't use tmpnam function from the
+	system on VxWorks in kernel mode.
+
 2013-04-11  Vincent Celier  <celier@adacore.com>
 
 	* make.adb (Compile): Clarify the error message reported
