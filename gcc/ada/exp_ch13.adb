@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
@@ -553,6 +554,28 @@ package body Exp_Ch13 is
                end;
 
             else
+               --  If the action is the generated body of a null subprogram,
+               --  analyze the expressions in its delayed aspects, because we
+               --  may not have reached the end of the declarative list when
+               --  delayed aspects are normally analyzed. This ensures that
+               --  dispatching calls are properly rewritten when the inner
+               --  postcondition procedure is analyzed.
+
+               if Is_Subprogram (E)
+                 and then Nkind (Parent (E)) = N_Procedure_Specification
+                 and then Null_Present (Parent (E))
+               then
+                  declare
+                     Prag : Node_Id;
+                  begin
+                     Prag := Spec_PPC_List (Contract (E));
+                     while Present (Prag) loop
+                        Analyze_PPC_In_Decl_Part (Prag, E);
+                        Prag := Next_Pragma (Prag);
+                     end loop;
+                  end;
+               end if;
+
                Analyze (Decl, Suppress => All_Checks);
             end if;
 

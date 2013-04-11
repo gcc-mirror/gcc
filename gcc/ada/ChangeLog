@@ -1,3 +1,22 @@
+2013-04-11  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Minor clean ups.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* nlists.ads, nlists.adb, treepr.adb, treepr.ads: Move debugging
+	function p from Nlists to Treepr.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Context): If the context is
+	a contract for a null procedure defer error reporting until
+	postcondition body is created.
+	* exp_ch13.adb (Expand_N_Freeze_Entity): If the entity is a
+	null procedure, complete the analysis of its contracts so that
+	calls within classwide conditions are properly rewritten as
+	dispatching calls.
+
 2013-04-11  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch10.adb, sem_ch12.adb: Minor reformatting.

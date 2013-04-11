@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -986,21 +986,6 @@ package body Nlists is
    begin
       return Int (Lists.Last) - Int (Lists.First) + 1;
    end Num_Lists;
-
-   -------
-   -- p --
-   -------
-
-   function p (U : Union_Id) return Node_Or_Entity_Id is
-   begin
-      if U in Node_Range then
-         return Parent (Node_Or_Entity_Id (U));
-      elsif U in List_Range then
-         return Parent (List_Id (U));
-      else
-         return 99_999_999;
-      end if;
-   end p;
 
    ------------
    -- Parent --

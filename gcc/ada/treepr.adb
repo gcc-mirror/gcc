@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,6 +214,27 @@ package body Treepr is
    --  Visit_Elist is called to process an element list in the case where
    --  descendents are to be printed. Prefix_Str is to be added to all
    --  printed lines.
+
+   -------
+   -- p --
+   -------
+
+   function p (N : Union_Id) return Node_Or_Entity_Id is
+   begin
+      case N is
+         when List_Low_Bound .. List_High_Bound - 1 =>
+            return Nlists.Parent (List_Id (N));
+
+         when Node_Range =>
+            return Atree.Parent (Node_Or_Entity_Id (N));
+
+         when others =>
+            Write_Int (Int (N));
+            Write_Str (" is not a Node_Id or List_Id value");
+            Write_Eol;
+            return Empty;
+      end case;
+   end p;
 
    --------
    -- pe --
