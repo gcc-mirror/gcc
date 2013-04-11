@@ -1,3 +1,9 @@
+2013-04-11  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: Reservation and documentation for -gnatd.G switch.
+	* gnat1drv.adb (Adjust_Global_Switches) Take into account -gnatd.G
+	switch, and set ALI file generation accordingly.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb, exp_dist.adb: Minor reformatting.

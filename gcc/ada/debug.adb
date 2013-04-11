@@ -124,7 +124,7 @@ package body Debug is
    --  d.D  Strict Alfa mode
    --  d.E  Force Alfa mode for gnat2why
    --  d.F  Alfa mode
-   --  d.G
+   --  d.G  Frame condition mode for gnat2why
    --  d.H  Standard package only mode for gnat2why
    --  d.I
    --  d.J  Disable parallel SCIL generation mode
@@ -603,7 +603,12 @@ package body Debug is
 
    --  d.F  Alfa mode. Generate AST in a form suitable for formal verification,
    --       as well as additional cross reference information in ALI files to
-   --       compute effects of subprograms.
+   --       compute effects of subprograms. Note that ALI files are only
+   --       written when option d.G is also given.
+
+   --  d.G  Frame condition mode for gnat2why. In this mode, gnat2why will not
+   --       generate Why code. Instead, it generates ALI files with an extra
+   --       section which contains the effects of subprograms.
 
    --  d.H  Standard package only mode for gnat2why. In this mode, gnat2why
    --       will only generate Why code for package Standard. Any given input
