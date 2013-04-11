@@ -1,3 +1,10 @@
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (skip_simple_constant_arithmetic): Move to...
+	* tree.c (skip_simple_constant_arithmetic): ...here and make public.
+	(skip_simple_arithmetic): Tidy up.
+	* tree.h (skip_simple_constant_arithmetic): Declare.
+
 2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.h (REVERSIBLE_CC_MODE): Define.

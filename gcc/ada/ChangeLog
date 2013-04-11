@@ -1,3 +1,8 @@
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * gcc-interface/decl.c (elaborate_expression_1): Skip only constant
+        arithmetics when looking for a read-only variable in the expression.
+
 2013-04-11  Javier Miranda  <miranda@adacore.com>
 
 	* check.ads, exp_ch6.adb (Install_Null_Excluding_Check): No check in

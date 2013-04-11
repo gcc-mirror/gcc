@@ -6186,12 +6186,13 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
     expr_variable_p = false;
   else
     {
-      /* Skip any conversions and simple arithmetics to see if the expression
-	 is based on a read-only variable.
+      /* Skip any conversions and simple constant arithmetics to see if the
+	 expression is based on a read-only variable.
 	 ??? This really should remain read-only, but we have to think about
 	 the typing of the tree here.  */
-      tree inner
-	= skip_simple_arithmetic (remove_conversions (gnu_expr, true));
+      tree inner = remove_conversions (gnu_expr, true);
+
+      inner = skip_simple_constant_arithmetic (inner);
 
       if (handled_component_p (inner))
 	{

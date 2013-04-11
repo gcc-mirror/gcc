@@ -1,3 +1,8 @@
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array23.adb: New test.
+	* gnat.dg/array23_pkg[123].ads: New helpers.
+
 2013-04-11  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/56900
