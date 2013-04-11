@@ -1,5 +1,43 @@
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
+	* atree.h: Add declarations for Flag255-Flag289 Fix declaration
+	of Field30 (was wrong, but no effect, since not yet referenced by
+	back end) Add declarations for Field31-Field35 Add declarations
+	for Node31-Node35.
+	* einfo.ads, einfo.adb (Has_Invariants): No longer applies to
+	procedures.
+	(Has_Predicates): No longer applies to functions.
+	(Is_Predicate_Function): New flag.
+	(Is_Predicate_Function_M): New flag.
+	(Is_Invariant_Procedure): New flag.
+	(Predicate_Function_M): New function.
+	(Set_Predicate_Function_M): New procedure.
+	* exp_ch11.adb (Expand_N_Raise_Expression): Take care of special
+	case of appearing in predicate used for membership test.
+	* exp_ch3.adb (Insert_Component_Invariant_Checks): Set
+	Is_Invariant_Procedure flag.
+	* exp_ch4.adb (Expand_Op_In): Call special predicate function
+	that takes care of raise_expression nodes in the predicate.
+	* exp_util.ads, exp_util.adb (Make_Predicate_Call): Add argument Mem for
+	membership case.
+	* sem_ch13.adb (Build_Predicate_Functions): New name for
+	Build_Predicate_Function.  Major rewrite to take care of raise
+	expression in predicate for membership tests.
+	* sem_res.adb (Resolve_Actuals): Include both predicate functions
+	in defense against infinite predicate function loops.
+	* sinfo.ads, sinfo.adb (Convert_To_Return_False): New flag.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb: Generate reference for component of anonymous
+	access type.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
 	* stand.ads: Minor reformatting.
 
 2013-04-11  Matthew Heaney  <heaney@adacore.com>

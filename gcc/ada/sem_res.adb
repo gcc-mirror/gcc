@@ -3935,7 +3935,9 @@ package body Sem_Res is
                --  infinite recursion.
 
                if not (Ekind (Nam) = E_Function
-                        and then Has_Predicates (Nam))
+                        and then (Is_Predicate_Function (Nam)
+                                    or else
+                                  Is_Predicate_Function_M (Nam)))
                then
                   Apply_Predicate_Check (A, F_Typ);
                end if;
@@ -9792,7 +9794,9 @@ package body Sem_Res is
       if Has_Predicates (Target_Typ) then
          if Nkind (Parent (N)) = N_Function_Call
            and then Present (Name (Parent (N)))
-           and then Has_Predicates (Entity (Name (Parent (N))))
+           and then (Is_Predicate_Function (Entity (Name (Parent (N))))
+                       or else
+                     Is_Predicate_Function_M (Entity (Name (Parent (N)))))
          then
             null;
 

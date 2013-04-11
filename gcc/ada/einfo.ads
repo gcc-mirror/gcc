@@ -1587,9 +1587,7 @@ package Einfo is
 --       True, then usually the Invariant_Procedure attribute is set once the
 --       type is frozen, however this may not be true in some error situations.
 --       Note that it might be the full type which has inheritable invariants,
---       and then the flag will also be set in the private type. Also set in
---       the invariant procedure entity, to distinguish it among entries in the
---       Subprograms_For_Type.
+--       and then the flag will also be set in the private type.
 
 --    Has_Machine_Radix_Clause (Flag83)
 --       Defined in decimal types and subtypes, set if a Machine_Radix
@@ -1731,11 +1729,9 @@ package Einfo is
 --       such an object and no warning is generated.
 
 --    Has_Predicates (Flag250)
---       Defined in all entities. Set in type and subtype entities if a pragma
---       Predicate or Predicate aspect applies to the type, or if it inherits a
---       Predicate aspect from its parent or progenitor types. Also set in the
---       predicate function entity, to distinguish it among entries in the
---       Subprograms_For_Type.
+--       Defined in type and subtype entities. Set if a pragma Predicate or
+--       Predicate aspect applies to the type or subtype, or if it inherits a
+--       Predicate aspect from its parent or progenitor types.
 
 --    Has_Primitive_Operations (Flag120) [base type only]
 --       Defined in all type entities. Set if at least one primitive operation
@@ -2406,6 +2402,10 @@ package Einfo is
 --       setting of Is_Intrinsic_Subprogram, NOT simply having convention set
 --       to intrinsic, which causes intrinsic code to be generated.
 
+--    Is_Invariant_Procedure (Flag257)
+--       Defined in functions an procedures. Set for a generated invariant
+--       procedure to identify it easily in the
+
 --    Is_Itype (Flag91)
 --       Defined in all entities. Set to indicate that a type is an Itype,
 --       which means that the declaration for the type does not appear
@@ -2636,6 +2636,15 @@ package Einfo is
 --       i.e. it is defined in a package that appears in a currently active
 --       use clause (RM 8.4(8)). Note that potentially use visible entities
 --       are not necessarily use visible (RM 8.4(9-11)).
+
+--    Is_Predicate_Function (Flag255)
+--       Present in functions and procedures. Set for generated predicate
+--       functions.
+
+--    Is_Predicate_Function_M (Flag256)
+--       Present in functions and procedures. Set for special version of
+--       predicate function generated for use in membership tests, where
+--       raise expressions are transformed to return False.
 
 --    Is_Preelaborated (Flag59)
 --       Defined in all entities, set in E_Package and E_Generic_Package
@@ -3383,6 +3392,12 @@ package Einfo is
 --
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
+
+--    Predicate_Function_M (synthesized)
+--       Defined in all types. Present only if Predicate_Function is present,
+--       and only if the predicate function has Raise_Expression nodes. It
+--       is the special version created for membership tests, where if one of
+--       these raise expressions is executed, the result is to return False.
 
 --    Primitive_Operations (synthesized)
 --       Defined in concurrent types, tagged record types and subtypes, tagged
@@ -4844,7 +4859,6 @@ package Einfo is
    --    Has_Pragma_Thread_Local_Storage     (Flag169)
    --    Has_Pragma_Unmodified               (Flag233)
    --    Has_Pragma_Unreferenced             (Flag180)
-   --    Has_Predicates                      (Flag250)
    --    Has_Private_Declaration             (Flag155)
    --    Has_Qualified_Name                  (Flag161)
    --    Has_Stream_Size_Clause              (Flag184)
@@ -4961,6 +4975,7 @@ package Einfo is
    --    Has_Object_Size_Clause              (Flag172)
    --    Has_Pragma_Preelab_Init             (Flag221)
    --    Has_Pragma_Unreferenced_Objects     (Flag212)
+   --    Has_Predicates                      (Flag250)
    --    Has_Primitive_Operations            (Flag120)  (base type only)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Specified_Layout                (Flag100)  (base type only)
@@ -5006,6 +5021,7 @@ package Einfo is
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
    --    Predicate_Function                  (synth)
+   --    Predicate_Function_M                (synth)
    --    Root_Type                           (synth)
    --    Size_Clause                         (synth)
 
@@ -5360,7 +5376,10 @@ package Einfo is
    --    Is_Eliminated                       (Flag124)
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Intrinsic_Subprogram             (Flag64)
+   --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
    --    Is_Machine_Code_Subprogram          (Flag137)  (non-generic case only)
+   --    Is_Predicate_Function               (Flag255)  (non-generic case only)
+   --    Is_Predicate_Function_M             (Flag256)  (non-generic case only)
    --    Is_Primitive                        (Flag218)
    --    Is_Primitive_Wrapper                (Flag195)  (non-generic case only)
    --    Is_Private_Descendant               (Flag53)
@@ -5629,8 +5648,11 @@ package Einfo is
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Interrupt_Handler                (Flag89)
    --    Is_Intrinsic_Subprogram             (Flag64)
+   --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
    --    Is_Machine_Code_Subprogram          (Flag137)  (non-generic case only)
    --    Is_Null_Init_Proc                   (Flag178)
+   --    Is_Predicate_Function               (Flag255)  (non-generic case only)
+   --    Is_Predicate_Function_M             (Flag256)  (non-generic case only)
    --    Is_Primitive                        (Flag218)
    --    Is_Primitive_Wrapper                (Flag195)  (non-generic case only)
    --    Is_Private_Descendant               (Flag53)
@@ -6327,6 +6349,7 @@ package Einfo is
    function Is_Internal                         (Id : E) return B;
    function Is_Interrupt_Handler                (Id : E) return B;
    function Is_Intrinsic_Subprogram             (Id : E) return B;
+   function Is_Invariant_Procedure              (Id : E) return B;
    function Is_Itype                            (Id : E) return B;
    function Is_Known_Non_Null                   (Id : E) return B;
    function Is_Known_Null                       (Id : E) return B;
@@ -6344,6 +6367,8 @@ package Einfo is
    function Is_Packed                           (Id : E) return B;
    function Is_Packed_Array_Type                (Id : E) return B;
    function Is_Potentially_Use_Visible          (Id : E) return B;
+   function Is_Predicate_Function               (Id : E) return B;
+   function Is_Predicate_Function_M             (Id : E) return B;
    function Is_Preelaborated                    (Id : E) return B;
    function Is_Primitive                        (Id : E) return B;
    function Is_Primitive_Wrapper                (Id : E) return B;
@@ -6933,6 +6958,7 @@ package Einfo is
    procedure Set_Is_Internal                     (Id : E; V : B := True);
    procedure Set_Is_Interrupt_Handler            (Id : E; V : B := True);
    procedure Set_Is_Intrinsic_Subprogram         (Id : E; V : B := True);
+   procedure Set_Is_Invariant_Procedure          (Id : E; V : B := True);
    procedure Set_Is_Itype                        (Id : E; V : B := True);
    procedure Set_Is_Known_Non_Null               (Id : E; V : B := True);
    procedure Set_Is_Known_Null                   (Id : E; V : B := True);
@@ -6951,6 +6977,8 @@ package Einfo is
    procedure Set_Is_Packed                       (Id : E; V : B := True);
    procedure Set_Is_Packed_Array_Type            (Id : E; V : B := True);
    procedure Set_Is_Potentially_Use_Visible      (Id : E; V : B := True);
+   procedure Set_Is_Predicate_Function           (Id : E; V : B := True);
+   procedure Set_Is_Predicate_Function_M         (Id : E; V : B := True);
    procedure Set_Is_Preelaborated                (Id : E; V : B := True);
    procedure Set_Is_Primitive                    (Id : E; V : B := True);
    procedure Set_Is_Primitive_Wrapper            (Id : E; V : B := True);
@@ -7104,9 +7132,11 @@ package Einfo is
 
    function Invariant_Procedure                 (Id : E) return N;
    function Predicate_Function                  (Id : E) return N;
+   function Predicate_Function_M                (Id : E) return N;
 
    procedure Set_Invariant_Procedure            (Id : E; V : E);
    procedure Set_Predicate_Function             (Id : E; V : E);
+   procedure Set_Predicate_Function_M           (Id : E; V : E);
 
    -----------------------------------
    -- Field Initialization Routines --
@@ -7649,6 +7679,7 @@ package Einfo is
    pragma Inline (Is_Internal);
    pragma Inline (Is_Interrupt_Handler);
    pragma Inline (Is_Intrinsic_Subprogram);
+   pragma Inline (Is_Invariant_Procedure);
    pragma Inline (Is_Itype);
    pragma Inline (Is_Known_Non_Null);
    pragma Inline (Is_Known_Null);
@@ -7673,6 +7704,8 @@ package Einfo is
    pragma Inline (Is_Packed);
    pragma Inline (Is_Packed_Array_Type);
    pragma Inline (Is_Potentially_Use_Visible);
+   pragma Inline (Is_Predicate_Function);
+   pragma Inline (Is_Predicate_Function_M);
    pragma Inline (Is_Preelaborated);
    pragma Inline (Is_Primitive);
    pragma Inline (Is_Primitive_Wrapper);
@@ -8074,6 +8107,7 @@ package Einfo is
    pragma Inline (Set_Is_Internal);
    pragma Inline (Set_Is_Interrupt_Handler);
    pragma Inline (Set_Is_Intrinsic_Subprogram);
+   pragma Inline (Set_Is_Invariant_Procedure);
    pragma Inline (Set_Is_Itype);
    pragma Inline (Set_Is_Known_Non_Null);
    pragma Inline (Set_Is_Known_Null);
@@ -8092,6 +8126,8 @@ package Einfo is
    pragma Inline (Set_Is_Packed);
    pragma Inline (Set_Is_Packed_Array_Type);
    pragma Inline (Set_Is_Potentially_Use_Visible);
+   pragma Inline (Set_Is_Predicate_Function);
+   pragma Inline (Set_Is_Predicate_Function_M);
    pragma Inline (Set_Is_Preelaborated);
    pragma Inline (Set_Is_Primitive);
    pragma Inline (Set_Is_Primitive_Wrapper);
