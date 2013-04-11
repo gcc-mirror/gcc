@@ -4966,8 +4966,7 @@ package body Sem_Ch12 is
         Make_Compilation_Unit (Sloc (N),
           Context_Items  => Empty_List,
           Unit           => Act_Decl,
-          Aux_Decls_Node =>
-            Make_Compilation_Unit_Aux (Sloc (N)));
+          Aux_Decls_Node => Make_Compilation_Unit_Aux (Sloc (N)));
 
       Set_Parent_Spec   (Act_Decl, Parent_Spec (N));
 
@@ -4984,8 +4983,8 @@ package body Sem_Ch12 is
 
       --  The two compilation unit nodes are linked by the Library_Unit field
 
-      Set_Library_Unit  (Decl_Cunit, Body_Cunit);
-      Set_Library_Unit  (Body_Cunit, Decl_Cunit);
+      Set_Library_Unit (Decl_Cunit, Body_Cunit);
+      Set_Library_Unit (Body_Cunit, Decl_Cunit);
 
       --  Preserve the private nature of the package if needed
 
@@ -5043,8 +5042,7 @@ package body Sem_Ch12 is
    procedure Check_Access_Definition (N : Node_Id) is
    begin
       pragma Assert
-        (Ada_Version >= Ada_2005
-           and then Present (Access_Definition (N)));
+        (Ada_Version >= Ada_2005 and then Present (Access_Definition (N)));
       null;
    end Check_Access_Definition;
 
