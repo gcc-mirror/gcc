@@ -1,3 +1,32 @@
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Minor code clean up.
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb, sem_ch13.adb (Analyze_Enumeration_Representation_Clause):
+	Ignore enumeration rep clauses by default in CodePeer mode, unless
+	-gnatd.I is specified.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Safe_To_Capture_Value): If the node belongs to
+	an expression that has been attached to the else_actions of an
+	if-expression, the capture is not safe.
+
+2013-04-11  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): Put check mark on type
+	conversion for arrays.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb: Minor reformatting.
+
+2013-04-11  Johannes Kanig  <kanig@adacore.com>
+
+	* adabkend.adb: Minor comment addition.
+
 2013-04-11  Matthew Heaney  <heaney@adacore.com>
 
 	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb ("="): Increment

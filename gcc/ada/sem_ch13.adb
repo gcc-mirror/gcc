@@ -26,6 +26,7 @@
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -4250,6 +4251,14 @@ package body Sem_Ch13 is
 
    begin
       if Ignore_Rep_Clauses then
+         return;
+      end if;
+
+      --  Ignore enumeration rep clauses by default in CodePeer mode,
+      --  unless -gnatd.I is specified, as a work around for potential false
+      --  positive messages.
+
+      if CodePeer_Mode and not Debug_Flag_Dot_II then
          return;
       end if;
 

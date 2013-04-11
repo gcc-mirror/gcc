@@ -12984,6 +12984,19 @@ package body Sem_Util is
             else
                Desc := P;
                P    := Parent (P);
+
+               --  A special Ada 2012 case: the original node may be part
+               --  of the else_actions of a conditional expression, in which
+               --  case it might not have been expanded yet, and appears in
+               --  a non-syntactic list of actions. In that case it is clearly
+               --  not safe to save a value.
+
+               if No (P)
+                 and then Is_List_Member (Desc)
+                 and then No (Parent (List_Containing (Desc)))
+               then
+                  return False;
+               end if;
             end if;
          end loop;
       end;

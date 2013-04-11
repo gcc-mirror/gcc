@@ -126,7 +126,7 @@ package body Debug is
    --  d.F  Alfa mode
    --  d.G  Frame condition mode for gnat2why
    --  d.H  Standard package only mode for gnat2why
-   --  d.I
+   --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Disable parallel SCIL generation mode
    --  d.K  Alfa detection only mode for gnat2why
    --  d.L  Depend on back end for limited types in if and case expressions
@@ -613,6 +613,12 @@ package body Debug is
    --  d.H  Standard package only mode for gnat2why. In this mode, gnat2why
    --       will only generate Why code for package Standard. Any given input
    --       file will be ignored.
+
+   --  d.I  Do not ignore enum representation clauses in CodePeer mode.
+   --       The default of ignoring representation clauses for enumeration
+   --       types in CodePeer is good for the majority of Ada code, but in some
+   --       cases being able to change this default might be useful to remove
+   --       some false positives.
 
    --  d.J  Disable parallel SCIL generation. Normally SCIL file generation is
    --       done in parallel to speed processing. This switch disables this
