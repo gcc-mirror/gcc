@@ -1,3 +1,10 @@
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Null_Procedure): New subprogram, mostly
+	extracted from Analyze_Subprogram_Declaration, to handle null
+	procedure declarations that in ada 2012 can be completions of
+	previous declarations.
+
 2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Entity_Of): Moved to Exp_Util.

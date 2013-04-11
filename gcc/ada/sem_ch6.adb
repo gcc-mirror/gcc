@@ -101,6 +101,11 @@ package body Sem_Ch6 is
    -- Local Subprograms --
    -----------------------
 
+   procedure Analyze_Null_Procedure
+     (N             : Node_Id;
+      Is_Completion : out Boolean);
+   --  A null procedure can be a declaration or (Ada 2012) a completion.
+
    procedure Analyze_Return_Statement (N : Node_Id);
    --  Common processing for simple and extended return statements
 
@@ -1212,6 +1217,137 @@ package body Sem_Ch6 is
 
       End_Generic;
    end Analyze_Generic_Subprogram_Body;
+
+   ----------------------------
+   -- Analyze_Null_Procedure --
+   ----------------------------
+
+   procedure Analyze_Null_Procedure
+     (N             : Node_Id;
+      Is_Completion : out Boolean)
+   is
+      Loc        : constant Source_Ptr := Sloc (N);
+      Spec       : constant Node_Id    := Specification (N);
+      Designator : Entity_Id;
+      Form       : Node_Id;
+      Null_Body  : Node_Id := Empty;
+      Prev       : Entity_Id;
+
+   begin
+      --  Capture the profile of the null procedure before analysis, for
+      --  expansion at the freeze point and at each point of call. The body is
+      --  used if the procedure has preconditions, or if it is a completion. In
+      --  the first case the body is analyzed at the freeze point, in the other
+      --  it replaces the null procedure declaration.
+
+      Null_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification => New_Copy_Tree (Spec),
+          Declarations => New_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (Make_Null_Statement (Loc))));
+
+      --  Create new entities for body and formals
+
+      Set_Defining_Unit_Name (Specification (Null_Body),
+        Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))));
+
+      Form := First (Parameter_Specifications (Specification (Null_Body)));
+      while Present (Form) loop
+         Set_Defining_Identifier (Form,
+           Make_Defining_Identifier (Loc, Chars (Defining_Identifier (Form))));
+         Next (Form);
+      end loop;
+
+      --  Determine whether the null procedure may be a completion of a generic
+      --  suprogram, in which case we use the new null body as the completion
+      --  and set minimal semantic information on the original declaration,
+      --  which is rewritten as a null statement.
+
+      Prev := Current_Entity_In_Scope (Defining_Entity (Spec));
+
+      if Present (Prev) and then Is_Generic_Subprogram (Prev) then
+         Insert_Before (N, Null_Body);
+         Set_Ekind (Defining_Entity (N), Ekind (Prev));
+         Set_Contract (Defining_Entity (N), Make_Contract (Loc));
+
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze_Generic_Subprogram_Body (Null_Body, Prev);
+         Is_Completion := True;
+         return;
+
+      else
+
+         --  Resolve the types of the formals now, because the freeze point
+         --  may appear in a different context, e.g. an instantiation.
+
+         Form := First (Parameter_Specifications (Specification (Null_Body)));
+         while Present (Form) loop
+            if Nkind (Parameter_Type (Form)) /= N_Access_Definition then
+               Find_Type (Parameter_Type (Form));
+
+            elsif
+              No (Access_To_Subprogram_Definition (Parameter_Type (Form)))
+            then
+               Find_Type (Subtype_Mark (Parameter_Type (Form)));
+
+            else
+               --  The case of a null procedure with a formal that is an
+               --  access_to_subprogram type, and that is used as an actual
+               --  in an instantiation is left to the enthusiastic reader.
+
+               null;
+            end if;
+
+            Next (Form);
+         end loop;
+      end if;
+
+      --  If there are previous overloadable entities with the same name,
+      --  check whether any of them is completed by the null procedure.
+
+      if Present (Prev) and then Is_Overloadable (Prev) then
+         Designator := Analyze_Subprogram_Specification (Spec);
+         Prev       := Find_Corresponding_Spec (N);
+      end if;
+
+      if No (Prev) or else not Comes_From_Source (Prev) then
+         Designator := Analyze_Subprogram_Specification (Spec);
+         Set_Has_Completion (Designator);
+
+         --  Signal to caller that this is a procedure declaration
+
+         Is_Completion := False;
+
+         --  Null procedures are always inlined, but generic formal subprograms
+         --  which appear as such in the internal instance of formal packages,
+         --  need no completion and are not marked Inline.
+
+         if Expander_Active
+           and then Nkind (N) /= N_Formal_Concrete_Subprogram_Declaration
+         then
+            Set_Corresponding_Body (N, Defining_Entity (Null_Body));
+            Set_Body_To_Inline (N, Null_Body);
+            Set_Is_Inlined (Designator);
+         end if;
+
+      else
+         --  The null procedure is a completion
+
+         Is_Completion := True;
+
+         if Expander_Active then
+            Rewrite (N, Null_Body);
+            Analyze (N);
+
+         else
+            Designator := Analyze_Subprogram_Specification (Spec);
+            Set_Has_Completion (Designator);
+            Set_Has_Completion (Prev);
+         end if;
+      end if;
+   end Analyze_Null_Procedure;
 
    -----------------------------
    -- Analyze_Operator_Symbol --
@@ -3194,13 +3330,10 @@ package body Sem_Ch6 is
    ------------------------------------
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
       Scop       : constant Entity_Id  := Current_Scope;
       Designator : Entity_Id;
-      Form       : Node_Id;
-      Null_Body  : Node_Id := Empty;
-
-   --  Start of processing for Analyze_Subprogram_Declaration
+      Is_Completion : Boolean;
+      --  Indicates whether a null procedure declaration is a completion
 
    begin
       --  Null procedures are not allowed in SPARK
@@ -3209,63 +3342,18 @@ package body Sem_Ch6 is
         and then Null_Present (Specification (N))
       then
          Check_SPARK_Restriction ("null procedure is not allowed", N);
-      end if;
-
-      --  For a null procedure, capture the profile before analysis, for
-      --  expansion at the freeze point and at each point of call. The body
-      --  will only be used if the procedure has preconditions. In that case
-      --  the body is analyzed at the freeze point.
-
-      if Nkind (Specification (N)) = N_Procedure_Specification
-        and then Null_Present (Specification (N))
-        and then Expander_Active
-      then
-         Null_Body :=
-           Make_Subprogram_Body (Loc,
-             Specification =>
-               New_Copy_Tree (Specification (N)),
-             Declarations =>
-               New_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (Make_Null_Statement (Loc))));
-
-         --  Create new entities for body and formals
-
-         Set_Defining_Unit_Name (Specification (Null_Body),
-           Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))));
-
-         Form := First (Parameter_Specifications (Specification (Null_Body)));
-         while Present (Form) loop
-            Set_Defining_Identifier (Form,
-              Make_Defining_Identifier (Loc,
-                Chars (Defining_Identifier (Form))));
-
-            --  Resolve the types of the formals now, because the freeze point
-            --  may appear in a different context, e.g. an instantiation.
-
-            if Nkind (Parameter_Type (Form)) /= N_Access_Definition then
-               Find_Type (Parameter_Type (Form));
-
-            elsif
-              No (Access_To_Subprogram_Definition (Parameter_Type (Form)))
-            then
-               Find_Type (Subtype_Mark (Parameter_Type (Form)));
-
-            else
-
-               --  the case of a null procedure with a formal that is an
-               --  access_to_subprogram type, and that is used as an actual
-               --  in an instantiation is left to the enthusiastic reader.
-
-               null;
-            end if;
-
-            Next (Form);
-         end loop;
 
          if Is_Protected_Type (Current_Scope) then
             Error_Msg_N ("protected operation cannot be a null procedure", N);
+         end if;
+
+         Analyze_Null_Procedure (N, Is_Completion);
+
+         if Is_Completion then
+
+            --  The null procedure acts as a body, nothing further is needed.
+
+            return;
          end if;
       end if;
 
@@ -3286,30 +3374,12 @@ package body Sem_Ch6 is
          Indent;
       end if;
 
-      if Nkind (Specification (N)) = N_Procedure_Specification
-        and then Null_Present (Specification (N))
-      then
-         Set_Has_Completion (Designator);
-
-         --  Null procedures are always inlined, but generic formal subprograms
-         --  which appear as such in the internal instance of formal packages,
-         --  need no completion and are not marked Inline.
-
-         if Present (Null_Body)
-           and then Nkind (N) /= N_Formal_Concrete_Subprogram_Declaration
-         then
-            Set_Corresponding_Body (N, Defining_Entity (Null_Body));
-            Set_Body_To_Inline (N, Null_Body);
-            Set_Is_Inlined (Designator);
-         end if;
-      end if;
-
       Validate_RCI_Subprogram_Declaration (N);
       New_Overloaded_Entity (Designator);
       Check_Delayed_Subprogram (Designator);
 
       --  If the type of the first formal of the current subprogram is a
-      --  nongeneric tagged private type, mark the subprogram as being a
+      --  non-generic tagged private type, mark the subprogram as being a
       --  private primitive. Ditto if this is a function with controlling
       --  result, and the return type is currently private. In both cases,
       --  the type of the controlling argument or result must be in the
@@ -8345,6 +8415,15 @@ package body Sem_Ch6 is
                  and then not Mode_Conformant (Designator, E)
                then
                   null;
+
+               --  For null procedures coming from source that are completions,
+               --  analysis of the generated body will establish the link.
+
+               elsif Comes_From_Source (E)
+                 and then Nkind (Spec) = N_Procedure_Specification
+                 and then Null_Present (Spec)
+               then
+                  return E;
 
                elsif not Has_Completion (E) then
                   if Nkind (N) /= N_Subprogram_Body_Stub then
