@@ -1,3 +1,10 @@
+2013-04-11  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/linux-atomic.c (SUBWORD_SYNC_OP, SUBWORD_VAL_CAS)
+	(SUBWORD_TEST_AND_SET): Use signed char/short types instead of
+	unsigned char/unsigned short.
+	(__sync_val_compare_and_swap_{1,2}): Handle signed argument.
+
 2013-04-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR other/55274
