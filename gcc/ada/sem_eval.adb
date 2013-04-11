@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1932,20 +1932,17 @@ package body Sem_Eval is
 
          Set_Is_Static_Expression (N, Stat);
 
-         if Stat then
+         --  If left operand is the empty string, the result is the
+         --  right operand, including its bounds if anomalous.
 
-            --  If left operand is the empty string, the result is the
-            --  right operand, including its bounds if anomalous.
-
-            if Left_Len = 0
-              and then Is_Array_Type (Etype (Right))
-              and then Etype (Right) /= Any_String
-            then
-               Set_Etype (N, Etype (Right));
-            end if;
-
-            Fold_Str (N, Folded_Val, Static => True);
+         if Left_Len = 0
+           and then Is_Array_Type (Etype (Right))
+           and then Etype (Right) /= Any_String
+         then
+            Set_Etype (N, Etype (Right));
          end if;
+
+         Fold_Str (N, Folded_Val, Static => Stat);
       end;
    end Eval_Concatenation;
 
@@ -3411,11 +3408,12 @@ package body Sem_Eval is
       --  is too long, or it is null, and the lower bound is type'First. In
       --  either case it is the upper bound that is out of range of the index
       --  type.
-
       if Ada_Version >= Ada_95 then
          if Root_Type (Bas) = Standard_String
               or else
             Root_Type (Bas) = Standard_Wide_String
+              or else
+            Root_Type (Bas) = Standard_Wide_Wide_String
          then
             Xtp := Standard_Positive;
          else
@@ -3428,24 +3426,54 @@ package body Sem_Eval is
             Lo := Type_Low_Bound (Etype (First_Index (Typ)));
          end if;
 
+         --  Check for string too long
+
          Len := String_Length (Strval (N));
 
          if UI_From_Int (Len) > String_Type_Len (Bas) then
-            Apply_Compile_Time_Constraint_Error
-              (N, "string literal too long for}", CE_Length_Check_Failed,
-               Ent => Bas,
-               Typ => First_Subtype (Bas));
+
+            --  Issue message. Note that this message is a warning if the
+            --  string literal is not marked as static (happens in some cases
+            --  of folding strings known at compile time, but not static).
+            --  Furthermore in such cases, we reword the message, since there
+            --  is no string literal in the source program!
+
+            if Is_Static_Expression (N) then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "string literal too long for}", CE_Length_Check_Failed,
+                  Ent => Bas,
+                  Typ => First_Subtype (Bas));
+            else
+               Apply_Compile_Time_Constraint_Error
+                 (N, "string value too long for}", CE_Length_Check_Failed,
+                  Ent  => Bas,
+                  Typ  => First_Subtype (Bas),
+                  Warn => True);
+            end if;
+
+         --  Test for null string not allowed
 
          elsif Len = 0
            and then not Is_Generic_Type (Xtp)
            and then
              Expr_Value (Lo) = Expr_Value (Type_Low_Bound (Base_Type (Xtp)))
          then
-            Apply_Compile_Time_Constraint_Error
-              (N, "null string literal not allowed for}",
-               CE_Length_Check_Failed,
-               Ent => Bas,
-               Typ => First_Subtype (Bas));
+            --  Same specialization of message
+
+            if Is_Static_Expression (N) then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "null string literal not allowed for}",
+                  CE_Length_Check_Failed,
+                  Ent => Bas,
+                  Typ => First_Subtype (Bas));
+            else
+               Apply_Compile_Time_Constraint_Error
+                 (N, "null string value not allowed for}",
+                  CE_Length_Check_Failed,
+                  Ent  => Bas,
+                  Typ  => First_Subtype (Bas),
+                  Warn => True);
+            end if;
          end if;
       end if;
    end Eval_String_Literal;
@@ -4091,7 +4119,7 @@ package body Sem_Eval is
       --  Note that we have to reset Is_Static_Expression both after the
       --  analyze step (because Resolve will evaluate the literal, which
       --  will cause semantic errors if it is marked as static), and after
-      --  the Resolve step (since Resolve in some cases sets this flag).
+      --  the Resolve step (since Resolve in some cases resets this flag).
 
       Analyze (N);
       Set_Is_Static_Expression (N, Static);

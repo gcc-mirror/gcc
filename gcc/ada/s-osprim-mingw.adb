@@ -68,17 +68,17 @@ package body System.OS_Primitives is
 
    type Clock_Data_Access is access all Clock_Data;
 
-   --  Two base clock buffers. This is used to be able to update a buffer
-   --  while the other buffer is read. The point is that we do not want to
-   --  use a lock inside the Clock routine for performance reasons. We still
-   --  use a lock in the Get_Base_Time which is called very rarely. Current
-   --  is a pointer, the pragma Atomic is there to ensure that the value can
-   --  be set or read atomically. That's it, when Get_Base_Time has updated
-   --  a buffer the switch to the new value is done by changing Current
-   --  pointer.
+   --  Two base clock buffers. This is used to be able to update a buffer while
+   --  the other buffer is read. The point is that we do not want to use a lock
+   --  inside the Clock routine for performance reasons. We still use a lock
+   --  in the Get_Base_Time which is called very rarely. Current is a pointer,
+   --  the pragma Atomic is there to ensure that the value can be set or read
+   --  atomically. That's it, when Get_Base_Time has updated a buffer the
+   --  switch to the new value is done by changing Current pointer.
 
    First, Second : aliased Clock_Data;
-   Current       : Clock_Data_Access := First'Access;
+
+   Current : Clock_Data_Access := First'Access;
    pragma Atomic (Current);
 
    --  The following signature is to detect change on the base clock data
@@ -177,9 +177,11 @@ package body System.OS_Primitives is
       epoch_1970     : constant := 16#19D_B1DE_D53E_8000#; -- win32 UTC epoch
       system_time_ns : constant := 100;                    -- 100 ns per tick
       Sec_Unit       : constant := 10#1#E9;
-      Max_Elapsed    : constant LARGE_INTEGER :=
+
+      Max_Elapsed : constant LARGE_INTEGER :=
                          LARGE_INTEGER (Tick_Frequency / 100_000);
       --  Look for a precision of 0.01 ms
+
       Sig            : constant Signature_Type := Signature;
 
       Loc_Ticks, Ctrl_Ticks : aliased LARGE_INTEGER;
@@ -269,13 +271,14 @@ package body System.OS_Primitives is
          end if;
       end loop;
 
-      New_Data.Base_Clock := Duration
-        (Long_Long_Float ((New_Data.Base_Time - epoch_1970) * system_time_ns) /
-           Long_Long_Float (Sec_Unit));
+      New_Data.Base_Clock :=
+        Duration
+          (Long_Long_Float
+            ((New_Data.Base_Time - epoch_1970) * system_time_ns) /
+                                               Long_Long_Float (Sec_Unit));
 
       --  At this point all the base values have been set into the new data
-      --  record. We just change the pointer (atomic operation) to this new
-      --  values.
+      --  record. Change the pointer (atomic operation) to these new values.
 
       Current := New_Data;
       Data    := New_Data.all;

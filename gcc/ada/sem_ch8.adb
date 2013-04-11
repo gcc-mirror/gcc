@@ -2821,13 +2821,13 @@ package body Sem_Ch8 is
            and then Entity (Prefix (Nam)) = Current_Scope
            and then Chars (Selector_Name (Nam)) = Chars (New_S)
          then
-            if Overriding_Renamings then
-               null;
+            --  This is an error, but we overlook the error and accept the
+            --  renaming if the special Overriding_Renamings mode is in effect.
 
-            else
+            if not Overriding_Renamings then
                Error_Msg_NE
-                  ("implicit operation& is not visible (RM 8.3 (15))",
-                     Nam, Old_S);
+                 ("implicit operation& is not visible (RM 8.3 (15))",
+                  Nam, Old_S);
             end if;
          end if;
 

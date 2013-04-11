@@ -12009,7 +12009,7 @@ package body Sem_Util is
       function Is_Interface_Conversion (N : Node_Id) return Boolean;
       --  Determine whether N is a construct of the form
       --    Some_Type (Operand._tag'Address)
-      --  This construct appears in the context of dispatching calls
+      --  This construct appears in the context of dispatching calls.
 
       function Reference_To (Obj : Node_Id) return Node_Id;
       --  An explicit dereference is created when removing side-effects from

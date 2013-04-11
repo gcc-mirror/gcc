@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,7 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -5160,9 +5161,100 @@ package body Exp_Aggr is
 
    procedure Expand_N_Aggregate (N : Node_Id) is
    begin
+      --  Record aggregate case
+
       if Is_Record_Type (Etype (N)) then
          Expand_Record_Aggregate (N);
+
+      --  Array aggregate case
+
       else
+         --  A special case, if we have a string subtype with bounds 1 .. N,
+         --  where N is known at compile time, and the aggregate is of the
+         --  form (others => 'x'), and N is less than 80 (an arbitrary limit
+         --  for now), then replace the aggregate by the equivalent string
+         --  literal (but do not mark it as static since it is not!)
+
+         --  Note: this entire circuit is redundant with respect to code in
+         --  Expand_Array_Aggregate that collapses others choices to positional
+         --  form, but there are two problems with that circuit:
+
+         --    a) It is limited to very small cases due to ill-understood
+         --       interations with bootstrapping. That limit is removed by
+         --       use of the No_Implicit_Loops restriction.
+
+         --    b) It erroneously ends up with the resulting expressions being
+         --       considered static when they are not. For example, the
+         --       following test should fail:
+
+         --           pragma Restrictions (No_Implicit_Loops);
+         --           package NonSOthers4 is
+         --              B  : constant String (1 .. 6) := (others => 'A');
+         --              DH : constant String (1 .. 8) := B & "BB";
+         --              X : Integer;
+         --              pragma Export (C, X, Link_Name => DH);
+         --           end;
+
+         --       But it succeeds (DH looks static to pragma Export)
+
+         --    To be sorted out! ???
+
+         if Present (Component_Associations (N)) then
+            declare
+               CA : constant Node_Id := First (Component_Associations (N));
+               MX : constant         := 80;
+
+            begin
+               if Nkind (First (Choices (CA))) = N_Others_Choice
+                 and then Nkind (Expression (CA)) = N_Character_Literal
+               then
+                  declare
+                     T  : constant Entity_Id := Etype (N);
+                     X  : constant Node_Id   := First_Index (T);
+                     EC : constant Node_Id   := Expression (CA);
+                     CV : constant Uint      := Char_Literal_Value (EC);
+                     CC : constant Int       := UI_To_Int (CV);
+
+                  begin
+                     if Nkind (X) = N_Range
+                       and then Compile_Time_Known_Value (Low_Bound (X))
+                       and then Expr_Value (Low_Bound (X)) = 1
+                       and then Compile_Time_Known_Value (High_Bound (X))
+                     then
+                        declare
+                           Hi : constant Uint := Expr_Value (High_Bound (X));
+
+                        begin
+                           if Hi <= MX then
+                              Start_String;
+
+                              for J in 1 .. UI_To_Int (Hi) loop
+                                 Store_String_Char (Char_Code (CC));
+                              end loop;
+
+                              Rewrite (N,
+                                Make_String_Literal (Sloc (N),
+                                  Strval => End_String));
+
+                              if CC >= Int (2 ** 16) then
+                                 Set_Has_Wide_Wide_Character (N);
+                              elsif CC >= Int (2 ** 8) then
+                                 Set_Has_Wide_Character (N);
+                              end if;
+
+                              Analyze_And_Resolve (N, T);
+                              Set_Is_Static_Expression (N, False);
+                              return;
+                           end if;
+                        end;
+                     end if;
+                  end;
+               end if;
+            end;
+         end if;
+
+         --  Not that special case, so normal expansion of array aggregate
+
          Expand_Array_Aggregate (N);
       end if;
    exception

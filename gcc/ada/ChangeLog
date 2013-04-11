@@ -1,3 +1,25 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* s-osprim-mingw.adb, sem_ch3.adb, sem_prag.adb, sem_util.adb.
+	makeutl.adb, sem_ch8.adb: Minor reformatting.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Minor fixes for VMS.
+	* ug_words: Minor addition: -gnato? => /OVERFLOW_CHECKS=?.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb (Usage): Minor edit to -gnatW message
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Aggregate): Add circuit for handling
+	others for string literal case. Also add big ??? comment about
+	this new code, which should be redundant, but is not.
+	* sem_eval.adb (Eval_Concatenation): Handle non-static case
+	properly (Eval_String_Literal): Handle non-static literal properly
+
 2013-03-20  Tobias Burnus  <burnus@net-b.de>
 
 	* i-fortra.ads: Update comment, add Ada 2012's optional

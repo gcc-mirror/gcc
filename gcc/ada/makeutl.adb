@@ -369,12 +369,12 @@ package body Makeutl is
       Status : Boolean;
       --  For call to Close
 
-      Iter : Source_Iterator :=
-        For_Each_Source
-          (In_Tree           => Project_Tree,
-           Language          => Name_Ada,
-           Encapsulated_Libs => False,
-           Locally_Removed   => False);
+      Iter : Source_Iterator := For_Each_Source
+                                  (In_Tree           => Project_Tree,
+                                   Language          => Name_Ada,
+                                   Encapsulated_Libs => False,
+                                   Locally_Removed   => False);
+
       Source : Prj.Source_Id;
 
    begin
@@ -431,13 +431,14 @@ package body Makeutl is
             --  found.
 
             if ALI_Name /= No_File then
+
                --  Look in the project and the projects that are extending it
                --  to find the real ALI file.
 
                declare
-                  ALI : constant String := Get_Name_String (ALI_Name);
+                  ALI      : constant String := Get_Name_String (ALI_Name);
+                  ALI_Path : Name_Id         := No_Name;
 
-                  ALI_Path : Name_Id := No_Name;
                begin
                   loop
                      --  For library projects, use the library ALI directory,
@@ -462,6 +463,7 @@ package body Makeutl is
                   end loop;
 
                   if ALI_Path /= No_Name then
+
                      --  First line is the unit name
 
                      Get_Name_String (ALI_Unit);
@@ -475,7 +477,7 @@ package body Makeutl is
 
                      exit when not OK;
 
-                     --  Second line it the ALI file name
+                     --  Second line is the ALI file name
 
                      Get_Name_String (ALI_Name);
                      Add_Char_To_Name_Buffer (ASCII.LF);
@@ -488,7 +490,7 @@ package body Makeutl is
 
                      exit when not OK;
 
-                     --  Third line it the ALI path name
+                     --  Third line is the ALI path name
 
                      Get_Name_String (ALI_Path);
                      Add_Char_To_Name_Buffer (ASCII.LF);
@@ -576,8 +578,9 @@ package body Makeutl is
                if Sw'Length >= 3
                  and then (Sw (2) = 'I'
                             or else (not For_Gnatbind
-                                       and then (Sw (2) = 'L'
-                                         or else Sw (2) = 'A')))
+                                      and then (Sw (2) = 'L'
+                                                 or else
+                                                Sw (2) = 'A')))
                then
                   Start := 3;
 
@@ -592,7 +595,7 @@ package body Makeutl is
                              or else
                            Sw (2 .. 3) = "aI"
                              or else
-                           (For_Gnatbind and then Sw (2 .. 3) = "A="))
+                               (For_Gnatbind and then Sw (2 .. 3) = "A="))
                then
                   Start := 4;
 

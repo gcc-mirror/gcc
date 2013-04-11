@@ -4419,7 +4419,7 @@ cases; if two digits are given, then the first applies outside
 assertions, and the second within assertions.
 
 If no digits follow the @option{-gnato}, then it is equivalent to
-@option{-gnato11},
+@option{^-gnato11^/OVERFLOW_CHECKS=11^},
 causing all intermediate overflows to be handled in strict mode.
 
 This switch also causes arithmetic overflow checking to be performed
@@ -7059,8 +7059,7 @@ with the use of @option{-gnato} in previous versions of GNAT.
 
 @findex Machine_Overflows
 Note that the @option{-gnato??} switch does not affect the code generated
-for any floating-point operations; it applies only to integer
-semantics.
+for any floating-point operations; it applies only to integer semantics.
 For floating-point, @value{EDITION} has the @code{Machine_Overflows}
 attribute set to @code{False} and the normal mode of operation is to
 generate IEEE NaN and infinite values on overflow or invalid operations
@@ -7074,13 +7073,13 @@ subscript), or a wild jump (from an out of range case value). Overflow
 checking is also quite expensive in time and space, since in general it
 requires the use of double length arithmetic.
 
-Note again that the default is @option{-gnato00}, so overflow checking is
-not performed in default mode. This means that out of the box, with the
-default settings, @value{EDITION} does not do all the checks expected from the
-language description in the Ada Reference Manual. If you want all constraint
-checks to be performed, as described in this Manual, then you must
-explicitly use the @option{-gnato??} switch either on the @command{gnatmake} or
-@command{gcc} command.
+Note again that the default is @option{^-gnato00^/OVERFLOW_CHECKS=00^},
+so overflow checking is not performed in default mode. This means that out of
+the box, with the default settings, @value{EDITION} does not do all the checks
+expected from the language description in the Ada Reference Manual.
+If you want all constraint checks to be performed, as described in this Manual,
+then you must explicitly use the @option{-gnato??}
+switch either on the @command{gnatmake} or @command{gcc} command.
 
 @item -gnatE
 @cindex @option{-gnatE} (@command{gcc})
@@ -18165,7 +18164,7 @@ the generated body sample to @var{n}.
 The default indentation is 3.
 
 @item ^-gnatyo^/ORDERED_SUBPROGRAMS^
-@cindex @option{^-gnato^/ORDERED_SUBPROGRAMS^} (@command{gnatstub})
+@cindex @option{^-gnatyo^/ORDERED_SUBPROGRAMS^} (@command{gnatstub})
 Order local bodies alphabetically. (By default local bodies are ordered
 in the same way as the corresponding local specs in the argument spec file.)
 
@@ -25962,10 +25961,11 @@ eliminate intermediate overflows (@code{ELIMINATED})
 As with the pragma, if only one digit appears then it applies to all
 cases; if two digits are given, then the first applies outside
 assertions, and the second within assertions. Thus the equivalent
-of the example pragma above would be @option{-gnato23}.
+of the example pragma above would be
+@option{^-gnato23^/OVERFLOW_CHECKS=23^}.
 
 If no digits follow the @option{-gnato}, then it is equivalent to
-@option{-gnato11},
+@option{^-gnato11^/OVERFLOW_CHECKS=11^},
 causing all intermediate operations to be computed using the base
 type (@code{STRICT} mode).
 

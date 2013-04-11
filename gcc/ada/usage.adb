@@ -584,8 +584,8 @@ begin
 
    --  Line for -gnatW switch
 
-   Write_Switch_Char ("W");
-   Write_Str ("Wide character encoding method (");
+   Write_Switch_Char ("W?");
+   Write_Str ("Wide character encoding method (?=");
 
    for J in WC_Encoding_Method loop
       Write_Char (WC_Encoding_Letters (J));
