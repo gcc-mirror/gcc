@@ -1,3 +1,9 @@
+2013-04-11  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/48184
+	* params.def (PARAM_ALIGN_THRESHOLD): Increase the minimum
+	value to 1.
+
 2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (skip_simple_constant_arithmetic): Move to...
