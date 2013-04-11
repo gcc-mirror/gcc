@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Csets;
+with Hostparm;
 with Opt;
 with Output;
 with Osint;    use Osint;
@@ -1047,6 +1048,39 @@ package body Prj.Makr is
            Project_File_Extension;
          Output_Name_Last := Output_Name_Last + Project_File_Extension'Length;
 
+         --  Back up project file if it already exists
+
+         if not Hostparm.OpenVMS
+           and then not Opt.No_Backup
+           and then
+             Is_Regular_File (Path_Name (1 .. Path_Last))
+         then
+            declare
+               Discard : Boolean;
+               Saved_Path : constant String :=
+                 Path_Name (1 .. Path_Last) & ".saved_";
+               Nmb : Natural := 0;
+            begin
+               loop
+                  declare
+                     Img : constant String := Nmb'Img;
+                  begin
+                     if not Is_Regular_File
+                             (Saved_Path & Img (2 .. Img'Last))
+                     then
+                        Copy_File
+                          (Name => Path_Name (1 .. Path_Last),
+                           Pathname => Saved_Path & Img (2 .. Img'Last),
+                           Mode => Overwrite,
+                           Success => Discard);
+                        exit;
+                     end if;
+
+                     Nmb := Nmb + 1;
+                  end;
+               end loop;
+            end;
+         end if;
       end if;
 
       --  Change the current directory to the directory of the project file,

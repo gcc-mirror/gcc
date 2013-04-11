@@ -1,3 +1,16 @@
+2013-04-11  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_rm.texi: Add Detect_BLocking in the ravenscar profile
+	pragma list.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* gnatname.adb (Scan_Args): Recognize new switch --no-backup
+	(Usage): Add line for --no-backup.
+	* opt.ads (No_Nackup): New Boolean variable, initialized to False.
+	* prj-makr.adb (Initialize): Create a backup for an existing
+	project file if gnatname is not invoked with --no-backup.
+
 2013-04-11  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch4.adb: Minor code improvement: replace various calls to

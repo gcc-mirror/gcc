@@ -4857,10 +4857,10 @@ priority-ordered scheduling policy.
 @item Locking_Policy (Ceiling_Locking)
 [RM D.3] While tasks and interrupts execute a protected action, they inherit
 the ceiling priority of the corresponding protected object.
-@c
-@c @item Detect_Blocking
-@c This pragma forces the detection of potentially blocking operations within a
-@c protected operation, and to raise Program_Error if that happens.
+
+@item Detect_Blocking
+This pragma forces the detection of potentially blocking operations within a
+protected operation, and to raise Program_Error if that happens.
 @end table
 @noindent
 
