@@ -1456,20 +1456,35 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
             }
           else
             {
-              /* If we don't know all the misalignment values, we prefer
-                 peeling for data-ref that has maximum number of data-refs
+              /* If we don't know any misalignment values, we prefer
+                 peeling for data-ref that has the maximum number of data-refs
                  with the same alignment, unless the target prefers to align
                  stores over load.  */
               if (all_misalignments_unknown)
                 {
-                  if (same_align_drs_max 
-			< STMT_VINFO_SAME_ALIGN_REFS (stmt_info).length ()
-                      || !dr0)
+		  unsigned same_align_drs
+		    = STMT_VINFO_SAME_ALIGN_REFS (stmt_info).length ();
+                  if (!dr0
+		      || same_align_drs_max < same_align_drs)
                     {
-                      same_align_drs_max
-			  = STMT_VINFO_SAME_ALIGN_REFS (stmt_info).length ();
+                      same_align_drs_max = same_align_drs;
                       dr0 = dr;
                     }
+		  /* For data-refs with the same number of related
+		     accesses prefer the one where the misalign
+		     computation will be invariant in the outermost loop.  */
+		  else if (same_align_drs_max == same_align_drs)
+		    {
+		      struct loop *ivloop0, *ivloop;
+		      ivloop0 = outermost_invariant_loop_for_expr
+			  (loop, DR_BASE_ADDRESS (dr0));
+		      ivloop = outermost_invariant_loop_for_expr
+			  (loop, DR_BASE_ADDRESS (dr));
+		      if ((ivloop && !ivloop0)
+			  || (ivloop && ivloop0
+			      && flow_loop_nested_p (ivloop, ivloop0)))
+			dr0 = dr;
+		    }
 
                   if (!first_store && DR_IS_WRITE (dr))
                     first_store = dr;
@@ -1478,8 +1493,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               /* If there are both known and unknown misaligned accesses in the
                  loop, we choose peeling amount according to the known
                  accesses.  */
-
-
               if (!supportable_dr_alignment)
                 {
                   dr0 = dr;

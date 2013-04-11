@@ -1,3 +1,12 @@
+2013-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56878
+	* tree-flow.h (outermost_invariant_loop_for_expr): Declare.
+	* tree-ssa-loop-ivopts.c (outermost_invariant_loop_for_expr):
+	New function.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Prefer to align the DR with the most invariant base address.
+
 2013-04-11  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* opts.c (common_handle_option): Fix formatting and add FALLTHRU

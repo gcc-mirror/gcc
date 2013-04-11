@@ -1367,6 +1367,54 @@ find_interesting_uses_cond (struct ivopts_data *data, gimple stmt)
   record_use (data, NULL, civ, stmt, USE_COMPARE);
 }
 
+/* Returns the outermost loop EXPR is obviously invariant in
+   relative to the loop LOOP, i.e. if all its operands are defined
+   outside of the returned loop.  Returns NULL if EXPR is not
+   even obviously invariant in LOOP.  */
+
+struct loop *
+outermost_invariant_loop_for_expr (struct loop *loop, tree expr)
+{
+  basic_block def_bb;
+  unsigned i, len;
+
+  if (is_gimple_min_invariant (expr))
+    return current_loops->tree_root;
+
+  if (TREE_CODE (expr) == SSA_NAME)
+    {
+      def_bb = gimple_bb (SSA_NAME_DEF_STMT (expr));
+      if (def_bb)
+	{
+	  if (flow_bb_inside_loop_p (loop, def_bb))
+	    return NULL;
+	  return superloop_at_depth (loop,
+				     loop_depth (def_bb->loop_father) + 1);
+	}
+
+      return current_loops->tree_root;
+    }
+
+  if (!EXPR_P (expr))
+    return NULL;
+
+  unsigned maxdepth = 0;
+  len = TREE_OPERAND_LENGTH (expr);
+  for (i = 0; i < len; i++)
+    {
+      struct loop *ivloop;
+      if (!TREE_OPERAND (expr, i))
+	continue;
+
+      ivloop = outermost_invariant_loop_for_expr (loop, TREE_OPERAND (expr, i));
+      if (!ivloop)
+	return NULL;
+      maxdepth = MAX (maxdepth, loop_depth (ivloop));
+    }
+
+  return superloop_at_depth (loop, maxdepth);
+}
+
 /* Returns true if expression EXPR is obviously invariant in LOOP,
    i.e. if all its operands are defined outside of the LOOP.  LOOP
    should not be the function body.  */
