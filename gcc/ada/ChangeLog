@@ -1,3 +1,10 @@
+2013-04-11  Javier Miranda  <miranda@adacore.com>
+
+	* check.ads, exp_ch6.adb (Install_Null_Excluding_Check): No check in
+	interface thunks since it is performed at the caller side.
+	(Expand_Simple_Function_Return): No accessibility check needed in thunks
+	since the check is done by the target routine.
+
 2013-04-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Priority): pre-analyze
