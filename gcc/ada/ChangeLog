@@ -1,3 +1,18 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch11.ads, exp_ch11.adb (Expand_N_Raise_Expression): New procedure.
+	* exp_util.adb (Insert_Actions): Add entry for N_Raise_Expression.
+	* expander.adb: Add call to Expand_N_Raise_Expression.
+	* par-ch11.adb (P_Raise_Expression): New procedure.
+	* par-ch4.adb (P_Relation): Handle Raise_Expression.
+	* par.adb (P_Raise_Expression): New procedure.
+	* sem.adb: Add handling for N_Raise_Expression.
+	* sem_ch11.ads, sem_ch11.adb (Analyze_Raise_Expression): New procedure.
+	* sem_res.adb (Resolve): Add handling for N_Raise_Expression.
+	* sinfo.ads, sinfo.adb (N_Raise_Expression): New node.
+	* sprint.adb (Sprint_Node_Actual): Add handling for N_Raise_Expression.
+	* stand.ads (Any_Type): Document use with N_Raise_Expression.
+
 2013-04-11  Vincent Celier  <celier@adacore.com>
 
 	* gnat_ugn.texi: Remove section "The Development Environments"

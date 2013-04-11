@@ -2060,9 +2060,11 @@ package body Sem_Res is
          Analyze_Dimension (N);
          return;
 
-      --  Return if type = Any_Type (previous error encountered)
+      --  Return if type = Any_Type (previous error encountered). except that
+      --  a Raise_Expression node is OK: it is legitimately labeled this way
+      --  since it provides no information on the context.
 
-      elsif Etype (N) = Any_Type then
+      elsif Etype (N) = Any_Type and then Nkind (N) /= N_Raise_Expression then
          Debug_A_Exit ("resolving  ", N, "  (done, Etype = Any_Type)");
          return;
       end if;
@@ -2804,7 +2806,12 @@ package body Sem_Res is
             when N_Qualified_Expression
                              => Resolve_Qualified_Expression     (N, Ctx_Type);
 
+            --  Why is the following null, needs a comment ???
+
             when N_Quantified_Expression => null;
+
+            when N_Raise_Expression
+                             => Set_Etype (N, Ctx_Type);
 
             when N_Raise_xxx_Error
                              => Set_Etype (N, Ctx_Type);
