@@ -3586,6 +3586,29 @@ end MyProj;
 @subsection Attributes
 @c ---------------------------------------------
 
+@menu
+* Project Level Attributes::
+* Package Binder Attributes::
+* Package Builder Attributes::
+* Package Check Attributes::
+* Package Clean Attributes::
+* Package Compiler Attributes::
+* Package Cross_Reference Attributes::
+* Package Eliminate Attributes::
+* Package Finder Attributes::
+* Package gnatls Attributes::
+* Package gnatstub Attributes::
+* Package IDE Attributes::
+* Package Install Attributes::
+* Package Linker Attributes::
+* Package Metrics Attribute::
+* Package Naming Attributes::
+* Package Pretty_Printer Attributes::
+* Package Remote Attributes::
+* Package Stack Attributes::
+* Package Synchronize Attributes::
+@end menu
+
 @noindent
 A project (and its packages) may have @b{attributes} that define
 the project's properties.  Some attributes have values that are strings;
@@ -3676,152 +3699,1246 @@ The prefix of an attribute may be:
 @end itemize
 
 @noindent
-Legal attribute names are listed below, including the package in
-which they must be declared. These names are case-insensitive. The
-semantics for the attributes is explained in great details in other sections.
 
-The column @emph{index} indicates whether the attribute is an indexed attribute,
-and when it is whether its index is case sensitive (sensitive) or not (insensitive), or if case sensitivity depends is the same as file names sensitivity on the
-system (file). The text is between brackets ([]) if the index is optional.
+In the following sections, all predefined attributes are succinctly described,
+first the project level attributes, that is those attributes that are not in a
+package, then the attributes in the different packages.
 
-@multitable @columnfractions .3 .1 .2 .4
-@headitem Attribute Name @tab Value @tab Package @tab Index
-@headitem General attributes @tab @tab @tab @pxref{Building With Projects}
-@item Name @tab string @tab - @tab (Read-only, name of project)
-@item Project_Dir @tab string @tab - @tab (Read-only, directory of project)
-@item Source_Files @tab list @tab - @tab -
-@item Source_Dirs  @tab list @tab - @tab -
-@item Source_List_File @tab string @tab - @tab -
-@item Locally_Removed_Files @tab list @tab - @tab -
-@item Excluded_Source_Files @tab list @tab - @tab -
-@item Object_Dir   @tab string @tab - @tab -
-@item Exec_Dir     @tab string @tab - @tab -
-@item Excluded_Source_Dirs @tab list @tab - @tab -
-@item Excluded_Source_Files @tab list @tab - @tab -
-@item Excluded_Source_List_File @tab list @tab - @tab -
-@item Inherit_Source_Path  @tab list @tab - @tab insensitive
-@item Languages @tab list @tab - @tab -
-@item Main      @tab list @tab - @tab -
-@item Main_Language @tab string @tab - @tab -
-@item Externally_Built      @tab string @tab - @tab -
-@item Roots      @tab list @tab - @tab file
-@headitem
-   Library-related attributes @tab @tab @tab @pxref{Library Projects}
-@item Library_Dir @tab string @tab - @tab -
-@item Library_Name @tab string @tab - @tab -
-@item Library_Kind @tab string @tab - @tab -
-@item Library_Version @tab string @tab - @tab -
-@item Library_Interface @tab string @tab - @tab -
-@item Library_Auto_Init @tab string @tab - @tab -
-@item Library_Options @tab list @tab - @tab -
-@item Leading_Library_Options @tab list @tab - @tab -
-@item Library_Src_Dir @tab string @tab - @tab -
-@item Library_ALI_Dir @tab string @tab - @tab -
-@item Library_GCC @tab string @tab - @tab -
-@item Library_Symbol_File @tab string @tab - @tab -
-@item Library_Symbol_Policy @tab string @tab - @tab -
-@item Library_Reference_Symbol_File @tab string @tab - @tab -
-@item Interfaces @tab list @tab - @tab -
-@headitem
-   Naming @tab @tab @tab @pxref{Naming Schemes}
-@item Spec_Suffix @tab string @tab Naming @tab insensitive (language)
-@item Body_Suffix @tab string @tab Naming @tab insensitive (language)
-@item Separate_Suffix @tab string @tab Naming @tab -
-@item Casing @tab string @tab Naming @tab -
-@item Dot_Replacement @tab string @tab Naming @tab -
-@item Spec @tab string @tab Naming @tab insensitive (Ada unit)
-@item Body @tab string @tab Naming @tab insensitive (Ada unit)
-@item Specification_Exceptions @tab list @tab Naming @tab insensitive (language)
-@item Implementation_Exceptions @tab list @tab Naming @tab insensitive (language)
-@headitem
-   Building @tab @tab @tab
-@item Default_Switches @tab list @tab Builder, Compiler, Binder, Linker, Cross_Reference, Finder, Pretty_Printer, gnatstub, Check, Synchronize, Eliminate, Metrics, IDE @tab insensitive (language name)
-@item Switches @tab list @tab Builder, Compiler, Binder, Linker, Cross_Reference, Finder, gnatls, Pretty_Printer, gnatstub, Check, Synchronize, Eliminate, Metrics, Stack @tab [file] (file name)
-@item Local_Configuration_Pragmas @tab string @tab Compiler @tab -
-@item Local_Config_File @tab string @tab insensitive @tab -
-@item Global_Configuration_Pragmas @tab list @tab Builder @tab -
-@item Global_Compilation_Switches @tab list @tab Builder @tab language
-@item Executable @tab string @tab Builder @tab [file]
-@item Executable_Suffix @tab string @tab Builder @tab -
-@item Global_Config_File @tab string @tab Builder @tab insensitive (language)
-@headitem
-   IDE (used and created by GPS) @tab @tab @tab
-@item Remote_Host @tab string @tab IDE @tab -
-@item Program_Host @tab string @tab IDE @tab -
-@item Communication_Protocol @tab string @tab IDE @tab -
-@item Compiler_Command @tab string @tab IDE @tab insensitive (language)
-@item Debugger_Command @tab string @tab IDE @tab -
-@item Gnatlist @tab string @tab IDE @tab -
-@item Gnat @tab string @tab IDE @tab -
-@item VCS_Kind @tab string @tab IDE @tab -
-@item VCS_File_Check @tab string @tab IDE @tab -
-@item VCS_Log_Check @tab string @tab IDE @tab -
-@item Documentation_Dir @tab string @tab IDE @tab -
-@headitem
-   Configuration files @tab @tab @tab See gprbuild manual
-@item Default_Language @tab string @tab - @tab -
-@item Run_Path_Option @tab list @tab - @tab -
-@item Run_Path_Origin @tab string @tab - @tab -
-@item Separate_Run_Path_Options @tab string @tab - @tab -
-@item Toolchain_Version @tab string @tab - @tab insensitive
-@item Toolchain_Description @tab string @tab - @tab insensitive
-@item Object_Generated @tab string @tab - @tab insensitive
-@item Objects_Linked @tab string @tab - @tab insensitive
-@item Target @tab string @tab - @tab -
-@item Library_Builder @tab string @tab - @tab -
-@item Library_Support @tab string @tab - @tab -
-@item Archive_Builder @tab list @tab - @tab -
-@item Archive_Builder_Append_Option @tab list @tab - @tab -
-@item Archive_Indexer @tab list @tab - @tab -
-@item Archive_Suffix @tab string @tab - @tab -
-@item Library_Partial_Linker @tab list @tab - @tab -
-@item Shared_Library_Prefix @tab string @tab - @tab -
-@item Shared_Library_Suffix @tab string @tab - @tab -
-@item Symbolic_Link_Supported @tab string @tab - @tab -
-@item Library_Major_Minor_Id_Supported @tab string @tab - @tab -
-@item Library_Auto_Init_Supported @tab string @tab - @tab -
-@item Shared_Library_Minimum_Switches @tab list @tab - @tab -
-@item Library_Version_Switches @tab list @tab - @tab -
-@item Library_Install_Name_Option @tab string @tab - @tab -
-@item Runtime_Library_Dir @tab string @tab - @tab insensitive
-@item Runtime_Source_Dir @tab string @tab - @tab insensitive
-@item Driver @tab string @tab Compiler,Binder,Linker @tab insensitive (language)
-@item Required_Switches @tab list @tab Compiler,Binder,Linker @tab insensitive (language)
-@item Leading_Required_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Trailing_Required_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Pic_Option @tab list @tab Compiler @tab insensitive (language)
-@item Path_Syntax @tab string @tab Compiler @tab insensitive (language)
-@item Object_File_Suffix @tab string @tab Compiler @tab insensitive (language)
-@item Object_File_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Multi_Unit_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Multi_Unit_Object_Separator @tab string @tab Compiler @tab insensitive (language)
-@item Mapping_File_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Mapping_Spec_Suffix @tab string @tab Compiler @tab insensitive (language)
-@item Mapping_Body_Suffix @tab string @tab Compiler @tab insensitive (language)
-@item Config_File_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Config_Body_File_Name @tab string @tab Compiler @tab insensitive (language)
-@item Config_Body_File_Name_Index @tab string @tab Compiler @tab insensitive (language)
-@item Config_Body_File_Name_Pattern @tab string @tab Compiler @tab insensitive (language)
-@item Config_Spec_File_Name @tab string @tab Compiler @tab insensitive (language)
-@item Config_Spec_File_Name_Index @tab string @tab Compiler @tab insensitive (language)
-@item Config_Spec_File_Name_Pattern @tab string @tab Compiler @tab insensitive (language)
-@item Config_File_Unique @tab string @tab Compiler @tab insensitive (language)
-@item Dependency_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Dependency_Driver @tab list @tab Compiler @tab insensitive (language)
-@item Include_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Include_Path @tab string @tab Compiler @tab insensitive (language)
-@item Include_Path_File @tab string @tab Compiler @tab insensitive (language)
-@item Prefix @tab string @tab Binder @tab insensitive (language)
-@item Objects_Path @tab string @tab Binder @tab insensitive (language)
-@item Objects_Path_File @tab string @tab Binder @tab insensitive (language)
-@item Linker_Options @tab list @tab Linker @tab -
-@item Leading_Switches @tab list @tab Linker @tab -
-@item Map_File_Options @tab string @tab Linker @tab -
-@item Executable_Switches @tab list @tab Linker @tab -
-@item Lib_Dir_Switch @tab string @tab Linker @tab -
-@item Lib_Name_Switch @tab string @tab Linker @tab -
-@item Max_Command_Line_Length @tab string @tab Linker @tab -
-@item Response_File_Format @tab string @tab Linker @tab -
-@item Response_File_Switches @tab list @tab Linker @tab -
-@end multitable
+It is possible for different tools to create dynamically new packages with
+attributes, or new attribute in predefined packages. These attributes are
+not documented here.
+
+The attributes under Configuration headings are usually found only in
+configuration project files.
+
+The characteristics of each attribute are indicated as follows:
+
+@itemize @bullet
+
+@item @b{Type of value}
+
+The value of an attribute may be a single string, indicated by the word
+"single", or a string list, indicated by the word "list".
+
+@item @b{Read-only}
+
+When the attribute is read-only, that is when it is not allowed to declare
+the attribute, this is indicated by the words "read-only".
+
+@item @b{Optional index}
+
+If it is allowed in the value of the attribute (both single and list) to have
+an optional index, this is indicated by the words "optional index".
+
+@item @b{Indexed attribute}
+
+When an it is an indexed attribute, this is indicated by the word "indexed".
+
+@item @b{Case-sensitivity of the index}
+
+For an indexed attribute, if the index is case-insensitive, this is indicated
+by the words "case-insensitive index".
+
+@item @b{File name index}
+
+For an indexed attribute, when the index is a file name, this is indicated by
+the words "file name index". The index may or may not be case-sensitive,
+depending on the platform.
+
+@item @b{others allowed in index}
+
+For an indexed attribute, if it is allowed to use @b{others} as the index,
+this is indicated by the words "others allowed".
+
+@end itemize
+
+@node Project Level Attributes
+@subsubsection Project Level Attributes
+@noindent
+
+@itemize @bullet
+
+@item @b{General}
+
+@itemize @bullet
+
+@item @b{Name}: single, read-only
+
+The name of the project.
+
+@item @b{Project_Dir}: single, read-only
+
+The path name of the project directory.
+
+@item @b{Main}: list, optional index
+
+The list of main sources for the executables.
+
+@item @b{Languages}: list
+
+The list of languages of the sources of the project.
+
+@item @b{Roots}: list, indexed, file name index
+
+The index is the file name of an executable source. Indicates the list of
+units that need to be bound and linked with their closures with the executable.
+
+@item @b{Externally_Built}: single
+
+Indicates if the project is externally built.
+Only case-insensitive values allowed are "true" and "false", the default.
+
+@end itemize
+@noindent
+
+@item @b{Directories}
+
+@itemize @bullet
+
+@item @b{Object_Dir}: single
+
+Indicates the object directory for the project.
+
+@item @b{Exec_Dir}: single
+
+Indicates the exec directory for the project, that is the directory where the
+executables are.
+
+@item @b{Source_Dirs}: list
+
+The list of source directories of the project.
+
+@item @b{Inherit_Source_Path}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of language names. Indicates that
+in the source search path of the index language the source directories of
+the languages in the list should be included.
+
+Example:
+
+for Inherit_Source_Path ("C++") use ("C");
+
+@item @b{Exclude_Source_Dirs}: list
+
+The list of directories that are included in Source_Dirs but are not source
+directories of the project.
+
+@item @b{Ignore_Source_Sub_Dirs}: list
+
+Value is a list of simple names for subdirectories that are removed from the
+list of source directories, including theur subdirectories.
+
+@end itemize
+
+@item @b{Source Files}
+
+@itemize @bullet
+
+@item @b{Source_Files}: list
+
+Value is a list of source file simple names.
+
+@item @b{Locally_Removed_Files}: list
+
+Obsolescent. Equivalent to Excluded_Source_Files.
+
+@item @b{Excluded_Source_Files}: list
+
+Value is a list of simple file names that are not sources of the project.
+Allows to remove sources that are inherited or found in the source directories
+and that match the naming scheme.
+
+@item @b{Source_List_File}: single
+
+Value is a text file name that contains a list of source file simple names,
+one on each line.
+
+@item @b{Excluded_Source_List_File}: single
+
+Value is a text file name that contains a list of file simple names that
+are not sources of the project.
+
+@item @b{Interfaces}: list
+
+Value is a list of file names that constitutes the interfaces of the project.
+
+@end itemize
+
+@item @b{Aggregate Projects}
+
+@itemize @bullet
+
+@item @b{Project_Files}: list
+
+Value is the list of aggregated projects.
+
+@item @b{Project_Path}: list
+
+Value is a list of directories that are added to the project search path when
+looking for the aggregated projects.
+
+@item @b{External}: single, indexed
+
+Index is the name of an external reference. Value is the value of the
+external reference to be used when parsing the aggregated projects.
+
+@end itemize
+
+@item @b{Libraries}
+
+@itemize @bullet
+
+@item @b{Library_Dir}: single
+
+Value is the name of the library directory. This attribute needs to be
+declared for each library project.
+
+@item @b{Library_Name}: single
+
+Value is the name of the library. This attribute needs to be declared or
+inherited for each library project.
+
+@item @b{Library_Kind}: single
+
+Specifies the kind of library: static library (archive) or shared library.
+Case-insensitive values must be one of "static" for archives (the default) or
+"dynamic" or "relocatable" for shared libraries.
+
+@item @b{Library_Version}: single
+
+Value is the name of the library file.
+
+@item @b{Library_Interface}: list
+
+Value is the list of unit names that constitutes the interfaces
+of a Stand-Alone Library project.
+
+@item @b{Library_Standalone}: single
+
+Specifies if a Stand-Alone Library (SAL) is encapsulated or not.
+Only authorized case-insensitive values are "standard" for non encapsulated
+SALs, "encapsulated" for encapsulated SALs or "no" for non SAL library project.
+
+@item @b{Library_Encapsulated_Options}: list
+
+Value is a list of options that need to be used when linking an encapsulated
+Stand-Alone Library.
+
+@item @b{Library_Encapsulated_Supported}: single
+
+Indicates if encapsulated Stand-Alone Libraries are supported. Only
+authorized case-insensitive values are "true" and "false" (the default).
+
+@item @b{Library_Auto_Init}: single
+
+Indicates if a Stand-Alone Library is auto-initialized. Only authorized
+case-insentive values are "true" and "false".
+
+@item @b{Leading_Library_Options}: list
+
+Value is a list of options that are to be used at the beginning of
+the command line when linking a shared library.
+
+@item @b{Library_Options}: list
+
+Value is a list of options that are to be used when linking a shared library.
+
+@item @b{Library_Src_Dir}: single
+
+Value is the name of the directory where copies of the sources of the
+interfaces of a Stand-Alone Library are to be copied.
+
+@item @b{Library_ALI_Dir}: single
+
+Value is the name of the directory where the ALI files of the interfaces
+of a Stand-Alone Library are to be copied. When this attribute is not declared,
+the directory is the library directory.
+
+@item @b{Library_gcc}: single
+
+Obsolescent attribute. Specify the linker driver used to link a shared library.
+Use instead attribute Linker'Driver.
+
+@item @b{Library_Symbol_File}: single
+
+Value is the name of the library symbol file.
+
+@item @b{Library_Symbol_Policy}: single
+
+Indicates the symbol policy kind. Only authorized case-insensitive values are
+"autonomous", "default", "compliant", "controlled" or "direct".
+
+@item @b{Library_Reference_Symbol_File}: single
+
+Value is the name of the reference symbol file.
+
+@end itemize
+
+@item @b{Configuration - General}
+
+@itemize @bullet
+
+@item @b{Default_Language}: single
+
+Value is the case-insensitive name of the language of a project when attribute
+Languages is not specified.
+
+@item @b{Run_Path_Option}: list
+
+Value is the list of switches to be used when specifying the run path option
+in an executable.
+
+@item @b{Run_Path_Origin}: single
+
+Value is the the string that may replace the path name of the executable
+directory in the run path options.
+
+@item @b{Separate_Run_Path_Options}: single
+
+Indicates if there may be or not several run path options specified when
+linking an executable. Only authorized case-insensitive b=values are "true" or
+"false" (the default).
+
+@item @b{Toolchain_Version}: single, indexed, case-insensitive index
+
+Index is a language name. Specify the version of a toolchain for a language.
+
+@item @b{Toolchain_Description}: single, indexed, case-insensitive index
+
+Obsolescent. No longer used.
+
+@item @b{Object_Generated}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates if invoking the compiler for a language
+produces an object file. Only authorized case-insensitive values are "false"
+and "true" (the default).
+
+@item @b{Objects_Linked}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates if the object files created by the compiler
+for a language need to be linked in the executable. Only authorized
+case-insensitive values are "false" and "true" (the default).
+
+@item @b{Target}: single
+
+Value is the name of the target platform.
+
+@end itemize
+
+@item @b{Configuration - Libraries}
+
+@itemize @bullet
+
+@item @b{Library_Builder}: single
+
+Value is the path name of the application that is to be used to build
+libraries. Usually the path name of "gprlib".
+
+@item @b{Library_Support}: single
+
+Indicates the level of support of libraries. Only authorized case-insensitive
+values are "static_only", "full" or "none" (the default).
+
+@end itemize
+
+@item @b{Configuration - Archives}
+
+@itemize @bullet
+
+@item @b{Archive_Builder}: list
+
+Value is the name of the application to be used to create a static library
+(archive), followed by the options to be used.
+
+@item @b{Archive_Builder_Append_Option}: list
+
+Value is the list of options to be used when invoking the archive builder
+to add project files into an archive.
+
+@item @b{Archive_Indexer}: list
+
+Value is the name of the archive indexer, followed by the required options.
+
+@item @b{Archive_Suffix}: single
+
+Value is the extension of archives. When not declared, the extension is ".a".
+
+@item @b{Library_Partial_Linker}: list
+
+Value is the name of the partial linker executable, followed by the required
+options.
+
+@end itemize
+
+@item @b{Configuration - Shared Libraries}
+
+@itemize @bullet
+
+@item @b{Shared_Library_Prefix}: single
+
+Value is the prefix in the name of shared library files. When not declared,
+the prefix is "lib".
+
+@item @b{Shared_Library_Suffix}: single
+
+Value is the the extension of the name of shared library files. When not
+declared, the extension is ".so".
+
+@item @b{Symbolic_Link_Supported}: single
+
+Indicates if symbolic links are supported on the platform. Only authorized
+case-insensitive values are "true" and "false" (the default).
+
+@item @b{Library_Major_Minor_Id_Supported}: single
+
+Indicates if major and minor ids for shared library names are supported on
+the platform. Only authorized case-insensitive values are "true" and "false"
+(the default).
+
+@item @b{Library_Auto_Init_Supported}: single
+
+Indicates if auto-initialization of Stand-Alone Libraries is supported. Only
+authorized case-insensitive values are "true" and "false" (the default).
+
+@item @b{Shared_Library_Minimum_Switches}: list
+
+Value is the list of required switches when linking a shared library.
+
+@item @b{Library_Version_Switches}: list
+
+Value is the list of switches to specify a internal name for a shared library.
+
+@item @b{Library_Install_Name_Option}: single
+
+Value is the name of the option that needs to be used, concatenated with the
+path name of the library file, when linking a shared library.
+
+@item @b{Runtime_Library_Dir}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the path name of the directory where the
+runtime libraries are located.
+
+@item @b{Runtime_Source_Dir}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the path name of the directory where the
+sources of runtime libraries are located.
+
+@end itemize
+
+@end itemize
+
+@node Package Binder Attributes
+@subsubsection Package Binder Attributes
+
+@itemize @bullet
+
+@item @b{General}
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used when binding
+code of the language, if there is no applicable attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is either a language name or a source file name. Value is the list of
+switches to be used when binding code. Index is either the source file name
+of the executable to be bound or the language name of the code to be bound.
+
+@end itemize
+
+@item @b{Configuration - Binding}
+
+@itemize @bullet
+
+@item @b{Driver}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of the application to be used when
+binding code of the language.
+
+@item @b{Required_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of the required switches to be
+used when binding code of the language.
+
+@item @b{Prefix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is a prefix to be used for the binder exchange
+file name for the language. Used to have different binder exchange file names
+when binding different languages.
+
+@item @b{Objects_Path}: single,indexed, case-insensitive index
+
+Index is a language name. Value is the name of the environment variable that
+contains the path for the object directories.
+
+@item @b{Object_Path_File}: single,indexed, case-insensitive index
+
+Index is a language name. Value is the name of the environment variable. The
+value of the environment variable is the path name of a text file that
+contains the list of object directories.
+
+@end itemize
+
+@end itemize
+
+@node Package Builder Attributes
+@subsubsection Package Builder Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of builder switches to be used when
+building an executable of the language, if there is no applicable attribute
+Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is either a language name or a source file name. Value is the list of
+builder switches to be used when building an executable. Index is either the
+source file name of the executable to be built or its language name.
+
+@item @b{Global_Compilation_Switches}: list, optional index, indexed,
+                                       case-insensitive index
+
+Index is either a language name or a source file name. Value is the list of
+compilation switches to be used when building an executable. Index is either
+the source file name of the executable to be built or its language name.
+
+@item @b{Executable}: single, indexed, case-insensitive index
+
+Index is an executable source file name. Value is the simple file name of the
+executable to be built.
+
+@item @b{Executable_Suffix}: single
+
+Value is the extension of the file names of executable. When not specified,
+the extension is the default extension of executables on the platform.
+
+@item @b{Global_Configuration_Pragmas}: single
+
+Value is the file name of a configuration pragmas file that is specified to
+the Ada compiler when compiling any Ada source in the project tree.
+
+@item @b{Global_Config_File}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the file name of a configuration file that
+is specified to the compiler when compiling any source of the language in the
+project tree.
+
+@end itemize
+
+@node Package Check Attributes
+@subsubsection Package Check Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatcheck} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatcheck} for the source.
+
+@end itemize
+
+@node Package Clean Attributes
+@subsubsection Package Clean Attributes
+
+@itemize @bullet
+
+@item @b{Switches}: list
+
+Value is a list of switches to be used by the cleaning application.
+
+@item @b{Source_Artifact_Extensions}: list, indexed, case-insensitive index
+
+Index is a language names. Value is the list of extensions for file names
+derived from object file names that need to be cleaned in the object
+directory of the project.
+
+@item @b{Object_Artifact_Extensions}: list, indexed, case-insensitive index
+
+Index is a language names. Value is the list of extensions for file names
+derived from source file names that need to be cleaned in the object
+directory of the project.
+
+@end itemize
+
+@node Package Compiler Attributes
+@subsubsection Package Compiler Attributes
+
+@itemize @bullet
+
+@item @b{General}
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+the compiler for the language for a source of the project, if there is no
+applicable attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used when invoking the compiler for the source or for its language.
+
+@item @b{Local_Configuration_Pragmas}: single
+
+Value is the file name of a configuration pragmas file that is specified to
+the Ada compiler when compiling any Ada source in the project.
+
+@item @b{Local_Config_File}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the file name of a configuration file that
+is specified to the compiler when compiling any source of the language in the
+project.
+
+@end itemize
+
+@item @b{Configuration - Compiling}
+
+@itemize @bullet
+
+@item @b{Driver}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of the executable for the compiler
+of the language.
+
+@item @b{Language_Kind}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates the kind of the language, either file based
+or unit based. Only authorized case-insensitive values are "unit_based" and
+"file_based" (the default).
+
+@item @b{Dependency_Kind}: : single, indexed, case-insensitive index
+
+Index is a language name. Indicates how the dependencies are handled for the
+language. Only authorized case-insensitive values are "makefile", "ali_file",
+"ali_closure" or "none" (the default.
+
+@item @b{Required_Switches}: list, indexed, case-insensitive index
+
+Equivalent to attribute Leading_Required_Switches.
+
+@item @b{Leading_Required_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of the minimum switches to be used
+at the beginning of the command line when invoking the compiler for the
+language.
+
+@item @b{Trailing_Required_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of the minimum switches to be used
+at the end of the command line when invoking the compiler for the language.
+
+@item @b{PIC_Option}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used when
+compiling a source of the language when the project is a shared library
+project.
+
+@item @b{Path_Syntax}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the kind of path syntax to be used when
+invoking the compiler for the language. Only authorized case-insensitive
+values are "canonical" and "host" (the default).
+
+@item @b{Source_File_Switches}: single, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used just before
+the path name of the source to compile when invoking the compiler for a source
+of the language.
+
+@item @b{Object_File_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the extension of the object files created
+by the compiler of the language. When not specified, the extension is the
+default one for the platform.
+
+@item @b{Object_File_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used by the
+compiler of the language to specify the path name of the object file. When not
+specified, the switch used is "-o".
+
+@item @b{Multi_Unit_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used to compile
+a unit in a multi unit source of the language. The index of the unit in the
+source is concatenated with the last switches in the list.
+
+@item @b{Multi_Unit_Object_Separator}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the string to be used in the object file
+name before the index of the unit, when compiling a unit in a multi unit source
+of the language.
+
+@end itemize
+
+@item @b{Configuration - Mapping Files}
+
+@itemize @bullet
+
+@item @b{Mapping_File_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used to specify
+a mapping file when invoking the compiler for a source of the language.
+
+@item @b{Mapping_Spec_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the suffix to be used in a mapping file
+to indicate that the source is a spec.
+
+@item @b{Mapping_Body_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the suffix to be used in a mapping file
+to indicate that the source is a body.
+
+@end itemize
+
+@item @b{Configuration - Config Files}
+
+@itemize @bullet
+
+@item @b{Config_File_Switches}: list: single, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to specify to the
+compiler of the language a configuration file.
+
+@item @b{Config_Body_File_Name}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to a body of the language in a configuration
+file.
+
+@item @b{Config_Body_File_Name_Index}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to the body a unit in a multi unit source of the
+language in a configuration file.
+
+@item @b{Config_Body_File_Name_Pattern}: single, indexed,
+                                         case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration for all bodies of the languages in a configuration file.
+
+@item @b{Config_Spec_File_Name}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to a spec of the language in a configuration
+file.
+
+@item @b{Config_Spec_File_Name_Index}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to the spec a unit in a multi unit source of the
+language in a configuration file.
+
+@item @b{Config_Spec_File_Name_Pattern}: single, indexed,
+                                         case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration for all specs of the languages in a configuration file.
+
+@item @b{Config_File_Unique}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates if there should be only one configuration
+file specified to the compiler of the language. Only authorized
+case-insensitive values are "true" and "false" (the default).
+
+@end itemize
+
+@item @b{Configuration - Dependencies}
+
+@itemize @bullet
+
+@item @b{Dependency_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used to specify
+to the compiler the dependency file when the dependency kind of the language is
+file based, and when Dependency_Driver is not specified for the language.
+
+@item @b{Dependency_Driver}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the name of the executable to be used to
+create the dependency file for a source of the language, followed by the
+required switches.
+
+@end itemize
+
+@item @b{Configuration - Search Paths}
+
+@itemize @bullet
+
+@item @b{Include_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to specify to the
+compiler of the language to indicate a directory to look for sources.
+
+@item @b{Include_Path}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of an environment variable that
+contains the path of all the directories that the compiler of the language
+may search for sources.
+
+@item @b{Include_Path_File}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of an environment variable the
+value of which is the path name of a text file that contains the directories
+that the compiler of the language may search for sources.
+
+@item @b{Object_Path_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to specify to the
+compiler of the language the name of a text file that contains the list of
+object directories. When this attribute is not declared, the text file is
+not created.
+
+@end itemize
+
+@end itemize
+
+@node Package Cross_Reference Attributes
+@subsubsection Package Cross_Reference Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatxref} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatxref} for the source.
+
+@end itemize
+
+@node Package Eliminate Attributes
+@subsubsection Package Eliminate Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatelim} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatelim} for the source.
+
+@end itemize
+
+@node Package Finder Attributes
+@subsubsection Package Finder Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatfind} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatfind} for the source.
+
+@end itemize
+
+@node Package gnatls Attributes
+@subsubsection Package gnatls Attributes
+
+@itemize @bullet
+
+@item @b{Switches}: list
+
+Value is a list of switches to be used when invoking @code{gnatls}.
+
+@end itemize
+
+@node Package gnatstub Attributes
+@subsubsection Package gnatstub Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatstub} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatstub} for the source.
+
+@end itemize
+
+@node Package IDE Attributes
+@subsubsection Package IDE Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed
+
+Index is the name of an external tool that the GNAT Programming System (GPS)
+is supporting. Value is a list of switches to use when invoking that tool.
+
+@item @b{Remote_Host}: single
+
+Value is a string that designates the remote host in a cross-compilation
+environment, to be used for remote compilation and debugging. This attribute
+should not be specified when running on the local machine.
+
+@item @b{Program_Host}: single
+
+Value is a string that specifies the name of IP address of the embedded target
+in a cross-compilation environment, on which the program should execute.
+
+@item @b{Communication_Protocol}: single
+
+Value is the name of the protocol to use to communicate with the target
+in a cross-compilation environment, for example @code{"wtx"} or
+@code{"vxworks"}.
+
+@item @b{Compiler_Command}: single, indexed, case-insensitive index
+
+Index is a language Name. Value is a string that denotes the command to be
+used to invoke the compiler. The value of @code{Compiler_Command ("Ada")} is
+expected to be compatible with @command{gnatmake}, in particular in
+the handling of switches.
+
+@item @b{Debugger_Command}: single
+
+Value is a string that specifies the name of the debugger to be used, such as
+gdb, powerpc-wrs-vxworks-gdb or gdb-4.
+
+@item @b{gnatlist}: single
+
+Value is a string that specifies the name of the @command{gnatls} utility
+to be used to retrieve information about the predefined path; for example,
+@code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
+
+@item @b{VCS_Kind}: single
+
+Value is a string used to specify the Version Control System (VCS) to be used
+for this project, for example CVS, RCS, ClearCase or Perforce.
+
+@item @b{VCS_File_Check}: single
+
+Value is a string that specifies the command used by the VCS to check
+the validity of a file, either when the user explicitly asks for a check,
+or as a sanity check before doing the check-in.
+
+@item @b{VCS_Log_Check}: single
+
+Value is a string that specifies the command used by the VCS to check
+the validity of a log file.
+
+@item @b{Documentation_Dir}: single
+
+Value is the directory used to generate the documentation of source code.
+
+@end itemize
+
+@node Package Install Attributes
+@subsubsection Package Install Attributes
+
+@itemize @bullet
+
+@item @b{Prefix}: single
+
+Value is the install destination directory.
+
+@item @b{Sources_Subdir}: single
+
+Value is the sources directory or subdirectory of Prefix.
+
+@item @b{Exec_Subdir}: single
+
+Value is the executables directory or subdirectory of Prefix.
+
+@item @b{Lib_Subdir}: single
+
+Value is library directory or subdirectory of Prefix.
+
+@item @b{Project_Subdir}: single
+
+Value is the project directory or subdirectory of Prefix.
+
+@item @b{Active}: single
+
+Indicates that the project is to be installed or not. Case-insensitive value
+"false" means that the project is not to be installed, all other values mean
+that the project is to be installed.
+
+@end itemize
+
+@node Package Linker Attributes
+@subsubsection Package Linker Attributes
+
+@itemize @bullet
+
+@item @b{General}
+
+@itemize @bullet
+
+@item @b{Required_Switches}: list
+
+Value is a list of switches that are required when invoking the linker to link
+an executable.
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches for the linker when
+linking an executable for a main source of the language, when there is no
+applicable Switches.
+
+@item @b{Leading_Switches}: list, optional index, indexed,
+                            case-insensitive index, others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used at the beginning of the command line when invoking the linker to
+build an executable for the source or for its language.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used when invoking the linker to build an executable for the source or
+for its language.
+
+@item @b{Trailing_Switches}: list, optional index, indexed,
+                             case-insensitive index, others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used at the end of the command line when invoking the linker to
+build an executable for the source or for its language. These switches may
+override the Required_Switches.
+
+@item @b{Linker_Options}: list
+
+Value is a list of switches/options that are to be added when linking an
+executable from a project importing the current project directly or indirectly.
+Linker_Options are not used when linking an executable from the current
+project.
+
+@item @b{Map_File_Option}: single
+
+Value is the switch to specify the map file name that the linker needs to
+create.
+
+@end itemize
+
+@item @b{Configuration - Linking}
+
+@itemize @bullet
+
+@item @b{Driver}: single
+
+Value is the name of the linker executable.
+
+@end itemize
+
+@item @b{Configuration - Response Files}
+
+@itemize @bullet
+
+@item @b{Max_Command_Line_Length}: single
+
+Value is the maximum number of character in the command line when invoking
+the linker to link an executable.
+
+@item @b{Response_File_Format}: single
+
+Indicates the kind of response file to create when the length of the linking
+command line is too large. Only authorized case-insensitive values are "none",
+"gnu", "object_list", "gcc_gnu", "gcc_option_list" and "gcc_object_list".
+
+@item @b{Response_File_Switches}: list
+
+Value is the list of switches to specify a response file to the linker.
+
+@end itemize
+
+@end itemize
+
+@node Package Metrics Attribute
+@subsubsection Package Metrics Attribute
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatmetric} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatmetric} for the source.
+
+@end itemize
+
+@node Package Naming Attributes
+@subsubsection Package Naming Attributes
+
+@itemize @bullet
+
+@item @b{Specification_Suffix}: single, indexed, case-insensitive index
+
+Equivalent to attribute Spec_Suffix.
+
+@item @b{Spec_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the extension of file names for specs of
+the language.
+
+@item @b{Implementation_Suffix}: single, indexed, case-insensitive index
+
+Equivalent to attribute Body_Suffix.
+
+@item @b{Body_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the extension of file names for bodies of
+the language.
+
+@item @b{Separate_Suffix}: single
+
+Value is the extension of file names for subunits of Ada.
+
+@item @b{Casing}: single
+
+Indicates the casing of sources of the Ada language. Only authorized
+case-insensitive values are "lowercase", "uppercase" and "mixedcase".
+
+@item @b{Dot_Replacement}: single
+
+Value is the string that replace the dot of unit names in the source file names
+of the Ada language.
+
+@item @b{Specification}: single, optional index, indexed,
+                         case-insensitive index
+
+Equivalent to attribute Spec.
+
+@item @b{Spec}: single, optional index, indexed, case-insensitive index
+
+Index is a unit name. Value is the file name of the spec of the unit.
+
+@item @b{Implementation}: single, optional index, indexed,
+                          case-insensitive index
+
+Equivalent to attribute Body.
+
+@item @b{Body}: single, optional index, indexed, case-insensitive index
+
+Index is a unit name. Value is the file name of the body of the unit.
+
+@item @b{Specification_Exceptions}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of specs for the language that do not
+necessarily follow the naming scheme for the language and that may or may not
+be found in the source directories of the project.
+
+@item @b{Implementation_Exceptions}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of bodies for the language that do not
+necessarily follow the naming scheme for the language and that may or may not
+be found in the source directories of the project.
+
+@end itemize
+
+@node Package Pretty_Printer Attributes
+@subsubsection Package Pretty_Printer Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatpp} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatpp} for the source.
+
+@end itemize
+
+@node Package Remote Attributes
+@subsubsection Package Remote Attributes
+
+@itemize @bullet
+
+@item @b{Build_Slaves}: list
+
+Value is the list of machine names that are to be used in distributed
+compilation.
+
+@item @b{Root_Dir}: single
+
+Value is the root directory used by the slave machines.
+
+@end itemize
+
+@node Package Stack Attributes
+@subsubsection Package Stack Attributes
+
+@itemize @bullet
+
+@item @b{Switches}: list
+
+Value is the list of switches to be used when invoking @code{gnatstack}.
+
+@end itemize
+
+@node Package Synchronize Attributes
+@subsubsection Package Synchronize Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatsync} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatsync} for the source.
+
+@end itemize
 
