@@ -1,5 +1,14 @@
 2013-04-11  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_ch4.adb: Minor code improvement: replace various calls to
+	Make_If_Statement in expansion with Make_Implicit_If_Statement.
+
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ali.adb: Fix minor typo.
+
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_ch4.adb (Find_Enclosing_Context): Add missing case of
 	N_Procedure_Call_Statement.
 
