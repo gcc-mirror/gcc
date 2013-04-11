@@ -1,3 +1,15 @@
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_conditional_expr_1, build_over_call): Protect
+	error calls with complain & tf_error.
+	* typeck.c (finish_class_member_access_expr, cp_build_binary_op,
+	build_x_unary_op, cp_build_unary_op, cp_build_compound_expr,
+	build_ptrmemfunc): Likewise.
+	(lookup_destructor): Take tsubst_flags_t parameter, adjust.
+
+	* cvt.c (warn_ref_binding): Rename to diagnose_ref_binding.
+	(convert_to_reference): Adjust.
+
 2013-04-11  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_copy) [VAR_DECL]: Don't call tsubst for
