@@ -1,3 +1,9 @@
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54216
+	* g++.dg/cpp0x/enum26.C: New.
+	* g++.old-deja/g++.pt/mangle1.C: Adjust.
+
 2013-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect-fcm.x: Add check for zero forms of
