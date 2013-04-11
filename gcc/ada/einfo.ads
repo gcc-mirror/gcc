@@ -2843,14 +2843,17 @@ package Einfo is
 --       Applies to all entities. True for task types and subtypes
 
 --    Is_Thunk (Flag225)
---       Defined in all entities for subprograms (functions, procedures, and
---       operators). True for subprograms that are thunks, that is small
---       subprograms built by the expander for tagged types that cover
---       interface types. At run-time thunks displace the pointer to the object
---       (pointer named "this" in the C++ terminology) from a secondary
---       dispatch table to the primary dispatch table associated with a given
---       tagged type. Set by Expand_Interface_Thunk and used by Expand_Call to
---       handle extra actuals associated with accessibility level.
+--       Applies to all entities. True for subprograms that are thunks: that is
+--       small subprograms built by the expander for tagged types that cover
+--       interface types. As part of the runtime call to an interface, thunks
+--       displace the pointer to the object (pointer named "this" in the C++
+--       terminology) from a secondary dispatch table to the primary dispatch
+--       table associated with a given tagged type; if the thunk is a function
+--       that returns an object which covers an interface type then the thunk
+--       displaces the pointer to the object from the primary dispatch table to
+--       the secondary dispatch table associated with the interface type. Set
+--       by Expand_Interface_Thunk and used by Expand_Call to handle extra
+--       actuals associated with accessibility level.
 
 --    Is_Trivial_Subprogram (Flag235)
 --       Defined in all entities. Set in subprograms where either the body

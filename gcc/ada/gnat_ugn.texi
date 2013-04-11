@@ -212,10 +212,8 @@ AdaCore@*
 * Conditional Compilation::
 * Inline Assembler::
 * Compatibility and Porting Guide::
-@ifset unw
 * Microsoft Windows Topics::
 * Mac OS Topics::
-@end ifset
 * GNU Free Documentation License::
 * Index::
 
@@ -652,7 +650,6 @@ Compatibility and Porting Guide
 * Transitioning to 64-Bit GNAT for OpenVMS::
 @end ifset
 
-@ifset unw
 Microsoft Windows Topics
 
 @ifclear FSFEDITION
@@ -675,7 +672,6 @@ Microsoft Windows Topics
 Mac OS Topics
 
 * Codesigning the Debugger::
-@end ifset
 
 * Index::
 @end menu
@@ -29083,7 +29079,6 @@ without sacrificing the capabilities of the 64-bit architecture.
 @end ifset
 
 @c ************************************************
-@ifset unw
 @node Microsoft Windows Topics
 @appendix Microsoft Windows Topics
 @cindex Windows NT
@@ -31202,8 +31197,6 @@ codesign -f -s  "gdb-cert"  <gnat_install_prefix>/bin/gdb
 ... where "gdb-cert" should be replaced by the actual certificate
 name chosen above, and <gnat_install_prefix> should be replaced by
 the location where you installed GNAT.
-
-@end ifset
 
 @c **********************************
 @c * GNU Free Documentation License *

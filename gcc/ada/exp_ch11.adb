@@ -1410,8 +1410,7 @@ package body Exp_Ch11 is
         --  No cleanup action needed in thunks associated with interfaces
         --  because they only displace the pointer to the object.
 
-        and then not (Is_Subprogram (Current_Scope)
-                       and then Is_Thunk (Current_Scope))
+        and then not Is_Thunk (Current_Scope)
       then
          Expand_Cleanup_Actions (Parent (N));
       else

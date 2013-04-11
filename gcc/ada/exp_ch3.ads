@@ -104,9 +104,6 @@ package Exp_Ch3 is
    --  then tags components located at variable positions of Target are
    --  initialized.
 
-   function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
-   --  Returns true if E has variable size components (move to sem_util???)
-
    function Needs_Simple_Initialization
      (T           : Entity_Id;
       Consider_IS : Boolean := True) return Boolean;

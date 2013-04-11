@@ -637,6 +637,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
 
       L_Node := Left.First;
       R_Node := Right.First;
+      Result := True;
       while L_Node /= 0 loop
          if not Is_Equal (Left.Nodes (L_Node), Right.Nodes (R_Node)) then
             Result := False;

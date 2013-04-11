@@ -149,10 +149,6 @@ procedure Xgnatugn is
      (Input        : Input_File;
       At_Character : Natural;
       Message      : String);
-   procedure Warning
-     (Input        : Input_File;
-      Message      : String);
-   --  Like Error, but just print a warning message
 
    Dictionary_File : aliased Input_File;
    procedure Read_Dictionary_File;
@@ -181,7 +177,6 @@ procedure Xgnatugn is
    --  Conditional commands for edition are passed through unchanged
 
    subtype Target_Type is Flag_Type range UNW .. VMS;
-   subtype Edition_Type is Flag_Type range FSFEDITION .. GPLEDITION;
 
    Target : Target_Type;
    --  The Target variable is initialized using the command line
@@ -236,42 +231,6 @@ procedure Xgnatugn is
    function Rewrite_Source_Line (Line : String) return String;
    --  This subprogram takes a line and rewrites it according to Target.
    --  It relies on information in Source_File to generate error messages.
-
-   type Conditional is (Set, Clear);
-   procedure Push_Conditional (Cond : Conditional; Flag : Flag_Type);
-   procedure Pop_Conditional  (Cond : Conditional);
-   --  These subprograms deal with conditional processing (@ifset/@ifclear).
-   --  They rely on information in Source_File to generate error messages.
-
-   function VMS_Context_Determined return Boolean;
-   --  Returns true if, in the current conditional preprocessing context, we
-   --  always have a VMS or a non-VMS version, regardless of the value of
-   --  Target.
-
-   function In_VMS_Section return Boolean;
-   --  Returns True if in an "@ifset vms" section
-
-   procedure Check_No_Pending_Conditional;
-   --  Checks that all preprocessing directives have been properly matched by
-   --  their @end counterpart. If this is not the case, print an error
-   --  message.
-
-   --  The following definitions implement a stack to track the conditional
-   --  preprocessing context.
-
-   type Conditional_Context is record
-      Starting_Line : Positive;
-      Cond          : Conditional;
-      Flag          : Flag_Type;
-   end record;
-
-   Conditional_Stack_Depth : constant := 3;
-
-   Conditional_Stack :
-     array (1 .. Conditional_Stack_Depth) of Conditional_Context;
-
-   Conditional_TOS : Natural := 0;
-   --  Pointer to the Top Of Stack for Conditional_Stack
 
    -----------
    -- Usage --
@@ -409,16 +368,6 @@ procedure Xgnatugn is
    -------------
    -- Warning --
    -------------
-
-   procedure Warning
-     (Input   : Input_File;
-      Message : String)
-   is
-   begin
-      if Warnings_Enabled then
-         Warning (Input, 0, Message);
-      end if;
-   end Warning;
 
    procedure Warning
      (Input        : Input_File;
@@ -883,17 +832,6 @@ procedure Xgnatugn is
                Maybe_Rewrite_Extension;
 
             when VMS_Alternative =>
-               if VMS_Context_Determined then
-                  if (not In_VMS_Section)
-                    or else
-                    Line (Token.VMS.First .. Token.VMS.Last) /=
-                    Line (Token.Non_VMS.First .. Token.Non_VMS.Last)
-                  then
-                     Warning (Source_File, Token.First,
-                              "VMS alternative already determined "
-                                & "by conditionals");
-                  end if;
-               end if;
                if Target = VMS then
                   Append (Rewritten_Line, Line (Token.VMS.First
                                                 .. Token.VMS.Last));
@@ -917,11 +855,6 @@ procedure Xgnatugn is
    -------------------------
 
    procedure Process_Source_File is
-      Ifset       : constant String := "@ifset ";
-      Ifclear     : constant String := "@ifclear ";
-      Endsetclear : constant String := "@end ";
-      --  Strings to be recognized for conditional processing
-
    begin
       while not End_Of_File (Source_File.Data) loop
          declare
@@ -931,152 +864,17 @@ procedure Xgnatugn is
             --  syntax of all lines, and not only those which are actually
             --  included in the output.
 
-            Have_Conditional : Boolean := False;
-            --  True if we have encountered a conditional preprocessing
-            --  directive.
-
-            Cond : Conditional;
-            --  The kind of the directive
-
-            Flag : Flag_Type;
-            --  Its flag
-
          begin
-            --  If the line starts with @ifset or @ifclear, we try to convert
-            --  the following flag to one of our flag types. If we fail,
-            --  Have_Conditional remains False.
-
-            if Line'Length >= Ifset'Length
-              and then Line (1 .. Ifset'Length) = Ifset
+            if First_Time
+              and then Line'Length > 3 and then Line (1 .. 3) = "@if"
             then
-               Cond := Set;
-
-               declare
-                  Arg : constant String :=
-                          Trim (Line (Ifset'Length + 1 .. Line'Last), Both);
-
-               begin
-                  Flag := Flag_Type'Value (Arg);
-                  Have_Conditional := True;
-
-                  case Flag is
-                     when Target_Type =>
-                        if Translate (Target_Type'Image (Flag),
-                                      Lower_Case_Map)
-                                                      /= Arg
-                        then
-                           Error (Source_File, "flag has to be lowercase");
-                        end if;
-
-                        --  Set unw/vms flag in the output file so that
-                        --  @ifset/@ifclear will work as expected.
-
-                        if First_Time then
-                           Put_Line (Output_File, "@set " & Argument (1));
-                           First_Time := False;
-                        end if;
-
-                     when Edition_Type =>
-                        null;
-                  end case;
-               exception
-                  when Constraint_Error =>
-                     Error (Source_File, "unknown flag for '@ifset'");
-               end;
-
-            elsif Line'Length >= Ifclear'Length
-              and then Line (1 .. Ifclear'Length) = Ifclear
-            then
-               Cond := Clear;
-
-               declare
-                  Arg : constant String :=
-                          Trim (Line (Ifclear'Length + 1 .. Line'Last), Both);
-
-               begin
-                  Flag := Flag_Type'Value (Arg);
-                  Have_Conditional := True;
-
-                  case Flag is
-                     when Target_Type =>
-                        if Translate (Target_Type'Image (Flag),
-                                      Lower_Case_Map)
-                                                      /= Arg
-                        then
-                           Error (Source_File, "flag has to be lowercase");
-                        end if;
-
-                        --  Set unw/vms flag in the output file so that
-                        --  @ifset/@ifclear will work as expected.
-
-                        if First_Time then
-                           Put_Line (Output_File, "@set " & Argument (1));
-                           First_Time := False;
-                        end if;
-
-                     when Edition_Type =>
-                        null;
-                  end case;
-               exception
-                  when Constraint_Error =>
-                     Error (Source_File, "unknown flag for '@ifclear'");
-               end;
+               Put_Line (Output_File, "@set " & Argument (1));
+               First_Time := False;
             end if;
-
-            if Have_Conditional then
-               --  We create a new conditional context and suppress the
-               --  directive in the output.
-
-               Push_Conditional (Cond, Flag);
-
-            elsif Line'Length >= Endsetclear'Length
-              and then Line (1 .. Endsetclear'Length) = Endsetclear
-            then
-               --  The '@end ifset'/'@end ifclear' case is handled here. We
-               --  have to pop the conditional context.
-
-               declare
-                  First, Last : Natural;
-
-               begin
-                  Find_Token (Source => Line (Endsetclear'Length + 1
-                                              .. Line'Length),
-                              Set    => Letter_Set,
-                              Test   => Inside,
-                              First  => First,
-                              Last   => Last);
-
-                  if Last = 0 then
-                     Error (Source_File, "'@end' without argument");
-                  else
-                     if Line (First .. Last) = "ifset" then
-                        Have_Conditional := True;
-                        Cond := Set;
-                     elsif Line (First .. Last) = "ifclear" then
-                        Have_Conditional := True;
-                        Cond := Clear;
-                     end if;
-
-                     if Have_Conditional then
-                        Pop_Conditional (Cond);
-
-                        if Conditional_TOS > 0 then
-                           Flag := Conditional_Stack (Conditional_TOS).Flag;
-                        end if;
-                     end if;
-
-                     --  We fall through to the ordinary case for other @end
-                     --  directives.
-
-                  end if;               --  @end without argument
-               end;
-            end if;                     --  Have_Conditional
 
             Put_Line (Output_File, Rewritten);
          end;
       end loop;
-
-      Check_No_Pending_Conditional;
    end Process_Source_File;
 
    ---------------------------
@@ -1158,123 +956,6 @@ procedure Xgnatugn is
    begin
       return S (Get (Ug_Words, Word));
    end Get_Replacement_Word;
-
-   ----------------------
-   -- Push_Conditional --
-   ----------------------
-
-   procedure Push_Conditional (Cond : Conditional; Flag : Flag_Type) is
-   begin
-      if Flag in Target_Type then
-
-         --  Check if the current directive is pointless because of a previous,
-         --  enclosing directive.
-
-         for J in 1 .. Conditional_TOS loop
-            if Conditional_Stack (J).Flag = Flag then
-               Warning
-                 (Source_File, "directive without effect because of line"
-                 & Integer'Image (Conditional_Stack (J).Starting_Line));
-            end if;
-         end loop;
-      end if;
-
-      Conditional_TOS := Conditional_TOS + 1;
-      Conditional_Stack (Conditional_TOS) :=
-        (Starting_Line => Source_File.Line,
-         Cond          => Cond,
-         Flag          => Flag);
-   end Push_Conditional;
-
-   ---------------------
-   -- Pop_Conditional --
-   ---------------------
-
-   procedure Pop_Conditional (Cond : Conditional) is
-   begin
-      if Conditional_TOS > 0 then
-         case Cond is
-            when Set =>
-               if Conditional_Stack (Conditional_TOS).Cond /= Set then
-                  Error (Source_File,
-                         "'@end ifset' does not match '@ifclear' at line"
-                         & Integer'Image (Conditional_Stack
-                                          (Conditional_TOS).Starting_Line));
-               end if;
-
-            when Clear =>
-               if Conditional_Stack (Conditional_TOS).Cond /= Clear then
-                  Error (Source_File,
-                         "'@end ifclear' does not match '@ifset' at line"
-                         & Integer'Image (Conditional_Stack
-                                          (Conditional_TOS).Starting_Line));
-               end if;
-         end case;
-
-         Conditional_TOS := Conditional_TOS - 1;
-
-      else
-         case Cond is
-            when Set =>
-               Error (Source_File,
-                      "'@end ifset' without corresponding '@ifset'");
-
-            when Clear =>
-               Error (Source_File,
-                      "'@end ifclear' without corresponding '@ifclear'");
-         end case;
-      end if;
-   end Pop_Conditional;
-
-   ----------------------------
-   -- VMS_Context_Determined --
-   ----------------------------
-
-   function VMS_Context_Determined return Boolean is
-   begin
-      for J in 1 .. Conditional_TOS loop
-         if Conditional_Stack (J).Flag = VMS then
-            return True;
-         end if;
-      end loop;
-
-      return False;
-   end VMS_Context_Determined;
-
-   --------------------
-   -- In_VMS_Section --
-   --------------------
-
-   function In_VMS_Section return Boolean is
-   begin
-      for J in 1 .. Conditional_TOS loop
-         if Conditional_Stack (J).Flag = VMS then
-            return Conditional_Stack (J).Cond = Set;
-         end if;
-      end loop;
-
-      return False;
-   end In_VMS_Section;
-
-   ----------------------------------
-   -- Check_No_Pending_Conditional --
-   ----------------------------------
-
-   procedure Check_No_Pending_Conditional is
-   begin
-      for J in 1 .. Conditional_TOS loop
-         case Conditional_Stack (J).Cond is
-            when Set =>
-               Error (Source_File, "Missing '@end ifset' for '@ifset' at line"
-                      & Integer'Image (Conditional_Stack (J).Starting_Line));
-
-            when Clear =>
-               Error (Source_File,
-                      "Missing '@end ifclear' for '@ifclear' at line"
-                      & Integer'Image (Conditional_Stack (J).Starting_Line));
-         end case;
-      end loop;
-   end Check_No_Pending_Conditional;
 
 --  Start of processing for Xgnatugn
 
