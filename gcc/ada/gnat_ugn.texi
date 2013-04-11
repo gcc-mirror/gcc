@@ -7944,7 +7944,7 @@ preprocessing is triggered and parameterized.
 This switch indicates to the compiler the file name (without directory
 information) of the preprocessor data file to use. The preprocessor data file
 should be found in the source directories. Note that when the compiler is
-called by a builder (@command{gnatmake} or @command{gprbuild}) with a project
+called by a builder such as (@command{gnatmake} with a project
 file, if the object directory is not also a source directory, the builder needs
 to be called with @option{-x}.
 
@@ -18518,8 +18518,8 @@ $ gnattest --harness-dir=driver -Psimple.gpr
 a test driver is created in directory "driver". It can be compiled and run:
 
 @smallexample
-$ cd driver
-$ gprbuild -Ptest_driver
+$ cd obj/driver
+$ gnatmake -Ptest_driver
 $ test_runner
 @end smallexample
 
@@ -18584,8 +18584,8 @@ and body of function Dec in simple.ads and simple.adb, running
 
 @smallexample
 gnattest --harness-dir=driver -Psimple.gpr
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 
@@ -18680,8 +18680,8 @@ seen by running the test driver generated for the second example. As previously
 mentioned, actual tests are already written for this example.
 
 @smallexample
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 
@@ -18722,8 +18722,8 @@ of the type which have overriding primitives:
 
 @smallexample
 gnattest --harness-dir=driver --validate-type-extensions -Ptagged_rec.gpr
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 
@@ -18771,8 +18771,8 @@ Assert (Sqrt (-5.0) = -1.0, "wrong error indication");
 are acceptable:
 
 @smallexample
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 

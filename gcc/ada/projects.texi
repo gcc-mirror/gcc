@@ -1,7 +1,7 @@
 @set gprconfig GPRconfig
 
 @c ------ projects.texi
-@c Copyright (C) 2002-2012, Free Software Foundation, Inc.
+@c Copyright (C) 2002-2013, Free Software Foundation, Inc.
 @c This file is shared between the GNAT user's guide and gprbuild. It is not
 @c compilable on its own, you should instead compile the other two manuals.
 @c For that reason, there is no toplevel @menu
@@ -3570,7 +3570,7 @@ Here are some examples of attribute declarations:
 @end smallexample
 
 @noindent
-Attributes references may be appear anywhere in expressions, and are used
+Attributes references may appear anywhere in expressions, and are used
 to retrieve the value previously assigned to the attribute. If an attribute
 has not been set in a given package or project, its value defaults to the
 empty string or the empty list.
@@ -3721,7 +3721,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Required_Switches @tab list @tab Compiler,Binder,Linker @tab insensitive (language)
 @item Leading_Required_Switches @tab list @tab Compiler @tab insensitive (language)
 @item Trailing_Required_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Pic_Options @tab list @tab Compiler @tab insensitive (language)
+@item Pic_Option @tab list @tab Compiler @tab insensitive (language)
 @item Path_Syntax @tab string @tab Compiler @tab insensitive (language)
 @item Object_File_Suffix @tab string @tab Compiler @tab insensitive (language)
 @item Object_File_Switches @tab list @tab Compiler @tab insensitive (language)
@@ -3729,7 +3729,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Multi_Unit_Object_Separator @tab string @tab Compiler @tab insensitive (language)
 @item Mapping_File_Switches @tab list @tab Compiler @tab insensitive (language)
 @item Mapping_Spec_Suffix @tab string @tab Compiler @tab insensitive (language)
-@item Mapping_body_Suffix @tab string @tab Compiler @tab insensitive (language)
+@item Mapping_Body_Suffix @tab string @tab Compiler @tab insensitive (language)
 @item Config_File_Switches @tab list @tab Compiler @tab insensitive (language)
 @item Config_Body_File_Name @tab string @tab Compiler @tab insensitive (language)
 @item Config_Body_File_Name_Index @tab string @tab Compiler @tab insensitive (language)
@@ -4654,7 +4654,7 @@ to use to communicate with the target in a cross-compilation environment,
 e.g.@: @code{"wtx"} or @code{"vxworks"}.
 
 @item Compiler_Command
-This is an associative array attribute, whose domain is a language name. Its
+This is an indexed attribute, whose domain is a language name. Its
 value is  string that denotes the command to be used to invoke the compiler.
 The value of @code{Compiler_Command ("Ada")} is expected to be compatible with
 @command{gnatmake}, in particular in the handling of switches.
@@ -4664,7 +4664,7 @@ This is simple attribute, Its value is a string that specifies the name of
 the debugger to be used, such as gdb, powerpc-wrs-vxworks-gdb or gdb-4.
 
 @item Default_Switches
-This is an associative array attribute. Its indexes are the name of the
+This is an indexed attribute. Its indexes are the name of the
 external tools that the GNAT Programming System (GPS) is supporting. Its
 value is a list of switches to use when invoking that tool.
 

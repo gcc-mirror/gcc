@@ -842,7 +842,7 @@ package body Exp_Ch4 is
             --  if statement instead of the regular Program_Error circuitry.
 
             Insert_Action (N,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
                 Condition       => Cond,
                 Then_Statements => Stmts));
          end if;
@@ -3017,8 +3017,6 @@ package body Exp_Ch4 is
 
    --  Start of processing for Expand_Concatenate
 
-   --  Kirtchev
-
    begin
       --  Choose an appropriate computational type
 
@@ -3965,7 +3963,7 @@ package body Exp_Ch4 is
                       Name       => New_Occurrence_Of (Nnn, Loc),
                       Expression => Relocate_Node (Lop)),
 
-                    Make_If_Statement (Loc,
+                    Make_Implicit_If_Statement (N,
                       Condition =>
                         Make_Op_Not (Loc,
                           Right_Opnd =>
@@ -4090,14 +4088,9 @@ package body Exp_Ch4 is
    ------------------------
 
    procedure Expand_N_Allocator (N : Node_Id) is
-      PtrT  : constant Entity_Id  := Etype (N);
-      Dtyp  : constant Entity_Id  := Available_View (Designated_Type (PtrT));
-      Etyp  : constant Entity_Id  := Etype (Expression (N));
-      Loc   : constant Source_Ptr := Sloc (N);
-      Desig : Entity_Id;
-      Nod   : Node_Id;
-      Pool  : Entity_Id;
-      Temp  : Entity_Id;
+      Etyp : constant Entity_Id  := Etype (Expression (N));
+      Loc  : constant Source_Ptr := Sloc (N);
+      PtrT : constant Entity_Id  := Etype (N);
 
       procedure Rewrite_Coextension (N : Node_Id);
       --  Static coextensions have the same lifetime as the entity they
@@ -4195,6 +4188,15 @@ package body Exp_Ch4 is
          end;
       end Size_In_Storage_Elements;
 
+      --  Local variables
+
+      Dtyp    : constant Entity_Id  := Available_View (Designated_Type (PtrT));
+      Desig   : Entity_Id;
+      Nod     : Node_Id;
+      Pool    : Entity_Id;
+      Rel_Typ : Entity_Id;
+      Temp    : Entity_Id;
+
    --  Start of processing for Expand_N_Allocator
 
    begin
@@ -4216,13 +4218,40 @@ package body Exp_Ch4 is
              (Is_Itype (PtrT) and then No (Finalization_Master (PtrT))))
         and then Needs_Finalization (Dtyp)
       then
+         --  Detect the allocation of an anonymous controlled object where the
+         --  type of the context is named. For example:
+
+         --     procedure Proc (Ptr : Named_Access_Typ);
+         --     Proc (new Designated_Typ);
+
+         --  Regardless of the anonymous-to-named access type conversion, the
+         --  lifetime of the object must be associated with the named access
+         --  type. Use the finalization-related attributes of the named access
+         --  type.
+
+         if Nkind_In (Parent (N), N_Type_Conversion,
+                                  N_Unchecked_Type_Conversion)
+           and then Ekind_In (Etype (Parent (N)), E_Access_Subtype,
+                                                  E_Access_Type,
+                                                  E_General_Access_Type)
+         then
+            Rel_Typ := Etype (Parent (N));
+         else
+            Rel_Typ := Empty;
+         end if;
+
          --  Anonymous access-to-controlled types allocate on the global pool.
          --  Do not set this attribute on .NET/JVM since those targets do not
          --  support pools.
 
          if No (Associated_Storage_Pool (PtrT)) and then VM_Target = No_VM then
-            Set_Associated_Storage_Pool
-              (PtrT, Get_Global_Pool_For_Access_Type (PtrT));
+            if Present (Rel_Typ) then
+               Set_Associated_Storage_Pool (PtrT,
+                 Associated_Storage_Pool (Rel_Typ));
+            else
+               Set_Associated_Storage_Pool (PtrT,
+                 Get_Global_Pool_For_Access_Type (PtrT));
+            end if;
          end if;
 
          --  The finalization master must be inserted and analyzed as part of
@@ -4231,7 +4260,11 @@ package body Exp_Ch4 is
          --  updated when analysis changes current units.
 
          if not Alfa_Mode then
-            Set_Finalization_Master (PtrT, Current_Anonymous_Master);
+            if Present (Rel_Typ) then
+               Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
+            else
+               Set_Finalization_Master (PtrT, Current_Anonymous_Master);
+            end if;
          end if;
       end if;
 
@@ -5186,8 +5219,6 @@ package body Exp_Ch4 is
                Desig_Typ := Obj_Typ;
             end if;
 
-            --  Kirtchev J730-020
-
             Desig_Typ := Base_Type (Desig_Typ);
 
             --  Generate:
@@ -5261,7 +5292,7 @@ package body Exp_Ch4 is
 
             if Nkind (Context) /= N_Simple_Return_Statement then
                Insert_Action_After (Context,
-                 Make_If_Statement (Loc,
+                 Make_Implicit_If_Statement (Obj_Decl,
                    Condition =>
                      Make_Op_Ne (Loc,
                        Left_Opnd  => New_Reference_To (Temp_Id, Loc),
@@ -6728,8 +6759,6 @@ package body Exp_Ch4 is
       Cnode : Node_Id;
       --  Node which is to be replaced by the result of concatenating the nodes
       --  in the list Opnds.
-
-   --  Kirtchev
 
    begin
       --  Ensure validity of both operands
@@ -11552,7 +11581,7 @@ package body Exp_Ch4 is
             Set_Has_Dereference_Action (Deref);
 
             Stmt :=
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
                 Condition       =>
                   Make_Function_Call (Loc,
                     Name                   =>
