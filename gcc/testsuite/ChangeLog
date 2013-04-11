@@ -1,3 +1,8 @@
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56913
+	* g++.dg/cpp0x/sfinae44.C: New.
+
 2013-04-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* ada/acats/run_all.sh: Remove special handling of -gnat95 switch.
