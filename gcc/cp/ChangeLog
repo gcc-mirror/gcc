@@ -1,3 +1,11 @@
+2013-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/23055
+	* pt.c (uses_deducible_template_parms): New.
+	(deducible_array_bound, deducible_expression): New.
+	(deducible_template_args): New.
+	(unify_one_argument): Call uses_deducible_template_parms.
+
 2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56913
