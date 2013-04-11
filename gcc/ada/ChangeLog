@@ -1,5 +1,23 @@
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
+	* errout.ads: Minor reformatting.
+	* sem_eval.adb (Why_Not_Static): Now issues continuation messages
+	(Why_Not_Static): Test for aggregates behind string literals.
+	* sem_eval.ads (Why_Not_Static): Now issues continuation messages.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenation): Wrap expansion in
+	Expressions_With_Actions.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Base_Types_Match): For an actual type in an
+	instance, the base type may itself be a subtype, so find true
+	base type to determine compatibility.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
 	* s-osprim-mingw.adb, sem_ch3.adb, sem_prag.adb, sem_util.adb.
 	makeutl.adb, sem_ch8.adb: Minor reformatting.
 
