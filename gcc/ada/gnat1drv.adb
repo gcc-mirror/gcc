@@ -293,7 +293,10 @@ procedure Gnat1drv is
          Formal_Extensions := True;
       end if;
 
-      if Debug_Flag_Dot_FF then
+      --  Alfa_Mode is activated by default in the gnat2why executable, but
+      --  can also be activated using the -gnatd.F switch.
+
+      if Debug_Flag_Dot_FF or else Alfa_Mode then
          Alfa_Mode := True;
 
          --  Set strict standard interpretation of compiler permissions

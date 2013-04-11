@@ -1,3 +1,20 @@
+2013-04-11  Matthew Heaney  <heaney@adacore.com>
+
+	* a-cdlili.adb, a-cidlli.adb, a-cbdlli.adb ("="): Increment
+	lock counts before entering loop.
+	(Find): Ditto.
+	(Is_Sorted, Merge, Sort): Ditto.
+	(Reverse_Find): Ditto.
+	(Splice_Internal): Internal operation to refactor splicing logic.
+	(Splice): Some logic moved into Splice_Internal.
+
+2013-04-11  Johannes Kanig  <kanig@adacore.com>
+
+	* adabkend.adb (Scan_Compiler_Arguments): Do not call
+	Set_Output_Object_File_Name in Alfa_Mode
+	* gnat1drv.adb (Adjust_Global_Switches): Take Alfa_Mode into account.
+	* opt.ads: Fix documentation.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb: Minor code reorganization and comment fixes.
