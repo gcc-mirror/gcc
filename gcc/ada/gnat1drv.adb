@@ -1030,9 +1030,10 @@ begin
       elsif Main_Kind in N_Generic_Renaming_Declaration then
          Back_End_Mode := Generate_Object;
 
-      --  It's not an error to generate SCIL for e.g. a spec which has a body
+      --  It is not an error to analyze (in CodePeer or Alfa modes) a spec
+      --  which requires a body, when the body is not available.
 
-      elsif CodePeer_Mode then
+      elsif CodePeer_Mode or Alfa_Mode then
          Back_End_Mode := Generate_Object;
 
       --  In all other cases (specs which have bodies, generics, and bodies

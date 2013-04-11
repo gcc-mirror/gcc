@@ -1,3 +1,21 @@
+2013-04-11  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Allow missing body in Alfa
+	mode.
+
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Detect the
+	allocation of an anonymous controlled object where the type of
+	the context is named. Use the pool and finalization master of
+	the named access type to allocate the object.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Remove most mentions of gprbuild.
+	* projects.texi: Remove all mentions of asociative array
+	attributes.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, sem_attr.adb, gnat1drv.adb, prj-makr.adb,
