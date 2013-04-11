@@ -1,3 +1,9 @@
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56899
+	* fold-const.c (extract_muldiv_1): Apply distributive law
+	only if TYPE_OVERFLOW_WRAPS (ctype).
+
 2013-04-11  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/56124

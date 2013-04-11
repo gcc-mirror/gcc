@@ -1,3 +1,8 @@
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56899
+	* gcc.c-torture/execute/pr56899.c: New test.
+
 2013-04-10  David S. Miller  <davem@davemloft.net>
 
 	* gcc.target/sparc/setcc-4.c: New test.
