@@ -1,3 +1,45 @@
+2013-04-11  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi: Remove obsolete comment about DLL calling
+	convention.
+
+2013-04-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): For the call to the target primitive
+	of an interface thunks do not compute the extra actuals; just
+	propagate the extra actuals received by the thunk.
+	* exp_disp.adb (Expand_Interface_Thunk): Decorate new attribute
+	Thunk_Entity.
+	* sem_ch6.adb (Create_Extra_Formals): Do not generate extra
+	formals in interface thunks whose target primitive has no extra
+	formals.
+
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Detect
+	a renaming by looking at the Renamed_Object attribute.
+	(Is_Renaming): Removed.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* prj-env.adb (Initialize_Default_Project_Path): Take
+	into account a project path file, specified by environment
+	variable GPR_PROJECT_PATH_FILE, before taking into account
+	GPR_PROJECT_PATH.
+	* projects.texi: Add documentation for GPR_PROJECT_PATH_FILE
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cdlili.adb, a-cdlili.ads, a-cihama.adb, a-cihama.ads, a-coinve.adb,
+	a-coinve.ads, a-ciorse.adb, a-ciorse.ads, a-coorma.adb, a-coorma.ads,
+	a-cfdlli.adb, a-cfdlli.ads, a-cborma.adb, a-cborma.ads, a-cidlli.adb,
+	a-cidlli.ads, a-ciormu.adb, a-ciormu.ads, a-cihase.adb, a-cihase.ads,
+	a-cohama.adb, a-cohama.ads, a-coorse.adb, a-coorse.ads, a-cbhama.adb,
+	a-cbhama.ads, a-cborse.adb, a-cborse.ads, a-ciorma.adb, a-cobove.adb,
+	a-ciorma.ads, a-cobove.ads, a-coormu.adb, a-coormu.ads, a-cohase.adb,
+	a-cohase.ads, a-cbdlli.adb, a-cbdlli.ads, a-cbhase.adb, a-cbhase.ads:
+	Move Iterator operations from body to private part of spec.
+
 2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ttypes.ads, get_targ.ads: More minor rewording of comments.

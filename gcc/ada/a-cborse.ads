@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,6 +35,7 @@ with Ada.Iterator_Interfaces;
 
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Streams;
+private with Ada.Finalization;
 
 generic
    type Element_Type is private;
@@ -373,5 +374,27 @@ private
    Empty_Set : constant Set := Set'(Tree_Type with Capacity => 0);
 
    No_Element : constant Cursor := Cursor'(null, 0);
+
+   use Ada.Finalization;
+
+   type Iterator is new Limited_Controlled and
+     Set_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : Set_Access;
+      Node      : Count_Type;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
 end Ada.Containers.Bounded_Ordered_Sets;

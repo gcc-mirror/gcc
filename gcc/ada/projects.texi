@@ -1209,12 +1209,18 @@ the search stops:
   current project file.
 
 @item
-@cindex @code{ADA_PROJECT_PATH}
+@cindex @code{GPR_PROJECT_PATH_FILE}
 @cindex @code{GPR_PROJECT_PATH}
+@cindex @code{ADA_PROJECT_PATH}
   Then it is searched relative to all the directories specified in the
-  ^environment variables^logical names^ @b{GPR_PROJECT_PATH} and
-  @b{ADA_PROJECT_PATH} (in that order) if they exist. The former is
-  recommended, the latter is kept for backward compatibility.
+  ^environment variables^logical names^ @b{GPR_PROJECT_PATH_FILE},
+  @b{GPR_PROJECT_PATH} and @b{ADA_PROJECT_PATH} (in that order) if they exist.
+  The value of @b{GPR_PROJECT_PATH_FILE}, when defined, is the path name of
+  a text file that contains project directory path names, one per line.
+  @b{GPR_PROJECT_PATH} and @b{ADA_PROJECT_PATH}, when defined, contain
+  project directory path names separated by directory separators.
+  @b{ADA_PROJECT_PATH} is used for compatibility, it is recommended to
+  use @b{GPR_PROJECT_PATH_FILE} or @b{GPR_PROJECT_PATH}.
 
 @item Finally, it is searched relative to the default project directories.
   Such directories depends on the tool used. The different locations searched

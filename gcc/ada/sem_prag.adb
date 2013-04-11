@@ -806,9 +806,6 @@ package body Sem_Prag is
       --  Returns True if pragma appears within the context clause of a unit,
       --  and False for any other placement (does not generate any messages).
 
-      function Is_Renaming (N : Node_Id) return Boolean;
-      --  Determine whether arbitrary node N is a renaming
-
       function Is_Static_String_Expression (Arg : Node_Id) return Boolean;
       --  Analyzes the argument, and determines if it is a static string
       --  expression, returns True if so, False if non-static or not String.
@@ -3015,17 +3012,6 @@ package body Sem_Prag is
 
          return True;
       end Is_In_Context_Clause;
-
-      -----------------
-      -- Is_Renaming --
-      -----------------
-
-      function Is_Renaming (N : Node_Id) return Boolean is
-      begin
-         return
-           Is_Entity_Name (N)
-             and then Present (Renamed_Object (Entity (N)));
-      end Is_Renaming;
 
       ---------------------------------
       -- Is_Static_String_Expression --
@@ -9169,7 +9155,7 @@ package body Sem_Prag is
                            --  When the item renames an entire object, replace
                            --  the item with a reference to the object.
 
-                           if Is_Renaming (Item) then
+                           if Present (Renamed_Object (Entity (Item))) then
                               Rewrite (Item,
                                 New_Reference_To (Item_Id, Sloc (Item)));
                               Analyze (Item);
@@ -10884,7 +10870,7 @@ package body Sem_Prag is
                      --  When the item renames an entire object, replace the
                      --  item with a reference to the object.
 
-                     if Is_Renaming (Item) then
+                     if Present (Renamed_Object (Entity (Item))) then
                         Rewrite (Item,
                           New_Reference_To (Item_Id, Sloc (Item)));
                         Analyze (Item);

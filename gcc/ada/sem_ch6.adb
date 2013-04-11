@@ -7901,6 +7901,13 @@ package body Sem_Ch6 is
          return;
       end if;
 
+      --  No need to generate extra formals in interface thunks whose target
+      --  primitive has no extra formals.
+
+      if Is_Thunk (E) and then No (Extra_Formals (Thunk_Entity (E))) then
+         return;
+      end if;
+
       --  If this is a derived subprogram then the subtypes of the parent
       --  subprogram's formal parameters will be used to determine the need
       --  for extra formals.

@@ -1886,6 +1886,7 @@ package body Exp_Disp is
       Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
+      Set_Thunk_Entity (Thunk_Id, Target);
 
       --  Procedure case
 
