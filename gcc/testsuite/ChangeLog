@@ -1,3 +1,8 @@
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* g++.dg/template/arrow4.C: New test.
+
 2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array23.adb: New test.
