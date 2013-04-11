@@ -245,7 +245,7 @@ package body Einfo is
    --    Corresponding_Equality          Node30
    --    Static_Initialization           Node30
 
-   --    (unused)                        Node31
+   --    Thunk_Entity                    Node31
 
    --    (unused)                        Node32
 
@@ -2907,6 +2907,13 @@ package body Einfo is
       return Node25 (Id);
    end Task_Body_Procedure;
 
+   function Thunk_Entity (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
+                      and then Is_Thunk (Id));
+      return Node31 (Id);
+   end Thunk_Entity;
+
    function Treat_As_Volatile (Id : E) return B is
    begin
       return Flag41 (Id);
@@ -5538,6 +5545,13 @@ package body Einfo is
       pragma Assert (Ekind (Id) in Task_Kind);
       Set_Node25 (Id, V);
    end Set_Task_Body_Procedure;
+
+   procedure Set_Thunk_Entity (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure)
+                       and then Is_Thunk (Id));
+      Set_Node31 (Id, V);
+   end Set_Thunk_Entity;
 
    procedure Set_Treat_As_Volatile (Id : E; V : B := True) is
    begin
@@ -8959,7 +8973,8 @@ package body Einfo is
               E_Variable                                   =>
             Write_Str ("Related_Type");
 
-         when E_Procedure                                  =>
+         when E_Procedure                                  |
+              E_Function                                   =>
             Write_Str ("Wrapped_Entity");
 
          when others                                       =>
@@ -9033,6 +9048,10 @@ package body Einfo is
    procedure Write_Field31_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Procedure                                  |
+              E_Function                                   =>
+            Write_Str ("Thunk_Entity");
+
          when others                                       =>
             Write_Str ("Field31??");
       end case;

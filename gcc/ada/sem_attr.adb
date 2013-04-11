@@ -10051,9 +10051,7 @@ package body Sem_Attr is
          --  then this is only legal within a task or protected record.
 
          when others =>
-            if not Is_Entity_Name (P)
-              or else not Is_Type (Entity (P))
-            then
+            if not Is_Entity_Name (P) or else not Is_Type (Entity (P)) then
                Resolve (P);
             end if;
 
@@ -10061,9 +10059,7 @@ package body Sem_Attr is
             --  'Class) then this is only legal within a task or protected
             --  record. What is this all about ???
 
-            if Is_Entity_Name (N)
-              and then Is_Type (Entity (N))
-            then
+            if Is_Entity_Name (N) and then Is_Type (Entity (N)) then
                if Is_Concurrent_Type (Entity (N))
                  and then In_Open_Scopes (Entity (P))
                then
