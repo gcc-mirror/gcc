@@ -408,6 +408,17 @@ procedure Gnat1drv is
          --  which is more complex to formally verify than the original source.
 
          Tagged_Type_Expansion := False;
+
+         --  Distinguish between the two modes of gnat2why: frame condition
+         --  generation (generation of ALI files) and translation of Why (no
+         --  ALI files generated). This is done with the switch -gnatd.G,
+         --  which activates frame condition mode. The other changes in
+         --  behavior depending on this switch are done in gnat2why directly.
+
+         if not Debug_Flag_Dot_GG then
+            Opt.Disable_ALI_File := True;
+         end if;
+
       end if;
 
       --  Set Configurable_Run_Time mode if system.ads flag set
