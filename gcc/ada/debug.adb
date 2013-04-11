@@ -143,7 +143,7 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Use Expression_With_Actions
    --  d.Y  Do not use Expression_With_Actions
-   --  d.Z
+   --  d.Z  Dump flow analysis graphs, for debugging purposes (gnat2why)
 
    --  d1   Error msgs have node numbers where possible
    --  d2   Eliminate error flags in verbose form error messages
@@ -682,6 +682,11 @@ package body Debug is
    --       the old method for other backends and in SCIL mode. This debug flag
    --       forces use of the new N_Expression_With_Actions node in these other
    --       cases and is intended for transitional use.
+
+   --  d.Z  In gnat2why, in Flow analysis mode (-gnatd.Q), dump the different
+   --       graphs (control flow, control dependence) for debugging purposes.
+   --       This debug flag will be removed when flow analysis is sufficiently
+   --       stable.
 
    --  d.Y  Prevents the use of the N_Expression_With_Actions node even in the
    --       case of the gcc back end. Provided as a back up in case the new

@@ -470,8 +470,8 @@ package body Set_Targ is
 begin
    --  First step: see if the -gnateT switch is present. As we have noted,
    --  this has to be done very early, so can not depend on the normal circuit
-   --  for reading switches and setting switches in opt. The following code
-   --  will set Opt.Target_Dependent_Info_Read if an option starting -gnatet
+   --  for reading switches and setting switches in Opt. The following code
+   --  will set Opt.Target_Dependent_Info_Read if an option starting -gnateT
    --  is present in the options string.
 
    declare
@@ -494,6 +494,12 @@ begin
          declare
             Argv_Ptr : constant Big_String_Ptr := save_argv (Arg);
          begin
+
+            --  ??? Is there no problem accessing at indices 1 to 7 or 8
+            --  without first checking if the length of the underlying string
+            --  may be smaller? See back_end.adb for an example where function
+            --  Len_Arg is used to retrieve this length.
+
             if Argv_Ptr (1 .. 7) = "-gnateT" then
                Opt.Target_Dependent_Info_Read := True;
             elsif Argv_Ptr (1 .. 8) = "-gnatd.b" then
@@ -507,7 +513,7 @@ begin
 
    if not Opt.Target_Dependent_Info_Read then
 
-      --  Set values set by direct calls to the back end
+      --  Set values by direct calls to the back end
 
       Bits_BE                    := Get_Bits_BE;
       Bits_Per_Unit              := Get_Bits_Per_Unit;
@@ -536,13 +542,13 @@ begin
 
       Register_Back_End_Types (Register_Float_Type'Access);
 
-      --  Case of reading the target dependent values from target.atp
+   --  Case of reading the target dependent values from target.atp
 
-      --  This is bit more complex than might be expected, because it has to
-      --  be done very early. All kinds of packages depend on these values,
-      --  and we can't wait till the normal processing of reading command line
-      --  switches etc to read the file. We do this at the System.OS_Lib level
-      --  since it is too early to be using Osint directly.
+   --  This is bit more complex than might be expected, because it has to be
+   --  done very early. All kinds of packages depend on these values, and we
+   --  can't wait till the normal processing of reading command line switches
+   --  etc to read the file. We do this at the System.OS_Lib level since it is
+   --  too early to be using Osint directly.
 
    else
       Read_File : declare

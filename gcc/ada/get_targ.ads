@@ -102,10 +102,11 @@ package Get_Targ is
    --  Alignment guaranteed by malloc falls
 
    function Get_Double_Float_Alignment     return Nat;
-   --  Alignment required for Long_Float
+   --  Alignment required for Long_Float or 0 if no special requirement
 
    function Get_Double_Scalar_Alignment    return Nat;
-   --  Alignment required for Long_Long_Integer
+   --  Alignment required for Long_Long_Integer or larger integer types
+   --  or 0 if no special requirement.
 
    --  Other subprograms
 
