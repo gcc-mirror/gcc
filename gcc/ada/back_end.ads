@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,8 @@
 ------------------------------------------------------------------------------
 
 --  Call the back end with all the information needed. Also contains other
---  back-end specific interfaces required by the front end.
+--  back-end specific interfaces required by the front end. See also Get_Targ,
+--  which defines additional interfaces to the back end.
 
 with Einfo; use Einfo;
 
@@ -63,13 +64,13 @@ package Back_End is
    --  the back end.
 
    procedure Register_Back_End_Types (Call_Back : Register_Type_Proc);
-   --  Calls the Call_Back function with information for each supported type.
+   --  Calls the Call_Back function with information for each supported type
 
    procedure Call_Back_End (Mode : Back_End_Mode_Type);
    --  Call back end, i.e. make call to driver traversing the tree and
-   --  outputting code. This call is made with all tables locked.
-   --  The back end is responsible for unlocking any tables it may need
-   --  to change, and locking them again before returning.
+   --  outputting code. This call is made with all tables locked. The back
+   --  end is responsible for unlocking any tables it may need to change,
+   --  and locking them again before returning.
 
    procedure Scan_Compiler_Arguments;
    --  Acquires command-line parameters passed to the compiler and processes

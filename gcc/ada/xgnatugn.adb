@@ -85,12 +85,6 @@
 --       output. A line containing this escape sequence may not also contain
 --       a ^alpha^beta^ sequence.
 
---       Process @ifset and @ifclear for the target flags (unw, vms);
---       this is because we have menu problems if we let makeinfo handle
---       these ifset/ifclear pairs.
---       Note: @ifset/@ifclear commands for the edition flags (FSFEDITION,
---       PROEDITION, GPLEDITION) are passed through unchanged
-
 with Ada.Command_Line;           use Ada.Command_Line;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;

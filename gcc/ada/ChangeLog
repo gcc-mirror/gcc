@@ -1,3 +1,32 @@
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* xgnatugn.adb: Remove obsolete comments.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.ads, back_end.adb: Minor reformatting.
+	* set_targ.ads, set_targ.adb: New files.
+
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_case.adb (Check_Against_Predicate): New routine.
+	(Check_Choices): When the type covered by the list of choices
+	is a static subtype with a static predicate, check all choices
+	agains the predicate.
+	(Issue_Msg): All versions removed.
+	(Missing_Choice): New routines.
+	* sem_ch4.adb: Code and comment reformatting.
+	(Analyze_Case_Expression): Do not check the choices when the case
+	expression is being preanalyzed and the type of the expression
+	is a subtype with a static predicate.
+	(Has_Static_Predicate): New routine.
+	* sem_ch13.adb: Code and comment reformatting.	(Build_Range):
+	Always build a range even if the low and hi bounds denote the
+	same value. This is needed by the machinery in Check_Choices.
+	(Build_Static_Predicate): Always build a range even if the low and
+	hi bounds denote the same value. This is needed by the machinery
+	in Check_Choices.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, sem_util.adb, exp_ch6.adb, xgnatugn.adb: Minor

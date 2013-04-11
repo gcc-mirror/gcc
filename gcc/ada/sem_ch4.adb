@@ -1248,14 +1248,8 @@ package body Sem_Ch4 is
    -----------------------------
 
    procedure Analyze_Case_Expression (N : Node_Id) is
-      Expr      : constant Node_Id := Expression (N);
-      FirstX    : constant Node_Id := Expression (First (Alternatives (N)));
-      Alt       : Node_Id;
-      Exp_Type  : Entity_Id;
-      Exp_Btype : Entity_Id;
-
-      Dont_Care      : Boolean;
-      Others_Present : Boolean;
+      function Has_Static_Predicate (Subtyp : Entity_Id) return Boolean;
+      --  Determine whether subtype Subtyp has aspect Static_Predicate
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
@@ -1270,6 +1264,28 @@ package body Sem_Ch4 is
            Process_Associated_Node   => No_OP);
       use Case_Choices_Processing;
 
+      --------------------------
+      -- Has_Static_Predicate --
+      --------------------------
+
+      function Has_Static_Predicate (Subtyp : Entity_Id) return Boolean is
+         Item : Node_Id;
+
+      begin
+         Item := First_Rep_Item (Subtyp);
+         while Present (Item) loop
+            if Nkind (Item) = N_Aspect_Specification
+              and then Chars (Identifier (Item)) = Name_Static_Predicate
+            then
+               return True;
+            end if;
+
+            Next_Rep_Item (Item);
+         end loop;
+
+         return False;
+      end Has_Static_Predicate;
+
       -----------------------------
       -- Non_Static_Choice_Error --
       -----------------------------
@@ -1279,6 +1295,17 @@ package body Sem_Ch4 is
          Flag_Non_Static_Expr
            ("choice given in case expression is not static!", Choice);
       end Non_Static_Choice_Error;
+
+      --  Local variables
+
+      Expr      : constant Node_Id := Expression (N);
+      FirstX    : constant Node_Id := Expression (First (Alternatives (N)));
+      Alt       : Node_Id;
+      Exp_Type  : Entity_Id;
+      Exp_Btype : Entity_Id;
+
+      Dont_Care      : Boolean;
+      Others_Present : Boolean;
 
    --  Start of processing for Analyze_Case_Expression
 
@@ -1364,9 +1391,22 @@ package body Sem_Ch4 is
          Exp_Type := Exp_Btype;
       end if;
 
+      --  The case expression alternatives cover the range of a static subtype
+      --  subject to aspect Static_Predicate. Do not check the choices when the
+      --  case expression has not been fully analyzed yet because this may lead
+      --  to bogus errors.
+
+      if Is_Static_Subtype (Exp_Type)
+        and then Has_Static_Predicate (Exp_Type)
+        and then In_Spec_Expression
+      then
+         null;
+
       --  Call instantiated Analyze_Choices which does the rest of the work
 
-      Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
+      else
+         Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
+      end if;
 
       if Exp_Type = Universal_Integer and then not Others_Present then
          Error_Msg_N
@@ -1896,10 +1936,9 @@ package body Sem_Ch4 is
 
    begin
       A := First (Actions (N));
-      loop
+      while Present (A) loop
          Analyze (A);
          Next (A);
-         exit when No (A);
       end loop;
 
       --  This test needs a comment ???
