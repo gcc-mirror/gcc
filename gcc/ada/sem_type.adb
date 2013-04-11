@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -780,7 +780,7 @@ package body Sem_Type is
          RA  : Entity_Id;
 
       begin
-         --  Retrieve parent subtype from subtype declaration for actual.
+         --  Retrieve parent subtype from subtype declaration for actual
 
          if Nkind (Par) = N_Subtype_Declaration
            and then not Comes_From_Source (Par)
@@ -793,7 +793,7 @@ package body Sem_Type is
             end if;
          end if;
 
-         --  Otherwise actual is not the actual of an enclosing instance.
+         --  Otherwise actual is not the actual of an enclosing instance
 
          return T;
       end Real_Actual;
@@ -1313,7 +1313,7 @@ package body Sem_Type is
       --  Determine whether a subprogram is an actual in an enclosing instance.
       --  An overloading between such a subprogram and one declared outside the
       --  instance is resolved in favor of the first, because it resolved in
-      --  the generic. Within the instance the eactual is represented by a
+      --  the generic. Within the instance the actual is represented by a
       --  constructed subprogram renaming.
 
       function Matches (Actual, Formal : Node_Id) return Boolean;

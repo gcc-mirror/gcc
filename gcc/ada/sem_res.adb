@@ -2060,16 +2060,17 @@ package body Sem_Res is
          Analyze_Dimension (N);
          return;
 
-      --  A Raise_Expression takes its type from context. The expression
-      --  itself does not specify any possible interpretation.
-
-      --  Seems confusing to set the Etype to Typ here, only to be overwritten
-      --  and set to Ctx_Type in the big case statement???
+      --  A Raise_Expression takes its type from context. The Etype was set
+      --  to Any_Type, reflecting the fact that the expression itself does
+      --  not specify any possible interpretation. So we set the type to the
+      --  resolution type here and now. We need to do this before Resolve sees
+      --  the Any_Type value.
 
       elsif Nkind (N) = N_Raise_Expression then
          Set_Etype (N, Typ);
 
-      --  Return if type = Any_Type (previous error encountered).
+      --  Any other case of Any_Type as the Etype value means that we had
+      --  a previous error.
 
       elsif Etype (N) = Any_Type then
          Debug_A_Exit ("resolving  ", N, "  (done, Etype = Any_Type)");
@@ -2815,10 +2816,14 @@ package body Sem_Res is
 
             --  Why is the following null, needs a comment ???
 
-            when N_Quantified_Expression => null;
+            when N_Quantified_Expression
+                             => null;
+
+            --  Nothing to do for Raise_Expression, since we took care of
+            --  setting the Etype earlier, and no other processing is needed.
 
             when N_Raise_Expression
-                             => Set_Etype (N, Ctx_Type);
+                             => null;
 
             when N_Raise_xxx_Error
                              => Set_Etype (N, Ctx_Type);
@@ -4480,7 +4485,7 @@ package body Sem_Res is
                if In_Instance_Body then
                   Error_Msg_N
                     ("??type in allocator has deeper level than "
-                     & " designated class-wide type", E);
+                     & "designated class-wide type", E);
                   Error_Msg_N
                     ("\??Program_Error will be raised at run time", E);
                   Rewrite (N,
@@ -10662,7 +10667,7 @@ package body Sem_Res is
                then
                   if In_Instance_Body then
                      Conversion_Error_N
-                       ("??source array type has deeper accesibility "
+                       ("??source array type has deeper accessibility "
                         & "level than target", Operand);
                      Conversion_Error_N
                        ("\??Program_Error will be raised at run time",
