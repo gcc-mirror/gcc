@@ -4032,7 +4032,7 @@ earlier versions of the package body.
 Syntax:
 
 @smallexample @c ada
-pragma No_Inline (NAME [, NAME]);
+pragma No_Inline (NAME {, NAME});
 @end smallexample
 
 @noindent

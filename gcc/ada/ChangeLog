@@ -1,3 +1,18 @@
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object): Add new
+	local variable Fin_Call. Remove and explain ??? comment. Use the
+	Actions of logical operators "and then" and "or else" to insert
+	the generated finalization call.
+
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_rm.texi: Fix typo.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* atree.h: Add declarations for Flag255-Flag289 Fix declaration

@@ -5166,8 +5166,8 @@ package body Exp_Ch4 is
                      if Nkind_In (Par, N_Assignment_Statement,
                                        N_Object_Declaration,
                                        N_Pragma,
-                                       N_Simple_Return_Statement,
-                                       N_Procedure_Call_Statement)
+                                       N_Procedure_Call_Statement,
+                                       N_Simple_Return_Statement)
                      then
                         return Par;
 
@@ -5192,6 +5192,7 @@ package body Exp_Ch4 is
             Obj_Typ   : constant Node_Id    := Etype (Obj_Id);
             Desig_Typ : Entity_Id;
             Expr      : Node_Id;
+            Fin_Call  : Node_Id;
             Ptr_Id    : Entity_Id;
             Temp_Id   : Entity_Id;
 
@@ -5244,9 +5245,12 @@ package body Exp_Ch4 is
 
             --  Step 3: Hook the transient object to the temporary
 
-            if Is_Access_Type (Obj_Typ) then
+            --  The use of unchecked conversion / unrestricted access is needed
+            --  to avoid an accessibility violation. Note that the finalization
+            --  code is structured in such a way that the "hook" is processed
+            --  only when it points to an existing object.
 
-               --  Why is this an unchecked conversion ???
+            if Is_Access_Type (Obj_Typ) then
                Expr :=
                  Unchecked_Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
             else
@@ -5282,7 +5286,7 @@ package body Exp_Ch4 is
             --  the return statement as this would make it unreachable.
 
             if Nkind (Context) /= N_Simple_Return_Statement then
-               Insert_Action_After (Context,
+               Fin_Call :=
                  Make_Implicit_If_Statement (Obj_Decl,
                    Condition =>
                      Make_Op_Ne (Loc,
@@ -5298,7 +5302,17 @@ package body Exp_Ch4 is
 
                      Make_Assignment_Statement (Loc,
                        Name       => New_Reference_To (Temp_Id, Loc),
-                       Expression => Make_Null (Loc)))));
+                       Expression => Make_Null (Loc))));
+
+               --  Use the Actions list of logical operators when inserting the
+               --  finalization call. This ensures that all transient objects
+               --  are finalized after the operators are evaluated.
+
+               if Nkind_In (Context, N_And_Then, N_Or_Else) then
+                  Insert_Action (Context, Fin_Call);
+               else
+                  Insert_Action_After (Context, Fin_Call);
+               end if;
             end if;
          end Process_Transient_Object;
 
