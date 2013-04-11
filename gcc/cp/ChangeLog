@@ -1,3 +1,9 @@
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* call.c (null_ptr_cst_p): Call fold_non_dependent_expr_sfinae before
+	calling maybe_constant_value for C++98.
+
 2013-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56901
