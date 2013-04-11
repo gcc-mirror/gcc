@@ -1,3 +1,20 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Remove wrapping in
+	expression-with-actions node. No longer needed given fix to
+	sem_prag and caused loss of some useful warnings.
+	* sem.ads: Minor reformatting.
+	* sem_prag.adb (Check_Disabled): Removed, to be replaced by not
+	Check_Enabled. These two routines were curiously incompatible
+	causing confusion.
+	(Analyze_Pragma, case Check): Make sure we do
+	not expand the string argument if the check is disabled. Avoid
+	use of Check_Disabled, which resulted in missing analysis in
+	some cases.
+	* sem_prag.ads (Check_Disabled): Removed, to be replaced by not
+	Check_Enabled. These two routines were curiously incompatible
+	causing confusion.
+
 2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Process_Transient_Object): Use

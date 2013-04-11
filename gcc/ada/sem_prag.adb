@@ -7833,6 +7833,7 @@ package body Sem_Prag is
             Expr  : Node_Id;
             Eloc  : Source_Ptr;
             Cname : Name_Id;
+            Str   : Node_Id;
 
             Check_On : Boolean;
             --  Set True if category of assertions referenced by Name enabled
@@ -7846,21 +7847,15 @@ package body Sem_Prag is
 
             if Arg_Count = 3 then
                Check_Optional_Identifier (Arg3, Name_Message);
-               Analyze_And_Resolve (Get_Pragma_Arg (Arg3), Standard_String);
+               Str := Get_Pragma_Arg (Arg3);
             end if;
 
             Check_Arg_Is_Identifier (Arg1);
-
-            --  Completely ignore if disabled
-
-            if Check_Disabled (Chars (Get_Pragma_Arg (Arg1))) then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
-
             Cname := Chars (Get_Pragma_Arg (Arg1));
             Check_On := Check_Enabled (Cname);
+            Expr := Get_Pragma_Arg (Arg2);
+
+            --  Deal with SCO generation
 
             case Cname is
                when Name_Predicate |
@@ -7882,28 +7877,52 @@ package body Sem_Prag is
                   end if;
             end case;
 
-            --  If expansion is active and the check is not enabled then we
-            --  rewrite the Check as:
+            --  Deal with analyzing the string argument.
+
+            if Arg_Count = 3 then
+
+               --  If checks are not on we don't want any expansion (since
+               --  such expansion would not get properly deleted) but
+               --  we do want to analyze (to get proper references).
+               --  The Preanalyze_And_Resolve routine does just what we want
+
+               if not Check_On then
+                  Preanalyze_And_Resolve (Str, Standard_String);
+
+                  --  Otherwise we need a proper analysis and expansion
+
+               else
+                  Analyze_And_Resolve (Str, Standard_String);
+               end if;
+            end if;
+
+            --  Now you might think we could just do the same with the
+            --  Boolean expression if checks are off (and expansion is on)
+            --  and then rewrite the check as a null
+            --  statement. This would work but we would lose the useful
+            --  warnings about an assertion being bound to fail even if
+            --  assertions are turned off.
+
+            --  So instead we wrap the boolean expression in an if statement
+            --  that looks like:
 
             --    if False and then condition then
             --       null;
             --    end if;
 
-            --  The reason we do this rewriting during semantic analysis rather
-            --  than as part of normal expansion is that we cannot analyze and
-            --  expand the code for the boolean expression directly, or it may
-            --  cause insertion of actions that would escape the attempt to
-            --  suppress the check code.
+            --  The reason we do this rewriting during semantic analysis
+            --  rather than as part of normal expansion is that we cannot
+            --  analyze and expand the code for the boolean expression
+            --  directly, or it may cause insertion of actions that would
+            --  escape the attempt to suppress the check code.
 
             --  Note that the Sloc for the if statement corresponds to the
-            --  argument condition, not the pragma itself. The reason for this
-            --  is that we may generate a warning if the condition is False at
-            --  compile time, and we do not want to delete this warning when we
-            --  delete the if statement.
+            --  argument condition, not the pragma itself. The reason for
+            --  this is that we may generate a warning if the condition is
+            --  False at compile time, and we do not want to delete this
+            --  warning when we delete the if statement.
 
-            Expr := Get_Pragma_Arg (Arg2);
-
-            if Expander_Active and then not Check_On then
+            if Expander_Active and not Check_On then
                Eloc := Sloc (Expr);
 
                Rewrite (N,
@@ -7915,9 +7934,12 @@ package body Sem_Prag is
                    Then_Statements => New_List (
                      Make_Null_Statement (Eloc))));
 
+               In_Assertion_Expr := In_Assertion_Expr + 1;
                Analyze (N);
+               In_Assertion_Expr := In_Assertion_Expr - 1;
 
-            --  Check is active
+            --  Check is active or expansion not active. In these cases we can
+            --  just go ahead and analyze the boolean with no worries.
 
             else
                In_Assertion_Expr := In_Assertion_Expr + 1;
@@ -8314,7 +8336,7 @@ package body Sem_Prag is
 
             --  Completely ignore if disabled
 
-            if Check_Disabled (Pname) then
+            if not Check_Enabled (Pname) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -12401,7 +12423,7 @@ package body Sem_Prag is
 
             --  Completely ignore if disabled
 
-            if Check_Disabled (Pname) then
+            if not Check_Enabled (Pname) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -12474,7 +12496,7 @@ package body Sem_Prag is
 
             --  Completely ignore if disabled
 
-            if Check_Disabled (Pname) then
+            if not Check_Enabled (Pname) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -16390,40 +16412,6 @@ package body Sem_Prag is
       when Pragma_Exit => null;
    end Analyze_Pragma;
 
-   --------------------
-   -- Check_Disabled --
-   --------------------
-
-   function Check_Disabled (Nam : Name_Id) return Boolean is
-      PP : Node_Id;
-
-   begin
-      --  Loop through entries in check policy list
-
-      PP := Opt.Check_Policy_List;
-      loop
-         --  If there are no specific entries that matched, then nothing is
-         --  disabled, so return False.
-
-         if No (PP) then
-            return False;
-
-         --  Here we have an entry see if it matches
-
-         else
-            declare
-               PPA : constant List_Id := Pragma_Argument_Associations (PP);
-            begin
-               if Nam = Chars (Get_Pragma_Arg (First (PPA))) then
-                  return Chars (Get_Pragma_Arg (Last (PPA))) = Name_Disable;
-               else
-                  PP := Next_Pragma (PP);
-               end if;
-            end;
-         end if;
-      end loop;
-   end Check_Disabled;
-
    -------------------
    -- Check_Enabled --
    -------------------
@@ -16455,7 +16443,7 @@ package body Sem_Prag is
                   case (Chars (Get_Pragma_Arg (Last (PPA)))) is
                      when Name_On | Name_Check =>
                         return True;
-                     when Name_Off | Name_Ignore =>
+                     when Name_Off | Name_Disable | Name_Ignore =>
                         return False;
                      when others =>
                         raise Program_Error;

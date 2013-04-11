@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,13 +53,6 @@ package Sem_Prag is
    --  entity for the related subprogram. This procedure does a preanalysis
    --  of the expressions in the pragma as "spec expressions" (see section
    --  in Sem "Handling of Default and Per-Object Expressions...").
-
-   function Check_Disabled (Nam : Name_Id) return Boolean;
-   --  This function is used in connection with pragmas Assertion, Check,
-   --  Precondition, and Postcondition, to determine if Check pragmas (or
-   --  corresponding Assert, Precondition, or Postcondition pragmas) are
-   --  currently disabled (as set by a Check_Policy or Assertion_Policy pragma
-   --  with the Disable argument).
 
    function Check_Enabled (Nam : Name_Id) return Boolean;
    --  This function is used in connection with pragmas Assertion, Check,
