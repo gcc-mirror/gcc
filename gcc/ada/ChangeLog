@@ -1,3 +1,15 @@
+2013-04-11  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: Remove comment for -gnatd.G.
+
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Expand_Record_Equality.Suitable_Element):
+	Remove recursive routine, replace with...
+	(Expand_Record_Equality.Element_To_Compare): New subroutine,
+	implement iterative search for next element to compare.
+	Add explanatory comment in the tagged case.
+
 2013-04-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb: remove spurious warning from non-empty loop.

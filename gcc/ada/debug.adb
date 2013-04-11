@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,7 +124,7 @@ package body Debug is
    --  d.D  Strict Alfa mode
    --  d.E  Force Alfa mode for gnat2why
    --  d.F  Alfa mode
-   --  d.G  Precondition only mode for gnat2why
+   --  d.G
    --  d.H  Standard package only mode for gnat2why
    --  d.I  SCIL generation mode
    --  d.J  Disable parallel SCIL generation mode
