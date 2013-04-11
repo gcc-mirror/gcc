@@ -1659,11 +1659,19 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	{
 	  bool lval = real_lvalue_p (datum);
 	  if (lval && FUNCTION_RVALUE_QUALIFIED (type))
-	    error ("pointer-to-member-function type %qT requires an rvalue",
-		   ptrmem_type);
+	    {
+	      if (complain & tf_error)
+		error ("pointer-to-member-function type %qT requires an rvalue",
+		       ptrmem_type);
+	      return error_mark_node;
+	    }
 	  else if (!lval && !FUNCTION_RVALUE_QUALIFIED (type))
-	    error ("pointer-to-member-function type %qT requires an lvalue",
-		   ptrmem_type);
+	    {
+	      if (complain & tf_error)
+		error ("pointer-to-member-function type %qT requires an lvalue",
+		       ptrmem_type);
+	      return error_mark_node;
+	    }
 	}
       return build2 (OFFSET_REF, type, datum, component);
     }
