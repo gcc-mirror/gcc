@@ -1941,7 +1941,10 @@ package body Sem_Ch4 is
          Next (A);
       end loop;
 
-      --  This test needs a comment ???
+      --  We currently hijack Expression_With_Actions with a VOID type and
+      --  a NULL statement in the Expression. This will ultimately be replaced
+      --  by a proper separate N_Compound_Statement node, at which point the
+      --  test below can go away???
 
       if Nkind (Expression (N)) = N_Null_Statement then
          Set_Etype (N, Standard_Void_Type);

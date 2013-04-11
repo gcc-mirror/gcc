@@ -1,3 +1,58 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.adb (Register_Back_End_Types): Moved to Get_Targ
+	* back_end.ads (C_String): Moved to Get_Targ
+	(Register_Type_Proc): Moved to Get_Targ (Register_Back_End_Types):
+	Moved to Get_Targ.
+	* cstand.adb (Register_Float_Type): New interface
+	(Create_Back_End_Float_Types): Use entries in FPT_Mode_Table.
+	* get_targ.adb (Register_Back_End_Types): Moved here from
+	Back_End.
+	* get_targ.ads (C_String): Moved here from Back_End
+	(Register_Type_Proc): Moved here from Back_End
+	(Register_Back_End_Types): here from Back_End.
+	* gnat1drv.adb (GGnat11drv): Add call to
+	Write_Target_Dependent_Values;
+	* lib-writ.ads, lib-writ.adb (Write_ALI): Remove section writing
+	obsolete target dependent info.
+	* opt.ads (Generate_Target_Dependent_Info):
+	Removed (Target_Dependent_Info_Read): New flag
+	(Target_Dependent_Info_Write): New flag
+	* output.adb: Minor comment change
+	* s-os_lib.ads: Minor reformatting
+	* set_targ.ads, set_targ.adb: Minor reformatting.
+	* switch-c.adb (Scan_Switches.First_Ptr): New variable
+	(Scan_Front_End_Switches): Check -gnatd.b, -gnateT come first
+	(Scan_Front_End_Switches): Handle -gnatet, -gnateT
+	* ttypes.ads: Remove documentation section on target dependent
+	info in ali file Remove four letter codes, no longer used Instead
+	of using Get_Targ.Get_xxx, we use Set_Targ.xxx
+	* usage.adb: Add usage lines for -gnatet/-gnateT
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb: Update documentation.
+	* sinfo.ads (N_Expression_With_Actions): Ditto.
+
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Add a guard to prevent the double insertion of the same aspect
+	into a rep item list. This previously led to a circularity.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute, case 'Access): Reject attribute
+	reference if the prefix is the dereference of an anonymous access
+	to subprogram type.
+	* exp_attr.adb (Expand_N_Attribute_Reference, Access_Cases): Handle
+	properly a reference to the current instance of a protected type
+	from within a protected subprogram.
+	* sem_res.adb (Find_Unique_Access_Type): Treat
+	Attribute_Access_Type like Allocator_Type when resolving an
+	equality operator.
+
 2013-04-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* xgnatugn.adb: Remove obsolete comments.

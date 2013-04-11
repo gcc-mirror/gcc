@@ -2053,12 +2053,17 @@ package body Sem_Ch13 is
 
                Set_Is_Delayed_Aspect (Aspect);
 
-               --  In the case of Default_Value, link aspect to base type
-               --  as well, even though it appears on a first subtype. This
-               --  is mandated by the semantics of the aspect. Verify that
-               --  this a scalar type, to prevent cascaded errors.
+               --  In the case of Default_Value, link the aspect to base type
+               --  as well, even though it appears on a first subtype. This is
+               --  mandated by the semantics of the aspect. Do not establish
+               --  the link when processing the base type itself as this leads
+               --  to a rep item circularity. Verify that we are dealing with
+               --  a scalar type to prevent cascaded errors.
 
-               if A_Id = Aspect_Default_Value and then Is_Scalar_Type (E) then
+               if A_Id = Aspect_Default_Value
+                 and then Is_Scalar_Type (E)
+                 and then Base_Type (E) /= E
+               then
                   Set_Has_Delayed_Aspects (Base_Type (E));
                   Record_Rep_Item (Base_Type (E), Aspect);
                end if;

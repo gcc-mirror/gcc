@@ -7074,7 +7074,11 @@ package Sinfo is
       --  N_Expression_With_Actions has type Standard_Void_Type. However some
       --  backends do not support such expression-with-actions occurring
       --  outside of a proper (non-void) expression, so this should just be
-      --  used as an intermediate representation within the front-end.
+      --  used as an intermediate representation within the front-end. Also
+      --  note that this is really an irregularity (expressions and statements
+      --  are not interchangeable, and in particular an N_Null_Statement is
+      --  not a proper expression), and in the long term all cases of this
+      --  idiom should instead use a new node kind N_Compound_Statement.
 
       --------------------
       -- Free Statement --

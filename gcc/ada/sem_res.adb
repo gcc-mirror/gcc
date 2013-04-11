@@ -6821,10 +6821,12 @@ package body Sem_Res is
       --  the expression must be rejected.
 
       function Find_Unique_Access_Type return Entity_Id;
-      --  In the case of allocators, make a last-ditch attempt to find a single
-      --  access type with the right designated type. This is semantically
-      --  dubious, and of no interest to any real code, but c48008a makes it
-      --  all worthwhile.
+      --  In the case of allocators and access attributes, the context must
+      --  provide an indication of the specific access type to be used. If
+      --  one operand is of such a "generic" access type, check whether there
+      --  is a specific visible access type that has the same designated type.
+      --  This is semantically dubious, and of no interest to any real code,
+      --  but c48008a makes it all worthwhile.
 
       -------------------------
       -- Check_If_Expression --
@@ -6857,9 +6859,14 @@ package body Sem_Res is
          S   : Entity_Id;
 
       begin
-         if Ekind (Etype (R)) =  E_Allocator_Type then
+         if Ekind (Etype (R)) =  E_Allocator_Type
+           or else Ekind (Etype (R)) = E_Access_Attribute_Type
+         then
             Acc := Designated_Type (Etype (R));
-         elsif Ekind (Etype (L)) =  E_Allocator_Type then
+
+         elsif Ekind (Etype (L)) =  E_Allocator_Type
+           or else Ekind (Etype (L)) = E_Access_Attribute_Type
+         then
             Acc := Designated_Type (Etype (L));
          else
             return Empty;

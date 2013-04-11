@@ -147,6 +147,10 @@ package body Switch.C is
       First_Char : Positive;
       --  Marks start of switch to be stored
 
+      First_Ptr : Positive;
+      --  Save position of first character after -gnatd (for checking that
+      --  debug flags that must come first are first, in particular -gnatd.b),
+
    begin
       Ptr := Switch_Chars'First;
 
@@ -333,6 +337,7 @@ package body Switch.C is
             when 'd' =>
                Store_Switch := False;
                Dot := False;
+               First_Ptr := Ptr + 1;
 
                --  Note: for the debug switch, the remaining characters in this
                --  switch field must all be debug flags, since all valid switch
@@ -349,9 +354,25 @@ package body Switch.C is
                      C in 'a' .. 'z' or else
                      C in 'A' .. 'Z'
                   then
+                     --  Case of dotted flag
+
                      if Dot then
                         Set_Dotted_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd." & C);
+
+                        --  Special check, -gnatd.b must come first
+
+                        if C = 'b'
+                          and then (Ptr /= First_Ptr + 1
+                                      or else not First_Switch)
+                        then
+                           Osint.Fail
+                             ("-gnatd.b must be first if combined "
+                              & "with other switches");
+                        end if;
+
+                     --  Not a dotted flag
+
                      else
                         Set_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd" & C);
@@ -627,10 +648,22 @@ package body Switch.C is
                      Generate_SCO_Instance_Table := True;
                      Ptr := Ptr + 1;
 
-                  --  -gnatet (generate target dependent information)
+                  --  -gnatet (write target dependent information)
 
                   when 't' =>
-                     Generate_Target_Dependent_Info := True;
+                     Target_Dependent_Info_Write := True;
+                     Ptr := Ptr + 1;
+
+                  --  -gnateT (read target dependent information)
+
+                  when 'T' =>
+                     if not First_Switch then
+                        Osint.Fail
+                          ("-gnateT must be first if combined with "
+                           & "other switches");
+                     end if;
+
+                     Target_Dependent_Info_Read := True;
                      Ptr := Ptr + 1;
 
                   --  -gnateV (validity checks on parameters)

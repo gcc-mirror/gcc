@@ -664,11 +664,6 @@ package Opt is
    --  True when switch -fdebug-instances is used. When True, a table of
    --  instances is included in SCOs.
 
-   Generate_Target_Dependent_Info : Boolean := False;
-   --  GNAT
-   --  When true (-gnatet switch used). True if target dependent info is to be
-   --  generated in the ali file.
-
    Generating_Code : Boolean := False;
    --  GNAT
    --  True if the frontend finished its work and has called the backend to
@@ -1336,6 +1331,25 @@ package Opt is
    --  types and dispatching calls, assuming the underlying target supports
    --  it (e.g. in the JVM case).
 
+   Target_Dependent_Info_Read : Boolean := False;
+   --  GNAT
+   --  Set True to override the normal processing in Get_Targ and set the
+   --  necessary information by reading the target dependent information
+   --  file (see package Get_Targ in get_targ.ads for full details). Set
+   --  True by use of the -gnateT switch.
+
+   Target_Dependent_Info_Write : Boolean := False;
+   --  GNAT
+   --  Set True to enable a call to Get_Targ.Write_Target_Dependent_Info which
+   --  writes a target independent information file (see package Get_Targ in
+   --  get_targ.ads for full details). Set True by use of the -gnatet switch.
+   --
+   --  Note: although we do indeed set this switch to True as documented above
+   --  if -gnatet is encountered, we actually do not use this flag to enable
+   --  writing of the file. That's because the read in Get_Targ has to be done
+   --  long before the normal circuit for setting switches (see Get_Targ for
+   --  full details of how we handle this requirement).
+
    Task_Dispatching_Policy : Character := ' ';
    --  GNAT, GNATBIND
    --  Set to ' ' for the default case (no task dispatching policy specified).
@@ -1982,7 +1996,8 @@ package Opt is
    Alfa_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
-   --  the Alfa subset of Ada. Set by the gnat2why executable.
+   --  the Alfa subset of Ada. Set True by the gnat2why executable or by use
+   --  of the -gnatd.F debug switch.
 
    Frame_Condition_Mode : Boolean := False;
    --  Specific mode to be used in combination with Alfa_Mode. If set to
