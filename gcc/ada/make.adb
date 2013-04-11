@@ -1321,8 +1321,8 @@ package body Make is
                      then
                         Errutil.Error_Msg
                           ('"' & Argv &
-                           """ is not a gnatmake switch. Consider moving " &
-                           "it to Global_Compilation_Switches.",
+                           """ is not a gnatmake switch. Consider moving "
+                           & "it to Global_Compilation_Switches.",
                            Element.Location);
                         Make_Failed ("*** illegal switch """ & Argv & """");
                      end if;
@@ -2982,8 +2982,8 @@ package body Make is
                   Make_Failed
                     ("not allowed to compile """ &
                      Get_Name_String (Fname) &
-                     """; use -a switch, or compile file with " &
-                     """-gnatg"" switch");
+                     """; use -a switch, or use the compiler directly with "
+                     & "the ""-gnatg"" switch");
                end if;
             end if;
          end;
@@ -3449,8 +3449,8 @@ package body Make is
                   Fail
                     ("not allowed to compile """ &
                      Get_Name_String (Source.File) &
-                     """; use -a switch, or compile file with " &
-                     """-gnatg"" switch");
+                     """; use -a switch, or use the compiler directly with "
+                     & "the ""-gnatg"" switch");
                end if;
 
                Verbose_Msg
@@ -3841,7 +3841,7 @@ package body Make is
          Last := 1;
          Result (1) :=
            new String'
-                 ("-gnatec=" & Get_Name_String (For_Project.Config_File_Name));
+             ("-gnatec=" & Get_Name_String (For_Project.Config_File_Name));
 
       else
          Temporary_Config_File := False;
@@ -4233,8 +4233,7 @@ package body Make is
                                    (Index).Library_Dir.Display_Name) &
                           "lib" &
                           Get_Name_String
-                            (Library_Projs.Table
-                               (Index).Library_Name) &
+                            (Library_Projs.Table (Index).Library_Name) &
                           "." &
                           MLib.Tgt.Archive_Ext);
 
@@ -4244,9 +4243,8 @@ package body Make is
                      Linker_Switches.Increment_Last;
                      Linker_Switches.Table (Linker_Switches.Last) :=
                        new String'("-L" &
-                         Get_Name_String
-                           (Library_Projs.Table (Index).
-                              Library_Dir.Display_Name));
+                         Get_Name_String (Library_Projs.Table (Index).
+                                            Library_Dir.Display_Name));
 
                      --  Add the -l switch
 
@@ -4254,8 +4252,7 @@ package body Make is
                      Linker_Switches.Table (Linker_Switches.Last) :=
                        new String'("-l" &
                          Get_Name_String
-                           (Library_Projs.Table (Index).
-                              Library_Name));
+                           (Library_Projs.Table (Index).Library_Name));
                   end if;
                end if;
             end loop;
@@ -5592,8 +5589,8 @@ package body Make is
          --  No main program may be specified on the command line
 
          elsif Osint.Number_Of_Files /= 0 then
-            Make_Failed ("-B cannot be used with a main specified on " &
-                         "the command line");
+            Make_Failed
+              ("-B cannot be used with a main specified on the command line");
 
          --  And the project file cannot be a library project file
 
@@ -5641,8 +5638,9 @@ package body Make is
               and then not Unique_Compile
               and then ((not Make_Steps) or else Bind_Only or else Link_Only)
             then
-               Make_Failed ("cannot specify a main program " &
-                            "on the command line for a library project file");
+               Make_Failed
+                 ("cannot specify a main program "
+                  & "on the command line for a library project file");
             end if;
 
          --  If no mains have been specified on the command line, and we are
@@ -5652,8 +5650,8 @@ package body Make is
 
          else
             if Main_Index /= 0 then
-               Make_Failed ("cannot specify a multi-unit index but no main " &
-                            "on the command line");
+               Make_Failed ("cannot specify a multi-unit index but no main "
+                            & "on the command line");
             end if;
 
             declare
@@ -5879,9 +5877,10 @@ package body Make is
             Add_Switch
               ("-I" &
                Normalize_Directory_Name
-               (Get_Primary_Src_Search_Directory.all).all,
-               Compiler, Append_Switch => False,
-               And_Save => False);
+                 (Get_Primary_Src_Search_Directory.all).all,
+                  Compiler,
+                  Append_Switch => False,
+                  And_Save      => False);
 
          end if;
 
@@ -6440,9 +6439,8 @@ package body Make is
             if Prefix'Length > 0 then
                declare
                   PATH : constant String :=
-                           Prefix & Directory_Separator & "bin" &
-                           Path_Separator &
-                           Getenv ("PATH").all;
+                    Prefix & Directory_Separator & "bin" & Path_Separator &
+                      Getenv ("PATH").all;
                begin
                   Setenv ("PATH", PATH);
                end;
@@ -7423,8 +7421,8 @@ package body Make is
       elsif Program_Args = Linker
         and then Argv = "-o"
       then
-         Make_Failed ("switch -o not allowed within a -largs. " &
-                      "Use -o directly.");
+         Make_Failed
+           ("switch -o not allowed within a -largs. Use -o directly.");
 
       --  Check to see if we are reading switches after a -cargs, -bargs or
       --  -largs switch. If so, save it.
@@ -7573,16 +7571,16 @@ package body Make is
                   elsif Src_Path_Name = null
                     and then Lib_Path_Name = null
                   then
-                     Make_Failed ("RTS path not valid: missing " &
-                                  "adainclude and adalib directories");
+                     Make_Failed ("RTS path not valid: missing "
+                                  & "adainclude and adalib directories");
 
                   elsif Src_Path_Name = null then
-                     Make_Failed ("RTS path not valid: missing adainclude " &
-                                  "directory");
+                     Make_Failed ("RTS path not valid: missing adainclude "
+                                  & "directory");
 
                   elsif  Lib_Path_Name = null then
-                     Make_Failed ("RTS path not valid: missing adalib " &
-                                  "directory");
+                     Make_Failed ("RTS path not valid: missing adalib "
+                                  & "directory");
                   end if;
                end;
             end if;
@@ -7820,8 +7818,8 @@ package body Make is
                --  or a -P switch inside a project file.
 
                Fail
-                 ("either the tool is not ""project-aware"" or " &
-                  "a project file is specified inside a project file");
+                 ("either the tool is not ""project-aware"" or "
+                  & "a project file is specified inside a project file");
 
             elsif Argv'Last = 2 then
 

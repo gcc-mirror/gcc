@@ -1,5 +1,15 @@
 2013-04-11  Vincent Celier  <celier@adacore.com>
 
+	* make.adb (Compile): Clarify the error message reported
+	when gnatmake refuses to compile a runtime source.
+	(Start_Compile_If_Possible): Ditto.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Add documentation about -gnatc and gnatmake.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
 	* switch-c.adb: Document internal switches.
 	* usage.adb: Remove lines for internal switches: -gnatea, -gnateO,
 	-gnatez and -gnateO.
