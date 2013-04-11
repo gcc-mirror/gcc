@@ -1,3 +1,19 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Minor reformatting.
+
+2013-04-11  Yannick Moy  <moy@adacore.com>
+
+	* ali-util.adb (Read_Withed_ALIs): Do not consider it an error to
+	read ALI files with No_Object=True in Alfa mode.
+	* gnat1drv.adb: Set appropriately Back_End_Mode in Alfa mode, whether
+	this is during frame condition generation of translation to Why.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor code reorganization
+	* types.ads: Minor reformatting.
+
 2013-04-11  Johannes Kanig  <kanig@adacore.com>
 
 	* opt.ads New global boolean Frame_Condition_Mode to avoid

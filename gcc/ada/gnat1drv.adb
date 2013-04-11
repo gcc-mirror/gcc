@@ -1043,12 +1043,23 @@ begin
       elsif Main_Kind in N_Generic_Renaming_Declaration then
          Back_End_Mode := Generate_Object;
 
-      --  It is not an error to analyze (in CodePeer mode or Alfa mode with
-      --  generation of Why) a spec which requires a body, when the body is
-      --  not available.
+      --  It is not an error to analyze in CodePeer mode a spec which requires
+      --  a body, in order to generate SCIL for this spec.
 
-      elsif CodePeer_Mode or (Alfa_Mode and not Frame_Condition_Mode) then
+      elsif CodePeer_Mode then
          Back_End_Mode := Generate_Object;
+
+      --  It is not an error to analyze in Alfa mode a spec which requires a
+      --  body, when the body is not available. During frame condition
+      --  generation, the corresponding ALI file is generated. During
+      --  translation to Why, Why code is generated for the spec.
+
+      elsif Alfa_Mode then
+         if Frame_Condition_Mode then
+            Back_End_Mode := Declarations_Only;
+         else
+            Back_End_Mode := Generate_Object;
+         end if;
 
       --  In all other cases (specs which have bodies, generics, and bodies
       --  where subunits are missing), we cannot generate code and we generate
