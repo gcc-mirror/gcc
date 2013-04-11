@@ -1,5 +1,19 @@
 2013-04-11  Johannes Kanig  <kanig@adacore.com>
 
+	* opt.ads New global boolean Frame_Condition_Mode to avoid
+	referring to command line switch.
+	* gnat1drv.adb (Gnat1drv) set frame condition mode when -gnatd.G
+	is present, and disable Code generation in that case. Disable
+	ALI file generation when switch is *not* present.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Perform the
+	pre-analysis on a copy of the expression, to prevent downstream
+	visbility issues involving operators and instantiations.
+
+2013-04-11  Johannes Kanig  <kanig@adacore.com>
+
 	* debug.adb: Reservation and documentation for -gnatd.G switch.
 	* gnat1drv.adb (Adjust_Global_Switches) Take into account -gnatd.G
 	switch, and set ALI file generation accordingly.
