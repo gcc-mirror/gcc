@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3545,6 +3545,7 @@ package Sinfo is
 
       --  RELATION ::=
       --    SIMPLE_EXPRESSION [not] in MEMBERSHIP_CHOICE_LIST
+      --  | RAISE_EXPRESSION
 
       --  MEMBERSHIP_CHOICE_LIST ::=
       --    MEMBERSHIP_CHOICE {'|' MEMBERSHIP CHOICE}
@@ -6119,13 +6120,26 @@ package Sinfo is
 
       --  In Ada 2005, we have
 
-      --  RAISE_STATEMENT ::= raise; | raise exception_NAME [with EXPRESSION];
+      --  RAISE_STATEMENT ::=
+      --    raise; | raise exception_NAME [with string_EXPRESSION];
 
       --  N_Raise_Statement
       --  Sloc points to RAISE
       --  Name (Node2) (set to Empty if no exception name present)
       --  Expression (Node3) (set to Empty if no expression present)
       --  From_At_End (Flag4-Sem)
+
+      ----------------------------
+      -- 11.3  Raise Expression --
+      ----------------------------
+
+      --  RAISE_EXPRESSION ::= raise exception_NAME [with string_EXPRESSION]
+
+      --  N_Raise_Expression
+      --  Sloc points to RAISE
+      --  Name (Node2) (always present)
+      --  Expression (Node3) (set to Empty if no expression present)
+      --  plus fields for expression
 
       -------------------------------
       -- 12.1  Generic Declaration --
@@ -7664,6 +7678,7 @@ package Sinfo is
       N_Allocator,
       N_Case_Expression,
       N_Extension_Aggregate,
+      N_Raise_Expression,
       N_Range,
       N_Real_Literal,
       N_Reference,
@@ -11347,6 +11362,13 @@ package Sinfo is
         3 => True,    --  Expression (Node3)
         4 => False,   --  unused
         5 => False),  --  unused
+
+     N_Raise_Expression =>
+       (1 => False,   --  unused
+        2 => True,    --  Name (Node2)
+        3 => True,    --  Expression (Node3)
+        4 => False,   --  unused
+        5 => False),  --  Etype (Node5-Sem)
 
      N_Generic_Subprogram_Declaration =>
        (1 => True,    --  Specification (Node1)

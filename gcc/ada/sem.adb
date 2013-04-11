@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -469,6 +469,9 @@ package body Sem is
 
          when N_Quantified_Expression =>
             Analyze_Quantified_Expression (N);
+
+         when N_Raise_Expression =>
+            Analyze_Raise_Expression (N);
 
          when N_Raise_Statement =>
             Analyze_Raise_Statement (N);
