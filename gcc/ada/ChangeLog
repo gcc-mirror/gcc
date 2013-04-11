@@ -1,3 +1,8 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, sem_util.adb, exp_ch6.adb, xgnatugn.adb: Minor
+	reformatting.
+
 2013-04-11  Doug Rupp  <rupp@adacore.com>
 
 	* gnatlink.adb: Fold program basename to lower case on VMS for

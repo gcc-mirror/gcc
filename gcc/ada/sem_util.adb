@@ -7756,9 +7756,7 @@ package body Sem_Util is
       if Compile_Time_Known_Value (Exp) then
          return True;
 
-      elsif Is_Entity_Name (Exp)
-        and then Present (Entity (Exp))
-      then
+      elsif Is_Entity_Name (Exp) and then Present (Entity (Exp)) then
          return Is_Constant_Object (Entity (Exp))
            or else Ekind (Entity (Exp)) = E_Enumeration_Literal;
 
@@ -9582,11 +9580,10 @@ package body Sem_Util is
       return Ekind (Op) = E_Function
         and then Is_Intrinsic_Subprogram (Op)
         and then
-          ((Present_System_Aux
-            and then Scope (Op) = System_Aux_Id)
-           or else
-           (True_VMS_Target
-             and then Scope (Scope (Op)) = RTU_Entity (System)));
+          ((Present_System_Aux and then Scope (Op) = System_Aux_Id)
+             or else
+              (True_VMS_Target
+                and then Scope (Scope (Op)) = RTU_Entity (System)));
    end Is_VMS_Operator;
 
    -----------------

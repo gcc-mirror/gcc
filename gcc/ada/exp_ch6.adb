@@ -7221,9 +7221,7 @@ package body Exp_Ch6 is
       --  the object is returned by reference and the maximum functionality
       --  required is just to displace the pointer.
 
-      elsif Is_Thunk (Current_Scope)
-        and then Is_Interface (Exptyp)
-      then
+      elsif Is_Thunk (Current_Scope) and then Is_Interface (Exptyp) then
          null;
 
       elsif not Requires_Transient_Scope (R_Type) then
