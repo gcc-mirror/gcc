@@ -1,3 +1,12 @@
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Entity_Of): Moved to Exp_Util.
+	* exp_util.ads, exp_util.adb (Entity_Of): New routine.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* g-spipat.ads: Minor comment fix.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, sem_util.adb, sem_res.adb, exp_ch4.adb: Minor
