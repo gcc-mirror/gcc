@@ -79,8 +79,8 @@ package body Sem_Ch10 is
    --  Build and decorate the list of shadow entities for a package mentioned
    --  in a limited_with clause. If the package was not previously analyzed
    --  then it also performs a basic decoration of the real entities. This is
-   --  required to do not pass non-decorated entities to the back-end.
-   --  Implements Ada 2005 (AI-50217).
+   --  required in order to avoid passing non-decorated entities to the
+   --  back-end. Implements Ada 2005 (AI-50217).
 
    procedure Check_Body_Needed_For_SAL (Unit_Name : Entity_Id);
    --  Check whether the source for the body of a compilation unit must be
