@@ -5380,6 +5380,55 @@ package body Sem_Util is
       end if;
    end Get_Generic_Entity;
 
+   -------------------------------------
+   -- Get_Incomplete_View_Of_Ancestor --
+   -------------------------------------
+
+   function Get_Incomplete_View_Of_Ancestor (E : Entity_Id) return Entity_Id is
+      Cur_Unit  : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+      Par_Scope : Entity_Id;
+      Par_Type  : Entity_Id;
+
+   begin
+      --  The incomplete view of an ancestor is only relevant for private
+      --  derived types in child units.
+
+      if not Is_Derived_Type (E)
+        or else not Is_Child_Unit (Cur_Unit)
+      then
+         return Empty;
+
+      else
+         Par_Scope := Scope (Cur_Unit);
+         if No (Par_Scope) then
+            return Empty;
+         end if;
+
+         Par_Type := Etype (Base_Type (E));
+
+         --  Traverse list of ancestor types until we find one declared in
+         --  a parent or grandparent unit (two levels seem sufficient).
+
+         while Present (Par_Type) loop
+            if Scope (Par_Type) = Par_Scope
+              or else Scope (Par_Type) = Scope (Par_Scope)
+            then
+               return Par_Type;
+
+            elsif not Is_Derived_Type (Par_Type) then
+               return Empty;
+
+            else
+               Par_Type := Etype (Base_Type (Par_Type));
+            end if;
+         end loop;
+
+         --  If none found, there is no relevant ancestor type.
+
+         return Empty;
+      end if;
+   end Get_Incomplete_View_Of_Ancestor;
+
    ----------------------
    -- Get_Index_Bounds --
    ----------------------

@@ -1,3 +1,44 @@
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Get_Incomplete_View_Of_Ancestor):
+	New function to implement the notion introduced in RM 7.3.1
+	(5.2/3): in a child unit, a derived type is within the derivation
+	class of an ancestor declared in a parent unit, even if there
+	is an intermediate derivation that does not see the full view
+	of that ancestor.
+	* sem_res.adb (Valid_Conversion): if all else fails, examine if an
+	incomplete view of an ancestor makes a numeric conversion legal.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: in Ada2012 operators can only have in
+	parameters.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Create_Binder_Mapping_File): Do not put into
+	the mapping file ALI files of sources that have been replaced.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add subsection Duplicate Sources in Projects.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for gnatmake switch -droot_dir/**
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* init.c (__gnat_install_handler): Only set up an alternate
+	stack when installing a signal handler for SIGSEGV.
+
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Connect_Socket, timeout version): Call
+	underlying connect operation directly, not through the 2-argument
+	Connect_Socket thick binding, in order to avoid raising a junk
+	exception for the EINPROGRESS return.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* a-cdlili.adb: Minor addition of pragma Warnings (Off).

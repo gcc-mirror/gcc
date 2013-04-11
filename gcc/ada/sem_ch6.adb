@@ -12633,6 +12633,13 @@ package body Sem_Ch6 is
             --  [IN] OUT parameters allowed for functions in Ada 2012
 
             if Ada_Version >= Ada_2012 then
+
+               --  Even in Ada 2012 operators can only have IN parameters
+
+               if Is_Operator_Symbol_Name (Chars (Scope (Formal_Id))) then
+                  Error_Msg_N ("operators can only have IN parameters", Spec);
+               end if;
+
                if In_Present (Spec) then
                   Set_Ekind (Formal_Id, E_In_Out_Parameter);
                else
