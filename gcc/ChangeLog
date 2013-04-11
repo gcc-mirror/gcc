@@ -1,5 +1,10 @@
 2013-04-11  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (get_initial_def_for_induction): Properly
+	generate vector constants.
+
+2013-04-11  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/56878
 	* tree-flow.h (outermost_invariant_loop_for_expr): Declare.
 	* tree-ssa-loop-ivopts.c (outermost_invariant_loop_for_expr):
