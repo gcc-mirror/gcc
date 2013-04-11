@@ -10,6 +10,8 @@
 	(cp_parser_postfix_open_square_expression): Take decltype_p.
 	(cp_parser_builtin_offsetof): Adjust.
 	(cp_convert_range_for): Pass complain to finish_unary_op_expr.
+	* decl2.c (grok_array_decl): Add decltype_p parm.
+	* cp-tree.h: Adjust prototype.
 	* semantics.c (finish_unary_op_expr): Add complain parm.
 
 2013-04-11  Jakub Jelinek  <jakub@redhat.com>
