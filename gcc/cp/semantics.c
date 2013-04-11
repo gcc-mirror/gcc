@@ -9114,16 +9114,14 @@ lambda_function (tree lambda)
 tree
 lambda_capture_field_type (tree expr)
 {
-  tree type;
-  if (!TREE_TYPE (expr) || WILDCARD_TYPE_P (TREE_TYPE (expr)))
+  tree type = non_reference (unlowered_expr_type (expr));
+  if (!type || WILDCARD_TYPE_P (type))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
-  else
-    type = non_reference (unlowered_expr_type (expr));
   return type;
 }
 
@@ -9324,7 +9322,7 @@ lambda_proxy_type (tree ref)
   if (REFERENCE_REF_P (ref))
     ref = TREE_OPERAND (ref, 0);
   type = TREE_TYPE (ref);
-  if (type && !WILDCARD_TYPE_P (type))
+  if (type && !WILDCARD_TYPE_P (non_reference (type)))
     return type;
   type = cxx_make_type (DECLTYPE_TYPE);
   DECLTYPE_TYPE_EXPR (type) = ref;
