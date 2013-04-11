@@ -605,10 +605,6 @@ package body Debug is
    --       as well as additional cross reference information in ALI files to
    --       compute effects of subprograms.
 
-   --  d.G  Precondition only mode for gnat2why. In this mode, gnat2why will
-   --       only generate Why code that checks for the well-guardedness of
-   --       preconditions.
-
    --  d.H  Standard package only mode for gnat2why. In this mode, gnat2why
    --       will only generate Why code for package Standard. Any given input
    --       file will be ignored.

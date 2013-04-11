@@ -5137,11 +5137,16 @@ package body Exp_Ch4 is
 
                   --    return ... and then Ctrl_Func_Call ...;
 
+                  --  Yet another case: a formal in a procedure call statement:
+
+                  --    Proc (... and then Ctrl_Func_Call ...);
+
                   while Present (Par) loop
                      if Nkind_In (Par, N_Assignment_Statement,
                                        N_Object_Declaration,
                                        N_Pragma,
-                                       N_Simple_Return_Statement)
+                                       N_Simple_Return_Statement,
+                                       N_Procedure_Call_Statement)
                      then
                         return Par;
 
@@ -10899,9 +10904,9 @@ package body Exp_Ch4 is
 
       function Element_To_Compare (C : Entity_Id) return Entity_Id is
          Comp : Entity_Id;
+
       begin
          Comp := C;
-
          loop
             --  Exit loop when the next element to be compared is found, or
             --  there is no more such element.
@@ -10919,7 +10924,7 @@ package body Exp_Ch4 is
               --  inherited components only.
 
               (Is_Tagged_Type (Typ)
-                 and then Comp /= Original_Record_Component (Comp))
+                and then Comp /= Original_Record_Component (Comp))
 
               --  Skip _Tag
 
@@ -10931,8 +10936,8 @@ package body Exp_Ch4 is
               --  .NET/JVM, skip _Parent whenever it has type Root_Controlled.
 
               or else (Chars (Comp) = Name_uParent
-                and then VM_Target /= No_VM
-                and then Etype (Comp) = RTE (RE_Root_Controlled))
+                        and then VM_Target /= No_VM
+                        and then Etype (Comp) = RTE (RE_Root_Controlled))
 
               --  Skip interface elements (secondary tags???)
 

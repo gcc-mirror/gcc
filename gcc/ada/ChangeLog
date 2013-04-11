@@ -1,3 +1,12 @@
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Find_Enclosing_Context): Add missing case of
+	N_Procedure_Call_Statement.
+
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Minor comment fix.
+
 2013-04-11  Johannes Kanig  <kanig@adacore.com>
 
 	* debug.adb: Remove comment for -gnatd.G.
