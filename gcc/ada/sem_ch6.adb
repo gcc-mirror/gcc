@@ -362,9 +362,7 @@ package body Sem_Ch6 is
          Analyze (New_Body);
          Set_Is_Inlined (Prev);
 
-      elsif Present (Prev)
-        and then Comes_From_Source (Prev)
-      then
+      elsif Present (Prev) and then Comes_From_Source (Prev) then
          Set_Has_Completion (Prev, False);
 
          --  For navigation purposes, indicate that the function is a body
@@ -436,9 +434,9 @@ package body Sem_Ch6 is
 
          begin
             if Nkind (Par) = N_Package_Specification
-               and then Decls = Visible_Declarations (Par)
-               and then Present (Private_Declarations (Par))
-               and then not Is_Empty_List (Private_Declarations (Par))
+              and then Decls = Visible_Declarations (Par)
+              and then Present (Private_Declarations (Par))
+              and then not Is_Empty_List (Private_Declarations (Par))
             then
                Decls := Private_Declarations (Par);
             end if;
@@ -882,7 +880,7 @@ package body Sem_Ch6 is
 
       if Present (Expr)
 
-         --  Defend against previous errors
+        --  Defend against previous errors
 
         and then Nkind (Expr) /= N_Empty
         and then Present (Etype (Expr))
@@ -1220,7 +1218,7 @@ package body Sem_Ch6 is
 
    begin
       if        (Nkind (Par) = N_Function_Call
-                   and then N = Name (Par))
+                  and then N = Name (Par))
         or else  Nkind (Par) = N_Function_Instantiation
         or else (Nkind (Par) = N_Indexed_Component
                    and then N = Prefix (Par))
@@ -1322,8 +1320,8 @@ package body Sem_Ch6 is
       --  Special processing for Elab_Spec, Elab_Body and Elab_Subp_Body calls
 
       if Nkind (P) = N_Attribute_Reference
-        and then (Attribute_Name (P) = Name_Elab_Spec or else
-                  Attribute_Name (P) = Name_Elab_Body or else
+        and then (Attribute_Name (P) = Name_Elab_Spec      or else
+                  Attribute_Name (P) = Name_Elab_Body      or else
                   Attribute_Name (P) = Name_Elab_Subp_Body)
       then
          if Present (Actuals) then
@@ -1410,11 +1408,9 @@ package body Sem_Ch6 is
       --  function, the context will select the operation whose type is Void.
 
       elsif Nkind (P) = N_Selected_Component
-        and then (Ekind (Entity (Selector_Name (P))) = E_Entry
-                    or else
-                  Ekind (Entity (Selector_Name (P))) = E_Procedure
-                    or else
-                  Ekind (Entity (Selector_Name (P))) = E_Function)
+        and then Ekind_In (Entity (Selector_Name (P)), E_Entry,
+                                                       E_Procedure,
+                                                       E_Function)
       then
          Analyze_Call_And_Resolve;
 
@@ -1490,8 +1486,8 @@ package body Sem_Ch6 is
       Returns_Object : constant Boolean :=
                          Nkind (N) = N_Extended_Return_Statement
                            or else
-                            (Nkind (N) = N_Simple_Return_Statement
-                              and then Present (Expression (N)));
+                             (Nkind (N) = N_Simple_Return_Statement
+                               and then Present (Expression (N)));
       --  True if we're returning something; that is, "return <expression>;"
       --  or "return Result : T [:= ...]". False for "return;". Used for error
       --  checking: If Returns_Object is True, N should apply to a function
@@ -1685,9 +1681,7 @@ package body Sem_Ch6 is
 
             --  Unconstrained array as result is not allowed in SPARK
 
-            if Is_Array_Type (Typ)
-              and then not Is_Constrained (Typ)
-            then
+            if Is_Array_Type (Typ) and then not Is_Constrained (Typ) then
                Check_SPARK_Restriction
                  ("returning an unconstrained array is not allowed",
                   Result_Definition (N));
@@ -1703,9 +1697,7 @@ package body Sem_Ch6 is
             --  right before this, because they don't get applied to types that
             --  do not come from source.
 
-            if Is_Access_Type (Typ)
-              and then Null_Exclusion_Present (N)
-            then
+            if Is_Access_Type (Typ) and then Null_Exclusion_Present (N) then
                Set_Etype  (Designator,
                  Create_Null_Excluding_Itype
                   (T           => Typ,
@@ -1752,8 +1744,7 @@ package body Sem_Ch6 is
 
             elsif Ekind (Typ) = E_Incomplete_Type
               or else (Is_Class_Wide_Type (Typ)
-                         and then
-                           Ekind (Root_Type (Typ)) = E_Incomplete_Type)
+                         and then Ekind (Root_Type (Typ)) = E_Incomplete_Type)
             then
                --  AI05-0151: Tagged incomplete types are allowed in all formal
                --  parts. Untagged incomplete types are not allowed in bodies.
@@ -1952,7 +1943,7 @@ package body Sem_Ch6 is
                         Is_Limited_Record (Designated_Type (Etype (Scop)))))
            and then Expander_Active
 
-            --  Avoid cases with no tasking support
+           --  Avoid cases with no tasking support
 
            and then RTE_Available (RE_Current_Master)
            and then not Restriction_Active (No_Task_Hierarchy)
@@ -2019,14 +2010,14 @@ package body Sem_Ch6 is
             return
               Nkind (N) = N_Pragma
                 and then
-                   (Pragma_Name (N) = Name_Inline_Always
-                     or else
+                  (Pragma_Name (N) = Name_Inline_Always
+                    or else
                       (Front_End_Inlining
                         and then Pragma_Name (N) = Name_Inline))
                 and then
-                   Chars
-                     (Expression (First (Pragma_Argument_Associations (N))))
-                        = Chars (Body_Id);
+                  Chars
+                    (Expression (First (Pragma_Argument_Associations (N)))) =
+                                                              Chars (Body_Id);
          end Is_Inline_Pragma;
 
       --  Start of processing for Check_Inline_Pragma
@@ -2490,9 +2481,7 @@ package body Sem_Ch6 is
       --  part of the context of one of its subunits. No need to redo the
       --  analysis.
 
-      elsif Prev_Id = Body_Id
-        and then Has_Completion (Body_Id)
-      then
+      elsif Prev_Id = Body_Id and then Has_Completion (Body_Id) then
          return;
 
       else
@@ -2658,8 +2647,8 @@ package body Sem_Ch6 is
                 (Nkind (Original_Node (Spec_Decl)) =
                                         N_Subprogram_Renaming_Declaration
                    or else (Present (Corresponding_Body (Spec_Decl))
-                              and then
-                                Nkind (Unit_Declaration_Node
+                             and then
+                               Nkind (Unit_Declaration_Node
                                         (Corresponding_Body (Spec_Decl))) =
                                            N_Subprogram_Renaming_Declaration))
             then
@@ -2821,9 +2810,7 @@ package body Sem_Ch6 is
       --  is the limited view of a class-wide type and the non-limited view is
       --  available, update the return type accordingly.
 
-      if Ada_Version >= Ada_2005
-        and then Comes_From_Source (N)
-      then
+      if Ada_Version >= Ada_2005 and then Comes_From_Source (N) then
          declare
             Etyp : Entity_Id;
             Rtyp : Entity_Id;
@@ -2834,9 +2821,7 @@ package body Sem_Ch6 is
             if Ekind (Rtyp) = E_Anonymous_Access_Type then
                Etyp := Directly_Designated_Type (Rtyp);
 
-               if Is_Class_Wide_Type (Etyp)
-                 and then From_With_Type (Etyp)
-               then
+               if Is_Class_Wide_Type (Etyp) and then From_With_Type (Etyp) then
                   Set_Directly_Designated_Type
                     (Etype (Current_Scope), Available_View (Etyp));
                end if;
@@ -2898,7 +2883,7 @@ package body Sem_Ch6 is
            and then Expander_Active
            and then
              (Has_Pragma_Inline_Always (Spec_Id)
-                or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
+               or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
          then
             Build_Body_To_Inline (N, Spec_Id);
          end if;
@@ -3373,7 +3358,7 @@ package body Sem_Ch6 is
             if Is_Interface (Etyp)
               and then not Is_Abstract_Subprogram (Designator)
               and then not (Ekind (Designator) = E_Procedure
-                              and then Null_Present (Specification (N)))
+                             and then Null_Present (Specification (N)))
             then
                Error_Msg_Name_1 := Chars (Defining_Entity (N));
 
@@ -3401,10 +3386,9 @@ package body Sem_Ch6 is
          Set_Kill_Elaboration_Checks (Designator);
       end if;
 
-      if Scop /= Standard_Standard
-        and then not Is_Child_Unit (Designator)
-      then
+      if Scop /= Standard_Standard and then not Is_Child_Unit (Designator) then
          Set_Categorization_From_Scope (Designator, Scop);
+
       else
          --  For a compilation unit, check for library-unit pragmas
 
@@ -3890,7 +3874,7 @@ package body Sem_Ch6 is
 
                elsif No (Expression (N))
                  and then Nkind (Parent (Parent (N))) =
-                 N_Extended_Return_Statement
+                                         N_Extended_Return_Statement
                then
                   return OK;
 
@@ -3932,7 +3916,7 @@ package body Sem_Ch6 is
             return Present (Declarations (N))
               and then Present (First (Declarations (N)))
               and then Chars (Expression (Return_Statement)) =
-                 Chars (Defining_Identifier (First (Declarations (N))));
+                       Chars (Defining_Identifier (First (Declarations (N))));
          end if;
       end Has_Single_Return;
 
@@ -4809,8 +4793,8 @@ package body Sem_Ch6 is
          May_Inline : constant Boolean :=
                         Has_Pragma_Inline_Always (Spec_Id)
                           or else (Has_Pragma_Inline (Spec_Id)
-                                     and then ((Optimization_Level > 0
-                                                  and then Ekind (Spec_Id)
+                                    and then ((Optimization_Level > 0
+                                                and then Ekind (Spec_Id)
                                                              = E_Function)
                                                or else Front_End_Inlining));
          Body_To_Analyze : Node_Id;
@@ -5493,10 +5477,9 @@ package body Sem_Ch6 is
          if Ada_Version >= Ada_2005
            and then Ekind (Etype (Old_Type)) = E_Anonymous_Access_Type
            and then
-             (Can_Never_Be_Null (Old_Type)
-                /= Can_Never_Be_Null (New_Type)
-              or else Is_Access_Constant (Etype (Old_Type))
-                        /= Is_Access_Constant (Etype (New_Type)))
+             (Can_Never_Be_Null (Old_Type) /= Can_Never_Be_Null (New_Type)
+               or else Is_Access_Constant (Etype (Old_Type)) /=
+                       Is_Access_Constant (Etype (New_Type)))
          then
             Conformance_Error ("\return type does not match!", New_Id);
             return;
@@ -5519,7 +5502,6 @@ package body Sem_Ch6 is
 
       if Ctype >= Subtype_Conformant then
          if Convention (Old_Id) /= Convention (New_Id) then
-
             if not Is_Frozen (New_Id) then
                null;
 
@@ -5646,8 +5628,8 @@ package body Sem_Ch6 is
 
          Access_Types_Match := Ada_Version >= Ada_2005
 
-            --  Ensure that this rule is only applied when New_Id is a
-            --  renaming of Old_Id.
+           --  Ensure that this rule is only applied when New_Id is a
+           --  renaming of Old_Id.
 
            and then Nkind (Parent (Parent (New_Id))) =
                       N_Subprogram_Renaming_Declaration
@@ -5655,26 +5637,26 @@ package body Sem_Ch6 is
            and then Present (Entity (Name (Parent (Parent (New_Id)))))
            and then Entity (Name (Parent (Parent (New_Id)))) = Old_Id
 
-            --  Now handle the allowed access-type case
+           --  Now handle the allowed access-type case
 
            and then Is_Access_Type (Old_Formal_Base)
            and then Is_Access_Type (New_Formal_Base)
 
-            --  The type kinds must match. The only exception occurs with
-            --  multiple generics of the form:
+           --  The type kinds must match. The only exception occurs with
+           --  multiple generics of the form:
 
-            --   generic                    generic
-            --     type F is private;         type A is private;
-            --     type F_Ptr is access F;    type A_Ptr is access A;
-            --     with proc F_P (X : F_Ptr); with proc A_P (X : A_Ptr);
-            --   package F_Pack is ...      package A_Pack is
-            --                                package F_Inst is
-            --                                  new F_Pack (A, A_Ptr, A_P);
+           --   generic                    generic
+           --     type F is private;         type A is private;
+           --     type F_Ptr is access F;    type A_Ptr is access A;
+           --     with proc F_P (X : F_Ptr); with proc A_P (X : A_Ptr);
+           --   package F_Pack is ...      package A_Pack is
+           --                                package F_Inst is
+           --                                  new F_Pack (A, A_Ptr, A_P);
 
-            --  When checking for conformance between the parameters of A_P
-            --  and F_P, the type kinds of F_Ptr and A_Ptr will not match
-            --  because the compiler has transformed A_Ptr into a subtype of
-            --  F_Ptr. We catch this case in the code below.
+           --  When checking for conformance between the parameters of A_P
+           --  and F_P, the type kinds of F_Ptr and A_Ptr will not match
+           --  because the compiler has transformed A_Ptr into a subtype of
+           --  F_Ptr. We catch this case in the code below.
 
            and then (Ekind (Old_Formal_Base) = Ekind (New_Formal_Base)
                   or else
@@ -5684,7 +5666,7 @@ package body Sem_Ch6 is
                        and then Etype (Etype (New_Formal_Base)) =
                                   Old_Formal_Base))
            and then Directly_Designated_Type (Old_Formal_Base) =
-                      Directly_Designated_Type (New_Formal_Base)
+                    Directly_Designated_Type (New_Formal_Base)
            and then ((Is_Itype (Old_Formal_Base)
                        and then Can_Never_Be_Null (Old_Formal_Base))
                     or else
@@ -6116,17 +6098,13 @@ package body Sem_Ch6 is
       --  done for delayed_freeze subprograms because the underlying
       --  returned type may not be known yet (for private types)
 
-      if not Has_Delayed_Freeze (Designator)
-        and then Expander_Active
-      then
+      if not Has_Delayed_Freeze (Designator) and then Expander_Active then
          declare
             Typ  : constant Entity_Id := Etype (Designator);
             Utyp : constant Entity_Id := Underlying_Type (Typ);
-
          begin
             if Is_Immutably_Limited_Type (Typ) then
                Set_Returns_By_Ref (Designator);
-
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
             end if;
@@ -6190,7 +6168,7 @@ package body Sem_Ch6 is
             --  with partial declaration.
 
             if Is_Access_Type (New_Discr_Type)
-                 and then Null_Exclusion_Present (New_Discr)
+              and then Null_Exclusion_Present (New_Discr)
             then
                New_Discr_Type :=
                  Create_Null_Excluding_Itype
@@ -6678,9 +6656,7 @@ package body Sem_Ch6 is
          --  sequences (which were the original sequences of statements in
          --  the exception handlers) and check them.
 
-         if Nkind (Last_Stm) = N_Label
-           and then Exception_Junk (Last_Stm)
-         then
+         if Nkind (Last_Stm) = N_Label and then Exception_Junk (Last_Stm) then
             Stm := Last_Stm;
             loop
                Prev (Stm);
@@ -6721,7 +6697,7 @@ package body Sem_Ch6 is
              (Nkind_In (Last_Stm, N_Goto_Statement,
                                    N_Label,
                                    N_Object_Declaration)
-                and then Exception_Junk (Last_Stm))
+               and then Exception_Junk (Last_Stm))
            or else Nkind (Last_Stm) in N_Push_xxx_Label
            or else Nkind (Last_Stm) in N_Pop_xxx_Label
 
@@ -7511,11 +7487,14 @@ package body Sem_Ch6 is
       ----------------------
 
       function Base_Types_Match (T1, T2 : Entity_Id) return Boolean is
+         BT1 : constant Entity_Id := Base_Type (T1);
+         BT2 : constant Entity_Id := Base_Type (T2);
+
       begin
          if T1 = T2 then
             return True;
 
-         elsif Base_Type (T1) = Base_Type (T2) then
+         elsif BT1 = BT2 then
 
             --  The following is too permissive. A more precise test should
             --  check that the generic actual is an ancestor subtype of the
@@ -7527,6 +7506,16 @@ package body Sem_Ch6 is
             return not Is_Generic_Actual_Type (T1)
               or else not Is_Generic_Actual_Type (T2)
               or else Scope (T1) /= Scope (T2);
+
+         --  If T2 is a generic actual type it is declared as the subtype of
+         --  the actual.  If that actual is itself a subtype we need to use
+         --  its own base type to check for compatibility.
+
+         elsif Ekind (BT2) = Ekind (T2) and then BT1 = Base_Type (BT2) then
+            return True;
+
+         elsif Ekind (BT1) = Ekind (T1) and then BT2 = Base_Type (BT1) then
+            return True;
 
          else
             return False;
@@ -7572,14 +7561,10 @@ package body Sem_Ch6 is
          --  access-to-class-wide type in a formal. Both entities designate the
          --  same type.
 
-         if From_With_Type (T1)
-           and then T2 = Available_View (T1)
-         then
+         if From_With_Type (T1) and then T2 = Available_View (T1) then
             return True;
 
-         elsif From_With_Type (T2)
-           and then T1 = Available_View (T2)
-         then
+         elsif From_With_Type (T2) and then T1 = Available_View (T2) then
             return True;
 
          elsif From_With_Type (T1)
@@ -7596,10 +7581,9 @@ package body Sem_Ch6 is
    --  Start of processing for Conforming_Types
 
    begin
-      --  The context is an instance association for a formal
-      --  access-to-subprogram type; the formal parameter types require
-      --  mapping because they may denote other formal parameters of the
-      --  generic unit.
+      --  The context is an instance association for a formal access-to-
+      --  subprogram type; the formal parameter types require mapping because
+      --  they may denote other formal parameters of the generic unit.
 
       if Get_Inst then
          Type_1 := Get_Instance_Of (T1);
@@ -7645,9 +7629,8 @@ package body Sem_Ch6 is
       Are_Anonymous_Access_To_Subprogram_Types :=
         Ekind (Type_1) = Ekind (Type_2)
           and then
-            (Ekind (Type_1) = E_Anonymous_Access_Subprogram_Type
-             or else
-               Ekind (Type_1) = E_Anonymous_Access_Protected_Subprogram_Type);
+            Ekind_In (Type_1, E_Anonymous_Access_Subprogram_Type,
+                              E_Anonymous_Access_Protected_Subprogram_Type);
 
       --  Test anonymous access type case. For this case, static subtype
       --  matching is required for mode conformance (RM 6.3.1(15)). We check
@@ -7657,7 +7640,10 @@ package body Sem_Ch6 is
       if (Ekind (Base_Type (Type_1)) = E_Anonymous_Access_Type
             and then
           Ekind (Base_Type (Type_2)) = E_Anonymous_Access_Type)
-        or else Are_Anonymous_Access_To_Subprogram_Types -- Ada 2005 (AI-254)
+
+        -- Ada 2005 (AI-254)
+
+        or else Are_Anonymous_Access_To_Subprogram_Types
       then
          declare
             Desig_1 : Entity_Id;
@@ -7725,8 +7711,8 @@ package body Sem_Ch6 is
             else
                return Base_Type (Desig_1) = Base_Type (Desig_2)
                 and then (Ctype = Type_Conformant
-                            or else
-                          Subtypes_Statically_Match (Desig_1, Desig_2));
+                           or else
+                             Subtypes_Statically_Match (Desig_1, Desig_2));
             end if;
          end;
 
@@ -7736,7 +7722,7 @@ package body Sem_Ch6 is
          if ((Ekind (Type_1) = E_Anonymous_Access_Type
                and then Is_Access_Type (Type_2))
             or else (Ekind (Type_2) = E_Anonymous_Access_Type
-                       and then Is_Access_Type (Type_1)))
+                      and then Is_Access_Type (Type_1)))
            and then
              Conforming_Types
                (Designated_Type (Type_1), Designated_Type (Type_2), Ctype)
@@ -7826,8 +7812,8 @@ package body Sem_Ch6 is
    --  Start of processing for Create_Extra_Formals
 
    begin
-      --  We never generate extra formals if expansion is not active
-      --  because we don't need them unless we are generating code.
+      --  We never generate extra formals if expansion is not active because we
+      --  don't need them unless we are generating code.
 
       if not Expander_Active then
          return;
@@ -7852,9 +7838,7 @@ package body Sem_Ch6 is
       --  situation may arise for subprogram types created as part of
       --  dispatching calls (see Expand_Dispatching_Call)
 
-      if Present (Last_Extra) and then
-        Present (Extra_Formal (Last_Extra))
-      then
+      if Present (Last_Extra) and then Present (Extra_Formal (Last_Extra)) then
          return;
       end if;
 
@@ -8093,9 +8077,7 @@ package body Sem_Ch6 is
       --  Chain new entity if front of homonym in current scope, so that
       --  homonyms are contiguous.
 
-      if Present (E)
-        and then E /= C_E
-      then
+      if Present (E) and then E /= C_E then
          while Homonym (C_E) /= E loop
             C_E := Homonym (C_E);
          end loop;
@@ -8606,14 +8588,10 @@ package body Sem_Ch6 is
          return Nkind (Selector_Name (E1)) = N_Character_Literal
            and then Chars (E2) = Chars (Selector_Name (E1));
 
-      elsif Nkind (E1) in N_Op
-        and then Nkind (E2) = N_Function_Call
-      then
+      elsif Nkind (E1) in N_Op and then Nkind (E2) = N_Function_Call then
          return FCO (E1, E2);
 
-      elsif Nkind (E2) in N_Op
-        and then Nkind (E1) = N_Function_Call
-      then
+      elsif Nkind (E2) in N_Op and then Nkind (E1) = N_Function_Call then
          return FCO (E2, E1);
 
       --  Otherwise we must have the same syntactic entity
@@ -9319,8 +9297,8 @@ package body Sem_Ch6 is
                        and then No (N_Formal)
                        and then (Ekind (New_E) /= E_Function
                                   or else
-                                 Types_Correspond
-                                   (Etype (P_Prim), Etype (New_E)))
+                                    Types_Correspond
+                                      (Etype (P_Prim), Etype (New_E)))
                      then
                         return False;
                      end if;
@@ -9615,12 +9593,8 @@ package body Sem_Ch6 is
                     ("abstract subprograms must be visible "
                      & "(RM 3.9.3(10))!", S);
 
-               elsif Ekind (S) = E_Function
-                 and then not Is_Overriding
-               then
-                  if Is_Tagged_Type (T)
-                    and then T = Base_Type (Etype (S))
-                  then
+               elsif Ekind (S) = E_Function and then not Is_Overriding then
+                  if Is_Tagged_Type (T) and then T = Base_Type (Etype (S)) then
                      Error_Msg_N
                        ("private function with tagged result must"
                         & " override visible-part function", S);
@@ -10038,7 +10012,7 @@ package body Sem_Ch6 is
                --  interface procedures.
 
                elsif (Ekind (Def_Id) = E_Procedure
-                        or else Ekind (Def_Id) = E_Entry)
+                       or else Ekind (Def_Id) = E_Entry)
                  and then Ekind (Subp) = E_Procedure
                  and then Matches_Prefixed_View_Profile
                             (Parameter_Specifications (Parent (Def_Id)),
@@ -10059,13 +10033,12 @@ package body Sem_Ch6 is
                      --  routine must be of mode "out", "in out" or
                      --  access-to-variable.
 
-                     if (Ekind (Candidate) = E_Entry
-                         or else Ekind (Candidate) = E_Procedure)
+                     if Ekind_In (Candidate, E_Entry, E_Procedure)
                        and then Is_Protected_Type (Typ)
                        and then Ekind (Formal) /= E_In_Out_Parameter
                        and then Ekind (Formal) /= E_Out_Parameter
-                       and then Nkind (Parameter_Type (Parent (Formal)))
-                                  /= N_Access_Definition
+                       and then Nkind (Parameter_Type (Parent (Formal))) /=
+                                                          N_Access_Definition
                      then
                         null;
 
@@ -10453,9 +10426,7 @@ package body Sem_Ch6 is
 
                   begin
                      Prev := First_Entity (Current_Scope);
-                     while Present (Prev)
-                       and then Next_Entity (Prev) /= E
-                     loop
+                     while Present (Prev) and then Next_Entity (Prev) /= E loop
                         Next_Entity (Prev);
                      end loop;
 
@@ -10798,8 +10769,7 @@ package body Sem_Ch6 is
          end if;
 
          return
-           Ekind (Desig) = E_Incomplete_Type
-             and then From_With_Type (Desig);
+           Ekind (Desig) = E_Incomplete_Type and then From_With_Type (Desig);
       end Designates_From_With_Type;
 
       ---------------------------
@@ -10842,7 +10812,7 @@ package body Sem_Ch6 is
             if Is_Incomplete_Type (Formal_Type)
               or else
                (Is_Class_Wide_Type (Formal_Type)
-                  and then Is_Incomplete_Type (Root_Type (Formal_Type)))
+                 and then Is_Incomplete_Type (Root_Type (Formal_Type)))
             then
                --  Ada 2005 (AI-326): Tagged incomplete types allowed in
                --  primitive operations, as long as their completion is
@@ -12515,9 +12485,7 @@ package body Sem_Ch6 is
       --  If this is an empty initialization procedure, no need to create
       --  actual subtypes (small optimization).
 
-      if Ekind (Subp) = E_Procedure
-        and then Is_Null_Init_Proc (Subp)
-      then
+      if Ekind (Subp) = E_Procedure and then Is_Null_Init_Proc (Subp) then
          return;
       end if;
 

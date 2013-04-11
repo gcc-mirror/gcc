@@ -3017,6 +3017,8 @@ package body Exp_Ch4 is
 
    --  Start of processing for Expand_Concatenate
 
+   --  Kirtchev
+
    begin
       --  Choose an appropriate computational type
 
@@ -3233,7 +3235,6 @@ package body Exp_Ch4 is
                    Prefix         =>
                      Duplicate_Subexpr (Opnd, Name_Req => True),
                    Attribute_Name => Name_First);
-               Set_Parent (Opnd_Low_Bound (NN), Opnd);
 
                --  Capture last operand bounds if result could be null
 
@@ -3244,7 +3245,6 @@ package body Exp_Ch4 is
                         Prefix         =>
                           Duplicate_Subexpr (Opnd, Name_Req => True),
                         Attribute_Name => Name_First));
-                  Set_Parent (Last_Opnd_Low_Bound, Opnd);
 
                   Last_Opnd_High_Bound :=
                     Convert_To (Ityp,
@@ -3252,7 +3252,6 @@ package body Exp_Ch4 is
                         Prefix         =>
                           Duplicate_Subexpr (Opnd, Name_Req => True),
                         Attribute_Name => Name_Last));
-                  Set_Parent (Last_Opnd_High_Bound, Opnd);
                end if;
 
                --  Capture length of operand in entity
@@ -5182,6 +5181,10 @@ package body Exp_Ch4 is
                Desig_Typ := Obj_Typ;
             end if;
 
+            --  Kirtchev J730-020
+
+            Desig_Typ := Base_Type (Desig_Typ);
+
             --  Generate:
             --    Ann : access [all] <Desig_Typ>;
 
@@ -6721,6 +6724,8 @@ package body Exp_Ch4 is
       --  Node which is to be replaced by the result of concatenating the nodes
       --  in the list Opnds.
 
+   --  Kirtchev
+
    begin
       --  Ensure validity of both operands
 
@@ -6748,7 +6753,6 @@ package body Exp_Ch4 is
 
       --  Now Cnode is the deepest concatenation, and its parents are the
       --  concatenation nodes above, so now we process bottom up, doing the
-      --  operations. We gather a string that is as long as possible up to five
       --  operands.
 
       --  The outer loop runs more than once if more than one concatenation
@@ -6768,7 +6772,27 @@ package body Exp_Ch4 is
             Append (Right_Opnd (Cnode), Opnds);
          end loop Inner;
 
-         Expand_Concatenate (Cnode, Opnds);
+         --  Wrap the node to concatenate into an expression actions node to
+         --  keep it nicely packaged. This is useful in the case of an assert
+         --  pragma with a concatenation where we want to be able to delete
+         --  the concatenation and all its expansion stuff.
+
+         declare
+            Cnod : constant Node_Id   := Relocate_Node (Cnode);
+            Typ  : constant Entity_Id := Base_Type (Etype (Cnode));
+
+         begin
+            --  Note: use Rewrite rather than Replace here, so that for example
+            --  Why_Not_Static can find the original concatenation node OK!
+
+            Rewrite (Cnode,
+              Make_Expression_With_Actions (Sloc (Cnode),
+                Actions    => New_List (Make_Null_Statement (Sloc (Cnode))),
+                Expression => Cnod));
+
+            Expand_Concatenate (Cnod, Opnds);
+            Analyze_And_Resolve (Cnode, Typ);
+         end;
 
          exit Outer when Cnode = N;
          Cnode := Parent (Cnode);

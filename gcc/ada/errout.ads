@@ -242,7 +242,7 @@ package Errout is
    --      messages starting with the \ insertion character). The effect of the
    --      use of ! in a parent message automatically applies to all of its
    --      continuation messages (since we clearly don't want any case in which
-   --      continuations are separated from the parent message. It is allowable
+   --      continuations are separated from the main message). It is allowable
    --      to put ! in continuation messages, and the usual style is to include
    --      it, since it makes it clear that the continuation is part of an
    --      unconditional message.
