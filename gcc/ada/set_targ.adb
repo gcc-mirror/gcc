@@ -134,10 +134,6 @@ package body Set_Targ is
    pragma No_Return (Fail);
    --  Terminate program with fatal error message passed as parameter
 
-   type C_String is array (0 .. 255) of aliased Character;
-   pragma Convention (C, C_String);
-   --  String long enough to hold any mode name for the following call
-
    procedure Register_Float_Type
      (Name      : C_String;
       Digs      : Natural;
@@ -327,7 +323,7 @@ package body Set_Targ is
 
       procedure Write_Line;
       --  Output contents of Buffer (1 .. Buflen) followed by a New_Line,
-      --  and set Buflen back to zero.
+      --  and set Buflen back to zero, ready to write next line.
 
       ----------
       -- AddC --
@@ -536,68 +532,9 @@ begin
       Wchar_T_Size               := Get_Wchar_T_Size;
       Words_BE                   := Get_Words_BE;
 
-      --  Register floating-point types from the back end (depending on the
-      --  back end in use, we have to do different things to get this info).
+      --  Register floating-point types from the back end
 
-      case Get_Back_End is
-
-         --  GCC back end, get information using Enumerate_Modes
-
-         when GCC =>
-            declare
-               type Register_Type_Proc is access procedure
-                 (C_Name    : C_String;
-                  Digs      : Natural;
-                  Complex   : Boolean;
-                  Count     : Natural;
-                  Float_Rep : Float_Rep_Kind;
-                  Size      : Positive;
-                  Alignment : Natural);
-               pragma Convention (C, Register_Type_Proc);
-               --  Call back procedure for Register_Back_End_Types
-
-               procedure Enumerate_Modes (Call_Back : Register_Type_Proc);
-               pragma Import (C, Enumerate_Modes, "enumerate_modes");
-               --  Back end procedure that does the call backs (see misc.c)
-
-            begin
-               Num_FPT_Modes := 0;
-               Enumerate_Modes (Register_Float_Type'Access);
-            end;
-
-         --  AAMP back end, supply the two needed types directly
-
-         when AAMP =>
-            declare
-               Str : C_String;
-
-            begin
-               Str (1 .. 6) := "float" & ASCII.NUL;
-               Register_Float_Type
-                 (Name      => Str,
-                  Digs      => 6,
-                  Complex   => False,
-                  Count     => 0,
-                  Float_Rep => AAMP,
-                  Size      => 32,
-                  Alignment => 16);
-
-               Str (1 .. 7) := "double" & ASCII.NUL;
-               Register_Float_Type
-                 (Name      => Str,
-                  Digs      => 9,
-                  Complex   => False,
-                  Count     => 0,
-                  Float_Rep => AAMP,
-                  Size      => 48,
-                  Alignment => 16);
-            end;
-
-            --  DotNet TBD
-
-         when DOTNET =>
-            null;
-      end case;
+      Register_Back_End_Types (Register_Float_Type'Access);
 
       --  Case of reading the target dependent values from target.atp
 

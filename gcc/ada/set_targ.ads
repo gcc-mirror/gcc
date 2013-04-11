@@ -137,8 +137,5 @@ package Set_Targ is
    --     for a Mode_Entry (where float_rep is I/V/A for IEEE-754-Binary,
    --     Vax_Native, AAMP), fields are separated by at least one blank, and
    --     a LF character immediately follows the alignment field.
-   --
-   --    It is a fatal error to call this procedure if the target.atp file is
-   --    not found in the current directory.
 
 end Set_Targ;

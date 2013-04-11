@@ -244,7 +244,12 @@ begin
    --  Line for -gnatet switch
 
    Write_Switch_Char ("et");
-   Write_Line ("Generate target dependent information in ALI file");
+   Write_Line ("Write target dependent information file");
+
+   --  Line for -gnateT switch
+
+   Write_Switch_Char ("eT");
+   Write_Line ("Read target dependent information file");
 
    --  Line for -gnateV switch
 

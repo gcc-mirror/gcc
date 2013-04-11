@@ -61,6 +61,7 @@ with Sem_Ch13;
 with Sem_Elim;
 with Sem_Eval;
 with Sem_Type;
+with Set_Targ;
 with Sinfo;    use Sinfo;
 with Sinput.L; use Sinput.L;
 with Snames;
@@ -877,6 +878,14 @@ begin
       elsif Usage_Requested then
          Usage;
       end if;
+
+      --  Generate target dependent output file if requested
+
+      if Target_Dependent_Info_Write then
+         Set_Targ.Write_Target_Dependent_Values;
+      end if;
+
+      --  Call the front end
 
       Original_Operating_Mode := Operating_Mode;
       Frontend;

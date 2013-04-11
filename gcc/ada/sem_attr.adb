@@ -9297,6 +9297,17 @@ package body Sem_Attr is
                Resolve (Prefix (P));
                Generate_Reference (Entity (Selector_Name (P)), P);
 
+            --  Implement check implied by 3.10.2 (18.1/2) : F.all'access is
+            --  statically illegal if F is an anonymous access to subprogram.
+
+            elsif Nkind (P) = N_Explicit_Dereference
+              and then Is_Entity_Name (Prefix (P))
+              and then Ekind (Etype (Entity (Prefix  (P)))) =
+                 E_Anonymous_Access_Subprogram_Type
+            then
+               Error_Msg_N ("anonymous access to subprogram "
+                 &  "has deeper accessibility than any master", P);
+
             elsif Is_Overloaded (P) then
 
                --  Use the designated type of the context to disambiguate
