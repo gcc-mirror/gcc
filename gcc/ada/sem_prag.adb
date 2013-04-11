@@ -8917,11 +8917,6 @@ package body Sem_Prag is
             --  Verify the legality of a single dependency clause. Flag Is_Last
             --  denotes whether Clause is the last clause in the relation.
 
-            function Entity_Of (N : Node_Id) return Entity_Id;
-            --  Return the entity of N or Empty. If N is a renaming, find the
-            --  entity of the root renamed object.
-            --  Surely this should not be buried here??? exp_util???
-
             procedure Normalize_Clause (Clause : Node_Id);
             --  Remove a self-dependency "+" from the input list of a clause.
             --  Depending on the contents of the relation, either split the
@@ -9202,34 +9197,6 @@ package body Sem_Prag is
                Analyze_Input_List (Inputs);
             end Analyze_Dependency_Clause;
 
-            ---------------
-            -- Entity_Of --
-            ---------------
-
-            function Entity_Of (N : Node_Id) return Entity_Id is
-               Id : Entity_Id;
-
-            begin
-               --  Follow a possible chain of renamings to reach the root
-               --  renamed object.
-
-               Id := Entity (N);
-               while Present (Renamed_Object (Id)) loop
-                  if Is_Entity_Name (Renamed_Object (Id)) then
-                     Id := Entity (Renamed_Object (Id));
-
-                  --  The root of the renaming is not an entire object or
-                  --  variable, return Empty.
-
-                  else
-                     Id := Empty;
-                     exit;
-                  end if;
-               end loop;
-
-               return Id;
-            end Entity_Of;
-
             ----------------------
             -- Normalize_Clause --
             ----------------------
@@ -9279,26 +9246,26 @@ package body Sem_Prag is
                     (Output : Node_Id;
                      Inputs : Node_Id)
                   is
-                     function Contains
-                       (List : List_Id;
-                        Id   : Entity_Id) return Boolean;
-                     --  Determine whether List contains element Id
-                     --  Surely this should not be buried here??? exp_Util???
+                     function In_Input_List
+                       (Item   : Entity_Id;
+                        Inputs : List_Id) return Boolean;
+                     --  Determine whether a particulat item appears in the
+                     --  input list of a clause.
 
-                     --------------
-                     -- Contains --
-                     --------------
+                     -------------------
+                     -- In_Input_List --
+                     -------------------
 
-                     function Contains
-                       (List : List_Id;
-                        Id   : Entity_Id) return Boolean
+                     function In_Input_List
+                       (Item   : Entity_Id;
+                        Inputs : List_Id) return Boolean
                      is
                         Elmt : Node_Id;
 
                      begin
-                        Elmt := First (List);
+                        Elmt := First (Inputs);
                         while Present (Elmt) loop
-                           if Entity_Of (Elmt) = Id then
+                           if Entity_Of (Elmt) = Item then
                               return True;
                            end if;
 
@@ -9306,11 +9273,12 @@ package body Sem_Prag is
                         end loop;
 
                         return False;
-                     end Contains;
+                     end In_Input_List;
 
                      --  Local variables
 
-                     Grouped : List_Id;
+                     Output_Id : constant Entity_Id := Entity_Of (Output);
+                     Grouped   : List_Id;
 
                   --  Start of processing for Propagate_Output
 
@@ -9340,7 +9308,10 @@ package body Sem_Prag is
                      elsif Nkind (Inputs) = N_Aggregate then
                         Grouped := Expressions (Inputs);
 
-                        if not Contains (Grouped, Entity_Of (Output)) then
+                        if not In_Input_List
+                                 (Item   => Output_Id,
+                                  Inputs => Grouped)
+                        then
                            Prepend_To (Grouped, New_Copy_Tree (Output));
                         end if;
 
@@ -9353,7 +9324,7 @@ package body Sem_Prag is
 
                      --    (Output => (Output, Input))
 
-                     elsif Entity_Of (Output) /= Entity_Of (Inputs) then
+                     elsif Entity_Of (Inputs) /= Output_Id then
                         Rewrite (Inputs,
                           Make_Aggregate (Loc,
                             Expressions => New_List (
