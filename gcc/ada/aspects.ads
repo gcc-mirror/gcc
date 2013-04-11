@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,6 +88,7 @@ package Aspects is
       Aspect_Default_Component_Value,
       Aspect_Default_Iterator,
       Aspect_Default_Value,
+      Aspect_Depends,                       -- GNAT
       Aspect_Dimension,                     -- GNAT
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
@@ -229,6 +230,7 @@ package Aspects is
                              Aspect_Compiler_Unit            => True,
                              Aspect_Contract_Case            => True,
                              Aspect_Contract_Cases           => True,
+                             Aspect_Depends                  => True,
                              Aspect_Dimension                => True,
                              Aspect_Dimension_System         => True,
                              Aspect_Favor_Top_Level          => True,
@@ -325,6 +327,7 @@ package Aspects is
                         Aspect_Default_Component_Value => Expression,
                         Aspect_Default_Iterator        => Name,
                         Aspect_Default_Value           => Expression,
+                        Aspect_Depends                 => Expression,
                         Aspect_Dimension               => Expression,
                         Aspect_Dimension_System        => Expression,
                         Aspect_Dispatching_Domain      => Expression,
@@ -399,6 +402,7 @@ package Aspects is
      Aspect_Default_Iterator             => Name_Default_Iterator,
      Aspect_Default_Value                => Name_Default_Value,
      Aspect_Default_Component_Value      => Name_Default_Component_Value,
+     Aspect_Depends                      => Name_Depends,
      Aspect_Dimension                    => Name_Dimension,
      Aspect_Dimension_System             => Name_Dimension_System,
      Aspect_Discard_Names                => Name_Discard_Names,

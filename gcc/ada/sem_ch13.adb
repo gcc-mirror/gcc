@@ -1475,6 +1475,17 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
+               when Aspect_Depends =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Depends),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))));
+
+                  Delay_Required := False;
+
                --  Aspect Global must be delayed because it can mention names
                --  and benefit from the forward visibility rules applicable to
                --  aspects of subprograms.
@@ -7265,6 +7276,7 @@ package body Sem_Ch13 is
          when Aspect_Abstract_State       |
               Aspect_Contract_Case        |
               Aspect_Contract_Cases       |
+              Aspect_Depends              |
               Aspect_Dimension            |
               Aspect_Dimension_System     |
               Aspect_Implicit_Dereference |
