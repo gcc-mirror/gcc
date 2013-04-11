@@ -14750,6 +14750,9 @@ cp_parser_enum_specifier (cp_parser* parser)
 	{
 	  identifier = make_anon_name ();
 	  is_anonymous = true;
+	  if (scoped_enum_p)
+	    error_at (type_start_token->location,
+		      "anonymous scoped enum is not allowed");
 	}
     }
   pop_deferring_access_checks ();
@@ -14897,7 +14900,13 @@ cp_parser_enum_specifier (cp_parser* parser)
       if (type == error_mark_node)
 	cp_parser_skip_to_end_of_block_or_statement (parser);
       /* If the next token is not '}', then there are some enumerators.  */
-      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
+      else if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
+	{
+	  if (is_anonymous && !scoped_enum_p)
+	    pedwarn (type_start_token->location, OPT_Wpedantic,
+		     "ISO C++ forbids empty anonymous enum");
+	}
+      else
 	cp_parser_enumerator_list (parser, type);
 
       /* Consume the final '}'.  */
