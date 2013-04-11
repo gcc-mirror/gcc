@@ -555,7 +555,7 @@ null_ptr_cst_p (tree t)
     {
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
       if (cxx_dialect < cxx0x)
-	t = maybe_constant_value (t);
+	t = maybe_constant_value (fold_non_dependent_expr_sfinae (t, tf_none));
       STRIP_NOPS (t);
       if (integer_zerop (t) && !TREE_OVERFLOW (t))
 	return true;
