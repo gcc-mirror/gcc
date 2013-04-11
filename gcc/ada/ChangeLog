@@ -1,3 +1,15 @@
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb (Set_Entity_With_Style_Check): Fix logic of
+	check for implementation defined identifiers.
+
+2013-04-11  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): Add an explanation
+	of why range check and length are put on different nodes.
+	* exp_ch4.adb (Apply_Type_Conversion_Checks): Remove check marks
+	when doing their expansion.
+
 2013-04-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Get_Incomplete_View_Of_Ancestor):

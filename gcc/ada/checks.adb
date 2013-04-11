@@ -3248,7 +3248,9 @@ package body Checks is
       --  expansion, to take into accounts changes of representation. The
       --  checks become range checks on the base type or length checks on the
       --  subtype, depending on whether the target type is unconstrained or
-      --  constrained.
+      --  constrained. Note that the range check is put on the expression of a
+      --  type conversion, while the length check is put on the type conversion
+      --  itself.
 
       elsif Is_Array_Type (Target_Type) then
          if Is_Constrained (Target_Type) then

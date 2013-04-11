@@ -13419,9 +13419,10 @@ package body Sem_Util is
          --  the entities within it).
 
          if (Is_Implementation_Defined (Val)
+               or else
+             Is_Implementation_Defined (Scope (Val)))
               and then not (Ekind_In (Val, E_Package, E_Generic_Package)
-                              and then Is_Library_Level_Entity (Val)))
-           or else Is_Implementation_Defined (Scope (Val))
+                              and then Is_Library_Level_Entity (Val))
          then
             Check_Restriction (No_Implementation_Identifiers, N);
          end if;
