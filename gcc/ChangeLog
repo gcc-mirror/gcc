@@ -1,3 +1,9 @@
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56899
+	* fold-const.c (extract_muldiv_1): Apply distributive law
+	only if TYPE_OVERFLOW_WRAPS (ctype).
+
 2013-04-10  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=supersparc
