@@ -2372,10 +2372,12 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
 /* Finish an expression of the form CODE EXPR.  */
 
 tree
-finish_unary_op_expr (location_t loc, enum tree_code code, tree expr)
+finish_unary_op_expr (location_t loc, enum tree_code code, tree expr,
+		      tsubst_flags_t complain)
 {
-  tree result = build_x_unary_op (loc, code, expr, tf_warning_or_error);
-  if (TREE_OVERFLOW_P (result) && !TREE_OVERFLOW_P (expr))
+  tree result = build_x_unary_op (loc, code, expr, complain);
+  if ((complain & tf_warning)
+      && TREE_OVERFLOW_P (result) && !TREE_OVERFLOW_P (expr))
     overflow_warning (input_location, result);
 
   return result;
