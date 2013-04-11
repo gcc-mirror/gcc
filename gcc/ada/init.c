@@ -711,15 +711,6 @@ __gnat_install_handler(void)
 #include <sys/ucontext.h>
 #include <sys/regset.h>
 
-/* The code below is common to SPARC and x86.  Beware of the delay slot
-   differences for signal context adjustments.  */
-
-#if defined (__sparc)
-#define RETURN_ADDR_OFFSET 8
-#else
-#define RETURN_ADDR_OFFSET 0
-#endif
-
 static void
 __gnat_error_handler (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
 {

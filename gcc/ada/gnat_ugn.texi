@@ -655,7 +655,11 @@ Compatibility and Porting Guide
 @ifset unw
 Microsoft Windows Topics
 
+@ifclear FSFEDITION
+* Installing from the Command Line::
+@end ifclear
 * Using GNAT on Windows::
+* Using a network installation of GNAT::
 * CONSOLE and WINDOWS subsystems::
 * Temporary Files::
 * Mixed-Language Programming on Windows::
@@ -29091,6 +29095,9 @@ This chapter describes topics that are specific to the Microsoft Windows
 platforms (NT, 2000, and XP Professional).
 
 @menu
+@ifclear FSFEDITION
+* Installing from the Command Line::
+@end ifclear
 * Using GNAT on Windows::
 * Using a network installation of GNAT::
 * CONSOLE and WINDOWS subsystems::
@@ -29107,6 +29114,54 @@ platforms (NT, 2000, and XP Professional).
 * Setting Stack Size from gnatlink::
 * Setting Heap Size from gnatlink::
 @end menu
+
+@ifclear FSFEDITION
+@node Installing from the Command Line
+@section Installing from the Command Line
+@cindex Batch installation
+@cindex Silent installation
+@cindex Unassisted installation
+
+@noindent
+By default the @value{EDITION} installers display a GUI that prompts the user
+to enter installation path and similar information, and guide him through the
+installation process. It is also possible to perform silent installations
+using the command-line interface.
+
+In order to install one of the @value{EDITION} installers from the command
+line you should pass parameter @code{/S} (and, optionally,
+@code{/D=<directory>}) as command-line arguments.
+
+@ifset PROEDITION
+For example, for an unattended installation of
+@value{EDITION} 7.0.2 into the default directory
+@code{C:\GNATPRO\7.0.2} you would run:
+
+@smallexample
+gnatpro-7.0.2-i686-pc-mingw32-bin.exe /S
+@end smallexample
+
+To install into a custom directory, say, @code{C:\TOOLS\GNATPRO\7.0.2}:
+
+@smallexample
+gnatpro-7.0.2-i686-pc-mingw32-bin /S /D=C:\TOOLS\GNATPRO\7.0.2
+@end smallexample
+@end ifset
+
+@ifset GPLEDITION
+For example, for an unattended installation of
+@value{EDITION} 2012 into @code{C:\GNAT\2012}:
+
+@smallexample
+gnat-gpl-2012-i686-pc-mingw32-bin /S /D=C:\GNAT\2012
+@end smallexample
+@end ifset
+
+You can use the same syntax for all installers.
+
+Note that unattended installations don't modify system path, nor create file
+associations, so such activities need to be done by hand.
+@end ifclear
 
 @node Using GNAT on Windows
 @section Using GNAT on Windows

@@ -494,14 +494,13 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Delete (Container : in out Set; Item : Element_Type) is
       X : Node_Access := Element_Keys.Find (Container.Tree, Item);
-
    begin
       if X = null then
          raise Constraint_Error with "attempt to delete element not in set";
+      else
+         Tree_Operations.Delete_Node_Sans_Free (Container.Tree, X);
+         Free (X);
       end if;
-
-      Tree_Operations.Delete_Node_Sans_Free (Container.Tree, X);
-      Free (X);
    end Delete;
 
    ------------------
@@ -1924,6 +1923,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -1975,6 +1975,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
             L := L - 1;
             B := B - 1;
+
          exception
             when others =>
                L := L - 1;
@@ -1982,10 +1983,13 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                raise;
          end;
 
-         if not Compare then  -- Item >= Hint.Element
-            --  Ceiling returns an element that is equivalent or greater than
-            --  Item. If Item is "not less than" the element, then by
-            --  elimination we know that Item is equivalent to the element.
+         --  Item >= Hint.Element
+
+         if not Compare then
+
+            --  Ceiling returns an element that is equivalent or greater
+            --  than Item. If Item is "not less than" the element, then
+            --  by elimination we know that Item is equivalent to the element.
 
             --  But this means that it is not possible to assign the value of
             --  Item to the specified element (on Node), because a different

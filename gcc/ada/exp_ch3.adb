@@ -4846,9 +4846,8 @@ package body Exp_Ch3 is
 
       begin
          Full_Type := Typ;
-         if Is_Private_Type (Typ)
-           and then Present (Full_View (Typ))
-         then
+
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
             Full_Type := Full_View (Typ);
          end if;
 
@@ -5169,9 +5168,9 @@ package body Exp_Ch3 is
                     (N, New_Copy_Tree (Init_Expr, New_Scope => Current_Scope));
                   return;
 
-               --  If type has discriminants, try to build equivalent
-               --  aggregate using discriminant values from the declaration.
-               --  This is a useful optimization, in particular if restriction
+               --  If type has discriminants, try to build equivalent aggregate
+               --  using discriminant values from the declaration. This
+               --  is a useful optimization, in particular if restriction
                --  No_Elaboration_Code is active.
 
                elsif Build_Equivalent_Aggregate then

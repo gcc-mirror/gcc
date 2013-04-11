@@ -149,6 +149,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
 
             BS := BS - 1;
             LS := LS - 1;
+
          exception
             when others =>
                BT := BT - 1;
@@ -265,6 +266,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          LR := LR - 1;
 
          return Tree;
+
       exception
          when others =>
             BL := BL - 1;
@@ -340,6 +342,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
 
             BS := BS - 1;
             LS := LS - 1;
+
          exception
             when others =>
                BT := BT - 1;
@@ -447,6 +450,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          LR := LR - 1;
 
          return Tree;
+
       exception
          when others =>
             BL := BL - 1;
@@ -532,6 +536,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          LR := LR - 1;
 
          return Result;
+
       exception
          when others =>
             BL := BL - 1;
@@ -605,6 +610,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          LR := LR - 1;
 
          return Result;
+
       exception
          when others =>
             BL := BL - 1;
@@ -689,6 +695,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
 
             BS := BS - 1;
             LS := LS - 1;
+
          exception
             when others =>
                BT := BT - 1;
@@ -826,6 +833,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          LR := LR - 1;
 
          return Tree;
+
       exception
          when others =>
             BL := BL - 1;
@@ -886,6 +894,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
 
          BS := BS - 1;
          LS := LS - 1;
+
       exception
          when others =>
             BS := BS - 1;
@@ -957,6 +966,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
          LR := LR - 1;
 
          return Tree;
+
       exception
          when others =>
             BL := BL - 1;

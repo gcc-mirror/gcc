@@ -8798,8 +8798,6 @@ package body Sem_Res is
         and then Ekind_In (Entity (S), E_Component, E_Discriminant)
         and then Present (Original_Record_Component (Entity (S)))
         and then Ekind (Original_Record_Component (Entity (S))) = E_Component
-        and then Present (Discriminant_Checking_Func
-                           (Original_Record_Component (Entity (S))))
         and then not Discriminant_Checks_Suppressed (T)
         and then not Init_Component
       then
