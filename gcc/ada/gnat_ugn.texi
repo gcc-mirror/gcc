@@ -12282,6 +12282,13 @@ Display Copyright and version, then exit disregarding all other options.
 If @option{--version} was not used, display usage, then exit disregarding
 all other options.
 
+@item --subdirs=<dir>
+Real object, library or exec directories are subdirectories <dir> of the
+specified ones.
+
+@item --no-backup
+Do not create a backup copy of an existing project file.
+
 @item --and
 Start another section of directories/patterns.
 
@@ -12328,6 +12335,9 @@ Specifying switch @option{^-D^/DIRS_FILE^} is equivalent to specifying as many
 switches @option{^-d^/SOURCE_DIRS^} as there are nonempty lines in
 @file{file}.
 
+@item -eL
+Follow symbolic links when processing project files.
+
 @item ^-f^/FOREIGN_PATTERN=^@file{pattern}
 @cindex @option{^-f^/FOREIGN_PATTERN^} (@code{gnatname})
 Foreign patterns. Using this switch, it is possible to add sources of languages
@@ -12354,6 +12364,10 @@ information. @file{proj} must be writable.
 There may be only one switch @option{^-P^/PROJECT_FILE^}.
 When a switch @option{^-P^/PROJECT_FILE^} is specified,
 no switch @option{^-c^/CONFIG_FILE^} may be specified.
+On all platforms, except on VMS, when @code{gnatname} is invoked for an
+existing project file <proj>.gpr, a backup copy of the project file is created
+in the project directory with file name <proj>.gpr.saved_x. 'x' is the first
+non negative number that makes this backup copy a new file.
 
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@code{gnatname})

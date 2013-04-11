@@ -1188,6 +1188,11 @@ package Opt is
    --  Set to True to enable compatibility mode with Rational compiler, and
    --  to accept renamings of implicit operations in their own scope.
 
+   Relaxed_RM_Semantics : Boolean := False;
+   --  GNAT
+   --  Set to True to ignore some Ada semantic error to help parse legacy
+   --  Ada code for use in e.g. static analysis (such as CodePeer).
+
    Replace_In_Comments : Boolean := False;
    --  GNATPREP
    --  Set to True if -C switch used

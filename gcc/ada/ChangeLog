@@ -1,3 +1,27 @@
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb, sem_prag.adb, par-ch2.adb, sem_attr.adb, gnat1drv.adb,
+	exp_disp.adb, opt.ads, sem_ch13.adb (Relaxed_RM_Semantics): New flag.
+	Enable this flag in CodePeer mode, and also via -gnatd.M.
+	Replace some uses of CodePeer_Mode by Relaxed_RM_Semantics.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Check_Constrained_Object): If a subtype is created
+	from the renamed object in an object renaming declaration with
+	an unconstrained nominal subtype, freeze the created subtype at
+	once, to prevent order of elaboration issues in the backend.
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Aggr_Size_OK): Refine setting of Max_Aggr_Size
+	in particular in CodePeer mode.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for backup copies of project
+	files for gnatname.
+
 2013-04-11  Tristan Gingold  <gingold@adacore.com>
 
 	* gnat_rm.texi: Add Detect_BLocking in the ravenscar profile
@@ -7,7 +31,8 @@
 
 	* gnatname.adb (Scan_Args): Recognize new switch --no-backup
 	(Usage): Add line for --no-backup.
-	* opt.ads (No_Nackup): New Boolean variable, initialized to False.
+	* opt.ads (No_Backup): New Boolean variable, initialized to False.
+	(Ada_Version_Default): Switch to Ada 2012 by default.
 	* prj-makr.adb (Initialize): Create a backup for an existing
 	project file if gnatname is not invoked with --no-backup.
 

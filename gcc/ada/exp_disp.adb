@@ -8382,10 +8382,10 @@ package body Exp_Disp is
          --  excluded from this check because interfaces must be visible in
          --  the public and private part (RM 7.3 (7.3/2))
 
-         --  We disable this check in CodePeer mode, to accommodate legacy
-         --  Ada code.
+         --  We disable this check in Relaxed_RM_Semantics mode, to
+         --  accommodate legacy Ada code.
 
-         if not CodePeer_Mode
+         if not Relaxed_RM_Semantics
            and then Is_Abstract_Type (Typ)
            and then Is_Abstract_Subprogram (Prim)
            and then Present (Alias (Prim))

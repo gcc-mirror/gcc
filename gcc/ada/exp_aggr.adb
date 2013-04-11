@@ -313,31 +313,11 @@ package body Exp_Aggr is
       Lov  : Uint;
       Hiv  : Uint;
 
-      --  The following constant determines the maximum size of an array
-      --  aggregate produced by converting named to positional notation (e.g.
-      --  from others clauses). This avoids running away with attempts to
-      --  convert huge aggregates, which hit memory limits in the backend.
-
-      --  The normal limit is 5000, but we increase this limit to 2**24 (about
-      --  16 million) if Restrictions (No_Elaboration_Code) or Restrictions
-      --  (No_Implicit_Loops) is specified, since in either case we are at
-      --  risk of declaring the program illegal because of this limit. We also
-      --  increase the limit when Static_Elaboration_Desired, given that this
-      --  means that objects are intended to be placed in data memory.
-
-      --  We also increase the limit if the aggregate is for a packed two-
-      --  dimensional array, because if components are static it is much more
-      --  efficient to construct a one-dimensional equivalent array with static
-      --  components.
-
-      Max_Aggr_Size : constant Nat :=
-        5000 + (2 ** 24 - 5000) *
-          Boolean'Pos
-            (Restriction_Active (No_Elaboration_Code)
-             or else Restriction_Active (No_Implicit_Loops)
-             or else Is_Two_Dim_Packed_Array (Typ)
-             or else ((Ekind (Current_Scope) = E_Package
-                       and then Static_Elaboration_Desired (Current_Scope))));
+      Max_Aggr_Size : Nat;
+      --  Determines the maximum size of an array aggregate produced by
+      --  converting named to positional notation (e.g. from others clauses).
+      --  This avoids running away with attempts to convert huge aggregates,
+      --  which hit memory limits in the backend.
 
       function Component_Count (T : Entity_Id) return Int;
       --  The limit is applied to the total number of components that the
@@ -396,6 +376,36 @@ package body Exp_Aggr is
    --  Start of processing for Aggr_Size_OK
 
    begin
+      --  The normal aggregate limit is 5000, but we increase this limit to
+      --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code) or
+      --  Restrictions (No_Implicit_Loops) is specified, since in either case
+      --  we are at risk of declaring the program illegal because of this
+      --  limit. We also increase the limit when Static_Elaboration_Desired,
+      --  given that this means that objects are intended to be placed in data
+      --  memory.
+
+      --  We also increase the limit if the aggregate is for a packed two-
+      --  dimensional array, because if components are static it is much more
+      --  efficient to construct a one-dimensional equivalent array with static
+      --  components.
+
+      --  Finally, we use a small limit in CodePeer mode where we favor loops
+      --  instead of thousands of single assignments (from large aggregates).
+
+      Max_Aggr_Size := 5000;
+
+      if CodePeer_Mode then
+         Max_Aggr_Size := 100;
+
+      elsif Restriction_Active (No_Elaboration_Code)
+        or else Restriction_Active (No_Implicit_Loops)
+        or else Is_Two_Dim_Packed_Array (Typ)
+        or else ((Ekind (Current_Scope) = E_Package
+                 and then Static_Elaboration_Desired (Current_Scope)))
+      then
+         Max_Aggr_Size := 2 ** 24;
+      end if;
+
       Siz  := Component_Count (Component_Type (Typ));
 
       Indx := First_Index (Typ);

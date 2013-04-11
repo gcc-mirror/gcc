@@ -2405,6 +2405,11 @@ package body Sem_Attr is
          elsif not Comes_From_Source (N) then
             null;
 
+         elsif Relaxed_RM_Semantics
+           and then Nkind (P) = N_Attribute_Reference
+         then
+            null;
+
          else
             Error_Attr ("invalid prefix for % attribute", P);
          end if;
@@ -5008,6 +5013,11 @@ package body Sem_Attr is
 
          elsif Nkind (P) = N_Type_Conversion
            and then not Comes_From_Source (P)
+         then
+            null;
+
+         elsif Relaxed_RM_Semantics
+           and then Nkind (P) = N_Attribute_Reference
          then
             null;
 
@@ -9180,15 +9190,12 @@ package body Sem_Attr is
                   --  when within an instance, because any violations will have
                   --  been caught by the compilation of the generic unit.
 
-                  --  Note that we relax this check in CodePeer mode for
-                  --  compatibility with legacy code, since CodePeer is an
-                  --  Ada source code analyzer, not a strict compiler.
-                  --  ??? Note that a better approach would be to have a
-                  --  separate switch to relax this rule, and enable this
-                  --  switch in CodePeer mode.
+                  --  We relax this check in Relaxed_RM_Semantics mode for
+                  --  compatibility with legacy code for use by Ada source
+                  --  code analyzers (e.g. CodePeer).
 
                   elsif Attr_Id = Attribute_Access
-                    and then not CodePeer_Mode
+                    and then not Relaxed_RM_Semantics
                     and then not In_Instance
                     and then Present (Enclosing_Generic_Unit (Entity (P)))
                     and then Present (Enclosing_Generic_Body (N))
