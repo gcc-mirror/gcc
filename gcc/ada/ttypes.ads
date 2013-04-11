@@ -234,12 +234,16 @@ package Ttypes is
                                      Set_Targ.Double_Float_Alignment;
    --  The default alignment of "double" floating-point types, i.e. floating
    --  point types whose size is equal to 64 bits, or 0 if this alignment is
-   --  not specifically capped.
+   --  not lower than the largest power of 2 multiple of System.Storage_Unit
+   --  that does not exceed either the object size of the type or the maximum
+   --  allowed alignment.
 
    Target_Double_Scalar_Alignment : constant Nat :=
                                       Set_Targ.Double_Scalar_Alignment;
    --  The default alignment of "double" or larger scalar types, i.e. scalar
    --  types whose size is greater or equal to 64 bits, or 0 if this alignment
-   --  is not specifically capped.
+   --  is not lower than the largest power of 2 multiple of System.Storage_Unit
+   --  that does not exceed either the object size of the type or the maximum
+   --  allowed alignment.
 
 end Ttypes;

@@ -1,3 +1,22 @@
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ttypes.ads, get_targ.ads: More minor rewording of comments.
+
+2013-04-11  Johannes Kanig  <kanig@adacore.com>
+
+	* debug.adb: Document use of switch -gnatd.Z.
+
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Both pragma Depends and Global can now
+	support renamings of entire objects. Legal renamings are replaced by
+	the object they rename.
+	(Is_Renaming): New routine.
+
+2013-04-11  Yannick Moy  <moy@adacore.com>
+
+	* set_targ.adb, opt.ads: Minor changes in comments.
+
 2013-04-11  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_ugn.texi: Minor clean ups.

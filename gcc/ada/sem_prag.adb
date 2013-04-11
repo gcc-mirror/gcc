@@ -806,6 +806,9 @@ package body Sem_Prag is
       --  Returns True if pragma appears within the context clause of a unit,
       --  and False for any other placement (does not generate any messages).
 
+      function Is_Renaming (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N is a renaming
+
       function Is_Static_String_Expression (Arg : Node_Id) return Boolean;
       --  Analyzes the argument, and determines if it is a static string
       --  expression, returns True if so, False if non-static or not String.
@@ -3012,6 +3015,17 @@ package body Sem_Prag is
 
          return True;
       end Is_In_Context_Clause;
+
+      -----------------
+      -- Is_Renaming --
+      -----------------
+
+      function Is_Renaming (N : Node_Id) return Boolean is
+      begin
+         return
+           Is_Entity_Name (N)
+             and then Present (Renamed_Object (Entity (N)));
+      end Is_Renaming;
 
       ---------------------------------
       -- Is_Static_String_Expression --
@@ -9017,8 +9031,8 @@ package body Sem_Prag is
                   Null_Seen : in out Boolean)
                is
                   Is_Output : constant Boolean := not Is_Input;
-                  Item_Id   : Entity_Id;
                   Grouped   : Node_Id;
+                  Item_Id   : Entity_Id;
 
                begin
                   --  Multiple input or output items appear as an aggregate
@@ -9106,15 +9120,19 @@ package body Sem_Prag is
                   else
                      Analyze (Item);
 
-                     if Is_Entity_Name (Item) then
-                        Item_Id := Entity_Of (Item);
+                     --  Find the entity of the item. If this is a renaming,
+                     --  climb the renaming chain to reach the root object.
+                     --  Renamings of non-entire objects do not yield an
+                     --  entity (Empty).
 
-                        if Present (Item_Id)
-                          and then Ekind_In (Item_Id, E_Abstract_State,
-                                                      E_In_Parameter,
-                                                      E_In_Out_Parameter,
-                                                      E_Out_Parameter,
-                                                      E_Variable)
+                     Item_Id := Entity_Of (Item);
+
+                     if Present (Item_Id) then
+                        if Ekind_In (Item_Id, E_Abstract_State,
+                                              E_In_Parameter,
+                                              E_In_Out_Parameter,
+                                              E_Out_Parameter,
+                                              E_Variable)
                         then
                            --  Detect multiple uses of the same state, variable
                            --  or formal parameter. If this is not the case,
@@ -9146,6 +9164,15 @@ package body Sem_Prag is
                               end if;
 
                               Append_Unique_Elmt (Item_Id, All_Inputs_Seen);
+                           end if;
+
+                           --  When the item renames an entire object, replace
+                           --  the item with a reference to the object.
+
+                           if Is_Renaming (Item) then
+                              Rewrite (Item,
+                                New_Reference_To (Item_Id, Sloc (Item)));
+                              Analyze (Item);
                            end if;
 
                         --  All other input/output items are illegal
@@ -10809,7 +10836,7 @@ package body Sem_Prag is
                  (Item        : Node_Id;
                   Global_Mode : Name_Id)
                is
-                  Id : Entity_Id;
+                  Item_Id : Entity_Id;
 
                begin
                   --  Detect one of the following cases
@@ -10826,13 +10853,18 @@ package body Sem_Prag is
 
                   Analyze (Item);
 
-                  if Is_Entity_Name (Item) then
-                     Id := Entity (Item);
+                  --  Find the entity of the item. If this is a renaming, climb
+                  --  the renaming chain to reach the root object. Renamings of
+                  --  non-entire objects do not yield an entity (Empty).
+
+                  Item_Id := Entity_Of (Item);
+
+                  if Present (Item_Id) then
 
                      --  A global item cannot reference a formal parameter. Do
                      --  this check first to provide a better error diagnostic.
 
-                     if Is_Formal (Id) then
+                     if Is_Formal (Item_Id) then
                         Error_Msg_N
                           ("global item cannot reference formal parameter",
                            Item);
@@ -10841,12 +10873,21 @@ package body Sem_Prag is
                      --  The only legal references are those to abstract states
                      --  and variables.
 
-                     elsif not Ekind_In (Entity (Item), E_Abstract_State,
-                                                        E_Variable)
+                     elsif not Ekind_In (Item_Id, E_Abstract_State,
+                                                  E_Variable)
                      then
                         Error_Msg_N
                           ("global item must denote variable or state", Item);
                         return;
+                     end if;
+
+                     --  When the item renames an entire object, replace the
+                     --  item with a reference to the object.
+
+                     if Is_Renaming (Item) then
+                        Rewrite (Item,
+                          New_Reference_To (Item_Id, Sloc (Item)));
+                        Analyze (Item);
                      end if;
 
                   --  Some form of illegal construct masquerading as a name
@@ -10860,7 +10901,7 @@ package body Sem_Prag is
                   --  The same entity might be referenced through various way.
                   --  Check the entity of the item rather than the item itself.
 
-                  if Contains (Seen, Id) then
+                  if Contains (Seen, Item_Id) then
                      Error_Msg_N ("duplicate global item", Item);
 
                   --  Add the entity of the current item to the list of
@@ -10871,16 +10912,16 @@ package body Sem_Prag is
                         Seen := New_Elmt_List;
                      end if;
 
-                     Append_Elmt (Id, Seen);
+                     Append_Elmt (Item_Id, Seen);
                   end if;
 
-                  if Ekind (Id) = E_Abstract_State
-                    and then Is_Volatile_State (Id)
+                  if Ekind (Item_Id) = E_Abstract_State
+                    and then Is_Volatile_State (Item_Id)
                   then
                      --  A global item of mode In_Out or Output cannot denote a
                      --  volatile Input state.
 
-                     if Is_Input_State (Id)
+                     if Is_Input_State (Item_Id)
                        and then (Global_Mode = Name_In_Out
                                    or else
                                  Global_Mode = Name_Output)
@@ -10892,7 +10933,7 @@ package body Sem_Prag is
                      --  A global item of mode In_Out or Input cannot reference
                      --  a volatile Output state.
 
-                     elsif Is_Output_State (Id)
+                     elsif Is_Output_State (Item_Id)
                        and then (Global_Mode = Name_In_Out
                                    or else
                                  Global_Mode = Name_Input)

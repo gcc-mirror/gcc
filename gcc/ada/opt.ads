@@ -1335,20 +1335,14 @@ package Opt is
    --  GNAT
    --  Set True to override the normal processing in Get_Targ and set the
    --  necessary information by reading the target dependent information
-   --  file (see package Get_Targ in get_targ.ads for full details). Set
-   --  True by use of the -gnateT switch.
+   --  file (see packages Get_Targ and Set_Targ for full details). Set True
+   --  by use of the -gnateT switch.
 
    Target_Dependent_Info_Write : Boolean := False;
    --  GNAT
-   --  Set True to enable a call to Get_Targ.Write_Target_Dependent_Info which
-   --  writes a target independent information file (see package Get_Targ in
-   --  get_targ.ads for full details). Set True by use of the -gnatet switch.
-   --
-   --  Note: although we do indeed set this switch to True as documented above
-   --  if -gnatet is encountered, we actually do not use this flag to enable
-   --  writing of the file. That's because the read in Get_Targ has to be done
-   --  long before the normal circuit for setting switches (see Get_Targ for
-   --  full details of how we handle this requirement).
+   --  Set True to enable a call to Set_Targ.Write_Target_Dependent_Info which
+   --  writes a target independent information file (see packages Get_Targ and
+   --  Set_Targ for full details). Set True by use of the -gnatet switch.
 
    Task_Dispatching_Policy : Character := ' ';
    --  GNAT, GNATBIND
