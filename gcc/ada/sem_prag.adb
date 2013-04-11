@@ -1914,13 +1914,13 @@ package body Sem_Prag is
          --  instance can be in a nested scope. The check that protected type
          --  is itself a library-level declaration is done elsewhere.
 
-         --  Note: we omit this check in Codepeer mode to properly handle code
-         --  prior to AI-0033 (pragmas don't matter to codepeer in any case).
+         --  Note: we omit this check in Relaxed_RM_Semantics mode to properly
+         --  handle code prior to AI-0033.
 
          if Inside_A_Generic then
             if Ekind (Scope (Current_Scope)) = E_Generic_Package
               and then In_Package_Body (Scope (Current_Scope))
-              and then not CodePeer_Mode
+              and then not Relaxed_RM_Semantics
             then
                Error_Pragma ("pragma% cannot be used inside a generic");
             end if;
@@ -3648,9 +3648,12 @@ package body Sem_Prag is
          end if;
 
          --  Check that we are not applying this to a specless body
+         --  Relax this check if Relaxed_RM_Semantics to accomodate other Ada
+         --  compilers.
 
          if Is_Subprogram (E)
            and then Nkind (Parent (Declaration_Node (E))) = N_Subprogram_Body
+           and then not Relaxed_RM_Semantics
          then
             Error_Pragma
               ("pragma% requires separate spec and must come before body");
@@ -5996,7 +5999,9 @@ package body Sem_Prag is
             Error_Pragma_Arg
               ("cannot export entity& that was previously imported", Arg);
 
-         elsif Present (Address_Clause (E)) and then not CodePeer_Mode then
+         elsif Present (Address_Clause (E))
+           and then not Relaxed_RM_Semantics
+         then
             Error_Pragma_Arg
               ("cannot export entity& that has an address clause", Arg);
          end if;

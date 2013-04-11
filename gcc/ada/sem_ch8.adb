@@ -792,6 +792,12 @@ package body Sem_Ch8 is
                      Make_Subtype_From_Expr (Nam, Typ)));
                Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
                Set_Etype (Nam, Subt);
+
+               --  Freeze subtype at once, to prevent order of elaboration
+               --  issues in the backend. The renamed object exists, so its
+               --  type is already frozen in any case.
+
+               Freeze_Before (N, Subt);
             end if;
          end if;
       end Check_Constrained_Object;

@@ -126,11 +126,11 @@ package body Debug is
    --  d.F  Alfa mode
    --  d.G
    --  d.H  Standard package only mode for gnat2why
-   --  d.I  SCIL generation mode
+   --  d.I
    --  d.J  Disable parallel SCIL generation mode
    --  d.K  Alfa detection only mode for gnat2why
    --  d.L  Depend on back end for limited types in if and case expressions
-   --  d.M
+   --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
@@ -624,6 +624,9 @@ package body Debug is
    --       expressions of a limited type. This debug flag removes this special
    --       case expansion, leaving it up to the back end to handle conditional
    --       expressions correctly.
+
+   --  d.M  Relaxed RM semantics. This flag sets Opt.Relaxed_RM_Semantics
+   --       See Opt.Relaxed_RM_Semantics for more details.
 
    --  d.N  Enlarge entities by one node (but don't attempt to use this extra
    --       node for storage of any flags or fields). This can be used to do

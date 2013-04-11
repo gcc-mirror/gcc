@@ -9002,7 +9002,9 @@ package body Sem_Ch13 is
 
       procedure Too_Late is
       begin
-         Error_Msg_N ("|representation item appears too late!", N);
+         if not Relaxed_RM_Semantics then
+            Error_Msg_N ("|representation item appears too late!", N);
+         end if;
       end Too_Late;
 
    --  Start of processing for Rep_Item_Too_Late
@@ -9017,7 +9019,7 @@ package body Sem_Ch13 is
 
         and then not From_With_Type (T)
 
-        --  Exclude generated entitiesa (not coming from source). The common
+        --  Exclude generated entities (not coming from source). The common
         --  case is when we generate a renaming which prematurely freezes the
         --  renamed internal entity, but we still want to be able to set copies
         --  of attribute values such as Size/Alignment.

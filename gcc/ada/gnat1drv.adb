@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,11 +110,10 @@ procedure Gnat1drv is
 
    procedure Adjust_Global_Switches is
    begin
-      --  Debug flag -gnatd.I is a synonym for Generate_SCIL and requires code
-      --  generation.
+      --  -gnatd.M enables Relaxed_RM_Semantics
 
-      if Debug_Flag_Dot_II and then Operating_Mode = Generate_Code then
-         Generate_SCIL := True;
+      if Debug_Flag_Dot_MM then
+         Relaxed_RM_Semantics := True;
       end if;
 
       --  Disable CodePeer_Mode in Check_Syntax, since we need front-end
@@ -275,6 +274,13 @@ procedure Gnat1drv is
 
          Force_ALI_Tree_File := True;
          Try_Semantics := True;
+
+         --  Make the Ada front-end more liberal to support other Ada compilers
+         Relaxed_RM_Semantics := True;
+      end if;
+
+      if Relaxed_RM_Semantics then
+         Overriding_Renamings := True;
       end if;
 
       --  Set switches for formal verification mode

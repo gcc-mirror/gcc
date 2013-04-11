@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -493,9 +493,10 @@ package body Ch2 is
       --  Ada RM terminology).
 
       --  Since older GNAT versions did not generate this error, disable this
-      --  message in codepeer mode to help legacy code using codepeer.
+      --  message in Relaxed_RM_Semantics mode to help legacy code using e.g.
+      --  codepeer.
 
-      if Identifier_Seen and not Id_Present and not CodePeer_Mode then
+      if Identifier_Seen and not Id_Present and not Relaxed_RM_Semantics then
          Error_Msg_SC ("|pragma argument identifier required here");
          Error_Msg_SC ("\since previous argument had identifier (RM 2.8(4))");
       end if;
