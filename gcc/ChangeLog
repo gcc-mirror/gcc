@@ -1,3 +1,8 @@
+2013-04-10  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=supersparc
+	or -mcpu=hypersparc.
+
 2013-04-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/56848
