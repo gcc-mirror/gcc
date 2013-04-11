@@ -1,5 +1,12 @@
 2013-04-11  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_copy) [VAR_DECL]: Don't call tsubst for
+	local variables, look them up instead.
+	(tsubst_decl) [VAR_DECL]: Remove handling for anonymous union
+	proxies and substitution in unevaluated context.
+	(tsubst_expr) [OMP_FOR]: Instantiate OMP_FOR_PRE_BODY
+	before the iterators.
+
 	PR c++/23055
 	* pt.c (uses_deducible_template_parms): New.
 	(deducible_array_bound, deducible_expression): New.
