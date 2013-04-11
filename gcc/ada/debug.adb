@@ -609,10 +609,6 @@ package body Debug is
    --       will only generate Why code for package Standard. Any given input
    --       file will be ignored.
 
-   --  d.I  Generate SCIL mode. Generate intermediate code for the sake of
-   --       of static analysis tools, and ensure additional tree consistency
-   --       between different compilations of specs.
-
    --  d.J  Disable parallel SCIL generation. Normally SCIL file generation is
    --       done in parallel to speed processing. This switch disables this
    --       behavior.

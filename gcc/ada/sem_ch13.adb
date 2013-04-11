@@ -9002,6 +9002,10 @@ package body Sem_Ch13 is
 
       procedure Too_Late is
       begin
+         --  Other compilers seem more relaxed about rep items appearing too
+         --  late. Since analysis tools typically don't care about rep items
+         --  anyway, no reason to be too strict about this.
+
          if not Relaxed_RM_Semantics then
             Error_Msg_N ("|representation item appears too late!", N);
          end if;

@@ -1191,7 +1191,12 @@ package Opt is
    Relaxed_RM_Semantics : Boolean := False;
    --  GNAT
    --  Set to True to ignore some Ada semantic error to help parse legacy
-   --  Ada code for use in e.g. static analysis (such as CodePeer).
+   --  Ada code for use in e.g. static analysis (such as CodePeer). This
+   --  deals with cases where other compilers allow illegal constructs. Tools
+   --  such as CodePeer are interested in analyzing code rather than enforcing
+   --  legality rules, so as long as these illegal constructs end up with code
+   --  that can be handled by the tool in question, there is no reason to
+   --  reject the code that is considered correct by the other compiler.
 
    Replace_In_Comments : Boolean := False;
    --  GNATPREP

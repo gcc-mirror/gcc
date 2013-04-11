@@ -1048,31 +1048,34 @@ package body Prj.Makr is
            Project_File_Extension;
          Output_Name_Last := Output_Name_Last + Project_File_Extension'Length;
 
-         --  Back up project file if it already exists
+         --  Back up project file if it already exists (not needed in VMS since
+         --  versioning of files takes care of this requirement on VMS).
 
          if not Hostparm.OpenVMS
            and then not Opt.No_Backup
-           and then
-             Is_Regular_File (Path_Name (1 .. Path_Last))
+           and then Is_Regular_File (Path_Name (1 .. Path_Last))
          then
             declare
-               Discard : Boolean;
+               Discard    : Boolean;
                Saved_Path : constant String :=
-                 Path_Name (1 .. Path_Last) & ".saved_";
-               Nmb : Natural := 0;
+                              Path_Name (1 .. Path_Last) & ".saved_";
+               Nmb        : Natural;
+
             begin
+               Nmb := 0;
                loop
                   declare
                      Img : constant String := Nmb'Img;
+
                   begin
                      if not Is_Regular_File
-                             (Saved_Path & Img (2 .. Img'Last))
+                              (Saved_Path & Img (2 .. Img'Last))
                      then
                         Copy_File
-                          (Name => Path_Name (1 .. Path_Last),
+                          (Name     => Path_Name (1 .. Path_Last),
                            Pathname => Saved_Path & Img (2 .. Img'Last),
-                           Mode => Overwrite,
-                           Success => Discard);
+                           Mode     => Overwrite,
+                           Success  => Discard);
                         exit;
                      end if;
 

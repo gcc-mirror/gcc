@@ -1915,7 +1915,9 @@ package body Sem_Prag is
          --  is itself a library-level declaration is done elsewhere.
 
          --  Note: we omit this check in Relaxed_RM_Semantics mode to properly
-         --  handle code prior to AI-0033.
+         --  handle code prior to AI-0033. Analysis tools typically are not
+         --  interested in this pragma in any case, so no need to worry too
+         --  much about its placement.
 
          if Inside_A_Generic then
             if Ekind (Scope (Current_Scope)) = E_Generic_Package
