@@ -1516,6 +1516,9 @@ the current unit, or if it appears at the start of any unit that
 is part of the dependency set of the current unit (e.g., units that
 are mentioned in @code{with} clauses).
 
+Check names introduced by this pragma are subject to control by compiler
+switches (in particular -gnatp) in the usual manner.
+
 @node Pragma Check_Policy
 @unnumberedsec Pragma Check_Policy
 @cindex Controlling assertions
