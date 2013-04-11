@@ -1,3 +1,16 @@
+2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object): Use
+	an unchecked conversion when associating a transient controlled
+	object with its "hook".
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case
+	Preelaborable_Initialization): The pragma is legal if it comes
+	from an aspect on the private view of the type, even though its
+	analysis point takes place later at the freeze point.
+
 2013-04-11  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb: Minor reformatting.

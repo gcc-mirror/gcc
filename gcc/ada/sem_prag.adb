@@ -13423,12 +13423,22 @@ package body Sem_Prag is
             Check_First_Subtype (Arg1);
             Ent := Entity (Get_Pragma_Arg (Arg1));
 
-            if not (Is_Private_Type (Ent)
-                      or else
-                    Is_Protected_Type (Ent)
-                      or else
-                    (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent)))
+            --  The pragma may come from an aspect on a private declaration,
+            --  even if the freeze point at which this is analyzed in the
+            --  private part after the full view.
+
+            if Has_Private_Declaration (Ent)
+              and then From_Aspect_Specification (N)
             then
+               null;
+
+            elsif Is_Private_Type (Ent)
+              or else Is_Protected_Type (Ent)
+              or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
+            then
+               null;
+
+            else
                Error_Pragma_Arg
                  ("pragma % can only be applied to private, formal derived or "
                   & "protected type",
