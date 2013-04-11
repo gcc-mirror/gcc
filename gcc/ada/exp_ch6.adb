@@ -2559,6 +2559,39 @@ package body Exp_Ch6 is
       --  as we go through the loop, since this is a convenient place to do it.
       --  (Though it seems that this would be better done in Expand_Actuals???)
 
+      --  Special case: Thunks must not compute the extra actuals; they must
+      --  just propagate to the target primitive their extra actuals.
+
+      if Is_Thunk (Current_Scope)
+        and then Thunk_Entity (Current_Scope) = Subp
+        and then Present (Extra_Formals (Subp))
+      then
+         pragma Assert (Present (Extra_Formals (Current_Scope)));
+
+         declare
+            Target_Formal : Entity_Id;
+            Thunk_Formal  : Entity_Id;
+
+         begin
+            Target_Formal := Extra_Formals (Subp);
+            Thunk_Formal  := Extra_Formals (Current_Scope);
+            while Present (Target_Formal) loop
+               Add_Extra_Actual
+                 (New_Occurrence_Of (Thunk_Formal, Loc), Thunk_Formal);
+
+               Target_Formal := Extra_Formal (Target_Formal);
+               Thunk_Formal  := Extra_Formal (Thunk_Formal);
+            end loop;
+
+            while Is_Non_Empty_List (Extra_Actuals) loop
+               Add_Actual_Parameter (Remove_Head (Extra_Actuals));
+            end loop;
+
+            Expand_Actuals (Call_Node, Subp);
+            return;
+         end;
+      end if;
+
       Formal := First_Formal (Subp);
       Actual := First_Actual (Call_Node);
       Param_Count := 1;

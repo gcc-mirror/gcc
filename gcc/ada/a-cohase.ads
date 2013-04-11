@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -542,5 +542,16 @@ private
    Empty_Set : constant Set := (Controlled with HT => (null, 0, 0, 0));
 
    No_Element : constant Cursor := (Container => null, Node => null);
+
+   type Iterator is limited new
+     Set_Iterator_Interfaces.Forward_Iterator with record
+        Container : Set_Access;
+     end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
 end Ada.Containers.Hashed_Sets;

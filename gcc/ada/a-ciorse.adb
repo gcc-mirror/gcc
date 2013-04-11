@@ -42,26 +42,6 @@ with System; use type System.Address;
 
 package body Ada.Containers.Indefinite_Ordered_Sets is
 
-   type Iterator is new Limited_Controlled and
-     Set_Iterator_Interfaces.Reversible_Iterator with
-   record
-      Container : Set_Access;
-      Node      : Node_Access;
-   end record;
-
-   overriding procedure Finalize (Object : in out Iterator);
-
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
-
-   overriding function Next
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
-
-   overriding function Previous
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
-
    -----------------------
    -- Local Subprograms --
    -----------------------

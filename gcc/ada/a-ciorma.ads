@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -352,5 +352,25 @@ private
                                            Lock   => 0));
 
    No_Element : constant Cursor := Cursor'(null, null);
+
+   type Iterator is new Limited_Controlled and
+     Map_Iterator_Interfaces.Reversible_Iterator with
+   record
+      Container : Map_Access;
+      Node      : Node_Access;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
 
 end Ada.Containers.Indefinite_Ordered_Maps;

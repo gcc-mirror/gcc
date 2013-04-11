@@ -29729,12 +29729,6 @@ end API;
 @end group
 @end smallexample
 
-@noindent
-Note that a variable is
-@strong{always imported with a DLL convention}. A function
-can have @code{C} or @code{Stdcall} convention.
-(@pxref{Windows Calling Conventions}).
-
 @node Creating an Import Library
 @subsection Creating an Import Library
 @cindex Import library

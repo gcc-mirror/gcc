@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,29 +26,8 @@
 ------------------------------------------------------------------------------
 
 with System;  use type System.Address;
-with Ada.Finalization;
 
 package body Ada.Containers.Formal_Doubly_Linked_Lists is
-
-   type Iterator is new Ada.Finalization.Limited_Controlled and
-     List_Iterator_Interfaces.Reversible_Iterator with
-   record
-      Container : List_Access;
-      Node      : Count_Type;
-   end record;
-
-   overriding procedure Finalize (Object : in out Iterator);
-
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
-
-   overriding function Next
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
-
-   overriding function Previous
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
