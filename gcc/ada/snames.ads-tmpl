@@ -1205,7 +1205,6 @@ package Snames is
    Name_Archive_Suffix                     : constant Name_Id := N + $;
    Name_Binder                             : constant Name_Id := N + $;
    Name_Body_Suffix                        : constant Name_Id := N + $;
-   Name_Build_Slaves                       : constant Name_Id := N + $;
    Name_Builder                            : constant Name_Id := N + $;
    Name_Clean                              : constant Name_Id := N + $;
    Name_Compiler                           : constant Name_Id := N + $;

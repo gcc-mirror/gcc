@@ -4825,9 +4825,145 @@ package body Exp_Ch3 is
       --  which case the init proc call must be inserted only after the bodies
       --  of the shared variable procedures have been seen.
 
+      function Build_Equivalent_Aggregate return Boolean;
+      --  If the object has a constrained discriminated type and no initial
+      --  value, it may be possible to build an equivalent aggregate instead,
+      --  and prevent an actual call to the initialization procedure.
+
       function Rewrite_As_Renaming return Boolean;
       --  Indicate whether to rewrite a declaration with initialization into an
       --  object renaming declaration (see below).
+
+      --------------------------------
+      -- Build_Equivalent_Aggregate --
+      --------------------------------
+
+      function Build_Equivalent_Aggregate return Boolean is
+         Aggr      : Node_Id;
+         Comp      : Entity_Id;
+         Discr     : Elmt_Id;
+         Full_Type : Entity_Id;
+
+      begin
+         Full_Type := Typ;
+         if Is_Private_Type (Typ)
+           and then Present (Full_View (Typ))
+         then
+            Full_Type := Full_View (Typ);
+         end if;
+
+         --  Only perform this transformation if Elaboration_Code is forbidden
+         --  or undesirable, and if this is a global entity of a constrained
+         --  record type.
+
+         --  If Initialize_Scalars might be active this  transformation cannot
+         --  be performed either, because it will lead to different semantics
+         --  or because elaboration code will in fact be created.
+
+         if Ekind (Full_Type) /= E_Record_Subtype
+           or else not Has_Discriminants (Full_Type)
+           or else not Is_Constrained (Full_Type)
+           or else Is_Controlled (Full_Type)
+           or else Is_Limited_Type (Full_Type)
+           or else not Restriction_Active (No_Initialize_Scalars)
+         then
+            return False;
+         end if;
+
+         if Ekind (Current_Scope) = E_Package
+          and then
+            (Restriction_Active (No_Elaboration_Code)
+              or else Is_Preelaborated (Current_Scope))
+         then
+
+            --  Building a static aggregate is possible if the discriminants
+            --  have static values and the other components have static
+            --  defaults or none.
+
+            Discr := First_Elmt (Discriminant_Constraint (Full_Type));
+            while Present (Discr) loop
+               if not Is_OK_Static_Expression (Node (Discr)) then
+                  return False;
+               end if;
+
+               Next_Elmt (Discr);
+            end loop;
+
+            --  Check that initialized components are OK, and that non-
+            --  initialized components do not require a call to their own
+            --  initialization procedure.
+
+            Comp := First_Component (Full_Type);
+            while Present (Comp) loop
+               if Ekind (Comp) = E_Component
+                 and then Present (Expression (Parent (Comp)))
+                 and then
+                   not Is_OK_Static_Expression (Expression (Parent (Comp)))
+               then
+                  return False;
+
+               elsif Has_Non_Null_Base_Init_Proc (Etype (Comp)) then
+                  return False;
+
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+
+            --  Everything is static, assemble the aggregate, discriminant
+            --  values first.
+
+            Aggr :=
+               Make_Aggregate (Loc,
+                Expressions            => New_List,
+                Component_Associations => New_List);
+
+            Discr := First_Elmt (Discriminant_Constraint (Full_Type));
+            while Present (Discr) loop
+               Append_To (Expressions (Aggr), New_Copy (Node (Discr)));
+               Next_Elmt (Discr);
+            end loop;
+
+            --  Now collect values of initialized components.
+
+            Comp := First_Component (Full_Type);
+            while Present (Comp) loop
+               if Ekind (Comp) = E_Component
+                 and then Present (Expression (Parent (Comp)))
+               then
+                  Append_To (Component_Associations (Aggr),
+                    Make_Component_Association (Loc,
+                      Choices    => New_List (New_Occurrence_Of (Comp, Loc)),
+                      Expression => New_Copy_Tree
+                                      (Expression (Parent (Comp)))));
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+
+            --  Finally, box-initialize remaining components.
+
+            Append_To (Component_Associations (Aggr),
+              Make_Component_Association (Loc,
+                Choices => New_List (Make_Others_Choice (Loc)),
+                Expression => Empty));
+            Set_Box_Present (Last (Component_Associations (Aggr)));
+            Set_Expression (N, Aggr);
+
+            if Typ /= Full_Type then
+               Analyze_And_Resolve (Aggr, Full_View (Base_Type (Full_Type)));
+               Rewrite (Aggr, Unchecked_Convert_To (Typ, Aggr));
+               Analyze_And_Resolve (Aggr, Typ);
+            else
+               Analyze_And_Resolve (Aggr, Full_Type);
+            end if;
+
+            return True;
+
+         else
+            return False;
+         end if;
+      end Build_Equivalent_Aggregate;
 
       -------------------------
       -- Rewrite_As_Renaming --
@@ -5031,6 +5167,14 @@ package body Exp_Ch3 is
                if Present (Init_Expr) then
                   Set_Expression
                     (N, New_Copy_Tree (Init_Expr, New_Scope => Current_Scope));
+                  return;
+
+               --  If type has discriminants, try to build equivalent
+               --  aggregate using discriminant values from the declaration.
+               --  This is a useful optimization, in particular if restriction
+               --  No_Elaboration_Code is active.
+
+               elsif Build_Equivalent_Aggregate then
                   return;
 
                else
