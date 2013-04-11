@@ -536,6 +536,21 @@ package body Sem_Disp is
                Set_Entity (Name (N), Alias (Subp));
                return;
 
+            --  An obscure special case: a null procedure may have a class-
+            --  wide pre/postcondition that includes a call to an abstract
+            --  subp. Calls within the expression may not have been rewritten
+            --  as dispatching calls yet, because the null body appears in
+            --  the current declarative part. The expression will be properly
+            --  rewritten/reanalyzed when the postcondition procedure is built.
+
+            elsif In_Spec_Expression
+              and then Is_Subprogram (Current_Scope)
+              and then
+                Nkind (Parent (Current_Scope)) = N_Procedure_Specification
+              and then Null_Present (Parent (Current_Scope))
+            then
+               null;
+
             else
                --  We need to determine whether the context of the call
                --  provides a tag to make the call dispatching. This requires

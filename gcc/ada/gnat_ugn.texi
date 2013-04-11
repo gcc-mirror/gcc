@@ -454,18 +454,6 @@ Stack Related Facilities
 * Static Stack Usage Analysis::
 * Dynamic Stack Usage Analysis::
 
-Some Useful Memory Pools
-
-The GNAT Debug Pool Facility
-
-@ifclear vms
-The gnatmem Tool
-
-* Running gnatmem::
-* Switches for gnatmem::
-* Example of gnatmem Usage::
-@end ifclear
-
 Verifying Properties Using gnatcheck
 
 Sample Bodies Using gnatstub
