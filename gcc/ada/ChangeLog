@@ -1,3 +1,8 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb: Minor code reorganization and comment fixes.
+	* sem_type.adb: Minor reformatting.
+
 2013-04-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Process_Transient_Object): Add new
