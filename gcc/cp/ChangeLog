@@ -1,5 +1,11 @@
 2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/56913
+	* typeck2.c (build_m_component_ref): Protect error calls with
+	(complain & tf_error).
+
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/54216
 	* parser.c (cp_parser_enum_specifier): Check for empty
 	anonymous enums and anonymous scoped enums.
