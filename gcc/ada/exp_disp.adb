@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
-with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_CG;   use Exp_CG;
 with Exp_Dbug; use Exp_Dbug;
@@ -1884,6 +1883,7 @@ package body Exp_Disp is
       end loop;
 
       Thunk_Id := Make_Temporary (Loc, 'T');
+      Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
 

@@ -2271,7 +2271,6 @@ package body Einfo is
 
    function Is_Thunk (Id : E) return B is
    begin
-      pragma Assert (Is_Subprogram (Id));
       return Flag225 (Id);
    end Is_Thunk;
 
@@ -4880,6 +4879,7 @@ package body Einfo is
 
    procedure Set_Is_Thunk (Id : E; V : B := True) is
    begin
+      pragma Assert (Is_Subprogram (Id));
       Set_Flag225 (Id, V);
    end Set_Is_Thunk;
 

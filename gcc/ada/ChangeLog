@@ -1,3 +1,41 @@
+2013-04-11  Doug Rupp  <rupp@adacore.com>
+
+	* gnatlink.adb: Fold program basename to lower case on VMS for
+	consistency.
+
+2013-04-11  Matthew Heaney  <heaney@adacore.com>
+
+	* a-rbtgbo.adb (Generic_Equal): Initialize Result variable before
+	entering loop.
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* xgnatugn.adb: Remove dead code (handling of @ifset/@ifclear).
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Remove some use of ifset in menus. Not strictly
+	needed, and seems to confuse some versions of makeinfo.
+
+2013-04-11  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.adb (Is_Thunk): Remove assertion.
+	(Set_Is_Thunk): Add assertion.
+	* einfo.ads (Is_Thunk): Complete documentation.
+	* exp_ch11.adb (Expand_N_Handled_Sequence_Of_Statements): Code cleanup.
+	* exp_ch3.ad[sb] (Is_Variable_Size_Array): Moved to sem_util
+	(Is_Variable_Size_Record): Moved to sem_util
+	* exp_ch6.adb (Expand_Call): Code cleanup.
+	(Expand_N_Extended_Return_Statement): Code cleanup.
+	(Expand_Simple_Function_Return): Code cleanup.
+	* exp_disp.adb Remove dependency on exp_ch3
+	(Expand_Interface_Thunk): Add minimum decoration needed to set
+	attribute Is_Thunk.
+	* sem_ch3.ad[sb] (Is_Constant_Bound): moved to sem_util
+	* sem_util.ad[sb] (Is_Constant_Bound): Moved from
+	sem_ch3 (Is_Variable_Size_Array): Moved from exp_ch3
+	(Is_Variable_Size_Record): Moved from exp_ch3
+
 2013-04-11  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch11.adb (Expand_N_Handled_Sequence_Of_Statements): Do

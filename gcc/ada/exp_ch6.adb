@@ -2691,9 +2691,7 @@ package body Exp_Ch6 is
             --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of
             --  accessibility levels.
 
-            if Ekind (Current_Scope) in Subprogram_Kind
-              and then Is_Thunk (Current_Scope)
-            then
+            if Is_Thunk (Current_Scope) then
                declare
                   Parm_Ent : Entity_Id;
 
@@ -5493,8 +5491,7 @@ package body Exp_Ch6 is
       --  the pointer to the object) they are always handled by means of
       --  simple return statements.
 
-      pragma Assert (not Is_Subprogram (Current_Scope)
-                      or else not Is_Thunk (Current_Scope));
+      pragma Assert (not Is_Thunk (Current_Scope));
 
       if Nkind (Ret_Obj_Decl) = N_Object_Declaration then
          Exp := Expression (Ret_Obj_Decl);
@@ -7144,8 +7141,7 @@ package body Exp_Ch6 is
          --  handled by means of simple return statements. This leaves their
          --  expansion simple and clean.
 
-        and then not (Is_Subprogram (Current_Scope)
-                       and then Is_Thunk (Current_Scope))
+        and then not Is_Thunk (Current_Scope)
       then
          declare
             Return_Object_Entity : constant Entity_Id :=
@@ -7225,8 +7221,7 @@ package body Exp_Ch6 is
       --  the object is returned by reference and the maximum functionality
       --  required is just to displace the pointer.
 
-      elsif Is_Subprogram (Current_Scope)
-        and then Is_Thunk (Current_Scope)
+      elsif Is_Thunk (Current_Scope)
         and then Is_Interface (Exptyp)
       then
          null;

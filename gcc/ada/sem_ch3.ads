@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,12 +173,6 @@ package Sem_Ch3 is
    --  ??? MORE DOCUMENTATION
    --  Given a discriminant somewhere in the Typ_For_Constraint tree and a
    --  Constraint, return the value of that discriminant.
-
-   function Is_Constant_Bound (Exp : Node_Id) return Boolean;
-   --  Exp is the expression for an array bound. Determines whether the
-   --  bound is a compile-time known value, or a constant entity, or an
-   --  enumeration literal, or an expression composed of constant-bound
-   --  subexpressions which are evaluated by means of standard operators.
 
    function Is_Null_Extension (T : Entity_Id) return Boolean;
    --  Returns True if the tagged type T has an N_Full_Type_Declaration that

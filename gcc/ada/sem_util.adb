@@ -7747,6 +7747,31 @@ package body Sem_Util is
                or else Is_Task_Interface (T));
    end Is_Concurrent_Interface;
 
+   -----------------------
+   -- Is_Constant_Bound --
+   -----------------------
+
+   function Is_Constant_Bound (Exp : Node_Id) return Boolean is
+   begin
+      if Compile_Time_Known_Value (Exp) then
+         return True;
+
+      elsif Is_Entity_Name (Exp)
+        and then Present (Entity (Exp))
+      then
+         return Is_Constant_Object (Entity (Exp))
+           or else Ekind (Entity (Exp)) = E_Enumeration_Literal;
+
+      elsif Nkind (Exp) in N_Binary_Op then
+         return Is_Constant_Bound (Left_Opnd (Exp))
+           and then Is_Constant_Bound (Right_Opnd (Exp))
+           and then Scope (Entity (Exp)) = Standard_Standard;
+
+      else
+         return False;
+      end if;
+   end Is_Constant_Bound;
+
    --------------------------------------
    -- Is_Controlling_Limited_Procedure --
    --------------------------------------
@@ -9480,6 +9505,69 @@ package body Sem_Util is
         and then Chars (T) /= No_Name
         and then Get_Name_String (Chars (T)) = "valuetype";
    end Is_Value_Type;
+
+   ----------------------------
+   -- Is_Variable_Size_Array --
+   ----------------------------
+
+   function Is_Variable_Size_Array (E : Entity_Id) return Boolean is
+      Idx : Node_Id;
+
+   begin
+      pragma Assert (Is_Array_Type (E));
+
+      --  Check if some index is initialized with a non-constant value
+
+      Idx := First_Index (E);
+      while Present (Idx) loop
+         if Nkind (Idx) = N_Range then
+            if not Is_Constant_Bound (Low_Bound (Idx))
+              or else not Is_Constant_Bound (High_Bound (Idx))
+            then
+               return True;
+            end if;
+         end if;
+
+         Idx := Next_Index (Idx);
+      end loop;
+
+      return False;
+   end Is_Variable_Size_Array;
+
+   -----------------------------
+   -- Is_Variable_Size_Record --
+   -----------------------------
+
+   function Is_Variable_Size_Record (E : Entity_Id) return Boolean is
+      Comp     : Entity_Id;
+      Comp_Typ : Entity_Id;
+
+   begin
+      pragma Assert (Is_Record_Type (E));
+
+      Comp := First_Entity (E);
+      while Present (Comp) loop
+         Comp_Typ := Etype (Comp);
+
+         --  Recursive call if the record type has discriminants
+
+         if Is_Record_Type (Comp_Typ)
+           and then Has_Discriminants (Comp_Typ)
+           and then Is_Variable_Size_Record (Comp_Typ)
+         then
+            return True;
+
+         elsif Is_Array_Type (Comp_Typ)
+           and then Is_Variable_Size_Array (Comp_Typ)
+         then
+            return True;
+         end if;
+
+         Next_Entity (Comp);
+      end loop;
+
+      return False;
+   end Is_Variable_Size_Record;
 
    ---------------------
    -- Is_VMS_Operator --
