@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -684,6 +684,15 @@ package body Ch6 is
             Stub_Node :=
               New_Node (N_Subprogram_Body_Stub, Sloc (Specification_Node));
             Set_Specification (Stub_Node, Specification_Node);
+
+            --  The specification has been parsed as part of a subprogram
+            --  declaration, and aspects have already been collected.
+
+            if Is_Non_Empty_List (Aspects) then
+               Set_Parent (Aspects, Stub_Node);
+               Set_Aspect_Specifications (Stub_Node, Aspects);
+            end if;
+
             Scan; -- past SEPARATE
             Pop_Scope_Stack;
             TF_Semicolon;

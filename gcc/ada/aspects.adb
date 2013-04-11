@@ -220,6 +220,7 @@ package body Aspects is
       N_Subprogram_Body                        => True,
       N_Subprogram_Declaration                 => True,
       N_Subprogram_Renaming_Declaration        => True,
+      N_Subprogram_Body_Stub                   => True,
       N_Subtype_Declaration                    => True,
       N_Task_Body                              => True,
       N_Task_Type_Declaration                  => True,

@@ -88,7 +88,7 @@ procedure Gnatname is
       Table_Initial        => 10,
       Table_Increment      => 100,
       Table_Name           => "Gnatname.Arguments");
-   --  Table to accumulate the foreign patterns
+   --  Table to accumulate directories and patterns
 
    package Preprocessor_Switches is new Table.Table
      (Table_Component_Type => String_Access,

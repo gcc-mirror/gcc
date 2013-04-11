@@ -2681,10 +2681,11 @@ package body Sem_Ch6 is
       end if;
 
       --  Ada 2012 aspects may appear in a subprogram body, but only if there
-      --  is no previous spec.
+      --  is no previous spec. Ditto for a subprogram stub that does not have
+      --  a corresponding spec, but for which there may also be a spec_id.
 
       if Has_Aspects (N) then
-         if Present (Corresponding_Spec (N)) then
+         if Present (Spec_Id) then
             Error_Msg_N
               ("aspect specifications must appear in subprogram declaration",
                 N);
