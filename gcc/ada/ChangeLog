@@ -1,3 +1,16 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_attr.adb, gnat1drv.adb, prj-makr.adb,
+	opt.ads, sem_ch13.adb: Minor reformatting.
+	* debug.adb: Minor comment fix (remove junk .I doc).
+
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.ads, exp_dist.adb, exp_dist.ads (Rtsfind.PCS_Version, case
+	PolyORB): Bump to 6.
+	(Exp_Dist.PolyORB_Support): Replace TC_Build with
+	Build_Complex_TC.
+
 2013-04-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* debug.adb, sem_prag.adb, par-ch2.adb, sem_attr.adb, gnat1drv.adb,

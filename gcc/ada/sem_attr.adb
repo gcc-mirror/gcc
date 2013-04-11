@@ -5016,6 +5016,8 @@ package body Sem_Attr is
          then
             null;
 
+         --  Some other compilers allow dubious use of X'???'Size
+
          elsif Relaxed_RM_Semantics
            and then Nkind (P) = N_Attribute_Reference
          then

@@ -275,7 +275,11 @@ procedure Gnat1drv is
          Force_ALI_Tree_File := True;
          Try_Semantics := True;
 
-         --  Make the Ada front-end more liberal to support other Ada compilers
+         --  Make the Ada front-end more liberal so that the compiler will
+         --  allow illegal code that is allowed by other compilers. CodePeer
+         --  is in the business of finding problems, not enforcing rules!
+         --  This is useful when using CodePeer mode with other compilers.
+
          Relaxed_RM_Semantics := True;
       end if;
 
