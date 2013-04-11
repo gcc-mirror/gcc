@@ -1,3 +1,38 @@
+2013-04-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Handled_Sequence_Of_Statements): Do
+	not add cleanup actions in thunks associated with interface types.
+	* exp_ch3.ad[sb] (Is_Variable_Size_Record): Move declaration to
+	the package spec.
+	* exp_ch4.adb (Tagged_Conversion): Update call to
+	Expand_Interface_Conversion since the parameter Is_Static is no
+	longer needed.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Adding
+	assertion to ensure that interface thunks are never handled by
+	this routine.
+	(Expand_N_Simple_Function_Return): Do not rewrite this statement
+	as an extended return statement in interface thunks, and do not
+	perform copy in the secondary stack if the return statement is
+	located in a thunk.
+	* exp_disp.adb (Expand_Dispatching_Call): No longer displace
+	the pointer to the returned object in functions returning interface
+	types.
+	(Expand_Interface_Thunk): For functions returning interface types
+	displace the pointer to the returned object.
+	(Expand_Interface_Conversion): Remove formal
+	Is_Static since this subprogram can now evaluate it locally.
+	* sem_ch3.adb (Add_Internal_Interface_Entities): For functions
+	propagate the type returned by the covered interface primitive to
+	the internal interface entity. Needed by the thunk to generate
+	the code which displaces "this" to reference the corresponding
+	secondary dispatch table.
+	* sem_disp.adb (Propagate_Tag): Update call to
+	Expand_Interface_Conversion since the parameter Is_Static is no
+	longer needed.
+	* sem_res.adb (Resolve_Type_Conversion): Update calls to
+	Expand_Interface_Conversion since the parameter Is_Static is no
+	longer needed plus code cleanup.
+
 2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* init.c (RETURN_ADDR_OFFSET): Delete as unused.

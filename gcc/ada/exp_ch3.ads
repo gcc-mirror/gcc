@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,6 +103,9 @@ package Exp_Ch3 is
    --  fixed positions of Target are initialized; if Variable_Comps is True
    --  then tags components located at variable positions of Target are
    --  initialized.
+
+   function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
+   --  Returns true if E has variable size components (move to sem_util???)
 
    function Needs_Simple_Initialization
      (T           : Entity_Id;
