@@ -9757,7 +9757,7 @@ package body Sem_Res is
                      N);
 
                else
-                  Expand_Interface_Conversion (N, Is_Static => False);
+                  Expand_Interface_Conversion (N);
                end if;
 
             --  Conversion to interface type
@@ -9770,29 +9770,18 @@ package body Sem_Res is
                   Opnd := Etype (Opnd);
                end if;
 
-               if not Interface_Present_In_Ancestor
-                        (Typ   => Opnd,
-                         Iface => Target)
+               if Is_Class_Wide_Type (Opnd)
+                 or else Interface_Present_In_Ancestor
+                           (Typ   => Opnd,
+                            Iface => Target)
                then
-                  if Is_Class_Wide_Type (Opnd) then
-
-                     --  The static analysis is not enough to know if the
-                     --  interface is implemented or not. Hence we must pass
-                     --  the work to the expander to generate code to evaluate
-                     --  the conversion at run time.
-
-                     Expand_Interface_Conversion (N, Is_Static => False);
-
-                  else
-                     Error_Msg_Name_1 := Chars (Etype (Target));
-                     Error_Msg_Name_2 := Chars (Opnd);
-                     Error_Msg_N
-                       ("wrong interface conversion (% is not a progenitor "
-                        & "of %)", N);
-                  end if;
-
-               else
                   Expand_Interface_Conversion (N);
+               else
+                  Error_Msg_Name_1 := Chars (Etype (Target));
+                  Error_Msg_Name_2 := Chars (Opnd);
+                  Error_Msg_N
+                    ("wrong interface conversion (% is not a progenitor "
+                     & "of %)", N);
                end if;
             end if;
          end;

@@ -1402,10 +1402,16 @@ package body Exp_Ch11 is
 
       --  Add clean up actions if required
 
-      if Nkind (Parent (N)) /= N_Package_Body
-        and then Nkind (Parent (N)) /= N_Accept_Statement
-        and then Nkind (Parent (N)) /= N_Extended_Return_Statement
+      if not Nkind_In (Parent (N), N_Package_Body,
+                                   N_Accept_Statement,
+                                   N_Extended_Return_Statement)
         and then not Delay_Cleanups (Current_Scope)
+
+        --  No cleanup action needed in thunks associated with interfaces
+        --  because they only displace the pointer to the object.
+
+        and then not (Is_Subprogram (Current_Scope)
+                       and then Is_Thunk (Current_Scope))
       then
          Expand_Cleanup_Actions (Parent (N));
       else

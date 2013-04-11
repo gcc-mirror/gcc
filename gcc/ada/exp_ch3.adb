@@ -232,9 +232,6 @@ package body Exp_Ch3 is
    function Is_Variable_Size_Array (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 
-   function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
-   --  Returns true if E has variable size components
-
    function Make_Eq_Body
      (Typ     : Entity_Id;
       Eq_Name : Name_Id) return Node_Id;

@@ -1661,6 +1661,15 @@ package body Sem_Ch3 is
                  (New_Subp, Is_Abstract_Subprogram (Prim));
                Set_Interface_Alias (New_Subp, Iface_Prim);
 
+               --  If the returned type is an interface then propagate it to
+               --  the returned type. Needed by the thunk to generate the code
+               --  which displaces "this" to reference the corresponding
+               --  secondary dispatch table in the returned object.
+
+               if Is_Interface (Etype (Iface_Prim)) then
+                  Set_Etype (New_Subp, Etype (Iface_Prim));
+               end if;
+
                --  Internal entities associated with interface types are
                --  only registered in the list of primitives of the tagged
                --  type. They are only used to fill the contents of the
