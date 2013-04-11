@@ -5246,7 +5246,10 @@ package body Exp_Ch4 is
             --  Step 3: Hook the transient object to the temporary
 
             if Is_Access_Type (Obj_Typ) then
-               Expr := Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
+
+               --  Why is this an unchecked conversion ???
+               Expr :=
+                 Unchecked_Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
             else
                Expr :=
                  Make_Attribute_Reference (Loc,
