@@ -1700,7 +1700,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_gdwarf:
-      if (arg && strlen(arg) != 0)
+      if (arg && strlen (arg) != 0)
         {
           error_at (loc, "%<-gdwarf%s%> is ambiguous; "
                     "use %<-gdwarf-%s%> for DWARF version "
@@ -1708,9 +1708,9 @@ common_handle_option (struct gcc_options *opts,
           break;
         }
       else
-        {
-          value = opts->x_dwarf_version;
-        }
+        value = opts->x_dwarf_version;
+      
+      /* FALLTHRU */
     case OPT_gdwarf_:
       if (value < 2 || value > 4)
 	error_at (loc, "dwarf version %d is not supported", value);
