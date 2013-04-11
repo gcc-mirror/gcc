@@ -1693,6 +1693,14 @@ package body Sem_Ch13 is
 
                   else
                      Insert_After (N, Aitem);
+
+                     --  Pre/Postconditions on stubs are analyzed at once,
+                     --  because the proper body is analyzed next, and the
+                     --  contract must be captured before the body.
+
+                     if Nkind (N) = N_Subprogram_Body_Stub then
+                        Analyze (Aitem);
+                     end if;
                   end if;
 
                   goto Continue;

@@ -38,6 +38,7 @@ with Prj.Util; use Prj.Util;
 with Sdefault;
 with Snames;   use Snames;
 with Table;    use Table;
+with Tempdir;
 
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
@@ -1235,6 +1236,7 @@ package body Prj.Makr is
                         Success : Boolean;
                         Saved_Output : File_Descriptor;
                         Saved_Error  : File_Descriptor;
+                        Tmp_File     : Path_Name_Type;
 
                      begin
                         --  If we don't have the path of the compiler yet,
@@ -1256,35 +1258,23 @@ package body Prj.Makr is
                            end if;
                         end if;
 
-                        --  If we don't have yet the file name of the
-                        --  temporary file, get it now.
+                        --  Create the temporary file
 
-                        if Temp_File_Name = null then
-                           Create_Temp_File (FD, Temp_File_Name);
+                        Tempdir.Create_Temp_File (FD, Tmp_File);
 
-                           if FD = Invalid_FD then
-                              Prj.Com.Fail
-                                ("could not create temporary file");
-                           end if;
+                        if FD = Invalid_FD then
+                           Prj.Com.Fail
+                             ("could not create temporary file");
 
-                           Close (FD);
-                           Delete_File (Temp_File_Name.all, Success);
+                        else
+                           Temp_File_Name :=
+                             new String'(Get_Name_String (Tmp_File));
                         end if;
 
                         Args (Args'Last) := new String'
                           (Dir_Name &
                            Directory_Separator &
                            Str (1 .. Last));
-
-                        --  Create the temporary file
-
-                        FD := Create_Output_Text_File
-                          (Name => Temp_File_Name.all);
-
-                        if FD = Invalid_FD then
-                           Prj.Com.Fail
-                             ("could not create temporary file");
-                        end if;
 
                         --  Save the standard output and error
 
@@ -1331,7 +1321,8 @@ package body Prj.Makr is
 
                            if not Is_Valid (File) then
                               Prj.Com.Fail
-                                ("could not read temporary file");
+                                ("could not read temporary file " &
+                                 Temp_File_Name.all);
                            end if;
 
                            Save_Last_Source_Index := Sources.Last;

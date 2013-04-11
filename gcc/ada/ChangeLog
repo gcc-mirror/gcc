@@ -1,5 +1,31 @@
 2013-04-11  Ed Schonberg  <schonberg@adacore.com>
 
+	* par-ch6.adb (P_Subprogram): Attach aspects to subprogram stub.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Allow aspects on
+	subprogram stubs.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Analyze generated
+	pre/post pragmas at once before analyzing the proper body.
+	* sem_prag.adb (Chain_PPC): Handle pragma that comes from an
+	aspect on a subprogram stub.
+	* aspects.adb: Aspect specifications can appear on a
+	subprogram_Body_Stub.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* gnatname.adb: Minor comment fix.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
+	* prj-makr.adb (Process_Directory): Create a new temporary
+	file for each invocation of the compiler, in directory pointed
+	by environment variable TMPDIR if it exists.
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Minor editing/clean ups.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch6.adb (Analyze_Null_Procedure): New subprogram, mostly
 	extracted from Analyze_Subprogram_Declaration, to handle null
 	procedure declarations that in ada 2012 can be completions of

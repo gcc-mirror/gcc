@@ -2187,11 +2187,16 @@ package body Sem_Prag is
                  ("aspect % requires ''Class for null procedure");
 
             --  Pre/postconditions are legal on a subprogram body if it is not
-            --  a completion of a declaration.
+            --  a completion of a declaration. They are also legal on a stub
+            --  with no previous declarations (this is checked when processing
+            --  the corresponding aspects).
 
             elsif Nkind (PO) = N_Subprogram_Body
               and then Acts_As_Spec (PO)
             then
+               null;
+
+            elsif Nkind (PO) = N_Subprogram_Body_Stub then
                null;
 
             elsif not Nkind_In (PO, N_Subprogram_Declaration,

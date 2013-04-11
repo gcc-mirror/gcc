@@ -3926,23 +3926,19 @@ files.
 
 It is possible to supply several file names on the same @command{gcc}
 command. This causes @command{gcc} to call the appropriate compiler for
-each file. For example, the following command lists three separate
+each file. For example, the following command lists two separate
 files to be compiled:
 
 @smallexample
-$ gcc -c x.adb y.adb z.c
+$ gcc -c x.adb y.adb
 @end smallexample
 
 @noindent
 calls @code{gnat1} (the Ada compiler) twice to compile @file{x.adb} and
-@file{y.adb}, and @code{cc1} (the C compiler) once to compile @file{z.c}.
-The compiler generates three object files @file{x.o}, @file{y.o} and
-@file{z.o} and the two ALI files @file{x.ali} and @file{y.ali} from the
-Ada compilations. Any switches apply to all the files ^listed,^listed.^
-@ifclear vms
-except for
-@option{-gnat@var{x}} switches, which apply only to Ada compilations.
-@end ifclear
+@file{y.adb}.
+The compiler generates two object files @file{x.o} and @file{y.o}
+and the two ALI files @file{x.ali} and @file{y.ali}.
+Any switches apply to all the files ^listed,^listed.^
 
 @node Switches for gcc
 @section Switches for @command{gcc}
