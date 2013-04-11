@@ -376,7 +376,7 @@ DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 DEFPARAM (PARAM_ALIGN_THRESHOLD,
 	  "align-threshold",
 	  "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment",
-	  100, 0, 0)
+	  100, 1, 0)
 
 DEFPARAM (PARAM_ALIGN_LOOP_ITERATIONS,
 	  "align-loop-iterations",
