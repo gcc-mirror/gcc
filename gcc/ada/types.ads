@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,8 +102,8 @@ package Types is
    --  Graphic characters, as defined in ARM
 
    subtype Line_Terminator is Character range ASCII.LF .. ASCII.CR;
-   --  Line terminator characters (LF, VT, FF, CR). For further details,
-   --  see the extensive discussion of line termination in the Sinput spec.
+   --  Line terminator characters (LF, VT, FF, CR). For further details, see
+   --  the extensive discussion of line termination in the Sinput spec.
 
    subtype Upper_Half_Character is
      Character range Character'Val (16#80#) .. Character'Val (16#FF#);

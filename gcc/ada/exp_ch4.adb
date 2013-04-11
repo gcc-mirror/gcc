@@ -355,6 +355,7 @@ package body Exp_Ch4 is
          if Nkind (Op1) = N_Op_Not then
             Arg1 := Right_Opnd (Op1);
             Arg2 := Right_Opnd (Op2);
+
             if Kind = N_Op_And then
                Proc_Name := RTE (RE_Vector_Nor);
             elsif Kind = N_Op_Or then
@@ -601,9 +602,8 @@ package body Exp_Ch4 is
       Dtyp := Available_View (Designated_Type (PtrT));
       Etyp := Etype (Expression (Orig_Node));
 
-      if Is_Class_Wide_Type (Dtyp)
-        and then Is_Interface (Dtyp)
-      then
+      if Is_Class_Wide_Type (Dtyp) and then Is_Interface (Dtyp) then
+
          --  If the type of the allocator expression is not an interface type
          --  we can generate code to reference the record component containing
          --  the pointer to the secondary dispatch table.
@@ -641,7 +641,7 @@ package body Exp_Ch4 is
          --  generate a run-time call to displace "this" to reference the
          --  component containing the pointer to the secondary dispatch table
          --  or else raise Constraint_Error if the actual object does not
-         --  implement the target interface. This case corresponds with the
+         --  implement the target interface. This case corresponds to the
          --  following example:
 
          --   function Op (Obj : Iface_1'Class) return access Iface_2'Class is
@@ -1204,9 +1204,8 @@ package body Exp_Ch4 is
             Insert_Action (N, Tag_Assign);
          end if;
 
-         if Needs_Finalization (DesigT)
-            and then Needs_Finalization (T)
-         then
+         if Needs_Finalization (DesigT) and then Needs_Finalization (T) then
+
             --  Generate an Adjust call if the object will be moved. In Ada
             --  2005, the object may be inherently limited, in which case
             --  there is no Adjust procedure, and the object is built in
@@ -1220,17 +1219,17 @@ package body Exp_Ch4 is
               and then not Is_Immutably_Limited_Type (T)
             then
                Insert_Action (N,
-                 Make_Adjust_Call (
-                   Obj_Ref    =>
 
-                     --  An unchecked conversion is needed in the classwide
-                     --  case because the designated type can be an ancestor
-                     --  of the subtype mark of the allocator.
+                 --  An unchecked conversion is needed in the classwide case
+                 --  because the designated type can be an ancestor of the
+                 --  subtype mark of the allocator.
 
-                     Unchecked_Convert_To (T,
-                       Make_Explicit_Dereference (Loc,
-                         Prefix => New_Reference_To (Temp, Loc))),
-                   Typ => T));
+                 Make_Adjust_Call
+                   (Obj_Ref =>
+                      Unchecked_Convert_To (T,
+                        Make_Explicit_Dereference (Loc,
+                          Prefix => New_Reference_To (Temp, Loc))),
+                    Typ     => T));
             end if;
 
             --  Generate:
@@ -1315,9 +1314,7 @@ package body Exp_Ch4 is
          Rewrite (N, New_Reference_To (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
-      elsif Is_Access_Type (T)
-        and then Can_Never_Be_Null (T)
-      then
+      elsif Is_Access_Type (T) and then Can_Never_Be_Null (T) then
          Install_Null_Excluding_Check (Exp);
 
       elsif Is_Access_Type (DesigT)
@@ -2701,8 +2698,8 @@ package body Exp_Ch4 is
                         --  discriminant(s).
 
                         if Nkind (Lhs) = N_Selected_Component
-                          and then Has_Per_Object_Constraint (
-                                     Entity (Selector_Name (Lhs)))
+                          and then Has_Per_Object_Constraint
+                                     (Entity (Selector_Name (Lhs)))
                         then
                            Lhs_Discr_Val :=
                              Make_Selected_Component (Loc,
@@ -3336,9 +3333,7 @@ package body Exp_Ch4 is
       --  converted to an array, and the easiest way of doing that is to go
       --  through the normal general circuit.
 
-      if NN = 1
-        and then Base_Type (Etype (Operands (1))) /= Ctyp
-      then
+      if NN = 1 and then Base_Type (Etype (Operands (1))) /= Ctyp then
          Result := Operands (1);
          goto Done;
       end if;
@@ -4214,8 +4209,7 @@ package body Exp_Ch4 is
       --  Expand_Allocator_Expression inherit the proper type attributes.
 
       if (Ekind (PtrT) = E_Anonymous_Access_Type
-           or else
-             (Is_Itype (PtrT) and then No (Finalization_Master (PtrT))))
+           or else (Is_Itype (PtrT) and then No (Finalization_Master (PtrT))))
         and then Needs_Finalization (Dtyp)
       then
          --  Detect the allocation of an anonymous controlled object where the
@@ -4797,9 +4791,7 @@ package body Exp_Ch4 is
                      --    * CodePeer mode - TSS primitive Finalize_Address is
                      --    not created in this mode.
 
-                     elsif not Alfa_Mode
-                       and then not CodePeer_Mode
-                     then
+                     elsif not (Alfa_Mode or CodePeer_Mode) then
                         Insert_Action (N,
                           Make_Set_Finalize_Address_Call
                             (Loc     => Loc,
@@ -4819,9 +4811,7 @@ package body Exp_Ch4 is
       --  object that has been rewritten as a reference, we displace "this"
       --  to reference properly its secondary dispatch table.
 
-      if Nkind (N) = N_Identifier
-        and then Is_Interface (Dtyp)
-      then
+      if Nkind (N) = N_Identifier and then Is_Interface (Dtyp) then
          Displace_Allocator_Pointer (N);
       end if;
 
@@ -5101,10 +5091,10 @@ package body Exp_Ch4 is
                   while Present (Par) loop
                      if Is_List_Member (Par)
                        and then
-                          not Nkind_In (Par, N_Component_Association,
-                                             N_Discriminant_Association,
-                                             N_Parameter_Association,
-                                             N_Pragma_Argument_Association)
+                         not Nkind_In (Par, N_Component_Association,
+                                            N_Discriminant_Association,
+                                            N_Parameter_Association,
+                                            N_Pragma_Argument_Association)
                      then
                         return Par;
 
@@ -5667,9 +5657,7 @@ package body Exp_Ch4 is
       --  change it to the SLOC of the expression which, after expansion, will
       --  correspond to what is being evaluated.
 
-      if Present (Parent (N))
-        and then Nkind (Parent (N)) = N_If_Statement
-      then
+      if Present (Parent (N)) and then Nkind (Parent (N)) = N_If_Statement then
          Set_Sloc (New_If, Sloc (Parent (N)));
          Set_Sloc (Parent (N), Loc);
       end if;
@@ -6531,7 +6519,7 @@ package body Exp_Ch4 is
                return;
 
             elsif Nkind_In (Parnt, N_Indexed_Component, N_Selected_Component)
-               and then Prefix (Parnt) = Child
+              and then Prefix (Parnt) = Child
             then
                null;
 
@@ -6643,8 +6631,8 @@ package body Exp_Ch4 is
       --  Deal with software overflow checking
 
       if not Backend_Overflow_Checks_On_Target
-         and then Is_Signed_Integer_Type (Etype (N))
-         and then Do_Overflow_Check (N)
+        and then Is_Signed_Integer_Type (Etype (N))
+        and then Do_Overflow_Check (N)
       then
          --  The only case to worry about is when the argument is equal to the
          --  largest negative number, so what we do is to insert the check:
@@ -6881,9 +6869,8 @@ package body Exp_Ch4 is
       --  We cannot do this transformation in configurable run time mode if we
       --  have 64-bit integers and long shifts are not available.
 
-        and then
-          (Esize (Ltyp) <= 32
-             or else Support_Long_Shifts_On_Target)
+        and then (Esize (Ltyp) <= 32
+                   or else Support_Long_Shifts_On_Target)
       then
          Rewrite (N,
            Make_Op_Shift_Right (Loc,
@@ -6934,17 +6921,13 @@ package body Exp_Ch4 is
       --  Mixed-mode operations can appear in a non-static universal context,
       --  in which case the integer argument must be converted explicitly.
 
-      elsif Typ = Universal_Real
-        and then Is_Integer_Type (Rtyp)
-      then
+      elsif Typ = Universal_Real and then Is_Integer_Type (Rtyp) then
          Rewrite (Ropnd,
            Convert_To (Universal_Real, Relocate_Node (Ropnd)));
 
          Analyze_And_Resolve (Ropnd, Universal_Real);
 
-      elsif Typ = Universal_Real
-        and then Is_Integer_Type (Ltyp)
-      then
+      elsif Typ = Universal_Real and then Is_Integer_Type (Ltyp) then
          Rewrite (Lopnd,
            Convert_To (Universal_Real, Relocate_Node (Lopnd)));
 
@@ -7077,8 +7060,8 @@ package body Exp_Ch4 is
                --  Lhs of equality
 
                if Nkind (Lhs) = N_Selected_Component
-                 and then Has_Per_Object_Constraint
-                            (Entity (Selector_Name (Lhs)))
+                 and then
+                   Has_Per_Object_Constraint (Entity (Selector_Name (Lhs)))
                then
                   --  Enclosing record is an Unchecked_Union, use formal A
 
@@ -7118,8 +7101,8 @@ package body Exp_Ch4 is
                --  Rhs of equality
 
                if Nkind (Rhs) = N_Selected_Component
-                 and then Has_Per_Object_Constraint
-                            (Entity (Selector_Name (Rhs)))
+                 and then
+                   Has_Per_Object_Constraint (Entity (Selector_Name (Rhs)))
                then
                   if Is_Unchecked_Union
                        (Scope (Entity (Selector_Name (Rhs))))
@@ -7764,10 +7747,10 @@ package body Exp_Ch4 is
                    and then not Do_Overflow_Check (P))
                  or else
                   (Nkind (P) = N_Op_Divide
-                     and then Is_Integer_Type (Etype (L))
-                     and then Is_Unsigned_Type (Etype (L))
-                     and then R = N
-                     and then not Do_Overflow_Check (P))
+                    and then Is_Integer_Type (Etype (L))
+                    and then Is_Unsigned_Type (Etype (L))
+                    and then R = N
+                    and then not Do_Overflow_Check (P))
                then
                   Set_Is_Power_Of_2_For_Shift (N);
                   return;
@@ -8209,10 +8192,7 @@ package body Exp_Ch4 is
       --  (the operation now corresponds to the hardware remainder), and it
       --  does not seem likely that it could be harmful.
 
-      if LOK and then Llo >= 0
-           and then
-         ROK and then Rlo >= 0
-      then
+      if LOK and then Llo >= 0 and then ROK and then Rlo >= 0 then
          Rewrite (N,
            Make_Op_Rem (Sloc (N),
              Left_Opnd  => Left_Opnd (N),
@@ -8312,12 +8292,9 @@ package body Exp_Ch4 is
       Rop : constant Node_Id    := Right_Opnd (N);
 
       Lp2 : constant Boolean :=
-              Nkind (Lop) = N_Op_Expon
-                and then Is_Power_Of_2_For_Shift (Lop);
-
+              Nkind (Lop) = N_Op_Expon and then Is_Power_Of_2_For_Shift (Lop);
       Rp2 : constant Boolean :=
-              Nkind (Rop) = N_Op_Expon
-                and then Is_Power_Of_2_For_Shift (Rop);
+              Nkind (Rop) = N_Op_Expon and then Is_Power_Of_2_For_Shift (Rop);
 
       Ltyp : constant Entity_Id  := Etype (Lop);
       Rtyp : constant Entity_Id  := Etype (Rop);
@@ -8476,18 +8453,12 @@ package body Exp_Ch4 is
       --  Mixed-mode operations can appear in a non-static universal context,
       --  in which case the integer argument must be converted explicitly.
 
-      elsif Typ = Universal_Real
-        and then Is_Integer_Type (Rtyp)
-      then
+      elsif Typ = Universal_Real and then Is_Integer_Type (Rtyp) then
          Rewrite (Rop, Convert_To (Universal_Real, Relocate_Node (Rop)));
-
          Analyze_And_Resolve (Rop, Universal_Real);
 
-      elsif Typ = Universal_Real
-        and then Is_Integer_Type (Ltyp)
-      then
+      elsif Typ = Universal_Real and then Is_Integer_Type (Ltyp) then
          Rewrite (Lop, Convert_To (Universal_Real, Relocate_Node (Lop)));
-
          Analyze_And_Resolve (Lop, Universal_Real);
 
       --  Non-fixed point cases, check software overflow checking required
@@ -9105,7 +9076,7 @@ package body Exp_Ch4 is
    begin
       --  Do validity check if validity checking operands
 
-      if Validity_Checks_On and then Validity_Check_Operands then
+      if Validity_Checks_On and Validity_Check_Operands then
          Ensure_Valid (Operand);
       end if;
 
@@ -9383,7 +9354,7 @@ package body Exp_Ch4 is
             --  contexts where we do not want the value anyway.
 
             elsif (Nkind (Par) = N_Attribute_Reference
-                     and then Prefix (Par) = N)
+                    and then Prefix (Par) = N)
               or else Is_Renamed_Object (N)
             then
                null;
@@ -9452,11 +9423,11 @@ package body Exp_Ch4 is
                      --  fact incorrect.
 
                      elsif Is_Entity_Name (Dval)
-                       and then Nkind (Parent (Entity (Dval))) =
-                                                      N_Object_Declaration
-                       and then Present (Expression (Parent (Entity (Dval))))
                        and then
-                         not Is_Static_Expression
+                         Nkind (Parent (Entity (Dval))) = N_Object_Declaration
+                       and then Present (Expression (Parent (Entity (Dval))))
+                       and then not
+                         Is_Static_Expression
                            (Expression (Parent (Entity (Dval))))
                      then
                         exit Discr_Loop;
@@ -9725,7 +9696,7 @@ package body Exp_Ch4 is
 
       elsif Nkind (Parent (N)) = N_Assignment_Statement
         or else (Nkind (Parent (Parent (N))) = N_Assignment_Statement
-                   and then Parent (N) = Name (Parent (Parent (N))))
+                  and then Parent (N) = Name (Parent (Parent (N))))
       then
          return;
 
@@ -9958,7 +9929,7 @@ package body Exp_Ch4 is
          --  range as the base type (or is the base type).
 
          if Range_Checks_Suppressed (Target_Type)
-           or else (Lo = Type_Low_Bound (Btyp)
+           or else (Lo = Type_Low_Bound  (Btyp)
                       and then
                     Hi = Type_High_Bound (Btyp))
          then
@@ -10222,9 +10193,7 @@ package body Exp_Ch4 is
 
       --  Do validity check if validity checking operands
 
-      if Validity_Checks_On
-        and then Validity_Check_Operands
-      then
+      if Validity_Checks_On and Validity_Check_Operands then
          Ensure_Valid (Operand);
       end if;
 
@@ -12775,10 +12744,10 @@ package body Exp_Ch4 is
          if not Is_Class_Wide_Type (Left_Type)
            and then (Is_Ancestor (Etype (Right_Type), Left_Type,
                                   Use_Full_View => True)
-                       or else (Is_Interface (Etype (Right_Type))
-                                 and then Interface_Present_In_Ancestor
-                                           (Typ   => Left_Type,
-                                            Iface => Etype (Right_Type))))
+                      or else (Is_Interface (Etype (Right_Type))
+                                and then Interface_Present_In_Ancestor
+                                          (Typ   => Left_Type,
+                                           Iface => Etype (Right_Type))))
          then
             Result := New_Reference_To (Standard_True, Loc);
             return;

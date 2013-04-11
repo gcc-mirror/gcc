@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -272,7 +272,11 @@ package body ALI.Util is
                      Error_Msg ("{ had errors, must be fixed, and recompiled");
                      Set_Name_Table_Info (Afile, Int (No_Unit_Id));
 
+                  --  In formal verification mode, object files are never
+                  --  generated, so No_Object=True is not considered an error.
+
                   elsif ALIs.Table (Idread).No_Object
+                    and then not Alfa_Mode
                     and then not Ignore_Errors
                   then
                      Error_Msg_File_1 := Withs.Table (W).Sfile;

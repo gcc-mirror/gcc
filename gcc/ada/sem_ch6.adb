@@ -449,7 +449,7 @@ package body Sem_Ch6 is
             --  prevent visibility issues later with operators in instances.
 
             Preanalyze_Spec_Expression
-              (New_Copy_Tree (Expression  (Ret)), Etype (Id));
+              (New_Copy_Tree (Expression (Ret)), Etype (Id));
             End_Scope;
          end;
       end if;
