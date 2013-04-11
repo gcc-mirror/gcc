@@ -6796,27 +6796,7 @@ package body Exp_Ch4 is
             Append (Right_Opnd (Cnode), Opnds);
          end loop Inner;
 
-         --  Wrap the node to concatenate into an expression actions node to
-         --  keep it nicely packaged. This is useful in the case of an assert
-         --  pragma with a concatenation where we want to be able to delete
-         --  the concatenation and all its expansion stuff.
-
-         declare
-            Cnod : constant Node_Id   := Relocate_Node (Cnode);
-            Typ  : constant Entity_Id := Base_Type (Etype (Cnode));
-
-         begin
-            --  Note: use Rewrite rather than Replace here, so that for example
-            --  Why_Not_Static can find the original concatenation node OK!
-
-            Rewrite (Cnode,
-              Make_Expression_With_Actions (Sloc (Cnode),
-                Actions    => New_List (Make_Null_Statement (Sloc (Cnode))),
-                Expression => Cnod));
-
-            Expand_Concatenate (Cnod, Opnds);
-            Analyze_And_Resolve (Cnode, Typ);
-         end;
+         Expand_Concatenate (Cnode, Opnds);
 
          exit Outer when Cnode = N;
          Cnode := Parent (Cnode);
@@ -11397,7 +11377,6 @@ package body Exp_Ch4 is
 
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean is
          T : Entity_Id;
-
       begin
          if No (P) then
             return False;

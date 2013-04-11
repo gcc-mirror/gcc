@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -177,7 +177,7 @@
 --  repeatedly (for instance in the above aggregate "new Thing (Function_Call)"
 --  needs to be called 100 times.)
 
---  The reason why this mechanism does not work is that, the expanded code for
+--  The reason why this mechanism does not work is that the expanded code for
 --  the children is typically inserted above the parent and thus when the
 --  father gets expanded no re-evaluation takes place. For instance in the case
 --  of aggregates if "new Thing (Function_Call)" is expanded before of the
