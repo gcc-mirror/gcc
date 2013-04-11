@@ -5256,7 +5256,7 @@ package body Sem_Prag is
 
             elsif not Effective
               and then Warn_On_Redundant_Constructs
-              and then not (Status = Suppressed or Suppress_All_Inlining)
+              and then not (Status = Suppressed or else Suppress_All_Inlining)
             then
                if Inlining_Not_Possible (Subp) then
                   Error_Msg_NE
@@ -12434,12 +12434,14 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
             Check_No_Identifiers;
+
             Hint := First (Pragma_Argument_Associations (N));
             while Present (Hint) loop
                Check_Arg_Is_One_Of (Hint,
                  Name_No_Unroll, Name_Unroll, Name_No_Vector, Name_Vector);
                Next (Hint);
             end loop;
+
             Check_Loop_Pragma_Placement;
          end Loop_Optimize;
 
