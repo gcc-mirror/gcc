@@ -10889,53 +10889,60 @@ package body Exp_Ch4 is
 
       First_Time : Boolean := True;
 
-      function Suitable_Element (C : Entity_Id) return Entity_Id;
-      --  Return the first field to compare beginning with C, skipping the
-      --  inherited components.
+      function Element_To_Compare (C : Entity_Id) return Entity_Id;
+      --  Return the next discriminant or component to compare, starting with
+      --  C, skipping inherited components.
 
-      ----------------------
-      -- Suitable_Element --
-      ----------------------
+      ------------------------
+      -- Element_To_Compare --
+      ------------------------
 
-      function Suitable_Element (C : Entity_Id) return Entity_Id is
+      function Element_To_Compare (C : Entity_Id) return Entity_Id is
+         Comp : Entity_Id;
       begin
-         if No (C) then
-            return Empty;
+         Comp := C;
 
-         elsif Ekind (C) /= E_Discriminant
-           and then Ekind (C) /= E_Component
-         then
-            return Suitable_Element (Next_Entity (C));
+         loop
+            --  Exit loop when the next element to be compared is found, or
+            --  there is no more such element.
 
-         --  Below test for C /= Original_Record_Component (C) is dubious
-         --  if Typ is a constrained record subtype???
+            exit when No (Comp);
 
-         elsif Is_Tagged_Type (Typ)
-           and then C /= Original_Record_Component (C)
-         then
-            return Suitable_Element (Next_Entity (C));
+            exit when Ekind_In (Comp, E_Discriminant, E_Component)
+              and then not (
 
-         elsif Chars (C) = Name_uTag then
-            return Suitable_Element (Next_Entity (C));
+              --  Skip inherited components
 
-         --  The .NET/JVM version of type Root_Controlled contains two fields
-         --  which should not be considered part of the object. To achieve
-         --  proper equiality between two controlled objects on .NET/JVM, skip
-         --  field _parent whenever it is of type Root_Controlled.
+              --  Note: for a tagged type, we always generate the "=" primitive
+              --  for the base type (not on the first subtype), so the test for
+              --  Comp /= Original_Record_Component (Comp) is True for
+              --  inherited components only.
 
-         elsif Chars (C) = Name_uParent
-           and then VM_Target /= No_VM
-           and then Etype (C) = RTE (RE_Root_Controlled)
-         then
-            return Suitable_Element (Next_Entity (C));
+              (Is_Tagged_Type (Typ)
+                 and then Comp /= Original_Record_Component (Comp))
 
-         elsif Is_Interface (Etype (C)) then
-            return Suitable_Element (Next_Entity (C));
+              --  Skip _Tag
 
-         else
-            return C;
-         end if;
-      end Suitable_Element;
+              or else Chars (Comp) = Name_uTag
+
+              --  The .NET/JVM version of type Root_Controlled contains two
+              --  fields which should not be considered part of the object. To
+              --  achieve proper equiality between two controlled objects on
+              --  .NET/JVM, skip _Parent whenever it has type Root_Controlled.
+
+              or else (Chars (Comp) = Name_uParent
+                and then VM_Target /= No_VM
+                and then Etype (Comp) = RTE (RE_Root_Controlled))
+
+              --  Skip interface elements (secondary tags???)
+
+              or else Is_Interface (Etype (Comp)));
+
+            Next_Entity (Comp);
+         end loop;
+
+         return Comp;
+      end Element_To_Compare;
 
    --  Start of processing for Expand_Record_Equality
 
@@ -10951,7 +10958,7 @@ package body Exp_Ch4 is
       --     and then Lhs.Cmpn = Rhs.Cmpn
 
       Result := New_Reference_To (Standard_True, Loc);
-      C := Suitable_Element (First_Entity (Typ));
+      C := Element_To_Compare (First_Entity (Typ));
       while Present (C) loop
          declare
             New_Lhs : Node_Id;
@@ -10995,7 +11002,7 @@ package body Exp_Ch4 is
             end if;
          end;
 
-         C := Suitable_Element (Next_Entity (C));
+         C := Element_To_Compare (Next_Entity (C));
       end loop;
 
       return Result;
