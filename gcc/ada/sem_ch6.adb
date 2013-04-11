@@ -447,9 +447,15 @@ package body Sem_Ch6 is
 
             --  Do a preanalysis of the expression on a separate copy, to
             --  prevent visibility issues later with operators in instances.
+            --  Attach copy to tree so that parent links are available.
 
-            Preanalyze_Spec_Expression
-              (New_Copy_Tree (Expression (Ret)), Etype (Id));
+            declare
+               Expr : constant Node_Id := New_Copy_Tree (Expression (Ret));
+            begin
+               Set_Parent (Expr, Ret);
+               Preanalyze_Spec_Expression (Expr, Etype (Id));
+            end;
+
             End_Scope;
          end;
       end if;

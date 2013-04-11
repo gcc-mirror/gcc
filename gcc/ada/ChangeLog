@@ -1,5 +1,15 @@
 2013-04-11  Vincent Celier  <celier@adacore.com>
 
+	* gnat_ugn.texi: Remove section "The Development Environments"
+	now that all predefined attributes are documented, including
+	those in package IDE.
+
+2013-04-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Preserve parent link in copy of expression.
+
+2013-04-11  Vincent Celier  <celier@adacore.com>
+
 	* projects.texi: Complete rewrite of the subsection Attributes
 	in section "Project file Reference".
 

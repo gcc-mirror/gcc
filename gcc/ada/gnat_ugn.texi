@@ -12509,7 +12509,6 @@ are used in this example.
 @menu
 * gnatmake and Project Files::
 * The GNAT Driver and Project Files::
-* The Development Environments::
 @end menu
 
 @c ---------------------------------------------
@@ -13297,86 +13296,6 @@ on @command{gnatbind}'s option @option{-R}. But if the argument files for the
 tool invoked by the @command{gnat} driver are explicitly  specified
 either directly or through the tool @option{-files} option, then the tool
 is called only for these explicitly specified files.
-
-@c ---------------------------------------------
-@node The Development Environments
-@section The Development Environments
-@c ---------------------------------------------
-
-@noindent
-See the appropriate manuals for more details. These environments will
-store a number of settings in the project itself, when they are meant
-to be shared by the whole team working on the project. Here are the
-attributes defined in the package @b{IDE} in projects.
-
-@table @code
-@item Remote_Host
-This is a simple attribute. Its value is a string that designates the remote
-host in a cross-compilation environment, to be used for remote compilation and
-debugging. This field should not be specified when running on the local
-machine.
-
-@item Program_Host
-This is a simple attribute. Its value is a string that specifies the
-name of IP address of the embedded target in a cross-compilation environment,
-on which the program should execute.
-
-@item Communication_Protocol
-This is a simple string attribute. Its value is the name of the protocol
-to use to communicate with the target in a cross-compilation environment,
-e.g.@: @code{"wtx"} or @code{"vxworks"}.
-
-@item Compiler_Command
-This is an indexed attribute, whose domain is a language name. Its
-value is  string that denotes the command to be used to invoke the compiler.
-The value of @code{Compiler_Command ("Ada")} is expected to be compatible with
-@command{gnatmake}, in particular in the handling of switches.
-
-@item Debugger_Command
-This is simple attribute, Its value is a string that specifies the name of
-the debugger to be used, such as gdb, powerpc-wrs-vxworks-gdb or gdb-4.
-
-@item Default_Switches
-This is an indexed attribute. Its indexes are the name of the
-external tools that the GNAT Programming System (GPS) is supporting. Its
-value is a list of switches to use when invoking that tool.
-
-@item  Gnatlist
-This is a simple attribute.  Its value is a string that specifies the name
-of the @command{gnatls} utility to be used to retrieve information about the
-predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
-
-@item VCS_Kind
-This is a simple attribute. Its value is a string used to specify the
-Version Control System (VCS) to be used for this project, e.g.@: CVS, RCS
-ClearCase or Perforce.
-
-@item Gnat
-This is a simple attribute. Its value is a string that specifies the name
-of the @command{gnat} utility to be used when executing various tools from
-GPS, in particular @code{"gnat pp"}, @code{"gnat stub"},@dots{}
-
-@item VCS_File_Check
-This is a simple attribute. Its value is a string that specifies the
-command used by the VCS to check the validity of a file, either
-when the user explicitly asks for a check, or as a sanity check before
-doing the check-in.
-
-@item VCS_Log_Check
-This is a simple attribute. Its value is a string that specifies
-the command used by the VCS to check the validity of a log file.
-
-@item VCS_Repository_Root
-The VCS repository root path. This is used to create tags or branches
-of the repository. For subversion the value should be the @code{URL}
-as specified to check-out the working copy of the repository.
-
-@item VCS_Patch_Root
-The local root directory to use for building patch file. All patch chunks
-will be relative to this path. The root project directory is used if
-this value is not defined.
-
-@end table
 
 @c *****************************************
 @c * Cross-referencing tools
