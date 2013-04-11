@@ -14521,7 +14521,7 @@ package body Sem_Prag is
                --  described in "Handling of Default and Per-Object
                --  Expressions" in sem.ads.
 
-               Preanalyze_Spec_Expression (Arg, Standard_Integer);
+               Preanalyze_Spec_Expression (Arg, RTE (RE_Any_Priority));
 
                if not Is_Static_Expression (Arg) then
                   Check_Restriction (Static_Priorities, Arg);
