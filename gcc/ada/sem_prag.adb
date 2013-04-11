@@ -6722,20 +6722,21 @@ package body Sem_Prag is
 
          --  pragma Abstract_State (ABSTRACT_STATE_LIST)
 
-         --  ABSTRACT_STATE_LIST        ::=
+         --  ABSTRACT_STATE_LIST ::=
          --    null
-         --    | STATE_NAME_WITH_PROPERTIES {, STATE_NAME_WITH_PROPERTIES}
+         --  | STATE_NAME_WITH_PROPERTIES {, STATE_NAME_WITH_PROPERTIES}
 
          --  STATE_NAME_WITH_PROPERTIES ::=
          --    STATE_NAME
-         --    | (STATE_NAME with PROPERTY_LIST)
+         --  | (STATE_NAME with PROPERTY_LIST)
 
-         --  PROPERTY_LIST              ::= PROPERTY {, PROPERTY}
-         --  PROPERTY                   ::= SIMPLE_PROPERTY
-         --                               | NAME_VALUE_PROPERTY
-         --  SIMPLE_PROPERTY            ::= IDENTIFIER
-         --  NAME_VALUE_PROPERTY        ::= IDENTIFIER => EXPRESSION
-         --  STATE_NAME                 ::= DEFINING_IDENTIFIER
+         --  PROPERTY_LIST ::= PROPERTY {, PROPERTY}
+         --  PROPERTY      ::= SIMPLE_PROPERTY | NAME_VALUE_PROPERTY
+
+         --  SIMPLE_PROPERTY      ::= IDENTIFIER
+         --  NAME_VALUE_PROPERTY  ::= IDENTIFIER => EXPRESSION
+
+         --  STATE_NAME ::= DEFINING_IDENTIFIER
 
          when Pragma_Abstract_State => Abstract_State : declare
             Pack_Id : Entity_Id;
@@ -8878,17 +8879,18 @@ package body Sem_Prag is
 
          --  pragma Depends (DEPENDENCY_RELATION);
 
-         --  DEPENDENCY_RELATION ::= null
-         --                        | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
-         --  DEPENDENCY_CLAUSE   ::= OUTPUT_LIST =>[+] INPUT_LIST
-         --  OUTPUT_LIST         ::= null
-         --                        | OUTPUT
-         --                        | (OUTPUT {, OUTPUT})
-         --  INPUT_LIST          ::= null
-         --                        | INPUT
-         --                        | (INPUT {, INPUT})
-         --  OUTPUT              ::= NAME | FUNCTION_RESULT
-         --  INPUT               ::= NAME
+         --  DEPENDENCY_RELATION ::=
+         --    null
+         --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
+
+         --  DEPENDENCY_CLAUSE ::= OUTPUT_LIST =>[+] INPUT_LIST
+
+         --  OUTPUT_LIST ::= null | OUTPUT | (OUTPUT {, OUTPUT})
+
+         --  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
+
+         --  OUTPUT ::= NAME | FUNCTION_RESULT
+         --  INPUT  ::= NAME
 
          --  where FUNCTION_RESULT is a function Result attribute_reference
 
@@ -8918,6 +8920,7 @@ package body Sem_Prag is
             function Entity_Of (N : Node_Id) return Entity_Id;
             --  Return the entity of N or Empty. If N is a renaming, find the
             --  entity of the root renamed object.
+            --  Surely this should not be buried here??? exp_util???
 
             procedure Normalize_Clause (Clause : Node_Id);
             --  Remove a self-dependency "+" from the input list of a clause.
@@ -9204,12 +9207,13 @@ package body Sem_Prag is
             ---------------
 
             function Entity_Of (N : Node_Id) return Entity_Id is
-               Id : Entity_Id := Entity (N);
+               Id : Entity_Id;
 
             begin
                --  Follow a possible chain of renamings to reach the root
                --  renamed object.
 
+               Id := Entity (N);
                while Present (Renamed_Object (Id)) loop
                   if Is_Entity_Name (Renamed_Object (Id)) then
                      Id := Entity (Renamed_Object (Id));
@@ -9279,6 +9283,7 @@ package body Sem_Prag is
                        (List : List_Id;
                         Id   : Entity_Id) return Boolean;
                      --  Determine whether List contains element Id
+                     --  Surely this should not be buried here??? exp_Util???
 
                      --------------
                      -- Contains --
@@ -10764,14 +10769,16 @@ package body Sem_Prag is
 
          --  pragma Global (GLOBAL_SPECIFICATION)
 
-         --  GLOBAL_SPECIFICATION ::= null
-         --                         | GLOBAL_LIST
-         --                         | MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
-         --  MODED_GLOBAL_LIST    ::= MODE_SELECTOR => GLOBAL_LIST
-         --  MODE_SELECTOR        ::= Input | Output | In_Out | Contract_In
-         --  GLOBAL_LIST          ::= GLOBAL_ITEM
-         --                         | (GLOBAL_ITEM {, GLOBAL_ITEM})
-         --  GLOBAL_ITEM          ::= NAME
+         --  GLOBAL_SPECIFICATION ::=
+         --    null
+         --  | GLOBAL_LIST
+         --  | MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
+
+         --  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
+
+         --  MODE_SELECTOR ::= Input | Output | In_Out | Contract_In
+         --  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
+         --  GLOBAL_ITEM   ::= NAME
 
          when Pragma_Global => Global : declare
             Subp_Id : Entity_Id;
@@ -10780,12 +10787,11 @@ package body Sem_Prag is
             --  A list containing the entities of all the items processed so
             --  far. It plays a role in detecting distinct entities.
 
-            --  Flags used to verify the consistency of modes
-
             Contract_Seen : Boolean := False;
             In_Out_Seen   : Boolean := False;
             Input_Seen    : Boolean := False;
             Output_Seen   : Boolean := False;
+            --  Flags used to verify the consistency of modes
 
             procedure Analyze_Global_List
               (List        : Node_Id;

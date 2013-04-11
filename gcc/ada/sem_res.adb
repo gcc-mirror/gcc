@@ -10920,9 +10920,9 @@ package body Sem_Res is
          else
             return Conversion_Check
                     (Is_Numeric_Type (Opnd_Type)
-                       or else
-                         (Present (Inc_Ancestor)
-                           and then Is_Numeric_Type (Inc_Ancestor)),
+                      or else
+                        (Present (Inc_Ancestor)
+                          and then Is_Numeric_Type (Inc_Ancestor)),
                      "illegal operand for numeric conversion");
          end if;
 
@@ -10936,6 +10936,7 @@ package body Sem_Res is
             Conversion_Error_N
               ("illegal operand for array conversion", Operand);
             return False;
+
          else
             return Valid_Array_Conversion;
          end if;

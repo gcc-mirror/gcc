@@ -1,3 +1,13 @@
+2013-04-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_util.adb, sem_res.adb, exp_ch4.adb: Minor
+	reformatting.
+
+2013-04-11  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.ads (Fully_Qualified_Name_String): Document that the
+	constructed literal is the entity name in all upper case.
+
 2013-04-11  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_util.adb (Set_Entity_With_Style_Check): Fix logic of
