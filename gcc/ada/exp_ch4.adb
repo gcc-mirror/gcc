@@ -1867,9 +1867,9 @@ package body Exp_Ch4 is
 
             X := First_Index (T);
             while Present (X) loop
-               if Denotes_Discriminant (Type_Low_Bound (Etype (X)))
-                 or else
-                   Denotes_Discriminant (Type_High_Bound (Etype (X)))
+               if Denotes_Discriminant (Type_Low_Bound  (Etype (X)))
+                    or else
+                  Denotes_Discriminant (Type_High_Bound (Etype (X)))
                then
                   T := Base_Type (T);
                   exit;
@@ -1891,8 +1891,7 @@ package body Exp_Ch4 is
          Index : Node_Id) return Node_Id
       is
          Need_Separate_Indexes : constant Boolean :=
-                                   Ltyp /= Rtyp
-                                     or else not Is_Constrained (Ltyp);
+           Ltyp /= Rtyp or else not Is_Constrained (Ltyp);
          --  If the index types are identical, and we are working with
          --  constrained types, then we can use the same index for both
          --  of the arrays.
@@ -6488,9 +6487,9 @@ package body Exp_Ch4 is
 
             elsif Nkind (Parnt) = N_Attribute_Reference
               and then (Attribute_Name (Parnt) = Name_Address
-                         or else
+                          or else
                         Attribute_Name (Parnt) = Name_Bit
-                         or else
+                          or else
                         Attribute_Name (Parnt) = Name_Size)
               and then Prefix (Parnt) = Child
             then
@@ -6700,9 +6699,7 @@ package body Exp_Ch4 is
 
       --  Arithmetic overflow checks for signed integer/fixed point types
 
-      if Is_Signed_Integer_Type (Typ)
-        or else Is_Fixed_Point_Type (Typ)
-      then
+      if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
          Apply_Arithmetic_Overflow_Check (N);
          return;
 
@@ -6852,8 +6849,7 @@ package body Exp_Ch4 is
       --  We cannot do this transformation in configurable run time mode if we
       --  have 64-bit integers and long shifts are not available.
 
-        and then (Esize (Ltyp) <= 32
-                   or else Support_Long_Shifts_On_Target)
+        and then (Esize (Ltyp) <= 32 or else Support_Long_Shifts_On_Target)
       then
          Rewrite (N,
            Make_Op_Shift_Right (Loc,
@@ -6890,8 +6886,7 @@ package body Exp_Ch4 is
       --  Other cases of division of fixed-point operands. Again we exclude the
       --  case where Treat_Fixed_As_Integer is set.
 
-      elsif (Is_Fixed_Point_Type (Ltyp) or else
-             Is_Fixed_Point_Type (Rtyp))
+      elsif (Is_Fixed_Point_Type (Ltyp) or else Is_Fixed_Point_Type (Rtyp))
         and then not Treat_Fixed_As_Integer (N)
       then
          if Is_Integer_Type (Typ) then
@@ -7814,9 +7809,9 @@ package body Exp_Ch4 is
 
       elsif Rtyp = Base_Type (Standard_Long_Long_Integer)
         or else (Rtyp = Base_Type (Standard_Long_Integer)
-                   and then
-                     Esize (Standard_Long_Integer) > Esize (Standard_Integer))
-        or else (Rtyp = Universal_Integer)
+                  and then
+                    Esize (Standard_Long_Integer) > Esize (Standard_Integer))
+        or else Rtyp = Universal_Integer
       then
          Etyp := Standard_Long_Long_Integer;
 
@@ -8243,8 +8238,7 @@ package body Exp_Ch4 is
                 (Type_Low_Bound (Base_Type (Underlying_Type (Etype (Left)))));
 
             if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
-              and then
-                ((not LOK) or else (Llo = LLB))
+              and then ((not LOK) or else (Llo = LLB))
             then
                Rewrite (N,
                  Make_If_Expression (Loc,
@@ -9003,10 +8997,7 @@ package body Exp_Ch4 is
 
       --  Arithmetic overflow checks for signed integer/fixed point types
 
-      if Is_Signed_Integer_Type (Typ)
-           or else
-         Is_Fixed_Point_Type (Typ)
-      then
+      if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
          Apply_Arithmetic_Overflow_Check (N);
 
       --  VAX floating-point types case
@@ -11377,6 +11368,7 @@ package body Exp_Ch4 is
 
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean is
          T : Entity_Id;
+
       begin
          if No (P) then
             return False;
@@ -11598,7 +11590,7 @@ package body Exp_Ch4 is
 
            and then
              (Root_Operand_Type = Base_Type (Standard_Short_Integer)
-               or else
+                or else
               Root_Operand_Type = Base_Type (Standard_Short_Short_Integer))
 
            --  Test for interesting operation, which includes addition,
@@ -12728,8 +12720,8 @@ package body Exp_Ch4 is
                                   Use_Full_View => True)
                       or else (Is_Interface (Etype (Right_Type))
                                 and then Interface_Present_In_Ancestor
-                                          (Typ   => Left_Type,
-                                           Iface => Etype (Right_Type))))
+                                           (Typ   => Left_Type,
+                                            Iface => Etype (Right_Type))))
          then
             Result := New_Reference_To (Standard_True, Loc);
             return;
