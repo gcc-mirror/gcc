@@ -5850,8 +5850,10 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 
       /* The last case is if we are a multiply.  In that case, we can
 	 apply the distributive law to commute the multiply and addition
-	 if the multiplication of the constants doesn't overflow.  */
-      if (code == MULT_EXPR)
+	 if the multiplication of the constants doesn't overflow
+	 and overflow is defined.  With undefined overflow
+	 op0 * c might overflow, while (op0 + orig_op1) * c doesn't.  */
+      if (code == MULT_EXPR && TYPE_OVERFLOW_WRAPS (ctype))
 	return fold_build2 (tcode, ctype,
 			    fold_build2 (code, ctype,
 					 fold_convert (ctype, op0),
