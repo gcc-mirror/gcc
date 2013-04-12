@@ -1,3 +1,22 @@
+2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb (Find_Aspect): New routine.
+	(Find_Value_Of_Aspect): New routine.
+	(Has_Aspect): Reimplemented.
+	* aspects.ads (Find_Aspect): New routine.
+	(Find_Value_Of_Aspect): New routine, previously known as Find_Aspect.
+	* exp_ch5.adb (Expand_Iterator_Loop): Update the call to Find_Aspect.
+	* exp_util.adb (Is_Iterated_Container): Update the call to Find_Aspect.
+	* sem_ch4.adb (Try_Container_Indexing): Update calls to Find_Aspect.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Update
+	the call to Find_Aspect. Use function Has_Aspect for better
+	readability.
+	(Preanalyze_Range): Use function Has_Aspect for better readability.
+	* sem_ch13.adb (Check_One_Function): Update the call to Find_Aspect.
+	* sem_prag.adb (Analyze_Pragma): There is no longer need to
+	look at the parent to extract the corresponding pragma for
+	aspect Global.
+
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb, sem_elab.adb, repinfo.adb, sem_ch4.adb, restrict.adb,

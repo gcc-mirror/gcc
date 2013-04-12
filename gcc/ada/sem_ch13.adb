@@ -1226,11 +1226,10 @@ package body Sem_Ch13 is
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)));
 
+               --  The aspect corresponds to pragma Implemented. Construct the
+               --  pragma.
+
                when Aspect_Synchronization =>
-
-                  --  The aspect corresponds to pragma Implemented.
-                  --  Construct the pragma.
-
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
@@ -2338,7 +2337,7 @@ package body Sem_Ch13 is
 
          procedure Check_One_Function (Subp : Entity_Id) is
             Default_Element : constant Node_Id :=
-                                Find_Aspect
+                                Find_Value_Of_Aspect
                                   (Etype (First_Formal (Subp)),
                                    Aspect_Iterator_Element);
 

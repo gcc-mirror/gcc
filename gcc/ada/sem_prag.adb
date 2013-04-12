@@ -9620,7 +9620,7 @@ package body Sem_Prag is
 
                   --  Retrieve the pragma as it contains the analyzed lists
 
-                  Global := Aspect_Rep_Item (Parent (Global));
+                  Global := Aspect_Rep_Item (Global);
 
                   --  The pragma may not have been analyzed because of the
                   --  arbitrary declaration order of aspects. Make sure that
