@@ -5033,29 +5033,8 @@ package body Exp_Ch4 is
             ----------------------------
 
             function Find_Enclosing_Context return Node_Id is
-               function Is_Body_Or_Unit (N : Node_Id) return Boolean;
-               --  Determine whether N denotes a body or unit declaration
-
-               ---------------------
-               -- Is_Body_Or_Unit --
-               ---------------------
-
-               function Is_Body_Or_Unit (N : Node_Id) return Boolean is
-               begin
-                  return Nkind_In (N, N_Entry_Body,
-                                      N_Package_Body,
-                                      N_Package_Declaration,
-                                      N_Protected_Body,
-                                      N_Subprogram_Body,
-                                      N_Task_Body);
-               end Is_Body_Or_Unit;
-
-               --  Local variables
-
                Par : Node_Id;
                Top : Node_Id;
-
-            --  Start of processing for Find_Enclosing_Context
 
             begin
                --  The expression_with_actions is in a case/if expression and
@@ -5074,7 +5053,7 @@ package body Exp_Ch4 is
 
                      --  Prevent the search from going too far
 
-                     elsif Is_Body_Or_Unit (Par) then
+                     elsif Is_Body_Or_Package_Declaration (Par) then
                         exit;
                      end if;
 
@@ -5099,7 +5078,7 @@ package body Exp_Ch4 is
 
                      --  Prevent the search from going too far
 
-                     elsif Is_Body_Or_Unit (Par) then
+                     elsif Is_Body_Or_Package_Declaration (Par) then
                         exit;
                      end if;
 
@@ -5171,7 +5150,9 @@ package body Exp_Ch4 is
                      then
                         return Par;
 
-                     elsif Is_Body_Or_Unit (Par) then
+                     --  Prevent the search from going too far
+
+                     elsif Is_Body_Or_Package_Declaration (Par) then
                         exit;
                      end if;
 

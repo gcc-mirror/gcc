@@ -2258,7 +2258,7 @@ package body Sem_Elab is
            --  in this case, due to the out of order handling in this case.
 
            and then (Nkind (Original_Node (N)) /= N_Function_Call
-                      or else not In_Assertion (Original_Node (N)))
+                      or else not In_Assertion_Expression (Original_Node (N)))
          then
             if Inst_Case then
                Error_Msg_NE

@@ -253,10 +253,15 @@ package body Sem_Prag is
       --  Pre-analyze the guard and consequence expressions of a Contract_Cases
       --  pragma/aspect aggregate expression.
 
+      ----------------------------
+      -- Analyze_Contract_Cases --
+      ----------------------------
+
       procedure Analyze_Contract_Cases (Aggr : Node_Id) is
          Case_Guard : Node_Id;
          Conseq     : Node_Id;
          Post_Case  : Node_Id;
+
       begin
          Post_Case := First (Component_Associations (Aggr));
          while Present (Post_Case) loop
@@ -266,19 +271,24 @@ package body Sem_Prag is
             --  Preanalyze the boolean expression, we treat this as a spec
             --  expression (i.e. similar to a default expression).
 
-            Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
+            if Nkind (Case_Guard) /= N_Others_Choice then
+               Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
+            end if;
+
             Preanalyze_Assert_Expression (Conseq, Standard_Boolean);
 
             Next (Post_Case);
          end loop;
       end Analyze_Contract_Cases;
 
+   --  Start of processing for Analyze_CTC_In_Decl_Part
+
    begin
       --  Install formals and push subprogram spec onto scope stack so that we
       --  can see the formals from the pragma.
 
-      Install_Formals (S);
       Push_Scope (S);
+      Install_Formals (S);
 
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
@@ -11194,6 +11204,39 @@ package body Sem_Prag is
             end if;
          end Float_Representation;
 
+         -----------
+         -- Ghost --
+         -----------
+
+         --  pragma GHOST (function_LOCAL_NAME);
+
+         when Pragma_Ghost => Ghost : declare
+            Subp    : Node_Id;
+            Subp_Id : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            --  Ensure the proper placement of the pragma. Ghost must be
+            --  associated with a subprogram declaration.
+
+            Subp := Parent (Corresponding_Aspect (N));
+
+            if Nkind (Subp) /= N_Subprogram_Declaration then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Subp_Id := Defining_Unit_Name (Specification (Subp));
+
+            if Ekind (Subp_Id) /= E_Function then
+               Error_Pragma ("pragma % must be applied to a function");
+            end if;
+         end Ghost;
+
          ------------
          -- Global --
          ------------
@@ -13542,13 +13585,11 @@ package body Sem_Prag is
                return;
             end if;
 
-            Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
+            Preanalyze_Assert_Expression (Expression (Arg1), Any_Boolean);
 
             --  Transform pragma Loop_Invariant into equivalent pragma Check
             --  Generate:
             --    pragma Check (Loop_Invaraint, Arg1);
-
-            --  Seems completely wrong to hijack pragma Check this way ???
 
             Rewrite (N,
               Make_Pragma (Loc,
@@ -13625,7 +13666,8 @@ package body Sem_Prag is
                   Error_Pragma_Arg ("wrong change modifier", Variant);
                end if;
 
-               Preanalyze_And_Resolve (Expression (Variant), Any_Discrete);
+               Preanalyze_Assert_Expression
+                 (Expression (Variant), Any_Discrete);
 
                Next (Variant);
             end loop;
@@ -17762,6 +17804,7 @@ package body Sem_Prag is
       Pragma_Fast_Math                      => -1,
       Pragma_Finalize_Storage_Only          =>  0,
       Pragma_Float_Representation           =>  0,
+      Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
       Pragma_Ident                          => -1,
       Pragma_Implementation_Defined         => -1,

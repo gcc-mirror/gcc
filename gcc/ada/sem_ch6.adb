@@ -486,19 +486,21 @@ package body Sem_Ch6 is
    ----------------------------
 
    procedure Analyze_Function_Call (N : Node_Id) is
-      P       : constant Node_Id := Name (N);
-      Actuals : constant List_Id := Parameter_Associations (N);
-      Actual  : Node_Id;
+      Actuals  : constant List_Id := Parameter_Associations (N);
+      Func_Nam : constant Node_Id := Name (N);
+      Actual   : Node_Id;
+
+   --  Start of processing for Analyze_Function_Call
 
    begin
-      Analyze (P);
+      Analyze (Func_Nam);
 
       --  A call of the form A.B (X) may be an Ada 2005 call, which is
       --  rewritten as B (A, X). If the rewriting is successful, the call
       --  has been analyzed and we just return.
 
-      if Nkind (P) = N_Selected_Component
-        and then Name (N) /= P
+      if Nkind (Func_Nam) = N_Selected_Component
+        and then Name (N) /= Func_Nam
         and then Is_Rewrite_Substitution (N)
         and then Present (Etype (N))
       then
@@ -507,7 +509,7 @@ package body Sem_Ch6 is
 
       --  If error analyzing name, then set Any_Type as result type and return
 
-      if Etype (P) = Any_Type then
+      if Etype (Func_Nam) = Any_Type then
          Set_Etype (N, Any_Type);
          return;
       end if;
@@ -524,12 +526,6 @@ package body Sem_Ch6 is
       end if;
 
       Analyze_Call (N);
-
-      --  Mark function call if within assertion
-
-      if In_Assertion_Expr /= 0 then
-         Set_In_Assertion (N);
-      end if;
    end Analyze_Function_Call;
 
    -----------------------------
@@ -537,9 +533,9 @@ package body Sem_Ch6 is
    -----------------------------
 
    procedure Analyze_Function_Return (N : Node_Id) is
-      Loc        : constant Source_Ptr  := Sloc (N);
-      Stm_Entity : constant Entity_Id   := Return_Statement_Entity (N);
-      Scope_Id   : constant Entity_Id   := Return_Applies_To (Stm_Entity);
+      Loc        : constant Source_Ptr := Sloc (N);
+      Stm_Entity : constant Entity_Id  := Return_Statement_Entity (N);
+      Scope_Id   : constant Entity_Id  := Return_Applies_To (Stm_Entity);
 
       R_Type : constant Entity_Id := Etype (Scope_Id);
       --  Function result subtype
@@ -6562,6 +6558,11 @@ package body Sem_Ch6 is
                else
                   Set_Overridden_Operation (Subp, Overridden_Subp);
                end if;
+
+            --  Ensure that a ghost function is not overriding another routine
+
+            elsif Is_Ghost_Function (Subp) then
+               Error_Msg_N ("ghost function & cannot be overriding", Subp);
             end if;
          end if;
 

@@ -498,6 +498,7 @@ package Snames is
    Name_Export_Valued_Procedure        : constant Name_Id := N + $; -- GNAT
    Name_External                       : constant Name_Id := N + $; -- GNAT
    Name_Finalize_Storage_Only          : constant Name_Id := N + $; -- GNAT
+   Name_Ghost                          : constant Name_Id := N + $; -- GNAT
    Name_Global                         : constant Name_Id := N + $; -- GNAT
    Name_Ident                          : constant Name_Id := N + $; -- VMS
    Name_Implementation_Defined         : constant Name_Id := N + $; -- GNAT
@@ -1792,6 +1793,7 @@ package Snames is
       Pragma_Export_Valued_Procedure,
       Pragma_External,
       Pragma_Finalize_Storage_Only,
+      Pragma_Ghost,
       Pragma_Global,
       Pragma_Ident,
       Pragma_Implementation_Defined,

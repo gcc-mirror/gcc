@@ -868,6 +868,11 @@ package body Sem_Ch4 is
       --  Flag indicates whether an interpretation of the prefix is a
       --  parameterless call that returns an access_to_subprogram.
 
+      procedure Check_Ghost_Function_Call;
+      --  Verify the legality of a call to a ghost function. Such calls can
+      --  appear only in assertion expressions except subtype predicates or
+      --  from within another ghost function.
+
       procedure Check_Mixed_Parameter_And_Named_Associations;
       --  Check that parameter and named associations are not mixed. This is
       --  a restriction in SPARK mode.
@@ -881,6 +886,38 @@ package body Sem_Ch4 is
 
       procedure No_Interpretation;
       --  Output error message when no valid interpretation exists
+
+      -------------------------------
+      -- Check_Ghost_Function_Call --
+      -------------------------------
+
+      procedure Check_Ghost_Function_Call is
+         S : Entity_Id;
+
+      begin
+         --  The ghost function appears inside an assertion expression
+
+         if In_Assertion_Expression (N) then
+            return;
+
+         else
+            S := Current_Scope;
+            while Present (S) and then S /= Standard_Standard loop
+
+               --  The call appears inside another ghost function
+
+               if Is_Ghost_Function (S) then
+                  return;
+               end if;
+
+               S := Scope (S);
+            end loop;
+         end if;
+
+         Error_Msg_N
+           ("call to ghost function must appear in assertion expression or "
+            & "another ghost function", N);
+      end Check_Ghost_Function_Call;
 
       --------------------------------------------------
       -- Check_Mixed_Parameter_And_Named_Associations --
@@ -970,6 +1007,12 @@ package body Sem_Ch4 is
    begin
       if Restriction_Check_Required (SPARK) then
          Check_Mixed_Parameter_And_Named_Associations;
+      end if;
+
+      --  Mark a function that appears inside an assertion expression
+
+      if Nkind (N) = N_Function_Call and then In_Assertion_Expr > 0 then
+         Set_In_Assertion_Expression (N);
       end if;
 
       --  Initialize the type of the result of the call to the error type,
@@ -1078,6 +1121,8 @@ package body Sem_Ch4 is
             Set_Etype (Nam_Ent, Etype (N));
          end if;
 
+      --  Overloaded call
+
       else
          --  An overloaded selected component must denote overloaded operations
          --  of a concurrent type. The interpretations are attached to the
@@ -1162,9 +1207,9 @@ package body Sem_Ch4 is
             Get_Next_Interp (X, It);
          end loop;
 
-         --  If the name is the result of a function call, it can only
-         --  be a call to a function returning an access to subprogram.
-         --  Insert explicit dereference.
+         --  If the name is the result of a function call, it can only be a
+         --  call to a function returning an access to subprogram. Insert
+         --  explicit dereference.
 
          if Nkind (Nam) = N_Function_Call then
             Insert_Explicit_Dereference (Nam);
@@ -1242,6 +1287,13 @@ package body Sem_Ch4 is
          end if;
 
          End_Interp_List;
+      end if;
+
+      --  A call to a ghost function is allowed only in assertion expressions,
+      --  excluding subtype predicates, or from within another ghost function.
+
+      if Is_Ghost_Function (Get_Subprogram_Entity (N)) then
+         Check_Ghost_Function_Call;
       end if;
    end Analyze_Call;
 

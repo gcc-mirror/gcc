@@ -1,3 +1,60 @@
+2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Alphabetize subprogram bodies in this unit. Add
+	an entry for Aspect_Ghost in the table of canonical aspects.
+	(Has_Aspect): New routine.
+	* aspects.ads: Add Aspect_Ghost to all relevant
+	tables. Alphabetize subprograms in this unit.
+	(Has_Aspect): New routine.
+	* einfo.adb: Add with and use clauses for Aspects.
+	(Is_Ghost_Function): New routine.
+	* einfo.ads: Add new synthesized attribute Is_Ghost_Function and
+	update the structure of the related nodes.
+	(Is_Ghost_Function): New routine.
+	* exp_ch4.adb (Find_Enclosing_Context): Use routine
+	Is_Body_Or_Package_Declaration to terminate a search.
+	(Is_Body_Or_Unit): Removed.
+	* exp_util.adb (Within_Case_Or_If_Expression): Use routine
+	Is_Body_Or_Package_Declaration to terminate a search.
+	* par-prag.adb: Add pragma Ghost to the list of pragmas that do
+	not need special processing by the parser.
+	* sem_attr.adb (Analyze_Access_Attribute): Detect an
+	illegal use of 'Access where the prefix is a ghost function.
+	(Analyze_Attribute): Use routine Is_Body_Or_Package_Declaration
+	to terminate a search.	(Check_References_In_Prefix): Use routine
+	Is_Body_Or_Package_Declaration to terminate a search.
+	* sem_ch4.adb (Analyze_Call): Mark a function when it appears
+	inside an assertion expression.  Verify the legality of a call
+	to a ghost function.
+	(Check_Ghost_Function_Call): New routine.
+	* sem_ch6.adb (Analyze_Function_Call): Code reformatting. Move
+	the setting of attribute In_Assertion_Expression to Analyze_Call.
+	(Check_Overriding_Indicator): Detect an illegal attempt to
+	override a function with a ghost function.
+	* sem_ch12.adb (Preanalyze_Actuals): Detect an illegal use of
+	a ghost function as a generic actual.
+	* sem_elab.adb (Check_Internal_Call_Continue): Update the call
+	to In_Assertion.
+	* sem_prag.adb: Add an entry for pragma Ghost in the table
+	of significant arguments.
+	(Analyze_Pragma): Do not analyze
+	an "others" case guard. Add processing for pragma Ghost. Use
+	Preanalyze_Assert_Expression when analyzing the expression of
+	pragmas Loop_Invariant and Loop_Variant.
+	* sem_util.adb (Get_Subprogram_Entity): Reimplemented.
+	(Is_Body_Or_Package_Declaration): New routine.
+	* sem_util.ads: Alphabetize subprotrams in this unit.
+	(Is_Body_Or_Package_Declaration): New routine.
+	* sinfo.adb (In_Assertion): Rename to In_Assertion_Expression.
+	(Set_In_Assertion): Rename to Set_In_Assertion_Expression.
+	* sinfo.ads: Rename flag In_Assertion to In_Assertion_Expression
+	to better reflect its use.  Update all places that mention the flag.
+	(In_Assertion): Rename to In_Assertion_Expression. Update
+	related pragma Inline.	(Set_In_Assertion): Rename to
+	Set_In_Assertion_Expression. Update related pragma Inline.
+	* snames.ads-tmpl: Add new predefined name Ghost. Add new pragma
+	id Pragma_Ghost.
+
 2013-04-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_prag.adb (Set_Imported): Do not generate error for multiple
