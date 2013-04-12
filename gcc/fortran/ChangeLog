@@ -1,6 +1,12 @@
 2013-04-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56845
+	* trans-decl.c (gfc_trans_deferred_vars): Restrict
+	static CLASS init to SAVE and -fno-automatic.
+
+2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56845
 	* trans-decl.c (gfc_trans_deferred_vars): Set _vptr for
 	allocatable static BT_CLASS.
 	* trans-expr.c (gfc_class_set_static_fields): New function.

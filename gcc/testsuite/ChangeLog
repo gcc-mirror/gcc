@@ -1,3 +1,14 @@
+2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56845
+	* gfortran.dg/class_allocate_15.f90: New.
+
+	Revert:
+	2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_lib_alloc_2.f90: Update
+	scan-tree-dump-times.
+
 2013-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56918
