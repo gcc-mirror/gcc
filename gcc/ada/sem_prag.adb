@@ -458,6 +458,11 @@ package body Sem_Prag is
       --  In Ada 95 or 05 mode, these are implementation defined pragmas, so
       --  should be caught by the No_Implementation_Pragmas restriction.
 
+      procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id);
+      --  Subsidiary routine to the analysis of pragmas Depends and Global.
+      --  Append an input or output item to a list. If the list is empty, a
+      --  new one is created.
+
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
       --  83 mode (used for language pragmas that are not a standard part of
@@ -982,6 +987,19 @@ package body Sem_Prag is
             Check_Restriction (No_Implementation_Pragmas, N);
          end if;
       end Ada_2012_Pragma;
+
+      --------------
+      -- Add_Item --
+      --------------
+
+      procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id) is
+      begin
+         if No (To_List) then
+            To_List := New_Elmt_List;
+         end if;
+
+         Append_Unique_Elmt (Item, To_List);
+      end Add_Item;
 
       --------------------------
       -- Check_Ada_83_Warning --
@@ -3485,8 +3503,8 @@ package body Sem_Prag is
               and then C /= Convention (Overridden_Operation (E))
             then
                Error_Pragma_Arg
-                 ("cannot change convention for overridden "
-                  & "dispatching operation", Arg1);
+                 ("cannot change convention for overridden dispatching "
+                  & "operation", Arg1);
             end if;
 
             --  Set the convention
@@ -8652,8 +8670,8 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has "
-                  & "no effect?j?", N);
+                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has no "
+                  & "effect?j?", N);
             end if;
          end CPP_Virtual;
 
@@ -8667,8 +8685,8 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has "
-                  & "no effect?j?", N);
+                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has no "
+                  & "effect?j?", N);
             end if;
          end CPP_Vtable;
 
@@ -8900,13 +8918,13 @@ package body Sem_Prag is
          --  where FUNCTION_RESULT is a function Result attribute_reference
 
          when Pragma_Depends => Depends : declare
-            Subp_Decl : Node_Id;
-            Subp_Id   : Entity_Id;
-
             All_Inputs_Seen : Elist_Id := No_Elist;
             --  A list containing the entities of all the inputs processed so
             --  far. This Elist is populated with unique entities because the
             --  same input may appear in multiple input lists.
+
+            Global_Seen : Boolean := False;
+            --  A flag set when pragma Global has been processed
 
             Outputs_Seen : Elist_Id := No_Elist;
             --  A list containing the entities of all the outputs processed so
@@ -8916,11 +8934,51 @@ package body Sem_Prag is
             Null_Output_Seen : Boolean := False;
             --  A flag used to track the legality of a null output
 
+            Result_Seen : Boolean := False;
+            --  A flag set when Subp_Id'Result is processed
+
+            Subp_Id : Entity_Id;
+            --  The entity of the subprogram subject to pragma Depends
+
+            Subp_Inputs  : Elist_Id := No_Elist;
+            Subp_Outputs : Elist_Id := No_Elist;
+            --  Two lists containing the full set of inputs and output of the
+            --  related subprograms. Note that these lists contain both nodes
+            --  and entities.
+
             procedure Analyze_Dependency_Clause
               (Clause  : Node_Id;
                Is_Last : Boolean);
             --  Verify the legality of a single dependency clause. Flag Is_Last
             --  denotes whether Clause is the last clause in the relation.
+
+            function Appears_In
+              (List    : Elist_Id;
+               Item_Id : Entity_Id) return Boolean;
+            --  Determine whether a particular item appears in a mixed list of
+            --  nodes and entities.
+
+            procedure Check_Function_Return;
+            --  Verify that Funtion'Result appears as one of the outputs
+
+            procedure Check_Mode
+              (Item     : Node_Id;
+               Item_Id  : Entity_Id;
+               Is_Input : Boolean);
+            --  Ensure that an item has a proper "in", "in out" or "out" mode
+            --  depending on its function. If this is not the case, emit an
+            --  error.
+
+            procedure Check_Usage
+              (Subp_List : Elist_Id;
+               Item_List : Elist_Id;
+               Is_Input  : Boolean);
+            --  Verify that all items from list Subp_List appear in Item_List.
+            --  Emit an error if this is not the case.
+
+            procedure Collect_Subprogram_Inputs_Outputs;
+            --  Gather all inputs and outputs of the subprogram. These are the
+            --  formal parameters and entities classified in pragma Global.
 
             procedure Normalize_Clause (Clause : Node_Id);
             --  Remove a self-dependency "+" from the input list of a clause.
@@ -9080,6 +9138,9 @@ package body Sem_Prag is
                      elsif Is_Input then
                         Error_Msg_N
                           ("function result cannot act as input", Item);
+
+                     else
+                        Result_Seen := True;
                      end if;
 
                   --  Detect multiple uses of null in a single dependency list
@@ -9120,6 +9181,11 @@ package body Sem_Prag is
                                               E_Out_Parameter,
                                               E_Variable)
                         then
+                           --  Ensure that the item is of the correct mode
+                           --  depending on its function.
+
+                           Check_Mode (Item, Item_Id, Is_Input);
+
                            --  Detect multiple uses of the same state, variable
                            --  or formal parameter. If this is not the case,
                            --  add the item to the list of processed relations.
@@ -9127,11 +9193,7 @@ package body Sem_Prag is
                            if Contains (Seen, Item_Id) then
                               Error_Msg_N ("duplicate use of item", Item);
                            else
-                              if No (Seen) then
-                                 Seen := New_Elmt_List;
-                              end if;
-
-                              Append_Elmt (Item_Id, Seen);
+                              Add_Item (Item_Id, Seen);
                            end if;
 
                            --  Detect an illegal use of an input related to a
@@ -9145,11 +9207,7 @@ package body Sem_Prag is
                                 ("input of a null output list appears in "
                                  & "multiple input lists", Item);
                            else
-                              if No (All_Inputs_Seen) then
-                                 All_Inputs_Seen := New_Elmt_List;
-                              end if;
-
-                              Append_Unique_Elmt (Item_Id, All_Inputs_Seen);
+                              Add_Item (Item_Id, All_Inputs_Seen);
                            end if;
 
                            --  When the item renames an entire object, replace
@@ -9214,6 +9272,295 @@ package body Sem_Prag is
 
                Analyze_Input_List (Inputs);
             end Analyze_Dependency_Clause;
+
+            ----------------
+            -- Appears_In --
+            ----------------
+
+            function Appears_In
+              (List    : Elist_Id;
+               Item_Id : Entity_Id) return Boolean
+            is
+               Elmt : Elmt_Id;
+               Id   : Entity_Id;
+
+            begin
+               if Present (List) then
+                  Elmt := First_Elmt (List);
+                  while Present (Elmt) loop
+                     if Nkind (Node (Elmt)) = N_Defining_Identifier then
+                        Id := Node (Elmt);
+                     else
+                        Id := Entity (Node (Elmt));
+                     end if;
+
+                     if Id = Item_Id then
+                        return True;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end if;
+
+               return False;
+            end Appears_In;
+
+            ----------------------------
+            --  Check_Function_Return --
+            ----------------------------
+
+            procedure Check_Function_Return is
+            begin
+               if Ekind (Subp_Id) = E_Function and then not Result_Seen then
+                  Error_Msg_NE
+                    ("result of & must appear in exactly one output list",
+                     N, Subp_Id);
+               end if;
+            end Check_Function_Return;
+
+            ----------------
+            -- Check_Mode --
+            ----------------
+
+            procedure Check_Mode
+              (Item     : Node_Id;
+               Item_Id  : Entity_Id;
+               Is_Input : Boolean)
+            is
+            begin
+               if Is_Input then
+                  if Ekind (Item_Id) = E_Out_Parameter
+                    or else
+                      (Global_Seen
+                         and then not Appears_In (Subp_Inputs, Item_Id))
+                  then
+                     Error_Msg_NE
+                       ("item & must have mode in or in out", Item, Item_Id);
+                  end if;
+
+               --  Output
+
+               else
+                  if Ekind (Item_Id) = E_In_Parameter
+                    or else
+                      (Global_Seen
+                         and then not Appears_In (Subp_Outputs, Item_Id))
+                  then
+                     Error_Msg_NE
+                       ("item & must have mode out or in out", Item, Item_Id);
+                  end if;
+               end if;
+            end Check_Mode;
+
+            -----------------
+            -- Check_Usage --
+            -----------------
+
+            procedure Check_Usage
+              (Subp_List : Elist_Id;
+               Item_List : Elist_Id;
+               Is_Input  : Boolean)
+            is
+               procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id);
+               --  Emit an error concerning the erroneous usage of an item
+
+               -----------------
+               -- Usage_Error --
+               -----------------
+
+               procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id) is
+               begin
+                  if Is_Input then
+                     Error_Msg_NE
+                       ("item & must appear in at least one input list of "
+                        & "aspect Depends", Item, Item_Id);
+                  else
+                     Error_Msg_NE
+                       ("item & must appear in exactly one output list of "
+                        & "aspect Depends", Item, Item_Id);
+                  end if;
+               end Usage_Error;
+
+               --  Local variables
+
+               Elmt    : Elmt_Id;
+               Item    : Node_Id;
+               Item_Id : Entity_Id;
+
+            --  Start of processing for Check_Usage
+
+            begin
+               if No (Subp_List) then
+                  return;
+               end if;
+
+               --  Each input or output of the subprogram must appear in a
+               --  dependency relation.
+
+               Elmt := First_Elmt (Subp_List);
+               while Present (Elmt) loop
+                  Item := Node (Elmt);
+
+                  if Nkind (Item) = N_Defining_Identifier then
+                     Item_Id := Item;
+                  else
+                     Item_Id := Entity (Item);
+                  end if;
+
+                  --  The item does not appear in a dependency
+
+                  if not Contains (Item_List, Item_Id) then
+                     if Is_Formal (Item_Id) then
+                        Usage_Error (Item, Item_Id);
+
+                     --  States and global variables are not used properly only
+                     --  when the subprogram is subject to pragma Global.
+
+                     elsif Global_Seen then
+                        Usage_Error (Item, Item_Id);
+                     end if;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end Check_Usage;
+
+            ---------------------------------------
+            -- Collect_Subprogram_Inputs_Outputs --
+            ---------------------------------------
+
+            procedure Collect_Subprogram_Inputs_Outputs is
+               procedure Collect_Global_List
+                 (List : Node_Id;
+                  Mode : Name_Id := Name_Input);
+               --  Collect all relevant items from a global list
+
+               -------------------------
+               -- Collect_Global_List --
+               -------------------------
+
+               procedure Collect_Global_List
+                 (List : Node_Id;
+                  Mode : Name_Id := Name_Input)
+               is
+                  procedure Collect_Global_Item
+                    (Item : Node_Id;
+                     Mode : Name_Id);
+                  --  Add an item to the proper subprogram input or output
+                  --  collection.
+
+                  -------------------------
+                  -- Collect_Global_Item --
+                  -------------------------
+
+                  procedure Collect_Global_Item
+                    (Item : Node_Id;
+                     Mode : Name_Id)
+                  is
+                  begin
+                     if Mode = Name_In_Out or else Mode = Name_Input then
+                        Add_Item (Item, Subp_Inputs);
+                     end if;
+
+                     if Mode = Name_In_Out or else Mode = Name_Output then
+                        Add_Item (Item, Subp_Outputs);
+                     end if;
+                  end Collect_Global_Item;
+
+                  --  Local variables
+
+                  Assoc : Node_Id;
+                  Item  : Node_Id;
+
+               --  Start of processing for Collect_Global_List
+
+               begin
+                  --  Single global item declaration
+
+                  if Nkind_In (List, N_Identifier, N_Selected_Component) then
+                     Collect_Global_Item (List, Mode);
+
+                  --  Simple global list or moded global list declaration
+
+                  else
+                     if Present (Expressions (List)) then
+                        Item := First (Expressions (List));
+                        while Present (Item) loop
+                           Collect_Global_Item (Item, Mode);
+
+                           Next (Item);
+                        end loop;
+
+                     else
+                        Assoc := First (Component_Associations (List));
+                        while Present (Assoc) loop
+                           Collect_Global_List
+                             (List => Expression (Assoc),
+                              Mode => Chars (First (Choices (Assoc))));
+
+                           Next (Assoc);
+                        end loop;
+                     end if;
+                  end if;
+               end Collect_Global_List;
+
+               --  Local variables
+
+               Formal : Entity_Id;
+               Global : Node_Id;
+               List   : Node_Id;
+
+            --  Start of processing for Collect_Subprogram_Inputs_Outputs
+
+            begin
+               --  Process all formal parameters
+
+               Formal := First_Formal (Subp_Id);
+               while Present (Formal) loop
+                  if Ekind_In (Formal, E_In_Out_Parameter,
+                                       E_In_Parameter)
+                  then
+                     Add_Item (Formal, Subp_Inputs);
+                  end if;
+
+                  if Ekind_In (Formal, E_In_Out_Parameter,
+                                       E_Out_Parameter)
+                  then
+                     Add_Item (Formal, Subp_Outputs);
+                  end if;
+
+                  Next_Formal (Formal);
+               end loop;
+
+               --  If the subprogram is subject to pragma Global, traverse all
+               --  global lists and gather the relevant items.
+
+               Global := Find_Aspect (Subp_Id, Aspect_Global);
+               if Present (Global) then
+                  Global_Seen := True;
+
+                  --  Retrieve the pragma as it contains the analyzed lists
+
+                  Global := Aspect_Rep_Item (Parent (Global));
+
+                  --  The pragma may not have been analyzed because of the
+                  --  arbitrary declaration order of aspects. Make sure that
+                  --  it is analyzed for the purposes of item extraction.
+
+                  if not Analyzed (Global) then
+                     Analyze (Global);
+                  end if;
+
+                  List :=
+                    Expression (First (Pragma_Argument_Associations (Global)));
+
+                  --  Nothing to be done for a null global list
+
+                  if Nkind (List) /= N_Null then
+                     Collect_Global_List (List);
+                  end if;
+               end if;
+            end Collect_Subprogram_Inputs_Outputs;
 
             ----------------------
             -- Normalize_Clause --
@@ -9490,6 +9837,7 @@ package body Sem_Prag is
             Clause      : Node_Id;
             Errors      : Nat;
             Last_Clause : Node_Id;
+            Subp_Decl   : Node_Id;
 
          --  Start of processing for Depends
 
@@ -9511,10 +9859,22 @@ package body Sem_Prag is
             Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
             Clause  := Expression (Arg1);
 
-            --  There is nothing to be done for a null dependency relation
+            --  Empty dependency list
 
             if Nkind (Clause) = N_Null then
-               null;
+
+               --  Gather all states, variables and formal parameters that the
+               --  subprogram may depend on. These items are obtained from the
+               --  parameter profile or pragma Global (if available).
+
+               Collect_Subprogram_Inputs_Outputs;
+
+               --  Verify that every input or output of the subprogram appear
+               --  in a dependency.
+
+               Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
+               Check_Usage (Subp_Outputs, Outputs_Seen, False);
+               Check_Function_Return;
 
             --  Dependency clauses appear as component associations of an
             --  aggregate.
@@ -9523,6 +9883,12 @@ package body Sem_Prag is
               and then Present (Component_Associations (Clause))
             then
                Last_Clause := Last (Component_Associations (Clause));
+
+               --  Gather all states, variables and formal parameters that the
+               --  subprogram may depend on. These items are obtained from the
+               --  parameter profile or pragma Global (if available).
+
+               Collect_Subprogram_Inputs_Outputs;
 
                --  Ensure that the formal parameters are visible when analyzing
                --  all clauses. This falls out of the general rule of aspects
@@ -9558,6 +9924,13 @@ package body Sem_Prag is
                end loop;
 
                End_Scope;
+
+               --  Verify that every input or output of the subprogram appear
+               --  in a dependency.
+
+               Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
+               Check_Usage (Subp_Outputs, Outputs_Seen, False);
+               Check_Function_Return;
 
             --  The top level dependency relation is malformed
 
@@ -10047,8 +10420,8 @@ package body Sem_Prag is
                 Present (Source_Location)
             then
                Error_Pragma
-                 ("parameter profile and source location cannot "
-                  & "be used together in pragma%");
+                 ("parameter profile and source location cannot be used "
+                  & "together in pragma%");
             end if;
 
             Process_Eliminate_Pragma
@@ -10894,18 +11267,14 @@ package body Sem_Prag is
                   --  processed items.
 
                   else
-                     if No (Seen) then
-                        Seen := New_Elmt_List;
-                     end if;
-
-                     Append_Elmt (Item_Id, Seen);
+                     Add_Item (Item_Id, Seen);
                   end if;
 
                   if Ekind (Item_Id) = E_Abstract_State
                     and then Is_Volatile_State (Item_Id)
                   then
-                     --  A global item of mode In_Out or Output cannot denote
-                     --  a volatile Input state.
+                     --  A global item of mode In_Out or Output cannot denote a
+                     --  volatile Input state.
 
                      if Is_Input_State (Item_Id)
                        and then (Global_Mode = Name_In_Out
@@ -10954,9 +11323,9 @@ package body Sem_Prag is
                procedure Check_Mode_Restriction_In_Function (Mode : Node_Id) is
                begin
                   if Ekind (Subp_Id) = E_Function then
-                     Error_Msg_Name_1 := Chars (Mode);
-                     Error_Msg_N
-                       ("global mode % not applicable to functions", Mode);
+                     Error_Msg_NE
+                       ("global mode & not applicable to functions",
+                        Mode, Mode);
                   end if;
                end Check_Mode_Restriction_In_Function;
 
@@ -11008,22 +11377,22 @@ package body Sem_Prag is
 
                      Assoc := First (Component_Associations (List));
                      while Present (Assoc) loop
-                           Mode := First (Choices (Assoc));
+                        Mode := First (Choices (Assoc));
 
                         if Nkind (Mode) = N_Identifier then
                            if Chars (Mode) = Name_Contract_In then
-                                 Check_Duplicate_Mode (Mode, Contract_Seen);
+                              Check_Duplicate_Mode (Mode, Contract_Seen);
 
                            elsif Chars (Mode) = Name_In_Out then
                               Check_Duplicate_Mode (Mode, In_Out_Seen);
-                                 Check_Mode_Restriction_In_Function (Mode);
+                              Check_Mode_Restriction_In_Function (Mode);
 
                            elsif Chars (Mode) = Name_Input then
-                                 Check_Duplicate_Mode (Mode, Input_Seen);
+                              Check_Duplicate_Mode (Mode, Input_Seen);
 
                            elsif Chars (Mode) = Name_Output then
                               Check_Duplicate_Mode (Mode, Output_Seen);
-                                 Check_Mode_Restriction_In_Function (Mode);
+                              Check_Mode_Restriction_In_Function (Mode);
 
                            else
                               Error_Msg_N ("invalid mode selector", Mode);
@@ -11316,8 +11685,8 @@ package body Sem_Prag is
                   null;
                else
                   Error_Pragma_Arg
-                    ("controlling formal must be of synchronized "
-                     & "tagged type", Arg1);
+                    ("controlling formal must be of synchronized tagged type",
+                     Arg1);
                   return;
                end if;
 
@@ -12275,8 +12644,8 @@ package body Sem_Prag is
 
             elsif In_Private_Part (Current_Scope) then
                Error_Pragma_Arg
-                 ("pragma% only allowed for private type "
-                  & "declared in visible part", Arg1);
+                 ("pragma% only allowed for private type declared in "
+                  & "visible part", Arg1);
 
             else
                Error_Pragma_Arg
@@ -12369,12 +12738,12 @@ package body Sem_Prag is
                if Ekind (Def_Id) /= E_Function then
                   if VM_Target = JVM_Target then
                      Error_Pragma_Arg
-                       ("pragma% requires function returning a "
-                        & "'Java access type", Def_Id);
+                       ("pragma% requires function returning a 'Java access "
+                        & "type", Def_Id);
                   else
                      Error_Pragma_Arg
-                       ("pragma% requires function returning a "
-                        & "'C'I'L access type", Def_Id);
+                       ("pragma% requires function returning a 'C'I'L access "
+                        & "type", Def_Id);
                   end if;
                end if;
 
@@ -12488,7 +12857,7 @@ package body Sem_Prag is
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
                        ("first formal of % function must be a named access "
-                        & " type", Parameter_Type (Parent (This_Formal)));
+                        & "type", Parameter_Type (Parent (This_Formal)));
 
                   elsif Atree.Convention
                          (Designated_Type (Etype (This_Formal))) /= Convention
@@ -12531,13 +12900,13 @@ package body Sem_Prag is
                   if Atree.Convention (Etype (Def_Id)) /= Convention then
                      if Convention = Convention_Java then
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a "
-                           & "'Java access type", Arg1);
+                          ("pragma% requires function returning a 'Java "
+                           & "access type", Arg1);
                      else
                         pragma Assert (Convention = Convention_CIL);
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a "
-                           & "'C'I'L access type", Arg1);
+                          ("pragma% requires function returning a 'C'I'L "
+                           & "access type", Arg1);
                      end if;
                   end if;
 
@@ -14611,8 +14980,8 @@ package body Sem_Prag is
 
             elsif Lower_Val > Upper_Val then
                Error_Pragma
-                 ("last_priority_expression must be greater than "
-                  & "or equal to first_priority_expression");
+                 ("last_priority_expression must be greater than or equal to "
+                  & "first_priority_expression");
 
             --  Store the new policy, but always preserve System_Location since
             --  we like the error message with the run-time name.
@@ -15454,8 +15823,8 @@ package body Sem_Prag is
               or else In_Package_Body (Current_Scope)
             then
                Error_Pragma
-                 ("pragma% can only apply to type declared immediately"
-                  & " within a package declaration");
+                 ("pragma% can only apply to type declared immediately "
+                  & "within a package declaration");
             end if;
 
             --  A simple storage pool type must be an immutably limited record
@@ -15693,7 +16062,7 @@ package body Sem_Prag is
                  or else Present (Next_Formal (First_Formal (Ent)))
                then
                   Error_Pragma_Arg
-                   ("argument for pragma% must be function of one argument",
+                    ("argument for pragma% must be function of one argument",
                      Arg);
                end if;
             end Check_OK_Stream_Convert_Function;
@@ -16828,8 +17197,8 @@ package body Sem_Prag is
 
                   elsif not Is_Static_String_Expression (Arg1) then
                      Error_Pragma_Arg
-                       ("argument of pragma% must be On/Off or "
-                        & "static string expression", Arg1);
+                       ("argument of pragma% must be On/Off or static string "
+                        & "expression", Arg1);
 
                   --  One argument string expression case
 
@@ -16967,8 +17336,8 @@ package body Sem_Prag is
 
                      elsif not Is_Static_String_Expression (Arg2) then
                         Error_Pragma_Arg
-                          ("second argument of pragma% must be entity "
-                           & "name or static string expression", Arg2);
+                          ("second argument of pragma% must be entity name "
+                           & "or static string expression", Arg2);
 
                      --  String literal case
 
@@ -17007,9 +17376,8 @@ package body Sem_Prag is
 
                            if Err then
                               Error_Msg
-                                ("??pragma Warnings On with no "
-                                 & "matching Warnings Off",
-                                 Loc);
+                                ("??pragma Warnings On with no matching "
+                                 & "Warnings Off", Loc);
                            end if;
                         end if;
                      end if;
