@@ -1,3 +1,8 @@
+2013-04-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* df-core.c (df_find_def): Compare register numbers.
+	(df_find_use): Likewise.
+
 2013-04-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/56903
