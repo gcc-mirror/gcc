@@ -33976,6 +33976,11 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
 	return true;
       if (!TARGET_PARTIAL_REG_STALL)
 	return true;
+      /* LRA checks if the hard register is OK for the given mode.
+        QImode values can live in non-QI regs, so we allow all
+        registers here.  */
+      if (lra_in_progress)
+       return true;
       return !can_create_pseudo_p ();
     }
   /* We handle both integer and floats in the general purpose registers.  */
