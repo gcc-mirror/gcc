@@ -1,3 +1,18 @@
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* makeutl.adb, prj-nmsc.adb: Minor reformatting.
+
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Make_Invariant_Call): Use Check_Kind instead
+	of Check_Enabled.
+	* gnat_rm.texi (Check_Policy): Update documentation for new
+	Check_Policy syntax.
+	* sem_prag.adb (Check_Kind): Replaces Check_Enabled
+	(Analyze_Pragma, case Check_Policy): Rework to accomodate new
+	syntax (like Assertion_Policy).
+	* sem_prag.ads (Check_Kind): Replaces Check_Enabled.
+
 2013-04-12  Doug Rupp  <rupp@adacore.com>
 
 	* init.c (SS$_CONTROLC, SS$_CONTINUE) [VMS]: New macros.

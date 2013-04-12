@@ -2320,12 +2320,12 @@ package body Sem_Prag is
          --  For a pragma PPC in the extended main source unit, record enabled
          --  status in SCO.
 
-         --  This may seem redundant with the call to Check_Enabled occurring
-         --  later on when the pragma is rewritten into a pragma Check but
-         --  is actually required in the case of a postcondition within a
+         --  This may seem redundant with the call to Check_Kind test that
+         --  occurs later on when the pragma is rewritten into a pragma Check
+         --  but is actually required in the case of a postcondition within a
          --  generic.
 
-         if Check_Enabled (Pname) and then not Split_PPC (N) then
+         if Check_Kind (Pname) = Name_Check and then not Split_PPC (N) then
             Set_SCO_Pragma_Enabled (Loc);
          end if;
 
@@ -6763,7 +6763,11 @@ package body Sem_Prag is
 
       Check_Applicable_Policy (N);
 
+      --  If pragma is disable, rewrite as Null statement and skip analysis
+
       if Is_Disabled (N) then
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze (N);
          raise Pragma_Exit;
       end if;
 
@@ -7612,6 +7616,7 @@ package body Sem_Prag is
                --  now inserted all the equivalent Check pragmas.
 
                Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
             end if;
          end Assertion_Policy;
 
@@ -8096,7 +8101,32 @@ package body Sem_Prag is
             Rewrite_Assertion_Kind (Get_Pragma_Arg (Arg1));
             Check_Arg_Is_Identifier (Arg1);
             Cname := Chars (Get_Pragma_Arg (Arg1));
-            Check_On := Check_Enabled (Cname);
+
+            --  Set Check_On to indicate check status
+
+            case Check_Kind (Cname) is
+               when Name_Ignore =>
+                  Check_On := False;
+
+               when Name_Check =>
+                  Check_On := True;
+
+               --  For disable, rewrite pragma as null statement and skip
+               --  rest of the analysis of the pragma.
+
+               when Name_Disable =>
+                  Rewrite (N, Make_Null_Statement (Loc));
+                  Analyze (N);
+                  raise Pragma_Exit;
+
+               --  No other possibilities
+
+               when others =>
+                  raise Program_Error;
+            end case;
+
+            --  If check kind was not Disable, then continue pragma analysis
+
             Expr := Get_Pragma_Arg (Arg2);
 
             --  Deal with SCO generation
@@ -8233,24 +8263,36 @@ package body Sem_Prag is
          -- Check_Policy --
          ------------------
 
+         --  This is the old style syntax, which is still allowed in all modes:
+
          --  pragma Check_Policy ([Name   =>] CHECK_KIND
          --                       [Policy =>] POLICY_IDENTIFIER);
 
          --  POLICY_IDENTIFIER ::= On | Off | Check | Disable | Ignore
 
-         --  CHECK_KIND ::= IDENTIFIER |
-         --                 Pre'Class | Post'Class | Identifier'Class
+         --  CHECK_KIND ::= IDENTIFIER           |
+         --                 Pre'Class            |
+         --                 Post'Class           |
+         --                 Type_Invariant'Class |
+         --                 Invariant'Class
 
-         when Pragma_Check_Policy => Check_Policy :
+         --  This is the new style syntax, compatible with Assertion_Policy
+         --  and also allowed in all modes.
+
+         --  Pragma Check_Policy (
+         --      CHECK_KIND => POLICY_IDENTIFIER
+         --   {, CHECK_KIND => POLICY_IDENTIFIER});
+
+         --  Note: the identifiers Name and Policy are not allowed as
+         --  Check_Kind values. This avoids ambiguities between the old and
+         --  new form syntax.
+
+         when Pragma_Check_Policy => Check_Policy : declare
+            Kind : Node_Id;
+
          begin
             GNAT_Pragma;
-            Check_Arg_Count (2);
-            Check_Optional_Identifier (Arg1, Name_Name);
-            Rewrite_Assertion_Kind (Get_Pragma_Arg (Arg1));
-            Check_Arg_Is_Identifier (Arg1);
-            Check_Optional_Identifier (Arg2, Name_Policy);
-            Check_Arg_Is_One_Of
-              (Arg2, Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
+            Check_At_Least_N_Arguments (1);
 
             --  A Check_Policy pragma can appear either as a configuration
             --  pragma, or in a declarative part or a package spec (see RM
@@ -8261,8 +8303,90 @@ package body Sem_Prag is
                Check_Is_In_Decl_Part_Or_Package_Spec;
             end if;
 
-            Set_Next_Pragma (N, Opt.Check_Policy_List);
-            Opt.Check_Policy_List := N;
+            --  Figure out if we have the old or new syntax. We have the
+            --  old syntax if the first argument has no identifier, or the
+            --  identifier is Name.
+
+            if Nkind (Arg1) /= N_Pragma_Argument_Association
+               or else Nam_In (Chars (Arg1), No_Name, Name_Name)
+            then
+               --  Old syntax
+
+               Check_Arg_Count (2);
+               Check_Optional_Identifier (Arg1, Name_Name);
+               Kind := Get_Pragma_Arg (Arg1);
+               Rewrite_Assertion_Kind (Kind);
+               Check_Arg_Is_Identifier (Arg1);
+
+               --  Check forbidden check kind
+
+               if Nam_In (Chars (Kind), Name_Name, Name_Policy) then
+                  Error_Msg_Name_2 := Chars (Kind);
+                     Error_Pragma_Arg
+                       ("pragma% does not allow% as check name", Arg1);
+               end if;
+
+               --  Check policy
+
+               Check_Optional_Identifier (Arg2, Name_Policy);
+               Check_Arg_Is_One_Of
+                 (Arg2,
+                  Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
+
+               --  And chain pragma on the Check_Policy_List for search
+
+               Set_Next_Pragma (N, Opt.Check_Policy_List);
+               Opt.Check_Policy_List := N;
+
+            --  For the new syntax, what we do is to convert each argument to
+            --  an old syntax equivalent. We do that because we want to chain
+            --  old style Check_Pragmas for the search (we don't wnat to have
+            --  to deal with multiple arguments in the search)
+
+            else
+               declare
+                  Arg  : Node_Id;
+                  Argx : Node_Id;
+                  LocP : Source_Ptr;
+
+               begin
+                  Arg := Arg1;
+                  while Present (Arg) loop
+                     LocP := Sloc (Arg);
+                     Argx := Get_Pragma_Arg (Arg);
+
+                     --  Kind must be specified
+
+                     if Nkind (Arg) /= N_Pragma_Argument_Association
+                       or else Chars (Arg) = No_Name
+                     then
+                        Error_Pragma_Arg
+                          ("missing assertion kind for pragma%", Arg);
+                     end if;
+
+                     --  Construct equivalent old form syntax Check_Policy
+                     --  pragma and insert it to get remaining checks.
+
+                     Insert_Action (N,
+                       Make_Pragma (LocP,
+                         Chars                        => Name_Check_Policy,
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (LocP,
+                             Expression =>
+                               Make_Identifier (LocP, Chars (Arg))),
+                           Make_Pragma_Argument_Association (Sloc (Argx),
+                             Expression => Argx))));
+
+                     Arg := Next (Arg);
+                  end loop;
+
+                  --  Rewrite original Check_Policy pragma to null, since we
+                  --  have converted it into a series of old syntax pragmas.
+
+                  Rewrite (N, Make_Null_Statement (Loc));
+                  Analyze (N);
+               end;
+            end if;
          end Check_Policy;
 
          ---------------------
@@ -17734,11 +17858,11 @@ package body Sem_Prag is
       when Pragma_Exit => null;
    end Analyze_Pragma;
 
-   -------------------
-   -- Check_Enabled --
-   -------------------
+   ----------------
+   -- Check_Kind --
+   ----------------
 
-   function Check_Enabled (Nam : Name_Id) return Boolean is
+   function Check_Kind (Nam : Name_Id) return Name_Id is
       PP : Node_Id;
 
    begin
@@ -17757,9 +17881,11 @@ package body Sem_Prag is
             then
                case (Chars (Get_Pragma_Arg (Last (PPA)))) is
                   when Name_On | Name_Check =>
-                     return True;
-                  when Name_Off | Name_Disable | Name_Ignore =>
-                     return False;
+                     return Name_Check;
+                  when Name_Off | Name_Ignore =>
+                     return Name_Ignore;
+                  when Name_Disable =>
+                     return Name_Disable;
                   when others =>
                      raise Program_Error;
                end case;
@@ -17775,8 +17901,12 @@ package body Sem_Prag is
       --  compatibility with the RM for the cases of assertion, invariant,
       --  precondition, predicate, and postcondition.
 
-      return Assertions_Enabled;
-   end Check_Enabled;
+      if Assertions_Enabled then
+         return Name_Check;
+      else
+         return Name_Ignore;
+      end if;
+   end Check_Kind;
 
    -----------------------------
    -- Check_Applicable_Policy --

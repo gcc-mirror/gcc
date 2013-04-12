@@ -1258,20 +1258,19 @@ package body Makeutl is
          while Obj_Proj /= No_Project loop
             if Obj_Proj.Object_Directory /= No_Path_Information then
                declare
-                  Dir  : constant String :=
-                    Get_Name_String
-                      (Obj_Proj.Object_Directory.Display_Name);
+                  Dir : constant String :=
+                    Get_Name_String (Obj_Proj.Object_Directory.Display_Name);
 
                   Object_Path : constant String :=
                     Normalize_Pathname
-                      (Name          =>
-                           Get_Name_String (Source.Object),
+                      (Name          => Get_Name_String (Source.Object),
                        Resolve_Links => Opt.Follow_Links_For_Files,
                        Directory     => Dir);
 
                   Obj_Path : constant Path_Name_Type :=
                     Create_Name (Object_Path);
-                  Stamp    : Time_Stamp_Type := Empty_Time_Stamp;
+
+                  Stamp : Time_Stamp_Type := Empty_Time_Stamp;
 
                begin
                   --  For specs, we do not check object files if there is a
@@ -1301,14 +1300,12 @@ package body Makeutl is
       elsif Source.Language.Config.Dependency_Kind = Makefile then
          declare
             Object_Dir : constant String :=
-                           Get_Name_String
-                             (Source.Project.Object_Directory.Display_Name);
+              Get_Name_String (Source.Project.Object_Directory.Display_Name);
             Dep_Path   : constant String :=
-                           Normalize_Pathname
-                             (Name        => Get_Name_String (Source.Dep_Name),
-                              Resolve_Links =>
-                                Opt.Follow_Links_For_Files,
-                              Directory     => Object_Dir);
+              Normalize_Pathname
+                (Name          => Get_Name_String (Source.Dep_Name),
+                 Resolve_Links => Opt.Follow_Links_For_Files,
+                 Directory     => Object_Dir);
          begin
             Source.Dep_Path := Create_Name (Dep_Path);
             Source.Dep_TS   := Osint.Unknown_Attributes;
@@ -1326,8 +1323,8 @@ package body Makeutl is
      (Env  : Prj.Tree.Environment;
       Argv : String) return Boolean
    is
-      Start     : Positive := 3;
-      Finish    : Natural := Argv'Last;
+      Start  : Positive := 3;
+      Finish : Natural := Argv'Last;
 
       pragma Assert (Argv'First = 1);
       pragma Assert (Argv (1 .. 2) = "-X");
