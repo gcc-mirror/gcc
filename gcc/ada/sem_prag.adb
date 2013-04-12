@@ -248,6 +248,31 @@ package body Sem_Prag is
    ------------------------------
 
    procedure Analyze_CTC_In_Decl_Part (N : Node_Id; S : Entity_Id) is
+
+      procedure Analyze_Contract_Cases (Aggr : Node_Id);
+      --  Pre-analyze the guard and consequence expressions of a Contract_Cases
+      --  pragma/aspect aggregate expression.
+
+      procedure Analyze_Contract_Cases (Aggr : Node_Id) is
+         Case_Guard : Node_Id;
+         Conseq     : Node_Id;
+         Post_Case  : Node_Id;
+      begin
+         Post_Case := First (Component_Associations (Aggr));
+         while Present (Post_Case) loop
+            Case_Guard := First (Choices (Post_Case));
+            Conseq     := Expression (Post_Case);
+
+            --  Preanalyze the boolean expression, we treat this as a spec
+            --  expression (i.e. similar to a default expression).
+
+            Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
+            Preanalyze_Assert_Expression (Conseq, Standard_Boolean);
+
+            Next (Post_Case);
+         end loop;
+      end Analyze_Contract_Cases;
+
    begin
       --  Install formals and push subprogram spec onto scope stack so that we
       --  can see the formals from the pragma.
@@ -258,10 +283,27 @@ package body Sem_Prag is
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
 
-      Preanalyze_CTC_Args
-        (N,
-         Get_Requires_From_CTC_Pragma (N),
-         Get_Ensures_From_CTC_Pragma (N));
+      if Pragma_Name (N) = Name_Test_Case
+        or else Pragma_Name (N) = Name_Contract_Case
+      then
+         Preanalyze_CTC_Args
+           (N,
+            Get_Requires_From_CTC_Pragma (N),
+            Get_Ensures_From_CTC_Pragma (N));
+
+      elsif Pragma_Name (N) = Name_Contract_Cases then
+         Analyze_Contract_Cases
+           (Expression (First (Pragma_Argument_Associations (N))));
+
+         --  In ASIS mode, for a pragma generated from a source aspect, also
+         --  analyze the original aspect expression.
+
+         if ASIS_Mode
+           and then Present (Corresponding_Aspect (N))
+         then
+            Analyze_Contract_Cases (Expression (Corresponding_Aspect (N)));
+         end if;
+      end if;
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the expressions in the contract case or test case is done.
