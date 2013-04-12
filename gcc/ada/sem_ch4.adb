@@ -413,8 +413,9 @@ package body Sem_Ch4 is
       if Comes_From_Source (N) then
          Check_Restriction (No_Allocators, N);
 
-         --  Processing for No_Allocators_After_Elaboration, loop to look at
-         --  enclosing context, checking task case and main subprogram case.
+         --  Processing for No_Standard_Allocators_After_Elaboration, loop to
+         --  look at enclosing context, checking task case and main subprogram
+         --  case.
 
          C := N;
          P := Parent (C);
@@ -431,7 +432,8 @@ package body Sem_Ch4 is
                --  violation of No_Allocators_After_Elaboration we can detect.
 
                if Nkind (Original_Node (Parent (P))) = N_Task_Body then
-                  Check_Restriction (No_Allocators_After_Elaboration, N);
+                  Check_Restriction
+                    (No_Standard_Allocators_After_Elaboration, N);
                   exit;
                end if;
 

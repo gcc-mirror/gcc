@@ -721,6 +721,8 @@ package Snames is
    Name_Name                           : constant Name_Id := N + $;
    Name_NCA                            : constant Name_Id := N + $;
    Name_No                             : constant Name_Id := N + $;
+   Name_No_Access_Parameter_Allocators : constant Name_Id := N + $;
+   Name_No_Coextensions                : constant Name_Id := N + $;
    Name_No_Dependence                  : constant Name_Id := N + $;
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
@@ -728,8 +730,11 @@ package Snames is
    Name_No_Requeue                     : constant Name_Id := N + $;
    Name_No_Requeue_Statements          : constant Name_Id := N + $;
    Name_No_Specification_Of_Aspect     : constant Name_Id := N + $;
+   Name_No_Standard_Allocators_After_Elaboration : constant Name_Id := N + $;
    Name_No_Task_Attributes             : constant Name_Id := N + $;
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
+   Name_No_Use_Of_Attribute            : constant Name_Id := N + $;
+   Name_No_Use_Of_Pragma               : constant Name_Id := N + $;
    Name_No_Unroll                      : constant Name_Id := N + $;
    Name_No_Vector                      : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;

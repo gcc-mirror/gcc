@@ -5801,6 +5801,26 @@ package body Sem_Prag is
                   end if;
                end;
 
+            elsif Id = Name_No_Use_Of_Attribute then
+               if Nkind (Expr) /= N_Identifier
+                 or else not Is_Attribute_Name (Chars (Expr))
+               then
+                  Error_Msg_N ("unknown attribute name?", Expr);
+
+               else
+                  Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
+               end if;
+
+            elsif Id = Name_No_Use_Of_Pragma then
+               if Nkind (Expr) /= N_Identifier
+                 or else not Is_Pragma_Name (Chars (Expr))
+               then
+                  Error_Msg_N ("unknown pragma name?", Expr);
+
+               else
+                  Set_Restriction_No_Use_Of_Pragma (Expr, Warn);
+               end if;
+
             --  All other cases of restriction identifier present
 
             else
@@ -6756,6 +6776,8 @@ package body Sem_Prag is
             end if;
          end if;
       end if;
+
+      Check_Restriction_No_Use_Of_Pragma (N);
 
       --  An enumeration type defines the pragmas that are supported by the
       --  implementation. Get_Pragma_Id (in package Prag) transforms a name
