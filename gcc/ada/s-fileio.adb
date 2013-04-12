@@ -696,8 +696,8 @@ package body System.File_IO is
                   Klen := KImage'Length;
                   To_Lower (KImage);
 
-                  if Index + Klen - 1 <= Form'Last and then
-                    Form (Index .. Index + Klen - 1) = KImage
+                  if Index + Klen - 1 <= Form'Last
+                    and then Form (Index .. Index + Klen - 1) = KImage
                   then
                      case Parm is
                         when Force_Record_Mode =>

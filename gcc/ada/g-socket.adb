@@ -733,7 +733,9 @@ package body GNAT.Sockets is
          end if;
       end if;
 
-      --  Wait for socket to become available for writing
+      --  Wait for socket to become available for writing (unless the Timeout
+      --  is zero, in which case we consider that it has already expired, and
+      --  we do not need to wait at all).
 
       if Timeout = 0.0 then
          Status := Expired;

@@ -49,11 +49,7 @@
 --      function Left  (Container : List; Position : Cursor) return List;
 --      function Right (Container : List; Position : Cursor) return List;
 
---    See detailed specifications for these subprograms
-
---  private with Ada.Streams;
---  private with Ada.Finalization;
---  with Ada.Iterator_Interfaces;
+--    See subprogram specifications that follow for details
 
 generic
    type Element_Type is private;

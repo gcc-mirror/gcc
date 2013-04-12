@@ -1,5 +1,17 @@
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
+	* a-cfdlli.ads, g-socket.adb, s-fileio.adb: Minor reformatting.
+
+2013-04-12  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Update analyse of
+	Attribute_Old and Attribute_Result so they are allowed in the
+	right-hand-side of an association in a Contract_Cases pragma.
+	* sem_prag.adb (Analyze_CTC_In_Decl_Part): Add pre-analysis of
+	the expressions in a Contract_Cases pragma.
+
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem.ads, opt.ads: Minor comment edits.
 	* sem_warn.adb, sem_ch6.adb: Minor reformatting.
 

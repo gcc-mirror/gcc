@@ -4262,7 +4262,7 @@ package body Sem_Attr is
 
          if In_Spec_Expression then
 
-            --  Check in postcondition or Ensures clause
+            --  Check in postcondition, Test_Case or Contract_Cases
 
             Prag := N;
             while not Nkind_In (Prag, N_Pragma,
@@ -4299,6 +4299,30 @@ package body Sem_Attr is
                         Error_Attr
                           ("% attribute misplaced inside test case", P);
                      end if;
+                  end if;
+               end;
+
+            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Cases then
+               declare
+                  Aggr : constant Node_Id :=
+                    Expression (First (Pragma_Argument_Associations (Prag)));
+                  Arg  : Node_Id;
+
+               begin
+                  Arg := N;
+                  while Arg /= Prag and Parent (Parent (Arg)) /= Aggr loop
+                     Arg := Parent (Arg);
+                  end loop;
+
+                  --  At this point, Parent (Arg) should be a
+                  --  N_Component_Association. Attribute Old is only allowed in
+                  --  the expression part of this association.
+
+                  if Nkind (Parent (Arg)) /= N_Component_Association
+                    or else Arg /= Expression (Parent (Arg))
+                  then
+                     Error_Attr
+                       ("% attribute misplaced inside contract cases", P);
                   end if;
                end;
 
@@ -4654,7 +4678,7 @@ package body Sem_Attr is
                Error_Attr;
             end if;
 
-            --  Check in postcondition or Ensures clause of function
+            --  Check in postcondition, Test_Case or Contract_Cases of function
 
             Prag := N;
             while not Nkind_In (Prag, N_Pragma,
@@ -4692,6 +4716,30 @@ package body Sem_Attr is
                         Error_Attr
                           ("% attribute misplaced inside test case", P);
                      end if;
+                  end if;
+               end;
+
+            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Cases then
+               declare
+                  Aggr : constant Node_Id :=
+                    Expression (First (Pragma_Argument_Associations (Prag)));
+                  Arg  : Node_Id;
+
+               begin
+                  Arg := N;
+                  while Arg /= Prag and Parent (Parent (Arg)) /= Aggr loop
+                     Arg := Parent (Arg);
+                  end loop;
+
+                  --  At this point, Parent (Arg) should be a
+                  --  N_Component_Association. Attribute Result is only
+                  --  allowed in the expression part of this association.
+
+                  if Nkind (Parent (Arg)) /= N_Component_Association
+                    or else Arg /= Expression (Parent (Arg))
+                  then
+                     Error_Attr
+                       ("% attribute misplaced inside contract cases", P);
                   end if;
                end;
 
