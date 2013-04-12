@@ -1,3 +1,10 @@
+2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Allow NEG
+	code in CC_NZ mode.
+	* config/aarch64/aarch64.md (*neg_<shift><mode>3_compare0): New
+	pattern.
+
 2013-04-11  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/48184
