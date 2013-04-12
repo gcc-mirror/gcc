@@ -436,6 +436,10 @@ package Opt is
    --  Set True to force the run time to raise Program_Error if calls to
    --  potentially blocking operations are detected from protected actions.
 
+   Directories_Must_Exist_In_Projects : Boolean := True;
+   --  PROJECT MANAGER
+   --  Set to False with switch -f of gnatclean and gprclean
+
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling

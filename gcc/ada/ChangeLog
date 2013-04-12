@@ -1,3 +1,27 @@
+2013-04-12  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (SS$_CONTROLC, SS$_CONTINUE) [VMS]: New macros.
+	(__gnat_handle_vms_condition) [VMS]: Dispatch on the Crtl/C user
+	handler if installed.
+	* ctrl_c.c (__gnat_install_int_handler)
+	[VMS]: Install a dummy sigaction handler to trigger the real
+	user handler dispatch in init.c/__gnat_handle_vms_condition.
+	(__gnat_uninstall_int_handler) [VMS]: Likewise.
+
+2013-04-12  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Parse_Cmd_Line): Set Directories_Must_Exist_In_Projects
+	to False if switch is specified.
+	* makeutl.adb (Initialize_Source_Record): Do not look for the
+	object file if there is no object directory.
+	* opt.ads (Directories_Must_Exist_In_Projects): New Boolean
+	variable, defaulted to True.
+	* prj-nmsc.adb (Check_Library_Attributes): Do not fail if library
+	directory does not exist when Directories_Must_Exist_In_Projects is
+	False.
+	(Get_Directories): Do not fail when the object or the exec directory
+	do not exist when Directories_Must_Exist_In_Projects is False.
+
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
 	* namet.adb, namet.ads: Minor addition (7 arg version of Nam_In).

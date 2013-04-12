@@ -3155,16 +3155,19 @@ package body Prj.Nmsc is
             end if;
 
             if not Dir_Exists then
+               if Directories_Must_Exist_In_Projects then
+                  --  Get the absolute name of the library directory that does
+                  --  not exist, to report an error.
 
-               --  Get the absolute name of the library directory that
-               --  does not exist, to report an error.
+                  Err_Vars.Error_Msg_File_1 :=
+                    File_Name_Type (Project.Library_Dir.Display_Name);
+                  Error_Msg
+                    (Data.Flags,
+                     "library directory { does not exist",
+                     Lib_Dir.Location, Project);
+               end if;
 
-               Err_Vars.Error_Msg_File_1 :=
-                 File_Name_Type (Project.Library_Dir.Display_Name);
-               Error_Msg
-                 (Data.Flags,
-                  "library directory { does not exist",
-                  Lib_Dir.Location, Project);
+               Project.Library_Dir := No_Path_Information;
 
             --  Checks for object/source directories
 
@@ -5407,15 +5410,20 @@ package body Prj.Nmsc is
                Externally_Built => Project.Externally_Built);
 
             if not Dir_Exists and then not Project.Externally_Built then
+               if Opt.Directories_Must_Exist_In_Projects then
+                  --  The object directory does not exist, report an error if
+                  --  the project is not externally built.
 
-               --  The object directory does not exist, report an error if the
-               --  project is not externally built.
+                  Err_Vars.Error_Msg_File_1 :=
+                    File_Name_Type (Object_Dir.Value);
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Require_Obj_Dirs,
+                     "object directory { not found",
+                     Project.Location, Project);
+               end if;
 
-               Err_Vars.Error_Msg_File_1 :=
-                 File_Name_Type (Object_Dir.Value);
-               Error_Or_Warning
-                 (Data.Flags, Data.Flags.Require_Obj_Dirs,
-                  "object directory { not found", Project.Location, Project);
+               Project.Object_Directory := No_Path_Information;
+
             end if;
          end if;
 
@@ -5488,10 +5496,14 @@ package body Prj.Nmsc is
                Externally_Built => Project.Externally_Built);
 
             if not Dir_Exists then
-               Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
-               Error_Or_Warning
-                 (Data.Flags, Data.Flags.Missing_Source_Files,
-                  "exec directory { not found", Project.Location, Project);
+               if Opt.Directories_Must_Exist_In_Projects then
+                  Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Missing_Source_Files,
+                     "exec directory { not found", Project.Location, Project);
+               end if;
+
+               Project.Exec_Directory := No_Path_Information;
             end if;
          end if;
       end if;

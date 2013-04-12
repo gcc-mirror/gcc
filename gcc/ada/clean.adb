@@ -1729,6 +1729,7 @@ package body Clean is
 
                      when 'f' =>
                         Force_Deletions := True;
+                        Directories_Must_Exist_In_Projects := False;
 
                      when 'F' =>
                         Full_Path_Name_For_Brief_Errors := True;
