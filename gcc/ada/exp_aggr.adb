@@ -1841,7 +1841,7 @@ package body Exp_Aggr is
       --  these discriminants are not components of the aggregate, and must be
       --  initialized. The assignments are appended to List.
 
-      function Get_Explicit_Discriminant_Value (D : Entity_Id)  return Node_Id;
+      function Get_Explicit_Discriminant_Value (D : Entity_Id) return Node_Id;
       --  If the ancestor part is an unconstrained type and further ancestors
       --  do not provide discriminants for it, check aggregate components for
       --  values of the discriminants.
@@ -2068,7 +2068,8 @@ package body Exp_Aggr is
       -- Get_Explicit_Discriminant_Value --
       -------------------------------------
 
-      function Get_Explicit_Discriminant_Value (D : Entity_Id)  return Node_Id
+      function Get_Explicit_Discriminant_Value
+        (D : Entity_Id) return Node_Id
       is
          Assoc  : Node_Id;
          Choice : Node_Id;
@@ -2081,6 +2082,7 @@ package body Exp_Aggr is
          Assoc := First (Component_Associations (N));
          while Present (Assoc) loop
             Choice := First (Choices (Assoc));
+
             if Chars (Choice) = Chars (D) then
                Val := Expression (Assoc);
                Remove (Assoc);
