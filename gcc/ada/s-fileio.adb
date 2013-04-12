@@ -29,15 +29,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;            use Ada.Finalization;
-with Ada.IO_Exceptions;           use Ada.IO_Exceptions;
+with Ada.Finalization;  use Ada.Finalization;
+with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
 with Interfaces.C;
-with Interfaces.C.Strings;        use Interfaces.C.Strings;
-with Interfaces.C_Streams;        use Interfaces.C_Streams;
+with Interfaces.C.Strings; use Interfaces.C.Strings;
+with Interfaces.C_Streams; use Interfaces.C_Streams;
 
 with System.CRTL.Runtime;
-with System.Case_Util;            use System.Case_Util;
+with System.Case_Util;    use System.Case_Util;
 with System.OS_Lib;
 with System.Soft_Links;
 
@@ -54,6 +54,7 @@ package body System.File_IO is
 
    subtype String_Access is System.OS_Lib.String_Access;
    procedure Free (X : in out String_Access) renames System.OS_Lib.Free;
+
    function "=" (X, Y : String_Access) return Boolean
      renames System.OS_Lib."=";
 
@@ -104,7 +105,7 @@ package body System.File_IO is
    --  If true, add appropriate suffix to control string for Open
 
    VMS_Formstr : String_Access := null;
-   --  For special VMS RMS keywords and values.
+   --  For special VMS RMS keywords and values
 
    -----------------------
    -- Local Subprograms --
@@ -147,12 +148,12 @@ package body System.File_IO is
    --  message providing errno information.
 
    procedure Form_VMS_RMS_Keys (Form : String; VMS_Form : out String_Access);
-   --   Parse the RMS Keys
+   --  Parse the RMS Keys
 
    function Form_RMS_Context_Key
      (Form     : String;
       VMS_Form : String_Access) return Natural;
-   --   Parse the RMS Context Key
+   --  Parse the RMS Context Key
 
    ----------------
    -- Append_Set --
@@ -531,7 +532,6 @@ package body System.File_IO is
             Fopstr (1) := (if Creat then 'w' else 'r');
             Fopstr (2) := '+';
             Fptr := 3;
-
       end case;
 
       --  If text_translation_required is true then we need to append either a
@@ -575,13 +575,10 @@ package body System.File_IO is
 
       if V1 = 0 then
          return Default;
-
       elsif Form (V1) = 'y' then
          return True;
-
       elsif Form (V1) = 'n' then
          return False;
-
       else
          raise Use_Error with "invalid Form";
       end if;
@@ -668,7 +665,7 @@ package body System.File_IO is
       type Context_Parms is
         (Binary_Data, Convert_Fortran_Carriage_Control, Force_Record_Mode,
          Force_Stream_Mode, Explicit_Write);
-   --  Ada-fied list of all possible Context keyword values.
+      --  Ada-fied list of all possible Context keyword values
 
       Pos   : Natural := 0;
       Klen  : Natural := 0;
@@ -746,9 +743,8 @@ package body System.File_IO is
       Klen : Natural := VMS_RMS_Keys_Token'Length;
       Index : Natural;
 
-      --  Ada-fied list of all RMS keywords, translated from the
-      --  HP C Run-Time Library Reference Manual, Table REF-3:
-      --  RMS Valid Keywords and Values
+      --  Ada-fied list of all RMS keywords, translated from the HP C Run-Time
+      --  Library Reference Manual, Table REF-3: RMS Valid Keywords and Values.
 
       type RMS_Keys is
        (Access_Callback, Allocation_Quantity, Block_Size, Context,
@@ -788,12 +784,13 @@ package body System.File_IO is
                      for Key in RMS_Keys loop
                         declare
                            KImage : String := RMS_Keys'Image (Key);
+
                         begin
                            Klen := KImage'Length;
                            To_Lower (KImage);
+
                            if Form (Index .. Index + Klen - 1) = KImage then
                               case Key is
-
                                  when Context =>
                                     Index := Form_RMS_Context_Key
                                      (Form (Index + Klen .. Form'Last),
@@ -810,8 +807,7 @@ package body System.File_IO is
 
                      if Form (Index) = ')' then
 
-                        --  Done, erase the unneeded trailing comma and
-                        --  return.
+                        --  Done, erase the unneeded trailing comma and return
 
                         for J in reverse VMS_Form'First .. VMS_Form'Last loop
                            if VMS_Form (J) = ',' then
@@ -821,15 +817,19 @@ package body System.File_IO is
                         end loop;
 
                         --  Shouldn't be possible to get here
+
                         raise Use_Error;
 
                      elsif Form (Index) = ',' then
 
                         --  Another key ahead, exit inner loop
+
                         null;
+
                      else
 
                         --  Keyword value not terminated correctly
+
                         raise Use_Error with "malformed VMS RMS Form";
                      end if;
                   end loop;
@@ -837,6 +837,7 @@ package body System.File_IO is
             end if;
 
             --  Found the keyword, but not followed by correct syntax
+
             raise Use_Error with "malformed VMS RMS Form";
          end if;
       end loop;
@@ -1024,13 +1025,10 @@ package body System.File_IO is
 
          if V1 = 0 then
             Shared := None;
-
          elsif Formstr (V1 .. V2) = "yes" then
             Shared := Yes;
-
          elsif Formstr (V1 .. V2) = "no" then
             Shared := No;
-
          else
             raise Use_Error with "invalid Form";
          end if;
@@ -1046,13 +1044,10 @@ package body System.File_IO is
 
          if V1 = 0 then
             Encoding := CRTL.Unspecified;
-
          elsif Formstr (V1 .. V2) = "utf8" then
             Encoding := CRTL.UTF8;
-
          elsif Formstr (V1 .. V2) = "8bits" then
             Encoding := CRTL.ASCII_8bits;
-
          else
             raise Use_Error with "invalid Form";
          end if;
@@ -1314,7 +1309,8 @@ package body System.File_IO is
    ------------------------
 
    procedure Raise_Device_Error
-     (File : AFCB_Ptr; Errno : Integer := OS_Lib.Errno)
+     (File  : AFCB_Ptr;
+      Errno : Integer := OS_Lib.Errno)
    is
    begin
       --  Clear error status so that the same error is not reported twice
@@ -1348,7 +1344,6 @@ package body System.File_IO is
       else -- 0 < Nread < Siz
          raise Data_Error with "not enough data read";
       end if;
-
    end Read_Buf;
 
    procedure Read_Buf
@@ -1440,7 +1435,6 @@ package body System.File_IO is
          if File.Stream = NULL_Stream then
             Close (File_Ptr);
             raise Use_Error;
-
          else
             File.Mode := Mode;
             Append_Set (File);

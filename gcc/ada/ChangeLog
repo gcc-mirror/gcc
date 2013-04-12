@@ -1,3 +1,13 @@
+2013-04-12  Doug Rupp  <rupp@adacore.com>
+
+	* s-fileio.adb: Minor reformatting.
+
+2013-04-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning): Do not warn if
+	the last statement in the analyzed loop is an unconditional
+	exit statement.
+
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads (Style_Check_Main): New switch.
