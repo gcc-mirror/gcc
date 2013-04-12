@@ -96,4 +96,5 @@ package Exp_Ch11 is
    --  handler (and restriction No_Exception_Propagation is set), or if there
    --  is a local handler marking that it has a local raise. E is the entity
    --  of the corresponding exception.
+
 end Exp_Ch11;

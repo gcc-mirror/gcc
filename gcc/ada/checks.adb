@@ -6242,9 +6242,9 @@ package body Checks is
          return;
       end if;
 
-      --  Do not insert checks within a predicate function.  This will arise
-      --  if the current unit and the predicate function are  being compiled
-      --  with  validity checks enabled.
+      --  Do not insert checks within a predicate function. This will arise
+      --  if the current unit and the predicate function are being compiled
+      --  with validity checks enabled.
 
       if Present (Predicate_Function (Typ))
         and then Current_Scope = Predicate_Function (Typ)

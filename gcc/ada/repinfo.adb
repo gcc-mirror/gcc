@@ -1041,11 +1041,13 @@ package body Repinfo is
          Write_Str ("for ");
          List_Name (Ent);
          Write_Str ("'" & Attr_Name & " use System.");
+
          if Bytes_Big_Endian xor Reverse_Storage_Order (Ent) then
             Write_Str ("High");
          else
             Write_Str ("Low");
          end if;
+
          Write_Line ("_Order_First;");
       end List_Attr;
 
@@ -1060,6 +1062,7 @@ package body Repinfo is
          if Is_Record_Type (Ent) then
             List_Attr ("Bit_Order");
          end if;
+
          List_Attr ("Scalar_Storage_Order");
       end if;
    end List_Scalar_Storage_Order;

@@ -69,22 +69,22 @@ package body Restrict is
    --  Once set True, this is never turned off again.
 
    No_Use_Of_Attribute : array (Attribute_Id) of Source_Ptr :=
-                          (others => No_Location);
+                           (others => No_Location);
 
    No_Use_Of_Attribute_Warning : array (Attribute_Id) of Boolean :=
-                                  (others => False);
+                                   (others => False);
 
    No_Use_Of_Attribute_Set : Boolean := False;
-   --  Indicates that No_Use_Of_Attribute was set at least once.
+   --  Indicates that No_Use_Of_Attribute was set at least once
 
    No_Use_Of_Pragma : array (Pragma_Id) of Source_Ptr :=
                         (others => No_Location);
 
    No_Use_Of_Pragma_Warning : array (Pragma_Id) of Boolean :=
-                                  (others => False);
+                                (others => False);
 
    No_Use_Of_Pragma_Set : Boolean := False;
-   --  Indicates that No_Use_Of_Pragma was set at least once.
+   --  Indicates that No_Use_Of_Pragma was set at least once
 
    -----------------------
    -- Local Subprograms --
@@ -322,7 +322,7 @@ package body Restrict is
          return;
       end if;
 
-      --  If nothing set, nothing to check.
+      --  If nothing set, nothing to check
 
       if not No_Use_Of_Attribute_Set then
          return;
@@ -334,8 +334,7 @@ package body Restrict is
          Error_Msg_Node_1 := N;
          Error_Msg_Warn := No_Use_Of_Attribute_Warning (A_Id);
          Error_Msg_N
-           ("<violation of restriction `No_Use_Of_Attribute '='> &`#",
-            N);
+           ("<violation of restriction `No_Use_Of_Attribute '='> &`#", N);
       end if;
    end Check_Restriction_No_Use_Of_Attribute;
 
@@ -356,7 +355,7 @@ package body Restrict is
          return;
       end if;
 
-      --  If nothing set, nothing to check.
+      --  If nothing set, nothing to check
 
       if not No_Use_Of_Pragma_Set then
          return;
@@ -368,8 +367,7 @@ package body Restrict is
          Error_Msg_Node_1 := Id;
          Error_Msg_Warn := No_Use_Of_Pragma_Warning (P_Id);
          Error_Msg_N
-           ("<violation of restriction `No_Use_Of_Pragma '='> &`#",
-            Id);
+           ("<violation of restriction `No_Use_Of_Pragma '='> &`#", Id);
       end if;
    end Check_Restriction_No_Use_Of_Pragma;
 
@@ -380,6 +378,10 @@ package body Restrict is
    procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id) is
       function Chars_Is (E : Entity_Id; S : String) return Boolean;
       --  Return True iff Chars (E) matches S (given in lower case)
+
+      --------------
+      -- Chars_Is --
+      --------------
 
       function Chars_Is (E : Entity_Id; S : String) return Boolean is
          Nam : constant Name_Id := Chars (E);
