@@ -1,3 +1,14 @@
+2013-04-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56261
+	* gfortran.h (gfc_explicit_interface_required): New prototype.
+	* expr.c (gfc_check_pointer_assign): Check if an explicit interface is
+	required in a proc-ptr assignment.
+	* interface.c (check_result_characteristics): Extra check.
+	* resolve.c (gfc_explicit_interface_required): New function.
+	(resolve_global_procedure): Use new function
+	'gfc_explicit_interface_required'. Do a full interface check.
+
 2013-04-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56845

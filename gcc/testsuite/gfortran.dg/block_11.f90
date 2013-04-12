@@ -50,7 +50,7 @@ module m3
   implicit none
 contains
   subroutine my_test()
-    procedure(), pointer :: ptr
+    procedure(sub), pointer :: ptr
     ! Before the fix, one had the link error
     ! "undefined reference to `sub.1909'"
     block
