@@ -645,7 +645,7 @@ package body Sem_Warn is
                end if;
 
             --  If an unconditional exit statement is the last statement in the
-            --  loop assume that no warning is needed. without any attempt at
+            --  loop, assume that no warning is needed, without any attempt at
             --  checking whether the exit is reachable.
 
             elsif Exit_Stmt = Last (Statements (Loop_Statement)) then

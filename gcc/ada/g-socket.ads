@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2011, AdaCore                     --
+--                     Copyright (C) 2001-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -858,7 +858,9 @@ package GNAT.Sockets is
    --  whether the operation completed successfully, timed out, or was aborted.
    --  If Selector is not null, the designated selector is used to wait for the
    --  socket to become available, else a private selector object is created
-   --  by this procedure and destroyed before it returns.
+   --  by this procedure and destroyed before it returns. If Timeout is 0.0,
+   --  no attempt is made to detect whether the connection has succeeded; it
+   --  is up to the user to determine this using Check_Selector later on.
 
    procedure Control_Socket
      (Socket  : Socket_Type;
