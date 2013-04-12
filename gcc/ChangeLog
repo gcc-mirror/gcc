@@ -1,3 +1,8 @@
+2013-04-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/tm.texi.in (LOOP_ALIGN): Remove loop note references.
+	* doc/tm.texi: Regenerated.
+
 2013-04-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_hard_regno_mode_ok): Use ANY_QI_REGNO_P in
