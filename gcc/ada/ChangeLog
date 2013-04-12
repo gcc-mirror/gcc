@@ -1,5 +1,21 @@
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
+	* namet.adb, namet.ads: Minor addition (7 arg version of Nam_In).
+	* exp_prag.adb, sem_ch3.adb, sem_intr.adb, sem_type.adb, exp_util.adb,
+	sem_aux.adb, exp_ch9.adb, sem_ch7.adb, sem_ch10.adb, sem_prag.adb,
+	par-ch2.adb, tbuild.adb, rtsfind.adb, freeze.adb, sem_util.adb,
+	sem_res.adb, sem_attr.adb, exp_ch2.adb, prj-makr.adb, sem_elab.adb,
+	exp_ch4.adb, sem_ch4.adb, sem_mech.adb, sem_ch6.adb, par-prag.adb,
+	prj-nmsc.adb, exp_disp.adb, sem_ch8.adb, sem_warn.adb, par-util.adb,
+	sem_eval.adb, exp_intr.adb, sem_ch13.adb, exp_cg.adb, lib-xref.adb,
+	sem_disp.adb, exp_ch3.adb: Minor code reorganization (use Nam_In).
+
+2013-04-12  Doug Rupp  <rupp@adacore.com>
+
+	* init.c: Don't clobber condition code on VMS.
+
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
 	* exp_aggr.adb: Minor reformatting.
 	* namet.ads, namet.adb (Nam_In): New functions.
 

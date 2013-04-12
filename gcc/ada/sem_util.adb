@@ -8478,9 +8478,8 @@ package body Sem_Util is
    begin
       if Is_Class_Wide_Type (Typ)
         and then
-          (Chars (Etype (Typ)) = Name_Forward_Iterator
-             or else
-           Chars (Etype (Typ)) = Name_Reversible_Iterator)
+          Nam_In (Chars (Etype (Typ)), Name_Forward_Iterator,
+                                       Name_Reversible_Iterator)
         and then
           Is_Predefined_File_Name
             (Unit_File_Name (Get_Source_Unit (Etype (Typ))))
@@ -8643,9 +8642,7 @@ package body Sem_Util is
             --  Attributes 'Input and 'Result produce objects
 
             when N_Attribute_Reference =>
-               return Attribute_Name (N) = Name_Input
-                        or else
-                      Attribute_Name (N) = Name_Result;
+               return Nam_In (Attribute_Name (N), Name_Input, Name_Result);
 
             when N_Selected_Component =>
                return
@@ -14530,9 +14527,7 @@ package body Sem_Util is
                   return False;
 
                elsif not Ekind_In (E, E_Discriminant, E_Component)
-                 or else (Chars (E) = Name_uTag
-                            or else
-                          Chars (E) = Name_uParent)
+                 or else Nam_In (Chars (E), Name_uTag, Name_uParent)
                then
                   Next_Entity (E);
 

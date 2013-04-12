@@ -516,11 +516,9 @@ package body Lib.Xref is
                P := Parent (P);
 
                if Nkind (P) = N_Pragma then
-                  if Pragma_Name (P) = Name_Warnings
-                       or else
-                     Pragma_Name (P) = Name_Unmodified
-                       or else
-                     Pragma_Name (P) = Name_Unreferenced
+                  if Nam_In (Pragma_Name (P), Name_Warnings,
+                                              Name_Unmodified,
+                                              Name_Unreferenced)
                   then
                      return False;
                   end if;

@@ -1461,9 +1461,9 @@ package body Sem_Ch6 is
       --  Special processing for Elab_Spec, Elab_Body and Elab_Subp_Body calls
 
       if Nkind (P) = N_Attribute_Reference
-        and then (Attribute_Name (P) = Name_Elab_Spec      or else
-                  Attribute_Name (P) = Name_Elab_Body      or else
-                  Attribute_Name (P) = Name_Elab_Subp_Body)
+        and then Nam_In (Attribute_Name (P), Name_Elab_Spec,
+                                             Name_Elab_Body,
+                                             Name_Elab_Subp_Body)
       then
          if Present (Actuals) then
             Error_Msg_N
@@ -4010,9 +4010,8 @@ package body Sem_Ch6 is
             Nxt := Next (Decl);
 
             if Nkind (Decl) = N_Pragma
-              and then (Pragma_Name (Decl) = Name_Unreferenced
-                          or else
-                        Pragma_Name (Decl) = Name_Unmodified)
+              and then Nam_In (Pragma_Name (Decl), Name_Unreferenced,
+                                                   Name_Unmodified)
             then
                Remove (Decl);
             end if;
@@ -4515,8 +4514,8 @@ package body Sem_Ch6 is
                   Conv := Current_Entity (Id);
 
                elsif Nkind_In (Id, N_Selected_Component, N_Expanded_Name)
-                 and then Chars (Selector_Name (Id))
-                            = Name_Unchecked_Conversion
+                 and then
+                   Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
                then
                   Conv := Current_Entity (Selector_Name (Id));
                else
@@ -5100,9 +5099,8 @@ package body Sem_Ch6 is
                Nxt := Next (Decl);
 
                if Nkind (Decl) = N_Pragma
-                 and then (Pragma_Name (Decl) = Name_Unreferenced
-                           or else
-                             Pragma_Name (Decl) = Name_Unmodified)
+                 and then Nam_In (Pragma_Name (Decl), Name_Unreferenced,
+                                                      Name_Unmodified)
                then
                   Remove (Decl);
                end if;
@@ -6499,11 +6497,9 @@ package body Sem_Ch6 is
       if Present (Overridden_Subp)
         and then (not Is_Hidden (Overridden_Subp)
                    or else
-                     ((Chars (Overridden_Subp) = Name_Initialize
-                         or else
-                       Chars (Overridden_Subp) = Name_Adjust
-                         or else
-                       Chars (Overridden_Subp) = Name_Finalize)
+                     (Nam_In (Chars (Overridden_Subp), Name_Initialize,
+                                                       Name_Adjust,
+                                                       Name_Finalize)
                       and then Present (Alias (Overridden_Subp))
                       and then not Is_Hidden (Alias (Overridden_Subp))))
       then
@@ -12910,16 +12906,12 @@ package body Sem_Ch6 is
       --  Verify that user-defined operators have proper number of arguments
       --  First case of operators which can only be unary
 
-      if Id = Name_Op_Not
-        or else Id = Name_Op_Abs
-      then
+      if Nam_In (Id, Name_Op_Not, Name_Op_Abs) then
          N_OK := (N = 1);
 
       --  Case of operators which can be unary or binary
 
-      elsif Id = Name_Op_Add
-        or Id = Name_Op_Subtract
-      then
+      elsif Nam_In (Id, Name_Op_Add, Name_Op_Subtract) then
          N_OK := (N in 1 .. 2);
 
       --  All other operators can only be binary

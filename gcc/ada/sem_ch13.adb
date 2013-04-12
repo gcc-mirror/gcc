@@ -1001,8 +1001,8 @@ package body Sem_Ch13 is
                begin
                   A := First (L);
                   while Present (A) loop
-                     exit when Chars (Identifier (A)) = Name_Export
-                       or else Chars (Identifier (A)) = Name_Import;
+                     exit when Nam_In (Chars (Identifier (A)), Name_Export,
+                                                               Name_Import);
                      Next (A);
                   end loop;
 
@@ -1349,9 +1349,7 @@ package body Sem_Ch13 is
                      while Present (A) loop
                         A_Name := Chars (Identifier (A));
 
-                        if A_Name = Name_Import or else
-                           A_Name = Name_Export
-                        then
+                        if Nam_In (A_Name, Name_Import, Name_Export) then
                            if Found then
                               Error_Msg_N ("conflicting", A);
                            else
@@ -7568,13 +7566,10 @@ package body Sem_Ch13 is
                Check_Expr_Constants (Prefix (Nod));
 
             when N_Attribute_Reference =>
-               if Attribute_Name (Nod) = Name_Address
-                   or else
-                  Attribute_Name (Nod) = Name_Access
-                    or else
-                  Attribute_Name (Nod) = Name_Unchecked_Access
-                    or else
-                  Attribute_Name (Nod) = Name_Unrestricted_Access
+               if Nam_In (Attribute_Name (Nod), Name_Address,
+                                                Name_Access,
+                                                Name_Unchecked_Access,
+                                                Name_Unrestricted_Access)
                then
                   Check_At_Constant_Address (Prefix (Nod));
 
@@ -7739,10 +7734,7 @@ package body Sem_Ch13 is
             --  record, both at location zero. This seems a bit strange, but
             --  it seems to happen in some circumstances, perhaps on an error.
 
-            if Chars (C1_Ent) = Name_uTag
-                 and then
-               Chars (C2_Ent) = Name_uTag
-            then
+            if Nam_In (Chars (C1_Ent), Name_uTag, Name_uTag) then
                return;
             end if;
 
@@ -9322,11 +9314,8 @@ package body Sem_Ch13 is
          declare
             Pname : constant Name_Id := Pragma_Name (N);
          begin
-            if Pname = Name_Convention or else
-               Pname = Name_Import     or else
-               Pname = Name_Export     or else
-               Pname = Name_External   or else
-               Pname = Name_Interface
+            if Nam_In (Pname, Name_Convention, Name_Import,   Name_Export,
+                              Name_External,   Name_Interface)
             then
                return False;
             end if;
@@ -9928,8 +9917,7 @@ package body Sem_Ch13 is
       procedure No_Independence is
       begin
          if Pragma_Name (N) = Name_Independent then
-            Error_Msg_NE
-              ("independence cannot be guaranteed for&", N, E);
+            Error_Msg_NE ("independence cannot be guaranteed for&", N, E);
          else
             Error_Msg_NE
               ("independent components cannot be guaranteed for&", N, E);

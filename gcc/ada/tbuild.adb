@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,9 +174,8 @@ package body Tbuild is
               Attribute_Name => Attribute_Name);
 
    begin
-      pragma Assert (Attribute_Name = Name_Address
-                       or else
-                     Attribute_Name = Name_Unrestricted_Access);
+      pragma Assert (Nam_In (Attribute_Name, Name_Address,
+                                             Name_Unrestricted_Access));
       Set_Must_Be_Byte_Aligned (N, True);
       return N;
    end Make_Byte_Aligned_Attribute_Reference;

@@ -1005,9 +1005,9 @@ package body Sem_Res is
          --  functions, this is never a parameterless call (RM 4.1.4(6)).
 
          if Nkind (Parent (N)) = N_Attribute_Reference
-            and then (Attribute_Name (Parent (N)) = Name_Address      or else
-                      Attribute_Name (Parent (N)) = Name_Code_Address or else
-                      Attribute_Name (Parent (N)) = Name_Access)
+            and then Nam_In (Attribute_Name (Parent (N)), Name_Address,
+                                                          Name_Code_Address,
+                                                          Name_Access)
          then
             return False;
          end if;
@@ -1373,7 +1373,7 @@ package body Sem_Res is
          elsif In_Instance then
             null;
 
-         elsif (Op_Name = Name_Op_Multiply or else Op_Name = Name_Op_Divide)
+         elsif Nam_In (Op_Name, Name_Op_Multiply, Name_Op_Divide)
            and then Is_Fixed_Point_Type (Etype (Left_Opnd  (Op_Node)))
            and then Is_Fixed_Point_Type (Etype (Right_Opnd (Op_Node)))
          then
@@ -1385,7 +1385,7 @@ package body Sem_Res is
          --  available.
 
          elsif Ada_Version >= Ada_2005
-           and then (Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne)
+           and then Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne)
            and then Ekind (Etype (Act1)) = E_Anonymous_Access_Type
          then
             null;
@@ -1496,9 +1496,7 @@ package body Sem_Res is
            and then not In_Instance
          then
             if Is_Fixed_Point_Type (Typ)
-              and then (Op_Name = Name_Op_Multiply
-                          or else
-                        Op_Name = Name_Op_Divide)
+              and then Nam_In (Op_Name, Name_Op_Multiply, Name_Op_Divide)
             then
                --  Already checked above
 
@@ -1534,7 +1532,7 @@ package body Sem_Res is
       --  the equality node will not resolve any remaining ambiguity, and it
       --  assumes that the first operand is not overloaded.
 
-      if (Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne)
+      if Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne)
         and then Ekind (Func) = E_Function
         and then Is_Overloaded (Act1)
       then
@@ -1947,9 +1945,9 @@ package body Sem_Res is
       --  access-to-subprogram type.
 
       if Nkind (N) = N_Attribute_Reference
-        and then (Attribute_Name (N) = Name_Access              or else
-                  Attribute_Name (N) = Name_Unrestricted_Access or else
-                  Attribute_Name (N) = Name_Unchecked_Access)
+        and then Nam_In (Attribute_Name (N), Name_Access,
+                                             Name_Unrestricted_Access,
+                                             Name_Unchecked_Access)
         and then Comes_From_Source (N)
         and then Is_Entity_Name (Prefix (N))
         and then Is_Subprogram (Entity (Prefix (N)))

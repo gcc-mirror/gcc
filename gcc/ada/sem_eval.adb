@@ -528,9 +528,7 @@ package body Sem_Eval is
          --  Fixup only required for First/Last attribute reference
 
          if Nkind (N) = N_Attribute_Reference
-           and then (Attribute_Name (N) = Name_First
-                       or else
-                     Attribute_Name (N) = Name_Last)
+           and then Nam_In (Attribute_Name (N), Name_First, Name_Last)
          then
             Xtyp := Etype (Prefix (N));
 
@@ -697,9 +695,7 @@ package body Sem_Eval is
 
          elsif Nkind (Lf) = N_Attribute_Reference
            and then Attribute_Name (Lf) = Attribute_Name (Rf)
-           and then (Attribute_Name (Lf) = Name_First
-                       or else
-                     Attribute_Name (Lf) = Name_Last)
+           and then Nam_In (Attribute_Name (Lf), Name_First, Name_Last)
            and then Nkind_In (Prefix (Lf), N_Identifier, N_Expanded_Name)
            and then Nkind_In (Prefix (Rf), N_Identifier, N_Expanded_Name)
            and then Entity (Prefix (Lf)) = Entity (Prefix (Rf))

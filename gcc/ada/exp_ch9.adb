@@ -1933,9 +1933,8 @@ package body Exp_Ch9 is
          --  Transfer ppc pragmas to the declarations of the wrapper
 
          while Present (P) loop
-            if Pragma_Name (P) = Name_Precondition
-                 or else
-               Pragma_Name (P) = Name_Postcondition
+            if Nam_In (Pragma_Name (P), Name_Precondition,
+                                        Name_Postcondition)
             then
                Append (Relocate_Node (P), Decls);
                Set_Analyzed (Last (Decls), False);
@@ -14087,11 +14086,10 @@ package body Exp_Ch9 is
         and then (Nkind_In (Stmt, N_Null_Statement, N_Label)
                     or else
                       (Nkind (Stmt) = N_Pragma
-                         and then (Pragma_Name (Stmt) = Name_Unreferenced
-                                     or else
-                                   Pragma_Name (Stmt) = Name_Unmodified
-                                     or else
-                                   Pragma_Name (Stmt) = Name_Warnings)))
+                        and then
+                          Nam_In (Pragma_Name (Stmt), Name_Unreferenced,
+                                                      Name_Unmodified,
+                                                      Name_Warnings)))
       loop
          Next (Stmt);
       end loop;

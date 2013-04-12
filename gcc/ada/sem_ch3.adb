@@ -9651,7 +9651,7 @@ package body Sem_Ch3 is
 
             elsif Is_Subprogram (E)
               and then (not Comes_From_Source (E)
-                          or else Chars (E) = Name_uCall)
+                         or else Chars (E) = Name_uCall)
             then
                null;
 
@@ -12068,9 +12068,9 @@ package body Sem_Ch3 is
          Set_Ekind (Def_Id, E_Signed_Integer_Subtype);
       end if;
 
-      Set_Etype            (Def_Id, Base_Type        (T));
-      Set_Size_Info        (Def_Id,                  (T));
-      Set_First_Rep_Item   (Def_Id, First_Rep_Item   (T));
+      Set_Etype            (Def_Id, Base_Type      (T));
+      Set_Size_Info        (Def_Id,                (T));
+      Set_First_Rep_Item   (Def_Id, First_Rep_Item (T));
       Set_Discrete_RM_Size (Def_Id);
    end Constrain_Integer;
 
@@ -12086,10 +12086,10 @@ package body Sem_Ch3 is
 
    begin
       Set_Ekind          (Def_Id, E_Ordinary_Fixed_Point_Subtype);
-      Set_Etype          (Def_Id, Base_Type        (T));
-      Set_Size_Info      (Def_Id,                  (T));
-      Set_First_Rep_Item (Def_Id, First_Rep_Item   (T));
-      Set_Small_Value    (Def_Id, Small_Value      (T));
+      Set_Etype          (Def_Id, Base_Type      (T));
+      Set_Size_Info      (Def_Id,                (T));
+      Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
+      Set_Small_Value    (Def_Id, Small_Value    (T));
 
       --  Process the constraint
 
@@ -12437,9 +12437,7 @@ package body Sem_Ch3 is
          then
             Old_C := First_Component (Typ);
             while Present (Old_C) loop
-               if Chars ((Old_C)) = Name_uTag
-                 or else Chars ((Old_C)) = Name_uParent
-               then
+               if Nam_In (Chars (Old_C), Name_uTag, Name_uParent) then
                   Append_Elmt (Old_C, Comp_List);
                end if;
 
@@ -13276,9 +13274,9 @@ package body Sem_Ch3 is
         or else Is_Internal (Parent_Subp)
         or else Is_Private_Overriding
         or else Is_Internal_Name (Chars (Parent_Subp))
-        or else Chars (Parent_Subp) = Name_Initialize
-        or else Chars (Parent_Subp) = Name_Adjust
-        or else Chars (Parent_Subp) = Name_Finalize
+        or else Nam_In (Chars (Parent_Subp), Name_Initialize,
+                                             Name_Adjust,
+                                             Name_Finalize)
       then
          Set_Derived_Name;
 
@@ -13451,10 +13449,9 @@ package body Sem_Ch3 is
       --  set on both views of the type.
 
       if Is_Controlled (Parent_Type)
-        and then
-          (Chars (Parent_Subp) = Name_Initialize or else
-           Chars (Parent_Subp) = Name_Adjust     or else
-           Chars (Parent_Subp) = Name_Finalize)
+        and then Nam_In (Chars (Parent_Subp), Name_Initialize,
+                                              Name_Adjust,
+                                              Name_Finalize)
         and then Is_Hidden (Parent_Subp)
         and then not Is_Visibly_Controlled (Parent_Type)
       then
@@ -19326,7 +19323,7 @@ package body Sem_Ch3 is
                        or else
                          (Is_Class_Wide_Type (Entity (Subt))
                            and then
-                           Chars (Etype (Base_Type (Entity (Subt)))) =
+                             Chars (Etype (Base_Type (Entity (Subt)))) =
                                                                   Type_Id));
             end if;
 
@@ -20162,7 +20159,7 @@ package body Sem_Ch3 is
 
       --  Complete both implicit base and declared first subtype entities
 
-      Set_Etype          (Implicit_Base, Base_Typ);
+      Set_Etype          (Implicit_Base,                 Base_Typ);
       Set_Size_Info      (Implicit_Base,                (Base_Typ));
       Set_RM_Size        (Implicit_Base, RM_Size        (Base_Typ));
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Base_Typ));

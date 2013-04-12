@@ -906,6 +906,10 @@ extern Exception_Code Base_Code_In (Exception_Code);
 /* DEC Ada exceptions are not defined in a header file, so they
    must be declared.  */
 
+#define FAC_MASK  		0x0fff0000
+#define MSG_MASK  		0x0000fff8
+#define DECADA_M_FACILITY	0x00310000
+
 #define ADA$_ALREADY_OPEN	0x0031a594
 #define ADA$_CONSTRAINT_ERRO	0x00318324
 #define ADA$_DATA_ERROR		0x003192c4
@@ -1060,7 +1064,7 @@ __gnat_default_resignal_p (int code)
   int i, iexcept;
 
   for (i = 0; facility_resignal_table [i]; i++)
-    if ((code & 0xfff0000) == facility_resignal_table [i])
+    if ((code & FAC_MASK) == facility_resignal_table [i])
       return 1;
 
   for (i = 0, iexcept = 0;
@@ -1231,7 +1235,14 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
   message[0] = 0;
   /* Subtract PC & PSL fields as per ABI for SYS$PUTMSG.  */
   sigargs[0] -= 2;
-  SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
+
+  /* If it was a DEC Ada specific condtiion, make it GNAT otherwise
+     keep the old facility.  */
+  if (sigargs [1] & FAC_MASK == DECADA_M_FACILITY)
+    SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
+  else
+    SYS$PUTMSG (sigargs, copy_msg, 0, message);
+
   /* Add back PC & PSL fields as per ABI for SYS$PUTMSG.  */
   sigargs[0] += 2;
   msg = message;

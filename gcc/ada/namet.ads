@@ -211,6 +211,16 @@ package Namet is
       V5 : Name_Id;
       V6 : Name_Id) return Boolean;
 
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id;
+      V5 : Name_Id;
+      V6 : Name_Id;
+      V7 : Name_Id) return Boolean;
+
    pragma Inline (Nam_In);
    --  Inline all above functions
 

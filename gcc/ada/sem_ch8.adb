@@ -3362,13 +3362,9 @@ package body Sem_Ch8 is
          Error_Msg_N ("illegal expressions in attribute reference", Nam);
 
       elsif
-        Aname = Name_Compose      or else
-        Aname = Name_Exponent     or else
-        Aname = Name_Leading_Part or else
-        Aname = Name_Pos          or else
-        Aname = Name_Round        or else
-        Aname = Name_Scaling      or else
-        Aname = Name_Val
+        Nam_In (Aname, Name_Compose, Name_Exponent, Name_Leading_Part,
+                       Name_Pos,     Name_Round,    Name_Scaling,
+                       Name_Val)
       then
          if Nkind (N) = N_Subprogram_Renaming_Declaration
            and then Present (Corresponding_Formal_Spec (N))
@@ -4569,7 +4565,7 @@ package body Sem_Ch8 is
             --  is put or put_line, then add a special error message (since
             --  this is a very common error for beginners to make).
 
-            if Chars (N) = Name_Put or else Chars (N) = Name_Put_Line then
+            if Nam_In (Chars (N), Name_Put, Name_Put_Line) then
                Error_Msg_N -- CODEFIX
                  ("\\possible missing `WITH Ada.Text_'I'O; " &
                   "USE Ada.Text_'I'O`!", N);

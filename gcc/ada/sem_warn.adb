@@ -1788,9 +1788,8 @@ package body Sem_Warn is
 
                               if Nkind (P) = N_Pragma
                                 and then
-                                  (Pragma_Name (P) = Name_Contract_Case
-                                     or else
-                                   Pragma_Name (P) = Name_Test_Case)
+                                  Nam_In (Pragma_Name (P), Name_Contract_Case,
+                                                           Name_Test_Case)
                                 and then
                                   Nod = Get_Ensures_From_CTC_Pragma (P)
                               then
@@ -3226,9 +3225,8 @@ package body Sem_Warn is
             --  node, since assert pragmas get rewritten at analysis time.
 
             elsif Nkind (Original_Node (P)) = N_Pragma
-              and then (Pragma_Name (Original_Node (P)) = Name_Assert
-                          or else
-                        Pragma_Name (Original_Node (P)) = Name_Check)
+              and then Nam_In (Pragma_Name (Original_Node (P)), Name_Assert,
+                                                                Name_Check)
             then
                return;
             end if;

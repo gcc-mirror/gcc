@@ -954,10 +954,10 @@ package body Prj.Makr is
                      then
                         Name := Prj.Tree.Name_Of (Current_Node, Tree);
 
-                        if Name = Name_Source_Files     or else
-                           Name = Name_Source_List_File or else
-                           Name = Name_Source_Dirs      or else
-                           Name = Name_Naming
+                        if Nam_In (Name, Name_Source_Files,
+                                         Name_Source_List_File,
+                                         Name_Source_Dirs,
+                                         Name_Naming)
                         then
                            Comments :=
                              Tree.Project_Nodes.Table (Current_Node).Comments;

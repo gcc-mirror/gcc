@@ -2021,9 +2021,8 @@ package body Sem_Elab is
 
          elsif not Debug_Flag_Dot_UU
            and then Nkind (N) = N_Attribute_Reference
-           and then (Attribute_Name (N) = Name_Access
-                       or else
-                     Attribute_Name (N) = Name_Unrestricted_Access)
+           and then Nam_In (Attribute_Name (N), Name_Access,
+                                                Name_Unrestricted_Access)
            and then Is_Entity_Name (Prefix (N))
            and then Is_Subprogram (Entity (Prefix (N)))
          then
