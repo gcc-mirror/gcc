@@ -597,7 +597,6 @@ package body Switch.C is
 
                      if Ptr >= Max or else Switch_Chars (Ptr) /= '=' then
                         Bad_Switch ("-gnateO");
-
                      else
                         Object_Path_File_Name :=
                           new String'(Switch_Chars (Ptr + 1 .. Max));
@@ -651,8 +650,24 @@ package body Switch.C is
                   --  -gnatet (write target dependent information)
 
                   when 't' =>
-                     Target_Dependent_Info_Write := True;
+                     if not First_Switch then
+                        Osint.Fail
+                          ("-gnatet must be first if combined with "
+                           & "other switches");
+                     end if;
+
+                     --  Check for '='
+
                      Ptr := Ptr + 1;
+
+                     if Ptr >= Max or else Switch_Chars (Ptr) /= '=' then
+                        Bad_Switch ("-gnatet");
+                     else
+                        Target_Dependent_Info_Write_Name :=
+                          new String'(Switch_Chars (Ptr + 1 .. Max));
+                     end if;
+
+                     return;
 
                   --  -gnateT (read target dependent information)
 
@@ -663,8 +678,22 @@ package body Switch.C is
                            & "other switches");
                      end if;
 
-                     Target_Dependent_Info_Read := True;
+                     --  Check for '='
+
                      Ptr := Ptr + 1;
+
+                     if Ptr >= Max or else Switch_Chars (Ptr) /= '=' then
+                        Bad_Switch ("-gnateT");
+                     else
+                        --  This parameter was stored by Set_Targ earlier
+
+                        pragma Assert
+                          (Target_Dependent_Info_Read_Name.all =
+                             Switch_Chars (Ptr + 1 .. Max));
+                        null;
+                     end if;
+
+                     return;
 
                   --  -gnateV (validity checks on parameters)
 

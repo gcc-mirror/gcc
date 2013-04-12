@@ -1331,18 +1331,19 @@ package Opt is
    --  types and dispatching calls, assuming the underlying target supports
    --  it (e.g. in the JVM case).
 
-   Target_Dependent_Info_Read : Boolean := False;
+   Target_Dependent_Info_Read_Name : String_Ptr := null;
    --  GNAT
-   --  Set True to override the normal processing in Get_Targ and set the
-   --  necessary information by reading the target dependent information
-   --  file (see packages Get_Targ and Set_Targ for full details). Set True
-   --  by use of the -gnateT switch.
+   --  Set non-null to override the normal processing in Get_Targ and set the
+   --  necessary information by reading the target dependent information file
+   --  whose name is given here (see packages Get_Targ and Set_Targ for full
+   --  details). Set to non-null file name by use of the -gnateT switch.
 
-   Target_Dependent_Info_Write : Boolean := False;
+   Target_Dependent_Info_Write_Name : String_Ptr := null;
    --  GNAT
-   --  Set True to enable a call to Set_Targ.Write_Target_Dependent_Info which
-   --  writes a target independent information file (see packages Get_Targ and
-   --  Set_Targ for full details). Set True by use of the -gnatet switch.
+   --  Set non-null to enable a call to Set_Targ.Write_Target_Dependent_Info
+   --  which writes a target independent information file (see packages
+   --  Get_Targ and Set_Targ for full details) using the name given by
+   --  this switch. Set to non-null file name by use of the -gnatet switch.
 
    Task_Dispatching_Policy : Character := ' ';
    --  GNAT, GNATBIND

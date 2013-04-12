@@ -1,3 +1,16 @@
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Test Target_Dependent_Info_Write_Name.
+	* opt.ads (Target_Dependent_Info_Read): Add _Name, now an access
+	type (Target_Dependent_Info_Write): Add _Name, now an access type.
+	* set_targ.adb (Write_Target_Dependent_Values): Use name
+	from -gnatet switch stored in Target_Dependent_Info_Write_Name
+	(Read_Target_Dependent_Values): Use name from -gnateT switch
+	stored in Target_Dependent_Info_Read_Name.
+	* switch-c.adb: New form of -gnatet and -gnateT switches.
+	* usage.adb: New form of -gnatet and -gnateT switches with
+	file name.
+
 2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
         * gcc-interface/decl.c (elaborate_expression_1): Skip only constant
