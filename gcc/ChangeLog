@@ -1,3 +1,8 @@
+2013-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Use ANY_QI_REGNO_P in
+	QImode checks.
+
 2013-04-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* df-core.c (df_find_def): Compare register numbers.
@@ -89,10 +94,9 @@
 
 2013-04-12  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* ifcvt.c (end_ifcvt_sequence): Mark a and b for unsharing as
-	well.
+	* ifcvt.c (end_ifcvt_sequence): Mark a and b for unsharing as well.
 
-2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-11  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Allow NEG
 	code in CC_NZ mode.
@@ -102,8 +106,7 @@
 2013-04-11  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/48184
-	* params.def (PARAM_ALIGN_THRESHOLD): Increase the minimum
-	value to 1.
+	* params.def (PARAM_ALIGN_THRESHOLD): Increase the minimum value to 1.
 
 2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -112,7 +115,7 @@
 	(skip_simple_arithmetic): Tidy up.
 	* tree.h (skip_simple_constant_arithmetic): Declare.
 
-2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-11  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.h (REVERSIBLE_CC_MODE): Define.
 
@@ -216,7 +219,7 @@
 	(aarch64_start_file): Use the new function.
 
 2013-04-10  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
-            Jason Merrill  <jason@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
 
 	* common.opt: Add -gdwarf.
 	* opts.c (common_handle_option): Handle it.
@@ -303,8 +306,7 @@
 2013-04-09  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/48762
-	* params.def (PARAM_MAX_CSE_INSNS): Increase the minimum
-	value to 1.
+	* params.def (PARAM_MAX_CSE_INSNS): Increase the minimum value to 1.
 
 2013-04-09  Richard Biener  <rguenther@suse.de>
 
@@ -389,7 +391,7 @@
 
 	* basic-block.h (GCOV_COMPUTE_SCALE): Define.
 	* ipa-inline-analysis.c (param_change_prob): Use helper rounding divide
-        methods.
+	methods.
 	(estimate_edge_size_and_time): Add comment to suggest using rounding
 	methods.
 	(estimate_node_size_and_time): Ditto.
@@ -417,7 +419,7 @@
 	(update_specialized_profile): Ditto.
 	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge): Ditto.
 	* cfg.c (update_bb_profile_for_threading): Add comment to suggest using
-        rounding methods.
+	rounding methods.
 	* sched-rgn.c (compute_dom_prob_ps): Ditto.
 	(compute_trg_info): Ditto.
 	* cfgrtl.c (force_nonfallthru_and_redirect): Ditto.
@@ -451,8 +453,7 @@
 
 	* config/epiphany/epiphany.c (epiphany_select_cc_mode):
 	Don't use CC_FPmode for ORDERED / UNORDERED.
-	* config/epiphany/epiphany.md (cmpsf_ord): Make pattern
-	unconditional.
+	* config/epiphany/epiphany.md (cmpsf_ord): Make pattern unconditional.
 
 	* config/epiphany/constraints.md (CnL): New constraint.
 	* config/epiphany/epiphany.md (addsi3_i): Add r/r/CnL alternative.
@@ -517,8 +518,8 @@
 
 2013-04-08  Xinyu Qi  <xyqi@marvell.com>
 
- 	PR target/54338
- 	* config/arm/arm.h (REG_CLASS_CONTENTS): Include IWMMXT_GR_REGS
+	PR target/54338
+	* config/arm/arm.h (REG_CLASS_CONTENTS): Include IWMMXT_GR_REGS
 	in ALL_REGS.
 
 2013-04-08  Richard Biener  <rguenther@suse.de>
@@ -586,7 +587,7 @@
 	(movdf_soft_insn): Likewise.
 	* config/arm/vfp.md (movdi_vfp): Likewise.
 	* config/arm/t-arm (MD_INCLUDES): Add ldrdstrd.md.
-        * config/arm/arm-protos.h (gen_operands_ldrd_strd): New declaration.
+	* config/arm/arm-protos.h (gen_operands_ldrd_strd): New declaration.
 	* config/arm/arm.c (gen_operands_ldrd_strd): New function.
 	(mem_ok_for_ldrd_strd): Likewise.
 	(output_move_double): Update assertion.
@@ -605,7 +606,7 @@
 
 	* config/arm/arm.md (arm_ashldi3_1bit): Convert define_insn into
 	define_insn_and_split.
-        (arm_ashrdi3_1bit,arm_lshrdi3_1bit): Likewise.
+	(arm_ashrdi3_1bit,arm_lshrdi3_1bit): Likewise.
 	(shiftsi3_compare): New pattern.
 	(rrx): New pattern.
 	* config/arm/unspecs.md (UNSPEC_RRX): New.
@@ -656,8 +657,8 @@
 
 2013-04-04  Ian Lance Taylor  <iant@google.com>
 
-	* doc/standards.texi (Standards): The Go frontend supports the Go
-	1 language standard.
+	* doc/standards.texi (Standards): The Go frontend supports the Go 1
+	language standard.
 
 2013-04-04  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -679,8 +680,7 @@
 	arm_neon_builtins.def.
 	(enum arm_builtins): Include neon builtin definitions.
 	(ARM_BUILTIN_NEON_BASE): Move from enum to macro.
-	* config/arm/t-arm (arm.o): Add dependency on
-	arm_neon_builtins.def.
+	* config/arm/t-arm (arm.o): Add dependency on arm_neon_builtins.def.
 
 2013-04-04  Marek Polacek  <polacek@redhat.com>
 
@@ -699,8 +699,7 @@
 
 	PR tree-optimization/56213
 	* tree-vect-data-refs.c (vect_check_strided_load): Remove.
-	(vect_analyze_data_refs): Allow all non-nested loads as
-	strided loads.
+	(vect_analyze_data_refs): Allow all non-nested loads as strided loads.
 
 2013-04-04  Richard Biener  <rguenther@suse.de>
 
@@ -711,8 +710,7 @@
 
 2013-04-03  Nick Clifton  <nickc@redhat.com>
 
-	* config/v850/v850e3v5.md (fmasf4): Use fmaf.s on E3V5
-	architectures.
+	* config/v850/v850e3v5.md (fmasf4): Use fmaf.s on E3V5 architectures.
 	(fmssf4): Use fmsf.s on E3V5 architectures.
 	(fnmasf4): Use fnmaf.s on E3V5 architectures.
 	(fnmssf4): Use fnmsf.s on E3V5 architectures.
@@ -725,19 +723,18 @@
 2013-04-03  Teresa Johnson  <tejohnson@google.com>
 
 	* gcov-io.c (compute_working_sets): Moved most of body of old
-        compute_working_sets here from profile.c.
+	compute_working_sets here from profile.c.
 	* gcov-io.h (NUM_GCOV_WORKING_SETS): Moved here from profile.c.
-        (gcov_working_set_t): Moved typedef here from basic-block.h
-        (compute_working_set): Declare.
+	(gcov_working_set_t): Moved typedef here from basic-block.h
+	(compute_working_set): Declare.
 	* profile.c (NUM_GCOV_WORKING_SETS): Moved to gcov-io.h.
 	(get_working_sets): Renamed from compute_working_set,
-        replace most of body with call to new compute_working_sets.
+	replace most of body with call to new compute_working_sets.
 	(get_exec_counts): Replace call to compute_working_sets
-        to get_working_sets.
-	* profile.h (get_working_sets): Renamed from
-        compute_working_set.
+	to get_working_sets.
+	* profile.h (get_working_sets): Renamed from compute_working_set.
 	* lto-cgraph.c (input_symtab): Replace call to compute_working_sets
-        to get_working_sets.
+	to get_working_sets.
 	* basic-block.h (gcov_working_set_t): Moved to gcov-io.h.
 	* gcov-dump.c (dump_working_sets): New function.
 
@@ -754,9 +751,8 @@
 2013-04-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/56799
-        * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Bring
-	back test for widening conversion erroneously dropped in prior
-	change.
+	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Bring
+	back test for widening conversion erroneously dropped in prior change.
 
 2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -767,8 +763,7 @@
 2013-04-03  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/55702
-	* tsan.c (instrument_func_exit): Allow BUILT_IN_RETURN
-	functions.
+	* tsan.c (instrument_func_exit): Allow BUILT_IN_RETURN functions.
 
 2013-04-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -810,7 +805,8 @@
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/56790
-	* fold-const.c (fold_ternary_loc) <VEC_COND_EXPR>: Add constant folding.
+	* fold-const.c (fold_ternary_loc) <VEC_COND_EXPR>: Add constant
+	folding.
 
 2013-04-03  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -854,7 +850,8 @@
 	PR target/52790
 	* config/i386/cygming.h (SUB_TARGET_RECORD_STUB): New sub-target macro.
 	* config/i386/i386-protos.h (i386_pe_record_stub): Add new prototype.
-	* config/i386/i386.c (legitimize_pe_coff_extern_decl): New static function.
+	* config/i386/i386.c (legitimize_pe_coff_extern_decl): New static
+	function.
 	(legitimize_pe_coff_symbol): Likewise.
 	(is_imported_p): New helper-function.
 	(ix86_option_override_internal): Make MEDIUM_PIC the default code-model
@@ -1382,7 +1379,7 @@
 	* config/i386/i386.md (*vec_extract2vdi_1): Merge with
 	*vec_extractv2di_1_rex64.  Use x64 isa attribute.
 
-2013-03-28   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-03-28  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.md (*and<mode>3_compare0): New pattern.
 	(*andsi3_compare0_uxtw): New pattern.
@@ -1416,7 +1413,7 @@
 
 2013-03-28  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
-   	* genmodes.c (emit_max_int): New function.
+	* genmodes.c (emit_max_int): New function.
 	(emit_insn_modes_h): Added call to emit_max_function.
 	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_INT, MAX_BITSIZE_MODE_ANY_MODE):
 	Added doc.
@@ -1635,8 +1632,8 @@
 2013-03-26  Xinyu Qi  <xyqi@marvell.com>
 
 	* config/arm/arm.h (FIRST_IWMMXT_GR_REGNUM): Add comment.
-        * config/arm/iwmmxt.md (WCGR0): Update.
-        (WCGR1, WCGR2, WCGR3): Likewise.
+	* config/arm/iwmmxt.md (WCGR0): Update.
+	(WCGR1, WCGR2, WCGR3): Likewise.
 
 2013-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -1657,8 +1654,8 @@
 
 2013-03-25  Jeff Law  <law@redhat.com>
 
-        * tree-ssa-dom.c (record_equivalences_from_incoming_edge): Add missing
-        check for INTEGRAL_TYPE_P that was missing due to checking in
+	* tree-ssa-dom.c (record_equivalences_from_incoming_edge): Add missing
+	check for INTEGRAL_TYPE_P that was missing due to checking in
 	wrong version of prior patch.
 
 2013-03-25  Walter Lee  <walt@tilera.com>
@@ -2600,7 +2597,7 @@
 	* config/mips/mips.md (multimem): New type.
 	(length): Differentiate between 17-bit and 18-bit branch offsets.
 	(MOVEP1, MOVEP2): New mode iterator.
- 	(mov_<load>l): Use ZC constraint.
+	(mov_<load>l): Use ZC constraint.
 	(mov_<load>r): Likewise.
 	(mov_<store>l): Likewise.
 	(mov_<store>r): Likewise.
@@ -2654,7 +2651,7 @@
 	(mips_attribute_table): Add micromips, nomicromips and nocompression.
 	(mips_mips16_decl_p): Delete.
 	(mips_nomips16_decl_p): Delete.
- 	(mips_get_compress_on_flags): New function.
+	(mips_get_compress_on_flags): New function.
 	(mips_get_compress_off_flags): New function.
 	(mips_get_compress_mode): New function.
 	(mips_get_compress_on_name): New function.
