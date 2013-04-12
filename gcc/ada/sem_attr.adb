@@ -1225,11 +1225,9 @@ package body Sem_Attr is
             --  the prefix of another attribute. Error is posted on parent.
 
             if Nkind (Parent (N)) = N_Attribute_Reference
-              and then (Attribute_Name (Parent (N)) = Name_Address
-                          or else
-                        Attribute_Name (Parent (N)) = Name_Code_Address
-                          or else
-                        Attribute_Name (Parent (N)) = Name_Access)
+              and then Nam_In (Attribute_Name (Parent (N)), Name_Address,
+                                                            Name_Code_Address,
+                                                            Name_Access)
             then
                Error_Msg_Name_1 := Attribute_Name (Parent (N));
                Error_Msg_N ("illegal prefix for % attribute", Parent (N));
@@ -2204,9 +2202,7 @@ package body Sem_Attr is
          --  a context check
 
          if Ada_Version >= Ada_2005
-           and then (Aname = Name_Count
-                      or else Aname = Name_Caller
-                      or else Aname = Name_AST_Entry)
+           and then Nam_In (Aname, Name_Count, Name_Caller, Name_AST_Entry)
          then
             declare
                Count : Natural := 0;
@@ -2845,9 +2841,7 @@ package body Sem_Attr is
          Check_E0;
 
          if Nkind (P) = N_Attribute_Reference
-           and then (Attribute_Name (P) = Name_Elab_Body
-                       or else
-                     Attribute_Name (P) = Name_Elab_Spec)
+           and then Nam_In (Attribute_Name (P), Name_Elab_Body, Name_Elab_Spec)
          then
             null;
 
@@ -3818,11 +3812,10 @@ package body Sem_Attr is
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
               and then
-                (Pragma_Name (Original_Node (Stmt)) = Name_Assert
-                   or else
-                 Pragma_Name (Original_Node (Stmt)) = Name_Loop_Invariant
-                   or else
-                 Pragma_Name (Original_Node (Stmt)) = Name_Loop_Variant)
+                Nam_In (Pragma_Name (Original_Node (Stmt)),
+                        Name_Assert,
+                        Name_Loop_Invariant,
+                        Name_Loop_Variant)
             then
                In_Loop_Assertion := True;
 

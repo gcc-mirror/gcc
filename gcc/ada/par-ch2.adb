@@ -433,9 +433,7 @@ package body Ch2 is
          P := P_Pragma;
 
          if Nkind (P) /= N_Error
-          and then (Pragma_Name (P) = Name_Assert
-                      or else
-                    Pragma_Name (P) = Name_Debug)
+           and then Nam_In (Pragma_Name (P), Name_Assert, Name_Debug)
          then
             Error_Msg_Name_1 := Pragma_Name (P);
             Error_Msg_N

@@ -2106,11 +2106,10 @@ package body Exp_Disp is
            TSS_Name_Type
              (Name_Buffer (Name_Len - TSS_Name'Length + 1 .. Name_Len));
 
-         if        Chars (E) = Name_uSize
+         if Nam_In (Chars (E), Name_uSize, Name_uAssign)
            or else
              (Chars (E) = Name_Op_Eq
-                and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
-           or else Chars (E) = Name_uAssign
+               and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize
            or else Is_Predefined_Interface_Primitive (E)

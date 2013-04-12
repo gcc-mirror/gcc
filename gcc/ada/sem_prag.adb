@@ -306,10 +306,7 @@ package body Sem_Prag is
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
 
-      if Pragma_Name (N) = Name_Test_Case
-           or else
-         Pragma_Name (N) = Name_Contract_Case
-      then
+      if Nam_In (Pragma_Name (N), Name_Test_Case, Name_Contract_Case) then
          Preanalyze_CTC_Args
            (N,
             Get_Requires_From_CTC_Pragma (N),
@@ -1321,7 +1318,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1 and then Chars (Argx) /= N2 then
+         if not Nam_In (Chars (Argx), N1, N2) then
             Error_Msg_Name_2 := N1;
             Error_Msg_Name_3 := N2;
             Error_Pragma_Arg ("argument for pragma% must be% or%", Argx);
@@ -1337,10 +1334,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1
-           and then Chars (Argx) /= N2
-           and then Chars (Argx) /= N3
-         then
+         if not Nam_In (Chars (Argx), N1, N2, N3) then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
@@ -1354,11 +1348,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1
-           and then Chars (Argx) /= N2
-           and then Chars (Argx) /= N3
-           and then Chars (Argx) /= N4
-         then
+         if not Nam_In (Chars (Argx), N1, N2, N3, N4) then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
@@ -1372,12 +1362,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1
-           and then Chars (Argx) /= N2
-           and then Chars (Argx) /= N3
-           and then Chars (Argx) /= N4
-           and then Chars (Argx) /= N5
-         then
+         if not Nam_In (Chars (Argx), N1, N2, N3, N4, N5) then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
@@ -2179,9 +2164,7 @@ package body Sem_Prag is
 
       procedure Check_No_Link_Name is
       begin
-         if Present (Arg3)
-           and then Chars (Arg3) = Name_Link_Name
-         then
+         if Present (Arg3) and then Chars (Arg3) = Name_Link_Name then
             Arg4 := Arg3;
          end if;
 
@@ -3499,19 +3482,16 @@ package body Sem_Prag is
                   then
                      --  Give error if same as our pragma or Export/Convention
 
-                     if Pragma_Name (Decl) = Name_Export
-                          or else
-                        Pragma_Name (Decl) = Name_Convention
-                          or else
-                        Pragma_Name (Decl) = Pragma_Name (N)
+                     if Nam_In (Pragma_Name (Decl), Name_Export,
+                                                    Name_Convention,
+                                                    Pragma_Name (N))
                      then
                         exit;
 
                      --  Case of Import/Interface or the other way round
 
-                     elsif Pragma_Name (Decl) = Name_Interface
-                             or else
-                           Pragma_Name (Decl) = Name_Import
+                     elsif Nam_In (Pragma_Name (Decl), Name_Interface,
+                                                       Name_Import)
                      then
                         --  Here we know that we have Import and Interface. It
                         --  doesn't matter which way round they are. See if
@@ -4287,9 +4267,7 @@ package body Sem_Prag is
 
                elsif Etype (Def_Id) /= Standard_Void_Type
                  and then
-                   (Pname = Name_Export_Procedure
-                      or else
-                    Pname = Name_Import_Procedure)
+                   Nam_In (Pname, Name_Export_Procedure, Name_Import_Procedure)
                then
                   Match := False;
 
@@ -6409,9 +6387,10 @@ package body Sem_Prag is
             Class := First (Expressions (Mech_Name));
 
             if Nkind (Prefix (Mech_Name)) /= N_Identifier
-             or else not (Chars (Prefix (Mech_Name)) = Name_Descriptor or else
-                          Chars (Prefix (Mech_Name)) = Name_Short_Descriptor)
-             or else Present (Next (Class))
+              or else
+                not Nam_In (Chars (Prefix (Mech_Name)), Name_Descriptor,
+                                                        Name_Short_Descriptor)
+              or else Present (Next (Class))
             then
                Bad_Mechanism;
             else
@@ -6436,8 +6415,9 @@ package body Sem_Prag is
             Param := First (Parameter_Associations (Mech_Name));
 
             if Nkind (Name (Mech_Name)) /= N_Identifier
-              or else not (Chars (Name (Mech_Name)) = Name_Descriptor or else
-                           Chars (Name (Mech_Name)) = Name_Short_Descriptor)
+              or else
+                not Nam_In (Chars (Name (Mech_Name)), Name_Descriptor,
+                                                      Name_Short_Descriptor)
               or else Present (Next (Param))
               or else No (Selector_Name (Param))
               or else Chars (Selector_Name (Param)) /= Name_Class
@@ -9722,11 +9702,11 @@ package body Sem_Prag is
                      Mode : Name_Id)
                   is
                   begin
-                     if Mode = Name_In_Out or else Mode = Name_Input then
+                     if Nam_In (Mode, Name_In_Out, Name_Input) then
                         Add_Item (Item, Subp_Inputs);
                      end if;
 
-                     if Mode = Name_In_Out or else Mode = Name_Output then
+                     if Nam_In (Mode, Name_In_Out, Name_Output) then
                         Add_Item (Item, Subp_Outputs);
                      end if;
                   end Collect_Global_Item;
@@ -11574,9 +11554,7 @@ package body Sem_Prag is
                      --  volatile Input state.
 
                      if Is_Input_State (Item_Id)
-                       and then (Global_Mode = Name_In_Out
-                                   or else
-                                 Global_Mode = Name_Output)
+                       and then Nam_In (Global_Mode, Name_In_Out, Name_Output)
                      then
                         Error_Msg_N
                           ("global item of mode In_Out or Output cannot "
@@ -11586,9 +11564,7 @@ package body Sem_Prag is
                      --  a volatile Output state.
 
                      elsif Is_Output_State (Item_Id)
-                       and then (Global_Mode = Name_In_Out
-                                   or else
-                                 Global_Mode = Name_Input)
+                       and then Nam_In (Global_Mode, Name_In_Out, Name_Input)
                      then
                         Error_Msg_N
                           ("global item of mode In_Out or Input cannot "
@@ -13845,8 +13821,8 @@ package body Sem_Prag is
 
             Variant := First (Pragma_Argument_Associations (N));
             while Present (Variant) loop
-               if Chars (Variant) /= Name_Decreases
-                 and then Chars (Variant) /= Name_Increases
+               if not Nam_In (Chars (Variant), Name_Decreases,
+                                               Name_Increases)
                then
                   Error_Pragma_Arg ("wrong change modifier", Variant);
                end if;
@@ -17491,10 +17467,7 @@ package body Sem_Prag is
                   --  On/Off one argument case was processed by parser
 
                   if Nkind (Argx) = N_Identifier
-                    and then
-                      (Chars (Argx) = Name_On
-                         or else
-                       Chars (Argx) = Name_Off)
+                    and then Nam_In (Chars (Argx), Name_On, Name_Off)
                   then
                      null;
 
@@ -17896,9 +17869,8 @@ package body Sem_Prag is
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean is
    begin
-      return Pragma_Name (N) = Name_Interrupt_State
-               or else
-             Pragma_Name (N) = Name_Priority_Specific_Dispatching;
+      return Nam_In (Pragma_Name (N), Name_Interrupt_State,
+                                      Name_Priority_Specific_Dispatching);
    end Delay_Config_Pragma_Analyze;
 
    -------------------------

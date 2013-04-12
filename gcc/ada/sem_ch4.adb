@@ -4111,13 +4111,11 @@ package body Sem_Ch4 is
                        and then Nkind (Name) /= N_Selected_Component)
                      or else
                       (Nkind (Parent_N) = N_Attribute_Reference
-                         and then (Attribute_Name (Parent_N) = Name_First
-                                     or else
-                                   Attribute_Name (Parent_N) = Name_Last
-                                     or else
-                                   Attribute_Name (Parent_N) = Name_Length
-                                     or else
-                                   Attribute_Name (Parent_N) = Name_Range)))
+                        and then
+                          Nam_In (Attribute_Name (Parent_N), Name_First,
+                                                             Name_Last,
+                                                             Name_Length,
+                                                             Name_Range)))
                then
                   Set_Etype (N, Etype (Comp));
 
@@ -4780,9 +4778,9 @@ package body Sem_Ch4 is
 
       elsif Nkind (Expr) = N_Attribute_Reference
         and then
-          (Attribute_Name (Expr) = Name_Access            or else
-           Attribute_Name (Expr) = Name_Unchecked_Access  or else
-           Attribute_Name (Expr) = Name_Unrestricted_Access)
+          Nam_In (Attribute_Name (Expr), Name_Access,
+                                         Name_Unchecked_Access,
+                                         Name_Unrestricted_Access)
       then
          Error_Msg_N ("argument of conversion cannot be access", N);
          Error_Msg_N ("\use qualified expression instead", N);
@@ -5037,8 +5035,7 @@ package body Sem_Ch4 is
    --  Start of processing for Check_Arithmetic_Pair
 
    begin
-      if Op_Name = Name_Op_Add or else Op_Name = Name_Op_Subtract then
-
+      if Nam_In (Op_Name, Name_Op_Add, Name_Op_Subtract) then
          if Is_Numeric_Type (T1)
            and then Is_Numeric_Type (T2)
            and then (Covers (T1 => T1, T2 => T2)
@@ -5048,11 +5045,9 @@ package body Sem_Ch4 is
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
          end if;
 
-      elsif Op_Name = Name_Op_Multiply or else Op_Name = Name_Op_Divide then
-
+      elsif Nam_In (Op_Name, Name_Op_Multiply, Name_Op_Divide) then
          if Is_Fixed_Point_Type (T1)
-           and then (Is_Fixed_Point_Type (T2)
-                       or else T2 = Universal_Real)
+           and then (Is_Fixed_Point_Type (T2) or else T2 = Universal_Real)
          then
             --  If Treat_Fixed_As_Integer is set then the Etype is already set
             --  and no further processing is required (this is the case of an
@@ -5090,7 +5085,7 @@ package body Sem_Ch4 is
 
          elsif Is_Fixed_Point_Type (T1)
            and then (Base_Type (T2) = Base_Type (Standard_Integer)
-                       or else T2 = Universal_Integer)
+                      or else T2 = Universal_Integer)
          then
             Add_One_Interp (N, Op_Id, T1);
 
@@ -5107,7 +5102,7 @@ package body Sem_Ch4 is
 
          elsif Is_Fixed_Point_Type (T2)
            and then (Base_Type (T1) = Base_Type (Standard_Integer)
-                       or else T1 = Universal_Integer)
+                      or else T1 = Universal_Integer)
            and then Op_Name = Name_Op_Multiply
          then
             Add_One_Interp (N, Op_Id, T2);

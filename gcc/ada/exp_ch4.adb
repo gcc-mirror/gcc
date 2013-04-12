@@ -6485,11 +6485,9 @@ package body Exp_Ch4 is
                return;
 
             elsif Nkind (Parnt) = N_Attribute_Reference
-              and then (Attribute_Name (Parnt) = Name_Address
-                          or else
-                        Attribute_Name (Parnt) = Name_Bit
-                          or else
-                        Attribute_Name (Parnt) = Name_Size)
+              and then Nam_In (Attribute_Name (Parnt), Name_Address,
+                                                       Name_Bit,
+                                                       Name_Size)
               and then Prefix (Parnt) = Child
             then
                return;

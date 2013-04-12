@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5022,9 +5022,8 @@ package body Prj.Nmsc is
       function Is_Reserved (Name : Name_Id) return Boolean is
       begin
          if Get_Name_Table_Byte (Name) /= 0
-           and then Name /= Name_Project
-           and then Name /= Name_Extends
-           and then Name /= Name_External
+           and then
+             not Nam_In (Name, Name_Project, Name_Extends, Name_External)
            and then Name not in Ada_2005_Reserved_Words
          then
             Unit := No_Name;
@@ -7729,7 +7728,7 @@ package body Prj.Nmsc is
 
                if Language.First_Source = No_Source
                  and then (Data.Flags.Require_Sources_Other_Lang
-                           or else Language.Name = Name_Ada)
+                            or else Language.Name = Name_Ada)
                then
                   Iter := For_Each_Source (In_Tree => Data.Tree,
                                            Project => Project.Project);
