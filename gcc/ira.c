@@ -4359,8 +4359,6 @@ ira (FILE *f)
   int rebuild_p;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
-  basic_block bb;
-  bool need_dce;
 
   ira_conflicts_p = optimize > 0;
 
@@ -4590,6 +4588,13 @@ ira (FILE *f)
       flag_caller_saves = saved_flag_caller_saves;
       flag_ira_region = saved_flag_ira_region;
     }
+}
+
+static void
+do_reload (void)
+{
+  basic_block bb;
+  bool need_dce;
 
   if (flag_ira_verbose < 10)
     ira_dump_file = dump_file;
@@ -4628,6 +4633,8 @@ ira (FILE *f)
     }
 
   timevar_pop (TV_RELOAD);
+
+  timevar_push (TV_IRA);
 
   if (ira_conflicts_p && ! ira_use_lra_p)
     {
@@ -4686,6 +4693,8 @@ ira (FILE *f)
 
   if (need_dce && optimize)
     run_fast_dce ();
+
+  timevar_pop (TV_IRA);
 }
 
 /* Run the integrated register allocator.  */
@@ -4712,6 +4721,33 @@ struct rtl_opt_pass pass_ira =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
+  TODO_do_not_ggc_collect               /* todo_flags_finish */
+ }
+};
+
+static unsigned int
+rest_of_handle_reload (void)
+{
+  do_reload ();
+  return 0;
+}
+
+struct rtl_opt_pass pass_reload =
+{
+ {
+  RTL_PASS,
+  "reload",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
+  NULL,                                 /* gate */
+  rest_of_handle_reload,	        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_RELOAD,	                        /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0					/* todo_flags_finish */
  }
 };

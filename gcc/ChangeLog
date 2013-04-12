@@ -1,3 +1,21 @@
+2013-04-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-pass.h (TODO_do_not_ggc_collect): New.
+	* passes.c (execute_one_ipa_transform_pass): Honor
+	TODO_do_not_ggc_collect.
+	(execute_one_pass): Likewise.
+
+	Revert
+	2013-04-10  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (init_optimization_passes): Remove reload pass.
+	* ira.c (do_reload): Merge into ...
+	(ira): ... this.
+	(rest_of_handle_reload): Remove.
+	(pass_reload): Likewise.
+	* config/i386/i386.c (ix86_option_override): Refer to ira instead
+	of reload for vzeroupper pass placement.
+
 2013-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56918

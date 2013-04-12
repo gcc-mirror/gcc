@@ -1620,6 +1620,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_sms);
       NEXT_PASS (pass_sched);
       NEXT_PASS (pass_ira);
+      NEXT_PASS (pass_reload);
       NEXT_PASS (pass_postreload);
 	{
 	  struct opt_pass **p = &pass_postreload.pass.sub;
@@ -2186,7 +2187,8 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   current_pass = NULL;
 
   /* Signal this is a suitable GC collection point.  */
-  ggc_collect ();
+  if (!(todo_after & TODO_do_not_ggc_collect))
+    ggc_collect ();
 }
 
 /* For the current function, execute all ipa transforms. */
@@ -2365,7 +2367,8 @@ execute_one_pass (struct opt_pass *pass)
   current_pass = NULL;
 
   /* Signal this is a suitable GC collection point.  */
-  ggc_collect ();
+  if (!((todo_after | pass->todo_flags_finish) & TODO_do_not_ggc_collect))
+    ggc_collect ();
 
   return true;
 }

@@ -154,6 +154,7 @@ struct simple_ipa_opt_pass
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
 
 /* To-do flags.  */
+#define TODO_do_not_ggc_collect		(1 << 1)
 #define TODO_verify_ssa			(1 << 2)
 #define TODO_verify_flow		(1 << 3)
 #define TODO_verify_stmts		(1 << 4)
@@ -445,6 +446,7 @@ extern struct rtl_opt_pass pass_mode_switching;
 extern struct rtl_opt_pass pass_sms;
 extern struct rtl_opt_pass pass_sched;
 extern struct rtl_opt_pass pass_ira;
+extern struct rtl_opt_pass pass_reload;
 extern struct rtl_opt_pass pass_clean_state;
 extern struct rtl_opt_pass pass_branch_prob;
 extern struct rtl_opt_pass pass_value_profile_transformations;
