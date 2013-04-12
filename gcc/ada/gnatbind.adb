@@ -176,6 +176,9 @@ procedure Gnatbind is
          Max_Storage_At_Blocking         => True,
          --  Not checkable at compile time
 
+         --  The following three should not be partition-wide, so the
+         --  following tests are junk to be removed eventually ???
+
          No_Specification_Of_Aspect      => True,
          --  Requires a parameter value, not a count
 

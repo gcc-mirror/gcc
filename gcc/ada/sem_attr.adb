@@ -1746,9 +1746,13 @@ package body Sem_Attr is
          --  AI05-0057: if restriction No_Default_Stream_Attributes is active,
          --  it is illegal to use a predefined elementary type stream attribute
          --  either by itself, or more importantly as part of the attribute
-         --  subprogram for a composite type.
+         --  subprogram for a composite type. However, if the broader
+         --  restriction No_Streams is active, stream operations are not
+         --  generated, and there is no error.
 
-         if Restriction_Active (No_Default_Stream_Attributes) then
+         if Restriction_Active (No_Default_Stream_Attributes)
+           and then not Restriction_Active (No_Streams)
+         then
             declare
                T : Entity_Id;
 
