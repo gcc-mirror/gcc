@@ -2457,14 +2457,6 @@ package body Sem_Ch10 is
          return;
       end if;
 
-      --  We reset ordinary style checking during the analysis of a with'ed
-      --  unit, but we do NOT reset GNAT special analysis mode (the latter
-      --  definitely *does* apply to with'ed units).
-
-      if not GNAT_Mode then
-         Style_Check := False;
-      end if;
-
       --  If the library unit is a predefined unit, and we are in high
       --  integrity mode, then temporarily reset Configurable_Run_Time_Mode
       --  for the analysis of the with'ed unit. This mode does not prevent

@@ -1,3 +1,27 @@
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads (Style_Check_Main): New switch.
+	* sem.adb (Semantics): Set Style_Check flag properly for new
+	unit to be analyzed.
+	* sem_ch10.adb (Analyze_With_Clause): Don't reset Style_Check,
+	the proper setting of this flag is now part of the Semantics
+	procedure.
+	* switch-c.adb (Scan_Front_End_Switches): Set Style_Check_Main
+	for -gnatg and -gnaty
+
+2013-04-12  Doug Rupp  <rupp@adacore.com>
+
+	* s-crtl.ads (fopen, freopen): Add vms_form parameter
+	* i-cstrea.ads (fopen, freopen): Likewise.
+	* adaint.h (__gnat_fopen, __gnat_freopen): Likewise.
+	* adaint.c (__gnat_fopen, __gnat_freopen): Likewise.
+	[VMS]: Split out RMS keys and call CRTL function appropriately.
+	* s-fileio.adb (Form_VMS_RMS_Keys, Form_RMS_Context_Key): New
+	subprograms.
+	(Open, Reset): Call Form_VMS_RMS_Keys. Call fopen,freopen with
+	vms_form
+	* gnat_rm.texi: Document implemented RMS keys.
+
 2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications):

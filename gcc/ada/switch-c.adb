@@ -751,6 +751,7 @@ package body Switch.C is
                Identifier_Character_Set := 'n';
                System_Extend_Unit := Empty;
                Warning_Mode := Treat_As_Error;
+               Style_Check_Main := True;
 
                --  Set Ada 2012 mode explicitly. We don't want to rely on the
                --  implicit setting here, since for example, we want
@@ -1173,6 +1174,7 @@ package body Switch.C is
 
             when 'y' =>
                Ptr := Ptr + 1;
+               Style_Check_Main := True;
 
                if Ptr > Max then
                   Set_Default_Style_Check_Options;

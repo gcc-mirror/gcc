@@ -14261,6 +14261,25 @@ The use of these parameters is described later in this section. If an
 unrecognized keyword appears in a form string, it is silently ignored
 and not considered invalid.
 
+@noindent
+For OpenVMS additional FORM string keywords are available for use with
+RMS services.  The syntax is:
+
+@smallexample
+VMS_RMS_Keys=(keyword=value,@dots{},keyword=value)
+@end smallexample
+
+@noindent
+The following RMS keywords and values are currently defined:
+
+@smallexample
+Context=Force_Stream_Mode|Force_Record_Mode
+@end smallexample
+
+@noindent
+VMS RMS keys are silently ignored on non-VMS systems.  On OpenVMS
+unimplented RMS keywords, values, or invalid syntax will raise Use_Error.
+
 @node Direct_IO
 @section Direct_IO
 

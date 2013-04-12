@@ -1267,7 +1267,15 @@ package Opt is
    --  GNAT
    --  Set True to perform style checks. Activates checks carried out in
    --  package Style (see body of this package for details of checks). This
-   --  flag is set True by either the -gnatg or -gnaty switches.
+   --  flag is set True by use of either the -gnatg or -gnaty switches, or
+   --  by the Style_Check pragma.
+
+   Style_Check_Main : Boolean := False;
+   --  GNAT
+   --  Set True if Style_Check was set for the main unit. This is used to
+   --  renable style checks for units in the mail extended source that get
+   --  with'ed indirectly. It is set on by use of either the -gnatg or -gnaty
+   --  switches, but not by use of the Style_Checks pragma.
 
    Suppress_All_Inlining : Boolean := False;
    --  GNAT

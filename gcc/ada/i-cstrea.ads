@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,8 +107,8 @@ package Interfaces.C_Streams is
    function fopen
      (filename : chars;
       mode     : chars;
-      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
-      return FILEs
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8;
+      vms_form : chars := System.Null_Address) return FILEs
      renames System.CRTL.fopen;
    --  Note: to maintain target independence, use text_translation_required,
    --  a boolean variable defined in sysdep.c to deal with the target
@@ -144,8 +144,8 @@ package Interfaces.C_Streams is
      (filename : chars;
       mode     : chars;
       stream   : FILEs;
-      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
-      return FILEs
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8;
+      vms_form : chars := System.Null_Address) return FILEs
      renames System.CRTL.freopen;
 
    function fseek
