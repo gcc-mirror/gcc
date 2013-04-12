@@ -1,3 +1,7 @@
+2013-04-12  Release Manager
+
+	* GCC 4.6.4 released.
+
 2013-04-10  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.h (ASM_CPU_SPEC): Pass -Av8 if -mcpu=supersparc
