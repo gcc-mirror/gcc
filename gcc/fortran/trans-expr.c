@@ -97,6 +97,24 @@ gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
 
 
 tree
+gfc_class_set_static_fields (tree decl, tree vptr, tree data)
+{
+  tree tmp;
+  tree field;
+  vec<constructor_elt, va_gc> *init = NULL;
+
+  field = TYPE_FIELDS (TREE_TYPE (decl));
+  tmp = gfc_advance_chain (field, CLASS_DATA_FIELD);
+  CONSTRUCTOR_APPEND_ELT (init, tmp, data);
+
+  tmp = gfc_advance_chain (field, CLASS_VPTR_FIELD);
+  CONSTRUCTOR_APPEND_ELT (init, tmp, vptr);
+
+  return build_constructor (TREE_TYPE (decl), init);
+}
+
+
+tree
 gfc_class_data_get (tree decl)
 {
   tree data;
