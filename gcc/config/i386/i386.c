@@ -33972,13 +33972,13 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     {
       /* Take care for QImode values - they can be in non-QI regs,
 	 but then they do cause partial register stalls.  */
-      if (TARGET_64BIT || QI_REGNO_P (regno))
+      if (ANY_QI_REGNO_P (regno))
 	return true;
       if (!TARGET_PARTIAL_REG_STALL)
 	return true;
       /* LRA checks if the hard register is OK for the given mode.
-        QImode values can live in non-QI regs, so we allow all
-        registers here.  */
+	 QImode values can live in non-QI regs, so we allow all
+	 registers here.  */
       if (lra_in_progress)
        return true;
       return !can_create_pseudo_p ();
