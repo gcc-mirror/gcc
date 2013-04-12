@@ -1,3 +1,9 @@
+2013-04-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/56903
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Add
+	lra_in_progress for return.
+
 2013-04-12  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.md (mov_scc,mov_negscc,mov_notscc): Convert
