@@ -1,3 +1,8 @@
+2013-04-12  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp87.c: Do not run test on ppc and xtensa
+	either.
+
 2013-04-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56929
