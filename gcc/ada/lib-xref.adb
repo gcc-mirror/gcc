@@ -1364,6 +1364,23 @@ package body Lib.Xref is
             then
                Tref := Etype (Tref);
 
+               --  Another special case: an object of a classwide type
+               --  initialized with a tag-indeterminate call gets a subtype
+               --  of the classwide type during expansion. See if the original
+               --  type in the declaration is named, and return it instead
+               --  of going to the root type.
+
+               if Ekind (Tref) = E_Class_Wide_Subtype
+                 and then Nkind (Parent (Ent)) = N_Object_Declaration
+                 and then
+                   Nkind (Original_Node (Object_Definition (Parent (Ent))))
+                     = N_Identifier
+               then
+                  Tref :=
+                    Entity
+                      (Original_Node ((Object_Definition (Parent (Ent)))));
+               end if;
+
             --  For anything else, exit
 
             else

@@ -253,12 +253,12 @@ package Restrict is
    --  being ignored here.
 
    procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
-   --  N is the node of an attribute definition clause.  An error message
+   --  N is the node of an attribute definition clause. An error message
    --  (warning) will be issued if a restriction (warning) was previously set
    --  for this attribute using Set_No_Use_Of_Attribute.
 
-   procedure Check_Restriction_No_Use_Of_Pragma  (N : Node_Id);
-   --  N is the node of a pragma.  An error message (warning) will be issued
+   procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id);
+   --  N is the node of a pragma. An error message (warning) will be issued
    --  if a restriction (warning) was previously set for this pragma using
    --  Set_No_Use_Of_Pragma.
 

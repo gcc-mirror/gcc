@@ -1,3 +1,16 @@
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb, sem_elab.adb, repinfo.adb, sem_ch4.adb, restrict.adb,
+	restrict.ads: Minor reformatting.
+
+2013-04-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb: Retrieve original name of classwide type if any.
+
+2013-04-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch11.ads: Minor reformatting.
+
 2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb: Alphabetize subprogram bodies in this unit. Add

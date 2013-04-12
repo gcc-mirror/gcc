@@ -414,8 +414,7 @@ package body Sem_Ch4 is
          Check_Restriction (No_Allocators, N);
 
          --  Processing for No_Standard_Allocators_After_Elaboration, loop to
-         --  look at enclosing context, checking task case and main subprogram
-         --  case.
+         --  look at enclosing context, checking task/main subprogram case.
 
          C := N;
          P := Parent (C);
