@@ -176,6 +176,15 @@ procedure Gnatbind is
          Max_Storage_At_Blocking         => True,
          --  Not checkable at compile time
 
+         No_Specification_Of_Aspect      => True,
+         --  Requires a parameter value, not a count
+
+         No_Use_Of_Attribute             => True,
+         --  Requires a parameter value, not a count
+
+         No_Use_Of_Pragma                => True,
+         --  Requires a parameter value, not a count
+
          others                          => False);
 
       Additional_Restrictions_Listed : Boolean := False;

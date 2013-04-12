@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,10 @@ package Prj is
 
    procedure Add_Restricted_Language (Name : String);
    --  Call by gprbuild for each language specify by switch
+   --  --restricted-to-languages=.
+
+   procedure Remove_All_Restricted_Languages;
+   --  Call by gprbuild in CodePeer mode to ignore switches
    --  --restricted-to-languages=.
 
    function Is_Allowed_Language (Name : Name_Id) return Boolean;
@@ -1829,6 +1833,7 @@ package Prj is
 
    Gprbuild_Flags : constant Processing_Flags;
    Gprclean_Flags : constant Processing_Flags;
+   Gprexec_Flags  : constant Processing_Flags;
    Gnatmake_Flags : constant Processing_Flags;
    --  Flags used by the various tools. They all display the error messages
    --  through Prj.Err.
@@ -2001,6 +2006,18 @@ private
                        Require_Obj_Dirs           => Warning,
                        Allow_Invalid_External     => Error,
                        Missing_Source_Files       => Error,
+                       Ignore_Missing_With        => False);
+
+   Gprexec_Flags :  constant Processing_Flags :=
+                      (Report_Error               => null,
+                       When_No_Sources            => Silent,
+                       Require_Sources_Other_Lang => False,
+                       Allow_Duplicate_Basenames  => False,
+                       Compiler_Driver_Mandatory  => False,
+                       Error_On_Unknown_Language  => True,
+                       Require_Obj_Dirs           => Silent,
+                       Allow_Invalid_External     => Error,
+                       Missing_Source_Files       => Silent,
                        Ignore_Missing_With        => False);
 
    Gnatmake_Flags : constant Processing_Flags :=

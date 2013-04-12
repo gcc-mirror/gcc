@@ -2780,8 +2780,8 @@ package body Exp_Ch3 is
 
          --  Loop through components, skipping pragmas, in 2 steps. The first
          --  step deals with regular components. The second step deals with
-         --  components have per object constraints, and no explicit initia-
-         --  lization.
+         --  components that have per object constraints and no explicit
+         --  initialization.
 
          Has_POC := False;
 
@@ -2799,9 +2799,7 @@ package body Exp_Ch3 is
             --  Leave any processing of per-object constrained component for
             --  the second pass.
 
-            if Has_Access_Constraint (Id)
-              and then No (Expression (Decl))
-            then
+            if Has_Access_Constraint (Id) and then No (Expression (Decl)) then
                Has_POC := True;
 
             --  Regular component cases

@@ -8986,9 +8986,13 @@ package body Sem_Prag is
          --    null
          --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
 
-         --  DEPENDENCY_CLAUSE ::= OUTPUT_LIST =>[+] INPUT_LIST
+         --  DEPENDENCY_CLAUSE ::=
+         --    OUTPUT_LIST =>[+] INPUT_LIST
+         --  | NULL_DEPENDENCY_CLAUSE
 
-         --  OUTPUT_LIST ::= null | OUTPUT | (OUTPUT {, OUTPUT})
+         --  NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+         --  OUTPUT_LIST ::= OUTPUT | (OUTPUT {, OUTPUT})
 
          --  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
 
@@ -9140,6 +9144,16 @@ package body Sem_Prag is
                         Top_Level => False,
                         Seen      => Inputs_Seen,
                         Null_Seen => Null_Input_Seen);
+                  end if;
+
+                  --  Detect an illegal dependency clause of the form
+
+                  --    (null =>[+] null)
+
+                  if Null_Output_Seen and then Null_Input_Seen then
+                     Error_Msg_N
+                       ("null dependency clause cannot have a null input list",
+                        Inputs);
                   end if;
                end Analyze_Input_List;
 

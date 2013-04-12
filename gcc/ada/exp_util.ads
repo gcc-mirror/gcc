@@ -345,7 +345,7 @@ package Exp_Util is
    --  This procedure ensures that type referenced by Typ is defined. For the
    --  case of a type other than an Itype, nothing needs to be done, since
    --  all such types have declaration nodes. For Itypes, an N_Itype_Reference
-   --  node is generated and inserted at the given node N. This is typically
+   --  node is generated and inserted as an action on node N. This is typically
    --  used to ensure that an Itype is properly defined outside a conditional
    --  construct when it is referenced in more than one branch.
 

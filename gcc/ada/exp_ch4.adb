@@ -4149,6 +4149,10 @@ package body Exp_Ch4 is
          --  are too large, and which in the absence of a check results in
          --  undetected chaos ???
 
+         --  Note in particular that this is a pessimistic estimate in the
+         --  case of packed array types, where an array element might occupy
+         --  just a fraction of a storage element???
+
          declare
             Len : Node_Id;
             Res : Node_Id;

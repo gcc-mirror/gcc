@@ -1,5 +1,28 @@
 2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Input_List): Detect an illegal dependency
+	clause where both input and output lists are null.
+	(Analyze_Pragma): Update the grammar of pragma Depends.
+
+2013-04-12  Vincent Celier  <celier@adacore.com>
+
+	* gnatbind.adb (No_Restriction_List): Exclude restrictions that
+	take a parameter value, not a count.
+	* prj.ads, prj.adb (Remove_All_Restricted_Languages): New procedure.
+	* projects.texi: Complete documentation of attribute Roots.
+
+2013-04-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb, exp_util.ads, checks.adb, freeze.adb, sem_attr.adb,
+	sem_ch3.adb: Minor reformatting.
+	* exp_ch4.adb (Size_In_Storage_Elements): Minor documentation
+	improvement: note that the computation is pessimistic for bit
+	packed arrays.
+	* gnat_rm.texi (Range_Length): Fix minor error in description
+	of attribute.
+
+2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* aspects.adb (Find_Aspect): New routine.
 	(Find_Value_Of_Aspect): New routine.
 	(Has_Aspect): Reimplemented.
