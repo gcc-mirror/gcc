@@ -1968,12 +1968,27 @@ package body Sem_Ch13 is
                end if;
             end if;
 
+            --  Aspect Abstract_State introduces implicit declarations for all
+            --  state abstraction entities it defines. To emulate this behavior
+            --  insert the pragma at the start of the visible declarations of
+            --  the related package.
+
+            if Nam = Name_Abstract_State
+              and then Nkind (N) = N_Package_Declaration
+            then
+               if No (Visible_Declarations (Specification (N))) then
+                  Set_Visible_Declarations (Specification (N), New_List);
+               end if;
+
+               Prepend (Aitem, Visible_Declarations (Specification (N)));
+               goto Continue;
+
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the
             --  N_Compilation_Unit_Aux node (no delay is required here)
             --  except for aspects on a subprogram body (see below).
 
-            if Nkind (Parent (N)) = N_Compilation_Unit
+            elsif Nkind (Parent (N)) = N_Compilation_Unit
               and then (Present (Aitem) or else Is_Boolean_Aspect (Aspect))
             then
                declare
@@ -2013,20 +2028,6 @@ package body Sem_Ch13 is
                      end if;
 
                      Prepend (Aitem, Declarations (N));
-
-                  --  Aspect Abstract_State produces implicit declarations for
-                  --  all state abstraction entities it defines. To emulate
-                  --  this behavior, insert the pragma at the start of the
-                  --  visible declarations of the related package.
-
-                  elsif Nam = Name_Abstract_State
-                    and then Nkind (N) = N_Package_Declaration
-                  then
-                     if No (Visible_Declarations (Specification (N))) then
-                        Set_Visible_Declarations (Specification (N), New_List);
-                     end if;
-
-                     Prepend (Aitem, Visible_Declarations (Specification (N)));
 
                   else
                      if No (Pragmas_After (Aux)) then

@@ -1,5 +1,19 @@
 2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Insert the corresponding pragma for aspect Abstract_State at
+	the top of the visible declarations of the related package.
+	Previously this was only done when the package is a compilation
+	unit.
+
+2013-04-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Further menu clean ups.
+	* sem_prag.adb, opt.ads: Minor reformatting.
+	* sem_util.ads: Minor comment fix.
+
+2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Aspect
 	Depends is now a delayed aspect. The delay is required
 	due to the interplay between aspects Depends and Global.

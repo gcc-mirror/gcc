@@ -602,21 +602,20 @@ package Opt is
    Float_Format : Character := ' ';
    --  GNAT
    --  A non-blank value indicates that a Float_Format pragma has been
-   --  processed, in which case this variable is set to 'I' for IEEE or
-   --  to 'V' for VAX. The setting of 'V' is only possible on OpenVMS
-   --  versions of GNAT.
+   --  processed, in which case this variable is set to 'I' for IEEE or to
+   --  'V' for VAX. The setting of 'V' is only possible on OpenVMS versions
+   --  of GNAT.
 
    Float_Format_Long : Character := ' ';
    --  GNAT
-   --  A non-blank value indicates that a Long_Float pragma has been
-   --  processed (this pragma is recognized only in OpenVMS versions
-   --  of GNAT), in which case this variable is set to D or G for
-   --  D_Float or G_Float.
+   --  A non-blank value indicates that a Long_Float pragma has been processed
+   --  (this pragma is recognized only in OpenVMS versions of GNAT), in which
+   --  case this variable is set to D or G for D_Float or G_Float.
 
    Force_ALI_Tree_File : Boolean := False;
    --  GNAT
-   --  Force generation of ALI file even if errors are encountered.
-   --  Also forces generation of tree file if -gnatt is also set.
+   --  Force generation of ALI file even if errors are encountered. Also forces
+   --  generation of tree file if -gnatt is also set. Set on by use of -gnatQ.
 
    Disable_ALI_File : Boolean := False;
    --  GNAT
@@ -1404,12 +1403,12 @@ package Opt is
    --  Flag set to force attempt at semantic analysis, even if parser errors
    --  occur. This will probably cause blowups at this stage in the game. On
    --  the other hand, most such blowups will be caught cleanly and simply
-   --  say compilation abandoned. This flag is set to True by -gnatq or -gnatQ.
+   --  say compilation abandoned. This flag is set on by -gnatq or -gnatQ.
 
    Unchecked_Shared_Lib_Imports : Boolean := False;
    --  GPRBUILD
    --  Set to True when shared library projects are allowed to import projects
-   --  that are not shared library projects. Set by switch
+   --  that are not shared library projects. Set on by use of the switch
    --  --unchecked-shared-lib-imports.
 
    Undefined_Symbols_Are_False : Boolean := False;
