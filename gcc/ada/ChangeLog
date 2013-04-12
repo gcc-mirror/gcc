@@ -1,3 +1,17 @@
+2013-04-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Stream_Attribute): If restriction
+	No_Default_Stream_Attributes is active, it is illegal to use a
+	predefined elementary type stream attribute either by itself,
+	or more importantly as part of the attribute subprogram for a
+	composite type. However, if the broader restriction No_Streams
+	is active, then stream operations are not generated, and there
+	is no error.
+
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* gnatbind.adb: Minor reformatting.
+
 2013-04-12  Bob Duff  <duff@adacore.com>
 
 	* sem_attr.adb (Analyze_Access_Attribute): Treat P'Access like a
