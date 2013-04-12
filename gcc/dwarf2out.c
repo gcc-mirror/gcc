@@ -18828,6 +18828,7 @@ gen_producer_string (void)
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:
       case OPT_fdiagnostics_show_caret:
+      case OPT_fdiagnostics_color_:
       case OPT_fverbose_asm:
       case OPT____:
       case OPT__sysroot_:

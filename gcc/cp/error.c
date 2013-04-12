@@ -3022,14 +3022,14 @@ cp_print_error_function (diagnostic_context *context,
 		    {
 		      if (context->show_column && s.column != 0)
 			pp_printf (context->printer,
-				   _("    inlined from %qs at %s:%d:%d"),
+				   _("    inlined from %qs at %r%s:%d:%d%R"),
 				   cxx_printable_name_translate (fndecl, 2),
-				   s.file, s.line, s.column);
+				   "locus", s.file, s.line, s.column);
 		      else
 			pp_printf (context->printer,
-				   _("    inlined from %qs at %s:%d"),
+				   _("    inlined from %qs at %r%s:%d%R"),
 				   cxx_printable_name_translate (fndecl, 2),
-				   s.file, s.line);
+				   "locus", s.file, s.line);
 
 		    }
 		  else
@@ -3111,11 +3111,11 @@ print_instantiation_partial_context_line (diagnostic_context *context,
   xloc = expand_location (loc);
 
   if (context->show_column)
-    pp_verbatim (context->printer, _("%s:%d:%d:   "),
-		 xloc.file, xloc.line, xloc.column);
+    pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),
+		 "locus", xloc.file, xloc.line, xloc.column);
   else
-    pp_verbatim (context->printer, _("%s:%d:   "),
-		 xloc.file, xloc.line);
+    pp_verbatim (context->printer, _("%r%s:%d:%R   "),
+		 "locus", xloc.file, xloc.line);
 
   if (t != NULL)
     {
@@ -3189,14 +3189,16 @@ print_instantiation_partial_context (diagnostic_context *context,
 	  xloc = expand_location (loc);
 	  if (context->show_column)
 	    pp_verbatim (context->printer,
-			 _("%s:%d:%d:   [ skipping %d instantiation contexts, "
-			   "use -ftemplate-backtrace-limit=0 to disable ]\n"),
-			 xloc.file, xloc.line, xloc.column, skip);
+			 _("%r%s:%d:%d:%R   [ skipping %d instantiation "
+			   "contexts, use -ftemplate-backtrace-limit=0 to "
+			   "disable ]\n"),
+			 "locus", xloc.file, xloc.line, xloc.column, skip);
 	  else
 	    pp_verbatim (context->printer,
-			 _("%s:%d:   [ skipping %d instantiation contexts, "
-			   "use -ftemplate-backtrace-limit=0 to disable ]\n"),
-			 xloc.file, xloc.line, skip);
+			 _("%r%s:%d:%R   [ skipping %d instantiation "
+			   "contexts, use -ftemplate-backtrace-limit=0 to "
+			   "disable ]\n"),
+			 "locus", xloc.file, xloc.line, skip);
 	  
 	  do {
 	    loc = t->locus;
@@ -3258,12 +3260,12 @@ maybe_print_constexpr_context (diagnostic_context *context)
       const char *s = expr_as_string (t, 0);
       if (context->show_column)
 	pp_verbatim (context->printer,
-		     _("%s:%d:%d:   in constexpr expansion of %qs"),
-		     xloc.file, xloc.line, xloc.column, s);
+		     _("%r%s:%d:%d:%R   in constexpr expansion of %qs"),
+		     "locus", xloc.file, xloc.line, xloc.column, s);
       else
 	pp_verbatim (context->printer,
-		     _("%s:%d:   in constexpr expansion of %qs"),
-		     xloc.file, xloc.line, s);
+		     _("%r%s:%d:%R   in constexpr expansion of %qs"),
+		     "locus", xloc.file, xloc.line, s);
       pp_base_newline (context->printer);
     }
 }

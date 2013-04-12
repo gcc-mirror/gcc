@@ -1,3 +1,9 @@
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.c (cp_print_error_function,
+	print_instantiation_partial_context_line,
+	maybe_print_constexpr_context): Colorize locus strings.
+
 2013-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52748

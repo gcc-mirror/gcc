@@ -1,3 +1,34 @@
+2013-04-12  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* opts.c: Include diagnostic-color.h.
+	(common_handle_option): Handle OPT_fdiagnostics_color_.
+	* Makefile.in (OBJS-libcommon): Add diagnostic-color.o.
+	(diagnostic.o, opts.o, pretty-print.o): Depend on diagnostic-color.h.
+	(diagnostic-color.o): New.
+	* common.opt (fdiagnostics-color, fdiagnostics-color=): New options.
+	(diagnostic_color_rule): New enum.
+	* dwarf2out.c (gen_producer_string): Don't print -fdiagnostics-color*.
+	* langhooks.c (lhd_print_error_function): Add %r "locus" and %R around
+	the location string.
+	* diagnostic.def: Add 3rd argument to DEFINE_DIAGNOSTIC_KIND macros,
+	either NULL, or color kind.
+	* diagnostic-color.c: New file.
+	* diagnostic-color.h: New file.
+	* diagnostic-core.h (DEFINE_DIAGNOSTIC_KIND): Adjust macro for 3
+	arguments.
+	* doc/invoke.texi (-fdiagnostics-color): Document.
+	* pretty-print.h (pp_show_color): Define.
+	(struct pretty_print_info): Add show_color field.
+	* diagnostic.c: Include diagnostic-color.h.
+	(diagnostic_build_prefix): Adjust for 3 argument DEFINE_DIAGNOSTIC_KIND
+	macros.  Colorize error:, warning: etc. strings and also the location
+	string.
+	(diagnostic_show_locus): Colorize the caret line.
+	* pretty-print.c: Include diagnostic-color.h.
+	(pp_base_format): Handle %r and %R format specifiers.  Colorize strings
+	inside of %< %> quotes or quoted through q format modifier.
+
 2013-04-12  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* ifcvt.c (end_ifcvt_sequence): Mark a and b for unsharing as
