@@ -1453,7 +1453,8 @@ package Sem_Util is
    procedure Set_Entity_With_Style_Check (N : Node_Id; Val : Entity_Id);
    --  This procedure has the same calling sequence as Set_Entity, but
    --  if Style_Check is set, then it calls a style checking routine which
-   --  can check identifier spelling style.
+   --  can check identifier spelling style. This procedure also takes care
+   --  of checking the restriction No_Implementation_Identifiers.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);

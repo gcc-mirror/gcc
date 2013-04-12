@@ -9330,9 +9330,8 @@ package body Sem_Prag is
             begin
                if Is_Input then
                   if Ekind (Item_Id) = E_Out_Parameter
-                    or else
-                      (Global_Seen
-                         and then not Appears_In (Subp_Inputs, Item_Id))
+                    or else (Global_Seen
+                              and then not Appears_In (Subp_Inputs, Item_Id))
                   then
                      Error_Msg_NE
                        ("item & must have mode in or in out", Item, Item_Id);
