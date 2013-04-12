@@ -1,3 +1,8 @@
+2013-04-12  Richard Biener  <rguenther@suse.de>
+
+	* gimple.c (is_gimple_constant): Vector CONSTRUCTORs should
+	not be considered a gimple constant.
+
 2013-04-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (const_binop): Handle vector shifts by a scalar.
