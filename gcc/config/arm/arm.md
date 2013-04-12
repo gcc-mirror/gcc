@@ -8259,36 +8259,56 @@
    operands[3] = const0_rtx;"
 )
 
-(define_insn "*mov_scc"
+(define_insn_and_split "*mov_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand 2 "cc_register" "") (const_int 0)]))]
   "TARGET_ARM"
-  "mov%D1\\t%0, #0\;mov%d1\\t%0, #1"
+  "#"   ; "mov%D1\\t%0, #0\;mov%d1\\t%0, #1"
+  "TARGET_ARM"
+  [(set (match_dup 0)
+        (if_then_else:SI (match_dup 1)
+                         (const_int 1)
+                         (const_int 0)))]
+  ""
   [(set_attr "conds" "use")
-   (set_attr "insn" "mov")
    (set_attr "length" "8")]
 )
 
-(define_insn "*mov_negscc"
+(define_insn_and_split "*mov_negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(neg:SI (match_operator:SI 1 "arm_comparison_operator"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_ARM"
-  "mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
+  "#"   ; "mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
+  "TARGET_ARM"
+  [(set (match_dup 0)
+        (if_then_else:SI (match_dup 1)
+                         (match_dup 3)
+                         (const_int 0)))]
+  {
+    operands[3] = GEN_INT (~0);
+  }
   [(set_attr "conds" "use")
-   (set_attr "insn" "mov")
    (set_attr "length" "8")]
 )
 
-(define_insn "*mov_notscc"
+(define_insn_and_split "*mov_notscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(not:SI (match_operator:SI 1 "arm_comparison_operator"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_ARM"
-  "mvn%D1\\t%0, #0\;mvn%d1\\t%0, #1"
+  "#"   ; "mvn%D1\\t%0, #0\;mvn%d1\\t%0, #1"
+  "TARGET_ARM"
+  [(set (match_dup 0)
+        (if_then_else:SI (match_dup 1)
+                         (match_dup 3)
+                         (match_dup 4)))]
+  {
+    operands[3] = GEN_INT (~1);
+    operands[4] = GEN_INT (~0);
+  }
   [(set_attr "conds" "use")
-   (set_attr "insn" "mov")
    (set_attr "length" "8")]
 )
 
