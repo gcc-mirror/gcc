@@ -1,3 +1,8 @@
+2013-04-12  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* ifcvt.c (end_ifcvt_sequence): Mark a and b for unsharing as
+	well.
+
 2013-04-11  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/48184
