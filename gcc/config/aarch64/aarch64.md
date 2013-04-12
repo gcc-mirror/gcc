@@ -1901,6 +1901,21 @@
    (set_attr "mode" "SI")]
 )
 
+(define_insn "*neg_<shift><mode>3_compare0"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (neg:GPI (ASHIFT:GPI
+		   (match_operand:GPI 1 "register_operand" "r")
+		   (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n")))
+	 (const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(neg:GPI (ASHIFT:GPI (match_dup 1) (match_dup 2))))]
+  ""
+  "negs\\t%<w>0, %<w>1, <shift> %2"
+  [(set_attr "v8type" "alus_shift")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "*neg_<shift>_<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(neg:GPI (ASHIFT:GPI

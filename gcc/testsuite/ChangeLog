@@ -1,3 +1,7 @@
+2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/negs.c: New.
+
 2013-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56895
