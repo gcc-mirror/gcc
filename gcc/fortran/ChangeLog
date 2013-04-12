@@ -1,3 +1,9 @@
+2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56929
+	* trans-array.c (duplicate_allocatable): Fix handling
+	of scalar coarrays.
+
 2013-04-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56261

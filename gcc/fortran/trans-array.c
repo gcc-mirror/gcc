@@ -7321,7 +7321,7 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
      allocate memory to the destination.  */
   gfc_init_block (&block);
 
-  if (rank == 0)
+  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (dest)))
     {
       tmp = null_pointer_node;
       tmp = fold_build2_loc (input_location, MODIFY_EXPR, type, dest, tmp);
@@ -7348,7 +7348,11 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       null_data = gfc_finish_block (&block);
 
       gfc_init_block (&block);
-      nelems = get_full_array_size (&block, src, rank);
+      if (rank)
+	nelems = get_full_array_size (&block, src, rank);
+      else
+	nelems = gfc_index_one_node;
+
       tmp = fold_convert (gfc_array_index_type,
 			  TYPE_SIZE_UNIT (gfc_get_element_type (type)));
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
@@ -7374,7 +7378,7 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 
   /* Null the destination if the source is null; otherwise do
      the allocate and copy.  */
-  if (rank == 0)
+  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (src)))
     null_cond = src;
   else
     null_cond = gfc_conv_descriptor_data_get (src);
