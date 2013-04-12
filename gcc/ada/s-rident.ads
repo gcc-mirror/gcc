@@ -65,7 +65,7 @@
 --  The latest implementation avoids both this problem by using a named
 --  scheme for recording restrictions, rather than a positional scheme which
 --  fails completely if restrictions are added or subtracted. Now the worst
---  that happens at bind time in incosistent builds is that unrecognized
+--  that happens at bind time in inconsistent builds is that unrecognized
 --  restrictions are ignored, and the consistency checking for restrictions
 --  might be incomplete, which is no big deal.
 

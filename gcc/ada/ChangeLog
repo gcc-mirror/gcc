@@ -1,3 +1,15 @@
+2013-04-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Set_Imported): Do not generate error for multiple
+	Import in CodePeer mode.
+	* s-rident.ads: Fix minor typo.
+
+2013-04-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Do not insert validity check
+	in the body of the generated predicate function, to prevent
+	infinite recursion.
+
 2013-04-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* s-rident.ads: Add various missing Ada 2012 restrictions:

@@ -6246,6 +6246,12 @@ package body Sem_Prag is
             if Is_Exported (E) then
                Error_Msg_NE ("entity& was previously exported", N, E);
 
+            --  Ignore error in CodePeer mode where we treat all imported
+            --  subprograms as unknown.
+
+            elsif CodePeer_Mode then
+               goto OK;
+
             --  OK if Import/Interface case
 
             elsif Import_Interface_Present (N) then
