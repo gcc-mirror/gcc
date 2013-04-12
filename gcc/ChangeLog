@@ -1,3 +1,12 @@
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56918
+	PR tree-optimization/56920
+	* fold-const.c (int_const_binop_1): Use op1.mul_with_sign (op2, ...)
+	instead of op1 - op2.  Pass 2 * TYPE_PRECISION (type) as second
+	argument to rshift method.  For 2 * HOST_BITS_PER_WIDE_INT precision
+	use wide_mul_with_sign method.
+
 2013-04-12  Richard Biener  <rguenther@suse.de>
 
 	* gimple.c (is_gimple_constant): Vector CONSTRUCTORs should

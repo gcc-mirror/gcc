@@ -1,3 +1,10 @@
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56918
+	PR tree-optimization/56920
+	* gcc.dg/vect/pr56918.c: New test.
+	* gcc.dg/vect/pr56920.c: New test.
+
 2013-04-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56845
