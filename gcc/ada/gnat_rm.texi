@@ -1557,15 +1557,27 @@ pragma Check_Policy
  ([Name   =>] CHECK_KIND,
   [Policy =>] POLICY_IDENTIFIER);
 
-CHECK_KIND ::= IDENTIFIER |
-                   Pre'Class | Post'Class | Type_Invariant'Class
+Pragma Check_Policy (
+    CHECK_KIND => POLICY_IDENTIFIER
+ @{, CHECK_KIND => POLICY_IDENTIFIER@});
+
+ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
+
+CHECK_KIND ::= IDENTIFIER           |
+               Pre'Class            |
+               Post'Class           |
+               Type_Invariant'Class |
+               Invariant'Class
+
+The identifiers Name and Policy are not allowed as CHECK_KIND values. This
+avoids confusion between the two possible syntax forms for this pragma.
 
 POLICY_IDENTIFIER ::= ON | OFF | CHECK | DISABLE | IGNORE
 @end smallexample
 
 @noindent
 This pragma is used to set the checking policy for assertions (specified
-by aspects of pragmas), the @code{Debug} pragma, or additional checks
+by aspects or pragmas), the @code{Debug} pragma, or additional checks
 to be checked using the @code{Check} pragma. It may appear either as
 a configuration pragma, or within a declarative part of package. In the
 latter case, it applies from the point where it appears to the end of
@@ -1573,10 +1585,8 @@ the declarative region (like pragma @code{Suppress}).
 
 The @code{Check_Policy} pragma is similar to the
 predefined @code{Assertion_Policy} pragma,
-and if the first argument corresponds to one of the assertion kinds that
+and if the check kind corresponds to one of the assertion kinds that
 are allowed by @code{Assertion_Policy}, then the effect is identical.
-The identifiers @code{Precondition} and @code{Postcondition} are allowed
-synonyms for @code{Pre} and @code{Post}.
 
 If the first argument is Debug, then the policy applies to Debug pragmas,
 disabling their effect if the policy is @code{Off}, @code{Disable}, or
@@ -1605,9 +1615,8 @@ to turn on corresponding checks. The default for a set of checks for which no
 The check policy settings @code{CHECK} and @code{IGNORE} are recognized
 as synonyms for @code{ON} and @code{OFF}. These synonyms are provided for
 compatibility with the standard @code{Assertion_Policy} pragma. The check
-policy setting @code{DISABLE} is also synonymous with @code{OFF} in this
-context, but does not have any other significance for check
-names other than assertion kinds.
+policy setting @code{DISABLE} causes the second argument of a corresponding
+@code{Check} pragma to be completely ignored and not analyzed.
 
 @node Pragma Comment
 @unnumberedsec Pragma Comment

@@ -54,7 +54,7 @@ package Sem_Prag is
    --  of the expressions in the pragma as "spec expressions" (see section
    --  in Sem "Handling of Default and Per-Object Expressions...").
 
-   function Check_Enabled (Nam : Name_Id) return Boolean;
+   function Check_Kind (Nam : Name_Id) return Name_Id;
    --  This function is used in connection with pragmas Assertion, Check,
    --  and assertion aspects and pragmas, to determine if Check pragmas
    --  (or corresponding assertion aspects or pragmas) are currently active
@@ -63,17 +63,15 @@ package Sem_Prag is
    --  Assertion_Policy as configuration pragmas either in a configuration
    --  pragma file, or at the start of the current unit, or locally given
    --  Check_Policy and Assertion_Policy pragmas that are currently active.
-   --  True is returned if the specified check is enabled.
    --
-   --  This function knows about all relevant synonyms (e.g. Precondition or
-   --  Pre can be used to refer to the Pre aspect or Precondition pragma, and
-   --  Predicate refers to both static and dynamic predicates, and Assertion
-   --  applies to all assertion aspects and pragmas).
+   --  The value returned is one of the names Check, Ignore, Disable (On
+   --  returns Check, and Off returns Ignore).
    --
-   --  Note: for assertion kinds Pre'Class, Post'Class, Type_Invariant'Class,
-   --  the name passed is Name_uPre, Name_uPost, Name_uType_Invariant, which
-   --  corresponds to _Pre, _Post, _Type_Invariant, which are special names
-   --  used in identifiers to represent these attribute references.
+   --  Note: for assertion kinds Pre'Class, Post'Class, Invariant'Class,
+   --  and Type_Invariant'Class, the name passed is Name_uPre, Name_uPost,
+   --  Name_uInvariant, or Name_uType_Invariant, which corresponds to _Pre,
+   --  _Post, _Invariant, or _Type_Invariant, which are special names used
+   --  in identifiers to represent these attribute references.
 
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
@@ -83,9 +81,9 @@ package Sem_Prag is
    --  we use for the purpose of this procedure is the aspect name, which may
    --  be different from the pragma name (e.g. Precondition for Pre aspect).
    --  In addition, 'Class aspects are recognized (and the corresponding
-   --  special names used in the processing.
+   --  special names used in the processing).
    --
-   --  If the name is valid assertion_Kind name, then the Check_Policy pragma
+   --  If the name is valid ASSERTION_KIND name, then the Check_Policy pragma
    --  chain is checked for a matching entry (or for an Assertion entry which
    --  matches all possibilities). If a matching entry is found then the policy
    --  is checked. If it is Off, Ignore, or Disable, then the Is_Ignored flag

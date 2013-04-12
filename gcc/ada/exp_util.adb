@@ -5456,7 +5456,7 @@ package body Exp_Util is
       pragma Assert
         (Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)));
 
-      if Check_Enabled (Name_Invariant) then
+      if Check_Kind (Name_Invariant) = Name_Check then
          return
            Make_Procedure_Call_Statement (Loc,
              Name                   =>

@@ -3156,6 +3156,7 @@ package body Prj.Nmsc is
 
             if not Dir_Exists then
                if Directories_Must_Exist_In_Projects then
+
                   --  Get the absolute name of the library directory that does
                   --  not exist, to report an error.
 
@@ -3211,8 +3212,8 @@ package body Prj.Nmsc is
                              File_Name_Type (Dir_Elem.Value);
                            Error_Msg
                              (Data.Flags,
-                              "library directory cannot be the same " &
-                              "as source directory {",
+                              "library directory cannot be the same "
+                              & "as source directory {",
                               Lib_Dir.Location, Project);
                            OK := False;
                            exit;
@@ -3246,8 +3247,8 @@ package body Prj.Nmsc is
 
                                     Error_Msg
                                       (Data.Flags,
-                                       "library directory cannot be the same" &
-                                       " as source directory { of project %%",
+                                       "library directory cannot be the same "
+                                       & "as source directory { of project %%",
                                        Lib_Dir.Location, Project);
                                     OK := False;
                                     exit Project_Loop;
