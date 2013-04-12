@@ -548,6 +548,8 @@ The GNAT Library
 * System.Address_Image (s-addima.ads)::
 * System.Assertions (s-assert.ads)::
 * System.Memory (s-memory.ads)::
+* System.Multiprocessors (s-multip.ads)::
+* System.Multiprocessors.Dispatching_Domains (s-mudido.ads)::
 * System.Partition_Interface (s-parint.ads)::
 * System.Pool_Global (s-pooglo.ads)::
 * System.Pool_Local (s-pooloc.ads)::
@@ -15508,6 +15510,8 @@ of GNAT, and will generate a warning message.
 * System.Address_Image (s-addima.ads)::
 * System.Assertions (s-assert.ads)::
 * System.Memory (s-memory.ads)::
+* System.Multiprocessors (s-multip.ads)::
+* System.Multiprocessors.Dispatching_Domains (s-mudido.ads)::
 * System.Partition_Interface (s-parint.ads)::
 * System.Pool_Global (s-pooglo.ads)::
 * System.Pool_Local (s-pooloc.ads)::
@@ -16969,6 +16973,22 @@ realloc. The body of this unit may be modified to provide alternative
 allocation mechanisms for the default pool, and in addition, direct
 calls to this unit may be made for low level allocation uses (for
 example see the body of @code{GNAT.Tables}).
+
+@node System.Multiprocessors (s-multip.ads)
+@section @code{System.Multiprocessors} (@file{s-multip.ads})
+@cindex @code{System.Multiprocessors} (@file{s-multip.ads})
+@cindex Multiprocessor interface
+This is an Ada 2012 unit defined in the Ada 2012 Reference Manual, but
+in GNAT we also make it available in Ada 95 and Ada 2005 (where it is
+technically an implementation-defined addition).
+
+@node System.Multiprocessors.Dispatching_Domains (s-mudido.ads)
+@section @code{System.Multiprocessors.Dispatching_Domains} (@file{s-mudido.ads})
+@cindex @code{System.Multiprocessors.Dispatching_Domains} (@file{s-mudido.ads})
+@cindex Multiprocessor interface
+This is an Ada 2012 unit defined in the Ada 2012 Reference Manual, but
+in GNAT we also make it available in Ada 95 and Ada 2005 (where it is
+technically an implementation-defined addition).
 
 @node System.Partition_Interface (s-parint.ads)
 @section @code{System.Partition_Interface} (@file{s-parint.ads})

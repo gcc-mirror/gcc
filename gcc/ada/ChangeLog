@@ -1,3 +1,34 @@
+2013-04-12  Bob Duff  <duff@adacore.com>
+
+	* par-ch7.adb (P_Package): Initialize Sloc in the newly-pushed scope
+	stack entry.
+
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb: Minor fix to wording of error message for
+	-gnatet/eT.
+
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb: Add s-multip and s-mudido to list of impl defined
+	system units.
+	* gnat_rm.texi: Add documentation for
+	System.Multiprocessors[.Dispatching_Domains].
+
+2013-04-12  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Completion of menu cleanups.
+
+2013-04-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Diagnose_Multiple_Pragmas): Relax the rules
+	in Relaxed_RM_Semantics.
+
+2013-04-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* set_targ.adb (elab code): Add support for non gcc back-ends
+	where save_argv is null.
+
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
 	* gnat1drv.adb (Gnat1drv): Test Target_Dependent_Info_Write_Name.

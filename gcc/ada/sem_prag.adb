@@ -3456,8 +3456,12 @@ package body Sem_Prag is
             end if;
 
             --  Give message if needed if we fall through those tests
+            --  except on Relaxed_RM_Semantics where we let go: either this
+            --  is a case accepted/ignored by other Ada compilers (e.g.
+            --  a mix of Convention and Import), or another error will be
+            --  generated later (e.g. using both Import and Export).
 
-            if Err then
+            if Err and not Relaxed_RM_Semantics then
                Error_Pragma_Arg
                  ("at most one Convention/Export/Import pragma is allowed",
                   Arg2);

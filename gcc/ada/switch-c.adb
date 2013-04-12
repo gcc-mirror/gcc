@@ -652,8 +652,7 @@ package body Switch.C is
                   when 't' =>
                      if not First_Switch then
                         Osint.Fail
-                          ("-gnatet must be first if combined with "
-                           & "other switches");
+                          ("-gnatet must not be combined with other switches");
                      end if;
 
                      --  Check for '='
@@ -674,8 +673,7 @@ package body Switch.C is
                   when 'T' =>
                      if not First_Switch then
                         Osint.Fail
-                          ("-gnateT must be first if combined with "
-                           & "other switches");
+                          ("-gnateT must not be combined with other switches");
                      end if;
 
                      --  Check for '='
