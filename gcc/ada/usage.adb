@@ -243,13 +243,13 @@ begin
 
    --  Line for -gnatet switch
 
-   Write_Switch_Char ("et");
-   Write_Line ("Write target dependent information file");
+   Write_Switch_Char ("et=?");
+   Write_Line ("Write target dependent information file ?, e.g. gnatet=tdf");
 
    --  Line for -gnateT switch
 
-   Write_Switch_Char ("eT");
-   Write_Line ("Read target dependent information file");
+   Write_Switch_Char ("eT=?");
+   Write_Line ("Read target dependent information file ?, e.g. gnateT=tdf");
 
    --  Line for -gnateV switch
 

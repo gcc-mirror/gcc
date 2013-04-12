@@ -881,7 +881,7 @@ begin
 
       --  Generate target dependent output file if requested
 
-      if Target_Dependent_Info_Write then
+      if Target_Dependent_Info_Write_Name /= null then
          Set_Targ.Write_Target_Dependent_Values;
       end if;
 

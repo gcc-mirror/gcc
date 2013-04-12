@@ -35,12 +35,9 @@ with Unchecked_Conversion;
 
 package body Set_Targ is
 
-   ---------------------------------------------
-   -- Data Used to Read/Write target.atp File --
-   ---------------------------------------------
-
-   File_Name : aliased constant String := "target.atp";
-   --  Name of file to read/write
+   --------------------------------------------------------
+   -- Data Used to Read/Write Target Dependent Info File --
+   --------------------------------------------------------
 
    --  Table of string names written to file
 
@@ -369,8 +366,9 @@ package body Set_Targ is
          AddC (ASCII.LF);
 
          if Buflen /= Write (Fdesc, Buffer'Address, Buflen) then
-            Delete_File (File_Name'Address, OK);
-            Fail ("disk full writing target.atp");
+            Delete_File (Target_Dependent_Info_Write_Name'Address, OK);
+            Fail ("disk full writing file "
+                  & Target_Dependent_Info_Write_Name.all);
          end if;
 
          Buflen := 0;
@@ -379,10 +377,11 @@ package body Set_Targ is
    --  Start of processing for Write_Target_Dependent_Values
 
    begin
-      Fdesc := Create_File (File_Name'Address, Text);
+      Fdesc :=
+        Create_File (Target_Dependent_Info_Write_Name.all'Address, Text);
 
       if Fdesc = Invalid_FD then
-         Fail ("cannot create target.atp");
+         Fail ("cannot create file " & Target_Dependent_Info_Write_Name.all);
       end if;
 
       --  Loop through values
@@ -459,7 +458,8 @@ package body Set_Targ is
       Close (Fdesc, OK);
 
       if not OK then
-         Fail ("disk full writing target.atp");
+         Fail ("disk full writing file "
+               & Target_Dependent_Info_Write_Name.all);
       end if;
    end Write_Target_Dependent_Values;
 
@@ -471,7 +471,7 @@ begin
    --  First step: see if the -gnateT switch is present. As we have noted,
    --  this has to be done very early, so can not depend on the normal circuit
    --  for reading switches and setting switches in Opt. The following code
-   --  will set Opt.Target_Dependent_Info_Read if an option starting -gnateT
+   --  will set Opt.Target_Dependent_Info_Read_Name if the switch -gnateT=name
    --  is present in the options string.
 
    declare
@@ -513,11 +513,14 @@ begin
          declare
             Argv_Ptr : constant Big_String_Ptr := save_argv (Arg);
             Argv_Len : constant Nat            := Len_Arg (Arg);
+
          begin
-            if Argv_Len = 7
-              and then Argv_Ptr (1 .. 7) = "-gnateT"
+            if Argv_Len > 8
+              and then Argv_Ptr (1 .. 8) = "-gnateT="
             then
-               Opt.Target_Dependent_Info_Read := True;
+               Opt.Target_Dependent_Info_Read_Name :=
+                 new String'(Argv_Ptr (9 .. Natural (Argv_Len)));
+
             elsif Argv_Len >= 8
               and then Argv_Ptr (1 .. 8) = "-gnatd.b"
             then
@@ -529,7 +532,7 @@ begin
 
    --  If the switch is not set, we get all values from the back end
 
-   if not Opt.Target_Dependent_Info_Read then
+   if Opt.Target_Dependent_Info_Read_Name = null then
 
       --  Set values by direct calls to the back end
 
@@ -560,7 +563,7 @@ begin
 
       Register_Back_End_Types (Register_Float_Type'Access);
 
-   --  Case of reading the target dependent values from target.atp
+   --  Case of reading the target dependent values from file
 
    --  This is bit more complex than might be expected, because it has to be
    --  done very early. All kinds of packages depend on these values, and we
@@ -569,7 +572,7 @@ begin
    --  too early to be using Osint directly.
 
    else
-      Read_File : declare
+      Read_Target_Dependent_Values : declare
          File_Desc : File_Descriptor;
          N         : Natural;
 
@@ -592,9 +595,9 @@ begin
          --  Checks that we have one or more spaces and skips them
 
          procedure FailN (S : String);
-         --  Calls Fail prefixing "target.atp: " to the start of the given
-         --  string, and " name" to the end where name is the currently
-         --  gathered name in Nam_Buf, surrounded by quotes.
+         --  Calls Fail adding " name in file xxx", where name is the currently
+         --  gathered name in Nam_Buf, surrounded by quotes, and xxx is the
+         --  name of the file.
 
          procedure Get_Name;
          --  Scan out name, leaving it in Nam_Buf with Nam_Len set. Calls
@@ -628,7 +631,8 @@ begin
 
          procedure FailN (S : String) is
          begin
-            Fail ("target.atp: " & S & " """ & Nam_Buf (1 .. Nam_Len) & '"');
+            Fail (S & " """ & Nam_Buf (1 .. Nam_Len) & """ in file "
+                  & Target_Dependent_Info_Read_Name.all);
          end FailN;
 
          --------------
@@ -700,19 +704,19 @@ begin
             end loop;
          end Skip_Spaces;
 
-      --  Start of processing for Read_File
+      --  Start of processing for Read_Target_Dependent_Values
 
       begin
-         File_Desc := Open_Read ("target.atp", Text);
+         File_Desc := Open_Read (Target_Dependent_Info_Read_Name.all, Text);
 
          if File_Desc = Invalid_FD then
-            Fail ("cannot read target.atp file");
+            Fail ("cannot read file " & Target_Dependent_Info_Read_Name.all);
          end if;
 
          Buflen := Read (File_Desc, Buffer'Address, Buffer'Length);
 
          if Buflen = Buffer'Length then
-            Fail ("target.atp file is too long");
+            Fail ("file is too long: " & Target_Dependent_Info_Read_Name.all);
          end if;
 
          --  Scan through file for properly formatted entries in first section
@@ -753,20 +757,23 @@ begin
 
          for J in DTR'Range loop
             if not DTR (J) then
-               Fail ("missing entry in target.atp for " & DTN (J).all);
+               Fail ("missing entry for " & DTN (J).all & " in file "
+                     & Target_Dependent_Info_Read_Name.all);
             end if;
          end loop;
 
          --  Now acquire FPT entries
 
          if N >= Buflen then
-            Fail ("target.atp is missing entries for FPT modes");
+            Fail ("missing entries for FPT modes in file "
+                  & Target_Dependent_Info_Read_Name.all);
          end if;
 
          if Buffer (N) = ASCII.LF then
             N := N + 1;
          else
-            Fail ("target.atp is missing blank line");
+            Fail ("missing blank line in file "
+                  & Target_Dependent_Info_Read_Name.all);
          end if;
 
          Num_FPT_Modes := 0;
@@ -810,6 +817,6 @@ begin
                N := N + 1;
             end;
          end loop;
-      end Read_File;
+      end Read_Target_Dependent_Values;
    end if;
 end Set_Targ;
