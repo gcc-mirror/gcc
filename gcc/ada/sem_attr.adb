@@ -4314,8 +4314,8 @@ package body Sem_Attr is
                      Arg := Parent (Arg);
                   end loop;
 
-                  --  At this point, Parent (Arg) should be a
-                  --  N_Component_Association. Attribute Old is only allowed in
+                  --  At this point, Parent (Arg) should be a component
+                  --  association. Attribute Result is only allowed in
                   --  the expression part of this association.
 
                   if Nkind (Parent (Arg)) /= N_Component_Association
@@ -4731,9 +4731,9 @@ package body Sem_Attr is
                      Arg := Parent (Arg);
                   end loop;
 
-                  --  At this point, Parent (Arg) should be a
-                  --  N_Component_Association. Attribute Result is only
-                  --  allowed in the expression part of this association.
+                  --  At this point, Parent (Arg) should be a component
+                  --  association. Attribute Result is only allowed in
+                  --  the expression part of this association.
 
                   if Nkind (Parent (Arg)) /= N_Component_Association
                     or else Arg /= Expression (Parent (Arg))

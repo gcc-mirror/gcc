@@ -1259,7 +1259,7 @@ begin
 
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
-      List_Rep_Info;
+      List_Rep_Info (Ttypes.Bytes_Big_Endian);
       List_Inlining_Info;
 
       --  Only write the library if the backend did not generate any error

@@ -7064,8 +7064,8 @@ package body Sem_Ch6 is
       --  Last non-trivial postcondition on the subprogram, or else Empty if
       --  either no non-trivial postcondition or only inherited postconditions.
 
-      Last_Contract_Case : Node_Id := Empty;
-      --  Last non-trivial contract-case on the subprogram, or else Empty
+      Last_Contract_Cases : Node_Id := Empty;
+      --  Last non-trivial contract-cases on the subprogram, or else Empty
 
       Attribute_Result_Mentioned : Boolean := False;
       --  Whether attribute 'Result is mentioned in a non-trivial postcondition
@@ -7204,8 +7204,10 @@ package body Sem_Ch6 is
       ----------------------------
 
       procedure Process_Contract_Cases (Spec : Node_Id) is
-         Prag : Node_Id;
-         Arg  : Node_Id;
+         Prag       : Node_Id;
+         Aggr       : Node_Id;
+         Conseq     : Node_Id;
+         Post_Case  : Node_Id;
 
          Ignored : Traverse_Final_Result;
          pragma Unreferenced (Ignored);
@@ -7213,42 +7215,47 @@ package body Sem_Ch6 is
       begin
          Prag := Spec_CTC_List (Contract (Spec));
          loop
-            --  Retrieve the Ensures component of the contract-case, if any
+            if Pragma_Name (Prag) = Name_Contract_Cases then
 
-            Arg := Get_Ensures_From_CTC_Pragma (Prag);
+               Aggr := Expression (First
+                         (Pragma_Argument_Associations (Prag)));
 
-            --  Ignore trivial contract-case when Ensures component is "True"
-            --  or "False".
+               Post_Case := First (Component_Associations (Aggr));
+               while Present (Post_Case) loop
+                  Conseq := Expression (Post_Case);
 
-            if Pragma_Name (Prag) = Name_Contract_Case
-              and then not Is_Trivial_Post_Or_Ensures (Expression (Arg))
-            then
-               --  Since contract-cases are listed in reverse order, the first
-               --  contract-case in the list is the last in the source.
+                  --  Ignore trivial contract-case when consequence is "True"
+                  --  or "False".
 
-               if No (Last_Contract_Case) then
-                  Last_Contract_Case := Prag;
-               end if;
+                  if not Is_Trivial_Post_Or_Ensures (Conseq) then
 
-               --  For functions, look for presence of 'Result in Ensures
+                     Last_Contract_Cases := Prag;
 
-               if Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
-                  Ignored := Find_Attribute_Result (Arg);
-               end if;
+                     --  For functions, look for presence of 'Result in
+                     --  consequence expression.
 
-               --  For each individual contract-case, look for presence
-               --  of an expression that could be evaluated differently
-               --  in post-state.
+                     if Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
+                        Ignored := Find_Attribute_Result (Conseq);
+                     end if;
 
-               Post_State_Mentioned := False;
-               Ignored := Find_Post_State (Arg);
+                     --  For each individual case, look for presence of an
+                     --  expression that could be evaluated differently in
+                     --  post-state.
 
-               if Post_State_Mentioned then
-                  No_Warning_On_Some_Postcondition := True;
-               else
-                  Error_Msg_N
-                    ("`Ensures` component refers only to pre-state??", Prag);
-               end if;
+                     Post_State_Mentioned := False;
+                     Ignored := Find_Post_State (Conseq);
+
+                     if Post_State_Mentioned then
+                        No_Warning_On_Some_Postcondition := True;
+                     else
+                        Error_Msg_N
+                          ("contract case refers only to pre-state?T?",
+                           Conseq);
+                     end if;
+                  end if;
+
+                  Next (Post_Case);
+               end loop;
             end if;
 
             Prag := Next_Pragma (Prag);
@@ -7304,7 +7311,7 @@ package body Sem_Ch6 is
                      No_Warning_On_Some_Postcondition := True;
                   else
                      Error_Msg_N
-                       ("postcondition refers only to pre-state??", Prag);
+                       ("postcondition refers only to pre-state?T?", Prag);
                   end if;
                end if;
             end if;
@@ -7352,12 +7359,12 @@ package body Sem_Ch6 is
 
       if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
         and then (Present (Last_Postcondition)
-                   or else Present (Last_Contract_Case))
+                   or else Present (Last_Contract_Cases))
         and then not Attribute_Result_Mentioned
         and then No_Warning_On_Some_Postcondition
       then
          if Present (Last_Postcondition) then
-            if Present (Last_Contract_Case) then
+            if Present (Last_Contract_Cases) then
                Error_Msg_N
                  ("neither function postcondition nor "
                   & "contract cases mention result?T?", Last_Postcondition);
@@ -7369,7 +7376,7 @@ package body Sem_Ch6 is
             end if;
          else
             Error_Msg_N
-              ("contract cases do not mention result?T?", Last_Contract_Case);
+              ("contract cases do not mention result?T?", Last_Contract_Cases);
          end if;
       end if;
    end Check_Subprogram_Contract;

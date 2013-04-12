@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -283,8 +283,9 @@ package Repinfo is
    -- Compiler Interface --
    ------------------------
 
-   procedure List_Rep_Info;
-   --  Procedure to list representation information
+   procedure List_Rep_Info (Bytes_Big_Endian : Boolean);
+   --  Procedure to list representation information. Bytes_Big_Endian is the
+   --  value from Ttypes (Repinfo cannot have a dependency on Ttypes).
 
    procedure Tree_Write;
    --  Writes out internal tables to current tree file using the relevant

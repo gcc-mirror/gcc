@@ -6871,8 +6871,8 @@ package body Sem_Prag is
                --  declare additional states.
 
                if Null_Seen then
-                  Error_Msg_Name_1 := Chars (Pack_Id);
-                  Error_Msg_N ("package % has null abstract state", State);
+                  Error_Msg_NE
+                    ("package & has null abstract state", State, Pack_Id);
 
                --  Null states appear as internally generated entities
 
@@ -6885,9 +6885,9 @@ package body Sem_Prag is
                   --  non-null states.
 
                   if Non_Null_Seen then
-                     Error_Msg_Name_1 := Chars (Pack_Id);
-                     Error_Msg_N
-                       ("package % has non-null abstract state", State);
+                     Error_Msg_NE
+                       ("package & has non-null abstract state",
+                        State, Pack_Id);
                   end if;
 
                --  Simple state declaration
@@ -11364,9 +11364,8 @@ package body Sem_Prag is
                procedure Check_Mode_Restriction_In_Function (Mode : Node_Id) is
                begin
                   if Ekind (Subp_Id) = E_Function then
-                     Error_Msg_NE
-                       ("global mode & not applicable to functions",
-                        Mode, Mode);
+                     Error_Msg_N
+                       ("global mode & not applicable to functions", Mode);
                   end if;
                end Check_Mode_Restriction_In_Function;
 
