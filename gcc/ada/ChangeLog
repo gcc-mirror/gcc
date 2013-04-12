@@ -1,5 +1,10 @@
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
+	* exp_aggr.adb: Minor reformatting.
+	* namet.ads, namet.adb (Nam_In): New functions.
+
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.adb (Has_Dynamic_Predicate_Aspect): New flag.
 	(Has_Static_Predicate_Aspect): New flag.
 	* einfo.ads (Has_Dynamic_Predicate_Aspect): New flag.
