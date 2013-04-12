@@ -175,7 +175,7 @@ package body Sem_Attr is
    --  Note that the only required action of this procedure is to catch the
    --  static expression cases as described in the RM. Folding of other cases
    --  is done where convenient, but some additional non-static folding is in
-   --  N_Expand_Attribute_Reference in cases where this is more convenient.
+   --  Expand_N_Attribute_Reference in cases where this is more convenient.
 
    function Is_Anonymous_Tagged_Base
      (Anon : Entity_Id;
@@ -654,10 +654,11 @@ package body Sem_Attr is
                Kill_Current_Values;
             end if;
 
-            --  Treat as call for elaboration purposes and we are all done.
-            --  Suppress this treatment under debug flag.
+            --  In the static elaboration model, treat the attribute reference
+            --  as a call for elaboration purposes.  Suppress this treatment
+            --  under debug flag. In any case, we are all done.
 
-            if not Debug_Flag_Dot_UU then
+            if not Dynamic_Elaboration_Checks and not Debug_Flag_Dot_UU then
                Check_Elab_Call (N);
             end if;
 
