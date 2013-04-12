@@ -56,13 +56,45 @@ package Sem_Prag is
 
    function Check_Enabled (Nam : Name_Id) return Boolean;
    --  This function is used in connection with pragmas Assertion, Check,
-   --  Precondition, and Postcondition, to determine if Check pragmas (or
-   --  corresponding Assert, Precondition, or Postcondition pragmas) are
-   --  currently active, as determined by the presence of -gnata on the
-   --  command line (which sets the default), and the appearance of pragmas
-   --  Check_Policy and Assertion_Policy as configuration pragmas either in
-   --  a configuration pragma file, or at the start of the current unit.
+   --  and assertion aspects and pragmas, to determine if Check pragmas
+   --  (or corresponding assertion aspects or pragmas) are currently active
+   --  as determined by the presence of -gnata on the command line (which
+   --  sets the default), and the appearance of pragmas Check_Policy and
+   --  Assertion_Policy as configuration pragmas either in a configuration
+   --  pragma file, or at the start of the current unit, or locally given
+   --  Check_Policy and Assertion_Policy pragmas that are currently active.
    --  True is returned if the specified check is enabled.
+   --
+   --  This function knows about all relevant synonyms (e.g. Precondition or
+   --  Pre can be used to refer to the Pre aspect or Precondition pragma, and
+   --  Predicate refers to both static and dynamic predicates, and Assertion
+   --  applies to all assertion aspects and pragmas).
+   --
+   --  Note: for assertion kinds Pre'Class, Post'Class, Type_Invariant'Class,
+   --  the name passed is Name_uPre, Name_uPost, Name_uType_Invariant, which
+   --  corresponds to _Pre, _Post, _Type_Invariant, which are special names
+   --  used in identifiers to represent these attribute references.
+
+   procedure Check_Applicable_Policy (N : Node_Id);
+   --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
+   --  the name of the aspect or pragma is not one of those recognized as a
+   --  assertion kind by an Assertion_Kind pragma, then the call has no effect.
+   --  Note that in the case of a pragma derived from an aspect, the name
+   --  we use for the purpose of this procedure is the aspect name, which may
+   --  be different from the pragma name (e.g. Precondition for Pre aspect).
+   --  In addition, 'Class aspects are recognized (and the corresponding
+   --  special names used in the processing.
+   --
+   --  If the name is valid assertion_Kind name, then the Check_Policy pragma
+   --  chain is checked for a matching entry (or for an Assertion entry which
+   --  matches all possibilities). If a matching entry is found then the policy
+   --  is checked. If it is Off, Ignore, or Disable, then the Is_Ignored flag
+   --  is set in the aspect or pragma node. Additionally for policy Disable,
+   --  the Is_Disabled flag is set.
+   --
+   --  If no matching Check_Policy pragma is found then the effect depends on
+   --  whether -gnata was used, if so, then the call has no effect, otherwise
+   --  Is_Ignored (but not Is_Disabled) is set True.
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;
    --  N is a pragma appearing in a configuration pragma file. Most such

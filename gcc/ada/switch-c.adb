@@ -283,7 +283,6 @@ package body Switch.C is
             when 'a' =>
                Ptr := Ptr + 1;
                Assertions_Enabled := True;
-               Debug_Pragmas_Enabled := True;
 
             --  -gnatA (disregard gnat.adc)
 

@@ -341,7 +341,7 @@ package Opt is
    --  Modified by use of -gnatwu/U.
 
    CodePeer_Mode : Boolean := False;
-   --  GNAT, GNATBIND
+   --  GNAT, GNATBIND, GPRBUILD
    --  Enable full CodePeer mode (SCIL generation, disable switches that
    --  interact badly with it, etc...).
 
@@ -387,14 +387,6 @@ package Opt is
    --  GNATMAKE, GPRMAKE
    --  Set to True (-C switch) to indicate that the compiler will be invoked
    --  with a mapping file (-gnatem compiler switch).
-
-   Debug_Pragmas_Enabled : Boolean := False;
-   --  GNAT
-   --  Enable debug statements from pragma Debug
-
-   Debug_Pragmas_Disabled : Boolean := False;
-   --  GNAT
-   --  Debug pragmas completely disabled (no semantic checking)
 
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
@@ -1785,17 +1777,6 @@ package Opt is
    --  terminated by Empty. The order is most recently processed first. This
    --  list includes only those pragmas in configuration pragma files.
 
-   Debug_Pragmas_Disabled_Config : Boolean;
-   --  GNAT
-   --  This is the value of the configuration switch for debug pragmas disabled
-   --  mode, as possibly set by use of the configuration pragma Debug_Policy.
-
-   Debug_Pragmas_Enabled_Config : Boolean;
-   --  GNAT
-   --  This is the value of the configuration switch for debug pragmas enabled
-   --  mode, as possibly set by the command line switch -gnata and possibly
-   --  modified by the use of the configuration pragma Debug_Policy.
-
    Default_Pool_Config : Node_Id := Empty;
    --  GNAT
    --  Same as Default_Pool above, except this is only for Default_Storage_Pool
@@ -2042,8 +2023,6 @@ private
       Assume_No_Invalid_Values       : Boolean;
       Check_Float_Overflow           : Boolean;
       Check_Policy_List              : Node_Id;
-      Debug_Pragmas_Disabled         : Boolean;
-      Debug_Pragmas_Enabled          : Boolean;
       Default_Pool                   : Node_Id;
       Dynamic_Elaboration_Checks     : Boolean;
       Exception_Locations_Suppressed : Boolean;

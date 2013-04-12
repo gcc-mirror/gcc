@@ -181,10 +181,23 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
+   function Is_Valid_Assertion_Kind (Nam : Name_Id) return Boolean;
+   --  Returns True if Nam is one of the names recognized as a valid assertion
+   --  kind by the Assertion_Policy pragma. Note that the 'Class cases are
+   --  represented by the corresponding special names Name_uPre, Name_uPost,
+   --  Name_uInviarnat, and Name_uType_Invariant (_Pre, _Post, _Invariant,
+   --  and _Type_Invariant).
+
    procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
    --  of a Contract_Case or Test_Case pragma if present (possibly Empty). We
    --  treat these as spec expressions (i.e. similar to a default expression).
+
+   procedure Rewrite_Assertion_Kind (N : Node_Id);
+   --  If N is Pre'Class, Post'Class, Invariant'Class, or Type_Invariant'Class,
+   --  then it is rewritten as an identifier with the corresponding special
+   --  name _Pre, _Post, _Invariant, or _Type_Invariant. Used by pragmas
+   --  Check, Check_Policy.
 
    procedure rv;
    --  This is a dummy function called by the processing for pragma Reviewable.
@@ -294,7 +307,8 @@ package body Sem_Prag is
       --  expressions (i.e. similar to a default expression).
 
       if Pragma_Name (N) = Name_Test_Case
-        or else Pragma_Name (N) = Name_Contract_Case
+           or else
+         Pragma_Name (N) = Name_Contract_Case
       then
          Preanalyze_CTC_Args
            (N,
@@ -308,9 +322,7 @@ package body Sem_Prag is
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
-         if ASIS_Mode
-           and then Present (Corresponding_Aspect (N))
-         then
+         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
             Analyze_Contract_Cases (Expression (Corresponding_Aspect (N)));
          end if;
       end if;
@@ -1212,6 +1224,7 @@ package body Sem_Prag is
                OK   : Boolean;
                Ent  : constant Entity_Id := Entity (Argx);
                Scop : constant Entity_Id := Scope (Ent);
+
             begin
                --  Case of a pragma applied to a compilation unit: pragma must
                --  occur immediately after the program unit in the compilation.
@@ -6768,6 +6781,12 @@ package body Sem_Prag is
          Pname := Chars (Identifier (Corresponding_Aspect (N)));
       end if;
 
+      Check_Applicable_Policy (N);
+
+      if Is_Disabled (N) then
+         raise Pragma_Exit;
+      end if;
+
       --  Preset arguments
 
       Arg_Count := 0;
@@ -7446,41 +7465,174 @@ package body Sem_Prag is
          -- Assertion_Policy --
          ----------------------
 
-         --  pragma Assertion_Policy (Check | Disable | Ignore)
+         --  pragma Assertion_Policy (POLICY_IDENTIFIER);
+
+         --  The following form is Ada 2012 only, but we allow it in all modes
+
+         --  Pragma Assertion_Policy (
+         --      ASSERTION_KIND => POLICY_IDENTIFIER
+         --   {, ASSERTION_KIND => POLICY_IDENTIFIER});
+
+         --  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
+
+         --  RM_ASSERTION_KIND ::= Assert               |
+         --                        Static_Predicate     |
+         --                        Dynamic_Predicate    |
+         --                        Pre                  |
+         --                        Pre'Class            |
+         --                        Post                 |
+         --                        Post'Class           |
+         --                        Type_Invariant       |
+         --                        Type_Invariant'Class
+
+         --  ID_ASSERTION_KIND ::= Assert_And_Cut       }
+         --                        Assume               |
+         --                        Contract_Cases       |
+         --                        Debug                |
+         --                        Loop_Invariant       |
+         --                        Loop_Variant         |
+         --                        Postcondition        |
+         --                        Precondition         |
+         --                        Predicate
+         --
+         --  Note: The RM_ASSERTION_KIND list is language-defined, and the
+         --  ID_ASSERTION_KIND list contains implementation-defined additions
+         --  recognized by GNAT. The effect is to control the behavior of
+         --  identically named aspects and pragmas, depending on the specified
+         --  policy identifier:
+
+         --  POLICY_IDENTIFIER ::= Check | Disable | Ignore
+
+         --  Note: Check and Ignore are language-defined. Disable is a GNAT
+         --  implementation defined addition that results in totally ignoring
+         --  the corresponding assertion. If Disable is specified, then the
+         --  argument of the assertion is not even analyzed. This is useful
+         --  when the aspect/pragma argument references entities in a with'ed
+         --  packaqe that is replaced by a dummy package in the final build.
+
+         --  Note: the attribute forms Pre'Class, Post'Class, Invariant'Class,
+         --  and Type_Invariant'Class were recognized by the parser and
+         --  transformed into referencea to the special internal identifiers
+         --  _Pre, _Post, _Invariant, and _Type_Invariant, so no special
+         --  processing is required here.
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
+            LocP   : Source_Ptr;
             Policy : Node_Id;
+            Arg    : Node_Id;
+            Kind   : Name_Id;
+            Prag   : Node_Id;
 
          begin
             Ada_2005_Pragma;
-            Check_Valid_Configuration_Pragma;
-            Check_Arg_Count (1);
-            Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Disable, Name_Ignore);
 
-            --  We treat pragma Assertion_Policy as equivalent to:
+            --  This can always appear as a configuration pragma
 
-            --    pragma Check_Policy (Assertion, policy)
+            if Is_Configuration_Pragma then
+               null;
 
-            --  So rewrite the pragma in that manner and link on to the chain
-            --  of Check_Policy pragmas, marking the pragma as analyzed.
+            --  It can also appear in a declaration or package spec in Ada
+            --  2012 mode. We allow this in other modes, but in that case
+            --  we consider that we have an Ada 2012 pragma on our hands.
 
-            Policy := Get_Pragma_Arg (Arg1);
+            else
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+               Ada_2012_Pragma;
+            end if;
 
-            Rewrite (N,
-              Make_Pragma (Loc,
-                Chars                        => Name_Check_Policy,
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Make_Identifier (Loc, Name_Assertion)),
+            --  One argument case with no identifier (first form above)
 
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression =>
-                      Make_Identifier (Sloc (Policy), Chars (Policy))))));
+            if Arg_Count = 1
+              and then (Nkind (Arg1) /= N_Pragma_Argument_Association
+                         or else Chars (Arg1) = No_Name)
+            then
+               Check_Arg_Is_One_Of
+                 (Arg1, Name_Check, Name_Disable, Name_Ignore);
 
-            Set_Analyzed (N);
-            Set_Next_Pragma (N, Opt.Check_Policy_List);
-            Opt.Check_Policy_List := N;
+               --  Treat one argument Assertion_Policy as equivalent to:
+
+               --    pragma Check_Policy (Assertion, policy)
+
+               --  So rewrite pragma in that manner and link on to the chain
+               --  of Check_Policy pragmas, marking the pragma as analyzed.
+
+               Policy := Get_Pragma_Arg (Arg1);
+
+               Rewrite (N,
+                 Make_Pragma (Loc,
+                   Chars                        => Name_Check_Policy,
+                   Pragma_Argument_Associations => New_List (
+                     Make_Pragma_Argument_Association (Loc,
+                       Expression => Make_Identifier (Loc, Name_Assertion)),
+
+                     Make_Pragma_Argument_Association (Loc,
+                       Expression =>
+                         Make_Identifier (Sloc (Policy), Chars (Policy))))));
+
+               Set_Analyzed (N);
+               Set_Next_Pragma (N, Opt.Check_Policy_List);
+               Opt.Check_Policy_List := N;
+
+            --  Here if we have two or more arguments
+
+            else
+               Check_At_Least_N_Arguments (1);
+               Ada_2012_Pragma;
+
+               --  Loop through arguments
+
+               Arg := Arg1;
+               while Present (Arg) loop
+                  LocP := Sloc (Arg);
+
+                  --  Kind must be specified
+
+                  if Nkind (Arg) /= N_Pragma_Argument_Association
+                    or else Chars (Arg) = No_Name
+                  then
+                     Error_Pragma_Arg
+                       ("missing assertion kind for pragma%", Arg);
+                  end if;
+
+                  --  Check Kind and Policy have allowed forms
+
+                  Kind := Chars (Arg);
+
+                  if not Is_Valid_Assertion_Kind (Kind) then
+                     Error_Pragma_Arg
+                       ("invalid assertion kind for pragma%", Arg);
+                  end if;
+
+                  Check_Arg_Is_One_Of
+                    (Arg, Name_Check, Name_Disable, Name_Ignore);
+
+                  --  We rewrite the Assertion_Policy pragma as a series of
+                  --  Check_Policy pragmas:
+
+                  --    Check_Policy (Kind, Policy);
+
+                  Prag :=
+                    Make_Pragma (LocP,
+                      Chars                        => Name_Check_Policy,
+                      Pragma_Argument_Associations => New_List (
+                         Make_Pragma_Argument_Association (LocP,
+                           Expression => Make_Identifier (LocP, Kind)),
+                         Make_Pragma_Argument_Association (LocP,
+                           Expression => Get_Pragma_Arg (Arg))));
+
+                  Set_Analyzed (Prag);
+                  Set_Next_Pragma (Prag, Opt.Check_Policy_List);
+                  Opt.Check_Policy_List := Prag;
+                  Insert_Action (N, Prag);
+
+                  Arg := Next (Arg);
+               end loop;
+
+               --  Rewrite the Assertion_Policy pragma as null since we have
+               --  now inserted all the equivalent Check pragmas.
+
+               Rewrite (N, Make_Null_Statement (Loc));
+            end if;
          end Assertion_Policy;
 
          ------------
@@ -7930,9 +8082,15 @@ package body Sem_Prag is
          -- Check --
          -----------
 
-         --  pragma Check ([Name    =>] IDENTIFIER,
+         --  pragma Check ([Name    =>] CHECK_KIND,
          --                [Check   =>] Boolean_EXPRESSION
          --              [,[Message =>] String_EXPRESSION]);
+
+         --  CHECK_KIND ::= IDENTIFIER           |
+         --                 Pre'Class            |
+         --                 Post'Class           |
+         --                 Invariant'Class      |
+         --                 Type_Invariant'Class
 
          when Pragma_Check => Check : declare
             Expr  : Node_Id;
@@ -7955,6 +8113,7 @@ package body Sem_Prag is
                Str := Get_Pragma_Arg (Arg3);
             end if;
 
+            Rewrite_Assertion_Kind (Get_Pragma_Arg (Arg1));
             Check_Arg_Is_Identifier (Arg1);
             Cname := Chars (Get_Pragma_Arg (Arg1));
             Check_On := Check_Enabled (Cname);
@@ -8094,19 +8253,21 @@ package body Sem_Prag is
          -- Check_Policy --
          ------------------
 
-         --  pragma Check_Policy (
-         --    [Name   =>] IDENTIFIER,
-         --    [Policy =>] POLICY_IDENTIFIER);
+         --  pragma Check_Policy ([Name   =>] CHECK_KIND
+         --                       [Policy =>] POLICY_IDENTIFIER);
 
-         --  POLICY_IDENTIFIER ::= ON | OFF | CHECK | DISABLE | IGNORE
+         --  POLICY_IDENTIFIER ::= On | Off | Check | Disable | Ignore
 
-         --  Note: this is a configuration pragma, but it is allowed to appear
-         --  anywhere else.
+         --  CHECK_KIND ::= IDENTIFIER |
+         --                 Pre'Class | Post'Class | Identifier'Class
 
-         when Pragma_Check_Policy =>
+         when Pragma_Check_Policy => Check_Policy :
+         begin
             GNAT_Pragma;
             Check_Arg_Count (2);
             Check_Optional_Identifier (Arg1, Name_Name);
+            Rewrite_Assertion_Kind (Get_Pragma_Arg (Arg1));
+            Check_Arg_Is_Identifier (Arg1);
             Check_Optional_Identifier (Arg2, Name_Policy);
             Check_Arg_Is_One_Of
               (Arg2, Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
@@ -8122,6 +8283,7 @@ package body Sem_Prag is
 
             Set_Next_Pragma (N, Opt.Check_Policy_List);
             Opt.Check_Policy_List := N;
+         end Check_Policy;
 
          ---------------------
          -- CIL_Constructor --
@@ -8438,9 +8600,9 @@ package body Sem_Prag is
             S14_Pragma;
             Check_Arg_Count (1);
 
-            --  Completely ignore if disabled
+            --  Completely ignore if not enabled
 
-            if not Check_Enabled (Pname) then
+            if Is_Ignored (N) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -8873,20 +9035,16 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
 
-            --  Skip analysis if disabled
-
-            if Debug_Pragmas_Disabled then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
+            --  The condition for executing the call is that the expander
+            --  is active and that we are not ignoring this debug pragma.
 
             Cond :=
               New_Occurrence_Of
-                (Boolean_Literals (Debug_Pragmas_Enabled and Expander_Active),
+                (Boolean_Literals
+                  (Expander_Active and then not Is_Ignored (N)),
                  Loc);
 
-            if Debug_Pragmas_Enabled then
+            if not Is_Ignored (N) then
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
@@ -8965,16 +9123,29 @@ package body Sem_Prag is
          -- Debug_Policy --
          ------------------
 
-         --  pragma Debug_Policy (Check | Ignore)
+         --  pragma Debug_Policy (On | Off | Check | Disable | Ignore)
 
          when Pragma_Debug_Policy =>
             GNAT_Pragma;
             Check_Arg_Count (1);
-            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Disable, Name_Ignore);
-            Debug_Pragmas_Enabled :=
-              Chars (Get_Pragma_Arg (Arg1)) = Name_Check;
-            Debug_Pragmas_Disabled :=
-              Chars (Get_Pragma_Arg (Arg1)) = Name_Disable;
+            Check_No_Identifiers;
+            Check_Arg_Is_Identifier (Arg1);
+
+            --  Exactly equivalent to pragma Check_Policy (Debug, arg), so
+            --  rewrite it that way, and let the rest of the checking come
+            --  from analyzing the rewritten pragma.
+
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars                        => Name_Check_Policy,
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Name_Debug)),
+
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Get_Pragma_Arg (Arg1)))));
+
+            Analyze (N);
 
          -------------
          -- Depends --
@@ -12778,10 +12949,10 @@ package body Sem_Prag is
             end if;
 
             --  Note that the type has at least one invariant, and also that
-            --  it has inheritable invariants if we have Invariant'Class.
-            --  Build the corresponding invariant procedure declaration, so
-            --  that calls to it can be generated before the body is built
-            --  (for example wihin an expression function).
+            --  it has inheritable invariants if we have Invariant'Class
+            --  or Type_Invariant'Class. Build the corresponding invariant
+            --  procedure declaration, so that calls to it can be generated
+            --  before the body is built (e.g. within an expression function).
 
             PDecl := Build_Invariant_Procedure_Declaration (Typ);
             Insert_After (N, PDecl);
@@ -13591,9 +13762,9 @@ package body Sem_Prag is
             Check_Arg_Count (1);
             Check_Loop_Pragma_Placement;
 
-            --  Completely ignore if disabled
+            --  Completely ignore if not enabled
 
-            if not Check_Enabled (Pname) then
+            if Is_Ignored (N) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -13662,9 +13833,9 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
             Check_Loop_Pragma_Placement;
 
-            --  Completely ignore if disabled
+            --  Completely ignore if not enabled
 
-            if not Check_Enabled (Pname) then
+            if Is_Ignored (N) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -14762,7 +14933,7 @@ package body Sem_Prag is
 
             Check_Precondition_Postcondition (In_Body);
 
-            --  When the pragma is a source contruct and appears inside a body,
+            --  When the pragma is a source construct appearing inside a body,
             --  preanalyze the boolean_expression to detect illegal forward
             --  references:
 
@@ -14793,10 +14964,20 @@ package body Sem_Prag is
             Check_Precondition_Postcondition (In_Body);
 
             --  If in spec, nothing more to do. If in body, then we convert the
-            --  pragma to pragma Check (Precondition, cond [, msg]). Note we do
-            --  this whether or not precondition checks are enabled. That works
-            --  fine since pragma Check will do this check, and will also
-            --  analyze the condition itself in the proper context.
+            --  pragma to an equivalent pragam Check. Note we do this whether
+            --  or not precondition checks are enabled. That works fine since
+            --  pragma Check will do this check, and will also analyze the
+            --  condition itself in the proper context.
+
+            --  The form of the pragma Check is either:
+
+            --    pragma Check (Precondition, cond [, msg])
+            --       or
+            --    pragma Check (Pre, cond [, msg])
+
+            --  We use the Pre form if this pragma derived from a Pre aspect.
+            --  This is needed to make sure that the right set of Policy
+            --  pragmas are checked.
 
             if In_Body then
                Rewrite (N,
@@ -14804,7 +14985,7 @@ package body Sem_Prag is
                    Chars                        => Name_Check,
                    Pragma_Argument_Associations => New_List (
                      Make_Pragma_Argument_Association (Loc,
-                       Expression => Make_Identifier (Loc, Name_Precondition)),
+                       Expression => Make_Identifier (Loc, Pname)),
 
                      Make_Pragma_Argument_Association (Sloc (Arg1),
                        Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
@@ -17591,39 +17772,123 @@ package body Sem_Prag is
       --  Loop through entries in check policy list
 
       PP := Opt.Check_Policy_List;
-      loop
-         --  If there are no specific entries that matched, then we let the
-         --  setting of assertions govern. Note that this provides the needed
-         --  compatibility with the RM for the cases of assertion, invariant,
-         --  precondition, predicate, and postcondition.
+      while Present (PP) loop
+         declare
+            PPA : constant List_Id := Pragma_Argument_Associations (PP);
+            Pnm : constant Name_Id := Chars (Get_Pragma_Arg (First (PPA)));
 
-         if No (PP) then
-            return Assertions_Enabled;
+         begin
+            if Nam = Pnm
+              or else (Is_Valid_Assertion_Kind (Nam)
+                        and then Pnm = Name_Assertion)
+            then
+               case (Chars (Get_Pragma_Arg (Last (PPA)))) is
+                  when Name_On | Name_Check =>
+                     return True;
+                  when Name_Off | Name_Disable | Name_Ignore =>
+                     return False;
+                  when others =>
+                     raise Program_Error;
+               end case;
 
-         --  Here we have an entry see if it matches
-
-         else
-            declare
-               PPA : constant List_Id := Pragma_Argument_Associations (PP);
-
-            begin
-               if Nam = Chars (Get_Pragma_Arg (First (PPA))) then
-                  case (Chars (Get_Pragma_Arg (Last (PPA)))) is
-                     when Name_On | Name_Check =>
-                        return True;
-                     when Name_Off | Name_Disable | Name_Ignore =>
-                        return False;
-                     when others =>
-                        raise Program_Error;
-                  end case;
-
-               else
-                  PP := Next_Pragma (PP);
-               end if;
-            end;
-         end if;
+            else
+               PP := Next_Pragma (PP);
+            end if;
+         end;
       end loop;
+
+      --  If there are no specific entries that matched, then we let the
+      --  setting of assertions govern. Note that this provides the needed
+      --  compatibility with the RM for the cases of assertion, invariant,
+      --  precondition, predicate, and postcondition.
+
+      return Assertions_Enabled;
    end Check_Enabled;
+
+   -----------------------------
+   -- Check_Applicable_Policy --
+   -----------------------------
+
+   procedure Check_Applicable_Policy (N : Node_Id) is
+      PP     : Node_Id;
+      Policy : Name_Id;
+
+      Ename : Name_Id;
+      --  Effective name of aspect or pragma, this is simply the name of
+      --  the aspect or pragma, except in the case of a pragma derived from
+      --  an aspect, in which case it is the name of the aspect (which may be
+      --  different, e.g. Pre aspect generating Precondition pragma). It also
+      --  deals with the 'Class cases for an aspect.
+
+   begin
+      if Nkind (N) = N_Pragma then
+         if Present (Corresponding_Aspect (N)) then
+            Ename := Chars (Identifier (Corresponding_Aspect (N)));
+         else
+            Ename := Chars (Pragma_Identifier (N));
+         end if;
+
+      else
+         pragma Assert (Nkind (N) = N_Aspect_Specification);
+         Ename := Chars (Identifier (N));
+
+         if Class_Present (N) then
+            case Ename is
+               when Name_Invariant      => Ename := Name_uInvariant;
+               when Name_Pre            => Ename := Name_uPre;
+               when Name_Post           => Ename := Name_uPost;
+               when Name_Type_Invariant => Ename := Name_uType_Invariant;
+               when others           => raise Program_Error;
+            end case;
+         end if;
+      end if;
+
+      --  No effect if not valid assertion kind name
+
+      if not Is_Valid_Assertion_Kind (Ename) then
+         return;
+      end if;
+
+      --  Loop through entries in check policy list
+
+      PP := Opt.Check_Policy_List;
+      while Present (PP) loop
+         declare
+            PPA : constant List_Id := Pragma_Argument_Associations (PP);
+            Pnm : constant Name_Id := Chars (Get_Pragma_Arg (First (PPA)));
+
+         begin
+            if Ename = Pnm or else Pnm = Name_Assertion then
+               Policy := Chars (Get_Pragma_Arg (Last (PPA)));
+
+               case Policy is
+                  when Name_Off | Name_Ignore =>
+                     Set_Is_Ignored (N, True);
+
+                  when Name_Disable =>
+                     Set_Is_Ignored (N, True);
+                     Set_Is_Disabled (N, True);
+
+                  when others =>
+                     null;
+               end case;
+
+               return;
+            end if;
+
+            PP := Next_Pragma (PP);
+         end;
+      end loop;
+
+      --  If there are no specific entries that matched, then we let the
+      --  setting of assertions govern. Note that this provides the needed
+      --  compatibility with the RM for the cases of assertion, invariant,
+      --  precondition, predicate, and postcondition.
+
+      if not Assertions_Enabled then
+         Set_Is_Ignored (N);
+      end if;
+   end Check_Applicable_Policy;
 
    ---------------------------------
    -- Delay_Config_Pragma_Analyze --
@@ -18076,6 +18341,44 @@ package body Sem_Prag is
       end if;
    end Is_Pragma_String_Literal;
 
+   -----------------------------
+   -- Is_Valid_Assertion_Kind --
+   -----------------------------
+
+   function Is_Valid_Assertion_Kind (Nam : Name_Id) return Boolean is
+   begin
+      case Nam is
+         when
+            --  RM defined
+
+            Name_Assert            |
+            Name_Static_Predicate  |
+            Name_Dynamic_Predicate |
+            Name_Pre               |
+            Name_uPre              |
+            Name_Post              |
+            Name_uPost             |
+            Name_Type_Invariant    |
+            Name_uType_Invariant   |
+
+            --  Impl defined
+
+            Name_Assert_And_Cut    |
+            Name_Assume            |
+            Name_Contract_Cases    |
+            Name_Debug             |
+            Name_Invariant         |
+            Name_uInvariant        |
+            Name_Loop_Invariant    |
+            Name_Loop_Variant      |
+            Name_Postcondition     |
+            Name_Precondition      |
+            Name_Predicate         => return True;
+
+         when others               => return False;
+      end case;
+   end Is_Valid_Assertion_Kind;
+
    -----------------------------------------
    -- Make_Aspect_For_PPC_In_Gen_Sub_Decl --
    -----------------------------------------
@@ -18214,6 +18517,35 @@ package body Sem_Prag is
       --  Nothing else to do at the current time!
 
    end Process_Compilation_Unit_Pragmas;
+
+   ----------------------------
+   -- Rewrite_Assertion_Kind --
+   ----------------------------
+
+   procedure Rewrite_Assertion_Kind (N : Node_Id) is
+      Nam : Name_Id;
+
+   begin
+      if Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Class
+        and then Nkind (Prefix (N)) = N_Identifier
+      then
+         case Chars (Prefix (N)) is
+            when Name_Pre =>
+               Nam := Name_uPre;
+            when Name_Post =>
+               Nam := Name_uPost;
+            when Name_Type_Invariant =>
+               Nam := Name_uType_Invariant;
+            when Name_Invariant =>
+               Nam := Name_uInvariant;
+            when others =>
+               return;
+         end case;
+
+         Rewrite (N, Make_Identifier (Sloc (N), Chars => Nam));
+      end if;
+   end Rewrite_Assertion_Kind;
 
    --------
    -- rv --

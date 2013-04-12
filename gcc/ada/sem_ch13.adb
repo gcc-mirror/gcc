@@ -51,6 +51,7 @@ with Sem_Ch9;  use Sem_Ch9;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -947,11 +948,11 @@ package body Sem_Ch13 is
       --  Some special cases don't require delay analysis, thus the aspect is
       --  analyzed right now.
 
-      --  Note that there is a special handling for
-      --  Pre/Post/Test_Case/Contract_Case aspects. In this case, we do not
-      --  have to worry about delay issues, since the pragmas themselves deal
-      --  with delay of visibility for the expression analysis. Thus, we just
-      --  insert the pragma after the node N.
+      --  Note that there is a special handling for Pre, Post, Test_Case,
+      --  Contract_Case aspects. In these cases, we do not have to worry
+      --  about delay issues, since the pragmas themselves deal with delay
+      --  of visibility for the expression analysis. Thus, we just insert
+      --  the pragma after the node N.
 
    begin
       pragma Assert (Present (L));
@@ -1007,7 +1008,7 @@ package body Sem_Ch13 is
 
                   if No (A) then
                      Error_Msg_N
-                       ("Missing Import/Export for Link/External name",
+                       ("missing Import/Export for Link/External name",
                          Aspect);
                   end if;
                end;
@@ -1021,7 +1022,7 @@ package body Sem_Ch13 is
             begin
                if not Is_Type (E) or else not Has_Discriminants (E) then
                   Error_Msg_N
-                    ("Aspect must apply to a type with discriminants", N);
+                    ("aspect must apply to a type with discriminants", N);
 
                else
                   declare
@@ -1057,6 +1058,15 @@ package body Sem_Ch13 is
                goto Continue;
             end if;
 
+            --  Skip looking at aspect if it is totally disabled. Just mark
+            --  it as such for later reference in the tree.
+
+            Check_Applicable_Policy (Aspect);
+
+            if Is_Disabled (Aspect) then
+               goto Continue;
+            end if;
+
             --  Set the source location of expression, used in the case of
             --  a failed precondition/postcondition or invariant. Note that
             --  the source location of the expression is not usually the best
@@ -1080,7 +1090,7 @@ package body Sem_Ch13 is
 
             Check_Restriction_No_Specification_Of_Aspect (Aspect);
 
-            --  Analyze this aspect
+            --  Analyze this aspect (actual analysis is delayed till later)
 
             Set_Analyzed (Aspect);
             Set_Entity (Aspect, E);
@@ -1202,7 +1212,7 @@ package body Sem_Ch13 is
                       Chars      => Chars (Id),
                       Expression => Relocate_Node (Expr));
 
-               --  Case 2: Aspects cooresponding to pragmas
+               --  Case 2: Aspects corresponding to pragmas
 
                --  Case 2a: Aspects corresponding to pragmas with two
                --  arguments, where the first argument is a local name
@@ -1211,8 +1221,6 @@ package body Sem_Ch13 is
 
                when Aspect_Suppress   |
                     Aspect_Unsuppress =>
-
-                  --  Construct the pragma
 
                   Aitem :=
                     Make_Pragma (Loc,
@@ -1264,7 +1272,8 @@ package body Sem_Ch13 is
                     Aspect_Static_Predicate  =>
 
                   --  Construct the pragma (always a pragma Predicate, with
-                  --  flags recording whether it is static/dynamic).
+                  --  flags recording whether it is static/dynamic). We also
+                  --  set flags recording this in the type itself.
 
                   Aitem :=
                     Make_Pragma (Loc,
@@ -1277,16 +1286,33 @@ package body Sem_Ch13 is
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Name_Predicate));
 
+                  --  Mark type has predicates, and remember what kind of
+                  --  aspect lead to this predicate (we need this to access
+                  --  the right set of check policies later on).
+
+                  Set_Has_Predicates (E);
+
+                  if A_Id = Aspect_Dynamic_Predicate then
+                     Set_Has_Dynamic_Predicate_Aspect (E);
+                  elsif A_Id = Aspect_Static_Predicate then
+                     Set_Has_Static_Predicate_Aspect (E);
+                  end if;
+
                   --  If the type is private, indicate that its completion
                   --  has a freeze node, because that is the one that will be
                   --  visible at freeze time.
-
-                  Set_Has_Predicates (E);
 
                   if Is_Private_Type (E)
                     and then Present (Full_View (E))
                   then
                      Set_Has_Predicates (Full_View (E));
+
+                     if A_Id = Aspect_Dynamic_Predicate then
+                        Set_Has_Dynamic_Predicate_Aspect (Full_View (E));
+                     elsif A_Id = Aspect_Static_Predicate then
+                        Set_Has_Static_Predicate_Aspect (Full_View (E));
+                     end if;
+
                      Set_Has_Delayed_Aspects (Full_View (E));
                      Ensure_Freeze_Node (Full_View (E));
                   end if;
@@ -1379,6 +1405,7 @@ package body Sem_Ch13 is
                when Aspect_CPU                |
                     Aspect_Interrupt_Priority |
                     Aspect_Priority           =>
+
                   if Nkind (N) = N_Subprogram_Body then
                      Aitem :=
                        Make_Pragma (Loc,
@@ -1396,9 +1423,6 @@ package body Sem_Ch13 is
                   end if;
 
                when Aspect_Warnings =>
-
-                  --  Construct the pragma
-
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
@@ -1429,8 +1453,6 @@ package body Sem_Ch13 is
                   --  an invariant must apply to a private type, or appear in
                   --  the private part of a spec and apply to a completion.
 
-                  --  Construct the pragma
-
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
@@ -1440,7 +1462,7 @@ package body Sem_Ch13 is
                           Expression => Relocate_Node (Expr))),
                       Class_Present                => Class_Present (Aspect),
                       Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Invariant));
+                                 Make_Identifier (Sloc (Id), Name_Invariant));
 
                   --  Add message unless exception messages are suppressed
 
@@ -1572,6 +1594,7 @@ package body Sem_Ch13 is
                   goto Continue;
 
                --  Case 4: Special handling for aspects
+
                --  Pre/Post/Test_Case/Contract_Case whose corresponding pragmas
                --  take care of the delay.
 
@@ -5716,7 +5739,7 @@ package body Sem_Ch13 is
       --  predicate being considered dynamic even if it looks static
 
       Static_Predicate_Present : Node_Id := Empty;
-      --  Set to N_Pragma node for a static predicate if one is encountered.
+      --  Set to N_Pragma node for a static predicate if one is encountered
 
       --------------
       -- Add_Call --
