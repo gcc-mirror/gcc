@@ -1230,7 +1230,7 @@ package Einfo is
 --       the same structure for constrained and unconstrained arrays, subtype
 --       marks and discrete ranges are both represented by a subtype. This
 --       function returns the tree node corresponding to an occurrence of the
---       first index (NOT the entity for the type). Subsequent indexes are
+--       first index (NOT the entity for the type). Subsequent indices are
 --       obtained using Next_Index. Note that this field is defined for the
 --       case of string literal subtypes, but is always Empty.
 
@@ -2291,6 +2291,10 @@ package Einfo is
 --       Applies to all entities. Yields True for a generic unit (generic
 --       package, generic function, generic procedure), and False for all
 --       other entities.
+
+--    Is_Ghost_Function (synthesized)
+--       Applies to all entities. Yields True for a function marked by aspect
+--       Ghost.
 
 --    Is_Hidden (Flag57)
 --       Defined in all entities. Set true for all entities declared in the
@@ -5404,6 +5408,7 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
+   --    Is_Ghost_Function                   (synth)    (non-generic case only)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    Scope_Depth                         (synth)
@@ -6611,6 +6616,7 @@ package Einfo is
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
    function Is_Finalizer                        (Id : E) return B;
+   function Is_Ghost_Function                   (Id : E) return B;
    function Is_Input_State                      (Id : E) return B;
    function Is_Null_State                       (Id : E) return B;
    function Is_Output_State                     (Id : E) return B;

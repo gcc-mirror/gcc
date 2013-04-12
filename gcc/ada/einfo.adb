@@ -32,12 +32,13 @@
 pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering, not used for this unit
 
-with Atree;  use Atree;
-with Namet;  use Namet;
-with Nlists; use Nlists;
-with Output; use Output;
-with Sinfo;  use Sinfo;
-with Stand;  use Stand;
+with Aspects; use Aspects;
+with Atree;   use Atree;
+with Namet;   use Namet;
+with Nlists;  use Nlists;
+with Output;  use Output;
+with Sinfo;   use Sinfo;
+with Stand;   use Stand;
 
 package body Einfo is
 
@@ -6549,9 +6550,30 @@ package body Einfo is
 
    function Is_Finalizer (Id : E) return B is
    begin
-      return Ekind (Id) = E_Procedure
-        and then Chars (Id) = Name_uFinalizer;
+      return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
    end Is_Finalizer;
+
+   -----------------------
+   -- Is_Ghost_Function --
+   -----------------------
+
+   function Is_Ghost_Function (Id : E) return B is
+      Subp_Id : Entity_Id := Id;
+
+   begin
+      if Present (Subp_Id) and then Ekind (Subp_Id) = E_Function then
+
+         --  Handle renamings of functions
+
+         if Present (Alias (Subp_Id)) then
+            Subp_Id := Alias (Subp_Id);
+         end if;
+
+         return Has_Aspect (Subp_Id, Aspect_Ghost);
+      end if;
+
+      return False;
+   end Is_Ghost_Function;
 
    --------------------
    -- Is_Input_State --
@@ -6570,8 +6592,7 @@ package body Einfo is
    function Is_Null_State (Id : E) return B is
    begin
       return
-        Ekind (Id) = E_Abstract_State
-          and then Nkind (Parent (Id)) = N_Null;
+        Ekind (Id) = E_Abstract_State and then Nkind (Parent (Id)) = N_Null;
    end Is_Null_State;
 
    ---------------------
@@ -6590,10 +6611,7 @@ package body Einfo is
 
    function Is_Package_Or_Generic_Package (Id : E) return B is
    begin
-      return
-        Ekind (Id) = E_Package
-          or else
-        Ekind (Id) = E_Generic_Package;
+      return Ekind_In (Id, E_Generic_Package, E_Package);
    end Is_Package_Or_Generic_Package;
 
    ---------------
@@ -6612,8 +6630,7 @@ package body Einfo is
 
    function Is_Protected_Component (Id : E) return B is
    begin
-      return Ekind (Id) = E_Component
-        and then Is_Protected_Type (Scope (Id));
+      return Ekind (Id) = E_Component and then Is_Protected_Type (Scope (Id));
    end Is_Protected_Component;
 
    ----------------------------

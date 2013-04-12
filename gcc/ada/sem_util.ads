@@ -178,6 +178,17 @@ package Sem_Util is
    --  not necessarily mean that CE could be raised, but a response of True
    --  means that for sure CE cannot be raised.
 
+   procedure Check_Dynamically_Tagged_Expression
+     (Expr        : Node_Id;
+      Typ         : Entity_Id;
+      Related_Nod : Node_Id);
+   --  Check wrong use of dynamically tagged expression
+
+   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id);
+   --  Verify that the full declaration of type T has been seen. If not, place
+   --  error message on node N. Used in object declarations, type conversions
+   --  and qualified expressions.
+
    procedure Check_Function_Writable_Actuals (N : Node_Id);
    --  (Ada 2012): If the construct N has two or more direct constituents that
    --  are names or expressions whose evaluation may occur in an arbitrary
@@ -209,17 +220,6 @@ package Sem_Util is
    --  distinction between initial and later declarative items, the distinction
    --  remains in the Examiner (JB01-005). Note that the Examiner does not
    --  count package declarations in later declarative items.
-
-   procedure Check_Dynamically_Tagged_Expression
-     (Expr        : Node_Id;
-      Typ         : Entity_Id;
-      Related_Nod : Node_Id);
-   --  Check wrong use of dynamically tagged expression
-
-   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id);
-   --  Verify that the full declaration of type T has been seen. If not, place
-   --  error message on node N. Used in object declarations, type conversions
-   --  and qualified expressions.
 
    procedure Check_Nested_Access (Ent : Entity_Id);
    --  Check whether Ent denotes an entity declared in an uplevel scope, which
@@ -470,7 +470,7 @@ package Sem_Util is
    --  discriminant at the same position in this new type.
 
    procedure Find_Overlaid_Entity
-     (N : Node_Id;
+     (N   : Node_Id;
       Ent : out Entity_Id;
       Off : out Boolean);
    --  The node N should be an address representation clause. Determines if
@@ -848,6 +848,9 @@ package Sem_Util is
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determines if the given node denotes an atomic object in the sense of
    --  the legality checks described in RM C.6(12).
+
+   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes a body or a package declaration
 
    function Is_Bounded_String (T : Entity_Id) return Boolean;
    --  True if T is a bounded string type. Used to make sure "=" composes
@@ -1304,9 +1307,9 @@ package Sem_Util is
    --  S2. Otherwise, it is S itself.
 
    function Object_Access_Level (Obj : Node_Id) return Uint;
-   --  Return the accessibility level of the view of the object Obj.
-   --  For convenience, qualified expressions applied to object names
-   --  are also allowed as actuals for this function.
+   --  Return the accessibility level of the view of the object Obj. For
+   --  convenience, qualified expressions applied to object names are also
+   --  allowed as actuals for this function.
 
    function Primitive_Names_Match (E1, E2 : Entity_Id) return Boolean;
    --  Returns True if the names of both entities correspond with matching

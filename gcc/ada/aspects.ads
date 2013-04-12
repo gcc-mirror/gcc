@@ -161,6 +161,7 @@ package Aspects is
       Aspect_Discard_Names,
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
+      Aspect_Ghost,                         -- GNAT
       Aspect_Independent,
       Aspect_Independent_Components,
       Aspect_Import,
@@ -234,6 +235,7 @@ package Aspects is
                              Aspect_Dimension                => True,
                              Aspect_Dimension_System         => True,
                              Aspect_Favor_Top_Level          => True,
+                             Aspect_Ghost                    => True,
                              Aspect_Global                   => True,
                              Aspect_Inline_Always            => True,
                              Aspect_Invariant                => True,
@@ -413,6 +415,7 @@ package Aspects is
      Aspect_External_Tag                 => Name_External_Tag,
      Aspect_Export                       => Name_Export,
      Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
+     Aspect_Ghost                        => Name_Ghost,
      Aspect_Global                       => Name_Global,
      Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
      Aspect_Import                       => Name_Import,
@@ -500,11 +503,6 @@ package Aspects is
    --  implemented internally with a hash table in the body, that provides
    --  access to aspect specifications.
 
-   function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
-   --  Returns True if the node N is a declaration node that permits aspect
-   --  specifications in the grammar. It is possible for other nodes to have
-   --  aspect specifications as a result of Rewrite or Replace calls.
-
    function Aspect_Specifications (N : Node_Id) return List_Id;
    --  Given a node N, returns the list of N_Aspect_Specification nodes that
    --  are attached to this declaration node. If the node is in the class of
@@ -519,6 +517,28 @@ package Aspects is
    --  Replace calls, and this function may be used to retrieve the aspect
    --  specifications for the original rewritten node in such cases.
 
+   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id;
+   --  Find value of a given aspect from aspect list of entity
+
+   function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean;
+   --  Determine whether entity Id has aspect A
+
+   procedure Move_Aspects (From : Node_Id; To : Node_Id);
+   --  Moves aspects from 'From' node to 'To' node. Has_Aspects (To) must be
+   --  False on entry. If Has_Aspects (From) is False, the call has no effect.
+   --  Otherwise the aspects are moved and on return Has_Aspects (To) is True,
+   --  and Has_Aspects (From) is False.
+
+   function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
+   --  Returns True if the node N is a declaration node that permits aspect
+   --  specifications in the grammar. It is possible for other nodes to have
+   --  aspect specifications as a result of Rewrite or Replace calls.
+
+   function Same_Aspect (A1 : Aspect_Id; A2 : Aspect_Id) return Boolean;
+   --  Returns True if A1 and A2 are (essentially) the same aspect. This is not
+   --  a simple equality test because e.g. Post and Postcondition are the same.
+   --  This is used for detecting duplicate aspects.
+
    procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
    --  The node N must be in the class of declaration nodes that permit aspect
    --  specifications and the Has_Aspects flag must be False on entry. L must
@@ -529,24 +549,10 @@ package Aspects is
    --  node that has its Has_Aspects flag set True on entry, or with L being an
    --  empty list or No_List.
 
-   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id;
-   --  Find value of a given aspect from aspect list of entity
-
-   procedure Move_Aspects (From : Node_Id; To : Node_Id);
-   --  Moves aspects from 'From' node to 'To' node. Has_Aspects (To) must be
-   --  False on entry. If Has_Aspects (From) is False, the call has no effect.
-   --  Otherwise the aspects are moved and on return Has_Aspects (To) is True,
-   --  and Has_Aspects (From) is False.
-
-   function Same_Aspect (A1 : Aspect_Id; A2 : Aspect_Id) return Boolean;
-   --  Returns True if A1 and A2 are (essentially) the same aspect. This is not
-   --  a simple equality test because e.g. Post and Postcondition are the same.
-   --  This is used for detecting duplicate aspects.
+   procedure Tree_Read;
+   --  Reads contents of Aspect_Specifications hash table from the tree file
 
    procedure Tree_Write;
    --  Writes contents of Aspect_Specifications hash table to the tree file
-
-   procedure Tree_Read;
-   --  Reads contents of Aspect_Specifications hash table from the tree file
 
 end Aspects;

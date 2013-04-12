@@ -602,10 +602,13 @@ package body Sem_Attr is
             if Has_Pragma_Inline_Always (Entity (P)) then
                Error_Attr_P
                  ("prefix of % attribute cannot be Inline_Always subprogram");
-            end if;
 
-            if Aname = Name_Unchecked_Access then
+            elsif Aname = Name_Unchecked_Access then
                Error_Attr ("attribute% cannot be applied to a subprogram", P);
+
+            elsif Is_Ghost_Function (Entity (P)) then
+               Error_Attr_P
+                 ("prefix of % attribute cannot be a ghost function");
             end if;
 
             --  Issue an error if the prefix denotes an eliminated subprogram
@@ -3694,13 +3697,7 @@ package body Sem_Attr is
 
                   --  Prevent the search from going too far
 
-                  elsif Nkind_In (Stmt, N_Entry_Body,
-                                        N_Package_Body,
-                                        N_Package_Declaration,
-                                        N_Protected_Body,
-                                        N_Subprogram_Body,
-                                        N_Task_Body)
-                  then
+                  elsif Is_Body_Or_Package_Declaration (Stmt) then
                      exit;
                   end if;
 
@@ -3845,13 +3842,7 @@ package body Sem_Attr is
 
             --  Prevent the search from going too far
 
-            elsif Nkind_In (Stmt, N_Entry_Body,
-                                  N_Package_Body,
-                                  N_Package_Declaration,
-                                  N_Protected_Body,
-                                  N_Subprogram_Body,
-                                  N_Task_Body)
-            then
+            elsif Is_Body_Or_Package_Declaration (Stmt) then
                exit;
             end if;
 
@@ -9193,7 +9184,6 @@ package body Sem_Attr is
                     and then
                       (Ekind (Btyp) = E_Access_Subprogram_Type
                         or else Is_Local_Anonymous_Access (Btyp))
-
                     and then Subprogram_Access_Level (Entity (P)) >
                                Type_Access_Level (Btyp)
                   then
@@ -9595,9 +9585,9 @@ package body Sem_Attr is
                --  in such a context.
 
                if Attr_Id /= Attribute_Unchecked_Access
+                 and then Ekind (Btyp) = E_General_Access_Type
                  and then
                    Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
-                 and then Ekind (Btyp) = E_General_Access_Type
                then
                   Accessibility_Message;
                   return;

@@ -5612,49 +5612,58 @@ package body Sem_Util is
    ---------------------------
 
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id is
-      Nam  : Node_Id;
-      Proc : Entity_Id;
+      Subp    : Node_Id;
+      Subp_Id : Entity_Id;
 
    begin
       if Nkind (Nod) = N_Accept_Statement then
-         Nam := Entry_Direct_Name (Nod);
+         Subp := Entry_Direct_Name (Nod);
 
-      --  For an entry call, the prefix of the call is a selected component.
-      --  Need additional code for internal calls ???
+      elsif Nkind (Nod) = N_Slice then
+         Subp := Prefix (Nod);
 
-      elsif Nkind (Nod) = N_Entry_Call_Statement then
-         if Nkind (Name (Nod)) = N_Selected_Component then
-            Nam := Entity (Selector_Name (Name (Nod)));
+      else
+         Subp := Name (Nod);
+      end if;
+
+      --  Strip the subprogram call
+
+      loop
+         if Nkind_In (Subp, N_Explicit_Dereference,
+                            N_Indexed_Component,
+                            N_Selected_Component)
+         then
+            Subp := Prefix (Subp);
+
+         elsif Nkind_In (Subp, N_Type_Conversion,
+                               N_Unchecked_Type_Conversion)
+         then
+            Subp := Expression (Subp);
+
          else
-            Nam := Empty;
+            exit;
+         end if;
+      end loop;
+
+      --  Extract the entity of the subprogram call
+
+      if Is_Entity_Name (Subp) then
+         Subp_Id := Entity (Subp);
+
+         if Ekind (Subp_Id) = E_Access_Subprogram_Type then
+            Subp_Id := Directly_Designated_Type (Subp_Id);
          end if;
 
-      else
-         Nam := Name (Nod);
-      end if;
+         if Is_Subprogram (Subp_Id) then
+            return Subp_Id;
+         else
+            return Empty;
+         end if;
 
-      if Nkind (Nam) = N_Explicit_Dereference then
-         Proc := Etype (Prefix (Nam));
-      elsif Is_Entity_Name (Nam) then
-         Proc := Entity (Nam);
+      --  The search did not find a construct that denotes a subprogram
+
       else
          return Empty;
-      end if;
-
-      if Is_Object (Proc) then
-         Proc := Etype (Proc);
-      end if;
-
-      if Ekind (Proc) = E_Access_Subprogram_Type then
-         Proc := Directly_Designated_Type (Proc);
-      end if;
-
-      if not Is_Subprogram (Proc)
-        and then Ekind (Proc) /= E_Subprogram_Type
-      then
-         return Empty;
-      else
-         return Proc;
       end if;
    end Get_Subprogram_Entity;
 
@@ -7713,6 +7722,20 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Atomic_Object;
+
+   ------------------------------------
+   -- Is_Body_Or_Package_Declaration --
+   ------------------------------------
+
+   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean is
+   begin
+      return Nkind_In (N, N_Entry_Body,
+                          N_Package_Body,
+                          N_Package_Declaration,
+                          N_Protected_Body,
+                          N_Subprogram_Body,
+                          N_Task_Body);
+   end Is_Body_Or_Package_Declaration;
 
    -----------------------
    -- Is_Bounded_String --

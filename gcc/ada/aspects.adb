@@ -110,15 +110,6 @@ package body Aspects is
       end if;
    end Aspect_Specifications;
 
-   -------------------
-   -- Get_Aspect_Id --
-   -------------------
-
-   function Get_Aspect_Id (Name : Name_Id) return Aspect_Id is
-   begin
-      return Aspect_Id_Hash_Table.Get (Name);
-   end Get_Aspect_Id;
-
    -----------------
    -- Find_Aspect --
    -----------------
@@ -168,6 +159,38 @@ package body Aspects is
 
       return Empty;
    end Find_Aspect;
+
+   -------------------
+   -- Get_Aspect_Id --
+   -------------------
+
+   function Get_Aspect_Id (Name : Name_Id) return Aspect_Id is
+   begin
+      return Aspect_Id_Hash_Table.Get (Name);
+   end Get_Aspect_Id;
+
+   ----------------
+   -- Has_Aspect --
+   ----------------
+
+   function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean is
+      Decl   : constant Node_Id := Parent (Parent (Id));
+      Aspect : Node_Id;
+
+   begin
+      if Has_Aspects (Decl) then
+         Aspect := First (Aspect_Specifications (Decl));
+         while Present (Aspect) loop
+            if Get_Aspect_Id (Chars (Identifier (Aspect))) = A then
+               return True;
+            end if;
+
+            Next (Aspect);
+         end loop;
+      end if;
+
+      return False;
+   end Has_Aspect;
 
    ------------------
    -- Move_Aspects --
@@ -271,6 +294,7 @@ package body Aspects is
     Aspect_External_Name                => Aspect_External_Name,
     Aspect_External_Tag                 => Aspect_External_Tag,
     Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,
+    Aspect_Ghost                        => Aspect_Ghost,
     Aspect_Global                       => Aspect_Global,
     Aspect_Implicit_Dereference         => Aspect_Implicit_Dereference,
     Aspect_Import                       => Aspect_Import,

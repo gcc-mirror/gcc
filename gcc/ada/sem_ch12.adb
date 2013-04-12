@@ -12402,7 +12402,16 @@ package body Sem_Ch12 is
                Analyze (Act);
             end if;
 
-            if Errs /= Serious_Errors_Detected then
+            --  Ensure that a ghost function does not act as generic actual
+
+            if Is_Entity_Name (Act)
+              and then Is_Ghost_Function (Entity (Act))
+            then
+               Error_Msg_N
+                 ("ghost function & cannot act as generic actual", Act);
+               Abandon_Instantiation (Act);
+
+            elsif Errs /= Serious_Errors_Detected then
 
                --  Do a minimal analysis of the generic, to prevent spurious
                --  warnings complaining about the generic being unreferenced,
