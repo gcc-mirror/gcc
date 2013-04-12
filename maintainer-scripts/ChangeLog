@@ -1,3 +1,8 @@
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Disable snapshots from gcc-4_6-branch.
+	* update_version_svn: Ignore gcc-4_6-branch.
+
 2013-04-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_libstdcxx_svn: No longer ignore all output from
