@@ -3377,7 +3377,7 @@ package body Exp_Ch5 is
             declare
                Default_Iter : constant Entity_Id :=
                                 Entity
-                                  (Find_Aspect
+                                  (Find_Value_Of_Aspect
                                     (Etype (Container),
                                      Aspect_Default_Iterator));
 

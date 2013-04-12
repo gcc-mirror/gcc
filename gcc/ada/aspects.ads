@@ -517,8 +517,15 @@ package Aspects is
    --  Replace calls, and this function may be used to retrieve the aspect
    --  specifications for the original rewritten node in such cases.
 
-   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id;
-   --  Find value of a given aspect from aspect list of entity
+   function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id;
+   --  Find the aspect specification of aspect A associated with entity I.
+   --  Return Empty if Id does not have the requested aspect.
+
+   function Find_Value_Of_Aspect
+     (Id : Entity_Id;
+      A  : Aspect_Id) return Node_Id;
+   --  Find the value of aspect A associated with entity Id. Return Empty if
+   --  Id does not have the requested aspect.
 
    function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean;
    --  Determine whether entity Id has aspect A

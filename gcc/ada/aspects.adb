@@ -114,51 +114,90 @@ package body Aspects is
    -- Find_Aspect --
    -----------------
 
-   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id is
-      Ritem : Node_Id;
-      Typ   : Entity_Id;
+   function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id is
+      Decl  : Node_Id;
+      Item  : Node_Id;
+      Owner : Entity_Id;
+      Spec  : Node_Id;
 
    begin
+      Owner := Id;
 
-      --  If the aspect is an inherited one and the entity is a class-wide
-      --  type, use the aspect of the specific type. If the type is a base
-      --  aspect, examine the rep. items of the base type.
+      --  Handle various cases of base or inherited aspects for types
 
-      if Is_Type (Ent) then
+      if Is_Type (Id) then
          if Base_Aspect (A) then
-            Typ := Base_Type (Ent);
-         else
-            Typ := Ent;
+            Owner := Base_Type (Owner);
          end if;
 
-         if Is_Class_Wide_Type (Typ)
-           and then Inherited_Aspect (A)
-         then
-            Ritem := First_Rep_Item (Etype (Typ));
-         else
-            Ritem := First_Rep_Item (Typ);
+         if Is_Class_Wide_Type (Owner) and then Inherited_Aspect (A) then
+            Owner := Root_Type (Owner);
          end if;
-
-      else
-         Ritem := First_Rep_Item (Ent);
       end if;
 
-      while Present (Ritem) loop
-         if Nkind (Ritem) = N_Aspect_Specification
-           and then Get_Aspect_Id (Chars (Identifier (Ritem))) = A
+      --  Search the representation items for the desired aspect
+
+      Item := First_Rep_Item (Owner);
+      while Present (Item) loop
+         if Nkind (Item) = N_Aspect_Specification
+           and then Get_Aspect_Id (Chars (Identifier (Item))) = A
          then
-            if A = Aspect_Default_Iterator then
-               return Expression (Aspect_Rep_Item (Ritem));
-            else
-               return Expression (Ritem);
-            end if;
+            return Item;
          end if;
 
-         Next_Rep_Item (Ritem);
+         Next_Rep_Item (Item);
       end loop;
+
+      --  Note that not all aspects are added to the chain of representation
+      --  items. In such cases, search the list of aspect specifications. First
+      --  find the declaration node where the aspects reside. This is usually
+      --  the parent or the parent of the parent.
+
+      Decl := Parent (Owner);
+      if not Permits_Aspect_Specifications (Decl) then
+         Decl := Parent (Decl);
+      end if;
+
+      --  Search the list of aspect specifications for the desired aspect
+
+      if Permits_Aspect_Specifications (Decl) then
+         Spec := First (Aspect_Specifications (Decl));
+         while Present (Spec) loop
+            if Get_Aspect_Id (Chars (Identifier (Spec))) = A then
+               return Spec;
+            end if;
+
+            Next (Spec);
+         end loop;
+      end if;
+
+      --  The entity does not carry any aspects or the desired aspect was not
+      --  found.
 
       return Empty;
    end Find_Aspect;
+
+   --------------------------
+   -- Find_Value_Of_Aspect --
+   --------------------------
+
+   function Find_Value_Of_Aspect
+     (Id : Entity_Id;
+      A  : Aspect_Id) return Node_Id
+   is
+      Spec : constant Node_Id := Find_Aspect (Id, A);
+
+   begin
+      if Present (Spec) then
+         if A = Aspect_Default_Iterator then
+            return Expression (Aspect_Rep_Item (Spec));
+         else
+            return Expression (Spec);
+         end if;
+      end if;
+
+      return Empty;
+   end Find_Value_Of_Aspect;
 
    -------------------
    -- Get_Aspect_Id --
@@ -174,22 +213,8 @@ package body Aspects is
    ----------------
 
    function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean is
-      Decl   : constant Node_Id := Parent (Parent (Id));
-      Aspect : Node_Id;
-
    begin
-      if Has_Aspects (Decl) then
-         Aspect := First (Aspect_Specifications (Decl));
-         while Present (Aspect) loop
-            if Get_Aspect_Id (Chars (Identifier (Aspect))) = A then
-               return True;
-            end if;
-
-            Next (Aspect);
-         end loop;
-      end if;
-
-      return False;
+      return Present (Find_Aspect (Id, A));
    end Has_Aspect;
 
    ------------------

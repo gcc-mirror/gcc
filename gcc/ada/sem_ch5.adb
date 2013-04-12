@@ -1789,7 +1789,7 @@ package body Sem_Ch5 is
 
             declare
                Element : constant Entity_Id :=
-                           Find_Aspect (Typ, Aspect_Iterator_Element);
+                           Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
             begin
                if No (Element) then
                   Error_Msg_NE ("cannot iterate over&", N, Typ);
@@ -1800,7 +1800,7 @@ package body Sem_Ch5 is
                   --  If the container has a variable indexing aspect, the
                   --  element is a variable and is modifiable in the loop.
 
-                  if Present (Find_Aspect (Typ, Aspect_Variable_Indexing)) then
+                  if Has_Aspect (Typ, Aspect_Variable_Indexing) then
                      Set_Ekind (Def_Id, E_Variable);
                   end if;
                end if;
@@ -1814,7 +1814,7 @@ package body Sem_Ch5 is
             if Is_Entity_Name (Original_Node (Name (N)))
               and then not Is_Iterator (Typ)
             then
-               if No (Find_Aspect (Typ, Aspect_Iterator_Element)) then
+               if not Has_Aspect (Typ, Aspect_Iterator_Element) then
                   Error_Msg_NE
                     ("cannot iterate over&", Name (N), Typ);
                else
@@ -3044,9 +3044,9 @@ package body Sem_Ch5 is
 
          --  Check that the resulting object is an iterable container
 
-         elsif Present (Find_Aspect (Typ, Aspect_Iterator_Element))
-           or else Present (Find_Aspect (Typ, Aspect_Constant_Indexing))
-           or else Present (Find_Aspect (Typ, Aspect_Variable_Indexing))
+         elsif Has_Aspect (Typ, Aspect_Iterator_Element)
+           or else Has_Aspect (Typ, Aspect_Constant_Indexing)
+           or else Has_Aspect (Typ, Aspect_Variable_Indexing)
          then
             null;
 
