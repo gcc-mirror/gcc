@@ -3649,7 +3649,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 				NULL_TREE);
 	}
 
-      if (sym->ts.type == BT_CLASS && TREE_STATIC (sym->backend_decl)
+      if (sym->ts.type == BT_CLASS
+	  && (sym->attr.save || gfc_option.flag_max_stack_var_size == 0)
 	  && CLASS_DATA (sym)->attr.allocatable)
 	{
 	  tree vptr;
