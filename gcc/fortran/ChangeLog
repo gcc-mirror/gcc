@@ -1,3 +1,8 @@
+2013-04-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56266
+	* primary.c (gfc_match_varspec): Turn gcc_assert into MATCH_ERROR.
+
 2013-04-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56929
