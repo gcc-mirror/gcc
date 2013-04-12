@@ -1,3 +1,9 @@
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-format.c (gcc_diag_char_table, gcc_tdiag_char_table,
+	gcc_cdiag_char_table, gcc_cxxdiag_char_table): Add %r and %R format
+	specifiers.
+
 2013-04-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-pragma.c (add_to_renaming_pragma_list): Fix leading comment.

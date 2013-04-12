@@ -226,6 +226,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
+-fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option -fno-diagnostics-show-caret}
 
 @item Warning Options
@@ -2955,6 +2956,76 @@ Only meaningful in line-wrapping mode.  Instructs the diagnostic
 messages reporter to emit the same source location information (as
 prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
+
+@item -fdiagnostics-color[=@var{WHEN}]
+@itemx -fno-diagnostics-color
+@opindex fdiagnostics-color
+@cindex highlight, color, colour
+@vindex GCC_COLORS @r{environment variable}
+Use color in diagnostics.  @var{WHEN} is @samp{never}, @samp{always},
+or @samp{auto}.  The default is @samp{never}, @samp{auto} means to use color
+only when the standard error is a terminal. The forms
+@option{-fdiagnostics-color} and @option{-fno-diagnostics-color} are
+aliases for @option{-fdiagnostics-color=always} and
+@option{-fdiagnostics-color=never}, respectively.
+
+The colors are defined by the environment variable @env{GCC_COLORS}.
+Its value is a colon-separated list of capabilities and Select Graphic
+Rendition (SGR) substrings. SGR commands are interpreted by the
+terminal or terminal emulator.  (See the section in the documentation
+of your text terminal for permitted values and their meanings as
+character attributes.)  These substring values are integers in decimal
+representation and can be concatenated with semicolons.
+Common values to concatenate include
+@samp{1} for bold,
+@samp{4} for underline,
+@samp{5} for blink,
+@samp{7} for inverse,
+@samp{39} for default foreground color,
+@samp{30} to @samp{37} for foreground colors,
+@samp{90} to @samp{97} for 16-color mode foreground colors,
+@samp{38;5;0} to @samp{38;5;255}
+for 88-color and 256-color modes foreground colors,
+@samp{49} for default background color,
+@samp{40} to @samp{47} for background colors,
+@samp{100} to @samp{107} for 16-color mode background colors,
+and @samp{48;5;0} to @samp{48;5;255}
+for 88-color and 256-color modes background colors.
+
+The default @env{GCC_COLORS} is
+@samp{error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01}
+where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
+@samp{01;36} is bold cyan, @samp{01;32} is bold green and
+@samp{01} is bold. Setting @env{GCC_COLORS} to the empty
+string disables colors.
+Supported capabilities are as follows.
+
+@table @code
+@item error=
+@vindex error GCC_COLORS @r{capability}
+SGR substring for error: markers.
+
+@item warning=
+@vindex warning GCC_COLORS @r{capability}
+SGR substring for warning: markers.
+
+@item note=
+@vindex note GCC_COLORS @r{capability}
+SGR substring for note: markers.
+
+@item caret=
+@vindex caret GCC_COLORS @r{capability}
+SGR substring for caret line.
+
+@item locus=
+@vindex locus GCC_COLORS @r{capability}
+SGR substring for location information, @samp{file:line} or
+@samp{file:line:column} etc.
+
+@item quote=
+@vindex quote GCC_COLORS @r{capability}
+SGR substring for information printed within quotes.
+@end table
 
 @item -fno-diagnostics-show-option
 @opindex fno-diagnostics-show-option

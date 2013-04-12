@@ -1028,6 +1028,30 @@ fdiagnostics-show-caret
 Common Var(flag_diagnostics_show_caret) Init(1)
 Show the source line with a caret indicating the column
 
+fdiagnostics-color
+Common Alias(fdiagnostics-color=,always,never)
+;
+
+fdiagnostics-color=
+Common Joined RejectNegative Enum(diagnostic_color_rule)
+-fdiagnostics-color=[never|always|auto]	Colorize diagnostics
+
+; Required for these enum values.
+SourceInclude
+diagnostic-color.h
+
+Enum
+Name(diagnostic_color_rule) Type(int)
+
+EnumValue
+Enum(diagnostic_color_rule) String(never) Value(DIAGNOSTICS_COLOR_NO)
+
+EnumValue
+Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
+
+EnumValue
+Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
+
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them

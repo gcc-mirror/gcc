@@ -1465,7 +1465,7 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic.o pretty-print.o intl.o input.o version.o
+OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o input.o version.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -2668,11 +2668,12 @@ fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GIMPLE_H) realmpfr.h $(TREE_FLOW_H)
 diagnostic.o : diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    version.h $(DEMANGLE_H) $(INPUT_H) intl.h $(BACKTRACE_H) $(DIAGNOSTIC_H) \
-   diagnostic.def
+   diagnostic.def diagnostic-color.h
+diagnostic-color.o : diagnostic-color.c $(CONFIG_H) $(SYSTEM_H) diagnostic-color.h
 opts.o : opts.c $(OPTS_H) $(OPTIONS_H) $(DIAGNOSTIC_CORE_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(DUMPFILE_H) $(TM_H) \
    $(DIAGNOSTIC_H) insn-attr-common.h intl.h $(COMMON_TARGET_H) \
-   $(FLAGS_H) $(PARAMS_H) opts-diagnostic.h
+   $(FLAGS_H) $(PARAMS_H) opts-diagnostic.h diagnostic-color.h
 opts-global.o : opts-global.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(DIAGNOSTIC_H) $(OPTS_H) $(FLAGS_H) $(GGC_H) $(TREE_H) langhooks.h \
    $(TM_H) $(RTL_H) $(DBGCNT_H) debug.h $(LTO_STREAMER_H) output.h \
@@ -3434,7 +3435,8 @@ params.o : params.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(COMMON_TARGET_H) \
    $(PARAMS_H) $(DIAGNOSTIC_CORE_H)
 pointer-set.o: pointer-set.c pointer-set.h $(CONFIG_H) $(SYSTEM_H)
 hooks.o: hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(HOOKS_H)
-pretty-print.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h $(PRETTY_PRINT_H)
+pretty-print.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h $(PRETTY_PRINT_H) \
+   diagnostic-color.h
 errors.o : errors.c $(CONFIG_H) $(SYSTEM_H) errors.h
 dbgcnt.o: dbgcnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DUMPFILE_H) \
     $(DIAGNOSTIC_CORE_H) $(DBGCNT_H)
