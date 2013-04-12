@@ -2592,13 +2592,6 @@ is_gimple_constant (const_tree t)
     case VECTOR_CST:
       return true;
 
-    /* Vector constant constructors are gimple invariant.  */
-    case CONSTRUCTOR:
-      if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-	return TREE_CONSTANT (t);
-      else
-	return false;
-
     default:
       return false;
     }
