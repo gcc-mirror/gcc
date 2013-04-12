@@ -1475,6 +1475,9 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
+               --  Aspect Depends must be delayed because it mentions names
+               --  of inputs and output that are classified by aspect Global.
+
                when Aspect_Depends =>
                   Aitem :=
                     Make_Pragma (Loc,
@@ -1483,8 +1486,6 @@ package body Sem_Ch13 is
                       Pragma_Argument_Associations => New_List (
                         Make_Pragma_Argument_Association (Loc,
                           Expression => Relocate_Node (Expr))));
-
-                  Delay_Required := False;
 
                --  Aspect Global must be delayed because it can mention names
                --  and benefit from the forward visibility rules applicable to
@@ -7194,6 +7195,14 @@ package body Sem_Ch13 is
          when Aspect_Default_Value =>
             T := Entity (ASN);
 
+         --  Depends is a delayed aspect because it mentiones names first
+         --  introduced by aspect Global which is already delayed. There is
+         --  no action to be taken with respect to the aspect itself as the
+         --  analysis is done by the corresponding pragma.
+
+         when Aspect_Depends =>
+            return;
+
          when Aspect_Dispatching_Domain =>
             T := RTE (RE_Dispatching_Domain);
 
@@ -7205,8 +7214,8 @@ package body Sem_Ch13 is
 
          --  Global is a delayed aspect because it may reference names that
          --  have not been declared yet. There is no action to be taken with
-         --  respect to the aspect itself as the reference checking is done on
-         --  the corresponding pragma.
+         --  respect to the aspect itself as the reference checking is done
+         --  on the corresponding pragma.
 
          when Aspect_Global =>
             return;
@@ -7283,7 +7292,6 @@ package body Sem_Ch13 is
          when Aspect_Abstract_State       |
               Aspect_Contract_Case        |
               Aspect_Contract_Cases       |
-              Aspect_Depends              |
               Aspect_Dimension            |
               Aspect_Dimension_System     |
               Aspect_Implicit_Dereference |

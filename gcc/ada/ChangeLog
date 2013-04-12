@@ -1,3 +1,21 @@
+2013-04-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Aspect
+	Depends is now a delayed aspect. The delay is required
+	due to the interplay between aspects Depends and Global.
+	(Check_Aspect_At_Freeze_Point): Add an entry for aspect Depends.
+	* sem_prag.adb: Reformat various error messages.
+	(Add_Item): New subsidiary routine.
+	(Analyze_Pragma): Add new variables
+	Global_Seen, Result_Seen, Subp_Inputs and Subp_Outputs. The
+	analysis of pragma Depends now has the capability to check
+	the proper mode and usage of subprogram inputs and outputs.
+	(Appears_In): New routine.
+	(Check_Function_Return): New routine.
+	(Check_Mode): New routine.
+	(Check_Usage): New routine.
+	(Collect_Subprogram_Inputs_Outputs): New routine.
+
 2013-04-12  Bob Duff  <duff@adacore.com>
 
 	* par-ch7.adb (P_Package): Initialize Sloc in the newly-pushed scope
