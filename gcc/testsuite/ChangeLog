@@ -1,3 +1,7 @@
+2013-04-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-cstvecshift.c: New testcase.
+
 2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/negs.c: New.
