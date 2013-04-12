@@ -1,5 +1,10 @@
 2013-04-12  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.md (mov_scc,mov_negscc,mov_notscc): Convert
+	define_insn into define_insn_and_split and emit movsicc patterns.
+
+2013-04-12  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.c (gen_operands_ldrd_strd): Initialize "base".
 
 2013-04-12  Richard Biener  <rguenther@suse.de>
