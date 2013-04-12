@@ -516,10 +516,6 @@ package body GNAT.Sockets is
         (Selector, R_Socket_Set, W_Socket_Set, E_Socket_Set, Status, Timeout);
    end Check_Selector;
 
-   --------------------
-   -- Check_Selector --
-   --------------------
-
    procedure Check_Selector
      (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
@@ -739,12 +735,17 @@ package body GNAT.Sockets is
 
       --  Wait for socket to become available for writing
 
-      Wait_On_Socket
-        (Socket   => Socket,
-         For_Read => False,
-         Timeout  => Timeout,
-         Selector => Selector,
-         Status   => Status);
+      if Timeout = 0.0 then
+         Status := Expired;
+
+      else
+         Wait_On_Socket
+           (Socket   => Socket,
+            For_Read => False,
+            Timeout  => Timeout,
+            Selector => Selector,
+            Status   => Status);
+      end if;
 
       --  Check error condition (the asynchronous connect may have terminated
       --  with an error, e.g. ECONNREFUSED) if select(2) completed.

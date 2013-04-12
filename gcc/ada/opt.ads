@@ -597,7 +597,7 @@ package Opt is
    Fast_Math : Boolean := False;
    --  GNAT
    --  Indicates the current setting of Fast_Math mode, as set by the use
-   --  of a Fast_Math pragma (set on by Fast_Math (On)).
+   --  of a Fast_Math pragma (set True by Fast_Math (On)).
 
    Float_Format : Character := ' ';
    --  GNAT
@@ -1274,8 +1274,8 @@ package Opt is
    --  GNAT
    --  Set True if Style_Check was set for the main unit. This is used to
    --  renable style checks for units in the mail extended source that get
-   --  with'ed indirectly. It is set on by use of either the -gnatg or -gnaty
-   --  switches, but not by use of the Style_Checks pragma.
+   --  with'ed indirectly. It is set True by use of either the -gnatg or
+   --  -gnaty switches, but not by use of the Style_Checks pragma.
 
    Suppress_All_Inlining : Boolean := False;
    --  GNAT
@@ -1411,7 +1411,7 @@ package Opt is
    --  Flag set to force attempt at semantic analysis, even if parser errors
    --  occur. This will probably cause blowups at this stage in the game. On
    --  the other hand, most such blowups will be caught cleanly and simply
-   --  say compilation abandoned. This flag is set on by -gnatq or -gnatQ.
+   --  say compilation abandoned. This flag is set True by -gnatq or -gnatQ.
 
    Unchecked_Shared_Lib_Imports : Boolean := False;
    --  GPRBUILD

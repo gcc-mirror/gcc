@@ -12242,7 +12242,7 @@ package body Sem_Ch6 is
          while Present (Prag) loop
             if Nkind (Prag) = N_Pragma then
 
-               --  If pragma, capture if enabled postcondition, else ignore
+               --  If pragma, capture if postconditions enabled, else ignore
 
                if Pragma_Name (Prag) = Name_Postcondition
                  and then Check_Enabled (Name_Postcondition)

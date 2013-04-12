@@ -7012,7 +7012,7 @@ package body Sem_Prag is
                return;
             end if;
 
-            Pack_Id := Defining_Unit_Name (Specification (Par));
+            Pack_Id := Defining_Entity (Par);
             State   := Expression (Arg1);
 
             --  Multiple abstract states appear as an aggregate

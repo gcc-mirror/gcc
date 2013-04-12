@@ -1,3 +1,29 @@
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem.ads, opt.ads: Minor comment edits.
+	* sem_warn.adb, sem_ch6.adb: Minor reformatting.
+
+2013-04-12  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb a-cfdlli.ads (List, Not_No_Element, Iterate,
+	Reverse_Iterate, Query_Element, Update_Element, Read, Write): Removed,
+	not suitable for formal analysis.
+
+2013-04-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Abstract_State): Use Defining entity
+	to locate package entity, which may be a child unit.
+
+2013-04-12  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb, g-socket.ads (Connect_Socket, version with timeout): If
+	the specified timeout is 0, do not attempt to determine whether the
+	connection succeeded.
+
+2013-04-12  Doug Rupp  <rupp@adacore.com>
+
+	* s-fileio.adb (Form_RMS Context_Key): Fix some thinkos.
+
 2013-04-12  Doug Rupp  <rupp@adacore.com>
 
 	* s-fileio.adb: Minor reformatting.

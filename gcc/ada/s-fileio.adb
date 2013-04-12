@@ -696,12 +696,14 @@ package body System.File_IO is
                   Klen := KImage'Length;
                   To_Lower (KImage);
 
-                  if Form (Index .. Index + Klen - 1) = KImage then
+                  if Index + Klen - 1 <= Form'Last and then
+                    Form (Index .. Index + Klen - 1) = KImage
+                  then
                      case Parm is
                         when Force_Record_Mode =>
                            VMS_Form (Pos) := '"';
                            Pos := Pos + 1;
-                           VMS_Form (Pos .. Pos + 7) := "ctx=rec";
+                           VMS_Form (Pos .. Pos + 6) := "ctx=rec";
                            Pos := Pos + 7;
                            VMS_Form (Pos) := '"';
                            Pos := Pos + 1;
@@ -711,7 +713,7 @@ package body System.File_IO is
                         when Force_Stream_Mode =>
                            VMS_Form (Pos) := '"';
                            Pos := Pos + 1;
-                           VMS_Form (Pos .. Pos + 7) := "ctx=stm";
+                           VMS_Form (Pos .. Pos + 6) := "ctx=stm";
                            Pos := Pos + 7;
                            VMS_Form (Pos) := '"';
                            Pos := Pos + 1;
