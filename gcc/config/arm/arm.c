@@ -12694,7 +12694,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
 {
   int nops = 2;
   HOST_WIDE_INT offsets[2], offset;
-  rtx base;
+  rtx base = NULL_RTX;
   rtx cur_base, cur_offset, tmp;
   int i, gap;
   HARD_REG_SET regset;

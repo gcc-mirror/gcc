@@ -1,3 +1,7 @@
+2013-04-12  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.c (gen_operands_ldrd_strd): Initialize "base".
+
 2013-04-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-pass.h (TODO_do_not_ggc_collect): New.
