@@ -490,8 +490,6 @@ package body Sem_Ch6 is
       Func_Nam : constant Node_Id := Name (N);
       Actual   : Node_Id;
 
-   --  Start of processing for Analyze_Function_Call
-
    begin
       Analyze (Func_Nam);
 
@@ -7217,9 +7215,8 @@ package body Sem_Ch6 is
          Prag := Spec_CTC_List (Contract (Spec));
          loop
             if Pragma_Name (Prag) = Name_Contract_Cases then
-
-               Aggr := Expression (First
-                         (Pragma_Argument_Associations (Prag)));
+               Aggr :=
+                 Expression (First (Pragma_Argument_Associations (Prag)));
 
                Post_Case := First (Component_Associations (Aggr));
                while Present (Post_Case) loop
@@ -11885,6 +11882,12 @@ package body Sem_Ch6 is
          Map : Elist_Id;
          CP  : Node_Id;
 
+         Ename : Name_Id;
+         --  Effective name of pragma (maybe Pre/Post rather than Precondition/
+         --  Postcodition if the pragma came from a Pre/Post aspect). We need
+         --  the name right when we generate the Check pragma, since we want
+         --  the right set of check policies to apply.
+
       begin
          --  Prepare map if this is the case where we have to map entities of
          --  arguments in the overridden subprogram to corresponding entities
@@ -11936,11 +11939,19 @@ package body Sem_Ch6 is
             return CP;
          end if;
 
+         --  Get effective name of aspect
+
+         if Present (Corresponding_Aspect (Prag)) then
+            Ename := Chars (Identifier (Corresponding_Aspect (Prag)));
+         else
+            Ename := Nam;
+         end if;
+
          --  Change copy of pragma into corresponding pragma Check
 
          Prepend_To (Pragma_Argument_Associations (CP),
            Make_Pragma_Argument_Association (Sloc (Prag),
-             Expression => Make_Identifier (Loc, Nam)));
+             Expression => Make_Identifier (Loc, Ename)));
          Set_Pragma_Identifier (CP, Make_Identifier (Sloc (Prag), Name_Check));
 
          --  If this is inherited case and the current message starts with
@@ -12249,11 +12260,12 @@ package body Sem_Ch6 is
          Prag := First (Declarations (N));
          while Present (Prag) loop
             if Nkind (Prag) = N_Pragma then
+               Check_Applicable_Policy (Prag);
 
                --  If pragma, capture if postconditions enabled, else ignore
 
                if Pragma_Name (Prag) = Name_Postcondition
-                 and then Check_Enabled (Name_Postcondition)
+                 and then not Is_Ignored (Prag)
                then
                   if Plist = No_List then
                      Plist := Empty_List;

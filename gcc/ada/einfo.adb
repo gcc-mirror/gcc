@@ -546,9 +546,9 @@ package body Einfo is
    --    Is_Predicate_Function           Flag255
    --    Is_Predicate_Function_M         Flag256
    --    Is_Invariant_Procedure          Flag257
+   --    Has_Dynamic_Predicate_Aspect    Flag258
+   --    Has_Static_Predicate_Aspect     Flag259
 
-   --    (unused)                        Flag258
-   --    (unused)                        Flag259
    --    (unused)                        Flag260
 
    --    (unused)                        Flag261
@@ -1395,6 +1395,12 @@ package body Einfo is
       return Flag220 (Id);
    end Has_Dispatch_Table;
 
+   function Has_Dynamic_Predicate_Aspect (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag258 (Id);
+   end Has_Dynamic_Predicate_Aspect;
+
    function Has_Enumeration_Rep_Clause (Id : E) return B is
    begin
       pragma Assert (Is_Enumeration_Type (Id));
@@ -1669,6 +1675,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag211 (Id);
    end Has_Static_Discriminants;
+
+   function Has_Static_Predicate_Aspect (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag259 (Id);
+   end Has_Static_Predicate_Aspect;
 
    function Has_Storage_Size_Clause (Id : E) return B is
    begin
@@ -3967,6 +3979,12 @@ package body Einfo is
       Set_Flag220 (Id, V);
    end Set_Has_Dispatch_Table;
 
+   procedure Set_Has_Dynamic_Predicate_Aspect (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag258 (Id, V);
+   end Set_Has_Dynamic_Predicate_Aspect;
+
    procedure Set_Has_Enumeration_Rep_Clause (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Enumeration_Type (Id));
@@ -4250,6 +4268,12 @@ package body Einfo is
    begin
       Set_Flag211 (Id, V);
    end Set_Has_Static_Discriminants;
+
+   procedure Set_Has_Static_Predicate_Aspect (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag259 (Id, V);
+   end Set_Has_Static_Predicate_Aspect;
 
    procedure Set_Has_Storage_Size_Clause (Id : E; V : B := True) is
    begin
@@ -7759,6 +7783,8 @@ package body Einfo is
       W ("Has_Delayed_Aspects",             Flag200 (Id));
       W ("Has_Delayed_Freeze",              Flag18  (Id));
       W ("Has_Discriminants",               Flag5   (Id));
+      W ("Has_Dispatch_Table",              Flag220 (Id));
+      W ("Has_Dynamic_Predicate_Aspect",    Flag258 (Id));
       W ("Has_Enumeration_Rep_Clause",      Flag66  (Id));
       W ("Has_Exit",                        Flag47  (Id));
       W ("Has_External_Tag_Rep_Clause",     Flag110 (Id));
@@ -7808,6 +7834,7 @@ package body Einfo is
       W ("Has_Specified_Stream_Read",       Flag192 (Id));
       W ("Has_Specified_Stream_Write",      Flag193 (Id));
       W ("Has_Static_Discriminants",        Flag211 (Id));
+      W ("Has_Static_Predicate_Aspect",     Flag259 (Id));
       W ("Has_Storage_Size_Clause",         Flag23  (Id));
       W ("Has_Stream_Size_Clause",          Flag184 (Id));
       W ("Has_Task",                        Flag30  (Id));

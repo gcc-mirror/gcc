@@ -1,3 +1,69 @@
+2013-04-12  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (Has_Dynamic_Predicate_Aspect): New flag.
+	(Has_Static_Predicate_Aspect): New flag.
+	* einfo.ads (Has_Dynamic_Predicate_Aspect): New flag.
+	(Has_Static_Predicate_Aspect): New flag.
+	* exp_ch9.adb: Minor reformatting.
+	* exp_util.adb (Make_Invariant_Call): Check_Enabled now handles
+	synonyms.
+	* gnat1drv.adb: Remove setting of Debug_Pragmas_Enabled,
+	since this switch is gone and control of Debug is done with
+	Assertions_Enabled.
+	* gnat_rm.texi: Update documentation for Assertion_Policy and
+	Check_Policy pragmas.
+	* opt.adb (Debug_Pragmas_Disabled[_Config]): Removed
+	(Debug_Pragmas_Enabled[_Config]): Removed Since debug now
+	controlled by Assertion_Enabled.
+	* opt.ads (Debug_Pragmas_Disabled[_Config]): Removed
+	(Debug_Pragmas_Enabled[_Config]): Removed Since debug now
+	controlled by Assertion_Enabled.
+	* par-ch2.adb (Scan_Pragma_Argument_Association): Allow new
+	'Class forms.
+	* sem_attr.adb: Minor reformatting.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Disable aspect
+	if DISABLE policy applies.
+	* sem_ch6.adb (Grab_PPC): Check original name of aspect for
+	aspect from pragma (Process_PPCs): Properly check assertion policy.
+	* sem_prag.adb (Check_Enabled): Rewritten for new Assertion_Policy
+	(Check_Appicable_Policy): New procedure.
+	(Is_Valid_Assertion_Kind): New function.
+	(Rewrite_Assertion_Kind): New procedure.
+	(Analyze_Pragma): Handle case of disabled assertion pragma.
+	(Analyze_Pragma, case Assertion_Policy): Rewritten for Ada 2012.
+	(Analyze_Pragma, case Check): Deal with 'Class possibilities.
+	(Analyze_Pragma, case Check_Policy): Deal with 'Class possibilities.
+	(Analyze_Pragma, case Contract_Class): New handling of ignored pragma.
+	(Analyze_Pragma, case Debug): New control with Assertion_Policy.
+	(Analyze_Pragma, case Debug_Policy): Now consistent with
+	Assertion_Policy.
+	(Analyze_Pragma, case Loop_Invariant): New handling of ignored
+	pragma.
+	(Analyze_Pragma, case Loop_Variant): New handling of ignored pragma.
+	(Analyze_Pragma, case Precondition): Use proper name for Check pragma.
+	(Analyze_Pragma, case Check_Enabled): Rewritten for new policy stuff.
+	* sem_prag.ads (Check_Enabled): Rewritten for new
+	Assertion_Policy stuff.
+	(Check_Appicable_Policy): New procedure.
+	* sinfo.adb (Is_Disabled): New flag.
+	(Is_Ignored): New flag.
+	* sinfo.ads (Is_Disabled): New flag.
+	(Is_Ignored): New flag.
+	(N_Pragma_Argument_Association): New 'Class forms.
+	* snames.ads-tmpl: New names Name_uPre, Name_uPost,
+	Name_uType_Invariant, Name_uInvariant.
+	* switch-c.adb: Remove setting of Debug_Pragmas_Enabled for -gnata.
+	* tree_io.ads (ASIS_Version_Number): Updated (remove
+	read write of obsolete flags Debug_Pragmas_Disabled and
+	Debug_Pragmas_Enabled.
+
+2013-04-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Get_Explicit_Discriminant_Value): Subsidiary
+	of Build_Record_Aggr_Code, used to retrieve explicit values
+	for inherited discriminants in an extension aggregate, when the
+	ancestor type is unconstrained.
+
 2013-04-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Check_Stream_Attribute): If restriction

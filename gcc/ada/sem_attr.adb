@@ -4345,11 +4345,10 @@ package body Sem_Attr is
             end if;
          end if;
 
-         --  Either the attribute reference is generated for a Requires
-         --  clause, in which case no expressions follow, or it is a
-         --  primary. In that case, if expressions follow, the attribute
-         --  reference is an indexable object, so rewrite the node
-         --  accordingly.
+         --  If the attribute reference is generated for a Requires clause,
+         --  then no expressions follow. Otherwise it is a primary, in which
+         --  case, if expressions follow, the attribute reference must be
+         --  an indexable object, so rewrite the node accordingly.
 
          if Present (E1) then
             Rewrite (N,

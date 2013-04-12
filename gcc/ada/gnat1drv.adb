@@ -240,11 +240,9 @@ procedure Gnat1drv is
 
          Generate_SCIL := True;
 
-         --  Enable assertions and debug pragmas, since they give CodePeer
-         --  valuable extra information.
+         --  Enable assertions, since they give CodePeer valuable extra info
 
          Assertions_Enabled    := True;
-         Debug_Pragmas_Enabled := True;
 
          --  Disable all simple value propagation. This is an optimization
          --  which is valuable for code optimization, and also for generation
@@ -401,11 +399,10 @@ procedure Gnat1drv is
 
          Use_Expression_With_Actions := False;
 
-         --  Enable assertions and debug pragmas, since they give valuable
-         --  extra information for formal verification.
+         --  Enable assertions, since they give valuable extra information for
+         --  formal verification.
 
-         Assertions_Enabled    := True;
-         Debug_Pragmas_Enabled := True;
+         Assertions_Enabled := True;
 
          --  Turn off style check options since we are not interested in any
          --  front-end warnings when we are getting Alfa output.

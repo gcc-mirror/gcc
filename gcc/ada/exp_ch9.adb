@@ -1934,7 +1934,8 @@ package body Exp_Ch9 is
 
          while Present (P) loop
             if Pragma_Name (P) = Name_Precondition
-              or else Pragma_Name (P) = Name_Postcondition
+                 or else
+               Pragma_Name (P) = Name_Postcondition
             then
                Append (Relocate_Node (P), Decls);
                Set_Analyzed (Last (Decls), False);

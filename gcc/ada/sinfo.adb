@@ -1740,6 +1740,15 @@ package body Sinfo is
       return Flag16 (N);
    end Is_Controlling_Actual;
 
+   function Is_Disabled
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      return Flag15 (N);
+   end Is_Disabled;
+
    function Is_Delayed_Aspect
       (N : Node_Id) return Boolean is
    begin
@@ -1797,6 +1806,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       return Flag4 (N);
    end Is_Folded_In_Parser;
+
+   function Is_Ignored
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      return Flag9 (N);
+   end Is_Ignored;
 
    function Is_In_Discriminant_Check
       (N : Node_Id) return Boolean is
@@ -4832,6 +4850,15 @@ package body Sinfo is
       Set_Flag14 (N, Val);
    end Set_Is_Delayed_Aspect;
 
+   procedure Set_Is_Disabled
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag15 (N, Val);
+   end Set_Is_Disabled;
+
    procedure Set_Is_Dynamic_Coextension
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -4879,6 +4906,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       Set_Flag4 (N, Val);
    end Set_Is_Folded_In_Parser;
+
+   procedure Set_Is_Ignored
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag9 (N, Val);
+   end Set_Is_Ignored;
 
    procedure Set_Is_In_Discriminant_Check
       (N : Node_Id; Val : Boolean := True) is

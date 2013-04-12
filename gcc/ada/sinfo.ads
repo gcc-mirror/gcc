@@ -1286,6 +1286,14 @@ package Sinfo is
    --    a dispatching call. It is off in all other cases. See Sem_Disp for
    --    details of its use.
 
+   --  Is_Disabled (Flag15-Sem)
+   --    A flag set in an N_Aspect_Specification or N_Pragma node if there was
+   --    a Check_Policy or Assertion_Policy (or in the case of a Debug_Pragma)
+   --    a Debug_Policy pragma that resulted in totally disabling the flagged
+   --    aspect or policy as a result of using the GNAT-defined policy DISABLE.
+   --    If this flag is set, the aspect or policy is not analyzed for semantic
+   --    correctness, so any expressions etc will not be marked as analyzed.
+
    --  Is_Dynamic_Coextension (Flag18-Sem)
    --    Present in allocator nodes, to indicate that this is an allocator
    --    for an access discriminant of a dynamically allocated object. The
@@ -1307,6 +1315,20 @@ package Sinfo is
    --    block acts as a wrapper of a handled construct which has controlled
    --    objects. The wrapper prevents interference between exception handlers
    --    and At_End handlers.
+
+   --  Is_Ignored (Flag9-Sem)
+   --    A flag set in an N_Aspect_Specification or N_Pragma node if there was
+   --    a Check_Policy or Assertion_Policy (or in the case of a Debug_Pragma)
+   --    a Debug_Policy pragma that specified a policy of IGNORE, DISABLE, or
+   --    OFF, for the pragma/aspect. If there was a Policy pragma specifying
+   --    a Policy of ON or CHECK, then this flag is reset. If no Policy pragma
+   --    gives a policy for the aspect or pragma, then there are two cases. For
+   --    an assertion aspect or pragma (one of the assertion kinds allowed in
+   --    an Assertion_Policy pragma), then Is_Ignored is set if assertions are
+   --    ignored because of the use of a -gnata switch. For any other aspects
+   --    or pragmas, the flag is off. If this flag is set, the aspect/pragma
+   --    is fully analyzed and checked for other syntactic/semantic errors,
+   --    but it does not have any semantic effect.
 
    --  Is_In_Discriminant_Check (Flag11-Sem)
    --    This flag is present in a selected component, and is used to indicate
@@ -2085,11 +2107,13 @@ package Sinfo is
       --  Corresponding_Aspect (Node3-Sem) (set to Empty if not present)
       --  Pragma_Identifier (Node4)
       --  Next_Rep_Item (Node5-Sem)
+      --  Class_Present (Flag6) set if from Aspect with 'Class
       --  From_Aspect_Specification (Flag13-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
+      --  Is_Disabled (Flag15-Sem)
+      --  Is_Ignored (Flag9-Sem)
       --  Import_Interface_Present (Flag16-Sem)
       --  Split_PPC (Flag17) set if corresponding aspect had Split_PPC set
-      --  Class_Present (Flag6) set if from Aspect with 'Class
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma
@@ -2111,6 +2135,27 @@ package Sinfo is
       --  PRAGMA_ARGUMENT_ASSOCIATION ::=
       --    [pragma_argument_IDENTIFIER =>] NAME
       --  | [pragma_argument_IDENTIFIER =>] EXPRESSION
+
+      --  In Ada 2012, there are two more possibilities:
+
+      --  PRAGMA_ARGUMENT_ASSOCIATION ::=
+      --    [pragma_argument_ASPECT_MARK =>] NAME
+      --  | [pragma_argument_ASPECT_MARK =>] EXPRESSION
+
+      --  where the interesting allowed cases (which do not fit the syntax of
+      --  the first alternative above) are
+
+      --  ASPECT_MARK => Pre'Class | Post'Class | Type_Invariant'Class
+
+      --  We allow this special usage in all Ada modes, but it would be a
+      --  pain to allow these aspects to pervade the pragma syntax, and the
+      --  representation of pragma nodes internally. So what we do is to
+      --  replace these ASPECT_MARK forms with identifiers whose name is one
+      --  of the special internal names _Pre, _Post or _Type_Invariant.
+
+      --  We do a similar replacement of these Aspect_Mark forms in the
+      --  Expression of a pragma argument association for the cases of
+      --  the first arguments of any Check pragmas and Check_Policy pragmas
 
       --  N_Pragma_Argument_Association
       --  Sloc points to first token in association
@@ -6712,6 +6757,8 @@ package Sinfo is
       --  Split_PPC (Flag17) Set if split pre/post attribute
       --  Is_Boolean_Aspect (Flag16-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
+      --  Is_Disabled (Flag15-Sem)
+      --  Is_Ignored (Flag9-Sem)
 
       --  Note: Aspect_Specification is an Ada 2012 feature
 
@@ -8667,6 +8714,9 @@ package Sinfo is
    function Is_Delayed_Aspect
      (N : Node_Id) return Boolean;    -- Flag14
 
+   function Is_Disabled
+     (N : Node_Id) return Boolean;    -- Flag15
+
    function Is_Dynamic_Coextension
      (N : Node_Id) return Boolean;    -- Flag18
 
@@ -8684,6 +8734,9 @@ package Sinfo is
 
    function Is_Folded_In_Parser
      (N : Node_Id) return Boolean;    -- Flag4
+
+   function Is_Ignored
+     (N : Node_Id) return Boolean;    -- Flag9
 
    function Is_In_Discriminant_Check
      (N : Node_Id) return Boolean;    -- Flag11
@@ -9647,6 +9700,12 @@ package Sinfo is
 
    procedure Set_Is_Delayed_Aspect
      (N : Node_Id; Val : Boolean := True);    -- Flag14
+
+   procedure Set_Is_Disabled
+     (N : Node_Id; Val : Boolean := True);    -- Flag15
+
+   procedure Set_Is_Ignored
+     (N : Node_Id; Val : Boolean := True);    -- Flag9
 
    procedure Set_Is_Dynamic_Coextension
      (N : Node_Id; Val : Boolean := True);    -- Flag18
@@ -12020,12 +12079,14 @@ package Sinfo is
    pragma Inline (Is_Component_Right_Opnd);
    pragma Inline (Is_Controlling_Actual);
    pragma Inline (Is_Delayed_Aspect);
+   pragma Inline (Is_Disabled);
    pragma Inline (Is_Dynamic_Coextension);
    pragma Inline (Is_Elsif);
    pragma Inline (Is_Entry_Barrier_Function);
    pragma Inline (Is_Expanded_Build_In_Place_Call);
    pragma Inline (Is_Finalization_Wrapper);
    pragma Inline (Is_Folded_In_Parser);
+   pragma Inline (Is_Ignored);
    pragma Inline (Is_In_Discriminant_Check);
    pragma Inline (Is_Machine_Number);
    pragma Inline (Is_Null_Loop);
@@ -12186,20 +12247,20 @@ package Sinfo is
    pragma Inline (Set_All_Present);
    pragma Inline (Set_Alternatives);
    pragma Inline (Set_Ancestor_Part);
-   pragma Inline (Set_Atomic_Sync_Required);
    pragma Inline (Set_Array_Aggregate);
    pragma Inline (Set_Aspect_Rep_Item);
    pragma Inline (Set_Assignment_OK);
    pragma Inline (Set_Associated_Node);
    pragma Inline (Set_At_End_Proc);
+   pragma Inline (Set_Atomic_Sync_Required);
    pragma Inline (Set_Attribute_Name);
    pragma Inline (Set_Aux_Decls_Node);
    pragma Inline (Set_Backwards_OK);
    pragma Inline (Set_Bad_Is_Detected);
-   pragma Inline (Set_Body_To_Inline);
    pragma Inline (Set_Body_Required);
-   pragma Inline (Set_By_Ref);
+   pragma Inline (Set_Body_To_Inline);
    pragma Inline (Set_Box_Present);
+   pragma Inline (Set_By_Ref);
    pragma Inline (Set_Char_Literal_Value);
    pragma Inline (Set_Chars);
    pragma Inline (Set_Check_Address_Alignment);
@@ -12225,8 +12286,8 @@ package Sinfo is
    pragma Inline (Set_Context_Items);
    pragma Inline (Set_Context_Pending);
    pragma Inline (Set_Controlling_Argument);
-   pragma Inline (Set_Convert_To_Return_False);
    pragma Inline (Set_Conversion_OK);
+   pragma Inline (Set_Convert_To_Return_False);
    pragma Inline (Set_Corresponding_Aspect);
    pragma Inline (Set_Corresponding_Body);
    pragma Inline (Set_Corresponding_Formal_Spec);
@@ -12237,8 +12298,8 @@ package Sinfo is
    pragma Inline (Set_Dcheck_Function);
    pragma Inline (Set_Declarations);
    pragma Inline (Set_Default_Expression);
-   pragma Inline (Set_Default_Storage_Pool);
    pragma Inline (Set_Default_Name);
+   pragma Inline (Set_Default_Storage_Pool);
    pragma Inline (Set_Defining_Identifier);
    pragma Inline (Set_Defining_Unit_Name);
    pragma Inline (Set_Delay_Alternative);
@@ -12254,16 +12315,16 @@ package Sinfo is
    pragma Inline (Set_Discriminant_Type);
    pragma Inline (Set_Do_Accessibility_Check);
    pragma Inline (Set_Do_Discriminant_Check);
-   pragma Inline (Set_Do_Length_Check);
    pragma Inline (Set_Do_Division_Check);
+   pragma Inline (Set_Do_Length_Check);
    pragma Inline (Set_Do_Overflow_Check);
    pragma Inline (Set_Do_Range_Check);
    pragma Inline (Set_Do_Storage_Check);
    pragma Inline (Set_Do_Tag_Check);
-   pragma Inline (Set_Elaborate_Present);
    pragma Inline (Set_Elaborate_All_Desirable);
    pragma Inline (Set_Elaborate_All_Present);
    pragma Inline (Set_Elaborate_Desirable);
+   pragma Inline (Set_Elaborate_Present);
    pragma Inline (Set_Elaboration_Boolean);
    pragma Inline (Set_Else_Actions);
    pragma Inline (Set_Else_Statements);
@@ -12310,13 +12371,14 @@ package Sinfo is
    pragma Inline (Set_Has_Created_Identifier);
    pragma Inline (Set_Has_Dereference_Action);
    pragma Inline (Set_Has_Dynamic_Length_Check);
+   pragma Inline (Set_Has_Dynamic_Range_Check);
    pragma Inline (Set_Has_Init_Expression);
    pragma Inline (Set_Has_Local_Raise);
-   pragma Inline (Set_Has_Dynamic_Range_Check);
    pragma Inline (Set_Has_No_Elaboration_Code);
    pragma Inline (Set_Has_Pragma_Suppress_All);
    pragma Inline (Set_Has_Private_View);
    pragma Inline (Set_Has_Relative_Deadline_Pragma);
+   pragma Inline (Set_Has_Self_Reference);
    pragma Inline (Set_Has_Storage_Size_Pragma);
    pragma Inline (Set_Has_Wide_Character);
    pragma Inline (Set_Has_Wide_Wide_Character);
@@ -12325,16 +12387,15 @@ package Sinfo is
    pragma Inline (Set_High_Bound);
    pragma Inline (Set_Identifier);
    pragma Inline (Set_Implicit_With);
-   pragma Inline (Set_Includes_Infinities);
-   pragma Inline (Set_Interface_List);
-   pragma Inline (Set_Interface_Present);
    pragma Inline (Set_Import_Interface_Present);
    pragma Inline (Set_In_Assertion_Expression);
    pragma Inline (Set_In_Present);
+   pragma Inline (Set_Includes_Infinities);
    pragma Inline (Set_Inherited_Discriminant);
    pragma Inline (Set_Instance_Spec);
+   pragma Inline (Set_Interface_List);
+   pragma Inline (Set_Interface_Present);
    pragma Inline (Set_Intval);
-   pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Is_Accessibility_Actual);
    pragma Inline (Set_Is_Asynchronous_Call_Block);
    pragma Inline (Set_Is_Boolean_Aspect);
@@ -12342,12 +12403,14 @@ package Sinfo is
    pragma Inline (Set_Is_Component_Right_Opnd);
    pragma Inline (Set_Is_Controlling_Actual);
    pragma Inline (Set_Is_Delayed_Aspect);
+   pragma Inline (Set_Is_Disabled);
    pragma Inline (Set_Is_Dynamic_Coextension);
    pragma Inline (Set_Is_Elsif);
    pragma Inline (Set_Is_Entry_Barrier_Function);
    pragma Inline (Set_Is_Expanded_Build_In_Place_Call);
    pragma Inline (Set_Is_Finalization_Wrapper);
    pragma Inline (Set_Is_Folded_In_Parser);
+   pragma Inline (Set_Is_Ignored);
    pragma Inline (Set_Is_In_Discriminant_Check);
    pragma Inline (Set_Is_Machine_Number);
    pragma Inline (Set_Is_Null_Loop);
@@ -12355,22 +12418,22 @@ package Sinfo is
    pragma Inline (Set_Is_Power_Of_2_For_Shift);
    pragma Inline (Set_Is_Prefixed_Call);
    pragma Inline (Set_Is_Protected_Subprogram_Body);
-   pragma Inline (Set_Has_Self_Reference);
    pragma Inline (Set_Is_Static_Coextension);
    pragma Inline (Set_Is_Static_Expression);
    pragma Inline (Set_Is_Subprogram_Descriptor);
    pragma Inline (Set_Is_Task_Allocation_Block);
    pragma Inline (Set_Is_Task_Master);
    pragma Inline (Set_Iteration_Scheme);
+   pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Itype);
    pragma Inline (Set_Kill_Range_Check);
+   pragma Inline (Set_Label_Construct);
    pragma Inline (Set_Last_Bit);
    pragma Inline (Set_Last_Name);
-   pragma Inline (Set_Library_Unit);
-   pragma Inline (Set_Label_Construct);
    pragma Inline (Set_Left_Opnd);
-   pragma Inline (Set_Limited_View_Installed);
+   pragma Inline (Set_Library_Unit);
    pragma Inline (Set_Limited_Present);
+   pragma Inline (Set_Limited_View_Installed);
    pragma Inline (Set_Literals);
    pragma Inline (Set_Local_Raise_Not_OK);
    pragma Inline (Set_Local_Raise_Statements);
@@ -12398,9 +12461,9 @@ package Sinfo is
    pragma Inline (Set_No_Initialization);
    pragma Inline (Set_No_Minimize_Eliminate);
    pragma Inline (Set_No_Truncation);
-   pragma Inline (Set_Null_Present);
    pragma Inline (Set_Null_Exclusion_Present);
    pragma Inline (Set_Null_Exclusion_In_Return_Present);
+   pragma Inline (Set_Null_Present);
    pragma Inline (Set_Null_Record_Present);
    pragma Inline (Set_Object_Definition);
    pragma Inline (Set_Of_Present);
@@ -12409,8 +12472,8 @@ package Sinfo is
    pragma Inline (Set_Others_Discrete_Choices);
    pragma Inline (Set_Out_Present);
    pragma Inline (Set_Parameter_Associations);
-   pragma Inline (Set_Parameter_Specifications);
    pragma Inline (Set_Parameter_List_Truncated);
+   pragma Inline (Set_Parameter_Specifications);
    pragma Inline (Set_Parameter_Type);
    pragma Inline (Set_Parent_Spec);
    pragma Inline (Set_Position);
@@ -12453,38 +12516,38 @@ package Sinfo is
    pragma Inline (Set_Selector_Names);
    pragma Inline (Set_Shift_Count_OK);
    pragma Inline (Set_Source_Type);
-   pragma Inline (Set_Spec_PPC_List);
    pragma Inline (Set_Spec_CTC_List);
+   pragma Inline (Set_Spec_PPC_List);
    pragma Inline (Set_Specification);
    pragma Inline (Set_Split_PPC);
    pragma Inline (Set_Statements);
    pragma Inline (Set_Storage_Pool);
-   pragma Inline (Set_Subpool_Handle_Name);
    pragma Inline (Set_Strval);
+   pragma Inline (Set_Subpool_Handle_Name);
    pragma Inline (Set_Subtype_Indication);
    pragma Inline (Set_Subtype_Mark);
    pragma Inline (Set_Subtype_Marks);
    pragma Inline (Set_Suppress_Assignment_Checks);
    pragma Inline (Set_Suppress_Loop_Warnings);
    pragma Inline (Set_Synchronized_Present);
+   pragma Inline (Set_TSS_Elist);
    pragma Inline (Set_Tagged_Present);
    pragma Inline (Set_Target_Type);
    pragma Inline (Set_Task_Definition);
    pragma Inline (Set_Task_Present);
    pragma Inline (Set_Then_Actions);
    pragma Inline (Set_Then_Statements);
+   pragma Inline (Set_Treat_Fixed_As_Integer);
    pragma Inline (Set_Triggering_Alternative);
    pragma Inline (Set_Triggering_Statement);
-   pragma Inline (Set_Treat_Fixed_As_Integer);
-   pragma Inline (Set_TSS_Elist);
    pragma Inline (Set_Type_Definition);
    pragma Inline (Set_Unit);
    pragma Inline (Set_Unknown_Discriminants_Present);
    pragma Inline (Set_Unreferenced_In_Spec);
+   pragma Inline (Set_Used_Operations);
    pragma Inline (Set_Variant_Part);
    pragma Inline (Set_Variants);
    pragma Inline (Set_Visible_Declarations);
-   pragma Inline (Set_Used_Operations);
    pragma Inline (Set_Was_Originally_Stub);
    pragma Inline (Set_Withed_Body);
 

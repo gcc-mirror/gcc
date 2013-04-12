@@ -1841,6 +1841,11 @@ package body Exp_Aggr is
       --  these discriminants are not components of the aggregate, and must be
       --  initialized. The assignments are appended to List.
 
+      function Get_Explicit_Discriminant_Value (D : Entity_Id)  return Node_Id;
+      --  If the ancestor part is an unconstrained type and further ancestors
+      --  do not provide discriminants for it, check aggregate components for
+      --  values of the discriminants.
+
       function Is_Int_Range_Bounds (Bounds : Node_Id) return Boolean;
       --  Check whether Bounds is a range node and its lower and higher bounds
       --  are integers literals.
@@ -2058,6 +2063,35 @@ package body Exp_Aggr is
 
          return Empty;
       end Get_Constraint_Association;
+
+      -------------------------------------
+      -- Get_Explicit_Discriminant_Value --
+      -------------------------------------
+
+      function Get_Explicit_Discriminant_Value (D : Entity_Id)  return Node_Id
+      is
+         Assoc  : Node_Id;
+         Choice : Node_Id;
+         Val    : Node_Id;
+
+      begin
+         --  The aggregate has been normalized and all associations have a
+         --  single choice.
+
+         Assoc := First (Component_Associations (N));
+         while Present (Assoc) loop
+            Choice := First (Choices (Assoc));
+            if Chars (Choice) = Chars (D) then
+               Val := Expression (Assoc);
+               Remove (Assoc);
+               return Val;
+            end if;
+
+            Next (Assoc);
+         end loop;
+
+         return Empty;
+      end Get_Explicit_Discriminant_Value;
 
       -------------------------------
       -- Init_Hidden_Discriminants --
@@ -2296,6 +2330,15 @@ package body Exp_Aggr is
                      Discrim := First_Discriminant (Anc_Typ);
                      while Present (Discrim) loop
                         Disc_Value := Ancestor_Discriminant_Value (Discrim);
+
+                        --  If no usable discriminant in ancestors, check
+                        --  whether aggregate has an explicit value for it.
+
+                        if No (Disc_Value) then
+                           Disc_Value :=
+                             Get_Explicit_Discriminant_Value (Discrim);
+                        end if;
+
                         Append_To (Anc_Constr, Disc_Value);
                         Next_Discriminant (Discrim);
                      end loop;

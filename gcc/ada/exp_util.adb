@@ -5458,10 +5458,7 @@ package body Exp_Util is
       pragma Assert
         (Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)));
 
-      if Check_Enabled (Name_Invariant)
-           or else
-         Check_Enabled (Name_Assertion)
-      then
+      if Check_Enabled (Name_Invariant) then
          return
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
@@ -5590,14 +5587,26 @@ package body Exp_Util is
       Expr : Node_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Expr);
+      Nam : Name_Id;
 
    begin
+      --  Compute proper name to use, we need to get this right so that the
+      --  right set of check policies apply to the CHeck pragma we are making.
+
+      if Has_Dynamic_Predicate_Aspect (Typ) then
+         Nam := Name_Dynamic_Predicate;
+      elsif Has_Static_Predicate_Aspect (Typ) then
+         Nam := Name_Static_Predicate;
+      else
+         Nam := Name_Predicate;
+      end if;
+
       return
         Make_Pragma (Loc,
           Pragma_Identifier            => Make_Identifier (Loc, Name_Check),
           Pragma_Argument_Associations => New_List (
             Make_Pragma_Argument_Association (Loc,
-              Expression => Make_Identifier (Loc, Name_Predicate)),
+              Expression => Make_Identifier (Loc, Nam)),
             Make_Pragma_Argument_Association (Loc,
               Expression => Make_Predicate_Call (Typ, Expr))));
    end Make_Predicate_Check;
