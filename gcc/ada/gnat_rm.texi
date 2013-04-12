@@ -7135,7 +7135,7 @@ what is passed to @code{Allocate} and returned from @code{Deallocate}.
 the number of values represented by the subtype (zero for a null
 range).  The result is static for static subtypes.  @code{Range_Length}
 applied to the index subtype of a one dimensional array always gives the
-same result as @code{Range} applied to the array itself.
+same result as @code{Length} applied to the array itself.
 
 @node Ref
 @unnumberedsec Ref
