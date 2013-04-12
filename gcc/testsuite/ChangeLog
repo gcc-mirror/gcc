@@ -1,3 +1,25 @@
+2013-04-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56261
+	* gfortran.dg/auto_char_len_4.f90: Add -pedantic. Changed error.
+	* gfortran.dg/assumed_rank_4.f90: Modified error wording.
+	* gfortran.dg/block_11.f90: Fix invalid test case.
+	* gfortran.dg/function_types_3.f90: Add new error message.
+	* gfortran.dg/global_references_1.f90: Ditto.
+	* gfortran.dg/import2.f90: Remove unneeded parts.
+	* gfortran.dg/import6.f90: Fix invalid test case.
+	* gfortran.dg/proc_decl_2.f90: Ditto.
+	* gfortran.dg/proc_decl_9.f90: Ditto.
+	* gfortran.dg/proc_decl_18.f90: Ditto.
+	* gfortran.dg/proc_ptr_40.f90: New.
+	* gfortran.dg/whole_file_7.f90: Modified error wording.
+	* gfortran.dg/whole_file_16.f90: Ditto.
+	* gfortran.dg/whole_file_17.f90: Add -pedantic.
+	* gfortran.dg/whole_file_18.f90: Modified error wording.
+	* gfortran.dg/whole_file_20.f03: Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_associated.f90: Fix
+	invalid test case.
+
 2013-04-12  Richard Biener  <rguenther@suse.de>
 
 	Revert

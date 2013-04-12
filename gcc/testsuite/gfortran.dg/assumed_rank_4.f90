@@ -20,8 +20,8 @@ end subroutine valid2
 
 subroutine foo99(x)
   integer  x(99)
-  call valid1(x) ! { dg-error "Procedure 'valid1' at .1. with assumed-rank dummy argument 'x' must have an explicit interface" }
-  call valid2(x(1)) ! { dg-error "Procedure 'valid2' at .1. with assumed-type dummy argument 'x' must have an explicit interface" }
+  call valid1(x) ! { dg-error "Explicit interface required" }
+  call valid2(x(1)) ! { dg-error "Explicit interface required" }
 end subroutine foo99
 
 subroutine foo(x)

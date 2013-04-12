@@ -1239,7 +1239,7 @@ check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	  return false;
 	}
 
-      if (r1->ts.u.cl->length)
+      if (r1->ts.u.cl->length && r2->ts.u.cl->length)
 	{
 	  int compval = gfc_dep_compare_expr (r1->ts.u.cl->length,
 					      r2->ts.u.cl->length);

@@ -2843,6 +2843,7 @@ match gfc_iso_c_sub_interface(gfc_code *, gfc_symbol *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);
 bool gfc_type_is_extensible (gfc_symbol *);
 bool gfc_resolve_intrinsic (gfc_symbol *, locus *);
+bool gfc_explicit_interface_required (gfc_symbol *, char *, int);
 
 
 /* array.c */

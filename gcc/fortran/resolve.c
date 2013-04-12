@@ -2118,6 +2118,126 @@ not_entry_self_reference  (gfc_symbol *sym, gfc_namespace *gsym_ns)
   return true;
 }
 
+
+/* Check for the requirement of an explicit interface. F08:12.4.2.2.  */
+
+bool
+gfc_explicit_interface_required (gfc_symbol *sym, char *errmsg, int err_len)
+{
+  gfc_formal_arglist *arg = gfc_sym_get_dummy_args (sym);
+
+  for ( ; arg; arg = arg->next)
+    {
+      if (!arg->sym)
+	continue;
+
+      if (arg->sym->attr.allocatable)  /* (2a)  */
+	{
+	  strncpy (errmsg, _("allocatable argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->attr.asynchronous)
+	{
+	  strncpy (errmsg, _("asynchronous argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->attr.optional)
+	{
+	  strncpy (errmsg, _("optional argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->attr.pointer)
+	{
+	  strncpy (errmsg, _("pointer argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->attr.target)
+	{
+	  strncpy (errmsg, _("target argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->attr.value)
+	{
+	  strncpy (errmsg, _("value argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->attr.volatile_)
+	{
+	  strncpy (errmsg, _("volatile argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->as && arg->sym->as->type == AS_ASSUMED_SHAPE)  /* (2b)  */
+	{
+	  strncpy (errmsg, _("assumed-shape argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->as && arg->sym->as->type == AS_ASSUMED_RANK)  /* TS 29113, 6.2.  */
+	{
+	  strncpy (errmsg, _("assumed-rank argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->attr.codimension)  /* (2c)  */
+	{
+	  strncpy (errmsg, _("coarray argument"), err_len);
+	  return true;
+	}
+      else if (false)  /* (2d) TODO: parametrized derived type  */
+	{
+	  strncpy (errmsg, _("parametrized derived type argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->ts.type == BT_CLASS)  /* (2e)  */
+	{
+	  strncpy (errmsg, _("polymorphic argument"), err_len);
+	  return true;
+	}
+      else if (arg->sym->ts.type == BT_ASSUMED)
+	{
+	  /* As assumed-type is unlimited polymorphic (cf. above).
+	     See also TS 29113, Note 6.1.  */
+	  strncpy (errmsg, _("assumed-type argument"), err_len);
+	  return true;
+	}
+    }
+
+  if (sym->attr.function)
+    {
+      gfc_symbol *res = sym->result ? sym->result : sym;
+
+      if (res->attr.dimension)  /* (3a)  */
+	{
+	  strncpy (errmsg, _("array result"), err_len);
+	  return true;
+	}
+      else if (res->attr.pointer || res->attr.allocatable)  /* (3b)  */
+	{
+	  strncpy (errmsg, _("pointer or allocatable result"), err_len);
+	  return true;
+	}
+      else if (res->ts.type == BT_CHARACTER && res->ts.u.cl
+	       && res->ts.u.cl->length
+	       && res->ts.u.cl->length->expr_type != EXPR_CONSTANT)  /* (3c)  */
+	{
+	  strncpy (errmsg, _("result with non-constant character length"), err_len);
+	  return true;
+	}
+    }
+
+  if (sym->attr.elemental)  /* (4)  */
+    {
+      strncpy (errmsg, _("elemental procedure"), err_len);
+      return true;
+    }
+  else if (sym->attr.is_bind_c)  /* (5)  */
+    {
+      strncpy (errmsg, _("bind(c) procedure"), err_len);
+      return true;
+    }
+
+  return false;
+}
+
+
 static void
 resolve_global_procedure (gfc_symbol *sym, locus *where,
 			  gfc_actual_arglist **actual, int sub)
@@ -2125,6 +2245,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
   gfc_gsymbol * gsym;
   gfc_namespace *ns;
   enum gfc_symbol_type type;
+  char reason[200];
 
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 
@@ -2195,160 +2316,32 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	      }
 	}
 
-      /* Differences in constant character lengths.  */
-      if (sym->attr.function && sym->ts.type == BT_CHARACTER)
+      if (sym->attr.function && !gfc_compare_types (&sym->ts, &def_sym->ts))
 	{
-	  long int l1 = 0, l2 = 0;
-	  gfc_charlen *cl1 = sym->ts.u.cl;
-	  gfc_charlen *cl2 = def_sym->ts.u.cl;
-
-	  if (cl1 != NULL
-	      && cl1->length != NULL
-	      && cl1->length->expr_type == EXPR_CONSTANT)
-	    l1 = mpz_get_si (cl1->length->value.integer);
-
-  	  if (cl2 != NULL
-	      && cl2->length != NULL
-	      && cl2->length->expr_type == EXPR_CONSTANT)
-	    l2 = mpz_get_si (cl2->length->value.integer);
-
-	  if (l1 && l2 && l1 != l2)
-	    gfc_error ("Character length mismatch in return type of "
-		       "function '%s' at %L (%ld/%ld)", sym->name,
-		       &sym->declared_at, l1, l2);
+	  gfc_error ("Return type mismatch of function '%s' at %L (%s/%s)",
+		     sym->name, &sym->declared_at, gfc_typename (&sym->ts),
+		     gfc_typename (&def_sym->ts));
+	  goto done;
 	}
 
-     /* Type mismatch of function return type and expected type.  */
-     if (sym->attr.function
-	 && !gfc_compare_types (&sym->ts, &def_sym->ts))
-	gfc_error ("Return type mismatch of function '%s' at %L (%s/%s)",
-		   sym->name, &sym->declared_at, gfc_typename (&sym->ts),
-		   gfc_typename (&def_sym->ts));
-
-      if (def_sym->formal && sym->attr.if_source != IFSRC_IFBODY)
+      if (sym->attr.if_source == IFSRC_UNKNOWN
+	  && gfc_explicit_interface_required (def_sym, reason, sizeof(reason)))
 	{
-	  gfc_formal_arglist *arg = def_sym->formal;
-	  for ( ; arg; arg = arg->next)
-	    if (!arg->sym)
-	      continue;
-	    /* F2003, 12.3.1.1 (2a); F2008, 12.4.2.2 (2a)  */
-	    else if (arg->sym->attr.allocatable
-		     || arg->sym->attr.asynchronous
-		     || arg->sym->attr.optional
-		     || arg->sym->attr.pointer
-		     || arg->sym->attr.target
-		     || arg->sym->attr.value
-		     || arg->sym->attr.volatile_)
-	      {
-		gfc_error ("Dummy argument '%s' of procedure '%s' at %L "
-			   "has an attribute that requires an explicit "
-			   "interface for this procedure", arg->sym->name,
-			   sym->name, &sym->declared_at);
-		break;
-	      }
-	    /* F2003, 12.3.1.1 (2b); F2008, 12.4.2.2 (2b)  */
-	    else if (arg->sym && arg->sym->as
-		     && arg->sym->as->type == AS_ASSUMED_SHAPE)
-	      {
-		gfc_error ("Procedure '%s' at %L with assumed-shape dummy "
-			   "argument '%s' must have an explicit interface",
-			   sym->name, &sym->declared_at, arg->sym->name);
-		break;
-	      }
-	    /* TS 29113, 6.2.  */
-	    else if (arg->sym && arg->sym->as
-		     && arg->sym->as->type == AS_ASSUMED_RANK)
-	      {
-		gfc_error ("Procedure '%s' at %L with assumed-rank dummy "
-			   "argument '%s' must have an explicit interface",
-			   sym->name, &sym->declared_at, arg->sym->name);
-		break;
-	      }
-	    /* F2008, 12.4.2.2 (2c)  */
-	    else if (arg->sym->attr.codimension)
-	      {
-		gfc_error ("Procedure '%s' at %L with coarray dummy argument "
-			   "'%s' must have an explicit interface",
-			   sym->name, &sym->declared_at, arg->sym->name);
-		break;
-	      }
-	    /* F2003, 12.3.1.1 (2c); F2008, 12.4.2.2 (2d)   */
-	    else if (false) /* TODO: is a parametrized derived type  */
-	      {
-		gfc_error ("Procedure '%s' at %L with parametrized derived "
-			   "type argument '%s' must have an explicit "
-			   "interface", sym->name, &sym->declared_at,
-			   arg->sym->name);
-		break;
-	      }
-	    /* F2003, 12.3.1.1 (2d); F2008, 12.4.2.2 (2e)   */
-	    else if (arg->sym->ts.type == BT_CLASS)
-	      {
-		gfc_error ("Procedure '%s' at %L with polymorphic dummy "
-			   "argument '%s' must have an explicit interface",
-			   sym->name, &sym->declared_at, arg->sym->name);
-		break;
-	      }
-	    /* As assumed-type is unlimited polymorphic (cf. above).
-	       See also  TS 29113, Note 6.1.  */
-	    else if (arg->sym->ts.type == BT_ASSUMED)
-	      {
-		gfc_error ("Procedure '%s' at %L with assumed-type dummy "
-			   "argument '%s' must have an explicit interface",
-			   sym->name, &sym->declared_at, arg->sym->name);
-		break;
-	      }
+	  gfc_error ("Explicit interface required for '%s' at %L: %s",
+		     sym->name, &sym->declared_at, reason);
+	  goto done;
 	}
 
-      if (def_sym->attr.function)
-	{
-	  /* F2003, 12.3.1.1 (3a); F2008, 12.4.2.2 (3a) */
-	  if (def_sym->as && def_sym->as->rank
-	      && (!sym->as || sym->as->rank != def_sym->as->rank))
-	    gfc_error ("The reference to function '%s' at %L either needs an "
-		       "explicit INTERFACE or the rank is incorrect", sym->name,
-		       where);
+      if (!pedantic && (gfc_option.allow_std & GFC_STD_GNU))
+	/* Turn erros into warnings with -std=gnu and -std=legacy.  */
+	gfc_errors_to_warnings (1);
 
-	  /* F2003, 12.3.1.1 (3b); F2008, 12.4.2.2 (3b) */
-	  if ((def_sym->result->attr.pointer
-	       || def_sym->result->attr.allocatable)
-	       && (sym->attr.if_source != IFSRC_IFBODY
-		   || def_sym->result->attr.pointer
-			!= sym->result->attr.pointer
-		   || def_sym->result->attr.allocatable
-			!= sym->result->attr.allocatable))
-	    gfc_error ("Function '%s' at %L with a POINTER or ALLOCATABLE "
-		       "result must have an explicit interface", sym->name,
-		       where);
-
-	  /* F2003, 12.3.1.1 (3c); F2008, 12.4.2.2 (3c)  */
-	  if (sym->ts.type == BT_CHARACTER && sym->attr.if_source != IFSRC_IFBODY
-	      && def_sym->ts.type == BT_CHARACTER && def_sym->ts.u.cl->length != NULL)
-	    {
-	      gfc_charlen *cl = sym->ts.u.cl;
-
-	      if (!sym->attr.entry_master && sym->attr.if_source == IFSRC_UNKNOWN
-		  && cl && cl->length && cl->length->expr_type != EXPR_CONSTANT)
-		{
-		  gfc_error ("Nonconstant character-length function '%s' at %L "
-			     "must have an explicit interface", sym->name,
-			     &sym->declared_at);
-		}
-	    }
-	}
-
-      /* F2003, 12.3.1.1 (4); F2008, 12.4.2.2 (4) */
-      if (def_sym->attr.elemental && !sym->attr.elemental)
-	{
-	  gfc_error ("ELEMENTAL procedure '%s' at %L must have an explicit "
-		     "interface", sym->name, &sym->declared_at);
-	}
-
-      /* F2003, 12.3.1.1 (5); F2008, 12.4.2.2 (5) */
-      if (def_sym->attr.is_bind_c && !sym->attr.is_bind_c)
-	{
-	  gfc_error ("Procedure '%s' at %L with BIND(C) attribute must have "
-		     "an explicit interface", sym->name, &sym->declared_at);
+      if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
+				   reason, sizeof(reason), NULL, NULL))
+	{	
+	  gfc_error ("Interface mismatch in global procedure '%s' at %L: %s ",
+		    sym->name, &sym->declared_at, reason);
+	  goto done;
 	}
 
       if (!pedantic
@@ -2358,9 +2351,10 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
       if (sym->attr.if_source != IFSRC_IFBODY)
 	gfc_procedure_use (def_sym, actual, where);
-
-      gfc_errors_to_warnings (0);
     }
+    
+done:
+  gfc_errors_to_warnings (0);
 
   if (gsym->type == GSYM_UNKNOWN)
     {
