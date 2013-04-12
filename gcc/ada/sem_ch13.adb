@@ -2770,6 +2770,7 @@ package body Sem_Ch13 is
       end if;
 
       Set_Entity (N, U_Ent);
+      Check_Restriction_No_Use_Of_Attribute (N);
 
       --  Switch on particular attribute
 

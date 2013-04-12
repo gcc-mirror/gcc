@@ -3667,6 +3667,10 @@ package body Sem_Res is
                         Establish_Transient_Scope (A, False);
                      end if;
                   end;
+
+                  if Ekind (Etype (F)) = E_Anonymous_Access_Type then
+                     Check_Restriction (No_Access_Parameter_Allocators, A);
+                  end if;
                end if;
 
                --  (Ada 2005): The call may be to a primitive operation of
@@ -4552,6 +4556,8 @@ package body Sem_Res is
                          Defining_Identifier (Associated_Node_For_Itype (Typ));
 
             begin
+               Check_Restriction (No_Coextensions, N);
+
                --  Ada 2012 AI05-0052: If the designated type of the allocator
                --  is limited, then the allocator shall not be used to define
                --  the value of an access discriminant unless the discriminated
