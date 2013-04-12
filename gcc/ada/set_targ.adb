@@ -487,18 +487,26 @@ begin
       pragma Import (C, save_argv);
       --  Saved value of argv (argument pointers), imported from misc.c
 
-      function Len_Arg (Arg : Pos) return Nat;
-      --  Determine length of argument number Arg on original gnat1 command
-      --  line.
+      gnat_argc : Nat;
+      gnat_argv : Arg_Array_Ptr;
+      pragma Import (C, gnat_argc);
+      pragma Import (C, gnat_argv);
+      --  If save_argv is not set, default to gnat_argc/argv
+
+      argc : Nat;
+      argv : Arg_Array_Ptr;
+
+      function Len_Arg (Arg : Big_String_Ptr) return Nat;
+      --  Determine length of argument Arg (a nul terminated C string).
 
       -------------
       -- Len_Arg --
       -------------
 
-      function Len_Arg (Arg : Pos) return Nat is
+      function Len_Arg (Arg : Big_String_Ptr) return Nat is
       begin
          for J in 1 .. Nat'Last loop
-            if save_argv (Arg).all (Natural (J)) = ASCII.NUL then
+            if Arg (Natural (J)) = ASCII.NUL then
                return J - 1;
             end if;
          end loop;
@@ -507,12 +515,21 @@ begin
       end Len_Arg;
 
    begin
+      if save_argv /= null then
+         argv := save_argv;
+         argc := save_argc;
+      else
+         --  Case of a non gcc compiler, e.g. gnat2why or gnat2scil
+         argv := gnat_argv;
+         argc := gnat_argc;
+      end if;
+
       --  Loop through arguments looking for -gnateT, also look for -gnatd.b
 
-      for Arg in 1 .. save_argc - 1 loop
+      for Arg in 1 .. argc - 1 loop
          declare
-            Argv_Ptr : constant Big_String_Ptr := save_argv (Arg);
-            Argv_Len : constant Nat            := Len_Arg (Arg);
+            Argv_Ptr : constant Big_String_Ptr := argv (Arg);
+            Argv_Len : constant Nat            := Len_Arg (Argv_Ptr);
 
          begin
             if Argv_Len > 8

@@ -169,32 +169,32 @@ AdaCore@*
 * About This Guide::
 * Getting Started with GNAT::
 * The GNAT Compilation Model::
-* Compiling With gcc::
-* Binding With gnatbind::
-* Linking With gnatlink::
+* Compiling with gcc::
+* Binding with gnatbind::
+* Linking with gnatlink::
 * The GNAT Make Program gnatmake::
 * Improving Performance::
-* Renaming Files Using gnatchop::
+* Renaming Files with gnatchop::
 * Configuration Pragmas::
-* Handling Arbitrary File Naming Conventions Using gnatname::
+* Handling Arbitrary File Naming Conventions with gnatname::
 * GNAT Project Manager::
 * Tools Supporting Project Files::
 * The Cross-Referencing Tools gnatxref and gnatfind::
 * The GNAT Pretty-Printer gnatpp::
-* The GNAT Metric Tool gnatmetric::
-* File Name Krunching Using gnatkr::
-* Preprocessing Using gnatprep::
+* The GNAT Metrics Tool gnatmetric::
+* File Name Krunching with gnatkr::
+* Preprocessing with gnatprep::
 * The GNAT Library Browser gnatls::
-* Cleaning Up Using gnatclean::
+* Cleaning Up with gnatclean::
 @ifclear vms
 * GNAT and Libraries::
 * Using the GNU make Utility::
 @end ifclear
 * Memory Management Issues::
 * Stack Related Facilities::
-* Verifying Properties Using gnatcheck::
-* Creating Sample Bodies Using gnatstub::
-* Creating Unit Tests Using gnattest::
+* Verifying Properties with gnatcheck::
+* Creating Sample Bodies with gnatstub::
+* Creating Unit Tests with gnattest::
 * Performing Dimensionality Analysis in GNAT::
 * Generating Ada Bindings for C and C++ headers::
 * Other Utility Programs::
@@ -257,21 +257,21 @@ The GNAT Compilation Model
 * Placement of temporary files::
 @end ifset
 
-Compiling With gcc
+Compiling with gcc
 * Compiling Programs::
 * Switches for gcc::
 * Search Paths and the Run-Time Library (RTL)::
 * Order of Compilation Issues::
 * Examples::
 
-Binding With gnatbind
+Binding with gnatbind
 * Running gnatbind::
 * Switches for gnatbind::
 * Command-Line Access::
 * Search Paths for gnatbind::
 * Examples of gnatbind Usage::
 
-Linking With gnatlink
+Linking with gnatlink
 * Running gnatlink::
 * Switches for gnatlink::
 
@@ -289,7 +289,7 @@ Improving Performance
 * Reducing Size of Ada Executables with gnatelim::
 * Reducing Size of Executables with unused subprogram/data elimination::
 
-Renaming Files Using gnatchop
+Renaming Files with gnatchop
 * Handling Files with Multiple Units::
 * Operating gnatchop in Compilation Mode::
 * Command Line for gnatchop::
@@ -300,7 +300,7 @@ Configuration Pragmas
 * Handling of Configuration Pragmas::
 * The Configuration Pragmas Files::
 
-Handling Arbitrary File Naming Conventions Using gnatname
+Handling Arbitrary File Naming Conventions with gnatname
 * Arbitrary File Naming Conventions::
 * Running gnatname::
 * Switches for gnatname::
@@ -318,11 +318,8 @@ GNAT Project Manager
 * Project File Reference::
 
 Tools Supporting Project Files
-* Switches Related to Project Files::
-* Switches and Project Files::
-* Specifying Configuration Pragmas::
-* Project Files and Main Subprograms::
-* Library Project Files::
+* gnatmake and Project Files::
+* The GNAT Driver and Project Files::
 
 The Cross-Referencing Tools gnatxref and gnatfind
 * Switches for gnatxref::
@@ -339,13 +336,13 @@ The GNAT Pretty-Printer gnatpp
 The GNAT Metrics Tool gnatmetric
 * Switches for gnatmetric::
 
-File Name Krunching Using gnatkr
+File Name Krunching with gnatkr
 * About gnatkr::
 * Using gnatkr::
 * Krunching Method::
 * Examples of gnatkr Usage::
 
-Preprocessing Using gnatprep
+Preprocessing with gnatprep
 * Preprocessing Symbols::
 * Using gnatprep::
 * Switches for gnatprep::
@@ -357,7 +354,7 @@ The GNAT Library Browser gnatls
 * Switches for gnatls::
 * Examples of gnatls Usage::
 
-Cleaning Up Using gnatclean
+Cleaning Up with gnatclean
 * Running gnatclean::
 * Switches for gnatclean::
 @c * Examples of gnatclean Usage::
@@ -388,13 +385,13 @@ Stack Related Facilities
 * Static Stack Usage Analysis::
 * Dynamic Stack Usage Analysis::
 
-Verifying Properties Using gnatcheck
+Verifying Properties with gnatcheck
 
-Creating Sample Bodies Using gnatstub
+Creating Sample Bodies with gnatstub
 * Running gnatstub::
 * Switches for gnatstub::
 
-Creating Unit Tests Using gnattest
+Creating Unit Tests with gnattest
 * Running gnattest::
 * Switches for gnattest::
 * Project Attributes for gnattest::
@@ -431,8 +428,8 @@ Other Utility Programs
 
 @ifclear vms
 Code Coverage and Profiling
-* Code Coverage of Ada Programs using gcov::
-* Profiling an Ada Program using gprof::
+* Code Coverage of Ada Programs with gcov::
+* Profiling an Ada Program with gprof::
 @end ifclear
 
 Running and Debugging Ada Programs
@@ -445,7 +442,7 @@ Running and Debugging Ada Programs
 * Ada Exceptions::
 * Ada Tasks::
 * Debugging Generic Units::
-* Remote Debugging using gdbserver::
+* Remote Debugging with gdbserver::
 * GNAT Abnormal Termination or Failure to Terminate::
 * Naming Conventions for GNAT Source Files::
 * Getting Internal Debugging Information::
@@ -469,36 +466,6 @@ Compatibility with HP Ada
 * Input-Output::
 * Implementation Limits::
 * Tools and Utilities::
-
-Language-Related Features
-* Integer Types and Representations::
-* Floating-Point Types and Representations::
-* Pragmas Float_Representation and Long_Float::
-* Fixed-Point Types and Representations::
-* Record and Array Component Alignment::
-* Address Clauses::
-* Other Representation Clauses::
-
-Tasking and Task-Related Features
-* Implementation of Tasks in HP Ada for OpenVMS Alpha Systems::
-* Assigning Task IDs::
-* Task IDs and Delays::
-* Task-Related Pragmas::
-* Scheduling and Task Priority::
-* The Task Stack::
-* External Interrupts::
-
-Pragmas and Pragma-Related Features
-* Restrictions on the Pragma INLINE::
-* Restrictions on the Pragma INTERFACE::
-* Restrictions on the Pragma SYSTEM_NAME::
-
-Library of Predefined Units
-* Changes to DECLIB::
-
-Bindings
-* Shared Libraries and Options Files::
-* Interfaces to C::
 @end ifset
 
 Platform-Specific Information for the Run-Time Libraries
@@ -554,13 +521,13 @@ Compatibility and Porting Guide
 * Compatibility with Ada 83::
 * Compatibility between Ada 95 and Ada 2005::
 * Implementation-dependent characteristics::
+* Compatibility with Other Ada Systems::
+* Representation Clauses::
 @ifclear vms
 @c This brief section is only in the non-VMS version
 @c The complete chapter on HP Ada issues is in the VMS version
 * Compatibility with HP Ada 83::
 @end ifclear
-* Compatibility with Other Ada Systems::
-* Representation Clauses::
 @ifset vms
 * Transitioning to 64-Bit GNAT for OpenVMS::
 @end ifset
@@ -578,6 +545,7 @@ Microsoft Windows Topics
 * Introduction to Dynamic Link Libraries (DLLs)::
 * Using DLLs with GNAT::
 * Building DLLs with GNAT::
+* Building DLLs with gnatdll::
 * GNAT and Windows Resources::
 * Debugging a DLL::
 * Setting Stack Size from gnatlink::
@@ -650,16 +618,16 @@ and running Ada programs with the GNAT Ada programming environment.
 by GNAT.
 
 @item
-@ref{Compiling With gcc}, describes how to compile
+@ref{Compiling with gcc}, describes how to compile
 Ada programs with @command{gcc}, the Ada compiler.
 
 @item
-@ref{Binding With gnatbind}, describes how to
+@ref{Binding with gnatbind}, describes how to
 perform binding of Ada programs with @code{gnatbind}, the GNAT binding
 utility.
 
 @item
-@ref{Linking With gnatlink},
+@ref{Linking with gnatlink},
 describes @command{gnatlink}, a
 program that provides for linking using the GNAT run-time library to
 construct a program. @command{gnatlink} can also incorporate foreign language
@@ -679,7 +647,7 @@ also describes the @command{gnatelim} tool and unused subprogram/data
 elimination.
 
 @item
-@ref{Renaming Files Using gnatchop}, describes
+@ref{Renaming Files with gnatchop}, describes
 @code{gnatchop}, a utility that allows you to preprocess a file that
 contains Ada source code, and split it into one or more new files, one
 for each compilation unit.
@@ -689,7 +657,7 @@ for each compilation unit.
 handled by GNAT.
 
 @item
-@ref{Handling Arbitrary File Naming Conventions Using gnatname},
+@ref{Handling Arbitrary File Naming Conventions with gnatname},
 shows how to override the default GNAT file naming conventions,
 either for an individual unit or globally.
 
@@ -708,17 +676,17 @@ version of an Ada source file with control over casing, indentation,
 comment placement, and other elements of program presentation style.
 
 @item
-@ref{The GNAT Metric Tool gnatmetric}, shows how to compute various
+@ref{The GNAT Metrics Tool gnatmetric}, shows how to compute various
 metrics for an Ada source file, such as the number of types and subprograms,
 and assorted complexity measures.
 
 @item
-@ref{File Name Krunching Using gnatkr}, describes the @code{gnatkr}
+@ref{File Name Krunching with gnatkr}, describes the @code{gnatkr}
 file name krunching utility, used to handle shortened
 file names on operating systems with a limit on the length of names.
 
 @item
-@ref{Preprocessing Using gnatprep}, describes @code{gnatprep}, a
+@ref{Preprocessing with gnatprep}, describes @code{gnatprep}, a
 preprocessor utility that allows a single source file to be used to
 generate multiple or parameterized source files by means of macro
 substitution.
@@ -729,7 +697,7 @@ utility that displays information about compiled units, including dependences
 on the corresponding sources files, and consistency of compilations.
 
 @item
-@ref{Cleaning Up Using gnatclean}, describes @code{gnatclean}, a utility
+@ref{Cleaning Up with gnatclean}, describes @code{gnatclean}, a utility
 to delete files that are produced by the compiler, binder and linker.
 
 @ifclear vms
@@ -757,15 +725,15 @@ allocation and deallocation and helps detect ``memory leaks''.
 stack checking and analysis.
 
 @item
-@ref{Verifying Properties Using gnatcheck}, discusses @code{gnatcheck},
+@ref{Verifying Properties with gnatcheck}, discusses @code{gnatcheck},
 a utility that checks Ada code against a set of rules.
 
 @item
-@ref{Creating Sample Bodies Using gnatstub}, discusses @code{gnatstub},
+@ref{Creating Sample Bodies with gnatstub}, discusses @code{gnatstub},
 a utility that generates empty but compilable bodies for library units.
 
 @item
-@ref{Creating Unit Tests Using gnattest}, discusses @code{gnattest},
+@ref{Creating Unit Tests with gnattest}, discusses @code{gnattest},
 a utility that generates unit testing templates for library units.
 
 @item
@@ -1056,7 +1024,7 @@ Alternatively, if you want to rename your files according to this default
 convention, which is probably more convenient if you will be using GNAT
 for all your compilations, then the @code{gnatchop} utility
 can be used to generate correctly-named source files
-(@pxref{Renaming Files Using gnatchop}).
+(@pxref{Renaming Files with gnatchop}).
 
 You can compile the program using the following command (@code{$} is used
 as the command prompt in the examples in this document):
@@ -1993,7 +1961,7 @@ can specify the exact file names that you want used, as described
 in the next section. Finally, if your Ada programs are migrating from a
 compiler with a different naming convention, you can use the gnatchop
 utility to produce source files that follow the GNAT naming conventions.
-(For details @pxref{Renaming Files Using gnatchop}.)
+(For details @pxref{Renaming Files with gnatchop}.)
 
 Note: in the case of @code{Windows NT/XP} or @code{OpenVMS} operating
 systems, case is not significant. So for example on @code{Windows XP}
@@ -3725,8 +3693,8 @@ GNAT uses the current directory for temporary files.
 @end ifset
 
 @c *************************
-@node Compiling With gcc
-@chapter Compiling With @command{gcc}
+@node Compiling with gcc
+@chapter Compiling with @command{gcc}
 
 @noindent
 This chapter discusses how to compile Ada programs using the @command{gcc}
@@ -7015,7 +6983,7 @@ on subprogram calls and generic instantiations.
 Note that @option{-gnatE} is not necessary for safety, because in the
 default mode, GNAT ensures statically that the checks would not fail.
 For full details of the effect and use of this switch,
-@xref{Compiling With gcc}.
+@xref{Compiling with gcc}.
 
 @item -fstack-check
 @cindex @option{-fstack-check} (@command{gcc})
@@ -7084,7 +7052,7 @@ Normally, GNAT allows only a single unit in a source file. However, this
 restriction does not apply in syntax-check-only mode, and it is possible
 to check a file containing multiple compilation units concatenated
 together. This is primarily used by the @code{gnatchop} utility
-(@pxref{Renaming Files Using gnatchop}).
+(@pxref{Renaming Files with gnatchop}).
 @end table
 
 @node Using gcc for Semantic Checking
@@ -7859,7 +7827,7 @@ preprocessing.
 
 @noindent
 The actual preprocessing function is described in details in section
-@ref{Preprocessing Using gnatprep}. This section only describes how integrated
+@ref{Preprocessing with gnatprep}. This section only describes how integrated
 preprocessing is triggered and parameterized.
 
 @table @code
@@ -8207,8 +8175,8 @@ Compile the subunit in file @file{abc-def.adb} in semantic-checking-only
 mode.
 @end table
 
-@node Binding With gnatbind
-@chapter Binding With @code{gnatbind}
+@node Binding with gnatbind
+@chapter Binding with @code{gnatbind}
 @findex gnatbind
 
 @menu
@@ -9203,8 +9171,8 @@ since gnatlink will not be able to find the generated file.
 @end table
 
 @c ------------------------------------
-@node Linking With gnatlink
-@chapter Linking With @command{gnatlink}
+@node Linking with gnatlink
+@chapter Linking with @command{gnatlink}
 @c ------------------------------------
 @findex gnatlink
 
@@ -11560,8 +11528,8 @@ It can be observed that the procedure @code{Unused} and the object
 appropriate options.
 
 @c ********************************
-@node Renaming Files Using gnatchop
-@chapter Renaming Files Using @code{gnatchop}
+@node Renaming Files with gnatchop
+@chapter Renaming Files with @code{gnatchop}
 @findex gnatchop
 
 @noindent
@@ -11918,6 +11886,11 @@ unit will be skipped.
 @cindex Configuration pragmas
 @cindex Pragmas, configuration
 
+@menu
+* Handling of Configuration Pragmas::
+* The Configuration Pragmas Files::
+@end menu
+
 @noindent
 Configuration pragmas include those pragmas described as
 such in the Ada Reference Manual, as well as
@@ -11994,13 +11967,7 @@ recognized by GNAT:
    Validity_Checks
    Warnings
    Wide_Character_Encoding
-
 @end smallexample
-
-@menu
-* Handling of Configuration Pragmas::
-* The Configuration Pragmas Files::
-@end menu
 
 @node Handling of Configuration Pragmas
 @section Handling of Configuration Pragmas
@@ -12090,8 +12057,8 @@ predefined package SYSTEM all the additional types and subprograms that are
 defined in HP Ada. See @ref{Compatibility with HP Ada} for details.
 @end ifset
 
-@node Handling Arbitrary File Naming Conventions Using gnatname
-@chapter Handling Arbitrary File Naming Conventions Using @code{gnatname}
+@node Handling Arbitrary File Naming Conventions with gnatname
+@chapter Handling Arbitrary File Naming Conventions with @code{gnatname}
 @cindex Arbitrary File Naming Conventions
 
 @menu
@@ -13967,6 +13934,11 @@ point to any character in the middle of the identifier.
 @findex gnatpp
 @cindex Pretty-Printer
 
+@menu
+* Switches for gnatpp::
+* Formatting Rules::
+@end menu
+
 @noindent
 ^The @command{gnatpp} tool^GNAT PRETTY^ is an ASIS-based utility
 for source reformatting / pretty-printing.
@@ -14026,11 +13998,6 @@ use the @option{-gnatec} switch to set the configuration file,
 use the @option{-gnat05} switch if sources should be compiled in
 Ada 2005 mode  etc.
 @end itemize
-
-@menu
-* Switches for gnatpp::
-* Formatting Rules::
-@end menu
 
 @node Switches for gnatpp
 @section Switches for @command{gnatpp}
@@ -15137,8 +15104,8 @@ end Test;
 @end smallexample
 
 @c *********************************
-@node The GNAT Metric Tool gnatmetric
-@chapter The GNAT Metric Tool @command{gnatmetric}
+@node The GNAT Metrics Tool gnatmetric
+@chapter The GNAT Metrics Tool @command{gnatmetric}
 @findex gnatmetric
 @cindex Metric tool
 
@@ -15148,6 +15115,10 @@ for computing various program metrics.
 It takes an Ada source file as input and generates a file containing the
 metrics data as output. Various switches control which
 metrics are computed and output.
+
+@menu
+* Switches for gnatmetric::
+@end menu
 
 @command{gnatmetric} generates and uses the ASIS
 tree for the input source and thus requires the input to be syntactically and
@@ -15200,10 +15171,6 @@ and use the @option{-gnatec} switch to set the configuration file,
 use the @option{-gnat05} switch if sources should be compiled in
 Ada 2005 mode etc.
 @end itemize
-
-@menu
-* Switches for gnatmetric::
-@end menu
 
 @node Switches for gnatmetric
 @section Switches for @command{gnatmetric}
@@ -16076,8 +16043,8 @@ the @option{-U} option followed by the name of the main unit:
 
 
 @c ***********************************
-@node File Name Krunching Using gnatkr
-@chapter File Name Krunching Using @code{gnatkr}
+@node File Name Krunching with gnatkr
+@chapter File Name Krunching with @code{gnatkr}
 @findex gnatkr
 
 @noindent
@@ -16292,8 +16259,8 @@ $ gnatkr very_long_unit_name.ads/count=6 --> vlunna.ads
 $ gnatkr very_long_unit_name.ads/count=0 --> very_long_unit_name.ads
 @end smallexample
 
-@node Preprocessing Using gnatprep
-@chapter Preprocessing Using @code{gnatprep}
+@node Preprocessing with gnatprep
+@chapter Preprocessing with @code{gnatprep}
 @findex gnatprep
 
 @noindent
@@ -16889,8 +16856,8 @@ GNU:[LIB.OPENVMS7_1.2_8_1.ADALIB]unchconv.ads
 @end smallexample
 @end ifset
 
-@node Cleaning Up Using gnatclean
-@chapter Cleaning Up Using @code{gnatclean}
+@node Cleaning Up with gnatclean
+@chapter Cleaning Up with @code{gnatclean}
 @findex gnatclean
 @cindex Cleaning tool
 
@@ -18743,8 +18710,8 @@ stack usage reports at run-time. See its body for the details.
 @c *********************************
 @c *            GNATCHECK          *
 @c *********************************
-@node Verifying Properties Using gnatcheck
-@chapter Verifying Properties Using @command{gnatcheck}
+@node Verifying Properties with gnatcheck
+@chapter Verifying Properties with @command{gnatcheck}
 @findex gnatcheck
 @cindex @command{gnatcheck}
 
@@ -18765,8 +18732,8 @@ For full details, refer to @cite{GNATcheck Reference Manual} document.
 
 
 @c *********************************
-@node Creating Sample Bodies Using gnatstub
-@chapter Creating Sample Bodies Using @command{gnatstub}
+@node Creating Sample Bodies with gnatstub
+@chapter Creating Sample Bodies with @command{gnatstub}
 @findex gnatstub
 
 @noindent
@@ -18974,8 +18941,8 @@ Verbose mode: generate version information.
 @end table
 
 @c *********************************
-@node Creating Unit Tests Using gnattest
-@chapter Creating Unit Tests Using @command{gnattest}
+@node Creating Unit Tests with gnattest
+@chapter Creating Unit Tests with @command{gnattest}
 @findex gnattest
 
 @noindent
@@ -20269,12 +20236,12 @@ This chapter describes how to use @code{gcov} - coverage testing tool - and
 @code{gprof} - profiler tool - on your Ada programs.
 
 @menu
-* Code Coverage of Ada Programs using gcov::
-* Profiling an Ada Program using gprof::
+* Code Coverage of Ada Programs with gcov::
+* Profiling an Ada Program with gprof::
 @end menu
 
-@node Code Coverage of Ada Programs using gcov
-@section Code Coverage of Ada Programs using gcov
+@node Code Coverage of Ada Programs with gcov
+@section Code Coverage of Ada Programs with gcov
 @cindex gcov
 @cindex -fprofile-arcs
 @cindex -ftest-coverage
@@ -20361,8 +20328,8 @@ text file, and provide this file to gcov as a parameter,  preceded by a @@
 Note that on AIX compiling a static library with @code{-fprofile-arcs} is
 not supported as there can be unresolved symbols during the final link.
 
-@node Profiling an Ada Program using gprof
-@section Profiling an Ada Program using gprof
+@node Profiling an Ada Program with gprof
+@section Profiling an Ada Program with gprof
 @cindex gprof
 @cindex -pg
 @cindex Profiling
@@ -20587,7 +20554,7 @@ the incorrect user program.
 * Ada Exceptions::
 * Ada Tasks::
 * Debugging Generic Units::
-* Remote Debugging using gdbserver::
+* Remote Debugging with gdbserver::
 * GNAT Abnormal Termination or Failure to Terminate::
 * Naming Conventions for GNAT Source Files::
 * Getting Internal Debugging Information::
@@ -21045,9 +21012,9 @@ When the breakpoint occurs, you can step through the code of the
 instance in the normal manner and examine the values of local variables, as for
 other units.
 
-@node Remote Debugging using gdbserver
-@section Remote Debugging using gdbserver
-@cindex Remote Debugging using gdbserver
+@node Remote Debugging with gdbserver
+@section Remote Debugging with gdbserver
+@cindex Remote Debugging with gdbserver
 
 @noindent
 On platforms where gdbserver is supported, it is possible to use this tool
@@ -27238,7 +27205,7 @@ The preprocessor may be used in two separate modes. It can be used quite
 separately from the compiler, to generate a separate output source file
 that is then fed to the compiler as a separate step. This is the
 @code{gnatprep} utility, whose use is fully described in
-@ref{Preprocessing Using gnatprep}.
+@ref{Preprocessing with gnatprep}.
 @cindex @code{gnatprep}
 
 The preprocessing language allows such constructs as
@@ -29655,12 +29622,6 @@ end API;
 @end cartouche
 @end group
 @end smallexample
-
-@noindent
-Note that a variable is
-@strong{always imported with a DLL convention}. A function
-can have @code{C} or @code{Stdcall} convention.
-(@pxref{Windows Calling Conventions}).
 
 @node Creating an Import Library
 @subsection Creating an Import Library

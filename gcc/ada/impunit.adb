@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2012, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2013, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -380,7 +380,14 @@ package body Impunit is
     ("s-ststop", F),  -- System.Strings.Stream_Ops
     ("s-tasinf", F),  -- System.Task_Info
     ("s-wchcnv", F),  -- System.Wch_Cnv
-    ("s-wchcon", F)); -- System.Wch_Con
+    ("s-wchcon", F),  -- System.Wch_Con
+
+   --  The following are strictly speaking Ada 2012 units, but we are allowed
+   --  to add children to system, so we consider them to be implementation
+   --  defined additions to System in earlier versions of Ada.
+
+    ("s-multip", T),  -- System.Multiprocessors
+    ("s-mudido", T)); -- System.Multiprocessors.Dispatching_Domains
 
    --------------------
    -- Ada 2005 Units --
@@ -544,8 +551,6 @@ package body Impunit is
    --  The following units should be used only in Ada 2012 mode
 
    Non_Imp_File_Names_12 : constant File_List := (
-    ("s-multip", T),  -- System.Multiprocessors
-    ("s-mudido", T),  -- System.Multiprocessors.Dispatching_Domains
     ("s-stposu", T),  -- System.Storage_Pools.Subpools
     ("a-cobove", T),  -- Ada.Containers.Bounded_Vectors
     ("a-cbdlli", T),  -- Ada.Containers.Bounded_Doubly_Linked_Lists
