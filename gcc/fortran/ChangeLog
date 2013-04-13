@@ -1,3 +1,8 @@
+2013-04-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55959
+	* expr.c (gfc_simplify_expr): Branch is not unreachable.
+
 2013-04-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56266
