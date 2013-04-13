@@ -1916,7 +1916,6 @@ gfc_simplify_expr (gfc_expr *p, int type)
 
     case EXPR_COMPCALL:
     case EXPR_PPC:
-      gcc_unreachable ();
       break;
     }
 
