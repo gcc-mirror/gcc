@@ -21,10 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SCHED_INT_H
 #define GCC_SCHED_INT_H
 
+#include "insn-attr.h"
+
 #ifdef INSN_SCHEDULING
 
-/* For state_t.  */
-#include "insn-attr.h"
 #include "df.h"
 #include "basic-block.h"
 

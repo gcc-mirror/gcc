@@ -1,5 +1,11 @@
 2013-04-13  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* sched-deps.c (deps_analyze_insn): Do not check for EH_REGION insn
+	notes, they are emitted only just before final.
+	* sched-int.h: Include insn-attr.h before checking INSN_SCHEDULING.
+
+2013-04-13  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* emit-rtl.c (remove_insn): Do not call df_insn_delete here.
 	* cfgrtl.c (delete_insn): Call it here instead.
 	* lra-spills.c (lra_final_code_change): Use delete_insn.
