@@ -3908,8 +3908,21 @@ set_insn_deleted (rtx insn)
 }
 
 
-/* Remove an insn from its doubly-linked list.  This function knows how
-   to handle sequences.  */
+/* Unlink INSN from the insn chain.
+
+   This function knows how to handle sequences.
+   
+   This function does not invalidate data flow information associated with
+   INSN (i.e. does not call df_insn_delete).  That makes this function
+   usable for only disconnecting an insn from the chain, and re-emit it
+   elsewhere later.
+
+   To later insert INSN elsewhere in the insn chain via add_insn and
+   similar functions, PREV_INSN and NEXT_INSN must be nullified by
+   the caller.  Nullifying them here breaks many insn chain walks.
+
+   To really delete an insn and related DF information, use delete_insn.  */
+
 void
 remove_insn (rtx insn)
 {
@@ -3967,10 +3980,6 @@ remove_insn (rtx insn)
 
       gcc_assert (stack);
     }
-
-  /* Invalidate data flow information associated with INSN.  */
-  if (INSN_P (insn))
-    df_insn_delete (insn);
 
   /* Fix up basic block boundaries, if necessary.  */
   if (!BARRIER_P (insn)

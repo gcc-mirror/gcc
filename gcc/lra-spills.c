@@ -639,7 +639,7 @@ lra_final_code_change (void)
 		 need them anymore and don't want to waste compiler
 		 time processing them in a few subsequent passes.  */
 	      lra_invalidate_insn_data (insn);
-	      remove_insn (insn);
+	      delete_insn (insn);
 	      continue;
 	    }
 
