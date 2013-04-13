@@ -164,6 +164,8 @@ delete_insn (rtx insn)
     {
       /* If this insn has already been deleted, something is very wrong.  */
       gcc_assert (!INSN_DELETED_P (insn));
+      if (INSN_P (insn))
+	df_insn_delete (insn);
       remove_insn (insn);
       INSN_DELETED_P (insn) = 1;
     }

@@ -1,3 +1,14 @@
+2013-04-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* emit-rtl.c (remove_insn): Do not call df_insn_delete here.
+	* cfgrtl.c (delete_insn): Call it here instead.
+	* lra-spills.c (lra_final_code_change): Use delete_insn.
+	* haifa-sched.c (sched_remove_insn): Likewise.
+	* sel-sched-ir.c (return_nop_to_pool): Clear INSN_DELETED_P for nops
+	returning to the nop pool.
+	(sel_remove_insn): Simplify the only_disconnect case via remove_insn,
+	use delete_insn for definitive removal.  Clear BLOCK_FOR_INSN.
+
 2013-04-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/tm.texi.in (LOOP_ALIGN): Remove loop note references.

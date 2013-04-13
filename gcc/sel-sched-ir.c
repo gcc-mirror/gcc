@@ -1065,6 +1065,9 @@ return_nop_to_pool (insn_t nop, bool full_tidying)
   gcc_assert (INSN_IN_STREAM_P (nop));
   sel_remove_insn (nop, false, full_tidying);
 
+  /* We'll recycle this nop.  */
+  INSN_DELETED_P (nop) = 0;
+
   if (nop_pool.n == nop_pool.s)
     nop_pool.v = XRESIZEVEC (rtx, nop_pool.v,
                              (nop_pool.s = 2 * nop_pool.s + 1));
@@ -3929,31 +3932,19 @@ sel_remove_insn (insn_t insn, bool only_disconnect, bool full_tidying)
     }
 
   if (only_disconnect)
-    {
-      insn_t prev = PREV_INSN (insn);
-      insn_t next = NEXT_INSN (insn);
-      basic_block bb = BLOCK_FOR_INSN (insn);
-
-      NEXT_INSN (prev) = next;
-      PREV_INSN (next) = prev;
-
-      if (BB_HEAD (bb) == insn)
-        {
-          gcc_assert (BLOCK_FOR_INSN (prev) == bb);
-          BB_HEAD (bb) = prev;
-        }
-      if (BB_END (bb) == insn)
-        BB_END (bb) = prev;
-    }
+    remove_insn (insn);
   else
     {
-      remove_insn (insn);
+      delete_insn (insn);
       clear_expr (INSN_EXPR (insn));
     }
 
-  /* It is necessary to null this fields before calling add_insn ().  */
+  /* It is necessary to NULL these fields in case we are going to re-insert
+     INSN into the insns stream, as will usually happen in the ONLY_DISCONNECT
+     case, but also for NOPs that we will return to the nop pool.  */
   PREV_INSN (insn) = NULL_RTX;
   NEXT_INSN (insn) = NULL_RTX;
+  set_block_for_insn (insn, NULL);
 
   return tidy_control_flow (bb, full_tidying);
 }

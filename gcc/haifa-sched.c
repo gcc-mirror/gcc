@@ -8198,7 +8198,7 @@ sched_remove_insn (rtx insn)
 
   change_queue_index (insn, QUEUE_NOWHERE);
   current_sched_info->add_remove_insn (insn, 1);
-  remove_insn (insn);
+  delete_insn (insn);
 }
 
 /* Clear priorities of all instructions, that are forward dependent on INSN.
