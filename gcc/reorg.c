@@ -2144,69 +2144,66 @@ fill_simple_delay_slots (int non_jumps_p)
 	  if (CALL_P (insn))
 	    maybe_never = 1;
 
-	    for (trial = next_nonnote_insn (insn); !stop_search_p (trial, 1);
-		 trial = next_trial)
-	      {
-		next_trial = next_nonnote_insn (trial);
+	  for (trial = next_nonnote_insn (insn); !stop_search_p (trial, 1);
+	       trial = next_trial)
+	    {
+	      next_trial = next_nonnote_insn (trial);
 
-		/* This must be an INSN or CALL_INSN.  */
-		pat = PATTERN (trial);
+	      /* This must be an INSN or CALL_INSN.  */
+	      pat = PATTERN (trial);
 
-		/* Stand-alone USE and CLOBBER are just for flow.  */
-		if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+	      /* Stand-alone USE and CLOBBER are just for flow.  */
+	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+		continue;
+
+	      /* If this already has filled delay slots, get the insn needing
+		 the delay slots.  */
+	      if (GET_CODE (pat) == SEQUENCE)
+		trial_delay = XVECEXP (pat, 0, 0);
+	      else
+		trial_delay = trial;
+
+	      /* Stop our search when seeing a jump.  */
+	      if (JUMP_P (trial_delay))
+		break;
+
+	      /* See if we have a resource problem before we try to split.  */
+	      if (GET_CODE (pat) != SEQUENCE
+		  && ! insn_references_resource_p (trial, &set, true)
+		  && ! insn_sets_resource_p (trial, &set, true)
+		  && ! insn_sets_resource_p (trial, &needed, true)
+#ifdef HAVE_cc0
+		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
+#endif
+		  && ! (maybe_never && may_trap_or_fault_p (pat))
+		  && (trial = try_split (pat, trial, 0))
+		  && eligible_for_delay (insn, slots_filled, trial, flags)
+		  && ! can_throw_internal(trial))
+		{
+		  next_trial = next_nonnote_insn (trial);
+		  delay_list = add_to_delay_list (trial, delay_list);
+#ifdef HAVE_cc0
+		  if (reg_mentioned_p (cc0_rtx, pat))
+		    link_cc0_insns (trial);
+#endif
+		  delete_related_insns (trial);
+		  if (slots_to_fill == ++slots_filled)
+		    break;
 		  continue;
+		}
 
-		/* If this already has filled delay slots, get the insn needing
-		   the delay slots.  */
-		if (GET_CODE (pat) == SEQUENCE)
-		  trial_delay = XVECEXP (pat, 0, 0);
-		else
-		  trial_delay = trial;
+	      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
+	      mark_referenced_resources (trial, &needed, true);
 
-		/* Stop our search when seeing a jump.  */
-		if (JUMP_P (trial_delay))
-		  break;
+	      /* Ensure we don't put insns between the setting of cc and the
+		 comparison by moving a setting of cc into an earlier delay
+		 slot since these insns could clobber the condition code.  */
+	      set.cc = 1;
 
-		/* See if we have a resource problem before we try to
-		   split.  */
-		if (GET_CODE (pat) != SEQUENCE
-		    && ! insn_references_resource_p (trial, &set, true)
-		    && ! insn_sets_resource_p (trial, &set, true)
-		    && ! insn_sets_resource_p (trial, &needed, true)
-#ifdef HAVE_cc0
-		    && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
-#endif
-		    && ! (maybe_never && may_trap_or_fault_p (pat))
-		    && (trial = try_split (pat, trial, 0))
-		    && eligible_for_delay (insn, slots_filled, trial, flags)
-		    && ! can_throw_internal(trial))
-		  {
-		    next_trial = next_nonnote_insn (trial);
-		    delay_list = add_to_delay_list (trial, delay_list);
-
-#ifdef HAVE_cc0
-		    if (reg_mentioned_p (cc0_rtx, pat))
-		      link_cc0_insns (trial);
-#endif
-
-		    delete_related_insns (trial);
-		    if (slots_to_fill == ++slots_filled)
-		      break;
-		    continue;
-		  }
-
-		mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
-		mark_referenced_resources (trial, &needed, true);
-
-		/* Ensure we don't put insns between the setting of cc and the
-		   comparison by moving a setting of cc into an earlier delay
-		   slot since these insns could clobber the condition code.  */
-		set.cc = 1;
-
-		/* If this is a call, we might not get here.  */
-		if (CALL_P (trial_delay))
-		  maybe_never = 1;
-	      }
+	      /* If this is a call, we might not get here.  */
+	      if (CALL_P (trial_delay))
+		maybe_never = 1;
+	    }
 
 	  /* If there are slots left to fill and our search was stopped by an
 	     unconditional branch, try the insn at the branch target.  We can
