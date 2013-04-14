@@ -1,3 +1,10 @@
+2013-04-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56816
+	* match.c (gfc_match_select_type): Add syntax error. Move namespace
+	allocation and cleanup...
+	* parse.c (decode_statement): ... here.
+
 2013-04-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55959
