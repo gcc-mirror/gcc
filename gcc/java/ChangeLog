@@ -1,3 +1,10 @@
+2013-04-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcj.texi (Configure-time Options): Refer to GCC, not gcc.
+	(Resources): Adjust reference to Mauve.
+	Remove link to java.sun.com.
+	Refer to GCC, not gcc.
+
 2013-04-09  Richard Biener  <rguenther@suse.de>
 
 	* expr.c (build_java_binop): Pass a type to build_int_cst.
