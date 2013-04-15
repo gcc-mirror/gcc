@@ -1,3 +1,8 @@
+2013-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56962
+	* gcc.c-torture/execute/pr56962.c: New test.
+
 2013-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56933
