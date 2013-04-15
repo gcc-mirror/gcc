@@ -1,3 +1,9 @@
+2013-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56388
+	* semantics.c (insert_capture_proxy): Just use index 1 in the
+	stmt_list_stack.
+
 2013-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* error.c (cp_print_error_function,
