@@ -2162,13 +2162,58 @@
   ""
 )
 
-(define_insn "*anddi3_insn"
-  [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
-	(and:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
-		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_32BIT && !TARGET_IWMMXT && !TARGET_NEON"
-  "#"
-  [(set_attr "length" "8")]
+(define_insn_and_split "*anddi3_insn"
+  [(set (match_operand:DI         0 "s_register_operand"     "=&r,&r,&r,&r,w,w ,?&r,?&r,?w,?w")
+	(and:DI (match_operand:DI 1 "s_register_operand"     "%0 ,r ,0,r ,w,0 ,0  ,r  ,w ,0")
+		(match_operand:DI 2 "arm_anddi_operand_neon" "r  ,r ,De,De,w,DL,r  ,r  ,w ,DL")))]
+  "TARGET_32BIT && !TARGET_IWMMXT"
+{
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3: /* fall through */
+      return "#";
+    case 4: /* fall through */
+    case 8: return "vand\t%P0, %P1, %P2";
+    case 5: /* fall through */
+    case 9: return neon_output_logic_immediate ("vand", &operands[2],
+                    DImode, 1, VALID_NEON_QREG_MODE (DImode));
+    case 6: return "#";
+    case 7: return "#";
+    default: gcc_unreachable ();
+    }
+}
+  "TARGET_32BIT && !TARGET_IWMMXT"
+  [(set (match_dup 3) (match_dup 4))
+   (set (match_dup 5) (match_dup 6))]
+  "
+  {
+    operands[3] = gen_lowpart (SImode, operands[0]);
+    operands[5] = gen_highpart (SImode, operands[0]);
+
+    operands[4] = simplify_gen_binary (AND, SImode,
+                                           gen_lowpart (SImode, operands[1]),
+                                           gen_lowpart (SImode, operands[2]));
+    operands[6] = simplify_gen_binary (AND, SImode,
+                                           gen_highpart (SImode, operands[1]),
+                                           gen_highpart_mode (SImode, DImode, operands[2]));
+
+  }"
+  [(set_attr "neon_type" "*,*,*,*,neon_int_1,neon_int_1,*,*,neon_int_1,neon_int_1")
+   (set_attr "arch" "*,*,*,*,neon_for_64bits,neon_for_64bits,*,*,
+                     avoid_neon_for_64bits,avoid_neon_for_64bits")
+   (set_attr "length" "8,8,8,8,*,*,8,8,*,*")
+   (set (attr "insn_enabled") (if_then_else
+                                (lt (symbol_ref "which_alternative")
+                                    (const_int 4))
+                                (if_then_else (match_test "!TARGET_NEON")
+                                              (const_string "yes")
+                                              (const_string "no"))
+                                (if_then_else (match_test "TARGET_NEON")
+                                              (const_string "yes")
+                                              (const_string "no"))))]
 )
 
 (define_insn_and_split "*anddi_zesidi_di"

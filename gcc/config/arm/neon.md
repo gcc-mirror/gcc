@@ -724,29 +724,6 @@
   [(set_attr "neon_type" "neon_int_1")]
 )
 
-(define_insn "anddi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,w,?&r,?&r,?w,?w")
-        (and:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,r,w,0")
-		(match_operand:DI 2 "neon_inv_logic_op2" "w,DL,r,r,w,DL")))]
-  "TARGET_NEON"
-{
-  switch (which_alternative)
-    {
-    case 0: /* fall through */
-    case 4: return "vand\t%P0, %P1, %P2";
-    case 1: /* fall through */
-    case 5: return neon_output_logic_immediate ("vand", &operands[2],
-    		     DImode, 1, VALID_NEON_QREG_MODE (DImode));
-    case 2: return "#";
-    case 3: return "#";
-    default: gcc_unreachable ();
-    }
-}
-  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*,neon_int_1,neon_int_1")
-   (set_attr "length" "*,*,8,8,*,*")
-   (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")]
-)
-
 (define_insn "orn<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
 	(ior:VDQ (not:VDQ (match_operand:VDQ 2 "s_register_operand" "w"))
@@ -5611,7 +5588,7 @@
    (match_operand:SI 3 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  emit_insn (gen_and<mode>3<V_suf64> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_and<mode>3 (operands[0], operands[1], operands[2]));
   DONE;
 })
 

@@ -1,3 +1,15 @@
+2013-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (const_ok_for_dimode_op): Handle AND case.
+	* config/arm/arm.md (*anddi3_insn): Change to insn_and_split.
+	* config/arm/constraints.md (De): New constraint.
+	* config/arm/neon.md (anddi3_neon): Delete.
+	(neon_vand<mode>): Expand to standard anddi3 pattern.
+	* config/arm/predicates.md (imm_for_neon_inv_logic_operand):
+	Move earlier in the file.
+	(neon_inv_logic_op2): Likewise.
+	(arm_anddi_operand_neon): New predicate.
+
 2013-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_as_needed): Set
