@@ -1,3 +1,8 @@
+2013-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/30_threads/condition_variable/members/53841.cc: Add
+	-std=gnu++0x -pthread on alpha*-*-osf*, mips-sgi-irix6*.
+
 2013-04-11  Release Manager
 
 	* GCC 4.7.3 released.
