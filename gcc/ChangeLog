@@ -1,3 +1,10 @@
+2013-04-15  Joey Ye  <joey.ye@arm.com>
+
+	* config/arm/arm.c (thumb1_final_prescan_insn): Assert lr save
+	for real far jump.
+	(thumb_far_jump_used_p): Count instruction size and set
+	far_jump_used.
+
 2013-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (fill_simple_delay_slots): Reindent block of code.

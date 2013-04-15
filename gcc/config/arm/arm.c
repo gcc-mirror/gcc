@@ -22713,6 +22713,11 @@ thumb1_final_prescan_insn (rtx insn)
       else if (conds != CONDS_NOCOND)
 	cfun->machine->thumb1_cc_insn = NULL_RTX;
     }
+
+    /* Check if unexpected far jump is used.  */
+    if (cfun->machine->lr_save_eliminated
+        && get_attr_far_jump (insn) == FAR_JUMP_YES)
+      internal_error("Unexpected thumb1 far jump");
 }
 
 int
@@ -22738,6 +22743,8 @@ static int
 thumb_far_jump_used_p (void)
 {
   rtx insn;
+  bool far_jump = false;
+  unsigned int func_size = 0;
 
   /* This test is only important for leaf functions.  */
   /* assert (!leaf_function_p ()); */
@@ -22788,6 +22795,26 @@ thumb_far_jump_used_p (void)
     {
       if (JUMP_P (insn) && get_attr_far_jump (insn) == FAR_JUMP_YES)
 	{
+	  far_jump = true;
+	}
+      func_size += get_attr_length (insn);
+    }
+
+  /* Attribute far_jump will always be true for thumb1 before
+     shorten_branch pass.  So checking far_jump attribute before
+     shorten_branch isn't much useful.
+
+     Following heuristic tries to estimate more accruately if a far jump
+     may finally be used.  The heuristic is very conservative as there is
+     no chance to roll-back the decision of not to use far jump.
+
+     Thumb1 long branch offset is -2048 to 2046.  The worst case is each
+     2-byte insn is assiociated with a 4 byte constant pool.  Using
+     function size 2048/3 as the threshold is conservative enough.  */
+  if (far_jump)
+    {
+      if ((func_size * 3) >= 2048)
+        {
 	  /* Record the fact that we have decided that
 	     the function does use far jumps.  */
 	  cfun->machine->far_jump_used = 1;

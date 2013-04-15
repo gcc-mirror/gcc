@@ -1,3 +1,8 @@
+2013-04-15  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.target/arm/thumb1-far-jump-1.c: New test.
+	* gcc.target/arm/thumb1-far-jump-2.c: New test.
+
 2013-04-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/56816
