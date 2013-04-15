@@ -2146,7 +2146,7 @@ create_function_arglist (gfc_symbol * sym)
 	 hence, the optional status cannot be transfered via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */
       else if (f->sym->attr.optional && f->sym->attr.value
-	       && !f->sym->attr.dimension && !f->sym->ts.type != BT_CLASS
+	       && !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
 	       && f->sym->ts.type != BT_DERIVED)
 	{
           tree tmp;

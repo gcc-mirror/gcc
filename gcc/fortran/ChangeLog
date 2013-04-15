@@ -1,3 +1,13 @@
+2013-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (gfc_find_intrinsic_vtab): Removed unused var.
+	* dependency.c (check_data_pointer_types): Fix check.
+	* frontend-passes.c (check_data_pointer_types): Remove
+	superfluous statement.
+	* parse.c (decode_omp_directive): Add missing break.
+	* resolve.c (resolve_typebound_subroutine: Free variable.
+	* trans-decl.c (create_function_arglist): Correct condition.
+
 2013-04-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/56816
