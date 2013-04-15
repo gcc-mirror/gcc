@@ -260,7 +260,8 @@ line, but, unlike @code{LIBGCC_SPEC}, it is used unmodified.
 @defmac USE_LD_AS_NEEDED
 A macro that controls the modifications to @code{LIBGCC_SPEC}
 mentioned in @code{REAL_LIBGCC_SPEC}.  If nonzero, a spec will be
-generated that uses --as-needed and the shared libgcc in place of the
+generated that uses @option{--as-needed} or equivalent options and the
+shared @file{libgcc} in place of the
 static exception handler library, when linking without any of
 @code{-static}, @code{-static-libgcc}, or @code{-shared-libgcc}.
 @end defmac

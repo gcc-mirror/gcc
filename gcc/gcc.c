@@ -1361,7 +1361,8 @@ init_gcc_specs (struct obstack *obstack, const char *shared_name,
 		"%{!static:%{!static-libgcc:"
 #if USE_LD_AS_NEEDED
 		"%{!shared-libgcc:",
-		static_name, " --as-needed ", shared_name, " --no-as-needed"
+		static_name, " " LD_AS_NEEDED_OPTION " ",
+		shared_name, " " LD_NO_AS_NEEDED_OPTION
 		"}"
 		"%{shared-libgcc:",
 		shared_name, "%{!shared: ", static_name, "}"
