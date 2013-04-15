@@ -5820,6 +5820,8 @@ resolve_typebound_subroutine (gfc_code *code)
 	correct typespec.  */
       code->expr1->ts = ts;
     }
+  else if (new_ref)
+    gfc_free_ref_list (new_ref);
 
   return true;
 }

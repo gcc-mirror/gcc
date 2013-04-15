@@ -1200,7 +1200,7 @@ check_data_pointer_types (gfc_expr *expr1, gfc_expr *expr2)
   bool seen_component_ref;
 
   if (expr1->expr_type != EXPR_VARIABLE
-	|| expr1->expr_type != EXPR_VARIABLE)
+	|| expr2->expr_type != EXPR_VARIABLE)
     return false;
 
   sym1 = expr1->symtree->n.sym;
