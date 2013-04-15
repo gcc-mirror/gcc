@@ -1,5 +1,9 @@
 2013-04-15  Joey Ye  <joey.ye@arm.com>
 
+	* config/arm/arm.c (thumb_far_jump_used_p): Fix typo in comments.
+
+2013-04-15  Joey Ye  <joey.ye@arm.com>
+
 	* config/arm/arm.c (thumb1_final_prescan_insn): Assert lr save
 	for real far jump.
 	(thumb_far_jump_used_p): Count instruction size and set
