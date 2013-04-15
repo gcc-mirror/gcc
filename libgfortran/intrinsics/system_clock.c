@@ -29,20 +29,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "time_1.h"
 
 
+#if !defined(__MINGW32__) && !defined(__CYGWIN__)
+
 /* POSIX states that CLOCK_REALTIME must be present if clock_gettime
    is available, others are optional.  */
 #if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_CLOCK_GETTIME_LIBRT)
-#ifdef CLOCK_MONOTONIC
+#if defined(CLOCK_MONOTONIC) && defined(_POSIX_MONOTONIC_CLOCK) \
+  && _POSIX_MONOTONIC_CLOCK >= 0
 #define GF_CLOCK_MONOTONIC CLOCK_MONOTONIC
 #else
 #define GF_CLOCK_MONOTONIC CLOCK_REALTIME
 #endif
 #endif
 
-/* Weakref trickery for clock_gettime().  On Glibc, clock_gettime()
-   requires us to link in librt, which also pulls in libpthread.  In
-   order to avoid this by default, only call clock_gettime() through a
-   weak reference. 
+/* Weakref trickery for clock_gettime().  On Glibc <= 2.16,
+   clock_gettime() requires us to link in librt, which also pulls in
+   libpthread.  In order to avoid this by default, only call
+   clock_gettime() through a weak reference.
 
    Some targets don't support weak undefined references; on these
    GTHREAD_USE_WEAK is 0. So we need to define it to 1 on other
@@ -105,6 +108,8 @@ gf_gettime_mono (time_t * secs, long * nanosecs, long * tck)
 #endif
 }
 
+#endif /* !__MINGW32 && !__CYGWIN__  */
+
 extern void system_clock_4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
 export_proto(system_clock_4);
 
@@ -115,12 +120,28 @@ export_proto(system_clock_8);
 /* prefix(system_clock_4) is the INTEGER(4) version of the SYSTEM_CLOCK
    intrinsic subroutine.  It returns the number of clock ticks for the current
    system time, the number of ticks per second, and the maximum possible value
-   for COUNT.  On the first call to SYSTEM_CLOCK, COUNT is set to zero. */
+   for COUNT.  */
 
 void
 system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	       GFC_INTEGER_4 *count_max)
 {
+#if defined(__MINGW32__) || defined(__CYGWIN__) 
+  if (count)
+    {
+      /* Use GetTickCount here as the resolution and range is
+	 sufficient for the INTEGER(kind=4) version, and
+	 QueryPerformanceCounter has potential issues.  */
+      uint32_t cnt = GetTickCount ();
+      if (cnt > GFC_INTEGER_4_HUGE)
+	cnt -= GFC_INTEGER_4_HUGE - 1;
+      *count = cnt;
+    }
+  if (count_rate)
+    *count_rate = 1000;
+  if (count_max)
+    *count_max = GFC_INTEGER_4_HUGE;
+#else
   GFC_INTEGER_4 cnt;
   GFC_INTEGER_4 mx;
 
@@ -158,6 +179,7 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
     *count_rate = tck;
   if (count_max != NULL)
     *count_max = mx;
+#endif
 }
 
 
@@ -167,6 +189,33 @@ void
 system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 		GFC_INTEGER_8 *count_max)
 {
+#if defined(__MINGW32__) || defined(__CYGWIN__) 
+  LARGE_INTEGER cnt;
+  LARGE_INTEGER freq;
+  bool fail = false;
+  if (count && !QueryPerformanceCounter (&cnt))
+    fail = true;
+  if (count_rate && !QueryPerformanceFrequency (&freq))
+    fail = true;
+  if (fail)
+    {
+      if (count)
+	*count = - GFC_INTEGER_8_HUGE;
+      if (count_rate)
+	*count_rate = 0;
+      if (count_max)
+	*count_max = 0;
+    }
+  else
+    {
+      if (count)
+	*count = cnt.QuadPart;
+      if (count_rate)
+	*count_rate = freq.QuadPart;
+      if (count_max)
+	*count_max = GFC_INTEGER_8_HUGE;
+    }
+#else
   GFC_INTEGER_8 cnt;
   GFC_INTEGER_8 mx;
 
@@ -204,4 +253,5 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
     *count_rate = tck;
   if (count_max != NULL)
     *count_max = mx;
+#endif
 }
