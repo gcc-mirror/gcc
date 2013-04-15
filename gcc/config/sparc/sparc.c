@@ -4207,13 +4207,14 @@ mem_min_alignment (rtx mem, int desired)
    mapped into one sparc_mode_class mode.  */
 
 enum sparc_mode_class {
-  S_MODE, D_MODE, T_MODE, O_MODE,
+  H_MODE, S_MODE, D_MODE, T_MODE, O_MODE,
   SF_MODE, DF_MODE, TF_MODE, OF_MODE,
   CC_MODE, CCFP_MODE
 };
 
 /* Modes for single-word and smaller quantities.  */
-#define S_MODES ((1 << (int) S_MODE) | (1 << (int) SF_MODE))
+#define S_MODES \
+  ((1 << (int) H_MODE) | (1 << (int) S_MODE) | (1 << (int) SF_MODE))
 
 /* Modes for double-word and smaller quantities.  */
 #define D_MODES (S_MODES | (1 << (int) D_MODE) | (1 << DF_MODE))
@@ -4224,13 +4225,11 @@ enum sparc_mode_class {
 /* Modes for 8-word and smaller quantities.  */
 #define O_MODES (T_MODES | (1 << (int) O_MODE) | (1 << (int) OF_MODE))
 
-/* Modes for single-float quantities.  We must allow any single word or
-   smaller quantity.  This is because the fix/float conversion instructions
-   take integer inputs/outputs from the float registers.  */
-#define SF_MODES (S_MODES)
+/* Modes for single-float quantities.  */
+#define SF_MODES ((1 << (int) S_MODE) | (1 << (int) SF_MODE))
 
 /* Modes for double-float and smaller quantities.  */
-#define DF_MODES (D_MODES)
+#define DF_MODES (SF_MODES | (1 << (int) D_MODE) | (1 << DF_MODE))
 
 /* Modes for quad-float and smaller quantities.  */
 #define TF_MODES (DF_MODES | (1 << (int) TF_MODE))
@@ -4326,7 +4325,9 @@ sparc_init_modes (void)
 	case MODE_INT:
 	case MODE_PARTIAL_INT:
 	case MODE_COMPLEX_INT:
-	  if (GET_MODE_SIZE (i) <= 4)
+	  if (GET_MODE_SIZE (i) < 4)
+	    sparc_mode_class[i] = 1 << (int) H_MODE;
+	  else if (GET_MODE_SIZE (i) == 4)
 	    sparc_mode_class[i] = 1 << (int) S_MODE;
 	  else if (GET_MODE_SIZE (i) == 8)
 	    sparc_mode_class[i] = 1 << (int) D_MODE;
@@ -4338,14 +4339,16 @@ sparc_init_modes (void)
 	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_VECTOR_INT:
-	  if (GET_MODE_SIZE (i) <= 4)
-	    sparc_mode_class[i] = 1 << (int)SF_MODE;
+	  if (GET_MODE_SIZE (i) == 4)
+	    sparc_mode_class[i] = 1 << (int) SF_MODE;
 	  else if (GET_MODE_SIZE (i) == 8)
-	    sparc_mode_class[i] = 1 << (int)DF_MODE;
+	    sparc_mode_class[i] = 1 << (int) DF_MODE;
+	  else
+	    sparc_mode_class[i] = 0;
 	  break;
 	case MODE_FLOAT:
 	case MODE_COMPLEX_FLOAT:
-	  if (GET_MODE_SIZE (i) <= 4)
+	  if (GET_MODE_SIZE (i) == 4)
 	    sparc_mode_class[i] = 1 << (int) SF_MODE;
 	  else if (GET_MODE_SIZE (i) == 8)
 	    sparc_mode_class[i] = 1 << (int) DF_MODE;
