@@ -1829,16 +1829,20 @@ record_increment (slsr_cand_t c, double_int increment)
       if (c->kind == CAND_ADD
 	  && c->index == increment
 	  && (increment.sgt (double_int_one)
-	      || increment.slt (double_int_minus_one)))
+	      || increment.slt (double_int_minus_one))
+	  && (gimple_assign_rhs_code (c->cand_stmt) == PLUS_EXPR
+	      || gimple_assign_rhs_code (c->cand_stmt) == POINTER_PLUS_EXPR))
 	{
-	  tree t0;
+	  tree t0 = NULL_TREE;
 	  tree rhs1 = gimple_assign_rhs1 (c->cand_stmt);
 	  tree rhs2 = gimple_assign_rhs2 (c->cand_stmt);
 	  if (operand_equal_p (rhs1, c->base_expr, 0))
 	    t0 = rhs2;
-	  else
+	  else if (operand_equal_p (rhs2, c->base_expr, 0))
 	    t0 = rhs1;
-	  if (SSA_NAME_DEF_STMT (t0) && gimple_bb (SSA_NAME_DEF_STMT (t0)))
+	  if (t0
+	      && SSA_NAME_DEF_STMT (t0)
+	      && gimple_bb (SSA_NAME_DEF_STMT (t0)))
 	    {
 	      incr_vec[incr_vec_len].initializer = t0;
 	      incr_vec[incr_vec_len++].init_bb
