@@ -1,3 +1,8 @@
+2013-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr56890-1.c: New test.
+	* gcc.dg/pr56890-2.c: Likewise.
+
 2013-04-15  Joey Ye  <joey.ye@arm.com>
 
 	* gcc.target/arm/thumb1-far-jump-1.c: New test.
