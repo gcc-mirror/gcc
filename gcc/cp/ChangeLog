@@ -1,5 +1,11 @@
 2013-04-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/52748
+	* pt.c (tsubst) [DECLTYPE_TYPE]: If ~id is an expression
+	rather than a destructor name, it isn't an unqualified-name.
+	(tsubst_copy_and_build): Pass down decltype_flag to operator
+	handling code, too.
+
 	PR c++/56388
 	* semantics.c (insert_capture_proxy): Just use index 1 in the
 	stmt_list_stack.

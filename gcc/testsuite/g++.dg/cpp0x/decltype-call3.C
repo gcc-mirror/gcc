@@ -43,6 +43,50 @@ A operator==(B,B);
 A operator->*(B,B);
 
 #define TRY(E) static_cast<decltype(E)*>(0)
+
+template <class B>
+void f()
+{
+  B b;
+  TRY(b(0));
+  TRY(b[0]);
+  TRY(b=0);
+  TRY(b+=0);
+  TRY(b-=0);
+  TRY(b*=0);
+  TRY(b/=0);
+  TRY(b^=0);
+  TRY(b&=0);
+  TRY(b|=0);
+  TRY(b<<=0);
+  TRY(b>>=0);
+
+  TRY(-b);
+  TRY(+b);
+  TRY(*b);
+  TRY(&b);
+  TRY(!b);
+  TRY(~b);
+  TRY(++b);
+  TRY(--b);
+
+  TRY(b+b);
+  TRY(b-b);
+  TRY(b*b);
+  TRY(b/b);
+  TRY(b%b);
+  TRY(b^b);
+  TRY(b&b);
+  TRY(b|b);
+  TRY(b>b);
+  TRY(b<b);
+  TRY((b,b));
+  TRY(b<<b);
+  TRY(b>>b);
+  TRY(b==b);
+  TRY(b->*b);
+}
+
 int main()
 {
   B b;
@@ -83,4 +127,6 @@ int main()
   TRY(b>>b);
   TRY(b==b);
   TRY(b->*b);
+
+  f<B>();
 }
