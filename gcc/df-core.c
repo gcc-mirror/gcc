@@ -1800,7 +1800,7 @@ df_find_def (rtx insn, rtx reg)
   for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
     {
       df_ref def = *def_rec;
-      if (rtx_equal_p (DF_REF_REAL_REG (def), reg))
+      if (DF_REF_REGNO (def) == REGNO (reg))
 	return def;
     }
 
@@ -1834,14 +1834,14 @@ df_find_use (rtx insn, rtx reg)
   for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
     {
       df_ref use = *use_rec;
-      if (rtx_equal_p (DF_REF_REAL_REG (use), reg))
+      if (DF_REF_REGNO (use) == REGNO (reg))
 	return use;
     }
   if (df->changeable_flags & DF_EQ_NOTES)
     for (use_rec = DF_INSN_UID_EQ_USES (uid); *use_rec; use_rec++)
       {
 	df_ref use = *use_rec;
-	if (rtx_equal_p (DF_REF_REAL_REG (use), reg))
+	if (DF_REF_REGNO (use) == REGNO (reg))
 	  return use;
       }
   return NULL;

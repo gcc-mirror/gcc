@@ -141,13 +141,13 @@ package body Sem_Ch5 is
                --  directly.
 
                elsif (Is_Prival (Ent)
-                        and then
-                          (Ekind (Current_Scope) = E_Function
-                             or else Ekind (Enclosing_Dynamic_Scope
-                                             (Current_Scope)) = E_Function))
+                       and then
+                         (Ekind (Current_Scope) = E_Function
+                           or else Ekind (Enclosing_Dynamic_Scope
+                                            (Current_Scope)) = E_Function))
                    or else
                      (Ekind (Ent) = E_Component
-                        and then Is_Protected_Type (Scope (Ent)))
+                       and then Is_Protected_Type (Scope (Ent)))
                then
                   Error_Msg_N
                     ("protected function cannot modify protected object", N);
@@ -222,16 +222,15 @@ package body Sem_Ch5 is
 
          if Is_Entity_Name (Opnd)
            and then (Ekind (Entity (Opnd)) = E_Out_Parameter
-                      or else Ekind (Entity (Opnd)) =
-                           E_In_Out_Parameter
-                      or else Ekind (Entity (Opnd)) =
-                           E_Generic_In_Out_Parameter
+                      or else Ekind_In (Entity (Opnd),
+                                        E_In_Out_Parameter,
+                                        E_Generic_In_Out_Parameter)
                       or else
                         (Ekind (Entity (Opnd)) = E_Variable
                           and then Nkind (Parent (Entity (Opnd))) =
-                             N_Object_Renaming_Declaration
+                                            N_Object_Renaming_Declaration
                           and then Nkind (Parent (Parent (Entity (Opnd)))) =
-                             N_Accept_Statement))
+                                            N_Accept_Statement))
          then
             Opnd_Type := Get_Actual_Subtype (Opnd);
 
@@ -394,7 +393,7 @@ package body Sem_Ch5 is
                end loop;
 
                if (Nkind (Ent) = N_Attribute_Reference
-                     and then Attribute_Name (Ent) = Name_Priority)
+                    and then Attribute_Name (Ent) = Name_Priority)
 
                   --  Renamings of the attribute Priority applied to protected
                   --  objects have been previously expanded into calls to the
@@ -402,15 +401,15 @@ package body Sem_Ch5 is
 
                  or else
                   (Nkind (Ent) = N_Function_Call
-                     and then (Entity (Name (Ent)) = RTE (RE_Get_Ceiling)
-                                or else
-                               Entity (Name (Ent)) = RTE (RO_PE_Get_Ceiling)))
+                    and then (Entity (Name (Ent)) = RTE (RE_Get_Ceiling)
+                               or else
+                              Entity (Name (Ent)) = RTE (RO_PE_Get_Ceiling)))
                then
                   --  The enclosing subprogram cannot be a protected function
 
                   S := Current_Scope;
                   while not (Is_Subprogram (S)
-                               and then Convention (S) = Convention_Protected)
+                              and then Convention (S) = Convention_Protected)
                      and then S /= Standard_Standard
                   loop
                      S := Scope (S);
@@ -583,8 +582,8 @@ package body Sem_Ch5 is
             Propagate_Tag (Lhs, Rhs);
 
          elsif Nkind (Rhs) = N_Function_Call
-              and then Is_Entity_Name (Name (Rhs))
-              and then Is_Abstract_Subprogram (Entity (Name (Rhs)))
+           and then Is_Entity_Name (Name (Rhs))
+           and then Is_Abstract_Subprogram (Entity (Name (Rhs)))
          then
             Error_Msg_N
               ("call to abstract function must be dispatching", Name (Rhs));
@@ -607,9 +606,7 @@ package body Sem_Ch5 is
       --  as well to anonymous access-to-subprogram types that are component
       --  subtypes or formal parameters.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Access_Type (T1)
-      then
+      if Ada_Version >= Ada_2005 and then Is_Access_Type (T1) then
          if Is_Local_Anonymous_Access (T1)
            or else Ekind (T2) = E_Anonymous_Access_Subprogram_Type
 
@@ -665,12 +662,10 @@ package body Sem_Ch5 is
       --  assignment within the block.
 
       elsif Is_Array_Type (T1)
-        and then
-          (Nkind (Rhs) /= N_Type_Conversion
-            or else Is_Constrained (Etype (Rhs)))
-        and then
-          (Nkind (Rhs) /= N_Function_Call
-            or else Nkind (N) /= N_Block_Statement)
+        and then (Nkind (Rhs) /= N_Type_Conversion
+                   or else Is_Constrained (Etype (Rhs)))
+        and then (Nkind (Rhs) /= N_Function_Call
+                   or else Nkind (N) /= N_Block_Statement)
       then
          --  Assignment verifies that the length of the Lsh and Rhs are equal,
          --  but of course the indexes do not have to match. If the right-hand
@@ -1172,7 +1167,7 @@ package body Sem_Ch5 is
 
       elsif Ada_Version = Ada_83
         and then (Is_Generic_Type (Exp_Btype)
-                    or else Is_Generic_Type (Root_Type (Exp_Btype)))
+                   or else Is_Generic_Type (Root_Type (Exp_Btype)))
       then
          Error_Msg_N
            ("(Ada 83) case expression cannot be of a generic type", Exp);
@@ -1198,9 +1193,7 @@ package body Sem_Ch5 is
       --  A case statement with a single OTHERS alternative is not allowed
       --  in SPARK.
 
-      if Others_Present
-        and then List_Length (Alternatives (N)) = 1
-      then
+      if Others_Present and then List_Length (Alternatives (N)) = 1 then
          Check_SPARK_Restriction
            ("OTHERS as unique case alternative is not allowed", N);
       end if;
@@ -1297,9 +1290,7 @@ package body Sem_Ch5 is
          Scope_Id := Scope_Stack.Table (J).Entity;
          Kind := Ekind (Scope_Id);
 
-         if Kind = E_Loop
-           and then (No (Target) or else Scope_Id = U_Name)
-         then
+         if Kind = E_Loop and then (No (Target) or else Scope_Id = U_Name) then
             Set_Has_Exit (Scope_Id);
             exit;
 
@@ -1423,9 +1414,7 @@ package body Sem_Ch5 is
          Scope_Id := Scope_Stack.Table (J).Entity;
 
          if Label_Scope = Scope_Id
-           or else (Ekind (Scope_Id) /= E_Block
-                     and then Ekind (Scope_Id) /= E_Loop
-                     and then Ekind (Scope_Id) /= E_Return_Statement)
+           or else not Ekind_In (Scope_Id, E_Block, E_Loop, E_Return_Statement)
          then
             if Scope_Id /= Label_Scope then
                Error_Msg_N
@@ -1447,9 +1436,9 @@ package body Sem_Ch5 is
 
    --  The expander has circuitry to completely delete code that it can tell
    --  will not be executed (as a result of compile time known conditions). In
-   --  the analyzer, we ensure that code that will be deleted in this manner is
-   --  analyzed but not expanded. This is obviously more efficient, but more
-   --  significantly, difficulties arise if code is expanded and then
+   --  the analyzer, we ensure that code that will be deleted in this manner
+   --  is analyzed but not expanded. This is obviously more efficient, but
+   --  more significantly, difficulties arise if code is expanded and then
    --  eliminated (e.g. exception table entries disappear). Similarly, itypes
    --  generated in deleted code must be frozen from start, because the nodes
    --  on which they depend will not be available at the freeze point.
@@ -1800,7 +1789,7 @@ package body Sem_Ch5 is
 
             declare
                Element : constant Entity_Id :=
-                           Find_Aspect (Typ, Aspect_Iterator_Element);
+                           Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
             begin
                if No (Element) then
                   Error_Msg_NE ("cannot iterate over&", N, Typ);
@@ -1811,7 +1800,7 @@ package body Sem_Ch5 is
                   --  If the container has a variable indexing aspect, the
                   --  element is a variable and is modifiable in the loop.
 
-                  if Present (Find_Aspect (Typ, Aspect_Variable_Indexing)) then
+                  if Has_Aspect (Typ, Aspect_Variable_Indexing) then
                      Set_Ekind (Def_Id, E_Variable);
                   end if;
                end if;
@@ -1825,7 +1814,7 @@ package body Sem_Ch5 is
             if Is_Entity_Name (Original_Node (Name (N)))
               and then not Is_Iterator (Typ)
             then
-               if No (Find_Aspect (Typ, Aspect_Iterator_Element)) then
+               if not Has_Aspect (Typ, Aspect_Iterator_Element) then
                   Error_Msg_NE
                     ("cannot iterate over&", Name (N), Typ);
                else
@@ -2161,15 +2150,11 @@ package body Sem_Ch5 is
          --  Propagate staticness to loop range itself, in case the
          --  corresponding subtype is static.
 
-         if New_Lo /= Lo
-           and then Is_Static_Expression (New_Lo)
-         then
+         if New_Lo /= Lo and then Is_Static_Expression (New_Lo) then
             Rewrite (Low_Bound (R), New_Copy (New_Lo));
          end if;
 
-         if New_Hi /= Hi
-           and then Is_Static_Expression (New_Hi)
-         then
+         if New_Hi /= Hi and then Is_Static_Expression (New_Hi) then
             Rewrite (High_Bound (R), New_Copy (New_Hi));
          end if;
       end Process_Bounds;
@@ -2238,9 +2223,8 @@ package body Sem_Ch5 is
          --  new iterator form.
 
          if Nkind (DS_Copy) = N_Function_Call
-           or else
-             (Is_Entity_Name (DS_Copy)
-               and then not Is_Type (Entity (DS_Copy)))
+           or else (Is_Entity_Name (DS_Copy)
+                     and then not Is_Type (Entity (DS_Copy)))
          then
             --  This is an iterator specification. Rewrite it as such and
             --  analyze it to capture function calls that may require
@@ -2351,7 +2335,7 @@ package body Sem_Ch5 is
              and then Is_Itype (Etype (Id))
              and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
              and then Nkind (Original_Node (Parent (Loop_Nod))) =
-                        N_Quantified_Expression)
+                                                   N_Quantified_Expression)
       then
          Set_Etype (Id, Etype (DS));
       end if;
@@ -2395,9 +2379,8 @@ package body Sem_Ch5 is
                --  instance, since in practice they tend to be dubious in these
                --  cases since they can result from intended parametrization.
 
-               if not Inside_A_Generic
-                 and then not In_Instance
-               then
+               if not Inside_A_Generic and then not In_Instance then
+
                   --  Specialize msg if invalid values could make the loop
                   --  non-null after all.
 
@@ -2436,7 +2419,7 @@ package body Sem_Ch5 is
 
                --  The other case for a warning is a reverse loop where the
                --  upper bound is the integer literal zero or one, and the
-               --  lower bound can be positive.
+               --  lower bound may exceed this value.
 
                --  For example, we have
 
@@ -2449,10 +2432,23 @@ package body Sem_Ch5 is
               and then Nkind (Original_Node (H)) = N_Integer_Literal
               and then
                 (Intval (Original_Node (H)) = Uint_0
-                  or else Intval (Original_Node (H)) = Uint_1)
+                  or else
+                 Intval (Original_Node (H)) = Uint_1)
             then
-               Error_Msg_N ("??loop range may be null", DS);
-               Error_Msg_N ("\??bounds may be wrong way round", DS);
+               --  Lower bound may in fact be known and known not to exceed
+               --  upper bound (e.g. reverse 0 .. 1) and that's OK.
+
+               if Compile_Time_Known_Value (L)
+                 and then Expr_Value (L) <= Expr_Value (H)
+               then
+                  null;
+
+               --  Otherwise warning is warranted
+
+               else
+                  Error_Msg_N ("??loop range may be null", DS);
+                  Error_Msg_N ("\??bounds may be wrong way round", DS);
+               end if;
             end if;
          end;
       end if;
@@ -2839,9 +2835,7 @@ package body Sem_Ch5 is
       P          : Node_Id;
 
    begin
-      if Is_List_Member (N)
-        and then Comes_From_Source (N)
-      then
+      if Is_List_Member (N) and then Comes_From_Source (N) then
          declare
             Nxt : Node_Id;
 
@@ -2993,9 +2987,8 @@ package body Sem_Ch5 is
 
       Analyze (R_Copy);
 
-      if Nkind (R_Copy) in N_Subexpr
-        and then Is_Overloaded (R_Copy)
-      then
+      if Nkind (R_Copy) in N_Subexpr and then Is_Overloaded (R_Copy) then
+
          --  Apply preference rules for range of predefined integer types, or
          --  diagnose true ambiguity.
 
@@ -3037,9 +3030,7 @@ package body Sem_Ch5 is
 
       --  Subtype mark in iteration scheme
 
-      if Is_Entity_Name (R_Copy)
-        and then Is_Type (Entity (R_Copy))
-      then
+      if Is_Entity_Name (R_Copy) and then Is_Type (Entity (R_Copy)) then
          null;
 
       --  Expression in range, or Ada 2012 iterator
@@ -3053,9 +3044,9 @@ package body Sem_Ch5 is
 
          --  Check that the resulting object is an iterable container
 
-         elsif Present (Find_Aspect (Typ, Aspect_Iterator_Element))
-           or else Present (Find_Aspect (Typ, Aspect_Constant_Indexing))
-           or else Present (Find_Aspect (Typ, Aspect_Variable_Indexing))
+         elsif Has_Aspect (Typ, Aspect_Iterator_Element)
+           or else Has_Aspect (Typ, Aspect_Constant_Indexing)
+           or else Has_Aspect (Typ, Aspect_Variable_Indexing)
          then
             null;
 

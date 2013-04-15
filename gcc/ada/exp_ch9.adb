@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1933,8 +1933,8 @@ package body Exp_Ch9 is
          --  Transfer ppc pragmas to the declarations of the wrapper
 
          while Present (P) loop
-            if Pragma_Name (P) = Name_Precondition
-              or else Pragma_Name (P) = Name_Postcondition
+            if Nam_In (Pragma_Name (P), Name_Precondition,
+                                        Name_Postcondition)
             then
                Append (Relocate_Node (P), Decls);
                Set_Analyzed (Last (Decls), False);
@@ -13388,6 +13388,7 @@ package body Exp_Ch9 is
       Args        : List_Id;
       L           : constant List_Id := New_List;
       Has_Entry   : constant Boolean := Has_Entries (Ptyp);
+      Prio_Type   : Entity_Id;
       Restricted  : constant Boolean := Restricted_Profile;
 
    begin
@@ -13456,18 +13457,37 @@ package body Exp_Ch9 is
                     Expression
                      (First (Pragma_Argument_Associations (Prio_Clause)));
 
+                  --  Get_Rep_Item returns either priority pragma.
+
+                  if Pragma_Name (Prio_Clause) = Name_Priority then
+                     Prio_Type := RTE (RE_Any_Priority);
+                  else
+                     Prio_Type := RTE (RE_Interrupt_Priority);
+                  end if;
+
                --  Attribute definition clause Priority
 
                else
+                  if Chars (Prio_Clause) = Name_Priority then
+                     Prio_Type := RTE (RE_Any_Priority);
+                  else
+                     Prio_Type := RTE (RE_Interrupt_Priority);
+                  end if;
+
                   Prio := Expression (Prio_Clause);
                end if;
 
                --  If priority is a static expression, then we can duplicate it
                --  with no problem and simply append it to the argument list.
+               --  However, it has only be pre-analyzed, so we need to check
+               --  now that it is in the bounds of the priority type.
 
                if Is_Static_Expression (Prio) then
+                  Set_Analyzed (Prio, False);
                   Append_To (Args,
-                    Duplicate_Subexpr_No_Checks (Prio));
+                    Make_Type_Conversion (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Prio_Type, Loc),
+                      Expression   => Duplicate_Subexpr (Prio)));
 
                --  Otherwise, the priority may be a per-object expression, if
                --  it depends on a discriminant of the type. In this case,
@@ -13477,18 +13497,13 @@ package body Exp_Ch9 is
                --  appropriate approach, but that could generate declarations
                --  improperly placed in the enclosing scope.
 
-               --  Note: Use System.Any_Priority as the expected type for the
-               --  non-static priority expression, in case the expression has
-               --  not been analyzed yet (as occurs for example with pragma
-               --  Interrupt_Priority).
-
                else
                   Temp := Make_Temporary (Loc, 'R', Prio);
                   Append_To (L,
                      Make_Object_Declaration (Loc,
                         Defining_Identifier => Temp,
                         Object_Definition   =>
-                          New_Occurrence_Of (RTE (RE_Any_Priority), Loc),
+                          New_Occurrence_Of (Prio_Type,  Loc),
                         Expression          => Relocate_Node (Prio)));
 
                   Append_To (Args, New_Occurrence_Of (Temp, Loc));
@@ -14071,11 +14086,10 @@ package body Exp_Ch9 is
         and then (Nkind_In (Stmt, N_Null_Statement, N_Label)
                     or else
                       (Nkind (Stmt) = N_Pragma
-                         and then (Pragma_Name (Stmt) = Name_Unreferenced
-                                     or else
-                                   Pragma_Name (Stmt) = Name_Unmodified
-                                     or else
-                                   Pragma_Name (Stmt) = Name_Warnings)))
+                        and then
+                          Nam_In (Pragma_Name (Stmt), Name_Unreferenced,
+                                                      Name_Unmodified,
+                                                      Name_Warnings)))
       loop
          Next (Stmt);
       end loop;

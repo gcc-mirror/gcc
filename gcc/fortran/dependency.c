@@ -756,7 +756,7 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 	}
     }
 
-  if (gfc_dep_compare_expr(e1, e2) == 0)
+  if (gfc_dep_compare_expr (e1, e2) == 0)
     {
       /* Case 18: X - X = 0.  */
       mpz_set_si (*result, 0);
@@ -1548,7 +1548,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
 #define IS_CONSTANT_INTEGER(a) ((a) && ((a)->expr_type == EXPR_CONSTANT) \
 			      && (a)->ts.type == BT_INTEGER)
 
-  if (IS_CONSTANT_INTEGER(l_stride) && IS_CONSTANT_INTEGER(r_stride)
+  if (IS_CONSTANT_INTEGER (l_stride) && IS_CONSTANT_INTEGER (r_stride)
       && gfc_dep_difference (l_start, r_start, &tmp))
     {
       mpz_t gcd;

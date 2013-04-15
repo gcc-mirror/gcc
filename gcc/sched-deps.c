@@ -3680,12 +3680,6 @@ deps_analyze_insn (struct deps_desc *deps, rtx insn)
   if (sched_deps_info->use_cselib)
     cselib_process_insn (insn);
 
-  /* EH_REGION insn notes can not appear until well after we complete
-     scheduling.  */
-  if (NOTE_P (insn))
-    gcc_assert (NOTE_KIND (insn) != NOTE_INSN_EH_REGION_BEG
-		&& NOTE_KIND (insn) != NOTE_INSN_EH_REGION_END);
-
   if (sched_deps_info->finish_insn)
     sched_deps_info->finish_insn ();
 

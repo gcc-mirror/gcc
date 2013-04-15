@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -643,6 +643,13 @@ package body Sem_Warn is
                else
                   Expression := Condition (Exit_Stmt);
                end if;
+
+            --  If an unconditional exit statement is the last statement in the
+            --  loop, assume that no warning is needed, without any attempt at
+            --  checking whether the exit is reachable.
+
+            elsif Exit_Stmt = Last (Statements (Loop_Statement)) then
+               return;
             end if;
 
             Exit_Stmt := Next_Exit_Statement (Exit_Stmt);
@@ -1781,9 +1788,8 @@ package body Sem_Warn is
 
                               if Nkind (P) = N_Pragma
                                 and then
-                                  (Pragma_Name (P) = Name_Contract_Case
-                                     or else
-                                   Pragma_Name (P) = Name_Test_Case)
+                                  Nam_In (Pragma_Name (P), Name_Contract_Case,
+                                                           Name_Test_Case)
                                 and then
                                   Nod = Get_Ensures_From_CTC_Pragma (P)
                               then
@@ -3219,9 +3225,8 @@ package body Sem_Warn is
             --  node, since assert pragmas get rewritten at analysis time.
 
             elsif Nkind (Original_Node (P)) = N_Pragma
-              and then (Pragma_Name (Original_Node (P)) = Name_Assert
-                          or else
-                        Pragma_Name (Original_Node (P)) = Name_Check)
+              and then Nam_In (Pragma_Name (Original_Node (P)), Name_Assert,
+                                                                Name_Check)
             then
                return;
             end if;

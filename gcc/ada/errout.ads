@@ -222,7 +222,7 @@ package Errout is
    --      A second ^ may occur in the message, in which case it is replaced
    --      by the decimal conversion of the Uint value in Error_Msg_Uint_2.
 
-   --    Insertion character > (Right bracket, run time name)
+   --    Insertion character > (Greater Than, run time name)
    --      The character > is replaced by a string of the form (name) if
    --      Targparm scanned out a Run_Time_Name (see package Targparm for
    --      details). The name is enclosed in parentheses and output in mixed
@@ -242,7 +242,7 @@ package Errout is
    --      messages starting with the \ insertion character). The effect of the
    --      use of ! in a parent message automatically applies to all of its
    --      continuation messages (since we clearly don't want any case in which
-   --      continuations are separated from the parent message. It is allowable
+   --      continuations are separated from the main message). It is allowable
    --      to put ! in continuation messages, and the usual style is to include
    --      it, since it makes it clear that the continuation is part of an
    --      unconditional message.

@@ -4721,7 +4721,7 @@ struct rtl_opt_pass pass_ira =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_do_not_ggc_collect               /* todo_flags_finish */
  }
 };
 
@@ -4748,6 +4748,6 @@ struct rtl_opt_pass pass_reload =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect                      /* todo_flags_finish */
+  0					/* todo_flags_finish */
  }
 };

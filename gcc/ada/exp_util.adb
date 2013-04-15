@@ -1774,6 +1774,35 @@ package body Exp_Util is
       end if;
    end Ensure_Defined;
 
+   ---------------
+   -- Entity_Of --
+   ---------------
+
+   function Entity_Of (N : Node_Id) return Entity_Id is
+      Id : Entity_Id;
+
+   begin
+      Id := Empty;
+
+      if Is_Entity_Name (N) then
+         Id := Entity (N);
+
+         --  Follow a possible chain of renamings to reach the root renamed
+         --  object.
+
+         while Present (Renamed_Object (Id)) loop
+            if Is_Entity_Name (Renamed_Object (Id)) then
+               Id := Entity (Renamed_Object (Id));
+            else
+               Id := Empty;
+               exit;
+            end if;
+         end loop;
+      end if;
+
+      return Id;
+   end Entity_Of;
+
    --------------------
    -- Entry_Names_OK --
    --------------------
@@ -3674,6 +3703,7 @@ package body Exp_Util is
                N_Push_Storage_Error_Label               |
                N_Qualified_Expression                   |
                N_Quantified_Expression                  |
+               N_Raise_Expression                       |
                N_Range                                  |
                N_Range_Constraint                       |
                N_Real_Literal                           |
@@ -4268,7 +4298,7 @@ package body Exp_Util is
          --  Look for aspect Default_Iterator
 
          if Has_Aspects (Parent (Typ)) then
-            Aspect := Find_Aspect (Typ, Aspect_Default_Iterator);
+            Aspect := Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
 
             if Present (Aspect) then
                Iter := Entity (Aspect);
@@ -5159,11 +5189,9 @@ package body Exp_Util is
       --  True if access attribute
 
       elsif Nkind (N) = N_Attribute_Reference
-        and then (Attribute_Name (N) = Name_Access
-                    or else
-                  Attribute_Name (N) = Name_Unchecked_Access
-                    or else
-                  Attribute_Name (N) = Name_Unrestricted_Access)
+        and then Nam_In (Attribute_Name (N), Name_Access,
+                                             Name_Unchecked_Access,
+                                             Name_Unrestricted_Access)
       then
          return True;
 
@@ -5428,10 +5456,7 @@ package body Exp_Util is
       pragma Assert
         (Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)));
 
-      if Check_Enabled (Name_Invariant)
-           or else
-         Check_Enabled (Name_Assertion)
-      then
+      if Check_Kind (Name_Invariant) = Name_Check then
          return
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
@@ -5519,18 +5544,36 @@ package body Exp_Util is
 
    function Make_Predicate_Call
      (Typ  : Entity_Id;
-      Expr : Node_Id) return Node_Id
+      Expr : Node_Id;
+      Mem  : Boolean := False) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
    begin
       pragma Assert (Present (Predicate_Function (Typ)));
 
+      --  Call special membership version if requested and available
+
+      if Mem then
+         declare
+            PFM : constant Entity_Id := Predicate_Function_M (Typ);
+         begin
+            if Present (PFM) then
+               return
+                 Make_Function_Call (Loc,
+                   Name                   => New_Occurrence_Of (PFM, Loc),
+                   Parameter_Associations => New_List (Relocate_Node (Expr)));
+            end if;
+         end;
+      end if;
+
+      --  Case of calling normal predicate function
+
       return
-        Make_Function_Call (Loc,
-          Name                   =>
-            New_Occurrence_Of (Predicate_Function (Typ), Loc),
-          Parameter_Associations => New_List (Relocate_Node (Expr)));
+          Make_Function_Call (Loc,
+            Name                   =>
+              New_Occurrence_Of (Predicate_Function (Typ), Loc),
+            Parameter_Associations => New_List (Relocate_Node (Expr)));
    end Make_Predicate_Call;
 
    --------------------------
@@ -5542,14 +5585,26 @@ package body Exp_Util is
       Expr : Node_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Expr);
+      Nam : Name_Id;
 
    begin
+      --  Compute proper name to use, we need to get this right so that the
+      --  right set of check policies apply to the CHeck pragma we are making.
+
+      if Has_Dynamic_Predicate_Aspect (Typ) then
+         Nam := Name_Dynamic_Predicate;
+      elsif Has_Static_Predicate_Aspect (Typ) then
+         Nam := Name_Static_Predicate;
+      else
+         Nam := Name_Predicate;
+      end if;
+
       return
         Make_Pragma (Loc,
           Pragma_Identifier            => Make_Identifier (Loc, Name_Check),
           Pragma_Argument_Associations => New_List (
             Make_Pragma_Argument_Association (Loc,
-              Expression => Make_Identifier (Loc, Name_Predicate)),
+              Expression => Make_Identifier (Loc, Nam)),
             Make_Pragma_Argument_Association (Loc,
               Expression => Make_Predicate_Call (Typ, Expr))));
    end Make_Predicate_Check;
@@ -7965,13 +8020,7 @@ package body Exp_Util is
 
          --  Prevent the search from going too far
 
-         elsif Nkind_In (Par, N_Entry_Body,
-                              N_Package_Body,
-                              N_Package_Declaration,
-                              N_Protected_Body,
-                              N_Subprogram_Body,
-                              N_Task_Body)
-         then
+         elsif Is_Body_Or_Package_Declaration (Par) then
             return False;
          end if;
 

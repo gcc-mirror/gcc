@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1331,9 +1331,9 @@ package body ALI is
                                     when Constraint_Error =>
 
                                        --  A constraint error comes from the
-                                       --  additionh. We reset to the maximum
-                                       --  and indicate that the real value is
-                                       --  now unknown.
+                                       --  addition. We reset to the maximum
+                                       --  and indicate that the real value
+                                       --  is now unknown.
 
                                        Cumulative_Restrictions.Value (R) :=
                                          Integer'Last;

@@ -153,6 +153,8 @@ procedure Gnatlink is
    Binder_Ali_File      : String_Access;
    Binder_Obj_File      : String_Access;
 
+   Base_Command_Name    : String_Access;
+
    Tname    : Temp_File_Name;
    Tname_FD : File_Descriptor := Invalid_FD;
    --  Temporary file used by linker to pass list of object files on
@@ -225,6 +227,12 @@ procedure Gnatlink is
 
    procedure Process_Binder_File (Name : String);
    --  Reads the binder file and extracts linker arguments
+
+   function To_Lower (A : Character) return Character;
+   --  Fold a character to lower case;
+
+   procedure To_Lower (A : in out String);
+   --  Fold a string to lower case;
 
    procedure Usage;
    --  Display usage
@@ -314,7 +322,7 @@ procedure Gnatlink is
 
    procedure Error_Msg (Message : String) is
    begin
-      Write_Str (Base_Name (Command_Name));
+      Write_Str (Base_Command_Name.all);
       Write_Str (": ");
       Write_Str (Message);
       Write_Eol;
@@ -1406,6 +1414,31 @@ procedure Gnatlink is
       Status := fclose (Fd);
    end Process_Binder_File;
 
+   --------------
+   -- To_Lower --
+   --------------
+
+   function To_Lower (A : Character) return Character is
+      A_Val : constant Natural := Character'Pos (A);
+
+   begin
+      if A in 'A' .. 'Z'
+        or else A_Val in 16#C0# .. 16#D6#
+        or else A_Val in 16#D8# .. 16#DE#
+      then
+         return Character'Val (A_Val + 16#20#);
+      else
+         return A;
+      end if;
+   end To_Lower;
+
+   procedure To_Lower (A : in out String) is
+   begin
+      for J in A'Range loop
+         A (J) := To_Lower (A (J));
+      end loop;
+   end To_Lower;
+
    -----------
    -- Usage --
    -----------
@@ -1413,7 +1446,7 @@ procedure Gnatlink is
    procedure Usage is
    begin
       Write_Str ("Usage: ");
-      Write_Str (Base_Name (Command_Name));
+      Write_Str (Base_Command_Name.all);
       Write_Str (" switches mainprog.ali [non-Ada-objects] [linker-options]");
       Write_Eol;
       Write_Eol;
@@ -1499,6 +1532,15 @@ begin
             end if;
          end loop;
       end;
+   end if;
+
+   Base_Command_Name := new String'(Base_Name (Command_Name));
+
+   --  Fold to lower case "GNATLINK" on VMS to be consistent with output
+   --  from other GNAT utilities.
+
+   if Hostparm.OpenVMS then
+      To_Lower (Base_Command_Name.all);
    end if;
 
    Process_Args;
@@ -1737,7 +1779,7 @@ begin
 
    --  Assume this is a cross tool if the executable name is not gnatlink
 
-   if Base_Name (Command_Name) = "gnatlink"
+   if Base_Command_Name.all = "gnatlink"
      and then Output_File_Name.all = "test"
    then
       Error_Msg ("warning: executable name """ & Output_File_Name.all

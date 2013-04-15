@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1038,6 +1038,100 @@ package body Namet is
          return Name_Entries.Last;
       end if;
    end Name_Find;
+
+   -------------
+   -- Nam_In --
+   -------------
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2;
+   end Nam_In;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3;
+   end Nam_In;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4;
+   end Nam_In;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id;
+      V5 : Name_Id) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4 or else
+             T = V5;
+   end Nam_In;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id;
+      V5 : Name_Id;
+      V6 : Name_Id) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4 or else
+             T = V5 or else
+             T = V6;
+   end Nam_In;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id;
+      V5 : Name_Id;
+      V6 : Name_Id;
+      V7 : Name_Id) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4 or else
+             T = V5 or else
+             T = V6 or else
+             T = V7;
+   end Nam_In;
 
    ------------------
    -- Reinitialize --

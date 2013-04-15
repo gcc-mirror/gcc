@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -780,7 +780,7 @@ package body Sem_Type is
          RA  : Entity_Id;
 
       begin
-         --  Retrieve parent subtype from subtype declaration for actual.
+         --  Retrieve parent subtype from subtype declaration for actual
 
          if Nkind (Par) = N_Subtype_Declaration
            and then not Comes_From_Source (Par)
@@ -793,7 +793,7 @@ package body Sem_Type is
             end if;
          end if;
 
-         --  Otherwise actual is not the actual of an enclosing instance.
+         --  Otherwise actual is not the actual of an enclosing instance
 
          return T;
       end Real_Actual;
@@ -1313,7 +1313,7 @@ package body Sem_Type is
       --  Determine whether a subprogram is an actual in an enclosing instance.
       --  An overloading between such a subprogram and one declared outside the
       --  instance is resolved in favor of the first, because it resolved in
-      --  the generic. Within the instance the eactual is represented by a
+      --  the generic. Within the instance the actual is represented by a
       --  constructed subprogram renaming.
 
       function Matches (Actual, Formal : Node_Id) return Boolean;
@@ -2057,8 +2057,7 @@ package body Sem_Type is
            and then not In_Instance
          then
             if Is_Fixed_Point_Type (Typ)
-              and then (Chars (Nam1) = Name_Op_Multiply
-                          or else Chars (Nam1) = Name_Op_Divide)
+              and then Nam_In (Chars (Nam1), Name_Op_Multiply, Name_Op_Divide)
               and then
                 (Ada_Version = Ada_83
                   or else
@@ -2079,9 +2078,7 @@ package body Sem_Type is
             --  declared in the same declarative list as the type. The node
             --  may be an operator or a function call.
 
-            elsif (Chars (Nam1) = Name_Op_Eq
-                     or else
-                   Chars (Nam1) = Name_Op_Ne)
+            elsif Nam_In (Chars (Nam1), Name_Op_Eq, Name_Op_Ne)
               and then Ada_Version >= Ada_2005
               and then Etype (User_Subp) = Standard_Boolean
               and then Ekind (Operand_Type) = E_Anonymous_Access_Type
@@ -3059,10 +3056,7 @@ package body Sem_Type is
       elsif Num = 1 then
          T1 := Etype (First_Formal (New_S));
 
-         if Op_Name = Name_Op_Subtract
-           or else Op_Name = Name_Op_Add
-           or else Op_Name = Name_Op_Abs
-         then
+         if Nam_In (Op_Name, Name_Op_Subtract, Name_Op_Add, Name_Op_Abs) then
             return Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T);
 
@@ -3080,26 +3074,24 @@ package body Sem_Type is
          T1 := Etype (First_Formal (New_S));
          T2 := Etype (Next_Formal (First_Formal (New_S)));
 
-         if Op_Name =  Name_Op_And or else Op_Name = Name_Op_Or
-           or else Op_Name = Name_Op_Xor
-         then
+         if Nam_In (Op_Name, Name_Op_And, Name_Op_Or, Name_Op_Xor) then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Valid_Boolean_Arg (Base_Type (T));
 
-         elsif Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne then
+         elsif Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne) then
             return Base_Type (T1) = Base_Type (T2)
               and then not Is_Limited_Type (T1)
               and then Is_Boolean_Type (T);
 
-         elsif Op_Name = Name_Op_Lt or else Op_Name = Name_Op_Le
-           or else Op_Name = Name_Op_Gt or else Op_Name = Name_Op_Ge
+         elsif Nam_In (Op_Name, Name_Op_Lt, Name_Op_Le,
+                                Name_Op_Gt, Name_Op_Ge)
          then
             return Base_Type (T1) = Base_Type (T2)
               and then Valid_Comparison_Arg (T1)
               and then Is_Boolean_Type (T);
 
-         elsif Op_Name = Name_Op_Add or else Op_Name = Name_Op_Subtract then
+         elsif Nam_In (Op_Name, Name_Op_Add, Name_Op_Subtract) then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T);
@@ -3152,7 +3144,7 @@ package body Sem_Type is
                         and then Is_Floating_Point_Type (T2)
                         and then Base_Type (T2) = Base_Type (T));
 
-         elsif Op_Name = Name_Op_Mod or else Op_Name = Name_Op_Rem then
+         elsif Nam_In (Op_Name, Name_Op_Mod, Name_Op_Rem) then
             return Base_Type (T1) = Base_Type (T2)
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Integer_Type (T);

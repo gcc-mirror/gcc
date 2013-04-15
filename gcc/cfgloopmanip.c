@@ -502,7 +502,7 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 
   /* See if loop is predicted to iterate too many times.  */
   if (iteration_bound && iterations > 0
-      && RDIV (iterations * scale, REG_BR_PROB_BASE) > iteration_bound)
+      && apply_probability (iterations, scale) > iteration_bound)
     {
       /* Fixing loop profile for different trip count is not trivial; the exit
 	 probabilities has to be updated to match and frequencies propagated down
@@ -563,7 +563,8 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 	      count_in += e->count;
 
 	  if (count_in != 0)
-	    scale = RDIV (count_in * iteration_bound * REG_BR_PROB_BASE, loop->header->count);
+	    scale = GCOV_COMPUTE_SCALE (count_in * iteration_bound,
+                                        loop->header->count);
 	}
       else if (loop->header->frequency)
 	{
@@ -574,7 +575,8 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 	      freq_in += EDGE_FREQUENCY (e);
 
 	  if (freq_in != 0)
-	    scale = RDIV (freq_in * iteration_bound * REG_BR_PROB_BASE, loop->header->frequency);
+	    scale = GCOV_COMPUTE_SCALE (freq_in * iteration_bound,
+                                        loop->header->frequency);
 	}
       if (!scale)
 	scale = 1;
@@ -890,7 +892,7 @@ loopify (edge latch_edge, edge header_edge,
       switch_bb->count = cnt;
       FOR_EACH_EDGE (e, ei, switch_bb->succs)
 	{
-	  e->count = RDIV (switch_bb->count * e->probability, REG_BR_PROB_BASE);
+	  e->count = apply_probability (switch_bb->count, e->probability);
 	}
     }
   scale_loop_frequencies (loop, false_scale, REG_BR_PROB_BASE);
@@ -1199,8 +1201,9 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	{
 	  /* The blocks that are dominated by a removed exit edge ORIG have
 	     frequencies scaled by this.  */
-	  scale_after_exit = RDIV (REG_BR_PROB_BASE * REG_BR_PROB_BASE,
-				   REG_BR_PROB_BASE - orig->probability);
+	  scale_after_exit
+              = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE,
+                                    REG_BR_PROB_BASE - orig->probability);
 	  bbs_to_scale = BITMAP_ALLOC (NULL);
 	  for (i = 0; i < n; i++)
 	    {
@@ -1231,12 +1234,12 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	     frequency should be reduced by prob_pass_wont_exit.  Caller
 	     should've managed the flags so all except for original loop
 	     has won't exist set.  */
-	  scale_act = RDIV (wanted_freq * REG_BR_PROB_BASE, freq_in);
+	  scale_act = GCOV_COMPUTE_SCALE (wanted_freq, freq_in);
 	  /* Now simulate the duplication adjustments and compute header
 	     frequency of the last copy.  */
 	  for (i = 0; i < ndupl; i++)
-	    wanted_freq = RDIV (wanted_freq * scale_step[i], REG_BR_PROB_BASE);
-	  scale_main = RDIV (wanted_freq * REG_BR_PROB_BASE, freq_in);
+	    wanted_freq = combine_probabilities (wanted_freq, scale_step[i]);
+	  scale_main = GCOV_COMPUTE_SCALE (wanted_freq, freq_in);
 	}
       else if (is_latch)
 	{
@@ -1248,16 +1251,16 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	  for (i = 0; i < ndupl; i++)
 	    {
 	      scale_main += p;
-	      p = RDIV (p * scale_step[i], REG_BR_PROB_BASE);
+	      p = combine_probabilities (p, scale_step[i]);
 	    }
-	  scale_main = RDIV (REG_BR_PROB_BASE * REG_BR_PROB_BASE, scale_main);
-	  scale_act = RDIV (scale_main * prob_pass_main, REG_BR_PROB_BASE);
+	  scale_main = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE, scale_main);
+	  scale_act = combine_probabilities (scale_main, prob_pass_main);
 	}
       else
 	{
 	  scale_main = REG_BR_PROB_BASE;
 	  for (i = 0; i < ndupl; i++)
-	    scale_main = RDIV (scale_main * scale_step[i], REG_BR_PROB_BASE);
+	    scale_main = combine_probabilities (scale_main, scale_step[i]);
 	  scale_act = REG_BR_PROB_BASE - prob_pass_thru;
 	}
       for (i = 0; i < ndupl; i++)
@@ -1378,7 +1381,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       if (flags & DLTHE_FLAG_UPDATE_FREQ)
 	{
 	  scale_bbs_frequencies_int (new_bbs, n, scale_act, REG_BR_PROB_BASE);
-	  scale_act = RDIV (scale_act * scale_step[j], REG_BR_PROB_BASE);
+	  scale_act = combine_probabilities (scale_act, scale_step[j]);
 	}
     }
   free (new_bbs);
@@ -1638,8 +1641,8 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
 		  current_ir_type () == IR_GIMPLE ? EDGE_TRUE_VALUE : 0);
   e1->probability = then_prob;
   e->probability = REG_BR_PROB_BASE - then_prob;
-  e1->count = RDIV (e->count * e1->probability, REG_BR_PROB_BASE);
-  e->count = RDIV (e->count * e->probability, REG_BR_PROB_BASE);
+  e1->count = apply_probability (e->count, e1->probability);
+  e->count = apply_probability (e->count, e->probability);
 
   set_immediate_dominator (CDI_DOMINATORS, first_head, new_head);
   set_immediate_dominator (CDI_DOMINATORS, second_head, new_head);

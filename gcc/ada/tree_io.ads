@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package Tree_IO is
    Tree_Format_Error : exception;
    --  Raised if a format error is detected in the input file
 
-   ASIS_Version_Number : constant := 30;
+   ASIS_Version_Number : constant := 31;
    --  ASIS Version. This is used to check for consistency between the compiler
    --  used to generate trees and an ASIS application that is reading the
    --  trees. It must be incremented whenever a change is made to the tree
@@ -59,6 +59,7 @@ package Tree_IO is
    --  29  Changes in Sem_Ch3 (tree copying in case of discriminant constraint
    --      for concurrent types).
    --  30  Add Check_Float_Overflow boolean to tree file
+   --  31  Remove read/write of Debug_Pragmas_Disabled/Debug_Pragmas_Enabled
 
    procedure Tree_Read_Initialize (Desc : File_Descriptor);
    --  Called to initialize reading of a tree file. This call must be made

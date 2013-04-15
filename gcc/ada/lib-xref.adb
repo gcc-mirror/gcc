@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -516,11 +516,9 @@ package body Lib.Xref is
                P := Parent (P);
 
                if Nkind (P) = N_Pragma then
-                  if Pragma_Name (P) = Name_Warnings
-                       or else
-                     Pragma_Name (P) = Name_Unmodified
-                       or else
-                     Pragma_Name (P) = Name_Unreferenced
+                  if Nam_In (Pragma_Name (P), Name_Warnings,
+                                              Name_Unmodified,
+                                              Name_Unreferenced)
                   then
                      return False;
                   end if;
@@ -1364,6 +1362,23 @@ package body Lib.Xref is
             then
                Tref := Etype (Tref);
 
+               --  Another special case: an object of a classwide type
+               --  initialized with a tag-indeterminate call gets a subtype
+               --  of the classwide type during expansion. See if the original
+               --  type in the declaration is named, and return it instead
+               --  of going to the root type.
+
+               if Ekind (Tref) = E_Class_Wide_Subtype
+                 and then Nkind (Parent (Ent)) = N_Object_Declaration
+                 and then
+                   Nkind (Original_Node (Object_Definition (Parent (Ent))))
+                     = N_Identifier
+               then
+                  Tref :=
+                    Entity
+                      (Original_Node ((Object_Definition (Parent (Ent)))));
+               end if;
+
             --  For anything else, exit
 
             else
@@ -2047,8 +2062,8 @@ package body Lib.Xref is
                      Ctyp := '*';
                   end if;
 
-                  --  Special handling for access parameters and objects of
-                  --  an anonymous access type.
+                  --  Special handling for access parameters and objects and
+                  --  components of an anonymous access type.
 
                   if Ekind_In (Etype (XE.Key.Ent),
                                E_Anonymous_Access_Type,
@@ -2056,7 +2071,9 @@ package body Lib.Xref is
                                E_Anonymous_Access_Protected_Subprogram_Type)
                   then
                      if Is_Formal (XE.Key.Ent)
-                       or else Ekind_In (XE.Key.Ent, E_Variable, E_Constant)
+                       or else
+                         Ekind_In
+                           (XE.Key.Ent, E_Variable, E_Constant, E_Component)
                      then
                         Ctyp := 'p';
                      end if;

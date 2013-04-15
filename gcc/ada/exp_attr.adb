@@ -1060,14 +1060,44 @@ package body Exp_Attr is
                      --  match in cases of expander-generated calls (e.g. init
                      --  procs).
 
+                     --  The code may be nested in a block, so find enclosing
+                     --  scope that is a protected operation.
+
                      else
-                        Formal :=
-                          First_Entity
-                            (Protected_Body_Subprogram (Current_Scope));
-                        Rewrite (N,
-                          Unchecked_Convert_To (Typ,
-                            New_Occurrence_Of (Formal, Loc)));
-                        Set_Etype (N, Typ);
+                        declare
+                           Subp : Entity_Id;
+
+                        begin
+                           Subp := Current_Scope;
+                           while Ekind_In (Subp, E_Loop, E_Block) loop
+                              Subp := Scope (Subp);
+                           end loop;
+
+                           Formal :=
+                             First_Entity
+                               (Protected_Body_Subprogram (Subp));
+
+                           --  For a protected subprogram the _Object parameter
+                           --  is the protected record, so we create an access
+                           --  to it. The _Object parameter of an entry is an
+                           --  address.
+
+                           if Ekind (Subp) = E_Entry then
+                              Rewrite (N,
+                                Unchecked_Convert_To (Typ,
+                                  New_Occurrence_Of (Formal, Loc)));
+                              Set_Etype (N, Typ);
+
+                           else
+                              Rewrite (N,
+                                Unchecked_Convert_To (Typ,
+                                  Make_Attribute_Reference (Loc,
+                                    Attribute_Name => Name_Unrestricted_Access,
+                                    Prefix         =>
+                                      New_Occurrence_Of (Formal, Loc))));
+                              Analyze_And_Resolve (N);
+                           end if;
+                        end;
                      end if;
 
                   --  The expression must appear in a default expression,

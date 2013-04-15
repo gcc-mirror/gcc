@@ -452,14 +452,14 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 		    {
 		      if (context->show_column)
 			pp_printf (context->printer,
-				   _("    inlined from %qs at %s:%d:%d"),
+				   _("    inlined from %qs at %r%s:%d:%d%R"),
 				   identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)),
-				   s.file, s.line, s.column);
+				   "locus", s.file, s.line, s.column);
 		      else
 			pp_printf (context->printer,
-				   _("    inlined from %qs at %s:%d"),
+				   _("    inlined from %qs at %r%s:%d%R"),
 				   identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)),
-				   s.file, s.line);
+				   "locus", s.file, s.line);
 
 		    }
 		  else

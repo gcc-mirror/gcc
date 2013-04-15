@@ -22,6 +22,7 @@
 
 (define_constants
   [(GPR_0			 0)
+   (GPR_1			 1)
    (GPR_FP			11)
    (GPR_IP			12)
    (GPR_SP			13)
@@ -264,6 +265,15 @@
   rtx addr
     = (frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx);
 
+  if (!MACHINE_FUNCTION (cfun)->lr_slot_known)
+    {
+      start_sequence ();
+      epiphany_expand_prologue ();
+      if (!MACHINE_FUNCTION (cfun)->lr_slot_known)
+        epiphany_expand_epilogue (0);
+      end_sequence ();
+      gcc_assert (MACHINE_FUNCTION (cfun)->lr_slot_known);
+    }
   addr = plus_constant (Pmode, addr, MACHINE_FUNCTION (cfun)->lr_slot_offset);
   operands[1] = gen_frame_mem (SImode, addr);
 })
@@ -420,13 +430,19 @@
   DONE;
 }")
 
+; The default case of epiphany_print_operand emits IMMEDIATE_PREFIX
+; where appropriate; however, 'n' is processed by output_asm_insn
+; which doesn't, so we have to explicitly emit the '# in the
+; r/r/CnL output template alternative.
 (define_insn "addsi3_i"
-  [(set (match_operand:SI 0 "add_reg_operand" "=r")
-	(plus:SI (match_operand:SI 1 "add_reg_operand" "%r")
-		 (match_operand:SI 2 "add_operand" "rL")))
+  [(set (match_operand:SI 0 "add_reg_operand" "=r,r")
+	(plus:SI (match_operand:SI 1 "add_reg_operand" "%r,r")
+		 (match_operand:SI 2 "add_operand" "rL,CnL")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "add %0,%1,%2"
+  "@
+   add %0,%1,%2
+   sub %0,%1,#%n2"
 [(set_attr "type" "misc")])
 
 ; We use a clobber of UNKNOWN_REGNUM here so that the peephole optimizers
@@ -1705,6 +1721,132 @@
   "sub %0,%1,%2"
   [(set_attr "type" "compare")])
 
+(define_code_iterator logical_op
+  [and ior xor])
+
+(define_code_attr op_mnc
+  [(plus "add") (minus "sub") (and "and") (ior "orr") (xor "eor")])
+
+(define_insn "*<op_mnc>_f"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (logical_op:SI (match_operand:SI 1 "gpr_operand" "%r")
+				   (match_operand:SI 2 "gpr_operand"  "r"))
+                    (const_int 0)))
+   (set (match_operand:SI 0 "gpr_operand" "=r")
+        (logical_op:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "<op_mnc> %0,%1,%2"
+  [(set_attr "type" "compare")])
+
+(define_insn_and_split "*mov_f"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "gpr_operand"  "r") (const_int 0)))
+   (set (match_operand:SI 0 "gpr_operand" "=r") (match_dup 1))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (and:SI (match_dup 1) (match_dup 1)) (const_int 0)))
+     (set (match_operand:SI 0 "gpr_operand" "=r")
+	  (and:SI (match_dup 1) (match_dup 1)))])]
+  ""
+  [(set_attr "type" "compare")])
+
+(define_peephole2
+  [(parallel
+    [(set (match_operand:SI 0 "gpr_operand" "=r")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
+			 (match_operand:SI 2 "gpr_operand" "%r")))
+     (clobber (reg:CC CC_REGNUM))])
+   (parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (and:SI (match_dup 0) (match_dup 0)) (const_int 0)))
+     (set (match_operand:SI 3 "gpr_operand" "=r")
+	  (and:SI (match_dup 0) (match_dup 0)))])]
+  "peep2_reg_dead_p (2, operands[0])"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (logical_op:SI (match_dup 1) (match_dup 2))
+		      (const_int 0)))
+     (set (match_dup 3) (logical_op:SI (match_dup 1) (match_dup 2)))])])
+
+(define_peephole2
+  [(parallel
+    [(set (match_operand:SI 0 "gpr_operand" "=r")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
+			 (match_operand:SI 2 "gpr_operand" "%r")))
+     (clobber (reg:CC CC_REGNUM))])
+   (parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (and:SI (match_dup 0) (match_dup 0)) (const_int 0)))
+     (set (match_operand:SI 3 "gpr_operand" "=r")
+	  (and:SI (match_dup 0) (match_dup 0)))])]
+  "peep2_reg_dead_p (2, operands[3])"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (logical_op:SI (match_dup 1) (match_dup 2))
+		      (const_int 0)))
+     (set (match_dup 0) (logical_op:SI (match_dup 1) (match_dup 2)))])])
+
+(define_peephole2
+  [(parallel
+    [(set (match_operand:SI 0 "gpr_operand" "=r")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
+			 (match_operand:SI 2 "gpr_operand" "%r")))
+     (clobber (reg:CC CC_REGNUM))])
+   (parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (match_dup 0) (const_int 0)))
+     (clobber (match_operand:SI 3 "gpr_operand" "=r"))])]
+  ""
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (logical_op:SI (match_dup 1) (match_dup 2))
+		      (const_int 0)))
+     (set (match_dup 0) (logical_op:SI (match_dup 1) (match_dup 2)))])])
+
+(define_expand "cstoresi4"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+          (match_operand:SI 1 "comparison_operator"))
+     (match_operand:SI 2 "" "")])
+   (set (match_dup 0) (match_operand:SI 3 "arith_operand" ""))
+   (set (match_operand:SI 0 "gpr_operand" "=r")
+	(if_then_else:SI (match_dup 4) (match_dup 5) (match_dup 0)))]
+  ""
+{
+  enum rtx_code o2_code = GET_CODE (operands[2]);
+  enum rtx_code cmp_code = GET_CODE (operands[1]);
+
+  if ((o2_code == AND || o2_code == IOR || o2_code == XOR)
+      && operands[3] == const0_rtx)
+    {
+      operands[2] = copy_rtx(operands[2]);
+      XEXP (operands[2], 0) = force_reg (SImode, XEXP (operands[2], 0));
+      XEXP (operands[2], 1) = force_reg (SImode, XEXP (operands[2], 1));
+    }
+  else
+    operands[2] = force_reg (SImode, operands[2]);
+  operands[1] = gen_rtx_COMPARE (CCmode, operands[2], operands[3]);
+  if (cmp_code != NE)
+    {
+      operands[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (SImode));
+      operands[3] = const0_rtx;
+    }
+  else
+    {
+      if (operands[3] != const0_rtx)
+	operands[2] = gen_rtx_MINUS (SImode, operands[2], operands[3]);
+      operands[2] = gen_rtx_SET (VOIDmode, operands[0], operands[2]);
+      operands[3] = operands[0];
+    }
+  operands[4] = gen_rtx_fmt_ee (cmp_code, SImode,
+				gen_rtx_REG (CCmode, CC_REGNUM), const0_rtx);
+  operands[5] = force_reg (SImode, GEN_INT (STORE_FLAG_VALUE));
+})
+
+
 ; floating point comparisons
 
 (define_insn "*cmpsf_cc_insn"
@@ -1747,7 +1889,7 @@
    (clobber (reg:SI GPR_IP))
    (clobber (reg:SI GPR_16))
    (clobber (reg:SI GPR_LR))]
-  "TARGET_SOFT_CMPSF"
+  ""
   "%f0"
   [(set_attr "type" "sfunc")])
 
@@ -1811,6 +1953,8 @@
 	 operations - if we get some.  */
       operands[1]
 	= gen_compare_reg (<MODE>mode, code, cmp_in_mode, cmp_op0, cmp_op1);
+      if (!operands[1])
+	FAIL;
     }
 })
 
@@ -2285,6 +2429,11 @@
   [(plus "add") (minus "sub") (mult "mul") (div "div")
    (and "and") (ior "ior") (xor "xor")])
 
+; The addsi3 / subsi3 do checks that we don't want when splitting V2SImode
+; operations into two SImode operations.
+(define_code_attr si_pattern_suffix
+  [(plus "_i") (minus "_i") (and "") (ior "") (xor "")])
+
 ; You might think that this would work better as a define_expand, but
 ; again lower_subreg pessimizes the code if it sees indiviudual operations.
 ; We need to keep inputs and outputs as register pairs if we want to
@@ -2311,8 +2460,8 @@
     o1h = copy_to_mode_reg (SImode, o1h);
   if (reg_overlap_mentioned_p (o0l, o2h))
     o2h = copy_to_mode_reg (SImode, o2h);
-  emit_insn (gen_<insn_opname>si3 (o0l, o1l, o2l));
-  emit_insn (gen_<insn_opname>si3 (o0h, o1h, o2h));
+  emit_insn (gen_<insn_opname>si3<si_pattern_suffix> (o0l, o1l, o2l));
+  emit_insn (gen_<insn_opname>si3<si_pattern_suffix> (o0h, o1h, o2h));
   DONE;
 }
   [(set_attr "length" "8")])

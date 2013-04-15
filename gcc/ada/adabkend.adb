@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2011, AdaCore                     --
+--                     Copyright (C) 2001-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -234,6 +234,15 @@ package body Adabkend is
             then
                if Is_Switch (Argv) then
                   Fail ("Object file name missing after -gnatO");
+
+               --  In Alfa_Mode, such an object file is never written, and the
+               --  call to Set_Output_Object_File_Name may fail (e.g. when the
+               --  object file name does not have the expected suffix). So we
+               --  skip that call when Alfa_Mode is set.
+
+               elsif Alfa_Mode then
+                  Output_File_Name_Seen := True;
+
                else
                   Set_Output_Object_File_Name (Argv);
                   Output_File_Name_Seen := True;

@@ -10633,16 +10633,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    break;
 	  }
 
-	if (VAR_P (t) && DECL_ANON_UNION_VAR_P (t))
-	  {
-	    /* Just use name lookup to find a member alias for an anonymous
-	       union, but then add it to the hash table.  */
-	    r = lookup_name (DECL_NAME (t));
-	    gcc_assert (DECL_ANON_UNION_VAR_P (r));
-	    register_local_specialization (r, t);
-	    break;
-	  }
-
 	/* Create a new node for the specialization we need.  */
 	r = copy_decl (t);
 	if (type == NULL_TREE)
@@ -10747,21 +10737,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	  }
 	else if (cp_unevaluated_operand)
-	  {
-	    /* We're substituting this var in a decltype outside of its
-	       scope, such as for a lambda return type.  Don't add it to
-	       local_specializations, do perform auto deduction.  */
-	    tree auto_node = type_uses_auto (type);
-	    if (auto_node)
-	      {
-		tree init
-		  = tsubst_expr (DECL_INITIAL (t), args, complain, in_decl,
-				 /*constant_expression_p=*/false);
-		init = resolve_nondeduced_context (init);
-		TREE_TYPE (r) = type
-		  = do_auto_deduction (type, init, auto_node);
-	      }
-	  }
+	  gcc_unreachable ();
 	else
 	  register_local_specialization (r, t);
 
@@ -12175,11 +12151,32 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case VAR_DECL:
     case FUNCTION_DECL:
-      if ((DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
-	  || local_variable_p (t))
-	t = tsubst (t, args, complain, in_decl);
-      mark_used (t);
-      return t;
+      if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
+	r = tsubst (t, args, complain, in_decl);
+      else if (local_variable_p (t))
+	{
+	  r = retrieve_local_specialization (t);
+	  if (r == NULL_TREE)
+	    {
+	      if (DECL_ANON_UNION_VAR_P (t))
+		{
+		  /* Just use name lookup to find a member alias for an
+		     anonymous union, but then add it to the hash table.  */
+		  r = lookup_name (DECL_NAME (t));
+		  gcc_assert (DECL_ANON_UNION_VAR_P (r));
+		  register_local_specialization (r, t);
+		}
+	      else
+		{
+		  gcc_assert (errorcount || sorrycount);
+		  return error_mark_node;
+		}
+	    }
+	}
+      else
+	r = t;
+      mark_used (r);
+      return r;
 
     case NAMESPACE_DECL:
       return t;
@@ -13218,14 +13215,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
 	stmt = begin_omp_structured_block ();
 
+	pre_body = push_stmt_list ();
+	RECUR (OMP_FOR_PRE_BODY (t));
+	pre_body = pop_stmt_list (pre_body);
+
 	for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
 	  tsubst_omp_for_iterator (t, i, declv, initv, condv, incrv,
 				   &clauses, args, complain, in_decl,
 				   integral_constant_expression_p);
-
-	pre_body = push_stmt_list ();
-	RECUR (OMP_FOR_PRE_BODY (t));
-	pre_body = pop_stmt_list (pre_body);
 
 	body = push_stmt_list ();
 	RECUR (OMP_FOR_BODY (t));
@@ -15357,6 +15354,135 @@ check_non_deducible_conversion (tree parm, tree arg, int strict,
     return unify_arg_conversion (explain_p, parm, type, arg);
 }
 
+static bool uses_deducible_template_parms (tree type);
+
+/* Returns true iff the expression EXPR is one from which a template
+   argument can be deduced.  In other words, if it's an undecorated
+   use of a template non-type parameter.  */
+
+static bool
+deducible_expression (tree expr)
+{
+  return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
+}
+
+/* Returns true iff the array domain DOMAIN uses a template parameter in a
+   deducible way; that is, if it has a max value of <PARM> - 1.  */
+
+static bool
+deducible_array_bound (tree domain)
+{
+  if (domain == NULL_TREE)
+    return false;
+
+  tree max = TYPE_MAX_VALUE (domain);
+  if (TREE_CODE (max) != MINUS_EXPR)
+    return false;
+
+  return deducible_expression (TREE_OPERAND (max, 0));
+}
+
+/* Returns true iff the template arguments ARGS use a template parameter
+   in a deducible way.  */
+
+static bool
+deducible_template_args (tree args)
+{
+  for (int i = 0; i < TREE_VEC_LENGTH (args); ++i)
+    {
+      bool deducible;
+      tree elt = TREE_VEC_ELT (args, i);
+      if (ARGUMENT_PACK_P (elt))
+	deducible = deducible_template_args (ARGUMENT_PACK_ARGS (elt));
+      else
+	{
+	  if (PACK_EXPANSION_P (elt))
+	    elt = PACK_EXPANSION_PATTERN (elt);
+	  if (TREE_CODE (elt) == TEMPLATE_TEMPLATE_PARM)
+	    deducible = true;
+	  else if (TYPE_P (elt))
+	    deducible = uses_deducible_template_parms (elt);
+	  else
+	    deducible = deducible_expression (elt);
+	}
+      if (deducible)
+	return true;
+    }
+  return false;
+}
+
+/* Returns true iff TYPE contains any deducible references to template
+   parameters, as per 14.8.2.5.  */
+
+static bool
+uses_deducible_template_parms (tree type)
+{
+  if (PACK_EXPANSION_P (type))
+    type = PACK_EXPANSION_PATTERN (type);
+
+  /* T
+     cv-list T
+     TT<T>
+     TT<i>
+     TT<> */
+  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+      || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    return true;
+
+  /* T*
+     T&
+     T&&  */
+  if (POINTER_TYPE_P (type))
+    return uses_deducible_template_parms (TREE_TYPE (type));
+
+  /* T[integer-constant ]
+     type [i]  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return (uses_deducible_template_parms (TREE_TYPE (type))
+	    || deducible_array_bound (TYPE_DOMAIN (type)));
+
+  /* T type ::*
+     type T::*
+     T T::*
+     T (type ::*)()
+     type (T::*)()
+     type (type ::*)(T)
+     type (T::*)(T)
+     T (type ::*)(T)
+     T (T::*)()
+     T (T::*)(T) */
+  if (TYPE_PTRMEM_P (type))
+    return (uses_deducible_template_parms (TYPE_PTRMEM_CLASS_TYPE (type))
+	    || (uses_deducible_template_parms
+		(TYPE_PTRMEM_POINTED_TO_TYPE (type))));
+
+  /* template-name <T> (where template-name refers to a class template)
+     template-name <i> (where template-name refers to a class template) */
+  if (CLASS_TYPE_P (type)
+      && CLASSTYPE_TEMPLATE_INFO (type)
+      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
+    return deducible_template_args (INNERMOST_TEMPLATE_ARGS
+				    (CLASSTYPE_TI_ARGS (type)));
+
+  /* type (T)
+     T()
+     T(T)  */
+  if (TREE_CODE (type) == FUNCTION_TYPE
+      || TREE_CODE (type) == METHOD_TYPE)
+    {
+      if (uses_deducible_template_parms (TREE_TYPE (type)))
+	return true;
+      tree parm = TYPE_ARG_TYPES (type);
+      if (TREE_CODE (type) == METHOD_TYPE)
+	parm = TREE_CHAIN (parm);
+      for (; parm; parm = TREE_CHAIN (parm))
+	if (uses_deducible_template_parms (TREE_VALUE (parm)))
+	  return true;
+    }
+
+  return false;
+}
+
 /* Subroutine of type_unification_real and unify_pack_expansion to
    handle unification of a single P/A pair.  Parameters are as
    for those functions.  */
@@ -15376,10 +15502,21 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
        template args from other function args.  */
     return unify_success (explain_p);
 
-  /* FIXME uses_deducible_template_parms */
+  /* Implicit conversions (Clause 4) will be performed on a function
+     argument to convert it to the type of the corresponding function
+     parameter if the parameter type contains no template-parameters that
+     participate in template argument deduction.  */
   if (TYPE_P (parm) && !uses_template_parms (parm))
+    /* For function parameters that contain no template-parameters at all,
+       we have historically checked for convertibility in order to shortcut
+       consideration of this candidate.  */
     return check_non_deducible_conversion (parm, arg, strict, flags,
 					   explain_p);
+  else if (strict == DEDUCE_CALL
+	   && TYPE_P (parm) && !uses_deducible_template_parms (parm))
+    /* For function parameters with only non-deducible template parameters,
+       just return.  */
+    return unify_success (explain_p);
 
   switch (strict)
     {

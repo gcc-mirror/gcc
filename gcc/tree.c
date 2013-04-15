@@ -2833,14 +2833,12 @@ save_expr (tree expr)
   return t;
 }
 
-/* Look inside EXPR and into any simple arithmetic operations.  Return
-   the innermost non-arithmetic node.  */
+/* Look inside EXPR into any simple arithmetic operations.  Return the
+   outermost non-arithmetic or non-invariant node.  */
 
 tree
 skip_simple_arithmetic (tree expr)
 {
-  tree inner;
-
   /* We don't care about whether this can be used as an lvalue in this
      context.  */
   while (TREE_CODE (expr) == NON_LVALUE_EXPR)
@@ -2850,17 +2848,16 @@ skip_simple_arithmetic (tree expr)
      a constant, it will be more efficient to not make another SAVE_EXPR since
      it will allow better simplification and GCSE will be able to merge the
      computations if they actually occur.  */
-  inner = expr;
-  while (1)
+  while (true)
     {
-      if (UNARY_CLASS_P (inner))
-	inner = TREE_OPERAND (inner, 0);
-      else if (BINARY_CLASS_P (inner))
+      if (UNARY_CLASS_P (expr))
+	expr = TREE_OPERAND (expr, 0);
+      else if (BINARY_CLASS_P (expr))
 	{
-	  if (tree_invariant_p (TREE_OPERAND (inner, 1)))
-	    inner = TREE_OPERAND (inner, 0);
-	  else if (tree_invariant_p (TREE_OPERAND (inner, 0)))
-	    inner = TREE_OPERAND (inner, 1);
+	  if (tree_invariant_p (TREE_OPERAND (expr, 1)))
+	    expr = TREE_OPERAND (expr, 0);
+	  else if (tree_invariant_p (TREE_OPERAND (expr, 0)))
+	    expr = TREE_OPERAND (expr, 1);
 	  else
 	    break;
 	}
@@ -2868,9 +2865,37 @@ skip_simple_arithmetic (tree expr)
 	break;
     }
 
-  return inner;
+  return expr;
 }
 
+/* Look inside EXPR into simple arithmetic operations involving constants.
+   Return the outermost non-arithmetic or non-constant node.  */
+
+tree
+skip_simple_constant_arithmetic (tree expr)
+{
+  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  while (true)
+    {
+      if (UNARY_CLASS_P (expr))
+	expr = TREE_OPERAND (expr, 0);
+      else if (BINARY_CLASS_P (expr))
+	{
+	  if (TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+	    expr = TREE_OPERAND (expr, 0);
+	  else if (TREE_CONSTANT (TREE_OPERAND (expr, 0)))
+	    expr = TREE_OPERAND (expr, 1);
+	  else
+	    break;
+	}
+      else
+	break;
+    }
+
+  return expr;
+}
 
 /* Return which tree structure is used by T.  */
 
@@ -5327,7 +5352,7 @@ struct simple_ipa_opt_pass pass_ipa_free_lang_data =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect			/* todo_flags_finish */
+  0					/* todo_flags_finish */
  }
 };
 
@@ -6369,7 +6394,7 @@ type_hash_hash (const void *item)
 /* Look in the type hash table for a type isomorphic to TYPE.
    If one is found, return it.  Otherwise return 0.  */
 
-tree
+static tree
 type_hash_lookup (hashval_t hashcode, tree type)
 {
   struct type_hash *h, in;
@@ -6391,7 +6416,7 @@ type_hash_lookup (hashval_t hashcode, tree type)
 /* Add an entry to the type-hash-table
    for a type TYPE whose hash code is HASHCODE.  */
 
-void
+static void
 type_hash_add (hashval_t hashcode, tree type)
 {
   struct type_hash *h;

@@ -802,7 +802,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
 
   /* Compute probability of taking the optimal path.  */
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
 
@@ -962,7 +962,7 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
     return false;
 
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
 
@@ -1156,8 +1156,8 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   /* Compute probability of taking the optimal path(s).  */
   if (all > 0)
     {
-      prob1 = (count1 * REG_BR_PROB_BASE + all / 2) / all;
-      prob2 = (count2 * REG_BR_PROB_BASE + all / 2) / all;
+      prob1 = GCOV_COMPUTE_SCALE (count1, all);
+      prob2 = GCOV_COMPUTE_SCALE (count2, all);
     }
   else
     {
@@ -1430,7 +1430,7 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
     return false;
 
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
   direct_call = find_func_by_funcdef_no ((int)val);
@@ -1636,7 +1636,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   if (check_counter (stmt, "value", &count, &all, gimple_bb (stmt)->count))
     return false;
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
   dest = gimple_call_arg (stmt, 0);

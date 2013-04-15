@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -49,11 +49,7 @@
 --      function Left  (Container : List; Position : Cursor) return List;
 --      function Right (Container : List; Position : Cursor) return List;
 
---    See detailed specifications for these subprograms
-
-private with Ada.Streams;
-with Ada.Containers;
-with Ada.Iterator_Interfaces;
+--    See subprogram specifications that follow for details
 
 generic
    type Element_Type is private;
@@ -64,11 +60,8 @@ generic
 package Ada.Containers.Formal_Doubly_Linked_Lists is
    pragma Pure;
 
-   type List (Capacity : Count_Type) is tagged private with
-      Constant_Indexing => Constant_Reference,
-      Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
-   --  pragma Preelaborable_Initialization (List);
+   type List (Capacity : Count_Type) is private;
+   pragma Preelaborable_Initialization (List);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -76,17 +69,6 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
-
-   function Not_No_Element (Position : Cursor) return Boolean;
-
-   package List_Iterator_Interfaces is new
-     Ada.Iterator_Interfaces (Cursor => Cursor, Has_Element => Not_No_Element);
-
-   function Iterate (Container : List; Start : Cursor)
-      return List_Iterator_Interfaces.Reversible_Iterator'Class;
-
-   function Iterate (Container : List)
-      return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    function "=" (Left, Right : List) return Boolean;
 
@@ -106,15 +88,6 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
      (Container : in out List;
       Position  : Cursor;
       New_Item  : Element_Type);
-
-   procedure Query_Element
-     (Container : List; Position : Cursor;
-      Process   : not null access procedure (Element : Element_Type));
-
-   procedure Update_Element
-     (Container : in out List;
-      Position  : Cursor;
-      Process   : not null access procedure (Element : in out Element_Type));
 
    procedure Move (Target : in out List; Source : in out List);
 
@@ -218,16 +191,6 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
 
    function Has_Element (Container : List; Position : Cursor) return Boolean;
 
-   procedure Iterate
-     (Container : List;
-      Process   :
-      not null access procedure (Container : List; Position : Cursor));
-
-   procedure Reverse_Iterate
-     (Container : List;
-      Process   :
-      not null access procedure (Container : List; Position : Cursor));
-
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
@@ -239,15 +202,6 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
       procedure Merge (Target, Source : in out List);
 
    end Generic_Sorting;
-
-   type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is private
-   with
-      Implicit_Dereference => Element;
-
-   function Constant_Reference
-     (Container : List;      --  SHOULD BE ALIASED ???
-      Position  : Cursor)   return Constant_Reference_Type;
 
    function Strict_Equal (Left, Right : List) return Boolean;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
@@ -268,7 +222,7 @@ private
    type Node_Type is record
       Prev    : Count_Type'Base := -1;
       Next    : Count_Type;
-      Element : aliased Element_Type;
+      Element : Element_Type;
    end record;
 
    function "=" (L, R : Node_Type) return Boolean is abstract;
@@ -279,48 +233,14 @@ private
    type List (Capacity : Count_Type) is tagged record
       Nodes  : Node_Array (1 .. Capacity) := (others => <>);
       Free   : Count_Type'Base := -1;
-      Busy   : Natural := 0;
-      Lock   : Natural := 0;
       Length : Count_Type := 0;
       First  : Count_Type := 0;
       Last   : Count_Type := 0;
    end record;
 
-   use Ada.Streams;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out List);
-
-   for List'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : List);
-
-   for List'Write use Write;
-
-   type List_Access is access all List;
-   for List_Access'Storage_Size use 0;
-
    type Cursor is record
       Node : Count_Type := 0;
    end record;
-
-   type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is null record;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor);
-
-   for Cursor'Read use Read;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor);
-
-   for Cursor'Write use Write;
 
    Empty_List : constant List := (0, others => <>);
 

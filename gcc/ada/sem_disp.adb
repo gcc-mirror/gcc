@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -535,6 +535,21 @@ package body Sem_Disp is
 
                Set_Entity (Name (N), Alias (Subp));
                return;
+
+            --  An obscure special case: a null procedure may have a class-
+            --  wide pre/postcondition that includes a call to an abstract
+            --  subp. Calls within the expression may not have been rewritten
+            --  as dispatching calls yet, because the null body appears in
+            --  the current declarative part. The expression will be properly
+            --  rewritten/reanalyzed when the postcondition procedure is built.
+
+            elsif In_Spec_Expression
+              and then Is_Subprogram (Current_Scope)
+              and then
+                Nkind (Parent (Current_Scope)) = N_Procedure_Specification
+              and then Null_Present (Parent (Current_Scope))
+            then
+               null;
 
             else
                --  We need to determine whether the context of the call
@@ -1198,9 +1213,7 @@ package body Sem_Disp is
 
          Check_Subtype_Conformant (Subp, Ovr_Subp);
 
-         if (Chars (Subp) = Name_Initialize
-           or else Chars (Subp) = Name_Adjust
-           or else Chars (Subp) = Name_Finalize)
+         if Nam_In (Chars (Subp), Name_Initialize, Name_Adjust, Name_Finalize)
            and then Is_Controlled (Tagged_Type)
            and then not Is_Visibly_Controlled (Tagged_Type)
          then
@@ -1371,11 +1384,10 @@ package body Sem_Disp is
          Set_DT_Position (Subp, No_Uint);
 
       elsif Has_Controlled_Component (Tagged_Type)
-        and then
-          (Chars (Subp) = Name_Initialize or else
-           Chars (Subp) = Name_Adjust     or else
-           Chars (Subp) = Name_Finalize   or else
-           Chars (Subp) = Name_Finalize_Address)
+        and then Nam_In (Chars (Subp), Name_Initialize,
+                                       Name_Adjust,
+                                       Name_Finalize,
+                                       Name_Finalize_Address)
       then
          declare
             F_Node   : constant Node_Id := Freeze_Node (Tagged_Type);
@@ -2445,7 +2457,7 @@ package body Sem_Disp is
                Set_Etype (Call_Node, Etype (Control));
                Set_Analyzed (Call_Node);
 
-               Expand_Interface_Conversion (Call_Node, Is_Static => False);
+               Expand_Interface_Conversion (Call_Node);
             end if;
          end;
 

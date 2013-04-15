@@ -609,11 +609,11 @@ gfc_cpp_init (void)
     pp_dir_change (cpp_in, get_src_pwd ());
 }
 
-gfc_try
+bool
 gfc_cpp_preprocess (const char *source_file)
 {
   if (!gfc_cpp_enabled ())
-    return FAILURE;
+    return false;
 
   cpp_change_file (cpp_in, LC_RENAME, source_file);
 
@@ -636,7 +636,7 @@ gfc_cpp_preprocess (const char *source_file)
       || (gfc_cpp_preprocess_only () && gfc_cpp_option.output_filename))
     fclose (print.outf);
 
-  return SUCCESS;
+  return true;
 }
 
 void

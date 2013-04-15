@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Back_End; use Back_End;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -35,6 +34,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
+with Set_Targ; use Set_Targ;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -146,18 +146,19 @@ package body CStand is
    --  Print representation of package Standard if switch set
 
    procedure Register_Float_Type
-     (Name      : C_String; -- Nul-terminated string with name of type
-      Digs      : Natural;  -- Nr or digits for floating point, 0 otherwise
-      Complex   : Boolean;  -- True iff type has real and imaginary parts
-      Count     : Natural;  -- Number of elements in vector, 0 otherwise
-      Float_Rep : Float_Rep_Kind; -- Representation used for fpt type
-      Size      : Positive; -- Size of representation in bits
-      Alignment : Natural); -- Required alignment in bits
-   pragma Convention (C, Register_Float_Type);
-   --  Call back to allow the back end to register available types.
-   --  This call back currently creates predefined floating point base types
-   --  for any floating point types reported by the back end, and adds them
-   --  to the list of predefined float types.
+     (Name      : String;
+      Digs      : Positive;
+      Float_Rep : Float_Rep_Kind;
+      Size      : Positive;
+      Alignment : Natural);
+   --  Registers a single back end floating-point type (from FPT_Mode_Table in
+   --  Set_Targ). This will create a predefined floating-point base type for
+   --  one of the floating point types reported by the back end, and add it
+   --  to the list of predefined float types. Name is the name of the type
+   --  as a normal format (non-null-terminated) string. Digs is the number of
+   --  digits, which is always non-zero, since non-floating-point types were
+   --  filtered out earlier. Float_Rep indicates the kind of floating-point
+   --  type, and Size and Alignment are the size and alignment in bits.
 
    procedure Set_Integer_Bounds
      (Id  : Entity_Id;
@@ -424,14 +425,20 @@ package body CStand is
          Append (Decl, Decl_S);
       end Build_Exception;
 
-      ---------------------------
+      ---------------------------------
       -- Create_Back_End_Float_Types --
-      ---------------------------
+      ---------------------------------
 
       procedure Create_Back_End_Float_Types is
       begin
-         Back_End_Float_Types := No_Elist;
-         Register_Back_End_Types (Register_Float_Type'Access);
+         for J in 1 .. Num_FPT_Modes loop
+            declare
+               E : FPT_Mode_Entry renames FPT_Mode_Table (J);
+            begin
+               Register_Float_Type
+                 (E.NAME.all, E.DIGS, E.FLOAT_REP, E.SIZE, E.ALIGNMENT);
+            end;
+         end loop;
       end Create_Back_End_Float_Types;
 
       ------------------------
@@ -2009,107 +2016,29 @@ package body CStand is
    -------------------------
 
    procedure Register_Float_Type
-     (Name      : C_String;
-      Digs      : Natural;
-      Complex   : Boolean;
-      Count     : Natural;
+     (Name      : String;
+      Digs      : Positive;
       Float_Rep : Float_Rep_Kind;
       Size      : Positive;
       Alignment : Natural)
    is
-      T    : String (1 .. Name'Length);
-      Last : Natural := 0;
-
-      procedure Dump;
-      --  Dump information given by the back end for the type to register
-
-      procedure Dump is
-      begin
-         Write_Str ("type " & T (1 .. Last) & " is ");
-
-         if Count > 0 then
-            Write_Str ("array (1 .. ");
-            Write_Int (Int (Count));
-
-            if Complex then
-               Write_Str (", 1 .. 2");
-            end if;
-
-            Write_Str (") of ");
-
-         elsif Complex then
-            Write_Str ("array (1 .. 2) of ");
-         end if;
-
-         if Digs > 0 then
-            Write_Str ("digits ");
-            Write_Int (Int (Digs));
-            Write_Line (";");
-
-            Write_Str ("pragma Float_Representation (");
-
-            case Float_Rep is
-               when IEEE_Binary =>  Write_Str ("IEEE");
-               when VAX_Native =>
-                  case Digs is
-                     when  6 =>     Write_Str ("VAXF");
-                     when  9 =>     Write_Str ("VAXD");
-                     when 15 =>     Write_Str ("VAXG");
-                     when others => Write_Str ("VAX_"); Write_Int (Int (Digs));
-                  end case;
-               when AAMP =>         Write_Str ("AAMP");
-            end case;
-            Write_Line (", " & T & ");");
-
-         else
-            Write_Str ("mod 2**");
-            Write_Int (Int (Size / Positive'Max (1, Count)));
-            Write_Line (";");
-         end if;
-
-         Write_Str ("for " & T & "'Size use ");
-         Write_Int (Int (Size));
-         Write_Line (";");
-
-         Write_Str ("for " & T & "'Alignment use ");
-         Write_Int (Int (Alignment / 8));
-         Write_Line (";");
-      end Dump;
+      Ent   : constant Entity_Id := New_Standard_Entity;
+      Esize : constant Pos :=
+                Pos ((Size + Alignment - 1) / Alignment * Alignment);
 
    begin
-      for J in T'Range loop
-         T (J) := Name (Name'First + J - 1);
-         if T (J) = ASCII.NUL then
-            Last := J - 1;
-            exit;
-         end if;
-      end loop;
+      Set_Defining_Identifier (New_Node (N_Full_Type_Declaration, Stloc), Ent);
+      Make_Name (Ent, Name);
+      Set_Scope (Ent, Standard_Standard);
+      Build_Float_Type (Ent, Esize, Float_Rep, Pos (Digs));
+      Set_RM_Size (Ent, UI_From_Int (Int (Size)));
+      Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
 
-      if Debug_Flag_Dot_B then
-         Dump;
+      if No (Back_End_Float_Types) then
+         Back_End_Float_Types := New_Elmt_List;
       end if;
 
-      if Digs > 0 and then not Complex and then Count = 0 then
-         declare
-            Ent   : constant Entity_Id := New_Standard_Entity;
-            Esize : constant Pos := Pos ((Size + Alignment - 1)
-                                           / Alignment * Alignment);
-         begin
-            Set_Defining_Identifier
-              (New_Node (N_Full_Type_Declaration, Stloc), Ent);
-            Make_Name (Ent, T (1 .. Last));
-            Set_Scope (Ent, Standard_Standard);
-            Build_Float_Type (Ent, Esize, Float_Rep, Pos (Digs));
-            Set_RM_Size (Ent, UI_From_Int (Int (Size)));
-            Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
-
-            if No (Back_End_Float_Types) then
-               Back_End_Float_Types := New_Elmt_List;
-            end if;
-
-            Append_Elmt (Ent, Back_End_Float_Types);
-         end;
-      end if;
+      Append_Elmt (Ent, Back_End_Float_Types);
    end Register_Float_Type;
 
    ----------------------
@@ -2118,10 +2047,8 @@ package body CStand is
 
    procedure Set_Float_Bounds (Id  : Entity_Id) is
       L : Node_Id;
-      --  Low bound of literal value
-
       H : Node_Id;
-      --  High bound of literal value
+      --  Low and high bounds of literal value
 
       R : Node_Id;
       --  Range specification
@@ -2166,9 +2093,12 @@ package body CStand is
       Lb  : Uint;
       Hb  : Uint)
    is
-      L : Node_Id;     -- Low bound of literal value
-      H : Node_Id;     -- High bound of literal value
-      R : Node_Id;     -- Range specification
+      L : Node_Id;
+      H : Node_Id;
+      --  Low and high bounds of literal value
+
+      R : Node_Id;
+      --  Range specification
 
    begin
       L := Make_Integer (Lb);

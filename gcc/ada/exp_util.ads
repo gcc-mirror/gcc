@@ -345,9 +345,13 @@ package Exp_Util is
    --  This procedure ensures that type referenced by Typ is defined. For the
    --  case of a type other than an Itype, nothing needs to be done, since
    --  all such types have declaration nodes. For Itypes, an N_Itype_Reference
-   --  node is generated and inserted at the given node N. This is typically
+   --  node is generated and inserted as an action on node N. This is typically
    --  used to ensure that an Itype is properly defined outside a conditional
    --  construct when it is referenced in more than one branch.
+
+   function Entity_Of (N : Node_Id) return Entity_Id;
+   --  Return the entity of N or Empty. If N is a renaming, return the entity
+   --  of the root renamed object.
 
    function Entry_Names_OK return Boolean;
    --  Determine whether it is appropriate to dynamically allocate strings
@@ -440,7 +444,8 @@ package Exp_Util is
 
    function Fully_Qualified_Name_String (E : Entity_Id) return String_Id;
    --  Generates the string literal corresponding to the fully qualified name
-   --  of entity E with an ASCII.NUL appended at the end of the name.
+   --  of entity E, in all upper case, with an ASCII.NUL appended at the end
+   --  of the name.
 
    procedure Generate_Poll_Call (N : Node_Id);
    --  If polling is active, then a call to the Poll routine is built,
@@ -647,9 +652,12 @@ package Exp_Util is
 
    function Make_Predicate_Call
      (Typ  : Entity_Id;
-      Expr : Node_Id) return Node_Id;
+      Expr : Node_Id;
+      Mem  : Boolean := False) return Node_Id;
    --  Typ is a type with Predicate_Function set. This routine builds a call to
    --  this function passing Expr as the argument, and returns it unanalyzed.
+   --  If Mem is set True, this is the special call for the membership case,
+   --  and the function called is the Predicate_Function_M if present.
 
    function Make_Predicate_Check
      (Typ  : Entity_Id;

@@ -23,7 +23,7 @@ function g(x)       ! Global entity
 ! Function 'f' cannot be referenced as a subroutine. The previous
 ! definition is in 'line 12'.
 
-  call f(g) ! { dg-error "is already being used as a FUNCTION" }
+  call f(g) ! { dg-error "is already being used as a FUNCTION|Interface mismatch in global procedure" }
 end function g
 ! Error only appears once but testsuite associates with both lines.
 function h(x)       ! { dg-error "is already being used as a FUNCTION" }
@@ -59,7 +59,7 @@ END SUBROUTINE TT
 ! Function 'h' cannot be referenced as a subroutine. The previous
 ! definition is in 'line 29'.
 
-  call h (x) ! { dg-error "is already being used as a FUNCTION" }
+  call h (x) ! { dg-error "is already being used as a FUNCTION|Interface mismatch in global procedure" }
 
 ! PR23308===========================================================
 ! Lahey - 2521-S: "SOURCE.F90", line 68: Intrinsic procedure name or

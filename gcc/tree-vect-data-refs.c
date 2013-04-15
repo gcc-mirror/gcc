@@ -129,31 +129,6 @@ vect_get_smallest_scalar_type (gimple stmt, HOST_WIDE_INT *lhs_size_unit,
 }
 
 
-/* Find the place of the data-ref in STMT in the interleaving chain that starts
-   from FIRST_STMT.  Return -1 if the data-ref is not a part of the chain.  */
-
-int
-vect_get_place_in_interleaving_chain (gimple stmt, gimple first_stmt)
-{
-  gimple next_stmt = first_stmt;
-  int result = 0;
-
-  if (first_stmt != GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
-    return -1;
-
-  while (next_stmt && next_stmt != stmt)
-    {
-      result++;
-      next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
-    }
-
-  if (next_stmt)
-    return result;
-  else
-    return -1;
-}
-
-
 /* Check if data references pointed by DR_I and DR_J are same or
    belong to same interleaving group.  Return FALSE if drs are
    different, otherwise return TRUE.  */
@@ -1481,20 +1456,35 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
             }
           else
             {
-              /* If we don't know all the misalignment values, we prefer
-                 peeling for data-ref that has maximum number of data-refs
+              /* If we don't know any misalignment values, we prefer
+                 peeling for data-ref that has the maximum number of data-refs
                  with the same alignment, unless the target prefers to align
                  stores over load.  */
               if (all_misalignments_unknown)
                 {
-                  if (same_align_drs_max 
-			< STMT_VINFO_SAME_ALIGN_REFS (stmt_info).length ()
-                      || !dr0)
+		  unsigned same_align_drs
+		    = STMT_VINFO_SAME_ALIGN_REFS (stmt_info).length ();
+                  if (!dr0
+		      || same_align_drs_max < same_align_drs)
                     {
-                      same_align_drs_max
-			  = STMT_VINFO_SAME_ALIGN_REFS (stmt_info).length ();
+                      same_align_drs_max = same_align_drs;
                       dr0 = dr;
                     }
+		  /* For data-refs with the same number of related
+		     accesses prefer the one where the misalign
+		     computation will be invariant in the outermost loop.  */
+		  else if (same_align_drs_max == same_align_drs)
+		    {
+		      struct loop *ivloop0, *ivloop;
+		      ivloop0 = outermost_invariant_loop_for_expr
+			  (loop, DR_BASE_ADDRESS (dr0));
+		      ivloop = outermost_invariant_loop_for_expr
+			  (loop, DR_BASE_ADDRESS (dr));
+		      if ((ivloop && !ivloop0)
+			  || (ivloop && ivloop0
+			      && flow_loop_nested_p (ivloop, ivloop0)))
+			dr0 = dr;
+		    }
 
                   if (!first_store && DR_IS_WRITE (dr))
                     first_store = dr;
@@ -1503,8 +1493,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               /* If there are both known and unknown misaligned accesses in the
                  loop, we choose peeling amount according to the known
                  accesses.  */
-
-
               if (!supportable_dr_alignment)
                 {
                   dr0 = dr;
@@ -3206,6 +3194,17 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	    }
 	  return false;
         }
+      else
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "got vectype for stmt: ");
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				 STMT_VINFO_VECTYPE (stmt_info));
+	    }
+	}
 
       /* Adjust the minimal vectorization factor according to the
 	 vector type.  */
@@ -3293,13 +3292,13 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
   switch (var_kind)
   {
   case vect_simple_var:
-    prefix = "vect_";
+    prefix = "vect";
     break;
   case vect_scalar_var:
-    prefix = "stmp_";
+    prefix = "stmp";
     break;
   case vect_pointer_var:
-    prefix = "vect_p";
+    prefix = "vectp";
     break;
   default:
     gcc_unreachable ();
@@ -3307,7 +3306,7 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
 
   if (name)
     {
-      char* tmp = concat (prefix, name, NULL);
+      char* tmp = concat (prefix, "_", name, NULL);
       new_vect_var = create_tmp_reg (type, tmp);
       free (tmp);
     }
@@ -3836,7 +3835,8 @@ tree
 vect_create_destination_var (tree scalar_dest, tree vectype)
 {
   tree vec_dest;
-  const char *new_name;
+  const char *name;
+  char *new_name;
   tree type;
   enum vect_var_kind kind;
 
@@ -3845,10 +3845,13 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
 
   gcc_assert (TREE_CODE (scalar_dest) == SSA_NAME);
 
-  new_name = get_name (scalar_dest);
-  if (!new_name)
-    new_name = "var_";
+  name = get_name (scalar_dest);
+  if (name)
+    asprintf (&new_name, "%s_%u", name, SSA_NAME_VERSION (scalar_dest));
+  else
+    asprintf (&new_name, "_%u", SSA_NAME_VERSION (scalar_dest));
   vec_dest = vect_get_new_vect_var (type, kind, new_name);
+  free (new_name);
 
   return vec_dest;
 }

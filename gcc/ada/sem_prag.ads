@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,22 +54,45 @@ package Sem_Prag is
    --  of the expressions in the pragma as "spec expressions" (see section
    --  in Sem "Handling of Default and Per-Object Expressions...").
 
-   function Check_Disabled (Nam : Name_Id) return Boolean;
+   function Check_Kind (Nam : Name_Id) return Name_Id;
    --  This function is used in connection with pragmas Assertion, Check,
-   --  Precondition, and Postcondition, to determine if Check pragmas (or
-   --  corresponding Assert, Precondition, or Postcondition pragmas) are
-   --  currently disabled (as set by a Check_Policy or Assertion_Policy pragma
-   --  with the Disable argument).
+   --  and assertion aspects and pragmas, to determine if Check pragmas
+   --  (or corresponding assertion aspects or pragmas) are currently active
+   --  as determined by the presence of -gnata on the command line (which
+   --  sets the default), and the appearance of pragmas Check_Policy and
+   --  Assertion_Policy as configuration pragmas either in a configuration
+   --  pragma file, or at the start of the current unit, or locally given
+   --  Check_Policy and Assertion_Policy pragmas that are currently active.
+   --
+   --  The value returned is one of the names Check, Ignore, Disable (On
+   --  returns Check, and Off returns Ignore).
+   --
+   --  Note: for assertion kinds Pre'Class, Post'Class, Invariant'Class,
+   --  and Type_Invariant'Class, the name passed is Name_uPre, Name_uPost,
+   --  Name_uInvariant, or Name_uType_Invariant, which corresponds to _Pre,
+   --  _Post, _Invariant, or _Type_Invariant, which are special names used
+   --  in identifiers to represent these attribute references.
 
-   function Check_Enabled (Nam : Name_Id) return Boolean;
-   --  This function is used in connection with pragmas Assertion, Check,
-   --  Precondition, and Postcondition, to determine if Check pragmas (or
-   --  corresponding Assert, Precondition, or Postcondition pragmas) are
-   --  currently active, as determined by the presence of -gnata on the
-   --  command line (which sets the default), and the appearance of pragmas
-   --  Check_Policy and Assertion_Policy as configuration pragmas either in
-   --  a configuration pragma file, or at the start of the current unit.
-   --  True is returned if the specified check is enabled.
+   procedure Check_Applicable_Policy (N : Node_Id);
+   --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
+   --  the name of the aspect or pragma is not one of those recognized as a
+   --  assertion kind by an Assertion_Kind pragma, then the call has no effect.
+   --  Note that in the case of a pragma derived from an aspect, the name
+   --  we use for the purpose of this procedure is the aspect name, which may
+   --  be different from the pragma name (e.g. Precondition for Pre aspect).
+   --  In addition, 'Class aspects are recognized (and the corresponding
+   --  special names used in the processing).
+   --
+   --  If the name is valid ASSERTION_KIND name, then the Check_Policy pragma
+   --  chain is checked for a matching entry (or for an Assertion entry which
+   --  matches all possibilities). If a matching entry is found then the policy
+   --  is checked. If it is Off, Ignore, or Disable, then the Is_Ignored flag
+   --  is set in the aspect or pragma node. Additionally for policy Disable,
+   --  the Is_Disabled flag is set.
+   --
+   --  If no matching Check_Policy pragma is found then the effect depends on
+   --  whether -gnata was used, if so, then the call has no effect, otherwise
+   --  Is_Ignored (but not Is_Disabled) is set True.
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;
    --  N is a pragma appearing in a configuration pragma file. Most such

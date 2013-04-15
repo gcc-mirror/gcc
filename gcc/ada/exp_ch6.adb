@@ -2559,6 +2559,39 @@ package body Exp_Ch6 is
       --  as we go through the loop, since this is a convenient place to do it.
       --  (Though it seems that this would be better done in Expand_Actuals???)
 
+      --  Special case: Thunks must not compute the extra actuals; they must
+      --  just propagate to the target primitive their extra actuals.
+
+      if Is_Thunk (Current_Scope)
+        and then Thunk_Entity (Current_Scope) = Subp
+        and then Present (Extra_Formals (Subp))
+      then
+         pragma Assert (Present (Extra_Formals (Current_Scope)));
+
+         declare
+            Target_Formal : Entity_Id;
+            Thunk_Formal  : Entity_Id;
+
+         begin
+            Target_Formal := Extra_Formals (Subp);
+            Thunk_Formal  := Extra_Formals (Current_Scope);
+            while Present (Target_Formal) loop
+               Add_Extra_Actual
+                 (New_Occurrence_Of (Thunk_Formal, Loc), Thunk_Formal);
+
+               Target_Formal := Extra_Formal (Target_Formal);
+               Thunk_Formal  := Extra_Formal (Thunk_Formal);
+            end loop;
+
+            while Is_Non_Empty_List (Extra_Actuals) loop
+               Add_Actual_Parameter (Remove_Head (Extra_Actuals));
+            end loop;
+
+            Expand_Actuals (Call_Node, Subp);
+            return;
+         end;
+      end if;
+
       Formal := First_Formal (Subp);
       Actual := First_Actual (Call_Node);
       Param_Count := 1;
@@ -2691,9 +2724,7 @@ package body Exp_Ch6 is
             --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of
             --  accessibility levels.
 
-            if Ekind (Current_Scope) in Subprogram_Kind
-              and then Is_Thunk (Current_Scope)
-            then
+            if Is_Thunk (Current_Scope) then
                declare
                   Parm_Ent : Entity_Id;
 
@@ -5489,6 +5520,12 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_N_Extended_Return_Statement
 
    begin
+      --  Given that functionality of interface thunks is simple (just displace
+      --  the pointer to the object) they are always handled by means of
+      --  simple return statements.
+
+      pragma Assert (not Is_Thunk (Current_Scope));
+
       if Nkind (Ret_Obj_Decl) = N_Object_Declaration then
          Exp := Expression (Ret_Obj_Decl);
       else
@@ -7132,18 +7169,26 @@ package body Exp_Ch6 is
         and then Is_Immutably_Limited_Type (Etype (Expression (N)))
         and then Ada_Version >= Ada_2005
         and then not Debug_Flag_Dot_L
+
+         --  The functionality of interface thunks is simple and it is always
+         --  handled by means of simple return statements. This leaves their
+         --  expansion simple and clean.
+
+        and then not Is_Thunk (Current_Scope)
       then
          declare
             Return_Object_Entity : constant Entity_Id :=
                                      Make_Temporary (Loc, 'R', Exp);
+
             Obj_Decl : constant Node_Id :=
                          Make_Object_Declaration (Loc,
                            Defining_Identifier => Return_Object_Entity,
                            Object_Definition   => Subtype_Ind,
                            Expression          => Exp);
 
-            Ext : constant Node_Id := Make_Extended_Return_Statement (Loc,
-                    Return_Object_Declarations => New_List (Obj_Decl));
+            Ext : constant Node_Id :=
+                    Make_Extended_Return_Statement (Loc,
+                      Return_Object_Declarations => New_List (Obj_Decl));
             --  Do not perform this high-level optimization if the result type
             --  is an interface because the "this" pointer must be displaced.
 
@@ -7203,6 +7248,13 @@ package body Exp_Ch6 is
       if Is_Immutably_Limited_Type (Exptyp)
         or else Is_Limited_Interface (Exptyp)
       then
+         null;
+
+      --  No copy needed for thunks returning interface type objects since
+      --  the object is returned by reference and the maximum functionality
+      --  required is just to displace the pointer.
+
+      elsif Is_Thunk (Current_Scope) and then Is_Interface (Exptyp) then
          null;
 
       elsif not Requires_Transient_Scope (R_Type) then
@@ -7433,12 +7485,16 @@ package body Exp_Ch6 is
       --  return expression has a specific type whose level is known not to
       --  be statically deeper than the function's result type.
 
+      --  No runtime check needed in interface thunks since it is performed
+      --  by the target primitive associated with the thunk.
+
       --  Note: accessibility check is skipped in the VM case, since there
       --  does not seem to be any practical way to implement this check.
 
       elsif Ada_Version >= Ada_2005
         and then Tagged_Type_Expansion
         and then Is_Class_Wide_Type (R_Type)
+        and then not Is_Thunk (Current_Scope)
         and then not Scope_Suppress.Suppress (Accessibility_Check)
         and then
           (Is_Class_Wide_Type (Etype (Exp))

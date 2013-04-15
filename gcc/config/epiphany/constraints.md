@@ -39,6 +39,11 @@
   (and (match_code "const_int")
        (match_test "SIMM11 (ival)")))
 
+(define_constraint "CnL"
+  "A negated signed 11-bit constant."
+  (and (match_code "const_int")
+       (match_test "SIMM11 (-ival)")))
+
 (define_constraint "Cm1"
   "A signed 11-bit constant added to -1"
   (and (match_code "const_int")

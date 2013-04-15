@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,31 +35,9 @@ with Ada.Containers.Red_Black_Trees.Generic_Bounded_Keys;
 pragma Elaborate_All
   (Ada.Containers.Red_Black_Trees.Generic_Bounded_Keys);
 
-with Ada.Finalization; use Ada.Finalization;
-
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Ordered_Maps is
-
-   type Iterator is new Limited_Controlled and
-     Map_Iterator_Interfaces.Reversible_Iterator with
-   record
-      Container : Map_Access;
-      Node      : Count_Type;
-   end record;
-
-   overriding procedure Finalize (Object : in out Iterator);
-
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
-
-   overriding function Next
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
-
-   overriding function Previous
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
 
    -----------------------------
    -- Node Access Subprograms --

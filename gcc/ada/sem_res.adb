@@ -1005,9 +1005,9 @@ package body Sem_Res is
          --  functions, this is never a parameterless call (RM 4.1.4(6)).
 
          if Nkind (Parent (N)) = N_Attribute_Reference
-            and then (Attribute_Name (Parent (N)) = Name_Address      or else
-                      Attribute_Name (Parent (N)) = Name_Code_Address or else
-                      Attribute_Name (Parent (N)) = Name_Access)
+            and then Nam_In (Attribute_Name (Parent (N)), Name_Address,
+                                                          Name_Code_Address,
+                                                          Name_Access)
          then
             return False;
          end if;
@@ -1373,7 +1373,7 @@ package body Sem_Res is
          elsif In_Instance then
             null;
 
-         elsif (Op_Name = Name_Op_Multiply or else Op_Name = Name_Op_Divide)
+         elsif Nam_In (Op_Name, Name_Op_Multiply, Name_Op_Divide)
            and then Is_Fixed_Point_Type (Etype (Left_Opnd  (Op_Node)))
            and then Is_Fixed_Point_Type (Etype (Right_Opnd (Op_Node)))
          then
@@ -1385,7 +1385,7 @@ package body Sem_Res is
          --  available.
 
          elsif Ada_Version >= Ada_2005
-           and then (Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne)
+           and then Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne)
            and then Ekind (Etype (Act1)) = E_Anonymous_Access_Type
          then
             null;
@@ -1496,9 +1496,7 @@ package body Sem_Res is
            and then not In_Instance
          then
             if Is_Fixed_Point_Type (Typ)
-              and then (Op_Name = Name_Op_Multiply
-                          or else
-                        Op_Name = Name_Op_Divide)
+              and then Nam_In (Op_Name, Name_Op_Multiply, Name_Op_Divide)
             then
                --  Already checked above
 
@@ -1534,7 +1532,7 @@ package body Sem_Res is
       --  the equality node will not resolve any remaining ambiguity, and it
       --  assumes that the first operand is not overloaded.
 
-      if (Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne)
+      if Nam_In (Op_Name, Name_Op_Eq, Name_Op_Ne)
         and then Ekind (Func) = E_Function
         and then Is_Overloaded (Act1)
       then
@@ -1947,9 +1945,9 @@ package body Sem_Res is
       --  access-to-subprogram type.
 
       if Nkind (N) = N_Attribute_Reference
-        and then (Attribute_Name (N) = Name_Access              or else
-                  Attribute_Name (N) = Name_Unrestricted_Access or else
-                  Attribute_Name (N) = Name_Unchecked_Access)
+        and then Nam_In (Attribute_Name (N), Name_Access,
+                                             Name_Unrestricted_Access,
+                                             Name_Unchecked_Access)
         and then Comes_From_Source (N)
         and then Is_Entity_Name (Prefix (N))
         and then Is_Subprogram (Entity (Prefix (N)))
@@ -2060,7 +2058,17 @@ package body Sem_Res is
          Analyze_Dimension (N);
          return;
 
-      --  Return if type = Any_Type (previous error encountered)
+      --  A Raise_Expression takes its type from context. The Etype was set
+      --  to Any_Type, reflecting the fact that the expression itself does
+      --  not specify any possible interpretation. So we set the type to the
+      --  resolution type here and now. We need to do this before Resolve sees
+      --  the Any_Type value.
+
+      elsif Nkind (N) = N_Raise_Expression then
+         Set_Etype (N, Typ);
+
+      --  Any other case of Any_Type as the Etype value means that we had
+      --  a previous error.
 
       elsif Etype (N) = Any_Type then
          Debug_A_Exit ("resolving  ", N, "  (done, Etype = Any_Type)");
@@ -2299,9 +2307,8 @@ package body Sem_Res is
                           and then Scope (It.Nam) = Standard_Standard
                         then
                            Error_Msg_N
-                             ("\\possible interpretation as " &
-                                "universal_fixed operation " &
-                                  "(RM 4.5.5 (19))", N);
+                             ("\\possible interpretation as universal_fixed "
+                              & "operation (RM 4.5.5 (19))", N);
                         else
                            Error_Msg_N
                              ("\\possible interpretation (predefined)#!", N);
@@ -2589,8 +2596,9 @@ package body Sem_Res is
                      end if;
 
                      Error_Msg_Node_2 := Typ;
-                     Error_Msg_NE ("no visible interpretation of&" &
-                       " matches expected type&", N, Subp_Name);
+                     Error_Msg_NE
+                       ("no visible interpretation of& "
+                        & "matches expected type&", N, Subp_Name);
                   end;
 
                   if All_Errors_Mode then
@@ -2804,7 +2812,16 @@ package body Sem_Res is
             when N_Qualified_Expression
                              => Resolve_Qualified_Expression     (N, Ctx_Type);
 
-            when N_Quantified_Expression => null;
+            --  Why is the following null, needs a comment ???
+
+            when N_Quantified_Expression
+                             => null;
+
+            --  Nothing to do for Raise_Expression, since we took care of
+            --  setting the Etype earlier, and no other processing is needed.
+
+            when N_Raise_Expression
+                             => null;
 
             when N_Raise_xxx_Error
                              => Set_Etype (N, Ctx_Type);
@@ -3513,8 +3530,8 @@ package body Sem_Res is
                         or else Is_By_Reference_Type (Etype (Expression (A)))
                      then
                         Error_Msg_N
-                          ("view conversion between unrelated by reference " &
-                           "array types not allowed (\'A'I-00246)", A);
+                          ("view conversion between unrelated by reference "
+                           & "array types not allowed (\'A'I-00246)", A);
 
                      --  In Ada 2005 mode, check view conversion component
                      --  type cannot be private, tagged, or volatile. Note
@@ -3598,8 +3615,8 @@ package body Sem_Res is
                      or else Is_Limited_Type (Etype (Expression (A))))
                then
                   Error_Msg_N
-                    ("conversion between unrelated limited array types " &
-                     "not allowed (\A\I-00246)", A);
+                    ("conversion between unrelated limited array types "
+                     & "not allowed (\A\I-00246)", A);
 
                   if Is_Limited_Type (Etype (F)) then
                      Explain_Limited_Type (Etype (F), A);
@@ -3648,6 +3665,10 @@ package body Sem_Res is
                         Establish_Transient_Scope (A, False);
                      end if;
                   end;
+
+                  if Ekind (Etype (F)) = E_Anonymous_Access_Type then
+                     Check_Restriction (No_Access_Parameter_Allocators, A);
+                  end if;
                end if;
 
                --  (Ada 2005): The call may be to a primitive operation of
@@ -3928,7 +3949,9 @@ package body Sem_Res is
                --  infinite recursion.
 
                if not (Ekind (Nam) = E_Function
-                        and then Has_Predicates (Nam))
+                        and then (Is_Predicate_Function (Nam)
+                                    or else
+                                  Is_Predicate_Function_M (Nam)))
                then
                   Apply_Predicate_Check (A, F_Typ);
                end if;
@@ -4078,8 +4101,8 @@ package body Sem_Res is
                        and then No (Non_Limited_View (Desig))
                      then
                         Error_Msg_NE
-                          ("premature use of incomplete type& " &
-                           "in dispatching call", A, Desig);
+                          ("premature use of incomplete type& "
+                           & "in dispatching call", A, Desig);
                      end if;
                   end;
                end if;
@@ -4314,8 +4337,8 @@ package body Sem_Res is
                               (Etype (Pool), Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_N
-                    ("limited function calls not yet supported in simple " &
-                     "storage pool allocators", Expression (E));
+                    ("limited function calls not yet supported in simple "
+                     & "storage pool allocators", Expression (E));
                end if;
             end;
          end if;
@@ -4462,10 +4485,11 @@ package body Sem_Res is
                  Deepest_Type_Access_Level (Typ)
             then
                if In_Instance_Body then
-                  Error_Msg_N ("??type in allocator has deeper level than" &
-                               " designated class-wide type", E);
-                  Error_Msg_N ("\??Program_Error will be raised at run time",
-                               E);
+                  Error_Msg_N
+                    ("??type in allocator has deeper level than "
+                     & "designated class-wide type", E);
+                  Error_Msg_N
+                    ("\??Program_Error will be raised at run time", E);
                   Rewrite (N,
                     Make_Raise_Program_Error (Sloc (N),
                       Reason => PE_Accessibility_Check_Failed));
@@ -4476,8 +4500,8 @@ package body Sem_Res is
                --  type. A run-time check will be performed in the instance.
 
                elsif not Is_Generic_Type (Exp_Typ) then
-                  Error_Msg_N ("type in allocator has deeper level than" &
-                               " designated class-wide type", E);
+                  Error_Msg_N ("type in allocator has deeper level than "
+                               & "designated class-wide type", E);
                end if;
             end if;
          end;
@@ -4530,6 +4554,8 @@ package body Sem_Res is
                          Defining_Identifier (Associated_Node_For_Itype (Typ));
 
             begin
+               Check_Restriction (No_Coextensions, N);
+
                --  Ada 2012 AI05-0052: If the designated type of the allocator
                --  is limited, then the allocator shall not be used to define
                --  the value of an access discriminant unless the discriminated
@@ -5039,8 +5065,8 @@ package body Sem_Res is
                        and then not Machine_Overflows_On_Target
                      then
                         Error_Msg_N
-                          ("float division by zero, " &
-                           "may generate '+'/'- infinity??", Right_Opnd (N));
+                          ("float division by zero, may generate "
+                           & "'+'/'- infinity??", Right_Opnd (N));
 
                         --  For all other cases, we get a Constraint_Error
 
@@ -6799,10 +6825,12 @@ package body Sem_Res is
       --  the expression must be rejected.
 
       function Find_Unique_Access_Type return Entity_Id;
-      --  In the case of allocators, make a last-ditch attempt to find a single
-      --  access type with the right designated type. This is semantically
-      --  dubious, and of no interest to any real code, but c48008a makes it
-      --  all worthwhile.
+      --  In the case of allocators and access attributes, the context must
+      --  provide an indication of the specific access type to be used. If
+      --  one operand is of such a "generic" access type, check whether there
+      --  is a specific visible access type that has the same designated type.
+      --  This is semantically dubious, and of no interest to any real code,
+      --  but c48008a makes it all worthwhile.
 
       -------------------------
       -- Check_If_Expression --
@@ -6835,9 +6863,14 @@ package body Sem_Res is
          S   : Entity_Id;
 
       begin
-         if Ekind (Etype (R)) =  E_Allocator_Type then
+         if Ekind_In (Etype (R), E_Allocator_Type,
+                                 E_Access_Attribute_Type)
+         then
             Acc := Designated_Type (Etype (R));
-         elsif Ekind (Etype (L)) =  E_Allocator_Type then
+
+         elsif Ekind_In (Etype (L), E_Allocator_Type,
+                                    E_Access_Attribute_Type)
+         then
             Acc := Designated_Type (Etype (L));
          else
             return Empty;
@@ -8776,8 +8809,6 @@ package body Sem_Res is
         and then Ekind_In (Entity (S), E_Component, E_Discriminant)
         and then Present (Original_Record_Component (Entity (S)))
         and then Ekind (Original_Record_Component (Entity (S))) = E_Component
-        and then Present (Discriminant_Checking_Func
-                           (Original_Record_Component (Entity (S))))
         and then not Discriminant_Checks_Suppressed (T)
         and then not Init_Component
       then
@@ -9737,7 +9768,7 @@ package body Sem_Res is
                      N);
 
                else
-                  Expand_Interface_Conversion (N, Is_Static => False);
+                  Expand_Interface_Conversion (N);
                end if;
 
             --  Conversion to interface type
@@ -9750,29 +9781,18 @@ package body Sem_Res is
                   Opnd := Etype (Opnd);
                end if;
 
-               if not Interface_Present_In_Ancestor
-                        (Typ   => Opnd,
-                         Iface => Target)
+               if Is_Class_Wide_Type (Opnd)
+                 or else Interface_Present_In_Ancestor
+                           (Typ   => Opnd,
+                            Iface => Target)
                then
-                  if Is_Class_Wide_Type (Opnd) then
-
-                     --  The static analysis is not enough to know if the
-                     --  interface is implemented or not. Hence we must pass
-                     --  the work to the expander to generate code to evaluate
-                     --  the conversion at run time.
-
-                     Expand_Interface_Conversion (N, Is_Static => False);
-
-                  else
-                     Error_Msg_Name_1 := Chars (Etype (Target));
-                     Error_Msg_Name_2 := Chars (Opnd);
-                     Error_Msg_N
-                       ("wrong interface conversion (% is not a progenitor " &
-                        "of %)", N);
-                  end if;
-
-               else
                   Expand_Interface_Conversion (N);
+               else
+                  Error_Msg_Name_1 := Chars (Etype (Target));
+                  Error_Msg_Name_2 := Chars (Opnd);
+                  Error_Msg_N
+                    ("wrong interface conversion (% is not a progenitor "
+                     & "of %)", N);
                end if;
             end if;
          end;
@@ -9785,7 +9805,9 @@ package body Sem_Res is
       if Has_Predicates (Target_Typ) then
          if Nkind (Parent (N)) = N_Function_Call
            and then Present (Name (Parent (N)))
-           and then Has_Predicates (Entity (Name (Parent (N))))
+           and then (Is_Predicate_Function (Entity (Name (Parent (N))))
+                       or else
+                     Is_Predicate_Function_M (Entity (Name (Parent (N)))))
          then
             null;
 
@@ -10480,22 +10502,19 @@ package body Sem_Res is
       Operand     : Node_Id;
       Report_Errs : Boolean := True) return Boolean
    is
-      Target_Type : constant Entity_Id := Base_Type (Target);
-      Opnd_Type   : Entity_Id          := Etype (Operand);
+      Target_Type  : constant Entity_Id := Base_Type (Target);
+      Opnd_Type    : Entity_Id          := Etype (Operand);
+      Inc_Ancestor : Entity_Id;
 
       function Conversion_Check
         (Valid : Boolean;
          Msg   : String) return Boolean;
       --  Little routine to post Msg if Valid is False, returns Valid value
 
-      --  The following are badly named, this kind of overloading is actively
-      --  confusing in reading code, please rename to something like
-      --  Error_Msg_N_If_Reporting ???
-
-      procedure Error_Msg_N (Msg : String; N : Node_Or_Entity_Id);
+      procedure Conversion_Error_N (Msg : String; N : Node_Or_Entity_Id);
       --  If Report_Errs, then calls Errout.Error_Msg_N with its arguments
 
-      procedure Error_Msg_NE
+      procedure Conversion_Error_NE
         (Msg : String;
          N   : Node_Or_Entity_Id;
          E   : Node_Or_Entity_Id);
@@ -10532,37 +10551,37 @@ package body Sem_Res is
 
            and then not In_Instance
          then
-            Error_Msg_N (Msg, Operand);
+            Conversion_Error_N (Msg, Operand);
          end if;
 
          return Valid;
       end Conversion_Check;
 
-      -----------------
-      -- Error_Msg_N --
-      -----------------
+      ------------------------
+      -- Conversion_Error_N --
+      ------------------------
 
-      procedure Error_Msg_N (Msg : String; N : Node_Or_Entity_Id) is
+      procedure Conversion_Error_N (Msg : String; N : Node_Or_Entity_Id) is
       begin
          if Report_Errs then
-            Errout.Error_Msg_N (Msg, N);
+            Error_Msg_N (Msg, N);
          end if;
-      end Error_Msg_N;
+      end Conversion_Error_N;
 
-      ------------------
-      -- Error_Msg_NE --
-      ------------------
+      -------------------------
+      -- Conversion_Error_NE --
+      -------------------------
 
-      procedure Error_Msg_NE
+      procedure Conversion_Error_NE
         (Msg : String;
          N   : Node_Or_Entity_Id;
          E   : Node_Or_Entity_Id)
       is
       begin
          if Report_Errs then
-            Errout.Error_Msg_NE (Msg, N, E);
+            Error_Msg_NE (Msg, N, E);
          end if;
-      end Error_Msg_NE;
+      end Conversion_Error_NE;
 
       ----------------------------
       -- Valid_Array_Conversion --
@@ -10590,7 +10609,7 @@ package body Sem_Res is
          if
            Number_Dimensions (Target_Type) /= Number_Dimensions (Opnd_Type)
          then
-            Error_Msg_N
+            Conversion_Error_N
               ("incompatible number of dimensions for conversion", Operand);
             return False;
 
@@ -10612,7 +10631,7 @@ package body Sem_Res is
                  and then (Root_Type (Target_Index_Type)
                            /= Root_Type (Opnd_Index_Type))
                then
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("incompatible index types for array conversion",
                      Operand);
                   return False;
@@ -10646,10 +10665,10 @@ package body Sem_Res is
                     Deepest_Type_Access_Level (Opnd_Type)
                then
                   if In_Instance_Body then
-                     Error_Msg_N
-                       ("??source array type has " &
-                        "deeper accessibility level than target", Operand);
-                     Error_Msg_N
+                     Conversion_Error_N
+                       ("??source array type has deeper accessibility "
+                        & "level than target", Operand);
+                     Conversion_Error_N
                        ("\??Program_Error will be raised at run time",
                         Operand);
                      Rewrite (N,
@@ -10661,9 +10680,9 @@ package body Sem_Res is
                   --  Conversion not allowed because of accessibility levels
 
                   else
-                     Error_Msg_N
-                       ("source array type has " &
-                       "deeper accessibility level than target", Operand);
+                     Conversion_Error_N
+                       ("source array type has deeper accessibility "
+                        & "level than target", Operand);
                      return False;
                   end if;
 
@@ -10674,7 +10693,7 @@ package body Sem_Res is
             --  All other cases where component base types do not match
 
             else
-               Error_Msg_N
+               Conversion_Error_N
                  ("incompatible component types for array conversion",
                   Operand);
                return False;
@@ -10688,7 +10707,7 @@ package body Sem_Res is
             if not Subtypes_Statically_Match
                      (Target_Comp_Type, Opnd_Comp_Type)
             then
-               Error_Msg_N
+               Conversion_Error_N
                  ("component subtypes must statically match", Operand);
                return False;
             end if;
@@ -10751,7 +10770,7 @@ package body Sem_Res is
             return True;
 
          else
-            Error_Msg_NE
+            Conversion_Error_NE
               ("invalid tagged conversion, not compatible with}",
                N, First_Subtype (Opnd_Type));
             return False;
@@ -10818,7 +10837,7 @@ package body Sem_Res is
             It1 := It;
 
             if No (It.Typ) then
-               Error_Msg_N ("illegal operand in conversion", Operand);
+               Conversion_Error_N ("illegal operand in conversion", Operand);
                return False;
             end if;
 
@@ -10830,7 +10849,8 @@ package body Sem_Res is
                It1 :=  Disambiguate (Operand, I1, I, Any_Type);
 
                if It1 = No_Interp then
-                  Error_Msg_N ("ambiguous operand in conversion", Operand);
+                  Conversion_Error_N
+                    ("ambiguous operand in conversion", Operand);
 
                   --  If the interpretation involves a standard operator, use
                   --  the location of the type, which may be user-defined.
@@ -10841,7 +10861,7 @@ package body Sem_Res is
                      Error_Msg_Sloc := Sloc (It.Nam);
                   end if;
 
-                  Error_Msg_N -- CODEFIX
+                  Conversion_Error_N -- CODEFIX
                     ("\\possible interpretation#!", Operand);
 
                   if Sloc (N1) = Standard_Location then
@@ -10850,7 +10870,7 @@ package body Sem_Res is
                      Error_Msg_Sloc := Sloc (N1);
                   end if;
 
-                  Error_Msg_N -- CODEFIX
+                  Conversion_Error_N -- CODEFIX
                     ("\\possible interpretation#!", Operand);
 
                   return False;
@@ -10861,6 +10881,13 @@ package body Sem_Res is
             Opnd_Type := It1.Typ;
          end;
       end if;
+
+      --  If we are within a child unit, check whether the type of the
+      --  expression has an ancestor in a parent unit, in which case it
+      --  belongs to its derivation class even if the ancestor is private.
+      --  See RM 7.3.1 (5.2/3).
+
+      Inc_Ancestor := Get_Incomplete_View_Of_Ancestor (Opnd_Type);
 
       --  Numeric types
 
@@ -10890,7 +10917,10 @@ package body Sem_Res is
 
          else
             return Conversion_Check
-                    (Is_Numeric_Type (Opnd_Type),
+                    (Is_Numeric_Type (Opnd_Type)
+                      or else
+                        (Present (Inc_Ancestor)
+                          and then Is_Numeric_Type (Inc_Ancestor)),
                      "illegal operand for numeric conversion");
          end if;
 
@@ -10901,8 +10931,10 @@ package body Sem_Res is
            or else Opnd_Type = Any_Composite
            or else Opnd_Type = Any_String
          then
-            Error_Msg_N ("illegal operand for array conversion", Operand);
+            Conversion_Error_N
+              ("illegal operand for array conversion", Operand);
             return False;
+
          else
             return Valid_Array_Conversion;
          end if;
@@ -10933,14 +10965,14 @@ package body Sem_Res is
                --  will be generated by Expand_N_Type_Conversion.
 
                if In_Instance_Body then
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("??cannot convert local pointer to non-local access type",
                      Operand);
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("\??Program_Error will be raised at run time", Operand);
 
                else
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("cannot convert local pointer to non-local access type",
                      Operand);
                   return False;
@@ -10966,16 +10998,16 @@ package body Sem_Res is
                   --  will be generated by Expand_N_Type_Conversion.
 
                   if In_Instance_Body then
-                     Error_Msg_N
-                       ("??cannot convert access discriminant to non-local" &
-                        " access type", Operand);
-                     Error_Msg_N
+                     Conversion_Error_N
+                       ("??cannot convert access discriminant to non-local "
+                        & "access type", Operand);
+                     Conversion_Error_N
                        ("\??Program_Error will be raised at run time",
                         Operand);
                   else
-                     Error_Msg_N
-                       ("cannot convert access discriminant to non-local" &
-                        " access type", Operand);
+                     Conversion_Error_N
+                       ("cannot convert access discriminant to non-local "
+                        & "access type", Operand);
                      return False;
                   end if;
                end if;
@@ -10992,7 +11024,7 @@ package body Sem_Res is
                    Ekind_In (Entity (Operand), E_In_Parameter, E_Constant)
                  and then Present (Discriminal_Link (Entity (Operand)))
                then
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("discriminant has deeper accessibility level than target",
                      Operand);
                   return False;
@@ -11017,7 +11049,7 @@ package body Sem_Res is
          if Is_Access_Constant (Opnd_Type)
            and then not Is_Access_Constant (Target_Type)
          then
-            Error_Msg_N
+            Conversion_Error_N
               ("access-to-constant operand type not allowed", Operand);
             return False;
          end if;
@@ -11057,9 +11089,9 @@ package body Sem_Res is
                   if Nkind (Associated_Node_For_Itype (Opnd_Type)) =
                        N_Object_Declaration
                   then
-                     Error_Msg_N
-                       ("implicit conversion of stand-alone anonymous " &
-                        "access object not allowed", Operand);
+                     Conversion_Error_N
+                       ("implicit conversion of stand-alone anonymous "
+                        & "access object not allowed", Operand);
                      return False;
 
                   --  Implicit conversions aren't allowed for anonymous access
@@ -11071,9 +11103,9 @@ package body Sem_Res is
                                        N_Function_Specification,
                                        N_Procedure_Specification)
                   then
-                     Error_Msg_N
-                       ("implicit conversion of anonymous access formal " &
-                        "not allowed", Operand);
+                     Conversion_Error_N
+                       ("implicit conversion of anonymous access formal "
+                        & "not allowed", Operand);
                      return False;
 
                   --  This is a case where there's an enclosing object whose
@@ -11084,9 +11116,9 @@ package body Sem_Res is
                   elsif Object_Access_Level (Operand)
                           = Scope_Depth (Standard_Standard)
                   then
-                     Error_Msg_N
-                       ("implicit conversion of anonymous access value " &
-                        "not allowed", Operand);
+                     Conversion_Error_N
+                       ("implicit conversion of anonymous access value "
+                        & "not allowed", Operand);
                      return False;
 
                   --  In other cases, the level of the operand's type must be
@@ -11096,9 +11128,9 @@ package body Sem_Res is
                   elsif Type_Access_Level (Opnd_Type) >
                         Deepest_Type_Access_Level (Target_Type)
                   then
-                     Error_Msg_N
-                       ("implicit conversion of anonymous access value " &
-                        "violates accessibility", Operand);
+                     Conversion_Error_N
+                       ("implicit conversion of anonymous access value "
+                        & "violates accessibility", Operand);
                      return False;
                   end if;
                end if;
@@ -11111,17 +11143,17 @@ package body Sem_Res is
                --  will be generated by Expand_N_Type_Conversion.
 
                if In_Instance_Body then
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("??cannot convert local pointer to non-local access type",
                      Operand);
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("\??Program_Error will be raised at run time", Operand);
 
                else
                   --  Avoid generation of spurious error message
 
                   if not Error_Posted (N) then
-                     Error_Msg_N
+                     Conversion_Error_N
                       ("cannot convert local pointer to non-local access type",
                        Operand);
                   end if;
@@ -11149,17 +11181,17 @@ package body Sem_Res is
                   --  will be generated by Expand_N_Type_Conversion.
 
                   if In_Instance_Body then
-                     Error_Msg_N
-                       ("??cannot convert access discriminant to non-local"
-                        & " access type", Operand);
-                     Error_Msg_N
+                     Conversion_Error_N
+                       ("??cannot convert access discriminant to non-local "
+                        & "access type", Operand);
+                     Conversion_Error_N
                        ("\??Program_Error will be raised at run time",
                         Operand);
 
                   else
-                     Error_Msg_N
-                       ("cannot convert access discriminant to non-local" &
-                        " access type", Operand);
+                     Conversion_Error_N
+                       ("cannot convert access discriminant to non-local "
+                        & "access type", Operand);
                      return False;
                   end if;
                end if;
@@ -11175,7 +11207,7 @@ package body Sem_Res is
                    Ekind_In (Entity (Operand), E_In_Parameter, E_Constant)
                  and then Present (Discriminal_Link (Entity (Operand)))
                then
-                  Error_Msg_N
+                  Conversion_Error_N
                     ("discriminant has deeper accessibility level than target",
                      Operand);
                   return False;
@@ -11226,7 +11258,7 @@ package body Sem_Res is
 
             else
                if not Same_Base then
-                  Error_Msg_NE
+                  Conversion_Error_NE
                     ("target designated type not compatible with }",
                      N, Base_Type (Opnd));
                   return False;
@@ -11251,10 +11283,10 @@ package body Sem_Res is
                     and then Known_Static_RM_Size (Opnd)
                     and then RM_Size (Target) /= RM_Size (Opnd)
                   then
-                     Error_Msg_NE
+                     Conversion_Error_NE
                        ("target designated subtype not compatible with }",
                         N, Opnd);
-                     Error_Msg_NE
+                     Conversion_Error_NE
                        ("\because sizes of the two designated subtypes differ",
                         N, Opnd);
                      return False;
@@ -11292,12 +11324,12 @@ package body Sem_Res is
                or else not Is_Entity_Name (Name (Parent (N)))
                or else not Is_Return_Object (Entity (Name (Parent (N)))))
          then
-            Error_Msg_N
+            Conversion_Error_N
               ("illegal attempt to store anonymous access to subprogram",
                Operand);
-            Error_Msg_N
-              ("\value has deeper accessibility than any master " &
-               "(RM 3.10.2 (13))",
+            Conversion_Error_N
+              ("\value has deeper accessibility than any master "
+               & "(RM 3.10.2 (13))",
                Operand);
 
             Error_Msg_NE
@@ -11316,7 +11348,7 @@ package body Sem_Res is
          if Type_Access_Level (Opnd_Type) >
             Deepest_Type_Access_Level (Target_Type)
          then
-            Error_Msg_N
+            Conversion_Error_N
               ("operand type has deeper accessibility level than target",
                Operand);
 
@@ -11338,9 +11370,9 @@ package body Sem_Res is
                end loop;
 
                if T_Gen /= O_Gen then
-                  Error_Msg_N
-                    ("target type must be declared in same generic body"
-                     & " as operand type", N);
+                  Conversion_Error_N
+                    ("target type must be declared in same generic body "
+                     & "as operand type", N);
                end if;
             end;
          end if;
@@ -11397,14 +11429,14 @@ package body Sem_Res is
       elsif Ekind (Target_Type) = E_Access_Type
          and then Is_Access_Type (Opnd_Type)
       then
-         Error_Msg_N ("target type must be general access type!", N);
-         Error_Msg_NE -- CODEFIX
+         Conversion_Error_N ("target type must be general access type!", N);
+         Conversion_Error_NE -- CODEFIX
             ("add ALL to }!", N, Target_Type);
          return False;
 
       else
-         Error_Msg_NE ("invalid conversion, not compatible with }",
-           N, Opnd_Type);
+         Conversion_Error_NE
+           ("invalid conversion, not compatible with }", N, Opnd_Type);
          return False;
       end if;
    end Valid_Conversion;

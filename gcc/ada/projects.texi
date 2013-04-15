@@ -1,7 +1,7 @@
 @set gprconfig GPRconfig
 
 @c ------ projects.texi
-@c Copyright (C) 2002-2012, Free Software Foundation, Inc.
+@c Copyright (C) 2002-2013, Free Software Foundation, Inc.
 @c This file is shared between the GNAT user's guide and gprbuild. It is not
 @c compilable on its own, you should instead compile the other two manuals.
 @c For that reason, there is no toplevel @menu
@@ -82,7 +82,6 @@ the information on the command line itself). They share common switches
 to control the loading of the project (in particular
 @option{^-P^/PROJECT_FILE=^@emph{projectfile}} and
 @option{^-X^/EXTERNAL_REFERENCE=^@emph{vbl}=@emph{value}}).
-@xref{Switches Related to Project Files}.
 
 The Project Manager supports a wide range of development strategies,
 for systems of all sizes.  Here are some typical practices that are
@@ -218,6 +217,7 @@ should contain the following code:
 
 @menu
 * Source Files and Directories::
+* Duplicate Sources in Projects::
 * Object and Exec Directory::
 * Main Subprograms::
 * Tools Options in Project Files::
@@ -402,20 +402,30 @@ setting @code{Source_Dirs}. The project manager automatically finds
 @file{pack.ads}, @file{pack.adb} and @file{proc.adb} as source files of the
 project.
 
-Note that it is considered an error for a project file to have no sources
-attached to it unless explicitly declared as mentioned above.
+Note that by default a warning is issued when a project has no sources attached
+to it and this is not explicitly indicated in the project file.
 
+@c ---------------------------------------------
+@node Duplicate Sources in Projects
+@subsection Duplicate Sources in Projects
+@c ---------------------------------------------
+
+@noindent
 If the order of the source directories is known statically, that is if
-@code{"**"} is not used in the string list @code{Source_Dirs}, then there may
+@code{"/**"} is not used in the string list @code{Source_Dirs}, then there may
 be several files with the same source file name sitting in different
 directories of the project. In this case, only the file in the first directory
 is considered as a source of the project and the others are hidden. If
-@code{"**"} is used in the string list @code{Source_Dirs}, it is an error
+@code{"/**"} is used in the string list @code{Source_Dirs}, it is an error
 to have several files with the same source file name in the same directory
-@code{"**"} subtree, since there would be an ambiguity as to which one should
+@code{"/**"} subtree, since there would be an ambiguity as to which one should
 be used. However, two files with the same source file name may exist in two
 single directories or directory subtrees. In this case, the one in the first
 directory or directory subtree is a source of the project.
+
+If there are two sources in different directories of the same @code{"/**"}
+subtree, one way to resolve the problem is to exclude the directory of the
+file that should not be used as a source of the project.
 
 @c ---------------------------------------------
 @node Object and Exec Directory
@@ -875,8 +885,7 @@ the associated language, and thus the compiler to use.
 
 Note that the use by the Ada compiler of pragmas Source_File_Name is not
 supported when using project files. You must use the features described in this
-paragraph. You can however specify other configuration pragmas
-(@pxref{Specifying Configuration Pragmas}).
+paragraph. You can however specify other configuration pragmas.
 
 The following attributes can be defined in package @code{Naming}:
 
@@ -1092,31 +1101,6 @@ The following attributes can be defined in package @code{Remote}:
 
 @table @asis
 
-@item @b{Build_Slaves}
-@cindex @code{Build_Slaves}
-
-A list of string referencing the remote build slaves to use for the
-compilation phase. The format is:
-@code{[protocol://]name.domain[:port]}.
-
-Where @code{protocol} is one of:
-
-@table @asis
-
-@item rsync
-@cindex @code{rsync}
-
-The sources are copied using the external @code{rsync} tool.
-
-@item file
-
-The sources are accessed via a shared directory or mount point.
-
-@end table
-
-The default port used to communicate with @command{gprslave} is
-@code{8484}.
-
 @item @b{Root_Dir}:
 @cindex @code{Root_Dir}
 
@@ -1225,12 +1209,18 @@ the search stops:
   current project file.
 
 @item
-@cindex @code{ADA_PROJECT_PATH}
+@cindex @code{GPR_PROJECT_PATH_FILE}
 @cindex @code{GPR_PROJECT_PATH}
+@cindex @code{ADA_PROJECT_PATH}
   Then it is searched relative to all the directories specified in the
-  ^environment variables^logical names^ @b{GPR_PROJECT_PATH} and
-  @b{ADA_PROJECT_PATH} (in that order) if they exist. The former is
-  recommended, the latter is kept for backward compatibility.
+  ^environment variables^logical names^ @b{GPR_PROJECT_PATH_FILE},
+  @b{GPR_PROJECT_PATH} and @b{ADA_PROJECT_PATH} (in that order) if they exist.
+  The value of @b{GPR_PROJECT_PATH_FILE}, when defined, is the path name of
+  a text file that contains project directory path names, one per line.
+  @b{GPR_PROJECT_PATH} and @b{ADA_PROJECT_PATH}, when defined, contain
+  project directory path names separated by directory separators.
+  @b{ADA_PROJECT_PATH} is used for compatibility, it is recommended to
+  use @b{GPR_PROJECT_PATH_FILE} or @b{GPR_PROJECT_PATH}.
 
 @item Finally, it is searched relative to the default project directories.
   Such directories depends on the tool used. The different locations searched
@@ -1532,13 +1522,13 @@ The second parameter to @code{external} is optional, and is the default
 value to use if "mode" is not set from the command line or the environment.
 
 In order to set the switches according to the different scenarios, other
-constructs have to be introduced such as typed variables and case statements.
+constructs have to be introduced such as typed variables and case constructions.
 
 @cindex typed variable
-@cindex case statement
+@cindex case construction
 A @b{typed variable} is a variable that
 can take only a limited number of values, similar to an enumeration in Ada.
-Such a variable can then be used in a @b{case statement} and create conditional
+Such a variable can then be used in a @b{case construction} and create conditional
 sections in the project. The following example shows how this can be done:
 
 @smallexample @c projectfile
@@ -1565,7 +1555,7 @@ project is considered as invalid.
 
 The @code{Mode} variable is initialized with an external value
 defaulting to @code{"debug"}. This default could be omitted and that would
-force the user to define the value. Finally, we can use a case statement to set the
+force the user to define the value. Finally, we can use a case construction to set the
 switches depending on the scenario the user has chosen.
 
 Most aspects of the projects can depend on scenarios. The notable exception
@@ -2914,8 +2904,8 @@ attributes.
 * External Values::
 * Typed String Declaration::
 * Variables::
+* Case Constructions::
 * Attributes::
-* Case Statements::
 @end menu
 
 @c ---------------------------------------------
@@ -3122,6 +3112,9 @@ The following packages are currently supported in project files
   @code{Builder}. The first string should always be @code{-rules} to specify
   that all the other options belong to the @code{-rules} section of the
   parameters to @command{gnatcheck}.
+@item Clean
+  This package specifies the options used when cleaning a project or a project
+  tree using the tools @command{gnatclean} or @command{gprclean}.
 @item Compiler
   This package specifies the compilation options used by the compiler for
   each languages. @xref{Tools Options in Project Files}.
@@ -3151,17 +3144,12 @@ The following packages are currently supported in project files
 @item IDE
   This package specifies the options used when starting an integrated
   development environment, for instance @command{GPS} or @command{Gnatbench}.
-  @xref{The Development Environments}.
 @item Install
   This package specifies the options used when installing a project
   with @command{gprinstall}. @xref{Installation}.
 @item Linker
   This package specifies the options used by the linker.
   @xref{Main Subprograms}.
-@item Makefile
-@cindex Makefile package in projects
-  This package is used by the GPS plugin Makefile.py. See the documentation
-  in that plugin (from GPS: /Tools/Plug-ins).
 @item Metrics
   This package specifies the options used when calling the tool
   @command{gnatmetric} via the @command{gnat} driver. Its attributes
@@ -3178,6 +3166,9 @@ The following packages are currently supported in project files
   @command{gnatpp} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
+@item Remote
+  This package is used by @command{gprbuild} to describe how distributed
+  compilation should be done.
 @item Stack
   This package specifies the options used when calling the tool
   @command{gnatstack} via the @command{gnat} driver. Its attributes
@@ -3430,7 +3421,7 @@ Here is an example of a string type declaration:
 Variables of a string type are called @b{typed variables}; all other
 variables are called @b{untyped variables}. Typed variables are
 particularly useful in @code{case} constructions, to support conditional
-attribute declarations. (@pxref{Case Statements}).
+attribute declarations. (@pxref{Case Constructions}).
 
 A string type may be referenced by its name if it has been declared in the same
 project file, or by an expanded name whose prefix is the name of the project
@@ -3452,7 +3443,7 @@ string ("").
 
 A @b{typed} variable can be used as part of a @b{case} expression to
 compute the value, but it can only be declared once in the project file,
-so that all case statements see the same value for the variable. This
+so that all case constructions see the same value for the variable. This
 provides more consistency and makes the project easier to understand.
 The syntax for its declaration is identical to the Ada syntax for an
 object declaration. In effect, a typed variable acts as a constant.
@@ -3514,9 +3505,101 @@ A @b{context} may be one of the following:
 @end itemize
 
 @c ---------------------------------------------
+@node Case Constructions
+@subsection Case Constructions
+@c ---------------------------------------------
+
+@noindent
+A @b{case} statement is used in a project file to effect conditional
+behavior. Through this statement, you can set the value of attributes
+and variables depending on the value previously assigned to a typed
+variable.
+
+All choices in a choice list must be distinct. Unlike Ada, the choice
+lists of all alternatives do not need to include all values of the type.
+An @code{others} choice must appear last in the list of alternatives.
+
+The syntax of a @code{case} construction is based on the Ada case statement
+(although the @code{null} statement for empty alternatives is optional).
+
+The case expression must be a typed string variable, whose value is often
+given by an external reference (@pxref{External Values}).
+
+Each alternative starts with the reserved word @code{when}, either a list of
+literal strings separated by the @code{"|"} character or the reserved word
+@code{others}, and the @code{"=>"} token.
+Each literal string must belong to the string type that is the type of the
+case variable.
+After each @code{=>}, there are zero or more statements.  The only
+statements allowed in a case construction are other case constructions,
+attribute declarations and variable declarations. String type declarations and
+package declarations are not allowed. Variable declarations are restricted to
+variables that have already been declared before the case construction.
+
+@smallexample
+case_statement ::=
+  @i{case} @i{<typed_variable_>}name @i{is} @{case_item@} @i{end case} ;
+
+case_item ::=
+  @i{when} discrete_choice_list =>
+    @{case_statement
+      | attribute_declaration
+      | variable_declaration
+      | empty_declaration@}
+
+discrete_choice_list ::= string_literal @{| string_literal@} | @i{others}
+@end smallexample
+
+@noindent
+Here is a typical example:
+
+@smallexample @c projectfile
+@group
+project MyProj is
+   type OS_Type is ("GNU/Linux", "Unix", "NT", "VMS");
+   OS : OS_Type := external ("OS", "GNU/Linux");
+
+   package Compiler is
+     case OS is
+       when "GNU/Linux" | "Unix" =>
+         for Switches ("Ada") use ("-gnath");
+       when "NT" =>
+         for Switches ("Ada") use ("-gnatP");
+       when others =>
+         null;
+     end case;
+   end Compiler;
+end MyProj;
+@end group
+@end smallexample
+
+@c ---------------------------------------------
 @node Attributes
 @subsection Attributes
 @c ---------------------------------------------
+
+@menu
+* Project Level Attributes::
+* Package Binder Attributes::
+* Package Builder Attributes::
+* Package Check Attributes::
+* Package Clean Attributes::
+* Package Compiler Attributes::
+* Package Cross_Reference Attributes::
+* Package Eliminate Attributes::
+* Package Finder Attributes::
+* Package gnatls Attributes::
+* Package gnatstub Attributes::
+* Package IDE Attributes::
+* Package Install Attributes::
+* Package Linker Attributes::
+* Package Metrics Attribute::
+* Package Naming Attributes::
+* Package Pretty_Printer Attributes::
+* Package Remote Attributes::
+* Package Stack Attributes::
+* Package Synchronize Attributes::
+@end menu
 
 @noindent
 A project (and its packages) may have @b{attributes} that define
@@ -3570,7 +3653,7 @@ Here are some examples of attribute declarations:
 @end smallexample
 
 @noindent
-Attributes references may be appear anywhere in expressions, and are used
+Attributes references may appear anywhere in expressions, and are used
 to retrieve the value previously assigned to the attribute. If an attribute
 has not been set in a given package or project, its value defaults to the
 empty string or the empty list.
@@ -3608,1099 +3691,1246 @@ The prefix of an attribute may be:
 @end itemize
 
 @noindent
-Legal attribute names are listed below, including the package in
-which they must be declared. These names are case-insensitive. The
-semantics for the attributes is explained in great details in other sections.
 
-The column @emph{index} indicates whether the attribute is an indexed attribute,
-and when it is whether its index is case sensitive (sensitive) or not (insensitive), or if case sensitivity depends is the same as file names sensitivity on the
-system (file). The text is between brackets ([]) if the index is optional.
+In the following sections, all predefined attributes are succinctly described,
+first the project level attributes, that is those attributes that are not in a
+package, then the attributes in the different packages.
 
-@multitable @columnfractions .3 .1 .2 .4
-@headitem Attribute Name @tab Value @tab Package @tab Index
-@headitem General attributes @tab @tab @tab @pxref{Building With Projects}
-@item Name @tab string @tab - @tab (Read-only, name of project)
-@item Project_Dir @tab string @tab - @tab (Read-only, directory of project)
-@item Source_Files @tab list @tab - @tab -
-@item Source_Dirs  @tab list @tab - @tab -
-@item Source_List_File @tab string @tab - @tab -
-@item Locally_Removed_Files @tab list @tab - @tab -
-@item Excluded_Source_Files @tab list @tab - @tab -
-@item Object_Dir   @tab string @tab - @tab -
-@item Exec_Dir     @tab string @tab - @tab -
-@item Excluded_Source_Dirs @tab list @tab - @tab -
-@item Excluded_Source_Files @tab list @tab - @tab -
-@item Excluded_Source_List_File @tab list @tab - @tab -
-@item Inherit_Source_Path  @tab list @tab - @tab insensitive
-@item Languages @tab list @tab - @tab -
-@item Main      @tab list @tab - @tab -
-@item Main_Language @tab string @tab - @tab -
-@item Externally_Built      @tab string @tab - @tab -
-@item Roots      @tab list @tab - @tab file
-@headitem
-   Library-related attributes @tab @tab @tab @pxref{Library Projects}
-@item Library_Dir @tab string @tab - @tab -
-@item Library_Name @tab string @tab - @tab -
-@item Library_Kind @tab string @tab - @tab -
-@item Library_Version @tab string @tab - @tab -
-@item Library_Interface @tab string @tab - @tab -
-@item Library_Auto_Init @tab string @tab - @tab -
-@item Library_Options @tab list @tab - @tab -
-@item Leading_Library_Options @tab list @tab - @tab -
-@item Library_Src_Dir @tab string @tab - @tab -
-@item Library_ALI_Dir @tab string @tab - @tab -
-@item Library_GCC @tab string @tab - @tab -
-@item Library_Symbol_File @tab string @tab - @tab -
-@item Library_Symbol_Policy @tab string @tab - @tab -
-@item Library_Reference_Symbol_File @tab string @tab - @tab -
-@item Interfaces @tab list @tab - @tab -
-@headitem
-   Naming @tab @tab @tab @pxref{Naming Schemes}
-@item Spec_Suffix @tab string @tab Naming @tab insensitive (language)
-@item Body_Suffix @tab string @tab Naming @tab insensitive (language)
-@item Separate_Suffix @tab string @tab Naming @tab -
-@item Casing @tab string @tab Naming @tab -
-@item Dot_Replacement @tab string @tab Naming @tab -
-@item Spec @tab string @tab Naming @tab insensitive (Ada unit)
-@item Body @tab string @tab Naming @tab insensitive (Ada unit)
-@item Specification_Exceptions @tab list @tab Naming @tab insensitive (language)
-@item Implementation_Exceptions @tab list @tab Naming @tab insensitive (language)
-@headitem
-   Building @tab @tab @tab @pxref{Switches and Project Files}
-@item Default_Switches @tab list @tab Builder, Compiler, Binder, Linker, Cross_Reference, Finder, Pretty_Printer, gnatstub, Check, Synchronize, Eliminate, Metrics, IDE @tab insensitive (language name)
-@item Switches @tab list @tab Builder, Compiler, Binder, Linker, Cross_Reference, Finder, gnatls, Pretty_Printer, gnatstub, Check, Synchronize, Eliminate, Metrics, Stack @tab [file] (file name)
-@item Local_Configuration_Pragmas @tab string @tab Compiler @tab -
-@item Local_Config_File @tab string @tab insensitive @tab -
-@item Global_Configuration_Pragmas @tab list @tab Builder @tab -
-@item Global_Compilation_Switches @tab list @tab Builder @tab language
-@item Executable @tab string @tab Builder @tab [file]
-@item Executable_Suffix @tab string @tab Builder @tab -
-@item Global_Config_File @tab string @tab Builder @tab insensitive (language)
-@headitem
-   IDE (used and created by GPS) @tab @tab @tab
-@item Remote_Host @tab string @tab IDE @tab -
-@item Program_Host @tab string @tab IDE @tab -
-@item Communication_Protocol @tab string @tab IDE @tab -
-@item Compiler_Command @tab string @tab IDE @tab insensitive (language)
-@item Debugger_Command @tab string @tab IDE @tab -
-@item Gnatlist @tab string @tab IDE @tab -
-@item Gnat @tab string @tab IDE @tab -
-@item VCS_Kind @tab string @tab IDE @tab -
-@item VCS_File_Check @tab string @tab IDE @tab -
-@item VCS_Log_Check @tab string @tab IDE @tab -
-@item Documentation_Dir @tab string @tab IDE @tab -
-@headitem
-   Configuration files @tab @tab @tab See gprbuild manual
-@item Default_Language @tab string @tab - @tab -
-@item Run_Path_Option @tab list @tab - @tab -
-@item Run_Path_Origin @tab string @tab - @tab -
-@item Separate_Run_Path_Options @tab string @tab - @tab -
-@item Toolchain_Version @tab string @tab - @tab insensitive
-@item Toolchain_Description @tab string @tab - @tab insensitive
-@item Object_Generated @tab string @tab - @tab insensitive
-@item Objects_Linked @tab string @tab - @tab insensitive
-@item Target @tab string @tab - @tab -
-@item Library_Builder @tab string @tab - @tab -
-@item Library_Support @tab string @tab - @tab -
-@item Archive_Builder @tab list @tab - @tab -
-@item Archive_Builder_Append_Option @tab list @tab - @tab -
-@item Archive_Indexer @tab list @tab - @tab -
-@item Archive_Suffix @tab string @tab - @tab -
-@item Library_Partial_Linker @tab list @tab - @tab -
-@item Shared_Library_Prefix @tab string @tab - @tab -
-@item Shared_Library_Suffix @tab string @tab - @tab -
-@item Symbolic_Link_Supported @tab string @tab - @tab -
-@item Library_Major_Minor_Id_Supported @tab string @tab - @tab -
-@item Library_Auto_Init_Supported @tab string @tab - @tab -
-@item Shared_Library_Minimum_Switches @tab list @tab - @tab -
-@item Library_Version_Switches @tab list @tab - @tab -
-@item Library_Install_Name_Option @tab string @tab - @tab -
-@item Runtime_Library_Dir @tab string @tab - @tab insensitive
-@item Runtime_Source_Dir @tab string @tab - @tab insensitive
-@item Driver @tab string @tab Compiler,Binder,Linker @tab insensitive (language)
-@item Required_Switches @tab list @tab Compiler,Binder,Linker @tab insensitive (language)
-@item Leading_Required_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Trailing_Required_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Pic_Options @tab list @tab Compiler @tab insensitive (language)
-@item Path_Syntax @tab string @tab Compiler @tab insensitive (language)
-@item Object_File_Suffix @tab string @tab Compiler @tab insensitive (language)
-@item Object_File_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Multi_Unit_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Multi_Unit_Object_Separator @tab string @tab Compiler @tab insensitive (language)
-@item Mapping_File_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Mapping_Spec_Suffix @tab string @tab Compiler @tab insensitive (language)
-@item Mapping_body_Suffix @tab string @tab Compiler @tab insensitive (language)
-@item Config_File_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Config_Body_File_Name @tab string @tab Compiler @tab insensitive (language)
-@item Config_Body_File_Name_Index @tab string @tab Compiler @tab insensitive (language)
-@item Config_Body_File_Name_Pattern @tab string @tab Compiler @tab insensitive (language)
-@item Config_Spec_File_Name @tab string @tab Compiler @tab insensitive (language)
-@item Config_Spec_File_Name_Index @tab string @tab Compiler @tab insensitive (language)
-@item Config_Spec_File_Name_Pattern @tab string @tab Compiler @tab insensitive (language)
-@item Config_File_Unique @tab string @tab Compiler @tab insensitive (language)
-@item Dependency_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Dependency_Driver @tab list @tab Compiler @tab insensitive (language)
-@item Include_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Include_Path @tab string @tab Compiler @tab insensitive (language)
-@item Include_Path_File @tab string @tab Compiler @tab insensitive (language)
-@item Prefix @tab string @tab Binder @tab insensitive (language)
-@item Objects_Path @tab string @tab Binder @tab insensitive (language)
-@item Objects_Path_File @tab string @tab Binder @tab insensitive (language)
-@item Linker_Options @tab list @tab Linker @tab -
-@item Leading_Switches @tab list @tab Linker @tab -
-@item Map_File_Options @tab string @tab Linker @tab -
-@item Executable_Switches @tab list @tab Linker @tab -
-@item Lib_Dir_Switch @tab string @tab Linker @tab -
-@item Lib_Name_Switch @tab string @tab Linker @tab -
-@item Max_Command_Line_Length @tab string @tab Linker @tab -
-@item Response_File_Format @tab string @tab Linker @tab -
-@item Response_File_Switches @tab list @tab Linker @tab -
-@end multitable
+It is possible for different tools to create dynamically new packages with
+attributes, or new attribute in predefined packages. These attributes are
+not documented here.
 
-@c ---------------------------------------------
-@node Case Statements
-@subsection Case Statements
-@c ---------------------------------------------
+The attributes under Configuration headings are usually found only in
+configuration project files.
 
-@noindent
-A @b{case} statement is used in a project file to effect conditional
-behavior. Through this statement, you can set the value of attributes
-and variables depending on the value previously assigned to a typed
-variable.
-
-All choices in a choice list must be distinct. Unlike Ada, the choice
-lists of all alternatives do not need to include all values of the type.
-An @code{others} choice must appear last in the list of alternatives.
-
-The syntax of a @code{case} construction is based on the Ada case statement
-(although the @code{null} statement for empty alternatives is optional).
-
-The case expression must be a typed string variable, whose value is often
-given by an external reference (@pxref{External Values}).
-
-Each alternative starts with the reserved word @code{when}, either a list of
-literal strings separated by the @code{"|"} character or the reserved word
-@code{others}, and the @code{"=>"} token.
-Each literal string must belong to the string type that is the type of the
-case variable.
-After each @code{=>}, there are zero or more statements.  The only
-statements allowed in a case construction are other case statements,
-attribute declarations and variable declarations. String type declarations and
-package declarations are not allowed. Variable declarations are restricted to
-variables that have already been declared before the case construction.
-
-@smallexample
-case_statement ::=
-  @i{case} @i{<typed_variable_>}name @i{is} @{case_item@} @i{end case} ;
-
-case_item ::=
-  @i{when} discrete_choice_list =>
-    @{case_statement
-      | attribute_declaration
-      | variable_declaration
-      | empty_declaration@}
-
-discrete_choice_list ::= string_literal @{| string_literal@} | @i{others}
-@end smallexample
-
-@noindent
-Here is a typical example:
-
-@smallexample @c projectfile
-@group
-project MyProj is
-   type OS_Type is ("GNU/Linux", "Unix", "NT", "VMS");
-   OS : OS_Type := external ("OS", "GNU/Linux");
-
-   package Compiler is
-     case OS is
-       when "GNU/Linux" | "Unix" =>
-         for Switches ("Ada") use ("-gnath");
-       when "NT" =>
-         for Switches ("Ada") use ("-gnatP");
-       when others =>
-         null;
-     end case;
-   end Compiler;
-end MyProj;
-@end group
-@end smallexample
-
-@c ---------------------------------------------
-@node Tools Supporting Project Files
-@chapter Tools Supporting Project Files
-@c ---------------------------------------------
-
-@noindent
-
-@menu
-* gnatmake and Project Files::
-* The GNAT Driver and Project Files::
-* The Development Environments::
-@end menu
-
-@c ---------------------------------------------
-@node gnatmake and Project Files
-@section gnatmake and Project Files
-@c ---------------------------------------------
-
-@noindent
-This section covers several topics related to @command{gnatmake} and
-project files: defining ^switches^switches^ for @command{gnatmake}
-and for the tools that it invokes; specifying configuration pragmas;
-the use of the @code{Main} attribute; building and rebuilding library project
-files.
-
-@menu
-* Switches Related to Project Files::
-* Switches and Project Files::
-* Specifying Configuration Pragmas::
-* Project Files and Main Subprograms::
-* Library Project Files::
-@end menu
-
-@c ---------------------------------------------
-@node Switches Related to Project Files
-@subsection Switches Related to Project Files
-@c ---------------------------------------------
-
-@noindent
-The following switches are used by GNAT tools that support project files:
-
-@table @option
-
-@item ^-P^/PROJECT_FILE=^@var{project}
-@cindex @option{^-P^/PROJECT_FILE^} (any project-aware tool)
-Indicates the name of a project file. This project file will be parsed with
-the verbosity indicated by @option{^-vP^MESSAGE_PROJECT_FILES=^@emph{x}},
-if any, and using the external references indicated
-by @option{^-X^/EXTERNAL_REFERENCE^} switches, if any.
-@ifclear vms
-There may zero, one or more spaces between @option{-P} and @var{project}.
-@end ifclear
-
-There must be only one @option{^-P^/PROJECT_FILE^} switch on the command line.
-
-Since the Project Manager parses the project file only after all the switches
-on the command line are checked, the order of the switches
-@option{^-P^/PROJECT_FILE^},
-@option{^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}}
-or @option{^-X^/EXTERNAL_REFERENCE^} is not significant.
-
-@item ^-X^/EXTERNAL_REFERENCE=^@var{name=value}
-@cindex @option{^-X^/EXTERNAL_REFERENCE^} (any project-aware tool)
-Indicates that external variable @var{name} has the value @var{value}.
-The Project Manager will use this value for occurrences of
-@code{external(name)} when parsing the project file.
-
-@ifclear vms
-If @var{name} or @var{value} includes a space, then @var{name=value} should be
-put between quotes.
-@smallexample
-  -XOS=NT
-  -X"user=John Doe"
-@end smallexample
-@end ifclear
-
-Several @option{^-X^/EXTERNAL_REFERENCE^} switches can be used simultaneously.
-If several @option{^-X^/EXTERNAL_REFERENCE^} switches specify the same
-@var{name}, only the last one is used.
-
-An external variable specified with a @option{^-X^/EXTERNAL_REFERENCE^} switch
-takes precedence over the value of the same name in the environment.
-
-@item ^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}
-@cindex @option{^-vP^/MESSAGES_PROJECT_FILE^} (any project-aware tool)
-Indicates the verbosity of the parsing of GNAT project files.
-
-@ifclear vms
-@option{-vP0} means Default;
-@option{-vP1} means Medium;
-@option{-vP2} means High.
-@end ifclear
-
-@ifset vms
-There are three possible options for this qualifier: DEFAULT, MEDIUM and
-HIGH.
-@end ifset
-
-The default is ^Default^DEFAULT^: no output for syntactically correct
-project files.
-If several @option{^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}} switches are present,
-only the last one is used.
-
-@item ^-aP^/ADD_PROJECT_SEARCH_DIR=^<dir>
-@cindex @option{^-aP^/ADD_PROJECT_SEARCH_DIR=^} (any project-aware tool)
-Add directory <dir> at the beginning of the project search path, in order,
-after the current working directory.
-
-@ifclear vms
-@item -eL
-@cindex @option{-eL} (any project-aware tool)
-Follow all symbolic links when processing project files.
-@end ifclear
-
-@item ^--subdirs^/SUBDIRS^=<subdir>
-@cindex @option{^--subdirs^/SUBDIRS^=} (gnatmake and gnatclean)
-This switch is recognized by @command{gnatmake} and @command{gnatclean}. It
-indicate that the real directories (except the source directories) are the
-subdirectories <subdir> of the directories specified in the project files.
-This applies in particular to object directories, library directories and
-exec directories. If the subdirectories do not exist, they are created
-automatically.
-
-@end table
-
-@c ---------------------------------------------
-@node Switches and Project Files
-@subsection Switches and Project Files
-@c ---------------------------------------------
-
-@noindent
-@ifset vms
-It is not currently possible to specify VMS style qualifiers in the project
-files; only Unix style ^switches^switches^ may be specified.
-@end ifset
-
-For each of the packages @code{Builder}, @code{Compiler}, @code{Binder}, and
-@code{Linker}, you can specify a @code{^Default_Switches^Default_Switches^}
-attribute, a @code{Switches} attribute, or both;
-as their names imply, these ^switch^switch^-related
-attributes affect the ^switches^switches^ that are used for each of these GNAT
-components when
-@command{gnatmake} is invoked.  As will be explained below, these
-component-specific ^switches^switches^ precede
-the ^switches^switches^ provided on the @command{gnatmake} command line.
-
-The @code{^Default_Switches^Default_Switches^} attribute is an attribute
-indexed by language name (case insensitive) whose value is a string list.
-For example:
-
-@smallexample @c projectfile
-@group
-package Compiler is
-  for ^Default_Switches^Default_Switches^ ("Ada")
-      use ("^-gnaty^-gnaty^",
-           "^-v^-v^");
-end Compiler;
-@end group
-@end smallexample
-
-@noindent
-The @code{Switches} attribute is indexed on a file name (which may or may
-not be case sensitive, depending
-on the operating system) whose value is a string list.  For example:
-
-@smallexample @c projectfile
-@group
-package Builder is
-   for Switches ("main1.adb")
-       use ("^-O2^-O2^");
-   for Switches ("main2.adb")
-       use ("^-g^-g^");
-end Builder;
-@end group
-@end smallexample
-
-@noindent
-For the @code{Builder} package, the file names must designate source files
-for main subprograms.  For the @code{Binder} and @code{Linker} packages, the
-file names must designate @file{ALI} or source files for main subprograms.
-In each case just the file name without an explicit extension is acceptable.
-
-For each tool used in a program build (@command{gnatmake}, the compiler, the
-binder, and the linker), the corresponding package @dfn{contributes} a set of
-^switches^switches^ for each file on which the tool is invoked, based on the
-^switch^switch^-related attributes defined in the package.
-In particular, the ^switches^switches^
-that each of these packages contributes for a given file @var{f} comprise:
+The characteristics of each attribute are indicated as follows:
 
 @itemize @bullet
-@item the value of attribute @code{Switches (@var{f})},
-  if it is specified in the package for the given file,
-@item otherwise, the value of @code{^Default_Switches^Default_Switches^ ("Ada")},
-  if it is specified in the package.
+
+@item @b{Type of value}
+
+The value of an attribute may be a single string, indicated by the word
+"single", or a string list, indicated by the word "list".
+
+@item @b{Read-only}
+
+When the attribute is read-only, that is when it is not allowed to declare
+the attribute, this is indicated by the words "read-only".
+
+@item @b{Optional index}
+
+If it is allowed in the value of the attribute (both single and list) to have
+an optional index, this is indicated by the words "optional index".
+
+@item @b{Indexed attribute}
+
+When an it is an indexed attribute, this is indicated by the word "indexed".
+
+@item @b{Case-sensitivity of the index}
+
+For an indexed attribute, if the index is case-insensitive, this is indicated
+by the words "case-insensitive index".
+
+@item @b{File name index}
+
+For an indexed attribute, when the index is a file name, this is indicated by
+the words "file name index". The index may or may not be case-sensitive,
+depending on the platform.
+
+@item @b{others allowed in index}
+
+For an indexed attribute, if it is allowed to use @b{others} as the index,
+this is indicated by the words "others allowed".
 
 @end itemize
 
+@node Project Level Attributes
+@subsubsection Project Level Attributes
 @noindent
-If neither of these attributes is defined in the package, then the package does
-not contribute any ^switches^switches^ for the given file.
 
-When @command{gnatmake} is invoked on a file, the ^switches^switches^ comprise
-two sets, in the following order: those contributed for the file
-by the @code{Builder} package;
-and the switches passed on the command line.
+@itemize @bullet
 
-When @command{gnatmake} invokes a tool (compiler, binder, linker) on a file,
-the ^switches^switches^ passed to the tool comprise three sets,
-in the following order:
+@item @b{General}
 
-@enumerate
-@item
-the applicable ^switches^switches^ contributed for the file
-by the @code{Builder} package in the project file supplied on the command line;
+@itemize @bullet
 
-@item
-those contributed for the file by the package (in the relevant project file --
-see below) corresponding to the tool; and
+@item @b{Name}: single, read-only
 
-@item
-the applicable switches passed on the command line.
-@end enumerate
+The name of the project.
 
-The term @emph{applicable ^switches^switches^} reflects the fact that
-@command{gnatmake} ^switches^switches^ may or may not be passed to individual
-tools, depending on the individual ^switch^switch^.
+@item @b{Project_Dir}: single, read-only
 
-@command{gnatmake} may invoke the compiler on source files from different
-projects. The Project Manager will use the appropriate project file to
-determine the @code{Compiler} package for each source file being compiled.
-Likewise for the @code{Binder} and @code{Linker} packages.
+The path name of the project directory.
 
-As an example, consider the following package in a project file:
+@item @b{Main}: list, optional index
 
-@smallexample @c projectfile
-@group
-project Proj1 is
-   package Compiler is
-      for ^Default_Switches^Default_Switches^ ("Ada")
-          use ("^-g^-g^");
-      for Switches ("a.adb")
-          use ("^-O1^-O1^");
-      for Switches ("b.adb")
-          use ("^-O2^-O2^",
-               "^-gnaty^-gnaty^");
-   end Compiler;
-end Proj1;
-@end group
-@end smallexample
+The list of main sources for the executables.
 
+@item @b{Languages}: list
+
+The list of languages of the sources of the project.
+
+@item @b{Roots}: list, indexed, file name index
+
+The index is the file name of an executable source. Indicates the list of
+units that need to be bound and linked with their closures with the executable.
+
+@item @b{Externally_Built}: single
+
+Indicates if the project is externally built.
+Only case-insensitive values allowed are "true" and "false", the default.
+
+@end itemize
 @noindent
-If @command{gnatmake} is invoked with this project file, and it needs to
-compile, say, the files @file{a.adb}, @file{b.adb}, and @file{c.adb}, then
-@file{a.adb} will be compiled with the ^switch^switch^
-@option{^-O1^-O1^},
-@file{b.adb} with ^switches^switches^
-@option{^-O2^-O2^}
-and @option{^-gnaty^-gnaty^},
-and @file{c.adb} with @option{^-g^-g^}.
 
-The following example illustrates the ordering of the ^switches^switches^
-contributed by different packages:
+@item @b{Directories}
 
-@smallexample @c projectfile
-@group
-project Proj2 is
-   package Builder is
-      for Switches ("main.adb")
-          use ("^-g^-g^",
-               "^-O1^-)1^",
-               "^-f^-f^");
-   end Builder;
-@end group
+@itemize @bullet
 
-@group
-   package Compiler is
-      for Switches ("main.adb")
-          use ("^-O2^-O2^");
-   end Compiler;
-end Proj2;
-@end group
-@end smallexample
+@item @b{Object_Dir}: single
 
-@noindent
-If you issue the command:
+Indicates the object directory for the project.
 
-@smallexample
-    gnatmake ^-Pproj2^/PROJECT_FILE=PROJ2^ -O0 main
-@end smallexample
+@item @b{Exec_Dir}: single
 
-@noindent
-then the compiler will be invoked on @file{main.adb} with the following
-sequence of ^switches^switches^
+Indicates the exec directory for the project, that is the directory where the
+executables are.
 
-@smallexample
-   ^-g -O1 -O2 -O0^-g -O1 -O2 -O0^
-@end smallexample
+@item @b{Source_Dirs}: list
 
-@noindent
-with the last @option{^-O^-O^}
-^switch^switch^ having precedence over the earlier ones;
-several other ^switches^switches^
-(such as @option{^-c^-c^}) are added implicitly.
+The list of source directories of the project.
 
-The ^switches^switches^
-@option{^-g^-g^}
-and @option{^-O1^-O1^} are contributed by package
-@code{Builder},  @option{^-O2^-O2^} is contributed
-by the package @code{Compiler}
-and @option{^-O0^-O0^} comes from the command line.
+@item @b{Inherit_Source_Path}: list, indexed, case-insensitive index
 
-The @option{^-g^-g^}
-^switch^switch^ will also be passed in the invocation of
-@command{Gnatlink.}
-
-A final example illustrates switch contributions from packages in different
-project files:
-
-@smallexample @c projectfile
-@group
-project Proj3 is
-   for Source_Files use ("pack.ads", "pack.adb");
-   package Compiler is
-      for ^Default_Switches^Default_Switches^ ("Ada")
-          use ("^-gnata^-gnata^");
-   end Compiler;
-end Proj3;
-@end group
-
-@group
-with "Proj3";
-project Proj4 is
-   for Source_Files use ("foo_main.adb", "bar_main.adb");
-   package Builder is
-      for Switches ("foo_main.adb")
-          use ("^-s^-s^",
-               "^-g^-g^");
-   end Builder;
-end Proj4;
-@end group
-
-@group
--- Ada source file:
-with Pack;
-procedure Foo_Main is
-   @dots{}
-end Foo_Main;
-@end group
-@end smallexample
-
-@noindent
-If the command is
-@smallexample
-gnatmake ^-PProj4^/PROJECT_FILE=PROJ4^ foo_main.adb -cargs -gnato
-@end smallexample
-
-@noindent
-then the ^switches^switches^ passed to the compiler for @file{foo_main.adb} are
-@option{^-g^-g^} (contributed by the package @code{Proj4.Builder}) and
-@option{^-gnato^-gnato^} (passed on the command line).
-When the imported package @code{Pack} is compiled, the ^switches^switches^ used
-are @option{^-g^-g^} from @code{Proj4.Builder},
-@option{^-gnata^-gnata^} (contributed from package @code{Proj3.Compiler},
-and @option{^-gnato^-gnato^} from the command line.
-
-When using @command{gnatmake} with project files, some ^switches^switches^ or
-arguments may be expressed as relative paths. As the working directory where
-compilation occurs may change, these relative paths are converted to absolute
-paths. For the ^switches^switches^ found in a project file, the relative paths
-are relative to the project file directory, for the switches on the command
-line, they are relative to the directory where @command{gnatmake} is invoked.
-The ^switches^switches^ for which this occurs are:
-^-I^-I^,
-^-A^-A^,
-^-L^-L^,
-^-aO^-aO^,
-^-aL^-aL^,
-^-aI^-aI^, as well as all arguments that are not switches (arguments to
-^switch^switch^
-^-o^-o^, object files specified in package @code{Linker} or after
--largs on the command line). The exception to this rule is the ^switch^switch^
-^--RTS=^--RTS=^ for which a relative path argument is never converted.
-
-@c ---------------------------------------------
-@node Specifying Configuration Pragmas
-@subsection Specifying Configuration Pragmas
-@c ---------------------------------------------
-
-@noindent
-When using @command{gnatmake} with project files, if there exists a file
-@file{gnat.adc} that contains configuration pragmas, this file will be
-ignored.
-
-Configuration pragmas can be defined by means of the following attributes in
-project files: @code{Global_Configuration_Pragmas} in package @code{Builder}
-and @code{Local_Configuration_Pragmas} in package @code{Compiler}.
-
-Both these attributes are single string attributes. Their values is the path
-name of a file containing configuration pragmas. If a path name is relative,
-then it is relative to the project directory of the project file where the
-attribute is defined.
-
-When compiling a source, the configuration pragmas used are, in order,
-those listed in the file designated by attribute
-@code{Global_Configuration_Pragmas} in package @code{Builder} of the main
-project file, if it is specified, and those listed in the file designated by
-attribute @code{Local_Configuration_Pragmas} in package @code{Compiler} of
-the project file of the source, if it exists.
-
-@c ---------------------------------------------
-@node Project Files and Main Subprograms
-@subsection Project Files and Main Subprograms
-@c ---------------------------------------------
-
-@noindent
-When using a project file, you can invoke @command{gnatmake}
-with one or several main subprograms, by specifying their source files on the
-command line.
-
-@smallexample
-    gnatmake ^-P^/PROJECT_FILE=^prj main1.adb main2.adb main3.adb
-@end smallexample
-
-@noindent
-Each of these needs to be a source file of the same project, except
-when the switch ^-u^/UNIQUE^ is used.
-
-When ^-u^/UNIQUE^ is not used, all the mains need to be sources of the
-same project, one of the project in the tree rooted at the project specified
-on the command line. The package @code{Builder} of this common project, the
-"main project" is the one that is considered by @command{gnatmake}.
-
-When ^-u^/UNIQUE^ is used, the specified source files may be in projects
-imported directly or indirectly by the project specified on the command line.
-Note that if such a source file is not part of the project specified on the
-command line, the ^switches^switches^ found in package @code{Builder} of the
-project specified on the command line, if any, that are transmitted
-to the compiler will still be used, not those found in the project file of
-the source file.
-
-When using a project file, you can also invoke @command{gnatmake} without
-explicitly specifying any main, and the effect depends on whether you have
-defined the @code{Main} attribute.  This attribute has a string list value,
-where each element in the list is the name of a source file (the file
-extension is optional) that contains a unit that can be a main subprogram.
-
-If the @code{Main} attribute is defined in a project file as a non-empty
-string list and the switch @option{^-u^/UNIQUE^} is not used on the command
-line, then invoking @command{gnatmake} with this project file but without any
-main on the command line is equivalent to invoking @command{gnatmake} with all
-the file names in the @code{Main} attribute on the command line.
+Index is a language name. Value is a list of language names. Indicates that
+in the source search path of the index language the source directories of
+the languages in the list should be included.
 
 Example:
-@smallexample @c projectfile
-@group
-   project Prj is
-      for Main use ("main1.adb", "main2.adb", "main3.adb");
-   end Prj;
-@end group
-@end smallexample
 
-@noindent
-With this project file, @code{"gnatmake ^-Pprj^/PROJECT_FILE=PRJ^"}
-is equivalent to
-@code{"gnatmake ^-Pprj^/PROJECT_FILE=PRJ^ main1.adb main2.adb main3.adb"}.
+for Inherit_Source_Path ("C++") use ("C");
 
-When the project attribute @code{Main} is not specified, or is specified
-as an empty string list, or when the switch @option{-u} is used on the command
-line, then invoking @command{gnatmake} with no main on the command line will
-result in all immediate sources of the project file being checked, and
-potentially recompiled. Depending on the presence of the switch @option{-u},
-sources from other project files on which the immediate sources of the main
-project file depend are also checked and potentially recompiled. In other
-words, the @option{-u} switch is applied to all of the immediate sources of the
-main project file.
+@item @b{Exclude_Source_Dirs}: list
 
-When no main is specified on the command line and attribute @code{Main} exists
-and includes several mains, or when several mains are specified on the
-command line, the default ^switches^switches^ in package @code{Builder} will
-be used for all mains, even if there are specific ^switches^switches^
-specified for one or several mains.
+The list of directories that are included in Source_Dirs but are not source
+directories of the project.
 
-But the ^switches^switches^ from package @code{Binder} or @code{Linker} will be
-the specific ^switches^switches^ for each main, if they are specified.
+@item @b{Ignore_Source_Sub_Dirs}: list
 
-@c ---------------------------------------------
-@node Library Project Files
-@subsection Library Project Files
-@c ---------------------------------------------
-
-@noindent
-When @command{gnatmake} is invoked with a main project file that is a library
-project file, it is not allowed to specify one or more mains on the command
-line.
-
-When a library project file is specified, switches ^-b^/ACTION=BIND^ and
-^-l^/ACTION=LINK^ have special meanings.
-
-@itemize @bullet
-@item ^-b^/ACTION=BIND^ is only allowed for stand-alone libraries. It indicates
-  to @command{gnatmake} that @command{gnatbind} should be invoked for the
-  library.
-
-@item ^-l^/ACTION=LINK^ may be used for all library projects. It indicates
-  to @command{gnatmake} that the binder generated file should be compiled
-  (in the case of a stand-alone library) and that the library should be built.
-@end itemize
-
-@c ---------------------------------------------
-@node The GNAT Driver and Project Files
-@section The GNAT Driver and Project Files
-@c ---------------------------------------------
-
-@noindent
-A number of GNAT tools, other than @command{^gnatmake^gnatmake^}
-can benefit from project files:
-(@command{^gnatbind^gnatbind^},
-@command{^gnatcheck^gnatcheck^},
-@command{^gnatclean^gnatclean^},
-@command{^gnatelim^gnatelim^},
-@command{^gnatfind^gnatfind^},
-@command{^gnatlink^gnatlink^},
-@command{^gnatls^gnatls^},
-@command{^gnatmetric^gnatmetric^},
-@command{^gnatpp^gnatpp^},
-@command{^gnatstub^gnatstub^},
-and @command{^gnatxref^gnatxref^}). However, none of these tools can be invoked
-directly with a project file switch (@option{^-P^/PROJECT_FILE=^}).
-They must be invoked through the @command{gnat} driver.
-
-The @command{gnat} driver is a wrapper that accepts a number of commands and
-calls the corresponding tool. It was designed initially for VMS platforms (to
-convert VMS qualifiers to Unix-style switches), but it is now available on all
-GNAT platforms.
-
-On non-VMS platforms, the @command{gnat} driver accepts the following commands
-(case insensitive):
-
-@itemize @bullet
-@item BIND to invoke @command{^gnatbind^gnatbind^}
-@item CHOP to invoke @command{^gnatchop^gnatchop^}
-@item CLEAN to invoke @command{^gnatclean^gnatclean^}
-@item COMP or COMPILE to invoke the compiler
-@item ELIM to invoke @command{^gnatelim^gnatelim^}
-@item FIND to invoke @command{^gnatfind^gnatfind^}
-@item KR or KRUNCH to invoke @command{^gnatkr^gnatkr^}
-@item LINK to invoke @command{^gnatlink^gnatlink^}
-@item LS or LIST to invoke @command{^gnatls^gnatls^}
-@item MAKE to invoke @command{^gnatmake^gnatmake^}
-@item NAME to invoke @command{^gnatname^gnatname^}
-@item PREP or PREPROCESS to invoke @command{^gnatprep^gnatprep^}
-@item PP or PRETTY to invoke @command{^gnatpp^gnatpp^}
-@item METRIC to invoke @command{^gnatmetric^gnatmetric^}
-@item STUB to invoke @command{^gnatstub^gnatstub^}
-@item XREF to invoke @command{^gnatxref^gnatxref^}
+Value is a list of simple names for subdirectories that are removed from the
+list of source directories, including theur subdirectories.
 
 @end itemize
 
-@noindent
-(note that the compiler is invoked using the command
-@command{^gnatmake -f -u -c^gnatmake -f -u -c^}).
-
-On non-VMS platforms, between @command{gnat} and the command, two
-special switches may be used:
+@item @b{Source Files}
 
 @itemize @bullet
-@item @command{-v} to display the invocation of the tool.
-@item @command{-dn} to prevent the @command{gnat} driver from removing
-  the temporary files it has created. These temporary files are
-  configuration files and temporary file list files.
+
+@item @b{Source_Files}: list
+
+Value is a list of source file simple names.
+
+@item @b{Locally_Removed_Files}: list
+
+Obsolescent. Equivalent to Excluded_Source_Files.
+
+@item @b{Excluded_Source_Files}: list
+
+Value is a list of simple file names that are not sources of the project.
+Allows to remove sources that are inherited or found in the source directories
+and that match the naming scheme.
+
+@item @b{Source_List_File}: single
+
+Value is a text file name that contains a list of source file simple names,
+one on each line.
+
+@item @b{Excluded_Source_List_File}: single
+
+Value is a text file name that contains a list of file simple names that
+are not sources of the project.
+
+@item @b{Interfaces}: list
+
+Value is a list of file names that constitutes the interfaces of the project.
 
 @end itemize
 
-@noindent
-The command may be followed by switches and arguments for the invoked
-tool.
-
-@smallexample
-  gnat bind -C main.ali
-  gnat ls -a main
-  gnat chop foo.txt
-@end smallexample
-
-@noindent
-Switches may also be put in text files, one switch per line, and the text
-files may be specified with their path name preceded by '@@'.
-
-@smallexample
-   gnat bind @@args.txt main.ali
-@end smallexample
-
-@noindent
-In addition, for commands BIND, COMP or COMPILE, FIND, ELIM, LS or LIST, LINK,
-METRIC, PP or PRETTY, STUB and XREF, the project file related switches
-(@option{^-P^/PROJECT_FILE^},
-@option{^-X^/EXTERNAL_REFERENCE^} and
-@option{^-vP^/MESSAGES_PROJECT_FILE=^x}) may be used in addition to
-the switches of the invoking tool.
-
-When GNAT PP or GNAT PRETTY is used with a project file, but with no source
-specified on the command line, it invokes @command{^gnatpp^gnatpp^} with all
-the immediate sources of the specified project file.
-
-When GNAT METRIC is used with a project file, but with no source
-specified on the command line, it invokes @command{^gnatmetric^gnatmetric^}
-with all the immediate sources of the specified project file and with
-@option{^-d^/DIRECTORY^} with the parameter pointing to the object directory
-of the project.
-
-In addition, when GNAT PP, GNAT PRETTY or GNAT METRIC is used with
-a project file, no source is specified on the command line and
-switch ^-U^/ALL_PROJECTS^ is specified on the command line, then
-the underlying tool (^gnatpp^gnatpp^ or
-^gnatmetric^gnatmetric^) is invoked for all sources of all projects,
-not only for the immediate sources of the main project.
-@ifclear vms
-(-U stands for Universal or Union of the project files of the project tree)
-@end ifclear
-
-For each of the following commands, there is optionally a corresponding
-package in the main project.
+@item @b{Aggregate Projects}
 
 @itemize @bullet
-@item package @code{Binder} for command BIND (invoking @code{^gnatbind^gnatbind^})
 
-@item package @code{Check} for command CHECK (invoking
-  @code{^gnatcheck^gnatcheck^})
+@item @b{Project_Files}: list
 
-@item package @code{Compiler} for command COMP or COMPILE (invoking the compiler)
+Value is the list of aggregated projects.
 
-@item package @code{Cross_Reference} for command XREF (invoking
-  @code{^gnatxref^gnatxref^})
+@item @b{Project_Path}: list
 
-@item package @code{Eliminate} for command ELIM (invoking
-  @code{^gnatelim^gnatelim^})
+Value is a list of directories that are added to the project search path when
+looking for the aggregated projects.
 
-@item package @code{Finder} for command FIND (invoking @code{^gnatfind^gnatfind^})
+@item @b{External}: single, indexed
 
-@item package @code{Gnatls} for command LS or LIST (invoking @code{^gnatls^gnatls^})
-
-@item package @code{Gnatstub} for command STUB
-  (invoking @code{^gnatstub^gnatstub^})
-
-@item package @code{Linker} for command LINK (invoking @code{^gnatlink^gnatlink^})
-
-@item package @code{Check} for command CHECK
-  (invoking @code{^gnatcheck^gnatcheck^})
-
-@item package @code{Metrics} for command METRIC
-  (invoking @code{^gnatmetric^gnatmetric^})
-
-@item package @code{Pretty_Printer} for command PP or PRETTY
-  (invoking @code{^gnatpp^gnatpp^})
+Index is the name of an external reference. Value is the value of the
+external reference to be used when parsing the aggregated projects.
 
 @end itemize
 
-@noindent
-Package @code{Gnatls} has a unique attribute @code{Switches},
-a simple variable with a string list value. It contains ^switches^switches^
-for the invocation of @code{^gnatls^gnatls^}.
+@item @b{Libraries}
 
-@smallexample @c projectfile
-@group
-project Proj1 is
-   package gnatls is
-      for Switches
-          use ("^-a^-a^",
-               "^-v^-v^");
-   end gnatls;
-end Proj1;
-@end group
-@end smallexample
+@itemize @bullet
 
-@noindent
-All other packages have two attribute @code{Switches} and
-@code{^Default_Switches^Default_Switches^}.
+@item @b{Library_Dir}: single
 
-@code{Switches} is an indexed attribute, indexed by the
-source file name, that has a string list value: the ^switches^switches^ to be
-used when the tool corresponding to the package is invoked for the specific
-source file.
+Value is the name of the library directory. This attribute needs to be
+declared for each library project.
 
-@code{^Default_Switches^Default_Switches^} is an attribute,
-indexed by  the programming language that has a string list value.
-@code{^Default_Switches^Default_Switches^ ("Ada")} contains the
-^switches^switches^ for the invocation of the tool corresponding
-to the package, except if a specific @code{Switches} attribute
-is specified for the source file.
+@item @b{Library_Name}: single
 
-@smallexample @c projectfile
-@group
-project Proj is
+Value is the name of the library. This attribute needs to be declared or
+inherited for each library project.
 
-   for Source_Dirs use ("**");
+@item @b{Library_Kind}: single
 
-   package gnatls is
-      for Switches use
-          ("^-a^-a^",
-           "^-v^-v^");
-   end gnatls;
-@end group
-@group
+Specifies the kind of library: static library (archive) or shared library.
+Case-insensitive values must be one of "static" for archives (the default) or
+"dynamic" or "relocatable" for shared libraries.
 
-   package Compiler is
-      for ^Default_Switches^Default_Switches^ ("Ada")
-          use ("^-gnatv^-gnatv^",
-               "^-gnatwa^-gnatwa^");
-   end Binder;
-@end group
-@group
+@item @b{Library_Version}: single
 
-   package Binder is
-      for ^Default_Switches^Default_Switches^ ("Ada")
-          use ("^-C^-C^",
-               "^-e^-e^");
-   end Binder;
-@end group
-@group
+Value is the name of the library file.
 
-   package Linker is
-      for ^Default_Switches^Default_Switches^ ("Ada")
-          use ("^-C^-C^");
-      for Switches ("main.adb")
-          use ("^-C^-C^",
-               "^-v^-v^",
-               "^-v^-v^");
-   end Linker;
-@end group
-@group
+@item @b{Library_Interface}: list
 
-   package Finder is
-      for ^Default_Switches^Default_Switches^ ("Ada")
-           use ("^-a^-a^",
-                "^-f^-f^");
-   end Finder;
-@end group
-@group
+Value is the list of unit names that constitutes the interfaces
+of a Stand-Alone Library project.
 
-   package Cross_Reference is
-      for ^Default_Switches^Default_Switches^ ("Ada")
-          use ("^-a^-a^",
-               "^-f^-f^",
-               "^-d^-d^",
-               "^-u^-u^");
-   end Cross_Reference;
-end Proj;
-@end group
-@end smallexample
+@item @b{Library_Standalone}: single
 
-@noindent
-With the above project file, commands such as
+Specifies if a Stand-Alone Library (SAL) is encapsulated or not.
+Only authorized case-insensitive values are "standard" for non encapsulated
+SALs, "encapsulated" for encapsulated SALs or "no" for non SAL library project.
 
-@smallexample
-   ^gnat comp -Pproj main^GNAT COMP /PROJECT_FILE=PROJ MAIN^
-   ^gnat ls -Pproj main^GNAT LIST /PROJECT_FILE=PROJ MAIN^
-   ^gnat xref -Pproj main^GNAT XREF /PROJECT_FILE=PROJ MAIN^
-   ^gnat bind -Pproj main.ali^GNAT BIND /PROJECT_FILE=PROJ MAIN.ALI^
-   ^gnat link -Pproj main.ali^GNAT LINK /PROJECT_FILE=PROJ MAIN.ALI^
-@end smallexample
+@item @b{Library_Encapsulated_Options}: list
 
-@noindent
-will set up the environment properly and invoke the tool with the switches
-found in the package corresponding to the tool:
-@code{^Default_Switches^Default_Switches^ ("Ada")} for all tools,
-except @code{Switches ("main.adb")}
-for @code{^gnatlink^gnatlink^}.
-It is also possible to invoke some of the tools,
-(@code{^gnatcheck^gnatcheck^},
-@code{^gnatmetric^gnatmetric^},
-and @code{^gnatpp^gnatpp^})
-on a set of project units thanks to the combination of the switches
-@option{-P}, @option{-U} and possibly the main unit when one is interested
-in its closure. For instance,
-@smallexample
-gnat metric -Pproj
-@end smallexample
+Value is a list of options that need to be used when linking an encapsulated
+Stand-Alone Library.
 
-@noindent
-will compute the metrics for all the immediate units of project
-@code{proj}.
-@smallexample
-gnat metric -Pproj -U
-@end smallexample
+@item @b{Library_Encapsulated_Supported}: single
 
-@noindent
-will compute the metrics for all the units of the closure of projects
-rooted at @code{proj}.
-@smallexample
-gnat metric -Pproj -U main_unit
-@end smallexample
+Indicates if encapsulated Stand-Alone Libraries are supported. Only
+authorized case-insensitive values are "true" and "false" (the default).
 
-@noindent
-will compute the metrics for the closure of units rooted at
-@code{main_unit}. This last possibility relies implicitly
-on @command{gnatbind}'s option @option{-R}. But if the argument files for the
-tool invoked by the @command{gnat} driver are explicitly  specified
-either directly or through the tool @option{-files} option, then the tool
-is called only for these explicitly specified files.
+@item @b{Library_Auto_Init}: single
 
-@c ---------------------------------------------
-@node The Development Environments
-@section The Development Environments
-@c ---------------------------------------------
+Indicates if a Stand-Alone Library is auto-initialized. Only authorized
+case-insentive values are "true" and "false".
 
-@noindent
-See the appropriate manuals for more details. These environments will
-store a number of settings in the project itself, when they are meant
-to be shared by the whole team working on the project. Here are the
-attributes defined in the package @b{IDE} in projects.
+@item @b{Leading_Library_Options}: list
 
-@table @code
-@item Remote_Host
-This is a simple attribute. Its value is a string that designates the remote
-host in a cross-compilation environment, to be used for remote compilation and
-debugging. This field should not be specified when running on the local
-machine.
+Value is a list of options that are to be used at the beginning of
+the command line when linking a shared library.
 
-@item Program_Host
-This is a simple attribute. Its value is a string that specifies the
-name of IP address of the embedded target in a cross-compilation environment,
-on which the program should execute.
+@item @b{Library_Options}: list
 
-@item Communication_Protocol
-This is a simple string attribute. Its value is the name of the protocol
-to use to communicate with the target in a cross-compilation environment,
-e.g.@: @code{"wtx"} or @code{"vxworks"}.
+Value is a list of options that are to be used when linking a shared library.
 
-@item Compiler_Command
-This is an associative array attribute, whose domain is a language name. Its
-value is  string that denotes the command to be used to invoke the compiler.
-The value of @code{Compiler_Command ("Ada")} is expected to be compatible with
-@command{gnatmake}, in particular in the handling of switches.
+@item @b{Library_Src_Dir}: single
 
-@item Debugger_Command
-This is simple attribute, Its value is a string that specifies the name of
-the debugger to be used, such as gdb, powerpc-wrs-vxworks-gdb or gdb-4.
+Value is the name of the directory where copies of the sources of the
+interfaces of a Stand-Alone Library are to be copied.
 
-@item Default_Switches
-This is an associative array attribute. Its indexes are the name of the
-external tools that the GNAT Programming System (GPS) is supporting. Its
-value is a list of switches to use when invoking that tool.
+@item @b{Library_ALI_Dir}: single
 
-@item  Gnatlist
-This is a simple attribute.  Its value is a string that specifies the name
-of the @command{gnatls} utility to be used to retrieve information about the
-predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
+Value is the name of the directory where the ALI files of the interfaces
+of a Stand-Alone Library are to be copied. When this attribute is not declared,
+the directory is the library directory.
 
-@item VCS_Kind
-This is a simple attribute. Its value is a string used to specify the
-Version Control System (VCS) to be used for this project, e.g.@: CVS, RCS
-ClearCase or Perforce.
+@item @b{Library_gcc}: single
 
-@item Gnat
-This is a simple attribute. Its value is a string that specifies the name
-of the @command{gnat} utility to be used when executing various tools from
-GPS, in particular @code{"gnat pp"}, @code{"gnat stub"},@dots{}
+Obsolescent attribute. Specify the linker driver used to link a shared library.
+Use instead attribute Linker'Driver.
 
-@item VCS_File_Check
-This is a simple attribute. Its value is a string that specifies the
-command used by the VCS to check the validity of a file, either
-when the user explicitly asks for a check, or as a sanity check before
-doing the check-in.
+@item @b{Library_Symbol_File}: single
 
-@item VCS_Log_Check
-This is a simple attribute. Its value is a string that specifies
-the command used by the VCS to check the validity of a log file.
+Value is the name of the library symbol file.
 
-@item VCS_Repository_Root
-The VCS repository root path. This is used to create tags or branches
-of the repository. For subversion the value should be the @code{URL}
-as specified to check-out the working copy of the repository.
+@item @b{Library_Symbol_Policy}: single
 
-@item VCS_Patch_Root
-The local root directory to use for building patch file. All patch chunks
-will be relative to this path. The root project directory is used if
-this value is not defined.
+Indicates the symbol policy kind. Only authorized case-insensitive values are
+"autonomous", "default", "compliant", "controlled" or "direct".
 
-@end table
+@item @b{Library_Reference_Symbol_File}: single
+
+Value is the name of the reference symbol file.
+
+@end itemize
+
+@item @b{Configuration - General}
+
+@itemize @bullet
+
+@item @b{Default_Language}: single
+
+Value is the case-insensitive name of the language of a project when attribute
+Languages is not specified.
+
+@item @b{Run_Path_Option}: list
+
+Value is the list of switches to be used when specifying the run path option
+in an executable.
+
+@item @b{Run_Path_Origin}: single
+
+Value is the the string that may replace the path name of the executable
+directory in the run path options.
+
+@item @b{Separate_Run_Path_Options}: single
+
+Indicates if there may be or not several run path options specified when
+linking an executable. Only authorized case-insensitive b=values are "true" or
+"false" (the default).
+
+@item @b{Toolchain_Version}: single, indexed, case-insensitive index
+
+Index is a language name. Specify the version of a toolchain for a language.
+
+@item @b{Toolchain_Description}: single, indexed, case-insensitive index
+
+Obsolescent. No longer used.
+
+@item @b{Object_Generated}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates if invoking the compiler for a language
+produces an object file. Only authorized case-insensitive values are "false"
+and "true" (the default).
+
+@item @b{Objects_Linked}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates if the object files created by the compiler
+for a language need to be linked in the executable. Only authorized
+case-insensitive values are "false" and "true" (the default).
+
+@item @b{Target}: single
+
+Value is the name of the target platform.
+
+@end itemize
+
+@item @b{Configuration - Libraries}
+
+@itemize @bullet
+
+@item @b{Library_Builder}: single
+
+Value is the path name of the application that is to be used to build
+libraries. Usually the path name of "gprlib".
+
+@item @b{Library_Support}: single
+
+Indicates the level of support of libraries. Only authorized case-insensitive
+values are "static_only", "full" or "none" (the default).
+
+@end itemize
+
+@item @b{Configuration - Archives}
+
+@itemize @bullet
+
+@item @b{Archive_Builder}: list
+
+Value is the name of the application to be used to create a static library
+(archive), followed by the options to be used.
+
+@item @b{Archive_Builder_Append_Option}: list
+
+Value is the list of options to be used when invoking the archive builder
+to add project files into an archive.
+
+@item @b{Archive_Indexer}: list
+
+Value is the name of the archive indexer, followed by the required options.
+
+@item @b{Archive_Suffix}: single
+
+Value is the extension of archives. When not declared, the extension is ".a".
+
+@item @b{Library_Partial_Linker}: list
+
+Value is the name of the partial linker executable, followed by the required
+options.
+
+@end itemize
+
+@item @b{Configuration - Shared Libraries}
+
+@itemize @bullet
+
+@item @b{Shared_Library_Prefix}: single
+
+Value is the prefix in the name of shared library files. When not declared,
+the prefix is "lib".
+
+@item @b{Shared_Library_Suffix}: single
+
+Value is the the extension of the name of shared library files. When not
+declared, the extension is ".so".
+
+@item @b{Symbolic_Link_Supported}: single
+
+Indicates if symbolic links are supported on the platform. Only authorized
+case-insensitive values are "true" and "false" (the default).
+
+@item @b{Library_Major_Minor_Id_Supported}: single
+
+Indicates if major and minor ids for shared library names are supported on
+the platform. Only authorized case-insensitive values are "true" and "false"
+(the default).
+
+@item @b{Library_Auto_Init_Supported}: single
+
+Indicates if auto-initialization of Stand-Alone Libraries is supported. Only
+authorized case-insensitive values are "true" and "false" (the default).
+
+@item @b{Shared_Library_Minimum_Switches}: list
+
+Value is the list of required switches when linking a shared library.
+
+@item @b{Library_Version_Switches}: list
+
+Value is the list of switches to specify a internal name for a shared library.
+
+@item @b{Library_Install_Name_Option}: single
+
+Value is the name of the option that needs to be used, concatenated with the
+path name of the library file, when linking a shared library.
+
+@item @b{Runtime_Library_Dir}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the path name of the directory where the
+runtime libraries are located.
+
+@item @b{Runtime_Source_Dir}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the path name of the directory where the
+sources of runtime libraries are located.
+
+@end itemize
+
+@end itemize
+
+@node Package Binder Attributes
+@subsubsection Package Binder Attributes
+
+@itemize @bullet
+
+@item @b{General}
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used when binding
+code of the language, if there is no applicable attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is either a language name or a source file name. Value is the list of
+switches to be used when binding code. Index is either the source file name
+of the executable to be bound or the language name of the code to be bound.
+
+@end itemize
+
+@item @b{Configuration - Binding}
+
+@itemize @bullet
+
+@item @b{Driver}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of the application to be used when
+binding code of the language.
+
+@item @b{Required_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of the required switches to be
+used when binding code of the language.
+
+@item @b{Prefix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is a prefix to be used for the binder exchange
+file name for the language. Used to have different binder exchange file names
+when binding different languages.
+
+@item @b{Objects_Path}: single,indexed, case-insensitive index
+
+Index is a language name. Value is the name of the environment variable that
+contains the path for the object directories.
+
+@item @b{Object_Path_File}: single,indexed, case-insensitive index
+
+Index is a language name. Value is the name of the environment variable. The
+value of the environment variable is the path name of a text file that
+contains the list of object directories.
+
+@end itemize
+
+@end itemize
+
+@node Package Builder Attributes
+@subsubsection Package Builder Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of builder switches to be used when
+building an executable of the language, if there is no applicable attribute
+Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is either a language name or a source file name. Value is the list of
+builder switches to be used when building an executable. Index is either the
+source file name of the executable to be built or its language name.
+
+@item @b{Global_Compilation_Switches}: list, optional index, indexed,
+                                       case-insensitive index
+
+Index is either a language name or a source file name. Value is the list of
+compilation switches to be used when building an executable. Index is either
+the source file name of the executable to be built or its language name.
+
+@item @b{Executable}: single, indexed, case-insensitive index
+
+Index is an executable source file name. Value is the simple file name of the
+executable to be built.
+
+@item @b{Executable_Suffix}: single
+
+Value is the extension of the file names of executable. When not specified,
+the extension is the default extension of executables on the platform.
+
+@item @b{Global_Configuration_Pragmas}: single
+
+Value is the file name of a configuration pragmas file that is specified to
+the Ada compiler when compiling any Ada source in the project tree.
+
+@item @b{Global_Config_File}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the file name of a configuration file that
+is specified to the compiler when compiling any source of the language in the
+project tree.
+
+@end itemize
+
+@node Package Check Attributes
+@subsubsection Package Check Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatcheck} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatcheck} for the source.
+
+@end itemize
+
+@node Package Clean Attributes
+@subsubsection Package Clean Attributes
+
+@itemize @bullet
+
+@item @b{Switches}: list
+
+Value is a list of switches to be used by the cleaning application.
+
+@item @b{Source_Artifact_Extensions}: list, indexed, case-insensitive index
+
+Index is a language names. Value is the list of extensions for file names
+derived from object file names that need to be cleaned in the object
+directory of the project.
+
+@item @b{Object_Artifact_Extensions}: list, indexed, case-insensitive index
+
+Index is a language names. Value is the list of extensions for file names
+derived from source file names that need to be cleaned in the object
+directory of the project.
+
+@end itemize
+
+@node Package Compiler Attributes
+@subsubsection Package Compiler Attributes
+
+@itemize @bullet
+
+@item @b{General}
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+the compiler for the language for a source of the project, if there is no
+applicable attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used when invoking the compiler for the source or for its language.
+
+@item @b{Local_Configuration_Pragmas}: single
+
+Value is the file name of a configuration pragmas file that is specified to
+the Ada compiler when compiling any Ada source in the project.
+
+@item @b{Local_Config_File}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the file name of a configuration file that
+is specified to the compiler when compiling any source of the language in the
+project.
+
+@end itemize
+
+@item @b{Configuration - Compiling}
+
+@itemize @bullet
+
+@item @b{Driver}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of the executable for the compiler
+of the language.
+
+@item @b{Language_Kind}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates the kind of the language, either file based
+or unit based. Only authorized case-insensitive values are "unit_based" and
+"file_based" (the default).
+
+@item @b{Dependency_Kind}: : single, indexed, case-insensitive index
+
+Index is a language name. Indicates how the dependencies are handled for the
+language. Only authorized case-insensitive values are "makefile", "ali_file",
+"ali_closure" or "none" (the default.
+
+@item @b{Required_Switches}: list, indexed, case-insensitive index
+
+Equivalent to attribute Leading_Required_Switches.
+
+@item @b{Leading_Required_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of the minimum switches to be used
+at the beginning of the command line when invoking the compiler for the
+language.
+
+@item @b{Trailing_Required_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of the minimum switches to be used
+at the end of the command line when invoking the compiler for the language.
+
+@item @b{PIC_Option}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used when
+compiling a source of the language when the project is a shared library
+project.
+
+@item @b{Path_Syntax}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the kind of path syntax to be used when
+invoking the compiler for the language. Only authorized case-insensitive
+values are "canonical" and "host" (the default).
+
+@item @b{Source_File_Switches}: single, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used just before
+the path name of the source to compile when invoking the compiler for a source
+of the language.
+
+@item @b{Object_File_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the extension of the object files created
+by the compiler of the language. When not specified, the extension is the
+default one for the platform.
+
+@item @b{Object_File_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used by the
+compiler of the language to specify the path name of the object file. When not
+specified, the switch used is "-o".
+
+@item @b{Multi_Unit_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used to compile
+a unit in a multi unit source of the language. The index of the unit in the
+source is concatenated with the last switches in the list.
+
+@item @b{Multi_Unit_Object_Separator}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the string to be used in the object file
+name before the index of the unit, when compiling a unit in a multi unit source
+of the language.
+
+@end itemize
+
+@item @b{Configuration - Mapping Files}
+
+@itemize @bullet
+
+@item @b{Mapping_File_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used to specify
+a mapping file when invoking the compiler for a source of the language.
+
+@item @b{Mapping_Spec_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the suffix to be used in a mapping file
+to indicate that the source is a spec.
+
+@item @b{Mapping_Body_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the suffix to be used in a mapping file
+to indicate that the source is a body.
+
+@end itemize
+
+@item @b{Configuration - Config Files}
+
+@itemize @bullet
+
+@item @b{Config_File_Switches}: list: single, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to specify to the
+compiler of the language a configuration file.
+
+@item @b{Config_Body_File_Name}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to a body of the language in a configuration
+file.
+
+@item @b{Config_Body_File_Name_Index}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to the body a unit in a multi unit source of the
+language in a configuration file.
+
+@item @b{Config_Body_File_Name_Pattern}: single, indexed,
+                                         case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration for all bodies of the languages in a configuration file.
+
+@item @b{Config_Spec_File_Name}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to a spec of the language in a configuration
+file.
+
+@item @b{Config_Spec_File_Name_Index}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration specific to the spec a unit in a multi unit source of the
+language in a configuration file.
+
+@item @b{Config_Spec_File_Name_Pattern}: single, indexed,
+                                         case-insensitive index
+
+Index is a language name. Value is the template to be used to indicate a
+configuration for all specs of the languages in a configuration file.
+
+@item @b{Config_File_Unique}: single, indexed, case-insensitive index
+
+Index is a language name. Indicates if there should be only one configuration
+file specified to the compiler of the language. Only authorized
+case-insensitive values are "true" and "false" (the default).
+
+@end itemize
+
+@item @b{Configuration - Dependencies}
+
+@itemize @bullet
+
+@item @b{Dependency_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to be used to specify
+to the compiler the dependency file when the dependency kind of the language is
+file based, and when Dependency_Driver is not specified for the language.
+
+@item @b{Dependency_Driver}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the name of the executable to be used to
+create the dependency file for a source of the language, followed by the
+required switches.
+
+@end itemize
+
+@item @b{Configuration - Search Paths}
+
+@itemize @bullet
+
+@item @b{Include_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to specify to the
+compiler of the language to indicate a directory to look for sources.
+
+@item @b{Include_Path}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of an environment variable that
+contains the path of all the directories that the compiler of the language
+may search for sources.
+
+@item @b{Include_Path_File}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the name of an environment variable the
+value of which is the path name of a text file that contains the directories
+that the compiler of the language may search for sources.
+
+@item @b{Object_Path_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is the list of switches to specify to the
+compiler of the language the name of a text file that contains the list of
+object directories. When this attribute is not declared, the text file is
+not created.
+
+@end itemize
+
+@end itemize
+
+@node Package Cross_Reference Attributes
+@subsubsection Package Cross_Reference Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatxref} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatxref} for the source.
+
+@end itemize
+
+@node Package Eliminate Attributes
+@subsubsection Package Eliminate Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatelim} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatelim} for the source.
+
+@end itemize
+
+@node Package Finder Attributes
+@subsubsection Package Finder Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatfind} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatfind} for the source.
+
+@end itemize
+
+@node Package gnatls Attributes
+@subsubsection Package gnatls Attributes
+
+@itemize @bullet
+
+@item @b{Switches}: list
+
+Value is a list of switches to be used when invoking @code{gnatls}.
+
+@end itemize
+
+@node Package gnatstub Attributes
+@subsubsection Package gnatstub Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatstub} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatstub} for the source.
+
+@end itemize
+
+@node Package IDE Attributes
+@subsubsection Package IDE Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed
+
+Index is the name of an external tool that the GNAT Programming System (GPS)
+is supporting. Value is a list of switches to use when invoking that tool.
+
+@item @b{Remote_Host}: single
+
+Value is a string that designates the remote host in a cross-compilation
+environment, to be used for remote compilation and debugging. This attribute
+should not be specified when running on the local machine.
+
+@item @b{Program_Host}: single
+
+Value is a string that specifies the name of IP address of the embedded target
+in a cross-compilation environment, on which the program should execute.
+
+@item @b{Communication_Protocol}: single
+
+Value is the name of the protocol to use to communicate with the target
+in a cross-compilation environment, for example @code{"wtx"} or
+@code{"vxworks"}.
+
+@item @b{Compiler_Command}: single, indexed, case-insensitive index
+
+Index is a language Name. Value is a string that denotes the command to be
+used to invoke the compiler. The value of @code{Compiler_Command ("Ada")} is
+expected to be compatible with @command{gnatmake}, in particular in
+the handling of switches.
+
+@item @b{Debugger_Command}: single
+
+Value is a string that specifies the name of the debugger to be used, such as
+gdb, powerpc-wrs-vxworks-gdb or gdb-4.
+
+@item @b{gnatlist}: single
+
+Value is a string that specifies the name of the @command{gnatls} utility
+to be used to retrieve information about the predefined path; for example,
+@code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
+
+@item @b{VCS_Kind}: single
+
+Value is a string used to specify the Version Control System (VCS) to be used
+for this project, for example CVS, RCS, ClearCase or Perforce.
+
+@item @b{VCS_File_Check}: single
+
+Value is a string that specifies the command used by the VCS to check
+the validity of a file, either when the user explicitly asks for a check,
+or as a sanity check before doing the check-in.
+
+@item @b{VCS_Log_Check}: single
+
+Value is a string that specifies the command used by the VCS to check
+the validity of a log file.
+
+@item @b{Documentation_Dir}: single
+
+Value is the directory used to generate the documentation of source code.
+
+@end itemize
+
+@node Package Install Attributes
+@subsubsection Package Install Attributes
+
+@itemize @bullet
+
+@item @b{Prefix}: single
+
+Value is the install destination directory.
+
+@item @b{Sources_Subdir}: single
+
+Value is the sources directory or subdirectory of Prefix.
+
+@item @b{Exec_Subdir}: single
+
+Value is the executables directory or subdirectory of Prefix.
+
+@item @b{Lib_Subdir}: single
+
+Value is library directory or subdirectory of Prefix.
+
+@item @b{Project_Subdir}: single
+
+Value is the project directory or subdirectory of Prefix.
+
+@item @b{Active}: single
+
+Indicates that the project is to be installed or not. Case-insensitive value
+"false" means that the project is not to be installed, all other values mean
+that the project is to be installed.
+
+@end itemize
+
+@node Package Linker Attributes
+@subsubsection Package Linker Attributes
+
+@itemize @bullet
+
+@item @b{General}
+
+@itemize @bullet
+
+@item @b{Required_Switches}: list
+
+Value is a list of switches that are required when invoking the linker to link
+an executable.
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches for the linker when
+linking an executable for a main source of the language, when there is no
+applicable Switches.
+
+@item @b{Leading_Switches}: list, optional index, indexed,
+                            case-insensitive index, others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used at the beginning of the command line when invoking the linker to
+build an executable for the source or for its language.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used when invoking the linker to build an executable for the source or
+for its language.
+
+@item @b{Trailing_Switches}: list, optional index, indexed,
+                             case-insensitive index, others allowed
+
+Index is a source file name or a language name. Value is the list of switches
+to be used at the end of the command line when invoking the linker to
+build an executable for the source or for its language. These switches may
+override the Required_Switches.
+
+@item @b{Linker_Options}: list
+
+Value is a list of switches/options that are to be added when linking an
+executable from a project importing the current project directly or indirectly.
+Linker_Options are not used when linking an executable from the current
+project.
+
+@item @b{Map_File_Option}: single
+
+Value is the switch to specify the map file name that the linker needs to
+create.
+
+@end itemize
+
+@item @b{Configuration - Linking}
+
+@itemize @bullet
+
+@item @b{Driver}: single
+
+Value is the name of the linker executable.
+
+@end itemize
+
+@item @b{Configuration - Response Files}
+
+@itemize @bullet
+
+@item @b{Max_Command_Line_Length}: single
+
+Value is the maximum number of character in the command line when invoking
+the linker to link an executable.
+
+@item @b{Response_File_Format}: single
+
+Indicates the kind of response file to create when the length of the linking
+command line is too large. Only authorized case-insensitive values are "none",
+"gnu", "object_list", "gcc_gnu", "gcc_option_list" and "gcc_object_list".
+
+@item @b{Response_File_Switches}: list
+
+Value is the list of switches to specify a response file to the linker.
+
+@end itemize
+
+@end itemize
+
+@node Package Metrics Attribute
+@subsubsection Package Metrics Attribute
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatmetric} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatmetric} for the source.
+
+@end itemize
+
+@node Package Naming Attributes
+@subsubsection Package Naming Attributes
+
+@itemize @bullet
+
+@item @b{Specification_Suffix}: single, indexed, case-insensitive index
+
+Equivalent to attribute Spec_Suffix.
+
+@item @b{Spec_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the extension of file names for specs of
+the language.
+
+@item @b{Implementation_Suffix}: single, indexed, case-insensitive index
+
+Equivalent to attribute Body_Suffix.
+
+@item @b{Body_Suffix}: single, indexed, case-insensitive index
+
+Index is a language name. Value is the extension of file names for bodies of
+the language.
+
+@item @b{Separate_Suffix}: single
+
+Value is the extension of file names for subunits of Ada.
+
+@item @b{Casing}: single
+
+Indicates the casing of sources of the Ada language. Only authorized
+case-insensitive values are "lowercase", "uppercase" and "mixedcase".
+
+@item @b{Dot_Replacement}: single
+
+Value is the string that replace the dot of unit names in the source file names
+of the Ada language.
+
+@item @b{Specification}: single, optional index, indexed,
+                         case-insensitive index
+
+Equivalent to attribute Spec.
+
+@item @b{Spec}: single, optional index, indexed, case-insensitive index
+
+Index is a unit name. Value is the file name of the spec of the unit.
+
+@item @b{Implementation}: single, optional index, indexed,
+                          case-insensitive index
+
+Equivalent to attribute Body.
+
+@item @b{Body}: single, optional index, indexed, case-insensitive index
+
+Index is a unit name. Value is the file name of the body of the unit.
+
+@item @b{Specification_Exceptions}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of specs for the language that do not
+necessarily follow the naming scheme for the language and that may or may not
+be found in the source directories of the project.
+
+@item @b{Implementation_Exceptions}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of bodies for the language that do not
+necessarily follow the naming scheme for the language and that may or may not
+be found in the source directories of the project.
+
+@end itemize
+
+@node Package Pretty_Printer Attributes
+@subsubsection Package Pretty_Printer Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatpp} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatpp} for the source.
+
+@end itemize
+
+@node Package Remote Attributes
+@subsubsection Package Remote Attributes
+
+@itemize @bullet
+
+@item @b{Build_Slaves}: list
+
+Value is the list of machine names that are to be used in distributed
+compilation.
+
+@item @b{Root_Dir}: single
+
+Value is the root directory used by the slave machines.
+
+@end itemize
+
+@node Package Stack Attributes
+@subsubsection Package Stack Attributes
+
+@itemize @bullet
+
+@item @b{Switches}: list
+
+Value is the list of switches to be used when invoking @code{gnatstack}.
+
+@end itemize
+
+@node Package Synchronize Attributes
+@subsubsection Package Synchronize Attributes
+
+@itemize @bullet
+
+@item @b{Default_Switches}: list, indexed, case-insensitive index
+
+Index is a language name. Value is a list of switches to be used when invoking
+@code{gnatsync} for a source of the language, if there is no applicable
+attribute Switches.
+
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
+                    others allowed
+
+Index is a source file name. Value is the list of switches to be used when
+invoking @code{gnatsync} for the source.
+
+@end itemize
+

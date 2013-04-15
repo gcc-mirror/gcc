@@ -409,6 +409,12 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		}
 
 	      STMT_VINFO_VECTYPE (stmt_info) = vectype;
+
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
+		}
             }
 
 	  /* The vectorization factor is according to the smallest
@@ -3220,30 +3226,36 @@ get_initial_def_for_induction (gimple iv_phi)
 	}
 
       vec_alloc (v, nunits);
+      bool constant_p = is_gimple_min_invariant (new_name);
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
       for (i = 1; i < nunits; i++)
 	{
 	  /* Create: new_name_i = new_name + step_expr  */
 	  enum tree_code code = POINTER_TYPE_P (scalar_type)
 				? POINTER_PLUS_EXPR : PLUS_EXPR;
-	  init_stmt = gimple_build_assign_with_ops (code, new_var,
-						    new_name, step_expr);
-	  new_name = make_ssa_name (new_var, init_stmt);
-	  gimple_assign_set_lhs (init_stmt, new_name);
-
-	  new_bb = gsi_insert_on_edge_immediate (pe, init_stmt);
-	  gcc_assert (!new_bb);
-
-	  if (dump_enabled_p ())
+	  new_name = fold_build2 (code, scalar_type, new_name, step_expr);
+	  if (!is_gimple_min_invariant (new_name))
 	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "created new init_stmt: ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, init_stmt, 0);
+	      init_stmt = gimple_build_assign (new_var, new_name);
+	      new_name = make_ssa_name (new_var, init_stmt);
+	      gimple_assign_set_lhs (init_stmt, new_name);
+	      new_bb = gsi_insert_on_edge_immediate (pe, init_stmt);
+	      gcc_assert (!new_bb);
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "created new init_stmt: ");
+		  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, init_stmt, 0);
+		}
+	      constant_p = false;
 	    }
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_name);
 	}
       /* Create a vector from [new_name_0, new_name_1, ..., new_name_nunits-1]  */
-      new_vec = build_constructor (vectype, v);
+      if (constant_p)
+	new_vec = build_vector_from_ctor (vectype, v);
+      else
+	new_vec = build_constructor (vectype, v);
       vec_init = vect_init_vector (iv_phi, new_vec, vectype, NULL);
     }
 
@@ -5755,7 +5767,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   slpeel_make_loop_iterate_ntimes (loop, ratio);
 
   /* Reduce loop iterations by the vectorization factor.  */
-  scale_loop_profile (loop, RDIV (REG_BR_PROB_BASE , vectorization_factor),
+  scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vectorization_factor),
 		      expected_iterations / vectorization_factor);
   loop->nb_iterations_upper_bound
     = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (vectorization_factor),

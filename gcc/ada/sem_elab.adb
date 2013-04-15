@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2021,9 +2021,8 @@ package body Sem_Elab is
 
          elsif not Debug_Flag_Dot_UU
            and then Nkind (N) = N_Attribute_Reference
-           and then (Attribute_Name (N) = Name_Access
-                       or else
-                     Attribute_Name (N) = Name_Unrestricted_Access)
+           and then Nam_In (Attribute_Name (N), Name_Access,
+                                                Name_Unrestricted_Access)
            and then Is_Entity_Name (Prefix (N))
            and then Is_Subprogram (Entity (Prefix (N)))
          then
@@ -2258,7 +2257,7 @@ package body Sem_Elab is
            --  in this case, due to the out of order handling in this case.
 
            and then (Nkind (Original_Node (N)) /= N_Function_Call
-                      or else not In_Assertion (Original_Node (N)))
+                      or else not In_Assertion_Expression (Original_Node (N)))
          then
             if Inst_Case then
                Error_Msg_NE
@@ -3339,9 +3338,11 @@ package body Sem_Elab is
             if Nkind (Item) = N_Pragma
               and then Pragma_Name (Item) = Name_Elaborate_All
             then
-               --  Return if some previous error on the pragma itself
+               --  Return if some previous error on the pragma itself. The
+               --  pragma may be unanalyzed, because of a previous error, or
+               --  if it is the context of a subunit, inherited by its parent.
 
-               if Error_Posted (Item) then
+               if Error_Posted (Item) or else not Analyzed (Item) then
                   return;
                end if;
 

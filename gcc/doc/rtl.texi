@@ -3099,17 +3099,10 @@ side-effects.
 
 @findex sequence
 @item (sequence [@var{insns} @dots{}])
-Represents a sequence of insns.  Each of the @var{insns} that appears
-in the vector is suitable for appearing in the chain of insns, so it
-must be an @code{insn}, @code{jump_insn}, @code{call_insn},
-@code{code_label}, @code{barrier} or @code{note}.
-
-A @code{sequence} RTX is never placed in an actual insn during RTL
-generation.  It represents the sequence of insns that result from a
-@code{define_expand} @emph{before} those insns are passed to
-@code{emit_insn} to insert them in the chain of insns.  When actually
-inserted, the individual sub-insns are separated out and the
-@code{sequence} is forgotten.
+Represents a sequence of insns.  If a @code{sequence} appears in the
+chain of insns, then each of the @var{insns} that appears in the sequence
+must be suitable for appearing in the chain of insns, i.e. must satisfy
+the @code{INSN_P} predicate.
 
 After delay-slot scheduling is completed, an insn and all the insns that
 reside in its delay slots are grouped together into a @code{sequence}.
@@ -3123,6 +3116,19 @@ the effect of the insns in the delay slots.  In such a case,
 the branch and should be executed only if the branch is taken; otherwise
 the insn should be executed only if the branch is not taken.
 @xref{Delay Slots}.
+
+Some back ends also use @code{sequence} objects for purposes other than
+delay-slot groups.  This is not supported in the common parts of the
+compiler, which treat such sequences as delay-slot groups.
+
+DWARF2 Call Frame Address (CFA) adjustments are sometimes also expressed
+using @code{sequence} objects as the value of a @code{RTX_FRAME_RELATED_P}
+note.  This only happens if the CFA adjustments cannot be easily derived
+from the pattern of the instruction to which the note is attached.  In
+such cases, the value of the note is used instead of best-guesing the
+semantics of the instruction.  The back end can attach notes containing
+a @code{sequence} of @code{set} patterns that express the effect of the
+parent instruction.
 @end table
 
 These expression codes appear in place of a side effect, as the body of
@@ -3602,28 +3608,8 @@ of debugging information.
 @item NOTE_INSN_EH_REGION_BEG
 @itemx NOTE_INSN_EH_REGION_END
 These types of notes indicate the position of the beginning and end of a
-level of scoping for exception handling.  @code{NOTE_BLOCK_NUMBER}
-identifies which @code{CODE_LABEL} or @code{note} of type
-@code{NOTE_INSN_DELETED_LABEL} is associated with the given region.
-
-@findex NOTE_INSN_LOOP_BEG
-@findex NOTE_INSN_LOOP_END
-@item NOTE_INSN_LOOP_BEG
-@itemx NOTE_INSN_LOOP_END
-These types of notes indicate the position of the beginning and end
-of a @code{while} or @code{for} loop.  They enable the loop optimizer
-to find loops quickly.
-
-@findex NOTE_INSN_LOOP_CONT
-@item NOTE_INSN_LOOP_CONT
-Appears at the place in a loop that @code{continue} statements jump to.
-
-@findex NOTE_INSN_LOOP_VTOP
-@item NOTE_INSN_LOOP_VTOP
-This note indicates the place in a loop where the exit test begins for
-those loops in which the exit test has been duplicated.  This position
-becomes another virtual start of the loop when considering loop
-invariants.
+level of scoping for exception handling.  @code{NOTE_EH_HANDLER}
+identifies which region is associated with these notes.
 
 @findex NOTE_INSN_FUNCTION_BEG
 @item NOTE_INSN_FUNCTION_BEG

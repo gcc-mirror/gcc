@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,6 +110,95 @@ package body Aspects is
       end if;
    end Aspect_Specifications;
 
+   -----------------
+   -- Find_Aspect --
+   -----------------
+
+   function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id is
+      Decl  : Node_Id;
+      Item  : Node_Id;
+      Owner : Entity_Id;
+      Spec  : Node_Id;
+
+   begin
+      Owner := Id;
+
+      --  Handle various cases of base or inherited aspects for types
+
+      if Is_Type (Id) then
+         if Base_Aspect (A) then
+            Owner := Base_Type (Owner);
+         end if;
+
+         if Is_Class_Wide_Type (Owner) and then Inherited_Aspect (A) then
+            Owner := Root_Type (Owner);
+         end if;
+      end if;
+
+      --  Search the representation items for the desired aspect
+
+      Item := First_Rep_Item (Owner);
+      while Present (Item) loop
+         if Nkind (Item) = N_Aspect_Specification
+           and then Get_Aspect_Id (Chars (Identifier (Item))) = A
+         then
+            return Item;
+         end if;
+
+         Next_Rep_Item (Item);
+      end loop;
+
+      --  Note that not all aspects are added to the chain of representation
+      --  items. In such cases, search the list of aspect specifications. First
+      --  find the declaration node where the aspects reside. This is usually
+      --  the parent or the parent of the parent.
+
+      Decl := Parent (Owner);
+      if not Permits_Aspect_Specifications (Decl) then
+         Decl := Parent (Decl);
+      end if;
+
+      --  Search the list of aspect specifications for the desired aspect
+
+      if Permits_Aspect_Specifications (Decl) then
+         Spec := First (Aspect_Specifications (Decl));
+         while Present (Spec) loop
+            if Get_Aspect_Id (Chars (Identifier (Spec))) = A then
+               return Spec;
+            end if;
+
+            Next (Spec);
+         end loop;
+      end if;
+
+      --  The entity does not carry any aspects or the desired aspect was not
+      --  found.
+
+      return Empty;
+   end Find_Aspect;
+
+   --------------------------
+   -- Find_Value_Of_Aspect --
+   --------------------------
+
+   function Find_Value_Of_Aspect
+     (Id : Entity_Id;
+      A  : Aspect_Id) return Node_Id
+   is
+      Spec : constant Node_Id := Find_Aspect (Id, A);
+
+   begin
+      if Present (Spec) then
+         if A = Aspect_Default_Iterator then
+            return Expression (Aspect_Rep_Item (Spec));
+         else
+            return Expression (Spec);
+         end if;
+      end if;
+
+      return Empty;
+   end Find_Value_Of_Aspect;
+
    -------------------
    -- Get_Aspect_Id --
    -------------------
@@ -119,55 +208,14 @@ package body Aspects is
       return Aspect_Id_Hash_Table.Get (Name);
    end Get_Aspect_Id;
 
-   -----------------
-   -- Find_Aspect --
-   -----------------
+   ----------------
+   -- Has_Aspect --
+   ----------------
 
-   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id is
-      Ritem : Node_Id;
-      Typ   : Entity_Id;
-
+   function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean is
    begin
-
-      --  If the aspect is an inherited one and the entity is a class-wide
-      --  type, use the aspect of the specific type. If the type is a base
-      --  aspect, examine the rep. items of the base type.
-
-      if Is_Type (Ent) then
-         if Base_Aspect (A) then
-            Typ := Base_Type (Ent);
-         else
-            Typ := Ent;
-         end if;
-
-         if Is_Class_Wide_Type (Typ)
-           and then Inherited_Aspect (A)
-         then
-            Ritem := First_Rep_Item (Etype (Typ));
-         else
-            Ritem := First_Rep_Item (Typ);
-         end if;
-
-      else
-         Ritem := First_Rep_Item (Ent);
-      end if;
-
-      while Present (Ritem) loop
-         if Nkind (Ritem) = N_Aspect_Specification
-           and then Get_Aspect_Id (Chars (Identifier (Ritem))) = A
-         then
-            if A = Aspect_Default_Iterator then
-               return Expression (Aspect_Rep_Item (Ritem));
-            else
-               return Expression (Ritem);
-            end if;
-         end if;
-
-         Next_Rep_Item (Ritem);
-      end loop;
-
-      return Empty;
-   end Find_Aspect;
+      return Present (Find_Aspect (Id, A));
+   end Has_Aspect;
 
    ------------------
    -- Move_Aspects --
@@ -220,6 +268,7 @@ package body Aspects is
       N_Subprogram_Body                        => True,
       N_Subprogram_Declaration                 => True,
       N_Subprogram_Renaming_Declaration        => True,
+      N_Subprogram_Body_Stub                   => True,
       N_Subtype_Declaration                    => True,
       N_Task_Body                              => True,
       N_Task_Type_Declaration                  => True,
@@ -259,6 +308,7 @@ package body Aspects is
     Aspect_Default_Component_Value      => Aspect_Default_Component_Value,
     Aspect_Default_Iterator             => Aspect_Default_Iterator,
     Aspect_Default_Value                => Aspect_Default_Value,
+    Aspect_Depends                      => Aspect_Depends,
     Aspect_Dimension                    => Aspect_Dimension,
     Aspect_Dimension_System             => Aspect_Dimension_System,
     Aspect_Discard_Names                => Aspect_Discard_Names,
@@ -269,6 +319,7 @@ package body Aspects is
     Aspect_External_Name                => Aspect_External_Name,
     Aspect_External_Tag                 => Aspect_External_Tag,
     Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,
+    Aspect_Ghost                        => Aspect_Ghost,
     Aspect_Global                       => Aspect_Global,
     Aspect_Implicit_Dereference         => Aspect_Implicit_Dereference,
     Aspect_Import                       => Aspect_Import,

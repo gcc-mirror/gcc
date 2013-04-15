@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1997-2010, AdaCore                     --
+--                     Copyright (C) 1997-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -729,7 +729,7 @@ package GNAT.Spitbol.Patterns is
    function "*" (P : PString; Var : VString_Var)  return Pattern;
    function "*" (P : PChar;   Var : VString_Var)  return Pattern;
    --  Matches P, and if the match succeeds, assigns the matched substring
-   --  to the given VString variable S. This assignment happens as soon as
+   --  to the given VString variable Var. This assignment happens as soon as
    --  the substring is matched, and if the pattern P1 is matched more than
    --  once during the course of the match, then the assignment will occur
    --  more than once.

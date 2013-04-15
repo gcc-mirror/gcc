@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,6 +67,24 @@ package body Restrict is
    No_Specification_Of_Aspect_Set : Boolean := False;
    --  Set True if any entry of No_Specifcation_Of_Aspects has been set True.
    --  Once set True, this is never turned off again.
+
+   No_Use_Of_Attribute : array (Attribute_Id) of Source_Ptr :=
+                           (others => No_Location);
+
+   No_Use_Of_Attribute_Warning : array (Attribute_Id) of Boolean :=
+                                   (others => False);
+
+   No_Use_Of_Attribute_Set : Boolean := False;
+   --  Indicates that No_Use_Of_Attribute was set at least once
+
+   No_Use_Of_Pragma : array (Pragma_Id) of Source_Ptr :=
+                        (others => No_Location);
+
+   No_Use_Of_Pragma_Warning : array (Pragma_Id) of Boolean :=
+                                (others => False);
+
+   No_Use_Of_Pragma_Set : Boolean := False;
+   --  Indicates that No_Use_Of_Pragma was set at least once
 
    -----------------------
    -- Local Subprograms --
@@ -287,6 +305,72 @@ package body Restrict is
       Check_Restriction (No_Implicit_Heap_Allocations, N);
    end Check_No_Implicit_Heap_Alloc;
 
+   -------------------------------------------
+   -- Check_Restriction_No_Use_Of_Attribute --
+   --------------------------------------------
+
+   procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id) is
+      Id   : constant Name_Id      := Chars (N);
+      A_Id : constant Attribute_Id := Get_Attribute_Id (Id);
+
+   begin
+      --  Ignore call if node N is not in the main source unit, since we only
+      --  give messages for the main unit. This avoids giving messages for
+      --  aspects that are specified in withed units.
+
+      if not In_Extended_Main_Source_Unit (N) then
+         return;
+      end if;
+
+      --  If nothing set, nothing to check
+
+      if not No_Use_Of_Attribute_Set then
+         return;
+      end if;
+
+      Error_Msg_Sloc := No_Use_Of_Attribute (A_Id);
+
+      if Error_Msg_Sloc /= No_Location then
+         Error_Msg_Node_1 := N;
+         Error_Msg_Warn := No_Use_Of_Attribute_Warning (A_Id);
+         Error_Msg_N
+           ("<violation of restriction `No_Use_Of_Attribute '='> &`#", N);
+      end if;
+   end Check_Restriction_No_Use_Of_Attribute;
+
+   ----------------------------------------
+   -- Check_Restriction_No_Use_Of_Pragma --
+   ----------------------------------------
+
+   procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id) is
+      Id   : constant Node_Id   := Pragma_Identifier (N);
+      P_Id : constant Pragma_Id := Get_Pragma_Id (Chars (Id));
+
+   begin
+      --  Ignore call if node N is not in the main source unit, since we only
+      --  give messages for the main unit. This avoids giving messages for
+      --  aspects that are specified in withed units.
+
+      if not In_Extended_Main_Source_Unit (N) then
+         return;
+      end if;
+
+      --  If nothing set, nothing to check
+
+      if not No_Use_Of_Pragma_Set then
+         return;
+      end if;
+
+      Error_Msg_Sloc := No_Use_Of_Pragma (P_Id);
+
+      if Error_Msg_Sloc /= No_Location then
+         Error_Msg_Node_1 := Id;
+         Error_Msg_Warn := No_Use_Of_Pragma_Warning (P_Id);
+         Error_Msg_N
+           ("<violation of restriction `No_Use_Of_Pragma '='> &`#", Id);
+      end if;
+   end Check_Restriction_No_Use_Of_Pragma;
+
    -----------------------------------
    -- Check_Obsolescent_2005_Entity --
    -----------------------------------
@@ -294,6 +378,10 @@ package body Restrict is
    procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id) is
       function Chars_Is (E : Entity_Id; S : String) return Boolean;
       --  Return True iff Chars (E) matches S (given in lower case)
+
+      --------------
+      -- Chars_Is --
+      --------------
 
       function Chars_Is (E : Entity_Id; S : String) return Boolean is
          Nam : constant Name_Id := Chars (E);
@@ -1270,6 +1358,44 @@ package body Restrict is
 
       No_Specification_Of_Aspect_Set := True;
    end Set_Restriction_No_Specification_Of_Aspect;
+
+   -----------------------------------------
+   -- Set_Restriction_No_Use_Of_Attribute --
+   -----------------------------------------
+
+   procedure Set_Restriction_No_Use_Of_Attribute
+     (N       : Node_Id;
+      Warning : Boolean)
+   is
+      A_Id : constant Attribute_Id := Get_Attribute_Id (Chars (N));
+
+   begin
+      No_Use_Of_Attribute_Set := True;
+      No_Use_Of_Attribute (A_Id) := Sloc (N);
+
+      if Warning = False then
+         No_Use_Of_Attribute_Warning (A_Id) := False;
+      end if;
+   end Set_Restriction_No_Use_Of_Attribute;
+
+   --------------------------------------
+   -- Set_Restriction_No_Use_Of_Pragma --
+   --------------------------------------
+
+   procedure Set_Restriction_No_Use_Of_Pragma
+     (N       : Node_Id;
+      Warning : Boolean)
+   is
+      A_Id : constant Pragma_Id := Get_Pragma_Id (Chars (N));
+
+   begin
+      No_Use_Of_Pragma_Set := True;
+      No_Use_Of_Pragma (A_Id) := Sloc (N);
+
+      if Warning = False then
+         No_Use_Of_Pragma_Warning (A_Id) := False;
+      end if;
+   end Set_Restriction_No_Use_Of_Pragma;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

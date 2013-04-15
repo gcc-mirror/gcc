@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,12 +162,11 @@ package body Exp_Ch2 is
          --  lvalue references in the arguments.
 
          and then not (Nkind (Parent (N)) = N_Attribute_Reference
-                         and then
-                           (Attribute_Name (Parent (N)) = Name_Asm_Input
-                              or else
-                            Attribute_Name (Parent (N)) = Name_Asm_Output
-                              or else
-                            Prefix (Parent (N)) = N))
+                        and then
+                          (Nam_In (Attribute_Name (Parent (N)),
+                                   Name_Asm_Input,
+                                   Name_Asm_Output)
+                            or else Prefix (Parent (N)) = N))
 
       then
          --  Case of Current_Value is a compile time known value

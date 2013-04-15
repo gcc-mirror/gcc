@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -387,6 +387,9 @@ package body Expander is
 
                   when N_Raise_Constraint_Error =>
                      Expand_N_Raise_Constraint_Error (N);
+
+                  when N_Raise_Expression =>
+                     Expand_N_Raise_Expression (N);
 
                   when N_Raise_Program_Error =>
                      Expand_N_Raise_Program_Error (N);

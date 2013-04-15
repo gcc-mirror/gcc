@@ -114,9 +114,6 @@ eni_weights eni_time_weights;
 static tree declare_return_variable (copy_body_data *, tree, tree, basic_block);
 static void remap_block (tree *, copy_body_data *);
 static void copy_bind_expr (tree *, int *, copy_body_data *);
-static tree mark_local_for_remap_r (tree *, int *, void *);
-static void unsave_expr_1 (tree);
-static tree unsave_r (tree *, int *, void *);
 static void declare_inline_vars (tree, tree);
 static void remap_save_expr (tree *, void *, int *);
 static void prepend_lexical_block (tree current_block, tree new_block);
@@ -1521,10 +1518,12 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
      basic_block_info automatically.  */
   copy_basic_block = create_basic_block (NULL, (void *) 0,
                                          (basic_block) prev->aux);
+  /* Update to use apply_probability().  */
   copy_basic_block->count = bb->count * count_scale / REG_BR_PROB_BASE;
 
   /* We are going to rebuild frequencies from scratch.  These values
      have just small importance to drive canonicalize_loop_headers.  */
+  /* Update to use EDGE_FREQUENCY.  */
   freq = ((gcov_type)bb->frequency * frequency_scale / REG_BR_PROB_BASE);
 
   /* We recompute frequencies after inlining, so this is quite safe.  */
@@ -1890,6 +1889,7 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR)
 	  flags |= EDGE_FALLTHRU;
 	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
+        /* Update to use apply_probability().  */
 	new_edge->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
 	new_edge->probability = old_edge->probability;
       }
@@ -2060,6 +2060,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
   struct function *src_cfun = DECL_STRUCT_FUNCTION (callee_fndecl);
   gcov_type count_scale;
 
+  /* Update to use GCOV_COMPUTE_SCALE.  */
   if (ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count)
     count_scale = (REG_BR_PROB_BASE * count
 		   / ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count);
@@ -2207,6 +2208,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   int incoming_frequency = 0;
   gcov_type incoming_count = 0;
 
+  /* Update to use GCOV_COMPUTE_SCALE.  */
   if (ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count)
     count_scale = (REG_BR_PROB_BASE * count
 		   / ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count);
@@ -2231,7 +2233,9 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 	    incoming_frequency += EDGE_FREQUENCY (e);
 	    incoming_count += e->count;
 	  }
+      /* Update to use apply_probability().  */
       incoming_count = incoming_count * count_scale / REG_BR_PROB_BASE;
+      /* Update to use EDGE_FREQUENCY.  */
       incoming_frequency
 	= incoming_frequency * frequency_scale / REG_BR_PROB_BASE;
       ENTRY_BLOCK_PTR->count = incoming_count;
@@ -4051,6 +4055,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
      a self-referential call; if we're calling ourselves, we need to
      duplicate our body before altering anything.  */
   copy_body (id, bb->count,
+             /* Update to use GCOV_COMPUTE_SCALE.  */
   	     cg_edge->frequency * REG_BR_PROB_BASE / CGRAPH_FREQ_BASE,
 	     bb, return_block, NULL, NULL);
 
@@ -4463,137 +4468,6 @@ remap_save_expr (tree *tp, void *st_, int *walk_subtrees)
 
   /* Replace this SAVE_EXPR with the copy.  */
   *tp = t;
-}
-
-/* Called via walk_tree.  If *TP points to a DECL_STMT for a local label,
-   copies the declaration and enters it in the splay_tree in DATA (which is
-   really an `copy_body_data *').  */
-
-static tree
-mark_local_for_remap_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-			void *data)
-{
-  copy_body_data *id = (copy_body_data *) data;
-
-  /* Don't walk into types.  */
-  if (TYPE_P (*tp))
-    *walk_subtrees = 0;
-
-  else if (TREE_CODE (*tp) == LABEL_EXPR)
-    {
-      tree decl = TREE_OPERAND (*tp, 0);
-
-      /* Copy the decl and remember the copy.  */
-      insert_decl_map (id, decl, id->copy_decl (decl, id));
-    }
-
-  return NULL_TREE;
-}
-
-/* Perform any modifications to EXPR required when it is unsaved.  Does
-   not recurse into EXPR's subtrees.  */
-
-static void
-unsave_expr_1 (tree expr)
-{
-  switch (TREE_CODE (expr))
-    {
-    case TARGET_EXPR:
-      /* Don't mess with a TARGET_EXPR that hasn't been expanded.
-         It's OK for this to happen if it was part of a subtree that
-         isn't immediately expanded, such as operand 2 of another
-         TARGET_EXPR.  */
-      if (TREE_OPERAND (expr, 1))
-	break;
-
-      TREE_OPERAND (expr, 1) = TREE_OPERAND (expr, 3);
-      TREE_OPERAND (expr, 3) = NULL_TREE;
-      break;
-
-    default:
-      break;
-    }
-}
-
-/* Called via walk_tree when an expression is unsaved.  Using the
-   splay_tree pointed to by ST (which is really a `splay_tree'),
-   remaps all local declarations to appropriate replacements.  */
-
-static tree
-unsave_r (tree *tp, int *walk_subtrees, void *data)
-{
-  copy_body_data *id = (copy_body_data *) data;
-  struct pointer_map_t *st = id->decl_map;
-  tree *n;
-
-  /* Only a local declaration (variable or label).  */
-  if ((TREE_CODE (*tp) == VAR_DECL && !TREE_STATIC (*tp))
-      || TREE_CODE (*tp) == LABEL_DECL)
-    {
-      /* Lookup the declaration.  */
-      n = (tree *) pointer_map_contains (st, *tp);
-
-      /* If it's there, remap it.  */
-      if (n)
-	*tp = *n;
-    }
-
-  else if (TREE_CODE (*tp) == STATEMENT_LIST)
-    gcc_unreachable ();
-  else if (TREE_CODE (*tp) == BIND_EXPR)
-    copy_bind_expr (tp, walk_subtrees, id);
-  else if (TREE_CODE (*tp) == SAVE_EXPR
-	   || TREE_CODE (*tp) == TARGET_EXPR)
-    remap_save_expr (tp, st, walk_subtrees);
-  else
-    {
-      copy_tree_r (tp, walk_subtrees, NULL);
-
-      /* Do whatever unsaving is required.  */
-      unsave_expr_1 (*tp);
-    }
-
-  /* Keep iterating.  */
-  return NULL_TREE;
-}
-
-/* Copies everything in EXPR and replaces variables, labels
-   and SAVE_EXPRs local to EXPR.  */
-
-tree
-unsave_expr_now (tree expr)
-{
-  copy_body_data id;
-
-  /* There's nothing to do for NULL_TREE.  */
-  if (expr == 0)
-    return expr;
-
-  /* Set up ID.  */
-  memset (&id, 0, sizeof (id));
-  id.src_fn = current_function_decl;
-  id.dst_fn = current_function_decl;
-  id.decl_map = pointer_map_create ();
-  id.debug_map = NULL;
-
-  id.copy_decl = copy_decl_no_change;
-  id.transform_call_graph_edges = CB_CGE_DUPLICATE;
-  id.transform_new_cfg = false;
-  id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = NULL;
-
-  /* Walk the tree once to find local labels.  */
-  walk_tree_without_duplicates (&expr, mark_local_for_remap_r, &id);
-
-  /* Walk the tree again, copying, remapping, and unsaving.  */
-  walk_tree (&expr, unsave_r, &id, NULL);
-
-  /* Clean up.  */
-  pointer_map_destroy (id.decl_map);
-  if (id.debug_map)
-    pointer_map_destroy (id.debug_map);
-
-  return expr;
 }
 
 /* Called via walk_gimple_seq.  If *GSIP points to a GIMPLE_LABEL for a local

@@ -2408,10 +2408,12 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
 /* Finish an expression of the form CODE EXPR.  */
 
 tree
-finish_unary_op_expr (location_t loc, enum tree_code code, tree expr)
+finish_unary_op_expr (location_t loc, enum tree_code code, tree expr,
+		      tsubst_flags_t complain)
 {
-  tree result = build_x_unary_op (loc, code, expr, tf_warning_or_error);
-  if (TREE_OVERFLOW_P (result) && !TREE_OVERFLOW_P (expr))
+  tree result = build_x_unary_op (loc, code, expr, complain);
+  if ((complain & tf_warning)
+      && TREE_OVERFLOW_P (result) && !TREE_OVERFLOW_P (expr))
     overflow_warning (input_location, result);
 
   return result;
@@ -9114,16 +9116,14 @@ lambda_function (tree lambda)
 tree
 lambda_capture_field_type (tree expr)
 {
-  tree type;
-  if (!TREE_TYPE (expr) || WILDCARD_TYPE_P (TREE_TYPE (expr)))
+  tree type = non_reference (unlowered_expr_type (expr));
+  if (!type || WILDCARD_TYPE_P (type))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
-  else
-    type = non_reference (unlowered_expr_type (expr));
   return type;
 }
 
@@ -9324,7 +9324,7 @@ lambda_proxy_type (tree ref)
   if (REFERENCE_REF_P (ref))
     ref = TREE_OPERAND (ref, 0);
   type = TREE_TYPE (ref);
-  if (type && !WILDCARD_TYPE_P (type))
+  if (type && !WILDCARD_TYPE_P (non_reference (type)))
     return type;
   type = cxx_make_type (DECLTYPE_TYPE);
   DECLTYPE_TYPE_EXPR (type) = ref;

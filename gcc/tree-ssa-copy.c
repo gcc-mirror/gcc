@@ -163,7 +163,7 @@ replace_exp_1 (use_operand_p op_p, tree val,
   if (TREE_CODE (val) == SSA_NAME)
     SET_USE (op_p, val);
   else
-    SET_USE (op_p, unsave_expr_now (val));
+    SET_USE (op_p, unshare_expr (val));
 }
 
 
@@ -214,7 +214,7 @@ propagate_tree_value (tree *op_p, tree val)
   if (TREE_CODE (val) == SSA_NAME)
     *op_p = val;
   else
-    *op_p = unsave_expr_now (val);
+    *op_p = unshare_expr (val);
 }
 
 
@@ -844,7 +844,6 @@ struct gimple_opt_pass pass_copy_prop =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_cleanup_cfg
-    | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_update_ssa			/* todo_flags_finish */
  }

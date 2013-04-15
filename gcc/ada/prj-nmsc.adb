@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3155,16 +3155,20 @@ package body Prj.Nmsc is
             end if;
 
             if not Dir_Exists then
+               if Directories_Must_Exist_In_Projects then
 
-               --  Get the absolute name of the library directory that
-               --  does not exist, to report an error.
+                  --  Get the absolute name of the library directory that does
+                  --  not exist, to report an error.
 
-               Err_Vars.Error_Msg_File_1 :=
-                 File_Name_Type (Project.Library_Dir.Display_Name);
-               Error_Msg
-                 (Data.Flags,
-                  "library directory { does not exist",
-                  Lib_Dir.Location, Project);
+                  Err_Vars.Error_Msg_File_1 :=
+                    File_Name_Type (Project.Library_Dir.Display_Name);
+                  Error_Msg
+                    (Data.Flags,
+                     "library directory { does not exist",
+                     Lib_Dir.Location, Project);
+               end if;
+
+               Project.Library_Dir := No_Path_Information;
 
             --  Checks for object/source directories
 
@@ -3208,8 +3212,8 @@ package body Prj.Nmsc is
                              File_Name_Type (Dir_Elem.Value);
                            Error_Msg
                              (Data.Flags,
-                              "library directory cannot be the same " &
-                              "as source directory {",
+                              "library directory cannot be the same "
+                              & "as source directory {",
                               Lib_Dir.Location, Project);
                            OK := False;
                            exit;
@@ -3243,8 +3247,8 @@ package body Prj.Nmsc is
 
                                     Error_Msg
                                       (Data.Flags,
-                                       "library directory cannot be the same" &
-                                       " as source directory { of project %%",
+                                       "library directory cannot be the same "
+                                       & "as source directory { of project %%",
                                        Lib_Dir.Location, Project);
                                     OK := False;
                                     exit Project_Loop;
@@ -5022,9 +5026,8 @@ package body Prj.Nmsc is
       function Is_Reserved (Name : Name_Id) return Boolean is
       begin
          if Get_Name_Table_Byte (Name) /= 0
-           and then Name /= Name_Project
-           and then Name /= Name_Extends
-           and then Name /= Name_External
+           and then
+             not Nam_In (Name, Name_Project, Name_Extends, Name_External)
            and then Name not in Ada_2005_Reserved_Words
          then
             Unit := No_Name;
@@ -5408,15 +5411,20 @@ package body Prj.Nmsc is
                Externally_Built => Project.Externally_Built);
 
             if not Dir_Exists and then not Project.Externally_Built then
+               if Opt.Directories_Must_Exist_In_Projects then
+                  --  The object directory does not exist, report an error if
+                  --  the project is not externally built.
 
-               --  The object directory does not exist, report an error if the
-               --  project is not externally built.
+                  Err_Vars.Error_Msg_File_1 :=
+                    File_Name_Type (Object_Dir.Value);
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Require_Obj_Dirs,
+                     "object directory { not found",
+                     Project.Location, Project);
+               end if;
 
-               Err_Vars.Error_Msg_File_1 :=
-                 File_Name_Type (Object_Dir.Value);
-               Error_Or_Warning
-                 (Data.Flags, Data.Flags.Require_Obj_Dirs,
-                  "object directory { not found", Project.Location, Project);
+               Project.Object_Directory := No_Path_Information;
+
             end if;
          end if;
 
@@ -5489,10 +5497,14 @@ package body Prj.Nmsc is
                Externally_Built => Project.Externally_Built);
 
             if not Dir_Exists then
-               Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
-               Error_Or_Warning
-                 (Data.Flags, Data.Flags.Missing_Source_Files,
-                  "exec directory { not found", Project.Location, Project);
+               if Opt.Directories_Must_Exist_In_Projects then
+                  Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Missing_Source_Files,
+                     "exec directory { not found", Project.Location, Project);
+               end if;
+
+               Project.Exec_Directory := No_Path_Information;
             end if;
          end if;
       end if;
@@ -7729,7 +7741,7 @@ package body Prj.Nmsc is
 
                if Language.First_Source = No_Source
                  and then (Data.Flags.Require_Sources_Other_Lang
-                           or else Language.Name = Name_Ada)
+                            or else Language.Name = Name_Ada)
                then
                   Iter := For_Each_Source (In_Tree => Data.Tree,
                                            Project => Project.Project);

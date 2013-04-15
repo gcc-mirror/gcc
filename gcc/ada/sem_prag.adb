@@ -181,10 +181,23 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
+   function Is_Valid_Assertion_Kind (Nam : Name_Id) return Boolean;
+   --  Returns True if Nam is one of the names recognized as a valid assertion
+   --  kind by the Assertion_Policy pragma. Note that the 'Class cases are
+   --  represented by the corresponding special names Name_uPre, Name_uPost,
+   --  Name_uInviarnat, and Name_uType_Invariant (_Pre, _Post, _Invariant,
+   --  and _Type_Invariant).
+
    procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
    --  of a Contract_Case or Test_Case pragma if present (possibly Empty). We
    --  treat these as spec expressions (i.e. similar to a default expression).
+
+   procedure Rewrite_Assertion_Kind (N : Node_Id);
+   --  If N is Pre'Class, Post'Class, Invariant'Class, or Type_Invariant'Class,
+   --  then it is rewritten as an identifier with the corresponding special
+   --  name _Pre, _Post, _Invariant, or _Type_Invariant. Used by pragmas
+   --  Check, Check_Policy.
 
    procedure rv;
    --  This is a dummy function called by the processing for pragma Reviewable.
@@ -248,20 +261,68 @@ package body Sem_Prag is
    ------------------------------
 
    procedure Analyze_CTC_In_Decl_Part (N : Node_Id; S : Entity_Id) is
+
+      procedure Analyze_Contract_Cases (Aggr : Node_Id);
+      --  Pre-analyze the guard and consequence expressions of a Contract_Cases
+      --  pragma/aspect aggregate expression.
+
+      ----------------------------
+      -- Analyze_Contract_Cases --
+      ----------------------------
+
+      procedure Analyze_Contract_Cases (Aggr : Node_Id) is
+         Case_Guard : Node_Id;
+         Conseq     : Node_Id;
+         Post_Case  : Node_Id;
+
+      begin
+         Post_Case := First (Component_Associations (Aggr));
+         while Present (Post_Case) loop
+            Case_Guard := First (Choices (Post_Case));
+            Conseq     := Expression (Post_Case);
+
+            --  Preanalyze the boolean expression, we treat this as a spec
+            --  expression (i.e. similar to a default expression).
+
+            if Nkind (Case_Guard) /= N_Others_Choice then
+               Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
+            end if;
+
+            Preanalyze_Assert_Expression (Conseq, Standard_Boolean);
+
+            Next (Post_Case);
+         end loop;
+      end Analyze_Contract_Cases;
+
+   --  Start of processing for Analyze_CTC_In_Decl_Part
+
    begin
       --  Install formals and push subprogram spec onto scope stack so that we
       --  can see the formals from the pragma.
 
-      Install_Formals (S);
       Push_Scope (S);
+      Install_Formals (S);
 
       --  Preanalyze the boolean expressions, we treat these as spec
       --  expressions (i.e. similar to a default expression).
 
-      Preanalyze_CTC_Args
-        (N,
-         Get_Requires_From_CTC_Pragma (N),
-         Get_Ensures_From_CTC_Pragma (N));
+      if Nam_In (Pragma_Name (N), Name_Test_Case, Name_Contract_Case) then
+         Preanalyze_CTC_Args
+           (N,
+            Get_Requires_From_CTC_Pragma (N),
+            Get_Ensures_From_CTC_Pragma (N));
+
+      elsif Pragma_Name (N) = Name_Contract_Cases then
+         Analyze_Contract_Cases
+           (Expression (First (Pragma_Argument_Associations (N))));
+
+         --  In ASIS mode, for a pragma generated from a source aspect, also
+         --  analyze the original aspect expression.
+
+         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
+            Analyze_Contract_Cases (Expression (Corresponding_Aspect (N)));
+         end if;
+      end if;
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the expressions in the contract case or test case is done.
@@ -401,9 +462,8 @@ package body Sem_Prag is
                Error_Msg_Name_2 := Name_Class;
 
                Error_Msg_N
-                 ("aspect `%''%` can only be specified for a primitive " &
-                  "operation of a tagged type",
-                  Corresponding_Aspect (N));
+                 ("aspect `%''%` can only be specified for a primitive "
+                  & "operation of a tagged type", Corresponding_Aspect (N));
             end if;
 
             Replace_Type (Get_Pragma_Arg (Arg1));
@@ -458,6 +518,11 @@ package body Sem_Prag is
       --  Called for pragmas defined in Ada 2012, that are not in Ada 95 or 05.
       --  In Ada 95 or 05 mode, these are implementation defined pragmas, so
       --  should be caught by the No_Implementation_Pragmas restriction.
+
+      procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id);
+      --  Subsidiary routine to the analysis of pragmas Depends and Global.
+      --  Append an input or output item to a list. If the list is empty, a
+      --  new one is created.
 
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
@@ -984,6 +1049,19 @@ package body Sem_Prag is
          end if;
       end Ada_2012_Pragma;
 
+      --------------
+      -- Add_Item --
+      --------------
+
+      procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id) is
+      begin
+         if No (To_List) then
+            To_List := New_Elmt_List;
+         end if;
+
+         Append_Unique_Elmt (Item, To_List);
+      end Add_Item;
+
       --------------------------
       -- Check_Ada_83_Warning --
       --------------------------
@@ -1143,6 +1221,7 @@ package body Sem_Prag is
                OK   : Boolean;
                Ent  : constant Entity_Id := Entity (Argx);
                Scop : constant Entity_Id := Scope (Ent);
+
             begin
                --  Case of a pragma applied to a compilation unit: pragma must
                --  occur immediately after the program unit in the compilation.
@@ -1239,7 +1318,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1 and then Chars (Argx) /= N2 then
+         if not Nam_In (Chars (Argx), N1, N2) then
             Error_Msg_Name_2 := N1;
             Error_Msg_Name_3 := N2;
             Error_Pragma_Arg ("argument for pragma% must be% or%", Argx);
@@ -1255,10 +1334,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1
-           and then Chars (Argx) /= N2
-           and then Chars (Argx) /= N3
-         then
+         if not Nam_In (Chars (Argx), N1, N2, N3) then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
@@ -1272,11 +1348,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1
-           and then Chars (Argx) /= N2
-           and then Chars (Argx) /= N3
-           and then Chars (Argx) /= N4
-         then
+         if not Nam_In (Chars (Argx), N1, N2, N3, N4) then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
@@ -1290,12 +1362,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Is_Identifier (Argx);
 
-         if Chars (Argx) /= N1
-           and then Chars (Argx) /= N2
-           and then Chars (Argx) /= N3
-           and then Chars (Argx) /= N4
-           and then Chars (Argx) /= N5
-         then
+         if not Nam_In (Chars (Argx), N1, N2, N3, N4, N5) then
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
@@ -1430,8 +1497,8 @@ package body Sem_Prag is
            and then not Is_Unchecked_Union (Etype (Subtype_Mark (Sindic)))
          then
             Error_Msg_N
-              ("component subtype subject to per-object constraint " &
-               "must be an Unchecked_Union", Comp);
+              ("component subtype subject to per-object constraint "
+               & "must be an Unchecked_Union", Comp);
 
          --  Ada 2012 (AI05-0026): For an unchecked union type declared within
          --  the body of a generic unit, or within the body of any of its
@@ -1914,13 +1981,15 @@ package body Sem_Prag is
          --  instance can be in a nested scope. The check that protected type
          --  is itself a library-level declaration is done elsewhere.
 
-         --  Note: we omit this check in Codepeer mode to properly handle code
-         --  prior to AI-0033 (pragmas don't matter to codepeer in any case).
+         --  Note: we omit this check in Relaxed_RM_Semantics mode to properly
+         --  handle code prior to AI-0033. Analysis tools typically are not
+         --  interested in this pragma in any case, so no need to worry too
+         --  much about its placement.
 
          if Inside_A_Generic then
             if Ekind (Scope (Current_Scope)) = E_Generic_Package
               and then In_Package_Body (Scope (Current_Scope))
-              and then not CodePeer_Mode
+              and then not Relaxed_RM_Semantics
             then
                Error_Pragma ("pragma% cannot be used inside a generic");
             end if;
@@ -1946,12 +2015,12 @@ package body Sem_Prag is
          begin
             if Nkind (Constr) = N_Pragma then
                Error_Pragma
-                 ("pragma % must appear immediately within the statements " &
-                  "of a loop");
+                 ("pragma % must appear immediately within the statements "
+                  & "of a loop");
             else
                Error_Pragma_Arg
-                 ("block containing pragma % must appear immediately within " &
-                  "the statements of a loop", Constr);
+                 ("block containing pragma % must appear immediately within "
+                  & "the statements of a loop", Constr);
             end if;
          end Placement_Error;
 
@@ -2095,9 +2164,7 @@ package body Sem_Prag is
 
       procedure Check_No_Link_Name is
       begin
-         if Present (Arg3)
-           and then Chars (Arg3) = Name_Link_Name
-         then
+         if Present (Arg3) and then Chars (Arg3) = Name_Link_Name then
             Arg4 := Arg3;
          end if;
 
@@ -2185,11 +2252,16 @@ package body Sem_Prag is
                  ("aspect % requires ''Class for null procedure");
 
             --  Pre/postconditions are legal on a subprogram body if it is not
-            --  a completion of a declaration.
+            --  a completion of a declaration. They are also legal on a stub
+            --  with no previous declarations (this is checked when processing
+            --  the corresponding aspects).
 
             elsif Nkind (PO) = N_Subprogram_Body
               and then Acts_As_Spec (PO)
             then
+               null;
+
+            elsif Nkind (PO) = N_Subprogram_Body_Stub then
                null;
 
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
@@ -2248,12 +2320,12 @@ package body Sem_Prag is
          --  For a pragma PPC in the extended main source unit, record enabled
          --  status in SCO.
 
-         --  This may seem redundant with the call to Check_Enabled occurring
-         --  later on when the pragma is rewritten into a pragma Check but
-         --  is actually required in the case of a postcondition within a
+         --  This may seem redundant with the call to Check_Kind test that
+         --  occurs later on when the pragma is rewritten into a pragma Check
+         --  but is actually required in the case of a postcondition within a
          --  generic.
 
-         if Check_Enabled (Pname) and then not Split_PPC (N) then
+         if Check_Kind (Pname) = Name_Check and then not Split_PPC (N) then
             Set_SCO_Pragma_Enabled (Loc);
          end if;
 
@@ -3410,19 +3482,16 @@ package body Sem_Prag is
                   then
                      --  Give error if same as our pragma or Export/Convention
 
-                     if Pragma_Name (Decl) = Name_Export
-                          or else
-                        Pragma_Name (Decl) = Name_Convention
-                          or else
-                        Pragma_Name (Decl) = Pragma_Name (N)
+                     if Nam_In (Pragma_Name (Decl), Name_Export,
+                                                    Name_Convention,
+                                                    Pragma_Name (N))
                      then
                         exit;
 
                      --  Case of Import/Interface or the other way round
 
-                     elsif Pragma_Name (Decl) = Name_Interface
-                             or else
-                           Pragma_Name (Decl) = Name_Import
+                     elsif Nam_In (Pragma_Name (Decl), Name_Interface,
+                                                       Name_Import)
                      then
                         --  Here we know that we have Import and Interface. It
                         --  doesn't matter which way round they are. See if
@@ -3450,8 +3519,12 @@ package body Sem_Prag is
             end if;
 
             --  Give message if needed if we fall through those tests
+            --  except on Relaxed_RM_Semantics where we let go: either this
+            --  is a case accepted/ignored by other Ada compilers (e.g.
+            --  a mix of Convention and Import), or another error will be
+            --  generated later (e.g. using both Import and Export).
 
-            if Err then
+            if Err and not Relaxed_RM_Semantics then
                Error_Pragma_Arg
                  ("at most one Convention/Export/Import pragma is allowed",
                   Arg2);
@@ -3475,9 +3548,8 @@ package body Sem_Prag is
               and then C /= Convention (Overridden_Operation (E))
             then
                Error_Pragma_Arg
-                 ("cannot change convention for " &
-                  "overridden dispatching operation",
-                  Arg1);
+                 ("cannot change convention for overridden dispatching "
+                  & "operation", Arg1);
             end if;
 
             --  Set the convention
@@ -3648,9 +3720,12 @@ package body Sem_Prag is
          end if;
 
          --  Check that we are not applying this to a specless body
+         --  Relax this check if Relaxed_RM_Semantics to accomodate other Ada
+         --  compilers.
 
          if Is_Subprogram (E)
            and then Nkind (Parent (Declaration_Node (E))) = N_Subprogram_Body
+           and then not Relaxed_RM_Semantics
          then
             Error_Pragma
               ("pragma% requires separate spec and must come before body");
@@ -4192,9 +4267,7 @@ package body Sem_Prag is
 
                elsif Etype (Def_Id) /= Standard_Void_Type
                  and then
-                   (Pname = Name_Export_Procedure
-                      or else
-                    Pname = Name_Import_Procedure)
+                   Nam_In (Pname, Name_Export_Procedure, Name_Import_Procedure)
                then
                   Match := False;
 
@@ -4786,8 +4859,8 @@ package body Sem_Prag is
                      then
                         Error_Msg_Sloc := Sloc (Def_Id);
                         Error_Msg_NE
-                          ("cannot import&, renaming already provided for " &
-                           "declaration #", N, Def_Id);
+                          ("cannot import&, renaming already provided for "
+                           & "declaration #", N, Def_Id);
                      end if;
                   end;
 
@@ -5256,7 +5329,7 @@ package body Sem_Prag is
 
             elsif not Effective
               and then Warn_On_Redundant_Constructs
-              and then not (Status = Suppressed or Suppress_All_Inlining)
+              and then not (Status = Suppressed or else Suppress_All_Inlining)
             then
                if Inlining_Not_Possible (Subp) then
                   Error_Msg_NE
@@ -5729,6 +5802,26 @@ package body Sem_Prag is
                   end if;
                end;
 
+            elsif Id = Name_No_Use_Of_Attribute then
+               if Nkind (Expr) /= N_Identifier
+                 or else not Is_Attribute_Name (Chars (Expr))
+               then
+                  Error_Msg_N ("unknown attribute name?", Expr);
+
+               else
+                  Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
+               end if;
+
+            elsif Id = Name_No_Use_Of_Pragma then
+               if Nkind (Expr) /= N_Identifier
+                 or else not Is_Pragma_Name (Chars (Expr))
+               then
+                  Error_Msg_N ("unknown pragma name?", Expr);
+
+               else
+                  Set_Restriction_No_Use_Of_Pragma (Expr, Warn);
+               end if;
+
             --  All other cases of restriction identifier present
 
             else
@@ -5996,7 +6089,9 @@ package body Sem_Prag is
             Error_Pragma_Arg
               ("cannot export entity& that was previously imported", Arg);
 
-         elsif Present (Address_Clause (E)) and then not CodePeer_Mode then
+         elsif Present (Address_Clause (E))
+           and then not Relaxed_RM_Semantics
+         then
             Error_Pragma_Arg
               ("cannot export entity& that has an address clause", Arg);
          end if;
@@ -6152,6 +6247,12 @@ package body Sem_Prag is
             if Is_Exported (E) then
                Error_Msg_NE ("entity& was previously exported", N, E);
 
+            --  Ignore error in CodePeer mode where we treat all imported
+            --  subprograms as unknown.
+
+            elsif CodePeer_Mode then
+               goto OK;
+
             --  OK if Import/Interface case
 
             elsif Import_Interface_Present (N) then
@@ -6286,9 +6387,10 @@ package body Sem_Prag is
             Class := First (Expressions (Mech_Name));
 
             if Nkind (Prefix (Mech_Name)) /= N_Identifier
-             or else not (Chars (Prefix (Mech_Name)) = Name_Descriptor or else
-                          Chars (Prefix (Mech_Name)) = Name_Short_Descriptor)
-             or else Present (Next (Class))
+              or else
+                not Nam_In (Chars (Prefix (Mech_Name)), Name_Descriptor,
+                                                        Name_Short_Descriptor)
+              or else Present (Next (Class))
             then
                Bad_Mechanism;
             else
@@ -6313,8 +6415,9 @@ package body Sem_Prag is
             Param := First (Parameter_Associations (Mech_Name));
 
             if Nkind (Name (Mech_Name)) /= N_Identifier
-              or else not (Chars (Name (Mech_Name)) = Name_Descriptor or else
-                           Chars (Name (Mech_Name)) = Name_Short_Descriptor)
+              or else
+                not Nam_In (Chars (Name (Mech_Name)), Name_Descriptor,
+                                                      Name_Short_Descriptor)
               or else Present (Next (Param))
               or else No (Selector_Name (Param))
               or else Chars (Selector_Name (Param)) /= Name_Class
@@ -6658,6 +6761,16 @@ package body Sem_Prag is
          Pname := Chars (Identifier (Corresponding_Aspect (N)));
       end if;
 
+      Check_Applicable_Policy (N);
+
+      --  If pragma is disable, rewrite as Null statement and skip analysis
+
+      if Is_Disabled (N) then
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze (N);
+         raise Pragma_Exit;
+      end if;
+
       --  Preset arguments
 
       Arg_Count := 0;
@@ -6682,6 +6795,8 @@ package body Sem_Prag is
             end if;
          end if;
       end if;
+
+      Check_Restriction_No_Use_Of_Pragma (N);
 
       --  An enumeration type defines the pragmas that are supported by the
       --  implementation. Get_Pragma_Id (in package Prag) transforms a name
@@ -6715,20 +6830,21 @@ package body Sem_Prag is
 
          --  pragma Abstract_State (ABSTRACT_STATE_LIST)
 
-         --  ABSTRACT_STATE_LIST        ::=
+         --  ABSTRACT_STATE_LIST ::=
          --    null
-         --    | STATE_NAME_WITH_PROPERTIES {, STATE_NAME_WITH_PROPERTIES}
+         --  | STATE_NAME_WITH_PROPERTIES {, STATE_NAME_WITH_PROPERTIES}
 
          --  STATE_NAME_WITH_PROPERTIES ::=
          --    STATE_NAME
-         --    | (STATE_NAME with PROPERTY_LIST)
+         --  | (STATE_NAME with PROPERTY_LIST)
 
-         --  PROPERTY_LIST              ::= PROPERTY {, PROPERTY}
-         --  PROPERTY                   ::= SIMPLE_PROPERTY
-         --                                 | NAME_VALUE_PROPERTY
-         --  SIMPLE_PROPERTY            ::= IDENTIFIER
-         --  NAME_VALUE_PROPERTY        ::= IDENTIFIER => EXPRESSION
-         --  STATE_NAME                 ::= DEFINING_IDENTIFIER
+         --  PROPERTY_LIST ::= PROPERTY {, PROPERTY}
+         --  PROPERTY      ::= SIMPLE_PROPERTY | NAME_VALUE_PROPERTY
+
+         --  SIMPLE_PROPERTY      ::= IDENTIFIER
+         --  NAME_VALUE_PROPERTY  ::= IDENTIFIER => EXPRESSION
+
+         --  STATE_NAME ::= DEFINING_IDENTIFIER
 
          when Pragma_Abstract_State => Abstract_State : declare
             Pack_Id : Entity_Id;
@@ -6796,8 +6912,8 @@ package body Sem_Prag is
                --  declare additional states.
 
                if Null_Seen then
-                  Error_Msg_Name_1 := Chars (Pack_Id);
-                  Error_Msg_N ("package % has null abstract state", State);
+                  Error_Msg_NE
+                    ("package & has null abstract state", State, Pack_Id);
 
                --  Null states appear as internally generated entities
 
@@ -6810,9 +6926,9 @@ package body Sem_Prag is
                   --  non-null states.
 
                   if Non_Null_Seen then
-                     Error_Msg_Name_1 := Chars (Pack_Id);
-                     Error_Msg_N
-                       ("package % has non-null abstract state", State);
+                     Error_Msg_NE
+                       ("package & has non-null abstract state",
+                        State, Pack_Id);
                   end if;
 
                --  Simple state declaration
@@ -6865,8 +6981,8 @@ package body Sem_Prag is
                        (not Input_Seen and then not Output_Seen))  --  none
                   then
                      Error_Msg_N
-                       ("property Volatile requires exactly one Input or " &
-                        "Output", State);
+                       ("property Volatile requires exactly one Input or "
+                        & "Output", State);
                   end if;
 
                   --  Either Input or Output require Volatile
@@ -6979,7 +7095,7 @@ package body Sem_Prag is
                return;
             end if;
 
-            Pack_Id := Defining_Unit_Name (Specification (Par));
+            Pack_Id := Defining_Entity (Par);
             State   := Expression (Arg1);
 
             --  Multiple abstract states appear as an aggregate
@@ -7333,41 +7449,175 @@ package body Sem_Prag is
          -- Assertion_Policy --
          ----------------------
 
-         --  pragma Assertion_Policy (Check | Disable | Ignore)
+         --  pragma Assertion_Policy (POLICY_IDENTIFIER);
+
+         --  The following form is Ada 2012 only, but we allow it in all modes
+
+         --  Pragma Assertion_Policy (
+         --      ASSERTION_KIND => POLICY_IDENTIFIER
+         --   {, ASSERTION_KIND => POLICY_IDENTIFIER});
+
+         --  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
+
+         --  RM_ASSERTION_KIND ::= Assert               |
+         --                        Static_Predicate     |
+         --                        Dynamic_Predicate    |
+         --                        Pre                  |
+         --                        Pre'Class            |
+         --                        Post                 |
+         --                        Post'Class           |
+         --                        Type_Invariant       |
+         --                        Type_Invariant'Class
+
+         --  ID_ASSERTION_KIND ::= Assert_And_Cut       }
+         --                        Assume               |
+         --                        Contract_Cases       |
+         --                        Debug                |
+         --                        Loop_Invariant       |
+         --                        Loop_Variant         |
+         --                        Postcondition        |
+         --                        Precondition         |
+         --                        Predicate
+         --
+         --  Note: The RM_ASSERTION_KIND list is language-defined, and the
+         --  ID_ASSERTION_KIND list contains implementation-defined additions
+         --  recognized by GNAT. The effect is to control the behavior of
+         --  identically named aspects and pragmas, depending on the specified
+         --  policy identifier:
+
+         --  POLICY_IDENTIFIER ::= Check | Disable | Ignore
+
+         --  Note: Check and Ignore are language-defined. Disable is a GNAT
+         --  implementation defined addition that results in totally ignoring
+         --  the corresponding assertion. If Disable is specified, then the
+         --  argument of the assertion is not even analyzed. This is useful
+         --  when the aspect/pragma argument references entities in a with'ed
+         --  packaqe that is replaced by a dummy package in the final build.
+
+         --  Note: the attribute forms Pre'Class, Post'Class, Invariant'Class,
+         --  and Type_Invariant'Class were recognized by the parser and
+         --  transformed into referencea to the special internal identifiers
+         --  _Pre, _Post, _Invariant, and _Type_Invariant, so no special
+         --  processing is required here.
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
+            LocP   : Source_Ptr;
             Policy : Node_Id;
+            Arg    : Node_Id;
+            Kind   : Name_Id;
+            Prag   : Node_Id;
 
          begin
             Ada_2005_Pragma;
-            Check_Valid_Configuration_Pragma;
-            Check_Arg_Count (1);
-            Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Disable, Name_Ignore);
 
-            --  We treat pragma Assertion_Policy as equivalent to:
+            --  This can always appear as a configuration pragma
 
-            --    pragma Check_Policy (Assertion, policy)
+            if Is_Configuration_Pragma then
+               null;
 
-            --  So rewrite the pragma in that manner and link on to the chain
-            --  of Check_Policy pragmas, marking the pragma as analyzed.
+            --  It can also appear in a declaration or package spec in Ada
+            --  2012 mode. We allow this in other modes, but in that case
+            --  we consider that we have an Ada 2012 pragma on our hands.
 
-            Policy := Get_Pragma_Arg (Arg1);
+            else
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+               Ada_2012_Pragma;
+            end if;
 
-            Rewrite (N,
-              Make_Pragma (Loc,
-                Chars                        => Name_Check_Policy,
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Make_Identifier (Loc, Name_Assertion)),
+            --  One argument case with no identifier (first form above)
 
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression =>
-                      Make_Identifier (Sloc (Policy), Chars (Policy))))));
+            if Arg_Count = 1
+              and then (Nkind (Arg1) /= N_Pragma_Argument_Association
+                         or else Chars (Arg1) = No_Name)
+            then
+               Check_Arg_Is_One_Of
+                 (Arg1, Name_Check, Name_Disable, Name_Ignore);
 
-            Set_Analyzed (N);
-            Set_Next_Pragma (N, Opt.Check_Policy_List);
-            Opt.Check_Policy_List := N;
+               --  Treat one argument Assertion_Policy as equivalent to:
+
+               --    pragma Check_Policy (Assertion, policy)
+
+               --  So rewrite pragma in that manner and link on to the chain
+               --  of Check_Policy pragmas, marking the pragma as analyzed.
+
+               Policy := Get_Pragma_Arg (Arg1);
+
+               Rewrite (N,
+                 Make_Pragma (Loc,
+                   Chars                        => Name_Check_Policy,
+                   Pragma_Argument_Associations => New_List (
+                     Make_Pragma_Argument_Association (Loc,
+                       Expression => Make_Identifier (Loc, Name_Assertion)),
+
+                     Make_Pragma_Argument_Association (Loc,
+                       Expression =>
+                         Make_Identifier (Sloc (Policy), Chars (Policy))))));
+
+               Set_Analyzed (N);
+               Set_Next_Pragma (N, Opt.Check_Policy_List);
+               Opt.Check_Policy_List := N;
+
+            --  Here if we have two or more arguments
+
+            else
+               Check_At_Least_N_Arguments (1);
+               Ada_2012_Pragma;
+
+               --  Loop through arguments
+
+               Arg := Arg1;
+               while Present (Arg) loop
+                  LocP := Sloc (Arg);
+
+                  --  Kind must be specified
+
+                  if Nkind (Arg) /= N_Pragma_Argument_Association
+                    or else Chars (Arg) = No_Name
+                  then
+                     Error_Pragma_Arg
+                       ("missing assertion kind for pragma%", Arg);
+                  end if;
+
+                  --  Check Kind and Policy have allowed forms
+
+                  Kind := Chars (Arg);
+
+                  if not Is_Valid_Assertion_Kind (Kind) then
+                     Error_Pragma_Arg
+                       ("invalid assertion kind for pragma%", Arg);
+                  end if;
+
+                  Check_Arg_Is_One_Of
+                    (Arg, Name_Check, Name_Disable, Name_Ignore);
+
+                  --  We rewrite the Assertion_Policy pragma as a series of
+                  --  Check_Policy pragmas:
+
+                  --    Check_Policy (Kind, Policy);
+
+                  Prag :=
+                    Make_Pragma (LocP,
+                      Chars                        => Name_Check_Policy,
+                      Pragma_Argument_Associations => New_List (
+                         Make_Pragma_Argument_Association (LocP,
+                           Expression => Make_Identifier (LocP, Kind)),
+                         Make_Pragma_Argument_Association (LocP,
+                           Expression => Get_Pragma_Arg (Arg))));
+
+                  Set_Analyzed (Prag);
+                  Set_Next_Pragma (Prag, Opt.Check_Policy_List);
+                  Opt.Check_Policy_List := Prag;
+                  Insert_Action (N, Prag);
+
+                  Arg := Next (Arg);
+               end loop;
+
+               --  Rewrite the Assertion_Policy pragma as null since we have
+               --  now inserted all the equivalent Check pragmas.
+
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+            end if;
          end Assertion_Policy;
 
          ------------
@@ -7593,8 +7843,7 @@ package body Sem_Prag is
                --  unit (RM E.4.1(4)).
 
                Error_Pragma
-                 ("pragma% not in Remote_Call_Interface or " &
-                  "Remote_Types unit");
+                 ("pragma% not in Remote_Call_Interface or Remote_Types unit");
             end if;
 
             if Ekind (Nm) = E_Procedure
@@ -7818,14 +8067,21 @@ package body Sem_Prag is
          -- Check --
          -----------
 
-         --  pragma Check ([Name    =>] IDENTIFIER,
+         --  pragma Check ([Name    =>] CHECK_KIND,
          --                [Check   =>] Boolean_EXPRESSION
          --              [,[Message =>] String_EXPRESSION]);
+
+         --  CHECK_KIND ::= IDENTIFIER           |
+         --                 Pre'Class            |
+         --                 Post'Class           |
+         --                 Invariant'Class      |
+         --                 Type_Invariant'Class
 
          when Pragma_Check => Check : declare
             Expr  : Node_Id;
             Eloc  : Source_Ptr;
             Cname : Name_Id;
+            Str   : Node_Id;
 
             Check_On : Boolean;
             --  Set True if category of assertions referenced by Name enabled
@@ -7839,21 +8095,41 @@ package body Sem_Prag is
 
             if Arg_Count = 3 then
                Check_Optional_Identifier (Arg3, Name_Message);
-               Analyze_And_Resolve (Get_Pragma_Arg (Arg3), Standard_String);
+               Str := Get_Pragma_Arg (Arg3);
             end if;
 
+            Rewrite_Assertion_Kind (Get_Pragma_Arg (Arg1));
             Check_Arg_Is_Identifier (Arg1);
-
-            --  Completely ignore if disabled
-
-            if Check_Disabled (Chars (Get_Pragma_Arg (Arg1))) then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
-
             Cname := Chars (Get_Pragma_Arg (Arg1));
-            Check_On := Check_Enabled (Cname);
+
+            --  Set Check_On to indicate check status
+
+            case Check_Kind (Cname) is
+               when Name_Ignore =>
+                  Check_On := False;
+
+               when Name_Check =>
+                  Check_On := True;
+
+               --  For disable, rewrite pragma as null statement and skip
+               --  rest of the analysis of the pragma.
+
+               when Name_Disable =>
+                  Rewrite (N, Make_Null_Statement (Loc));
+                  Analyze (N);
+                  raise Pragma_Exit;
+
+               --  No other possibilities
+
+               when others =>
+                  raise Program_Error;
+            end case;
+
+            --  If check kind was not Disable, then continue pragma analysis
+
+            Expr := Get_Pragma_Arg (Arg2);
+
+            --  Deal with SCO generation
 
             case Cname is
                when Name_Predicate |
@@ -7875,28 +8151,51 @@ package body Sem_Prag is
                   end if;
             end case;
 
-            --  If expansion is active and the check is not enabled then we
-            --  rewrite the Check as:
+            --  Deal with analyzing the string argument.
+
+            if Arg_Count = 3 then
+
+               --  If checks are not on we don't want any expansion (since
+               --  such expansion would not get properly deleted) but
+               --  we do want to analyze (to get proper references).
+               --  The Preanalyze_And_Resolve routine does just what we want
+
+               if not Check_On then
+                  Preanalyze_And_Resolve (Str, Standard_String);
+
+                  --  Otherwise we need a proper analysis and expansion
+
+               else
+                  Analyze_And_Resolve (Str, Standard_String);
+               end if;
+            end if;
+
+            --  Now you might think we could just do the same with the Boolean
+            --  expression if checks are off (and expansion is on) and then
+            --  rewrite the check as a null statement. This would work but we
+            --  would lose the useful warnings about an assertion being bound
+            --  to fail even if assertions are turned off.
+
+            --  So instead we wrap the boolean expression in an if statement
+            --  that looks like:
 
             --    if False and then condition then
             --       null;
             --    end if;
 
-            --  The reason we do this rewriting during semantic analysis rather
-            --  than as part of normal expansion is that we cannot analyze and
-            --  expand the code for the boolean expression directly, or it may
-            --  cause insertion of actions that would escape the attempt to
-            --  suppress the check code.
+            --  The reason we do this rewriting during semantic analysis
+            --  rather than as part of normal expansion is that we cannot
+            --  analyze and expand the code for the boolean expression
+            --  directly, or it may cause insertion of actions that would
+            --  escape the attempt to suppress the check code.
 
             --  Note that the Sloc for the if statement corresponds to the
-            --  argument condition, not the pragma itself. The reason for this
-            --  is that we may generate a warning if the condition is False at
-            --  compile time, and we do not want to delete this warning when we
-            --  delete the if statement.
+            --  argument condition, not the pragma itself. The reason for
+            --  this is that we may generate a warning if the condition is
+            --  False at compile time, and we do not want to delete this
+            --  warning when we delete the if statement.
 
-            Expr := Get_Pragma_Arg (Arg2);
-
-            if Expander_Active and then not Check_On then
+            if Expander_Active and not Check_On then
                Eloc := Sloc (Expr);
 
                Rewrite (N,
@@ -7908,9 +8207,12 @@ package body Sem_Prag is
                    Then_Statements => New_List (
                      Make_Null_Statement (Eloc))));
 
+               In_Assertion_Expr := In_Assertion_Expr + 1;
                Analyze (N);
+               In_Assertion_Expr := In_Assertion_Expr - 1;
 
-            --  Check is active
+            --  Check is active or expansion not active. In these cases we can
+            --  just go ahead and analyze the boolean with no worries.
 
             else
                In_Assertion_Expr := In_Assertion_Expr + 1;
@@ -7961,22 +8263,36 @@ package body Sem_Prag is
          -- Check_Policy --
          ------------------
 
-         --  pragma Check_Policy (
-         --    [Name   =>] IDENTIFIER,
-         --    [Policy =>] POLICY_IDENTIFIER);
+         --  This is the old style syntax, which is still allowed in all modes:
 
-         --  POLICY_IDENTIFIER ::= ON | OFF | CHECK | DISABLE | IGNORE
+         --  pragma Check_Policy ([Name   =>] CHECK_KIND
+         --                       [Policy =>] POLICY_IDENTIFIER);
 
-         --  Note: this is a configuration pragma, but it is allowed to appear
-         --  anywhere else.
+         --  POLICY_IDENTIFIER ::= On | Off | Check | Disable | Ignore
 
-         when Pragma_Check_Policy =>
+         --  CHECK_KIND ::= IDENTIFIER           |
+         --                 Pre'Class            |
+         --                 Post'Class           |
+         --                 Type_Invariant'Class |
+         --                 Invariant'Class
+
+         --  This is the new style syntax, compatible with Assertion_Policy
+         --  and also allowed in all modes.
+
+         --  Pragma Check_Policy (
+         --      CHECK_KIND => POLICY_IDENTIFIER
+         --   {, CHECK_KIND => POLICY_IDENTIFIER});
+
+         --  Note: the identifiers Name and Policy are not allowed as
+         --  Check_Kind values. This avoids ambiguities between the old and
+         --  new form syntax.
+
+         when Pragma_Check_Policy => Check_Policy : declare
+            Kind : Node_Id;
+
+         begin
             GNAT_Pragma;
-            Check_Arg_Count (2);
-            Check_Optional_Identifier (Arg1, Name_Name);
-            Check_Optional_Identifier (Arg2, Name_Policy);
-            Check_Arg_Is_One_Of
-              (Arg2, Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
+            Check_At_Least_N_Arguments (1);
 
             --  A Check_Policy pragma can appear either as a configuration
             --  pragma, or in a declarative part or a package spec (see RM
@@ -7987,8 +8303,91 @@ package body Sem_Prag is
                Check_Is_In_Decl_Part_Or_Package_Spec;
             end if;
 
-            Set_Next_Pragma (N, Opt.Check_Policy_List);
-            Opt.Check_Policy_List := N;
+            --  Figure out if we have the old or new syntax. We have the
+            --  old syntax if the first argument has no identifier, or the
+            --  identifier is Name.
+
+            if Nkind (Arg1) /= N_Pragma_Argument_Association
+               or else Nam_In (Chars (Arg1), No_Name, Name_Name)
+            then
+               --  Old syntax
+
+               Check_Arg_Count (2);
+               Check_Optional_Identifier (Arg1, Name_Name);
+               Kind := Get_Pragma_Arg (Arg1);
+               Rewrite_Assertion_Kind (Kind);
+               Check_Arg_Is_Identifier (Arg1);
+
+               --  Check forbidden check kind
+
+               if Nam_In (Chars (Kind), Name_Name, Name_Policy) then
+                  Error_Msg_Name_2 := Chars (Kind);
+                     Error_Pragma_Arg
+                       ("pragma% does not allow% as check name", Arg1);
+               end if;
+
+               --  Check policy
+
+               Check_Optional_Identifier (Arg2, Name_Policy);
+               Check_Arg_Is_One_Of
+                 (Arg2,
+                  Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
+
+               --  And chain pragma on the Check_Policy_List for search
+
+               Set_Next_Pragma (N, Opt.Check_Policy_List);
+               Opt.Check_Policy_List := N;
+
+            --  For the new syntax, what we do is to convert each argument to
+            --  an old syntax equivalent. We do that because we want to chain
+            --  old style Check_Pragmas for the search (we don't wnat to have
+            --  to deal with multiple arguments in the search)
+
+            else
+               declare
+                  Arg  : Node_Id;
+                  Argx : Node_Id;
+                  LocP : Source_Ptr;
+
+               begin
+                  Arg := Arg1;
+                  while Present (Arg) loop
+                     LocP := Sloc (Arg);
+                     Argx := Get_Pragma_Arg (Arg);
+
+                     --  Kind must be specified
+
+                     if Nkind (Arg) /= N_Pragma_Argument_Association
+                       or else Chars (Arg) = No_Name
+                     then
+                        Error_Pragma_Arg
+                          ("missing assertion kind for pragma%", Arg);
+                     end if;
+
+                     --  Construct equivalent old form syntax Check_Policy
+                     --  pragma and insert it to get remaining checks.
+
+                     Insert_Action (N,
+                       Make_Pragma (LocP,
+                         Chars                        => Name_Check_Policy,
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (LocP,
+                             Expression =>
+                               Make_Identifier (LocP, Chars (Arg))),
+                           Make_Pragma_Argument_Association (Sloc (Argx),
+                             Expression => Argx))));
+
+                     Arg := Next (Arg);
+                  end loop;
+
+                  --  Rewrite original Check_Policy pragma to null, since we
+                  --  have converted it into a series of old syntax pragmas.
+
+                  Rewrite (N, Make_Null_Statement (Loc));
+                  Analyze (N);
+               end;
+            end if;
+         end Check_Policy;
 
          ---------------------
          -- CIL_Constructor --
@@ -8204,8 +8603,8 @@ package body Sem_Prag is
                  and then not Is_Array_Type (Typ)
                then
                   Error_Pragma_Arg
-                    ("Name parameter of pragma% must identify record or " &
-                     "array type", Name);
+                    ("Name parameter of pragma% must identify record or "
+                     & "array type", Name);
                end if;
 
                --  An explicit Component_Alignment pragma overrides an
@@ -8305,9 +8704,9 @@ package body Sem_Prag is
             S14_Pragma;
             Check_Arg_Count (1);
 
-            --  Completely ignore if disabled
+            --  Completely ignore if not enabled
 
-            if Check_Disabled (Pname) then
+            if Is_Ignored (N) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -8491,10 +8890,9 @@ package body Sem_Prag is
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
-               --  Following message is obsolete ???
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_class is now obsolete and has no " &
-                  "effect; replace it by pragma import?j?", N);
+                 ("'G'N'A'T pragma cpp'_class is now obsolete and has no "
+                  & "effect; replace it by pragma import?j?", N);
             end if;
 
             Check_Arg_Count (1);
@@ -8557,8 +8955,8 @@ package body Sem_Prag is
             then
                if Scope (Def_Id) /= Scope (Etype (Def_Id)) then
                   Error_Msg_N
-                    ("'C'P'P constructor must be defined in the scope of " &
-                     "its returned type", Arg1);
+                    ("'C'P'P constructor must be defined in the scope of "
+                     & "its returned type", Arg1);
                end if;
 
                if Arg_Count >= 2 then
@@ -8618,8 +9016,8 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has " &
-                  "no effect?j?", N);
+                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has no "
+                  & "effect?j?", N);
             end if;
          end CPP_Virtual;
 
@@ -8633,8 +9031,8 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has " &
-                  "no effect?j?", N);
+                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has no "
+                  & "effect?j?", N);
             end if;
          end CPP_Vtable;
 
@@ -8741,20 +9139,16 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
 
-            --  Skip analysis if disabled
-
-            if Debug_Pragmas_Disabled then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
+            --  The condition for executing the call is that the expander
+            --  is active and that we are not ignoring this debug pragma.
 
             Cond :=
               New_Occurrence_Of
-                (Boolean_Literals (Debug_Pragmas_Enabled and Expander_Active),
+                (Boolean_Literals
+                  (Expander_Active and then not Is_Ignored (N)),
                  Loc);
 
-            if Debug_Pragmas_Enabled then
+            if not Is_Ignored (N) then
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
@@ -8833,16 +9227,1085 @@ package body Sem_Prag is
          -- Debug_Policy --
          ------------------
 
-         --  pragma Debug_Policy (Check | Ignore)
+         --  pragma Debug_Policy (On | Off | Check | Disable | Ignore)
 
          when Pragma_Debug_Policy =>
             GNAT_Pragma;
             Check_Arg_Count (1);
-            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Disable, Name_Ignore);
-            Debug_Pragmas_Enabled :=
-              Chars (Get_Pragma_Arg (Arg1)) = Name_Check;
-            Debug_Pragmas_Disabled :=
-              Chars (Get_Pragma_Arg (Arg1)) = Name_Disable;
+            Check_No_Identifiers;
+            Check_Arg_Is_Identifier (Arg1);
+
+            --  Exactly equivalent to pragma Check_Policy (Debug, arg), so
+            --  rewrite it that way, and let the rest of the checking come
+            --  from analyzing the rewritten pragma.
+
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars                        => Name_Check_Policy,
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Name_Debug)),
+
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Get_Pragma_Arg (Arg1)))));
+
+            Analyze (N);
+
+         -------------
+         -- Depends --
+         -------------
+
+         --  pragma Depends (DEPENDENCY_RELATION);
+
+         --  DEPENDENCY_RELATION ::=
+         --    null
+         --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
+
+         --  DEPENDENCY_CLAUSE ::=
+         --    OUTPUT_LIST =>[+] INPUT_LIST
+         --  | NULL_DEPENDENCY_CLAUSE
+
+         --  NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+         --  OUTPUT_LIST ::= OUTPUT | (OUTPUT {, OUTPUT})
+
+         --  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
+
+         --  OUTPUT ::= NAME | FUNCTION_RESULT
+         --  INPUT  ::= NAME
+
+         --  where FUNCTION_RESULT is a function Result attribute_reference
+
+         when Pragma_Depends => Depends : declare
+            All_Inputs_Seen : Elist_Id := No_Elist;
+            --  A list containing the entities of all the inputs processed so
+            --  far. This Elist is populated with unique entities because the
+            --  same input may appear in multiple input lists.
+
+            Global_Seen : Boolean := False;
+            --  A flag set when pragma Global has been processed
+
+            Outputs_Seen : Elist_Id := No_Elist;
+            --  A list containing the entities of all the outputs processed so
+            --  far. The elements of this list may come from different output
+            --  lists.
+
+            Null_Output_Seen : Boolean := False;
+            --  A flag used to track the legality of a null output
+
+            Result_Seen : Boolean := False;
+            --  A flag set when Subp_Id'Result is processed
+
+            Subp_Id : Entity_Id;
+            --  The entity of the subprogram subject to pragma Depends
+
+            Subp_Inputs  : Elist_Id := No_Elist;
+            Subp_Outputs : Elist_Id := No_Elist;
+            --  Two lists containing the full set of inputs and output of the
+            --  related subprograms. Note that these lists contain both nodes
+            --  and entities.
+
+            procedure Analyze_Dependency_Clause
+              (Clause  : Node_Id;
+               Is_Last : Boolean);
+            --  Verify the legality of a single dependency clause. Flag Is_Last
+            --  denotes whether Clause is the last clause in the relation.
+
+            function Appears_In
+              (List    : Elist_Id;
+               Item_Id : Entity_Id) return Boolean;
+            --  Determine whether a particular item appears in a mixed list of
+            --  nodes and entities.
+
+            procedure Check_Function_Return;
+            --  Verify that Funtion'Result appears as one of the outputs
+
+            procedure Check_Mode
+              (Item     : Node_Id;
+               Item_Id  : Entity_Id;
+               Is_Input : Boolean);
+            --  Ensure that an item has a proper "in", "in out" or "out" mode
+            --  depending on its function. If this is not the case, emit an
+            --  error.
+
+            procedure Check_Usage
+              (Subp_List : Elist_Id;
+               Item_List : Elist_Id;
+               Is_Input  : Boolean);
+            --  Verify that all items from list Subp_List appear in Item_List.
+            --  Emit an error if this is not the case.
+
+            procedure Collect_Subprogram_Inputs_Outputs;
+            --  Gather all inputs and outputs of the subprogram. These are the
+            --  formal parameters and entities classified in pragma Global.
+
+            procedure Normalize_Clause (Clause : Node_Id);
+            --  Remove a self-dependency "+" from the input list of a clause.
+            --  Depending on the contents of the relation, either split the
+            --  the clause into multiple smaller clauses or perform the
+            --  normalization in place.
+
+            -------------------------------
+            -- Analyze_Dependency_Clause --
+            -------------------------------
+
+            procedure Analyze_Dependency_Clause
+              (Clause  : Node_Id;
+               Is_Last : Boolean)
+            is
+               procedure Analyze_Input_List (Inputs : Node_Id);
+               --  Verify the legality of a single input list
+
+               procedure Analyze_Input_Output
+                 (Item      : Node_Id;
+                  Is_Input  : Boolean;
+                  Top_Level : Boolean;
+                  Seen      : in out Elist_Id;
+                  Null_Seen : in out Boolean);
+               --  Verify the legality of a single input or output item. Flag
+               --  Is_Input should be set whenever Item is an input, False when
+               --  it denotes an output. Flag Top_Level should be set whenever
+               --  Item appears immediately within an input or output list.
+               --  Seen is a collection of all abstract states, variables and
+               --  formals processed so far. Flag Null_Seen denotes whether a
+               --  null input or output has been encountered.
+
+               ------------------------
+               -- Analyze_Input_List --
+               ------------------------
+
+               procedure Analyze_Input_List (Inputs : Node_Id) is
+                  Inputs_Seen : Elist_Id := No_Elist;
+                  --  A list containing the entities of all inputs that appear
+                  --  in the current input list.
+
+                  Null_Input_Seen : Boolean := False;
+                  --  A flag used to track the legality of a null input
+
+                  Input : Node_Id;
+
+               begin
+                  --  Multiple inputs appear as an aggregate
+
+                  if Nkind (Inputs) = N_Aggregate then
+                     if Present (Component_Associations (Inputs)) then
+                        Error_Msg_N
+                          ("nested dependency relations not allowed", Inputs);
+
+                     elsif Present (Expressions (Inputs)) then
+                        Input := First (Expressions (Inputs));
+                        while Present (Input) loop
+                           Analyze_Input_Output
+                             (Item      => Input,
+                              Is_Input  => True,
+                              Top_Level => False,
+                              Seen      => Inputs_Seen,
+                              Null_Seen => Null_Input_Seen);
+
+                           Next (Input);
+                        end loop;
+
+                     else
+                        Error_Msg_N
+                          ("malformed input dependency list", Inputs);
+                     end if;
+
+                  --  Process a solitary input
+
+                  else
+                     Analyze_Input_Output
+                       (Item      => Inputs,
+                        Is_Input  => True,
+                        Top_Level => False,
+                        Seen      => Inputs_Seen,
+                        Null_Seen => Null_Input_Seen);
+                  end if;
+
+                  --  Detect an illegal dependency clause of the form
+
+                  --    (null =>[+] null)
+
+                  if Null_Output_Seen and then Null_Input_Seen then
+                     Error_Msg_N
+                       ("null dependency clause cannot have a null input list",
+                        Inputs);
+                  end if;
+               end Analyze_Input_List;
+
+               --------------------------
+               -- Analyze_Input_Output --
+               --------------------------
+
+               procedure Analyze_Input_Output
+                 (Item      : Node_Id;
+                  Is_Input  : Boolean;
+                  Top_Level : Boolean;
+                  Seen      : in out Elist_Id;
+                  Null_Seen : in out Boolean)
+               is
+                  Is_Output : constant Boolean := not Is_Input;
+                  Grouped   : Node_Id;
+                  Item_Id   : Entity_Id;
+
+               begin
+                  --  Multiple input or output items appear as an aggregate
+
+                  if Nkind (Item) = N_Aggregate then
+                     if not Top_Level then
+                        Error_Msg_N
+                          ("nested grouping of items not allowed", Item);
+
+                     elsif Present (Component_Associations (Item)) then
+                        Error_Msg_N
+                          ("nested dependency relations not allowed", Item);
+
+                     --  Recursively analyze the grouped items
+
+                     elsif Present (Expressions (Item)) then
+                        Grouped := First (Expressions (Item));
+                        while Present (Grouped) loop
+                           Analyze_Input_Output
+                             (Item      => Grouped,
+                              Is_Input  => Is_Input,
+                              Top_Level => False,
+                              Seen      => Seen,
+                              Null_Seen => Null_Seen);
+
+                           Next (Grouped);
+                        end loop;
+
+                     else
+                        Error_Msg_N ("malformed dependency list", Item);
+                     end if;
+
+                  --  Process Function'Result in the context of a dependency
+                  --  clause.
+
+                  elsif Nkind (Item) = N_Attribute_Reference
+                    and then Attribute_Name (Item) = Name_Result
+                  then
+                     --  It is sufficent to analyze the prefix of 'Result in
+                     --  order to establish legality of the attribute.
+
+                     Analyze (Prefix (Item));
+
+                     --  The prefix of 'Result must denote the function for
+                     --  which aspect/pragma Depends applies.
+
+                     if not Is_Entity_Name (Prefix (Item))
+                       or else Ekind (Subp_Id) /= E_Function
+                       or else Entity (Prefix (Item)) /= Subp_Id
+                     then
+                        Error_Msg_Name_1 := Name_Result;
+                        Error_Msg_N
+                          ("prefix of attribute % must denote the enclosing "
+                           & "function", Item);
+
+                     --  Function'Result is allowed to appear on the output
+                     --  side of a dependency clause.
+
+                     elsif Is_Input then
+                        Error_Msg_N
+                          ("function result cannot act as input", Item);
+
+                     else
+                        Result_Seen := True;
+                     end if;
+
+                  --  Detect multiple uses of null in a single dependency list
+                  --  or throughout the whole relation. Verify the placement of
+                  --  a null output list relative to the other clauses.
+
+                  elsif Nkind (Item) = N_Null then
+                     if Null_Seen then
+                        Error_Msg_N
+                          ("multiple null dependency relations not allowed",
+                           Item);
+                     else
+                        Null_Seen := True;
+
+                        if Is_Output and then not Is_Last then
+                           Error_Msg_N
+                             ("null output list must be the last clause in "
+                              & "a dependency relation", Item);
+                        end if;
+                     end if;
+
+                  --  Default case
+
+                  else
+                     Analyze (Item);
+
+                     --  Find the entity of the item. If this is a renaming,
+                     --  climb the renaming chain to reach the root object.
+                     --  Renamings of non-entire objects do not yield an
+                     --  entity (Empty).
+
+                     Item_Id := Entity_Of (Item);
+
+                     if Present (Item_Id) then
+                        if Ekind_In (Item_Id, E_Abstract_State,
+                                              E_In_Parameter,
+                                              E_In_Out_Parameter,
+                                              E_Out_Parameter,
+                                              E_Variable)
+                        then
+                           --  Ensure that the item is of the correct mode
+                           --  depending on its function.
+
+                           Check_Mode (Item, Item_Id, Is_Input);
+
+                           --  Detect multiple uses of the same state, variable
+                           --  or formal parameter. If this is not the case,
+                           --  add the item to the list of processed relations.
+
+                           if Contains (Seen, Item_Id) then
+                              Error_Msg_N ("duplicate use of item", Item);
+                           else
+                              Add_Item (Item_Id, Seen);
+                           end if;
+
+                           --  Detect an illegal use of an input related to a
+                           --  null output. Such input items cannot appear in
+                           --  other input lists.
+
+                           if Null_Output_Seen
+                             and then Contains (All_Inputs_Seen, Item_Id)
+                           then
+                              Error_Msg_N
+                                ("input of a null output list appears in "
+                                 & "multiple input lists", Item);
+                           else
+                              Add_Item (Item_Id, All_Inputs_Seen);
+                           end if;
+
+                           --  When the item renames an entire object, replace
+                           --  the item with a reference to the object.
+
+                           if Present (Renamed_Object (Entity (Item))) then
+                              Rewrite (Item,
+                                New_Reference_To (Item_Id, Sloc (Item)));
+                              Analyze (Item);
+                           end if;
+
+                        --  All other input/output items are illegal
+
+                        else
+                           Error_Msg_N
+                             ("item must denote variable, state or formal "
+                              & "parameter", Item);
+                        end if;
+
+                     --  All other input/output items are illegal
+
+                     else
+                        Error_Msg_N
+                          ("item must denote variable, state or formal "
+                           & "parameter", Item);
+                     end if;
+                  end if;
+               end Analyze_Input_Output;
+
+               --  Local variables
+
+               Inputs : Node_Id;
+               Output : Node_Id;
+
+            --  Start of processing for Analyze_Dependency_Clause
+
+            begin
+               --  Process the output_list of a dependency_clause
+
+               Output := First (Choices (Clause));
+               while Present (Output) loop
+                  Analyze_Input_Output
+                    (Item      => Output,
+                     Is_Input  => False,
+                     Top_Level => True,
+                     Seen      => Outputs_Seen,
+                     Null_Seen => Null_Output_Seen);
+
+                  Next (Output);
+               end loop;
+
+               --  Process the input_list of a dependency_clause
+
+               Inputs := Expression (Clause);
+
+               --  An input list with a self-dependency appears as operator "+"
+               --  where the actuals inputs are the right operand.
+
+               if Nkind (Inputs) = N_Op_Plus then
+                  Inputs := Right_Opnd (Inputs);
+               end if;
+
+               Analyze_Input_List (Inputs);
+            end Analyze_Dependency_Clause;
+
+            ----------------
+            -- Appears_In --
+            ----------------
+
+            function Appears_In
+              (List    : Elist_Id;
+               Item_Id : Entity_Id) return Boolean
+            is
+               Elmt : Elmt_Id;
+               Id   : Entity_Id;
+
+            begin
+               if Present (List) then
+                  Elmt := First_Elmt (List);
+                  while Present (Elmt) loop
+                     if Nkind (Node (Elmt)) = N_Defining_Identifier then
+                        Id := Node (Elmt);
+                     else
+                        Id := Entity (Node (Elmt));
+                     end if;
+
+                     if Id = Item_Id then
+                        return True;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end if;
+
+               return False;
+            end Appears_In;
+
+            ----------------------------
+            --  Check_Function_Return --
+            ----------------------------
+
+            procedure Check_Function_Return is
+            begin
+               if Ekind (Subp_Id) = E_Function and then not Result_Seen then
+                  Error_Msg_NE
+                    ("result of & must appear in exactly one output list",
+                     N, Subp_Id);
+               end if;
+            end Check_Function_Return;
+
+            ----------------
+            -- Check_Mode --
+            ----------------
+
+            procedure Check_Mode
+              (Item     : Node_Id;
+               Item_Id  : Entity_Id;
+               Is_Input : Boolean)
+            is
+            begin
+               if Is_Input then
+                  if Ekind (Item_Id) = E_Out_Parameter
+                    or else (Global_Seen
+                              and then not Appears_In (Subp_Inputs, Item_Id))
+                  then
+                     Error_Msg_NE
+                       ("item & must have mode in or in out", Item, Item_Id);
+                  end if;
+
+               --  Output
+
+               else
+                  if Ekind (Item_Id) = E_In_Parameter
+                    or else
+                      (Global_Seen
+                         and then not Appears_In (Subp_Outputs, Item_Id))
+                  then
+                     Error_Msg_NE
+                       ("item & must have mode out or in out", Item, Item_Id);
+                  end if;
+               end if;
+            end Check_Mode;
+
+            -----------------
+            -- Check_Usage --
+            -----------------
+
+            procedure Check_Usage
+              (Subp_List : Elist_Id;
+               Item_List : Elist_Id;
+               Is_Input  : Boolean)
+            is
+               procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id);
+               --  Emit an error concerning the erroneous usage of an item
+
+               -----------------
+               -- Usage_Error --
+               -----------------
+
+               procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id) is
+               begin
+                  if Is_Input then
+                     Error_Msg_NE
+                       ("item & must appear in at least one input list of "
+                        & "aspect Depends", Item, Item_Id);
+                  else
+                     Error_Msg_NE
+                       ("item & must appear in exactly one output list of "
+                        & "aspect Depends", Item, Item_Id);
+                  end if;
+               end Usage_Error;
+
+               --  Local variables
+
+               Elmt    : Elmt_Id;
+               Item    : Node_Id;
+               Item_Id : Entity_Id;
+
+            --  Start of processing for Check_Usage
+
+            begin
+               if No (Subp_List) then
+                  return;
+               end if;
+
+               --  Each input or output of the subprogram must appear in a
+               --  dependency relation.
+
+               Elmt := First_Elmt (Subp_List);
+               while Present (Elmt) loop
+                  Item := Node (Elmt);
+
+                  if Nkind (Item) = N_Defining_Identifier then
+                     Item_Id := Item;
+                  else
+                     Item_Id := Entity (Item);
+                  end if;
+
+                  --  The item does not appear in a dependency
+
+                  if not Contains (Item_List, Item_Id) then
+                     if Is_Formal (Item_Id) then
+                        Usage_Error (Item, Item_Id);
+
+                     --  States and global variables are not used properly only
+                     --  when the subprogram is subject to pragma Global.
+
+                     elsif Global_Seen then
+                        Usage_Error (Item, Item_Id);
+                     end if;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end Check_Usage;
+
+            ---------------------------------------
+            -- Collect_Subprogram_Inputs_Outputs --
+            ---------------------------------------
+
+            procedure Collect_Subprogram_Inputs_Outputs is
+               procedure Collect_Global_List
+                 (List : Node_Id;
+                  Mode : Name_Id := Name_Input);
+               --  Collect all relevant items from a global list
+
+               -------------------------
+               -- Collect_Global_List --
+               -------------------------
+
+               procedure Collect_Global_List
+                 (List : Node_Id;
+                  Mode : Name_Id := Name_Input)
+               is
+                  procedure Collect_Global_Item
+                    (Item : Node_Id;
+                     Mode : Name_Id);
+                  --  Add an item to the proper subprogram input or output
+                  --  collection.
+
+                  -------------------------
+                  -- Collect_Global_Item --
+                  -------------------------
+
+                  procedure Collect_Global_Item
+                    (Item : Node_Id;
+                     Mode : Name_Id)
+                  is
+                  begin
+                     if Nam_In (Mode, Name_In_Out, Name_Input) then
+                        Add_Item (Item, Subp_Inputs);
+                     end if;
+
+                     if Nam_In (Mode, Name_In_Out, Name_Output) then
+                        Add_Item (Item, Subp_Outputs);
+                     end if;
+                  end Collect_Global_Item;
+
+                  --  Local variables
+
+                  Assoc : Node_Id;
+                  Item  : Node_Id;
+
+               --  Start of processing for Collect_Global_List
+
+               begin
+                  --  Single global item declaration
+
+                  if Nkind_In (List, N_Identifier, N_Selected_Component) then
+                     Collect_Global_Item (List, Mode);
+
+                  --  Simple global list or moded global list declaration
+
+                  else
+                     if Present (Expressions (List)) then
+                        Item := First (Expressions (List));
+                        while Present (Item) loop
+                           Collect_Global_Item (Item, Mode);
+
+                           Next (Item);
+                        end loop;
+
+                     else
+                        Assoc := First (Component_Associations (List));
+                        while Present (Assoc) loop
+                           Collect_Global_List
+                             (List => Expression (Assoc),
+                              Mode => Chars (First (Choices (Assoc))));
+
+                           Next (Assoc);
+                        end loop;
+                     end if;
+                  end if;
+               end Collect_Global_List;
+
+               --  Local variables
+
+               Formal : Entity_Id;
+               Global : Node_Id;
+               List   : Node_Id;
+
+            --  Start of processing for Collect_Subprogram_Inputs_Outputs
+
+            begin
+               --  Process all formal parameters
+
+               Formal := First_Formal (Subp_Id);
+               while Present (Formal) loop
+                  if Ekind_In (Formal, E_In_Out_Parameter,
+                                       E_In_Parameter)
+                  then
+                     Add_Item (Formal, Subp_Inputs);
+                  end if;
+
+                  if Ekind_In (Formal, E_In_Out_Parameter,
+                                       E_Out_Parameter)
+                  then
+                     Add_Item (Formal, Subp_Outputs);
+                  end if;
+
+                  Next_Formal (Formal);
+               end loop;
+
+               --  If the subprogram is subject to pragma Global, traverse all
+               --  global lists and gather the relevant items.
+
+               Global := Find_Aspect (Subp_Id, Aspect_Global);
+               if Present (Global) then
+                  Global_Seen := True;
+
+                  --  Retrieve the pragma as it contains the analyzed lists
+
+                  Global := Aspect_Rep_Item (Global);
+
+                  --  The pragma may not have been analyzed because of the
+                  --  arbitrary declaration order of aspects. Make sure that
+                  --  it is analyzed for the purposes of item extraction.
+
+                  if not Analyzed (Global) then
+                     Analyze (Global);
+                  end if;
+
+                  List :=
+                    Expression (First (Pragma_Argument_Associations (Global)));
+
+                  --  Nothing to be done for a null global list
+
+                  if Nkind (List) /= N_Null then
+                     Collect_Global_List (List);
+                  end if;
+               end if;
+            end Collect_Subprogram_Inputs_Outputs;
+
+            ----------------------
+            -- Normalize_Clause --
+            ----------------------
+
+            procedure Normalize_Clause (Clause : Node_Id) is
+               procedure Create_Or_Modify_Clause
+                 (Output   : Node_Id;
+                  Outputs  : Node_Id;
+                  Inputs   : Node_Id;
+                  After    : Node_Id;
+                  In_Place : Boolean;
+                  Multiple : Boolean);
+               --  Create a brand new clause to represent the self-reference
+               --  or modify the input and/or output lists of an existing
+               --  clause. Output denotes a self-referencial output. Outputs
+               --  is the output list of a clause. Inputs is the input list
+               --  of a clause. After denotes the clause after which the new
+               --  clause is to be inserted. Flag In_Place should be set when
+               --  normalizing the last output of an output list. Flag Multiple
+               --  should be set when Output comes from a list with multiple
+               --  items.
+
+               -----------------------------
+               -- Create_Or_Modify_Clause --
+               -----------------------------
+
+               procedure Create_Or_Modify_Clause
+                 (Output   : Node_Id;
+                  Outputs  : Node_Id;
+                  Inputs   : Node_Id;
+                  After    : Node_Id;
+                  In_Place : Boolean;
+                  Multiple : Boolean)
+               is
+                  procedure Propagate_Output
+                    (Output : Node_Id;
+                     Inputs : Node_Id);
+                  --  Handle the various cases of output propagation to the
+                  --  input list. Output denotes a self-referencial output
+                  --  item. Inputs is the input list of a clause.
+
+                  ----------------------
+                  -- Propagate_Output --
+                  ----------------------
+
+                  procedure Propagate_Output
+                    (Output : Node_Id;
+                     Inputs : Node_Id)
+                  is
+                     function In_Input_List
+                       (Item   : Entity_Id;
+                        Inputs : List_Id) return Boolean;
+                     --  Determine whether a particulat item appears in the
+                     --  input list of a clause.
+
+                     -------------------
+                     -- In_Input_List --
+                     -------------------
+
+                     function In_Input_List
+                       (Item   : Entity_Id;
+                        Inputs : List_Id) return Boolean
+                     is
+                        Elmt : Node_Id;
+
+                     begin
+                        Elmt := First (Inputs);
+                        while Present (Elmt) loop
+                           if Entity_Of (Elmt) = Item then
+                              return True;
+                           end if;
+
+                           Next (Elmt);
+                        end loop;
+
+                        return False;
+                     end In_Input_List;
+
+                     --  Local variables
+
+                     Output_Id : constant Entity_Id := Entity_Of (Output);
+                     Grouped   : List_Id;
+
+                  --  Start of processing for Propagate_Output
+
+                  begin
+                     --  The clause is of the form:
+
+                     --    (Output =>+ null)
+
+                     --  Remove the null input and replace it with a copy of
+                     --  the output:
+
+                     --    (Output => Output)
+
+                     if Nkind (Inputs) = N_Null then
+                        Rewrite (Inputs, New_Copy_Tree (Output));
+
+                     --  The clause is of the form:
+
+                     --    (Output =>+ (Input1, ..., InputN))
+
+                     --  Determine whether the output is not already mentioned
+                     --  in the input list and if not, add it to the list of
+                     --  inputs:
+
+                     --    (Output => (Output, Input1, ..., InputN))
+
+                     elsif Nkind (Inputs) = N_Aggregate then
+                        Grouped := Expressions (Inputs);
+
+                        if not In_Input_List
+                                 (Item   => Output_Id,
+                                  Inputs => Grouped)
+                        then
+                           Prepend_To (Grouped, New_Copy_Tree (Output));
+                        end if;
+
+                     --  The clause is of the form:
+
+                     --    (Output =>+ Input)
+
+                     --  If the input does not mention the output, group the
+                     --  two together:
+
+                     --    (Output => (Output, Input))
+
+                     elsif Entity_Of (Inputs) /= Output_Id then
+                        Rewrite (Inputs,
+                          Make_Aggregate (Loc,
+                            Expressions => New_List (
+                              New_Copy_Tree (Output),
+                              New_Copy_Tree (Inputs))));
+                     end if;
+                  end Propagate_Output;
+
+                  --  Local variables
+
+                  Loc    : constant Source_Ptr := Sloc (Output);
+                  Clause : Node_Id;
+
+               --  Start of processing for Create_Or_Modify_Clause
+
+               begin
+                  --  A function result cannot depend on itself because it
+                  --  cannot appear in the input list of a relation.
+
+                  if Nkind (Output) = N_Attribute_Reference
+                    and then Attribute_Name (Output) = Name_Result
+                  then
+                     Error_Msg_N
+                       ("function result cannot depend on itself", Output);
+                     return;
+
+                  --  A null output depending on itself does not require any
+                  --  normalization.
+
+                  elsif Nkind (Output) = N_Null then
+                     return;
+                  end if;
+
+                  --  When performing the transformation in place, simply add
+                  --  the output to the list of inputs (if not already there).
+                  --  This case arises when dealing with the last output of an
+                  --  output list - we perform the normalization in place to
+                  --  avoid generating a malformed tree.
+
+                  if In_Place then
+                     Propagate_Output (Output, Inputs);
+
+                     --  A list with multiple outputs is slowly trimmed until
+                     --  only one element remains. When this happens, replace
+                     --  the aggregate with the element itself.
+
+                     if Multiple then
+                        Remove  (Output);
+                        Rewrite (Outputs, Output);
+                     end if;
+
+                  --  Default case
+
+                  else
+                     --  Unchain the output from its output list as it will
+                     --  appear in a new clause. Note that we cannot simply
+                     --  rewrite the output as null because this will violate
+                     --  the semantics of aspect/pragma Depends.
+
+                     Remove (Output);
+
+                     --  Create a new clause of the form:
+
+                     --    (Output => Inputs)
+
+                     Clause :=
+                       Make_Component_Association (Loc,
+                         Choices    => New_List (Output),
+                         Expression => New_Copy_Tree (Inputs));
+
+                     --  The new clause contains replicated content that has
+                     --  already been analyzed. There is not need to reanalyze
+                     --  it or renormalize it again.
+
+                     Set_Analyzed (Clause);
+
+                     Propagate_Output
+                       (Output => First (Choices (Clause)),
+                        Inputs => Expression (Clause));
+
+                     Insert_After (After, Clause);
+                  end if;
+               end Create_Or_Modify_Clause;
+
+               --  Local variables
+
+               Outputs     : constant Node_Id := First (Choices (Clause));
+               Inputs      : Node_Id;
+               Last_Output : Node_Id;
+               Next_Output : Node_Id;
+               Output      : Node_Id;
+
+            --  Start of processing for Normalize_Clause
+
+            begin
+               --  A self-dependency appears as operator "+". Remove the "+"
+               --  from the tree by moving the real inputs to their proper
+               --  place.
+
+               if Nkind (Expression (Clause)) = N_Op_Plus then
+                  Rewrite
+                    (Expression (Clause), Right_Opnd (Expression (Clause)));
+                  Inputs := Expression (Clause);
+
+                  --  Multiple outputs appear as an aggregate
+
+                  if Nkind (Outputs) = N_Aggregate then
+                     Last_Output := Last (Expressions (Outputs));
+
+                     Output := First (Expressions (Outputs));
+                     while Present (Output) loop
+
+                        --  Normalization may remove an output from its list,
+                        --  preserve the subsequent output now.
+
+                        Next_Output := Next (Output);
+
+                        Create_Or_Modify_Clause
+                          (Output   => Output,
+                           Outputs  => Outputs,
+                           Inputs   => Inputs,
+                           After    => Clause,
+                           In_Place => Output = Last_Output,
+                           Multiple => True);
+
+                        Output := Next_Output;
+                     end loop;
+
+                  --  Solitary output
+
+                  else
+                     Create_Or_Modify_Clause
+                       (Output   => Outputs,
+                        Outputs  => Empty,
+                        Inputs   => Inputs,
+                        After    => Empty,
+                        In_Place => True,
+                        Multiple => False);
+                  end if;
+               end if;
+            end Normalize_Clause;
+
+            --  Local variables
+
+            Clause      : Node_Id;
+            Errors      : Nat;
+            Last_Clause : Node_Id;
+            Subp_Decl   : Node_Id;
+
+         --  Start of processing for Depends
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Depends must be
+            --  associated with a subprogram declaration.
+
+            Subp_Decl := Parent (Corresponding_Aspect (N));
+
+            if Nkind (Subp_Decl) /= N_Subprogram_Declaration then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
+            Clause  := Expression (Arg1);
+
+            --  Empty dependency list
+
+            if Nkind (Clause) = N_Null then
+
+               --  Gather all states, variables and formal parameters that the
+               --  subprogram may depend on. These items are obtained from the
+               --  parameter profile or pragma Global (if available).
+
+               Collect_Subprogram_Inputs_Outputs;
+
+               --  Verify that every input or output of the subprogram appear
+               --  in a dependency.
+
+               Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
+               Check_Usage (Subp_Outputs, Outputs_Seen, False);
+               Check_Function_Return;
+
+            --  Dependency clauses appear as component associations of an
+            --  aggregate.
+
+            elsif Nkind (Clause) = N_Aggregate
+              and then Present (Component_Associations (Clause))
+            then
+               Last_Clause := Last (Component_Associations (Clause));
+
+               --  Gather all states, variables and formal parameters that the
+               --  subprogram may depend on. These items are obtained from the
+               --  parameter profile or pragma Global (if available).
+
+               Collect_Subprogram_Inputs_Outputs;
+
+               --  Ensure that the formal parameters are visible when analyzing
+               --  all clauses. This falls out of the general rule of aspects
+               --  pertaining to subprogram declarations.
+
+               Push_Scope (Subp_Id);
+               Install_Formals (Subp_Id);
+
+               Clause := First (Component_Associations (Clause));
+               while Present (Clause) loop
+                  Errors := Serious_Errors_Detected;
+
+                  --  Normalization may create extra clauses that contain
+                  --  replicated input and output names. There is no need
+                  --  to reanalyze or renormalize these extra clauses.
+
+                  if not Analyzed (Clause) then
+                     Set_Analyzed (Clause);
+
+                     Analyze_Dependency_Clause
+                       (Clause  => Clause,
+                        Is_Last => Clause = Last_Clause);
+
+                     --  Do not normalize an erroneous clause because the
+                     --  inputs or outputs may denote illegal items.
+
+                     if Errors = Serious_Errors_Detected then
+                        Normalize_Clause (Clause);
+                     end if;
+                  end if;
+
+                  Next (Clause);
+               end loop;
+
+               End_Scope;
+
+               --  Verify that every input or output of the subprogram appear
+               --  in a dependency.
+
+               Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
+               Check_Usage (Subp_Outputs, Outputs_Seen, False);
+               Check_Function_Return;
+
+            --  The top level dependency relation is malformed
+
+            else
+               Error_Msg_N ("malformed dependency relation", Clause);
+            end if;
+         end Depends;
 
          ---------------------
          -- Detect_Blocking --
@@ -9325,8 +10788,8 @@ package body Sem_Prag is
                 Present (Source_Location)
             then
                Error_Pragma
-                 ("parameter profile and source location cannot " &
-                  "be used together in pragma%");
+                 ("parameter profile and source location cannot be used "
+                  & "together in pragma%");
             end if;
 
             Process_Eliminate_Pragma
@@ -10030,20 +11493,55 @@ package body Sem_Prag is
             end if;
          end Float_Representation;
 
+         -----------
+         -- Ghost --
+         -----------
+
+         --  pragma GHOST (function_LOCAL_NAME);
+
+         when Pragma_Ghost => Ghost : declare
+            Subp    : Node_Id;
+            Subp_Id : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            --  Ensure the proper placement of the pragma. Ghost must be
+            --  associated with a subprogram declaration.
+
+            Subp := Parent (Corresponding_Aspect (N));
+
+            if Nkind (Subp) /= N_Subprogram_Declaration then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Subp_Id := Defining_Unit_Name (Specification (Subp));
+
+            if Ekind (Subp_Id) /= E_Function then
+               Error_Pragma ("pragma % must be applied to a function");
+            end if;
+         end Ghost;
+
          ------------
          -- Global --
          ------------
 
          --  pragma Global (GLOBAL_SPECIFICATION)
 
-         --  GLOBAL_SPECIFICATION ::= MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
-         --                           | GLOBAL_LIST
-         --                           | null
-         --  MODED_GLOBAL_LIST    ::= MODE_SELECTOR => GLOBAL_LIST
-         --  MODE_SELECTOR        ::= Input | Output | In_Out | Contract_In
-         --  GLOBAL_LIST          ::= GLOBAL_ITEM
-         --                           | (GLOBAL_ITEM {, GLOBAL_ITEM})
-         --  GLOBAL_ITEM          ::= NAME
+         --  GLOBAL_SPECIFICATION ::=
+         --    null
+         --  | GLOBAL_LIST
+         --  | MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST}
+
+         --  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
+
+         --  MODE_SELECTOR ::= Input | Output | In_Out | Contract_In
+         --  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
+         --  GLOBAL_ITEM   ::= NAME
 
          when Pragma_Global => Global : declare
             Subp_Id : Entity_Id;
@@ -10052,12 +11550,11 @@ package body Sem_Prag is
             --  A list containing the entities of all the items processed so
             --  far. It plays a role in detecting distinct entities.
 
-            --  Flags used to verify the consistency of modes
-
             Contract_Seen : Boolean := False;
             In_Out_Seen   : Boolean := False;
             Input_Seen    : Boolean := False;
             Output_Seen   : Boolean := False;
+            --  Flags used to verify the consistency of modes
 
             procedure Analyze_Global_List
               (List        : Node_Id;
@@ -10099,36 +11596,7 @@ package body Sem_Prag is
                  (Item        : Node_Id;
                   Global_Mode : Name_Id)
                is
-                  function Is_Duplicate_Item (Id : Entity_Id) return Boolean;
-                  --  Determine whether Id has already been processed
-
-                  -----------------------
-                  -- Is_Duplicate_Item --
-                  -----------------------
-
-                  function Is_Duplicate_Item (Id : Entity_Id) return Boolean is
-                     Item_Elmt : Elmt_Id;
-
-                  begin
-                     if Present (Seen) then
-                        Item_Elmt := First_Elmt (Seen);
-                        while Present (Item_Elmt) loop
-                           if Node (Item_Elmt) = Id then
-                              return True;
-                           end if;
-
-                           Next_Elmt (Item_Elmt);
-                        end loop;
-                     end if;
-
-                     return False;
-                  end Is_Duplicate_Item;
-
-                  --  Local declarations
-
-                  Id : Entity_Id;
-
-               --  Start of processing for Analyze_Global_Item
+                  Item_Id : Entity_Id;
 
                begin
                   --  Detect one of the following cases
@@ -10145,13 +11613,18 @@ package body Sem_Prag is
 
                   Analyze (Item);
 
-                  if Is_Entity_Name (Item) then
-                     Id := Entity (Item);
+                  --  Find the entity of the item. If this is a renaming, climb
+                  --  the renaming chain to reach the root object. Renamings of
+                  --  non-entire objects do not yield an entity (Empty).
+
+                  Item_Id := Entity_Of (Item);
+
+                  if Present (Item_Id) then
 
                      --  A global item cannot reference a formal parameter. Do
                      --  this check first to provide a better error diagnostic.
 
-                     if Is_Formal (Id) then
+                     if Is_Formal (Item_Id) then
                         Error_Msg_N
                           ("global item cannot reference formal parameter",
                            Item);
@@ -10160,12 +11633,21 @@ package body Sem_Prag is
                      --  The only legal references are those to abstract states
                      --  and variables.
 
-                     elsif not Ekind_In (Entity (Item), E_Abstract_State,
-                                                        E_Variable)
+                     elsif not Ekind_In (Item_Id, E_Abstract_State,
+                                                  E_Variable)
                      then
                         Error_Msg_N
                           ("global item must denote variable or state", Item);
                         return;
+                     end if;
+
+                     --  When the item renames an entire object, replace the
+                     --  item with a reference to the object.
+
+                     if Present (Renamed_Object (Entity (Item))) then
+                        Rewrite (Item,
+                          New_Reference_To (Item_Id, Sloc (Item)));
+                        Analyze (Item);
                      end if;
 
                   --  Some form of illegal construct masquerading as a name
@@ -10179,42 +11661,34 @@ package body Sem_Prag is
                   --  The same entity might be referenced through various way.
                   --  Check the entity of the item rather than the item itself.
 
-                  if Is_Duplicate_Item (Id) then
+                  if Contains (Seen, Item_Id) then
                      Error_Msg_N ("duplicate global item", Item);
 
                   --  Add the entity of the current item to the list of
                   --  processed items.
 
                   else
-                     if No (Seen) then
-                        Seen := New_Elmt_List;
-                     end if;
-
-                     Append_Elmt (Id, Seen);
+                     Add_Item (Item_Id, Seen);
                   end if;
 
-                  if Ekind (Id) = E_Abstract_State
-                    and then Is_Volatile_State (Id)
+                  if Ekind (Item_Id) = E_Abstract_State
+                    and then Is_Volatile_State (Item_Id)
                   then
                      --  A global item of mode In_Out or Output cannot denote a
                      --  volatile Input state.
 
-                     if Is_Input_State (Id)
-                       and then (Global_Mode = Name_In_Out
-                                   or else
-                                 Global_Mode = Name_Output)
+                     if Is_Input_State (Item_Id)
+                       and then Nam_In (Global_Mode, Name_In_Out, Name_Output)
                      then
                         Error_Msg_N
-                          ("global item of mode In_Out or Output cannot " &
-                           "reference Volatile Input state", Item);
+                          ("global item of mode In_Out or Output cannot "
+                           & "reference Volatile Input state", Item);
 
                      --  A global item of mode In_Out or Input cannot reference
                      --  a volatile Output state.
 
-                     elsif Is_Output_State (Id)
-                       and then (Global_Mode = Name_In_Out
-                                   or else
-                                 Global_Mode = Name_Input)
+                     elsif Is_Output_State (Item_Id)
+                       and then Nam_In (Global_Mode, Name_In_Out, Name_Input)
                      then
                         Error_Msg_N
                           ("global item of mode In_Out or Input cannot "
@@ -10246,9 +11720,8 @@ package body Sem_Prag is
                procedure Check_Mode_Restriction_In_Function (Mode : Node_Id) is
                begin
                   if Ekind (Subp_Id) = E_Function then
-                     Error_Msg_Name_1 := Chars (Mode);
                      Error_Msg_N
-                       ("global mode % not applicable to functions", Mode);
+                       ("global mode & not applicable to functions", Mode);
                   end if;
                end Check_Mode_Restriction_In_Function;
 
@@ -10300,22 +11773,22 @@ package body Sem_Prag is
 
                      Assoc := First (Component_Associations (List));
                      while Present (Assoc) loop
-                           Mode := First (Choices (Assoc));
+                        Mode := First (Choices (Assoc));
 
                         if Nkind (Mode) = N_Identifier then
                            if Chars (Mode) = Name_Contract_In then
-                                 Check_Duplicate_Mode (Mode, Contract_Seen);
+                              Check_Duplicate_Mode (Mode, Contract_Seen);
 
                            elsif Chars (Mode) = Name_In_Out then
                               Check_Duplicate_Mode (Mode, In_Out_Seen);
-                                 Check_Mode_Restriction_In_Function (Mode);
+                              Check_Mode_Restriction_In_Function (Mode);
 
                            elsif Chars (Mode) = Name_Input then
-                                 Check_Duplicate_Mode (Mode, Input_Seen);
+                              Check_Duplicate_Mode (Mode, Input_Seen);
 
                            elsif Chars (Mode) = Name_Output then
                               Check_Duplicate_Mode (Mode, Output_Seen);
-                                 Check_Mode_Restriction_In_Function (Mode);
+                              Check_Mode_Restriction_In_Function (Mode);
 
                            else
                               Error_Msg_N ("invalid mode selector", Mode);
@@ -10393,7 +11866,7 @@ package body Sem_Prag is
 
                Analyze_Global_List (List);
 
-               Pop_Scope;
+               End_Scope;
             end if;
          end Global;
 
@@ -10608,8 +12081,8 @@ package body Sem_Prag is
                   null;
                else
                   Error_Pragma_Arg
-                    ("controlling formal must be of synchronized " &
-                     "tagged type", Arg1);
+                    ("controlling formal must be of synchronized tagged type",
+                     Arg1);
                   return;
                end if;
 
@@ -10637,8 +12110,8 @@ package body Sem_Prag is
               and then Is_Task_Interface (Typ)
             then
                Error_Pragma_Arg
-                 ("implementation kind By_Protected_Procedure cannot be " &
-                  "applied to a task interface primitive", Arg2);
+                 ("implementation kind By_Protected_Procedure cannot be "
+                  & "applied to a task interface primitive", Arg2);
                return;
             end if;
 
@@ -11460,8 +12933,8 @@ package body Sem_Prag is
                   Int_Val > Expr_Value (Type_High_Bound (Int_Id))
                then
                   Error_Pragma_Arg
-                    ("value not in range of type " &
-                     """Ada.Interrupts.Interrupt_'I'D""", Arg1);
+                    ("value not in range of type "
+                     & """Ada.Interrupts.Interrupt_'I'D""", Arg1);
                end if;
             end if;
 
@@ -11567,8 +13040,8 @@ package body Sem_Prag is
 
             elsif In_Private_Part (Current_Scope) then
                Error_Pragma_Arg
-                 ("pragma% only allowed for private type " &
-                  "declared in visible part", Arg1);
+                 ("pragma% only allowed for private type declared in "
+                  & "visible part", Arg1);
 
             else
                Error_Pragma_Arg
@@ -11576,10 +13049,10 @@ package body Sem_Prag is
             end if;
 
             --  Note that the type has at least one invariant, and also that
-            --  it has inheritable invariants if we have Invariant'Class.
-            --  Build the corresponding invariant procedure declaration, so
-            --  that calls to it can be generated before the body is built
-            --  (for example wihin an expression function).
+            --  it has inheritable invariants if we have Invariant'Class
+            --  or Type_Invariant'Class. Build the corresponding invariant
+            --  procedure declaration, so that calls to it can be generated
+            --  before the body is built (e.g. within an expression function).
 
             PDecl := Build_Invariant_Procedure_Declaration (Typ);
             Insert_After (N, PDecl);
@@ -11661,12 +13134,12 @@ package body Sem_Prag is
                if Ekind (Def_Id) /= E_Function then
                   if VM_Target = JVM_Target then
                      Error_Pragma_Arg
-                       ("pragma% requires function returning a " &
-                        "'Java access type", Def_Id);
+                       ("pragma% requires function returning a 'Java access "
+                        & "type", Def_Id);
                   else
                      Error_Pragma_Arg
-                       ("pragma% requires function returning a " &
-                        "'C'I'L access type", Def_Id);
+                       ("pragma% requires function returning a 'C'I'L access "
+                        & "type", Def_Id);
                   end if;
                end if;
 
@@ -11762,8 +13235,8 @@ package body Sem_Prag is
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
-                       ("first formal of % function must be a named access" &
-                        " to subprogram type",
+                       ("first formal of % function must be a named access "
+                        & "to subprogram type",
                         Parameter_Type (Parent (This_Formal)));
 
                   --  Warning: We should reject anonymous access types because
@@ -11779,9 +13252,8 @@ package body Sem_Prag is
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
-                       ("first formal of % function must be a named access" &
-                        " type",
-                        Parameter_Type (Parent (This_Formal)));
+                       ("first formal of % function must be a named access "
+                        & "type", Parameter_Type (Parent (This_Formal)));
 
                   elsif Atree.Convention
                          (Designated_Type (Etype (This_Formal))) /= Convention
@@ -11790,14 +13262,12 @@ package body Sem_Prag is
 
                      if Convention = Convention_Java then
                         Error_Msg_N
-                          ("pragma% requires convention 'Cil in designated" &
-                           " type",
-                           Parameter_Type (Parent (This_Formal)));
+                          ("pragma% requires convention 'Cil in designated "
+                           & "type", Parameter_Type (Parent (This_Formal)));
                      else
                         Error_Msg_N
-                          ("pragma% requires convention 'Java in designated" &
-                           " type",
-                           Parameter_Type (Parent (This_Formal)));
+                          ("pragma% requires convention 'Java in designated "
+                           & "type", Parameter_Type (Parent (This_Formal)));
                      end if;
 
                   elsif No (Expression (Parent (This_Formal)))
@@ -11826,13 +13296,13 @@ package body Sem_Prag is
                   if Atree.Convention (Etype (Def_Id)) /= Convention then
                      if Convention = Convention_Java then
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a " &
-                           "'Java access type", Arg1);
+                          ("pragma% requires function returning a 'Java "
+                           & "access type", Arg1);
                      else
                         pragma Assert (Convention = Convention_CIL);
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a " &
-                           "'C'I'L access type", Arg1);
+                          ("pragma% requires function returning a 'C'I'L "
+                           & "access type", Arg1);
                      end if;
                   end if;
 
@@ -11847,12 +13317,12 @@ package body Sem_Prag is
 
                      if Convention = Convention_Java then
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a named" &
-                           "'Java access type", Arg1);
+                          ("pragma% requires function returning a named "
+                           & "'Java access type", Arg1);
                      else
                         Error_Pragma_Arg
-                          ("pragma% requires function returning a named" &
-                           "'C'I'L access type", Arg1);
+                          ("pragma% requires function returning a named "
+                           & "'C'I'L access type", Arg1);
                      end if;
                   end if;
                end if;
@@ -12392,21 +13862,19 @@ package body Sem_Prag is
             Check_Arg_Count (1);
             Check_Loop_Pragma_Placement;
 
-            --  Completely ignore if disabled
+            --  Completely ignore if not enabled
 
-            if Check_Disabled (Pname) then
+            if Is_Ignored (N) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
             end if;
 
-            Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
+            Preanalyze_Assert_Expression (Expression (Arg1), Any_Boolean);
 
             --  Transform pragma Loop_Invariant into equivalent pragma Check
             --  Generate:
             --    pragma Check (Loop_Invaraint, Arg1);
-
-            --  Seems completely wrong to hijack pragma Check this way ???
 
             Rewrite (N,
               Make_Pragma (Loc,
@@ -12434,12 +13902,14 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
             Check_No_Identifiers;
+
             Hint := First (Pragma_Argument_Associations (N));
             while Present (Hint) loop
                Check_Arg_Is_One_Of (Hint,
                  Name_No_Unroll, Name_Unroll, Name_No_Vector, Name_Vector);
                Next (Hint);
             end loop;
+
             Check_Loop_Pragma_Placement;
          end Loop_Optimize;
 
@@ -12463,9 +13933,9 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
             Check_Loop_Pragma_Placement;
 
-            --  Completely ignore if disabled
+            --  Completely ignore if not enabled
 
-            if Check_Disabled (Pname) then
+            if Is_Ignored (N) then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
@@ -12475,13 +13945,14 @@ package body Sem_Prag is
 
             Variant := First (Pragma_Argument_Associations (N));
             while Present (Variant) loop
-               if Chars (Variant) /= Name_Decreases
-                 and then Chars (Variant) /= Name_Increases
+               if not Nam_In (Chars (Variant), Name_Decreases,
+                                               Name_Increases)
                then
                   Error_Pragma_Arg ("wrong change modifier", Variant);
                end if;
 
-               Preanalyze_And_Resolve (Expression (Variant), Any_Discrete);
+               Preanalyze_Assert_Expression
+                 (Expression (Variant), Any_Discrete);
 
                Next (Variant);
             end loop;
@@ -12875,8 +14346,8 @@ package body Sem_Prag is
                      loop
                         if No (Ent) then
                            Error_Pragma
-                             ("pragma % entity name does not match any " &
-                              "enumeration literal");
+                             ("pragma % entity name does not match any "
+                              & "enumeration literal");
 
                         elsif Chars (Ent) = Chars (Ename) then
                            Set_Entity (Ename, Ent);
@@ -13414,12 +14885,22 @@ package body Sem_Prag is
             Check_First_Subtype (Arg1);
             Ent := Entity (Get_Pragma_Arg (Arg1));
 
-            if not (Is_Private_Type (Ent)
-                      or else
-                    Is_Protected_Type (Ent)
-                      or else
-                    (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent)))
+            --  The pragma may come from an aspect on a private declaration,
+            --  even if the freeze point at which this is analyzed in the
+            --  private part after the full view.
+
+            if Has_Private_Declaration (Ent)
+              and then From_Aspect_Specification (N)
             then
+               null;
+
+            elsif Is_Private_Type (Ent)
+              or else Is_Protected_Type (Ent)
+              or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
+            then
+               null;
+
+            else
                Error_Pragma_Arg
                  ("pragma % can only be applied to private, formal derived or "
                   & "protected type",
@@ -13434,8 +14915,8 @@ package body Sem_Prag is
               and then not Has_Preelaborable_Initialization (Ent)
             then
                Error_Msg_N
-                 ("protected type & does not have preelaborable " &
-                  "initialization", Ent);
+                 ("protected type & does not have preelaborable "
+                  & "initialization", Ent);
 
             --  Otherwise mark the type as definitely having preelaborable
             --  initialization.
@@ -13552,7 +15033,7 @@ package body Sem_Prag is
 
             Check_Precondition_Postcondition (In_Body);
 
-            --  When the pragma is a source contruct and appears inside a body,
+            --  When the pragma is a source construct appearing inside a body,
             --  preanalyze the boolean_expression to detect illegal forward
             --  references:
 
@@ -13583,10 +15064,20 @@ package body Sem_Prag is
             Check_Precondition_Postcondition (In_Body);
 
             --  If in spec, nothing more to do. If in body, then we convert the
-            --  pragma to pragma Check (Precondition, cond [, msg]). Note we do
-            --  this whether or not precondition checks are enabled. That works
-            --  fine since pragma Check will do this check, and will also
-            --  analyze the condition itself in the proper context.
+            --  pragma to an equivalent pragam Check. Note we do this whether
+            --  or not precondition checks are enabled. That works fine since
+            --  pragma Check will do this check, and will also analyze the
+            --  condition itself in the proper context.
+
+            --  The form of the pragma Check is either:
+
+            --    pragma Check (Precondition, cond [, msg])
+            --       or
+            --    pragma Check (Pre, cond [, msg])
+
+            --  We use the Pre form if this pragma derived from a Pre aspect.
+            --  This is needed to make sure that the right set of Policy
+            --  pragmas are checked.
 
             if In_Body then
                Rewrite (N,
@@ -13594,7 +15085,7 @@ package body Sem_Prag is
                    Chars                        => Name_Check,
                    Pragma_Argument_Associations => New_List (
                      Make_Pragma_Argument_Association (Loc,
-                       Expression => Make_Identifier (Loc, Name_Precondition)),
+                       Expression => Make_Identifier (Loc, Pname)),
 
                      Make_Pragma_Argument_Association (Sloc (Arg1),
                        Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
@@ -13808,7 +15299,7 @@ package body Sem_Prag is
                --  described in "Handling of Default and Per-Object
                --  Expressions" in sem.ads.
 
-               Preanalyze_Spec_Expression (Arg, Standard_Integer);
+               Preanalyze_Spec_Expression (Arg, RTE (RE_Any_Priority));
 
                if not Is_Static_Expression (Arg) then
                   Check_Restriction (Static_Priorities, Arg);
@@ -13894,8 +15385,8 @@ package body Sem_Prag is
 
             elsif Lower_Val > Upper_Val then
                Error_Pragma
-                 ("last_priority_expression must be greater than" &
-                  " or equal to first_priority_expression");
+                 ("last_priority_expression must be greater than or equal to "
+                  & "first_priority_expression");
 
             --  Store the new policy, but always preserve System_Location since
             --  we like the error message with the run-time name.
@@ -14737,8 +16228,8 @@ package body Sem_Prag is
               or else In_Package_Body (Current_Scope)
             then
                Error_Pragma
-                 ("pragma% can only apply to type declared immediately " &
-                  "within a package declaration");
+                 ("pragma% can only apply to type declared immediately "
+                  & "within a package declaration");
             end if;
 
             --  A simple storage pool type must be an immutably limited record
@@ -14976,8 +16467,8 @@ package body Sem_Prag is
                  or else Present (Next_Formal (First_Formal (Ent)))
                then
                   Error_Pragma_Arg
-                    ("argument for pragma% must be" &
-                     " function of one argument", Arg);
+                    ("argument for pragma% must be function of one argument",
+                     Arg);
                end if;
             end Check_OK_Stream_Convert_Function;
 
@@ -16100,10 +17591,7 @@ package body Sem_Prag is
                   --  On/Off one argument case was processed by parser
 
                   if Nkind (Argx) = N_Identifier
-                    and then
-                      (Chars (Argx) = Name_On
-                         or else
-                       Chars (Argx) = Name_Off)
+                    and then Nam_In (Chars (Argx), Name_On, Name_Off)
                   then
                      null;
 
@@ -16111,8 +17599,8 @@ package body Sem_Prag is
 
                   elsif not Is_Static_String_Expression (Arg1) then
                      Error_Pragma_Arg
-                       ("argument of pragma% must be On/Off or " &
-                        "static string expression", Arg1);
+                       ("argument of pragma% must be On/Off or static string "
+                        & "expression", Arg1);
 
                   --  One argument string expression case
 
@@ -16156,8 +17644,8 @@ package body Sem_Prag is
 
                                  if not Set_Dot_Warning_Switch (Chr) then
                                     Error_Pragma_Arg
-                                      ("invalid warning switch character " &
-                                       '.' & Chr, Arg1);
+                                      ("invalid warning switch character "
+                                       & '.' & Chr, Arg1);
                                  end if;
 
                               --  Non-Dot case
@@ -16250,8 +17738,8 @@ package body Sem_Prag is
 
                      elsif not Is_Static_String_Expression (Arg2) then
                         Error_Pragma_Arg
-                          ("second argument of pragma% must be entity " &
-                           "name or static string expression", Arg2);
+                          ("second argument of pragma% must be entity name "
+                           & "or static string expression", Arg2);
 
                      --  String literal case
 
@@ -16290,9 +17778,8 @@ package body Sem_Prag is
 
                            if Err then
                               Error_Msg
-                                ("??pragma Warnings On with no " &
-                                 "matching Warnings Off",
-                                 Loc);
+                                ("??pragma Warnings On with no matching "
+                                 & "Warnings Off", Loc);
                            end if;
                         end if;
                      end if;
@@ -16371,84 +17858,140 @@ package body Sem_Prag is
       when Pragma_Exit => null;
    end Analyze_Pragma;
 
-   --------------------
-   -- Check_Disabled --
-   --------------------
+   ----------------
+   -- Check_Kind --
+   ----------------
 
-   function Check_Disabled (Nam : Name_Id) return Boolean is
+   function Check_Kind (Nam : Name_Id) return Name_Id is
       PP : Node_Id;
 
    begin
       --  Loop through entries in check policy list
 
       PP := Opt.Check_Policy_List;
-      loop
-         --  If there are no specific entries that matched, then nothing is
-         --  disabled, so return False.
+      while Present (PP) loop
+         declare
+            PPA : constant List_Id := Pragma_Argument_Associations (PP);
+            Pnm : constant Name_Id := Chars (Get_Pragma_Arg (First (PPA)));
 
-         if No (PP) then
-            return False;
+         begin
+            if Nam = Pnm
+              or else (Is_Valid_Assertion_Kind (Nam)
+                        and then Pnm = Name_Assertion)
+            then
+               case (Chars (Get_Pragma_Arg (Last (PPA)))) is
+                  when Name_On | Name_Check =>
+                     return Name_Check;
+                  when Name_Off | Name_Ignore =>
+                     return Name_Ignore;
+                  when Name_Disable =>
+                     return Name_Disable;
+                  when others =>
+                     raise Program_Error;
+               end case;
 
-         --  Here we have an entry see if it matches
-
-         else
-            declare
-               PPA : constant List_Id := Pragma_Argument_Associations (PP);
-            begin
-               if Nam = Chars (Get_Pragma_Arg (First (PPA))) then
-                  return Chars (Get_Pragma_Arg (Last (PPA))) = Name_Disable;
-               else
-                  PP := Next_Pragma (PP);
-               end if;
-            end;
-         end if;
+            else
+               PP := Next_Pragma (PP);
+            end if;
+         end;
       end loop;
-   end Check_Disabled;
 
-   -------------------
-   -- Check_Enabled --
-   -------------------
+      --  If there are no specific entries that matched, then we let the
+      --  setting of assertions govern. Note that this provides the needed
+      --  compatibility with the RM for the cases of assertion, invariant,
+      --  precondition, predicate, and postcondition.
 
-   function Check_Enabled (Nam : Name_Id) return Boolean is
-      PP : Node_Id;
+      if Assertions_Enabled then
+         return Name_Check;
+      else
+         return Name_Ignore;
+      end if;
+   end Check_Kind;
+
+   -----------------------------
+   -- Check_Applicable_Policy --
+   -----------------------------
+
+   procedure Check_Applicable_Policy (N : Node_Id) is
+      PP     : Node_Id;
+      Policy : Name_Id;
+
+      Ename : Name_Id;
+      --  Effective name of aspect or pragma, this is simply the name of
+      --  the aspect or pragma, except in the case of a pragma derived from
+      --  an aspect, in which case it is the name of the aspect (which may be
+      --  different, e.g. Pre aspect generating Precondition pragma). It also
+      --  deals with the 'Class cases for an aspect.
 
    begin
+      if Nkind (N) = N_Pragma then
+         if Present (Corresponding_Aspect (N)) then
+            Ename := Chars (Identifier (Corresponding_Aspect (N)));
+         else
+            Ename := Chars (Pragma_Identifier (N));
+         end if;
+
+      else
+         pragma Assert (Nkind (N) = N_Aspect_Specification);
+         Ename := Chars (Identifier (N));
+
+         if Class_Present (N) then
+            case Ename is
+               when Name_Invariant      => Ename := Name_uInvariant;
+               when Name_Pre            => Ename := Name_uPre;
+               when Name_Post           => Ename := Name_uPost;
+               when Name_Type_Invariant => Ename := Name_uType_Invariant;
+               when others           => raise Program_Error;
+            end case;
+         end if;
+      end if;
+
+      --  No effect if not valid assertion kind name
+
+      if not Is_Valid_Assertion_Kind (Ename) then
+         return;
+      end if;
+
       --  Loop through entries in check policy list
 
       PP := Opt.Check_Policy_List;
-      loop
-         --  If there are no specific entries that matched, then we let the
-         --  setting of assertions govern. Note that this provides the needed
-         --  compatibility with the RM for the cases of assertion, invariant,
-         --  precondition, predicate, and postcondition.
+      while Present (PP) loop
+         declare
+            PPA : constant List_Id := Pragma_Argument_Associations (PP);
+            Pnm : constant Name_Id := Chars (Get_Pragma_Arg (First (PPA)));
 
-         if No (PP) then
-            return Assertions_Enabled;
+         begin
+            if Ename = Pnm or else Pnm = Name_Assertion then
+               Policy := Chars (Get_Pragma_Arg (Last (PPA)));
 
-         --  Here we have an entry see if it matches
+               case Policy is
+                  when Name_Off | Name_Ignore =>
+                     Set_Is_Ignored (N, True);
 
-         else
-            declare
-               PPA : constant List_Id := Pragma_Argument_Associations (PP);
+                  when Name_Disable =>
+                     Set_Is_Ignored (N, True);
+                     Set_Is_Disabled (N, True);
 
-            begin
-               if Nam = Chars (Get_Pragma_Arg (First (PPA))) then
-                  case (Chars (Get_Pragma_Arg (Last (PPA)))) is
-                     when Name_On | Name_Check =>
-                        return True;
-                     when Name_Off | Name_Ignore =>
-                        return False;
-                     when others =>
-                        raise Program_Error;
-                  end case;
+                  when others =>
+                     null;
+               end case;
 
-               else
-                  PP := Next_Pragma (PP);
-               end if;
-            end;
-         end if;
+               return;
+            end if;
+
+            PP := Next_Pragma (PP);
+         end;
       end loop;
-   end Check_Enabled;
+
+      --  If there are no specific entries that matched, then we let the
+      --  setting of assertions govern. Note that this provides the needed
+      --  compatibility with the RM for the cases of assertion, invariant,
+      --  precondition, predicate, and postcondition.
+
+      if not Assertions_Enabled then
+         Set_Is_Ignored (N);
+      end if;
+   end Check_Applicable_Policy;
 
    ---------------------------------
    -- Delay_Config_Pragma_Analyze --
@@ -16456,9 +17999,8 @@ package body Sem_Prag is
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean is
    begin
-      return Pragma_Name (N) = Name_Interrupt_State
-               or else
-             Pragma_Name (N) = Name_Priority_Specific_Dispatching;
+      return Nam_In (Pragma_Name (N), Name_Interrupt_State,
+                                      Name_Priority_Specific_Dispatching);
    end Delay_Config_Pragma_Analyze;
 
    -------------------------
@@ -16618,6 +18160,7 @@ package body Sem_Prag is
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                => -1,
       Pragma_Default_Storage_Pool           => -1,
+      Pragma_Depends                        => -1,
       Pragma_Disable_Atomic_Synchronization => -1,
       Pragma_Discard_Names                  =>  0,
       Pragma_Dispatching_Domain             => -1,
@@ -16642,6 +18185,7 @@ package body Sem_Prag is
       Pragma_Fast_Math                      => -1,
       Pragma_Finalize_Storage_Only          =>  0,
       Pragma_Float_Representation           =>  0,
+      Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
       Pragma_Ident                          => -1,
       Pragma_Implementation_Defined         => -1,
@@ -16899,6 +18443,44 @@ package body Sem_Prag is
       end if;
    end Is_Pragma_String_Literal;
 
+   -----------------------------
+   -- Is_Valid_Assertion_Kind --
+   -----------------------------
+
+   function Is_Valid_Assertion_Kind (Nam : Name_Id) return Boolean is
+   begin
+      case Nam is
+         when
+            --  RM defined
+
+            Name_Assert            |
+            Name_Static_Predicate  |
+            Name_Dynamic_Predicate |
+            Name_Pre               |
+            Name_uPre              |
+            Name_Post              |
+            Name_uPost             |
+            Name_Type_Invariant    |
+            Name_uType_Invariant   |
+
+            --  Impl defined
+
+            Name_Assert_And_Cut    |
+            Name_Assume            |
+            Name_Contract_Cases    |
+            Name_Debug             |
+            Name_Invariant         |
+            Name_uInvariant        |
+            Name_Loop_Invariant    |
+            Name_Loop_Variant      |
+            Name_Postcondition     |
+            Name_Precondition      |
+            Name_Predicate         => return True;
+
+         when others               => return False;
+      end case;
+   end Is_Valid_Assertion_Kind;
+
    -----------------------------------------
    -- Make_Aspect_For_PPC_In_Gen_Sub_Decl --
    -----------------------------------------
@@ -17037,6 +18619,35 @@ package body Sem_Prag is
       --  Nothing else to do at the current time!
 
    end Process_Compilation_Unit_Pragmas;
+
+   ----------------------------
+   -- Rewrite_Assertion_Kind --
+   ----------------------------
+
+   procedure Rewrite_Assertion_Kind (N : Node_Id) is
+      Nam : Name_Id;
+
+   begin
+      if Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Class
+        and then Nkind (Prefix (N)) = N_Identifier
+      then
+         case Chars (Prefix (N)) is
+            when Name_Pre =>
+               Nam := Name_uPre;
+            when Name_Post =>
+               Nam := Name_uPost;
+            when Name_Type_Invariant =>
+               Nam := Name_uType_Invariant;
+            when Name_Invariant =>
+               Nam := Name_uInvariant;
+            when others =>
+               return;
+         end case;
+
+         Rewrite (N, Make_Identifier (Sloc (N), Chars => Nam));
+      end if;
+   end Rewrite_Assertion_Kind;
 
    --------
    -- rv --

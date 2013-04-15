@@ -1,3 +1,226 @@
+2013-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr56890-1.c: New test.
+	* gcc.dg/pr56890-2.c: Likewise.
+
+2013-04-15  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.target/arm/thumb1-far-jump-1.c: New test.
+	* gcc.target/arm/thumb1-far-jump-2.c: New test.
+
+2013-04-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56816
+	* gfortran.dg/select_type_33.f03: New test.
+
+2013-04-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55959
+	* gfortran.dg/typebound_proc_29.f03: New.
+
+2013-04-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56266
+	* gfortran.dg/typebound_proc_28.f03: New.
+
+2013-04-12  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp87.c: Do not run test on ppc and xtensa
+	either.
+
+2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56929
+	* gfortran.dg/coarray/alloc_comp_2.f90: New.
+
+2013-04-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/56903
+	* gcc.target/i386/pr56903.c: New test.
+
+2013-04-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56261
+	* gfortran.dg/auto_char_len_4.f90: Add -pedantic. Changed error.
+	* gfortran.dg/assumed_rank_4.f90: Modified error wording.
+	* gfortran.dg/block_11.f90: Fix invalid test case.
+	* gfortran.dg/function_types_3.f90: Add new error message.
+	* gfortran.dg/global_references_1.f90: Ditto.
+	* gfortran.dg/import2.f90: Remove unneeded parts.
+	* gfortran.dg/import6.f90: Fix invalid test case.
+	* gfortran.dg/proc_decl_2.f90: Ditto.
+	* gfortran.dg/proc_decl_9.f90: Ditto.
+	* gfortran.dg/proc_decl_18.f90: Ditto.
+	* gfortran.dg/proc_ptr_40.f90: New.
+	* gfortran.dg/whole_file_7.f90: Modified error wording.
+	* gfortran.dg/whole_file_16.f90: Ditto.
+	* gfortran.dg/whole_file_17.f90: Add -pedantic.
+	* gfortran.dg/whole_file_18.f90: Modified error wording.
+	* gfortran.dg/whole_file_20.f03: Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_associated.f90: Fix
+	invalid test case.
+
+2013-04-12  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2013-04-10  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/pr55604.C: Use -fdump-rtl-ira.
+
+2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56845
+	* gfortran.dg/class_allocate_15.f90: New.
+
+	Revert:
+	2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_lib_alloc_2.f90: Update
+	scan-tree-dump-times.
+
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56918
+	PR tree-optimization/56920
+	* gcc.dg/vect/pr56918.c: New test.
+	* gcc.dg/vect/pr56920.c: New test.
+
+2013-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56845
+	* gfortran.dg/class_allocate_14.f90: New.
+	* gfortran.dg/coarray_lib_alloc_2.f90: Update scan-tree-dump-times.
+	* gfortran.dg/coarray_lib_alloc_3.f90: New.
+
+2013-04-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-cstvecshift.c: New testcase.
+
+2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/negs.c: New.
+
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* g++.dg/template/arrow4.C: New test.
+
+2013-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array23.adb: New test.
+	* gnat.dg/array23_pkg[123].ads: New helpers.
+
+2013-04-11  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/56900
+	* gcc.dg/tree-ssa/vrp87.c: Do not run test on various targets.
+
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56913
+	* g++.dg/cpp0x/sfinae44.C: New.
+
+2013-04-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada/acats/run_all.sh: Remove special handling of -gnat95 switch.
+	* ada/acats/ada95.lst: Remove special handling of -gnat95 switch.
+
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54216
+	* g++.dg/cpp0x/enum26.C: New.
+	* g++.old-deja/g++.pt/mangle1.C: Adjust.
+
+2013-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-fcm.x: Add check for zero forms of
+	inverse operands.
+	* gcc.target/aarch64/vect-fcm-eq-d.c: Check that new zero form
+	loop is vectorized.
+	* gcc.target/aarch64/vect-fcm-eq-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c: Check that new zero form
+	loop is vectorized and that the correct instruction is generated.
+	* gcc.target/aarch64/vect-fcm-ge-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-f.c: Likewise.
+
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56899
+	* gcc.c-torture/execute/pr56899.c: New test.
+
+2013-04-10  David S. Miller  <davem@davemloft.net>
+
+	* gcc.target/sparc/setcc-4.c: New test.
+	* gcc.target/sparc/setcc-5.c: New test.
+
+2013-04-10  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/pr55604.C: Use -fdump-rtl-ira.
+
+2013-04-10  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-39.c: New testcase.
+
+2013-04-10  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR tree-optimization/55524
+	* gcc.target/epiphany/fnma-1.c: New test.
+
+2013-04-10  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* gcc.dg/tree-ssa/inline-11.c: New test
+
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* g++.dg/template/arrow3.C: New test.
+
+2013-04-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/minmax_minus.c: New test.
+
+2013-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56883
+	* c-c++-common/gomp/pr56883.c: New test.
+
+2013-04-09  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp87.c: New test.
+
+2013-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56854
+	* g++.dg/torture/pr56854.C: New test.
+
+2013-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56782
+	* gfortran.dg/array_constructor_44.f90:  New test.
+
+2013-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56871
+	* g++.dg/cpp0x/constexpr-specialization.C: New.
+
+2013-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/pr56837.c: New test.
+
+	PR c++/34949
+	PR c++/50243
+	* g++.dg/opt/vt3.C: New test.
+	* g++.dg/opt/vt4.C: New test.
+
+2013-04-08  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-25.c: New test.
+
+2013-04-08  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Adjust.
+
 2013-04-08  Richard Biener  <rguenther@suse.de>
 
 	* gfortran.dg/vect/fast-math-pr37021.f90: Adjust.

@@ -6630,9 +6630,10 @@ package body Exp_Dist is
                    Make_Simple_Return_Statement (Loc,
                      Expression =>
                        Make_Function_Call (Loc,
-                         Name => New_Occurrence_Of (RTE (RE_TC_Build), Loc),
+                         Name =>
+                           New_Occurrence_Of (RTE (RE_Build_Complex_TC), Loc),
                          Parameter_Associations => New_List (
-                           New_Occurrence_Of (RTE (RE_TC_Object), Loc),
+                           New_Occurrence_Of (RTE (RE_Tk_Objref), Loc),
                            Make_Aggregate (Loc,
                              Expressions =>
                                New_List (
@@ -10207,11 +10208,11 @@ package body Exp_Dist is
             function Make_Constructed_TypeCode
               (Kind       : Entity_Id;
                Parameters : List_Id) return Node_Id;
-            --  Call TC_Build with the given kind and parameters
+            --  Call Build_Complex_TC with the given kind and parameters
 
             procedure Return_Constructed_TypeCode (Kind : Entity_Id);
-            --  Make a return statement that calls TC_Build with the given
-            --  typecode kind, and the constructed parameters list.
+            --  Make a return statement that calls Build_Complex_TC with the
+            --  given typecode kind, and the constructed parameters list.
 
             procedure Return_Alias_TypeCode (Base_TypeCode : Node_Id);
             --  Return a typecode that is a TC_Alias for the given typecode
@@ -10285,7 +10286,7 @@ package body Exp_Dist is
             procedure Return_Alias_TypeCode (Base_TypeCode : Node_Id) is
             begin
                Add_TypeCode_Parameter (Base_TypeCode, Parameters);
-               Return_Constructed_TypeCode (RTE (RE_TC_Alias));
+               Return_Constructed_TypeCode (RTE (RE_Tk_Alias));
             end Return_Alias_TypeCode;
 
             -------------------------------
@@ -10298,12 +10299,12 @@ package body Exp_Dist is
             is
                Constructed_TC : constant Node_Id :=
                  Make_Function_Call (Loc,
-                   Name =>
-                     New_Occurrence_Of (RTE (RE_TC_Build), Loc),
+                   Name                   =>
+                     New_Occurrence_Of (RTE (RE_Build_Complex_TC), Loc),
                    Parameter_Associations => New_List (
                      New_Occurrence_Of (Kind, Loc),
                      Make_Aggregate (Loc,
-                        Expressions => Parameters)));
+                       Expressions => Parameters)));
             begin
                Set_Etype (Constructed_TC, RTE (RE_TypeCode));
                return Constructed_TC;
@@ -10420,7 +10421,7 @@ package body Exp_Dist is
 
                         Add_TypeCode_Parameter
                           (Make_Constructed_TypeCode
-                           (RTE (RE_TC_Struct), Struct_TC_Params),
+                             (RTE (RE_Tk_Struct), Struct_TC_Params),
                            Union_TC_Params);
 
                         Add_String_Parameter (Name_Str, Union_TC_Params);
@@ -10439,7 +10440,7 @@ package body Exp_Dist is
 
                      Add_TypeCode_Parameter
                        (Make_Constructed_TypeCode
-                        (RTE (RE_TC_Union), Union_TC_Params),
+                          (RTE (RE_Tk_Union), Union_TC_Params),
                         Params);
 
                      Add_String_Parameter (Name_Str, Params);
@@ -10687,7 +10688,7 @@ package body Exp_Dist is
                      TC_Append_Record_Traversal
                        (Parameters, Component_List (Rdef),
                         Empty, Dummy_Counter);
-                     Return_Constructed_TypeCode (RTE (RE_TC_Struct));
+                     Return_Constructed_TypeCode (RTE (RE_Tk_Struct));
                   end;
                end if;
 
@@ -10705,7 +10706,7 @@ package body Exp_Dist is
                   for J in 1 .. Ndim loop
                      if Constrained then
                         Inner_TypeCode := Make_Constructed_TypeCode
-                          (RTE (RE_TC_Array), New_List (
+                          (RTE (RE_Tk_Array), New_List (
                             Build_To_Any_Call (Loc,
                               OK_Convert_To (RTE (RE_Unsigned_32),
                                 Make_Attribute_Reference (Loc,
@@ -10731,7 +10732,7 @@ package body Exp_Dist is
                         Next_Index (Indx);
 
                         Inner_TypeCode := Make_Constructed_TypeCode
-                          (RTE (RE_TC_Sequence), New_List (
+                          (RTE (RE_Tk_Sequence), New_List (
                             Build_To_Any_Call (Loc,
                               OK_Convert_To (RTE (RE_Unsigned_32),
                                 Make_Integer_Literal (Loc, 0)),
@@ -10747,7 +10748,7 @@ package body Exp_Dist is
                      Start_String;
                      Store_String_Char ('V');
                      Add_String_Parameter (End_String, Parameters);
-                     Return_Constructed_TypeCode (RTE (RE_TC_Struct));
+                     Return_Constructed_TypeCode (RTE (RE_Tk_Struct));
                   end if;
                end;
 

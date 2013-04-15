@@ -964,6 +964,8 @@ end_ifcvt_sequence (struct noce_if_info *if_info)
 
   set_used_flags (if_info->x);
   set_used_flags (if_info->cond);
+  set_used_flags (if_info->a);
+  set_used_flags (if_info->b);
   unshare_all_rtl_in_chain (seq);
   end_sequence ();
 
@@ -4514,8 +4516,7 @@ struct rtl_opt_pass pass_if_after_combine =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_ggc_collect                      /* todo_flags_finish */
+  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
  }
 };
 
@@ -4551,7 +4552,6 @@ struct rtl_opt_pass pass_if_after_reload =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_ggc_collect                      /* todo_flags_finish */
+  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
  }
 };

@@ -984,12 +984,22 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
       break;
 
     case MULT_HIGHPART_EXPR:
-      /* ??? Need quad precision, or an additional shift operand
-	 to the multiply primitive, to handle very large highparts.  */
       if (TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT)
-	return NULL_TREE;
-      tmp = op1 - op2;
-      res = tmp.rshift (TYPE_PRECISION (type), TYPE_PRECISION (type), !uns);
+	{
+	  bool dummy_overflow;
+	  if (TYPE_PRECISION (type) != 2 * HOST_BITS_PER_WIDE_INT)
+	    return NULL_TREE;
+	  op1.wide_mul_with_sign (op2, uns, &res, &dummy_overflow);
+	}
+      else
+	{
+	  bool dummy_overflow;
+	  /* MULT_HIGHPART_EXPR can't ever oveflow, as the multiplication
+	     is performed in twice the precision of arguments.  */
+	  tmp = op1.mul_with_sign (op2, false, &dummy_overflow);
+	  res = tmp.rshift (TYPE_PRECISION (type),
+			    2 * TYPE_PRECISION (type), !uns);
+	}
       break;
 
     case TRUNC_DIV_EXPR:
@@ -1342,21 +1352,44 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
   if (TREE_CODE (arg1) == VECTOR_CST
       && TREE_CODE (arg2) == VECTOR_CST)
     {
-      tree type = TREE_TYPE(arg1);
+      tree type = TREE_TYPE (arg1);
       int count = TYPE_VECTOR_SUBPARTS (type), i;
-      tree *elts =  XALLOCAVEC (tree, count);
+      tree *elts = XALLOCAVEC (tree, count);
 
       for (i = 0; i < count; i++)
 	{
-          tree elem1 = VECTOR_CST_ELT (arg1, i);
+	  tree elem1 = VECTOR_CST_ELT (arg1, i);
 	  tree elem2 = VECTOR_CST_ELT (arg2, i);
 
-          elts[i] = const_binop (code, elem1, elem2);
+	  elts[i] = const_binop (code, elem1, elem2);
 
-          /* It is possible that const_binop cannot handle the given
-            code and return NULL_TREE */
-          if(elts[i] == NULL_TREE)
-            return NULL_TREE;
+	  /* It is possible that const_binop cannot handle the given
+	     code and return NULL_TREE */
+	  if (elts[i] == NULL_TREE)
+	    return NULL_TREE;
+	}
+
+      return build_vector (type, elts);
+    }
+
+  /* Shifts allow a scalar offset for a vector.  */
+  if (TREE_CODE (arg1) == VECTOR_CST
+      && TREE_CODE (arg2) == INTEGER_CST)
+    {
+      tree type = TREE_TYPE (arg1);
+      int count = TYPE_VECTOR_SUBPARTS (type), i;
+      tree *elts = XALLOCAVEC (tree, count);
+
+      for (i = 0; i < count; i++)
+	{
+	  tree elem1 = VECTOR_CST_ELT (arg1, i);
+
+	  elts[i] = const_binop (code, elem1, arg2);
+
+	  /* It is possible that const_binop cannot handle the given
+	     code and return NULL_TREE */
+	  if (elts[i] == NULL_TREE)
+	    return NULL_TREE;
 	}
 
       return build_vector (type, elts);
@@ -5850,8 +5883,10 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 
       /* The last case is if we are a multiply.  In that case, we can
 	 apply the distributive law to commute the multiply and addition
-	 if the multiplication of the constants doesn't overflow.  */
-      if (code == MULT_EXPR)
+	 if the multiplication of the constants doesn't overflow
+	 and overflow is defined.  With undefined overflow
+	 op0 * c might overflow, while (op0 + orig_op1) * c doesn't.  */
+      if (code == MULT_EXPR && TYPE_OVERFLOW_WRAPS (ctype))
 	return fold_build2 (tcode, ctype,
 			    fold_build2 (code, ctype,
 					 fold_convert (ctype, op0),
@@ -9886,7 +9921,8 @@ fold_binary_loc (location_t loc,
       || (TREE_CODE (arg0) == FIXED_CST && TREE_CODE (arg1) == FIXED_CST)
       || (TREE_CODE (arg0) == FIXED_CST && TREE_CODE (arg1) == INTEGER_CST)
       || (TREE_CODE (arg0) == COMPLEX_CST && TREE_CODE (arg1) == COMPLEX_CST)
-      || (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST))
+      || (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
+      || (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == INTEGER_CST))
     {
       if (kind == tcc_binary)
 	{

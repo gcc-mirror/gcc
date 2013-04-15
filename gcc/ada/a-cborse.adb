@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,31 +38,9 @@ with Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations;
 pragma Elaborate_All
   (Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations);
 
-with Ada.Finalization; use Ada.Finalization;
-
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Ordered_Sets is
-
-   type Iterator is new Limited_Controlled and
-     Set_Iterator_Interfaces.Reversible_Iterator with
-   record
-      Container : Set_Access;
-      Node      : Count_Type;
-   end record;
-
-   overriding procedure Finalize (Object : in out Iterator);
-
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
-
-   overriding function Next
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
-
-   overriding function Previous
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
 
    ------------------------------
    -- Access to Fields of Node --
@@ -979,6 +957,9 @@ package body Ada.Containers.Bounded_Ordered_Sets is
          pragma Assert (Vet (Container, Position.Node),
                         "bad cursor in Update_Element_Preserving_Key");
 
+         --  Per AI05-0022, the container implementation is required to detect
+         --  element tampering by a generic actual subprogram.
+
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
             E : Element_Type renames N.Element;
@@ -987,12 +968,15 @@ package body Ada.Containers.Bounded_Ordered_Sets is
             B : Natural renames Container.Busy;
             L : Natural renames Container.Lock;
 
+            Eq : Boolean;
+
          begin
             B := B + 1;
             L := L + 1;
 
             begin
                Process (E);
+               Eq := Equivalent_Keys (K, Key (E));
             exception
                when others =>
                   L := L - 1;
@@ -1003,7 +987,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
             L := L - 1;
             B := B - 1;
 
-            if Equivalent_Keys (K, Key (E)) then
+            if Eq then
                return;
             end if;
          end;
@@ -1727,16 +1711,54 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       Hint      : Count_Type;
       Result    : Count_Type;
       Inserted  : Boolean;
+      Compare   : Boolean;
+
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
+
+      B : Natural renames Container.Busy;
+      L : Natural renames Container.Lock;
 
    --  Start of processing for Replace_Element
 
    begin
-      if Item < Node.Element
-        or else Node.Element < Item
-      then
-         null;
+      --  Replace_Element assigns value Item to the element designated by Node,
+      --  per certain semantic constraints, described as follows.
 
-      else
+      --  If Item is equivalent to the element, then element is replaced and
+      --  there's nothing else to do. This is the easy case.
+
+      --  If Item is not equivalent, then the node will (possibly) have to move
+      --  to some other place in the tree. This is slighly more complicated,
+      --  because we must ensure that Item is not equivalent to some other
+      --  element in the tree (in which case, the replacement is not allowed).
+
+      --  Determine whether Item is equivalent to element on the specified
+      --  node.
+
+      begin
+         B := B + 1;
+         L := L + 1;
+
+         Compare := (if Item < Node.Element then False
+                     elsif Node.Element < Item then False
+                     else True);
+
+         L := L - 1;
+         B := B - 1;
+
+      exception
+         when others =>
+            L := L - 1;
+            B := B - 1;
+            raise;
+      end;
+
+      if Compare then
+
+         --  Item is equivalent to the node's element, so we will not have to
+         --  move the node.
+
          if Container.Lock > 0 then
             raise Program_Error with
               "attempt to tamper with elements (set is locked)";
@@ -1746,12 +1768,67 @@ package body Ada.Containers.Bounded_Ordered_Sets is
          return;
       end if;
 
+      --  The replacement Item is not equivalent to the element on the
+      --  specified node, which means that it will need to be re-inserted in a
+      --  different position in the tree. We must now determine whether Item is
+      --  equivalent to some other element in the tree (which would prohibit
+      --  the assignment and hence the move).
+
+      --  Ceiling returns the smallest element equivalent or greater than the
+      --  specified Item; if there is no such element, then it returns 0.
+
       Hint := Element_Keys.Ceiling (Container, Item);
 
-      if Hint = 0 then
-         null;
+      if Hint /= 0 then  -- Item <= Nodes (Hint).Element
+         begin
+            B := B + 1;
+            L := L + 1;
 
-      elsif Item < Nodes (Hint).Element then
+            Compare := Item < Nodes (Hint).Element;
+
+            L := L - 1;
+            B := B - 1;
+
+         exception
+            when others =>
+               L := L - 1;
+               B := B - 1;
+               raise;
+         end;
+
+         --  Item is equivalent to Nodes (Hint).Element
+
+         if not Compare then
+
+            --  Ceiling returns an element that is equivalent or greater than
+            --  Item. If Item is "not less than" the element, then by
+            --  elimination we know that Item is equivalent to the element.
+
+            --  But this means that it is not possible to assign the value of
+            --  Item to the specified element (on Node), because a different
+            --  element (on Hint) equivalent to Item already exsits. (Were we
+            --  to change Node's element value, we would have to move Node, but
+            --  we would be unable to move the Node, because its new position
+            --  in the tree is already occupied by an equivalent element.)
+
+            raise Program_Error with "attempt to replace existing element";
+         end if;
+
+         --  Item is not equivalent to any other element in the tree
+         --  (specifically, it is less then Nodes (Hint).Element), so it is
+         --  safe to assign the value of Item to Node.Element. This means that
+         --  the node will have to move to a different position in the tree
+         --  (because its element will have a different value).
+
+         --  The nearest (greater) neighbor of Item is Hint. This will be the
+         --  insertion position of Node (because its element will have Item as
+         --  its new value).
+
+         --  If Node equals Hint, the relative position of Node does not
+         --  change. This allows us to perform an optimization: we need not
+         --  remove Node from the tree and then reinsert it with its new value,
+         --  because it would only be placed in the exact same position.
+
          if Hint = Index then
             if Container.Lock > 0 then
                raise Program_Error with
@@ -1761,11 +1838,13 @@ package body Ada.Containers.Bounded_Ordered_Sets is
             Node.Element := Item;
             return;
          end if;
-
-      else
-         pragma Assert (not (Nodes (Hint).Element < Item));
-         raise Program_Error with "attempt to replace existing element";
       end if;
+
+      --  If we get here, it is because Item was greater than all elements in
+      --  the tree (Hint = 0), or because Item was less than some element at a
+      --  different place in the tree (Item < Nodes (Hint).Element and Hint /=
+      --  Index). In either case, we remove Node from the tree and then insert
+      --  Item into the tree, onto the same Node.
 
       Tree_Operations.Delete_Node_Sans_Free (Container, Index);
 

@@ -555,7 +555,7 @@ null_ptr_cst_p (tree t)
     {
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
       if (cxx_dialect < cxx0x)
-	t = maybe_constant_value (t);
+	t = maybe_constant_value (fold_non_dependent_expr_sfinae (t, tf_none));
       STRIP_NOPS (t);
       if (integer_zerop (t) && !TREE_OVERFLOW (t))
 	return true;
@@ -4577,8 +4577,9 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	  || (conv2 && conv2->kind == ck_ambig)
 	  || (conv3 && conv3->kind == ck_ambig))
 	{
-	  error ("operands to ?: have different types %qT and %qT",
-		 arg2_type, arg3_type);
+	  if (complain & tf_error)
+	    error ("operands to ?: have different types %qT and %qT",
+		   arg2_type, arg3_type);
 	  result = error_mark_node;
 	}
       else if (conv2 && (!conv2->bad_p || !conv3))
@@ -4760,10 +4761,11 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
       /* In this case, there is always a common type.  */
       result_type = type_after_usual_arithmetic_conversions (arg2_type,
 							     arg3_type);
-      do_warn_double_promotion (result_type, arg2_type, arg3_type,
-				"implicit conversion from %qT to %qT to "
-				"match other result of conditional",
-				input_location);
+      if (complain & tf_warning)
+	do_warn_double_promotion (result_type, arg2_type, arg3_type,
+				  "implicit conversion from %qT to %qT to "
+				  "match other result of conditional",
+				  input_location);
 
       if (TREE_CODE (arg2_type) == ENUMERAL_TYPE
 	  && TREE_CODE (arg3_type) == ENUMERAL_TYPE)
@@ -6790,9 +6792,14 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* Check that the base class is accessible.  */
       if (!accessible_base_p (TREE_TYPE (argtype),
 			      BINFO_TYPE (cand->conversion_path), true))
-	error ("%qT is not an accessible base of %qT",
-	       BINFO_TYPE (cand->conversion_path),
-	       TREE_TYPE (argtype));
+	{
+	  if (complain & tf_error)
+	    error ("%qT is not an accessible base of %qT",
+		   BINFO_TYPE (cand->conversion_path),
+		   TREE_TYPE (argtype));
+	  else
+	    return error_mark_node;
+	}
       /* If fn was found by a using declaration, the conversion path
 	 will be to the derived class, not the base declaring fn. We
 	 must convert from derived to base.  */

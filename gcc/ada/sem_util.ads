@@ -178,6 +178,17 @@ package Sem_Util is
    --  not necessarily mean that CE could be raised, but a response of True
    --  means that for sure CE cannot be raised.
 
+   procedure Check_Dynamically_Tagged_Expression
+     (Expr        : Node_Id;
+      Typ         : Entity_Id;
+      Related_Nod : Node_Id);
+   --  Check wrong use of dynamically tagged expression
+
+   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id);
+   --  Verify that the full declaration of type T has been seen. If not, place
+   --  error message on node N. Used in object declarations, type conversions
+   --  and qualified expressions.
+
    procedure Check_Function_Writable_Actuals (N : Node_Id);
    --  (Ada 2012): If the construct N has two or more direct constituents that
    --  are names or expressions whose evaluation may occur in an arbitrary
@@ -209,17 +220,6 @@ package Sem_Util is
    --  distinction between initial and later declarative items, the distinction
    --  remains in the Examiner (JB01-005). Note that the Examiner does not
    --  count package declarations in later declarative items.
-
-   procedure Check_Dynamically_Tagged_Expression
-     (Expr        : Node_Id;
-      Typ         : Entity_Id;
-      Related_Nod : Node_Id);
-   --  Check wrong use of dynamically tagged expression
-
-   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id);
-   --  Verify that the full declaration of type T has been seen. If not, place
-   --  error message on node N. Used in object declarations, type conversions
-   --  and qualified expressions.
 
    procedure Check_Nested_Access (Ent : Entity_Id);
    --  Check whether Ent denotes an entity declared in an uplevel scope, which
@@ -470,7 +470,7 @@ package Sem_Util is
    --  discriminant at the same position in this new type.
 
    procedure Find_Overlaid_Entity
-     (N : Node_Id;
+     (N   : Node_Id;
       Ent : out Entity_Id;
       Off : out Boolean);
    --  The node N should be an address representation clause. Determines if
@@ -581,6 +581,12 @@ package Sem_Util is
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
    --  instantiation is a renaming, the function returns the renamed generic.
+
+   function Get_Incomplete_View_Of_Ancestor (E : Entity_Id) return Entity_Id;
+   --  Implements the notion introduced ever-so briefly in RM 7.3.1 (5.2/3):
+   --  in a child unit a derived type is within the derivation class of an
+   --  ancestor declared in a parent unit, even if there is an intermediate
+   --  derivation that does not see the full view of that ancestor.
 
    procedure Get_Index_Bounds (N : Node_Id; L, H : out Node_Id);
    --  This procedure assigns to L and H respectively the values of the low and
@@ -843,9 +849,18 @@ package Sem_Util is
    --  Determines if the given node denotes an atomic object in the sense of
    --  the legality checks described in RM C.6(12).
 
+   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes a body or a package declaration
+
    function Is_Bounded_String (T : Entity_Id) return Boolean;
    --  True if T is a bounded string type. Used to make sure "=" composes
    --  properly for bounded string types.
+
+   function Is_Constant_Bound (Exp : Node_Id) return Boolean;
+   --  Exp is the expression for an array bound. Determines whether the
+   --  bound is a compile-time known value, or a constant entity, or an
+   --  enumeration literal, or an expression composed of constant-bound
+   --  subexpressions which are evaluated by means of standard operators.
 
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;
@@ -1037,6 +1052,12 @@ package Sem_Util is
    --  CIL, will always return false for other targets. A value type is a CIL
    --  object that is accessed directly, as opposed to the other CIL objects
    --  that are accessed through managed pointers.
+
+   function Is_Variable_Size_Array (E : Entity_Id) return Boolean;
+   --  Returns true if E has variable size components
+
+   function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
+   --  Returns true if E has variable size components
 
    function Is_VMS_Operator (Op : Entity_Id) return Boolean;
    --  Determine whether an operator is one of the intrinsics defined
@@ -1286,9 +1307,9 @@ package Sem_Util is
    --  S2. Otherwise, it is S itself.
 
    function Object_Access_Level (Obj : Node_Id) return Uint;
-   --  Return the accessibility level of the view of the object Obj.
-   --  For convenience, qualified expressions applied to object names
-   --  are also allowed as actuals for this function.
+   --  Return the accessibility level of the view of the object Obj. For
+   --  convenience, qualified expressions applied to object names are also
+   --  allowed as actuals for this function.
 
    function Primitive_Names_Match (E1, E2 : Entity_Id) return Boolean;
    --  Returns True if the names of both entities correspond with matching
@@ -1435,7 +1456,8 @@ package Sem_Util is
    procedure Set_Entity_With_Style_Check (N : Node_Id; Val : Entity_Id);
    --  This procedure has the same calling sequence as Set_Entity, but
    --  if Style_Check is set, then it calls a style checking routine which
-   --  can check identifier spelling style.
+   --  can check identifier spelling style. This procedure also takes care
+   --  of checking the restriction No_Implementation_Identifiers.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);

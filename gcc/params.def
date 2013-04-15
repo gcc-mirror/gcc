@@ -376,7 +376,7 @@ DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 DEFPARAM (PARAM_ALIGN_THRESHOLD,
 	  "align-threshold",
 	  "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment",
-	  100, 0, 0)
+	  100, 1, 0)
 
 DEFPARAM (PARAM_ALIGN_LOOP_ITERATIONS,
 	  "align-loop-iterations",
@@ -451,7 +451,7 @@ DEFPARAM(PARAM_MAX_GOTO_DUPLICATION_INSNS,
 DEFPARAM(PARAM_MAX_CSE_PATH_LENGTH,
 	 "max-cse-path-length",
 	 "The maximum length of path considered in cse",
-	 10, 0, 0)
+	 10, 1, 0)
 DEFPARAM(PARAM_MAX_CSE_INSNS,
 	 "max-cse-insns",
 	 "The maximum instructions CSE process before flushing",

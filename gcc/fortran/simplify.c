@@ -3263,7 +3263,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
   gcc_assert (array->expr_type == EXPR_VARIABLE);
   gcc_assert (as);
 
-  if (gfc_resolve_array_spec (as, 0) == FAILURE)
+  if (!gfc_resolve_array_spec (as, 0))
     return NULL;
 
   /* The last dimension of an assumed-size array is special.  */
@@ -3313,8 +3313,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
     {
       if (upper)
 	{
-	  if (gfc_ref_dimen_size (&ref->u.ar, d-1, &result->value.integer, NULL)
-	      != SUCCESS)
+	  if (!gfc_ref_dimen_size (&ref->u.ar, d - 1, &result->value.integer, NULL))
 	    goto returnNull;
 	}
       else
@@ -4078,7 +4077,7 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
       case BT_CHARACTER:
 #define LENGTH(x) ((x)->value.character.length)
 #define STRING(x) ((x)->value.character.string)
-	if (LENGTH(extremum) < LENGTH(arg))
+	if (LENGTH (extremum) < LENGTH(arg))
 	  {
 	    gfc_char_t *tmp = STRING(extremum);
 
@@ -4629,10 +4628,10 @@ gfc_simplify_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
   gfc_expr *result;
   gfc_constructor *array_ctor, *mask_ctor, *vector_ctor;
 
-  if (!is_constant_array_expr(array)
-      || !is_constant_array_expr(vector)
+  if (!is_constant_array_expr (array)
+      || !is_constant_array_expr (vector)
       || (!gfc_is_constant_expr (mask)
-          && !is_constant_array_expr(mask)))
+          && !is_constant_array_expr (mask)))
     return NULL;
 
   result = gfc_get_array_expr (array->ts.type, array->ts.kind, &array->where);
@@ -5506,7 +5505,7 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
   gfc_expr *result, *e, *f;
   gfc_array_ref *ar;
   int n;
-  gfc_try t;
+  bool t;
   int k = get_kind (BT_INTEGER, kind, "SHAPE", gfc_default_integer_kind);
 
   if (source->rank == -1)
@@ -5524,7 +5523,7 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
     }
   else if (source->shape)
     {
-      t = SUCCESS;
+      t = true;
       for (n = 0; n < source->rank; n++)
 	{
 	  mpz_init (shape[n]);
@@ -5532,13 +5531,13 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
 	}
     }
   else
-    t = FAILURE;
+    t = false;
 
   for (n = 0; n < source->rank; n++)
     {
       e = gfc_get_constant_expr (BT_INTEGER, k, &source->where);
 
-      if (t == SUCCESS)
+      if (t)
 	{
 	  mpz_set (e->value.integer, shape[n]);
 	  mpz_clear (shape[n]);
@@ -5631,7 +5630,7 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
   if (dim == NULL)
     {
-      if (gfc_array_size (array, &size) == FAILURE)
+      if (!gfc_array_size (array, &size))
 	return NULL;
     }
   else
@@ -5640,7 +5639,7 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 	return NULL;
 
       d = mpz_get_ui (dim->value.integer) - 1;
-      if (gfc_array_dimen_size (array, d, &size) == FAILURE)
+      if (!gfc_array_dimen_size (array, d, &size))
 	return NULL;
     }
 
@@ -5668,7 +5667,7 @@ gfc_simplify_sizeof (gfc_expr *x)
     return NULL;
 
   if (x->rank && x->expr_type != EXPR_ARRAY
-      && gfc_array_size (x, &array_size) == FAILURE)
+      && !gfc_array_size (x, &array_size))
     return NULL;
 
   result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
@@ -5897,7 +5896,7 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
      constructor.  */
   if (source->expr_type == EXPR_ARRAY)
     {
-      if (gfc_array_size (source, &size) == FAILURE)
+      if (!gfc_array_size (source, &size))
 	gfc_internal_error ("Failure getting length of a constant array.");
     }
   else
@@ -6123,13 +6122,13 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	|| !gfc_is_constant_expr (size))
     return NULL;
 
-  if (gfc_calculate_transfer_sizes (source, mold, size, &source_size,
-				    &result_size, &result_length) == FAILURE)
+  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size, 
+				     &result_size, &result_length))
     return NULL;
 
   /* Calculate the size of the source.  */
   if (source->expr_type == EXPR_ARRAY
-      && gfc_array_size (source, &tmp) == FAILURE)
+      && !gfc_array_size (source, &tmp))
     gfc_internal_error ("Failure getting length of a constant array.");
 
   /* Create an empty new expression with the appropriate characteristics.  */
@@ -6395,7 +6394,7 @@ gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
   if (!is_constant_array_expr (vector)
       || !is_constant_array_expr (mask)
       || (!gfc_is_constant_expr (field)
-	  && !is_constant_array_expr(field)))
+	  && !is_constant_array_expr (field)))
     return NULL;
 
   result = gfc_get_array_expr (vector->ts.type, vector->ts.kind,

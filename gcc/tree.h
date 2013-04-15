@@ -5498,10 +5498,15 @@ extern tree staticp (tree);
 
 extern tree save_expr (tree);
 
-/* Look inside EXPR and into any simple arithmetic operations.  Return
-   the innermost non-arithmetic node.  */
+/* Look inside EXPR into any simple arithmetic operations.  Return the
+   outermost non-arithmetic or non-invariant node.  */
 
 extern tree skip_simple_arithmetic (tree);
+
+/* Look inside EXPR into simple arithmetic operations involving constants.
+   Return the outermost non-arithmetic or non-constant node.  */
+
+extern tree skip_simple_constant_arithmetic (tree);
 
 /* Return which tree structure is used by T.  */
 
@@ -6087,8 +6092,6 @@ extern hashval_t iterative_hash_host_wide_int (HOST_WIDE_INT, hashval_t);
 extern int compare_tree_int (const_tree, unsigned HOST_WIDE_INT);
 extern int type_list_equal (const_tree, const_tree);
 extern int chain_member (const_tree, const_tree);
-extern tree type_hash_lookup (unsigned int, tree);
-extern void type_hash_add (unsigned int, tree);
 extern int simple_cst_list_equal (const_tree, const_tree);
 extern void dump_tree_statistics (void);
 extern void recompute_tree_invariant_for_addr_expr (tree);
@@ -6177,7 +6180,6 @@ extern void indent_to (FILE *, int);
 extern bool debug_find_tree (tree, tree);
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */
-extern tree unsave_expr_now (tree);
 extern tree build_duplicate_type (tree);
 
 /* In calls.c */

@@ -54,7 +54,7 @@ static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
 static void maybe_warn_about_returning_address_of_local (tree);
-static tree lookup_destructor (tree, tree, tree);
+static tree lookup_destructor (tree, tree, tree, tsubst_flags_t);
 static void warn_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
                               tsubst_flags_t);
@@ -2469,7 +2469,8 @@ build_class_member_access_expr (tree object, tree member,
    SCOPE is NULL, by OBJECT.DTOR_NAME, where DTOR_NAME is ~type.  */
 
 static tree
-lookup_destructor (tree object, tree scope, tree dtor_name)
+lookup_destructor (tree object, tree scope, tree dtor_name,
+		   tsubst_flags_t complain)
 {
   tree object_type = TREE_TYPE (object);
   tree dtor_type = TREE_OPERAND (dtor_name, 0);
@@ -2477,8 +2478,9 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
 
   if (scope && !check_dtor_name (scope, dtor_type))
     {
-      error ("qualified type %qT does not match destructor name ~%qT",
-	     scope, dtor_type);
+      if (complain & tf_error)
+	error ("qualified type %qT does not match destructor name ~%qT",
+	       scope, dtor_type);
       return error_mark_node;
     }
   if (identifier_p (dtor_type))
@@ -2489,16 +2491,18 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
 	dtor_type = object_type;
       else
 	{
-	  error ("object type %qT does not match destructor name ~%qT",
-		 object_type, dtor_type);
+	  if (complain & tf_error)
+	    error ("object type %qT does not match destructor name ~%qT",
+		   object_type, dtor_type);
 	  return error_mark_node;
 	}
       
     }
   else if (!DERIVED_FROM_P (dtor_type, TYPE_MAIN_VARIANT (object_type)))
     {
-      error ("the type being destroyed is %qT, but the destructor refers to %qT",
-	     TYPE_MAIN_VARIANT (object_type), dtor_type);
+      if (complain & tf_error)
+	error ("the type being destroyed is %qT, but the destructor "
+	       "refers to %qT", TYPE_MAIN_VARIANT (object_type), dtor_type);
       return error_mark_node;
     }
   expr = lookup_member (dtor_type, complete_dtor_identifier,
@@ -2731,7 +2735,7 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	}
 
       if (TREE_CODE (name) == BIT_NOT_EXPR)
-	member = lookup_destructor (object, scope, name);
+	member = lookup_destructor (object, scope, name, complain);
       else
 	{
 	  /* Look up the member.  */
@@ -3933,7 +3937,8 @@ cp_build_binary_op (location_t location,
   if ((invalid_op_diag
        = targetm.invalid_binary_op (code, type0, type1)))
     {
-      error (invalid_op_diag);
+      if (complain & tf_error)
+	error (invalid_op_diag);
       return error_mark_node;
     }
 
@@ -4047,8 +4052,9 @@ cp_build_binary_op (location_t location,
 	      || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE))
 	{
 	  enum tree_code tcode0 = code0, tcode1 = code1;
+	  tree cop1 = fold_non_dependent_expr_sfinae (op1, tf_none);
 
-	  warn_for_div_by_zero (location, maybe_constant_value (op1));
+	  warn_for_div_by_zero (location, maybe_constant_value (cop1));
 
 	  if (tcode0 == COMPLEX_TYPE || tcode0 == VECTOR_TYPE)
 	    tcode0 = TREE_CODE (TREE_TYPE (TREE_TYPE (op0)));
@@ -4084,7 +4090,11 @@ cp_build_binary_op (location_t location,
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
-      warn_for_div_by_zero (location, maybe_constant_value (op1));
+      {
+	tree cop1 = fold_non_dependent_expr_sfinae (op1, tf_none);
+
+	warn_for_div_by_zero (location, maybe_constant_value (cop1));
+      }
 
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
@@ -4132,7 +4142,8 @@ cp_build_binary_op (location_t location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  tree const_op1 = maybe_constant_value (op1);
+	  tree const_op1 = fold_non_dependent_expr_sfinae (op1, tf_none);
+	  const_op1 = maybe_constant_value (const_op1);
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
@@ -4178,7 +4189,8 @@ cp_build_binary_op (location_t location,
 	}
       else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  tree const_op1 = maybe_constant_value (op1);
+	  tree const_op1 = fold_non_dependent_expr_sfinae (op1, tf_none);
+	  const_op1 = maybe_constant_value (const_op1);
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
@@ -4593,7 +4605,8 @@ cp_build_binary_op (location_t location,
 	      || !same_scalar_type_ignoring_signedness (TREE_TYPE (type0),
 							TREE_TYPE (type1)))
 	    {
-	      binary_op_error (location, code, type0, type1);
+	      if (complain & tf_error)
+		binary_op_error (location, code, type0, type1);
 	      return error_mark_node;
 	    }
 	  arithmetic_types_p = 1;
@@ -4605,11 +4618,12 @@ cp_build_binary_op (location_t location,
       && (shorten || common || short_compare))
     {
       result_type = cp_common_type (type0, type1);
-      do_warn_double_promotion (result_type, type0, type1,
-				"implicit conversion from %qT to %qT "
-				"to match other operand of binary "
-				"expression",
-				location);
+      if (complain & tf_warning)
+	do_warn_double_promotion (result_type, type0, type1,
+				  "implicit conversion from %qT to %qT "
+				  "to match other operand of binary "
+				  "expression",
+				  location);
     }
 
   if (!result_type)
@@ -4947,10 +4961,11 @@ build_x_unary_op (location_t loc, enum tree_code code, tree xarg,
 	  tree fn = get_first_fn (xarg);
 	  if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
 	    {
-	      error (DECL_CONSTRUCTOR_P (fn)
-                     ? G_("taking address of constructor %qE")
-                     : G_("taking address of destructor %qE"),
-                     xarg);
+	      if (complain & tf_error)
+		error (DECL_CONSTRUCTOR_P (fn)
+		       ? G_("taking address of constructor %qE")
+		       : G_("taking address of destructor %qE"),
+		       xarg);
 	      return error_mark_node;
 	    }
 	}
@@ -4963,17 +4978,23 @@ build_x_unary_op (location_t loc, enum tree_code code, tree xarg,
 	  if (TREE_CODE (xarg) != OFFSET_REF
 	      || !TYPE_P (TREE_OPERAND (xarg, 0)))
 	    {
-              error ("invalid use of %qE to form a pointer-to-member-function",
-                     xarg);
-              if (TREE_CODE (xarg) != OFFSET_REF)
-                inform (input_location, "  a qualified-id is required");
+	      if (complain & tf_error)
+		{
+		  error ("invalid use of %qE to form a "
+			 "pointer-to-member-function", xarg);
+		  if (TREE_CODE (xarg) != OFFSET_REF)
+		    inform (input_location, "  a qualified-id is required");
+		}
 	      return error_mark_node;
 	    }
 	  else
 	    {
-	      error ("parentheses around %qE cannot be used to form a"
-		     " pointer-to-member-function",
-		     xarg);
+	      if (complain & tf_error)
+		error ("parentheses around %qE cannot be used to form a"
+		       " pointer-to-member-function",
+		       xarg);
+	      else
+		return error_mark_node;
 	      PTRMEM_OK_P (xarg) = 1;
 	    }
 	}
@@ -5388,7 +5409,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 				    : code),
 				   TREE_TYPE (xarg))))
     {
-      error (invalid_op_diag);
+      if (complain & tf_error)
+	error (invalid_op_diag);
       return error_mark_node;
     }
 
@@ -6021,7 +6043,8 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
 
   if (type_unknown_p (rhs))
     {
-      error ("no context to resolve type of %qE", rhs);
+      if (complain & tf_error)
+	error ("no context to resolve type of %qE", rhs);
       return error_mark_node;
     }
   
@@ -7570,8 +7593,13 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
       if (!force
 	  && !can_convert_arg (to_type, TREE_TYPE (pfn), pfn,
 			       LOOKUP_NORMAL, complain))
-	error ("invalid conversion to type %qT from type %qT",
-	       to_type, pfn_type);
+	{
+	  if (complain & tf_error)
+	    error ("invalid conversion to type %qT from type %qT",
+		   to_type, pfn_type);
+	  else
+	    return error_mark_node;
+	}
 
       n = get_delta_difference (TYPE_PTRMEMFUNC_OBJECT_TYPE (pfn_type),
 				TYPE_PTRMEMFUNC_OBJECT_TYPE (to_type),

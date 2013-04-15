@@ -300,7 +300,12 @@ callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   c = gfc_constructor_first (arg->value.constructor);
 
-  if (c == NULL)
+  /* Don't do any simplififcation if we have
+     - no element in the constructor or
+     - only have a single element in the array which contains an
+     iterator.  */
+
+  if (c == NULL || (c->iterator != NULL && gfc_constructor_next (c) == NULL))
     return 0;
 
   res = copy_walk_reduction_arg (c->expr, fn);
@@ -583,7 +588,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
       newvar = NULL;
       for (j=0; j<i; j++)
 	{
-	  if (gfc_dep_compare_functions(*(expr_array[i]),
+	  if (gfc_dep_compare_functions (*(expr_array[i]),
 					*(expr_array[j]), true)	== 0)
 	    {
 	      if (newvar == NULL)
@@ -931,7 +936,7 @@ optimize_assignment (gfc_code * c)
       remove_trim (rhs);
 
       /* Replace a = '   ' by a = '' to optimize away a memcpy.  */
-      if (is_empty_string(rhs))
+      if (is_empty_string (rhs))
 	rhs->value.character.length = 0;
     }
 

@@ -500,7 +500,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   tree decl, backend_decl, stmt, type, outer_decl;
   locus old_loc = gfc_current_locus;
   const char *iname;
-  gfc_try t;
+  bool t;
 
   decl = OMP_CLAUSE_DECL (c);
   gfc_current_locus = where;
@@ -562,7 +562,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   ref->u.ar.type = AR_FULL;
   ref->u.ar.dimen = 0;
   t = gfc_resolve_expr (e1);
-  gcc_assert (t == SUCCESS);
+  gcc_assert (t);
 
   e2 = gfc_get_expr ();
   e2->expr_type = EXPR_VARIABLE;
@@ -570,12 +570,12 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   e2->symtree = symtree2;
   e2->ts = sym->ts;
   t = gfc_resolve_expr (e2);
-  gcc_assert (t == SUCCESS);
+  gcc_assert (t);
 
   e3 = gfc_copy_expr (e1);
   e3->symtree = symtree3;
   t = gfc_resolve_expr (e3);
-  gcc_assert (t == SUCCESS);
+  gcc_assert (t);
 
   iname = NULL;
   switch (OMP_CLAUSE_REDUCTION_CODE (c))
@@ -647,7 +647,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   e1 = gfc_copy_expr (e1);
   e3 = gfc_copy_expr (e3);
   t = gfc_resolve_expr (e4);
-  gcc_assert (t == SUCCESS);
+  gcc_assert (t);
 
   /* Create the init statement list.  */
   pushlevel ();

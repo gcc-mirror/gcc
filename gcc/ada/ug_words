@@ -94,6 +94,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatn2         ^ /INLINE=PRAGMA_LEVEL_2
 -gnatN          ^ /INLINE=FULL
 -gnato          ^ /CHECKS=OVERFLOW
+-gnato?         ^ /OVERFLOW_CHECKS=?
 -gnato??        ^ /OVERFLOW_CHECKS=??
 -gnatp          ^ /CHECKS=SUPPRESS_ALL
 -gnat-p         ^ /CHECKS=UNSUPPRESS_ALL

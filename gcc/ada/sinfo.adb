@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -601,6 +601,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Type_Conversion);
       return Flag14 (N);
    end Conversion_OK;
+
+   function Convert_To_Return_False
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Raise_Expression);
+      return Flag13 (N);
+   end Convert_To_Return_False;
 
    function Corresponding_Aspect
       (N : Node_Id) return Node_Id is
@@ -1233,6 +1241,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Parameter_Specification
         or else NT (N).Nkind = N_Pragma_Argument_Association
         or else NT (N).Nkind = N_Qualified_Expression
+        or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
         or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
@@ -1631,13 +1640,13 @@ package body Sinfo is
       return Flag16 (N);
    end Import_Interface_Present;
 
-   function In_Assertion
+   function In_Assertion_Expression
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Function_Call);
       return Flag4 (N);
-   end In_Assertion;
+   end In_Assertion_Expression;
 
    function In_Present
       (N : Node_Id) return Boolean is
@@ -1731,6 +1740,15 @@ package body Sinfo is
       return Flag16 (N);
    end Is_Controlling_Actual;
 
+   function Is_Disabled
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      return Flag15 (N);
+   end Is_Disabled;
+
    function Is_Delayed_Aspect
       (N : Node_Id) return Boolean is
    begin
@@ -1788,6 +1806,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       return Flag4 (N);
    end Is_Folded_In_Parser;
+
+   function Is_Ignored
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      return Flag9 (N);
+   end Is_Ignored;
 
    function Is_In_Discriminant_Check
       (N : Node_Id) return Boolean is
@@ -2130,6 +2157,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Renaming_Declaration
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
         or else NT (N).Nkind = N_Requeue_Statement
         or else NT (N).Nkind = N_Subprogram_Renaming_Declaration
@@ -3683,6 +3711,14 @@ package body Sinfo is
       Set_Flag14 (N, Val);
    end Set_Conversion_OK;
 
+   procedure Set_Convert_To_Return_False
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Raise_Expression);
+      Set_Flag13 (N, Val);
+   end Set_Convert_To_Return_False;
+
    procedure Set_Corresponding_Aspect
       (N : Node_Id; Val : Node_Id) is
    begin
@@ -4305,6 +4341,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Parameter_Specification
         or else NT (N).Nkind = N_Pragma_Argument_Association
         or else NT (N).Nkind = N_Qualified_Expression
+        or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
         or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
@@ -4703,13 +4740,13 @@ package body Sinfo is
       Set_Flag16 (N, Val);
    end Set_Import_Interface_Present;
 
-   procedure Set_In_Assertion
+   procedure Set_In_Assertion_Expression
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Function_Call);
       Set_Flag4 (N, Val);
-   end Set_In_Assertion;
+   end Set_In_Assertion_Expression;
 
    procedure Set_In_Present
       (N : Node_Id; Val : Boolean := True) is
@@ -4813,6 +4850,15 @@ package body Sinfo is
       Set_Flag14 (N, Val);
    end Set_Is_Delayed_Aspect;
 
+   procedure Set_Is_Disabled
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag15 (N, Val);
+   end Set_Is_Disabled;
+
    procedure Set_Is_Dynamic_Coextension
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -4860,6 +4906,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       Set_Flag4 (N, Val);
    end Set_Is_Folded_In_Parser;
+
+   procedure Set_Is_Ignored
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag9 (N, Val);
+   end Set_Is_Ignored;
 
    procedure Set_Is_In_Discriminant_Check
       (N : Node_Id; Val : Boolean := True) is
@@ -5202,6 +5257,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Renaming_Declaration
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
         or else NT (N).Nkind = N_Requeue_Statement
         or else NT (N).Nkind = N_Subprogram_Renaming_Declaration

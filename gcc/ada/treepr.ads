@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,16 +62,27 @@ package Treepr is
 
    --  The following debugging procedures are intended to be called from gdb
 
+   function p (N : Union_Id) return Node_Or_Entity_Id;
+   pragma Export (Ada, p);
+   --  Returns parent of a list or node (depending on the value of N). If N
+   --  is neither a list nor a node id, then prints a message to that effect
+   --  and returns Empty.
+
+   procedure pn (N : Union_Id);
+   --  Prints a node, node list, uint, or anything else that falls under
+   --  the definition of Union_Id. Historically this was only for printing
+   --  nodes, hence the name.
+
    procedure pp (N : Union_Id);
    pragma Export (Ada, pp);
-   --  Prints a node, node list, uint, or anything else that falls under
-   --  Union_Id.
+   --  Identical to pn, present for historical reasons
 
    procedure ppp (N : Node_Id);
    pragma Export (Ada, ppp);
    --  Same as Print_Node_Subtree
 
-   --  The following are no longer needed; you can use pp or ppp instead
+   --  The following are no longer really needed, now that pn will print
+   --  anything you throw at it!
 
    procedure pe (E : Elist_Id);
    pragma Export (Ada, pe);
@@ -83,10 +94,6 @@ package Treepr is
    --  -99999966. In other words for the positive case we fill out to 8 digits
    --  on the left and add a minus sign. This just saves some typing in the
    --  debugger.
-
-   procedure pn (N : Union_Id);
-   pragma Export (Ada, pn);
-   --  Same as pp
 
    procedure pt (N : Node_Id);
    pragma Export (Ada, pt);

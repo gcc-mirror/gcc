@@ -8584,6 +8584,45 @@ simplify_cond_using_ranges (gimple stmt)
 	}
     }
 
+  /* If we have a comparison of a SSA_NAME boolean against
+     a constant (which obviously must be [0..1]), see if the
+     SSA_NAME was set by a type conversion where the source
+     of the conversion is another SSA_NAME with a range [0..1].
+
+     If so, we can replace the SSA_NAME in the comparison with
+     the RHS of the conversion.  This will often make the type
+     conversion dead code which DCE will clean up.  */
+  if (TREE_CODE (op0) == SSA_NAME
+      && (TREE_CODE (TREE_TYPE (op0)) == BOOLEAN_TYPE
+	  || (INTEGRAL_TYPE_P (TREE_TYPE (op0))
+	      && TYPE_PRECISION (TREE_TYPE (op0)) == 1))
+      && TREE_CODE (op1) == INTEGER_CST)
+    {
+      gimple def_stmt = SSA_NAME_DEF_STMT (op0);
+      tree innerop;
+
+      if (!is_gimple_assign (def_stmt)
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+	return false;
+
+      innerop = gimple_assign_rhs1 (def_stmt);
+
+      if (TREE_CODE (innerop) == SSA_NAME)
+	{
+	  value_range_t *vr = get_value_range (innerop);
+
+	  if (range_int_cst_p (vr)
+	      && operand_equal_p (vr->min, integer_zero_node, 0)
+	      && operand_equal_p (vr->max, integer_one_node, 0))
+	    {
+	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
+	      gimple_cond_set_lhs (stmt, innerop);
+	      gimple_cond_set_rhs (stmt, newconst);
+	      return true;
+	    }
+	}
+    }
+
   return false;
 }
 
@@ -9369,7 +9408,6 @@ struct gimple_opt_pass pass_vrp =
   TODO_cleanup_cfg
     | TODO_update_ssa
     | TODO_verify_ssa
-    | TODO_verify_flow
-    | TODO_ggc_collect			/* todo_flags_finish */
+    | TODO_verify_flow			/* todo_flags_finish */
  }
 };

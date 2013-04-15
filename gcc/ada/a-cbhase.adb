@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,25 +34,10 @@ with Ada.Containers.Hash_Tables.Generic_Bounded_Keys;
 pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
 
 with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
-with Ada.Finalization;             use Ada.Finalization;
 
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Hashed_Sets is
-
-   type Iterator is new Limited_Controlled and
-     Set_Iterator_Interfaces.Forward_Iterator with
-   record
-      Container : Set_Access;
-   end record;
-
-   overriding procedure Finalize (Object : in out Iterator);
-
-   overriding function First (Object : Iterator) return Cursor;
-
-   overriding function Next
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --

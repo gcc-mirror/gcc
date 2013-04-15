@@ -1661,6 +1661,15 @@ package body Sem_Ch3 is
                  (New_Subp, Is_Abstract_Subprogram (Prim));
                Set_Interface_Alias (New_Subp, Iface_Prim);
 
+               --  If the returned type is an interface then propagate it to
+               --  the returned type. Needed by the thunk to generate the code
+               --  which displaces "this" to reference the corresponding
+               --  secondary dispatch table in the returned object.
+
+               if Is_Interface (Etype (Iface_Prim)) then
+                  Set_Etype (New_Subp, Etype (Iface_Prim));
+               end if;
+
                --  Internal entities associated with interface types are
                --  only registered in the list of primitives of the tagged
                --  type. They are only used to fill the contents of the
@@ -8347,7 +8356,6 @@ package body Sem_Ch3 is
            and then Present (Full_View (T))
          then
             Analyze_And_Resolve (Expr, BDT, Suppress => Overflow_Check);
-
          else
             Analyze_And_Resolve (Expr, BDT);
          end if;
@@ -9643,7 +9651,7 @@ package body Sem_Ch3 is
 
             elsif Is_Subprogram (E)
               and then (not Comes_From_Source (E)
-                          or else Chars (E) = Name_uCall)
+                         or else Chars (E) = Name_uCall)
             then
                null;
 
@@ -12060,9 +12068,9 @@ package body Sem_Ch3 is
          Set_Ekind (Def_Id, E_Signed_Integer_Subtype);
       end if;
 
-      Set_Etype            (Def_Id, Base_Type        (T));
-      Set_Size_Info        (Def_Id,                  (T));
-      Set_First_Rep_Item   (Def_Id, First_Rep_Item   (T));
+      Set_Etype            (Def_Id, Base_Type      (T));
+      Set_Size_Info        (Def_Id,                (T));
+      Set_First_Rep_Item   (Def_Id, First_Rep_Item (T));
       Set_Discrete_RM_Size (Def_Id);
    end Constrain_Integer;
 
@@ -12078,10 +12086,10 @@ package body Sem_Ch3 is
 
    begin
       Set_Ekind          (Def_Id, E_Ordinary_Fixed_Point_Subtype);
-      Set_Etype          (Def_Id, Base_Type        (T));
-      Set_Size_Info      (Def_Id,                  (T));
-      Set_First_Rep_Item (Def_Id, First_Rep_Item   (T));
-      Set_Small_Value    (Def_Id, Small_Value      (T));
+      Set_Etype          (Def_Id, Base_Type      (T));
+      Set_Size_Info      (Def_Id,                (T));
+      Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
+      Set_Small_Value    (Def_Id, Small_Value    (T));
 
       --  Process the constraint
 
@@ -12429,9 +12437,7 @@ package body Sem_Ch3 is
          then
             Old_C := First_Component (Typ);
             while Present (Old_C) loop
-               if Chars ((Old_C)) = Name_uTag
-                 or else Chars ((Old_C)) = Name_uParent
-               then
+               if Nam_In (Chars (Old_C), Name_uTag, Name_uParent) then
                   Append_Elmt (Old_C, Comp_List);
                end if;
 
@@ -13268,9 +13274,9 @@ package body Sem_Ch3 is
         or else Is_Internal (Parent_Subp)
         or else Is_Private_Overriding
         or else Is_Internal_Name (Chars (Parent_Subp))
-        or else Chars (Parent_Subp) = Name_Initialize
-        or else Chars (Parent_Subp) = Name_Adjust
-        or else Chars (Parent_Subp) = Name_Finalize
+        or else Nam_In (Chars (Parent_Subp), Name_Initialize,
+                                             Name_Adjust,
+                                             Name_Finalize)
       then
          Set_Derived_Name;
 
@@ -13443,10 +13449,9 @@ package body Sem_Ch3 is
       --  set on both views of the type.
 
       if Is_Controlled (Parent_Type)
-        and then
-          (Chars (Parent_Subp) = Name_Initialize or else
-           Chars (Parent_Subp) = Name_Adjust     or else
-           Chars (Parent_Subp) = Name_Finalize)
+        and then Nam_In (Chars (Parent_Subp), Name_Initialize,
+                                              Name_Adjust,
+                                              Name_Finalize)
         and then Is_Hidden (Parent_Subp)
         and then not Is_Visibly_Controlled (Parent_Type)
       then
@@ -16322,31 +16327,6 @@ package body Sem_Ch3 is
 
       return Assoc_List;
    end Inherit_Components;
-
-   -----------------------
-   -- Is_Constant_Bound --
-   -----------------------
-
-   function Is_Constant_Bound (Exp : Node_Id) return Boolean is
-   begin
-      if Compile_Time_Known_Value (Exp) then
-         return True;
-
-      elsif Is_Entity_Name (Exp)
-        and then Present (Entity (Exp))
-      then
-         return Is_Constant_Object (Entity (Exp))
-           or else Ekind (Entity (Exp)) = E_Enumeration_Literal;
-
-      elsif Nkind (Exp) in N_Binary_Op then
-         return Is_Constant_Bound (Left_Opnd (Exp))
-           and then Is_Constant_Bound (Right_Opnd (Exp))
-           and then Scope (Entity (Exp)) = Standard_Standard;
-
-      else
-         return False;
-      end if;
-   end Is_Constant_Bound;
 
    -----------------------
    -- Is_Null_Extension --
@@ -19343,7 +19323,7 @@ package body Sem_Ch3 is
                        or else
                          (Is_Class_Wide_Type (Entity (Subt))
                            and then
-                           Chars (Etype (Base_Type (Entity (Subt)))) =
+                             Chars (Etype (Base_Type (Entity (Subt)))) =
                                                                   Type_Id));
             end if;
 
@@ -20179,7 +20159,7 @@ package body Sem_Ch3 is
 
       --  Complete both implicit base and declared first subtype entities
 
-      Set_Etype          (Implicit_Base, Base_Typ);
+      Set_Etype          (Implicit_Base,                 Base_Typ);
       Set_Size_Info      (Implicit_Base,                (Base_Typ));
       Set_RM_Size        (Implicit_Base, RM_Size        (Base_Typ));
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Base_Typ));

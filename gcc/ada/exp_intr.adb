@@ -518,11 +518,9 @@ package body Exp_Intr is
       elsif Nam = Name_Generic_Dispatching_Constructor then
          Expand_Dispatching_Constructor_Call (N);
 
-      elsif Nam = Name_Import_Address
-              or else
-            Nam = Name_Import_Largest_Value
-              or else
-            Nam = Name_Import_Value
+      elsif Nam_In (Nam, Name_Import_Address,
+                         Name_Import_Largest_Value,
+                         Name_Import_Value)
       then
          Expand_Import_Call (N);
 
@@ -556,10 +554,10 @@ package body Exp_Intr is
       elsif Nam = Name_To_Pointer then
          Expand_To_Pointer (N);
 
-      elsif Nam = Name_File
-        or else Nam = Name_Line
-        or else Nam = Name_Source_Location
-        or else Nam = Name_Enclosing_Entity
+      elsif Nam_In (Nam, Name_File,
+                         Name_Line,
+                         Name_Source_Location,
+                         Name_Enclosing_Entity)
       then
          Expand_Source_Info (N, Nam);
 

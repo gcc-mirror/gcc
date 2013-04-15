@@ -990,9 +990,10 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
 	  /* If this insn is a USE made by update_block, we care about the
 	     underlying insn.  */
-	  if (code == INSN && GET_CODE (PATTERN (insn)) == USE
+	  if (code == INSN
+	      && GET_CODE (PATTERN (insn)) == USE
 	      && INSN_P (XEXP (PATTERN (insn), 0)))
-	      real_insn = XEXP (PATTERN (insn), 0);
+	    real_insn = XEXP (PATTERN (insn), 0);
 
 	  if (CALL_P (real_insn))
 	    {

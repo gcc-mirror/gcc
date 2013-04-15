@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,6 +164,65 @@ package Namet is
 
    First_Name_Id : constant Name_Id := Names_Low_Bound + 2;
    --  Subscript of first entry in names table
+
+   ------------------------------
+   -- Name_Id Membership Tests --
+   ------------------------------
+
+   --  The following functions allow a convenient notation for testing whether
+   --  a Name_Id value matches any one of a list of possible values. In each
+   --  case True is returned if the given T argument is equal to any of the V
+   --  arguments. These essentially duplicate the Ada 2012 membership tests,
+   --  but we cannot use the latter (yet) in the compiler front end, because
+   --  of bootstrap considerations
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id) return Boolean;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id) return Boolean;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id) return Boolean;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id;
+      V5 : Name_Id) return Boolean;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id;
+      V5 : Name_Id;
+      V6 : Name_Id) return Boolean;
+
+   function Nam_In
+     (T  : Name_Id;
+      V1 : Name_Id;
+      V2 : Name_Id;
+      V3 : Name_Id;
+      V4 : Name_Id;
+      V5 : Name_Id;
+      V6 : Name_Id;
+      V7 : Name_Id) return Boolean;
+
+   pragma Inline (Nam_In);
+   --  Inline all above functions
 
    -----------------
    -- Subprograms --

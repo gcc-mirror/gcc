@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "params.h"
 #include "diagnostic.h"
+#include "diagnostic-color.h"
 #include "opts-diagnostic.h"
 #include "insn-attr-common.h"
 #include "common/common-target.h"
@@ -1497,6 +1498,11 @@ common_handle_option (struct gcc_options *opts,
       dc->show_caret = value;
       break;
 
+    case OPT_fdiagnostics_color_:
+      pp_show_color (dc->printer)
+	= colorize_init ((diagnostic_color_rule_t) value);
+      break;
+
     case OPT_fdiagnostics_show_option:
       dc->show_option_requested = value;
       break;
@@ -1699,6 +1705,18 @@ common_handle_option (struct gcc_options *opts,
       set_debug_level (SDB_DEBUG, false, arg, opts, opts_set, loc);
       break;
 
+    case OPT_gdwarf:
+      if (arg && strlen (arg) != 0)
+        {
+          error_at (loc, "%<-gdwarf%s%> is ambiguous; "
+                    "use %<-gdwarf-%s%> for DWARF version "
+                    "or %<-gdwarf -g%s%> for debug level", arg, arg, arg);
+          break;
+        }
+      else
+        value = opts->x_dwarf_version;
+      
+      /* FALLTHRU */
     case OPT_gdwarf_:
       if (value < 2 || value > 4)
 	error_at (loc, "dwarf version %d is not supported", value);

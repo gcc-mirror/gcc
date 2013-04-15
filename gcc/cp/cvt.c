@@ -40,7 +40,7 @@ static tree cp_convert_to_pointer (tree, tree, tsubst_flags_t);
 static tree convert_to_pointer_force (tree, tree, tsubst_flags_t);
 static tree build_type_conversion (tree, tree);
 static tree build_up_reference (tree, tree, int, tree, tsubst_flags_t);
-static void warn_ref_binding (location_t, tree, tree, tree);
+static void diagnose_ref_binding (location_t, tree, tree, tree);
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -371,7 +371,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl,
    non-volatile const type.  */
 
 static void
-warn_ref_binding (location_t loc, tree reftype, tree intype, tree decl)
+diagnose_ref_binding (location_t loc, tree reftype, tree intype, tree decl)
 {
   tree ttl = TREE_TYPE (reftype);
 
@@ -456,9 +456,9 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	tree ttl = TREE_TYPE (reftype);
 	tree ttr = lvalue_type (expr);
 
-	if ((complain & tf_warning)
+	if ((complain & tf_error)
 	    && ! real_lvalue_p (expr))
-	  warn_ref_binding (loc, reftype, intype, decl);
+	  diagnose_ref_binding (loc, reftype, intype, decl);
 
 	if (! (convtype & CONV_CONST)
 	    && !at_least_as_qualified_p (ttl, ttr))
@@ -502,8 +502,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 					 ICR_CONVERTING, 0, 0, complain);
       if (rval == NULL_TREE || rval == error_mark_node)
 	return rval;
-      if (complain & tf_warning)
-	warn_ref_binding (loc, reftype, intype, decl);
+      if (complain & tf_error)
+	diagnose_ref_binding (loc, reftype, intype, decl);
       rval = build_up_reference (reftype, rval, flags, decl, complain);
     }
 

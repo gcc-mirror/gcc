@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -259,6 +259,45 @@ struct Flag_Word4
   Boolean      flag215	    :  1;
 };
 
+/* Structure used for extra flags in sixth component overlaying Field12 */
+struct Flag_Word5
+{
+  Boolean      flag255	    :  1;
+  Boolean      flag256	    :  1;
+  Boolean      flag257	    :  1;
+  Boolean      flag258	    :  1;
+  Boolean      flag259	    :  1;
+  Boolean      flag260	    :  1;
+  Boolean      flag261	    :  1;
+  Boolean      flag262	    :  1;
+
+  Boolean      flag263	    :  1;
+  Boolean      flag264	    :  1;
+  Boolean      flag265	    :  1;
+  Boolean      flag266	    :  1;
+  Boolean      flag267	    :  1;
+  Boolean      flag268	    :  1;
+  Boolean      flag269	    :  1;
+  Boolean      flag270	    :  1;
+
+  Boolean      flag271	    :  1;
+  Boolean      flag272	    :  1;
+  Boolean      flag273	    :  1;
+  Boolean      flag274	    :  1;
+  Boolean      flag275	    :  1;
+  Boolean      flag276	    :  1;
+  Boolean      flag277	    :  1;
+  Boolean      flag278	    :  1;
+
+  Boolean      flag279      :  1;
+  Boolean      flag280	    :  1;
+  Boolean      flag281	    :  1;
+  Boolean      flag282	    :  1;
+  Boolean      flag283	    :  1;
+  Boolean      flag284	    :  1;
+  Boolean      flag285	    :  1;
+  Boolean      flag286	    :  1;
+};
 struct Non_Extended
 {
   Source_Ptr   sloc;
@@ -290,6 +329,7 @@ struct Extended
       struct   Flag_Word fw;
       struct   Flag_Word2 fw2;
       struct   Flag_Word4 fw4;
+      struct   Flag_Word5 fw5;
     } U;
 };
 
@@ -387,7 +427,12 @@ extern Node_Id Current_Error_Node;
 #define Field27(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field9)
 #define Field28(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field10)
 #define Field29(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.field11)
-#define Field30(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field6)
+#define Field30(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.field6)
+#define Field31(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.field7)
+#define Field32(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.field8)
+#define Field33(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.field9)
+#define Field34(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.field10)
+#define Field35(N)    (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.X.field11)
 
 #define Node1(N)      Field1  (N)
 #define Node2(N)      Field2  (N)
@@ -419,6 +464,12 @@ extern Node_Id Current_Error_Node;
 #define Node28(N)     Field28 (N)
 #define Node29(N)     Field29 (N)
 #define Node30(N)     Field30 (N)
+#define Node31(N)     Field31 (N)
+#define Node32(N)     Field32 (N)
+#define Node33(N)     Field33 (N)
+#define Node34(N)     Field34 (N)
+#define Node35(N)     Field35 (N)
+#define Node36(N)     Field36 (N)
 
 #define List1(N)      Field1  (N)
 #define List2(N)      Field2  (N)
@@ -741,6 +792,39 @@ extern Node_Id Current_Error_Node;
 #define Flag252(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag70)
 #define Flag253(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag71)
 #define Flag254(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag72)
+
+#define Flag255(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag255)
+#define Flag256(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag256)
+#define Flag257(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag257)
+#define Flag258(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag258)
+#define Flag259(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag259)
+#define Flag260(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag260)
+#define Flag261(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag261)
+#define Flag262(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag262)
+#define Flag263(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag263)
+#define Flag264(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag264)
+#define Flag265(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag265)
+#define Flag266(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag266)
+#define Flag267(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag267)
+#define Flag268(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag268)
+#define Flag269(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag269)
+#define Flag270(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag270)
+#define Flag271(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag271)
+#define Flag272(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag272)
+#define Flag273(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag273)
+#define Flag274(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag274)
+#define Flag275(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag275)
+#define Flag276(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag276)
+#define Flag277(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag277)
+#define Flag278(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag278)
+#define Flag279(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag279)
+#define Flag280(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag280)
+#define Flag281(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag281)
+#define Flag282(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag282)
+#define Flag283(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag283)
+#define Flag284(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag284)
+#define Flag285(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag285)
+#define Flag286(N)     (Nodes_Ptr[(N) - First_Node_Id + 5].V.EX.U.fw5.flag286)
 
 #ifdef __cplusplus
 }

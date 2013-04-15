@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -603,14 +603,6 @@ __gnat_install_handler (void)
      handled properly, avoiding a SEGV generation from stack usage by the
      handler itself.  */
 
-#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
-  stack_t stack;
-  stack.ss_sp = __gnat_alternate_stack;
-  stack.ss_size = sizeof (__gnat_alternate_stack);
-  stack.ss_flags = 0;
-  sigaltstack (&stack, NULL);
-#endif
-
   act.sa_sigaction = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
   sigemptyset (&act.sa_mask);
@@ -624,11 +616,23 @@ __gnat_install_handler (void)
     sigaction (SIGILL,  &act, NULL);
   if (__gnat_get_interrupt_state (SIGBUS) != 's')
     sigaction (SIGBUS,  &act, NULL);
-#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
-  act.sa_flags |= SA_ONSTACK;
-#endif
   if (__gnat_get_interrupt_state (SIGSEGV) != 's')
-    sigaction (SIGSEGV, &act, NULL);
+    {
+#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
+      /* Setup an alternate stack region for the handler execution so that
+	 stack overflows can be handled properly, avoiding a SEGV generation
+	 from stack usage by the handler itself.  */
+      stack_t stack;
+
+      stack.ss_sp = __gnat_alternate_stack;
+      stack.ss_size = sizeof (__gnat_alternate_stack);
+      stack.ss_flags = 0;
+      sigaltstack (&stack, NULL);
+
+      act.sa_flags |= SA_ONSTACK;
+#endif
+      sigaction (SIGSEGV, &act, NULL);
+    }
 
   __gnat_handler_installed = 1;
 }
@@ -706,15 +710,6 @@ __gnat_install_handler(void)
 #include <siginfo.h>
 #include <sys/ucontext.h>
 #include <sys/regset.h>
-
-/* The code below is common to SPARC and x86.  Beware of the delay slot
-   differences for signal context adjustments.  */
-
-#if defined (__sparc)
-#define RETURN_ADDR_OFFSET 8
-#else
-#define RETURN_ADDR_OFFSET 0
-#endif
 
 static void
 __gnat_error_handler (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
@@ -809,6 +804,7 @@ __gnat_install_handler (void)
 /* Routine called from binder to override default feature values. */
 void __gnat_set_features (void);
 int __gnat_features_set = 0;
+void (*__gnat_ctrl_c_handler) (void) = 0;
 
 #ifdef __IA64
 #define lib_get_curr_invo_context LIB$I64_GET_CURR_INVO_CONTEXT
@@ -823,10 +819,12 @@ int __gnat_features_set = 0;
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
    It would be better to just include <ssdef.h> */
 
+#define SS$_CONTINUE           1
 #define SS$_ACCVIO            12
 #define SS$_HPARITH         1284
 #define SS$_INTDIV          1156
 #define SS$_STKOVF          1364
+#define SS$_CONTROLC        1617
 #define SS$_RESIGNAL        2328
 
 #define MTH$_FLOOVEMAT   1475268       /* Some ACVC_21 CXA tests */
@@ -846,24 +844,28 @@ extern int LIB$_ACTIMAGE;
 #define FDL$_UNPRIKW 11829410
 #define CMA$_EXIT_THREAD 4227492
 
-struct cond_sigargs {
+struct cond_sigargs
+{
   unsigned int sigarg;
   unsigned int sigargval;
 };
 
-struct cond_subtests {
+struct cond_subtests
+{
   unsigned int num;
   const struct cond_sigargs sigargs[];
 };
 
-struct cond_except {
+struct cond_except
+{
   unsigned int cond;
   const struct Exception_Data *except;
   unsigned int needs_adjust;  /* 1 = adjust PC,  0 = no adjust */
   const struct cond_subtests *subtests;
 };
 
-struct descriptor_s {
+struct descriptor_s
+{
   unsigned short len, mbz;
   __char_ptr32 adr;
 };
@@ -911,6 +913,9 @@ extern Exception_Code Base_Code_In (Exception_Code);
 /* DEC Ada exceptions are not defined in a header file, so they
    must be declared.  */
 
+#define FAC_MASK  		0x0fff0000
+#define DECADA_M_FACILITY	0x00310000
+
 #define ADA$_ALREADY_OPEN	0x0031a594
 #define ADA$_CONSTRAINT_ERRO	0x00318324
 #define ADA$_DATA_ERROR		0x003192c4
@@ -939,7 +944,8 @@ extern Exception_Code Base_Code_In (Exception_Code);
 #define ADA$_USE_ERROR		0x0031a8a4
 
 /* DEC Ada specific conditions.  */
-static const struct cond_except dec_ada_cond_except_table [] = {
+static const struct cond_except dec_ada_cond_except_table [] =
+{
   {ADA$_PROGRAM_ERROR,   &program_error, 0, 0},
   {ADA$_USE_ERROR,       &Use_Error, 0, 0},
   {ADA$_KEYSIZERR,       &program_error, 0, 0},
@@ -987,18 +993,19 @@ static const struct cond_except dec_ada_cond_except_table [] = {
    in hindsight should have just made ACCVIO == Storage_Error.  */
 #define ACCVIO_VIRTUAL_ADDR 3
 static const struct cond_subtests accvio_c_e =
-  {1,  /* number of subtests below */
-     {
-       {ACCVIO_VIRTUAL_ADDR, 0}
-      }
-   };
+{1,  /* number of subtests below */
+  {
+     { ACCVIO_VIRTUAL_ADDR, 0 }
+   }
+};
 
 /* Macro flag to adjust PC which gets off by one for some conditions,
    not sure if this is reliably true, PC could be off by more for
    HPARITH for example, unless a trapb is inserted. */
 #define NEEDS_ADJUST 1
 
-static const struct cond_except system_cond_except_table [] = {
+static const struct cond_except system_cond_except_table [] =
+{
   {MTH$_FLOOVEMAT, &constraint_error, 0, 0},
   {SS$_INTDIV,     &constraint_error, 0, 0},
   {SS$_HPARITH,    &constraint_error, NEEDS_ADJUST, 0},
@@ -1040,7 +1047,8 @@ static const struct cond_except system_cond_except_table [] = {
 typedef int
 resignal_predicate (int code);
 
-static const int * const cond_resignal_table [] = {
+static const int * const cond_resignal_table [] =
+{
   &C$_SIGKILL,
   (int *)CMA$_EXIT_THREAD,
   &SS$_DEBUG,
@@ -1051,7 +1059,8 @@ static const int * const cond_resignal_table [] = {
   0
 };
 
-static const int facility_resignal_table [] = {
+static const int facility_resignal_table [] =
+{
   0x1380000, /* RDB */
   0x2220000, /* SQL */
   0
@@ -1065,7 +1074,7 @@ __gnat_default_resignal_p (int code)
   int i, iexcept;
 
   for (i = 0; facility_resignal_table [i]; i++)
-    if ((code & 0xfff0000) == facility_resignal_table [i])
+    if ((code & FAC_MASK) == facility_resignal_table [i])
       return 1;
 
   for (i = 0, iexcept = 0;
@@ -1099,7 +1108,6 @@ __gnat_set_resignal_predicate (resignal_predicate *predicate)
 /* Action routine for SYS$PUTMSG. There may be multiple
    conditions, each with text to be appended to MESSAGE
    and separated by line termination.  */
-
 static int
 copy_msg (struct descriptor_s *msgdesc, char *message)
 {
@@ -1125,7 +1133,6 @@ copy_msg (struct descriptor_s *msgdesc, char *message)
 
 /* Scan TABLE for a match for the condition contained in SIGARGS,
    and return the entry, or the empty entry if no match found.  */
-
 static const struct cond_except *
   scan_conditions ( int *sigargs, const struct cond_except *table [])
 {
@@ -1174,6 +1181,8 @@ static const struct cond_except *
     return &(*table) [i];
 }
 
+/* __gnat_handle_vms_condtition is both a frame based handler
+   for the runtime, and an exception vector for the compiler.  */
 long
 __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 {
@@ -1211,6 +1220,19 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
       const struct cond_except *cond_tables [] = {dec_ada_cond_except_table,
 					          system_cond_except_table,
 					          0};
+      unsigned int ctrlc = SS$_CONTROLC;
+      int ctrlc_match = LIB$MATCH_COND (&sigargs [1], &ctrlc);
+
+      extern int SYS$DCLAST (void (*astadr)(), unsigned long long astprm,
+	                     unsigned int acmode);
+
+      /* If SS$_CONTROLC has been imported as an exception, it will take
+	 priority over a a Ctrl/C handler.  See above.  */
+      if (ctrlc_match && __gnat_ctrl_c_handler)
+	{
+	  SYS$DCLAST (__gnat_ctrl_c_handler, 0, 0);
+	  return SS$_CONTINUE;
+	}
 
       i = 0;
       while ((cond_table = cond_tables[i++]) && !exception)
@@ -1236,7 +1258,18 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
   message[0] = 0;
   /* Subtract PC & PSL fields as per ABI for SYS$PUTMSG.  */
   sigargs[0] -= 2;
-  SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
+
+  extern int SYS$PUTMSG (void *, int (*)(), void *, unsigned long long);
+
+  /* If it was a DEC Ada specific condtiion, make it GNAT otherwise
+     keep the old facility.  */
+  if (sigargs [1] & FAC_MASK == DECADA_M_FACILITY)
+    SYS$PUTMSG (sigargs, copy_msg, &gnat_facility,
+	        (unsigned long long ) message);
+  else
+    SYS$PUTMSG (sigargs, copy_msg, 0,
+	        (unsigned long long ) message);
+
   /* Add back PC & PSL fields as per ABI for SYS$PUTMSG.  */
   sigargs[0] += 2;
   msg = message;
@@ -1253,6 +1286,8 @@ __gnat_install_handler (void)
   long prvhnd ATTRIBUTE_UNUSED;
 
 #if !defined (IN_RTS)
+  extern int SYS$SETEXV (unsigned int vector, int (*addres)(),
+	                 unsigned int accmode, void *(*(prvhnd)));
   SYS$SETEXV (1, __gnat_handle_vms_condition, 3, &prvhnd);
 #endif
 
@@ -1378,15 +1413,14 @@ struct regsum
 };
 
 extern int SYS$GET_REGION_INFO (unsigned int, unsigned long long *,
-                                void *, void *, unsigned int,
-                                void *, unsigned int *);
+	                        void *, void *, unsigned int,
+	                        void *, unsigned int *);
 extern int SYS$EXPREG_64 (unsigned long long *, unsigned long long,
-                          unsigned int, unsigned int, void **,
-                          unsigned long long *);
+	                  unsigned int, unsigned int, void **,
+	                  unsigned long long *);
 extern int SYS$SETPRT_64 (void *, unsigned long long, unsigned int,
-                          unsigned int, void **, unsigned long long *,
-                          unsigned int *);
-extern int SYS$PUTMSG (void *, int (*)(), void *, unsigned long long);
+	                  unsigned int, void **, unsigned long long *,
+	                  unsigned int *);
 
 /* Add a guard page in the memory region containing ADDR at ADDR +/- SIZE.
    (The sign depends on the kind of the memory region).  */
@@ -1412,7 +1446,7 @@ __gnat_set_stack_guard_page (void *addr, unsigned long size)
 
   /* Extend the region.  */
   status = SYS$EXPREG_64 (&buffer.q_region_id,
-                          size, 0, 0, &start_va, &length);
+	                  size, 0, 0, &start_va, &length);
 
   if ((status & 1) != 1)
     return -1;
@@ -1422,7 +1456,7 @@ __gnat_set_stack_guard_page (void *addr, unsigned long size)
     start_va = (void *)((unsigned long long)start_va + length - VMS_PAGESIZE);
 
   status = SYS$SETPRT_64 (start_va, VMS_PAGESIZE, PSL__C_USER, PRT__C_NA,
-                          &ret_va, &ret_len, &ret_prot);
+	                  &ret_va, &ret_len, &ret_prot);
 
   if ((status & 1) != 1)
     return -1;
@@ -1473,7 +1507,8 @@ struct feature {
 int __gl_heap_size = 64;
 
 /* Array feature logical names and global variable addresses.  */
-static const struct feature features[] = {
+static const struct feature features[] =
+{
   {"GNAT$NO_MALLOC_64", &__gl_heap_size},
   {0, 0}
 };
@@ -1490,13 +1525,13 @@ __gnat_set_features (void)
       __gnat_vms_get_logical (features[i].name, buff, sizeof (buff));
 
       if (strcmp (buff, "ENABLE") == 0
-          || strcmp (buff, "TRUE") == 0
-          || strcmp (buff, "1") == 0)
-        *features[i].gl_addr = 32;
+	  || strcmp (buff, "TRUE") == 0
+	  || strcmp (buff, "1") == 0)
+	*features[i].gl_addr = 32;
       else if (strcmp (buff, "DISABLE") == 0
-               || strcmp (buff, "FALSE") == 0
-               || strcmp (buff, "0") == 0)
-        *features[i].gl_addr = 64;
+	       || strcmp (buff, "FALSE") == 0
+	       || strcmp (buff, "0") == 0)
+	*features[i].gl_addr = 64;
     }
 
   /* Features to artificially limit the stack size.  */

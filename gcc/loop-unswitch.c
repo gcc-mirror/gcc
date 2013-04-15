@@ -436,9 +436,11 @@ unswitch_loop (struct loop *loop, basic_block unswitch_on, rtx cond, rtx cinsn)
   emit_insn_after (seq, BB_END (switch_bb));
   e = make_edge (switch_bb, true_edge->dest, 0);
   e->probability = prob;
+  /* Update to use apply_probability().  */
   e->count = latch_edge->count * prob / REG_BR_PROB_BASE;
   e = make_edge (switch_bb, FALLTHRU_EDGE (unswitch_on)->dest, EDGE_FALLTHRU);
   e->probability = false_edge->probability;
+  /* Update to use apply_probability().  */
   e->count = latch_edge->count * (false_edge->probability) / REG_BR_PROB_BASE;
 
   if (irred_flag)

@@ -654,9 +654,10 @@ static const format_char_info gcc_diag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "K", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    "",   NULL },
+  { "K",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    "",   NULL },
 
-  { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
+  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -676,9 +677,10 @@ static const format_char_info gcc_tdiag_char_table[] =
   /* These will require a "tree" at runtime.  */
   { "DFKTEV", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
 
-  { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
+  { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
-  { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
+  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -698,9 +700,10 @@ static const format_char_info gcc_cdiag_char_table[] =
   /* These will require a "tree" at runtime.  */
   { "DEFKTV", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
 
-  { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
+  { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
-  { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
+  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -725,7 +728,8 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
-  { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "cR",   NULL },
+  { "<>'R",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };

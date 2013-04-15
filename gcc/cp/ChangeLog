@@ -1,3 +1,102 @@
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.c (cp_print_error_function,
+	print_instantiation_partial_context_line,
+	maybe_print_constexpr_context): Colorize locus strings.
+
+2013-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52748
+	* parser.c (complain_flags): New.
+	(cp_parser_postfix_expression): Use it.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_binary_expression): Likewise.
+	(cp_parser_assignment_expression): Likewise.
+	(cp_parser_expression): Likewise.
+	(cp_parser_postfix_open_square_expression): Take decltype_p.
+	(cp_parser_builtin_offsetof): Adjust.
+	(cp_convert_range_for): Pass complain to finish_unary_op_expr.
+	* decl2.c (grok_array_decl): Add decltype_p parm.
+	* cp-tree.h: Adjust prototype.
+	* semantics.c (finish_unary_op_expr): Add complain parm.
+
+2013-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* call.c (null_ptr_cst_p): Call fold_non_dependent_expr_sfinae before
+	calling maybe_constant_value for C++98.
+
+2013-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56901
+	* semantics.c (lambda_capture_field_type, lambda_proxy_type):
+	Strip references before checking WILDCARD_TYPE_P.
+
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_conditional_expr_1, build_over_call): Protect
+	error calls with complain & tf_error.
+	* typeck.c (finish_class_member_access_expr, cp_build_binary_op,
+	build_x_unary_op, cp_build_unary_op, cp_build_compound_expr,
+	build_ptrmemfunc): Likewise.
+	(lookup_destructor): Take tsubst_flags_t parameter, adjust.
+
+	* cvt.c (warn_ref_binding): Rename to diagnose_ref_binding.
+	(convert_to_reference): Adjust.
+
+2013-04-11  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_copy) [VAR_DECL]: Don't call tsubst for
+	local variables, look them up instead.
+	(tsubst_decl) [VAR_DECL]: Remove handling for anonymous union
+	proxies and substitution in unevaluated context.
+	(tsubst_expr) [OMP_FOR]: Instantiate OMP_FOR_PRE_BODY
+	before the iterators.
+
+	PR c++/23055
+	* pt.c (uses_deducible_template_parms): New.
+	(deducible_array_bound, deducible_expression): New.
+	(deducible_template_args): New.
+	(unify_one_argument): Call uses_deducible_template_parms.
+
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56913
+	* typeck2.c (build_m_component_ref): Protect error calls with
+	(complain & tf_error).
+
+2013-04-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54216
+	* parser.c (cp_parser_enum_specifier): Check for empty
+	anonymous enums and anonymous scoped enums.
+
+2013-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/56895
+	* typeck.c (cp_build_binary_op): Call fold_non_dependent_expr_sfinae
+	first before calling maybe_constant_value for warn_for_div_by_zero
+	or invalid shift count warning purposes.
+
+2013-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25466
+	* rtti.c (build_typeid): Check the address of the argument
+	rather than looking for an INDIRECT_REF.
+
+2013-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56838
+	PR c++/17232
+	* typeck2.c (abstract_virtuals_error_sfinae): Disable
+	complete_type again.
+
+2013-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56871
+	* decl.c (validate_constexpr_redeclaration): Allow an explicit
+	specialization to be different wrt the constexpr specifier.
+
 2013-04-06  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_std_attribute): Treat [[noreturn]] like GNU

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -626,8 +626,16 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    -------------------
 
    function Generic_Equal (Left, Right : Tree_Type) return Boolean is
+      BL : Natural renames Left'Unrestricted_Access.Busy;
+      LL : Natural renames Left'Unrestricted_Access.Lock;
+
+      BR : Natural renames Right'Unrestricted_Access.Busy;
+      LR : Natural renames Right'Unrestricted_Access.Lock;
+
       L_Node : Node_Access;
       R_Node : Node_Access;
+
+      Result : Boolean;
 
    begin
       if Left'Address = Right'Address then
@@ -638,18 +646,45 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          return False;
       end if;
 
+      --  Per AI05-0022, the container implementation is required to detect
+      --  element tampering by a generic actual subprogram.
+
+      BL := BL + 1;
+      LL := LL + 1;
+
+      BR := BR + 1;
+      LR := LR + 1;
+
       L_Node := Left.First;
       R_Node := Right.First;
+      Result := True;
       while L_Node /= null loop
          if not Is_Equal (L_Node, R_Node) then
-            return False;
+            Result := False;
+            exit;
          end if;
 
          L_Node := Next (L_Node);
          R_Node := Next (R_Node);
       end loop;
 
-      return True;
+      BL := BL - 1;
+      LL := LL - 1;
+
+      BR := BR - 1;
+      LR := LR - 1;
+
+      return Result;
+
+   exception
+      when others =>
+         BL := BL - 1;
+         LL := LL - 1;
+
+         BR := BR - 1;
+         LR := LR - 1;
+
+         raise;
    end Generic_Equal;
 
    -----------------------

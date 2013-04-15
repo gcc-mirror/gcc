@@ -169,39 +169,39 @@ AdaCore@*
 * About This Guide::
 * Getting Started with GNAT::
 * The GNAT Compilation Model::
-* Compiling Using gcc::
-* Binding Using gnatbind::
-* Linking Using gnatlink::
+* Compiling with gcc::
+* Binding with gnatbind::
+* Linking with gnatlink::
 * The GNAT Make Program gnatmake::
 * Improving Performance::
-* Renaming Files Using gnatchop::
+* Renaming Files with gnatchop::
 * Configuration Pragmas::
-* Handling Arbitrary File Naming Conventions Using gnatname::
+* Handling Arbitrary File Naming Conventions with gnatname::
 * GNAT Project Manager::
 * Tools Supporting Project Files::
 * The Cross-Referencing Tools gnatxref and gnatfind::
 * The GNAT Pretty-Printer gnatpp::
-* The GNAT Metric Tool gnatmetric::
-* File Name Krunching Using gnatkr::
-* Preprocessing Using gnatprep::
+* The GNAT Metrics Tool gnatmetric::
+* File Name Krunching with gnatkr::
+* Preprocessing with gnatprep::
 * The GNAT Library Browser gnatls::
-* Cleaning Up Using gnatclean::
+* Cleaning Up with gnatclean::
 @ifclear vms
 * GNAT and Libraries::
 * Using the GNU make Utility::
 @end ifclear
 * Memory Management Issues::
 * Stack Related Facilities::
-* Verifying Properties Using gnatcheck::
-* Creating Sample Bodies Using gnatstub::
-* Creating Unit Tests Using gnattest::
+* Verifying Properties with gnatcheck::
+* Creating Sample Bodies with gnatstub::
+* Creating Unit Tests with gnattest::
 * Performing Dimensionality Analysis in GNAT::
 * Generating Ada Bindings for C and C++ headers::
 * Other Utility Programs::
-* Running and Debugging Ada Programs::
 @ifclear vms
 * Code Coverage and Profiling::
 @end ifclear
+* Running and Debugging Ada Programs::
 @ifset vms
 * Compatibility with HP Ada::
 @end ifset
@@ -212,467 +212,9 @@ AdaCore@*
 * Conditional Compilation::
 * Inline Assembler::
 * Compatibility and Porting Guide::
-@ifset unw
 * Microsoft Windows Topics::
 * Mac OS Topics::
-@end ifset
 * GNU Free Documentation License::
-* Index::
-
- --- The Detailed Node Listing ---
-
-About This Guide
-
-* What This Guide Contains::
-* What You Should Know before Reading This Guide::
-* Related Information::
-* Conventions::
-
-Getting Started with GNAT
-
-* Running GNAT::
-* Running a Simple Ada Program::
-* Running a Program with Multiple Units::
-* Using the gnatmake Utility::
-@ifset vms
-* Editing with Emacs::
-@end ifset
-@ifclear vms
-* Introduction to GPS::
-@end ifclear
-
-The GNAT Compilation Model
-
-* Source Representation::
-* Foreign Language Representation::
-* File Naming Rules::
-* Using Other File Names::
-* Alternative File Naming Schemes::
-* Generating Object Files::
-* Source Dependencies::
-* The Ada Library Information Files::
-* Binding an Ada Program::
-* Mixed Language Programming::
-@ifclear vms
-* Building Mixed Ada & C++ Programs::
-* Comparison between GNAT and C/C++ Compilation Models::
-@end ifclear
-* Comparison between GNAT and Conventional Ada Library Models::
-@ifset vms
-* Placement of temporary files::
-@end ifset
-
-Foreign Language Representation
-
-* Latin-1::
-* Other 8-Bit Codes::
-* Wide Character Encodings::
-
-Compiling Ada Programs With gcc
-
-* Compiling Programs::
-* Switches for gcc::
-* Search Paths and the Run-Time Library (RTL)::
-* Order of Compilation Issues::
-* Examples::
-
-Switches for gcc
-
-* Output and Error Message Control::
-* Warning Message Control::
-* Debugging and Assertion Control::
-* Validity Checking::
-* Style Checking::
-* Run-Time Checks::
-* Using gcc for Syntax Checking::
-* Using gcc for Semantic Checking::
-* Compiling Different Versions of Ada::
-* Character Set Control::
-* File Naming Control::
-* Subprogram Inlining Control::
-* Auxiliary Output Control::
-* Debugging Control::
-* Exception Handling Control::
-* Units to Sources Mapping Files::
-* Integrated Preprocessing::
-@ifset vms
-* Return Codes::
-@end ifset
-
-Binding Ada Programs With gnatbind
-
-* Running gnatbind::
-* Switches for gnatbind::
-* Command-Line Access::
-* Search Paths for gnatbind::
-* Examples of gnatbind Usage::
-
-Switches for gnatbind
-
-* Consistency-Checking Modes::
-* Binder Error Message Control::
-* Elaboration Control::
-* Output Control::
-* Binding with Non-Ada Main Programs::
-* Binding Programs with No Main Subprogram::
-
-Linking Using gnatlink
-
-* Running gnatlink::
-* Switches for gnatlink::
-
-The GNAT Make Program gnatmake
-
-* Running gnatmake::
-* Switches for gnatmake::
-* Mode Switches for gnatmake::
-* Notes on the Command Line::
-* How gnatmake Works::
-* Examples of gnatmake Usage::
-
-Improving Performance
-* Performance Considerations::
-* Text_IO Suggestions::
-* Reducing Size of Ada Executables with gnatelim::
-* Reducing Size of Executables with unused subprogram/data elimination::
-
-Performance Considerations
-* Controlling Run-Time Checks::
-* Use of Restrictions::
-* Optimization Levels::
-* Debugging Optimized Code::
-* Inlining of Subprograms::
-* Vectorization of loops::
-* Other Optimization Switches::
-* Optimization and Strict Aliasing::
-@ifset vms
-* Coverage Analysis::
-@end ifset
-
-Reducing Size of Ada Executables with gnatelim
-* About gnatelim::
-* Running gnatelim::
-* Processing Precompiled Libraries::
-* Correcting the List of Eliminate Pragmas::
-* Making Your Executables Smaller::
-* Summary of the gnatelim Usage Cycle::
-
-Reducing Size of Executables with unused subprogram/data elimination
-* About unused subprogram/data elimination::
-* Compilation options::
-
-Renaming Files Using gnatchop
-
-* Handling Files with Multiple Units::
-* Operating gnatchop in Compilation Mode::
-* Command Line for gnatchop::
-* Switches for gnatchop::
-* Examples of gnatchop Usage::
-
-Configuration Pragmas
-
-* Handling of Configuration Pragmas::
-* The Configuration Pragmas Files::
-
-Handling Arbitrary File Naming Conventions Using gnatname
-
-* Arbitrary File Naming Conventions::
-* Running gnatname::
-* Switches for gnatname::
-* Examples of gnatname Usage::
-
-The Cross-Referencing Tools gnatxref and gnatfind
-
-* Switches for gnatxref::
-* Switches for gnatfind::
-* Project Files for gnatxref and gnatfind::
-* Regular Expressions in gnatfind and gnatxref::
-* Examples of gnatxref Usage::
-* Examples of gnatfind Usage::
-
-The GNAT Pretty-Printer gnatpp
-
-* Switches for gnatpp::
-* Formatting Rules::
-
-The GNAT Metrics Tool gnatmetric
-
-* Switches for gnatmetric::
-
-File Name Krunching Using gnatkr
-
-* About gnatkr::
-* Using gnatkr::
-* Krunching Method::
-* Examples of gnatkr Usage::
-
-Preprocessing Using gnatprep
-* Preprocessing Symbols::
-* Using gnatprep::
-* Switches for gnatprep::
-* Form of Definitions File::
-* Form of Input Text for gnatprep::
-
-The GNAT Library Browser gnatls
-
-* Running gnatls::
-* Switches for gnatls::
-* Examples of gnatls Usage::
-
-Cleaning Up Using gnatclean
-
-* Running gnatclean::
-* Switches for gnatclean::
-@c * Examples of gnatclean Usage::
-
-@ifclear vms
-
-GNAT and Libraries
-
-* Introduction to Libraries in GNAT::
-* General Ada Libraries::
-* Stand-alone Ada Libraries::
-* Rebuilding the GNAT Run-Time Library::
-
-Using the GNU make Utility
-
-* Using gnatmake in a Makefile::
-* Automatically Creating a List of Directories::
-* Generating the Command Line Switches::
-* Overcoming Command Line Length Limits::
-@end ifclear
-
-Memory Management Issues
-
-* Some Useful Memory Pools::
-* The GNAT Debug Pool Facility::
-@ifclear vms
-* The gnatmem Tool::
-@end ifclear
-
-Stack Related Facilities
-
-* Stack Overflow Checking::
-* Static Stack Usage Analysis::
-* Dynamic Stack Usage Analysis::
-
-Some Useful Memory Pools
-
-The GNAT Debug Pool Facility
-
-@ifclear vms
-The gnatmem Tool
-
-* Running gnatmem::
-* Switches for gnatmem::
-* Example of gnatmem Usage::
-@end ifclear
-
-Verifying Properties Using gnatcheck
-
-Sample Bodies Using gnatstub
-
-* Running gnatstub::
-* Switches for gnatstub::
-
-Creating Unit Tests Using gnattest
-
-* Running gnattest::
-* Switches for gnattest::
-* Project Attributes for gnattest::
-* Simple Example::
-* Setting Up and Tearing Down the Testing Environment::
-* Regenerating Tests::
-* Default Test Behavior::
-* Testing Primitive Operations of Tagged Types::
-* Testing Inheritance::
-* Tagged Types Substitutability Testing::
-* Testing with Contracts::
-* Additional Tests::
-@ifclear vms
-* Support for other platforms/run-times::
-@end ifclear
-* Current Limitations::
-
-Other Utility Programs
-
-* Using Other Utility Programs with GNAT::
-* The External Symbol Naming Scheme of GNAT::
-* Converting Ada Files to html with gnathtml::
-
-@ifclear vms
-Code Coverage and Profiling
-
-* Code Coverage of Ada Programs using gcov::
-* Profiling an Ada Program using gprof::
-@end ifclear
-
-Running and Debugging Ada Programs
-
-* The GNAT Debugger GDB::
-* Running GDB::
-* Introduction to GDB Commands::
-* Using Ada Expressions::
-* Calling User-Defined Subprograms::
-* Using the Next Command in a Function::
-* Ada Exceptions::
-* Ada Tasks::
-* Debugging Generic Units::
-* Remote Debugging using gdbserver::
-* GNAT Abnormal Termination or Failure to Terminate::
-* Naming Conventions for GNAT Source Files::
-* Getting Internal Debugging Information::
-* Stack Traceback::
-
-@ifset vms
-* LSE::
-@end ifset
-
-@ifset vms
-Compatibility with HP Ada
-
-* Ada Language Compatibility::
-* Differences in the Definition of Package System::
-* Language-Related Features::
-* The Package STANDARD::
-* The Package SYSTEM::
-* Tasking and Task-Related Features::
-* Pragmas and Pragma-Related Features::
-* Library of Predefined Units::
-* Bindings::
-* Main Program Definition::
-* Implementation-Defined Attributes::
-* Compiler and Run-Time Interfacing::
-* Program Compilation and Library Management::
-* Input-Output::
-* Implementation Limits::
-* Tools and Utilities::
-
-Language-Related Features
-
-* Integer Types and Representations::
-* Floating-Point Types and Representations::
-* Pragmas Float_Representation and Long_Float::
-* Fixed-Point Types and Representations::
-* Record and Array Component Alignment::
-* Address Clauses::
-* Other Representation Clauses::
-
-Tasking and Task-Related Features
-
-* Implementation of Tasks in HP Ada for OpenVMS Alpha Systems::
-* Assigning Task IDs::
-* Task IDs and Delays::
-* Task-Related Pragmas::
-* Scheduling and Task Priority::
-* The Task Stack::
-* External Interrupts::
-
-Pragmas and Pragma-Related Features
-
-* Restrictions on the Pragma INLINE::
-* Restrictions on the Pragma INTERFACE::
-* Restrictions on the Pragma SYSTEM_NAME::
-
-Library of Predefined Units
-
-* Changes to DECLIB::
-
-Bindings
-
-* Shared Libraries and Options Files::
-* Interfaces to C::
-@end ifset
-
-Platform-Specific Information for the Run-Time Libraries
-
-* Summary of Run-Time Configurations::
-* Specifying a Run-Time Library::
-* Choosing the Scheduling Policy::
-* Solaris-Specific Considerations::
-* Linux-Specific Considerations::
-* AIX-Specific Considerations::
-* RTX-Specific Considerations::
-* HP-UX-Specific Considerations::
-
-Example of Binder Output File
-
-Elaboration Order Handling in GNAT
-
-* Elaboration Code::
-* Checking the Elaboration Order::
-* Controlling the Elaboration Order::
-* Controlling Elaboration in GNAT - Internal Calls::
-* Controlling Elaboration in GNAT - External Calls::
-* Default Behavior in GNAT - Ensuring Safety::
-* Treatment of Pragma Elaborate::
-* Elaboration Issues for Library Tasks::
-* Mixing Elaboration Models::
-* What to Do If the Default Elaboration Behavior Fails::
-* Elaboration for Dispatching Calls::
-* Summary of Procedures for Elaboration Control::
-* Other Elaboration Order Considerations::
-
-Overflow Check Handling in GNAT
-* Background::
-* Overflow Checking Modes in GNAT::
-* Specifying the Desired Mode::
-* Default Settings::
-* Implementation Notes::
-
-Conditional Compilation
-* Use of Boolean Constants::
-* Debugging - A Special Case::
-* Conditionalizing Declarations::
-* Use of Alternative Implementations::
-* Preprocessing::
-
-Inline Assembler
-
-* Basic Assembler Syntax::
-* A Simple Example of Inline Assembler::
-* Output Variables in Inline Assembler::
-* Input Variables in Inline Assembler::
-* Inlining Inline Assembler Code::
-* Other Asm Functionality::
-
-Compatibility and Porting Guide
-
-* Compatibility with Ada 83::
-* Compatibility between Ada 95 and Ada 2005::
-* Implementation-dependent characteristics::
-@ifclear vms
-@c This brief section is only in the non-VMS version
-@c The complete chapter on HP Ada issues is in the VMS version
-* Compatibility with HP Ada 83::
-@end ifclear
-* Compatibility with Other Ada Systems::
-* Representation Clauses::
-@ifset vms
-* Transitioning to 64-Bit GNAT for OpenVMS::
-@end ifset
-
-@ifset unw
-Microsoft Windows Topics
-
-* Using GNAT on Windows::
-* CONSOLE and WINDOWS subsystems::
-* Temporary Files::
-* Mixed-Language Programming on Windows::
-* Windows Calling Conventions::
-* Introduction to Dynamic Link Libraries (DLLs)::
-* Using DLLs with GNAT::
-* Building DLLs with GNAT::
-* GNAT and Windows Resources::
-* Debugging a DLL::
-* Setting Stack Size from gnatlink::
-* Setting Heap Size from gnatlink::
-
-Mac OS Topics
-
-* Codesigning the Debugger::
-@end ifset
-
 * Index::
 @end menu
 @end ifnottex
@@ -735,16 +277,16 @@ and running Ada programs with the GNAT Ada programming environment.
 by GNAT.
 
 @item
-@ref{Compiling Using gcc}, describes how to compile
+@ref{Compiling with gcc}, describes how to compile
 Ada programs with @command{gcc}, the Ada compiler.
 
 @item
-@ref{Binding Using gnatbind}, describes how to
+@ref{Binding with gnatbind}, describes how to
 perform binding of Ada programs with @code{gnatbind}, the GNAT binding
 utility.
 
 @item
-@ref{Linking Using gnatlink},
+@ref{Linking with gnatlink},
 describes @command{gnatlink}, a
 program that provides for linking using the GNAT run-time library to
 construct a program. @command{gnatlink} can also incorporate foreign language
@@ -764,7 +306,7 @@ also describes the @command{gnatelim} tool and unused subprogram/data
 elimination.
 
 @item
-@ref{Renaming Files Using gnatchop}, describes
+@ref{Renaming Files with gnatchop}, describes
 @code{gnatchop}, a utility that allows you to preprocess a file that
 contains Ada source code, and split it into one or more new files, one
 for each compilation unit.
@@ -774,7 +316,7 @@ for each compilation unit.
 handled by GNAT.
 
 @item
-@ref{Handling Arbitrary File Naming Conventions Using gnatname},
+@ref{Handling Arbitrary File Naming Conventions with gnatname},
 shows how to override the default GNAT file naming conventions,
 either for an individual unit or globally.
 
@@ -793,17 +335,17 @@ version of an Ada source file with control over casing, indentation,
 comment placement, and other elements of program presentation style.
 
 @item
-@ref{The GNAT Metric Tool gnatmetric}, shows how to compute various
+@ref{The GNAT Metrics Tool gnatmetric}, shows how to compute various
 metrics for an Ada source file, such as the number of types and subprograms,
 and assorted complexity measures.
 
 @item
-@ref{File Name Krunching Using gnatkr}, describes the @code{gnatkr}
+@ref{File Name Krunching with gnatkr}, describes the @code{gnatkr}
 file name krunching utility, used to handle shortened
 file names on operating systems with a limit on the length of names.
 
 @item
-@ref{Preprocessing Using gnatprep}, describes @code{gnatprep}, a
+@ref{Preprocessing with gnatprep}, describes @code{gnatprep}, a
 preprocessor utility that allows a single source file to be used to
 generate multiple or parameterized source files by means of macro
 substitution.
@@ -814,7 +356,7 @@ utility that displays information about compiled units, including dependences
 on the corresponding sources files, and consistency of compilations.
 
 @item
-@ref{Cleaning Up Using gnatclean}, describes @code{gnatclean}, a utility
+@ref{Cleaning Up with gnatclean}, describes @code{gnatclean}, a utility
 to delete files that are produced by the compiler, binder and linker.
 
 @ifclear vms
@@ -842,15 +384,15 @@ allocation and deallocation and helps detect ``memory leaks''.
 stack checking and analysis.
 
 @item
-@ref{Verifying Properties Using gnatcheck}, discusses @code{gnatcheck},
+@ref{Verifying Properties with gnatcheck}, discusses @code{gnatcheck},
 a utility that checks Ada code against a set of rules.
 
 @item
-@ref{Creating Sample Bodies Using gnatstub}, discusses @code{gnatstub},
+@ref{Creating Sample Bodies with gnatstub}, discusses @code{gnatstub},
 a utility that generates empty but compilable bodies for library units.
 
 @item
-@ref{Creating Unit Tests Using gnattest}, discusses @code{gnattest},
+@ref{Creating Unit Tests with gnattest}, discusses @code{gnattest},
 a utility that generates unit testing templates for library units.
 
 @item
@@ -1141,7 +683,7 @@ Alternatively, if you want to rename your files according to this default
 convention, which is probably more convenient if you will be using GNAT
 for all your compilations, then the @code{gnatchop} utility
 can be used to generate correctly-named source files
-(@pxref{Renaming Files Using gnatchop}).
+(@pxref{Renaming Files with gnatchop}).
 
 You can compile the program using the following command (@code{$} is used
 as the command prompt in the examples in this document):
@@ -2078,7 +1620,7 @@ can specify the exact file names that you want used, as described
 in the next section. Finally, if your Ada programs are migrating from a
 compiler with a different naming convention, you can use the gnatchop
 utility to produce source files that follow the GNAT naming conventions.
-(For details @pxref{Renaming Files Using gnatchop}.)
+(For details @pxref{Renaming Files with gnatchop}.)
 
 Note: in the case of @code{Windows NT/XP} or @code{OpenVMS} operating
 systems, case is not significant. So for example on @code{Windows XP}
@@ -3810,8 +3352,8 @@ GNAT uses the current directory for temporary files.
 @end ifset
 
 @c *************************
-@node Compiling Using gcc
-@chapter Compiling Using @command{gcc}
+@node Compiling with gcc
+@chapter Compiling with @command{gcc}
 
 @noindent
 This chapter discusses how to compile Ada programs using the @command{gcc}
@@ -3926,23 +3468,19 @@ files.
 
 It is possible to supply several file names on the same @command{gcc}
 command. This causes @command{gcc} to call the appropriate compiler for
-each file. For example, the following command lists three separate
+each file. For example, the following command lists two separate
 files to be compiled:
 
 @smallexample
-$ gcc -c x.adb y.adb z.c
+$ gcc -c x.adb y.adb
 @end smallexample
 
 @noindent
 calls @code{gnat1} (the Ada compiler) twice to compile @file{x.adb} and
-@file{y.adb}, and @code{cc1} (the C compiler) once to compile @file{z.c}.
-The compiler generates three object files @file{x.o}, @file{y.o} and
-@file{z.o} and the two ALI files @file{x.ali} and @file{y.ali} from the
-Ada compilations. Any switches apply to all the files ^listed,^listed.^
-@ifclear vms
-except for
-@option{-gnat@var{x}} switches, which apply only to Ada compilations.
-@end ifclear
+@file{y.adb}.
+The compiler generates two object files @file{x.o} and @file{y.o}
+and the two ALI files @file{x.ali} and @file{y.ali}.
+Any switches apply to all the files ^listed,^listed.^
 
 @node Switches for gcc
 @section Switches for @command{gcc}
@@ -4157,7 +3695,15 @@ Assume no invalid (bad) values except for 'Valid attribute use
 
 @item -gnatc
 @cindex @option{-gnatc} (@command{gcc})
-Check syntax and semantics only (no code generation attempted).
+Check syntax and semantics only (no code generation attempted). When the
+compiler is invoked by @command{gnatmake}, if the switch @option{-gnatc} is
+only given to the compiler (after @option{-cargs} or in package Compiler of
+the project file, @command{gnatmake} will fail because it will not find the
+object file after compilation. If @command{gnatmake} is called with
+@option{-gnatc} as a builder switch (before @option{-cargs} or in package
+Builder of the project file) then @command{gnatmake} will not fail because
+it will not look for the object files after compilation, and it will not try
+to build and link.
 
 @item -gnatC
 @cindex @option{-gnatC} (@command{gcc})
@@ -4419,7 +3965,7 @@ cases; if two digits are given, then the first applies outside
 assertions, and the second within assertions.
 
 If no digits follow the @option{-gnato}, then it is equivalent to
-@option{-gnato11},
+@option{^-gnato11^/OVERFLOW_CHECKS=11^},
 causing all intermediate overflows to be handled in strict mode.
 
 This switch also causes arithmetic overflow checking to be performed
@@ -7002,6 +6548,12 @@ year). The compiler will generate code based on the assumption that
 the condition being checked is true, which can result in disaster if
 that assumption is wrong.
 
+The checks subject to suppression include all the checks defined by
+the Ada standard, the additional implementation defined checks
+@code{Alignment_Check}, @code{Atomic_Synchronization}, and
+@code{Validity_Check}, as well as any checks introduced using
+@code{pragma Check_Name}.
+
 The @option{-gnatp} switch has no effect if a subsequent
 @option{-gnat-p} switch appears.
 
@@ -7059,8 +6611,7 @@ with the use of @option{-gnato} in previous versions of GNAT.
 
 @findex Machine_Overflows
 Note that the @option{-gnato??} switch does not affect the code generated
-for any floating-point operations; it applies only to integer
-semantics.
+for any floating-point operations; it applies only to integer semantics.
 For floating-point, @value{EDITION} has the @code{Machine_Overflows}
 attribute set to @code{False} and the normal mode of operation is to
 generate IEEE NaN and infinite values on overflow or invalid operations
@@ -7074,13 +6625,13 @@ subscript), or a wild jump (from an out of range case value). Overflow
 checking is also quite expensive in time and space, since in general it
 requires the use of double length arithmetic.
 
-Note again that the default is @option{-gnato00}, so overflow checking is
-not performed in default mode. This means that out of the box, with the
-default settings, @value{EDITION} does not do all the checks expected from the
-language description in the Ada Reference Manual. If you want all constraint
-checks to be performed, as described in this Manual, then you must
-explicitly use the @option{-gnato??} switch either on the @command{gnatmake} or
-@command{gcc} command.
+Note again that the default is @option{^-gnato00^/OVERFLOW_CHECKS=00^},
+so overflow checking is not performed in default mode. This means that out of
+the box, with the default settings, @value{EDITION} does not do all the checks
+expected from the language description in the Ada Reference Manual.
+If you want all constraint checks to be performed, as described in this Manual,
+then you must explicitly use the @option{-gnato??}
+switch either on the @command{gnatmake} or @command{gcc} command.
 
 @item -gnatE
 @cindex @option{-gnatE} (@command{gcc})
@@ -7091,7 +6642,7 @@ on subprogram calls and generic instantiations.
 Note that @option{-gnatE} is not necessary for safety, because in the
 default mode, GNAT ensures statically that the checks would not fail.
 For full details of the effect and use of this switch,
-@xref{Compiling Using gcc}.
+@xref{Compiling with gcc}.
 
 @item -fstack-check
 @cindex @option{-fstack-check} (@command{gcc})
@@ -7160,7 +6711,7 @@ Normally, GNAT allows only a single unit in a source file. However, this
 restriction does not apply in syntax-check-only mode, and it is possible
 to check a file containing multiple compilation units concatenated
 together. This is primarily used by the @code{gnatchop} utility
-(@pxref{Renaming Files Using gnatchop}).
+(@pxref{Renaming Files with gnatchop}).
 @end table
 
 @node Using gcc for Semantic Checking
@@ -7935,7 +7486,7 @@ preprocessing.
 
 @noindent
 The actual preprocessing function is described in details in section
-@ref{Preprocessing Using gnatprep}. This section only describes how integrated
+@ref{Preprocessing with gnatprep}. This section only describes how integrated
 preprocessing is triggered and parameterized.
 
 @table @code
@@ -7945,7 +7496,7 @@ preprocessing is triggered and parameterized.
 This switch indicates to the compiler the file name (without directory
 information) of the preprocessor data file to use. The preprocessor data file
 should be found in the source directories. Note that when the compiler is
-called by a builder (@command{gnatmake} or @command{gprbuild}) with a project
+called by a builder such as (@command{gnatmake} with a project
 file, if the object directory is not also a source directory, the builder needs
 to be called with @option{-x}.
 
@@ -8283,8 +7834,8 @@ Compile the subunit in file @file{abc-def.adb} in semantic-checking-only
 mode.
 @end table
 
-@node Binding Using gnatbind
-@chapter Binding Using @code{gnatbind}
+@node Binding with gnatbind
+@chapter Binding with @code{gnatbind}
 @findex gnatbind
 
 @menu
@@ -9279,8 +8830,8 @@ since gnatlink will not be able to find the generated file.
 @end table
 
 @c ------------------------------------
-@node Linking Using gnatlink
-@chapter Linking Using @command{gnatlink}
+@node Linking with gnatlink
+@chapter Linking with @command{gnatlink}
 @c ------------------------------------
 @findex gnatlink
 
@@ -11636,8 +11187,8 @@ It can be observed that the procedure @code{Unused} and the object
 appropriate options.
 
 @c ********************************
-@node Renaming Files Using gnatchop
-@chapter Renaming Files Using @code{gnatchop}
+@node Renaming Files with gnatchop
+@chapter Renaming Files with @code{gnatchop}
 @findex gnatchop
 
 @noindent
@@ -11994,6 +11545,11 @@ unit will be skipped.
 @cindex Configuration pragmas
 @cindex Pragmas, configuration
 
+@menu
+* Handling of Configuration Pragmas::
+* The Configuration Pragmas Files::
+@end menu
+
 @noindent
 Configuration pragmas include those pragmas described as
 such in the Ada Reference Manual, as well as
@@ -12070,13 +11626,7 @@ recognized by GNAT:
    Validity_Checks
    Warnings
    Wide_Character_Encoding
-
 @end smallexample
-
-@menu
-* Handling of Configuration Pragmas::
-* The Configuration Pragmas Files::
-@end menu
 
 @node Handling of Configuration Pragmas
 @section Handling of Configuration Pragmas
@@ -12166,8 +11716,8 @@ predefined package SYSTEM all the additional types and subprograms that are
 defined in HP Ada. See @ref{Compatibility with HP Ada} for details.
 @end ifset
 
-@node Handling Arbitrary File Naming Conventions Using gnatname
-@chapter Handling Arbitrary File Naming Conventions Using @code{gnatname}
+@node Handling Arbitrary File Naming Conventions with gnatname
+@chapter Handling Arbitrary File Naming Conventions with @code{gnatname}
 @cindex Arbitrary File Naming Conventions
 
 @menu
@@ -12283,6 +11833,13 @@ Display Copyright and version, then exit disregarding all other options.
 If @option{--version} was not used, display usage, then exit disregarding
 all other options.
 
+@item --subdirs=<dir>
+Real object, library or exec directories are subdirectories <dir> of the
+specified ones.
+
+@item --no-backup
+Do not create a backup copy of an existing project file.
+
 @item --and
 Start another section of directories/patterns.
 
@@ -12303,6 +11860,9 @@ specified, no switch @option{^-P^/PROJECT_FILE^} may be specified (see below).
 @cindex @option{^-d^/SOURCE_DIRS^} (@code{gnatname})
 Look for source files in directory @file{dir}. There may be zero, one or more
 spaces between @option{^-d^/SOURCE_DIRS=^} and @file{dir}.
+@file{dir} may end with @code{/**}, that is it may be of the form
+@code{root_dir/**}. In this case, the directory @code{root_dir} and all of its
+subdirectories, recursively, have to be searched for sources.
 When a switch @option{^-d^/SOURCE_DIRS^}
 is specified, the current working directory will not be searched for source
 files, unless it is explicitly specified with a @option{^-d^/SOURCE_DIRS^}
@@ -12328,6 +11888,9 @@ Each nonempty line in @file{file} must be a directory.
 Specifying switch @option{^-D^/DIRS_FILE^} is equivalent to specifying as many
 switches @option{^-d^/SOURCE_DIRS^} as there are nonempty lines in
 @file{file}.
+
+@item -eL
+Follow symbolic links when processing project files.
 
 @item ^-f^/FOREIGN_PATTERN=^@file{pattern}
 @cindex @option{^-f^/FOREIGN_PATTERN^} (@code{gnatname})
@@ -12355,6 +11918,10 @@ information. @file{proj} must be writable.
 There may be only one switch @option{^-P^/PROJECT_FILE^}.
 When a switch @option{^-P^/PROJECT_FILE^} is specified,
 no switch @option{^-c^/CONFIG_FILE^} may be specified.
+On all platforms, except on VMS, when @code{gnatname} is invoked for an
+existing project file <proj>.gpr, a backup copy of the project file is created
+in the project directory with file name <proj>.gpr.saved_x. 'x' is the first
+non negative number that makes this backup copy a new file.
 
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@code{gnatname})
@@ -12477,6 +12044,806 @@ are used in this example.
 @end macro
 
 @include projects.texi
+
+@c ---------------------------------------------
+@c Tools Supporting Project Files
+@c ---------------------------------------------
+
+@node Tools Supporting Project Files
+@chapter Tools Supporting Project Files
+
+@noindent
+
+@menu
+* gnatmake and Project Files::
+* The GNAT Driver and Project Files::
+@end menu
+
+@c ---------------------------------------------
+@node gnatmake and Project Files
+@section gnatmake and Project Files
+@c ---------------------------------------------
+
+@noindent
+This section covers several topics related to @command{gnatmake} and
+project files: defining ^switches^switches^ for @command{gnatmake}
+and for the tools that it invokes; specifying configuration pragmas;
+the use of the @code{Main} attribute; building and rebuilding library project
+files.
+
+@menu
+* Switches Related to Project Files::
+* Switches and Project Files::
+* Specifying Configuration Pragmas::
+* Project Files and Main Subprograms::
+* Library Project Files::
+@end menu
+
+@c ---------------------------------------------
+@node Switches Related to Project Files
+@subsection Switches Related to Project Files
+@c ---------------------------------------------
+
+@noindent
+The following switches are used by GNAT tools that support project files:
+
+@table @option
+
+@item ^-P^/PROJECT_FILE=^@var{project}
+@cindex @option{^-P^/PROJECT_FILE^} (any project-aware tool)
+Indicates the name of a project file. This project file will be parsed with
+the verbosity indicated by @option{^-vP^MESSAGE_PROJECT_FILES=^@emph{x}},
+if any, and using the external references indicated
+by @option{^-X^/EXTERNAL_REFERENCE^} switches, if any.
+@ifclear vms
+There may zero, one or more spaces between @option{-P} and @var{project}.
+@end ifclear
+
+There must be only one @option{^-P^/PROJECT_FILE^} switch on the command line.
+
+Since the Project Manager parses the project file only after all the switches
+on the command line are checked, the order of the switches
+@option{^-P^/PROJECT_FILE^},
+@option{^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}}
+or @option{^-X^/EXTERNAL_REFERENCE^} is not significant.
+
+@item ^-X^/EXTERNAL_REFERENCE=^@var{name=value}
+@cindex @option{^-X^/EXTERNAL_REFERENCE^} (any project-aware tool)
+Indicates that external variable @var{name} has the value @var{value}.
+The Project Manager will use this value for occurrences of
+@code{external(name)} when parsing the project file.
+
+@ifclear vms
+If @var{name} or @var{value} includes a space, then @var{name=value} should be
+put between quotes.
+@smallexample
+  -XOS=NT
+  -X"user=John Doe"
+@end smallexample
+@end ifclear
+
+Several @option{^-X^/EXTERNAL_REFERENCE^} switches can be used simultaneously.
+If several @option{^-X^/EXTERNAL_REFERENCE^} switches specify the same
+@var{name}, only the last one is used.
+
+An external variable specified with a @option{^-X^/EXTERNAL_REFERENCE^} switch
+takes precedence over the value of the same name in the environment.
+
+@item ^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}
+@cindex @option{^-vP^/MESSAGES_PROJECT_FILE^} (any project-aware tool)
+Indicates the verbosity of the parsing of GNAT project files.
+
+@ifclear vms
+@option{-vP0} means Default;
+@option{-vP1} means Medium;
+@option{-vP2} means High.
+@end ifclear
+
+@ifset vms
+There are three possible options for this qualifier: DEFAULT, MEDIUM and
+HIGH.
+@end ifset
+
+The default is ^Default^DEFAULT^: no output for syntactically correct
+project files.
+If several @option{^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}} switches are present,
+only the last one is used.
+
+@item ^-aP^/ADD_PROJECT_SEARCH_DIR=^<dir>
+@cindex @option{^-aP^/ADD_PROJECT_SEARCH_DIR=^} (any project-aware tool)
+Add directory <dir> at the beginning of the project search path, in order,
+after the current working directory.
+
+@ifclear vms
+@item -eL
+@cindex @option{-eL} (any project-aware tool)
+Follow all symbolic links when processing project files.
+@end ifclear
+
+@item ^--subdirs^/SUBDIRS^=<subdir>
+@cindex @option{^--subdirs^/SUBDIRS^=} (gnatmake and gnatclean)
+This switch is recognized by @command{gnatmake} and @command{gnatclean}. It
+indicate that the real directories (except the source directories) are the
+subdirectories <subdir> of the directories specified in the project files.
+This applies in particular to object directories, library directories and
+exec directories. If the subdirectories do not exist, they are created
+automatically.
+
+@end table
+
+@c ---------------------------------------------
+@node Switches and Project Files
+@subsection Switches and Project Files
+@c ---------------------------------------------
+
+@noindent
+@ifset vms
+It is not currently possible to specify VMS style qualifiers in the project
+files; only Unix style ^switches^switches^ may be specified.
+@end ifset
+
+For each of the packages @code{Builder}, @code{Compiler}, @code{Binder}, and
+@code{Linker}, you can specify a @code{^Default_Switches^Default_Switches^}
+attribute, a @code{Switches} attribute, or both;
+as their names imply, these ^switch^switch^-related
+attributes affect the ^switches^switches^ that are used for each of these GNAT
+components when
+@command{gnatmake} is invoked.  As will be explained below, these
+component-specific ^switches^switches^ precede
+the ^switches^switches^ provided on the @command{gnatmake} command line.
+
+The @code{^Default_Switches^Default_Switches^} attribute is an attribute
+indexed by language name (case insensitive) whose value is a string list.
+For example:
+
+@smallexample @c projectfile
+@group
+package Compiler is
+  for ^Default_Switches^Default_Switches^ ("Ada")
+      use ("^-gnaty^-gnaty^",
+           "^-v^-v^");
+end Compiler;
+@end group
+@end smallexample
+
+@noindent
+The @code{Switches} attribute is indexed on a file name (which may or may
+not be case sensitive, depending
+on the operating system) whose value is a string list.  For example:
+
+@smallexample @c projectfile
+@group
+package Builder is
+   for Switches ("main1.adb")
+       use ("^-O2^-O2^");
+   for Switches ("main2.adb")
+       use ("^-g^-g^");
+end Builder;
+@end group
+@end smallexample
+
+@noindent
+For the @code{Builder} package, the file names must designate source files
+for main subprograms.  For the @code{Binder} and @code{Linker} packages, the
+file names must designate @file{ALI} or source files for main subprograms.
+In each case just the file name without an explicit extension is acceptable.
+
+For each tool used in a program build (@command{gnatmake}, the compiler, the
+binder, and the linker), the corresponding package @dfn{contributes} a set of
+^switches^switches^ for each file on which the tool is invoked, based on the
+^switch^switch^-related attributes defined in the package.
+In particular, the ^switches^switches^
+that each of these packages contributes for a given file @var{f} comprise:
+
+@itemize @bullet
+@item the value of attribute @code{Switches (@var{f})},
+  if it is specified in the package for the given file,
+@item otherwise, the value of @code{^Default_Switches^Default_Switches^ ("Ada")},
+  if it is specified in the package.
+
+@end itemize
+
+@noindent
+If neither of these attributes is defined in the package, then the package does
+not contribute any ^switches^switches^ for the given file.
+
+When @command{gnatmake} is invoked on a file, the ^switches^switches^ comprise
+two sets, in the following order: those contributed for the file
+by the @code{Builder} package;
+and the switches passed on the command line.
+
+When @command{gnatmake} invokes a tool (compiler, binder, linker) on a file,
+the ^switches^switches^ passed to the tool comprise three sets,
+in the following order:
+
+@enumerate
+@item
+the applicable ^switches^switches^ contributed for the file
+by the @code{Builder} package in the project file supplied on the command line;
+
+@item
+those contributed for the file by the package (in the relevant project file --
+see below) corresponding to the tool; and
+
+@item
+the applicable switches passed on the command line.
+@end enumerate
+
+The term @emph{applicable ^switches^switches^} reflects the fact that
+@command{gnatmake} ^switches^switches^ may or may not be passed to individual
+tools, depending on the individual ^switch^switch^.
+
+@command{gnatmake} may invoke the compiler on source files from different
+projects. The Project Manager will use the appropriate project file to
+determine the @code{Compiler} package for each source file being compiled.
+Likewise for the @code{Binder} and @code{Linker} packages.
+
+As an example, consider the following package in a project file:
+
+@smallexample @c projectfile
+@group
+project Proj1 is
+   package Compiler is
+      for ^Default_Switches^Default_Switches^ ("Ada")
+          use ("^-g^-g^");
+      for Switches ("a.adb")
+          use ("^-O1^-O1^");
+      for Switches ("b.adb")
+          use ("^-O2^-O2^",
+               "^-gnaty^-gnaty^");
+   end Compiler;
+end Proj1;
+@end group
+@end smallexample
+
+@noindent
+If @command{gnatmake} is invoked with this project file, and it needs to
+compile, say, the files @file{a.adb}, @file{b.adb}, and @file{c.adb}, then
+@file{a.adb} will be compiled with the ^switch^switch^
+@option{^-O1^-O1^},
+@file{b.adb} with ^switches^switches^
+@option{^-O2^-O2^}
+and @option{^-gnaty^-gnaty^},
+and @file{c.adb} with @option{^-g^-g^}.
+
+The following example illustrates the ordering of the ^switches^switches^
+contributed by different packages:
+
+@smallexample @c projectfile
+@group
+project Proj2 is
+   package Builder is
+      for Switches ("main.adb")
+          use ("^-g^-g^",
+               "^-O1^-)1^",
+               "^-f^-f^");
+   end Builder;
+@end group
+
+@group
+   package Compiler is
+      for Switches ("main.adb")
+          use ("^-O2^-O2^");
+   end Compiler;
+end Proj2;
+@end group
+@end smallexample
+
+@noindent
+If you issue the command:
+
+@smallexample
+    gnatmake ^-Pproj2^/PROJECT_FILE=PROJ2^ -O0 main
+@end smallexample
+
+@noindent
+then the compiler will be invoked on @file{main.adb} with the following
+sequence of ^switches^switches^
+
+@smallexample
+   ^-g -O1 -O2 -O0^-g -O1 -O2 -O0^
+@end smallexample
+
+@noindent
+with the last @option{^-O^-O^}
+^switch^switch^ having precedence over the earlier ones;
+several other ^switches^switches^
+(such as @option{^-c^-c^}) are added implicitly.
+
+The ^switches^switches^
+@option{^-g^-g^}
+and @option{^-O1^-O1^} are contributed by package
+@code{Builder},  @option{^-O2^-O2^} is contributed
+by the package @code{Compiler}
+and @option{^-O0^-O0^} comes from the command line.
+
+The @option{^-g^-g^}
+^switch^switch^ will also be passed in the invocation of
+@command{Gnatlink.}
+
+A final example illustrates switch contributions from packages in different
+project files:
+
+@smallexample @c projectfile
+@group
+project Proj3 is
+   for Source_Files use ("pack.ads", "pack.adb");
+   package Compiler is
+      for ^Default_Switches^Default_Switches^ ("Ada")
+          use ("^-gnata^-gnata^");
+   end Compiler;
+end Proj3;
+@end group
+
+@group
+with "Proj3";
+project Proj4 is
+   for Source_Files use ("foo_main.adb", "bar_main.adb");
+   package Builder is
+      for Switches ("foo_main.adb")
+          use ("^-s^-s^",
+               "^-g^-g^");
+   end Builder;
+end Proj4;
+@end group
+
+@group
+-- Ada source file:
+with Pack;
+procedure Foo_Main is
+   @dots{}
+end Foo_Main;
+@end group
+@end smallexample
+
+@noindent
+If the command is
+@smallexample
+gnatmake ^-PProj4^/PROJECT_FILE=PROJ4^ foo_main.adb -cargs -gnato
+@end smallexample
+
+@noindent
+then the ^switches^switches^ passed to the compiler for @file{foo_main.adb} are
+@option{^-g^-g^} (contributed by the package @code{Proj4.Builder}) and
+@option{^-gnato^-gnato^} (passed on the command line).
+When the imported package @code{Pack} is compiled, the ^switches^switches^ used
+are @option{^-g^-g^} from @code{Proj4.Builder},
+@option{^-gnata^-gnata^} (contributed from package @code{Proj3.Compiler},
+and @option{^-gnato^-gnato^} from the command line.
+
+When using @command{gnatmake} with project files, some ^switches^switches^ or
+arguments may be expressed as relative paths. As the working directory where
+compilation occurs may change, these relative paths are converted to absolute
+paths. For the ^switches^switches^ found in a project file, the relative paths
+are relative to the project file directory, for the switches on the command
+line, they are relative to the directory where @command{gnatmake} is invoked.
+The ^switches^switches^ for which this occurs are:
+^-I^-I^,
+^-A^-A^,
+^-L^-L^,
+^-aO^-aO^,
+^-aL^-aL^,
+^-aI^-aI^, as well as all arguments that are not switches (arguments to
+^switch^switch^
+^-o^-o^, object files specified in package @code{Linker} or after
+-largs on the command line). The exception to this rule is the ^switch^switch^
+^--RTS=^--RTS=^ for which a relative path argument is never converted.
+
+@c ---------------------------------------------
+@node Specifying Configuration Pragmas
+@subsection Specifying Configuration Pragmas
+@c ---------------------------------------------
+
+@noindent
+When using @command{gnatmake} with project files, if there exists a file
+@file{gnat.adc} that contains configuration pragmas, this file will be
+ignored.
+
+Configuration pragmas can be defined by means of the following attributes in
+project files: @code{Global_Configuration_Pragmas} in package @code{Builder}
+and @code{Local_Configuration_Pragmas} in package @code{Compiler}.
+
+Both these attributes are single string attributes. Their values is the path
+name of a file containing configuration pragmas. If a path name is relative,
+then it is relative to the project directory of the project file where the
+attribute is defined.
+
+When compiling a source, the configuration pragmas used are, in order,
+those listed in the file designated by attribute
+@code{Global_Configuration_Pragmas} in package @code{Builder} of the main
+project file, if it is specified, and those listed in the file designated by
+attribute @code{Local_Configuration_Pragmas} in package @code{Compiler} of
+the project file of the source, if it exists.
+
+@c ---------------------------------------------
+@node Project Files and Main Subprograms
+@subsection Project Files and Main Subprograms
+@c ---------------------------------------------
+
+@noindent
+When using a project file, you can invoke @command{gnatmake}
+with one or several main subprograms, by specifying their source files on the
+command line.
+
+@smallexample
+    gnatmake ^-P^/PROJECT_FILE=^prj main1.adb main2.adb main3.adb
+@end smallexample
+
+@noindent
+Each of these needs to be a source file of the same project, except
+when the switch ^-u^/UNIQUE^ is used.
+
+When ^-u^/UNIQUE^ is not used, all the mains need to be sources of the
+same project, one of the project in the tree rooted at the project specified
+on the command line. The package @code{Builder} of this common project, the
+"main project" is the one that is considered by @command{gnatmake}.
+
+When ^-u^/UNIQUE^ is used, the specified source files may be in projects
+imported directly or indirectly by the project specified on the command line.
+Note that if such a source file is not part of the project specified on the
+command line, the ^switches^switches^ found in package @code{Builder} of the
+project specified on the command line, if any, that are transmitted
+to the compiler will still be used, not those found in the project file of
+the source file.
+
+When using a project file, you can also invoke @command{gnatmake} without
+explicitly specifying any main, and the effect depends on whether you have
+defined the @code{Main} attribute.  This attribute has a string list value,
+where each element in the list is the name of a source file (the file
+extension is optional) that contains a unit that can be a main subprogram.
+
+If the @code{Main} attribute is defined in a project file as a non-empty
+string list and the switch @option{^-u^/UNIQUE^} is not used on the command
+line, then invoking @command{gnatmake} with this project file but without any
+main on the command line is equivalent to invoking @command{gnatmake} with all
+the file names in the @code{Main} attribute on the command line.
+
+Example:
+@smallexample @c projectfile
+@group
+   project Prj is
+      for Main use ("main1.adb", "main2.adb", "main3.adb");
+   end Prj;
+@end group
+@end smallexample
+
+@noindent
+With this project file, @code{"gnatmake ^-Pprj^/PROJECT_FILE=PRJ^"}
+is equivalent to
+@code{"gnatmake ^-Pprj^/PROJECT_FILE=PRJ^ main1.adb main2.adb main3.adb"}.
+
+When the project attribute @code{Main} is not specified, or is specified
+as an empty string list, or when the switch @option{-u} is used on the command
+line, then invoking @command{gnatmake} with no main on the command line will
+result in all immediate sources of the project file being checked, and
+potentially recompiled. Depending on the presence of the switch @option{-u},
+sources from other project files on which the immediate sources of the main
+project file depend are also checked and potentially recompiled. In other
+words, the @option{-u} switch is applied to all of the immediate sources of the
+main project file.
+
+When no main is specified on the command line and attribute @code{Main} exists
+and includes several mains, or when several mains are specified on the
+command line, the default ^switches^switches^ in package @code{Builder} will
+be used for all mains, even if there are specific ^switches^switches^
+specified for one or several mains.
+
+But the ^switches^switches^ from package @code{Binder} or @code{Linker} will be
+the specific ^switches^switches^ for each main, if they are specified.
+
+@c ---------------------------------------------
+@node Library Project Files
+@subsection Library Project Files
+@c ---------------------------------------------
+
+@noindent
+When @command{gnatmake} is invoked with a main project file that is a library
+project file, it is not allowed to specify one or more mains on the command
+line.
+
+When a library project file is specified, switches ^-b^/ACTION=BIND^ and
+^-l^/ACTION=LINK^ have special meanings.
+
+@itemize @bullet
+@item ^-b^/ACTION=BIND^ is only allowed for stand-alone libraries. It indicates
+  to @command{gnatmake} that @command{gnatbind} should be invoked for the
+  library.
+
+@item ^-l^/ACTION=LINK^ may be used for all library projects. It indicates
+  to @command{gnatmake} that the binder generated file should be compiled
+  (in the case of a stand-alone library) and that the library should be built.
+@end itemize
+
+@c ---------------------------------------------
+@node The GNAT Driver and Project Files
+@section The GNAT Driver and Project Files
+@c ---------------------------------------------
+
+@noindent
+A number of GNAT tools, other than @command{^gnatmake^gnatmake^}
+can benefit from project files:
+(@command{^gnatbind^gnatbind^},
+@command{^gnatcheck^gnatcheck^},
+@command{^gnatclean^gnatclean^},
+@command{^gnatelim^gnatelim^},
+@command{^gnatfind^gnatfind^},
+@command{^gnatlink^gnatlink^},
+@command{^gnatls^gnatls^},
+@command{^gnatmetric^gnatmetric^},
+@command{^gnatpp^gnatpp^},
+@command{^gnatstub^gnatstub^},
+and @command{^gnatxref^gnatxref^}). However, none of these tools can be invoked
+directly with a project file switch (@option{^-P^/PROJECT_FILE=^}).
+They must be invoked through the @command{gnat} driver.
+
+The @command{gnat} driver is a wrapper that accepts a number of commands and
+calls the corresponding tool. It was designed initially for VMS platforms (to
+convert VMS qualifiers to Unix-style switches), but it is now available on all
+GNAT platforms.
+
+On non-VMS platforms, the @command{gnat} driver accepts the following commands
+(case insensitive):
+
+@itemize @bullet
+@item BIND to invoke @command{^gnatbind^gnatbind^}
+@item CHOP to invoke @command{^gnatchop^gnatchop^}
+@item CLEAN to invoke @command{^gnatclean^gnatclean^}
+@item COMP or COMPILE to invoke the compiler
+@item ELIM to invoke @command{^gnatelim^gnatelim^}
+@item FIND to invoke @command{^gnatfind^gnatfind^}
+@item KR or KRUNCH to invoke @command{^gnatkr^gnatkr^}
+@item LINK to invoke @command{^gnatlink^gnatlink^}
+@item LS or LIST to invoke @command{^gnatls^gnatls^}
+@item MAKE to invoke @command{^gnatmake^gnatmake^}
+@item NAME to invoke @command{^gnatname^gnatname^}
+@item PREP or PREPROCESS to invoke @command{^gnatprep^gnatprep^}
+@item PP or PRETTY to invoke @command{^gnatpp^gnatpp^}
+@item METRIC to invoke @command{^gnatmetric^gnatmetric^}
+@item STUB to invoke @command{^gnatstub^gnatstub^}
+@item XREF to invoke @command{^gnatxref^gnatxref^}
+
+@end itemize
+
+@noindent
+(note that the compiler is invoked using the command
+@command{^gnatmake -f -u -c^gnatmake -f -u -c^}).
+
+On non-VMS platforms, between @command{gnat} and the command, two
+special switches may be used:
+
+@itemize @bullet
+@item @command{-v} to display the invocation of the tool.
+@item @command{-dn} to prevent the @command{gnat} driver from removing
+  the temporary files it has created. These temporary files are
+  configuration files and temporary file list files.
+
+@end itemize
+
+@noindent
+The command may be followed by switches and arguments for the invoked
+tool.
+
+@smallexample
+  gnat bind -C main.ali
+  gnat ls -a main
+  gnat chop foo.txt
+@end smallexample
+
+@noindent
+Switches may also be put in text files, one switch per line, and the text
+files may be specified with their path name preceded by '@@'.
+
+@smallexample
+   gnat bind @@args.txt main.ali
+@end smallexample
+
+@noindent
+In addition, for commands BIND, COMP or COMPILE, FIND, ELIM, LS or LIST, LINK,
+METRIC, PP or PRETTY, STUB and XREF, the project file related switches
+(@option{^-P^/PROJECT_FILE^},
+@option{^-X^/EXTERNAL_REFERENCE^} and
+@option{^-vP^/MESSAGES_PROJECT_FILE=^x}) may be used in addition to
+the switches of the invoking tool.
+
+When GNAT PP or GNAT PRETTY is used with a project file, but with no source
+specified on the command line, it invokes @command{^gnatpp^gnatpp^} with all
+the immediate sources of the specified project file.
+
+When GNAT METRIC is used with a project file, but with no source
+specified on the command line, it invokes @command{^gnatmetric^gnatmetric^}
+with all the immediate sources of the specified project file and with
+@option{^-d^/DIRECTORY^} with the parameter pointing to the object directory
+of the project.
+
+In addition, when GNAT PP, GNAT PRETTY or GNAT METRIC is used with
+a project file, no source is specified on the command line and
+switch ^-U^/ALL_PROJECTS^ is specified on the command line, then
+the underlying tool (^gnatpp^gnatpp^ or
+^gnatmetric^gnatmetric^) is invoked for all sources of all projects,
+not only for the immediate sources of the main project.
+@ifclear vms
+(-U stands for Universal or Union of the project files of the project tree)
+@end ifclear
+
+For each of the following commands, there is optionally a corresponding
+package in the main project.
+
+@itemize @bullet
+@item package @code{Binder} for command BIND (invoking @code{^gnatbind^gnatbind^})
+
+@item package @code{Check} for command CHECK (invoking
+  @code{^gnatcheck^gnatcheck^})
+
+@item package @code{Compiler} for command COMP or COMPILE (invoking the compiler)
+
+@item package @code{Cross_Reference} for command XREF (invoking
+  @code{^gnatxref^gnatxref^})
+
+@item package @code{Eliminate} for command ELIM (invoking
+  @code{^gnatelim^gnatelim^})
+
+@item package @code{Finder} for command FIND (invoking @code{^gnatfind^gnatfind^})
+
+@item package @code{Gnatls} for command LS or LIST (invoking @code{^gnatls^gnatls^})
+
+@item package @code{Gnatstub} for command STUB
+  (invoking @code{^gnatstub^gnatstub^})
+
+@item package @code{Linker} for command LINK (invoking @code{^gnatlink^gnatlink^})
+
+@item package @code{Check} for command CHECK
+  (invoking @code{^gnatcheck^gnatcheck^})
+
+@item package @code{Metrics} for command METRIC
+  (invoking @code{^gnatmetric^gnatmetric^})
+
+@item package @code{Pretty_Printer} for command PP or PRETTY
+  (invoking @code{^gnatpp^gnatpp^})
+
+@end itemize
+
+@noindent
+Package @code{Gnatls} has a unique attribute @code{Switches},
+a simple variable with a string list value. It contains ^switches^switches^
+for the invocation of @code{^gnatls^gnatls^}.
+
+@smallexample @c projectfile
+@group
+project Proj1 is
+   package gnatls is
+      for Switches
+          use ("^-a^-a^",
+               "^-v^-v^");
+   end gnatls;
+end Proj1;
+@end group
+@end smallexample
+
+@noindent
+All other packages have two attribute @code{Switches} and
+@code{^Default_Switches^Default_Switches^}.
+
+@code{Switches} is an indexed attribute, indexed by the
+source file name, that has a string list value: the ^switches^switches^ to be
+used when the tool corresponding to the package is invoked for the specific
+source file.
+
+@code{^Default_Switches^Default_Switches^} is an attribute,
+indexed by  the programming language that has a string list value.
+@code{^Default_Switches^Default_Switches^ ("Ada")} contains the
+^switches^switches^ for the invocation of the tool corresponding
+to the package, except if a specific @code{Switches} attribute
+is specified for the source file.
+
+@smallexample @c projectfile
+@group
+project Proj is
+
+   for Source_Dirs use ("**");
+
+   package gnatls is
+      for Switches use
+          ("^-a^-a^",
+           "^-v^-v^");
+   end gnatls;
+@end group
+@group
+
+   package Compiler is
+      for ^Default_Switches^Default_Switches^ ("Ada")
+          use ("^-gnatv^-gnatv^",
+               "^-gnatwa^-gnatwa^");
+   end Binder;
+@end group
+@group
+
+   package Binder is
+      for ^Default_Switches^Default_Switches^ ("Ada")
+          use ("^-C^-C^",
+               "^-e^-e^");
+   end Binder;
+@end group
+@group
+
+   package Linker is
+      for ^Default_Switches^Default_Switches^ ("Ada")
+          use ("^-C^-C^");
+      for Switches ("main.adb")
+          use ("^-C^-C^",
+               "^-v^-v^",
+               "^-v^-v^");
+   end Linker;
+@end group
+@group
+
+   package Finder is
+      for ^Default_Switches^Default_Switches^ ("Ada")
+           use ("^-a^-a^",
+                "^-f^-f^");
+   end Finder;
+@end group
+@group
+
+   package Cross_Reference is
+      for ^Default_Switches^Default_Switches^ ("Ada")
+          use ("^-a^-a^",
+               "^-f^-f^",
+               "^-d^-d^",
+               "^-u^-u^");
+   end Cross_Reference;
+end Proj;
+@end group
+@end smallexample
+
+@noindent
+With the above project file, commands such as
+
+@smallexample
+   ^gnat comp -Pproj main^GNAT COMP /PROJECT_FILE=PROJ MAIN^
+   ^gnat ls -Pproj main^GNAT LIST /PROJECT_FILE=PROJ MAIN^
+   ^gnat xref -Pproj main^GNAT XREF /PROJECT_FILE=PROJ MAIN^
+   ^gnat bind -Pproj main.ali^GNAT BIND /PROJECT_FILE=PROJ MAIN.ALI^
+   ^gnat link -Pproj main.ali^GNAT LINK /PROJECT_FILE=PROJ MAIN.ALI^
+@end smallexample
+
+@noindent
+will set up the environment properly and invoke the tool with the switches
+found in the package corresponding to the tool:
+@code{^Default_Switches^Default_Switches^ ("Ada")} for all tools,
+except @code{Switches ("main.adb")}
+for @code{^gnatlink^gnatlink^}.
+It is also possible to invoke some of the tools,
+(@code{^gnatcheck^gnatcheck^},
+@code{^gnatmetric^gnatmetric^},
+and @code{^gnatpp^gnatpp^})
+on a set of project units thanks to the combination of the switches
+@option{-P}, @option{-U} and possibly the main unit when one is interested
+in its closure. For instance,
+@smallexample
+gnat metric -Pproj
+@end smallexample
+
+@noindent
+will compute the metrics for all the immediate units of project
+@code{proj}.
+@smallexample
+gnat metric -Pproj -U
+@end smallexample
+
+@noindent
+will compute the metrics for all the units of the closure of projects
+rooted at @code{proj}.
+@smallexample
+gnat metric -Pproj -U main_unit
+@end smallexample
+
+@noindent
+will compute the metrics for the closure of units rooted at
+@code{main_unit}. This last possibility relies implicitly
+on @command{gnatbind}'s option @option{-R}. But if the argument files for the
+tool invoked by the @command{gnat} driver are explicitly  specified
+either directly or through the tool @option{-files} option, then the tool
+is called only for these explicitly specified files.
 
 @c *****************************************
 @c * Cross-referencing tools
@@ -13226,6 +13593,11 @@ point to any character in the middle of the identifier.
 @findex gnatpp
 @cindex Pretty-Printer
 
+@menu
+* Switches for gnatpp::
+* Formatting Rules::
+@end menu
+
 @noindent
 ^The @command{gnatpp} tool^GNAT PRETTY^ is an ASIS-based utility
 for source reformatting / pretty-printing.
@@ -13285,11 +13657,6 @@ use the @option{-gnatec} switch to set the configuration file,
 use the @option{-gnat05} switch if sources should be compiled in
 Ada 2005 mode  etc.
 @end itemize
-
-@menu
-* Switches for gnatpp::
-* Formatting Rules::
-@end menu
 
 @node Switches for gnatpp
 @section Switches for @command{gnatpp}
@@ -14396,8 +14763,8 @@ end Test;
 @end smallexample
 
 @c *********************************
-@node The GNAT Metric Tool gnatmetric
-@chapter The GNAT Metric Tool @command{gnatmetric}
+@node The GNAT Metrics Tool gnatmetric
+@chapter The GNAT Metrics Tool @command{gnatmetric}
 @findex gnatmetric
 @cindex Metric tool
 
@@ -14407,6 +14774,10 @@ for computing various program metrics.
 It takes an Ada source file as input and generates a file containing the
 metrics data as output. Various switches control which
 metrics are computed and output.
+
+@menu
+* Switches for gnatmetric::
+@end menu
 
 @command{gnatmetric} generates and uses the ASIS
 tree for the input source and thus requires the input to be syntactically and
@@ -14459,10 +14830,6 @@ and use the @option{-gnatec} switch to set the configuration file,
 use the @option{-gnat05} switch if sources should be compiled in
 Ada 2005 mode etc.
 @end itemize
-
-@menu
-* Switches for gnatmetric::
-@end menu
 
 @node Switches for gnatmetric
 @section Switches for @command{gnatmetric}
@@ -15335,8 +15702,8 @@ the @option{-U} option followed by the name of the main unit:
 
 
 @c ***********************************
-@node File Name Krunching Using gnatkr
-@chapter File Name Krunching Using @code{gnatkr}
+@node File Name Krunching with gnatkr
+@chapter File Name Krunching with @code{gnatkr}
 @findex gnatkr
 
 @noindent
@@ -15551,8 +15918,8 @@ $ gnatkr very_long_unit_name.ads/count=6 --> vlunna.ads
 $ gnatkr very_long_unit_name.ads/count=0 --> very_long_unit_name.ads
 @end smallexample
 
-@node Preprocessing Using gnatprep
-@chapter Preprocessing Using @code{gnatprep}
+@node Preprocessing with gnatprep
+@chapter Preprocessing with @code{gnatprep}
 @findex gnatprep
 
 @noindent
@@ -16148,8 +16515,8 @@ GNU:[LIB.OPENVMS7_1.2_8_1.ADALIB]unchconv.ads
 @end smallexample
 @end ifset
 
-@node Cleaning Up Using gnatclean
-@chapter Cleaning Up Using @code{gnatclean}
+@node Cleaning Up with gnatclean
+@chapter Cleaning Up with @code{gnatclean}
 @findex gnatclean
 @cindex Cleaning tool
 
@@ -18002,8 +18369,8 @@ stack usage reports at run-time. See its body for the details.
 @c *********************************
 @c *            GNATCHECK          *
 @c *********************************
-@node Verifying Properties Using gnatcheck
-@chapter Verifying Properties Using @command{gnatcheck}
+@node Verifying Properties with gnatcheck
+@chapter Verifying Properties with @command{gnatcheck}
 @findex gnatcheck
 @cindex @command{gnatcheck}
 
@@ -18024,8 +18391,8 @@ For full details, refer to @cite{GNATcheck Reference Manual} document.
 
 
 @c *********************************
-@node Creating Sample Bodies Using gnatstub
-@chapter Creating Sample Bodies Using @command{gnatstub}
+@node Creating Sample Bodies with gnatstub
+@chapter Creating Sample Bodies with @command{gnatstub}
 @findex gnatstub
 
 @noindent
@@ -18165,7 +18532,7 @@ the generated body sample to @var{n}.
 The default indentation is 3.
 
 @item ^-gnatyo^/ORDERED_SUBPROGRAMS^
-@cindex @option{^-gnato^/ORDERED_SUBPROGRAMS^} (@command{gnatstub})
+@cindex @option{^-gnatyo^/ORDERED_SUBPROGRAMS^} (@command{gnatstub})
 Order local bodies alphabetically. (By default local bodies are ordered
 in the same way as the corresponding local specs in the argument spec file.)
 
@@ -18233,8 +18600,8 @@ Verbose mode: generate version information.
 @end table
 
 @c *********************************
-@node Creating Unit Tests Using gnattest
-@chapter Creating Unit Tests Using @command{gnattest}
+@node Creating Unit Tests with gnattest
+@chapter Creating Unit Tests with @command{gnattest}
 @findex gnattest
 
 @noindent
@@ -18505,8 +18872,8 @@ $ gnattest --harness-dir=driver -Psimple.gpr
 a test driver is created in directory "driver". It can be compiled and run:
 
 @smallexample
-$ cd driver
-$ gprbuild -Ptest_driver
+$ cd obj/driver
+$ gnatmake -Ptest_driver
 $ test_runner
 @end smallexample
 
@@ -18571,8 +18938,8 @@ and body of function Dec in simple.ads and simple.adb, running
 
 @smallexample
 gnattest --harness-dir=driver -Psimple.gpr
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 
@@ -18667,8 +19034,8 @@ seen by running the test driver generated for the second example. As previously
 mentioned, actual tests are already written for this example.
 
 @smallexample
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 
@@ -18709,8 +19076,8 @@ of the type which have overriding primitives:
 
 @smallexample
 gnattest --harness-dir=driver --validate-type-extensions -Ptagged_rec.gpr
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 
@@ -18758,8 +19125,8 @@ Assert (Sqrt (-5.0) = -1.0, "wrong error indication");
 are acceptable:
 
 @smallexample
-cd driver
-gprbuild -Ptest_driver
+cd obj/driver
+gnatmake -Ptest_driver
 test_runner
 @end smallexample
 
@@ -19528,12 +19895,12 @@ This chapter describes how to use @code{gcov} - coverage testing tool - and
 @code{gprof} - profiler tool - on your Ada programs.
 
 @menu
-* Code Coverage of Ada Programs using gcov::
-* Profiling an Ada Program using gprof::
+* Code Coverage of Ada Programs with gcov::
+* Profiling an Ada Program with gprof::
 @end menu
 
-@node Code Coverage of Ada Programs using gcov
-@section Code Coverage of Ada Programs using gcov
+@node Code Coverage of Ada Programs with gcov
+@section Code Coverage of Ada Programs with gcov
 @cindex gcov
 @cindex -fprofile-arcs
 @cindex -ftest-coverage
@@ -19620,8 +19987,8 @@ text file, and provide this file to gcov as a parameter,  preceded by a @@
 Note that on AIX compiling a static library with @code{-fprofile-arcs} is
 not supported as there can be unresolved symbols during the final link.
 
-@node Profiling an Ada Program using gprof
-@section Profiling an Ada Program using gprof
+@node Profiling an Ada Program with gprof
+@section Profiling an Ada Program with gprof
 @cindex gprof
 @cindex -pg
 @cindex Profiling
@@ -19846,7 +20213,7 @@ the incorrect user program.
 * Ada Exceptions::
 * Ada Tasks::
 * Debugging Generic Units::
-* Remote Debugging using gdbserver::
+* Remote Debugging with gdbserver::
 * GNAT Abnormal Termination or Failure to Terminate::
 * Naming Conventions for GNAT Source Files::
 * Getting Internal Debugging Information::
@@ -20304,9 +20671,9 @@ When the breakpoint occurs, you can step through the code of the
 instance in the normal manner and examine the values of local variables, as for
 other units.
 
-@node Remote Debugging using gdbserver
-@section Remote Debugging using gdbserver
-@cindex Remote Debugging using gdbserver
+@node Remote Debugging with gdbserver
+@section Remote Debugging with gdbserver
+@cindex Remote Debugging with gdbserver
 
 @noindent
 On platforms where gdbserver is supported, it is possible to use this tool
@@ -25962,10 +26329,11 @@ eliminate intermediate overflows (@code{ELIMINATED})
 As with the pragma, if only one digit appears then it applies to all
 cases; if two digits are given, then the first applies outside
 assertions, and the second within assertions. Thus the equivalent
-of the example pragma above would be @option{-gnato23}.
+of the example pragma above would be
+@option{^-gnato23^/OVERFLOW_CHECKS=23^}.
 
 If no digits follow the @option{-gnato}, then it is equivalent to
-@option{-gnato11},
+@option{^-gnato11^/OVERFLOW_CHECKS=11^},
 causing all intermediate operations to be computed using the base
 type (@code{STRICT} mode).
 
@@ -26496,7 +26864,7 @@ The preprocessor may be used in two separate modes. It can be used quite
 separately from the compiler, to generate a separate output source file
 that is then fed to the compiler as a separate step. This is the
 @code{gnatprep} utility, whose use is fully described in
-@ref{Preprocessing Using gnatprep}.
+@ref{Preprocessing with gnatprep}.
 @cindex @code{gnatprep}
 
 The preprocessing language allows such constructs as
@@ -28252,7 +28620,6 @@ without sacrificing the capabilities of the 64-bit architecture.
 @end ifset
 
 @c ************************************************
-@ifset unw
 @node Microsoft Windows Topics
 @appendix Microsoft Windows Topics
 @cindex Windows NT
@@ -28264,6 +28631,9 @@ This chapter describes topics that are specific to the Microsoft Windows
 platforms (NT, 2000, and XP Professional).
 
 @menu
+@ifclear FSFEDITION
+* Installing from the Command Line::
+@end ifclear
 * Using GNAT on Windows::
 * Using a network installation of GNAT::
 * CONSOLE and WINDOWS subsystems::
@@ -28280,6 +28650,54 @@ platforms (NT, 2000, and XP Professional).
 * Setting Stack Size from gnatlink::
 * Setting Heap Size from gnatlink::
 @end menu
+
+@ifclear FSFEDITION
+@node Installing from the Command Line
+@section Installing from the Command Line
+@cindex Batch installation
+@cindex Silent installation
+@cindex Unassisted installation
+
+@noindent
+By default the @value{EDITION} installers display a GUI that prompts the user
+to enter installation path and similar information, and guide him through the
+installation process. It is also possible to perform silent installations
+using the command-line interface.
+
+In order to install one of the @value{EDITION} installers from the command
+line you should pass parameter @code{/S} (and, optionally,
+@code{/D=<directory>}) as command-line arguments.
+
+@ifset PROEDITION
+For example, for an unattended installation of
+@value{EDITION} 7.0.2 into the default directory
+@code{C:\GNATPRO\7.0.2} you would run:
+
+@smallexample
+gnatpro-7.0.2-i686-pc-mingw32-bin.exe /S
+@end smallexample
+
+To install into a custom directory, say, @code{C:\TOOLS\GNATPRO\7.0.2}:
+
+@smallexample
+gnatpro-7.0.2-i686-pc-mingw32-bin /S /D=C:\TOOLS\GNATPRO\7.0.2
+@end smallexample
+@end ifset
+
+@ifset GPLEDITION
+For example, for an unattended installation of
+@value{EDITION} 2012 into @code{C:\GNAT\2012}:
+
+@smallexample
+gnat-gpl-2012-i686-pc-mingw32-bin /S /D=C:\GNAT\2012
+@end smallexample
+@end ifset
+
+You can use the same syntax for all installers.
+
+Note that unattended installations don't modify system path, nor create file
+associations, so such activities need to be done by hand.
+@end ifclear
 
 @node Using GNAT on Windows
 @section Using GNAT on Windows
@@ -28863,12 +29281,6 @@ end API;
 @end cartouche
 @end group
 @end smallexample
-
-@noindent
-Note that a variable is
-@strong{always imported with a DLL convention}. A function
-can have @code{C} or @code{Stdcall} convention.
-(@pxref{Windows Calling Conventions}).
 
 @node Creating an Import Library
 @subsection Creating an Import Library
@@ -30321,15 +30733,13 @@ codesign -f -s  "gdb-cert"  <gnat_install_prefix>/bin/gdb
 name chosen above, and <gnat_install_prefix> should be replaced by
 the location where you installed GNAT.
 
-@end ifset
-
 @c **********************************
 @c * GNU Free Documentation License *
 @c **********************************
 @include fdl.texi
 @c GNU Free Documentation License
 
-@node Index,,GNU Free Documentation License, Top
+@node Index
 @unnumbered Index
 
 @printindex cp

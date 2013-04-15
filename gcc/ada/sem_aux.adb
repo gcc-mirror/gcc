@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -467,8 +467,8 @@ package body Sem_Aux is
          elsif Nkind (N) = N_Attribute_Definition_Clause
            and then
              (Chars (N) = Nam
-                or else (Nam = Name_Priority
-                          and then Chars (N) = Name_Interrupt_Priority))
+               or else (Nam = Name_Priority
+                         and then Chars (N) = Name_Interrupt_Priority))
          then
             if Check_Parents or else Entity (N) = E then
                return N;
@@ -477,9 +477,9 @@ package body Sem_Aux is
          elsif Nkind (N) = N_Aspect_Specification
            and then
              (Chars (Identifier (N)) = Nam
-                or else (Nam = Name_Priority
-                          and then Chars (Identifier (N)) =
-                                     Name_Interrupt_Priority))
+               or else
+                 (Nam = Name_Priority
+                   and then Chars (Identifier (N)) = Name_Interrupt_Priority))
          then
             if Check_Parents then
                return N;

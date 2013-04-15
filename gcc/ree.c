@@ -957,7 +957,6 @@ struct rtl_opt_pass pass_ree =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish
-    | TODO_ggc_collect
     | TODO_verify_rtl_sharing,          /* todo_flags_finish */
  }
 };

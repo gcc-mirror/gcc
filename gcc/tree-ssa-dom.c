@@ -3076,7 +3076,6 @@ struct gimple_opt_pass pass_phi_only_cprop =
   0,		                        /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_cleanup_cfg
-    | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_verify_stmts
     | TODO_update_ssa			/* todo_flags_finish */

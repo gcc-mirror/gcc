@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2012, AdaCore                     --
+--                     Copyright (C) 2001-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -199,6 +199,12 @@ package body GNAT.Sockets is
    pragma Inline (Check_For_Fd_Set);
    --  Raise Constraint_Error if Fd is less than 0 or greater than or equal to
    --  FD_SETSIZE, on platforms where fd_set is a bitmap.
+
+   function Connect_Socket
+     (Socket : Socket_Type;
+      Server : Sock_Addr_Type) return C.int;
+   pragma Inline (Connect_Socket);
+   --  Underlying implementation for the Connect_Socket procedures
 
    --  Types needed for Datagram_Socket_Stream_Type
 
@@ -510,10 +516,6 @@ package body GNAT.Sockets is
         (Selector, R_Socket_Set, W_Socket_Set, E_Socket_Set, Status, Timeout);
    end Check_Selector;
 
-   --------------------
-   -- Check_Selector --
-   --------------------
-
    procedure Check_Selector
      (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
@@ -662,11 +664,10 @@ package body GNAT.Sockets is
    -- Connect_Socket --
    --------------------
 
-   procedure Connect_Socket
+   function Connect_Socket
      (Socket : Socket_Type;
-      Server : Sock_Addr_Type)
+      Server : Sock_Addr_Type) return C.int
    is
-      Res : C.int;
       Sin : aliased Sockaddr_In;
       Len : constant C.int := Sin'Size / 8;
 
@@ -681,16 +682,18 @@ package body GNAT.Sockets is
         (Sin'Unchecked_Access,
          Short_To_Network (C.unsigned_short (Server.Port)));
 
-      Res := C_Connect (C.int (Socket), Sin'Address, Len);
+      return C_Connect (C.int (Socket), Sin'Address, Len);
+   end Connect_Socket;
 
-      if Res = Failure then
+   procedure Connect_Socket
+     (Socket : Socket_Type;
+      Server : Sock_Addr_Type)
+   is
+   begin
+      if Connect_Socket (Socket, Server) = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
    end Connect_Socket;
-
-   --------------------
-   -- Connect_Socket --
-   --------------------
 
    procedure Connect_Socket
      (Socket   : Socket_Type;
@@ -719,28 +722,32 @@ package body GNAT.Sockets is
       Req := (Name => Non_Blocking_IO, Enabled => True);
       Control_Socket (Socket, Request => Req);
 
-      --  Start operation (non-blocking), will raise Socket_Error with
-      --  EINPROGRESS.
+      --  Start operation (non-blocking), will return Failure with errno set
+      --  to EINPROGRESS.
 
-      begin
-         Connect_Socket (Socket, Server);
-      exception
-         when E : Socket_Error =>
-            if Resolve_Exception (E) = Operation_Now_In_Progress then
-               null;
-            else
-               raise;
-            end if;
-      end;
+      Res := Connect_Socket (Socket, Server);
+      if Res = Failure then
+         Conn_Err := Socket_Errno;
+         if Conn_Err /= SOSC.EINPROGRESS then
+            Raise_Socket_Error (Conn_Err);
+         end if;
+      end if;
 
-      --  Wait for socket to become available for writing
+      --  Wait for socket to become available for writing (unless the Timeout
+      --  is zero, in which case we consider that it has already expired, and
+      --  we do not need to wait at all).
 
-      Wait_On_Socket
-        (Socket   => Socket,
-         For_Read => False,
-         Timeout  => Timeout,
-         Selector => Selector,
-         Status   => Status);
+      if Timeout = 0.0 then
+         Status := Expired;
+
+      else
+         Wait_On_Socket
+           (Socket   => Socket,
+            For_Read => False,
+            Timeout  => Timeout,
+            Selector => Selector,
+            Status   => Status);
+      end if;
 
       --  Check error condition (the asynchronous connect may have terminated
       --  with an error, e.g. ECONNREFUSED) if select(2) completed.

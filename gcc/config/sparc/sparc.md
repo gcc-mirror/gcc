@@ -22,88 +22,88 @@
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
-(define_constants
-  [(UNSPEC_MOVE_PIC		0)
-   (UNSPEC_UPDATE_RETURN	1)
-   (UNSPEC_LOAD_PCREL_SYM	2)
-   (UNSPEC_FRAME_BLOCKAGE      3)
-   (UNSPEC_MOVE_PIC_LABEL	5)
-   (UNSPEC_SETH44		6)
-   (UNSPEC_SETM44		7)
-   (UNSPEC_SETHH		9)
-   (UNSPEC_SETLM		10)
-   (UNSPEC_EMB_HISUM		11)
-   (UNSPEC_EMB_TEXTUHI		13)
-   (UNSPEC_EMB_TEXTHI		14)
-   (UNSPEC_EMB_TEXTULO		15)
-   (UNSPEC_EMB_SETHM		18)
-   (UNSPEC_MOVE_GOTDATA		19)
+(define_c_enum "unspec" [
+  UNSPEC_MOVE_PIC
+  UNSPEC_UPDATE_RETURN
+  UNSPEC_LOAD_PCREL_SYM
+  UNSPEC_FRAME_BLOCKAGE
+  UNSPEC_MOVE_PIC_LABEL
+  UNSPEC_SETH44
+  UNSPEC_SETM44
+  UNSPEC_SETHH
+  UNSPEC_SETLM
+  UNSPEC_EMB_HISUM
+  UNSPEC_EMB_TEXTUHI
+  UNSPEC_EMB_TEXTHI
+  UNSPEC_EMB_TEXTULO
+  UNSPEC_EMB_SETHM
+  UNSPEC_MOVE_GOTDATA
 
-   (UNSPEC_MEMBAR		20)
-   (UNSPEC_ATOMIC		21)
+  UNSPEC_MEMBAR
+  UNSPEC_ATOMIC
 
-   (UNSPEC_TLSGD		30)
-   (UNSPEC_TLSLDM		31)
-   (UNSPEC_TLSLDO		32)
-   (UNSPEC_TLSIE		33)
-   (UNSPEC_TLSLE		34)
-   (UNSPEC_TLSLD_BASE		35)
+  UNSPEC_TLSGD
+  UNSPEC_TLSLDM
+  UNSPEC_TLSLDO
+  UNSPEC_TLSIE
+  UNSPEC_TLSLE
+  UNSPEC_TLSLD_BASE
 
-   (UNSPEC_FPACK16	 	40)
-   (UNSPEC_FPACK32		41)
-   (UNSPEC_FPACKFIX		42)
-   (UNSPEC_FEXPAND		43)
-   (UNSPEC_MUL16AU		44)
-   (UNSPEC_MUL16AL		45)
-   (UNSPEC_MUL8UL		46)
-   (UNSPEC_MULDUL		47)
-   (UNSPEC_ALIGNDATA		48)
-   (UNSPEC_FCMP			49)
-   (UNSPEC_PDIST		50)
-   (UNSPEC_EDGE8		51)
-   (UNSPEC_EDGE8L		52)
-   (UNSPEC_EDGE16		53)
-   (UNSPEC_EDGE16L		54)
-   (UNSPEC_EDGE32		55)
-   (UNSPEC_EDGE32L		56)
-   (UNSPEC_ARRAY8		57)
-   (UNSPEC_ARRAY16		58)
-   (UNSPEC_ARRAY32		59)
+  UNSPEC_FPACK16
+  UNSPEC_FPACK32
+  UNSPEC_FPACKFIX
+  UNSPEC_FEXPAND
+  UNSPEC_MUL16AU
+  UNSPEC_MUL16AL
+  UNSPEC_MUL8UL
+  UNSPEC_MULDUL
+  UNSPEC_ALIGNDATA
+  UNSPEC_FCMP
+  UNSPEC_PDIST
+  UNSPEC_EDGE8
+  UNSPEC_EDGE8L
+  UNSPEC_EDGE16
+  UNSPEC_EDGE16L
+  UNSPEC_EDGE32
+  UNSPEC_EDGE32L
+  UNSPEC_ARRAY8
+  UNSPEC_ARRAY16
+  UNSPEC_ARRAY32
 
-   (UNSPEC_SP_SET		60)
-   (UNSPEC_SP_TEST		61)
+  UNSPEC_SP_SET
+  UNSPEC_SP_TEST
 
-   (UNSPEC_EDGE8N		70)
-   (UNSPEC_EDGE8LN		71)
-   (UNSPEC_EDGE16N		72)
-   (UNSPEC_EDGE16LN		73)
-   (UNSPEC_EDGE32N		74)
-   (UNSPEC_EDGE32LN		75)
-   (UNSPEC_BSHUFFLE		76)
-   (UNSPEC_CMASK8		77)
-   (UNSPEC_CMASK16		78)
-   (UNSPEC_CMASK32		79)
-   (UNSPEC_FCHKSM16		80)
-   (UNSPEC_PDISTN		81)
-   (UNSPEC_FUCMP		82)
-   (UNSPEC_FHADD		83)
-   (UNSPEC_FHSUB		84)
-   (UNSPEC_XMUL			85)
-   (UNSPEC_MUL8			86)
-   (UNSPEC_MUL8SU		87)
-   (UNSPEC_MULDSU		88)
-  ])
+  UNSPEC_EDGE8N
+  UNSPEC_EDGE8LN
+  UNSPEC_EDGE16N
+  UNSPEC_EDGE16LN
+  UNSPEC_EDGE32N
+  UNSPEC_EDGE32LN
+  UNSPEC_BSHUFFLE
+  UNSPEC_CMASK8
+  UNSPEC_CMASK16
+  UNSPEC_CMASK32
+  UNSPEC_FCHKSM16
+  UNSPEC_PDISTN
+  UNSPEC_FUCMP
+  UNSPEC_FHADD
+  UNSPEC_FHSUB
+  UNSPEC_XMUL
+  UNSPEC_MUL8
+  UNSPEC_MUL8SU
+  UNSPEC_MULDSU
+])
 
-(define_constants
-  [(UNSPECV_BLOCKAGE		0)
-   (UNSPECV_FLUSHW		1)
-   (UNSPECV_FLUSH		4)
-   (UNSPECV_SAVEW		6)
-   (UNSPECV_CAS			8)
-   (UNSPECV_SWAP		9)
-   (UNSPECV_LDSTUB		10)
-   (UNSPECV_PROBE_STACK_RANGE	11)
-  ])
+(define_c_enum "unspecv" [
+  UNSPECV_BLOCKAGE
+  UNSPECV_FLUSHW
+  UNSPECV_FLUSH
+  UNSPECV_SAVEW
+  UNSPECV_CAS
+  UNSPECV_SWAP
+  UNSPECV_LDSTUB
+  UNSPECV_PROBE_STACK_RANGE
+])
 
 (define_constants
  [(G0_REG			0)
@@ -615,11 +615,14 @@
 
 ;; Next come the scc insns.
 
+;; Note that the boolean result (operand 0) takes on DImode
+;; (not SImode) when TARGET_ARCH64.
+
 (define_expand "cstoresi4"
   [(use (match_operator 1 "comparison_operator"
          [(match_operand:SI 2 "compare_operand" "")
           (match_operand:SI 3 "arith_operand" "")]))
-   (clobber (match_operand:SI 0 "register_operand"))]
+   (clobber (match_operand:SI 0 "cstore_result_operand"))]
   ""
 {
   if (GET_CODE (operands[2]) == ZERO_EXTRACT && operands[3] != const0_rtx)
@@ -631,7 +634,7 @@
   [(use (match_operator 1 "comparison_operator"
          [(match_operand:DI 2 "compare_operand" "")
           (match_operand:DI 3 "arith_operand" "")]))
-   (clobber (match_operand:SI 0 "register_operand"))]
+   (clobber (match_operand:SI 0 "cstore_result_operand"))]
   "TARGET_ARCH64"
 {
   if (GET_CODE (operands[2]) == ZERO_EXTRACT && operands[3] != const0_rtx)
@@ -643,7 +646,7 @@
   [(use (match_operator 1 "comparison_operator"
          [(match_operand:F 2 "register_operand" "")
           (match_operand:F 3 "register_operand" "")]))
-   (clobber (match_operand:SI 0 "register_operand"))]
+   (clobber (match_operand:SI 0 "cstore_result_operand"))]
   "TARGET_FPU"
   { if (emit_scc_insn (operands)) DONE; else FAIL; })
 
@@ -652,12 +655,12 @@
 ;; Seq_special[_xxx] and sne_special[_xxx] clobber the CC reg, because they
 ;; generate addcc/subcc instructions.
 
-(define_expand "seqsi_special"
+(define_expand "seqsi<P:mode>_special"
   [(set (match_dup 3)
 	(xor:SI (match_operand:SI 1 "register_operand" "")
 		(match_operand:SI 2 "register_operand" "")))
-   (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (eq:SI (match_dup 3) (const_int 0)))
+   (parallel [(set (match_operand:P 0 "register_operand" "")
+		   (eq:P (match_dup 3) (const_int 0)))
 	      (clobber (reg:CC CC_REG))])]
   ""
   { operands[3] = gen_reg_rtx (SImode); })
@@ -666,17 +669,17 @@
   [(set (match_dup 3)
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
-   (set (match_operand:SI 0 "register_operand" "")
-	(eq:SI (match_dup 3) (const_int 0)))]
+   (set (match_operand:DI 0 "register_operand" "")
+	(eq:DI (match_dup 3) (const_int 0)))]
   "TARGET_ARCH64"
   { operands[3] = gen_reg_rtx (DImode); })
 
-(define_expand "snesi_special"
+(define_expand "snesi<P:mode>_special"
   [(set (match_dup 3)
 	(xor:SI (match_operand:SI 1 "register_operand" "")
 		(match_operand:SI 2 "register_operand" "")))
-   (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (ne:SI (match_dup 3) (const_int 0)))
+   (parallel [(set (match_operand:P 0 "register_operand" "")
+		   (ne:P (match_dup 3) (const_int 0)))
 	      (clobber (reg:CC CC_REG))])]
   ""
   { operands[3] = gen_reg_rtx (SImode); })
@@ -685,8 +688,8 @@
   [(set (match_dup 3)
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
-   (set (match_operand:SI 0 "register_operand" "")
-	(ne:SI (match_dup 3) (const_int 0)))]
+   (set (match_operand:DI 0 "register_operand" "")
+	(ne:DI (match_dup 3) (const_int 0)))]
   "TARGET_ARCH64 && ! TARGET_VIS3"
   { operands[3] = gen_reg_rtx (DImode); })
 
@@ -694,8 +697,8 @@
   [(set (match_dup 3)
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
-   (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (ne:SI (match_dup 3) (const_int 0)))
+   (parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (ne:DI (match_dup 3) (const_int 0)))
 	      (clobber (reg:CCX CC_REG))])]
   "TARGET_ARCH64 && TARGET_VIS3"
   { operands[3] = gen_reg_rtx (DImode); })
@@ -708,9 +711,9 @@
 ;; them to always use the splits below so the results can be
 ;; scheduled.
 
-(define_insn_and_split "*snesi_zero"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ne:SI (match_operand:SI 1 "register_operand" "r")
+(define_insn_and_split "*snesi<P:mode>_zero"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(ne:P (match_operand:SI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CC CC_REG))]
   ""
@@ -718,11 +721,11 @@
   ""
   [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
-   (set (match_dup 0) (ltu:SI (reg:CC CC_REG) (const_int 0)))]
+   (set (match_dup 0) (ltu:P (reg:CC CC_REG) (const_int 0)))]
   ""
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*neg_snesi_zero"
+(define_insn_and_split "*neg_snesisi_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (ne:SI (match_operand:SI 1 "register_operand" "r")
 		       (const_int 0))))
@@ -736,35 +739,16 @@
   ""
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*snesi_zero_extend"
+(define_insn_and_split "*neg_snesidi_zero"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (ne:DI (match_operand:SI 1 "register_operand" "r")
-               (const_int 0)))
+	(neg:DI (ne:DI (match_operand:SI 1 "register_operand" "r")
+		       (const_int 0))))
    (clobber (reg:CC CC_REG))]
   "TARGET_ARCH64"
   "#"
-  "&& 1"
-  [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (minus:SI (const_int 0)
-                                                     (match_dup 1))
-                                           (const_int 0)))
-   (set (match_dup 0) (zero_extend:DI (plus:SI (plus:SI (const_int 0)
-                                                        (const_int 0))
-                                               (ltu:SI (reg:CC_NOOV CC_REG)
-                                                       (const_int 0)))))]
   ""
-  [(set_attr "length" "2")])
-
-(define_insn_and_split "*neg_snesi_sign_extend"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (neg:DI (ne:DI (match_operand:SI 1 "register_operand" "r")
-                      (const_int 0))))
-   (clobber (reg:CC CC_REG))]
-  "TARGET_ARCH64"
-  "#"
-  "&& 1"
-  [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (minus:SI (const_int 0)
-                                                     (match_dup 1))
-                                           (const_int 0)))
+  [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (neg:SI (match_dup 1))
+					   (const_int 0)))
    (set (match_dup 0) (sign_extend:DI (neg:SI (ltu:SI (reg:CC CC_REG)
                                                       (const_int 0)))))]
   ""
@@ -843,9 +827,9 @@
   ""
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*seqsi_zero"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(eq:SI (match_operand:SI 1 "register_operand" "r")
+(define_insn_and_split "*seqsi<P:mode>_zero"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(eq:P (match_operand:SI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CC CC_REG))]
   ""
@@ -853,11 +837,11 @@
   ""
   [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
-   (set (match_dup 0) (geu:SI (reg:CC CC_REG) (const_int 0)))]
+   (set (match_dup 0) (geu:P (reg:CC CC_REG) (const_int 0)))]
   ""
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*neg_seqsi_zero"
+(define_insn_and_split "*neg_seqsisi_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (eq:SI (match_operand:SI 1 "register_operand" "r")
 		       (const_int 0))))
@@ -871,25 +855,7 @@
   ""
   [(set_attr "length" "2")])
 
-(define_insn_and_split "*seqsi_zero_extend"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (eq:DI (match_operand:SI 1 "register_operand" "r")
-               (const_int 0)))
-   (clobber (reg:CC CC_REG))]
-  "TARGET_ARCH64"
-  "#"
-  "&& 1"
-  [(set (reg:CC_NOOV CC_REG) (compare:CC_NOOV (minus:SI (const_int 0)
-                                                     (match_dup 1))
-                                           (const_int 0)))
-   (set (match_dup 0) (zero_extend:DI (minus:SI (minus:SI (const_int 0)
-                                                          (const_int -1))
-                                                (ltu:SI (reg:CC_NOOV CC_REG)
-                                                        (const_int 0)))))]
-  ""
-  [(set_attr "length" "2")])
-
-(define_insn_and_split "*neg_seqsi_sign_extend"
+(define_insn_and_split "*neg_seqsidi_zero"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (eq:DI (match_operand:SI 1 "register_operand" "r")
 		       (const_int 0))))
@@ -1021,9 +987,9 @@
 ;; ??? The addx/subx insns use the 32 bit carry flag so there are no DImode
 ;; versions for v9.
 
-(define_insn "*sltu_insn"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ltu:SI (reg:CC CC_REG) (const_int 0)))]
+(define_insn "*sltu<P:mode>_insn"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(ltu:P (reg:CC CC_REG) (const_int 0)))]
   ""
   "addx\t%%g0, 0, %0"
   [(set_attr "type" "ialuX")])
@@ -1042,28 +1008,20 @@
   "addxc\t%%g0, %%g0, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*sltu_extend_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ltu:DI (reg:CC CC_REG) (const_int 0)))]
-  "TARGET_ARCH64"
-  "addx\t%%g0, 0, %0"
-  [(set_attr "type" "ialuX")])
-
-(define_insn "*neg_sltu_insn"
+(define_insn "*neg_sltusi_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (ltu:SI (reg:CC CC_REG) (const_int 0))))]
   ""
   "subx\t%%g0, 0, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*neg_sltu_extend_sp64"
+(define_insn "*neg_sltudi_insn"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (neg:SI (ltu:SI (reg:CC CC_REG) (const_int 0)))))]
   "TARGET_ARCH64"
   "subx\t%%g0, 0, %0"
   [(set_attr "type" "ialuX")])
 
-;; ??? Combine should canonicalize these next two to the same pattern.
 (define_insn "*neg_sltu_minus_x"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(minus:SI (neg:SI (ltu:SI (reg:CC CC_REG) (const_int 0)))
@@ -1080,28 +1038,21 @@
   "subx\t%%g0, %1, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*sgeu_insn"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(geu:SI (reg:CC CC_REG) (const_int 0)))]
+(define_insn "*sgeu<P:mode>_insn"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(geu:P (reg:CC CC_REG) (const_int 0)))]
   ""
   "subx\t%%g0, -1, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*sgeu_extend_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(geu:DI (reg:CC CC_REG) (const_int 0)))]
-  "TARGET_ARCH64"
-  "subx\t%%g0, -1, %0"
-  [(set_attr "type" "ialuX")])
-
-(define_insn "*neg_sgeu_insn"
+(define_insn "*neg_sgeusi_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (geu:SI (reg:CC CC_REG) (const_int 0))))]
   ""
   "addx\t%%g0, -1, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*neg_sgeu_extend_sp64"
+(define_insn "*neg_sgeudi_insn"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (neg:SI (geu:SI (reg:CC CC_REG) (const_int 0)))))]
   "TARGET_ARCH64"

@@ -543,6 +543,7 @@ FUNC:_ZNKSt17__gnu_cxx_ldbl1289money_putIwSt19ostreambuf_iteratorIwSt11char_trai
 FUNC:_ZNKSt17__gnu_cxx_ldbl1289money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE8__do_putES4_bRSt8ios_basewd@@GLIBCXX_LDBL_3.4
 FUNC:_ZNKSt17__gnu_cxx_ldbl1289money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE9_M_insertILb0EEES4_S4_RSt8ios_basewRKSbIwS3_SaIwEE@@GLIBCXX_LDBL_3.4
 FUNC:_ZNKSt17__gnu_cxx_ldbl1289money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE9_M_insertILb1EEES4_S4_RSt8ios_basewRKSbIwS3_SaIwEE@@GLIBCXX_LDBL_3.4
+FUNC:_ZNKSt17bad_function_call4whatEv@@GLIBCXX_3.4.18
 FUNC:_ZNKSt18basic_stringstreamIcSt11char_traitsIcESaIcEE3strEv@@GLIBCXX_3.4
 FUNC:_ZNKSt18basic_stringstreamIcSt11char_traitsIcESaIcEE5rdbufEv@@GLIBCXX_3.4
 FUNC:_ZNKSt18basic_stringstreamIwSt11char_traitsIwESaIwEE3strEv@@GLIBCXX_3.4
@@ -732,6 +733,8 @@ FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt
 FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt8ios_basewm@@GLIBCXX_3.4
 FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt8ios_basewx@@GLIBCXX_3.4
 FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt8ios_basewy@@GLIBCXX_3.4
+FUNC:_ZNKSt8__detail20_Prime_rehash_policy11_M_next_bktEm@@GLIBCXX_3.4.18
+FUNC:_ZNKSt8__detail20_Prime_rehash_policy14_M_need_rehashEmmm@@GLIBCXX_3.4.18
 FUNC:_ZNKSt8bad_cast4whatEv@@GLIBCXX_3.4.9
 FUNC:_ZNKSt8ios_base7failure4whatEv@@GLIBCXX_3.4
 FUNC:_ZNKSt8messagesIcE18_M_convert_to_charERKSs@@GLIBCXX_3.4
@@ -1353,6 +1356,7 @@ FUNC:_ZNSt11range_errorD2Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD0Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD1Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD2Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt11this_thread11__sleep_forENSt6chrono8durationIlSt5ratioILl1ELl1EEEENS1_IlS2_ILl1ELl1000000000EEEE@@GLIBCXX_3.4.18
 FUNC:_ZNSt12__basic_fileIcE2fdEv@@GLIBCXX_3.4
 FUNC:_ZNSt12__basic_fileIcE4fileEv@@GLIBCXX_3.4.1
 FUNC:_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei@@GLIBCXX_3.4
@@ -1635,6 +1639,11 @@ FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEs@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEt@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEx@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEy@@GLIBCXX_3.4
+FUNC:_ZNSt13random_device14_M_init_pretr1ERKSs@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device16_M_getval_pretr1Ev@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device7_M_finiEv@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device7_M_initERKSs@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device9_M_getvalEv@@GLIBCXX_3.4.18
 FUNC:_ZNSt13runtime_errorC1ERKSs@@GLIBCXX_3.4
 FUNC:_ZNSt13runtime_errorC2ERKSs@@GLIBCXX_3.4
 FUNC:_ZNSt13runtime_errorD0Ev@@GLIBCXX_3.4
@@ -2393,14 +2402,17 @@ FUNC:_ZNVSt9__atomic011atomic_flag12test_and_setESt12memory_order@@GLIBCXX_3.4.1
 FUNC:_ZNVSt9__atomic011atomic_flag5clearESt12memory_order@@GLIBCXX_3.4.11
 FUNC:_ZSt10unexpectedv@@GLIBCXX_3.4
 FUNC:_ZSt11_Hash_bytesPKvmm@@CXXABI_1.3.5
+FUNC:_ZSt13get_terminatev@@GLIBCXX_3.4.19
 FUNC:_ZSt13set_terminatePFvvE@@GLIBCXX_3.4
 FUNC:_ZSt14__convert_to_vIdEvPKcRT_RSt12_Ios_IostateRKP15__locale_struct@@GLIBCXX_3.4
 FUNC:_ZSt14__convert_to_vIeEvPKcRT_RSt12_Ios_IostateRKP15__locale_struct@@GLIBCXX_3.4
 FUNC:_ZSt14__convert_to_vIfEvPKcRT_RSt12_Ios_IostateRKP15__locale_struct@@GLIBCXX_3.4
 FUNC:_ZSt14__convert_to_vIgEvPKcRT_RSt12_Ios_IostateRKP15__locale_struct@@GLIBCXX_LDBL_3.4
+FUNC:_ZSt14get_unexpectedv@@GLIBCXX_3.4.19
 FUNC:_ZSt14set_unexpectedPFvvE@@GLIBCXX_3.4
 FUNC:_ZSt15_Fnv_hash_bytesPKvmm@@CXXABI_1.3.5
 FUNC:_ZSt15future_categoryv@@GLIBCXX_3.4.15
+FUNC:_ZSt15get_new_handlerv@@GLIBCXX_3.4.19
 FUNC:_ZSt15set_new_handlerPFvvE@@GLIBCXX_3.4
 FUNC:_ZSt15system_categoryv@@GLIBCXX_3.4.11
 FUNC:_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l@@GLIBCXX_3.4.9
@@ -2678,6 +2690,7 @@ FUNC:__cxa_guard_acquire@@CXXABI_1.3
 FUNC:__cxa_guard_release@@CXXABI_1.3
 FUNC:__cxa_pure_virtual@@CXXABI_1.3
 FUNC:__cxa_rethrow@@CXXABI_1.3
+FUNC:__cxa_thread_atexit@@CXXABI_1.3.7
 FUNC:__cxa_throw@@CXXABI_1.3
 FUNC:__cxa_tm_cleanup@@CXXABI_TM_1
 FUNC:__cxa_vec_cctor@@CXXABI_1.3
@@ -2724,6 +2737,7 @@ OBJECT:0:CXXABI_1.3.3
 OBJECT:0:CXXABI_1.3.4
 OBJECT:0:CXXABI_1.3.5
 OBJECT:0:CXXABI_1.3.6
+OBJECT:0:CXXABI_1.3.7
 OBJECT:0:CXXABI_LDBL_1.3
 OBJECT:0:CXXABI_TM_1
 OBJECT:0:GLIBCXX_3.4
@@ -2736,6 +2750,8 @@ OBJECT:0:GLIBCXX_3.4.14
 OBJECT:0:GLIBCXX_3.4.15
 OBJECT:0:GLIBCXX_3.4.16
 OBJECT:0:GLIBCXX_3.4.17
+OBJECT:0:GLIBCXX_3.4.18
+OBJECT:0:GLIBCXX_3.4.19
 OBJECT:0:GLIBCXX_3.4.2
 OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.4

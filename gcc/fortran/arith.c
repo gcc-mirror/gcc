@@ -901,9 +901,9 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
       if (gfc_init_expr_flag)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Noninteger "
-			      "exponent in an initialization "
-			      "expression at %L", &op2->where) == FAILURE)
+	  if (!gfc_notify_std (GFC_STD_F2003, "Noninteger "
+			       "exponent in an initialization "
+			       "expression at %L", &op2->where))
 	    {
 	      gfc_free_expr (result);
 	      return ARITH_PROHIBIT;
@@ -926,9 +926,9 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       {
 	if (gfc_init_expr_flag)
 	  {
-	    if (gfc_notify_std (GFC_STD_F2003, "Noninteger "
-				"exponent in an initialization "
-				"expression at %L", &op2->where) == FAILURE)
+	    if (!gfc_notify_std (GFC_STD_F2003, "Noninteger "
+				 "exponent in an initialization "
+				 "expression at %L", &op2->where))
 	      {
 		gfc_free_expr (result);
 		return ARITH_PROHIBIT;
@@ -1347,8 +1347,7 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   gfc_expr *r;
   arith rc = ARITH_OK;
 
-  if (gfc_check_conformance (op1, op2,
-			     "elemental binary operation") != SUCCESS)
+  if (!gfc_check_conformance (op1, op2, "elemental binary operation"))
     return ARITH_INCOMMENSURATE;
 
   head = gfc_constructor_copy (op1->value.constructor);

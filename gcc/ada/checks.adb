@@ -996,7 +996,7 @@ package body Checks is
          elsif Dsiz <= Standard_Long_Long_Integer_Size then
             Ctyp := Standard_Long_Long_Integer;
 
-            --  No check type exists, use runtime call
+         --  No check type exists, use runtime call
 
          else
             if Nkind (N) = N_Op_Add then
@@ -3244,13 +3244,20 @@ package body Checks is
                 Reason    => CE_Discriminant_Check_Failed));
          end;
 
-      --  For arrays, conversions are applied during expansion, to take into
-      --  accounts changes of representation. The checks become range checks on
-      --  the base type or length checks on the subtype, depending on whether
-      --  the target type is unconstrained or constrained.
+      --  For arrays, checks are set now, but conversions are applied during
+      --  expansion, to take into accounts changes of representation. The
+      --  checks become range checks on the base type or length checks on the
+      --  subtype, depending on whether the target type is unconstrained or
+      --  constrained. Note that the range check is put on the expression of a
+      --  type conversion, while the length check is put on the type conversion
+      --  itself.
 
-      else
-         null;
+      elsif Is_Array_Type (Target_Type) then
+         if Is_Constrained (Target_Type) then
+            Set_Do_Length_Check (N);
+         else
+            Set_Do_Range_Check (Expr);
+         end if;
       end if;
    end Apply_Type_Conversion_Checks;
 
@@ -6221,6 +6228,7 @@ package body Checks is
 
    procedure Insert_Valid_Check (Expr : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Expr);
+      Typ : constant Entity_Id  := Etype (Expr);
       Exp : Node_Id;
 
    begin
@@ -6230,6 +6238,16 @@ package body Checks is
       if not Validity_Checks_On
         or else Range_Or_Validity_Checks_Suppressed (Expr)
         or else Expr_Known_Valid (Expr)
+      then
+         return;
+      end if;
+
+      --  Do not insert checks within a predicate function. This will arise
+      --  if the current unit and the predicate function are being compiled
+      --  with validity checks enabled.
+
+      if Present (Predicate_Function (Typ))
+        and then Current_Scope = Predicate_Function (Typ)
       then
          return;
       end if;
@@ -6573,6 +6591,13 @@ package body Checks is
         and then Is_Concurrent_Record_Type
                    (Directly_Designated_Type (Etype (N)))
       then
+         return;
+      end if;
+
+      --  No check needed in interface thunks since the runtime check is
+      --  already performed at the caller side.
+
+      if Is_Thunk (Current_Scope) then
          return;
       end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -252,6 +252,16 @@ package Restrict is
    --  Wrapper on Check_Restriction with Msg_Issued, with the out-parameter
    --  being ignored here.
 
+   procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
+   --  N is the node of an attribute definition clause. An error message
+   --  (warning) will be issued if a restriction (warning) was previously set
+   --  for this attribute using Set_No_Use_Of_Attribute.
+
+   procedure Check_Restriction_No_Use_Of_Pragma (N : Node_Id);
+   --  N is the node of a pragma. An error message (warning) will be issued
+   --  if a restriction (warning) was previously set for this pragma using
+   --  Set_No_Use_Of_Pragma.
+
    procedure Check_Restriction_No_Dependence (U : Node_Id; Err : Node_Id);
    --  Called when a dependence on a unit is created (either implicitly, or by
    --  an explicit WITH clause). U is a node for the unit involved, and Err is
@@ -415,6 +425,19 @@ package Restrict is
    --  the identifier is not a valid aspect name. Warning is set True for the
    --  case of a Restriction_Warnings pragma specifying this restriction and
    --  False for a Restrictions pragma specifying this restriction.
+
+   procedure Set_Restriction_No_Use_Of_Attribute
+     (N       : Node_Id;
+      Warning : Boolean);
+   --  N is the node id for the identifier in a pragma Restrictions for
+   --  No_Use_Of_Attribute. Caller has verified that this is a valid attribute
+   --  designator.
+
+   procedure Set_Restriction_No_Use_Of_Pragma
+     (N       : Node_Id;
+      Warning : Boolean);
+   --  N is the node id for the identifier in a pragma Restrictions for
+   --  No_Use_Of_Pragma. Caller has verified that this is a valid pragma id.
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);

@@ -3450,7 +3450,6 @@ struct gimple_opt_pass pass_sra_early =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_update_ssa
-  | TODO_ggc_collect
   | TODO_verify_ssa			/* todo_flags_finish */
  }
 };
@@ -3472,7 +3471,6 @@ struct gimple_opt_pass pass_sra =
   0,					/* properties_destroyed */
   TODO_update_address_taken,		/* todo_flags_start */
   TODO_update_ssa
-  | TODO_ggc_collect
   | TODO_verify_ssa			/* todo_flags_finish */
  }
 };

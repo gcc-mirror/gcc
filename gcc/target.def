@@ -2457,6 +2457,16 @@ DEFHOOK
  reg_class_t, (reg_class_t, enum machine_mode),
  NULL)
 
+DEFHOOK
+(cstore_mode,
+ "This hook defines the machine mode to use for the boolean result of\
+  conditional store patterns.  The ICODE argument is the instruction code\
+  for the cstore being performed.  Not definiting this hook is the same\
+  as accepting the mode encoded into operand 0 of the cstore expander\
+  patterns.",
+  enum machine_mode, (enum insn_code icode),
+  default_cstore_mode)
+
 /* True if a structure, union or array with MODE containing FIELD should
    be accessed using BLKmode.  */
 DEFHOOK

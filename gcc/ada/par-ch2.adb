@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,12 @@ package body Ch2 is
    --  the scanned association has an identifier (this is used to check the
    --  rule that no associations without identifiers can follow an association
    --  which has an identifier). The result is returned in Association.
+   --
+   --  Note: We allow attribute forms Pre'Class, Post'Class, Invariant'Class,
+   --  Type_Invariant'Class in place of a pragma argument identifier. Rather
+   --  than handle this case specially, we replace such references with
+   --  one of the special internal identifiers _Pre, _Post, _Invariant, or
+   --  _Type_Invariant, and this procedure is where this replacement occurs.
 
    ---------------------
    -- 2.3  Identifier --
@@ -427,9 +433,7 @@ package body Ch2 is
          P := P_Pragma;
 
          if Nkind (P) /= N_Error
-          and then (Pragma_Name (P) = Name_Assert
-                      or else
-                    Pragma_Name (P) = Name_Debug)
+           and then Nam_In (Pragma_Name (P), Name_Assert, Name_Debug)
          then
             Error_Msg_Name_1 := Pragma_Name (P);
             Error_Msg_N
@@ -448,6 +452,24 @@ package body Ch2 is
    --    [pragma_argument_IDENTIFIER =>] NAME
    --  | [pragma_argument_IDENTIFIER =>] EXPRESSION
 
+   --  In Ada 2012, there are two more possibilities:
+
+   --  PRAGMA_ARGUMENT_ASSOCIATION ::=
+   --    [pragma_argument_ASPECT_MARK =>] NAME
+   --  | [pragma_argument_ASPECT_MARK =>] EXPRESSION
+
+   --  where the interesting allowed cases (which do not fit the syntax of the
+   --  first alternative above are
+
+   --  ASPECT_MARK ::=
+   --    Pre'Class | Post'Class | Invariant'Class | Type_Invariant'Class
+
+   --  We allow this special usage in all Ada modes, but it would be a pain to
+   --  allow these aspects to pervade the pragma syntax, and the representation
+   --  of pragma nodes internally. So what we do is to replace these
+   --  ASPECT_MARK forms with identifiers whose name is one of the special
+   --  internal names _Pre, _Post, _Invariant, or _Type_Invariant.
+
    --  Error recovery: cannot raise Error_Resync
 
    procedure Scan_Pragma_Argument_Association
@@ -461,6 +483,7 @@ package body Ch2 is
    begin
       Association := New_Node (N_Pragma_Argument_Association, Token_Ptr);
       Set_Chars (Association, No_Name);
+      Id_Present := False;
 
       --  Argument starts with identifier
 
@@ -470,22 +493,69 @@ package body Ch2 is
          Scan; -- past Identifier
 
          if Token = Tok_Arrow then
-            Identifier_Seen := True;
             Scan; -- past arrow
-            Set_Chars (Association, Chars (Identifier_Node));
             Id_Present := True;
 
-         --  Case of argument with no identifier
+         --  Case of one of the special aspect forms
+
+         elsif Token = Tok_Apostrophe then
+            Scan; -- past apostrophe
+
+            --  We have apostrophe, so check for identifier'Class
+
+            if Token /= Tok_Identifier or else Token_Name /= Name_Class then
+               null;
+
+            --  We have identifier'Class, check for arrow
+
+            else
+               Scan; -- Past Class
+
+               if Token /= Tok_Arrow then
+                  null;
+
+               --  Here we have scanned identifier'Class =>
+
+               else
+                  Id_Present := True;
+                  Scan; -- past arrow
+
+                  case Chars (Identifier_Node) is
+                     when Name_Pre =>
+                        Set_Chars (Identifier_Node, Name_uPre);
+
+                     when Name_Post =>
+                        Set_Chars (Identifier_Node, Name_uPost);
+
+                     when Name_Type_Invariant =>
+                        Set_Chars (Identifier_Node, Name_uType_Invariant);
+
+                     when Name_Invariant =>
+                        Set_Chars (Identifier_Node, Name_uInvariant);
+
+                     --  If it is X'Class => for some invalid X, we will give
+                     --  an error, and forget that 'Class was present, which
+                     --  will give better error recovery. We could do a spell
+                     --  check here, but it seems too much work.
+
+                     when others =>
+                        Error_Msg_SC ("invalid aspect id for pragma");
+                  end case;
+               end if;
+            end if;
+         end if;
+
+         --  Identifier was present
+
+         if Id_Present then
+            Set_Chars (Association, Chars (Identifier_Node));
+            Identifier_Seen := True;
+
+         --  Identifier not present after all
 
          else
             Restore_Scan_State (Scan_State); -- to Identifier
-            Id_Present := False;
          end if;
-
-      --  Argument does not start with identifier
-
-      else
-         Id_Present := False;
       end if;
 
       --  Diagnose error of "positional" argument for pragma appearing after
@@ -493,9 +563,10 @@ package body Ch2 is
       --  Ada RM terminology).
 
       --  Since older GNAT versions did not generate this error, disable this
-      --  message in codepeer mode to help legacy code using codepeer.
+      --  message in Relaxed_RM_Semantics mode to help legacy code using e.g.
+      --  codepeer.
 
-      if Identifier_Seen and not Id_Present and not CodePeer_Mode then
+      if Identifier_Seen and not Id_Present and not Relaxed_RM_Semantics then
          Error_Msg_SC ("|pragma argument identifier required here");
          Error_Msg_SC ("\since previous argument had identifier (RM 2.8(4))");
       end if;

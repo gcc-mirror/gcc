@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -249,12 +249,13 @@ package body Freeze is
         --  has an interface name, or if it is one of the shift/rotate
         --  operations known to the compiler.
 
-        and then (Present (Interface_Name (Renamed_Subp))
-                   or else Chars (Renamed_Subp) = Name_Rotate_Left
-                   or else Chars (Renamed_Subp) = Name_Rotate_Right
-                   or else Chars (Renamed_Subp) = Name_Shift_Left
-                   or else Chars (Renamed_Subp) = Name_Shift_Right
-                   or else Chars (Renamed_Subp) = Name_Shift_Right_Arithmetic)
+        and then
+          (Present (Interface_Name (Renamed_Subp))
+            or else Nam_In (Chars (Renamed_Subp), Name_Rotate_Left,
+                                                  Name_Rotate_Right,
+                                                  Name_Shift_Left,
+                                                  Name_Shift_Right,
+                                                  Name_Shift_Right_Arithmetic))
       then
          Set_Interface_Name (Ent, Interface_Name (Renamed_Subp));
 
@@ -1834,9 +1835,8 @@ package body Freeze is
          begin
             case Nkind (N) is
                when N_Attribute_Reference =>
-                  if (Attribute_Name (N) = Name_Access
-                        or else
-                      Attribute_Name (N) = Name_Unchecked_Access)
+                  if Nam_In (Attribute_Name (N), Name_Access,
+                                                 Name_Unchecked_Access)
                     and then Is_Entity_Name (Prefix (N))
                     and then Is_Type (Entity (Prefix (N)))
                     and then Entity (Prefix (N)) = E
@@ -3484,7 +3484,7 @@ package body Freeze is
                                  Set_Is_Packed            (Btyp);
                                  Set_Has_Non_Standard_Rep (Btyp);
 
-                                 --  Otherwise give an error message
+                              --  Otherwise give an error message
 
                               else
                                  Error_Msg_NE
@@ -4550,9 +4550,9 @@ package body Freeze is
 
                   begin
                      pragma Assert
-                       (Op_Name = Name_Allocate
-                         or else Op_Name = Name_Deallocate
-                         or else Op_Name = Name_Storage_Size);
+                       (Nam_In (Op_Name, Name_Allocate,
+                                         Name_Deallocate,
+                                         Name_Storage_Size));
 
                      Error_Msg_Name_1 := Op_Name;
 
@@ -4601,7 +4601,8 @@ package body Freeze is
                            if Op_Name = Name_Allocate then
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_Out_Parameter,
-                                 Address_Type, "Storage_Address", Is_OK);
+                                  Address_Type, "Storage_Address", Is_OK);
+
                            elsif Op_Name = Name_Deallocate then
                               Validate_Simple_Pool_Op_Formal
                                 (Op, Formal, E_In_Parameter,
