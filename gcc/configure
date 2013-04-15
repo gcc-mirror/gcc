@@ -17830,7 +17830,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17831 "configure"
+#line 17833 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17936,7 +17936,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17937 "configure"
+#line 17939 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26557,6 +26557,8 @@ if test "${gcc_cv_ld_as_needed+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_ld_as_needed=no
+gcc_cv_ld_as_needed_option='--as-needed'
+gcc_cv_ld_no_as_needed_option='--no-as-needed'
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
@@ -26566,6 +26568,15 @@ elif test x$gcc_cv_ld != x; then
 	# Check if linker supports --as-needed and --no-as-needed options
 	if $gcc_cv_ld --help 2>/dev/null | grep as-needed > /dev/null; then
 		gcc_cv_ld_as_needed=yes
+	else
+	  case "$target" in
+	    # Solaris 2 ld always supports -z ignore/-z record.
+	    *-*-solaris2*)
+	      gcc_cv_ld_as_needed=yes
+	      gcc_cv_ld_as_needed_option="-z ignore"
+	      gcc_cv_ld_no_as_needed_option="-z record"
+	      ;;
+	  esac
 	fi
 fi
 
@@ -26575,6 +26586,16 @@ $as_echo "$gcc_cv_ld_as_needed" >&6; }
 if test x"$gcc_cv_ld_as_needed" = xyes; then
 
 $as_echo "#define HAVE_LD_AS_NEEDED 1" >>confdefs.h
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD_AS_NEEDED_OPTION "$gcc_cv_ld_as_needed_option"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD_NO_AS_NEEDED_OPTION "$gcc_cv_ld_no_as_needed_option"
+_ACEOF
 
 fi
 

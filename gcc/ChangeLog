@@ -1,3 +1,19 @@
+2013-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_as_needed): Set
+	gcc_cv_ld_as_needed_option, gcc_cv_no_as_needed_option.
+	Use -z ignore, -z record on *-*-solaris2*.
+	(HAVE_LD_AS_NEEDED): Update comment.
+	(LD_AS_NEEDED_OPTION, LD_NO_AS_NEEDED_OPTION): Define.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* gcc.c (init_gcc_specs) [USE_LD_AS_NEEDED]: Use
+	LD_AS_NEEDED_OPTION, LD_NO_AS_NEEDED_OPTION.
+	* config/sol2.h [HAVE_LD_AS_NEEDED] (USE_LD_AS_NEEDED): Define.
+	* doc/tm.texi.in (USE_LD_AS_NEEDED): Allow for --as-needed
+	equivalents.  Fix markup.
+	* doc/tm.texi: Regenerate.
+
 2013-04-15  Andrew Hsieh  <andrewhsieh.google.com>
 
 	* config/i386/i386.opt: New option mstack-protector-guard=.
