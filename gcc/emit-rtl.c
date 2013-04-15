@@ -2660,15 +2660,12 @@ verify_rtx_sharing (rtx orig, rtx insn)
   return;
 }
 
-/* Go through all the RTL insn bodies and check that there is no unexpected
-   sharing in between the subexpressions.  */
+/* Go through all the RTL insn bodies and clear all the USED bits.  */
 
-DEBUG_FUNCTION void
-verify_rtl_sharing (void)
+static void
+reset_all_used_flags (void)
 {
   rtx p;
-
-  timevar_push (TV_VERIFY_RTL_SHARING);
 
   for (p = get_insns (); p; p = NEXT_INSN (p))
     if (INSN_P (p))
@@ -2693,6 +2690,19 @@ verify_rtl_sharing (void)
 	      }
 	  }
       }
+}
+
+/* Go through all the RTL insn bodies and check that there is no unexpected
+   sharing in between the subexpressions.  */
+
+DEBUG_FUNCTION void
+verify_rtl_sharing (void)
+{
+  rtx p;
+
+  timevar_push (TV_VERIFY_RTL_SHARING);
+
+  reset_all_used_flags ();
 
   for (p = get_insns (); p; p = NEXT_INSN (p))
     if (INSN_P (p))
@@ -2702,6 +2712,8 @@ verify_rtl_sharing (void)
 	if (CALL_P (p))
 	  verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (p), p);
       }
+
+  reset_all_used_flags ();
 
   timevar_pop (TV_VERIFY_RTL_SHARING);
 }
