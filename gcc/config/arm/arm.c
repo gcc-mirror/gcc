@@ -22804,12 +22804,12 @@ thumb_far_jump_used_p (void)
      shorten_branch pass.  So checking far_jump attribute before
      shorten_branch isn't much useful.
 
-     Following heuristic tries to estimate more accruately if a far jump
+     Following heuristic tries to estimate more accurately if a far jump
      may finally be used.  The heuristic is very conservative as there is
      no chance to roll-back the decision of not to use far jump.
 
      Thumb1 long branch offset is -2048 to 2046.  The worst case is each
-     2-byte insn is assiociated with a 4 byte constant pool.  Using
+     2-byte insn is associated with a 4 byte constant pool.  Using
      function size 2048/3 as the threshold is conservative enough.  */
   if (far_jump)
     {
