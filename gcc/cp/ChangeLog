@@ -1,5 +1,7 @@
 2013-04-15  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Use tsubst_copy_and_build.
+
 	PR c++/52748
 	* pt.c (tsubst) [DECLTYPE_TYPE]: If ~id is an expression
 	rather than a destructor name, it isn't an unqualified-name.

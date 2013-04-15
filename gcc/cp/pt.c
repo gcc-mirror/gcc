@@ -11770,9 +11770,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	++cp_unevaluated_operand;
 	++c_inhibit_evaluation_warnings;
 
-	type = tsubst_expr (DECLTYPE_TYPE_EXPR (t), args,
-			    complain|tf_decltype, in_decl,
-			    /*integral_constant_expression_p=*/false);
+	type = tsubst_copy_and_build (DECLTYPE_TYPE_EXPR (t), args,
+				      complain|tf_decltype, in_decl,
+				      /*function_p*/false,
+				      /*integral_constant_expression*/false);
 
 	--cp_unevaluated_operand;
 	--c_inhibit_evaluation_warnings;
