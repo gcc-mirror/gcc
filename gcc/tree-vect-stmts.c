@@ -5962,7 +5962,6 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   GROUP_STORE_COUNT (res) = 0;
   GROUP_GAP (res) = 0;
   GROUP_SAME_DR_STMT (res) = NULL;
-  GROUP_READ_WRITE_DEPENDENCE (res) = false;
 
   return res;
 }

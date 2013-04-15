@@ -1,3 +1,17 @@
+2013-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56933
+	* tree-vectorizer.h (struct _stmt_vec_info): Remove read_write_dep
+	member.
+	(GROUP_READ_WRITE_DEPENDENCE): Remove.
+	(STMT_VINFO_GROUP_READ_WRITE_DEPENDENCE): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_group_access): Move
+	dependence check ...
+	vect_analyze_data_ref_dependence (vect_analyze_data_ref_dependence):
+	... here.
+	* tree-vect-stmts.c (new_stmt_vec_info): Do not initialize
+	GROUP_READ_WRITE_DEPENDENCE.
+
 2013-04-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* emit-rtl.c (reset_all_used_flags): New function.

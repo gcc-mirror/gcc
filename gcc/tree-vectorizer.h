@@ -460,10 +460,6 @@ typedef struct _stmt_vec_info {
   /* Stmt is part of some pattern (computation idiom)  */
   bool in_pattern_p;
 
-  /* For loads only, if there is a store with the same location, this field is
-     TRUE.  */
-  bool read_write_dep;
-
   /* The stmt to which this info struct refers to.  */
   gimple stmt;
 
@@ -589,7 +585,6 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_GROUP_STORE_COUNT(S)    (S)->store_count
 #define STMT_VINFO_GROUP_GAP(S)            (S)->gap
 #define STMT_VINFO_GROUP_SAME_DR_STMT(S)   (S)->same_dr_stmt
-#define STMT_VINFO_GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
 #define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 
@@ -599,7 +594,6 @@ typedef struct _stmt_vec_info {
 #define GROUP_STORE_COUNT(S)            (S)->store_count
 #define GROUP_GAP(S)                    (S)->gap
 #define GROUP_SAME_DR_STMT(S)           (S)->same_dr_stmt
-#define GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 

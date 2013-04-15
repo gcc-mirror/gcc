@@ -341,14 +341,34 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
 	    }
 
-          /* For interleaving, mark that there is a read-write dependency if
-             necessary.  We check before that one of the data-refs is store.  */
-          if (DR_IS_READ (dra))
-            GROUP_READ_WRITE_DEPENDENCE (stmtinfo_a) = true;
-	  else
-            {
-              if (DR_IS_READ (drb))
-                GROUP_READ_WRITE_DEPENDENCE (stmtinfo_b) = true;
+	  /* When we perform grouped accesses and perform implicit CSE
+	     by detecting equal accesses and doing disambiguation with
+	     runtime alias tests like for
+	        .. = a[i];
+		.. = a[i+1];
+		a[i] = ..;
+		a[i+1] = ..;
+		*p = ..;
+		.. = a[i];
+		.. = a[i+1];
+	     where we will end up loading { a[i], a[i+1] } once, make
+	     sure that inserting group loads before the first load and
+	     stores after the last store will do the right thing.  */
+	  if ((STMT_VINFO_GROUPED_ACCESS (stmtinfo_a)
+	       && GROUP_SAME_DR_STMT (stmtinfo_a))
+	      || (STMT_VINFO_GROUPED_ACCESS (stmtinfo_b)
+		  && GROUP_SAME_DR_STMT (stmtinfo_b)))
+	    {
+	      gimple earlier_stmt;
+	      earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));
+	      if (DR_IS_WRITE
+		    (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "READ_WRITE dependence in interleaving.");
+		  return true;
+		}
 	    }
 
 	  continue;
@@ -2094,17 +2114,6 @@ vect_analyze_group_access (struct data_reference *dr)
                   if (dump_enabled_p ())
                     dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
                                      "Two store stmts share the same dr.");
-                  return false;
-                }
-
-              /* Check that there is no load-store dependencies for this loads
-                 to prevent a case of load-store-load to the same location.  */
-              if (GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (next))
-                  || GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (prev)))
-                {
-                  if (dump_enabled_p ())
-                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-                                     "READ_WRITE dependence in interleaving.");
                   return false;
                 }
 
