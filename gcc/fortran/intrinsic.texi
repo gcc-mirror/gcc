@@ -12052,7 +12052,7 @@ the underlying platform clock. @var{COUNT_MAX} usually equals
 @code{HUGE(COUNT_MAX)}. Note that the millisecond resolution of the
 @var{kind=4} version implies that the @var{COUNT} will wrap around in
 roughly 25 days. In order to avoid issues with the wrap around and for
-more precise timing, please use the @var{kind=4} version.
+more precise timing, please use the @var{kind=8} version.
 
 If there is no clock, or querying the clock fails, @var{COUNT} is set
 to @code{-HUGE(COUNT)}, and @var{COUNT_RATE} and @var{COUNT_MAX} are
