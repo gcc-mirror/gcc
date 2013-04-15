@@ -12038,26 +12038,37 @@ and should considered in new code for future portability.
 @item @emph{Description}:
 Determines the @var{COUNT} of a processor clock since an unspecified
 time in the past modulo @var{COUNT_MAX}, @var{COUNT_RATE} determines
-the number of clock ticks per second.  If the platform supports a high
-resolution monotonic clock, that clock is used and can provide up to
-nanosecond resolution.  If a high resolution monotonic clock is not
-available, the implementation falls back to a potentially lower
-resolution realtime clock.
+the number of clock ticks per second.  If the platform supports a
+monotonic clock, that clock is used and can, depending on the platform
+clock implementation, provide up to nanosecond resolution.  If a
+monotonic clock is not available, the implementation falls back to a
+realtime clock.
 
-@var{COUNT_RATE} is system dependent and can vary depending on the kind of the
-arguments. For @var{kind=4} arguments, @var{COUNT} usually represents
-milliseconds, while for @var{kind=8} arguments, @var{COUNT} typically
-represents micro- or nanoseconds. @var{COUNT_MAX} usually equals
-@code{HUGE(COUNT_MAX)}.
+@var{COUNT_RATE} is system dependent and can vary depending on the
+kind of the arguments. For @var{kind=4} arguments, @var{COUNT}
+represents milliseconds, while for @var{kind=8} arguments, @var{COUNT}
+typically represents micro- or nanoseconds depending on resolution of
+the underlying platform clock. @var{COUNT_MAX} usually equals
+@code{HUGE(COUNT_MAX)}. Note that the millisecond resolution of the
+@var{kind=4} version implies that the @var{COUNT} will wrap around in
+roughly 25 days. In order to avoid issues with the wrap around and for
+more precise timing, please use the @var{kind=4} version.
 
-If there is no clock, @var{COUNT} is set to @code{-HUGE(COUNT)}, and
-@var{COUNT_RATE} and @var{COUNT_MAX} are set to zero.
+If there is no clock, or querying the clock fails, @var{COUNT} is set
+to @code{-HUGE(COUNT)}, and @var{COUNT_RATE} and @var{COUNT_MAX} are
+set to zero.
 
-When running on a platform using the GNU C library (glibc), or a
-derivative thereof, the high resolution monotonic clock is available
-only when linking with the @var{rt} library.  This can be done
-explicitly by adding the @code{-lrt} flag when linking the
+When running on a platform using the GNU C library (glibc) version
+2.16 or older, or a derivative thereof, the high resolution monotonic
+clock is available only when linking with the @var{rt} library.  This
+can be done explicitly by adding the @code{-lrt} flag when linking the
 application, but is also done implicitly when using OpenMP.
+
+On the Windows platform, the version with @var{kind=4} arguments uses
+the @code{GetTickCount} function, whereas the @var{kind=8} version
+uses @code{QueryPerformanceCounter} and
+@code{QueryPerformanceCounterFrequency}. For more information, and
+potential caveats, please see the platform documentation.
 
 @item @emph{Standard}:
 Fortran 95 and later

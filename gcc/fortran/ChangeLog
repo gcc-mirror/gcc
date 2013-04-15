@@ -1,3 +1,8 @@
+2013-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/56919
+	* intrinsics.texi (SYSTEM_CLOCK): Update documentation.
+
 2013-04-15  Tobias Burnus  <burnus@net-b.de>
 
 	* class.c (gfc_find_intrinsic_vtab): Removed unused var.

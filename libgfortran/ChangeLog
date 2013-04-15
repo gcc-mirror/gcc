@@ -1,3 +1,14 @@
+2013-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/56919
+	* intrinsics/time_1.h: Check __CYGWIN__ in addition to
+	__MINGW32__.
+	* intrinsics/system_clock.c (GF_CLOCK_MONOTONIC): Check
+	_POSIX_MONOTONIC_CLOCK as well.
+	(system_clock_4): Use GetTickCount on Windows.
+	(system_clock_8): Use QueryPerformanceCounter and
+	QueryPerformanceCounterFrequency on Windows.
+
 2013-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56810
