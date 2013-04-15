@@ -626,3 +626,17 @@ Split 32-byte AVX unaligned store
 mrtm
 Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation
+
+mstack-protector-guard=
+Target RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)
+Use given stack-protector guard
+
+Enum
+Name(stack_protector_guard) Type(enum stack_protector_guard)
+Known stack protector guard (for use with the -mstack-protector-guard= option):
+
+EnumValue
+Enum(stack_protector_guard) String(tls) Value(SSP_TLS)
+
+EnumValue
+Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)

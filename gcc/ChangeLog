@@ -1,3 +1,18 @@
+2013-04-15  Andrew Hsieh  <andrewhsieh.google.com>
+
+	* config/i386/i386.opt: New option mstack-protector-guard=.
+	* config/i386/i386-opts.h: Add enum stack_protector_guard.
+	* config/i386/i386.h: Define TARGET_SSP_GLOBAL_GUARD and
+	TARGET_SSP_TLS_GUARD.
+	* config/i386/i386.c (ix86_option_override_internal): Set
+	ix86_stack_protector_guard.
+	* config/i386/i386.md (stack_protect_set): Enable for
+	TARGET_SSP_TLS_GUARD only.
+	(stack_protect_set_<mode>): Ditto.
+	(stack_protect_test): Ditto.
+	(stack_protect_test_<mode>): Ditto.
+	* doc/invoke.texi (i386 Option): Document.
+
 2013-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/56890
