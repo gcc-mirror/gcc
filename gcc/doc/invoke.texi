@@ -657,7 +657,8 @@ Objective-C and Objective-C++ Dialects}.
 -mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
 -m32 -m64 -mx32 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -m8bit-idiv @gol
--mavx256-split-unaligned-load -mavx256-split-unaligned-store}
+-mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
+-mstack-protector-guard=@var{guard}}
 
 @emph{i386 and x86-64 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -14591,6 +14592,13 @@ to 255, 8-bit unsigned integer divide is used instead of
 @opindex avx256-split-unaligned-load
 @opindex avx256-split-unaligned-store
 Split 32-byte AVX unaligned load and store.
+
+@item -mstack-protector-guard=@var{guard}
+@opindex mstack-protector-guard=@var{guard}
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} or @samp{tls} per thread at %gs:20 (the default).
+This option has effect only when @option{-fstack-protector}
+or @option{-fstack-protector-all} is also specified.
 
 @end table
 
