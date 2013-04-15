@@ -1,3 +1,7 @@
+2013-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	* list_read.c (finish_separator): Initialize variable.
+
 2013-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/56919
