@@ -393,7 +393,7 @@ static int
 finish_separator (st_parameter_dt *dtp)
 {
   int c;
-  int err;
+  int err = LIBERROR_OK;
 
  restart:
   eat_spaces (dtp);
@@ -433,7 +433,7 @@ finish_separator (st_parameter_dt *dtp)
 	    return err;
 	  goto restart;
 	}
-
+      /* Fall through.  */
     default:
       unget_char (dtp, c);
       break;
@@ -2788,6 +2788,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
 		    "namelist not terminated with / or &end");
 	  goto nml_err_ret;
 	}
+      /* Fall through.  */
     case '/':
       dtp->u.p.input_complete = 1;
       return true;
