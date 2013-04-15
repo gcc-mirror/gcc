@@ -1,3 +1,8 @@
+2013-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/anddi3-opt.c: New test.
+	* gcc.target/arm/anddi3-opt2.c: Likewise.
+
 2013-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr56890-1.c: New test.
