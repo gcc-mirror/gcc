@@ -9495,6 +9495,10 @@ tables, and hence is desirable if it works.
 True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections should be emitted.  These sections are not used on most platforms, and in particular GDB does not use them.
 @end deftypevr
 
+@deftypevr {Target Hook} bool TARGET_FORCE_AT_COMP_DIR
+True if the @code{DW_AT_comp_dir} attribute should be emitted for each  compilation unit.  This attribute is required for the darwin linker  to emit debug information.
+@end deftypevr
+
 @deftypevr {Target Hook} bool TARGET_DELAY_SCHED2
 True if sched2 is not to be run at its normal place.  This usually means it will be run as part of machine-specific reorg.
 @end deftypevr
