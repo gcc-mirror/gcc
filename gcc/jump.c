@@ -133,7 +133,7 @@ cleanup_barriers (void)
 	  if (BARRIER_P (prev))
 	    delete_insn (insn);
 	  else if (prev != PREV_INSN (insn))
-	    reorder_insns (insn, insn, prev);
+	    reorder_insns_nobb (insn, insn, prev);
 	}
     }
   return 0;
