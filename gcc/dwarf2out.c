@@ -22538,7 +22538,7 @@ dwarf2out_finish (const char *filename)
   /* Add the name for the main input file now.  We delayed this from
      dwarf2out_init to avoid complications with PCH.  */
   add_name_attribute (comp_unit_die (), remap_debug_filename (filename));
-  if (!IS_ABSOLUTE_PATH (filename))
+  if (!IS_ABSOLUTE_PATH (filename) || targetm.force_at_comp_dir)
     add_comp_dir_attribute (comp_unit_die ());
   else if (get_AT (comp_unit_die (), DW_AT_comp_dir) == NULL)
     {

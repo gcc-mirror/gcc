@@ -9388,6 +9388,8 @@ tables, and hence is desirable if it works.
 
 @hook TARGET_WANT_DEBUG_PUB_SECTIONS
 
+@hook TARGET_FORCE_AT_COMP_DIR
+
 @hook TARGET_DELAY_SCHED2
 
 @hook TARGET_DELAY_VARTRACK

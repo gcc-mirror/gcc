@@ -2758,6 +2758,13 @@ DEFHOOKPOD
  bool, false)
 
 DEFHOOKPOD
+(force_at_comp_dir,
+ "True if the @code{DW_AT_comp_dir} attribute should be emitted for each \
+ compilation unit.  This attribute is required for the darwin linker \
+ to emit debug information.",
+ bool, false)
+
+DEFHOOKPOD
 (delay_sched2, "True if sched2 is not to be run at its normal place.  \
 This usually means it will be run as part of machine-specific reorg.",
 bool, false)
