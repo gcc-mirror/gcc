@@ -1,3 +1,8 @@
+2013-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/invoke.texi (i386 Option): Reword -mstack-protector-guard
+	description.
+
 2013-04-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56756
