@@ -2191,6 +2191,11 @@ gfc_explicit_interface_required (gfc_symbol *sym, char *errmsg, int err_len)
 	  strncpy (errmsg, _("polymorphic argument"), err_len);
 	  return true;
 	}
+      else if (arg->sym->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
+	{
+	  strncpy (errmsg, _("NO_ARG_CHECK attribute"), err_len);
+	  return true;
+	}
       else if (arg->sym->ts.type == BT_ASSUMED)
 	{
 	  /* As assumed-type is unlimited polymorphic (cf. above).
@@ -4644,8 +4649,19 @@ resolve_variable (gfc_expr *e)
     return false;
   sym = e->symtree->n.sym;
 
+  /* Use same check as for TYPE(*) below; this check has to be before TYPE(*)
+     as ts.type is set to BT_ASSUMED in resolve_symbol.  */
+  if (sym->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
+    {
+      if (!actual_arg || inquiry_argument)
+	{
+	  gfc_error ("Variable %s at %L with NO_ARG_CHECK attribute may only "
+		     "be used as actual argument", sym->name, &e->where);
+	  return false;
+	}
+    }
   /* TS 29113, 407b.  */
-  if (e->ts.type == BT_ASSUMED)
+  else if (e->ts.type == BT_ASSUMED)
     {
       if (!actual_arg)
 	{
@@ -4665,13 +4681,12 @@ resolve_variable (gfc_expr *e)
 	  return false;
 	}
     }
-
   /* TS 29113, C535b.  */
-  if ((sym->ts.type == BT_CLASS && sym->attr.class_ok
-	&& CLASS_DATA (sym)->as
-	&& CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
-       || (sym->ts.type != BT_CLASS && sym->as
-	   && sym->as->type == AS_ASSUMED_RANK))
+  else if ((sym->ts.type == BT_CLASS && sym->attr.class_ok
+	    && CLASS_DATA (sym)->as
+	    && CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
+	   || (sym->ts.type != BT_CLASS && sym->as
+	       && sym->as->type == AS_ASSUMED_RANK))
     {
       if (!actual_arg)
 	{
@@ -4692,10 +4707,18 @@ resolve_variable (gfc_expr *e)
 	}
     }
 
-  /* TS 29113, 407b.  */
-  if (e->ts.type == BT_ASSUMED && e->ref
+  if ((sym->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK)) && e->ref
       && !(e->ref->type == REF_ARRAY && e->ref->u.ar.type == AR_FULL
 	   && e->ref->next == NULL))
+    {
+      gfc_error ("Variable %s at %L with NO_ARG_CHECK attribute shall not have "
+		 "a subobject reference", sym->name, &e->ref->u.ar.where);
+      return false;
+    }
+  /* TS 29113, 407b.  */
+  else if (e->ts.type == BT_ASSUMED && e->ref
+	   && !(e->ref->type == REF_ARRAY && e->ref->u.ar.type == AR_FULL
+		&& e->ref->next == NULL))
     {
       gfc_error ("Assumed-type variable %s at %L shall not have a subobject "
 		 "reference", sym->name, &e->ref->u.ar.where);
@@ -12837,7 +12860,61 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
-  if (sym->ts.type == BT_ASSUMED)
+    /* Use the same constraints as TYPE(*), except for the type check
+       and that only scalars and assumed-size arrays are permitted.  */
+    if (sym->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
+      {
+	if (!sym->attr.dummy)
+	  {
+	    gfc_error ("Variable %s at %L with NO_ARG_CHECK attribute shall be "
+		       "a dummy argument", sym->name, &sym->declared_at);
+	    return;
+	  }
+
+	if (sym->ts.type != BT_ASSUMED && sym->ts.type != BT_INTEGER
+	    && sym->ts.type != BT_REAL && sym->ts.type != BT_LOGICAL
+	    && sym->ts.type != BT_COMPLEX)
+	  {
+	    gfc_error ("Variable %s at %L with NO_ARG_CHECK attribute shall be "
+		       "of type TYPE(*) or of an numeric intrinsic type",
+		       sym->name, &sym->declared_at);
+	    return;
+	  }
+
+      if (sym->attr.allocatable || sym->attr.codimension
+	  || sym->attr.pointer || sym->attr.value)
+	{
+	  gfc_error ("Variable %s at %L with NO_ARG_CHECK attribute may not "
+		     "have the ALLOCATABLE, CODIMENSION, POINTER or VALUE "
+		     "attribute", sym->name, &sym->declared_at);
+	  return;
+	}
+
+      if (sym->attr.intent == INTENT_OUT)
+	{
+	  gfc_error ("Variable %s at %L with NO_ARG_CHECK attribute may not "
+		     "have the INTENT(OUT) attribute",
+		     sym->name, &sym->declared_at);
+	  return;
+	}
+      if (sym->attr.dimension && sym->as->type != AS_ASSUMED_SIZE)
+	{
+	  gfc_error ("Variable %s at %L with NO_ARG_CHECK attribute shall "
+		     "either be a scalar or an assumed-size array",
+		     sym->name, &sym->declared_at);
+	  return;
+	}
+
+      /* Set the type to TYPE(*) and add a dimension(*) to ensure
+	 NO_ARG_CHECK is correctly handled in trans*.c, e.g. with
+	 packing.  */
+      sym->ts.type = BT_ASSUMED;
+      sym->as = gfc_get_array_spec ();
+      sym->as->type = AS_ASSUMED_SIZE;
+      sym->as->rank = 1;
+      sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+    }
+  else if (sym->ts.type == BT_ASSUMED)
     {
       /* TS 29113, C407a.  */
       if (!sym->attr.dummy)

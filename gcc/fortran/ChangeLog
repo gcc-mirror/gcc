@@ -1,3 +1,17 @@
+2013-04-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39505
+	* decl.c (ext_attr_list): Add EXT_ATTR_NO_ARG_CHECK.
+	* gfortran.h (ext_attr_id_t): Ditto.
+	* gfortran.texi (GNU Fortran Compiler Directives):
+	Document it.
+	* interface.c (compare_type_rank): Ignore rank for NO_ARG_CHECK.
+	(compare_parameter): Ditto - and regard as unlimited polymorphic.
+	* resolve.c (resolve_symbol, resolve_variable): Add same constraint
+	checks as for TYPE(*); turn dummy to TYPE(*),dimension(*).
+	(gfc_explicit_interface_required): Require explicit interface
+	for NO_ARG_CHECK.
+
 2013-04-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/56968
