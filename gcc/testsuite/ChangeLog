@@ -1,3 +1,8 @@
+2013-04-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56969
+	* gfortran.dg/c_assoc_5.f90: New.
+
 2013-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/ipa/devirt-c-7.C: Require nonpic effective target.
