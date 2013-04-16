@@ -1,3 +1,26 @@
+2013-04-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/43631
+	* emit-rtl.c (make_note_raw): New function.
+	(link_insn_into_chain): New static inline function.
+	(add_insn): Use it.
+	(add_insn_before, add_insn_after): Factor insn chain linking code...
+	(add_insn_before_nobb, add_insn_after_nobb): ...here, new functions
+	using link_insn_into_chain.
+	(note_outside_basic_block_p): New helper function for emit_note_after
+	and emit_note_before.
+	(emit_note_after): Use nobb variant of add_insn_after if the note
+	should not be contained in a basic block.
+	(emit_note_before): Use nobb variant of add_insn_before if the note
+	should not be contained in a basic block.
+	(emit_note_copy): Use make_note_raw.
+	(emit_note): Likewise.
+	* bb-reorder.c (insert_section_boundary_note): Remove hack to set
+	BLOCK_FOR_INSN to NULL manually for NOTE_INSN_SWITCH_TEXT_SECTIONS.
+	* jump.c (cleanup_barriers): Use reorder_insns_nobb to avoid making
+	the moved barrier the tail of the basic block it follows.
+	* var-tracking.c (pass_variable_tracking): Add TODO_verify_flow.
+
 2013-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56962

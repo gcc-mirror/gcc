@@ -2173,7 +2173,6 @@ static void
 insert_section_boundary_note (void)
 {
   basic_block bb;
-  rtx new_note;
   int first_partition = 0;
 
   if (!flag_reorder_blocks_and_partition)
@@ -2185,11 +2184,7 @@ insert_section_boundary_note (void)
 	first_partition = BB_PARTITION (bb);
       if (BB_PARTITION (bb) != first_partition)
 	{
-	  new_note = emit_note_before (NOTE_INSN_SWITCH_TEXT_SECTIONS,
-				       BB_HEAD (bb));
-	  /* ??? This kind of note always lives between basic blocks,
-	     but add_insn_before will set BLOCK_FOR_INSN anyway.  */
-	  BLOCK_FOR_INSN (new_note) = NULL;
+	  emit_note_before (NOTE_INSN_SWITCH_TEXT_SECTIONS, BB_HEAD (bb));
 	  break;
 	}
     }
