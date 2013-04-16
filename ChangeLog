@@ -1,3 +1,8 @@
+2013-04-16  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac (aarch64-*-*): Don't disable java.
+	* configure: Regenerate.
+
 2013-04-10  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

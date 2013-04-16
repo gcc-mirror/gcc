@@ -4,6 +4,14 @@
 #ifndef __IEEE_BIG_ENDIAN
 #ifndef __IEEE_LITTLE_ENDIAN
 
+#ifdef __aarch64__
+#ifdef __AARCH64EB__
+#define __IEEE_BIG_ENDIAN
+#else
+#define __IEEE_LITTLE_ENDIAN
+#endif
+#endif
+
 #ifdef __alpha__
 #define __IEEE_LITTLE_ENDIAN
 #endif
