@@ -8959,13 +8959,12 @@ void
 insert_capture_proxy (tree var)
 {
   cp_binding_level *b;
-  int skip;
   tree stmt_list;
 
   /* Put the capture proxy in the extra body block so that it won't clash
      with a later local variable.  */
   b = current_binding_level;
-  for (skip = 0; ; ++skip)
+  for (;;)
     {
       cp_binding_level *n = b->level_chain;
       if (n->kind == sk_function_parms)
@@ -8976,8 +8975,7 @@ insert_capture_proxy (tree var)
 
   /* And put a DECL_EXPR in the STATEMENT_LIST for the same block.  */
   var = build_stmt (DECL_SOURCE_LOCATION (var), DECL_EXPR, var);
-  stmt_list = VEC_index (tree, stmt_list_stack,
-			 VEC_length (tree, stmt_list_stack) - 1 - skip);
+  stmt_list = VEC_index (tree, stmt_list_stack, 1);
   gcc_assert (stmt_list);
   append_to_statement_list_force (var, &stmt_list);
 }
