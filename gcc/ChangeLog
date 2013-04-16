@@ -1,3 +1,15 @@
+2013-04-16  Greta Yorsh  <Greta.Yorsh at arm.com>
+
+	* config/arm/arm.c (emit_multi_reg_push): New declaration
+	for an existing function.
+	(arm_emit_strd_push): New function.
+	(arm_expand_prologue): Used here.
+	(arm_emit_ldrd_pop): New function.
+	(arm_expand_epilogue): Used here.
+	(arm_get_frame_offsets): Update condition.
+	(arm_emit_multi_reg_pop): Add a special case for load of a single
+	register with writeback.
+
 2013-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (i386 Option): Reword -mstack-protector-guard
