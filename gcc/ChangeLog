@@ -1,3 +1,10 @@
+2013-04-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/56948
+	* config/rs6000/vsx.md (vsx_mov<mode>): Add j->r alternative.
+	(vsx_movti_64bit): Change j->wa to O->wa.  Add n->r alternative.
+	(vsx_movti_32bit): Change j->wa to O->wa.
+
 2013-04-16  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/56921
