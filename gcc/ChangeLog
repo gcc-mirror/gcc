@@ -1,3 +1,12 @@
+2013-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56756
+	* tree-ssa-loop-im.c (struct first_mem_ref_loc_1): New functor.
+	(first_mem_ref_loc): New.
+	(execute_sm): Place the load temporarily before a previous
+	access instead of in the latch edge to ensure its SSA dependencies
+	are defined at points dominating the load.
+
 2013-04-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfgrtl.c (cfg_layout_merge_blocks): Revert r184005, implement

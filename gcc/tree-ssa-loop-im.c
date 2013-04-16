@@ -1718,6 +1718,32 @@ rewrite_mem_refs (struct loop *loop, mem_ref_p ref, tree tmp_var)
   for_all_locs_in_loop (loop, ref, rewrite_mem_ref_loc (tmp_var));
 }
 
+/* Stores the first reference location in LOCP.  */
+
+struct first_mem_ref_loc_1
+{
+  first_mem_ref_loc_1 (mem_ref_loc_p *locp_) : locp (locp_) {}
+  bool operator()(mem_ref_loc_p loc);
+  mem_ref_loc_p *locp;
+};
+
+bool
+first_mem_ref_loc_1::operator()(mem_ref_loc_p loc)
+{
+  *locp = loc;
+  return true;
+}
+
+/* Returns the first reference location to REF in LOOP.  */
+
+static mem_ref_loc_p
+first_mem_ref_loc (struct loop *loop, mem_ref_p ref)
+{
+  mem_ref_loc_p locp = NULL;
+  for_all_locs_in_loop (loop, ref, first_mem_ref_loc_1 (&locp));
+  return locp;
+}
+
 /* The name and the length of the currently generated variable
    for lsm.  */
 #define MAX_LSM_NAME_LENGTH 40
@@ -2022,9 +2048,10 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
   unsigned i;
   gimple load;
   struct fmt_data fmt_data;
-  edge ex, latch_edge;
+  edge ex;
   struct lim_aux_data *lim_data;
   bool multi_threaded_model_p = false;
+  gimple_stmt_iterator gsi;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2049,9 +2076,10 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
 
   rewrite_mem_refs (loop, ref, tmp_var);
 
-  /* Emit the load code into the latch, so that we are sure it will
-     be processed after all dependencies.  */
-  latch_edge = loop_latch_edge (loop);
+  /* Emit the load code on a random exit edge or into the latch if
+     the loop does not exit, so that we are sure it will be processed
+     by move_computations after all dependencies.  */
+  gsi = gsi_for_stmt (first_mem_ref_loc (loop, ref)->stmt);
 
   /* FIXME/TODO: For the multi-threaded variant, we could avoid this
      load altogether, since the store is predicated by a flag.  We
@@ -2060,7 +2088,7 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
   lim_data = init_lim_data (load);
   lim_data->max_loop = loop;
   lim_data->tgt_loop = loop;
-  gsi_insert_on_edge (latch_edge, load);
+  gsi_insert_before (&gsi, load, GSI_SAME_STMT);
 
   if (multi_threaded_model_p)
     {
@@ -2068,7 +2096,7 @@ execute_sm (struct loop *loop, vec<edge> exits, mem_ref_p ref)
       lim_data = init_lim_data (load);
       lim_data->max_loop = loop;
       lim_data->tgt_loop = loop;
-      gsi_insert_on_edge (latch_edge, load);
+      gsi_insert_before (&gsi, load, GSI_SAME_STMT);
     }
 
   /* Sink the store to every exit from the loop.  */

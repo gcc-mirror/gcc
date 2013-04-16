@@ -1,3 +1,8 @@
+2013-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56756
+	* gcc.dg/torture/pr56756.c: New testcase.
+
 2013-04-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56969
