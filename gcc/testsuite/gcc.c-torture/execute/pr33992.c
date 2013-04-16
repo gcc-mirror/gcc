@@ -7,7 +7,7 @@ bar (unsigned long long i)
     abort ();
 }
 
-void __attribute__((always_inline))
+static void __attribute__((always_inline))
 foo (unsigned long long *r)
 {
   int i;

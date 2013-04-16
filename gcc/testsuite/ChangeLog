@@ -1,3 +1,11 @@
+2013-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ipa/devirt-c-7.C: Require nonpic effective target.
+	* gcc.c-torture/execute/pr33992.x: Remove.
+	* gcc.c-torture/execute/pr33992.c (foo): Declare as static.
+	* gcc.dg/uninit-pred-5_a.c (foo): Ditto.
+	* gcc.dg/uninit-pred-5_b.c (foo): Ditto.
+
 2013-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56962
@@ -111,7 +119,7 @@
 
 	* gcc.dg/fold-cstvecshift.c: New testcase.
 
-2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-11  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/negs.c: New.
 
@@ -835,7 +843,7 @@
 	* gcc.dg/vect/vect-outer-3a-big-array.c: Adjust.
 	* gcc.dg/vect/vect-outer-3a.c: Likewise.
 
-2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-03-21  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/vect.c: Test and result vector added
 	for sabd and saba instructions.
