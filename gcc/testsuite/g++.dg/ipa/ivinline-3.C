@@ -1,6 +1,6 @@
 /* Verify that simple virtual calls on an object refrence are inlined
    even without early inlining.  */
-/* { dg-do run } */
+/* { dg-do run { target nonpic } } */
 /* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining -fno-ipa-cp"  } */
 
 extern "C" void abort (void);
