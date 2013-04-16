@@ -1,3 +1,12 @@
+2013-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/56921
+	* loop-init.c (pass_rtl_move_loop_invariants): Add
+	TODO_do_not_ggc_collect to todo_flags_finish.
+	(pass_rtl_unswitch): Same.
+	(pass_rtl_unroll_and_peel_loops): Same.
+	(pass_rtl_doloop): Same.
+
 2013-04-16  Greta Yorsh  <Greta.Yorsh at arm.com>
 
 	* config/arm/arm.c (emit_multi_reg_push): New declaration
