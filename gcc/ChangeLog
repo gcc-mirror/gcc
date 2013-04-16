@@ -1,5 +1,9 @@
 2013-04-16  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cfgrtl.c (cfg_layout_merge_blocks): Revert r184005, implement
+	correct fix by moving header and footer insn to the footer of
+	the merged basic block.  Clear BB_END of the merged-away block.
+
 	PR middle-end/43631
 	* emit-rtl.c (make_note_raw): New function.
 	(link_insn_into_chain): New static inline function.

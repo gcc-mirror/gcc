@@ -4083,18 +4083,40 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (!optimize)
     emit_nop_for_unique_locus_between (a, b);
 
-  /* Possible line number notes should appear in between.  */
-  if (BB_HEADER (b))
+  /* Move things from b->footer after a->footer.  */
+  if (BB_FOOTER (b))
     {
-      rtx first = BB_END (a), last;
+      if (!BB_FOOTER (a))
+	BB_FOOTER (a) = BB_FOOTER (b);
+      else
+	{
+	  rtx last = BB_FOOTER (a);
 
-      last = emit_insn_after_noloc (BB_HEADER (b), BB_END (a), a);
-      /* The above might add a BARRIER as BB_END, but as barriers
-	 aren't valid parts of a bb, remove_insn doesn't update
-	 BB_END if it is a barrier.  So adjust BB_END here.  */
-      while (BB_END (a) != first && BARRIER_P (BB_END (a)))
-	BB_END (a) = PREV_INSN (BB_END (a));
-      delete_insn_chain (NEXT_INSN (first), last, false);
+	  while (NEXT_INSN (last))
+	    last = NEXT_INSN (last);
+	  NEXT_INSN (last) = BB_FOOTER (b);
+	  PREV_INSN (BB_FOOTER (b)) = last;
+	}
+      BB_FOOTER (b) = NULL;
+    }
+
+  /* Move things from b->header before a->footer.
+     Note that this may include dead tablejump data, but we don't clean
+     those up until we go out of cfglayout mode.  */
+   if (BB_HEADER (b))
+     {
+      if (! BB_FOOTER (a))
+	BB_FOOTER (a) = BB_HEADER (b);
+      else
+	{
+	  rtx last = BB_HEADER (b);
+ 
+	  while (NEXT_INSN (last))
+	    last = NEXT_INSN (last);
+	  NEXT_INSN (last) = BB_FOOTER (a);
+	  PREV_INSN (BB_FOOTER (a)) = last;
+	  BB_FOOTER (a) = BB_HEADER (b);
+	}
       BB_HEADER (b) = NULL;
     }
 
@@ -4120,27 +4142,10 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (!NOTE_INSN_BASIC_BLOCK_P (insn))
     insn = NEXT_INSN (insn);
   gcc_assert (NOTE_INSN_BASIC_BLOCK_P (insn));
-  BB_HEAD (b) = NULL;
+  BB_HEAD (b) = BB_END (b) = NULL;
   delete_insn (insn);
 
   df_bb_delete (b->index);
-
-  /* Possible tablejumps and barriers should appear after the block.  */
-  if (BB_FOOTER (b))
-    {
-      if (!BB_FOOTER (a))
-	BB_FOOTER (a) = BB_FOOTER (b);
-      else
-	{
-	  rtx last = BB_FOOTER (a);
-
-	  while (NEXT_INSN (last))
-	    last = NEXT_INSN (last);
-	  NEXT_INSN (last) = BB_FOOTER (b);
-	  PREV_INSN (BB_FOOTER (b)) = last;
-	}
-      BB_FOOTER (b) = NULL;
-    }
 
   /* If B was a forwarder block, propagate the locus on the edge.  */
   if (forwarder_p
