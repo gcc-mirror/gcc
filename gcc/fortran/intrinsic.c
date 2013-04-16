@@ -4236,7 +4236,8 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 
 got_specific:
   expr->value.function.isym = specific;
-  gfc_intrinsic_symbol (expr->symtree->n.sym);
+  if (!expr->symtree->n.sym->module)
+    gfc_intrinsic_symbol (expr->symtree->n.sym);
 
   if (!error_flag)
     gfc_pop_suppress_errors ();

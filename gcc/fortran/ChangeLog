@@ -1,3 +1,10 @@
+2013-04-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56969
+	* intrinsic.c (gfc_intrinsic_func_interface): Don't set
+	module name to "(intrinsic)" for intrinsics from intrinsic
+	modules.
+
 2013-04-15  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.texi (SYSTEM_CLOCK): Recommend kind=8.
