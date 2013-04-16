@@ -42,4 +42,9 @@
 // Static initializer macro is buggy in darwin, see libstdc++/51906
 #define _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
 
+// Configure checks for nanosleep fail on Darwin, but nanosleep and
+// sched_yield are always available, so use them.
+#define _GLIBCXX_USE_NANOSLEEP 1
+#define _GLIBCXX_USE_SCHED_YIELD 1
+
 #endif

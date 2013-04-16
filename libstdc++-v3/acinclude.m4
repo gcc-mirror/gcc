@@ -1132,6 +1132,11 @@ dnl --enable-libstdcxx-time=no
 dnl --disable-libstdcxx-time
 dnl        disables the checks completely
 dnl
+dnl N.B. Darwin provides nanosleep but doesn't support the whole POSIX
+dnl Timers option, so doesn't define _POSIX_TIMERS. Because the test
+dnl below fails Darwin unconditionally defines _GLIBCXX_USE_NANOSLEEP in
+dnl os_defines.h and also defines _GLIBCXX_USE_SCHED_YIELD.
+dnl
 AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 
   AC_MSG_CHECKING([for clock_gettime, nanosleep and sched_yield])
