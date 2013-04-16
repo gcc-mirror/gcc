@@ -1,3 +1,9 @@
+2013-04-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56968
+	* expr.c (gfc_check_pointer_assign): Handle generic functions returning
+	procedure pointers.
+
 2013-04-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56969
