@@ -518,6 +518,10 @@ compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
   gfc_array_spec *as1, *as2;
   int r1, r2;
 
+  if (s1->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK)
+      || s2->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
+    return 1;
+
   as1 = (s1->ts.type == BT_CLASS) ? CLASS_DATA (s1)->as : s1->as;
   as2 = (s2->ts.type == BT_CLASS) ? CLASS_DATA (s2)->as : s2->as;
 
@@ -1900,6 +1904,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && actual->ts.type != BT_HOLLERITH
       && formal->ts.type != BT_ASSUMED
+      && !(formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
       && !gfc_compare_types (&formal->ts, &actual->ts)
       && !(formal->ts.type == BT_DERIVED && actual->ts.type == BT_CLASS
 	   && gfc_compare_derived_types (formal->ts.u.derived,
@@ -2059,6 +2064,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	       && (formal->as->type == AS_ASSUMED_SHAPE
 		   || formal->as->type == AS_DEFERRED)
 	       && actual->expr_type != EXPR_NULL;
+
+  /* Skip rank checks for NO_ARG_CHECK.  */
+  if (formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
+    return 1;
 
   /* Scalar & coindexed, see: F2008, Section 12.5.2.4.  */
   if (rank_check || ranks_must_agree
