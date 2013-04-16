@@ -14596,9 +14596,9 @@ Split 32-byte AVX unaligned load and store.
 @item -mstack-protector-guard=@var{guard}
 @opindex mstack-protector-guard=@var{guard}
 Generate stack protection code using canary at @var{guard}.  Supported
-locations are @samp{global} or @samp{tls} per thread at %gs:20 (the default).
-This option has effect only when @option{-fstack-protector}
-or @option{-fstack-protector-all} is also specified.
+locations are @samp{global} for global canary or @samp{tls} for per-thread
+canary in the TLS block (the default).  This option has effect only when
+@option{-fstack-protector} or @option{-fstack-protector-all} is specified.
 
 @end table
 
