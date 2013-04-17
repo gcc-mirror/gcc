@@ -84,6 +84,10 @@
        (eq_attr "type" "store4"))
   "cortex_m4_ex*5")
 
+(define_bypass 1 "cortex_m4_load1"
+                 "cortex_m4_store1_1,cortex_m4_store1_2"
+                 "arm_no_early_store_addr_dep")
+
 ;; If the address of load or store depends on the result of the preceding
 ;; instruction, the latency is increased by one.
 

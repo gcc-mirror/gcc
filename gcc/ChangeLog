@@ -1,3 +1,7 @@
+2013-04-17  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/cortex-m4.md: Add a new bypass.
+
 2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.md (*adds_<optab><mode>_multp2):
