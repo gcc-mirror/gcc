@@ -1291,6 +1291,40 @@
    (set_attr "mode" "SI")]
 )
 
+(define_insn "*adds_mul_imm_<mode>"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (plus:GPI (mult:GPI
+		    (match_operand:GPI 1 "register_operand" "r")
+		    (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))
+		   (match_operand:GPI 3 "register_operand" "rk"))
+	 (const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI (mult:GPI (match_dup 1) (match_dup 2))
+		  (match_dup 3)))]
+  ""
+  "adds\\t%<w>0, %<w>3, %<w>1, lsl %p2"
+  [(set_attr "v8type" "alus_shift")
+   (set_attr "mode" "<MODE>")]
+)
+
+(define_insn "*subs_mul_imm_<mode>"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (minus:GPI (match_operand:GPI 1 "register_operand" "rk")
+		    (mult:GPI
+		     (match_operand:GPI 2 "register_operand" "r")
+		     (match_operand:QI 3 "aarch64_pwr_2_<mode>" "n")))
+	 (const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI (match_dup 1)
+		   (mult:GPI (match_dup 2) (match_dup 3))))]
+  ""
+  "subs\\t%<w>0, %<w>1, %<w>2, lsl %p3"
+  [(set_attr "v8type" "alus_shift")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "*add<mode>3nr_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
