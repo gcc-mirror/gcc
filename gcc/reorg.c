@@ -502,8 +502,6 @@ emit_delay_sequence (rtx insn, rtx list, int length)
 	INSN_LOCATION (seq_insn) = INSN_LOCATION (tem);
       INSN_LOCATION (tem) = 0;
 
-      /* Remove any REG_DEAD notes because we can't rely on them now
-	 that the insn has been moved.  */
       for (note = REG_NOTES (tem); note; note = next)
 	{
 	  next = XEXP (note, 1);
