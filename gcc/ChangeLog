@@ -1,3 +1,10 @@
+2013-04-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lower-subreg.c (resolve_simple_move): If called self-recursive,
+	do not delete_insn insns that have not yet been emitted, only
+	unlink them with remove_insn.
+	* df-scan.c (df_insn_delete): Revert r197492.
+
 2013-04-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* emit-rtl.c (link_insn_into_chain): Handle chaining of SEQUENCEs.
