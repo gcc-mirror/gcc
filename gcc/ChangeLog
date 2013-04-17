@@ -1,3 +1,8 @@
+2013-04-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 45688
+	* doc/extend.texi: Fix typo.
+
 2013-04-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_build_slp_tree_1): Split out from ...

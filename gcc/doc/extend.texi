@@ -4049,7 +4049,7 @@ class itself is instantiated.
 @cindex @code{version_id} attribute
 This IA-64 HP-UX attribute, attached to a global variable or function, renames a
 symbol to contain a version string, thus allowing for function level
-versioning.  HP-UX system header files may use version level functioning
+versioning.  HP-UX system header files may use function level versioning
 for some system calls.
 
 @smallexample
