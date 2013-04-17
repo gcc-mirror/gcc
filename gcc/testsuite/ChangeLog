@@ -1,3 +1,10 @@
+2013-04-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/40958
+        * lib/gcc-dg.exp (scan-module): Uncompress module file before
+        scanning.
+        * gfortran.dg/module_md5_1.f90: Remove.
+
 2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/adds3.c: New.

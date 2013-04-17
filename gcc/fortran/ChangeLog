@@ -1,3 +1,24 @@
+2013-04-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/40958
+	* scanner.h: New file.
+	* Make-lang.in: Dependencies on scanner.h.
+	* scanner.c (gfc_directorylist): Move to scanner.h.
+	* module.c: Don't include md5.h, include scanner.h and zlib.h.
+	(MOD_VERSION): Add comment about backwards compatibility.
+	(module_fp): Change type to gzFile.
+	(ctx): Remove.
+	(gzopen_included_file_1): New function.
+	(gzopen_included_file): New function.
+	(gzopen_intrinsic_module): New function.
+	(write_char): Use gzputc.
+	(read_crc32_from_module_file): New function.
+	(read_md5_from_module_file): Remove.
+	(gfc_dump_module): Use gz* functions instead of stdio, check gzip
+	crc32 instead of md5.
+	(read_module_to_tmpbuf): Use gz* functions instead of stdio.
+	(gfc_use_module): Use gz* functions.
+
 2013-04-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39505
