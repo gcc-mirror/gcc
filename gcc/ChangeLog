@@ -1,3 +1,9 @@
+2013-04-17  Greta Yorsh  <Greta.Yorsh at arm.com>
+
+	* config/arm/arm.c (use_return_insn): Return 0 for targets that
+	can benefit from using a sequence of LDRD instructions in epilogue
+	instead of a single LDM instruction.
+
 2013-04-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 45688

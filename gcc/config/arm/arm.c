@@ -2412,6 +2412,10 @@ use_return_insn (int iscond, rtx sibling)
   if (IS_INTERRUPT (func_type) && (frame_pointer_needed || TARGET_THUMB))
     return 0;
 
+  if (TARGET_LDRD && current_tune->prefer_ldrd_strd
+      && !optimize_function_for_size_p (cfun))
+    return 0;
+
   offsets = arm_get_frame_offsets ();
   stack_adjust = offsets->outgoing_args - offsets->saved_regs;
 
