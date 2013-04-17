@@ -1325,6 +1325,78 @@
    (set_attr "mode" "<MODE>")]
 )
 
+(define_insn "*adds_<optab><ALLX:mode>_<GPI:mode>"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (plus:GPI
+	  (ANY_EXTEND:GPI (match_operand:ALLX 1 "register_operand" "r"))
+	  (match_operand:GPI 2 "register_operand" "r"))
+	(const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI (ANY_EXTEND:GPI (match_dup 1)) (match_dup 2)))]
+  ""
+  "adds\\t%<GPI:w>0, %<GPI:w>2, %<GPI:w>1, <su>xt<ALLX:size>"
+  [(set_attr "v8type" "alus_ext")
+   (set_attr "mode" "<GPI:MODE>")]
+)
+
+(define_insn "*subs_<optab><ALLX:mode>_<GPI:mode>"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (minus:GPI (match_operand:GPI 1 "register_operand" "r")
+		    (ANY_EXTEND:GPI
+		     (match_operand:ALLX 2 "register_operand" "r")))
+	(const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI (match_dup 1) (ANY_EXTEND:GPI (match_dup 2))))]
+  ""
+  "subs\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size>"
+  [(set_attr "v8type" "alus_ext")
+   (set_attr "mode" "<GPI:MODE>")]
+)
+
+(define_insn "*adds_<optab><mode>_multp2"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (plus:GPI (ANY_EXTRACT:GPI
+		    (mult:GPI (match_operand:GPI 1 "register_operand" "r")
+			      (match_operand 2 "aarch64_pwr_imm3" "Up3"))
+		    (match_operand 3 "const_int_operand" "n")
+		    (const_int 0))
+		   (match_operand:GPI 4 "register_operand" "r"))
+	(const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI (ANY_EXTRACT:GPI (mult:GPI (match_dup 1) (match_dup 2))
+				   (match_dup 3)
+				   (const_int 0))
+		  (match_dup 4)))]
+  "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
+  "adds\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
+  [(set_attr "v8type" "alus_ext")
+   (set_attr "mode" "<MODE>")]
+)
+
+(define_insn "*subs_<optab><mode>_multp2"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (minus:GPI (match_operand:GPI 4 "register_operand" "r")
+		    (ANY_EXTRACT:GPI
+		     (mult:GPI (match_operand:GPI 1 "register_operand" "r")
+			       (match_operand 2 "aarch64_pwr_imm3" "Up3"))
+		     (match_operand 3 "const_int_operand" "n")
+		     (const_int 0)))
+	(const_int 0)))
+   (set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI (match_dup 4) (ANY_EXTRACT:GPI
+				  (mult:GPI (match_dup 1) (match_dup 2))
+				  (match_dup 3)
+				  (const_int 0))))]
+  "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
+  "subs\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
+  [(set_attr "v8type" "alus_ext")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "*add<mode>3nr_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ

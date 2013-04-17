@@ -1,5 +1,13 @@
 2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
+	* config/aarch64/aarch64.md (*adds_<optab><mode>_multp2):
+	New pattern.
+	(*subs_<optab><mode>_multp2): New pattern.
+	(*adds_<optab><ALLX:mode>_<GPI:mode>): New pattern.
+	(*subs_<optab><ALLX:mode>_<GPI:mode>): New pattern.
+
+2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
 	* config/aarch64/aarch64.md (*adds_mul_imm_<mode>): New pattern.
 	(*subs_mul_imm_<mode>): New pattern.
 
