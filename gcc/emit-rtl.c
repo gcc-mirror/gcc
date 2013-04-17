@@ -3806,6 +3806,13 @@ link_insn_into_chain (rtx insn, rtx prev, rtx next)
       if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
 	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
     }
+
+  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    {
+      rtx sequence = PATTERN (insn);
+      PREV_INSN (XVECEXP (sequence, 0, 0)) = prev;
+      NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+    }
 }
 
 /* Add INSN to the end of the doubly-linked list.
