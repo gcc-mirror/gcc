@@ -1,11 +1,16 @@
-2013-04-17  Greta Yorsh  <Greta.Yorsh at arm.com>
+2013-04-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* emit-rtl.c (link_insn_into_chain): Handle chaining of SEQUENCEs.
+	* reorg.c (emit_delay_sequence): Simplify with emit-rtl API.
+
+2013-04-17  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.md (movsicc_insn): Convert define_insn into
 	define_insn_and_split.
 	(and_scc,ior_scc,negscc): Likewise.
 	(cmpsi2_addneg, subsi3_compare): Convert to named patterns.
 
-2013-04-17  Greta Yorsh  <Greta.Yorsh at arm.com>
+2013-04-17  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.c (use_return_insn): Return 0 for targets that
 	can benefit from using a sequence of LDRD instructions in epilogue
