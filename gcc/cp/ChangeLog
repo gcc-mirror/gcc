@@ -1,3 +1,12 @@
+2013-04-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement n3599 - Literal operator templates for strings.
+	* parser.c (make_string_pack (tree value)): New function.
+	(cp_parser_userdef_string_literal (cp_token *)): Use it
+	to construct calls to character string literal operator templates.
+	(cp_parser_template_declaration_after_export): Check for new string
+	literal operator template parameter form.
+
 2013-04-15  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst) [DECLTYPE_TYPE]: Use tsubst_copy_and_build.
