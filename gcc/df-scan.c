@@ -1158,17 +1158,7 @@ df_insn_delete (rtx insn)
      In any case, we expect BB to be non-NULL at least up to register
      allocation, so disallow a non-NULL BB up to there.  Not perfect
      but better than nothing...  */
-  /* ??? bb can also be NULL if lower-subreg.c:resolve_simple_mov emits
-     an insn into a sequence and then does delete_insn on it.  Not sure
-     if that makes sense, but for now it means this assert cannot work.
-     See PR56738.
-     Disable for now but revisit before the end of GCC 4.9 stage1.  */
-#if 0
   gcc_checking_assert (bb != NULL || reload_completed);
-#else
-  if (bb == NULL)
-    return;
-#endif
 
   df_grow_bb_info (df_scan);
   df_grow_reg_info ();
