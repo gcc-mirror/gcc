@@ -719,14 +719,113 @@ aliasing_component_refs_p (tree ref1,
   return false;
 }
 
-/* Return true if two memory references based on the variables BASE1
-   and BASE2 constrained to [OFFSET1, OFFSET1 + MAX_SIZE1) and
-   [OFFSET2, OFFSET2 + MAX_SIZE2) may alias.  */
+/* Return true if we can determine that component references REF1 and REF2,
+   that are within a common DECL, cannot overlap.  */
 
 static bool
-decl_refs_may_alias_p (tree base1,
+nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
+{
+  vec<tree, va_stack> component_refs1;
+  vec<tree, va_stack> component_refs2;
+
+  vec_stack_alloc (tree, component_refs1, 16);
+  vec_stack_alloc (tree, component_refs2, 16);
+
+  /* Create the stack of handled components for REF1.  */
+  while (handled_component_p (ref1))
+    {
+      component_refs1.safe_push (ref1);
+      ref1 = TREE_OPERAND (ref1, 0);
+    }
+  if (TREE_CODE (ref1) == MEM_REF)
+    {
+      if (!integer_zerop (TREE_OPERAND (ref1, 1)))
+	goto may_overlap;
+      ref1 = TREE_OPERAND (TREE_OPERAND (ref1, 0), 0);
+    }
+
+  /* Create the stack of handled components for REF2.  */
+  while (handled_component_p (ref2))
+    {
+      component_refs2.safe_push (ref2);
+      ref2 = TREE_OPERAND (ref2, 0);
+    }
+  if (TREE_CODE (ref2) == MEM_REF)
+    {
+      if (!integer_zerop (TREE_OPERAND (ref2, 1)))
+	goto may_overlap;
+      ref2 = TREE_OPERAND (TREE_OPERAND (ref2, 0), 0);
+    }
+
+  /* We must have the same base DECL.  */
+  gcc_assert (ref1 == ref2);
+
+  /* Pop the stacks in parallel and examine the COMPONENT_REFs of the same
+     rank.  This is sufficient because we start from the same DECL and you
+     cannot reference several fields at a time with COMPONENT_REFs (unlike
+     with ARRAY_RANGE_REFs for arrays) so you always need the same number
+     of them to access a sub-component, unless you're in a union, in which
+     case the return value will precisely be false.  */
+  while (true)
+    {
+      do
+	{
+	  if (component_refs1.is_empty ())
+	    goto may_overlap;
+	  ref1 = component_refs1.pop ();
+	}
+      while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref1, 0))));
+
+      do
+	{
+	  if (component_refs2.is_empty ())
+	     goto may_overlap;
+	  ref2 = component_refs2.pop ();
+	}
+      while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref2, 0))));
+
+      /* Beware of BIT_FIELD_REF.  */
+      if (TREE_CODE (ref1) != COMPONENT_REF
+	  || TREE_CODE (ref2) != COMPONENT_REF)
+	goto may_overlap;
+
+      tree field1 = TREE_OPERAND (ref1, 1);
+      tree field2 = TREE_OPERAND (ref2, 1);
+
+      /* ??? We cannot simply use the type of operand #0 of the refs here
+	 as the Fortran compiler smuggles type punning into COMPONENT_REFs
+	 for common blocks instead of using unions like everyone else.  */
+      tree type1 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field1));
+      tree type2 = TYPE_MAIN_VARIANT (DECL_CONTEXT (field2));
+
+      /* We cannot disambiguate fields in a union or qualified union.  */
+      if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
+	 goto may_overlap;
+
+      /* Different fields of the same record type cannot overlap.  */
+      if (field1 != field2)
+	{
+	  component_refs1.release ();
+	  component_refs2.release ();
+	  return true;
+	}
+    }
+
+may_overlap:
+  component_refs1.release ();
+  component_refs2.release ();
+  return false;
+}
+
+/* Return true if two memory references based on the variables BASE1
+   and BASE2 constrained to [OFFSET1, OFFSET1 + MAX_SIZE1) and
+   [OFFSET2, OFFSET2 + MAX_SIZE2) may alias.  REF1 and REF2
+   if non-NULL are the complete memory reference trees.  */
+
+static bool
+decl_refs_may_alias_p (tree ref1, tree base1,
 		       HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
-		       tree base2,
+		       tree ref2, tree base2,
 		       HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2)
 {
   gcc_checking_assert (DECL_P (base1) && DECL_P (base2));
@@ -737,7 +836,17 @@ decl_refs_may_alias_p (tree base1,
 
   /* If both references are based on the same variable, they cannot alias if
      the accesses do not overlap.  */
-  return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+  if (!ranges_overlap_p (offset1, max_size1, offset2, max_size2))
+    return false;
+
+  /* For components with variable position, the above test isn't sufficient,
+     so we disambiguate component references manually.  */
+  if (ref1 && ref2
+      && handled_component_p (ref1) && handled_component_p (ref2)
+      && nonoverlapping_component_refs_of_decl_p (ref1, ref2))
+    return false;
+
+  return true;     
 }
 
 /* Return true if an indirect reference based on *PTR1 constrained
@@ -1086,8 +1195,8 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   var1_p = DECL_P (base1);
   var2_p = DECL_P (base2);
   if (var1_p && var2_p)
-    return decl_refs_may_alias_p (base1, offset1, max_size1,
-				  base2, offset2, max_size2);
+    return decl_refs_may_alias_p (ref1->ref, base1, offset1, max_size1,
+				  ref2->ref, base2, offset2, max_size2);
 
   ind1_p = (TREE_CODE (base1) == MEM_REF
 	    || TREE_CODE (base1) == TARGET_MEM_REF);
