@@ -1,3 +1,9 @@
+2013-04-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56814
+	* interface.c (check_result_characteristics): Get result from interface
+	if present.
+
 2013-04-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/40958
