@@ -1,5 +1,10 @@
 2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
+	* gcc.target/aarch64/adds3.c: New.
+	* gcc.target/aarch64/subs3.c: New.
+
+2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
 	* gcc.target/aarch64/adds1.c: New.
 	* gcc.target/aarch64/adds2.c: New.
 	* gcc.target/aarch64/subs1.c: New.
