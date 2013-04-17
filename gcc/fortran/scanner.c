@@ -48,18 +48,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "flags.h"
 #include "cpp.h"
-
-/* Structure for holding module and include file search path.  */
-typedef struct gfc_directorylist
-{
-  char *path;
-  bool use_for_modules;
-  struct gfc_directorylist *next;
-}
-gfc_directorylist;
+#include "scanner.h"
 
 /* List of include file search directories.  */
-static gfc_directorylist *include_dirs, *intrinsic_modules_dirs;
+gfc_directorylist *include_dirs, *intrinsic_modules_dirs;
 
 static gfc_file *file_head, *current_file;
 
