@@ -1,9 +1,41 @@
+2013-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr41.ad[sb]: New test.
+	* gcc.dg/tree-ssa/ssa-fre-38.c: Likewise.
+	* gcc.dg/vect/slp-24-big-array.c: Beef up anti-vectorization trick.
+	* gcc.dg/vect/slp-24.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7.c: Likewise.
+	* gcc.dg/vect/vect-strided-mult-char-ls.c: Likewise.
+	* gcc.dg/vect/vect-strided-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-same-dr.c: Likewise.
+	* gcc.dg/vect/vect-strided-u16-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u16-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u32-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u32-i8.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2-gap.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-unknown.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8.c: Likewise.
+
 2013-04-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR fortran/40958
-        * lib/gcc-dg.exp (scan-module): Uncompress module file before
-        scanning.
-        * gfortran.dg/module_md5_1.f90: Remove.
+	PR fortran/40958
+	* lib/gcc-dg.exp (scan-module): Uncompress module file before scanning.
+	* gfortran.dg/module_md5_1.f90: Remove.
 
 2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 

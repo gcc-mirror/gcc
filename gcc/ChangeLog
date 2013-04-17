@@ -1,3 +1,12 @@
+2013-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p): New.
+	(decl_refs_may_alias_p): Add REF1 and REF2 parameters.
+	Use nonoverlapping_component_refs_of_decl_p to disambiguate component
+	references.
+	(refs_may_alias_p_1): Adjust call to decl_refs_may_alias_p.
+	* tree-streamer.c (record_common_node): Adjust reference in comment.
+
 2013-04-17  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/cortex-m4.md: Add a new bypass.
