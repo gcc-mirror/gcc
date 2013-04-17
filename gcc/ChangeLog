@@ -1,3 +1,22 @@
+2013-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/56921
+	* cfgloop.h (struct loop): Add simple_loop_desc member.
+	(struct niter_desc): Mark with GTY(()).
+	(simple_loop_desc): Do not use aux field but simple_loop_desc.
+	* loop-iv.c (get_simple_loop_desc): Likewise.
+	(free_simple_loop_desc): Likewise.
+
+	Revert
+	2013-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/56921
+	* loop-init.c (pass_rtl_move_loop_invariants): Add
+	TODO_do_not_ggc_collect to todo_flags_finish.
+	(pass_rtl_unswitch): Same.
+	(pass_rtl_unroll_and_peel_loops): Same.
+	(pass_rtl_doloop): Same.
+
 2013-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p): New.
