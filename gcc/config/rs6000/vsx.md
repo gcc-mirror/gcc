@@ -267,7 +267,7 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "vecstore,vecload,vecsimple,vecstore,vecload,vecsimple,*,*,*,vecsimple,vecsimple,*,vecstore,vecload")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,vecstore,vecload,vecsimple,*,*,*,vecsimple,vecsimple,*,*,vecstore,vecload")])
 
 ;; Unlike other VSX moves, allow the GPRs, since a normal use of TImode is for
 ;; unions.  However for plain data movement, slightly favor the vector loads
