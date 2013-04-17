@@ -1,3 +1,9 @@
+2013-04-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement n3599 - Literal operator templates for strings.
+	* g++.dg/cpp1y/udlit-char-template.C: New test.
+	* g++.dg/cpp1y/udlit-char-template-neg.C: New test.
+
 2013-04-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39505

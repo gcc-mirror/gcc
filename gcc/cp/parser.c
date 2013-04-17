@@ -3702,6 +3702,37 @@ make_char_string_pack (tree value)
   return argvec;
 }
 
+/* A subroutine of cp_parser_userdef_numeric_literal to
+   create a char... template parameter pack from a string node.  */
+
+static tree
+make_string_pack (tree value)
+{
+  tree charvec;
+  tree argpack = make_node (NONTYPE_ARGUMENT_PACK);
+  const char *str = TREE_STRING_POINTER (value);
+  int i, len = TREE_STRING_LENGTH (value) - 1;
+  tree argvec = make_tree_vec (2);
+
+  tree string_char_type_node = TREE_TYPE (TREE_TYPE (value));
+
+  /* First template parm is character type.  */
+  TREE_VEC_ELT (argvec, 0) = string_char_type_node;
+
+  /* Fill in CHARVEC with all of the parameters.  */
+  charvec = make_tree_vec (len);
+  for (i = 0; i < len; ++i)
+    TREE_VEC_ELT (charvec, i) = build_int_cst (string_char_type_node, str[i]);
+
+  /* Build the argument packs.  */
+  SET_ARGUMENT_PACK_ARGS (argpack, charvec);
+  TREE_TYPE (argpack) = string_char_type_node;
+
+  TREE_VEC_ELT (argvec, 1) = argpack;
+
+  return argvec;
+}
+
 /* Parse a user-defined numeric constant.  returns a call to a user-defined
    literal operator.  */
 
@@ -3801,10 +3832,29 @@ cp_parser_userdef_string_literal (cp_token *token)
   int len = TREE_STRING_LENGTH (value)
 	/ TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
   tree decl, result;
+  vec<tree, va_gc> *args;
+
+  /* Look for a template function with typename parameter CharT
+     and parameter pack CharT...  Call the function with
+     template parameter characters representing the string.  */
+  args = make_tree_vector ();
+  decl = lookup_literal_operator (name, args);
+  if (decl && decl != error_mark_node)
+    {
+      tree tmpl_args = make_string_pack (value);
+      decl = lookup_template_function (decl, tmpl_args);
+      result = finish_call_expr (decl, &args, false, true, tf_none);
+      if (result != error_mark_node)
+	{
+	  release_tree_vector (args);
+	  return result;
+	}
+    }
+  release_tree_vector (args);
 
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  vec<tree, va_gc> *args = make_tree_vector ();
+  args = make_tree_vector ();
   vec_safe_push (args, value);
   vec_safe_push (args, build_int_cst (size_type_node, len));
   decl = lookup_name (name);
@@ -22101,9 +22151,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
       else
 	{
 	  int num_parms = TREE_VEC_LENGTH (parameter_list);
-	  if (num_parms != 1)
-	    ok = false;
-	  else
+	  if (num_parms == 1)
 	    {
 	      tree parm_list = TREE_VEC_ELT (parameter_list, 0);
 	      tree parm = INNERMOST_TEMPLATE_PARMS (parm_list);
@@ -22111,10 +22159,23 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 		ok = false;
 	    }
+	  else if (num_parms == 2 && cxx_dialect >= cxx1y)
+	    {
+	      tree parm_type = TREE_VEC_ELT (parameter_list, 0);
+	      tree type = INNERMOST_TEMPLATE_PARMS (parm_type);
+	      tree parm_list = TREE_VEC_ELT (parameter_list, 1);
+	      tree parm = INNERMOST_TEMPLATE_PARMS (parm_list);
+	      if (TREE_TYPE (parm) != TREE_TYPE (type)
+		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
+		ok = false;
+	    }
+	  else
+	    ok = false;
 	}
       if (!ok)
 	error ("literal operator template %qD has invalid parameter list."
-	       "  Expected non-type template argument pack <char...>",
+	       "  Expected non-type template argument pack <char...>"
+	       " or <typename CharT, CharT...>",
 	       decl);
     }
   /* Register member declarations.  */
