@@ -1,3 +1,20 @@
+2013-04-16  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
+	2012-05-29  Jack Howarth  <howarth@bromo.med.uc.edu>
+	* config/darwin.h (STARTFILE_SPEC): Use -no_new_main with -lgcrt1.o
+	on Darwin >= 12.
+	(DARWIN_CRT1_SPEC): Use -lcrt1.10.6.o when Darwin >= 10 and < 12.
+
+
+	2012-05-29  Jack Howarth  <howarth@bromo.med.uc.edu>
+	PR debug/53453
+	* doc/tm.texi: Update.
+	* doc/tm.texi.in (SDB and DWARF) <TARGET_FORCE_AT_COMP_DIR>: Add @hook.
+	* target.def (force_at_comp_dir): New hook.
+	* config/darwin.h (TARGET_FORCE_AT_COMP_DIR): Define.
+	* dwarf2out.c (dwarf2out_finish): Check targetm.force_at_comp_dir.
+
 2013-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/56890
