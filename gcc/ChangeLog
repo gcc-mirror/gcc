@@ -1,5 +1,17 @@
 2013-04-17  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_build_slp_tree_1): Split out from ...
+	(vect_build_slp_tree): ... here.
+	(vect_build_slp_tree_1): Compute which stmts of the SLP group
+	match.  Remove special-casing of mismatched complex loads.
+	(vect_build_slp_tree): Based on the result from vect_build_slp_tree_1
+	re-try the match with swapped commutative operands.
+	(vect_supported_load_permutation_p): Remove special-casing of
+	mismatched complex loads.
+	(vect_analyze_slp_instance): Adjust.
+
+2013-04-17  Richard Biener  <rguenther@suse.de>
+
 	PR rtl-optimization/56921
 	* cfgloop.h (struct loop): Add simple_loop_desc member.
 	(struct niter_desc): Mark with GTY(()).
