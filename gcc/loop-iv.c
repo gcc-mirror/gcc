@@ -3016,10 +3016,10 @@ get_simple_loop_desc (struct loop *loop)
 
   /* At least desc->infinite is not always initialized by
      find_simple_loop_exit.  */
-  desc = XCNEW (struct niter_desc);
+  desc = ggc_alloc_cleared_niter_desc ();
   iv_analysis_loop_init (loop);
   find_simple_exit (loop, desc);
-  loop->aux = desc;
+  loop->simple_loop_desc = desc;
 
   if (desc->simple_p && (desc->assumptions || desc->infinite))
     {
@@ -3069,6 +3069,6 @@ free_simple_loop_desc (struct loop *loop)
   if (!desc)
     return;
 
-  free (desc);
-  loop->aux = NULL;
+  ggc_free (desc);
+  loop->simple_loop_desc = NULL;
 }

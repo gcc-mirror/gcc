@@ -172,6 +172,9 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* Head of the cyclic list of the exits of the loop.  */
   struct loop_exit *exits;
+
+  /* Number of iteration analysis data for RTL.  */
+  struct niter_desc *simple_loop_desc;
 };
 
 /* Flags for state of loop structure.  */
@@ -372,7 +375,7 @@ struct rtx_iv
 /* The description of an exit from the loop and of the number of iterations
    till we take the exit.  */
 
-struct niter_desc
+struct GTY(()) niter_desc
 {
   /* The edge out of the loop.  */
   edge out_edge;
@@ -425,7 +428,7 @@ extern void free_simple_loop_desc (struct loop *loop);
 static inline struct niter_desc *
 simple_loop_desc (struct loop *loop)
 {
-  return (struct niter_desc *) loop->aux;
+  return loop->simple_loop_desc;
 }
 
 /* Accessors for the loop structures.  */
