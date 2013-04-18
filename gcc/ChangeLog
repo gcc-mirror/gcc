@@ -1,3 +1,17 @@
+2013-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (x86_64_ms_sysv_extra_clobbered_registers):
+	New array.
+	(ix86_expand_call): Remove clobbered_registers array and use
+	x86_64_ms_sysv_extra_clobbered_registers instead.
+	* config/i386/i386.h (x86_64_ms_sysv_extra_clobbered_registers):
+	Declare here.
+	* config/i386/predicates.md (call_rex64_ms_sysv_operation): New
+	predicate.
+	* config/i386/i386.md (*call_rex64_ms_sysv): Use
+	call_rex64_ms_sysv_operation predicate.  Remove explicit clobbers.
+	(*call_value_rex64_ms_sysv): Ditto.
+
 2013-04-18  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (output_pubnames): Check die_perennial_p of
@@ -12,7 +26,7 @@
 	* gimple.h (enum ssa_mode): Define.
 	(gimple_seq_set_location): New.
 	* asan.c (build_check_stmt): Change some gimple_build_* calls
-        to use build_assign and build_type_cast.
+	to use build_assign and build_type_cast.
 
 2013-04-18  Richard Biener  <rguenther@suse.de>
 
