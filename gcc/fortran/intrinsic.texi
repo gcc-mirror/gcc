@@ -9248,7 +9248,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab Shall be of type @code{REAL}.
-@item @var{S} @tab (Optional) shall be of type @code{REAL} and
+@item @var{S} @tab Shall be of type @code{REAL} and
 not equal to zero.
 @end multitable
 
