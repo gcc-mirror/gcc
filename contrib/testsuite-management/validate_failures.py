@@ -361,7 +361,7 @@ def GetManifestPath(srcdir, target, user_provided_must_exist):
     return manifest_path
   else:
     if not srcdir:
-      Error('Could not determine where the location of GCC\'s source tree. '
+      Error('Could not determine the location of GCC\'s source tree. '
             'The Makefile does not contain a definition for "srcdir".')
     if not target:
       Error('Could not determine the target triplet for this build. '
