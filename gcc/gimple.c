@@ -4207,4 +4207,105 @@ gimple_asm_clobbers_memory_p (const_gimple stmt)
 
   return false;
 }
+
+
+/* Create and return an unnamed temporary.  MODE indicates whether
+   this should be an SSA or NORMAL temporary.  TYPE is the type to use
+   for the new temporary.  */
+
+tree
+create_gimple_tmp (tree type, enum ssa_mode mode)
+{
+  return (mode == M_SSA)
+         ? make_ssa_name (type, NULL)
+         : create_tmp_var (type, NULL);
+}
+
+
+/* Return the expression type to use based on the CODE and type of
+   the given operand OP.  If the expression CODE is a comparison,
+   the returned type is boolean_type_node.  Otherwise, it returns
+   the type of OP.  */
+
+static tree
+get_expr_type (enum tree_code code, tree op)
+{
+  return (TREE_CODE_CLASS (code) == tcc_comparison)
+	 ? boolean_type_node
+	 : TREE_TYPE (op);
+}
+
+
+/* Build a new gimple assignment.  The LHS of the assignment is a new
+   temporary whose type matches the given expression.  MODE indicates
+   whether the LHS should be an SSA or a normal temporary.  CODE is
+   the expression code for the RHS.  OP1 is the first operand and VAL
+   is an integer value to be used as the second operand.  */
+
+gimple
+build_assign (enum tree_code code, tree op1, int val, enum ssa_mode mode)
+{
+  tree op2 = build_int_cst (TREE_TYPE (op1), val);
+  tree lhs = create_gimple_tmp (get_expr_type (code, op1), mode);
+  return gimple_build_assign_with_ops (code, lhs, op1, op2);
+}
+
+gimple
+build_assign (enum tree_code code, gimple g, int val, enum ssa_mode mode)
+{
+  return build_assign (code, gimple_assign_lhs (g), val, mode);
+}
+
+
+/* Build and return a new GIMPLE assignment.  The new assignment will
+   have the opcode CODE and operands OP1 and OP2.  The type of the
+   expression on the RHS is inferred to be the type of OP1.
+
+   The LHS of the statement will be an SSA name or a GIMPLE temporary
+   in normal form depending on the type of builder invoking this
+   function.  */
+
+gimple
+build_assign (enum tree_code code, tree op1, tree op2, enum ssa_mode mode)
+{
+  tree lhs = create_gimple_tmp (get_expr_type (code, op1), mode);
+  return gimple_build_assign_with_ops (code, lhs, op1, op2);
+}
+
+gimple
+build_assign (enum tree_code code, gimple op1, tree op2, enum ssa_mode mode)
+{
+  return build_assign (code, gimple_assign_lhs (op1), op2, mode);
+}
+
+gimple
+build_assign (enum tree_code code, tree op1, gimple op2, enum ssa_mode mode)
+{
+  return build_assign (code, op1, gimple_assign_lhs (op2), mode);
+}
+
+gimple
+build_assign (enum tree_code code, gimple op1, gimple op2, enum ssa_mode mode)
+{
+  return build_assign (code, gimple_assign_lhs (op1), gimple_assign_lhs (op2),
+                       mode);
+}
+
+
+/* Create and return a type cast assignment. This creates a NOP_EXPR
+   that converts OP to TO_TYPE.  */
+
+gimple
+build_type_cast (tree to_type, tree op, enum ssa_mode mode)
+{
+  tree lhs = create_gimple_tmp (to_type, mode);
+  return gimple_build_assign_with_ops (NOP_EXPR, lhs, op, NULL_TREE);
+}
+
+gimple
+build_type_cast (tree to_type, gimple op, enum ssa_mode mode)
+{
+  return build_type_cast (to_type, gimple_assign_lhs (op), mode);
+}
+
 #include "gt-gimple.h"

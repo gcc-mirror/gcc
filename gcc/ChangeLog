@@ -1,3 +1,14 @@
+2013-04-18  Diego Novillo  <dnovillo@google.com>
+
+	* gimple.c (create_gimple_tmp): New.
+	(get_expr_type): New.
+	(build_assign): New.
+	(build_type_cast): New.
+	* gimple.h (enum ssa_mode): Define.
+	(gimple_seq_set_location): New.
+	* asan.c (build_check_stmt): Change some gimple_build_* calls
+        to use build_assign and build_type_cast.
+
 2013-04-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_analyze_group_access): Properly
