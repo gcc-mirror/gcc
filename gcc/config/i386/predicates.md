@@ -573,7 +573,7 @@
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "register_no_elim_operand")))
 
-;; Return true if OP is a vzeroall operation, known to be a PARALLEL.
+;; Return true if OP is a call from MS ABI to SYSV ABI function.
 (define_predicate "call_rex64_ms_sysv_operation"
   (match_code "parallel")
 {
