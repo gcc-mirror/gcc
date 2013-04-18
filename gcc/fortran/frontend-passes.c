@@ -1073,6 +1073,7 @@ combine_array_constructor (gfc_expr *e)
 
   gfc_free_expr (op1);
   gfc_free_expr (op2);
+  gfc_free_expr (scalar);
 
   e->value.constructor = newbase;
   return true;

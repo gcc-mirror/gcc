@@ -4077,11 +4077,15 @@ match_typebound_call (gfc_symtree* varst)
   if (m == MATCH_NO)
     gfc_error ("Expected component reference at %C");
   if (m != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_free_expr (base);
+      return MATCH_ERROR;
+    }
 
   if (gfc_match_eos () != MATCH_YES)
     {
       gfc_error ("Junk after CALL at %C");
+      gfc_free_expr (base);
       return MATCH_ERROR;
     }
 
@@ -4093,6 +4097,7 @@ match_typebound_call (gfc_symtree* varst)
     {
       gfc_error ("Expected type-bound procedure or procedure pointer component "
 		 "at %C");
+      gfc_free_expr (base);
       return MATCH_ERROR;
     }
   new_st.expr1 = base;
@@ -5371,7 +5376,7 @@ gfc_match_select_type (void)
     {
       m = gfc_match (" %e ", &expr1);
       if (m != MATCH_YES)
-	goto cleanup;
+	return m;
     }
 
   m = gfc_match (" )%t");
@@ -5417,6 +5422,8 @@ gfc_match_select_type (void)
   return MATCH_YES;
 
 cleanup:
+  gfc_free_expr (expr1);
+  gfc_free_expr (expr2);
   return m;
 }
 

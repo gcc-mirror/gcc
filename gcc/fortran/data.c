@@ -106,6 +106,7 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 {
   int len, start, end;
   gfc_char_t *dest;
+  bool alloced_init = false;
 	    
   gfc_extract_int (ts->u.cl->length, &len);
 
@@ -114,6 +115,7 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
       /* Create a new initializer.  */
       init = gfc_get_character_expr (ts->kind, NULL, NULL, len);
       init->ts = *ts;
+      alloced_init = true;
     }
 
   dest = init->value.character.string;
@@ -134,6 +136,10 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 	{
 	  gfc_error ("failure to simplify substring reference in DATA "
 		     "statement at %L", &ref->u.ss.start->where);
+	  gfc_free_expr (start_expr);
+	  gfc_free_expr (end_expr);
+	  if (alloced_init)
+	    gfc_free_expr (init);
 	  return NULL;
 	}
 
