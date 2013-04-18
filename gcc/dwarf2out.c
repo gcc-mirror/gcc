@@ -9018,11 +9018,13 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
       /* Enumerator names are part of the pubname table, but the parent
          DW_TAG_enumeration_type die may have been pruned.  Don't output
          them if that is the case.  */
-      if (pub->die->die_tag == DW_TAG_enumerator && !pub->die->die_mark)
+      if (pub->die->die_tag == DW_TAG_enumerator &&
+          (pub->die->die_parent == NULL
+	   || !pub->die->die_parent->die_perennial_p))
         continue;
 
       /* We shouldn't see pubnames for DIEs outside of the main CU.  */
-      if (names == pubname_table)
+      if (names == pubname_table && pub->die->die_tag != DW_TAG_enumerator)
 	gcc_assert (pub->die->die_mark);
 
       if (names != pubtype_table

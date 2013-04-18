@@ -1,5 +1,10 @@
 2013-04-18   Cary Coutant  <ccoutant@google.com>
 
+	* g++.dg/debug/dwarf2/pubnames-2.C: Add -fno-debug-types-section.
+	* g++.dg/debug/dwarf2/pubnames-3.C: New test case.
+
+2013-04-18   Cary Coutant  <ccoutant@google.com>
+
 	* g++.dg/debug/dwarf2/typedef2.C: Add -fno-debug-types-section flag.
 	* g++.dg/debug/dwarf2/typedef4.C: Likewise.
 	* g++.dg/debug/dwarf2/static-data-member1.C: Likewise.
