@@ -5719,6 +5719,8 @@ resolve_typebound_function (gfc_expr* e)
 	correct typespec.  */
       e->ts = ts;
     }
+  else if (new_ref)
+    gfc_free_ref_list (new_ref);
 
   return true;
 }

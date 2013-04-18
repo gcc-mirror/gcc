@@ -1,5 +1,13 @@
 2013-04-18  Tobias Burnus  <burnus@net-b.de>
 
+	* expr.c (find_array_element): Don't copy expr.
+	* data.c (create_character_initializer): Free expr.
+	* frontend-passes.c (combine_array_constructor): Ditto.
+	* match.c (match_typebound_call, gfc_match_select_type): Ditto.
+	* resolve.c (resolve_typebound_function): Free gfc_ref.
+
+2013-04-18  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/56994
 	* invoke.texi (NEAREST): S argument is not optional.
 

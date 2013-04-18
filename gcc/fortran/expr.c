@@ -1209,7 +1209,7 @@ find_array_element (gfc_constructor_base base, gfc_array_ref *ar,
 	  goto depart;
 	}
 
-      e = gfc_copy_expr (ar->start[i]);
+      e = ar->start[i];
       if (e->expr_type != EXPR_CONSTANT)
 	{
 	  cons = NULL;
@@ -1258,8 +1258,6 @@ depart:
   mpz_clear (offset);
   mpz_clear (span);
   mpz_clear (tmp);
-  if (e)
-    gfc_free_expr (e);
   *rval = cons;
   return t;
 }
