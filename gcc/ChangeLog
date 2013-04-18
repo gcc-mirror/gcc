@@ -1,3 +1,8 @@
+2013-04-18  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (output_pubnames): Check die_perennial_p of
+	parent instead of die_mark.
+
 2013-04-18  Diego Novillo  <dnovillo@google.com>
 
 	* gimple.c (create_gimple_tmp): New.
