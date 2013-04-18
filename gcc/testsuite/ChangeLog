@@ -1,3 +1,8 @@
+2013-04-18  Grigoriy Kraynov  <grigoriy.kraynov@intel.com>
+
+	* gcc.target/i386/avx2-vpop-check.h: volatility is casted away in
+	memcmp().
+
 2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56984
