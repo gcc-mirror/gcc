@@ -2216,6 +2216,16 @@ static int const x86_64_int_return_registers[4] =
   AX_REG, DX_REG, DI_REG, SI_REG
 };
 
+/* Additional registers that are clobbered by SYSV calls.  */
+
+int const x86_64_ms_sysv_extra_clobbered_registers[12] =
+{
+  SI_REG, DI_REG,
+  XMM6_REG, XMM7_REG,
+  XMM8_REG, XMM9_REG, XMM10_REG, XMM11_REG,
+  XMM12_REG, XMM13_REG, XMM14_REG, XMM15_REG
+};
+
 /* Define the structure for the machine field in struct function.  */
 
 struct GTY(()) stack_local_entry {
@@ -23704,17 +23714,10 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 		  rtx callarg2,
 		  rtx pop, bool sibcall)
 {
-  /* We need to represent that SI and DI registers are clobbered
-     by SYSV calls.  */
-  static int clobbered_registers[] = {
-	XMM6_REG, XMM7_REG, XMM8_REG,
-	XMM9_REG, XMM10_REG, XMM11_REG,
-	XMM12_REG, XMM13_REG, XMM14_REG,
-	XMM15_REG, SI_REG, DI_REG
-  };
-  rtx vec[ARRAY_SIZE (clobbered_registers) + 3];
+  int const cregs_size = ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
+  rtx vec[3 + cregs_size];
   rtx use = NULL, call;
-  unsigned int vec_len;
+  unsigned int vec_len = 0;
 
   if (pop == const0_rtx)
     pop = NULL;
@@ -23730,8 +23733,10 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   else
     {
       /* Static functions and indirect calls don't need the pic register.  */
-      if (flag_pic && (!TARGET_64BIT
-                       || (ix86_cmodel == CM_LARGE_PIC && DEFAULT_ABI != MS_ABI))
+      if (flag_pic
+	  && (!TARGET_64BIT
+	      || (ix86_cmodel == CM_LARGE_PIC
+		  && DEFAULT_ABI != MS_ABI))
 	  && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
 	  && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
 	use_reg (&use, pic_offset_table_rtx);
@@ -23758,7 +23763,6 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));
     }
 
-  vec_len = 0;
   call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);
   if (retval)
     call = gen_rtx_SET (VOIDmode, retval, call);
@@ -23779,12 +23783,14 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       vec[vec_len++] = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx),
 				       UNSPEC_MS_TO_SYSV_CALL);
 
-      for (i = 0; i < ARRAY_SIZE (clobbered_registers); i++)
-	vec[vec_len++]
-	  = gen_rtx_CLOBBER (VOIDmode,
-			     gen_rtx_REG (SSE_REGNO_P (clobbered_registers[i])
-					  ? TImode : DImode,
-					  clobbered_registers[i]));
+      for (i = 0; i < cregs_size; i++)
+	{
+	  int regno = x86_64_ms_sysv_extra_clobbered_registers[i];
+	  enum machine_mode mode = SSE_REGNO_P (regno) ? TImode : DImode;
+
+	  vec[vec_len++]
+	    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (mode, regno));
+	}
     }
 
   if (vec_len > 1)
