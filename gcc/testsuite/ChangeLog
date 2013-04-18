@@ -1,3 +1,17 @@
+2013-04-18   Cary Coutant  <ccoutant@google.com>
+
+	* g++.dg/debug/dwarf2/typedef2.C: Add -fno-debug-types-section flag.
+	* g++.dg/debug/dwarf2/typedef4.C: Likewise.
+	* g++.dg/debug/dwarf2/static-data-member1.C: Likewise.
+	* g++.dg/debug/dwarf2/global-used-types-1.C: Likewise.
+	* g++.dg/debug/dwarf2/self-ref-1.C: Likewise.
+	* g++.dg/debug/dwarf2/nested-2.C: Likewise.
+	* g++.dg/debug/dwarf2/typedef1.C: Likewise.
+	* g++.dg/debug/dwarf2/namespace-2.C: Likewise.
+	* g++.dg/debug/dwarf2/integer-typedef.C: Likewise.
+	* g++.dg/debug/dwarf2/self-ref-2.C: Likewise.
+	* g++.dg/debug/dwarf2/explicit-constructor.C: Likewise.
+
 2013-04-18  Grigoriy Kraynov  <grigoriy.kraynov@intel.com>
 
 	* gcc.target/i386/avx2-vpop-check.h: volatility is casted away in
