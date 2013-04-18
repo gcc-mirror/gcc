@@ -1,3 +1,10 @@
+2013-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56984
+	* tree-vrp.c (register_edge_assert_for_2): For (x >> M) < N
+	and (x >> M) >= N don't register any assertion if N << M is the
+	minimum value.
+
 2013-04-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* lower-subreg.c (resolve_simple_move): If called self-recursive,
