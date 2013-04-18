@@ -33,6 +33,15 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef gimple gimple_seq_node;
 
+/* Types of supported temporaries.  GIMPLE temporaries may be symbols
+   in normal form (i.e., regular decls) or SSA names.  This enum is
+   used by create_gimple_tmp to tell it what kind of temporary the
+   caller wants.  */
+enum ssa_mode {
+    M_SSA = 0,
+    M_NORMAL
+};
+
 /* For each block, the PHI nodes that need to be rewritten are stored into
    these vectors.  */
 typedef vec<gimple> gimple_vec;
@@ -720,6 +729,17 @@ union GTY ((desc ("gimple_statement_structure (&%h)"),
 
 /* In gimple.c.  */
 
+/* Helper functions to build GIMPLE statements.  */
+tree create_gimple_tmp (tree, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, tree, int, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, gimple, int, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, tree, tree, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, gimple, tree, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, tree, gimple, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, gimple, gimple, enum ssa_mode = M_SSA);
+gimple build_type_cast (tree, tree, enum ssa_mode = M_SSA);
+gimple build_type_cast (tree, gimple, enum ssa_mode = M_SSA);
+
 /* Offset in bytes to the location of the operand vector.
    Zero if there is no operand vector for this tuple structure.  */
 extern size_t const gimple_ops_offset_[];
@@ -1095,7 +1115,6 @@ gimple_seq_empty_p (gimple_seq s)
 {
   return s == NULL;
 }
-
 
 void gimple_seq_add_stmt (gimple_seq *, gimple);
 
@@ -5326,4 +5345,15 @@ extern tree maybe_fold_or_comparisons (enum tree_code, tree, tree,
 				       enum tree_code, tree, tree);
 
 bool gimple_val_nonnegative_real_p (tree);
+
+
+/* Set the location of all statements in SEQ to LOC.  */
+
+static inline void
+gimple_seq_set_location (gimple_seq seq, location_t loc)
+{
+  for (gimple_stmt_iterator i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
+    gimple_set_location (gsi_stmt (i), loc);
+}
+
 #endif  /* GCC_GIMPLE_H */
