@@ -418,6 +418,9 @@ gupcr_gmem_init (void)
 		      (gupcr_ptl_ni,
 		       GUPCR_PTL_PTE_GMEM, &le,
 		       PTL_PRIORITY_LIST, NULL, &gupcr_gmem_le));
+  gupcr_debug (FC_MEM, "Gmem LE created at 0x%lx with size 0x%lx)",
+	      (long unsigned) gupcr_gmem_base,
+	      (long unsigned) gupcr_gmem_size);
   /* Initialize GMEM get lists */
   gupcr_gmem_gets.num_pending = 0;
   gupcr_gmem_gets.num_completed = 0;

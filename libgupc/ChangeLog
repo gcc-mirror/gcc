@@ -1,3 +1,10 @@
+2013-04-18  Nenad Vukicevic  <nenad@intrepid.com>
+
+	portals4/gupcr_gmem.c (gupcr_gmem_init): Add debug logging for
+	GMEM location/size.
+	portals4/gupcr_lock_sup.c (gupcr_lock_init): Fix the debug print
+	format for GMEM size.
+
 2013-04-11  Nenad Vukicevic  <nenad@intrepid.com>
 
 	configure.ac: Fix check for correct bounce buffer size value where

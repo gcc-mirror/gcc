@@ -273,7 +273,7 @@ gupcr_lock_init (void)
     PTL_LE_EVENT_SUCCESS_DISABLE | PTL_LE_EVENT_LINK_DISABLE;
   gupcr_portals_call (PtlLEAppend, (gupcr_ptl_ni, GUPCR_PTL_PTE_LOCK, &le,
 				    PTL_PRIORITY_LIST, NULL, &gupcr_lock_le));
-  gupcr_debug (FC_LOCK, "Lock LE created at 0x%lx with size 0x%lu)",
+  gupcr_debug (FC_LOCK, "Lock LE created at 0x%lx with size 0x%lx)",
 	       (long unsigned) gupcr_gmem_base,
 	       (long unsigned) gupcr_gmem_size);
   /* Setup MD for writes into lock data structures located on
