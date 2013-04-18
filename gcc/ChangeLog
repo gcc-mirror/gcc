@@ -1,3 +1,11 @@
+2013-04-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_group_access): Properly
+	handle negative step.  Remove redundant checks.
+	(vect_create_data_ref_ptr): Avoid ICEs with non-constant steps.
+	* tree-vect-stmts.c (vectorizable_load): Instead of asserting
+	for negative step and grouped loads fail to vectorize.
+
 2013-04-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* emit-rtl.c (reset_insn_used_flags): New function.
