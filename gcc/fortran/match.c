@@ -5364,7 +5364,6 @@ gfc_match_select_type (void)
   char name[GFC_MAX_SYMBOL_LEN];
   bool class_array;
   gfc_symbol *sym;
-  gfc_namespace *parent_ns;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -5373,8 +5372,6 @@ gfc_match_select_type (void)
   m = gfc_match (" select type ( ");
   if (m != MATCH_YES)
     return m;
-
-  gfc_current_ns = gfc_build_block_ns (gfc_current_ns);
 
   m = gfc_match (" %n => %e", name, &expr2);
   if (m == MATCH_YES)
@@ -5406,7 +5403,10 @@ gfc_match_select_type (void)
 
   m = gfc_match (" )%t");
   if (m != MATCH_YES)
-    goto cleanup;
+    {
+      gfc_error ("parse error in SELECT TYPE statement at %C");
+      goto cleanup;
+    }
 
   /* This ghastly expression seems to be needed to distinguish a CLASS
      array, which can have a reference, from other expressions that
@@ -5444,9 +5444,6 @@ gfc_match_select_type (void)
   return MATCH_YES;
 
 cleanup:
-  parent_ns = gfc_current_ns->parent;
-  gfc_free_namespace (gfc_current_ns);
-  gfc_current_ns = parent_ns;
   return m;
 }
 
