@@ -1,3 +1,10 @@
+2013-04-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* emit-rtl.c (reset_insn_used_flags): New function.
+	(reset_all_used_flags): Use it.
+	(verify_insn_sharing): New function.
+	(verify_rtl_sharing): Fix verification for SEQUENCEs.
+
 2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56984
@@ -108,7 +115,7 @@
 	(pass_rtl_unroll_and_peel_loops): Same.
 	(pass_rtl_doloop): Same.
 
-2013-04-16  Greta Yorsh  <Greta.Yorsh at arm.com>
+2013-04-16  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.c (emit_multi_reg_push): New declaration
 	for an existing function.

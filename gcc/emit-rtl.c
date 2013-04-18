@@ -2596,6 +2596,18 @@ verify_rtx_sharing (rtx orig, rtx insn)
   return;
 }
 
+/* Reset used-flags for INSN.  */
+
+static void
+reset_insn_used_flags (rtx insn)
+{
+  gcc_assert (INSN_P (insn));
+  reset_used_flags (PATTERN (insn));
+  reset_used_flags (REG_NOTES (insn));
+  if (CALL_P (insn))
+    reset_used_flags (CALL_INSN_FUNCTION_USAGE (insn));
+}
+
 /* Go through all the RTL insn bodies and clear all the USED bits.  */
 
 static void
@@ -2606,26 +2618,28 @@ reset_all_used_flags (void)
   for (p = get_insns (); p; p = NEXT_INSN (p))
     if (INSN_P (p))
       {
-	reset_used_flags (PATTERN (p));
-	reset_used_flags (REG_NOTES (p));
-	if (CALL_P (p))
-	  reset_used_flags (CALL_INSN_FUNCTION_USAGE (p));
-	if (GET_CODE (PATTERN (p)) == SEQUENCE)
+	rtx pat = PATTERN (p);
+	if (GET_CODE (pat) != SEQUENCE)
+	  reset_insn_used_flags (p);
+	else
 	  {
-	    int i;
-	    rtx q, sequence = PATTERN (p);
-
-	    for (i = 0; i < XVECLEN (sequence, 0); i++)
-	      {
-		q = XVECEXP (sequence, 0, i);
-		gcc_assert (INSN_P (q));
-		reset_used_flags (PATTERN (q));
-		reset_used_flags (REG_NOTES (q));
-		if (CALL_P (q))
-		  reset_used_flags (CALL_INSN_FUNCTION_USAGE (q));
-	      }
+	    gcc_assert (REG_NOTES (p) == NULL);
+	    for (int i = 0; i < XVECLEN (pat, 0); i++)
+	      reset_insn_used_flags (XVECEXP (pat, 0, i));
 	  }
       }
+}
+
+/* Verify sharing in INSN.  */
+
+static void
+verify_insn_sharing (rtx insn)
+{
+  gcc_assert (INSN_P (insn));
+  reset_used_flags (PATTERN (insn));
+  reset_used_flags (REG_NOTES (insn));
+  if (CALL_P (insn))
+    reset_used_flags (CALL_INSN_FUNCTION_USAGE (insn));
 }
 
 /* Go through all the RTL insn bodies and check that there is no unexpected
@@ -2643,10 +2657,12 @@ verify_rtl_sharing (void)
   for (p = get_insns (); p; p = NEXT_INSN (p))
     if (INSN_P (p))
       {
-	verify_rtx_sharing (PATTERN (p), p);
-	verify_rtx_sharing (REG_NOTES (p), p);
-	if (CALL_P (p))
-	  verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (p), p);
+	rtx pat = PATTERN (p);
+	if (GET_CODE (pat) != SEQUENCE)
+	  verify_insn_sharing (p);
+	else
+	  for (int i = 0; i < XVECLEN (pat, 0); i++)
+	    verify_insn_sharing (XVECEXP (pat, 0, i));
       }
 
   reset_all_used_flags ();
