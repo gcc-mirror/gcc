@@ -1403,7 +1403,10 @@ dump_function_decl (tree t, int flags)
     show_return = !DECL_CONV_FN_P (t)  && !DECL_CONSTRUCTOR_P (t)
 		  && !DECL_DESTRUCTOR_P (t);
   if (show_return)
-    dump_type_prefix (TREE_TYPE (fntype), flags);
+    {
+      tree ret = fndecl_declared_return_type (t);
+      dump_type_prefix (ret, flags);
+    }
 
   /* Print the function name.  */
   if (!do_outer_scope)

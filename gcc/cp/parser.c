@@ -11510,7 +11510,7 @@ cp_parser_decltype (cp_parser *parser)
       cp_lexer_consume_token (parser->lexer);
       if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
 	return error_mark_node;
-      expr = make_auto ();
+      expr = make_decltype_auto ();
       AUTO_IS_DECLTYPE (expr) = true;
       goto rewrite;
     }
