@@ -1,3 +1,10 @@
+2013-04-19  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/sfp-machine.h (_FP_W_TYPE): Change to define
+	as 'unsigned long long' instead of 'unsigned long'.
+	(_FP_WS_TYPE): Change to define as 'signed long long' instead of
+	'signed long'.
+
 2013-04-10  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/linux-atomic.c (SUBWORD_SYNC_OP, SUBWORD_VAL_CAS)
