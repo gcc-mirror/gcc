@@ -1,3 +1,9 @@
+2013-04-17  Jason Merrill  <jason@redhat.com>
+
+	DR 941
+	* decl.c (duplicate_decls): Don't propagate DECL_DELETED_FN to
+	template specializations.
+
 2013-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52748
