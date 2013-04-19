@@ -992,10 +992,7 @@ decls_match (tree newdecl, tree olddecl)
 
       /* A declaration with deduced return type should use its pre-deduction
 	 type for declaration matching.  */
-      if (FNDECL_USED_AUTO (olddecl))
-	r2 = DECL_STRUCT_FUNCTION (olddecl)->language->x_auto_return_pattern;
-      else
-	r2 = TREE_TYPE (f2);
+      r2 = fndecl_declared_return_type (olddecl);
 
       if (same_type_p (TREE_TYPE (f1), r2))
 	{
@@ -1538,11 +1535,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 			      TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
 	    {
 	      error ("new declaration %q#D", newdecl);
-	      if (FNDECL_USED_AUTO (olddecl))
-		error_at (DECL_SOURCE_LOCATION (olddecl), "ambiguates old "
-			  "declaration with deduced return type");
-	      else
-		error ("ambiguates old declaration %q+#D", olddecl);
+	      error ("ambiguates old declaration %q+#D", olddecl);
               return error_mark_node;
 	    }
 	  else
@@ -9503,6 +9496,9 @@ grokdeclarator (const cp_declarator *declarator,
 			  pedwarn (input_location, 0, "%qs function uses "
 				   "%<auto%> type specifier without trailing "
 				   "return type", name);
+			else if (virtualp)
+			  permerror (input_location, "virtual function cannot "
+				     "have deduced return type");
 		      }
 		    else if (!is_auto (type))
 		      {
@@ -14378,6 +14374,40 @@ cxx_comdat_group (tree decl)
     }
 
   return name;
+}
+
+/* Returns the return type for FN as written by the user, which may include
+   a placeholder for a deduced return type.  */
+
+tree
+fndecl_declared_return_type (tree fn)
+{
+  fn = STRIP_TEMPLATE (fn);
+  if (FNDECL_USED_AUTO (fn))
+    return (DECL_STRUCT_FUNCTION (fn)->language
+	    ->x_auto_return_pattern);
+  else
+    return TREE_TYPE (TREE_TYPE (fn));
+}
+
+/* Returns true iff DECL was declared with an auto return type and it has
+   not yet been deduced to a real type.  */
+
+bool
+undeduced_auto_decl (tree decl)
+{
+  if (cxx_dialect < cxx1y)
+    return false;
+  return type_uses_auto (TREE_TYPE (decl));
+}
+
+/* Complain if DECL has an undeduced return type.  */
+
+void
+require_deduced_type (tree decl)
+{
+  if (undeduced_auto_decl (decl))
+    error ("use of %qD before deduction of %<auto%>", decl);
 }
 
 #include "gt-cp-decl.h"

@@ -5225,6 +5225,9 @@ extern void initialize_artificial_var		(tree, vec<constructor_elt, va_gc> *);
 extern tree check_var_type			(tree, tree);
 extern tree reshape_init                        (tree, tree, tsubst_flags_t);
 extern tree next_initializable_field (tree);
+extern tree fndecl_declared_return_type		(tree);
+extern bool undeduced_auto_decl			(tree);
+extern void require_deduced_type		(tree);
 
 extern bool defer_mark_used_calls;
 extern GTY(()) vec<tree, va_gc> *deferred_mark_used_calls;
@@ -5425,6 +5428,7 @@ extern tree check_explicit_specialization	(tree, tree, int, int);
 extern int num_template_headers_for_class	(tree);
 extern void check_template_variable		(tree);
 extern tree make_auto				(void);
+extern tree make_decltype_auto			(void);
 extern tree do_auto_deduction			(tree, tree, tree);
 extern tree type_uses_auto			(tree);
 extern void append_type_to_template_for_access_check (tree, tree, tree,

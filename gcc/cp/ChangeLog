@@ -1,5 +1,22 @@
 2013-04-19  Jason Merrill  <jason@redhat.com>
 
+	N3638 changes to return type deduction
+	* decl.c (undeduced_auto_decl): New.
+	(require_deduced_type): New.
+	(fndecl_declared_return_type): New.
+	(decls_match): Use it.
+	(duplicate_decls): Don't check for auto return.
+	(grokdeclarator): Reject virtual auto.
+	* class.c (resolve_address_of_overloaded_function): Handle
+	auto function templates.
+	* decl2.c (mark_used): Use undeduced_auto_decl, require_deduced_type.
+	* cp-tree.h: Declare new fns.
+	* error.c (dump_function_decl): Use fndecl_declared_return_type.
+	* search.c (check_final_overrider): Likewise.
+	* pt.c (make_decltype_auto): New.
+	(do_auto_deduction): Require plain decltype(auto).
+	(is_auto): Adjust.
+
 	DR 941
 	* decl.c (duplicate_decls): Don't propagate DECL_DELETED_FN to
 	template specializations.
