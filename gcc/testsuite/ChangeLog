@@ -1,3 +1,8 @@
+2013-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56992
+	* g++.dg/opt/pr56999.C: New test.
+
 2013-04-18   Cary Coutant  <ccoutant@google.com>
 
 	* g++.dg/debug/dwarf2/pubnames-2.C: Add -fno-debug-types-section.
