@@ -1563,24 +1563,15 @@ static void
 add_dependence_list_and_free (struct deps_desc *deps, rtx insn, rtx *listp,
                               int uncond, enum reg_note dep_type)
 {
-  rtx list, next;
+  add_dependence_list (insn, *listp, uncond, dep_type);
 
   /* We don't want to short-circuit dependencies involving debug
      insns, because they may cause actual dependencies to be
      disregarded.  */
   if (deps->readonly || DEBUG_INSN_P (insn))
-    {
-      add_dependence_list (insn, *listp, uncond, dep_type);
-      return;
-    }
+    return;
 
-  for (list = *listp, *listp = NULL; list ; list = next)
-    {
-      next = XEXP (list, 1);
-      if (uncond || ! sched_insns_conditions_mutex_p (insn, XEXP (list, 0)))
-	add_dependence (insn, XEXP (list, 0), dep_type);
-      free_INSN_LIST_node (list);
-    }
+  free_INSN_LIST_list (listp);
 }
 
 /* Remove all occurences of INSN from LIST.  Return the number of
@@ -1763,6 +1754,15 @@ flush_pending_lists (struct deps_desc *deps, rtx insn, int for_read,
 
   add_dependence_list_and_free (deps, insn, &deps->pending_jump_insns, 1,
 				REG_DEP_ANTI);
+
+  if (DEBUG_INSN_P (insn))
+    {
+      if (for_write)
+	free_INSN_LIST_list (&deps->pending_read_insns);
+      free_INSN_LIST_list (&deps->pending_write_insns);
+      free_INSN_LIST_list (&deps->last_pending_memory_flush);
+      free_INSN_LIST_list (&deps->pending_jump_insns);
+    }
 
   if (!deps->readonly)
     {
@@ -3262,9 +3262,9 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
             SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
           }
 
-      /* Flush pending lists on jumps, but not on speculative checks.  */
-      if (JUMP_P (insn) && !(sel_sched_p ()
-                             && sel_insn_is_speculation_check (insn)))
+      /* Don't flush pending lists on speculative checks for
+	 selective scheduling.  */
+      if (!sel_sched_p () || !sel_insn_is_speculation_check (insn))
 	flush_pending_lists (deps, insn, true, true);
 
       reg_pending_barrier = NOT_A_BARRIER;

@@ -1,3 +1,24 @@
+2013-04-19  Matthias Klose  <doko@ubuntu.com>
+
+	PR middle-end/56848
+	Re-apply
+	2013-04-01  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2013-02-25  Andrey Belevantsev  <abel@ispras.ru>
+	Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/56077
+	* sched-deps.c (sched_analyze_insn): When reg_pending_barrier,
+	flush pending lists also on non-jumps.  Adjust comment.
+
+	Backport from 4.8:
+	2012-08-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* sched-deps.c (add_dependence_list_and_free): Simplify.
+	(flush_pending_list_and_free): Fix a hack that was fixing a hack.  Free
+	lists when add_dependence_list_and_free doesn't free them.
+
 2013-04-19  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
