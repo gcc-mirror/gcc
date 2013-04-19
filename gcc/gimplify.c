@@ -2729,6 +2729,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       gimple_stmt_iterator gsi;
       call = gimple_build_call_from_tree (*expr_p);
       gimple_call_set_fntype (call, TREE_TYPE (fnptrtype));
+      notice_special_calls (call);
       gimplify_seq_add_stmt (pre_p, call);
       gsi = gsi_last (*pre_p);
       fold_stmt (&gsi);
@@ -4968,6 +4969,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       STRIP_USELESS_TYPE_CONVERSION (CALL_EXPR_FN (*from_p));
       assign = gimple_build_call_from_tree (*from_p);
       gimple_call_set_fntype (assign, TREE_TYPE (fnptrtype));
+      notice_special_calls (assign);
       if (!gimple_call_noreturn_p (assign))
 	gimple_call_set_lhs (assign, *to_p);
     }
