@@ -1,3 +1,27 @@
+2013-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _slp_instance): Move load_permutation
+	member ...
+	(struct _slp_tree): ... here.  Make it a vector of unsigned ints.
+	(SLP_INSTANCE_LOAD_PERMUTATION): Remove.
+	(SLP_TREE_LOAD_PERMUTATION): Add.
+	(vect_transform_slp_perm_load): Adjust prototype.
+	* tree-vect-slp.c (vect_free_slp_tree): Adjust.
+	(vect_free_slp_instance): Likewise.
+	(vect_create_new_slp_node): Likewise.
+	(vect_supported_slp_permutation_p): Remove.
+	(vect_slp_rearrange_stmts): Adjust.
+	(vect_supported_load_permutation_p): Likewise.  Inline
+	vect_supported_slp_permutation_p here.
+	(vect_analyze_slp_instance): Compute load permutations per
+	slp node instead of per instance.
+	(vect_get_slp_defs): Adjust.
+	(vect_transform_slp_perm_load): Likewise.
+	(vect_schedule_slp_instance): Remove redundant code.
+	(vect_schedule_slp): Remove hack for PR56270, add it ...
+	* tree-vect-stmts.c (vectorizable_load): ... here, do not
+	CSE loads for SLP.  Adjust.
+
 2013-04-19  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.c (load_multiple_sequence, ldm_stm_operation_p): Fix
