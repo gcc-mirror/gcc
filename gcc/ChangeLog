@@ -1,3 +1,12 @@
+2013-04-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56992
+	* lra-coalesce.c (coalescable_pseudo_p): Remove 2nd parameter and
+	related code.
+	(lra_coalesce): Remove split_origin_bitmap and related code.
+	* lra.c (lra): Coalesce after undoing inheritance.  Recreate live
+	ranges if necessary.
+
 2013-04-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (x86_64_ms_sysv_extra_clobbered_registers):
