@@ -1,3 +1,8 @@
+2013-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57000
+	* gcc.dg/tree-ssa/reassoc-27.c: New testcase.
+
 2013-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

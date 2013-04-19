@@ -1,3 +1,8 @@
+2013-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57000
+	* tree-ssa-reassoc.c (pass_reassoc): Add TODO_update_ssa_only_virtuals.
+
 2013-04-19  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/cortex-m4-fpu.md (cortex_m4_v): Delete cpu unit.
