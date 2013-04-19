@@ -1,3 +1,8 @@
+2013-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56982
+	* gcc.c-torture/execute/pr56982.c: New testcase.
+
 2013-04-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/56718

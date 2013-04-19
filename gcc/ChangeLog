@@ -1,5 +1,20 @@
 2013-04-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/56982
+	* builtins.def (BUILT_IN_LONGJMP): longjmp is not a leaf
+	function.
+	* gimplify.c (gimplify_call_expr): Notice special calls.
+	(gimplify_modify_expr): Likewise.
+	* tree-cfg.c (make_abnormal_goto_edges): Handle setjmp-like
+	abnormal control flow receivers.
+	(call_can_make_abnormal_goto): Handle cfun->calls_setjmp
+	in the same way as cfun->has_nonlocal_labels.
+	(gimple_purge_dead_abnormal_call_edges): Likewise.
+	(stmt_starts_bb_p): Make setjmp-like abnormal control flow
+	receivers start a basic-block.
+
+2013-04-19  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (struct _slp_instance): Move load_permutation
 	member ...
 	(struct _slp_tree): ... here.  Make it a vector of unsigned ints.
