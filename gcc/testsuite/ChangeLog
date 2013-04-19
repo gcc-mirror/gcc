@@ -1,3 +1,13 @@
+2013-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56872
+	* gfortran.dg/array_constructor_45.f90:  New test.
+	* gfortran.dg/array_constructor_46.f90:  New test.
+	* gfortran.dg/array_constructor_47.f90:  New test.
+	* gfortran.dg/array_constructor_40.f90:  Adjust number of
+	while loops.
+
 2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/56999

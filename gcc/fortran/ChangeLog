@@ -1,3 +1,14 @@
+2013-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56872
+	* frontend-passes.c (copy_walk_reduction_arg): Change argument type
+	to gfc_constructor.  If it has an iterator, wrap the copy of its
+	expression in an array constructor with that iterator.  Don't special
+	case function expressions.
+	(callback_reduction): Update caller.  Don't return early if there is
+	an iterator.
+
 2013-04-18  Tobias Burnus  <burnus@net-b.de>
 
 	* expr.c (find_array_element): Don't copy expr.
