@@ -1,3 +1,12 @@
+2013-04-19  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/cortex-m4-fpu.md (cortex_m4_v): Delete cpu unit.
+	Replace with ...
+	(cortex_m4_v_a,  cortex_m4_v_b): ... new cpu units.
+	(cortex_m4_v, cortex_m4_exa_va, cortex_m4_exb_vb): New reservations.
+	(cortex_m4_fmacs): Use new reservations.
+	(cortex_m4_f_load, cortex_m4_f_store): Likewise.
+
 2013-04-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/56999
