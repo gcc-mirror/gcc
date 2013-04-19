@@ -1,3 +1,14 @@
+2013-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/56718
+	* ipa-cp.c (ipa_value_from_known_type_jfunc): Moved...
+	* ipa-prop.c (ipa_binfo_from_known_type_jfunc): ...here, renamed
+	and made public.  Adjusted all callers.
+	(ipa_intraprocedural_devirtualization): New function.
+	* ipa-prop.h (ipa_binfo_from_known_type_jfunc): Declare.
+	(ipa_intraprocedural_devirtualization): Likewise.
+	* Makefile.in (tree-ssa-pre.o): Add ipa-prop.h to dependencies.
+
 2013-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57000

@@ -1,3 +1,9 @@
+2013-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/56718
+	* g++.dg/ipa/imm-devirt-1.C: New test.
+	* g++.dg/ipa/imm-devirt-2.C: Likewise.
+
 2013-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57000
