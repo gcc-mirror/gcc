@@ -106,6 +106,9 @@ struct _slp_tree {
   vec<slp_tree> children;
   /* A group of scalar stmts to be vectorized together.  */
   vec<gimple> stmts;
+  /* Load permutation relative to the stores, NULL if there is no
+     permutation.  */
+  vec<unsigned> load_permutation;
   /* Vectorized stmt/s.  */
   vec<gimple> vec_stmts;
   /* Number of vector stmts that are created to replace the group of scalar
@@ -131,10 +134,6 @@ typedef struct _slp_instance {
   /* Vectorization costs associated with SLP instance.  */
   stmt_vector_for_cost body_cost_vec;
 
-  /* Loads permutation relatively to the stores, NULL if there is no
-     permutation.  */
-  vec<int> load_permutation;
-
   /* The group of nodes that contain loads of this SLP instance.  */
   vec<slp_tree> loads;
 
@@ -149,7 +148,6 @@ typedef struct _slp_instance {
 #define SLP_INSTANCE_GROUP_SIZE(S)               (S)->group_size
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_BODY_COST_VEC(S)            (S)->body_cost_vec
-#define SLP_INSTANCE_LOAD_PERMUTATION(S)         (S)->load_permutation
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_FIRST_LOAD_STMT(S)          (S)->first_load
 
@@ -157,6 +155,7 @@ typedef struct _slp_instance {
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
 #define SLP_TREE_VEC_STMTS(S)                    (S)->vec_stmts
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
+#define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 
 /* This structure is used in creation of an SLP tree.  Each instance
    corresponds to the same operand in a group of scalar stmts in an SLP
@@ -961,7 +960,7 @@ extern int vect_get_single_scalar_iteration_cost (loop_vec_info);
 
 /* In tree-vect-slp.c.  */
 extern void vect_free_slp_instance (slp_instance);
-extern bool vect_transform_slp_perm_load (gimple, vec<tree> ,
+extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
                                           gimple_stmt_iterator *, int,
                                           slp_instance, bool);
 extern bool vect_schedule_slp (loop_vec_info, bb_vec_info);
