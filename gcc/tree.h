@@ -613,6 +613,9 @@ struct GTY(()) tree_base {
        OMP_CLAUSE_PRIVATE_DEBUG in
            OMP_CLAUSE_PRIVATE
 
+       OMP_CLAUSE_LINEAR_NO_COPYIN in
+	   OMP_CLAUSE_LINEAR
+
        TRANSACTION_EXPR_RELAXED in
 	   TRANSACTION_EXPR
 
@@ -632,6 +635,9 @@ struct GTY(()) tree_base {
 
        OMP_CLAUSE_PRIVATE_OUTER_REF in
 	   OMP_CLAUSE_PRIVATE
+
+       OMP_CLAUSE_LINEAR_NO_COPYOUT in
+	   OMP_CLAUSE_LINEAR
 
        TYPE_REF_IS_RVALUE in
 	   REFERENCE_TYPE
@@ -1916,6 +1922,16 @@ extern void protected_set_expr_location (tree, location_t);
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_merge
 #define OMP_CLAUSE_REDUCTION_PLACEHOLDER(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 3)
+
+/* True if a LINEAR clause doesn't need copy in.  True for iterator vars which
+   are always initialized inside of the loop construct, false otherwise.  */
+#define OMP_CLAUSE_LINEAR_NO_COPYIN(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR)->base.public_flag)
+
+/* True if a LINEAR clause doesn't need copy out.  True for iterator vars which
+   are declared inside of the simd construct.  */
+#define OMP_CLAUSE_LINEAR_NO_COPYOUT(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR))
 
 #define OMP_CLAUSE_LINEAR_STEP(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR), 1)

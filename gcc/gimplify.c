@@ -59,14 +59,18 @@ enum gimplify_omp_var_data
   GOVD_LOCAL = 128,
   GOVD_DEBUG_PRIVATE = 256,
   GOVD_PRIVATE_OUTER_REF = 512,
+  GOVD_LINEAR = 1024,
+  GOVD_ALIGNED = 2048,
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
-			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LOCAL)
+			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
+			   | GOVD_LOCAL)
 };
 
 
 enum omp_region_type
 {
   ORT_WORKSHARE = 0,
+  ORT_SIMD = 1, /* #pragma omp for simd is ORT_WORKSHARE.  */
   ORT_PARALLEL = 2,
   ORT_COMBINED_PARALLEL = 3,
   ORT_TASK = 4,
@@ -755,7 +759,9 @@ gimple_add_tmp_var (tree tmp)
       if (gimplify_omp_ctxp)
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
-	  while (ctx && ctx->region_type == ORT_WORKSHARE)
+	  while (ctx
+		 && (ctx->region_type == ORT_WORKSHARE
+		     || ctx->region_type == ORT_SIMD))
 	    ctx = ctx->outer_context;
 	  if (ctx)
 	    omp_add_variable (ctx, tmp, GOVD_LOCAL | GOVD_SEEN);
@@ -2102,7 +2108,9 @@ gimplify_var_or_parm_decl (tree *expr_p)
 	  && decl_function_context (decl) != current_function_decl)
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
-	  while (ctx && ctx->region_type == ORT_WORKSHARE)
+	  while (ctx
+		 && (ctx->region_type == ORT_WORKSHARE
+		     || ctx->region_type == ORT_SIMD))
 	    ctx = ctx->outer_context;
 	  if (!ctx && !pointer_set_insert (nonlocal_vlas, decl))
 	    {
@@ -5751,7 +5759,8 @@ omp_firstprivatize_variable (struct gimplify_omp_ctx *ctx, tree decl)
 	  else
 	    return;
 	}
-      else if (ctx->region_type != ORT_WORKSHARE)
+      else if (ctx->region_type != ORT_WORKSHARE
+	       && ctx->region_type != ORT_SIMD)
 	omp_add_variable (ctx, decl, GOVD_FIRSTPRIVATE);
 
       ctx = ctx->outer_context;
@@ -5973,7 +5982,8 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       enum omp_clause_default_kind default_kind, kind;
       struct gimplify_omp_ctx *octx;
 
-      if (ctx->region_type == ORT_WORKSHARE)
+      if (ctx->region_type == ORT_WORKSHARE
+	  || ctx->region_type == ORT_SIMD)
 	goto do_outer;
 
       /* ??? Some compiler-generated variables (like SAVE_EXPRs) could be
@@ -6086,7 +6096,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
    to the contrary in the innermost scope, generate an error.  */
 
 static bool
-omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
+omp_is_private (struct gimplify_omp_ctx *ctx, tree decl, bool simd)
 {
   splay_tree_node n;
 
@@ -6097,8 +6107,12 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
 	{
 	  if (ctx == gimplify_omp_ctxp)
 	    {
-	      error ("iteration variable %qE should be private",
-		     DECL_NAME (decl));
+	      if (simd)
+		error ("iteration variable %qE is predetermined linear",
+		       DECL_NAME (decl));
+	      else
+		error ("iteration variable %qE should be private",
+		       DECL_NAME (decl));
 	      n->value = GOVD_PRIVATE;
 	      return true;
 	    }
@@ -6116,16 +6130,26 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
 	  else if ((n->value & GOVD_REDUCTION) != 0)
 	    error ("iteration variable %qE should not be reduction",
 		   DECL_NAME (decl));
+	  else if (simd && (n->value & GOVD_LASTPRIVATE) != 0)
+	    error ("iteration variable %qE should not be lastprivate",
+		   DECL_NAME (decl));
+	  else if (simd && (n->value & GOVD_PRIVATE) != 0)
+	    error ("iteration variable %qE should not be private",
+		   DECL_NAME (decl));
+	  else if (simd && (n->value & GOVD_LINEAR) != 0)
+	    error ("iteration variable %qE is predetermined linear",
+		   DECL_NAME (decl));
 	}
       return (ctx == gimplify_omp_ctxp
 	      || (ctx->region_type == ORT_COMBINED_PARALLEL
 		  && gimplify_omp_ctxp->outer_context == ctx));
     }
 
-  if (ctx->region_type != ORT_WORKSHARE)
+  if (ctx->region_type != ORT_WORKSHARE
+      && ctx->region_type != ORT_SIMD)
     return false;
   else if (ctx->outer_context)
-    return omp_is_private (ctx->outer_context, decl);
+    return omp_is_private (ctx->outer_context, decl, simd);
   return false;
 }
 
@@ -6150,7 +6174,8 @@ omp_check_private (struct gimplify_omp_ctx *ctx, tree decl)
       if (n != NULL)
 	return (n->value & GOVD_SHARED) == 0;
     }
-  while (ctx->region_type == ORT_WORKSHARE);
+  while (ctx->region_type == ORT_WORKSHARE
+	 || ctx->region_type == ORT_SIMD);
   return false;
 }
 
@@ -6202,6 +6227,15 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_REDUCTION:
 	  flags = GOVD_REDUCTION | GOVD_SEEN | GOVD_EXPLICIT;
 	  check_non_private = "reduction";
+	  goto do_add;
+	case OMP_CLAUSE_LINEAR:
+	  if (gimplify_expr (&OMP_CLAUSE_LINEAR_STEP (c), pre_p, NULL,
+			     is_gimple_val, fb_rvalue) == GS_ERROR)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  flags = GOVD_LINEAR | GOVD_EXPLICIT;
 	  goto do_add;
 
 	do_add:
@@ -6293,7 +6327,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_NUM_THREADS:
 	  if (gimplify_expr (&OMP_CLAUSE_OPERAND (c, 0), pre_p, NULL,
 			     is_gimple_val, fb_rvalue) == GS_ERROR)
-	      remove = true;
+	    remove = true;
 	  break;
 
 	case OMP_CLAUSE_NOWAIT:
@@ -6302,6 +6336,19 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
+	case OMP_CLAUSE_SAFELEN:
+	  break;
+
+	case OMP_CLAUSE_ALIGNED:
+	  decl = OMP_CLAUSE_DECL (c);
+	  if (error_operand_p (decl))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if (!is_global_var (decl)
+	      && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
+	    omp_add_variable (ctx, decl, GOVD_ALIGNED);
 	  break;
 
 	case OMP_CLAUSE_DEFAULT:
@@ -6372,6 +6419,10 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     code = OMP_CLAUSE_PRIVATE;
   else if (flags & GOVD_FIRSTPRIVATE)
     code = OMP_CLAUSE_FIRSTPRIVATE;
+  else if (flags & GOVD_LASTPRIVATE)
+    code = OMP_CLAUSE_LASTPRIVATE;
+  else if (flags & GOVD_ALIGNED)
+    return 0;
   else
     gcc_unreachable ();
 
@@ -6404,6 +6455,7 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_SHARED:
 	case OMP_CLAUSE_FIRSTPRIVATE:
+	case OMP_CLAUSE_LINEAR:
 	  decl = OMP_CLAUSE_DECL (c);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	  remove = !(n->value & GOVD_SEEN);
@@ -6419,6 +6471,27 @@ gimplify_adjust_omp_clauses (tree *list_p)
 		  OMP_CLAUSE_SET_CODE (c, OMP_CLAUSE_PRIVATE);
 		  OMP_CLAUSE_PRIVATE_DEBUG (c) = 1;
 		}
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
+		  && ctx->outer_context
+		  && ctx->outer_context->region_type == ORT_COMBINED_PARALLEL
+		  && !(OMP_CLAUSE_LINEAR_NO_COPYIN (c)
+		       && OMP_CLAUSE_LINEAR_NO_COPYOUT (c))
+		  && !is_global_var (decl))
+		{
+		  n = splay_tree_lookup (ctx->outer_context->variables,
+					 (splay_tree_key) decl);
+		  if (n == NULL
+		      || (n->value & GOVD_DATA_SHARE_CLASS) == 0)
+		    {
+		      int flags = OMP_CLAUSE_LINEAR_NO_COPYIN (c)
+				  ? GOVD_LASTPRIVATE : GOVD_SHARED;
+		      if (n == NULL)
+			omp_add_variable (ctx->outer_context, decl,
+					  flags | GOVD_SEEN);
+		      else
+			n->value |= flags | GOVD_SEEN;
+		    }
+		}
 	    }
 	  break;
 
@@ -6429,6 +6502,15 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	  OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (c)
 	    = (n->value & GOVD_FIRSTPRIVATE) != 0;
+	  break;
+
+	case OMP_CLAUSE_ALIGNED:
+	  decl = OMP_CLAUSE_DECL (c);
+	  if (!is_global_var (decl))
+	    {
+	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	      remove = n == NULL || !(n->value & GOVD_SEEN);
+	    }
 	  break;
 
 	case OMP_CLAUSE_REDUCTION:
@@ -6445,6 +6527,7 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
+	case OMP_CLAUSE_SAFELEN:
 	  break;
 
 	default:
@@ -6548,14 +6631,42 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   gimple gfor;
   gimple_seq for_body, for_pre_body;
   int i;
+  bool simd;
+  bitmap has_decl_expr = NULL;
 
   for_stmt = *expr_p;
 
+  simd = TREE_CODE (for_stmt) == OMP_SIMD
+	 || TREE_CODE (for_stmt) == OMP_FOR_SIMD;
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p,
-			     ORT_WORKSHARE);
+			     TREE_CODE (for_stmt) == OMP_SIMD
+			     ? ORT_SIMD : ORT_WORKSHARE);
 
   /* Handle OMP_FOR_INIT.  */
   for_pre_body = NULL;
+  if (simd && OMP_FOR_PRE_BODY (for_stmt))
+    {
+      has_decl_expr = BITMAP_ALLOC (NULL);
+      if (TREE_CODE (OMP_FOR_PRE_BODY (for_stmt)) == DECL_EXPR
+	  && TREE_CODE (DECL_EXPR_DECL (OMP_FOR_PRE_BODY (for_stmt)))
+	     == VAR_DECL)
+	{
+	  t = OMP_FOR_PRE_BODY (for_stmt);
+	  bitmap_set_bit (has_decl_expr, DECL_UID (DECL_EXPR_DECL (t)));
+	}
+      else if (TREE_CODE (OMP_FOR_PRE_BODY (for_stmt)) == STATEMENT_LIST)
+	{
+	  tree_stmt_iterator si;
+	  for (si = tsi_start (OMP_FOR_PRE_BODY (for_stmt)); !tsi_end_p (si);
+	       tsi_next (&si))
+	    {
+	      t = tsi_stmt (si);
+	      if (TREE_CODE (t) == DECL_EXPR
+		  && TREE_CODE (DECL_EXPR_DECL (t)) == VAR_DECL)
+		bitmap_set_bit (has_decl_expr, DECL_UID (DECL_EXPR_DECL (t)));
+	    }
+	}
+    }
   gimplify_and_add (OMP_FOR_PRE_BODY (for_stmt), &for_pre_body);
   OMP_FOR_PRE_BODY (for_stmt) = NULL_TREE;
 
@@ -6574,7 +6685,29 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  || POINTER_TYPE_P (TREE_TYPE (decl)));
 
       /* Make sure the iteration variable is private.  */
-      if (omp_is_private (gimplify_omp_ctxp, decl))
+      bool is_private = omp_is_private (gimplify_omp_ctxp, decl, simd);
+      tree c = NULL_TREE;
+      if (simd)
+	{
+	  splay_tree_node n = splay_tree_lookup (gimplify_omp_ctxp->variables,
+						 (splay_tree_key)decl);
+	  if (n != NULL && (n->value & GOVD_DATA_SHARE_CLASS) != 0)
+	    omp_notice_variable (gimplify_omp_ctxp, decl, true);
+	  else
+	    {
+	      c = build_omp_clause (input_location, OMP_CLAUSE_LINEAR);
+	      OMP_CLAUSE_LINEAR_NO_COPYIN (c) = 1;
+	      if (has_decl_expr
+		  && bitmap_bit_p (has_decl_expr, DECL_UID (decl)))
+		OMP_CLAUSE_LINEAR_NO_COPYOUT (c) = 1;
+	      OMP_CLAUSE_DECL (c) = decl;
+	      OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (for_stmt);
+	      OMP_FOR_CLAUSES (for_stmt) = c;
+	      omp_add_variable (gimplify_omp_ctxp, decl,
+				GOVD_LINEAR | GOVD_EXPLICIT | GOVD_SEEN);
+	    }
+	}
+      else if (is_private)
 	omp_notice_variable (gimplify_omp_ctxp, decl, true);
       else
 	omp_add_variable (gimplify_omp_ctxp, decl, GOVD_PRIVATE | GOVD_SEEN);
@@ -6616,6 +6749,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	case PREINCREMENT_EXPR:
 	case POSTINCREMENT_EXPR:
 	  t = build_int_cst (TREE_TYPE (decl), 1);
+	  if (c)
+	    OMP_CLAUSE_LINEAR_STEP (c) = t;
 	  t = build2 (PLUS_EXPR, TREE_TYPE (decl), var, t);
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (var), var, t);
 	  TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), i) = t;
@@ -6624,6 +6759,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	case PREDECREMENT_EXPR:
 	case POSTDECREMENT_EXPR:
 	  t = build_int_cst (TREE_TYPE (decl), -1);
+	  if (c)
+	    OMP_CLAUSE_LINEAR_STEP (c) = t;
 	  t = build2 (PLUS_EXPR, TREE_TYPE (decl), var, t);
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (var), var, t);
 	  TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), i) = t;
@@ -6657,6 +6794,20 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
 				is_gimple_val, fb_rvalue);
 	  ret = MIN (ret, tret);
+	  if (c)
+	    {
+	      OMP_CLAUSE_LINEAR_STEP (c) = TREE_OPERAND (t, 1);
+	      if (TREE_CODE (t) == MINUS_EXPR)
+		{
+		  t = TREE_OPERAND (t, 1);
+		  OMP_CLAUSE_LINEAR_STEP (c)
+		    = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
+		  tret = gimplify_expr (&OMP_CLAUSE_LINEAR_STEP (c),
+					&for_pre_body, NULL,
+					is_gimple_val, fb_rvalue);
+		  ret = MIN (ret, tret);
+		}
+	    }
 	  break;
 
 	default:
@@ -6665,7 +6816,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
       if (var != decl || TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1)
 	{
-	  tree c;
 	  for (c = OMP_FOR_CLAUSES (for_stmt); c ; c = OMP_CLAUSE_CHAIN (c))
 	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 		&& OMP_CLAUSE_DECL (c) == decl
@@ -6686,6 +6836,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    }
 	}
     }
+
+  BITMAP_FREE (has_decl_expr);
 
   gimplify_and_add (OMP_FOR_BODY (for_stmt), &for_body);
 

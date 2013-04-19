@@ -25875,8 +25875,12 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 				tree list, bool *colon)
 {
   cp_token *token;
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
   if (colon)
-    *colon = false;
+    {
+      parser->colon_corrects_to_scope_p = false;
+      *colon = false;
+    }
   while (1)
     {
       tree name, decl;
@@ -25888,7 +25892,12 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 				      /*declarator_p=*/false,
 				      /*optional_p=*/false);
       if (name == error_mark_node)
-	goto skip_comma;
+	{
+	  if (colon)
+	    parser->colon_corrects_to_scope_p
+	      = saved_colon_corrects_to_scope_p;
+	  goto skip_comma;
+	}
 
       decl = cp_parser_lookup_name_simple (parser, name, token->location);
       if (decl == error_mark_node)
@@ -25909,6 +25918,9 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	break;
       cp_lexer_consume_token (parser->lexer);
     }
+
+  if (colon)
+    parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
 
   if (colon != NULL && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
@@ -26520,6 +26532,64 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list)
 }
 
 /* OpenMP 4.0:
+   safelen ( constant-expression )  */
+
+static tree
+cp_parser_omp_clause_safelen (cp_parser *parser, tree list,
+			      location_t location)
+{
+  tree t, c;
+
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    return list;
+
+  t = cp_parser_constant_expression (parser, false, NULL);
+
+  if (t == error_mark_node
+      || !cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_SAFELEN, "safelen", location);
+
+  c = build_omp_clause (location, OMP_CLAUSE_SAFELEN);
+  OMP_CLAUSE_SAFELEN_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+
+  return c;
+}
+
+/* OpenMP 4.0:
+   simdlen ( constant-expression )  */
+
+static tree
+cp_parser_omp_clause_simdlen (cp_parser *parser, tree list,
+			      location_t location)
+{
+  tree t, c;
+
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    return list;
+
+  t = cp_parser_constant_expression (parser, false, NULL);
+
+  if (t == error_mark_node
+      || !cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_SIMDLEN, "simdlen", location);
+
+  c = build_omp_clause (location, OMP_CLAUSE_SIMDLEN);
+  OMP_CLAUSE_SIMDLEN_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+
+  return c;
+}
+
+/* OpenMP 4.0:
    depend ( depend-kind : variable-list )
 
    depend-kind:
@@ -26943,6 +27013,16 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_proc_bind (parser, clauses,
 						    token->location);
 	  c_name = "proc_bind";
+	  break;
+	case PRAGMA_OMP_CLAUSE_SAFELEN:
+	  clauses = cp_parser_omp_clause_safelen (parser, clauses,
+						  token->location);
+	  c_name = "safelen";
+	  break;
+	case PRAGMA_OMP_CLAUSE_SIMDLEN:
+	  clauses = cp_parser_omp_clause_simdlen (parser, clauses,
+						  token->location);
+	  c_name = "simdlen";
 	  break;
 	default:
 	  cp_parser_error (parser, "expected %<#pragma omp%> clause");

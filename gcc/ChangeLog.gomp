@@ -1,3 +1,31 @@
+2013-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_NO_COPYIN,
+	OMP_CLAUSE_LINEAR_NO_COPYOUT): Define.
+	* omp-low.c (extract_omp_for_data): Handle #pragma omp simd.
+	(build_outer_var_ref): For #pragma omp simd allow linear etc.
+	clauses to bind even to private vars.
+	(scan_sharing_clauses): Handle OMP_CLAUSE_LINEAR, OMP_CLAUSE_ALIGNED
+	and OMP_CLAUSE_SAFELEN.
+	(lower_rec_input_clauses): Handle OMP_CLAUSE_LINEAR.  Don't emit
+	a GOMP_barrier call for firstprivate/lastprivate in #pragma omp simd.
+	(lower_lastprivate_clauses): Handle also OMP_CLAUSE_LINEAR.
+	(expand_omp_simd): New function.
+	(expand_omp_for): Handle #pragma omp simd.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_LINEAR and
+	GOVD_ALIGNED, add GOVD_LINEAR into GOVD_DATA_SHARE_CLASS.
+	(enum omp_region_type): Add ORT_SIMD.
+	(gimple_add_tmp_var, gimplify_var_or_parm_decl, omp_check_private,
+	omp_firstprivatize_variable, omp_notice_variable): Handle ORT_SIMD
+	like ORT_WORKSHARE.
+	(omp_is_private): Likewise.  Add SIMD argument, tweak diagnostics
+	and add extra errors in simd constructs.
+	(gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses): Handle
+	OMP_CLAUSE_LINEAR, OMP_CLAUSE_ALIGNED and OMP_CLAUSE_SAFELEN.
+	(gimplify_adjust_omp_clauses_1): Handle GOVD_LASTPRIVATE and
+	GOVD_ALIGNED.
+	(gimplify_omp_for): Handle #pragma omp simd.
+
 2013-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtin-types.def (DEF_FUNCTION_TYPE_8): Document.

@@ -1,3 +1,16 @@
+2013-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (CP_OMP_CLAUSE_INFO): Also allow it on OMP_CLAUSE_LINEAR.
+	* parser.c (cp_parser_omp_var_list_no_open): If colon is non-NULL,
+	temporarily disable colon_corrects_to_scope_p during the parsing
+	of the variable list.
+	(cp_parser_omp_clause_safelen, cp_parser_omp_clause_simdlen): New
+	functions.
+	(cp_parser_omp_all_clauses): Handle OMP_CLAUSE_SAFELEN and
+	OMP_CLAUSE_SIMDLEN.
+	* semantics.c (finish_omp_clauses): Allow NULL_TREE in
+	OMP_CLAUSE_ALIGNED_ALIGNMENT.
+
 2013-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (finish_omp_taskgroup): New prototype.

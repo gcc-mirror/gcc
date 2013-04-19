@@ -1,3 +1,8 @@
+2013-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/simd1.c: New test.
+	* c-c++-common/gomp/simd2.c: New test.
+
 2013-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/combined-1.c: Look for GOMP_parallel_loop_runtime

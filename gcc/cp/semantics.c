@@ -4317,6 +4317,8 @@ finish_omp_clauses (tree clauses)
 	  t = OMP_CLAUSE_ALIGNED_ALIGNMENT (c);
 	  if (t == error_mark_node)
 	    remove = true;
+	  else if (t == NULL_TREE)
+	    break;
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
