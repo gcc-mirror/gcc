@@ -1,5 +1,9 @@
 2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* lra.c: Update the flow chart diagram.
+
+2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/56847
 	* lra-constraints.c (process_alt_operands): Discourage alternative
 	with non-matche doffsettable memory constraint fro memory with
