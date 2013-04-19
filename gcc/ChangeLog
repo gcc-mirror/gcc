@@ -1,5 +1,10 @@
 2013-04-19  Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.c (load_multiple_sequence, ldm_stm_operation_p): Fix
+	spelling in two comments.
+
+2013-04-19  Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	PR target/56797
 	* config/arm/arm.c (load_multiple_sequence): Require SP
 	as base register for loads if SP is in the register list.
