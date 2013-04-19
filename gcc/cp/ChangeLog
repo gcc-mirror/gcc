@@ -1,3 +1,9 @@
+2013-04-19  Jason Merrill  <jason@redhat.com>
+
+	DR 941
+	* decl.c (duplicate_decls): Don't propagate DECL_DELETED_FN to
+	template specializations.
+
 2013-04-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement n3599 - Literal operator templates for strings.

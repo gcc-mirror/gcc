@@ -1764,12 +1764,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  warning (OPT_Wredundant_decls, "previous declaration of %q+D", olddecl);
 	}
 
-      if (DECL_DELETED_FN (newdecl))
+      if (!(DECL_TEMPLATE_INSTANTIATION (olddecl)
+	    && DECL_TEMPLATE_SPECIALIZATION (newdecl)))
 	{
-	  error ("deleted definition of %qD", newdecl);
-	  error ("after previous declaration %q+D", olddecl);
+	  if (DECL_DELETED_FN (newdecl))
+	    {
+	      error ("deleted definition of %qD", newdecl);
+	      error ("after previous declaration %q+D", olddecl);
+	    }
+	  DECL_DELETED_FN (newdecl) |= DECL_DELETED_FN (olddecl);
 	}
-      DECL_DELETED_FN (newdecl) |= DECL_DELETED_FN (olddecl);
     }
 
   /* Deal with C++: must preserve virtual function table size.  */
