@@ -1,3 +1,13 @@
+2013-04-19  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2013-01-08  Steven Bosscher  <steven@gcc.gnu.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48189
+	* predict.c (predict_loops): If max is 0, don't call compare_tree_int.
+	If nitercst is 0, don't predict the exit edge.
+
 2013-04-16  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	Backport from mainline
