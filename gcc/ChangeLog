@@ -1,3 +1,9 @@
+2013-04-19  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/56797
+	* config/arm/arm.c (load_multiple_sequence): Require SP
+	as base register for loads if SP is in the register list.
+
 2013-04-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/56718
