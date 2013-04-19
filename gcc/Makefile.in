@@ -2369,7 +2369,8 @@ tree-ssa-pre.o : tree-ssa-pre.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(FLAGS_H) langhooks.h \
    $(CFGLOOP_H) alloc-pool.h $(BASIC_BLOCK_H) $(BITMAP_H) $(HASH_TABLE_H) \
    $(GIMPLE_H) $(TREE_INLINE_H) tree-iterator.h tree-ssa-sccvn.h $(PARAMS_H) \
-   $(DBGCNT_H) tree-scalar-evolution.h $(GIMPLE_PRETTY_PRINT_H) domwalk.h
+   $(DBGCNT_H) tree-scalar-evolution.h $(GIMPLE_PRETTY_PRINT_H) domwalk.h \
+   $(IPA_PROP_H)
 tree-ssa-sccvn.o : tree-ssa-sccvn.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) \
    $(TM_H) coretypes.h $(DUMPFILE_H) $(FLAGS_H) $(CFGLOOP_H) \

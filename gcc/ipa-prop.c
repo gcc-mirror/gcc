@@ -356,6 +356,20 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
   jfunc->value.ancestor.agg_preserved = agg_preserved;
 }
 
+/* Extract the acual BINFO being described by JFUNC which must be a known type
+   jump function.  */
+
+tree
+ipa_binfo_from_known_type_jfunc (struct ipa_jump_func *jfunc)
+{
+  tree base_binfo = TYPE_BINFO (jfunc->value.known_type.base_type);
+  if (!base_binfo)
+    return NULL_TREE;
+  return get_binfo_at_offset (base_binfo,
+			      jfunc->value.known_type.offset,
+			      jfunc->value.known_type.component_type);
+}
+
 /* Structure to be passed in between detect_type_change and
    check_stmt_for_type_change.  */
 
@@ -1957,6 +1971,30 @@ ipa_analyze_node (struct cgraph_node *node)
   pop_cfun ();
 }
 
+/* Given a statement CALL which must be a GIMPLE_CALL calling an OBJ_TYPE_REF
+   attempt a type-based devirtualization.  If successful, return the
+   target function declaration, otherwise return NULL.  */
+
+tree
+ipa_intraprocedural_devirtualization (gimple call)
+{
+  tree binfo, token, fndecl;
+  struct ipa_jump_func jfunc;
+  tree otr = gimple_call_fn (call);
+
+  jfunc.type = IPA_JF_UNKNOWN;
+  compute_known_type_jump_func (OBJ_TYPE_REF_OBJECT (otr), &jfunc,
+				call);
+  if (jfunc.type != IPA_JF_KNOWN_TYPE)
+    return NULL_TREE;
+  binfo = ipa_binfo_from_known_type_jfunc (&jfunc);
+  if (!binfo)
+    return NULL_TREE;
+  token = OBJ_TYPE_REF_TOKEN (otr);
+  fndecl = gimple_get_virt_method_for_binfo (tree_low_cst (token, 1),
+					     binfo);
+  return fndecl;
+}
 
 /* Update the jump function DST when the call graph edge corresponding to SRC is
    is being inlined, knowing that DST is of type ancestor and src of known
