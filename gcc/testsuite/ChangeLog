@@ -1,3 +1,8 @@
+2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56847
+	* gcc.dg/pr56847.c: New test.
+
 2013-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56982
