@@ -1,6 +1,6 @@
 2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
-	PR rtl-optimization/56992
+	PR rtl-optimization/56999
 	* g++.dg/opt/pr56999.C: New test.
 
 2013-04-18   Cary Coutant  <ccoutant@google.com>

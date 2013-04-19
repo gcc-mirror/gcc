@@ -1,6 +1,6 @@
 2013-04-18  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimization/56992
+	PR rtl-optimization/56999
 	* lra-coalesce.c (coalescable_pseudo_p): Remove 2nd parameter and
 	related code.
 	(lra_coalesce): Remove split_origin_bitmap and related code.
