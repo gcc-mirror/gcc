@@ -87,10 +87,11 @@ extensions, be aware of two things:
       3.1, 3.2 and 3.3).
    </para>
 
-   <para>Please note that the upcoming C++ standard has first-class
+   <para>Please note that the concept checks only validate the requirements
+   of the old C++03 standard. C++11 was expected to have first-class
    support for template parameter constraints based on concepts in the core
-   language. This will obviate the need for the library-simulated concept
-   checking described above.
+   language. This would have obviated the need for the library-simulated concept
+   checking described above, but was not part of C++11.
    </para>
 
 </chapter>
