@@ -1,3 +1,7 @@
+2013-04-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/extensions.xml: Fix anachronism.
+
 2013-04-09  Tom Tromey  <tromey@redhat.com>
 
 	* configure, config.h.in: Rebuild.
