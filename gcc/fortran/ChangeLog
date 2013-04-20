@@ -1,3 +1,9 @@
+2013-04-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56907
+	* trans-intrinsic.c (conv_isocbinding_function): Don't pack array
+	passed to C_LOC
+
 2013-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
