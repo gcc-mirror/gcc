@@ -3646,6 +3646,8 @@ static void
 avoid_complex_debug_insns (rtx insn, rtx *exp_p, int depth)
 {
   rtx exp = *exp_p;
+  const char *format_ptr;
+  int i, j;
 
   if (exp == NULL_RTX)
     return;
@@ -3668,8 +3670,7 @@ avoid_complex_debug_insns (rtx insn, rtx *exp_p, int depth)
       return;
     }
 
-  const char *format_ptr = GET_RTX_FORMAT (GET_CODE (exp));
-  int i, j;
+  format_ptr = GET_RTX_FORMAT (GET_CODE (exp));
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (exp)); i++)
     switch (*format_ptr++)
       {

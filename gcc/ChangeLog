@@ -1,3 +1,7 @@
+2013-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (avoid_complex_debug_insns): Fix C++ism.
+
 2013-04-19  Matthias Klose  <doko@ubuntu.com>
 
 	PR middle-end/56848

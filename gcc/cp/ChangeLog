@@ -1,3 +1,7 @@
+2013-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* parser.c (cp_parser_late_return_type_opt): Fix C++ism.
+
 2013-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56388
