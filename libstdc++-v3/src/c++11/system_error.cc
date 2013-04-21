@@ -62,8 +62,8 @@ namespace
     }
   };
 
-  const generic_error_category generic_category_instance;
-  const system_error_category system_category_instance;
+  const generic_error_category generic_category_instance{};
+  const system_error_category system_category_instance{};
 }
 
 namespace std _GLIBCXX_VISIBILITY(default)
