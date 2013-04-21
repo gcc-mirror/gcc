@@ -1,3 +1,10 @@
+2013-04-21  Evgeniy Stepanov  <eugenis@google.com>
+
+	* src/c++11/system_error.cc (generic_category_instance): Add
+	initializer.
+	(system_category_instance): Likewise.
+	* src/c++11/future.cc (__fec): Likewise.
+
 2013-04-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/extensions.xml: Fix anachronism.
