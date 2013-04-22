@@ -11352,7 +11352,7 @@ package body Sem_Ch6 is
       --       end if;
 
       --       if Count = 0 then
-      --          raise Assertion_Error with "contract cases incomplete";
+      --          raise Assertion_Error with "xxx contract cases incomplete";
       --            <or>
       --          Flag_N+1 := True;  --  when "others" present
 
@@ -11712,11 +11712,12 @@ package body Sem_Ch6 is
             CG_Stmts := New_List (Set (Others_Flag));
 
          --  Generate:
-         --    raise Assetion_Error with "contract cases incomplete";
+         --    raise Assertion_Error with "xxx contract cases incomplete";
 
          else
             Start_String;
-            Store_String_Chars ("contract cases incomplete");
+            Store_String_Chars (Build_Location_String (Loc));
+            Store_String_Chars (" contract cases incomplete");
 
             CG_Stmts := New_List (
               Make_Procedure_Call_Statement (Loc,

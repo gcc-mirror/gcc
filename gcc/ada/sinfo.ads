@@ -1325,10 +1325,10 @@ package Sinfo is
    --    gives a policy for the aspect or pragma, then there are two cases. For
    --    an assertion aspect or pragma (one of the assertion kinds allowed in
    --    an Assertion_Policy pragma), then Is_Ignored is set if assertions are
-   --    ignored because of the use of a -gnata switch. For any other aspects
-   --    or pragmas, the flag is off. If this flag is set, the aspect/pragma
-   --    is fully analyzed and checked for other syntactic/semantic errors,
-   --    but it does not have any semantic effect.
+   --    ignored because of the absence of a -gnata switch. For any other
+   --    aspects or pragmas, the flag is off. If this flag is set, the
+   --    aspect/pragma is fully analyzed and checked for other
+   --    syntactic/semantic errors, but it does not have any semantic effect.
 
    --  Is_In_Discriminant_Check (Flag11-Sem)
    --    This flag is present in a selected component, and is used to indicate
