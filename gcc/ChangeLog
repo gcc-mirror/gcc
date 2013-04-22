@@ -1,3 +1,19 @@
+2013-04-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* coretypes.h (gimple_stmt_iterator_d): Forward declare.
+	(gimple_stmt_iterator): New typedef.
+	* gimple.h (gimple_stmt_iterator): Rename to...
+	(gimple_stmt_iterator_d): ... This.
+	* doc/tm.texi.in (TARGET_FOLD_BUILTIN): Detail restriction that
+	trees be valid for GIMPLE and GENERIC.
+	(TARGET_GIMPLE_FOLD_BUILTIN): New.
+	* gimple-fold.c (gimple_fold_call): Call target hook
+	gimple_fold_builtin.
+	* hooks.c (hook_bool_gsiptr_false): New.
+	* hooks.h (hook_bool_gsiptr_false): New.
+	* target.def (fold_stmt): New.
+	* doc/tm.texi: Regenerate.
+
 2013-04-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/57018

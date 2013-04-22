@@ -1289,12 +1289,23 @@ DEFHOOK
  "",
  tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
 
-/* Fold a target-specific builtin.  */
+/* Fold a target-specific builtin to a tree valid for both GIMPLE
+   and GENERIC.  */
 DEFHOOK
 (fold_builtin,
  "",
  tree, (tree fndecl, int n_args, tree *argp, bool ignore),
  hook_tree_tree_int_treep_bool_null)
+
+/* Fold a target-specific builtin to a valid GIMPLE tree.  */
+DEFHOOK
+(gimple_fold_builtin,
+ "Fold a call to a machine specific built-in function that was set up\n\
+by @samp{TARGET_INIT_BUILTINS}.  @var{gsi} points to the gimple\n\
+statement holding the function call.  Returns true if any change\n\
+was made to the GIMPLE stream.",
+ bool, (gimple_stmt_iterator *gsi),
+ hook_bool_gsiptr_false)
 
 /* Target hook is used to compare the target attributes in two functions to
    determine which function's features get higher priority.  This is used
