@@ -188,36 +188,48 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
    old one can be freed.  */
 
 static gfc_expr *
-copy_walk_reduction_arg (gfc_expr *e, gfc_expr *fn)
+copy_walk_reduction_arg (gfc_constructor *c, gfc_expr *fn)
 {
-  gfc_expr *fcn;
-  gfc_isym_id id;
+  gfc_expr *fcn, *e = c->expr;
 
-  if (e->rank == 0 || e->expr_type == EXPR_FUNCTION)
-    fcn = gfc_copy_expr (e);
-  else
+  fcn = gfc_copy_expr (e);
+  if (c->iterator)
     {
-      id = fn->value.function.isym->id;
+      gfc_constructor_base newbase;
+      gfc_expr *new_expr;
+      gfc_constructor *new_c;
+
+      newbase = NULL;
+      new_expr = gfc_get_expr ();
+      new_expr->expr_type = EXPR_ARRAY;
+      new_expr->ts = e->ts;
+      new_expr->where = e->where;
+      new_expr->rank = 1;
+      new_c = gfc_constructor_append_expr (&newbase, fcn, &(e->where));
+      new_c->iterator = c->iterator;
+      new_expr->value.constructor = newbase;
+      c->iterator = NULL;
+
+      fcn = new_expr;
+    }
+
+  if (fcn->rank != 0)
+    {
+      gfc_isym_id id = fn->value.function.isym->id;
 
       if (id == GFC_ISYM_SUM || id == GFC_ISYM_PRODUCT)
-	fcn = gfc_build_intrinsic_call (current_ns,
-					fn->value.function.isym->id,
+	fcn = gfc_build_intrinsic_call (current_ns, id,
 					fn->value.function.isym->name,
-					fn->where, 3, gfc_copy_expr (e),
-					NULL, NULL);
+					fn->where, 3, fcn, NULL, NULL);
       else if (id == GFC_ISYM_ANY || id == GFC_ISYM_ALL)
-	fcn = gfc_build_intrinsic_call (current_ns,
-					fn->value.function.isym->id,
+	fcn = gfc_build_intrinsic_call (current_ns, id,
 					fn->value.function.isym->name,
-					fn->where, 2, gfc_copy_expr (e),
-					NULL);
+					fn->where, 2, fcn, NULL);
       else
 	gfc_internal_error ("Illegal id in copy_walk_reduction_arg");
 
       fcn->symtree->n.sym->attr.access = ACCESS_PRIVATE;
     }
-
-  (void) gfc_expr_walker (&fcn, callback_reduction, NULL);
 
   return fcn;
 }
@@ -301,10 +313,10 @@ callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
      - only have a single element in the array which contains an
      iterator.  */
 
-  if (c == NULL || (c->iterator != NULL && gfc_constructor_next (c) == NULL))
+  if (c == NULL)
     return 0;
 
-  res = copy_walk_reduction_arg (c->expr, fn);
+  res = copy_walk_reduction_arg (c, fn);
 
   c = gfc_constructor_next (c);
   while (c)
@@ -316,7 +328,7 @@ callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
       new_expr->where = fn->where;
       new_expr->value.op.op = op;
       new_expr->value.op.op1 = res;
-      new_expr->value.op.op2 = copy_walk_reduction_arg (c->expr, fn);
+      new_expr->value.op.op2 = copy_walk_reduction_arg (c, fn);
       res = new_expr;
       c = gfc_constructor_next (c);
     }
