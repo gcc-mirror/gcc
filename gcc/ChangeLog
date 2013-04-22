@@ -1,4 +1,4 @@
-2013-04-18  Christian Bruel  <christian.bruel@st.com>
+2013-04-22  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/56995
 	* config/sh/sh.h (enum reg_class): Remove DF_HI_REGS.
