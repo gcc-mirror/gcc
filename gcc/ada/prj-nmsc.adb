@@ -3659,6 +3659,21 @@ package body Prj.Nmsc is
          end loop;
       end if;
 
+      if not Lib_Standalone.Default
+        and then Project.Library_Kind = Static
+      then
+         --  An standalone library must be a shared library
+
+         Error_Msg_Name_1 := Project.Name;
+
+         Error_Msg
+           (Data.Flags,
+            Continuation.all &
+              "standalone library project %% must be a shared library",
+            Project.Location, Project);
+         Continuation := Continuation_String'Access;
+      end if;
+
       if Project.Library and not Data.In_Aggregate_Lib then
 
          --  Record the library name

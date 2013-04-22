@@ -942,6 +942,7 @@ package body Exp_Ch6 is
       Formal    : Entity_Id;
       N_Node    : Node_Id;
       Post_Call : List_Id;
+      E_Actual  : Entity_Id;
       E_Formal  : Entity_Id;
 
       procedure Add_Call_By_Copy_Code;
@@ -1508,6 +1509,7 @@ package body Exp_Ch6 is
       Actual := First_Actual (N);
       while Present (Formal) loop
          E_Formal := Etype (Formal);
+         E_Actual := Etype (Actual);
 
          if Is_Scalar_Type (E_Formal)
            or else Nkind (Actual) = N_Slice
@@ -1645,7 +1647,7 @@ package body Exp_Ch6 is
             --  conversion" errors.
 
             elsif Is_Access_Type (E_Formal)
-              and then not Same_Type (E_Formal, Etype (Actual))
+              and then not Same_Type (E_Formal, E_Actual)
               and then not Is_Tagged_Type (Designated_Type (E_Formal))
             then
                Add_Call_By_Copy_Code;
@@ -1661,7 +1663,7 @@ package body Exp_Ch6 is
 
             elsif Is_Entity_Name (Actual)
               and then Is_Volatile (Entity (Actual))
-              and then not Is_By_Reference_Type (Etype (Actual))
+              and then not Is_By_Reference_Type (E_Actual)
               and then not Is_Scalar_Type (Etype (Entity (Actual)))
               and then not Is_Volatile (E_Formal)
             then
@@ -1682,10 +1684,10 @@ package body Exp_Ch6 is
 
             elsif Is_Scalar_Type (E_Formal)
               and then
-                (not In_Subrange_Of (E_Formal, Etype (Actual))
+                (not In_Subrange_Of (E_Formal, E_Actual)
                   or else
                     (Ekind (Formal) = E_In_Out_Parameter
-                      and then not In_Subrange_Of (Etype (Actual), E_Formal)))
+                      and then not In_Subrange_Of (E_Actual, E_Formal)))
             then
                --  Perhaps the setting back to False should be done within
                --  Add_Call_By_Copy_Code, since it could get set on other
@@ -1696,6 +1698,28 @@ package body Exp_Ch6 is
                end if;
 
                Add_Call_By_Copy_Code;
+            end if;
+
+            --  RM 3.2.4 (23/3) : A predicate is checked on in-out and out
+            --  by-reference parameters on exit from the call. If the actual
+            --  is a derived type and the operation is inherited, the body
+            --  of the operation will not contain a call to the predicate
+            --  function, so it must be done explicitly after the call. Ditto
+            --  if the actual is an entity of a predicated subtype.
+
+            if Is_By_Reference_Type (E_Formal)
+              and then Has_Predicates (E_Actual)
+            then
+               if Is_Derived_Type (E_Actual)
+                 and then Is_Inherited_Operation_For_Type (Subp, E_Actual)
+               then
+                  Append_To
+                   (Post_Call, Make_Predicate_Check (E_Actual, Actual));
+
+               elsif Is_Entity_Name (Actual) then
+                  Append_To
+                   (Post_Call, Make_Predicate_Check (E_Actual, Actual));
+               end if;
             end if;
 
          --  Processing for IN parameters

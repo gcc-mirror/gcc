@@ -8462,8 +8462,11 @@ package body Sem_Util is
       Typ : Entity_Id) return Boolean
    is
    begin
+      --  Check that the operation has been created by the declaration for
+      --  the type.
+
       return Is_Inherited_Operation (E)
-        and then Etype (Parent (E)) = Typ;
+        and then Defining_Identifier (Parent (E)) = Typ;
    end Is_Inherited_Operation_For_Type;
 
    -----------------

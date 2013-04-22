@@ -833,6 +833,7 @@ void (*__gnat_ctrl_c_handler) (void) = 0;
 
 /* These codes are in standard message libraries.  */
 extern int C$_SIGKILL;
+extern int C$_SIGINT;
 extern int SS$_DEBUG;
 extern int LIB$_KEYNOTFOU;
 extern int LIB$_ACTIMAGE;
@@ -1221,14 +1222,18 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 					          system_cond_except_table,
 					          0};
       unsigned int ctrlc = SS$_CONTROLC;
+      unsigned int *sigint = &C$_SIGINT;
       int ctrlc_match = LIB$MATCH_COND (&sigargs [1], &ctrlc);
+      int sigint_match = LIB$MATCH_COND (&sigargs [1], &sigint);
 
       extern int SYS$DCLAST (void (*astadr)(), unsigned long long astprm,
 	                     unsigned int acmode);
 
       /* If SS$_CONTROLC has been imported as an exception, it will take
-	 priority over a a Ctrl/C handler.  See above.  */
-      if (ctrlc_match && __gnat_ctrl_c_handler)
+	 priority over a a Ctrl/C handler.  See above.  SIGINT has a
+	 different condition value due to it's DECCCRTL roots and it's
+	 the condition that gets raised for a "kill -INT".  */
+      if ((ctrlc_match || sigint_match) && __gnat_ctrl_c_handler)
 	{
 	  SYS$DCLAST (__gnat_ctrl_c_handler, 0, 0);
 	  return SS$_CONTINUE;
