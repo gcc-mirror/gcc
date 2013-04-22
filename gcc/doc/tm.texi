@@ -10931,8 +10931,16 @@ Fold a call to a machine specific built-in function that was set up by
 @samp{TARGET_INIT_BUILTINS}.  @var{fndecl} is the declaration of the
 built-in function.  @var{n_args} is the number of arguments passed to
 the function; the arguments themselves are pointed to by @var{argp}.
-The result is another tree containing a simplified expression for the
-call's result.  If @var{ignore} is true the value will be ignored.
+The result is another tree, valid for both GIMPLE and GENERIC,
+containing a simplified expression for the call's result.  If
+@var{ignore} is true the value will be ignored.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_GIMPLE_FOLD_BUILTIN (gimple_stmt_iterator *@var{gsi})
+Fold a call to a machine specific built-in function that was set up
+by @samp{TARGET_INIT_BUILTINS}.  @var{gsi} points to the gimple
+statement holding the function call.  Returns true if any change
+was made to the GIMPLE stream.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_COMPARE_VERSION_PRIORITY (tree @var{decl1}, tree @var{decl2})

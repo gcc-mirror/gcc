@@ -139,7 +139,7 @@ enum plf_mask {
 
 /* Iterator object for GIMPLE statement sequences.  */
 
-typedef struct
+struct gimple_stmt_iterator_d
 {
   /* Sequence node holding the current statement.  */
   gimple_seq_node ptr;
@@ -150,8 +150,7 @@ typedef struct
      block/sequence is removed.  */
   gimple_seq *seq;
   basic_block bb;
-} gimple_stmt_iterator;
-
+};
 
 /* Data structure definitions for GIMPLE tuples.  NOTE: word markers
    are for 64 bit hosts.  */
