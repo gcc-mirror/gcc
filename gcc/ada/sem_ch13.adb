@@ -949,7 +949,7 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Case aspects. In these cases, we do not have to worry
+      --  Contract_Cases aspects. In these cases, we do not have to worry
       --  about delay issues, since the pragmas themselves deal with delay
       --  of visibility for the expression analysis. Thus, we just insert
       --  the pragma after the node N.
@@ -1593,8 +1593,8 @@ package body Sem_Ch13 is
 
                --  Case 4: Special handling for aspects
 
-               --  Pre/Post/Test_Case/Contract_Case whose corresponding pragmas
-               --  take care of the delay.
+               --  Pre/Post/Test_Case/Contract_Cases whose corresponding
+               --  pragmas take care of the delay.
 
                --  Aspects Pre/Post generate Precondition/Postcondition pragmas
                --  with a first argument that is the expression, and a second
@@ -1727,77 +1727,74 @@ package body Sem_Ch13 is
                   goto Continue;
                end;
 
-               when Aspect_Contract_Case |
-                    Aspect_Test_Case     =>
+               when Aspect_Test_Case => Test_Case : declare
+                  Args      : List_Id;
+                  Comp_Expr : Node_Id;
+                  Comp_Assn : Node_Id;
+                  New_Expr  : Node_Id;
 
-                  declare
-                     Args      : List_Id;
-                     Comp_Expr : Node_Id;
-                     Comp_Assn : Node_Id;
-                     New_Expr  : Node_Id;
+               begin
+                  Args := New_List;
 
-                  begin
-                     Args := New_List;
+                  if Nkind (Parent (N)) = N_Compilation_Unit then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_N ("incorrect placement of aspect `%`", E);
+                     goto Continue;
+                  end if;
 
-                     if Nkind (Parent (N)) = N_Compilation_Unit then
-                        Error_Msg_Name_1 := Nam;
-                        Error_Msg_N ("incorrect placement of aspect `%`", E);
-                        goto Continue;
-                     end if;
+                  if Nkind (Expr) /= N_Aggregate then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_NE
+                       ("wrong syntax for aspect `%` for &", Id, E);
+                     goto Continue;
+                  end if;
 
-                     if Nkind (Expr) /= N_Aggregate then
+                  --  Make pragma expressions refer to the original aspect
+                  --  expressions through the Original_Node link. This is
+                  --  used in semantic analysis for ASIS mode, so that the
+                  --  original expression also gets analyzed.
+
+                  Comp_Expr := First (Expressions (Expr));
+                  while Present (Comp_Expr) loop
+                     New_Expr := Relocate_Node (Comp_Expr);
+                     Set_Original_Node (New_Expr, Comp_Expr);
+                     Append_To (Args,
+                       Make_Pragma_Argument_Association (Sloc (Comp_Expr),
+                         Expression => New_Expr));
+                     Next (Comp_Expr);
+                  end loop;
+
+                  Comp_Assn := First (Component_Associations (Expr));
+                  while Present (Comp_Assn) loop
+                     if List_Length (Choices (Comp_Assn)) /= 1
+                       or else
+                         Nkind (First (Choices (Comp_Assn))) /= N_Identifier
+                     then
                         Error_Msg_Name_1 := Nam;
                         Error_Msg_NE
                           ("wrong syntax for aspect `%` for &", Id, E);
                         goto Continue;
                      end if;
 
-                     --  Make pragma expressions refer to the original aspect
-                     --  expressions through the Original_Node link. This is
-                     --  used in semantic analysis for ASIS mode, so that the
-                     --  original expression also gets analyzed.
+                     New_Expr := Relocate_Node (Expression (Comp_Assn));
+                     Set_Original_Node (New_Expr, Expression (Comp_Assn));
+                     Append_To (Args,
+                       Make_Pragma_Argument_Association (Sloc (Comp_Assn),
+                       Chars      => Chars (First (Choices (Comp_Assn))),
+                       Expression => New_Expr));
+                     Next (Comp_Assn);
+                  end loop;
 
-                     Comp_Expr := First (Expressions (Expr));
-                     while Present (Comp_Expr) loop
-                        New_Expr := Relocate_Node (Comp_Expr);
-                        Set_Original_Node (New_Expr, Comp_Expr);
-                        Append_To (Args,
-                          Make_Pragma_Argument_Association (Sloc (Comp_Expr),
-                            Expression => New_Expr));
-                        Next (Comp_Expr);
-                     end loop;
+                  --  Build the test-case pragma
 
-                     Comp_Assn := First (Component_Associations (Expr));
-                     while Present (Comp_Assn) loop
-                        if List_Length (Choices (Comp_Assn)) /= 1
-                          or else
-                            Nkind (First (Choices (Comp_Assn))) /= N_Identifier
-                        then
-                           Error_Msg_Name_1 := Nam;
-                           Error_Msg_NE
-                             ("wrong syntax for aspect `%` for &", Id, E);
-                           goto Continue;
-                        end if;
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Nam),
+                      Pragma_Argument_Associations => Args);
 
-                        New_Expr := Relocate_Node (Expression (Comp_Assn));
-                        Set_Original_Node (New_Expr, Expression (Comp_Assn));
-                        Append_To (Args,
-                          Make_Pragma_Argument_Association (Sloc (Comp_Assn),
-                          Chars      => Chars (First (Choices (Comp_Assn))),
-                          Expression => New_Expr));
-                        Next (Comp_Assn);
-                     end loop;
-
-                     --  Build the contract-case or test-case pragma
-
-                     Aitem :=
-                       Make_Pragma (Loc,
-                         Pragma_Identifier            =>
-                           Make_Identifier (Sloc (Id), Nam),
-                         Pragma_Argument_Associations => Args);
-
-                     Delay_Required := False;
-                  end;
+                  Delay_Required := False;
+               end Test_Case;
 
                when Aspect_Contract_Cases => Contract_Cases : declare
                   Case_Guard  : Node_Id;
@@ -7312,7 +7309,6 @@ package body Sem_Ch13 is
          --  Here is the list of aspects that don't require delay analysis
 
          when Aspect_Abstract_State       |
-              Aspect_Contract_Case        |
               Aspect_Contract_Cases       |
               Aspect_Dimension            |
               Aspect_Dimension_System     |

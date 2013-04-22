@@ -122,7 +122,7 @@ Implementation Defined Pragmas
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
-* Pragma Contract_Case::
+* Pragma Contract_Cases::
 * Pragma Convention_Identifier::
 * Pragma CPP_Class::
 * Pragma CPP_Constructor::
@@ -877,7 +877,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
-* Pragma Contract_Case::
+* Pragma Contract_Cases::
 * Pragma Convention_Identifier::
 * Pragma CPP_Class::
 * Pragma CPP_Constructor::
@@ -1856,107 +1856,88 @@ If the alignment for a record or array type is not specified (using
 pragma @code{Pack}, pragma @code{Component_Alignment}, or a record rep
 clause), the GNAT uses the default alignment as described previously.
 
-@node Pragma Contract_Case
-@unnumberedsec Pragma Contract_Case
+@node Pragma Contract_Cases
+@unnumberedsec Pragma Contract_Cases
 @cindex Contract cases
-@findex Contract_Case
+@findex Contract_Cases
 @noindent
 Syntax:
 
 @smallexample @c ada
-pragma Contract_Case (
-   [Name     =>] static_string_Expression
-  ,[Mode     =>] (Nominal | Robustness)
- [, Requires =>  Boolean_Expression]
- [, Ensures  =>  Boolean_Expression]);
+pragma Contract_Cases (
+   Condition => Consequence
+ @{,Condition => Consequence@});
 @end smallexample
 
 @noindent
-The @code{Contract_Case} pragma allows defining fine-grain specifications
+The @code{Contract_Cases} pragma allows defining fine-grain specifications
 that can complement or replace the contract given by a precondition and a
-postcondition. Additionally, the @code{Contract_Case} pragma can be used
+postcondition. Additionally, the @code{Contract_Cases} pragma can be used
 by testing and formal verification tools. The compiler checks its validity and,
 depending on the assertion policy at the point of declaration of the pragma,
 it may insert a check in the executable. For code generation, the contract
-case
+cases
 
 @smallexample @c ada
-pragma Contract_Case (
-   Name     => ...
-   Mode     => ...
-   Requires => R,
-   Ensures  => E);
+pragma Contract_Cases (
+  Cond1 => Pred1,
+  Cond2 => Pred2);
 @end smallexample
 
 @noindent
-is equivalent to
+are equivalent to
 
 @smallexample @c ada
-pragma Postcondition (not R'Old or else E);
+C1 : constant Boolean := Cond1;  --  evaluated at subprogram entry
+C2 : constant Boolean := Cond2;  --  evaluated at subprogram entry
+pragma Precondition ((C1 and not C2) or (C2 and not C1));
+pragma Postcondition (if C1 then Pred1);
+pragma Postcondition (if C2 then Pred2);
 @end smallexample
 
 @noindent
-which is also equivalent to (in Ada 2012)
-
-@smallexample @c ada
-pragma Postcondition (if R'Old then E);
-@end smallexample
-
-@noindent
-expressing that, whenever condition @code{R} is satisfied on entry to the
-subprogram, condition @code{E} should be fulfilled on exit to the subprogram.
+The precondition expresses that one and only one of the conditions is
+satisfied on entry to the subprogram.
+The postcondition expresses that, whenever condition @code{Ci} is satisfied
+on entry to the subprogram, consequence @code{Predi} should be fulfilled on
+exit to the subprogram.
 
 A precondition @code{P} and postcondition @code{Q} can also be
 expressed as contract cases:
 
 @smallexample @c ada
-pragma Contract_Case (
-   Name     => "Replace precondition",
-   Mode     => Nominal,
-   Requires => not P,
-   Ensures  => False);
-pragma Contract_Case (
-   Name     => "Replace postcondition",
-   Mode     => Nominal,
-   Requires => P,
-   Ensures  => Q);
+pragma Contract_Cases (P => Q);
 @end smallexample
 
-@code{Contract_Case} pragmas may only appear immediately following the
-(separate) declaration of a subprogram in a package declaration, inside
-a package spec unit. Only other pragmas may intervene (that is appear
-between the subprogram declaration and a contract case).
+The placement and visibility rules for @code{Contract_Cases} pragmas are
+identical to those described for preconditions and postconditions.
 
-The compiler checks that boolean expressions given in @code{Requires} and
-@code{Ensures} are valid, where the rules for @code{Requires} are the
-same as the rule for an expression in @code{Precondition} and the rules
-for @code{Ensures} are the same as the rule for an expression in
+The compiler checks that boolean expressions given in conditions and
+consequences are valid, where the rules for conditions are the same as
+the rule for an expression in @code{Precondition} and the rules for
+consequences are the same as the rule for an expression in
 @code{Postcondition}. In particular, attributes @code{'Old} and
-@code{'Result} can only be used within the @code{Ensures}
-expression. The following is an example of use within a package spec:
+@code{'Result} can only be used within consequence expressions.
+The condition for the last contract case may be @code{others}, to denote
+any case not captured by the previous cases. The
+following is an example of use within a package spec:
 
 @smallexample @c ada
 package Math_Functions is
    ...
    function Sqrt (Arg : Float) return Float;
-   pragma Contract_Case (Name     => "Small argument",
-                         Mode     => Nominal,
-                         Requires => Arg < 100,
-                         Ensures  => Sqrt'Result < 10);
+   pragma Contract_Cases ((Arg in 0 .. 99) => Sqrt'Result < 10,
+                          Arg >= 100       => Sqrt'Result >= 10,
+                          others           => Sqrt'Result = 0);
    ...
 end Math_Functions;
 @end smallexample
 
 @noindent
-The meaning of a contract case is that, whenever the associated subprogram is
-executed in a context where @code{Requires} holds, then @code{Ensures}
-should hold when the subprogram returns. Mode @code{Nominal} indicates
-that the input context should also satisfy the precondition of the
-subprogram, and the output context should also satisfy its
-postcondition. More @code{Robustness} indicates that the precondition and
-postcondition of the subprogram should be ignored for this contract case,
-which is mostly useful when testing such a contract using a testing tool
-that understands contract cases.
+The meaning of contract cases is that only one case should apply at each
+call, as determined by the corresponding condition evaluating to True,
+and that the consequence for this case should hold when the subprogram
+returns.
 
 @node Pragma Convention_Identifier
 @unnumberedsec Pragma Convention_Identifier
@@ -5818,12 +5799,10 @@ pragma Test_Case (
 
 @noindent
 The @code{Test_Case} pragma allows defining fine-grain specifications
-for use by testing tools. Its syntax is similar to the syntax of the
-@code{Contract_Case} pragma, which is used for both testing and
-formal verification.
+for use by testing tools.
 The compiler checks the validity of the @code{Test_Case} pragma, but its
 presence does not lead to any modification of the code generated by the
-compiler, contrary to the treatment of the @code{Contract_Case} pragma.
+compiler.
 
 @code{Test_Case} pragmas may only appear immediately following the
 (separate) declaration of a subprogram in a package declaration, inside
@@ -18138,7 +18117,7 @@ A complete description of the AIs may be found in
 @item @code{Atomic_Components} @tab
 @item @code{Bit_Order} @tab
 @item @code{Component_Size} @tab
-@item @code{Contract_Case} @tab                 -- GNAT
+@item @code{Contract_Cases} @tab                 -- GNAT
 @item @code{Discard_Names} @tab
 @item @code{External_Tag} @tab
 @item @code{Favor_Top_Level} @tab               -- GNAT

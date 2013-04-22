@@ -8701,7 +8701,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
 
             --  Completely ignore if not enabled

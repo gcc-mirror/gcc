@@ -5413,7 +5413,7 @@ This switch suppresses warnings for tracking of deleted conditional code.
 @cindex @option{-gnatw.t} (@command{gcc})
 This switch activates warnings on suspicious postconditions (whether a
 pragma @code{Postcondition} or a @code{Post} aspect in Ada 2012)
-and suspicious contract cases (pragma @code{Contract_Case}). A
+and suspicious contract cases (pragma @code{Contract_Cases}). A
 function postcondition or contract case is suspicious when no postcondition
 or contract case for this function mentions the result of the function.
 A procedure postcondition or contract case is suspicious when it only

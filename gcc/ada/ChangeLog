@@ -1,3 +1,10 @@
+2013-04-22  Yannick Moy  <moy@adacore.com>
+
+	* aspects.ads, aspects.adb, sem_ch13.adb: Removal of references to
+	Contract_Case.
+	* gnat_ugn.texi, gnat_rm.texi Description of Contract_Case replaced by
+	description of Contract_Cases.
+
 2013-04-12  Robert Dewar  <dewar@adacore.com>
 
 	* makeutl.adb, prj-nmsc.adb: Minor reformatting.
