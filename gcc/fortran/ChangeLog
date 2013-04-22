@@ -1,3 +1,17 @@
+2013-04-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53685
+	PR fortran/57022
+	* check.c (gfc_calculate_transfer_sizes): Fix for array-valued SOURCE
+	expressions.
+	* simplify.c (gfc_simplify_sizeof,gfc_simplify_storage_size): Get rid
+	of special treatment for EXPR_ARRAY.
+	* target-memory.h (gfc_element_size): New prototype.
+	* target-memory.c (size_array): Remove.
+	(gfc_element_size): New function.
+	(gfc_target_expr_size): Modified to always return the full size of the
+	expression.
+
 2013-04-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56907

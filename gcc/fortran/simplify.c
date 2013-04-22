@@ -5674,14 +5674,6 @@ gfc_simplify_sizeof (gfc_expr *x)
 				  &x->where);
   mpz_set_si (result->value.integer, gfc_target_expr_size (x));
 
-  /* gfc_target_expr_size already takes the array size for array constructors
-     into account.  */
-  if (x->rank && x->expr_type != EXPR_ARRAY)
-    {
-      mpz_mul (result->value.integer, result->value.integer, array_size);
-      mpz_clear (array_size);
-    }
-
   return result;
 }
 
@@ -5694,7 +5686,6 @@ gfc_simplify_storage_size (gfc_expr *x,
 {
   gfc_expr *result = NULL;
   int k;
-  size_t elt_size;
 
   if (x->ts.type == BT_CLASS || x->ts.deferred)
     return NULL;
@@ -5708,17 +5699,10 @@ gfc_simplify_storage_size (gfc_expr *x,
   if (k == -1)
     return &gfc_bad_expr;
 
-  if (x->expr_type == EXPR_ARRAY)
-    {
-      gfc_constructor *c = gfc_constructor_first (x->value.constructor);
-      elt_size = gfc_target_expr_size (c->expr);
-    }
-  else
-    elt_size = gfc_target_expr_size (x);
-
   result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
 				  &x->where);
-  mpz_set_si (result->value.integer, elt_size);
+
+  mpz_set_si (result->value.integer, gfc_element_size (x));
 
   mpz_mul_ui (result->value.integer, result->value.integer, BITS_PER_UNIT);
   return result;
