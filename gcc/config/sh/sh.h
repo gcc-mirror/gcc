@@ -984,7 +984,6 @@ enum reg_class
   GENERAL_REGS,
   FP0_REGS,
   FP_REGS,
-  DF_HI_REGS,
   DF_REGS,
   FPSCR_REGS,
   GENERAL_FP_REGS,
@@ -1010,7 +1009,6 @@ enum reg_class
   "GENERAL_REGS",	\
   "FP0_REGS",		\
   "FP_REGS",		\
-  "DF_HI_REGS",		\
   "DF_REGS",		\
   "FPSCR_REGS",		\
   "GENERAL_FP_REGS",	\
@@ -1046,8 +1044,6 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000 },	\
 /* FP_REGS:  */								\
   { 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0x00000000 },	\
-/* DF_HI_REGS:  Initialized in TARGET_CONDITIONAL_REGISTER_USAGE.  */	\
-  { 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0x0000ff00 },	\
 /* DF_REGS:  */								\
   { 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0x0000ff00 },	\
 /* FPSCR_REGS:  */							\
@@ -1922,7 +1918,7 @@ struct sh_args {
 
 #define REGCLASS_HAS_FP_REG(CLASS) \
   ((CLASS) == FP0_REGS || (CLASS) == FP_REGS \
-   || (CLASS) == DF_REGS || (CLASS) == DF_HI_REGS)
+   || (CLASS) == DF_REGS)
 
 /* ??? Perhaps make MEMORY_MOVE_COST depend on compiler option?  This
    would be so that people with slow memory systems could generate

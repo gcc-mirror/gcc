@@ -12163,7 +12163,7 @@ sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
       else
 	{
 	  if (GET_MODE_SIZE (from) < 8)
-	    return reg_classes_intersect_p (DF_HI_REGS, rclass);
+	    return reg_classes_intersect_p (DF_REGS, rclass);
 	}
     }
   return false;
@@ -13210,9 +13210,7 @@ sh_conditional_register_usage (void)
       call_really_used_regs[MACH_REG] = 0;
       call_really_used_regs[MACL_REG] = 0;
     }
-  for (regno = FIRST_FP_REG + (TARGET_LITTLE_ENDIAN != 0);
-       regno <= LAST_FP_REG; regno += 2)
-    SET_HARD_REG_BIT (reg_class_contents[DF_HI_REGS], regno);
+
   if (TARGET_SHMEDIA)
     {
       for (regno = FIRST_TARGET_REG; regno <= LAST_TARGET_REG; regno ++)
