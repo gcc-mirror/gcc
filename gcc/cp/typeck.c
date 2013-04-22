@@ -2483,7 +2483,9 @@ lookup_destructor (tree object, tree scope, tree dtor_name,
 	       scope, dtor_type);
       return error_mark_node;
     }
-  if (identifier_p (dtor_type))
+  if (is_auto (dtor_type))
+    dtor_type = object_type;
+  else if (identifier_p (dtor_type))
     {
       /* In a template, names we can't find a match for are still accepted
 	 destructor names, and we check them here.  */
