@@ -1,5 +1,13 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	Core 1586
+	* parser.c (cp_parser_unqualified_id): Handle ~auto.
+	(cp_parser_pseudo_destructor_name): Likewise.
+	(cp_parser_postfix_dot_deref_expression): Adjust.
+	(cp_lexer_nth_token_is_keyword): New.
+	* semantics.c (finish_pseudo_destructor_expr): Handle ~auto.
+	* typeck.c (lookup_destructor): Handle ~auto.
+
 	* pt.c (fn_type_unification): Push tinst level around
 	type_unification_real if we aren't explaining.
 	* cp-tree.h (TFF_NO_TEMPLATE_BINDINGS): New.
