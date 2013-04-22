@@ -11521,6 +11521,21 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	    return error_mark_node;
 	  }
+	else if (TREE_CODE (type) == FUNCTION_TYPE
+		 && (type_memfn_quals (type) != TYPE_UNQUALIFIED
+		     || type_memfn_rqual (type) != REF_QUAL_NONE))
+	  {
+	    if (complain & tf_error)
+	      {
+		if (code == POINTER_TYPE)
+		  error ("forming pointer to qualified function type %qT",
+			 type);
+		else
+		  error ("forming reference to qualified function type %qT",
+			 type);
+	      }
+	    return error_mark_node;
+	  }
 	else if (code == POINTER_TYPE)
 	  {
 	    r = build_pointer_type (type);

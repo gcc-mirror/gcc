@@ -1,5 +1,9 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48665
+	* rtti.c (get_typeid): Diagnose qualified function type.
+	* pt.c (tsubst) [POINTER_TYPE]: Likewise.
+
 	* error.c (dump_aggr_type): Fix lambda detection.
 	(dump_simple_decl): Pretty-print capture field.
 
