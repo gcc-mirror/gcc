@@ -1,3 +1,56 @@
+2013-04-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h: Add C++11 allocator support.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/std/unordered_set: Remove bits/algobase.h
+	include. Replace bits/alloc_traits.h by ext/alloc_traits.h.
+	* include/std/unordered_map: Likewise.
+	* include/ext/throw_allocator.h: Add checks on calls to allocator
+	construct/destroy.
+	(std::hash<__gnu_cxx::throw_value_limit>): Add conditional throw.
+	(std::hash<__gnu_cxx::throw_value_random>): Likewise.
+	* testsuite/util/regression/rand/priority_queue
+	/container_rand_regression_test.tcc: Adapt.
+	* testsuite/util/regression/rand/assoc
+	/container_rand_regression_test.tcc: Likewise.
+	* testsuite/util/testsuite_counter_type.h: Add count of destructors.
+	* testsuite/23_containers/unordered_set
+	/not_default_constructible_hash_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/copy_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/move_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/move_assign.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	New.
+	* testsuite/23_containers/unordered_map/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/copy_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/move_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/swap.cc: New.
+
 2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/type_traits (is_signed): Simplify.

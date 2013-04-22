@@ -60,6 +60,8 @@ namespace __debug
       typedef typename _Base::const_local_iterator _Base_const_local_iterator;
       typedef typename _Base::local_iterator _Base_local_iterator;
 
+      typedef __gnu_cxx::__alloc_traits<typename
+					_Base::allocator_type> _Alloc_traits;
     public:
       typedef typename _Base::size_type       size_type;
       typedef typename _Base::hasher          hasher;
@@ -96,12 +98,27 @@ namespace __debug
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
-      unordered_set(const unordered_set& __x) = default;
+      unordered_set(const unordered_set&) = default;
 
-      unordered_set(const _Base& __x) 
-      : _Base(__x) { }
+      unordered_set(const _Base& __x)
+	: _Base(__x) { }
 
-      unordered_set(unordered_set&& __x) = default;
+      unordered_set(unordered_set&&) = default;
+
+      explicit
+      unordered_set(const allocator_type& __a)
+	: _Base(__a)
+      { }
+
+      unordered_set(const unordered_set& __uset,
+		    const allocator_type& __a)
+	: _Base(__uset._M_base(), __a)
+      { }
+
+      unordered_set(unordered_set&& __uset,
+		    const allocator_type& __a)
+	: _Base(std::move(__uset._M_base()), __a)
+      { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 0,
@@ -115,33 +132,41 @@ namespace __debug
       unordered_set&
       operator=(const unordered_set& __x)
       {
-	*static_cast<_Base*>(this) = __x;
+	_M_base() = __x._M_base();
 	this->_M_invalidate_all();
 	return *this;
       }
 
       unordered_set&
       operator=(unordered_set&& __x)
+      noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
 	__glibcxx_check_self_move_assign(__x);
-	clear();
-	swap(__x);
+	bool xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
+	    || __x.get_allocator() == this->get_allocator();
+	_M_base() = std::move(__x._M_base());
+	if (xfer_memory)
+	  this->_M_swap(__x);
+	else
+	  this->_M_invalidate_all();
+	__x._M_invalidate_all();
 	return *this;
       }
 
       unordered_set&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
+	this->_M_invalidate_all();
 	return *this;
       }
 
       void
       swap(unordered_set& __x)
+      noexcept(_Alloc_traits::_S_nothrow_swap())
       {
+	if (!_Alloc_traits::_S_propagate_on_swap())
+	  __glibcxx_check_equal_allocs(__x);
 	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
       }
@@ -485,6 +510,9 @@ namespace __debug
       typedef typename _Base::const_local_iterator _Base_const_local_iterator;
       typedef typename _Base::local_iterator _Base_local_iterator;
 
+      typedef __gnu_cxx::__alloc_traits<typename
+					_Base::allocator_type> _Alloc_traits;
+
     public:
       typedef typename _Base::size_type       size_type;
       typedef typename _Base::hasher          hasher;
@@ -521,12 +549,27 @@ namespace __debug
 		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a) { }
 
-      unordered_multiset(const unordered_multiset& __x) = default;
+      unordered_multiset(const unordered_multiset&) = default;
 
       unordered_multiset(const _Base& __x) 
       : _Base(__x) { }
 
-      unordered_multiset(unordered_multiset&& __x) = default;
+      unordered_multiset(unordered_multiset&&) = default;
+
+      explicit
+      unordered_multiset(const allocator_type& __a)
+	: _Base(__a)
+      { }
+
+      unordered_multiset(const unordered_multiset& __uset,
+			 const allocator_type& __a)
+	: _Base(__uset._M_base(), __a)
+      { }
+      
+      unordered_multiset(unordered_multiset&& __uset,
+			 const allocator_type& __a)
+	: _Base(std::move(__uset._M_base()), __a)
+      { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 0,
@@ -540,33 +583,41 @@ namespace __debug
       unordered_multiset&
       operator=(const unordered_multiset& __x)
       {
-	*static_cast<_Base*>(this) = __x;
+	_M_base() = __x._M_base();
 	this->_M_invalidate_all();
 	return *this;
       }
 
       unordered_multiset&
       operator=(unordered_multiset&& __x)
+      noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-        // NB: DR 675.
 	__glibcxx_check_self_move_assign(__x);
-	clear();
-	swap(__x);
+	bool xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
+	    || __x.get_allocator() == this->get_allocator();
+	_M_base() = std::move(__x._M_base());
+	if (xfer_memory)
+	  this->_M_swap(__x);
+	else
+	  this->_M_invalidate_all();
+	__x._M_invalidate_all();
 	return *this;
       }
 
       unordered_multiset&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
+	this->_M_invalidate_all();
 	return *this;
       }
 
       void
       swap(unordered_multiset& __x)
+      noexcept(_Alloc_traits::_S_nothrow_swap())
       {
+	if (!_Alloc_traits::_S_propagate_on_swap())
+	  __glibcxx_check_equal_allocs(__x);
 	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
       }
