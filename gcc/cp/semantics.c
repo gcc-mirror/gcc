@@ -8442,7 +8442,8 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 		    tree x = get_nth_callarg (t, 0);
 		    if (is_this_parameter (x))
 		      {
-			if (DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)))
+			if (DECL_CONTEXT (x) == NULL_TREE
+			    || DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)))
 			  {
 			    if (flags & tf_error)
 			      sorry ("calling a member function of the "
