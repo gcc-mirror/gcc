@@ -1,3 +1,8 @@
+2013-04-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vrecps.c: New.
+	* gcc.target/aarch64/vrecpx.c: Likewise.
+
 2013-04-22  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/56995

@@ -50,6 +50,7 @@ enum aarch64_simd_builtin_type_mode
   T_OI,
   T_XI,
   T_SI,
+  T_SF,
   T_HI,
   T_QI,
   T_MAX
@@ -72,6 +73,7 @@ enum aarch64_simd_builtin_type_mode
 #define oi_UP	 T_OI
 #define xi_UP	 T_XI
 #define si_UP    T_SI
+#define sf_UP    T_SF
 #define hi_UP    T_HI
 #define qi_UP    T_QI
 
@@ -172,6 +174,8 @@ typedef struct
 
 #define BUILTIN_DX(T, N) \
   VAR2 (T, N, di, df)
+#define BUILTIN_GPF(T, N) \
+  VAR2 (T, N, sf, df)
 #define BUILTIN_SDQ_I(T, N) \
   VAR4 (T, N, qi, hi, si, di)
 #define BUILTIN_SD_HSI(T, N) \
@@ -609,7 +613,7 @@ aarch64_init_simd_builtins (void)
       {
 	"v8qi", "v4hi", "v2si", "v2sf", "di", "df",
 	"v16qi", "v8hi", "v4si", "v4sf", "v2di", "v2df",
-	"ti", "ei", "oi", "xi", "si", "hi", "qi"
+	"ti", "ei", "oi", "xi", "si", "sf", "hi", "qi"
       };
       char namebuf[60];
       tree ftype = NULL;

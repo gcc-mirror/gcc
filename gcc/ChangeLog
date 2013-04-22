@@ -1,3 +1,26 @@
+2013-04-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_builtin_type_mode): Handle SF types.
+	(sf_UP): Define.
+	(BUILTIN_GPF): Define.
+	(aarch64_init_simd_builtins): Handle SF types.
+	* config/aarch64/aarch64-simd-builtins.def (frecpe): Add support.
+	(frecps): Likewise.
+	(frecpx): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(simd_types): Update simd_frcp<esx> to simd_frecp<esx>.
+	(aarch64_frecpe<mode>): New.
+	(aarch64_frecps<mode>): Likewise.
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_FRECP<ESX>.
+	(v8type): Add frecp<esx>.
+	(aarch64_frecp<FRECP:frecp_suffix><mode>): New.
+	(aarch64_frecps<mode>): Likewise.
+	* config/aarch64/iterators.md (FRECP): New.
+	(frecp_suffix): Likewise.
+	* config/aarch64/arm_neon.h
+	(vrecp<esx><qsd>_<fd><32, 64>): Convert to using builtins.
+
 2013-04-22  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/56995
