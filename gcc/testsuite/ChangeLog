@@ -1,3 +1,7 @@
+2013-04-21  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-26.c: New test.
+
 2013-04-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56907
