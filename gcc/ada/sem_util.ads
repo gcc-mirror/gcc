@@ -576,6 +576,7 @@ package Sem_Util is
 
    function Get_Ensures_From_CTC_Pragma (N : Node_Id) return Node_Id;
    --  Return the Ensures component of Test_Case pragma N, or Empty otherwise
+   --  Bad name now that this no longer applies to Contract_Case ???
 
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
@@ -616,6 +617,7 @@ package Sem_Util is
 
    function Get_Name_From_CTC_Pragma (N : Node_Id) return String_Id;
    --  Return the Name component of Test_Case pragma N
+   --  Bad name now that this no longer applies to Contract_Case ???
 
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
@@ -634,6 +636,7 @@ package Sem_Util is
 
    function Get_Requires_From_CTC_Pragma (N : Node_Id) return Node_Id;
    --  Return the Requires component of Test_Case pragma N, or Empty otherwise
+   --  Bad name now that this no longer applies to Contract_Case ???
 
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id;
    --  Nod is either a procedure call statement, or a function call, or an
