@@ -2573,7 +2573,7 @@ tic6x-*-uclinux)
 tilegx-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilegx/linux.h ${tm_file}"
         tmake_file="${tmake_file} tilegx/t-tilegx"
-	extra_objs="mul-tables.o"
+	extra_objs="${extra_objs} mul-tables.o"
 	c_target_objs="${c_target_objs} tilegx-c.o"
 	cxx_target_objs="${cxx_target_objs} tilegx-c.o"
 	extra_headers="feedback.h"
@@ -2581,7 +2581,7 @@ tilegx-*-linux*)
 tilepro-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
         tmake_file="${tmake_file} tilepro/t-tilepro"
-	extra_objs="mul-tables.o"
+	extra_objs="${extra_objs} mul-tables.o"
 	c_target_objs="${c_target_objs} tilepro-c.o"
 	cxx_target_objs="${cxx_target_objs} tilepro-c.o"
 	extra_headers="feedback.h"
