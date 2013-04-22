@@ -1,5 +1,9 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	N3648
+	* parser.c (cp_parser_lambda_introducer): Make lambda capture init
+	pedwarn unconditional except in C++1y mode.
+
 	* semantics.c (potential_constant_expression_1): Don't crash on
 	'this' in NSDMI.
 
