@@ -1292,6 +1292,48 @@ namespace __gnu_test
 	    { throw; }
 	}
       };
+
+    template<typename _Tp>
+      struct assign_operator
+      {
+	_Tp _M_other;
+
+	void
+	operator()(_Tp& __container)
+	{
+	  try
+	    {
+	      // An exception while assigning might leave the container empty
+	      // making future attemps less relevant. So we copy it before to
+	      // always assign to a non empty container. It also check for copy
+	      // constructor exception safety at the same time.
+	      _Tp __clone(__container);
+	      __clone = _M_other;
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+      };
+
+
+#if __cplusplus >= 201103L
+    template<typename _Tp>
+      struct move_assign_operator
+      {
+	_Tp _M_other;
+
+	void
+	operator()(_Tp& __container)
+	{
+	  try
+	    {
+	      __container = std::move(_M_other);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+      };
+#endif
   };
 
   // Base class for exception tests.
@@ -1320,27 +1362,12 @@ namespace __gnu_test
       typedef swap<container_type> 			swap;
       typedef iterator_operations<container_type>	iterator_ops;
       typedef const_iterator_operations<container_type>	const_iterator_ops;
+      typedef assign_operator<container_type>		assign_operator;
+#if __cplusplus >= 201103L
+      typedef move_assign_operator<container_type>	move_assign_operator;
+#endif
 
       using base_type::compare;
-
-      // Functor objects.
-      clear			_M_clear;
-      erase_point		_M_erasep;
-      erase_range		_M_eraser;
-      insert_point		_M_insertp;
-      emplace			_M_emplace;
-      emplace_point		_M_emplacep;
-      emplace_front		_M_emplacef;
-      emplace_back		_M_emplaceb;
-      pop_front			_M_popf;
-      pop_back			_M_popb;
-      push_front	       	_M_pushf;
-      push_back			_M_pushb;
-      rehash			_M_rehash;
-      swap			_M_swap;
-
-      iterator_ops	       	_M_iops;
-      const_iterator_ops	_M_ciops;
     };
 
 
@@ -1369,67 +1396,97 @@ namespace __gnu_test
 
       using base_type::generate;
 
-      container_type 					_M_container;
-      std::vector<function_type>			_M_functions;
-
       basic_safety() { run(); }
 
       void
       run()
       {
-	// Setup.
-	condition_type::never_adjustor off;
-	
-	// Construct containers.
-	populate p1(_M_container);
-	populate p2(base_type::_M_swap._M_other);
-	
-	// Construct list of member functions to exercise.
-	_M_functions.push_back(function_type(base_type::_M_iops));
-	_M_functions.push_back(function_type(base_type::_M_ciops));
-	
-	_M_functions.push_back(function_type(base_type::_M_erasep));
-	_M_functions.push_back(function_type(base_type::_M_eraser));
-	_M_functions.push_back(function_type(base_type::_M_insertp));
-	_M_functions.push_back(function_type(base_type::_M_emplace));
-	_M_functions.push_back(function_type(base_type::_M_emplacep));
-	_M_functions.push_back(function_type(base_type::_M_emplacef));
-	_M_functions.push_back(function_type(base_type::_M_emplaceb));
-	_M_functions.push_back(function_type(base_type::_M_popf));
-	_M_functions.push_back(function_type(base_type::_M_popb));
-	_M_functions.push_back(function_type(base_type::_M_pushf));
-	_M_functions.push_back(function_type(base_type::_M_pushb));
-	_M_functions.push_back(function_type(base_type::_M_rehash));
-	_M_functions.push_back(function_type(base_type::_M_swap));
-	
-	// Last.
-	_M_functions.push_back(function_type(base_type::_M_clear));
+	{
+	  // Setup.
+	  condition_type::never_adjustor off;
 
-	// Run tests.
-	for (auto i = _M_functions.begin(); i != _M_functions.end(); ++i)
-	  {
-	    function_type& f = *i;
-	    run_steps_to_limit(f);
-	  }
+	  // Construct containers.
+	  container_type container;
+	  populate p1(container);
+
+	  // Construct list of member functions to exercise.
+	  std::vector<function_type> functions;
+	  typename base_type::iterator_ops iops;
+	  functions.push_back(function_type(iops));
+	  typename base_type::const_iterator_ops ciops;
+	  functions.push_back(function_type(ciops));
+	
+	  typename base_type::erase_point erasep;
+	  functions.push_back(function_type(erasep));
+	  typename base_type::erase_range eraser;
+	  functions.push_back(function_type(eraser));
+	  typename base_type::insert_point insertp;
+	  functions.push_back(function_type(insertp));
+	  typename base_type::emplace emplace;
+	  functions.push_back(function_type(emplace));
+	  typename base_type::emplace_point emplacep;
+	  functions.push_back(function_type(emplacep));
+	  typename base_type::emplace_front emplacef;
+	  functions.push_back(function_type(emplacef));
+	  typename base_type::emplace_back emplaceb;
+	  functions.push_back(function_type(emplaceb));
+	  typename base_type::pop_front popf;
+	  functions.push_back(function_type(popf));
+	  typename base_type::pop_back popb;
+	  functions.push_back(function_type(popb));
+	  typename base_type::push_front pushf;
+	  functions.push_back(function_type(pushf));
+	  typename base_type::push_back pushb;
+	  functions.push_back(function_type(pushb));
+	  typename base_type::rehash rehash;
+	  functions.push_back(function_type(rehash));
+	  typename base_type::swap swap;
+	  populate p2(swap._M_other);
+	  functions.push_back(function_type(swap));
+	  typename base_type::assign_operator assignop;
+	  populate p3(assignop._M_other);
+	  functions.push_back(function_type(assignop));
+#if __cplusplus >= 201103L
+	  typename base_type::move_assign_operator massignop;
+	  populate p4(massignop._M_other);
+	  functions.push_back(function_type(massignop));
+#endif	
+	  // Last.
+	  typename base_type::clear clear;
+	  functions.push_back(function_type(clear));
+
+	  // Run tests.
+	  size_t i(1);
+	  for (auto it = functions.begin(); it != functions.end(); ++it)
+	    {
+	      function_type& f = *it;
+	      i = run_steps_to_limit(i, container, f);
+	    }
+	}
+
+	// Now that all instances has been destroyed check that there is no
+	// allocation remaining.
+	std::cout << "Checking remaining stuff" << std::endl;
+	__gnu_cxx::annotate_base::check();
       }
 
       template<typename _Funct>
-	void
-	run_steps_to_limit(const _Funct& __f)
+	size_t
+	run_steps_to_limit(size_t __step, container_type& __cont,
+			   const _Funct& __f)
 	{
-	  size_t i(1);
 	  bool exit(false);
-	  auto a = _M_container.get_allocator();
+	  auto a = __cont.get_allocator();
 
 	  do
 	    {
 	      // Use the current step as an allocator label.
-	      a.set_label(i);
+	      a.set_label(__step);
 
 	      try
 		{
-		  condition_type::limit_adjustor limit(i);
-		  __f(_M_container);
+		  condition_type::limit_adjustor limit(__step);
+		  __f(__cont);
 
 		  // If we get here, done.
 		  exit = true;
@@ -1438,18 +1495,19 @@ namespace __gnu_test
 		{
 		  // Check this step for allocations.
 		  // NB: Will throw std::logic_error if allocations.
-		  a.check_allocated(i);
+		  a.check(__step);
 
 		  // Check memory allocated with operator new.
 
-		  ++i;
 		}
+	      ++__step;
 	    }
 	  while (!exit);
 
 	  // Log count info.
 	  std::cout << __f.target_type().name() << std::endl;
-	  std::cout << "end count " << i << std::endl;
+	  std::cout << "end count " << __step << std::endl;
+	  return __step;
 	}
   };
 
@@ -1467,8 +1525,6 @@ namespace __gnu_test
       typedef typename base_type::populate 		populate;
       typedef __gnu_cxx::random_condition		condition_type;
 
-      container_type 					_M_container;
-
       generation_prohibited()  { run(); }
 
       void
@@ -1479,10 +1535,13 @@ namespace __gnu_test
 	// propagated and in error. Sudden death!
 
 	// Setup.
+	container_type container;
+	typename base_type::swap swap;
+
 	{
 	  condition_type::never_adjustor off;
-	  populate p1(_M_container);
-	  populate p2(base_type::_M_swap._M_other);
+	  populate p1(container);
+	  populate p2(swap._M_other);
 	}
 
 	// Run tests.
@@ -1493,20 +1552,27 @@ namespace __gnu_test
 	  // constructor or assignment operator of value_type throws.
 	  if (!traits<container_type>::has_throwing_erase::value)
 	    {
-	      this->_M_erasep(_M_container);
-	      this->_M_eraser(_M_container);
+	      typename base_type::erase_point erasep;
+	      erasep(container);
+	      typename base_type::erase_range eraser;
+	      eraser(container);
 	    }
 
-	  this->_M_popf(_M_container);
-	  this->_M_popb(_M_container);
+	  typename base_type::pop_front popf;
+	  popf(container);
+	  typename base_type::pop_back popb;
+	  popb(container);
 
-	  this->_M_iops(_M_container);
-	  this->_M_ciops(_M_container);
+	  typename base_type::iterator_ops iops;
+	  iops(container);
+	  typename base_type::const_iterator_ops ciops;
+	  ciops(container);
 
-	  this->_M_swap(_M_container);
+	  swap(container);
 
 	  // Last.
-	  this->_M_clear(_M_container);
+	  typename base_type::clear clear;
+	  clear(container);
 	}
       }
     };
@@ -1529,15 +1595,7 @@ namespace __gnu_test
 
       using base_type::compare;
 
-      container_type 					_M_container_test;
-      container_type 					_M_container_control;
-      std::vector<function_type>			_M_functions;
-
       propagation_consistent() { run(); }
-
-      void
-      sync()
-      { _M_container_test = _M_container_control; }
 
       // Run test.
       void
@@ -1547,48 +1605,59 @@ namespace __gnu_test
 	condition_type::never_adjustor off;
 
 	// Construct containers.
-	populate p(_M_container_control);
+	container_type container_control;
+
+	populate p(container_control);
 
 	// Construct list of member functions to exercise.
-	_M_functions.push_back(function_type(base_type::_M_emplace));
-	_M_functions.push_back(function_type(base_type::_M_emplacep));
-	_M_functions.push_back(function_type(base_type::_M_emplacef));
-	_M_functions.push_back(function_type(base_type::_M_emplaceb));
-	_M_functions.push_back(function_type(base_type::_M_pushf));
-	_M_functions.push_back(function_type(base_type::_M_pushb));
-	_M_functions.push_back(function_type(base_type::_M_insertp));
-	_M_functions.push_back(function_type(base_type::_M_rehash));
+	std::vector<function_type> functions;
+	typename base_type::emplace emplace;
+	functions.push_back(function_type(emplace));
+	typename base_type::emplace_point emplacep;
+	functions.push_back(function_type(emplacep));
+	typename base_type::emplace_front emplacef;
+	functions.push_back(function_type(emplacef));
+	typename base_type::emplace_back emplaceb;
+	functions.push_back(function_type(emplaceb));
+	typename base_type::push_front pushf;
+	functions.push_back(function_type(pushf));
+	typename base_type::push_back pushb;
+	functions.push_back(function_type(pushb));
+	typename base_type::insert_point insertp;
+	functions.push_back(function_type(insertp));
+	typename base_type::rehash rehash;
+	functions.push_back(function_type(rehash));
 
 	// Run tests.
-	for (auto i = _M_functions.begin(); i != _M_functions.end(); ++i)
+	for (auto i = functions.begin(); i != functions.end(); ++i)
 	  {
 	    function_type& f = *i;
-	    run_steps_to_limit(f);
+	    run_steps_to_limit(container_control, f);
 	  }
       }
 
       template<typename _Funct>
 	void
-	run_steps_to_limit(const _Funct& __f)
+	run_steps_to_limit(container_type& container_control, const _Funct& __f)
 	{
 	  size_t i(1);
 	  bool exit(false);
 
 	  do
 	    {
-	      sync();
+	      container_type container_test(container_control);
 
 	      try
 		{
 		  condition_type::limit_adjustor limit(i);
-		  __f(_M_container_test);
+		  __f(container_test);
 
 		  // If we get here, done.
 		  exit = true;
 		}
 	      catch(const __gnu_cxx::forced_error&)
 		{
-		  compare(_M_container_control, _M_container_test);
+		  compare(container_control, container_test);
 		  ++i;
 		}
 	    }

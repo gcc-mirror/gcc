@@ -36,23 +36,21 @@ namespace __gnu_test
     static int move_count;
     static int move_assign_count;
 #endif
+    static int destructor_count;
 
     int val;
     
     counter_type() : val(0)
-    {
-      ++default_count;
-    }
+    { ++default_count; }
 
     counter_type(int inval) : val(inval)
-    {
-      ++specialize_count;
-    }
+    { ++specialize_count; }
 
     counter_type(const counter_type& in) : val(in.val)
-    {
-      ++copy_count;
-    }
+    { ++copy_count; }
+
+    ~counter_type()
+    { ++destructor_count; }
 
     counter_type&
     operator=(const counter_type& in)
@@ -70,7 +68,7 @@ namespace __gnu_test
     }
 
     counter_type&
-    operator=(counter_type&& rhs)
+    operator=(counter_type&& rhs) noexcept
     {
       val = rhs.val;
       ++move_assign_count;
@@ -90,6 +88,7 @@ namespace __gnu_test
       move_count = 0;
       move_assign_count = 0;
 #endif
+      destructor_count = 0;
     }
 
     bool operator==(const counter_type& rhs) const
@@ -109,6 +108,7 @@ namespace __gnu_test
   int counter_type::move_count = 0;
   int counter_type::move_assign_count = 0;
 #endif
+  int counter_type::destructor_count = 0;
 
   struct counter_type_hasher
   {
