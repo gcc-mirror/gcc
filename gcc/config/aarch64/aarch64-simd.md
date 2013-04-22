@@ -59,9 +59,9 @@
 ; simd_fmul             floating point multiply.
 ; simd_fmul_elt         floating point multiply (by element).
 ; simd_fnegabs          floating point neg/abs.
-; simd_frcpe            floating point reciprocal estimate.
-; simd_frcps            floating point reciprocal step.
-; simd_frecx            floating point reciprocal exponent.
+; simd_frecpe            floating point reciprocal estimate.
+; simd_frecps            floating point reciprocal step.
+; simd_frecpx            floating point reciprocal exponent.
 ; simd_frint            floating point round to integer.
 ; simd_fsqrt            floating point square root.
 ; simd_icvtf            integer convert to floating point.
@@ -163,9 +163,9 @@
    simd_fmul,\
    simd_fmul_elt,\
    simd_fnegabs,\
-   simd_frcpe,\
-   simd_frcps,\
-   simd_frecx,\
+   simd_frecpe,\
+   simd_frecps,\
+   simd_frecpx,\
    simd_frint,\
    simd_fsqrt,\
    simd_icvtf,\
@@ -305,8 +305,8 @@
 	  (eq_attr "simd_type" "simd_store3,simd_store4") (const_string "neon_vst1_3_4_regs")
 	  (eq_attr "simd_type" "simd_store1s,simd_store2s") (const_string "neon_vst1_vst2_lane")
 	  (eq_attr "simd_type" "simd_store3s,simd_store4s") (const_string "neon_vst3_vst4_lane")
-	  (and (eq_attr "simd_type" "simd_frcpe,simd_frcps") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vrecps_vrsqrts_ddd")
-	  (and (eq_attr "simd_type" "simd_frcpe,simd_frcps") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vrecps_vrsqrts_qqq")
+	  (and (eq_attr "simd_type" "simd_frecpe,simd_frecps") (eq_attr "simd_mode" "V2SF")) (const_string "neon_fp_vrecps_vrsqrts_ddd")
+	  (and (eq_attr "simd_type" "simd_frecpe,simd_frecps") (eq_attr "simd_mode" "V4SF,V2DF")) (const_string "neon_fp_vrecps_vrsqrts_qqq")
 	  (eq_attr "simd_type" "none") (const_string "none")
   ]
   (const_string "unknown")))
@@ -3750,3 +3750,25 @@
   "ld1r\\t{%0.<Vtype>}, %1"
   [(set_attr "simd_type" "simd_load1r")
    (set_attr "simd_mode" "<MODE>")])
+
+(define_insn "aarch64_frecpe<mode>"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")]
+		    UNSPEC_FRECPE))]
+  "TARGET_SIMD"
+  "frecpe\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_frecpe")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aarch64_frecps<mode>"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")
+		     (match_operand:VDQF 2 "register_operand" "w")]
+		    UNSPEC_FRECPS))]
+  "TARGET_SIMD"
+  "frecps\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_frecps")
+   (set_attr "simd_mode" "<MODE>")]
+)
+

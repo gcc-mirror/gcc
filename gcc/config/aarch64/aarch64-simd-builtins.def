@@ -256,3 +256,12 @@
   BUILTIN_VALL (BINOP, uzp2)
   BUILTIN_VALL (BINOP, trn1)
   BUILTIN_VALL (BINOP, trn2)
+
+  /* Implemented by
+     aarch64_frecp<FRECP:frecp_suffix><mode>.  */
+  BUILTIN_GPF (UNOP, frecpe)
+  BUILTIN_GPF (BINOP, frecps)
+  BUILTIN_GPF (UNOP, frecpx)
+
+  BUILTIN_VDQF (UNOP, frecpe)
+  BUILTIN_VDQF (BINOP, frecps)
