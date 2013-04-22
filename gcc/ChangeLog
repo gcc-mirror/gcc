@@ -1,3 +1,8 @@
+2013-04-21  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-forwprop.c (simplify_conversion_from_bitmask): New function.
+	(ssa_forward_propagate_and_combine): Use it.
+
 2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra.c: Update the flow chart diagram.
