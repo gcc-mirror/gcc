@@ -538,18 +538,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   template<typename _Tp,
-	   bool = is_integral<_Tp>::value,
-	   bool = is_floating_point<_Tp>::value>
+	   bool = is_arithmetic<_Tp>::value>
     struct __is_signed_helper
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_signed_helper<_Tp, false, true>
-    : public true_type { };
-
-  template<typename _Tp>
-    struct __is_signed_helper<_Tp, true, false>
-    : public integral_constant<bool, static_cast<bool>(_Tp(-1) < _Tp(0))>
+    struct __is_signed_helper<_Tp, true>
+    : public integral_constant<bool, _Tp(-1) < _Tp(0)>
     { };
 
   /// is_signed
