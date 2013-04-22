@@ -1,3 +1,7 @@
+2013-04-22  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_type): Mangle decltype(auto).
+
 2013-04-19  Jason Merrill  <jason@redhat.com>
 
 	N3638 changes to return type deduction

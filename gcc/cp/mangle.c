@@ -2019,7 +2019,10 @@ write_type (tree type)
 	    case TEMPLATE_TYPE_PARM:
 	      if (is_auto (type))
 		{
-		  write_identifier ("Da");
+		  if (AUTO_IS_DECLTYPE (type))
+		    write_identifier ("Dc");
+		  else
+		    write_identifier ("Da");
 		  ++is_builtin_type;
 		  break;
 		}
