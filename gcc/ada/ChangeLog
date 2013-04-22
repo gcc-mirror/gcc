@@ -1,5 +1,19 @@
 2013-04-22  Yannick Moy  <moy@adacore.com>
 
+	* gnat_rm.texi, exp_util.adb, sem_prag.adb, sem_prag.ads, par-ch2.adb,
+	opt.ads, sem_ch13.adb: Minor correction of typos in comments/doc.
+
+2013-04-22  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes): Set Library_Dir to
+	No_Path_Information only when Directories_Must_Exist_In_Projects
+	is False.
+	(Get_Directories): Set Object_Directory
+	or Exec_Directory to No_Path_Information only when
+	Directories_Must_Exist_In_Projects is False.
+
+2013-04-22  Yannick Moy  <moy@adacore.com>
+
 	* par-prag.adb, sem_attr.adb, sem_ch6.adb, sem_prag.adb, sem_warn.adb,
 	snames.ads-tmpl, sinfo.ads, sem_util.ads: Remove all references to
 	Pragma_Contract_Case and Name_Contract_Case.

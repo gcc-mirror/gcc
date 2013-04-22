@@ -1460,7 +1460,7 @@ package body Sem_Ch13 is
                           Expression => Relocate_Node (Expr))),
                       Class_Present                => Class_Present (Aspect),
                       Pragma_Identifier            =>
-                                 Make_Identifier (Sloc (Id), Name_Invariant));
+                        Make_Identifier (Sloc (Id), Name_Invariant));
 
                   --  Add message unless exception messages are suppressed
 

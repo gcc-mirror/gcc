@@ -7467,7 +7467,7 @@ package body Sem_Prag is
          --                        Type_Invariant       |
          --                        Type_Invariant'Class
 
-         --  ID_ASSERTION_KIND ::= Assert_And_Cut       }
+         --  ID_ASSERTION_KIND ::= Assert_And_Cut       |
          --                        Assume               |
          --                        Contract_Cases       |
          --                        Debug                |
@@ -7490,11 +7490,11 @@ package body Sem_Prag is
          --  the corresponding assertion. If Disable is specified, then the
          --  argument of the assertion is not even analyzed. This is useful
          --  when the aspect/pragma argument references entities in a with'ed
-         --  packaqe that is replaced by a dummy package in the final build.
+         --  package that is replaced by a dummy package in the final build.
 
          --  Note: the attribute forms Pre'Class, Post'Class, Invariant'Class,
          --  and Type_Invariant'Class were recognized by the parser and
-         --  transformed into referencea to the special internal identifiers
+         --  transformed into references to the special internal identifiers
          --  _Pre, _Post, _Invariant, and _Type_Invariant, so no special
          --  processing is required here.
 
@@ -7513,9 +7513,9 @@ package body Sem_Prag is
             if Is_Configuration_Pragma then
                null;
 
-            --  It can also appear in a declaration or package spec in Ada
-            --  2012 mode. We allow this in other modes, but in that case
-            --  we consider that we have an Ada 2012 pragma on our hands.
+            --  It can also appear in a declarative part or package spec in Ada
+            --  2012 mode. We allow this in other modes, but in that case we
+            --  consider that we have an Ada 2012 pragma on our hands.
 
             else
                Check_Is_In_Decl_Part_Or_Package_Spec;
@@ -8338,8 +8338,8 @@ package body Sem_Prag is
 
             --  For the new syntax, what we do is to convert each argument to
             --  an old syntax equivalent. We do that because we want to chain
-            --  old style Check_Pragmas for the search (we don't wnat to have
-            --  to deal with multiple arguments in the search)
+            --  old style Check_Policy pragmas for the search (we don't want
+            --  to have to deal with multiple arguments in the search.)
 
             else
                declare
@@ -17923,7 +17923,7 @@ package body Sem_Prag is
                when Name_Pre            => Ename := Name_uPre;
                when Name_Post           => Ename := Name_uPost;
                when Name_Type_Invariant => Ename := Name_uType_Invariant;
-               when others           => raise Program_Error;
+               when others              => raise Program_Error;
             end case;
          end if;
       end if;

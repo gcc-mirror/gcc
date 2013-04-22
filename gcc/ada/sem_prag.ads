@@ -75,15 +75,15 @@ package Sem_Prag is
 
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
-   --  the name of the aspect or pragma is not one of those recognized as a
-   --  assertion kind by an Assertion_Kind pragma, then the call has no effect.
-   --  Note that in the case of a pragma derived from an aspect, the name
-   --  we use for the purpose of this procedure is the aspect name, which may
-   --  be different from the pragma name (e.g. Precondition for Pre aspect).
-   --  In addition, 'Class aspects are recognized (and the corresponding
-   --  special names used in the processing).
+   --  the name of the aspect or pragma is not one of those recognized as
+   --  an assertion kind by an Assertion_Policy pragma, then the call has
+   --  no effect. Note that in the case of a pragma derived from an aspect,
+   --  the name we use for the purpose of this procedure is the aspect name,
+   --  which may be different from the pragma name (e.g. Precondition for
+   --  Pre aspect). In addition, 'Class aspects are recognized (and the
+   --  corresponding special names used in the processing).
    --
-   --  If the name is valid ASSERTION_KIND name, then the Check_Policy pragma
+   --  If the name is a valid assertion kind name, then the Check_Policy pragma
    --  chain is checked for a matching entry (or for an Assertion entry which
    --  matches all possibilities). If a matching entry is found then the policy
    --  is checked. If it is Off, Ignore, or Disable, then the Is_Ignored flag

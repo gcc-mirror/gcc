@@ -5589,7 +5589,7 @@ package body Exp_Util is
 
    begin
       --  Compute proper name to use, we need to get this right so that the
-      --  right set of check policies apply to the CHeck pragma we are making.
+      --  right set of check policies apply to the Check pragma we are making.
 
       if Has_Dynamic_Predicate_Aspect (Typ) then
          Nam := Name_Dynamic_Predicate;
