@@ -1,5 +1,11 @@
 2013-04-22  Yannick Moy  <moy@adacore.com>
 
+	* par-prag.adb, sem_attr.adb, sem_ch6.adb, sem_prag.adb, sem_warn.adb,
+	snames.ads-tmpl, sinfo.ads, sem_util.ads: Remove all references to
+	Pragma_Contract_Case and Name_Contract_Case.
+
+2013-04-22  Yannick Moy  <moy@adacore.com>
+
 	* aspects.ads, aspects.adb, sem_ch13.adb: Removal of references to
 	Contract_Case.
 	* gnat_ugn.texi, gnat_rm.texi Description of Contract_Case replaced by

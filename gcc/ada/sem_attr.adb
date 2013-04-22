@@ -4265,10 +4265,7 @@ package body Sem_Attr is
             if Nkind (Prag) /= N_Pragma then
                Error_Attr ("% attribute can only appear in postcondition", P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Case
-                    or else
-                  Get_Pragma_Id (Prag) = Pragma_Test_Case
-            then
+            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
                declare
                   Arg_Ens : constant Node_Id :=
                               Get_Ensures_From_CTC_Pragma (Prag);
@@ -4281,13 +4278,7 @@ package body Sem_Attr is
                   end loop;
 
                   if Arg /= Arg_Ens then
-                     if Get_Pragma_Id (Prag) = Pragma_Contract_Case then
-                        Error_Attr
-                          ("% attribute misplaced inside contract case", P);
-                     else
-                        Error_Attr
-                          ("% attribute misplaced inside test case", P);
-                     end if;
+                     Error_Attr ("% attribute misplaced inside test case", P);
                   end if;
                end;
 
@@ -4681,10 +4672,7 @@ package body Sem_Attr is
                  ("% attribute can only appear in postcondition of function",
                   P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Case
-                    or else
-                  Get_Pragma_Id (Prag) = Pragma_Test_Case
-            then
+            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
                declare
                   Arg_Ens : constant Node_Id :=
                               Get_Ensures_From_CTC_Pragma (Prag);
@@ -4697,13 +4685,7 @@ package body Sem_Attr is
                   end loop;
 
                   if Arg /= Arg_Ens then
-                     if Get_Pragma_Id (Prag) = Pragma_Contract_Case then
-                        Error_Attr
-                          ("% attribute misplaced inside contract case", P);
-                     else
-                        Error_Attr
-                          ("% attribute misplaced inside test case", P);
-                     end if;
+                     Error_Attr ("% attribute misplaced inside test case", P);
                   end if;
                end;
 
