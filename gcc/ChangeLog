@@ -1,3 +1,9 @@
+2013-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/56990
+	* tsan.c (instrument_expr): Don't instrument expression
+	in case its size is zero.
+
 2013-04-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/57032
