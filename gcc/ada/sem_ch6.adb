@@ -11595,6 +11595,13 @@ package body Sem_Ch6 is
       --  Start of processing for Expand_Contract_Cases
 
       begin
+         --  Do nothing if pragma is not enabled. If pragma is disabled, it has
+         --  already been rewritten as a Null statement.
+
+         if Is_Ignored (CCs) then
+            return;
+         end if;
+
          --  Create the counter which tracks the number of case guards that
          --  evaluate to True.
 

@@ -1062,6 +1062,15 @@ package body Exp_Prag is
    --  Start of processing for Expand_Pragma_Loop_Variant
 
    begin
+      --  If pragma is not enabled, rewrite as Null statement. If pragma is
+      --  disabled, it has already been rewritten as a Null statement.
+
+      if Is_Ignored (N) then
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze (N);
+         return;
+      end if;
+
       --  Locate the enclosing loop for which this assertion applies. In the
       --  case of Ada 2012 array iteration, we might be dealing with nested
       --  loops. Only the outermost loop has an identifier.

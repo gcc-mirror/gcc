@@ -6768,7 +6768,7 @@ package body Sem_Prag is
 
       Check_Applicable_Policy (N);
 
-      --  If pragma is disable, rewrite as Null statement and skip analysis
+      --  If pragma is disabled, rewrite as Null statement and skip analysis
 
       if Is_Disabled (N) then
          Rewrite (N, Make_Null_Statement (Loc));
@@ -8732,14 +8732,6 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_Arg_Count (1);
-
-            --  Completely ignore if not enabled
-
-            if Is_Ignored (N) then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
 
             --  Check the placement of the pragma
 
@@ -13893,14 +13885,6 @@ package body Sem_Prag is
             Check_Arg_Count (1);
             Check_Loop_Pragma_Placement;
 
-            --  Completely ignore if not enabled
-
-            if Is_Ignored (N) then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
-
             Preanalyze_Assert_Expression (Expression (Arg1), Any_Boolean);
 
             --  Transform pragma Loop_Invariant into equivalent pragma Check
@@ -13963,14 +13947,6 @@ package body Sem_Prag is
             S14_Pragma;
             Check_At_Least_N_Arguments (1);
             Check_Loop_Pragma_Placement;
-
-            --  Completely ignore if not enabled
-
-            if Is_Ignored (N) then
-               Rewrite (N, Make_Null_Statement (Loc));
-               Analyze (N);
-               return;
-            end if;
 
             --  Process all increasing / decreasing expressions
 
