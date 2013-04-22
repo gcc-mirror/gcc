@@ -1,5 +1,14 @@
 2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/type_traits (is_signed): Simplify.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	N3669
 	* include/std/complex (complex<float>::real, complex<float>::imag,
 	complex<double>::real, complex<double>::imag,
