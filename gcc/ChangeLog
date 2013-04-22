@@ -1,3 +1,9 @@
+2013-04-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57018
+	* lra-eliminations.c (mark_not_eliminable): Prevent elimination of
+	a set sp if no stack realignment.
+
 2013-04-22  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (tilegx-linux): Extend extra_objs rather than
