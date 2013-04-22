@@ -4058,7 +4058,7 @@ LCF0:
 	  [Define if your assembler supports .gnu_attribute.])])
 
     gcc_GAS_CHECK_FEATURE([.micromips support],
-      gcc_cv_as_micromips_support,,,
+      gcc_cv_as_micromips_support,,[--fatal-warnings],
       [.set micromips],,
       [AC_DEFINE(HAVE_GAS_MICROMIPS, 1,
           [Define if your assembler supports the .set micromips directive])])
