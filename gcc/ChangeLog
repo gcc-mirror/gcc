@@ -1,3 +1,10 @@
+2013-04-22  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	Backported from mainline.
+	2013-04-10  Yufeng Zhang  <yufeng.zhang@arm.com>
+	* config/aarch64/aarch64.c (aarch64_print_extension): New function.
+	(aarch64_start_file): Use the new function.
+
 2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56984
