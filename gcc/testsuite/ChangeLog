@@ -1,4 +1,4 @@
-2013-04-18  Christian Bruel  <christian.bruel@st.com>
+2013-04-22  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/56995
 	* gcc.target/sh/mfmovd.c: Add new function and check hard_float.
