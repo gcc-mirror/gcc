@@ -1066,11 +1066,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 387. std::complex over-encapsulated.
       __attribute ((__abi_tag__ ("cxx11")))
       constexpr float 
-      real() { return __real__ _M_value; }
+      real() const { return __real__ _M_value; }
 
       __attribute ((__abi_tag__ ("cxx11")))
       constexpr float 
-      imag() { return __imag__ _M_value; }
+      imag() const { return __imag__ _M_value; }
 #else
       float& 
       real() { return __real__ _M_value; }
@@ -1217,11 +1217,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 387. std::complex over-encapsulated.
       __attribute ((__abi_tag__ ("cxx11")))
       constexpr double 
-      real() { return __real__ _M_value; }
+      real() const { return __real__ _M_value; }
 
       __attribute ((__abi_tag__ ("cxx11")))
       constexpr double 
-      imag() { return __imag__ _M_value; }
+      imag() const { return __imag__ _M_value; }
 #else
       double& 
       real() { return __real__ _M_value; }
@@ -1369,11 +1369,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 387. std::complex over-encapsulated.
       __attribute ((__abi_tag__ ("cxx11")))
       constexpr long double 
-      real() { return __real__ _M_value; }
+      real() const { return __real__ _M_value; }
 
       __attribute ((__abi_tag__ ("cxx11")))
       constexpr long double 
-      imag() { return __imag__ _M_value; }
+      imag() const { return __imag__ _M_value; }
 #else
       long double& 
       real() { return __real__ _M_value; }
