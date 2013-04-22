@@ -291,8 +291,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap(__first, __last);
 
-      --__last;
-      std::__pop_heap(__first, __last, __last);
+      if (__last - __first > 1)
+	{
+	  --__last;
+	  std::__pop_heap(__first, __last, __last);
+	}
     }
 
   template<typename _RandomAccessIterator, typename _Distance,
@@ -363,8 +366,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_non_empty_range(__first, __last);
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
-      --__last;
-      std::__pop_heap(__first, __last, __last, __comp);
+      if (__last - __first > 1)
+	{
+	  --__last;
+	  std::__pop_heap(__first, __last, __last, __comp);
+	}
     }
 
   /**

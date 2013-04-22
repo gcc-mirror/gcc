@@ -1,3 +1,9 @@
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57010
+	* include/bits/stl_heap.h (pop_heap): Avoid self move-assignment.
+	* testsuite/25_algorithms/pop_heap/57010.cc: New.
+
 2013-04-21  Evgeniy Stepanov  <eugenis@google.com>
 
 	* src/c++11/system_error.cc (generic_category_instance): Add
