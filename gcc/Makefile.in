@@ -1137,6 +1137,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-format.o c-family/c-gimplify.o c-family/c-lex.o \
   c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
+  c-family/c-cilkplus.o \
   c-family/c-semantics.o c-family/c-ada-spec.o tree-mudflap.o
 
 # Language-independent object files.
@@ -1965,6 +1966,9 @@ c-family/c-lex.o : c-family/c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 c-family/c-omp.o : c-family/c-omp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) $(C_COMMON_H) $(GIMPLE_H) langhooks.h
+
+c-family/c-cilkplus.o : c-family/c-cilkplus.c $(CONFIG_H) $(SYSTEM_H) \
+	coretypes.h $(TREE_H) $(C_COMMON_H) langhooks.h
 
 CFLAGS-c-family/c-opts.o += @TARGET_SYSTEM_ROOT_DEFINE@
 c-family/c-opts.o : c-family/c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \

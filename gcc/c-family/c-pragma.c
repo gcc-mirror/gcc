@@ -1352,6 +1352,12 @@ init_pragma (void)
 				      omp_pragmas[i].id, true, true);
     }
 
+  if (flag_enable_cilk && !flag_preprocess_only)
+    {
+      cpp_register_deferred_pragma (parse_in, NULL, "simd", 
+				    PRAGMA_CILK_SIMD, true, false);
+    }
+
   if (!flag_preprocess_only)
     cpp_register_deferred_pragma (parse_in, "GCC", "pch_preprocess",
 				  PRAGMA_GCC_PCH_PREPROCESS, false, false);

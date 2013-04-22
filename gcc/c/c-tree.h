@@ -642,6 +642,11 @@ extern tree c_build_va_arg (location_t, tree, tree);
 extern tree c_finish_transaction (location_t, tree, int);
 extern bool c_tree_equal (tree, tree);
 
+/* In c-cilkplus.c */
+extern tree c_finish_cilk_simd_loop (location_t, tree, tree, tree, tree,
+				     tree, tree);
+extern tree c_finish_cilk_clauses (tree);
+
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
 

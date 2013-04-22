@@ -586,6 +586,17 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_string (buffer, "taskgroup");
       break;
 
+    case OMP_CLAUSE_CILK_ASSERT:
+      pp_string (buffer, "cilk_assert");
+      break;
+
+    case OMP_CLAUSE_CILK_VECTORLENGTH:
+      pp_string (buffer, "cilk_vectorlength(");
+      dump_generic_node (buffer, OMP_CLAUSE_CILK_VECTORLENGTH_EXPR (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
     default:
       /* Should never happen.  */
       dump_generic_node (buffer, clause, spc, flags, false);
