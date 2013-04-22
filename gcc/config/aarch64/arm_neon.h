@@ -23404,109 +23404,109 @@ vrsrad_n_u64 (uint64x1_t __a, uint64x1_t __b, const int __c)
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vshl_n_s8 (int8x8_t __a, const int __b)
 {
-  return (int8x8_t) __builtin_aarch64_sshl_nv8qi (__a, __b);
+  return (int8x8_t) __builtin_aarch64_ashlv8qi (__a, __b);
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vshl_n_s16 (int16x4_t __a, const int __b)
 {
-  return (int16x4_t) __builtin_aarch64_sshl_nv4hi (__a, __b);
+  return (int16x4_t) __builtin_aarch64_ashlv4hi (__a, __b);
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vshl_n_s32 (int32x2_t __a, const int __b)
 {
-  return (int32x2_t) __builtin_aarch64_sshl_nv2si (__a, __b);
+  return (int32x2_t) __builtin_aarch64_ashlv2si (__a, __b);
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vshl_n_s64 (int64x1_t __a, const int __b)
 {
-  return (int64x1_t) __builtin_aarch64_sshl_ndi (__a, __b);
+  return (int64x1_t) __builtin_aarch64_ashldi (__a, __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vshl_n_u8 (uint8x8_t __a, const int __b)
 {
-  return (uint8x8_t) __builtin_aarch64_ushl_nv8qi ((int8x8_t) __a, __b);
+  return (uint8x8_t) __builtin_aarch64_ashlv8qi ((int8x8_t) __a, __b);
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vshl_n_u16 (uint16x4_t __a, const int __b)
 {
-  return (uint16x4_t) __builtin_aarch64_ushl_nv4hi ((int16x4_t) __a, __b);
+  return (uint16x4_t) __builtin_aarch64_ashlv4hi ((int16x4_t) __a, __b);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vshl_n_u32 (uint32x2_t __a, const int __b)
 {
-  return (uint32x2_t) __builtin_aarch64_ushl_nv2si ((int32x2_t) __a, __b);
+  return (uint32x2_t) __builtin_aarch64_ashlv2si ((int32x2_t) __a, __b);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vshl_n_u64 (uint64x1_t __a, const int __b)
 {
-  return (uint64x1_t) __builtin_aarch64_ushl_ndi ((int64x1_t) __a, __b);
+  return (uint64x1_t) __builtin_aarch64_ashldi ((int64x1_t) __a, __b);
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vshlq_n_s8 (int8x16_t __a, const int __b)
 {
-  return (int8x16_t) __builtin_aarch64_sshl_nv16qi (__a, __b);
+  return (int8x16_t) __builtin_aarch64_ashlv16qi (__a, __b);
 }
 
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vshlq_n_s16 (int16x8_t __a, const int __b)
 {
-  return (int16x8_t) __builtin_aarch64_sshl_nv8hi (__a, __b);
+  return (int16x8_t) __builtin_aarch64_ashlv8hi (__a, __b);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vshlq_n_s32 (int32x4_t __a, const int __b)
 {
-  return (int32x4_t) __builtin_aarch64_sshl_nv4si (__a, __b);
+  return (int32x4_t) __builtin_aarch64_ashlv4si (__a, __b);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vshlq_n_s64 (int64x2_t __a, const int __b)
 {
-  return (int64x2_t) __builtin_aarch64_sshl_nv2di (__a, __b);
+  return (int64x2_t) __builtin_aarch64_ashlv2di (__a, __b);
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vshlq_n_u8 (uint8x16_t __a, const int __b)
 {
-  return (uint8x16_t) __builtin_aarch64_ushl_nv16qi ((int8x16_t) __a, __b);
+  return (uint8x16_t) __builtin_aarch64_ashlv16qi ((int8x16_t) __a, __b);
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vshlq_n_u16 (uint16x8_t __a, const int __b)
 {
-  return (uint16x8_t) __builtin_aarch64_ushl_nv8hi ((int16x8_t) __a, __b);
+  return (uint16x8_t) __builtin_aarch64_ashlv8hi ((int16x8_t) __a, __b);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vshlq_n_u32 (uint32x4_t __a, const int __b)
 {
-  return (uint32x4_t) __builtin_aarch64_ushl_nv4si ((int32x4_t) __a, __b);
+  return (uint32x4_t) __builtin_aarch64_ashlv4si ((int32x4_t) __a, __b);
 }
 
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vshlq_n_u64 (uint64x2_t __a, const int __b)
 {
-  return (uint64x2_t) __builtin_aarch64_ushl_nv2di ((int64x2_t) __a, __b);
+  return (uint64x2_t) __builtin_aarch64_ashlv2di ((int64x2_t) __a, __b);
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vshld_n_s64 (int64x1_t __a, const int __b)
 {
-  return (int64x1_t) __builtin_aarch64_sshl_ndi (__a, __b);
+  return (int64x1_t) __builtin_aarch64_ashldi (__a, __b);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vshld_n_u64 (uint64x1_t __a, const int __b)
 {
-  return (uint64x1_t) __builtin_aarch64_ushl_ndi (__a, __b);
+  return (uint64x1_t) __builtin_aarch64_ashldi (__a, __b);
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
@@ -23694,109 +23694,109 @@ vshll_n_u32 (uint32x2_t __a, const int __b)
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vshr_n_s8 (int8x8_t __a, const int __b)
 {
-  return (int8x8_t) __builtin_aarch64_sshr_nv8qi (__a, __b);
+  return (int8x8_t) __builtin_aarch64_ashrv8qi (__a, __b);
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vshr_n_s16 (int16x4_t __a, const int __b)
 {
-  return (int16x4_t) __builtin_aarch64_sshr_nv4hi (__a, __b);
+  return (int16x4_t) __builtin_aarch64_ashrv4hi (__a, __b);
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vshr_n_s32 (int32x2_t __a, const int __b)
 {
-  return (int32x2_t) __builtin_aarch64_sshr_nv2si (__a, __b);
+  return (int32x2_t) __builtin_aarch64_ashrv2si (__a, __b);
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vshr_n_s64 (int64x1_t __a, const int __b)
 {
-  return (int64x1_t) __builtin_aarch64_sshr_ndi (__a, __b);
+  return (int64x1_t) __builtin_aarch64_ashrdi (__a, __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vshr_n_u8 (uint8x8_t __a, const int __b)
 {
-  return (uint8x8_t) __builtin_aarch64_ushr_nv8qi ((int8x8_t) __a, __b);
+  return (uint8x8_t) __builtin_aarch64_lshrv8qi ((int8x8_t) __a, __b);
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vshr_n_u16 (uint16x4_t __a, const int __b)
 {
-  return (uint16x4_t) __builtin_aarch64_ushr_nv4hi ((int16x4_t) __a, __b);
+  return (uint16x4_t) __builtin_aarch64_lshrv4hi ((int16x4_t) __a, __b);
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vshr_n_u32 (uint32x2_t __a, const int __b)
 {
-  return (uint32x2_t) __builtin_aarch64_ushr_nv2si ((int32x2_t) __a, __b);
+  return (uint32x2_t) __builtin_aarch64_lshrv2si ((int32x2_t) __a, __b);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vshr_n_u64 (uint64x1_t __a, const int __b)
 {
-  return (uint64x1_t) __builtin_aarch64_ushr_ndi ((int64x1_t) __a, __b);
+  return (uint64x1_t) __builtin_aarch64_lshrdi ((int64x1_t) __a, __b);
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vshrq_n_s8 (int8x16_t __a, const int __b)
 {
-  return (int8x16_t) __builtin_aarch64_sshr_nv16qi (__a, __b);
+  return (int8x16_t) __builtin_aarch64_ashrv16qi (__a, __b);
 }
 
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vshrq_n_s16 (int16x8_t __a, const int __b)
 {
-  return (int16x8_t) __builtin_aarch64_sshr_nv8hi (__a, __b);
+  return (int16x8_t) __builtin_aarch64_ashrv8hi (__a, __b);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vshrq_n_s32 (int32x4_t __a, const int __b)
 {
-  return (int32x4_t) __builtin_aarch64_sshr_nv4si (__a, __b);
+  return (int32x4_t) __builtin_aarch64_ashrv4si (__a, __b);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vshrq_n_s64 (int64x2_t __a, const int __b)
 {
-  return (int64x2_t) __builtin_aarch64_sshr_nv2di (__a, __b);
+  return (int64x2_t) __builtin_aarch64_ashrv2di (__a, __b);
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vshrq_n_u8 (uint8x16_t __a, const int __b)
 {
-  return (uint8x16_t) __builtin_aarch64_ushr_nv16qi ((int8x16_t) __a, __b);
+  return (uint8x16_t) __builtin_aarch64_lshrv16qi ((int8x16_t) __a, __b);
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vshrq_n_u16 (uint16x8_t __a, const int __b)
 {
-  return (uint16x8_t) __builtin_aarch64_ushr_nv8hi ((int16x8_t) __a, __b);
+  return (uint16x8_t) __builtin_aarch64_lshrv8hi ((int16x8_t) __a, __b);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vshrq_n_u32 (uint32x4_t __a, const int __b)
 {
-  return (uint32x4_t) __builtin_aarch64_ushr_nv4si ((int32x4_t) __a, __b);
+  return (uint32x4_t) __builtin_aarch64_lshrv4si ((int32x4_t) __a, __b);
 }
 
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vshrq_n_u64 (uint64x2_t __a, const int __b)
 {
-  return (uint64x2_t) __builtin_aarch64_ushr_nv2di ((int64x2_t) __a, __b);
+  return (uint64x2_t) __builtin_aarch64_lshrv2di ((int64x2_t) __a, __b);
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vshrd_n_s64 (int64x1_t __a, const int __b)
 {
-  return (int64x1_t) __builtin_aarch64_sshr_ndi (__a, __b);
+  return (int64x1_t) __builtin_aarch64_ashrdi (__a, __b);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vshrd_n_u64 (uint64x1_t __a, const int __b)
 {
-  return (uint64x1_t) __builtin_aarch64_ushr_ndi (__a, __b);
+  return (uint64x1_t) __builtin_aarch64_lshrdi (__a, __b);
 }
 
 /* vsli */
