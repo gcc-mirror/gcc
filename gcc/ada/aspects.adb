@@ -301,7 +301,6 @@ package body Aspects is
     Aspect_Compiler_Unit                => Aspect_Compiler_Unit,
     Aspect_Component_Size               => Aspect_Component_Size,
     Aspect_Constant_Indexing            => Aspect_Constant_Indexing,
-    Aspect_Contract_Case                => Aspect_Contract_Case,
     Aspect_Contract_Cases               => Aspect_Contract_Cases,
     Aspect_Convention                   => Aspect_Convention,
     Aspect_CPU                          => Aspect_CPU,
