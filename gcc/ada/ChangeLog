@@ -1,3 +1,20 @@
+2013-04-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Contract_Case): New routine.
+	(Analyze_Pragma): Aspect/pragma Contract_Cases can
+	now be associated with a library level subprogram.
+	Add circuitry to detect illegal uses of aspect/pragma Contract_Cases
+	in a subprogram body.
+	(Chain_Contract_Cases): Rename formal parameter Subp_Decl to
+	Subp_Id. Remove local constant Subp. The entity of the subprogram
+	is now obtained via the formal paramter.
+
+2013-04-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not set
+	Is_Constr_Subt_For_Unc_Aliased on the subtype of the expression,
+	if the expression is a source entity.
+
 2013-04-22  Yannick Moy  <moy@adacore.com>
 
 	* exp_prag.adb, sinfo.ads, sem_prag.ads: Minor correction of typos in
