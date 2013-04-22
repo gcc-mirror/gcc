@@ -1709,6 +1709,7 @@ package body Exp_Ch6 is
 
             if Is_By_Reference_Type (E_Formal)
               and then Has_Predicates (E_Actual)
+              and then not Is_Init_Proc (Subp)
             then
                if Is_Derived_Type (E_Actual)
                  and then Is_Inherited_Operation_For_Type (Subp, E_Actual)
