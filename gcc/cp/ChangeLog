@@ -1,5 +1,11 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (fn_type_unification): Push tinst level around
+	type_unification_real if we aren't explaining.
+	* cp-tree.h (TFF_NO_TEMPLATE_BINDINGS): New.
+	* error.c (dump_function_decl): Respect it.
+	(subst_to_string): Pass it.
+
 	PR c++/48665
 	* rtti.c (get_typeid): Diagnose qualified function type.
 	* pt.c (tsubst) [POINTER_TYPE]: Likewise.

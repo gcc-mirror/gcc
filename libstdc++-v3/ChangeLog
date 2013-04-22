@@ -1,5 +1,8 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Also ignore "In
+	substitution" lines.
+
 	* testsuite/20_util/is_assignable/value.cc: Comment out tests involving
 	function-cv-quals.
 	* testsuite/20_util/is_constructible/value-2.cc: Likewise.
