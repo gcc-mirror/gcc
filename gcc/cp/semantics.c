@@ -3105,6 +3105,12 @@ finish_id_expression (tree id_expression,
 		= decl_function_context (containing_function);
 	    }
 
+	  if (lambda_expr && TREE_CODE (decl) == VAR_DECL
+	      && DECL_ANON_UNION_VAR_P (decl))
+	    {
+	      error ("cannot capture member %qD of anonymous union", decl);
+	      return error_mark_node;
+	    }
 	  if (context == containing_function)
 	    {
 	      decl = add_default_capture (lambda_stack,
