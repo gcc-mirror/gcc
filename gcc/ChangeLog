@@ -1,3 +1,13 @@
+2013-04-18  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/56995
+	* config/sh/sh.h (enum reg_class): Remove DF_HI_REGS.
+	(REG_CLASS_NAMES): Idem.
+	(REG_CLASS_CONTENTS): Idem.
+	(REGCLASS_HAS_FP_REG): Idem.
+	* config/sh/sh.c (sh_cannot_change_mode_class): Idem.
+	(sh_conditional_register_usage): Idem.
+
 2013-04-21  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-forwprop.c (simplify_conversion_from_bitmask): New function.
