@@ -3166,9 +3166,10 @@ package body Prj.Nmsc is
                     (Data.Flags,
                      "library directory { does not exist",
                      Lib_Dir.Location, Project);
-               end if;
 
-               Project.Library_Dir := No_Path_Information;
+               else
+                  Project.Library_Dir := No_Path_Information;
+               end if;
 
             --  Checks for object/source directories
 
@@ -5421,10 +5422,10 @@ package body Prj.Nmsc is
                     (Data.Flags, Data.Flags.Require_Obj_Dirs,
                      "object directory { not found",
                      Project.Location, Project);
+
+               else
+                  Project.Object_Directory := No_Path_Information;
                end if;
-
-               Project.Object_Directory := No_Path_Information;
-
             end if;
          end if;
 
@@ -5502,9 +5503,10 @@ package body Prj.Nmsc is
                   Error_Or_Warning
                     (Data.Flags, Data.Flags.Missing_Source_Files,
                      "exec directory { not found", Project.Location, Project);
-               end if;
 
-               Project.Exec_Directory := No_Path_Information;
+               else
+                  Project.Exec_Directory := No_Path_Information;
+               end if;
             end if;
          end if;
       end if;

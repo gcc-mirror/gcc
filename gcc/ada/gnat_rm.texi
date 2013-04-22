@@ -1235,7 +1235,7 @@ Syntax:
 @smallexample @c ada
 pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
 
-Pragma Assertion_Policy (
+pragma Assertion_Policy (
     ASSERTION_KIND => POLICY_IDENTIFIER
  @{, ASSERTION_KIND => POLICY_IDENTIFIER@});
 
@@ -1442,8 +1442,11 @@ pragma Check (
      [Check   =>] Boolean_EXPRESSION
   [, [Message =>] string_EXPRESSION] );
 
-CHECK_KIND ::= IDENTIFIER |
-               Pre'Class | Post'Class | Type_Invariant'Class
+CHECK_KIND ::= IDENTIFIER           |
+               Pre'Class            |
+               Post'Class           |
+               Type_Invariant'Class |
+               Invariant'Class
 @end smallexample
 
 @noindent
@@ -1557,7 +1560,7 @@ pragma Check_Policy
  ([Name   =>] CHECK_KIND,
   [Policy =>] POLICY_IDENTIFIER);
 
-Pragma Check_Policy (
+pragma Check_Policy (
     CHECK_KIND => POLICY_IDENTIFIER
  @{, CHECK_KIND => POLICY_IDENTIFIER@});
 
@@ -1589,14 +1592,14 @@ and if the check kind corresponds to one of the assertion kinds that
 are allowed by @code{Assertion_Policy}, then the effect is identical.
 
 If the first argument is Debug, then the policy applies to Debug pragmas,
-disabling their effect if the policy is @code{Off}, @code{Disable}, or
-@code{Ignore}, and allowing them to execute with normal semantics if
-the policy is @code{On} or @code{Check}. In addition if the policy is
-@code{Disable}, then the procedure call in @code{Debug} pragmas will
-be totally ignored and not analyzed semanticslly.
+disabling their effect if the policy is @code{OFF}, @code{DISABLE}, or
+@code{IGNORE}, and allowing them to execute with normal semantics if
+the policy is @code{ON} or @code{CHECK}. In addition if the policy is
+@code{DISABLE}, then the procedure call in @code{Debug} pragmas will
+be totally ignored and not analyzed semantically.
 
 Finally the first argument may be some other identifier than the above
-posibilities, in which case it controls a set of named assertions
+possibilities, in which case it controls a set of named assertions
 that can be checked using pragma @code{Check}. For example, if the pragma:
 
 @smallexample @c ada
