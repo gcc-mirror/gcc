@@ -1630,17 +1630,24 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	{
 	  if (winner)
 	    {
-	      if (complain)
+	      tree winner_type
+		= non_reference (TREE_TYPE (TREE_TYPE (winner)));
+
+	      if (!same_type_ignoring_top_level_qualifiers_p (winner_type,
+							      candidate))
 		{
-		  error ("ambiguous default type conversion from %qT",
-			 basetype);
-		  error ("  candidate conversions include %qD and %qD",
-			 winner, cand);
+		  if (complain)
+		    {
+		      error ("ambiguous default type conversion from %qT",
+			     basetype);
+		      error ("  candidate conversions include %qD and %qD",
+			     winner, cand);
+		    }
+		  return error_mark_node;
 		}
-	      return error_mark_node;
 	    }
-	  else
-	    winner = cand;
+
+	  winner = cand;
 	}
     }
 
