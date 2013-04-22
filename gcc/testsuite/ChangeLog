@@ -55,20 +55,19 @@
 	* gfortran.dg/array_constructor_45.f90:  New test.
 	* gfortran.dg/array_constructor_46.f90:  New test.
 	* gfortran.dg/array_constructor_47.f90:  New test.
-	* gfortran.dg/array_constructor_40.f90:  Adjust number of
-	while loops.
+	* gfortran.dg/array_constructor_40.f90:  Adjust number of while loops.
 
 2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/56999
 	* g++.dg/opt/pr56999.C: New test.
 
-2013-04-18   Cary Coutant  <ccoutant@google.com>
+2013-04-18  Cary Coutant  <ccoutant@google.com>
 
 	* g++.dg/debug/dwarf2/pubnames-2.C: Add -fno-debug-types-section.
 	* g++.dg/debug/dwarf2/pubnames-3.C: New test case.
 
-2013-04-18   Cary Coutant  <ccoutant@google.com>
+2013-04-18  Cary Coutant  <ccoutant@google.com>
 
 	* g++.dg/debug/dwarf2/typedef2.C: Add -fno-debug-types-section flag.
 	* g++.dg/debug/dwarf2/typedef4.C: Likewise.
@@ -84,8 +83,7 @@
 
 2013-04-18  Grigoriy Kraynov  <grigoriy.kraynov@intel.com>
 
-	* gcc.target/i386/avx2-vpop-check.h: volatility is casted away in
-	memcmp().
+	* gcc.target/i386/avx2-vpop-check.h: Cast away volatility in memcmp().
 
 2013-04-18  Jakub Jelinek  <jakub@redhat.com>
 
@@ -139,12 +137,12 @@
 	* lib/gcc-dg.exp (scan-module): Uncompress module file before scanning.
 	* gfortran.dg/module_md5_1.f90: Remove.
 
-2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-16  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/adds3.c: New.
 	* gcc.target/aarch64/subs3.c: New.
 
-2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-16  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/adds1.c: New.
 	* gcc.target/aarch64/adds2.c: New.
