@@ -1,5 +1,8 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	* error.c (dump_aggr_type): Fix lambda detection.
+	(dump_simple_decl): Pretty-print capture field.
+
 	N3323
 	* cvt.c (build_expr_type_conversion): Two conversions that return
 	the same type aren't necessarily ambiguous.

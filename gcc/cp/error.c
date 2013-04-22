@@ -656,7 +656,7 @@ dump_aggr_type (tree t, int flags)
       else
 	pp_printf (pp_base (cxx_pp), M_("<anonymous %s>"), variety);
     }
-  else if (LAMBDA_TYPE_P (name))
+  else if (LAMBDA_TYPE_P (t))
     {
       /* A lambda's "type" is essentially its signature.  */
       pp_string (cxx_pp, M_("<lambda"));
@@ -933,7 +933,16 @@ dump_simple_decl (tree t, tree type, int flags)
       && TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (t)))
     pp_string (cxx_pp, "...");
   if (DECL_NAME (t))
-    dump_decl (DECL_NAME (t), flags);
+    {
+      if (DECL_CLASS_SCOPE_P (t) && LAMBDA_TYPE_P (DECL_CONTEXT (t)))
+	{
+	  pp_character (cxx_pp, '<');
+	  pp_string (cxx_pp, IDENTIFIER_POINTER (DECL_NAME (t)) + 2);
+	  pp_string (cxx_pp, " capture>");
+	}
+      else
+	dump_decl (DECL_NAME (t), flags);
+    }
   else
     pp_string (cxx_pp, M_("<anonymous>"));
   if (flags & TFF_DECL_SPECIFIERS)
