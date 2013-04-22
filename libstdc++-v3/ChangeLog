@@ -1,3 +1,11 @@
+2013-04-22  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/is_assignable/value.cc: Comment out tests involving
+	function-cv-quals.
+	* testsuite/20_util/is_constructible/value-2.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/result_type.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs-2.cc: Likewise.
+
 2013-04-22  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h: Add C++11 allocator support.
