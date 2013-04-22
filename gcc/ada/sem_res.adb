@@ -5899,8 +5899,7 @@ package body Sem_Res is
       if Nkind (N) = N_Function_Call
         and then Is_Tagged_Type (Etype (N))
         and then Is_Entity_Name (Name (N))
-        and then Is_Inherited_Operation_For_Type
-                   (Entity (Name (N)), Etype (N))
+        and then Is_Inherited_Operation_For_Type (Entity (Name (N)), Etype (N))
       then
          Check_SPARK_Restriction ("function not inherited", N);
       end if;

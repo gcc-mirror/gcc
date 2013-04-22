@@ -7063,17 +7063,15 @@ package body Sem_Ch6 is
       --  Last non-trivial contract-cases on the subprogram, or else Empty
 
       Attribute_Result_Mentioned : Boolean := False;
-      --  Whether attribute 'Result is mentioned in a non-trivial postcondition
-      --  or contract-cases.
+      --  True if 'Result used in a non-trivial postcondition or contract-cases
 
       No_Warning_On_Some_Postcondition : Boolean := False;
-      --  Whether there exists a non-trivial postcondition or contract-cases
+      --  True if there is a non-trivial postcondition or contract-cases
       --  without a corresponding warning.
 
       Post_State_Mentioned : Boolean := False;
-      --  Whether some expression mentioned in a postcondition or
-      --  contract-cases can have a different value in the post-state than
-      --  in the pre-state.
+      --  True if expression mentioned in a postcondition or contract-cases
+      --  can have a different value in the post-state than in the pre-state.
 
       function Check_Attr_Result (N : Node_Id) return Traverse_Result;
       --  Check if N is a reference to the attribute 'Result, and if so set
@@ -7223,7 +7221,6 @@ package body Sem_Ch6 is
                   --  or "False".
 
                   if not Is_Trivial_Post_Or_Ensures (Conseq) then
-
                      Last_Contract_Cases := Prag;
 
                      --  For functions, look for presence of 'Result in
@@ -12272,8 +12269,7 @@ package body Sem_Ch6 is
                      end if;
 
                      if not Expander_Active then
-                        Prepend
-                          (Grab_PPC (Pspec), Declarations (N));
+                        Prepend (Grab_PPC (Pspec), Declarations (N));
                      else
                         Append (Grab_PPC (Pspec), Plist);
                      end if;

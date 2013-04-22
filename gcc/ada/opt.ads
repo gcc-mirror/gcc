@@ -206,7 +206,10 @@ package Opt is
 
    Assertions_Enabled : Boolean := False;
    --  GNAT
-   --  Enable assertions made using pragma Assert
+   --  Indicates default policy (True = Check, False = Ignore) to be applied
+   --  to all assertion aspects and pragmas, and to pragma Debug, if there is
+   --  no overriding Assertion_Policy, Check_Policy, or Debug_Policy pragma.
+   --  Set True by use of -gnata.
 
    Assume_No_Invalid_Values : Boolean := False;
    --  GNAT Normally, in accordance with (RM 13.9.1 (9-11)) the front end
@@ -282,13 +285,13 @@ package Opt is
 
    Check_Object_Consistency : Boolean := False;
    --  GNATBIND, GNATMAKE
-   --  Set to True to check whether every object file is consistent with
-   --  its corresponding ada library information (ALI) file. An object
-   --  file is inconsistent with the corresponding ALI file if the object
-   --  file does not exist or if it has an older time stamp than the ALI file.
-   --  Default above is for GNATBIND. GNATMAKE overrides this default to
-   --  True (see Make.Initialize) since we normally do need to check source
-   --  consistencies in gnatmake.
+   --  Set to True to check whether every object file is consistent with its
+   --  corresponding ada library information (ALI) file. An object file is
+   --  inconsistent with the corresponding ALI file if the object file does
+   --  not exist or if it has an older time stamp than the ALI file. Default
+   --  above is for GNATBIND. GNATMAKE overrides this default to True (see
+   --  Make.Initialize) since we normally do need to check source consistencies
+   --  in gnatmake.
 
    Check_Only : Boolean := False;
    --  GNATBIND
