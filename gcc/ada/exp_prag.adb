@@ -1059,7 +1059,7 @@ package body Exp_Prag is
          end if;
       end Process_Variant;
 
-   --  Start of processing for Expand_Pragma_Loop_Assertion
+   --  Start of processing for Expand_Pragma_Loop_Variant
 
    begin
       --  Locate the enclosing loop for which this assertion applies. In the

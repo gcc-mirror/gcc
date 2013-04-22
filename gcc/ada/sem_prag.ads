@@ -55,7 +55,7 @@ package Sem_Prag is
    --  in Sem "Handling of Default and Per-Object Expressions...").
 
    function Check_Kind (Nam : Name_Id) return Name_Id;
-   --  This function is used in connection with pragmas Assertion, Check,
+   --  This function is used in connection with pragmas Assert, Check,
    --  and assertion aspects and pragmas, to determine if Check pragmas
    --  (or corresponding assertion aspects or pragmas) are currently active
    --  as determined by the presence of -gnata on the command line (which

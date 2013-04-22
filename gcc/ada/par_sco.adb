@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1455,11 +1455,11 @@ package body Par_SCO is
                --  specification. The corresponding pragma will have the same
                --  sloc.
 
-               when Aspect_Pre               |
-                    Aspect_Precondition      |
-                    Aspect_Post              |
-                    Aspect_Postcondition     |
-                    Aspect_Invariant         =>
+               when Aspect_Pre           |
+                    Aspect_Precondition  |
+                    Aspect_Post          |
+                    Aspect_Postcondition |
+                    Aspect_Invariant     =>
 
                   C1 := 'a';
 

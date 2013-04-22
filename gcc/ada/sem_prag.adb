@@ -768,7 +768,7 @@ package body Sem_Prag is
       --  Outputs error message for current pragma. The message contains a %
       --  that will be replaced with the pragma name, and the flag is placed
       --  on the pragma itself. Pragma_Exit is then raised. Note: this routine
-      --  calls Fix_Error (see spec of that function for details).
+      --  calls Fix_Error (see spec of that procedure for details).
 
       procedure Error_Pragma_Arg (Msg : String; Arg : Node_Id);
       pragma No_Return (Error_Pragma_Arg);
@@ -780,7 +780,7 @@ package body Sem_Prag is
       --  message is placed using Error_Msg_N, so the message may also contain
       --  an & insertion character which will reference the given Arg value.
       --  After placing the message, Pragma_Exit is raised. Note: this routine
-      --  calls Fix_Error (see spec of that function for details).
+      --  calls Fix_Error (see spec of that procedure for details).
 
       procedure Error_Pragma_Arg (Msg1, Msg2 : String; Arg : Node_Id);
       pragma No_Return (Error_Pragma_Arg);
@@ -797,7 +797,7 @@ package body Sem_Prag is
       --  the message may also contain an & insertion character which will
       --  reference the identifier. After placing the message, Pragma_Exit
       --  is raised. Note: this routine calls Fix_Error (see spec of that
-      --  function for details).
+      --  procedure for details).
 
       procedure Error_Pragma_Ref (Msg : String; Ref : Entity_Id);
       pragma No_Return (Error_Pragma_Ref);
@@ -805,7 +805,7 @@ package body Sem_Prag is
       --  a % that will be replaced with the pragma name. The parameter Ref
       --  must be an entity whose name can be referenced by & and sloc by #.
       --  After placing the message, Pragma_Exit is raised. Note: this routine
-      --  calls Fix_Error (see spec of that function for details).
+      --  calls Fix_Error (see spec of that procedure for details).
 
       function Find_Lib_Unit_Name return Entity_Id;
       --  Used for a library unit pragma to find the entity to which the
@@ -831,6 +831,8 @@ package body Sem_Prag is
       --  comes from an aspect, each such "pragma" substring is replaced with
       --  the characters "aspect", and if Error_Msg_Name_1 is Name_Precondition
       --  (resp Name_Postcondition) it is changed to Name_Pre (resp Name_Post).
+      --  In addition, if the current pragma results from rewriting another
+      --  pragma, Error_Msg_Name_1 is set to the original pragma name.
 
       procedure Gather_Associations
         (Names : Name_List;
@@ -2862,6 +2864,8 @@ package body Sem_Prag is
       ---------------
 
       procedure Fix_Error (Msg : in out String) is
+         Orig : constant Node_Id := Original_Node (N);
+
       begin
          if From_Aspect_Specification (N) then
             for J in Msg'First .. Msg'Last - 5 loop
@@ -2875,6 +2879,9 @@ package body Sem_Prag is
             elsif Error_Msg_Name_1 = Name_Postcondition then
                Error_Msg_Name_1 := Name_Post;
             end if;
+
+         elsif Orig /= N and then Nkind (Orig) = N_Pragma then
+            Error_Msg_Name_1 := Pragma_Name (Orig);
          end if;
       end Fix_Error;
 

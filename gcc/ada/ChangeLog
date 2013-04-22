@@ -1,3 +1,15 @@
+2013-04-22  Yannick Moy  <moy@adacore.com>
+
+	* exp_prag.adb, sinfo.ads, sem_prag.ads: Minor correction of typos in
+	comments.
+	* sem_ch6.adb (Expand_Contract_Cases): Add location to message.
+
+2013-04-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb (Fix_Error): For a pragma rewritten from another
+	pragma, fix up error message to include original pragma name.
+	* par_sco.adb: Minor reformatting.
+
 2013-04-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, sem_util.adb, sem_util.ads, sem_res.adb, exp_ch6.adb,
