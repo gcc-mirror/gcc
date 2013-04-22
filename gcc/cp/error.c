@@ -1451,7 +1451,8 @@ dump_function_decl (tree t, int flags)
 	dump_type_suffix (TREE_TYPE (fntype), flags);
 
       /* If T is a template instantiation, dump the parameter binding.  */
-      if (template_parms != NULL_TREE && template_args != NULL_TREE)
+      if (template_parms != NULL_TREE && template_args != NULL_TREE
+	  && !(flags & TFF_NO_TEMPLATE_BINDINGS))
 	{
 	  pp_cxx_whitespace (cxx_pp);
 	  pp_cxx_left_bracket (cxx_pp);
@@ -2889,7 +2890,8 @@ subst_to_string (tree p)
   tree decl = TREE_PURPOSE (p);
   tree targs = TREE_VALUE (p);
   tree tparms = DECL_TEMPLATE_PARMS (decl);
-  int flags = TFF_DECL_SPECIFIERS|TFF_TEMPLATE_HEADER;
+  int flags = (TFF_DECL_SPECIFIERS|TFF_TEMPLATE_HEADER
+	       |TFF_NO_TEMPLATE_BINDINGS);
 
   if (p == NULL_TREE)
     return "";

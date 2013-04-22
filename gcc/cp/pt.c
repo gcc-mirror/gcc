@@ -15125,9 +15125,21 @@ fn_type_unification (tree fn,
      callers must be ready to deal with unification failures in any
      event.  */
 
+  TREE_VALUE (tinst) = targs;
+  /* If we aren't explaining yet, push tinst context so we can see where
+     any errors (e.g. from class instantiations triggered by instantiation
+     of default template arguments) come from.  If we are explaining, this
+     context is redundant.  */
+  if (!explain_p && !push_tinst_level (tinst))
+    {
+      excessive_deduction_depth = true;
+      goto fail;
+    }
   ok = !type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 			       targs, parms, args, nargs, /*subr=*/0,
 			       strict, flags, explain_p);
+  if (!explain_p)
+    pop_tinst_level ();
   if (!ok)
     goto fail;
 
