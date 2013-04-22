@@ -1,5 +1,9 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	Core 1612
+	* semantics.c (finish_id_expression): Reject capture of anonymous
+	union member.
+
 	Core 1609
 	* decl2.c (check_default_args): Check for pack expansion.
 
