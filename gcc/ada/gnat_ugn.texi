@@ -17083,6 +17083,7 @@ build an encapsulated library the attribute
 @group
    for Library_Dir use "lib_dir";
    for Library_Name use "dummy";
+   for Library_Kind use "dynamic";
    for Library_Interface use ("int1", "int1.child");
    for Library_Standalone use "encapsulated";
 @end group

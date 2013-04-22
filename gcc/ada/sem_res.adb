@@ -5896,19 +5896,14 @@ package body Sem_Res is
       --  In formal mode, the primitive operations of a tagged type or type
       --  extension do not include functions that return the tagged type.
 
-      --  Commented out as the call to Is_Inherited_Operation_For_Type may
-      --  cause an error because the type entity of the parent node of
-      --  Entity (Name (N) may not be set. ???
-      --  So why not just add a guard ???
-
---      if Nkind (N) = N_Function_Call
---        and then Is_Tagged_Type (Etype (N))
---        and then Is_Entity_Name (Name (N))
---        and then Is_Inherited_Operation_For_Type
---                   (Entity (Name (N)), Etype (N))
---      then
---         Check_SPARK_Restriction ("function not inherited", N);
---      end if;
+      if Nkind (N) = N_Function_Call
+        and then Is_Tagged_Type (Etype (N))
+        and then Is_Entity_Name (Name (N))
+        and then Is_Inherited_Operation_For_Type
+                   (Entity (Name (N)), Etype (N))
+      then
+         Check_SPARK_Restriction ("function not inherited", N);
+      end if;
 
       --  Implement rule in 12.5.1 (23.3/2): In an instance, if the actual is
       --  class-wide and the call dispatches on result in a context that does

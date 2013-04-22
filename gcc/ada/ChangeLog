@@ -1,3 +1,21 @@
+2013-04-22  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi, prj-nmsc.adb, projects.texi: Add check for
+	Library_Standalone and Library_Kind.
+
+2013-04-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): If the call is to an
+	inherited operation and the actual is a by-reference type with
+	predicates, add predicate call to post-call actions.
+	* sem_util.adb (Is_Inherited_Operation_For_Type): Fix coding
+	error: a type declaration has a defining identifier, not an Etype.
+	* sem_res.adb: Restore code removed because of above error.
+
+2013-04-22  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (__gnat_handle_vms_condition): Also match C$_SIGINT.
+
 2013-04-22  Yannick Moy  <moy@adacore.com>
 
 	* gnat_rm.texi, exp_util.adb, sem_prag.adb, sem_prag.ads, par-ch2.adb,
