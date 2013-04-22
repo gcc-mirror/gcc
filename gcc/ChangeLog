@@ -1,3 +1,11 @@
+2013-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57032
+	Revert:
+	2013-03-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (TARGET_LRA_P): New define.
+
 2013-04-22  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* coretypes.h (gimple_stmt_iterator_d): Forward declare.
@@ -302,7 +310,7 @@
 
 	* config/arm/cortex-m4.md: Add a new bypass.
 
-2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-16  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.md (*adds_<optab><mode>_multp2):
 	New pattern.
@@ -310,7 +318,7 @@
 	(*adds_<optab><ALLX:mode>_<GPI:mode>): New pattern.
 	(*subs_<optab><ALLX:mode>_<GPI:mode>): New pattern.
 
-2013-04-16   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-16  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.md (*adds_mul_imm_<mode>): New pattern.
 	(*subs_mul_imm_<mode>): New pattern.
