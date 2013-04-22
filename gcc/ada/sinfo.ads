@@ -7042,12 +7042,12 @@ package Sinfo is
       --  Note that this includes precondition/postcondition pragmas generated
       --  to correspond to Pre/Post aspects.
 
-      --  Spec_CTC_List points to a list of Contract_Case and Test_Case pragma
+      --  Spec_CTC_List points to a list of Contract_Cases and Test_Case pragma
       --  nodes for contract-cases and test-cases declared in the spec of the
       --  entry/subprogram. The last pragma encountered is at the head of this
       --  list, so it is in reverse order of textual appearance. Note that
-      --  this includes contract-case and test-case pragmas generated from
-      --  Contract_Case and Test_Case aspects.
+      --  this includes contract-cases and test-case pragmas generated from
+      --  Contract_Cases and Test_Case aspects.
 
       -------------------
       -- Expanded_Name --

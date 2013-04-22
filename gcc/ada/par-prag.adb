@@ -1121,7 +1121,6 @@ begin
            Pragma_Compile_Time_Error             |
            Pragma_Compile_Time_Warning           |
            Pragma_Compiler_Unit                  |
-           Pragma_Contract_Case                  |
            Pragma_Contract_Cases                 |
            Pragma_Convention_Identifier          |
            Pragma_CPP_Class                      |
