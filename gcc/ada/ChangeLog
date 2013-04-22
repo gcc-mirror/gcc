@@ -1,3 +1,10 @@
+2013-04-22  Yannick Moy  <moy@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Variant): Rewrite pragma as
+	null statement if ignored.
+	* sem_ch6.adb (Expand_Contract_Cases): Do nothing if pragma is ignored.
+	* sem_prag.adb (Analyze_Pragma): Keep analyzing ignored pragmas.
+
 2013-04-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Contract_Case): New routine.
