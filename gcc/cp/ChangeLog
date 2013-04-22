@@ -1,5 +1,8 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	Core 1609
+	* decl2.c (check_default_args): Check for pack expansion.
+
 	* mangle.c (write_type): Mangle decltype(auto).
 
 2013-04-19  Jason Merrill  <jason@redhat.com>

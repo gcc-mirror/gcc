@@ -4463,7 +4463,7 @@ check_default_args (tree x)
     {
       if (TREE_PURPOSE (arg))
 	saw_def = true;
-      else if (saw_def)
+      else if (saw_def && !PACK_EXPANSION_P (TREE_VALUE (arg)))
 	{
 	  error ("default argument missing for parameter %P of %q+#D", i, x);
 	  TREE_PURPOSE (arg) = error_mark_node;
