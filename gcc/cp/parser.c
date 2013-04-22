@@ -8518,9 +8518,10 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	{
 	  /* An explicit expression exists.  */
 	  cp_lexer_consume_token (parser->lexer);
-          pedwarn (input_location, OPT_Wpedantic,
-                   "ISO C++ does not allow initializers "
-                   "in lambda expression capture lists");
+	  if (cxx_dialect < cxx1y)
+	    pedwarn (input_location, 0,
+		     "lambda capture initializers "
+		     "only available with -std=c++1y or -std=gnu++1y");
 	  capture_init_expr = cp_parser_assignment_expression (parser,
 							       /*cast_p=*/true,
 							       &idk);
