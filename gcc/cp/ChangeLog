@@ -1,5 +1,8 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (potential_constant_expression_1): Don't crash on
+	'this' in NSDMI.
+
 	Core 1612
 	* semantics.c (finish_id_expression): Reject capture of anonymous
 	union member.
