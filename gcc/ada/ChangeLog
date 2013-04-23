@@ -1,3 +1,19 @@
+2013-04-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Body): When compiling with
+	initialize_scalars, disable predicate checks on the generated
+	assignment to an out scalar parameter.
+
+2013-04-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Remove error
+	check for "constrained in partial view" constraints entirely.
+
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, sem_prag.ads: Minor reformatting.
+	* errout.ads: Comment update.
+
 2013-04-23  Yannick Moy  <moy@adacore.com>
 
 	* exp_ch5.adb: Minor typo.

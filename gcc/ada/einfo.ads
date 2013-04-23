@@ -1429,7 +1429,7 @@ package Einfo is
 --       type has no discriminants and the full view has discriminants with
 --       defaults. In Ada 2005 heap-allocated objects of such types are not
 --       constrained, and can change their discriminants with full assignment.
-
+--
 --       Ada 2012 has an additional rule (3.3. (23/10.3)) concerning objects
 --       declared in a generic package body. Objects whose type is an untagged
 --       generic formal private type are considered to have a constrained
