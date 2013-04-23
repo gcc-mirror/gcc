@@ -12082,16 +12082,12 @@ package body Sem_Ch6 is
 
                      declare
                         New_Expr : constant Node_Id :=
-                                     Get_Pragma_Arg
-                                       (Next
-                                         (First
-                                           (Pragma_Argument_Associations
-                                             (Inherited_Precond))));
+                          Get_Pragma_Arg
+                            (Next (First (Pragma_Argument_Associations
+                                            (Inherited_Precond))));
                         Old_Expr : constant Node_Id :=
-                                     Get_Pragma_Arg
-                                       (Next
-                                         (First
-                                           (Pragma_Argument_Associations
+                          Get_Pragma_Arg
+                            (Next (First (Pragma_Argument_Associations
                                              (Precond))));
 
                      begin
@@ -12404,8 +12400,7 @@ package body Sem_Ch6 is
 
          declare
             Post_Proc : constant Entity_Id :=
-                          Make_Defining_Identifier (Loc,
-                            Chars => Name_uPostconditions);
+              Make_Defining_Identifier (Loc, Chars => Name_uPostconditions);
             --  The entity for the _Postconditions procedure
 
          begin
