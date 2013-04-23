@@ -1,3 +1,19 @@
+2013-04-23  Shiva Chen  <shiva0217@gmail.com>
+
+        * lra-assigns.c (find_hard_regno_for): Use lra_reg_val_equal_p
+        to check the register content is equal or not.
+        * lra-constraints.c (match_reload): Use lra_assign_reg_val
+        to assign register content record.
+        * lra-eliminations.c (update_reg_eliminate): Use
+	lra_update_reg_val_offset to update register content offset.
+        * lra-int.h (struct lra_reg): Add offset member.
+        (lra_reg_val_equal_p): New static inline function.
+        (lra_update_reg_val_offset): New static inline function.
+        (lra_assign_reg_val): New static inline function.
+        * lra.c (lra_create_new_reg): Use lra_assign_reg_val
+        to assign register content record.
+        (initialize_lra_reg_info_element): Initial offset to zero.
+
 2013-04-23  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/mips.md (*movhi_internal, *movqi_internal): New

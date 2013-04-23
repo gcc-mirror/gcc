@@ -1124,8 +1124,15 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
   setup_elimination_map ();
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (elimination_map[ep->from] == ep && ep->previous_offset != ep->offset)
-      bitmap_ior_into (insns_with_changed_offsets,
-		       &lra_reg_info[ep->from].insn_bitmap);
+      {
+	bitmap_ior_into (insns_with_changed_offsets,
+			 &lra_reg_info[ep->from].insn_bitmap);
+
+	/* Update offset when the eliminate offset have been
+	   changed.  */
+	lra_update_reg_val_offset (lra_reg_info[ep->from].val,
+				   ep->offset - ep->previous_offset);
+      }
 }
 
 /* Initialize the table of hard registers to eliminate.

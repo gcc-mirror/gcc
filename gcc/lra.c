@@ -194,7 +194,7 @@ lra_create_new_reg (enum machine_mode md_mode, rtx original,
   new_reg
     = lra_create_new_reg_with_unique_value (md_mode, original, rclass, title);
   if (original != NULL_RTX && REG_P (original))
-    lra_reg_info[REGNO (new_reg)].val = lra_reg_info[REGNO (original)].val;
+    lra_assign_reg_val (REGNO (original), REGNO (new_reg));
   return new_reg;
 }
 
@@ -1392,6 +1392,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].last_reload = 0;
   lra_reg_info[i].restore_regno = -1;
   lra_reg_info[i].val = get_new_reg_value ();
+  lra_reg_info[i].offset = 0;
   lra_reg_info[i].copies = NULL;
 }
 
