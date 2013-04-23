@@ -1,4 +1,4 @@
-2013-04-23  Bill Schmidt  wschmidt@linux.vnet.ibm.com>
+2013-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backported from mainline.
 	PR rtl-optimization/56605
