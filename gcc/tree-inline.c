@@ -1866,7 +1866,8 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
    debug stmts are left after a statement that must end the basic block.  */
 
 static bool
-copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
+copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
+		   bool can_make_abnormal_goto)
 {
   basic_block new_bb = (basic_block) bb->aux;
   edge_iterator ei;
@@ -1921,7 +1922,11 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
          into a COMPONENT_REF which doesn't.  If the copy
          can throw, the original could also throw.  */
       can_throw = stmt_can_throw_internal (copy_stmt);
-      nonlocal_goto = stmt_can_make_abnormal_goto (copy_stmt);
+      /* If the call we inline cannot make abnormal goto do not add
+         additional abnormal edges but only retain those already present
+	 in the original function body.  */
+      nonlocal_goto
+	= can_make_abnormal_goto && stmt_can_make_abnormal_goto (copy_stmt);
 
       if (can_throw || nonlocal_goto)
 	{
@@ -2270,10 +2275,13 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   last = last_basic_block;
 
   /* Now that we've duplicated the blocks, duplicate their edges.  */
+  bool can_make_abormal_goto
+    = id->gimple_call && stmt_can_make_abnormal_goto (id->gimple_call);
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     if (!blocks_to_copy
         || (bb->index > 0 && bitmap_bit_p (blocks_to_copy, bb->index)))
-      need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map);
+      need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map,
+					       can_make_abormal_goto);
 
   if (new_entry)
     {

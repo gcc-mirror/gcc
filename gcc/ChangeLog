@@ -1,3 +1,11 @@
+2013-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57036
+	* tree-inline.c (copy_edges_for_bb): Add can_make_abnormal_goto
+	parameter, only add abnormal goto edges from the copied body
+	if the call could perform abnormal gotos.
+	(copy_cfg_body): Adjust.
+
 2013-04-23  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add simd attribute.
