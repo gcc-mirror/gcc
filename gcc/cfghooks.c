@@ -313,7 +313,8 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
     pp_printf (pp, "COUNT:" HOST_WIDEST_INT_PRINT_DEC, bb->count);
   pp_printf (pp, " FREQ:%i |", bb->frequency);
   pp_write_text_to_stream (pp);
-  cfg_hooks->dump_bb_for_graph (pp, bb);
+  if (!(dump_flags & TDF_SLIM))
+    cfg_hooks->dump_bb_for_graph (pp, bb);
 }
 
 /* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */
