@@ -1,3 +1,8 @@
+2013-04-23  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/mips.md (*movhi_internal, *movqi_internal): New
+	operands.  Record compression.
+
 2013-04-23  Xinliang David Li  <davidxl@google.com>
 
 	* cfghhooks.c (dump_bb_for_graph): Support 'slim' graph dump.
@@ -53,7 +58,6 @@
 	* cfghhooks.c (dump_bb_for_graph): Dump profile count and frquency.
 	* Makefile.in: New dependency
 
-2013-04-22  Catherine Moore  <clm@codesourcery.com>
             David Daney <ddaney.cavm@gmail.com>
 
         * configure.ac (gcc_cv_as_micromips_support):  Use the
