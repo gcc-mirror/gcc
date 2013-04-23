@@ -1019,7 +1019,7 @@ extern void __gnat_notify_unhandled_exception (struct Exception_Occurrence *);
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
 #define PERSONALITY_FUNCTION    __gnat_personality_sj0
-#elif defined(__SEH__)
+#elif defined (__SEH__)
 #define PERSONALITY_FUNCTION    __gnat_personality_imp
 #else
 #define PERSONALITY_FUNCTION    __gnat_personality_v0
@@ -1056,7 +1056,7 @@ typedef int version_arg_t;
 typedef _Unwind_Action phases_arg_t;
 #endif
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 static
 #endif
 _Unwind_Reason_Code
@@ -1222,7 +1222,7 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 #endif
 }
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 
 #define STATUS_USER_DEFINED		(1U << 29)
 
