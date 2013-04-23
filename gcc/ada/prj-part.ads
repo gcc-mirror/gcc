@@ -70,7 +70,9 @@ package Prj.Part is
    --
    --  If Implicit_Project is True, the main project file being parsed is
    --  deemed to be in the current working directory, even if it is not the
-   --  case.
-   --  Why is this ever useful???
+   --  case. Implicit_Project is set to True when a tool such as gprbuild is
+   --  invoked without a project file and is using an implicit project file
+   --  that is virtually in the current working directory, but is physically
+   --  in another directory.
 
 end Prj.Part;

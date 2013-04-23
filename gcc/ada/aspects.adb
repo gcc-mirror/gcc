@@ -163,6 +163,12 @@ package body Aspects is
          if Is_Class_Wide_Type (Owner) and then Inherited_Aspect (A) then
             Owner := Root_Type (Owner);
          end if;
+
+         if Is_Private_Type (Owner)
+           and then Present (Full_View (Owner))
+         then
+            Owner := Full_View (Owner);
+         end if;
       end if;
 
       --  Search the representation items for the desired aspect

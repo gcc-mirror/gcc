@@ -1720,21 +1720,31 @@ package body Exp_Ch6 is
             --  this is harder to verify, and there may be a redundant check.
 
             --  Note also that Subp may be either a subprogram entity for
-            --  direct calls, or a type entity for indirect calls, hence the
-            --  test that Is_Overloadable returns True before testing whether
-            --  Subp is an inherited operation.
+            --  direct calls, or a type entity for indirect calls, which must
+            --  be handled separately because the name does not denote an
+            --  overloadable entity.
 
-            if (Present (Find_Aspect (E_Actual, Aspect_Predicate))
+            --  If the formal is class-wide the corresponding postcondition
+            --  procedure does not include a predicate call, so it has to be
+            --  generated explicitly.
+
+            if (Has_Aspect (E_Actual, Aspect_Predicate)
                   or else
-                Present (Find_Aspect (E_Actual, Aspect_Dynamic_Predicate))
+                Has_Aspect (E_Actual, Aspect_Dynamic_Predicate)
                   or else
-                Present (Find_Aspect (E_Actual, Aspect_Static_Predicate)))
+                Has_Aspect (E_Actual, Aspect_Static_Predicate))
               and then not Is_Init_Proc (Subp)
             then
                if (Is_Derived_Type (E_Actual)
                     and then Is_Overloadable (Subp)
                     and then Is_Inherited_Operation_For_Type (Subp, E_Actual))
                  or else Is_Entity_Name (Actual)
+               then
+                  Append_To
+                    (Post_Call, Make_Predicate_Check (E_Actual, Actual));
+
+               elsif Is_Class_Wide_Type (E_Formal)
+                 and then not Is_Class_Wide_Type (E_Actual)
                then
                   Append_To
                     (Post_Call, Make_Predicate_Check (E_Actual, Actual));
