@@ -2895,6 +2895,8 @@ lto_flatten_files (struct lto_file_decl_data **orig, int count, int last_file_ix
 static int real_file_count;
 static GTY((length ("real_file_count + 1"))) struct lto_file_decl_data **real_file_decl_data;
 
+static void print_lto_report_1 (void);
+
 /* Read all the symbols from the input files FNAMES.  NFILES is the
    number of files requested in the command line.  Instantiate a
    global call graph by aggregating all the sub-graphs found in each
@@ -2985,6 +2987,10 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   if (resolution_file_name)
     fclose (resolution);
+
+  /* Show the LTO report before launching LTRANS.  */
+  if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
+    print_lto_report_1 ();
 
   /* Free gimple type merging datastructures.  */
   htab_delete (gimple_types);
