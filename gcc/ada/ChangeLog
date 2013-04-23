@@ -1,5 +1,31 @@
 2013-04-23  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Significant
+	rewrite to make sure Is_Ignore is properly captured when aspect
+	is declared.
+	* sem_ch6.adb: Minor reformatting.
+	* sem_prag.adb (Analyze_Pragma): Do not test policy at time of
+	pragma for the case of a pragma coming from an aspect (already
+	tested when we analyzed the aspect).
+
+2013-04-23  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Parse_Project_And_Apply_Config): New
+	Boolean parameter Implicit_Project, defaulted to False. Call
+	Prj.Part.Parse with Implicit_Project.
+	* prj-conf.ads (Parse_Project_And_Apply_Config): New Boolean
+	parameter Implicit_Project, defaulted to False.
+	* prj-part.adb (Parse_Single_Project): New Boolean parameter
+	Implicit_Project, defaulted to False. When Implicit_Project is
+	True, change the Directory of the project node to the Current_Dir.
+	* prj-part.ads (Parse): New Boolean parameter, defaulted to False
+
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor reformatting.
+
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
 	* xoscons.adb: Minor reformatting.
 
 2013-04-23  Hristian Kirtchev  <kirtchev@adacore.com>

@@ -961,7 +961,7 @@ package body Sem_Ch13 is
 
       Aspect := First (L);
       Aspect_Loop : while Present (Aspect) loop
-         declare
+         Analyze_One_Aspect : declare
             Expr : constant Node_Id    := Expression (Aspect);
             Id   : constant Node_Id    := Identifier (Aspect);
             Loc  : constant Source_Ptr := Sloc (Aspect);
@@ -977,12 +977,22 @@ package body Sem_Ch13 is
             --  is set below when Expr is present.
 
             procedure Analyze_Aspect_External_Or_Link_Name;
-            --  This routine performs the analysis of the External_Name or
-            --  Link_Name aspects.
+            --  Perform analysis of the External_Name or Link_Name aspects
 
             procedure Analyze_Aspect_Implicit_Dereference;
-            --  This routine performs the analysis of the Implicit_Dereference
-            --  aspects.
+            --  Perform  analysis of the Implicit_Dereference aspects
+
+            procedure Make_Aitem_Pragma
+              (Pragma_Argument_Associations : List_Id;
+               Pragma_Name                  : Name_Id);
+            --  This is a wrapper for Make_Pragma used for converting aspects
+            --  to pragmas. It takes care of Sloc (set from Loc) and building
+            --  the pragma identifier from the given name. In addition the
+            --  flags Class_Present and Split_PPC are set from the aspect
+            --  node, as well as Is_Ignored. This routine also sets the
+            --  From_Aspect_Specification in the resulting pragma node to
+            --  True, and sets Corresponding_Aspect to point to the aspect.
+            --  The resulting pragma is assigned to Aitem.
 
             ------------------------------------------
             -- Analyze_Aspect_External_Or_Link_Name --
@@ -1051,6 +1061,42 @@ package body Sem_Ch13 is
                end if;
             end Analyze_Aspect_Implicit_Dereference;
 
+            -----------------------
+            -- Make_Aitem_Pragma --
+            -----------------------
+
+            procedure Make_Aitem_Pragma
+              (Pragma_Argument_Associations : List_Id;
+               Pragma_Name                  : Name_Id)
+            is
+            begin
+               --  We should never get here if aspect was disabled
+
+               pragma Assert (not Is_Disabled (Aspect));
+
+               --  Build the pragma
+
+               Aitem :=
+                 Make_Pragma (Loc,
+                   Pragma_Argument_Associations =>
+                     Pragma_Argument_Associations,
+                   Pragma_Identifier =>
+                     Make_Identifier (Sloc (Id), Pragma_Name),
+                     Class_Present     => Class_Present (Aspect),
+                     Split_PPC         => Split_PPC (Aspect));
+
+               --  Set additional semantic fields
+
+               if Is_Ignored (Aspect) then
+                  Set_Is_Ignored (Aitem);
+               end if;
+
+               Set_Corresponding_Aspect (Aitem, Aspect);
+               Set_From_Aspect_Specification (Aitem, True);
+            end Make_Aitem_Pragma;
+
+         --  Start of processing for Analyze_One_Aspect
+
          begin
             --  Skip aspect if already analyzed (not clear if this is needed)
 
@@ -1059,7 +1105,8 @@ package body Sem_Ch13 is
             end if;
 
             --  Skip looking at aspect if it is totally disabled. Just mark
-            --  it as such for later reference in the tree.
+            --  it as such for later reference in the tree. This also sets
+            --  the Is_Ignored flag appropriately.
 
             Check_Applicable_Policy (Aspect);
 
@@ -1218,36 +1265,32 @@ package body Sem_Ch13 is
                --  referring to the entity, and the second argument is the
                --  aspect definition expression.
 
+               --  Suppress/Unsuppress
+
                when Aspect_Suppress   |
                     Aspect_Unsuppress =>
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => New_Occurrence_Of (E, Loc)),
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => New_Occurrence_Of (E, Loc)),
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Chars (Id));
 
-                        Make_Pragma_Argument_Association (Sloc (Expr),
-                          Expression => Relocate_Node (Expr))),
+               --  Synchronization
 
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Chars (Id)));
-
-               --  The aspect corresponds to pragma Implemented. Construct the
-               --  pragma.
+               --  Corresponds to pragma Implemented, construct the pragma
 
                when Aspect_Synchronization =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => New_Occurrence_Of (E, Loc)),
 
-                        Make_Pragma_Argument_Association (Sloc (Expr),
-                          Expression => Relocate_Node (Expr))),
-
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Implemented));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => New_Occurrence_Of (E, Loc)),
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Implemented);
 
                   --  No delay is required since the only values are: By_Entry
                   --  | By_Protected_Procedure | By_Any | Optional which don't
@@ -1255,16 +1298,18 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
+               --  Attach Handler
+
                when Aspect_Attach_Handler =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Attach_Handler),
-                          Pragma_Argument_Associations => New_List (
-                            Make_Pragma_Argument_Association (Sloc (Ent),
-                              Expression => Ent),
-                            Make_Pragma_Argument_Association (Sloc (Expr),
-                              Expression => Relocate_Node (Expr))));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Sloc (Ent),
+                         Expression => Ent),
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Attach_Handler);
+
+               --  Dynamic_Predicate, Predicate, Static_Predicate
 
                when Aspect_Dynamic_Predicate |
                     Aspect_Predicate         |
@@ -1274,16 +1319,13 @@ package body Sem_Ch13 is
                   --  flags recording whether it is static/dynamic). We also
                   --  set flags recording this in the type itself.
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations => New_List (
-                         Make_Pragma_Argument_Association (Sloc (Ent),
-                           Expression => Ent),
-                         Make_Pragma_Argument_Association (Sloc (Expr),
-                           Expression => Relocate_Node (Expr))),
-                      Class_Present                => Class_Present (Aspect),
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Predicate));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Sloc (Ent),
+                         Expression => Ent),
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Predicate);
 
                   --  Mark type has predicates, and remember what kind of
                   --  aspect lead to this predicate (we need this to access
@@ -1301,9 +1343,7 @@ package body Sem_Ch13 is
                   --  has a freeze node, because that is the one that will be
                   --  visible at freeze time.
 
-                  if Is_Private_Type (E)
-                    and then Present (Full_View (E))
-                  then
+                  if Is_Private_Type (E) and then Present (Full_View (E)) then
                      Set_Has_Predicates (Full_View (E));
 
                      if A_Id = Aspect_Dynamic_Predicate then
@@ -1320,6 +1360,8 @@ package body Sem_Ch13 is
                --  arguments, where the second argument is a local name
                --  referring to the entity, and the first argument is the
                --  aspect definition expression.
+
+               --  Convention
 
                when Aspect_Convention  =>
 
@@ -1387,30 +1429,28 @@ package body Sem_Ch13 is
                         Append_To (Arg_List, E_Assoc);
                      end if;
 
-                     Aitem :=
-                       Make_Pragma (Loc,
-                         Pragma_Argument_Associations => Arg_List,
-                         Pragma_Identifier            =>
-                            Make_Identifier (Loc, P_Name));
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => Arg_List,
+                        Pragma_Name                  => P_Name);
                   end;
 
-               --  The following three aspects can be specified for a
-               --  subprogram body, in which case we generate pragmas for them
-               --  and insert them ahead of local declarations, rather than
-               --  after the body.
+               --  CPU, Interrupt_Priority, Priority
+
+               --  These three aspects can be specified for a subprogram body,
+               --  in which case we generate pragmas for them and insert them
+               --  ahead of local declarations, rather than after the body.
 
                when Aspect_CPU                |
                     Aspect_Interrupt_Priority |
                     Aspect_Priority           =>
 
                   if Nkind (N) = N_Subprogram_Body then
-                     Aitem :=
-                       Make_Pragma (Loc,
-                         Pragma_Argument_Associations => New_List (
-                           Make_Pragma_Argument_Association (Sloc (Expr),
-                             Expression => Relocate_Node (Expr))),
-                         Pragma_Identifier            =>
-                           Make_Identifier (Sloc (Id), Chars (Id)));
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Sloc (Expr),
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  => Chars (Id));
+
                   else
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
@@ -1419,17 +1459,17 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr));
                   end if;
 
+               --  Warnings
+
                when Aspect_Warnings =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Sloc (Expr),
-                          Expression => Relocate_Node (Expr)),
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => New_Occurrence_Of (E, Loc))),
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Chars (Id)),
-                      Class_Present                => Class_Present (Aspect));
+
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr)),
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => New_Occurrence_Of (E, Loc))),
+                     Pragma_Name                  => Chars (Id));
 
                   --  We don't have to play the delay game here, since the only
                   --  values are ON/OFF which don't get analyzed anyway.
@@ -1443,6 +1483,8 @@ package body Sem_Ch13 is
                --  entity, a second argument that is the expression and a third
                --  argument that is an appropriate message.
 
+               --  Invariant, Type_Invariant
+
                when Aspect_Invariant      |
                     Aspect_Type_Invariant =>
 
@@ -1450,16 +1492,13 @@ package body Sem_Ch13 is
                   --  an invariant must apply to a private type, or appear in
                   --  the private part of a spec and apply to a completion.
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Sloc (Ent),
-                          Expression => Ent),
-                        Make_Pragma_Argument_Association (Sloc (Expr),
-                          Expression => Relocate_Node (Expr))),
-                      Class_Present                => Class_Present (Aspect),
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Invariant));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Sloc (Ent),
+                         Expression => Ent),
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Invariant);
 
                   --  Add message unless exception messages are suppressed
 
@@ -1482,50 +1521,49 @@ package body Sem_Ch13 is
                --  Case 2d : Aspects that correspond to a pragma with one
                --  argument.
 
-               when Aspect_Abstract_State =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Abstract_State),
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => Relocate_Node (Expr))));
+               --  Abstract_State
 
+               when Aspect_Abstract_State =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Abstract_State);
                   Delay_Required := False;
+
+               --  Depends
 
                --  Aspect Depends must be delayed because it mentions names
                --  of inputs and output that are classified by aspect Global.
 
                when Aspect_Depends =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Depends),
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => Relocate_Node (Expr))));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Depends);
+
+               --  Global
 
                --  Aspect Global must be delayed because it can mention names
                --  and benefit from the forward visibility rules applicable to
                --  aspects of subprograms.
 
                when Aspect_Global =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Global),
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => Relocate_Node (Expr))));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Global);
+
+               --  Relative_Deadline
 
                when Aspect_Relative_Deadline =>
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => Relocate_Node (Expr))),
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Relative_Deadline));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                      Pragma_Name                 => Name_Relative_Deadline);
 
                   --  If the aspect applies to a task, the corresponding pragma
                   --  must appear within its declarations, not after.
@@ -1562,12 +1600,16 @@ package body Sem_Ch13 is
                --  Case 3a: The aspects listed below don't correspond to
                --  pragmas/attributes but do require delayed analysis.
 
+               --  Default_Value, Default_Component_Value
+
                when Aspect_Default_Value           |
                     Aspect_Default_Component_Value =>
                   Aitem := Empty;
 
                --  Case 3b: The aspects listed below don't correspond to
                --  pragmas/attributes and don't need delayed analysis.
+
+               --  Implicit_Dereference
 
                --  For Implicit_Dereference, External_Name and Link_Name, only
                --  the legality checks are done during the analysis, thus no
@@ -1577,14 +1619,20 @@ package body Sem_Ch13 is
                   Analyze_Aspect_Implicit_Dereference;
                   goto Continue;
 
+               --  External_Name, Link_Name
+
                when Aspect_External_Name |
                     Aspect_Link_Name     =>
                   Analyze_Aspect_External_Or_Link_Name;
                   goto Continue;
 
+               --  Dimension
+
                when Aspect_Dimension =>
                   Analyze_Aspect_Dimension (N, Id, Expr);
                   goto Continue;
+
+               --  Dimension_System
 
                when Aspect_Dimension_System =>
                   Analyze_Aspect_Dimension_System (N, Id, Expr);
@@ -1594,6 +1642,8 @@ package body Sem_Ch13 is
 
                --  Pre/Post/Test_Case/Contract_Cases whose corresponding
                --  pragmas take care of the delay.
+
+               --  Pre/Post
 
                --  Aspects Pre/Post generate Precondition/Postcondition pragmas
                --  with a first argument that is the expression, and a second
@@ -1648,16 +1698,12 @@ package body Sem_Ch13 is
 
                   --  Build the precondition/postcondition pragma
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Pname),
-                      Class_Present                => Class_Present (Aspect),
-                      Split_PPC                    => Split_PPC (Aspect),
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Eloc,
-                          Chars      => Name_Check,
-                          Expression => Relocate_Node (Expr))));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Eloc,
+                         Chars      => Name_Check,
+                         Expression => Relocate_Node (Expr))),
+                       Pragma_Name                => Pname);
 
                   --  Add message unless exception messages are suppressed
 
@@ -1726,6 +1772,8 @@ package body Sem_Ch13 is
                   goto Continue;
                end;
 
+               --  Test_Case
+
                when Aspect_Test_Case => Test_Case : declare
                   Args      : List_Id;
                   Comp_Expr : Node_Id;
@@ -1786,14 +1834,14 @@ package body Sem_Ch13 is
 
                   --  Build the test-case pragma
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Nam),
-                      Pragma_Argument_Associations => Args);
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => Args,
+                     Pragma_Name                  => Nam);
 
                   Delay_Required := False;
                end Test_Case;
+
+               --  Contract_Cases
 
                when Aspect_Contract_Cases => Contract_Cases : declare
                   Case_Guard  : Node_Id;
@@ -1860,13 +1908,11 @@ package body Sem_Ch13 is
 
                   --  Transform the aspect into a pragma
 
-                  Aitem :=
-                    Make_Pragma (Loc,
-                      Pragma_Identifier            =>
-                        Make_Identifier (Loc, Nam),
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Loc,
-                          Expression => Relocate_Node (Expr))));
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Nam);
 
                   Delay_Required := False;
                end Contract_Cases;
@@ -1875,8 +1921,10 @@ package body Sem_Ch13 is
                --  boolean argument.
 
                --  In the general case, the corresponding pragma cannot be
-               --  generated yet because the evaluation of the boolean needs to
-               --  be delayed til the freeze point.
+               --  generated yet because the evaluation of the boolean needs
+               --  to be delayed till the freeze point.
+
+               --  Boolwn_Aspects
 
                when Boolean_Aspects      |
                     Library_Unit_Aspects =>
@@ -1954,13 +2002,11 @@ package body Sem_Ch13 is
                   --  simply insert the pragma, no delay is required.
 
                   if No (Expr) then
-                     Aitem :=
-                       Make_Pragma (Loc,
-                         Pragma_Argument_Associations => New_List (
-                           Make_Pragma_Argument_Association (Sloc (Ent),
-                             Expression => Ent)),
-                         Pragma_Identifier            =>
-                           Make_Identifier (Sloc (Id), Chars (Id)));
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Sloc (Ent),
+                            Expression => Ent)),
+                        Pragma_Name                  => Chars (Id));
 
                      Delay_Required := False;
 
@@ -1979,8 +2025,16 @@ package body Sem_Ch13 is
             if Present (Aitem) then
                Set_From_Aspect_Specification (Aitem, True);
 
+               --  For a pragma, keep pointer to aspect
+
                if Nkind (Aitem) = N_Pragma then
                   Set_Corresponding_Aspect (Aitem, Aspect);
+
+                  --  Also set Is_Ignored flag. No need to set Is_Disabled.
+                  --  We checked that right away, and would not get here.
+
+                  Set_Is_Ignored (Aitem, Is_Ignored (Aspect));
+                  pragma Assert (not Is_Disabled (Aspect));
                end if;
             end if;
 
@@ -2000,9 +2054,9 @@ package body Sem_Ch13 is
                goto Continue;
 
             --  In the context of a compilation unit, we directly put the
-            --  pragma in the Pragmas_After list of the
-            --  N_Compilation_Unit_Aux node (no delay is required here)
-            --  except for aspects on a subprogram body (see below).
+            --  pragma in the Pragmas_After list of the N_Compilation_Unit_Aux
+            --  node (no delay is required here) except for aspects on a
+            --  subprogram body (see below).
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit
               and then (Present (Aitem) or else Is_Boolean_Aspect (Aspect))
@@ -2018,13 +2072,11 @@ package body Sem_Ch13 is
 
                   if Is_Boolean_Aspect (Aspect) and then No (Aitem) then
                      if Is_True (Static_Boolean (Expr)) then
-                        Aitem :=
-                          Make_Pragma (Loc,
-                            Pragma_Argument_Associations => New_List (
-                              Make_Pragma_Argument_Association (Sloc (Ent),
-                                Expression => Ent)),
-                            Pragma_Identifier            =>
-                              Make_Identifier (Sloc (Id), Chars (Id)));
+                        Make_Aitem_Pragma
+                          (Pragma_Argument_Associations => New_List (
+                             Make_Pragma_Argument_Association (Sloc (Ent),
+                               Expression => Ent)),
+                           Pragma_Name                  => Chars (Id));
 
                         Set_From_Aspect_Specification (Aitem, True);
                         Set_Corresponding_Aspect (Aitem, Aspect);
@@ -2097,7 +2149,7 @@ package body Sem_Ch13 is
                Insert_After (Ins_Node, Aitem);
                Ins_Node := Aitem;
             end if;
-         end;
+         end Analyze_One_Aspect;
 
       <<Continue>>
          Next (Aspect);

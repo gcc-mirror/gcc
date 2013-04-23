@@ -2138,12 +2138,7 @@ package body Sem_Prag is
          --  For a pragma PPC in the extended main source unit, record enabled
          --  status in SCO.
 
-         --  This may seem redundant with the call to Check_Kind test that
-         --  occurs later on when the pragma is rewritten into a pragma Check
-         --  but is actually required in the case of a postcondition within a
-         --  generic.
-
-         if Check_Kind (Pname) = Name_Check and then not Split_PPC (N) then
+         if not Is_Ignored (N) and then not Split_PPC (N) then
             Set_SCO_Pragma_Enabled (Loc);
          end if;
 
@@ -6775,14 +6770,20 @@ package body Sem_Prag is
          Pname := Chars (Identifier (Corresponding_Aspect (N)));
       end if;
 
-      Check_Applicable_Policy (N);
+      --  Check applicable policy. We skip this for a pragma that came from
+      --  an aspect, since we already dealt with the Disable case, and we set
+      --  the Is_Ignored flag at the time the aspect was analyzed.
 
-      --  If pragma is disabled, rewrite as Null statement and skip analysis
+      if not From_Aspect_Specification (N) then
+         Check_Applicable_Policy (N);
 
-      if Is_Disabled (N) then
-         Rewrite (N, Make_Null_Statement (Loc));
-         Analyze (N);
-         raise Pragma_Exit;
+         --  If pragma is disabled, rewrite as NULL and skip analysis
+
+         if Is_Disabled (N) then
+            Rewrite (N, Make_Null_Statement (Loc));
+            Analyze (N);
+            raise Pragma_Exit;
+         end if;
       end if;
 
       --  Preset arguments
@@ -8109,26 +8110,37 @@ package body Sem_Prag is
 
             --  Set Check_On to indicate check status
 
-            case Check_Kind (Cname) is
-               when Name_Ignore =>
-                  Check_On := False;
+            --  If this comes from an aspect, we have already taken care of
+            --  the policy active when the aspect was analyzed, and Is_Ignore
+            --  is set appriately already.
 
-               when Name_Check =>
-                  Check_On := True;
+            if From_Aspect_Specification (N) then
+               Check_On := not Is_Ignored (N);
 
-               --  For disable, rewrite pragma as null statement and skip
-               --  rest of the analysis of the pragma.
+            --  Otherwise check the status right now
 
-               when Name_Disable =>
-                  Rewrite (N, Make_Null_Statement (Loc));
-                  Analyze (N);
-                  raise Pragma_Exit;
+            else
+               case Check_Kind (Cname) is
+                  when Name_Ignore =>
+                     Check_On := False;
 
-               --  No other possibilities
+                  when Name_Check =>
+                     Check_On := True;
 
-               when others =>
-                  raise Program_Error;
-            end case;
+                  --  For disable, rewrite pragma as null statement and skip
+                  --  rest of the analysis of the pragma.
+
+                  when Name_Disable =>
+                     Rewrite (N, Make_Null_Statement (Loc));
+                     Analyze (N);
+                     raise Pragma_Exit;
+
+                     --  No other possibilities
+
+                  when others =>
+                     raise Program_Error;
+               end case;
+            end if;
 
             --  If check kind was not Disable, then continue pragma analysis
 

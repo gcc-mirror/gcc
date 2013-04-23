@@ -2586,9 +2586,11 @@ package body Exp_Util is
    begin
       Start_String;
       Internal_Full_Qualified_Name (E);
+
       if Append_NUL then
          Store_String_Char (Get_Char_Code (ASCII.NUL));
       end if;
+
       return End_String;
    end Fully_Qualified_Name_String;
 

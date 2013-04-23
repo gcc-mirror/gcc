@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -191,7 +191,8 @@ package body Prj.Part is
       Depth             : Natural;
       Current_Dir       : String;
       Is_Config_File    : Boolean;
-      Env               : in out Environment);
+      Env               : in out Environment;
+      Implicit_Project  : Boolean := False);
    --  Parse a project file. This is a recursive procedure: it calls itself for
    --  imported and extended projects. When From_Extended is not None, if the
    --  project has already been parsed and is an extended project A, return the
@@ -201,6 +202,10 @@ package body Prj.Part is
    --
    --  Is_Config_File should be set to True if the project represents a config
    --  file (.cgpr) since some specific checks apply.
+   --
+   --  If Implicit_Project is True, change the Directory of the project node
+   --  to be the Current_Dir. Recursive calls to Parse_Single_Project are
+   --  always done with the default False value for Implicit_Project.
 
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
@@ -530,7 +535,8 @@ package body Prj.Part is
       Current_Directory : String := "";
       Is_Config_File    : Boolean;
       Env               : in out Prj.Tree.Environment;
-      Target_Name       : String := "")
+      Target_Name       : String := "";
+      Implicit_Project  : Boolean := False)
    is
       Dummy : Boolean;
       pragma Warnings (Off, Dummy);
@@ -598,7 +604,8 @@ package body Prj.Part is
             Depth             => 0,
             Current_Dir       => Current_Directory,
             Is_Config_File    => Is_Config_File,
-            Env               => Env);
+            Env               => Env,
+            Implicit_Project  => Implicit_Project);
 
       exception
          when Types.Unrecoverable_Error =>
@@ -1230,7 +1237,8 @@ package body Prj.Part is
       Depth             : Natural;
       Current_Dir       : String;
       Is_Config_File    : Boolean;
-      Env               : in out Environment)
+      Env               : in out Environment;
+      Implicit_Project  : Boolean := False)
    is
       Path_Name : constant String := Get_Name_String (Path_Name_Id);
 
@@ -1394,7 +1402,10 @@ package body Prj.Part is
       Tree.Reset_State;
       Scan (In_Tree);
 
-      if not Is_Config_File and then Name_From_Path = No_Name then
+      if not Is_Config_File
+        and then Name_From_Path = No_Name
+        and then not Implicit_Project
+      then
 
          --  The project file name is not correct (no or bad extension, or not
          --  following Ada identifier's syntax).
@@ -1977,6 +1988,13 @@ package body Prj.Part is
       Tree.Restore_And_Free (Project_Comment_State);
 
       Debug_Decrease_Indent;
+
+      if Project /= Empty_Node and then Implicit_Project then
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (Current_Dir);
+         Add_Char_To_Name_Buffer (Dir_Sep);
+         In_Tree.Project_Nodes.Table (Project).Directory := Name_Find;
+      end if;
    end Parse_Single_Project;
 
    -----------------------
