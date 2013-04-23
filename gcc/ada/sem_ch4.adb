@@ -574,17 +574,6 @@ package body Sem_Ch4 is
                   Rewrite (E, New_Copy_Tree (Subtype_Mark (E)));
                   Analyze_Allocator (N);
                   return;
-
-               --  Ada 2005, AI-363: if the designated type has a constrained
-               --  partial view, it cannot receive a discriminant constraint,
-               --  and the allocated object is unconstrained.
-
-               elsif Ada_Version >= Ada_2005
-                 and then Has_Constrained_Partial_View (Base_Typ)
-               then
-                  Error_Msg_N
-                    ("constraint not allowed when type " &
-                      "has a constrained partial view", Constraint (E));
                end if;
 
                if Expander_Active then

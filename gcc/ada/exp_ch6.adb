@@ -6550,6 +6550,7 @@ package body Exp_Ch6 is
       if Init_Or_Norm_Scalars and then Is_Subprogram (Spec_Id) then
          declare
             F : Entity_Id;
+            A : Node_Id;
 
          begin
             --  Loop through formals
@@ -6564,12 +6565,15 @@ package body Exp_Ch6 is
                   --  Insert the initialization. We turn off validity checks
                   --  for this assignment, since we do not want any check on
                   --  the initial value itself (which may well be invalid).
+                  --  Predicate checks are disabled as well (RM 6.4.1 (13/3))
+
+                  A :=  Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (F, Loc),
+                      Expression => Get_Simple_Init_Val (Etype (F), N));
+                  Set_Suppress_Assignment_Checks (A);
 
                   Insert_Before_And_Analyze (First (L),
-                    Make_Assignment_Statement (Loc,
-                      Name       => New_Occurrence_Of (F, Loc),
-                      Expression => Get_Simple_Init_Val (Etype (F), N)),
-                    Suppress => Validity_Check);
+                    A, Suppress => Validity_Check);
                end if;
 
                Next_Formal (F);
