@@ -151,25 +151,6 @@ package body Sem_Aux is
       end if;
    end Constant_Value;
 
-   ----------------------------------------------
-   -- Effectively_Has_Constrained_Partial_View --
-   ----------------------------------------------
-
-   function Effectively_Has_Constrained_Partial_View
-     (Typ  : Entity_Id;
-      Scop : Entity_Id) return Boolean
-   is
-   begin
-      return Has_Constrained_Partial_View (Typ)
-        or else (In_Generic_Body (Scop)
-                   and then Is_Generic_Type (Base_Type (Typ))
-                   and then Is_Private_Type (Base_Type (Typ))
-                   and then not Is_Tagged_Type (Typ)
-                   and then not (Is_Array_Type (Typ)
-                                   and then not Is_Constrained (Typ))
-                   and then Has_Discriminants (Typ));
-   end Effectively_Has_Constrained_Partial_View;
-
    -----------------------------
    -- Enclosing_Dynamic_Scope --
    -----------------------------
@@ -630,25 +611,6 @@ package body Sem_Aux is
       return Present (Get_Rep_Pragma (E, Nam1, Nam2, Check_Parents));
    end Has_Rep_Pragma;
 
-   -------------------------------
-   -- Initialization_Suppressed --
-   -------------------------------
-
-   function Initialization_Suppressed (Typ : Entity_Id) return Boolean is
-   begin
-      return Suppress_Initialization (Typ)
-        or else Suppress_Initialization (Base_Type (Typ));
-   end Initialization_Suppressed;
-
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize is
-   begin
-      Obsolescent_Warnings.Init;
-   end Initialize;
-
    ---------------------
    -- In_Generic_Body --
    ---------------------
@@ -685,6 +647,25 @@ package body Sem_Aux is
 
       return False;
    end In_Generic_Body;
+
+   -------------------------------
+   -- Initialization_Suppressed --
+   -------------------------------
+
+   function Initialization_Suppressed (Typ : Entity_Id) return Boolean is
+   begin
+      return Suppress_Initialization (Typ)
+        or else Suppress_Initialization (Base_Type (Typ));
+   end Initialization_Suppressed;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      Obsolescent_Warnings.Init;
+   end Initialize;
 
    ---------------------
    -- Is_By_Copy_Type --
@@ -828,38 +809,6 @@ package body Sem_Aux is
       end if;
    end Is_Generic_Formal;
 
-   ---------------------------
-   -- Is_Indefinite_Subtype --
-   ---------------------------
-
-   function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean is
-      K : constant Entity_Kind := Ekind (Ent);
-
-   begin
-      if Is_Constrained (Ent) then
-         return False;
-
-      elsif K in Array_Kind
-        or else K in Class_Wide_Kind
-        or else Has_Unknown_Discriminants (Ent)
-      then
-         return True;
-
-      --  Known discriminants: indefinite if there are no default values
-
-      elsif K in Record_Kind
-        or else Is_Incomplete_Or_Private_Type (Ent)
-        or else Is_Concurrent_Type (Ent)
-      then
-         return (Has_Discriminants (Ent)
-           and then
-             No (Discriminant_Default_Value (First_Discriminant (Ent))));
-
-      else
-         return False;
-      end if;
-   end Is_Indefinite_Subtype;
-
    -------------------------------
    -- Is_Immutably_Limited_Type --
    -------------------------------
@@ -958,6 +907,38 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Immutably_Limited_Type;
+
+   ---------------------------
+   -- Is_Indefinite_Subtype --
+   ---------------------------
+
+   function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean is
+      K : constant Entity_Kind := Ekind (Ent);
+
+   begin
+      if Is_Constrained (Ent) then
+         return False;
+
+      elsif K in Array_Kind
+        or else K in Class_Wide_Kind
+        or else Has_Unknown_Discriminants (Ent)
+      then
+         return True;
+
+      --  Known discriminants: indefinite if there are no default values
+
+      elsif K in Record_Kind
+        or else Is_Incomplete_Or_Private_Type (Ent)
+        or else Is_Concurrent_Type (Ent)
+      then
+         return (Has_Discriminants (Ent)
+           and then
+             No (Discriminant_Default_Value (First_Discriminant (Ent))));
+
+      else
+         return False;
+      end if;
+   end Is_Indefinite_Subtype;
 
    ---------------------
    -- Is_Limited_Type --
@@ -1146,6 +1127,25 @@ package body Sem_Aux is
 
       return N;
    end Number_Discriminants;
+
+   ----------------------------------------------
+   -- Object_Type_Has_Constrained_Partial_View --
+   ----------------------------------------------
+
+   function Object_Type_Has_Constrained_Partial_View
+     (Typ  : Entity_Id;
+      Scop : Entity_Id) return Boolean
+   is
+   begin
+      return Has_Constrained_Partial_View (Typ)
+        or else (In_Generic_Body (Scop)
+                  and then Is_Generic_Type (Base_Type (Typ))
+                  and then Is_Private_Type (Base_Type (Typ))
+                  and then not Is_Tagged_Type (Typ)
+                  and then not (Is_Array_Type (Typ)
+                                 and then not Is_Constrained (Typ))
+                  and then Has_Discriminants (Typ));
+   end Object_Type_Has_Constrained_Partial_View;
 
    ---------------
    -- Tree_Read --

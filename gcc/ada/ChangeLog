@@ -1,3 +1,16 @@
+2013-04-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb sem_aux.ads (Effectively_has_Constrained_Partial_View):
+	Rename subprogram as Object_Type_Has_Constrained_Partial_View, better
+	description of purpose.
+	* checks.adb (Apply_Discriminant_Check): Use above renaming.
+	* sem_ch4.adb (Analyze_Allocator): Check Has_Constrained_Partial_View
+	of the base type, rather than using the Object_Type predicate.
+	* sem_attr.adb (Analyze_Attribute, case 'Access): Use above renaming.
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): ditto.
+	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Constrained): Ditto.
+	* exp_ch4.adb (Expand_N_Allocator): Ditto.
+
 2013-04-23  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb (Expand_Pragma_Check): Check for Assert rather

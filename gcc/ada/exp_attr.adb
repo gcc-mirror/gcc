@@ -1791,7 +1791,7 @@ package body Exp_Attr is
                          or else
                            (Nkind (Obj) = N_Explicit_Dereference
                               and then
-                                not Effectively_Has_Constrained_Partial_View
+                                not Object_Type_Has_Constrained_Partial_View
                                       (Typ  => Base_Type (Etype (Obj)),
                                        Scop => Current_Scope)));
             end if;
@@ -1915,7 +1915,7 @@ package body Exp_Attr is
                     or else
                      (Nkind (Pref) = N_Explicit_Dereference
                        and then
-                         not Effectively_Has_Constrained_Partial_View
+                         not Object_Type_Has_Constrained_Partial_View
                                (Typ  => Base_Type (Ptyp),
                                 Scop => Current_Scope))
                     or else Is_Constrained (Underlying_Type (Ptyp))
