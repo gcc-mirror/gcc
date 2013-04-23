@@ -1,5 +1,7 @@
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
+	* src/c++11/hashtable_c++0x.cc: Include ext/aligned_buffer.h.
+
 	* testsuite/lib/prune.exp (libstdc++-dg-prune): Also ignore "In
 	substitution" lines.
 
