@@ -980,7 +980,7 @@ package body Sem_Ch13 is
             --  Perform analysis of the External_Name or Link_Name aspects
 
             procedure Analyze_Aspect_Implicit_Dereference;
-            --  Perform  analysis of the Implicit_Dereference aspects
+            --  Perform analysis of the Implicit_Dereference aspects
 
             procedure Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
@@ -1082,8 +1082,8 @@ package body Sem_Ch13 is
                      Pragma_Argument_Associations,
                    Pragma_Identifier =>
                      Make_Identifier (Sloc (Id), Pragma_Name),
-                     Class_Present     => Class_Present (Aspect),
-                     Split_PPC         => Split_PPC (Aspect));
+                   Class_Present     => Class_Present (Aspect),
+                   Split_PPC         => Split_PPC (Aspect));
 
                --  Set additional semantic fields
 
@@ -5707,7 +5707,7 @@ package body Sem_Ch13 is
    -- Build_Predicate_Functions --
    -------------------------------
 
-   --  The procedures that are constructed here has the form:
+   --  The procedures that are constructed here have the form:
 
    --    function typPredicate (Ixxx : typ) return Boolean is
    --    begin
@@ -5725,8 +5725,8 @@ package body Sem_Ch13 is
    --  use this function even if checks are off, e.g. for membership tests.
 
    --  If the expression has at least one Raise_Expression, then we also build
-   --  the typPredicateM version of the function, in which any occurence of a
-   --  Raise_Expressioon is converted to "return False".
+   --  the typPredicateM version of the function, in which any occurrence of a
+   --  Raise_Expression is converted to "return False".
 
    procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
@@ -6216,22 +6216,48 @@ package body Sem_Ch13 is
 
          --  Deal with static predicate case
 
-         if Ekind_In (Typ, E_Enumeration_Subtype,
-                           E_Modular_Integer_Subtype,
-                           E_Signed_Integer_Subtype)
+         --  ??? We don't currently deal with real types
+         --  ??? Why requiring that Typ is static?
+
+         if Ekind (Typ) in Discrete_Kind
            and then Is_Static_Subtype (Typ)
            and then not Dynamic_Predicate_Present
          then
-            Build_Static_Predicate (Typ, Expr, Object_Name);
+            --  Only build the predicate for subtypes
 
-            if Present (Static_Predicate_Present)
-              and No (Static_Predicate (Typ))
+            if Ekind_In (Typ, E_Enumeration_Subtype,
+                              E_Modular_Integer_Subtype,
+                              E_Signed_Integer_Subtype)
             then
-               Error_Msg_F
-                 ("expression does not have required form for "
-                  & "static predicate",
-                  Next (First (Pragma_Argument_Associations
-                                (Static_Predicate_Present))));
+               Build_Static_Predicate (Typ, Expr, Object_Name);
+
+               if Present (Static_Predicate_Present)
+                 and No (Static_Predicate (Typ))
+               then
+                  Error_Msg_F
+                    ("expression does not have required form for "
+                     & "static predicate",
+                     Next (First (Pragma_Argument_Associations
+                                   (Static_Predicate_Present))));
+               end if;
+            end if;
+
+         --  If a Static_Predicate applies on other types, that's an error:
+         --  either the type is scalar but non-static, or it's not even a
+         --  scalar type. We do not issue an error on generated types, as these
+         --  would be duplicates of the same error on a source type.
+
+         elsif Present (Static_Predicate_Present)
+           and then Comes_From_Source (Typ)
+         then
+            if Is_Scalar_Type (Typ) then
+               Error_Msg_FE
+                 ("static predicate not allowed for non-static type&",
+                  Typ, Typ);
+            else
+               Error_Msg_FE
+                 ("static predicate not allowed for non-scalar type&",
+                  Typ, Typ);
             end if;
          end if;
       end if;

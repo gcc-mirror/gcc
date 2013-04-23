@@ -35,6 +35,7 @@ with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
+with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -11113,6 +11114,7 @@ package body Sem_Ch3 is
    is
       Loc         : constant Source_Ptr := Sloc (Constrained_Typ);
       Compon_Type : constant Entity_Id := Etype (Comp);
+      Array_Comp  : Node_Id;
 
       function Build_Constrained_Array_Type
         (Old_Type : Entity_Id) return Entity_Id;
@@ -11510,7 +11512,19 @@ package body Sem_Ch3 is
          return Compon_Type;
 
       elsif Is_Array_Type (Compon_Type) then
-         return Build_Constrained_Array_Type (Compon_Type);
+         Array_Comp := Build_Constrained_Array_Type (Compon_Type);
+
+         --  If the component of the parent is packed, and the record type is
+         --  already frozen, as is the case for an itype, the component type
+         --  itself will not be frozen, and the packed array type for it must
+         --  be constructed explicitly.
+
+         if Is_Packed (Compon_Type)
+           and then Is_Frozen (Current_Scope)
+         then
+            Create_Packed_Array_Type (Array_Comp);
+         end if;
+         return Array_Comp;
 
       elsif Has_Discriminants (Compon_Type) then
          return Build_Constrained_Discriminated_Type (Compon_Type);

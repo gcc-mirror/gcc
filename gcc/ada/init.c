@@ -1286,6 +1286,22 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
   Raise_From_Signal_Handler (exception, msg);
 }
 
+#if defined (IN_RTS) && defined (__IA64)
+/* Called only from adasigio.b32.  This is a band aid to avoid going
+   through the VMS signal handling code which results in a 0x8000 per
+   handled exception memory leak in P2 space (see VMS source listing
+   sys/lis/exception.lis) due to the allocation of working space that
+   is expected to be deallocated upon return from the condition handler,
+   which doesn't return in GNAT compiled code.  */
+void
+GNAT$STOP (int *sigargs)
+{
+   /* Note that there are no mechargs. We rely on the fact that condtions
+      raised from DEClib I/O do not require an "adjust".  */
+   __gnat_handle_vms_condition (sigargs, 0);
+}
+#endif
+
 void
 __gnat_install_handler (void)
 {

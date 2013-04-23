@@ -1,5 +1,29 @@
 2013-04-23  Yannick Moy  <moy@adacore.com>
 
+	* einfo.ads: Minor typo fix.
+	* sem_ch13.adb (Build_Predicate_Functions): Reject cases where
+	Static_Predicate is applied to a non-scalar or non-static type.
+	* sem_prag.adb: Minor typo fix.
+
+2013-04-23  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (GNAT$STOP) [VMS]: New function.
+
+2013-04-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Add exp_pakd to context.
+	(Constrain_Component_Type): If the component of the parent is
+	packed, and the record subtype being built is already frozen,
+	as is the case for an itype, the component type itself will not
+	be frozen, and the packed array type for it must be constructed
+	explicitly.
+
+2013-04-23  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb, g-socket.ads (Set_Close_On_Exec): New subprogram.
+
+2013-04-23  Yannick Moy  <moy@adacore.com>
+
 	* err_vars.ads (Error_Msg_Qual_Level): Set variable to zero
 	at declaration.
 	* opt.ads (Multiple_Unit_Index): Set variable to zero at declaration.
