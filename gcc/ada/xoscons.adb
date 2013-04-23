@@ -441,7 +441,6 @@ procedure XOSCons is
       Ada_Ofile, C_Ofile : Sfile;
       Current_Line       : in out Integer)
    is
-
       function Get_Value (Name : String) return Int_Value_Type;
       --  Returns the value of the variable Name
 
