@@ -1,5 +1,24 @@
 2013-04-23  Robert Dewar  <dewar@adacore.com>
 
+	* xoscons.adb: Minor reformatting.
+
+2013-04-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Mode): Ensure that a
+	self-referential output appears in both input and output lists of
+	the subprogram as categorized by aspect Global.
+	(Check_Usage): Rename formal parameters to better illustrate their
+	function. Update all uses of the said formals.
+
+2013-04-23  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.adb, exp_util.ads (Fully_Qualified_Name_String): New
+	parameter Append_NUL to make NUL-termination optional.
+	* exp_dist.adb: Consistently use the above throughout instead of
+	Get_Library_Unit_Name_String.
+
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
 	* sem_util.adb, sem_res.adb, prj-tree.adb, prj-tree.ads: Minor
 	reformatting.
 

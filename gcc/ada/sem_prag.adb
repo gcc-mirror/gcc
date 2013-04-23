@@ -9365,10 +9365,10 @@ package body Sem_Prag is
             --  dependency clause has operator "+".
 
             procedure Check_Usage
-              (Subp_List : Elist_Id;
-               Item_List : Elist_Id;
-               Is_Input  : Boolean);
-            --  Verify that all items from list Subp_List appear in Item_List.
+              (Subp_Items : Elist_Id;
+               Used_Items : Elist_Id;
+               Is_Input   : Boolean);
+            --  Verify that all items from Subp_Items appear in Used_Items.
             --  Emit an error if this is not the case.
 
             procedure Collect_Subprogram_Inputs_Outputs;
@@ -9765,7 +9765,10 @@ package body Sem_Prag is
 
                   if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
                      if Global_Seen
-                       and then not Appears_In (Subp_Inputs, Item_Id)
+                       and then not
+                         (Appears_In (Subp_Inputs, Item_Id)
+                            and then
+                          Appears_In (Subp_Outputs, Item_Id))
                      then
                         Error_Msg_NE
                           ("item & must have mode in out", Item, Item_Id);
@@ -9795,9 +9798,9 @@ package body Sem_Prag is
             -----------------
 
             procedure Check_Usage
-              (Subp_List : Elist_Id;
-               Item_List : Elist_Id;
-               Is_Input  : Boolean)
+              (Subp_Items : Elist_Id;
+               Used_Items : Elist_Id;
+               Is_Input   : Boolean)
             is
                procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id);
                --  Emit an error concerning the erroneous usage of an item
@@ -9828,14 +9831,14 @@ package body Sem_Prag is
             --  Start of processing for Check_Usage
 
             begin
-               if No (Subp_List) then
+               if No (Subp_Items) then
                   return;
                end if;
 
                --  Each input or output of the subprogram must appear in a
                --  dependency relation.
 
-               Elmt := First_Elmt (Subp_List);
+               Elmt := First_Elmt (Subp_Items);
                while Present (Elmt) loop
                   Item := Node (Elmt);
 
@@ -9847,7 +9850,7 @@ package body Sem_Prag is
 
                   --  The item does not appear in a dependency
 
-                  if not Contains (Item_List, Item_Id) then
+                  if not Contains (Used_Items, Item_Id) then
                      if Is_Formal (Item_Id) then
                         Usage_Error (Item, Item_Id);
 
