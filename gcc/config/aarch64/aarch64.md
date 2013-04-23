@@ -786,6 +786,7 @@
    dup\\t%0, %1.<v>[0]"
   [(set_attr "v8type" "move,alu,alu,load1,load1,store1,store1,*,*,*")
    (set_attr "simd_type" "*,*,simd_move_imm,*,*,*,*,simd_movgp,simd_dupgp,simd_dup")
+   (set_attr "simd" "*,*,yes,*,*,*,*,yes,yes,yes")
    (set_attr "mode" "<MODE>")
    (set_attr "simd_mode" "<MODE>")]
 )
