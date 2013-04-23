@@ -6473,24 +6473,28 @@ gimplify_adjust_omp_clauses (tree *list_p)
 		}
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
 		  && ctx->outer_context
-		  && ctx->outer_context->region_type == ORT_COMBINED_PARALLEL
 		  && !(OMP_CLAUSE_LINEAR_NO_COPYIN (c)
 		       && OMP_CLAUSE_LINEAR_NO_COPYOUT (c))
 		  && !is_global_var (decl))
 		{
-		  n = splay_tree_lookup (ctx->outer_context->variables,
-					 (splay_tree_key) decl);
-		  if (n == NULL
-		      || (n->value & GOVD_DATA_SHARE_CLASS) == 0)
+		  if (ctx->outer_context->region_type == ORT_COMBINED_PARALLEL)
 		    {
-		      int flags = OMP_CLAUSE_LINEAR_NO_COPYIN (c)
-				  ? GOVD_LASTPRIVATE : GOVD_SHARED;
-		      if (n == NULL)
-			omp_add_variable (ctx->outer_context, decl,
-					  flags | GOVD_SEEN);
-		      else
-			n->value |= flags | GOVD_SEEN;
+		      n = splay_tree_lookup (ctx->outer_context->variables,
+					     (splay_tree_key) decl);
+		      if (n == NULL
+			  || (n->value & GOVD_DATA_SHARE_CLASS) == 0)
+			{
+			  int flags = OMP_CLAUSE_LINEAR_NO_COPYIN (c)
+				      ? GOVD_LASTPRIVATE : GOVD_SHARED;
+			  if (n == NULL)
+			    omp_add_variable (ctx->outer_context, decl,
+					      flags | GOVD_SEEN);
+			  else
+			    n->value |= flags | GOVD_SEEN;
+			}
 		    }
+		  else
+		    omp_notice_variable (ctx->outer_context, decl, true);
 		}
 	    }
 	  break;
@@ -6510,6 +6514,39 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	    {
 	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      remove = n == NULL || !(n->value & GOVD_SEEN);
+	      if (!remove && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
+		{
+		  struct gimplify_omp_ctx *octx;
+		  if (n != NULL
+		      && (n->value & (GOVD_DATA_SHARE_CLASS
+				      & ~GOVD_FIRSTPRIVATE)))
+		    remove = true;
+		  else
+		    for (octx = ctx->outer_context; octx;
+			 octx = octx->outer_context)
+		      {
+			n = splay_tree_lookup (octx->variables,
+					       (splay_tree_key) decl);
+			if (n == NULL)
+			  continue;
+			if (n->value & GOVD_LOCAL)
+			  break;
+			/* We have to avoid assigning a shared variable
+			   to itself when trying to add
+			   __builtin_assume_aligned.  */
+			if (n->value & GOVD_SHARED)
+			  {
+			    remove = true;
+			    break;
+			  }
+		      }
+		}
+	    }
+	  else if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	    {
+	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	      if (n != NULL && (n->value & GOVD_DATA_SHARE_CLASS) != 0)
+		remove = true;
 	    }
 	  break;
 

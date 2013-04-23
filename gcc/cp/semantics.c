@@ -4058,6 +4058,15 @@ finish_omp_clauses (tree clauses)
 	  goto check_dup_generic;
 	case OMP_CLAUSE_LINEAR:
 	  name = "linear";
+	  t = OMP_CLAUSE_DECL (c);
+	  if (!type_dependent_expression_p (t)
+	      && !INTEGRAL_TYPE_P (TREE_TYPE (t))
+	      && TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
+	    {
+	      error ("linear clause applied to non-integral non-pointer");
+	      remove = true;
+	      break;
+	    }
 	  t = OMP_CLAUSE_LINEAR_STEP (c);
 	  if (t == NULL_TREE)
 	    t = integer_one_node;
@@ -4073,7 +4082,20 @@ finish_omp_clauses (tree clauses)
 	    {
 	      t = mark_rvalue_use (t);
 	      if (!processing_template_decl)
-		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		{
+		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		  if (TREE_CODE (TREE_TYPE (OMP_CLAUSE_DECL (c)))
+		      == POINTER_TYPE)
+		    {
+		      t = pointer_int_sum (OMP_CLAUSE_LOCATION (c), PLUS_EXPR,
+					   OMP_CLAUSE_DECL (c), t);
+		      t = fold_build2_loc (OMP_CLAUSE_LOCATION (c),
+					   MINUS_EXPR, sizetype, t,
+					   OMP_CLAUSE_DECL (c));
+		      if (t == error_mark_node)
+			remove = true;
+		    }
+		}
 	      OMP_CLAUSE_LINEAR_STEP (c) = t;
 	    }
 	  goto check_dup_generic;
@@ -4385,6 +4407,7 @@ finish_omp_clauses (tree clauses)
 	  break;
 
 	case OMP_CLAUSE_UNIFORM:
+	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) != PARM_DECL)
 	    {
 	      if (processing_template_decl)
