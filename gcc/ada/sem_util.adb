@@ -8137,8 +8137,9 @@ package body Sem_Util is
                  (Present (Corresponding_Body (Decl))
                    and then
                      Nkind (Original_Node
-                        (Unit_Declaration_Node (Corresponding_Body (Decl))))
-                    = N_Expression_Function));
+                             (Unit_Declaration_Node
+                               (Corresponding_Body (Decl)))) =
+                                  N_Expression_Function));
       end if;
    end Is_Expression_Function;
 
