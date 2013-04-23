@@ -1719,8 +1719,6 @@ package body Sem_Ch13 is
                                        & Build_Location_String (Eloc))));
                   end if;
 
-                  Set_From_Aspect_Specification (Aitem, True);
-                  Set_Corresponding_Aspect (Aitem, Aspect);
                   Set_Is_Delayed_Aspect (Aspect);
 
                   --  For Pre/Post cases, insert immediately after the entity
@@ -2024,18 +2022,6 @@ package body Sem_Ch13 is
 
             if Present (Aitem) then
                Set_From_Aspect_Specification (Aitem, True);
-
-               --  For a pragma, keep pointer to aspect
-
-               if Nkind (Aitem) = N_Pragma then
-                  Set_Corresponding_Aspect (Aitem, Aspect);
-
-                  --  Also set Is_Ignored flag. No need to set Is_Disabled.
-                  --  We checked that right away, and would not get here.
-
-                  Set_Is_Ignored (Aitem, Is_Ignored (Aspect));
-                  pragma Assert (not Is_Disabled (Aspect));
-               end if;
             end if;
 
             --  Aspect Abstract_State introduces implicit declarations for all
@@ -6244,8 +6230,8 @@ package body Sem_Ch13 is
 
          --  If a Static_Predicate applies on other types, that's an error:
          --  either the type is scalar but non-static, or it's not even a
-         --  scalar type. We do not issue an error on generated types, as these
-         --  would be duplicates of the same error on a source type.
+         --  scalar type. We do not issue an error on generated types, as
+         --  these may be duplicates of the same error on a source type.
 
          elsif Present (Static_Predicate_Present)
            and then Comes_From_Source (Typ)

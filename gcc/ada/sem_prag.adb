@@ -7482,7 +7482,8 @@ package body Sem_Prag is
          --                        Loop_Variant         |
          --                        Postcondition        |
          --                        Precondition         |
-         --                        Predicate
+         --                        Predicate            |
+         --                        Statement_Assertions
          --
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
          --  ID_ASSERTION_KIND list contains implementation-defined additions

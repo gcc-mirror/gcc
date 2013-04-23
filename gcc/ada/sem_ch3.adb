@@ -11519,11 +11519,10 @@ package body Sem_Ch3 is
          --  itself will not be frozen, and the packed array type for it must
          --  be constructed explicitly.
 
-         if Is_Packed (Compon_Type)
-           and then Is_Frozen (Current_Scope)
-         then
+         if Is_Packed (Compon_Type) and then Is_Frozen (Current_Scope) then
             Create_Packed_Array_Type (Array_Comp);
          end if;
+
          return Array_Comp;
 
       elsif Has_Discriminants (Compon_Type) then

@@ -1,3 +1,9 @@
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor code reorganization (remove some redundant
+	assignments).
+	* sem_ch3.adb, sem_prag.adb: Minor reformatting.
+
 2013-04-23  Yannick Moy  <moy@adacore.com>
 
 	* einfo.ads: Minor typo fix.
