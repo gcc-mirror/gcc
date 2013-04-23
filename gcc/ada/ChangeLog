@@ -1,3 +1,10 @@
+2013-04-23  Kai Tietz  <ktietz@redhat.com>
+
+	Merged from trunk.
+	PR target/55445
+	* raise-gcc.c (__SEH__): Additional check that
+	SjLj isn't active.
+
 2013-03-22  Release Manager
 
 	* GCC 4.8.0 released.
