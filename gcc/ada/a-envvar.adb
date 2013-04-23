@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2009-2012, Free Software Foundation, Inc.       --
+--         Copyright (C) 2009-2013, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -223,4 +223,13 @@ package body Ada.Environment_Variables is
       end if;
    end Value;
 
+   function Value (Name : String; Default : String) return String is
+   begin
+      if Exists (Name) then
+         return Value (Name);
+
+      else
+         return Default;
+      end if;
+   end Value;
 end Ada.Environment_Variables;

@@ -9346,10 +9346,14 @@ package body Sem_Prag is
             procedure Check_Mode
               (Item     : Node_Id;
                Item_Id  : Entity_Id;
-               Is_Input : Boolean);
+               Is_Input : Boolean;
+               Self_Ref : Boolean);
             --  Ensure that an item has a proper "in", "in out" or "out" mode
             --  depending on its function. If this is not the case, emit an
-            --  error.
+            --  error. Item and Item_Id denote the attributes of an item. Flag
+            --  Is_Input should be set when item comes from an input list.
+            --  Flag Self_Ref should be set when the item is an output and the
+            --  dependency clause has operator "+".
 
             procedure Check_Usage
               (Subp_List : Elist_Id;
@@ -9382,16 +9386,19 @@ package body Sem_Prag is
                procedure Analyze_Input_Output
                  (Item      : Node_Id;
                   Is_Input  : Boolean;
+                  Self_Ref  : Boolean;
                   Top_Level : Boolean;
                   Seen      : in out Elist_Id;
                   Null_Seen : in out Boolean);
                --  Verify the legality of a single input or output item. Flag
                --  Is_Input should be set whenever Item is an input, False when
-               --  it denotes an output. Flag Top_Level should be set whenever
-               --  Item appears immediately within an input or output list.
-               --  Seen is a collection of all abstract states, variables and
-               --  formals processed so far. Flag Null_Seen denotes whether a
-               --  null input or output has been encountered.
+               --  it denotes an output. Flag Self_Ref should be set when the
+               --  item is an output and the dependency clause has a "+". Flag
+               --  Top_Level should be set whenever Item appears immediately
+               --  within an input or output list. Seen is a collection of all
+               --  abstract states, variables and formals processed so far.
+               --  Flag Null_Seen denotes whether a null input or output has
+               --  been encountered.
 
                ------------------------
                -- Analyze_Input_List --
@@ -9421,6 +9428,7 @@ package body Sem_Prag is
                            Analyze_Input_Output
                              (Item      => Input,
                               Is_Input  => True,
+                              Self_Ref  => False,
                               Top_Level => False,
                               Seen      => Inputs_Seen,
                               Null_Seen => Null_Input_Seen);
@@ -9439,6 +9447,7 @@ package body Sem_Prag is
                      Analyze_Input_Output
                        (Item      => Inputs,
                         Is_Input  => True,
+                        Self_Ref  => False,
                         Top_Level => False,
                         Seen      => Inputs_Seen,
                         Null_Seen => Null_Input_Seen);
@@ -9462,6 +9471,7 @@ package body Sem_Prag is
                procedure Analyze_Input_Output
                  (Item      : Node_Id;
                   Is_Input  : Boolean;
+                  Self_Ref  : Boolean;
                   Top_Level : Boolean;
                   Seen      : in out Elist_Id;
                   Null_Seen : in out Boolean)
@@ -9490,6 +9500,7 @@ package body Sem_Prag is
                            Analyze_Input_Output
                              (Item      => Grouped,
                               Is_Input  => Is_Input,
+                              Self_Ref  => Self_Ref,
                               Top_Level => False,
                               Seen      => Seen,
                               Null_Seen => Null_Seen);
@@ -9576,7 +9587,7 @@ package body Sem_Prag is
                            --  Ensure that the item is of the correct mode
                            --  depending on its function.
 
-                           Check_Mode (Item, Item_Id, Is_Input);
+                           Check_Mode (Item, Item_Id, Is_Input, Self_Ref);
 
                            --  Detect multiple uses of the same state, variable
                            --  or formal parameter. If this is not the case,
@@ -9631,12 +9642,24 @@ package body Sem_Prag is
 
                --  Local variables
 
-               Inputs : Node_Id;
-               Output : Node_Id;
+               Inputs   : Node_Id;
+               Output   : Node_Id;
+               Self_Ref : Boolean;
 
             --  Start of processing for Analyze_Dependency_Clause
 
             begin
+               Inputs   := Expression (Clause);
+               Self_Ref := False;
+
+               --  An input list with a self-dependency appears as operator "+"
+               --  where the actuals inputs are the right operand.
+
+               if Nkind (Inputs) = N_Op_Plus then
+                  Inputs   := Right_Opnd (Inputs);
+                  Self_Ref := True;
+               end if;
+
                --  Process the output_list of a dependency_clause
 
                Output := First (Choices (Clause));
@@ -9644,6 +9667,7 @@ package body Sem_Prag is
                   Analyze_Input_Output
                     (Item      => Output,
                      Is_Input  => False,
+                     Self_Ref  => Self_Ref,
                      Top_Level => True,
                      Seen      => Outputs_Seen,
                      Null_Seen => Null_Output_Seen);
@@ -9652,15 +9676,6 @@ package body Sem_Prag is
                end loop;
 
                --  Process the input_list of a dependency_clause
-
-               Inputs := Expression (Clause);
-
-               --  An input list with a self-dependency appears as operator "+"
-               --  where the actuals inputs are the right operand.
-
-               if Nkind (Inputs) = N_Op_Plus then
-                  Inputs := Right_Opnd (Inputs);
-               end if;
 
                Analyze_Input_List (Inputs);
             end Analyze_Dependency_Clause;
@@ -9717,9 +9732,12 @@ package body Sem_Prag is
             procedure Check_Mode
               (Item     : Node_Id;
                Item_Id  : Entity_Id;
-               Is_Input : Boolean)
+               Is_Input : Boolean;
+               Self_Ref : Boolean)
             is
             begin
+               --  Input
+
                if Is_Input then
                   if Ekind (Item_Id) = E_Out_Parameter
                     or else (Global_Seen
@@ -9729,17 +9747,37 @@ package body Sem_Prag is
                        ("item & must have mode in or in out", Item, Item_Id);
                   end if;
 
-               --  Output
+               --  Self-referential output
 
-               else
-                  if Ekind (Item_Id) = E_In_Parameter
-                    or else
-                      (Global_Seen
-                         and then not Appears_In (Subp_Outputs, Item_Id))
-                  then
+               elsif Self_Ref then
+
+                  --  A self-referential state or variable must appear in both
+                  --  input and output lists of a subprogram.
+
+                  if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
+                     if Global_Seen
+                       and then not Appears_In (Subp_Inputs, Item_Id)
+                     then
+                        Error_Msg_NE
+                          ("item & must have mode in out", Item, Item_Id);
+                     end if;
+
+                  --  Self-referential parameter
+
+                  elsif Ekind (Item_Id) /= E_In_Out_Parameter then
                      Error_Msg_NE
-                       ("item & must have mode out or in out", Item, Item_Id);
+                       ("item & must have mode in out", Item, Item_Id);
                   end if;
+
+               --  Regular output
+
+               elsif Ekind (Item_Id) = E_In_Parameter
+                 or else
+                   (Global_Seen
+                      and then not Appears_In (Subp_Outputs, Item_Id))
+               then
+                  Error_Msg_NE
+                    ("item & must have mode out or in out", Item, Item_Id);
                end if;
             end Check_Mode;
 

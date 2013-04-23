@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -1707,8 +1708,22 @@ package body Exp_Ch6 is
             --  function, so it must be done explicitly after the call. Ditto
             --  if the actual is an entity of a predicated subtype.
 
-            if Is_By_Reference_Type (E_Formal)
-              and then Has_Predicates (E_Actual)
+            --  The rule refers to by-reference types, but a check is needed
+            --  for by-copy types as well. That check is subsumed by the rule
+            --  for subtype conversion on assignment, but we can generate the
+            --  required check now.
+
+            --  Note that this is needed only if the subtype of the actual has
+            --  an explicit predicate aspect, not if it inherits them from a
+            --  base type or ancestor. The check is also superfluous if the
+            --  subtype is elaborated before the body of the subprogram, but
+            --  this is harder to verify, and there may be a redundant check.
+
+            if (Present (Find_Aspect (E_Actual, Aspect_Predicate))
+              or else Present
+                (Find_Aspect (E_Actual, Aspect_Dynamic_Predicate))
+              or else Present
+                (Find_Aspect (E_Actual, Aspect_Static_Predicate)))
               and then not Is_Init_Proc (Subp)
             then
                if Is_Derived_Type (E_Actual)

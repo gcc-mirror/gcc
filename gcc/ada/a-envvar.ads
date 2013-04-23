@@ -23,6 +23,11 @@ package Ada.Environment_Variables is
    --  Constraint_Error is propagated. If the execution environment does not
    --  support environment variables, then Program_Error is propagated.
 
+   function Value (Name : String; Default : String) return String;
+   --  If the external execution environment supports environment variables and
+   --  an environment variable with the given name currently exists, then Value
+   --  returns its value; otherwise, it returns Default.
+
    function Exists (Name : String) return Boolean;
    --  If the external execution environment supports environment variables and
    --  an environment variable with the given name currently exists, then
