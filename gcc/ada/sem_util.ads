@@ -894,8 +894,9 @@ package Sem_Util is
    --  it is of protected, synchronized or task kind.
 
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
-   --  Predicate to determine whether a function entity comes from a rewritten
-   --  expression function, and should be inlined unconditionally.
+   --  Predicate to determine whether a scope entity comes from a rewritten
+   --  expression function call, and should be inlined unconditionally. Also
+   --  used to determine that such a call does not constitute a freeze point.
 
    function Is_False (U : Uint) return Boolean;
    pragma Inline (Is_False);

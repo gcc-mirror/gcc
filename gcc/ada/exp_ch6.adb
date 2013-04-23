@@ -1719,6 +1719,11 @@ package body Exp_Ch6 is
             --  subtype is elaborated before the body of the subprogram, but
             --  this is harder to verify, and there may be a redundant check.
 
+            --  Note also that Subp may be either a subprogram entity for
+            --  direct calls, or a type entity for indirect calls, hence the
+            --  test that Is_Overloadable returns True before testing whether
+            --  Subp is an inherited operation.
+
             if (Present (Find_Aspect (E_Actual, Aspect_Predicate))
                   or else
                 Present (Find_Aspect (E_Actual, Aspect_Dynamic_Predicate))
@@ -1727,6 +1732,7 @@ package body Exp_Ch6 is
               and then not Is_Init_Proc (Subp)
             then
                if (Is_Derived_Type (E_Actual)
+                    and then Is_Overloadable (Subp)
                     and then Is_Inherited_Operation_For_Type (Subp, E_Actual))
                  or else Is_Entity_Name (Actual)
                then
