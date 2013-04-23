@@ -1,5 +1,21 @@
 2013-04-23  Robert Dewar  <dewar@adacore.com>
 
+	* exp_prag.adb (Expand_Pragma_Check): Check for Assert rather
+	than Assertion.
+	* sem_prag.adb (Is_Valid_Assertion_Kind): Moved to spec
+	(Effective_Name): New function (Analyze_Pragma, case Check):
+	Disallow [Statement_]Assertions (Check_Kind): Implement
+	Statement_Assertions (Check_Applicable_Policy): Use Effective_Name
+	(Is_Valid_Assertion_Kind): Allow Statement_Assertions.
+	* sem_prag.ads (Is_Valid_Assertion_Kind): Moved here from body
+	(Effective_Name): New function.
+	* sem_res.adb: Minor reformatting.
+	* snames.ads-tmpl (Name_Statement_Assertions): New entry.
+	* gnat_rm.texi: Add documentation of new assertion kind
+	Statement_Assertions.
+
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
 	* sinfo.ads, einfo.adb, sem_res.adb, exp_ch6.adb, aspects.adb: Minor
 	reformatting and code clean up.
 

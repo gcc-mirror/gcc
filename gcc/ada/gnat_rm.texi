@@ -1251,7 +1251,8 @@ RM_ASSERTION_KIND ::= Assert               |
                       Type_Invariant       |
                       Type_Invariant'Class
 
-ID_ASSERTION_KIND ::= Assert_And_Cut       |
+ID_ASSERTION_KIND ::= Assertions           |
+                      Assert_And_Cut       |
                       Assume               |
                       Contract_Cases       |
                       Debug                |
@@ -1262,6 +1263,7 @@ ID_ASSERTION_KIND ::= Assert_And_Cut       |
                       Postcondition        |
                       Precondition         |
                       Predicate
+                      Statement_Assertions
 
 POLICY_IDENTIFIER ::= Check | Disable | Ignore
 @end smallexample
@@ -1291,6 +1293,15 @@ checking of the corresponding pragma or aspect. This is
 useful when the pragma or aspect argument references subprograms
 in a with'ed package which is replaced by a dummy package
 for the final build.
+
+The implementation defined policy @code{Assertions} applies to all
+assertion kinds. The form with no assertion kind given implies this
+choice, so it applies to all assertion kinds (RM defined, and
+implementation defined).
+
+The implementation defined policy @code{Statement_Assertions}
+applies to @code{Assert}, @code{Assert_And_Cut},
+@code{Assume}, and @code{Loop_Invariant}.
 
 @node Pragma Assume_No_Invalid_Values
 @unnumberedsec Pragma Assume_No_Invalid_Values
@@ -1459,6 +1470,11 @@ refers to the normal set of pragma @code{Assert} statements.
 Checks introduced by this pragma are normally deactivated by default. They can
 be activated either by the command line option @option{-gnata}, which turns on
 all checks, or individually controlled using pragma @code{Check_Policy}.
+
+The identifiers @code{Assertions} and @code{Statement_Assertions} are not
+permitted as check kinds, since this would cause confusion with the use
+of these identifiers in @code{Assertion_Policy} and @code{Check_Policy}
+pragmas, where they are used to refer to sets of assertions.
 
 @node Pragma Check_Float_Overflow
 @unnumberedsec Pragma Check_Float_Overflow
@@ -2860,7 +2876,18 @@ the standard runtime libraries be recompiled.
 The two argument form specifies the representation to be used for
 the specified floating-point type. On all systems other than OpenVMS,
 the argument must
-be @code{IEEE_Float} and the pragma has no effect. On OpenVMS, the
+be @code{IEEE_Float} to specify the use of IEEE format, as follows:
+
+@itemize @bullet
+@item
+For a digits value of 6, 32-bit IEEE short format will be used.
+@item
+For a digits value of 15, 64-bit IEEE long format will be used.
+@item
+No other value of digits is permitted.
+@end itemize
+
+On OpenVMS, the
 argument may be @code{VAX_Float} to specify the use of the VAX float
 format, as follows:
 

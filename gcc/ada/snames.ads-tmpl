@@ -761,6 +761,7 @@ package Snames is
    Name_Simple_Barriers                : constant Name_Id := N + $;
    Name_Spec_File_Name                 : constant Name_Id := N + $;
    Name_State                          : constant Name_Id := N + $;
+   Name_Statement_Assertions           : constant Name_Id := N + $;
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
    Name_Strict                         : constant Name_Id := N + $;

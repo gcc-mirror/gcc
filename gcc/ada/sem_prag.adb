@@ -181,13 +181,6 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
-   function Is_Valid_Assertion_Kind (Nam : Name_Id) return Boolean;
-   --  Returns True if Nam is one of the names recognized as a valid assertion
-   --  kind by the Assertion_Policy pragma. Note that the 'Class cases are
-   --  represented by the corresponding special names Name_uPre, Name_uPost,
-   --  Name_uInviarnat, and Name_uType_Invariant (_Pre, _Post, _Invariant,
-   --  and _Type_Invariant).
-
    procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
    --  of a Test_Case pragma if present (possibly Empty). We treat these as
@@ -352,9 +345,7 @@ package body Sem_Prag is
       --  In ASIS mode, for a pragma generated from a source aspect, also
       --  analyze the original aspect expression.
 
-      if ASIS_Mode
-        and then Present (Corresponding_Aspect (N))
-      then
+      if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
          Preanalyze_Assert_Expression
            (Expression (Corresponding_Aspect (N)), Standard_Boolean);
       end if;
@@ -2222,9 +2213,7 @@ package body Sem_Prag is
                --  In ASIS mode, for a pragma generated from a source aspect,
                --  also analyze the original aspect expression.
 
-               if ASIS_Mode
-                 and then Present (Corresponding_Aspect (N))
-               then
+               if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
                   Preanalyze_Assert_Expression
                     (Expression (Corresponding_Aspect (N)), Standard_Boolean);
                end if;
@@ -2411,9 +2400,7 @@ package body Sem_Prag is
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
-         if ASIS_Mode
-           and then Present (Corresponding_Aspect (N))
-         then
+         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
             Check_Expr_Is_Static_Expression
               (Original_Node (Get_Pragma_Arg (Arg1)), Standard_String);
          end if;
@@ -2882,10 +2869,7 @@ package body Sem_Prag is
 
             --  Get name from corresponding aspect
 
-            if Present (Corresponding_Aspect (N)) then
-               Error_Msg_Name_1 :=
-                 Chars (Identifier (Corresponding_Aspect (N)));
-            end if;
+            Error_Msg_Name_1 := Effective_Name (N);
          end if;
       end Fix_Error;
 
@@ -6765,10 +6749,7 @@ package body Sem_Prag is
       --  Here to start processing for recognized pragma
 
       Prag_Id := Get_Pragma_Id (Pname);
-
-      if Present (Corresponding_Aspect (N)) then
-         Pname := Chars (Identifier (Corresponding_Aspect (N)));
-      end if;
+      Pname := Effective_Name (N);
 
       --  Check applicable policy. We skip this for a pragma that came from
       --  an aspect, since we already dealt with the Disable case, and we set
@@ -7426,9 +7407,9 @@ package body Sem_Prag is
             Check_Arg_Order ((Name_Check, Name_Message));
             Check_Optional_Identifier (Arg1, Name_Check);
 
-            --  We treat pragma Assert as equivalent to:
+            --  We treat pragma Assert[_And_Cut] as equivalent to:
 
-            --    pragma Check (Assertion, condition [, msg]);
+            --    pragma Check (Assert[_And_Cut], condition [, msg]);
 
             --  So rewrite pragma in this manner, transfer the message
             --  argument if present, and analyze the result
@@ -7443,8 +7424,7 @@ package body Sem_Prag is
             Expr := Get_Pragma_Arg (Arg1);
             Newa := New_List (
               Make_Pragma_Argument_Association (Loc,
-                Expression => Make_Identifier (Loc, Name_Assertion)),
-
+                Expression => Make_Identifier (Loc, Pname)),
               Make_Pragma_Argument_Association (Sloc (Expr),
                 Expression => Expr));
 
@@ -8083,6 +8063,9 @@ package body Sem_Prag is
          --                 Invariant'Class      |
          --                 Type_Invariant'Class
 
+         --  The identifiers Assertions and Statement_Assertions are not
+         --  allowed, since they have special meaning for Check_Policy.
+
          when Pragma_Check => Check : declare
             Expr  : Node_Id;
             Eloc  : Source_Ptr;
@@ -8107,6 +8090,23 @@ package body Sem_Prag is
             Rewrite_Assertion_Kind (Get_Pragma_Arg (Arg1));
             Check_Arg_Is_Identifier (Arg1);
             Cname := Chars (Get_Pragma_Arg (Arg1));
+
+            --  Check forbidden name Assertions or Statement_Assertions
+
+            case Cname is
+               when Name_Assertions =>
+                  Error_Pragma_Arg
+                    ("""Assertions"" is not allowed as a check kind "
+                     & "for pragma%", Arg1);
+
+               when Name_Statement_Assertions =>
+                  Error_Pragma_Arg
+                    ("""Statement_Assertions"" is not allowed as a check kind "
+                     & "for pragma%", Arg1);
+
+               when others =>
+                  null;
+            end case;
 
             --  Set Check_On to indicate check status
 
@@ -17945,8 +17945,13 @@ package body Sem_Prag is
 
          begin
             if Nam = Pnm
-              or else (Is_Valid_Assertion_Kind (Nam)
-                        and then Pnm = Name_Assertion)
+              or else (Pnm = Name_Assertion
+                        and then Is_Valid_Assertion_Kind (Nam))
+              or else (Pnm = Name_Statement_Assertions
+                        and then Nam_In (Nam, Name_Assert,
+                                              Name_Assert_And_Cut,
+                                              Name_Assume,
+                                              Name_Loop_Invariant))
             then
                case (Chars (Get_Pragma_Arg (Last (PPA)))) is
                   when Name_On | Name_Check =>
@@ -17985,36 +17990,9 @@ package body Sem_Prag is
       PP     : Node_Id;
       Policy : Name_Id;
 
-      Ename : Name_Id;
-      --  Effective name of aspect or pragma, this is simply the name of
-      --  the aspect or pragma, except in the case of a pragma derived from
-      --  an aspect, in which case it is the name of the aspect (which may be
-      --  different, e.g. Pre aspect generating Precondition pragma). It also
-      --  deals with the 'Class cases for an aspect.
+      Ename : constant Name_Id := Effective_Name (N);
 
    begin
-      if Nkind (N) = N_Pragma then
-         if Present (Corresponding_Aspect (N)) then
-            Ename := Chars (Identifier (Corresponding_Aspect (N)));
-         else
-            Ename := Chars (Pragma_Identifier (N));
-         end if;
-
-      else
-         pragma Assert (Nkind (N) = N_Aspect_Specification);
-         Ename := Chars (Identifier (N));
-
-         if Class_Present (N) then
-            case Ename is
-               when Name_Invariant      => Ename := Name_uInvariant;
-               when Name_Pre            => Ename := Name_uPre;
-               when Name_Post           => Ename := Name_uPost;
-               when Name_Type_Invariant => Ename := Name_uType_Invariant;
-               when others              => raise Program_Error;
-            end case;
-         end if;
-      end if;
-
       --  No effect if not valid assertion kind name
 
       if not Is_Valid_Assertion_Kind (Ename) then
@@ -18071,6 +18049,66 @@ package body Sem_Prag is
       return Nam_In (Pragma_Name (N), Name_Interrupt_State,
                                       Name_Priority_Specific_Dispatching);
    end Delay_Config_Pragma_Analyze;
+
+   --------------------
+   -- Effective_Name --
+   --------------------
+
+   function Effective_Name (N : Node_Id) return Name_Id is
+      Pras : Node_Id;
+      Name : Name_Id;
+
+   begin
+      pragma Assert (Nkind_In (N, N_Aspect_Specification, N_Pragma));
+      Pras := N;
+
+      if Is_Rewrite_Substitution (Pras)
+        and then Nkind (Original_Node (Pras)) = N_Pragma
+      then
+         Pras := Original_Node (Pras);
+      end if;
+
+      --  Case where we came from aspect specication
+
+      if Nkind (Pras) = N_Pragma and then From_Aspect_Specification (Pras) then
+         Pras := Corresponding_Aspect (Pras);
+      end if;
+
+      --  Get name from aspect or pragma
+
+      if Nkind (Pras) = N_Pragma then
+         Name := Pragma_Name (Pras);
+      else
+         Name := Chars (Identifier (Pras));
+      end if;
+
+      --  Deal with 'Class
+
+      if Class_Present (Pras) then
+         case Name is
+
+         --  Names that need converting to special _xxx form
+
+            when Name_Pre             => Name := Name_uPre;
+            when Name_Post            => Name := Name_uPost;
+            when Name_Invariant       => Name := Name_uInvariant;
+            when Name_Type_Invariant  => Name := Name_uType_Invariant;
+
+               --  Names already in special _xxx form (leave them alone)
+
+            when Name_uPre            => null;
+            when Name_uPost           => null;
+            when Name_uInvariant      => null;
+            when Name_uType_Invariant => null;
+
+               --  Anything else is impossible with Class_Present set True
+
+            when others               => raise Program_Error;
+         end case;
+      end if;
+
+      return Name;
+   end Effective_Name;
 
    -------------------------
    -- Get_Base_Subprogram --
@@ -18521,31 +18559,32 @@ package body Sem_Prag is
          when
             --  RM defined
 
-            Name_Assert            |
-            Name_Static_Predicate  |
-            Name_Dynamic_Predicate |
-            Name_Pre               |
-            Name_uPre              |
-            Name_Post              |
-            Name_uPost             |
-            Name_Type_Invariant    |
-            Name_uType_Invariant   |
+            Name_Assert               |
+            Name_Static_Predicate     |
+            Name_Dynamic_Predicate    |
+            Name_Pre                  |
+            Name_uPre                 |
+            Name_Post                 |
+            Name_uPost                |
+            Name_Type_Invariant       |
+            Name_uType_Invariant      |
 
             --  Impl defined
 
-            Name_Assert_And_Cut    |
-            Name_Assume            |
-            Name_Contract_Cases    |
-            Name_Debug             |
-            Name_Invariant         |
-            Name_uInvariant        |
-            Name_Loop_Invariant    |
-            Name_Loop_Variant      |
-            Name_Postcondition     |
-            Name_Precondition      |
-            Name_Predicate         => return True;
+            Name_Assert_And_Cut       |
+            Name_Assume               |
+            Name_Contract_Cases       |
+            Name_Debug                |
+            Name_Invariant            |
+            Name_uInvariant           |
+            Name_Loop_Invariant       |
+            Name_Loop_Variant         |
+            Name_Postcondition        |
+            Name_Precondition         |
+            Name_Predicate            |
+            Name_Statement_Assertions => return True;
 
-         when others               => return False;
+         when others                  => return False;
       end case;
    end Is_Valid_Assertion_Kind;
 
