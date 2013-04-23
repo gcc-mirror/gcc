@@ -568,9 +568,21 @@ package body Exp_Ch13 is
                   declare
                      Prag : Node_Id;
                   begin
-                     Prag := Spec_PPC_List (Contract (E));
+                     Prag := Pre_Post_Conditions (Contract (E));
                      while Present (Prag) loop
                         Analyze_PPC_In_Decl_Part (Prag, E);
+
+                        Prag := Next_Pragma (Prag);
+                     end loop;
+
+                     Prag := Classifications (Contract (E));
+                     while Present (Prag) loop
+                        if Pragma_Name (Prag) = Name_Depends then
+                           Analyze_Depends_In_Decl_Part (Prag);
+                        else
+                           Analyze_Global_In_Decl_Part (Prag);
+                        end if;
+
                         Prag := Next_Pragma (Prag);
                      end loop;
                   end;

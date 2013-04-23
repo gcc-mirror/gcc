@@ -46,6 +46,12 @@ package Sem_Prag is
    --  expressions in the pragma as "spec expressions" (see section in Sem
    --  "Handling of Default and Per-Object Expressions...").
 
+   procedure Analyze_Depends_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Depends
+
+   procedure Analyze_Global_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis of delayed pragma Global
+
    procedure Analyze_PPC_In_Decl_Part (N : Node_Id; S : Entity_Id);
    --  Special analyze routine for precondition/postcondition pragma that
    --  appears within a declarative part where the pragma is associated

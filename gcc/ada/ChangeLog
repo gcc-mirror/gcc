@@ -1,3 +1,76 @@
+2013-04-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Build_PPC_Wrapper): Correct the traversal of
+	pre- and post-conditions.
+	(Expand_N_Task_Type_Declaration):
+	Use the correct attribute to check for pre- and post-conditions.
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Correct the traversal of
+	pre- and post-conditions.  Analyze delayed classification items.
+	* freeze.adb (Freeze_Entity): Use the correct attribute to
+	check for pre- and post- conditions.
+	* sem_ch3.adb (Analyze_Declarations): Correct the traversal
+	of pre- and post-conditions as well as contract- and
+	test-cases. Analyze delayed pragmas Depends and Global.
+	* sem_ch6.adb (Check_Subprogram_Contract): Use the correct
+	attribute to check for pre- and post-conditions, as well as
+	contract-cases and test-cases.	(List_Inherited_Pre_Post_Aspects):
+	Correct the traversal of pre- and post- conditions.
+	(Process_Contract_Cases): Update the comment on usage. Correct
+	the traversal of contract-cases.
+	(Process_Post_Conditions): Update the comment on usage. Correct the
+	traversal of pre- and post-conditions.
+	(Process_PPCs): Correct the traversal of pre- and post-conditions.
+	(Spec_Postconditions): Use the correct
+	attribute to check for pre- and post- conditions, as well as
+	contract-cases and test-cases.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Reimplement the
+	actions related to aspects Depends and Global. Code refactoring
+	for pre- and post-conditions.
+	(Insert_Delayed_Pragma): New routine.
+	* sem_prag.adb (Add_Item): New routine.
+	(Analyze_Depends_In_Decl_Part): New routine.
+	(Analyze_Global_In_Decl_Part): New routine.
+	(Analyze_Pragma): Reimplement the actions related to aspects Depends and
+	Global. Verify that a body acts as a spec for pragma Contract_Cases.
+	(Chain_PPC): Use Add_Contract_Item to chain a pragma.
+	(Chain_CTC): Correct the traversal of contract-
+	and test-cases. Use Add_Contract_Item to chain a pragma.
+	(Chain_Contract_Cases): Correct the traversal of contract-
+	and test-cases. Use Add_Contract_Item to chain a pragma.
+	(Check_Precondition_Postcondition): Update the comment on usage.
+	(Check_Test_Case): Update the comment on usage.
+	* sem_prag.ads (Analyze_Depends_In_Decl_Part): New routine.
+	(Analyze_Global_In_Decl_Part): New routine.
+	* sem_util.ads, sem_util.adb (Add_Contract_Item): New routine.
+	* sinfo.adb (Classifications): New routine.
+	(Contract_Test_Cases): New routine.
+	(Pre_Post_Conditions): New routine.
+	(Set_Classifications): New routine.
+	(Set_Contract_Test_Cases): New routine.
+	(Set_Pre_Post_Conditions): New routine.
+	(Set_Spec_CTC_List): Removed.
+	(Set_Spec_PPC_List): Removed.
+	(Spec_CTC_List): Removed.
+	(Spec_PPC_List): Removed.
+	* sinfo.ads: Update the structure of N_Contruct along with all
+	related comments.
+	(Classifications): New routine and pragma Inline.
+	(Contract_Test_Cases): New routine and pragma Inline.
+	(Pre_Post_Conditions): New routine and pragma Inline.
+	(Set_Classifications): New routine and pragma Inline.
+	(Set_Contract_Test_Cases): New routine and pragma Inline.
+	(Set_Pre_Post_Conditions): New routine and pragma Inline.
+	(Set_Spec_CTC_List): Removed.
+	(Set_Spec_PPC_List): Removed.
+	(Spec_CTC_List): Removed.
+	(Spec_PPC_List): Removed.
+
+2013-04-23  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (GNAT$STOP) [VMS]: Bump sigargs[0] count by 2
+	to account for LIB$STOP not having the chance to add the PC and
+	PSL fields.
+
 2013-04-23  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb: Minor code reorganization (remove some redundant

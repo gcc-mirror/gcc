@@ -208,6 +208,43 @@ package body Sem_Util is
       Append_Elmt (A, L);
    end Add_Access_Type_To_Process;
 
+   -----------------------
+   -- Add_Contract_Item --
+   -----------------------
+
+   procedure Add_Contract_Item (Item : Node_Id; Subp_Id : Entity_Id) is
+      Items : constant Node_Id := Contract (Subp_Id);
+      Nam   : Name_Id;
+
+   begin
+      if Present (Items) and then Nkind (Item) = N_Pragma then
+         Nam := Pragma_Name (Item);
+
+         if Nam_In (Nam, Name_Precondition, Name_Postcondition) then
+            Set_Next_Pragma (Item, Pre_Post_Conditions (Items));
+            Set_Pre_Post_Conditions (Items, Item);
+
+         elsif Nam_In (Nam, Name_Contract_Cases, Name_Test_Case) then
+            Set_Next_Pragma (Item, Contract_Test_Cases (Items));
+            Set_Contract_Test_Cases (Items, Item);
+
+         elsif Nam_In (Nam, Name_Depends, Name_Global) then
+            Set_Next_Pragma (Item, Classifications (Items));
+            Set_Classifications (Items, Item);
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  The subprogram has not been properly decorated or the item is illegal
+
+      else
+         raise Program_Error;
+      end if;
+   end Add_Contract_Item;
+
    ----------------------------
    -- Add_Global_Declaration --
    ----------------------------

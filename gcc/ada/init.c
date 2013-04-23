@@ -1297,7 +1297,10 @@ void
 GNAT$STOP (int *sigargs)
 {
    /* Note that there are no mechargs. We rely on the fact that condtions
-      raised from DEClib I/O do not require an "adjust".  */
+      raised from DEClib I/O do not require an "adjust".  Also the count
+      will be off by 2, since LIB$STOP didn't get a chance to add the
+      PC and PSL fields, so we bump it so PUTMSG comes out right.  */
+   sigargs [0] += 2;
    __gnat_handle_vms_condition (sigargs, 0);
 }
 #endif

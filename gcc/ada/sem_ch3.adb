@@ -2202,7 +2202,7 @@ package body Sem_Ch3 is
 
                --  Analyze preconditions and postconditions
 
-               Prag := Spec_PPC_List (Contract (Sent));
+               Prag := Pre_Post_Conditions (Contract (Sent));
                while Present (Prag) loop
                   Analyze_PPC_In_Decl_Part (Prag, Sent);
                   Prag := Next_Pragma (Prag);
@@ -2210,9 +2210,22 @@ package body Sem_Ch3 is
 
                --  Analyze contract-cases and test-cases
 
-               Prag := Spec_CTC_List (Contract (Sent));
+               Prag := Contract_Test_Cases (Contract (Sent));
                while Present (Prag) loop
                   Analyze_CTC_In_Decl_Part (Prag, Sent);
+                  Prag := Next_Pragma (Prag);
+               end loop;
+
+               --  Analyze classification pragmas
+
+               Prag := Classifications (Contract (Sent));
+               while Present (Prag) loop
+                  if Pragma_Name (Prag) = Name_Depends then
+                     Analyze_Depends_In_Decl_Part (Prag);
+                  else
+                     Analyze_Global_In_Decl_Part (Prag);
+                  end if;
+
                   Prag := Next_Pragma (Prag);
                end loop;
 

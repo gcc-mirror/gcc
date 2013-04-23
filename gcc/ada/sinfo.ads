@@ -7038,22 +7038,23 @@ package Sinfo is
 
       --  N_Contract
       --  Sloc points to the subprogram's name
-      --  Spec_PPC_List (Node1) (set to Empty if none)
-      --  Spec_CTC_List (Node2) (set to Empty if none)
+      --  Pre_Post_Conditions (Node1) (set to Empty if none)
+      --  Contract_Test_Cases (Node2) (set to Empty if none)
+      --  Classifications (Node3) (set to Empty if none)
 
-      --  Spec_PPC_List points to a list of Precondition and Postcondition
-      --  pragma nodes for preconditions and postconditions declared in the
-      --  spec of the entry/subprogram. The last pragma encountered is at the
-      --  head of this list, so it is in reverse order of textual appearance.
-      --  Note that this includes precondition/postcondition pragmas generated
-      --  to correspond to Pre/Post aspects.
+      --  Pre_Post_Conditions contains a collection of pragmas that correspond
+      --  to pre- and post-conditions associated with an entry or a subprogram.
+      --  The pragmas can either come from source or be the byproduct of aspect
+      --  expansion. The ordering in the list is of LIFO fasion.
 
-      --  Spec_CTC_List points to a list of Contract_Cases and Test_Case pragma
-      --  nodes for contract-cases and test-cases declared in the spec of the
-      --  entry/subprogram. The last pragma encountered is at the head of this
-      --  list, so it is in reverse order of textual appearance. Note that
-      --  this includes contract-cases and test-case pragmas generated from
-      --  Contract_Cases and Test_Case aspects.
+      --  Contract_Test_Cases contains a collection of pragmas that correspond
+      --  to aspects/pragmas Contract_Cases and Test_Case. The ordering in the
+      --  list is of LIFO fasion.
+
+      --  Classifications contains pragmas that either categorize subprogram
+      --  inputs and outputs or establish dependencies between them. Currently
+      --  pragmas Depends and Global are stored in this list. The ordering is
+      --  of LIFO fasion.
 
       -------------------
       -- Expanded_Name --
@@ -8306,6 +8307,9 @@ package Sinfo is
    function Class_Present
      (N : Node_Id) return Boolean;    -- Flag6
 
+   function Classifications
+     (N : Node_Id) return Node_Id;    -- Node3
+
    function Comes_From_Extended_Return_Statement
      (N : Node_Id) return Boolean;    -- Flag18
 
@@ -8359,6 +8363,9 @@ package Sinfo is
 
    function Context_Items
      (N : Node_Id) return List_Id;    -- List1
+
+   function Contract_Test_Cases
+     (N : Node_Id) return Node_Id;    -- Node2
 
    function Controlling_Argument
      (N : Node_Id) return Node_Id;    -- Node1
@@ -8954,6 +8961,9 @@ package Sinfo is
    function Pragmas_Before
      (N : Node_Id) return List_Id;    -- List4
 
+   function Pre_Post_Conditions
+     (N : Node_Id) return Node_Id;    -- Node1
+
    function Prefix
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -9061,12 +9071,6 @@ package Sinfo is
 
    function Source_Type
      (N : Node_Id) return Entity_Id;  -- Node1
-
-   function Spec_PPC_List
-     (N : Node_Id) return Node_Id;    -- Node1
-
-   function Spec_CTC_List
-     (N : Node_Id) return Node_Id;    -- Node2
 
    function Specification
      (N : Node_Id) return Node_Id;    -- Node1
@@ -9296,6 +9300,9 @@ package Sinfo is
    procedure Set_Class_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag6
 
+   procedure Set_Classifications
+     (N : Node_Id; Val : Node_Id);            -- Node3
+
    procedure Set_Comes_From_Extended_Return_Statement
      (N : Node_Id; Val : Boolean := True);    -- Flag18
 
@@ -9349,6 +9356,9 @@ package Sinfo is
 
    procedure Set_Context_Pending
      (N : Node_Id; Val : Boolean := True);    -- Flag16
+
+   procedure Set_Contract_Test_Cases
+     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Controlling_Argument
      (N : Node_Id; Val : Node_Id);            -- Node1
@@ -9941,6 +9951,9 @@ package Sinfo is
    procedure Set_Pragmas_Before
      (N : Node_Id; Val : List_Id);            -- List4
 
+   procedure Set_Pre_Post_Conditions
+     (N : Node_Id; Val : Node_Id);            -- Node1
+
    procedure Set_Prefix
      (N : Node_Id; Val : Node_Id);            -- Node3
 
@@ -10048,12 +10061,6 @@ package Sinfo is
 
    procedure Set_Source_Type
      (N : Node_Id; Val : Entity_Id);          -- Node1
-
-   procedure Set_Spec_PPC_List
-     (N : Node_Id; Val : Node_Id);            -- Node1
-
-   procedure Set_Spec_CTC_List
-     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Specification
      (N : Node_Id; Val : Node_Id);            -- Node1
@@ -11701,9 +11708,9 @@ package Sinfo is
         5 => False),  --  Etype (Node5-Sem)
 
      N_Contract =>
-       (1 => False,   --  Spec_PPC_List (Node1)
-        2 => False,   --  Spec_CTC_List (Node2)
-        3 => False,   --  unused
+       (1 => False,   --  Pre_Post_Conditions (Node1)
+        2 => False,   --  Contract_Test_Cases (Node2)
+        3 => False,   --  Classifications (Node3)
         4 => False,   --  unused
         5 => False),  --  unused
 
@@ -11946,6 +11953,7 @@ package Sinfo is
    pragma Inline (Choice_Parameter);
    pragma Inline (Choices);
    pragma Inline (Class_Present);
+   pragma Inline (Classifications);
    pragma Inline (Comes_From_Extended_Return_Statement);
    pragma Inline (Compile_Time_Known_Aggregate);
    pragma Inline (Component_Associations);
@@ -11964,6 +11972,7 @@ package Sinfo is
    pragma Inline (Context_Installed);
    pragma Inline (Context_Items);
    pragma Inline (Context_Pending);
+   pragma Inline (Contract_Test_Cases);
    pragma Inline (Controlling_Argument);
    pragma Inline (Convert_To_Return_False);
    pragma Inline (Conversion_OK);
@@ -12162,6 +12171,7 @@ package Sinfo is
    pragma Inline (Pragma_Identifier);
    pragma Inline (Pragmas_After);
    pragma Inline (Pragmas_Before);
+   pragma Inline (Pre_Post_Conditions);
    pragma Inline (Prefix);
    pragma Inline (Premature_Use);
    pragma Inline (Present_Expr);
@@ -12198,8 +12208,6 @@ package Sinfo is
    pragma Inline (Selector_Names);
    pragma Inline (Shift_Count_OK);
    pragma Inline (Source_Type);
-   pragma Inline (Spec_PPC_List);
-   pragma Inline (Spec_CTC_List);
    pragma Inline (Specification);
    pragma Inline (Split_PPC);
    pragma Inline (Statements);
@@ -12273,6 +12281,7 @@ package Sinfo is
    pragma Inline (Set_Choice_Parameter);
    pragma Inline (Set_Choices);
    pragma Inline (Set_Class_Present);
+   pragma Inline (Set_Classifications);
    pragma Inline (Set_Comes_From_Extended_Return_Statement);
    pragma Inline (Set_Compile_Time_Known_Aggregate);
    pragma Inline (Set_Component_Associations);
@@ -12291,6 +12300,7 @@ package Sinfo is
    pragma Inline (Set_Context_Installed);
    pragma Inline (Set_Context_Items);
    pragma Inline (Set_Context_Pending);
+   pragma Inline (Set_Contract_Test_Cases);
    pragma Inline (Set_Controlling_Argument);
    pragma Inline (Set_Conversion_OK);
    pragma Inline (Set_Convert_To_Return_False);
@@ -12487,6 +12497,7 @@ package Sinfo is
    pragma Inline (Set_Pragma_Identifier);
    pragma Inline (Set_Pragmas_After);
    pragma Inline (Set_Pragmas_Before);
+   pragma Inline (Set_Pre_Post_Conditions);
    pragma Inline (Set_Prefix);
    pragma Inline (Set_Premature_Use);
    pragma Inline (Set_Present_Expr);
@@ -12522,9 +12533,6 @@ package Sinfo is
    pragma Inline (Set_Selector_Names);
    pragma Inline (Set_Shift_Count_OK);
    pragma Inline (Set_Source_Type);
-   pragma Inline (Set_Spec_CTC_List);
-   pragma Inline (Set_Spec_PPC_List);
-   pragma Inline (Set_Specification);
    pragma Inline (Set_Split_PPC);
    pragma Inline (Set_Statements);
    pragma Inline (Set_Storage_Pool);
