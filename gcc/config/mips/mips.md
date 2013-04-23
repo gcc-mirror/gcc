@@ -4538,13 +4538,14 @@
 })
 
 (define_insn "*movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,*a,*d")
-	(match_operand:HI 1 "move_operand"         "d,I,m,dJ,*d*J,*a"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,!u,d,!u,d,ZU,m,*a,*d")
+	(match_operand:HI 1 "move_operand"         "d,J,I,ZU,m,!u,dJ,*d*J,*a"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], HImode)
        || reg_or_0_operand (operands[1], HImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtlo,mflo")
+  [(set_attr "move_type" "move,const,const,load,load,store,store,mtlo,mflo")
+   (set_attr "compression" "all,micromips,*,micromips,*,micromips,*,*,*")
    (set_attr "mode" "HI")])
 
 (define_insn "*movhi_mips16"
@@ -4613,13 +4614,14 @@
 })
 
 (define_insn "*movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,*a,*d")
-	(match_operand:QI 1 "move_operand"         "d,I,m,dJ,*d*J,*a"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,!u,d,!u,d,ZV,m,*a,*d")
+	(match_operand:QI 1 "move_operand"         "d,J,I,ZW,m,!u,dJ,*d*J,*a"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], QImode)
        || reg_or_0_operand (operands[1], QImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtlo,mflo")
+  [(set_attr "move_type" "move,const,const,load,load,store,store,mtlo,mflo")
+   (set_attr "compression" "all,micromips,*,micromips,*,micromips,*,*,*")
    (set_attr "mode" "QI")])
 
 (define_insn "*movqi_mips16"
