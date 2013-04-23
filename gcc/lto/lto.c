@@ -3274,7 +3274,7 @@ do_whole_program_analysis (void)
     }
 
   /* Show the LTO report before launching LTRANS.  */
-  if (flag_lto_report)
+  if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
     print_lto_report_1 ();
   if (mem_report_wpa)
     dump_memory_report (true);
@@ -3402,7 +3402,7 @@ lto_main (void)
 	     print_lto_report before launching LTRANS.  If LTRANS was
 	     launched directly by the driver we would not need to do
 	     this.  */
-	  if (flag_lto_report)
+	  if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
 	    print_lto_report_1 ();
 
 	  /* Record the global variables.  */

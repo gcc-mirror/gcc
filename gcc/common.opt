@@ -1504,6 +1504,10 @@ flto-report
 Common Report Var(flag_lto_report) Init(0)
 Report various link-time optimization statistics
 
+flto-report-wpa
+Common Report Var(flag_lto_report_wpa) Init(0)
+Report various link-time optimization statistics for WPA only
+
 fmath-errno
 Common Report Var(flag_errno_math) Init(1) Optimization SetByCombined
 Set errno after built-in math functions
