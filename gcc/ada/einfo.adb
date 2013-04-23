@@ -7205,15 +7205,25 @@ package body Einfo is
 
    function Predicate_Function_M (Id : E) return E is
       S : Entity_Id;
+      T : Entity_Id;
 
    begin
       pragma Assert (Is_Type (Id));
 
-      if No (Subprograms_For_Type (Id)) then
+      --  If type is private and has a completion, predicate may be defined
+      --  on the full view.
+
+      if Is_Private_Type (Id) and then Present (Full_View (Id)) then
+         T := Full_View (Id);
+      else
+         T := Id;
+      end if;
+
+      if No (Subprograms_For_Type (T)) then
          return Empty;
 
       else
-         S := Subprograms_For_Type (Id);
+         S := Subprograms_For_Type (T);
          while Present (S) loop
             if Is_Predicate_Function_M (S) then
                return S;

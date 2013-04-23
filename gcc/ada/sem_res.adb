@@ -3612,7 +3612,7 @@ package body Sem_Res is
                  and then not Same_Ancestor (Etype (F), Etype (Expression (A)))
                  and then
                   (Is_Limited_Type (Etype (F))
-                     or else Is_Limited_Type (Etype (Expression (A))))
+                    or else Is_Limited_Type (Etype (Expression (A))))
                then
                   Error_Msg_N
                     ("conversion between unrelated limited array types "
@@ -3671,13 +3671,13 @@ package body Sem_Res is
                   end if;
                end if;
 
-               --  (Ada 2005): The call may be to a primitive operation of
-               --   a tagged synchronized type, declared outside of the type.
-               --   In this case the controlling actual must be converted to
-               --   its corresponding record type, which is the formal type.
-               --   The actual may be a subtype, either because of a constraint
-               --   or because it is a generic actual, so use base type to
-               --   locate concurrent type.
+               --  (Ada 2005): The call may be to a primitive operation of a
+               --  tagged synchronized type, declared outside of the type. In
+               --  this case the controlling actual must be converted to its
+               --  corresponding record type, which is the formal type. The
+               --  actual may be a subtype, either because of a constraint or
+               --  because it is a generic actual, so use base type to locate
+               --  concurrent type.
 
                F_Typ := Base_Type (Etype (F));
 
@@ -3951,7 +3951,8 @@ package body Sem_Res is
 
                if not (Ekind (Nam) = E_Function
                         and then (Is_Predicate_Function (Nam)
-                                    or else Is_Predicate_Function_M (Nam)))
+                                    or else
+                                  Is_Predicate_Function_M (Nam)))
                  and then not Is_Init_Proc (Nam)
                then
                   Apply_Predicate_Check (A, F_Typ);
@@ -4293,8 +4294,8 @@ package body Sem_Res is
          Error_Msg_N ("type of allocator cannot be abstract",  N);
       end if;
 
-      --  For qualified expression, resolve the expression using the
-      --  given subtype (nothing to do for type mark, subtype indication)
+      --  For qualified expression, resolve the expression using the given
+      --  subtype (nothing to do for type mark, subtype indication)
 
       if Nkind (E) = N_Qualified_Expression then
          if Is_Class_Wide_Type (Etype (E))
@@ -4308,8 +4309,8 @@ package body Sem_Res is
          Resolve (Expression (E), Etype (E));
          Check_Unset_Reference (Expression (E));
 
-         --  A qualified expression requires an exact match of the type,
-         --  class-wide matching is not allowed.
+         --  A qualified expression requires an exact match of the type.
+         --  Class-wide matching is not allowed.
 
          if (Is_Class_Wide_Type (Etype (Expression (E)))
               or else Is_Class_Wide_Type (Etype (E)))
@@ -4350,9 +4351,9 @@ package body Sem_Res is
          --  deeper than the type of the allocator (in contrast to access
          --  parameters, where the level of the actual can be arbitrary).
 
-         --  We can't use Valid_Conversion to perform this check because
-         --  in general the type of the allocator is unrelated to the type
-         --  of the access discriminant.
+         --  We can't use Valid_Conversion to perform this check because in
+         --  general the type of the allocator is unrelated to the type of
+         --  the access discriminant.
 
          if Ekind (Typ) /= E_Anonymous_Access_Type
            or else Is_Local_Anonymous_Access (Typ)
@@ -4771,8 +4772,7 @@ package body Sem_Res is
             Resolve (N, Any_Fixed);
 
          elsif Is_Fixed_Point_Type (B_Typ)
-           and then (T = Universal_Real
-                      or else Is_Fixed_Point_Type (T))
+           and then (T = Universal_Real or else Is_Fixed_Point_Type (T))
            and then Is_Overloaded (N)
          then
             --  C * F(X) in a fixed context, where C is a real literal or a
@@ -4880,7 +4880,7 @@ package body Sem_Res is
                         and then Is_Fixed_Point_Type (B_Typ))
               or else (Is_Fixed_Point_Type (B_Typ)
                         and then (Is_Integer_Or_Universal (L)
-                                   or else
+                                    or else
                                   Is_Integer_Or_Universal (R))))
         and then Nkind_In (N, N_Op_Multiply, N_Op_Divide)
       then
@@ -4974,7 +4974,7 @@ package body Sem_Res is
 
       else
          if (TL = Universal_Integer or else TL = Universal_Real)
-              and then
+               and then
             (TR = Universal_Integer or else TR = Universal_Real)
          then
             Check_For_Visible_Operator (N, B_Typ);
@@ -5138,7 +5138,7 @@ package body Sem_Res is
                --  In this case, the back end has to generate additional tests.
 
                if (Nkind (N) = N_Op_Rem and then (LNeg and RNeg))
-                    or else
+                     or else
                   (Nkind (N) = N_Op_Mod and then (LNeg or RNeg))
                then
                   Check_Restriction (No_Implicit_Conditionals, N);
