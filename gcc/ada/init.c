@@ -816,6 +816,10 @@ void (*__gnat_ctrl_c_handler) (void) = 0;
 #define lib_get_invo_handle LIB$GET_INVO_HANDLE
 #endif
 
+/* Masks for facility identification. */
+#define FAC_MASK  		0x0fff0000
+#define DECADA_M_FACILITY	0x00310000
+
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
    It would be better to just include <ssdef.h> */
 
@@ -913,9 +917,6 @@ extern Exception_Code Base_Code_In (Exception_Code);
 
 /* DEC Ada exceptions are not defined in a header file, so they
    must be declared.  */
-
-#define FAC_MASK  		0x0fff0000
-#define DECADA_M_FACILITY	0x00310000
 
 #define ADA$_ALREADY_OPEN	0x0031a594
 #define ADA$_CONSTRAINT_ERRO	0x00318324

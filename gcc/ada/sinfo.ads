@@ -1327,8 +1327,8 @@ package Sinfo is
    --    an Assertion_Policy pragma), then Is_Ignored is set if assertions are
    --    ignored because of the absence of a -gnata switch. For any other
    --    aspects or pragmas, the flag is off. If this flag is set, the
-   --    aspect/pragma is fully analyzed and checked for other
-   --    syntactic/semantic errors, but it does not have any semantic effect.
+   --    aspect/pragma is fully analyzed and checked for other syntactic
+   --    and semantic errors, but it does not have any semantic effect.
 
    --  Is_In_Discriminant_Check (Flag11-Sem)
    --    This flag is present in a selected component, and is used to indicate
@@ -2145,7 +2145,10 @@ package Sinfo is
       --  where the interesting allowed cases (which do not fit the syntax of
       --  the first alternative above) are
 
-      --  ASPECT_MARK => Pre'Class | Post'Class | Type_Invariant'Class
+      --  ASPECT_MARK => Pre'Class |
+      --                 Post'Class |
+      --                 Type_Invariant'Class |
+      --                 Invariant'Class
 
       --  We allow this special usage in all Ada modes, but it would be a
       --  pain to allow these aspects to pervade the pragma syntax, and the
@@ -4728,7 +4731,7 @@ package Sinfo is
       --------------------------
 
       --  SUBPROGRAM_BODY ::=
-      --    SUBPROGRAM_SPECIFICATION is
+      --    SUBPROGRAM_SPECIFICATION [ASPECT_SPECIFICATIONS] is
       --      DECLARATIVE_PART
       --    begin
       --      HANDLED_SEQUENCE_OF_STATEMENTS

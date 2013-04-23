@@ -827,12 +827,12 @@ package body Sem_Prag is
 
       procedure Fix_Error (Msg : in out String);
       --  This is called prior to issuing an error message. Msg is a string
-      --  that typically contains the substring "pragma". If the current pragma
-      --  comes from an aspect, each such "pragma" substring is replaced with
-      --  the characters "aspect", and if Error_Msg_Name_1 is Name_Precondition
-      --  (resp Name_Postcondition) it is changed to Name_Pre (resp Name_Post).
-      --  In addition, if the current pragma results from rewriting another
-      --  pragma, Error_Msg_Name_1 is set to the original pragma name.
+      --  that typically contains the substring "pragma". If the pragma comes
+      --  from an aspect, each such "pragma" substring is replaced with the
+      --  characters "aspect", and Error_Msg_Name_1 is set to the name of the
+      --  aspect (which may be different from the pragma name). If the current
+      --  pragma results from rewriting another pragma, then Error_Msg_Name_1
+      --  is set to the original pragma name.
 
       procedure Gather_Associations
         (Names : Name_List;
@@ -2864,24 +2864,33 @@ package body Sem_Prag is
       ---------------
 
       procedure Fix_Error (Msg : in out String) is
-         Orig : constant Node_Id := Original_Node (N);
-
       begin
+         --  If we have a rewriting of another pragma, go to that pragma
+
+         if Is_Rewrite_Substitution (N)
+           and then Nkind (Original_Node (N)) = N_Pragma
+         then
+            Error_Msg_Name_1 := Pragma_Name (Original_Node (N));
+         end if;
+
+         --  Case where pragma comes from an aspect specification
+
          if From_Aspect_Specification (N) then
+
+            --  Change appearence of "pragma" in message to "aspect"
+
             for J in Msg'First .. Msg'Last - 5 loop
                if Msg (J .. J + 5) = "pragma" then
                   Msg (J .. J + 5) := "aspect";
                end if;
             end loop;
 
-            if Error_Msg_Name_1 = Name_Precondition then
-               Error_Msg_Name_1 := Name_Pre;
-            elsif Error_Msg_Name_1 = Name_Postcondition then
-               Error_Msg_Name_1 := Name_Post;
-            end if;
+            --  Get name from corresponding aspect
 
-         elsif Orig /= N and then Nkind (Orig) = N_Pragma then
-            Error_Msg_Name_1 := Pragma_Name (Orig);
+            if Present (Corresponding_Aspect (N)) then
+               Error_Msg_Name_1 :=
+                 Chars (Identifier (Corresponding_Aspect (N)));
+            end if;
          end if;
       end Fix_Error;
 

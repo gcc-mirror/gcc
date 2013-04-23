@@ -12174,13 +12174,10 @@ package body Sem_Ch6 is
          Prag := First (Declarations (N));
          while Present (Prag) loop
             if Nkind (Prag) = N_Pragma then
-               Check_Applicable_Policy (Prag);
 
-               --  If pragma, capture if postconditions enabled, else ignore
+               --  Capture postcondition pragmas
 
-               if Pragma_Name (Prag) = Name_Postcondition
-                 and then not Is_Ignored (Prag)
-               then
+               if Pragma_Name (Prag) = Name_Postcondition then
                   if Plist = No_List then
                      Plist := Empty_List;
                   end if;

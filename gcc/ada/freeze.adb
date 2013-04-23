@@ -3913,27 +3913,92 @@ package body Freeze is
                   end if;
                end if;
 
-               --  For bit-packed arrays, check the size
+               --  Specific checks for bit-packed arrays
 
-               if Is_Bit_Packed_Array (E) and then Known_RM_Size (E) then
-                  declare
-                     SizC : constant Node_Id := Size_Clause (E);
+               if Is_Bit_Packed_Array (E) then
 
-                     Discard : Boolean;
-                     pragma Warnings (Off, Discard);
+                  --  Check number of elements for bit packed arrays that come
+                  --  from source and have compile time known ranges. The
+                  --  bit-packed arrays circuitry does not support arrays
+                  --  with more than Integer'Last + 1 elements, and when this
+                  --  restriction is violated, causes incorrect data access.
 
-                  begin
-                     --  It is not clear if it is possible to have no size
-                     --  clause at this stage, but it is not worth worrying
-                     --  about. Post error on the entity name in the size
-                     --  clause if present, else on the type entity itself.
+                  --  For the case where this is not compile time known, a
+                  --  run-time check should be generated???
 
-                     if Present (SizC) then
-                        Check_Size (Name (SizC), E, RM_Size (E), Discard);
-                     else
-                        Check_Size (E, E, RM_Size (E), Discard);
-                     end if;
-                  end;
+                  if Comes_From_Source (E) and then Is_Constrained (E) then
+                     declare
+                        Elmts : Uint;
+                        Index : Node_Id;
+                        Ilen  : Node_Id;
+                        Ityp  : Entity_Id;
+
+                     begin
+                        Elmts := Uint_1;
+                        Index := First_Index (E);
+                        while Present (Index) loop
+                           Ityp := Etype (Index);
+
+                           --  Never generate an error if any index is of a
+                           --  generic type. We will check this in instances.
+
+                           if Is_Generic_Type (Ityp) then
+                              Elmts := Uint_0;
+                              exit;
+                           end if;
+
+                           Ilen :=
+                             Make_Attribute_Reference (Loc,
+                               Prefix         =>
+                                 New_Occurrence_Of (Ityp, Loc),
+                               Attribute_Name => Name_Range_Length);
+                           Analyze_And_Resolve (Ilen);
+
+                           --  No attempt is made to check number of elements
+                           --  if not compile time known.
+
+                           if Nkind (Ilen) /= N_Integer_Literal then
+                              Elmts := Uint_0;
+                              exit;
+                           end if;
+
+                           Elmts := Elmts * Intval (Ilen);
+                           Next_Index (Index);
+                        end loop;
+
+                        if Elmts > Intval (High_Bound
+                                             (Scalar_Range
+                                                (Standard_Integer))) + 1
+                        then
+                           Error_Msg_N
+                             ("bit packed array type may not have "
+                              & "more than Integer''Last+1 elements", E);
+                        end if;
+                     end;
+                  end if;
+
+                  --  Check size
+
+                  if Known_RM_Size (E) then
+                     declare
+                        SizC : constant Node_Id := Size_Clause (E);
+
+                        Discard : Boolean;
+                        pragma Warnings (Off, Discard);
+
+                     begin
+                        --  It is not clear if it is possible to have no size
+                        --  clause at this stage, but it is not worth worrying
+                        --  about. Post error on the entity name in the size
+                        --  clause if present, else on the type entity itself.
+
+                        if Present (SizC) then
+                           Check_Size (Name (SizC), E, RM_Size (E), Discard);
+                        else
+                           Check_Size (E, E, RM_Size (E), Discard);
+                        end if;
+                     end;
+                  end if;
                end if;
 
                --  If any of the index types was an enumeration type with a
