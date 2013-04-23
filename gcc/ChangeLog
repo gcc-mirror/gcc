@@ -1,3 +1,9 @@
+2013-04-22  Xinliang David Li  <davidxl@google.com>
+
+	* graph.c (draw_cfg_node_succ_edges): Add branch probility as label.
+	* cfghhooks.c (dump_bb_for_graph): Dump profile count and frquency.
+	* Makefile.in: New dependency
+
 2013-04-22  Catherine Moore  <clm@codesourcery.com>
             David Daney <ddaney.cavm@gmail.com>
 
