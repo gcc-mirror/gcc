@@ -3946,12 +3946,13 @@ package body Sem_Res is
 
                --  Apply predicate checks, unless this is a call to the
                --  predicate check function itself, which would cause an
-               --  infinite recursion.
+               --  infinite recursion, or it is a call to an initialization
+               --  procedure whose operand is of course an unfinished object.
 
                if not (Ekind (Nam) = E_Function
                         and then (Is_Predicate_Function (Nam)
-                                    or else
-                                  Is_Predicate_Function_M (Nam)))
+                                    or else Is_Predicate_Function_M (Nam)))
+                 and then not Is_Init_Proc (Nam)
                then
                   Apply_Predicate_Check (A, F_Typ);
                end if;
