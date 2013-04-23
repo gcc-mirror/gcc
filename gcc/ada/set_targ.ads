@@ -98,7 +98,7 @@ package Set_Targ is
    end record;
 
    FPT_Mode_Table : array (1 .. 1000) of FPT_Mode_Entry;
-   Num_FPT_Modes  : Natural;
+   Num_FPT_Modes  : Natural := 0;
    --  Table containing the supported modes and number of entries
 
    -----------------

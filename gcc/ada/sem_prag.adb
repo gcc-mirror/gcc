@@ -181,6 +181,16 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
+   function Original_Name (N : Node_Id) return Name_Id;
+   --  N is a pragma node or aspect specification node. This function returns
+   --  the name of the pragma or aspect in original source form, taking into
+   --  account possible rewrites, and also cases where a pragma comes from an
+   --  aspect (in such cases, the name can be different from the pragma name,
+   --  e.g. a Pre aspect generates a Precondition pragma). This also deals with
+   --  the presence of 'Class, which results in one of the special names
+   --  Name_uPre, Name_uPost, Name_uInvariant, or Name_uType_Invariant being
+   --  returned to represent the corresponding aspects with x'Class names.
+
    procedure Preanalyze_CTC_Args (N, Arg_Req, Arg_Ens : Node_Id);
    --  Preanalyze the boolean expressions in the Requires and Ensures arguments
    --  of a Test_Case pragma if present (possibly Empty). We treat these as
@@ -2869,7 +2879,7 @@ package body Sem_Prag is
 
             --  Get name from corresponding aspect
 
-            Error_Msg_Name_1 := Effective_Name (N);
+            Error_Msg_Name_1 := Original_Name (N);
          end if;
       end Fix_Error;
 
@@ -6749,7 +6759,7 @@ package body Sem_Prag is
       --  Here to start processing for recognized pragma
 
       Prag_Id := Get_Pragma_Id (Pname);
-      Pname := Effective_Name (N);
+      Pname := Original_Name (N);
 
       --  Check applicable policy. We skip this for a pragma that came from
       --  an aspect, since we already dealt with the Disable case, and we set
@@ -17990,7 +18000,7 @@ package body Sem_Prag is
       PP     : Node_Id;
       Policy : Name_Id;
 
-      Ename : constant Name_Id := Effective_Name (N);
+      Ename : constant Name_Id := Original_Name (N);
 
    begin
       --  No effect if not valid assertion kind name
@@ -18049,66 +18059,6 @@ package body Sem_Prag is
       return Nam_In (Pragma_Name (N), Name_Interrupt_State,
                                       Name_Priority_Specific_Dispatching);
    end Delay_Config_Pragma_Analyze;
-
-   --------------------
-   -- Effective_Name --
-   --------------------
-
-   function Effective_Name (N : Node_Id) return Name_Id is
-      Pras : Node_Id;
-      Name : Name_Id;
-
-   begin
-      pragma Assert (Nkind_In (N, N_Aspect_Specification, N_Pragma));
-      Pras := N;
-
-      if Is_Rewrite_Substitution (Pras)
-        and then Nkind (Original_Node (Pras)) = N_Pragma
-      then
-         Pras := Original_Node (Pras);
-      end if;
-
-      --  Case where we came from aspect specication
-
-      if Nkind (Pras) = N_Pragma and then From_Aspect_Specification (Pras) then
-         Pras := Corresponding_Aspect (Pras);
-      end if;
-
-      --  Get name from aspect or pragma
-
-      if Nkind (Pras) = N_Pragma then
-         Name := Pragma_Name (Pras);
-      else
-         Name := Chars (Identifier (Pras));
-      end if;
-
-      --  Deal with 'Class
-
-      if Class_Present (Pras) then
-         case Name is
-
-         --  Names that need converting to special _xxx form
-
-            when Name_Pre             => Name := Name_uPre;
-            when Name_Post            => Name := Name_uPost;
-            when Name_Invariant       => Name := Name_uInvariant;
-            when Name_Type_Invariant  => Name := Name_uType_Invariant;
-
-               --  Names already in special _xxx form (leave them alone)
-
-            when Name_uPre            => null;
-            when Name_uPost           => null;
-            when Name_uInvariant      => null;
-            when Name_uType_Invariant => null;
-
-               --  Anything else is impossible with Class_Present set True
-
-            when others               => raise Program_Error;
-         end case;
-      end if;
-
-      return Name;
-   end Effective_Name;
 
    -------------------------
    -- Get_Base_Subprogram --
@@ -18663,6 +18613,66 @@ package body Sem_Prag is
          end if;
       end if;
    end Make_Aspect_For_PPC_In_Gen_Sub_Decl;
+
+   -------------------
+   -- Original_Name --
+   -------------------
+
+   function Original_Name (N : Node_Id) return Name_Id is
+      Pras : Node_Id;
+      Name : Name_Id;
+
+   begin
+      pragma Assert (Nkind_In (N, N_Aspect_Specification, N_Pragma));
+      Pras := N;
+
+      if Is_Rewrite_Substitution (Pras)
+        and then Nkind (Original_Node (Pras)) = N_Pragma
+      then
+         Pras := Original_Node (Pras);
+      end if;
+
+      --  Case where we came from aspect specication
+
+      if Nkind (Pras) = N_Pragma and then From_Aspect_Specification (Pras) then
+         Pras := Corresponding_Aspect (Pras);
+      end if;
+
+      --  Get name from aspect or pragma
+
+      if Nkind (Pras) = N_Pragma then
+         Name := Pragma_Name (Pras);
+      else
+         Name := Chars (Identifier (Pras));
+      end if;
+
+      --  Deal with 'Class
+
+      if Class_Present (Pras) then
+         case Name is
+
+         --  Names that need converting to special _xxx form
+
+            when Name_Pre             => Name := Name_uPre;
+            when Name_Post            => Name := Name_uPost;
+            when Name_Invariant       => Name := Name_uInvariant;
+            when Name_Type_Invariant  => Name := Name_uType_Invariant;
+
+               --  Names already in special _xxx form (leave them alone)
+
+            when Name_uPre            => null;
+            when Name_uPost           => null;
+            when Name_uInvariant      => null;
+            when Name_uType_Invariant => null;
+
+               --  Anything else is impossible with Class_Present set True
+
+            when others               => raise Program_Error;
+         end case;
+      end if;
+
+      return Name;
+   end Original_Name;
 
    -------------------------
    -- Preanalyze_CTC_Args --

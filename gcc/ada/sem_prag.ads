@@ -104,16 +104,6 @@ package Sem_Prag is
    --  True have their analysis delayed until after the main program is parsed
    --  and analyzed.
 
-   function Effective_Name (N : Node_Id) return Name_Id;
-   --  N is a pragma node or aspect specification node. This function returns
-   --  the name of the pragma or aspect, taking into account possible rewrites,
-   --  and also cases where a pragma comes from an aspect (in such cases,
-   --  the name can be different from the pragma name, e.g. Pre generates
-   --  a Precondition pragma). This also deals with the presence of 'Class
-   --  which results in one of the special names Name_uPre, Name_uPost,
-   --  Name_uInvariant, or Name_uType_Invariant being returned to represent
-   --  the corresponding aspects with x'Class names.
-
    procedure Initialize;
    --  Initializes data structures used for pragma processing. Must be called
    --  before analyzing each new main source program.
