@@ -1454,7 +1454,7 @@ package body Par_SCO is
 
             C1 := ASCII.NUL;
 
-            case Get_Aspect_Id (Chars (Identifier (AN))) is
+            case Get_Aspect_Id (AN) is
 
                --  Aspects rewritten into pragmas controlled by a Check_Policy:
                --  Current_Pragma_Sloc must be set to the sloc of the aspect

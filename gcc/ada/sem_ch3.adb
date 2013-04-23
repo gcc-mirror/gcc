@@ -3404,14 +3404,7 @@ package body Sem_Ch3 is
 
             Set_Is_Constr_Subt_For_U_Nominal (Act_T);
 
-            --  If the expression is a source entity its type is defined
-            --  elsewhere. Otherwise it is a just-created subtype, and the
-            --  back-end may need to create a template for it.
-
-            if Aliased_Present (N)
-              and then (not Is_Entity_Name (E)
-                         or else not Comes_From_Source (E))
-            then
+            if Aliased_Present (N) then
                Set_Is_Constr_Subt_For_UN_Aliased (Act_T);
             end if;
 

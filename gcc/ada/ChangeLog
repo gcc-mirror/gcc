@@ -1,3 +1,26 @@
+2013-04-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declarations): Undo previous patch.
+	* exp_util.adb (Expand_Subtype_From_Expr): If the expression
+	is a source entity and the declaration is for an aliased
+	unconstrained array, create a new subtype so that the flag
+	Is_Constr_Subt_For_UN_Aliased does not pollute other entities.
+
+2013-04-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Move tables Base_Aspect and Inherited_Aspect
+	from the spec to the body.
+	(Find_Aspect): Update the call to Get_Aspect_Id.
+	(Get_Aspect_Id): New version that takes an aspect specification.
+	* aspects.ads: Reorganize all aspect related tables.
+	(Get_Aspect_Id): New version that takes an aspect specification.
+	* par_sco.adb (Traverse_Aspects): Update the call to Get_Aspect_Id.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Update
+	the call to Get_Aspect_Id.
+	* sem_ch13.adb (Analyze_Aspect_At_Freeze_Point): Update the
+	call to Get_Aspect_Id.	(Analyze_Aspect_Specifications): Update
+	the call to Get_Aspect_Id. Update the call to Impl_Defined_Aspect.
+
 2013-04-23  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Fix_Error): Rewrite to do more accurate job
