@@ -83,7 +83,7 @@ package body Sem_Util is
    NCT_Hash_Tables_Used : Boolean := False;
    --  Set to True if hash tables are in use
 
-   NCT_Table_Entries : Nat;
+   NCT_Table_Entries : Nat := 0;
    --  Count entries in table to see if threshold is reached
 
    NCT_Hash_Table_Setup : Boolean := False;

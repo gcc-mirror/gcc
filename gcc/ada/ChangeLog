@@ -1,3 +1,20 @@
+2013-04-23  Yannick Moy  <moy@adacore.com>
+
+	* err_vars.ads (Error_Msg_Qual_Level): Set variable to zero
+	at declaration.
+	* opt.ads (Multiple_Unit_Index): Set variable to zero at declaration.
+	* sem_util.adb (NCT_Table_Entries): Set variable to zero at declaration.
+	* set_targ.ads (Num_FPT_Modes): Set variable to zero at declaration.
+	* stylesw.adb (Save_Style_Check_Options): Protect testing the
+	value of Style_Check_Comments_Spacing by a previous test that
+	Style_Check_Comments is True.
+
+2013-04-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb, sem_prag.ads (Effective_Name): Rename to
+	Original_Name, and move declaration to package body as this
+	subprogram is not used from outside. Also clarify documentation.
+
 2013-04-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Body): When compiling with
