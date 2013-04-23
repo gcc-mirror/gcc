@@ -1,3 +1,10 @@
+2013-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+	    Pascal Obry    <obry@adacore.com>
+
+	* gcc-interface/Makefile.in (targ): Fix target name check.
+	(../../gnatmake$(exeext)): Add '+' for LTO.
+	(../../gnatlink$(exeext)): Likewise.
+
 2013-04-23  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb (Build_PPC_Wrapper): Correct the traversal of
