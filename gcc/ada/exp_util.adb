@@ -2040,8 +2040,20 @@ package body Exp_Util is
                    Make_Literal_Range (Loc,
                      Literal_Typ => Exp_Typ)))));
 
+      --  If the type of the expression is an internally generated type it
+      --  may not be necessary to create a new subtype. However there are
+      --  two exceptions : references to the current instances, and aliased
+      --  array object declarations, for which the back-end needs to create
+      --  a template.
+
       elsif Is_Constrained (Exp_Typ)
         and then not Is_Class_Wide_Type (Unc_Type)
+        and then
+          (Nkind (N) /= N_Object_Declaration
+             or else not Is_Entity_Name (Expression (N))
+             or else not Comes_From_Source (Entity (Expression (N)))
+             or else not Is_Array_Type (Exp_Typ)
+             or else not Aliased_Present (N))
       then
          if Is_Itype (Exp_Typ) then
 
@@ -2066,7 +2078,7 @@ package body Exp_Util is
                   end if;
                end;
 
-            --  No need to generate a new one (new what???)
+            --  No need to generate a new subtype
 
             else
                T := Exp_Typ;

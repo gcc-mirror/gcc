@@ -878,7 +878,7 @@ package body Sem_Ch13 is
            and then Entity (ASN) = E
            and then Is_Delayed_Aspect (ASN)
          then
-            A_Id := Get_Aspect_Id (Chars (Identifier (ASN)));
+            A_Id := Get_Aspect_Id (ASN);
 
             case A_Id is
 
@@ -1081,7 +1081,7 @@ package body Sem_Ch13 is
 
             --  Check restriction No_Implementation_Aspect_Specifications
 
-            if Impl_Defined_Aspects (A_Id) then
+            if Implementation_Defined_Aspect (A_Id) then
                Check_Restriction
                  (No_Implementation_Aspect_Specifications, Aspect);
             end if;
@@ -1103,9 +1103,8 @@ package body Sem_Ch13 is
             if No_Duplicates_Allowed (A_Id) then
                Anod := First (L);
                while Anod /= Aspect loop
-                  if Same_Aspect
-                      (A_Id, Get_Aspect_Id (Chars (Identifier (Anod))))
-                    and then Comes_From_Source (Aspect)
+                  if Comes_From_Source (Aspect)
+                    and then Same_Aspect (A_Id, Get_Aspect_Id (Anod))
                   then
                      Error_Msg_Name_1 := Nam;
                      Error_Msg_Sloc := Sloc (Anod);
@@ -1131,7 +1130,7 @@ package body Sem_Ch13 is
 
             --  Check some general restrictions on language defined aspects
 
-            if not Impl_Defined_Aspects (A_Id) then
+            if not Implementation_Defined_Aspect (A_Id) then
                Error_Msg_Name_1 := Nam;
 
                --  Not allowed for renaming declarations
