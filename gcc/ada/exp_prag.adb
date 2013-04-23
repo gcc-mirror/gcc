@@ -377,7 +377,7 @@ package body Exp_Prag is
 
                --  For Assert, we just use the location
 
-               if Nam = Name_Assertion then
+               if Nam = Name_Assert then
                   null;
 
                --  For predicate, we generate the string "predicate failed
@@ -446,7 +446,7 @@ package body Exp_Prag is
          then
             return;
 
-         elsif Nam = Name_Assertion then
+         elsif Nam = Name_Assert then
             Error_Msg_N ("?A?assertion will fail at run time", N);
          else
 

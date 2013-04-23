@@ -8908,27 +8908,32 @@ package body Sem_Res is
             Orig : constant Node_Id := Original_Node (Parent (N));
 
          begin
+            --  Special handling of Asssert pragma
+
             if Nkind (Orig) = N_Pragma
               and then Pragma_Name (Orig) = Name_Assert
             then
-               --  Don't want to warn if original condition is explicit False
-
                declare
                   Expr : constant Node_Id :=
                            Original_Node
                              (Expression
                                (First (Pragma_Argument_Associations (Orig))));
+
                begin
+                  --  Don't warn if original condition is explicit False,
+                  --  since obviously the failure is expected in this case.
+
                   if Is_Entity_Name (Expr)
                     and then Entity (Expr) = Standard_False
                   then
                      null;
-                  else
-                     --  Issue warning. We do not want the deletion of the
-                     --  IF/AND-THEN to take this message with it. We achieve
-                     --  this by making sure that the expanded code points to
-                     --  the Sloc of the expression, not the original pragma.
 
+                  --  Issue warning. We do not want the deletion of the
+                  --  IF/AND-THEN to take this message with it. We achieve this
+                  --  by making sure that the expanded code points to the Sloc
+                  --  of the expression, not the original pragma.
+
+                  else
                      --  Note: Use Error_Msg_F here rather than Error_Msg_N.
                      --  The source location of the expression is not usually
                      --  the best choice here. For example, it gets located on
