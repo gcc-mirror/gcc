@@ -925,6 +925,57 @@ package body Sem_Ch13 is
    -----------------------------------
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
+      procedure Insert_Delayed_Pragma (Prag : Node_Id);
+      --  Insert a postcondition-like pragma into the tree depending on the
+      --  context. Prag one of the following: Pre, Post, Depends or Global.
+
+      ---------------------------
+      -- Insert_Delayed_Pragma --
+      ---------------------------
+
+      procedure Insert_Delayed_Pragma (Prag : Node_Id) is
+         Aux : Node_Id;
+
+      begin
+         --  When the context is a library unit, the pragma is added to the
+         --  Pragmas_After list.
+
+         if Nkind (Parent (N)) = N_Compilation_Unit then
+            Aux := Aux_Decls_Node (Parent (N));
+
+            if No (Pragmas_After (Aux)) then
+               Set_Pragmas_After (Aux, New_List);
+            end if;
+
+            Prepend (Prag, Pragmas_After (Aux));
+
+         --  Pragmas associated with subprogram bodies are inserted in the
+         --  declarative part.
+
+         elsif Nkind (N) = N_Subprogram_Body then
+            if No (Declarations (N)) then
+               Set_Declarations (N, New_List);
+            end if;
+
+            Append (Prag, Declarations (N));
+
+         --  Default
+
+         else
+            Insert_After (N, Prag);
+
+            --  Analyze the pragma before analyzing the proper body of a stub.
+            --  This ensures that the pragma will appear on the proper contract
+            --  list (see N_Contract).
+
+            if Nkind (N) = N_Subprogram_Body_Stub then
+               Analyze (Prag);
+            end if;
+         end if;
+      end Insert_Delayed_Pragma;
+
+      --  Local variables
+
       Aspect : Node_Id;
       Aitem  : Node_Id;
       Ent    : Node_Id;
@@ -1535,6 +1586,8 @@ package body Sem_Ch13 is
 
                --  Aspect Depends must be delayed because it mentions names
                --  of inputs and output that are classified by aspect Global.
+               --  The aspect and pragma are treated the same way as a post
+               --  condition.
 
                when Aspect_Depends =>
                   Make_Aitem_Pragma
@@ -1543,11 +1596,24 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Depends);
 
+                  --  Decorate the aspect and pragma
+
+                  Set_Aspect_Rep_Item           (Aspect, Aitem);
+                  Set_Corresponding_Aspect      (Aitem, Aspect);
+                  Set_From_Aspect_Specification (Aitem);
+                  Set_Is_Delayed_Aspect         (Aitem);
+                  Set_Is_Delayed_Aspect         (Aspect);
+                  Set_Parent                    (Aitem, Aspect);
+
+                  Insert_Delayed_Pragma (Aitem);
+                  goto Continue;
+
                --  Global
 
                --  Aspect Global must be delayed because it can mention names
                --  and benefit from the forward visibility rules applicable to
-               --  aspects of subprograms.
+               --  aspects of subprograms. The aspect and pragma are treated
+               --  the same way as a post condition.
 
                when Aspect_Global =>
                   Make_Aitem_Pragma
@@ -1555,6 +1621,18 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Global);
+
+                  --  Decorate the aspect and pragma
+
+                  Set_Aspect_Rep_Item           (Aspect, Aitem);
+                  Set_Corresponding_Aspect      (Aitem, Aspect);
+                  Set_From_Aspect_Specification (Aitem);
+                  Set_Is_Delayed_Aspect         (Aitem);
+                  Set_Is_Delayed_Aspect         (Aspect);
+                  Set_Parent                    (Aitem, Aspect);
+
+                  Insert_Delayed_Pragma (Aitem);
+                  goto Continue;
 
                --  Relative_Deadline
 
@@ -1727,46 +1805,7 @@ package body Sem_Ch13 is
                   --  about delay issues, since the pragmas themselves deal
                   --  with delay of visibility for the expression analysis.
 
-                  --  If the entity is a library-level subprogram, the pre/
-                  --  postconditions must be treated as late pragmas. Note
-                  --  that they must be prepended, not appended, to the list,
-                  --  so that split AND THEN sections are processed in the
-                  --  correct order.
-
-                  if Nkind (Parent (N)) = N_Compilation_Unit then
-                     declare
-                        Aux : constant Node_Id := Aux_Decls_Node (Parent (N));
-
-                     begin
-                        if No (Pragmas_After (Aux)) then
-                           Set_Pragmas_After (Aux, New_List);
-                        end if;
-
-                        Prepend (Aitem, Pragmas_After (Aux));
-                     end;
-
-                  --  If it is a subprogram body, add pragmas to list of
-                  --  declarations in body.
-
-                  elsif Nkind (N) = N_Subprogram_Body then
-                     if No (Declarations (N)) then
-                        Set_Declarations (N, New_List);
-                     end if;
-
-                     Append (Aitem, Declarations (N));
-
-                  else
-                     Insert_After (N, Aitem);
-
-                     --  Pre/Postconditions on stubs are analyzed at once,
-                     --  because the proper body is analyzed next, and the
-                     --  contract must be captured before the body.
-
-                     if Nkind (N) = N_Subprogram_Body_Stub then
-                        Analyze (Aitem);
-                     end if;
-                  end if;
-
+                  Insert_Delayed_Pragma (Aitem);
                   goto Continue;
                end;
 

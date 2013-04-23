@@ -3119,11 +3119,11 @@ package body Freeze is
                if Is_Subprogram (E)
                  and then Is_Imported (E)
                  and then Present (Contract (E))
-                 and then Present (Spec_PPC_List (Contract (E)))
+                 and then Present (Pre_Post_Conditions (Contract (E)))
                then
                   Error_Msg_NE
-                    ("pre/post conditions on imported subprogram "
-                     & "are not enforced??", E, Spec_PPC_List (Contract (E)));
+                    ("pre/post conditions on imported subprogram are not "
+                     & "enforced??", E, Pre_Post_Conditions (Contract (E)));
                end if;
 
             end if;
