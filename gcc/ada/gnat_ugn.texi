@@ -4529,7 +4529,7 @@ Additional details on incorrect parameters
 
 @item -gnatjnn
 @cindex @option{-gnatjnn} (@command{gcc})
-In normal operation mode (or if @option{-gnatj0} is used, then error messages
+In normal operation mode (or if @option{-gnatj0} is used), then error messages
 with continuation lines are treated as though the continuation lines were
 separate messages (and so a warning with two continuation lines counts as
 three warnings, and is listed as three separate messages).
@@ -9448,12 +9448,13 @@ object and ALI files in the directory where it found the dummy file.
 @item ^-j^/PROCESSES=^@var{n}
 @cindex @option{^-j^/PROCESSES^} (@command{gnatmake})
 @cindex Parallel make
-Use @var{n} processes to carry out the (re)compilations. On a
-multiprocessor machine compilations will occur in parallel. In the
-event of compilation errors, messages from various compilations might
-get interspersed (but @command{gnatmake} will give you the full ordered
-list of failing compiles at the end). If this is problematic, rerun
-the make process with n set to 1 to get a clean list of messages.
+Use @var{n} processes to carry out the (re)compilations. On a multiprocessor
+machine compilations will occur in parallel. If @var{n} is 0, then the
+maximum number of parallel compilations is the number of core processors
+on the platform. In the event of compilation errors, messages from various
+compilations might get interspersed (but @command{gnatmake} will give you the
+full ordered list of failing compiles at the end). If this is problematic,
+rerun the make process with n set to 1 to get a clean list of messages.
 
 @item ^-k^/CONTINUE_ON_ERROR^
 @cindex @option{^-k^/CONTINUE_ON_ERROR^} (@command{gnatmake})

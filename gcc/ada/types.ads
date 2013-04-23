@@ -577,7 +577,7 @@ package Types is
    --  the source file (we assume that the host system has the concept of a
    --  file time stamp which is modified when a file is modified). These
    --  time stamps are used to ensure consistency of the set of units that
-   --  constitutes a library. Time stamps are 12 character strings with
+   --  constitutes a library. Time stamps are 14-character strings with
    --  with the following format:
 
    --     YYYYMMDDHHMMSS
