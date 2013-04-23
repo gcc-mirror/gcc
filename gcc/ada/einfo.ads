@@ -2544,7 +2544,7 @@ package Einfo is
 --       entirely synthesized, by looking at the bounds, and the immediate
 --       subtype parent. However, this method does not work for some Itypes
 --       that have no parent set (and the only way to find the immediate
---       subtype parent is to go through the tree). For now, this flay is set
+--       subtype parent is to go through the tree). For now, this flag is set
 --       conservatively, i.e. if it is set then for sure the subtype is non-
 --       static, but if it is not set, then the type may or may not be static.
 --       Thus the test for a static subtype is that this flag is clear AND that

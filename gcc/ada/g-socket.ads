@@ -979,6 +979,17 @@ package GNAT.Sockets is
    --  socket. Count is set to the count of transmitted stream elements. Flags
    --  allow control over transmission.
 
+   procedure Set_Close_On_Exec
+     (Socket        : Socket_Type;
+      Close_On_Exec : Boolean;
+      Status        : out Boolean);
+   --  When Close_On_Exec is True, mark Socket to be closed automatically when
+   --  a new program is executed by the calling process (i.e. prevent Socket
+   --  from being inherited by child processes). When Close_On_Exec is False,
+   --  mark Socket to not be closed on exec (i.e. allow it to be inherited).
+   --  Status is False if the operation could not be performed, or is not
+   --  supported on the target platform.
+
    procedure Set_Socket_Option
      (Socket : Socket_Type;
       Level  : Level_Type := Socket_Level;

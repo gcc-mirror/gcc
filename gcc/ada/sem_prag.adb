@@ -8121,8 +8121,8 @@ package body Sem_Prag is
             --  Set Check_On to indicate check status
 
             --  If this comes from an aspect, we have already taken care of
-            --  the policy active when the aspect was analyzed, and Is_Ignore
-            --  is set appriately already.
+            --  the policy active when the aspect was analyzed, and Is_Ignored
+            --  is set appropriately already.
 
             if From_Aspect_Specification (N) then
                Check_On := not Is_Ignored (N);
