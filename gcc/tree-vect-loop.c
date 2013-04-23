@@ -879,7 +879,6 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_REDUCTION_CHAINS (res).create (10);
   LOOP_VINFO_SLP_INSTANCES (res).create (10);
   LOOP_VINFO_SLP_UNROLLING_FACTOR (res) = 1;
-  LOOP_VINFO_PEELING_HTAB (res) = NULL;
   LOOP_VINFO_TARGET_COST_DATA (res) = init_cost (loop);
   LOOP_VINFO_PEELING_FOR_GAPS (res) = false;
   LOOP_VINFO_OPERANDS_SWAPPED (res) = false;
@@ -960,8 +959,8 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   LOOP_VINFO_REDUCTIONS (loop_vinfo).release ();
   LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo).release ();
 
-  if (LOOP_VINFO_PEELING_HTAB (loop_vinfo))
-    htab_delete (LOOP_VINFO_PEELING_HTAB (loop_vinfo));
+  if (LOOP_VINFO_PEELING_HTAB (loop_vinfo).is_created ())
+    LOOP_VINFO_PEELING_HTAB (loop_vinfo).dispose ();
 
   destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
 

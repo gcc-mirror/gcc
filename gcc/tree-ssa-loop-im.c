@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-pass.h"
 #include "flags.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "tree-affine.h"
 #include "pointer-set.h"
 #include "tree-ssa-propagate.h"
@@ -133,6 +133,32 @@ typedef struct mem_ref
    and its subloops.  */
 #define LOOP_DEP_BIT(loopnum, storedp) (2 * (loopnum) + (storedp ? 1 : 0))
 
+/* Mem_ref hashtable helpers.  */
+
+struct mem_ref_hasher : typed_noop_remove <mem_ref>
+{
+  typedef mem_ref value_type;
+  typedef tree_node compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* A hash function for struct mem_ref object OBJ.  */
+
+inline hashval_t
+mem_ref_hasher::hash (const value_type *mem)
+{
+  return mem->hash;
+}
+
+/* An equality function for struct mem_ref object MEM1 with
+   memory reference OBJ2.  */
+
+inline bool
+mem_ref_hasher::equal (const value_type *mem1, const compare_type *obj2)
+{
+  return operand_equal_p (mem1->mem.ref, (const_tree) obj2, 0);
+}
 
 
 /* Description of memory accesses in loops.  */
@@ -140,7 +166,7 @@ typedef struct mem_ref
 static struct
 {
   /* The hash table of memory references accessed in loops.  */
-  htab_t refs;
+  hash_table <mem_ref_hasher> refs;
 
   /* The list of memory references.  */
   vec<mem_ref_p> refs_list;
@@ -646,7 +672,7 @@ mem_ref_in_stmt (gimple stmt)
   gcc_assert (!store);
 
   hash = iterative_hash_expr (*mem, 0);
-  ref = (mem_ref_p) htab_find_with_hash (memory_accesses.refs, *mem, hash);
+  ref = memory_accesses.refs.find_with_hash (*mem, hash);
 
   gcc_assert (ref != NULL);
   return ref;
@@ -1411,27 +1437,6 @@ force_move_till (tree ref, tree *index, void *data)
   return true;
 }
 
-/* A hash function for struct mem_ref object OBJ.  */
-
-static hashval_t
-memref_hash (const void *obj)
-{
-  const struct mem_ref *const mem = (const struct mem_ref *) obj;
-
-  return mem->hash;
-}
-
-/* An equality function for struct mem_ref object OBJ1 with
-   memory reference OBJ2.  */
-
-static int
-memref_eq (const void *obj1, const void *obj2)
-{
-  const struct mem_ref *const mem1 = (const struct mem_ref *) obj1;
-
-  return operand_equal_p (mem1->mem.ref, (const_tree) obj2, 0);
-}
-
 /* A function to free the mem_ref object OBJ.  */
 
 static void
@@ -1502,7 +1507,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
 {
   tree *mem = NULL;
   hashval_t hash;
-  PTR *slot;
+  mem_ref **slot;
   mem_ref_p ref;
   bool is_stored;
   unsigned id;
@@ -1526,8 +1531,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
   else
     {
       hash = iterative_hash_expr (*mem, 0);
-      slot = htab_find_slot_with_hash (memory_accesses.refs,
-				       *mem, hash, INSERT);
+      slot = memory_accesses.refs.find_slot_with_hash (*mem, hash, INSERT);
       if (*slot)
 	{
 	  ref = (mem_ref_p) *slot;
@@ -2553,7 +2557,7 @@ tree_ssa_lim_initialize (void)
 
   alloc_aux_for_edges (0);
 
-  memory_accesses.refs = htab_create (100, memref_hash, memref_eq, NULL);
+  memory_accesses.refs.create (100);
   memory_accesses.refs_list.create (100);
   /* Allocate a special, unanalyzable mem-ref with ID zero.  */
   memory_accesses.refs_list.quick_push
@@ -2596,7 +2600,7 @@ tree_ssa_lim_finalize (void)
   bitmap_obstack_release (&lim_bitmap_obstack);
   pointer_map_destroy (lim_aux_data_map);
 
-  htab_delete (memory_accesses.refs);
+  memory_accesses.refs.dispose ();
 
   FOR_EACH_VEC_ELT (memory_accesses.refs_list, i, ref)
     memref_free (ref);

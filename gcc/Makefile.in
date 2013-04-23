@@ -966,7 +966,8 @@ GIMPLE_STREAMER_H = gimple-streamer.h $(LTO_STREAMER_H) $(BASIC_BLOCK_H) \
 TREE_STREAMER_H = tree-streamer.h $(TREE_H) $(LTO_STREAMER_H) \
 		  $(STREAMER_HOOKS_H)
 STREAMER_HOOKS_H = streamer-hooks.h $(TREE_H)
-TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H) $(TARGET_H)
+TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H) $(TARGET_H) \
+	$(HASH_TABLE_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
 IPA_INLINE_H = ipa-inline.h $(IPA_PROP_H)
 GSTAB_H = gstab.h stab.def
@@ -2255,7 +2256,7 @@ tree-ssa-structalias.o: tree-ssa-structalias.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(GGC_H) $(OBSTACK_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) \
-   $(GIMPLE_H) $(HASHTAB_H) $(FUNCTION_H) $(CGRAPH_H) \
+   $(GIMPLE_H) $(HASH_TABLE_H) $(FUNCTION_H) $(CGRAPH_H) \
    $(TREE_PASS_H) alloc-pool.h $(SPLAY_TREE_H) $(PARAMS_H) \
    $(CGRAPH_H) $(ALIAS_H) pointer-set.h
 tree-ssa-uninit.o : tree-ssa-uninit.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
@@ -2275,7 +2276,7 @@ tree-into-ssa.o : tree-into-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(DIAGNOSTIC_CORE_H) \
    $(FUNCTION_H) $(TM_H) coretypes.h \
    langhooks.h domwalk.h $(TREE_PASS_H) $(PARAMS_H) $(BASIC_BLOCK_H) \
-   $(BITMAP_H) $(CFGLOOP_H) $(FLAGS_H) $(HASHTAB_H) \
+   $(BITMAP_H) $(CFGLOOP_H) $(FLAGS_H) $(HASH_TABLE_H) \
    $(GIMPLE_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-ter.o : tree-ssa-ter.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h $(DUMPFILE_H) \
@@ -2374,7 +2375,7 @@ tree-ssa-pre.o : tree-ssa-pre.c $(TREE_FLOW_H) $(CONFIG_H) \
 tree-ssa-sccvn.o : tree-ssa-sccvn.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) \
    $(TM_H) coretypes.h $(DUMPFILE_H) $(FLAGS_H) $(CFGLOOP_H) \
-   alloc-pool.h $(BASIC_BLOCK_H) $(BITMAP_H) $(HASHTAB_H) $(GIMPLE_H) \
+   alloc-pool.h $(BASIC_BLOCK_H) $(BITMAP_H) $(HASH_TABLE_H) $(GIMPLE_H) \
    $(TREE_INLINE_H) tree-ssa-propagate.h tree-ssa-sccvn.h \
    $(PARAMS_H) $(GIMPLE_PRETTY_PRINT_H) gimple-fold.h
 gimple-ssa-strength-reduction.o : gimple-ssa-strength-reduction.c $(CONFIG_H) \
@@ -2509,7 +2510,7 @@ tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    pointer-set.h alloc-pool.h \
    $(TREE_PRETTY_PRINT_H)
 tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
-   $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) \
+   $(SYSTEM_H) $(HASH_TABLE_H) $(TREE_H) $(DIAGNOSTIC_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(FLAGS_H) \
    tree-iterator.h $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_INLINE_H) \
    $(VEC_H) langhooks.h alloc-pool.h pointer-set.h $(CFGLOOP_H) \
@@ -2765,7 +2766,7 @@ function.o : function.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_
    $(TREE_PASS_H) $(DF_H) $(PARAMS_H) bb-reorder.h \
    $(COMMON_TARGET_H)
 statistics.o : statistics.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_PASS_H) $(TREE_DUMP_H) $(HASHTAB_H) statistics.h $(FUNCTION_H)
+   $(TREE_PASS_H) $(TREE_DUMP_H) $(HASH_TABLE_H) statistics.h $(FUNCTION_H)
 stmt.o : stmt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DUMPFILE_H) $(TM_H) \
    $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(FUNCTION_H) insn-config.h hard-reg-set.h $(EXPR_H) \
