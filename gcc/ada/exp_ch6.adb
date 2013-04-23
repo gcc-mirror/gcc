@@ -1740,14 +1740,14 @@ package body Exp_Ch6 is
                     and then Is_Inherited_Operation_For_Type (Subp, E_Actual))
                  or else Is_Entity_Name (Actual)
                then
-                  Append_To
-                    (Post_Call, Make_Predicate_Check (E_Actual, Actual));
+                  Append_To (Post_Call,
+                    Make_Predicate_Check (E_Actual, Actual));
 
                elsif Is_Class_Wide_Type (E_Formal)
                  and then not Is_Class_Wide_Type (E_Actual)
                then
-                  Append_To
-                    (Post_Call, Make_Predicate_Check (E_Actual, Actual));
+                  Append_To (Post_Call,
+                    Make_Predicate_Check (E_Actual, Actual));
                end if;
             end if;
 

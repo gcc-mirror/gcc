@@ -1,3 +1,8 @@
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, einfo.adb, sem_res.adb, exp_ch6.adb, aspects.adb: Minor
+	reformatting and code clean up.
+
 2013-04-23  Vincent Celier  <celier@adacore.com>
 
 	* prj-part.ads, prj-conf.ads: Minor comment updates.

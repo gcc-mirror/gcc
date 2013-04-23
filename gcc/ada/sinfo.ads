@@ -6772,6 +6772,9 @@ package Sinfo is
       --  a copy of the expression for visibility analysis, see spec of
       --  Sem_Ch13 for full details of this usage.
 
+      --  In the case of aspects of the form xxx'Class, the aspect identifier
+      --  is for xxx, and Class_Present is set to True.
+
       --  Note: When a Pre or Post aspect specification is processed, it is
       --  broken into AND THEN sections. The left most section has Split_PPC
       --  set to False, indicating that it is the original specification (e.g.
