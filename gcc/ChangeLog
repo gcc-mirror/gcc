@@ -1,3 +1,10 @@
+2013-04-22  Andi Kleen  <ak@linux.intel.com>
+
+	* common.opt (-flto-report-wpa): Add.
+	* doc/invoke.texi (-flto-report-wpa): Add.
+	* lto/lto.c (do_whole_program_analysis): Check for lto-report-wpa.
+	(lto_main): dito.
+
 2013-04-22  Xinliang David Li  <davidxl@google.com>
 
 	* graph.c (draw_cfg_node_succ_edges): Add branch probility as label.

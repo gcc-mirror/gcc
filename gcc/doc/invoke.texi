@@ -379,7 +379,7 @@ Objective-C and Objective-C++ Dialects}.
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
--flto-partition=@var{alg} -flto-report -fmerge-all-constants @gol
+-flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
 -fno-default-inline @gol
@@ -8454,6 +8454,10 @@ It is meant to be useful to GCC developers when processing object
 files in LTO mode (via @option{-flto}).
 
 Disabled by default.
+
+@item -flto-report-wpa
+Like @option{-flto-report}, but only print for the WPA phase of Link
+Time Optimization.
 
 @item -fuse-linker-plugin
 Enables the use of a linker plugin during link-time optimization.  This
