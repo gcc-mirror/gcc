@@ -1,3 +1,8 @@
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
+	* a-envvar.adb, a-envvar.ads, exp_util.adb, sem_ch12.adb: Minor
+	reformatting.
+
 2013-04-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declarations): Undo previous patch.

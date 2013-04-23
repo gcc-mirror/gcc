@@ -3247,6 +3247,7 @@ package body Sem_Ch12 is
                if Get_Aspect_Id (Aspect) /= Aspect_Warnings then
                   Analyze (Expression (Aspect));
                end if;
+
                Next (Aspect);
             end loop;
 
