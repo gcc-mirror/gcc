@@ -1,3 +1,9 @@
+2013-04-23  Bill Schmidt  wschmidt@linux.vnet.ibm.com>
+
+	Backported from mainline.
+	PR rtl-optimization/56605
+	* gcc.target/powerpc/pr56605.c: New.
+
 2013-04-22  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

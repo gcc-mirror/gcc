@@ -1496,19 +1496,26 @@ implies_p (rtx a, rtx b)
   rtx op0, op1, opb0, opb1, r;
   enum machine_mode mode;
 
+  if (rtx_equal_p (a, b))
+    return true;
+
   if (GET_CODE (a) == EQ)
     {
       op0 = XEXP (a, 0);
       op1 = XEXP (a, 1);
 
-      if (REG_P (op0))
+      if (REG_P (op0)
+          || (GET_CODE (op0) == SUBREG
+              && REG_P (SUBREG_REG (op0))))
 	{
 	  r = simplify_replace_rtx (b, op0, op1);
 	  if (r == const_true_rtx)
 	    return true;
 	}
 
-      if (REG_P (op1))
+      if (REG_P (op1)
+          || (GET_CODE (op1) == SUBREG
+              && REG_P (SUBREG_REG (op1))))
 	{
 	  r = simplify_replace_rtx (b, op1, op0);
 	  if (r == const_true_rtx)
