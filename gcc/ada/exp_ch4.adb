@@ -4673,9 +4673,8 @@ package body Exp_Ch4 is
                                           (First_Discriminant (Typ)))
                        and then (Ada_Version < Ada_2005
                                   or else not
-                                    Effectively_Has_Constrained_Partial_View
-                                      (Typ  => Typ,
-                                       Scop => Current_Scope))
+                                    Object_Type_Has_Constrained_Partial_View
+                                      (Typ, Current_Scope))
                      then
                         Typ := Build_Default_Subtype (Typ, N);
                         Set_Expression (N, New_Reference_To (Typ, Loc));
