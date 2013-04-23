@@ -8752,7 +8752,8 @@ simplify_conversion_using_ranges (gimple stmt)
       || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
     return false;
   innerop = gimple_assign_rhs1 (def_stmt);
-  if (TREE_CODE (innerop) != SSA_NAME)
+  if (TREE_CODE (innerop) != SSA_NAME
+      || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop))
     return false;
 
   /* Get the value-range of the inner operand.  */
