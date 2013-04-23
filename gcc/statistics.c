@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-dump.h"
 #include "statistics.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "function.h"
 
 static int statistics_dump_nr;
@@ -42,42 +42,52 @@ typedef struct statistics_counter_s {
   unsigned HOST_WIDE_INT prev_dumped_count;
 } statistics_counter_t;
 
-/* Array of statistic hashes, indexed by pass id.  */
-static htab_t *statistics_hashes;
-static unsigned nr_statistics_hashes;
+/* Hashtable helpers.  */
+
+struct stats_counter_hasher
+{
+  typedef statistics_counter_t value_type;
+  typedef statistics_counter_t compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
 
 /* Hash a statistic counter by its string ID.  */
 
-static hashval_t
-hash_statistics_hash (const void *p)
+inline hashval_t
+stats_counter_hasher::hash (const value_type *c)
 {
-  const statistics_counter_t *const c = (const statistics_counter_t *)p;
   return htab_hash_string (c->id) + c->val;
 }
 
 /* Compare two statistic counters by their string IDs.  */
 
-static int
-hash_statistics_eq (const void *p, const void *q)
+inline bool
+stats_counter_hasher::equal (const value_type *c1, const compare_type *c2)
 {
-  const statistics_counter_t *const c1 = (const statistics_counter_t *)p;
-  const statistics_counter_t *const c2 = (const statistics_counter_t *)q;
   return c1->val == c2->val && strcmp (c1->id, c2->id) == 0;
 }
 
 /* Free a statistics entry.  */
 
-static void
-hash_statistics_free (void *p)
+inline void
+stats_counter_hasher::remove (value_type *v)
 {
-  free (CONST_CAST(char *, ((statistics_counter_t *)p)->id));
-  free (p);
+  free (CONST_CAST(char *, v->id));
+  free (v);
 }
+
+typedef hash_table <stats_counter_hasher> stats_counter_table_type;
+
+/* Array of statistic hashes, indexed by pass id.  */
+static stats_counter_table_type *statistics_hashes;
+static unsigned nr_statistics_hashes;
 
 /* Return the current hashtable to be used for recording or printing
    statistics.  */
 
-static htab_t
+static stats_counter_table_type
 curr_statistics_hash (void)
 {
   unsigned idx;
@@ -86,20 +96,20 @@ curr_statistics_hash (void)
   idx = current_pass->static_pass_number;
 
   if (idx < nr_statistics_hashes
-      && statistics_hashes[idx] != NULL)
+      && statistics_hashes[idx].is_created ())
     return statistics_hashes[idx];
 
   if (idx >= nr_statistics_hashes)
     {
-      statistics_hashes = XRESIZEVEC (struct htab *, statistics_hashes, idx+1);
+      statistics_hashes = XRESIZEVEC (stats_counter_table_type,
+				      statistics_hashes, idx+1);
       memset (statistics_hashes + nr_statistics_hashes, 0,
-	      (idx + 1 - nr_statistics_hashes) * sizeof (htab_t));
+	      (idx + 1 - nr_statistics_hashes)
+	      * sizeof (stats_counter_table_type));
       nr_statistics_hashes = idx + 1;
     }
 
-  statistics_hashes[idx] = htab_create (15, hash_statistics_hash,
-					hash_statistics_eq,
-					hash_statistics_free);
+  statistics_hashes[idx].create (15);
 
   return statistics_hashes[idx];
 }
@@ -107,10 +117,11 @@ curr_statistics_hash (void)
 /* Helper for statistics_fini_pass.  Print the counter difference
    since the last dump for the pass dump files.  */
 
-static int
-statistics_fini_pass_1 (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+statistics_fini_pass_1 (statistics_counter_t **slot,
+			void *data ATTRIBUTE_UNUSED)
 {
-  statistics_counter_t *counter = (statistics_counter_t *)*slot;
+  statistics_counter_t *counter = *slot;
   unsigned HOST_WIDE_INT count = counter->count - counter->prev_dumped_count;
   if (count == 0)
     return 1;
@@ -127,10 +138,11 @@ statistics_fini_pass_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 /* Helper for statistics_fini_pass.  Print the counter difference
    since the last dump for the statistics dump.  */
 
-static int
-statistics_fini_pass_2 (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+statistics_fini_pass_2 (statistics_counter_t **slot,
+			void *data ATTRIBUTE_UNUSED)
 {
-  statistics_counter_t *counter = (statistics_counter_t *)*slot;
+  statistics_counter_t *counter = *slot;
   unsigned HOST_WIDE_INT count = counter->count - counter->prev_dumped_count;
   if (count == 0)
     return 1;
@@ -157,10 +169,11 @@ statistics_fini_pass_2 (void **slot, void *data ATTRIBUTE_UNUSED)
 
 /* Helper for statistics_fini_pass, reset the counters.  */
 
-static int
-statistics_fini_pass_3 (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+statistics_fini_pass_3 (statistics_counter_t **slot,
+			void *data ATTRIBUTE_UNUSED)
 {
-  statistics_counter_t *counter = (statistics_counter_t *)*slot;
+  statistics_counter_t *counter = *slot;
   counter->prev_dumped_count = counter->count;
   return 1;
 }
@@ -179,26 +192,25 @@ statistics_fini_pass (void)
       fprintf (dump_file, "\n");
       fprintf (dump_file, "Pass statistics:\n");
       fprintf (dump_file, "----------------\n");
-      htab_traverse_noresize (curr_statistics_hash (),
-			      statistics_fini_pass_1, NULL);
+      curr_statistics_hash ()
+	.traverse_noresize <void *, statistics_fini_pass_1> (NULL);
       fprintf (dump_file, "\n");
     }
   if (statistics_dump_file
       && !(statistics_dump_flags & TDF_STATS
 	   || statistics_dump_flags & TDF_DETAILS))
-    htab_traverse_noresize (curr_statistics_hash (),
-			    statistics_fini_pass_2, NULL);
-  htab_traverse_noresize (curr_statistics_hash (),
-			  statistics_fini_pass_3, NULL);
+    curr_statistics_hash ()
+      .traverse_noresize <void *, statistics_fini_pass_2> (NULL);
+  curr_statistics_hash ()
+    .traverse_noresize <void *, statistics_fini_pass_3> (NULL);
 }
 
 /* Helper for printing summary information.  */
 
-static int
-statistics_fini_1 (void **slot, void *data)
+int
+statistics_fini_1 (statistics_counter_t **slot, opt_pass *pass)
 {
-  struct opt_pass *pass = (struct opt_pass *)data;
-  statistics_counter_t *counter = (statistics_counter_t *)*slot;
+  statistics_counter_t *counter = *slot;
   if (counter->count == 0)
     return 1;
   if (counter->histogram_p)
@@ -230,10 +242,11 @@ statistics_fini (void)
     {
       unsigned i;
       for (i = 0; i < nr_statistics_hashes; ++i)
-	if (statistics_hashes[i] != NULL
+	if (statistics_hashes[i].is_created ()
 	    && get_pass_for_id (i) != NULL)
-	  htab_traverse_noresize (statistics_hashes[i],
-				  statistics_fini_1, get_pass_for_id (i));
+	  statistics_hashes[i]
+	    .traverse_noresize <opt_pass *, statistics_fini_1>
+	    (get_pass_for_id (i));
     }
 
   dump_end (statistics_dump_nr, statistics_dump_file);
@@ -261,14 +274,14 @@ statistics_init (void)
    and HISTOGRAM_P.  */
 
 static statistics_counter_t *
-lookup_or_add_counter (htab_t hash, const char *id, int val,
+lookup_or_add_counter (stats_counter_table_type hash, const char *id, int val,
 		       bool histogram_p)
 {
   statistics_counter_t **counter;
   statistics_counter_t c;
   c.id = id;
   c.val = val;
-  counter = (statistics_counter_t **) htab_find_slot (hash, &c, INSERT);
+  counter = hash.find_slot (&c, INSERT);
   if (!*counter)
     {
       *counter = XNEW (struct statistics_counter_s);

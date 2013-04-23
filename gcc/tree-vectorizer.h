@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-data-ref.h"
 #include "target.h"
+#include "hash-table.h"
 
 typedef source_location LOC;
 #define UNKNOWN_LOC UNKNOWN_LOCATION
@@ -189,6 +190,30 @@ typedef struct _vect_peel_extended_info
   stmt_vector_for_cost body_cost_vec;
 } *vect_peel_extended_info;
 
+
+/* Peeling hashtable helpers.  */
+
+struct peel_info_hasher : typed_free_remove <_vect_peel_info>
+{
+  typedef _vect_peel_info value_type;
+  typedef _vect_peel_info compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+peel_info_hasher::hash (const value_type *peel_info)
+{
+  return (hashval_t) peel_info->npeel;
+}
+
+inline bool
+peel_info_hasher::equal (const value_type *a, const compare_type *b)
+{
+  return (a->npeel == b->npeel);
+}
+
+
 /*-----------------------------------------------------------------*/
 /* Info on vectorized loops.                                       */
 /*-----------------------------------------------------------------*/
@@ -273,7 +298,7 @@ typedef struct _loop_vec_info {
   vec<gimple> reduction_chains;
 
   /* Hash table used to choose the best peeling option.  */
-  htab_t peeling_htab;
+  hash_table <peel_info_hasher> peeling_htab;
 
   /* Cost data used by the target cost model.  */
   void *target_cost_data;

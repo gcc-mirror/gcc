@@ -216,10 +216,11 @@ vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 					   tree, unsigned int);
 
 hashval_t vn_nary_op_compute_hash (const vn_nary_op_t);
-int vn_nary_op_eq (const void *, const void *);
+bool vn_nary_op_eq (const_vn_nary_op_t const vno1,
+		    const_vn_nary_op_t const vno2);
 bool vn_nary_may_trap (vn_nary_op_t);
 hashval_t vn_reference_compute_hash (const vn_reference_t);
-int vn_reference_eq (const void *, const void *);
+bool vn_reference_eq (const_vn_reference_t const, const_vn_reference_t const);
 unsigned int get_max_value_id (void);
 unsigned int get_next_value_id (void);
 unsigned int get_constant_value_id (tree);

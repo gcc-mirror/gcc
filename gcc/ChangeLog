@@ -1,3 +1,52 @@
+2013-04-23  Lawrence Crowl  <crowl@google.com>
+
+	* Makefile.in: Update as needed below.
+
+	* hash-table.h (class hash_table):
+	Correct many methods with parameter types compare_type to the correct
+	value_type.  (Correct code was unlikely to notice the change.)
+	(hash_table::elements_with_deleted) New.
+	(class hashtable::iterator): New.
+	(hashtable::begin()): New.
+	(hashtable::end()): New.
+	(FOR_EACH_HASH_TABLE_ELEMENT): New.
+
+	* statistics.c (statistics_hashes):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-into-ssa.c (var_infos):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-coalesce.c (struct coalesce_list_d.list):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-loop-im.c (struct mem_ref.refs):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-reassoc.c (undistribute_ops_list::ctable):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-sccvn.c (vn_tables_s::nary):
+	Change type to hash_table.  Update dependent calls and types.
+	(vn_tables_s::phis): Likewise.
+	(vn_tables_s::references): Likewise.
+
+	* tree-ssa-sccvn.h (vn_nary_op_eq): Update parameter and return types.
+	(vn_reference_eq): Update parameter and return types.
+
+	* tree-ssa-structalias.c (pointer_equiv_class_table):
+	Change type to hash_table.  Update dependent calls and types.
+	(location_equiv_class_table): Likewise.
+
+	* tree-vect-data-refs.c: Consequential changes for making
+	peeling a hash_table.
+
+	* tree-vect-loop.c (new_loop_vec_info): Dependent hash_table update.
+	(destroy_loop_vec_info): Dependent hash_table update.
+
+	* tree-vectorizer.h (peeling_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
 2013-04-23  Shiva Chen  <shiva0217@gmail.com>
 
         * lra-assigns.c (find_hard_regno_for): Use lra_reg_val_equal_p
