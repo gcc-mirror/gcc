@@ -1,5 +1,9 @@
 2013-04-22  Andi Kleen  <ak@linux.intel.com>
 
+	* lto/lto.c (print_lto_report_1): Fix LTO report names.
+
+2013-04-22  Andi Kleen  <ak@linux.intel.com>
+
 	* lto/lto.c (print_lto_report_1): Declare early.
 	(read_cgraph_and_symbols): Call print_lto_report_1 early.
 

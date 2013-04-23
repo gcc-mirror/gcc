@@ -3177,7 +3177,7 @@ print_lto_report_1 (void)
   else
     fprintf (stderr, "[%s] GIMPLE type table is empty\n", pfx);
   if (type_hash_cache)
-    fprintf (stderr, "[%s] GIMPLE type hash table: size %ld, %ld elements, "
+    fprintf (stderr, "[%s] GIMPLE type hash cache table: size %ld, %ld elements, "
 	     "%ld searches, %ld collisions (ratio: %f)\n", pfx,
 	     (long) htab_size (type_hash_cache),
 	     (long) htab_elements (type_hash_cache),
@@ -3185,7 +3185,7 @@ print_lto_report_1 (void)
 	     (long) type_hash_cache->collisions,
 	     htab_collisions (type_hash_cache));
   else
-    fprintf (stderr, "[%s] GIMPLE type hash table is empty\n", pfx);
+    fprintf (stderr, "[%s] GIMPLE type hash cache table is empty\n", pfx);
 
   print_gimple_types_stats (pfx);
   print_lto_report (pfx);
