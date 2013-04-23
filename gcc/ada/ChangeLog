@@ -1,3 +1,12 @@
+2013-04-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, sem_res.adb, prj-tree.adb, prj-tree.ads: Minor
+	reformatting.
+
+2013-04-23  Pascal Obry  <obry@adacore.com>
+
+	* xoscons.adb: Remove unused use clause, minor code clean-up.
+
 2013-04-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb: Code cleanup for Is_Expression_Function

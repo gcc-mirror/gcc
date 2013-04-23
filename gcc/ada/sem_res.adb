@@ -5376,19 +5376,19 @@ package body Sem_Res is
 
       Check_Internal_Protected_Use (N, Nam);
 
-      --  Freeze the subprogram name if not in a spec-expression. Note that we
-      --  freeze procedure calls as well as function calls. Procedure calls are
-      --  not frozen according to the rules (RM 13.14(14)) because it is
-      --  impossible to have a procedure call to a non-frozen procedure in pure
-      --  Ada, but in the code that we generate in the expander, this rule
-      --  needs extending because we can generate procedure calls that need
-      --  freezing.
+      --  Freeze the subprogram name if not in a spec-expression. Note that
+      --  we freeze procedure calls as well as function calls. Procedure calls
+      --  are not frozen according to the rules (RM 13.14(14)) because it is
+      --  impossible to have a procedure call to a non-frozen procedure in
+      --  pure Ada, but in the code that we generate in the expander, this
+      --  rule needs extending because we can generate procedure calls that
+      --  need freezing.
 
       --  In Ada 2012, expression functions may be called within pre/post
       --  conditions of subsequent functions or expression functions. Such
       --  calls do not freeze when they appear within generated bodies,
       --  (including the body of another expression function) which would
-      --  place the freeze node in the wrong scope.  An expression function
+      --  place the freeze node in the wrong scope. An expression function
       --  is frozen in the usual fashion, by the appearance of a real body,
       --  or at the end of a declarative part.
 
