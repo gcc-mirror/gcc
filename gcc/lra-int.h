@@ -118,6 +118,8 @@ struct lra_reg
   /* Value holding by register.	 If the pseudos have the same value
      they do not conflict.  */
   int val;
+  /* Offset from relative eliminate register to pesudo reg.  */
+  int offset;
   /* These members are set up in lra-lives.c and updated in
      lra-coalesce.c.  */
   /* The biggest size mode in which each pseudo reg is referred in
@@ -443,6 +445,37 @@ lra_get_insn_recog_data (rtx insn)
   return lra_set_insn_recog_data (insn);
 }
 
+/* Update offset from pseudos with VAL by INCR.  */
+static inline void
+lra_update_reg_val_offset (int val, int incr)
+{
+  int i;
+
+  for (i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
+    {
+      if (lra_reg_info[i].val == val)
+        lra_reg_info[i].offset += incr;
+    }
+}
+
+/* Return true if register content is equal to VAL with OFFSET.  */
+static inline bool
+lra_reg_val_equal_p (int regno, int val, int offset)
+{
+  if (lra_reg_info[regno].val == val
+      && lra_reg_info[regno].offset == offset)
+    return true;
+
+  return false;
+}
+
+/* Assign value of register FROM to TO.  */
+static inline void
+lra_assign_reg_val (int from, int to)
+{
+  lra_reg_info[to].val = lra_reg_info[from].val;
+  lra_reg_info[to].offset = lra_reg_info[from].offset;
+}
 
 
 struct target_lra_int
