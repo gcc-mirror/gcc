@@ -225,11 +225,7 @@ package body Ada.Environment_Variables is
 
    function Value (Name : String; Default : String) return String is
    begin
-      if Exists (Name) then
-         return Value (Name);
-
-      else
-         return Default;
-      end if;
+      return (if Exists (Name) then Value (Name) else Default);
    end Value;
+
 end Ada.Environment_Variables;

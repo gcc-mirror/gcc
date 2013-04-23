@@ -13,6 +13,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  The implementation of this package is as defined in the Ada 2012 RM, but
+--  it is available in Ada 95 and Ada 2005 modes as well.
+
 package Ada.Environment_Variables is
    pragma Preelaborate (Environment_Variables);
 
@@ -38,9 +41,11 @@ package Ada.Environment_Variables is
    --  then Set first clears any existing environment variable with the given
    --  name, and then defines a single new environment variable with the given
    --  name and value. Otherwise Program_Error is propagated.
+   --
    --  If implementation-defined circumstances prohibit the definition of an
-   --  environment variable with the given name and value, then
+   --  environment variable with the given name and value, then exception
    --  Constraint_Error is propagated.
+   --
    --  It is implementation defined whether there exist values for which the
    --  call Set (Name, Value) has the same effect as Clear (Name).
 
