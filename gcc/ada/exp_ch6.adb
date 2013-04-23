@@ -1720,19 +1720,16 @@ package body Exp_Ch6 is
             --  this is harder to verify, and there may be a redundant check.
 
             if (Present (Find_Aspect (E_Actual, Aspect_Predicate))
-              or else Present
-                (Find_Aspect (E_Actual, Aspect_Dynamic_Predicate))
-              or else Present
-                (Find_Aspect (E_Actual, Aspect_Static_Predicate)))
+                  or else
+                Present (Find_Aspect (E_Actual, Aspect_Dynamic_Predicate))
+                  or else
+                Present (Find_Aspect (E_Actual, Aspect_Static_Predicate)))
               and then not Is_Init_Proc (Subp)
             then
-               if Is_Derived_Type (E_Actual)
-                 and then Is_Inherited_Operation_For_Type (Subp, E_Actual)
+               if (Is_Derived_Type (E_Actual)
+                    and then Is_Inherited_Operation_For_Type (Subp, E_Actual))
+                 or else Is_Entity_Name (Actual)
                then
-                  Append_To
-                    (Post_Call, Make_Predicate_Check (E_Actual, Actual));
-
-               elsif Is_Entity_Name (Actual) then
                   Append_To
                     (Post_Call, Make_Predicate_Check (E_Actual, Actual));
                end if;

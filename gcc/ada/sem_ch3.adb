@@ -3410,7 +3410,7 @@ package body Sem_Ch3 is
 
             if Aliased_Present (N)
               and then (not Is_Entity_Name (E)
-                 or else not Comes_From_Source (E))
+                         or else not Comes_From_Source (E))
             then
                Set_Is_Constr_Subt_For_UN_Aliased (Act_T);
             end if;
