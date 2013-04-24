@@ -1471,7 +1471,7 @@ set_std_cxx11 (int iso)
 static void
 set_std_cxx1y (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX11: CLK_GNUCXX11);
+  cpp_set_lang (parse_in, iso ? CLK_CXX1Y: CLK_GNUCXX1Y);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
