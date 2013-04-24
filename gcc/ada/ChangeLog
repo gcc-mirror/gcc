@@ -1,3 +1,22 @@
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Subprogram_Renaming_Declaration): If this
+	is a renaming of predefined equality for an untagged record,
+	add generated body to the freeze actions for the subprogram, to
+	prevent freezing issues when the record has incomplete components.
+	* exp_ch4.adb (Expand_Composite_Equality): If the type is a type
+	without completion, return a predefined comparison instead of
+	just False.  This may happen when building the expression for
+	record equality, when some component has a type whose completion
+	has not been seen yet. The operation will be analyzed an expanded
+	after the type has been frozen, at which point all component
+	types will have been completed, or an error reported.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Do not delay
+	analysis of a Convention aspect.
+
 2013-04-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Machine_Overflows_On_Target): New macro and declaration.
