@@ -934,7 +934,7 @@ dump_simple_decl (tree t, tree type, int flags)
     pp_string (cxx_pp, "...");
   if (DECL_NAME (t))
     {
-      if (DECL_CLASS_SCOPE_P (t) && LAMBDA_TYPE_P (DECL_CONTEXT (t)))
+      if (TREE_CODE (t) == FIELD_DECL && DECL_NORMAL_CAPTURE_P (t))
 	{
 	  pp_character (cxx_pp, '<');
 	  pp_string (cxx_pp, IDENTIFIER_POINTER (DECL_NAME (t)) + 2);

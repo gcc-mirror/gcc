@@ -1,5 +1,10 @@
 2013-04-24  Jason Merrill  <jason@redhat.com>
 
+	N3648: init-captures are named.
+	* semantics.c (add_capture): Don't prepend "__" to init-captures.
+	(build_capture_proxy): Adjust.
+	* error.c (dump_simple_decl): Check DECL_NORMAL_CAPTURE_P.
+
 	N3648: Allow braced and parenthesized initializers.
 	* parser.c (cp_parser_lambda_introducer): Use cp_parser_initializer.
 	* pt.c (tsubst) [DECLTYPE_TYPE]: Handle DECLTYPE_FOR_INIT_CAPTURE.
