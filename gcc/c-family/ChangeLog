@@ -1,4 +1,9 @@
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Do not define
+	__GXX_EXPERIMENTAL_CXX1Y__.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
             Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c.opt ([Wpointer-arith]): Enabled by -Wpedantic, as documented.

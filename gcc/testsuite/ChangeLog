@@ -1,5 +1,9 @@
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.dg/cpp1y/cxx1y_macro.C: Remove.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* c-c++-common/Wpointer-arith-1.c: New.
 
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
