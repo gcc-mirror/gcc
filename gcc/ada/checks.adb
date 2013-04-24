@@ -7750,6 +7750,19 @@ package body Checks is
       end if;
    end Overflow_Checks_Suppressed;
 
+   ---------------------------------
+   -- Predicate_Checks_Suppressed --
+   ---------------------------------
+
+   function Predicate_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Predicate_Check);
+      else
+         return Scope_Suppress.Suppress (Predicate_Check);
+      end if;
+   end Predicate_Checks_Suppressed;
+
    -----------------------------
    -- Range_Checks_Suppressed --
    -----------------------------

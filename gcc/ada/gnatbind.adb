@@ -494,13 +494,14 @@ procedure Gnatbind is
 
    procedure Generic_Scan_Bind_Args is
       Next_Arg : Positive := 1;
+
    begin
-      --  Use low level argument routines to avoid dragging in the secondary
-      --  stack
+      --  Use low level argument routines to avoid dragging in secondary stack
 
       while Next_Arg < Arg_Count loop
          declare
             Next_Argv : String (1 .. Len_Arg (Next_Arg));
+
          begin
             Fill_Arg (Next_Argv'Address, Next_Arg);
 
@@ -531,6 +532,10 @@ procedure Gnatbind is
       end loop;
    end Generic_Scan_Bind_Args;
 
+   ---------------
+   -- Write_Arg --
+   ---------------
+
    procedure Write_Arg (S : String) is
    begin
       Write_Str (" " & S);
@@ -545,7 +550,6 @@ procedure Gnatbind is
 --  Start of processing for Gnatbind
 
 begin
-
    --  Set default for Shared_Libgnat option
 
    declare

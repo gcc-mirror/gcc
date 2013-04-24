@@ -1082,6 +1082,7 @@ package Snames is
    Name_Index_Check                    : constant Name_Id := N + $;
    Name_Length_Check                   : constant Name_Id := N + $;
    Name_Overflow_Check                 : constant Name_Id := N + $;
+   Name_Predicate_Check                : constant Name_Id := N + $; -- GNAT
    Name_Range_Check                    : constant Name_Id := N + $;
    Name_Storage_Check                  : constant Name_Id := N + $;
    Name_Tag_Check                      : constant Name_Id := N + $;

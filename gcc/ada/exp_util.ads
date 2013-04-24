@@ -665,8 +665,9 @@ package Exp_Util is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id;
    --  Typ is a type with Predicate_Function set. This routine builds a Check
-   --  pragma whose first argument is Predicate, and the second argument is a
-   --  call to the this predicate function with Expr as the argument.
+   --  pragma whose first argument is Predicate, and the second argument is
+   --  a call to the predicate function of Typ with Expr as the argument. If
+   --  Predicate_Check is suppressed then a null statement is returned instead.
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;

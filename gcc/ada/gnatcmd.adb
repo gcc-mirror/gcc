@@ -1395,9 +1395,6 @@ begin
    Snames.Initialize;
 
    Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
-   Prj.Env.Initialize_Default_Project_Path
-     (Root_Environment.Project_Path,
-      Target_Name => Sdefault.Target_Name.all);
 
    Project_Node_Tree := new Project_Node_Tree_Data;
    Prj.Tree.Initialize (Project_Node_Tree);
@@ -1910,6 +1907,13 @@ begin
             end loop;
          end Inspect_Switches;
       end if;
+
+      --  Add the default project search directories now, after the directories
+      --  that have been specified by switches -aP<dir>.
+
+      Prj.Env.Initialize_Default_Project_Path
+        (Root_Environment.Project_Path,
+         Target_Name => Sdefault.Target_Name.all);
 
       --  If there is a project file specified, parse it, get the switches
       --  for the tool and setup PATH environment variables.

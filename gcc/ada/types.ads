@@ -666,15 +666,16 @@ package Types is
    Index_Check            : constant :=  8;
    Length_Check           : constant :=  9;
    Overflow_Check         : constant := 10;
-   Range_Check            : constant := 11;
-   Storage_Check          : constant := 12;
-   Tag_Check              : constant := 13;
-   Validity_Check         : constant := 14;
+   Predicate_Check        : constant := 11;
+   Range_Check            : constant := 12;
+   Storage_Check          : constant := 13;
+   Tag_Check              : constant := 14;
+   Validity_Check         : constant := 15;
    --  Values used to represent individual predefined checks (including the
    --  setting of Atomic_Synchronization, which is implemented internally using
-   --  a "check" whose name is Atomic_Synchronization.
+   --  a "check" whose name is Atomic_Synchronization).
 
-   All_Checks : constant := 15;
+   All_Checks : constant := 16;
    --  Value used to represent All_Checks value
 
    subtype Predefined_Check_Id is Check_Id range 1 .. All_Checks;

@@ -5628,12 +5628,38 @@ pragma Suppress (Identifier [, [On =>] Name]);
 
 @noindent
 This is a standard pragma, and supports all the check names required in
-the RM. It is included here because GNAT recognizes one additional check
-name: @code{Alignment_Check} which can be used to suppress alignment checks
+the RM. It is included here because GNAT recognizes some additional check
+names that are implementation defined (as permitted by the RM):
+
+@itemize @bullet
+
+@item
+@code{Alignment_Check} can be used to suppress alignment checks
 on addresses used in address clauses. Such checks can also be suppressed
 by suppressing range checks, but the specific use of @code{Alignment_Check}
 allows suppression of alignment checks without suppressing other range checks.
 
+@item
+@code{Predicate_Check} can be used to control whether predicate checks are
+active. It is applicable only to predicates for which the policy is
+@code{Check}. Unlike @code{Assertion_Policy}, which determines if a given
+predicate is ignored or checked for the whole program, the use of
+@code{Suppress} and @code{Unsuppress} with this check name allows a given
+predicate to be turned on and off at specific points in the program.
+
+@item
+@code{Validity_Check} can be used specifically to control validity checks.
+If @code{Suppress} is used to suppress validity checks, then no validity
+checks are performed, including those specified by the appropriate compiler
+switch or the @code{Validity_Checks} pragma.
+
+@item
+Additional check names previously introduced by use of the @code{Check_Name}
+pragma are also allowed.
+
+@end itemize
+
+@noindent
 Note that pragma Suppress gives the compiler permission to omit
 checks, but does not require the compiler to omit checks. The compiler
 will generate checks if they are essentially free, even when they are
@@ -6181,6 +6207,10 @@ checks.
 
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
+
+Note that in addition to the checks defined in the Ada RM, GNAT recogizes
+a number of implementation-defined check names. See description of pragma
+@code{Suppress} for full details.
 
 @node Pragma Use_VADS_Size
 @unnumberedsec Pragma Use_VADS_Size
@@ -10429,6 +10459,12 @@ the last line is a single @code{LF} character (@code{16#0A#}).
 The implementation defined check name Alignment_Check controls checking of
 address clause values for proper alignment (that is, the address supplied
 must be consistent with the alignment of the type).
+
+The implementation defined check name Predicate_Check controls whether
+predicate checks are generated.
+
+The implementation defined check name Validity_Check controls whether
+validity checks are generated.
 
 In addition, a user program can add implementation-defined check names
 by means of the pragma Check_Name.

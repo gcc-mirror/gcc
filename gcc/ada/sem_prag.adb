@@ -4928,6 +4928,51 @@ package body Sem_Prag is
                   & "operation", Arg1);
             end if;
 
+            --  Special checks for Convention_Stdcall
+
+            if C = Convention_Stdcall then
+
+               --  A dispatching call is not allowed. A dispatching subprogram
+               --  cannot be used to interface to the Win32 API, so in fact
+               --  this check does not impose any effective restriction.
+
+               if Is_Dispatching_Operation (E) then
+                  Error_Msg_Sloc := Sloc (E);
+
+                  --  Note: make this unconditional so that if there is more
+                  --  than one call to which the pragma applies, we get a
+                  --  message for each call. Also don't use Error_Pragma,
+                  --  so that we get multiple messages!
+
+                  Error_Msg_N
+                    ("dispatching subprogram# cannot use Stdcall convention!",
+                     Arg1);
+
+               --  Subprogram is allowed, but not a generic subprogram
+
+               elsif not Is_Subprogram (E)
+                 and then not Is_Generic_Subprogram (E)
+
+                 --  A variable is OK
+
+                 and then Ekind (E) /= E_Variable
+
+                 --  An access to subprogram is also allowed
+
+                 and then not
+                   (Is_Access_Type (E)
+                     and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
+
+                 --  Allow internal call to set convention of subprogram type
+
+                 and then not (Ekind (E) = E_Subprogram_Type)
+               then
+                  Error_Pragma_Arg
+                    ("second argument of pragma% must be subprogram (type)",
+                     Arg2);
+               end if;
+            end if;
+
             --  Set the convention
 
             Set_Convention (E, C);
@@ -5158,40 +5203,7 @@ package body Sem_Prag is
               ("second argument of pragma% must be a subprogram", Arg2);
          end if;
 
-         --  Stdcall case
-
-         if C = Convention_Stdcall then
-
-            --  A dispatching call is not allowed. A dispatching subprogram
-            --  cannot be used to interface to the Win32 API, so in fact this
-            --  check does not impose any effective restriction.
-
-            if Is_Dispatching_Operation (E) then
-
-               Error_Pragma
-                 ("dispatching subprograms cannot use Stdcall convention");
-
-            --  Subprogram is allowed, but not a generic subprogram, and not a
-            --  dispatching operation.
-
-            elsif not Is_Subprogram (E)
-              and then not Is_Generic_Subprogram (E)
-
-              --  A variable is OK
-
-              and then Ekind (E) /= E_Variable
-
-              --  An access to subprogram is also allowed
-
-              and then not
-                (Is_Access_Type (E)
-                  and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
-            then
-               Error_Pragma_Arg
-                 ("second argument of pragma% must be subprogram (type)",
-                  Arg2);
-            end if;
-         end if;
+         --  Deal with non-subprogram cases
 
          if not Is_Subprogram (E)
            and then not Is_Generic_Subprogram (E)
@@ -5202,7 +5214,7 @@ package body Sem_Prag is
                Check_First_Subtype (Arg2);
                Set_Convention_From_Pragma (Base_Type (E));
 
-               --  For subprograms, we must set the convention on the
+               --  For access subprograms, we must set the convention on the
                --  internally generated directly designated type as well.
 
                if Ekind (E) = E_Access_Subprogram_Type then
@@ -5251,6 +5263,12 @@ package body Sem_Prag is
                E1 := Homonym (E1);
                exit when No (E1) or else Scope (E1) /= Current_Scope;
 
+               --  Ignore entry for which convention is already set
+
+               if Has_Convention_Pragma (E1) then
+                  goto Continue;
+               end if;
+
                --  Do not set the pragma on inherited operations or on formal
                --  subprograms.
 
@@ -5274,6 +5292,9 @@ package body Sem_Prag is
                      Generate_Reference (E1, Id, 'b');
                   end if;
                end if;
+
+            <<Continue>>
+               null;
             end loop;
          end if;
       end Process_Convention;
