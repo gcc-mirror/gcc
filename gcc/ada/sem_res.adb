@@ -1666,16 +1666,16 @@ package body Sem_Res is
       --  and reexpanded later on. We will also have more information at that
       --  point for possible suppression of individual checks.
 
-      --  However, in Alfa mode, most expansion is suppressed, and this
-      --  later reanalysis and reexpansion may not occur. Alfa mode does
+      --  However, in SPARK mode, most expansion is suppressed, and this
+      --  later reanalysis and reexpansion may not occur. SPARK mode does
       --  require the setting of checking flags for proof purposes, so we
-      --  do the Alfa preanalysis without suppressing checks.
+      --  do the SPARK preanalysis without suppressing checks.
 
-      --  This special handling for Alfa mode is required for example in the
+      --  This special handling for SPARK mode is required for example in the
       --  case of Ada 2012 constructs such as quantified expressions, which are
       --  expanded in two separate steps.
 
-      if Alfa_Mode then
+      if SPARK_Mode then
          Analyze_And_Resolve (N, T);
       else
          Analyze_And_Resolve (N, T, Suppress => All_Checks);
@@ -4162,12 +4162,12 @@ package body Sem_Res is
 
             --  If it is a named association, treat the selector_name as a
             --  proper identifier, and mark the corresponding entity. Ignore
-            --  this reference in Alfa mode, as it refers to an entity not in
+            --  this reference in SPARK mode, as it refers to an entity not in
             --  scope at the point of reference, so the reference should be
             --  ignored for computing effects of subprograms.
 
             if Nkind (Parent (A)) = N_Parameter_Association
-              and then not Alfa_Mode
+              and then not SPARK_Mode
             then
                Set_Entity (Selector_Name (Parent (A)), F);
                Generate_Reference (F, Selector_Name (Parent (A)));

@@ -6131,10 +6131,10 @@ package body Exp_Ch3 is
       elsif CodePeer_Mode then
          return;
 
-      --  Do not create TSS routine Finalize_Address when compiling in Alfa
+      --  Do not create TSS routine Finalize_Address when compiling in SPARK
       --  mode because it is not necessary and results in useless expansion.
 
-      elsif Alfa_Mode then
+      elsif SPARK_Mode then
          return;
       end if;
 
@@ -6883,9 +6883,9 @@ package body Exp_Ch3 is
             --  created. If Def_Id is limited, Stream_Input and Stream_Read
             --  may produce build-in-place allocations and for those the
             --  expander needs Finalize_Address. Do not create the body of
-            --  Finalize_Address in Alfa mode since it is not needed.
+            --  Finalize_Address in SPARK mode since it is not needed.
 
-            if not Alfa_Mode then
+            if not SPARK_Mode then
                Make_Finalize_Address_Body (Def_Id);
             end if;
 

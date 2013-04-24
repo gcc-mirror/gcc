@@ -1664,10 +1664,10 @@ package body Sem_Ch5 is
         and then (Nkind (Parent (N)) /= N_Quantified_Expression
                    or else Operating_Mode = Check_Semantics)
 
-        --  Do not perform this expansion in Alfa mode, since the formal
+        --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
 
-        and then not Alfa_Mode
+        and then not SPARK_Mode
       then
          declare
             Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
@@ -2682,7 +2682,7 @@ package body Sem_Ch5 is
       --  types the actual subtype of the components will only be determined
       --  when the cursor declaration is analyzed.
 
-      --  If the expander is not active, or in Alfa mode, then we want to
+      --  If the expander is not active, or in SPARK mode, then we want to
       --  analyze the loop body now even in the Ada 2012 iterator case, since
       --  the rewriting will not be done. Insert the loop variable in the
       --  current scope, if not done when analysing the iteration scheme.

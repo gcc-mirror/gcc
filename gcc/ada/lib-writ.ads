@@ -811,12 +811,13 @@ package Lib.Writ is
    --  reference data. See the spec of Par_SCO in file par_sco.ads for full
    --  details of the format.
 
-   ----------------------
-   -- Alfa Information --
-   ----------------------
+   ---------------------------------------
+   -- SPARK Cross-Reference Information --
+   ---------------------------------------
 
-   --  The Alfa information follows the SCO information. See the spec of Alfa
-   --  in file alfa.ads for full details of the format.
+   --  The SPARK cross-reference information follows the SCO information. See
+   --  the spec of SPARK_Xrefs in file spark_xrefs.ads for full details of the
+   --  format.
 
    ----------------------
    -- Global Variables --

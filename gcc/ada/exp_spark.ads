@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             E X P _ A L F A                              --
+--                            E X P _ S P A R K                             --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,13 +24,13 @@
 ------------------------------------------------------------------------------
 
 --  This package implements a light expansion which is used in formal
---  verification mode (Alfa_Mode = True). Instead of a complete expansion
---  of nodes for code generation, this Alfa expansion targets generation
+--  verification mode (SPARK_Mode = True). Instead of a complete expansion
+--  of nodes for code generation, this SPARK expansion targets generation
 --  of intermediate code for formal verification.
 
---  Expand_Alfa is called directly by Expander.Expand.
+--  Expand_SPARK is called directly by Expander.Expand.
 
---  Alfa expansion has three main objectives:
+--  SPARK expansion has three main objectives:
 
 --    1. Perform limited expansion to explicit some Ada rules and constructs
 --       (translate 'Old and 'Result, replace renamings by renamed, insert
@@ -44,9 +44,9 @@
 --       formally, as typically done in the full expansion for high-level
 --       constructs (tasking, dispatching)
 
---  To fulfill objective 1, Expand_Alfa selectively expands some constructs.
+--  To fulfill objective 1, Expand_SPARK selectively expands some constructs.
 
---  To fulfill objective 2, the tree after Alfa expansion should be fully
+--  To fulfill objective 2, the tree after SPARK expansion should be fully
 --  analyzed semantically. In particular, all expression must have their proper
 --  type, and semantic links should be set between tree nodes (partial to full
 --  view, etc.) Some kinds of nodes should be either absent, or can be ignored
@@ -56,21 +56,22 @@
 --      N_Expression_Function:         absent (rewitten)
 --      N_Expression_With_Actions:     absent (not generated)
 
---  Alfa cross-references are generated from the regular cross-references (used
---  for browsing and code understanding) and additional references collected
---  during semantic analysis, in particular on all dereferences. These Alfa
---  cross-references are output in a separate section of ALI files, as
---  described in alfa.adb. They are the basis for the computation of data
---  dependences in the formal verification backend. This implies that all
---  cross-references should be generated in this mode, even those that would
---  not make sense from a user point-of-view, and that cross-references that do
---  not lead to data dependences for subprograms can be safely ignored.
+--  SPARK cross-references are generated from the regular cross-references
+--  (used for browsing and code understanding) and additional references
+--  collected during semantic analysis, in particular on all
+--  dereferences. These SPARK cross-references are output in a separate section
+--  of ALI files, as described in spark_xrefs.adb. They are the basis for the
+--  computation of data dependences in the formal verification backend. This
+--  implies that all cross-references should be generated in this mode, even
+--  those that would not make sense from a user point-of-view, and that
+--  cross-references that do not lead to data dependences for subprograms can
+--  be safely ignored.
 
 --  To support the formal verification of units parameterized by data, the
 --  value of deferred constants should not be considered as a compile-time
 --  constant at program locations where the full view is not visible.
 
---  To fulfill objective 3, Expand_Alfa does not expand features that are not
+--  To fulfill objective 3, Expand_SPARK does not expand features that are not
 --  formally analyzed (tasking), or for which formal analysis relies on the
 --  source level representation (dispatching, aspects, pragmas). However, these
 --  should be semantically analyzed, which sometimes requires the insertion of
@@ -79,8 +80,8 @@
 
 with Types; use Types;
 
-package Exp_Alfa is
+package Exp_SPARK is
 
-   procedure Expand_Alfa (N : Node_Id);
+   procedure Expand_SPARK (N : Node_Id);
 
-end Exp_Alfa;
+end Exp_SPARK;

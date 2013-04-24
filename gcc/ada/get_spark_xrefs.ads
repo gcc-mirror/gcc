@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             G E T _ A L F A                              --
+--                       G E T _ S P A R K _ X R E F S                      --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the function used to read Alfa information from an
---  ALI file and populate the tables defined in package Alfa with the result.
+--  This package contains the function used to read SPARK cross-reference
+--  information from an ALI file and populate the tables defined in package
+--  SPARK_Xrefs with the result.
 
 generic
    --  These subprograms provide access to the ALI file. Locating, opening and
@@ -46,12 +47,13 @@ generic
    --  and position to the next character, which will be returned by the next
    --  call to Getc or Nextc.
 
-procedure Get_Alfa;
---  Load Alfa information from ALI file text format into internal Alfa tables
---  (Alfa.Alfa_Xref_Table, Alfa.Alfa_Scope_Table and Alfa.Alfa_File_Table). On
---  entry the input file is positioned to the initial 'F' of the first Alfa
+procedure Get_SPARK_Xrefs;
+--  Load SPARK cross-reference information from ALI file text format into
+--  internal SPARK tables (SPARK_Xrefs.SPARK_Xref_Table,
+--  SPARK_Xrefs.SPARK_Scope_Table and SPARK_Xrefs.SPARK_File_Table). On entry
+--  the input file is positioned to the initial 'F' of the first SPARK specific
 --  line in the ALI file. On return, the file is positioned either to the end
---  of file, or to the first character of the line following the Alfa
+--  of file, or to the first character of the line following the SPARK specific
 --  information (which will never start with an 'F').
 --
 --  If a format error is detected in the input, then an exception is raised

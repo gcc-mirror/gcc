@@ -4379,13 +4379,13 @@ package body Sem_Attr is
          --  enclosing subprogram. This is properly an expansion activity
          --  but it has to be performed now to prevent out-of-order issues.
 
-         --  This expansion is both harmful and not needed in Alfa mode, since
+         --  This expansion is both harmful and not needed in SPARK mode, since
          --  the formal verification backend relies on the types of nodes
          --  (hence is not robust w.r.t. a change to base type here), and does
          --  not suffer from the out-of-order issue described above. Thus, this
-         --  expansion is skipped in Alfa mode.
+         --  expansion is skipped in SPARK mode.
 
-         if not Is_Entity_Name (P) and then not Alfa_Mode then
+         if not Is_Entity_Name (P) and then not SPARK_Mode then
             P_Type := Base_Type (P_Type);
             Set_Etype (N, P_Type);
             Set_Etype (P, P_Type);

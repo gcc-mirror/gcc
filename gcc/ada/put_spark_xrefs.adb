@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             P U T _ A L F A                              --
+--                       P U T _ S P A R K _ X R E F S                      --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,15 +23,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alfa; use Alfa;
+with SPARK_Xrefs; use SPARK_Xrefs;
 
-procedure Put_Alfa is
+procedure Put_SPARK_Xrefs is
 begin
-   --  Loop through entries in Alfa_File_Table
+   --  Loop through entries in SPARK_File_Table
 
-   for J in 1 .. Alfa_File_Table.Last loop
+   for J in 1 .. SPARK_File_Table.Last loop
       declare
-         F     : Alfa_File_Record renames Alfa_File_Table.Table (J);
+         F     : SPARK_File_Record renames SPARK_File_Table.Table (J);
          Start : Scope_Index;
          Stop  : Scope_Index;
 
@@ -71,7 +71,7 @@ begin
             pragma Assert (Start <= Stop);
 
             declare
-               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Start);
+               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Start);
 
             begin
                Write_Info_Initiate ('F');
@@ -109,11 +109,11 @@ begin
       end;
    end loop;
 
-   --  Loop through entries in Alfa_File_Table
+   --  Loop through entries in SPARK_File_Table
 
-   for J in 1 .. Alfa_File_Table.Last loop
+   for J in 1 .. SPARK_File_Table.Last loop
       declare
-         F           : Alfa_File_Record renames Alfa_File_Table.Table (J);
+         F           : SPARK_File_Record renames SPARK_File_Table.Table (J);
          Start       : Scope_Index;
          Stop        : Scope_Index;
          File        : Nat;
@@ -132,7 +132,7 @@ begin
             pragma Assert (Start <= Stop);
 
             Output_One_Scope : declare
-               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Start);
+               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Start);
 
                XStart : Xref_Index;
                XStop  : Xref_Index;
@@ -177,8 +177,8 @@ begin
                   pragma Assert (XStart <= XStop);
 
                   Output_One_Xref : declare
-                     R : Alfa_Xref_Record renames
-                           Alfa_Xref_Table.Table (XStart);
+                     R : SPARK_Xref_Record renames
+                           SPARK_Xref_Table.Table (XStart);
 
                   begin
                      if R.Entity_Line /= Entity_Line
@@ -240,4 +240,4 @@ begin
          end loop;
       end;
    end loop;
-end Put_Alfa;
+end Put_SPARK_Xrefs;

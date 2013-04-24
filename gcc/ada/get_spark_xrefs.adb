@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             G E T _ A L F A                              --
+--                       G E T _ S P A R K _ X R E F S                      --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,12 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alfa;  use Alfa;
-with Types; use Types;
+with SPARK_Xrefs; use SPARK_Xrefs;
+with Types;       use Types;
 
 with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
-procedure Get_Alfa is
+procedure Get_SPARK_Xrefs is
    C : Character;
 
    use ASCII;
@@ -41,10 +41,10 @@ procedure Get_Alfa is
    --  Scope number for the current scope entity
 
    Cur_File_Idx : File_Index;
-   --  Index in Alfa_File_Table of the current file
+   --  Index in SPARK_File_Table of the current file
 
    Cur_Scope_Idx : Scope_Index;
-   --  Index in Alfa_Scope_Table of the current scope
+   --  Index in SPARK_Scope_Table of the current scope
 
    Name_Str : String (1 .. 32768);
    Name_Len : Natural := 0;
@@ -196,17 +196,17 @@ procedure Get_Alfa is
       end loop;
    end Skip_Spaces;
 
---  Start of processing for Get_Alfa
+--  Start of processing for Get_SPARK_Xrefs
 
 begin
-   Initialize_Alfa_Tables;
+   Initialize_SPARK_Tables;
 
    Cur_File      := 0;
    Cur_Scope     := 0;
    Cur_File_Idx  := 1;
    Cur_Scope_Idx := 0;
 
-   --  Loop through lines of Alfa information
+   --  Loop through lines of SPARK cross-reference information
 
    while Nextc = 'F' loop
       Skipc;
@@ -215,7 +215,7 @@ begin
 
       --  Make sure first line is a File line
 
-      if Alfa_File_Table.Last = 0 and then C /= 'D' then
+      if SPARK_File_Table.Last = 0 and then C /= 'D' then
          raise Data_Error;
       end if;
 
@@ -229,9 +229,9 @@ begin
 
             --  Complete previous entry if any
 
-            if Alfa_File_Table.Last /= 0 then
-               Alfa_File_Table.Table (Alfa_File_Table.Last).To_Scope :=
-                 Alfa_Scope_Table.Last;
+            if SPARK_File_Table.Last /= 0 then
+               SPARK_File_Table.Table (SPARK_File_Table.Last).To_Scope :=
+                 SPARK_Scope_Table.Last;
             end if;
 
             --  Scan out dependency number and file name
@@ -259,11 +259,11 @@ begin
 
             --  Make new File table entry (will fill in To_Scope later)
 
-            Alfa_File_Table.Append (
+            SPARK_File_Table.Append (
               (File_Name      => File_Name,
                Unit_File_Name => Unit_File_Name,
                File_Num       => Cur_File,
-               From_Scope     => Alfa_Scope_Table.Last + 1,
+               From_Scope     => SPARK_Scope_Table.Last + 1,
                To_Scope       => 0));
 
             --  Initialize counter for scopes
@@ -320,7 +320,7 @@ begin
                --  To_Xref later). Initial range (From_Xref .. To_Xref) is
                --  empty for scopes without entities.
 
-               Alfa_Scope_Table.Append (
+               SPARK_Scope_Table.Append (
                  (Scope_Entity   => Empty,
                   Scope_Name     => new String'(Name_Str (1 .. Name_Len)),
                   File_Num       => Cur_File,
@@ -352,7 +352,7 @@ begin
             --  Update component From_Xref of current file if first reference
             --  in this file.
 
-            while Alfa_File_Table.Table (Cur_File_Idx).File_Num /= Cur_File
+            while SPARK_File_Table.Table (Cur_File_Idx).File_Num /= Cur_File
             loop
                Cur_File_Idx := Cur_File_Idx + 1;
             end loop;
@@ -368,21 +368,22 @@ begin
             --  Update component To_Xref of previous scope
 
             if Cur_Scope_Idx /= 0 then
-               Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
-                 Alfa_Xref_Table.Last;
+               SPARK_Scope_Table.Table (Cur_Scope_Idx).To_Xref :=
+                 SPARK_Xref_Table.Last;
             end if;
 
             --  Update component From_Xref of current scope
 
-            Cur_Scope_Idx := Alfa_File_Table.Table (Cur_File_Idx).From_Scope;
+            Cur_Scope_Idx := SPARK_File_Table.Table (Cur_File_Idx).From_Scope;
 
-            while Alfa_Scope_Table.Table (Cur_Scope_Idx).Scope_Num /= Cur_Scope
+            while SPARK_Scope_Table.Table (Cur_Scope_Idx).Scope_Num /=
+              Cur_Scope
             loop
                Cur_Scope_Idx := Cur_Scope_Idx + 1;
             end loop;
 
-            Alfa_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
-              Alfa_Xref_Table.Last + 1;
+            SPARK_Scope_Table.Table (Cur_Scope_Idx).From_Xref :=
+              SPARK_Xref_Table.Last + 1;
 
          --  Cross reference entry
 
@@ -457,7 +458,7 @@ begin
                               Rtype = 'm' or else
                               Rtype = 's');
 
-                           Alfa_Xref_Table.Append (
+                           SPARK_Xref_Table.Append (
                              (Entity_Name => XR_Entity,
                               Entity_Line => XR_Entity_Line,
                               Etype       => XR_Entity_Typ,
@@ -473,7 +474,7 @@ begin
                end loop;
             end;
 
-         --  No other Alfa lines are possible
+         --  No other SPARK lines are possible
 
          when others =>
             raise Data_Error;
@@ -488,12 +489,12 @@ begin
 
    --  Here with all Xrefs stored, complete last entries in File/Scope tables
 
-   if Alfa_File_Table.Last /= 0 then
-      Alfa_File_Table.Table (Alfa_File_Table.Last).To_Scope :=
-        Alfa_Scope_Table.Last;
+   if SPARK_File_Table.Last /= 0 then
+      SPARK_File_Table.Table (SPARK_File_Table.Last).To_Scope :=
+        SPARK_Scope_Table.Last;
    end if;
 
    if Cur_Scope_Idx /= 0 then
-      Alfa_Scope_Table.Table (Cur_Scope_Idx).To_Xref := Alfa_Xref_Table.Last;
+      SPARK_Scope_Table.Table (Cur_Scope_Idx).To_Xref := SPARK_Xref_Table.Last;
    end if;
-end Get_Alfa;
+end Get_SPARK_Xrefs;

@@ -278,7 +278,7 @@ package body ALI.Util is
                   --  generated, so No_Object=True is not considered an error.
 
                   elsif ALIs.Table (Idread).No_Object
-                    and then not Alfa_Mode
+                    and then not SPARK_Mode
                     and then not Ignore_Errors
                   then
                      Error_Msg_File_1 := Withs.Table (W).Sfile;

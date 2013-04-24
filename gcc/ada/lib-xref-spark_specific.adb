@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                        L I B . X R E F . A L F A                         --
+--              L I B . X R E F . S P A R K _ S P E C I F I C               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,23 +23,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alfa;     use Alfa;
-with Einfo;    use Einfo;
-with Nmake;    use Nmake;
-with Put_Alfa;
+with SPARK_Xrefs;     use SPARK_Xrefs;
+with Einfo;           use Einfo;
+with Nmake;           use Nmake;
+with Put_SPARK_Xrefs;
 
 with GNAT.HTable;
 
 separate (Lib.Xref)
-package body Alfa is
+package body SPARK_Specific is
 
    ---------------------
    -- Local Constants --
    ---------------------
 
-   --  Table of Alfa_Entities, True for each entity kind used in Alfa
+   --  Table of SPARK_Entities, True for each entity kind used in SPARK
 
-   Alfa_Entities : constant array (Entity_Kind) of Boolean :=
+   SPARK_Entities : constant array (Entity_Kind) of Boolean :=
      (E_Constant         => True,
       E_Function         => True,
       E_In_Out_Parameter => True,
@@ -51,9 +51,9 @@ package body Alfa is
       E_Variable         => True,
       others             => False);
 
-   --  True for each reference type used in Alfa
+   --  True for each reference type used in SPARK
 
-   Alfa_References : constant array (Character) of Boolean :=
+   SPARK_References : constant array (Character) of Boolean :=
      ('m' => True,
       'r' => True,
       's' => True,
@@ -79,28 +79,28 @@ package body Alfa is
    --  Table of cross-references for reads and writes through explicit
    --  dereferences, that are output as reads/writes to the special variable
    --  "Heap". These references are added to the regular references when
-   --  computing Alfa cross-references.
+   --  computing SPARK cross-references.
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   procedure Add_Alfa_File (Ubody, Uspec : Unit_Number_Type; Dspec : Nat);
-   --  Add file and corresponding scopes for unit to the tables Alfa_File_Table
-   --  and Alfa_Scope_Table. When two units are present for the same
-   --  compilation unit, as it happens for library-level instantiations of
-   --  generics, then Ubody /= Uspec, and all scopes are added to the same
-   --  Alfa file. Otherwise Ubody = Uspec.
+   procedure Add_SPARK_File (Ubody, Uspec : Unit_Number_Type; Dspec : Nat);
+   --  Add file and corresponding scopes for unit to the tables
+   --  SPARK_File_Table and SPARK_Scope_Table. When two units are present for
+   --  the same compilation unit, as it happens for library-level
+   --  instantiations of generics, then Ubody /= Uspec, and all scopes are
+   --  added to the same SPARK file. Otherwise Ubody = Uspec.
 
-   procedure Add_Alfa_Scope (N : Node_Id);
-   --  Add scope N to the table Alfa_Scope_Table
+   procedure Add_SPARK_Scope (N : Node_Id);
+   --  Add scope N to the table SPARK_Scope_Table
 
-   procedure Add_Alfa_Xrefs;
-   --  Filter table Xrefs to add all references used in Alfa to the table
-   --  Alfa_Xref_Table.
+   procedure Add_SPARK_Xrefs;
+   --  Filter table Xrefs to add all references used in SPARK to the table
+   --  SPARK_Xref_Table.
 
-   procedure Detect_And_Add_Alfa_Scope (N : Node_Id);
-   --  Call Add_Alfa_Scope on scopes
+   procedure Detect_And_Add_SPARK_Scope (N : Node_Id);
+   --  Call Add_SPARK_Scope on scopes
 
    function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range;
    --  Hash function for hash table
@@ -127,11 +127,11 @@ package body Alfa is
       Inside_Stubs : Boolean);
    --  Traverse corresponding construct, calling Process on all declarations
 
-   -------------------
-   -- Add_Alfa_File --
-   -------------------
+   --------------------
+   -- Add_SPARK_File --
+   --------------------
 
-   procedure Add_Alfa_File (Ubody, Uspec : Unit_Number_Type; Dspec : Nat) is
+   procedure Add_SPARK_File (Ubody, Uspec : Unit_Number_Type; Dspec : Nat) is
       File : constant Source_File_Index := Source_Index (Uspec);
       From : Scope_Index;
 
@@ -146,7 +146,7 @@ package body Alfa is
          return;
       end if;
 
-      From := Alfa_Scope_Table.Last + 1;
+      From := SPARK_Scope_Table.Last + 1;
 
       --  Unit might not have an associated compilation unit, as seen in code
       --  filling Sdep_Table in Write_ALI.
@@ -154,19 +154,19 @@ package body Alfa is
       if Present (Cunit (Ubody)) then
          Traverse_Compilation_Unit
            (CU           => Cunit (Ubody),
-            Process      => Detect_And_Add_Alfa_Scope'Access,
+            Process      => Detect_And_Add_SPARK_Scope'Access,
             Inside_Stubs => False);
       end if;
 
       --  When two units are present for the same compilation unit, as it
       --  happens for library-level instantiations of generics, then add all
-      --  scopes to the same Alfa file.
+      --  scopes to the same SPARK file.
 
       if Ubody /= Uspec then
          if Present (Cunit (Uspec)) then
             Traverse_Compilation_Unit
               (CU           => Cunit (Uspec),
-               Process      => Detect_And_Add_Alfa_Scope'Access,
+               Process      => Detect_And_Add_SPARK_Scope'Access,
                Inside_Stubs => False);
          end if;
       end if;
@@ -177,9 +177,9 @@ package body Alfa is
          Scope_Id : Int;
       begin
          Scope_Id := 1;
-         for Index in From .. Alfa_Scope_Table.Last loop
+         for Index in From .. SPARK_Scope_Table.Last loop
             declare
-               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
+               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
             begin
                S.Scope_Num := Scope_Id;
                S.File_Num  := Dspec;
@@ -195,18 +195,18 @@ package body Alfa is
 
       begin
          Scope_Id := From;
-         for Index in From .. Alfa_Scope_Table.Last loop
+         for Index in From .. SPARK_Scope_Table.Last loop
             declare
-               S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
+               S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
             begin
                if S.Scope_Num /= 0 then
-                  Alfa_Scope_Table.Table (Scope_Id) := S;
+                  SPARK_Scope_Table.Table (Scope_Id) := S;
                   Scope_Id := Scope_Id + 1;
                end if;
             end;
          end loop;
 
-         Alfa_Scope_Table.Set_Last (Scope_Id - 1);
+         SPARK_Scope_Table.Set_Last (Scope_Id - 1);
       end;
 
       --  Make entry for new file in file table
@@ -225,19 +225,19 @@ package body Alfa is
          Unit_File_Name := new String'(Name_Buffer (1 .. Name_Len));
       end if;
 
-      Alfa_File_Table.Append (
+      SPARK_File_Table.Append (
         (File_Name      => File_Name,
          Unit_File_Name => Unit_File_Name,
          File_Num       => Dspec,
          From_Scope     => From,
-         To_Scope       => Alfa_Scope_Table.Last));
-   end Add_Alfa_File;
+         To_Scope       => SPARK_Scope_Table.Last));
+   end Add_SPARK_File;
 
-   --------------------
-   -- Add_Alfa_Scope --
-   --------------------
+   ---------------------
+   -- Add_SPARK_Scope --
+   ---------------------
 
-   procedure Add_Alfa_Scope (N : Node_Id) is
+   procedure Add_SPARK_Scope (N : Node_Id) is
       E   : constant Entity_Id  := Defining_Entity (N);
       Loc : constant Source_Ptr := Sloc (E);
       Typ : Character;
@@ -294,7 +294,7 @@ package body Alfa is
       --  File_Num and Scope_Num are filled later. From_Xref and To_Xref are
       --  filled even later, but are initialized to represent an empty range.
 
-      Alfa_Scope_Table.Append (
+      SPARK_Scope_Table.Append (
         (Scope_Name     => new String'(Unique_Name (E)),
          File_Num       => 0,
          Scope_Num      => 0,
@@ -306,37 +306,37 @@ package body Alfa is
          From_Xref      => 1,
          To_Xref        => 0,
          Scope_Entity   => E));
-   end Add_Alfa_Scope;
+   end Add_SPARK_Scope;
 
-   --------------------
-   -- Add_Alfa_Xrefs --
-   --------------------
+   ---------------------
+   -- Add_SPARK_Xrefs --
+   ---------------------
 
-   procedure Add_Alfa_Xrefs is
+   procedure Add_SPARK_Xrefs is
       function Entity_Of_Scope (S : Scope_Index) return Entity_Id;
       --  Return the entity which maps to the input scope index
 
       function Get_Entity_Type (E : Entity_Id) return Character;
       --  Return a character representing the type of entity
 
-      function Is_Alfa_Reference
+      function Is_SPARK_Reference
         (E   : Entity_Id;
          Typ : Character) return Boolean;
-      --  Return whether entity reference E meets Alfa requirements. Typ is the
-      --  reference type.
+      --  Return whether entity reference E meets SPARK requirements. Typ is
+      --  the reference type.
 
-      function Is_Alfa_Scope (E : Entity_Id) return Boolean;
+      function Is_SPARK_Scope (E : Entity_Id) return Boolean;
       --  Return whether the entity or reference scope meets requirements for
-      --  being an Alfa scope.
+      --  being an SPARK scope.
 
       function Is_Future_Scope_Entity
         (E : Entity_Id;
          S : Scope_Index) return Boolean;
-      --  Check whether entity E is in Alfa_Scope_Table at index S or higher
+      --  Check whether entity E is in SPARK_Scope_Table at index S or higher
 
       function Is_Global_Constant (E : Entity_Id) return Boolean;
       --  Return True if E is a global constant for which we should ignore
-      --  reads in Alfa.
+      --  reads in SPARK.
 
       function Lt (Op1 : Natural; Op2 : Natural) return Boolean;
       --  Comparison function for Sort call
@@ -375,7 +375,7 @@ package body Alfa is
          Hash       => Entity_Hash,
          Equal      => "=");
       --  Package used to build a correspondance between entities and scope
-      --  numbers used in Alfa cross references.
+      --  numbers used in SPARK cross references.
 
       Nrefs : Nat := Xrefs.Last;
       --  Number of references in table. This value may get reset (reduced)
@@ -398,7 +398,7 @@ package body Alfa is
 
       function Entity_Of_Scope (S : Scope_Index) return Entity_Id is
       begin
-         return Alfa_Scope_Table.Table (S).Scope_Entity;
+         return SPARK_Scope_Table.Table (S).Scope_Entity;
       end Entity_Of_Scope;
 
       ---------------------
@@ -424,11 +424,11 @@ package body Alfa is
          return Scopes.Get (N).Num;
       end Get_Scope_Num;
 
-      -----------------------
-      -- Is_Alfa_Reference --
-      -----------------------
+      ------------------------
+      -- Is_SPARK_Reference --
+      ------------------------
 
-      function Is_Alfa_Reference
+      function Is_SPARK_Reference
         (E   : Entity_Id;
          Typ : Character) return Boolean
       is
@@ -440,15 +440,15 @@ package body Alfa is
          if Ekind (E) in Overloadable_Kind then
             return Typ = 's';
 
-         --  References to constant objects are not considered in Alfa section,
-         --  as these will be translated as constants in the intermediate
-         --  language for formal verification, and should therefore never
-         --  appear in frame conditions.
+         --  References to constant objects are not considered in SPARK
+         --  section, as these will be translated as constants in the
+         --  intermediate language for formal verification, and should
+         --  therefore never appear in frame conditions.
 
          elsif Is_Constant_Object (E) then
             return False;
 
-         --  Objects of Task type or protected type are not Alfa references
+         --  Objects of Task type or protected type are not SPARK references
 
          elsif Present (Etype (E))
            and then Ekind (Etype (E)) in Concurrent_Kind
@@ -461,19 +461,19 @@ package body Alfa is
          else
             return Typ = 'r' or else Typ = 'm';
          end if;
-      end Is_Alfa_Reference;
+      end Is_SPARK_Reference;
 
-      -------------------
-      -- Is_Alfa_Scope --
-      -------------------
+      --------------------
+      -- Is_SPARK_Scope --
+      --------------------
 
-      function Is_Alfa_Scope (E : Entity_Id) return Boolean is
+      function Is_SPARK_Scope (E : Entity_Id) return Boolean is
       begin
          return Present (E)
            and then not Is_Generic_Unit (E)
            and then Renamed_Entity (E) = Empty
            and then Get_Scope_Num (E) /= No_Scope;
-      end Is_Alfa_Scope;
+      end Is_SPARK_Scope;
 
       ----------------------------
       -- Is_Future_Scope_Entity --
@@ -484,7 +484,7 @@ package body Alfa is
          S : Scope_Index) return Boolean
       is
          function Is_Past_Scope_Entity return Boolean;
-         --  Check whether entity E is in Alfa_Scope_Table at index strictly
+         --  Check whether entity E is in SPARK_Scope_Table at index strictly
          --  lower than S.
 
          --------------------------
@@ -493,11 +493,11 @@ package body Alfa is
 
          function Is_Past_Scope_Entity return Boolean is
          begin
-            for Index in Alfa_Scope_Table.First .. S - 1 loop
-               if Alfa_Scope_Table.Table (Index).Scope_Entity = E then
+            for Index in SPARK_Scope_Table.First .. S - 1 loop
+               if SPARK_Scope_Table.Table (Index).Scope_Entity = E then
                   declare
-                     Dummy : constant Alfa_Scope_Record :=
-                               Alfa_Scope_Table.Table (Index);
+                     Dummy : constant SPARK_Scope_Record :=
+                               SPARK_Scope_Table.Table (Index);
                      pragma Unreferenced (Dummy);
                   begin
                      return True;
@@ -511,8 +511,8 @@ package body Alfa is
       --  Start of processing for Is_Future_Scope_Entity
 
       begin
-         for Index in S .. Alfa_Scope_Table.Last loop
-            if Alfa_Scope_Table.Table (Index).Scope_Entity = E then
+         for Index in S .. SPARK_Scope_Table.Last loop
+            if SPARK_Scope_Table.Table (Index).Scope_Entity = E then
                return True;
             end if;
          end loop;
@@ -663,8 +663,8 @@ package body Alfa is
          To   : Xref_Index)
       is
       begin
-         Alfa_Scope_Table.Table (S).From_Xref := From;
-         Alfa_Scope_Table.Table (S).To_Xref := To;
+         SPARK_Scope_Table.Table (S).From_Xref := From;
+         SPARK_Scope_Table.Table (S).To_Xref := To;
       end Update_Scope_Range;
 
       --  Local variables
@@ -679,12 +679,12 @@ package body Alfa is
       Ref_Name   : String_Ptr;
       Scope_Id   : Scope_Index;
 
-   --  Start of processing for Add_Alfa_Xrefs
+   --  Start of processing for Add_SPARK_Xrefs
 
    begin
-      for Index in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
+      for Index in SPARK_Scope_Table.First .. SPARK_Scope_Table.Last loop
          declare
-            S : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
+            S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
          begin
             Set_Scope_Num (S.Scope_Entity, S.Scope_Num);
          end;
@@ -710,7 +710,7 @@ package body Alfa is
          Xrefs.Table (Index).Def := Sloc (Xrefs.Table (Index).Key.Ent);
       end loop;
 
-      --  Eliminate entries not appropriate for Alfa. Done prior to sorting
+      --  Eliminate entries not appropriate for SPARK. Done prior to sorting
       --  cross-references, as it discards useless references which do not have
       --  a proper format for the comparison function (like no location).
 
@@ -722,12 +722,12 @@ package body Alfa is
             Ref : Xref_Key renames Xrefs.Table (Rnums (Index)).Key;
 
          begin
-            if Alfa_Entities (Ekind (Ref.Ent))
-              and then Alfa_References (Ref.Typ)
-              and then Is_Alfa_Scope (Ref.Ent_Scope)
-              and then Is_Alfa_Scope (Ref.Ref_Scope)
+            if SPARK_Entities (Ekind (Ref.Ent))
+              and then SPARK_References (Ref.Typ)
+              and then Is_SPARK_Scope (Ref.Ent_Scope)
+              and then Is_SPARK_Scope (Ref.Ref_Scope)
               and then not Is_Global_Constant (Ref.Ent)
-              and then Is_Alfa_Reference (Ref.Ent, Ref.Typ)
+              and then Is_SPARK_Reference (Ref.Ent, Ref.Typ)
 
               --  Discard references from unknown scopes, e.g. generic scopes
 
@@ -791,7 +791,7 @@ package body Alfa is
 
       --  The two steps have eliminated all references, nothing to do
 
-      if Alfa_Scope_Table.Last = 0 then
+      if SPARK_Scope_Table.Last = 0 then
          return;
       end if;
 
@@ -808,7 +808,7 @@ package body Alfa is
 
          begin
             --  If this assertion fails, the scope which we are looking for is
-            --  not in Alfa scope table, which reveals either a problem in the
+            --  not in SPARK scope table, which reveals either a problem in the
             --  construction of the scope table, or an erroneous scope for the
             --  current cross-reference.
 
@@ -822,14 +822,14 @@ package body Alfa is
                Update_Scope_Range
                  (S    => Scope_Id,
                   From => From_Index,
-                  To   => Alfa_Xref_Table.Last);
+                  To   => SPARK_Xref_Table.Last);
 
-               From_Index := Alfa_Xref_Table.Last + 1;
+               From_Index := SPARK_Xref_Table.Last + 1;
             end if;
 
             while Ref.Ent_Scope /= Entity_Of_Scope (Scope_Id) loop
                Scope_Id := Scope_Id + 1;
-               pragma Assert (Scope_Id <= Alfa_Scope_Table.Last);
+               pragma Assert (Scope_Id <= SPARK_Scope_Table.Last);
             end loop;
 
             if Ref.Ent /= Ref_Id then
@@ -844,7 +844,7 @@ package body Alfa is
                Col  := Int (Get_Column_Number (Ref_Entry.Def));
             end if;
 
-            Alfa_Xref_Table.Append (
+            SPARK_Xref_Table.Append (
               (Entity_Name => Ref_Name,
                Entity_Line => Line,
                Etype       => Get_Entity_Type (Ref.Ent),
@@ -862,14 +862,17 @@ package body Alfa is
       Update_Scope_Range
         (S    => Scope_Id,
          From => From_Index,
-         To   => Alfa_Xref_Table.Last);
-   end Add_Alfa_Xrefs;
+         To   => SPARK_Xref_Table.Last);
+   end Add_SPARK_Xrefs;
 
-   ------------------
-   -- Collect_Alfa --
-   ------------------
+   -------------------------
+   -- Collect_SPARK_Xrefs --
+   -------------------------
 
-   procedure Collect_Alfa (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat) is
+   procedure Collect_SPARK_Xrefs
+     (Sdep_Table : Unit_Ref_Table;
+      Num_Sdep   : Nat)
+   is
       D1 : Nat;
       D2 : Nat;
 
@@ -878,9 +881,9 @@ package body Alfa is
 
       pragma Assert (Xrefs.Last /= 0);
 
-      Initialize_Alfa_Tables;
+      Initialize_SPARK_Tables;
 
-      --  Generate file and scope Alfa information
+      --  Generate file and scope SPARK cross-reference information
 
       D1 := 1;
       while D1 <= Num_Sdep loop
@@ -888,7 +891,7 @@ package body Alfa is
          --  In rare cases, when treating the library-level instantiation of a
          --  generic, two consecutive units refer to the same compilation unit
          --  node and entity. In that case, treat them as a single unit for the
-         --  sake of Alfa cross references by passing to Add_Alfa_File.
+         --  sake of SPARK cross references by passing to Add_SPARK_File.
 
          if D1 < Num_Sdep
            and then Cunit_Entity (Sdep_Table (D1)) =
@@ -899,7 +902,7 @@ package body Alfa is
             D2 := D1;
          end if;
 
-         Add_Alfa_File
+         Add_SPARK_File
            (Ubody => Sdep_Table (D1),
             Uspec => Sdep_Table (D2),
             Dspec => D2);
@@ -921,9 +924,9 @@ package body Alfa is
       begin
          --  Fill in the hash-table
 
-         for S in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
+         for S in SPARK_Scope_Table.First .. SPARK_Scope_Table.Last loop
             declare
-               Srec : Alfa_Scope_Record renames Alfa_Scope_Table.Table (S);
+               Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
             begin
                Entity_Hash_Table.Set (Srec.Scope_Entity, S);
             end;
@@ -931,9 +934,9 @@ package body Alfa is
 
          --  Use the hash-table to locate spec entities
 
-         for S in Alfa_Scope_Table.First .. Alfa_Scope_Table.Last loop
+         for S in SPARK_Scope_Table.First .. SPARK_Scope_Table.Last loop
             declare
-               Srec : Alfa_Scope_Record renames Alfa_Scope_Table.Table (S);
+               Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
 
                Spec_Entity : constant Entity_Id :=
                                Unique_Entity (Srec.Scope_Entity);
@@ -947,24 +950,24 @@ package body Alfa is
                  and then Spec_Scope /= 0
                then
                   Srec.Spec_File_Num :=
-                    Alfa_Scope_Table.Table (Spec_Scope).File_Num;
+                    SPARK_Scope_Table.Table (Spec_Scope).File_Num;
                   Srec.Spec_Scope_Num :=
-                    Alfa_Scope_Table.Table (Spec_Scope).Scope_Num;
+                    SPARK_Scope_Table.Table (Spec_Scope).Scope_Num;
                end if;
             end;
          end loop;
       end;
 
-      --  Generate cross reference Alfa information
+      --  Generate SPARK cross-reference information
 
-      Add_Alfa_Xrefs;
-   end Collect_Alfa;
+      Add_SPARK_Xrefs;
+   end Collect_SPARK_Xrefs;
 
-   -------------------------------
-   -- Detect_And_Add_Alfa_Scope --
-   -------------------------------
+   --------------------------------
+   -- Detect_And_Add_SPARK_Scope --
+   --------------------------------
 
-   procedure Detect_And_Add_Alfa_Scope (N : Node_Id) is
+   procedure Detect_And_Add_SPARK_Scope (N : Node_Id) is
    begin
       if Nkind_In (N, N_Subprogram_Declaration,
                       N_Subprogram_Body,
@@ -972,9 +975,9 @@ package body Alfa is
                       N_Package_Declaration,
                       N_Package_Body)
       then
-         Add_Alfa_Scope (N);
+         Add_SPARK_Scope (N);
       end if;
-   end Detect_And_Add_Alfa_Scope;
+   end Detect_And_Add_SPARK_Scope;
 
    -------------------------------------
    -- Enclosing_Subprogram_Or_Package --
@@ -1432,4 +1435,4 @@ package body Alfa is
         (Handled_Statement_Sequence (N), Process, Inside_Stubs);
    end Traverse_Subprogram_Body;
 
-end Alfa;
+end SPARK_Specific;

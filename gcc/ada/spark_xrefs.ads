@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                                 A L F A                                  --
+--                           S P A R K _ X R E F S                          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,42 +23,45 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package defines tables used to store information needed for the Alfa
---  mode. It is used by procedures in Lib.Xref.Alfa to build the Alfa
---  information before writing it out to the ALI file, and by Get_Alfa/Put_Alfa
---  to read and write the text form that is used in the ALI file.
+--  This package defines tables used to store information needed for the SPARK
+--  mode. It is used by procedures in Lib.Xref.SPARK_Specific to build the
+--  SPARK specific cross-references information before writing it out to the
+--  ALI file, and by Get_SPARK_Xrefs/Put_SPARK_Xrefs to read and write the text
+--  form that is used in the ALI file.
 
 with Types;      use Types;
 with GNAT.Table;
 
-package Alfa is
+package SPARK_Xrefs is
 
-   --  Alfa information can exist in one of two forms. In the ALI file, it is
-   --  represented using a text format that is described in this specification.
-   --  Internally it is stored using three tables Alfa_Xref_Table,
-   --  Alfa_Scope_Table and Alfa_File_Table, which are also defined in this
-   --  unit.
+   --  SPARK cross-reference information can exist in one of two forms. In the
+   --  ALI file, it is represented using a text format that is described in
+   --  this specification.  Internally it is stored using three tables
+   --  SPARK_Xref_Table, SPARK_Scope_Table and SPARK_File_Table, which are also
+   --  defined in this unit.
 
-   --  Lib.Xref.Alfa is part of the compiler. It extracts Alfa information from
-   --  the complete set of cross-references generated during compilation.
+   --  Lib.Xref.SPARK_Specific is part of the compiler. It extracts SPARK
+   --  cross-reference information from the complete set of cross-references
+   --  generated during compilation.
 
-   --  Get_Alfa reads the text lines in ALI format and populates the internal
-   --  tables with corresponding information.
+   --  Get_SPARK_Xrefs reads the text lines in ALI format and populates the
+   --  internal tables with corresponding information.
 
-   --  Put_Alfa reads the internal tables and generates text lines in the ALI
-   --  format.
+   --  Put_SPARK_Xrefs reads the internal tables and generates text lines in
+   --  the ALI format.
 
-   ---------------------
-   -- Alfa ALI Format --
-   ---------------------
+   ----------------------------
+   -- SPARK Xrefs ALI Format --
+   ----------------------------
 
-   --  Alfa information is generated on a unit-by-unit basis in the ALI file,
-   --  using lines that start with the identifying character F ("Formal").
-   --  These lines are generated if one of the -gnatd.E (SPARK generation mode)
-   --  or gnatd.F (Why generation mode) switches is set.
+   --  SPARK cross-reference information is generated on a unit-by-unit basis
+   --  in the ALI file, using lines that start with the identifying character F
+   --  ("Formal").  These lines are generated if -gnatd.E or -gnatd.F (Why
+   --  generation mode) switches are set.
 
-   --  The Alfa information follows the cross-reference information, so it
-   --  needs not be read by tools like gnatbind, gnatmake etc.
+   --  The SPARK cross-reference information comes after the shared
+   --  cross-reference information, so it needs not be read by tools like
+   --  gnatbind, gnatmake etc.
 
    --  -------------------
    --  -- Scope Section --
@@ -86,8 +89,9 @@ package Alfa is
 
    --      Note: the filename is redundant in that it could be deduced from the
    --      corresponding D line, but it is convenient at least for human
-   --      reading of the Alfa information, and means that the Alfa information
-   --      can stand on its own without needing other parts of the ALI file.
+   --      reading of the SPARK cross-reference information, and means that
+   --      the SPARK cross-reference information can stand on its own without
+   --      needing other parts of the ALI file.
 
    --      The optional unit filename is given only for subunits.
 
@@ -187,13 +191,13 @@ package Alfa is
    -- Xref Table --
    ----------------
 
-   --  The following table records Alfa cross-references
+   --  The following table records SPARK cross-references
 
    type Xref_Index is new Int;
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
-   type Alfa_Xref_Record is record
+   type SPARK_Xref_Record is record
       Entity_Name : String_Ptr;
       --  Pointer to entity name in ALI file
 
@@ -233,8 +237,8 @@ package Alfa is
       --  Column number for the reference
    end record;
 
-   package Alfa_Xref_Table is new GNAT.Table (
-     Table_Component_Type => Alfa_Xref_Record,
+   package SPARK_Xref_Table is new GNAT.Table (
+     Table_Component_Type => SPARK_Xref_Record,
      Table_Index_Type     => Xref_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 2000,
@@ -251,7 +255,7 @@ package Alfa is
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
-   type Alfa_Scope_Record is record
+   type SPARK_Scope_Record is record
       Scope_Name : String_Ptr;
       --  Pointer to scope name in ALI file
 
@@ -294,8 +298,8 @@ package Alfa is
       --  Entity (subprogram or package) for the scope
    end record;
 
-   package Alfa_Scope_Table is new GNAT.Table (
-     Table_Component_Type => Alfa_Scope_Record,
+   package SPARK_Scope_Table is new GNAT.Table (
+     Table_Component_Type => SPARK_Scope_Record,
      Table_Index_Type     => Scope_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 200,
@@ -312,7 +316,7 @@ package Alfa is
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
-   type Alfa_File_Record is record
+   type SPARK_File_Record is record
       File_Name : String_Ptr;
       --  Pointer to file name in ALI file
 
@@ -330,8 +334,8 @@ package Alfa is
       --  Ending index in Scope table for this unit
    end record;
 
-   package Alfa_File_Table is new GNAT.Table (
-     Table_Component_Type => Alfa_File_Record,
+   package SPARK_File_Table is new GNAT.Table (
+     Table_Component_Type => SPARK_File_Record,
      Table_Index_Type     => File_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 20,
@@ -349,15 +353,15 @@ package Alfa is
    -- Subprograms --
    -----------------
 
-   procedure Initialize_Alfa_Tables;
+   procedure Initialize_SPARK_Tables;
    --  Reset tables for a new compilation
 
-   procedure dalfa;
-   --  Debug routine to dump internal Alfa tables. This is a raw format dump
-   --  showing exactly what the tables contain.
+   procedure dspark;
+   --  Debug routine to dump internal SPARK cross-reference tables. This is a
+   --  raw format dump showing exactly what the tables contain.
 
-   procedure palfa;
-   --  Debugging procedure to output contents of Alfa binary tables in the
-   --  format in which they appear in an ALI file.
+   procedure pspark;
+   --  Debugging procedure to output contents of SPARK cross-reference binary
+   --  tables in the format in which they appear in an ALI file.
 
-end Alfa;
+end SPARK_Xrefs;

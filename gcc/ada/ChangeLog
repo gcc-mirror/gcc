@@ -1,3 +1,27 @@
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* adabkend.adb, ali-util.adb, ali.adb, debug.adb,
+	errout.adb, errout.ads, erroutc.adb, exp_ch3.adb, exp_ch4.adb,
+	exp_ch6.adb, exp_ch7.adb, exp_dbug.adb, exp_util.adb,
+	expander.adb, freeze.adb, gnat1drv.adb, lib-writ.adb,
+	lib-writ.ads, lib-xref.adb, lib-xref.ads, opt.adb, opt.ads,
+	restrict.adb, sem_aggr.adb, sem_attr.adb, sem_ch3.adb,
+	sem_ch4.adb, sem_ch5.adb, sem_ch6.adb, sem_eval.adb, sem_prag.adb,
+	sem_res.adb, sem_util.adb: Everything with name
+	'Alfa' renamed in 'SPARK'. Update comments.
+	Renaming of units with name 'Alfa', renamed with 'SPARK' instead.
+	* exp_alfa.adb: renamed exp_spark.adb.
+	* exp_alfa.ads: renamed exp_spark.ads.
+	* get_alfa.adb: renamed get_spark_xrefs.adb.
+	* get_alfa.ads: renamed get_spark_xrefs.ads.
+	* lib-xref-alfa.adb: renamed lib-xref-spark_specific.adb.
+	* put_alfa.adb: renamed put_spark_xrefs.adb.
+	* put_alfa.ads: renamed put_spark_xrefs.ads.
+	* alfa.adb: renamed spark_xrefs.adb.
+	* alfa.ads: renamed spark_xrefs.ads.
+	* alfa_test.adb: renamed spark_xrefs_test.adb.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2013-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document pragma Assume.

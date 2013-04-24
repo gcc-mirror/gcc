@@ -8092,11 +8092,11 @@ package body Exp_Ch6 is
          return False;
 
       else
-         --  In Alfa mode, build-in-place calls are not expanded, so that we
+         --  In SPARK mode, build-in-place calls are not expanded, so that we
          --  may end up with a call that is neither resolved to an entity, nor
          --  an indirect call.
 
-         if Alfa_Mode then
+         if SPARK_Mode then
             return False;
 
          elsif Is_Entity_Name (Name (Exp_Node)) then
@@ -8563,12 +8563,12 @@ package body Exp_Ch6 is
          then
             null;
 
-         --  Do not generate the call to Set_Finalize_Address in Alfa mode
+         --  Do not generate the call to Set_Finalize_Address in SPARK mode
          --  because it is not necessary and results in unwanted expansion.
          --  This expansion is also not carried out in CodePeer mode because
          --  Finalize_Address is never built.
 
-         elsif not Alfa_Mode
+         elsif not SPARK_Mode
            and then not CodePeer_Mode
          then
             Insert_Action (Allocator,
