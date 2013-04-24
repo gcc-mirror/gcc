@@ -107,6 +107,7 @@ Implementation Defined Pragmas
 * Pragma Assert::
 * Pragma Assert_And_Cut::
 * Pragma Assertion_Policy::
+* Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Attribute_Definition::
 * Pragma Ast_Entry::
@@ -863,6 +864,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assert::
 * Pragma Assert_And_Cut::
 * Pragma Assertion_Policy::
+* Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Attribute_Definition::
 * Pragma Ast_Entry::
@@ -1335,6 +1337,40 @@ implementation defined).
 The implementation defined policy @code{Statement_Assertions}
 applies to @code{Assert}, @code{Assert_And_Cut},
 @code{Assume}, and @code{Loop_Invariant}.
+
+@node Pragma Assume
+@unnumberedsec Pragma Assume
+@findex Assume
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Assume (
+  boolean_EXPRESSION
+  [, string_EXPRESSION]);
+@end smallexample
+
+@noindent
+The effect of this pragma is identical to that of pragma @code{Assert},
+except that in an @code{Assertion_Policy} pragma, the identifier
+@code{Assume} is used to control whether it is ignored or checked
+(or disabled).
+
+The intention is that this be used for assumptions about the
+external environment. So you cannot expect to verify formally
+or informally that the condition is met, this must be
+established by examining things outside the program itself.
+For example, we may have code that depends on the size of
+@code{Long_Long_Integer} being at least 64. So we could write:
+
+@smallexample @c ada
+pragma Assume (Long_Long_Integer'Size >= 64);
+@end smallexample
+
+@noindent
+This assumption cannot be proved from the program itself,
+but it acts as a useful run-time check that the assumption
+is met, and documents the need to ensure that it is met by
+reference to information outside the program.
 
 @node Pragma Assume_No_Invalid_Values
 @unnumberedsec Pragma Assume_No_Invalid_Values

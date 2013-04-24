@@ -1,5 +1,11 @@
 2013-04-24  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document pragma Assume.
+	* sem_prag.adb (Analyze_Pragma, case Assume): Now processed as
+	part of Assert, and no longer requires -gnatd.F
+
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document pragma Assert_And_Cut.
 	* sem_prag.adb (Analyze_Pragma, case Assert_And_Cut): Remove
 	S14_Pragma call.
