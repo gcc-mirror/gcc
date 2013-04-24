@@ -1,4 +1,4 @@
-2013-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2013-04-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/56905
 	* libsupc++/exception_ptr.h (copy_exception): Deprecate and
