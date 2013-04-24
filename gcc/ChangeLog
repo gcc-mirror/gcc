@@ -1,3 +1,26 @@
+2013-04-24  Sterling Augustine  <saugustine@google.com>
+
+	* dwarf2out.c (skeleton_debug_str_hash, add_skeleton_AT_string)
+	(comp_dir_string, debug_str_dwo_section): New.
+	(DEBUG_STR_DWO_SECTION): Rename to ...
+	(DEBUG_DWO_STR_SECTION): ... this.
+	(DEBUG_NORM_STR_SECTION): Delete.
+	(DEBUG_STR_SECTION, DEBUG_STR_SECTION_FLAGS): Edit definitions.
+	(DEBUG_STR_DWO_SECTION_FLAGS): New.
+	(find_AT_string): Move most logic to ...
+	(find_AT_string_in_table): ... here.  New.
+	(add_top_level_skeleton_die_attrs): Call comp_dir_string and
+	add_skeleton_AT_string.  Delete logic.
+	(output_skeleton_debug_sections): Remove call to
+	add_top_level_skeleton_die_attrs.
+	(add_comp_dir_attribute): Move logic to comp_dir_string.
+	(dwarf2out_init): Initialize debug_str_dwo_section.
+	(output_indirect_string): Call find_string_form.
+	(output_indirect_strings): Rewrite.
+	(prune_unused_types): Empty skeleton_debug_str_hash.
+	Call get_skeleton_type_unit and add_top_level_skeleton_die_attrs.
+	(dwarf2out_finish):  Call output_indirect_strings.
+
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/cpp.texi: Remove __GXX_EXPERIMENTAL_CXX1Y__.
