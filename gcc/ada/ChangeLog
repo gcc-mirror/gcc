@@ -1,3 +1,9 @@
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document pragma Assert_And_Cut.
+	* sem_prag.adb (Analyze_Pragma, case Assert_And_Cut): Remove
+	S14_Pragma call.
+
 2013-04-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aux.adb: Add guard in Available_View.

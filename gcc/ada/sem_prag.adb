@@ -8849,7 +8849,6 @@ package body Sem_Prag is
                Ada_2005_Pragma;
             else -- Pragma_Assert_And_Cut
                GNAT_Pragma;
-               S14_Pragma;
             end if;
 
             Check_At_Least_N_Arguments (1);

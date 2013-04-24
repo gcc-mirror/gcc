@@ -105,6 +105,7 @@ Implementation Defined Pragmas
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assert_And_Cut::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Attribute_Definition::
@@ -860,6 +861,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assert_And_Cut::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Attribute_Definition::
@@ -1202,13 +1204,18 @@ Note that, as with the @code{if} statement to which it is equivalent, the
 type of the expression is either @code{Standard.Boolean}, or any type derived
 from this standard type.
 
-If assertions are disabled (switch @option{-gnata} not used), then there
+Assert checks can be either checked or ignored. By default they are ignored.
+They will be checked if either the command line switch @option{-gnata} is
+used, or if an @code{Assertion_Policy} or @code{Check_Policy} pragma is used
+to enable @code{Assert_Checks}.
+
+If assertions are ignored, then there
 is no run-time effect (and in particular, any side effects from the
 expression will not occur at run time).  (The expression is still
 analyzed at compile time, and may cause types to be frozen if they are
 mentioned here for the first time).
 
-If assertions are enabled, then the given expression is tested, and if
+If assertions are checked, then the given expression is tested, and if
 it is @code{False} then @code{System.Assertions.Raise_Assert_Failure} is called
 which results in the raising of @code{Assert_Failure} with the given message.
 
@@ -1220,12 +1227,38 @@ semantic correctness whether or not assertions are enabled, so turning
 assertions on and off cannot affect the legality of a program.
 
 Note that the implementation defined policy @code{DISABLE}, given in a
-pragma Assertion_Policy, can be used to suppress this semantic analysis.
+pragma @code{Assertion_Policy}, can be used to suppress this semantic analysis.
 
 Note: this is a standard language-defined pragma in versions
 of Ada from 2005 on. In GNAT, it is implemented in all versions
 of Ada, and the DISABLE policy is an implementation-defined
 addition.
+
+@node Pragma Assert_And_Cut
+@unnumberedsec Pragma Assert_And_Cut
+@findex Assert_And_Cut
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Assert_And_Cut (
+  boolean_EXPRESSION
+  [, string_EXPRESSION]);
+@end smallexample
+
+@noindent
+The effect of this pragma is identical to that of pragma @code{Assert},
+except that in an @code{Assertion_Policy} pragma, the identifier
+@code{Assert_And_Cut} is used to control whether it is ignored or checked
+(or disabled).
+
+The intention is that this be used within a subprogram when the
+given test expresion sums up all the work done so far in the
+subprogram, so that the rest of the subprogram can be verified
+(informally or formally) using only the entry preconditions,
+and the expression in this pragma. This allows dividing up
+a subprogram into sections for the purposes of testing or
+formal verification. The pragma also serves as useful
+documentation.
 
 @node Pragma Assertion_Policy
 @unnumberedsec Pragma Assertion_Policy
