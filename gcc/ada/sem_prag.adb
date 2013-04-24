@@ -8828,9 +8828,9 @@ package body Sem_Prag is
             end if;
          end Annotate;
 
-         ---------------------------
-         -- Assert/Assert_And_Cut --
-         ---------------------------
+         ----------------------------------
+         -- Assert/Assert_And_Cut/Assume --
+         ----------------------------------
 
          --  pragma Assert
          --    (   [Check => ]  Boolean_EXPRESSION
@@ -8840,7 +8840,14 @@ package body Sem_Prag is
          --    (   [Check => ]  Boolean_EXPRESSION
          --     [, [Message =>] Static_String_EXPRESSION]);
 
-         when Pragma_Assert | Pragma_Assert_And_Cut => Assert : declare
+         --  pragma Assume
+         --    (   [Check => ]  Boolean_EXPRESSION
+         --     [, [Message =>] Static_String_EXPRESSION]);
+
+         when Pragma_Assert         |
+              Pragma_Assert_And_Cut |
+              Pragma_Assume         =>
+         Assert : declare
             Expr : Node_Id;
             Newa : List_Id;
 
@@ -9055,35 +9062,6 @@ package body Sem_Prag is
                Analyze (N);
             end if;
          end Assertion_Policy;
-
-         ------------
-         -- Assume --
-         ------------
-
-         --  pragma Assume (boolean_EXPRESSION);
-
-         when Pragma_Assume => Assume : declare
-         begin
-            GNAT_Pragma;
-            S14_Pragma;
-            Check_Arg_Count (1);
-
-            --  Pragma Assume is transformed into pragma Check in the following
-            --  manner:
-
-            --    pragma Check (Assume, Expr);
-
-            Rewrite (N,
-              Make_Pragma (Loc,
-                Chars                        => Name_Check,
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Make_Identifier (Loc, Name_Assume)),
-
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Relocate_Node (Expression (Arg1))))));
-            Analyze (N);
-         end Assume;
 
          ------------------------------
          -- Assume_No_Invalid_Values --
