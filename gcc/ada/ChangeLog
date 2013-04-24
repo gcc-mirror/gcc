@@ -1,3 +1,30 @@
+2013-04-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Machine_Overflows_On_Target): New macro and declaration.
+	(Signed_Zeros_On_Target): Likewise.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb: Add with and use clause for Sem_Prag.
+	(Freeze_Subprogram): Analyze all delayed aspects for a null
+	procedure so that they are available when analyzing the
+	internally-generated _Postconditions routine.
+	* exp_ch13.adb: Remove with and use clause for Sem_Prag.
+	(Expand_N_Freeze_Entity): Move the code that analyzes delayed
+	aspects of null procedures to exp_ch6.Freeze_Subprogram.
+	* sem_prag.adb (Analyze_Abstract_State): Update the check on
+	volatile requirements.
+
+2013-04-24  Bob Duff  <duff@adacore.com>
+
+	* ali-util.ads (Source_Record): New component Stamp_File
+	to record from whence the Stamp came.
+	* ali-util.adb (Set_Source_Table): Set Stamp_File component.
+	* bcheck.adb (Check_Consistency): Print additional information in
+	Verbose_Mode.
+	* gnatbind.adb (Gnatbind): Print additional information in
+	Verbose_Mode.
+
 2013-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch13.adb, sem_prag.adb: Update comments.

@@ -8353,14 +8353,7 @@ package body Sem_Prag is
 
                   --  Volatile requires exactly one Input or Output
 
-                  --  Isn't this just Input_Seen = Output_Seen ???
-
-                  if Volatile_Seen
-                    and then
-                      ((Input_Seen and Output_Seen)           --  both
-                         or else
-                       (not Input_Seen and not Output_Seen))  --  none
-                  then
+                  if Volatile_Seen and then Input_Seen = Output_Seen then
                      Error_Msg_N
                        ("property Volatile requires exactly one Input or "
                         & "Output", State);
