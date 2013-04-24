@@ -90,6 +90,7 @@ c-common.h, not after.
       LAMBDA_EXPR_MUTABLE_P (in LAMBDA_EXPR)
       DECL_FINAL_P (in FUNCTION_DECL)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
+      DECLTYPE_FOR_INIT_CAPTURE (in DECLTYPE_TYPE)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -97,6 +98,7 @@ c-common.h, not after.
       TYPENAME_IS_RESOLVING_P (in TYPE_NAME_TYPE)
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
       FNDECL_USED_AUTO (in FUNCTION_DECL)
+      DECLTYPE_FOR_LAMBDA_PROXY (in DECLTYPE_TYPE)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -3590,10 +3592,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECLTYPE_TYPE_CHECK (NODE))->type_common.string_flag
 
 /* These flags indicate that we want different semantics from normal
-   decltype: lambda capture just drops references, lambda proxies look
-   through implicit dereference.  */
+   decltype: lambda capture just drops references, init capture
+   uses auto semantics, lambda proxies look through implicit dereference.  */
 #define DECLTYPE_FOR_LAMBDA_CAPTURE(NODE) \
   TREE_LANG_FLAG_0 (DECLTYPE_TYPE_CHECK (NODE))
+#define DECLTYPE_FOR_INIT_CAPTURE(NODE) \
+  TREE_LANG_FLAG_1 (DECLTYPE_TYPE_CHECK (NODE))
 #define DECLTYPE_FOR_LAMBDA_PROXY(NODE) \
   TREE_LANG_FLAG_2 (DECLTYPE_TYPE_CHECK (NODE))
 
@@ -5781,7 +5785,7 @@ extern tree finish_trait_expr			(enum cp_trait_kind, tree, tree);
 extern tree build_lambda_expr                   (void);
 extern tree build_lambda_object			(tree);
 extern tree begin_lambda_type                   (tree);
-extern tree lambda_capture_field_type		(tree);
+extern tree lambda_capture_field_type		(tree, bool);
 extern tree lambda_return_type			(tree);
 extern tree lambda_proxy_type			(tree);
 extern tree lambda_function			(tree);

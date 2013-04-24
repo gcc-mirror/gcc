@@ -9127,14 +9127,22 @@ lambda_function (tree lambda)
    The caller should add REFERENCE_TYPE for capture by reference.  */
 
 tree
-lambda_capture_field_type (tree expr)
+lambda_capture_field_type (tree expr, bool explicit_init_p)
 {
-  tree type = non_reference (unlowered_expr_type (expr));
+  tree type;
+  if (explicit_init_p)
+    {
+      type = make_auto ();
+      type = do_auto_deduction (type, expr, type);
+    }
+  else
+    type = non_reference (unlowered_expr_type (expr));
   if (!type || WILDCARD_TYPE_P (type))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
+      DECLTYPE_FOR_INIT_CAPTURE (type) = explicit_init_p;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
   return type;
@@ -9400,7 +9408,10 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
   char *buf;
   tree type, member, name;
 
-  type = lambda_capture_field_type (initializer);
+  if (TREE_CODE (initializer) == TREE_LIST)
+    initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
+						   tf_warning_or_error);
+  type = lambda_capture_field_type (initializer, explicit_init_p);
   if (by_reference_p)
     {
       type = build_reference_type (type);
