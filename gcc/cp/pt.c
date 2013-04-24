@@ -11794,7 +11794,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	--c_inhibit_evaluation_warnings;
 
 	if (DECLTYPE_FOR_LAMBDA_CAPTURE (t))
-	  type = lambda_capture_field_type (type);
+	  type = lambda_capture_field_type (type,
+					    DECLTYPE_FOR_INIT_CAPTURE (t));
 	else if (DECLTYPE_FOR_LAMBDA_PROXY (t))
 	  type = lambda_proxy_type (type);
 	else

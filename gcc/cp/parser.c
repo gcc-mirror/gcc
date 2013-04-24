@@ -8548,17 +8548,18 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	}
 
       /* Find the initializer for this capture.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ)
+	  || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
+	  || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	{
-	  /* An explicit expression exists.  */
-	  cp_lexer_consume_token (parser->lexer);
+	  bool direct, non_constant;
+	  /* An explicit initializer exists.  */
 	  if (cxx_dialect < cxx1y)
 	    pedwarn (input_location, 0,
 		     "lambda capture initializers "
 		     "only available with -std=c++1y or -std=gnu++1y");
-	  capture_init_expr = cp_parser_assignment_expression (parser,
-							       /*cast_p=*/true,
-							       &idk);
+	  capture_init_expr = cp_parser_initializer (parser, &direct,
+						     &non_constant);
 	  explicit_init_p = true;
 	}
       else

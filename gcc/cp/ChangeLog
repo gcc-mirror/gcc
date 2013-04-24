@@ -1,3 +1,13 @@
+2013-04-24  Jason Merrill  <jason@redhat.com>
+
+	N3648: Allow braced and parenthesized initializers.
+	* parser.c (cp_parser_lambda_introducer): Use cp_parser_initializer.
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Handle DECLTYPE_FOR_INIT_CAPTURE.
+	* semantics.c (lambda_capture_field_type): Use do_auto_deduction.
+	(add_capture): Collapse a parenthesized initializer into a single
+	expression.
+	* cp-tree.h (DECLTYPE_FOR_INIT_CAPTURE): New.
+
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56970
