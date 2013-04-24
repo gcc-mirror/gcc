@@ -698,25 +698,16 @@ package body Ch4 is
 
          if Token = Tok_Arrow then
             Error_Msg
-              ("expect identifier in parameter association",
-                Sloc (Expr_Node));
+              ("expect identifier in parameter association", Sloc (Expr_Node));
             Scan;  -- past arrow
 
          elsif not Comma_Present then
             T_Right_Paren;
 
-            --  Do not convert Prefix'Loop_Entry (Expr1, ..., ExprN) into an
-            --  indexed component now. Let the analysis determine whether the
-            --  attribute is legal and perform the transformation if needed.
-
-            if Attr_Name = Name_Loop_Entry then
-               Set_Expressions (Name_Node, Arg_List);
-            else
-               Prefix_Node := Name_Node;
-               Name_Node := New_Node (N_Indexed_Component, Sloc (Prefix_Node));
-               Set_Prefix (Name_Node, Prefix_Node);
-               Set_Expressions (Name_Node, Arg_List);
-            end if;
+            Prefix_Node := Name_Node;
+            Name_Node := New_Node (N_Indexed_Component, Sloc (Prefix_Node));
+            Set_Prefix (Name_Node, Prefix_Node);
+            Set_Expressions (Name_Node, Arg_List);
 
             goto Scan_Name_Extension;
          end if;
