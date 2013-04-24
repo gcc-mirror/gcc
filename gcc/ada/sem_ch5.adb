@@ -2958,7 +2958,16 @@ package body Sem_Ch5 is
                elsif Nkind (P) = N_Handled_Sequence_Of_Statements
                  and then Nkind (Parent (P)) = N_Block_Statement
                then
-                  null;
+                  --  The original loop is now placed inside a block statement
+                  --  due to the expansion of attribute 'Loop_Entry. Return as
+                  --  this is not a "real" block for the purposes of exit
+                  --  counting.
+
+                  if Nkind (N) = N_Loop_Statement
+                    and then Subject_To_Loop_Entry_Attributes (N)
+                  then
+                     return;
+                  end if;
 
                --  Statements in exception handler in a block
 

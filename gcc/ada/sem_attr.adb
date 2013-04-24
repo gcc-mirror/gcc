@@ -3698,6 +3698,7 @@ package body Sem_Attr is
          --  Local variables
 
          Context           : constant Node_Id := Parent (N);
+         Attr              : Node_Id;
          Enclosing_Loop    : Node_Id;
          In_Loop_Assertion : Boolean   := False;
          Loop_Id           : Entity_Id := Empty;
@@ -3707,6 +3708,13 @@ package body Sem_Attr is
       --  Start of processing for Loop_Entry
 
       begin
+         Attr := N;
+
+         --  Set the type of the attribute now to ensure the successfull
+         --  continuation of analysis even if the attribute is misplaced.
+
+         Set_Etype (Attr, P_Type);
+
          --  Attribute 'Loop_Entry may appear in several flavors:
 
          --    * Prefix'Loop_Entry - in this form, the attribute applies to the
@@ -3775,6 +3783,8 @@ package body Sem_Attr is
                   Set_Expressions (N, Expressions (Context));
                   Rewrite   (Context, N);
                   Set_Etype (Context, P_Type);
+
+                  Attr := Context;
                end if;
             end if;
          end if;
@@ -3796,17 +3806,14 @@ package body Sem_Attr is
          --  Climb the parent chain to verify the location of the attribute and
          --  find the enclosing loop.
 
-         Stmt := N;
+         Stmt := Attr;
          while Present (Stmt) loop
 
-            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma (if
-            --  any). Note that when these two are expanded, we must look for
-            --  an Assertion pragma.
+            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
               and then
                 Nam_In (Pragma_Name (Original_Node (Stmt)),
-                        Name_Assert,
                         Name_Loop_Invariant,
                         Name_Loop_Variant)
             then
@@ -3852,8 +3859,8 @@ package body Sem_Attr is
          --  appear within a body of accept statement, if this construct is
          --  itself enclosed by the given loop statement.
 
-         for J in reverse 0 .. Scope_Stack.Last loop
-            Scop := Scope_Stack.Table (J).Entity;
+         for Index in reverse 0 .. Scope_Stack.Last loop
+            Scop := Scope_Stack.Table (Index).Entity;
 
             if Ekind (Scop) = E_Loop and then Scop = Loop_Id then
                exit;
@@ -3883,8 +3890,6 @@ package body Sem_Attr is
          then
             Error_Attr_P ("prefix of attribute % must denote an entity");
          end if;
-
-         Set_Etype (N, P_Type);
       end Loop_Entry;
 
       -------------

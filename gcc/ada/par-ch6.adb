@@ -838,6 +838,22 @@ package body Ch6 is
                        ("\unit must be compiled with -gnat2012 switch!");
                   end if;
 
+                  --  Catch an illegal placement of the aspect specification
+                  --  list:
+
+                  --    function_specification
+                  --      [aspect_specification] is (expression);
+
+                  --  This case is correctly processed by the parser because
+                  --  the expression function first appears as a subprogram
+                  --  declaration to the parser.
+
+                  if Is_Non_Empty_List (Aspects) then
+                     Error_Msg
+                       ("aspect specifications must come after parenthesized "
+                        & "expression", Sloc (First (Aspects)));
+                  end if;
+
                   --  Parse out expression and build expression function
 
                   Body_Node :=
