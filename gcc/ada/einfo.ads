@@ -1598,6 +1598,11 @@ package Einfo is
 --       Note that it might be the full type which has inheritable invariants,
 --       and then the flag will also be set in the private type.
 
+--    Has_Loop_Entry_Attributes (Flag260)
+--       Defined in E_Loop entities. Set when the loop is subject to at least
+--       one attribute 'Loop_Entry. The flag also implies that the loop has
+--       already been transformed. See Expand_Loop_Entry_Attribute for details.
+
 --    Has_Machine_Radix_Clause (Flag83)
 --       Defined in decimal types and subtypes, set if a Machine_Radix
 --       representation clause is present. This flag is used to detect
@@ -3032,10 +3037,6 @@ package Einfo is
 --       the literals string entity. See unit Exp_Imgv for full details of
 --       the nature and use of this entity for implementing the Image and
 --       Value attributes for the enumeration type in question.
-
---    Loop_Entry_Attributes (Elist10)
---       Defined for loop statement scopes. The list contains all Loop_Entry
---       attribute references related to the target loop.
 
 --    Low_Bound_Tested (Flag205)
 --       Defined in all entities. Currently this can only be set True for
@@ -5507,8 +5508,8 @@ package Einfo is
 
    --  E_Loop
    --    First_Exit_Statement                (Node8)
-   --    Loop_Entry_Attributes               (Elist10)
    --    Has_Exit                            (Flag47)
+   --    Has_Loop_Entry_Attributes           (Flag260)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
 
@@ -6280,6 +6281,7 @@ package Einfo is
    function Has_Initial_Value                   (Id : E) return B;
    function Has_Interrupt_Handler               (Id : E) return B;
    function Has_Invariants                      (Id : E) return B;
+   function Has_Loop_Entry_Attributes           (Id : E) return B;
    function Has_Machine_Radix_Clause            (Id : E) return B;
    function Has_Master_Entity                   (Id : E) return B;
    function Has_Missing_Return                  (Id : E) return B;
@@ -6444,7 +6446,6 @@ package Einfo is
    function Limited_View                        (Id : E) return E;
    function Lit_Indexes                         (Id : E) return E;
    function Lit_Strings                         (Id : E) return E;
-   function Loop_Entry_Attributes               (Id : E) return L;
    function Low_Bound_Tested                    (Id : E) return B;
    function Machine_Radix_10                    (Id : E) return B;
    function Master_Id                           (Id : E) return E;
@@ -6887,6 +6888,7 @@ package Einfo is
    procedure Set_Has_Inheritable_Invariants      (Id : E; V : B := True);
    procedure Set_Has_Initial_Value               (Id : E; V : B := True);
    procedure Set_Has_Invariants                  (Id : E; V : B := True);
+   procedure Set_Has_Loop_Entry_Attributes       (Id : E; V : B := True);
    procedure Set_Has_Machine_Radix_Clause        (Id : E; V : B := True);
    procedure Set_Has_Master_Entity               (Id : E; V : B := True);
    procedure Set_Has_Missing_Return              (Id : E; V : B := True);
@@ -7057,7 +7059,6 @@ package Einfo is
    procedure Set_Limited_View                    (Id : E; V : E);
    procedure Set_Lit_Indexes                     (Id : E; V : E);
    procedure Set_Lit_Strings                     (Id : E; V : E);
-   procedure Set_Loop_Entry_Attributes           (Id : E; V : L);
    procedure Set_Low_Bound_Tested                (Id : E; V : B := True);
    procedure Set_Machine_Radix_10                (Id : E; V : B := True);
    procedure Set_Master_Id                       (Id : E; V : E);
@@ -7586,6 +7587,7 @@ package Einfo is
    pragma Inline (Has_Inheritable_Invariants);
    pragma Inline (Has_Initial_Value);
    pragma Inline (Has_Invariants);
+   pragma Inline (Has_Loop_Entry_Attributes);
    pragma Inline (Has_Machine_Radix_Clause);
    pragma Inline (Has_Master_Entity);
    pragma Inline (Has_Missing_Return);
@@ -7795,7 +7797,6 @@ package Einfo is
    pragma Inline (Limited_View);
    pragma Inline (Lit_Indexes);
    pragma Inline (Lit_Strings);
-   pragma Inline (Loop_Entry_Attributes);
    pragma Inline (Low_Bound_Tested);
    pragma Inline (Machine_Radix_10);
    pragma Inline (Master_Id);
@@ -8043,6 +8044,7 @@ package Einfo is
    pragma Inline (Set_Has_Inheritable_Invariants);
    pragma Inline (Set_Has_Initial_Value);
    pragma Inline (Set_Has_Invariants);
+   pragma Inline (Set_Has_Loop_Entry_Attributes);
    pragma Inline (Set_Has_Machine_Radix_Clause);
    pragma Inline (Set_Has_Master_Entity);
    pragma Inline (Set_Has_Missing_Return);
@@ -8212,7 +8214,6 @@ package Einfo is
    pragma Inline (Set_Limited_View);
    pragma Inline (Set_Lit_Indexes);
    pragma Inline (Set_Lit_Strings);
-   pragma Inline (Set_Loop_Entry_Attributes);
    pragma Inline (Set_Low_Bound_Tested);
    pragma Inline (Set_Machine_Radix_10);
    pragma Inline (Set_Master_Id);

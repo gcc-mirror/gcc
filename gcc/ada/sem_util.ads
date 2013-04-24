@@ -474,6 +474,11 @@ package Sem_Util is
    --  analyzed. Subsequent uses of this id on a different type denotes the
    --  discriminant at the same position in this new type.
 
+   function Find_Loop_In_Conditional_Block (N : Node_Id) return Node_Id;
+   --  Find the nested loop statement in a conditional block. Loops subject to
+   --  attribute 'Loop_Entry are transformed into blocks. Parts of the original
+   --  loop are nested within the block.
+
    procedure Find_Overlaid_Entity
      (N   : Node_Id;
       Ent : out Entity_Id;
@@ -1523,6 +1528,10 @@ package Sem_Util is
    function Statically_Different (E1, E2 : Node_Id) return Boolean;
    --  Return True if it can be statically determined that the Expressions
    --  E1 and E2 refer to different objects
+
+   function Subject_To_Loop_Entry_Attributes (N : Node_Id) return Boolean;
+   --  Determine whether node N is a loop statement subject to at least one
+   --  'Loop_Entry attribute.
 
    function Subprogram_Access_Level (Subp : Entity_Id) return Uint;
    --  Return the accessibility level of the view denoted by Subp

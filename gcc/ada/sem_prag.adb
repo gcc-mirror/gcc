@@ -13962,7 +13962,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_At_Least_N_Arguments (1);
             Check_Loop_Pragma_Placement;
 
