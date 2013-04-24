@@ -1,3 +1,16 @@
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb, xref_lib.adb, gnatls.adb, sem_ch13.adb: Minor
+	reformatting.
+
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body,
+	Analyze_Subprogram_Body_Helper): Reset contract node to Empty
+	before setting entity to E_Subprogram_Body.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Reset contract node to
+	Empty before setting entity to E_Subprogram_Body.
+
 2013-04-24  Vincent Celier  <celier@adacore.com>
 
 	* gnat_ugn.texi: Document new gnatls switch -aPdir.

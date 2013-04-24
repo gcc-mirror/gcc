@@ -1766,13 +1766,10 @@ begin
                        (Root_Environment.Project_Path,
                         Argv (Argv'First + 3 .. Argv'Last));
 
-                     --  Pass -aPdir to gnatls
+                     --  Pass -aPdir to gnatls, but not to other tools
 
                      if The_Command = List then
                         Arg_Num := Arg_Num + 1;
-
-                     --  but not to other tools
-
                      else
                         Remove_Switch (Arg_Num);
                      end if;

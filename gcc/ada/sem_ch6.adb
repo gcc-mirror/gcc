@@ -1107,6 +1107,7 @@ package body Sem_Ch6 is
          --  Visible generic entity is callable within its own body
 
          Set_Ekind          (Gen_Id,  Ekind (Body_Id));
+         Set_Contract       (Body_Id, Empty);
          Set_Ekind          (Body_Id, E_Subprogram_Body);
          Set_Convention     (Body_Id, Convention (Gen_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
@@ -2902,6 +2903,7 @@ package body Sem_Ch6 is
          end if;
 
          Set_Corresponding_Body (Unit_Declaration_Node (Spec_Id), Body_Id);
+         Set_Contract (Body_Id, Empty);
          Set_Ekind (Body_Id, E_Subprogram_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
