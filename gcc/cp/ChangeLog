@@ -1,3 +1,8 @@
+2013-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53721
+	* parser.c (cp_parser_postfix_dot_deref_expression): Fix thinko.
+
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cxx_sizeof_or_alignof_type): Change -Wpointer-arith
