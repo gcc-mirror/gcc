@@ -1,3 +1,51 @@
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_type.adb, exp_attr.adb, exp_ch4.adb: Minor reformatting.
+
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document 'Update attribute.
+	* sem_attr.adb (Analyze_Attribute, case Update): Remove call
+	to S14_Attribute (S14_Attribute): removed.
+
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* interfac.ads: Add size clauses for IEEE_Float_32/64
+
+2013-04-24  Claire Dross  <dross@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Remove
+	special assignment of Use_Expression_With_Actions for SPARK_Mode.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Check for the presence
+	of the dynamic predicate aspect when trying to determine if the
+	predicate of a type is non-static.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Check
+	for the presence of the dynamic predicate aspect when trying to
+	determine if the predicate of a type is non- static.
+	* sem_ch13.adb (Add_Call): Capture the nature of the
+	inherited ancestor predicate.
+	(Build_Predicate_Functions): Update comments. Rewrite the checks on
+	static predicate application. Complain about the form of a non-static
+	expression only when the type is static.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: Add guard to tree traversal.
+
+2013-04-24  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Clean): Remove local variable Root_Environment,
+	use Makeutl.Root_Environment instead.
+	* gnatcmd.adb: Remove local variable Root_Environment, use
+	Makeutl.Root_Environment instead.
+	* make.adb (Gnatmake): Remove local variable Root_Environment,
+	use Makeutl.Root_Environment instead.
+	* prj-makr.adb: Remove local variable Root_Environment, use
+	Makeutl.Root_Environment instead.
+
 2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_attr.adb (Expand_Loop_Entry_Attribute): Clarify the

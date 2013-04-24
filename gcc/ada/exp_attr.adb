@@ -785,8 +785,7 @@ package body Exp_Attr is
 
          --  When the related loop name appears as the argument of attribute
          --  Loop_Entry, the corresponding label construct is the generated
-         --  block statement. This happens because the expander reuses the
-         --  label.
+         --  block statement. This is because the expander reuses the label.
 
          if Nkind (Loop_Stmt) = N_Block_Statement then
             Decls := Declarations (Loop_Stmt);
@@ -797,8 +796,8 @@ package body Exp_Attr is
          else
             pragma Assert
               (Nkind (Parent (Loop_Stmt)) = N_Handled_Sequence_Of_Statements
-                 and then Nkind (Parent (Parent (Loop_Stmt))) =
-                            N_Block_Statement);
+                and then Nkind (Parent (Parent (Loop_Stmt))) =
+                                                      N_Block_Statement);
 
             Decls := Declarations (Parent (Parent (Loop_Stmt)));
          end if;

@@ -2028,7 +2028,7 @@ package body Sem_Type is
       elsif (Nkind (N) = N_Function_Call
               and then Nkind (Name (N)) = N_Expanded_Name
               and then (Chars (Predef_Subp) /= Name_Op_Expon
-                          or else Hides_Op (User_Subp, Predef_Subp))
+                         or else Hides_Op (User_Subp, Predef_Subp))
               and then Scope (User_Subp) = Entity (Prefix (Name (N))))
         or else Hides_Op (User_Subp, Predef_Subp)
       then
@@ -2060,12 +2060,10 @@ package body Sem_Type is
               and then Nam_In (Chars (Nam1), Name_Op_Multiply, Name_Op_Divide)
               and then
                 (Ada_Version = Ada_83
-                  or else
-                   (Ada_Version >= Ada_2012
-                     and then
-                       In_Same_Declaration_List
-                         (First_Subtype (Typ),
-                            Unit_Declaration_Node (User_Subp))))
+                  or else (Ada_Version >= Ada_2012
+                            and then In_Same_Declaration_List
+                                       (First_Subtype (Typ),
+                                          Unit_Declaration_Node (User_Subp))))
             then
                if It2.Nam = Predef_Subp then
                   return It1;

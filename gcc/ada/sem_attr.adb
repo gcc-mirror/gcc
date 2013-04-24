@@ -376,12 +376,6 @@ package body Sem_Attr is
       pragma No_Return (Error_Attr);
       --  Like Error_Attr, but error is posted at the start of the prefix
 
-      procedure S14_Attribute;
-      --  Called for all attributes defined for formal verification to check
-      --  that the S14_Extensions flag is set.
-      --  Bad name ???
-      --  No such thing as S14_Extensions flag ???
-
       procedure Standard_Attribute (Val : Int);
       --  Used to process attributes whose prefix is package Standard which
       --  yield values of type Universal_Integer. The attribute reference
@@ -1972,18 +1966,6 @@ package body Sem_Attr is
 
          Set_Etype (N, Standard_Boolean);
       end Legal_Formal_Attribute;
-
-      -------------------
-      -- S14_Attribute --
-      -------------------
-
-      procedure S14_Attribute is
-      begin
-         if not Formal_Extensions then
-            Error_Attr
-              ("attribute % requires the use of debug switch -gnatd.V", N);
-         end if;
-      end S14_Attribute;
 
       ------------------------
       -- Standard_Attribute --
@@ -5667,7 +5649,6 @@ package body Sem_Attr is
       --  Start of processing for Update
 
       begin
-         S14_Attribute;
          Check_E1;
 
          if not Is_Object_Reference (P) then

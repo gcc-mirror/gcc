@@ -1868,6 +1868,7 @@ package body Sem_Prag is
 
             begin
                if Is_Entity_Name (N)
+                 and then Present (Entity (N))
                  and then Is_Formal (Entity (N))
                  and then Nkind (Parent (N)) /= N_Type_Conversion
                then
