@@ -1,3 +1,9 @@
+2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimizations/57046
+	* lra-constraints (split_reg): Set up lra_risky_transformations_p
+	for multi-reg splits.
+
 2013-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/x86-64.h (ASM_SPEC): Support -mx32.
