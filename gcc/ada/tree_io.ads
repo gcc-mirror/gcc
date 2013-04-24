@@ -47,7 +47,7 @@ package Tree_IO is
    Tree_Format_Error : exception;
    --  Raised if a format error is detected in the input file
 
-   ASIS_Version_Number : constant := 31;
+   ASIS_Version_Number : constant := 32;
    --  ASIS Version. This is used to check for consistency between the compiler
    --  used to generate trees and an ASIS application that is reading the
    --  trees. It must be incremented whenever a change is made to the tree
@@ -60,6 +60,8 @@ package Tree_IO is
    --      for concurrent types).
    --  30  Add Check_Float_Overflow boolean to tree file
    --  31  Remove read/write of Debug_Pragmas_Disabled/Debug_Pragmas_Enabled
+   --  32  Change the way entities are changed through Next_Entity field in
+   --      the hierarchy of child units
 
    procedure Tree_Read_Initialize (Desc : File_Descriptor);
    --  Called to initialize reading of a tree file. This call must be made

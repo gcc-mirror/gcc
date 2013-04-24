@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -181,12 +181,13 @@ package body System.Soft_Links.Tasking is
 
       --  There is no need for explicit protection against race conditions for
       --  this part because it can only be executed by the environment task
-      --  after all the other tasks have been finalized.
+      --  after all the other tasks have been finalized. Note that there is no
+      --  fall-back handler which could apply to this environment task because
+      --  it has no parents, and, as specified in ARM C.7.3 par. 9/2, "the
+      --  fall-back handler applies only to the dependent tasks of the task".
 
       if Self_Id.Common.Specific_Handler /= null then
          Self_Id.Common.Specific_Handler.all (Cause, Self_Id, EO);
-      elsif Self_Id.Common.Fall_Back_Handler /= null then
-         Self_Id.Common.Fall_Back_Handler.all (Cause, Self_Id, EO);
       end if;
    end Task_Termination_Handler_T;
 

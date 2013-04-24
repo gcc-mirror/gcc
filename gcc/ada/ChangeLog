@@ -1,3 +1,50 @@
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Add a predicate check on an
+	actual the related type has a predicate function.
+	* sem_ch3.adb (Constant_Redeclaration): Ensure that the related
+	type has an invariant procedure before building a call to it.
+	* sem_ch6.adb (Append_Enabled_Item): New routine.
+	(Check_Access_Invariants): Use routine
+	Append_Enabled_Item to chain onto the list of postconditions.
+	(Contains_Enabled_Pragmas): Removed.
+	(Expand_Contract_Cases): Use routine Append_Enabled_Item to chain onto
+	the list of postconditions.
+	(Invariants_Or_Predicates_Present): Removed.
+	(Process_PPCs): Partially reimplemented.
+
+2013-04-24  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* tree_io.ads: Update ASIS_Version_Number because of changes
+	in the way how entities are chained in a scope by means of
+	Next_Entity link.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause, case
+	Storage_Size): If the clause is not from an aspect, insert
+	assignment to size variable of task type at the point of the
+	clause, not after the task definition, to prevent access before
+	elaboration in the back-end.
+
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Sig_Flags): Set correct value for Pragma_Assume.
+
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Document 'Loop_Entry.
+
+2013-04-24  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-tassta.adb, s-tarest.adb (Task_Wrapper): Start looking for
+	fall-back termination handlers from the parents, because they apply
+	only to dependent tasks.
+	* s-solita.adb (Task_Termination_Handler_T): Do not look for fall-back
+	termination handlers because the environment task has no parent,
+	and if it defines one of these handlers it does not apply to
+	itself because they apply only to dependent tasks.
+
 2013-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* sem_type.adb, exp_attr.adb, exp_ch4.adb: Minor reformatting.

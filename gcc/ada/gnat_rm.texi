@@ -277,6 +277,7 @@ Implementation Defined Attributes
 * Integer_Value::
 * Invalid_Value::
 * Large::
+* Loop_Entry::
 * Machine_Size::
 * Mantissa::
 * Max_Interrupt_Priority::
@@ -6682,6 +6683,7 @@ consideration, you should minimize the use of these attributes.
 * Integer_Value::
 * Invalid_Value::
 * Large::
+* Loop_Entry::
 * Machine_Size::
 * Mantissa::
 * Max_Interrupt_Priority::
@@ -7172,6 +7174,36 @@ relevant environment variables at run time.
 The @code{Large} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
+
+@node Loop_Entry
+@unnumberedsec Loop_Entry
+@findex Loop_Entry
+@noindent
+Syntax:
+
+@smallexample @c ada
+X'Loop_Entry [(loop_name)]
+@end smallexample
+
+@noindent
+The @code{Loop_Entry} attribute is used to refer to the value that an
+expression had upon entry to a given loop in much the same way that the
+@code{Old} attribute in a subprogram postcondition can be used to refer
+to the value an expression had upon entry to the subprogram. The
+relevant loop is either identified by the given loop name, or it is the
+innermost enclosing loop when no loop name is given.
+
+@noindent
+A @code{Loop_Entry} attribute can only occur within a
+@code{Loop_Variant} or @code{Loop_Invariant} pragma. A common use of
+@code{Loop_Entry} is to compare the current value of objects with their
+initial value at loop entry, in a @code{Loop_Invariant} pragma.
+
+@noindent
+The effect of using @code{X'Loop_Entry} is the same as declaring
+a constant initialized with the initial value of @code{X} at loop
+entry. This copy is not performed if the loop is not entered, or if the
+corresponding pragmas are ignored or disabled.
 
 @node Machine_Size
 @unnumberedsec Machine_Size

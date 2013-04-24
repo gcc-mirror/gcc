@@ -18218,7 +18218,7 @@ package body Sem_Prag is
       Pragma_Assert                         => -1,
       Pragma_Assert_And_Cut                 => -1,
       Pragma_Assertion_Policy               =>  0,
-      Pragma_Assume                         =>  0,
+      Pragma_Assume                         => -1,
       Pragma_Assume_No_Invalid_Values       =>  0,
       Pragma_Attribute_Definition           => +3,
       Pragma_Asynchronous                   => -1,

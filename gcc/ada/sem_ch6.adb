@@ -332,14 +332,14 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
+      Prev := Current_Entity_In_Scope (Defining_Entity (Spec));
 
       --  If there are previous overloadable entities with the same name,
       --  check whether any of them is completed by the expression function.
 
       if Present (Prev) and then Is_Overloadable (Prev) then
-         Def_Id   := Analyze_Subprogram_Specification (Spec);
-         Prev     := Find_Corresponding_Spec (N);
+         Def_Id := Analyze_Subprogram_Specification (Spec);
+         Prev   := Find_Corresponding_Spec (N);
       end if;
 
       Ret := Make_Simple_Return_Statement (LocX, Expression (N));
@@ -11198,17 +11198,16 @@ package body Sem_Ch6 is
       Plist : List_Id := No_List;
       --  List of generated postconditions
 
+      procedure Append_Enabled_Item (Item : Node_Id; List : in out List_Id);
+      --  Append a node to a list. If there is no list, create a new one. When
+      --  the item denotes a pragma, it is added to the list only when it is
+      --  enabled.
+
       procedure Check_Access_Invariants (E : Entity_Id);
       --  If the subprogram returns an access to a type with invariants, or
       --  has access parameters whose designated type has an invariant, then
       --  under the same visibility conditions as for other invariant checks,
       --  the type invariant must be applied to the returned value.
-
-      function Contains_Enabled_Pragmas (L : List_Id) return Boolean;
-      --  Determine whether list L has at least one enabled pragma. The routine
-      --  ignores other non-pragma elements.
-      --  This is NOT what the routine does??? It returns False if there is
-      --  one ignored pragma ???
 
       procedure Expand_Contract_Cases (CCs : Node_Id; Subp_Id : Entity_Id);
       --  Given pragma Contract_Cases CCs, create the circuitry needed to
@@ -11226,11 +11225,6 @@ package body Sem_Ch6 is
       procedure Insert_After_Last_Declaration (Nod : Node_Id);
       --  Insert node Nod after the last declaration of the context
 
-      function Invariants_Or_Predicates_Present return Boolean;
-      --  Determines if any invariants or predicates are present for any OUT
-      --  or IN OUT parameters of the subprogram, or (for a function) if the
-      --  return value has an invariant.
-
       function Is_Public_Subprogram_For (T : Entity_Id) return Boolean;
       --  T is the entity for a private type for which invariants are defined.
       --  This function returns True if the procedure corresponding to the
@@ -11239,6 +11233,30 @@ package body Sem_Ch6 is
       --  contains the declaration of the private type). A True value means
       --  that an invariant check is required (for an IN OUT parameter, or
       --  the returned value of a function.
+
+      -------------------------
+      -- Append_Enabled_Item --
+      -------------------------
+
+      procedure Append_Enabled_Item (Item : Node_Id; List : in out List_Id) is
+      begin
+         --  Do not chain ignored or disabled pragmas
+
+         if Nkind (Item) = N_Pragma
+           and then (Is_Ignored (Item) or else Is_Disabled (Item))
+         then
+            null;
+
+         --  Add the item
+
+         else
+            if No (List) then
+               List := New_List;
+            end if;
+
+            Append (Item, List);
+         end if;
+      end Append_Enabled_Item;
 
       -----------------------------
       -- Check_Access_Invariants --
@@ -11266,38 +11284,17 @@ package body Sem_Ch6 is
 
                Call := Make_Invariant_Call (Obj);
 
-               Append_To (Plist,
-                 Make_If_Statement (Loc,
-                   Condition =>
-                     Make_Op_Ne (Loc,
-                       Left_Opnd   => Make_Null (Loc),
-                       Right_Opnd  => New_Occurrence_Of (E, Loc)),
-                   Then_Statements => New_List (Call)));
+               Append_Enabled_Item
+                 (Make_If_Statement (Loc,
+                    Condition =>
+                      Make_Op_Ne (Loc,
+                        Left_Opnd   => Make_Null (Loc),
+                        Right_Opnd  => New_Occurrence_Of (E, Loc)),
+                    Then_Statements => New_List (Call)),
+                  List => Plist);
             end if;
          end if;
       end Check_Access_Invariants;
-
-      ------------------------------
-      -- Contains_Enabled_Pragmas --
-      ------------------------------
-
-      --  This routine does not implement its documented spec ???
-
-      function Contains_Enabled_Pragmas (L : List_Id) return Boolean is
-         Prag : Node_Id;
-
-      begin
-         Prag := First (L);
-         while Present (Prag) loop
-            if Nkind (Prag) = N_Pragma and then Is_Ignored (Prag) then
-               return False;
-            end if;
-
-            Next (Prag);
-         end loop;
-
-         return True;
-      end Contains_Enabled_Pragmas;
 
       ---------------------------
       -- Expand_Contract_Cases --
@@ -11759,11 +11756,7 @@ package body Sem_Ch6 is
          --  Raise Assertion_Error when the corresponding consequence of a case
          --  guard that evaluated to True fails.
 
-         if No (Plist) then
-            Plist := New_List;
-         end if;
-
-         Append_To (Plist, Conseq_Checks);
+         Append_Enabled_Item (Conseq_Checks, Plist);
       end Expand_Contract_Cases;
 
       --------------
@@ -11889,51 +11882,6 @@ package body Sem_Ch6 is
          end if;
       end Insert_After_Last_Declaration;
 
-      --------------------------------------
-      -- Invariants_Or_Predicates_Present --
-      --------------------------------------
-
-      function Invariants_Or_Predicates_Present return Boolean is
-         Formal : Entity_Id;
-
-      begin
-         --  Check function return result. If result is an access type there
-         --  may be invariants on the designated type.
-
-         if Ekind (Designator) /= E_Procedure
-           and then Has_Invariants (Etype (Designator))
-         then
-            return True;
-
-         elsif Ekind (Designator) /= E_Procedure
-           and then Is_Access_Type (Etype (Designator))
-           and then Has_Invariants (Designated_Type (Etype (Designator)))
-         then
-            return True;
-         end if;
-
-         --  Check parameters
-
-         Formal := First_Formal (Designator);
-         while Present (Formal) loop
-            if Ekind (Formal) /= E_In_Parameter
-              and then (Has_Invariants (Etype (Formal))
-                         or else Present (Predicate_Function (Etype (Formal))))
-            then
-               return True;
-
-            elsif Is_Access_Type (Etype (Formal))
-              and then Has_Invariants (Designated_Type (Etype (Formal)))
-            then
-               return True;
-            end if;
-
-            Next_Formal (Formal);
-         end loop;
-
-         return False;
-      end Invariants_Or_Predicates_Present;
-
       ------------------------------
       -- Is_Public_Subprogram_For --
       ------------------------------
@@ -11986,6 +11934,14 @@ package body Sem_Ch6 is
          end if;
       end Is_Public_Subprogram_For;
 
+      --  Local variables
+
+      Formal     : Node_Id;
+      Formal_Typ : Entity_Id;
+      Func_Typ   : Entity_Id;
+      Post_Proc  : Entity_Id;
+      Result     : Node_Id;
+
    --  Start of processing for Process_PPCs
 
    begin
@@ -11997,10 +11953,18 @@ package body Sem_Ch6 is
          Designator := Body_Id;
       end if;
 
+      --  Do not process a predicate function as its body will contain a
+      --  recursive call to itself and blow up the stack.
+
+      if Ekind (Designator) = E_Function
+        and then Is_Predicate_Function (Designator)
+      then
+         return;
+
       --  Internally generated subprograms, such as type-specific functions,
       --  don't get assertion checks.
 
-      if Get_TSS_Name (Designator) /= TSS_Null then
+      elsif Get_TSS_Name (Designator) /= TSS_Null then
          return;
       end if;
 
@@ -12153,10 +12117,6 @@ package body Sem_Ch6 is
                --  Capture postcondition pragmas
 
                if Pragma_Name (Prag) = Name_Postcondition then
-                  if Plist = No_List then
-                     Plist := Empty_List;
-                  end if;
-
                   Analyze (Prag);
 
                   --  If expansion is disabled, as in a generic unit, save
@@ -12165,7 +12125,7 @@ package body Sem_Ch6 is
                   if not Expander_Active then
                      Prepend (Grab_PPC, Declarations (N));
                   else
-                     Append (Grab_PPC, Plist);
+                     Append_Enabled_Item (Grab_PPC, Plist);
                   end if;
                end if;
 
@@ -12244,14 +12204,10 @@ package body Sem_Ch6 is
                   if Pragma_Name (Prag) = Name_Postcondition
                     and then (not Class or else Class_Present (Prag))
                   then
-                     if Plist = No_List then
-                        Plist := Empty_List;
-                     end if;
-
                      if not Expander_Active then
                         Prepend (Grab_PPC (Pspec), Declarations (N));
                      else
-                        Append (Grab_PPC (Pspec), Plist);
+                        Append_Enabled_Item (Grab_PPC (Pspec), Plist);
                      end if;
                   end if;
 
@@ -12285,147 +12241,126 @@ package body Sem_Ch6 is
          end Spec_Postconditions;
       end if;
 
-      --  If we had any postconditions and expansion is enabled, or if the
-      --  subprogram has invariants, then build the _Postconditions procedure.
+      --  Add an invariant call to check the result of a function
 
-      if Expander_Active
-        and then (Invariants_Or_Predicates_Present
-                   or else (Present (Plist)
-                             and then Contains_Enabled_Pragmas (Plist)))
+      if Ekind (Designator) /= E_Procedure
+        and then Expander_Active
+        and then Assertions_Enabled
       then
-         if No (Plist) then
-            Plist := Empty_List;
+         Func_Typ := Etype (Designator);
+         Result   := Make_Defining_Identifier (Loc, Name_uResult);
+
+         Set_Etype (Result, Func_Typ);
+
+         --  Add argument for return
+
+         Parms := New_List (
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier => Result,
+             Parameter_Type      => New_Occurrence_Of (Func_Typ, Loc)));
+
+         --  Add invariant call if returning type with invariants and this is a
+         --  public function, i.e. a function declared in the visible part of
+         --  the package defining the private type.
+
+         if Has_Invariants (Func_Typ)
+           and then Present (Invariant_Procedure (Func_Typ))
+           and then Is_Public_Subprogram_For (Func_Typ)
+         then
+            Append_Enabled_Item
+              (Make_Invariant_Call (New_Occurrence_Of (Result, Loc)), Plist);
          end if;
 
-         --  Special processing for function return
+         --  Same if return value is an access to type with invariants
 
-         if Ekind (Designator) /= E_Procedure then
-            declare
-               Rent : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc, Name_uResult);
-               Ftyp : constant Entity_Id := Etype (Designator);
+         Check_Access_Invariants (Result);
 
-            begin
-               Set_Etype (Rent, Ftyp);
+      --  Procedure case
 
-               --  Add argument for return
+      else
+         Parms := No_List;
+      end if;
 
-               Parms :=
-                 New_List (
-                   Make_Parameter_Specification (Loc,
-                     Parameter_Type      => New_Occurrence_Of (Ftyp, Loc),
-                     Defining_Identifier => Rent));
+      --  Add invariant calls and predicate calls for parameters. Note that
+      --  this is done for functions as well, since in Ada 2012 they can have
+      --  IN OUT args.
 
-               --  Add invariant call if returning type with invariants and
-               --  this is a public function, i.e. a function declared in the
-               --  visible part of the package defining the private type.
+      if Expander_Active and then Assertions_Enabled then
+         Formal := First_Formal (Designator);
+         while Present (Formal) loop
+            if Ekind (Formal) /= E_In_Parameter
+              or else Is_Access_Type (Etype (Formal))
+            then
+               Formal_Typ := Etype (Formal);
 
-               if Has_Invariants (Etype (Rent))
-                 and then Present (Invariant_Procedure (Etype (Rent)))
-                 and then Is_Public_Subprogram_For (Etype (Rent))
+               if Has_Invariants (Formal_Typ)
+                 and then Present (Invariant_Procedure (Formal_Typ))
+                 and then Is_Public_Subprogram_For (Formal_Typ)
                then
-                  Append_To (Plist,
-                    Make_Invariant_Call (New_Occurrence_Of (Rent, Loc)));
+                  Append_Enabled_Item
+                    (Make_Invariant_Call (New_Occurrence_Of (Formal, Loc)),
+                     Plist);
                end if;
 
-               --  Same if return value is an access to type with invariants
+               Check_Access_Invariants (Formal);
 
-               Check_Access_Invariants (Rent);
-            end;
-
-         --  Procedure rather than a function
-
-         else
-            Parms := No_List;
-         end if;
-
-         --  Add invariant calls and predicate calls for parameters. Note that
-         --  this is done for functions as well, since in Ada 2012 they can
-         --  have IN OUT args.
-
-         declare
-            Formal : Entity_Id;
-            Ftype  : Entity_Id;
-
-         begin
-            Formal := First_Formal (Designator);
-            while Present (Formal) loop
-               if Ekind (Formal) /= E_In_Parameter
-                 or else Is_Access_Type (Etype (Formal))
-               then
-                  Ftype := Etype (Formal);
-
-                  if Has_Invariants (Ftype)
-                    and then Present (Invariant_Procedure (Ftype))
-                    and then Is_Public_Subprogram_For (Ftype)
-                  then
-                     Append_To (Plist,
-                       Make_Invariant_Call
-                         (New_Occurrence_Of (Formal, Loc)));
-                  end if;
-
-                  Check_Access_Invariants (Formal);
-
-                  if Present (Predicate_Function (Ftype)) then
-                     Append_To (Plist,
-                       Make_Predicate_Check
-                         (Ftype, New_Occurrence_Of (Formal, Loc)));
-                  end if;
+               if Present (Predicate_Function (Formal_Typ)) then
+                  Append_Enabled_Item
+                    (Make_Predicate_Check
+                      (Formal_Typ, New_Occurrence_Of (Formal, Loc)),
+                     Plist);
                end if;
-
-               Next_Formal (Formal);
-            end loop;
-         end;
-
-         --  Build and insert postcondition procedure
-
-         declare
-            Post_Proc : constant Entity_Id :=
-              Make_Defining_Identifier (Loc, Chars => Name_uPostconditions);
-            --  The entity for the _Postconditions procedure
-
-         begin
-            --  Insert the corresponding body of a post condition pragma after
-            --  the last declaration of the context. This ensures that the body
-            --  will not cause any premature freezing as it may mention types:
-
-            --    procedure Proc (Obj : Array_Typ) is
-            --       procedure _postconditions is
-            --       begin
-            --          ... Obj ...
-            --       end _postconditions;
-
-            --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
-            --    begin
-
-            --  In the example above, Obj is of type T but the incorrect
-            --  placement of _postconditions will cause a crash in gigi due to
-            --  an out of order reference. The body of _postconditions must be
-            --  placed after the declaration of Temp to preserve correct
-            --  visibility.
-
-            Insert_After_Last_Declaration (
-              Make_Subprogram_Body (Loc,
-                Specification =>
-                  Make_Procedure_Specification (Loc,
-                    Defining_Unit_Name => Post_Proc,
-                    Parameter_Specifications => Parms),
-
-                Declarations => Empty_List,
-
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => Plist)));
-
-            Set_Ekind (Post_Proc, E_Procedure);
-
-            --  If this is a procedure, set the Postcondition_Proc attribute on
-            --  the proper defining entity for the subprogram.
-
-            if Ekind (Designator) = E_Procedure then
-               Set_Postcondition_Proc (Designator, Post_Proc);
             end if;
-         end;
+
+            Next_Formal (Formal);
+         end loop;
+      end if;
+
+      --  Build and insert postcondition procedure
+
+      if Expander_Active and then Present (Plist) then
+         Post_Proc :=
+           Make_Defining_Identifier (Loc, Chars => Name_uPostconditions);
+
+         --  Insert the corresponding body of a post condition pragma after the
+         --  last declaration of the context. This ensures that the body will
+         --  not cause any premature freezing as it may mention types:
+
+         --    procedure Proc (Obj : Array_Typ) is
+         --       procedure _postconditions is
+         --       begin
+         --          ... Obj ...
+         --       end _postconditions;
+
+         --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
+         --    begin
+
+         --  In the example above, Obj is of type T but the incorrect placement
+         --  of _postconditions will cause a crash in gigi due to an out of
+         --  order reference. The body of _postconditions must be placed after
+         --  the declaration of Temp to preserve correct visibility.
+
+         Insert_After_Last_Declaration (
+           Make_Subprogram_Body (Loc,
+             Specification              =>
+               Make_Procedure_Specification (Loc,
+                 Defining_Unit_Name       => Post_Proc,
+                 Parameter_Specifications => Parms),
+
+             Declarations               => Empty_List,
+
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => Plist)));
+
+         Set_Ekind (Post_Proc, E_Procedure);
+
+         --  If this is a procedure, set the Postcondition_Proc attribute on
+         --  the proper defining entity for the subprogram.
+
+         if Ekind (Designator) = E_Procedure then
+            Set_Postcondition_Proc (Designator, Post_Proc);
+         end if;
 
          Set_Has_Postconditions (Designator);
       end if;
