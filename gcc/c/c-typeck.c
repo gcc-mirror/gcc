@@ -9093,6 +9093,13 @@ c_finish_bc_stmt (location_t loc, tree *label_p, bool is_break)
       error_at (loc, "break statement used with OpenMP for loop");
       return NULL_TREE;
 
+    case 2:
+      if (is_break) 
+	error ("break statement within _Cilk_for loop");
+      else 
+	error ("continue statement within _Cilk_for loop");
+      return NULL_TREE;
+
     default:
       gcc_unreachable ();
     }

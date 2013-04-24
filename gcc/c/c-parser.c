@@ -10736,7 +10736,7 @@ c_parser_cilk_clause_noassert (c_parser *parser ATTRIBUTE_UNUSED,
 }
 
 /* Cilk Plus:
-   vectorlength (constant-expression-list )
+   vectorlength ( constant-expression-list )
 
    constant-expression-list:
      constant-expression
@@ -10780,6 +10780,16 @@ c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses)
 
   return clauses;
 }
+
+/* Cilk Plus:
+   vectorlengthfor ( type-name ) */
+/*
+static tree
+c_parser_cilk_clause_vectorlengthfor (c_parser *parser, tree clauses)
+{
+  // FIXME: Implement
+}
+*/
 
 /* Cilk Plus:
    linear ( simd-linear-variable-list )
@@ -11084,15 +11094,6 @@ c_parser_cilk_for_statement (c_parser *parser, enum rid for_keyword,
   body = c_parser_c99_block_statement (parser);
   c_break_label = save_break;
   c_cont_label = save_cont;
-
-  // FIXME: Disallow the following constructs within a SIMD loop:
-  //
-  // RETURN
-  // GOTO
-  // _Cilk_spawn
-  // _Cilk_for
-  // OpenMP directive or construct
-  // Calls to setjmp()
 
   if (!fail)
     {
