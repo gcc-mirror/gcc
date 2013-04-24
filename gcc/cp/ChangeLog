@@ -1,3 +1,9 @@
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cxx_sizeof_or_alignof_type): Change -Wpointer-arith
+	pedwarn to simply use OPT_Wpointer_arith.
+	(cp_build_unary_op): Likewise.
+
 2013-04-24  Jason Merrill  <jason@redhat.com>
 
 	N3648: init-captures are named.
