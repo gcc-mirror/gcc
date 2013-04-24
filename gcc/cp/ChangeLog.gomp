@@ -1,3 +1,13 @@
+2013-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Add missing break after
+	case 'i'.
+	(cp_parser_omp_cancellation_point): Diagnose error if
+	#pragma omp cancellation isn't followed by point.
+	* semantics.c (finish_omp_clauses): Complain also about zero
+	in alignment of aligned directive or safelen/simdlen expressions.
+	(finish_omp_cancel): Fix up diagnostics wording.
+
 2013-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (finish_omp_clauses): On OMP_CLAUSE_LINEAR clauses

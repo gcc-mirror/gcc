@@ -4245,7 +4245,7 @@ finish_omp_clauses (tree clauses)
 	      if (!processing_template_decl)
 		{
 		  if (TREE_CODE (t) != INTEGER_CST
-		      || tree_int_cst_sgn (t) == -1)
+		      || tree_int_cst_sgn (t) != 1)
 		    {
 		      error ("%qs length expression must be positive constant"
 			     " integer expression",
@@ -4355,7 +4355,7 @@ finish_omp_clauses (tree clauses)
 	      if (!processing_template_decl)
 		{
 		  if (TREE_CODE (t) != INTEGER_CST
-		      || tree_int_cst_sgn (t) == -1)
+		      || tree_int_cst_sgn (t) != 1)
 		    {
 		      error ("%<aligned%> clause alignment expression must be "
 			     "positive constant integer expression");
@@ -5394,7 +5394,7 @@ finish_omp_cancel (tree clauses)
     mask = 8;
   else
     {
-      error ("%<#pragma omp cancellation point must specify one of "
+      error ("%<#pragma omp cancel must specify one of "
 	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
       return;
     }

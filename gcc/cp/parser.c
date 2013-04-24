@@ -25767,6 +25767,7 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'i':
 	  if (!strcmp ("inbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_INBRANCH;
+	  break;
 	case 'l':
 	  if (!strcmp ("lastprivate", p))
 	    result = PRAGMA_OMP_CLAUSE_LASTPRIVATE;
@@ -26644,7 +26645,7 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list)
 
 /* OpenMP 4.0:
    map ( map-kind : variable-list )
-   map ( variable-list)
+   map ( variable-list )
 
    map-kind:
      alloc | to | from | tofrom  */
@@ -28553,6 +28554,7 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok)
     }
   if (!point_seen)
     {
+      cp_parser_error (parser, "expected %<point%>");
       cp_parser_require_pragma_eol (parser, pragma_tok);
       return;
     }

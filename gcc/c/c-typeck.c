@@ -10573,6 +10573,93 @@ c_finish_omp_task (location_t loc, tree clauses, tree block)
   return add_stmt (stmt);
 }
 
+/* Like c_begin_compound_stmt, except force the retention of the BLOCK.  */
+
+tree
+c_begin_omp_taskgroup (void)
+{
+  tree block;
+
+  keep_next_level ();
+  block = c_begin_compound_stmt (true);
+
+  return block;
+}
+
+/* Generate code for #pragma omp taskgroup.  */
+
+void
+c_finish_omp_taskgroup (location_t loc, tree block)
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKGROUP_START);
+  tree stmt = build_call_expr_loc (loc, fn, 0);
+  block = c_end_compound_stmt (loc, block, true);
+  add_stmt (stmt);
+  add_stmt (block);
+  fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKGROUP_END);
+  stmt = build_call_expr_loc (loc, fn, 0);
+  add_stmt (stmt);
+}
+
+/* Generate GOMP_cancel call for #pragma omp cancel.  */
+
+void
+c_finish_omp_cancel (location_t loc, tree clauses)
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCEL);
+  int mask = 0;
+  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+    mask = 1;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+    mask = 2;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+    mask = 4;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+    mask = 8;
+  else
+    {
+      error_at (loc, "%<#pragma omp cancel must specify one of "
+		     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> "
+		     "clauses");
+      return;
+    }
+  tree stmt = build_call_expr_loc (loc, fn, 1,
+				   build_int_cst (integer_type_node, mask));
+  tree ifc = find_omp_clause (clauses, OMP_CLAUSE_IF);
+  if (ifc != NULL_TREE)
+    stmt = build3 (COND_EXPR, void_type_node, OMP_CLAUSE_IF_EXPR (ifc),
+		   stmt, NULL_TREE);
+  add_stmt (stmt);
+}
+
+/* Generate GOMP_cancellation_point call for
+   #pragma omp cancellation point.  */
+
+void
+c_finish_omp_cancellation_point (location_t loc, tree clauses)
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_CANCELLATION_POINT);
+  int mask = 0;
+  if (find_omp_clause (clauses, OMP_CLAUSE_PARALLEL))
+    mask = 1;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_FOR))
+    mask = 2;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_SECTIONS))
+    mask = 4;
+  else if (find_omp_clause (clauses, OMP_CLAUSE_TASKGROUP))
+    mask = 8;
+  else
+    {
+      error_at (loc, "%<#pragma omp cancellation point must specify one of "
+		     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> "
+		     "clauses");
+      return;
+    }
+  tree stmt = build_call_expr_loc (loc, fn, 1,
+				   build_int_cst (integer_type_node, mask));
+  add_stmt (stmt);
+}
+
 /* For all elements of CLAUSES, validate them vs OpenMP constraints.
    Remove any elements from the list that are invalid.  */
 
@@ -10580,6 +10667,7 @@ tree
 c_finish_omp_clauses (tree clauses)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
+  bitmap_head aligned_head;
   tree c, t, *pc = &clauses;
   const char *name;
 
@@ -10587,6 +10675,7 @@ c_finish_omp_clauses (tree clauses)
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
   bitmap_initialize (&firstprivate_head, &bitmap_default_obstack);
   bitmap_initialize (&lastprivate_head, &bitmap_default_obstack);
+  bitmap_initialize (&aligned_head, &bitmap_default_obstack);
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
@@ -10674,6 +10763,19 @@ c_finish_omp_clauses (tree clauses)
 	    }
 	  goto check_dup_generic;
 
+	case OMP_CLAUSE_LINEAR:
+	  name = "linear";
+	  t = OMP_CLAUSE_DECL (c);
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+	      && TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"linear clause applied to non-integral non-pointer");
+	      remove = true;
+	      break;
+	    }
+	  goto check_dup_generic;
+
 	check_dup_generic:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
@@ -10738,6 +10840,71 @@ c_finish_omp_clauses (tree clauses)
 	    bitmap_set_bit (&lastprivate_head, DECL_UID (t));
 	  break;
 
+	case OMP_CLAUSE_ALIGNED:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE is not a variable in %<aligned%> clause", t);
+	      remove = true;
+	    }
+	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE appears more than once in %<aligned%> clauses",
+			t);
+	      remove = true;
+	    }
+	  else
+	    bitmap_set_bit (&aligned_head, DECL_UID (t));
+	  break;
+
+	case OMP_CLAUSE_DEPEND:
+	  t = OMP_CLAUSE_DECL (c);
+	  /* FIXME: depend clause argument may be also array section.  */
+	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE is not a variable in %<depend%> clause", t);
+	      remove = true;
+	    }
+	  break;
+
+	case OMP_CLAUSE_MAP:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_FROM:
+	  t = OMP_CLAUSE_DECL (c);
+	  /* FIXME: map clause argument may be also array section.  */
+	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE is not a variable in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else if (TREE_CODE (t) == VAR_DECL && DECL_THREAD_LOCAL_P (t))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD is threadprivate variable in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  break;
+
+	case OMP_CLAUSE_UNIFORM:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (TREE_CODE (t) != PARM_DECL)
+	    {
+	      if (DECL_P (t))
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not an argument in %<uniform%> clause", t);
+	      else
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not an argument in %<uniform%> clause", t);
+	      remove = true;
+	    }
+	  break;
+
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_SCHEDULE:
@@ -10748,6 +10915,17 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_SAFELEN:
+	case OMP_CLAUSE_SIMDLEN:
+	case OMP_CLAUSE_DEVICE:
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	case OMP_CLAUSE_PARALLEL:
+	case OMP_CLAUSE_FOR:
+	case OMP_CLAUSE_SECTIONS:
+	case OMP_CLAUSE_TASKGROUP:
+	case OMP_CLAUSE_PROC_BIND:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 

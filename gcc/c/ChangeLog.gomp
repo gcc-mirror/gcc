@@ -1,3 +1,42 @@
+2013-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_compound_statement,
+	c_parser_statement): Adjust comments for OpenMP 3.0+
+	additions.
+	(c_parser_pragma): Handle PRAGMA_OMP_CANCEL and
+	PRAGMA_OMP_CANCELLATION_POINT.
+	(c_parser_omp_clause_name): Handle new OpenMP 4.0 clauses.
+	(c_parser_omp_clause_collapse): Fully fold collapse
+	expression.
+	(c_parser_omp_clause_branch, c_parser_omp_clause_cancelkind,
+	c_parser_omp_clause_num_teams, c_parser_omp_clause_aligned,
+	c_parser_omp_clause_linear, c_parser_omp_clause_safelen,
+	c_parser_omp_clause_simdlen, c_parser_omp_clause_depend,
+	c_parser_omp_clause_map, c_parser_omp_clause_device,
+	c_parser_omp_clause_dist_schedule, c_parser_omp_clause_proc_bind,
+	c_parser_omp_clause_to, c_parser_omp_clause_from,
+	c_parser_omp_clause_uniform): New functions.
+	(c_parser_omp_all_clauses): Handle new OpenMP 4.0 clauses.
+	(c_parser_omp_for_loop): Add CODE argument, pass it through
+	to c_finish_omp_for.
+	(OMP_SIMD_CLAUSE_MASK): Define.
+	(c_parser_omp_simd): New function.
+	(c_parser_omp_for): Parse #pragma omp for simd.
+	(OMP_PARALLEL_CLAUSE_MASK): Add OMP_CLAUSE_PROC_BIND.
+	(c_parser_omp_parallel): Parse #pragma omp parallel for simd.
+	(OMP_TASK_CLAUSE_MASK): Add OMP_CLAUSE_DEPEND.
+	(c_parser_omp_taskgroup): New function.
+	(OMP_CANCEL_CLAUSE_MASK, OMP_CANCELLATION_POINT_CLAUSE_MASK): Define.
+	(c_parser_omp_cancel, c_parser_omp_cancellation_point): New functions.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_SIMD and
+	PRAGMA_OMP_TASKGROUP.
+	(c_parser_transaction_cancel): Formatting fix.
+	* c-tree.h (c_begin_omp_taskgroup, c_finish_omp_taskgroup,
+	c_finish_omp_cancel, c_finish_omp_cancellation_point): New prototypes.
+	* c-typeck.c (c_begin_omp_taskgroup, c_finish_omp_taskgroup,
+	c_finish_omp_cancel, c_finish_omp_cancellation_point): New functions.
+	(c_finish_omp_clauses): Handle new OpenMP 4.0 clauses.
+
 2013-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_all_clauses): Change mask argument type
