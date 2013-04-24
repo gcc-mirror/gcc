@@ -38,13 +38,8 @@ package Sem_Prag is
    procedure Analyze_Pragma (N : Node_Id);
    --  Analyze procedure for pragma reference node N
 
-   procedure Analyze_CTC_In_Decl_Part (N : Node_Id; S : Entity_Id);
-   --  Special analyze routine for contract-case and test-case pragmas that
-   --  appears within a declarative part where the pragma is associated with
-   --  a subprogram specification. N is the pragma node, and S is the entity
-   --  for the related subprogram. This procedure does a preanalysis of the
-   --  expressions in the pragma as "spec expressions" (see section in Sem
-   --  "Handling of Default and Per-Object Expressions...").
+   procedure Analyze_Contract_Cases_In_Decl_Part (N : Node_Id);
+   --  Perform full analysis and expansion of delayed pragma Contract_Cases
 
    procedure Analyze_Depends_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Depends
@@ -59,6 +54,14 @@ package Sem_Prag is
    --  entity for the related subprogram. This procedure does a preanalysis
    --  of the expressions in the pragma as "spec expressions" (see section
    --  in Sem "Handling of Default and Per-Object Expressions...").
+
+   procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id; S : Entity_Id);
+   --  Special analyze routine for contract-case and test-case pragmas that
+   --  appears within a declarative part where the pragma is associated with
+   --  a subprogram specification. N is the pragma node, and S is the entity
+   --  for the related subprogram. This procedure does a preanalysis of the
+   --  expressions in the pragma as "spec expressions" (see section in Sem
+   --  "Handling of Default and Per-Object Expressions...").
 
    function Check_Kind (Nam : Name_Id) return Name_Id;
    --  This function is used in connection with pragmas Assert, Check,

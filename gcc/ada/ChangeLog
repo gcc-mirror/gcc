@@ -1,3 +1,32 @@
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb: Remove with and use clause for Sem_Prag.
+	(Freeze_Subprogram): Call Analyze_Subprogram_Contract to analyze
+	the contract of a subprogram.
+	* sem_ch3.adb: Remove with and use clause for Sem_Prag.
+	(Analyze_Declarations): Call Analyze_Subprogram_Contract to
+	analyze the contract of a subprogram.
+	* sem_ch6.adb (Analyze_Subprogram_Contract): New routine.
+	(Check_Subprogram_Contract): Removed.
+	* sem_ch6.ads (Analyze_Subprogram_Contract): New routine.
+	(Check_Subprogram_Contract): Removed.
+	(Expand_Contract_Cases): Add a guard against malformed contract cases.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Call
+	Decorate_Delayed_Aspect_And_Pragma to decorate aspects
+	Contract_Cases, Depends and Global. Reimplement the analysis of
+	aspect Contract_Cases.
+	(Decorate_Delayed_Aspect_And_Pragma): New routine.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): New routine.
+	(Analyze_CTC_In_Decl_Part): Removed.
+	(Analyze_Pragma): Reimplement the analysis of pragma Contract_Cases.
+	(Analyze_Test_Case_In_Decl_Part): New routine.
+	(Find_Related_Subprogram): New routine.
+	(Requires_Profile_Installation): Add new formal Prag. Update
+	the logic to take into account the origin of the pragma.
+	* sem_prag.ads (Analyze_Contract_Cases_In_Decl_Part): New routine.
+	(Analyze_CTC_In_Decl_Part): Removed.
+	(Analyze_Test_Case_In_Decl_Part): New routine.
+
 2013-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Process_Convention): Move Stdcall tests to
