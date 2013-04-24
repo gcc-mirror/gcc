@@ -1370,7 +1370,7 @@ package body Sem_Prag is
    begin
       Set_Analyzed (N);
 
-      Subp_Decl := Parent (Corresponding_Aspect (N));
+      Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
       Clause    := Expression (Arg1);
 
@@ -1746,7 +1746,7 @@ package body Sem_Prag is
    begin
       Set_Analyzed (N);
 
-      Subp_Decl := Parent (Corresponding_Aspect (N));
+      Subp_Decl := Find_Related_Subprogram (N);
       Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
       List      := Expression (Arg1);
 
@@ -10625,7 +10625,7 @@ package body Sem_Prag is
             --  associated with a subprogram declaration or a body that acts
             --  as a spec.
 
-            Subp_Decl := Parent (Corresponding_Aspect (N));
+            Subp_Decl := Find_Related_Subprogram (N, Check_Duplicates => True);
 
             if Nkind (Subp_Decl) /= N_Subprogram_Declaration
               and then (Nkind (Subp_Decl) /= N_Subprogram_Body
@@ -11904,7 +11904,7 @@ package body Sem_Prag is
             --  associated with a subprogram declaration or a body that acts
             --  as a spec.
 
-            Subp_Decl := Parent (Corresponding_Aspect (N));
+            Subp_Decl := Find_Related_Subprogram (N, Check_Duplicates => True);
 
             if Nkind (Subp_Decl) /= N_Subprogram_Declaration
               and then (Nkind (Subp_Decl) /= N_Subprogram_Body

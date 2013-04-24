@@ -1,3 +1,16 @@
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb: Add guard in Available_View.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Use
+	Find_Related_Subprogram to find the associated subprogram.
+	(Analyze_Global_In_Decl_List): Use Find_Related_Subprogram
+	to find the associated subprogram.
+	(Analyze_Pragma): Use Find_Related_Subprogram to find the associated
+	subprogram.
+
 2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb: Remove with and use clause for Sem_Prag.
