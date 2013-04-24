@@ -1335,6 +1335,16 @@ package body Sem_Ch13 is
                       Chars      => Chars (Id),
                       Expression => Relocate_Node (Expr));
 
+                  --  If the address is specified we treat the entity as
+                  --  referenced, to avoid spurious warnings. This is analogous
+                  --  to what is done with an attribute definition clause, but
+                  --  here we don't want to generate a reference because this
+                  --  is the point of definition of the entity.
+
+                  if A_Id = Aspect_Address then
+                     Set_Referenced (E);
+                  end if;
+
                --  Case 2: Aspects corresponding to pragmas
 
                --  Case 2a: Aspects corresponding to pragmas with two

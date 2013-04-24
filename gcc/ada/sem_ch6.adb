@@ -7917,13 +7917,19 @@ package body Sem_Ch6 is
             --  on discriminants and others do not (and requiring the extra
             --  formal would introduce distributed overhead).
 
+            --  If the type does not have a completion yet, treat as prior to
+            --  Ada 2012 for consistency.
+
             if Has_Discriminants (Formal_Type)
               and then not Is_Constrained (Formal_Type)
               and then not Is_Indefinite_Subtype (Formal_Type)
               and then (Ada_Version < Ada_2012
-                         or else
-                           not (Is_Tagged_Type (Underlying_Type (Formal_Type))
-                                 and then Is_Limited_Type (Formal_Type)))
+                         or else No (Underlying_Type (Formal_Type))
+                         or else not
+                           (Is_Limited_Type (Formal_Type)
+                             and then
+                               (Is_Tagged_Type
+                                  (Underlying_Type (Formal_Type)))))
             then
                Set_Extra_Constrained
                  (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "O"));
@@ -11198,7 +11204,9 @@ package body Sem_Ch6 is
 
       function Contains_Enabled_Pragmas (L : List_Id) return Boolean;
       --  Determine whether list L has at least one enabled pragma. The routine
-      --  ignores nother non-pragma elements.
+      --  ignores other non-pragma elements.
+      --  This is NOT what the routine does??? It returns False if there is
+      --  one ignored pragma ???
 
       procedure Expand_Contract_Cases (CCs : Node_Id; Subp_Id : Entity_Id);
       --  Given pragma Contract_Cases CCs, create the circuitry needed to
@@ -11270,6 +11278,8 @@ package body Sem_Ch6 is
       ------------------------------
       -- Contains_Enabled_Pragmas --
       ------------------------------
+
+      --  This routine does not implement its documented spec ???
 
       function Contains_Enabled_Pragmas (L : List_Id) return Boolean is
          Prag : Node_Id;
@@ -12277,10 +12287,9 @@ package body Sem_Ch6 is
       --  subprogram has invariants, then build the _Postconditions procedure.
 
       if Expander_Active
-        and then
-          (Invariants_Or_Predicates_Present
-             or else
-               (Present (Plist) and then Contains_Enabled_Pragmas (Plist)))
+        and then (Invariants_Or_Predicates_Present
+                   or else (Present (Plist)
+                             and then Contains_Enabled_Pragmas (Plist)))
       then
          if No (Plist) then
             Plist := Empty_List;

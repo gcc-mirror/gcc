@@ -16393,6 +16393,10 @@ Several such switches may be specified simultaneously.
 Source path manipulation. Same meaning as the equivalent @command{gnatmake}
 flags (@pxref{Switches for gnatmake}).
 
+@item ^-aP^/ADD_PROJECT_SEARCH_DIR=^@var{dir}
+@cindex @option{^-aP^/ADD_PROJECT_SEARCH_DIR=^} (@code{gnatls})
+Add @var{dir} at the beginning of the project search dir.
+
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@code{gnatls})
 Specifies the default location of the runtime library. Same meaning as the
