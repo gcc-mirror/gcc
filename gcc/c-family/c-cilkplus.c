@@ -179,7 +179,7 @@ find_invalid_stmts_in_loops (tree *tp, int *walk_subtrees, void *data)
     case OMP_ATOMIC_READ:
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
-      error_at (EXPR_LOCATION (*tp), "OpenMP statments are not allowed "
+      error_at (EXPR_LOCATION (*tp), "OpenMP statements are not allowed "
 		"within loops annotated with #pragma simd");
       *valid = false;
       *walk_subtrees = 0;

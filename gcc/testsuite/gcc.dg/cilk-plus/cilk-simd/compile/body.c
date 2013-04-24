@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fcilkplus" } */
+/* { dg-options "-O3 -fcilkplus -fopenmp" } */
 
 int *a, *b, c;
 void *jmpbuf[10];
@@ -23,5 +23,13 @@ void foo()
     {
       if (c==5)
 	break; /* { dg-error "break statement within" } */
+    }
+
+#pragma simd
+  for (i=0; i < 1000; ++i)
+    {
+#pragma omp for /* { dg-error "OpenMP statements are not allowed" } */
+      for (j=0; j < 1000; ++j)
+	a[i] = b[i];
     }
 }
