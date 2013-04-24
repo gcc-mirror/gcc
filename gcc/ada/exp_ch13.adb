@@ -567,19 +567,26 @@ package body Exp_Ch13 is
                then
                   declare
                      Prag : Node_Id;
+
                   begin
+                     --  Comment this loop ???
+
                      Prag := Pre_Post_Conditions (Contract (E));
                      while Present (Prag) loop
                         Analyze_PPC_In_Decl_Part (Prag, E);
-
                         Prag := Next_Pragma (Prag);
                      end loop;
+
+                     --  Why don't we do the same for Contract_Test_Cases ???
+
+                     --  Comment this loop?
 
                      Prag := Classifications (Contract (E));
                      while Present (Prag) loop
                         if Pragma_Name (Prag) = Name_Depends then
                            Analyze_Depends_In_Decl_Part (Prag);
                         else
+                           pragma Assert (Pragma_Name (Prag) = Name_Global);
                            Analyze_Global_In_Decl_Part (Prag);
                         end if;
 

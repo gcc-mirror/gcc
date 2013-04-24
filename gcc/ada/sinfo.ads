@@ -7043,18 +7043,18 @@ package Sinfo is
       --  Classifications (Node3) (set to Empty if none)
 
       --  Pre_Post_Conditions contains a collection of pragmas that correspond
-      --  to pre- and post-conditions associated with an entry or a subprogram.
+      --  to pre- and postconditions associated with an entry or a subprogram.
       --  The pragmas can either come from source or be the byproduct of aspect
-      --  expansion. The ordering in the list is of LIFO fasion.
+      --  expansion. The ordering in the list is of LIFO fashion.
 
       --  Contract_Test_Cases contains a collection of pragmas that correspond
       --  to aspects/pragmas Contract_Cases and Test_Case. The ordering in the
-      --  list is of LIFO fasion.
+      --  list is of LIFO fashion.
 
       --  Classifications contains pragmas that either categorize subprogram
       --  inputs and outputs or establish dependencies between them. Currently
       --  pragmas Depends and Global are stored in this list. The ordering is
-      --  of LIFO fasion.
+      --  of LIFO fashion.
 
       -------------------
       -- Expanded_Name --

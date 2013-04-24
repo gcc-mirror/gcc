@@ -338,7 +338,8 @@ package body Sem_Prag is
             Get_Requires_From_CTC_Pragma (N),
             Get_Ensures_From_CTC_Pragma (N));
 
-      elsif Pragma_Name (N) = Name_Contract_Cases then
+      else
+         pragma Assert (Pragma_Name (N) = Name_Contract_Cases);
          Analyze_Contract_Cases
            (Expression (First (Pragma_Argument_Associations (N))));
 
@@ -6259,8 +6260,8 @@ package body Sem_Prag is
                end if;
             end loop;
 
-         --  When the convention is Java or CIL, we also allow Import to be
-         --  given for packages, generic packages, exceptions, record
+         --  When the convention is Java or CIL, we also allow Import to
+         --  be given for packages, generic packages, exceptions, record
          --  components, and access to subprograms.
 
          elsif (C = Convention_Java or else C = Convention_CIL)
@@ -8297,7 +8298,7 @@ package body Sem_Prag is
 
                elsif Nkind (State) = N_Null then
                   Name := New_Internal_Name ('S');
-                  Is_Null   := True;
+                  Is_Null := True;
                   Null_Seen := True;
 
                   --  Catch a case where a null state appears in a list of
@@ -8352,11 +8353,13 @@ package body Sem_Prag is
 
                   --  Volatile requires exactly one Input or Output
 
+                  --  Isn't this just Input_Seen = Output_Seen ???
+
                   if Volatile_Seen
                     and then
-                      ((Input_Seen and then Output_Seen)           --  both
+                      ((Input_Seen and Output_Seen)           --  both
                          or else
-                       (not Input_Seen and then not Output_Seen))  --  none
+                       (not Input_Seen and not Output_Seen))  --  none
                   then
                      Error_Msg_N
                        ("property Volatile requires exactly one Input or "

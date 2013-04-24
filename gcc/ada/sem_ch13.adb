@@ -929,6 +929,8 @@ package body Sem_Ch13 is
       --  Insert a postcondition-like pragma into the tree depending on the
       --  context. Prag one of the following: Pre, Post, Depends or Global.
 
+      --  Why not also Contract_Cases ???
+
       ---------------------------
       -- Insert_Delayed_Pragma --
       ---------------------------
@@ -985,6 +987,8 @@ package body Sem_Ch13 is
       Ins_Node : Node_Id := N;
       --  Insert pragmas/attribute definition clause after this node when no
       --  delayed analysis is required.
+
+      --  Start of processing for Analyze_Aspect_Specifications
 
       --  The general processing involves building an attribute definition
       --  clause or a pragma node that corresponds to the aspect. Then in order
