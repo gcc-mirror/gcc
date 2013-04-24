@@ -1487,6 +1487,11 @@ package body Sem_Ch13 is
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => Arg_List,
                         Pragma_Name                  => P_Name);
+
+                     --  Convention is a static name, and must be associated
+                     --  with the entity at once.
+
+                     Delay_Required := False;
                   end;
 
                --  CPU, Interrupt_Priority, Priority
