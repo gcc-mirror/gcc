@@ -379,6 +379,8 @@ package body Sem_Attr is
       procedure S14_Attribute;
       --  Called for all attributes defined for formal verification to check
       --  that the S14_Extensions flag is set.
+      --  Bad name ???
+      --  No such thing as S14_Extensions flag ???
 
       procedure Standard_Attribute (Val : Int);
       --  Used to process attributes whose prefix is package Standard which
@@ -3728,8 +3730,6 @@ package body Sem_Attr is
          --  Regardless of variations, the attribute reference does not have an
          --  expression list. Instead, all available expressions are stored as
          --  indexed components.
-
-         S14_Attribute;
 
          --  When the attribute is part of an indexed component, find the first
          --  expression as it will determine the semantics of 'Loop_Entry.

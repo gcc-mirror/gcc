@@ -8828,9 +8828,9 @@ package body Sem_Prag is
             end if;
          end Annotate;
 
-         ----------------------------------
-         -- Assert/Assert_And_Cut/Assume --
-         ----------------------------------
+         -------------------------------------------------
+         -- Assert/Assert_And_Cut/Assume/Loop_Invariant --
+         -------------------------------------------------
 
          --  pragma Assert
          --    (   [Check => ]  Boolean_EXPRESSION
@@ -8844,17 +8844,27 @@ package body Sem_Prag is
          --    (   [Check => ]  Boolean_EXPRESSION
          --     [, [Message =>] Static_String_EXPRESSION]);
 
+         --  pragma Loop_Invariant
+         --    (   [Check => ]  Boolean_EXPRESSION
+         --     [, [Message =>] Static_String_EXPRESSION]);
+
          when Pragma_Assert         |
               Pragma_Assert_And_Cut |
-              Pragma_Assume         =>
+              Pragma_Assume         |
+              Pragma_Loop_Invariant =>
          Assert : declare
             Expr : Node_Id;
             Newa : List_Id;
 
          begin
+            --  Assert is an Ada 2005 RM-defined pragma
+
             if Prag_Id = Pragma_Assert then
                Ada_2005_Pragma;
-            else -- Pragma_Assert_And_Cut
+
+            --  The remaining ones are GNAT pragmas
+
+            else
                GNAT_Pragma;
             end if;
 
@@ -8863,19 +8873,32 @@ package body Sem_Prag is
             Check_Arg_Order ((Name_Check, Name_Message));
             Check_Optional_Identifier (Arg1, Name_Check);
 
-            --  We treat pragma Assert[_And_Cut] as equivalent to:
+            --  Special processing for Loop_Invariant
 
-            --    pragma Check (Assert[_And_Cut], condition [, msg]);
+            if Prag_Id = Pragma_Loop_Invariant then
 
-            --  So rewrite pragma in this manner, transfer the message
-            --  argument if present, and analyze the result
+               --  Check restricted placement, must be within a loop
 
-            --  Pragma Assert_And_Cut is treated exactly like pragma Assert by
-            --  the frontend. Formal verification tools may use it to "cut" the
-            --  paths through the code, to make verification tractable. When
-            --  dealing with a semantically analyzed tree, the information that
-            --  a Check node N corresponds to a source Assert_And_Cut pragma
-            --  can be retrieved from the pragma kind of Original_Node(N).
+               Check_Loop_Pragma_Placement;
+
+               --  Do preanalyze to deal with embedded Loop_Entry attribute
+
+               Preanalyze_Assert_Expression (Expression (Arg1), Any_Boolean);
+            end if;
+
+            --  Implement Assert[_And_Cut]/Assume/Loop_Invariant by generating
+            --  a corresponding Check pragma:
+
+            --    pragma Check (name, condition [, msg]);
+
+            --  Where name is the identifier matching the pragma name. So
+            --  rewrite pragma in this manner, transfer the message argument
+            --  if present, and analyze the result
+
+            --  Note: When dealing with a semantically analyzed tree, the
+            --  information that a Check node N corresponds to a source Assert,
+            --  Assume, or Assert_And_Cut pragma can be retrieved from the
+            --  pragma kind of Original_Node(N).
 
             Expr := Get_Pragma_Arg (Arg1);
             Newa := New_List (
@@ -13889,36 +13912,6 @@ package body Sem_Prag is
 
             Set_Standard_Fpt_Formats;
          end Long_Float;
-
-         --------------------
-         -- Loop_Invariant --
-         --------------------
-
-         --  pragma Loop_Invariant ( boolean_EXPRESSION );
-
-         when Pragma_Loop_Invariant => Loop_Invariant : declare
-         begin
-            GNAT_Pragma;
-            S14_Pragma;
-            Check_Arg_Count (1);
-            Check_Loop_Pragma_Placement;
-
-            Preanalyze_Assert_Expression (Expression (Arg1), Any_Boolean);
-
-            --  Transform pragma Loop_Invariant into equivalent pragma Check
-            --  Generate:
-            --    pragma Check (Loop_Invaraint, Arg1);
-
-            Rewrite (N,
-              Make_Pragma (Loc,
-                Chars                        => Name_Check,
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Make_Identifier (Loc, Name_Loop_Invariant)),
-                  Relocate_Node (Arg1))));
-
-            Analyze (N);
-         end Loop_Invariant;
 
          -------------------
          -- Loop_Optimize --
