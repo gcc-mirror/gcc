@@ -1,3 +1,13 @@
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56970
+	* init.c (build_offset_ref): Add tsubst_flags_t parameter.
+	* semantics.c (finish_qualified_id_expr): Likewise.
+	(finish_id_expression): Update.
+	* typeck.c (cp_build_addr_expr_1): Likewise.
+	* pt.c (tsubst_qualified_id, resolve_nondeduced_context): Likewise.
+	* cp-tree.h: Update declarations.
+
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
 	Core 1586
