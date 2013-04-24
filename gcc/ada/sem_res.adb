@@ -6821,6 +6821,11 @@ package body Sem_Res is
       --  impose an expected type (as can be the case in an equality operation)
       --  the expression must be rejected.
 
+      procedure Explain_Redundancy (N : Node_Id);
+      --  Attempt to explain the nature of a redundant comparison with True. If
+      --  the expression N is too complex, this routine issues a general error
+      --  message.
+
       function Find_Unique_Access_Type return Entity_Id;
       --  In the case of allocators and access attributes, the context must
       --  provide an indication of the specific access type to be used. If
@@ -6849,6 +6854,72 @@ package body Sem_Res is
             end if;
          end if;
       end Check_If_Expression;
+
+      ------------------------
+      -- Explain_Redundancy --
+      ------------------------
+
+      procedure Explain_Redundancy (N : Node_Id) is
+         Error  : Name_Id;
+         Val    : Node_Id;
+         Val_Id : Entity_Id;
+
+      begin
+         Val := N;
+
+         --  Strip the operand down to an entity
+
+         loop
+            if Nkind (Val) = N_Selected_Component then
+               Val := Selector_Name (Val);
+            else
+               exit;
+            end if;
+         end loop;
+
+         --  The construct denotes an entity
+
+         if Is_Entity_Name (Val) and then Present (Entity (Val)) then
+            Val_Id := Entity (Val);
+
+            --  Do not generate an error message when the comparison is done
+            --  against the enumeration literal Standard.True.
+
+            if Ekind (Val_Id) /= E_Enumeration_Literal then
+
+               --  Build a customized error message
+
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer ("?r?");
+
+               if Ekind (Val_Id) = E_Component then
+                  Add_Str_To_Name_Buffer ("component ");
+
+               elsif Ekind (Val_Id) = E_Constant then
+                  Add_Str_To_Name_Buffer ("constant ");
+
+               elsif Ekind (Val_Id) = E_Discriminant then
+                  Add_Str_To_Name_Buffer ("discriminant ");
+
+               elsif Is_Formal (Val_Id) then
+                  Add_Str_To_Name_Buffer ("parameter ");
+
+               elsif Ekind (Val_Id) = E_Variable then
+                  Add_Str_To_Name_Buffer ("variable ");
+               end if;
+
+               Add_Str_To_Name_Buffer ("& is always True!");
+               Error := Name_Find;
+
+               Error_Msg_NE (Get_Name_String (Error), Val, Val_Id);
+            end if;
+
+         --  The construct is too complex to disect, issue a general message
+
+         else
+            Error_Msg_N ("?r?expression is always True!", Val);
+         end if;
+      end Explain_Redundancy;
 
       -----------------------------
       -- Find_Unique_Access_Type --
@@ -6979,12 +7050,13 @@ package body Sem_Res is
 
          if Warn_On_Redundant_Constructs
            and then Comes_From_Source (N)
+           and then Comes_From_Source (R)
            and then Is_Entity_Name (R)
            and then Entity (R) = Standard_True
-           and then Comes_From_Source (R)
          then
             Error_Msg_N -- CODEFIX
-              ("?r?comparison with True is redundant!", R);
+              ("?r?comparison with True is redundant!", N);
+            Explain_Redundancy (Original_Node (R));
          end if;
 
          Check_Unset_Reference (L);
