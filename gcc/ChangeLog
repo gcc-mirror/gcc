@@ -1,3 +1,11 @@
+2013-04-24  Julian Brown  <julian@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* dwarf2out.c (gen_enumeration_type_die): Fix HOST_BITS_PER_WIDE_INT
+	dependency behavior in enumeration type DIE generation. Add TODO
+	note to comments about future DW_FORM_sdata/udata re-work of related
+	code.
+
 2013-04-23  Lawrence Crowl  <crowl@google.com>
 
 	* Makefile.in: Update as needed below.
