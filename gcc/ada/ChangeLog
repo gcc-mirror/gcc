@@ -1,3 +1,10 @@
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* snames.ads-tmpl: Minor change to list
+	Loop_(In)variant not in configuration pragma.
+	* sem_ch3.adb (Analyze_Declarations): Do not look at the original node
+	for analyzing the expressions in pre/postconditions.
+
 2013-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* gnatcmd.adb, xref_lib.adb, gnatls.adb, sem_ch13.adb: Minor

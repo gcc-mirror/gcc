@@ -411,9 +411,7 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
-   Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
    Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
-   Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
@@ -549,6 +547,8 @@ package Snames is
    --  of the type Pragma_Id, and the functions Get_Pragma_Id and Is_Pragma_Id
    --  correctly recognize and process Lock_Free. Lock_Free is a GNAT pragma.
 
+   Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
    Name_Machine_Attribute              : constant Name_Id := N + $; -- GNAT
    Name_Main                           : constant Name_Id := N + $; -- GNAT
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
@@ -1721,9 +1721,7 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Long_Float,
-      Pragma_Loop_Invariant,
       Pragma_Loop_Optimize,
-      Pragma_Loop_Variant,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
@@ -1827,6 +1825,8 @@ package Snames is
       Pragma_Linker_Options,
       Pragma_Linker_Section,
       Pragma_List,
+      Pragma_Loop_Invariant,
+      Pragma_Loop_Variant,
       Pragma_Machine_Attribute,
       Pragma_Main,
       Pragma_Main_Storage,

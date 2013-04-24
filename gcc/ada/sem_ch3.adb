@@ -2187,17 +2187,14 @@ package body Sem_Ch3 is
       --  delayed visibility requirement.
 
       declare
-         Decl      : Node_Id;
-         Subp_Decl : Node_Id;
-         Subp_Id   : Entity_Id;
+         Decl    : Node_Id;
+         Subp_Id : Entity_Id;
 
       begin
          Decl := First (L);
          while Present (Decl) loop
-            Subp_Decl := Original_Node (Decl);
-
-            if Nkind (Subp_Decl) = N_Subprogram_Declaration then
-               Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
+            if Nkind (Decl) = N_Subprogram_Declaration then
+               Subp_Id := Defining_Unit_Name (Specification (Decl));
                Analyze_Subprogram_Contract (Subp_Id);
             end if;
 
