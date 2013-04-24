@@ -1,8 +1,10 @@
-#include <stdlib.h>
 #include <setjmp.h>
 
-static sigjmp_buf env;
-void *stderr;
+extern void abort (void);
+extern void exit (int);
+
+static jmp_buf env;
+
 void baz (void)
 {
   __asm__ volatile ("" : : : "memory");
