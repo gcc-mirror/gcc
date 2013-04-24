@@ -2545,6 +2545,7 @@ package body Sem_Ch5 is
       Iter : constant Node_Id := Iteration_Scheme (N);
       Loc  : constant Source_Ptr := Sloc (N);
       Ent  : Entity_Id;
+      Stmt : Node_Id;
 
    --  Start of processing for Analyze_Loop_Statement
 
@@ -2707,13 +2708,22 @@ package body Sem_Ch5 is
          Analyze_Statements (Statements (N));
       end if;
 
+      --  When the iteration scheme of a loop contains attribute 'Loop_Entry,
+      --  the loop is transformed into a conditional block. Retrieve the loop.
+
+      Stmt := N;
+
+      if Subject_To_Loop_Entry_Attributes (Stmt) then
+         Stmt := Find_Loop_In_Conditional_Block (Stmt);
+      end if;
+
       --  Finish up processing for the loop. We kill all current values, since
       --  in general we don't know if the statements in the loop have been
       --  executed. We could do a bit better than this with a loop that we
       --  know will execute at least once, but it's not worth the trouble and
       --  the front end is not in the business of flow tracing.
 
-      Process_End_Label (N, 'e', Ent);
+      Process_End_Label (Stmt, 'e', Ent);
       End_Scope;
       Kill_Current_Values;
 
@@ -2724,15 +2734,15 @@ package body Sem_Ch5 is
       --  before making this call, since Check_Infinite_Loop_Warning relies on
       --  being able to use semantic visibility information to find references.
 
-      if Comes_From_Source (N) then
-         Check_Infinite_Loop_Warning (N);
+      if Comes_From_Source (Stmt) then
+         Check_Infinite_Loop_Warning (Stmt);
       end if;
 
       --  Code after loop is unreachable if the loop has no WHILE or FOR and
       --  contains no EXIT statements within the body of the loop.
 
       if No (Iter) and then not Has_Exit (Ent) then
-         Check_Unreachable_Code (N);
+         Check_Unreachable_Code (Stmt);
       end if;
    end Analyze_Loop_Statement;
 

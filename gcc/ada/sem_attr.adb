@@ -3891,19 +3891,7 @@ package body Sem_Attr is
             Error_Attr_P ("prefix of attribute % must denote an entity");
          end if;
 
-         Set_Etype (N, Etype (P));
-
-         --  Associate the attribute with its related loop
-
-         if No (Loop_Entry_Attributes (Loop_Id)) then
-            Set_Loop_Entry_Attributes (Loop_Id, New_Elmt_List);
-         end if;
-
-         --  A Loop_Entry may be [pre]analyzed several times, depending on the
-         --  context. Ensure that it appears only once in the attributes list
-         --  of the related loop.
-
-         Append_Unique_Elmt (N, Loop_Entry_Attributes (Loop_Id));
+         Set_Etype (N, P_Type);
       end Loop_Entry;
 
       -------------

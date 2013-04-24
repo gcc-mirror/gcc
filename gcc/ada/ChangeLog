@@ -1,3 +1,58 @@
+2013-04-24  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Host_Entry): Introduce intermediate copy of
+	memory location pointed to by Hostent_H_Addr, as it might not
+	have sufficient alignment.
+
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* repinfo.adb (List_Rep_Info): Set the value of Unit_Casing before
+	calling subprograms which may read it.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Remove Loop_Entry_Attributes from the usage of
+	nodes. Flag 260 is now used.
+	(Has_Loop_Entry_Attributes): New routine.
+	(Loop_Entry_Attributes): Removed.
+	(Set_Has_Loop_Entry_Attributes): New routine.
+	(Set_Loop_Entry_Attributes): Removed.
+	(Write_Entity_Flags): Write out Flag 260.
+	(Write_Field10_Name): Remove the output for Loop_Entry_Attributes.
+	* einfo.ads: Remove attribute Loop_Entry_Attributes,
+	its related comment and uses in nodes.	Add new attribute
+	Has_Loop_Entry_Attributes, related comment and uses in loop nodes.
+	(Has_Loop_Entry_Attributes): New routine and pragma Inline.
+	(Loop_Entry_Attributes): Removed along with pragma Inline.
+	(Set_Has_Loop_Entry_Attributes): New routine and pragma Inline.
+	(Set_Loop_Entry_Attributes): Removed along with pragma Inline.
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): New routine.
+	(Expand_N_Attribute_Reference): Expand attribute 'Loop_Entry.
+	* exp_ch5.adb: Remove with and use clause for Elists.
+	(Expand_Loop_Entry_Attributes): Removed.
+	(Expand_N_Loop_Statement): Add local variable Stmt. Rename local
+	constant Isc to Scheme. When a loop is subject to attribute
+	'Loop_Entry, retrieve the nested loop from the conditional
+	block. Move the processing of controlled object at the end of
+	loop expansion.
+	* sem_attr.adb (Analyze_Attribute): Do not chain attribute
+	'Loop_Entry to its related loop.
+	* sem_ch5.adb (Analyze_Loop_Statement): Add local variable
+	Stmt. When the iteration scheme mentions attribute 'Loop_Entry,
+	the entire loop is rewritten into a block.  Retrieve the nested
+	loop in such cases to complete the analysis.
+	* sem_util.ads, sem_util.adb (Find_Loop_In_Conditional_Block): New
+	routine.
+	(Subject_To_Loop_Entry_Attributes): New routine.
+
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb (Expand_Loop_Variant): Generate pragma Check
+	(Loop_Variant, xxx) rather than Assert (xxx).
+	* gnat_rm.texi: Document pragma Loop_Variant.
+	* sem_prag.adb (Analyze_Pragma, case Loop_Variant): Remove call
+	to S14_Pragma.
+
 2013-04-24  Yannick Moy  <moy@adacore.com>
 
 	* adabkend.adb, ali-util.adb, ali.adb, debug.adb,

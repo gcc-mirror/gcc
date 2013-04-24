@@ -114,7 +114,8 @@ package body Repinfo is
       Table_Name           => "FE_Rep_Table");
 
    Unit_Casing : Casing_Type;
-   --  Identifier casing for current unit
+   --  Identifier casing for current unit. This is set by List_Rep_Info for
+   --  each unit, before calling subprograms which may read it.
 
    Need_Blank_Line : Boolean;
    --  Set True if a blank line is needed before outputting any information for
@@ -988,11 +989,11 @@ package body Repinfo is
       then
          for U in Main_Unit .. Last_Unit loop
             if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
+               Unit_Casing := Identifier_Casing (Source_Index (U));
 
                --  Normal case, list to standard output
 
                if not List_Representation_Info_To_File then
-                  Unit_Casing := Identifier_Casing (Source_Index (U));
                   Write_Eol;
                   Write_Str ("Representation information for unit ");
                   Write_Unit_Name (Unit_Name (U));

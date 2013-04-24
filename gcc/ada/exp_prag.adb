@@ -830,9 +830,9 @@ package body Exp_Prag is
 
    --        if Flag then
    --           if Curr_1 /= Old_1 then
-   --              pragma Assert (Curr_1 > Old_1);
+   --              pragma Check (Loop_Variant, Curr_1 > Old_1);
    --           else
-   --              pragma Assert (Curr_2 < Old_2);
+   --              pragma Check (Loop_Variant, Curr_2 < Old_2);
    --           end if;
    --        else
    --           Flag := True;
@@ -999,12 +999,14 @@ package body Exp_Prag is
          --  Step 5: Create corresponding assertion to verify change of value
 
          --  Generate:
-         --    pragma Assert (Curr <|> Old);
+         --    pragma Check (Loop_Variant, Curr <|> Old);
 
          Prag :=
            Make_Pragma (Loc,
-             Chars                        => Name_Assert,
+             Chars                        => Name_Check,
              Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Loc,
+                 Expression => Make_Identifier (Loc, Name_Loop_Variant)),
                Make_Pragma_Argument_Association (Loc,
                  Expression =>
                    Make_Op (Loc,

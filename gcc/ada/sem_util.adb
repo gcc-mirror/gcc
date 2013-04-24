@@ -4740,6 +4740,41 @@ package body Sem_Util is
       raise Program_Error;
    end Find_Corresponding_Discriminant;
 
+   ------------------------------------
+   -- Find_Loop_In_Conditional_Block --
+   ------------------------------------
+
+   function Find_Loop_In_Conditional_Block (N : Node_Id) return Node_Id is
+      Stmt : Node_Id;
+
+   begin
+      Stmt := N;
+
+      if Nkind (Stmt) = N_If_Statement then
+         Stmt := First (Then_Statements (Stmt));
+      end if;
+
+      pragma Assert (Nkind (Stmt) = N_Block_Statement);
+
+      --  Inspect the statements of the conditional block. In general the loop
+      --  should be the first statement in the statement sequence of the block,
+      --  but the finalization machinery may have introduced extra object
+      --  declarations.
+
+      Stmt := First (Statements (Handled_Statement_Sequence (Stmt)));
+      while Present (Stmt) loop
+         if Nkind (Stmt) = N_Loop_Statement then
+            return Stmt;
+         end if;
+
+         Next (Stmt);
+      end loop;
+
+      --  The expansion of attribute 'Loop_Entry produced a malformed block
+
+      raise Program_Error;
+   end Find_Loop_In_Conditional_Block;
+
    --------------------------
    -- Find_Overlaid_Entity --
    --------------------------
@@ -13869,6 +13904,33 @@ package body Sem_Util is
         and then not Is_Formal (Entity (R1))
         and then not Is_Formal (Entity (R2));
    end Statically_Different;
+
+   --------------------------------------
+   -- Subject_To_Loop_Entry_Attributes --
+   --------------------------------------
+
+   function Subject_To_Loop_Entry_Attributes (N : Node_Id) return Boolean is
+      Stmt : Node_Id;
+
+   begin
+      Stmt := N;
+
+      --  The expansion mechanism transform a loop subject to at least one
+      --  'Loop_Entry attribute into a conditional block. Infinite loops lack
+      --  the conditional part.
+
+      if Nkind_In (Stmt, N_Block_Statement, N_If_Statement)
+        and then Nkind (Original_Node (N)) = N_Loop_Statement
+      then
+         Stmt := Original_Node (N);
+      end if;
+
+      return
+        Nkind (Stmt) = N_Loop_Statement
+          and then Present (Identifier (Stmt))
+          and then Present (Entity (Identifier (Stmt)))
+          and then Has_Loop_Entry_Attributes (Entity (Identifier (Stmt)));
+   end Subject_To_Loop_Entry_Attributes;
 
    -----------------------------
    -- Subprogram_Access_Level --

@@ -2485,8 +2485,8 @@ package body GNAT.Sockets is
 
       Aliases_Count, Addresses_Count : Natural;
 
-      --  H_Length is not used because it is currently only set to 4
-      --  H_Addrtype is always AF_INET
+      --  H_Length is not used because it is currently only ever set to 4, as
+      --  H_Addrtype is always AF_INET.
 
    begin
       Aliases_Count := 0;
@@ -2514,10 +2514,24 @@ package body GNAT.Sockets is
          for J in Result.Addresses'Range loop
             declare
                Addr : In_Addr;
-               for Addr'Address use
-                 Hostent_H_Addr (E, C.int (J - Result.Addresses'First));
-               pragma Import (Ada, Addr);
+
+               --  Hostent_H_Addr (E, <index>) may return an address that is
+               --  not correctly aligned for In_Addr, so we need to use
+               --  an intermediate copy operation on a type with an alignemnt
+               --  of 1 to recover the value.
+
+               subtype Addr_Buf_T is C.char_array (1 .. Addr'Size / 8);
+               Unaligned_Addr : Addr_Buf_T;
+               for Unaligned_Addr'Address
+                 use Hostent_H_Addr (E, C.int (J - Result.Addresses'First));
+               pragma Import (Ada, Unaligned_Addr);
+
+               Aligned_Addr : Addr_Buf_T;
+               for Aligned_Addr'Address use Addr'Address;
+               pragma Import (Ada, Aligned_Addr);
+
             begin
+               Aligned_Addr := Unaligned_Addr;
                To_Inet_Addr (Addr, Result.Addresses (J));
             end;
          end loop;
