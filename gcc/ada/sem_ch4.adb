@@ -2388,12 +2388,20 @@ package body Sem_Ch4 is
 
       Analyze (P);
 
+      --  If P is an explicit dereference whose prefix is of a remote access-
+      --  to-subprogram type, then N has already been rewritten as a subprogram
+      --  call and analyzed.
+
       if Nkind (N) in N_Subprogram_Call then
+         return;
 
-         --  If P is an explicit dereference whose prefix is of a
-         --  remote access-to-subprogram type, then N has already
-         --  been rewritten as a subprogram call and analyzed.
+      --  When the prefix is attribute 'Loop_Entry and the sole expression of
+      --  the indexed component denotes a loop name, the indexed form is turned
+      --  into an attribute reference.
 
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Loop_Entry
+      then
          return;
       end if;
 

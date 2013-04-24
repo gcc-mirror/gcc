@@ -1,3 +1,24 @@
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Swap_Private_Dependents): New internal routine
+	to Install_Private_Declarations, to make the installation of
+	private dependents recursive in the presence of child units.
+	* sem_ch3.adb (Build_Discriminated_Subtype): Initialize properly
+	the Private_Dependents of a private subtype.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Update the
+	retrieval of the block declarations.
+	* par-ch4.adb (P_Name): Let the name parsing machinery create
+	a sequence of nested indexed components for attribute Loop_Entry.
+	* sem_attr.adb (Analyze_Attribute): Add local constant
+	Context. Reimplement part of the analysis of attribute Loop_Entry.
+	(Convert_To_Indexed_Component): Removed.
+	* sem_ch4.adb (Analyze_Indexed_Component_Form): Do not analyze
+	an indexed component after it has been rewritten into attribute
+	Loop_Entry.
+
 2013-04-24  Yannick Moy  <moy@adacore.com>
 
 	* snames.ads-tmpl: Minor change to list

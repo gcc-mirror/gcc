@@ -782,7 +782,15 @@ package body Exp_Attr is
       --  'Loop_Entry attribute. Retrieve the declarative list of the block.
 
       if Has_Loop_Entry_Attributes (Loop_Id) then
-         Decls  := Declarations (Parent (Parent (Loop_Stmt)));
+         if Nkind (Loop_Stmt) = N_Block_Statement then
+            Decls := Declarations (Loop_Stmt);
+         else
+            --  What is going on here??? comments/assertions needed to explain
+            --  the assumption being made about the tree???
+
+            Decls := Declarations (Parent (Parent (Loop_Stmt)));
+         end if;
+
          Result := Empty;
 
       --  Transform the loop into a conditional block

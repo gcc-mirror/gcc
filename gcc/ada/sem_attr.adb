@@ -2136,20 +2136,6 @@ package body Sem_Attr is
          E1 := Empty;
          E2 := Empty;
 
-      --  Do not analyze the expressions of attribute Loop_Entry. Depending on
-      --  the number of arguments and/or the nature of the first argument, the
-      --  whole attribute reference may be rewritten into an indexed component.
-      --  In the case of two or more arguments, the expressions are analyzed
-      --  when the indexed component is analyzed, otherwise the sole argument
-      --  is preanalyzed to determine whether it is a loop name.
-
-      elsif Aname = Name_Loop_Entry then
-         E1 := First (Exprs);
-
-         if Present (E1) then
-            E2 := Next (E1);
-         end if;
-
       else
          E1 := First (Exprs);
          Analyze (E1);
@@ -3641,11 +3627,6 @@ package body Sem_Attr is
          --  Inspect the prefix for any uses of entities declared within the
          --  related loop. Loop_Id denotes the loop identifier.
 
-         procedure Convert_To_Indexed_Component;
-         --  Transform the attribute reference into an indexed component where
-         --  the prefix is Prefix'Loop_Entry and the expressions are associated
-         --  with the indexed component.
-
          --------------------------------
          -- Check_References_In_Prefix --
          --------------------------------
@@ -3712,27 +3693,9 @@ package body Sem_Attr is
             Check_References (P);
          end Check_References_In_Prefix;
 
-         ----------------------------------
-         -- Convert_To_Indexed_Component --
-         ----------------------------------
-
-         procedure Convert_To_Indexed_Component is
-            New_Loop_Entry : constant Node_Id := Relocate_Node (N);
-
-         begin
-            --  The new Loop_Entry loses its arguments. They will be converted
-            --  into the expressions of the indexed component.
-
-            Set_Expressions (New_Loop_Entry, No_List);
-
-            Rewrite (N,
-              Make_Indexed_Component (Loc,
-                Prefix      => New_Loop_Entry,
-                Expressions => Exprs));
-         end Convert_To_Indexed_Component;
-
          --  Local variables
 
+         Context           : constant Node_Id := Parent (N);
          Enclosing_Loop    : Node_Id;
          In_Loop_Assertion : Boolean   := False;
          Loop_Id           : Entity_Id := Empty;
@@ -3742,47 +3705,77 @@ package body Sem_Attr is
       --  Start of processing for Loop_Entry
 
       begin
+         --  Attribute 'Loop_Entry may appear in several flavors:
+
+         --    * Prefix'Loop_Entry - in this form, the attribute applies to the
+         --        nearest enclosing loop.
+
+         --    * Prefix'Loop_Entry (Expr) - depending on what Expr denotes, the
+         --        attribute may be related to a loop denoted by label Expr or
+         --        the prefix may denote an array object and Expr may act as an
+         --        indexed component.
+
+         --    * Prefix'Loop_Entry (Expr1, ..., ExprN) - the attribute applies
+         --        to the nearest enclosing loop, all expressions are part of
+         --        an indexed component.
+
+         --    * Prefix'Loop_Entry (Expr) (...) (...) - depending on what Expr
+         --        denotes, the attribute may be related to a loop denoted by
+         --        label Expr or the prefix may denote a multidimensional array
+         --        array object and Expr along with the rest of the expressions
+         --        may act as indexed components.
+
+         --  Regardless of variations, the attribute reference does not have an
+         --  expression list. Instead, all available expressions are stored as
+         --  indexed components.
+
          S14_Attribute;
 
-         --  The attribute reference appears as
-         --    Prefix'Loop_Entry (Expr1, Expr2, ... ExprN)
+         --  When the attribute is part of an indexed component, find the first
+         --  expression as it will determine the semantics of 'Loop_Entry.
 
-         --  In this case, the loop name is omitted and the arguments are part
-         --  of an indexed component. Transform the whole attribute reference
-         --  to reflect this scenario.
+         if Nkind (Context) = N_Indexed_Component then
+            E1 := First (Expressions (Context));
+            E2 := Next (E1);
 
-         if Present (E2) then
-            Convert_To_Indexed_Component;
-            Analyze (N);
-            return;
+            --  The attribute reference appears in the following form:
 
-         --  The attribute reference appears as
-         --    Prefix'Loop_Entry (Loop_Name)
-         --      or
-         --    Prefix'Loop_Entry (Expr1)
+            --    Prefix'Loop_Entry (Exp1, Expr2, ..., ExprN) [(...)]
 
-         --  Depending on what Expr1 resolves to, either rewrite the reference
-         --  into an indexed component or continue with the analysis.
+            --  In this case, the loop name is omitted and no rewriting is
+            --  required.
 
-         elsif Present (E1) then
+            if Present (E2) then
+               null;
 
-            --  Do not expand the argument as it may have side effects. Simply
-            --  preanalyze to determine whether it is a loop or something else.
+            --  The form of the attribute is:
 
-            Preanalyze_And_Resolve (E1);
+            --    Prefix'Loop_Entry (Expr) [(...)]
 
-            if Is_Entity_Name (E1)
-              and then Present (Entity (E1))
-              and then Ekind (Entity (E1)) = E_Loop
-            then
-               Loop_Id := Entity (E1);
-
-            --  The argument is not a loop name
+            --  If Expr denotes a loop entry, the whole attribute and indexed
+            --  component will have to be rewritten to reflect this relation.
 
             else
-               Convert_To_Indexed_Component;
-               Analyze (N);
-               return;
+               pragma Assert (Present (E1));
+
+               --  Do not expand the expression as it may have side effects.
+               --  Simply preanalyze to determine whether it is a loop name or
+               --  something else.
+
+               Preanalyze_And_Resolve (E1);
+
+               if Is_Entity_Name (E1)
+                 and then Present (Entity (E1))
+                 and then Ekind (Entity (E1)) = E_Loop
+               then
+                  Loop_Id := Entity (E1);
+
+                  --  Transform the attribute and enclosing indexed component
+
+                  Set_Expressions (N, Expressions (Context));
+                  Rewrite   (Context, N);
+                  Set_Etype (Context, P_Type);
+               end if;
             end if;
          end if;
 
