@@ -67,6 +67,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_SCIL; use Sem_SCIL;
 with Sem_Util; use Sem_Util;
@@ -8293,6 +8294,42 @@ package body Exp_Ch6 is
             Set_Returns_By_Ref (Subp);
          end if;
       end;
+
+      --  Wnen freezing a null procedure, analyze its delayed aspects now
+      --  because we may not have reached the end of the declarative list when
+      --  delayed aspects are normally analyzed. This ensures that dispatching
+      --  calls are properly rewritten when the generated _Postcondition
+      --  procedure is analyzed in the null procedure body.
+
+      if Nkind (Parent (Subp)) = N_Procedure_Specification
+        and then Null_Present (Parent (Subp))
+      then
+         declare
+            Prag : Node_Id;
+
+         begin
+            --  Analyze all pre- and post-conditions
+
+            Prag := Pre_Post_Conditions (Contract (Subp));
+            while Present (Prag) loop
+               Analyze_PPC_In_Decl_Part (Prag, Subp);
+               Prag := Next_Pragma (Prag);
+            end loop;
+
+            --  Analyze classification aspects Depends and Global
+
+            Prag := Classifications (Contract (Subp));
+            while Present (Prag) loop
+               if Pragma_Name (Prag) = Name_Depends then
+                  Analyze_Depends_In_Decl_Part (Prag);
+               else
+                  Analyze_Global_In_Decl_Part (Prag);
+               end if;
+
+               Prag := Next_Pragma (Prag);
+            end loop;
+         end;
+      end if;
    end Freeze_Subprogram;
 
    -----------------------
