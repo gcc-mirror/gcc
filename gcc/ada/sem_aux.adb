@@ -86,8 +86,12 @@ package body Sem_Aux is
 
          return Get_Full_View (Non_Limited_View (Typ));
 
+      --  If it is class_wide, check whether the specific type comes from
+      --  A limited_with.
+
       elsif Is_Class_Wide_Type (Typ)
         and then Is_Incomplete_Type (Etype (Typ))
+        and then From_With_Type (Etype (Typ))
         and then Present (Non_Limited_View (Etype (Typ)))
       then
          return Class_Wide_Type (Non_Limited_View (Etype (Typ)));
