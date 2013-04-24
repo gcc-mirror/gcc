@@ -64,7 +64,6 @@ with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
-with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Smem; use Sem_Smem;
 with Sem_Type; use Sem_Type;
@@ -2181,59 +2180,25 @@ package body Sem_Ch3 is
          D := Next_Node;
       end loop;
 
-      --  One more thing to do, we need to scan the declarations to check
-      --  for any precondition/postcondition pragmas (Pre/Post aspects have
-      --  by this stage been converted into corresponding pragmas). It is
-      --  at this point that we analyze the expressions in such pragmas,
-      --  to implement the delayed visibility requirement.
+      --  One more thing to do, we need to scan the declarations to check for
+      --  any precondition/postcondition pragmas (Pre/Post aspects have by this
+      --  stage been converted into corresponding pragmas). It is at this point
+      --  that we analyze the expressions in such pragmas, to implement the
+      --  delayed visibility requirement.
 
       declare
-         Decl : Node_Id;
-         Spec : Node_Id;
-         Sent : Entity_Id;
-         Prag : Node_Id;
+         Decl      : Node_Id;
+         Subp_Decl : Node_Id;
+         Subp_Id   : Entity_Id;
 
       begin
          Decl := First (L);
          while Present (Decl) loop
-            if Nkind (Original_Node (Decl)) = N_Subprogram_Declaration then
-               Spec := Specification (Original_Node (Decl));
-               Sent := Defining_Unit_Name (Spec);
+            Subp_Decl := Original_Node (Decl);
 
-               --  Analyze preconditions and postconditions
-
-               Prag := Pre_Post_Conditions (Contract (Sent));
-               while Present (Prag) loop
-                  Analyze_PPC_In_Decl_Part (Prag, Sent);
-                  Prag := Next_Pragma (Prag);
-               end loop;
-
-               --  Analyze contract-cases and test-cases
-
-               Prag := Contract_Test_Cases (Contract (Sent));
-               while Present (Prag) loop
-                  Analyze_CTC_In_Decl_Part (Prag, Sent);
-                  Prag := Next_Pragma (Prag);
-               end loop;
-
-               --  Analyze classification pragmas
-
-               Prag := Classifications (Contract (Sent));
-               while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Depends then
-                     Analyze_Depends_In_Decl_Part (Prag);
-                  else
-                     pragma Assert (Pragma_Name (Prag) = Name_Global);
-                     Analyze_Global_In_Decl_Part (Prag);
-                  end if;
-
-                  Prag := Next_Pragma (Prag);
-               end loop;
-
-               --  At this point, entities have been attached to identifiers.
-               --  This is required to be able to detect suspicious contracts.
-
-               Check_Subprogram_Contract (Sent);
+            if Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
+               Analyze_Subprogram_Contract (Subp_Id);
             end if;
 
             Next (Decl);

@@ -181,6 +181,13 @@ package body Sem_Prag is
    --  to Uppercase or Lowercase, then a new string literal with appropriate
    --  casing is constructed.
 
+   function Find_Related_Subprogram
+     (Prag             : Node_Id;
+      Check_Duplicates : Boolean := False) return Node_Id;
+   --  Find the declaration of the related subprogram subject to pragma Prag.
+   --  If flag Check_Duplicates is set, the routine emits errors concerning
+   --  duplicate pragmas.
+
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
    --  original one, following the renaming chain) is returned. Otherwise the
@@ -213,10 +220,12 @@ package body Sem_Prag is
    --  pragma in the source program, a breakpoint on rv catches this place in
    --  the source, allowing convenient stepping to the point of interest.
 
-   function Requires_Profile_Installation (Subp : Node_Id) return Boolean;
+   function Requires_Profile_Installation
+     (Prag : Node_Id;
+      Subp : Node_Id) return Boolean;
    --  Subsidiary routine to the analysis of pragma Depends and pragma Global.
    --  Determine whether the profile of subprogram Subp must be installed into
-   --  visibility to access its formals.
+   --  visibility to access its formals from pragma Prag.
 
    procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id);
    --  Place semantic information on the argument of an Elaborate/Elaborate_All
@@ -282,33 +291,57 @@ package body Sem_Prag is
       end if;
    end Adjust_External_Name_Case;
 
-   ------------------------------
-   -- Analyze_CTC_In_Decl_Part --
-   ------------------------------
+   -----------------------------------------
+   -- Analyze_Contract_Cases_In_Decl_Part --
+   -----------------------------------------
 
-   procedure Analyze_CTC_In_Decl_Part (N : Node_Id; S : Entity_Id) is
+   procedure Analyze_Contract_Cases_In_Decl_Part (N : Node_Id) is
+      Others_Seen : Boolean := False;
 
-      procedure Analyze_Contract_Cases (Aggr : Node_Id);
-      --  Pre-analyze the guard and consequence expressions of a Contract_Cases
-      --  pragma/aspect aggregate expression.
+      procedure Analyze_Contract_Case (CCase : Node_Id);
+      --  Verify the legality of a single contract case
 
-      ----------------------------
-      -- Analyze_Contract_Cases --
-      ----------------------------
+      ---------------------------
+      -- Analyze_Contract_Case --
+      ---------------------------
 
-      procedure Analyze_Contract_Cases (Aggr : Node_Id) is
-         Case_Guard : Node_Id;
-         Conseq     : Node_Id;
-         Post_Case  : Node_Id;
+      procedure Analyze_Contract_Case (CCase : Node_Id) is
+         Case_Guard  : Node_Id;
+         Conseq      : Node_Id;
+         Extra_Guard : Node_Id;
 
       begin
-         Post_Case := First (Component_Associations (Aggr));
-         while Present (Post_Case) loop
-            Case_Guard := First (Choices (Post_Case));
-            Conseq     := Expression (Post_Case);
+         if Nkind (CCase) = N_Component_Association then
+            Case_Guard := First (Choices (CCase));
+            Conseq     := Expression (CCase);
 
-            --  Preanalyze the boolean expression, we treat this as a spec
-            --  expression (i.e. similar to a default expression).
+            --  Each contract case must have exactly one case guard
+
+            Extra_Guard := Next (Case_Guard);
+
+            if Present (Extra_Guard) then
+               Error_Msg_N
+                 ("contract case may have only one case guard", Extra_Guard);
+            end if;
+
+            --  Check the placement of "others" (if available)
+
+            if Nkind (Case_Guard) = N_Others_Choice then
+               if Others_Seen then
+                  Error_Msg_N
+                    ("only one others choice allowed in aspect Contract_Cases",
+                     Case_Guard);
+               else
+                  Others_Seen := True;
+               end if;
+
+            elsif Others_Seen then
+               Error_Msg_N
+                 ("others must be the last choice in aspect Contract_Cases",
+                  N);
+            end if;
+
+            --  Preanalyze the case guard and consequence
 
             if Nkind (Case_Guard) /= N_Others_Choice then
                Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
@@ -316,46 +349,64 @@ package body Sem_Prag is
 
             Preanalyze_Assert_Expression (Conseq, Standard_Boolean);
 
-            Next (Post_Case);
-         end loop;
-      end Analyze_Contract_Cases;
+         --  The contract case is malformed
 
-   --  Start of processing for Analyze_CTC_In_Decl_Part
+         else
+            Error_Msg_N ("wrong syntax in contract case", CCase);
+         end if;
+      end Analyze_Contract_Case;
+
+      --  Local variables
+
+      Arg1      : constant Node_Id := First (Pragma_Argument_Associations (N));
+      All_Cases : Node_Id;
+      CCase     : Node_Id;
+      Subp_Decl : Node_Id;
+      Subp_Id   : Entity_Id;
+
+   --  Start of processing for Analyze_Contract_Cases_In_Decl_Part
 
    begin
-      --  Install formals and push subprogram spec onto scope stack so that we
-      --  can see the formals from the pragma.
+      Set_Analyzed (N);
 
-      Push_Scope (S);
-      Install_Formals (S);
+      Subp_Decl := Find_Related_Subprogram (N);
+      Subp_Id   := Defining_Unit_Name (Specification (Subp_Decl));
+      All_Cases := Expression (Arg1);
 
-      --  Preanalyze the boolean expressions, we treat these as spec
-      --  expressions (i.e. similar to a default expression).
+      --  Multiple contract cases appear in aggregate form
 
-      if Pragma_Name (N) = Name_Test_Case then
-         Preanalyze_CTC_Args
-           (N,
-            Get_Requires_From_CTC_Pragma (N),
-            Get_Ensures_From_CTC_Pragma (N));
+      if Nkind (All_Cases) = N_Aggregate then
+         if No (Component_Associations (All_Cases)) then
+            Error_Msg_N ("wrong syntax for aspect Contract_Cases", N);
+
+         --  Individual contract cases appear as component associations
+
+         else
+            --  Ensure that the formal parameters are visible when analyzing
+            --  all clauses. This falls out of the general rule of aspects
+            --  pertaining to subprogram declarations. Skip the installation
+            --  for subprogram bodies because the formals are already visible.
+
+            if Requires_Profile_Installation (N, Subp_Decl) then
+               Push_Scope (Subp_Id);
+               Install_Formals (Subp_Id);
+            end if;
+
+            CCase := First (Component_Associations (All_Cases));
+            while Present (CCase) loop
+               Analyze_Contract_Case (CCase);
+               Next (CCase);
+            end loop;
+
+            if Requires_Profile_Installation (N, Subp_Decl) then
+               End_Scope;
+            end if;
+         end if;
 
       else
-         pragma Assert (Pragma_Name (N) = Name_Contract_Cases);
-         Analyze_Contract_Cases
-           (Expression (First (Pragma_Argument_Associations (N))));
-
-         --  In ASIS mode, for a pragma generated from a source aspect, also
-         --  analyze the original aspect expression.
-
-         if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
-            Analyze_Contract_Cases (Expression (Corresponding_Aspect (N)));
-         end if;
+         Error_Msg_N ("wrong syntax for aspect Contract_Cases", N);
       end if;
-
-      --  Remove the subprogram from the scope stack now that the pre-analysis
-      --  of the expressions in the contract case or test case is done.
-
-      End_Scope;
-   end Analyze_CTC_In_Decl_Part;
+   end Analyze_Contract_Cases_In_Decl_Part;
 
    ----------------------------------
    -- Analyze_Depends_In_Decl_Part --
@@ -1358,7 +1409,7 @@ package body Sem_Prag is
          --  to subprogram declarations. Skip the installation for subprogram
          --  bodies because the formals are already visible.
 
-         if Requires_Profile_Installation (Subp_Decl) then
+         if Requires_Profile_Installation (N, Subp_Decl) then
             Push_Scope (Subp_Id);
             Install_Formals (Subp_Id);
          end if;
@@ -1389,7 +1440,7 @@ package body Sem_Prag is
             Next (Clause);
          end loop;
 
-         if Requires_Profile_Installation (Subp_Decl) then
+         if Requires_Profile_Installation (N, Subp_Decl) then
             End_Scope;
          end if;
 
@@ -1713,14 +1764,14 @@ package body Sem_Prag is
          --  item. This falls out of the general rule of aspects pertaining to
          --  subprogram declarations.
 
-         if Requires_Profile_Installation (Subp_Decl) then
+         if Requires_Profile_Installation (N, Subp_Decl) then
             Push_Scope (Subp_Id);
             Install_Formals (Subp_Id);
          end if;
 
          Analyze_Global_List (List);
 
-         if Requires_Profile_Installation (Subp_Decl) then
+         if Requires_Profile_Installation (N, Subp_Decl) then
             End_Scope;
          end if;
       end if;
@@ -10049,204 +10100,46 @@ package body Sem_Prag is
          --  CONSEQUENCE ::= boolean_EXPRESSION
 
          when Pragma_Contract_Cases => Contract_Cases : declare
-            Others_Seen : Boolean := False;
-
-            procedure Analyze_Contract_Case (Contract_Case : Node_Id);
-            --  Verify the legality of a single contract case
-
-            procedure Chain_Contract_Cases (Subp_Id : Entity_Id);
-            --  Chain pragma Contract_Cases to the contract of a subprogram.
-            --  Subp_Id is the related subprogram.
-
-            ---------------------------
-            -- Analyze_Contract_Case --
-            ---------------------------
-
-            procedure Analyze_Contract_Case (Contract_Case : Node_Id) is
-               Case_Guard  : Node_Id;
-               Extra_Guard : Node_Id;
-
-            begin
-               if Nkind (Contract_Case) = N_Component_Association then
-                  Case_Guard := First (Choices (Contract_Case));
-
-                  --  Each contract case must have exactly on case guard
-
-                  Extra_Guard := Next (Case_Guard);
-
-                  if Present (Extra_Guard) then
-                     Error_Pragma_Arg
-                       ("contract case may have only one case guard",
-                        Extra_Guard);
-                  end if;
-
-                  --  Check the placement of "others" (if available)
-
-                  if Nkind (Case_Guard) = N_Others_Choice then
-                     if Others_Seen then
-                        Error_Pragma_Arg
-                          ("only one others choice allowed in pragma %",
-                           Case_Guard);
-                     else
-                        Others_Seen := True;
-                     end if;
-
-                  elsif Others_Seen then
-                     Error_Pragma_Arg
-                       ("others must be the last choice in pragma %", N);
-                  end if;
-
-               --  The contract case is malformed
-
-               else
-                  Error_Pragma_Arg
-                    ("wrong syntax in contract case", Contract_Case);
-               end if;
-            end Analyze_Contract_Case;
-
-            --------------------------
-            -- Chain_Contract_Cases --
-            --------------------------
-
-            procedure Chain_Contract_Cases (Subp_Id : Entity_Id) is
-               CTC : Node_Id;
-
-            begin
-               Check_Duplicate_Pragma (Subp_Id);
-               CTC := Contract_Test_Cases (Contract (Subp_Id));
-               while Present (CTC) loop
-                  if Chars (Pragma_Identifier (CTC)) = Pname then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_Sloc   := Sloc (CTC);
-
-                     if From_Aspect_Specification (CTC) then
-                        Error_Msg_NE
-                          ("aspect% for & previously given#", N, Subp_Id);
-                     else
-                        Error_Msg_NE
-                          ("pragma% for & duplicates pragma#", N, Subp_Id);
-                     end if;
-
-                     raise Pragma_Exit;
-                  end if;
-
-                  CTC := Next_Pragma (CTC);
-               end loop;
-
-               --  Prepend pragma Contract_Cases to the contract
-
-               Add_Contract_Item (N, Subp_Id);
-            end Chain_Contract_Cases;
-
-            --  Local variables
-
-            Context       : constant Node_Id := Parent (N);
-            All_Cases     : Node_Id;
-            Decl          : Node_Id;
-            Contract_Case : Node_Id;
-            Subp_Decl     : Node_Id;
-            Subp_Id       : Entity_Id;
-
-         --  Start of processing for Contract_Cases
+            Subp_Decl : Node_Id;
+            Subp_Id   : Entity_Id;
 
          begin
             GNAT_Pragma;
+            S14_Pragma;
             Check_Arg_Count (1);
 
-            --  Check the placement of the pragma
+            --  Ensure the proper placement of the pragma. Contract_Cases must
+            --  be associated with a subprogram declaration or a body that acts
+            --  as a spec.
 
-            if not Is_List_Member (N) then
+            Subp_Decl := Find_Related_Subprogram (N, Check_Duplicates => True);
+
+            if Nkind (Subp_Decl) /= N_Subprogram_Declaration
+              and then (Nkind (Subp_Decl) /= N_Subprogram_Body
+                         or else not Acts_As_Spec (Subp_Decl))
+            then
                Pragma_Misplaced;
+               return;
             end if;
 
-            --  Aspect/pragma Contract_Cases may be associated with a library
-            --  level subprogram.
+            Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
 
-            if Nkind (Context) = N_Compilation_Unit_Aux then
-               Subp_Decl := Unit (Parent (Context));
+            --  The pragma is analyzed at the end of the declarative part which
+            --  contains the related subprogram. Reset the analyzed flag.
 
-               if not Nkind_In (Subp_Decl, N_Generic_Subprogram_Declaration,
-                                           N_Subprogram_Declaration)
-               then
-                  Pragma_Misplaced;
-               end if;
+            Set_Analyzed (N, False);
 
-               Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
+            --  When the aspect/pragma appears on a subprogram body, perform
+            --  the full analysis now.
 
-            --  The aspect/pragma appears in a subprogram body. The placement
-            --  is legal when the body acts as a spec.
+            if Nkind (Subp_Decl) = N_Subprogram_Body then
+               Analyze_Contract_Cases_In_Decl_Part (N);
 
-            elsif Nkind (Context) = N_Subprogram_Body then
-               Subp_Id := Defining_Unit_Name (Specification (Context));
-
-               if not Acts_As_Spec (Context) then
-                  Error_Pragma
-                    ("pragma % may not appear in a subprogram body that acts "
-                     & "as completion");
-               end if;
-
-            --  Nested subprogram case, the aspect/pragma must apply to the
-            --  subprogram spec.
+            --  Chain the pragma on the contract for further processing
 
             else
-               Decl := N;
-               while Present (Prev (Decl)) loop
-                  Decl := Prev (Decl);
-
-                  if Nkind (Decl) in N_Generic_Declaration then
-                     Subp_Decl := Decl;
-                  else
-                     Subp_Decl := Original_Node (Decl);
-                  end if;
-
-                  --  Skip prior pragmas
-
-                  if Nkind (Subp_Decl) = N_Pragma then
-                     null;
-
-                  --  Skip internally generated code
-
-                  elsif not Comes_From_Source (Subp_Decl) then
-                     null;
-
-                  --  We have found the related subprogram
-
-                  elsif Nkind_In (Subp_Decl, N_Generic_Subprogram_Declaration,
-                                             N_Subprogram_Declaration)
-                  then
-                     exit;
-
-                  else
-                     Pragma_Misplaced;
-                  end if;
-               end loop;
-
-               Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
+               Add_Contract_Item (N, Subp_Id);
             end if;
-
-            All_Cases := Expression (Arg1);
-
-            --  Multiple contract cases appear in aggregate form
-
-            if Nkind (All_Cases) = N_Aggregate then
-               if No (Component_Associations (All_Cases)) then
-                  Error_Pragma ("wrong syntax for pragma %");
-
-               --  Individual contract cases appear as component associations
-
-               else
-                  Contract_Case := First (Component_Associations (All_Cases));
-                  while Present (Contract_Case) loop
-                     Analyze_Contract_Case (Contract_Case);
-
-                     Next (Contract_Case);
-                  end loop;
-               end if;
-            else
-               Error_Pragma ("wrong syntax for pragma %");
-            end if;
-
-            Chain_Contract_Cases (Subp_Id);
          end Contract_Cases;
 
          ----------------
@@ -18013,6 +17906,34 @@ package body Sem_Prag is
       when Pragma_Exit => null;
    end Analyze_Pragma;
 
+   ------------------------------------
+   -- Analyze_Test_Case_In_Decl_Part --
+   ------------------------------------
+
+   procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id; S : Entity_Id) is
+   begin
+      --  Install formals and push subprogram spec onto scope stack so that we
+      --  can see the formals from the pragma.
+
+      Push_Scope (S);
+      Install_Formals (S);
+
+      --  Preanalyze the boolean expressions, we treat these as spec
+      --  expressions (i.e. similar to a default expression).
+
+      if Pragma_Name (N) = Name_Test_Case then
+         Preanalyze_CTC_Args
+           (N,
+            Get_Requires_From_CTC_Pragma (N),
+            Get_Ensures_From_CTC_Pragma (N));
+      end if;
+
+      --  Remove the subprogram from the scope stack now that the pre-analysis
+      --  of the expressions in the contract case or test case is done.
+
+      End_Scope;
+   end Analyze_Test_Case_In_Decl_Part;
+
    ----------------
    -- Check_Kind --
    ----------------
@@ -18135,6 +18056,75 @@ package body Sem_Prag is
       return Nam_In (Pragma_Name (N), Name_Interrupt_State,
                                       Name_Priority_Specific_Dispatching);
    end Delay_Config_Pragma_Analyze;
+
+   -----------------------------
+   -- Find_Related_Subprogram --
+   -----------------------------
+
+   function Find_Related_Subprogram
+     (Prag             : Node_Id;
+      Check_Duplicates : Boolean := False) return Node_Id
+   is
+      Context   : constant Node_Id := Parent (Prag);
+      Nam       : constant Name_Id := Pragma_Name (Prag);
+      Decl      : Node_Id;
+      Subp_Decl : Node_Id;
+
+   begin
+      --  The pragma is a byproduct of an aspect
+
+      if Present (Corresponding_Aspect (Prag)) then
+         Subp_Decl := Parent (Corresponding_Aspect (Prag));
+
+      --  The pragma is associated with a library-level subprogram
+
+      elsif Nkind (Context) = N_Compilation_Unit_Aux then
+         Subp_Decl := Unit (Parent (Context));
+
+      --  The pragma appears inside the declarative part of a subprogram body
+
+      elsif Nkind (Context) = N_Subprogram_Body then
+         Subp_Decl := Context;
+
+      --  The pragma appears someplace after its related subprogram. Inspect
+      --  all previous declarations for a suitable candidate.
+
+      else
+         Decl      := Prag;
+         Subp_Decl := Empty;
+         while Present (Prev (Decl)) loop
+            Decl := Prev (Decl);
+
+            if Nkind (Decl) in N_Generic_Declaration then
+               Subp_Decl := Decl;
+            else
+               Subp_Decl := Original_Node (Decl);
+            end if;
+
+            --  Skip prior pragmas
+
+            if Nkind (Subp_Decl) = N_Pragma then
+               if Check_Duplicates and then Pragma_Name (Subp_Decl) = Nam then
+                  Error_Msg_Name_1 := Nam;
+                  Error_Msg_Sloc   := Sloc (Subp_Decl);
+                  Error_Msg_N ("pragma % duplicates pragma declared #", Prag);
+               end if;
+
+            --  Skip internally generated code
+
+            elsif not Comes_From_Source (Subp_Decl) then
+               null;
+
+            --  The nearest preceding declaration is the related subprogram
+
+            else
+               exit;
+            end if;
+         end loop;
+      end if;
+
+      return Subp_Decl;
+   end Find_Related_Subprogram;
 
    -------------------------
    -- Get_Base_Subprogram --
@@ -18855,7 +18845,10 @@ package body Sem_Prag is
    -- Requires_Profile_Installation --
    -----------------------------------
 
-   function Requires_Profile_Installation (Subp : Node_Id) return Boolean is
+   function Requires_Profile_Installation
+     (Prag : Node_Id;
+      Subp : Node_Id) return Boolean
+   is
    begin
       --  When aspects Depends and Global are associated with a subprogram
       --  declaration, their corresponding pragmas are analyzed at the end of
@@ -18868,12 +18861,15 @@ package body Sem_Prag is
       --  When aspects Depends and Global are associated with a subprogram body
       --  which is also a compilation unit, their corresponding pragmas appear
       --  in the Pragmas_After list. The Pragmas_After collection is analyzed
-      --  out of context and the formals must be installed in visibility.
+      --  out of context and the formals must be installed in visibility. This
+      --  does not apply when the pragma is a source construct.
 
-      elsif Nkind (Subp) = N_Subprogram_Body
-        and then Nkind (Parent (Subp)) = N_Compilation_Unit
-      then
-         return True;
+      elsif Nkind (Subp) = N_Subprogram_Body then
+         if Nkind (Parent (Subp)) = N_Compilation_Unit then
+            return Present (Corresponding_Aspect (Prag));
+         else
+            return False;
+         end if;
 
       --  In all other cases the two corresponding pragmas are analyzed in
       --  context and the formals are already visibile.
