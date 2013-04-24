@@ -782,11 +782,23 @@ package body Exp_Attr is
       --  'Loop_Entry attribute. Retrieve the declarative list of the block.
 
       if Has_Loop_Entry_Attributes (Loop_Id) then
+
+         --  When the related loop name appears as the argument of attribute
+         --  Loop_Entry, the corresponding label construct is the generated
+         --  block statement. This happens because the expander reuses the
+         --  label.
+
          if Nkind (Loop_Stmt) = N_Block_Statement then
             Decls := Declarations (Loop_Stmt);
+
+         --  In all other cases, the loop must appear in the handled sequence
+         --  of statements of the generated block.
+
          else
-            --  What is going on here??? comments/assertions needed to explain
-            --  the assumption being made about the tree???
+            pragma Assert
+              (Nkind (Parent (Loop_Stmt)) = N_Handled_Sequence_Of_Statements
+                 and then Nkind (Parent (Parent (Loop_Stmt))) =
+                            N_Block_Statement);
 
             Decls := Declarations (Parent (Parent (Loop_Stmt)));
          end if;
@@ -798,6 +810,27 @@ package body Exp_Attr is
       else
          Set_Has_Loop_Entry_Attributes (Loop_Id);
          Scheme := Iteration_Scheme (Loop_Stmt);
+
+         --  Infinite loops are transformed into:
+
+         --    declare
+         --       Temp1 : constant <type of Pref1> := <Pref1>;
+         --       . . .
+         --       TempN : constant <type of PrefN> := <PrefN>;
+         --    begin
+         --       loop
+         --          <original source statements with attribute rewrites>
+         --       end loop;
+         --    end;
+
+         if No (Scheme) then
+            Build_Conditional_Block (Loc,
+              Cond      => Empty,
+              Loop_Stmt => Relocate_Node (Loop_Stmt),
+              If_Stmt   => Result,
+              Blk_Stmt  => Blk);
+
+            Result := Blk;
 
          --  While loops are transformed into:
 
@@ -817,7 +850,7 @@ package body Exp_Attr is
          --  Note that loops over iterators and containers are already
          --  converted into while loops.
 
-         if Present (Condition (Scheme)) then
+         elsif Present (Condition (Scheme)) then
             declare
                Cond : constant Node_Id := Condition (Scheme);
 
@@ -947,27 +980,6 @@ package body Exp_Attr is
                  If_Stmt   => Result,
                  Blk_Stmt  => Blk);
             end;
-
-         --  Infinite loops are transformed into:
-
-         --    declare
-         --       Temp1 : constant <type of Pref1> := <Pref1>;
-         --       . . .
-         --       TempN : constant <type of PrefN> := <PrefN>;
-         --    begin
-         --       loop
-         --          <original source statements with attribute rewrites>
-         --       end loop;
-         --    end;
-
-         else
-            Build_Conditional_Block (Loc,
-              Cond      => Empty,
-              Loop_Stmt => Relocate_Node (Loop_Stmt),
-              If_Stmt   => Result,
-              Blk_Stmt  => Blk);
-
-            Result := Blk;
          end if;
 
          Decls := Declarations (Blk);
@@ -993,7 +1005,7 @@ package body Exp_Attr is
 
       Rewrite (Attr, New_Reference_To (Temp_Id, Loc));
 
-      Installed := Current_Scope = Loop_Id;
+      Installed := Current_Scope = Scope (Loop_Id);
 
       --  Depending on the pracement of attribute 'Loop_Entry relative to the
       --  associated loop, ensure the proper visibility for analysis.

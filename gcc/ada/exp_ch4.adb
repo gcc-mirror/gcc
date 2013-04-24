@@ -4577,9 +4577,19 @@ package body Exp_Ch4 is
                      --  access type did not get expanded. Salvage it now.
 
                      if not Restriction_Active (No_Task_Hierarchy) then
-                        pragma Assert (Present (Parent (Base_Type (PtrT))));
-                        Expand_N_Full_Type_Declaration
-                          (Parent (Base_Type (PtrT)));
+                        if Present (Parent (Base_Type (PtrT))) then
+                           Expand_N_Full_Type_Declaration
+                             (Parent (Base_Type (PtrT)));
+
+                        else
+                           --  If the type of the allocator is an itype,
+                           --  the master must exist in the context. This
+                           --  is the case when the allocator initializes
+                           --  an access component in an init-proc.
+
+                           pragma Assert (Is_Itype (PtrT));
+                           Build_Master_Renaming (PtrT, N);
+                        end if;
                      end if;
                   end if;
 

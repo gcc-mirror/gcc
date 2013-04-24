@@ -1,3 +1,41 @@
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Clarify the
+	extraction of the declarative part of the conditional block. Move
+	the processing of simple infinite loops to the start of the
+	expansion logic. Correct the check which determines whether the
+	proper scope is installed in visibility.
+	* sem_attr.adb (Analyze_Attribute): Add local variable Attr
+	to keep track of the attribute in case the enclosing indexed
+	component has to be rewritten. When searching for the enclosing
+	loop, start from the proper attribute reference in case of a
+	rewriting. Do not allow for 'Loop_Entry to appear in pragma
+	Assert. Replace loop variable J with Index. Set the type of the
+	proper attribute.
+	* sem_ch5.adb (Check_Unreachable_Code): Detect a specialized
+	block that services a loop statement subject to at least one
+	'Loop_Entry attribute.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Disambiguate): In Ada 2012 mode, when trying to
+	resolve a fixed point operation, use first subtype to determine
+	whether type and operator are declared in the same list of
+	declarations.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch6.adb (P_Subprogram): Detect an illegal
+	placement of the aspect specification list in the context of
+	expression functions.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator):  If the designated object
+	has tasks, and the pointer type is an itype that has no master
+	id, create a master renaming in the current context, which can
+	only be an init_proc.
+
 2013-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_ch7.adb: Minor reformatting.
