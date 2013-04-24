@@ -36,7 +36,7 @@ void test01()
 
   VERIFY( f1.valid() );
 
-  p1.set_exception(std::copy_exception(0));
+  p1.set_exception(std::make_exception_ptr(0));
 
   try
   {
