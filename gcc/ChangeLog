@@ -1,3 +1,12 @@
+2013-04-24  Marek Polacek  <polacek@redhat.com>
+
+	* tree-scalar-evolution.h (analyze_scalar_evolution): Remove.
+	* tree-scalar-evolution.c (get_exit_conditions_rec): Likewise.
+	(select_loops_exit_conditions): Likewise.
+	(number_of_iterations_for_all_loops): Likewise.
+	(analyze_scalar_evolution_for_all_loop_phi_nodes): Likewise.
+	(scev_analysis): Likewise.
+
 2013-04-02  Catherine Moore  <clm@codesourcery.com>
 	    Chao-ying Fu <fu@mips.com>
 

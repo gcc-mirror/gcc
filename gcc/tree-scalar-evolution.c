@@ -868,39 +868,6 @@ get_loop_exit_condition (const struct loop *loop)
   return res;
 }
 
-/* Recursively determine and enqueue the exit conditions for a loop.  */
-
-static void
-get_exit_conditions_rec (struct loop *loop,
-			 vec<gimple> *exit_conditions)
-{
-  if (!loop)
-    return;
-
-  /* Recurse on the inner loops, then on the next (sibling) loops.  */
-  get_exit_conditions_rec (loop->inner, exit_conditions);
-  get_exit_conditions_rec (loop->next, exit_conditions);
-
-  if (single_exit (loop))
-    {
-      gimple loop_condition = get_loop_exit_condition (loop);
-
-      if (loop_condition)
-	exit_conditions->safe_push (loop_condition);
-    }
-}
-
-/* Select the candidate loop nests for the analysis.  This function
-   initializes the EXIT_CONDITIONS array.  */
-
-static void
-select_loops_exit_conditions (vec<gimple> *exit_conditions)
-{
-  struct loop *function_body = current_loops->tree_root;
-
-  get_exit_conditions_rec (function_body->inner, exit_conditions);
-}
-
 
 /* Depth first search algorithm.  */
 
@@ -2882,41 +2849,6 @@ number_of_exit_cond_executions (struct loop *loop)
   return ret;
 }
 
-/* One of the drivers for testing the scalar evolutions analysis.
-   This function computes the number of iterations for all the loops
-   from the EXIT_CONDITIONS array.  */
-
-static void
-number_of_iterations_for_all_loops (vec<gimple> *exit_conditions)
-{
-  unsigned int i;
-  unsigned nb_chrec_dont_know_loops = 0;
-  unsigned nb_static_loops = 0;
-  gimple cond;
-
-  FOR_EACH_VEC_ELT (*exit_conditions, i, cond)
-    {
-      tree res = number_of_latch_executions (loop_containing_stmt (cond));
-      if (chrec_contains_undetermined (res))
-	nb_chrec_dont_know_loops++;
-      else
-	nb_static_loops++;
-    }
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "\n(\n");
-      fprintf (dump_file, "-----------------------------------------\n");
-      fprintf (dump_file, "%d\tnb_chrec_dont_know_loops\n", nb_chrec_dont_know_loops);
-      fprintf (dump_file, "%d\tnb_static_loops\n", nb_static_loops);
-      fprintf (dump_file, "%d\tnb_total_loops\n", number_of_loops ());
-      fprintf (dump_file, "-----------------------------------------\n");
-      fprintf (dump_file, ")\n\n");
-
-      print_loops (dump_file, 3);
-    }
-}
-
 
 
 /* Counters for the stats.  */
@@ -3026,54 +2958,6 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
 
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, ")\n");
-}
-
-/* One of the drivers for testing the scalar evolutions analysis.
-   This function analyzes the scalar evolution of all the scalars
-   defined as loop phi nodes in one of the loops from the
-   EXIT_CONDITIONS array.
-
-   TODO Optimization: A loop is in canonical form if it contains only
-   a single scalar loop phi node.  All the other scalars that have an
-   evolution in the loop are rewritten in function of this single
-   index.  This allows the parallelization of the loop.  */
-
-static void
-analyze_scalar_evolution_for_all_loop_phi_nodes (vec<gimple> *exit_conditions)
-{
-  unsigned int i;
-  struct chrec_stats stats;
-  gimple cond, phi;
-  gimple_stmt_iterator psi;
-
-  reset_chrecs_counters (&stats);
-
-  FOR_EACH_VEC_ELT (*exit_conditions, i, cond)
-    {
-      struct loop *loop;
-      basic_block bb;
-      tree chrec;
-
-      loop = loop_containing_stmt (cond);
-      bb = loop->header;
-
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  phi = gsi_stmt (psi);
-	  if (!virtual_operand_p (PHI_RESULT (phi)))
-	    {
-	      chrec = instantiate_parameters
-		        (loop,
-			 analyze_scalar_evolution (loop, PHI_RESULT (phi)));
-
-	      if (dump_file && (dump_flags & TDF_STATS))
-		gather_chrec_stats (chrec, &stats);
-	    }
-	}
-    }
-
-  if (dump_file && (dump_flags & TDF_STATS))
-    dump_chrecs_stats (dump_file, &stats);
 }
 
 /* Callback for htab_traverse, gathers information on chrecs in the
@@ -3252,23 +3136,6 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
   iv->no_overflow = !folded_casts && TYPE_OVERFLOW_UNDEFINED (type);
 
   return true;
-}
-
-/* Runs the analysis of scalar evolutions.  */
-
-void
-scev_analysis (void)
-{
-  vec<gimple> exit_conditions;
-
-  exit_conditions.create (37);
-  select_loops_exit_conditions (&exit_conditions);
-
-  if (dump_file && (dump_flags & TDF_STATS))
-    analyze_scalar_evolution_for_all_loop_phi_nodes (&exit_conditions);
-
-  number_of_iterations_for_all_loops (&exit_conditions);
-  exit_conditions.release ();
 }
 
 /* Finalize the scalar evolution analysis.  */
