@@ -1655,7 +1655,7 @@ The name @samp{gnu++0x} is deprecated.
 
 @item c++1y
 The next revision of the ISO C++ standard, tentatively planned for
-2017.  Support is highly experimental, and will almost certainly
+2014.  Support is highly experimental, and will almost certainly
 change in incompatible ways in future releases.
 
 @item gnu++1y
