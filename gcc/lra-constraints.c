@@ -4198,7 +4198,7 @@ split_reg (bool before_p, int original_regno, rtx insn, rtx next_usage_insns)
 {
   enum reg_class rclass;
   rtx original_reg;
-  int hard_regno;
+  int hard_regno, nregs;
   rtx new_reg, save, restore, usage_insn;
   bool after_p;
   bool call_save_p;
@@ -4208,10 +4208,12 @@ split_reg (bool before_p, int original_regno, rtx insn, rtx next_usage_insns)
       rclass = ira_allocno_class_translate[REGNO_REG_CLASS (original_regno)];
       hard_regno = original_regno;
       call_save_p = false;
+      nregs = 1;
     }
   else
     {
       hard_regno = reg_renumber[original_regno];
+      nregs = hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (original_regno)];
       rclass = lra_get_allocno_class (original_regno);
       original_reg = regno_reg_rtx[original_regno];
       call_save_p = need_for_call_save_p (original_regno);
@@ -4324,6 +4326,13 @@ split_reg (bool before_p, int original_regno, rtx insn, rtx next_usage_insns)
 			 before_p ? NULL_RTX : save,
 			 call_save_p
 			 ?  "Add save<-reg" : "Add split<-reg");
+  if (nregs > 1)
+    /* If we are trying to split multi-register.  We should check
+       conflicts on the next assignment sub-pass.  IRA can allocate on
+       sub-register levels, LRA do this on pseudos level right now and
+       this discrepancy may create allocation conflicts after
+       splitting.  */
+    lra_risky_transformations_p = true;
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "	  ))))))))))))))))))))))))))))))))))))))))))))))))\n");
