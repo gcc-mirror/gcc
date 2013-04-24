@@ -34,7 +34,7 @@ void test01()
   using namespace std;
 
   try {
-    rethrow_exception(copy_exception(0));
+    rethrow_exception(make_exception_ptr(0));
   } catch(...) {
   }
 }
@@ -45,7 +45,7 @@ void test02()
   using namespace std;
 
   try {
-    rethrow_exception(copy_exception(runtime_error("test")));
+    rethrow_exception(make_exception_ptr(runtime_error("test")));
   } catch(exception &e) {
     VERIFY( typeid(e) == typeid(runtime_error) );
     VERIFY( strcmp(e.what(), "test") == 0 );

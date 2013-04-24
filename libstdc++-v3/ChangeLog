@@ -1,3 +1,18 @@
+2013-04-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56905
+	* libsupc++/exception_ptr.h (copy_exception): Deprecate and
+	move implementation to make_exception_ptr.
+	* include/std/future (_State_base::_M_break_promise): Replace
+	copy_exception with make_exception_ptr.
+	* testsuite/18_support/exception_ptr/move.cc: Likewise.
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Likewise.
+	* testsuite/30_threads/future/members/get2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get2.cc: Likewise.
+
 2013-04-22  Jason Merrill  <jason@redhat.com>
 
 	* src/c++11/hashtable_c++0x.cc: Include ext/aligned_buffer.h.
