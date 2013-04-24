@@ -2223,6 +2223,7 @@ package body Sem_Ch3 is
                   if Pragma_Name (Prag) = Name_Depends then
                      Analyze_Depends_In_Decl_Part (Prag);
                   else
+                     pragma Assert (Pragma_Name (Prag) = Name_Global);
                      Analyze_Global_In_Decl_Part (Prag);
                   end if;
 
@@ -11530,7 +11531,8 @@ package body Sem_Ch3 is
          --  If the component of the parent is packed, and the record type is
          --  already frozen, as is the case for an itype, the component type
          --  itself will not be frozen, and the packed array type for it must
-         --  be constructed explicitly.
+         --  be constructed explicitly. Since the creation of packed types is
+         --  an expansion activity, we only do this if expansion is active.
 
          if Expander_Active
            and then Is_Packed (Compon_Type)

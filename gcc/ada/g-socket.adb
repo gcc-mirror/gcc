@@ -2221,10 +2221,8 @@ package body GNAT.Sockets is
       Status        : out Boolean)
    is
       function C_Set_Close_On_Exec
-        (Socket : Socket_Type; Close_On_Exec : C.int)
-         return C.int;
+        (Socket : Socket_Type; Close_On_Exec : C.int) return C.int;
       pragma Import (C, C_Set_Close_On_Exec, "__gnat_set_close_on_exec");
-
    begin
       Status := C_Set_Close_On_Exec (Socket, Boolean'Pos (Close_On_Exec)) = 0;
    end Set_Close_On_Exec;

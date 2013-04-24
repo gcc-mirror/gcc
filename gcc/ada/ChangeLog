@@ -1,3 +1,17 @@
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch13.adb, sem_prag.adb: Update comments.
+	* sem_ch3.adb, exp_ch9.adb, g-socket.adb, sem_ch13.adb: Minor
+	reformatting.
+
+2013-04-24  Doug Rupp  <rupp@adacore.com>
+
+	* vms_data.ads (/{NO}INHIBIT-EXEC): Document new default behavior.
+
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Minor correction of typo.
+
 2013-04-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb: Create packed array only when expander is

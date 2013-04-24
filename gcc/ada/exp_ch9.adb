@@ -1926,6 +1926,7 @@ package body Exp_Ch9 is
 
       begin
          P := Pre_Post_Conditions (Contract (E));
+
          if No (P) then
             return;
          end if;
