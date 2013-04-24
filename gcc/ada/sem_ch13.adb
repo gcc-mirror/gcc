@@ -1335,7 +1335,7 @@ package body Sem_Ch13 is
                       Chars      => Chars (Id),
                       Expression => Relocate_Node (Expr));
 
-                  --  If the address is specified we treat the entity as
+                  --  If the address is specified, then we treat the entity as
                   --  referenced, to avoid spurious warnings. This is analogous
                   --  to what is done with an attribute definition clause, but
                   --  here we don't want to generate a reference because this

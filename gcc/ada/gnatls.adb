@@ -1252,8 +1252,7 @@ procedure Gnatls is
    procedure Scan_Ls_Arg (Argv : String) is
       FD  : File_Descriptor;
       Len : Integer;
-
-      OK : Boolean;
+      OK  : Boolean;
 
    begin
       pragma Assert (Argv'First = 1);

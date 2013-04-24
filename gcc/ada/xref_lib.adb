@@ -274,6 +274,7 @@ package body Xref_Lib is
 
       declare
          File_Name : String := Entity (File_Start .. Line_Start - 1);
+
       begin
          Osint.Canonical_Case_File_Name (File_Name);
          File_Ref := Add_To_Xref_File (File_Name, Visited => True);
