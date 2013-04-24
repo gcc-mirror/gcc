@@ -1,3 +1,10 @@
+2013-04-02  Catherine Moore  <clm@codesourcery.com>
+	    Chao-ying Fu <fu@mips.com>
+
+        * config/mips/micromips.md (jraddiusp): New pattern.
+        * config/mips/mips.c (mips_expand_epilogue): Use the JRADDIUSP
+        instruction if possible.
+
 2013-04-24  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/driver-rs6000.c (elf_dcachebsize): Fix comment pasto.
