@@ -1,3 +1,10 @@
+2013-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): On OMP_CLAUSE_LINEAR clauses
+	verify OMP_CLAUSE_DECL has integral or pointer type, and handle
+	linear steps for pointer type decls.  FIx up handling of
+	OMP_CLAUSE_UNIFORM.
+
 2013-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (CP_OMP_CLAUSE_INFO): Also allow it on OMP_CLAUSE_LINEAR.

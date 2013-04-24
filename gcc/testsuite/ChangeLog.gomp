@@ -1,3 +1,9 @@
+2013-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/simd3.c: New test.
+	* c-c++-common/gomp/simd4.c: New test.
+	* c-c++-common/gomp/simd5.c: New test.
+
 2013-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/simd1.c: New test.
