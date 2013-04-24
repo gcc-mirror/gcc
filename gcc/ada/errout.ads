@@ -507,8 +507,8 @@ package Errout is
    --  Note: a special exception is that RM is never treated as a keyword
    --  but instead is copied literally into the message, this avoids the
    --  need for writing 'R'M for all reference manual quotes. A similar
-   --  exception is applied to the occurrence of the string Alfa used in
-   --  error messages about the Alfa subset of Ada.
+   --  exception is applied to the occurrence of the string SPARK used in
+   --  error messages about the SPARK subset of Ada.
 
    --  In the case of names, the default mode for the error text processor
    --  is to surround the name by quotation marks automatically. The case

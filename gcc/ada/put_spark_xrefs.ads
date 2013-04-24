@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             P U T _ A L F A                              --
+--                       P U T _ S P A R K _ X R E F S                      --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the function used to read Alfa information from the
---  internal tables defined in package Alfa, and output text information for
---  the ALI file. The interface allows control over the destination of the
---  output, so that this routine can also be used for debugging purposes.
+--  This package contains the function used to read SPARK cross-reference
+--  information from the internal tables defined in package SPARK_Xrefs, and
+--  output text information for the ALI file. The interface allows control over
+--  the destination of the output, so that this routine can also be used for
+--  debugging purposes.
 
 with Types; use Types;
 
@@ -52,7 +53,7 @@ generic
    with procedure Write_Info_Terminate is <>;
    --  Terminate current info line and output lines built in Info_Buffer
 
-procedure Put_Alfa;
---  Read information from Alfa tables (Alfa.Alfa_Xref_Table,
---  Alfa.Alfa_Scope_Table and Alfa.Alfa_File_Table) and output corresponding
---  information in ALI format using the Write_Info procedures.
+procedure Put_SPARK_Xrefs;
+--  Read information from SPARK tables (SPARK_Xrefs.SPARK_Xref_Table,
+--  SPARK_Xrefs.SPARK_Scope_Table and SPARK_Xrefs.SPARK_File_Table) and output
+--  corresponding information in ALI format using the Write_Info procedures.

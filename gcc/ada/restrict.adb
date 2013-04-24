@@ -564,12 +564,12 @@ package body Restrict is
    begin
       Msg_Issued := False;
 
-      --  In CodePeer and Alfa mode, we do not want to check for any
+      --  In CodePeer and SPARK mode, we do not want to check for any
       --  restriction, or set additional restrictions other than those already
       --  set in gnat1drv.adb so that we have consistency between each
       --  compilation.
 
-      if CodePeer_Mode or Alfa_Mode then
+      if CodePeer_Mode or SPARK_Mode then
          return;
       end if;
 

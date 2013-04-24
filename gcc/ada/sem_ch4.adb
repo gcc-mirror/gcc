@@ -1801,8 +1801,8 @@ package body Sem_Ch4 is
       --  In formal verification mode, keep track of all reads and writes
       --  through explicit dereferences.
 
-      if Alfa_Mode then
-         Alfa.Generate_Dereference (N);
+      if SPARK_Mode then
+         SPARK_Specific.Generate_Dereference (N);
       end if;
 
       Analyze (P);
@@ -4484,10 +4484,10 @@ package body Sem_Ch4 is
                      --  Emit appropriate message. Gigi will replace the
                      --  node subsequently with the appropriate Raise.
 
-                     --  In Alfa mode, this is made into an error to simplify
+                     --  In SPARK mode, this is made into an error to simplify
                      --  the processing of the formal verification backend.
 
-                     if Alfa_Mode then
+                     if SPARK_Mode then
                         Apply_Compile_Time_Constraint_Error
                           (N, "component not present in }",
                            CE_Discriminant_Check_Failed,

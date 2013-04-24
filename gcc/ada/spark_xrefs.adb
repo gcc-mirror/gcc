@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                                 A L F A                                  --
+--                           S P A R K _ X R E F S                          --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,25 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Output;   use Output;
-with Put_Alfa;
+with Output;          use Output;
+with Put_SPARK_Xrefs;
 
-package body Alfa is
+package body SPARK_Xrefs is
 
-   -----------
-   -- dalfa --
-   -----------
+   ------------
+   -- dspark --
+   ------------
 
-   procedure dalfa is
+   procedure dspark is
    begin
-      --  Dump Alfa file table
+      --  Dump SPARK cross-reference file table
 
-      Write_Line ("Alfa File Table");
-      Write_Line ("---------------");
+      Write_Line ("SPARK Xrefs File Table");
+      Write_Line ("----------------------");
 
-      for Index in 1 .. Alfa_File_Table.Last loop
+      for Index in 1 .. SPARK_File_Table.Last loop
          declare
-            AFR : Alfa_File_Record renames Alfa_File_Table.Table (Index);
+            AFR : SPARK_File_Record renames SPARK_File_Table.Table (Index);
 
          begin
             Write_Str ("  ");
@@ -63,15 +63,15 @@ package body Alfa is
          end;
       end loop;
 
-      --  Dump Alfa scope table
+      --  Dump SPARK cross-reference scope table
 
       Write_Eol;
-      Write_Line ("Alfa Scope Table");
-      Write_Line ("----------------");
+      Write_Line ("SPARK Xrefs Scope Table");
+      Write_Line ("-----------------------");
 
-      for Index in 1 .. Alfa_Scope_Table.Last loop
+      for Index in 1 .. SPARK_Scope_Table.Last loop
          declare
-            ASR : Alfa_Scope_Record renames Alfa_Scope_Table.Table (Index);
+            ASR : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
 
          begin
             Write_Str ("  ");
@@ -103,15 +103,15 @@ package body Alfa is
          end;
       end loop;
 
-      --  Dump Alfa cross-reference table
+      --  Dump SPARK cross-reference table
 
       Write_Eol;
-      Write_Line ("Alfa Xref Table");
-      Write_Line ("---------------");
+      Write_Line ("SPARK Xref Table");
+      Write_Line ("----------------");
 
-      for Index in 1 .. Alfa_Xref_Table.Last loop
+      for Index in 1 .. SPARK_Xref_Table.Last loop
          declare
-            AXR : Alfa_Xref_Record renames Alfa_Xref_Table.Table (Index);
+            AXR : SPARK_Xref_Record renames SPARK_Xref_Table.Table (Index);
 
          begin
             Write_Str  ("  ");
@@ -140,24 +140,24 @@ package body Alfa is
             Write_Eol;
          end;
       end loop;
-   end dalfa;
+   end dspark;
 
    ----------------
    -- Initialize --
    ----------------
 
-   procedure Initialize_Alfa_Tables is
+   procedure Initialize_SPARK_Tables is
    begin
-      Alfa_File_Table.Init;
-      Alfa_Scope_Table.Init;
-      Alfa_Xref_Table.Init;
-   end Initialize_Alfa_Tables;
+      SPARK_File_Table.Init;
+      SPARK_Scope_Table.Init;
+      SPARK_Xref_Table.Init;
+   end Initialize_SPARK_Tables;
 
-   -----------
-   -- palfa --
-   -----------
+   ------------
+   -- pspark --
+   ------------
 
-   procedure palfa is
+   procedure pspark is
 
       procedure Write_Info_Char (C : Character) renames Write_Char;
       --  Write one character;
@@ -192,12 +192,12 @@ package body Alfa is
          Write_Int (N);
       end Write_Info_Nat;
 
-      procedure Debug_Put_Alfa is new Put_Alfa;
+      procedure Debug_Put_SPARK_Xrefs is new Put_SPARK_Xrefs;
 
-   --  Start of processing for palfa
+   --  Start of processing for pspark
 
    begin
-      Debug_Put_Alfa;
-   end palfa;
+      Debug_Put_SPARK_Xrefs;
+   end pspark;
 
-end Alfa;
+end SPARK_Xrefs;

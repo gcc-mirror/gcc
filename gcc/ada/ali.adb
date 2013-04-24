@@ -57,7 +57,7 @@ package body ALI is
       'Y'    => True,   -- limited_with
       'Z'    => True,   -- implicit with from instantiation
       'C'    => True,   -- SCO information
-      'F'    => True,   -- Alfa information
+      'F'    => True,   -- SPARK cross-reference information
       others => False);
 
    --------------------
@@ -2670,7 +2670,7 @@ package body ALI is
       --  Here after dealing with xref sections
 
       --  Ignore remaining lines, which belong to an additional section of the
-      --  ALI file not considered here (like SCO or Alfa).
+      --  ALI file not considered here (like SCO or SPARK information).
 
       Check_Unknown_Line;
 

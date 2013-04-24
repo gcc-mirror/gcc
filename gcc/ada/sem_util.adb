@@ -12030,8 +12030,8 @@ package body Sem_Util is
                --  In formal verification mode, keep track of all reads and
                --  writes through explicit dereferences.
 
-               if Alfa_Mode then
-                  Alfa.Generate_Dereference (N, 'm');
+               if SPARK_Mode then
+                  SPARK_Specific.Generate_Dereference (N, 'm');
                end if;
 
                if Nkind (P) = N_Selected_Component
@@ -12127,7 +12127,7 @@ package body Sem_Util is
                --  source. This excludes, for example, calls to a dispatching
                --  assignment operation when the left-hand side is tagged.
 
-               if Modification_Comes_From_Source or else Alfa_Mode then
+               if Modification_Comes_From_Source or else SPARK_Mode then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable

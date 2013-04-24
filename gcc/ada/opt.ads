@@ -1929,7 +1929,7 @@ package Opt is
    --  really seems wrong for Errout to depend on Expander.
    --
    --  Note: for many purposes, it is more appropriate to test the flag
-   --  Full_Expander_Active, which also checks that Alfa mode is not active.
+   --  Full_Expander_Active, which also checks that SPARK mode is not active.
 
    Static_Dispatch_Tables : Boolean := True;
    --  This flag indicates if the backend supports generation of statically
@@ -1983,19 +1983,21 @@ package Opt is
    -- Modes for Formal Verification --
    -----------------------------------
 
-   Alfa_Mode : Boolean := False;
+   SPARK_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
-   --  the Alfa subset of Ada. Set True by the gnat2why executable or by use
-   --  of the -gnatd.F debug switch.
+   --  the SPARK 2014 subset of Ada. Set True by the gnat2why executable or by
+   --  use of the -gnatd.F debug switch. Note that this is completely separate
+   --  from the SPARK restriction defined in GNAT to detect violations of a
+   --  subset of SPARK 2005 rules.
 
    Frame_Condition_Mode : Boolean := False;
-   --  Specific mode to be used in combination with Alfa_Mode. If set to
+   --  Specific mode to be used in combination with SPARK_Mode. If set to
    --  true, ALI files containing the frame conditions (global effects) are
    --  generated, and Why files are *not* generated. If not true, Why files
    --  are generated. Set by debug flag -gnatd.G.
 
-   Strict_Alfa_Mode : Boolean := False;
+   SPARK_Strict_Mode : Boolean := False;
    --  Interpret compiler permissions as strictly as possible. E.g. base ranges
    --  for integers are limited to the strict minimum with this option. Set by
    --  debug flag -gnatd.D.
@@ -2007,12 +2009,12 @@ package Opt is
 
    function Full_Expander_Active return Boolean;
    pragma Inline (Full_Expander_Active);
-   --  Returns the value of (Expander_Active and not Alfa_Mode). This "flag"
+   --  Returns the value of (Expander_Active and not SPARK_Mode). This "flag"
    --  indicates that expansion is fully active, that is, not in the reduced
-   --  mode for Alfa (True) or that expansion is either deactivated, or active
-   --  in the reduced mode for Alfa (False). For more information on full
+   --  mode for SPARK (True) or that expansion is either deactivated, or active
+   --  in the reduced mode for SPARK (False). For more information on full
    --  expansion, see package Expander. For more information on reduced
-   --  Alfa expansion, see package Exp_Alfa.
+   --  SPARK expansion, see package Exp_SPARK.
 
 private
 

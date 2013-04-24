@@ -560,10 +560,10 @@ package body Exp_Util is
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
    begin
-      --  Do not perform this expansion in Alfa mode because it is not
+      --  Do not perform this expansion in SPARK mode because it is not
       --  necessary.
 
-      if Alfa_Mode then
+      if SPARK_Mode then
          return;
       end if;
 
@@ -6986,10 +6986,13 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the value
 
       else
-         --  An expression which is in Alfa mode is considered side effect free
-         --  if the resulting value is captured by a variable or a constant.
+         --  An expression which is in SPARK mode is considered side effect
+         --  free if the resulting value is captured by a variable or a
+         --  constant.
 
-         if Alfa_Mode and then Nkind (Parent (Exp)) = N_Object_Declaration then
+         if SPARK_Mode
+           and then Nkind (Parent (Exp)) = N_Object_Declaration
+         then
             goto Leave;
          end if;
 
@@ -7029,11 +7032,11 @@ package body Exp_Util is
 
          --  The regular expansion of functions with side effects involves the
          --  generation of an access type to capture the return value found on
-         --  the secondary stack. Since Alfa (and why) cannot process access
+         --  the secondary stack. Since SPARK (and why) cannot process access
          --  types, use a different approach which ignores the secondary stack
          --  and "copies" the returned object.
 
-         if Alfa_Mode then
+         if SPARK_Mode then
             Res := New_Reference_To (Def_Id, Loc);
             Ref_Type := Exp_Type;
 
@@ -7067,10 +7070,10 @@ package body Exp_Util is
          else
             E := Relocate_Node (E);
 
-            --  Do not generate a 'reference in Alfa mode since the access type
-            --  is not created in the first place.
+            --  Do not generate a 'reference in SPARK mode since the access
+            --  type is not created in the first place.
 
-            if Alfa_Mode then
+            if SPARK_Mode then
                New_Exp := E;
 
             --  Otherwise generate reference, marking the value as non-null

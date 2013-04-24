@@ -9833,10 +9833,10 @@ package body Sem_Ch3 is
 
                --  The side effect removal machinery may generate illegal Ada
                --  code to avoid the usage of access types and 'reference in
-               --  Alfa mode. Since this is legal code with respect to theorem
+               --  SPARK mode. Since this is legal code with respect to theorem
                --  proving, do not emit the error.
 
-               if Alfa_Mode
+               if SPARK_Mode
                  and then Nkind (Exp) = N_Function_Call
                  and then Nkind (Parent (Exp)) = N_Object_Declaration
                  and then not Comes_From_Source
@@ -11974,7 +11974,7 @@ package body Sem_Ch3 is
          --  which must not be reevaluated.
 
          --  The forced evaluation removes side effects from expressions,
-         --  which should occur also in Alfa mode. Otherwise, we end up with
+         --  which should occur also in SPARK mode. Otherwise, we end up with
          --  unexpected insertions of actions at places where this is not
          --  supposed to occur, e.g. on default parameters of a call.
 
@@ -18610,9 +18610,9 @@ package body Sem_Ch3 is
             --  duplication of the expression without forcing evaluation.
 
             --  The forced evaluation removes side effects from expressions,
-            --  which should occur also in Alfa mode. Otherwise, we end up with
-            --  unexpected insertions of actions at places where this is not
-            --  supposed to occur, e.g. on default parameters of a call.
+            --  which should occur also in SPARK mode. Otherwise, we end up
+            --  with unexpected insertions of actions at places where this is
+            --  not supposed to occur, e.g. on default parameters of a call.
 
             if Expander_Active then
                Force_Evaluation (Lo);
@@ -18725,7 +18725,7 @@ package body Sem_Ch3 is
       --  Case of other than an explicit N_Range node
 
       --  The forced evaluation removes side effects from expressions, which
-      --  should occur also in Alfa mode. Otherwise, we end up with unexpected
+      --  should occur also in SPARK mode. Otherwise, we end up with unexpected
       --  insertions of actions at places where this is not supposed to occur,
       --  e.g. on default parameters of a call.
 
@@ -20169,7 +20169,7 @@ package body Sem_Ch3 is
       --  subtype range. Keep Size, RM_Size and First_Rep_Item info, which
       --  should not be relied upon in formal verification.
 
-      if Strict_Alfa_Mode then
+      if SPARK_Strict_Mode then
          declare
             Sym_Hi_Val : Uint;
             Sym_Lo_Val : Uint;

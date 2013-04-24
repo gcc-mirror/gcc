@@ -1147,7 +1147,7 @@ package body Sem_Ch6 is
          --  than inserted in the code, in order to facilitate a distinct
          --  treatment for them.
 
-         if not Alfa_Mode then
+         if not SPARK_Mode then
             Process_PPCs (N, Gen_Id, Body_Id);
          end if;
 
@@ -3090,7 +3090,7 @@ package body Sem_Ch6 is
       --  than inserted in the code, in order to facilitate a distinct
       --  treatment for them.
 
-      if not Alfa_Mode then
+      if not SPARK_Mode then
          Process_PPCs (N, Spec_Id, Body_Id);
       end if;
 
