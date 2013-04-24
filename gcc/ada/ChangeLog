@@ -1,3 +1,34 @@
+2013-04-24  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Document new gnatls switch -aPdir.
+	* gnatcmd.adb: Pass switch -aP<dir> to gnatls.
+	* gnatls.adb (Scan_Ls_Arg): Process new switch -aP<dir>. Issue
+	a warning for unknown switches.
+	(Usage): Add line for new switch -aPdir.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Is_Limited_Class_Wide_Type): Return true
+	if the type comes from a limited view, so that task attributes can be
+	constructed.
+
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Float_Conversion_Check): Do not apply checks if
+	full expansion is not enabled.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Create_Extra_Formals): In Ada 2012, create extra
+	formals if the type does not yet have a completion, and thus
+	has no underlying view.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Treat an aspect
+	specification for Address as a reference, to suppress warnings
+	on entities that may be read by an external device.
+
 2013-04-24  Sergey Rybin  <rybin@adacore.com frybin>
 
 	* gnat_ugn.texi: Add description of '--help' and '--version'

@@ -8643,7 +8643,7 @@ package body Sem_Util is
    begin
       return
         Is_Class_Wide_Type (Typ)
-          and then Is_Limited_Type (Typ);
+          and then (Is_Limited_Type (Typ) or else From_With_Type (Typ));
    end Is_Limited_Class_Wide_Type;
 
    ---------------------------------

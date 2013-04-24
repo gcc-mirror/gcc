@@ -949,7 +949,10 @@ package Sem_Util is
    --  i.e. a library unit or an entity declared in a library package.
 
    function Is_Limited_Class_Wide_Type (Typ : Entity_Id) return Boolean;
-   --  Determine whether a given arbitrary type is a limited class-wide type
+   --  Determine whether a given type is a limited class-wide type, in which
+   --  case it needs a Master_Id, because extensions of its designated type
+   --  may include task components. A class-wide type that comes from a
+   --  limited view must be treated in the same way.
 
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
    --  Determines whether Expr is a reference to a variable or IN OUT mode

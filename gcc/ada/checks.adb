@@ -1907,6 +1907,15 @@ package body Checks is
       Reason : RT_Exception_Code;
 
    begin
+      --  We do not need checks if we are not generating code (i.e. the full
+      --  expander is not active). In SPARK mode, we specifically don't want
+      --  the frontend to expand these checks, which are dealt with directly
+      --  in the formal verification backend.
+
+      if not Full_Expander_Active then
+         return;
+      end if;
+
       if not Compile_Time_Known_Value (LB)
           or not Compile_Time_Known_Value (HB)
       then
