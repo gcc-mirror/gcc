@@ -977,9 +977,6 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 	}
     }
 
-  if (! validate_p)
-    return;
-
   /* Substitute the operands; the new values are in the substed_operand
      array.  */
   for (i = 0; i < static_id->n_operands; i++)
@@ -987,13 +984,16 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
   for (i = 0; i < static_id->n_dups; i++)
     *id->dup_loc[i] = substed_operand[(int) static_id->dup_num[i]];
 
-  /* If we had a move insn but now we don't, re-recognize it.
-     This will cause spurious re-recognition if the old move had a
-     PARALLEL since the new one still will, but we can't call
-     single_set without having put new body into the insn and the
-     re-recognition won't hurt in this rare case.  */
-  id = lra_update_insn_recog_data (insn);
-  static_id = id->insn_static_data;
+  if (validate_p)
+    {
+      /* If we had a move insn but now we don't, re-recognize it.
+	 This will cause spurious re-recognition if the old move had a
+	 PARALLEL since the new one still will, but we can't call
+	 single_set without having put new body into the insn and the
+	 re-recognition won't hurt in this rare case.  */
+      id = lra_update_insn_recog_data (insn);
+      static_id = id->insn_static_data;
+    }
 }
 
 /* Spill pseudos which are assigned to hard registers in SET.  Add

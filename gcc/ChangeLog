@@ -1,5 +1,11 @@
 2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
+	Revert:
+	2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
+	* rtl.h (struct rtx_def): ...
+	
+2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimizations/57046
 	* lra-constraints (split_reg): Set up lra_risky_transformations_p
 	for multi-reg splits.
