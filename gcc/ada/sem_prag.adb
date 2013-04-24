@@ -213,6 +213,11 @@ package body Sem_Prag is
    --  pragma in the source program, a breakpoint on rv catches this place in
    --  the source, allowing convenient stepping to the point of interest.
 
+   function Requires_Profile_Installation (Subp : Node_Id) return Boolean;
+   --  Subsidiary routine to the analysis of pragma Depends and pragma Global.
+   --  Determine whether the profile of subprogram Subp must be installed into
+   --  visibility to access its formals.
+
    procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id);
    --  Place semantic information on the argument of an Elaborate/Elaborate_All
    --  pragma. Entity name for unit and its parents is taken from item in
@@ -1352,7 +1357,7 @@ package body Sem_Prag is
          --  to subprogram declarations. Skip the installation for subprogram
          --  bodies because the formals are already visible.
 
-         if Nkind (Subp_Decl) = N_Subprogram_Declaration then
+         if Requires_Profile_Installation (Subp_Decl) then
             Push_Scope (Subp_Id);
             Install_Formals (Subp_Id);
          end if;
@@ -1383,7 +1388,7 @@ package body Sem_Prag is
             Next (Clause);
          end loop;
 
-         if Nkind (Subp_Decl) = N_Subprogram_Declaration then
+         if Requires_Profile_Installation (Subp_Decl) then
             End_Scope;
          end if;
 
@@ -1702,20 +1707,21 @@ package body Sem_Prag is
       --  of these may be malformed in which case the analysis emits error
       --  messages.
 
-      elsif Nkind (Subp_Decl) = N_Subprogram_Body then
-         Analyze_Global_List (List);
-
-      --  Ensure that the formal parameters are visible when processing an
-      --  item. This falls out of the general rule of aspects pertaining to
-      --  subprogram declarations.
-
       else
-         Push_Scope (Subp_Id);
-         Install_Formals (Subp_Id);
+         --  Ensure that the formal parameters are visible when processing an
+         --  item. This falls out of the general rule of aspects pertaining to
+         --  subprogram declarations.
+
+         if Requires_Profile_Installation (Subp_Decl) then
+            Push_Scope (Subp_Id);
+            Install_Formals (Subp_Id);
+         end if;
 
          Analyze_Global_List (List);
 
-         End_Scope;
+         if Requires_Profile_Installation (Subp_Decl) then
+            End_Scope;
+         end if;
       end if;
    end Analyze_Global_In_Decl_Part;
 
@@ -18827,6 +18833,38 @@ package body Sem_Prag is
    begin
       null;
    end rv;
+
+   -----------------------------------
+   -- Requires_Profile_Installation --
+   -----------------------------------
+
+   function Requires_Profile_Installation (Subp : Node_Id) return Boolean is
+   begin
+      --  When aspects Depends and Global are associated with a subprogram
+      --  declaration, their corresponding pragmas are analyzed at the end of
+      --  the declarative part. This is done out of context, therefore the
+      --  formals must be installed in visibility.
+
+      if Nkind (Subp) = N_Subprogram_Declaration then
+         return True;
+
+      --  When aspects Depends and Global are associated with a subprogram body
+      --  which is also a compilation unit, their corresponding pragmas appear
+      --  in the Pragmas_After list. The Pragmas_After collection is analyzed
+      --  out of context and the formals must be installed in visibility.
+
+      elsif Nkind (Subp) = N_Subprogram_Body
+        and then Nkind (Parent (Subp)) = N_Compilation_Unit
+      then
+         return True;
+
+      --  In all other cases the two corresponding pragmas are analyzed in
+      --  context and the formals are already visibile.
+
+      else
+         return False;
+      end if;
+   end Requires_Profile_Installation;
 
    --------------------------------
    -- Set_Encoded_Interface_Name --

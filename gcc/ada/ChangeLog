@@ -1,3 +1,28 @@
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Create packed array only when expander is
+	active.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Install the formals only
+	when the context warrants it.
+	(Analyze_Global_In_Decl_List): Install the formals only when
+	the context warrants it.
+	(Requires_Profile_Installation): New routine.
+
+2013-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Simple_Return_Statement): When the return
+	type is a discriminated private type that does not require use
+	of the secondary stack, a constrained subtype of the underlying
+	type is created to convey the proper object size to the backend.
+	If the return type is originally a private type, the return
+	expression is wrapped in an unchecked_conversion. If the return
+	expression is used subsequently in a call to the postcondition
+	function, this conversion must be undone to prevent a spurious
+	error on the analysis of that call.
+
 2013-04-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55445
