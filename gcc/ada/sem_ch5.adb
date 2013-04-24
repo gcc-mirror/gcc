@@ -2298,11 +2298,15 @@ package body Sem_Ch5 is
             Set_Etype  (DS, Entity (DS));
          end if;
 
-         --  Attempt to iterate through non-static predicate
+         --  Attempt to iterate through non-static predicate. Note that a type
+         --  with inherited predicates may have both static and dynamic forms.
+         --  In this case it is not sufficent to check the static predicate
+         --  function only, look for a dynamic predicate aspect as well.
 
          if Is_Discrete_Type (Entity (DS))
            and then Present (Predicate_Function (Entity (DS)))
-           and then No (Static_Predicate (Entity (DS)))
+           and then (No (Static_Predicate (Entity (DS)))
+                      or else Has_Dynamic_Predicate_Aspect (Entity (DS)))
          then
             Bad_Predicated_Subtype_Use
               ("cannot use subtype& with non-static predicate for loop " &

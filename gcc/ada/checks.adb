@@ -2499,26 +2499,30 @@ package body Checks is
               Make_Raise_Storage_Error (Sloc (N),
                 Reason => SE_Infinite_Recursion));
 
-         --  Here for normal case of predicate active.
+         --  Here for normal case of predicate active
 
          else
             --  If the predicate is a static predicate and the operand is
             --  static, the predicate must be evaluated statically. If the
             --  evaluation fails this is a static constraint error. This check
             --  is disabled in -gnatc mode, because the compiler is incapable
-            --  of evaluating static expressions in that case.
+            --  of evaluating static expressions in that case. Note that when
+            --  inherited predicates are involved, a type may have both static
+            --  and dynamic forms. Check the presence of a dynamic predicate
+            --  aspect.
 
-            if Is_OK_Static_Expression (N) then
-               if Present (Static_Predicate (Typ)) then
-                  if Operating_Mode < Generate_Code
-                    or else Eval_Static_Predicate_Check (N, Typ)
-                  then
-                     return;
-                  else
-                     Error_Msg_NE
-                       ("static expression fails static predicate check on&",
-                        N, Typ);
-                  end if;
+            if Is_OK_Static_Expression (N)
+              and then Present (Static_Predicate (Typ))
+              and then not Has_Dynamic_Predicate_Aspect (Typ)
+            then
+               if Operating_Mode < Generate_Code
+                 or else Eval_Static_Predicate_Check (N, Typ)
+               then
+                  return;
+               else
+                  Error_Msg_NE
+                    ("static expression fails static predicate check on&",
+                     N, Typ);
                end if;
             end if;
 

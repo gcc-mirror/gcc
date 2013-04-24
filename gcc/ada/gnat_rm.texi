@@ -305,6 +305,7 @@ Implementation Defined Attributes
 * Unconstrained_Array::
 * Universal_Literal_String::
 * Unrestricted_Access::
+* Update::
 * Valid_Scalars::
 * VADS_Size::
 * Value_Size::
@@ -6710,6 +6711,7 @@ consideration, you should minimize the use of these attributes.
 * Unconstrained_Array::
 * Universal_Literal_String::
 * Unrestricted_Access::
+* Update::
 * Valid_Scalars::
 * VADS_Size::
 * Value_Size::
@@ -7712,6 +7714,78 @@ context of the attribute, and may not be returned to some enclosing
 scope. For instance, a function cannot use @code{Unrestricted_Access}
 to create a unconstrained pointer and then return that value to the
 caller.
+
+@node Update
+@unnumberedsec Update
+@findex Update
+@noindent
+The @code{Update} attribute creates a copy of an array or record value
+with one or more modified components. The syntax is:
+
+@smallexample @c ada
+PREFIX'Update (AGGREGATE);
+@end smallexample
+
+@noindent
+where @code{PREFIX} is the name of an array or record object, and
+@code{AGGREGATE} is a named aggregate that does not contain an @code{others}
+choice. The effect is to yield a copy of the array or record value which
+is unchanged apart from the components mentioned in the aggregate, which
+are changed to the indicated value. The original value of the array or
+record value is not affected. For example:
+
+@smallexample @c ada
+type Arr is Array (1 .. 5) of Integer;
+...
+Avar1 : Arr := (1,2,3,4,5);
+Avar2 : Arr := Avar1'Update ((2 => 10, 3 .. 4 => 20));
+@end smallexample
+
+@noindent
+yields a value for @code{Avar2} of 1,10,20,20,5 with @code{Avar1}
+begin unmodified. Similarly:
+
+@smallexample @c ada
+type Rec is A, B, C : Integer;
+...
+Rvar1 : Rec := (A => 1, B => 2, C => 3);
+Rvar2 : Rec := Rvar1'Update ((B => 20));
+@end smallexample
+
+@noindent
+yields a value for @code{Rvar2} of (A => 1, B => 20, C => 3),
+with @code{Rvar1} being unmodifed.
+Note that the value of the attribute reference is computed
+completely before it is used. This means that if you write:
+
+@smallexample @c ada
+Avar1 := Avar1'Update ((1 => 10, 2 => Function_Call));
+@end smallexample
+
+@noindent
+then the value of @code{Avar1} is not modified if @code{Function_Call}
+raises an exception, unlike the effect of a series of direct assignments
+to elements of @code{Avar1}. In general this requires that
+two extra complete copies of the object are required, which should be
+kept in mind when considering efficiency.
+
+The @code{Update} attribute cannot be applied to prefixes of a limited
+type, and cannot reference discriminants in the case of a record type.
+
+In the record case, no component can be mentioned more than once. In
+the array case, two overlapping ranges can appear in the aggregate,
+in which case the modifications are processed left to right.
+
+Multi-dimensional arrays can be modified, as shown by this example:
+
+@smallexample @c ada
+A : array (1 .. 10, 1 .. 10) of Integer;
+..
+A := A'Update (1 => (2 => 20), 3 => (4 => 30));
+@end smallexample
+
+@noindent
+which changes element (1,2) to 20 and (3,4) to 30.
 
 @node Valid_Scalars
 @unnumberedsec Valid_Scalars

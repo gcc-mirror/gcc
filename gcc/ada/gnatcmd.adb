@@ -59,7 +59,6 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure GNATCmd is
    Project_Node_Tree : Project_Node_Tree_Ref;
-   Root_Environment  : Prj.Tree.Environment;
    Project_File      : String_Access;
    Project           : Prj.Project_Id;
    Current_Verbosity : Prj.Verbosity := Prj.Default;

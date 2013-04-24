@@ -98,8 +98,6 @@ package body Clean is
 
    Project_Node_Tree : Project_Node_Tree_Ref;
 
-   Root_Environment : Prj.Tree.Environment;
-
    Main_Project : Prj.Project_Id := Prj.No_Project;
 
    All_Projects : Boolean := False;

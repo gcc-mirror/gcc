@@ -5767,7 +5767,7 @@ package body Sem_Ch13 is
 
       Dynamic_Predicate_Present : Boolean := False;
       --  Set True if a dynamic predicate is present, results in the entire
-      --  predicate being considered dynamic even if it looks static
+      --  predicate being considered dynamic even if it looks static.
 
       Static_Predicate_Present : Node_Id := Empty;
       --  Set to N_Pragma node for a static predicate if one is encountered
@@ -5782,6 +5782,12 @@ package body Sem_Ch13 is
       begin
          if Present (T) and then Present (Predicate_Function (T)) then
             Set_Has_Predicates (Typ);
+
+            --  Capture the nature of the inherited ancestor predicate
+
+            if Has_Dynamic_Predicate_Aspect (T) then
+               Dynamic_Predicate_Present := True;
+            end if;
 
             --  Build the call to the predicate function of T
 
@@ -5866,6 +5872,8 @@ package body Sem_Ch13 is
             if Nkind (Ritem) = N_Pragma
               and then Pragma_Name (Ritem) = Name_Predicate
             then
+               --  Capture the nature of the predicate
+
                if Present (Corresponding_Aspect (Ritem)) then
                   case Chars (Identifier (Corresponding_Aspect (Ritem))) is
                      when Name_Dynamic_Predicate =>
@@ -6199,25 +6207,28 @@ package body Sem_Ch13 is
             end;
          end if;
 
-         --  Deal with static predicate case
+         if Is_Scalar_Type (Typ) then
 
-         --  ??? We don't currently deal with real types
-         --  ??? Why requiring that Typ is static?
+            --  Attempt to build a static predicate for a discrete or a real
+            --  subtype. This action may fail because the actual expression may
+            --  not be static.
 
-         if Ekind (Typ) in Discrete_Kind
-           and then Is_Static_Subtype (Typ)
-           and then not Dynamic_Predicate_Present
-         then
-            --  Only build the predicate for subtypes
-
-            if Ekind_In (Typ, E_Enumeration_Subtype,
+            if Ekind_In (Typ, E_Decimal_Fixed_Point_Subtype,
+                              E_Enumeration_Subtype,
+                              E_Floating_Point_Subtype,
                               E_Modular_Integer_Subtype,
+                              E_Ordinary_Fixed_Point_Subtype,
                               E_Signed_Integer_Subtype)
             then
                Build_Static_Predicate (Typ, Expr, Object_Name);
 
+               --  The predicate is categorized as static but its expression is
+               --  dynamic. Note that the predicate may become non-static when
+               --  inherited dynamic predicates are involved.
+
                if Present (Static_Predicate_Present)
-                 and No (Static_Predicate (Typ))
+                 and then No (Static_Predicate (Typ))
+                 and then not Dynamic_Predicate_Present
                then
                   Error_Msg_F
                     ("expression does not have required form for "

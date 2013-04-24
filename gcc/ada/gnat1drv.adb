@@ -387,18 +387,6 @@ procedure Gnat1drv is
 
          Debug_Flag_HH := True;
 
-         --  Disable Expressions_With_Actions nodes
-
-         --  The gnat2why backend does not deal with Expressions_With_Actions
-         --  in all places (in particular assertions). It is difficult to
-         --  determine in the frontend which cases are allowed, so we disable
-         --  Expressions_With_Actions entirely. Even in the cases where
-         --  gnat2why deals with Expressions_With_Actions, it is easier to
-         --  deal with the original constructs (quantified, conditional and
-         --  case expressions) instead of the rewritten ones.
-
-         Use_Expression_With_Actions := False;
-
          --  Enable assertions, since they give valuable extra information for
          --  formal verification.
 

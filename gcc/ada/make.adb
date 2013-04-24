@@ -5475,7 +5475,6 @@ package body Make is
       --  is invoked with the -F switch to force checking of elaboration flags.
 
       Project_Node_Tree : Project_Node_Tree_Ref;
-      Root_Environment  : Prj.Tree.Environment;
 
       Stop_Compile : Boolean;
 
