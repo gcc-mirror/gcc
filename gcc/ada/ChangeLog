@@ -1,3 +1,17 @@
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_ch7.adb: Minor reformatting.
+	* gnat_rm.texi: Document pragma Loop_Invariant.
+	* sem_attr.adb (Analyze_Attribute, case Loop_Entry): This is
+	no longer an S14_Attribute.
+	* sem_prag.adb (Analyze_Pragma, case Loop_Invariant): Combine
+	processing with Assert, allow message parameter, remove call
+	to S14_Pragma.
+
+2013-04-24  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
 2013-04-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch7.adb (Swap_Private_Dependents): New internal routine

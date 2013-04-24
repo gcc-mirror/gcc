@@ -179,6 +179,7 @@ Implementation Defined Pragmas
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
+* Pragma Loop_Invariant::
 * Pragma Loop_Optimize::
 * Pragma Loop_Variant::
 * Pragma Machine_Attribute::
@@ -937,6 +938,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
+* Pragma Loop_Invariant::
 * Pragma Loop_Optimize::
 * Pragma Loop_Variant::
 * Pragma Machine_Attribute::
@@ -3992,6 +3994,33 @@ type @code{Long_Float} and for floating point type representations with
 For further details on this pragma, see the
 @cite{DEC Ada Language Reference Manual}, section 3.5.7b.  Note that to use
 this pragma, the standard runtime libraries must be recompiled.
+
+@node Pragma Loop_Invariant
+@unnumberedsec Pragma Loop_Invariant
+@findex Loop_Invariant
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Loop_Invariant ( boolean_EXPRESSION );
+
+@end smallexample
+
+@noindent
+The effect of this pragma is similar to that of pragma @code{Assert},
+except that in an @code{Assertion_Policy} pragma, the identifier
+@code{Loop_Invariant} is used to control whether it is ignored or checked
+(or disabled).
+
+@code{Loop_Invariant} can only appear as one of the items in the sequence
+of statements of a loop body. The intention is that it be used to
+represent a "loop invariant" assertion, i.e. something that is true each
+time through the loop, and which can be used to show that the loop is
+achieving its purpose.
+
+To aid in writing such invariants, the special attribute @code{Loop_Entry}
+may be used to refer to the value of an expression on entry to the loop. This
+attribute can only be used within the expression of a @code{Loop_Invariant}
+pragma. For full details, see documentation of attribute @code{Loop_Entry}.
 
 @node Pragma Loop_Optimize
 @unnumberedsec Pragma Loop_Optimize

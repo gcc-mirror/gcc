@@ -4191,7 +4191,7 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Dtyp    : constant Entity_Id  := Available_View (Designated_Type (PtrT));
+      Dtyp    : constant Entity_Id := Available_View (Designated_Type (PtrT));
       Desig   : Entity_Id;
       Nod     : Node_Id;
       Pool    : Entity_Id;

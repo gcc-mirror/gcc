@@ -8659,7 +8659,7 @@ package body Sem_Ch3 is
          Set_Known_To_Have_Preelab_Init
            (Def_Id, Known_To_Have_Preelab_Init (T));
 
-         --  private subtypes may have private dependents.
+         --  Private subtypes may have private dependents
 
          Set_Private_Dependents (Def_Id, New_Elmt_List);
 
