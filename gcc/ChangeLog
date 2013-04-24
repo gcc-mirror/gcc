@@ -1,3 +1,7 @@
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/cpp.texi: Remove __GXX_EXPERIMENTAL_CXX1Y__.
+
 2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
         * rtl.h (struct rtx_def): Add comment for field jump.

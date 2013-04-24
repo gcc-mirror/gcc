@@ -713,10 +713,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__DEPRECATED");
       if (flag_rtti)
 	cpp_define (pfile, "__GXX_RTTI");
-      if (cxx_dialect == cxx0x)
+      if (cxx_dialect >= cxx0x)
         cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
-      if (cxx_dialect >= cxx1y)
-        cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX1Y__");
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */
