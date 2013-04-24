@@ -1,3 +1,7 @@
+2013-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/x86-64.h (ASM_SPEC): Support -mx32.
+
 2013-04-24  Sterling Augustine  <saugustine@google.com>
 
 	* dwarf2out.c (skeleton_debug_str_hash, add_skeleton_AT_string)
