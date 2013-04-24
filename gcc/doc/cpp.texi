@@ -2319,6 +2319,13 @@ features likely to be included in C++0x are available. Note that these
 features are experimental, and may change or be removed in future
 versions of GCC.
 
+@item __GXX_EXPERIMENTAL_CXX1Y__
+This macro is defined when compiling a C++ source file with the option
+@option{-std=c++1y} or @option{-std=gnu++1y}. It indicates that some
+features likely to be included in C++1y are available. Note that these
+features are experimental, and may change or be removed in future
+versions of GCC.
+
 @item __GXX_WEAK__
 This macro is defined when compiling a C++ source file.  It has the
 value 1 if the compiler will use weak symbols, COMDAT sections, or

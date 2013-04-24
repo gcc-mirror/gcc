@@ -1,3 +1,7 @@
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/cpp.texi: Document __GXX_EXPERIMENTAL_CXX1Y__.
+
 2013-04-24  Marek Polacek  <polacek@redhat.com>
 
 	* tree-scalar-evolution.h (analyze_scalar_evolution): Remove.

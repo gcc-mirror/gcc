@@ -1,5 +1,9 @@
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.dg/cpp1y/cxx1y_macro.C: New.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/56970
 	* g++.dg/cpp0x/sfinae45.C: New.
 
