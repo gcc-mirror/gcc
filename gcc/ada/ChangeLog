@@ -1,3 +1,41 @@
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Move Stdcall tests to
+	Set_Convention_From_Pragma so that they are applied to each
+	entry of a homonym set.
+	(Process_Convention): Don't try to set convention if already set.
+
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* gnatbind.adb: Minor reformatting.
+
+2013-04-24  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Gnatclean): Add the default project search
+	directories in the project search path after scanning the
+	switches on the command line.
+	(Initialize): Do not put the default project search directories in the
+	project search path.
+	* gnatcmd.adb (GNATcmd): Add the default project search
+	directories in the project search path after scanning the switches
+	on the command line.
+	* make.adb (Initialize): Add the default project search
+	directories in the project search path after scanning the switches
+	on the command line.
+
+2013-04-24  Yannick Moy  <moy@adacore.com>
+
+	* restrict.ads (Restriction_Warnings): Initialize with all False value.
+
+2013-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, checks.adb (Predicate_Checks_Suppressed): New function.
+	* exp_util.ads, exp_util.adb (Make_Predicate_Check): Check setting of
+	Predicate_Check.
+	* snames.ads-tmpl (Name_Predicate_Check): New check name.
+	* types.ads (Predicate_Check): New definition.
+	* gnat_rm.texi: Add documentation for Predicate_Check.
+
 2013-04-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch8.adb (Expand_N_Subprogram_Renaming_Declaration): If this

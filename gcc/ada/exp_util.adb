@@ -46,7 +46,6 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -5472,18 +5471,11 @@ package body Exp_Util is
    begin
       pragma Assert
         (Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)));
-
-      if Check_Kind (Name_Invariant) = Name_Check then
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (Invariant_Procedure (Typ), Loc),
-             Parameter_Associations => New_List (Relocate_Node (Expr)));
-
-      else
-         return
-           Make_Null_Statement (Loc);
-      end if;
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (Invariant_Procedure (Typ), Loc),
+          Parameter_Associations => New_List (Relocate_Node (Expr)));
    end Make_Invariant_Call;
 
    ------------------------
@@ -5605,6 +5597,14 @@ package body Exp_Util is
       Nam : Name_Id;
 
    begin
+      --  If predicate checks are suppressed, then return a null statement.
+      --  For this call, we check only the scope setting. If the caller wants
+      --  to check a specific entity's setting, they must do it manually.
+
+      if Predicate_Checks_Suppressed (Empty) then
+         return Make_Null_Statement (Loc);
+      end if;
+
       --  Compute proper name to use, we need to get this right so that the
       --  right set of check policies apply to the Check pragma we are making.
 
