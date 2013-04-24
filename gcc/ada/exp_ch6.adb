@@ -1728,17 +1728,19 @@ package body Exp_Ch6 is
             --  procedure does not include a predicate call, so it has to be
             --  generated explicitly.
 
-            if (Has_Aspect (E_Actual, Aspect_Predicate)
-                  or else
-                Has_Aspect (E_Actual, Aspect_Dynamic_Predicate)
-                  or else
-                Has_Aspect (E_Actual, Aspect_Static_Predicate))
-              and then not Is_Init_Proc (Subp)
+            if not Is_Init_Proc (Subp)
+              and then (Has_Aspect (E_Actual, Aspect_Predicate)
+                          or else
+                        Has_Aspect (E_Actual, Aspect_Dynamic_Predicate)
+                          or else
+                        Has_Aspect (E_Actual, Aspect_Static_Predicate))
+              and then Present (Predicate_Function (E_Actual))
             then
-               if (Is_Derived_Type (E_Actual)
-                    and then Is_Overloadable (Subp)
-                    and then Is_Inherited_Operation_For_Type (Subp, E_Actual))
-                 or else Is_Entity_Name (Actual)
+               if Is_Entity_Name (Actual)
+                 or else
+                   (Is_Derived_Type (E_Actual)
+                     and then Is_Overloadable (Subp)
+                     and then Is_Inherited_Operation_For_Type (Subp, E_Actual))
                then
                   Append_To (Post_Call,
                     Make_Predicate_Check (E_Actual, Actual));
