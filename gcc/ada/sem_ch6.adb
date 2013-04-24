@@ -11196,6 +11196,10 @@ package body Sem_Ch6 is
       --  under the same visibility conditions as for other invariant checks,
       --  the type invariant must be applied to the returned value.
 
+      function Contains_Enabled_Pragmas (L : List_Id) return Boolean;
+      --  Determine whether list L has at least one enabled pragma. The routine
+      --  ignores nother non-pragma elements.
+
       procedure Expand_Contract_Cases (CCs : Node_Id; Subp_Id : Entity_Id);
       --  Given pragma Contract_Cases CCs, create the circuitry needed to
       --  evaluate case guards and trigger consequence expressions. Subp_Id
@@ -11262,6 +11266,26 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Access_Invariants;
+
+      ------------------------------
+      -- Contains_Enabled_Pragmas --
+      ------------------------------
+
+      function Contains_Enabled_Pragmas (L : List_Id) return Boolean is
+         Prag : Node_Id;
+
+      begin
+         Prag := First (L);
+         while Present (Prag) loop
+            if Nkind (Prag) = N_Pragma and then Is_Ignored (Prag) then
+               return False;
+            end if;
+
+            Next (Prag);
+         end loop;
+
+         return True;
+      end Contains_Enabled_Pragmas;
 
       ---------------------------
       -- Expand_Contract_Cases --
@@ -12252,8 +12276,11 @@ package body Sem_Ch6 is
       --  If we had any postconditions and expansion is enabled, or if the
       --  subprogram has invariants, then build the _Postconditions procedure.
 
-      if (Present (Plist) or else Invariants_Or_Predicates_Present)
-        and then Expander_Active
+      if Expander_Active
+        and then
+          (Invariants_Or_Predicates_Present
+             or else
+               (Present (Plist) and then Contains_Enabled_Pragmas (Plist)))
       then
          if No (Plist) then
             Plist := Empty_List;

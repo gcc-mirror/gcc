@@ -1,3 +1,54 @@
+2013-04-24  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: Add description of '--help' and '--version'
+	options for ASIS tools: gnatelim, gnatmetric, gnatstub, gnatpp.
+
+2013-04-24  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi: Minor syntax fix.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Add extra comments on
+	what and why is being analyzed. Remove the decoration of renamings as
+	this simply falls out of the general analysis mechanism.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Explain_Redundancy): New routine.
+	(Resolve_Equality_Op): Place the error concerning a redundant
+	comparison to True at the "=". Try to explain the nature of the
+	redundant True.
+
+2013-04-24  Javier Miranda  <miranda@adacore.com>
+
+
+	* checks.adb, exp_ch6.adb (Install_Null_Excluding_Check): No
+	check in interface thunks since it is performed at the caller
+	side.
+	(Expand_Simple_Function_Return): No accessibility check
+	needed in thunks since the check is done by the target routine.
+
+2013-04-24  Vincent Celier  <celier@adacore.com>
+
+	* xref_lib.adb (Add_Entity): Use the canonical file names
+	so that source file names with capital letters are found on
+	platforms where file names are case insensitive.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch4.adb (P_Name): Continue to parse the name extension when the
+	construct is attribute Loop_Entry. Do not convert the attribute
+	reference into an indexed component when there is at least one
+	expression / range following 'Loop_Entry.
+
+2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Contains_Enabled_Pragmas): New routine.
+	(Process_PPCs): Generate procedure _Postconditions
+	only when the context has invariants or predicates or enabled
+	aspects/pragmas.
+
 2013-04-24  Thomas Quinot  <quinot@adacore.com>
 
 	* g-socket.adb (Host_Entry): Introduce intermediate copy of

@@ -985,36 +985,31 @@ package body Exp_Attr is
 
       Rewrite (Attr, New_Reference_To (Temp_Id, Loc));
 
-      --  The analysis of the conditional block takes care of the constant
-      --  declaration.
-
       Installed := Current_Scope = Loop_Id;
+
+      --  Depending on the pracement of attribute 'Loop_Entry relative to the
+      --  associated loop, ensure the proper visibility for analysis.
 
       if not Installed then
          Push_Scope (Scope (Loop_Id));
       end if;
 
+      --  The analysis of the conditional block takes care of the constant
+      --  declaration.
+
       if Present (Result) then
          Rewrite (Loop_Stmt, Result);
          Analyze (Loop_Stmt);
+
+      --  The conditional block was analyzed when a previous 'Loop_Entry was
+      --  expanded. There is no point in reanalyzing the block, simply analyze
+      --  the declaration of the constant.
+
       else
          Analyze (Temp_Decl);
       end if;
 
       Analyze (Attr);
-
-      --  Patch up a renaming of a 'Loop_Entry attribute. This case may arise
-      --  when the attribute is used as the name in an Ada 2012 iterator loop.
-
-      if Nkind (Parent (Attr)) = N_Object_Renaming_Declaration then
-         declare
-            Mark : constant Node_Id := Subtype_Mark (Parent (Attr));
-
-         begin
-            Rewrite (Mark, New_Reference_To (Etype (Temp_Id), Sloc (Mark)));
-            Analyze (Mark);
-         end;
-      end if;
 
       if not Installed then
          Pop_Scope;

@@ -5135,9 +5135,9 @@ compiles with the Rational APEX compiler, even when the code includes non-
 conforming Ada constructs.  The profile enables the following three pragmas:
 
 @itemize @bullet
-pragma Implicit_Packing;
-pragma Overriding_Renamings;
-pragma Use_VADS_Size;
+@item pragma Implicit_Packing
+@item pragma Overriding_Renamings
+@item pragma Use_VADS_Size
 @end itemize
 
 @noindent

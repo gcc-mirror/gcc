@@ -10910,6 +10910,14 @@ Ada 2005 mode etc.
 
 @table @option
 @c !sort!
+@item --version
+@cindex @option{--version} @command{gnatelim}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatelim}
+Display usage, then exit disregarding all other options.
+
 @item ^-files^/FILES^=@var{filename}
 @cindex @option{^-files^/FILES^} (@code{gnatelim})
 Take the argument source files from the specified file. This file should be an
@@ -14207,6 +14215,14 @@ with @option{^-pipe^/STANDARD_OUTPUT^} option.
 The additional @command{gnatpp} switches are defined in this subsection.
 
 @table @option
+@item --version
+@cindex @option{--version} @command{gnatpp}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatpp}
+Display usage, then exit disregarding all other options.
+
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatpp})
 Take the argument source files from the specified file. This file should be an
@@ -15657,6 +15673,14 @@ Report control fan-in coupling
 Additional @command{gnatmetric} switches are as follows:
 
 @table @option
+@item --version
+@cindex @option{--version} @command{gnatmetric}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatmetric}
+Display usage, then exit disregarding all other options.
+
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatmetric})
 Take the argument source files from the specified file. This file should be an
@@ -18475,6 +18499,14 @@ is an optional sequence of switches as described in the next section
 
 @table @option
 @c !sort!
+
+@item --version
+@cindex @option{--version} @command{gnatstub}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatstub}
+Display usage, then exit disregarding all other options.
 
 @item ^-f^/FULL^
 @cindex @option{^-f^/FULL^} (@command{gnatstub})

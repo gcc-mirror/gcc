@@ -509,16 +509,25 @@ package body Ch4 is
               and then not
                 Is_Parameterless_Attribute (Get_Attribute_Id (Attr_Name))
             then
-               Set_Expressions (Name_Node, New_List);
+               --  Attribute Loop_Entry has no effect on the name extension
+               --  parsing logic, as if the attribute never existed in the
+               --  source. Continue parsing the subsequent expressions or
+               --  ranges.
+
+               if Attr_Name = Name_Loop_Entry then
+                  Scan; -- past left paren
+                  goto Scan_Name_Extension_Left_Paren;
 
                --  Attribute Update contains an array or record association
                --  list which provides new values for various components or
                --  elements. The list is parsed as an aggregate.
 
-               if Attr_Name = Name_Update then
+               elsif Attr_Name = Name_Update then
+                  Set_Expressions (Name_Node, New_List);
                   Append (P_Aggregate, Expressions (Name_Node));
 
                else
+                  Set_Expressions (Name_Node, New_List);
                   Scan; -- past left paren
 
                   loop
@@ -695,10 +704,20 @@ package body Ch4 is
 
          elsif not Comma_Present then
             T_Right_Paren;
-            Prefix_Node := Name_Node;
-            Name_Node := New_Node (N_Indexed_Component, Sloc (Prefix_Node));
-            Set_Prefix (Name_Node, Prefix_Node);
-            Set_Expressions (Name_Node, Arg_List);
+
+            --  Do not convert Prefix'Loop_Entry (Expr1, ..., ExprN) into an
+            --  indexed component now. Let the analysis determine whether the
+            --  attribute is legal and perform the transformation if needed.
+
+            if Attr_Name = Name_Loop_Entry then
+               Set_Expressions (Name_Node, Arg_List);
+            else
+               Prefix_Node := Name_Node;
+               Name_Node := New_Node (N_Indexed_Component, Sloc (Prefix_Node));
+               Set_Prefix (Name_Node, Prefix_Node);
+               Set_Expressions (Name_Node, Arg_List);
+            end if;
+
             goto Scan_Name_Extension;
          end if;
 
