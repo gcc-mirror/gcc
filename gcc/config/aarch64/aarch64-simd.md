@@ -1509,21 +1509,33 @@
    (set_attr "simd_mode" "V2SI")]
 )
 
-;; vbsl_* intrinsics may compile to any of bsl/bif/bit depending on register
-;; allocation.  For an intrinsic of form:
-;;   vD = bsl_* (vS, vN, vM)
+;; aarch64_simd_bsl may compile to any of bsl/bif/bit depending on register
+;; allocation.
+;; Operand 1 is the mask, operands 2 and 3 are the bitfields from which
+;; to select.
+;;
+;; Thus our BSL is of the form:
+;;   op0 = bsl (mask, op2, op3)
 ;; We can use any of:
-;;   bsl vS, vN, vM  (if D = S)
-;;   bit vD, vN, vS  (if D = M, so 1-bits in vS choose bits from vN, else vM)
-;;   bif vD, vM, vS  (if D = N, so 0-bits in vS choose bits from vM, else vN)
+;;
+;;   if (op0 = mask)
+;;     bsl mask, op1, op2
+;;   if (op0 = op1) (so 1-bits in mask choose bits from op2, else op0)
+;;     bit op0, op2, mask
+;;   if (op0 = op2) (so 0-bits in mask choose bits from op1, else op0)
+;;     bif op0, op1, mask
 
 (define_insn "aarch64_simd_bsl<mode>_internal"
   [(set (match_operand:VALL 0 "register_operand"		"=w,w,w")
-	(unspec:VALL
-	 [(match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w")
-	  (match_operand:VALL 2 "register_operand"		" w,w,0")
-	  (match_operand:VALL 3 "register_operand"		" w,0,w")]
-	 UNSPEC_BSL))]
+	(ior:VALL
+	   (and:VALL
+	     (match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w")
+	     (match_operand:VALL 2 "register_operand"		" w,w,0"))
+	   (and:VALL
+	     (not:<V_cmp_result>
+		(match_dup:<V_cmp_result> 1))
+	     (match_operand:VALL 3 "register_operand"		" w,0,w"))
+	))]
   "TARGET_SIMD"
   "@
   bsl\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
@@ -1532,15 +1544,17 @@
 )
 
 (define_expand "aarch64_simd_bsl<mode>"
-  [(set (match_operand:VALL 0 "register_operand")
-	(unspec:VALL [(match_operand:<V_cmp_result> 1 "register_operand")
-		      (match_operand:VALL 2 "register_operand")
-		      (match_operand:VALL 3 "register_operand")]
-		     UNSPEC_BSL))]
-  "TARGET_SIMD"
+  [(match_operand:VALL 0 "register_operand")
+   (match_operand:<V_cmp_result> 1 "register_operand")
+   (match_operand:VALL 2 "register_operand")
+   (match_operand:VALL 3 "register_operand")]
+ "TARGET_SIMD"
 {
   /* We can't alias operands together if they have different modes.  */
   operands[1] = gen_lowpart (<V_cmp_result>mode, operands[1]);
+  emit_insn (gen_aarch64_simd_bsl<mode>_internal (operands[0], operands[1],
+						  operands[2], operands[3]));
+  DONE;
 })
 
 (define_expand "aarch64_vcond_internal<mode>"

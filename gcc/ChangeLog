@@ -1,3 +1,10 @@
+2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_bsl<mode>_internal): Rewrite RTL to not use UNSPEC_BSL.
+	(aarch64_simd_bsl<mode>): Likewise.
+	* config/aarch64/iterators.md (unspec): Remove UNSPEC_BSL.
+
 2013-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57066
