@@ -12964,6 +12964,40 @@ package body Sem_Util is
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
 
+   ----------------
+   -- Referenced --
+   ----------------
+
+   function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean is
+      Seen : Boolean := False;
+
+      function Is_Reference (N : Node_Id) return Traverse_Result;
+      --  Determine whether node N denotes a reference to Id. If this is the
+      --  case, set global flag Seen to True and stop the traversal.
+
+      function Is_Reference (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Entity (N) = Id
+         then
+            Seen := True;
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Is_Reference;
+
+      procedure Inspect_Expression is new Traverse_Proc (Is_Reference);
+
+   --  Start of processing for Referenced
+
+   begin
+      Inspect_Expression (Expr);
+
+      return Seen;
+   end Referenced;
+
    ------------------------------------
    -- References_Generic_Formal_Type --
    ------------------------------------

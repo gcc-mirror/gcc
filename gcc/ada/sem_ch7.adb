@@ -2615,6 +2615,16 @@ package body Sem_Ch7 is
                return True;
             end if;
          end;
+
+      --  A [generic] package that introduces at least one non-null abstract
+      --  state requires completion. A null abstract state always appears as
+      --  the sole element of the state list.
+
+      elsif Ekind_In (P, E_Generic_Package, E_Package)
+        and then Present (Abstract_States (P))
+        and then not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+      then
+         return True;
       end if;
 
       --  Otherwise search entity chain for entity requiring completion

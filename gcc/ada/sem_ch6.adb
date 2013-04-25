@@ -11655,7 +11655,7 @@ package body Sem_Ch6 is
 
                --  Check possible overlap between a case guard and "others"
 
-               if Multiple_PCs then
+               if Multiple_PCs and then Exception_Extra_Info then
                   Case_Guard_Error
                     (Decls     => Error_Decls,
                      Flag      => Others_Flag,
@@ -11695,7 +11695,7 @@ package body Sem_Ch6 is
                --  Check whether this case guard overlaps with another case
                --  guard.
 
-               if Multiple_PCs then
+               if Multiple_PCs and then Exception_Extra_Info then
                   Case_Guard_Error
                     (Decls     => Error_Decls,
                      Flag      => Flag,

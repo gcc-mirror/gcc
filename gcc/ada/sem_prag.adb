@@ -181,6 +181,22 @@ package body Sem_Prag is
    --  to Uppercase or Lowercase, then a new string literal with appropriate
    --  casing is constructed.
 
+   function Appears_In (List : Elist_Id; Item_Id : Entity_Id) return Boolean;
+   --  Subsidiary to the analysis of pragma Global and pragma Depends. Query
+   --  whether a particular item appears in a mixed list of nodes and entities.
+   --  It is assumed that all nodes in the list have entities.
+
+   procedure Collect_Subprogram_Inputs_Outputs
+     (Subp_Id      : Entity_Id;
+      Subp_Inputs  : in out Elist_Id;
+      Subp_Outputs : in out Elist_Id;
+      Global_Seen  : out Boolean);
+   --  Subsidiary to the analysis of pragma Global and pragma Depends. Gather
+   --  all inputs and outputs of subprogram Subp_Id in lists Subp_Inputs and
+   --  Subp_Outputs. If the case where the subprogram has no inputs and/or
+   --  outputs, the corresponding returned list is No_Elist. Flag Global_Seen
+   --  is set when the related subprogram has aspect/pragma Global.
+
    function Find_Related_Subprogram
      (Prag             : Node_Id;
       Check_Duplicates : Boolean := False) return Node_Id;
@@ -448,12 +464,6 @@ package body Sem_Prag is
       --  Verify the legality of a single dependency clause. Flag Is_Last
       --  denotes whether Clause is the last clause in the relation.
 
-      function Appears_In
-        (List    : Elist_Id;
-         Item_Id : Entity_Id) return Boolean;
-      --  Determine whether a particular item appears in a mixed list of nodes
-      --  and entities.
-
       procedure Check_Function_Return;
       --  Verify that Funtion'Result appears as one of the outputs
 
@@ -475,10 +485,6 @@ package body Sem_Prag is
          Is_Input   : Boolean);
       --  Verify that all items from Subp_Items appear in Used_Items. Emit an
       --  error if this is not the case.
-
-      procedure Collect_Subprogram_Inputs_Outputs;
-      --  Gather all inputs and outputs of the subprogram. These are the formal
-      --  parameters and entities classified in pragma Global.
 
       procedure Normalize_Clause (Clause : Node_Id);
       --  Remove a self-dependency "+" from the input list of a clause.
@@ -787,38 +793,6 @@ package body Sem_Prag is
          Analyze_Input_List (Inputs);
       end Analyze_Dependency_Clause;
 
-      ----------------
-      -- Appears_In --
-      ----------------
-
-      function Appears_In
-        (List    : Elist_Id;
-         Item_Id : Entity_Id) return Boolean
-      is
-         Elmt : Elmt_Id;
-         Id   : Entity_Id;
-
-      begin
-         if Present (List) then
-            Elmt := First_Elmt (List);
-            while Present (Elmt) loop
-               if Nkind (Node (Elmt)) = N_Defining_Identifier then
-                  Id := Node (Elmt);
-               else
-                  Id := Entity (Node (Elmt));
-               end if;
-
-               if Id = Item_Id then
-                  return True;
-               end if;
-
-               Next_Elmt (Elmt);
-            end loop;
-         end if;
-
-         return False;
-      end Appears_In;
-
       ----------------------------
       --  Check_Function_Return --
       ----------------------------
@@ -960,138 +934,6 @@ package body Sem_Prag is
             Next_Elmt (Elmt);
          end loop;
       end Check_Usage;
-
-      ---------------------------------------
-      -- Collect_Subprogram_Inputs_Outputs --
-      ---------------------------------------
-
-      procedure Collect_Subprogram_Inputs_Outputs is
-         procedure Collect_Global_List
-           (List : Node_Id;
-            Mode : Name_Id := Name_Input);
-         --  Collect all relevant items from a global list
-
-         -------------------------
-         -- Collect_Global_List --
-         -------------------------
-
-         procedure Collect_Global_List
-           (List : Node_Id;
-            Mode : Name_Id := Name_Input)
-         is
-            procedure Collect_Global_Item
-              (Item : Node_Id;
-               Mode : Name_Id);
-            --  Add an item to the proper subprogram input or output collection
-
-            -------------------------
-            -- Collect_Global_Item --
-            -------------------------
-
-            procedure Collect_Global_Item
-              (Item : Node_Id;
-               Mode : Name_Id)
-            is
-            begin
-               if Nam_In (Mode, Name_In_Out, Name_Input) then
-                  Add_Item (Item, Subp_Inputs);
-               end if;
-
-               if Nam_In (Mode, Name_In_Out, Name_Output) then
-                  Add_Item (Item, Subp_Outputs);
-               end if;
-            end Collect_Global_Item;
-
-            --  Local variables
-
-            Assoc : Node_Id;
-            Item  : Node_Id;
-
-         --  Start of processing for Collect_Global_List
-
-         begin
-            --  Single global item declaration
-
-            if Nkind_In (List, N_Identifier, N_Selected_Component) then
-               Collect_Global_Item (List, Mode);
-
-            --  Simple global list or moded global list declaration
-
-            else
-               if Present (Expressions (List)) then
-                  Item := First (Expressions (List));
-                  while Present (Item) loop
-                     Collect_Global_Item (Item, Mode);
-
-                     Next (Item);
-                  end loop;
-
-               else
-                  Assoc := First (Component_Associations (List));
-                  while Present (Assoc) loop
-                     Collect_Global_List
-                       (List => Expression (Assoc),
-                        Mode => Chars (First (Choices (Assoc))));
-
-                     Next (Assoc);
-                  end loop;
-               end if;
-            end if;
-         end Collect_Global_List;
-
-         --  Local variables
-
-         Formal : Entity_Id;
-         Global : Node_Id;
-         List   : Node_Id;
-
-      --  Start of processing for Collect_Subprogram_Inputs_Outputs
-
-      begin
-         --  Process all formal parameters
-
-         Formal := First_Formal (Subp_Id);
-         while Present (Formal) loop
-            if Ekind_In (Formal, E_In_Out_Parameter, E_In_Parameter) then
-               Add_Item (Formal, Subp_Inputs);
-            end if;
-
-            if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
-               Add_Item (Formal, Subp_Outputs);
-            end if;
-
-            Next_Formal (Formal);
-         end loop;
-
-         --  If the subprogram is subject to pragma Global, traverse all global
-         --  lists and gather the relevant items.
-
-         Global := Find_Aspect (Subp_Id, Aspect_Global);
-         if Present (Global) then
-            Global_Seen := True;
-
-            --  Retrieve the pragma as it contains the analyzed lists
-
-            Global := Aspect_Rep_Item (Global);
-
-            --  The pragma may not have been analyzed because of the arbitrary
-            --  declaration order of aspects. Make sure that it is analyzed for
-            --  the purposes of item extraction.
-
-            if not Analyzed (Global) then
-               Analyze_Global_In_Decl_Part (Global);
-            end if;
-
-            List :=
-              Expression (First (Pragma_Argument_Associations (Global)));
-
-            --  Nothing to be done for a null global list
-
-            if Nkind (List) /= N_Null then
-               Collect_Global_List (List);
-            end if;
-         end if;
-      end Collect_Subprogram_Inputs_Outputs;
 
       ----------------------
       -- Normalize_Clause --
@@ -1382,7 +1224,11 @@ package body Sem_Prag is
          --  subprogram may depend on. These items are obtained from the
          --  parameter profile or pragma Global (if available).
 
-         Collect_Subprogram_Inputs_Outputs;
+         Collect_Subprogram_Inputs_Outputs
+           (Subp_Id      => Subp_Id,
+            Subp_Inputs  => Subp_Inputs,
+            Subp_Outputs => Subp_Outputs,
+            Global_Seen  => Global_Seen);
 
          --  Verify that every input or output of the subprogram appear in a
          --  dependency.
@@ -1402,7 +1248,11 @@ package body Sem_Prag is
          --  subprogram may depend on. These items are obtained from the
          --  parameter profile or pragma Global (if available).
 
-         Collect_Subprogram_Inputs_Outputs;
+         Collect_Subprogram_Inputs_Outputs
+           (Subp_Id      => Subp_Id,
+            Subp_Inputs  => Subp_Inputs,
+            Subp_Outputs => Subp_Outputs,
+            Global_Seen  => Global_Seen);
 
          --  Ensure that the formal parameters are visible when analyzing all
          --  clauses. This falls out of the general rule of aspects pertaining
@@ -1505,6 +1355,14 @@ package body Sem_Prag is
          --  processing a global list. This routine verifies that Mode is not a
          --  duplicate mode and sets the flag Status.
 
+         procedure Check_Mode_Restiction_In_Enclosing_Context
+           (Item    : Node_Id;
+            Item_Id : Entity_Id);
+         --  Verify that an item of mode In_Out or Output does not appear as an
+         --  input in the Global aspect of an enclosing subprogram. If this is
+         --  the case, emit an error. Item and Item_Id are respectively the
+         --  item and its entity.
+
          procedure Check_Mode_Restriction_In_Function (Mode : Node_Id);
          --  Mode denotes either In_Out or Output. Depending on the kind of the
          --  related subprogram, emit an error if those two modes apply to a
@@ -1574,18 +1432,8 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  The same entity might be referenced through various way. Check
-            --  the entity of the item rather than the item itself.
-
-            if Contains (Seen, Item_Id) then
-               Error_Msg_N ("duplicate global item", Item);
-
-            --  Add the entity of the current item to the list of processed
-            --  items.
-
-            else
-               Add_Item (Item_Id, Seen);
-            end if;
+            --  At this point we know that the global item is one of the two
+            --  valid choices. Perform mode- and usage-specific checks.
 
             if Ekind (Item_Id) = E_Abstract_State
               and then Is_Volatile_State (Item_Id)
@@ -1611,6 +1459,26 @@ package body Sem_Prag is
                      & "Volatile Output state", Item);
                end if;
             end if;
+
+            --  Verify that an output does not appear as an input in an
+            --  enclosing subprogram.
+
+            if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
+               Check_Mode_Restiction_In_Enclosing_Context (Item, Item_Id);
+            end if;
+
+            --  The same entity might be referenced through various way. Check
+            --  the entity of the item rather than the item itself.
+
+            if Contains (Seen, Item_Id) then
+               Error_Msg_N ("duplicate global item", Item);
+
+            --  Add the entity of the current item to the list of processed
+            --  items.
+
+            else
+               Add_Item (Item_Id, Seen);
+            end if;
          end Analyze_Global_Item;
 
          --------------------------
@@ -1628,6 +1496,53 @@ package body Sem_Prag is
 
             Status := True;
          end Check_Duplicate_Mode;
+
+         ------------------------------------------------
+         -- Check_Mode_Restiction_In_Enclosing_Context --
+         ------------------------------------------------
+
+         procedure Check_Mode_Restiction_In_Enclosing_Context
+           (Item    : Node_Id;
+            Item_Id : Entity_Id)
+         is
+            Dummy   : Boolean;
+            Inputs  : Elist_Id := No_Elist;
+            Outputs : Elist_Id := No_Elist;
+            Subp_Id : Entity_Id;
+
+         begin
+            --  Traverse the scope stack looking for enclosing subprograms
+            --  subject to aspect/pragma Global.
+
+            Subp_Id := Scope (Current_Scope);
+            while Present (Subp_Id) and then Subp_Id /= Standard_Standard loop
+               if Is_Subprogram (Subp_Id)
+                 and then Has_Aspect (Subp_Id, Aspect_Global)
+               then
+                  Collect_Subprogram_Inputs_Outputs
+                    (Subp_Id      => Subp_Id,
+                     Subp_Inputs  => Inputs,
+                     Subp_Outputs => Outputs,
+                     Global_Seen  => Dummy);
+
+                  --  The item is classified as In_Out or Output but appears as
+                  --  an Input in an enclosing subprogram.
+
+                  if Appears_In (Inputs, Item_Id)
+                    and then not Appears_In (Outputs, Item_Id)
+                  then
+                     Error_Msg_NE
+                       ("global item & cannot have mode In_Out or Output",
+                        Item, Item_Id);
+                     Error_Msg_NE
+                       ("\item already appears as input of subprogram &",
+                        Item, Subp_Id);
+                  end if;
+               end if;
+
+               Subp_Id := Scope (Subp_Id);
+            end loop;
+         end Check_Mode_Restiction_In_Enclosing_Context;
 
          ----------------------------------------
          -- Check_Mode_Restriction_In_Function --
@@ -8559,7 +8474,9 @@ package body Sem_Prag is
                Par := Unit (Par);
             end if;
 
-            if Nkind (Par) /= N_Package_Declaration then
+            if not Nkind_In (Par, N_Generic_Package_Declaration,
+                                  N_Package_Declaration)
+            then
                Pragma_Misplaced;
                return;
             end if;
@@ -10660,11 +10577,6 @@ package body Sem_Prag is
 
             Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
 
-            --  The pragma is analyzed at the end of the declarative part which
-            --  contains the related subprogram. Reset the analyzed flag.
-
-            Set_Analyzed (N, False);
-
             --  When the aspect/pragma appears on a subprogram body, perform
             --  the full analysis now.
 
@@ -11905,11 +11817,6 @@ package body Sem_Prag is
             end if;
 
             Subp_Id := Defining_Unit_Name (Specification (Subp_Decl));
-
-            --  The pragma is analyzed at the end of the declarative part which
-            --  contains the related subprogram. Reset the analyzed flag.
-
-            Set_Analyzed (N, False);
 
             --  When the aspect/pragma appears on a subprogram body, perform
             --  the full analysis now.
@@ -17895,6 +17802,35 @@ package body Sem_Prag is
    end Analyze_Test_Case_In_Decl_Part;
 
    ----------------
+   -- Appears_In --
+   ----------------
+
+   function Appears_In (List : Elist_Id; Item_Id : Entity_Id) return Boolean is
+      Elmt : Elmt_Id;
+      Id   : Entity_Id;
+
+   begin
+      if Present (List) then
+         Elmt := First_Elmt (List);
+         while Present (Elmt) loop
+            if Nkind (Node (Elmt)) = N_Defining_Identifier then
+               Id := Node (Elmt);
+            else
+               Id := Entity (Node (Elmt));
+            end if;
+
+            if Id = Item_Id then
+               return True;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      return False;
+   end Appears_In;
+
+   ----------------
    -- Check_Kind --
    ----------------
 
@@ -18006,6 +17942,143 @@ package body Sem_Prag is
          Set_Is_Ignored (N);
       end if;
    end Check_Applicable_Policy;
+
+   ---------------------------------------
+   -- Collect_Subprogram_Inputs_Outputs --
+   ---------------------------------------
+
+   procedure Collect_Subprogram_Inputs_Outputs
+     (Subp_Id      : Entity_Id;
+      Subp_Inputs  : in out Elist_Id;
+      Subp_Outputs : in out Elist_Id;
+      Global_Seen  : out Boolean)
+   is
+      procedure Collect_Global_List
+        (List : Node_Id;
+         Mode : Name_Id := Name_Input);
+      --  Collect all relevant items from a global list
+
+      -------------------------
+      -- Collect_Global_List --
+      -------------------------
+
+      procedure Collect_Global_List
+        (List : Node_Id;
+         Mode : Name_Id := Name_Input)
+      is
+         procedure Collect_Global_Item
+           (Item : Node_Id;
+            Mode : Name_Id);
+         --  Add an item to the proper subprogram input or output collection
+
+         -------------------------
+         -- Collect_Global_Item --
+         -------------------------
+
+         procedure Collect_Global_Item
+           (Item : Node_Id;
+            Mode : Name_Id)
+         is
+         begin
+            if Nam_In (Mode, Name_In_Out, Name_Input) then
+               Add_Item (Item, Subp_Inputs);
+            end if;
+
+            if Nam_In (Mode, Name_In_Out, Name_Output) then
+               Add_Item (Item, Subp_Outputs);
+            end if;
+         end Collect_Global_Item;
+
+         --  Local variables
+
+         Assoc : Node_Id;
+         Item  : Node_Id;
+
+      --  Start of processing for Collect_Global_List
+
+      begin
+         --  Single global item declaration
+
+         if Nkind_In (List, N_Identifier, N_Selected_Component) then
+            Collect_Global_Item (List, Mode);
+
+         --  Simple global list or moded global list declaration
+
+         else
+            if Present (Expressions (List)) then
+               Item := First (Expressions (List));
+               while Present (Item) loop
+                  Collect_Global_Item (Item, Mode);
+
+                  Next (Item);
+               end loop;
+
+            else
+               Assoc := First (Component_Associations (List));
+               while Present (Assoc) loop
+                  Collect_Global_List
+                    (List => Expression (Assoc),
+                     Mode => Chars (First (Choices (Assoc))));
+
+                  Next (Assoc);
+               end loop;
+            end if;
+         end if;
+      end Collect_Global_List;
+
+      --  Local variables
+
+      Formal : Entity_Id;
+      Global : Node_Id;
+      List   : Node_Id;
+
+   --  Start of processing for Collect_Subprogram_Inputs_Outputs
+
+   begin
+      Global_Seen := False;
+
+      --  Process all formal parameters
+
+      Formal := First_Formal (Subp_Id);
+      while Present (Formal) loop
+         if Ekind_In (Formal, E_In_Out_Parameter, E_In_Parameter) then
+            Add_Item (Formal, Subp_Inputs);
+         end if;
+
+         if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+            Add_Item (Formal, Subp_Outputs);
+         end if;
+
+         Next_Formal (Formal);
+      end loop;
+
+      --  If the subprogram is subject to pragma Global, traverse all global
+      --  lists and gather the relevant items.
+
+      Global := Find_Aspect (Subp_Id, Aspect_Global);
+      if Present (Global) then
+         Global_Seen := True;
+
+         --  Retrieve the pragma as it contains the analyzed lists
+
+         Global := Aspect_Rep_Item (Global);
+         List   := Expression (First (Pragma_Argument_Associations (Global)));
+
+         --  The pragma may not have been analyzed because of the arbitrary
+         --  declaration order of aspects. Make sure that it is analyzed for
+         --  the purposes of item extraction.
+
+         if not Analyzed (List) then
+            Analyze_Global_In_Decl_Part (Global);
+         end if;
+
+         --  Nothing to be done for a null global list
+
+         if Nkind (List) /= N_Null then
+            Collect_Global_List (List);
+         end if;
+      end if;
+   end Collect_Subprogram_Inputs_Outputs;
 
    ---------------------------------
    -- Delay_Config_Pragma_Analyze --
