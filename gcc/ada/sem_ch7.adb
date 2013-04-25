@@ -1860,10 +1860,14 @@ package body Sem_Ch7 is
                Set_Is_Potentially_Use_Visible
                  (Priv, Is_Potentially_Use_Visible (Node (Priv_Elmt)));
 
-               --  Within a child unit, recurse
+               --  Within a child unit, recurse, except in generic child
+               --  unit, which (unfortunately) handle private_dependents
+               --  separately.
 
                if Is_Priv
                  and then Is_Child_Unit (Cunit_Entity (Current_Sem_Unit))
+                 and then not Is_Empty_Elmt_List (Deps)
+                 and then not Inside_A_Generic
                then
                   Swap_Private_Dependents (Deps);
                end if;

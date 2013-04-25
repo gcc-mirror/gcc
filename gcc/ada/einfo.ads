@@ -2314,9 +2314,13 @@ package Einfo is
 --       package, generic function, generic procedure), and False for all
 --       other entities.
 
---    Is_Ghost_Function (synthesized)
---       Applies to all entities. Yields True for a function marked by aspect
---       Ghost.
+--    Is_Ghost_Entity (synthesized)
+--       Applies to all entities. Yields True for a subprogram or a whole
+--       object that has convention Ghost.
+
+--    Is_Ghost_Subprogram (synthesized)
+--       Applies to all entities. Yields True for a subprogram that has a Ghost
+--       convention.
 
 --    Is_Hidden (Flag57)
 --       Defined in all entities. Set true for all entities declared in the
@@ -4219,6 +4223,7 @@ package Einfo is
       --  floating point subtype created by a floating point type declaration.
 
       E_Floating_Point_Subtype,
+
       --  Floating point subtype, created by either a floating point subtype
       --  or floating point type declaration (in the latter case a floating
       --  point type is created for the base type, and this is the first
@@ -5428,7 +5433,8 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
-   --    Is_Ghost_Function                   (synth)    (non-generic case only)
+   --    Is_Ghost_Entity                     (synth)    (non-generic case only)
+   --    Is_Ghost_Subprogram                 (synth)    (non-generic case only)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    Scope_Depth                         (synth)
@@ -5701,6 +5707,8 @@ package Einfo is
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
    --    Is_Finalizer                        (synth)
+   --    Is_Ghost_Entity                     (synth)    (non-generic case only)
+   --    Is_Ghost_Subprogram                 (synth)    (non-generic case only)
    --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
 
@@ -5907,6 +5915,7 @@ package Einfo is
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
+   --    Is_Ghost_Entity                     (synth)
    --    Size_Clause                         (synth)
 
    --  E_Void
@@ -6638,7 +6647,8 @@ package Einfo is
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
    function Is_Finalizer                        (Id : E) return B;
-   function Is_Ghost_Function                   (Id : E) return B;
+   function Is_Ghost_Entity                     (Id : E) return B;
+   function Is_Ghost_Subprogram                 (Id : E) return B;
    function Is_Input_State                      (Id : E) return B;
    function Is_Null_State                       (Id : E) return B;
    function Is_Output_State                     (Id : E) return B;

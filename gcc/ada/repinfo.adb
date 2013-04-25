@@ -684,6 +684,8 @@ package body Repinfo is
             Write_Line ("Intrinsic");
          when Convention_Entry                 =>
             Write_Line ("Entry");
+         when Convention_Ghost                 =>
+            Write_Line ("Ghost");
          when Convention_Protected             =>
             Write_Line ("Protected");
          when Convention_Assembler             =>

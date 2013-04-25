@@ -4112,6 +4112,9 @@ to ignore the check (in which case the pragma has no effect on the program),
 or @code{Disable} in which case the pragma is not even checked for correct
 syntax.
 
+The @code{Loop_Entry} attribute may be used within the expressions of the
+@code{Loop_Variant} pragma to refer to values on entry to the loop.
+
 @node Pragma Machine_Attribute
 @unnumberedsec Pragma Machine_Attribute
 @findex Machine_Attribute
