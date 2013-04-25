@@ -494,6 +494,11 @@ package Sem_Util is
    --  Return the type of formal parameter Param as determined by its
    --  specification.
 
+   function Find_Pragma (Id : Entity_Id; Name : Name_Id) return Node_Id;
+   --  Given entity Id and pragma name Name, attempt to find the corresponding
+   --  pragma in Id's chain of representation items. The function returns Empty
+   --  if no such pragma has been found.
+
    function Find_Static_Alternative (N : Node_Id) return Node_Id;
    --  N is a case statement whose expression is a compile-time value.
    --  Determine the alternative chosen, so that the code of non-selected

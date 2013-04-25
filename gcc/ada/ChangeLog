@@ -1,3 +1,22 @@
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_Ghost_Subprogram): Remove useless code.
+
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor addition of index entry.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Check_Access_Invariants): Test whether an
+	invariant procedure is empty before generating a call to it.
+	(Has_Enabled_Predicate): New routine.
+	(Has_Null_Body): New routine.
+	(Process_PPCs): Test whether an invariant procedure is
+	empty before generating a call to it. Test whether predicates are
+	enabled for a particular type before generating a predicate call.
+	* sem_util.ads, sem_util.adb (Find_Pragma): New routine.
+
 2013-04-25  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch7.adb, einfo.adb, repinfo.adb, snames.adb-tmpl,

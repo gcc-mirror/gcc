@@ -11241,6 +11241,14 @@ package body Sem_Ch6 is
       --  references to parameters of the inherited subprogram to point to the
       --  corresponding parameters of the current subprogram.
 
+      function Has_Checked_Predicate (Typ : Entity_Id) return Boolean;
+      --  Determine whether type Typ has or inherits at least one predicate
+      --  aspect or pragma, for which the applicable policy is Checked.
+
+      function Has_Null_Body (Proc_Id : Entity_Id) return Boolean;
+      --  Determine whether the body of procedure Proc_Id contains a sole null
+      --  statement, possibly followed by an optional return.
+
       procedure Insert_After_Last_Declaration (Nod : Node_Id);
       --  Insert node Nod after the last declaration of the context
 
@@ -11294,6 +11302,7 @@ package body Sem_Ch6 is
 
             if Has_Invariants (Typ)
               and then Present (Invariant_Procedure (Typ))
+              and then not Has_Null_Body (Invariant_Procedure (Typ))
               and then Is_Public_Subprogram_For (Typ)
             then
                Obj :=
@@ -11886,6 +11895,91 @@ package body Sem_Ch6 is
          return CP;
       end Grab_PPC;
 
+      ---------------------------
+      -- Has_Checked_Predicate --
+      ---------------------------
+
+      function Has_Checked_Predicate (Typ : Entity_Id) return Boolean is
+         Anc  : Entity_Id;
+         Pred : Node_Id;
+
+      begin
+         --  Climb the ancestor type chain staring from the input. This is done
+         --  because the input type may lack aspect/pragma predicate and simply
+         --  inherit those from its ancestor.
+
+         Anc := Typ;
+         while Present (Anc) loop
+            Pred := Find_Pragma (Anc, Name_Predicate);
+
+            if Present (Pred) and then not Is_Ignored (Pred) then
+               return True;
+            end if;
+
+            Anc := Nearest_Ancestor (Anc);
+         end loop;
+
+         return False;
+      end Has_Checked_Predicate;
+
+      -------------------
+      -- Has_Null_Body --
+      -------------------
+
+      function Has_Null_Body (Proc_Id : Entity_Id) return Boolean is
+         Body_Id : Entity_Id;
+         Decl    : Node_Id;
+         Spec    : Node_Id;
+         Stmt1   : Node_Id;
+         Stmt2   : Node_Id;
+
+      begin
+         Spec := Parent (Proc_Id);
+         Decl := Parent (Spec);
+
+         --  Retrieve the entity of the invariant procedure body
+
+         if Nkind (Spec) = N_Procedure_Specification
+           and then Nkind (Decl) = N_Subprogram_Declaration
+         then
+            Body_Id := Corresponding_Body (Decl);
+
+         --  The body acts as a spec
+
+         else
+            Body_Id := Proc_Id;
+         end if;
+
+         --  The body will be generated later
+
+         if No (Body_Id) then
+            return False;
+         end if;
+
+         Spec := Parent (Body_Id);
+         Decl := Parent (Spec);
+
+         pragma Assert
+           (Nkind (Spec) = N_Procedure_Specification
+              and then Nkind (Decl) = N_Subprogram_Body);
+
+         Stmt1 := First (Statements (Handled_Statement_Sequence (Decl)));
+
+         --  Look for a null statement followed by an optional return statement
+
+         if Nkind (Stmt1) = N_Null_Statement then
+            Stmt2 := Next (Stmt1);
+
+            if Present (Stmt2) then
+               return Nkind (Stmt2) = N_Simple_Return_Statement;
+            else
+               return True;
+            end if;
+         end if;
+
+         return False;
+      end Has_Null_Body;
+
       -----------------------------------
       -- Insert_After_Last_Declaration --
       -----------------------------------
@@ -12262,11 +12356,7 @@ package body Sem_Ch6 is
 
       --  Add an invariant call to check the result of a function
 
-      if Ekind (Designator) /= E_Procedure
-        and then Expander_Active
-        --  Check of Assertions_Enabled is certainly wrong ???
-        and then Assertions_Enabled
-      then
+      if Ekind (Designator) /= E_Procedure and then Expander_Active then
          Func_Typ := Etype (Designator);
          Result   := Make_Defining_Identifier (Loc, Name_uResult);
 
@@ -12285,6 +12375,7 @@ package body Sem_Ch6 is
 
          if Has_Invariants (Func_Typ)
            and then Present (Invariant_Procedure (Func_Typ))
+           and then not Has_Null_Body (Invariant_Procedure (Func_Typ))
            and then Is_Public_Subprogram_For (Func_Typ)
          then
             Append_Enabled_Item
@@ -12305,8 +12396,7 @@ package body Sem_Ch6 is
       --  this is done for functions as well, since in Ada 2012 they can have
       --  IN OUT args.
 
-      if Expander_Active and then Assertions_Enabled then
-         --  Check of Assertions_Enabled is certainly wrong ???
+      if Expander_Active then
          Formal := First_Formal (Designator);
          while Present (Formal) loop
             if Ekind (Formal) /= E_In_Parameter
@@ -12316,6 +12406,7 @@ package body Sem_Ch6 is
 
                if Has_Invariants (Formal_Typ)
                  and then Present (Invariant_Procedure (Formal_Typ))
+                 and then not Has_Null_Body (Invariant_Procedure (Formal_Typ))
                  and then Is_Public_Subprogram_For (Formal_Typ)
                then
                   Append_Enabled_Item
@@ -12325,7 +12416,10 @@ package body Sem_Ch6 is
 
                Check_Access_Invariants (Formal);
 
-               if Present (Predicate_Function (Formal_Typ)) then
+               if Has_Predicates (Formal_Typ)
+                 and then Present (Predicate_Function (Formal_Typ))
+                 and then Has_Checked_Predicate (Formal_Typ)
+               then
                   Append_Enabled_Item
                     (Make_Predicate_Check
                       (Formal_Typ, New_Occurrence_Of (Formal, Loc)),

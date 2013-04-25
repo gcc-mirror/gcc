@@ -6043,6 +6043,7 @@ postcondition of the subprogram should be ignored for this test case.
 @findex Thread_Local_Storage
 @cindex Task specific storage
 @cindex TLS (Thread Local Storage)
+@cindex Task_Attributes
 Syntax:
 
 @smallexample @c ada
