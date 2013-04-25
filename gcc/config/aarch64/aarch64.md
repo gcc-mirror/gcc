@@ -2339,6 +2339,18 @@
    (set_attr "mode" "<GPI:MODE>")]
 )
 
+(define_insn "*cmp_swp_<optab><ALLX:mode>_shft_<GPI:mode>"
+  [(set (reg:CC_SWP CC_REGNUM)
+	(compare:CC_SWP (ashift:GPI
+			 (ANY_EXTEND:GPI
+			  (match_operand:ALLX 0 "register_operand" "r"))
+			 (match_operand:QI 1 "aarch64_shift_imm_<mode>" "n"))
+	(match_operand:GPI 2 "register_operand" "r")))]
+  ""
+  "cmp\\t%<GPI:w>2, %<GPI:w>0, <su>xt<ALLX:size> %1"
+  [(set_attr "v8type" "alus_ext")
+   (set_attr "mode" "<GPI:MODE>")]
+)
 
 ;; -------------------------------------------------------------------
 ;; Store-flag and conditional select insns
