@@ -1,3 +1,9 @@
+2013-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR bootstrap/57028
+        * Make-lang.in (f951): Link in ZLIB.
+        (CFLAGS-fortran/module.o): Add zlib include directory.
+
 2013-04-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/53685
