@@ -1,4 +1,14 @@
 2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_fold_builtin): New.
+	* config/aarch64/aarch64-protos.h (aarch64_fold_builtin): New.
+	* config/aarch64/aarch64.c (TARGET_FOLD_BUILTIN): Define.
+	* config/aarch64/aarch64-simd-builtins.def (abs): New.
+	* config/aarch64/arm_neon.h
+	(vabs<q>_<f32, 64>): Implement using __builtin_aarch64_fabs.
+
+2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-builtins.c

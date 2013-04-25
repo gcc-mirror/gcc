@@ -7874,6 +7874,9 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START aarch64_expand_builtin_va_start
 
+#undef TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN aarch64_fold_builtin
+
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG aarch64_function_arg
 

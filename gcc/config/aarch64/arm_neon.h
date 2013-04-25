@@ -4468,17 +4468,6 @@ vabds_f32 (float32_t a, float32_t b)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vabs_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("fabs %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vabs_s8 (int8x8_t a)
 {
@@ -4506,28 +4495,6 @@ vabs_s32 (int32x2_t a)
 {
   int32x2_t result;
   __asm__ ("abs %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vabsq_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("fabs %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vabsq_f64 (float64x2_t a)
-{
-  float64x2_t result;
-  __asm__ ("fabs %0.2d,%1.2d"
            : "=w"(result)
            : "w"(a)
            : /* No clobbers */);
@@ -19716,6 +19683,26 @@ vtbx4_p8 (poly8x8_t r, poly8x8x4_t tab, uint8x8_t idx)
 /* End of temporary inline asm.  */
 
 /* Start of optimal implementations in approved order.  */
+
+/* vabs  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vabs_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_absv2sf (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vabsq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_absv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vabsq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_absv2df (__a);
+}
 
 /* vadd */
 
