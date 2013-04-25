@@ -7104,21 +7104,13 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 
       if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
 	  || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
-	{
-	  if (ud1 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud1 ^ 0x8000) -  0x8000)));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud1));
-	}
+	emit_move_insn (dest, GEN_INT ((ud1 ^ 0x8000) - 0x8000));
 
       else if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000))
 	       || (ud4 == 0 && ud3 == 0 && ! (ud2 & 0x8000)))
 	{
-	  if (ud2 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud2 << 16) ^ 0x80000000)
-					   - 0x80000000));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud2 << 16));
+	  emit_move_insn (dest, GEN_INT (((ud2 << 16) ^ 0x80000000)
+					 - 0x80000000));
 	  if (ud1 != 0)
 	    emit_move_insn (copy_rtx (dest),
 			    gen_rtx_IOR (DImode, copy_rtx (dest),
@@ -7141,12 +7133,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
       else if ((ud4 == 0xffff && (ud3 & 0x8000))
 	       || (ud4 == 0 && ! (ud3 & 0x8000)))
 	{
-	  if (ud3 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud3 << 16) ^ 0x80000000)
-					   - 0x80000000));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud3 << 16));
-
+	  emit_move_insn (dest, GEN_INT (((ud3 << 16) ^ 0x80000000)
+					 - 0x80000000));
 	  if (ud2 != 0)
 	    emit_move_insn (copy_rtx (dest),
 			    gen_rtx_IOR (DImode, copy_rtx (dest),
@@ -7161,12 +7149,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 	}
       else
 	{
-	  if (ud4 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud4 << 16) ^ 0x80000000)
-					   - 0x80000000));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud4 << 16));
-
+	  emit_move_insn (dest, GEN_INT (((ud4 << 16) ^ 0x80000000)
+					 - 0x80000000));
 	  if (ud3 != 0)
 	    emit_move_insn (copy_rtx (dest),
 			    gen_rtx_IOR (DImode, copy_rtx (dest),
@@ -7181,7 +7165,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 					 GEN_INT (ud2 << 16)));
 	  if (ud1 != 0)
 	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest), GEN_INT (ud1)));
+			    gen_rtx_IOR (DImode, copy_rtx (dest),
+					 GEN_INT (ud1)));
 	}
     }
   return dest;

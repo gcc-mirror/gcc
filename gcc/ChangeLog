@@ -1,9 +1,13 @@
+2013-04-25  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Tidy.
+
 2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Revert:
 	2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 	* rtl.h (struct rtx_def): ...
-	
+
 2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimizations/57046
@@ -43,7 +47,7 @@
 
 2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * rtl.h (struct rtx_def): Add comment for field jump.
+	* rtl.h (struct rtx_def): Add comment for field jump.
 	(LRA_SUBREG_P): New macro.
 	* recog.c (register_operand): Check LRA_SUBREG_P.
 	* lra.c (lra): Add note at the end of RTL code. Align non-empty
@@ -65,9 +69,9 @@
 	non-null disp.  Reload inner instead of disp when base and index
 	are null.  Try to put lo_sum into register.
 	(EBB_PROBABILITY_CUTOFF): Redefine probability in percents.
-        (check_and_process_move): Move code for move cost check to
+	(check_and_process_move): Move code for move cost check to
 	simple_move_p.  Remove equiv_substitution.
-        (simple_move_p): New function.
+	(simple_move_p): New function.
 	(curr_insn_transform): Initialize sec_mem_p and change_p.  Set up
 	curr_insn_set.  Call check_and_process_move only for single set
 	insns.  Use the new function.  Move call of check_and_process_move
@@ -95,9 +99,9 @@
 2013-04-02  Catherine Moore  <clm@codesourcery.com>
 	    Chao-ying Fu <fu@mips.com>
 
-        * config/mips/micromips.md (jraddiusp): New pattern.
-        * config/mips/mips.c (mips_expand_epilogue): Use the JRADDIUSP
-        instruction if possible.
+	* config/mips/micromips.md (jraddiusp): New pattern.
+	* config/mips/mips.c (mips_expand_epilogue): Use the JRADDIUSP
+	instruction if possible.
 
 2013-04-24  Alan Modra  <amodra@gmail.com>
 
@@ -162,19 +166,19 @@
 
 2013-04-23  Shiva Chen  <shiva0217@gmail.com>
 
-        * lra-assigns.c (find_hard_regno_for): Use lra_reg_val_equal_p
-        to check the register content is equal or not.
-        * lra-constraints.c (match_reload): Use lra_assign_reg_val
-        to assign register content record.
-        * lra-eliminations.c (update_reg_eliminate): Use
+	* lra-assigns.c (find_hard_regno_for): Use lra_reg_val_equal_p
+	to check the register content is equal or not.
+	* lra-constraints.c (match_reload): Use lra_assign_reg_val
+	to assign register content record.
+	* lra-eliminations.c (update_reg_eliminate): Use
 	lra_update_reg_val_offset to update register content offset.
-        * lra-int.h (struct lra_reg): Add offset member.
-        (lra_reg_val_equal_p): New static inline function.
-        (lra_update_reg_val_offset): New static inline function.
-        (lra_assign_reg_val): New static inline function.
-        * lra.c (lra_create_new_reg): Use lra_assign_reg_val
-        to assign register content record.
-        (initialize_lra_reg_info_element): Initial offset to zero.
+	* lra-int.h (struct lra_reg): Add offset member.
+	(lra_reg_val_equal_p): New static inline function.
+	(lra_update_reg_val_offset): New static inline function.
+	(lra_assign_reg_val): New static inline function.
+	* lra.c (lra_create_new_reg): Use lra_assign_reg_val
+	to assign register content record.
+	(initialize_lra_reg_info_element): Initial offset to zero.
 
 2013-04-23  Catherine Moore  <clm@codesourcery.com>
 
@@ -236,11 +240,11 @@
 	* cfghhooks.c (dump_bb_for_graph): Dump profile count and frquency.
 	* Makefile.in: New dependency
 
-            David Daney <ddaney.cavm@gmail.com>
+	    David Daney <ddaney.cavm@gmail.com>
 
-        * configure.ac (gcc_cv_as_micromips_support):  Use the
-        --fatal-warnings option.
-        * configure: Regenerate.
+	* configure.ac (gcc_cv_as_micromips_support):  Use the
+	--fatal-warnings option.
+	* configure: Regenerate.
 
 2013-04-22  Marek Polacek  <polacek@redhat.com>
 
