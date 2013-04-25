@@ -6592,22 +6592,12 @@ package body Einfo is
    -------------------------
 
    function Is_Ghost_Subprogram (Id : E) return B is
-      Subp_Id : Entity_Id := Id;
-
    begin
-      if Present (Subp_Id)
-        and then Ekind_In (Subp_Id, E_Function, E_Procedure)
-      then
-         --  Handle subprogram renamings
-
-         if Present (Alias (Subp_Id)) then
-            Subp_Id := Alias (Subp_Id);
-         end if;
-
-         return Convention (Subp_Id) = Convention_Ghost;
+      if Present (Id) and then Ekind_In (Id, E_Function, E_Procedure) then
+         return Convention (Id) = Convention_Ghost;
+      else
+         return False;
       end if;
-
-      return False;
    end Is_Ghost_Subprogram;
 
    --------------------
