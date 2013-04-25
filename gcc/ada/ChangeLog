@@ -1,3 +1,10 @@
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document Reason argument for pragma Warnings.
+	* par-prag.adb: Handle Reason parameter for pragma Warnings.
+	* sem_prag.adb (Analyze_Pragma, case Warnings): Allow Reason argument.
+	* snames.ads-tmpl (Name_Reason): New name entry.
+
 2013-04-25  Yannick Moy  <moy@adacore.com>
 
 	* exp_spark.adb (Expand_SPARK_N_In): Remove procedure.
