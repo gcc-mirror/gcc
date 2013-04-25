@@ -1,3 +1,7 @@
+2013-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch7.adb: Minor reformatting.
+
 2013-04-25  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Minor fix to Loop_Variant doc (Loop_Entry allowed).
