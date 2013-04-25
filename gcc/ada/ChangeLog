@@ -1,3 +1,17 @@
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Aggregate): Use special circuitry to
+	fold strings with a single others choice only if there are no
+	expressions in the aggregate.
+
+2013-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Update doc on Ada 2012 default mode.
+
 2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb: Add with and use clause for Stringt.

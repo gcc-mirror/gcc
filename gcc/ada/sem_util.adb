@@ -8891,10 +8891,10 @@ package body Sem_Util is
    begin
       Note_Possible_Modification (AV, Sure => True);
 
-      --  We must reject parenthesized variable names. The check for
-      --  Comes_From_Source is present because there are currently
-      --  cases where the compiler violates this rule (e.g. passing
-      --  a task object to its controlled Initialize routine).
+      --  We must reject parenthesized variable names. Comes_From_Source is
+      --  checked because there are currently cases where the compiler violates
+      --  this rule (e.g. passing a task object to its controlled Initialize
+      --  routine). This should be properly documented in sinfo???
 
       if Paren_Count (AV) > 0 and then Comes_From_Source (AV) then
          return False;
@@ -8907,15 +8907,13 @@ package body Sem_Util is
       --  Unchecked conversions are allowed only if they come from the
       --  generated code, which sometimes uses unchecked conversions for out
       --  parameters in cases where code generation is unaffected. We tell
-      --  source unchecked conversions by seeing if they are rewrites of an
-      --  original Unchecked_Conversion function call, or of an explicit
+      --  source unchecked conversions by seeing if they are rewrites of
+      --  an original Unchecked_Conversion function call, or of an explicit
       --  conversion of a function call or an aggregate (as may happen in the
       --  expansion of a packed array aggregate).
 
       elsif Nkind (AV) = N_Unchecked_Type_Conversion then
-         if Nkind_In (Original_Node (AV),
-                        N_Function_Call, N_Aggregate)
-         then
+         if Nkind_In (Original_Node (AV), N_Function_Call, N_Aggregate) then
             return False;
 
          elsif Comes_From_Source (AV)
