@@ -22408,20 +22408,22 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc FT_%lx_%lx_%lx_%lx[TC],",
 		     k[0] & 0xffffffff, k[1] & 0xffffffff,
 		     k[2] & 0xffffffff, k[3] & 0xffffffff);
 	  fprintf (file, "0x%lx%08lx,0x%lx%08lx\n",
-		   k[0] & 0xffffffff, k[1] & 0xffffffff,
-		   k[2] & 0xffffffff, k[3] & 0xffffffff);
+		   k[WORDS_BIG_ENDIAN ? 0 : 1] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 1 : 0] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 2 : 3] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 3 : 2] & 0xffffffff);
 	  return;
 	}
       else
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs ("\t.long ", file);
 	  else
 	    fprintf (file, "\t.tc FT_%lx_%lx_%lx_%lx[TC],",
@@ -22448,18 +22450,19 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc FD_%lx_%lx[TC],",
 		     k[0] & 0xffffffff, k[1] & 0xffffffff);
 	  fprintf (file, "0x%lx%08lx\n",
-		   k[0] & 0xffffffff, k[1] & 0xffffffff);
+		   k[WORDS_BIG_ENDIAN ? 0 : 1] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 1 : 0] & 0xffffffff);
 	  return;
 	}
       else
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs ("\t.long ", file);
 	  else
 	    fprintf (file, "\t.tc FD_%lx_%lx[TC],",
@@ -22483,7 +22486,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc FS_%lx[TC],", l & 0xffffffff);
@@ -22492,7 +22495,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	}
       else
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs ("\t.long ", file);
 	  else
 	    fprintf (file, "\t.tc FS_%lx[TC],", l & 0xffffffff);
@@ -22524,9 +22527,8 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	}
 #endif
 
-      /* TOC entries are always Pmode-sized, but since this
-	 is a bigendian machine then if we're putting smaller
-	 integer constants in the TOC we have to pad them.
+      /* TOC entries are always Pmode-sized, so when big-endian
+	 smaller integer constants in the TOC need to be padded.
 	 (This is still a win over putting the constants in
 	 a separate constant pool, because then we'd have
 	 to have both a TOC entry _and_ the actual constant.)
@@ -22537,7 +22539,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
       /* It would be easy to make this work, but it doesn't now.  */
       gcc_assert (!TARGET_64BIT || POINTER_SIZE >= GET_MODE_BITSIZE (mode));
 
-      if (POINTER_SIZE > GET_MODE_BITSIZE (mode))
+      if (WORDS_BIG_ENDIAN && POINTER_SIZE > GET_MODE_BITSIZE (mode))
 	{
 #if HOST_BITS_PER_WIDE_INT == 32
 	  lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
@@ -22552,7 +22554,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc ID_%lx_%lx[TC],",
@@ -22565,7 +22567,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	{
 	  if (POINTER_SIZE < GET_MODE_BITSIZE (mode))
 	    {
-	      if (TARGET_MINIMAL_TOC)
+	      if (TARGET_ELF || TARGET_MINIMAL_TOC)
 		fputs ("\t.long ", file);
 	      else
 		fprintf (file, "\t.tc ID_%lx_%lx[TC],",
@@ -22575,7 +22577,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	    }
 	  else
 	    {
-	      if (TARGET_MINIMAL_TOC)
+	      if (TARGET_ELF || TARGET_MINIMAL_TOC)
 		fputs ("\t.long ", file);
 	      else
 		fprintf (file, "\t.tc IS_%lx[TC],", (long) low & 0xffffffff);
@@ -22613,7 +22615,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
       gcc_unreachable ();
     }
 
-  if (TARGET_MINIMAL_TOC)
+  if (TARGET_ELF || TARGET_MINIMAL_TOC)
     fputs (TARGET_32BIT ? "\t.long " : DOUBLE_INT_ASM_OP, file);
   else
     {

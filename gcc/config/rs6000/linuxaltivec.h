@@ -20,8 +20,13 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* Override rs6000.h and sysv4.h definition.  */
+#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#undef	TARGET_DEFAULT
+#define	TARGET_DEFAULT (MASK_ALTIVEC | MASK_LITTLE_ENDIAN)
+#else
 #undef	TARGET_DEFAULT
 #define	TARGET_DEFAULT MASK_ALTIVEC
+#endif
 
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS rs6000_altivec_abi = 1
