@@ -2085,19 +2085,19 @@ ada/exp_prag.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
 
 ada/exp_sel.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
-   ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
-   ada/debug.ads ada/einfo.ads ada/einfo.adb ada/elists.ads \
-   ada/exp_sel.ads ada/exp_sel.adb ada/hostparm.ads ada/lib.ads \
-   ada/namet.ads ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/nmake.adb \
-   ada/opt.ads ada/output.ads ada/restrict.ads ada/rident.ads \
-   ada/rtsfind.ads ada/sem_aux.ads ada/sinfo.ads ada/sinfo.adb \
-   ada/snames.ads ada/stand.ads ada/stringt.ads ada/system.ads \
-   ada/s-assert.ads ada/s-exctab.ads ada/s-imenne.ads ada/s-memory.ads \
-   ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads ada/s-stalib.ads \
-   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
-   ada/table.ads ada/table.adb ada/tbuild.ads ada/tbuild.adb \
-   ada/tree_io.ads ada/types.ads ada/uintp.ads ada/unchconv.ads \
-   ada/unchdeal.ads ada/urealp.ads 
+   ada/a-uncdea.ads ada/alloc.ads ada/atree.ads ada/debug.ads \
+   ada/einfo.ads ada/einfo.adb ada/elists.ads ada/exp_sel.ads \
+   ada/exp_sel.adb ada/hostparm.ads ada/lib.ads ada/namet.ads \
+   ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/nmake.adb ada/opt.ads \
+   ada/output.ads ada/restrict.ads ada/rident.ads ada/rtsfind.ads \
+   ada/sem_aux.ads ada/sinfo.ads ada/sinfo.adb ada/snames.ads \
+   ada/stand.ads ada/stringt.ads ada/system.ads ada/s-assert.ads \
+   ada/s-exctab.ads ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads \
+   ada/s-parame.ads ada/s-rident.ads ada/s-stalib.ads ada/s-string.ads \
+   ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads \
+   ada/table.adb ada/tbuild.ads ada/tbuild.adb ada/tree_io.ads \
+   ada/types.ads ada/uintp.ads ada/unchconv.ads ada/unchdeal.ads \
+   ada/urealp.ads 
 
 ada/exp_smem.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
@@ -2326,18 +2326,18 @@ ada/frontend.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/restrict.adb ada/rident.ads ada/rtsfind.ads ada/scans.ads \
    ada/scil_ll.ads ada/scn.ads ada/scng.ads ada/scng.adb ada/sem.ads \
    ada/sem_aux.ads ada/sem_ch8.ads ada/sem_elab.ads ada/sem_prag.ads \
-   ada/sem_scil.ads ada/sem_warn.ads ada/sinfo.ads ada/sinfo.adb \
-   ada/sinput.ads ada/sinput-l.ads ada/snames.ads ada/sprint.ads \
-   ada/stand.ads ada/stringt.ads ada/style.ads ada/styleg.ads \
-   ada/styleg.adb ada/stylesw.ads ada/system.ads ada/s-assert.ads \
-   ada/s-crc32.ads ada/s-exctab.ads ada/s-imenne.ads ada/s-memory.ads \
-   ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads ada/s-secsta.ads \
-   ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads \
-   ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads \
-   ada/s-utf_32.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
-   ada/targparm.ads ada/tbuild.ads ada/tbuild.adb ada/tree_io.ads \
-   ada/types.ads ada/uintp.ads ada/uname.ads ada/unchconv.ads \
-   ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
+   ada/sem_scil.ads ada/sem_vfpt.ads ada/sem_warn.ads ada/sinfo.ads \
+   ada/sinfo.adb ada/sinput.ads ada/sinput-l.ads ada/snames.ads \
+   ada/sprint.ads ada/stand.ads ada/stringt.ads ada/style.ads \
+   ada/styleg.ads ada/styleg.adb ada/stylesw.ads ada/system.ads \
+   ada/s-assert.ads ada/s-crc32.ads ada/s-exctab.ads ada/s-imenne.ads \
+   ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads \
+   ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \
+   ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads \
+   ada/s-unstyp.ads ada/s-utf_32.ads ada/s-wchcon.ads ada/table.ads \
+   ada/table.adb ada/targparm.ads ada/tbuild.ads ada/tbuild.adb \
+   ada/tree_io.ads ada/types.ads ada/uintp.ads ada/uname.ads \
+   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
 
 ada/g-byorma.o : ada/gnat.ads ada/g-byorma.ads ada/g-byorma.adb \
    ada/system.ads 
@@ -4046,17 +4046,16 @@ ada/sem_util.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/unchdeal.ads ada/urealp.ads ada/urealp.adb ada/widechar.ads 
 
 ada/sem_vfpt.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
-   ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
-   ada/cstand.ads ada/debug.ads ada/einfo.ads ada/einfo.adb \
-   ada/hostparm.ads ada/namet.ads ada/nlists.ads ada/opt.ads \
-   ada/output.ads ada/rident.ads ada/sem_vfpt.ads ada/sem_vfpt.adb \
-   ada/sinfo.ads ada/snames.ads ada/stand.ads ada/system.ads \
-   ada/s-assert.ads ada/s-exctab.ads ada/s-imenne.ads ada/s-memory.ads \
-   ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads ada/s-stalib.ads \
-   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
-   ada/table.ads ada/table.adb ada/targparm.ads ada/tree_io.ads \
-   ada/types.ads ada/uintp.ads ada/unchconv.ads ada/unchdeal.ads \
-   ada/urealp.ads 
+   ada/a-uncdea.ads ada/alloc.ads ada/atree.ads ada/cstand.ads \
+   ada/debug.ads ada/einfo.ads ada/einfo.adb ada/hostparm.ads \
+   ada/namet.ads ada/nlists.ads ada/opt.ads ada/output.ads ada/rident.ads \
+   ada/sem_vfpt.ads ada/sem_vfpt.adb ada/sinfo.ads ada/snames.ads \
+   ada/stand.ads ada/system.ads ada/s-assert.ads ada/s-exctab.ads \
+   ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads \
+   ada/s-rident.ads ada/s-stalib.ads ada/s-string.ads ada/s-traent.ads \
+   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
+   ada/targparm.ads ada/tree_io.ads ada/types.ads ada/uintp.ads \
+   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads 
 
 ada/sem_warn.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
