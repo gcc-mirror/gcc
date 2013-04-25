@@ -14418,7 +14418,7 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
   /* Adjust the address if it changed.  */
   if (addr != XEXP (mem, 0))
     {
-      mem = change_address (mem, mode, addr);
+      mem = replace_equiv_address_nv (mem, addr);
       if (TARGET_DEBUG_ADDR)
 	fprintf (stderr, "\nrs6000_secondary_reload_inner, mem adjusted.\n");
     }
