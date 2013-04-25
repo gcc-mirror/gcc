@@ -79,6 +79,17 @@
 #undef	LINK_OS_DEFAULT_SPEC
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
+#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#define LINK_OS_LINUX_EMUL "%{!mbig: %{!mbig-endian: -m elf32lppclinux}}%{mbig|mbig-endian: -m elf32ppclinux}"
+#else
+#define LINK_OS_LINUX_EMUL "%{!mlittle: %{!mlittle-endian: -m elf32ppclinux}}%{mlittle|mlittle-endian: -m elf32lppclinux}"
+#endif
+
+#undef LINK_OS_LINUX_SPEC
+#define LINK_OS_LINUX_SPEC LINK_OS_LINUX_EMUL " %{!shared: %{!static: \
+  %{rdynamic:-export-dynamic} \
+  -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
+
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
 
