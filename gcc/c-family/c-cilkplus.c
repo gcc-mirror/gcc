@@ -163,6 +163,11 @@ find_invalid_stmts_in_loops (tree *tp, int *walk_subtrees, void *data)
 	break;
       }
 
+      /* FIXME: Perhaps we could do without these OMP tests and defer
+	 to the OMP type checking, since OMP_SIMD cannot have OpenMP
+	 constructs either.  From OpenMP 4.0rc2: "No OpenMP construct
+	 can appear in the simd region".  Similarly for the call to
+	 setjmp above.  */
     case OMP_PARALLEL:
     case OMP_TASK:
     case OMP_FOR:
@@ -256,8 +261,7 @@ c_check_cilk_loop (location_t loc, tree decl, tree cond, tree incr, tree body)
       return false;
     }
   bool cond_ok = false;
-  if (TREE_CODE (cond) == NE_EXPR
-      || TREE_CODE (cond) == LT_EXPR
+  if (TREE_CODE (cond) == LT_EXPR
       || TREE_CODE (cond) == LE_EXPR
       || TREE_CODE (cond) == GT_EXPR
       || TREE_CODE (cond) == GE_EXPR)

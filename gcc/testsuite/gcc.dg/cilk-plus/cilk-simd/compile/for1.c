@@ -78,11 +78,15 @@ void foo()
   for (i=0; (char)i < 1234; ++i) /* { dg-error "invalid controlling predicate" } */
     a[i] = b[i];
 
-  // ?? This condition gets folded into "i != 0" by
-  // c_parser_cilk_for_statement().  Does this count as a "!=", or is
-  // this disallowed?  Assume it is allowed.
+  // icc disallows !=, we'll do the same.
 #pragma simd
-  for (i=100; i; --i)
+  for (i=255; i != 5; --i) /* { dg-error "invalid controlling predicate" } */
+    a[i] = b[i];
+
+  // This condition gets folded into "i != 0" by
+  // c_parser_cilk_for_statement().  Disallow != like above.
+#pragma simd
+  for (i=100; i; --i) /* { dg-error "invalid controlling predicate" } */
     a[i] = b[i];
 
   // Increment must be on the induction variable.
