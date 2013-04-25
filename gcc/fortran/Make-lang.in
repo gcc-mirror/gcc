@@ -99,7 +99,8 @@ gfortran-cross$(exeext): gfortran$(exeext)
 f951$(exeext): $(F95_OBJS) \
 		$(BACKEND) $(LIBDEPS) attribs.o
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(F95_OBJS) $(BACKEND) $(LIBS) attribs.o $(BACKENDLIBS)
+		$(F95_OBJS) $(BACKEND) $(ZLIB) $(LIBS) attribs.o \
+		$(BACKENDLIBS)
 
 gt-fortran-trans.h    : s-gtype; @true
 #
@@ -370,4 +371,5 @@ fortran/data.o: fortran/data.h
 fortran/options.o: $(PARAMS_H) $(TARGET_H) fortran/cpp.h
 fortran/cpp.o: fortran/cpp.c incpath.h incpath.o cppbuiltin.h
 fortran/scanner.o: fortran/scanner.h
+CFLAGS-fortran/module.o += $(ZLIBINC)
 fortran/module.o: fortran/scanner.h
