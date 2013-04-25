@@ -4882,26 +4882,6 @@ package body Sem_Util is
       end if;
    end Find_Parameter_Type;
 
-   -----------------
-   -- Find_Pragma --
-   -----------------
-
-   function Find_Pragma (Id : Entity_Id; Name : Name_Id) return Node_Id is
-      Item : Node_Id;
-
-   begin
-      Item := First_Rep_Item (Id);
-      while Present (Item) loop
-         if Nkind (Item) = N_Pragma and then Pragma_Name (Item) = Name then
-            return Item;
-         end if;
-
-         Item := Next_Rep_Item (Item);
-      end loop;
-
-      return Empty;
-   end Find_Pragma;
-
    -----------------------------
    -- Find_Static_Alternative --
    -----------------------------

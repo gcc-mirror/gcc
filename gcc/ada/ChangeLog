@@ -1,5 +1,21 @@
 2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.ads, einfo.adb: Remove with and use clauses for Namet.
+	(Find_Pragma): New routine.
+	* sem_util.ads, sem_util.adb (Find_Pragma): Moved to einfo.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Add_Call): Do not capture the nature of the inherited
+	predicate.
+	(Add_Predicates): Save the static predicate for diagnostics and error
+	reporting purposes.
+	(Process_PPCs): Remove local variables Dynamic_Predicate_Present and
+	Static_Predicate_Present. Add local variable Static_Pred. Ensure that
+	the expression of a static predicate is static.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.adb (Is_Ghost_Subprogram): Remove useless code.
 
 2013-04-25  Robert Dewar  <dewar@adacore.com>

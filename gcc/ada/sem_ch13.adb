@@ -5741,6 +5741,9 @@ package body Sem_Ch13 is
       Raise_Expression_Present : Boolean := False;
       --  Set True if Expr has at least one Raise_Expression
 
+      Static_Predic : Node_Id := Empty;
+      --  Set to N_Pragma node for a static predicate if one is encountered
+
       procedure Add_Call (T : Entity_Id);
       --  Includes a call to the predicate function for type T in Expr if T
       --  has predicates and Predicate_Function (T) is non-empty.
@@ -5765,13 +5768,6 @@ package body Sem_Ch13 is
       procedure Process_REs is new Traverse_Proc (Process_RE);
       --  Marks any raise expressions in Expr_M to return False
 
-      Dynamic_Predicate_Present : Boolean := False;
-      --  Set True if a dynamic predicate is present, results in the entire
-      --  predicate being considered dynamic even if it looks static.
-
-      Static_Predicate_Present : Node_Id := Empty;
-      --  Set to N_Pragma node for a static predicate if one is encountered
-
       --------------
       -- Add_Call --
       --------------
@@ -5782,12 +5778,6 @@ package body Sem_Ch13 is
       begin
          if Present (T) and then Present (Predicate_Function (T)) then
             Set_Has_Predicates (Typ);
-
-            --  Capture the nature of the inherited ancestor predicate
-
-            if Has_Dynamic_Predicate_Aspect (T) then
-               Dynamic_Predicate_Present := True;
-            end if;
 
             --  Build the call to the predicate function of T
 
@@ -5872,17 +5862,14 @@ package body Sem_Ch13 is
             if Nkind (Ritem) = N_Pragma
               and then Pragma_Name (Ritem) = Name_Predicate
             then
-               --  Capture the nature of the predicate
+               --  Save the static predicate of the type for diagnostics and
+               --  error reporting purposes.
 
-               if Present (Corresponding_Aspect (Ritem)) then
-                  case Chars (Identifier (Corresponding_Aspect (Ritem))) is
-                     when Name_Dynamic_Predicate =>
-                        Dynamic_Predicate_Present := True;
-                     when Name_Static_Predicate =>
-                        Static_Predicate_Present := Ritem;
-                     when others =>
-                        null;
-                  end case;
+               if Present (Corresponding_Aspect (Ritem))
+                 and then Chars (Identifier (Corresponding_Aspect (Ritem))) =
+                            Name_Static_Predicate
+               then
+                  Static_Predic := Ritem;
                end if;
 
                --  Acquire arguments
@@ -6211,7 +6198,9 @@ package body Sem_Ch13 is
 
             --  Attempt to build a static predicate for a discrete or a real
             --  subtype. This action may fail because the actual expression may
-            --  not be static.
+            --  not be static. Note that the presence of an inherited or
+            --  explicitly declared dynamic predicate is orthogonal to this
+            --  check because we are only interested in the static predicate.
 
             if Ekind_In (Typ, E_Decimal_Fixed_Point_Subtype,
                               E_Enumeration_Subtype,
@@ -6222,30 +6211,26 @@ package body Sem_Ch13 is
             then
                Build_Static_Predicate (Typ, Expr, Object_Name);
 
-               --  The predicate is categorized as static but its expression is
-               --  dynamic. Note that the predicate may become non-static when
-               --  inherited dynamic predicates are involved.
+               --  Emit an error when the predicate is categorized as static
+               --  but its expression is dynamic.
 
-               if Present (Static_Predicate_Present)
+               if Present (Static_Predic)
                  and then No (Static_Predicate (Typ))
-                 and then not Dynamic_Predicate_Present
                then
                   Error_Msg_F
                     ("expression does not have required form for "
                      & "static predicate",
                      Next (First (Pragma_Argument_Associations
-                                   (Static_Predicate_Present))));
+                                   (Static_Predic))));
                end if;
             end if;
 
-         --  If a Static_Predicate applies on other types, that's an error:
+         --  If a static predicate applies on other types, that's an error:
          --  either the type is scalar but non-static, or it's not even a
          --  scalar type. We do not issue an error on generated types, as
          --  these may be duplicates of the same error on a source type.
 
-         elsif Present (Static_Predicate_Present)
-           and then Comes_From_Source (Typ)
-         then
+         elsif Present (Static_Predic) and then Comes_From_Source (Typ) then
             if Is_Scalar_Type (Typ) then
                Error_Msg_FE
                  ("static predicate not allowed for non-static type&",
