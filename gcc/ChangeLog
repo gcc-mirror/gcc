@@ -1,5 +1,10 @@
 2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
+	* config/aarch64/aarch64.md 
+	(*cmp_swp_<optab><ALLX:mode>_shft_<GPI:mode>): New pattern.
+
+2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
 	* config/aarch64/aarch64.md (*ngc<mode>): New pattern.
 	(*ngcsi_uxtw): New pattern.
 
