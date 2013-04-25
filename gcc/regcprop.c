@@ -1015,6 +1015,13 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
 	    if (regno < set_regno || regno >= set_regno + set_nregs)
 	      kill_value_regno (regno, 1, vd);
+
+	  /* If SET was seen in CALL_INSN_FUNCTION_USAGE, and SET_SRC
+	     of the SET isn't in regs_invalidated_by_call hard reg set,
+	     but instead among CLOBBERs on the CALL_INSN, we could wrongly
+	     assume the value in it is still live.  */
+	  if (ksvd.ignore_set_reg)
+	    note_stores (PATTERN (insn), kill_clobbered_value, vd);
 	}
 
       /* Notice stores.  */
