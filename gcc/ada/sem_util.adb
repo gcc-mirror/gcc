@@ -2150,9 +2150,8 @@ package body Sem_Util is
          States : constant Elist_Id := Abstract_States (Pkg);
 
       begin
-         --  Check the first available state of the related package. A null
-         --  abstract state always appears as the sole element of the state
-         --  list.
+         --  Check first available state of related package. A null abstract
+         --  state always appears as the sole element of the state list.
 
          return
            Present (States)

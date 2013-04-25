@@ -3512,6 +3512,7 @@ package body Sem_Ch4 is
 
       function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean;
       --  Determine whether entity Id is referenced within expression Expr
+      --  This should be moved to sem_util ???
 
       --------------------
       -- Is_Empty_Range --
@@ -3575,6 +3576,10 @@ package body Sem_Ch4 is
          --  Determine whether node N denotes a reference to Id. If this is the
          --  case, set global flag Seen to True and stop the traversal.
 
+         ------------------
+         -- Is_Reference --
+         ------------------
+
          function Is_Reference (N : Node_Id) return Traverse_Result is
          begin
             if Is_Entity_Name (N)
@@ -3594,7 +3599,6 @@ package body Sem_Ch4 is
 
       begin
          Inspect_Expression (Expr);
-
          return Seen;
       end Referenced;
 
@@ -3662,10 +3666,10 @@ package body Sem_Ch4 is
       end if;
 
       --  Diagnose a possible misuse of the "some" existential quantifier. When
-      --  we have a quantified expression of the form
-      --
+      --  we have a quantified expression of the form:
+
       --    for some X => (if P then Q [else True])
-      --
+
       --  the if expression will not hold and render the quantified expression
       --  trivially True.
 

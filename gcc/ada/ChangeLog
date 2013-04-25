@@ -1,3 +1,7 @@
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb, sem_util.adb, sem_ch4.adb: Minor reformatting.
+
 2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch4.adb (Analyze_Quantified_Expression):
