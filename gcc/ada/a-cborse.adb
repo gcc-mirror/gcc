@@ -1815,7 +1815,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
          end if;
 
          --  Item is not equivalent to any other element in the tree
-         --  (specifically, it is less then Nodes (Hint).Element), so it is
+         --  (specifically, it is less than Nodes (Hint).Element), so it is
          --  safe to assign the value of Item to Node.Element. This means that
          --  the node will have to move to a different position in the tree
          --  (because its element will have a different value).

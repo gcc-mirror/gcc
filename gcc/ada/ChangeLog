@@ -1,3 +1,29 @@
+2013-04-25  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_In): Remove procedure.
+	(Expand_SPARK): Remove special expansion for membership tests.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Update all places
+	that should use constant Base_Typ. When building an invariant
+	check, account for invariants coming from the base type. Prevent
+	the creation of a junk invariant check when the related object
+	is of an array type and it is initialized with an aggregate.
+	* exp_util.adb (Make_Invariant_Call): Typ is now a variable. Use
+	the base type to create an invariant call when the type of the
+	expression is a composite subtype.
+
+2013-04-25  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* a-cborse.adb: Fix minor typo.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Different_Generic_Profile): A spec and body
+	match in an instance if a subtype declaration that renames a
+	generic actual with the same name appears between spec and body.
+
 2013-04-25  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb: Minor reformatting.

@@ -30,7 +30,6 @@ with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
-with Nlists;   use Nlists;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
@@ -54,9 +53,6 @@ package body Exp_SPARK is
 
    procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
    --  Expand attributes 'Old and 'Result only
-
-   procedure Expand_SPARK_N_In (N : Node_Id);
-   --  Expand set membership into individual ones
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
@@ -101,9 +97,6 @@ package body Exp_SPARK is
          when N_Expanded_Name |
               N_Identifier    =>
             Expand_Potential_Renaming (N);
-
-         when N_In =>
-            Expand_SPARK_N_In (N);
 
          --  A NOT IN B gets transformed to NOT (A IN B). This is the same
          --  expansion used in the normal case, so shared the code.
@@ -203,17 +196,6 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK_N_Attribute_Reference;
-
-   -----------------------
-   -- Expand_SPARK_N_In --
-   -----------------------
-
-   procedure Expand_SPARK_N_In (N : Node_Id) is
-   begin
-      if Present (Alternatives (N)) then
-         Expand_Set_Membership (N);
-      end if;
-   end Expand_SPARK_N_In;
 
    ------------------------------------------------
    -- Expand_SPARK_N_Object_Renaming_Declaration --

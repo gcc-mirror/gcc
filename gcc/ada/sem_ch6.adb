@@ -7547,8 +7547,8 @@ package body Sem_Ch6 is
               or else Scope (T1) /= Scope (T2);
 
          --  If T2 is a generic actual type it is declared as the subtype of
-         --  the actual.  If that actual is itself a subtype we need to use
-         --  its own base type to check for compatibility.
+         --  the actual. If that actual is itself a subtype we need to use its
+         --  own base type to check for compatibility.
 
          elsif Ekind (BT2) = Ekind (T2) and then BT1 = Base_Type (BT2) then
             return True;
@@ -8304,10 +8304,35 @@ package body Sem_Ch6 is
       function Different_Generic_Profile (E : Entity_Id) return Boolean is
          F1, F2 : Entity_Id;
 
+         function Same_Generic_Actual (T1, T2 : Entity_Id) return Boolean;
+         --  Check that the types of corresponding formals have the same
+         --  generic actual if any. We have to account for subtypes of a
+         --  generic formal, declared between a spec and a body, which may
+         --  appear distinct in an instance but matched in the generic.
+
+         -------------------------
+         -- Same_Generic_Actual --
+         -------------------------
+
+         function Same_Generic_Actual (T1, T2 : Entity_Id) return Boolean is
+         begin
+            return Is_Generic_Actual_Type (T1) = Is_Generic_Actual_Type (T2)
+              or else
+                (Present (Parent (T1))
+                  and then Comes_From_Source (Parent (T1))
+                  and then Nkind (Parent (T1)) = N_Subtype_Declaration
+                  and then Is_Entity_Name (Subtype_Indication (Parent (T1)))
+                  and then Entity (Subtype_Indication (Parent (T1))) = T2);
+         end Same_Generic_Actual;
+
+      --  Start of processing for Different_Generic_Profile
+
       begin
-         if Ekind (E) = E_Function
-           and then Is_Generic_Actual_Type (Etype (E)) /=
-                    Is_Generic_Actual_Type (Etype (Designator))
+         if not In_Instance then
+            return False;
+
+         elsif Ekind (E) = E_Function
+           and then not Same_Generic_Actual (Etype (E), Etype (Designator))
          then
             return True;
          end if;
@@ -8315,9 +8340,7 @@ package body Sem_Ch6 is
          F1 := First_Formal (Designator);
          F2 := First_Formal (E);
          while Present (F1) loop
-            if Is_Generic_Actual_Type (Etype (F1)) /=
-               Is_Generic_Actual_Type (Etype (F2))
-            then
+            if not Same_Generic_Actual (Etype (F1), Etype (F2)) then
                return True;
             end if;
 
@@ -8414,7 +8437,7 @@ package body Sem_Ch6 is
                --  If E is an internal function with a controlling result that
                --  was created for an operation inherited by a null extension,
                --  it may be overridden by a body without a previous spec (one
-               --  more reason why these should be shunned). In that case
+               --  more reason why these should be shunned). In that case we
                --  remove the generated body if present, because the current
                --  one is the explicit overriding.
 
@@ -8954,9 +8977,9 @@ package body Sem_Ch6 is
             --  All other node types cannot appear in this context. Strictly
             --  we should raise a fatal internal error. Instead we just ignore
             --  the nodes. This means that if anyone makes a mistake in the
-            --  expander and mucks an expression tree irretrievably, the
-            --  result will be a failure to detect a (probably very obscure)
-            --  case of non-conformance, which is better than bombing on some
+            --  expander and mucks an expression tree irretrievably, the result
+            --  will be a failure to detect a (probably very obscure) case
+            --  of non-conformance, which is better than bombing on some
             --  case where two expressions do in fact conform.
 
             when others =>
@@ -9146,8 +9169,8 @@ package body Sem_Ch6 is
          return Type_Conformant
                   (Iface_Prim, Prim, Skip_Controlling_Formals => True);
 
-      --  Case of a function returning an interface, or an access to one.
-      --  Check that the return types correspond.
+      --  Case of a function returning an interface, or an access to one. Check
+      --  that the return types correspond.
 
       elsif Implements_Interface (Typ, Iface) then
          if (Ekind (Etype (Prim)) = E_Anonymous_Access_Type)
@@ -9368,8 +9391,8 @@ package body Sem_Ch6 is
                   Next_Elmt (Prim_Elt);
                end loop;
 
-               --  If no match found, then the new subprogram does not
-               --  override in the generic (nor in the instance).
+               --  If no match found, then the new subprogram does not override
+               --  in the generic (nor in the instance).
 
                --  If the type in question is not abstract, and the subprogram
                --  is, this will be an error if the new operation is in the
@@ -9494,9 +9517,9 @@ package body Sem_Ch6 is
 
          --  Insert inequality right after equality if it is explicit or after
          --  the derived type when implicit. These entities are created only
-         --  for visibility purposes, and eventually replaced in the course of
-         --  expansion, so they do not need to be attached to the tree and seen
-         --  by the back-end. Keeping them internal also avoids spurious
+         --  for visibility purposes, and eventually replaced in the course
+         --  of expansion, so they do not need to be attached to the tree and
+         --  seen by the back-end. Keeping them internal also avoids spurious
          --  freezing problems. The declaration is inserted in the tree for
          --  analysis, and removed afterwards. If the equality operator comes
          --  from an explicit declaration, attach the inequality immediately
@@ -9605,9 +9628,9 @@ package body Sem_Ch6 is
          New_E : Entity_Id) return Boolean;
       --  Check whether new subprogram and old subprogram are both inherited
       --  from subprograms that have distinct dispatch table entries. This can
-      --  occur with derivations from instances with accidental homonyms.
-      --  The function is conservative given that the converse is only true
-      --  within instances that contain accidental overloadings.
+      --  occur with derivations from instances with accidental homonyms. The
+      --  function is conservative given that the converse is only true within
+      --  instances that contain accidental overloadings.
 
       ------------------------------------
       -- Check_For_Primitive_Subprogram --
@@ -10274,8 +10297,8 @@ package body Sem_Ch6 is
          Check_Dispatching_Operation (S, Empty);
          Check_For_Primitive_Subprogram (Is_Primitive_Subp);
 
-         --  If subprogram has an explicit declaration, check whether it
-         --  has an overriding indicator.
+         --  If subprogram has an explicit declaration, check whether it has an
+         --  overriding indicator.
 
          if Comes_From_Source (S) then
             Check_Synchronized_Overriding (S, Overridden_Subp);
@@ -10366,11 +10389,11 @@ package body Sem_Ch6 is
             if Scope (E) /= Current_Scope then
                null;
 
-            --  Ada 2012 (AI05-0165): For internally generated bodies of
-            --  null procedures locate the internally generated spec. We
-            --  enforce mode conformance since a tagged type may inherit
-            --  from interfaces several null primitives which differ only
-            --  in the mode of the formals.
+            --  Ada 2012 (AI05-0165): For internally generated bodies of null
+            --  procedures locate the internally generated spec. We enforce
+            --  mode conformance since a tagged type may inherit from
+            --  interfaces several null primitives which differ only in
+            --  the mode of the formals.
 
             elsif not Comes_From_Source (S)
               and then Is_Null_Procedure (S)
