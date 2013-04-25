@@ -2363,6 +2363,7 @@ ADA_EXCLUDE_SRCS =\
   s-bbsuer.ads s-bbsule.ads s-bbthqu.adb s-bbthqu.ads s-bbthre.adb \
   s-bbthre.ads s-bbtiev.adb s-bbtiev.ads s-bbtime.adb s-bbtime.ads \
   s-bcprmu.adb s-bcprmu.ads s-btstch.adb s-btstch.ads \
+  s-init.ads s-init.adb \
   s-po32gl.adb s-po32gl.ads \
   s-stache.adb s-stache.ads \
   s-thread.ads \
