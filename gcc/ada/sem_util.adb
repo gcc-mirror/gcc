@@ -1265,6 +1265,114 @@ package body Sem_Util is
       end if;
    end Cannot_Raise_Constraint_Error;
 
+   -----------------------------------------
+   -- Check_Dynamically_Tagged_Expression --
+   -----------------------------------------
+
+   procedure Check_Dynamically_Tagged_Expression
+     (Expr        : Node_Id;
+      Typ         : Entity_Id;
+      Related_Nod : Node_Id)
+   is
+   begin
+      pragma Assert (Is_Tagged_Type (Typ));
+
+      --  In order to avoid spurious errors when analyzing the expanded code,
+      --  this check is done only for nodes that come from source and for
+      --  actuals of generic instantiations.
+
+      if (Comes_From_Source (Related_Nod)
+           or else In_Generic_Actual (Expr))
+        and then (Is_Class_Wide_Type (Etype (Expr))
+                   or else Is_Dynamically_Tagged (Expr))
+        and then Is_Tagged_Type (Typ)
+        and then not Is_Class_Wide_Type (Typ)
+      then
+         Error_Msg_N ("dynamically tagged expression not allowed!", Expr);
+      end if;
+   end Check_Dynamically_Tagged_Expression;
+
+   -----------------------------------------------
+   -- Check_Expression_Against_Static_Predicate --
+   -----------------------------------------------
+
+   procedure Check_Expression_Against_Static_Predicate
+     (Expr : Node_Id;
+      Typ  : Entity_Id)
+   is
+   begin
+      --  When both the predicate and the expression are static, evaluate the
+      --  check at compile time. A type becomes non-static when it has aspect
+      --  Dynamic_Predicate.
+
+      if Is_OK_Static_Expression (Expr)
+        and then Has_Predicates (Typ)
+        and then Present (Static_Predicate (Typ))
+        and then not Has_Dynamic_Predicate_Aspect (Typ)
+      then
+         --  Either -gnatc is enabled or the expression is ok
+
+         if Operating_Mode < Generate_Code
+           or else Eval_Static_Predicate_Check (Expr, Typ)
+         then
+            null;
+
+         --  The expression is prohibited by the static predicate
+
+         else
+            Error_Msg_NE
+              ("?static expression fails static predicate check on &",
+               Expr, Typ);
+         end if;
+      end if;
+   end Check_Expression_Against_Static_Predicate;
+
+   --------------------------
+   -- Check_Fully_Declared --
+   --------------------------
+
+   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id) is
+   begin
+      if Ekind (T) = E_Incomplete_Type then
+
+         --  Ada 2005 (AI-50217): If the type is available through a limited
+         --  with_clause, verify that its full view has been analyzed.
+
+         if From_With_Type (T)
+           and then Present (Non_Limited_View (T))
+           and then Ekind (Non_Limited_View (T)) /= E_Incomplete_Type
+         then
+            --  The non-limited view is fully declared
+            null;
+
+         else
+            Error_Msg_NE
+              ("premature usage of incomplete}", N, First_Subtype (T));
+         end if;
+
+      --  Need comments for these tests ???
+
+      elsif Has_Private_Component (T)
+        and then not Is_Generic_Type (Root_Type (T))
+        and then not In_Spec_Expression
+      then
+         --  Special case: if T is the anonymous type created for a single
+         --  task or protected object, use the name of the source object.
+
+         if Is_Concurrent_Type (T)
+           and then not Comes_From_Source (T)
+           and then Nkind (N) = N_Object_Declaration
+         then
+            Error_Msg_NE ("type of& has incomplete component", N,
+              Defining_Identifier (N));
+
+         else
+            Error_Msg_NE
+              ("premature usage of incomplete}", N, First_Subtype (T));
+         end if;
+      end if;
+   end Check_Fully_Declared;
+
    -------------------------------------
    -- Check_Function_Writable_Actuals --
    -------------------------------------
@@ -2015,79 +2123,6 @@ package body Sem_Util is
          end if;
       end loop Outer;
    end Check_Later_Vs_Basic_Declarations;
-
-   -----------------------------------------
-   -- Check_Dynamically_Tagged_Expression --
-   -----------------------------------------
-
-   procedure Check_Dynamically_Tagged_Expression
-     (Expr        : Node_Id;
-      Typ         : Entity_Id;
-      Related_Nod : Node_Id)
-   is
-   begin
-      pragma Assert (Is_Tagged_Type (Typ));
-
-      --  In order to avoid spurious errors when analyzing the expanded code,
-      --  this check is done only for nodes that come from source and for
-      --  actuals of generic instantiations.
-
-      if (Comes_From_Source (Related_Nod)
-           or else In_Generic_Actual (Expr))
-        and then (Is_Class_Wide_Type (Etype (Expr))
-                   or else Is_Dynamically_Tagged (Expr))
-        and then Is_Tagged_Type (Typ)
-        and then not Is_Class_Wide_Type (Typ)
-      then
-         Error_Msg_N ("dynamically tagged expression not allowed!", Expr);
-      end if;
-   end Check_Dynamically_Tagged_Expression;
-
-   --------------------------
-   -- Check_Fully_Declared --
-   --------------------------
-
-   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id) is
-   begin
-      if Ekind (T) = E_Incomplete_Type then
-
-         --  Ada 2005 (AI-50217): If the type is available through a limited
-         --  with_clause, verify that its full view has been analyzed.
-
-         if From_With_Type (T)
-           and then Present (Non_Limited_View (T))
-           and then Ekind (Non_Limited_View (T)) /= E_Incomplete_Type
-         then
-            --  The non-limited view is fully declared
-            null;
-
-         else
-            Error_Msg_NE
-              ("premature usage of incomplete}", N, First_Subtype (T));
-         end if;
-
-      --  Need comments for these tests ???
-
-      elsif Has_Private_Component (T)
-        and then not Is_Generic_Type (Root_Type (T))
-        and then not In_Spec_Expression
-      then
-         --  Special case: if T is the anonymous type created for a single
-         --  task or protected object, use the name of the source object.
-
-         if Is_Concurrent_Type (T)
-           and then not Comes_From_Source (T)
-           and then Nkind (N) = N_Object_Declaration
-         then
-            Error_Msg_NE ("type of& has incomplete component", N,
-              Defining_Identifier (N));
-
-         else
-            Error_Msg_NE
-              ("premature usage of incomplete}", N, First_Subtype (T));
-         end if;
-      end if;
-   end Check_Fully_Declared;
 
    -------------------------
    -- Check_Nested_Access --
