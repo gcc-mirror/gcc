@@ -230,7 +230,6 @@
     UNSPEC_CMTST	; Used in aarch64-simd.md.
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMIN		; Used in aarch64-simd.md.
-    UNSPEC_BSL		; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
     UNSPEC_ZIP1		; Used in vector permute patterns.
