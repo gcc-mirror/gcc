@@ -6292,26 +6292,51 @@ package body Sem_Ch6 is
       ----------------------
 
       procedure Check_Convention (Op : Entity_Id) is
+         function Convention_Of (Id : Entity_Id) return Convention_Id;
+         --  Given an entity, return its convention. The function treats Ghost
+         --  as convention Ada because the two have the same dynamic semantics.
+
+         -------------------
+         -- Convention_Of --
+         -------------------
+
+         function Convention_Of (Id : Entity_Id) return Convention_Id is
+            Conv : constant Convention_Id := Convention (Id);
+         begin
+            if Conv = Convention_Ghost then
+               return Convention_Ada;
+            else
+               return Conv;
+            end if;
+         end Convention_Of;
+
+         --  Local variables
+
+         Op_Conv         : constant Convention_Id := Convention_Of (Op);
+         Iface_Conv      : Convention_Id;
          Iface_Elmt      : Elmt_Id;
          Iface_Prim_Elmt : Elmt_Id;
          Iface_Prim      : Entity_Id;
+
+      --  Start of processing for Check_Convention
 
       begin
          Iface_Elmt := First_Elmt (Ifaces_List);
          while Present (Iface_Elmt) loop
             Iface_Prim_Elmt :=
-               First_Elmt (Primitive_Operations (Node (Iface_Elmt)));
+              First_Elmt (Primitive_Operations (Node (Iface_Elmt)));
             while Present (Iface_Prim_Elmt) loop
                Iface_Prim := Node (Iface_Prim_Elmt);
+               Iface_Conv := Convention_Of (Iface_Prim);
 
                if Is_Interface_Conformant (Typ, Iface_Prim, Op)
-                 and then Convention (Iface_Prim) /= Convention (Op)
+                 and then Iface_Conv /= Op_Conv
                then
                   Error_Msg_N
                     ("inconsistent conventions in primitive operations", Typ);
 
                   Error_Msg_Name_1 := Chars (Op);
-                  Error_Msg_Name_2 := Get_Convention_Name (Convention (Op));
+                  Error_Msg_Name_2 := Get_Convention_Name (Op_Conv);
                   Error_Msg_Sloc   := Sloc (Op);
 
                   if Comes_From_Source (Op) or else No (Alias (Op)) then
@@ -6331,9 +6356,8 @@ package body Sem_Ch6 is
                   end if;
 
                   Error_Msg_Name_1 := Chars (Op);
-                  Error_Msg_Name_2 :=
-                    Get_Convention_Name (Convention (Iface_Prim));
-                  Error_Msg_Sloc := Sloc (Iface_Prim);
+                  Error_Msg_Name_2 := Get_Convention_Name (Iface_Conv);
+                  Error_Msg_Sloc   := Sloc (Iface_Prim);
                   Error_Msg_N
                     ("\\overridden operation % with " &
                      "convention % defined #", Typ);
@@ -6829,11 +6853,6 @@ package body Sem_Ch6 is
                else
                   Set_Overridden_Operation (Subp, Overridden_Subp);
                end if;
-
-            --  Ensure that a ghost function is not overriding another routine
-
-            elsif Is_Ghost_Function (Subp) then
-               Error_Msg_N ("ghost function & cannot be overriding", Subp);
             end if;
          end if;
 
@@ -12245,6 +12264,7 @@ package body Sem_Ch6 is
 
       if Ekind (Designator) /= E_Procedure
         and then Expander_Active
+        --  Check of Assertions_Enabled is certainly wrong ???
         and then Assertions_Enabled
       then
          Func_Typ := Etype (Designator);
@@ -12286,6 +12306,7 @@ package body Sem_Ch6 is
       --  IN OUT args.
 
       if Expander_Active and then Assertions_Enabled then
+         --  Check of Assertions_Enabled is certainly wrong ???
          Formal := First_Formal (Designator);
          while Present (Formal) loop
             if Ekind (Formal) /= E_In_Parameter

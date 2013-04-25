@@ -268,7 +268,7 @@ package body System.Tasking.Restricted.Stages is
             Save_Occurrence (EO, E);
       end;
 
-      --  Look for a fall-back handler.
+      --  Look for a fall-back handler
 
       --  This package is part of the restricted run time which supports
       --  neither task hierarchies (No_Task_Hierarchy) nor specific task

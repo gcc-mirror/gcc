@@ -854,10 +854,10 @@ package body Sem_Ch4 is
       --  Flag indicates whether an interpretation of the prefix is a
       --  parameterless call that returns an access_to_subprogram.
 
-      procedure Check_Ghost_Function_Call;
-      --  Verify the legality of a call to a ghost function. Such calls can
+      procedure Check_Ghost_Subprogram_Call;
+      --  Verify the legality of a call to a ghost subprogram. Such calls can
       --  appear only in assertion expressions except subtype predicates or
-      --  from within another ghost function.
+      --  from within another ghost subprogram.
 
       procedure Check_Mixed_Parameter_And_Named_Associations;
       --  Check that parameter and named associations are not mixed. This is
@@ -873,15 +873,15 @@ package body Sem_Ch4 is
       procedure No_Interpretation;
       --  Output error message when no valid interpretation exists
 
-      -------------------------------
-      -- Check_Ghost_Function_Call --
-      -------------------------------
+      ---------------------------------
+      -- Check_Ghost_Subprogram_Call --
+      ---------------------------------
 
-      procedure Check_Ghost_Function_Call is
+      procedure Check_Ghost_Subprogram_Call is
          S : Entity_Id;
 
       begin
-         --  The ghost function appears inside an assertion expression
+         --  The ghost subprogram appears inside an assertion expression
 
          if In_Assertion_Expression (N) then
             return;
@@ -890,9 +890,9 @@ package body Sem_Ch4 is
             S := Current_Scope;
             while Present (S) and then S /= Standard_Standard loop
 
-               --  The call appears inside another ghost function
+               --  The call appears inside another ghost subprogram
 
-               if Is_Ghost_Function (S) then
+               if Is_Ghost_Subprogram (S) then
                   return;
                end if;
 
@@ -901,9 +901,9 @@ package body Sem_Ch4 is
          end if;
 
          Error_Msg_N
-           ("call to ghost function must appear in assertion expression or "
-            & "another ghost function", N);
-      end Check_Ghost_Function_Call;
+           ("call to ghost subprogram must appear in assertion expression or "
+            & "another ghost subprogram", N);
+      end Check_Ghost_Subprogram_Call;
 
       --------------------------------------------------
       -- Check_Mixed_Parameter_And_Named_Associations --
@@ -1275,11 +1275,11 @@ package body Sem_Ch4 is
          End_Interp_List;
       end if;
 
-      --  A call to a ghost function is allowed only in assertion expressions,
-      --  excluding subtype predicates, or from within another ghost function.
+      --  A call to a ghost subprogram is allowed only in assertion expressions
+      --  excluding subtype predicates or from within another ghost subprogram.
 
-      if Is_Ghost_Function (Get_Subprogram_Entity (N)) then
-         Check_Ghost_Function_Call;
+      if Is_Ghost_Subprogram (Get_Subprogram_Entity (N)) then
+         Check_Ghost_Subprogram_Call;
       end if;
    end Analyze_Call;
 

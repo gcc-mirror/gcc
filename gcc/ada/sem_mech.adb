@@ -300,12 +300,14 @@ package body Sem_Mech is
                -- Ada --
                ---------
 
-               --  Note: all RM defined conventions are treated the same
-               --  from the point of view of parameter passing mechanism
+               --  Note: all RM defined conventions are treated the same from
+               --  the point of view of parameter passing mechanism. Convention
+               --  Ghost has the same dynamic semantics as convention Ada.
 
                when Convention_Ada       |
                     Convention_Intrinsic |
                     Convention_Entry     |
+                    Convention_Ghost     |
                     Convention_Protected |
                     Convention_Stubbed   =>
 
@@ -486,7 +488,6 @@ package body Sem_Mech is
                   else
                      Set_Mechanism (Formal, By_Reference);
                   end if;
-
             end case;
          end if;
 

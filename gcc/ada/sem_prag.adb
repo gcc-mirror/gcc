@@ -4975,9 +4975,16 @@ package body Sem_Prag is
               and then Present (Overridden_Operation (E))
               and then C /= Convention (Overridden_Operation (E))
             then
-               Error_Pragma_Arg
-                 ("cannot change convention for overridden dispatching "
-                  & "operation", Arg1);
+               --  An attempt to override a subprogram with a ghost subprogram
+               --  appears as a mismatch in conventions.
+
+               if C = Convention_Ghost then
+                  Error_Msg_N ("ghost subprogram & cannot be overriding", E);
+               else
+                  Error_Pragma_Arg
+                    ("cannot change convention for overridden dispatching "
+                     & "operation", Arg1);
+               end if;
             end if;
 
             --  Special checks for Convention_Stdcall
@@ -5136,14 +5143,14 @@ package body Sem_Prag is
          if C = Convention_Ada_Pass_By_Copy then
             if not Is_First_Subtype (E) then
                Error_Pragma_Arg
-                 ("convention `Ada_Pass_By_Copy` only "
-                  & "allowed for types", Arg2);
+                 ("convention `Ada_Pass_By_Copy` only allowed for types",
+                  Arg2);
             end if;
 
             if Is_By_Reference_Type (E) then
                Error_Pragma_Arg
-                 ("convention `Ada_Pass_By_Copy` not allowed for "
-                  & "by-reference type", Arg1);
+                 ("convention `Ada_Pass_By_Copy` not allowed for by-reference "
+                  & "type", Arg1);
             end if;
          end if;
 
@@ -5152,15 +5159,23 @@ package body Sem_Prag is
          if C = Convention_Ada_Pass_By_Reference then
             if not Is_First_Subtype (E) then
                Error_Pragma_Arg
-                 ("convention `Ada_Pass_By_Reference` only "
-                  & "allowed for types", Arg2);
+                 ("convention `Ada_Pass_By_Reference` only allowed for types",
+                  Arg2);
             end if;
 
             if Is_By_Copy_Type (E) then
                Error_Pragma_Arg
-                 ("convention `Ada_Pass_By_Reference` not allowed for "
-                  & "by-copy type", Arg1);
+                 ("convention `Ada_Pass_By_Reference` not allowed for by-copy "
+                  & "type", Arg1);
             end if;
+         end if;
+
+         --  Ghost special checking
+
+         if Is_Ghost_Subprogram (E)
+           and then Present (Overridden_Operation (E))
+         then
+            Error_Msg_N ("ghost subprogram & cannot be overriding", E);
          end if;
 
          --  Go to renamed subprogram if present, since convention applies to
@@ -5299,8 +5314,8 @@ package body Sem_Prag is
                Generate_Reference (E, Id, 'i');
             end if;
 
-            --  If the pragma comes from from an aspect, it only applies
-            --   to the given entity, not its homonyms.
+            --  If the pragma comes from from an aspect, it only applies to the
+            --  given entity, not its homonyms.
 
             if From_Aspect_Specification (N) then
                return;
@@ -11842,39 +11857,6 @@ package body Sem_Prag is
             end if;
          end Float_Representation;
 
-         -----------
-         -- Ghost --
-         -----------
-
-         --  pragma GHOST (function_LOCAL_NAME);
-
-         when Pragma_Ghost => Ghost : declare
-            Subp    : Node_Id;
-            Subp_Id : Entity_Id;
-
-         begin
-            GNAT_Pragma;
-            S14_Pragma;
-            Check_Arg_Count (1);
-            Check_Arg_Is_Local_Name (Arg1);
-
-            --  Ensure the proper placement of the pragma. Ghost must be
-            --  associated with a subprogram declaration.
-
-            Subp := Parent (Corresponding_Aspect (N));
-
-            if Nkind (Subp) /= N_Subprogram_Declaration then
-               Pragma_Misplaced;
-               return;
-            end if;
-
-            Subp_Id := Defining_Unit_Name (Specification (Subp));
-
-            if Ekind (Subp_Id) /= E_Function then
-               Error_Pragma ("pragma % must be applied to a function");
-            end if;
-         end Ghost;
-
          ------------
          -- Global --
          ------------
@@ -13120,6 +13102,7 @@ package body Sem_Prag is
             --  before the body is built (e.g. within an expression function).
 
             PDecl := Build_Invariant_Procedure_Declaration (Typ);
+
             Insert_After (N, PDecl);
             Analyze (PDecl);
 
@@ -17993,7 +17976,7 @@ package body Sem_Prag is
                      Set_Is_Ignored (N, True);
 
                   when Name_Disable =>
-                     Set_Is_Ignored (N, True);
+                     Set_Is_Ignored  (N, True);
                      Set_Is_Disabled (N, True);
 
                   when others =>
@@ -18277,7 +18260,6 @@ package body Sem_Prag is
       Pragma_Fast_Math                      => -1,
       Pragma_Finalize_Storage_Only          =>  0,
       Pragma_Float_Representation           =>  0,
-      Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
       Pragma_Ident                          => -1,
       Pragma_Implementation_Defined         => -1,

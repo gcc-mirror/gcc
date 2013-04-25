@@ -160,7 +160,6 @@ package Aspects is
       Aspect_Discard_Names,
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
-      Aspect_Ghost,                         -- GNAT
       Aspect_Independent,
       Aspect_Independent_Components,
       Aspect_Import,
@@ -215,7 +214,6 @@ package Aspects is
       Aspect_Dimension                => True,
       Aspect_Dimension_System         => True,
       Aspect_Favor_Top_Level          => True,
-      Aspect_Ghost                    => True,
       Aspect_Global                   => True,
       Aspect_Inline_Always            => True,
       Aspect_Invariant                => True,
@@ -380,7 +378,6 @@ package Aspects is
       Aspect_External_Tag                 => Name_External_Tag,
       Aspect_Export                       => Name_Export,
       Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
-      Aspect_Ghost                        => Name_Ghost,
       Aspect_Global                       => Name_Global,
       Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
       Aspect_Import                       => Name_Import,

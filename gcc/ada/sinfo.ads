@@ -1414,10 +1414,10 @@ package Sinfo is
    --  Label_Construct (Node2-Sem)
    --    Used in an N_Implicit_Label_Declaration node. Refers to an N_Label,
    --    N_Block_Statement or N_Loop_Statement node to which the label
-   --    declaration applies. This is not currently used in the compiler
-   --    itself, but it is useful in the implementation of ASIS queries.
-   --    This field is left empty for the special labels generated as part
-   --    of expanding raise statements with a local exception handler.
+   --    declaration applies. This attribute is used both in the compiler and
+   --    in the implementation of ASIS queries. The field is left empty for the
+   --    special labels generated as part of expanding raise statements with a
+   --    local exception handler.
 
    --  Library_Unit (Node4-Sem)
    --    In a stub node, Library_Unit points to the compilation unit node of

@@ -12401,13 +12401,13 @@ package body Sem_Ch12 is
                Analyze (Act);
             end if;
 
-            --  Ensure that a ghost function does not act as generic actual
+            --  Ensure that a ghost subprogram does not act as generic actual
 
             if Is_Entity_Name (Act)
-              and then Is_Ghost_Function (Entity (Act))
+              and then Is_Ghost_Subprogram (Entity (Act))
             then
                Error_Msg_N
-                 ("ghost function & cannot act as generic actual", Act);
+                 ("ghost subprogram & cannot act as generic actual", Act);
                Abandon_Instantiation (Act);
 
             elsif Errs /= Serious_Errors_Detected then

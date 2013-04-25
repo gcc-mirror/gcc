@@ -602,9 +602,9 @@ package body Sem_Attr is
             elsif Aname = Name_Unchecked_Access then
                Error_Attr ("attribute% cannot be applied to a subprogram", P);
 
-            elsif Is_Ghost_Function (Entity (P)) then
+            elsif Is_Ghost_Subprogram (Entity (P)) then
                Error_Attr_P
-                 ("prefix of % attribute cannot be a ghost function");
+                 ("prefix of % attribute cannot be a ghost subprogram");
             end if;
 
             --  Issue an error if the prefix denotes an eliminated subprogram

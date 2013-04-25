@@ -1,3 +1,58 @@
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor fix to Loop_Variant doc (Loop_Entry allowed).
+	* s-tarest.adb: Minor reformatting.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.ads, aspects.adb: Remove aspect Ghost from all relevant
+	tables.
+	* einfo.adb: Remove with and use clause for Aspects.
+	(Is_Ghost_Function): Removed.
+	(Is_Ghost_Entity): New routine.
+	(Is_Ghost_Subprogram): New routine.
+	* einfo.ads: Remove synthesized attribute Is_Ghost_Function
+	along with its uses in entities.  Add synthesized attributes
+	Is_Ghost_Entity and Is_Ghost_Subprogram along with uses in related
+	entities.
+	(Is_Ghost_Function): Removed.
+	(Is_Ghost_Entity): New routine.
+	(Is_Ghost_Subprogram): New routine.
+	* par-prag.adb: Remove pragma Ghost from the processing machinery.
+	* repinfo.adb (List_Mechanisms): Add a value for convention Ghost.
+	* sem_attr.adb (Analyze_Access_Attribute): Update the check
+	for ghost subprograms.
+	* sem_ch4.adb (Analyze_Call): Update the check for calls
+	to ghost subprograms.
+	(Check_Ghost_Function_Call): Removed.
+	(Check_Ghost_Subprogram_Call): New routine.
+	* sem_ch6.adb (Check_Convention): Rewritten.
+	(Check_Overriding_Indicator): Remove the check for overriding
+	ghost functions.
+	(Convention_Of): New routine.
+	* sem_ch12.adb (Preanalyze_Actuals): Update the check for ghost
+	generic actual subprograms.
+	* sem_mech.adb (Set_Mechanisms): Add an entry for convention Ghost.
+	* sem_prag.adb: Remove the value for pragma Ghost from
+	table Sig_Flags.
+	(Analyze_Pragma): Remove the processing for pragma Ghost.
+	(Process_Convention): Emit an error when a ghost
+	subprogram attempts to override.
+	(Set_Convention_From_Pragma): Emit an error when a ghost subprogram
+	attempts to override.
+	* sinfo.ads: Clarify the usage of field Label_Construct.
+	* snames.adb-tmpl (Get_Convention_Id): Add an entry for
+	predefined name Ghost.
+	(Get_Convention_Name): Add an entry for convention Ghost.
+	* snames.ads-tmpl: Move predefined name Ghost to the sublist
+	denoting conventions. Add convention id Ghost. Remove pragma
+	id Ghost.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Swap_Private_Dependents): Do no recurse on child
+	units if within a generic hierarchy.
+
 2013-04-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Expand_Actuals): Add a predicate check on an

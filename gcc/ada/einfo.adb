@@ -32,7 +32,6 @@
 pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering, not used for this unit
 
-with Aspects; use Aspects;
 with Atree;   use Atree;
 with Namet;   use Namet;
 with Nlists;  use Nlists;
@@ -6575,27 +6574,41 @@ package body Einfo is
       return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
    end Is_Finalizer;
 
-   -----------------------
-   -- Is_Ghost_Function --
-   -----------------------
+   ---------------------
+   -- Is_Ghost_Entity --
+   ---------------------
 
-   function Is_Ghost_Function (Id : E) return B is
+   function Is_Ghost_Entity (Id : E) return B is
+   begin
+      if Present (Id) and then Ekind (Id) = E_Variable then
+         return Convention (Id) = Convention_Ghost;
+      else
+         return Is_Ghost_Subprogram (Id);
+      end if;
+   end Is_Ghost_Entity;
+
+   -------------------------
+   -- Is_Ghost_Subprogram --
+   -------------------------
+
+   function Is_Ghost_Subprogram (Id : E) return B is
       Subp_Id : Entity_Id := Id;
 
    begin
-      if Present (Subp_Id) and then Ekind (Subp_Id) = E_Function then
-
-         --  Handle renamings of functions
+      if Present (Subp_Id)
+        and then Ekind_In (Subp_Id, E_Function, E_Procedure)
+      then
+         --  Handle subprogram renamings
 
          if Present (Alias (Subp_Id)) then
             Subp_Id := Alias (Subp_Id);
          end if;
 
-         return Has_Aspect (Subp_Id, Aspect_Ghost);
+         return Convention (Subp_Id) = Convention_Ghost;
       end if;
 
       return False;
-   end Is_Ghost_Function;
+   end Is_Ghost_Subprogram;
 
    --------------------
    -- Is_Input_State --
