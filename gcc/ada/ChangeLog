@@ -1,3 +1,30 @@
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression):
+	Add local variable Loop_Id. Verify that the loop variable
+	is used within the condition of the quantified expression.
+	(Referenced): New routine.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_case.adb (Analyze_Choices): Enhance the error message
+	given on a bad use of subtype predicate.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Enhance
+	the error message given on a bad use of subtype predicate.
+	* sem_util.adb (Bad_Predicated_Subtype_Use): Add formal parameter
+	Suggest_Static. Emit an extra error message advising how to
+	remedy the bad use of the predicate if the context warrants it.
+	* sem_util.ads (Bad_Predicated_Subtype_Use): Add formal parameter
+	Suggest_Static along with a comment explaining its usage.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): Further refinement
+	to checks for AI05-0125: the check for a hidden primitive that
+	may be overridden by the new declaration only applies if the
+	hidden operation is never declared. This is not the case if the
+	operation is declared in a parent unit.
+
 2013-04-25  Robert Dewar  <dewar@adacore.com>
 
 	* debug.adb: Remove d.X and d.Y entries and documentation.

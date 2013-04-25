@@ -2310,7 +2310,7 @@ package body Sem_Ch5 is
          then
             Bad_Predicated_Subtype_Use
               ("cannot use subtype& with non-static predicate for loop " &
-               "iteration", DS, Entity (DS));
+               "iteration", DS, Entity (DS), Suggest_Static => True);
          end if;
       end if;
 
