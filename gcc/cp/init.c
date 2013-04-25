@@ -634,7 +634,12 @@ perform_member_init (tree member, tree init)
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
       if (TREE_TYPE (init) != type)
-	init = digest_init (type, init, tf_warning_or_error);
+	{
+	  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+	      && CP_AGGREGATE_TYPE_P (type))
+	    init = reshape_init (type, init, tf_warning_or_error);
+	  init = digest_init (type, init, tf_warning_or_error);
+	}
       if (init == error_mark_node)
 	return;
       /* A FIELD_DECL doesn't really have a suitable lifetime, but

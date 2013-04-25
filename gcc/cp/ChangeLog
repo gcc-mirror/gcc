@@ -1,3 +1,8 @@
+2013-04-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50261
+	* init.c (perform_member_init): Call reshape_init.
+
 2013-04-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53721
