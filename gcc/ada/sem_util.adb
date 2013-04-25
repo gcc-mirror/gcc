@@ -12975,6 +12975,10 @@ package body Sem_Util is
       --  Determine whether node N denotes a reference to Id. If this is the
       --  case, set global flag Seen to True and stop the traversal.
 
+      ------------------
+      -- Is_Reference --
+      ------------------
+
       function Is_Reference (N : Node_Id) return Traverse_Result is
       begin
          if Is_Entity_Name (N)
@@ -12994,7 +12998,6 @@ package body Sem_Util is
 
    begin
       Inspect_Expression (Expr);
-
       return Seen;
    end Referenced;
 

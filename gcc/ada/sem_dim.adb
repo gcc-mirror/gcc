@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,7 @@ with GNAT.HTable;
 package body Sem_Dim is
 
    -------------------------
-   -- Rational arithmetic --
+   -- Rational Arithmetic --
    -------------------------
 
    type Whole is new Int;
@@ -91,7 +91,7 @@ package body Sem_Dim is
    function "/" (Left, Right : Rational) return Rational;
 
    ------------------
-   -- System types --
+   -- System Types --
    ------------------
 
    Max_Number_Of_Dimensions : constant := 7;
@@ -144,7 +144,7 @@ package body Sem_Dim is
      Table_Name           => "System_Table");
 
    --------------------
-   -- Dimension type --
+   -- Dimension Type --
    --------------------
 
    type Dimension_Type is
@@ -168,7 +168,7 @@ package body Sem_Dim is
         Equal      => "=");
 
    ------------------
-   -- Symbol types --
+   -- Symbol Types --
    ------------------
 
    type Symbol_Table_Range is range 0 .. 510;
@@ -441,24 +441,17 @@ package body Sem_Dim is
    -- Analyze_Aspect_Dimension --
    ------------------------------
 
-   --  with Dimension => (
-   --    [[Symbol =>]   SYMBOL,]
-   --                   DIMENSION_VALUE
-   --    [,             DIMENSION_VALUE]
-   --    [,             DIMENSION_VALUE]
-   --    [,             DIMENSION_VALUE]
-   --    [,             DIMENSION_VALUE]
-   --    [,             DIMENSION_VALUE]
-   --    [,             DIMENSION_VALUE]);
+   --  with Dimension =>
+   --    ([Symbol =>] SYMBOL, DIMENSION_VALUE {, DIMENSION_Value})
    --
    --  SYMBOL ::= STRING_LITERAL | CHARACTER_LITERAL
 
    --  DIMENSION_VALUE ::=
    --    RATIONAL
-   --  | others => RATIONAL
+   --  | others               => RATIONAL
    --  | DISCRETE_CHOICE_LIST => RATIONAL
 
-   --  RATIONAL ::= [-] NUMERAL [/ NUMERAL]
+   --  RATIONAL ::= [-] NUMERIC_LITERAL [/ NUMERIC_LITERAL]
 
    --  Note that when the dimensioned type is an integer type, then any
    --  dimension value must be an integer literal.
@@ -468,7 +461,7 @@ package body Sem_Dim is
       Id   : Entity_Id;
       Aggr : Node_Id)
    is
-      Def_Id    : constant Entity_Id := Defining_Identifier (N);
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
 
       Processed : array (Dimension_Type'Range) of Boolean := (others => False);
       --  This array is used when processing ranges or Others_Choice as part of
@@ -855,14 +848,7 @@ package body Sem_Dim is
    -- Analyze_Aspect_Dimension_System --
    -------------------------------------
 
-   --  with Dimension_System => (
-   --        DIMENSION
-   --     [, DIMENSION]
-   --     [, DIMENSION]
-   --     [, DIMENSION]
-   --     [, DIMENSION]
-   --     [, DIMENSION]
-   --     [, DIMENSION]);
+   --  with Dimension_System => (DIMENSION {, DIMENSION});
 
    --  DIMENSION ::= (
    --    [Unit_Name   =>] IDENTIFIER,
@@ -957,9 +943,9 @@ package body Sem_Dim is
             if Present (Component_Associations (Dim_Aggr))
               and then Present (Expressions (Dim_Aggr))
             then
-               Error_Msg_N ("mixed positional/named aggregate not allowed " &
-                            "here",
-                            Dim_Aggr);
+               Error_Msg_N
+                 ("mixed positional/named aggregate not allowed here",
+                  Dim_Aggr);
 
             --  Verify each dimension aggregate has three arguments
 
@@ -1039,13 +1025,12 @@ package body Sem_Dim is
                --  Check the second argument for each dimension aggregate is
                --  a string or a character.
 
-               if not Nkind_In
-                        (Unit_Symbol,
-                           N_String_Literal,
-                           N_Character_Literal)
+               if not Nkind_In (Unit_Symbol, N_String_Literal,
+                                             N_Character_Literal)
                then
-                  Error_Msg_N ("expected unit symbol (string or character)",
-                               Unit_Symbol);
+                  Error_Msg_N
+                    ("expected unit symbol (string or character)",
+                     Unit_Symbol);
 
                else
                   --  String case
@@ -1073,14 +1058,12 @@ package body Sem_Dim is
                --  Check the third argument for each dimension aggregate is
                --  a string or a character.
 
-               if not Nkind_In
-                        (Dim_Symbol,
-                           N_String_Literal,
-                           N_Character_Literal)
+               if not Nkind_In (Dim_Symbol, N_String_Literal,
+                                            N_Character_Literal)
                then
-                  Error_Msg_N ("expected dimension symbol (string or " &
-                               "character)",
-                               Dim_Symbol);
+                  Error_Msg_N
+                    ("expected dimension symbol (string or character)",
+                     Dim_Symbol);
 
                else
                   --  String case

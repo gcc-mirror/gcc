@@ -186,7 +186,7 @@ package Aspects is
       --  Aspects that have a static boolean value but don't correspond to
       --  pragmas
 
-      Aspect_Lock_Free);
+      Aspect_Lock_Free);                    -- GNAT
 
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;

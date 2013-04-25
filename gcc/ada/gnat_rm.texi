@@ -70,6 +70,7 @@ AdaCore
 @menu
 * About This Guide::
 * Implementation Defined Pragmas::
+* Implementation Defined Aspects::
 * Implementation Defined Attributes::
 * Standard and Implementation Defined Restrictions::
 * Implementation Advice::
@@ -248,70 +249,106 @@ Implementation Defined Pragmas
 * Pragma Weak_External::
 * Pragma Wide_Character_Encoding::
 
+Implementation Defined Aspects
+
+* Aspect Abstract_State::
+* Aspect Ada_2005::
+* Aspect Ada_2012::
+* Aspect Compiler_Unit::
+* Aspect Contract_Cases::
+* Aspect Depends::
+* Aspect Dimension::
+* Aspect Dimension_System::
+* Aspect Favor_Top_Level::
+* Aspect Global::
+* Aspect Inline_Always::
+* Aspect Invariant::
+* Aspect Object_Size::
+* Aspect Persistent_BSS::
+* Aspect Predicate::
+* Aspect Preelaborate_05::
+* Aspect Pure_05::
+* Aspect Pure_12::
+* Aspect Pure_Function::
+* Aspect Remote_Access_Type::
+* Aspect Scalar_Storage_Order::
+* Aspect Shared::
+* Aspect Simple_Storage_Pool::
+* Aspect Simple_Storage_Pool_Type::
+* Aspect Suppress_Debug_Info::
+* Aspect Test_Case::
+* Aspect Universal_Aliasing::
+* Aspect Universal_Data::
+* Aspect Unmodified::
+* Aspect Unreferenced::
+* Aspect Unreferenced_Objects::
+* Aspect Value_Size::
+* Aspect Warnings::
+
 Implementation Defined Attributes
 
-* Abort_Signal::
-* Address_Size::
-* Asm_Input::
-* Asm_Output::
-* AST_Entry::
-* Bit::
-* Bit_Position::
-* Compiler_Version::
-* Code_Address::
-* Default_Bit_Order::
-* Descriptor_Size::
-* Elaborated::
-* Elab_Body::
-* Elab_Spec::
-* Elab_Subp_Body::
-* Emax::
-* Enabled::
-* Enum_Rep::
-* Enum_Val::
-* Epsilon::
-* Fixed_Value::
-* Has_Access_Values::
-* Has_Discriminants::
-* Img::
-* Integer_Value::
-* Invalid_Value::
-* Large::
-* Loop_Entry::
-* Machine_Size::
-* Mantissa::
-* Max_Interrupt_Priority::
-* Max_Priority::
-* Maximum_Alignment::
-* Mechanism_Code::
-* Null_Parameter::
-* Object_Size::
-* Passed_By_Reference::
-* Pool_Address::
-* Range_Length::
-* Result::
-* Safe_Emax::
-* Safe_Large::
-* Scalar_Storage_Order::
-* Simple_Storage_Pool::
-* Small::
-* Storage_Unit::
-* Stub_Type::
-* System_Allocator_Alignment::
-* Target_Name::
-* Tick::
-* To_Address::
-* Type_Class::
-* UET_Address::
-* Unconstrained_Array::
-* Universal_Literal_String::
-* Unrestricted_Access::
-* Update::
-* Valid_Scalars::
-* VADS_Size::
-* Value_Size::
-* Wchar_T_Size::
-* Word_Size::
+* Attribute Abort_Signal::
+* Attribute Address_Size::
+* Attribute Asm_Input::
+* Attribute Asm_Output::
+* Attribute AST_Entry::
+* Attribute Bit::
+* Attribute Bit_Position::
+* Attribute Compiler_Version::
+* Attribute Code_Address::
+* Attribute Default_Bit_Order::
+* Attribute Descriptor_Size::
+* Attribute Elaborated::
+* Attribute Elab_Body::
+* Attribute Elab_Spec::
+* Attribute Elab_Subp_Body::
+* Attribute Emax::
+* Attribute Enabled::
+* Attribute Enum_Rep::
+* Attribute Enum_Val::
+* Attribute Epsilon::
+* Attribute Fixed_Value::
+* Attribute Has_Access_Values::
+* Attribute Has_Discriminants::
+* Attribute Img::
+* Attribute Integer_Value::
+* Attribute Invalid_Value::
+* Attribute Large::
+* Attribute Loop_Entry::
+* Attribute Machine_Size::
+* Attribute Mantissa::
+* Attribute Max_Interrupt_Priority::
+* Attribute Max_Priority::
+* Attribute Maximum_Alignment::
+* Attribute Mechanism_Code::
+* Attribute Null_Parameter::
+* Attribute Object_Size::
+* Attribute Passed_By_Reference::
+* Attribute Pool_Address::
+* Attribute Range_Length::
+* Attribute Result::
+* Attribute Safe_Emax::
+* Attribute Safe_Large::
+* Attribute Scalar_Storage_Order::
+* Attribute Simple_Storage_Pool::
+* Attribute Small::
+* Attribute Storage_Unit::
+* Attribute Stub_Type::
+* Attribute System_Allocator_Alignment::
+* Attribute Target_Name::
+* Attribute Tick::
+* Attribute To_Address::
+* Attribute Type_Class::
+* Attribute UET_Address::
+* Attribute Unconstrained_Array::
+* Attribute Universal_Literal_String::
+* Attribute Unrestricted_Access::
+* Attribute Update::
+* Attribute Valid_Scalars::
+* Attribute VADS_Size::
+* Attribute Value_Size::
+* Attribute Wchar_T_Size::
+* Attribute Word_Size::
 
 Standard and Implementation Defined Restrictions
 
@@ -1990,11 +2027,11 @@ pragma Postcondition (if C2 then Pred2);
 @end smallexample
 
 @noindent
-The precondition expresses that one and only one of the conditions is
+The precondition ensures that one and only one of the conditions is
 satisfied on entry to the subprogram.
-The postcondition expresses that, whenever condition @code{Ci} is satisfied
-on entry to the subprogram, consequence @code{Predi} should be fulfilled on
-exit to the subprogram.
+The postcondition ensures that for the condition that was True on entry,
+the corrresponding consequence is True on exit. Other consequence expressions
+are not evaluated.
 
 A precondition @code{P} and postcondition @code{Q} can also be
 expressed as contract cases:
@@ -6640,6 +6677,392 @@ Note that when the pragma is used within a file, it affects only the
 encoding within that file, and does not affect withed units, specs,
 or subunits.
 
+@node Implementation Defined Aspects
+@chapter Implementation Defined Aspects
+Ada defines (throughout the Ada 2012 reference manual, summarized
+in annex K) a set of aspects that can be specified for certain entities.
+These language defined aspects are implemented in GNAT in Ada 2012 mode
+and work as described in the Ada 2012 Reference Manual.
+
+In addition, Ada 2012 allows implementations to define additional aspects
+whose meaning is defined by the implementation.  GNAT provides
+a number of these implementation-dependent aspects which can be used
+to extend and enhance the functionality of the compiler.  This section of
+the GNAT reference manual describes these additional attributes.
+
+Note that any program using these aspects may not be portable to
+other compilers (although GNAT implements this set of aspects on all
+platforms).  Therefore if portability to other compilers is an important
+consideration, you should minimize the use of these aspects.
+
+Note that for many of these aspects, the effect is essentially similar
+to the use of a pragma or attribute specification with the same name
+applied to the entity. For example, if we write:
+
+@smallexample @c ada
+type R is range 1 .. 100
+  with Value_Size => 10;
+@end smallexample
+
+@noindent
+then the effect is the same as:
+
+@smallexample @c ada
+type R is range 1 .. 100;
+for R'Value_Size use 10;
+@end smallexample
+
+@noindent
+and if we write:
+
+@smallexample @c ada
+type R is new Integer
+  with Shared => True;
+@end smallexample
+
+@noindent
+then the effect is the same as:
+
+@smallexample @c ada
+type R is new Integer;
+pragma Shared (R);
+@end smallexample
+
+@noindent
+In the documentation sections that follow, such cases are simply marked
+as being equivalent to the corresponding pragma or attribute definition
+clause.
+
+@menu
+* Aspect Abstract_State::
+* Aspect Ada_2005::
+* Aspect Ada_2012::
+* Aspect Compiler_Unit::
+* Aspect Contract_Cases::
+* Aspect Depends::
+* Aspect Dimension::
+* Aspect Dimension_System::
+* Aspect Favor_Top_Level::
+* Aspect Global::
+* Aspect Inline_Always::
+* Aspect Invariant::
+* Aspect Lock_Free::
+* Aspect Object_Size::
+* Aspect Persistent_BSS::
+* Aspect Predicate::
+* Aspect Preelaborate_05::
+* Aspect Pure_05::
+* Aspect Pure_12::
+* Aspect Pure_Function::
+* Aspect Remote_Access_Type::
+* Aspect Scalar_Storage_Order::
+* Aspect Shared::
+* Aspect Simple_Storage_Pool::
+* Aspect Simple_Storage_Pool_Type::
+* Aspect Suppress_Debug_Info::
+* Aspect Test_Case::
+* Aspect Universal_Aliasing::
+* Aspect Universal_Data::
+* Aspect Unmodified::
+* Aspect Unreferenced::
+* Aspect Unreferenced_Objects::
+* Aspect Value_Size::
+* Aspect Warnings::
+@end menu
+
+@node Aspect Abstract_State
+@unnumberedsec Aspect Abstract_State
+@findex Abstract_State
+@noindent
+This aspect is equivalent to pragma @code{Abstract_State}.
+
+@node Aspect Ada_2005
+@unnumberedsec Aspect Ada_2005
+@findex Ada_2005
+@noindent
+This aspect is equivalent to the one argument form of pragma @code{Ada_2005}.
+
+@node Aspect Ada_2012
+@unnumberedsec Aspect Ada_2012
+@findex Ada_2012
+@noindent
+This aspect is equivalent to the one argument form of pragma @code{Ada_2012}.
+
+@node Aspect Compiler_Unit
+@unnumberedsec Aspect Compiler_Unit
+@findex Compiler_Unit
+@noindent
+This aspect is equivalent to pragma @code{Compiler_Unit}.
+
+@node Aspect Contract_Cases
+@unnumberedsec Aspect Contract_Cases
+@findex Contract_Cases
+@noindent
+This aspect is equivalent to pragma @code{Contract_Cases}, the sequence
+of clauses being enclosed in parentheses so that syntactically it is an
+aggregate.
+
+@node Aspect Depends
+@unnumberedsec Aspect Depends
+@findex Depends
+@noindent
+This aspect is equivalent to pragma @code{Depends}.
+
+* Dimension::
+
+@node Aspect Dimension
+@unnumberedsec Aspect Dimension
+@findex Dimension
+@noindent
+The @code{Dimension} aspect is used to define a system of
+dimensions that will be used in subsequent subtype declarations with
+@code{Dimension} aspects that reference this system. The syntax is:
+
+@smallexample @c ada
+with Dimension =>
+  ([Symbol =>] SYMBOL, DIMENSION_VALUE @{, DIMENSION_Value@})
+
+SYMBOL ::= STRING_LITERAL | CHARACTER_LITERAL
+
+DIMENSION_VALUE ::=
+  RATIONAL
+| others               => RATIONAL
+| DISCRETE_CHOICE_LIST => RATIONAL
+
+RATIONAL ::= [-] NUMERIC_LITERAL [/ NUMERIC_LITERAL]
+@end smallexample
+
+@noindent
+This aspect can only be applied to a subtype where the parent type has
+a @code{Dimension_Systen} aspect. It specifies which units apply to
+the subtype, and the corresponding powers. For examples of the usage
+of this aspect, see package @code{System.Dim.Mks}.
+Note that when the dimensioned type is an integer type, then any
+dimension value must be an integer literal.
+
+@node Aspect Dimension_System
+@unnumberedsec Aspect Dimension_System
+@findex Dimension_System
+@noindent
+The @code{Dimension_System} aspect is used to define a system of
+dimensions that will be used in subsequent subtype declarations with
+@code{Dimension} aspects that reference this system. The syntax is:
+
+@smallexample @c ada
+with Dimension_System => (DIMENSION @{, DIMENSION@});
+
+DIMENSION ::= ([Unit_Name   =>] IDENTIFIER,
+               [Unit_Symbol =>] SYMBOL,
+               [Dim_Symbol  =>] SYMBOL)
+
+SYMBOL ::= CHARACTER_LITERAL | STRING_LITERAL
+@end smallexample
+
+@noindent
+This aspect is applied to a type, which must be a numeric derived type
+(typically a floating-point type), that
+will represent values within the dimension system. Each @code{DIMENSION}
+corresponds to one particular dimension. A maximum of 7 dimensions may
+be specified. @code{Unit_Name} is the name of the dimension (for example
+@code{Meter}). @code{Unit_Symbol} is the short hand used for quantities
+of this dimension (for example 'm' for Meter). @code{Dim_Symbol} gives
+the identification within the dimension system (typically this is a
+single letter, e.g. 'L' standing for length for unit name Meter).
+
+Although the implementation allows multiple different dimension systems
+to be defined using this aspect, in practice, nearly all usage of the
+dimension system will use the standard definition in the run-time
+package @code{System.Dim.Mks}:
+
+@smallexample @c ada
+   type Mks_Type is new Long_Long_Float
+     with
+      Dimension_System => (
+        (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
+        (Unit_Name => Kilogram, Unit_Symbol => "kg",  Dim_Symbol => 'M'),
+        (Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
+        (Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
+        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Theta"),
+        (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
+        (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
+@end smallexample
+
+@noindent
+which correspond to the standard 7-unit dimension system typically
+used in physical calculations. See section
+"Performing Dimensionality Analysis in GNAT" in the GNAT Users
+Guide for detailed examples of use of the dimension system.
+
+@node Aspect Favor_Top_Level
+@unnumberedsec Aspect Favor_Top_Level
+@findex Favor_Top_Level
+@noindent
+This aspect is equivalent to pragma @code{Favor_Top_Level}.
+
+@node Aspect Global
+@unnumberedsec Aspect Global
+@findex Global
+@noindent
+This aspect is equivalent pragma @code{Global}.
+
+@node Aspect Inline_Always
+@unnumberedsec Aspect Inline_Always
+@findex Inline_Always
+@noindent
+This aspect is equivalent to pragma @code{Inline_Always}.
+
+@node Aspect Invariant
+@unnumberedsec Aspect Invariant
+@findex Invariant
+@noindent
+This aspect is equivalent to pragma @code{Invariant}. It is a
+synonym for the language defined aspect @code{Type_Invariant} except
+that it is separately controllable using pragma @code{Assertion_Policy}.
+
+@node Aspect Lock_Free
+@unnumberedsec Aspect Lock_Free
+@findex Lock_Free
+@noindent
+This aspect is equivalent to pragma @code{Lock_Free}.
+
+@node Aspect Object_Size
+@unnumberedsec Aspect Object_Size
+@findex Object_Size
+@noindent
+This aspect is equivalent to an @code{Object_Size} attribute definition
+clause.
+
+@node Aspect Persistent_BSS
+@unnumberedsec Aspect Persistent_BSS
+@findex Persistent_BSS
+@noindent
+This aspect is equivalent to pragma @code{Persistent_BSS}.
+
+@node Aspect Predicate
+@unnumberedsec Aspect Predicate
+@findex Predicate
+@noindent
+This aspect is equivalent to pragma @code{Predicate}. It is thus
+similar to the language defined aspects @code{Dynamic_Predicate}
+and @code{Static_Predicate} except that whether the resulting
+predicate is static or dynamic is controlled by the form of the
+expression. It is also separately controllable using pragma
+@code{Assertion_Policy}.
+
+@node Aspect Preelaborate_05
+@unnumberedsec Aspect Preelaborate_05
+@findex Preelaborate_05
+@noindent
+This aspect is equivalent to pragma @code{Preelaborate_05}.
+
+@node Aspect Pure_05
+@unnumberedsec Aspect Pure_05
+@findex Pure_05
+@noindent
+This aspect is equivalent to pragma @code{Pure_05}.
+
+@node Aspect Pure_12
+@unnumberedsec Aspect Pure_12
+@findex Pure_12
+@noindent
+This aspect is equivalent to pragma @code{Pure_12}.
+
+@node Aspect Pure_Function
+@unnumberedsec Aspect Pure_Function
+@findex Pure_Function
+@noindent
+This aspect is equivalent to pragma @code{Pure_Function}.
+
+@node Aspect Remote_Access_Type
+@unnumberedsec Aspect Remote_Access_Type
+@findex Remote_Access_Type
+@noindent
+This aspect is equivalent to pragma @code{Remote_Access_Type}.
+
+@node Aspect Scalar_Storage_Order
+@unnumberedsec Aspect Scalar_Storage_Order
+@findex Scalar_Storage_Order
+@noindent
+This aspect is equivalent to a @code{Scalar_Storage_Order}
+attribute definition clause.
+
+@node Aspect Shared
+@unnumberedsec Aspect Shared
+@findex Shared
+@noindent
+This aspect is equivalent to pragma @code{Shared}, and is thus a synonym
+for aspect @code{Atomic}.
+
+@node Aspect Simple_Storage_Pool
+@unnumberedsec Aspect Simple_Storage_Pool
+@findex Simple_Storage_Pool
+@noindent
+This aspect is equivalent to a @code{Simple_Storage_Pool}
+attribute definition clause.
+
+@node Aspect Simple_Storage_Pool_Type
+@unnumberedsec Aspect Simple_Storage_Pool_Type
+@findex Simple_Storage_Pool_Type
+@noindent
+This aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
+
+@node Aspect Suppress_Debug_Info
+@unnumberedsec Aspect Suppress_Debug_Info
+@findex Suppress_Debug_Info
+@noindent
+This aspect is equivalent to pragma @code{Suppress_Debug_Info}.
+
+@node Aspect Test_Case
+@unnumberedsec Aspect Test_Case
+@findex Test_Case
+@noindent
+This aspect is equivalent to pragma @code{Test_Case}.
+
+@node Aspect Universal_Aliasing
+@unnumberedsec Aspect Universal_Aliasing
+@findex Universal_Aliasing
+@noindent
+This aspect is equivalent to pragma @code{Universal_Aliasing}.
+
+@node Aspect Universal_Data
+@unnumberedsec Aspect Universal_Data
+@findex Universal_Data
+@noindent
+This aspect is equivalent to pragma @code{Universal_Data}.
+
+@node Aspect Unmodified
+@unnumberedsec Aspect Unmodified
+@findex Unmodified
+@noindent
+This aspect is equivalent to pragma @code{Unmodified}.
+
+@node Aspect Unreferenced
+@unnumberedsec Aspect Unreferenced
+@findex Unreferenced
+@noindent
+This aspect is equivalent to pragma @code{Unreferenced}.
+
+@node Aspect Unreferenced_Objects
+@unnumberedsec Aspect Unreferenced_Objects
+@findex Unreferenced_Objects
+@noindent
+This aspect is equivalent to pragma @code{Unreferenced_Objects}.
+
+@node Aspect Value_Size
+@unnumberedsec Aspect Value_Size
+@findex Value_Size
+@noindent
+This aspect is equivalent to a @code{Value_Size}
+attribute definition clause.
+
+@node Aspect Warnings
+@unnumberedsec Aspect Warnings
+@findex Warnings
+@noindent
+This aspect is equivalent to the two argument form of pragma @code{Warnings},
+where the first argument is @code{ON} or @code{OFF} and the second argument
+is the entity.
+
 @node Implementation Defined Attributes
 @chapter Implementation Defined Attributes
 Ada defines (throughout the Ada reference manual,
@@ -6660,73 +7083,73 @@ platforms).  Therefore if portability to other compilers is an important
 consideration, you should minimize the use of these attributes.
 
 @menu
-* Abort_Signal::
-* Address_Size::
-* Asm_Input::
-* Asm_Output::
-* AST_Entry::
-* Bit::
-* Bit_Position::
-* Compiler_Version::
-* Code_Address::
-* Default_Bit_Order::
-* Descriptor_Size::
-* Elaborated::
-* Elab_Body::
-* Elab_Spec::
-* Elab_Subp_Body::
-* Emax::
-* Enabled::
-* Enum_Rep::
-* Enum_Val::
-* Epsilon::
-* Fixed_Value::
-* Has_Access_Values::
-* Has_Discriminants::
-* Img::
-* Integer_Value::
-* Invalid_Value::
-* Large::
-* Loop_Entry::
-* Machine_Size::
-* Mantissa::
-* Max_Interrupt_Priority::
-* Max_Priority::
-* Maximum_Alignment::
-* Mechanism_Code::
-* Null_Parameter::
-* Object_Size::
-* Passed_By_Reference::
-* Pool_Address::
-* Range_Length::
-* Ref::
-* Result::
-* Safe_Emax::
-* Safe_Large::
-* Scalar_Storage_Order::
-* Simple_Storage_Pool::
-* Small::
-* Storage_Unit::
-* Stub_Type::
-* System_Allocator_Alignment::
-* Target_Name::
-* Tick::
-* To_Address::
-* Type_Class::
-* UET_Address::
-* Unconstrained_Array::
-* Universal_Literal_String::
-* Unrestricted_Access::
-* Update::
-* Valid_Scalars::
-* VADS_Size::
-* Value_Size::
-* Wchar_T_Size::
-* Word_Size::
+* Attribute Abort_Signal::
+* Attribute Address_Size::
+* Attribute Asm_Input::
+* Attribute Asm_Output::
+* Attribute AST_Entry::
+* Attribute Bit::
+* Attribute Bit_Position::
+* Attribute Compiler_Version::
+* Attribute Code_Address::
+* Attribute Default_Bit_Order::
+* Attribute Descriptor_Size::
+* Attribute Elaborated::
+* Attribute Elab_Body::
+* Attribute Elab_Spec::
+* Attribute Elab_Subp_Body::
+* Attribute Emax::
+* Attribute Enabled::
+* Attribute Enum_Rep::
+* Attribute Enum_Val::
+* Attribute Epsilon::
+* Attribute Fixed_Value::
+* Attribute Has_Access_Values::
+* Attribute Has_Discriminants::
+* Attribute Img::
+* Attribute Integer_Value::
+* Attribute Invalid_Value::
+* Attribute Large::
+* Attribute Loop_Entry::
+* Attribute Machine_Size::
+* Attribute Mantissa::
+* Attribute Max_Interrupt_Priority::
+* Attribute Max_Priority::
+* Attribute Maximum_Alignment::
+* Attribute Mechanism_Code::
+* Attribute Null_Parameter::
+* Attribute Object_Size::
+* Attribute Passed_By_Reference::
+* Attribute Pool_Address::
+* Attribute Range_Length::
+* Attribute Ref::
+* Attribute Result::
+* Attribute Safe_Emax::
+* Attribute Safe_Large::
+* Attribute Scalar_Storage_Order::
+* Attribute Simple_Storage_Pool::
+* Attribute Small::
+* Attribute Storage_Unit::
+* Attribute Stub_Type::
+* Attribute System_Allocator_Alignment::
+* Attribute Target_Name::
+* Attribute Tick::
+* Attribute To_Address::
+* Attribute Type_Class::
+* Attribute UET_Address::
+* Attribute Unconstrained_Array::
+* Attribute Universal_Literal_String::
+* Attribute Unrestricted_Access::
+* Attribute Update::
+* Attribute Valid_Scalars::
+* Attribute VADS_Size::
+* Attribute Value_Size::
+* Attribute Wchar_T_Size::
+* Attribute Word_Size::
 @end menu
 
-@node Abort_Signal
-@unnumberedsec Abort_Signal
+@node Attribute Abort_Signal
+@unnumberedsec Attribute Abort_Signal
 @findex Abort_Signal
 @noindent
 @code{Standard'Abort_Signal} (@code{Standard} is the only allowed
@@ -6736,8 +7159,8 @@ should only be used in the tasking runtime (it is highly peculiar, and
 completely outside the normal semantics of Ada, for a user program to
 intercept the abort exception).
 
-@node Address_Size
-@unnumberedsec Address_Size
+@node Attribute Address_Size
+@unnumberedsec Attribute Address_Size
 @cindex Size of @code{Address}
 @findex Address_Size
 @noindent
@@ -6748,8 +7171,8 @@ but has the advantage of being static, while a direct
 reference to System.Address'Size is non-static because Address
 is a private type.
 
-@node Asm_Input
-@unnumberedsec Asm_Input
+@node Attribute Asm_Input
+@unnumberedsec Attribute Asm_Input
 @findex Asm_Input
 @noindent
 The @code{Asm_Input} attribute denotes a function that takes two
@@ -6762,8 +7185,8 @@ constant are the same as those used in the RTL, and are dependent on
 the configuration file used to built the GCC back end.
 @ref{Machine Code Insertions}
 
-@node Asm_Output
-@unnumberedsec Asm_Output
+@node Attribute Asm_Output
+@unnumberedsec Attribute Asm_Output
 @findex Asm_Output
 @noindent
 The @code{Asm_Output} attribute denotes a function that takes two
@@ -6778,8 +7201,8 @@ GCC back end.  If there are no output operands, then this argument may
 either be omitted, or explicitly given as @code{No_Output_Operands}.
 @ref{Machine Code Insertions}
 
-@node AST_Entry
-@unnumberedsec AST_Entry
+@node Attribute AST_Entry
+@unnumberedsec Attribute AST_Entry
 @cindex OpenVMS
 @findex AST_Entry
 @noindent
@@ -6790,8 +7213,8 @@ pragma @code{Extend_System (Aux_DEC)}).  This value enables the given entry to
 be called when an AST occurs.  For further details, refer to the @cite{DEC Ada
 Language Reference Manual}, section 9.12a.
 
-@node Bit
-@unnumberedsec Bit
+@node Attribute Bit
+@unnumberedsec Attribute Bit
 @findex Bit
 @code{@var{obj}'Bit}, where @var{obj} is any object, yields the bit
 offset within the storage unit (byte) that contains the first bit of
@@ -6817,8 +7240,8 @@ are subject to index checks.
 This attribute is designed to be compatible with the DEC Ada 83 definition
 and implementation of the @code{Bit} attribute.
 
-@node Bit_Position
-@unnumberedsec Bit_Position
+@node Attribute Bit_Position
+@unnumberedsec Attribute Bit_Position
 @findex Bit_Position
 @noindent
 @code{@var{R.C}'Bit_Position}, where @var{R} is a record object and C is one
@@ -6829,8 +7252,8 @@ type @code{Universal_Integer}.  The value depends only on the field
 @var{C} and is independent of the alignment of
 the containing record @var{R}.
 
-@node Compiler_Version
-@unnumberedsec Compiler_Version
+@node Attribute Compiler_Version
+@unnumberedsec Attribute Compiler_Version
 @findex Compiler_Version
 @noindent
 @code{Standard'Compiler_Version} (@code{Standard} is the only allowed
@@ -6838,8 +7261,8 @@ prefix) yields a static string identifying the version of the compiler
 being used to compile the unit containing the attribute reference. A
 typical result would be something like "@value{EDITION} @i{version} (20090221)".
 
-@node Code_Address
-@unnumberedsec Code_Address
+@node Attribute Code_Address
+@unnumberedsec Attribute Code_Address
 @findex Code_Address
 @cindex Subprogram address
 @cindex Address of subprogram code
@@ -6877,8 +7300,8 @@ generated code of the specified subprogram, which may or may not be
 the same value as is returned by the corresponding @code{'Address}
 attribute.
 
-@node Default_Bit_Order
-@unnumberedsec Default_Bit_Order
+@node Attribute Default_Bit_Order
+@unnumberedsec Attribute Default_Bit_Order
 @cindex Big endian
 @cindex Little endian
 @findex Default_Bit_Order
@@ -6889,8 +7312,8 @@ as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @code{Low_Order_First}).  This is used to construct the definition of
 @code{Default_Bit_Order} in package @code{System}.
 
-@node Descriptor_Size
-@unnumberedsec Descriptor_Size
+@node Attribute Descriptor_Size
+@unnumberedsec Attribute Descriptor_Size
 @cindex Descriptor
 @cindex Dope vector
 @findex Descriptor_Size
@@ -6913,8 +7336,8 @@ In the example above, the descriptor contains two values of type
 a size of 31 bits and an alignment of 4, the descriptor size is @code{2 *
 Positive'Size + 2} or 64 bits.
 
-@node Elaborated
-@unnumberedsec Elaborated
+@node Attribute Elaborated
+@unnumberedsec Attribute Elaborated
 @findex Elaborated
 @noindent
 The prefix of the @code{'Elaborated} attribute must be a unit name.  The
@@ -6925,8 +7348,8 @@ in user programs.  The value will always be True once elaboration of all
 units has been completed.  An exception is for units which need no
 elaboration, the value is always False for such units.
 
-@node Elab_Body
-@unnumberedsec Elab_Body
+@node Attribute Elab_Body
+@unnumberedsec Attribute Elab_Body
 @findex Elab_Body
 @noindent
 This attribute can only be applied to a program unit name.  It returns
@@ -6938,8 +7361,8 @@ is useful to be able to call this elaboration procedure from Ada code,
 e.g.@: if it is necessary to do selective re-elaboration to fix some
 error.
 
-@node Elab_Spec
-@unnumberedsec Elab_Spec
+@node Attribute Elab_Spec
+@unnumberedsec Attribute Elab_Spec
 @findex Elab_Spec
 @noindent
 This attribute can only be applied to a program unit name.  It returns
@@ -6951,8 +7374,8 @@ which it is useful to be able to call this elaboration procedure from
 Ada code, e.g.@: if it is necessary to do selective re-elaboration to fix
 some error.
 
-@node Elab_Subp_Body
-@unnumberedsec Elab_Subp_Body
+@node Attribute Elab_Subp_Body
+@unnumberedsec Attribute Elab_Subp_Body
 @findex Elab_Subp_Body
 @noindent
 This attribute can only be applied to a library level subprogram
@@ -6962,8 +7385,8 @@ of the referenced subprogram unit. This is used in the main generated
 elaboration procedure by the binder in CodePeer mode only and is unrecognized
 otherwise.
 
-@node Emax
-@unnumberedsec Emax
+@node Attribute Emax
+@unnumberedsec Attribute Emax
 @cindex Ada 83 attributes
 @findex Emax
 @noindent
@@ -6971,8 +7394,8 @@ The @code{Emax} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
-@node Enabled
-@unnumberedsec Enabled
+@node Attribute Enabled
+@unnumberedsec Attribute Enabled
 @findex Enabled
 @noindent
 The @code{Enabled} attribute allows an application program to check at compile
@@ -6992,8 +7415,8 @@ to see if the check is enabled. A user of this package can then issue
 a @code{pragma Suppress} or @code{pragma Unsuppress} before instantiating
 the package or subprogram, controlling whether the check will be present.
 
-@node Enum_Rep
-@unnumberedsec Enum_Rep
+@node Attribute Enum_Rep
+@unnumberedsec Attribute Enum_Rep
 @cindex Representation of enums
 @findex Enum_Rep
 @noindent
@@ -7027,8 +7450,8 @@ integer type, and the argument is a variable, so that the universal
 integer calculation is done at run time, then the call to @code{Enum_Rep}
 may raise @code{Constraint_Error}.
 
-@node Enum_Val
-@unnumberedsec Enum_Val
+@node Attribute Enum_Val
+@unnumberedsec Attribute Enum_Val
 @cindex Representation of enums
 @findex Enum_Val
 @noindent
@@ -7048,8 +7471,8 @@ This will be equal to value of the @code{Val} attribute in the
 absence of an enumeration representation clause.  This is a static
 attribute (i.e.@: the result is static if the argument is static).
 
-@node Epsilon
-@unnumberedsec Epsilon
+@node Attribute Epsilon
+@unnumberedsec Attribute Epsilon
 @cindex Ada 83 attributes
 @findex Epsilon
 @noindent
@@ -7057,8 +7480,8 @@ The @code{Epsilon} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
-@node Fixed_Value
-@unnumberedsec Fixed_Value
+@node Attribute Fixed_Value
+@unnumberedsec Attribute Fixed_Value
 @findex Fixed_Value
 @noindent
 For every fixed-point type @var{S}, @code{@var{S}'Fixed_Value} denotes a
@@ -7084,8 +7507,8 @@ that there are full range checks, to ensure that the result is in range.
 This attribute is primarily intended for use in implementation of the
 input-output functions for fixed-point values.
 
-@node Has_Access_Values
-@unnumberedsec Has_Access_Values
+@node Attribute Has_Access_Values
+@unnumberedsec Attribute Has_Access_Values
 @cindex Access values, testing for
 @findex Has_Access_Values
 @noindent
@@ -7097,8 +7520,8 @@ The intended use of this attribute is in conjunction with generic
 definitions.  If the attribute is applied to a generic private type, it
 indicates whether or not the corresponding actual type has access values.
 
-@node Has_Discriminants
-@unnumberedsec Has_Discriminants
+@node Attribute Has_Discriminants
+@unnumberedsec Attribute Has_Discriminants
 @cindex Discriminants, testing for
 @findex Has_Discriminants
 @noindent
@@ -7108,8 +7531,8 @@ otherwise.  The intended use of this attribute is in conjunction with generic
 definitions.  If the attribute is applied to a generic private type, it
 indicates whether or not the corresponding actual type has discriminants.
 
-@node Img
-@unnumberedsec Img
+@node Attribute Img
+@unnumberedsec Attribute Img
 @findex Img
 @noindent
 The @code{Img} attribute differs from @code{Image} in that it may be
@@ -7131,8 +7554,8 @@ Put_Line ("X = " & @var{T}'Image (X));
 @noindent
 where @var{T} is the (sub)type of the object @code{X}.
 
-@node Integer_Value
-@unnumberedsec Integer_Value
+@node Attribute Integer_Value
+@unnumberedsec Attribute Integer_Value
 @findex Integer_Value
 @noindent
 For every integer type @var{S}, @code{@var{S}'Integer_Value} denotes a
@@ -7159,8 +7582,8 @@ that there are full range checks, to ensure that the result is in range.
 This attribute is primarily intended for use in implementation of the
 standard input-output functions for fixed-point values.
 
-@node Invalid_Value
-@unnumberedsec Invalid_Value
+@node Attribute Invalid_Value
+@unnumberedsec Attribute Invalid_Value
 @findex Invalid_Value
 @noindent
 For every scalar type S, S'Invalid_Value returns an undefined value of the
@@ -7170,8 +7593,8 @@ uninitialized value of the type if pragma Initialize_Scalars is used,
 including the ability to modify the value with the binder -Sxx flag and
 relevant environment variables at run time.
 
-@node Large
-@unnumberedsec Large
+@node Attribute Large
+@unnumberedsec Attribute Large
 @cindex Ada 83 attributes
 @findex Large
 @noindent
@@ -7179,8 +7602,8 @@ The @code{Large} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
-@node Loop_Entry
-@unnumberedsec Loop_Entry
+@node Attribute Loop_Entry
+@unnumberedsec Attribute Loop_Entry
 @findex Loop_Entry
 @noindent
 Syntax:
@@ -7209,15 +7632,15 @@ a constant initialized with the initial value of @code{X} at loop
 entry. This copy is not performed if the loop is not entered, or if the
 corresponding pragmas are ignored or disabled.
 
-@node Machine_Size
-@unnumberedsec Machine_Size
+@node Attribute Machine_Size
+@unnumberedsec Attribute Machine_Size
 @findex Machine_Size
 @noindent
 This attribute is identical to the @code{Object_Size} attribute.  It is
 provided for compatibility with the DEC Ada 83 attribute of this name.
 
-@node Mantissa
-@unnumberedsec Mantissa
+@node Attribute Mantissa
+@unnumberedsec Attribute Mantissa
 @cindex Ada 83 attributes
 @findex Mantissa
 @noindent
@@ -7225,8 +7648,8 @@ The @code{Mantissa} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
-@node Max_Interrupt_Priority
-@unnumberedsec Max_Interrupt_Priority
+@node Attribute Max_Interrupt_Priority
+@unnumberedsec Attribute Max_Interrupt_Priority
 @cindex Interrupt priority, maximum
 @findex Max_Interrupt_Priority
 @noindent
@@ -7234,16 +7657,16 @@ this attribute.
 permissible prefix), provides the same value as
 @code{System.Max_Interrupt_Priority}.
 
-@node Max_Priority
-@unnumberedsec Max_Priority
+@node Attribute Max_Priority
+@unnumberedsec Attribute Max_Priority
 @cindex Priority, maximum
 @findex Max_Priority
 @noindent
 @code{Standard'Max_Priority} (@code{Standard} is the only permissible
 prefix) provides the same value as @code{System.Max_Priority}.
 
-@node Maximum_Alignment
-@unnumberedsec Maximum_Alignment
+@node Attribute Maximum_Alignment
+@unnumberedsec Attribute Maximum_Alignment
 @cindex Alignment, maximum
 @findex Maximum_Alignment
 @noindent
@@ -7253,8 +7676,8 @@ target.  This is a static value that can be used to specify the alignment
 for an object, guaranteeing that it is properly aligned in all
 cases.
 
-@node Mechanism_Code
-@unnumberedsec Mechanism_Code
+@node Attribute Mechanism_Code
+@unnumberedsec Attribute Mechanism_Code
 @cindex Return values, passing mechanism
 @cindex Parameters, passing mechanism
 @findex Mechanism_Code
@@ -7292,8 +7715,8 @@ by descriptor (NCA: non-contiguous array)
 Values from 3 through 10 are only relevant to Digital OpenVMS implementations.
 @cindex OpenVMS
 
-@node Null_Parameter
-@unnumberedsec Null_Parameter
+@node Attribute Null_Parameter
+@unnumberedsec Attribute Null_Parameter
 @cindex Zero address, passing
 @findex Null_Parameter
 @noindent
@@ -7312,8 +7735,8 @@ passed for a record or other composite object passed by reference.
 There is no way of indicating this without the @code{Null_Parameter}
 attribute.
 
-@node Object_Size
-@unnumberedsec Object_Size
+@node Attribute Object_Size
+@unnumberedsec Attribute Object_Size
 @cindex Size, used for objects
 @findex Object_Size
 @noindent
@@ -7337,8 +7760,8 @@ alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
 
-@node Passed_By_Reference
-@unnumberedsec Passed_By_Reference
+@node Attribute Passed_By_Reference
+@unnumberedsec Attribute Passed_By_Reference
 @cindex Parameters, when passed by reference
 @findex Passed_By_Reference
 @noindent
@@ -7348,8 +7771,8 @@ normally passed by reference and @code{False} if the type is normally
 passed by copy in calls.  For scalar types, the result is always @code{False}
 and is static.  For non-scalar types, the result is non-static.
 
-@node Pool_Address
-@unnumberedsec Pool_Address
+@node Attribute Pool_Address
+@unnumberedsec Attribute Pool_Address
 @cindex Parameters, when passed by reference
 @findex Pool_Address
 @noindent
@@ -7367,8 +7790,8 @@ the global heap, on the stack, or in a static memory area. For an
 object created by @code{new}, @code{@var{Ptr.all}'Pool_Address} is
 what is passed to @code{Allocate} and returned from @code{Deallocate}.
 
-@node Range_Length
-@unnumberedsec Range_Length
+@node Attribute Range_Length
+@unnumberedsec Attribute Range_Length
 @findex Range_Length
 @noindent
 @code{@var{type}'Range_Length} for any discrete type @var{type} yields
@@ -7377,18 +7800,18 @@ range).  The result is static for static subtypes.  @code{Range_Length}
 applied to the index subtype of a one dimensional array always gives the
 same result as @code{Length} applied to the array itself.
 
-@node Ref
-@unnumberedsec Ref
+@node Attribute Ref
+@unnumberedsec Attribute Ref
 @findex Ref
 @noindent
 The @code{System.Address'Ref}
 (@code{System.Address} is the only permissible prefix)
 denotes a function identical to
 @code{System.Storage_Elements.To_Address} except that
-it is a static attribute.  See @ref{To_Address} for more details.
+it is a static attribute.  See @ref{Attribute To_Address} for more details.
 
-@node Result
-@unnumberedsec Result
+@node Attribute Result
+@unnumberedsec Attribute Result
 @findex Result
 @noindent
 @code{@var{function}'Result} can only be used with in a Postcondition pragma
@@ -7397,8 +7820,8 @@ is used to refer to the result of the function in the postcondition expression.
 For a further discussion of the use of this attribute and examples of its use,
 see the description of pragma Postcondition.
 
-@node Safe_Emax
-@unnumberedsec Safe_Emax
+@node Attribute Safe_Emax
+@unnumberedsec Attribute Safe_Emax
 @cindex Ada 83 attributes
 @findex Safe_Emax
 @noindent
@@ -7406,8 +7829,8 @@ The @code{Safe_Emax} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
-@node Safe_Large
-@unnumberedsec Safe_Large
+@node Attribute Safe_Large
+@unnumberedsec Attribute Safe_Large
 @cindex Ada 83 attributes
 @findex Safe_Large
 @noindent
@@ -7415,8 +7838,8 @@ The @code{Safe_Large} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
-@node Scalar_Storage_Order
-@unnumberedsec Scalar_Storage_Order
+@node Attribute Scalar_Storage_Order
+@unnumberedsec Attribute Scalar_Storage_Order
 @cindex Endianness
 @cindex Scalar storage order
 @findex Scalar_Storage_Order
@@ -7508,8 +7931,8 @@ are relaxed. Instead, the following rules apply:
 
 @end itemize
 
-@node Simple_Storage_Pool
-@unnumberedsec Simple_Storage_Pool
+@node Attribute Simple_Storage_Pool
+@unnumberedsec Attribute Simple_Storage_Pool
 @cindex Storage pool, simple
 @cindex Simple storage pool
 @findex Simple_Storage_Pool
@@ -7568,8 +7991,8 @@ parameter. The detailed semantics of such unchecked deallocations is the same
 as defined in section 13.11.2 of the Ada Reference Manual, except that the
 term ``simple storage pool'' is substituted for ``storage pool''.
 
-@node Small
-@unnumberedsec Small
+@node Attribute Small
+@unnumberedsec Attribute Small
 @cindex Ada 83 attributes
 @findex Small
 @noindent
@@ -7580,15 +8003,15 @@ for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute when applied to floating-point types.
 
-@node Storage_Unit
-@unnumberedsec Storage_Unit
+@node Attribute Storage_Unit
+@unnumberedsec Attribute Storage_Unit
 @findex Storage_Unit
 @noindent
 @code{Standard'Storage_Unit} (@code{Standard} is the only permissible
 prefix) provides the same value as @code{System.Storage_Unit}.
 
-@node Stub_Type
-@unnumberedsec Stub_Type
+@node Attribute Stub_Type
+@unnumberedsec Attribute Stub_Type
 @findex Stub_Type
 @noindent
 The GNAT implementation of remote access-to-classwide types is
@@ -7608,8 +8031,8 @@ type @code{RACW_Stub_Type} declared in the internal implementation-defined
 unit @code{System.Partition_Interface}. Use of this attribute will create
 an implicit dependency on this unit.
 
-@node System_Allocator_Alignment
-@unnumberedsec System_Allocator_Alignment
+@node Attribute System_Allocator_Alignment
+@unnumberedsec Attribute System_Allocator_Alignment
 @cindex Alignment, allocator
 @findex System_Allocator_Alignment
 @noindent
@@ -7620,8 +8043,8 @@ in user storage pools based on malloc either to reject allocation
 with alignment too large or to enable a realignment circuitry if the
 alignment request is larger than this value.
 
-@node Target_Name
-@unnumberedsec Target_Name
+@node Attribute Target_Name
+@unnumberedsec Attribute Target_Name
 @findex Target_Name
 @noindent
 @code{Standard'Target_Name} (@code{Standard} is the only permissible
@@ -7630,15 +8053,15 @@ for the current compilation. For GCC implementations, this is the
 standard gcc target name without the terminating slash (for
 example, GNAT 5.0 on windows yields "i586-pc-mingw32msv").
 
-@node Tick
-@unnumberedsec Tick
+@node Attribute Tick
+@unnumberedsec Attribute Tick
 @findex Tick
 @noindent
 @code{Standard'Tick} (@code{Standard} is the only permissible prefix)
 provides the same value as @code{System.Tick},
 
-@node To_Address
-@unnumberedsec To_Address
+@node Attribute To_Address
+@unnumberedsec Attribute To_Address
 @findex To_Address
 @noindent
 The @code{System'To_Address}
@@ -7653,8 +8076,8 @@ static expression and where the function call could not be used
 (since the function call is always non-static, even if its
 argument is static).
 
-@node Type_Class
-@unnumberedsec Type_Class
+@node Attribute Type_Class
+@unnumberedsec Attribute Type_Class
 @findex Type_Class
 @noindent
 @code{@var{type}'Type_Class} for any type or subtype @var{type} yields
@@ -7681,8 +8104,8 @@ Protected types yield the value @code{Type_Class_Task}, which thus
 applies to all concurrent types.  This attribute is designed to
 be compatible with the DEC Ada 83 attribute of the same name.
 
-@node UET_Address
-@unnumberedsec UET_Address
+@node Attribute UET_Address
+@unnumberedsec Attribute UET_Address
 @findex UET_Address
 @noindent
 The @code{UET_Address} attribute can only be used for a prefix which
@@ -7692,8 +8115,8 @@ intended only for use within the GNAT implementation.  See the unit
 @code{Ada.Exceptions} in files @file{a-except.ads} and @file{a-except.adb}
 for details on how this attribute is used in the implementation.
 
-@node Unconstrained_Array
-@unnumberedsec Unconstrained_Array
+@node Attribute Unconstrained_Array
+@unnumberedsec Attribute Unconstrained_Array
 @findex Unconstrained_Array
 @noindent
 The @code{Unconstrained_Array} attribute can be used with a prefix that
@@ -7703,8 +8126,8 @@ and @code{False} otherwise. In a generic instance, the result is
 still static, and yields the result of applying this test to the
 generic actual.
 
-@node Universal_Literal_String
-@unnumberedsec Universal_Literal_String
+@node Attribute Universal_Literal_String
+@unnumberedsec Attribute Universal_Literal_String
 @cindex Named numbers, representation of
 @findex Universal_Literal_String
 @noindent
@@ -7726,8 +8149,8 @@ begin
 end;
 @end smallexample
 
-@node Unrestricted_Access
-@unnumberedsec Unrestricted_Access
+@node Attribute Unrestricted_Access
+@unnumberedsec Attribute Unrestricted_Access
 @cindex @code{Access}, unrestricted
 @findex Unrestricted_Access
 @noindent
@@ -7751,8 +8174,8 @@ scope. For instance, a function cannot use @code{Unrestricted_Access}
 to create a unconstrained pointer and then return that value to the
 caller.
 
-@node Update
-@unnumberedsec Update
+@node Attribute Update
+@unnumberedsec Attribute Update
 @findex Update
 @noindent
 The @code{Update} attribute creates a copy of an array or record value
@@ -7823,8 +8246,8 @@ A := A'Update (1 => (2 => 20), 3 => (4 => 30));
 @noindent
 which changes element (1,2) to 20 and (3,4) to 30.
 
-@node Valid_Scalars
-@unnumberedsec Valid_Scalars
+@node Attribute Valid_Scalars
+@unnumberedsec Attribute Valid_Scalars
 @findex Valid_Scalars
 @noindent
 The @code{'Valid_Scalars} attribute is intended to make it easier to
@@ -7845,8 +8268,8 @@ be determined at compile time that the prefix of the attribute has no
 scalar parts (e.g., if the prefix is of an access type, an interface type,
 an undiscriminated task type, or an undiscriminated protected type).
 
-@node VADS_Size
-@unnumberedsec VADS_Size
+@node Attribute VADS_Size
+@unnumberedsec Attribute VADS_Size
 @cindex @code{Size}, VADS compatibility
 @findex VADS_Size
 @noindent
@@ -7860,24 +8283,24 @@ typical machines).  In addition @code{'VADS_Size} applied to an object
 gives the result that would be obtained by applying the attribute to
 the corresponding type.
 
-@node Value_Size
-@unnumberedsec Value_Size
+@node Attribute Value_Size
+@unnumberedsec Attribute Value_Size
 @cindex @code{Size}, setting for not-first subtype
 @findex Value_Size
 @code{@var{type}'Value_Size} is the number of bits required to represent
 a value of the given subtype.  It is the same as @code{@var{type}'Size},
 but, unlike @code{Size}, may be set for non-first subtypes.
 
-@node Wchar_T_Size
-@unnumberedsec Wchar_T_Size
+@node Attribute Wchar_T_Size
+@unnumberedsec Attribute Wchar_T_Size
 @findex Wchar_T_Size
 @code{Standard'Wchar_T_Size} (@code{Standard} is the only permissible
 prefix) provides the size in bits of the C @code{wchar_t} type
 primarily for constructing the definition of this type in
 package @code{Interfaces.C}.
 
-@node Word_Size
-@unnumberedsec Word_Size
+@node Attribute Word_Size
+@unnumberedsec Attribute Word_Size
 @findex Word_Size
 @code{Standard'Word_Size} (@code{Standard} is the only permissible
 prefix) provides the value @code{System.Word_Size}.
@@ -12165,7 +12588,7 @@ For primitive types, the alignment is the minimum of the actual size of
 objects of the type divided by @code{Storage_Unit},
 and the maximum alignment supported by the target.
 (This maximum alignment is given by the GNAT-specific attribute
-@code{Standard'Maximum_Alignment}; see @ref{Maximum_Alignment}.)
+@code{Standard'Maximum_Alignment}; see @ref{Attribute Maximum_Alignment}.)
 @cindex @code{Maximum_Alignment} attribute
 For example, for type @code{Long_Float}, the object size is 8 bytes, and the
 default alignment will be 8 on any target that supports alignments
@@ -18432,7 +18855,7 @@ A complete description of the AIs may be found in
 @item @code{Atomic_Components} @tab
 @item @code{Bit_Order} @tab
 @item @code{Component_Size} @tab
-@item @code{Contract_Cases} @tab                 -- GNAT
+@item @code{Contract_Cases} @tab                -- GNAT
 @item @code{Discard_Names} @tab
 @item @code{External_Tag} @tab
 @item @code{Favor_Top_Level} @tab               -- GNAT
@@ -18475,7 +18898,7 @@ A complete description of the AIs may be found in
   Note that for aspects with an expression, e.g. @code{Size}, the expression is
   treated like a default expression (visibility is analyzed at the point of
   occurrence of the aspect, but evaluation of the expression occurs at the
-  freeze point of the entity involved.
+  freeze point of the entity involved).
 
 @noindent
   RM References:  3.02.01 (3)   3.02.02 (2)   3.03.01 (2/2)   3.08 (6)

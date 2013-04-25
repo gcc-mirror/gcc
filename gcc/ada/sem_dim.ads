@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,9 +102,9 @@ package Sem_Dim is
       Aggr : Node_Id);
    --  Analyze the contents of aspect Dimension_System. Extract the numerical
    --  type, unit name and corresponding symbol from each indivitual dimension.
-   --  Id is the corresponding Aspect_Id (Aspect_Dimension_System)
-   --  Aggr is the corresponding expression for the aspect Dimension_System
-   --  declared by the declaration of N.
+   --  Id is the corresponding Aspect_Id (Aspect_Dimension_System). Aggr is
+   --  the corresponding expression for the aspect Dimension_System from the
+   --  declaration of N.
 
    procedure Analyze_Dimension (N : Node_Id);
    --  N may denote any of the following contexts:
