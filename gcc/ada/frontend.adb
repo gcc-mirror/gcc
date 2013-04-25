@@ -185,10 +185,13 @@ begin
       --  Check for VAX Float
 
       if Targparm.VAX_Float_On_Target then
+
          --  pragma Float_Representation (VAX_Float);
+
          Opt.Float_Format := 'V';
 
          --  pragma Long_Float (G_Float);
+
          Opt.Float_Format_Long := 'G';
 
          Set_Standard_Fpt_Formats;
