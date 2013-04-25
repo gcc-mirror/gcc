@@ -1,3 +1,35 @@
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Set_Abstract_States): The attribute now applies
+	to generic packages.
+	* sem_ch4.adb (Referenced): Moved to sem_util.
+	* sem_ch7.adb (Unit_Requires_Body): A [generic] package with
+	a non-null abstract state needs a body.
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Update the calls
+	to Collect_Subprogram_Inputs_Outputs.
+	(Analyze_Global_Item): Verify the proper usage of an item with mode
+	In_Out or Output relative to the enclosing context.
+	(Analyze_Pragma): Abstract_State can now be applied to a generic
+	package. Do not reset the Analyzed flag for pragmas Depends and Global
+	as this is not needed.
+	(Appears_In): Moved to library level.
+	(Check_Mode_Restiction_In_Enclosing_Context): New routine.
+	(Collect_Subprogram_Inputs_Outputs): Moved to library level. Add
+	formal parameters Subp_Id, Subp_Inputs, Subp_Outputs and Global
+	seen along with comments on usage.
+	* sem_util.ads, sem_util.adb (Referenced): New routine.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Expand_Contract_Cases): Generate
+	detailed error messages only when switch -gnateE is in effect.
+
+2013-04-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Do not issue
+	an error for a possibly misplaced 'Result or 'Old attribute when
+	analyzing the aspect.
+
 2013-04-25  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch12.adb, sem_util.adb, sem_ch4.adb: Minor reformatting.

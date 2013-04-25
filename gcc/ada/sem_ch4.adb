@@ -3510,10 +3510,6 @@ package body Sem_Ch4 is
       --  Determine whether if expression If_Expr lacks an else part or if it
       --  has one, it evaluates to True.
 
-      function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean;
-      --  Determine whether entity Id is referenced within expression Expr
-      --  This should be moved to sem_util ???
-
       --------------------
       -- Is_Empty_Range --
       --------------------
@@ -3564,43 +3560,6 @@ package body Sem_Ch4 is
              or else (Compile_Time_Known_Value (Else_Expr)
                        and then Is_True (Expr_Value (Else_Expr)));
       end No_Else_Or_Trivial_True;
-
-      ----------------
-      -- Referenced --
-      ----------------
-
-      function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean is
-         Seen : Boolean := False;
-
-         function Is_Reference (N : Node_Id) return Traverse_Result;
-         --  Determine whether node N denotes a reference to Id. If this is the
-         --  case, set global flag Seen to True and stop the traversal.
-
-         ------------------
-         -- Is_Reference --
-         ------------------
-
-         function Is_Reference (N : Node_Id) return Traverse_Result is
-         begin
-            if Is_Entity_Name (N)
-              and then Present (Entity (N))
-              and then Entity (N) = Id
-            then
-               Seen := True;
-               return Abandon;
-            else
-               return OK;
-            end if;
-         end Is_Reference;
-
-         procedure Inspect_Expression is new Traverse_Proc (Is_Reference);
-
-      --  Start of processing for Referenced
-
-      begin
-         Inspect_Expression (Expr);
-         return Seen;
-      end Referenced;
 
       --  Local variables
 

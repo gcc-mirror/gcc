@@ -4222,15 +4222,24 @@ package body Sem_Attr is
             --  Check in postcondition, Test_Case or Contract_Cases
 
             Prag := N;
-            while not Nkind_In (Prag, N_Pragma,
-                                      N_Function_Specification,
-                                      N_Procedure_Specification,
-                                      N_Subprogram_Body)
+            while Present (Prag)
+               and then not Nkind_In (Prag, N_Pragma,
+                                            N_Function_Specification,
+                                            N_Procedure_Specification,
+                                            N_Aspect_Specification,
+                                            N_Subprogram_Body)
             loop
                Prag := Parent (Prag);
             end loop;
 
-            if Nkind (Prag) /= N_Pragma then
+            --  In ASIS mode, the aspect itself is analyzed, in addition to the
+            --  corresponding pragma. Do not issue errors when analyzing the
+            --  aspect.
+
+            if Nkind (Prag) = N_Aspect_Specification then
+               null;
+
+            elsif Nkind (Prag) /= N_Pragma then
                Error_Attr ("% attribute can only appear in postcondition", P);
 
             elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
@@ -4241,7 +4250,7 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Arg /= Arg_Ens loop
+                  while Arg /= Prag and then Arg /= Arg_Ens loop
                      Arg := Parent (Arg);
                   end loop;
 
@@ -4258,7 +4267,7 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Parent (Parent (Arg)) /= Aggr loop
+                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
                      Arg := Parent (Arg);
                   end loop;
 
@@ -4628,14 +4637,23 @@ package body Sem_Attr is
             --  Check in postcondition, Test_Case or Contract_Cases of function
 
             Prag := N;
-            while not Nkind_In (Prag, N_Pragma,
-                                      N_Function_Specification,
-                                      N_Subprogram_Body)
+            while Present (Prag)
+               and then not Nkind_In (Prag, N_Pragma,
+                                            N_Function_Specification,
+                                            N_Aspect_Specification,
+                                            N_Subprogram_Body)
             loop
                Prag := Parent (Prag);
             end loop;
 
-            if Nkind (Prag) /= N_Pragma then
+            --  In ASIS mode, the aspect itself is analyzed, in addition to the
+            --  corresponding pragma. Do not issue errors when analyzing the
+            --  aspect.
+
+            if Nkind (Prag) = N_Aspect_Specification then
+               null;
+
+            elsif Nkind (Prag) /= N_Pragma then
                Error_Attr
                  ("% attribute can only appear in postcondition of function",
                   P);
@@ -4648,7 +4666,7 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Arg /= Arg_Ens loop
+                  while Arg /= Prag and then Arg /= Arg_Ens loop
                      Arg := Parent (Arg);
                   end loop;
 
@@ -4665,7 +4683,7 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Parent (Parent (Arg)) /= Aggr loop
+                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
                      Arg := Parent (Arg);
                   end loop;
 

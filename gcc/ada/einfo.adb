@@ -3233,7 +3233,7 @@ package body Einfo is
 
    procedure Set_Abstract_States (Id : E; V : L) is
    begin
-      pragma Assert (Ekind (Id) = E_Package);
+      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
       Set_Elist25 (Id, V);
    end Set_Abstract_States;
 
