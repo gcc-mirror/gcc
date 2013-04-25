@@ -3310,13 +3310,11 @@ package body Sem_Prag is
       procedure Check_No_Identifiers is
          Arg_Node : Node_Id;
       begin
-         if Arg_Count > 0 then
-            Arg_Node := Arg1;
-            while Present (Arg_Node) loop
-               Check_No_Identifier (Arg_Node);
-               Next (Arg_Node);
-            end loop;
-         end if;
+         Arg_Node := Arg1;
+         for J in 1 .. Arg_Count loop
+            Check_No_Identifier (Arg_Node);
+            Next (Arg_Node);
+         end loop;
       end Check_No_Identifiers;
 
       ------------------------
@@ -17477,14 +17475,36 @@ package body Sem_Prag is
          -- Warnings --
          --------------
 
-         --  pragma Warnings (On | Off);
-         --  pragma Warnings (On | Off, LOCAL_NAME);
-         --  pragma Warnings (static_string_EXPRESSION);
-         --  pragma Warnings (On | Off, STRING_LITERAL);
+         --  pragma Warnings (On | Off [,REASON]);
+         --  pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
+         --  pragma Warnings (static_string_EXPRESSION [,REASON]);
+         --  pragma Warnings (On | Off, STRING_LITERAL [,REASON]);
+
+         --  REASON ::= Reason => Static_String_Expression
 
          when Pragma_Warnings => Warnings : begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
+
+            --  See if last argument is labeled Reason. If so, make sure we
+            --  have a static string expression, but otherwise just ignore
+            --  the REASON argument by decreasing Num_Args by 1 (all the
+            --  remaining tests look only at the first Num_Args arguments).
+
+            declare
+               Last_Arg : constant Node_Id :=
+                            Last (Pragma_Argument_Associations (N));
+            begin
+               if Nkind (Last_Arg) = N_Pragma_Argument_Association
+                 and then Chars (Last_Arg) = Name_Reason
+               then
+                  Check_Arg_Is_Static_Expression (Last_Arg, Standard_String);
+                  Arg_Count := Arg_Count - 1;
+               end if;
+            end;
+
+            --  Now proceed with REASON taken care of and eliminated
+
             Check_No_Identifiers;
 
             --  If debug flag -gnatd.i is set, pragma is ignored

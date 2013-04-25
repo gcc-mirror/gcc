@@ -17,7 +17,7 @@
 -- for  more details.  You should have  received  a copy of the GNU General --
 -- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
 -- http://www.gnu.org/licenses for a complete copy of the license.          --
---                                                                          --
+--          War                                                                --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
@@ -1027,8 +1027,15 @@ begin
       --  set well before any semantic analysis is performed. Note that we
       --  ignore this pragma if debug flag -gnatd.i is set.
 
+      --  Also note that the "one argument" case may have two arguments if the
+      --  second one is a reason argument.
+
       when Pragma_Warnings =>
-         if Arg_Count = 1 and then not Debug_Flag_Dot_I then
+         if not Debug_Flag_Dot_I
+           and then (Arg_Count = 1
+                      or else (Arg_Count = 2
+                                and then Chars (Arg2) = Name_Reason))
+         then
             Check_No_Identifier (Arg1);
 
             declare
