@@ -3373,7 +3373,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "0x%x", UINTVAL (x));
+      asm_fprintf (f, "0x%wx", UINTVAL (x));
       break;
 
     case 'w':
