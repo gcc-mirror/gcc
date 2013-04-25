@@ -33,7 +33,6 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering, not used for this unit
 
 with Atree;   use Atree;
-with Namet;   use Namet;
 with Nlists;  use Nlists;
 with Output;  use Output;
 with Sinfo;   use Sinfo;
@@ -6101,6 +6100,26 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Entry_Family);
       return Etype (Discrete_Subtype_Definition (Parent (Id)));
    end Entry_Index_Type;
+
+   -----------------
+   -- Find_Pragma --
+   -----------------
+
+   function Find_Pragma (Id : Entity_Id; Name : Name_Id) return Node_Id is
+      Item : Node_Id;
+
+   begin
+      Item := First_Rep_Item (Id);
+      while Present (Item) loop
+         if Nkind (Item) = N_Pragma and then Pragma_Name (Item) = Name then
+            return Item;
+         end if;
+
+         Item := Next_Rep_Item (Item);
+      end loop;
+
+      return Empty;
+   end Find_Pragma;
 
    ---------------------
    -- First_Component --

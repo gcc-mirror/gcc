@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Namet;  use Namet;
 with Snames; use Snames;
 with Types;  use Types;
 with Uintp;  use Uintp;
@@ -7350,6 +7351,11 @@ package Einfo is
    --  Note: aspect specification nodes are linked only when evaluation of the
    --  expression is deferred to the freeze point. For further details see
    --  Sem_Ch13.Analyze_Aspect_Specifications.
+
+   function Find_Pragma (Id : Entity_Id; Name : Name_Id) return Node_Id;
+   --  Given entity Id and pragma name Name, attempt to find the corresponding
+   --  pragma in Id's chain of representation items. The function returns Empty
+   --  if no such pragma has been found.
 
    function Get_Attribute_Definition_Clause
      (E  : Entity_Id;
