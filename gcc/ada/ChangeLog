@@ -1,3 +1,17 @@
+2013-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): Test
+	for case of selecting from an unexpanded implicit dereference
+	and do not make a recursive call on such a prefix.
+
+2013-04-25  Doug Rupp  <rupp@adacore.com>
+
+	* targparm.adb (VXF{_Str}): New tag for vaxfloat.
+	(Get_Target_Parameters): Handle VXF tag.
+	* targparm.ads (VAX_Float_On_Target): New boolean.
+	* system-vms-ia64.ads (VAX_Float): New boolean.
+	* frontend.adb (Frontend): Handle VAX float boolean.
+
 2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.ads, einfo.adb: Remove with and use clauses for Namet.

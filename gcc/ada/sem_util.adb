@@ -8089,10 +8089,20 @@ package body Sem_Util is
             then
                return True;
 
+            --  If the prefix is of an access type at this point, then we want
+            --  to return False, rather than calling this function recursively
+            --  on the access object (which itself might be a discriminant-
+            --  dependent component of some other object, but that isn't
+            --  relevant to checking the object passed to us). This avoids
+            --  issuing wrong errors when compiling with -gnatc, where there
+            --  can be implicit dereferences that have not been expanded.
+
+            elsif Is_Access_Type (Etype (Prefix (Object))) then
+               return False;
+
             else
                return
                  Is_Dependent_Component_Of_Mutable_Object (Prefix (Object));
-
             end if;
 
          elsif Nkind (Object) = N_Indexed_Component
