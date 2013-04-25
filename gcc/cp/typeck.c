@@ -1725,15 +1725,19 @@ cxx_alignas_expr (tree e)
        
 	   When the alignment-specifier is of the form
 	   alignas(type-id ), it shall have the same effect as
-	   alignas( alignof(type-id )).  */
+	   alignas(alignof(type-id )).  */
 
     return cxx_sizeof_or_alignof_type (e, ALIGNOF_EXPR, false);
   
-
   /* If we reach this point, it means the alignas expression if of
      the form "alignas(assignment-expression)", so we should follow
      what is stated by [dcl.align]/2.  */
 
+  if (value_dependent_expression_p (e))
+    /* Leave value-dependent expression alone for now. */
+    return e;
+
+  e = fold_non_dependent_expr (e);
   e = mark_rvalue_use (e);
 
   /* [dcl.align]/2 says:
@@ -1741,18 +1745,7 @@ cxx_alignas_expr (tree e)
          the assignment-expression shall be an integral constant
 	 expression.  */
   
-  e = fold_non_dependent_expr (e);
-  if (value_dependent_expression_p (e))
-    /* Leave value-dependent expression alone for now. */;
-  else
-    e = cxx_constant_value (e);
-
-  if (e == NULL_TREE
-      || e == error_mark_node
-      || TREE_CODE (e) != INTEGER_CST)
-    return error_mark_node;
-
-  return e;
+  return cxx_constant_value (e);
 }
 
 

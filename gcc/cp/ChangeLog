@@ -1,5 +1,8 @@
 2013-04-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56859
+	* typeck.c (cxx_alignas_expr): Handle value-dependence properly.
+
 	PR c++/50261
 	* init.c (perform_member_init): Call reshape_init.
 
