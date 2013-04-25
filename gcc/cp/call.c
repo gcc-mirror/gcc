@@ -1959,6 +1959,10 @@ add_function_candidate (struct z_candidate **candidates,
 		     object parameter has reference type.  */
 		  bool rv = FUNCTION_RVALUE_QUALIFIED (TREE_TYPE (fn));
 		  parmtype = cp_build_reference_type (parmtype, rv);
+		  if (TREE_CODE (arg) == CONVERT_EXPR
+		      && TYPE_PTR_P (TREE_TYPE (arg)))
+		    /* Strip conversion from reference to pointer.  */
+		    arg = TREE_OPERAND (arg, 0);
 		  arg = build_fold_indirect_ref (arg);
 		  argtype = lvalue_type (arg);
 		}

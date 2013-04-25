@@ -1,5 +1,8 @@
 2013-04-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57064
+	* call.c (add_function_candidate): Strip ref-to-ptr conversion.
+
 	PR c++/56859
 	* typeck.c (cxx_alignas_expr): Handle value-dependence properly.
 
