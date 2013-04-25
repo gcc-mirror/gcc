@@ -3258,6 +3258,24 @@
                    (const_string "neon_fp_vadd_qqq_vabs_qq")))]
 )
 
+(define_insn "neon_vcvtv4sfv4hf"
+  [(set (match_operand:V4SF 0 "s_register_operand" "=w")
+	(unspec:V4SF [(match_operand:V4HF 1 "s_register_operand" "w")]
+			  UNSPEC_VCVT))]
+  "TARGET_NEON && TARGET_FP16"
+  "vcvt.f32.f16\t%q0, %P1"
+  [(set_attr "neon_type" "neon_fp_vadd_ddd_vabs_dd")]
+)
+
+(define_insn "neon_vcvtv4hfv4sf"
+  [(set (match_operand:V4HF 0 "s_register_operand" "=w")
+	(unspec:V4HF [(match_operand:V4SF 1 "s_register_operand" "w")]
+			  UNSPEC_VCVT))]
+  "TARGET_NEON && TARGET_FP16"
+  "vcvt.f16.f32\t%P0, %q1"
+  [(set_attr "neon_type" "neon_fp_vadd_ddd_vabs_dd")]
+)
+
 (define_insn "neon_vcvt_n<mode>"
   [(set (match_operand:<V_CVTTO> 0 "s_register_operand" "=w")
 	(unspec:<V_CVTTO> [(match_operand:VCVTF 1 "s_register_operand" "w")

@@ -43,6 +43,7 @@ typedef __builtin_neon_hi int16x4_t	__attribute__ ((__vector_size__ (8)));
 typedef __builtin_neon_si int32x2_t	__attribute__ ((__vector_size__ (8)));
 typedef __builtin_neon_di int64x1_t;
 typedef __builtin_neon_sf float32x2_t	__attribute__ ((__vector_size__ (8)));
+typedef __builtin_neon_hf float16x4_t	__attribute__ ((__vector_size__ (8)));
 typedef __builtin_neon_poly8 poly8x8_t	__attribute__ ((__vector_size__ (8)));
 typedef __builtin_neon_poly16 poly16x4_t	__attribute__ ((__vector_size__ (8)));
 typedef __builtin_neon_uqi uint8x8_t	__attribute__ ((__vector_size__ (8)));
@@ -6016,6 +6017,22 @@ vcvtq_u32_f32 (float32x4_t __a)
   return (uint32x4_t)__builtin_neon_vcvtv4sf (__a, 0);
 }
 
+#if ((__ARM_FP & 0x2) != 0)
+__extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
+vcvt_f16_f32 (float32x4_t __a)
+{
+  return (float16x4_t)__builtin_neon_vcvtv4hfv4sf (__a);
+}
+
+#endif
+#if ((__ARM_FP & 0x2) != 0)
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vcvt_f32_f16 (float16x4_t __a)
+{
+  return (float32x4_t)__builtin_neon_vcvtv4sfv4hf (__a);
+}
+
+#endif
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vcvt_n_s32_f32 (float32x2_t __a, const int __b)
 {

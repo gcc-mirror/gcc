@@ -19940,6 +19940,7 @@ arm_debugger_arg_offset (int value, rtx addr)
 typedef enum {
   T_V8QI,
   T_V4HI,
+  T_V4HF,
   T_V2SI,
   T_V2SF,
   T_DI,
@@ -19957,14 +19958,15 @@ typedef enum {
 #define TYPE_MODE_BIT(X) (1 << (X))
 
 #define TB_DREG (TYPE_MODE_BIT (T_V8QI) | TYPE_MODE_BIT (T_V4HI)	\
-		 | TYPE_MODE_BIT (T_V2SI) | TYPE_MODE_BIT (T_V2SF)	\
-		 | TYPE_MODE_BIT (T_DI))
+		 | TYPE_MODE_BIT (T_V4HF) | TYPE_MODE_BIT (T_V2SI)	\
+		 | TYPE_MODE_BIT (T_V2SF) | TYPE_MODE_BIT (T_DI))
 #define TB_QREG (TYPE_MODE_BIT (T_V16QI) | TYPE_MODE_BIT (T_V8HI)	\
 		 | TYPE_MODE_BIT (T_V4SI) | TYPE_MODE_BIT (T_V4SF)	\
 		 | TYPE_MODE_BIT (T_V2DI) | TYPE_MODE_BIT (T_TI))
 
 #define v8qi_UP  T_V8QI
 #define v4hi_UP  T_V4HI
+#define v4hf_UP  T_V4HF
 #define v2si_UP  T_V2SI
 #define v2sf_UP  T_V2SF
 #define di_UP    T_DI
@@ -20000,6 +20002,8 @@ typedef enum {
   NEON_SCALARMULH,
   NEON_SCALARMAC,
   NEON_CONVERT,
+  NEON_FLOAT_WIDEN,
+  NEON_FLOAT_NARROW,
   NEON_FIXCONV,
   NEON_SELECT,
   NEON_RESULTPAIR,
@@ -20393,6 +20397,7 @@ arm_init_neon_builtins (void)
 
   tree neon_intQI_type_node;
   tree neon_intHI_type_node;
+  tree neon_floatHF_type_node;
   tree neon_polyQI_type_node;
   tree neon_polyHI_type_node;
   tree neon_intSI_type_node;
@@ -20419,6 +20424,7 @@ arm_init_neon_builtins (void)
 
   tree V8QI_type_node;
   tree V4HI_type_node;
+  tree V4HF_type_node;
   tree V2SI_type_node;
   tree V2SF_type_node;
   tree V16QI_type_node;
@@ -20473,6 +20479,9 @@ arm_init_neon_builtins (void)
   neon_float_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (neon_float_type_node) = FLOAT_TYPE_SIZE;
   layout_type (neon_float_type_node);
+  neon_floatHF_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (neon_floatHF_type_node) = GET_MODE_PRECISION (HFmode);
+  layout_type (neon_floatHF_type_node);
 
   /* Define typedefs which exactly correspond to the modes we are basing vector
      types on.  If you change these names you'll need to change
@@ -20481,6 +20490,8 @@ arm_init_neon_builtins (void)
 					     "__builtin_neon_qi");
   (*lang_hooks.types.register_builtin_type) (neon_intHI_type_node,
 					     "__builtin_neon_hi");
+  (*lang_hooks.types.register_builtin_type) (neon_floatHF_type_node,
+					     "__builtin_neon_hf");
   (*lang_hooks.types.register_builtin_type) (neon_intSI_type_node,
 					     "__builtin_neon_si");
   (*lang_hooks.types.register_builtin_type) (neon_float_type_node,
@@ -20522,6 +20533,8 @@ arm_init_neon_builtins (void)
     build_vector_type_for_mode (neon_intQI_type_node, V8QImode);
   V4HI_type_node =
     build_vector_type_for_mode (neon_intHI_type_node, V4HImode);
+  V4HF_type_node =
+    build_vector_type_for_mode (neon_floatHF_type_node, V4HFmode);
   V2SI_type_node =
     build_vector_type_for_mode (neon_intSI_type_node, V2SImode);
   V2SF_type_node =
@@ -20644,7 +20657,7 @@ arm_init_neon_builtins (void)
       neon_builtin_datum *d = &neon_builtin_data[i];
 
       const char* const modenames[] = {
-	"v8qi", "v4hi", "v2si", "v2sf", "di",
+	"v8qi", "v4hi", "v4hf", "v2si", "v2sf", "di",
 	"v16qi", "v8hi", "v4si", "v4sf", "v2di",
 	"ti", "ei", "oi"
       };
@@ -20847,8 +20860,9 @@ arm_init_neon_builtins (void)
 	case NEON_REINTERP:
 	  {
 	    /* We iterate over 5 doubleword types, then 5 quadword
-	       types.  */
-	    int rhs = d->mode % 5;
+	       types. V4HF is not a type used in reinterpret, so we translate
+	       d->mode to the correct index in reinterp_ftype_dreg.  */
+	    int rhs = (d->mode - ((d->mode > T_V4HF) ? 1 : 0)) % 5;
 	    switch (insn_data[d->code].operand[0].mode)
 	      {
 	      case V8QImode: ftype = reinterp_ftype_dreg[0][rhs]; break;
@@ -20865,7 +20879,38 @@ arm_init_neon_builtins (void)
 	      }
 	  }
 	  break;
+	case NEON_FLOAT_WIDEN:
+	  {
+	    tree eltype = NULL_TREE;
+	    tree return_type = NULL_TREE;
 
+	    switch (insn_data[d->code].operand[1].mode)
+	    {
+	      case V4HFmode:
+	        eltype = V4HF_type_node;
+	        return_type = V4SF_type_node;
+	        break;
+	      default: gcc_unreachable ();
+	    }
+	    ftype = build_function_type_list (return_type, eltype, NULL);
+	    break;
+	  }
+	case NEON_FLOAT_NARROW:
+	  {
+	    tree eltype = NULL_TREE;
+	    tree return_type = NULL_TREE;
+
+	    switch (insn_data[d->code].operand[1].mode)
+	    {
+	      case V4SFmode:
+	        eltype = V4SF_type_node;
+	        return_type = V4HF_type_node;
+	        break;
+	      default: gcc_unreachable ();
+	    }
+	    ftype = build_function_type_list (return_type, eltype, NULL);
+	    break;
+	  }
 	default:
 	  gcc_unreachable ();
 	}
@@ -21862,6 +21907,8 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     case NEON_DUP:
     case NEON_RINT:
     case NEON_SPLIT:
+    case NEON_FLOAT_WIDEN:
+    case NEON_FLOAT_NARROW:
     case NEON_REINTERP:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
@@ -25517,7 +25564,7 @@ arm_vector_mode_supported_p (enum machine_mode mode)
 {
   /* Neon also supports V2SImode, etc. listed in the clause below.  */
   if (TARGET_NEON && (mode == V2SFmode || mode == V4SImode || mode == V8HImode
-      || mode == V16QImode || mode == V4SFmode || mode == V2DImode))
+      || mode == V4HFmode || mode == V16QImode || mode == V4SFmode || mode == V2DImode))
     return true;
 
   if ((TARGET_NEON || TARGET_IWMMXT)
@@ -26361,6 +26408,7 @@ static arm_mangle_map_entry arm_mangle_map[] = {
   { V8QImode,  "__builtin_neon_uqi",    "16__simd64_uint8_t" },
   { V4HImode,  "__builtin_neon_hi",     "16__simd64_int16_t" },
   { V4HImode,  "__builtin_neon_uhi",    "17__simd64_uint16_t" },
+  { V4HFmode,  "__builtin_neon_hf",     "18__simd64_float16_t" },
   { V2SImode,  "__builtin_neon_si",     "16__simd64_int32_t" },
   { V2SImode,  "__builtin_neon_usi",    "17__simd64_uint32_t" },
   { V2SFmode,  "__builtin_neon_sf",     "18__simd64_float32_t" },
