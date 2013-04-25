@@ -1,3 +1,8 @@
+2013-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57066
+        * gcc.dg/torture/builtin-logb-1.c: Adjust testcase.
+
 2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 
