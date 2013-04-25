@@ -1,3 +1,7 @@
+2013-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in (ADA_EXCLUDE_SRCS): Exclude s-init.ad{s,b}
+
 2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb (Apply_Predicate_Check): Update the comment associated
