@@ -30,6 +30,7 @@
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "optabs.h"
+#include "gimple.h"
 
 enum aarch64_simd_builtin_type_mode
 {
@@ -1254,6 +1255,54 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 
   return NULL_TREE;
 }
+
+#undef VAR1
+#define VAR1(T, N, MAP, A) \
+  case AARCH64_SIMD_BUILTIN_##N##A:
+
+bool
+aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  bool changed = false;
+  gimple stmt = gsi_stmt (*gsi);
+  tree call = gimple_call_fn (stmt);
+  tree fndecl;
+  gimple new_stmt = NULL;
+  if (call)
+    {
+      fndecl = gimple_call_fndecl (stmt);
+      if (fndecl)
+	{
+	  int fcode = DECL_FUNCTION_CODE (fndecl);
+	  int nargs = gimple_call_num_args (stmt);
+	  tree *args = (nargs > 0
+			? gimple_call_arg_ptr (stmt, 0)
+			: &error_mark_node);
+
+	  switch (fcode)
+	    {
+	      BUILTIN_VDQF (UNOP, addv, 0)
+		new_stmt = gimple_build_assign_with_ops (
+						REDUC_PLUS_EXPR,
+						gimple_call_lhs (stmt),
+						args[0],
+						NULL_TREE);
+		break;
+	    default:
+	      break;
+	    }
+	}
+    }
+
+  if (new_stmt)
+    {
+      gsi_replace (gsi, new_stmt, true);
+      changed = true;
+    }
+
+  return changed;
+}
+
 #undef AARCH64_CHECK_BUILTIN_MODE
 #undef AARCH64_FIND_FRINT_VARIANT
 #undef BUILTIN_DX

@@ -1,3 +1,14 @@
+2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_gimple_fold_builtin): New.
+	* config/aarch64/aarch64-protos.h (aarch64_gimple_fold_builtin): New.
+	* config/aarch64/aarch64-simd-builtins.def (addv): New.
+	* config/aarch64/aarch64-simd.md (addpv4sf): New.
+	(addvv4sf): Update.
+	* config/aarch64/aarch64.c (TARGET_GIMPLE_FOLD_BUILTIN): Define.
+
 2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.md 

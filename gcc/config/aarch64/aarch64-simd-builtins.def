@@ -238,6 +238,9 @@
   BUILTIN_VDQF (BINOP, fmax, 0)
   BUILTIN_VDQF (BINOP, fmin, 0)
 
+  /* Implemented by aarch64_addv<mode>.  */
+  BUILTIN_VDQF (UNOP, addv, 0)
+
   /* Implemented by <maxmin><mode>3.  */
   BUILTIN_VDQ_BHSI (BINOP, smax, 3)
   BUILTIN_VDQ_BHSI (BINOP, smin, 3)

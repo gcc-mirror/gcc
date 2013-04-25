@@ -1,3 +1,10 @@
+2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/vaddv-intrinsic.c: New.
+	* gcc.target/aarch64/vaddv-intrinsic-compile.c: Likewise.
+	* gcc.target/aarch64/vaddv-intrinsic.x: Likewise.
+
 2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/cmp.c: New.

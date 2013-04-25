@@ -19731,6 +19731,27 @@ vaddd_u64 (uint64x1_t __a, uint64x1_t __b)
   return __a + __b;
 }
 
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vaddv_f32 (float32x2_t __a)
+{
+  float32x2_t t = __builtin_aarch64_addvv2sf (__a);
+  return vget_lane_f32 (t, 0);
+}
+
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vaddvq_f32 (float32x4_t __a)
+{
+  float32x4_t t = __builtin_aarch64_addvv4sf (__a);
+  return vgetq_lane_f32 (t, 0);
+}
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vaddvq_f64 (float64x2_t __a)
+{
+  float64x2_t t = __builtin_aarch64_addvv2df (__a);
+  return vgetq_lane_f64 (t, 0);
+}
+
 /* vceq */
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
