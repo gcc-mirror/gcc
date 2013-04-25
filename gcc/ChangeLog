@@ -1,3 +1,8 @@
+2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.md (*ngc<mode>): New pattern.
+	(*ngcsi_uxtw): New pattern.
+
 2013-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             Julian Brown  <julian@codesourcery.com>
 
