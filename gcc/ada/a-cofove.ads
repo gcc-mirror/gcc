@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -55,7 +55,6 @@
 --      iterate over containers. Left returns the part of the container already
 --      scanned and Right the part not scanned yet.
 
-private with Ada.Streams;
 with Ada.Containers;
 use Ada.Containers;
 
@@ -72,21 +71,9 @@ package Ada.Containers.Formal_Vectors is
    range Index_Type'First - 1 ..
      Index_Type'Min (Index_Type'Base'Last - 1, Index_Type'Last) + 1;
 
-   --  ??? i don't think we can do this...
-   --  TODO: we need the ARG to either figure out how to declare this subtype,
-   --  or eliminate the requirement that it be present.
-   --  subtype Capacity_Subtype is Count_Type -- correct name???
-   --  range 0 .. Count_Type'Max (0,
-   --                             Index_Type'Pos (Index_Type'Last) -
-   --                             Index_Type'Pos (Index_Type'First) + 1);
-   --
-   --  so for now:
-   subtype Capacity_Subtype is Count_Type;
-
    No_Index : constant Extended_Index := Extended_Index'First;
 
-   type Vector (Capacity : Capacity_Subtype) is tagged private;
-   --  pragma Preelaborable_Initialization (Vector);
+   type Vector (Capacity : Count_Type) is tagged private;
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -97,11 +84,9 @@ package Ada.Containers.Formal_Vectors is
 
    function "=" (Left, Right : Vector) return Boolean;
 
-   function To_Vector (Length : Capacity_Subtype) return Vector;
-
    function To_Vector
      (New_Item : Element_Type;
-      Length   : Capacity_Subtype) return Vector;
+      Length   : Count_Type) return Vector;
 
    function "&" (Left, Right : Vector) return Vector;
 
@@ -111,17 +96,17 @@ package Ada.Containers.Formal_Vectors is
 
    function "&" (Left, Right : Element_Type) return Vector;
 
-   function Capacity (Container : Vector) return Capacity_Subtype;
+   function Capacity (Container : Vector) return Count_Type;
 
    procedure Reserve_Capacity
      (Container : in out Vector;
-      Capacity  : Capacity_Subtype);
+      Capacity  : Count_Type);
 
-   function Length (Container : Vector) return Capacity_Subtype;
+   function Length (Container : Vector) return Count_Type;
 
    procedure Set_Length
      (Container : in out Vector;
-      Length    : Capacity_Subtype);
+      Length    : Count_Type);
 
    function Is_Empty (Container : Vector) return Boolean;
 
@@ -131,7 +116,7 @@ package Ada.Containers.Formal_Vectors is
 
    function Copy
      (Source   : Vector;
-      Capacity : Capacity_Subtype := 0) return Vector;
+      Capacity : Count_Type := 0) return Vector;
 
    function To_Cursor
      (Container : Vector;
@@ -156,26 +141,6 @@ package Ada.Containers.Formal_Vectors is
      (Container : in out Vector;
       Position  : Cursor;
       New_Item  : Element_Type);
-
-   procedure Query_Element
-     (Container : Vector;
-      Index     : Index_Type;
-      Process   : not null access procedure (Element : Element_Type));
-
-   procedure Query_Element
-     (Container : Vector;
-      Position  : Cursor;
-      Process   : not null access procedure (Element : Element_Type));
-
-   procedure Update_Element
-     (Container : in out Vector;
-      Index     : Index_Type;
-      Process   : not null access procedure (Element : in out Element_Type));
-
-   procedure Update_Element
-     (Container : in out Vector;
-      Position  : Cursor;
-      Process   : not null access procedure (Element : in out Element_Type));
 
    procedure Move (Target : in out Vector; Source : in out Vector);
 
@@ -214,17 +179,6 @@ package Ada.Containers.Formal_Vectors is
       Position  : out Cursor;
       Count     : Count_Type := 1);
 
-   procedure Insert
-     (Container : in out Vector;
-      Before    : Extended_Index;
-      Count     : Count_Type := 1);
-
-   procedure Insert
-     (Container : in out Vector;
-      Before    : Cursor;
-      Position  : out Cursor;
-      Count     : Count_Type := 1);
-
    procedure Prepend
      (Container : in out Vector;
       New_Item  : Vector);
@@ -241,17 +195,6 @@ package Ada.Containers.Formal_Vectors is
    procedure Append
      (Container : in out Vector;
       New_Item  : Element_Type;
-      Count     : Count_Type := 1);
-
-   procedure Insert_Space
-     (Container : in out Vector;
-      Before    : Extended_Index;
-      Count     : Count_Type := 1);
-
-   procedure Insert_Space
-     (Container : in out Vector;
-      Before    : Cursor;
-      Position  : out Cursor;
       Count     : Count_Type := 1);
 
    procedure Delete
@@ -324,16 +267,6 @@ package Ada.Containers.Formal_Vectors is
 
    function Has_Element (Container : Vector; Position : Cursor) return Boolean;
 
-   procedure Iterate
-     (Container : Vector;
-      Process   : not null access
-                    procedure (Container : Vector; Position : Cursor));
-
-   procedure Reverse_Iterate
-     (Container : Vector;
-      Process   : not null access
-                    procedure (Container : Vector; Position : Cursor));
-
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
@@ -357,8 +290,6 @@ private
    pragma Inline (Element);
    pragma Inline (First_Element);
    pragma Inline (Last_Element);
-   pragma Inline (Query_Element);
-   pragma Inline (Update_Element);
    pragma Inline (Replace_Element);
    pragma Inline (Contains);
    pragma Inline (Next);
@@ -367,43 +298,15 @@ private
    type Elements_Array is array (Count_Type range <>) of Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   type Vector (Capacity : Capacity_Subtype) is tagged record
+   type Vector (Capacity : Count_Type) is tagged record
       Elements : Elements_Array (1 .. Capacity);
       Last     : Extended_Index := No_Index;
-      Busy     : Natural := 0;
-      Lock     : Natural := 0;
    end record;
-
-   use Ada.Streams;
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Vector);
-
-   for Vector'Write use Write;
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Vector);
-
-   for Vector'Read use Read;
 
    type Cursor is record
       Valid : Boolean    := True;
       Index : Index_Type := Index_Type'First;
    end record;
-
-   procedure Write
-     (Stream   : not null access Root_Stream_Type'Class;
-      Position : Cursor);
-
-   for Cursor'Write use Write;
-
-   procedure Read
-     (Stream   : not null access Root_Stream_Type'Class;
-      Position : out Cursor);
-
-   for Cursor'Read use Read;
 
    Empty_Vector : constant Vector := (Capacity => 0, others => <>);
 

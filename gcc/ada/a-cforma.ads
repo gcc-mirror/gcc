@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -54,7 +54,6 @@
 --    See detailed specifications for these subprograms
 
 private with Ada.Containers.Red_Black_Trees;
-private with Ada.Streams;
 
 generic
    type Key_Type is private;
@@ -99,30 +98,12 @@ package Ada.Containers.Formal_Ordered_Maps is
       Position  : Cursor;
       New_Item  : Element_Type);
 
-   procedure Query_Element
-     (Container : in out Map;
-      Position  : Cursor;
-      Process   : not null access
-                    procedure (Key : Key_Type; Element : Element_Type));
-
-   procedure Update_Element
-     (Container : in out Map;
-      Position  : Cursor;
-      Process   : not null access
-                    procedure (Key : Key_Type; Element : in out Element_Type));
-
    procedure Move (Target : in out Map; Source : in out Map);
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type;
-      Position  : out Cursor;
-      Inserted  : out Boolean);
-
-   procedure Insert
-     (Container : in out Map;
-      Key       : Key_Type;
       Position  : out Cursor;
       Inserted  : out Boolean);
 
@@ -183,16 +164,6 @@ package Ada.Containers.Formal_Ordered_Maps is
 
    function Has_Element (Container : Map; Position : Cursor) return Boolean;
 
-   procedure Iterate
-     (Container : Map;
-      Process   :
-        not null access procedure (Container : Map; Position : Cursor));
-
-   procedure Reverse_Iterate
-     (Container : Map;
-      Process   : not null access
-                    procedure (Container : Map; Position : Cursor));
-
    function Strict_Equal (Left, Right : Map) return Boolean;
    --  Strict_Equal returns True if the containers are physically equal, i.e.
    --  they are structurally equal (function "=" returns True) and that they
@@ -234,38 +205,12 @@ private
    type Map (Capacity : Count_Type) is
       new Tree_Types.Tree_Type (Capacity) with null record;
 
-   use Ada.Streams;
-
    type Cursor is record
       Node : Node_Access;
    end record;
 
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor);
-
-   for Cursor'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor);
-
-   for Cursor'Read use Read;
+   Empty_Map : constant Map := (Capacity => 0, others => <>);
 
    No_Element : constant Cursor := (Node => 0);
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Map);
-
-   for Map'Write use Write;
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Map);
-
-   for Map'Read use Read;
-
-   Empty_Map : constant Map := (Capacity => 0, others => <>);
 
 end Ada.Containers.Formal_Ordered_Maps;

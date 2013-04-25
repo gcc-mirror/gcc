@@ -2741,20 +2741,20 @@ package body Exp_Attr is
          CE : constant Entity_Id := Entity (Selector_Name (Pref));
 
       begin
-         --  In Ada 2005 (or later) if we have the standard nondefault
-         --  bit order, then we return the original value as given in
-         --  the component clause (RM 2005 13.5.2(3/2)).
+         --  In Ada 2005 (or later) if we have the non-default bit order, then
+         --  we return the original value as given in the component clause
+         --  (RM 2005 13.5.2(3/2)).
 
          if Present (Component_Clause (CE))
            and then Ada_Version >= Ada_2005
-           and then not Reverse_Bit_Order (Scope (CE))
+           and then Reverse_Bit_Order (Scope (CE))
          then
             Rewrite (N,
               Make_Integer_Literal (Loc,
                 Intval => Expr_Value (First_Bit (Component_Clause (CE)))));
             Analyze_And_Resolve (N, Typ);
 
-         --  Otherwise (Ada 83/95 or Ada 2005 or later with reverse bit order),
+         --  Otherwise (Ada 83/95 or Ada 2005 or later with default bit order),
          --  rewrite with normalized value if we know it statically.
 
          elsif Known_Static_Component_Bit_Offset (CE) then
@@ -3321,20 +3321,20 @@ package body Exp_Attr is
          CE : constant Entity_Id := Entity (Selector_Name (Pref));
 
       begin
-         --  In Ada 2005 (or later) if we have the standard nondefault
-         --  bit order, then we return the original value as given in
-         --  the component clause (RM 2005 13.5.2(4/2)).
+         --  In Ada 2005 (or later) if we have the non-default bit order, then
+         --  we return the original value as given in the component clause
+         --  (RM 2005 13.5.2(3/2)).
 
          if Present (Component_Clause (CE))
            and then Ada_Version >= Ada_2005
-           and then not Reverse_Bit_Order (Scope (CE))
+           and then Reverse_Bit_Order (Scope (CE))
          then
             Rewrite (N,
               Make_Integer_Literal (Loc,
                 Intval => Expr_Value (Last_Bit (Component_Clause (CE)))));
             Analyze_And_Resolve (N, Typ);
 
-         --  Otherwise (Ada 83/95 or Ada 2005 or later with reverse bit order),
+         --  Otherwise (Ada 83/95 or Ada 2005 or later with default bit order),
          --  rewrite with normalized value if we know it statically.
 
          elsif Known_Static_Component_Bit_Offset (CE)
@@ -4243,18 +4243,18 @@ package body Exp_Attr is
       begin
          if Present (Component_Clause (CE)) then
 
-            --  In Ada 2005 (or later) if we have the standard nondefault
-            --  bit order, then we return the original value as given in
-            --  the component clause (RM 2005 13.5.2(2/2)).
+            --  In Ada 2005 (or later) if we have the non-default bit order,
+            --  then we return the original value as given in the component
+            --  clause (RM 2005 13.5.2(2/2)).
 
             if Ada_Version >= Ada_2005
-              and then not Reverse_Bit_Order (Scope (CE))
+              and then Reverse_Bit_Order (Scope (CE))
             then
                Rewrite (N,
                   Make_Integer_Literal (Loc,
                     Intval => Expr_Value (Position (Component_Clause (CE)))));
 
-            --  Otherwise (Ada 83 or 95, or reverse bit order specified in
+            --  Otherwise (Ada 83 or 95, or default bit order specified in
             --  later Ada version), return the normalized value.
 
             else

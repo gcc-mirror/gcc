@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -53,7 +53,6 @@
 --    See detailed specifications for these subprograms
 
 private with Ada.Containers.Red_Black_Trees;
-private with Ada.Streams;
 
 generic
    type Element_Type is private;
@@ -99,11 +98,6 @@ package Ada.Containers.Formal_Ordered_Sets is
      (Container : in out Set;
       Position  : Cursor;
       New_Item  : Element_Type);
-
-   procedure Query_Element
-     (Container : in out Set;
-      Position  : Cursor;
-      Process   : not null access procedure (Element : Element_Type));
 
    procedure Move (Target : in out Set; Source : in out Set);
 
@@ -195,16 +189,6 @@ package Ada.Containers.Formal_Ordered_Sets is
 
    function Has_Element (Container : Set; Position : Cursor) return Boolean;
 
-   procedure Iterate
-     (Container : Set;
-      Process   :
-        not null access procedure (Container : Set; Position : Cursor));
-
-   procedure Reverse_Iterate
-     (Container : Set;
-      Process   : not null access
-                    procedure (Container : Set; Position : Cursor));
-
    generic
       type Key_Type (<>) is private;
 
@@ -236,12 +220,6 @@ package Ada.Containers.Formal_Ordered_Sets is
       function Ceiling (Container : Set; Key : Key_Type) return Cursor;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean;
-
-      procedure Update_Element_Preserving_Key
-        (Container : in out Set;
-         Position  : Cursor;
-         Process   : not null access
-                       procedure (Element : in out Element_Type));
 
    end Generic_Keys;
 
@@ -280,40 +258,12 @@ private
      new Tree_Types.Tree_Type (Capacity) with null record;
 
    use Red_Black_Trees;
-   use Ada.Streams;
-
-   type Set_Access is access all Set;
-   for Set_Access'Storage_Size use 0;
 
    type Cursor is record
       Node : Count_Type;
    end record;
 
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor);
-
-   for Cursor'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor);
-
-   for Cursor'Read use Read;
-
    No_Element : constant Cursor := (Node => 0);
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Set);
-
-   for Set'Write use Write;
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Set);
-
-   for Set'Read use Read;
 
    Empty_Set : constant Set := (Capacity => 0, others => <>);
 

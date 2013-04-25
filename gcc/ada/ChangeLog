@@ -1,3 +1,41 @@
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Update the comment associated
+	with the call to Check_Expression_Against_Static_Predicate.
+	* sem_ch3.adb (Analyze_Object_Declaration): Update the comment
+	associated with the call to Check_Expression_Against_Static_Predicate.
+	* sem_util.adb (Check_Expression_Against_Static_Predicate):
+	Broaden the check from a static expression to an expression with
+	a known value at compile time.
+	* sem_util.ads (Check_Expression_Against_Static_Predicate): Update
+	comment on usage.
+
+2013-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, cases Position,
+	First_Bit, and Last_Bit): Fix incorrect test in implementation of
+	RM 2005 13.5.2(3/2).
+
+2013-04-25  Claire Dross  <dross@adacore.com>
+
+	* a-cfhase.adb, a-cfhase.ads, a-cforma.adb, a-cforma.ads, a-cfhama.adb,
+	a-cfhama.ads, a-cforse.adb, a-cforse.ads, a-cofove.adb, a-cofove.ads
+	(Query_Element): Removed.
+	(Update_Element): Removed.
+	(Insert): The version with no New_Item specified is removed.
+	(Iterate): Removed.
+	(Write): Removed.
+	(Read): Removed.
+	Every check of fields Busy and Lock has been removed.
+
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Contract_Cases): Remove
+	call to S14_Pragma (Find_Related_Subprogram): Require proper
+	placement in subprogram body (Find_Related_Subprogram): Detect
+	duplicates for all cases (Find_Related_Subprogram): Handle case
+	of spec nested inside body.
+
 2013-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* par-prag.adb: Fix typo.

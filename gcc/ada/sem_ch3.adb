@@ -3277,8 +3277,8 @@ package body Sem_Ch3 is
             or else
               Is_Partially_Initialized_Type (T, Include_Implicit => False))
       then
-         --  If the type has a static predicate and the expression is also
-         --  static, see if the expression satisfies the predicate.
+         --  If the type has a static predicate and the expression is known at
+         --  compile time, see if the expression satisfies the predicate.
 
          if Present (E) then
             Check_Expression_Against_Static_Predicate (E, T);
@@ -3297,8 +3297,7 @@ package body Sem_Ch3 is
 
          if Is_String_Type (T) and then not Constant_Present (N) then
             Check_SPARK_Restriction
-              ("declaration of object of unconstrained type not allowed",
-               N);
+              ("declaration of object of unconstrained type not allowed", N);
          end if;
 
          --  Nothing to do in deferred constant case

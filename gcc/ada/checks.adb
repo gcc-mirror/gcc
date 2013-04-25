@@ -2502,8 +2502,8 @@ package body Checks is
          --  Here for normal case of predicate active
 
          else
-            --  If the type has a static predicate and the expression is also
-            --  static, see if the expression satisfies the predicate.
+            --  If the type has a static predicate and the expression is known
+            --  at compile time, see if the expression satisfies the predicate.
 
             Check_Expression_Against_Static_Predicate (N, Typ);
 

@@ -202,7 +202,11 @@ package body Sem_Prag is
       Check_Duplicates : Boolean := False) return Node_Id;
    --  Find the declaration of the related subprogram subject to pragma Prag.
    --  If flag Check_Duplicates is set, the routine emits errors concerning
-   --  duplicate pragmas.
+   --  duplicate pragmas. If a related subprogram is found, then either the
+   --  corresponding N_Subprogram_Declaration node is returned, or, if the
+   --  pragma applies to a subprogram body, then the N_Subprogram_Body node
+   --  is returned. Note that in the latter case, no check is made to ensure
+   --  that there is no separate declaration of the subprogram.
 
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
@@ -10043,7 +10047,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
 
             --  Ensure the proper placement of the pragma. Contract_Cases must
@@ -18113,63 +18116,83 @@ package body Sem_Prag is
    is
       Context   : constant Node_Id := Parent (Prag);
       Nam       : constant Name_Id := Pragma_Name (Prag);
-      Decl      : Node_Id;
+      Elmt      : Node_Id;
       Subp_Decl : Node_Id;
 
    begin
-      --  The pragma is a byproduct of an aspect
+      pragma Assert (Nkind (Prag) = N_Pragma);
+
+      --  If the pragma comes from an aspect, then what we want is the
+      --  declaration to which the aspect is attached, i.e. its parent.
 
       if Present (Corresponding_Aspect (Prag)) then
-         Subp_Decl := Parent (Corresponding_Aspect (Prag));
+         return Parent (Corresponding_Aspect (Prag));
+      end if;
+
+      --  Otherwise the pragma must be a list element, and the first thing to
+      --  do is to position past any previous pragmas or generated code. What
+      --  we are doing here is looking for the preceding declaration. This is
+      --  also where we will check for a duplicate pragma.
+
+      pragma Assert (Is_List_Member (Prag));
+
+      Elmt := Prag;
+      loop
+         Elmt := Prev (Elmt);
+         exit when No (Elmt);
+
+         --  Typically want we will want is the declaration original node. But
+         --  for the generic subprogram case, don't go to to the original node,
+         --  which is the unanalyzed tree: we need to attach the pre- and post-
+         --  conditions to the analyzed version at this point. They propagate
+         --  to the original tree when analyzing the corresponding body.
+
+         if Nkind (Elmt) not in N_Generic_Declaration then
+            Subp_Decl := Original_Node (Elmt);
+         else
+            Subp_Decl := Elmt;
+         end if;
+
+         --  Skip prior pragmas
+
+         if Nkind (Subp_Decl) = N_Pragma then
+            if Check_Duplicates and then Pragma_Name (Subp_Decl) = Nam then
+               Error_Msg_Name_1 := Nam;
+               Error_Msg_Sloc   := Sloc (Subp_Decl);
+               Error_Msg_N ("pragma % duplicates pragma declared #", Prag);
+            end if;
+
+         --  Skip internally generated code
+
+         elsif not Comes_From_Source (Subp_Decl) then
+            null;
+
+         --  Otherwise we have a declaration to return
+
+         else
+            return Subp_Decl;
+         end if;
+      end loop;
+
+      --  We fell through, which means there was no declaration preceding the
+      --  pragma (either it was the first element of the list, or we only had
+      --  other pragmas and generated code before it).
 
       --  The pragma is associated with a library-level subprogram
 
-      elsif Nkind (Context) = N_Compilation_Unit_Aux then
-         Subp_Decl := Unit (Parent (Context));
+      if Nkind (Context) = N_Compilation_Unit_Aux then
+         return Unit (Parent (Context));
 
       --  The pragma appears inside the declarative part of a subprogram body
 
       elsif Nkind (Context) = N_Subprogram_Body then
-         Subp_Decl := Context;
+         return Context;
 
-      --  The pragma appears someplace after its related subprogram. Inspect
-      --  all previous declarations for a suitable candidate.
+      --  Otherwise no subprogram found, return original pragma
 
       else
-         Decl      := Prag;
-         Subp_Decl := Empty;
-         while Present (Prev (Decl)) loop
-            Decl := Prev (Decl);
-
-            if Nkind (Decl) in N_Generic_Declaration then
-               Subp_Decl := Decl;
-            else
-               Subp_Decl := Original_Node (Decl);
-            end if;
-
-            --  Skip prior pragmas
-
-            if Nkind (Subp_Decl) = N_Pragma then
-               if Check_Duplicates and then Pragma_Name (Subp_Decl) = Nam then
-                  Error_Msg_Name_1 := Nam;
-                  Error_Msg_Sloc   := Sloc (Subp_Decl);
-                  Error_Msg_N ("pragma % duplicates pragma declared #", Prag);
-               end if;
-
-            --  Skip internally generated code
-
-            elsif not Comes_From_Source (Subp_Decl) then
-               null;
-
-            --  The nearest preceding declaration is the related subprogram
-
-            else
-               exit;
-            end if;
-         end loop;
+         return Prag;
       end if;
-
-      return Subp_Decl;
    end Find_Related_Subprogram;
 
    -------------------------

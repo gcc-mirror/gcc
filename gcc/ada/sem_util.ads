@@ -195,9 +195,9 @@ package Sem_Util is
      (Expr : Node_Id;
       Typ  : Entity_Id);
    --  Determine whether an arbitrary expression satisfies the static predicate
-   --  of a type. The routine does nothing if Expr is non-static or Typ lacks a
-   --  static predicate, otherwise it may emit a warning if the expression is
-   --  prohibited by the predicate.
+   --  of a type. The routine does nothing if Expr is not known at compile time
+   --  or Typ lacks a static predicate, otherwise it may emit a warning if the
+   --  expression is prohibited by the predicate.
 
    procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id);
    --  Verify that the full declaration of type T has been seen. If not, place
