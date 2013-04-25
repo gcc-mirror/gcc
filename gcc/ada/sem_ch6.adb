@@ -11908,9 +11908,13 @@ package body Sem_Ch6 is
          --  because the input type may lack aspect/pragma predicate and simply
          --  inherit those from its ancestor.
 
+         --  Note that predicate pragmas include all three cases of predicate
+         --  aspects (Predicate, Dynamic_Predicate, Static_Predicate), so this
+         --  routine checks for all three cases.
+
          Anc := Typ;
          while Present (Anc) loop
-            Pred := Find_Pragma (Anc, Name_Predicate);
+            Pred := Get_Pragma (Anc, Pragma_Predicate);
 
             if Present (Pred) and then not Is_Ignored (Pred) then
                return True;

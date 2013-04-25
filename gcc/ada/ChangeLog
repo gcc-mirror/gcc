@@ -1,3 +1,15 @@
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb: Put back with/use for Namet.
+	(Get_Pragma): New name (wi new spec) for Find_Pragma.
+	* sem_ch6.adb: Change name Find_Pragma to Get_Pragma with
+	different interface.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Is_Visible_Component): In an instance all
+	components are visible.
+
 2013-04-25  Matthew Heaney  <heaney@adacore.com>
 
 	* a-rbtgbo.adb, a-crbtgo.adb (Generic_Equal): do not test for

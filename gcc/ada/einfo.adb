@@ -33,6 +33,7 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering, not used for this unit
 
 with Atree;   use Atree;
+with Namet;   use Namet;
 with Nlists;  use Nlists;
 with Output;  use Output;
 with Sinfo;   use Sinfo;
@@ -6101,26 +6102,6 @@ package body Einfo is
       return Etype (Discrete_Subtype_Definition (Parent (Id)));
    end Entry_Index_Type;
 
-   -----------------
-   -- Find_Pragma --
-   -----------------
-
-   function Find_Pragma (Id : Entity_Id; Name : Name_Id) return Node_Id is
-      Item : Node_Id;
-
-   begin
-      Item := First_Rep_Item (Id);
-      while Present (Item) loop
-         if Nkind (Item) = N_Pragma and then Pragma_Name (Item) = Name then
-            return Item;
-         end if;
-
-         Item := Next_Rep_Item (Item);
-      end loop;
-
-      return Empty;
-   end Find_Pragma;
-
    ---------------------
    -- First_Component --
    ---------------------
@@ -6263,6 +6244,29 @@ package body Einfo is
          return T;
       end if;
    end Get_Full_View;
+
+   ----------------
+   -- Get_Pragma --
+   ----------------
+
+   function Get_Pragma (E  : Entity_Id; Id : Pragma_Id) return Node_Id
+   is
+      N : Node_Id;
+
+   begin
+      N := First_Rep_Item (E);
+      while Present (N) loop
+         if Nkind (N) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name (N)) = Id
+         then
+            return N;
+         else
+            Next_Rep_Item (N);
+         end if;
+      end loop;
+
+      return Empty;
+   end Get_Pragma;
 
    --------------------------------------
    -- Get_Record_Representation_Clause --
