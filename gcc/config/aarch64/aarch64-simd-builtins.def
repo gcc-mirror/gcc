@@ -282,3 +282,5 @@
 
   BUILTIN_VDQF (UNOP, frecpe, 0)
   BUILTIN_VDQF (BINOP, frecps, 0)
+
+  BUILTIN_VDQF (UNOP, abs, 2)

@@ -1260,6 +1260,25 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 #define VAR1(T, N, MAP, A) \
   case AARCH64_SIMD_BUILTIN_##N##A:
 
+tree
+aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
+		      bool ignore ATTRIBUTE_UNUSED)
+{
+  int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
+
+  switch (fcode)
+    {
+      BUILTIN_VDQF (UNOP, abs, 2)
+	return fold_build1 (ABS_EXPR, type, args[0]);
+	break;
+      default:
+	break;
+    }
+
+  return NULL_TREE;
+}
+
 bool
 aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
