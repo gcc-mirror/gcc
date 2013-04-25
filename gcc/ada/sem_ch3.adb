@@ -3260,11 +3260,11 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Deal with predicate check before we start to do major rewriting.
-      --  it is OK to initialize and then check the initialized value, since
-      --  the object goes out of scope if we get a predicate failure. Note
-      --  that we do this in the analyzer and not the expander because the
-      --  analyzer does some substantial rewriting in some cases.
+      --  Deal with predicate check before we start to do major rewriting. It
+      --  is OK to initialize and then check the initialized value, since the
+      --  object goes out of scope if we get a predicate failure. Note that we
+      --  do this in the analyzer and not the expander because the analyzer
+      --  does some substantial rewriting in some cases.
 
       --  We need a predicate check if the type has predicates, and if either
       --  there is an initializing expression, or for default initialization
@@ -3277,6 +3277,13 @@ package body Sem_Ch3 is
             or else
               Is_Partially_Initialized_Type (T, Include_Implicit => False))
       then
+         --  If the type has a static predicate and the expression is also
+         --  static, see if the expression satisfies the predicate.
+
+         if Present (E) then
+            Check_Expression_Against_Static_Predicate (E, T);
+         end if;
+
          Insert_After (N,
            Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc)));
       end if;

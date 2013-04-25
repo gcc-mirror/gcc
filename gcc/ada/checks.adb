@@ -2502,29 +2502,10 @@ package body Checks is
          --  Here for normal case of predicate active
 
          else
-            --  If the predicate is a static predicate and the operand is
-            --  static, the predicate must be evaluated statically. If the
-            --  evaluation fails this is a static constraint error. This check
-            --  is disabled in -gnatc mode, because the compiler is incapable
-            --  of evaluating static expressions in that case. Note that when
-            --  inherited predicates are involved, a type may have both static
-            --  and dynamic forms. Check the presence of a dynamic predicate
-            --  aspect.
+            --  If the type has a static predicate and the expression is also
+            --  static, see if the expression satisfies the predicate.
 
-            if Is_OK_Static_Expression (N)
-              and then Present (Static_Predicate (Typ))
-              and then not Has_Dynamic_Predicate_Aspect (Typ)
-            then
-               if Operating_Mode < Generate_Code
-                 or else Eval_Static_Predicate_Check (N, Typ)
-               then
-                  return;
-               else
-                  Error_Msg_NE
-                    ("static expression fails static predicate check on&",
-                     N, Typ);
-               end if;
-            end if;
+            Check_Expression_Against_Static_Predicate (N, Typ);
 
             Insert_Action (N,
               Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
