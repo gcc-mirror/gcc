@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -477,7 +477,7 @@ private
    --     reallocation when all of the following requirements are meat:
    --      - shared data object don't used anywhere longer;
    --      - its size is sufficient to store new value;
-   --      - the gap after reuse is less then some threshold.
+   --      - the gap after reuse is less than some threshold.
 
    --   - memory preallocation. Most of used memory allocation algorithms
    --     aligns allocated segment on the some boundary, thus some amount of
