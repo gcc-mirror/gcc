@@ -89,8 +89,6 @@ Texts.  A copy of the license is included in the section entitled
 
 @set FSFEDITION
 @set EDITION GNAT
-@set DEFAULTLANGUAGEVERSION Ada 2005
-@set NONDEFAULTLANGUAGEVERSION Ada 95
 
 @ifset unw
 @set PLATFORM
@@ -237,22 +235,18 @@ toolset for the full Ada programming language.
 It documents the features of the compiler and tools, and explains
 how to use them to build Ada applications.
 
-@value{EDITION} implements Ada 95 and Ada 2005, and it may also be invoked in
-Ada 83 compatibility mode.
-By default, @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
-but you can override with a compiler switch
-(@pxref{Compiling Different Versions of Ada})
+@value{EDITION} implements Ada 95, Ada 2005 and Ada 2012, and it may also be
+invoked in Ada 83 compatibility mode.
+By default, @value{EDITION} assumes Ada 2012, but you can override with a
+compiler switch (@pxref{Compiling Different Versions of Ada})
 to explicitly specify the language version.
 Throughout this manual, references to ``Ada'' without a year suffix
-apply to both the Ada 95 and Ada 2005 versions of the language.
-
+apply to both all Ada 95/2005/2012 versions of the language.
 
 @ifclear FSFEDITION
 For ease of exposition, ``@value{EDITION}'' will be referred to simply as
 ``GNAT'' in the remainder of this document.
 @end ifclear
-
-
 
 
 @menu
@@ -6762,8 +6756,8 @@ and specifications where a separate body is present).
 @noindent
 The switches described in this section allow you to explicitly specify
 the version of the Ada language that your programs are written in.
-By default @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
-but you can also specify @value{NONDEFAULTLANGUAGEVERSION} or
+The default mode is Ada 2012,
+but you can also specify Ada 95, Ada 2005 mode, or
 indicate Ada 83 compatibility mode.
 
 @table @option
@@ -6831,13 +6825,6 @@ may generally be compiled using this switch (see the description of the
 @option{-gnat83} and @option{-gnat95} switches for further
 information).
 
-@ifset PROEDITION
-Note that even though Ada 2005 is the current official version of the
-language, GNAT still compiles in Ada 95 mode by default, so if you are
-using Ada 2005 features in your program, you must use this switch (or
-the equivalent Ada_05 or Ada_2005 configuration pragmas).
-@end ifset
-
 @item -gnat12 or -gnat2012 (Ada 2012 mode)
 @cindex @option{-gnat12} (@command{gcc})
 @cindex @option{-gnat2012} (@command{gcc})
@@ -6845,18 +6832,13 @@ the equivalent Ada_05 or Ada_2005 configuration pragmas).
 
 @noindent
 This switch directs the compiler to implement the Ada 2012 version of the
-language.
+language (also the default).
 Since Ada 2012 is almost completely upwards
 compatible with Ada 2005 (and thus also with Ada 83, and Ada 95),
 Ada 83 and Ada 95 programs
 may generally be compiled using this switch (see the description of the
 @option{-gnat83}, @option{-gnat95}, and @option{-gnat05/2005} switches
 for further information).
-
-For information about the approved ``Ada Issues'' that have been incorporated
-into Ada 2012, see @url{http://www.ada-auth.org/ais.html}.
-Included with GNAT releases is a file @file{features-ada12} that describes
-the set of implemented Ada 2012 features.
 
 @item -gnatX (Enable GNAT Extensions)
 @cindex @option{-gnatX} (@command{gcc})

@@ -5226,9 +5226,10 @@ package body Exp_Aggr is
       else
          --  A special case, if we have a string subtype with bounds 1 .. N,
          --  where N is known at compile time, and the aggregate is of the
-         --  form (others => 'x'), and N is less than 80 (an arbitrary limit
-         --  for now), then replace the aggregate by the equivalent string
-         --  literal (but do not mark it as static since it is not!)
+         --  form (others => 'x'), with a single choice and no expressions,
+         --  and N is less than 80 (an arbitrary limit for now), then replace
+         --  the aggregate by the equivalent string literal (but do not mark
+         --  it as static since it is not!)
 
          --  Note: this entire circuit is redundant with respect to code in
          --  Expand_Array_Aggregate that collapses others choices to positional
@@ -5262,6 +5263,7 @@ package body Exp_Aggr is
             begin
                if Nkind (First (Choices (CA))) = N_Others_Choice
                  and then Nkind (Expression (CA)) = N_Character_Literal
+                 and then No (Expressions (N))
                then
                   declare
                      T  : constant Entity_Id := Etype (N);
