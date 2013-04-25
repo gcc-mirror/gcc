@@ -1877,7 +1877,7 @@ package body Sem_Ch7 is
          end loop;
       end Swap_Private_Dependents;
 
-   --  Start processing for Install_Private_Declarations
+   --  Start of processing for Install_Private_Declarations
 
    begin
       --  First exchange declarations for private types, so that the full
