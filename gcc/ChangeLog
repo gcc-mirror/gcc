@@ -1,3 +1,13 @@
+2013-04-25  Ian Bolton  <ian.bolton@arm.com>
+
+	Backported from mainline.
+	2013-03-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): New
+	format specifier for printing a constant in hex.
+	* config/aarch64/aarch64.md (insv_imm<mode>): Use the X
+	format specifier for printing second operand.
+
 2013-04-24  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backported from mainline.

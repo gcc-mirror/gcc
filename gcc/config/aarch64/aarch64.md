@@ -844,8 +844,8 @@
 	(match_operand:GPI 2 "const_int_operand" "n"))]
   "INTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
    && INTVAL (operands[1]) % 16 == 0
-   && INTVAL (operands[2]) <= 0xffff"
-  "movk\\t%<w>0, %2, lsl %1"
+   && UINTVAL (operands[2]) <= 0xffff"
+  "movk\\t%<w>0, %X2, lsl %1"
   [(set_attr "v8type" "movk")
    (set_attr "mode" "<MODE>")]
 )

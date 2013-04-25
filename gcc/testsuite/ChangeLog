@@ -1,3 +1,10 @@
+2013-04-25  Ian Bolton  <ian.bolton@arm.com>
+
+	Backported from mainline.
+	2013-03-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/movk.c: New test.
+
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56970
