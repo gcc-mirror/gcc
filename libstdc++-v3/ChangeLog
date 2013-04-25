@@ -1,3 +1,12 @@
+2013-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57065
+	* include/debug/unordered_map (unordered_map, unordered_multimap):
+	Fix default allocator type.
+	* include/profile/unordered_map (unordered_map, unordered_multimap):
+	Likewise.
+	* include/bits/unordered_map.h: Fix comments.
+
 2013-04-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/56905

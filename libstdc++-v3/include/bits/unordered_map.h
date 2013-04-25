@@ -75,12 +75,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @ingroup unordered_associative_containers
    *
-   *  @tparam  _Key  Type of key objects.
-   *  @tparam  _Tp  Type of mapped objects.
-   *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.
-   *  @tparam  _Pred  Predicate function object type, defaults
-   *                  to equal_to<_Value>.
-   *  @tparam  _Alloc  Allocator type, defaults to allocator<_Key>.
+   *  @tparam  _Key    Type of key objects.
+   *  @tparam  _Tp     Type of mapped objects.
+   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Value>.
+   *  @tparam  _Pred   Predicate function object type, defaults
+   *                   to equal_to<_Value>.
+   *  @tparam  _Alloc  Allocator type, defaults to 
+   *                   std::allocator<std::pair<const _Key, _Tp>>.
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, and
    *  <a href="tables.html#xx">unordered associative container</a>
@@ -786,12 +787,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @ingroup unordered_associative_containers
    *
-   *  @tparam  _Key  Type of key objects.
-   *  @tparam  _Tp  Type of mapped objects.
-   *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.
-   *  @tparam  _Pred  Predicate function object type, defaults
-   *                  to equal_to<_Value>.
-   *  @tparam  _Alloc  Allocator type, defaults to allocator<_Key>.
+   *  @tparam  _Key    Type of key objects.
+   *  @tparam  _Tp     Type of mapped objects.
+   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Value>.
+   *  @tparam  _Pred   Predicate function object type, defaults
+   *                   to equal_to<_Value>.
+   *  @tparam  _Alloc  Allocator type, defaults to
+   *                   std::allocator<std::pair<const _Key, _Tp>>.
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, and
    *  <a href="tables.html#xx">unordered associative container</a>
