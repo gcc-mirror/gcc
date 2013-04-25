@@ -1196,12 +1196,25 @@ package body Sem_Disp is
       Ovr_Subp := Old_Subp;
 
       --  [Ada 2012:AI-0125]: Search for inherited hidden primitive that may be
-      --  overridden by Subp
+      --  overridden by Subp. This only applies to source subprograms, and
+      --  their declaration must carry an explicit overriding indicator.
 
       if No (Ovr_Subp)
         and then Ada_Version >= Ada_2012
+        and then Comes_From_Source (Subp)
+        and then
+          Nkind (Unit_Declaration_Node (Subp)) = N_Subprogram_Declaration
       then
          Ovr_Subp := Find_Hidden_Overridden_Primitive (Subp);
+
+         --  Verify that the proper overriding indicator has been supplied.
+
+         if Present (Ovr_Subp)
+           and then
+             not Must_Override (Specification (Unit_Declaration_Node (Subp)))
+         then
+            Error_Msg_NE ("missing overriding indicator for&", Subp, Subp);
+         end if;
       end if;
 
       --  Now it should be a correct primitive operation, put it in the list

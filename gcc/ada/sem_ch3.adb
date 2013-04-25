@@ -3720,6 +3720,13 @@ package body Sem_Ch3 is
       end if;
 
       Analyze_Dimension (N);
+
+      --  Verify whether the object declaration introduces an illegal hidden
+      --  state within a package subject to a null abstract state.
+
+      if Formal_Extensions and then Ekind (Id) = E_Variable then
+         Check_No_Hidden_State (Id);
+      end if;
    end Analyze_Object_Declaration;
 
    ---------------------------
