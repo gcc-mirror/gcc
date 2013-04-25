@@ -505,8 +505,8 @@
 )
 
 (define_insn "neg<mode>2"
-  [(set (match_operand:VDQM 0 "register_operand" "=w")
-        (neg:VDQM (match_operand:VDQM 1 "register_operand" "w")))]
+  [(set (match_operand:VDQ 0 "register_operand" "=w")
+	(neg:VDQ (match_operand:VDQ 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "neg\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "simd_type" "simd_negabs")
