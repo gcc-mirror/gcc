@@ -1,5 +1,51 @@
 2013-04-25  Robert Dewar  <dewar@adacore.com>
 
+	* debug.adb: Remove d.X and d.Y entries and documentation.
+	* exp_ch4.adb (Expand_N_If_Expression): Remove special code used
+	if expression with actions not available (now always available).
+	(Expand_Short_Circuit_Operator): Same change.
+	* gnat1drv.adb (Adjust_Global_Switches) Remove setting
+	Use_Expression_With_Actions flag, since this is now obsolete.
+	* opt.ads (Use_Expression_Actions): Removed (always True now).
+	* sinfo.ads: Minor comment updates.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Actuals): If an actual is an array
+	subtype whose base type is currently private, install full view
+	when compiling instance body.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): Refine checks for
+	AI05-0125: the check for a hidden primitive that may be overridden
+	by the new declaration is only performed if the declaration comes
+	from source, and it must carry an explicit overriding indicator.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Abstract_States): The attribute now applies to
+	generic packages.
+	* sem_ch3.adb (Analyze_Object_Declaration): Check whether an
+	object declaration introduces an illegal hidden state.
+	* sem_prag.adb (Analyze_Abstract_State): Check whether a state
+	declaration introduces an illegal hidden state.
+	* sem_util.ads, sem_util.adb (Check_No_Hidden_State): New routine.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Is_Build_In_Place_Function_Call): The call may
+	be to a protected function, in which case the name in the call
+	is a selected component.
+
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression):
+	Warn on a suspicious use of quantifier "some" when "all" was meant.
+	(No_Else_Or_Trivial_True): New routine.
+
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, einfo.adb: Put back with/use for Namet.
 	(Get_Pragma): New name (wi new spec) for Find_Pragma.
 	* sem_ch6.adb: Change name Find_Pragma to Get_Pragma with

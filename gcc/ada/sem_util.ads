@@ -168,14 +168,14 @@ package Sem_Util is
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
 
-      procedure Build_Explicit_Dereference
-        (Expr : Node_Id;
-         Disc : Entity_Id);
-      --  AI05-139: Names with implicit dereference. If the expression N is a
-      --  reference type and the context imposes the corresponding designated
-      --  type, convert N into N.Disc.all. Such expressions are always over-
-      --  loaded with both interpretations, and the dereference interpretation
-      --  carries the name of the reference discriminant.
+   procedure Build_Explicit_Dereference
+     (Expr : Node_Id;
+      Disc : Entity_Id);
+   --  AI05-139: Names with implicit dereference. If the expression N is a
+   --  reference type and the context imposes the corresponding designated
+   --  type, convert N into N.Disc.all. Such expressions are always over-
+   --  loaded with both interpretations, and the dereference interpretation
+   --  carries the name of the reference discriminant.
 
    function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean;
    --  Returns True if the expression cannot possibly raise Constraint_Error.
@@ -230,6 +230,10 @@ package Sem_Util is
    --  Check whether Ent denotes an entity declared in an uplevel scope, which
    --  is accessed inside a nested procedure, and set Has_Up_Level_Access flag
    --  accordingly. This is currently only enabled for VM_Target /= No_VM.
+
+   procedure Check_No_Hidden_State (Id : Entity_Id);
+   --  Determine whether object or state Id introduces a hidden state. If this
+   --  is the case, emit an error.
 
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking

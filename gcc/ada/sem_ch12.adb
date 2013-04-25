@@ -5468,7 +5468,9 @@ package body Sem_Ch12 is
       --  previous formal in the same unit. The privacy status of the component
       --  type will have been examined earlier in the traversal of the
       --  corresponding actuals, and this status should not be modified for the
-      --  array type itself.
+      --  array (sub)type itself. However, if the base type of the array
+      --  (sub)type is private, its full view must be restored in the body to
+      --  be consistent with subsequent index subtypes, etc.
       --
       --  To detect this case we have to rescan the list of formals, which
       --  is usually short enough to ignore the resulting inefficiency.
@@ -5512,6 +5514,7 @@ package body Sem_Ch12 is
            and then Is_Entity_Name (Subtype_Indication (Parent (E)))
          then
             if Is_Array_Type (E)
+              and then not Is_Private_Type (Etype (E))
               and then Denotes_Previous_Actual (Component_Type (E))
             then
                null;

@@ -8518,6 +8518,13 @@ package body Sem_Prag is
                   Pop_Scope;
                end if;
 
+               --  Verify whether the state introduces an illegal hidden state
+               --  within a package subject to a null abstract state.
+
+               if Formal_Extensions then
+                  Check_No_Hidden_State (Id);
+               end if;
+
                --  Associate the state with its related package
 
                if No (Abstract_States (Pack_Id)) then

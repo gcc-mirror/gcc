@@ -8110,6 +8110,11 @@ package body Exp_Ch6 is
          elsif Nkind (Name (Exp_Node)) = N_Explicit_Dereference then
             Function_Id := Etype (Name (Exp_Node));
 
+         --  This may be a call to a protected function.
+
+         elsif Nkind (Name (Exp_Node)) = N_Selected_Component then
+            Function_Id := Etype (Entity (Selector_Name (Name (Exp_Node))));
+
          else
             raise Program_Error;
          end if;

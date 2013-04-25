@@ -5469,20 +5469,11 @@ package body Exp_Ch4 is
          Remove (Expr);
 
          if Present (Actions) then
-
-            --  If we are not allowed to use Expression_With_Actions, just skip
-            --  the optimization, it is not critical for correctness.
-
-            if not Use_Expression_With_Actions then
-               goto Skip_Optimization;
-            end if;
-
             Rewrite (N,
               Make_Expression_With_Actions (Loc,
                 Expression => Relocate_Node (Expr),
                 Actions    => Actions));
             Analyze_And_Resolve (N, Typ);
-
          else
             Rewrite (N, Relocate_Node (Expr));
          end if;
@@ -5493,8 +5484,6 @@ package body Exp_Ch4 is
          Set_Is_Static_Expression (N, False);
          return;
       end if;
-
-      <<Skip_Optimization>>
 
       --  If the type is limited or unconstrained, we expand as follows to
       --  avoid any possibility of improper copies.
@@ -5590,72 +5579,27 @@ package body Exp_Ch4 is
 
       elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
 
-         --  We have two approaches to handling this. If we are allowed to use
-         --  N_Expression_With_Actions, then we can just wrap the actions into
-         --  the appropriate expression.
+         --  We now wrap the actions into the appropriate expression
 
-         if Use_Expression_With_Actions then
-            if Present (Then_Actions (N)) then
-               Rewrite (Thenx,
-                 Make_Expression_With_Actions (Sloc (Thenx),
-                   Actions    => Then_Actions (N),
-                   Expression => Relocate_Node (Thenx)));
-               Set_Then_Actions (N, No_List);
-               Analyze_And_Resolve (Thenx, Typ);
-            end if;
-
-            if Present (Else_Actions (N)) then
-               Rewrite (Elsex,
-                 Make_Expression_With_Actions (Sloc (Elsex),
-                   Actions    => Else_Actions (N),
-                   Expression => Relocate_Node (Elsex)));
-               Set_Else_Actions (N, No_List);
-               Analyze_And_Resolve (Elsex, Typ);
-            end if;
-
-            return;
-
-            --  if we can't use N_Expression_With_Actions nodes, then we insert
-            --  the following sequence of actions (using Insert_Actions):
-
-            --      Cnn : typ;
-            --      if cond then
-            --         <<then actions>>
-            --         Cnn := then-expr;
-            --      else
-            --         <<else actions>>
-            --         Cnn := else-expr
-            --      end if;
-
-            --  and replace the if expression by a reference to Cnn
-
-         else
-            Cnn := Make_Temporary (Loc, 'C', N);
-
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cnn,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc));
-
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
-
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Thenx),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                    Expression => Relocate_Node (Thenx))),
-
-                Else_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Elsex),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                    Expression => Relocate_Node (Elsex))));
-
-            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
-            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
-
-            New_N := New_Occurrence_Of (Cnn, Loc);
+         if Present (Then_Actions (N)) then
+            Rewrite (Thenx,
+                     Make_Expression_With_Actions (Sloc (Thenx),
+                       Actions    => Then_Actions (N),
+                       Expression => Relocate_Node (Thenx)));
+            Set_Then_Actions (N, No_List);
+            Analyze_And_Resolve (Thenx, Typ);
          end if;
+
+         if Present (Else_Actions (N)) then
+            Rewrite (Elsex,
+                     Make_Expression_With_Actions (Sloc (Elsex),
+                       Actions    => Else_Actions (N),
+                       Expression => Relocate_Node (Elsex)));
+            Set_Else_Actions (N, No_List);
+            Analyze_And_Resolve (Elsex, Typ);
+         end if;
+
+         return;
 
          --  If no actions then no expansion needed, gigi will handle it using
          --  the same approach as a C conditional expression.
@@ -11098,29 +11042,6 @@ package body Exp_Ch4 is
       Shortcut_Ent   : constant Entity_Id := Boolean_Literals (Shortcut_Value);
       --  If Left = Shortcut_Value then Right need not be evaluated
 
-      function Make_Test_Expr (Opnd : Node_Id) return Node_Id;
-      --  For Opnd a boolean expression, return a Boolean expression equivalent
-      --  to Opnd /= Shortcut_Value.
-
-      --------------------
-      -- Make_Test_Expr --
-      --------------------
-
-      function Make_Test_Expr (Opnd : Node_Id) return Node_Id is
-      begin
-         if Shortcut_Value then
-            return Make_Op_Not (Sloc (Opnd), Opnd);
-         else
-            return Opnd;
-         end if;
-      end Make_Test_Expr;
-
-      Op_Var : Entity_Id;
-      --  Entity for a temporary variable holding the value of the operator,
-      --  used for expansion in the case where actions are present.
-
-   --  Start of processing for Expand_Short_Circuit_Operator
-
    begin
       --  Deal with non-standard booleans
 
@@ -11172,77 +11093,19 @@ package body Exp_Ch4 is
       --  must only be executed if the right operand of the short circuit is
       --  executed and not otherwise.
 
-      --  the temporary variable C.
-
       if Present (Actions (N)) then
          Actlist := Actions (N);
 
-         --  The old approach is to expand:
+         --  We now use an Expression_With_Actions node for the right operand
+         --  of the short-circuit form. Note that this solves the traceability
+         --  problems for coverage analysis.
 
-         --     left AND THEN right
-
-         --  into
-
-         --     C : Boolean := False;
-         --     IF left THEN
-         --        Actions;
-         --        IF right THEN
-         --           C := True;
-         --        END IF;
-         --     END IF;
-
-         --  and finally rewrite the operator into a reference to C. Similarly
-         --  for left OR ELSE right, with negated values. Note that this
-         --  rewrite causes some difficulties for coverage analysis because
-         --  of the introduction of the new variable C, which obscures the
-         --  structure of the test.
-
-         --  We use this "old approach" if use of N_Expression_With_Actions
-         --  is False (see description in Opt of when this is or is not set).
-
-         if not Use_Expression_With_Actions then
-            Op_Var := Make_Temporary (Loc, 'C', Related_Node => N);
-
-            Insert_Action (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Op_Var,
-                Object_Definition   =>
-                  New_Occurrence_Of (Standard_Boolean, Loc),
-                Expression          =>
-                  New_Occurrence_Of (Shortcut_Ent, Loc)));
-
-            Append_To (Actlist,
-              Make_Implicit_If_Statement (Right,
-                Condition       => Make_Test_Expr (Right),
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (LocR,
-                    Name       => New_Occurrence_Of (Op_Var, LocR),
-                    Expression =>
-                      New_Occurrence_Of
-                        (Boolean_Literals (not Shortcut_Value), LocR)))));
-
-            Insert_Action (N,
-              Make_Implicit_If_Statement (Left,
-                Condition       => Make_Test_Expr (Left),
-                Then_Statements => Actlist));
-
-            Rewrite (N, New_Occurrence_Of (Op_Var, Loc));
-            Analyze_And_Resolve (N, Standard_Boolean);
-
-         --  The new approach, activated for now by the use of debug flag
-         --  -gnatd.X is to use the new Expression_With_Actions node for the
-         --  right operand of the short-circuit form. This should solve the
-         --  traceability problems for coverage analysis.
-
-         else
-            Rewrite (Right,
-              Make_Expression_With_Actions (LocR,
-                Expression => Relocate_Node (Right),
-                Actions    => Actlist));
-            Set_Actions (N, No_List);
-            Analyze_And_Resolve (Right, Standard_Boolean);
-         end if;
+         Rewrite (Right,
+                  Make_Expression_With_Actions (LocR,
+                    Expression => Relocate_Node (Right),
+                    Actions    => Actlist));
+         Set_Actions (N, No_List);
+         Analyze_And_Resolve (Right, Standard_Boolean);
 
          Adjust_Result_Type (N, Typ);
          return;

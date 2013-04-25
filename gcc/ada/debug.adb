@@ -141,8 +141,8 @@ package body Debug is
    --  d.U  Ignore indirect calls for static elaboration
    --  d.V  Extensions for formal verification
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X  Use Expression_With_Actions
-   --  d.Y  Do not use Expression_With_Actions
+   --  d.X
+   --  d.Y
    --  d.Z  Dump flow analysis graphs, for debugging purposes (gnat2why)
 
    --  d1   Error msgs have node numbers where possible
@@ -674,14 +674,6 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.
-
-   --  d.X  By default, the compiler uses an elaborate rewriting framework for
-   --       short-circuited forms where the right hand condition generates
-   --       actions to be inserted. With the gcc backend, we now use the new
-   --       N_Expression_With_Actions node for this expansion, but we still use
-   --       the old method for other backends and in SCIL mode. This debug flag
-   --       forces use of the new N_Expression_With_Actions node in these other
-   --       cases and is intended for transitional use.
 
    --  d.Z  In gnat2why, in Flow analysis mode (-gnatd.Q), dump the different
    --       graphs (control flow, control dependence) for debugging purposes.

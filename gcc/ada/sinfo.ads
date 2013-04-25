@@ -7121,8 +7121,8 @@ package Sinfo is
       --  Expression (Node3)
       --  plus fields for expression
 
-      --  Note: the actions list is always non-null, since we would
-      --  never have created this node if there weren't some actions.
+      --  Note: the actions list is always non-null, since we would never have
+      --  created this node if there weren't some actions.
 
       --  Note: Expression may be a Null_Statement, in which case the
       --  N_Expression_With_Actions has type Standard_Void_Type. However some

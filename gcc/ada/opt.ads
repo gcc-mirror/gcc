@@ -1460,13 +1460,6 @@ package Opt is
    --  Set to True if -h (-gnath for the compiler) switch encountered
    --  requesting usage information
 
-   Use_Expression_With_Actions : Boolean;
-   --  The N_Expression_With_Actions node has been introduced relatively
-   --  recently, and not all back ends are prepared to handle it yet. So
-   --  we use this flag to suppress its use during a transitional period.
-   --  Currently the default is False for all cases (set in gnat1drv).
-   --  The default can be modified using -gnatd.X/-gnatd.Y.
-
    Use_Pragma_Linker_Constructor : Boolean := False;
    --  GNATBIND
    --  True if pragma Linker_Constructor applies to adainit

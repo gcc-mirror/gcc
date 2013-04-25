@@ -536,24 +536,6 @@ procedure Gnat1drv is
       Suppress_Options.Suppress (Atomic_Synchronization) :=
         not Atomic_Sync_Default_On_Target;
 
-      --  Set switch indicating if we can use N_Expression_With_Actions
-
-      --  Debug flag -gnatd.X decisively sets usage on
-
-      if Debug_Flag_Dot_XX then
-         Use_Expression_With_Actions := True;
-
-      --  Debug flag -gnatd.Y decisively sets usage off
-
-      elsif Debug_Flag_Dot_YY then
-         Use_Expression_With_Actions := False;
-
-      --  Otherwise this feature is implemented, so we allow its use
-
-      else
-         Use_Expression_With_Actions := True;
-      end if;
-
       --  Set switch indicating if back end can handle limited types, and
       --  guarantee that no incorrect copies are made (e.g. in the context
       --  of an if or case expression).

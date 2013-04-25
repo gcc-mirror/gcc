@@ -2125,6 +2125,98 @@ package body Sem_Util is
       end if;
    end Check_Nested_Access;
 
+   ---------------------------
+   -- Check_No_Hidden_State --
+   ---------------------------
+
+   procedure Check_No_Hidden_State (Id : Entity_Id) is
+      function Has_Null_Abstract_State (Pkg : Entity_Id) return Boolean;
+      --  Determine whether the entity of a package denoted by Pkg has a null
+      --  abstract state.
+
+      -----------------------------
+      -- Has_Null_Abstract_State --
+      -----------------------------
+
+      function Has_Null_Abstract_State (Pkg : Entity_Id) return Boolean is
+         States : constant Elist_Id := Abstract_States (Pkg);
+
+      begin
+         --  Check the first available state of the related package. A null
+         --  abstract state always appears as the sole element of the state
+         --  list.
+
+         return
+           Present (States)
+             and then Is_Null_State (Node (First_Elmt (States)));
+      end Has_Null_Abstract_State;
+
+      --  Local variables
+
+      Context     : Entity_Id := Empty;
+      Not_Visible : Boolean   := False;
+      Scop        : Entity_Id;
+
+   --  Start of processing for Check_No_Hidden_State
+
+   begin
+      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
+
+      --  Find the proper context where the object or state appears
+
+      Scop := Scope (Id);
+      while Present (Scop) loop
+         Context := Scop;
+
+         --  Keep track of the context's visibility
+
+         Not_Visible := Not_Visible or else In_Private_Part (Context);
+
+         --  Prevent the search from going too far
+
+         if Context = Standard_Standard then
+            return;
+
+         --  Objects and states that appear immediately within a subprogram or
+         --  inside a construct nested within a subprogram do not introduce a
+         --  hidden state. They behave as local variable declarations.
+
+         elsif Is_Subprogram (Context) then
+            return;
+
+         --  When examining a package body, use the entity of the spec as it
+         --  carries the abstract state declarations.
+
+         elsif Ekind (Context) = E_Package_Body then
+            Context := Spec_Entity (Context);
+         end if;
+
+         --  Stop the traversal when a package subject to a null abstract state
+         --  has been found.
+
+         if Ekind_In (Context, E_Generic_Package, E_Package)
+           and then Has_Null_Abstract_State (Context)
+         then
+            exit;
+         end if;
+
+         Scop := Scope (Scop);
+      end loop;
+
+      --  At this point we know that there is at least one package with a null
+      --  abstract state in visibility. Emit an error message unconditionally
+      --  if the entity being processed is a state because the placement of the
+      --  related package is irrelevant. This is not the case for objects as
+      --  the intermediate context matters.
+
+      if Present (Context)
+        and then (Ekind (Id) = E_Abstract_State or else Not_Visible)
+      then
+         Error_Msg_N ("cannot introduce hidden state &", Id);
+         Error_Msg_NE ("\package & has null abstract state", Id, Context);
+      end if;
+   end Check_No_Hidden_State;
+
    ------------------------------------------
    -- Check_Potentially_Blocking_Operation --
    ------------------------------------------
