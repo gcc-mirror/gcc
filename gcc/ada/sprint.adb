@@ -2499,7 +2499,8 @@ package body Sprint is
             Write_Str_With_Col_Check_Sloc ("package ");
             Sprint_Node (Defining_Unit_Name (Node));
 
-            if Nkind (Parent (Node)) = N_Package_Declaration
+            if Nkind_In (Parent (Node), N_Package_Declaration,
+                                        N_Generic_Package_Declaration)
               and then Has_Aspects (Parent (Node))
             then
                Sprint_Aspect_Specifications
@@ -3304,7 +3305,10 @@ package body Sprint is
       --  Print aspects, except for special case of package declaration,
       --  where the aspects are printed inside the package specification.
 
-      if Has_Aspects (Node) and Nkind (Node) /= N_Package_Declaration then
+      if Has_Aspects (Node)
+         and then not Nkind_In (Node, N_Package_Declaration,
+                                      N_Generic_Package_Declaration)
+      then
          Sprint_Aspect_Specifications (Node, Semicolon => True);
       end if;
 

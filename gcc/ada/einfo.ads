@@ -1753,12 +1753,14 @@ package Einfo is
 --       is defined for the type.
 
 --    Has_Private_Ancestor (Flag151)
---       Applies to type extensions. True if some ancestor is derived from a
---       private type, making some components invisible and aggregates illegal.
---       This flag is set at the point of derivation. The legality of the
---       aggregate must be rechecked because it also depends on the visibility
---       at the point the aggregate is resolved. See sem_aggr.adb.
---       This is part of AI05-0115.
+--       Applies to untagged derived types and to type extensions. True when
+--       some ancestor is derived from a private type, making some components
+--       invisible and aggregates illegal. Used to check the legality of
+--       selected components and aggregates. The flag is set at the point of
+--       derivation.
+--       The legality of an aggregate of a type with a private ancestor  must
+--       be checked because it also depends on the visibility at the point the
+--       aggregate is resolved. See sem_aggr.adb. This is part of AI05-0115.
 
 --    Has_Private_Declaration (Flag155)
 --       Defined in all entities. Returns True if it is the defining entity

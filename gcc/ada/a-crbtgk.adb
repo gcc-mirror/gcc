@@ -45,6 +45,13 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       X : Node_Access;
 
    begin
+      --  If the container is empty, return a result immediately, so that we do
+      --  not manipulate the tamper bits unnecessarily.
+
+      if Tree.Root = null then
+         return null;
+      end if;
+
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 
@@ -87,6 +94,13 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       Result : Node_Access;
 
    begin
+      --  If the container is empty, return a result immediately, so that we do
+      --  not manipulate the tamper bits unnecessarily.
+
+      if Tree.Root = null then
+         return null;
+      end if;
+
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 
@@ -137,6 +151,13 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       X : Node_Access;
 
    begin
+      --  If the container is empty, return a result immediately, so that we do
+      --  not manipulate the tamper bits unnecessarily.
+
+      if Tree.Root = null then
+         return null;
+      end if;
+
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 
@@ -198,6 +219,15 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  its previous neighbor, in order for the conditional insertion to
       --  succeed.
 
+      --  Handle insertion into an empty container as a special case, so that
+      --  we do not manipulate the tamper bits unnecessarily.
+
+      if Tree.Root = null then
+         Insert_Post (Tree, null, True, Node);
+         Inserted := True;
+         return;
+      end if;
+
       --  We search the tree to find the nearest neighbor of Key, which is
       --  either the smallest node greater than Key (Inserted is True), or the
       --  largest node less or equivalent to Key (Inserted is False).
@@ -227,9 +257,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
       if Inserted then
 
-         --  Either Tree is empty, or Key is less than Y. If Y is the first
-         --  node in the tree, then there are no other nodes that we need to
-         --  search for, and we insert a new node into the tree.
+         --  Key is less than Y. If Y is the first node in the tree, then there
+         --  are no other nodes that we need to search for, and we insert a new
+         --  node into the tree.
 
          if Y = Tree.First then
             Insert_Post (Tree, Y, True, Node);
@@ -316,18 +346,26 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  is not a search and the only comparisons that occur are with
       --  the hint and its neighbor.
 
-      --  If Position is null, this is interpreted to mean that Key is
-      --  large relative to the nodes in the tree. If the tree is empty,
-      --  or Key is greater than the last node in the tree, then we're
-      --  done; otherwise the hint was "wrong" and we must search.
+      --  Handle insertion into an empty container as a special case, so that
+      --  we do not manipulate the tamper bits unnecessarily.
+
+      if Tree.Root = null then
+         Insert_Post (Tree, null, True, Node);
+         Inserted := True;
+         return;
+      end if;
+
+      --  If Position is null, this is interpreted to mean that Key is large
+      --  relative to the nodes in the tree. If Key is greater than the last
+      --  node in the tree, then we're done; otherwise the hint was "wrong" and
+      --  we must search.
 
       if Position = null then  -- largest
          begin
             B := B + 1;
             L := L + 1;
 
-            Compare :=
-              Tree.Last = null or else Is_Greater_Key_Node (Key, Tree.Last);
+            Compare := Is_Greater_Key_Node (Key, Tree.Last);
 
             L := L - 1;
             B := B - 1;

@@ -3021,6 +3021,13 @@ package body Sem_Ch12 is
       Id := Defining_Entity (N);
       Generate_Definition (Id);
 
+      --  Analyze aspects now, so that generated pragmas appear in the
+      --  declarations before building and analyzing the generic copy.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
+
       --  Expansion is not applied to generic units
 
       Start_Generic;
@@ -3079,9 +3086,6 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------

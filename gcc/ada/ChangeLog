@@ -1,3 +1,36 @@
+2013-04-25  Matthew Heaney  <heaney@adacore.com>
+
+	* a-rbtgbo.adb, a-crbtgo.adb (Generic_Equal): do not test for
+	tampering when container empty.
+	* a-crbtgk.adb (Ceiling, Find, Floor): ditto.
+	(Generic_Conditional_Insert, Generic_Conditional_Insert_With_Hint):
+	ditto.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch12.adb: Move aspects from package specification to
+	generic package declaration.
+	* sem_ch12.adb: Analyze aspect specifications before building
+	and analyzing the generic copy, so that the generated pragmas
+	are properly taken into account.
+	* sem_ch13.adb: For compilation unit aspects that apply to a
+	generic package declaration, insert corresponding pragmas ahead
+	of visible declarations.
+	* sprint.adb: Display properly the aspects of a generic type
+	declaration.
+
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb: Minor reformatting.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Extend documentation on use of Is_Private_Ancestor
+	for untagged types.
+	* sem_ch3.adb (Is_Visible_Component): Refine predicate for the
+	case of untagged types derived from private types, to reject
+	illegal selected components.
+
 2013-04-25  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): Test

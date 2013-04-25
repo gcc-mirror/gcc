@@ -1986,7 +1986,9 @@ package body Sem_Ch13 is
                   --  issue of visibility delay for these aspects.
 
                   if A_Id in Library_Unit_Aspects
-                    and then Nkind (N) = N_Package_Declaration
+                    and then
+                      Nkind_In (N, N_Package_Declaration,
+                                   N_Generic_Package_Declaration)
                     and then Nkind (Parent (N)) /= N_Compilation_Unit
                   then
                      Error_Msg_N
@@ -2041,7 +2043,9 @@ package body Sem_Ch13 is
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the N_Compilation_Unit_Aux
             --  node (no delay is required here) except for aspects on a
-            --  subprogram body (see below).
+            --  subprogram body (see below) and a generic package, for which
+            --  we need to introduce the pragma before building the generic
+            --  copy (see sem_ch12).
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit
               and then (Present (Aitem) or else Is_Boolean_Aspect (Aspect))
@@ -2081,6 +2085,14 @@ package body Sem_Ch13 is
                      end if;
 
                      Prepend (Aitem, Declarations (N));
+
+                  elsif Nkind (N) = N_Generic_Package_Declaration then
+                     if No (Visible_Declarations (Specification (N))) then
+                        Set_Visible_Declarations (Specification (N), New_List);
+                     end if;
+
+                     Prepend (Aitem,
+                       Visible_Declarations (Specification (N)));
 
                   else
                      if No (Pragmas_After (Aux)) then

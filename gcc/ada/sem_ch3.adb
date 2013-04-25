@@ -16468,10 +16468,15 @@ package body Sem_Ch3 is
          Type_Scope     := Scope (Base_Type (Scope (C)));
       end if;
 
-      --  This test only concerns tagged types
+      --  For an untagged type derived from a private type, the only
+      --  visible components are new discriminants.
 
       if not Is_Tagged_Type (Original_Scope) then
-         return True;
+         return not Has_Private_Ancestor (Original_Scope)
+            or else In_Open_Scopes (Scope (Original_Scope))
+            or else
+              (Ekind (Original_Comp) = E_Discriminant
+                 and then Original_Scope = Type_Scope);
 
       --  If it is _Parent or _Tag, there is no visibility issue
 
@@ -17382,8 +17387,6 @@ package body Sem_Ch3 is
          --  The Base_Type is already completed, we can complete the subtype
          --  now. We have to create a new entity with the same name, Thus we
          --  can't use Create_Itype.
-
-         --  This is messy, should be fixed ???
 
          Full := Make_Defining_Identifier (Sloc (Id), Chars (Id));
          Set_Is_Itype (Full);
