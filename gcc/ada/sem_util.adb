@@ -449,9 +449,10 @@ package body Sem_Util is
    --------------------------------
 
    procedure Bad_Predicated_Subtype_Use
-     (Msg : String;
-      N   : Node_Id;
-      Typ : Entity_Id)
+     (Msg            : String;
+      N              : Node_Id;
+      Typ            : Entity_Id;
+      Suggest_Static : Boolean := False)
    is
    begin
       if Has_Predicates (Typ) then
@@ -464,6 +465,13 @@ package body Sem_Util is
 
          else
             Error_Msg_FE (Msg, N, Typ);
+         end if;
+
+         --  Emit an optional suggestion on how to remedy the error if the
+         --  context warrants it.
+
+         if Suggest_Static and then Present (Static_Predicate (Typ)) then
+            Error_Msg_FE ("\predicate of & should be marked static", N, Typ);
          end if;
       end if;
    end Bad_Predicated_Subtype_Use;

@@ -44,6 +44,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -1867,12 +1868,14 @@ package body Sem_Disp is
       Vis_List  : Elist_Id;
 
    begin
-      --  This Ada 2012 rule is valid only for type extensions or private
-      --  extensions.
+      --  This Ada 2012 rule applies only for type extensions or private
+      --  extensions, where the parent type is not in a parent unit, and
+      --  where an operation is never declared but still inherited.
 
       if No (Tag_Typ)
         or else not Is_Record_Type (Tag_Typ)
         or else Etype (Tag_Typ) = Tag_Typ
+        or else In_Open_Scopes (Scope (Etype (Tag_Typ)))
       then
          return Empty;
       end if;

@@ -3510,6 +3510,9 @@ package body Sem_Ch4 is
       --  Determine whether if expression If_Expr lacks an else part or if it
       --  has one, it evaluates to True.
 
+      function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean;
+      --  Determine whether entity Id is referenced within expression Expr
+
       --------------------
       -- Is_Empty_Range --
       --------------------
@@ -3561,9 +3564,44 @@ package body Sem_Ch4 is
                        and then Is_True (Expr_Value (Else_Expr)));
       end No_Else_Or_Trivial_True;
 
+      ----------------
+      -- Referenced --
+      ----------------
+
+      function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean is
+         Seen : Boolean := False;
+
+         function Is_Reference (N : Node_Id) return Traverse_Result;
+         --  Determine whether node N denotes a reference to Id. If this is the
+         --  case, set global flag Seen to True and stop the traversal.
+
+         function Is_Reference (N : Node_Id) return Traverse_Result is
+         begin
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Entity (N) = Id
+            then
+               Seen := True;
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Is_Reference;
+
+         procedure Inspect_Expression is new Traverse_Proc (Is_Reference);
+
+      --  Start of processing for Referenced
+
+      begin
+         Inspect_Expression (Expr);
+
+         return Seen;
+      end Referenced;
+
       --  Local variables
 
       Cond    : constant Node_Id := Condition (N);
+      Loop_Id : Entity_Id;
       QE_Scop : Entity_Id;
 
    --  Start of processing for Analyze_Quantified_Expression
@@ -3590,21 +3628,38 @@ package body Sem_Ch4 is
       if Present (Iterator_Specification (N)) then
          Preanalyze (Iterator_Specification (N));
 
+         --  Do not proceed with the analysis when the range of iteration is
+         --  empty. The appropriate error is issued by Is_Empty_Range.
+
          if Is_Entity_Name (Name (Iterator_Specification (N)))
            and then Is_Empty_Range (Etype (Name (Iterator_Specification (N))))
          then
             return;
          end if;
 
-      else
+      else pragma Assert (Present (Loop_Parameter_Specification (N)));
          Preanalyze (Loop_Parameter_Specification (N));
       end if;
 
       Preanalyze_And_Resolve (Cond, Standard_Boolean);
 
       End_Scope;
-
       Set_Etype (N, Standard_Boolean);
+
+      --  Verify that the loop variable is used within the condition of the
+      --  quantified expression.
+
+      if Present (Iterator_Specification (N)) then
+         Loop_Id := Defining_Identifier (Iterator_Specification (N));
+      else
+         Loop_Id := Defining_Identifier (Loop_Parameter_Specification (N));
+      end if;
+
+      if Warn_On_Suspicious_Contract
+        and then not Referenced (Loop_Id, Cond)
+      then
+         Error_Msg_N ("?T?unused variable &", Loop_Id);
+      end if;
 
       --  Diagnose a possible misuse of the "some" existential quantifier. When
       --  we have a quantified expression of the form
