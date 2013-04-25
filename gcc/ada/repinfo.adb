@@ -458,7 +458,6 @@ package body Repinfo is
            and then Present (Corresponding_Spec (Find_Declaration (Ent)))
          then
             E := First_Entity (Corresponding_Spec (Find_Declaration (Ent)));
-
             while Present (E) loop
                if Is_Subprogram (E)
                  and then
@@ -727,7 +726,6 @@ package body Repinfo is
       Form := First_Formal (Ent);
       while Present (Form) loop
          Get_Unqualified_Decoded_Name_String (Chars (Form));
-
          while Name_Len <= Plen loop
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := ' ';
@@ -1346,7 +1344,6 @@ package body Repinfo is
                   when Discrim_Val =>
                      declare
                         Sub : constant Int := UI_To_Int (Node.Op1);
-
                      begin
                         pragma Assert (Sub in D'Range);
                         return D (Sub);
