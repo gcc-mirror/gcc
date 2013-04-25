@@ -1,3 +1,8 @@
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb, einfo.adb, repinfo.adb, snames.adb-tmpl,
+	snames.ads-tmpl: Minor reformatting.
+
 2013-04-25  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch7.adb: Minor reformatting.

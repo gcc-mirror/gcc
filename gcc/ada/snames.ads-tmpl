@@ -1625,7 +1625,7 @@ package Snames is
    type Convention_Id is (
 
       --  The native-to-Ada (non-foreign) conventions come first. These include
-      --  the ones defined in the RM, plus Stubbed.
+      --  the ones defined in the RM, plus Ghost and Stubbed.
 
       Convention_Ada,
       Convention_Intrinsic,

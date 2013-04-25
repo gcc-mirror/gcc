@@ -557,6 +557,7 @@ package body Sem_Ch7 is
                     and then Ekind (Entity (N)) = E_Constant
                   then
                      V := Constant_Value (Entity (N));
+
                      if Present (V)
                        and then not Compile_Time_Known_Value_Or_Aggr (V)
                      then
@@ -1166,7 +1167,7 @@ package body Sem_Ch7 is
                   while Present (Inst_Par)
                     and then Inst_Par /= Standard_Standard
                     and then (not In_Open_Scopes (Inst_Par)
-                                or else not In_Private_Part (Inst_Par))
+                               or else not In_Private_Part (Inst_Par))
                   loop
                      Install_Private_Declarations (Inst_Par);
                      Set_Use (Private_Declarations
@@ -1660,8 +1661,8 @@ package body Sem_Ch7 is
                              and then Present (DTC_Entity (New_Op))
                              and then Present (DTC_Entity (Prim_Op))
                            then
-                              pragma Assert (DT_Position (New_Op)
-                                              = DT_Position (Prim_Op));
+                              pragma Assert
+                                (DT_Position (New_Op) = DT_Position (Prim_Op));
                               null;
                            end if;
 
@@ -1860,9 +1861,8 @@ package body Sem_Ch7 is
                Set_Is_Potentially_Use_Visible
                  (Priv, Is_Potentially_Use_Visible (Node (Priv_Elmt)));
 
-               --  Within a child unit, recurse, except in generic child
-               --  unit, which (unfortunately) handle private_dependents
-               --  separately.
+               --  Within a child unit, recurse, except in generic child unit,
+               --  which (unfortunately) handle private_dependents separately.
 
                if Is_Priv
                  and then Is_Child_Unit (Cunit_Entity (Current_Sem_Unit))
@@ -2019,7 +2019,7 @@ package body Sem_Ch7 is
 
          return In_Open_Scopes (S)
            or else (Is_Generic_Instance (Current_Scope)
-              and then Scope (Dep) = Scope (Current_Scope));
+                     and then Scope (Dep) = Scope (Current_Scope));
       else
          return True;
       end if;
@@ -2317,8 +2317,7 @@ package body Sem_Ch7 is
             Check_Conventions (Id);
          end if;
 
-         if (Ekind (Id) = E_Private_Type
-               or else Ekind (Id) = E_Limited_Private_Type)
+         if Ekind_In (Id, E_Private_Type, E_Limited_Private_Type)
            and then No (Full_View (Id))
            and then not Is_Generic_Type (Id)
            and then not Is_Derived_Type (Id)
@@ -2463,8 +2462,6 @@ package body Sem_Ch7 is
                  ("full view of type must be definite subtype", Full);
             end if;
 
-            Priv_Elmt := First_Elmt (Private_Dependents (Id));
-
             --  Swap out the subtypes and derived types of Id that
             --  were compiled in this scope, or installed previously
             --  by Install_Private_Declarations.
@@ -2473,6 +2470,7 @@ package body Sem_Ch7 is
             --  field which may be empty due to a swap by a previous call to
             --  End_Package_Scope (e.g. from the freezing mechanism).
 
+            Priv_Elmt := First_Elmt (Private_Dependents (Id));
             while Present (Priv_Elmt) loop
                Priv_Sub := Node (Priv_Elmt);
 
@@ -2552,7 +2550,7 @@ package body Sem_Ch7 is
                      if Etype (Subp) = Id
                        or else
                          (Is_Class_Wide_Type (Etype (Subp))
-                            and then Etype (Etype (Subp)) = Id)
+                           and then Etype (Etype (Subp)) = Id)
                      then
                         Error_Msg_NE
                           ("type& must be completed in the private part",
@@ -2565,8 +2563,7 @@ package body Sem_Ch7 is
             end;
 
          elsif not Is_Child_Unit (Id)
-           and then (not Is_Private_Type (Id)
-                      or else No (Full_View (Id)))
+           and then (not Is_Private_Type (Id) or else No (Full_View (Id)))
          then
             Set_Is_Hidden (Id);
             Set_Is_Potentially_Use_Visible (Id, False);

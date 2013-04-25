@@ -147,8 +147,8 @@ package body Snames is
       case N is
          when Name_Ada                   => return Convention_Ada;
          when Name_Ada_Pass_By_Copy      => return Convention_Ada_Pass_By_Copy;
-         when Name_Ada_Pass_By_Reference =>
-            return Convention_Ada_Pass_By_Reference;
+         when Name_Ada_Pass_By_Reference => return
+                                              Convention_Ada_Pass_By_Reference;
          when Name_Assembler             => return Convention_Assembler;
          when Name_C                     => return Convention_C;
          when Name_CIL                   => return Convention_CIL;
