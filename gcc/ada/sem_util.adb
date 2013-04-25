@@ -1301,11 +1301,11 @@ package body Sem_Util is
       Typ  : Entity_Id)
    is
    begin
-      --  When both the predicate and the expression are static, evaluate the
-      --  check at compile time. A type becomes non-static when it has aspect
-      --  Dynamic_Predicate.
+      --  When the predicate is static and the value of the expression is known
+      --  at compile time, evaluate the predicate check. A type is non-static
+      --  when it has aspect Dynamic_Predicate.
 
-      if Is_OK_Static_Expression (Expr)
+      if Compile_Time_Known_Value (Expr)
         and then Has_Predicates (Typ)
         and then Present (Static_Predicate (Typ))
         and then not Has_Dynamic_Predicate_Aspect (Typ)
