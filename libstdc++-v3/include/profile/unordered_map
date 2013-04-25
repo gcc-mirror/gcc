@@ -44,9 +44,9 @@ namespace __profile
 {
   /// Class std::unordered_map wrapper with performance instrumentation.
   template<typename _Key, typename _Tp,
-	   typename _Hash  = std::hash<_Key>,
+	   typename _Hash = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
-	   typename _Alloc =  std::allocator<_Key> >
+	   typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
     class unordered_map
     : public _GLIBCXX_STD_BASE
     {
@@ -346,9 +346,9 @@ namespace __profile
 
   /// Class std::unordered_multimap wrapper with performance instrumentation.
   template<typename _Key, typename _Tp,
-	   typename _Hash  = std::hash<_Key>,
+	   typename _Hash = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
-	   typename _Alloc =  std::allocator<_Key> >
+	   typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
     class unordered_multimap
     : public _GLIBCXX_STD_BASE
     {      
