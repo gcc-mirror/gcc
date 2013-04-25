@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package System.Dim.Mks is
         (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
         (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
 
-   --  SI Base dimensioned subtype
+   --  SI Base dimensioned subtypes
 
    subtype Length is Mks_Type
      with
@@ -69,7 +69,7 @@ package System.Dim.Mks is
      with
       Dimension => (Symbol => "kg",
         Kilogram => 1,
-        others =>   0);
+        others   => 0);
 
    subtype Time is Mks_Type
      with
@@ -92,19 +92,22 @@ package System.Dim.Mks is
    subtype Amount_Of_Substance is Mks_Type
      with
       Dimension => (Symbol => "mol",
-        Mole =>   1,
+        Mole   => 1,
         others => 0);
 
    subtype Luminous_Intensity is Mks_Type
      with
       Dimension => (Symbol => "cd",
         Candela => 1,
-        others =>  0);
+        others  => 0);
 
-   --  SI Base units
+   --  Initialize SI Base unit values
 
-   pragma Warnings (Off);
-   --  Turn off the all the dimension warnings
+   --  Turn off the all the dimension warnings for these basic assignments
+   --  since otherwise we would get complaints about assigning dimensionless
+   --  values to dimensioned subtypes (we can't assign 1.0*m to m!).
+
+   pragma Warnings (Off, "*assumed to be*");
 
    m   : constant Length                    := 1.0;
    kg  : constant Mass                      := 1.0;
@@ -114,16 +117,16 @@ package System.Dim.Mks is
    mol : constant Amount_Of_Substance       := 1.0;
    cd  : constant Luminous_Intensity        := 1.0;
 
-   pragma Warnings (On);
+   pragma Warnings (On, "*assumed to be*");
 
    --  SI Derived dimensioned subtypes
 
    subtype Absorbed_Dose is Mks_Type
      with
       Dimension => (Symbol => "Gy",
-        Meter =>  2,
+        Meter  =>  2,
         Second => -2,
-        others => 0);
+        others =>  0);
 
    subtype Angle is Mks_Type
      with
@@ -133,14 +136,14 @@ package System.Dim.Mks is
    subtype Area is Mks_Type
      with
       Dimension => (
-        Meter =>  2,
+        Meter  => 2,
         others => 0);
 
    subtype Catalytic_Activity is Mks_Type
      with
       Dimension => (Symbol => "kat",
         Second => -1,
-        Mole =>   1,
+        Mole   => 1,
         others => 0);
 
    subtype Celsius_Temperature is Mks_Type
@@ -152,11 +155,11 @@ package System.Dim.Mks is
    subtype Electric_Capacitance is Mks_Type
      with
       Dimension => (Symbol => 'F',
-        Meter =>    -2,
+        Meter    => -2,
         Kilogram => -1,
-        Second =>   4,
-        Ampere =>   2,
-        others =>   0);
+        Second   =>  4,
+        Ampere   =>  2,
+        others   =>  0);
 
    subtype Electric_Charge is Mks_Type
      with
@@ -168,119 +171,119 @@ package System.Dim.Mks is
    subtype Electric_Conductance is Mks_Type
      with
       Dimension => (Symbol => 'S',
-        Meter =>    -2,
+        Meter    => -2,
         Kilogram => -1,
-        Second =>   3,
-        Ampere =>   2,
-        others =>   0);
+        Second   =>  3,
+        Ampere   =>  2,
+        others   =>  0);
 
    subtype Electric_Potential_Difference is Mks_Type
      with
       Dimension => (Symbol => 'V',
-        Meter =>    2,
-        Kilogram => 1,
-        Second =>   -3,
-        Ampere =>   -1,
-        others =>   0);
+        Meter    =>  2,
+        Kilogram =>  1,
+        Second   => -3,
+        Ampere   => -1,
+        others   =>  0);
 
    subtype Electric_Resistance is Mks_Type
      with
       Dimension => (Symbol => "Ω",
-        Meter =>    2,
-        Kilogram => 1,
-        Second =>   -3,
-        Ampere =>   -2,
-        others =>   0);
+        Meter    =>  2,
+        Kilogram =>  1,
+        Second   => -3,
+        Ampere   => -2,
+        others   =>  0);
 
    subtype Energy is Mks_Type
      with
       Dimension => (Symbol => 'J',
-        Meter =>    2,
-        Kilogram => 1,
-        Second =>   -2,
-        others =>   0);
+        Meter    =>  2,
+        Kilogram =>  1,
+        Second   => -2,
+        others   =>  0);
 
    subtype Equivalent_Dose is Mks_Type
      with
       Dimension => (Symbol => "Sv",
-        Meter =>  2,
+        Meter  =>  2,
         Second => -2,
-        others => 0);
+        others =>  0);
 
    subtype Force is Mks_Type
      with
       Dimension => (Symbol => 'N',
-        Meter =>    1,
+        Meter    => 1,
         Kilogram => 1,
-        Second =>  -2,
-        others =>   0);
+        Second   => -2,
+        others   => 0);
 
    subtype Frequency is Mks_Type
      with
       Dimension => (Symbol => "Hz",
         Second => -1,
-        others => 0);
+        others =>  0);
 
    subtype Illuminance is Mks_Type
      with
       Dimension => (Symbol => "lx",
-        Meter =>   -2,
-        Candela => 1,
-        others =>  0);
+        Meter   => -2,
+        Candela =>  1,
+        others  =>  0);
 
    subtype Inductance is Mks_Type
      with
       Dimension => (Symbol => 'H',
-        Meter =>    2,
-        Kilogram => 1,
-        Second =>   -2,
-        Ampere =>   -2,
-        others =>   0);
+        Meter    =>  2,
+        Kilogram =>  1,
+        Second   => -2,
+        Ampere   => -2,
+        others   =>  0);
 
    subtype Luminous_Flux is Mks_Type
      with
       Dimension => (Symbol => "lm",
         Candela => 1,
-        others =>  0);
+        others  => 0);
 
    subtype Magnetic_Flux is Mks_Type
      with
       Dimension => (Symbol => "Wb",
-        Meter =>    2,
-        Kilogram => 1,
-        Second =>   -2,
-        Ampere =>   -1,
-        others =>   0);
+        Meter    =>  2,
+        Kilogram =>  1,
+        Second   => -2,
+        Ampere   => -1,
+        others   =>  0);
 
    subtype Magnetic_Flux_Density is Mks_Type
      with
       Dimension => (Symbol => 'T',
-        Kilogram => 1,
-        Second =>   -2,
-        Ampere =>   -1,
-        others =>   0);
+        Kilogram =>  1,
+        Second   => -2,
+        Ampere   => -1,
+        others   =>  0);
 
    subtype Power is Mks_Type
      with
       Dimension => (Symbol => 'W',
-        Meter =>    2,
-        Kilogram => 1,
-        Second =>   -3,
-        others =>   0);
+        Meter    =>  2,
+        Kilogram =>  1,
+        Second   => -3,
+        others   =>  0);
 
    subtype Pressure is Mks_Type
      with
       Dimension => (Symbol => "Pa",
-        Meter =>    -1,
-        Kilogram => 1,
-        Second =>   -2,
-        others =>   0);
+        Meter    => -1,
+        Kilogram =>  1,
+        Second   => -2,
+        others   =>  0);
 
    subtype Radioactivity is Mks_Type
      with
       Dimension => (Symbol => "Bq",
         Second => -1,
-        others => 0);
+        others =>  0);
 
    subtype Solid_Angle is Mks_Type
      with
@@ -290,18 +293,23 @@ package System.Dim.Mks is
    subtype Speed is Mks_Type
      with
       Dimension => (
-        Meter =>  1,
+        Meter  =>  1,
         Second => -1,
-        others => 0);
+        others =>  0);
 
    subtype Volume is Mks_Type
      with
       Dimension => (
-        Meter =>  3,
+        Meter  => 3,
         others => 0);
 
-   pragma Warnings (Off);
-   --  Turn off the all the dimension warnings
+   --  Initialize derived dimension values
+
+   --  Turn off the all the dimension warnings for these basic assignments
+   --  since otherwise we would get complaints about assigning dimensionless
+   --  values to dimensioned subtypes.
+
+   pragma Warnings (Off, "*assumed to be*");
 
    rad : constant Angle                         := 1.0;
    sr  : constant Solid_Angle                   := 1.0;
@@ -376,5 +384,5 @@ package System.Dim.Mks is
    kA  : constant Electric_Current := 1.0E+03;  -- kilo
    MeA : constant Electric_Current := 1.0E+06;  -- mega
 
-   pragma Warnings (On);
+   pragma Warnings (On, "*assumed to be*");
 end System.Dim.Mks;

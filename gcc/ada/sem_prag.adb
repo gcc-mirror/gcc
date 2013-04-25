@@ -1355,7 +1355,7 @@ package body Sem_Prag is
          --  processing a global list. This routine verifies that Mode is not a
          --  duplicate mode and sets the flag Status.
 
-         procedure Check_Mode_Restiction_In_Enclosing_Context
+         procedure Check_Mode_Restriction_In_Enclosing_Context
            (Item    : Node_Id;
             Item_Id : Entity_Id);
          --  Verify that an item of mode In_Out or Output does not appear as an
@@ -1464,7 +1464,7 @@ package body Sem_Prag is
             --  enclosing subprogram.
 
             if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
-               Check_Mode_Restiction_In_Enclosing_Context (Item, Item_Id);
+               Check_Mode_Restriction_In_Enclosing_Context (Item, Item_Id);
             end if;
 
             --  The same entity might be referenced through various way. Check
@@ -1497,11 +1497,11 @@ package body Sem_Prag is
             Status := True;
          end Check_Duplicate_Mode;
 
-         ------------------------------------------------
-         -- Check_Mode_Restiction_In_Enclosing_Context --
-         ------------------------------------------------
+         -------------------------------------------------
+         -- Check_Mode_Restriction_In_Enclosing_Context --
+         -------------------------------------------------
 
-         procedure Check_Mode_Restiction_In_Enclosing_Context
+         procedure Check_Mode_Restriction_In_Enclosing_Context
            (Item    : Node_Id;
             Item_Id : Entity_Id)
          is
@@ -1542,7 +1542,7 @@ package body Sem_Prag is
 
                Subp_Id := Scope (Subp_Id);
             end loop;
-         end Check_Mode_Restiction_In_Enclosing_Context;
+         end Check_Mode_Restriction_In_Enclosing_Context;
 
          ----------------------------------------
          -- Check_Mode_Restriction_In_Function --
@@ -17966,19 +17966,14 @@ package body Sem_Prag is
         (List : Node_Id;
          Mode : Name_Id := Name_Input)
       is
-         procedure Collect_Global_Item
-           (Item : Node_Id;
-            Mode : Name_Id);
+         procedure Collect_Global_Item (Item : Node_Id; Mode : Name_Id);
          --  Add an item to the proper subprogram input or output collection
 
          -------------------------
          -- Collect_Global_Item --
          -------------------------
 
-         procedure Collect_Global_Item
-           (Item : Node_Id;
-            Mode : Name_Id)
-         is
+         procedure Collect_Global_Item (Item : Node_Id; Mode : Name_Id) is
          begin
             if Nam_In (Mode, Name_In_Out, Name_Input) then
                Add_Item (Item, Subp_Inputs);
@@ -18009,7 +18004,6 @@ package body Sem_Prag is
                Item := First (Expressions (List));
                while Present (Item) loop
                   Collect_Global_Item (Item, Mode);
-
                   Next (Item);
                end loop;
 
@@ -18019,7 +18013,6 @@ package body Sem_Prag is
                   Collect_Global_List
                     (List => Expression (Assoc),
                      Mode => Chars (First (Choices (Assoc))));
-
                   Next (Assoc);
                end loop;
             end if;

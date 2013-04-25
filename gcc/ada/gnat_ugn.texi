@@ -19260,7 +19260,7 @@ familiar to engineering practice. The dimensions of algebraic expressions
 
 This feature depends on Ada 2012 aspect specifications, and is available from
 version 7.0.1 of GNAT onwards. The GNAT-specific aspect Dimension_System allows
-the user to define a system of units; the aspect Dimension then allows the user
+you to define a system of units; the aspect Dimension then allows the user
 to declare dimensioned quantities within a given system.
 
 The major advantage of this model is that it does not require the declaration of
@@ -19293,9 +19293,7 @@ conventional units. For example:
 @smallexample @c ada
    subtype Length is Mks_Type
      with
-      Dimension => (Symbol => 'm',
-        Meter  => 1,
-        others => 0);
+      Dimension => (Symbol => 'm', Meter  => 1, others => 0);
 @end smallexample
 @noindent
 and similarly for Mass, Time, Electric_Current, Thermodynamic_Temperature,
@@ -19324,13 +19322,17 @@ as well as useful multiples of these units:
 @end smallexample
 
 @noindent
-The user can then define a derived unit by providing the aspect that
+Using this package, you can then define a derived unit by
+providing the aspect that
 specifies its dimensions within the MKS system, as well as the string to
 be used for output of a value of that unit:
 
 @smallexample @c ada
   subtype Acceleration is Mks_Type
-    with Dimension => ("m/sec^^^2", Meter => 1, Second => -2, others => 0);
+    with Dimension => ("m/sec^^^2",
+                       Meter => 1,
+                       Second => -2,
+                       others => 0);
 @end smallexample
 
 @noindent

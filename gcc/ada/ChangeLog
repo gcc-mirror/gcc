@@ -1,3 +1,12 @@
+2013-04-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor code reorganization (correct misspelling
+	Restiction).
+	* sem_util.adb, aspects.ads, sem_ch6.adb: Minor reformatting.
+	* gnat_rm.texi: Document impl-defined aspects.
+	* sem_dim.adb, sem_dim.ads, gnat_ugn.texi, s-dimmks.ads: Minor
+	reformatting.
+
 2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Set_Abstract_States): The attribute now applies
