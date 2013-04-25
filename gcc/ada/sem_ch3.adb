@@ -1230,11 +1230,11 @@ package body Sem_Ch3 is
 
       Check_For_Premature_Usage (T_Def);
 
-      --  The return type and/or any parameter type may be incomplete. Mark
-      --  the subprogram_type as depending on the incomplete type, so that
-      --  it can be updated when the full type declaration is seen. This
-      --  only applies to incomplete types declared in some enclosing scope,
-      --  not to limited views from other packages.
+      --  The return type and/or any parameter type may be incomplete. Mark the
+      --  subprogram_type as depending on the incomplete type, so that it can
+      --  be updated when the full type declaration is seen. This only applies
+      --  to incomplete types declared in some enclosing scope, not to limited
+      --  views from other packages.
 
       if Present (Formals) then
          Formal := First_Formal (Desig_Type);
@@ -1256,9 +1256,9 @@ package body Sem_Ch3 is
          end loop;
       end if;
 
-      --  If the return type is incomplete, this is legal as long as the
-      --  type is declared in the current scope and will be completed in
-      --  it (rather than being part of limited view).
+      --  If the return type is incomplete, this is legal as long as the type
+      --  is declared in the current scope and will be completed in it (rather
+      --  than being part of limited view).
 
       if Ekind (Etype (Desig_Type)) = E_Incomplete_Type
         and then not Has_Delayed_Freeze (Desig_Type)
@@ -1331,9 +1331,9 @@ package body Sem_Ch3 is
       if Base_Type (Full_Desig) = T then
          Error_Msg_N ("access type cannot designate itself", S);
 
-      --  In Ada 2005, the type may have a limited view through some unit
-      --  in its own context, allowing the following circularity that cannot
-      --  be detected earlier
+      --  In Ada 2005, the type may have a limited view through some unit in
+      --  its own context, allowing the following circularity that cannot be
+      --  detected earlier
 
       elsif Is_Class_Wide_Type (Full_Desig)
         and then Etype (Full_Desig) = T
@@ -1348,8 +1348,8 @@ package body Sem_Ch3 is
 
       Set_Etype (T, T);
 
-      --  If the type has appeared already in a with_type clause, it is
-      --  frozen and the pointer size is already set. Else, initialize.
+      --  If the type has appeared already in a with_type clause, it is frozen
+      --  and the pointer size is already set. Else, initialize.
 
       if not From_With_Type (T) then
          Init_Size_Align (T);
@@ -16468,15 +16468,16 @@ package body Sem_Ch3 is
          Type_Scope     := Scope (Base_Type (Scope (C)));
       end if;
 
-      --  For an untagged type derived from a private type, the only
-      --  visible components are new discriminants.
+      --  For an untagged type derived from a private type, the only visible
+      --  components are new discriminants. In an instance all components are
+      --  visible (see Analyze_Selected_Component).
 
       if not Is_Tagged_Type (Original_Scope) then
          return not Has_Private_Ancestor (Original_Scope)
-            or else In_Open_Scopes (Scope (Original_Scope))
-            or else
-              (Ekind (Original_Comp) = E_Discriminant
-                 and then Original_Scope = Type_Scope);
+           or else In_Open_Scopes (Scope (Original_Scope))
+           or else In_Instance
+           or else (Ekind (Original_Comp) = E_Discriminant
+                     and then Original_Scope = Type_Scope);
 
       --  If it is _Parent or _Tag, there is no visibility issue
 
@@ -16545,9 +16546,9 @@ package body Sem_Ch3 is
                 and then Is_Local_Type (Type_Scope);
          end if;
 
-      --  There is another weird way in which a component may be invisible
-      --  when the private and the full view are not derived from the same
-      --  ancestor. Here is an example :
+      --  There is another weird way in which a component may be invisible when
+      --  the private and the full view are not derived from the same ancestor.
+      --  Here is an example :
 
       --       type A1 is tagged      record F1 : integer; end record;
       --       type A2 is new A1 with record F2 : integer; end record;
