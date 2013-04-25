@@ -1,3 +1,43 @@
+2013-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (neon_builtin_type_mode): Add T_V4HF.
+	(TB_DREG): Add T_V4HF.
+	(v4hf_UP): New macro.
+	(neon_itype): Add NEON_FLOAT_WIDEN, NEON_FLOAT_NARROW.
+	(arm_init_neon_builtins): Handle NEON_FLOAT_WIDEN,
+	NEON_FLOAT_NARROW.
+	Handle initialisation of V4HF. Adjust initialisation of reinterpret
+	built-ins.
+	(arm_expand_neon_builtin): Handle NEON_FLOAT_WIDEN,
+	NEON_FLOAT_NARROW.
+	(arm_vector_mode_supported_p): Handle V4HF.
+	(arm_mangle_map): Handle V4HFmode.
+	* config/arm/arm.h (VALID_NEON_DREG_MODE): Add V4HF.
+	* config/arm/arm_neon_builtins.def: Add entries for
+	vcvtv4hfv4sf, vcvtv4sfv4hf.
+	* config/arm/neon.md (neon_vcvtv4sfv4hf): New pattern.
+	(neon_vcvtv4hfv4sf): Likewise.
+	* config/arm/neon-gen.ml: Handle half-precision floating point
+	features.
+	* config/arm/neon-testgen.ml: Handle Requires_FP_bit feature.
+	* config/arm/arm_neon.h: Regenerate.
+	* config/arm/neon.ml (type elts): Add F16.
+	(type vectype): Add T_float16x4, T_floatHF.
+	(type vecmode): Add V4HF.
+	(type features): Add Requires_FP_bit feature.
+	(elt_width): Handle F16.
+	(elt_class): Likewise.
+	(elt_of_class_width): Likewise.
+	(mode_of_elt): Refactor.
+	(type_for_elt): Handle F16, fix error messages.
+	(vectype_size): Handle T_float16x4.
+	(vcvt_sh): New function.
+	(ops): Add entries for vcvt_f16_f32, vcvt_f32_f16.
+	(string_of_vectype): Handle T_floatHF, T_float16, T_float16x4.
+	(string_of_mode): Handle V4HF.
+	* doc/arm-neon-intrinsics.texi: Regenerate.
+
 2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Fix asm_fprintf

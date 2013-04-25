@@ -5748,6 +5748,18 @@
 
 
 @itemize @bullet
+@item float16x4_t vcvt_f16_f32 (float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcvt.f16.f32 @var{d0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vcvt_f32_f16 (float16x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcvt.f32.f16 @var{q0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
 @item float32x2_t vcvt_n_f32_u32 (uint32x2_t, const int)
 @*@emph{Form of expected instruction(s):} @code{vcvt.f32.u32 @var{d0}, @var{d0}, #@var{0}}
 @end itemize

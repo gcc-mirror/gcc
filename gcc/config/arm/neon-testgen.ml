@@ -163,10 +163,12 @@ let effective_target features =
     match List.find (fun feature ->
                        match feature with Requires_feature _ -> true
                                         | Requires_arch _ -> true
+                                        | Requires_FP_bit 1 -> true
                                         | _ -> false)
                      features with
       Requires_feature "FMA" -> "arm_neonv2"
     | Requires_arch 8 -> "arm_v8_neon"
+    | Requires_FP_bit 1 -> "arm_neon_fp16"
     | _ -> assert false
   with Not_found -> "arm_neon"
 
