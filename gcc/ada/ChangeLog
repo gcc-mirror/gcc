@@ -1,3 +1,19 @@
+2013-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb: Add with and use clause for Stringt.
+	(Expand_Contract_Cases): Moved from sem_ch6. Add formal parameters
+	Decls and Stmts along with comments on their usage.
+	* exp_ch6.ads (Expand_Contract_Cases): Moved from sem_ch6.
+	* sem_ch6.adb (Expand_Contract_Cases): Moved to exp_ch6.
+	(Process_Contract_Cases): Update the call to Expand_Contract_Cases.
+
+2013-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat_rm.texi: Minor editing, to clarify use of dimension aspects.
+	* sem_util.adb (Is_OK_Variable_For_Out_Formal): Reject an
+	aggregate for a packed type, which may be converted into an
+	unchecked conversion of an object.
+
 2013-04-25  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb: Minor code reorganization (correct misspelling

@@ -8909,10 +8909,13 @@ package body Sem_Util is
       --  parameters in cases where code generation is unaffected. We tell
       --  source unchecked conversions by seeing if they are rewrites of an
       --  original Unchecked_Conversion function call, or of an explicit
-      --  conversion of a function call.
+      --  conversion of a function call or an aggregate (as may happen in the
+      --  expansion of a packed array aggregate).
 
       elsif Nkind (AV) = N_Unchecked_Type_Conversion then
-         if Nkind (Original_Node (AV)) = N_Function_Call then
+         if Nkind_In (Original_Node (AV),
+                        N_Function_Call, N_Aggregate)
+         then
             return False;
 
          elsif Comes_From_Source (AV)

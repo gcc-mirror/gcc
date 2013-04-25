@@ -992,6 +992,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
 * Pragma Overflow_Mode::
+* Pragma Overriding_Renamings::
 * Pragma Partition_Elaboration_Policy::
 * Pragma Passive::
 * Pragma Persistent_BSS::
@@ -4698,6 +4699,25 @@ overflow checking, but does not affect the overflow mode.
 The pragma @code{Unsuppress (Overflow_Check)} unsuppresses (enables)
 overflow checking, but does not affect the overflow mode.
 
+@node Pragma Overriding_Renamings
+@unnumberedsec Pragma Overriding_Renamings
+@findex Overriding_Renamings
+@cindex Rational profile
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Overriding_Renamings;
+@end smallexample
+
+@noindent
+
+This is a GNAT pragma to simplify porting legacy code accepted by the Rational
+Ada compiler. In the presence of this pragma, a renaming declaration that
+renames an inherited operation declared in the same scope is legal, even though
+RM 8.3 (15) stipulates that an overridden operation is not visible within the
+declaration of the overriding operation.
+
 @node Pragma Partition_Elaboration_Policy
 @unnumberedsec Pragma Partition_Elaboration_Policy
 @findex Partition_Elaboration_Policy
@@ -5204,6 +5224,7 @@ pragma Profile (Rational);
 The Rational profile is intended to facilitate porting legacy code that
 compiles with the Rational APEX compiler, even when the code includes non-
 conforming Ada constructs.  The profile enables the following three pragmas:
+
 
 @itemize @bullet
 @item pragma Implicit_Packing
@@ -6814,9 +6835,9 @@ This aspect is equivalent to pragma @code{Depends}.
 @unnumberedsec Aspect Dimension
 @findex Dimension
 @noindent
-The @code{Dimension} aspect is used to define a system of
-dimensions that will be used in subsequent subtype declarations with
-@code{Dimension} aspects that reference this system. The syntax is:
+The @code{Dimension} aspect is used to specify the dimensions of a given
+subtype of a dimensioned numeric type. The aspect also specifies a symbol
+used when doing formatted output of dimensioned quantities. The syntax is:
 
 @smallexample @c ada
 with Dimension =>
@@ -6833,9 +6854,13 @@ RATIONAL ::= [-] NUMERIC_LITERAL [/ NUMERIC_LITERAL]
 @end smallexample
 
 @noindent
-This aspect can only be applied to a subtype where the parent type has
-a @code{Dimension_Systen} aspect. It specifies which units apply to
-the subtype, and the corresponding powers. For examples of the usage
+This aspect can only be applied to a subtype whose parent type has
+a @code{Dimension_Systen} aspect. The aspect must specify values for
+all dimensions of the system. The rational values are the powers of the
+corresponding dimensions that are used by the compiler to verify that
+physical (numeric) computations are dimensionally consistent. For example,
+the computation of a force must result in dimensions (L => 1, M => 1, T => -2).
+For further examples of the usage
 of this aspect, see package @code{System.Dim.Mks}.
 Note that when the dimensioned type is an integer type, then any
 dimension value must be an integer literal.
@@ -6864,15 +6889,19 @@ This aspect is applied to a type, which must be a numeric derived type
 will represent values within the dimension system. Each @code{DIMENSION}
 corresponds to one particular dimension. A maximum of 7 dimensions may
 be specified. @code{Unit_Name} is the name of the dimension (for example
-@code{Meter}). @code{Unit_Symbol} is the short hand used for quantities
+@code{Meter}). @code{Unit_Symbol} is the shorthand used for quantities
 of this dimension (for example 'm' for Meter). @code{Dim_Symbol} gives
 the identification within the dimension system (typically this is a
-single letter, e.g. 'L' standing for length for unit name Meter).
+single letter, e.g. 'L' standing for length for unit name Meter). The
+Unit_Smbol is used in formatted output of dimensioned quantities. The
+Dim_Symbol is used in error messages when numeric operations have
+inconsistent dimensions.
 
-Although the implementation allows multiple different dimension systems
-to be defined using this aspect, in practice, nearly all usage of the
-dimension system will use the standard definition in the run-time
-package @code{System.Dim.Mks}:
+GNAT provides the standard definition of the International MKS system in
+the run-time package @code{System.Dim.Mks}. You can easily define
+similar packages for cgs units or British units, and define conversion factors
+between values in different systems. The MKS system is characterized by the
+following aspect:
 
 @smallexample @c ada
    type Mks_Type is new Long_Long_Float
@@ -6888,9 +6917,7 @@ package @code{System.Dim.Mks}:
 @end smallexample
 
 @noindent
-which correspond to the standard 7-unit dimension system typically
-used in physical calculations. See section
-"Performing Dimensionality Analysis in GNAT" in the GNAT Users
+See section "Performing Dimensionality Analysis in GNAT" in the GNAT Users
 Guide for detailed examples of use of the dimension system.
 
 @node Aspect Favor_Top_Level
