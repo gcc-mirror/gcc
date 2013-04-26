@@ -69,7 +69,9 @@ extern "C" char* gets (char* __s) __attribute__((deprecated));
 #undef ftell
 #undef fwrite
 #undef getc
-#undef gets
+#if __cplusplus <= 201103L
+# undef gets
+#endif
 #undef perror
 #undef printf
 #undef putc
@@ -116,7 +118,9 @@ namespace std
   using ::fwrite;
   using ::getc;
   using ::getchar;
+#if __cplusplus <= 201103L
   using ::gets;
+#endif
   using ::perror;
   using ::printf;
   using ::putc;

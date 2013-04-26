@@ -1,3 +1,9 @@
+2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cstdio (gets): Provide only in C++98 and C++11.
+	* include/c_std/cstdio (gets): Likewise.
+	* testsuite/27_io/headers/cstdio/functions_std.cc: Adjust.
+
 2013-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/57065
