@@ -1,3 +1,7 @@
+2013-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (type, unit): Fix long lines.
+
 2013-04-26  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (lto-streamer-in.o): Add $(CFGLOOP_H) dependency.
@@ -81,9 +85,8 @@
 	(process_options): Default to -fdiagnostics-color=auto if
 	GCC_COLORS env var is in the environment.
 	* common.opt (fdiagnostics-color=): Add Var and Init.
-	* doc/invoke.texi (-fdiagnostics-color=): Document that if
-	GCC_COLORS env var is in the environment, the default is auto
-	rather than never.
+	* doc/invoke.texi (-fdiagnostics-color=): Document that if GCC_COLORS
+	env var is in the environment, the default is auto rather than never.
 
 	* diagnostic.h (file_name_as_prefix): Add context argument.
 	* diagnostic.c (file_name_as_prefix): Likewise.  Colorize
@@ -378,7 +381,7 @@
 
 2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
-	* config/aarch64/aarch64.md 
+	* config/aarch64/aarch64.md
 	(*cmp_swp_<optab><ALLX:mode>_shft_<GPI:mode>): New pattern.
 
 2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
@@ -393,12 +396,10 @@
 	(TB_DREG): Add T_V4HF.
 	(v4hf_UP): New macro.
 	(neon_itype): Add NEON_FLOAT_WIDEN, NEON_FLOAT_NARROW.
-	(arm_init_neon_builtins): Handle NEON_FLOAT_WIDEN,
-	NEON_FLOAT_NARROW.
+	(arm_init_neon_builtins): Handle NEON_FLOAT_WIDEN, NEON_FLOAT_NARROW.
 	Handle initialisation of V4HF. Adjust initialisation of reinterpret
 	built-ins.
-	(arm_expand_neon_builtin): Handle NEON_FLOAT_WIDEN,
-	NEON_FLOAT_NARROW.
+	(arm_expand_neon_builtin): Handle NEON_FLOAT_WIDEN, NEON_FLOAT_NARROW.
 	(arm_vector_mode_supported_p): Handle V4HF.
 	(arm_mangle_map): Handle V4HFmode.
 	* config/arm/arm.h (VALID_NEON_DREG_MODE): Add V4HF.
@@ -582,9 +583,8 @@
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* dwarf2out.c (gen_enumeration_type_die): Fix HOST_BITS_PER_WIDE_INT
-	dependency behavior in enumeration type DIE generation. Add TODO
-	note to comments about future DW_FORM_sdata/udata re-work of related
-	code.
+	dependency behavior in enumeration type DIE generation. Add TODO note
+	to comments about future DW_FORM_sdata/udata re-work of related code.
 
 2013-04-23  Lawrence Crowl  <crowl@google.com>
 
