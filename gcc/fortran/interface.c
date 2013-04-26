@@ -1182,8 +1182,15 @@ check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 {
   gfc_symbol *r1, *r2;
 
-  r1 = s1->result ? s1->result : s1;
-  r2 = s2->result ? s2->result : s2;
+  if (s1->ts.interface && s1->ts.interface->result)
+    r1 = s1->ts.interface->result;
+  else
+    r1 = s1->result ? s1->result : s1;
+
+  if (s2->ts.interface && s2->ts.interface->result)
+    r2 = s2->ts.interface->result;
+  else
+    r2 = s2->result ? s2->result : s2;
 
   if (r1->ts.type == BT_UNKNOWN)
     return SUCCESS;
