@@ -6346,8 +6346,14 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
   /* Remove BB from dominance structures.  */
   delete_from_dominance_info (CDI_DOMINATORS, bb);
+
+  /* Move BB from its current loop to the copy in the new function.  */
   if (current_loops)
-    remove_bb_from_loops (bb);
+    {
+      struct loop *new_loop = (struct loop *)bb->loop_father->aux;
+      if (new_loop)
+	bb->loop_father = new_loop;
+    }
 
   /* Link BB to the new linked list.  */
   move_block_after (bb, after);
@@ -6579,6 +6585,25 @@ replace_block_vars_by_duplicates (tree block, struct pointer_map_t *vars_map,
     replace_block_vars_by_duplicates (block, vars_map, to_context);
 }
 
+/* Fixup the loop arrays and numbers after moving LOOP and its subloops
+   from FN1 to FN2.  */
+
+static void
+fixup_loop_arrays_after_move (struct function *fn1, struct function *fn2,
+			      struct loop *loop)
+{
+  /* Discard it from the old loop array.  */
+  (*fn1->x_current_loops->larray)[loop->num] = NULL;
+
+  /* Place it in the new loop array, assigning it a new number.  */
+  loop->num = vec_safe_length (fn2->x_current_loops->larray);
+  vec_safe_push (fn2->x_current_loops->larray, loop);
+
+  /* Recurse to children.  */
+  for (loop = loop->inner; loop; loop = loop->next)
+    fixup_loop_arrays_after_move (fn1, fn2, loop);
+}
+
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
    EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
    single basic block in the original CFG and the new basic block is
@@ -6698,6 +6723,42 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 	}
     }
 
+  /* Initialize an empty loop tree.  */
+  dest_cfun->x_current_loops = ggc_alloc_cleared_loops ();
+  init_loops_structure (dest_cfun, dest_cfun->x_current_loops, 1);
+  dest_cfun->x_current_loops->state = LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
+
+  /* Move the outlined loop tree part.  */
+  FOR_EACH_VEC_ELT (bbs, i, bb)
+    {
+      if (bb->loop_father->header == bb
+	  && loop_outer (bb->loop_father) == loop)
+	{
+	  struct loop *loop = bb->loop_father;
+	  flow_loop_tree_node_remove (bb->loop_father);
+	  flow_loop_tree_node_add (dest_cfun->x_current_loops->tree_root, loop);
+	  fixup_loop_arrays_after_move (saved_cfun, cfun, loop);
+	}
+
+      /* Remove loop exits from the outlined region.  */
+      if (saved_cfun->x_current_loops->exits)
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  {
+	    void **slot = htab_find_slot_with_hash
+		(saved_cfun->x_current_loops->exits, e,
+		 htab_hash_pointer (e), NO_INSERT);
+	    if (slot)
+	      htab_clear_slot (saved_cfun->x_current_loops->exits, slot);
+	  }
+    }
+
+
+  /* Adjust the number of blocks in the tree root of the outlined part.  */
+  dest_cfun->x_current_loops->tree_root->num_nodes = bbs.length () + 2;
+
+  /* Setup a mapping to be used by move_block_to_fn.  */
+  loop->aux = current_loops->tree_root;
+
   pop_cfun ();
 
   /* Move blocks from BBS into DEST_CFUN.  */
@@ -6715,18 +6776,6 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   d.eh_map = eh_map;
   d.remap_decls_p = true;
 
-  /* Cancel all loops inside the SESE region.
-     ???  We rely on loop fixup because loop structure is not 100%
-     up-to-date when called from OMP lowering and thus cancel_loop_tree
-     will not work.
-     ???  Properly move loops to the outlined function.  */
-  FOR_EACH_VEC_ELT (bbs, i, bb)
-    if (bb->loop_father->header == bb)
-      {
-	bb->loop_father->header = NULL;
-	bb->loop_father->latch = NULL;
-	loops_state_set (LOOPS_NEED_FIXUP);
-      }
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
       /* No need to update edge counts on the last block.  It has
@@ -6735,6 +6784,13 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, &d);
       after = bb;
     }
+
+  loop->aux = NULL;
+  /* Loop sizes are no longer correct, fix them up.  */
+  loop->num_nodes -= bbs.length ();
+  for (struct loop *outer = loop_outer (loop);
+       outer; outer = loop_outer (outer))
+    outer->num_nodes -= bbs.length ();
 
   /* Rewire BLOCK_SUBBLOCKS of orig_block.  */
   if (orig_block)

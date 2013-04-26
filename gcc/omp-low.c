@@ -1258,10 +1258,7 @@ finalize_task_copyfn (gimple task_stmt)
     return;
 
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
-
-  /* Inform the callgraph about the new function.  */
-  DECL_STRUCT_FUNCTION (child_fn)->curr_properties
-    = cfun->curr_properties & ~PROP_loops;
+  DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
 
   push_cfun (child_cfun);
   bind = gimplify_body (child_fn, false);
@@ -1276,6 +1273,7 @@ finalize_task_copyfn (gimple task_stmt)
   gimple_set_body (child_fn, seq);
   pop_cfun ();
 
+  /* Inform the callgraph about the new function.  */
   cgraph_add_new_function (child_fn, false);
 }
 
@@ -3573,6 +3571,11 @@ expand_omp_taskreg (struct omp_region *region)
       new_bb = move_sese_region_to_fn (child_cfun, entry_bb, exit_bb, block);
       if (exit_bb)
 	single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
+      /* ???  As the OMP expansion process does not update the loop
+         tree of the original function before outlining the region to
+	 the new child function we need to discover loops in the child.
+	 Arrange for that.  */
+      child_cfun->x_current_loops->state |= LOOPS_NEED_FIXUP;
 
       /* Remove non-local VAR_DECLs from child_cfun->local_decls list.  */
       num = vec_safe_length (child_cfun->local_decls);
@@ -3589,8 +3592,7 @@ expand_omp_taskreg (struct omp_region *region)
 	vec_safe_truncate (child_cfun->local_decls, dstidx);
 
       /* Inform the callgraph about the new function.  */
-      DECL_STRUCT_FUNCTION (child_fn)->curr_properties
-	= cfun->curr_properties & ~PROP_loops;
+      DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
       cgraph_add_new_function (child_fn, true);
 
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
