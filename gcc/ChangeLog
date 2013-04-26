@@ -1,3 +1,10 @@
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57051
+	* fold-const.c (const_binop): Handle VEC_LSHIFT_EXPR
+	and VEC_RSHIFT_EXPR if shift count is a multiple of element
+	bitsize.
+
 2013-04-26  Richard Biener  <rguenther@suse.de>
 
 	* omp-low.c (finalize_task_copyfn): Do not drop PROP_loops.
