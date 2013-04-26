@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "expmed.h"
 #include "params.h"
+#include "hash-table.h"
 
 /* Information about a strength reduction candidate.  Each statement
    in the candidate table represents an expression of one of the
@@ -287,9 +288,6 @@ static struct pointer_map_t *stmt_cand_map;
 /* Obstack for candidates.  */
 static struct obstack cand_obstack;
 
-/* Hash table embodying a mapping from base exprs to chains of candidates.  */
-static htab_t base_cand_map;
-
 /* Obstack for candidate chains.  */
 static struct obstack chain_obstack;
 
@@ -311,32 +309,31 @@ lookup_cand (cand_idx idx)
   return cand_vec[idx - 1];
 }
 
-/* Callback to produce a hash value for a candidate chain header.  */
+/* Helper for hashing a candidate chain header.  */
 
-static hashval_t
-base_cand_hash (const void *p)
+struct cand_chain_hasher : typed_noop_remove <cand_chain>
 {
-  tree base_expr = ((const_cand_chain_t) p)->base_expr;
+  typedef cand_chain value_type;
+  typedef cand_chain compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+cand_chain_hasher::hash (const value_type *p)
+{
+  tree base_expr = p->base_expr;
   return iterative_hash_expr (base_expr, 0);
 }
 
-/* Callback when an element is removed from the hash table.
-   We never remove entries until the entire table is released.  */
-
-static void
-base_cand_free (void *p ATTRIBUTE_UNUSED)
+inline bool
+cand_chain_hasher::equal (const value_type *chain1, const compare_type *chain2)
 {
-}
-
-/* Callback to return true if two candidate chain headers are equal.  */
-
-static int
-base_cand_eq (const void *p1, const void *p2)
-{
-  const_cand_chain_t const chain1 = (const_cand_chain_t) p1;
-  const_cand_chain_t const chain2 = (const_cand_chain_t) p2;
   return operand_equal_p (chain1->base_expr, chain2->base_expr, 0);
 }
+
+/* Hash table embodying a mapping from base exprs to chains of candidates.  */
+static hash_table <cand_chain_hasher> base_cand_map;
 
 /* Use the base expr from candidate C to look for possible candidates
    that can serve as a basis for C.  Each potential basis must also
@@ -357,7 +354,7 @@ find_basis_for_candidate (slsr_cand_t c)
   int max_iters = PARAM_VALUE (PARAM_MAX_SLSR_CANDIDATE_SCAN);
 
   mapping_key.base_expr = c->base_expr;
-  chain = (cand_chain_t) htab_find (base_cand_map, &mapping_key);
+  chain = base_cand_map.find (&mapping_key);
 
   for (; chain && iters < max_iters; chain = chain->next, ++iters)
     {
@@ -393,13 +390,13 @@ static void
 record_potential_basis (slsr_cand_t c)
 {
   cand_chain_t node;
-  void **slot;
+  cand_chain **slot;
 
   node = (cand_chain_t) obstack_alloc (&chain_obstack, sizeof (cand_chain));
   node->base_expr = c->base_expr;
   node->cand = c;
   node->next = NULL;
-  slot = htab_find_slot (base_cand_map, node, INSERT);
+  slot = base_cand_map.find_slot (node, INSERT);
 
   if (*slot)
     {
@@ -1435,10 +1432,10 @@ dump_cand_vec (void)
 
 /* Callback used to dump the candidate chains hash table.  */
 
-static int
-base_cand_dump_callback (void **slot, void *ignored ATTRIBUTE_UNUSED)
+int
+ssa_base_cand_dump_callback (cand_chain **slot, void *ignored ATTRIBUTE_UNUSED)
 {
-  const_cand_chain_t chain = *((const_cand_chain_t *) slot);
+  const_cand_chain_t chain = *slot;
   cand_chain_t p;
 
   print_generic_expr (dump_file, chain->base_expr, 0);
@@ -1457,7 +1454,7 @@ static void
 dump_cand_chains (void)
 {
   fprintf (dump_file, "\nStrength reduction candidate chains:\n\n");
-  htab_traverse_noresize (base_cand_map, base_cand_dump_callback, NULL);
+  base_cand_map.traverse_noresize <void *, ssa_base_cand_dump_callback> (NULL);
   fputs ("\n", dump_file);
 }
 
@@ -2641,8 +2638,7 @@ execute_strength_reduction (void)
   gcc_obstack_init (&chain_obstack);
 
   /* Allocate the mapping from base expressions to candidate chains.  */
-  base_cand_map = htab_create (500, base_cand_hash,
-			       base_cand_eq, base_cand_free);
+  base_cand_map.create (500);
 
   /* Initialize the loop optimizer.  We need to detect flow across
      back edges, and this gives us dominator information as well.  */
@@ -2673,7 +2669,7 @@ execute_strength_reduction (void)
   /* Free resources.  */
   fini_walk_dominator_tree (&walk_data);
   loop_optimizer_finalize ();
-  htab_delete (base_cand_map);
+  base_cand_map.dispose ();
   obstack_free (&chain_obstack, NULL);
   pointer_map_destroy (stmt_cand_map);
   cand_vec.release ();

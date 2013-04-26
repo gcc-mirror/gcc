@@ -87,15 +87,6 @@ static struct gimplify_ctx *gimplify_ctxp;
 static struct gimplify_omp_ctx *gimplify_omp_ctxp;
 
 
-/* Formal (expression) temporary table handling: multiple occurrences of
-   the same scalar expression are evaluated into the same temporary.  */
-
-typedef struct gimple_temp_hash_elt
-{
-  tree val;   /* Key */
-  tree temp;  /* Value */
-} elt_t;
-
 /* Forward declaration.  */
 static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
 
@@ -128,40 +119,6 @@ mark_addressable (tree x)
       if (namep)
 	TREE_ADDRESSABLE (*(tree *)namep) = 1;
     }
-}
-
-/* Return a hash value for a formal temporary table entry.  */
-
-static hashval_t
-gimple_tree_hash (const void *p)
-{
-  tree t = ((const elt_t *) p)->val;
-  return iterative_hash_expr (t, 0);
-}
-
-/* Compare two formal temporary table entries.  */
-
-static int
-gimple_tree_eq (const void *p1, const void *p2)
-{
-  tree t1 = ((const elt_t *) p1)->val;
-  tree t2 = ((const elt_t *) p2)->val;
-  enum tree_code code = TREE_CODE (t1);
-
-  if (TREE_CODE (t2) != code
-      || TREE_TYPE (t1) != TREE_TYPE (t2))
-    return 0;
-
-  if (!operand_equal_p (t1, t2, 0))
-    return 0;
-
-#ifdef ENABLE_CHECKING
-  /* Only allow them to compare equal if they also hash equal; otherwise
-     results are nondeterminate, and we fail bootstrap comparison.  */
-  gcc_assert (gimple_tree_hash (p1) == gimple_tree_hash (p2));
-#endif
-
-  return 1;
 }
 
 /* Link gimple statement GS to the end of the sequence *SEQ_P.  If
@@ -241,8 +198,8 @@ pop_gimplify_context (gimple body)
   else
     record_vars (c->temps);
 
-  if (c->temp_htab)
-    htab_delete (c->temp_htab);
+  if (c->temp_htab.is_created ())
+    c->temp_htab.dispose ();
 }
 
 /* Push a GIMPLE_BIND tuple onto the stack of bindings.  */
@@ -585,23 +542,22 @@ lookup_tmp_var (tree val, bool is_formal)
   else
     {
       elt_t elt, *elt_p;
-      void **slot;
+      elt_t **slot;
 
       elt.val = val;
-      if (gimplify_ctxp->temp_htab == NULL)
-        gimplify_ctxp->temp_htab
-	  = htab_create (1000, gimple_tree_hash, gimple_tree_eq, free);
-      slot = htab_find_slot (gimplify_ctxp->temp_htab, (void *)&elt, INSERT);
+      if (!gimplify_ctxp->temp_htab.is_created ())
+        gimplify_ctxp->temp_htab.create (1000);
+      slot = gimplify_ctxp->temp_htab.find_slot (&elt, INSERT);
       if (*slot == NULL)
 	{
 	  elt_p = XNEW (elt_t);
 	  elt_p->val = val;
 	  elt_p->temp = ret = create_tmp_from_val (val, is_formal);
-	  *slot = (void *) elt_p;
+	  *slot = elt_p;
 	}
       else
 	{
-	  elt_p = (elt_t *) *slot;
+	  elt_p = *slot;
           ret = elt_p->temp;
 	}
     }

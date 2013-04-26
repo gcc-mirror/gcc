@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "target.h"
 #include "langhooks.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "plugin.h"
 
 /* Table of the tables of attributes (common, language, format, machine)
@@ -44,13 +44,45 @@ struct substring
   int length;
 };
 
+/* Simple hash function to avoid need to scan whole string.  */
+
+static inline hashval_t
+substring_hash (const char *str, int l)
+{
+  return str[0] + str[l - 1] * 256 + l * 65536;
+}
+
+/* Used for attribute_hash.  */
+
+struct attribute_hasher : typed_noop_remove <attribute_spec>
+{
+  typedef attribute_spec value_type;
+  typedef substring compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+attribute_hasher::hash (const value_type *spec)
+{
+  const int l = strlen (spec->name);
+  return substring_hash (spec->name, l);
+}
+
+inline bool
+attribute_hasher::equal (const value_type *spec, const compare_type *str)
+{
+  return (strncmp (spec->name, str->str, str->length) == 0
+	  && !spec->name[str->length]);
+}
+
 /* Scoped attribute name representation.  */
 
 struct scoped_attributes
 {
   const char *ns;
   vec<attribute_spec> attributes;
-  htab_t attribute_hash;
+  hash_table <attribute_hasher> attribute_hash;
 };
 
 /* The table of scope attributes.  */
@@ -83,36 +115,6 @@ extract_attribute_substring (struct substring *str)
     }
 }
 
-/* Simple hash function to avoid need to scan whole string.  */
-
-static inline hashval_t
-substring_hash (const char *str, int l)
-{
-  return str[0] + str[l - 1] * 256 + l * 65536;
-}
-
-/* Used for attribute_hash.  */
-
-static hashval_t
-hash_attr (const void *p)
-{
-  const struct attribute_spec *const spec = (const struct attribute_spec *) p;
-  const int l = strlen (spec->name);
-
-  return substring_hash (spec->name, l);
-}
-
-/* Used for attribute_hash.  */
-
-static int
-eq_attr (const void *p, const void *q)
-{
-  const struct attribute_spec *const spec = (const struct attribute_spec *) p;
-  const struct substring *const str = (const struct substring *) q;
-
-  return (!strncmp (spec->name, str->str, str->length) && !spec->name[str->length]);
-}
-
 /* Insert an array of attributes ATTRIBUTES into a namespace.  This
    array must be NULL terminated.  NS is the name of attribute
    namespace.  The function returns the namespace into which the
@@ -139,7 +141,7 @@ register_scoped_attributes (const struct attribute_spec * attributes,
       sa.ns = ns;
       sa.attributes.create (64);
       result = attributes_table.safe_push (sa);
-      result->attribute_hash = htab_create (200, hash_attr, eq_attr, NULL);
+      result->attribute_hash.create (200);
     }
 
   /* Really add the attributes to their namespace now.  */
@@ -272,11 +274,11 @@ register_scoped_attribute (const struct attribute_spec *attr,
 			   scoped_attributes *name_space)
 {
   struct substring str;
-  void **slot;
+  attribute_spec **slot;
 
   gcc_assert (attr != NULL && name_space != NULL);
 
-  gcc_assert (name_space->attribute_hash != NULL);
+  gcc_assert (name_space->attribute_hash.is_created ());
 
   str.str = attr->name;
   str.length = strlen (str.str);
@@ -285,11 +287,11 @@ register_scoped_attribute (const struct attribute_spec *attr,
      in the form '__text__'.  */
   gcc_assert (str.length > 0 && str.str[0] != '_');
 
-  slot = htab_find_slot_with_hash (name_space->attribute_hash, &str,
-				   substring_hash (str.str, str.length),
-				   INSERT);
+  slot = name_space->attribute_hash
+	 .find_slot_with_hash (&str, substring_hash (str.str, str.length),
+			       INSERT);
   gcc_assert (!*slot || attr->name[0] == '*');
-  *slot = (void *) CONST_CAST (struct attribute_spec *, attr);
+  *slot = CONST_CAST (struct attribute_spec *, attr);
 }
 
 /* Return the spec for the scoped attribute with namespace NS and
@@ -311,8 +313,7 @@ lookup_scoped_attribute_spec (const_tree ns, const_tree name)
   attr.str = IDENTIFIER_POINTER (name);
   attr.length = IDENTIFIER_LENGTH (name);
   extract_attribute_substring (&attr);
-  return (const struct attribute_spec *)
-    htab_find_with_hash (attrs->attribute_hash, &attr,
+  return attrs->attribute_hash.find_with_hash (&attr,
 			 substring_hash (attr.str, attr.length));
 }
 

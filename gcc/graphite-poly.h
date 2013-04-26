@@ -1531,9 +1531,6 @@ restore_scattering (scop_p scop)
 }
 
 bool graphite_legal_transform (scop_p);
-poly_bb_p find_pbb_via_hash (htab_t, basic_block);
-bool loop_is_parallel_p (loop_p, htab_t, int);
-scop_p get_loop_body_pbbs (loop_p, htab_t, vec<poly_bb_p> *);
 isl_map *reverse_loop_at_level (poly_bb_p, int);
 isl_union_map *reverse_loop_for_pbbs (scop_p, vec<poly_bb_p> , int);
 __isl_give isl_union_map *extend_schedule (__isl_take isl_union_map *);

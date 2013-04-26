@@ -282,12 +282,6 @@ struct int_tree_map {
   tree to;
 };
 
-extern unsigned int int_tree_map_hash (const void *);
-extern int int_tree_map_eq (const void *, const void *);
-
-extern unsigned int uid_decl_map_hash (const void *);
-extern int uid_decl_map_eq (const void *, const void *);
-
 #define num_ssa_names (vec_safe_length (cfun->gimple_df->ssa_names))
 #define ssa_name(i) ((*cfun->gimple_df->ssa_names)[(i)])
 

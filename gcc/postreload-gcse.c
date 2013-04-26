@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "diagnostic-core.h"
 
+#include "hash-table.h"
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
@@ -87,9 +88,6 @@ static struct
    type 'struct expr', and for each expression there is a single linked
    list of occurrences.  */
 
-/* The table itself.  */
-static htab_t expr_table;
-
 /* Expression elements in the hash table.  */
 struct expr
 {
@@ -102,6 +100,56 @@ struct expr
   /* List of available occurrence in basic blocks in the function.  */
   struct occr *avail_occr;
 };
+
+/* Hashtable helpers.  */
+
+struct expr_hasher : typed_noop_remove <expr>
+{
+  typedef expr value_type;
+  typedef expr compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+
+/* Hash expression X.
+   DO_NOT_RECORD_P is a boolean indicating if a volatile operand is found
+   or if the expression contains something we don't want to insert in the
+   table.  */
+
+static hashval_t
+hash_expr (rtx x, int *do_not_record_p)
+{
+  *do_not_record_p = 0;
+  return hash_rtx (x, GET_MODE (x), do_not_record_p,
+		   NULL,  /*have_reg_qty=*/false);
+}
+
+/* Callback for hashtab.
+   Return the hash value for expression EXP.  We don't actually hash
+   here, we just return the cached hash value.  */
+
+inline hashval_t
+expr_hasher::hash (const value_type *exp)
+{
+  return exp->hash;
+}
+
+/* Callback for hashtab.
+   Return nonzero if exp1 is equivalent to exp2.  */
+
+inline bool
+expr_hasher::equal (const value_type *exp1, const compare_type *exp2)
+{
+  int equiv_p = exp_equiv_p (exp1->expr, exp2->expr, 0, true);
+
+  gcc_assert (!equiv_p || exp1->hash == exp2->hash);
+  return equiv_p;
+}
+
+/* The table itself.  */
+static hash_table <expr_hasher> expr_table;
+
 
 static struct obstack expr_obstack;
 
@@ -183,11 +231,8 @@ static void reset_opr_set_tables (void);
 
 /* Hash table support.  */
 static hashval_t hash_expr (rtx, int *);
-static hashval_t hash_expr_for_htab (const void *);
-static int expr_equiv_p (const void *, const void *);
 static void insert_expr_in_table (rtx, rtx);
 static struct expr *lookup_expr_in_table (rtx);
-static int dump_hash_table_entry (void **, void *);
 static void dump_hash_table (FILE *);
 
 /* Helpers for eliminate_partially_redundant_load.  */
@@ -234,8 +279,7 @@ alloc_mem (void)
      make the hash table too small, but unnecessarily making it too large
      also doesn't help.  The i/4 is a gcse.c relic, and seems like a
      reasonable choice.  */
-  expr_table = htab_create (MAX (i / 4, 13),
-			    hash_expr_for_htab, expr_equiv_p, NULL);
+  expr_table.create (MAX (i / 4, 13));
 
   /* We allocate everything on obstacks because we often can roll back
      the whole obstack to some point.  Freeing obstacks is very fast.  */
@@ -262,7 +306,7 @@ free_mem (void)
 {
   free (uid_cuid);
 
-  htab_delete (expr_table);
+  expr_table.dispose ();
 
   obstack_free (&expr_obstack, NULL);
   obstack_free (&occr_obstack, NULL);
@@ -270,45 +314,6 @@ free_mem (void)
   obstack_free (&modifies_mem_obstack, NULL);
 
   free (reg_avail_info);
-}
-
-
-/* Hash expression X.
-   DO_NOT_RECORD_P is a boolean indicating if a volatile operand is found
-   or if the expression contains something we don't want to insert in the
-   table.  */
-
-static hashval_t
-hash_expr (rtx x, int *do_not_record_p)
-{
-  *do_not_record_p = 0;
-  return hash_rtx (x, GET_MODE (x), do_not_record_p,
-		   NULL,  /*have_reg_qty=*/false);
-}
-
-/* Callback for hashtab.
-   Return the hash value for expression EXP.  We don't actually hash
-   here, we just return the cached hash value.  */
-
-static hashval_t
-hash_expr_for_htab (const void *expp)
-{
-  const struct expr *const exp = (const struct expr *) expp;
-  return exp->hash;
-}
-
-/* Callback for hashtab.
-   Return nonzero if exp1 is equivalent to exp2.  */
-
-static int
-expr_equiv_p (const void *exp1p, const void *exp2p)
-{
-  const struct expr *const exp1 = (const struct expr *) exp1p;
-  const struct expr *const exp2 = (const struct expr *) exp2p;
-  int equiv_p = exp_equiv_p (exp1->expr, exp2->expr, 0, true);
-
-  gcc_assert (!equiv_p || exp1->hash == exp2->hash);
-  return equiv_p;
 }
 
 
@@ -343,8 +348,7 @@ insert_expr_in_table (rtx x, rtx insn)
   cur_expr->hash = hash;
   cur_expr->avail_occr = NULL;
 
-  slot = (struct expr **) htab_find_slot_with_hash (expr_table, cur_expr,
-						    hash, INSERT);
+  slot = expr_table.find_slot_with_hash (cur_expr, hash, INSERT);
 
   if (! (*slot))
     /* The expression isn't found, so insert it.  */
@@ -412,8 +416,7 @@ lookup_expr_in_table (rtx pat)
   tmp_expr->hash = hash;
   tmp_expr->avail_occr = NULL;
 
-  slot = (struct expr **) htab_find_slot_with_hash (expr_table, tmp_expr,
-                                                    hash, INSERT);
+  slot = expr_table.find_slot_with_hash (tmp_expr, hash, INSERT);
   obstack_free (&expr_obstack, tmp_expr);
 
   if (!slot)
@@ -427,18 +430,17 @@ lookup_expr_in_table (rtx pat)
    expression hash table to FILE.  */
 
 /* This helper is called via htab_traverse.  */
-static int
-dump_hash_table_entry (void **slot, void *filep)
+int
+dump_expr_hash_table_entry (expr **slot, FILE *file)
 {
-  struct expr *expr = (struct expr *) *slot;
-  FILE *file = (FILE *) filep;
+  struct expr *exprs = *slot;
   struct occr *occr;
 
   fprintf (file, "expr: ");
-  print_rtl (file, expr->expr);
-  fprintf (file,"\nhashcode: %u\n", expr->hash);
+  print_rtl (file, exprs->expr);
+  fprintf (file,"\nhashcode: %u\n", exprs->hash);
   fprintf (file,"list of occurrences:\n");
-  occr = expr->avail_occr;
+  occr = exprs->avail_occr;
   while (occr)
     {
       rtx insn = occr->insn;
@@ -455,13 +457,13 @@ dump_hash_table (FILE *file)
 {
   fprintf (file, "\n\nexpression hash table\n");
   fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-           (long) htab_size (expr_table),
-           (long) htab_elements (expr_table),
-           htab_collisions (expr_table));
-  if (htab_elements (expr_table) > 0)
+           (long) expr_table.size (),
+           (long) expr_table.elements (),
+           expr_table.collisions ());
+  if (expr_table.elements () > 0)
     {
       fprintf (file, "\n\ntable entries:\n");
-      htab_traverse (expr_table, dump_hash_table_entry, file);
+      expr_table.traverse <FILE *, dump_expr_hash_table_entry> (file);
     }
   fprintf (file, "\n");
 }
@@ -1223,13 +1225,13 @@ eliminate_partially_redundant_loads (void)
    marked for later deletion.  */
 
 /* This helper is called via htab_traverse.  */
-static int
-delete_redundant_insns_1 (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+delete_redundant_insns_1 (expr **slot, void *data ATTRIBUTE_UNUSED)
 {
-  struct expr *expr = (struct expr *) *slot;
+  struct expr *exprs = *slot;
   struct occr *occr;
 
-  for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
+  for (occr = exprs->avail_occr; occr != NULL; occr = occr->next)
     {
       if (occr->deleted_p && dbg_cnt (gcse2_delete))
 	{
@@ -1251,7 +1253,7 @@ delete_redundant_insns_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 static void
 delete_redundant_insns (void)
 {
-  htab_traverse (expr_table, delete_redundant_insns_1, NULL);
+  expr_table.traverse <void *, delete_redundant_insns_1> (NULL);
   if (dump_file)
     fprintf (dump_file, "\n");
 }
@@ -1277,7 +1279,7 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
   if (dump_file)
     dump_hash_table (dump_file);
 
-  if (htab_elements (expr_table) > 0)
+  if (expr_table.elements () > 0)
     {
       eliminate_partially_redundant_loads ();
       delete_redundant_insns ();

@@ -1,3 +1,240 @@
+2013-04-25  Lawrence Crowl  <crowl@google.com>
+
+	* Makefile.in: Update as needed below.
+
+	* alloc-pool.c (static hash_table <alloc_pool_hasher> alloc_pool_hash):
+	Move declaration to after the type's method definitons.
+
+	* attribs.c (htab_t scoped_attributes::attribute_hash):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* bitmap.c (htab_t bitmap_desc_hash):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* cselib.c (htab_t cselib_hash_table):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* data-streamer.h (struct string_slot): Move to lto-streamer.h.
+	(hash_string_slot_node): Move implementation into lto-streamer.h
+	struct string_slot_hasher.
+	(eq_string_slot_node): Likewise.
+
+	* data-streamer-out.c: Update output_block::string_hash_table
+	dependent calls and types.
+
+	* dwarf2cfi.c (htab_t trace_index):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* dwarf2out.c (htab_t break_out_includes::cu_hash_table):
+	Change type to hash_table.  Update dependent calls and types.
+	(htab_t copy_decls_for_unworthy_types::decl_table): Likewise.
+	(htab_t optimize_external_refs::map): Likewise.
+	(htab_t output_comp_unit::extern_map): Likewise.
+	(htab_t output_comdat_type_unit::extern_map): Likewise.
+	(htab_t output_macinfo::macinfo_htab): Likewise.
+	(htab_t optimize_location_lists::htab): Likewise.
+	(htab_t dwarf2out_finish::comdat_type_table): Likewise.
+
+	* except.c (htab_t ehspec_hash_type):
+	Change type to hash_table.  Update dependent calls and types.
+	(assign_filter_values::ttypes): Likewise.
+	(assign_filter_values::ehspec): Likewise.
+	(sjlj_assign_call_site_values::ar_hash): Likewise.
+	(convert_to_eh_region_ranges::ar_hash): Likewise.
+
+	* gcse.c (htab_t pre_ldst_table):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* ggc-common.c (htab_t saving_htab):
+	Change type to hash_table.  Update dependent calls and types.
+	(htab_t loc_hash): Likewise.
+	(htab_t ptr_hash): Likewise.
+	(call_count): Rename ggc_call_count.
+	(call_alloc): Rename ggc_call_alloc.
+	(loc_descriptor): Rename make_loc_descriptor.
+	(add_statistics): Rename ggc_add_statistics.
+
+	* ggc-common.c (saving_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* gimple.h (struct gimplify_ctx): Move to gimplify-ctx.h.
+	(push_gimplify_context): Likewise.
+	(pop_gimplify_context): Likewise.
+	(struct gimple_temp_hash_elt): Added.
+	(struct gimplify_hasher): Likewise.
+	(struct gimplify_ctx.temp_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* gimple-fold.c: Include gimplify-ctx.h.
+
+	* gimple-ssa-strength-reduction.c (htab_t base_cand_map):
+	Change type to hash_table.  Update dependent calls and types.
+	(base_cand_dump_callback): Rename to ssa_base_cand_dump_callback to
+	avoid potential global name collision.
+
+	* gimplify.c: Include gimplify-ctx.h.
+	(struct gimple_temp_hash_elt): Move to gimplify-ctx.h.
+	(htab_t gimplify_ctx::temp_htab):
+	Update dependent calls and types for new type hash_table.
+	(gimple_tree_hash): Move into gimplify_hasher in gimplify-ctx.h.
+	(gimple_tree_eq): Move into gimplify_hasher in gimplify-ctx.h.
+
+	* gimplify-ctx.h: New.
+	(struct gimple_temp_hash_elt): Move from gimplify.c.
+	(class gimplify_hasher): New.
+	(struct gimplify_ctx): Move from gimple.h.
+	(htab_t gimplify_ctx::temp_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* graphite-clast-to-gimple.c: Include graphite-htab.h.
+	(htab_t ivs_params::newivs_index):
+	Change type to hash_table.  Update dependent calls and types.
+	(htab_t ivs_params::params_index): Likewise.
+	(htab_t print_generated_program::params_index): Likewise.
+	(htab_t gloog::newivs_index): Likewise.
+	(htab_t gloog::params_index): Likewise.
+
+	* graphite.c: Include graphite-htab.h.
+	4htab_t graphite_transform_loops::bb_pbb_mapping):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* graphite-clast-to-gimple.h: (extern gloog) Move to graphite-htab.h.
+	(bb_pbb_map_hash): Fold into bb_pbb_htab_type in graphite-htab.h.
+	(eq_bb_pbb_map): Fold into bb_pbb_htab_type in graphite-htab.h.
+
+	* graphite-dependences.c: Include graphite-htab.h.
+	(loop_is_parallel_p): Change hash table type of parameter.
+
+	* graphite-htab.h: New.
+	(typedef hash_table <bb_pbb_hasher> bb_pbb_htab_type): New.
+	(extern find_pbb_via_hash): Move from graphite-poly.h.
+	(extern loop_is_parallel_p): Move from graphite-poly.h.
+	(extern get_loop_body_pbbs): Move from graphite-poly.h.
+
+	* graphite-poly.h (extern find_pbb_via_hash): Move to graphite-htab.h.
+	(extern loop_is_parallel_p): Move to graphite-htab.h.
+	(extern get_loop_body_pbbs): Move to graphite-htab.h.
+
+	* haifa-sched.c (htab_t delay_htab):
+	Change type to hash_table.  Update dependent calls and types.
+	(htab_t delay_htab_i2): Likewise.
+
+	* ira-color.c (htab_t allocno_hard_regs_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* ira-costs.c (htab_t cost_classes_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* loop-invariant.c (htab_t merge_identical_invariants::eq):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* loop-iv.c (htab_t bivs):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* loop-unroll.c (htab_t opt_info::insns_to_split):
+	Change type to hash_table.  Update dependent calls and types.
+	(htab_t opt_info::insns_with_var_to_expand): Likewise.
+
+	* lto-streamer.h (struct string_slot): Move from data-streamer.h
+	(struct string_slot_hasher): New.
+	(htab_t output_block::string_hash_table):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* lto-streamer-in.c (freeing_string_slot_hasher): New.
+	(htab_t file_name_hash_table):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* lto-streamer-out.c: Update output_block::string_hash_table dependent
+	calls and types.
+
+	* lto-streamer.c (htab_t tree_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* omp-low.c: Include gimplify-ctx.h.
+
+	* passes.c (htab_t name_to_pass_map):
+	Change type to hash_table.  Update dependent calls and types.
+	(pass_traverse): Rename to passes_pass_traverse.
+
+	* plugin.c (htab_t event_tab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* postreload-gcse.c (htab_t expr_table):
+	Change type to hash_table.  Update dependent calls and types.
+	(dump_hash_table_entry): Rename dump_expr_hash_table_entry.
+
+	* sese.c (debug_rename_map_1): Make extern.
+	(htab_t copy_bb_and_scalar_dependences::rename_map):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* sese.h (extern debug_rename_map): Move to .c file.
+
+	* store-motion.c (htab_t store_motion_mems_table):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* trans-mem.c (htab_t tm_new_mem_hash):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-browser.c (htab_t TB_up_ht):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-cfg.c (htab_t discriminator_per_locus):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-complex.c: Include tree-hasher.h
+	(htab_t complex_variable_components):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-eh.c (htab_t finally_tree):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-flow.h (extern int_tree_map_hash): Moved into tree-hasher
+	struct int_tree_hasher.
+	(extern int_tree_map_eq): Likewise.
+	(uid_decl_map_hash): Removed.
+	(extern decl_tree_map_eq): Likewise.
+
+	* tree-hasher.h: New.
+	(struct int_tree_hasher): New.
+	(typedef int_tree_htab_type): New.
+
+	* tree-inline.c: Include gimplify-ctx.h.
+
+	* tree-mudflap.c: Include gimplify-ctx.h.
+
+	* tree-parloops.c: Include tree-hasher.h.
+	(htab_t eliminate_local_variables_stmt::decl_address):
+	Change type to hash_table.  Update dependent calls and types.
+	(htab_t separate_decls_in_region::decl_copies): Likewise.
+
+	* tree-scalar-evolution.c (htab_t resolve_mixers::cache):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-sra.c (candidates):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa.c (int_tree_map_eq): Moved into struct int_tree_hasher
+	in tree-flow.h.
+	(int_tree_map_hash): Likewise.
+
+	* tree-ssa-dom.c (htab_t avail_exprs):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-live.c (var_map_base_init::tree_to_index):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-loop-ivopts.c (struct ivopts_data.inv_expr_tab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-phiopt.c (seen_ssa_names):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-strlen.c (decl_to_stridxlist_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* tree-ssa-uncprop.c (equiv):
+	Change type to hash_table.  Update dependent calls and types.
+
 2013-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57003

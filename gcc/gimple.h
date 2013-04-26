@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GIMPLE_H
 
 #include "pointer-set.h"
+#include "hash-table.h"
 #include "vec.h"
 #include "ggc.h"
 #include "basic-block.h"
@@ -959,6 +960,55 @@ enum gimplify_status {
   GS_ALL_DONE	= 1	/* The expression is fully gimplified.  */
 };
 
+/* Formal (expression) temporary table handling: multiple occurrences of
+   the same scalar expression are evaluated into the same temporary.  */
+
+typedef struct gimple_temp_hash_elt
+{
+  tree val;   /* Key */
+  tree temp;  /* Value */
+} elt_t;
+
+/* Gimplify hashtable helper.  */
+
+struct gimplify_hasher : typed_free_remove <elt_t>
+{
+  typedef elt_t value_type;
+  typedef elt_t compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+gimplify_hasher::hash (const value_type *p)
+{
+  tree t = p->val;
+  return iterative_hash_expr (t, 0);
+}
+
+inline bool
+gimplify_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  tree t1 = p1->val;
+  tree t2 = p2->val;
+  enum tree_code code = TREE_CODE (t1);
+
+  if (TREE_CODE (t2) != code
+      || TREE_TYPE (t1) != TREE_TYPE (t2))
+    return false;
+
+  if (!operand_equal_p (t1, t2, 0))
+    return false;
+
+#ifdef ENABLE_CHECKING
+  /* Only allow them to compare equal if they also hash equal; otherwise
+     results are nondeterminate, and we fail bootstrap comparison.  */
+  gcc_assert (hash (p1) == hash (p2));
+#endif
+
+  return true;
+}
+
 struct gimplify_ctx
 {
   struct gimplify_ctx *prev_context;
@@ -971,7 +1021,7 @@ struct gimplify_ctx
 
   vec<tree> case_labels;
   /* The formal temporary table.  Should this be persistent?  */
-  htab_t temp_htab;
+  hash_table <gimplify_hasher> temp_htab;
 
   int conditions;
   bool save_stack;

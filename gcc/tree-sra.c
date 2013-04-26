@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "alloc-pool.h"
 #include "tm.h"
 #include "tree.h"
@@ -269,18 +270,44 @@ static alloc_pool link_pool;
 /* Base (tree) -> Vector (vec<access_p> *) map.  */
 static struct pointer_map_t *base_access_vec;
 
+/* Candidate hash table helpers.  */
+
+struct uid_decl_hasher : typed_noop_remove <tree_node>
+{
+  typedef tree_node value_type;
+  typedef tree_node compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Hash a tree in a uid_decl_map.  */
+
+inline hashval_t
+uid_decl_hasher::hash (const value_type *item)
+{
+  return item->decl_minimal.uid;
+}
+
+/* Return true if the DECL_UID in both trees are equal.  */
+
+inline bool
+uid_decl_hasher::equal (const value_type *a, const compare_type *b)
+{
+  return (a->decl_minimal.uid == b->decl_minimal.uid);
+}
+
 /* Set of candidates.  */
 static bitmap candidate_bitmap;
-static htab_t candidates;
+static hash_table <uid_decl_hasher> candidates;
 
 /* For a candidate UID return the candidates decl.  */
 
 static inline tree
 candidate (unsigned uid)
 {
- struct tree_decl_minimal t;
- t.uid = uid;
- return (tree) htab_find_with_hash (candidates, &t, uid);
+ tree_node t;
+ t.decl_minimal.uid = uid;
+ return candidates.find_with_hash (&t, static_cast <hashval_t> (uid));
 }
 
 /* Bitmap of candidates which we should try to entirely scalarize away and
@@ -611,8 +638,7 @@ static void
 sra_initialize (void)
 {
   candidate_bitmap = BITMAP_ALLOC (NULL);
-  candidates = htab_create (vec_safe_length (cfun->local_decls) / 2,
-			    uid_decl_map_hash, uid_decl_map_eq, NULL);
+  candidates.create (vec_safe_length (cfun->local_decls) / 2);
   should_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   cannot_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   gcc_obstack_init (&name_obstack);
@@ -642,7 +668,7 @@ static void
 sra_deinitialize (void)
 {
   BITMAP_FREE (candidate_bitmap);
-  htab_delete (candidates);
+  candidates.dispose ();
   BITMAP_FREE (should_scalarize_away_bitmap);
   BITMAP_FREE (cannot_scalarize_away_bitmap);
   free_alloc_pool (access_pool);
@@ -659,9 +685,9 @@ static void
 disqualify_candidate (tree decl, const char *reason)
 {
   if (bitmap_clear_bit (candidate_bitmap, DECL_UID (decl)))
-    htab_clear_slot (candidates,
-		     htab_find_slot_with_hash (candidates, decl,
-					       DECL_UID (decl), NO_INSERT));
+    candidates.clear_slot (candidates.find_slot_with_hash (decl,
+							   DECL_UID (decl),
+							   NO_INSERT));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1680,7 +1706,7 @@ maybe_add_sra_candidate (tree var)
 {
   tree type = TREE_TYPE (var);
   const char *msg;
-  void **slot;
+  tree_node **slot;
 
   if (!AGGREGATE_TYPE_P (type)) 
     {
@@ -1728,8 +1754,8 @@ maybe_add_sra_candidate (tree var)
     }
 
   bitmap_set_bit (candidate_bitmap, DECL_UID (var));
-  slot = htab_find_slot_with_hash (candidates, var, DECL_UID (var), INSERT);
-  *slot = (void *) var;
+  slot = candidates.find_slot_with_hash (var, DECL_UID (var), INSERT);
+  *slot = var;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3587,7 +3613,7 @@ find_param_candidates (void)
        parm = DECL_CHAIN (parm))
     {
       tree type = TREE_TYPE (parm);
-      void **slot;
+      tree_node **slot;
 
       count++;
 
@@ -3626,9 +3652,8 @@ find_param_candidates (void)
 	continue;
 
       bitmap_set_bit (candidate_bitmap, DECL_UID (parm));
-      slot = htab_find_slot_with_hash (candidates, parm,
-				       DECL_UID (parm), INSERT);
-      *slot = (void *) parm;
+      slot = candidates.find_slot_with_hash (parm, DECL_UID (parm), INSERT);
+      *slot = parm;
 
       ret = true;
       if (dump_file && (dump_flags & TDF_DETAILS))

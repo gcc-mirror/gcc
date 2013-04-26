@@ -128,7 +128,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "dwarf2.h"
 #include "toplev.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "intl.h"
 #include "ggc.h"
 #include "tm_p.h"
@@ -166,6 +166,49 @@ struct GTY(()) call_site_record_d
   rtx landing_pad;
   int action;
 };
+
+/* In the following structure and associated functions,
+   we represent entries in the action table as 1-based indices.
+   Special cases are:
+
+	 0:	null action record, non-null landing pad; implies cleanups
+	-1:	null action record, null landing pad; implies no action
+	-2:	no call-site entry; implies must_not_throw
+	-3:	we have yet to process outer regions
+
+   Further, no special cases apply to the "next" field of the record.
+   For next, 0 means end of list.  */
+
+struct action_record
+{
+  int offset;
+  int filter;
+  int next;
+};
+
+/* Hashtable helpers.  */
+
+struct action_record_hasher : typed_free_remove <action_record>
+{
+  typedef action_record value_type;
+  typedef action_record compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+action_record_hasher::hash (const value_type *entry)
+{
+  return entry->next * 1009 + entry->filter;
+}
+
+inline bool
+action_record_hasher::equal (const value_type *entry, const compare_type *data)
+{
+  return entry->filter == data->filter && entry->next == data->next;
+}
+
+typedef hash_table <action_record_hasher> action_hash_type;
 
 static bool get_eh_region_and_lp_from_rtx (const_rtx, eh_region *,
 					   eh_landing_pad *);
@@ -173,18 +216,9 @@ static bool get_eh_region_and_lp_from_rtx (const_rtx, eh_region *,
 static int t2r_eq (const void *, const void *);
 static hashval_t t2r_hash (const void *);
 
-static int ttypes_filter_eq (const void *, const void *);
-static hashval_t ttypes_filter_hash (const void *);
-static int ehspec_filter_eq (const void *, const void *);
-static hashval_t ehspec_filter_hash (const void *);
-static int add_ttypes_entry (htab_t, tree);
-static int add_ehspec_entry (htab_t, htab_t, tree);
 static void dw2_build_landing_pads (void);
 
-static int action_record_eq (const void *, const void *);
-static hashval_t action_record_hash (const void *);
-static int add_action_record (htab_t, int, int);
-static int collect_one_action_chain (htab_t, eh_region);
+static int collect_one_action_chain (action_hash_type, eh_region);
 static int add_call_site (rtx, int, int);
 
 static void push_uleb128 (vec<uchar, va_gc> **, unsigned int);
@@ -687,46 +721,60 @@ struct ttypes_filter {
   int filter;
 };
 
+/* Helper for ttypes_filter hashing.  */
+
+struct ttypes_filter_hasher : typed_free_remove <ttypes_filter>
+{
+  typedef ttypes_filter value_type;
+  typedef tree_node compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
 /* Compare ENTRY (a ttypes_filter entry in the hash table) with DATA
    (a tree) for a @TTypes type node we are thinking about adding.  */
 
-static int
-ttypes_filter_eq (const void *pentry, const void *pdata)
+inline bool
+ttypes_filter_hasher::equal (const value_type *entry, const compare_type *data)
 {
-  const struct ttypes_filter *const entry
-    = (const struct ttypes_filter *) pentry;
-  const_tree const data = (const_tree) pdata;
-
   return entry->t == data;
 }
 
-static hashval_t
-ttypes_filter_hash (const void *pentry)
+inline hashval_t
+ttypes_filter_hasher::hash (const value_type *entry)
 {
-  const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
   return TREE_HASH (entry->t);
 }
+
+typedef hash_table <ttypes_filter_hasher> ttypes_hash_type;
+
+
+/* Helper for ehspec hashing.  */
+
+struct ehspec_hasher : typed_free_remove <ttypes_filter>
+{
+  typedef ttypes_filter value_type;
+  typedef ttypes_filter compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
 
 /* Compare ENTRY with DATA (both struct ttypes_filter) for a @TTypes
    exception specification list we are thinking about adding.  */
 /* ??? Currently we use the type lists in the order given.  Someone
    should put these in some canonical order.  */
 
-static int
-ehspec_filter_eq (const void *pentry, const void *pdata)
+inline bool
+ehspec_hasher::equal (const value_type *entry, const compare_type *data)
 {
-  const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
-  const struct ttypes_filter *data = (const struct ttypes_filter *) pdata;
-
   return type_list_equal (entry->t, data->t);
 }
 
 /* Hash function for exception specification lists.  */
 
-static hashval_t
-ehspec_filter_hash (const void *pentry)
+inline hashval_t
+ehspec_hasher::hash (const value_type *entry)
 {
-  const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
   hashval_t h = 0;
   tree list;
 
@@ -735,16 +783,19 @@ ehspec_filter_hash (const void *pentry)
   return h;
 }
 
+typedef hash_table <ehspec_hasher> ehspec_hash_type;
+
+
 /* Add TYPE (which may be NULL) to cfun->eh->ttype_data, using TYPES_HASH
    to speed up the search.  Return the filter value to be used.  */
 
 static int
-add_ttypes_entry (htab_t ttypes_hash, tree type)
+add_ttypes_entry (ttypes_hash_type ttypes_hash, tree type)
 {
   struct ttypes_filter **slot, *n;
 
-  slot = (struct ttypes_filter **)
-    htab_find_slot_with_hash (ttypes_hash, type, TREE_HASH (type), INSERT);
+  slot = ttypes_hash.find_slot_with_hash (type, (hashval_t) TREE_HASH (type),
+					  INSERT);
 
   if ((n = *slot) == NULL)
     {
@@ -765,14 +816,14 @@ add_ttypes_entry (htab_t ttypes_hash, tree type)
    to speed up the search.  Return the filter value to be used.  */
 
 static int
-add_ehspec_entry (htab_t ehspec_hash, htab_t ttypes_hash, tree list)
+add_ehspec_entry (ehspec_hash_type ehspec_hash, ttypes_hash_type ttypes_hash,
+		  tree list)
 {
   struct ttypes_filter **slot, *n;
   struct ttypes_filter dummy;
 
   dummy.t = list;
-  slot = (struct ttypes_filter **)
-    htab_find_slot (ehspec_hash, &dummy, INSERT);
+  slot = ehspec_hash.find_slot (&dummy, INSERT);
 
   if ((n = *slot) == NULL)
     {
@@ -821,7 +872,8 @@ void
 assign_filter_values (void)
 {
   int i;
-  htab_t ttypes, ehspec;
+  ttypes_hash_type ttypes;
+  ehspec_hash_type ehspec;
   eh_region r;
   eh_catch c;
 
@@ -831,8 +883,8 @@ assign_filter_values (void)
   else
     vec_alloc (cfun->eh->ehspec_data.other, 64);
 
-  ttypes = htab_create (31, ttypes_filter_hash, ttypes_filter_eq, free);
-  ehspec = htab_create (31, ehspec_filter_hash, ehspec_filter_eq, free);
+  ttypes.create (31);
+  ehspec.create (31);
 
   for (i = 1; vec_safe_iterate (cfun->eh->region_array, i, &r); ++i)
     {
@@ -886,8 +938,8 @@ assign_filter_values (void)
 	}
     }
 
-  htab_delete (ttypes);
-  htab_delete (ehspec);
+  ttypes.dispose ();
+  ehspec.dispose ();
 }
 
 /* Emit SEQ into basic block just before INSN (that is assumed to be
@@ -1009,12 +1061,12 @@ static vec<int> sjlj_lp_call_site_index;
 static int
 sjlj_assign_call_site_values (void)
 {
-  htab_t ar_hash;
+  action_hash_type ar_hash;
   int i, disp_index;
   eh_landing_pad lp;
 
   vec_alloc (crtl->eh.action_record_data, 64);
-  ar_hash = htab_create (31, action_record_hash, action_record_eq, free);
+  ar_hash.create (31);
 
   disp_index = 0;
   call_site_base = 1;
@@ -1043,7 +1095,7 @@ sjlj_assign_call_site_values (void)
 	disp_index++;
       }
 
-  htab_delete (ar_hash);
+  ar_hash.dispose ();
 
   return disp_index;
 }
@@ -2236,47 +2288,14 @@ expand_builtin_extend_pointer (tree addr_tree)
   return convert_modes (targetm.unwind_word_mode (), ptr_mode, addr, extend);
 }
 
-/* In the following functions, we represent entries in the action table
-   as 1-based indices.  Special cases are:
-
-	 0:	null action record, non-null landing pad; implies cleanups
-	-1:	null action record, null landing pad; implies no action
-	-2:	no call-site entry; implies must_not_throw
-	-3:	we have yet to process outer regions
-
-   Further, no special cases apply to the "next" field of the record.
-   For next, 0 means end of list.  */
-
-struct action_record
-{
-  int offset;
-  int filter;
-  int next;
-};
-
 static int
-action_record_eq (const void *pentry, const void *pdata)
-{
-  const struct action_record *entry = (const struct action_record *) pentry;
-  const struct action_record *data = (const struct action_record *) pdata;
-  return entry->filter == data->filter && entry->next == data->next;
-}
-
-static hashval_t
-action_record_hash (const void *pentry)
-{
-  const struct action_record *entry = (const struct action_record *) pentry;
-  return entry->next * 1009 + entry->filter;
-}
-
-static int
-add_action_record (htab_t ar_hash, int filter, int next)
+add_action_record (action_hash_type ar_hash, int filter, int next)
 {
   struct action_record **slot, *new_ar, tmp;
 
   tmp.filter = filter;
   tmp.next = next;
-  slot = (struct action_record **) htab_find_slot (ar_hash, &tmp, INSERT);
+  slot = ar_hash.find_slot (&tmp, INSERT);
 
   if ((new_ar = *slot) == NULL)
     {
@@ -2301,7 +2320,7 @@ add_action_record (htab_t ar_hash, int filter, int next)
 }
 
 static int
-collect_one_action_chain (htab_t ar_hash, eh_region region)
+collect_one_action_chain (action_hash_type ar_hash, eh_region region)
 {
   int next;
 
@@ -2430,7 +2449,7 @@ static unsigned int
 convert_to_eh_region_ranges (void)
 {
   rtx insn, iter, note;
-  htab_t ar_hash;
+  action_hash_type ar_hash;
   int last_action = -3;
   rtx last_action_insn = NULL_RTX;
   rtx last_landing_pad = NULL_RTX;
@@ -2444,7 +2463,7 @@ convert_to_eh_region_ranges (void)
 
   vec_alloc (crtl->eh.action_record_data, 64);
 
-  ar_hash = htab_create (31, action_record_hash, action_record_eq, free);
+  ar_hash.create (31);
 
   for (iter = get_insns (); iter ; iter = NEXT_INSN (iter))
     if (INSN_P (iter))
@@ -2581,7 +2600,7 @@ convert_to_eh_region_ranges (void)
 
   call_site_base = saved_call_site_base;
 
-  htab_delete (ar_hash);
+  ar_hash.dispose ();
   return 0;
 }
 
