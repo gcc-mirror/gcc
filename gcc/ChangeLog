@@ -1,5 +1,10 @@
 2013-04-25  Lawrence Crowl  <crowl@google.com>
 
+	* var-tracking.c (shared_hash_def::htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+2013-04-25  Lawrence Crowl  <crowl@google.com>
+
 	* Makefile.in: Update as needed below.
 
 	* alloc-pool.c (static hash_table <alloc_pool_hasher> alloc_pool_hash):
