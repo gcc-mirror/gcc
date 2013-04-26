@@ -323,6 +323,25 @@ adjust_clauses_for_omp (tree clauses)
 	      max_vlen_tree = OMP_CLAUSE_CILK_VECTORLENGTH_EXPR (c);
 	    }
 	}
+      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_CILK_VECTORLENGTHFOR)
+	{
+	  tree type = OMP_CLAUSE_CILK_VECTORLENGTHFOR_TYPE (c);
+
+	  /* FIXME: An appropriate safelen clause must be added like
+	     we do above for vectorlength, but don't yet know the
+	     target vector size so we can't calculate
+	     size_of_vector_register / sizeof(data_type).  */
+
+	  if ((TREE_CODE (type) != INTEGER_TYPE
+	       && TREE_CODE (type) != REAL_TYPE
+	       && TREE_CODE (type) != COMPLEX_TYPE
+	       && TREE_CODE (type) != POINTER_TYPE)
+	      || (TREE_CODE (type) == COMPLEX_TYPE
+		  && (TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
+		      && TREE_CODE (TREE_TYPE (type)) != REAL_TYPE)))
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "type must be integer, real, or complex");
+	}
     }
   if (max_vlen)
     {

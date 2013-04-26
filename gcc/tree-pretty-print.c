@@ -597,6 +597,14 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_character (buffer, ')');
       break;
 
+    case OMP_CLAUSE_CILK_VECTORLENGTHFOR:
+      pp_string (buffer, "cilk_vectorlengthfor(");
+      dump_generic_node (buffer,
+			 OMP_CLAUSE_CILK_VECTORLENGTHFOR_TYPE (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
     default:
       /* Should never happen.  */
       dump_generic_node (buffer, clause, spc, flags, false);
