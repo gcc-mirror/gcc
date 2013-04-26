@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
@@ -1239,8 +1240,15 @@ struct name_to_bb
   basic_block bb;
 };
 
-/* The hash table for remembering what we've seen.  */
-static htab_t seen_ssa_names;
+/* Hashtable helpers.  */
+
+struct ssa_names_hasher : typed_free_remove <name_to_bb>
+{
+  typedef name_to_bb value_type;
+  typedef name_to_bb compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
 
 /* Used for quick clearing of the hash-table when we see calls.
    Hash entries with phase < nt_call_phase are invalid.  */
@@ -1250,26 +1258,27 @@ static unsigned int nt_call_phase;
 static struct pointer_set_t *nontrap_set;
 
 /* The hash function.  */
-static hashval_t
-name_to_bb_hash (const void *p)
+
+inline hashval_t
+ssa_names_hasher::hash (const value_type *n)
 {
-  const struct name_to_bb *n = (const struct name_to_bb *) p;
   return n->ssa_name_ver ^ (((hashval_t) n->store) << 31)
          ^ (n->offset << 6) ^ (n->size << 3);
 }
 
 /* The equality function of *P1 and *P2.  */
-static int
-name_to_bb_eq (const void *p1, const void *p2)
-{
-  const struct name_to_bb *n1 = (const struct name_to_bb *)p1;
-  const struct name_to_bb *n2 = (const struct name_to_bb *)p2;
 
+inline bool
+ssa_names_hasher::equal (const value_type *n1, const compare_type *n2)
+{
   return n1->ssa_name_ver == n2->ssa_name_ver
          && n1->store == n2->store
          && n1->offset == n2->offset
          && n1->size == n2->size;
 }
+
+/* The hash table for remembering what we've seen.  */
+static hash_table <ssa_names_hasher> seen_ssa_names;
 
 /* We see the expression EXP in basic block BB.  If it's an interesting
    expression (an MEM_REF through an SSA_NAME) possibly insert the
@@ -1289,7 +1298,7 @@ add_or_mark_expr (basic_block bb, tree exp,
     {
       tree name = TREE_OPERAND (exp, 0);
       struct name_to_bb map;
-      void **slot;
+      name_to_bb **slot;
       struct name_to_bb *n2bb;
       basic_block found_bb = 0;
 
@@ -1302,8 +1311,8 @@ add_or_mark_expr (basic_block bb, tree exp,
       map.offset = tree_low_cst (TREE_OPERAND (exp, 1), 0);
       map.size = size;
 
-      slot = htab_find_slot (seen_ssa_names, &map, INSERT);
-      n2bb = (struct name_to_bb *) *slot;
+      slot = seen_ssa_names.find_slot (&map, INSERT);
+      n2bb = *slot;
       if (n2bb && n2bb->phase >= nt_call_phase)
         found_bb = n2bb->bb;
 
@@ -1413,8 +1422,7 @@ get_non_trapping (void)
 
   nt_call_phase = 0;
   nontrap = pointer_set_create ();
-  seen_ssa_names = htab_create (128, name_to_bb_hash, name_to_bb_eq,
-				free);
+  seen_ssa_names.create (128);
   /* We're going to do a dominator walk, so ensure that we have
      dominance information.  */
   calculate_dominance_info (CDI_DOMINATORS);
@@ -1431,7 +1439,7 @@ get_non_trapping (void)
   init_walk_dominator_tree (&walk_data);
   walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
   fini_walk_dominator_tree (&walk_data);
-  htab_delete (seen_ssa_names);
+  seen_ssa_names.dispose ();
 
   clear_aux_for_blocks ();
   return nontrap;

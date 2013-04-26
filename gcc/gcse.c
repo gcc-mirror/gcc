@@ -158,7 +158,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "obstack.h"
 #include "tree-pass.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "df.h"
 #include "dbgcnt.h"
 #include "target.h"
@@ -359,8 +359,34 @@ struct ls_expr
 /* Head of the list of load/store memory refs.  */
 static struct ls_expr * pre_ldst_mems = NULL;
 
+struct pre_ldst_expr_hasher : typed_noop_remove <ls_expr>
+{
+  typedef ls_expr value_type;
+  typedef value_type compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Hashtable helpers.  */
+inline hashval_t
+pre_ldst_expr_hasher::hash (const value_type *x)
+{
+  int do_not_record_p = 0;
+  return
+    hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
+}
+
+static int expr_equiv_p (const_rtx, const_rtx);
+
+inline bool
+pre_ldst_expr_hasher::equal (const value_type *ptr1,
+			     const compare_type *ptr2)
+{
+  return expr_equiv_p (ptr1->pattern, ptr2->pattern);
+}
+
 /* Hashtable for the load/store memory refs.  */
-static htab_t pre_ldst_table = NULL;
+static hash_table <pre_ldst_expr_hasher> pre_ldst_table;
 
 /* Bitmap containing one bit for each register in the program.
    Used when performing GCSE to track which registers have been set since
@@ -447,7 +473,6 @@ static int oprs_available_p (const_rtx, const_rtx);
 static void insert_expr_in_table (rtx, enum machine_mode, rtx, int, int, int,
 				  struct hash_table_d *);
 static unsigned int hash_expr (const_rtx, enum machine_mode, int *, int);
-static int expr_equiv_p (const_rtx, const_rtx);
 static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx);
 static void record_last_set_info (rtx, const_rtx, void *);
@@ -3652,23 +3677,6 @@ one_code_hoisting_pass (void)
     load towards the exit, and we end up with no loads or stores of 'i'
     in the loop.  */
 
-static hashval_t
-pre_ldst_expr_hash (const void *p)
-{
-  int do_not_record_p = 0;
-  const struct ls_expr *const x = (const struct ls_expr *) p;
-  return
-    hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
-}
-
-static int
-pre_ldst_expr_eq (const void *p1, const void *p2)
-{
-  const struct ls_expr *const ptr1 = (const struct ls_expr *) p1,
-    *const ptr2 = (const struct ls_expr *) p2;
-  return expr_equiv_p (ptr1->pattern, ptr2->pattern);
-}
-
 /* This will search the ldst list for a matching expression. If it
    doesn't find one, we create one and initialize it.  */
 
@@ -3678,16 +3686,16 @@ ldst_entry (rtx x)
   int do_not_record_p = 0;
   struct ls_expr * ptr;
   unsigned int hash;
-  void **slot;
+  ls_expr **slot;
   struct ls_expr e;
 
   hash = hash_rtx (x, GET_MODE (x), &do_not_record_p,
 		   NULL,  /*have_reg_qty=*/false);
 
   e.pattern = x;
-  slot = htab_find_slot_with_hash (pre_ldst_table, &e, hash, INSERT);
+  slot = pre_ldst_table.find_slot_with_hash (&e, hash, INSERT);
   if (*slot)
-    return (struct ls_expr *)*slot;
+    return *slot;
 
   ptr = XNEW (struct ls_expr);
 
@@ -3723,9 +3731,8 @@ free_ldst_entry (struct ls_expr * ptr)
 static void
 free_ld_motion_mems (void)
 {
-  if (pre_ldst_table)
-    htab_delete (pre_ldst_table);
-  pre_ldst_table = NULL;
+  if (pre_ldst_table.is_created ())
+    pre_ldst_table.dispose ();
 
   while (pre_ldst_mems)
     {
@@ -3780,14 +3787,14 @@ static struct ls_expr *
 find_rtx_in_ldst (rtx x)
 {
   struct ls_expr e;
-  void **slot;
-  if (!pre_ldst_table)
+  ls_expr **slot;
+  if (!pre_ldst_table.is_created ())
     return NULL;
   e.pattern = x;
-  slot = htab_find_slot (pre_ldst_table, &e, NO_INSERT);
-  if (!slot || ((struct ls_expr *)*slot)->invalid)
+  slot = pre_ldst_table.find_slot (&e, NO_INSERT);
+  if (!slot || (*slot)->invalid)
     return NULL;
-  return (struct ls_expr *) *slot;
+  return *slot;
 }
 
 /* Load Motion for loads which only kill themselves.  */
@@ -3875,8 +3882,7 @@ compute_ld_motion_mems (void)
   rtx insn;
 
   pre_ldst_mems = NULL;
-  pre_ldst_table
-    = htab_create (13, pre_ldst_expr_hash, pre_ldst_expr_eq, NULL);
+  pre_ldst_table.create (13);
 
   FOR_EACH_BB (bb)
     {
@@ -3967,7 +3973,7 @@ trim_ld_motion_mems (void)
       else
 	{
 	  *last = ptr->next;
-	  htab_remove_elt_with_hash (pre_ldst_table, ptr, ptr->hash_index);
+	  pre_ldst_table.remove_elt_with_hash (ptr, ptr->hash_index);
 	  free_ldst_entry (ptr);
 	  ptr = * last;
 	}

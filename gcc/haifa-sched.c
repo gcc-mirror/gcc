@@ -145,7 +145,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ira.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
-#include "hashtab.h"
+#include "hash-table.h"
 #include "dumpfile.h"
 
 #ifdef INSN_SCHEDULING
@@ -581,22 +581,72 @@ struct delay_pair
   int stages;
 };
 
+/* Helpers for delay hashing.  */
+
+struct delay_i1_hasher : typed_noop_remove <delay_pair>
+{
+  typedef delay_pair value_type;
+  typedef void compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Returns a hash value for X, based on hashing just I1.  */
+
+inline hashval_t
+delay_i1_hasher::hash (const value_type *x)
+{
+  return htab_hash_pointer (x->i1);
+}
+
+/* Return true if I1 of pair X is the same as that of pair Y.  */
+
+inline bool
+delay_i1_hasher::equal (const value_type *x, const compare_type *y)
+{
+  return x->i1 == y;
+}
+
+struct delay_i2_hasher : typed_free_remove <delay_pair>
+{
+  typedef delay_pair value_type;
+  typedef void compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Returns a hash value for X, based on hashing just I2.  */
+
+inline hashval_t
+delay_i2_hasher::hash (const value_type *x)
+{
+  return htab_hash_pointer (x->i2);
+}
+
+/* Return true if I2 of pair X is the same as that of pair Y.  */
+
+inline bool
+delay_i2_hasher::equal (const value_type *x, const compare_type *y)
+{
+  return x->i2 == y;
+}
+
 /* Two hash tables to record delay_pairs, one indexed by I1 and the other
    indexed by I2.  */
-static htab_t delay_htab;
-static htab_t delay_htab_i2;
+static hash_table <delay_i1_hasher> delay_htab;
+static hash_table <delay_i2_hasher> delay_htab_i2;
 
 /* Called through htab_traverse.  Walk the hashtable using I2 as
    index, and delete all elements involving an UID higher than
    that pointed to by *DATA.  */
-static int
-htab_i2_traverse (void **slot, void *data)
+int
+haifa_htab_i2_traverse (delay_pair **slot, int *data)
 {
-  int maxuid = *(int *)data;
-  struct delay_pair *p = *(struct delay_pair **)slot;
+  int maxuid = *data;
+  struct delay_pair *p = *slot;
   if (INSN_UID (p->i2) >= maxuid || INSN_UID (p->i1) >= maxuid)
     {
-      htab_clear_slot (delay_htab_i2, slot);
+      delay_htab_i2.clear_slot (slot);
     }
   return 1;
 }
@@ -604,16 +654,15 @@ htab_i2_traverse (void **slot, void *data)
 /* Called through htab_traverse.  Walk the hashtable using I2 as
    index, and delete all elements involving an UID higher than
    that pointed to by *DATA.  */
-static int
-htab_i1_traverse (void **slot, void *data)
+int
+haifa_htab_i1_traverse (delay_pair **pslot, int *data)
 {
-  int maxuid = *(int *)data;
-  struct delay_pair **pslot = (struct delay_pair **)slot;
+  int maxuid = *data;
   struct delay_pair *p, *first, **pprev;
 
   if (INSN_UID ((*pslot)->i1) >= maxuid)
     {
-      htab_clear_slot (delay_htab, slot);
+      delay_htab.clear_slot (pslot);
       return 1;
     }
   pprev = &first;
@@ -627,7 +676,7 @@ htab_i1_traverse (void **slot, void *data)
     }
   *pprev = NULL;
   if (first == NULL)
-    htab_clear_slot (delay_htab, slot);
+    delay_htab.clear_slot (pslot);
   else
     *pslot = first;
   return 1;
@@ -638,38 +687,8 @@ htab_i1_traverse (void **slot, void *data)
 void
 discard_delay_pairs_above (int max_uid)
 {
-  htab_traverse (delay_htab, htab_i1_traverse, &max_uid);
-  htab_traverse (delay_htab_i2, htab_i2_traverse, &max_uid);
-}
-
-/* Returns a hash value for X (which really is a delay_pair), based on
-   hashing just I1.  */
-static hashval_t
-delay_hash_i1 (const void *x)
-{
-  return htab_hash_pointer (((const struct delay_pair *) x)->i1);
-}
-
-/* Returns a hash value for X (which really is a delay_pair), based on
-   hashing just I2.  */
-static hashval_t
-delay_hash_i2 (const void *x)
-{
-  return htab_hash_pointer (((const struct delay_pair *) x)->i2);
-}
-
-/* Return nonzero if I1 of pair X is the same as that of pair Y.  */
-static int
-delay_i1_eq (const void *x, const void *y)
-{
-  return ((const struct delay_pair *) x)->i1 == y;
-}
-
-/* Return nonzero if I2 of pair X is the same as that of pair Y.  */
-static int
-delay_i2_eq (const void *x, const void *y)
-{
-  return ((const struct delay_pair *) x)->i2 == y;
+  delay_htab.traverse <int *, haifa_htab_i1_traverse> (&max_uid);
+  delay_htab_i2.traverse <int *, haifa_htab_i2_traverse> (&max_uid);
 }
 
 /* This function can be called by a port just before it starts the final
@@ -699,19 +718,15 @@ record_delay_slot_pair (rtx i1, rtx i2, int cycles, int stages)
   p->cycles = cycles;
   p->stages = stages;
 
-  if (!delay_htab)
+  if (!delay_htab.is_created ())
     {
-      delay_htab = htab_create (10, delay_hash_i1, delay_i1_eq, NULL);
-      delay_htab_i2 = htab_create (10, delay_hash_i2, delay_i2_eq, free);
+      delay_htab.create (10);
+      delay_htab_i2.create (10);
     }
-  slot = ((struct delay_pair **)
-	  htab_find_slot_with_hash (delay_htab, i1, htab_hash_pointer (i1),
-				    INSERT));
+  slot = delay_htab.find_slot_with_hash (i1, htab_hash_pointer (i1), INSERT);
   p->next_same_i1 = *slot;
   *slot = p;
-  slot = ((struct delay_pair **)
-	  htab_find_slot_with_hash (delay_htab_i2, i2, htab_hash_pointer (i2),
-				    INSERT));
+  slot = delay_htab_i2.find_slot_with_hash (i2, htab_hash_pointer (i2), INSERT);
   *slot = p;
 }
 
@@ -722,12 +737,10 @@ real_insn_for_shadow (rtx insn)
 {
   struct delay_pair *pair;
 
-  if (delay_htab == NULL)
+  if (!delay_htab.is_created ())
     return NULL_RTX;
 
-  pair
-    = (struct delay_pair *)htab_find_with_hash (delay_htab_i2, insn,
-						htab_hash_pointer (insn));
+  pair = delay_htab_i2.find_with_hash (insn, htab_hash_pointer (insn));
   if (!pair || pair->stages > 0)
     return NULL_RTX;
   return pair->i1;
@@ -755,12 +768,10 @@ add_delay_dependencies (rtx insn)
   sd_iterator_def sd_it;
   dep_t dep;
 
-  if (!delay_htab)
+  if (!delay_htab.is_created ())
     return;
 
-  pair
-    = (struct delay_pair *)htab_find_with_hash (delay_htab_i2, insn,
-						htab_hash_pointer (insn));
+  pair = delay_htab_i2.find_with_hash (insn, htab_hash_pointer (insn));
   if (!pair)
     return;
   add_dependence (insn, pair->i1, REG_DEP_ANTI);
@@ -771,8 +782,7 @@ add_delay_dependencies (rtx insn)
     {
       rtx pro = DEP_PRO (dep);
       struct delay_pair *other_pair
-	= (struct delay_pair *)htab_find_with_hash (delay_htab_i2, pro,
-						    htab_hash_pointer (pro));
+	= delay_htab_i2.find_with_hash (pro, htab_hash_pointer (pro));
       if (!other_pair || other_pair->stages)
 	continue;
       if (pair_delay (other_pair) >= pair_delay (pair))
@@ -1395,12 +1405,11 @@ dep_cost_1 (dep_t link, dw_t dw)
   if (DEP_COST (link) != UNKNOWN_DEP_COST)
     return DEP_COST (link);
 
-  if (delay_htab)
+  if (delay_htab.is_created ())
     {
       struct delay_pair *delay_entry;
       delay_entry
-	= (struct delay_pair *)htab_find_with_hash (delay_htab_i2, used,
-						    htab_hash_pointer (used));
+	= delay_htab_i2.find_with_hash (used, htab_hash_pointer (used));
       if (delay_entry)
 	{
 	  if (delay_entry->i1 == insn)
@@ -5726,12 +5735,12 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 	    {
 	      int delay_cost = 0;
 
-	      if (delay_htab)
+	      if (delay_htab.is_created ())
 		{
 		  struct delay_pair *delay_entry;
 		  delay_entry
-		    = (struct delay_pair *)htab_find_with_hash (delay_htab, insn,
-								htab_hash_pointer (insn));
+		    = delay_htab.find_with_hash (insn,
+						 htab_hash_pointer (insn));
 		  while (delay_entry && delay_cost == 0)
 		    {
 		      delay_cost = estimate_shadow_tick (delay_entry);
@@ -6189,14 +6198,13 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	      goto restart_choose_ready;
 	    }
 
-	  if (delay_htab)
+	  if (delay_htab.is_created ())
 	    {
 	      /* If this insn is the first part of a delay-slot pair, record a
 		 backtrack point.  */
 	      struct delay_pair *delay_entry;
 	      delay_entry
-		= (struct delay_pair *)htab_find_with_hash (delay_htab, insn,
-							    htab_hash_pointer (insn));
+		= delay_htab.find_with_hash (insn, htab_hash_pointer (insn));
 	      if (delay_entry)
 		{
 		  save_backtrack_point (delay_entry, ls);
@@ -6761,10 +6769,10 @@ sched_finish (void)
 void
 free_delay_pairs (void)
 {
-  if (delay_htab)
+  if (delay_htab.is_created ())
     {
-      htab_empty (delay_htab);
-      htab_empty (delay_htab_i2);
+      delay_htab.empty ();
+      delay_htab_i2.empty ();
     }
 }
 

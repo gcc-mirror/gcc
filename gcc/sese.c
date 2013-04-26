@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "cfgloop.h"
@@ -46,20 +47,50 @@ debug_rename_elt (rename_map_elt elt)
 
 /* Helper function for debug_rename_map.  */
 
-static int
-debug_rename_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
+int
+debug_rename_map_1 (rename_map_elt_s **slot, void *s ATTRIBUTE_UNUSED)
 {
-  struct rename_map_elt_s *entry = (struct rename_map_elt_s *) *slot;
+  struct rename_map_elt_s *entry = *slot;
   debug_rename_elt (entry);
   return 1;
 }
+
+
+/* Hashtable helpers.  */
+
+struct rename_map_hasher : typed_free_remove <rename_map_elt_s>
+{
+  typedef rename_map_elt_s value_type;
+  typedef rename_map_elt_s compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Computes a hash function for database element ELT.  */
+
+inline hashval_t
+rename_map_hasher::hash (const value_type *elt)
+{
+  return SSA_NAME_VERSION (elt->old_name);
+}
+
+/* Compares database elements E1 and E2.  */
+
+inline bool
+rename_map_hasher::equal (const value_type *elt1, const compare_type *elt2)
+{
+  return (elt1->old_name == elt2->old_name);
+}
+
+typedef hash_table <rename_map_hasher> rename_map_type;
+
 
 /* Print to stderr all the elements of RENAME_MAP.  */
 
 DEBUG_FUNCTION void
-debug_rename_map (htab_t rename_map)
+debug_rename_map (rename_map_type rename_map)
 {
-  htab_traverse (rename_map, debug_rename_map_1, NULL);
+  rename_map.traverse <void *, debug_rename_map_1> (NULL);
 }
 
 /* Computes a hash function for database element ELT.  */
@@ -365,17 +396,17 @@ get_false_edge_from_guard_bb (basic_block bb)
 /* Returns the expression associated to OLD_NAME in RENAME_MAP.  */
 
 static tree
-get_rename (htab_t rename_map, tree old_name)
+get_rename (rename_map_type rename_map, tree old_name)
 {
   struct rename_map_elt_s tmp;
-  PTR *slot;
+  rename_map_elt_s **slot;
 
   gcc_assert (TREE_CODE (old_name) == SSA_NAME);
   tmp.old_name = old_name;
-  slot = htab_find_slot (rename_map, &tmp, NO_INSERT);
+  slot = rename_map.find_slot (&tmp, NO_INSERT);
 
   if (slot && *slot)
-    return ((rename_map_elt) *slot)->expr;
+    return (*slot)->expr;
 
   return NULL_TREE;
 }
@@ -383,16 +414,16 @@ get_rename (htab_t rename_map, tree old_name)
 /* Register in RENAME_MAP the rename tuple (OLD_NAME, EXPR).  */
 
 static void
-set_rename (htab_t rename_map, tree old_name, tree expr)
+set_rename (rename_map_type rename_map, tree old_name, tree expr)
 {
   struct rename_map_elt_s tmp;
-  PTR *slot;
+  rename_map_elt_s **slot;
 
   if (old_name == expr)
     return;
 
   tmp.old_name = old_name;
-  slot = htab_find_slot (rename_map, &tmp, INSERT);
+  slot = rename_map.find_slot (&tmp, INSERT);
 
   if (!slot)
     return;
@@ -410,7 +441,8 @@ set_rename (htab_t rename_map, tree old_name, tree expr)
    is set when the code generation cannot continue.  */
 
 static bool
-rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
+rename_uses (gimple copy, rename_map_type rename_map,
+	     gimple_stmt_iterator *gsi_tgt,
 	     sese region, loop_p loop, vec<tree> iv_map,
 	     bool *gloog_error)
 {
@@ -516,7 +548,7 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 
 static void
 graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
-				htab_t rename_map,
+				rename_map_type rename_map,
 				vec<tree> iv_map, sese region,
 				bool *gloog_error)
 {
@@ -584,14 +616,14 @@ copy_bb_and_scalar_dependences (basic_block bb, sese region,
 				bool *gloog_error)
 {
   basic_block new_bb = split_edge (next_e);
-  htab_t rename_map = htab_create (10, rename_map_elt_info,
-				   eq_rename_map_elts, free);
+  rename_map_type rename_map;
+  rename_map.create (10);
 
   next_e = single_succ_edge (new_bb);
   graphite_copy_stmts_from_block (bb, new_bb, rename_map, iv_map, region,
 				  gloog_error);
   remove_phi_nodes (new_bb);
-  htab_delete (rename_map);
+  rename_map.dispose ();
 
   return next_e;
 }

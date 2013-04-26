@@ -49,8 +49,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "streamer-hooks.h"
 
+struct freeing_string_slot_hasher : string_slot_hasher
+{
+  static inline void remove (value_type *);
+};
+
+inline void
+freeing_string_slot_hasher::remove (value_type *v)
+{
+  free (v);
+}
+
 /* The table to hold the file names.  */
-static htab_t file_name_hash_table;
+static hash_table <freeing_string_slot_hasher> file_name_hash_table;
 
 
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
@@ -94,14 +105,14 @@ lto_input_data_block (struct lto_input_block *ib, void *addr, size_t length)
 static const char *
 canon_file_name (const char *string)
 {
-  void **slot;
+  string_slot **slot;
   struct string_slot s_slot;
   size_t len = strlen (string);
 
   s_slot.s = string;
   s_slot.len = len;
 
-  slot = htab_find_slot (file_name_hash_table, &s_slot, INSERT);
+  slot = file_name_hash_table.find_slot (&s_slot, INSERT);
   if (*slot == NULL)
     {
       char *saved_string;
@@ -117,7 +128,7 @@ canon_file_name (const char *string)
     }
   else
     {
-      struct string_slot *old_slot = (struct string_slot *) *slot;
+      struct string_slot *old_slot = *slot;
       return old_slot->s;
     }
 }
@@ -1137,8 +1148,7 @@ void
 lto_reader_init (void)
 {
   lto_streamer_init ();
-  file_name_hash_table = htab_create (37, hash_string_slot_node,
-				      eq_string_slot_node, free);
+  file_name_hash_table.create (37);
 }
 
 

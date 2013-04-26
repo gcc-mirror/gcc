@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "tree.h"
 #include "tm_p.h"
@@ -87,7 +88,36 @@ struct locus_discrim_map
   location_t locus;
   int discriminator;
 };
-static htab_t discriminator_per_locus;
+
+/* Hashtable helpers.  */
+
+struct locus_descrim_hasher : typed_free_remove <locus_discrim_map>
+{
+  typedef locus_discrim_map value_type;
+  typedef locus_discrim_map compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Trivial hash function for a location_t.  ITEM is a pointer to
+   a hash table entry that maps a location_t to a discriminator.  */
+
+inline hashval_t
+locus_descrim_hasher::hash (const value_type *item)
+{
+  return item->locus;
+}
+
+/* Equality function for the locus-to-discriminator map.  A and B
+   point to the two hash table entries to compare.  */
+
+inline bool
+locus_descrim_hasher::equal (const value_type *a, const compare_type *b)
+{
+  return a->locus == b->locus;
+}
+
+static hash_table <locus_descrim_hasher> discriminator_per_locus;
 
 /* Basic blocks and flowgraphs.  */
 static void make_blocks (gimple_seq);
@@ -99,8 +129,6 @@ static void make_cond_expr_edges (basic_block);
 static void make_gimple_switch_edges (basic_block);
 static void make_goto_expr_edges (basic_block);
 static void make_gimple_asm_edges (basic_block);
-static unsigned int locus_map_hash (const void *);
-static int locus_map_eq (const void *, const void *);
 static void assign_discriminator (location_t, basic_block);
 static edge gimple_redirect_edge_and_branch (edge, basic_block);
 static edge gimple_try_redirect_by_replacing_jump (edge, basic_block);
@@ -201,11 +229,10 @@ build_gimple_cfg (gimple_seq seq)
   group_case_labels ();
 
   /* Create the edges of the flowgraph.  */
-  discriminator_per_locus = htab_create (13, locus_map_hash, locus_map_eq,
-                                         free);
+  discriminator_per_locus.create (13);
   make_edges ();
   cleanup_dead_labels ();
-  htab_delete (discriminator_per_locus);
+  discriminator_per_locus.dispose ();
 }
 
 static unsigned int
@@ -675,26 +702,6 @@ make_edges (void)
   fold_cond_expr_cond ();
 }
 
-/* Trivial hash function for a location_t.  ITEM is a pointer to
-   a hash table entry that maps a location_t to a discriminator.  */
-
-static unsigned int
-locus_map_hash (const void *item)
-{
-  return ((const struct locus_discrim_map *) item)->locus;
-}
-
-/* Equality function for the locus-to-discriminator map.  VA and VB
-   point to the two hash table entries to compare.  */
-
-static int
-locus_map_eq (const void *va, const void *vb)
-{
-  const struct locus_discrim_map *a = (const struct locus_discrim_map *) va;
-  const struct locus_discrim_map *b = (const struct locus_discrim_map *) vb;
-  return a->locus == b->locus;
-}
-
 /* Find the next available discriminator value for LOCUS.  The
    discriminator distinguishes among several basic blocks that
    share a common locus, allowing for more accurate sample-based
@@ -708,9 +715,7 @@ next_discriminator_for_locus (location_t locus)
 
   item.locus = locus;
   item.discriminator = 0;
-  slot = (struct locus_discrim_map **)
-      htab_find_slot_with_hash (discriminator_per_locus, (void *) &item,
-                                (hashval_t) locus, INSERT);
+  slot = discriminator_per_locus.find_slot_with_hash (&item, locus, INSERT);
   gcc_assert (slot);
   if (*slot == HTAB_EMPTY_ENTRY)
     {

@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "tree.h"
 #include "gimple-pretty-print.h"
@@ -53,6 +54,29 @@ static void  verify_live_on_entry (tree_live_info_p);
    ssa_name or variable, and vice versa.  */
 
 
+/* Hashtable helpers.  */
+
+struct tree_int_map_hasher : typed_noop_remove <tree_int_map>
+{
+  typedef tree_int_map value_type;
+  typedef tree_int_map compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+tree_int_map_hasher::hash (const value_type *v)
+{
+  return tree_map_base_hash (v);
+}
+
+inline bool
+tree_int_map_hasher::equal (const value_type *v, const compare_type *c)
+{
+  return tree_int_map_eq (v, c);
+}
+
+
 /* This routine will initialize the basevar fields of MAP.  */
 
 static void
@@ -60,12 +84,11 @@ var_map_base_init (var_map map)
 {
   int x, num_part;
   tree var;
-  htab_t tree_to_index;
+  hash_table <tree_int_map_hasher> tree_to_index;
   struct tree_int_map *m, *mapstorage;
 
   num_part = num_var_partitions (map);
-  tree_to_index = htab_create (num_part, tree_map_base_hash,
-			       tree_int_map_eq, NULL);
+  tree_to_index.create (num_part);
   /* We can have at most num_part entries in the hash tables, so it's
      enough to allocate so many map elements once, saving some malloc
      calls.  */
@@ -91,8 +114,7 @@ var_map_base_init (var_map map)
 	   underlying decl.  */
 	m->base.from = TREE_TYPE (var);
       /* If base variable hasn't been seen, set it up.  */
-      slot = (struct tree_int_map **) htab_find_slot (tree_to_index,
-						      m, INSERT);
+      slot = tree_to_index.find_slot (m, INSERT);
       if (!*slot)
 	{
 	  baseindex = m - mapstorage;
@@ -108,7 +130,7 @@ var_map_base_init (var_map map)
   map->num_basevars = m - mapstorage;
 
   free (mapstorage);
-  htab_delete (tree_to_index);
+  tree_to_index. dispose ();
 }
 
 

@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "ggc.h"
 #include "ggc-internal.h"
 #include "diagnostic-core.h"
@@ -46,10 +46,6 @@ static ggc_statistics *ggc_stats;
 struct traversal_state;
 
 static int ggc_htab_delete (void **, void *);
-static hashval_t saving_htab_hash (const void *);
-static int saving_htab_eq (const void *, const void *);
-static int call_count (void **, void *);
-static int call_alloc (void **, void *);
 static int compare_ptr_data (const void *, const void *);
 static void relocate_ptrs (void *, void *);
 static void write_pch_globals (const struct ggc_root_tab * const *tab,
@@ -289,8 +285,6 @@ ggc_print_common_statistics (FILE *stream ATTRIBUTE_UNUSED,
 
 /* Functions for saving and restoring GCable memory to disk.  */
 
-static htab_t saving_htab;
-
 struct ptr_data
 {
   void *obj;
@@ -302,6 +296,30 @@ struct ptr_data
 };
 
 #define POINTER_HASH(x) (hashval_t)((intptr_t)x >> 3)
+
+/* Helper for hashing saving_htab.  */
+
+struct saving_hasher : typed_free_remove <ptr_data>
+{
+  typedef ptr_data value_type;
+  typedef void compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+saving_hasher::hash (const value_type *p)
+{
+  return POINTER_HASH (p->obj);
+}
+
+inline bool
+saving_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  return p1->obj == p2;
+}
+
+static hash_table <saving_hasher> saving_htab;
 
 /* Register an object in the hash table.  */
 
@@ -315,8 +333,7 @@ gt_pch_note_object (void *obj, void *note_ptr_cookie,
     return 0;
 
   slot = (struct ptr_data **)
-    htab_find_slot_with_hash (saving_htab, obj, POINTER_HASH (obj),
-			      INSERT);
+    saving_htab.find_slot_with_hash (obj, POINTER_HASH (obj), INSERT);
   if (*slot != NULL)
     {
       gcc_assert ((*slot)->note_ptr_fn == note_ptr_fn
@@ -347,24 +364,10 @@ gt_pch_note_reorder (void *obj, void *note_ptr_cookie,
     return;
 
   data = (struct ptr_data *)
-    htab_find_with_hash (saving_htab, obj, POINTER_HASH (obj));
+    saving_htab.find_with_hash (obj, POINTER_HASH (obj));
   gcc_assert (data && data->note_ptr_cookie == note_ptr_cookie);
 
   data->reorder_fn = reorder_fn;
-}
-
-/* Hash and equality functions for saving_htab, callbacks for htab_create.  */
-
-static hashval_t
-saving_htab_hash (const void *p)
-{
-  return POINTER_HASH (((const struct ptr_data *)p)->obj);
-}
-
-static int
-saving_htab_eq (const void *p1, const void *p2)
-{
-  return ((const struct ptr_data *)p1)->obj == p2;
 }
 
 /* Handy state for the traversal functions.  */
@@ -380,11 +383,10 @@ struct traversal_state
 
 /* Callbacks for htab_traverse.  */
 
-static int
-call_count (void **slot, void *state_p)
+int
+ggc_call_count (ptr_data **slot, traversal_state *state)
 {
-  struct ptr_data *d = (struct ptr_data *)*slot;
-  struct traversal_state *state = (struct traversal_state *)state_p;
+  struct ptr_data *d = *slot;
 
   ggc_pch_count_object (state->d, d->obj, d->size,
 			d->note_ptr_fn == gt_pch_p_S);
@@ -392,11 +394,10 @@ call_count (void **slot, void *state_p)
   return 1;
 }
 
-static int
-call_alloc (void **slot, void *state_p)
+int
+ggc_call_alloc (ptr_data **slot, traversal_state *state)
 {
-  struct ptr_data *d = (struct ptr_data *)*slot;
-  struct traversal_state *state = (struct traversal_state *)state_p;
+  struct ptr_data *d = *slot;
 
   d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size,
 				      d->note_ptr_fn == gt_pch_p_S);
@@ -429,7 +430,7 @@ relocate_ptrs (void *ptr_p, void *state_p)
     return;
 
   result = (struct ptr_data *)
-    htab_find_with_hash (saving_htab, *ptr, POINTER_HASH (*ptr));
+    saving_htab.find_with_hash (*ptr, POINTER_HASH (*ptr));
   gcc_assert (result);
   *ptr = result->new_addr;
 }
@@ -458,7 +459,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 	  else
 	    {
 	      new_ptr = (struct ptr_data *)
-		htab_find_with_hash (saving_htab, ptr, POINTER_HASH (ptr));
+		saving_htab.find_with_hash (ptr, POINTER_HASH (ptr));
 	      if (fwrite (&new_ptr->new_addr, sizeof (void *), 1, state->f)
 		  != 1)
 		fatal_error ("can%'t write PCH file: %m");
@@ -492,7 +493,7 @@ gt_pch_save (FILE *f)
   gt_pch_save_stringpool ();
 
   timevar_push (TV_PCH_PTR_REALLOC);
-  saving_htab = htab_create (50000, saving_htab_hash, saving_htab_eq, free);
+  saving_htab.create (50000);
 
   for (rt = gt_ggc_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
@@ -508,7 +509,7 @@ gt_pch_save (FILE *f)
   state.f = f;
   state.d = init_ggc_pch ();
   state.count = 0;
-  htab_traverse (saving_htab, call_count, &state);
+  saving_htab.traverse <traversal_state *, ggc_call_count> (&state);
 
   mmi.size = ggc_pch_total_size (state.d);
 
@@ -524,7 +525,7 @@ gt_pch_save (FILE *f)
   state.ptrs = XNEWVEC (struct ptr_data *, state.count);
   state.ptrs_i = 0;
 
-  htab_traverse (saving_htab, call_alloc, &state);
+  saving_htab.traverse <traversal_state *, ggc_call_alloc> (&state);
   timevar_pop (TV_PCH_PTR_REALLOC);
 
   timevar_push (TV_PCH_PTR_SORT);
@@ -653,7 +654,7 @@ gt_pch_save (FILE *f)
 
   XDELETE (state.ptrs);
   XDELETE (this_object);
-  htab_delete (saving_htab);
+  saving_htab.dispose ();
 }
 
 /* Read the state of the compiler back in from F.  */
@@ -913,30 +914,32 @@ struct loc_descriptor
   size_t collected;
 };
 
-/* Hashtable used for statistics.  */
-static htab_t loc_hash;
+/* Hash table helper.  */
 
-/* Hash table helpers functions.  */
-static hashval_t
-hash_descriptor (const void *p)
+struct loc_desc_hasher : typed_noop_remove <loc_descriptor>
 {
-  const struct loc_descriptor *const d = (const struct loc_descriptor *) p;
+  typedef loc_descriptor value_type;
+  typedef loc_descriptor compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
 
+inline hashval_t
+loc_desc_hasher::hash (const value_type *d)
+{
   return htab_hash_pointer (d->function) | d->line;
 }
 
-static int
-eq_descriptor (const void *p1, const void *p2)
+inline bool
+loc_desc_hasher::equal (const value_type *d, const compare_type *d2)
 {
-  const struct loc_descriptor *const d = (const struct loc_descriptor *) p1;
-  const struct loc_descriptor *const d2 = (const struct loc_descriptor *) p2;
-
   return (d->file == d2->file && d->line == d2->line
 	  && d->function == d2->function);
 }
 
-/* Hashtable converting address of allocated field to loc descriptor.  */
-static htab_t ptr_hash;
+/* Hashtable used for statistics.  */
+static hash_table <loc_desc_hasher> loc_hash;
+
 struct ptr_hash_entry
 {
   void *ptr;
@@ -944,26 +947,34 @@ struct ptr_hash_entry
   size_t size;
 };
 
-/* Hash table helpers functions.  */
-static hashval_t
-hash_ptr (const void *p)
-{
-  const struct ptr_hash_entry *const d = (const struct ptr_hash_entry *) p;
+/* Helper for ptr_hash table.  */
 
+struct ptr_hash_hasher : typed_noop_remove <ptr_hash_entry>
+{
+  typedef ptr_hash_entry value_type;
+  typedef void compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+ptr_hash_hasher::hash (const value_type *d)
+{
   return htab_hash_pointer (d->ptr);
 }
 
-static int
-eq_ptr (const void *p1, const void *p2)
+inline bool
+ptr_hash_hasher::equal (const value_type *p, const compare_type *p2)
 {
-  const struct ptr_hash_entry *const p = (const struct ptr_hash_entry *) p1;
-
   return (p->ptr == p2);
 }
 
+/* Hashtable converting address of allocated field to loc descriptor.  */
+static hash_table <ptr_hash_hasher> ptr_hash;
+
 /* Return descriptor for given call site, create new one if needed.  */
 static struct loc_descriptor *
-loc_descriptor (const char *name, int line, const char *function)
+make_loc_descriptor (const char *name, int line, const char *function)
 {
   struct loc_descriptor loc;
   struct loc_descriptor **slot;
@@ -971,10 +982,10 @@ loc_descriptor (const char *name, int line, const char *function)
   loc.file = name;
   loc.line = line;
   loc.function = function;
-  if (!loc_hash)
-    loc_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
+  if (!loc_hash.is_created ())
+    loc_hash.create (10);
 
-  slot = (struct loc_descriptor **) htab_find_slot (loc_hash, &loc, INSERT);
+  slot = loc_hash.find_slot (&loc, INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct loc_descriptor);
@@ -989,16 +1000,16 @@ void
 ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
 		     const char *name, int line, const char *function)
 {
-  struct loc_descriptor *loc = loc_descriptor (name, line, function);
+  struct loc_descriptor *loc = make_loc_descriptor (name, line, function);
   struct ptr_hash_entry *p = XNEW (struct ptr_hash_entry);
-  PTR *slot;
+  ptr_hash_entry **slot;
 
   p->ptr = ptr;
   p->loc = loc;
   p->size = allocated + overhead;
-  if (!ptr_hash)
-    ptr_hash = htab_create (10, hash_ptr, eq_ptr, NULL);
-  slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr), INSERT);
+  if (!ptr_hash.is_created ())
+    ptr_hash.create (10);
+  slot = ptr_hash.find_slot_with_hash (ptr, htab_hash_pointer (ptr), INSERT);
   gcc_assert (!*slot);
   *slot = p;
 
@@ -1009,14 +1020,14 @@ ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
 
 /* Helper function for prune_overhead_list.  See if SLOT is still marked and
    remove it from hashtable if it is not.  */
-static int
-ggc_prune_ptr (void **slot, void *b ATTRIBUTE_UNUSED)
+int
+ggc_prune_ptr (ptr_hash_entry **slot, void *b ATTRIBUTE_UNUSED)
 {
-  struct ptr_hash_entry *p = (struct ptr_hash_entry *) *slot;
+  struct ptr_hash_entry *p = *slot;
   if (!ggc_marked_p (p->ptr))
     {
       p->loc->collected += p->size;
-      htab_clear_slot (ptr_hash, slot);
+      ptr_hash.clear_slot (slot);
       free (p);
     }
   return 1;
@@ -1027,15 +1038,15 @@ ggc_prune_ptr (void **slot, void *b ATTRIBUTE_UNUSED)
 void
 ggc_prune_overhead_list (void)
 {
-  htab_traverse (ptr_hash, ggc_prune_ptr, NULL);
+  ptr_hash.traverse <void *, ggc_prune_ptr> (NULL);
 }
 
 /* Notice that the pointer has been freed.  */
 void
 ggc_free_overhead (void *ptr)
 {
-  PTR *slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr),
-					NO_INSERT);
+  ptr_hash_entry **slot;
+  slot = ptr_hash.find_slot_with_hash (ptr, htab_hash_pointer (ptr), NO_INSERT);
   struct ptr_hash_entry *p;
   /* The pointer might be not found if a PCH read happened between allocation
      and ggc_free () call.  FIXME: account memory properly in the presence of
@@ -1044,7 +1055,7 @@ ggc_free_overhead (void *ptr)
       return;
   p = (struct ptr_hash_entry *) *slot;
   p->loc->freed += p->size;
-  htab_clear_slot (ptr_hash, slot);
+  ptr_hash.clear_slot (slot);
   free (p);
 }
 
@@ -1083,11 +1094,10 @@ cmp_statistic (const void *loc1, const void *loc2)
 
 /* Collect array of the descriptors from hashtable.  */
 static struct loc_descriptor **loc_array;
-static int
-add_statistics (void **slot, void *b)
+int
+ggc_add_statistics (loc_descriptor **slot, int *n)
 {
-  int *n = (int *)b;
-  loc_array[*n] = (struct loc_descriptor *) *slot;
+  loc_array[*n] = *slot;
   (*n)++;
   return 1;
 }
@@ -1108,12 +1118,13 @@ dump_ggc_loc_statistics (bool final)
   ggc_force_collect = true;
   ggc_collect ();
 
-  loc_array = XCNEWVEC (struct loc_descriptor *, loc_hash->n_elements);
+  loc_array = XCNEWVEC (struct loc_descriptor *,
+			loc_hash.elements_with_deleted ());
   fprintf (stderr, "-------------------------------------------------------\n");
   fprintf (stderr, "\n%-48s %10s       %10s       %10s       %10s       %10s\n",
 	   "source location", "Garbage", "Freed", "Leak", "Overhead", "Times");
   fprintf (stderr, "-------------------------------------------------------\n");
-  htab_traverse (loc_hash, add_statistics, &nentries);
+  loc_hash.traverse <int *, ggc_add_statistics> (&nentries);
   qsort (loc_array, nentries, sizeof (*loc_array),
 	 final ? final_cmp_statistic : cmp_statistic);
   for (i = 0; i < nentries; i++)

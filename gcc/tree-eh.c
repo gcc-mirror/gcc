@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
@@ -193,20 +194,42 @@ struct finally_tree_node
   gimple parent;
 };
 
+/* Hashtable helpers.  */
+
+struct finally_tree_hasher : typed_free_remove <finally_tree_node>
+{
+  typedef finally_tree_node value_type;
+  typedef finally_tree_node compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+finally_tree_hasher::hash (const value_type *v)
+{
+  return (intptr_t)v->child.t >> 4;
+}
+
+inline bool
+finally_tree_hasher::equal (const value_type *v, const compare_type *c)
+{
+  return v->child.t == c->child.t;
+}
+
 /* Note that this table is *not* marked GTY.  It is short-lived.  */
-static htab_t finally_tree;
+static hash_table <finally_tree_hasher> finally_tree;
 
 static void
 record_in_finally_tree (treemple child, gimple parent)
 {
   struct finally_tree_node *n;
-  void **slot;
+  finally_tree_node **slot;
 
   n = XNEW (struct finally_tree_node);
   n->child = child;
   n->parent = parent;
 
-  slot = htab_find_slot (finally_tree, n, INSERT);
+  slot = finally_tree.find_slot (n, INSERT);
   gcc_assert (!*slot);
   *slot = n;
 }
@@ -285,7 +308,7 @@ outside_finally_tree (treemple start, gimple target)
   do
     {
       n.child = start;
-      p = (struct finally_tree_node *) htab_find (finally_tree, &n);
+      p = finally_tree.find (&n);
       if (!p)
 	return true;
       start.g = p->parent;
@@ -2102,7 +2125,7 @@ lower_eh_constructs (void)
   if (bodyp == NULL)
     return 0;
 
-  finally_tree = htab_create (31, struct_ptr_hash, struct_ptr_eq, free);
+  finally_tree.create (31);
   eh_region_may_contain_throw_map = BITMAP_ALLOC (NULL);
   memset (&null_state, 0, sizeof (null_state));
 
@@ -2120,7 +2143,7 @@ lower_eh_constructs (void)
      didn't change its value, and we don't have to re-set the function.  */
   gcc_assert (bodyp == gimple_body (current_function_decl));
 
-  htab_delete (finally_tree);
+  finally_tree.dispose ();
   BITMAP_FREE (eh_region_may_contain_throw_map);
   eh_seq = NULL;
 

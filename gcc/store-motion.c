@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "intl.h"
 #include "tree-pass.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "df.h"
 #include "dbgcnt.h"
 
@@ -90,9 +90,6 @@ struct st_expr
 /* Head of the list of load/store memory refs.  */
 static struct st_expr * store_motion_mems = NULL;
 
-/* Hashtable for the load/store memory refs.  */
-static htab_t store_motion_mems_table = NULL;
-
 /* These bitmaps will hold the local dataflow properties per basic block.  */
 static sbitmap *st_kill, *st_avloc, *st_antloc, *st_transp;
 
@@ -108,21 +105,31 @@ static int num_stores;
 /* Contains the edge_list returned by pre_edge_lcm.  */
 static struct edge_list *edge_list;
 
-static hashval_t
-pre_st_expr_hash (const void *p)
+/* Hashtable helpers.  */
+
+struct st_expr_hasher : typed_noop_remove <st_expr>
+{
+  typedef st_expr value_type;
+  typedef st_expr compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+st_expr_hasher::hash (const value_type *x)
 {
   int do_not_record_p = 0;
-  const struct st_expr *const x = (const struct st_expr *) p;
   return hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
 }
 
-static int
-pre_st_expr_eq (const void *p1, const void *p2)
+inline bool
+st_expr_hasher::equal (const value_type *ptr1, const compare_type *ptr2)
 {
-  const struct st_expr *const ptr1 = (const struct st_expr *) p1,
-    *const ptr2 = (const struct st_expr *) p2;
   return exp_equiv_p (ptr1->pattern, ptr2->pattern, 0, true);
 }
+
+/* Hashtable for the load/store memory refs.  */
+static hash_table <st_expr_hasher> store_motion_mems_table;
 
 /* This will search the st_expr list for a matching expression. If it
    doesn't find one, we create one and initialize it.  */
@@ -133,16 +140,16 @@ st_expr_entry (rtx x)
   int do_not_record_p = 0;
   struct st_expr * ptr;
   unsigned int hash;
-  void **slot;
+  st_expr **slot;
   struct st_expr e;
 
   hash = hash_rtx (x, GET_MODE (x), &do_not_record_p,
 		   NULL,  /*have_reg_qty=*/false);
 
   e.pattern = x;
-  slot = htab_find_slot_with_hash (store_motion_mems_table, &e, hash, INSERT);
+  slot = store_motion_mems_table.find_slot_with_hash (&e, hash, INSERT);
   if (*slot)
-    return (struct st_expr *)*slot;
+    return *slot;
 
   ptr = XNEW (struct st_expr);
 
@@ -176,9 +183,8 @@ free_st_expr_entry (struct st_expr * ptr)
 static void
 free_store_motion_mems (void)
 {
-  if (store_motion_mems_table)
-    htab_delete (store_motion_mems_table);
-  store_motion_mems_table = NULL;
+  if (store_motion_mems_table.is_created ())
+    store_motion_mems_table.dispose ();
 
   while (store_motion_mems)
     {
@@ -645,8 +651,7 @@ compute_store_table (void)
   unsigned int max_gcse_regno = max_reg_num ();
 
   store_motion_mems = NULL;
-  store_motion_mems_table = htab_create (13, pre_st_expr_hash,
-					 pre_st_expr_eq, NULL);
+  store_motion_mems_table.create (13);
   last_set_in = XCNEWVEC (int, max_gcse_regno);
   already_set = XNEWVEC (int, max_gcse_regno);
 
@@ -708,8 +713,7 @@ compute_store_table (void)
       if (! ptr->avail_stores)
 	{
 	  *prev_next_ptr_ptr = ptr->next;
-	  htab_remove_elt_with_hash (store_motion_mems_table,
-				     ptr, ptr->hash_index);
+	  store_motion_mems_table.remove_elt_with_hash (ptr, ptr->hash_index);
 	  free_st_expr_entry (ptr);
 	}
       else
@@ -1142,8 +1146,7 @@ one_store_motion_pass (void)
   num_stores = compute_store_table ();
   if (num_stores == 0)
     {
-      htab_delete (store_motion_mems_table);
-      store_motion_mems_table = NULL;
+      store_motion_mems_table.dispose ();
       end_alias_analysis ();
       return 0;
     }

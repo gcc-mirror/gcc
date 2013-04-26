@@ -265,11 +265,6 @@ associate_equivalences_with_edges (void)
    subtree rooted at the block where we record the equivalency.  */
 static vec<tree> equiv_stack;
 
-/* Global hash table implementing a mapping from invariant values
-   to a list of SSA_NAMEs which have the same value.  We might be
-   able to reuse tree-vn for this code.  */
-static htab_t equiv;
-
 /* Main structure for recording equivalences into our hash table.  */
 struct equiv_hash_elt
 {
@@ -280,53 +275,66 @@ struct equiv_hash_elt
   vec<tree> equivalences;
 };
 
-static void uncprop_enter_block (struct dom_walk_data *, basic_block);
-static void uncprop_leave_block (struct dom_walk_data *, basic_block);
-static void uncprop_into_successor_phis (basic_block);
+/* Value to ssa name equivalence hashtable helpers.  */
 
-/* Hashing and equality routines for the hash table.  */
-
-static hashval_t
-equiv_hash (const void *p)
+struct val_ssa_equiv_hasher
 {
-  tree const value = ((const struct equiv_hash_elt *)p)->value;
+  typedef equiv_hash_elt value_type;
+  typedef equiv_hash_elt compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
+
+inline hashval_t
+val_ssa_equiv_hasher::hash (const value_type *p)
+{
+  tree const value = p->value;
   return iterative_hash_expr (value, 0);
 }
 
-static int
-equiv_eq (const void *p1, const void *p2)
+inline bool
+val_ssa_equiv_hasher::equal (const value_type *p1, const compare_type *p2)
 {
-  tree value1 = ((const struct equiv_hash_elt *)p1)->value;
-  tree value2 = ((const struct equiv_hash_elt *)p2)->value;
+  tree value1 = p1->value;
+  tree value2 = p2->value;
 
   return operand_equal_p (value1, value2, 0);
 }
 
 /* Free an instance of equiv_hash_elt.  */
 
-static void
-equiv_free (void *p)
+inline void
+val_ssa_equiv_hasher::remove (value_type *elt)
 {
-  struct equiv_hash_elt *elt = (struct equiv_hash_elt *) p;
   elt->equivalences.release ();
   free (elt);
 }
+
+/* Global hash table implementing a mapping from invariant values
+   to a list of SSA_NAMEs which have the same value.  We might be
+   able to reuse tree-vn for this code.  */
+static hash_table <val_ssa_equiv_hasher> val_ssa_equiv;
+
+static void uncprop_enter_block (struct dom_walk_data *, basic_block);
+static void uncprop_leave_block (struct dom_walk_data *, basic_block);
+static void uncprop_into_successor_phis (basic_block);
 
 /* Remove the most recently recorded equivalency for VALUE.  */
 
 static void
 remove_equivalence (tree value)
 {
-  struct equiv_hash_elt equiv_hash_elt, *equiv_hash_elt_p;
-  void **slot;
+  struct equiv_hash_elt an_equiv_elt, *an_equiv_elt_p;
+  equiv_hash_elt **slot;
 
-  equiv_hash_elt.value = value;
-  equiv_hash_elt.equivalences.create (0);
+  an_equiv_elt.value = value;
+  an_equiv_elt.equivalences.create (0);
 
-  slot = htab_find_slot (equiv, &equiv_hash_elt, NO_INSERT);
+  slot = val_ssa_equiv.find_slot (&an_equiv_elt, NO_INSERT);
 
-  equiv_hash_elt_p = (struct equiv_hash_elt *) *slot;
-  equiv_hash_elt_p->equivalences.pop ();
+  an_equiv_elt_p = *slot;
+  an_equiv_elt_p->equivalences.pop ();
 }
 
 /* Record EQUIVALENCE = VALUE into our hash table.  */
@@ -334,23 +342,23 @@ remove_equivalence (tree value)
 static void
 record_equiv (tree value, tree equivalence)
 {
-  struct equiv_hash_elt *equiv_hash_elt;
-  void **slot;
+  equiv_hash_elt *an_equiv_elt_p;
+  equiv_hash_elt **slot;
 
-  equiv_hash_elt = XNEW (struct equiv_hash_elt);
-  equiv_hash_elt->value = value;
-  equiv_hash_elt->equivalences.create (0);
+  an_equiv_elt_p = XNEW (struct equiv_hash_elt);
+  an_equiv_elt_p->value = value;
+  an_equiv_elt_p->equivalences.create (0);
 
-  slot = htab_find_slot (equiv, equiv_hash_elt, INSERT);
+  slot = val_ssa_equiv.find_slot (an_equiv_elt_p, INSERT);
 
   if (*slot == NULL)
-    *slot = (void *) equiv_hash_elt;
+    *slot = an_equiv_elt_p;
   else
-     free (equiv_hash_elt);
+     free (an_equiv_elt_p);
 
-  equiv_hash_elt = (struct equiv_hash_elt *) *slot;
+  an_equiv_elt_p = *slot;
 
-  equiv_hash_elt->equivalences.safe_push (equivalence);
+  an_equiv_elt_p->equivalences.safe_push (equivalence);
 }
 
 /* Main driver for un-cprop.  */
@@ -364,7 +372,7 @@ tree_ssa_uncprop (void)
   associate_equivalences_with_edges ();
 
   /* Create our global data structures.  */
-  equiv = htab_create (1024, equiv_hash, equiv_eq, equiv_free);
+  val_ssa_equiv.create (1024);
   equiv_stack.create (2);
 
   /* We're going to do a dominator walk, so ensure that we have
@@ -392,7 +400,7 @@ tree_ssa_uncprop (void)
   /* EQUIV_STACK should already be empty at this point, so we just
      need to empty elements out of the hash table, free EQUIV_STACK,
      and cleanup the AUX field on the edges.  */
-  htab_delete (equiv);
+  val_ssa_equiv.dispose ();
   equiv_stack.release ();
   FOR_EACH_BB (bb)
     {
@@ -463,8 +471,8 @@ uncprop_into_successor_phis (basic_block bb)
 	  gimple phi = gsi_stmt (gsi);
 	  tree arg = PHI_ARG_DEF (phi, e->dest_idx);
 	  tree res = PHI_RESULT (phi);
-	  struct equiv_hash_elt equiv_hash_elt;
-	  void **slot;
+	  equiv_hash_elt an_equiv_elt;
+	  equiv_hash_elt **slot;
 
 	  /* If the argument is not an invariant, and refers to the same
 	     underlying variable as the PHI result, then there's no
@@ -475,13 +483,13 @@ uncprop_into_successor_phis (basic_block bb)
 	    continue;
 
 	  /* Lookup this argument's value in the hash table.  */
-	  equiv_hash_elt.value = arg;
-	  equiv_hash_elt.equivalences.create (0);
-	  slot = htab_find_slot (equiv, &equiv_hash_elt, NO_INSERT);
+	  an_equiv_elt.value = arg;
+	  an_equiv_elt.equivalences.create (0);
+	  slot = val_ssa_equiv.find_slot (&an_equiv_elt, NO_INSERT);
 
 	  if (slot)
 	    {
-	      struct equiv_hash_elt *elt = (struct equiv_hash_elt *) *slot;
+	      struct equiv_hash_elt *elt = *slot;
 	      int j;
 
 	      /* Walk every equivalence with the same value.  If we find

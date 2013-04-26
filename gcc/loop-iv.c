@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic-core.h"
 #include "df.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "dumpfile.h"
 
 /* Possible return values of iv_get_reaching_def.  */
@@ -106,9 +106,35 @@ static struct rtx_iv ** iv_ref_table;
 
 static struct loop *current_loop;
 
+/* Hashtable helper.  */
+
+struct biv_entry_hasher : typed_free_remove <biv_entry>
+{
+  typedef biv_entry value_type;
+  typedef rtx_def compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Returns hash value for biv B.  */
+
+inline hashval_t
+biv_entry_hasher::hash (const value_type *b)
+{
+  return b->regno;
+}
+
+/* Compares biv B and register R.  */
+
+inline bool
+biv_entry_hasher::equal (const value_type *b, const compare_type *r)
+{
+  return b->regno == REGNO (r);
+}
+
 /* Bivs of the current loop.  */
 
-static htab_t bivs;
+static hash_table <biv_entry_hasher> bivs;
 
 static bool iv_analyze_op (rtx, rtx, struct rtx_iv *);
 
@@ -243,24 +269,9 @@ clear_iv_info (void)
 	}
     }
 
-  htab_empty (bivs);
+  bivs.empty ();
 }
 
-/* Returns hash value for biv B.  */
-
-static hashval_t
-biv_hash (const void *b)
-{
-  return ((const struct biv_entry *) b)->regno;
-}
-
-/* Compares biv B and register R.  */
-
-static int
-biv_eq (const void *b, const void *r)
-{
-  return ((const struct biv_entry *) b)->regno == REGNO ((const_rtx) r);
-}
 
 /* Prepare the data for an induction variable analysis of a LOOP.  */
 
@@ -277,7 +288,7 @@ iv_analysis_loop_init (struct loop *loop)
   if (clean_slate)
     {
       df_set_flags (DF_EQ_NOTES + DF_DEFER_INSN_RESCAN);
-      bivs = htab_create (10, biv_hash, biv_eq, free);
+      bivs.create (10);
       clean_slate = false;
     }
   else
@@ -837,8 +848,7 @@ record_iv (df_ref def, struct rtx_iv *iv)
 static bool
 analyzed_for_bivness_p (rtx def, struct rtx_iv *iv)
 {
-  struct biv_entry *biv =
-    (struct biv_entry *) htab_find_with_hash (bivs, def, REGNO (def));
+  struct biv_entry *biv = bivs.find_with_hash (def, REGNO (def));
 
   if (!biv)
     return false;
@@ -851,7 +861,7 @@ static void
 record_biv (rtx def, struct rtx_iv *iv)
 {
   struct biv_entry *biv = XNEW (struct biv_entry);
-  void **slot = htab_find_slot_with_hash (bivs, def, REGNO (def), INSERT);
+  biv_entry **slot = bivs.find_slot_with_hash (def, REGNO (def), INSERT);
 
   biv->regno = REGNO (def);
   biv->iv = *iv;
@@ -1293,11 +1303,10 @@ iv_analysis_done (void)
       clear_iv_info ();
       clean_slate = true;
       df_finish_pass (true);
-      htab_delete (bivs);
+      bivs.dispose ();
       free (iv_ref_table);
       iv_ref_table = NULL;
       iv_ref_table_size = 0;
-      bivs = NULL;
     }
 }
 

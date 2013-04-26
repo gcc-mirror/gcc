@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tree.h"
 #include "tree-pretty-print.h"
 
@@ -94,14 +95,45 @@ static tree TB_next_expr (tree);
 static tree TB_up_expr (tree);
 static tree TB_first_in_bind (tree);
 static tree TB_last_in_bind (tree);
-static int  TB_parent_eq (const void *, const void *);
 static tree TB_history_prev (void);
 
 /* FIXME: To be declared in a .h file.  */
 void browse_tree (tree);
 
+/* Hashtable helpers.  */
+struct tree_upper_hasher : typed_noop_remove <tree_node>
+{
+  typedef tree_node value_type;
+  typedef tree_node compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+tree_upper_hasher::hash (const value_type *v)
+{
+  return pointer_hash <value_type>::hash (v);
+}
+
+inline bool
+tree_upper_hasher::equal (const value_type *parent, const compare_type *node)
+{
+  if (parent == NULL || node == NULL)
+    return 0;
+
+  if (EXPR_P (parent))
+    {
+      int n = TREE_OPERAND_LENGTH (parent);
+      int i;
+      for (i = 0; i < n; i++)
+	if (node == TREE_OPERAND (parent, i))
+	  return true;
+    }
+  return false;
+}
+
 /* Static variables.  */
-static htab_t TB_up_ht;
+static hash_table <tree_upper_hasher> TB_up_ht;
 static vec<tree, va_gc> *TB_history_stack;
 static int TB_verbose = 1;
 
@@ -134,7 +166,7 @@ browse_tree (tree begin)
 
   /* Store in a hashtable information about previous and upper statements.  */
   {
-    TB_up_ht = htab_create (1023, htab_hash_pointer, &TB_parent_eq, NULL);
+    TB_up_ht.create (1023);
     TB_update_up (head);
   }
 
@@ -612,7 +644,7 @@ browse_tree (tree begin)
     }
 
  ret:;
-  htab_delete (TB_up_ht);
+  TB_up_ht.dispose ();
   return;
 }
 
@@ -658,7 +690,7 @@ TB_up_expr (tree node)
   if (node == NULL_TREE)
     return NULL_TREE;
 
-  res = (tree) htab_find (TB_up_ht, node);
+  res = TB_up_ht.find (node);
   return res;
 }
 
@@ -724,7 +756,7 @@ store_child_info (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 		  void *data ATTRIBUTE_UNUSED)
 {
   tree node;
-  void **slot;
+  tree_node **slot;
 
   node = *tp;
 
@@ -736,35 +768,13 @@ store_child_info (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
       for (i = 0; i < n; i++)
 	{
 	  tree op = TREE_OPERAND (node, i);
-	  slot = htab_find_slot (TB_up_ht, op, INSERT);
-	  *slot = (void *) node;
+	  slot = TB_up_ht.find_slot (op, INSERT);
+	  *slot = node;
 	}
     }
 
   /* Never stop walk_tree.  */
   return NULL_TREE;
-}
-
-/* Function used in TB_up_ht.  */
-
-static int
-TB_parent_eq (const void *p1, const void *p2)
-{
-  const_tree const node = (const_tree)p2;
-  const_tree const parent = (const_tree) p1;
-
-  if (p1 == NULL || p2 == NULL)
-    return 0;
-
-  if (EXPR_P (parent))
-    {
-      int n = TREE_OPERAND_LENGTH (parent);
-      int i;
-      for (i = 0; i < n; i++)
-	if (node == TREE_OPERAND (parent, i))
-	  return 1;
-    }
-  return 0;
 }
 
 /* Update information about upper expressions in the hash table.  */
