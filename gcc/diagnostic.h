@@ -293,6 +293,6 @@ void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 
 
 /* Pure text formatting support functions.  */
-extern char *file_name_as_prefix (const char *);
+extern char *file_name_as_prefix (diagnostic_context *, const char *);
 
 #endif /* ! GCC_DIAGNOSTIC_H */

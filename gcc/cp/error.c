@@ -2962,7 +2962,7 @@ cp_print_error_function (diagnostic_context *context,
       const char *file = LOCATION_FILE (diagnostic->location);
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
-			 ? file_name_as_prefix (file) : NULL;
+			 ? file_name_as_prefix (context, file) : NULL;
 
       pp_base_set_prefix (context->printer, new_prefix);
 

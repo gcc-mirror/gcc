@@ -1,3 +1,10 @@
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* diagnostic.h (file_name_as_prefix): Add context argument.
+	* diagnostic.c (file_name_as_prefix): Likewise.  Colorize
+	the string as locus.
+	* langhooks.c (lhd_print_error_function): Adjust caller.
+
 2013-04-25  Lawrence Crowl  <crowl@google.com>
 
 	* var-tracking.c (shared_hash_def::htab):
