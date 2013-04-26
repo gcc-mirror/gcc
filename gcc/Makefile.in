@@ -2716,7 +2716,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(OPTS_H) params.def tree-mudflap.h $(TREE_PASS_H) $(GIMPLE_H) \
    tree-ssa-alias.h $(PLUGIN_H) realmpfr.h tree-diagnostic.h \
    $(TREE_PRETTY_PRINT_H) opts-diagnostic.h $(COMMON_TARGET_H) \
-   tsan.h
+   tsan.h diagnostic-color.h
 
 hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H) $(DIAGNOSTIC_CORE_H)
 

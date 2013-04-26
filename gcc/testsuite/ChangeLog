@@ -1,3 +1,10 @@
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/prune.exp: Add -fdiagnostics-color=never to TEST_ALWAYS_FLAGS.
+	* lib/c-compat.exp (compat-use-alt-compiler, compat_setup_dfp): Handle
+	-fdiagnostics-color=never option similarly to
+	-fno-diagnostics-show-caret option.
+
 2013-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57003

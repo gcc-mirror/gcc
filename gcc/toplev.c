@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-ssa-alias.h"
 #include "plugin.h"
+#include "diagnostic-color.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -1208,6 +1209,13 @@ process_options (void)
   debug_hooks = &do_nothing_debug_hooks;
 
   maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
+
+  /* Default to -fdiagnostics-color=auto if GCC_COLORS is in the environment,
+     otherwise default to -fdiagnostics-color=never.  */
+  if (!global_options_set.x_flag_diagnostics_show_color
+      && getenv ("GCC_COLORS"))
+    pp_show_color (global_dc->printer)
+      = colorize_init (DIAGNOSTICS_COLOR_AUTO);
 
   /* Allow the front end to perform consistency checks and do further
      initialization based on the command line options.  This hook also

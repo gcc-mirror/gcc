@@ -264,14 +264,8 @@ parse_gcc_colors (void)
 }
 
 #if defined(_WIN32)
-static bool
-should_colorize (void)
-{
-  return false;
-}
-
 bool
-colorize_init (void)
+colorize_init (diagnostic_color_rule_t)
 {
   return false;
 }
