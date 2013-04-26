@@ -1,3 +1,18 @@
+2013-04-26  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.in (lto-streamer-in.o): Add $(CFGLOOP_H) dependency.
+	(lto-streamer-out.o): Likewise.
+	* cfgloop.c (init_loops_structure): Export, add struct function
+	argument and adjust.
+	(flow_loops_find): Adjust.
+	* cfgloop.h (enum loop_estimation): Add EST_LAST.
+	(init_loops_structure): Declare.
+	* lto-streamer-in.c: Include cfgloop.h.
+	(input_cfg): Input the loop tree.
+	* lto-streamer-out.c: Include cfgloop.h.
+	(output_cfg): Output the loop tree.
+	(output_struct_function_base): Do not drop PROP_loops.
+
 2013-03-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (execute_build_cfg): Build the loop tree.

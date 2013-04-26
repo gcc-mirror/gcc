@@ -339,8 +339,9 @@ alloc_loop (void)
 /* Initializes loops structure LOOPS, reserving place for NUM_LOOPS loops
    (including the root of the loop tree).  */
 
-static void
-init_loops_structure (struct loops *loops, unsigned num_loops)
+void
+init_loops_structure (struct function *fn,
+		      struct loops *loops, unsigned num_loops)
 {
   struct loop *root;
 
@@ -349,11 +350,11 @@ init_loops_structure (struct loops *loops, unsigned num_loops)
 
   /* Dummy loop containing whole function.  */
   root = alloc_loop ();
-  root->num_nodes = n_basic_blocks;
-  root->latch = EXIT_BLOCK_PTR;
-  root->header = ENTRY_BLOCK_PTR;
-  ENTRY_BLOCK_PTR->loop_father = root;
-  EXIT_BLOCK_PTR->loop_father = root;
+  root->num_nodes = n_basic_blocks_for_function (fn);
+  root->latch = EXIT_BLOCK_PTR_FOR_FUNCTION (fn);
+  root->header = ENTRY_BLOCK_PTR_FOR_FUNCTION (fn);
+  ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)->loop_father = root;
+  EXIT_BLOCK_PTR_FOR_FUNCTION (fn)->loop_father = root;
 
   loops->larray->quick_push (root);
   loops->tree_root = root;
@@ -411,7 +412,7 @@ flow_loops_find (struct loops *loops)
   if (!loops)
     {
       loops = ggc_alloc_cleared_loops ();
-      init_loops_structure (loops, 1);
+      init_loops_structure (cfun, loops, 1);
     }
 
   /* Ensure that loop exits were released.  */
