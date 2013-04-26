@@ -297,7 +297,43 @@ c_check_cilk_loop (location_t loc, tree decl, tree cond, tree incr, tree body)
     return false;
 
   return true;
- }
+}
+
+/* Adjust any clauses to match the requirements for OpenMP.  */
+
+static tree
+adjust_clauses_for_omp (tree clauses)
+{
+  unsigned int max_vlen = 0;
+  tree c, max_vlen_tree = NULL;
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      /* #pragma simd vectorlength (a, b, c)
+	 is equivalent to:
+	 #pragma omp simd safelen (max (a, b, c)).  */
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_CILK_VECTORLENGTH)
+	{
+	  unsigned int vlen;
+
+	  vlen = TREE_INT_CST_LOW (OMP_CLAUSE_CILK_VECTORLENGTH_EXPR (c));
+	  if (vlen > max_vlen)
+	    {
+	      max_vlen = vlen;
+	      max_vlen_tree = OMP_CLAUSE_CILK_VECTORLENGTH_EXPR (c);
+	    }
+	}
+    }
+  if (max_vlen)
+    {
+      c = build_omp_clause (EXPR_LOCATION (max_vlen_tree),
+			    OMP_CLAUSE_SAFELEN);
+      OMP_CLAUSE_SAFELEN_EXPR (c) = max_vlen_tree;
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+    }
+  return clauses;
+}
 
 /* Validate and emit code for the FOR loop following a #<pragma simd>
    construct.
@@ -351,8 +387,6 @@ c_finish_cilk_simd_loop (location_t loc,
   TREE_VEC_ELT (condv, 0) = cond;
   TREE_VEC_ELT (incrv, 0) = incr;
 
-  // FIXME: What should we do about nested loops?  Look at specs.
-
   /* The OpenMP <#pragma omp simd> construct is exactly the same as
      the Cilk Plus one, with the exception of the vectorlength()
      clause in Cilk Plus.  Emitting an OMP_SIMD simlifies
@@ -360,11 +394,19 @@ c_finish_cilk_simd_loop (location_t loc,
   tree t = make_node (OMP_SIMD);
   TREE_TYPE (t) = void_type_node;
   OMP_FOR_INIT (t) = initv;
+
+  /* FIXME: The spec says "The increment and limit expressions may be
+     evaluated fewer times than in the serialization.  If different
+     evaluations of the same expression yield different values, the
+     behavior of the program is undefined."  This means that the RHS
+     of the condition and increment could be wrapped in a
+     SAVE_EXPR.  */
   OMP_FOR_COND (t) = condv;
   OMP_FOR_INCR (t) = incrv;
+
   OMP_FOR_BODY (t) = body;
   OMP_FOR_PRE_BODY (t) = NULL;
-  OMP_FOR_CLAUSES (t) = clauses;
+  OMP_FOR_CLAUSES (t) = adjust_clauses_for_omp (clauses);
 
   SET_EXPR_LOCATION (t, loc);
   return add_stmt (t);
