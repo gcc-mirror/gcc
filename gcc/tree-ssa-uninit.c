@@ -151,7 +151,21 @@ compute_uninit_opnds_pos (gimple phi)
       if (TREE_CODE (op) == SSA_NAME
           && ssa_undefined_value_p (op)
           && !can_skip_redundant_opnd (op, phi))
-        MASK_SET_BIT (uninit_opnds, i);
+	{
+	  /* Ignore SSA_NAMEs on abnormal edges to setjmp
+	     or nonlocal goto receiver.  */
+          if (cfun->has_nonlocal_label || cfun->calls_setjmp)
+	    {
+	      edge e = gimple_phi_arg_edge (phi, i);
+	      if (e->flags & EDGE_ABNORMAL)
+		{
+		  gimple last = last_stmt (e->src);
+		  if (last && stmt_can_make_abnormal_goto (last))
+		    continue;
+		}
+	    }
+	  MASK_SET_BIT (uninit_opnds, i);
+	}
     }
   return uninit_opnds;
 }

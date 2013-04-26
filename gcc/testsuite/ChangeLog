@@ -1,3 +1,8 @@
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/57045
+	* gcc.dg/setjmp-5.c: New test.
+
 2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55708
