@@ -1,5 +1,16 @@
 2013-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (toplev.o): Depend on diagnostic-color.h.
+	* diagnostic-color.c (should_colorize): Remove _WIN32 version.
+	(colorize_init): Add argument to _WIN32 version.
+	* toplev.c: Include diagnostic-color.h.
+	(process_options): Default to -fdiagnostics-color=auto if
+	GCC_COLORS env var is in the environment.
+	* common.opt (fdiagnostics-color=): Add Var and Init.
+	* doc/invoke.texi (-fdiagnostics-color=): Document that if
+	GCC_COLORS env var is in the environment, the default is auto
+	rather than never.
+
 	* diagnostic.h (file_name_as_prefix): Add context argument.
 	* diagnostic.c (file_name_as_prefix): Likewise.  Colorize
 	the string as locus.
