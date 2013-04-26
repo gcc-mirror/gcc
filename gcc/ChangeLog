@@ -1,3 +1,12 @@
+2013-04-26  Richard Biener  <rguenther@suse.de>
+
+	* omp-low.c (finalize_task_copyfn): Do not drop PROP_loops.
+	(expand_omp_taskreg): Likewise.  Mark loops for fixup.
+	* tree-cfg.c (move_block_to_fn): Remap loop fathers.
+	(fixup_loop_arrays_after_move): New function.
+	(move_sese_region_to_fn): Properly outline the loop tree parts
+	of the SESE region.
+
 2013-04-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (type, unit): Fix long lines.
