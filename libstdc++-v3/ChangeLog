@@ -1,3 +1,9 @@
+2013-04-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Insert_base<>::insert<_It>(_It, _It)): Enable move semantics.
+	* testsuite/23_containers/unordered_set/insert/move_range.cc: New.
+
 2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_global/cstdio (gets): Provide only in C++98 and C++11.
