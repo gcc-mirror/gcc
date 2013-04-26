@@ -1,4 +1,9 @@
-2013-03-26  Richard Biener  <rguenther@suse.de>
+2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55708
+	* g++.dg/cpp0x/constexpr-55708.C: New.
+
+2013-04-26  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-prof/update-loopch.c: Revert last change.
 	* gcc.dg/graphite/pr33766.c: Fix undefined behavior.
