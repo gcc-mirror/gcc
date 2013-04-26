@@ -1,3 +1,35 @@
+2013-04-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtl.h (struct rtx_def): Add comment for field jump.
+	(LRA_SUBREG_P): New macro.
+	* recog.c (register_operand): Check LRA_SUBREG_P.
+	* lra.c (lra): Add note at the end of RTL code. Align non-empty
+	stack frame.
+	* lra-spills.c (lra_spill): Align stack after spilling pseudos.
+	(lra_final_code_change): Skip subreg change for operators.
+	* lra-eliminations.c (eliminate_regs_in_insn): Make return earlier
+	if there are no operand changes.
+	* lra-constraints.c (curr_insn_set): New.
+	(match_reload): Set LRA_SUBREG_P.
+	(emit_spill_move): Ditto.
+	(check_and_process_move): Use curr_insn_set. Process only single
+	set insns.  Don't initialize sec_mem_p and change_p.
+	(simplify_operand_subreg): Use LRA_SUBREG_P.
+	(reg_in_class_p): New function.
+	(process_alt_operands): Use it.  Use #if HAVE_ATTR_enabled instead
+	of #ifdef.  Add code to remove cycling.
+	(process_address): Check EXTRA_CONSTRAINT_STR. Process even if
+	non-null disp.  Reload inner instead of disp when base and index
+	are null.  Try to put lo_sum into register.
+	(EBB_PROBABILITY_CUTOFF): Redefine probability in percents.
+	(check_and_process_move): Move code for move cost check to
+	simple_move_p.  Remove equiv_substitution.
+	(simple_move_p): New function.
+	(curr_insn_transform): Initialize sec_mem_p and change_p.  Set up
+	curr_insn_set.  Call check_and_process_move only for single set
+	insns.  Use the new function.  Move call of check_and_process_move
+	after operand equiv substitution and address process.
+
 2013-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR go/57045
