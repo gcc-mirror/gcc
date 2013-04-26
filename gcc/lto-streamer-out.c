@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-streamer.h"
 #include "tree-streamer.h"
 #include "streamer-hooks.h"
+#include "cfgloop.h"
 
 
 /* Clear the line info stored in DATA_IN.  */
@@ -659,6 +660,45 @@ output_cfg (struct output_block *ob, struct function *fn)
 
   streamer_write_hwi (ob, -1);
 
+  /* ???  The cfgloop interface is tied to cfun.  */
+  gcc_assert (cfun == fn);
+
+  /* Output the number of loops.  */
+  streamer_write_uhwi (ob, number_of_loops ());
+
+  /* Output each loop, skipping the tree root which has number zero.  */
+  for (unsigned i = 1; i < number_of_loops (); ++i)
+    {
+      struct loop *loop = get_loop (i);
+
+      /* Write the index of the loop header.  That's enough to rebuild
+         the loop tree on the reader side.  Stream -1 for an unused
+	 loop entry.  */
+      if (!loop)
+	{
+	  streamer_write_hwi (ob, -1);
+	  continue;
+	}
+      else
+	streamer_write_hwi (ob, loop->header->index);
+
+      /* Write everything copy_loop_info copies.  */
+      streamer_write_enum (ob->main_stream,
+			   loop_estimation, EST_LAST, loop->estimate_state);
+      streamer_write_hwi (ob, loop->any_upper_bound);
+      if (loop->any_upper_bound)
+	{
+	  streamer_write_uhwi (ob, loop->nb_iterations_upper_bound.low);
+	  streamer_write_hwi (ob, loop->nb_iterations_upper_bound.high);
+	}
+      streamer_write_hwi (ob, loop->any_estimate);
+      if (loop->any_estimate)
+	{
+	  streamer_write_uhwi (ob, loop->nb_iterations_estimate.low);
+	  streamer_write_hwi (ob, loop->nb_iterations_estimate.high);
+	}
+    }
+
   ob->main_stream = tmp_stream;
 }
 
@@ -733,9 +773,8 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   FOR_EACH_VEC_SAFE_ELT (fn->local_decls, i, t)
     stream_write_tree (ob, t, true);
 
-  /* Output current IL state of the function.
-     ???  We don't stream loops.  */
-  streamer_write_uhwi (ob, fn->curr_properties & ~PROP_loops);
+  /* Output current IL state of the function.  */
+  streamer_write_uhwi (ob, fn->curr_properties);
 
   /* Write all the attributes for FN.  */
   bp = bitpack_create (ob->main_stream);

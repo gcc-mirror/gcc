@@ -97,7 +97,8 @@ enum loop_estimation
   /* Estimate was not computed yet.  */
   EST_NOT_COMPUTED,
   /* Estimate is ready.  */
-  EST_AVAILABLE
+  EST_AVAILABLE,
+  EST_LAST
 };
 
 /* Structure to hold information for each natural loop.  */
@@ -213,6 +214,7 @@ struct GTY (()) loops {
 
 /* Loop recognition.  */
 bool bb_loop_header_p (basic_block);
+void init_loops_structure (struct function *, struct loops *, unsigned);
 extern struct loops *flow_loops_find (struct loops *);
 extern void disambiguate_loops_with_multiple_latches (void);
 extern void flow_loops_free (struct loops *);
