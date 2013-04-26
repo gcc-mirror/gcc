@@ -3095,7 +3095,7 @@ valtrack.o : valtrack.c $(VALTRACK_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(FUNCTION_H) $(REGS_H) $(EMIT_RTL_H)
 var-tracking.o : var-tracking.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TREE_H) hard-reg-set.h insn-config.h reload.h $(FLAGS_H) \
-   $(BASIC_BLOCK_H) bitmap.h alloc-pool.h $(FIBHEAP_H) $(HASHTAB_H) \
+   $(BASIC_BLOCK_H) bitmap.h alloc-pool.h $(FIBHEAP_H) $(HASH_TABLE_H) \
    $(REGS_H) $(EXPR_H) $(TREE_PASS_H) $(TREE_FLOW_H) \
    cselib.h $(TARGET_H) $(DIAGNOSTIC_CORE_H) $(PARAMS_H) $(DIAGNOSTIC_H) \
    pointer-set.h $(RECOG_H) $(TM_P_H) $(TREE_PRETTY_PRINT_H) $(ALIAS_H)
