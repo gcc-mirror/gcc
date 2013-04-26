@@ -35,16 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 /* --------------------------------------------------------------- */ 
 /* Calculate the size of an expression.  */
 
-static size_t
-size_array (gfc_expr *e)
-{
-  mpz_t array_size;
-  gfc_constructor *c = gfc_constructor_first (e->value.constructor);
-  size_t elt_size = gfc_target_expr_size (c->expr);
-
-  gfc_array_size (e, &array_size);
-  return (size_t)mpz_get_ui (array_size) * elt_size;
-}
 
 static size_t
 size_integer (int kind)
@@ -82,15 +72,13 @@ size_character (int length, int kind)
 }
 
 
+/* Return the size of a single element of the given expression.
+   Identical to gfc_target_expr_size for scalars.  */
+
 size_t
-gfc_target_expr_size (gfc_expr *e)
+gfc_element_size (gfc_expr *e)
 {
   tree type;
-
-  gcc_assert (e != NULL);
-
-  if (e->expr_type == EXPR_ARRAY)
-    return size_array (e);
 
   switch (e->ts.type)
     {
@@ -130,9 +118,33 @@ gfc_target_expr_size (gfc_expr *e)
 	return int_size_in_bytes (type);
       }
     default:
-      gfc_internal_error ("Invalid expression in gfc_target_expr_size.");
+      gfc_internal_error ("Invalid expression in gfc_element_size.");
       return 0;
     }
+}
+
+
+/* Return the size of an expression in its target representation.  */
+
+size_t
+gfc_target_expr_size (gfc_expr *e)
+{
+  mpz_t tmp;
+  size_t asz;
+
+  gcc_assert (e != NULL);
+
+  if (e->rank)
+    {
+      if (gfc_array_size (e, &tmp))
+	asz = mpz_get_ui (tmp);
+      else
+	asz = 0;
+    }
+  else
+    asz = 1;
+
+  return asz * gfc_element_size (e);
 }
 
 
