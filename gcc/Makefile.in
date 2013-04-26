@@ -2225,7 +2225,7 @@ tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TREE_H) \
 tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) $(FLAGS_H) $(PARAMS_H) $(INPUT_H) insn-config.h \
    $(HASHTAB_H) langhooks.h $(TREE_INLINE_H) $(CGRAPH_H) \
-   intl.h $(FUNCTION_H) $(GIMPLE_H) \
+   intl.h $(FUNCTION_H) $(GIMPLE_H) $(CFGLOOP_H) \
    debug.h $(DIAGNOSTIC_H) $(EXCEPT_H) $(TREE_FLOW_H) tree-iterator.h tree-mudflap.h \
    $(IPA_PROP_H) value-prof.h $(TREE_PASS_H) $(TARGET_H) \
    $(TREE_PRETTY_PRINT_H)
@@ -2237,7 +2237,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GGC_H) $(TM_P_H) $(TARGET_H) langhooks.h $(REGS_H) gt-stor-layout.h \
    $(DIAGNOSTIC_CORE_H) $(CGRAPH_H) $(TREE_INLINE_H) $(TREE_DUMP_H) $(GIMPLE_H)
 asan.o : asan.c asan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
-   output.h coretypes.h $(GIMPLE_PRETTY_PRINT_H) \
+   output.h coretypes.h $(GIMPLE_PRETTY_PRINT_H) $(CFGLOOP_H) \
    tree-iterator.h $(TREE_FLOW_H) $(TREE_PASS_H) \
    $(TARGET_H) $(EXPR_H) $(OPTABS_H) $(TM_P_H) langhooks.h \
    $(HASH_TABLE_H) alloc-pool.h
@@ -2250,7 +2250,7 @@ tsan.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    tree-ssa-propagate.h
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
-   $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) \
+   $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) $(CFGLOOP_H) \
    $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) $(TREE_DUMP_H) $(HASH_TABLE_H) \
    $(GIMPLE_H) $(FUNCTION_H) tree-ssa-sccvn.h \
    $(CGRAPH_H) $(GIMPLE_PRETTY_PRINT_H) $(PARAMS_H)
@@ -2314,14 +2314,14 @@ tree-ssa-phiopt.o : tree-ssa-phiopt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_FLOW_H) $(TREE_PASS_H) langhooks.h $(FLAGS_H) \
    $(DIAGNOSTIC_H) pointer-set.h domwalk.h $(CFGLOOP_H) \
    $(TREE_DATA_REF_H) $(TREE_PRETTY_PRINT_H) $(GIMPLE_PRETTY_PRINT_H) \
-   insn-config.h $(EXPR_H) $(OPTABS_H)
+   insn-config.h $(EXPR_H) $(OPTABS_H) $(SCEV_H)
 tree-nrv.o : tree-nrv.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FUNCTION_H) $(BASIC_BLOCK_H) $(FLAGS_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_PASS_H) \
    langhooks.h $(TREE_PRETTY_PRINT_H)
 tree-ssa-copy.o : tree-ssa-copy.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(GGC_H) $(DIAGNOSTIC_H) \
-   $(FUNCTION_H) $(TM_H) coretypes.h \
+   $(FUNCTION_H) $(TM_H) coretypes.h $(SCEV_H) \
    $(BASIC_BLOCK_H) $(TREE_PASS_H) langhooks.h tree-ssa-propagate.h \
    $(FLAGS_H) $(CFGLOOP_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-propagate.o : tree-ssa-propagate.c $(TREE_FLOW_H) $(CONFIG_H) \
@@ -2929,7 +2929,7 @@ ipa-cp.o : ipa-cp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
    $(TREE_INLINE_H) $(PARAMS_H) $(TREE_PRETTY_PRINT_H) $(IPA_INLINE_H)
 ipa-split.o : ipa-split.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(TREE_FLOW_H) \
-   $(TREE_PASS_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TREE_DUMP_H) \
+   $(TREE_PASS_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
    $(TREE_INLINE_H) $(PARAMS_H) $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H)
 ipa-inline.o : ipa-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
@@ -3058,13 +3058,13 @@ tree-sra.o : tree-sra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h alloc-pool.h \
    $(DBGCNT_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
 tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
     $(TREE_H) $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TREE_INLINE_H) \
-    $(TM_H) coretypes.h $(GIMPLE_H) \
+    $(TM_H) coretypes.h $(GIMPLE_H) $(CFGLOOP_H) \
     $(TREE_PASS_H) $(FLAGS_H) $(EXPR_H) $(BASIC_BLOCK_H) \
     $(GGC_H) $(OBSTACK_H) $(PARAMS_H) $(CPPLIB_H) $(PARAMS_H) \
     $(GIMPLE_PRETTY_PRINT_H) langhooks.h
 tree-complex.o : tree-complex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
     $(TM_H) $(FLAGS_H) $(TREE_FLOW_H) $(TREE_HASHER_H) $(GIMPLE_H) \
-    tree-iterator.h $(TREE_PASS_H) tree-ssa-propagate.h
+    $(CFGLOOP_H) tree-iterator.h $(TREE_PASS_H) tree-ssa-propagate.h
 tree-emutls.o : tree-emutls.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
     $(GIMPLE_H) $(TREE_PASS_H) $(TREE_FLOW_H) $(CGRAPH_H) langhooks.h \
     $(TARGET_H) $(TARGET_DEF_H) tree-iterator.h

@@ -197,6 +197,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-dump.h"
+#include "cfgloop.h"
 
 /* ??? This currently runs as part of tree-ssa-pre.  Why is this not
    a stand-alone GIMPLE pass?  */
@@ -1458,6 +1459,17 @@ replace_block_by (basic_block bb1, basic_block bb2)
 
   /* Mark the basic block as deleted.  */
   mark_basic_block_deleted (bb1);
+
+  /* ???  If we merge the loop preheader with the loop latch we are creating
+     additional entries into the loop, eventually rotating it.
+     Mark loops for fixup in this case.
+     ???  This is a completely unwanted transform and will wreck most
+     loops at this point - but with just not considering loop latches as
+     merge candidates we fail to commonize the two loops in gcc.dg/pr50763.c.
+     A better fix to avoid that regression is needed.  */
+  if (current_loops
+      && bb2->loop_father->latch == bb2)
+    loops_state_set (LOOPS_NEED_FIXUP);
 
   /* Redirect the incoming edges of bb1 to bb2.  */
   for (i = EDGE_COUNT (bb1->preds); i > 0 ; --i)

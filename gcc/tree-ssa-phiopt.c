@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "expr.h"
 #include "optabs.h"
+#include "tree-scalar-evolution.h"
 
 #ifndef HAVE_conditional_move
 #define HAVE_conditional_move (0)
@@ -242,7 +243,16 @@ tree_ssa_phiopt (void)
 static unsigned int
 tree_ssa_cs_elim (void)
 {
-  return tree_ssa_phiopt_worker (true, false);
+  unsigned todo;
+  /* ???  We are not interested in loop related info, but the following
+     will create it, ICEing as we didn't init loops with pre-headers.
+     An interfacing issue of find_data_references_in_bb.  */
+  loop_optimizer_init (LOOPS_NORMAL);
+  scev_initialize ();
+  todo = tree_ssa_phiopt_worker (true, false);
+  scev_finalize ();
+  loop_optimizer_finalize ();
+  return todo;
 }
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */

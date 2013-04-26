@@ -247,6 +247,8 @@ execute_build_cfg (void)
       fprintf (dump_file, "Scope blocks:\n");
       dump_scope_blocks (dump_file, dump_flags);
     }
+  cleanup_tree_cfg ();
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   return 0;
 }
 
@@ -263,10 +265,10 @@ struct gimple_opt_pass pass_build_cfg =
   0,					/* static_pass_number */
   TV_TREE_CFG,				/* tv_id */
   PROP_gimple_leh, 			/* properties_required */
-  PROP_cfg,				/* properties_provided */
+  PROP_cfg | PROP_loops,		/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_cleanup_cfg  /* todo_flags_finish */
+  TODO_verify_stmts			/* todo_flags_finish */
  }
 };
 
@@ -6713,6 +6715,18 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   d.eh_map = eh_map;
   d.remap_decls_p = true;
 
+  /* Cancel all loops inside the SESE region.
+     ???  We rely on loop fixup because loop structure is not 100%
+     up-to-date when called from OMP lowering and thus cancel_loop_tree
+     will not work.
+     ???  Properly move loops to the outlined function.  */
+  FOR_EACH_VEC_ELT (bbs, i, bb)
+    if (bb->loop_father->header == bb)
+      {
+	bb->loop_father->header = NULL;
+	bb->loop_father->latch = NULL;
+	loops_state_set (LOOPS_NEED_FIXUP);
+      }
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
       /* No need to update edge counts on the last block.  It has

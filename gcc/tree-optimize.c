@@ -204,6 +204,10 @@ execute_fixup_cfg (void)
   if (dump_file)
     gimple_dump_cfg (dump_file, dump_flags);
 
+  if (current_loops
+      && (todo & TODO_cleanup_cfg))
+    loops_state_set (LOOPS_NEED_FIXUP);
+
   return todo;
 }
 

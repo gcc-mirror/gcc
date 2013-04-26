@@ -733,8 +733,9 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   FOR_EACH_VEC_SAFE_ELT (fn->local_decls, i, t)
     stream_write_tree (ob, t, true);
 
-  /* Output current IL state of the function.  */
-  streamer_write_uhwi (ob, fn->curr_properties);
+  /* Output current IL state of the function.
+     ???  We don't stream loops.  */
+  streamer_write_uhwi (ob, fn->curr_properties & ~PROP_loops);
 
   /* Write all the attributes for FN.  */
   bp = bitpack_create (ob->main_stream);
