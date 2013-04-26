@@ -1,5 +1,13 @@
 2013-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR go/57045
+	* tree-ssa-uninit.c (compute_uninit_opnds_pos): In functions
+	with nonlocal goto receivers or returns twice calls, ignore
+	unininitialized values from abnormal edges to nl goto receiver
+	or returns twice call.
+
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/57051
 	* fold-const.c (const_binop): Handle VEC_LSHIFT_EXPR
 	and VEC_RSHIFT_EXPR if shift count is a multiple of element
