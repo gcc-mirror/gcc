@@ -72,9 +72,12 @@ build_message_string (const char *msg, ...)
 
 /* Same as diagnostic_build_prefix, but only the source FILE is given.  */
 char *
-file_name_as_prefix (const char *f)
+file_name_as_prefix (diagnostic_context *context, const char *f)
 {
-  return build_message_string ("%s: ", f);
+  const char *locus_cs
+    = colorize_start (pp_show_color (context->printer), "locus");
+  const char *locus_ce = colorize_stop (pp_show_color (context->printer));
+  return build_message_string ("%s%s:%s ", locus_cs, f, locus_ce);
 }
 
 

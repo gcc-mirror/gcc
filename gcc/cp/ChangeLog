@@ -1,3 +1,8 @@
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.c (cp_print_error_function): Adjust file_name_as_prefix
+	caller.
+
 2013-04-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56859
