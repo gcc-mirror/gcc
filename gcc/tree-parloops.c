@@ -2216,11 +2216,6 @@ parallelize_loops (void)
       }
       gen_parallel_loop (loop, reduction_list,
 			 n_threads, &niter_desc);
-#ifdef ENABLE_CHECKING
-      verify_flow_info ();
-      verify_loop_structure ();
-      verify_loop_closed_ssa (true);
-#endif
     }
 
   free_stmt_vec_info_vec ();

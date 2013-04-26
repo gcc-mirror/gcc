@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
 #include "cfgloop.h"
+#include "tree-scalar-evolution.h"
 
 /* This file implements the copy propagation pass and provides a
    handful of interfaces for performing const/copy propagation and
@@ -771,9 +772,8 @@ fini_copy_prop (void)
 	duplicate_ssa_name_ptr_info (copy_of[i].value, SSA_NAME_PTR_INFO (var));
     }
 
-  /* Don't do DCE if we have loops.  That's the simplest way to not
-     destroy the scev cache.  */
-  substitute_and_fold (get_value, NULL, !current_loops);
+  /* Don't do DCE if SCEV is initialized.  It would destroy the scev cache.  */
+  substitute_and_fold (get_value, NULL, !scev_initialized_p ());
 
   free (copy_of);
 }

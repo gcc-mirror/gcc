@@ -93,7 +93,7 @@ struct gimple_opt_pass pass_tree_loop_init =
   0,					/* static_pass_number */
   TV_NONE,				/* tv_id */
   PROP_cfg,				/* properties_required */
-  PROP_loops,				/* properties_provided */
+  0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   0             			/* todo_flags_finish */
@@ -577,7 +577,7 @@ struct gimple_opt_pass pass_parallelize_loops =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
+  TODO_verify_flow			/* todo_flags_finish */
  }
 };
 

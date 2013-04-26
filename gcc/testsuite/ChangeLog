@@ -1,3 +1,11 @@
+2013-03-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-prof/update-loopch.c: Revert last change.
+	* gcc.dg/graphite/pr33766.c: Fix undefined behavior.
+	* gcc.dg/pr53265.c: Remove XFAILs.
+	* gcc.dg/tree-ssa/loop-38.c: Remove unreliable dump scanning.
+	* gcc.dg/tree-ssa/pr21559.c: Change back to two expected jump threads.
+
 2013-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/prune.exp: Add -fdiagnostics-color=never to TEST_ALWAYS_FLAGS.

@@ -1329,6 +1329,12 @@ verify_loop_structure (void)
   bool dom_available = dom_info_available_p (CDI_DOMINATORS);
   sbitmap visited;
 
+  if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+    {
+      error ("loop verification on loop tree that needs fixup");
+      err = 1;
+    }
+
   /* We need up-to-date dominators, compute or verify them.  */
   if (!dom_available)
     calculate_dominance_info (CDI_DOMINATORS);

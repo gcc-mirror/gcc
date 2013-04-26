@@ -1,3 +1,62 @@
+2013-03-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (execute_build_cfg): Build the loop tree.
+	(pass_build_cfg): Provide PROP_loops.
+	(move_sese_region_to_fn): Remove loops that are outlined into fn
+	for now.
+	* tree-inline.c: Include cfgloop.h.
+	(initialize_cfun): Do not drop PROP_loops.
+	(copy_loops): New function.
+	(copy_cfg_body): Copy loop structure.
+	(tree_function_versioning): Initialize destination loop tree.
+	* tree-ssa-loop.c (pass_tree_loop_init): Do not provide PROP_loops.
+	(pass_parallelize_loops): Do IL verification.
+	* loop-init.c (loop_optimizer_init): Fixup loops if required.
+	* tree-optimize.c (execute_fixup_cfg): If we need to cleanup
+	the CFG make sure we fixup loops as well.
+	* tree-ssa-tail-merge.c: Include cfgloop.h.
+	(replace_block_by): When merging loop latches mark loops for fixup.
+	* lto-streamer-out.c (output_struct_function_base): Drop
+	PROP_loops for now.
+	* tree-ssa-phiopt.c: Include tree-scalar-evolution.h.
+	(tree_ssa_cs_elim): Initialize the loop optimizer and SCEV.
+	* ipa-split.c: Include cfgloop.h.
+	(split_function): Add the new return block to the loop tree root.
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Return
+	whether we have removed the forwarder block.
+	(merge_phi_nodes): If we removed a forwarder mark loops for fixup.
+	* cfgloop.h (place_new_loop): Declare.
+	* cfgloopmanip.c (place_new_loop): Export.
+	* Makefile.in (asan.o): Add $(CFGLOOP_H) dependency.
+	(tree-switch-conversion.o): Likewise.
+	(tree-complex.o): Likewise.
+	(tree-inline.o): Likewise.
+	(tree-ssa-tailmerge.o): Likewise.
+	(ipa-split.o): Likewise.
+	(tree-ssa-phiopt.o): Add $(SCEV_H) dependency.
+	(tree-ssa-copy.o): Likewise.
+	* tree-switch-conversion.c: Include cfgloop.h
+	(process_switch): If we emit a bit-test cascade, schedule loops
+	for fixup.
+	* tree-complex.c: Include cfgloop.h.
+	(expand_complex_div_wide): Properly add new basic-blocks to loops.
+	* asan.c: Include cfgloop.h.
+	(create_cond_insert_point): Properly add new basic-blocks to
+	loops, schedule loop fixup.
+	* cfgloop.c (verify_loop_structure): Check that looks are not
+	marked for fixup.
+	* omp-low.c (expand_parallel_call): Properly add new basic-blocks
+	to loops.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_sections): Likewise.
+	(expand_omp_atomic_pipeline): Schedule loops for fixup.
+	* tree-ssa-copy.c: Include tree-scalar-evolution.h.
+	(fini_copy_prop): Disable DCE in substitute_and_fold if SCEV
+	is initialized, not when loops are present.
+	* tree-parloops.c (parallelize_loops): Remove checking here.
+	* passes.c (init_optimization_passes): Schedule a copy-propagation
+	pass before complete unrolling of inner loops.
+
 2013-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (toplev.o): Depend on diagnostic-color.h.
