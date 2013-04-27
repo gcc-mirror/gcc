@@ -644,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __h._M_rehash(__do_rehash.second, __saved_state);
 
 	for (; __first != __last; ++__first)
-	  this->insert(*__first);
+	  __h._M_insert(*__first, __unique_keys());
       }
 
   /**
