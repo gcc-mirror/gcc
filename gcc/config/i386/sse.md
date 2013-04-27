@@ -9942,7 +9942,8 @@
 	 (match_operand:SI 2 "const_0_to_<sserotatemax>_operand" "n")))]
   "TARGET_XOP"
 {
-  operands[3] = GEN_INT ((<ssescalarnum> * 8) - INTVAL (operands[2]));
+  operands[3]
+    = GEN_INT (GET_MODE_BITSIZE (<ssescalarmode>mode) - INTVAL (operands[2]));
   return \"vprot<ssemodesuffix>\t{%3, %1, %0|%0, %1, %3}\";
 }
   [(set_attr "type" "sseishft")
