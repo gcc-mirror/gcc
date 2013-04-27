@@ -23714,7 +23714,8 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 		  rtx callarg2,
 		  rtx pop, bool sibcall)
 {
-  int const cregs_size = ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
+  unsigned int const cregs_size
+    = ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
   rtx vec[3 + cregs_size];
   rtx use = NULL, call;
   unsigned int vec_len = 0;
