@@ -1,5 +1,7 @@
 2013-04-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_call): Make cregs_size unsigned.
+
 	PR target/56866
 	* config/i386/i386.c (ix86_expand_mul_widen_evenodd): Don't
 	use xop_pmacsdqh if uns_p.
