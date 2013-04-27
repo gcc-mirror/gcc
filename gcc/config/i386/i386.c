@@ -40841,7 +40841,9 @@ ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
      the even slots.  For some cpus this is faster than a PSHUFD.  */
   if (odd_p)
     {
-      if (TARGET_XOP && mode == V4SImode)
+      /* For XOP use vpmacsdqh, but only for smult, as it is only
+	 signed.  */
+      if (TARGET_XOP && mode == V4SImode && !uns_p)
 	{
 	  x = force_reg (wmode, CONST0_RTX (wmode));
 	  emit_insn (gen_xop_pmacsdqh (dest, op1, op2, x));

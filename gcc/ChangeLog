@@ -1,3 +1,11 @@
+2013-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56866
+	* config/i386/i386.c (ix86_expand_mul_widen_evenodd): Don't
+	use xop_pmacsdqh if uns_p.
+	* config/i386/sse.md (xop_rotr<mode>3): Fix up computation of
+	the immediate rotate count.
+
 2013-04-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtl.h (struct rtx_def): Add comment for field jump.
