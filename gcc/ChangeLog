@@ -1,3 +1,9 @@
+2013-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56866
+	* config/i386/sse.md (xop_rotr<mode>3): Fix up computation of
+	the immediate rotate count.
+
 2013-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgexpand.c (avoid_complex_debug_insns): Fix C++ism.
