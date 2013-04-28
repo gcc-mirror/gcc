@@ -1,3 +1,10 @@
+2013-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	N3472 binary constants
+	* g++.dg/cpp/limits.C: Adjust warning wording.
+	* g++.dg/system-binary-constants-1.C: Likewise.
+	* g++.dg/cpp1y/system-binary-constants-1.C: New test.
+
 2013-04-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57093
