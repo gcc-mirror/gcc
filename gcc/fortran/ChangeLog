@@ -1,3 +1,9 @@
+2013-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57071
+	* frontend-passes (optimize_power):  New function.
+	(optimize_op):  Use it.
+
 2013-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR bootstrap/57028

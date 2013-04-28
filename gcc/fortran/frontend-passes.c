@@ -1091,6 +1091,65 @@ combine_array_constructor (gfc_expr *e)
   return true;
 }
 
+/* Change (-1)**k into 1-ishift(iand(k,1),1) and
+ 2**k into ishift(1,k) */
+
+static bool
+optimize_power (gfc_expr *e)
+{
+  gfc_expr *op1, *op2;
+  gfc_expr *iand, *ishft;
+
+  if (e->ts.type != BT_INTEGER)
+    return false;
+
+  op1 = e->value.op.op1;
+
+  if (op1 == NULL || op1->expr_type != EXPR_CONSTANT)
+    return false;
+
+  if (mpz_cmp_si (op1->value.integer, -1L) == 0)
+    {
+      gfc_free_expr (op1);
+
+      op2 = e->value.op.op2;
+
+      if (op2 == NULL)
+	return false;
+
+      iand = gfc_build_intrinsic_call (current_ns, GFC_ISYM_IAND,
+				       "_internal_iand", e->where, 2, op2,
+				       gfc_get_int_expr (e->ts.kind,
+							 &e->where, 1));
+				   
+      ishft = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ISHFT,
+					"_internal_ishft", e->where, 2, iand,
+					gfc_get_int_expr (e->ts.kind,
+							  &e->where, 1));
+
+      e->value.op.op = INTRINSIC_MINUS;
+      e->value.op.op1 = gfc_get_int_expr (e->ts.kind, &e->where, 1);
+      e->value.op.op2 = ishft;
+      return true;
+    }
+  else if (mpz_cmp_si (op1->value.integer, 2L) == 0)
+    {
+      gfc_free_expr (op1);
+
+      op2 = e->value.op.op2;
+      if (op2 == NULL)
+	return false;
+
+      ishft = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ISHFT,
+					"_internal_ishft", e->where, 2,
+					gfc_get_int_expr (e->ts.kind,
+							  &e->where, 1),
+					op2);
+      *e = *ishft;
+      return true;
+    }
+  return false;
+}
 
 /* Recursive optimization of operators.  */
 
@@ -1151,6 +1210,10 @@ optimize_op (gfc_expr *e)
     case INTRINSIC_TIMES:
     case INTRINSIC_DIVIDE:
       return combine_array_constructor (e) || changed;
+
+    case INTRINSIC_POWER:
+      return optimize_power (e);
+      break;
 
     default:
       break;
