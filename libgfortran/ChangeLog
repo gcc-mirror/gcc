@@ -1,6 +1,19 @@
 2013-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline:
+
+	PR libfortran/56786
+	* io/list_read.c (nml_parse_qualifier): Remove spurious next_char call
+	when checking for EOF. Use error return mechanism when EOF detected.
+	Do not return FAILURE unless parse_err_msg and parse_err_msg_size have
+	been set. Use hit_eof.
+	(nml_get_obj_data): Likewise use the correct error mechanism.
+	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
+	mode.
+
+2013-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
 	2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
 
 	PR libfortran/52512
