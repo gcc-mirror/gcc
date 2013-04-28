@@ -844,8 +844,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Primary class template _Hashtable_ebo_helper.
    *
-   *  Helper class using EBO when it is not forbidden, type is not
-   *  final, and when it worth it, type is empty.
+   *  Helper class using EBO when it is not forbidden (the type is not
+   *  final) and when it is worth it (the type is empty.)
    */
   template<int _Nm, typename _Tp,
 	   bool __use_ebo = !__is_final(_Tp) && __is_empty(_Tp)>
