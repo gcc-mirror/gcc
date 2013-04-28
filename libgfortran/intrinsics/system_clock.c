@@ -134,7 +134,7 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	 QueryPerformanceCounter has potential issues.  */
       uint32_t cnt = GetTickCount ();
       if (cnt > GFC_INTEGER_4_HUGE)
-	cnt -= GFC_INTEGER_4_HUGE - 1;
+	cnt = cnt - GFC_INTEGER_4_HUGE - 1;
       *count = cnt;
     }
   if (count_rate)
