@@ -1,3 +1,16 @@
+2013-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	N3472 binary constants
+	* include/cpplib.h (struct cpp_options): Fix a typo in user_literals
+	field comment.  Add binary_constants field.
+	* init.c (struct lang_flags): Add binary_constants field.
+	(lang_defaults): Add bin_cst column to the table.
+	(cpp_set_lang): Initialize CPP_OPTION (pfile, binary_constants).
+	* expr.c (cpp_classify_number): Talk about C++11 instead of C++0x
+	in diagnostics.  Accept binary constants if
+	CPP_OPTION (pfile, binary_constants) even when pedantic.  Adjust
+	pedwarn message.
+
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/cpplib.h (enum c_lang): Add CLK_GNUCXX1Y and CLK_CXX1Y.

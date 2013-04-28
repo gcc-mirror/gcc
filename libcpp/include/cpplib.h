@@ -423,7 +423,7 @@ struct cpp_options
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
-  /* Nonzero for C++ 2011 Standard user-defnied literals.  */
+  /* Nonzero for C++ 2011 Standard user-defined literals.  */
   unsigned char user_literals;
 
   /* Nonzero means warn when a string or character literal is followed by a
@@ -433,6 +433,9 @@ struct cpp_options
   /* Nonzero means interpret imaginary, fixed-point, or other gnu extension
      literal number suffixes as user-defined literal number suffixes.  */
   unsigned char ext_numeric_literals;
+
+  /* Nonzero for C++ 2014 Standard binary constants.  */
+  unsigned char binary_constants;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
