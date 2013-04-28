@@ -20,20 +20,20 @@
 
 #include <memory>
 
-// libstdc++/52924
+// libstdc++/51365
+// Test with 'final' deleter and allocator.
 
 struct A { };
 
-struct D {
-  ~D() noexcept(false) { }
+struct D final
+{
   void operator()(A*) { }
 };
 
 template<typename T>
-struct Alloc : std::allocator<T>
+struct Alloc final : std::allocator<T>
 {
   Alloc() = default;
-  ~Alloc() noexcept(false) { }
   template<typename U> Alloc(const Alloc<U>&) { }
 
   template<typename U>
@@ -43,6 +43,7 @@ struct Alloc : std::allocator<T>
 
 A a;
 D d;
+
 Alloc<A> al;
 
 auto sd = std::shared_ptr<A>(&a, d);
