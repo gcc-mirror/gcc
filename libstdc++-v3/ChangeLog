@@ -1,5 +1,11 @@
 2013-04-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper): Fix
+	comment.
+	* include/std/mutex (__recursive_mutex_base): Likewise.
+
+2013-04-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/51365
 	* include/bits/shared_ptr_base (_Sp_ebo_helper): Helper class to
 	implement EBO safely.
