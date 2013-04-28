@@ -1,3 +1,8 @@
+2013-04-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/system_clock.c (system_clock_4): Fix sign error in
+	Windows version.
+
 2013-04-15  Tobias Burnus  <burnus@net-b.de>
 
 	* list_read.c (finish_separator): Initialize variable.
@@ -37,7 +42,7 @@
 	(nml_get_obj_data): Likewise use the correct error mechanism.
 	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
 	mode.
-	
+
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56737
