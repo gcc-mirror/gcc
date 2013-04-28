@@ -1179,7 +1179,7 @@ gfc_get_element_type (tree type)
       element = TREE_TYPE (element);
 
       /* For arrays, which are not scalar coarrays.  */
-      if (TREE_CODE (element) == ARRAY_TYPE)
+      if (TREE_CODE (element) == ARRAY_TYPE && !TYPE_STRING_FLAG (element))
 	element = TREE_TYPE (element);
     }
 
