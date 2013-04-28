@@ -9619,7 +9619,7 @@ Fortran 95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = PACK(ARRAY, MASK[,VECTOR]}
+@code{RESULT = PACK(ARRAY, MASK[,VECTOR])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

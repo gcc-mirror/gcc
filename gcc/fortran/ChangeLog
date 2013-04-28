@@ -1,3 +1,10 @@
+2013-04-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57093
+	* trans-types.c (gfc_get_element_type): Fix handling
+	of scalar coarrays of type character.
+	* intrinsic.texi (PACK): Add missing ")".
+
 2013-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57071
@@ -6,9 +13,9 @@
 
 2013-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR bootstrap/57028
-        * Make-lang.in (f951): Link in ZLIB.
-        (CFLAGS-fortran/module.o): Add zlib include directory.
+	PR bootstrap/57028
+	* Make-lang.in (f951): Link in ZLIB.
+	(CFLAGS-fortran/module.o): Add zlib include directory.
 
 2013-04-22  Janus Weil  <janus@gcc.gnu.org>
 

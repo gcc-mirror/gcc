@@ -1,3 +1,8 @@
+2013-04-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57093
+	* gfortran.dg/coarray_30.f90: New.
+
 2013-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57071
@@ -43,7 +48,7 @@
 2013-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57066
-        * gcc.dg/torture/builtin-logb-1.c: Adjust testcase.
+	* gcc.dg/torture/builtin-logb-1.c: Adjust testcase.
 
 2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
