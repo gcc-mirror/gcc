@@ -1,3 +1,9 @@
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Vectorize over ifloorf,
+	iceilf, lround, iroundf.
+
 2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/54349
