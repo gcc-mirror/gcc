@@ -417,11 +417,51 @@ c_finish_cilk_simd_loop (location_t loc,
 tree
 c_finish_cilk_clauses (tree clauses)
 {
-  // FIXME: "...no variable shall be the subject of more than one
-  // linear clause".  Verify and check for this.
+  /* FIXME: Must validate reduction clauses too.  Right now we're
+     ignoring them.  */
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      tree prev = clauses;
 
-  // FIXME: Also, do whatever we were doing before in
-  // same_var_in_multiple_lists_p, but rewrite to use OMP_CLAUSEs.
+      /* If a variable appears in a linear clause it cannot appear in
+	 any other OMP clause.  */
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR)
+	for (tree c2 = clauses; c2; c2 = OMP_CLAUSE_CHAIN (c2))
+	  {
+	    if (c == c2)
+	      continue;
+	    enum omp_clause_code code = OMP_CLAUSE_CODE (c2);
+
+	    switch (code)
+	      {
+	      case OMP_CLAUSE_LINEAR:
+	      case OMP_CLAUSE_PRIVATE:
+	      case OMP_CLAUSE_FIRSTPRIVATE:
+	      case OMP_CLAUSE_LASTPRIVATE:
+	      case OMP_CLAUSE_REDUCTION:
+		break;
+
+	      case OMP_CLAUSE_CILK_ASSERT:
+	      case OMP_CLAUSE_CILK_VECTORLENGTH:
+		goto next;
+
+	      default:
+		gcc_unreachable ();
+	      }
+
+	    if (OMP_CLAUSE_DECL (c) == OMP_CLAUSE_DECL (c2))
+	      {
+		error_at (OMP_CLAUSE_LOCATION (c2),
+			  "variable appears in more than one clause");
+		inform (OMP_CLAUSE_LOCATION (c),
+			"multiple clause defined here");
+		// Remove problematic clauses.
+		OMP_CLAUSE_CHAIN (prev) = OMP_CLAUSE_CHAIN (c2);
+	      }
+	  next:
+	    prev = c2;
+	  }
+    }
 
   return clauses;
 }
