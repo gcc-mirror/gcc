@@ -2837,7 +2837,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 
 	      if (uns)
 		{
-		  low_bound = bound;
+		  low_bound = bound.zext (prec);
 		  high_bound = complement.zext (prec);
 		  if (tree_to_double_int (vr0.max).ult (low_bound))
 		    {

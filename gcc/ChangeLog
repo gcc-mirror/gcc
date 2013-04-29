@@ -1,5 +1,9 @@
 2013-04-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/57083
+	* tree-vrp.c (extract_range_from_binary_expr_1): For LSHIFT_EXPR with
+	non-singleton shift count range, zero extend low_bound for uns case.
+
 	* config/i386/predicates.md (general_vector_operand): New predicate.
 	* config/i386/i386.c (const_vector_equal_evenodd_p): New function.
 	(ix86_expand_mul_widen_evenodd): Force op1 resp. op2 into register
