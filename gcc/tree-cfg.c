@@ -6153,10 +6153,19 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 
   if (EXPR_P (t))
     {
-      if (TREE_BLOCK (t) == p->orig_block
+      tree block = TREE_BLOCK (t);
+      if (block == p->orig_block
 	  || (p->orig_block == NULL_TREE
-	  && TREE_BLOCK (t) == NULL_TREE))
+	      && block != NULL_TREE))
 	TREE_SET_BLOCK (t, p->new_block);
+#ifdef ENABLE_CHECKING
+      else if (block != NULL_TREE)
+	{
+	  while (block && TREE_CODE (block) == BLOCK && block != p->orig_block)
+	    block = BLOCK_SUPERCONTEXT (block);
+	  gcc_assert (block == p->orig_block);
+	}
+#endif
     }
   else if (DECL_P (t) || TREE_CODE (t) == SSA_NAME)
     {
@@ -6241,18 +6250,10 @@ move_stmt_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
   gimple stmt = gsi_stmt (*gsi_p);
   tree block = gimple_block (stmt);
 
-  if (p->orig_block == NULL_TREE
-      || block == p->orig_block
-      || block == NULL_TREE)
+  if (block == p->orig_block
+      || (p->orig_block == NULL_TREE
+	  && block != NULL_TREE))
     gimple_set_block (stmt, p->new_block);
-#ifdef ENABLE_CHECKING
-  else if (block != p->new_block)
-    {
-      while (block && block != p->orig_block)
-	block = BLOCK_SUPERCONTEXT (block);
-      gcc_assert (block);
-    }
-#endif
 
   switch (gimple_code (stmt))
     {
@@ -6486,14 +6487,6 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	  e->goto_locus = d->new_block ?
 	      COMBINE_LOCATION_DATA (line_table, e->goto_locus, d->new_block) :
 	      LOCATION_LOCUS (e->goto_locus);
-#ifdef ENABLE_CHECKING
-	else if (block != d->new_block)
-	  {
-	    while (block && block != d->orig_block)
-	      block = BLOCK_SUPERCONTEXT (block);
-	    gcc_assert (block);
-	  }
-#endif
       }
 }
 

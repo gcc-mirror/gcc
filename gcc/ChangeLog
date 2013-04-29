@@ -1,3 +1,10 @@
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57103
+	* tree-cfg.c (move_stmt_op): Fix condition under which to update
+	TREE_BLOCK.
+	(move_stmt_r): Remove redundant checking.
+
 2013-04-29  Teresa Johnson  <tejohnson@google.com>
 
 	PR bootstrap/57077
