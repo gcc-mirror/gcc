@@ -1,3 +1,7 @@
+2013-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/c1x-align-3.c: Add test for negative power of 2.
+
 2013-04-29  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/pr50763.c: Update test.

@@ -23,6 +23,7 @@ _Alignas (-(__LONG_LONG_MAX__-1)/4) char i3; /* { dg-error "too large|power of 2
 _Alignas (-(__LONG_LONG_MAX__-1)/8) char i4; /* { dg-error "too large|power of 2" } */
 _Alignas (-(__LONG_LONG_MAX__-1)/16) char i5; /* { dg-error "too large|power of 2" } */
 _Alignas (-1) char j; /* { dg-error "power of 2" } */
+_Alignas (-2) char j; /* { dg-error "positive power of 2" } */
 _Alignas (3) char k; /* { dg-error "power of 2" } */
 
 _Alignas ((void *) 1) char k; /* { dg-error "integer constant" } */
