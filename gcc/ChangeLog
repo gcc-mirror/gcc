@@ -1,3 +1,9 @@
+2013-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57083
+	* tree-vrp.c (extract_range_from_binary_expr_1): For LSHIFT_EXPR with
+	non-singleton shift count range, zero extend low_bound for uns case.
+
 2013-04-28  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* stor-layout.c (finalize_size_functions): Allocate a structure and

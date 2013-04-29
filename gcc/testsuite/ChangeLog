@@ -1,3 +1,8 @@
+2013-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57083
+	* gcc.dg/torture/pr57083.c: New test.
+
 2013-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk:
