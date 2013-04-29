@@ -1,3 +1,7 @@
+2013-04-26  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp88.c: New test.
+
 2013-04-29  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/57108
