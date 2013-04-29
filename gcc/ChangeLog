@@ -1,3 +1,45 @@
+2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/54349
+	* config/i386/i386.h (enum ix86_tune_indices)
+	<X86_TUNE_INTER_UNIT_MOVES_TO_VEC, X86_TUNE_INTER_UNIT_MOVES_FROM_VEC>:
+	New, split from X86_TUNE_INTER_UNIT_MOVES.
+	<X86_TUNE_INTER_UNIT_MOVES>: Remove.
+	(TARGET_INTER_UNIT_MOVES_TO_VEC): New define.
+	(TARGET_INTER_UNIT_MOVES_FROM_VEC): Ditto.
+	(TARGET_INTER_UNIT_MOVES): Remove.
+	* config/i386/i386.c (initial_ix86_tune_features): Update.
+	Disable X86_TUNE_INTER_UNIT_MOVES_FROM_VEC for m_ATHLON_K8 only.
+	(ix86_expand_convert_uns_didf_sse): Use
+	TARGET_INTER_UNIT_MOVES_TO_VEC instead of TARGET_INTER_UNIT_MOVES.
+	(ix86_expand_vector_init_one_nonzero): Ditto.
+	(ix86_expand_vector_init_interleave): Ditto.
+	(inline_secondary_memory_needed): Return true for moves from SSE class
+	registers for !TARGET_INTER_UNIT_MOVES_FROM_VEC targets and for moves
+	to SSE class registers for !TARGET_INTER_UNIT_MOVES_TO_VEC targets.
+	* config/i386/constraints.md (Yi, Ym): Depend on
+	TARGET_INTER_UNIT_MOVES_TO_VEC.
+	(Yj, Yn): New constraints.
+	* config/i386/i386.md (*movdi_internal): Change constraints of
+	operand 1 from Yi to Yj and from Ym to Yn.
+	(*movsi_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+	(*float<SWI48x:mode><X87MODEF:mode>2_1): Use
+	TARGET_INTER_UNIT_MOVES_TO_VEC instead of TARGET_INTER_UNIT_MOVES.
+	(*float<SWI48x:mode><X87MODEF:mode>2_1 splitters): Ditto.
+	(floatdi<X87MODEF:mode>2_i387_with_xmm): Ditto.
+	(floatdi<X87MODEF:mode>2_i387_with_xmm splitters): Ditto.
+	* config/i386/sse.md (movdi_to_sse): Ditto.
+	(sse2_stored): Change constraint of operand 1 from Yi to Yj.
+	Use TARGET_INTER_UNIT_MOVES_FROM_VEC instead of
+	TARGET_INTER_UNIT_MOVES.
+	(sse_storeq_rex64): Change constraint of operand 1 from Yi to Yj.
+	(sse_storeq_rex64 splitter): Use TARGET_INTER_UNIT_MOVES_FROM_VEC
+	instead of TARGET_INTER_UNIT_MOVES.
+	* config/i386/mmx.md (*mov<mode>_internal): Change constraint of
+	operand 1 from Yi to Yj and from Ym to Yn.
+
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (vec_unpacks_hi_): New.

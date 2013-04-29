@@ -523,7 +523,7 @@
     [(set (match_operand:V4SI 0 "register_operand" "=?x,x")
 	  (subreg:V4SI (match_operand:DI 1 "nonimmediate_operand" "r,m") 0))
      (clobber (match_scratch:V4SI 2 "=&x,X"))])]
-  "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES"
+  "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -7360,12 +7360,12 @@
 (define_insn_and_split "sse2_stored"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=xm,r")
 	(vec_select:SI
-	  (match_operand:V4SI 1 "register_operand" "x,Yi")
+	  (match_operand:V4SI 1 "register_operand" "x,Yj")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE"
   "#"
   "&& reload_completed
-   && (TARGET_INTER_UNIT_MOVES
+   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
        || MEM_P (operands [0])
        || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
@@ -7397,7 +7397,7 @@
 (define_insn "*sse2_storeq_rex64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=xm,*r,r")
 	(vec_select:DI
-	  (match_operand:V2DI 1 "nonimmediate_operand" "x,Yi,o")
+	  (match_operand:V2DI 1 "nonimmediate_operand" "x,Yj,o")
 	  (parallel [(const_int 0)])))]
   "TARGET_64BIT && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -7422,7 +7422,7 @@
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE
    && reload_completed
-   && (TARGET_INTER_UNIT_MOVES
+   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
        || MEM_P (operands [0])
        || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
