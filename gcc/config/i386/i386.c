@@ -1931,8 +1931,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_USE_FFREEP */
   m_AMD_MULTIPLE,
 
-  /* X86_TUNE_INTER_UNIT_MOVES */
+  /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC */
   ~(m_AMD_MULTIPLE | m_GENERIC),
+
+  /* X86_TUNE_INTER_UNIT_MOVES_FROM_VEC */
+  ~m_ATHLON_K8,
 
   /* X86_TUNE_INTER_UNIT_CONVERSIONS */
   ~(m_AMDFAM10 | m_BDVER ),
@@ -17867,7 +17870,7 @@ ix86_expand_convert_uns_didf_sse (rtx target, rtx input)
   rtx x;
 
   int_xmm = gen_reg_rtx (V4SImode);
-  if (TARGET_INTER_UNIT_MOVES)
+  if (TARGET_INTER_UNIT_MOVES_TO_VEC)
     emit_insn (gen_movdi_to_sse (int_xmm, input));
   else if (TARGET_SSE_SPLIT_REGS)
     {
@@ -33668,7 +33671,8 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 
       /* If the target says that inter-unit moves are more expensive
 	 than moving through memory, then don't generate them.  */
-      if (!TARGET_INTER_UNIT_MOVES)
+      if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
 	return true;
 
       /* Between SSE and general, we have moves no larger than word size.  */
@@ -35891,9 +35895,8 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
       /* For SSE4.1, we normally use vector set.  But if the second
 	 element is zero and inter-unit moves are OK, we use movq
 	 instead.  */
-      use_vector_set = (TARGET_64BIT
-			&& TARGET_SSE4_1
-			&& !(TARGET_INTER_UNIT_MOVES
+      use_vector_set = (TARGET_64BIT && TARGET_SSE4_1
+			&& !(TARGET_INTER_UNIT_MOVES_TO_VEC
 			     && one_var == 0));
       break;
     case V16QImode:
@@ -36428,7 +36431,7 @@ half:
 
       /* Don't use ix86_expand_vector_init_interleave if we can't
 	 move from GPR to SSE register directly.  */
-      if (!TARGET_INTER_UNIT_MOVES)
+      if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
 	break;
 
       n = GET_MODE_NUNITS (mode);
