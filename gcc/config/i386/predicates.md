@@ -1303,3 +1303,8 @@
   HOST_WIDE_INT low = val & 0xff;
   return val == ((low << 8) | low);
 })
+
+;; Return true if OP is nonimmediate_operand or CONST_VECTOR.
+(define_predicate "general_vector_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_code "const_vector")))
