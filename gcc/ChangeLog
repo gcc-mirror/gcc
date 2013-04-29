@@ -1,3 +1,11 @@
+2013-04-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57097
+        * lra-constraints.c (process_alt_operands): Discourage a bit more
+	using memory for pseudos.  Print cost dump for alternatives.
+	Modify cost values for conflicts with early clobbers.
+	(curr_insn_transform): Spill pseudos reassigned to NO_REGS.
+
 2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/57098
