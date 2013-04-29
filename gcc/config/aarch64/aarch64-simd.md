@@ -1257,6 +1257,16 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "<optab><fcvt_target><VDQF:mode>2"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(FLOATUORS:VDQF
+	  (match_operand:<FCVT_TARGET> 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "<su_optab>cvtf\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_icvtf")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
 (define_insn "aarch64_vmls<mode>"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
        (minus:VDQF (match_operand:VDQF 1 "register_operand" "0")

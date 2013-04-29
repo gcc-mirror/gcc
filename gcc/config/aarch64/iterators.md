@@ -530,6 +530,9 @@
 ;; Iterator for integer conversions
 (define_code_iterator FIXUORS [fix unsigned_fix])
 
+;; Iterator for float conversions
+(define_code_iterator FLOATUORS [float unsigned_float])
+
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator MAXMIN [smax smin umax umin])
 
@@ -557,6 +560,8 @@
 			 (zero_extend "zero_extend")
 			 (sign_extract "extv")
 			 (zero_extract "extzv")
+			 (float "float")
+			 (unsigned_float "floatuns")
 			 (and "and")
 			 (ior "ior")
 			 (xor "xor")
@@ -579,6 +584,7 @@
 (define_code_attr su_optab [(sign_extend "") (zero_extend "u")
 			    (div "") (udiv "u")
 			    (fix "") (unsigned_fix "u")
+			    (float "s") (unsigned_float "u")
 			    (ss_plus "s") (us_plus "u")
 			    (ss_minus "s") (us_minus "u")])
 

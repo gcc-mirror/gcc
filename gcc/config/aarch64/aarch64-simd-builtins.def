@@ -310,6 +310,15 @@
   VAR1 (UNOP, lfrintnusf, 2, si)
   VAR1 (UNOP, lfrintnudf, 2, di)
 
+  /* Implemented by <optab><fcvt_target><VDQF:mode>2.  */
+  VAR1 (UNOP, floatv2si, 2, v2sf)
+  VAR1 (UNOP, floatv4si, 2, v4sf)
+  VAR1 (UNOP, floatv2di, 2, v2df)
+
+  VAR1 (UNOP, floatunsv2si, 2, v2sf)
+  VAR1 (UNOP, floatunsv4si, 2, v4sf)
+  VAR1 (UNOP, floatunsv2di, 2, v2df)
+
   /* Implemented by
      aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>.  */
   BUILTIN_VALL (BINOP, zip1, 0)
