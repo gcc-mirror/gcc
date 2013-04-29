@@ -1,3 +1,7 @@
+2013-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* c-common.c (check_user_alignment): Emit error for negative values.
+
 2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-opts.c (set_std_cxx11): Use CLK_CXX1Y and CLK_GNUCXX1Y.
