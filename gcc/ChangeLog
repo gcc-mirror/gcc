@@ -1,6 +1,19 @@
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
+	(aarch64_fold_builtin): Fold float conversions.
+	* config/aarch64/aarch64-simd-builtins.def
+	(floatv2si, floatv4si, floatv2di): New.
+	(floatunsv2si, floatunsv4si, floatunsv2di): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(<optab><fcvt_target><VDQF:mode>2): New, expands to float and floatuns.
+	* config/aarch64/iterators.md (FLOATUORS): New.
+	(optab): Add float, floatuns.
+	(su_optab): Likewise.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
 	(aarch64_builtin_vectorized_function): Use new names for
 	fcvt builtins.
 	* config/aarch64/aarch64-simd-builtins.def (fcvtzs): Split as...

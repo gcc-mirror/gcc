@@ -1296,6 +1296,11 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
       BUILTIN_VDQF (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
 	break;
+      VAR1 (UNOP, floatv2si, 2, v2sf)
+      VAR1 (UNOP, floatv4si, 2, v4sf)
+      VAR1 (UNOP, floatv2di, 2, v2df)
+	return fold_build1 (FLOAT_EXPR, type, args[0]);
+	break;
       default:
 	break;
     }
