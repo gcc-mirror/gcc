@@ -5638,7 +5638,7 @@
   if (TARGET_SSE4_1)
     {
       if (CONSTANT_P (operands[2]))
-	operands[2] = force_const_mem (<MODE>mode, operands[2]);
+	operands[2] = validize_mem (force_const_mem (<MODE>mode, operands[2]));
       ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
     }
   else
