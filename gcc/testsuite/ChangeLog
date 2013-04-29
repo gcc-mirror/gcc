@@ -1,6 +1,11 @@
+2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57098
+	* gcc.target/i386/pr57098.c: New test.
+
 2013-04-29  Kai Tietz  <ktietz@redhat.com>
 
-	* gcc.c-torture/execute/pr55875.c
+	* gcc.c-torture/execute/pr55875.c: New test.
 
 2013-04-29  Richard Biener  <rguenther@suse.de>
 
