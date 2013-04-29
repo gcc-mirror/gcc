@@ -1,5 +1,17 @@
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/arm_neon.h
+	(vcvt<sd>_f<32,64>_s<32,64>): Rewrite in C.
+	(vcvt<q>_f<32,64>_s<32,64>): Rewrite using builtins.
+	(vcvt_<high_>_f<32,64>_f<32,64>): Likewise.
+	(vcvt<qsd>_<su><32,64>_f<32,64>): Likewise.
+	(vcvta<qsd>_<su><32,64>_f<32,64>): Likewise.
+	(vcvtm<qsd>_<su><32,64>_f<32,64>): Likewise.
+	(vcvtn<qsd>_<su><32,64>_f<32,64>): Likewise.
+	(vcvtp<qsd>_<su><32,64>_f<32,64>): Likewise.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-simd.md
 	(<optab><VDQF:mode><fcvt_target>2): New, maps to fix, fixuns.
 	(<fix_trunc_optab><VDQF:mode><fcvt_target>2): New, maps to
