@@ -3181,7 +3181,7 @@ cfgloopmanip.o : cfgloopmanip.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
 loop-init.o : loop-init.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(GGC_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) \
    coretypes.h $(TM_H) $(OBSTACK_H) $(TREE_PASS_H) $(FLAGS_H) \
-   $(REGS_H) $(DF_H)
+   $(REGS_H) $(DF_H) $(TREE_FLOW_H)
 loop-unswitch.o : loop-unswitch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(DUMPFILE_H) \
    $(RTL_H) $(TM_H) $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(PARAMS_H) \

@@ -1,3 +1,10 @@
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57081
+	* loop-init.c: Include tree-flow.h.
+	(loop_optimizer_finalize): Free number of iteration estimates.
+	* Makefile.in (loop-init.o): Add $(TREE_FLOW_H) dependency.
+
 2013-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57083

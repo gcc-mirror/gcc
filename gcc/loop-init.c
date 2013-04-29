@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "df.h"
 #include "ggc.h"
+#include "tree-flow.h"
 
 
 /* Apply FLAGS to the loop state.  */
@@ -141,6 +142,8 @@ loop_optimizer_finalize (void)
 
   if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     release_recorded_exits ();
+
+  free_numbers_of_iterations_estimates ();
 
   /* If we should preserve loop structure, do not free it but clear
      flags that advanced properties are there as we are not preserving
