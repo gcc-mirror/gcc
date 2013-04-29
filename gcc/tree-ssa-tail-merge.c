@@ -176,6 +176,11 @@ along with GCC; see the file COPYING3.  If not see
    - handle blocks with gimple_reg phi_nodes.
 
 
+   PASS PLACEMENT
+   This 'pass' is not a stand-alone gimple pass, but runs as part of
+   pass_pre, in order to share the value numbering.
+
+
    SWITCHES
 
    - ftree-tail-merge.  On at -O2.  We may have to enable it only at -Os.  */
@@ -198,9 +203,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-dump.h"
 #include "cfgloop.h"
-
-/* ??? This currently runs as part of tree-ssa-pre.  Why is this not
-   a stand-alone GIMPLE pass?  */
 #include "tree-pass.h"
 
 /* Describes a group of bbs with the same successors.  The successor bbs are
