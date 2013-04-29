@@ -1,5 +1,12 @@
 2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
+        * intrinsics/system_clock (gf_gettime_mono): Use variable
+        resolution for fractional seconds argument.
+        (system_clock_4): Simplify, update for gf_gettime_mono change.
+        (system_clock_8): Likewise.
+
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
         PR fortran/56981
         * io/transfer.c (next_record_w_unf): First fix head marker, then
         write tail.
