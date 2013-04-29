@@ -1224,19 +1224,19 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
    && in_mode == N##Fmode && in_n == C)
 	case BUILT_IN_FLOOR:
 	case BUILT_IN_FLOORF:
-	  return AARCH64_FIND_FRINT_VARIANT (frintm);
+	  return AARCH64_FIND_FRINT_VARIANT (floor);
 	case BUILT_IN_CEIL:
 	case BUILT_IN_CEILF:
-	  return AARCH64_FIND_FRINT_VARIANT (frintp);
+	  return AARCH64_FIND_FRINT_VARIANT (ceil);
 	case BUILT_IN_TRUNC:
 	case BUILT_IN_TRUNCF:
-	  return AARCH64_FIND_FRINT_VARIANT (frintz);
+	  return AARCH64_FIND_FRINT_VARIANT (btrunc);
 	case BUILT_IN_ROUND:
 	case BUILT_IN_ROUNDF:
-	  return AARCH64_FIND_FRINT_VARIANT (frinta);
+	  return AARCH64_FIND_FRINT_VARIANT (round);
 	case BUILT_IN_NEARBYINT:
 	case BUILT_IN_NEARBYINTF:
-	  return AARCH64_FIND_FRINT_VARIANT (frinti);
+	  return AARCH64_FIND_FRINT_VARIANT (nearbyint);
 	case BUILT_IN_SQRT:
 	case BUILT_IN_SQRTF:
 	  return AARCH64_FIND_FRINT_VARIANT (sqrt);

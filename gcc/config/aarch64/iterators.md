@@ -692,7 +692,8 @@
 			      UNSPEC_UZP1 UNSPEC_UZP2])
 
 (define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
-			     UNSPEC_FRINTI UNSPEC_FRINTX UNSPEC_FRINTA])
+			     UNSPEC_FRINTN UNSPEC_FRINTI UNSPEC_FRINTX
+			     UNSPEC_FRINTA])
 
 (define_int_iterator FCVT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
 			    UNSPEC_FRINTA])
@@ -787,12 +788,14 @@
 				(UNSPEC_FRINTM "floor")
 				(UNSPEC_FRINTI "nearbyint")
 				(UNSPEC_FRINTX "rint")
-				(UNSPEC_FRINTA "round")])
+				(UNSPEC_FRINTA "round")
+				(UNSPEC_FRINTN "frintn")])
 
 ;; frint suffix for floating-point rounding instructions.
 (define_int_attr frint_suffix [(UNSPEC_FRINTZ "z") (UNSPEC_FRINTP "p")
 			       (UNSPEC_FRINTM "m") (UNSPEC_FRINTI "i")
-			       (UNSPEC_FRINTX "x") (UNSPEC_FRINTA "a")])
+			       (UNSPEC_FRINTX "x") (UNSPEC_FRINTA "a")
+			       (UNSPEC_FRINTN "n")])
 
 (define_int_attr fcvt_pattern [(UNSPEC_FRINTZ "btrunc") (UNSPEC_FRINTA "round")
 			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")])

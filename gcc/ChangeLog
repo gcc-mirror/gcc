@@ -1,3 +1,28 @@
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Fold to standard pattern names.
+	* config/aarch64/aarch64-simd-builtins.def (frintn): New.
+	(frintz): Rename to...
+	(btrunc): ...this.
+	(frintp): Rename to...
+	(ceil): ...this.
+	(frintm): Rename to...
+	(floor): ...this.
+	(frinti): Rename to...
+	(nearbyint): ...this.
+	(frintx): Rename to...
+	(rint): ...this.
+	(frinta): Rename to...
+	(round): ...this.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_frint<frint_suffix><mode>): Delete.
+	(<frint_pattern><mode>2): Convert to insn.
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_FRINTN.
+	* config/aarch64/iterators.md (FRINT): Add UNSPEC_FRINTN.
+	(frint_pattern): Likewise.
+	(frint_suffix): Likewise.
+
 2013-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57081

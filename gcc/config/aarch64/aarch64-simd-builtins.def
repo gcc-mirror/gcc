@@ -247,13 +247,14 @@
   BUILTIN_VDQ_BHSI (BINOP, umax, 3)
   BUILTIN_VDQ_BHSI (BINOP, umin, 3)
 
-  /* Implemented by aarch64_frint<frint_suffix><mode>.  */
-  BUILTIN_VDQF (UNOP, frintz, 0)
-  BUILTIN_VDQF (UNOP, frintp, 0)
-  BUILTIN_VDQF (UNOP, frintm, 0)
-  BUILTIN_VDQF (UNOP, frinti, 0)
-  BUILTIN_VDQF (UNOP, frintx, 0)
-  BUILTIN_VDQF (UNOP, frinta, 0)
+  /* Implemented by <frint_pattern><mode>2.  */
+  BUILTIN_VDQF (UNOP, btrunc, 2)
+  BUILTIN_VDQF (UNOP, ceil, 2)
+  BUILTIN_VDQF (UNOP, floor, 2)
+  BUILTIN_VDQF (UNOP, nearbyint, 2)
+  BUILTIN_VDQF (UNOP, rint, 2)
+  BUILTIN_VDQF (UNOP, round, 2)
+  BUILTIN_VDQF (UNOP, frintn, 2)
 
   /* Implemented by aarch64_fcvt<frint_suffix><su><mode>.  */
   BUILTIN_VDQF (UNOP, fcvtzs, 0)
