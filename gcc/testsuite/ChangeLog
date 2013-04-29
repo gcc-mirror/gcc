@@ -1,3 +1,7 @@
+2013-04-29  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.c-torture/execute/pr55875.c
+
 2013-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57075
