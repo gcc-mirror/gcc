@@ -1,3 +1,9 @@
+2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44578
+	* config/i386/i386.md (*zero_extendsidi2): Add "!" to m->?*y
+	alternative.
+
 2013-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/57097

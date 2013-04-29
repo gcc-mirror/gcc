@@ -1,3 +1,8 @@
+2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44578
+	* gcc.target/i386/pr44578.c: New test.
+
 2013-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/57097
