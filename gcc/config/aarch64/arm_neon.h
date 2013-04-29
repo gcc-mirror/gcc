@@ -14941,171 +14941,6 @@ vrev64q_u32 (uint32x4_t a)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vrnd_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("frintz %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vrnda_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("frinta %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vrndm_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("frintm %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vrndn_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("frintn %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vrndp_f32 (float32x2_t a)
-{
-  float32x2_t result;
-  __asm__ ("frintp %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndq_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("frintz %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vrndq_f64 (float64x2_t a)
-{
-  float64x2_t result;
-  __asm__ ("frintz %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqa_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("frinta %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vrndqa_f64 (float64x2_t a)
-{
-  float64x2_t result;
-  __asm__ ("frinta %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqm_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("frintm %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vrndqm_f64 (float64x2_t a)
-{
-  float64x2_t result;
-  __asm__ ("frintm %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqn_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("frintn %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vrndqn_f64 (float64x2_t a)
-{
-  float64x2_t result;
-  __asm__ ("frintn %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vrndqp_f32 (float32x4_t a)
-{
-  float32x4_t result;
-  __asm__ ("frintp %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vrndqp_f64 (float64x2_t a)
-{
-  float64x2_t result;
-  __asm__ ("frintp %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 #define vrshrn_high_n_s16(a, b, c)                                      \
   __extension__                                                         \
     ({                                                                  \
@@ -23067,6 +22902,145 @@ __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vrecpxd_f64 (float64_t __a)
 {
   return __builtin_aarch64_frecpxdf (__a);
+}
+
+/* vrnd  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrnd_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_btruncv2sf (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_btruncv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrndq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_btruncv2df (__a);
+}
+
+/* vrnda  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrnda_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_roundv2sf (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndaq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_roundv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrndaq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_roundv2df (__a);
+}
+
+/* vrndi  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrndi_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_nearbyintv2sf (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndiq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_nearbyintv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrndiq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_nearbyintv2df (__a);
+}
+
+/* vrndm  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrndm_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_floorv2sf (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndmq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_floorv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrndmq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_floorv2df (__a);
+}
+
+/* vrndn  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrndn_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_frintnv2sf (__a);
+}
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndnq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_frintnv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrndnq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_frintnv2df (__a);
+}
+
+/* vrndp  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrndp_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_ceilv2sf (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndpq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_ceilv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrndpq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_ceilv2df (__a);
+}
+
+/* vrndx  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vrndx_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_rintv2sf (__a);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vrndxq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_rintv4sf (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vrndxq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_rintv2df (__a);
 }
 
 /* vrshl */
