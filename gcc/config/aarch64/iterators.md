@@ -560,6 +560,8 @@
 			 (zero_extend "zero_extend")
 			 (sign_extract "extv")
 			 (zero_extract "extzv")
+			 (fix "fix")
+			 (unsigned_fix "fixuns")
 			 (float "float")
 			 (unsigned_float "floatuns")
 			 (and "and")
@@ -579,6 +581,9 @@
 			 (ne "ne")
 			 (lt "lt")
 			 (ge "ge")])
+
+(define_code_attr fix_trunc_optab [(fix "fix_trunc")
+				   (unsigned_fix "fixuns_trunc")])
 
 ;; Optab prefix for sign/zero-extending operations
 (define_code_attr su_optab [(sign_extend "") (zero_extend "u")
