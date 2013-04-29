@@ -1,5 +1,12 @@
 2013-04-29  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/57075
+	* tree-inline.c (copy_edges_for_bb): Still split the bbs,
+	even if not adding abnormal edges for calls that can make
+	abnormal gotos.
+
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/57103
 	* tree-cfg.c (move_stmt_op): Fix condition under which to update
 	TREE_BLOCK.

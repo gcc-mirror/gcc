@@ -1923,11 +1923,7 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
          into a COMPONENT_REF which doesn't.  If the copy
          can throw, the original could also throw.  */
       can_throw = stmt_can_throw_internal (copy_stmt);
-      /* If the call we inline cannot make abnormal goto do not add
-         additional abnormal edges but only retain those already present
-	 in the original function body.  */
-      nonlocal_goto
-	= can_make_abnormal_goto && stmt_can_make_abnormal_goto (copy_stmt);
+      nonlocal_goto = stmt_can_make_abnormal_goto (copy_stmt);
 
       if (can_throw || nonlocal_goto)
 	{
@@ -1955,6 +1951,10 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
       else if (can_throw)
 	make_eh_edges (copy_stmt);
 
+      /* If the call we inline cannot make abnormal goto do not add
+         additional abnormal edges but only retain those already present
+	 in the original function body.  */
+      nonlocal_goto &= can_make_abnormal_goto;
       if (nonlocal_goto)
 	make_abnormal_goto_edges (gimple_bb (copy_stmt), true);
 

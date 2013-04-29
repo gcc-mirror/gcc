@@ -1,5 +1,10 @@
 2013-04-29  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/57075
+	* gcc.dg/torture/pr57075.c: New testcase.
+
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/57103
 	* gcc.dg/autopar/pr57103.c: New testcase.
 
