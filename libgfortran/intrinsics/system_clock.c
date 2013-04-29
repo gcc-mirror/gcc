@@ -65,7 +65,7 @@ static int weak_gettime (clockid_t, struct timespec *)
 
    Arguments:
    secs     - OUTPUT, seconds
-   nanosecs - OUTPUT, nanoseconds
+   fracsecs - OUTPUT, fractional seconds, units given by tk argument
    tk       - OUTPUT, clock resolution [counts/sec]
 
    If the target supports a monotonic clock, the OUTPUT arguments
@@ -79,7 +79,7 @@ static int weak_gettime (clockid_t, struct timespec *)
    is set.
 */
 static int
-gf_gettime_mono (time_t * secs, long * nanosecs, long * tck)
+gf_gettime_mono (time_t * secs, long * fracsecs, long * tck)
 {
   int err;
 #ifdef HAVE_CLOCK_GETTIME
@@ -87,7 +87,7 @@ gf_gettime_mono (time_t * secs, long * nanosecs, long * tck)
   *tck = 1000000000;
   err = clock_gettime (GF_CLOCK_MONOTONIC, &ts);
   *secs = ts.tv_sec;
-  *nanosecs = ts.tv_nsec;
+  *fracsecs = ts.tv_nsec;
   return err;
 #else
 #if defined(HAVE_CLOCK_GETTIME_LIBRT) && SUPPORTS_WEAK && GTHREAD_USE_WEAK
@@ -97,13 +97,12 @@ gf_gettime_mono (time_t * secs, long * nanosecs, long * tck)
       *tck = 1000000000;
       err = weak_gettime (GF_CLOCK_MONOTONIC, &ts);
       *secs = ts.tv_sec;
-      *nanosecs = ts.tv_nsec;
+      *fracsecs = ts.tv_nsec;
       return err;
     }
 #endif
   *tck = 1000000;
-  err = gf_gettime (secs, nanosecs);
-  *nanosecs *= 1000;
+  err = gf_gettime (secs, fracsecs);
   return err;
 #endif
 }
@@ -142,43 +141,33 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
   if (count_max)
     *count_max = GFC_INTEGER_4_HUGE;
 #else
-  GFC_INTEGER_4 cnt;
-  GFC_INTEGER_4 mx;
-
   time_t secs;
-  long nanosecs, tck;
+  long fracsecs, tck;
 
-  if (sizeof (secs) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "secs too small");
-
-  if (gf_gettime_mono (&secs, &nanosecs, &tck) == 0)
+  if (gf_gettime_mono (&secs, &fracsecs, &tck) == 0)
     {
-      tck = tck>1000 ? 1000 : tck;
-      GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) secs * tck;
-      ucnt += (nanosecs + 500000000 / tck) / (1000000000 / tck);
+      long tck_out = tck > 1000 ? 1000 : tck;
+      long tck_r = tck / tck_out;
+      GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) secs * tck_out;
+      ucnt += fracsecs / tck_r;
       if (ucnt > GFC_INTEGER_4_HUGE)
-	cnt = ucnt - GFC_INTEGER_4_HUGE - 1;
-      else
-	cnt = ucnt;
-      mx = GFC_INTEGER_4_HUGE;
+	ucnt = ucnt - GFC_INTEGER_4_HUGE - 1;
+      if (count)
+	*count = ucnt;
+      if (count_rate)
+	*count_rate = tck_out;
+      if (count_max)
+	*count_max = GFC_INTEGER_4_HUGE;
     }
   else
     {
-      if (count != NULL)
+      if (count)
 	*count = - GFC_INTEGER_4_HUGE;
-      if (count_rate != NULL)
+      if (count_rate)
 	*count_rate = 0;
-      if (count_max != NULL)
+      if (count_max)
 	*count_max = 0;
-      return;
     }
-
-  if (count != NULL)
-    *count = cnt;
-  if (count_rate != NULL)
-    *count_rate = tck;
-  if (count_max != NULL)
-    *count_max = mx;
 #endif
 }
 
@@ -216,42 +205,30 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 	*count_max = GFC_INTEGER_8_HUGE;
     }
 #else
-  GFC_INTEGER_8 cnt;
-  GFC_INTEGER_8 mx;
-
   time_t secs;
-  long nanosecs, tck;
+  long fracsecs, tck;
 
-  if (sizeof (secs) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "secs too small");
-
-  if (gf_gettime_mono (&secs, &nanosecs, &tck) == 0)
+  if (gf_gettime_mono (&secs, &fracsecs, &tck) == 0)
     {
       GFC_UINTEGER_8 ucnt = (GFC_UINTEGER_8) secs * tck;
-      ucnt += (nanosecs + 500000000 / tck) / (1000000000 / tck);
+      ucnt += fracsecs;
       if (ucnt > GFC_INTEGER_8_HUGE)
-	cnt = ucnt - GFC_INTEGER_8_HUGE - 1;
-      else
-	cnt = ucnt;
-      mx = GFC_INTEGER_8_HUGE;
+	ucnt = ucnt - GFC_INTEGER_8_HUGE - 1;
+      if (count)
+	*count = ucnt;
+      if (count_rate)
+	*count_rate = tck;
+      if (count_max)
+	*count_max = GFC_INTEGER_8_HUGE;
     }
   else
     {
-      if (count != NULL)
+      if (count)
 	*count = - GFC_INTEGER_8_HUGE;
-      if (count_rate != NULL)
+      if (count_rate)
 	*count_rate = 0;
-      if (count_max != NULL)
+      if (count_max)
 	*count_max = 0;
-
-      return;
     }
-
-  if (count != NULL)
-    *count = cnt;
-  if (count_rate != NULL)
-    *count_rate = tck;
-  if (count_max != NULL)
-    *count_max = mx;
 #endif
 }
