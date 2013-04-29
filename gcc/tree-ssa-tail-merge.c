@@ -691,7 +691,15 @@ find_same_succ_bb (basic_block bb, same_succ *same_p)
   edge_iterator ei;
   edge e;
 
-  if (bb == NULL)
+  if (bb == NULL
+      /* Be conservative with loop structure.  It's not evident that this test
+	 is sufficient.  Before tail-merge, we've just called
+	 loop_optimizer_finalize, and LOOPS_MAY_HAVE_MULTIPLE_LATCHES is now
+	 set, so there's no guarantee that the loop->latch value is still valid.
+	 But we assume that, since we've forced LOOPS_HAVE_SIMPLE_LATCHES at the
+	 start of pre, we've kept that property intact throughout pre, and are
+	 keeping it throughout tail-merge using this test.  */
+      || bb->loop_father->latch == bb)
     return;
   bitmap_set_bit (same->bbs, bb->index);
   FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1462,17 +1470,6 @@ replace_block_by (basic_block bb1, basic_block bb2)
   /* Mark the basic block as deleted.  */
   mark_basic_block_deleted (bb1);
 
-  /* ???  If we merge the loop preheader with the loop latch we are creating
-     additional entries into the loop, eventually rotating it.
-     Mark loops for fixup in this case.
-     ???  This is a completely unwanted transform and will wreck most
-     loops at this point - but with just not considering loop latches as
-     merge candidates we fail to commonize the two loops in gcc.dg/pr50763.c.
-     A better fix to avoid that regression is needed.  */
-  if (current_loops
-      && bb2->loop_father->latch == bb2)
-    loops_state_set (LOOPS_NEED_FIXUP);
-
   /* Redirect the incoming edges of bb1 to bb2.  */
   for (i = EDGE_COUNT (bb1->preds); i > 0 ; --i)
     {
@@ -1614,7 +1611,19 @@ tail_merge_optimize (unsigned int todo)
   int iteration_nr = 0;
   int max_iterations = PARAM_VALUE (PARAM_MAX_TAIL_MERGE_ITERATIONS);
 
-  if (!flag_tree_tail_merge || max_iterations == 0)
+  if (!flag_tree_tail_merge
+      || max_iterations == 0
+      /* We try to be conservative with respect to loop structure, since:
+	 - the cases where tail-merging could both affect loop structure and be
+	   benificial are rare,
+	 - it prevents us from having to fixup the loops using
+	   loops_state_set (LOOPS_NEED_FIXUP), and
+	 - keeping loop structure may allow us to simplify the pass.
+	 In order to be conservative, we need loop information.	 In rare cases
+	 (about 7 test-cases in the g++ testsuite) there is none (because
+	 loop_optimizer_finalize has been called before tail-merge, and
+	 PROP_loops is not set), so we bail out.  */
+      || current_loops == NULL)
     return 0;
 
   timevar_push (TV_TREE_TAIL_MERGE);

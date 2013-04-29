@@ -1,3 +1,9 @@
+2013-04-29  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-tail-merge.c (find_same_succ_bb): Skip loop latch bbs.
+	(replace_block_by): Don't set LOOPS_NEED_FIXUP.
+	(tail_merge_optimize): Handle current_loops == NULL.
+
 2013-04-26  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (range_fits_type_p): Move to earlier point in file.
