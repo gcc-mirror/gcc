@@ -5631,14 +5631,16 @@
 (define_expand "mul<mode>3"
   [(set (match_operand:VI4_AVX2 0 "register_operand")
 	(mult:VI4_AVX2
-	  (match_operand:VI4_AVX2 1 "nonimmediate_operand")
-	  (match_operand:VI4_AVX2 2 "nonimmediate_operand")))]
+	  (match_operand:VI4_AVX2 1 "general_vector_operand")
+	  (match_operand:VI4_AVX2 2 "general_vector_operand")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1)
     {
-      if (CONSTANT_P (operands[2]))
-	operands[2] = force_const_mem (<MODE>mode, operands[2]);
+      if (!nonimmediate_operand (operands[1], <MODE>mode))
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+      if (!nonimmediate_operand (operands[2], <MODE>mode))
+	operands[2] = force_reg (<MODE>mode, operands[2]);
       ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
     }
   else
@@ -5702,8 +5704,8 @@
 ;; named patterns, but signed V4SI needs special help for plain SSE2.
 (define_expand "vec_widen_smult_even_v4si"
   [(match_operand:V2DI 0 "register_operand")
-   (match_operand:V4SI 1 "register_operand")
-   (match_operand:V4SI 2 "register_operand")]
+   (match_operand:V4SI 1 "nonimmediate_operand")
+   (match_operand:V4SI 2 "nonimmediate_operand")]
   "TARGET_SSE2"
 {
   ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],
@@ -5714,8 +5716,8 @@
 (define_expand "vec_widen_<s>mult_odd_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (any_extend:<sseunpackmode>
-     (match_operand:VI4_AVX2 1 "register_operand"))
-   (match_operand:VI4_AVX2 2 "register_operand")]
+     (match_operand:VI4_AVX2 1 "general_vector_operand"))
+   (match_operand:VI4_AVX2 2 "general_vector_operand")]
   "TARGET_SSE2"
 {
   ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],
