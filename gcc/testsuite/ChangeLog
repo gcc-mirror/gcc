@@ -2,6 +2,14 @@
 
 	Backport from trunk:
 
+	PR fortran/51825
+	* gfortran.dg/namelist_77.f90: New test.
+	* gfortran.dg/namelist_78.f90: New test.
+
+2013-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk:
+
 	PR fortran/56786
 	* gfortran.dg/namelist_81.f90:  New test.
 
