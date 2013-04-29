@@ -1,3 +1,8 @@
+2013-04-29  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/57108
+	* gcc.target/sh/pr57108.c: New test.
+
 2013-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57089
