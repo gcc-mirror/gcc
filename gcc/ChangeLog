@@ -1,3 +1,10 @@
+2013-04-26  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (range_fits_type_p): Move to earlier point in file.
+	(simplify_cond_using_ranges): Generalize code to simplify
+	COND_EXPRs where one argument is a constant and the other
+	is an SSA_NAME created by an integral type conversion.
+
 2013-04-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (store_minmaxsi): Use only when

@@ -8509,6 +8509,57 @@ test_for_singularity (enum tree_code cond_code, tree op0,
   return NULL;
 }
 
+/* Return whether the value range *VR fits in an integer type specified
+   by PRECISION and UNSIGNED_P.  */
+
+static bool
+range_fits_type_p (value_range_t *vr, unsigned precision, bool unsigned_p)
+{
+  tree src_type;
+  unsigned src_precision;
+  double_int tem;
+
+  /* We can only handle integral and pointer types.  */
+  src_type = TREE_TYPE (vr->min);
+  if (!INTEGRAL_TYPE_P (src_type)
+      && !POINTER_TYPE_P (src_type))
+    return false;
+
+  /* An extension is fine unless VR is signed and unsigned_p,
+     and so is an identity transform.  */
+  src_precision = TYPE_PRECISION (TREE_TYPE (vr->min));
+  if ((src_precision < precision
+       && !(unsigned_p && !TYPE_UNSIGNED (src_type)))
+      || (src_precision == precision
+	  && TYPE_UNSIGNED (src_type) == unsigned_p))
+    return true;
+
+  /* Now we can only handle ranges with constant bounds.  */
+  if (vr->type != VR_RANGE
+      || TREE_CODE (vr->min) != INTEGER_CST
+      || TREE_CODE (vr->max) != INTEGER_CST)
+    return false;
+
+  /* For sign changes, the MSB of the double_int has to be clear.
+     An unsigned value with its MSB set cannot be represented by
+     a signed double_int, while a negative value cannot be represented
+     by an unsigned double_int.  */
+  if (TYPE_UNSIGNED (src_type) != unsigned_p
+      && (TREE_INT_CST_HIGH (vr->min) | TREE_INT_CST_HIGH (vr->max)) < 0)
+    return false;
+
+  /* Then we can perform the conversion on both ends and compare
+     the result for equality.  */
+  tem = tree_to_double_int (vr->min).ext (precision, unsigned_p);
+  if (tree_to_double_int (vr->min) != tem)
+    return false;
+  tem = tree_to_double_int (vr->max).ext (precision, unsigned_p);
+  if (tree_to_double_int (vr->max) != tem)
+    return false;
+
+  return true;
+}
+
 /* Simplify a conditional using a relational operator to an equality
    test if the range information indicates only one value can satisfy
    the original conditional.  */
@@ -8590,18 +8641,15 @@ simplify_cond_using_ranges (gimple stmt)
 	}
     }
 
-  /* If we have a comparison of a SSA_NAME boolean against
-     a constant (which obviously must be [0..1]), see if the
-     SSA_NAME was set by a type conversion where the source
-     of the conversion is another SSA_NAME with a range [0..1].
+  /* If we have a comparison of an SSA_NAME (OP0) against a constant,
+     see if OP0 was set by a type conversion where the source of
+     the conversion is another SSA_NAME with a range that fits
+     into the range of OP0's type.
 
-     If so, we can replace the SSA_NAME in the comparison with
-     the RHS of the conversion.  This will often make the type
-     conversion dead code which DCE will clean up.  */
+     If so, the conversion is redundant as the earlier SSA_NAME can be
+     used for the comparison directly if we just massage the constant in the
+     comparison.  */
   if (TREE_CODE (op0) == SSA_NAME
-      && (TREE_CODE (TREE_TYPE (op0)) == BOOLEAN_TYPE
-	  || (INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	      && TYPE_PRECISION (TREE_TYPE (op0)) == 1))
       && TREE_CODE (op1) == INTEGER_CST)
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (op0);
@@ -8618,8 +8666,9 @@ simplify_cond_using_ranges (gimple stmt)
 	  value_range_t *vr = get_value_range (innerop);
 
 	  if (range_int_cst_p (vr)
-	      && operand_equal_p (vr->min, integer_zero_node, 0)
-	      && operand_equal_p (vr->max, integer_one_node, 0))
+	      && range_fits_type_p (vr,
+				    TYPE_PRECISION (TREE_TYPE (op0)),
+				    TYPE_UNSIGNED (TREE_TYPE (op0))))
 	    {
 	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
 	      gimple_cond_set_lhs (stmt, innerop);
@@ -8806,57 +8855,6 @@ simplify_conversion_using_ranges (gimple stmt)
 
   gimple_assign_set_rhs1 (stmt, innerop);
   update_stmt (stmt);
-  return true;
-}
-
-/* Return whether the value range *VR fits in an integer type specified
-   by PRECISION and UNSIGNED_P.  */
-
-static bool
-range_fits_type_p (value_range_t *vr, unsigned precision, bool unsigned_p)
-{
-  tree src_type;
-  unsigned src_precision;
-  double_int tem;
-
-  /* We can only handle integral and pointer types.  */
-  src_type = TREE_TYPE (vr->min);
-  if (!INTEGRAL_TYPE_P (src_type)
-      && !POINTER_TYPE_P (src_type))
-    return false;
-
-  /* An extension is fine unless VR is signed and unsigned_p,
-     and so is an identity transform.  */
-  src_precision = TYPE_PRECISION (TREE_TYPE (vr->min));
-  if ((src_precision < precision
-       && !(unsigned_p && !TYPE_UNSIGNED (src_type)))
-      || (src_precision == precision
-	  && TYPE_UNSIGNED (src_type) == unsigned_p))
-    return true;
-
-  /* Now we can only handle ranges with constant bounds.  */
-  if (vr->type != VR_RANGE
-      || TREE_CODE (vr->min) != INTEGER_CST
-      || TREE_CODE (vr->max) != INTEGER_CST)
-    return false;
-
-  /* For sign changes, the MSB of the double_int has to be clear.
-     An unsigned value with its MSB set cannot be represented by
-     a signed double_int, while a negative value cannot be represented
-     by an unsigned double_int.  */
-  if (TYPE_UNSIGNED (src_type) != unsigned_p
-      && (TREE_INT_CST_HIGH (vr->min) | TREE_INT_CST_HIGH (vr->max)) < 0)
-    return false;
-
-  /* Then we can perform the conversion on both ends and compare
-     the result for equality.  */
-  tem = tree_to_double_int (vr->min).ext (precision, unsigned_p);
-  if (tree_to_double_int (vr->min) != tem)
-    return false;
-  tem = tree_to_double_int (vr->max).ext (precision, unsigned_p);
-  if (tree_to_double_int (vr->max) != tem)
-    return false;
-
   return true;
 }
 
