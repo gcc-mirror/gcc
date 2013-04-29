@@ -1,3 +1,7 @@
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-vrnd.c: New.
+
 2013-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57081
