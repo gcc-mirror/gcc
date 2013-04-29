@@ -1257,7 +1257,7 @@
 
 ;; Vector versions of the fcvt standard patterns.
 ;; Expands to lbtrunc, lround, lceil, lfloor
-(define_expand "l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2"
+(define_expand "l<fcvt_pattern><su_optab><VDQF:mode><fcvt_target>2"
   [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
 	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
 			       [(match_operand:VDQF 1 "register_operand")]
