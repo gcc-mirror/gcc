@@ -696,7 +696,7 @@
 			     UNSPEC_FRINTA])
 
 (define_int_iterator FCVT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
-			    UNSPEC_FRINTA])
+			    UNSPEC_FRINTA UNSPEC_FRINTN])
 
 (define_int_iterator FRECP [UNSPEC_FRECPE UNSPEC_FRECPX])
 
@@ -798,7 +798,8 @@
 			       (UNSPEC_FRINTN "n")])
 
 (define_int_attr fcvt_pattern [(UNSPEC_FRINTZ "btrunc") (UNSPEC_FRINTA "round")
-			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")])
+			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")
+			       (UNSPEC_FRINTN "frintn")])
 
 (define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
 			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")

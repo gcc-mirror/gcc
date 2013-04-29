@@ -1245,9 +1245,33 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
   (out_mode == N##Imode && out_n == C \
    && in_mode == N##Fmode && in_n == C)
 	case BUILT_IN_LFLOOR:
-	  return AARCH64_FIND_FRINT_VARIANT (fcvtms);
+	  {
+	    tree new_tree = NULL_TREE;
+	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv2dfv2di];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv4sfv4si];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv2sfv2si];
+	    return new_tree;
+	  }
 	case BUILT_IN_LCEIL:
-	  return AARCH64_FIND_FRINT_VARIANT (fcvtps);
+	  {
+	    tree new_tree = NULL_TREE;
+	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv2dfv2di];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv4sfv4si];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv2sfv2si];
+	    return new_tree;
+	  }
 	default:
 	  return NULL_TREE;
       }

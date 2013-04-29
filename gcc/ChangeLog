@@ -1,5 +1,36 @@
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Use new names for
+	fcvt builtins.
+	* config/aarch64/aarch64-simd-builtins.def (fcvtzs): Split as...
+	(lbtruncv2sf, lbtruncv4sf, lbtruncv2df): ...This.
+	(fcvtzu): Split as...
+	(lbtruncuv2sf, lbtruncuv4sf, lbtruncuv2df): ...This.
+	(fcvtas): Split as...
+	(lroundv2sf, lroundv4sf, lroundv2df, lroundsf, lrounddf): ...This.
+	(fcvtau): Split as...
+	(lrounduv2sf, lrounduv4sf, lrounduv2df, lroundusf, lroundudf): ...This.
+	(fcvtps): Split as...
+	(lceilv2sf, lceilv4sf, lceilv2df): ...This.
+	(fcvtpu): Split as...
+	(lceiluv2sf, lceiluv4sf, lceiluv2df, lceilusf, lceiludf): ...This.
+	(fcvtms): Split as...
+	(lfloorv2sf, lfloorv4sf, lfloorv2df): ...This.
+	(fcvtmu): Split as...
+	(lflooruv2sf, lflooruv4sf, lflooruv2df, lfloorusf, lfloorudf): ...This.
+	(lfrintnv2sf, lfrintnv4sf, lfrintnv2df, lfrintnsf, lfrintndf): New.
+	(lfrintnuv2sf, lfrintnuv4sf, lfrintnuv2df): Likewise.
+	(lfrintnusf, lfrintnudf): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2): Convert to
+	define_insn.
+	(aarch64_fcvt<frint_suffix><su><mode>): Remove.
+	* config/aarch64/iterators.md (FCVT): Include UNSPEC_FRINTN.
+	(fcvt_pattern): Likewise.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-simd.md
 	(l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2): Rename to...
 	(l<fcvt_pattern><su_optab><VDQF:mode><fcvt_target>2): ... This.
