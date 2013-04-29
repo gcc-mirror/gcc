@@ -1519,7 +1519,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
      basic_block_info automatically.  */
   copy_basic_block = create_basic_block (NULL, (void *) 0,
                                          (basic_block) prev->aux);
-  /* Update to use apply_probability().  */
+  /* Update to use apply_scale().  */
   copy_basic_block->count = bb->count * count_scale / REG_BR_PROB_BASE;
 
   /* We are going to rebuild frequencies from scratch.  These values
@@ -1891,7 +1891,7 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR)
 	  flags |= EDGE_FALLTHRU;
 	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
-        /* Update to use apply_probability().  */
+        /* Update to use apply_scale().  */
 	new_edge->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
 	new_edge->probability = old_edge->probability;
       }
@@ -2278,7 +2278,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 	    incoming_frequency += EDGE_FREQUENCY (e);
 	    incoming_count += e->count;
 	  }
-      /* Update to use apply_probability().  */
+      /* Update to use apply_scale().  */
       incoming_count = incoming_count * count_scale / REG_BR_PROB_BASE;
       /* Update to use EDGE_FREQUENCY.  */
       incoming_frequency

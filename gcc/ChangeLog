@@ -1,3 +1,17 @@
+2013-04-29  Teresa Johnson  <tejohnson@google.com>
+
+	PR bootstrap/57077
+	* basic-block.h (apply_scale): New function.
+	(apply_probability): Use apply_scale.
+	* gimple-streamer-in.c (input_bb): Ditto.
+	* lto-streamer-in.c (input_cfg): Ditto.
+	* lto-cgraph.c (merge_profile_summaries): Ditto.
+	* tree-optimize.c (execute_fixup_cfg): Ditto.
+	* tree-inline.c (copy_bb): Update comment to use
+	apply_scale.
+	(copy_edges_for_bb): Ditto.
+	(copy_cfg_body): Ditto.
+
 2013-04-29  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-tail-merge.c (find_same_succ_bb): Skip loop latch bbs.

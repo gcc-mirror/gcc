@@ -500,7 +500,7 @@ struct edge_list
 					      REG_BR_PROB_BASE)
 
 /* Compute a scale factor (or probability) suitable for scaling of
-   gcov_type values via apply_probability().  */
+   gcov_type values via apply_probability() and apply_scale().  */
 #define GCOV_COMPUTE_SCALE(num,den) \
   ((den) ? RDIV ((num) * REG_BR_PROB_BASE, (den)) : REG_BR_PROB_BASE)
 
@@ -952,13 +952,23 @@ combine_probabilities (int prob1, int prob2)
   return RDIV (prob1 * prob2, REG_BR_PROB_BASE);
 }
 
+/* Apply scale factor SCALE on frequency or count FREQ. Use this
+   interface when potentially scaling up, so that SCALE is not
+   constrained to be < REG_BR_PROB_BASE.  */
+
+static inline gcov_type
+apply_scale (gcov_type freq, int scale)
+{
+  return RDIV (freq * scale, REG_BR_PROB_BASE);
+}
+
 /* Apply probability PROB on frequency or count FREQ.  */
 
 static inline gcov_type
 apply_probability (gcov_type freq, int prob)
 {
   check_probability (prob);
-  return RDIV (freq * prob, REG_BR_PROB_BASE);
+  return apply_scale (freq, prob);
 }
 
 /* Return inverse probability for PROB.  */
