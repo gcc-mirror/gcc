@@ -329,8 +329,8 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
   index = streamer_read_uhwi (ib);
   bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
 
-  bb->count = apply_probability (streamer_read_gcov_count (ib),
-                                 count_materialization_scale);
+  bb->count = apply_scale (streamer_read_gcov_count (ib),
+                           count_materialization_scale);
   bb->frequency = streamer_read_hwi (ib);
   bb->flags = streamer_read_hwi (ib);
 
