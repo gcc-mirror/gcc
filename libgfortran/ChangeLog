@@ -1,3 +1,18 @@
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/56981
+        * io/transfer.c (next_record_w_unf): First fix head marker, then
+        write tail.
+        (next_record): Call flush_if_unbuffered.
+        * io/unix.c (struct unix_stream): Add field unbuffered.
+        (flush_if_unbuffered): New function.
+        (fd_to_stream): New argument.
+        (open_external): Fix fd_to_stream call.
+        (input_stream): Likewise.
+        (output_stream): Likewise.
+        (error_stream): Likewise.
+        * io/unix.h (flush_if_unbuffered): New prototype.
+
 2013-04-28  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/system_clock.c (system_clock_4): Fix sign error in

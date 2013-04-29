@@ -3207,17 +3207,6 @@ next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
   m = dtp->u.p.current_unit->recl_subrecord
     - dtp->u.p.current_unit->bytes_left_subrecord;
 
-  /* Write the length tail.  If we finish a record containing
-     subrecords, we write out the negative length.  */
-
-  if (dtp->u.p.current_unit->continued)
-    m_write = -m;
-  else
-    m_write = m;
-
-  if (unlikely (write_us_marker (dtp, m_write) < 0))
-    goto io_error;
-
   if (compile_options.record_marker == 0)
     record_marker = sizeof (GFC_INTEGER_4);
   else
@@ -3226,7 +3215,7 @@ next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
   /* Seek to the head and overwrite the bogus length with the real
      length.  */
 
-  if (unlikely (sseek (dtp->u.p.current_unit->s, - m - 2 * record_marker, 
+  if (unlikely (sseek (dtp->u.p.current_unit->s, - m - record_marker, 
 		       SEEK_CUR) < 0))
     goto io_error;
 
@@ -3240,8 +3229,18 @@ next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
 
   /* Seek past the end of the current record.  */
 
-  if (unlikely (sseek (dtp->u.p.current_unit->s, m + record_marker, 
-		       SEEK_CUR) < 0))
+  if (unlikely (sseek (dtp->u.p.current_unit->s, m, SEEK_CUR) < 0))
+    goto io_error;
+
+  /* Write the length tail.  If we finish a record containing
+     subrecords, we write out the negative length.  */
+
+  if (dtp->u.p.current_unit->continued)
+    m_write = -m;
+  else
+    m_write = m;
+
+  if (unlikely (write_us_marker (dtp, m_write) < 0))
     goto io_error;
 
   return;
@@ -3503,6 +3502,7 @@ next_record (st_parameter_dt *dtp, int done)
     pre_position (dtp);
 
   fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
+  flush_if_unbuffered (dtp->u.p.current_unit->s);
 }
 
 
