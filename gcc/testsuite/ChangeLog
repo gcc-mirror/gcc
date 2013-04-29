@@ -1,5 +1,9 @@
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* lib/target-supports.exp (vect_uintfloat_cvt): Enable for AArch64.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.target/aarch64/vect-vcvt.c: New.
 
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
