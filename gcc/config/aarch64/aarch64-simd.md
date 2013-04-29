@@ -1267,6 +1267,108 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+;; Conversions between vectors of floats and doubles.
+;; Contains a mix of patterns to match standard pattern names
+;; and those for intrinsics.
+
+;; Float widening operations.
+
+(define_insn "vec_unpacks_lo_v4sf"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+	(float_extend:V2DF
+	  (vec_select:V2SF
+	    (match_operand:V4SF 1 "register_operand" "w")
+	    (parallel [(const_int 0) (const_int 1)])
+	  )))]
+  "TARGET_SIMD"
+  "fcvtl\\t%0.2d, %1.2s"
+  [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+(define_insn "aarch64_float_extend_lo_v2df"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+	(float_extend:V2DF
+	  (match_operand:V2SF 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "fcvtl\\t%0.2d, %1.2s"
+  [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+(define_insn "vec_unpacks_hi_v4sf"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+	(float_extend:V2DF
+	  (vec_select:V2SF
+	    (match_operand:V4SF 1 "register_operand" "w")
+	    (parallel [(const_int 2) (const_int 3)])
+	  )))]
+  "TARGET_SIMD"
+  "fcvtl2\\t%0.2d, %1.4s"
+  [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+;; Float narrowing operations.
+
+(define_insn "aarch64_float_truncate_lo_v2sf"
+  [(set (match_operand:V2SF 0 "register_operand" "=w")
+      (float_truncate:V2SF
+	(match_operand:V2DF 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "fcvtn\\t%0.2s, %1.2d"
+  [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "simd_mode" "V2SF")]
+)
+
+(define_insn "aarch64_float_truncate_hi_v4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+    (vec_concat:V4SF
+      (match_operand:V2SF 1 "register_operand" "0")
+      (float_truncate:V2SF
+	(match_operand:V2DF 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "fcvtn2\\t%0.4s, %2.2d"
+  [(set_attr "simd_type" "simd_fcvtl")
+   (set_attr "simd_mode" "V4SF")]
+)
+
+(define_expand "vec_pack_trunc_v2df"
+  [(set (match_operand:V4SF 0 "register_operand")
+      (vec_concat:V4SF
+	(float_truncate:V2SF
+	    (match_operand:V2DF 1 "register_operand"))
+	(float_truncate:V2SF
+	    (match_operand:V2DF 2 "register_operand"))
+	  ))]
+  "TARGET_SIMD"
+  {
+    rtx tmp = gen_reg_rtx (V2SFmode);
+    emit_insn (gen_aarch64_float_truncate_lo_v2sf (tmp, operands[1]));
+    emit_insn (gen_aarch64_float_truncate_hi_v4sf (operands[0],
+						   tmp, operands[2]));
+    DONE;
+  }
+)
+
+(define_expand "vec_pack_trunc_df"
+  [(set (match_operand:V2SF 0 "register_operand")
+      (vec_concat:V2SF
+	(float_truncate:SF
+	    (match_operand:DF 1 "register_operand"))
+	(float_truncate:SF
+	    (match_operand:DF 2 "register_operand"))
+	  ))]
+  "TARGET_SIMD"
+  {
+    rtx tmp = gen_reg_rtx (V2SFmode);
+    emit_insn (gen_move_lo_quad_v2df (tmp, operands[1]));
+    emit_insn (gen_move_hi_quad_v2df (tmp, operands[2]));
+    emit_insn (gen_aarch64_float_truncate_lo_v2sf (operands[0], tmp));
+    DONE;
+  }
+)
+
 (define_insn "aarch64_vmls<mode>"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
        (minus:VDQF (match_operand:VDQF 1 "register_operand" "0")
