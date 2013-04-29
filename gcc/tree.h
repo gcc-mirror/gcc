@@ -452,10 +452,7 @@ enum omp_clause_code
   OMP_CLAUSE_CILK_ASSERT,
 
   /* Cilk Plus clause: vectorlength (constant-expression-list).  */
-  OMP_CLAUSE_CILK_VECTORLENGTH,
-
-  /* Cilk Plus clause: vectorlength (type-name).  */
-  OMP_CLAUSE_CILK_VECTORLENGTHFOR
+  OMP_CLAUSE_CILK_VECTORLENGTH
 };
 
 /* The definition of tree nodes fills the next several pages.  */
@@ -1872,12 +1869,6 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_CILK_VECTORLENGTH_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK \
 		      (NODE, OMP_CLAUSE_CILK_VECTORLENGTH), 0)
-
-/* In an OMP_SIMD_CLAUSE_CILK_VECTORLENGTHFOR, the type for the
-   vectorlengthfor clause.  */
-#define OMP_CLAUSE_CILK_VECTORLENGTHFOR_TYPE(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK \
-		      (NODE, OMP_CLAUSE_CILK_VECTORLENGTHFOR), 0)
 
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\

@@ -1493,7 +1493,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_CILK_ASSERT:
 	case OMP_CLAUSE_CILK_VECTORLENGTH:
-	case OMP_CLAUSE_CILK_VECTORLENGTHFOR:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1559,7 +1558,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_ALIGNED:
 	case OMP_CLAUSE_CILK_ASSERT:
 	case OMP_CLAUSE_CILK_VECTORLENGTH:
-	case OMP_CLAUSE_CILK_VECTORLENGTHFOR:
 	  break;
 
 	default:

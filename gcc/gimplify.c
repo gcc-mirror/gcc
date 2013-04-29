@@ -6339,7 +6339,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_CILK_ASSERT:
 	case OMP_CLAUSE_CILK_VECTORLENGTH:
-	case OMP_CLAUSE_CILK_VECTORLENGTHFOR:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -6570,7 +6569,6 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_CILK_ASSERT:
 	case OMP_CLAUSE_CILK_VECTORLENGTH:
-	case OMP_CLAUSE_CILK_VECTORLENGTHFOR:
 	  break;
 
 	default:

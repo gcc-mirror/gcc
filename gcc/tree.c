@@ -265,8 +265,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_SECTIONS  */
   0  /* OMP_CLAUSE_TASKGROUP  */
   , 0, /* OMP_CLAUSE_CILK_ASSERT  */
-  1, /* OMP_CLAUSE_CILK_VECTORLENGTH  */
-  1, /* OMP_CLAUSE_CILK_VECTORLENGTHFOR  */
+  1 /* OMP_CLAUSE_CILK_VECTORLENGTH  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -309,8 +308,7 @@ const char * const omp_clause_code_name[] =
   "sections",
   "taskgroup"
   , "cilk_assert",
-  "cilk_vectorlength",
-  "cilk_vectorlengthfor"
+  "cilk_vectorlength"
 };
 
 
@@ -10816,7 +10814,6 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_CILK_VECTORLENGTH:
-	case OMP_CLAUSE_CILK_VECTORLENGTHFOR:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
 

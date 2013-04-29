@@ -10745,12 +10745,8 @@ c_parser_cilk_clause_noassert (c_parser *parser ATTRIBUTE_UNUSED,
 static tree
 c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses)
 {
-  /* The icc manual says vectorlength and vectorlengthfor clauses
-     cannot coexist, but multiple vectorlength clauses are treated as
-     a union.  The 1.1 spec says nothing.  We will assume the icc
-     manual is correct.  */
-  check_no_duplicate_clause (clauses, OMP_CLAUSE_CILK_VECTORLENGTHFOR,
-			     "vectorlengthfor");
+  /* Multiple vectorlength clauses are allowed and treated as a
+     union, so we don't check for a duplicate clause.  */
 
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return clauses;
@@ -10783,46 +10779,6 @@ c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses)
       if (c_parser_next_token_is (parser, CPP_COMMA))
 	c_parser_consume_token (parser);
     }
-
-  return clauses;
-}
-
-/* Cilk Plus:
-   vectorlengthfor ( type-name ) */
-static tree
-c_parser_cilk_clause_vectorlengthfor (c_parser *parser, tree clauses)
-{
-  /* The icc manual says vectorlength and vectorlengthfor clauses
-     cannot coexist, but multiple vectorlength clauses are treated as
-     a union.  The 1.1 spec says nothing.  We will assume the icc
-     manual is correct.  */
-  check_no_duplicate_clause (clauses, OMP_CLAUSE_CILK_VECTORLENGTH,
-			     "vectorlength");
-
-  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
-    return clauses;
-
-  location_t loc = c_parser_peek_token (parser)->location;
-  tree type = NULL;
-  struct c_type_name *type_name = c_parser_type_name (parser);
-
-  /* FIXME: The specs are not clear whether typedef substitutions are
-     allowed.  Assume they are.  I have asked on the forum...  */
-
-  if (type_name)
-    type = groktypename (type_name, NULL, NULL);
-  if (type == error_mark_node)
-    type = NULL;
-
-  if (type != NULL)
-    {
-      tree u = build_omp_clause (loc, OMP_CLAUSE_CILK_VECTORLENGTHFOR);
-      OMP_CLAUSE_CILK_VECTORLENGTHFOR_TYPE (u) = type;
-      OMP_CLAUSE_CHAIN (u) = clauses;
-      clauses = u;
-    }
-
-  c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>");
 
   return clauses;
 }
@@ -10931,8 +10887,6 @@ c_parser_cilk_clause_name (c_parser *parser)
     result = PRAGMA_CILK_CLAUSE_ASSERT;
   else if (!strcmp (p, "vectorlength"))
     result = PRAGMA_CILK_CLAUSE_VECTORLENGTH;
-  else if (!strcmp (p, "vectorlengthfor"))
-    result = PRAGMA_CILK_CLAUSE_VECTORLENGTHFOR;
   else if (!strcmp (p, "linear"))
     result = PRAGMA_CILK_CLAUSE_LINEAR;
   else if (!strcmp (p, "private"))
@@ -10974,9 +10928,6 @@ c_parser_cilk_all_clauses (c_parser *parser)
 	  break;
 	case PRAGMA_CILK_CLAUSE_VECTORLENGTH:
 	  clauses = c_parser_cilk_clause_vectorlength (parser, clauses);
-	  break;
-	case PRAGMA_CILK_CLAUSE_VECTORLENGTHFOR:
-	  clauses = c_parser_cilk_clause_vectorlengthfor (parser, clauses);
 	  break;
 	case PRAGMA_CILK_CLAUSE_LINEAR:
 	  clauses = c_parser_cilk_clause_linear (parser, clauses);

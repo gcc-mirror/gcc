@@ -20,35 +20,7 @@ void foo()
   for (i=0; i < N; ++i)
     a[i] = b[i];
 
-#pragma simd vectorlength(4) vectorlengthfor(int) /* { dg-error "too many 'vectorlength'" } */
-  for (i=0; i < N; ++i)
-    a[i] = b[i];
-
-#pragma simd vectorlengthfor(int) vectorlengthfor(short int)
-  for (i=0; i < N; ++i)
-    a[i] = b[i];
-
-#pragma simd vectorlengthfor(tint)
-  for (i=0; i < N; ++i)
-    a[i] = b[i];
-
-#pragma simd vectorlengthfor(float)
-  for (i=0; i < N; ++i)
-    a[i] = b[i];
-
-#pragma simd vectorlengthfor(_Complex double)
-  for (i=0; i < N; ++i)
-    a[i] = b[i];
-
-#pragma simd vectorlengthfor(unsigned char)
-  for (i=0; i < N; ++i)
-    a[i] = b[i];
-
-#pragma simd vectorlengthfor(struct someclass) /* { dg-error "type must be" } */
-  for (i=0; i < N; ++i)
-    a[i] = b[i];
-
-#pragma simd vectorlengthfor(struct someclass *)
+#pragma simd vectorlength(4) vectorlength(8, 16)
   for (i=0; i < N; ++i)
     a[i] = b[i];
 }
