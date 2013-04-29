@@ -1257,6 +1257,29 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_expand "<optab><VDQF:mode><fcvt_target>2"
+  [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
+	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
+			       [(match_operand:VDQF 1 "register_operand")]
+			       UNSPEC_FRINTZ)))]
+  "TARGET_SIMD"
+  {})
+
+(define_expand "<fix_trunc_optab><VDQF:mode><fcvt_target>2"
+  [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
+	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
+			       [(match_operand:VDQF 1 "register_operand")]
+			       UNSPEC_FRINTZ)))]
+  "TARGET_SIMD"
+  {})
+
+(define_expand "ftrunc<VDQF:mode>2"
+  [(set (match_operand:VDQF 0 "register_operand")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand")]
+		      UNSPEC_FRINTZ))]
+  "TARGET_SIMD"
+  {})
+
 (define_insn "<optab><fcvt_target><VDQF:mode>2"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
 	(FLOATUORS:VDQF

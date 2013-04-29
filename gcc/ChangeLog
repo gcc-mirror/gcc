@@ -1,5 +1,15 @@
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd.md
+	(<optab><VDQF:mode><fcvt_target>2): New, maps to fix, fixuns.
+	(<fix_trunc_optab><VDQF:mode><fcvt_target>2): New, maps to
+	fix_trunc, fixuns_trunc.
+	(ftrunc<VDQF:mode>2): New.
+	* config/aarch64/iterators.md (optab): Add fix, fixuns.
+	(fix_trunc_optab): New.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_builtin_vectorized_function): Vectorize over ifloorf,
 	iceilf, lround, iroundf.
