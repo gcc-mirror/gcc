@@ -1,5 +1,19 @@
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def (vec_unpacks_hi_): New.
+	(float_truncate_hi_): Likewise.
+	(float_extend_lo_): Likewise.
+	(float_truncate_lo_): Likewise.
+	* config/aarch64/aarch64-simd.md (vec_unpacks_lo_v4sf): New.
+	(aarch64_float_extend_lo_v2df): Likewise.
+	(vec_unpacks_hi_v4sf): Likewise.
+	(aarch64_float_truncate_lo_v2sf): Likewise.
+	(aarch64_float_truncate_hi_v4sf): Likewise.
+	(vec_pack_trunc_v2df): Likewise.
+	(vec_pack_trunc_df): Likewise.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_fold_builtin): Fold float conversions.
 	* config/aarch64/aarch64-simd-builtins.def
