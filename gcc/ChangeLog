@@ -1,5 +1,11 @@
 2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd.md
+	(l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2): Rename to...
+	(l<fcvt_pattern><su_optab><VDQF:mode><fcvt_target>2): ... This.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/arm_neon.h (vrndq<a,m,n,p>_f<32, 64>): Rename to...
 	(vrnd<a,m,n,p>q_f<32, 64>): ...This, implement using builtin.
 	(vrnd<a,m,n,p>_f32): Implement using builtins.
