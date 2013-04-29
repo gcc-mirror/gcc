@@ -1,5 +1,11 @@
 2013-04-28  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/57114
+	* intrinsic.texi (RANK): Correct syntax description and
+	expected result.
+
+2013-04-28  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57093
 	* trans-types.c (gfc_get_element_type): Fix handling
 	of scalar coarrays of type character.
