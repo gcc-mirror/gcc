@@ -1,3 +1,8 @@
+2013-04-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (store_minmaxsi): Use only when
+	optimize_insn_for_size_p.
+
 2013-04-29  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/57108
