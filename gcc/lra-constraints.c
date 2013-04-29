@@ -2013,7 +2013,7 @@ process_alt_operands (int only_alternative)
 		 although it might takes the same number of
 		 reloads.  */
 	      if (no_regs_p && REG_P (op))
-		reject++;
+		reject += 2;
 
 #ifdef SECONDARY_MEMORY_NEEDED
 	      /* If reload requires moving value through secondary
@@ -2044,7 +2044,13 @@ process_alt_operands (int only_alternative)
 	     or non-important thing to be worth to do it.  */
 	  overall = losers * LRA_LOSER_COST_FACTOR + reject;
 	  if ((best_losers == 0 || losers != 0) && best_overall < overall)
-	    goto fail;
+            {
+              if (lra_dump_file != NULL)
+		fprintf (lra_dump_file,
+			 "          alt=%d,overall=%d,losers=%d -- reject\n",
+			 nalt, overall, losers);
+              goto fail;
+            }
 
 	  curr_alt[nop] = this_alternative;
 	  COPY_HARD_REG_SET (curr_alt_set[nop], this_alternative_set);
@@ -2139,7 +2145,10 @@ process_alt_operands (int only_alternative)
 	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++]
 		= last_conflict_j;
 	      losers++;
-	      overall += LRA_LOSER_COST_FACTOR;
+	      /* Early clobber was already reflected in REJECT. */
+	      lra_assert (reject > 0);
+	      reject--;
+	      overall += LRA_LOSER_COST_FACTOR - 1;
 	    }
 	  else
 	    {
@@ -2163,13 +2172,21 @@ process_alt_operands (int only_alternative)
 		}
 	      curr_alt_win[i] = curr_alt_match_win[i] = false;
 	      losers++;
-	      overall += LRA_LOSER_COST_FACTOR;
+	      /* Early clobber was already reflected in REJECT. */
+	      lra_assert (reject > 0);
+	      reject--;
+	      overall += LRA_LOSER_COST_FACTOR - 1;
 	    }
 	}
       small_class_operands_num = 0;
       for (nop = 0; nop < n_operands; nop++)
 	small_class_operands_num
 	  += SMALL_REGISTER_CLASS_P (curr_alt[nop]) ? 1 : 0;
+
+      if (lra_dump_file != NULL)
+	fprintf (lra_dump_file, "          alt=%d,overall=%d,losers=%d,"
+		 "small_class_ops=%d,rld_nregs=%d\n",
+		 nalt, overall, losers, small_class_operands_num, reload_nregs);
 
       /* If this alternative can be made to work by reloading, and it
 	 needs less reloading than the others checked so far, record
@@ -3136,7 +3153,15 @@ curr_insn_transform (void)
 		 spilled.  Spilled scratch pseudos are transformed
 		 back to scratches at the LRA end.  */
 	      && lra_former_scratch_operand_p (curr_insn, i))
-	    change_class (REGNO (op), NO_REGS, "      Change", true);
+	    {
+	      int regno = REGNO (op);
+	      change_class (regno, NO_REGS, "      Change", true);
+	      if (lra_get_regno_hard_regno (regno) >= 0)
+		/* We don't have to mark all insn affected by the
+		   spilled pseudo as there is only one such insn, the
+		   current one.  */
+		reg_renumber[regno] = -1;
+	    }
 	  continue;
 	}
 
