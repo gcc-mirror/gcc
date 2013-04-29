@@ -809,26 +809,28 @@
 )
 
 (define_insn "*movsi_aarch64"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,m, *w, r,*w")
-	(match_operand:SI 1 "aarch64_mov_operand"     " r,M,m,rZ,rZ,*w,*w"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,*w,m,  m,*w, r,*w")
+	(match_operand:SI 1 "aarch64_mov_operand"  " r,M,m, m,rZ,*w,rZ,*w,*w"))]
   "(register_operand (operands[0], SImode)
     || aarch64_reg_or_zero (operands[1], SImode))"
   "@
    mov\\t%w0, %w1
    mov\\t%w0, %1
    ldr\\t%w0, %1
+   ldr\\t%s0, %1
    str\\t%w1, %0
+   str\\t%s1, %0
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1"
-  [(set_attr "v8type" "move,alu,load1,store1,fmov,fmov,fmov")
+  [(set_attr "v8type" "move,alu,load1,load1,store1,store1,fmov,fmov,fmov")
    (set_attr "mode" "SI")
-   (set_attr "fp" "*,*,*,*,yes,yes,yes")]
+   (set_attr "fp" "*,*,*,*,*,*,yes,yes,yes")]
 )
 
 (define_insn "*movdi_aarch64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,m, r,  r,  *w, r,*w,w")
-	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,m,rZ,Usa,Ush,rZ,*w,*w,Dd"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,*w,m,  m,r,  r,  *w, r,*w,w")
+	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,m, m,rZ,*w,Usa,Ush,rZ,*w,*w,Dd"))]
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   "@
@@ -837,16 +839,18 @@
    mov\\t%x0, %1
    mov\\t%x0, %1
    ldr\\t%x0, %1
+   ldr\\t%d0, %1
    str\\t%x1, %0
+   str\\t%d1, %0
    adr\\t%x0, %a1
    adrp\\t%x0, %A1
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
    movi\\t%d0, %1"
-  [(set_attr "v8type" "move,move,move,alu,load1,store1,adr,adr,fmov,fmov,fmov,fmov")
+  [(set_attr "v8type" "move,move,move,alu,load1,load1,store1,store1,adr,adr,fmov,fmov,fmov,fmov")
    (set_attr "mode" "DI")
-   (set_attr "fp" "*,*,*,*,*,*,*,*,yes,yes,yes,yes")]
+   (set_attr "fp" "*,*,*,*,*,*,*,*,*,*,yes,yes,yes,yes")]
 )
 
 (define_insn "insv_imm<mode>"

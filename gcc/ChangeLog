@@ -1,5 +1,11 @@
 2013-04-29  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.md (movsi_aarch64): Support LDR/STR
+	from/to S register.
+	(movdi_aarch64): Support LDR/STR from/to D register.
+
+2013-04-29  Ian Bolton  <ian.bolton@arm.com>
+
 	* common/config/aarch64/aarch64-common.c: Enable REE pass at O2
 	or higher by default.
 
