@@ -408,13 +408,13 @@ remove_path (edge e)
   return true;
 }
 
-/* Creates place for a new LOOP in loops structure.  */
+/* Creates place for a new LOOP in loops structure of FN.  */
 
 void
-place_new_loop (struct loop *loop)
+place_new_loop (struct function *fn, struct loop *loop)
 {
-  loop->num = number_of_loops ();
-  vec_safe_push (current_loops->larray, loop);
+  loop->num = number_of_loops (fn);
+  vec_safe_push (loops_for_fn (fn)->larray, loop);
 }
 
 /* Given LOOP structure with filled header and latch, find the body of the
@@ -431,7 +431,7 @@ add_loop (struct loop *loop, struct loop *outer)
   edge_iterator ei;
 
   /* Add it to loop structure.  */
-  place_new_loop (loop);
+  place_new_loop (cfun, loop);
   flow_loop_tree_node_add (outer, loop);
 
   /* Find its nodes.  */
@@ -1010,7 +1010,7 @@ duplicate_loop (struct loop *loop, struct loop *target)
 {
   struct loop *cloop;
   cloop = alloc_loop ();
-  place_new_loop (cloop);
+  place_new_loop (cfun, cloop);
  
   copy_loop_info (loop, cloop);
 

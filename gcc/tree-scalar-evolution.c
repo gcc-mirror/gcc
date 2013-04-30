@@ -422,7 +422,7 @@ chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
 
       def = SSA_NAME_DEF_STMT (chrec);
       def_loop = loop_containing_stmt (def);
-      loop = get_loop (loop_nb);
+      loop = get_loop (cfun, loop_nb);
 
       if (def_loop == NULL)
 	return false;
@@ -629,7 +629,7 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 		    gimple at_stmt)
 {
   tree type, left, right;
-  struct loop *loop = get_loop (loop_nb), *chloop;
+  struct loop *loop = get_loop (cfun, loop_nb), *chloop;
 
   switch (TREE_CODE (chrec_before))
     {
@@ -3258,7 +3258,7 @@ scev_const_prop (void)
   loop_iterator li;
   gimple_stmt_iterator psi;
 
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   FOR_EACH_BB (bb)

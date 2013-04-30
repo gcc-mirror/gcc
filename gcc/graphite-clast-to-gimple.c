@@ -1094,7 +1094,7 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
   if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
     return next_e;
 
-  nb_loops = number_of_loops ();
+  nb_loops = number_of_loops (cfun);
   iv_map.create (nb_loops);
   for (i = 0; i < nb_loops; i++)
     iv_map.quick_push (NULL_TREE);

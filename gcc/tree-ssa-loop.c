@@ -74,7 +74,7 @@ tree_ssa_loop_init (void)
      regions into reducible.  */
   scev_initialize ();
 
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   return 0;
@@ -105,7 +105,7 @@ struct gimple_opt_pass pass_tree_loop_init =
 static unsigned int
 tree_ssa_loop_im (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   return tree_ssa_lim ();
@@ -142,7 +142,7 @@ struct gimple_opt_pass pass_lim =
 static unsigned int
 tree_ssa_loop_unswitch (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   return tree_ssa_unswitch_loops ();
@@ -216,7 +216,7 @@ struct gimple_opt_pass pass_predcom =
 static unsigned int
 tree_vectorize (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   return vectorize_loops ();
@@ -323,7 +323,7 @@ struct gimple_opt_pass pass_graphite_transforms =
 static unsigned int
 check_data_deps (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   tree_check_data_deps ();
@@ -361,7 +361,7 @@ struct gimple_opt_pass pass_check_data_deps =
 static unsigned int
 tree_ssa_loop_ivcanon (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   return canonicalize_induction_variables ();
@@ -428,7 +428,7 @@ struct gimple_opt_pass pass_scev_cprop =
 static unsigned int
 tree_ssa_loop_bounds (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   estimate_numbers_of_iterations ();
@@ -461,7 +461,7 @@ struct gimple_opt_pass pass_record_bounds =
 static unsigned int
 tree_complete_unroll (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   return tree_unroll_loops_completely (flag_unroll_loops
@@ -504,7 +504,7 @@ tree_complete_unroll_inner (void)
 
   loop_optimizer_init (LOOPS_NORMAL
 		       | LOOPS_HAVE_RECORDED_EXITS);
-  if (number_of_loops () > 1)
+  if (number_of_loops (cfun) > 1)
     {
       scev_initialize ();
       ret = tree_unroll_loops_completely (optimize >= 3, false);
@@ -553,7 +553,7 @@ gate_tree_parallelize_loops (void)
 static unsigned
 tree_parallelize_loops (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   if (parallelize_loops ())
@@ -586,7 +586,7 @@ struct gimple_opt_pass pass_parallelize_loops =
 static unsigned int
 tree_ssa_loop_prefetch (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   return tree_ssa_prefetch_arrays ();
@@ -623,7 +623,7 @@ struct gimple_opt_pass pass_loop_prefetch =
 static unsigned int
 tree_ssa_loop_ivopts (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   tree_ssa_iv_optimize ();

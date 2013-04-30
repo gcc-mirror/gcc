@@ -234,7 +234,7 @@ void rescan_loop_exit (edge, bool, bool);
 /* Loop data structure manipulation/querying.  */
 extern void flow_loop_tree_node_add (struct loop *, struct loop *);
 extern void flow_loop_tree_node_remove (struct loop *);
-extern void place_new_loop (struct loop *);
+extern void place_new_loop (struct function *, struct loop *);
 extern void add_loop (struct loop *, struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const_basic_block);
@@ -436,12 +436,12 @@ simple_loop_desc (struct loop *loop)
 
 /* Accessors for the loop structures.  */
 
-/* Returns the loop with index NUM from current_loops.  */
+/* Returns the loop with index NUM from FNs loop tree.  */
 
 static inline struct loop *
-get_loop (unsigned num)
+get_loop (struct function *fn, unsigned num)
 {
-  return (*current_loops->larray)[num];
+  return (*loops_for_fn (fn)->larray)[num];
 }
 
 /* Returns the number of superloops of LOOP.  */
@@ -482,27 +482,29 @@ loop_has_exit_edges (const struct loop *loop)
   return loop->exits->next->e != NULL;
 }
 
-/* Returns the list of loops in current_loops.  */
+/* Returns the list of loops in FN.  */
 
-static inline vec<loop_p, va_gc> *
-get_loops (void)
+inline vec<loop_p, va_gc> *
+get_loops (struct function *fn)
 {
-  if (!current_loops)
+  struct loops *loops = loops_for_fn (fn);
+  if (!loops)
     return NULL;
 
-  return current_loops->larray;
+  return loops->larray;
 }
 
-/* Returns the number of loops in current_loops (including the removed
+/* Returns the number of loops in FN (including the removed
    ones and the fake loop that forms the root of the loop tree).  */
 
 static inline unsigned
-number_of_loops (void)
+number_of_loops (struct function *fn)
 {
-  if (!current_loops)
+  struct loops *loops = loops_for_fn (fn);
+  if (!fn)
     return 0;
 
-  return vec_safe_length (current_loops->larray);
+  return vec_safe_length (loops->larray);
 }
 
 /* Returns true if state of the loops satisfies all properties
@@ -563,7 +565,7 @@ fel_next (loop_iterator *li, loop_p *loop)
   while (li->to_visit.iterate (li->idx, &anum))
     {
       li->idx++;
-      *loop = get_loop (anum);
+      *loop = get_loop (cfun, anum);
       if (*loop)
 	return;
     }
@@ -587,7 +589,7 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
       return;
     }
 
-  li->to_visit.create (number_of_loops ());
+  li->to_visit.create (number_of_loops (cfun));
   mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
 
   if (flags & LI_ONLY_INNERMOST)
