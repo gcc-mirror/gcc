@@ -1,3 +1,8 @@
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57107
+	* tree-eh.c (sink_clobbers): Preserve virtual SSA form.
+
 2013-04-30  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/56957

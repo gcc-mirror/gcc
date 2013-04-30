@@ -3342,7 +3342,24 @@ sink_clobbers (basic_block bb)
   if (!any_clobbers)
     return 0;
 
-  succbb = single_succ (bb);
+  edge succe = single_succ_edge (bb);
+  succbb = succe->dest;
+
+  /* See if there is a virtual PHI node to take an updated virtual
+     operand from.  */
+  gimple vphi = NULL;
+  tree vuse = NULL_TREE;
+  for (gsi = gsi_start_phis (succbb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      tree res = gimple_phi_result (gsi_stmt (gsi));
+      if (virtual_operand_p (res))
+	{
+	  vphi = gsi_stmt (gsi);
+	  vuse = res;
+	  break;
+	}
+    }
+
   dgsi = gsi_after_labels (succbb);
   gsi = gsi_last_bb (bb);
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
@@ -3353,7 +3370,6 @@ sink_clobbers (basic_block bb)
 	continue;
       if (gimple_code (stmt) == GIMPLE_LABEL)
 	break;
-      unlink_stmt_vdef (stmt);
       lhs = gimple_assign_lhs (stmt);
       /* Unfortunately we don't have dominance info updated at this
 	 point, so checking if
@@ -3365,21 +3381,33 @@ sink_clobbers (basic_block bb)
 	  && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (lhs, 0)))
 	{
+	  unlink_stmt_vdef (stmt);
 	  gsi_remove (&gsi, true);
 	  release_defs (stmt);
 	  continue;
 	}
+
+      /* As we do not change stmt order when sinking across a
+         forwarder edge we can keep virtual operands in place.  */
       gsi_remove (&gsi, false);
-      /* Trigger the operand scanner to cause renaming for virtual
-         operands for this statement.
-	 ???  Given the simple structure of this code manually
-	 figuring out the reaching definition should not be too hard.  */
-      if (gimple_vuse (stmt))
-	gimple_set_vuse (stmt, NULL_TREE);
-      gsi_insert_before (&dgsi, stmt, GSI_SAME_STMT);
+      gsi_insert_before (&dgsi, stmt, GSI_NEW_STMT);
+
+      /* But adjust virtual operands if we sunk across a PHI node.  */
+      if (vuse)
+	{
+	  gimple use_stmt;
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vuse)
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	      SET_USE (use_p, gimple_vdef (stmt));
+	  /* Adjust the incoming virtual operand.  */
+	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe), gimple_vuse (stmt));
+	  SET_USE (gimple_vuse_op (stmt), vuse);
+	}
     }
 
-  return TODO_update_ssa_only_virtuals;
+  return 0;
 }
 
 /* At the end of inlining, we can lower EH_DISPATCH.  Return true when 
