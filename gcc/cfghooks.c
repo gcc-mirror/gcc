@@ -662,7 +662,9 @@ split_edge (edge e)
       loop = find_common_loop (src->loop_father, dest->loop_father);
       add_bb_to_loop (ret, loop);
 
-      if (loop->latch == src)
+      /* If we split the latch edge of loop adjust the latch block.  */
+      if (loop->latch == src
+	  && loop->header == dest)
 	loop->latch = ret;
     }
 
