@@ -64,7 +64,7 @@ instantiate_parameters (struct loop *loop, tree chrec)
 static inline struct loop *
 get_chrec_loop (const_tree chrec)
 {
-  return get_loop (CHREC_VARIABLE (chrec));
+  return get_loop (cfun, CHREC_VARIABLE (chrec));
 }
 
 #endif  /* GCC_TREE_SCALAR_EVOLUTION_H  */

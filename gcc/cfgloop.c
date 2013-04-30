@@ -160,7 +160,7 @@ flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *,
   if (!current_loops || ! file)
     return;
 
-  fprintf (file, ";; %d loops found\n", number_of_loops ());
+  fprintf (file, ";; %d loops found\n", number_of_loops (cfun));
 
   FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
     {
@@ -1077,7 +1077,7 @@ record_loop_exits (void)
   loops_state_set (LOOPS_HAVE_RECORDED_EXITS);
 
   gcc_assert (current_loops->exits == NULL);
-  current_loops->exits = htab_create_ggc (2 * number_of_loops (),
+  current_loops->exits = htab_create_ggc (2 * number_of_loops (cfun),
 					  loop_exit_hash, loop_exit_eq,
 					  loop_exit_free);
 
@@ -1324,7 +1324,7 @@ verify_loop_structure (void)
   struct loop *loop;
   int err = 0;
   edge e;
-  unsigned num = number_of_loops ();
+  unsigned num = number_of_loops (cfun);
   loop_iterator li;
   struct loop_exit *exit, *mexit;
   bool dom_available = dom_info_available_p (CDI_DOMINATORS);

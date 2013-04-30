@@ -1593,7 +1593,7 @@ analyze_memory_references (void)
   /* Initialize bb_loop_postorder with a mapping from loop->num to
      its postorder index.  */
   i = 0;
-  bb_loop_postorder = XNEWVEC (unsigned, number_of_loops ());
+  bb_loop_postorder = XNEWVEC (unsigned, number_of_loops (cfun));
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     bb_loop_postorder[loop->num] = i++;
   /* Collect all basic-blocks in loops and sort them after their
@@ -2563,14 +2563,14 @@ tree_ssa_lim_initialize (void)
   memory_accesses.refs_list.quick_push
     (mem_ref_alloc (error_mark_node, 0, UNANALYZABLE_MEM_ID));
 
-  memory_accesses.refs_in_loop.create (number_of_loops ());
-  memory_accesses.refs_in_loop.quick_grow (number_of_loops ());
-  memory_accesses.refs_stored_in_loop.create (number_of_loops ());
-  memory_accesses.refs_stored_in_loop.quick_grow (number_of_loops ());
-  memory_accesses.all_refs_stored_in_loop.create (number_of_loops ());
-  memory_accesses.all_refs_stored_in_loop.quick_grow (number_of_loops ());
+  memory_accesses.refs_in_loop.create (number_of_loops (cfun));
+  memory_accesses.refs_in_loop.quick_grow (number_of_loops (cfun));
+  memory_accesses.refs_stored_in_loop.create (number_of_loops (cfun));
+  memory_accesses.refs_stored_in_loop.quick_grow (number_of_loops (cfun));
+  memory_accesses.all_refs_stored_in_loop.create (number_of_loops (cfun));
+  memory_accesses.all_refs_stored_in_loop.quick_grow (number_of_loops (cfun));
 
-  for (i = 0; i < number_of_loops (); i++)
+  for (i = 0; i < number_of_loops (cfun); i++)
     {
       bitmap_initialize (&memory_accesses.refs_in_loop[i],
 			 &lim_bitmap_obstack);

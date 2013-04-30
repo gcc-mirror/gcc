@@ -664,12 +664,12 @@ output_cfg (struct output_block *ob, struct function *fn)
   gcc_assert (cfun == fn);
 
   /* Output the number of loops.  */
-  streamer_write_uhwi (ob, number_of_loops ());
+  streamer_write_uhwi (ob, number_of_loops (fn));
 
   /* Output each loop, skipping the tree root which has number zero.  */
-  for (unsigned i = 1; i < number_of_loops (); ++i)
+  for (unsigned i = 1; i < number_of_loops (fn); ++i)
     {
-      struct loop *loop = get_loop (i);
+      struct loop *loop = get_loop (fn, i);
 
       /* Write the index of the loop header.  That's enough to rebuild
          the loop tree on the reader side.  Stream -1 for an unused

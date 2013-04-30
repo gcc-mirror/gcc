@@ -1180,7 +1180,7 @@ get_loop_copy (struct loop *loop)
   key.index1 = loop->num;
   entry = loop_copy.find (&key);
   if (entry)
-    return get_loop (entry->index2);
+    return get_loop (cfun, entry->index2);
   else
     return NULL;
 }

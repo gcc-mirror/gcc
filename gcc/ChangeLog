@@ -1,3 +1,86 @@
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
+	* function.h (loops_for_fn): New inline function.
+	(set_loops_for_fn): Likewise.
+	* cfgloop.h (place_new_loop): Add struct function parameter.
+	(get_loop): Likewise.
+	(get_loops): Likewise.
+	(number_of_loops): Likewise.
+	(fel_next): Adjust.
+	(fel_init): Likewise.
+	* cfg.c (get_loop_copy): Adjust.
+	* cfgloop.c (flow_loops_dump): Likewise.
+	(record_loop_exits): Likewise.
+	(verify_loop_structure): Likewise.
+	* cfgloopanal.c (mark_irreducible_loops): Likewise.
+	(estimate_reg_pressure_cost): Likewise.
+	(mark_loop_exit_edges): Likewise.
+	* cfgloopmanip.c (place_new_loop): Likewise.
+	(add_loop): Likewise.
+	(duplicate_loop): Likewise.
+	* graph.c (draw_cfg_nodes): Likewise.
+	* graphite-clast-to-gimple.c (translate_clast_user): Likewise.
+	* graphite-sese-to-poly.c (build_scop_scattering): Likewise.
+	(extract_affine_chrec): Likewise.
+	(build_scop_iteration_domain): Likewise.
+	* graphite.c (graphite_initialize): Likewise.
+	* ira-build.c (create_loop_tree_nodes): Likewise.
+	(more_one_region_p): Likewise.
+	(rebuild_regno_allocno_maps): Likewise.
+	(mark_loops_for_removal): Likewise.
+	(mark_all_loops_for_removal): Likewise.
+	(remove_unnecessary_regions): Likewise.
+	(ira_build): Likewise.
+	* ira-emit.c (setup_entered_from_non_parent_p): Likewise.
+	* loop-init.c (fix_loop_structure): Likewise.
+	(gate_rtl_move_loop_invariants): Likewise.
+	(gate_rtl_unswitch): Likewise.
+	(gate_rtl_unroll_and_peel_loops): Likewise.
+	(rtl_doloop): Likewise.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise.
+	* predict.c (tree_estimate_probability): Likewise.
+	(tree_estimate_probability_driver): Likewise.
+	(estimate_loops): Likewise.
+	* tree-cfg.c (fixup_loop_arrays_after_move): Likewise.
+	(move_sese_region_to_fn): Likewise.
+	(debug_loop_num): Likewise.
+	* tree-chrec.c (chrec_evaluate): Likewise.
+	(hide_evolution_in_other_loops_than_loop): Likewise.
+	(chrec_component_in_loop_num): Likewise.
+	(reset_evolution_in_loop): Likewise.
+	(evolution_function_is_invariant_rec_p): Likewise.
+	* tree-if-conv.c (main_tree_if_conversion): Likewise.
+	* tree-inline.c (copy_loops): Likewise.
+	(copy_cfg_body): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-loop-distribution.c (rdg_flag_loop_exits): Likewise.
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
+	Likewise.
+	(add_to_evolution_1): Likewise.
+	(scev_const_prop): Likewise.
+	* tree-scalar-evolution.h (get_chrec_loop): Likewise.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Likewise.
+	* tree-ssa-loop-im.c (analyze_memory_references): Likewise.
+	(tree_ssa_lim_initialize): Likewise.
+	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa): Likewise.
+	(verify_loop_closed_ssa): Likewise.
+	* tree-ssa-loop.c  (tree_ssa_loop_init): Likewise.
+	(tree_ssa_loop_im): Likewise.
+	(tree_ssa_loop_unswitch): Likewise.
+	(tree_vectorize): Likewise.
+	(check_data_deps): Likewise.
+	(tree_ssa_loop_ivcanon): Likewise.
+	(tree_ssa_loop_bounds): Likewise.
+	(tree_complete_unroll): Likewise.
+	(tree_complete_unroll_inner): Likewise.
+	(tree_parallelize_loops): Likewise.
+	(tree_ssa_loop_prefetch): Likewise.
+	(tree_ssa_loop_ivopts): Likewise.
+	* tree-ssa.c (execute_update_addresses_taken): Liekwise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+
 2013-04-29  Mike Frysinger  <vapier@gentoo.org>
 
 	* config/arm/bpabi.h (EABI_LINK_SPEC): Define.

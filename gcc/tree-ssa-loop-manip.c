@@ -493,7 +493,7 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
   bitmap names_to_rename;
 
   loops_state_set (LOOP_CLOSED_SSA);
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return;
 
   /* If the pass has caused the SSA form to be out-of-date, update it
@@ -516,7 +516,7 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
     {
       /* An array of bitmaps where LOOP_EXITS[I] is the set of basic blocks
 	 that are the destination of an edge exiting loop number I.  */
-      bitmap *loop_exits = XNEWVEC (bitmap, number_of_loops ());
+      bitmap *loop_exits = XNEWVEC (bitmap, number_of_loops (cfun));
       get_loops_exits (loop_exits);
 
       /* Add the PHI nodes on exits of the loops for the names we need to
@@ -578,7 +578,7 @@ verify_loop_closed_ssa (bool verify_ssa_p)
   edge e;
   edge_iterator ei;
 
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return;
 
   if (verify_ssa_p)

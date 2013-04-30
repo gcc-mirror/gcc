@@ -774,7 +774,7 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
   conds.create (3);
 
   EXECUTE_IF_SET_IN_BITMAP (loops, 0, i, bi)
-    collect_condition_stmts (get_loop (i), &conds);
+    collect_condition_stmts (get_loop (cfun, i), &conds);
 
   while (!conds.is_empty ())
     {
@@ -787,7 +787,7 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
 
       EXECUTE_IF_SET_IN_BITMAP (new_loops, 0, i, bi)
 	if (bitmap_set_bit (loops, i))
-	  collect_condition_stmts (get_loop (i), &conds);
+	  collect_condition_stmts (get_loop (cfun, i), &conds);
 
       BITMAP_FREE (new_loops);
     }

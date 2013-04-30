@@ -258,10 +258,8 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
 static void
 draw_cfg_nodes (pretty_printer *pp, struct function *fun)
 {
-  /* ??? This x_current_loops should be enapsulated.  */
-  if (fun->x_current_loops)
-    draw_cfg_nodes_for_loop (pp, fun->funcdef_no,
-			     fun->x_current_loops->tree_root);
+  if (loops_for_fn (fun))
+    draw_cfg_nodes_for_loop (pp, fun->funcdef_no, get_loop (fun, 0));
   else
     draw_cfg_nodes_no_loops (pp, fun);
 }

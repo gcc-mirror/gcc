@@ -87,7 +87,7 @@ vectorize_loops (void)
   loop_iterator li;
   struct loop *loop;
 
-  vect_loops_num = number_of_loops ();
+  vect_loops_num = number_of_loops (cfun);
 
   /* Bail out if there are no loops.  */
   if (vect_loops_num <= 1)
@@ -139,7 +139,7 @@ vectorize_loops (void)
     {
       loop_vec_info loop_vinfo;
 
-      loop = get_loop (i);
+      loop = get_loop (cfun, i);
       if (!loop)
 	continue;
       loop_vinfo = (loop_vec_info) loop->aux;

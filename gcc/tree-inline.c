@@ -2223,7 +2223,7 @@ copy_loops (bitmap blocks_to_copy,
 	  copy_loop_info (src_loop, dest_loop);
 
 	  /* Finally place it into the loop array and the loop tree.  */
-	  place_new_loop (dest_loop);
+	  place_new_loop (cfun, dest_loop);
 	  flow_loop_tree_node_add (dest_parent, dest_loop);
 
 	  /* Recurse.  */
@@ -2332,11 +2332,11 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
     }
 
   /* Duplicate the loop tree, if available and wanted.  */
-  if (id->src_cfun->x_current_loops != NULL
+  if (loops_for_fn (src_cfun) != NULL
       && current_loops != NULL)
     {
       copy_loops (blocks_to_copy, entry_block_map->loop_father,
-		  id->src_cfun->x_current_loops->tree_root);
+		  get_loop (src_cfun, 0));
       /* Defer to cfgcleanup to update loop-father fields of basic-blocks.  */
       loops_state_set (LOOPS_NEED_FIXUP);
     }
@@ -5199,7 +5199,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
     }
 
   /* Set up the destination functions loop tree.  */
-  if (DECL_STRUCT_FUNCTION (old_decl)->x_current_loops)
+  if (loops_for_fn (DECL_STRUCT_FUNCTION (old_decl)) != NULL)
     {
       cfun->curr_properties &= ~PROP_loops;
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);

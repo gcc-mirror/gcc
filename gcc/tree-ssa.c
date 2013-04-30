@@ -2117,7 +2117,8 @@ execute_update_addresses_taken (void)
 	  }
 
       /* Update SSA form here, we are called as non-pass as well.  */
-      if (number_of_loops () > 1 && loops_state_satisfies_p (LOOP_CLOSED_SSA))
+      if (number_of_loops (cfun) > 1
+	  && loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
       else
 	update_ssa (TODO_update_ssa);
