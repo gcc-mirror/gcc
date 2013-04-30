@@ -6051,14 +6051,13 @@ move_op_orig_expr_found (insn_t insn, expr_t expr,
                          cmpd_local_params_p lparams ATTRIBUTE_UNUSED,
                          void *static_params)
 {
-  bool only_disconnect, insn_emitted;
+  bool only_disconnect;
   moveop_static_params_p params = (moveop_static_params_p) static_params;
 
   copy_expr_onside (params->c_expr, INSN_EXPR (insn));
   track_scheduled_insns_and_blocks (insn);
-  insn_emitted = handle_emitting_transformations (insn, expr, params);
-  only_disconnect = (params->uid == INSN_UID (insn)
-                     && ! insn_emitted  && ! EXPR_WAS_CHANGED (expr));
+  handle_emitting_transformations (insn, expr, params);
+  only_disconnect = params->uid == INSN_UID (insn);
 
   /* Mark that we've disconnected an insn.  */
   if (only_disconnect)
