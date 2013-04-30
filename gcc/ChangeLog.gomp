@@ -1,3 +1,14 @@
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (check_omp_nesting_restrictions): Diagnose
+	OpenMP constructs nested inside simd region.  Don't treat
+	#pragma omp simd as work-sharing region.  Disallow work-sharing
+	constructs inside of critical region.  Complain if ordered
+	region is nested inside of parallel region without loop
+	region in between.
+	(scan_omp_1_stmt): Call check_omp_nesting_restrictions even
+	for GOMP_{cancel{,lation_point},taskyield,taskwait} calls.
+
 2013-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (omp-low.o): Depend on $(TARGET_H).
