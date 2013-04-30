@@ -1,3 +1,8 @@
+2013-04-30  Brooks Moses  <bmoses@google.com>
+
+	* MAINTAINERS: Update my email; move myself from Fortran
+	reviewer to Write After Approval.
+
 2013-04-16  Andreas Schwab  <schwab@suse.de>
 
 	* configure.ac (aarch64-*-*): Don't disable java.
