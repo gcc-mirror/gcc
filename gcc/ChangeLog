@@ -1,5 +1,11 @@
 2013-04-30  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/57122
+	* cfghooks.c (split_edge): Properly check for the loop
+	latch edge.
+
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/57107
 	* tree-eh.c (sink_clobbers): Preserve virtual SSA form.
 
