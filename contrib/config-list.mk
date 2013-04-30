@@ -11,7 +11,8 @@ TEST=all-gcc
 # nohup nice make -j25 -l36 -f ../gcc/contrib/config-list.mk > make.out 2>&1 &
 #
 # v850e1-elf is rejected by config.sub
-LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
+LIST = aarch64-elf aarch64-linux-gnu \
+  alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
   arm-wrs-vxworks arm-netbsdelf \
   arm-linux-androideabi arm-uclinux_eabi arm-eabi \

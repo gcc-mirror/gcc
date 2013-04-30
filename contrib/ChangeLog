@@ -1,3 +1,7 @@
+2013-04-22  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config-list.mk (LIST): Add aarch64-elf and aarch64-linux-gnu.
+
 2013-04-18  Diego Novillo  <dnovillo@google.com>
 
 	* validate_failures.py: Fix typo.
