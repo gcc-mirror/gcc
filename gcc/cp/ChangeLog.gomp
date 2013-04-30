@@ -1,3 +1,12 @@
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.c (tsubst_expr): Pass OMP_ATOMIC_SEQ_CST to finish_omp_atomic.
+	* semantics.c (finish_omp_atomic): Add seq_cst argument, pass
+	it through to c_finish_omp_atomic or store into OMP_ATOMIC_SEQ_CST.
+	* cp-tree.h (finish_omp_atomic): Adjust prototype.
+	* parser.c (cp_parser_omp_atomic): Parse seq_cst clause, pass
+	true if it is present to finish_omp_atomic.
+
 2013-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_name): Add missing break after

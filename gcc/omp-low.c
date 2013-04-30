@@ -5472,7 +5472,10 @@ expand_omp_atomic_load (basic_block load_bb, tree addr,
   itype = TREE_TYPE (TREE_TYPE (decl));
 
   call = build_call_expr_loc (loc, decl, 2, addr,
-			      build_int_cst (NULL, MEMMODEL_RELAXED));
+			      build_int_cst (NULL,
+					     gimple_omp_atomic_seq_cst_p (stmt)
+					     ? MEMMODEL_SEQ_CST
+					     : MEMMODEL_RELAXED));
   if (!useless_type_conversion_p (type, itype))
     call = fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, call);
   call = build2_loc (loc, MODIFY_EXPR, void_type_node, loaded_val, call);
@@ -5544,7 +5547,10 @@ expand_omp_atomic_store (basic_block load_bb, tree addr,
   if (!useless_type_conversion_p (itype, type))
     stored_val = fold_build1_loc (loc, VIEW_CONVERT_EXPR, itype, stored_val);
   call = build_call_expr_loc (loc, decl, 3, addr, stored_val,
-			      build_int_cst (NULL, MEMMODEL_RELAXED));
+			      build_int_cst (NULL,
+					     gimple_omp_atomic_seq_cst_p (stmt)
+					     ? MEMMODEL_SEQ_CST
+					     : MEMMODEL_RELAXED));
   if (exchange)
     {
       if (!useless_type_conversion_p (type, itype))
@@ -5585,6 +5591,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   enum tree_code code;
   bool need_old, need_new;
   enum machine_mode imode;
+  bool seq_cst;
 
   /* We expect to find the following sequences:
 
@@ -5610,6 +5617,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
     return false;
   need_new = gimple_omp_atomic_need_value_p (gsi_stmt (gsi));
   need_old = gimple_omp_atomic_need_value_p (last_stmt (load_bb));
+  seq_cst = gimple_omp_atomic_seq_cst_p (last_stmt (load_bb));
   gcc_checking_assert (!need_old || !need_new);
 
   if (!operand_equal_p (gimple_assign_lhs (stmt), stored_val, 0))
@@ -5676,7 +5684,9 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
      use the RELAXED memory model.  */
   call = build_call_expr_loc (loc, decl, 3, addr,
 			      fold_convert_loc (loc, itype, rhs),
-			      build_int_cst (NULL, MEMMODEL_RELAXED));
+			      build_int_cst (NULL,
+					     seq_cst ? MEMMODEL_SEQ_CST
+						     : MEMMODEL_RELAXED));
 
   if (need_old || need_new)
     {

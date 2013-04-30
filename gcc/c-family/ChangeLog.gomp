@@ -1,5 +1,9 @@
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-omp.c (c_finish_omp_atomic): Add seq_cst argument, store it
+	into OMP_ATOMIC_SEQ_CST bit.
+	* c-common.h (c_finish_omp_atomic): Adjust prototype.
+
 	* c-pragma.c (omp_pragmas): Add PRAGMA_OMP_DISTRIBUTE.
 
 2013-04-10  Jakub Jelinek  <jakub@redhat.com>

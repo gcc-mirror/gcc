@@ -122,7 +122,7 @@ c_finish_omp_taskyield (location_t loc)
 tree
 c_finish_omp_atomic (location_t loc, enum tree_code code,
 		     enum tree_code opcode, tree lhs, tree rhs,
-		     tree v, tree lhs1, tree rhs1, bool swapped)
+		     tree v, tree lhs1, tree rhs1, bool swapped, bool seq_cst)
 {
   tree x, type, addr;
 
@@ -168,6 +168,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     {
       x = build1 (OMP_ATOMIC_READ, type, addr);
       SET_EXPR_LOCATION (x, loc);
+      OMP_ATOMIC_SEQ_CST (x) = seq_cst;
       return build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
 				loc, x, NULL_TREE);
       return x;
@@ -192,6 +193,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     type = void_type_node;
   x = build2 (code, type, addr, rhs);
   SET_EXPR_LOCATION (x, loc);
+  OMP_ATOMIC_SEQ_CST (x) = seq_cst;
 
   /* Generally it is hard to prove lhs1 and lhs are the same memory
      location, just diagnose different variables.  */

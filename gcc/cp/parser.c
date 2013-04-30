@@ -27146,7 +27146,22 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok)
   tree rhs1 = NULL_TREE, orig_lhs;
   enum tree_code code = OMP_ATOMIC, opcode = NOP_EXPR;
   bool structured_block = false;
+  bool seq_cst = false;
 
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+
+      if (!strcmp (p, "seq_cst"))
+	{
+	  seq_cst = true;
+	  cp_lexer_consume_token (parser->lexer);
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+	      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME)
+	    cp_lexer_consume_token (parser->lexer);
+	}
+    }
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
@@ -27164,6 +27179,24 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok)
 	p = NULL;
       if (p)
 	cp_lexer_consume_token (parser->lexer);
+    }
+  if (!seq_cst)
+    {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME)
+	cp_lexer_consume_token (parser->lexer);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  const char *p = IDENTIFIER_POINTER (id);
+
+	  if (!strcmp (p, "seq_cst"))
+	    {
+	      seq_cst = true;
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	}
     }
   cp_parser_require_pragma_eol (parser, pragma_tok);
 
@@ -27471,7 +27504,7 @@ stmt_done:
       cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
     }
 done:
-  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1);
+  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1, seq_cst);
   if (!structured_block)
     cp_parser_consume_semicolon_at_end_of_statement (parser);
   return;

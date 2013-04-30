@@ -10218,7 +10218,20 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
   location_t eloc;
   bool structured_block = false;
   bool swapped = false;
+  bool seq_cst = false;
 
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if (!strcmp (p, "seq_cst"))
+	{
+	  seq_cst = true;
+	  c_parser_consume_token (parser);
+	  if (c_parser_next_token_is (parser, CPP_COMMA)
+	      && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+	    c_parser_consume_token (parser);
+	}
+    }
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
@@ -10235,6 +10248,23 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	p = NULL;
       if (p)
 	c_parser_consume_token (parser);
+    }
+  if (!seq_cst)
+    {
+      if (c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+	c_parser_consume_token (parser);
+
+      if (c_parser_next_token_is (parser, CPP_NAME))
+	{
+	  const char *p
+	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	  if (!strcmp (p, "seq_cst"))
+	    {
+	      seq_cst = true;
+	      c_parser_consume_token (parser);
+	    }
+	}
     }
   c_parser_skip_to_pragma_eol (parser);
 
@@ -10526,7 +10556,7 @@ done:
     }
   else
     stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1,
-				swapped);
+				swapped, seq_cst);
   if (stmt != error_mark_node)
     add_stmt (stmt);
 

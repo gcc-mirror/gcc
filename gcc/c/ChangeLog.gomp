@@ -1,3 +1,8 @@
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_atomic): Parse seq_cst clause, pass
+	true if it is present to c_finish_omp_atomic.
+
 2013-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_compound_statement,

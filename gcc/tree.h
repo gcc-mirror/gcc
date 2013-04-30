@@ -633,6 +633,9 @@ struct GTY(()) tree_base {
        OMP_PARALLEL_COMBINED in
            OMP_PARALLEL
 
+       OMP_ATOMIC_SEQ_CST in
+	   OMP_ATOMIC*
+
        OMP_CLAUSE_PRIVATE_OUTER_REF in
 	   OMP_CLAUSE_PRIVATE
 
@@ -1871,6 +1874,12 @@ extern void protected_set_expr_location (tree, location_t);
    combined parallel work-sharing constructs.  */
 #define OMP_PARALLEL_COMBINED(NODE) \
   (OMP_PARALLEL_CHECK (NODE)->base.private_flag)
+
+/* True if OMP_ATOMIC* is supposed to be sequentially consistent
+   as opposed to relaxed.  */
+#define OMP_ATOMIC_SEQ_CST(NODE) \
+  (TREE_RANGE_CHECK (NODE, OMP_ATOMIC, \
+		     OMP_ATOMIC_CAPTURE_NEW)->base.private_flag)
 
 /* True on a PRIVATE clause if its decl is kept around for debugging
    information only and its DECL_VALUE_EXPR is supposed to point

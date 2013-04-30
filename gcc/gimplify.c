@@ -7076,6 +7076,11 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
     rhs = tmp_load;
   storestmt = gimple_build_omp_atomic_store (rhs);
   gimplify_seq_add_stmt (pre_p, storestmt);
+  if (OMP_ATOMIC_SEQ_CST (*expr_p))
+    {
+      gimple_omp_atomic_set_seq_cst (loadstmt);
+      gimple_omp_atomic_set_seq_cst (storestmt);
+    }
   switch (TREE_CODE (*expr_p))
     {
     case OMP_ATOMIC_READ:
@@ -7092,7 +7097,7 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
       break;
     }
 
-   return GS_ALL_DONE;
+  return GS_ALL_DONE;
 }
 
 /* Gimplify a TRANSACTION_EXPR.  This involves gimplification of the
