@@ -1148,6 +1148,24 @@ optimize_power (gfc_expr *e)
       *e = *ishft;
       return true;
     }
+
+  else if (mpz_cmp_si (op1->value.integer, 1L) == 0)
+    {
+      op2 = e->value.op.op2;
+      if (op2 == NULL)
+	return false;
+
+      gfc_free_expr (op1);
+      gfc_free_expr (op2);
+
+      e->expr_type = EXPR_CONSTANT;
+      e->value.op.op1 = NULL;
+      e->value.op.op2 = NULL;
+      mpz_init_set_si (e->value.integer, 1);
+      /* Typespec cand location are still OK.  */
+      return true;
+    }
+
   return false;
 }
 
