@@ -1,3 +1,8 @@
+2013-04-30  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* explow.c (plus_constant): Pass "mode" to immed_double_int_const.
+	Use gen_int_mode rather than GEN_INT.
+
 2013-04-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* value-prof.c (stream_in_histogram_value): Remove the strayed
