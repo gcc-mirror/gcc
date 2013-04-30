@@ -1,3 +1,10 @@
+2013-04-29  Mike Frysinger  <vapier@gentoo.org>
+
+	* config/arm/bpabi.h (EABI_LINK_SPEC): Define.
+	(BPABI_LINK_SPEC): Use new EABI_LINK_SPEC.
+	* config/arm/linux-eabi.h (LINK_SPEC): Replace BE8_LINK_SPEC
+	with EABI_LINK_SPEC.
+
 2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44578
@@ -7,7 +14,7 @@
 2013-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/57097
-        * lra-constraints.c (process_alt_operands): Discourage a bit more
+	* lra-constraints.c (process_alt_operands): Discourage a bit more
 	using memory for pseudos.  Print cost dump for alternatives.
 	Modify cost values for conflicts with early clobbers.
 	(curr_insn_transform): Spill pseudos reassigned to NO_REGS.
