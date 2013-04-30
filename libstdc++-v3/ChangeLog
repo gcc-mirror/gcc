@@ -1,3 +1,167 @@
+2013-04-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper): Fix
+	comment.
+	* include/std/mutex (__recursive_mutex_base): Likewise.
+
+2013-04-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51365
+	* include/bits/shared_ptr_base (_Sp_ebo_helper): Helper class to
+	implement EBO safely.
+	(_Sp_counted_base::_M_get_deleter): Add noexcept.
+	(_Sp_counter_ptr): Use noexcept instead of comments.
+	(_Sp_counted_deleter): Likewise. Use _Sp_ebo_helper.
+	(_Sp_counted_ptr_inplace): Likewise.
+	* testsuite/20_util/shared_ptr/cons/51365.cc: New.
+	* testsuite/20_util/shared_ptr/cons/52924.cc: Add rebind member to
+	custom allocator and test construction with custom allocator.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error
+	line number.
+
+2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/unordered_set/insert/move_range.cc: Adjust
+	dialect to -std=gnu++11.
+
+2013-04-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Insert_base<>::insert<_It>(_It, _It)): Enable move semantics.
+	* testsuite/23_containers/unordered_set/insert/move_range.cc: New.
+
+2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cstdio (gets): Provide only in C++98 and C++11.
+	* include/c_std/cstdio (gets): Likewise.
+	* testsuite/27_io/headers/cstdio/functions_std.cc: Adjust.
+
+2013-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57065
+	* include/debug/unordered_map (unordered_map, unordered_multimap):
+	Fix default allocator type.
+	* include/profile/unordered_map (unordered_map, unordered_multimap):
+	Likewise.
+	* include/bits/unordered_map.h: Fix comments.
+
+2013-04-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56905
+	* libsupc++/exception_ptr.h (copy_exception): Deprecate and
+	move implementation to make_exception_ptr.
+	* include/std/future (_State_base::_M_break_promise): Replace
+	copy_exception with make_exception_ptr.
+	* testsuite/18_support/exception_ptr/move.cc: Likewise.
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Likewise.
+	* testsuite/30_threads/future/members/get2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get2.cc: Likewise.
+
+2013-04-22  Jason Merrill  <jason@redhat.com>
+
+	* src/c++11/hashtable_c++0x.cc: Include ext/aligned_buffer.h.
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Also ignore "In
+	substitution" lines.
+
+	* testsuite/20_util/is_assignable/value.cc: Comment out tests involving
+	function-cv-quals.
+	* testsuite/20_util/is_constructible/value-2.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/result_type.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs-2.cc: Likewise.
+
+2013-04-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h: Add C++11 allocator support.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/std/unordered_set: Remove bits/algobase.h
+	include. Replace bits/alloc_traits.h by ext/alloc_traits.h.
+	* include/std/unordered_map: Likewise.
+	* include/ext/throw_allocator.h: Add checks on calls to allocator
+	construct/destroy.
+	(std::hash<__gnu_cxx::throw_value_limit>): Add conditional throw.
+	(std::hash<__gnu_cxx::throw_value_random>): Likewise.
+	* testsuite/util/regression/rand/priority_queue
+	/container_rand_regression_test.tcc: Adapt.
+	* testsuite/util/regression/rand/assoc
+	/container_rand_regression_test.tcc: Likewise.
+	* testsuite/util/testsuite_counter_type.h: Add count of destructors.
+	* testsuite/23_containers/unordered_set
+	/not_default_constructible_hash_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/copy_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/move_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/move_assign.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	New.
+	* testsuite/23_containers/unordered_map/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/copy_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/move_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/swap.cc: New.
+
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (is_signed): Simplify.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	N3669
+	* include/std/complex (complex<float>::real, complex<float>::imag,
+	complex<double>::real, complex<double>::imag,
+	complex<long double>::real, complex<long double>::imag): Declare
+	as const member functions.
+	* include/std/type_traits (integral_constant<>::operator value_type):
+	Likewise.
+
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57010
+	* include/bits/stl_heap.h (pop_heap): Avoid self move-assignment.
+	* testsuite/25_algorithms/pop_heap/57010.cc: New.
+
+2013-04-21  Evgeniy Stepanov  <eugenis@google.com>
+
+	* src/c++11/system_error.cc (generic_category_instance): Add
+	initializer.
+	(system_category_instance): Likewise.
+	* src/c++11/future.cc (__fec): Likewise.
+
+2013-04-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/extensions.xml: Fix anachronism.
+
 2013-04-09  Tom Tromey  <tromey@redhat.com>
 
 	* configure, config.h.in: Rebuild.

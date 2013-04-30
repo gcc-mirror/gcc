@@ -1772,7 +1772,8 @@ finish_qualified_id_expr (tree qualifying_class,
 			  bool done,
 			  bool address_p,
 			  bool template_p,
-			  bool template_arg_p)
+			  bool template_arg_p,
+			  tsubst_flags_t complain)
 {
   gcc_assert (TYPE_P (qualifying_class));
 
@@ -1792,7 +1793,7 @@ finish_qualified_id_expr (tree qualifying_class,
       if (TREE_CODE (expr) == SCOPE_REF)
 	expr = TREE_OPERAND (expr, 1);
       expr = build_offset_ref (qualifying_class, expr,
-			       /*address_p=*/true);
+			       /*address_p=*/true, complain);
       return expr;
     }
 
@@ -1826,11 +1827,12 @@ finish_qualified_id_expr (tree qualifying_class,
 		 expr,
 		 BASELINK_ACCESS_BINFO (expr),
 		 /*preserve_reference=*/false,
-		 tf_warning_or_error));
+		 complain));
       else if (done)
 	/* The expression is a qualified name whose address is not
 	   being taken.  */
-	expr = build_offset_ref (qualifying_class, expr, /*address_p=*/false);
+	expr = build_offset_ref (qualifying_class, expr, /*address_p=*/false,
+				 complain);
     }
   else if (BASELINK_P (expr))
     ;
@@ -2373,6 +2375,8 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
 	  error ("invalid qualifying scope in pseudo-destructor name");
 	  return error_mark_node;
 	}
+      if (is_auto (destructor))
+	destructor = TREE_TYPE (object);
       if (scope && TYPE_P (scope) && !check_dtor_name (scope, destructor))
 	{
 	  error ("qualified type %qT does not match destructor name ~%qT",
@@ -3105,6 +3109,12 @@ finish_id_expression (tree id_expression,
 		= decl_function_context (containing_function);
 	    }
 
+	  if (lambda_expr && TREE_CODE (decl) == VAR_DECL
+	      && DECL_ANON_UNION_VAR_P (decl))
+	    {
+	      error ("cannot capture member %qD of anonymous union", decl);
+	      return error_mark_node;
+	    }
 	  if (context == containing_function)
 	    {
 	      decl = add_default_capture (lambda_stack,
@@ -3270,7 +3280,8 @@ finish_id_expression (tree id_expression,
 		    decl = finish_qualified_id_expr (scope, decl,
 						     done, address_p,
 						     template_p,
-						     template_arg_p);
+						     template_arg_p,
+						     tf_warning_or_error);
 		  else
 		    {
 		      tree type = NULL_TREE;
@@ -3386,7 +3397,8 @@ finish_id_expression (tree id_expression,
 					     done,
 					     address_p,
 					     template_p,
-					     template_arg_p);
+					     template_arg_p,
+					     tf_warning_or_error);
 	  else
 	    decl = convert_from_reference (decl);
 	}
@@ -5386,6 +5398,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
           break;
 
         case COMPONENT_REF:
+	case COMPOUND_EXPR:
 	  mark_type_use (expr);
           type = is_bitfield_expr_with_lowered_type (expr);
           if (!type)
@@ -8436,7 +8449,8 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 		    tree x = get_nth_callarg (t, 0);
 		    if (is_this_parameter (x))
 		      {
-			if (DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)))
+			if (DECL_CONTEXT (x) == NULL_TREE
+			    || DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)))
 			  {
 			    if (flags & tf_error)
 			      sorry ("calling a member function of the "
@@ -9114,14 +9128,22 @@ lambda_function (tree lambda)
    The caller should add REFERENCE_TYPE for capture by reference.  */
 
 tree
-lambda_capture_field_type (tree expr)
+lambda_capture_field_type (tree expr, bool explicit_init_p)
 {
-  tree type = non_reference (unlowered_expr_type (expr));
+  tree type;
+  if (explicit_init_p)
+    {
+      type = make_auto ();
+      type = do_auto_deduction (type, expr, type);
+    }
+  else
+    type = non_reference (unlowered_expr_type (expr));
   if (!type || WILDCARD_TYPE_P (type))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
+      DECLTYPE_FOR_INIT_CAPTURE (type) = explicit_init_p;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
   return type;
@@ -9265,13 +9287,12 @@ void
 insert_capture_proxy (tree var)
 {
   cp_binding_level *b;
-  int skip;
   tree stmt_list;
 
   /* Put the capture proxy in the extra body block so that it won't clash
      with a later local variable.  */
   b = current_binding_level;
-  for (skip = 0; ; ++skip)
+  for (;;)
     {
       cp_binding_level *n = b->level_chain;
       if (n->kind == sk_function_parms)
@@ -9282,7 +9303,7 @@ insert_capture_proxy (tree var)
 
   /* And put a DECL_EXPR in the STATEMENT_LIST for the same block.  */
   var = build_stmt (DECL_SOURCE_LOCATION (var), DECL_EXPR, var);
-  stmt_list = (*stmt_list_stack)[stmt_list_stack->length () - 1 - skip];
+  stmt_list = (*stmt_list_stack)[1];
   gcc_assert (stmt_list);
   append_to_statement_list_force (var, &stmt_list);
 }
@@ -9353,7 +9374,10 @@ build_capture_proxy (tree member)
     object = TREE_OPERAND (object, 0);
 
   /* Remove the __ inserted by add_capture.  */
-  name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
+  if (DECL_NORMAL_CAPTURE_P (member))
+    name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
+  else
+    name = DECL_NAME (member);
 
   type = lambda_proxy_type (object);
   var = build_decl (input_location, VAR_DECL, name, type);
@@ -9388,7 +9412,10 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
   char *buf;
   tree type, member, name;
 
-  type = lambda_capture_field_type (initializer);
+  if (TREE_CODE (initializer) == TREE_LIST)
+    initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
+						   tf_warning_or_error);
+  type = lambda_capture_field_type (initializer, explicit_init_p);
   if (by_reference_p)
     {
       type = build_reference_type (type);
@@ -9403,11 +9430,17 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
      won't find the field with name lookup.  We can't just leave the name
      unset because template instantiation uses the name to find
      instantiated fields.  */
-  buf = (char *) alloca (IDENTIFIER_LENGTH (id) + 3);
-  buf[1] = buf[0] = '_';
-  memcpy (buf + 2, IDENTIFIER_POINTER (id),
-	  IDENTIFIER_LENGTH (id) + 1);
-  name = get_identifier (buf);
+  if (!explicit_init_p)
+    {
+      buf = (char *) alloca (IDENTIFIER_LENGTH (id) + 3);
+      buf[1] = buf[0] = '_';
+      memcpy (buf + 2, IDENTIFIER_POINTER (id),
+	      IDENTIFIER_LENGTH (id) + 1);
+      name = get_identifier (buf);
+    }
+  else
+    /* But captures with explicit initializers are named.  */
+    name = id;
 
   /* If TREE_TYPE isn't set, we're still in the introducer, so check
      for duplicates.  */

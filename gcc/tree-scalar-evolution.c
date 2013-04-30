@@ -256,6 +256,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "cfgloop.h"
@@ -317,7 +318,7 @@ new_scev_info_str (basic_block instantiated_below, tree var)
 
 /* Computes a hash function for database element ELT.  */
 
-static hashval_t
+static inline hashval_t
 hash_scev_info (const void *elt)
 {
   return SSA_NAME_VERSION (((const struct scev_info_str *) elt)->var);
@@ -325,7 +326,7 @@ hash_scev_info (const void *elt)
 
 /* Compares database elements E1 and E2.  */
 
-static int
+static inline int
 eq_scev_info (const void *e1, const void *e2)
 {
   const struct scev_info_str *elt1 = (const struct scev_info_str *) e1;
@@ -342,6 +343,39 @@ del_scev_info (void *e)
 {
   ggc_free (e);
 }
+
+/* Hashtable helpers.  */
+
+struct scev_info_hasher
+{
+  typedef scev_info_str value_type;
+  typedef scev_info_str compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
+
+inline hashval_t
+scev_info_hasher::hash (const value_type *elt)
+{
+  return hash_scev_info (elt);
+}
+
+inline bool
+scev_info_hasher::equal (const value_type *elt1, const compare_type *elt2)
+{
+  return eq_scev_info (elt1, elt2);
+}
+
+/* Deletes database element E.  */
+
+inline void
+scev_info_hasher::remove (value_type *e)
+{
+  del_scev_info (e);
+}
+
+typedef hash_table <scev_info_hasher> scev_info_hash_table_type;
 
 /* Get the scalar evolution of VAR for INSTANTIATED_BELOW basic block.
    A first query on VAR returns chrec_not_analyzed_yet.  */
@@ -866,39 +900,6 @@ get_loop_exit_condition (const struct loop *loop)
     }
 
   return res;
-}
-
-/* Recursively determine and enqueue the exit conditions for a loop.  */
-
-static void
-get_exit_conditions_rec (struct loop *loop,
-			 vec<gimple> *exit_conditions)
-{
-  if (!loop)
-    return;
-
-  /* Recurse on the inner loops, then on the next (sibling) loops.  */
-  get_exit_conditions_rec (loop->inner, exit_conditions);
-  get_exit_conditions_rec (loop->next, exit_conditions);
-
-  if (single_exit (loop))
-    {
-      gimple loop_condition = get_loop_exit_condition (loop);
-
-      if (loop_condition)
-	exit_conditions->safe_push (loop_condition);
-    }
-}
-
-/* Select the candidate loop nests for the analysis.  This function
-   initializes the EXIT_CONDITIONS array.  */
-
-static void
-select_loops_exit_conditions (vec<gimple> *exit_conditions)
-{
-  struct loop *function_body = current_loops->tree_root;
-
-  get_exit_conditions_rec (function_body->inner, exit_conditions);
 }
 
 
@@ -2081,14 +2082,14 @@ analyze_scalar_evolution_in_loop (struct loop *wrto_loop, struct loop *use_loop,
    INSTANTIATED_BELOW block.  */
 
 static tree
-get_instantiated_value (htab_t cache, basic_block instantiated_below,
-			tree version)
+get_instantiated_value (scev_info_hash_table_type cache,
+			basic_block instantiated_below, tree version)
 {
   struct scev_info_str *info, pattern;
 
   pattern.var = version;
   pattern.instantiated_below = instantiated_below;
-  info = (struct scev_info_str *) htab_find (cache, &pattern);
+  info = cache.find (&pattern);
 
   if (info)
     return info->chrec;
@@ -2100,19 +2101,19 @@ get_instantiated_value (htab_t cache, basic_block instantiated_below,
    INSTANTIATED_BELOW to VAL.  */
 
 static void
-set_instantiated_value (htab_t cache, basic_block instantiated_below,
-			tree version, tree val)
+set_instantiated_value (scev_info_hash_table_type cache,
+			basic_block instantiated_below, tree version, tree val)
 {
   struct scev_info_str *info, pattern;
-  PTR *slot;
+  scev_info_str **slot;
 
   pattern.var = version;
   pattern.instantiated_below = instantiated_below;
-  slot = htab_find_slot (cache, &pattern, INSERT);
+  slot = cache.find_slot (&pattern, INSERT);
 
   if (!*slot)
     *slot = new_scev_info_str (instantiated_below, version);
-  info = (struct scev_info_str *) *slot;
+  info = *slot;
   info->chrec = val;
 }
 
@@ -2147,7 +2148,7 @@ loop_closed_phi_def (tree var)
 }
 
 static tree instantiate_scev_r (basic_block, struct loop *, struct loop *,
-				tree, bool, htab_t, int);
+				tree, bool, scev_info_hash_table_type, int);
 
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
@@ -2167,7 +2168,8 @@ static tree
 instantiate_scev_name (basic_block instantiate_below,
 		       struct loop *evolution_loop, struct loop *inner_loop,
 		       tree chrec,
-		       bool fold_conversions, htab_t cache, int size_expr)
+		       bool fold_conversions, scev_info_hash_table_type cache,
+		       int size_expr)
 {
   tree res;
   struct loop *def_loop;
@@ -2269,7 +2271,8 @@ static tree
 instantiate_scev_poly (basic_block instantiate_below,
 		       struct loop *evolution_loop, struct loop *,
 		       tree chrec,
-		       bool fold_conversions, htab_t cache, int size_expr)
+		       bool fold_conversions, scev_info_hash_table_type cache,
+		       int size_expr)
 {
   tree op1;
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
@@ -2315,7 +2318,8 @@ instantiate_scev_binary (basic_block instantiate_below,
 			 struct loop *evolution_loop, struct loop *inner_loop,
 			 tree chrec, enum tree_code code,
 			 tree type, tree c0, tree c1,
-			 bool fold_conversions, htab_t cache, int size_expr)
+			 bool fold_conversions, scev_info_hash_table_type cache,
+			 int size_expr)
 {
   tree op1;
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop, inner_loop,
@@ -2374,7 +2378,8 @@ static tree
 instantiate_array_ref (basic_block instantiate_below,
 		       struct loop *evolution_loop, struct loop *inner_loop,
 		       tree chrec,
-		       bool fold_conversions, htab_t cache, int size_expr)
+		       bool fold_conversions, scev_info_hash_table_type cache,
+		       int size_expr)
 {
   tree res;
   tree index = TREE_OPERAND (chrec, 1);
@@ -2413,7 +2418,8 @@ instantiate_scev_convert (basic_block instantiate_below,
 			  struct loop *evolution_loop, struct loop *inner_loop,
 			  tree chrec,
 			  tree type, tree op,
-			  bool fold_conversions, htab_t cache, int size_expr)
+			  bool fold_conversions,
+			  scev_info_hash_table_type cache, int size_expr)
 {
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
 				 inner_loop, op,
@@ -2462,7 +2468,8 @@ instantiate_scev_not (basic_block instantiate_below,
 		      struct loop *evolution_loop, struct loop *inner_loop,
 		      tree chrec,
 		      enum tree_code code, tree type, tree op,
-		      bool fold_conversions, htab_t cache, int size_expr)
+		      bool fold_conversions, scev_info_hash_table_type cache,
+		      int size_expr)
 {
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
 				 inner_loop, op,
@@ -2511,7 +2518,8 @@ static tree
 instantiate_scev_3 (basic_block instantiate_below,
 		    struct loop *evolution_loop, struct loop *inner_loop,
 		    tree chrec,
-		    bool fold_conversions, htab_t cache, int size_expr)
+		    bool fold_conversions, scev_info_hash_table_type cache,
+		    int size_expr)
 {
   tree op1, op2;
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
@@ -2559,7 +2567,8 @@ static tree
 instantiate_scev_2 (basic_block instantiate_below,
 		    struct loop *evolution_loop, struct loop *inner_loop,
 		    tree chrec,
-		    bool fold_conversions, htab_t cache, int size_expr)
+		    bool fold_conversions, scev_info_hash_table_type cache,
+		    int size_expr)
 {
   tree op1;
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
@@ -2599,7 +2608,8 @@ static tree
 instantiate_scev_1 (basic_block instantiate_below,
 		    struct loop *evolution_loop, struct loop *inner_loop,
 		    tree chrec,
-		    bool fold_conversions, htab_t cache, int size_expr)
+		    bool fold_conversions, scev_info_hash_table_type cache,
+		    int size_expr)
 {
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
 				 inner_loop, TREE_OPERAND (chrec, 0),
@@ -2632,7 +2642,8 @@ static tree
 instantiate_scev_r (basic_block instantiate_below,
 		    struct loop *evolution_loop, struct loop *inner_loop,
 		    tree chrec,
-		    bool fold_conversions, htab_t cache, int size_expr)
+		    bool fold_conversions, scev_info_hash_table_type cache,
+		    int size_expr)
 {
   /* Give up if the expression is larger than the MAX that we allow.  */
   if (size_expr++ > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
@@ -2738,7 +2749,8 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
 		  tree chrec)
 {
   tree res;
-  htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
+  scev_info_hash_table_type cache;
+  cache.create (10);
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
@@ -2760,7 +2772,7 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
       fprintf (dump_file, "))\n");
     }
 
-  htab_delete (cache);
+  cache.dispose ();
 
   return res;
 }
@@ -2773,10 +2785,11 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
 tree
 resolve_mixers (struct loop *loop, tree chrec)
 {
-  htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
+  scev_info_hash_table_type cache;
+  cache.create (10);
   tree ret = instantiate_scev_r (block_before_loop (loop), loop, NULL,
 				 chrec, true, cache, 0);
-  htab_delete (cache);
+  cache.dispose ();
   return ret;
 }
 
@@ -2880,41 +2893,6 @@ number_of_exit_cond_executions (struct loop *loop)
     return chrec_dont_know;
 
   return ret;
-}
-
-/* One of the drivers for testing the scalar evolutions analysis.
-   This function computes the number of iterations for all the loops
-   from the EXIT_CONDITIONS array.  */
-
-static void
-number_of_iterations_for_all_loops (vec<gimple> *exit_conditions)
-{
-  unsigned int i;
-  unsigned nb_chrec_dont_know_loops = 0;
-  unsigned nb_static_loops = 0;
-  gimple cond;
-
-  FOR_EACH_VEC_ELT (*exit_conditions, i, cond)
-    {
-      tree res = number_of_latch_executions (loop_containing_stmt (cond));
-      if (chrec_contains_undetermined (res))
-	nb_chrec_dont_know_loops++;
-      else
-	nb_static_loops++;
-    }
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "\n(\n");
-      fprintf (dump_file, "-----------------------------------------\n");
-      fprintf (dump_file, "%d\tnb_chrec_dont_know_loops\n", nb_chrec_dont_know_loops);
-      fprintf (dump_file, "%d\tnb_static_loops\n", nb_static_loops);
-      fprintf (dump_file, "%d\tnb_total_loops\n", number_of_loops ());
-      fprintf (dump_file, "-----------------------------------------\n");
-      fprintf (dump_file, ")\n\n");
-
-      print_loops (dump_file, 3);
-    }
 }
 
 
@@ -3026,54 +3004,6 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
 
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, ")\n");
-}
-
-/* One of the drivers for testing the scalar evolutions analysis.
-   This function analyzes the scalar evolution of all the scalars
-   defined as loop phi nodes in one of the loops from the
-   EXIT_CONDITIONS array.
-
-   TODO Optimization: A loop is in canonical form if it contains only
-   a single scalar loop phi node.  All the other scalars that have an
-   evolution in the loop are rewritten in function of this single
-   index.  This allows the parallelization of the loop.  */
-
-static void
-analyze_scalar_evolution_for_all_loop_phi_nodes (vec<gimple> *exit_conditions)
-{
-  unsigned int i;
-  struct chrec_stats stats;
-  gimple cond, phi;
-  gimple_stmt_iterator psi;
-
-  reset_chrecs_counters (&stats);
-
-  FOR_EACH_VEC_ELT (*exit_conditions, i, cond)
-    {
-      struct loop *loop;
-      basic_block bb;
-      tree chrec;
-
-      loop = loop_containing_stmt (cond);
-      bb = loop->header;
-
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  phi = gsi_stmt (psi);
-	  if (!virtual_operand_p (PHI_RESULT (phi)))
-	    {
-	      chrec = instantiate_parameters
-		        (loop,
-			 analyze_scalar_evolution (loop, PHI_RESULT (phi)));
-
-	      if (dump_file && (dump_flags & TDF_STATS))
-		gather_chrec_stats (chrec, &stats);
-	    }
-	}
-    }
-
-  if (dump_file && (dump_flags & TDF_STATS))
-    dump_chrecs_stats (dump_file, &stats);
 }
 
 /* Callback for htab_traverse, gathers information on chrecs in the
@@ -3252,23 +3182,6 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
   iv->no_overflow = !folded_casts && TYPE_OVERFLOW_UNDEFINED (type);
 
   return true;
-}
-
-/* Runs the analysis of scalar evolutions.  */
-
-void
-scev_analysis (void)
-{
-  vec<gimple> exit_conditions;
-
-  exit_conditions.create (37);
-  select_loops_exit_conditions (&exit_conditions);
-
-  if (dump_file && (dump_flags & TDF_STATS))
-    analyze_scalar_evolution_for_all_loop_phi_nodes (&exit_conditions);
-
-  number_of_iterations_for_all_loops (&exit_conditions);
-  exit_conditions.release ();
 }
 
 /* Finalize the scalar evolution analysis.  */

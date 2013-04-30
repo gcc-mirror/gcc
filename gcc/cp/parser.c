@@ -866,6 +866,12 @@ cp_lexer_next_token_is_keyword (cp_lexer* lexer, enum rid keyword)
   return cp_lexer_peek_token (lexer)->keyword == keyword;
 }
 
+static inline bool
+cp_lexer_nth_token_is_keyword (cp_lexer* lexer, size_t n, enum rid keyword)
+{
+  return cp_lexer_peek_nth_token (lexer, n)->keyword == keyword;
+}
+
 /* Return true if the next token is not the indicated KEYWORD.  */
 
 static inline bool
@@ -1860,7 +1866,7 @@ static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
 enum { non_attr = 0, normal_attr = 1, id_attr = 2 };
 static void cp_parser_pseudo_destructor_name
-  (cp_parser *, tree *, tree *);
+  (cp_parser *, tree, tree *, tree *);
 static tree cp_parser_unary_expression
   (cp_parser *, bool, bool, cp_id_kind *);
 static enum tree_code cp_parser_unary_operator
@@ -3702,6 +3708,37 @@ make_char_string_pack (tree value)
   return argvec;
 }
 
+/* A subroutine of cp_parser_userdef_numeric_literal to
+   create a char... template parameter pack from a string node.  */
+
+static tree
+make_string_pack (tree value)
+{
+  tree charvec;
+  tree argpack = make_node (NONTYPE_ARGUMENT_PACK);
+  const char *str = TREE_STRING_POINTER (value);
+  int i, len = TREE_STRING_LENGTH (value) - 1;
+  tree argvec = make_tree_vec (2);
+
+  tree string_char_type_node = TREE_TYPE (TREE_TYPE (value));
+
+  /* First template parm is character type.  */
+  TREE_VEC_ELT (argvec, 0) = string_char_type_node;
+
+  /* Fill in CHARVEC with all of the parameters.  */
+  charvec = make_tree_vec (len);
+  for (i = 0; i < len; ++i)
+    TREE_VEC_ELT (charvec, i) = build_int_cst (string_char_type_node, str[i]);
+
+  /* Build the argument packs.  */
+  SET_ARGUMENT_PACK_ARGS (argpack, charvec);
+  TREE_TYPE (argpack) = string_char_type_node;
+
+  TREE_VEC_ELT (argvec, 1) = argpack;
+
+  return argvec;
+}
+
 /* Parse a user-defined numeric constant.  returns a call to a user-defined
    literal operator.  */
 
@@ -3801,10 +3838,29 @@ cp_parser_userdef_string_literal (cp_token *token)
   int len = TREE_STRING_LENGTH (value)
 	/ TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
   tree decl, result;
+  vec<tree, va_gc> *args;
+
+  /* Look for a template function with typename parameter CharT
+     and parameter pack CharT...  Call the function with
+     template parameter characters representing the string.  */
+  args = make_tree_vector ();
+  decl = lookup_literal_operator (name, args);
+  if (decl && decl != error_mark_node)
+    {
+      tree tmpl_args = make_string_pack (value);
+      decl = lookup_template_function (decl, tmpl_args);
+      result = finish_call_expr (decl, &args, false, true, tf_none);
+      if (result != error_mark_node)
+	{
+	  release_tree_vector (args);
+	  return result;
+	}
+    }
+  release_tree_vector (args);
 
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  vec<tree, va_gc> *args = make_tree_vector ();
+  args = make_tree_vector ();
   vec_safe_push (args, value);
   vec_safe_push (args, build_int_cst (size_type_node, len));
   decl = lookup_name (name);
@@ -4769,6 +4825,17 @@ cp_parser_unqualified_id (cp_parser* parser,
 	  {
 	    cp_lexer_consume_token (parser->lexer);
 	    return build_nt (BIT_NOT_EXPR, scope);
+	  }
+
+	/* ~auto means the destructor of whatever the object is.  */
+	if (cp_parser_is_keyword (token, RID_AUTO))
+	  {
+	    if (cxx_dialect < cxx1y)
+	      pedwarn (input_location, 0,
+		       "%<~auto%> only available with "
+		       "-std=c++1y or -std=gnu++1y");
+	    cp_lexer_consume_token (parser->lexer);
+	    return build_nt (BIT_NOT_EXPR, make_auto ());
 	  }
 
 	/* If there was an explicit qualification (S::~T), first look
@@ -6088,7 +6155,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       /* Unlike the object expression in other contexts, *this is not
 	 required to be of complete type for purposes of class member
 	 access (5.2.5) outside the member function body.  */
-      else if (scope != current_class_ref
+      else if (postfix_expression != current_class_ref
 	       && !(processing_template_decl && scope == current_class_type))
 	scope = complete_type_or_else (scope, NULL_TREE);
       /* Let the name lookup machinery know that we are processing a
@@ -6121,18 +6188,18 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       cp_parser_parse_tentatively (parser);
       /* Parse the pseudo-destructor-name.  */
       s = NULL_TREE;
-      cp_parser_pseudo_destructor_name (parser, &s, &type);
+      cp_parser_pseudo_destructor_name (parser, postfix_expression,
+					&s, &type);
       if (dependent_p
 	  && (cp_parser_error_occurred (parser)
-	      || TREE_CODE (type) != TYPE_DECL
-	      || !SCALAR_TYPE_P (TREE_TYPE (type))))
+	      || !SCALAR_TYPE_P (type)))
 	cp_parser_abort_tentative_parse (parser);
       else if (cp_parser_parse_definitely (parser))
 	{
 	  pseudo_destructor_p = true;
 	  postfix_expression
 	    = finish_pseudo_destructor_expr (postfix_expression,
-					     s, TREE_TYPE (type));
+					     s, type);
 	}
     }
 
@@ -6393,10 +6460,27 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 
 static void
 cp_parser_pseudo_destructor_name (cp_parser* parser,
+				  tree object,
 				  tree* scope,
 				  tree* type)
 {
   bool nested_name_specifier_p;
+
+  /* Handle ~auto.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMPL)
+      && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_AUTO)
+      && !type_dependent_expression_p (object))
+    {
+      if (cxx_dialect < cxx1y)
+	pedwarn (input_location, 0,
+		 "%<~auto%> only available with "
+		 "-std=c++1y or -std=gnu++1y");
+      cp_lexer_consume_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer);
+      *scope = NULL_TREE;
+      *type = TREE_TYPE (object);
+      return;
+    }
 
   /* Assume that things will not work out.  */
   *type = error_mark_node;
@@ -6465,7 +6549,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
 
   /* Look for the type-name again.  We are not responsible for
      checking that it matches the first type-name.  */
-  *type = cp_parser_nonclass_name (parser);
+  *type = TREE_TYPE (cp_parser_nonclass_name (parser));
 }
 
 /* Parse a unary-expression.
@@ -8464,16 +8548,18 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	}
 
       /* Find the initializer for this capture.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ)
+	  || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
+	  || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	{
-	  /* An explicit expression exists.  */
-	  cp_lexer_consume_token (parser->lexer);
-          pedwarn (input_location, OPT_Wpedantic,
-                   "ISO C++ does not allow initializers "
-                   "in lambda expression capture lists");
-	  capture_init_expr = cp_parser_assignment_expression (parser,
-							       /*cast_p=*/true,
-							       &idk);
+	  bool direct, non_constant;
+	  /* An explicit initializer exists.  */
+	  if (cxx_dialect < cxx1y)
+	    pedwarn (input_location, 0,
+		     "lambda capture initializers "
+		     "only available with -std=c++1y or -std=gnu++1y");
+	  capture_init_expr = cp_parser_initializer (parser, &direct,
+						     &non_constant);
 	  explicit_init_p = true;
 	}
       else
@@ -11460,7 +11546,7 @@ cp_parser_decltype (cp_parser *parser)
       cp_lexer_consume_token (parser->lexer);
       if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
 	return error_mark_node;
-      expr = make_auto ();
+      expr = make_decltype_auto ();
       AUTO_IS_DECLTYPE (expr) = true;
       goto rewrite;
     }
@@ -22101,9 +22187,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
       else
 	{
 	  int num_parms = TREE_VEC_LENGTH (parameter_list);
-	  if (num_parms != 1)
-	    ok = false;
-	  else
+	  if (num_parms == 1)
 	    {
 	      tree parm_list = TREE_VEC_ELT (parameter_list, 0);
 	      tree parm = INNERMOST_TEMPLATE_PARMS (parm_list);
@@ -22111,10 +22195,23 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 		ok = false;
 	    }
+	  else if (num_parms == 2 && cxx_dialect >= cxx1y)
+	    {
+	      tree parm_type = TREE_VEC_ELT (parameter_list, 0);
+	      tree type = INNERMOST_TEMPLATE_PARMS (parm_type);
+	      tree parm_list = TREE_VEC_ELT (parameter_list, 1);
+	      tree parm = INNERMOST_TEMPLATE_PARMS (parm_list);
+	      if (TREE_TYPE (parm) != TREE_TYPE (type)
+		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
+		ok = false;
+	    }
+	  else
+	    ok = false;
 	}
       if (!ok)
 	error ("literal operator template %qD has invalid parameter list."
-	       "  Expected non-type template argument pack <char...>",
+	       "  Expected non-type template argument pack <char...>"
+	       " or <typename CharT, CharT...>",
 	       decl);
     }
   /* Register member declarations.  */

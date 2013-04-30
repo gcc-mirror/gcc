@@ -377,7 +377,7 @@ package body Exp_Prag is
 
                --  For Assert, we just use the location
 
-               if Nam = Name_Assertion then
+               if Nam = Name_Assert then
                   null;
 
                --  For predicate, we generate the string "predicate failed
@@ -446,7 +446,7 @@ package body Exp_Prag is
          then
             return;
 
-         elsif Nam = Name_Assertion then
+         elsif Nam = Name_Assert then
             Error_Msg_N ("?A?assertion will fail at run time", N);
          else
 
@@ -830,9 +830,9 @@ package body Exp_Prag is
 
    --        if Flag then
    --           if Curr_1 /= Old_1 then
-   --              pragma Assert (Curr_1 > Old_1);
+   --              pragma Check (Loop_Variant, Curr_1 > Old_1);
    --           else
-   --              pragma Assert (Curr_2 < Old_2);
+   --              pragma Check (Loop_Variant, Curr_2 < Old_2);
    --           end if;
    --        else
    --           Flag := True;
@@ -999,12 +999,14 @@ package body Exp_Prag is
          --  Step 5: Create corresponding assertion to verify change of value
 
          --  Generate:
-         --    pragma Assert (Curr <|> Old);
+         --    pragma Check (Loop_Variant, Curr <|> Old);
 
          Prag :=
            Make_Pragma (Loc,
-             Chars                        => Name_Assert,
+             Chars                        => Name_Check,
              Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Loc,
+                 Expression => Make_Identifier (Loc, Name_Loop_Variant)),
                Make_Pragma_Argument_Association (Loc,
                  Expression =>
                    Make_Op (Loc,
@@ -1059,9 +1061,18 @@ package body Exp_Prag is
          end if;
       end Process_Variant;
 
-   --  Start of processing for Expand_Pragma_Loop_Assertion
+   --  Start of processing for Expand_Pragma_Loop_Variant
 
    begin
+      --  If pragma is not enabled, rewrite as Null statement. If pragma is
+      --  disabled, it has already been rewritten as a Null statement.
+
+      if Is_Ignored (N) then
+         Rewrite (N, Make_Null_Statement (Loc));
+         Analyze (N);
+         return;
+      end if;
+
       --  Locate the enclosing loop for which this assertion applies. In the
       --  case of Ada 2012 array iteration, we might be dealing with nested
       --  loops. Only the outermost loop has an identifier.

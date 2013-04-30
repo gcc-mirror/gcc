@@ -2895,6 +2895,8 @@ lto_flatten_files (struct lto_file_decl_data **orig, int count, int last_file_ix
 static int real_file_count;
 static GTY((length ("real_file_count + 1"))) struct lto_file_decl_data **real_file_decl_data;
 
+static void print_lto_report_1 (void);
+
 /* Read all the symbols from the input files FNAMES.  NFILES is the
    number of files requested in the command line.  Instantiate a
    global call graph by aggregating all the sub-graphs found in each
@@ -2985,6 +2987,10 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   if (resolution_file_name)
     fclose (resolution);
+
+  /* Show the LTO report before launching LTRANS.  */
+  if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
+    print_lto_report_1 ();
 
   /* Free gimple type merging datastructures.  */
   htab_delete (gimple_types);
@@ -3171,7 +3177,7 @@ print_lto_report_1 (void)
   else
     fprintf (stderr, "[%s] GIMPLE type table is empty\n", pfx);
   if (type_hash_cache)
-    fprintf (stderr, "[%s] GIMPLE type hash table: size %ld, %ld elements, "
+    fprintf (stderr, "[%s] GIMPLE type hash cache table: size %ld, %ld elements, "
 	     "%ld searches, %ld collisions (ratio: %f)\n", pfx,
 	     (long) htab_size (type_hash_cache),
 	     (long) htab_elements (type_hash_cache),
@@ -3179,7 +3185,7 @@ print_lto_report_1 (void)
 	     (long) type_hash_cache->collisions,
 	     htab_collisions (type_hash_cache));
   else
-    fprintf (stderr, "[%s] GIMPLE type hash table is empty\n", pfx);
+    fprintf (stderr, "[%s] GIMPLE type hash cache table is empty\n", pfx);
 
   print_gimple_types_stats (pfx);
   print_lto_report (pfx);
@@ -3274,7 +3280,7 @@ do_whole_program_analysis (void)
     }
 
   /* Show the LTO report before launching LTRANS.  */
-  if (flag_lto_report)
+  if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
     print_lto_report_1 ();
   if (mem_report_wpa)
     dump_memory_report (true);
@@ -3402,7 +3408,7 @@ lto_main (void)
 	     print_lto_report before launching LTRANS.  If LTRANS was
 	     launched directly by the driver we would not need to do
 	     this.  */
-	  if (flag_lto_report)
+	  if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
 	    print_lto_report_1 ();
 
 	  /* Record the global variables.  */

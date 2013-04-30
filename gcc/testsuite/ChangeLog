@@ -1,3 +1,418 @@
+2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44578
+	* gcc.target/i386/pr44578.c: New test.
+
+2013-04-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57097
+	* gcc.target/i386/pr57097.c: New test.
+
+2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57098
+	* gcc.target/i386/pr57098.c: New test.
+
+2013-04-29  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.c-torture/execute/pr55875.c: New test.
+
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57075
+	* gcc.dg/torture/pr57075.c: New testcase.
+
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57103
+	* gcc.dg/autopar/pr57103.c: New testcase.
+
+2013-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/c1x-align-3.c: Add test for negative power of 2.
+
+2013-04-29  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr50763.c: Update test.
+
+2013-04-26  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp88.c: New test.
+
+2013-04-29  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/57108
+	* gcc.target/sh/pr57108.c: New test.
+
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57089
+	* gfortran.dg/gomp/pr57089.f90: New testcase.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* lib/target-supports.exp (vect_uintfloat_cvt): Enable for AArch64.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-vcvt.c: New.
+
+2013-04-29  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-vrnd.c: New.
+
+2013-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57081
+	* gcc.dg/torture/pr57081.c: New testcase.
+
+2013-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57083
+	* gcc.dg/torture/pr57083.c: New test.
+
+2013-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56450
+	* g++.dg/cpp0x/decltype52.C: New.
+
+2013-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	N3472 binary constants
+	* g++.dg/cpp/limits.C: Adjust warning wording.
+	* g++.dg/system-binary-constants-1.C: Likewise.
+	* g++.dg/cpp1y/system-binary-constants-1.C: New test.
+
+2013-04-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57093
+	* gfortran.dg/coarray_30.f90: New.
+
+2013-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57071
+	* frontend-passes (optimize_power):  New function.
+	(optimize_op):  Use it.
+
+2013-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56866
+	* gcc.c-torture/execute/pr56866.c: New test.
+	* gcc.target/i386/pr56866.c: New test.
+
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/57045
+	* gcc.dg/setjmp-5.c: New test.
+
+2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55708
+	* g++.dg/cpp0x/constexpr-55708.C: New.
+
+2013-04-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-prof/update-loopch.c: Revert last change.
+	* gcc.dg/graphite/pr33766.c: Fix undefined behavior.
+	* gcc.dg/pr53265.c: Remove XFAILs.
+	* gcc.dg/tree-ssa/loop-38.c: Remove unreliable dump scanning.
+	* gcc.dg/tree-ssa/pr21559.c: Change back to two expected jump threads.
+
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/prune.exp: Add -fdiagnostics-color=never to TEST_ALWAYS_FLAGS.
+	* lib/c-compat.exp (compat-use-alt-compiler, compat_setup_dfp): Handle
+	-fdiagnostics-color=never option similarly to
+	-fno-diagnostics-show-caret option.
+
+2013-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57003
+	* gcc.target/i386/pr57003.c: New test.
+
+2013-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57066
+	* gcc.dg/torture/builtin-logb-1.c: Adjust testcase.
+
+2013-04-25  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/vaddv-intrinsic.c: New.
+	* gcc.target/aarch64/vaddv-intrinsic-compile.c: Likewise.
+	* gcc.target/aarch64/vaddv-intrinsic.x: Likewise.
+
+2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/cmp.c: New.
+
+2013-04-25  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/ngc.c: New.
+
+2013-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_fp16_ok_nocache): New procedure.
+	(check_effective_target_arm_neon_fp16_ok): Likewise.
+	(add_options_for_arm_neon_fp16): Likewise.
+	* gcc.target/arm/neon/vcvtf16_f32.c: New test. Generated.
+	* gcc.target/arm/neon/vcvtf32_f16.c: Likewise.
+
+2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimizations/57046
+	* gcc.target/i386/pr57046.c: New test.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/cplusplus.C: New.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/cxx1y_macro.C: Remove.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-c++-common/Wpointer-arith-1.c: New.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/cxx1y_macro.C: New.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56970
+	* g++.dg/cpp0x/sfinae45.C: New.
+
+2013-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/57050
+	* gcc.c-torture/execute/pr56982.c: Avoid sigjmp_buf use.
+
+2013-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57036
+	* gcc.dg/torture/pr57036-1.c: New testcase.
+	* gcc.dg/torture/pr57036-2.c: Likewise.
+
+2013-04-23  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* gcc.target/aarch64/scalar-mov.c: New testcase.
+
+2013-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57026
+	* gcc.dg/torture/pr57026.c: New testcase.
+
+2013-04-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53685
+	PR fortran/57022
+	* gfortran.dg/transfer_check_4.f90: New.
+
+2013-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/56990
+	* gcc.dg/pr56990.c: New test.
+
+2013-04-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57018
+	* gcc.target/i386/pr57018.c: New test.
+
+2013-04-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vrecps.c: New.
+	* gcc.target/aarch64/vrecpx.c: Likewise.
+
+2013-04-22  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/56995
+	* gcc.target/sh/mfmovd.c: Add new function and check hard_float.
+
+2013-04-21  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-26.c: New test.
+
+2013-04-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56907
+	* gfortran.dg/c_loc_test_22.f90: New.
+
+2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/56847
+	* gcc.dg/pr56847.c: New test.
+
+2013-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56982
+	* gcc.c-torture/execute/pr56982.c: New testcase.
+
+2013-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/56718
+	* g++.dg/ipa/imm-devirt-1.C: New test.
+	* g++.dg/ipa/imm-devirt-2.C: Likewise.
+
+2013-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57000
+	* gcc.dg/tree-ssa/reassoc-27.c: New testcase.
+
+2013-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56872
+	* gfortran.dg/array_constructor_45.f90:  New test.
+	* gfortran.dg/array_constructor_46.f90:  New test.
+	* gfortran.dg/array_constructor_47.f90:  New test.
+	* gfortran.dg/array_constructor_40.f90:  Adjust number of while loops.
+
+2013-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/56999
+	* g++.dg/opt/pr56999.C: New test.
+
+2013-04-18  Cary Coutant  <ccoutant@google.com>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: Add -fno-debug-types-section.
+	* g++.dg/debug/dwarf2/pubnames-3.C: New test case.
+
+2013-04-18  Cary Coutant  <ccoutant@google.com>
+
+	* g++.dg/debug/dwarf2/typedef2.C: Add -fno-debug-types-section flag.
+	* g++.dg/debug/dwarf2/typedef4.C: Likewise.
+	* g++.dg/debug/dwarf2/static-data-member1.C: Likewise.
+	* g++.dg/debug/dwarf2/global-used-types-1.C: Likewise.
+	* g++.dg/debug/dwarf2/self-ref-1.C: Likewise.
+	* g++.dg/debug/dwarf2/nested-2.C: Likewise.
+	* g++.dg/debug/dwarf2/typedef1.C: Likewise.
+	* g++.dg/debug/dwarf2/namespace-2.C: Likewise.
+	* g++.dg/debug/dwarf2/integer-typedef.C: Likewise.
+	* g++.dg/debug/dwarf2/self-ref-2.C: Likewise.
+	* g++.dg/debug/dwarf2/explicit-constructor.C: Likewise.
+
+2013-04-18  Grigoriy Kraynov  <grigoriy.kraynov@intel.com>
+
+	* gcc.target/i386/avx2-vpop-check.h: Cast away volatility in memcmp().
+
+2013-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56984
+	* gcc.c-torture/compile/pr56984.c: New test.
+
+	PR rtl-optimization/56992
+	* gcc.dg/pr56992.c: New test.
+
+2013-04-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56814
+	* gfortran.dg/proc_ptr_42.f90: New.
+
+2013-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr41.ad[sb]: New test.
+	* gcc.dg/tree-ssa/ssa-fre-38.c: Likewise.
+	* gcc.dg/vect/slp-24-big-array.c: Beef up anti-vectorization trick.
+	* gcc.dg/vect/slp-24.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7.c: Likewise.
+	* gcc.dg/vect/vect-strided-mult-char-ls.c: Likewise.
+	* gcc.dg/vect/vect-strided-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-same-dr.c: Likewise.
+	* gcc.dg/vect/vect-strided-u16-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u16-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u32-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u32-i8.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2-gap.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-unknown.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7-big-array.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8.c: Likewise.
+
+2013-04-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/40958
+	* lib/gcc-dg.exp (scan-module): Uncompress module file before scanning.
+	* gfortran.dg/module_md5_1.f90: Remove.
+
+2013-04-16  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/adds3.c: New.
+	* gcc.target/aarch64/subs3.c: New.
+
+2013-04-16  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* gcc.target/aarch64/adds1.c: New.
+	* gcc.target/aarch64/adds2.c: New.
+	* gcc.target/aarch64/subs1.c: New.
+	* gcc.target/aarch64/subs2.c: New.
+
+2013-04-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement n3599 - Literal operator templates for strings.
+	* g++.dg/cpp1y/udlit-char-template.C: New test.
+	* g++.dg/cpp1y/udlit-char-template-neg.C: New test.
+
+2013-04-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39505
+	* gfortran.dg/no_arg_check_1.f90: New.
+	* gfortran.dg/no_arg_check_2.f90: New.
+	* gfortran.dg/no_arg_check_3.f90: New.
+
+2013-04-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56968
+	* gfortran.dg/proc_ptr_41.f90: New.
+
+2013-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56756
+	* gcc.dg/torture/pr56756.c: New testcase.
+
+2013-04-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56969
+	* gfortran.dg/c_assoc_5.f90: New.
+
+2013-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ipa/devirt-c-7.C: Require nonpic effective target.
+	* gcc.c-torture/execute/pr33992.x: Remove.
+	* gcc.c-torture/execute/pr33992.c (foo): Declare as static.
+	* gcc.dg/uninit-pred-5_a.c (foo): Ditto.
+	* gcc.dg/uninit-pred-5_b.c (foo): Ditto.
+
+2013-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56962
+	* gcc.c-torture/execute/pr56962.c: New test.
+
+2013-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56933
+	* gcc.dg/vect/pr56933.c: New testcase.
+
+2013-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/anddi3-opt.c: New test.
+	* gcc.target/arm/anddi3-opt2.c: Likewise.
+
 2013-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr56890-1.c: New test.
@@ -96,7 +511,7 @@
 
 	* gcc.dg/fold-cstvecshift.c: New testcase.
 
-2013-04-11   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-04-11  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/negs.c: New.
 
@@ -820,7 +1235,7 @@
 	* gcc.dg/vect/vect-outer-3a-big-array.c: Adjust.
 	* gcc.dg/vect/vect-outer-3a.c: Likewise.
 
-2013-03-21   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+2013-03-21  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* gcc.target/aarch64/vect.c: Test and result vector added
 	for sabd and saba instructions.

@@ -37,7 +37,7 @@ void test01()
   std::promise<int> p1;
   std::future<int> f1(p1.get_future());
 
-  p1.set_exception(std::copy_exception(value));
+  p1.set_exception(std::make_exception_ptr(value));
   try
   {
     (void) f1.get();
@@ -57,7 +57,7 @@ void test02()
   std::promise<int&> p1;
   std::future<int&> f1(p1.get_future());
 
-  p1.set_exception(std::copy_exception(value));
+  p1.set_exception(std::make_exception_ptr(value));
   try
   {
     (void) f1.get();
@@ -77,7 +77,7 @@ void test03()
   std::promise<void> p1;
   std::future<void> f1(p1.get_future());
 
-  p1.set_exception(std::copy_exception(value));
+  p1.set_exception(std::make_exception_ptr(value));
   try
   {
     f1.get();

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "dbgcnt.h"
 #include "domwalk.h"
+#include "ipa-prop.h"
 
 /* TODO:
 
@@ -4326,7 +4327,15 @@ eliminate_bb (dom_walk_data *, basic_block b)
 	    fn = VN_INFO (orig_fn)->valnum;
 	  else if (TREE_CODE (orig_fn) == OBJ_TYPE_REF
 		   && TREE_CODE (OBJ_TYPE_REF_EXPR (orig_fn)) == SSA_NAME)
-	    fn = VN_INFO (OBJ_TYPE_REF_EXPR (orig_fn))->valnum;
+	    {
+	      fn = VN_INFO (OBJ_TYPE_REF_EXPR (orig_fn))->valnum;
+	      if (!gimple_call_addr_fndecl (fn))
+		{
+		  fn = ipa_intraprocedural_devirtualization (stmt);
+		  if (fn)
+		    fn = build_fold_addr_expr (fn);
+		}
+	    }
 	  else
 	    continue;
 	  if (gimple_call_addr_fndecl (fn) != NULL_TREE

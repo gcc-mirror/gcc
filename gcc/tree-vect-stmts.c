@@ -4465,7 +4465,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       if (negative)
 	{
-	  gcc_assert (!grouped_load);
+	  if (grouped_load)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "negative step for group load not supported");
+	      return false;
+	    }
 	  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
 	  if (alignment_support_scheme != dr_aligned
 	      && alignment_support_scheme != dr_unaligned_supported)
@@ -4748,12 +4754,21 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       if (slp
-          && !SLP_INSTANCE_LOAD_PERMUTATION (slp_node_instance).exists ()
+          && !SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
 	  && first_stmt != SLP_TREE_SCALAR_STMTS (slp_node)[0])
         first_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[0];
 
       /* Check if the chain of loads is already vectorized.  */
-      if (STMT_VINFO_VEC_STMT (vinfo_for_stmt (first_stmt)))
+      if (STMT_VINFO_VEC_STMT (vinfo_for_stmt (first_stmt))
+	  /* For SLP we would need to copy over SLP_TREE_VEC_STMTS.
+	     ???  But we can only do so if there is exactly one
+	     as we have no way to get at the rest.  Leave the CSE
+	     opportunity alone.
+	     ???  With the group load eventually participating
+	     in multiple different permutations (having multiple
+	     slp nodes which refer to the same group) the CSE
+	     is even wrong code.  See PR56270.  */
+	  && !slp)
 	{
 	  *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
 	  return true;
@@ -4766,7 +4781,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  grouped_load = false;
 	  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-          if (SLP_INSTANCE_LOAD_PERMUTATION (slp_node_instance).exists ())
+          if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
             slp_perm = true;
 	  group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
     	}
@@ -5157,7 +5172,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       if (slp_perm)
         {
-          if (!vect_transform_slp_perm_load (stmt, dr_chain, gsi, vf,
+          if (!vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
                                              slp_node_instance, false))
             {
               dr_chain.release ();
@@ -5962,7 +5977,6 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   GROUP_STORE_COUNT (res) = 0;
   GROUP_GAP (res) = 0;
   GROUP_SAME_DR_STMT (res) = NULL;
-  GROUP_READ_WRITE_DEPENDENCE (res) = false;
 
   return res;
 }

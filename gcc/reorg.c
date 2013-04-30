@@ -458,69 +458,32 @@ find_end_label (rtx kind)
 /* Put INSN and LIST together in a SEQUENCE rtx of LENGTH, and replace
    the pattern of INSN with the SEQUENCE.
 
-   Chain the insns so that NEXT_INSN of each insn in the sequence points to
-   the next and NEXT_INSN of the last insn in the sequence points to
-   the first insn after the sequence.  Similarly for PREV_INSN.  This makes
-   it easier to scan all insns.
-
    Returns the SEQUENCE that replaces INSN.  */
 
 static rtx
 emit_delay_sequence (rtx insn, rtx list, int length)
 {
-  int i = 1;
-  rtx li;
-  int had_barrier = 0;
-
   /* Allocate the rtvec to hold the insns and the SEQUENCE.  */
   rtvec seqv = rtvec_alloc (length + 1);
   rtx seq = gen_rtx_SEQUENCE (VOIDmode, seqv);
   rtx seq_insn = make_insn_raw (seq);
-  rtx first = get_insns ();
-  rtx last = get_last_insn ();
 
-  /* Make a copy of the insn having delay slots.  */
-  rtx delay_insn = copy_rtx (insn);
+  /* If DELAY_INSN has a location, use it for SEQ_INSN.  If DELAY_INSN does
+     not have a location, but one of the delayed insns does, we pick up a
+     location from there later.  */
+  INSN_LOCATION (seq_insn) = INSN_LOCATION (insn);
 
-  /* If INSN is followed by a BARRIER, delete the BARRIER since it will only
-     confuse further processing.  Update LAST in case it was the last insn.
-     We will put the BARRIER back in later.  */
-  if (NEXT_INSN (insn) && BARRIER_P (NEXT_INSN (insn)))
-    {
-      delete_related_insns (NEXT_INSN (insn));
-      last = get_last_insn ();
-      had_barrier = 1;
-    }
-
-  /* Splice our SEQUENCE into the insn stream where INSN used to be.  */
-  NEXT_INSN (seq_insn) = NEXT_INSN (insn);
-  PREV_INSN (seq_insn) = PREV_INSN (insn);
-
-  if (insn != last)
-    PREV_INSN (NEXT_INSN (seq_insn)) = seq_insn;
-
-  if (insn != first)
-    NEXT_INSN (PREV_INSN (seq_insn)) = seq_insn;
-
-  /* Note the calls to set_new_first_and_last_insn must occur after
-     SEQ_INSN has been completely spliced into the insn stream.
-
-     Otherwise CUR_INSN_UID will get set to an incorrect value because
-     set_new_first_and_last_insn will not find SEQ_INSN in the chain.  */
-  if (insn == last)
-    set_new_first_and_last_insn (first, seq_insn);
-
-  if (insn == first)
-    set_new_first_and_last_insn (seq_insn, last);
+  /* Unlink INSN from the insn chain, so that we can put it into
+     the SEQUENCE.   Remember where we want to emit SEQUENCE in AFTER.  */
+  rtx after = PREV_INSN (insn);
+  remove_insn (insn);
+  NEXT_INSN (insn) = PREV_INSN (insn) = NULL;
 
   /* Build our SEQUENCE and rebuild the insn chain.  */
-  XVECEXP (seq, 0, 0) = delay_insn;
-  INSN_DELETED_P (delay_insn) = 0;
-  PREV_INSN (delay_insn) = PREV_INSN (seq_insn);
-
-  INSN_LOCATION (seq_insn) = INSN_LOCATION (delay_insn);
-
-  for (li = list; li; li = XEXP (li, 1), i++)
+  int i = 1;
+  start_sequence ();
+  XVECEXP (seq, 0, 0) = emit_insn (insn);
+  for (rtx li = list; li; li = XEXP (li, 1), i++)
     {
       rtx tem = XEXP (li, 0);
       rtx note, next;
@@ -528,9 +491,10 @@ emit_delay_sequence (rtx insn, rtx list, int length)
       /* Show that this copy of the insn isn't deleted.  */
       INSN_DELETED_P (tem) = 0;
 
-      XVECEXP (seq, 0, i) = tem;
-      PREV_INSN (tem) = XVECEXP (seq, 0, i - 1);
-      NEXT_INSN (XVECEXP (seq, 0, i - 1)) = tem;
+      /* Unlink insn from its original place, and re-emit it into
+	 the sequence.  */
+      NEXT_INSN (tem) = PREV_INSN (tem) = NULL;
+      XVECEXP (seq, 0, i) = emit_insn (tem);
 
       /* SPARC assembler, for instance, emit warning when debug info is output
          into the delay slot.  */
@@ -561,28 +525,11 @@ emit_delay_sequence (rtx insn, rtx list, int length)
 	    }
 	}
     }
-
-  NEXT_INSN (XVECEXP (seq, 0, length)) = NEXT_INSN (seq_insn);
-
-  /* If the previous insn is a SEQUENCE, update the NEXT_INSN pointer on the
-     last insn in that SEQUENCE to point to us.  Similarly for the first
-     insn in the following insn if it is a SEQUENCE.  */
-
-  if (PREV_INSN (seq_insn) && NONJUMP_INSN_P (PREV_INSN (seq_insn))
-      && GET_CODE (PATTERN (PREV_INSN (seq_insn))) == SEQUENCE)
-    NEXT_INSN (XVECEXP (PATTERN (PREV_INSN (seq_insn)), 0,
-			XVECLEN (PATTERN (PREV_INSN (seq_insn)), 0) - 1))
-      = seq_insn;
-
-  if (NEXT_INSN (seq_insn) && NONJUMP_INSN_P (NEXT_INSN (seq_insn))
-      && GET_CODE (PATTERN (NEXT_INSN (seq_insn))) == SEQUENCE)
-    PREV_INSN (XVECEXP (PATTERN (NEXT_INSN (seq_insn)), 0, 0)) = seq_insn;
-
-  /* If there used to be a BARRIER, put it back.  */
-  if (had_barrier)
-    emit_barrier_after (seq_insn);
-
+  end_sequence ();
   gcc_assert (i == length + 1);
+
+  /* Splice our SEQUENCE into the insn stream where INSN used to be.  */
+  add_insn_after (seq_insn, after, NULL);
 
   return seq_insn;
 }

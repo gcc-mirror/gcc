@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,8 @@ package Prj.Part is
       Current_Directory : String := "";
       Is_Config_File    : Boolean;
       Env               : in out Prj.Tree.Environment;
-      Target_Name       : String := "");
+      Target_Name       : String := "";
+      Implicit_Project  : Boolean := False);
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
    --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,
@@ -66,5 +67,12 @@ package Prj.Part is
    --  Target_Name will be used to initialize the default project path, unless
    --  In_Tree.Project_Path has already been initialized (which is the
    --  recommended use).
+   --
+   --  If Implicit_Project is True, the main project file being parsed is
+   --  deemed to be in the current working directory, even if it is not the
+   --  case. Implicit_Project is set to True when a tool such as gprbuild is
+   --  invoked without a project file and is using an implicit project file
+   --  that is virtually in the current working directory, but is physically
+   --  in another directory.
 
 end Prj.Part;

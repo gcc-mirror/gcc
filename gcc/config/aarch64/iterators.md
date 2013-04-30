@@ -230,7 +230,6 @@
     UNSPEC_CMTST	; Used in aarch64-simd.md.
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMIN		; Used in aarch64-simd.md.
-    UNSPEC_BSL		; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
     UNSPEC_ZIP1		; Used in vector permute patterns.
@@ -531,6 +530,9 @@
 ;; Iterator for integer conversions
 (define_code_iterator FIXUORS [fix unsigned_fix])
 
+;; Iterator for float conversions
+(define_code_iterator FLOATUORS [float unsigned_float])
+
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator MAXMIN [smax smin umax umin])
 
@@ -558,6 +560,10 @@
 			 (zero_extend "zero_extend")
 			 (sign_extract "extv")
 			 (zero_extract "extzv")
+			 (fix "fix")
+			 (unsigned_fix "fixuns")
+			 (float "float")
+			 (unsigned_float "floatuns")
 			 (and "and")
 			 (ior "ior")
 			 (xor "xor")
@@ -576,10 +582,14 @@
 			 (lt "lt")
 			 (ge "ge")])
 
+(define_code_attr fix_trunc_optab [(fix "fix_trunc")
+				   (unsigned_fix "fixuns_trunc")])
+
 ;; Optab prefix for sign/zero-extending operations
 (define_code_attr su_optab [(sign_extend "") (zero_extend "u")
 			    (div "") (udiv "u")
 			    (fix "") (unsigned_fix "u")
+			    (float "s") (unsigned_float "u")
 			    (ss_plus "s") (us_plus "u")
 			    (ss_minus "s") (us_minus "u")])
 
@@ -693,10 +703,13 @@
 			      UNSPEC_UZP1 UNSPEC_UZP2])
 
 (define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
-			     UNSPEC_FRINTI UNSPEC_FRINTX UNSPEC_FRINTA])
+			     UNSPEC_FRINTN UNSPEC_FRINTI UNSPEC_FRINTX
+			     UNSPEC_FRINTA])
 
 (define_int_iterator FCVT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
-			    UNSPEC_FRINTA])
+			    UNSPEC_FRINTA UNSPEC_FRINTN])
+
+(define_int_iterator FRECP [UNSPEC_FRECPE UNSPEC_FRECPX])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
@@ -786,15 +799,18 @@
 				(UNSPEC_FRINTM "floor")
 				(UNSPEC_FRINTI "nearbyint")
 				(UNSPEC_FRINTX "rint")
-				(UNSPEC_FRINTA "round")])
+				(UNSPEC_FRINTA "round")
+				(UNSPEC_FRINTN "frintn")])
 
 ;; frint suffix for floating-point rounding instructions.
 (define_int_attr frint_suffix [(UNSPEC_FRINTZ "z") (UNSPEC_FRINTP "p")
 			       (UNSPEC_FRINTM "m") (UNSPEC_FRINTI "i")
-			       (UNSPEC_FRINTX "x") (UNSPEC_FRINTA "a")])
+			       (UNSPEC_FRINTX "x") (UNSPEC_FRINTA "a")
+			       (UNSPEC_FRINTN "n")])
 
 (define_int_attr fcvt_pattern [(UNSPEC_FRINTZ "btrunc") (UNSPEC_FRINTA "round")
-			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")])
+			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")
+			       (UNSPEC_FRINTN "frintn")])
 
 (define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
 			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")
@@ -803,3 +819,5 @@
 (define_int_attr perm_hilo [(UNSPEC_ZIP1 "1") (UNSPEC_ZIP2 "2")
 			    (UNSPEC_TRN1 "1") (UNSPEC_TRN2 "2")
 			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")])
+
+(define_int_attr frecp_suffix  [(UNSPEC_FRECPE "e") (UNSPEC_FRECPX "x")])

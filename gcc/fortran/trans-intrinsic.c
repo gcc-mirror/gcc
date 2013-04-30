@@ -6317,8 +6317,13 @@ conv_isocbinding_function (gfc_se *se, gfc_expr *expr)
     {
       if (arg->expr->rank == 0)
 	gfc_conv_expr_reference (se, arg->expr);
-      else
+      else if (gfc_is_simply_contiguous (arg->expr, false))
 	gfc_conv_array_parameter (se, arg->expr, true, NULL, NULL, NULL);
+      else
+	{
+	  gfc_conv_expr_descriptor (se, arg->expr);
+	  se->expr = gfc_conv_descriptor_data_get (se->expr);
+	}
 
       /* TODO -- the following two lines shouldn't be necessary, but if
 	 they're removed, a bug is exposed later in the code path.

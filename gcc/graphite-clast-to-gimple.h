@@ -38,26 +38,7 @@ typedef struct bb_pbb_def
   poly_bb_p pbb;
 } bb_pbb_def;
 
-extern bool gloog (scop_p, htab_t);
 extern void debug_clast_stmt (struct clast_stmt *);
 extern void print_clast_stmt (FILE *, struct clast_stmt *);
-
-/* Hash function for data base element BB_PBB.  */
-
-static inline hashval_t
-bb_pbb_map_hash (const void *bb_pbb)
-{
-  return (hashval_t)(((const bb_pbb_def *)bb_pbb)->bb->index);
-}
-
-/* Compare data base element BB_PBB1 and BB_PBB2.  */
-
-static inline int
-eq_bb_pbb_map (const void *bb_pbb1, const void *bb_pbb2)
-{
-  const bb_pbb_def *bp1 = (const bb_pbb_def *) bb_pbb1;
-  const bb_pbb_def *bp2 = (const bb_pbb_def *) bb_pbb2;
-  return (bp1->bb->index == bp2->bb->index);
-}
 
 #endif

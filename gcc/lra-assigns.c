@@ -448,7 +448,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
   int hr, conflict_hr, nregs;
   enum machine_mode biggest_mode;
   unsigned int k, conflict_regno;
-  int val, biggest_nregs, nregs_diff;
+  int offset, val, biggest_nregs, nregs_diff;
   enum reg_class rclass;
   bitmap_iterator bi;
   bool *rclass_intersect_p;
@@ -508,9 +508,10 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
 #endif
   sparseset_clear_bit (conflict_reload_and_inheritance_pseudos, regno);
   val = lra_reg_info[regno].val;
+  offset = lra_reg_info[regno].offset;
   CLEAR_HARD_REG_SET (impossible_start_hard_regs);
   EXECUTE_IF_SET_IN_SPARSESET (live_range_hard_reg_pseudos, conflict_regno)
-    if (val == lra_reg_info[conflict_regno].val)
+    if (lra_reg_val_equal_p (conflict_regno, val, offset))
       {
 	conflict_hr = live_pseudos_reg_renumber[conflict_regno];
 	nregs = (hard_regno_nregs[conflict_hr]
@@ -538,7 +539,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
       }
   EXECUTE_IF_SET_IN_SPARSESET (conflict_reload_and_inheritance_pseudos,
 			       conflict_regno)
-    if (val != lra_reg_info[conflict_regno].val)
+    if (!lra_reg_val_equal_p (conflict_regno, val, offset))
       {
 	lra_assert (live_pseudos_reg_renumber[conflict_regno] < 0);
 	if ((hard_regno
@@ -1007,7 +1008,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 {
   int p, i, j, n, regno, hard_regno;
   unsigned int k, conflict_regno;
-  int val;
+  int val, offset;
   HARD_REG_SET conflict_set;
   enum machine_mode mode;
   lra_live_range_t r;
@@ -1050,8 +1051,9 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
       COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
       IOR_HARD_REG_SET (conflict_set, lra_reg_info[regno].conflict_hard_regs);
       val = lra_reg_info[regno].val;
+      offset = lra_reg_info[regno].offset;
       EXECUTE_IF_SET_IN_SPARSESET (live_range_hard_reg_pseudos, conflict_regno)
-	if (val != lra_reg_info[conflict_regno].val
+	if (!lra_reg_val_equal_p (conflict_regno, val, offset)
 	    /* If it is multi-register pseudos they should start on
 	       the same hard register.	*/
 	    || hard_regno != reg_renumber[conflict_regno])

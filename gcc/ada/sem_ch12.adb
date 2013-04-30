@@ -3021,6 +3021,13 @@ package body Sem_Ch12 is
       Id := Defining_Entity (N);
       Generate_Definition (Id);
 
+      --  Analyze aspects now, so that generated pragmas appear in the
+      --  declarations before building and analyzing the generic copy.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
+
       --  Expansion is not applied to generic units
 
       Start_Generic;
@@ -3079,9 +3086,6 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------
@@ -3244,11 +3248,10 @@ package body Sem_Ch12 is
          begin
             Aspect := First (Aspect_Specifications (N));
             while Present (Aspect) loop
-               if Get_Aspect_Id (Chars (Identifier (Aspect)))
-                  /= Aspect_Warnings
-               then
+               if Get_Aspect_Id (Aspect) /= Aspect_Warnings then
                   Analyze (Expression (Aspect));
                end if;
+
                Next (Aspect);
             end loop;
 
@@ -5464,11 +5467,13 @@ package body Sem_Ch12 is
       --  For a formal that is an array type, the component type is often a
       --  previous formal in the same unit. The privacy status of the component
       --  type will have been examined earlier in the traversal of the
-      --  corresponding actuals, and this status should not be modified for the
-      --  array type itself.
+      --  corresponding actuals, and this status should not be modified for
+      --  the array (sub)type itself. However, if the base type of the array
+      --  (sub)type is private, its full view must be restored in the body to
+      --  be consistent with subsequent index subtypes, etc.
       --
-      --  To detect this case we have to rescan the list of formals, which
-      --  is usually short enough to ignore the resulting inefficiency.
+      --  To detect this case we have to rescan the list of formals, which is
+      --  usually short enough to ignore the resulting inefficiency.
 
       -----------------------------
       -- Denotes_Previous_Actual --
@@ -5509,6 +5514,7 @@ package body Sem_Ch12 is
            and then Is_Entity_Name (Subtype_Indication (Parent (E)))
          then
             if Is_Array_Type (E)
+              and then not Is_Private_Type (Etype (E))
               and then Denotes_Previous_Actual (Component_Type (E))
             then
                null;
@@ -5546,8 +5552,8 @@ package body Sem_Ch12 is
             if Is_Discrete_Or_Fixed_Point_Type (E) then
                Set_RM_Size (E, RM_Size (Astype));
 
-            --  In  nested instances, the base type of an access actual
-            --  may itself be private, and need to be exchanged.
+            --  In nested instances, the base type of an access actual may
+            --  itself be private, and need to be exchanged.
 
             elsif Is_Access_Type (E)
               and then Is_Private_Type (Etype (E))
@@ -5649,9 +5655,9 @@ package body Sem_Ch12 is
                then
                   Switch_View (Typ);
 
-                  --  If the type of the entity is a subtype, it may also
-                  --  have to be made visible, together with the base type
-                  --  of its full view, after exchange.
+                  --  If the type of the entity is a subtype, it may also have
+                  --  to be made visible, together with the base type of its
+                  --  full view, after exchange.
 
                   if Is_Private_Type (Etype (E)) then
                      Switch_View (Etype (E));
@@ -5685,8 +5691,8 @@ package body Sem_Ch12 is
       --  Search generic parent for possible child unit with the given name
 
       function In_Enclosing_Instance return Boolean;
-      --  Within an instance of the parent, the child unit may be denoted
-      --  by a simple name, or an abbreviated expanded name. Examine enclosing
+      --  Within an instance of the parent, the child unit may be denoted by
+      --  a simple name, or an abbreviated expanded name. Examine enclosing
       --  scopes to locate a possible parent instantiation.
 
       ------------------------
@@ -5903,10 +5909,10 @@ package body Sem_Ch12 is
                elsif In_Open_Scopes (Inst_Par) then
 
                   --  If the parent is already installed, install the actuals
-                  --  for its formal packages. This is necessary when the
-                  --  child instance is a child of the parent instance:
-                  --  in this case, the parent is placed on the scope stack
-                  --  but the formal packages are not made visible.
+                  --  for its formal packages. This is necessary when the child
+                  --  instance is a child of the parent instance: in this case,
+                  --  the parent is placed on the scope stack but the formal
+                  --  packages are not made visible.
 
                   Install_Formal_Packages (Inst_Par);
                end if;
@@ -6138,9 +6144,9 @@ package body Sem_Ch12 is
 
             --  The normal exchange mechanism relies on the setting of a
             --  flag on the reference in the generic. However, an additional
-            --  mechanism is needed for types that are not explicitly mentioned
-            --  in the generic, but may be needed in expanded code in the
-            --  instance. This includes component types of arrays and
+            --  mechanism is needed for types that are not explicitly
+            --  mentioned in the generic, but may be needed in expanded code
+            --  in the instance. This includes component types of arrays and
             --  designated types of access types. This processing must also
             --  include the index types of arrays which we take care of here.
 
@@ -6322,10 +6328,10 @@ package body Sem_Ch12 is
       New_N : Node_Id;
 
       function Copy_Generic_Descendant (D : Union_Id) return Union_Id;
-      --  Check the given value of one of the Fields referenced by the
-      --  current node to determine whether to copy it recursively. The
-      --  field may hold a Node_Id, a List_Id, or an Elist_Id, or a plain
-      --  value (Sloc, Uint, Char) in which case it need not be copied.
+      --  Check the given value of one of the Fields referenced by the current
+      --  node to determine whether to copy it recursively. The field may hold
+      --  a Node_Id, a List_Id, or an Elist_Id, or a plain value (Sloc, Uint,
+      --  Char) in which case it need not be copied.
 
       procedure Copy_Descendants;
       --  Common utility for various nodes
@@ -6339,10 +6345,10 @@ package body Sem_Ch12 is
       --  Apply Copy_Node recursively to the members of a node list
 
       function In_Defining_Unit_Name (Nam : Node_Id) return Boolean;
-      --  True if an identifier is part of the defining program unit name
-      --  of a child unit. The entity of such an identifier must be kept
-      --  (for ASIS use) even though as the name of an enclosing generic
-      --   it would otherwise not be preserved in the generic tree.
+      --  True if an identifier is part of the defining program unit name of
+      --  a child unit. The entity of such an identifier must be kept (for
+      --  ASIS use) even though as the name of an enclosing generic it would
+      --  otherwise not be preserved in the generic tree.
 
       ----------------------
       -- Copy_Descendants --
@@ -6502,19 +6508,20 @@ package body Sem_Ch12 is
             Set_Associated_Node (N, New_N);
 
             --  If we are within an instantiation, this is a nested generic
-            --  that has already been analyzed at the point of definition. We
-            --  must preserve references that were global to the enclosing
+            --  that has already been analyzed at the point of definition.
+            --  We must preserve references that were global to the enclosing
             --  parent at that point. Other occurrences, whether global or
             --  local to the current generic, must be resolved anew, so we
             --  reset the entity in the generic copy. A global reference has a
             --  smaller depth than the parent, or else the same depth in case
             --  both are distinct compilation units.
+
             --  A child unit is implicitly declared within the enclosing parent
             --  but is in fact global to it, and must be preserved.
 
             --  It is also possible for Current_Instantiated_Parent to be
-            --  defined, and for this not to be a nested generic, namely if the
-            --  unit is loaded through Rtsfind. In that case, the entity of
+            --  defined, and for this not to be a nested generic, namely if
+            --  the unit is loaded through Rtsfind. In that case, the entity of
             --  New_N is only a link to the associated node, and not a defining
             --  occurrence.
 
@@ -6555,11 +6562,11 @@ package body Sem_Ch12 is
          --  Case of instantiating identifier or some other name or operator
 
          else
-            --  If the associated node is still defined, the entity in it is
-            --  global, and must be copied to the instance. If this copy is
-            --  being made for a body to inline, it is applied to an
-            --  instantiated tree, and the entity is already present and must
-            --  be also preserved.
+            --  If the associated node is still defined, the entity in it
+            --  is global, and must be copied to the instance. If this copy
+            --  is being made for a body to inline, it is applied to an
+            --  instantiated tree, and the entity is already present and
+            --  must be also preserved.
 
             declare
                Assoc : constant Node_Id := Get_Associated_Node (N);
@@ -6634,7 +6641,7 @@ package body Sem_Ch12 is
          --  If we are not instantiating, then this is where we load and
          --  analyze subunits, i.e. at the point where the stub occurs. A
          --  more permissive system might defer this analysis to the point
-         --  of instantiation, but this seems to complicated for now.
+         --  of instantiation, but this seems too complicated for now.
 
          if not Instantiating then
             declare
@@ -6659,8 +6666,8 @@ package body Sem_Ch12 is
                Lib.Analysing_Subunit_Of_Main := False;
 
                --  If the proper body is not found, a warning message will be
-               --  emitted when analyzing the stub, or later at the point
-               --  of instantiation. Here we just leave the stub as is.
+               --  emitted when analyzing the stub, or later at the point of
+               --  instantiation. Here we just leave the stub as is.
 
                if Unum = No_Unit then
                   Subunits_Missing := True;
@@ -6898,7 +6905,6 @@ package body Sem_Ch12 is
          begin
             if Prag_Id = Pragma_Ident or else Prag_Id = Pragma_Comment then
                New_N := Make_Null_Statement (Sloc (N));
-
             else
                Copy_Descendants;
             end if;
@@ -7457,7 +7463,7 @@ package body Sem_Ch12 is
               Corresponding_Spec (Proper_Body (Unit (Library_Unit (Enc_G))));
          end if;
 
-         --  Freeze package that encloses instance, and place node after
+         --  Freeze package that encloses instance, and place node after the
          --  package that encloses generic. If enclosing package is already
          --  frozen we have to assume it is at the proper place. This may be a
          --  potential ABE that requires dynamic checking. Do not add a freeze
@@ -7876,9 +7882,9 @@ package body Sem_Ch12 is
       Par_N : Node_Id;
 
       function Enclosing_Body (N : Node_Id) return Node_Id;
-      --  Find enclosing package or subprogram body, if any. Freeze node
-      --  may be placed at end of current declarative list if previous
-      --  instance and current one have different enclosing bodies.
+      --  Find enclosing package or subprogram body, if any. Freeze node may
+      --  be placed at end of current declarative list if previous instance
+      --  and current one have different enclosing bodies.
 
       function Previous_Instance (Gen : Entity_Id) return Entity_Id;
       --  Find the local instance, if any, that declares the generic that is
@@ -8387,8 +8393,8 @@ package body Sem_Ch12 is
       --  Install the scopes of noninstance parent units ending with Par
 
       procedure Install_Spec (Par : Entity_Id);
-      --  The child unit is within the declarative part of the parent, so
-      --  the declarations within the parent are immediately visible.
+      --  The child unit is within the declarative part of the parent, so the
+      --  declarations within the parent are immediately visible.
 
       -------------------------------
       -- Install_Noninstance_Specs --
@@ -8415,10 +8421,10 @@ package body Sem_Ch12 is
 
       begin
          --  If this parent of the child instance is a top-level unit,
-         --  then record the unit and its visibility for later resetting
-         --  in Remove_Parent. We exclude units that are generic instances,
-         --  as we only want to record this information for the ultimate
-         --  top-level noninstance parent (is that always correct???).
+         --  then record the unit and its visibility for later resetting in
+         --  Remove_Parent. We exclude units that are generic instances, as we
+         --  only want to record this information for the ultimate top-level
+         --  noninstance parent (is that always correct???).
 
          if Scope (Par) = Standard_Standard
            and then not Is_Generic_Instance (Par)
@@ -8692,15 +8698,15 @@ package body Sem_Ch12 is
       procedure Find_Matching_Actual
        (F    : Node_Id;
         Act  : in out Entity_Id);
-      --  We need to associate each formal entity in the formal package
-      --  with the corresponding entity in the actual package. The actual
-      --  package has been analyzed and possibly expanded, and as a result
-      --  there is no one-to-one correspondence between the two lists (for
-      --  example, the actual may include subtypes, itypes, and inherited
-      --  primitive operations, interspersed among the renaming declarations
-      --  for the actuals) . We retrieve the corresponding actual by name
-      --  because each actual has the same name as the formal, and they do
-      --  appear in the same order.
+      --  We need to associate each formal entity in the formal package with
+      --  the corresponding entity in the actual package. The actual package
+      --  has been analyzed and possibly expanded, and as a result there is
+      --  no one-to-one correspondence between the two lists (for example,
+      --  the actual may include subtypes, itypes, and inherited primitive
+      --  operations, interspersed among the renaming declarations for the
+      --  actuals) . We retrieve the corresponding actual by name because each
+      --  actual has the same name as the formal, and they do appear in the
+      --  same order.
 
       function Get_Formal_Entity (N : Node_Id) return Entity_Id;
       --  Retrieve entity of defining entity of  generic formal parameter.
@@ -8712,13 +8718,12 @@ package body Sem_Ch12 is
         (Formal_Node : Node_Id;
          Formal_Ent  : Entity_Id;
          Actual_Ent  : Entity_Id);
-      --  Associates the formal entity with the actual. In the case
-      --  where Formal_Ent is a formal package, this procedure iterates
-      --  through all of its formals and enters associations between the
-      --  actuals occurring in the formal package's corresponding actual
-      --  package (given by Actual_Ent) and the formal package's formal
-      --  parameters. This procedure recurses if any of the parameters is
-      --  itself a package.
+      --  Associates the formal entity with the actual. In the case where
+      --  Formal_Ent is a formal package, this procedure iterates through all
+      --  of its formals and enters associations between the actuals occurring
+      --  in the formal package's corresponding actual package (given by
+      --  Actual_Ent) and the formal package's formal parameters. This
+      --  procedure recurses if any of the parameters is itself a package.
 
       function Is_Instance_Of
         (Act_Spec : Entity_Id;
@@ -9173,12 +9178,12 @@ package body Sem_Ch12 is
 
       function From_Parent_Scope (Subp : Entity_Id) return Boolean;
       --  If the generic is a child unit, the parent has been installed on the
-      --  scope stack, but a default subprogram cannot resolve to something on
-      --  the parent because that parent is not really part of the visible
+      --  scope stack, but a default subprogram cannot resolve to something
+      --  on the parent because that parent is not really part of the visible
       --  context (it is there to resolve explicit local entities). If the
-      --  default has resolved in this way, we remove the entity from
-      --  immediate visibility and analyze the node again to emit an error
-      --  message or find another visible candidate.
+      --  default has resolved in this way, we remove the entity from immediate
+      --  visibility and analyze the node again to emit an error message or
+      --  find another visible candidate.
 
       procedure Valid_Actual_Subprogram (Act : Node_Id);
       --  Perform legality check and raise exception on failure
@@ -9556,14 +9561,14 @@ package body Sem_Ch12 is
          end if;
 
          --  The actual has to be resolved in order to check that it is a
-         --  variable (due to cases such as F (1), where F returns access to an
-         --  array, and for overloaded prefixes).
+         --  variable (due to cases such as F (1), where F returns access to
+         --  an array, and for overloaded prefixes).
 
          Ftyp := Get_Instance_Of (Etype (A_Gen_Obj));
 
-         --  If the type of the formal is not itself a formal, and the
-         --  current unit is a child unit, the formal type must be declared
-         --  in a parent, and must be retrieved by visibility.
+         --  If the type of the formal is not itself a formal, and the current
+         --  unit is a child unit, the formal type must be declared in a
+         --  parent, and must be retrieved by visibility.
 
          if Ftyp = Orig_Ftyp
            and then Is_Generic_Unit (Scope (Ftyp))
@@ -12402,13 +12407,13 @@ package body Sem_Ch12 is
                Analyze (Act);
             end if;
 
-            --  Ensure that a ghost function does not act as generic actual
+            --  Ensure that a ghost subprogram does not act as generic actual
 
             if Is_Entity_Name (Act)
-              and then Is_Ghost_Function (Entity (Act))
+              and then Is_Ghost_Subprogram (Entity (Act))
             then
                Error_Msg_N
-                 ("ghost function & cannot act as generic actual", Act);
+                 ("ghost subprogram & cannot act as generic actual", Act);
                Abandon_Instantiation (Act);
 
             elsif Errs /= Serious_Errors_Detected then

@@ -1,3 +1,28 @@
+2013-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* c-common.c (check_user_alignment): Emit error for negative values.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-opts.c (set_std_cxx11): Use CLK_CXX1Y and CLK_GNUCXX1Y.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Do not define
+	__GXX_EXPERIMENTAL_CXX1Y__.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* c.opt ([Wpointer-arith]): Enabled by -Wpedantic, as documented.
+	* c-common.c (pointer_int_sum): Change -Wpointer-arith pedwarns
+	to simply use OPT_Wpointer_arith.
+	(c_sizeof_or_alignof_type): Likewise.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __GXX_EXPERIMENTAL_CXX1Y__.
+
 2013-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-format.c (gcc_diag_char_table, gcc_tdiag_char_table,

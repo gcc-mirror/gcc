@@ -280,24 +280,27 @@ package Errout is
    --      which is being continued. It is allowable to put ? in continuation
    --      messages, and the usual style is to include it, since it makes it
    --      clear that the continuation is part of a warning message.
+   --
+   --      Note: this usage is obsolete, use ??, ?x? or ?X? instead to specify
+   --      the string to be added when Warn_Doc_Switch is set to True. If this
+   --      switch is True, then for simple ? messages it has no effect. This
+   --      simple form is to ease transition and will be removed later.
 
-   --    Insertion character ?? (two question marks)
+   --    Insertion character ?? (Two question marks: default warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
-   --      "[enabled by default]" at the end of the warning message. In the
-   --      case of continuations, use this in each continuation message.
+   --      "[enabled by default]" at the end of the warning message. For
+   --      continuations, use this in each continuation message.
 
    --    Insertion character ?x? (warning with switch)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
    --      "[-gnatwx]" at the end of the warning message. x is a lower case
-   --      letter. In the case of continuations, use this on each continuation
-   --      message.
+   --      letter. For continuations, use this on each continuation message.
 
    --    Insertion character ?X? (warning with dot switch)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
    --      "[-gnatw.x]" at the end of the warning message. X is an upper case
-   --      letter corresponding to the lower case letter x in the message. In
-   --      the case of continuations, use this on each continuation
-   --      message.
+   --      letter corresponding to the lower case letter x in the message.
+   --      For continuations, use this on each continuation message.
 
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
@@ -321,9 +324,8 @@ package Errout is
    --    Insertion character ' (Quote: literal character)
    --      Precedes a character which is placed literally into the message.
    --      Used to insert characters into messages that are one of the
-   --      insertion characters defined here. Also useful in inserting
-   --      sequences of upper case letters which are not to be treated as
-   --      keywords.
+   --      insertion characters defined here. Also used when insertion
+   --      upper case letter sequences not to be treated as keywords.
 
    --    Insertion character \ (Backslash: continuation message)
    --      Indicates that the message is a continuation of a message
@@ -505,8 +507,8 @@ package Errout is
    --  Note: a special exception is that RM is never treated as a keyword
    --  but instead is copied literally into the message, this avoids the
    --  need for writing 'R'M for all reference manual quotes. A similar
-   --  exception is applied to the occurrence of the string Alfa used in
-   --  error messages about the Alfa subset of Ada.
+   --  exception is applied to the occurrence of the string SPARK used in
+   --  error messages about the SPARK subset of Ada.
 
    --  In the case of names, the default mode for the error text processor
    --  is to surround the name by quotation marks automatically. The case

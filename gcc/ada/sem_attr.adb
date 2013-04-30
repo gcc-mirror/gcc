@@ -376,10 +376,6 @@ package body Sem_Attr is
       pragma No_Return (Error_Attr);
       --  Like Error_Attr, but error is posted at the start of the prefix
 
-      procedure S14_Attribute;
-      --  Called for all attributes defined for formal verification to check
-      --  that the S14_Extensions flag is set.
-
       procedure Standard_Attribute (Val : Int);
       --  Used to process attributes whose prefix is package Standard which
       --  yield values of type Universal_Integer. The attribute reference
@@ -606,9 +602,9 @@ package body Sem_Attr is
             elsif Aname = Name_Unchecked_Access then
                Error_Attr ("attribute% cannot be applied to a subprogram", P);
 
-            elsif Is_Ghost_Function (Entity (P)) then
+            elsif Is_Ghost_Subprogram (Entity (P)) then
                Error_Attr_P
-                 ("prefix of % attribute cannot be a ghost function");
+                 ("prefix of % attribute cannot be a ghost subprogram");
             end if;
 
             --  Issue an error if the prefix denotes an eliminated subprogram
@@ -1971,18 +1967,6 @@ package body Sem_Attr is
          Set_Etype (N, Standard_Boolean);
       end Legal_Formal_Attribute;
 
-      -------------------
-      -- S14_Attribute --
-      -------------------
-
-      procedure S14_Attribute is
-      begin
-         if not Formal_Extensions then
-            Error_Attr
-              ("attribute % requires the use of debug switch -gnatd.V", N);
-         end if;
-      end S14_Attribute;
-
       ------------------------
       -- Standard_Attribute --
       ------------------------
@@ -2135,20 +2119,6 @@ package body Sem_Attr is
       if No (Exprs) then
          E1 := Empty;
          E2 := Empty;
-
-      --  Do not analyze the expressions of attribute Loop_Entry. Depending on
-      --  the number of arguments and/or the nature of the first argument, the
-      --  whole attribute reference may be rewritten into an indexed component.
-      --  In the case of two or more arguments, the expressions are analyzed
-      --  when the indexed component is analyzed, otherwise the sole argument
-      --  is preanalyzed to determine whether it is a loop name.
-
-      elsif Aname = Name_Loop_Entry then
-         E1 := First (Exprs);
-
-         if Present (E1) then
-            E2 := Next (E1);
-         end if;
 
       else
          E1 := First (Exprs);
@@ -3641,11 +3611,6 @@ package body Sem_Attr is
          --  Inspect the prefix for any uses of entities declared within the
          --  related loop. Loop_Id denotes the loop identifier.
 
-         procedure Convert_To_Indexed_Component;
-         --  Transform the attribute reference into an indexed component where
-         --  the prefix is Prefix'Loop_Entry and the expressions are associated
-         --  with the indexed component.
-
          --------------------------------
          -- Check_References_In_Prefix --
          --------------------------------
@@ -3712,27 +3677,10 @@ package body Sem_Attr is
             Check_References (P);
          end Check_References_In_Prefix;
 
-         ----------------------------------
-         -- Convert_To_Indexed_Component --
-         ----------------------------------
-
-         procedure Convert_To_Indexed_Component is
-            New_Loop_Entry : constant Node_Id := Relocate_Node (N);
-
-         begin
-            --  The new Loop_Entry loses its arguments. They will be converted
-            --  into the expressions of the indexed component.
-
-            Set_Expressions (New_Loop_Entry, No_List);
-
-            Rewrite (N,
-              Make_Indexed_Component (Loc,
-                Prefix      => New_Loop_Entry,
-                Expressions => Exprs));
-         end Convert_To_Indexed_Component;
-
          --  Local variables
 
+         Context           : constant Node_Id := Parent (N);
+         Attr              : Node_Id;
          Enclosing_Loop    : Node_Id;
          In_Loop_Assertion : Boolean   := False;
          Loop_Id           : Entity_Id := Empty;
@@ -3742,47 +3690,84 @@ package body Sem_Attr is
       --  Start of processing for Loop_Entry
 
       begin
-         S14_Attribute;
+         Attr := N;
 
-         --  The attribute reference appears as
-         --    Prefix'Loop_Entry (Expr1, Expr2, ... ExprN)
+         --  Set the type of the attribute now to ensure the successfull
+         --  continuation of analysis even if the attribute is misplaced.
 
-         --  In this case, the loop name is omitted and the arguments are part
-         --  of an indexed component. Transform the whole attribute reference
-         --  to reflect this scenario.
+         Set_Etype (Attr, P_Type);
 
-         if Present (E2) then
-            Convert_To_Indexed_Component;
-            Analyze (N);
-            return;
+         --  Attribute 'Loop_Entry may appear in several flavors:
 
-         --  The attribute reference appears as
-         --    Prefix'Loop_Entry (Loop_Name)
-         --      or
-         --    Prefix'Loop_Entry (Expr1)
+         --    * Prefix'Loop_Entry - in this form, the attribute applies to the
+         --        nearest enclosing loop.
 
-         --  Depending on what Expr1 resolves to, either rewrite the reference
-         --  into an indexed component or continue with the analysis.
+         --    * Prefix'Loop_Entry (Expr) - depending on what Expr denotes, the
+         --        attribute may be related to a loop denoted by label Expr or
+         --        the prefix may denote an array object and Expr may act as an
+         --        indexed component.
 
-         elsif Present (E1) then
+         --    * Prefix'Loop_Entry (Expr1, ..., ExprN) - the attribute applies
+         --        to the nearest enclosing loop, all expressions are part of
+         --        an indexed component.
 
-            --  Do not expand the argument as it may have side effects. Simply
-            --  preanalyze to determine whether it is a loop or something else.
+         --    * Prefix'Loop_Entry (Expr) (...) (...) - depending on what Expr
+         --        denotes, the attribute may be related to a loop denoted by
+         --        label Expr or the prefix may denote a multidimensional array
+         --        array object and Expr along with the rest of the expressions
+         --        may act as indexed components.
 
-            Preanalyze_And_Resolve (E1);
+         --  Regardless of variations, the attribute reference does not have an
+         --  expression list. Instead, all available expressions are stored as
+         --  indexed components.
 
-            if Is_Entity_Name (E1)
-              and then Present (Entity (E1))
-              and then Ekind (Entity (E1)) = E_Loop
-            then
-               Loop_Id := Entity (E1);
+         --  When the attribute is part of an indexed component, find the first
+         --  expression as it will determine the semantics of 'Loop_Entry.
 
-            --  The argument is not a loop name
+         if Nkind (Context) = N_Indexed_Component then
+            E1 := First (Expressions (Context));
+            E2 := Next (E1);
+
+            --  The attribute reference appears in the following form:
+
+            --    Prefix'Loop_Entry (Exp1, Expr2, ..., ExprN) [(...)]
+
+            --  In this case, the loop name is omitted and no rewriting is
+            --  required.
+
+            if Present (E2) then
+               null;
+
+            --  The form of the attribute is:
+
+            --    Prefix'Loop_Entry (Expr) [(...)]
+
+            --  If Expr denotes a loop entry, the whole attribute and indexed
+            --  component will have to be rewritten to reflect this relation.
 
             else
-               Convert_To_Indexed_Component;
-               Analyze (N);
-               return;
+               pragma Assert (Present (E1));
+
+               --  Do not expand the expression as it may have side effects.
+               --  Simply preanalyze to determine whether it is a loop name or
+               --  something else.
+
+               Preanalyze_And_Resolve (E1);
+
+               if Is_Entity_Name (E1)
+                 and then Present (Entity (E1))
+                 and then Ekind (Entity (E1)) = E_Loop
+               then
+                  Loop_Id := Entity (E1);
+
+                  --  Transform the attribute and enclosing indexed component
+
+                  Set_Expressions (N, Expressions (Context));
+                  Rewrite   (Context, N);
+                  Set_Etype (Context, P_Type);
+
+                  Attr := Context;
+               end if;
             end if;
          end if;
 
@@ -3803,17 +3788,14 @@ package body Sem_Attr is
          --  Climb the parent chain to verify the location of the attribute and
          --  find the enclosing loop.
 
-         Stmt := N;
+         Stmt := Attr;
          while Present (Stmt) loop
 
-            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma (if
-            --  any). Note that when these two are expanded, we must look for
-            --  an Assertion pragma.
+            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
               and then
                 Nam_In (Pragma_Name (Original_Node (Stmt)),
-                        Name_Assert,
                         Name_Loop_Invariant,
                         Name_Loop_Variant)
             then
@@ -3859,8 +3841,8 @@ package body Sem_Attr is
          --  appear within a body of accept statement, if this construct is
          --  itself enclosed by the given loop statement.
 
-         for J in reverse 0 .. Scope_Stack.Last loop
-            Scop := Scope_Stack.Table (J).Entity;
+         for Index in reverse 0 .. Scope_Stack.Last loop
+            Scop := Scope_Stack.Table (Index).Entity;
 
             if Ekind (Scop) = E_Loop and then Scop = Loop_Id then
                exit;
@@ -3890,20 +3872,6 @@ package body Sem_Attr is
          then
             Error_Attr_P ("prefix of attribute % must denote an entity");
          end if;
-
-         Set_Etype (N, Etype (P));
-
-         --  Associate the attribute with its related loop
-
-         if No (Loop_Entry_Attributes (Loop_Id)) then
-            Set_Loop_Entry_Attributes (Loop_Id, New_Elmt_List);
-         end if;
-
-         --  A Loop_Entry may be [pre]analyzed several times, depending on the
-         --  context. Ensure that it appears only once in the attributes list
-         --  of the related loop.
-
-         Append_Unique_Elmt (N, Loop_Entry_Attributes (Loop_Id));
       end Loop_Entry;
 
       -------------
@@ -4254,21 +4222,27 @@ package body Sem_Attr is
             --  Check in postcondition, Test_Case or Contract_Cases
 
             Prag := N;
-            while not Nkind_In (Prag, N_Pragma,
-                                      N_Function_Specification,
-                                      N_Procedure_Specification,
-                                      N_Subprogram_Body)
+            while Present (Prag)
+               and then not Nkind_In (Prag, N_Pragma,
+                                            N_Function_Specification,
+                                            N_Procedure_Specification,
+                                            N_Aspect_Specification,
+                                            N_Subprogram_Body)
             loop
                Prag := Parent (Prag);
             end loop;
 
-            if Nkind (Prag) /= N_Pragma then
+            --  In ASIS mode, the aspect itself is analyzed, in addition to the
+            --  corresponding pragma. Do not issue errors when analyzing the
+            --  aspect.
+
+            if Nkind (Prag) = N_Aspect_Specification then
+               null;
+
+            elsif Nkind (Prag) /= N_Pragma then
                Error_Attr ("% attribute can only appear in postcondition", P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Case
-                    or else
-                  Get_Pragma_Id (Prag) = Pragma_Test_Case
-            then
+            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
                declare
                   Arg_Ens : constant Node_Id :=
                               Get_Ensures_From_CTC_Pragma (Prag);
@@ -4276,18 +4250,12 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Arg /= Arg_Ens loop
+                  while Arg /= Prag and then Arg /= Arg_Ens loop
                      Arg := Parent (Arg);
                   end loop;
 
                   if Arg /= Arg_Ens then
-                     if Get_Pragma_Id (Prag) = Pragma_Contract_Case then
-                        Error_Attr
-                          ("% attribute misplaced inside contract case", P);
-                     else
-                        Error_Attr
-                          ("% attribute misplaced inside test case", P);
-                     end if;
+                     Error_Attr ("% attribute misplaced inside test case", P);
                   end if;
                end;
 
@@ -4299,7 +4267,7 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Parent (Parent (Arg)) /= Aggr loop
+                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
                      Arg := Parent (Arg);
                   end loop;
 
@@ -4388,13 +4356,13 @@ package body Sem_Attr is
          --  enclosing subprogram. This is properly an expansion activity
          --  but it has to be performed now to prevent out-of-order issues.
 
-         --  This expansion is both harmful and not needed in Alfa mode, since
+         --  This expansion is both harmful and not needed in SPARK mode, since
          --  the formal verification backend relies on the types of nodes
          --  (hence is not robust w.r.t. a change to base type here), and does
          --  not suffer from the out-of-order issue described above. Thus, this
-         --  expansion is skipped in Alfa mode.
+         --  expansion is skipped in SPARK mode.
 
-         if not Is_Entity_Name (P) and then not Alfa_Mode then
+         if not Is_Entity_Name (P) and then not SPARK_Mode then
             P_Type := Base_Type (P_Type);
             Set_Etype (N, P_Type);
             Set_Etype (P, P_Type);
@@ -4669,22 +4637,28 @@ package body Sem_Attr is
             --  Check in postcondition, Test_Case or Contract_Cases of function
 
             Prag := N;
-            while not Nkind_In (Prag, N_Pragma,
-                                      N_Function_Specification,
-                                      N_Subprogram_Body)
+            while Present (Prag)
+               and then not Nkind_In (Prag, N_Pragma,
+                                            N_Function_Specification,
+                                            N_Aspect_Specification,
+                                            N_Subprogram_Body)
             loop
                Prag := Parent (Prag);
             end loop;
 
-            if Nkind (Prag) /= N_Pragma then
+            --  In ASIS mode, the aspect itself is analyzed, in addition to the
+            --  corresponding pragma. Do not issue errors when analyzing the
+            --  aspect.
+
+            if Nkind (Prag) = N_Aspect_Specification then
+               null;
+
+            elsif Nkind (Prag) /= N_Pragma then
                Error_Attr
                  ("% attribute can only appear in postcondition of function",
                   P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Case
-                    or else
-                  Get_Pragma_Id (Prag) = Pragma_Test_Case
-            then
+            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
                declare
                   Arg_Ens : constant Node_Id :=
                               Get_Ensures_From_CTC_Pragma (Prag);
@@ -4692,18 +4666,12 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Arg /= Arg_Ens loop
+                  while Arg /= Prag and then Arg /= Arg_Ens loop
                      Arg := Parent (Arg);
                   end loop;
 
                   if Arg /= Arg_Ens then
-                     if Get_Pragma_Id (Prag) = Pragma_Contract_Case then
-                        Error_Attr
-                          ("% attribute misplaced inside contract case", P);
-                     else
-                        Error_Attr
-                          ("% attribute misplaced inside test case", P);
-                     end if;
+                     Error_Attr ("% attribute misplaced inside test case", P);
                   end if;
                end;
 
@@ -4715,7 +4683,7 @@ package body Sem_Attr is
 
                begin
                   Arg := N;
-                  while Arg /= Prag and Parent (Parent (Arg)) /= Aggr loop
+                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
                      Arg := Parent (Arg);
                   end loop;
 
@@ -5699,7 +5667,6 @@ package body Sem_Attr is
       --  Start of processing for Update
 
       begin
-         S14_Attribute;
          Check_E1;
 
          if not Is_Object_Reference (P) then
@@ -9548,7 +9515,7 @@ package body Sem_Attr is
                  and then
                    (Ada_Version < Ada_2005
                      or else
-                       not Effectively_Has_Constrained_Partial_View
+                       not Object_Type_Has_Constrained_Partial_View
                              (Typ => Designated_Type (Base_Type (Typ)),
                               Scop => Current_Scope))
                then

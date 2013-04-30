@@ -2028,7 +2028,7 @@ package body Sem_Type is
       elsif (Nkind (N) = N_Function_Call
               and then Nkind (Name (N)) = N_Expanded_Name
               and then (Chars (Predef_Subp) /= Name_Op_Expon
-                          or else Hides_Op (User_Subp, Predef_Subp))
+                         or else Hides_Op (User_Subp, Predef_Subp))
               and then Scope (User_Subp) = Entity (Prefix (Name (N))))
         or else Hides_Op (User_Subp, Predef_Subp)
       then
@@ -2048,8 +2048,8 @@ package body Sem_Type is
       --  Ditto in Ada 2012, where an ambiguity may arise for an operation
       --  on a partial view that is completed with a fixed point type. See
       --  AI05-0020 and AI05-0209. The ambiguity is resolved in favor of the
-      --  user-defined subprogram so that a client of the package has the
-      --  same resulution as the body of the package.
+      --  user-defined type and subprogram, so that a client of the package
+      --  has the same resolution as the body of the package.
 
       else
          if (In_Open_Scopes (Scope (User_Subp))
@@ -2060,11 +2060,10 @@ package body Sem_Type is
               and then Nam_In (Chars (Nam1), Name_Op_Multiply, Name_Op_Divide)
               and then
                 (Ada_Version = Ada_83
-                  or else
-                   (Ada_Version >= Ada_2012
-                     and then
-                       In_Same_Declaration_List
-                         (Typ, Unit_Declaration_Node (User_Subp))))
+                  or else (Ada_Version >= Ada_2012
+                            and then In_Same_Declaration_List
+                                       (First_Subtype (Typ),
+                                          Unit_Declaration_Node (User_Subp))))
             then
                if It2.Nam = Predef_Subp then
                   return It1;

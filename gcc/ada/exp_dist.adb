@@ -2318,7 +2318,7 @@ package body Exp_Dist is
 
    procedure Build_Passive_Partition_Stub (U : Node_Id) is
       Pkg_Spec : Node_Id;
-      Pkg_Name : String_Id;
+      Pkg_Ent  : Entity_Id;
       L        : List_Id;
       Reg      : Node_Id;
       Loc      : constant Source_Ptr := Sloc (U);
@@ -2343,18 +2343,17 @@ package body Exp_Dist is
          Pkg_Spec := Parent (Corresponding_Spec (U));
          L := Declarations (U);
       end if;
+      Pkg_Ent := Defining_Entity (Pkg_Spec);
 
-      Get_Library_Unit_Name_String (Pkg_Spec);
-      Pkg_Name := String_From_Name_Buffer;
       Reg :=
         Make_Procedure_Call_Statement (Loc,
           Name                   =>
             New_Occurrence_Of (RTE (RE_Register_Passive_Package), Loc),
           Parameter_Associations => New_List (
-            Make_String_Literal (Loc, Pkg_Name),
+            Make_String_Literal (Loc,
+              Fully_Qualified_Name_String (Pkg_Ent, Append_NUL => False)),
             Make_Attribute_Reference (Loc,
-              Prefix         =>
-                New_Occurrence_Of (Defining_Entity (Pkg_Spec), Loc),
+              Prefix         => New_Occurrence_Of (Pkg_Ent, Loc),
               Attribute_Name => Name_Version)));
       Append_To (L, Reg);
       Analyze (Reg);
@@ -4111,13 +4110,13 @@ package body Exp_Dist is
          Append_To (Decls, Pkg_RPC_Receiver_Body);
          Analyze (Last (Decls));
 
-         Get_Library_Unit_Name_String (Pkg_Spec);
-
          --  Name
 
          Append_To (Register_Pkg_Actuals,
            Make_String_Literal (Loc,
-             Strval => String_From_Name_Buffer));
+             Strval =>
+               Fully_Qualified_Name_String
+                 (Defining_Entity (Pkg_Spec), Append_NUL => False)));
 
          --  Receiver
 
@@ -5591,7 +5590,7 @@ package body Exp_Dist is
                --  Name
 
                 Make_String_Literal (Loc,
-                  Fully_Qualified_Name_String (Desig)),
+                  Fully_Qualified_Name_String (Desig, Append_NUL => False)),
 
                --  Handler
 
@@ -5938,7 +5937,8 @@ package body Exp_Dist is
                      New_Occurrence_Of (RACW_Parameter, Loc)),
                    Make_String_Literal (Loc,
                      Strval => Fully_Qualified_Name_String
-                                 (Etype (Designated_Type (RACW_Type)))),
+                                 (Etype (Designated_Type (RACW_Type)),
+                                  Append_NUL => False)),
                    Build_Stub_Tag (Loc, RACW_Type),
                    New_Occurrence_Of (Boolean_Literals (Is_RAS), Loc),
                    Make_Attribute_Reference (Loc,
@@ -6134,7 +6134,8 @@ package body Exp_Dist is
                    Unchecked_Convert_To (RTE (RE_Address), Object),
                   Make_String_Literal (Loc,
                     Strval => Fully_Qualified_Name_String
-                                (Etype (Designated_Type (RACW_Type)))),
+                                (Etype (Designated_Type (RACW_Type)),
+                                 Append_NUL => False)),
                   Build_Stub_Tag (Loc, RACW_Type),
                   New_Occurrence_Of (Boolean_Literals (Is_RAS), Loc),
                   Make_Attribute_Reference (Loc,
@@ -7069,13 +7070,13 @@ package body Exp_Dist is
          Append_To (Decls, Pkg_RPC_Receiver_Object);
          Analyze (Last (Decls));
 
-         Get_Library_Unit_Name_String (Pkg_Spec);
-
          --  Name
 
          Append_To (Register_Pkg_Actuals,
            Make_String_Literal (Loc,
-             Strval => String_From_Name_Buffer));
+             Strval =>
+               Fully_Qualified_Name_String
+                 (Defining_Entity (Pkg_Spec), Append_NUL => False)));
 
          --  Version
 
@@ -9210,20 +9211,12 @@ package body Exp_Dist is
             Repo_Id_Str : out String_Id)
          is
          begin
+            Name_Str := Fully_Qualified_Name_String (E, Append_NUL => False);
             Start_String;
             Store_String_Chars ("DSA:");
-            Get_Library_Unit_Name_String (Scope (E));
-            Store_String_Chars
-              (Name_Buffer (Name_Buffer'First ..
-               Name_Buffer'First + Name_Len - 1));
-            Store_String_Char ('.');
-            Get_Name_String (Chars (E));
-            Store_String_Chars
-              (Name_Buffer (Name_Buffer'First ..
-               Name_Buffer'First + Name_Len - 1));
+            Store_String_Chars (Name_Str);
             Store_String_Chars (":1.0");
             Repo_Id_Str := End_String;
-            Name_Str    := String_From_Name_Buffer;
          end Build_Name_And_Repository_Id;
 
          -----------------------
@@ -11134,11 +11127,11 @@ package body Exp_Dist is
       Package_Spec : Node_Id) return Node_Id
    is
       Inst     : Node_Id;
-      Pkg_Name : String_Id;
+      Pkg_Name : constant String_Id :=
+        Fully_Qualified_Name_String
+          (Defining_Entity (Package_Spec), Append_NUL => False);
 
    begin
-      Get_Library_Unit_Name_String (Package_Spec);
-      Pkg_Name := String_From_Name_Buffer;
       Inst :=
         Make_Package_Instantiation (Loc,
           Defining_Unit_Name   => Make_Temporary (Loc, 'R'),

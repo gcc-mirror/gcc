@@ -411,9 +411,7 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
-   Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
    Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
-   Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
@@ -473,7 +471,6 @@ package Snames is
    Name_Common_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Complete_Representation        : constant Name_Id := N + $; -- GNAT
    Name_Complex_Representation         : constant Name_Id := N + $; -- GNAT
-   Name_Contract_Case                  : constant Name_Id := N + $; -- GNAT
    Name_Contract_Cases                 : constant Name_Id := N + $; -- GNAT
    Name_Controlled                     : constant Name_Id := N + $;
    Name_Convention                     : constant Name_Id := N + $;
@@ -502,7 +499,6 @@ package Snames is
    Name_Export_Valued_Procedure        : constant Name_Id := N + $; -- GNAT
    Name_External                       : constant Name_Id := N + $; -- GNAT
    Name_Finalize_Storage_Only          : constant Name_Id := N + $; -- GNAT
-   Name_Ghost                          : constant Name_Id := N + $; -- GNAT
    Name_Global                         : constant Name_Id := N + $; -- GNAT
    Name_Ident                          : constant Name_Id := N + $; -- VMS
    Name_Implementation_Defined         : constant Name_Id := N + $; -- GNAT
@@ -550,6 +546,8 @@ package Snames is
    --  of the type Pragma_Id, and the functions Get_Pragma_Id and Is_Pragma_Id
    --  correctly recognize and process Lock_Free. Lock_Free is a GNAT pragma.
 
+   Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
    Name_Machine_Attribute              : constant Name_Id := N + $; -- GNAT
    Name_Main                           : constant Name_Id := N + $; -- GNAT
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
@@ -643,6 +641,7 @@ package Snames is
    Name_COBOL                          : constant Name_Id := N + $;
    Name_CPP                            : constant Name_Id := N + $;
    Name_Fortran                        : constant Name_Id := N + $;
+   Name_Ghost                          : constant Name_Id := N + $;
    Name_Intrinsic                      : constant Name_Id := N + $;
    Name_Java                           : constant Name_Id := N + $;
    Name_Stdcall                        : constant Name_Id := N + $;
@@ -747,6 +746,7 @@ package Snames is
    Name_Optional                       : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
    Name_Parameter_Types                : constant Name_Id := N + $;
+   Name_Reason                         : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;
    Name_Requires                       : constant Name_Id := N + $;
    Name_Restricted                     : constant Name_Id := N + $;
@@ -762,6 +762,7 @@ package Snames is
    Name_Simple_Barriers                : constant Name_Id := N + $;
    Name_Spec_File_Name                 : constant Name_Id := N + $;
    Name_State                          : constant Name_Id := N + $;
+   Name_Statement_Assertions           : constant Name_Id := N + $;
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
    Name_Strict                         : constant Name_Id := N + $;
@@ -1082,6 +1083,7 @@ package Snames is
    Name_Index_Check                    : constant Name_Id := N + $;
    Name_Length_Check                   : constant Name_Id := N + $;
    Name_Overflow_Check                 : constant Name_Id := N + $;
+   Name_Predicate_Check                : constant Name_Id := N + $; -- GNAT
    Name_Range_Check                    : constant Name_Id := N + $;
    Name_Storage_Check                  : constant Name_Id := N + $;
    Name_Tag_Check                      : constant Name_Id := N + $;
@@ -1624,11 +1626,12 @@ package Snames is
    type Convention_Id is (
 
       --  The native-to-Ada (non-foreign) conventions come first. These include
-      --  the ones defined in the RM, plus Stubbed.
+      --  the ones defined in the RM, plus Ghost and Stubbed.
 
       Convention_Ada,
       Convention_Intrinsic,
       Convention_Entry,
+      Convention_Ghost,
       Convention_Protected,
       Convention_Stubbed,
 
@@ -1720,9 +1723,7 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Long_Float,
-      Pragma_Loop_Invariant,
       Pragma_Loop_Optimize,
-      Pragma_Loop_Variant,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
@@ -1775,7 +1776,6 @@ package Snames is
       Pragma_Common_Object,
       Pragma_Complete_Representation,
       Pragma_Complex_Representation,
-      Pragma_Contract_Case,
       Pragma_Contract_Cases,
       Pragma_Controlled,
       Pragma_Convention,
@@ -1797,7 +1797,6 @@ package Snames is
       Pragma_Export_Valued_Procedure,
       Pragma_External,
       Pragma_Finalize_Storage_Only,
-      Pragma_Ghost,
       Pragma_Global,
       Pragma_Ident,
       Pragma_Implementation_Defined,
@@ -1827,6 +1826,8 @@ package Snames is
       Pragma_Linker_Options,
       Pragma_Linker_Section,
       Pragma_List,
+      Pragma_Loop_Invariant,
+      Pragma_Loop_Variant,
       Pragma_Machine_Attribute,
       Pragma_Main,
       Pragma_Main_Storage,

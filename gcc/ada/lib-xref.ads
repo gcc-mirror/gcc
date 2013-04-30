@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +26,9 @@
 --  This package contains for collecting and outputting cross-reference
 --  information.
 
-with Einfo;    use Einfo;
-with Lib.Util; use Lib.Util;
-with Put_Alfa;
+with Einfo;           use Einfo;
+with Lib.Util;        use Lib.Util;
+with Put_SPARK_Xrefs;
 
 package Lib.Xref is
 
@@ -599,14 +599,14 @@ package Lib.Xref is
    --  Export at line 4, that its body is exported to C, and that the link name
    --  as given in the pragma is "here".
 
-   ----------------------
-   -- Alfa Information --
-   ----------------------
+   -----------------------------
+   -- SPARK Xrefs Information --
+   -----------------------------
 
-   --  This package defines procedures for collecting Alfa information and
-   --  printing in ALI files.
+   --  This package defines procedures for collecting SPARK cross-reference
+   --  information and printing in ALI files.
 
-   package Alfa is
+   package SPARK_Specific is
 
       function Enclosing_Subprogram_Or_Package (N : Node_Id) return Entity_Id;
       --  Return the closest enclosing subprogram of package
@@ -631,17 +631,19 @@ package Lib.Xref is
       --  Call Process on all declarations through all compilation units.
       --  Generic declarations are ignored.
 
-      procedure Collect_Alfa (Sdep_Table : Unit_Ref_Table; Num_Sdep : Nat);
-      --  Collect Alfa information from library units (for files and scopes)
-      --  and from cross-references. Fill in the tables in library package
-      --  called Alfa.
+      procedure Collect_SPARK_Xrefs
+        (Sdep_Table : Unit_Ref_Table;
+         Num_Sdep   : Nat);
+      --  Collect SPARK cross-reference information from library units (for
+      --  files and scopes) and from shared cross-references. Fill in the
+      --  tables in library package called SPARK_Xrefs.
 
-      procedure Output_Alfa is new Put_Alfa;
-      --  Output Alfa information to the ALI files, based on the information
-      --  collected in the tables in library package called Alfa, and using
-      --  routines in Lib.Util.
+      procedure Output_SPARK_Xrefs is new Put_SPARK_Xrefs;
+      --  Output SPARK cross-reference information to the ALI files, based on
+      --  the information collected in the tables in library package called
+      --  SPARK_Xrefs, and using routines in Lib.Util.
 
-   end Alfa;
+   end SPARK_Specific;
 
    -----------------
    -- Subprograms --

@@ -218,16 +218,27 @@ package body Bcheck is
                end if;
 
                if (not Tolerate_Consistency_Errors) and Verbose_Mode then
-                  Error_Msg_File_1 := Sdep.Table (D).Sfile;
+                  Error_Msg_File_1 := Source.Table (Src).Stamp_File;
+
+                  if Source.Table (Src).Source_Found then
+                     Error_Msg_File_1 :=
+                       Osint.Full_Source_Name (Error_Msg_File_1);
+                  else
+                     Error_Msg_File_1 :=
+                       Osint.Full_Lib_File_Name (Error_Msg_File_1);
+                  end if;
+
                   Error_Msg
-                    ("{ time stamp " & String (Source.Table (Src).Stamp));
+                    ("time stamp from { " & String (Source.Table (Src).Stamp));
 
                   Error_Msg_File_1 := Sdep.Table (D).Sfile;
-                  --  Something wrong here, should be different file ???
-
                   Error_Msg
                     (" conflicts with { timestamp " &
                      String (Sdep.Table (D).Stamp));
+
+                  Error_Msg_File_1 :=
+                    Osint.Full_Lib_File_Name (ALIs.Table (A).Afile);
+                  Error_Msg (" from {");
                end if;
 
                --  Exit from the loop through Sdep entries once we find one

@@ -1931,8 +1931,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_USE_FFREEP */
   m_AMD_MULTIPLE,
 
-  /* X86_TUNE_INTER_UNIT_MOVES */
+  /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC */
   ~(m_AMD_MULTIPLE | m_GENERIC),
+
+  /* X86_TUNE_INTER_UNIT_MOVES_FROM_VEC */
+  ~m_ATHLON_K8,
 
   /* X86_TUNE_INTER_UNIT_CONVERSIONS */
   ~(m_AMDFAM10 | m_BDVER ),
@@ -2214,6 +2217,16 @@ static int const x86_64_ms_abi_int_parameter_registers[4] =
 static int const x86_64_int_return_registers[4] =
 {
   AX_REG, DX_REG, DI_REG, SI_REG
+};
+
+/* Additional registers that are clobbered by SYSV calls.  */
+
+int const x86_64_ms_sysv_extra_clobbered_registers[12] =
+{
+  SI_REG, DI_REG,
+  XMM6_REG, XMM7_REG,
+  XMM8_REG, XMM9_REG, XMM10_REG, XMM11_REG,
+  XMM12_REG, XMM13_REG, XMM14_REG, XMM15_REG
 };
 
 /* Define the structure for the machine field in struct function.  */
@@ -3922,6 +3935,10 @@ ix86_option_override_internal (bool main_args_p)
   if (main_args_p)
     target_option_default_node = target_option_current_node
       = build_target_option_node ();
+
+  /* Handle stack protector */
+  if (!global_options_set.x_ix86_stack_protector_guard)
+    ix86_stack_protector_guard = TARGET_HAS_BIONIC ? SSP_GLOBAL : SSP_TLS;
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */
@@ -17868,7 +17885,7 @@ ix86_expand_convert_uns_didf_sse (rtx target, rtx input)
   rtx x;
 
   int_xmm = gen_reg_rtx (V4SImode);
-  if (TARGET_INTER_UNIT_MOVES)
+  if (TARGET_INTER_UNIT_MOVES_TO_VEC)
     emit_insn (gen_movdi_to_sse (int_xmm, input));
   else if (TARGET_SSE_SPLIT_REGS)
     {
@@ -20557,7 +20574,7 @@ ix86_expand_vec_perm (rtx operands[])
 	      vec[i * 2 + 1] = const1_rtx;
 	    }
 	  vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
-	  vt = force_const_mem (maskmode, vt);
+	  vt = validize_mem (force_const_mem (maskmode, vt));
 	  t1 = expand_simple_binop (maskmode, PLUS, t1, vt, t1, 1,
 				    OPTAB_DIRECT);
 
@@ -20754,7 +20771,7 @@ ix86_expand_vec_perm (rtx operands[])
       for (i = 0; i < 16; ++i)
 	vec[i] = GEN_INT (i/e * e);
       vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
-      vt = force_const_mem (V16QImode, vt);
+      vt = validize_mem (force_const_mem (V16QImode, vt));
       if (TARGET_XOP)
 	emit_insn (gen_xop_pperm (mask, mask, mask, vt));
       else
@@ -20765,7 +20782,7 @@ ix86_expand_vec_perm (rtx operands[])
       for (i = 0; i < 16; ++i)
 	vec[i] = GEN_INT (i % e);
       vt = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, vec));
-      vt = force_const_mem (V16QImode, vt);
+      vt = validize_mem (force_const_mem (V16QImode, vt));
       emit_insn (gen_addv16qi3 (mask, mask, vt));
     }
 
@@ -23715,17 +23732,11 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 		  rtx callarg2,
 		  rtx pop, bool sibcall)
 {
-  /* We need to represent that SI and DI registers are clobbered
-     by SYSV calls.  */
-  static int clobbered_registers[] = {
-	XMM6_REG, XMM7_REG, XMM8_REG,
-	XMM9_REG, XMM10_REG, XMM11_REG,
-	XMM12_REG, XMM13_REG, XMM14_REG,
-	XMM15_REG, SI_REG, DI_REG
-  };
-  rtx vec[ARRAY_SIZE (clobbered_registers) + 3];
+  unsigned int const cregs_size
+    = ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
+  rtx vec[3 + cregs_size];
   rtx use = NULL, call;
-  unsigned int vec_len;
+  unsigned int vec_len = 0;
 
   if (pop == const0_rtx)
     pop = NULL;
@@ -23741,8 +23752,10 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   else
     {
       /* Static functions and indirect calls don't need the pic register.  */
-      if (flag_pic && (!TARGET_64BIT
-                       || (ix86_cmodel == CM_LARGE_PIC && DEFAULT_ABI != MS_ABI))
+      if (flag_pic
+	  && (!TARGET_64BIT
+	      || (ix86_cmodel == CM_LARGE_PIC
+		  && DEFAULT_ABI != MS_ABI))
 	  && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
 	  && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
 	use_reg (&use, pic_offset_table_rtx);
@@ -23769,7 +23782,6 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));
     }
 
-  vec_len = 0;
   call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);
   if (retval)
     call = gen_rtx_SET (VOIDmode, retval, call);
@@ -23790,12 +23802,14 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       vec[vec_len++] = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx),
 				       UNSPEC_MS_TO_SYSV_CALL);
 
-      for (i = 0; i < ARRAY_SIZE (clobbered_registers); i++)
-	vec[vec_len++]
-	  = gen_rtx_CLOBBER (VOIDmode,
-			     gen_rtx_REG (SSE_REGNO_P (clobbered_registers[i])
-					  ? TImode : DImode,
-					  clobbered_registers[i]));
+      for (i = 0; i < cregs_size; i++)
+	{
+	  int regno = x86_64_ms_sysv_extra_clobbered_registers[i];
+	  enum machine_mode mode = SSE_REGNO_P (regno) ? TImode : DImode;
+
+	  vec[vec_len++]
+	    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (mode, regno));
+	}
     }
 
   if (vec_len > 1)
@@ -33672,7 +33686,8 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 
       /* If the target says that inter-unit moves are more expensive
 	 than moving through memory, then don't generate them.  */
-      if (!TARGET_INTER_UNIT_MOVES)
+      if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
 	return true;
 
       /* Between SSE and general, we have moves no larger than word size.  */
@@ -35895,9 +35910,8 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
       /* For SSE4.1, we normally use vector set.  But if the second
 	 element is zero and inter-unit moves are OK, we use movq
 	 instead.  */
-      use_vector_set = (TARGET_64BIT
-			&& TARGET_SSE4_1
-			&& !(TARGET_INTER_UNIT_MOVES
+      use_vector_set = (TARGET_64BIT && TARGET_SSE4_1
+			&& !(TARGET_INTER_UNIT_MOVES_TO_VEC
 			     && one_var == 0));
       break;
     case V16QImode:
@@ -36432,7 +36446,7 @@ half:
 
       /* Don't use ix86_expand_vector_init_interleave if we can't
 	 move from GPR to SSE register directly.  */
-      if (!TARGET_INTER_UNIT_MOVES)
+      if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
 	break;
 
       n = GET_MODE_NUNITS (mode);
@@ -40831,6 +40845,24 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 		       gen_rtx_fmt_ee (code, qimode, op1, op2));
 }
 
+/* Helper function of ix86_expand_mul_widen_evenodd.  Return true
+   if op is CONST_VECTOR with all odd elements equal to their
+   preceeding element.  */
+
+static bool
+const_vector_equal_evenodd_p (rtx op)
+{
+  enum machine_mode mode = GET_MODE (op);
+  int i, nunits = GET_MODE_NUNITS (mode);
+  if (GET_CODE (op) != CONST_VECTOR
+      || nunits != CONST_VECTOR_NUNITS (op))
+    return false;
+  for (i = 0; i < nunits; i += 2)
+    if (CONST_VECTOR_ELT (op, i) != CONST_VECTOR_ELT (op, i + 1))
+      return false;
+  return true;
+}
+
 void
 ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
 			       bool uns_p, bool odd_p)
@@ -40838,6 +40870,12 @@ ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
   enum machine_mode mode = GET_MODE (op1);
   enum machine_mode wmode = GET_MODE (dest);
   rtx x;
+  rtx orig_op1 = op1, orig_op2 = op2;
+
+  if (!nonimmediate_operand (op1, mode))
+    op1 = force_reg (mode, op1);
+  if (!nonimmediate_operand (op2, mode))
+    op2 = force_reg (mode, op2);
 
   /* We only play even/odd games with vectors of SImode.  */
   gcc_assert (mode == V4SImode || mode == V8SImode);
@@ -40846,7 +40884,9 @@ ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
      the even slots.  For some cpus this is faster than a PSHUFD.  */
   if (odd_p)
     {
-      if (TARGET_XOP && mode == V4SImode)
+      /* For XOP use vpmacsdqh, but only for smult, as it is only
+	 signed.  */
+      if (TARGET_XOP && mode == V4SImode && !uns_p)
 	{
 	  x = force_reg (wmode, CONST0_RTX (wmode));
 	  emit_insn (gen_xop_pmacsdqh (dest, op1, op2, x));
@@ -40854,10 +40894,12 @@ ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
 	}
 
       x = GEN_INT (GET_MODE_UNIT_BITSIZE (mode));
-      op1 = expand_binop (wmode, lshr_optab, gen_lowpart (wmode, op1),
-			  x, NULL, 1, OPTAB_DIRECT);
-      op2 = expand_binop (wmode, lshr_optab, gen_lowpart (wmode, op2),
-			  x, NULL, 1, OPTAB_DIRECT);
+      if (!const_vector_equal_evenodd_p (orig_op1))
+	op1 = expand_binop (wmode, lshr_optab, gen_lowpart (wmode, op1),
+			    x, NULL, 1, OPTAB_DIRECT);
+      if (!const_vector_equal_evenodd_p (orig_op2))
+	op2 = expand_binop (wmode, lshr_optab, gen_lowpart (wmode, op2),
+			    x, NULL, 1, OPTAB_DIRECT);
       op1 = gen_lowpart (mode, op1);
       op2 = gen_lowpart (mode, op2);
     }

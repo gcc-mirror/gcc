@@ -656,7 +656,7 @@ dump_aggr_type (tree t, int flags)
       else
 	pp_printf (pp_base (cxx_pp), M_("<anonymous %s>"), variety);
     }
-  else if (LAMBDA_TYPE_P (name))
+  else if (LAMBDA_TYPE_P (t))
     {
       /* A lambda's "type" is essentially its signature.  */
       pp_string (cxx_pp, M_("<lambda"));
@@ -933,7 +933,16 @@ dump_simple_decl (tree t, tree type, int flags)
       && TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (t)))
     pp_string (cxx_pp, "...");
   if (DECL_NAME (t))
-    dump_decl (DECL_NAME (t), flags);
+    {
+      if (TREE_CODE (t) == FIELD_DECL && DECL_NORMAL_CAPTURE_P (t))
+	{
+	  pp_character (cxx_pp, '<');
+	  pp_string (cxx_pp, IDENTIFIER_POINTER (DECL_NAME (t)) + 2);
+	  pp_string (cxx_pp, " capture>");
+	}
+      else
+	dump_decl (DECL_NAME (t), flags);
+    }
   else
     pp_string (cxx_pp, M_("<anonymous>"));
   if (flags & TFF_DECL_SPECIFIERS)
@@ -1403,7 +1412,10 @@ dump_function_decl (tree t, int flags)
     show_return = !DECL_CONV_FN_P (t)  && !DECL_CONSTRUCTOR_P (t)
 		  && !DECL_DESTRUCTOR_P (t);
   if (show_return)
-    dump_type_prefix (TREE_TYPE (fntype), flags);
+    {
+      tree ret = fndecl_declared_return_type (t);
+      dump_type_prefix (ret, flags);
+    }
 
   /* Print the function name.  */
   if (!do_outer_scope)
@@ -1439,7 +1451,8 @@ dump_function_decl (tree t, int flags)
 	dump_type_suffix (TREE_TYPE (fntype), flags);
 
       /* If T is a template instantiation, dump the parameter binding.  */
-      if (template_parms != NULL_TREE && template_args != NULL_TREE)
+      if (template_parms != NULL_TREE && template_args != NULL_TREE
+	  && !(flags & TFF_NO_TEMPLATE_BINDINGS))
 	{
 	  pp_cxx_whitespace (cxx_pp);
 	  pp_cxx_left_bracket (cxx_pp);
@@ -2877,7 +2890,8 @@ subst_to_string (tree p)
   tree decl = TREE_PURPOSE (p);
   tree targs = TREE_VALUE (p);
   tree tparms = DECL_TEMPLATE_PARMS (decl);
-  int flags = TFF_DECL_SPECIFIERS|TFF_TEMPLATE_HEADER;
+  int flags = (TFF_DECL_SPECIFIERS|TFF_TEMPLATE_HEADER
+	       |TFF_NO_TEMPLATE_BINDINGS);
 
   if (p == NULL_TREE)
     return "";
@@ -2948,7 +2962,7 @@ cp_print_error_function (diagnostic_context *context,
       const char *file = LOCATION_FILE (diagnostic->location);
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
-			 ? file_name_as_prefix (file) : NULL;
+			 ? file_name_as_prefix (context, file) : NULL;
 
       pp_base_set_prefix (context->printer, new_prefix);
 

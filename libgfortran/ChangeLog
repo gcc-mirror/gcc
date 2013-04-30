@@ -1,3 +1,45 @@
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * intrinsics/system_clock (gf_gettime_mono): Use variable
+        resolution for fractional seconds argument.
+        (system_clock_4): Simplify, update for gf_gettime_mono change.
+        (system_clock_8): Likewise.
+
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/56981
+        * io/transfer.c (next_record_w_unf): First fix head marker, then
+        write tail.
+        (next_record): Call flush_if_unbuffered.
+        * io/unix.c (struct unix_stream): Add field unbuffered.
+        (flush_if_unbuffered): New function.
+        (fd_to_stream): New argument.
+        (open_external): Fix fd_to_stream call.
+        (input_stream): Likewise.
+        (output_stream): Likewise.
+        (error_stream): Likewise.
+        * io/unix.h (flush_if_unbuffered): New prototype.
+
+2013-04-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/system_clock.c (system_clock_4): Fix sign error in
+	Windows version.
+
+2013-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	* list_read.c (finish_separator): Initialize variable.
+
+2013-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/56919
+	* intrinsics/time_1.h: Check __CYGWIN__ in addition to
+	__MINGW32__.
+	* intrinsics/system_clock.c (GF_CLOCK_MONOTONIC): Check
+	_POSIX_MONOTONIC_CLOCK as well.
+	(system_clock_4): Use GetTickCount on Windows.
+	(system_clock_8): Use QueryPerformanceCounter and
+	QueryPerformanceCounterFrequency on Windows.
+
 2013-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56810
@@ -22,7 +64,7 @@
 	(nml_get_obj_data): Likewise use the correct error mechanism.
 	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
 	mode.
-	
+
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56737

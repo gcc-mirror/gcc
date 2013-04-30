@@ -3373,7 +3373,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "0x%x", UINTVAL (x));
+      asm_fprintf (f, "0x%wx", UINTVAL (x));
       break;
 
     case 'w':
@@ -7874,6 +7874,9 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START aarch64_expand_builtin_va_start
 
+#undef TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN aarch64_fold_builtin
+
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG aarch64_function_arg
 
@@ -7894,6 +7897,9 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED aarch64_frame_pointer_required
+
+#undef TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN aarch64_gimple_fold_builtin
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR aarch64_gimplify_va_arg_expr

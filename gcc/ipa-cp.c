@@ -791,20 +791,6 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
     return NULL_TREE;
 }
 
-/* Extract the acual BINFO being described by JFUNC which must be a known type
-   jump function.  */
-
-static tree
-ipa_value_from_known_type_jfunc (struct ipa_jump_func *jfunc)
-{
-  tree base_binfo = TYPE_BINFO (ipa_get_jf_known_type_base_type (jfunc));
-  if (!base_binfo)
-    return NULL_TREE;
-  return get_binfo_at_offset (base_binfo,
-			      ipa_get_jf_known_type_offset (jfunc),
-			      ipa_get_jf_known_type_component_type (jfunc));
-}
-
 /* Determine whether JFUNC evaluates to a known value (that is either a
    constant or a binfo) and if so, return it.  Otherwise return NULL. INFO
    describes the caller node so that pass-through jump functions can be
@@ -816,7 +802,7 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
   if (jfunc->type == IPA_JF_CONST)
     return ipa_get_jf_constant (jfunc);
   else if (jfunc->type == IPA_JF_KNOWN_TYPE)
-    return ipa_value_from_known_type_jfunc (jfunc);
+    return ipa_binfo_from_known_type_jfunc (jfunc);
   else if (jfunc->type == IPA_JF_PASS_THROUGH
 	   || jfunc->type == IPA_JF_ANCESTOR)
     {
@@ -1103,7 +1089,7 @@ propagate_scalar_accross_jump_function (struct cgraph_edge *cs,
 
       if (jfunc->type == IPA_JF_KNOWN_TYPE)
 	{
-	  val = ipa_value_from_known_type_jfunc (jfunc);
+	  val = ipa_binfo_from_known_type_jfunc (jfunc);
 	  if (!val)
 	    return set_lattice_contains_variable (dest_lat);
 	}

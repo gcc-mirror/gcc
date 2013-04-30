@@ -1240,14 +1240,14 @@ package body Exp_Ch4 is
             --    * .NET/JVM - these targets do not support address arithmetic
             --    and unchecked conversion, key elements of Finalize_Address.
 
-            --    * Alfa mode - the call is useless and results in unwanted
+            --    * SPARK mode - the call is useless and results in unwanted
             --    expansion.
 
             --    * CodePeer mode - TSS primitive Finalize_Address is not
             --    created in this mode.
 
             if VM_Target = No_VM
-              and then not Alfa_Mode
+              and then not SPARK_Mode
               and then not CodePeer_Mode
               and then Present (Finalization_Master (PtrT))
               and then Present (Temp_Decl)
@@ -2568,11 +2568,14 @@ package body Exp_Ch4 is
          Full_Type := Typ;
       end if;
 
-      --  Defense against malformed private types with no completion the error
-      --  will be diagnosed later by check_completion
+      --  If the private type has no completion the context may be the
+      --  expansion of a composite equality for a composite type with some
+      --  still incomplete components. The expression will not be analyzed
+      --  until the enclosing type is completed, at which point this will be
+      --  properly expanded, unless there is a bona fide completion error.
 
       if No (Full_Type) then
-         return New_Reference_To (Standard_False, Loc);
+         return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
       end if;
 
       Full_Type := Base_Type (Full_Type);
@@ -4188,7 +4191,7 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Dtyp    : constant Entity_Id  := Available_View (Designated_Type (PtrT));
+      Dtyp    : constant Entity_Id := Available_View (Designated_Type (PtrT));
       Desig   : Entity_Id;
       Nod     : Node_Id;
       Pool    : Entity_Id;
@@ -4252,10 +4255,10 @@ package body Exp_Ch4 is
 
          --  The finalization master must be inserted and analyzed as part of
          --  the current semantic unit. This form of expansion is not carried
-         --  out in Alfa mode because it is useless. Note that the master is
+         --  out in SPARK mode because it is useless. Note that the master is
          --  updated when analysis changes current units.
 
-         if not Alfa_Mode then
+         if not SPARK_Mode then
             if Present (Rel_Typ) then
                Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
             else
@@ -4574,9 +4577,19 @@ package body Exp_Ch4 is
                      --  access type did not get expanded. Salvage it now.
 
                      if not Restriction_Active (No_Task_Hierarchy) then
-                        pragma Assert (Present (Parent (Base_Type (PtrT))));
-                        Expand_N_Full_Type_Declaration
-                          (Parent (Base_Type (PtrT)));
+                        if Present (Parent (Base_Type (PtrT))) then
+                           Expand_N_Full_Type_Declaration
+                             (Parent (Base_Type (PtrT)));
+
+                        --  The only other possibility is an itype. For this
+                        --  case, the master must exist in the context. This is
+                        --  the case when the allocator initializes an access
+                        --  component in an init-proc.
+
+                        else
+                           pragma Assert (Is_Itype (PtrT));
+                           Build_Master_Renaming (PtrT, N);
+                        end if;
                      end if;
                   end if;
 
@@ -4673,9 +4686,8 @@ package body Exp_Ch4 is
                                           (First_Discriminant (Typ)))
                        and then (Ada_Version < Ada_2005
                                   or else not
-                                    Effectively_Has_Constrained_Partial_View
-                                      (Typ  => Typ,
-                                       Scop => Current_Scope))
+                                    Object_Type_Has_Constrained_Partial_View
+                                      (Typ, Current_Scope))
                      then
                         Typ := Build_Default_Subtype (Typ, N);
                         Set_Expression (N, New_Reference_To (Typ, Loc));
@@ -4788,13 +4800,13 @@ package body Exp_Ch4 is
 
                      --  Do not generate this call in the following cases:
                      --
-                     --    * Alfa mode - the call is useless and results in
+                     --    * SPARK mode - the call is useless and results in
                      --    unwanted expansion.
                      --
                      --    * CodePeer mode - TSS primitive Finalize_Address is
                      --    not created in this mode.
 
-                     elsif not (Alfa_Mode or CodePeer_Mode) then
+                     elsif not (SPARK_Mode or CodePeer_Mode) then
                         Insert_Action (N,
                           Make_Set_Finalize_Address_Call
                             (Loc     => Loc,
@@ -5457,20 +5469,11 @@ package body Exp_Ch4 is
          Remove (Expr);
 
          if Present (Actions) then
-
-            --  If we are not allowed to use Expression_With_Actions, just skip
-            --  the optimization, it is not critical for correctness.
-
-            if not Use_Expression_With_Actions then
-               goto Skip_Optimization;
-            end if;
-
             Rewrite (N,
               Make_Expression_With_Actions (Loc,
                 Expression => Relocate_Node (Expr),
                 Actions    => Actions));
             Analyze_And_Resolve (N, Typ);
-
          else
             Rewrite (N, Relocate_Node (Expr));
          end if;
@@ -5481,8 +5484,6 @@ package body Exp_Ch4 is
          Set_Is_Static_Expression (N, False);
          return;
       end if;
-
-      <<Skip_Optimization>>
 
       --  If the type is limited or unconstrained, we expand as follows to
       --  avoid any possibility of improper copies.
@@ -5578,72 +5579,27 @@ package body Exp_Ch4 is
 
       elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
 
-         --  We have two approaches to handling this. If we are allowed to use
-         --  N_Expression_With_Actions, then we can just wrap the actions into
-         --  the appropriate expression.
+         --  We now wrap the actions into the appropriate expression
 
-         if Use_Expression_With_Actions then
-            if Present (Then_Actions (N)) then
-               Rewrite (Thenx,
-                 Make_Expression_With_Actions (Sloc (Thenx),
-                   Actions    => Then_Actions (N),
-                   Expression => Relocate_Node (Thenx)));
-               Set_Then_Actions (N, No_List);
-               Analyze_And_Resolve (Thenx, Typ);
-            end if;
-
-            if Present (Else_Actions (N)) then
-               Rewrite (Elsex,
-                 Make_Expression_With_Actions (Sloc (Elsex),
-                   Actions    => Else_Actions (N),
-                   Expression => Relocate_Node (Elsex)));
-               Set_Else_Actions (N, No_List);
-               Analyze_And_Resolve (Elsex, Typ);
-            end if;
-
-            return;
-
-            --  if we can't use N_Expression_With_Actions nodes, then we insert
-            --  the following sequence of actions (using Insert_Actions):
-
-            --      Cnn : typ;
-            --      if cond then
-            --         <<then actions>>
-            --         Cnn := then-expr;
-            --      else
-            --         <<else actions>>
-            --         Cnn := else-expr
-            --      end if;
-
-            --  and replace the if expression by a reference to Cnn
-
-         else
-            Cnn := Make_Temporary (Loc, 'C', N);
-
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cnn,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc));
-
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
-
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Thenx),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                    Expression => Relocate_Node (Thenx))),
-
-                Else_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Elsex),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                    Expression => Relocate_Node (Elsex))));
-
-            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
-            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
-
-            New_N := New_Occurrence_Of (Cnn, Loc);
+         if Present (Then_Actions (N)) then
+            Rewrite (Thenx,
+                     Make_Expression_With_Actions (Sloc (Thenx),
+                       Actions    => Then_Actions (N),
+                       Expression => Relocate_Node (Thenx)));
+            Set_Then_Actions (N, No_List);
+            Analyze_And_Resolve (Thenx, Typ);
          end if;
+
+         if Present (Else_Actions (N)) then
+            Rewrite (Elsex,
+                     Make_Expression_With_Actions (Sloc (Elsex),
+                       Actions    => Else_Actions (N),
+                       Expression => Relocate_Node (Elsex)));
+            Set_Else_Actions (N, No_List);
+            Analyze_And_Resolve (Elsex, Typ);
+         end if;
+
+         return;
 
          --  If no actions then no expansion needed, gigi will handle it using
          --  the same approach as a C conditional expression.
@@ -7555,7 +7511,7 @@ package body Exp_Ch4 is
 
       --  CodePeer and GNATprove want to see the unexpanded N_Op_Expon node
 
-      if CodePeer_Mode or Alfa_Mode then
+      if CodePeer_Mode or SPARK_Mode then
          return;
       end if;
 
@@ -11086,29 +11042,6 @@ package body Exp_Ch4 is
       Shortcut_Ent   : constant Entity_Id := Boolean_Literals (Shortcut_Value);
       --  If Left = Shortcut_Value then Right need not be evaluated
 
-      function Make_Test_Expr (Opnd : Node_Id) return Node_Id;
-      --  For Opnd a boolean expression, return a Boolean expression equivalent
-      --  to Opnd /= Shortcut_Value.
-
-      --------------------
-      -- Make_Test_Expr --
-      --------------------
-
-      function Make_Test_Expr (Opnd : Node_Id) return Node_Id is
-      begin
-         if Shortcut_Value then
-            return Make_Op_Not (Sloc (Opnd), Opnd);
-         else
-            return Opnd;
-         end if;
-      end Make_Test_Expr;
-
-      Op_Var : Entity_Id;
-      --  Entity for a temporary variable holding the value of the operator,
-      --  used for expansion in the case where actions are present.
-
-   --  Start of processing for Expand_Short_Circuit_Operator
-
    begin
       --  Deal with non-standard booleans
 
@@ -11160,77 +11093,19 @@ package body Exp_Ch4 is
       --  must only be executed if the right operand of the short circuit is
       --  executed and not otherwise.
 
-      --  the temporary variable C.
-
       if Present (Actions (N)) then
          Actlist := Actions (N);
 
-         --  The old approach is to expand:
+         --  We now use an Expression_With_Actions node for the right operand
+         --  of the short-circuit form. Note that this solves the traceability
+         --  problems for coverage analysis.
 
-         --     left AND THEN right
-
-         --  into
-
-         --     C : Boolean := False;
-         --     IF left THEN
-         --        Actions;
-         --        IF right THEN
-         --           C := True;
-         --        END IF;
-         --     END IF;
-
-         --  and finally rewrite the operator into a reference to C. Similarly
-         --  for left OR ELSE right, with negated values. Note that this
-         --  rewrite causes some difficulties for coverage analysis because
-         --  of the introduction of the new variable C, which obscures the
-         --  structure of the test.
-
-         --  We use this "old approach" if use of N_Expression_With_Actions
-         --  is False (see description in Opt of when this is or is not set).
-
-         if not Use_Expression_With_Actions then
-            Op_Var := Make_Temporary (Loc, 'C', Related_Node => N);
-
-            Insert_Action (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Op_Var,
-                Object_Definition   =>
-                  New_Occurrence_Of (Standard_Boolean, Loc),
-                Expression          =>
-                  New_Occurrence_Of (Shortcut_Ent, Loc)));
-
-            Append_To (Actlist,
-              Make_Implicit_If_Statement (Right,
-                Condition       => Make_Test_Expr (Right),
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (LocR,
-                    Name       => New_Occurrence_Of (Op_Var, LocR),
-                    Expression =>
-                      New_Occurrence_Of
-                        (Boolean_Literals (not Shortcut_Value), LocR)))));
-
-            Insert_Action (N,
-              Make_Implicit_If_Statement (Left,
-                Condition       => Make_Test_Expr (Left),
-                Then_Statements => Actlist));
-
-            Rewrite (N, New_Occurrence_Of (Op_Var, Loc));
-            Analyze_And_Resolve (N, Standard_Boolean);
-
-         --  The new approach, activated for now by the use of debug flag
-         --  -gnatd.X is to use the new Expression_With_Actions node for the
-         --  right operand of the short-circuit form. This should solve the
-         --  traceability problems for coverage analysis.
-
-         else
-            Rewrite (Right,
-              Make_Expression_With_Actions (LocR,
-                Expression => Relocate_Node (Right),
-                Actions    => Actlist));
-            Set_Actions (N, No_List);
-            Analyze_And_Resolve (Right, Standard_Boolean);
-         end if;
+         Rewrite (Right,
+                  Make_Expression_With_Actions (LocR,
+                    Expression => Relocate_Node (Right),
+                    Actions    => Actlist));
+         Set_Actions (N, No_List);
+         Analyze_And_Resolve (Right, Standard_Boolean);
 
          Adjust_Result_Type (N, Typ);
          return;

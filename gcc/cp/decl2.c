@@ -4463,7 +4463,7 @@ check_default_args (tree x)
     {
       if (TREE_PURPOSE (arg))
 	saw_def = true;
-      else if (saw_def)
+      else if (saw_def && !PACK_EXPANSION_P (TREE_VALUE (arg)))
 	{
 	  error ("default argument missing for parameter %P of %q+#D", i, x);
 	  TREE_PURPOSE (arg) = error_mark_node;
@@ -4578,7 +4578,7 @@ mark_used (tree decl)
   if ((decl_maybe_constant_var_p (decl)
        || (TREE_CODE (decl) == FUNCTION_DECL
 	   && DECL_DECLARED_CONSTEXPR_P (decl))
-       || type_uses_auto (TREE_TYPE (decl)))
+       || undeduced_auto_decl (decl))
       && DECL_LANG_SPECIFIC (decl)
       && DECL_TEMPLATE_INFO (decl)
       && !uses_template_parms (DECL_TI_ARGS (decl)))
@@ -4601,11 +4601,7 @@ mark_used (tree decl)
       && uses_template_parms (DECL_TI_ARGS (decl)))
     return true;
 
-  if (type_uses_auto (TREE_TYPE (decl)))
-    {
-      error ("use of %qD before deduction of %<auto%>", decl);
-      return false;
-    }
+  require_deduced_type (decl);
 
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand != 0)

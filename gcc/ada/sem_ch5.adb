@@ -1664,10 +1664,10 @@ package body Sem_Ch5 is
         and then (Nkind (Parent (N)) /= N_Quantified_Expression
                    or else Operating_Mode = Check_Semantics)
 
-        --  Do not perform this expansion in Alfa mode, since the formal
+        --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
 
-        and then not Alfa_Mode
+        and then not SPARK_Mode
       then
          declare
             Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
@@ -2298,15 +2298,19 @@ package body Sem_Ch5 is
             Set_Etype  (DS, Entity (DS));
          end if;
 
-         --  Attempt to iterate through non-static predicate
+         --  Attempt to iterate through non-static predicate. Note that a type
+         --  with inherited predicates may have both static and dynamic forms.
+         --  In this case it is not sufficent to check the static predicate
+         --  function only, look for a dynamic predicate aspect as well.
 
          if Is_Discrete_Type (Entity (DS))
            and then Present (Predicate_Function (Entity (DS)))
-           and then No (Static_Predicate (Entity (DS)))
+           and then (No (Static_Predicate (Entity (DS)))
+                      or else Has_Dynamic_Predicate_Aspect (Entity (DS)))
          then
             Bad_Predicated_Subtype_Use
               ("cannot use subtype& with non-static predicate for loop " &
-               "iteration", DS, Entity (DS));
+               "iteration", DS, Entity (DS), Suggest_Static => True);
          end if;
       end if;
 
@@ -2545,6 +2549,7 @@ package body Sem_Ch5 is
       Iter : constant Node_Id := Iteration_Scheme (N);
       Loc  : constant Source_Ptr := Sloc (N);
       Ent  : Entity_Id;
+      Stmt : Node_Id;
 
    --  Start of processing for Analyze_Loop_Statement
 
@@ -2682,7 +2687,7 @@ package body Sem_Ch5 is
       --  types the actual subtype of the components will only be determined
       --  when the cursor declaration is analyzed.
 
-      --  If the expander is not active, or in Alfa mode, then we want to
+      --  If the expander is not active, or in SPARK mode, then we want to
       --  analyze the loop body now even in the Ada 2012 iterator case, since
       --  the rewriting will not be done. Insert the loop variable in the
       --  current scope, if not done when analysing the iteration scheme.
@@ -2707,13 +2712,22 @@ package body Sem_Ch5 is
          Analyze_Statements (Statements (N));
       end if;
 
+      --  When the iteration scheme of a loop contains attribute 'Loop_Entry,
+      --  the loop is transformed into a conditional block. Retrieve the loop.
+
+      Stmt := N;
+
+      if Subject_To_Loop_Entry_Attributes (Stmt) then
+         Stmt := Find_Loop_In_Conditional_Block (Stmt);
+      end if;
+
       --  Finish up processing for the loop. We kill all current values, since
       --  in general we don't know if the statements in the loop have been
       --  executed. We could do a bit better than this with a loop that we
       --  know will execute at least once, but it's not worth the trouble and
       --  the front end is not in the business of flow tracing.
 
-      Process_End_Label (N, 'e', Ent);
+      Process_End_Label (Stmt, 'e', Ent);
       End_Scope;
       Kill_Current_Values;
 
@@ -2724,15 +2738,15 @@ package body Sem_Ch5 is
       --  before making this call, since Check_Infinite_Loop_Warning relies on
       --  being able to use semantic visibility information to find references.
 
-      if Comes_From_Source (N) then
-         Check_Infinite_Loop_Warning (N);
+      if Comes_From_Source (Stmt) then
+         Check_Infinite_Loop_Warning (Stmt);
       end if;
 
       --  Code after loop is unreachable if the loop has no WHILE or FOR and
       --  contains no EXIT statements within the body of the loop.
 
       if No (Iter) and then not Has_Exit (Ent) then
-         Check_Unreachable_Code (N);
+         Check_Unreachable_Code (Stmt);
       end if;
    end Analyze_Loop_Statement;
 
@@ -2948,7 +2962,16 @@ package body Sem_Ch5 is
                elsif Nkind (P) = N_Handled_Sequence_Of_Statements
                  and then Nkind (Parent (P)) = N_Block_Statement
                then
-                  null;
+                  --  The original loop is now placed inside a block statement
+                  --  due to the expansion of attribute 'Loop_Entry. Return as
+                  --  this is not a "real" block for the purposes of exit
+                  --  counting.
+
+                  if Nkind (N) = N_Loop_Statement
+                    and then Subject_To_Loop_Entry_Attributes (N)
+                  then
+                     return;
+                  end if;
 
                --  Statements in exception handler in a block
 

@@ -617,7 +617,7 @@ C++ ObjC++ Var(warn_pmf2ptr) Init(1) Warning
 Warn when converting the type of pointers to member functions
 
 Wpointer-arith
-C UPC ObjC C++ ObjC++ Var(warn_pointer_arith) Warning
+C UPC ObjC C++ ObjC++ Var(warn_pointer_arith) Warning LangEnabledBy(C UPC ObjC C++ ObjC++,Wpedantic)
 Warn about function pointer arithmetic
 
 Wpointer-sign

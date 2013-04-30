@@ -261,7 +261,8 @@ line, but, unlike @code{LIBGCC_SPEC}, it is used unmodified.
 @defmac USE_LD_AS_NEEDED
 A macro that controls the modifications to @code{LIBGCC_SPEC}
 mentioned in @code{REAL_LIBGCC_SPEC}.  If nonzero, a spec will be
-generated that uses --as-needed and the shared libgcc in place of the
+generated that uses @option{--as-needed} or equivalent options and the
+shared @file{libgcc} in place of the
 static exception handler library, when linking without any of
 @code{-static}, @code{-static-libgcc}, or @code{-shared-libgcc}.
 @end defmac
@@ -10843,9 +10844,12 @@ Fold a call to a machine specific built-in function that was set up by
 @samp{TARGET_INIT_BUILTINS}.  @var{fndecl} is the declaration of the
 built-in function.  @var{n_args} is the number of arguments passed to
 the function; the arguments themselves are pointed to by @var{argp}.
-The result is another tree containing a simplified expression for the
-call's result.  If @var{ignore} is true the value will be ignored.
+The result is another tree, valid for both GIMPLE and GENERIC,
+containing a simplified expression for the call's result.  If
+@var{ignore} is true the value will be ignored.
 @end deftypefn
+
+@hook TARGET_GIMPLE_FOLD_BUILTIN
 
 @hook TARGET_COMPARE_VERSION_PRIORITY
 This hook is used to compare the target attributes in two functions to

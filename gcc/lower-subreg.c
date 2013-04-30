@@ -1069,7 +1069,13 @@ resolve_simple_move (rtx set, rtx insn)
 
   emit_insn_before (insns, insn);
 
-  delete_insn (insn);
+  /* If we get here via self-recutsion, then INSN is not yet in the insns
+     chain and delete_insn will fail.  We only want to remove INSN from the
+     current sequence.  See PR56738.  */
+  if (in_sequence_p ())
+    remove_insn (insn);
+  else
+    delete_insn (insn);
 
   return insns;
 }

@@ -89,8 +89,6 @@ Texts.  A copy of the license is included in the section entitled
 
 @set FSFEDITION
 @set EDITION GNAT
-@set DEFAULTLANGUAGEVERSION Ada 2005
-@set NONDEFAULTLANGUAGEVERSION Ada 95
 
 @ifset unw
 @set PLATFORM
@@ -237,22 +235,18 @@ toolset for the full Ada programming language.
 It documents the features of the compiler and tools, and explains
 how to use them to build Ada applications.
 
-@value{EDITION} implements Ada 95 and Ada 2005, and it may also be invoked in
-Ada 83 compatibility mode.
-By default, @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
-but you can override with a compiler switch
-(@pxref{Compiling Different Versions of Ada})
+@value{EDITION} implements Ada 95, Ada 2005 and Ada 2012, and it may also be
+invoked in Ada 83 compatibility mode.
+By default, @value{EDITION} assumes Ada 2012, but you can override with a
+compiler switch (@pxref{Compiling Different Versions of Ada})
 to explicitly specify the language version.
 Throughout this manual, references to ``Ada'' without a year suffix
-apply to both the Ada 95 and Ada 2005 versions of the language.
-
+apply to both all Ada 95/2005/2012 versions of the language.
 
 @ifclear FSFEDITION
 For ease of exposition, ``@value{EDITION}'' will be referred to simply as
 ``GNAT'' in the remainder of this document.
 @end ifclear
-
-
 
 
 @menu
@@ -4529,7 +4523,7 @@ Additional details on incorrect parameters
 
 @item -gnatjnn
 @cindex @option{-gnatjnn} (@command{gcc})
-In normal operation mode (or if @option{-gnatj0} is used, then error messages
+In normal operation mode (or if @option{-gnatj0} is used), then error messages
 with continuation lines are treated as though the continuation lines were
 separate messages (and so a warning with two continuation lines counts as
 three warnings, and is listed as three separate messages).
@@ -5413,7 +5407,7 @@ This switch suppresses warnings for tracking of deleted conditional code.
 @cindex @option{-gnatw.t} (@command{gcc})
 This switch activates warnings on suspicious postconditions (whether a
 pragma @code{Postcondition} or a @code{Post} aspect in Ada 2012)
-and suspicious contract cases (pragma @code{Contract_Case}). A
+and suspicious contract cases (pragma @code{Contract_Cases}). A
 function postcondition or contract case is suspicious when no postcondition
 or contract case for this function mentions the result of the function.
 A procedure postcondition or contract case is suspicious when it only
@@ -6762,8 +6756,8 @@ and specifications where a separate body is present).
 @noindent
 The switches described in this section allow you to explicitly specify
 the version of the Ada language that your programs are written in.
-By default @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
-but you can also specify @value{NONDEFAULTLANGUAGEVERSION} or
+The default mode is Ada 2012,
+but you can also specify Ada 95, Ada 2005 mode, or
 indicate Ada 83 compatibility mode.
 
 @table @option
@@ -6831,13 +6825,6 @@ may generally be compiled using this switch (see the description of the
 @option{-gnat83} and @option{-gnat95} switches for further
 information).
 
-@ifset PROEDITION
-Note that even though Ada 2005 is the current official version of the
-language, GNAT still compiles in Ada 95 mode by default, so if you are
-using Ada 2005 features in your program, you must use this switch (or
-the equivalent Ada_05 or Ada_2005 configuration pragmas).
-@end ifset
-
 @item -gnat12 or -gnat2012 (Ada 2012 mode)
 @cindex @option{-gnat12} (@command{gcc})
 @cindex @option{-gnat2012} (@command{gcc})
@@ -6845,18 +6832,13 @@ the equivalent Ada_05 or Ada_2005 configuration pragmas).
 
 @noindent
 This switch directs the compiler to implement the Ada 2012 version of the
-language.
+language (also the default).
 Since Ada 2012 is almost completely upwards
 compatible with Ada 2005 (and thus also with Ada 83, and Ada 95),
 Ada 83 and Ada 95 programs
 may generally be compiled using this switch (see the description of the
 @option{-gnat83}, @option{-gnat95}, and @option{-gnat05/2005} switches
 for further information).
-
-For information about the approved ``Ada Issues'' that have been incorporated
-into Ada 2012, see @url{http://www.ada-auth.org/ais.html}.
-Included with GNAT releases is a file @file{features-ada12} that describes
-the set of implemented Ada 2012 features.
 
 @item -gnatX (Enable GNAT Extensions)
 @cindex @option{-gnatX} (@command{gcc})
@@ -9448,12 +9430,13 @@ object and ALI files in the directory where it found the dummy file.
 @item ^-j^/PROCESSES=^@var{n}
 @cindex @option{^-j^/PROCESSES^} (@command{gnatmake})
 @cindex Parallel make
-Use @var{n} processes to carry out the (re)compilations. On a
-multiprocessor machine compilations will occur in parallel. In the
-event of compilation errors, messages from various compilations might
-get interspersed (but @command{gnatmake} will give you the full ordered
-list of failing compiles at the end). If this is problematic, rerun
-the make process with n set to 1 to get a clean list of messages.
+Use @var{n} processes to carry out the (re)compilations. On a multiprocessor
+machine compilations will occur in parallel. If @var{n} is 0, then the
+maximum number of parallel compilations is the number of core processors
+on the platform. In the event of compilation errors, messages from various
+compilations might get interspersed (but @command{gnatmake} will give you the
+full ordered list of failing compiles at the end). If this is problematic,
+rerun the make process with n set to 1 to get a clean list of messages.
 
 @item ^-k^/CONTINUE_ON_ERROR^
 @cindex @option{^-k^/CONTINUE_ON_ERROR^} (@command{gnatmake})
@@ -10909,6 +10892,14 @@ Ada 2005 mode etc.
 
 @table @option
 @c !sort!
+@item --version
+@cindex @option{--version} @command{gnatelim}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatelim}
+Display usage, then exit disregarding all other options.
+
 @item ^-files^/FILES^=@var{filename}
 @cindex @option{^-files^/FILES^} (@code{gnatelim})
 Take the argument source files from the specified file. This file should be an
@@ -14206,6 +14197,14 @@ with @option{^-pipe^/STANDARD_OUTPUT^} option.
 The additional @command{gnatpp} switches are defined in this subsection.
 
 @table @option
+@item --version
+@cindex @option{--version} @command{gnatpp}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatpp}
+Display usage, then exit disregarding all other options.
+
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatpp})
 Take the argument source files from the specified file. This file should be an
@@ -15656,6 +15655,14 @@ Report control fan-in coupling
 Additional @command{gnatmetric} switches are as follows:
 
 @table @option
+@item --version
+@cindex @option{--version} @command{gnatmetric}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatmetric}
+Display usage, then exit disregarding all other options.
+
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatmetric})
 Take the argument source files from the specified file. This file should be an
@@ -16367,6 +16374,10 @@ Several such switches may be specified simultaneously.
 @cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@code{gnatls})
 Source path manipulation. Same meaning as the equivalent @command{gnatmake}
 flags (@pxref{Switches for gnatmake}).
+
+@item ^-aP^/ADD_PROJECT_SEARCH_DIR=^@var{dir}
+@cindex @option{^-aP^/ADD_PROJECT_SEARCH_DIR=^} (@code{gnatls})
+Add @var{dir} at the beginning of the project search dir.
 
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@code{gnatls})
@@ -17083,6 +17094,7 @@ build an encapsulated library the attribute
 @group
    for Library_Dir use "lib_dir";
    for Library_Name use "dummy";
+   for Library_Kind use "dynamic";
    for Library_Interface use ("int1", "int1.child");
    for Library_Standalone use "encapsulated";
 @end group
@@ -18474,6 +18486,14 @@ is an optional sequence of switches as described in the next section
 @table @option
 @c !sort!
 
+@item --version
+@cindex @option{--version} @command{gnatstub}
+Display Copyright and version, then exit disregarding all other options.
+
+@item --help
+@cindex @option{--help} @command{gnatstub}
+Display usage, then exit disregarding all other options.
+
 @item ^-f^/FULL^
 @cindex @option{^-f^/FULL^} (@command{gnatstub})
 If the destination directory already contains a file with the name of the
@@ -19222,7 +19242,7 @@ familiar to engineering practice. The dimensions of algebraic expressions
 
 This feature depends on Ada 2012 aspect specifications, and is available from
 version 7.0.1 of GNAT onwards. The GNAT-specific aspect Dimension_System allows
-the user to define a system of units; the aspect Dimension then allows the user
+you to define a system of units; the aspect Dimension then allows the user
 to declare dimensioned quantities within a given system.
 
 The major advantage of this model is that it does not require the declaration of
@@ -19255,9 +19275,7 @@ conventional units. For example:
 @smallexample @c ada
    subtype Length is Mks_Type
      with
-      Dimension => (Symbol => 'm',
-        Meter  => 1,
-        others => 0);
+      Dimension => (Symbol => 'm', Meter  => 1, others => 0);
 @end smallexample
 @noindent
 and similarly for Mass, Time, Electric_Current, Thermodynamic_Temperature,
@@ -19286,13 +19304,17 @@ as well as useful multiples of these units:
 @end smallexample
 
 @noindent
-The user can then define a derived unit by providing the aspect that
+Using this package, you can then define a derived unit by
+providing the aspect that
 specifies its dimensions within the MKS system, as well as the string to
 be used for output of a value of that unit:
 
 @smallexample @c ada
   subtype Acceleration is Mks_Type
-    with Dimension => ("m/sec^^^2", Meter => 1, Second => -2, others => 0);
+    with Dimension => ("m/sec^^^2",
+                       Meter => 1,
+                       Second => -2,
+                       others => 0);
 @end smallexample
 
 @noindent

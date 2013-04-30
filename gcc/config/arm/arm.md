@@ -858,7 +858,7 @@
 
 ;; This is the canonicalization of addsi3_compare0_for_combiner when the
 ;; addend is a constant.
-(define_insn "*cmpsi2_addneg"
+(define_insn "cmpsi2_addneg"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	 (match_operand:SI 1 "s_register_operand" "r,r")
@@ -1415,7 +1415,7 @@
    (set_attr "type"  "simple_alu_imm,*,*")]
 )
 
-(define_insn "*subsi3_compare"
+(define_insn "subsi3_compare"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI 1 "arm_rhs_operand" "r,r,I")
 		    (match_operand:SI 2 "arm_rhs_operand" "I,r,r")))
@@ -2162,13 +2162,58 @@
   ""
 )
 
-(define_insn "*anddi3_insn"
-  [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
-	(and:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
-		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_32BIT && !TARGET_IWMMXT && !TARGET_NEON"
-  "#"
-  [(set_attr "length" "8")]
+(define_insn_and_split "*anddi3_insn"
+  [(set (match_operand:DI         0 "s_register_operand"     "=&r,&r,&r,&r,w,w ,?&r,?&r,?w,?w")
+	(and:DI (match_operand:DI 1 "s_register_operand"     "%0 ,r ,0,r ,w,0 ,0  ,r  ,w ,0")
+		(match_operand:DI 2 "arm_anddi_operand_neon" "r  ,r ,De,De,w,DL,r  ,r  ,w ,DL")))]
+  "TARGET_32BIT && !TARGET_IWMMXT"
+{
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3: /* fall through */
+      return "#";
+    case 4: /* fall through */
+    case 8: return "vand\t%P0, %P1, %P2";
+    case 5: /* fall through */
+    case 9: return neon_output_logic_immediate ("vand", &operands[2],
+                    DImode, 1, VALID_NEON_QREG_MODE (DImode));
+    case 6: return "#";
+    case 7: return "#";
+    default: gcc_unreachable ();
+    }
+}
+  "TARGET_32BIT && !TARGET_IWMMXT"
+  [(set (match_dup 3) (match_dup 4))
+   (set (match_dup 5) (match_dup 6))]
+  "
+  {
+    operands[3] = gen_lowpart (SImode, operands[0]);
+    operands[5] = gen_highpart (SImode, operands[0]);
+
+    operands[4] = simplify_gen_binary (AND, SImode,
+                                           gen_lowpart (SImode, operands[1]),
+                                           gen_lowpart (SImode, operands[2]));
+    operands[6] = simplify_gen_binary (AND, SImode,
+                                           gen_highpart (SImode, operands[1]),
+                                           gen_highpart_mode (SImode, DImode, operands[2]));
+
+  }"
+  [(set_attr "neon_type" "*,*,*,*,neon_int_1,neon_int_1,*,*,neon_int_1,neon_int_1")
+   (set_attr "arch" "*,*,*,*,neon_for_64bits,neon_for_64bits,*,*,
+                     avoid_neon_for_64bits,avoid_neon_for_64bits")
+   (set_attr "length" "8,8,8,8,*,*,8,8,*,*")
+   (set (attr "insn_enabled") (if_then_else
+                                (lt (symbol_ref "which_alternative")
+                                    (const_int 4))
+                                (if_then_else (match_test "!TARGET_NEON")
+                                              (const_string "yes")
+                                              (const_string "no"))
+                                (if_then_else (match_test "TARGET_NEON")
+                                              (const_string "yes")
+                                              (const_string "no"))))]
 )
 
 (define_insn_and_split "*anddi_zesidi_di"
@@ -3534,7 +3579,7 @@
 	 [(match_operand:SI 1 "s_register_operand" "r")
 	  (match_operand:SI 2 "s_register_operand" "r")]))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && optimize_insn_for_size_p()"
   "*
   operands[3] = gen_rtx_fmt_ee (minmax_code (operands[3]), SImode,
 				operands[1], operands[2]);
@@ -8664,7 +8709,7 @@
    (set_attr "type" "f_sel<vfp_type>")]
 )
 
-(define_insn "*movsicc_insn"
+(define_insn_and_split "*movsicc_insn"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r,r,r,r,r")
 	(if_then_else:SI
 	 (match_operator 3 "arm_comparison_operator"
@@ -8677,10 +8722,45 @@
    mvn%D3\\t%0, #%B2
    mov%d3\\t%0, %1
    mvn%d3\\t%0, #%B1
-   mov%d3\\t%0, %1\;mov%D3\\t%0, %2
-   mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
-   mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
-   mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2"
+   #
+   #
+   #
+   #"
+   ; alt4: mov%d3\\t%0, %1\;mov%D3\\t%0, %2
+   ; alt5: mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
+   ; alt6: mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
+   ; alt7: mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    enum rtx_code rev_code;
+    enum machine_mode mode;
+    rtx rev_cond;
+
+    emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+                                  operands[3],
+                                  gen_rtx_SET (VOIDmode,
+                                               operands[0],
+                                               operands[1])));
+
+    rev_code = GET_CODE (operands[3]);
+    mode = GET_MODE (operands[4]);
+    if (mode == CCFPmode || mode == CCFPEmode)
+      rev_code = reverse_condition_maybe_unordered (rev_code);
+    else
+      rev_code = reverse_condition (rev_code);
+
+    rev_cond = gen_rtx_fmt_ee (rev_code,
+                               VOIDmode,
+                               operands[4],
+                               const0_rtx);
+    emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+                                  rev_cond,
+                                  gen_rtx_SET (VOIDmode,
+                                               operands[0],
+                                               operands[2])));
+    DONE;
+  }
   [(set_attr "length" "4,4,4,4,8,8,8,8")
    (set_attr "conds" "use")
    (set_attr "insn" "mov,mvn,mov,mvn,mov,mov,mvn,mvn")
@@ -9649,27 +9729,64 @@
    (set_attr "type" "alu_shift,alu_shift_reg")])
 
 
-(define_insn "*and_scc"
+(define_insn_and_split "*and_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(and:SI (match_operator:SI 1 "arm_comparison_operator"
-		 [(match_operand 3 "cc_register" "") (const_int 0)])
-		(match_operand:SI 2 "s_register_operand" "r")))]
+		 [(match_operand 2 "cc_register" "") (const_int 0)])
+		(match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_ARM"
-  "mov%D1\\t%0, #0\;and%d1\\t%0, %2, #1"
+  "#"   ; "mov%D1\\t%0, #0\;and%d1\\t%0, %3, #1"
+  "&& reload_completed"
+  [(cond_exec (match_dup 5) (set (match_dup 0) (const_int 0)))
+   (cond_exec (match_dup 4) (set (match_dup 0)
+                                 (and:SI (match_dup 3) (const_int 1))))]
+  {
+    enum machine_mode mode = GET_MODE (operands[2]);
+    enum rtx_code rc = GET_CODE (operands[1]);
+
+    /* Note that operands[4] is the same as operands[1],
+       but with VOIDmode as the result. */
+    operands[4] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
+    if (mode == CCFPmode || mode == CCFPEmode)
+      rc = reverse_condition_maybe_unordered (rc);
+    else
+      rc = reverse_condition (rc);
+    operands[5] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
+  }
   [(set_attr "conds" "use")
    (set_attr "insn" "mov")
    (set_attr "length" "8")]
 )
 
-(define_insn "*ior_scc"
+(define_insn_and_split "*ior_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(ior:SI (match_operator:SI 2 "arm_comparison_operator"
-		 [(match_operand 3 "cc_register" "") (const_int 0)])
-		(match_operand:SI 1 "s_register_operand" "0,?r")))]
+	(ior:SI (match_operator:SI 1 "arm_comparison_operator"
+		 [(match_operand 2 "cc_register" "") (const_int 0)])
+		(match_operand:SI 3 "s_register_operand" "0,?r")))]
   "TARGET_ARM"
   "@
-   orr%d2\\t%0, %1, #1
-   mov%D2\\t%0, %1\;orr%d2\\t%0, %1, #1"
+   orr%d1\\t%0, %3, #1
+   #"
+  "&& reload_completed
+   && REGNO (operands [0]) != REGNO (operands[3])"
+  ;; && which_alternative == 1
+  ; mov%D1\\t%0, %3\;orr%d1\\t%0, %3, #1
+  [(cond_exec (match_dup 5) (set (match_dup 0) (match_dup 3)))
+   (cond_exec (match_dup 4) (set (match_dup 0)
+                                 (ior:SI (match_dup 3) (const_int 1))))]
+  {
+    enum machine_mode mode = GET_MODE (operands[2]);
+    enum rtx_code rc = GET_CODE (operands[1]);
+
+    /* Note that operands[4] is the same as operands[1],
+       but with VOIDmode as the result. */
+    operands[4] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
+    if (mode == CCFPmode || mode == CCFPEmode)
+      rc = reverse_condition_maybe_unordered (rc);
+    else
+      rc = reverse_condition (rc);
+    operands[5] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
+  }
   [(set_attr "conds" "use")
    (set_attr "length" "4,8")]
 )
@@ -10376,24 +10493,75 @@
   "")
 ;; ??? The conditional patterns above need checking for Thumb-2 usefulness
 
-(define_insn "*negscc"
+(define_insn_and_split "*negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(neg:SI (match_operator 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_rhs_operand" "rI")])))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
-  "*
-  if (GET_CODE (operands[3]) == LT && operands[2] == const0_rtx)
-    return \"mov\\t%0, %1, asr #31\";
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
 
-  if (GET_CODE (operands[3]) == NE)
-    return \"subs\\t%0, %1, %2\;mvnne\\t%0, #0\";
+    if (GET_CODE (operands[3]) == LT && operands[2] == const0_rtx)
+       {
+         /* Emit mov\\t%0, %1, asr #31 */
+         emit_insn (gen_rtx_SET (VOIDmode,
+                                 operands[0],
+                                 gen_rtx_ASHIFTRT (SImode,
+                                                   operands[1],
+                                                   GEN_INT (31))));
+         DONE;
+       }
+     else if (GET_CODE (operands[3]) == NE)
+       {
+        /* Emit subs\\t%0, %1, %2\;mvnne\\t%0, #0 */
+        if (CONST_INT_P (operands[2]))
+          emit_insn (gen_cmpsi2_addneg (operands[0], operands[1], operands[2],
+                                        GEN_INT (- INTVAL (operands[2]))));
+        else
+          emit_insn (gen_subsi3_compare (operands[0], operands[1], operands[2]));
 
-  output_asm_insn (\"cmp\\t%1, %2\", operands);
-  output_asm_insn (\"mov%D3\\t%0, #0\", operands);
-  return \"mvn%d3\\t%0, #0\";
-  "
+        emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+                                      gen_rtx_NE (SImode,
+                                                  cc_reg,
+                                                  const0_rtx),
+                                      gen_rtx_SET (SImode,
+                                                   operands[0],
+                                                   GEN_INT (~0))));
+        DONE;
+      }
+    else
+      {
+        /* Emit: cmp\\t%1, %2\;mov%D3\\t%0, #0\;mvn%d3\\t%0, #0 */
+        emit_insn (gen_rtx_SET (VOIDmode,
+                                cc_reg,
+                                gen_rtx_COMPARE (CCmode, operands[1], operands[2])));
+        enum rtx_code rc = GET_CODE (operands[3]);
+
+        rc = reverse_condition (rc);
+        emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+                                      gen_rtx_fmt_ee (rc,
+                                                      VOIDmode,
+                                                      cc_reg,
+                                                      const0_rtx),
+                                      gen_rtx_SET (VOIDmode, operands[0], const0_rtx)));
+        rc = GET_CODE (operands[3]);
+        emit_insn (gen_rtx_COND_EXEC (VOIDmode,
+                                      gen_rtx_fmt_ee (rc,
+                                                      VOIDmode,
+                                                      cc_reg,
+                                                      const0_rtx),
+                                      gen_rtx_SET (VOIDmode,
+                                                   operands[0],
+                                                   GEN_INT (~0))));
+        DONE;
+      }
+     FAIL;
+  }
   [(set_attr "conds" "clob")
    (set_attr "length" "12")]
 )

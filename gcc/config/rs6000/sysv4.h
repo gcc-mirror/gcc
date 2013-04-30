@@ -187,12 +187,6 @@ do {									\
 	     rs6000_abi_name);						\
     }									\
 									\
-  if (rs6000_current_abi == ABI_AIX && TARGET_LITTLE_ENDIAN)		\
-    {									\
-      rs6000_isa_flags &= ~OPTION_MASK_LITTLE_ENDIAN;			\
-      error ("-mcall-aixdesc must be big endian");			\
-    }									\
-									\
   if (TARGET_SECURE_PLT != secure_plt)					\
     {									\
       error ("-msecure-plt not supported by your assembler");		\

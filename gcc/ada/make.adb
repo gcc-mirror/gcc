@@ -5475,7 +5475,6 @@ package body Make is
       --  is invoked with the -F switch to force checking of elaboration flags.
 
       Project_Node_Tree : Project_Node_Tree_Ref;
-      Root_Environment  : Prj.Tree.Environment;
 
       Stop_Compile : Boolean;
 
@@ -6392,8 +6391,6 @@ package body Make is
       --  the command line switches
 
       Prj.Tree.Initialize (Env, Gnatmake_Flags);
-      Prj.Env.Initialize_Default_Project_Path
-        (Env.Project_Path, Target_Name => Sdefault.Target_Name.all);
 
       Project_Node_Tree := new Project_Node_Tree_Data;
       Prj.Tree.Initialize (Project_Node_Tree);
@@ -6491,6 +6488,12 @@ package body Make is
       if Usage_Requested then
          Usage;
       end if;
+
+      --  Add the default project search directories now, after the directories
+      --  that have been specified by switches -aP<dir>.
+
+      Prj.Env.Initialize_Default_Project_Path
+        (Env.Project_Path, Target_Name => Sdefault.Target_Name.all);
 
       --  Test for trailing -P switch
 

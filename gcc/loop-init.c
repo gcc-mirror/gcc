@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "df.h"
 #include "ggc.h"
+#include "tree-flow.h"
 
 
 /* Apply FLAGS to the loop state.  */
@@ -91,16 +92,27 @@ loop_optimizer_init (unsigned flags)
     }
   else
     {
+      bool recorded_exits = loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS);
+
       gcc_assert (cfun->curr_properties & PROP_loops);
 
       /* Ensure that the dominators are computed, like flow_loops_find does.  */
       calculate_dominance_info (CDI_DOMINATORS);
 
+      if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+	{
+	  loops_state_clear (~0U);
+	  fix_loop_structure (NULL);
+	}
+
 #ifdef ENABLE_CHECKING
-      verify_loop_structure ();
+      else
+	verify_loop_structure ();
 #endif
 
       /* Clear all flags.  */
+      if (recorded_exits)
+	release_recorded_exits ();
       loops_state_clear (~0U);
     }
 
@@ -130,6 +142,8 @@ loop_optimizer_finalize (void)
 
   if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     release_recorded_exits ();
+
+  free_numbers_of_iterations_estimates ();
 
   /* If we should preserve loop structure, do not free it but clear
      flags that advanced properties are there as we are not preserving

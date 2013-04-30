@@ -257,7 +257,6 @@ typedef struct rename_map_elt_s
 } *rename_map_elt;
 
 
-extern void debug_rename_map (htab_t);
 extern hashval_t rename_map_elt_info (const void *);
 extern int eq_rename_map_elts (const void *, const void *);
 

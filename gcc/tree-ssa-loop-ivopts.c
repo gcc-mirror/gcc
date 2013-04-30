@@ -75,7 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "insn-config.h"
 #include "pointer-set.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "cfgloop.h"
@@ -236,6 +236,33 @@ typedef struct iv_use *iv_use_p;
 
 typedef struct iv_cand *iv_cand_p;
 
+/* Hashtable helpers.  */
+
+struct iv_inv_expr_hasher : typed_free_remove <iv_inv_expr_ent>
+{
+  typedef iv_inv_expr_ent value_type;
+  typedef iv_inv_expr_ent compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Hash function for loop invariant expressions.  */
+
+inline hashval_t
+iv_inv_expr_hasher::hash (const value_type *expr)
+{
+  return expr->hash;
+}
+
+/* Hash table equality function for expressions.  */
+
+inline bool
+iv_inv_expr_hasher::equal (const value_type *expr1, const compare_type *expr2)
+{
+  return expr1->hash == expr2->hash
+	 && operand_equal_p (expr1->expr, expr2->expr, 0);
+}
+
 struct ivopts_data
 {
   /* The currently optimized loop.  */
@@ -255,7 +282,7 @@ struct ivopts_data
 
   /* The hashtable of loop invariant expressions created
      by ivopt.  */
-  htab_t inv_expr_tab;
+  hash_table <iv_inv_expr_hasher> inv_expr_tab;
 
   /* Loop invariant expression id.  */
   int inv_expr_id;
@@ -814,30 +841,6 @@ niter_for_single_dom_exit (struct ivopts_data *data)
   return niter_for_exit (data, exit);
 }
 
-/* Hash table equality function for expressions.  */
-
-static int
-htab_inv_expr_eq (const void *ent1, const void *ent2)
-{
-  const struct iv_inv_expr_ent *expr1 =
-      (const struct iv_inv_expr_ent *)ent1;
-  const struct iv_inv_expr_ent *expr2 =
-      (const struct iv_inv_expr_ent *)ent2;
-
-  return expr1->hash == expr2->hash
-	 && operand_equal_p (expr1->expr, expr2->expr, 0);
-}
-
-/* Hash function for loop invariant expressions.  */
-
-static hashval_t
-htab_inv_expr_hash (const void *ent)
-{
-  const struct iv_inv_expr_ent *expr =
-      (const struct iv_inv_expr_ent *)ent;
-  return expr->hash;
-}
-
 /* Initializes data structures used by the iv optimization pass, stored
    in DATA.  */
 
@@ -852,8 +855,7 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->niters = NULL;
   data->iv_uses.create (20);
   data->iv_candidates.create (20);
-  data->inv_expr_tab = htab_create (10, htab_inv_expr_hash,
-                                    htab_inv_expr_eq, free);
+  data->inv_expr_tab.create (10);
   data->inv_expr_id = 0;
   decl_rtl_to_reset.create (20);
 }
@@ -3850,8 +3852,7 @@ get_expr_id (struct ivopts_data *data, tree expr)
 
   ent.expr = expr;
   ent.hash = iterative_hash_expr (expr, 0);
-  slot = (struct iv_inv_expr_ent **) htab_find_slot (data->inv_expr_tab,
-                                                     &ent, INSERT);
+  slot = data->inv_expr_tab.find_slot (&ent, INSERT);
   if (*slot)
     return (*slot)->id;
 
@@ -6653,7 +6654,7 @@ free_loop_data (struct ivopts_data *data)
 
   decl_rtl_to_reset.truncate (0);
 
-  htab_empty (data->inv_expr_tab);
+  data->inv_expr_tab.empty ();
   data->inv_expr_id = 0;
 }
 
@@ -6671,7 +6672,7 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   decl_rtl_to_reset.release ();
   data->iv_uses.release ();
   data->iv_candidates.release ();
-  htab_delete (data->inv_expr_tab);
+  data->inv_expr_tab.dispose ();
 }
 
 /* Returns true if the loop body BODY includes any function calls.  */

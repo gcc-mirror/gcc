@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,6 +56,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_SCIL;
 with Sem_Elab; use Sem_Elab;
 with Sem_Prag; use Sem_Prag;
+with Sem_VFpt; use Sem_VFpt;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -179,6 +180,21 @@ begin
 
       else
          Config_Pragmas := Empty_List;
+      end if;
+
+      --  Check for VAX Float
+
+      if Targparm.VAX_Float_On_Target then
+
+         --  pragma Float_Representation (VAX_Float);
+
+         Opt.Float_Format := 'V';
+
+         --  pragma Long_Float (G_Float);
+
+         Opt.Float_Format_Long := 'G';
+
+         Set_Standard_Fpt_Formats;
       end if;
 
       --  Now deal with specified config pragmas files if there are any

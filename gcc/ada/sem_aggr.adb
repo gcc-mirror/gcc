@@ -1678,9 +1678,10 @@ package body Sem_Aggr is
             --  unless the expression covers a single component, or the
             --  expander is inactive.
 
-            --  In Alfa mode, expressions that can perform side-effects will be
-            --  recognized by the gnat2why back-end, and the whole subprogram
-            --  will be ignored. So semantic analysis can be performed safely.
+            --  In SPARK mode, expressions that can perform side-effects will
+            --  be recognized by the gnat2why back-end, and the whole
+            --  subprogram will be ignored. So semantic analysis can be
+            --  performed safely.
 
             if Single_Elmt
               or else not Full_Expander_Active

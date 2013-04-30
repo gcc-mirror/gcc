@@ -39,6 +39,36 @@ with GNAT.HTable;           use GNAT.HTable;
 
 package body Aspects is
 
+   --  The following array indicates aspects that a subtype inherits from its
+   --  base type. True means that the subtype inherits the aspect from its base
+   --  type. False means it is not inherited.
+
+   Base_Aspect : constant array (Aspect_Id) of Boolean :=
+     (Aspect_Atomic                  => True,
+      Aspect_Atomic_Components       => True,
+      Aspect_Constant_Indexing       => True,
+      Aspect_Default_Iterator        => True,
+      Aspect_Discard_Names           => True,
+      Aspect_Independent_Components  => True,
+      Aspect_Iterator_Element        => True,
+      Aspect_Type_Invariant          => True,
+      Aspect_Unchecked_Union         => True,
+      Aspect_Variable_Indexing       => True,
+      Aspect_Volatile                => True,
+      others                         => False);
+
+   --  The following array indicates type aspects that are inherited and apply
+   --  to the class-wide type as well.
+
+   Inherited_Aspect : constant array (Aspect_Id) of Boolean :=
+     (Aspect_Constant_Indexing    => True,
+      Aspect_Default_Iterator     => True,
+      Aspect_Implicit_Dereference => True,
+      Aspect_Iterator_Element     => True,
+      Aspect_Remote_Types         => True,
+      Aspect_Variable_Indexing    => True,
+      others                      => False);
+
    procedure Set_Aspect_Specifications_No_Check (N : Node_Id; L : List_Id);
    --  Same as Set_Aspect_Specifications, but does not contain the assertion
    --  that checks that N does not already have aspect specifications. This
@@ -133,6 +163,10 @@ package body Aspects is
          if Is_Class_Wide_Type (Owner) and then Inherited_Aspect (A) then
             Owner := Root_Type (Owner);
          end if;
+
+         if Is_Private_Type (Owner) and then Present (Full_View (Owner)) then
+            Owner := Full_View (Owner);
+         end if;
       end if;
 
       --  Search the representation items for the desired aspect
@@ -140,7 +174,7 @@ package body Aspects is
       Item := First_Rep_Item (Owner);
       while Present (Item) loop
          if Nkind (Item) = N_Aspect_Specification
-           and then Get_Aspect_Id (Chars (Identifier (Item))) = A
+           and then Get_Aspect_Id (Item) = A
          then
             return Item;
          end if;
@@ -163,7 +197,7 @@ package body Aspects is
       if Permits_Aspect_Specifications (Decl) then
          Spec := First (Aspect_Specifications (Decl));
          while Present (Spec) loop
-            if Get_Aspect_Id (Chars (Identifier (Spec))) = A then
+            if Get_Aspect_Id (Spec) = A then
                return Spec;
             end if;
 
@@ -206,6 +240,12 @@ package body Aspects is
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id is
    begin
       return Aspect_Id_Hash_Table.Get (Name);
+   end Get_Aspect_Id;
+
+   function Get_Aspect_Id (Aspect : Node_Id) return Aspect_Id is
+   begin
+      pragma Assert (Nkind (Aspect) = N_Aspect_Specification);
+      return Aspect_Id_Hash_Table.Get (Chars (Identifier (Aspect)));
    end Get_Aspect_Id;
 
    ----------------
@@ -301,7 +341,6 @@ package body Aspects is
     Aspect_Compiler_Unit                => Aspect_Compiler_Unit,
     Aspect_Component_Size               => Aspect_Component_Size,
     Aspect_Constant_Indexing            => Aspect_Constant_Indexing,
-    Aspect_Contract_Case                => Aspect_Contract_Case,
     Aspect_Contract_Cases               => Aspect_Contract_Cases,
     Aspect_Convention                   => Aspect_Convention,
     Aspect_CPU                          => Aspect_CPU,
@@ -319,7 +358,6 @@ package body Aspects is
     Aspect_External_Name                => Aspect_External_Name,
     Aspect_External_Tag                 => Aspect_External_Tag,
     Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,
-    Aspect_Ghost                        => Aspect_Ghost,
     Aspect_Global                       => Aspect_Global,
     Aspect_Implicit_Dereference         => Aspect_Implicit_Dereference,
     Aspect_Import                       => Aspect_Import,

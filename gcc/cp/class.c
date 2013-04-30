@@ -7256,19 +7256,38 @@ resolve_address_of_overloaded_function (tree target_type,
 	       one, or vice versa.  */
 	    continue;
 
+	  tree ret = target_ret_type;
+
+	  /* If the template has a deduced return type, don't expose it to
+	     template argument deduction.  */
+	  if (undeduced_auto_decl (fn))
+	    ret = NULL_TREE;
+
 	  /* Try to do argument deduction.  */
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  instantiation = fn_type_unification (fn, explicit_targs, targs, args,
-					      nargs, target_ret_type,
+					       nargs, ret,
 					      DEDUCE_EXACT, LOOKUP_NORMAL,
 					       false, false);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;
 
+	  /* And now force instantiation to do return type deduction.  */
+	  if (undeduced_auto_decl (instantiation))
+	    {
+	      ++function_depth;
+	      instantiate_decl (instantiation, /*defer*/false, /*class*/false);
+	      --function_depth;
+
+	      require_deduced_type (instantiation);
+	    }
+
 	  /* See if there's a match.  */
 	  if (same_type_p (target_fn_type, static_fn_type (instantiation)))
 	    matches = tree_cons (instantiation, fn, matches);
+
+	  ggc_free (targs);
 	}
 
       /* Now, remove all but the most specialized of the matches.  */

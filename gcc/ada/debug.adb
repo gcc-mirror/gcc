@@ -121,14 +121,14 @@ package body Debug is
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
-   --  d.D  Strict Alfa mode
-   --  d.E  Force Alfa mode for gnat2why
-   --  d.F  Alfa mode
+   --  d.D  SPARK strict mode
+   --  d.E  Force SPARK mode for gnat2why
+   --  d.F  SPARK mode
    --  d.G  Frame condition mode for gnat2why
    --  d.H  Standard package only mode for gnat2why
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Disable parallel SCIL generation mode
-   --  d.K  Alfa detection only mode for gnat2why
+   --  d.K  SPARK detection only mode for gnat2why
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
@@ -141,8 +141,8 @@ package body Debug is
    --  d.U  Ignore indirect calls for static elaboration
    --  d.V  Extensions for formal verification
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X  Use Expression_With_Actions
-   --  d.Y  Do not use Expression_With_Actions
+   --  d.X
+   --  d.Y
    --  d.Z  Dump flow analysis graphs, for debugging purposes (gnat2why)
 
    --  d1   Error msgs have node numbers where possible
@@ -594,17 +594,17 @@ package body Debug is
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
 
-   --  d.D  Strict Alfa mode. Interpret compiler permissions as strictly as
-   --       possible in Alfa mode.
+   --  d.D  SPARK strict mode. Interpret compiler permissions as strictly as
+   --       possible in SPARK mode.
 
-   --  d.E  Force Alfa mode for gnat2why. In this mode, errors are issued for
-   --       all violations of Alfa in user code, and warnings are issued for
+   --  d.E  Force SPARK mode for gnat2why. In this mode, errors are issued for
+   --       all violations of SPARK in user code, and warnings are issued for
    --       constructs not yet implemented in gnat2why.
 
-   --  d.F  Alfa mode. Generate AST in a form suitable for formal verification,
-   --       as well as additional cross reference information in ALI files to
-   --       compute effects of subprograms. Note that ALI files are only
-   --       written when option d.G is also given.
+   --  d.F  SPARK mode. Generate AST in a form suitable for formal
+   --       verification, as well as additional cross reference information in
+   --       ALI files to compute effects of subprograms. Note that ALI files
+   --       are only written when option d.G is also given.
 
    --  d.G  Frame condition mode for gnat2why. In this mode, gnat2why will not
    --       generate Why code. Instead, it generates ALI files with an extra
@@ -624,8 +624,8 @@ package body Debug is
    --       done in parallel to speed processing. This switch disables this
    --       behavior.
 
-   --  d.K  Alfa detection only mode for gnat2why. In this mode, gnat2why
-   --       will only generate the .alfa file, but no Why code.
+   --  d.K  SPARK detection only mode for gnat2why. In this mode, gnat2why
+   --       does not generate Why code.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special
@@ -674,14 +674,6 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.
-
-   --  d.X  By default, the compiler uses an elaborate rewriting framework for
-   --       short-circuited forms where the right hand condition generates
-   --       actions to be inserted. With the gcc backend, we now use the new
-   --       N_Expression_With_Actions node for this expansion, but we still use
-   --       the old method for other backends and in SCIL mode. This debug flag
-   --       forces use of the new N_Expression_With_Actions node in these other
-   --       cases and is intended for transitional use.
 
    --  d.Z  In gnat2why, in Flow analysis mode (-gnatd.Q), dump the different
    --       graphs (control flow, control dependence) for debugging purposes.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -52,7 +52,6 @@
 --    See detailed specifications for these subprograms
 
 private with Ada.Containers.Hash_Tables;
-private with Ada.Streams;
 
 generic
    type Element_Type is private;
@@ -68,8 +67,7 @@ package Ada.Containers.Formal_Hashed_Sets is
    pragma Pure;
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is tagged private;
-   --  why is this commented out ???
-   --  pragma Preelaborable_Initialization (Set);
+   pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -107,11 +105,6 @@ package Ada.Containers.Formal_Hashed_Sets is
      (Container : in out Set;
       Position  : Cursor;
       New_Item  : Element_Type);
-
-   procedure Query_Element
-     (Container : in out Set;
-      Position  : Cursor;
-      Process   : not null access procedure (Element : Element_Type));
 
    procedure Move (Target : in out Set; Source : in out Set);
 
@@ -187,11 +180,6 @@ package Ada.Containers.Formal_Hashed_Sets is
      (Left  : Element_Type;
       Right : Set; CRight : Cursor) return Boolean;
 
-   procedure Iterate
-     (Container : Set;
-      Process   :
-        not null access procedure (Container : Set; Position : Cursor));
-
    function Default_Modulus (Capacity : Count_Type) return Hash_Type;
 
    generic
@@ -221,12 +209,6 @@ package Ada.Containers.Formal_Hashed_Sets is
       function Find (Container : Set; Key : Key_Type) return Cursor;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean;
-
-      procedure Update_Element_Preserving_Key
-        (Container : in out Set;
-         Position  : Cursor;
-         Process   : not null access
-                       procedure (Element : in out Element_Type));
 
    end Generic_Keys;
 
@@ -262,37 +244,12 @@ private
       new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
 
    use HT_Types;
-   use Ada.Streams;
 
    type Cursor is record
       Node : Count_Type;
    end record;
 
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor);
-
-   for Cursor'Write use Write;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor);
-
-   for Cursor'Read use Read;
-
    No_Element : constant Cursor := (Node => 0);
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Set);
-
-   for Set'Write use Write;
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Set);
-
-   for Set'Read use Read;
 
    Empty_Set : constant Set := (Capacity => 0, Modulus => 0, others => <>);
 

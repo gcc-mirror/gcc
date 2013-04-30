@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "tree.h"
 #include "tm_p.h"
@@ -87,7 +88,36 @@ struct locus_discrim_map
   location_t locus;
   int discriminator;
 };
-static htab_t discriminator_per_locus;
+
+/* Hashtable helpers.  */
+
+struct locus_descrim_hasher : typed_free_remove <locus_discrim_map>
+{
+  typedef locus_discrim_map value_type;
+  typedef locus_discrim_map compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Trivial hash function for a location_t.  ITEM is a pointer to
+   a hash table entry that maps a location_t to a discriminator.  */
+
+inline hashval_t
+locus_descrim_hasher::hash (const value_type *item)
+{
+  return item->locus;
+}
+
+/* Equality function for the locus-to-discriminator map.  A and B
+   point to the two hash table entries to compare.  */
+
+inline bool
+locus_descrim_hasher::equal (const value_type *a, const compare_type *b)
+{
+  return a->locus == b->locus;
+}
+
+static hash_table <locus_descrim_hasher> discriminator_per_locus;
 
 /* Basic blocks and flowgraphs.  */
 static void make_blocks (gimple_seq);
@@ -99,8 +129,6 @@ static void make_cond_expr_edges (basic_block);
 static void make_gimple_switch_edges (basic_block);
 static void make_goto_expr_edges (basic_block);
 static void make_gimple_asm_edges (basic_block);
-static unsigned int locus_map_hash (const void *);
-static int locus_map_eq (const void *, const void *);
 static void assign_discriminator (location_t, basic_block);
 static edge gimple_redirect_edge_and_branch (edge, basic_block);
 static edge gimple_try_redirect_by_replacing_jump (edge, basic_block);
@@ -201,11 +229,10 @@ build_gimple_cfg (gimple_seq seq)
   group_case_labels ();
 
   /* Create the edges of the flowgraph.  */
-  discriminator_per_locus = htab_create (13, locus_map_hash, locus_map_eq,
-                                         free);
+  discriminator_per_locus.create (13);
   make_edges ();
   cleanup_dead_labels ();
-  htab_delete (discriminator_per_locus);
+  discriminator_per_locus.dispose ();
 }
 
 static unsigned int
@@ -220,6 +247,8 @@ execute_build_cfg (void)
       fprintf (dump_file, "Scope blocks:\n");
       dump_scope_blocks (dump_file, dump_flags);
     }
+  cleanup_tree_cfg ();
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   return 0;
 }
 
@@ -236,10 +265,10 @@ struct gimple_opt_pass pass_build_cfg =
   0,					/* static_pass_number */
   TV_TREE_CFG,				/* tv_id */
   PROP_gimple_leh, 			/* properties_required */
-  PROP_cfg,				/* properties_provided */
+  PROP_cfg | PROP_loops,		/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_cleanup_cfg  /* todo_flags_finish */
+  TODO_verify_stmts			/* todo_flags_finish */
  }
 };
 
@@ -675,26 +704,6 @@ make_edges (void)
   fold_cond_expr_cond ();
 }
 
-/* Trivial hash function for a location_t.  ITEM is a pointer to
-   a hash table entry that maps a location_t to a discriminator.  */
-
-static unsigned int
-locus_map_hash (const void *item)
-{
-  return ((const struct locus_discrim_map *) item)->locus;
-}
-
-/* Equality function for the locus-to-discriminator map.  VA and VB
-   point to the two hash table entries to compare.  */
-
-static int
-locus_map_eq (const void *va, const void *vb)
-{
-  const struct locus_discrim_map *a = (const struct locus_discrim_map *) va;
-  const struct locus_discrim_map *b = (const struct locus_discrim_map *) vb;
-  return a->locus == b->locus;
-}
-
 /* Find the next available discriminator value for LOCUS.  The
    discriminator distinguishes among several basic blocks that
    share a common locus, allowing for more accurate sample-based
@@ -708,9 +717,7 @@ next_discriminator_for_locus (location_t locus)
 
   item.locus = locus;
   item.discriminator = 0;
-  slot = (struct locus_discrim_map **)
-      htab_find_slot_with_hash (discriminator_per_locus, (void *) &item,
-                                (hashval_t) locus, INSERT);
+  slot = discriminator_per_locus.find_slot_with_hash (&item, locus, INSERT);
   gcc_assert (slot);
   if (*slot == HTAB_EMPTY_ENTRY)
     {
@@ -967,25 +974,35 @@ make_abnormal_goto_edges (basic_block bb, bool for_call)
   gimple_stmt_iterator gsi;
 
   FOR_EACH_BB (target_bb)
-    for (gsi = gsi_start_bb (target_bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-	gimple label_stmt = gsi_stmt (gsi);
-	tree target;
+    {
+      for (gsi = gsi_start_bb (target_bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple label_stmt = gsi_stmt (gsi);
+	  tree target;
 
-	if (gimple_code (label_stmt) != GIMPLE_LABEL)
-	  break;
-
-	target = gimple_label_label (label_stmt);
-
-	/* Make an edge to every label block that has been marked as a
-	   potential target for a computed goto or a non-local goto.  */
-	if ((FORCED_LABEL (target) && !for_call)
-	    || (DECL_NONLOCAL (target) && for_call))
-	  {
-	    make_edge (bb, target_bb, EDGE_ABNORMAL);
+	  if (gimple_code (label_stmt) != GIMPLE_LABEL)
 	    break;
-	  }
-      }
+
+	  target = gimple_label_label (label_stmt);
+
+	  /* Make an edge to every label block that has been marked as a
+	     potential target for a computed goto or a non-local goto.  */
+	  if ((FORCED_LABEL (target) && !for_call)
+	      || (DECL_NONLOCAL (target) && for_call))
+	    {
+	      make_edge (bb, target_bb, EDGE_ABNORMAL);
+	      break;
+	    }
+	}
+      if (!gsi_end_p (gsi))
+	{
+	  /* Make an edge to every setjmp-like call.  */
+	  gimple call_stmt = gsi_stmt (gsi);
+	  if (is_gimple_call (call_stmt)
+	      && (gimple_call_flags (call_stmt) & ECF_RETURNS_TWICE))
+	    make_edge (bb, target_bb, EDGE_ABNORMAL);
+	}
+    }
 }
 
 /* Create edges for a goto statement at block BB.  */
@@ -2147,7 +2164,8 @@ call_can_make_abnormal_goto (gimple t)
 {
   /* If the function has no non-local labels, then a call cannot make an
      abnormal transfer of control.  */
-  if (!cfun->has_nonlocal_label)
+  if (!cfun->has_nonlocal_label
+      && !cfun->calls_setjmp)
    return false;
 
   /* Likewise if the call has no side effects.  */
@@ -2302,6 +2320,11 @@ stmt_starts_bb_p (gimple stmt, gimple prev_stmt)
       else
 	return true;
     }
+  else if (gimple_code (stmt) == GIMPLE_CALL
+	   && gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
+    /* setjmp acts similar to a nonlocal GOTO target and thus should
+       start a new block.  */
+    return true;
 
   return false;
 }
@@ -6130,10 +6153,19 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 
   if (EXPR_P (t))
     {
-      if (TREE_BLOCK (t) == p->orig_block
+      tree block = TREE_BLOCK (t);
+      if (block == p->orig_block
 	  || (p->orig_block == NULL_TREE
-	  && TREE_BLOCK (t) == NULL_TREE))
+	      && block != NULL_TREE))
 	TREE_SET_BLOCK (t, p->new_block);
+#ifdef ENABLE_CHECKING
+      else if (block != NULL_TREE)
+	{
+	  while (block && TREE_CODE (block) == BLOCK && block != p->orig_block)
+	    block = BLOCK_SUPERCONTEXT (block);
+	  gcc_assert (block == p->orig_block);
+	}
+#endif
     }
   else if (DECL_P (t) || TREE_CODE (t) == SSA_NAME)
     {
@@ -6218,18 +6250,10 @@ move_stmt_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
   gimple stmt = gsi_stmt (*gsi_p);
   tree block = gimple_block (stmt);
 
-  if (p->orig_block == NULL_TREE
-      || block == p->orig_block
-      || block == NULL_TREE)
+  if (block == p->orig_block
+      || (p->orig_block == NULL_TREE
+	  && block != NULL_TREE))
     gimple_set_block (stmt, p->new_block);
-#ifdef ENABLE_CHECKING
-  else if (block != p->new_block)
-    {
-      while (block && block != p->orig_block)
-	block = BLOCK_SUPERCONTEXT (block);
-      gcc_assert (block);
-    }
-#endif
 
   switch (gimple_code (stmt))
     {
@@ -6323,8 +6347,14 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
   /* Remove BB from dominance structures.  */
   delete_from_dominance_info (CDI_DOMINATORS, bb);
+
+  /* Move BB from its current loop to the copy in the new function.  */
   if (current_loops)
-    remove_bb_from_loops (bb);
+    {
+      struct loop *new_loop = (struct loop *)bb->loop_father->aux;
+      if (new_loop)
+	bb->loop_father = new_loop;
+    }
 
   /* Link BB to the new linked list.  */
   move_block_after (bb, after);
@@ -6457,14 +6487,6 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	  e->goto_locus = d->new_block ?
 	      COMBINE_LOCATION_DATA (line_table, e->goto_locus, d->new_block) :
 	      LOCATION_LOCUS (e->goto_locus);
-#ifdef ENABLE_CHECKING
-	else if (block != d->new_block)
-	  {
-	    while (block && block != d->orig_block)
-	      block = BLOCK_SUPERCONTEXT (block);
-	    gcc_assert (block);
-	  }
-#endif
       }
 }
 
@@ -6554,6 +6576,25 @@ replace_block_vars_by_duplicates (tree block, struct pointer_map_t *vars_map,
 
   for (block = BLOCK_SUBBLOCKS (block); block; block = BLOCK_CHAIN (block))
     replace_block_vars_by_duplicates (block, vars_map, to_context);
+}
+
+/* Fixup the loop arrays and numbers after moving LOOP and its subloops
+   from FN1 to FN2.  */
+
+static void
+fixup_loop_arrays_after_move (struct function *fn1, struct function *fn2,
+			      struct loop *loop)
+{
+  /* Discard it from the old loop array.  */
+  (*fn1->x_current_loops->larray)[loop->num] = NULL;
+
+  /* Place it in the new loop array, assigning it a new number.  */
+  loop->num = vec_safe_length (fn2->x_current_loops->larray);
+  vec_safe_push (fn2->x_current_loops->larray, loop);
+
+  /* Recurse to children.  */
+  for (loop = loop->inner; loop; loop = loop->next)
+    fixup_loop_arrays_after_move (fn1, fn2, loop);
 }
 
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
@@ -6675,6 +6716,42 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 	}
     }
 
+  /* Initialize an empty loop tree.  */
+  dest_cfun->x_current_loops = ggc_alloc_cleared_loops ();
+  init_loops_structure (dest_cfun, dest_cfun->x_current_loops, 1);
+  dest_cfun->x_current_loops->state = LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
+
+  /* Move the outlined loop tree part.  */
+  FOR_EACH_VEC_ELT (bbs, i, bb)
+    {
+      if (bb->loop_father->header == bb
+	  && loop_outer (bb->loop_father) == loop)
+	{
+	  struct loop *loop = bb->loop_father;
+	  flow_loop_tree_node_remove (bb->loop_father);
+	  flow_loop_tree_node_add (dest_cfun->x_current_loops->tree_root, loop);
+	  fixup_loop_arrays_after_move (saved_cfun, cfun, loop);
+	}
+
+      /* Remove loop exits from the outlined region.  */
+      if (saved_cfun->x_current_loops->exits)
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  {
+	    void **slot = htab_find_slot_with_hash
+		(saved_cfun->x_current_loops->exits, e,
+		 htab_hash_pointer (e), NO_INSERT);
+	    if (slot)
+	      htab_clear_slot (saved_cfun->x_current_loops->exits, slot);
+	  }
+    }
+
+
+  /* Adjust the number of blocks in the tree root of the outlined part.  */
+  dest_cfun->x_current_loops->tree_root->num_nodes = bbs.length () + 2;
+
+  /* Setup a mapping to be used by move_block_to_fn.  */
+  loop->aux = current_loops->tree_root;
+
   pop_cfun ();
 
   /* Move blocks from BBS into DEST_CFUN.  */
@@ -6700,6 +6777,13 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, &d);
       after = bb;
     }
+
+  loop->aux = NULL;
+  /* Loop sizes are no longer correct, fix them up.  */
+  loop->num_nodes -= bbs.length ();
+  for (struct loop *outer = loop_outer (loop);
+       outer; outer = loop_outer (outer))
+    outer->num_nodes -= bbs.length ();
 
   /* Rewire BLOCK_SUBBLOCKS of orig_block.  */
   if (orig_block)
@@ -7532,7 +7616,8 @@ gimple_purge_dead_abnormal_call_edges (basic_block bb)
   edge_iterator ei;
   gimple stmt = last_stmt (bb);
 
-  if (!cfun->has_nonlocal_label)
+  if (!cfun->has_nonlocal_label
+      && !cfun->calls_setjmp)
     return false;
 
   if (stmt && stmt_can_make_abnormal_goto (stmt))

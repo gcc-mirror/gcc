@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,8 +159,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
            "Source length exceeds Target capacity";
       end if;
 
-      --  Check busy bits
-
       Clear (Target);
 
       Insert_Elements (Source);
@@ -264,11 +262,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Delete has no element";
-      end if;
-
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "Delete attempted to tamper with elements (map is busy)";
       end if;
 
       pragma Assert (Vet (Container, Position), "bad cursor in Delete");
@@ -495,10 +488,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       Insert (Container, Key, New_Item, Position, Inserted);
 
       if not Inserted then
-         if Container.Lock > 0 then
-            raise Program_Error with
-              "Include attempted to tamper with cursors (map is locked)";
-         end if;
 
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
@@ -512,54 +501,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
    ------------
    -- Insert --
    ------------
-
-   procedure Insert
-     (Container : in out Map;
-      Key       : Key_Type;
-      Position  : out Cursor;
-      Inserted  : out Boolean)
-   is
-      procedure Assign_Key (Node : in out Node_Type);
-      pragma Inline (Assign_Key);
-
-      function New_Node return Count_Type;
-      pragma Inline (New_Node);
-
-      procedure Local_Insert is
-        new Key_Ops.Generic_Conditional_Insert (New_Node);
-
-      procedure Allocate is
-        new Generic_Allocate (Assign_Key);
-
-      -----------------
-      --  Assign_Key --
-      -----------------
-
-      procedure Assign_Key (Node : in out Node_Type) is
-      begin
-         Node.Key := Key;
-
-         --  What is following commented out line doing here ???
-         --  Node.Element := New_Item;
-      end Assign_Key;
-
-      --------------
-      -- New_Node --
-      --------------
-
-      function New_Node return Count_Type is
-         Result : Count_Type;
-      begin
-         Allocate (Container, Result);
-         return Result;
-      end New_Node;
-
-   --  Start of processing for Insert
-
-   begin
-
-      Local_Insert (Container, Key, Position.Node, Inserted);
-   end Insert;
 
    procedure Insert
      (Container : in out Map;
@@ -635,47 +576,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       return Length (Container) = 0;
    end Is_Empty;
 
-   -------------
-   -- Iterate --
-   -------------
-
-   procedure Iterate
-     (Container : Map;
-      Process   : not null
-                    access procedure (Container : Map; Position : Cursor))
-   is
-      procedure Process_Node (Node : Count_Type);
-      pragma Inline (Process_Node);
-
-      procedure Local_Iterate is new HT_Ops.Generic_Iteration (Process_Node);
-
-      ------------------
-      -- Process_Node --
-      ------------------
-
-      procedure Process_Node (Node : Count_Type) is
-      begin
-         Process (Container, (Node => Node));
-      end Process_Node;
-
-      B : Natural renames Container'Unrestricted_Access.Busy;
-
-   --  Start of processing for Iterate
-
-   begin
-      B := B + 1;
-
-      begin
-         Local_Iterate (Container);
-      exception
-         when others =>
-            B := B - 1;
-            raise;
-      end;
-
-      B := B - 1;
-   end Iterate;
-
    ---------
    -- Key --
    ---------
@@ -750,11 +650,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       if Target.Capacity < Length (Source) then
          raise Constraint_Error with  -- ???
            "Source length exceeds Target capacity";
-      end if;
-
-      if Source.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Source (list is busy)";
       end if;
 
       Clear (Target);
@@ -849,105 +744,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       return False;
    end Overlap;
 
-   -------------------
-   -- Query_Element --
-   -------------------
-
-   procedure Query_Element
-     (Container : in out Map;
-      Position  : Cursor;
-      Process   : not null access
-                    procedure (Key : Key_Type; Element : Element_Type))
-   is
-   begin
-      if not Has_Element (Container, Position) then
-         raise Constraint_Error with
-           "Position cursor of Query_Element has no element";
-      end if;
-
-      pragma Assert (Vet (Container, Position), "bad cursor in Query_Element");
-
-      declare
-         N : Node_Type renames Container.Nodes (Position.Node);
-         B : Natural renames Container.Busy;
-         L : Natural renames Container.Lock;
-
-      begin
-         B := B + 1;
-         L := L + 1;
-
-         declare
-            K : Key_Type renames N.Key;
-            E : Element_Type renames N.Element;
-         begin
-            Process (K, E);
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-               raise;
-         end;
-
-         L := L - 1;
-         B := B - 1;
-      end;
-   end Query_Element;
-
-   ----------
-   -- Read --
-   ----------
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Map)
-   is
-      function Read_Node (Stream : not null access Root_Stream_Type'Class)
-                          return Count_Type;
-
-      procedure Read_Nodes is
-        new HT_Ops.Generic_Read (Read_Node);
-
-      ---------------
-      -- Read_Node --
-      ---------------
-
-      function Read_Node
-        (Stream : not null access Root_Stream_Type'Class) return Count_Type
-      is
-         procedure Read_Element (Node : in out Node_Type);
-         pragma Inline (Read_Element);
-
-         procedure Allocate is
-           new Generic_Allocate (Read_Element);
-
-         procedure Read_Element (Node : in out Node_Type) is
-         begin
-            Element_Type'Read (Stream, Node.Element);
-         end Read_Element;
-
-         Node : Count_Type;
-
-      --  Start of processing for Read_Node
-
-      begin
-         Allocate (Container, Node);
-         return Node;
-      end Read_Node;
-
-   --  Start of processing for Read
-
-   begin
-      Read_Nodes (Stream, Container);
-   end Read;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor)
-   is
-   begin
-      raise Program_Error with "attempt to stream set cursor";
-   end Read;
-
    -------------
    -- Replace --
    -------------
@@ -963,11 +759,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       if Node = 0 then
          raise Constraint_Error with
            "attempt to replace key not in map";
-      end if;
-
-      if Container.Lock > 0 then
-         raise Program_Error with
-           "Replace attempted to tamper with cursors (map is locked)";
       end if;
 
       declare
@@ -991,11 +782,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       if not Has_Element (Container, Position) then
          raise Constraint_Error with
            "Position cursor of Replace_Element has no element";
-      end if;
-
-      if Container.Lock > 0 then
-         raise Program_Error with
-           "Replace_Element attempted to tamper with cursors (map is locked)";
       end if;
 
       pragma Assert (Vet (Container, Position),
@@ -1085,52 +871,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       return True;
    end Strict_Equal;
 
-   --------------------
-   -- Update_Element --
-   --------------------
-
-   procedure Update_Element
-     (Container : in out Map;
-      Position  : Cursor;
-      Process   : not null access procedure (Key     : Key_Type;
-                                             Element : in out Element_Type))
-   is
-   begin
-      if not Has_Element (Container, Position) then
-         raise Constraint_Error with
-           "Position cursor of Update_Element has no element";
-      end if;
-
-      pragma Assert (Vet (Container, Position),
-                     "bad cursor in Update_Element");
-
-      declare
-         B  : Natural renames Container.Busy;
-         L  : Natural renames Container.Lock;
-
-      begin
-         B := B + 1;
-         L := L + 1;
-
-         declare
-            N : Node_Type renames Container.Nodes (Position.Node);
-            K : Key_Type renames N.Key;
-            E : Element_Type renames N.Element;
-
-         begin
-            Process (K, E);
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-               raise;
-         end;
-
-         L := L - 1;
-         B := B - 1;
-      end;
-   end Update_Element;
-
    ---------
    -- Vet --
    ---------
@@ -1190,47 +930,5 @@ package body Ada.Containers.Formal_Hashed_Maps is
          return False;
       end;
    end Vet;
-
-   -----------
-   -- Write --
-   -----------
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Map)
-   is
-      procedure Write_Node
-        (Stream : not null access Root_Stream_Type'Class;
-         Node   : Node_Type);
-      pragma Inline (Write_Node);
-
-      procedure Write_Nodes is new HT_Ops.Generic_Write (Write_Node);
-
-      ----------------
-      -- Write_Node --
-      ----------------
-
-      procedure Write_Node
-        (Stream : not null access Root_Stream_Type'Class;
-         Node   : Node_Type)
-      is
-      begin
-         Key_Type'Write (Stream, Node.Key);
-         Element_Type'Write (Stream, Node.Element);
-      end Write_Node;
-
-   --  Start of processing for Write
-
-   begin
-      Write_Nodes (Stream, Container);
-   end Write;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor)
-   is
-   begin
-      raise Program_Error with "attempt to stream map cursor";
-   end Write;
 
 end Ada.Containers.Formal_Hashed_Maps;

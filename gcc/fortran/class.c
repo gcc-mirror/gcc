@@ -2480,7 +2480,7 @@ gfc_symbol *
 gfc_find_intrinsic_vtab (gfc_typespec *ts)
 {
   gfc_namespace *ns;
-  gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
+  gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL;
   gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
   int charlen = 0;
 
@@ -2689,8 +2689,6 @@ cleanup:
       gfc_commit_symbol (vtab);
       if (vtype)
 	gfc_commit_symbol (vtype);
-      if (def_init)
-	gfc_commit_symbol (def_init);
       if (copy)
 	gfc_commit_symbol (copy);
       if (src)

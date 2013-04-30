@@ -212,10 +212,6 @@ extern int dot_symbols;
 
 #ifndef RS6000_BI_ARCH
 
-/* 64-bit PowerPC Linux is always big-endian.  */
-#undef	OPTION_LITTLE_ENDIAN
-#define OPTION_LITTLE_ENDIAN	0
-
 /* 64-bit PowerPC Linux always has a TOC.  */
 #undef  TARGET_TOC
 #define	TARGET_TOC		1
@@ -376,12 +372,19 @@ extern int dot_symbols;
 #define GNU_USER_DYNAMIC_LINKER64 \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
 
+#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#define LINK_OS_LINUX_EMUL32 "%{!mbig: %{!mbig-endian: -m elf32lppclinux}}%{mbig|mbig-endian: -m elf32ppclinux}"
+#define LINK_OS_LINUX_EMUL64 "%{!mbig: %{!mbig-endian: -m elf64lppc}}%{mbig|mbig-endian: -m elf64ppc}"
+#else
+#define LINK_OS_LINUX_EMUL32 "%{!mlittle: %{!mlittle-endian: -m elf32ppclinux}}%{mlittle|mlittle-endian: -m elf32lppclinux}"
+#define LINK_OS_LINUX_EMUL64 "%{!mlittle: %{!mlittle-endian: -m elf64ppc}}%{mlittle|mlittle-endian: -m elf64lppc}"
+#endif
 
-#define LINK_OS_LINUX_SPEC32 "-m elf32ppclinux %{!shared: %{!static: \
+#define LINK_OS_LINUX_SPEC32 LINK_OS_LINUX_EMUL32 " %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
   -dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "}}"
 
-#define LINK_OS_LINUX_SPEC64 "-m elf64ppc %{!shared: %{!static: \
+#define LINK_OS_LINUX_SPEC64 LINK_OS_LINUX_EMUL64 " %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
   -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}"
 

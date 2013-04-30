@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hash-table.h"
 #include "hard-reg-set.h"
 #include "rtl.h"
 #include "expr.h"
@@ -131,35 +132,41 @@ typedef const struct cost_classes *const_cost_classes_t;
 /* Info about cost classes for each pseudo.  */
 static cost_classes_t *regno_cost_classes;
 
-/* Returns hash value for cost classes info V.  */
-static hashval_t
-cost_classes_hash (const void *v)
-{
-  const_cost_classes_t hv = (const_cost_classes_t) v;
+/* Helper for cost_classes hashing.  */
 
+struct cost_classes_hasher
+{
+  typedef cost_classes value_type;
+  typedef cost_classes compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
+
+/* Returns hash value for cost classes info HV.  */
+inline hashval_t
+cost_classes_hasher::hash (const value_type *hv)
+{
   return iterative_hash (&hv->classes, sizeof (enum reg_class) * hv->num, 0);
 }
 
-/* Compares cost classes info V1 and V2.  */
-static int
-cost_classes_eq (const void *v1, const void *v2)
+/* Compares cost classes info HV1 and HV2.  */
+inline bool
+cost_classes_hasher::equal (const value_type *hv1, const compare_type *hv2)
 {
-  const_cost_classes_t hv1 = (const_cost_classes_t) v1;
-  const_cost_classes_t hv2 = (const_cost_classes_t) v2;
-
   return hv1->num == hv2->num && memcmp (hv1->classes, hv2->classes,
 					 sizeof (enum reg_class) * hv1->num);
 }
 
 /* Delete cost classes info V from the hash table.  */
-static void
-cost_classes_del (void *v)
+inline void
+cost_classes_hasher::remove (value_type *v)
 {
   ira_free (v);
 }
 
 /* Hash table of unique cost classes.  */
-static htab_t cost_classes_htab;
+static hash_table <cost_classes_hasher> cost_classes_htab;
 
 /* Map allocno class -> cost classes for pseudo of given allocno
    class.  */
@@ -180,8 +187,7 @@ initiate_regno_cost_classes (void)
 	  sizeof (cost_classes_t) * N_REG_CLASSES);
   memset (cost_classes_mode_cache, 0,
 	  sizeof (cost_classes_t) * MAX_MACHINE_MODE);
-  cost_classes_htab
-    = htab_create (200, cost_classes_hash, cost_classes_eq, cost_classes_del);
+  cost_classes_htab.create (200);
 }
 
 /* Create new cost classes from cost classes FROM and set up members
@@ -229,7 +235,7 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
   cost_classes_t classes_ptr;
   enum reg_class cl;
   int i;
-  PTR *slot;
+  cost_classes **slot;
   HARD_REG_SET temp, temp2;
   bool exclude_p;
 
@@ -255,7 +261,7 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 	    }
 	  classes.classes[classes.num++] = cl;
 	}
-      slot = htab_find_slot (cost_classes_htab, &classes, INSERT);
+      slot = cost_classes_htab.find_slot (&classes, INSERT);
       if (*slot == NULL)
 	{
 	  classes_ptr = setup_cost_classes (&classes);
@@ -279,7 +285,7 @@ setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
   cost_classes_t classes_ptr;
   enum reg_class cl;
   int i;
-  PTR *slot;
+  cost_classes **slot;
   HARD_REG_SET temp;
 
   if ((classes_ptr = cost_classes_mode_cache[mode]) == NULL)
@@ -294,7 +300,7 @@ setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
 	    continue;
 	  classes.classes[classes.num++] = cl;
 	}
-      slot = htab_find_slot (cost_classes_htab, &classes, INSERT);
+      slot = cost_classes_htab.find_slot (&classes, INSERT);
       if (*slot == NULL)
 	{
 	  classes_ptr = setup_cost_classes (&classes);
@@ -312,7 +318,7 @@ static void
 finish_regno_cost_classes (void)
 {
   ira_free (regno_cost_classes);
-  htab_delete (cost_classes_htab);
+  cost_classes_htab.dispose ();
 }
 
 

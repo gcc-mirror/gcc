@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -328,8 +328,8 @@ package body Exp_Ch8 is
                --  meaning. It may be redefined later, but the renaming is
                --  elaborated where it occurs. This is technically known as
                --  Squirreling semantics. Renaming is rewritten as a subprogram
-               --  declaration, and the body is inserted at the end of the
-               --  current declaration list to prevent premature freezing.
+               --  declaration, and the generated  body is inserted into the
+               --  freeze actions for the subprogram.
 
                Decl := Build_Body_For_Renaming;
 
@@ -345,7 +345,7 @@ package body Exp_Ch8 is
                             Rhs    => Make_Identifier (Loc, Chars (Right)),
                             Bodies => Declarations (Decl))))));
 
-               Append (Decl, List_Containing (N));
+               Append_Freeze_Action (Id, Decl);
             end if;
          end;
       end if;

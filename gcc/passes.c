@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "line-map.h"
+#include "hash-table.h"
 #include "input.h"
 #include "tree.h"
 #include "rtl.h"
@@ -579,27 +580,33 @@ struct pass_registry
   struct opt_pass *pass;
 };
 
+/* Helper for pass_registry hash table.  */
+
+struct pass_registry_hasher : typed_noop_remove <pass_registry>
+{
+  typedef pass_registry value_type;
+  typedef pass_registry compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
 /* Pass registry hash function.  */
 
-static hashval_t
-passr_hash (const void *p)
+inline hashval_t
+pass_registry_hasher::hash (const value_type *s)
 {
-  const struct pass_registry *const s = (const struct pass_registry *const) p;
   return htab_hash_string (s->unique_name);
 }
 
 /* Hash equal function  */
 
-static int
-passr_eq (const void *p1, const void *p2)
+inline bool
+pass_registry_hasher::equal (const value_type *s1, const compare_type *s2)
 {
-  const struct pass_registry *const s1 = (const struct pass_registry *const) p1;
-  const struct pass_registry *const s2 = (const struct pass_registry *const) p2;
-
   return !strcmp (s1->unique_name, s2->unique_name);
 }
 
-static htab_t name_to_pass_map = NULL;
+static hash_table <pass_registry_hasher> name_to_pass_map;
 
 /* Register PASS with NAME.  */
 
@@ -609,11 +616,11 @@ register_pass_name (struct opt_pass *pass, const char *name)
   struct pass_registry **slot;
   struct pass_registry pr;
 
-  if (!name_to_pass_map)
-    name_to_pass_map = htab_create (256, passr_hash, passr_eq, NULL);
+  if (!name_to_pass_map.is_created ())
+    name_to_pass_map.create (256);
 
   pr.unique_name = name;
-  slot = (struct pass_registry **) htab_find_slot (name_to_pass_map, &pr, INSERT);
+  slot = name_to_pass_map.find_slot (&pr, INSERT);
   if (!*slot)
     {
       struct pass_registry *new_pr;
@@ -634,10 +641,9 @@ static vec<char_ptr> pass_tab = vNULL;
 
 /* Callback function for traversing NAME_TO_PASS_MAP.  */
 
-static int
-pass_traverse (void **slot, void *data ATTRIBUTE_UNUSED)
+int
+passes_pass_traverse (pass_registry **p, void *data ATTRIBUTE_UNUSED)
 {
-  struct pass_registry **p = (struct pass_registry **)slot;
   struct opt_pass *pass = (*p)->pass;
 
   gcc_assert (pass->static_pass_number > 0);
@@ -658,7 +664,7 @@ create_pass_tab (void)
     return;
 
   pass_tab.safe_grow_cleared (passes_by_id_size + 1);
-  htab_traverse (name_to_pass_map, pass_traverse, NULL);
+  name_to_pass_map.traverse <void *, passes_pass_traverse> (NULL);
 }
 
 static bool override_gate_status (struct opt_pass *, tree, bool);
@@ -743,8 +749,7 @@ get_pass_by_name (const char *name)
   struct pass_registry **slot, pr;
 
   pr.unique_name = name;
-  slot = (struct pass_registry **) htab_find_slot (name_to_pass_map,
-                                                   &pr, NO_INSERT);
+  slot = name_to_pass_map.find_slot (&pr, NO_INSERT);
 
   if (!slot || !*slot)
     return NULL;
@@ -1392,6 +1397,7 @@ init_optimization_passes (void)
 	 They ensure memory accesses are not indirect wherever possible.  */
       NEXT_PASS (pass_strip_predict_hints);
       NEXT_PASS (pass_rename_ssa_copies);
+      NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_ccp);
       /* After CCP we rewrite no longer addressed locals into SSA

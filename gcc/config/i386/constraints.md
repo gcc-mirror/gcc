@@ -87,8 +87,10 @@
 
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  z	First SSE register.
-;;  i	SSE2 inter-unit moves enabled
-;;  m	MMX inter-unit moves enabled
+;;  i	SSE2 inter-unit moves to SSE register enabled
+;;  j	SSE2 inter-unit moves from SSE register enabled
+;;  m	MMX inter-unit moves to MMX register enabled
+;;  n	MMX inter-unit moves from MMX register enabled
 ;;  a	Integer register when zero extensions with AND are disabled
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  d	Integer register when integer DFmode moves are enabled
@@ -99,12 +101,20 @@
  "First SSE register (@code{%xmm0}).")
 
 (define_register_constraint "Yi"
- "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES ? SSE_REGS : NO_REGS"
- "@internal Any SSE register, when SSE2 and inter-unit moves are enabled.")
+ "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC ? SSE_REGS : NO_REGS"
+ "@internal Any SSE register, when SSE2 and inter-unit moves to vector registers are enabled.")
+
+(define_register_constraint "Yj"
+ "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_FROM_VEC ? SSE_REGS : NO_REGS"
+ "@internal Any SSE register, when SSE2 and inter-unit moves from vector registers are enabled.")
 
 (define_register_constraint "Ym"
- "TARGET_MMX && TARGET_INTER_UNIT_MOVES ? MMX_REGS : NO_REGS"
- "@internal Any MMX register, when inter-unit moves are enabled.")
+ "TARGET_MMX && TARGET_INTER_UNIT_MOVES_TO_VEC ? MMX_REGS : NO_REGS"
+ "@internal Any MMX register, when inter-unit moves to vector registers are enabled.")
+
+(define_register_constraint "Yn"
+ "TARGET_MMX && TARGET_INTER_UNIT_MOVES_FROM_VEC ? MMX_REGS : NO_REGS"
+ "@internal Any MMX register, when inter-unit moves from vector registers are enabled.")
 
 (define_register_constraint "Yp"
  "TARGET_PARTIAL_REG_STALL ? NO_REGS : GENERAL_REGS"

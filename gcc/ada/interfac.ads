@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -159,9 +159,11 @@ package Interfaces is
 
    type IEEE_Float_32 is digits 6;
    pragma Float_Representation (IEEE_Float, IEEE_Float_32);
+   for IEEE_Float_32'Size use 32;
 
    type IEEE_Float_64 is digits 15;
    pragma Float_Representation (IEEE_Float, IEEE_Float_64);
+   for IEEE_Float_64'Size use 64;
 
    --  If there is an IEEE extended float available on the machine, we assume
    --  that it is available as Long_Long_Float.

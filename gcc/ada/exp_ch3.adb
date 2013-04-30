@@ -5035,10 +5035,14 @@ package body Exp_Ch3 is
          --  with invariants, and invariant checks are enabled, then insert an
          --  invariant check after the object declaration. Note that it is OK
          --  to clobber the object with an invalid value since if the exception
-         --  is raised, then the object will go out of scope.
+         --  is raised, then the object will go out of scope. In the case where
+         --  an array object is initialized with an aggregate, the expression
+         --  is removed. Check flag Has_Init_Expression to avoid generating a
+         --  junk invariant check.
 
-         if Has_Invariants (Typ)
-           and then Present (Invariant_Procedure (Typ))
+         if Has_Invariants (Base_Typ)
+           and then Present (Invariant_Procedure (Base_Typ))
+           and then not Has_Init_Expression (N)
          then
             Insert_After (N,
               Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
@@ -5052,18 +5056,14 @@ package body Exp_Ch3 is
          --  Initialize call as it is required but one for each ancestor of
          --  its type. This processing is suppressed if No_Initialization set.
 
-         if not Needs_Finalization (Typ)
-           or else No_Initialization (N)
-         then
+         if not Needs_Finalization (Typ) or else No_Initialization (N) then
             null;
 
-         elsif not Abort_Allowed
-           or else not Comes_From_Source (N)
-         then
+         elsif not Abort_Allowed or else not Comes_From_Source (N) then
             Insert_Action_After (Init_After,
               Make_Init_Call
                 (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                 Typ     => Base_Type (Typ)));
+                 Typ     => Base_Typ));
 
          --  Abort allowed
 
@@ -5086,7 +5086,7 @@ package body Exp_Ch3 is
                L   : constant List_Id := New_List (
                        Make_Init_Call
                          (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                          Typ     => Base_Type (Typ)));
+                          Typ     => Base_Typ));
 
                Blk : constant Node_Id :=
                        Make_Block_Statement (Loc,
@@ -5558,7 +5558,7 @@ package body Exp_Ch3 is
                Insert_Action_After (Init_After,
                  Make_Adjust_Call (
                    Obj_Ref => New_Reference_To (Def_Id, Loc),
-                   Typ     => Base_Type (Typ)));
+                   Typ     => Base_Typ));
             end if;
 
             --  For tagged types, when an init value is given, the tag has to
@@ -6131,10 +6131,10 @@ package body Exp_Ch3 is
       elsif CodePeer_Mode then
          return;
 
-      --  Do not create TSS routine Finalize_Address when compiling in Alfa
+      --  Do not create TSS routine Finalize_Address when compiling in SPARK
       --  mode because it is not necessary and results in useless expansion.
 
-      elsif Alfa_Mode then
+      elsif SPARK_Mode then
          return;
       end if;
 
@@ -6883,9 +6883,9 @@ package body Exp_Ch3 is
             --  created. If Def_Id is limited, Stream_Input and Stream_Read
             --  may produce build-in-place allocations and for those the
             --  expander needs Finalize_Address. Do not create the body of
-            --  Finalize_Address in Alfa mode since it is not needed.
+            --  Finalize_Address in SPARK mode since it is not needed.
 
-            if not Alfa_Mode then
+            if not SPARK_Mode then
                Make_Finalize_Address_Body (Def_Id);
             end if;
 

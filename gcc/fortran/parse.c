@@ -621,6 +621,7 @@ decode_omp_directive (void)
       match ("taskyield", gfc_match_omp_taskyield, ST_OMP_TASKYIELD);
       match ("threadprivate", gfc_match_omp_threadprivate,
 	     ST_OMP_THREADPRIVATE);
+      break;
     case 'w':
       match ("workshare", gfc_match_omp_workshare, ST_OMP_WORKSHARE);
       break;

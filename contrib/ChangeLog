@@ -1,3 +1,13 @@
+2013-04-18  Diego Novillo  <dnovillo@google.com>
+
+	* validate_failures.py: Fix typo.
+
+2013-04-18  Diego Novillo  <dnovillo@google.com>
+
+	* validate_failures.py: Loosen check for build directory.
+	State what failed if we couldn't find the source tree or
+	the target triplet.
+
 2013-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Add files for GCC 4.8.

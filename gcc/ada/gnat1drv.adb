@@ -292,20 +292,20 @@ procedure Gnat1drv is
          Formal_Extensions := True;
       end if;
 
-      --  Enable Alfa_Mode when using -gnatd.F switch
+      --  Enable SPARK_Mode when using -gnatd.F switch
 
       if Debug_Flag_Dot_FF then
-         Alfa_Mode := True;
+         SPARK_Mode := True;
       end if;
 
-      --  Alfa_Mode is also activated by default in the gnat2why executable
+      --  SPARK_Mode is also activated by default in the gnat2why executable
 
-      if Alfa_Mode then
+      if SPARK_Mode then
 
          --  Set strict standard interpretation of compiler permissions
 
          if Debug_Flag_Dot_DD then
-            Strict_Alfa_Mode := True;
+            SPARK_Strict_Mode := True;
          end if;
 
          --  Distinguish between the two modes of gnat2why: frame condition
@@ -334,7 +334,7 @@ procedure Gnat1drv is
 
          --  Enable some restrictions systematically to simplify the generated
          --  code (and ease analysis). Note that restriction checks are also
-         --  disabled in Alfa mode, see Restrict.Check_Restriction, and user
+         --  disabled in SPARK mode, see Restrict.Check_Restriction, and user
          --  specified Restrictions pragmas are ignored, see
          --  Sem_Prag.Process_Restrictions_Or_Restriction_Warnings.
 
@@ -346,7 +346,7 @@ procedure Gnat1drv is
          --  points at which potential checks are required semantically). We
          --  don't want the expansion associated with these checks, but that
          --  happens anyway because this expansion is simply not done in the
-         --  Alfa version of the expander.
+         --  SPARK version of the expander.
 
          --  Turn off dynamic elaboration checks: generates inconsistencies in
          --  trees between specs compiled as part of a main unit or as part of
@@ -378,7 +378,7 @@ procedure Gnat1drv is
          Polling_Required := False;
 
          --  Set operating mode to Generate_Code, but full front-end expansion
-         --  is not desirable in Alfa mode, so a light expansion is performed
+         --  is not desirable in SPARK mode, so a light expansion is performed
          --  instead.
 
          Operating_Mode := Generate_Code;
@@ -387,25 +387,13 @@ procedure Gnat1drv is
 
          Debug_Flag_HH := True;
 
-         --  Disable Expressions_With_Actions nodes
-
-         --  The gnat2why backend does not deal with Expressions_With_Actions
-         --  in all places (in particular assertions). It is difficult to
-         --  determine in the frontend which cases are allowed, so we disable
-         --  Expressions_With_Actions entirely. Even in the cases where
-         --  gnat2why deals with Expressions_With_Actions, it is easier to
-         --  deal with the original constructs (quantified, conditional and
-         --  case expressions) instead of the rewritten ones.
-
-         Use_Expression_With_Actions := False;
-
          --  Enable assertions, since they give valuable extra information for
          --  formal verification.
 
          Assertions_Enabled := True;
 
          --  Turn off style check options since we are not interested in any
-         --  front-end warnings when we are getting Alfa output.
+         --  front-end warnings when we are getting SPARK output.
 
          Reset_Style_Check_Options;
 
@@ -415,13 +403,13 @@ procedure Gnat1drv is
          Warning_Mode := Suppress;
 
          --  Suppress the generation of name tables for enumerations, which are
-         --  not needed for formal verification, and fall outside the Alfa
+         --  not needed for formal verification, and fall outside the SPARK
          --  subset (use of pointers).
 
          Global_Discard_Names := True;
 
          --  Suppress the expansion of tagged types and dispatching calls,
-         --  which lead to the generation of non-Alfa code (use of pointers),
+         --  which lead to the generation of non-SPARK code (use of pointers),
          --  which is more complex to formally verify than the original source.
 
          Tagged_Type_Expansion := False;
@@ -495,7 +483,7 @@ procedure Gnat1drv is
 
       --  Set proper status for overflow check mechanism
 
-      --  If already set (by -gnato or above in Alfa or CodePeer mode) then we
+      --  If already set (by -gnato or above in SPARK or CodePeer mode) then we
       --  have nothing to do.
 
       if Opt.Suppress_Options.Overflow_Mode_General /= Not_Set then
@@ -547,24 +535,6 @@ procedure Gnat1drv is
 
       Suppress_Options.Suppress (Atomic_Synchronization) :=
         not Atomic_Sync_Default_On_Target;
-
-      --  Set switch indicating if we can use N_Expression_With_Actions
-
-      --  Debug flag -gnatd.X decisively sets usage on
-
-      if Debug_Flag_Dot_XX then
-         Use_Expression_With_Actions := True;
-
-      --  Debug flag -gnatd.Y decisively sets usage off
-
-      elsif Debug_Flag_Dot_YY then
-         Use_Expression_With_Actions := False;
-
-      --  Otherwise this feature is implemented, so we allow its use
-
-      else
-         Use_Expression_With_Actions := True;
-      end if;
 
       --  Set switch indicating if back end can handle limited types, and
       --  guarantee that no incorrect copies are made (e.g. in the context
@@ -1062,12 +1032,12 @@ begin
       elsif CodePeer_Mode then
          Back_End_Mode := Generate_Object;
 
-      --  It is not an error to analyze in Alfa mode a spec which requires a
+      --  It is not an error to analyze in SPARK mode a spec which requires a
       --  body, when the body is not available. During frame condition
       --  generation, the corresponding ALI file is generated. During
       --  translation to Why, Why code is generated for the spec.
 
-      elsif Alfa_Mode then
+      elsif SPARK_Mode then
          if Frame_Condition_Mode then
             Back_End_Mode := Declarations_Only;
          else

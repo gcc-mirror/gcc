@@ -98,8 +98,6 @@ package body Clean is
 
    Project_Node_Tree : Project_Node_Tree_Ref;
 
-   Root_Environment : Prj.Tree.Environment;
-
    Main_Project : Prj.Project_Id := Prj.No_Project;
 
    All_Projects : Boolean := False;
@@ -1377,6 +1375,13 @@ package body Clean is
 
       Parse_Cmd_Line;
 
+      --  Add the default project search directories now, after the directories
+      --  that have been specified by switches -aP<dir>.
+
+      Prj.Env.Initialize_Default_Project_Path
+        (Root_Environment.Project_Path,
+         Target_Name => Sdefault.Target_Name.all);
+
       if Verbose_Mode then
          Display_Copyright;
       end if;
@@ -1550,9 +1555,6 @@ package body Clean is
          Snames.Initialize;
 
          Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
-         Prj.Env.Initialize_Default_Project_Path
-            (Root_Environment.Project_Path,
-             Target_Name => Sdefault.Target_Name.all);
 
          Project_Node_Tree := new Project_Node_Tree_Data;
          Prj.Tree.Initialize (Project_Node_Tree);

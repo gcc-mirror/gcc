@@ -459,7 +459,7 @@ package body Ch2 is
    --  | [pragma_argument_ASPECT_MARK =>] EXPRESSION
 
    --  where the interesting allowed cases (which do not fit the syntax of the
-   --  first alternative above are
+   --  first alternative above) are
 
    --  ASPECT_MARK ::=
    --    Pre'Class | Post'Class | Invariant'Class | Type_Invariant'Class

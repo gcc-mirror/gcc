@@ -477,6 +477,16 @@ get_typeid (tree type, tsubst_flags_t complain)
      referenced type.  */
   type = non_reference (type);
 
+  /* This is not one of the uses of a qualified function type in 8.3.5.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE
+      && (type_memfn_quals (type) != TYPE_UNQUALIFIED
+	  || type_memfn_rqual (type) != REF_QUAL_NONE))
+    {
+      if (complain & tf_error)
+	error ("typeid of qualified function type %qT", type);
+      return error_mark_node;
+    }
+
   /* The top-level cv-qualifiers of the lvalue expression or the type-id
      that is the operand of typeid are always ignored.  */
   type = TYPE_MAIN_VARIANT (type);

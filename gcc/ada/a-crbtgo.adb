@@ -646,6 +646,13 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          return False;
       end if;
 
+      --  If the containers are empty, return a result immediately, so as to
+      --  not manipulate the tamper bits unnecessarily.
+
+      if Left.Length = 0 then
+         return True;
+      end if;
+
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 

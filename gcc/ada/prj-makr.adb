@@ -25,6 +25,7 @@
 
 with Csets;
 with Hostparm;
+with Makeutl;  use Makeutl;
 with Opt;
 with Output;
 with Osint;    use Osint;
@@ -63,8 +64,6 @@ package body Prj.Makr is
 
    Tree : constant Project_Node_Tree_Ref := new Project_Node_Tree_Data;
    --  The project tree where the project file is parsed
-
-   Root_Environment : Prj.Tree.Environment;
 
    Args : Argument_List_Access;
    --  The list of arguments for calls to the compiler to get the unit names

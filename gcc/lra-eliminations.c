@@ -716,7 +716,9 @@ mark_not_eliminable (rtx x)
 	       ep++)
 	    if (ep->to_rtx == SET_DEST (x)
 		&& SET_DEST (x) != hard_frame_pointer_rtx
-		&& (GET_CODE (SET_SRC (x)) != PLUS
+		&& (! (SUPPORTS_STACK_ALIGNMENT && stack_realign_fp
+		       && REGNO (ep->to_rtx) == STACK_POINTER_REGNUM)
+		    || GET_CODE (SET_SRC (x)) != PLUS
 		    || XEXP (SET_SRC (x), 0) != SET_DEST (x)
 		    || ! CONST_INT_P (XEXP (SET_SRC (x), 1))))
 	      setup_can_eliminate (ep, false);
@@ -975,6 +977,9 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 	}
     }
 
+  if (! validate_p)
+    return;
+
   /* Substitute the operands; the new values are in the substed_operand
      array.  */
   for (i = 0; i < static_id->n_operands; i++)
@@ -982,16 +987,13 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
   for (i = 0; i < static_id->n_dups; i++)
     *id->dup_loc[i] = substed_operand[(int) static_id->dup_num[i]];
 
-  if (validate_p)
-    {
-      /* If we had a move insn but now we don't, re-recognize it.
-	 This will cause spurious re-recognition if the old move had a
-	 PARALLEL since the new one still will, but we can't call
-	 single_set without having put new body into the insn and the
-	 re-recognition won't hurt in this rare case.  */
-      id = lra_update_insn_recog_data (insn);
-      static_id = id->insn_static_data;
-    }
+  /* If we had a move insn but now we don't, re-recognize it.
+     This will cause spurious re-recognition if the old move had a
+     PARALLEL since the new one still will, but we can't call
+     single_set without having put new body into the insn and the
+     re-recognition won't hurt in this rare case.  */
+  id = lra_update_insn_recog_data (insn);
+  static_id = id->insn_static_data;
 }
 
 /* Spill pseudos which are assigned to hard registers in SET.  Add
@@ -1122,8 +1124,15 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
   setup_elimination_map ();
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (elimination_map[ep->from] == ep && ep->previous_offset != ep->offset)
-      bitmap_ior_into (insns_with_changed_offsets,
-		       &lra_reg_info[ep->from].insn_bitmap);
+      {
+	bitmap_ior_into (insns_with_changed_offsets,
+			 &lra_reg_info[ep->from].insn_bitmap);
+
+	/* Update offset when the eliminate offset have been
+	   changed.  */
+	lra_update_reg_val_offset (lra_reg_info[ep->from].val,
+				   ep->offset - ep->previous_offset);
+      }
 }
 
 /* Initialize the table of hard registers to eliminate.

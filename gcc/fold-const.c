@@ -1380,17 +1380,42 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       int count = TYPE_VECTOR_SUBPARTS (type), i;
       tree *elts = XALLOCAVEC (tree, count);
 
-      for (i = 0; i < count; i++)
+      if (code == VEC_LSHIFT_EXPR
+	  || code == VEC_RSHIFT_EXPR)
 	{
-	  tree elem1 = VECTOR_CST_ELT (arg1, i);
-
-	  elts[i] = const_binop (code, elem1, arg2);
-
-	  /* It is possible that const_binop cannot handle the given
-	     code and return NULL_TREE */
-	  if (elts[i] == NULL_TREE)
+	  if (!host_integerp (arg2, 1))
 	    return NULL_TREE;
+
+	  unsigned HOST_WIDE_INT shiftc = tree_low_cst (arg2, 1);
+	  unsigned HOST_WIDE_INT outerc = tree_low_cst (TYPE_SIZE (type), 1);
+	  unsigned HOST_WIDE_INT innerc
+	    = tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+	  if (shiftc >= outerc || (shiftc % innerc) != 0)
+	    return NULL_TREE;
+	  int offset = shiftc / innerc;
+	  if (code == VEC_LSHIFT_EXPR)
+	    offset = -offset;
+	  tree zero = build_zero_cst (TREE_TYPE (type));
+	  for (i = 0; i < count; i++)
+	    {
+	      if (i + offset < 0 || i + offset >= count)
+		elts[i] = zero;
+	      else
+		elts[i] = VECTOR_CST_ELT (arg1, i + offset);
+	    }
 	}
+      else
+	for (i = 0; i < count; i++)
+	  {
+	    tree elem1 = VECTOR_CST_ELT (arg1, i);
+
+	    elts[i] = const_binop (code, elem1, arg2);
+
+	    /* It is possible that const_binop cannot handle the given
+	       code and return NULL_TREE */
+	    if (elts[i] == NULL_TREE)
+	      return NULL_TREE;
+	  }
 
       return build_vector (type, elts);
     }

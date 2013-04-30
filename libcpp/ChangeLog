@@ -1,3 +1,23 @@
+2013-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	N3472 binary constants
+	* include/cpplib.h (struct cpp_options): Fix a typo in user_literals
+	field comment.  Add binary_constants field.
+	* init.c (struct lang_flags): Add binary_constants field.
+	(lang_defaults): Add bin_cst column to the table.
+	(cpp_set_lang): Initialize CPP_OPTION (pfile, binary_constants).
+	* expr.c (cpp_classify_number): Talk about C++11 instead of C++0x
+	in diagnostics.  Accept binary constants if
+	CPP_OPTION (pfile, binary_constants) even when pedantic.  Adjust
+	pedwarn message.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUCXX1Y and CLK_CXX1Y.
+	* init.c (lang_defaults): Add defaults for the latter.
+	(cpp_init_builtins): Define __cplusplus as 201300L for the latter.
+	* lex.c (_cpp_lex_direct): Update.
+
 2013-04-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR target/56771
@@ -46,7 +66,7 @@
 2013-02-13  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/55582
-	* libcpp/lex.c (lex_raw_string): Allow string literal with suffix
+	* lex.c (lex_raw_string): Allow string literal with suffix
 	beginning with 's' to be parsed as a C++11 user-defined literal.
 
 2013-01-14  Richard Sandiford  <rdsandiford@googlemail.com>

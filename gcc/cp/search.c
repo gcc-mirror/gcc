@@ -1842,8 +1842,8 @@ check_final_overrider (tree overrider, tree basefn)
 {
   tree over_type = TREE_TYPE (overrider);
   tree base_type = TREE_TYPE (basefn);
-  tree over_return = TREE_TYPE (over_type);
-  tree base_return = TREE_TYPE (base_type);
+  tree over_return = fndecl_declared_return_type (overrider);
+  tree base_return = fndecl_declared_return_type (basefn);
   tree over_throw, base_throw;
 
   int fail = 0;
@@ -1897,8 +1897,7 @@ check_final_overrider (tree overrider, tree basefn)
 	{
 	  /* can_convert will permit user defined conversion from a
 	     (reference to) class type. We must reject them.  */
-	  over_return = non_reference (TREE_TYPE (over_type));
-	  if (CLASS_TYPE_P (over_return))
+	  if (CLASS_TYPE_P (non_reference (over_return)))
 	    fail = 2;
 	  else
 	    {

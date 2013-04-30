@@ -259,7 +259,7 @@ TOOLS_LIBS = targext.o link.o ../../ggc-none.o ../../libcommon-target.a \
 # manufacturer, and operating system and assign each of those to its own
 # variable.
 host:=$(subst -, ,$(host_canonical))
-targ:=$(subst -, ,$(target))
+targ:=$(subst -, ,$(subst -gnu, ,$(target_alias)))
 arch:=$(word 1,$(targ))
 ifeq ($(words $(targ)),2)
   manu:=
@@ -2363,6 +2363,7 @@ ADA_EXCLUDE_SRCS =\
   s-bbsuer.ads s-bbsule.ads s-bbthqu.adb s-bbthqu.ads s-bbthre.adb \
   s-bbthre.ads s-bbtiev.adb s-bbtiev.ads s-bbtime.adb s-bbtime.ads \
   s-bcprmu.adb s-bcprmu.ads s-btstch.adb s-btstch.ads \
+  s-init.ads s-init.adb \
   s-po32gl.adb s-po32gl.ads \
   s-stache.adb s-stache.ads \
   s-thread.ads \
@@ -2519,11 +2520,11 @@ gnatlink-re: ../stamp-tools link.o targext.o gnatmake-re
 
 # Likewise for the tools
 ../../gnatmake$(exeext): $(P) b_gnatm.o link.o targext.o $(GNATMAKE_OBJS)
-	$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) \
+	+$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) \
 		    $(TOOLS_LIBS)
 
 ../../gnatlink$(exeext): $(P) b_gnatl.o link.o targext.o $(GNATLINK_OBJS)
-	$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) \
+	+$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) \
 		    $(TOOLS_LIBS)
 
 ../stamp-gnatlib-$(RTSDIR):

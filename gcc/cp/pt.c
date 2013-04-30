@@ -11521,6 +11521,21 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	    return error_mark_node;
 	  }
+	else if (TREE_CODE (type) == FUNCTION_TYPE
+		 && (type_memfn_quals (type) != TYPE_UNQUALIFIED
+		     || type_memfn_rqual (type) != REF_QUAL_NONE))
+	  {
+	    if (complain & tf_error)
+	      {
+		if (code == POINTER_TYPE)
+		  error ("forming pointer to qualified function type %qT",
+			 type);
+		else
+		  error ("forming reference to qualified function type %qT",
+			 type);
+	      }
+	    return error_mark_node;
+	  }
 	else if (code == POINTER_TYPE)
 	  {
 	    r = build_pointer_type (type);
@@ -11770,20 +11785,31 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	++cp_unevaluated_operand;
 	++c_inhibit_evaluation_warnings;
 
-	type = tsubst_expr (DECLTYPE_TYPE_EXPR (t), args,
-			    complain|tf_decltype, in_decl,
-			    /*integral_constant_expression_p=*/false);
+	type = tsubst_copy_and_build (DECLTYPE_TYPE_EXPR (t), args,
+				      complain|tf_decltype, in_decl,
+				      /*function_p*/false,
+				      /*integral_constant_expression*/false);
 
 	--cp_unevaluated_operand;
 	--c_inhibit_evaluation_warnings;
 
 	if (DECLTYPE_FOR_LAMBDA_CAPTURE (t))
-	  type = lambda_capture_field_type (type);
+	  type = lambda_capture_field_type (type,
+					    DECLTYPE_FOR_INIT_CAPTURE (t));
 	else if (DECLTYPE_FOR_LAMBDA_PROXY (t))
 	  type = lambda_proxy_type (type);
 	else
-	  type = finish_decltype_type
-	    (type, DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t), complain);
+	  {
+	    bool id = DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t);
+	    if (id && TREE_CODE (DECLTYPE_TYPE_EXPR (t)) == BIT_NOT_EXPR
+		&& EXPR_P (type))
+	      /* In a template ~id could be either a complement expression
+		 or an unqualified-id naming a destructor; if instantiating
+		 it produces an expression, it's not an id-expression or
+		 member access.  */
+	      id = false;
+	    type = finish_decltype_type (type, id, complain);
+	  }
 	return cp_build_qualified_type_real (type,
 					     cp_type_quals (t)
 					     | cp_type_quals (type),
@@ -12028,7 +12054,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
       expr = (finish_qualified_id_expr
 	      (scope, expr, done, address_p && PTRMEM_OK_P (qualified_id),
 	       QUALIFIED_NAME_IS_TEMPLATE (qualified_id),
-	       /*template_arg_p=*/false));
+	       /*template_arg_p=*/false, complain));
     }
 
   /* Expressions do not generally have reference type.  */
@@ -13431,9 +13457,8 @@ tsubst_copy_and_build (tree t,
 
   /* N3276 decltype magic only applies to calls at the top level or on the
      right side of a comma.  */
-  if (TREE_CODE (t) != CALL_EXPR
-      && TREE_CODE (t) != COMPOUND_EXPR)
-    complain &= ~tf_decltype;
+  tsubst_flags_t decltype_flag = (complain & tf_decltype);
+  complain &= ~tf_decltype;
 
   switch (TREE_CODE (t))
     {
@@ -13521,7 +13546,8 @@ tsubst_copy_and_build (tree t,
 	      r = convert_from_reference (r);
 	  }
 	else
-	  r = build_x_indirect_ref (input_location, r, RO_UNARY_STAR, complain);
+	  r = build_x_indirect_ref (input_location, r, RO_UNARY_STAR,
+				    complain|decltype_flag);
 	RETURN (r);
       }
 
@@ -13598,7 +13624,8 @@ tsubst_copy_and_build (tree t,
     case POSTINCREMENT_EXPR:
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
-      RETURN (build_x_unary_op (input_location, TREE_CODE (t), op1, complain));
+      RETURN (build_x_unary_op (input_location, TREE_CODE (t), op1,
+				complain|decltype_flag));
 
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
@@ -13610,7 +13637,8 @@ tsubst_copy_and_build (tree t,
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       RETURN (build_x_unary_op (input_location, TREE_CODE (t),
-			       RECUR (TREE_OPERAND (t, 0)), complain));
+			       RECUR (TREE_OPERAND (t, 0)),
+				complain|decltype_flag));
 
     case FIX_TRUNC_EXPR:
       RETURN (cp_build_unary_op (FIX_TRUNC_EXPR, RECUR (TREE_OPERAND (t, 0)),
@@ -13627,7 +13655,8 @@ tsubst_copy_and_build (tree t,
       else
 	op1 = tsubst_non_call_postfix_expression (op1, args, complain,
 						  in_decl);
-      RETURN (build_x_unary_op (input_location, ADDR_EXPR, op1, complain));
+      RETURN (build_x_unary_op (input_location, ADDR_EXPR, op1,
+				complain|decltype_flag));
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -13676,7 +13705,7 @@ tsubst_copy_and_build (tree t,
 	    ? ERROR_MARK
 	    : TREE_CODE (TREE_OPERAND (t, 1))),
 	   /*overload=*/NULL,
-	   complain);
+	   complain|decltype_flag);
 	if (EXPR_P (r) && TREE_NO_WARNING (t))
 	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
 
@@ -13692,7 +13721,8 @@ tsubst_copy_and_build (tree t,
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
       RETURN (build_x_array_ref (EXPR_LOCATION (t), op1,
-				RECUR (TREE_OPERAND (t, 1)), complain));
+				 RECUR (TREE_OPERAND (t, 1)),
+				 complain|decltype_flag));
 
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0)))
@@ -13785,7 +13815,7 @@ tsubst_copy_and_build (tree t,
 	   RECUR (TREE_OPERAND (t, 0)),
 	   TREE_CODE (TREE_OPERAND (t, 1)),
 	   RECUR (TREE_OPERAND (t, 2)),
-	   complain);
+	   complain|decltype_flag);
 	/* TREE_NO_WARNING must be set if either the expression was
 	   parenthesized or it uses an operator such as >>= rather
 	   than plain assignment.  In the former case, it was already
@@ -13874,7 +13904,7 @@ tsubst_copy_and_build (tree t,
 	RETURN (build_x_compound_expr (EXPR_LOCATION (t),
 				       op0,
 				       RECUR (TREE_OPERAND (t, 1)),
-				       complain));
+				       complain|decltype_flag));
       }
 
     case CALL_EXPR:
@@ -13885,10 +13915,6 @@ tsubst_copy_and_build (tree t,
 	bool qualified_p;
 	bool koenig_p;
 	tree ret;
-
-	/* Don't pass tf_decltype down to subexpressions.  */
-	tsubst_flags_t decltype_flag = (complain & tf_decltype);
-	complain &= ~tf_decltype;
 
 	function = CALL_EXPR_FN (t);
 	/* When we parsed the expression,  we determined whether or
@@ -15100,9 +15126,21 @@ fn_type_unification (tree fn,
      callers must be ready to deal with unification failures in any
      event.  */
 
+  TREE_VALUE (tinst) = targs;
+  /* If we aren't explaining yet, push tinst context so we can see where
+     any errors (e.g. from class instantiations triggered by instantiation
+     of default template arguments) come from.  If we are explaining, this
+     context is redundant.  */
+  if (!explain_p && !push_tinst_level (tinst))
+    {
+      excessive_deduction_depth = true;
+      goto fail;
+    }
   ok = !type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 			       targs, parms, args, nargs, /*subr=*/0,
 			       strict, flags, explain_p);
+  if (!explain_p)
+    pop_tinst_level ();
   if (!ok)
     goto fail;
 
@@ -16003,7 +16041,7 @@ resolve_nondeduced_context (tree orig_expr)
 	    {
 	      tree base
 		= TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (offset, 0)));
-	      expr = build_offset_ref (base, expr, addr);
+	      expr = build_offset_ref (base, expr, addr, tf_warning_or_error);
 	    }
 	  if (addr)
 	    expr = cp_build_addr_expr (expr, tf_warning_or_error);
@@ -20662,15 +20700,16 @@ make_args_non_dependent (vec<tree, va_gc> *args)
     }
 }
 
-/* Returns a type which represents 'auto'.  We use a TEMPLATE_TYPE_PARM
-   with a level one deeper than the actual template parms.  */
+/* Returns a type which represents 'auto' or 'decltype(auto)'.  We use a
+   TEMPLATE_TYPE_PARM with a level one deeper than the actual template
+   parms.  */
 
-tree
-make_auto (void)
+static tree
+make_auto_1 (tree name)
 {
   tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
   TYPE_NAME (au) = build_decl (BUILTINS_LOCATION,
-			       TYPE_DECL, get_identifier ("auto"), au);
+			       TYPE_DECL, name, au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
     (0, processing_template_decl + 1, processing_template_decl + 1,
@@ -20680,6 +20719,18 @@ make_auto (void)
   SET_DECL_TEMPLATE_PARM_P (TYPE_NAME (au));
 
   return au;
+}
+
+tree
+make_decltype_auto (void)
+{
+  return make_auto_1 (get_identifier ("decltype(auto)"));
+}
+
+tree
+make_auto (void)
+{
+  return make_auto_1 (get_identifier ("auto"));
 }
 
 /* Given type ARG, return std::initializer_list<ARG>.  */
@@ -20746,6 +20797,11 @@ do_auto_deduction (tree type, tree init, tree auto_node)
       bool id = (DECL_P (init) || TREE_CODE (init) == COMPONENT_REF);
       TREE_VEC_ELT (targs, 0)
 	= finish_decltype_type (init, id, tf_warning_or_error);
+      if (type != auto_node)
+	{
+	  error ("%qT as type rather than plain %<decltype(auto)%>", type);
+	  return error_mark_node;
+	}
     }
   else
     {
@@ -20824,13 +20880,15 @@ splice_late_return_type (tree type, tree late_return_type)
   return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
 }
 
-/* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto'.  */
+/* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto' or
+   'decltype(auto)'.  */
 
 bool
 is_auto (const_tree type)
 {
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-      && TYPE_IDENTIFIER (type) == get_identifier ("auto"))
+      && (TYPE_IDENTIFIER (type) == get_identifier ("auto")
+	  || TYPE_IDENTIFIER (type) == get_identifier ("decltype(auto)")))
     return true;
   else
     return false;

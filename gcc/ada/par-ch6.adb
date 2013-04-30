@@ -150,7 +150,7 @@ package body Ch6 is
    --  PARAMETER_AND_RESULT_PROFILE ::= [FORMAL_PART] return SUBTYPE_MARK
 
    --  SUBPROGRAM_BODY ::=
-   --    SUBPROGRAM_SPECIFICATION is
+   --    SUBPROGRAM_SPECIFICATION [ASPECT_SPECIFICATIONS] is
    --      DECLARATIVE_PART
    --    begin
    --      HANDLED_SEQUENCE_OF_STATEMENTS
@@ -836,6 +836,22 @@ package body Ch6 is
                        ("expression function is an Ada 2012 feature!");
                      Error_Msg_SC
                        ("\unit must be compiled with -gnat2012 switch!");
+                  end if;
+
+                  --  Catch an illegal placement of the aspect specification
+                  --  list:
+
+                  --    function_specification
+                  --      [aspect_specification] is (expression);
+
+                  --  This case is correctly processed by the parser because
+                  --  the expression function first appears as a subprogram
+                  --  declaration to the parser.
+
+                  if Is_Non_Empty_List (Aspects) then
+                     Error_Msg
+                       ("aspect specifications must come after parenthesized "
+                        & "expression", Sloc (First (Aspects)));
                   end if;
 
                   --  Parse out expression and build expression function

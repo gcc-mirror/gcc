@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "diagnostic-core.h"
 #include "tree.h"
 #include "tree-pass.h"
@@ -50,9 +51,36 @@ static const char *plugin_event_name_init[] =
 
 const char **plugin_event_name = plugin_event_name_init;
 
+/* Event hashtable helpers.  */
+
+struct event_hasher : typed_noop_remove <const char *>
+{
+  typedef const char *value_type;
+  typedef const char *compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Helper function for the event hash table that hashes the entry V.  */
+
+inline hashval_t
+event_hasher::hash (const value_type *v)
+{
+  return htab_hash_string (*v);
+}
+
+/* Helper function for the event hash table that compares the name of an
+   existing entry (S1) with the given string (S2).  */
+
+inline bool
+event_hasher::equal (const value_type *s1, const compare_type *s2)
+{
+  return !strcmp (*s1, *s2);
+}
+
 /* A hash table to map event names to the position of the names in the
    plugin_event_name table.  */
-static htab_t event_tab;
+static hash_table <event_hasher> event_tab;
 
 /* Keep track of the limit of allocated events and space ready for
    allocating events.  */
@@ -312,41 +340,31 @@ register_plugin_info (const char* name, struct plugin_info *info)
   plugin->help = info->help;
 }
 
-/* Helper function for the event hash table that compares the name of an
-   existing entry (E1) with the given string (S2).  */
-
-static int
-htab_event_eq (const void *e1, const void *s2)
-{
-  const char *s1= *(const char * const *) e1;
-  return !strcmp (s1, (const char *) s2);
-}
-
 /* Look up the event id for NAME.  If the name is not found, return -1
    if INSERT is NO_INSERT.  */
 
 int
 get_named_event_id (const char *name, enum insert_option insert)
 {
-  void **slot;
+  const char ***slot;
 
-  if (!event_tab)
+  if (!event_tab.is_created ())
     {
       int i;
 
-      event_tab = htab_create (150, htab_hash_string, htab_event_eq, NULL);
+      event_tab.create (150);
       for (i = 0; i < event_last; i++)
 	{
-	  slot = htab_find_slot (event_tab, plugin_event_name[i], INSERT);
+	  slot = event_tab.find_slot (&plugin_event_name[i], INSERT);
 	  gcc_assert (*slot == HTAB_EMPTY_ENTRY);
 	  *slot = &plugin_event_name[i];
 	}
     }
-  slot = htab_find_slot (event_tab, name, insert);
+  slot = event_tab.find_slot (&name, insert);
   if (slot == NULL)
     return -1;
   if (*slot != HTAB_EMPTY_ENTRY)
-    return (const char **) *slot - &plugin_event_name[0];
+    return *slot - &plugin_event_name[0];
 
   if (event_last >= event_horizon)
     {
@@ -368,8 +386,7 @@ get_named_event_id (const char *name, enum insert_option insert)
 					 plugin_callbacks, event_horizon);
 	}
       /* All the pointers in the hash table will need to be updated.  */
-      htab_delete (event_tab);
-      event_tab = NULL;
+      event_tab.dispose ();
     }
   else
     *slot = &plugin_event_name[event_last];

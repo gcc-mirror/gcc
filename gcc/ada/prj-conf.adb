@@ -1558,7 +1558,8 @@ package body Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      On_Load_Config             : Config_File_Hook := null)
+      On_Load_Config             : Config_File_Hook := null;
+      Implicit_Project           : Boolean := False)
    is
    begin
       pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
@@ -1578,7 +1579,8 @@ package body Prj.Conf is
          Packages_To_Check => Packages_To_Check,
          Current_Directory => Current_Directory,
          Is_Config_File    => False,
-         Env               => Env);
+         Env               => Env,
+         Implicit_Project  => Implicit_Project);
 
       if User_Project_Node = Empty_Node then
          User_Project_Node := Empty_Node;

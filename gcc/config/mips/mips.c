@@ -11414,6 +11414,7 @@ mips_expand_epilogue (bool sibcall_p)
   const struct mips_frame_info *frame;
   HOST_WIDE_INT step1, step2;
   rtx base, adjust, insn;
+  bool use_jraddiusp_p = false;
 
   if (!sibcall_p && mips_can_use_return_insn ())
     {
@@ -11541,12 +11542,19 @@ mips_expand_epilogue (bool sibcall_p)
 	  emit_insn (gen_cop0_move (gen_rtx_REG (SImode, COP0_STATUS_REG_NUM),
 				    gen_rtx_REG (SImode, K0_REG_NUM)));
 	}
+      else if (TARGET_MICROMIPS
+	       && !crtl->calls_eh_return
+	       && !sibcall_p
+	       && step2 > 0
+	       && mips_unsigned_immediate_p (step2, 5, 2))
+	use_jraddiusp_p = true;
       else
 	/* Deallocate the final bit of the frame.  */
 	mips_deallocate_stack (stack_pointer_rtx, GEN_INT (step2), 0);
     }
 
-  gcc_assert (!mips_epilogue.cfa_restores);
+  if (!use_jraddiusp_p)
+    gcc_assert (!mips_epilogue.cfa_restores);
 
   /* Add in the __builtin_eh_return stack adjustment.  We need to
      use a temporary in MIPS16 code.  */
@@ -11596,12 +11604,16 @@ mips_expand_epilogue (bool sibcall_p)
 	      rtx reg = gen_rtx_REG (Pmode, GP_REG_FIRST + 7);
 	      pat = gen_return_internal (reg);
 	    }
+	  else if (use_jraddiusp_p)
+	    pat = gen_jraddiusp (GEN_INT (step2));
 	  else
 	    {
 	      rtx reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
 	      pat = gen_simple_return_internal (reg);
 	    }
 	  emit_jump_insn (pat);
+	  if (use_jraddiusp_p)
+	    mips_epilogue_set_cfa (stack_pointer_rtx, step2);
 	}
     }
 

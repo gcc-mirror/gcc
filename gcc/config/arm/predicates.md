@@ -31,6 +31,17 @@
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
 
+(define_predicate "imm_for_neon_inv_logic_operand"
+  (match_code "const_vector")
+{
+  return (TARGET_NEON
+          && neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL));
+})
+
+(define_predicate "neon_inv_logic_op2"
+  (ior (match_operand 0 "imm_for_neon_inv_logic_operand")
+       (match_operand 0 "s_register_operand")))
+
 ;; Any hard register.
 (define_predicate "arm_hard_register_operand"
   (match_code "reg")
@@ -144,6 +155,12 @@
 (define_predicate "arm_add_operand"
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_neg_immediate_operand")))
+
+(define_predicate "arm_anddi_operand_neon"
+  (ior (match_operand 0 "s_register_operand")
+       (and (match_code "const_int")
+	    (match_test "const_ok_for_dimode_op (INTVAL (op), AND)"))
+       (match_operand 0 "neon_inv_logic_op2")))
 
 (define_predicate "arm_adddi_operand"
   (ior (match_operand 0 "s_register_operand")
@@ -525,19 +542,8 @@
           && neon_immediate_valid_for_logic (op, mode, 0, NULL, NULL));
 })
 
-(define_predicate "imm_for_neon_inv_logic_operand"
-  (match_code "const_vector")
-{
-  return (TARGET_NEON
-          && neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL));
-})
-
 (define_predicate "neon_logic_op2"
   (ior (match_operand 0 "imm_for_neon_logic_operand")
-       (match_operand 0 "s_register_operand")))
-
-(define_predicate "neon_inv_logic_op2"
-  (ior (match_operand 0 "imm_for_neon_inv_logic_operand")
        (match_operand 0 "s_register_operand")))
 
 ;; Predicates for named expanders that overlap multiple ISAs.

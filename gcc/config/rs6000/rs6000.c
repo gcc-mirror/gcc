@@ -7104,21 +7104,13 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 
       if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
 	  || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
-	{
-	  if (ud1 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud1 ^ 0x8000) -  0x8000)));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud1));
-	}
+	emit_move_insn (dest, GEN_INT ((ud1 ^ 0x8000) - 0x8000));
 
       else if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000))
 	       || (ud4 == 0 && ud3 == 0 && ! (ud2 & 0x8000)))
 	{
-	  if (ud2 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud2 << 16) ^ 0x80000000)
-					   - 0x80000000));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud2 << 16));
+	  emit_move_insn (dest, GEN_INT (((ud2 << 16) ^ 0x80000000)
+					 - 0x80000000));
 	  if (ud1 != 0)
 	    emit_move_insn (copy_rtx (dest),
 			    gen_rtx_IOR (DImode, copy_rtx (dest),
@@ -7141,12 +7133,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
       else if ((ud4 == 0xffff && (ud3 & 0x8000))
 	       || (ud4 == 0 && ! (ud3 & 0x8000)))
 	{
-	  if (ud3 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud3 << 16) ^ 0x80000000)
-					   - 0x80000000));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud3 << 16));
-
+	  emit_move_insn (dest, GEN_INT (((ud3 << 16) ^ 0x80000000)
+					 - 0x80000000));
 	  if (ud2 != 0)
 	    emit_move_insn (copy_rtx (dest),
 			    gen_rtx_IOR (DImode, copy_rtx (dest),
@@ -7161,12 +7149,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 	}
       else
 	{
-	  if (ud4 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud4 << 16) ^ 0x80000000)
-					   - 0x80000000));
-	  else
-	    emit_move_insn (dest, GEN_INT (ud4 << 16));
-
+	  emit_move_insn (dest, GEN_INT (((ud4 << 16) ^ 0x80000000)
+					 - 0x80000000));
 	  if (ud3 != 0)
 	    emit_move_insn (copy_rtx (dest),
 			    gen_rtx_IOR (DImode, copy_rtx (dest),
@@ -7181,7 +7165,8 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 					 GEN_INT (ud2 << 16)));
 	  if (ud1 != 0)
 	    emit_move_insn (copy_rtx (dest),
-			    gen_rtx_IOR (DImode, copy_rtx (dest), GEN_INT (ud1)));
+			    gen_rtx_IOR (DImode, copy_rtx (dest),
+					 GEN_INT (ud1)));
 	}
     }
   return dest;
@@ -14449,7 +14434,7 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
   /* Adjust the address if it changed.  */
   if (addr != XEXP (mem, 0))
     {
-      mem = change_address (mem, mode, addr);
+      mem = replace_equiv_address_nv (mem, addr);
       if (TARGET_DEBUG_ADDR)
 	fprintf (stderr, "\nrs6000_secondary_reload_inner, mem adjusted.\n");
     }
@@ -22440,20 +22425,22 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc FT_%lx_%lx_%lx_%lx[TC],",
 		     k[0] & 0xffffffff, k[1] & 0xffffffff,
 		     k[2] & 0xffffffff, k[3] & 0xffffffff);
 	  fprintf (file, "0x%lx%08lx,0x%lx%08lx\n",
-		   k[0] & 0xffffffff, k[1] & 0xffffffff,
-		   k[2] & 0xffffffff, k[3] & 0xffffffff);
+		   k[WORDS_BIG_ENDIAN ? 0 : 1] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 1 : 0] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 2 : 3] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 3 : 2] & 0xffffffff);
 	  return;
 	}
       else
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs ("\t.long ", file);
 	  else
 	    fprintf (file, "\t.tc FT_%lx_%lx_%lx_%lx[TC],",
@@ -22480,18 +22467,19 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc FD_%lx_%lx[TC],",
 		     k[0] & 0xffffffff, k[1] & 0xffffffff);
 	  fprintf (file, "0x%lx%08lx\n",
-		   k[0] & 0xffffffff, k[1] & 0xffffffff);
+		   k[WORDS_BIG_ENDIAN ? 0 : 1] & 0xffffffff,
+		   k[WORDS_BIG_ENDIAN ? 1 : 0] & 0xffffffff);
 	  return;
 	}
       else
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs ("\t.long ", file);
 	  else
 	    fprintf (file, "\t.tc FD_%lx_%lx[TC],",
@@ -22515,7 +22503,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc FS_%lx[TC],", l & 0xffffffff);
@@ -22524,7 +22512,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	}
       else
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs ("\t.long ", file);
 	  else
 	    fprintf (file, "\t.tc FS_%lx[TC],", l & 0xffffffff);
@@ -22556,9 +22544,8 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	}
 #endif
 
-      /* TOC entries are always Pmode-sized, but since this
-	 is a bigendian machine then if we're putting smaller
-	 integer constants in the TOC we have to pad them.
+      /* TOC entries are always Pmode-sized, so when big-endian
+	 smaller integer constants in the TOC need to be padded.
 	 (This is still a win over putting the constants in
 	 a separate constant pool, because then we'd have
 	 to have both a TOC entry _and_ the actual constant.)
@@ -22569,7 +22556,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
       /* It would be easy to make this work, but it doesn't now.  */
       gcc_assert (!TARGET_64BIT || POINTER_SIZE >= GET_MODE_BITSIZE (mode));
 
-      if (POINTER_SIZE > GET_MODE_BITSIZE (mode))
+      if (WORDS_BIG_ENDIAN && POINTER_SIZE > GET_MODE_BITSIZE (mode))
 	{
 #if HOST_BITS_PER_WIDE_INT == 32
 	  lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
@@ -22584,7 +22571,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (TARGET_64BIT)
 	{
-	  if (TARGET_MINIMAL_TOC)
+	  if (TARGET_ELF || TARGET_MINIMAL_TOC)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc ID_%lx_%lx[TC],",
@@ -22597,7 +22584,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	{
 	  if (POINTER_SIZE < GET_MODE_BITSIZE (mode))
 	    {
-	      if (TARGET_MINIMAL_TOC)
+	      if (TARGET_ELF || TARGET_MINIMAL_TOC)
 		fputs ("\t.long ", file);
 	      else
 		fprintf (file, "\t.tc ID_%lx_%lx[TC],",
@@ -22607,7 +22594,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	    }
 	  else
 	    {
-	      if (TARGET_MINIMAL_TOC)
+	      if (TARGET_ELF || TARGET_MINIMAL_TOC)
 		fputs ("\t.long ", file);
 	      else
 		fprintf (file, "\t.tc IS_%lx[TC],", (long) low & 0xffffffff);
@@ -22645,7 +22632,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
       gcc_unreachable ();
     }
 
-  if (TARGET_MINIMAL_TOC)
+  if (TARGET_ELF || TARGET_MINIMAL_TOC)
     fputs (TARGET_32BIT ? "\t.long " : DOUBLE_INT_ASM_OP, file);
   else
     {

@@ -44,6 +44,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -1196,12 +1197,25 @@ package body Sem_Disp is
       Ovr_Subp := Old_Subp;
 
       --  [Ada 2012:AI-0125]: Search for inherited hidden primitive that may be
-      --  overridden by Subp
+      --  overridden by Subp. This only applies to source subprograms, and
+      --  their declaration must carry an explicit overriding indicator.
 
       if No (Ovr_Subp)
         and then Ada_Version >= Ada_2012
+        and then Comes_From_Source (Subp)
+        and then
+          Nkind (Unit_Declaration_Node (Subp)) = N_Subprogram_Declaration
       then
          Ovr_Subp := Find_Hidden_Overridden_Primitive (Subp);
+
+         --  Verify that the proper overriding indicator has been supplied.
+
+         if Present (Ovr_Subp)
+           and then
+             not Must_Override (Specification (Unit_Declaration_Node (Subp)))
+         then
+            Error_Msg_NE ("missing overriding indicator for&", Subp, Subp);
+         end if;
       end if;
 
       --  Now it should be a correct primitive operation, put it in the list
@@ -1854,12 +1868,14 @@ package body Sem_Disp is
       Vis_List  : Elist_Id;
 
    begin
-      --  This Ada 2012 rule is valid only for type extensions or private
-      --  extensions.
+      --  This Ada 2012 rule applies only for type extensions or private
+      --  extensions, where the parent type is not in a parent unit, and
+      --  where an operation is never declared but still inherited.
 
       if No (Tag_Typ)
         or else not Is_Record_Type (Tag_Typ)
         or else Etype (Tag_Typ) = Tag_Typ
+        or else In_Open_Scopes (Scope (Etype (Tag_Typ)))
       then
          return Empty;
       end if;

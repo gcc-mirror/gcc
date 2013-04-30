@@ -42,8 +42,7 @@ streamer_string_index (struct output_block *ob, const char *s, unsigned int len,
   s_slot.len = len;
   s_slot.slot_num = 0;
 
-  slot = (struct string_slot **) htab_find_slot (ob->string_hash_table,
-						 &s_slot, INSERT);
+  slot = ob->string_hash_table.find_slot (&s_slot, INSERT);
   if (*slot == NULL)
     {
       struct lto_output_stream *string_stream = ob->string_stream;

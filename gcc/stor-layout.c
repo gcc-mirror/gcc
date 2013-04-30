@@ -290,6 +290,8 @@ finalize_size_functions (void)
 
   for (i = 0; size_functions && size_functions->iterate (i, &fndecl); i++)
     {
+      allocate_struct_function (fndecl, false);
+      set_cfun (NULL);
       dump_function (TDI_original, fndecl);
       gimplify_function_tree (fndecl);
       dump_function (TDI_generic, fndecl);

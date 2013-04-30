@@ -1890,12 +1890,15 @@ language and takes a list of sources as parameter.
   library can furthermore only depends on static libraries (including
   the GNAT runtime). This attribute can be set to @code{no} to make it clear
   that the library should not be standalone in which case the
-  @code{Library_Interface} should not defined.
+  @code{Library_Interface} should not defined. Note that this attribute
+  only applies to shared libraries, so @code{Library_Kind} must be set
+  to @code{dynamic}.
 
 @smallexample @c projectfile
 @group
      for Library_Dir use "lib";
      for Library_Name use "loggin";
+     for Library_Kind use "dynamic";
      for Library_Interface use ("lib1", "lib2");  --  unit names
      for Library_Standalone use "encapsulated";
 @end group
@@ -3772,8 +3775,15 @@ The list of languages of the sources of the project.
 
 @item @b{Roots}: list, indexed, file name index
 
-The index is the file name of an executable source. Indicates the list of
-units that need to be bound and linked with their closures with the executable.
+The index is the file name of an executable source. Indicates the list of units
+from the main project that need to be bound and linked with their closures
+with the executable. The index is either a file name, a language name or "*".
+The roots for an executable source are those in @b{Roots} with an index that
+is the executable source file name, if declared. Otherwise, they are those in
+@b{Roots} with an index that is the language name of the executable source,
+if present. Otherwise, they are those in @b{Roots ("*")}, if declared. If none
+of these three possibilities are declared, then there are no roots for the
+executable source.
 
 @item @b{Externally_Built}: single
 

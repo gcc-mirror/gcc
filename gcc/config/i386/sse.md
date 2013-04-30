@@ -523,7 +523,7 @@
     [(set (match_operand:V4SI 0 "register_operand" "=?x,x")
 	  (subreg:V4SI (match_operand:DI 1 "nonimmediate_operand" "r,m") 0))
      (clobber (match_scratch:V4SI 2 "=&x,X"))])]
-  "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES"
+  "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -5631,14 +5631,16 @@
 (define_expand "mul<mode>3"
   [(set (match_operand:VI4_AVX2 0 "register_operand")
 	(mult:VI4_AVX2
-	  (match_operand:VI4_AVX2 1 "nonimmediate_operand")
-	  (match_operand:VI4_AVX2 2 "nonimmediate_operand")))]
+	  (match_operand:VI4_AVX2 1 "general_vector_operand")
+	  (match_operand:VI4_AVX2 2 "general_vector_operand")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1)
     {
-      if (CONSTANT_P (operands[2]))
-	operands[2] = force_const_mem (<MODE>mode, operands[2]);
+      if (!nonimmediate_operand (operands[1], <MODE>mode))
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+      if (!nonimmediate_operand (operands[2], <MODE>mode))
+	operands[2] = force_reg (<MODE>mode, operands[2]);
       ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
     }
   else
@@ -5702,8 +5704,8 @@
 ;; named patterns, but signed V4SI needs special help for plain SSE2.
 (define_expand "vec_widen_smult_even_v4si"
   [(match_operand:V2DI 0 "register_operand")
-   (match_operand:V4SI 1 "register_operand")
-   (match_operand:V4SI 2 "register_operand")]
+   (match_operand:V4SI 1 "nonimmediate_operand")
+   (match_operand:V4SI 2 "nonimmediate_operand")]
   "TARGET_SSE2"
 {
   ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],
@@ -5714,8 +5716,8 @@
 (define_expand "vec_widen_<s>mult_odd_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (any_extend:<sseunpackmode>
-     (match_operand:VI4_AVX2 1 "register_operand"))
-   (match_operand:VI4_AVX2 2 "register_operand")]
+     (match_operand:VI4_AVX2 1 "general_vector_operand"))
+   (match_operand:VI4_AVX2 2 "general_vector_operand")]
   "TARGET_SSE2"
 {
   ix86_expand_mul_widen_evenodd (operands[0], operands[1], operands[2],
@@ -7358,12 +7360,12 @@
 (define_insn_and_split "sse2_stored"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=xm,r")
 	(vec_select:SI
-	  (match_operand:V4SI 1 "register_operand" "x,Yi")
+	  (match_operand:V4SI 1 "register_operand" "x,Yj")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE"
   "#"
   "&& reload_completed
-   && (TARGET_INTER_UNIT_MOVES
+   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
        || MEM_P (operands [0])
        || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
@@ -7395,7 +7397,7 @@
 (define_insn "*sse2_storeq_rex64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=xm,*r,r")
 	(vec_select:DI
-	  (match_operand:V2DI 1 "nonimmediate_operand" "x,Yi,o")
+	  (match_operand:V2DI 1 "nonimmediate_operand" "x,Yj,o")
 	  (parallel [(const_int 0)])))]
   "TARGET_64BIT && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -7420,7 +7422,7 @@
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE
    && reload_completed
-   && (TARGET_INTER_UNIT_MOVES
+   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
        || MEM_P (operands [0])
        || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
@@ -9924,7 +9926,8 @@
 	 (match_operand:SI 2 "const_0_to_<sserotatemax>_operand" "n")))]
   "TARGET_XOP"
 {
-  operands[3] = GEN_INT ((<ssescalarnum> * 8) - INTVAL (operands[2]));
+  operands[3]
+    = GEN_INT (GET_MODE_BITSIZE (<ssescalarmode>mode) - INTVAL (operands[2]));
   return \"vprot<ssemodesuffix>\t{%3, %1, %0|%0, %1, %3}\";
 }
   [(set_attr "type" "sseishft")

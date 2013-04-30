@@ -32,7 +32,7 @@
 #include "tree-inline.h"
 #include "diagnostic-core.h"
 #include "gimple.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "function.h"
 #include "cgraph.h"
 #include "tree-pass.h"
@@ -1862,48 +1862,54 @@ typedef struct equiv_class_label
 } *equiv_class_label_t;
 typedef const struct equiv_class_label *const_equiv_class_label_t;
 
-/* A hashtable for mapping a bitmap of labels->pointer equivalence
-   classes.  */
-static htab_t pointer_equiv_class_table;
+/* Equiv_class_label hashtable helpers.  */
 
-/* A hashtable for mapping a bitmap of labels->location equivalence
-   classes.  */
-static htab_t location_equiv_class_table;
+struct equiv_class_hasher : typed_free_remove <equiv_class_label>
+{
+  typedef equiv_class_label value_type;
+  typedef equiv_class_label compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
 
 /* Hash function for a equiv_class_label_t */
 
-static hashval_t
-equiv_class_label_hash (const void *p)
+inline hashval_t
+equiv_class_hasher::hash (const value_type *ecl)
 {
-  const_equiv_class_label_t const ecl = (const_equiv_class_label_t) p;
   return ecl->hashcode;
 }
 
 /* Equality function for two equiv_class_label_t's.  */
 
-static int
-equiv_class_label_eq (const void *p1, const void *p2)
+inline bool
+equiv_class_hasher::equal (const value_type *eql1, const compare_type *eql2)
 {
-  const_equiv_class_label_t const eql1 = (const_equiv_class_label_t) p1;
-  const_equiv_class_label_t const eql2 = (const_equiv_class_label_t) p2;
   return (eql1->hashcode == eql2->hashcode
 	  && bitmap_equal_p (eql1->labels, eql2->labels));
 }
+
+/* A hashtable for mapping a bitmap of labels->pointer equivalence
+   classes.  */
+static hash_table <equiv_class_hasher> pointer_equiv_class_table;
+
+/* A hashtable for mapping a bitmap of labels->location equivalence
+   classes.  */
+static hash_table <equiv_class_hasher> location_equiv_class_table;
 
 /* Lookup a equivalence class in TABLE by the bitmap of LABELS with
    hash HAS it contains.  Sets *REF_LABELS to the bitmap LABELS
    is equivalent to.  */
 
 static equiv_class_label *
-equiv_class_lookup_or_add (htab_t table, bitmap labels)
+equiv_class_lookup_or_add (hash_table <equiv_class_hasher> table, bitmap labels)
 {
   equiv_class_label **slot;
   equiv_class_label ecl;
 
   ecl.labels = labels;
   ecl.hashcode = bitmap_hash (labels);
-  slot = (equiv_class_label **) htab_find_slot_with_hash (table, &ecl,
-							  ecl.hashcode, INSERT);
+  slot = table.find_slot_with_hash (&ecl, ecl.hashcode, INSERT);
   if (!*slot)
     {
       *slot = XNEW (struct equiv_class_label);
@@ -2222,10 +2228,8 @@ perform_var_substitution (constraint_graph_t graph)
   struct scc_info *si = init_scc_info (size);
 
   bitmap_obstack_initialize (&iteration_obstack);
-  pointer_equiv_class_table = htab_create (511, equiv_class_label_hash,
-					   equiv_class_label_eq, free);
-  location_equiv_class_table = htab_create (511, equiv_class_label_hash,
-					    equiv_class_label_eq, free);
+  pointer_equiv_class_table.create (511);
+  location_equiv_class_table.create (511);
   pointer_equiv_class = 1;
   location_equiv_class = 1;
 
@@ -2358,8 +2362,8 @@ free_var_substitution_info (struct scc_info *si)
   free (graph->points_to);
   free (graph->eq_rep);
   sbitmap_free (graph->direct_nodes);
-  htab_delete (pointer_equiv_class_table);
-  htab_delete (location_equiv_class_table);
+  pointer_equiv_class_table.dispose ();
+  location_equiv_class_table.dispose ();
   bitmap_obstack_release (&iteration_obstack);
 }
 
@@ -5900,26 +5904,35 @@ typedef struct shared_bitmap_info
 } *shared_bitmap_info_t;
 typedef const struct shared_bitmap_info *const_shared_bitmap_info_t;
 
-static htab_t shared_bitmap_table;
+/* Shared_bitmap hashtable helpers.  */
+
+struct shared_bitmap_hasher : typed_free_remove <shared_bitmap_info>
+{
+  typedef shared_bitmap_info value_type;
+  typedef shared_bitmap_info compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
 
 /* Hash function for a shared_bitmap_info_t */
 
-static hashval_t
-shared_bitmap_hash (const void *p)
+inline hashval_t
+shared_bitmap_hasher::hash (const value_type *bi)
 {
-  const_shared_bitmap_info_t const bi = (const_shared_bitmap_info_t) p;
   return bi->hashcode;
 }
 
 /* Equality function for two shared_bitmap_info_t's. */
 
-static int
-shared_bitmap_eq (const void *p1, const void *p2)
+inline bool
+shared_bitmap_hasher::equal (const value_type *sbi1, const compare_type *sbi2)
 {
-  const_shared_bitmap_info_t const sbi1 = (const_shared_bitmap_info_t) p1;
-  const_shared_bitmap_info_t const sbi2 = (const_shared_bitmap_info_t) p2;
   return bitmap_equal_p (sbi1->pt_vars, sbi2->pt_vars);
 }
+
+/* Shared_bitmap hashtable.  */
+
+static hash_table <shared_bitmap_hasher> shared_bitmap_table;
 
 /* Lookup a bitmap in the shared bitmap hashtable, and return an already
    existing instance if there is one, NULL otherwise.  */
@@ -5927,18 +5940,18 @@ shared_bitmap_eq (const void *p1, const void *p2)
 static bitmap
 shared_bitmap_lookup (bitmap pt_vars)
 {
-  void **slot;
+  shared_bitmap_info **slot;
   struct shared_bitmap_info sbi;
 
   sbi.pt_vars = pt_vars;
   sbi.hashcode = bitmap_hash (pt_vars);
 
-  slot = htab_find_slot_with_hash (shared_bitmap_table, &sbi,
-				   sbi.hashcode, NO_INSERT);
+  slot = shared_bitmap_table.find_slot_with_hash (&sbi, sbi.hashcode,
+						  NO_INSERT);
   if (!slot)
     return NULL;
   else
-    return ((shared_bitmap_info_t) *slot)->pt_vars;
+    return (*slot)->pt_vars;
 }
 
 
@@ -5947,16 +5960,15 @@ shared_bitmap_lookup (bitmap pt_vars)
 static void
 shared_bitmap_add (bitmap pt_vars)
 {
-  void **slot;
+  shared_bitmap_info **slot;
   shared_bitmap_info_t sbi = XNEW (struct shared_bitmap_info);
 
   sbi->pt_vars = pt_vars;
   sbi->hashcode = bitmap_hash (pt_vars);
 
-  slot = htab_find_slot_with_hash (shared_bitmap_table, sbi,
-				   sbi->hashcode, INSERT);
+  slot = shared_bitmap_table.find_slot_with_hash (sbi, sbi->hashcode, INSERT);
   gcc_assert (!*slot);
-  *slot = (void *) sbi;
+  *slot = sbi;
 }
 
 
@@ -6612,8 +6624,7 @@ init_alias_vars (void)
   call_stmt_vars = pointer_map_create ();
 
   memset (&stats, 0, sizeof (stats));
-  shared_bitmap_table = htab_create (511, shared_bitmap_hash,
-				     shared_bitmap_eq, free);
+  shared_bitmap_table.create (511);
   init_base_vars ();
 
   gcc_obstack_init (&fake_var_decl_obstack);
@@ -6869,7 +6880,7 @@ delete_points_to_sets (void)
 {
   unsigned int i;
 
-  htab_delete (shared_bitmap_table);
+  shared_bitmap_table.dispose ();
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "Points to sets created:%d\n",
 	     stats.points_to_sets_created);

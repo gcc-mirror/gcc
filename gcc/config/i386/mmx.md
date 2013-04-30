@@ -80,7 +80,7 @@
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand"
     "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r   ,?!Ym,x,x,x,m,*x,*x,*x,m ,r ,Yi,!Ym,*Yi")
 	(match_operand:MMXMODE 1 "vector_move_operand"
-    "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!Ym,r   ,C,x,m,x,C ,*x,m ,*x,Yi,r ,*Yi,!Ym"))]
+    "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!Yn,r   ,C,x,m,x,C ,*x,m ,*x,Yj,r ,*Yj,!Yn"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {

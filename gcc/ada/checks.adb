@@ -1479,7 +1479,7 @@ package body Checks is
       --  partial view that is constrained.
 
       elsif Ada_Version >= Ada_2005
-        and then Effectively_Has_Constrained_Partial_View
+        and then Object_Type_Has_Constrained_Partial_View
                    (Typ  => Base_Type (T_Typ),
                     Scop => Current_Scope)
       then
@@ -1907,6 +1907,15 @@ package body Checks is
       Reason : RT_Exception_Code;
 
    begin
+      --  We do not need checks if we are not generating code (i.e. the full
+      --  expander is not active). In SPARK mode, we specifically don't want
+      --  the frontend to expand these checks, which are dealt with directly
+      --  in the formal verification backend.
+
+      if not Full_Expander_Active then
+         return;
+      end if;
+
       if not Compile_Time_Known_Value (LB)
           or not Compile_Time_Known_Value (HB)
       then
@@ -2490,28 +2499,13 @@ package body Checks is
               Make_Raise_Storage_Error (Sloc (N),
                 Reason => SE_Infinite_Recursion));
 
-         --  Here for normal case of predicate active.
+         --  Here for normal case of predicate active
 
          else
-            --  If the predicate is a static predicate and the operand is
-            --  static, the predicate must be evaluated statically. If the
-            --  evaluation fails this is a static constraint error. This check
-            --  is disabled in -gnatc mode, because the compiler is incapable
-            --  of evaluating static expressions in that case.
+            --  If the type has a static predicate and the expression is known
+            --  at compile time, see if the expression satisfies the predicate.
 
-            if Is_OK_Static_Expression (N) then
-               if Present (Static_Predicate (Typ)) then
-                  if Operating_Mode < Generate_Code
-                    or else Eval_Static_Predicate_Check (N, Typ)
-                  then
-                     return;
-                  else
-                     Error_Msg_NE
-                       ("static expression fails static predicate check on&",
-                        N, Typ);
-                  end if;
-               end if;
-            end if;
+            Check_Expression_Against_Static_Predicate (N, Typ);
 
             Insert_Action (N,
               Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
@@ -7749,6 +7743,19 @@ package body Checks is
          return Scope_Suppress.Suppress (Overflow_Check);
       end if;
    end Overflow_Checks_Suppressed;
+
+   ---------------------------------
+   -- Predicate_Checks_Suppressed --
+   ---------------------------------
+
+   function Predicate_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Predicate_Check);
+      else
+         return Scope_Suppress.Suppress (Predicate_Check);
+      end if;
+   end Predicate_Checks_Suppressed;
 
    -----------------------------
    -- Range_Checks_Suppressed --

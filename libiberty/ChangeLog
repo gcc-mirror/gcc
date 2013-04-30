@@ -1,3 +1,7 @@
+2013-04-22  Andi Kleen <ak@linux.intel.com>
+
+	* hashtab.c (hash_pointer): Move to end of file and reimplement.
+
 2013-04-03  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (cplus_demangle_type): Fix function quals.

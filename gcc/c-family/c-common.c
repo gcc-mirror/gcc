@@ -4316,13 +4316,13 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
+      pedwarn (loc, OPT_Wpointer_arith,
 	       "pointer of type %<void *%> used in arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
-      pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
+      pedwarn (loc, OPT_Wpointer_arith,
 	       "pointer to a function used in arithmetic");
       size_exp = integer_one_node;
     }
@@ -4911,8 +4911,8 @@ c_sizeof_or_alignof_type (location_t loc,
     {
       if (is_sizeof)
 	{
-	  if (complain && (pedantic || warn_pointer_arith))
-	    pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
+	  if (complain && warn_pointer_arith)
+	    pedwarn (loc, OPT_Wpointer_arith,
 		     "invalid application of %<sizeof%> to a function type");
           else if (!complain)
             return error_mark_node;
@@ -4939,8 +4939,7 @@ c_sizeof_or_alignof_type (location_t loc,
 	  if (type_code == VOID_TYPE && upc_shared_type_p (type))
 	    error_at (loc, "invalid application of %qs"
 	                   " to %<shared void%> type", op_name);
-          else if (type_code == VOID_TYPE
-	           && (pedantic || warn_pointer_arith))
+          else if (type_code == VOID_TYPE && warn_pointer_arith)
 	    pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
 		     "invalid application of %qs to a void type", op_name);
         }
@@ -7363,9 +7362,10 @@ check_user_alignment (const_tree align, bool allow_zero)
     }
   else if (allow_zero && integer_zerop (align))
     return -1;
-  else if ((i = tree_log2 (align)) == -1)
+  else if (tree_int_cst_sgn (align) == -1
+           || (i = tree_log2 (align)) == -1)
     {
-      error ("requested alignment is not a power of 2");
+      error ("requested alignment is not a positive power of 2");
       return -1;
     }
   else if (i >= HOST_BITS_PER_INT - BITS_PER_UNIT_LOG)

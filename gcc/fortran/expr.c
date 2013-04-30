@@ -1209,7 +1209,7 @@ find_array_element (gfc_constructor_base base, gfc_array_ref *ar,
 	  goto depart;
 	}
 
-      e = gfc_copy_expr (ar->start[i]);
+      e = ar->start[i];
       if (e->expr_type != EXPR_CONSTANT)
 	{
 	  cons = NULL;
@@ -1258,8 +1258,6 @@ depart:
   mpz_clear (offset);
   mpz_clear (span);
   mpz_clear (tmp);
-  if (e)
-    gfc_free_expr (e);
   *rval = cons;
   return t;
 }
@@ -3540,7 +3538,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	}
       else if (rvalue->expr_type == EXPR_FUNCTION)
 	{
-	  s2 = rvalue->symtree->n.sym->result;
+	  if (rvalue->value.function.esym)
+	    s2 = rvalue->value.function.esym->result;
+	  else
+	    s2 = rvalue->symtree->n.sym->result;
+
 	  name = s2->name;
 	}
       else

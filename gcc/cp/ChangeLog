@@ -1,3 +1,146 @@
+2013-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56450
+	* semantics.c (finish_decltype_type): Handle COMPOUND_EXPR.
+
+2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.c (cp_print_error_function): Adjust file_name_as_prefix
+	caller.
+
+2013-04-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56859
+	* typeck.c (cxx_alignas_expr): Handle value-dependence properly.
+
+	PR c++/50261
+	* init.c (perform_member_init): Call reshape_init.
+
+2013-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53721
+	* parser.c (cp_parser_postfix_dot_deref_expression): Fix thinko.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cxx_sizeof_or_alignof_type): Change -Wpointer-arith
+	pedwarn to simply use OPT_Wpointer_arith.
+	(cp_build_unary_op): Likewise.
+
+2013-04-24  Jason Merrill  <jason@redhat.com>
+
+	N3648: init-captures are named.
+	* semantics.c (add_capture): Don't prepend "__" to init-captures.
+	(build_capture_proxy): Adjust.
+	* error.c (dump_simple_decl): Check DECL_NORMAL_CAPTURE_P.
+
+	N3648: Allow braced and parenthesized initializers.
+	* parser.c (cp_parser_lambda_introducer): Use cp_parser_initializer.
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Handle DECLTYPE_FOR_INIT_CAPTURE.
+	* semantics.c (lambda_capture_field_type): Use do_auto_deduction.
+	(add_capture): Collapse a parenthesized initializer into a single
+	expression.
+	* cp-tree.h (DECLTYPE_FOR_INIT_CAPTURE): New.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56970
+	* init.c (build_offset_ref): Add tsubst_flags_t parameter.
+	* semantics.c (finish_qualified_id_expr): Likewise.
+	(finish_id_expression): Update.
+	* typeck.c (cp_build_addr_expr_1): Likewise.
+	* pt.c (tsubst_qualified_id, resolve_nondeduced_context): Likewise.
+	* cp-tree.h: Update declarations.
+
+2013-04-22  Jason Merrill  <jason@redhat.com>
+
+	Core 1586
+	* parser.c (cp_parser_unqualified_id): Handle ~auto.
+	(cp_parser_pseudo_destructor_name): Likewise.
+	(cp_parser_postfix_dot_deref_expression): Adjust.
+	(cp_lexer_nth_token_is_keyword): New.
+	* semantics.c (finish_pseudo_destructor_expr): Handle ~auto.
+	* typeck.c (lookup_destructor): Handle ~auto.
+
+	* pt.c (fn_type_unification): Push tinst level around
+	type_unification_real if we aren't explaining.
+	* cp-tree.h (TFF_NO_TEMPLATE_BINDINGS): New.
+	* error.c (dump_function_decl): Respect it.
+	(subst_to_string): Pass it.
+
+	PR c++/48665
+	* rtti.c (get_typeid): Diagnose qualified function type.
+	* pt.c (tsubst) [POINTER_TYPE]: Likewise.
+
+	* error.c (dump_aggr_type): Fix lambda detection.
+	(dump_simple_decl): Pretty-print capture field.
+
+	N3323
+	* cvt.c (build_expr_type_conversion): Two conversions that return
+	the same type aren't necessarily ambiguous.
+
+	N3648
+	* parser.c (cp_parser_lambda_introducer): Make lambda capture init
+	pedwarn unconditional except in C++1y mode.
+
+	* semantics.c (potential_constant_expression_1): Don't crash on
+	'this' in NSDMI.
+
+	Core 1612
+	* semantics.c (finish_id_expression): Reject capture of anonymous
+	union member.
+
+	Core 1609
+	* decl2.c (check_default_args): Check for pack expansion.
+
+	* mangle.c (write_type): Mangle decltype(auto).
+
+2013-04-19  Jason Merrill  <jason@redhat.com>
+
+	N3638 changes to return type deduction
+	* decl.c (undeduced_auto_decl): New.
+	(require_deduced_type): New.
+	(fndecl_declared_return_type): New.
+	(decls_match): Use it.
+	(duplicate_decls): Don't check for auto return.
+	(grokdeclarator): Reject virtual auto.
+	* class.c (resolve_address_of_overloaded_function): Handle
+	auto function templates.
+	* decl2.c (mark_used): Use undeduced_auto_decl, require_deduced_type.
+	* cp-tree.h: Declare new fns.
+	* error.c (dump_function_decl): Use fndecl_declared_return_type.
+	* search.c (check_final_overrider): Likewise.
+	* pt.c (make_decltype_auto): New.
+	(do_auto_deduction): Require plain decltype(auto).
+	(is_auto): Adjust.
+
+	DR 941
+	* decl.c (duplicate_decls): Don't propagate DECL_DELETED_FN to
+	template specializations.
+
+2013-04-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement n3599 - Literal operator templates for strings.
+	* parser.c (make_string_pack (tree value)): New function.
+	(cp_parser_userdef_string_literal (cp_token *)): Use it
+	to construct calls to character string literal operator templates.
+	(cp_parser_template_declaration_after_export): Check for new string
+	literal operator template parameter form.
+
+2013-04-15  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst) [DECLTYPE_TYPE]: Use tsubst_copy_and_build.
+
+	PR c++/52748
+	* pt.c (tsubst) [DECLTYPE_TYPE]: If ~id is an expression
+	rather than a destructor name, it isn't an unqualified-name.
+	(tsubst_copy_and_build): Pass down decltype_flag to operator
+	handling code, too.
+
+	PR c++/56388
+	* semantics.c (insert_capture_proxy): Just use index 1 in the
+	stmt_list_stack.
+
 2013-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* error.c (cp_print_error_function,

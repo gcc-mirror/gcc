@@ -62,7 +62,7 @@ package Restrict is
    --  since we want the binder to be able to accurately diagnose inter-unit
    --  restriction violations.
 
-   Restriction_Warnings : Rident.Restriction_Flags;
+   Restriction_Warnings : Rident.Restriction_Flags := (others => False);
    --  If one of these flags is set, then it means that violation of the
    --  corresponding restriction results only in a warning message, not
    --  in an error message, and the restriction is not otherwise enforced.

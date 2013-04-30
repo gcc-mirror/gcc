@@ -816,6 +816,10 @@ void (*__gnat_ctrl_c_handler) (void) = 0;
 #define lib_get_invo_handle LIB$GET_INVO_HANDLE
 #endif
 
+/* Masks for facility identification. */
+#define FAC_MASK  		0x0fff0000
+#define DECADA_M_FACILITY	0x00310000
+
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
    It would be better to just include <ssdef.h> */
 
@@ -833,6 +837,7 @@ void (*__gnat_ctrl_c_handler) (void) = 0;
 
 /* These codes are in standard message libraries.  */
 extern int C$_SIGKILL;
+extern int C$_SIGINT;
 extern int SS$_DEBUG;
 extern int LIB$_KEYNOTFOU;
 extern int LIB$_ACTIMAGE;
@@ -912,9 +917,6 @@ extern Exception_Code Base_Code_In (Exception_Code);
 
 /* DEC Ada exceptions are not defined in a header file, so they
    must be declared.  */
-
-#define FAC_MASK  		0x0fff0000
-#define DECADA_M_FACILITY	0x00310000
 
 #define ADA$_ALREADY_OPEN	0x0031a594
 #define ADA$_CONSTRAINT_ERRO	0x00318324
@@ -1221,14 +1223,18 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 					          system_cond_except_table,
 					          0};
       unsigned int ctrlc = SS$_CONTROLC;
+      unsigned int *sigint = &C$_SIGINT;
       int ctrlc_match = LIB$MATCH_COND (&sigargs [1], &ctrlc);
+      int sigint_match = LIB$MATCH_COND (&sigargs [1], &sigint);
 
       extern int SYS$DCLAST (void (*astadr)(), unsigned long long astprm,
 	                     unsigned int acmode);
 
       /* If SS$_CONTROLC has been imported as an exception, it will take
-	 priority over a a Ctrl/C handler.  See above.  */
-      if (ctrlc_match && __gnat_ctrl_c_handler)
+	 priority over a a Ctrl/C handler.  See above.  SIGINT has a
+	 different condition value due to it's DECCCRTL roots and it's
+	 the condition that gets raised for a "kill -INT".  */
+      if ((ctrlc_match || sigint_match) && __gnat_ctrl_c_handler)
 	{
 	  SYS$DCLAST (__gnat_ctrl_c_handler, 0, 0);
 	  return SS$_CONTINUE;
@@ -1279,6 +1285,25 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 
   Raise_From_Signal_Handler (exception, msg);
 }
+
+#if defined (IN_RTS) && defined (__IA64)
+/* Called only from adasigio.b32.  This is a band aid to avoid going
+   through the VMS signal handling code which results in a 0x8000 per
+   handled exception memory leak in P2 space (see VMS source listing
+   sys/lis/exception.lis) due to the allocation of working space that
+   is expected to be deallocated upon return from the condition handler,
+   which doesn't return in GNAT compiled code.  */
+void
+GNAT$STOP (int *sigargs)
+{
+   /* Note that there are no mechargs. We rely on the fact that condtions
+      raised from DEClib I/O do not require an "adjust".  Also the count
+      will be off by 2, since LIB$STOP didn't get a chance to add the
+      PC and PSL fields, so we bump it so PUTMSG comes out right.  */
+   sigargs [0] += 2;
+   __gnat_handle_vms_condition (sigargs, 0);
+}
+#endif
 
 void
 __gnat_install_handler (void)

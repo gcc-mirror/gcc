@@ -2435,6 +2435,7 @@ package body Sem_Ch8 is
          --  constructed later at the freeze point, so indicate that the
          --  completion has not been seen yet.
 
+         Set_Contract (New_S, Empty);
          Set_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);

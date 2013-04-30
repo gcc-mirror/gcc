@@ -30,6 +30,7 @@
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "optabs.h"
+#include "gimple.h"
 
 enum aarch64_simd_builtin_type_mode
 {
@@ -50,6 +51,7 @@ enum aarch64_simd_builtin_type_mode
   T_OI,
   T_XI,
   T_SI,
+  T_SF,
   T_HI,
   T_QI,
   T_MAX
@@ -72,6 +74,7 @@ enum aarch64_simd_builtin_type_mode
 #define oi_UP	 T_OI
 #define xi_UP	 T_XI
 #define si_UP    T_SI
+#define sf_UP    T_SF
 #define hi_UP    T_HI
 #define qi_UP    T_QI
 
@@ -128,123 +131,133 @@ typedef struct
   unsigned int fcode;
 } aarch64_simd_builtin_datum;
 
-#define CF(N, X) CODE_FOR_aarch64_##N##X
+#define CF0(N, X) CODE_FOR_aarch64_##N##X
+#define CF1(N, X) CODE_FOR_##N##X##1
+#define CF2(N, X) CODE_FOR_##N##X##2
+#define CF3(N, X) CODE_FOR_##N##X##3
+#define CF4(N, X) CODE_FOR_##N##X##4
+#define CF10(N, X) CODE_FOR_##N##X
 
-#define VAR1(T, N, A) \
-  {#N, AARCH64_SIMD_##T, UP (A), CF (N, A), 0},
-#define VAR2(T, N, A, B) \
-  VAR1 (T, N, A) \
-  VAR1 (T, N, B)
-#define VAR3(T, N, A, B, C) \
-  VAR2 (T, N, A, B) \
-  VAR1 (T, N, C)
-#define VAR4(T, N, A, B, C, D) \
-  VAR3 (T, N, A, B, C) \
-  VAR1 (T, N, D)
-#define VAR5(T, N, A, B, C, D, E) \
-  VAR4 (T, N, A, B, C, D) \
-  VAR1 (T, N, E)
-#define VAR6(T, N, A, B, C, D, E, F) \
-  VAR5 (T, N, A, B, C, D, E) \
-  VAR1 (T, N, F)
-#define VAR7(T, N, A, B, C, D, E, F, G) \
-  VAR6 (T, N, A, B, C, D, E, F) \
-  VAR1 (T, N, G)
-#define VAR8(T, N, A, B, C, D, E, F, G, H) \
-  VAR7 (T, N, A, B, C, D, E, F, G) \
-  VAR1 (T, N, H)
-#define VAR9(T, N, A, B, C, D, E, F, G, H, I) \
-  VAR8 (T, N, A, B, C, D, E, F, G, H) \
-  VAR1 (T, N, I)
-#define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
-  VAR9 (T, N, A, B, C, D, E, F, G, H, I) \
-  VAR1 (T, N, J)
-#define VAR11(T, N, A, B, C, D, E, F, G, H, I, J, K) \
-  VAR10 (T, N, A, B, C, D, E, F, G, H, I, J) \
-  VAR1 (T, N, K)
-#define VAR12(T, N, A, B, C, D, E, F, G, H, I, J, K, L) \
-  VAR11 (T, N, A, B, C, D, E, F, G, H, I, J, K) \
-  VAR1 (T, N, L)
+#define VAR1(T, N, MAP, A) \
+  {#N, AARCH64_SIMD_##T, UP (A), CF##MAP (N, A), 0},
+#define VAR2(T, N, MAP, A, B) \
+  VAR1 (T, N, MAP, A) \
+  VAR1 (T, N, MAP, B)
+#define VAR3(T, N, MAP, A, B, C) \
+  VAR2 (T, N, MAP, A, B) \
+  VAR1 (T, N, MAP, C)
+#define VAR4(T, N, MAP, A, B, C, D) \
+  VAR3 (T, N, MAP, A, B, C) \
+  VAR1 (T, N, MAP, D)
+#define VAR5(T, N, MAP, A, B, C, D, E) \
+  VAR4 (T, N, MAP, A, B, C, D) \
+  VAR1 (T, N, MAP, E)
+#define VAR6(T, N, MAP, A, B, C, D, E, F) \
+  VAR5 (T, N, MAP, A, B, C, D, E) \
+  VAR1 (T, N, MAP, F)
+#define VAR7(T, N, MAP, A, B, C, D, E, F, G) \
+  VAR6 (T, N, MAP, A, B, C, D, E, F) \
+  VAR1 (T, N, MAP, G)
+#define VAR8(T, N, MAP, A, B, C, D, E, F, G, H) \
+  VAR7 (T, N, MAP, A, B, C, D, E, F, G) \
+  VAR1 (T, N, MAP, H)
+#define VAR9(T, N, MAP, A, B, C, D, E, F, G, H, I) \
+  VAR8 (T, N, MAP, A, B, C, D, E, F, G, H) \
+  VAR1 (T, N, MAP, I)
+#define VAR10(T, N, MAP, A, B, C, D, E, F, G, H, I, J) \
+  VAR9 (T, N, MAP, A, B, C, D, E, F, G, H, I) \
+  VAR1 (T, N, MAP, J)
+#define VAR11(T, N, MAP, A, B, C, D, E, F, G, H, I, J, K) \
+  VAR10 (T, N, MAP, A, B, C, D, E, F, G, H, I, J) \
+  VAR1 (T, N, MAP, K)
+#define VAR12(T, N, MAP, A, B, C, D, E, F, G, H, I, J, K, L) \
+  VAR11 (T, N, MAP, A, B, C, D, E, F, G, H, I, J, K) \
+  VAR1 (T, N, MAP, L)
 
 /* BUILTIN_<ITERATOR> macros should expand to cover the same range of
    modes as is given for each define_mode_iterator in
    config/aarch64/iterators.md.  */
 
-#define BUILTIN_DX(T, N) \
-  VAR2 (T, N, di, df)
-#define BUILTIN_SDQ_I(T, N) \
-  VAR4 (T, N, qi, hi, si, di)
-#define BUILTIN_SD_HSI(T, N) \
-  VAR2 (T, N, hi, si)
-#define BUILTIN_V2F(T, N) \
-  VAR2 (T, N, v2sf, v2df)
-#define BUILTIN_VALL(T, N) \
-  VAR10 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, v2sf, v4sf, v2df)
-#define BUILTIN_VB(T, N) \
-  VAR2 (T, N, v8qi, v16qi)
-#define BUILTIN_VD(T, N) \
-  VAR4 (T, N, v8qi, v4hi, v2si, v2sf)
-#define BUILTIN_VDC(T, N) \
-  VAR6 (T, N, v8qi, v4hi, v2si, v2sf, di, df)
-#define BUILTIN_VDIC(T, N) \
-  VAR3 (T, N, v8qi, v4hi, v2si)
-#define BUILTIN_VDN(T, N) \
-  VAR3 (T, N, v4hi, v2si, di)
-#define BUILTIN_VDQ(T, N) \
-  VAR7 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
-#define BUILTIN_VDQF(T, N) \
-  VAR3 (T, N, v2sf, v4sf, v2df)
-#define BUILTIN_VDQHS(T, N) \
-  VAR4 (T, N, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VDQIF(T, N) \
-  VAR9 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2sf, v4sf, v2df)
-#define BUILTIN_VDQM(T, N) \
-  VAR6 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VDQV(T, N) \
-  VAR5 (T, N, v8qi, v16qi, v4hi, v8hi, v4si)
-#define BUILTIN_VDQ_BHSI(T, N) \
-  VAR6 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VDQ_I(T, N) \
-  VAR7 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
-#define BUILTIN_VDW(T, N) \
-  VAR3 (T, N, v8qi, v4hi, v2si)
-#define BUILTIN_VD_BHSI(T, N) \
-  VAR3 (T, N, v8qi, v4hi, v2si)
-#define BUILTIN_VD_HSI(T, N) \
-  VAR2 (T, N, v4hi, v2si)
-#define BUILTIN_VD_RE(T, N) \
-  VAR6 (T, N, v8qi, v4hi, v2si, v2sf, di, df)
-#define BUILTIN_VQ(T, N) \
-  VAR6 (T, N, v16qi, v8hi, v4si, v2di, v4sf, v2df)
-#define BUILTIN_VQN(T, N) \
-  VAR3 (T, N, v8hi, v4si, v2di)
-#define BUILTIN_VQW(T, N) \
-  VAR3 (T, N, v16qi, v8hi, v4si)
-#define BUILTIN_VQ_HSI(T, N) \
-  VAR2 (T, N, v8hi, v4si)
-#define BUILTIN_VQ_S(T, N) \
-  VAR6 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
-#define BUILTIN_VSDQ_HSI(T, N) \
-  VAR6 (T, N, v4hi, v8hi, v2si, v4si, hi, si)
-#define BUILTIN_VSDQ_I(T, N) \
-  VAR11 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si, di)
-#define BUILTIN_VSDQ_I_BHSI(T, N) \
-  VAR10 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si)
-#define BUILTIN_VSDQ_I_DI(T, N) \
-  VAR8 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, di)
-#define BUILTIN_VSD_HSI(T, N) \
-  VAR4 (T, N, v4hi, v2si, hi, si)
-#define BUILTIN_VSQN_HSDI(T, N) \
-  VAR6 (T, N, v8hi, v4si, v2di, hi, si, di)
-#define BUILTIN_VSTRUCT(T, N) \
-  VAR3 (T, N, oi, ci, xi)
+#define BUILTIN_DX(T, N, MAP) \
+  VAR2 (T, N, MAP, di, df)
+#define BUILTIN_GPF(T, N, MAP) \
+  VAR2 (T, N, MAP, sf, df)
+#define BUILTIN_SDQ_I(T, N, MAP) \
+  VAR4 (T, N, MAP, qi, hi, si, di)
+#define BUILTIN_SD_HSI(T, N, MAP) \
+  VAR2 (T, N, MAP, hi, si)
+#define BUILTIN_V2F(T, N, MAP) \
+  VAR2 (T, N, MAP, v2sf, v2df)
+#define BUILTIN_VALL(T, N, MAP) \
+  VAR10 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
+	 v4si, v2di, v2sf, v4sf, v2df)
+#define BUILTIN_VB(T, N, MAP) \
+  VAR2 (T, N, MAP, v8qi, v16qi)
+#define BUILTIN_VD(T, N, MAP) \
+  VAR4 (T, N, MAP, v8qi, v4hi, v2si, v2sf)
+#define BUILTIN_VDC(T, N, MAP) \
+  VAR6 (T, N, MAP, v8qi, v4hi, v2si, v2sf, di, df)
+#define BUILTIN_VDIC(T, N, MAP) \
+  VAR3 (T, N, MAP, v8qi, v4hi, v2si)
+#define BUILTIN_VDN(T, N, MAP) \
+  VAR3 (T, N, MAP, v4hi, v2si, di)
+#define BUILTIN_VDQ(T, N, MAP) \
+  VAR7 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
+#define BUILTIN_VDQF(T, N, MAP) \
+  VAR3 (T, N, MAP, v2sf, v4sf, v2df)
+#define BUILTIN_VDQH(T, N, MAP) \
+  VAR2 (T, N, MAP, v4hi, v8hi)
+#define BUILTIN_VDQHS(T, N, MAP) \
+  VAR4 (T, N, MAP, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VDQIF(T, N, MAP) \
+  VAR9 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2sf, v4sf, v2df)
+#define BUILTIN_VDQM(T, N, MAP) \
+  VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VDQV(T, N, MAP) \
+  VAR5 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v4si)
+#define BUILTIN_VDQ_BHSI(T, N, MAP) \
+  VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VDQ_I(T, N, MAP) \
+  VAR7 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
+#define BUILTIN_VDW(T, N, MAP) \
+  VAR3 (T, N, MAP, v8qi, v4hi, v2si)
+#define BUILTIN_VD_BHSI(T, N, MAP) \
+  VAR3 (T, N, MAP, v8qi, v4hi, v2si)
+#define BUILTIN_VD_HSI(T, N, MAP) \
+  VAR2 (T, N, MAP, v4hi, v2si)
+#define BUILTIN_VD_RE(T, N, MAP) \
+  VAR6 (T, N, MAP, v8qi, v4hi, v2si, v2sf, di, df)
+#define BUILTIN_VQ(T, N, MAP) \
+  VAR6 (T, N, MAP, v16qi, v8hi, v4si, v2di, v4sf, v2df)
+#define BUILTIN_VQN(T, N, MAP) \
+  VAR3 (T, N, MAP, v8hi, v4si, v2di)
+#define BUILTIN_VQW(T, N, MAP) \
+  VAR3 (T, N, MAP, v16qi, v8hi, v4si)
+#define BUILTIN_VQ_HSI(T, N, MAP) \
+  VAR2 (T, N, MAP, v8hi, v4si)
+#define BUILTIN_VQ_S(T, N, MAP) \
+  VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VSDQ_HSI(T, N, MAP) \
+  VAR6 (T, N, MAP, v4hi, v8hi, v2si, v4si, hi, si)
+#define BUILTIN_VSDQ_I(T, N, MAP) \
+  VAR11 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si, di)
+#define BUILTIN_VSDQ_I_BHSI(T, N, MAP) \
+  VAR10 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si)
+#define BUILTIN_VSDQ_I_DI(T, N, MAP) \
+  VAR8 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, di)
+#define BUILTIN_VSD_HSI(T, N, MAP) \
+  VAR4 (T, N, MAP, v4hi, v2si, hi, si)
+#define BUILTIN_VSQN_HSDI(T, N, MAP) \
+  VAR6 (T, N, MAP, v8hi, v4si, v2di, hi, si, di)
+#define BUILTIN_VSTRUCT(T, N, MAP) \
+  VAR3 (T, N, MAP, oi, ci, xi)
 
 static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 #include "aarch64-simd-builtins.def"
 };
 
 #undef VAR1
-#define VAR1(T, N, A) \
+#define VAR1(T, N, MAP, A) \
   AARCH64_SIMD_BUILTIN_##N##A,
 
 enum aarch64_builtins
@@ -256,53 +269,6 @@ enum aarch64_builtins
 			      + ARRAY_SIZE (aarch64_simd_builtin_data),
   AARCH64_BUILTIN_MAX
 };
-
-#undef BUILTIN_DX
-#undef BUILTIN_SDQ_I
-#undef BUILTIN_SD_HSI
-#undef BUILTIN_V2F
-#undef BUILTIN_VALL
-#undef BUILTIN_VB
-#undef BUILTIN_VD
-#undef BUILTIN_VDC
-#undef BUILTIN_VDIC
-#undef BUILTIN_VDN
-#undef BUILTIN_VDQ
-#undef BUILTIN_VDQF
-#undef BUILTIN_VDQHS
-#undef BUILTIN_VDQIF
-#undef BUILTIN_VDQM
-#undef BUILTIN_VDQV
-#undef BUILTIN_VDQ_BHSI
-#undef BUILTIN_VDQ_I
-#undef BUILTIN_VDW
-#undef BUILTIN_VD_BHSI
-#undef BUILTIN_VD_HSI
-#undef BUILTIN_VD_RE
-#undef BUILTIN_VQ
-#undef BUILTIN_VQN
-#undef BUILTIN_VQW
-#undef BUILTIN_VQ_HSI
-#undef BUILTIN_VQ_S
-#undef BUILTIN_VSDQ_HSI
-#undef BUILTIN_VSDQ_I
-#undef BUILTIN_VSDQ_I_BHSI
-#undef BUILTIN_VSDQ_I_DI
-#undef BUILTIN_VSD_HSI
-#undef BUILTIN_VSQN_HSDI
-#undef BUILTIN_VSTRUCT
-#undef CF
-#undef VAR1
-#undef VAR2
-#undef VAR3
-#undef VAR4
-#undef VAR5
-#undef VAR6
-#undef VAR7
-#undef VAR8
-#undef VAR9
-#undef VAR10
-#undef VAR11
 
 static GTY(()) tree aarch64_builtin_decls[AARCH64_BUILTIN_MAX];
 
@@ -609,7 +575,7 @@ aarch64_init_simd_builtins (void)
       {
 	"v8qi", "v4hi", "v2si", "v2sf", "di", "df",
 	"v16qi", "v8hi", "v4si", "v4sf", "v2di", "v2df",
-	"ti", "ei", "oi", "xi", "si", "hi", "qi"
+	"ti", "ei", "oi", "xi", "si", "sf", "hi", "qi"
       };
       char namebuf[60];
       tree ftype = NULL;
@@ -1258,19 +1224,19 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
    && in_mode == N##Fmode && in_n == C)
 	case BUILT_IN_FLOOR:
 	case BUILT_IN_FLOORF:
-	  return AARCH64_FIND_FRINT_VARIANT (frintm);
+	  return AARCH64_FIND_FRINT_VARIANT (floor);
 	case BUILT_IN_CEIL:
 	case BUILT_IN_CEILF:
-	  return AARCH64_FIND_FRINT_VARIANT (frintp);
+	  return AARCH64_FIND_FRINT_VARIANT (ceil);
 	case BUILT_IN_TRUNC:
 	case BUILT_IN_TRUNCF:
-	  return AARCH64_FIND_FRINT_VARIANT (frintz);
+	  return AARCH64_FIND_FRINT_VARIANT (btrunc);
 	case BUILT_IN_ROUND:
 	case BUILT_IN_ROUNDF:
-	  return AARCH64_FIND_FRINT_VARIANT (frinta);
+	  return AARCH64_FIND_FRINT_VARIANT (round);
 	case BUILT_IN_NEARBYINT:
 	case BUILT_IN_NEARBYINTF:
-	  return AARCH64_FIND_FRINT_VARIANT (frinti);
+	  return AARCH64_FIND_FRINT_VARIANT (nearbyint);
 	case BUILT_IN_SQRT:
 	case BUILT_IN_SQRTF:
 	  return AARCH64_FIND_FRINT_VARIANT (sqrt);
@@ -1279,9 +1245,51 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
   (out_mode == N##Imode && out_n == C \
    && in_mode == N##Fmode && in_n == C)
 	case BUILT_IN_LFLOOR:
-	  return AARCH64_FIND_FRINT_VARIANT (fcvtms);
+	case BUILT_IN_IFLOORF:
+	  {
+	    tree new_tree = NULL_TREE;
+	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv2dfv2di];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv4sfv4si];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv2sfv2si];
+	    return new_tree;
+	  }
 	case BUILT_IN_LCEIL:
-	  return AARCH64_FIND_FRINT_VARIANT (fcvtps);
+	case BUILT_IN_ICEILF:
+	  {
+	    tree new_tree = NULL_TREE;
+	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv2dfv2di];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv4sfv4si];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv2sfv2si];
+	    return new_tree;
+	  }
+	case BUILT_IN_LROUND:
+	case BUILT_IN_IROUNDF:
+	  {
+	    tree new_tree = NULL_TREE;
+	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lroundv2dfv2di];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lroundv4sfv4si];
+	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
+	      new_tree =
+		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lroundv2sfv2si];
+	    return new_tree;
+	  }
+
 	default:
 	  return NULL_TREE;
       }
@@ -1289,5 +1297,130 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 
   return NULL_TREE;
 }
+
+#undef VAR1
+#define VAR1(T, N, MAP, A) \
+  case AARCH64_SIMD_BUILTIN_##N##A:
+
+tree
+aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
+		      bool ignore ATTRIBUTE_UNUSED)
+{
+  int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
+
+  switch (fcode)
+    {
+      BUILTIN_VDQF (UNOP, abs, 2)
+	return fold_build1 (ABS_EXPR, type, args[0]);
+	break;
+      VAR1 (UNOP, floatv2si, 2, v2sf)
+      VAR1 (UNOP, floatv4si, 2, v4sf)
+      VAR1 (UNOP, floatv2di, 2, v2df)
+	return fold_build1 (FLOAT_EXPR, type, args[0]);
+	break;
+      default:
+	break;
+    }
+
+  return NULL_TREE;
+}
+
+bool
+aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  bool changed = false;
+  gimple stmt = gsi_stmt (*gsi);
+  tree call = gimple_call_fn (stmt);
+  tree fndecl;
+  gimple new_stmt = NULL;
+  if (call)
+    {
+      fndecl = gimple_call_fndecl (stmt);
+      if (fndecl)
+	{
+	  int fcode = DECL_FUNCTION_CODE (fndecl);
+	  int nargs = gimple_call_num_args (stmt);
+	  tree *args = (nargs > 0
+			? gimple_call_arg_ptr (stmt, 0)
+			: &error_mark_node);
+
+	  switch (fcode)
+	    {
+	      BUILTIN_VDQF (UNOP, addv, 0)
+		new_stmt = gimple_build_assign_with_ops (
+						REDUC_PLUS_EXPR,
+						gimple_call_lhs (stmt),
+						args[0],
+						NULL_TREE);
+		break;
+	    default:
+	      break;
+	    }
+	}
+    }
+
+  if (new_stmt)
+    {
+      gsi_replace (gsi, new_stmt, true);
+      changed = true;
+    }
+
+  return changed;
+}
+
 #undef AARCH64_CHECK_BUILTIN_MODE
 #undef AARCH64_FIND_FRINT_VARIANT
+#undef BUILTIN_DX
+#undef BUILTIN_SDQ_I
+#undef BUILTIN_SD_HSI
+#undef BUILTIN_V2F
+#undef BUILTIN_VALL
+#undef BUILTIN_VB
+#undef BUILTIN_VD
+#undef BUILTIN_VDC
+#undef BUILTIN_VDIC
+#undef BUILTIN_VDN
+#undef BUILTIN_VDQ
+#undef BUILTIN_VDQF
+#undef BUILTIN_VDQH
+#undef BUILTIN_VDQHS
+#undef BUILTIN_VDQIF
+#undef BUILTIN_VDQM
+#undef BUILTIN_VDQV
+#undef BUILTIN_VDQ_BHSI
+#undef BUILTIN_VDQ_I
+#undef BUILTIN_VDW
+#undef BUILTIN_VD_BHSI
+#undef BUILTIN_VD_HSI
+#undef BUILTIN_VD_RE
+#undef BUILTIN_VQ
+#undef BUILTIN_VQN
+#undef BUILTIN_VQW
+#undef BUILTIN_VQ_HSI
+#undef BUILTIN_VQ_S
+#undef BUILTIN_VSDQ_HSI
+#undef BUILTIN_VSDQ_I
+#undef BUILTIN_VSDQ_I_BHSI
+#undef BUILTIN_VSDQ_I_DI
+#undef BUILTIN_VSD_HSI
+#undef BUILTIN_VSQN_HSDI
+#undef BUILTIN_VSTRUCT
+#undef CF0
+#undef CF1
+#undef CF2
+#undef CF3
+#undef CF4
+#undef CF10
+#undef VAR1
+#undef VAR2
+#undef VAR3
+#undef VAR4
+#undef VAR5
+#undef VAR6
+#undef VAR7
+#undef VAR8
+#undef VAR9
+#undef VAR10
+#undef VAR11
+

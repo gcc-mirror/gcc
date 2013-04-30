@@ -1143,6 +1143,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	    gimplify_and_update_call_from_tree (gsi, result);
 	  changed = true;
 	}
+      else if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_MD)
+	changed |= targetm.gimple_fold_builtin (gsi);
     }
 
   return changed;

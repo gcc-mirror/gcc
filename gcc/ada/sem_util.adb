@@ -83,7 +83,7 @@ package body Sem_Util is
    NCT_Hash_Tables_Used : Boolean := False;
    --  Set to True if hash tables are in use
 
-   NCT_Table_Entries : Nat;
+   NCT_Table_Entries : Nat := 0;
    --  Count entries in table to see if threshold is reached
 
    NCT_Hash_Table_Setup : Boolean := False;
@@ -207,6 +207,43 @@ package body Sem_Util is
 
       Append_Elmt (A, L);
    end Add_Access_Type_To_Process;
+
+   -----------------------
+   -- Add_Contract_Item --
+   -----------------------
+
+   procedure Add_Contract_Item (Item : Node_Id; Subp_Id : Entity_Id) is
+      Items : constant Node_Id := Contract (Subp_Id);
+      Nam   : Name_Id;
+
+   begin
+      if Present (Items) and then Nkind (Item) = N_Pragma then
+         Nam := Pragma_Name (Item);
+
+         if Nam_In (Nam, Name_Precondition, Name_Postcondition) then
+            Set_Next_Pragma (Item, Pre_Post_Conditions (Items));
+            Set_Pre_Post_Conditions (Items, Item);
+
+         elsif Nam_In (Nam, Name_Contract_Cases, Name_Test_Case) then
+            Set_Next_Pragma (Item, Contract_Test_Cases (Items));
+            Set_Contract_Test_Cases (Items, Item);
+
+         elsif Nam_In (Nam, Name_Depends, Name_Global) then
+            Set_Next_Pragma (Item, Classifications (Items));
+            Set_Classifications (Items, Item);
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
+      --  The subprogram has not been properly decorated or the item is illegal
+
+      else
+         raise Program_Error;
+      end if;
+   end Add_Contract_Item;
 
    ----------------------------
    -- Add_Global_Declaration --
@@ -412,9 +449,10 @@ package body Sem_Util is
    --------------------------------
 
    procedure Bad_Predicated_Subtype_Use
-     (Msg : String;
-      N   : Node_Id;
-      Typ : Entity_Id)
+     (Msg            : String;
+      N              : Node_Id;
+      Typ            : Entity_Id;
+      Suggest_Static : Boolean := False)
    is
    begin
       if Has_Predicates (Typ) then
@@ -427,6 +465,13 @@ package body Sem_Util is
 
          else
             Error_Msg_FE (Msg, N, Typ);
+         end if;
+
+         --  Emit an optional suggestion on how to remedy the error if the
+         --  context warrants it.
+
+         if Suggest_Static and then Present (Static_Predicate (Typ)) then
+            Error_Msg_FE ("\predicate of & should be marked static", N, Typ);
          end if;
       end if;
    end Bad_Predicated_Subtype_Use;
@@ -1220,6 +1265,114 @@ package body Sem_Util is
       end if;
    end Cannot_Raise_Constraint_Error;
 
+   -----------------------------------------
+   -- Check_Dynamically_Tagged_Expression --
+   -----------------------------------------
+
+   procedure Check_Dynamically_Tagged_Expression
+     (Expr        : Node_Id;
+      Typ         : Entity_Id;
+      Related_Nod : Node_Id)
+   is
+   begin
+      pragma Assert (Is_Tagged_Type (Typ));
+
+      --  In order to avoid spurious errors when analyzing the expanded code,
+      --  this check is done only for nodes that come from source and for
+      --  actuals of generic instantiations.
+
+      if (Comes_From_Source (Related_Nod)
+           or else In_Generic_Actual (Expr))
+        and then (Is_Class_Wide_Type (Etype (Expr))
+                   or else Is_Dynamically_Tagged (Expr))
+        and then Is_Tagged_Type (Typ)
+        and then not Is_Class_Wide_Type (Typ)
+      then
+         Error_Msg_N ("dynamically tagged expression not allowed!", Expr);
+      end if;
+   end Check_Dynamically_Tagged_Expression;
+
+   -----------------------------------------------
+   -- Check_Expression_Against_Static_Predicate --
+   -----------------------------------------------
+
+   procedure Check_Expression_Against_Static_Predicate
+     (Expr : Node_Id;
+      Typ  : Entity_Id)
+   is
+   begin
+      --  When the predicate is static and the value of the expression is known
+      --  at compile time, evaluate the predicate check. A type is non-static
+      --  when it has aspect Dynamic_Predicate.
+
+      if Compile_Time_Known_Value (Expr)
+        and then Has_Predicates (Typ)
+        and then Present (Static_Predicate (Typ))
+        and then not Has_Dynamic_Predicate_Aspect (Typ)
+      then
+         --  Either -gnatc is enabled or the expression is ok
+
+         if Operating_Mode < Generate_Code
+           or else Eval_Static_Predicate_Check (Expr, Typ)
+         then
+            null;
+
+         --  The expression is prohibited by the static predicate
+
+         else
+            Error_Msg_NE
+              ("?static expression fails static predicate check on &",
+               Expr, Typ);
+         end if;
+      end if;
+   end Check_Expression_Against_Static_Predicate;
+
+   --------------------------
+   -- Check_Fully_Declared --
+   --------------------------
+
+   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id) is
+   begin
+      if Ekind (T) = E_Incomplete_Type then
+
+         --  Ada 2005 (AI-50217): If the type is available through a limited
+         --  with_clause, verify that its full view has been analyzed.
+
+         if From_With_Type (T)
+           and then Present (Non_Limited_View (T))
+           and then Ekind (Non_Limited_View (T)) /= E_Incomplete_Type
+         then
+            --  The non-limited view is fully declared
+            null;
+
+         else
+            Error_Msg_NE
+              ("premature usage of incomplete}", N, First_Subtype (T));
+         end if;
+
+      --  Need comments for these tests ???
+
+      elsif Has_Private_Component (T)
+        and then not Is_Generic_Type (Root_Type (T))
+        and then not In_Spec_Expression
+      then
+         --  Special case: if T is the anonymous type created for a single
+         --  task or protected object, use the name of the source object.
+
+         if Is_Concurrent_Type (T)
+           and then not Comes_From_Source (T)
+           and then Nkind (N) = N_Object_Declaration
+         then
+            Error_Msg_NE ("type of& has incomplete component", N,
+              Defining_Identifier (N));
+
+         else
+            Error_Msg_NE
+              ("premature usage of incomplete}", N, First_Subtype (T));
+         end if;
+      end if;
+   end Check_Fully_Declared;
+
    -------------------------------------
    -- Check_Function_Writable_Actuals --
    -------------------------------------
@@ -1971,79 +2124,6 @@ package body Sem_Util is
       end loop Outer;
    end Check_Later_Vs_Basic_Declarations;
 
-   -----------------------------------------
-   -- Check_Dynamically_Tagged_Expression --
-   -----------------------------------------
-
-   procedure Check_Dynamically_Tagged_Expression
-     (Expr        : Node_Id;
-      Typ         : Entity_Id;
-      Related_Nod : Node_Id)
-   is
-   begin
-      pragma Assert (Is_Tagged_Type (Typ));
-
-      --  In order to avoid spurious errors when analyzing the expanded code,
-      --  this check is done only for nodes that come from source and for
-      --  actuals of generic instantiations.
-
-      if (Comes_From_Source (Related_Nod)
-           or else In_Generic_Actual (Expr))
-        and then (Is_Class_Wide_Type (Etype (Expr))
-                   or else Is_Dynamically_Tagged (Expr))
-        and then Is_Tagged_Type (Typ)
-        and then not Is_Class_Wide_Type (Typ)
-      then
-         Error_Msg_N ("dynamically tagged expression not allowed!", Expr);
-      end if;
-   end Check_Dynamically_Tagged_Expression;
-
-   --------------------------
-   -- Check_Fully_Declared --
-   --------------------------
-
-   procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id) is
-   begin
-      if Ekind (T) = E_Incomplete_Type then
-
-         --  Ada 2005 (AI-50217): If the type is available through a limited
-         --  with_clause, verify that its full view has been analyzed.
-
-         if From_With_Type (T)
-           and then Present (Non_Limited_View (T))
-           and then Ekind (Non_Limited_View (T)) /= E_Incomplete_Type
-         then
-            --  The non-limited view is fully declared
-            null;
-
-         else
-            Error_Msg_NE
-              ("premature usage of incomplete}", N, First_Subtype (T));
-         end if;
-
-      --  Need comments for these tests ???
-
-      elsif Has_Private_Component (T)
-        and then not Is_Generic_Type (Root_Type (T))
-        and then not In_Spec_Expression
-      then
-         --  Special case: if T is the anonymous type created for a single
-         --  task or protected object, use the name of the source object.
-
-         if Is_Concurrent_Type (T)
-           and then not Comes_From_Source (T)
-           and then Nkind (N) = N_Object_Declaration
-         then
-            Error_Msg_NE ("type of& has incomplete component", N,
-              Defining_Identifier (N));
-
-         else
-            Error_Msg_NE
-              ("premature usage of incomplete}", N, First_Subtype (T));
-         end if;
-      end if;
-   end Check_Fully_Declared;
-
    -------------------------
    -- Check_Nested_Access --
    -------------------------
@@ -2087,6 +2167,97 @@ package body Sem_Util is
          end if;
       end if;
    end Check_Nested_Access;
+
+   ---------------------------
+   -- Check_No_Hidden_State --
+   ---------------------------
+
+   procedure Check_No_Hidden_State (Id : Entity_Id) is
+      function Has_Null_Abstract_State (Pkg : Entity_Id) return Boolean;
+      --  Determine whether the entity of a package denoted by Pkg has a null
+      --  abstract state.
+
+      -----------------------------
+      -- Has_Null_Abstract_State --
+      -----------------------------
+
+      function Has_Null_Abstract_State (Pkg : Entity_Id) return Boolean is
+         States : constant Elist_Id := Abstract_States (Pkg);
+
+      begin
+         --  Check first available state of related package. A null abstract
+         --  state always appears as the sole element of the state list.
+
+         return
+           Present (States)
+             and then Is_Null_State (Node (First_Elmt (States)));
+      end Has_Null_Abstract_State;
+
+      --  Local variables
+
+      Context     : Entity_Id := Empty;
+      Not_Visible : Boolean   := False;
+      Scop        : Entity_Id;
+
+   --  Start of processing for Check_No_Hidden_State
+
+   begin
+      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
+
+      --  Find the proper context where the object or state appears
+
+      Scop := Scope (Id);
+      while Present (Scop) loop
+         Context := Scop;
+
+         --  Keep track of the context's visibility
+
+         Not_Visible := Not_Visible or else In_Private_Part (Context);
+
+         --  Prevent the search from going too far
+
+         if Context = Standard_Standard then
+            return;
+
+         --  Objects and states that appear immediately within a subprogram or
+         --  inside a construct nested within a subprogram do not introduce a
+         --  hidden state. They behave as local variable declarations.
+
+         elsif Is_Subprogram (Context) then
+            return;
+
+         --  When examining a package body, use the entity of the spec as it
+         --  carries the abstract state declarations.
+
+         elsif Ekind (Context) = E_Package_Body then
+            Context := Spec_Entity (Context);
+         end if;
+
+         --  Stop the traversal when a package subject to a null abstract state
+         --  has been found.
+
+         if Ekind_In (Context, E_Generic_Package, E_Package)
+           and then Has_Null_Abstract_State (Context)
+         then
+            exit;
+         end if;
+
+         Scop := Scope (Scop);
+      end loop;
+
+      --  At this point we know that there is at least one package with a null
+      --  abstract state in visibility. Emit an error message unconditionally
+      --  if the entity being processed is a state because the placement of the
+      --  related package is irrelevant. This is not the case for objects as
+      --  the intermediate context matters.
+
+      if Present (Context)
+        and then (Ekind (Id) = E_Abstract_State or else Not_Visible)
+      then
+         Error_Msg_N ("cannot introduce hidden state &", Id);
+         Error_Msg_NE ("\package & has null abstract state", Id, Context);
+      end if;
+   end Check_No_Hidden_State;
 
    ------------------------------------------
    -- Check_Potentially_Blocking_Operation --
@@ -4702,6 +4873,41 @@ package body Sem_Util is
 
       raise Program_Error;
    end Find_Corresponding_Discriminant;
+
+   ------------------------------------
+   -- Find_Loop_In_Conditional_Block --
+   ------------------------------------
+
+   function Find_Loop_In_Conditional_Block (N : Node_Id) return Node_Id is
+      Stmt : Node_Id;
+
+   begin
+      Stmt := N;
+
+      if Nkind (Stmt) = N_If_Statement then
+         Stmt := First (Then_Statements (Stmt));
+      end if;
+
+      pragma Assert (Nkind (Stmt) = N_Block_Statement);
+
+      --  Inspect the statements of the conditional block. In general the loop
+      --  should be the first statement in the statement sequence of the block,
+      --  but the finalization machinery may have introduced extra object
+      --  declarations.
+
+      Stmt := First (Statements (Handled_Statement_Sequence (Stmt)));
+      while Present (Stmt) loop
+         if Nkind (Stmt) = N_Loop_Statement then
+            return Stmt;
+         end if;
+
+         Next (Stmt);
+      end loop;
+
+      --  The expansion of attribute 'Loop_Entry produced a malformed block
+
+      raise Program_Error;
+   end Find_Loop_In_Conditional_Block;
 
    --------------------------
    -- Find_Overlaid_Entity --
@@ -7980,7 +8186,7 @@ package body Sem_Util is
                   --  designated object is known to be constrained.
 
                   if Ekind (Prefix_Type) = E_Access_Type
-                    and then not Effectively_Has_Constrained_Partial_View
+                    and then not Object_Type_Has_Constrained_Partial_View
                                    (Typ  => Designated_Type (Prefix_Type),
                                     Scop => Current_Scope)
                   then
@@ -8017,10 +8223,20 @@ package body Sem_Util is
             then
                return True;
 
+            --  If the prefix is of an access type at this point, then we want
+            --  to return False, rather than calling this function recursively
+            --  on the access object (which itself might be a discriminant-
+            --  dependent component of some other object, but that isn't
+            --  relevant to checking the object passed to us). This avoids
+            --  issuing wrong errors when compiling with -gnatc, where there
+            --  can be implicit dereferences that have not been expanded.
+
+            elsif Is_Access_Type (Etype (Prefix (Object))) then
+               return False;
+
             else
                return
                  Is_Dependent_Component_Of_Mutable_Object (Prefix (Object));
-
             end if;
 
          elsif Nkind (Object) = N_Indexed_Component
@@ -8122,19 +8338,25 @@ package body Sem_Util is
    ----------------------------
 
    function Is_Expression_Function (Subp : Entity_Id) return Boolean is
-      Decl : constant Node_Id := Unit_Declaration_Node (Subp);
+      Decl : Node_Id;
 
    begin
-      return Ekind (Subp) = E_Function
-        and then Nkind (Decl) = N_Subprogram_Declaration
-        and then
-          (Nkind (Original_Node (Decl)) = N_Expression_Function
-            or else
-              (Present (Corresponding_Body (Decl))
-                and then
-                  Nkind (Original_Node
-                     (Unit_Declaration_Node (Corresponding_Body (Decl))))
-                 = N_Expression_Function));
+      if Ekind (Subp) /= E_Function then
+         return False;
+
+      else
+         Decl := Unit_Declaration_Node (Subp);
+         return Nkind (Decl) = N_Subprogram_Declaration
+           and then
+             (Nkind (Original_Node (Decl)) = N_Expression_Function
+               or else
+                 (Present (Corresponding_Body (Decl))
+                   and then
+                     Nkind (Original_Node
+                             (Unit_Declaration_Node
+                               (Corresponding_Body (Decl)))) =
+                                  N_Expression_Function));
+      end if;
    end Is_Expression_Function;
 
    --------------
@@ -8462,8 +8684,10 @@ package body Sem_Util is
       Typ : Entity_Id) return Boolean
    is
    begin
+      --  Check that the operation has been created by the type declaration
+
       return Is_Inherited_Operation (E)
-        and then Etype (Parent (E)) = Typ;
+        and then Defining_Identifier (Parent (E)) = Typ;
    end Is_Inherited_Operation_For_Type;
 
    -----------------
@@ -8563,7 +8787,7 @@ package body Sem_Util is
    begin
       return
         Is_Class_Wide_Type (Typ)
-          and then Is_Limited_Type (Typ);
+          and then (Is_Limited_Type (Typ) or else From_With_Type (Typ));
    end Is_Limited_Class_Wide_Type;
 
    ---------------------------------
@@ -8702,10 +8926,10 @@ package body Sem_Util is
    begin
       Note_Possible_Modification (AV, Sure => True);
 
-      --  We must reject parenthesized variable names. The check for
-      --  Comes_From_Source is present because there are currently
-      --  cases where the compiler violates this rule (e.g. passing
-      --  a task object to its controlled Initialize routine).
+      --  We must reject parenthesized variable names. Comes_From_Source is
+      --  checked because there are currently cases where the compiler violates
+      --  this rule (e.g. passing a task object to its controlled Initialize
+      --  routine). This should be properly documented in sinfo???
 
       if Paren_Count (AV) > 0 and then Comes_From_Source (AV) then
          return False;
@@ -8718,12 +8942,13 @@ package body Sem_Util is
       --  Unchecked conversions are allowed only if they come from the
       --  generated code, which sometimes uses unchecked conversions for out
       --  parameters in cases where code generation is unaffected. We tell
-      --  source unchecked conversions by seeing if they are rewrites of an
-      --  original Unchecked_Conversion function call, or of an explicit
-      --  conversion of a function call.
+      --  source unchecked conversions by seeing if they are rewrites of
+      --  an original Unchecked_Conversion function call, or of an explicit
+      --  conversion of a function call or an aggregate (as may happen in the
+      --  expansion of a packed array aggregate).
 
       elsif Nkind (AV) = N_Unchecked_Type_Conversion then
-         if Nkind (Original_Node (AV)) = N_Function_Call then
+         if Nkind_In (Original_Node (AV), N_Function_Call, N_Aggregate) then
             return False;
 
          elsif Comes_From_Source (AV)
@@ -11985,8 +12210,8 @@ package body Sem_Util is
                --  In formal verification mode, keep track of all reads and
                --  writes through explicit dereferences.
 
-               if Alfa_Mode then
-                  Alfa.Generate_Dereference (N, 'm');
+               if SPARK_Mode then
+                  SPARK_Specific.Generate_Dereference (N, 'm');
                end if;
 
                if Nkind (P) = N_Selected_Component
@@ -12082,7 +12307,7 @@ package body Sem_Util is
                --  source. This excludes, for example, calls to a dispatching
                --  assignment operation when the left-hand side is tagged.
 
-               if Modification_Comes_From_Source or else Alfa_Mode then
+               if Modification_Comes_From_Source or else SPARK_Mode then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable
@@ -12774,6 +12999,43 @@ package body Sem_Util is
 
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
+
+   ----------------
+   -- Referenced --
+   ----------------
+
+   function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean is
+      Seen : Boolean := False;
+
+      function Is_Reference (N : Node_Id) return Traverse_Result;
+      --  Determine whether node N denotes a reference to Id. If this is the
+      --  case, set global flag Seen to True and stop the traversal.
+
+      ------------------
+      -- Is_Reference --
+      ------------------
+
+      function Is_Reference (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Entity (N) = Id
+         then
+            Seen := True;
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Is_Reference;
+
+      procedure Inspect_Expression is new Traverse_Proc (Is_Reference);
+
+   --  Start of processing for Referenced
+
+   begin
+      Inspect_Expression (Expr);
+      return Seen;
+   end Referenced;
 
    ------------------------------------
    -- References_Generic_Formal_Type --
@@ -13824,6 +14086,33 @@ package body Sem_Util is
         and then not Is_Formal (Entity (R1))
         and then not Is_Formal (Entity (R2));
    end Statically_Different;
+
+   --------------------------------------
+   -- Subject_To_Loop_Entry_Attributes --
+   --------------------------------------
+
+   function Subject_To_Loop_Entry_Attributes (N : Node_Id) return Boolean is
+      Stmt : Node_Id;
+
+   begin
+      Stmt := N;
+
+      --  The expansion mechanism transform a loop subject to at least one
+      --  'Loop_Entry attribute into a conditional block. Infinite loops lack
+      --  the conditional part.
+
+      if Nkind_In (Stmt, N_Block_Statement, N_If_Statement)
+        and then Nkind (Original_Node (N)) = N_Loop_Statement
+      then
+         Stmt := Original_Node (N);
+      end if;
+
+      return
+        Nkind (Stmt) = N_Loop_Statement
+          and then Present (Identifier (Stmt))
+          and then Present (Entity (Identifier (Stmt)))
+          and then Has_Loop_Entry_Attributes (Entity (Identifier (Stmt)));
+   end Subject_To_Loop_Entry_Attributes;
 
    -----------------------------
    -- Subprogram_Access_Level --

@@ -43,6 +43,11 @@ package Sem_Util is
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
 
+   procedure Add_Contract_Item (Item : Node_Id; Subp_Id : Entity_Id);
+   --  Add a contract item (pragma Precondition, Postcondition, Test_Case,
+   --  Contract_Cases, Global, Depends) to the contract of a subprogram. Item
+   --  denotes a pragma and Subp_Id is the related subprogram.
+
    procedure Add_Global_Declaration (N : Node_Id);
    --  These procedures adds a declaration N at the library level, to be
    --  elaborated before any other code in the unit. It is used for example
@@ -117,19 +122,21 @@ package Sem_Util is
    --  is an error.
 
    procedure Bad_Predicated_Subtype_Use
-     (Msg : String;
-      N   : Node_Id;
-      Typ : Entity_Id);
+     (Msg            : String;
+      N              : Node_Id;
+      Typ            : Entity_Id;
+      Suggest_Static : Boolean := False);
    --  This is called when Typ, a predicated subtype, is used in a context
-   --  which does not allow the use of a predicated subtype. Msg is passed
-   --  to Error_Msg_FE to output an appropriate message using N as the
-   --  location, and Typ as the entity. The caller must set up any insertions
-   --  other than the & for the type itself. Note that if Typ is a generic
-   --  actual type, then the message will be output as a warning, and a
-   --  raise Program_Error is inserted using Insert_Action with node N as
-   --  the insertion point. Node N also supplies the source location for
-   --  construction of the raise node. If Typ is NOT a type with predicates
-   --  this call has no effect.
+   --  which does not allow the use of a predicated subtype. Msg is passed to
+   --  Error_Msg_FE to output an appropriate message using N as the location,
+   --  and Typ as the entity. The caller must set up any insertions other than
+   --  the & for the type itself. Note that if Typ is a generic actual type,
+   --  then the message will be output as a warning, and a raise Program_Error
+   --  is inserted using Insert_Action with node N as the insertion point. Node
+   --  N also supplies the source location for construction of the raise node.
+   --  If Typ does not have any predicates, the call has no effect. Set flag
+   --  Suggest_Static when the context warrants an advice on how to avoid the
+   --  use error.
 
    function Build_Actual_Subtype
      (T : Entity_Id;
@@ -163,14 +170,14 @@ package Sem_Util is
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
 
-      procedure Build_Explicit_Dereference
-        (Expr : Node_Id;
-         Disc : Entity_Id);
-      --  AI05-139: Names with implicit dereference. If the expression N is a
-      --  reference type and the context imposes the corresponding designated
-      --  type, convert N into N.Disc.all. Such expressions are always over-
-      --  loaded with both interpretations, and the dereference interpretation
-      --  carries the name of the reference discriminant.
+   procedure Build_Explicit_Dereference
+     (Expr : Node_Id;
+      Disc : Entity_Id);
+   --  AI05-139: Names with implicit dereference. If the expression N is a
+   --  reference type and the context imposes the corresponding designated
+   --  type, convert N into N.Disc.all. Such expressions are always over-
+   --  loaded with both interpretations, and the dereference interpretation
+   --  carries the name of the reference discriminant.
 
    function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean;
    --  Returns True if the expression cannot possibly raise Constraint_Error.
@@ -183,6 +190,14 @@ package Sem_Util is
       Typ         : Entity_Id;
       Related_Nod : Node_Id);
    --  Check wrong use of dynamically tagged expression
+
+   procedure Check_Expression_Against_Static_Predicate
+     (Expr : Node_Id;
+      Typ  : Entity_Id);
+   --  Determine whether an arbitrary expression satisfies the static predicate
+   --  of a type. The routine does nothing if Expr is not known at compile time
+   --  or Typ lacks a static predicate, otherwise it may emit a warning if the
+   --  expression is prohibited by the predicate.
 
    procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id);
    --  Verify that the full declaration of type T has been seen. If not, place
@@ -225,6 +240,10 @@ package Sem_Util is
    --  Check whether Ent denotes an entity declared in an uplevel scope, which
    --  is accessed inside a nested procedure, and set Has_Up_Level_Access flag
    --  accordingly. This is currently only enabled for VM_Target /= No_VM.
+
+   procedure Check_No_Hidden_State (Id : Entity_Id);
+   --  Determine whether object or state Id introduces a hidden state. If this
+   --  is the case, emit an error.
 
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
@@ -469,6 +488,11 @@ package Sem_Util is
    --  analyzed. Subsequent uses of this id on a different type denotes the
    --  discriminant at the same position in this new type.
 
+   function Find_Loop_In_Conditional_Block (N : Node_Id) return Node_Id;
+   --  Find the nested loop statement in a conditional block. Loops subject to
+   --  attribute 'Loop_Entry are transformed into blocks. Parts of the original
+   --  loop are nested within the block.
+
    procedure Find_Overlaid_Entity
      (N   : Node_Id;
       Ent : out Entity_Id;
@@ -575,8 +599,8 @@ package Sem_Util is
    --  Otherwise return Empty. Expression N should have been resolved already.
 
    function Get_Ensures_From_CTC_Pragma (N : Node_Id) return Node_Id;
-   --  Return the Ensures component of Contract_Case or Test_Case pragma N, or
-   --  Empty otherwise.
+   --  Return the Ensures component of Test_Case pragma N, or Empty otherwise
+   --  Bad name now that this no longer applies to Contract_Case ???
 
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
@@ -616,7 +640,8 @@ package Sem_Util is
    --  Sem_Ch8 for further details on handling of entity visibility.
 
    function Get_Name_From_CTC_Pragma (N : Node_Id) return String_Id;
-   --  Return the Name component of Contract_Case or Test_Case pragma N
+   --  Return the Name component of Test_Case pragma N
+   --  Bad name now that this no longer applies to Contract_Case ???
 
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
@@ -634,8 +659,8 @@ package Sem_Util is
    --  with any other kind of entity.
 
    function Get_Requires_From_CTC_Pragma (N : Node_Id) return Node_Id;
-   --  Return the Requires component of Contract_Case or Test_Case pragma N, or
-   --  Empty otherwise.
+   --  Return the Requires component of Test_Case pragma N, or Empty otherwise
+   --  Bad name now that this no longer applies to Contract_Case ???
 
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id;
    --  Nod is either a procedure call statement, or a function call, or an
@@ -893,8 +918,9 @@ package Sem_Util is
    --  it is of protected, synchronized or task kind.
 
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
-   --  Predicate to determine whether a function entity comes from a rewritten
-   --  expression function, and should be inlined unconditionally.
+   --  Predicate to determine whether a scope entity comes from a rewritten
+   --  expression function call, and should be inlined unconditionally. Also
+   --  used to determine that such a call does not constitute a freeze point.
 
    function Is_False (U : Uint) return Boolean;
    pragma Inline (Is_False);
@@ -937,7 +963,10 @@ package Sem_Util is
    --  i.e. a library unit or an entity declared in a library package.
 
    function Is_Limited_Class_Wide_Type (Typ : Entity_Id) return Boolean;
-   --  Determine whether a given arbitrary type is a limited class-wide type
+   --  Determine whether a given type is a limited class-wide type, in which
+   --  case it needs a Master_Id, because extensions of its designated type
+   --  may include task components. A class-wide type that comes from a
+   --  limited view must be treated in the same way.
 
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
    --  Determines whether Expr is a reference to a variable or IN OUT mode
@@ -1337,6 +1366,9 @@ package Sem_Util is
    --  parameter Ent gives the entity to which the End_Label refers,
    --  and to which cross-references are to be generated.
 
+   function Referenced (Id : Entity_Id; Expr : Node_Id) return Boolean;
+   --  Determine whether entity Id is referenced within expression Expr
+
    function References_Generic_Formal_Type (N : Node_Id) return Boolean;
    --  Returns True if the expression Expr contains any references to a
    --  generic type. This can only happen within a generic template.
@@ -1516,6 +1548,10 @@ package Sem_Util is
    function Statically_Different (E1, E2 : Node_Id) return Boolean;
    --  Return True if it can be statically determined that the Expressions
    --  E1 and E2 refer to different objects
+
+   function Subject_To_Loop_Entry_Attributes (N : Node_Id) return Boolean;
+   --  Determine whether node N is a loop statement subject to at least one
+   --  'Loop_Entry attribute.
 
    function Subprogram_Access_Level (Subp : Entity_Id) return Uint;
    --  Return the accessibility level of the view denoted by Subp

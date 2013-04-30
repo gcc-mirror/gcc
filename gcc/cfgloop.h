@@ -97,7 +97,8 @@ enum loop_estimation
   /* Estimate was not computed yet.  */
   EST_NOT_COMPUTED,
   /* Estimate is ready.  */
-  EST_AVAILABLE
+  EST_AVAILABLE,
+  EST_LAST
 };
 
 /* Structure to hold information for each natural loop.  */
@@ -172,6 +173,9 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* Head of the cyclic list of the exits of the loop.  */
   struct loop_exit *exits;
+
+  /* Number of iteration analysis data for RTL.  */
+  struct niter_desc *simple_loop_desc;
 };
 
 /* Flags for state of loop structure.  */
@@ -210,6 +214,7 @@ struct GTY (()) loops {
 
 /* Loop recognition.  */
 bool bb_loop_header_p (basic_block);
+void init_loops_structure (struct function *, struct loops *, unsigned);
 extern struct loops *flow_loops_find (struct loops *);
 extern void disambiguate_loops_with_multiple_latches (void);
 extern void flow_loops_free (struct loops *);
@@ -229,6 +234,7 @@ void rescan_loop_exit (edge, bool, bool);
 /* Loop data structure manipulation/querying.  */
 extern void flow_loop_tree_node_add (struct loop *, struct loop *);
 extern void flow_loop_tree_node_remove (struct loop *);
+extern void place_new_loop (struct loop *);
 extern void add_loop (struct loop *, struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const_basic_block);
@@ -372,7 +378,7 @@ struct rtx_iv
 /* The description of an exit from the loop and of the number of iterations
    till we take the exit.  */
 
-struct niter_desc
+struct GTY(()) niter_desc
 {
   /* The edge out of the loop.  */
   edge out_edge;
@@ -425,7 +431,7 @@ extern void free_simple_loop_desc (struct loop *loop);
 static inline struct niter_desc *
 simple_loop_desc (struct loop *loop)
 {
-  return (struct niter_desc *) loop->aux;
+  return loop->simple_loop_desc;
 }
 
 /* Accessors for the loop structures.  */

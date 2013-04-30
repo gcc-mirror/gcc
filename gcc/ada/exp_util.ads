@@ -442,10 +442,12 @@ package Exp_Util is
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result.
 
-   function Fully_Qualified_Name_String (E : Entity_Id) return String_Id;
+   function Fully_Qualified_Name_String
+     (E          : Entity_Id;
+      Append_NUL : Boolean := True) return String_Id;
    --  Generates the string literal corresponding to the fully qualified name
    --  of entity E, in all upper case, with an ASCII.NUL appended at the end
-   --  of the name.
+   --  of the name if Append_NUL is True.
 
    procedure Generate_Poll_Call (N : Node_Id);
    --  If polling is active, then a call to the Poll routine is built,
@@ -663,8 +665,9 @@ package Exp_Util is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id;
    --  Typ is a type with Predicate_Function set. This routine builds a Check
-   --  pragma whose first argument is Predicate, and the second argument is a
-   --  call to the this predicate function with Expr as the argument.
+   --  pragma whose first argument is Predicate, and the second argument is
+   --  a call to the predicate function of Typ with Expr as the argument. If
+   --  Predicate_Check is suppressed then a null statement is returned instead.
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;

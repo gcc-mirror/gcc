@@ -1003,7 +1003,7 @@ operator()()
   delete m_p_c;
 
   try 
-    { m_alloc.check_allocated(memory_label); }
+    { m_alloc.check(memory_label); }
   catch (...)
     {
       std::cerr << "detected leaks!" << std::endl;

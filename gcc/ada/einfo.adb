@@ -32,7 +32,6 @@
 pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering, not used for this unit
 
-with Aspects; use Aspects;
 with Atree;   use Atree;
 with Namet;   use Namet;
 with Nlists;  use Nlists;
@@ -93,7 +92,6 @@ package body Einfo is
    --    Discriminal_Link                Node10
    --    Float_Rep                       Uint10 (but returns Float_Rep_Kind)
    --    Handler_Records                 List10
-   --    Loop_Entry_Attributes           Elist10
    --    Normalized_Position_Max         Uint10
 
    --    Component_Bit_Offset            Uint11
@@ -548,8 +546,7 @@ package body Einfo is
    --    Is_Invariant_Procedure          Flag257
    --    Has_Dynamic_Predicate_Aspect    Flag258
    --    Has_Static_Predicate_Aspect     Flag259
-
-   --    (unused)                        Flag260
+   --    Has_Loop_Entry_Attributes       Flag260
 
    --    (unused)                        Flag261
    --    (unused)                        Flag262
@@ -669,7 +666,7 @@ package body Einfo is
 
    function Abstract_States (Id : E) return L is
    begin
-      pragma Assert (Ekind (Id) = E_Package);
+      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
       return Elist25 (Id);
    end Abstract_States;
 
@@ -1466,6 +1463,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag232 (Id);
    end Has_Invariants;
+
+   function Has_Loop_Entry_Attributes (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Loop);
+      return Flag260 (Id);
+   end Has_Loop_Entry_Attributes;
 
    function Has_Machine_Radix_Clause (Id : E) return B is
    begin
@@ -2396,12 +2399,6 @@ package body Einfo is
       return Node16 (Id);
    end Lit_Strings;
 
-   function Loop_Entry_Attributes (Id : E) return L is
-   begin
-      pragma Assert (Ekind (Id) = E_Loop);
-      return Elist10 (Id);
-   end Loop_Entry_Attributes;
-
    function Low_Bound_Tested (Id : E) return B is
    begin
       return Flag205 (Id);
@@ -3236,7 +3233,7 @@ package body Einfo is
 
    procedure Set_Abstract_States (Id : E; V : L) is
    begin
-      pragma Assert (Ekind (Id) = E_Package);
+      pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
       Set_Elist25 (Id, V);
    end Set_Abstract_States;
 
@@ -4050,6 +4047,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag232 (Id, V);
    end Set_Has_Invariants;
+
+   procedure Set_Has_Loop_Entry_Attributes (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Loop);
+      Set_Flag260 (Id, V);
+   end Set_Has_Loop_Entry_Attributes;
 
    procedure Set_Has_Machine_Radix_Clause (Id : E; V : B := True) is
    begin
@@ -5021,12 +5024,6 @@ package body Einfo is
       pragma Assert (Is_Enumeration_Type (Id) and then Root_Type (Id) = Id);
       Set_Node16 (Id, V);
    end Set_Lit_Strings;
-
-   procedure Set_Loop_Entry_Attributes (Id : E; V : L) is
-   begin
-      pragma Assert (Ekind (Id) = E_Loop);
-      Set_Elist10 (Id, V);
-   end Set_Loop_Entry_Attributes;
 
    procedure Set_Low_Bound_Tested (Id : E; V : B := True) is
    begin
@@ -6248,6 +6245,29 @@ package body Einfo is
       end if;
    end Get_Full_View;
 
+   ----------------
+   -- Get_Pragma --
+   ----------------
+
+   function Get_Pragma (E  : Entity_Id; Id : Pragma_Id) return Node_Id
+   is
+      N : Node_Id;
+
+   begin
+      N := First_Rep_Item (E);
+      while Present (N) loop
+         if Nkind (N) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name (N)) = Id
+         then
+            return N;
+         else
+            Next_Rep_Item (N);
+         end if;
+      end loop;
+
+      return Empty;
+   end Get_Pragma;
+
    --------------------------------------
    -- Get_Record_Representation_Clause --
    --------------------------------------
@@ -6577,27 +6597,31 @@ package body Einfo is
       return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
    end Is_Finalizer;
 
-   -----------------------
-   -- Is_Ghost_Function --
-   -----------------------
+   ---------------------
+   -- Is_Ghost_Entity --
+   ---------------------
 
-   function Is_Ghost_Function (Id : E) return B is
-      Subp_Id : Entity_Id := Id;
-
+   function Is_Ghost_Entity (Id : E) return B is
    begin
-      if Present (Subp_Id) and then Ekind (Subp_Id) = E_Function then
-
-         --  Handle renamings of functions
-
-         if Present (Alias (Subp_Id)) then
-            Subp_Id := Alias (Subp_Id);
-         end if;
-
-         return Has_Aspect (Subp_Id, Aspect_Ghost);
+      if Present (Id) and then Ekind (Id) = E_Variable then
+         return Convention (Id) = Convention_Ghost;
+      else
+         return Is_Ghost_Subprogram (Id);
       end if;
+   end Is_Ghost_Entity;
 
-      return False;
-   end Is_Ghost_Function;
+   -------------------------
+   -- Is_Ghost_Subprogram --
+   -------------------------
+
+   function Is_Ghost_Subprogram (Id : E) return B is
+   begin
+      if Present (Id) and then Ekind_In (Id, E_Function, E_Procedure) then
+         return Convention (Id) = Convention_Ghost;
+      else
+         return False;
+      end if;
+   end Is_Ghost_Subprogram;
 
    --------------------
    -- Is_Input_State --
@@ -6785,8 +6809,7 @@ package body Einfo is
 
    function Is_Wrapper_Package (Id : E) return B is
    begin
-      return (Ekind (Id) = E_Package
-                and then Present (Related_Instance (Id)));
+      return (Ekind (Id) = E_Package and then Present (Related_Instance (Id)));
    end Is_Wrapper_Package;
 
    -----------------
@@ -7168,15 +7191,25 @@ package body Einfo is
 
    function Predicate_Function (Id : E) return E is
       S : Entity_Id;
+      T : Entity_Id;
 
    begin
       pragma Assert (Is_Type (Id));
 
-      if No (Subprograms_For_Type (Id)) then
+      --  If type is private and has a completion, predicate may be defined
+      --  on the full view.
+
+      if Is_Private_Type (Id) and then Present (Full_View (Id)) then
+         T := Full_View (Id);
+      else
+         T := Id;
+      end if;
+
+      if No (Subprograms_For_Type (T)) then
          return Empty;
 
       else
-         S := Subprograms_For_Type (Id);
+         S := Subprograms_For_Type (T);
          while Present (S) loop
             if Is_Predicate_Function (S) then
                return S;
@@ -7195,15 +7228,25 @@ package body Einfo is
 
    function Predicate_Function_M (Id : E) return E is
       S : Entity_Id;
+      T : Entity_Id;
 
    begin
       pragma Assert (Is_Type (Id));
 
-      if No (Subprograms_For_Type (Id)) then
+      --  If type is private and has a completion, predicate may be defined
+      --  on the full view.
+
+      if Is_Private_Type (Id) and then Present (Full_View (Id)) then
+         T := Full_View (Id);
+      else
+         T := Id;
+      end if;
+
+      if No (Subprograms_For_Type (T)) then
          return Empty;
 
       else
-         S := Subprograms_For_Type (Id);
+         S := Subprograms_For_Type (T);
          while Present (S) loop
             if Is_Predicate_Function_M (S) then
                return S;
@@ -7796,6 +7839,7 @@ package body Einfo is
       W ("Has_Inheritable_Invariants",      Flag248 (Id));
       W ("Has_Initial_Value",               Flag219 (Id));
       W ("Has_Invariants",                  Flag232 (Id));
+      W ("Has_Loop_Entry_Attributes",       Flag260 (Id));
       W ("Has_Machine_Radix_Clause",        Flag83  (Id));
       W ("Has_Master_Entity",               Flag21  (Id));
       W ("Has_Missing_Return",              Flag142 (Id));
@@ -8247,9 +8291,6 @@ package body Einfo is
               E_Package_Body                               |
               E_Procedure                                  =>
             Write_Str ("Handler_Records");
-
-         when E_Loop                                       =>
-            Write_Str ("Loop_Entry_Attributes");
 
          when E_Component                                  |
               E_Discriminant                               =>

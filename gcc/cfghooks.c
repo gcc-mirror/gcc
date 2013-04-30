@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "diagnostic-core.h"
 #include "cfgloop.h"
+#include "pretty-print.h"
 
 /* A pointer to one of the hooks containers.  */
 static struct cfg_hooks *cfg_hooks;
@@ -308,7 +309,12 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   if (!cfg_hooks->dump_bb_for_graph)
     internal_error ("%s does not support dump_bb_for_graph",
 		    cfg_hooks->name);
-  cfg_hooks->dump_bb_for_graph (pp, bb);
+  if (bb->count)
+    pp_printf (pp, "COUNT:" HOST_WIDEST_INT_PRINT_DEC, bb->count);
+  pp_printf (pp, " FREQ:%i |", bb->frequency);
+  pp_write_text_to_stream (pp);
+  if (!(dump_flags & TDF_SLIM))
+    cfg_hooks->dump_bb_for_graph (pp, bb);
 }
 
 /* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */

@@ -114,7 +114,8 @@ package body Repinfo is
       Table_Name           => "FE_Rep_Table");
 
    Unit_Casing : Casing_Type;
-   --  Identifier casing for current unit
+   --  Identifier casing for current unit. This is set by List_Rep_Info for
+   --  each unit, before calling subprograms which may read it.
 
    Need_Blank_Line : Boolean;
    --  Set True if a blank line is needed before outputting any information for
@@ -457,7 +458,6 @@ package body Repinfo is
            and then Present (Corresponding_Spec (Find_Declaration (Ent)))
          then
             E := First_Entity (Corresponding_Spec (Find_Declaration (Ent)));
-
             while Present (E) loop
                if Is_Subprogram (E)
                  and then
@@ -683,6 +683,8 @@ package body Repinfo is
             Write_Line ("Intrinsic");
          when Convention_Entry                 =>
             Write_Line ("Entry");
+         when Convention_Ghost                 =>
+            Write_Line ("Ghost");
          when Convention_Protected             =>
             Write_Line ("Protected");
          when Convention_Assembler             =>
@@ -724,7 +726,6 @@ package body Repinfo is
       Form := First_Formal (Ent);
       while Present (Form) loop
          Get_Unqualified_Decoded_Name_String (Chars (Form));
-
          while Name_Len <= Plen loop
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := ' ';
@@ -988,11 +989,11 @@ package body Repinfo is
       then
          for U in Main_Unit .. Last_Unit loop
             if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
+               Unit_Casing := Identifier_Casing (Source_Index (U));
 
                --  Normal case, list to standard output
 
                if not List_Representation_Info_To_File then
-                  Unit_Casing := Identifier_Casing (Source_Index (U));
                   Write_Eol;
                   Write_Str ("Representation information for unit ");
                   Write_Unit_Name (Unit_Name (U));
@@ -1343,7 +1344,6 @@ package body Repinfo is
                   when Discrim_Val =>
                      declare
                         Sub : constant Int := UI_To_Int (Node.Op1);
-
                      begin
                         pragma Assert (Sub in D'Range);
                         return D (Sub);

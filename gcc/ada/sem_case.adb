@@ -1260,7 +1260,8 @@ package body Sem_Case is
                            then
                               Bad_Predicated_Subtype_Use
                                 ("cannot use subtype& with non-static "
-                                 & "predicate as case alternative", Choice, E);
+                                 & "predicate as case alternative", Choice, E,
+                                 Suggest_Static => True);
 
                               --  Static predicate case
 

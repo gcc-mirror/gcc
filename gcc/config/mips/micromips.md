@@ -95,6 +95,19 @@
    (set_attr "mode" "SI")
    (set_attr "can_delay" "no")])
 
+;; For JRADDIUSP.
+(define_insn "jraddiusp"
+  [(parallel [(return)
+	      (use (reg:SI 31))
+	      (set (reg:SI 29)
+		   (plus:SI (reg:SI 29)
+			    (match_operand 0 "uw5_operand")))])]
+  "TARGET_MICROMIPS"
+  "jraddiusp\t%0"
+  [(set_attr "type"	"trap")
+   (set_attr "can_delay" "no")
+   (set_attr "mode"	"SI")])
+
 ;; For MOVEP.
 (define_peephole2
   [(set (match_operand:MOVEP1 0 "register_operand" "")

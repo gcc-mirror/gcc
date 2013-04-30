@@ -73,7 +73,6 @@ procedure Gnatbind is
    --  Standard library
 
    Text     : Text_Buffer_Ptr;
-   Next_Arg : Positive;
 
    Output_File_Name_Seen : Boolean := False;
    Output_File_Name      : String_Ptr := new String'("");
@@ -103,6 +102,15 @@ procedure Gnatbind is
    --  Scan and process binder specific arguments. Argv is a single argument.
    --  All the one character arguments are still handled by Switch. This
    --  routine handles -aO -aI and -I-. The lower bound of Argv must be 1.
+
+   generic
+      with procedure Action (Argv : String);
+   procedure Generic_Scan_Bind_Args;
+   --  Iterate through the args calling Action on each one, taking care of
+   --  response files.
+
+   procedure Write_Arg (S : String);
+   --  Passed to Generic_Scan_Bind_Args to print args
 
    function Is_Cross_Compiler return Boolean;
    --  Returns True iff this is a cross-compiler
@@ -480,6 +488,62 @@ procedure Gnatbind is
       end if;
    end Scan_Bind_Arg;
 
+   ----------------------------
+   -- Generic_Scan_Bind_Args --
+   ----------------------------
+
+   procedure Generic_Scan_Bind_Args is
+      Next_Arg : Positive := 1;
+
+   begin
+      --  Use low level argument routines to avoid dragging in secondary stack
+
+      while Next_Arg < Arg_Count loop
+         declare
+            Next_Argv : String (1 .. Len_Arg (Next_Arg));
+
+         begin
+            Fill_Arg (Next_Argv'Address, Next_Arg);
+
+            if Next_Argv'Length > 0 then
+               if Next_Argv (1) = '@' then
+                  if Next_Argv'Length > 1 then
+                     declare
+                        Arguments : constant Argument_List :=
+                                      Response_File.Arguments_From
+                                        (Response_File_Name        =>
+                                           Next_Argv (2 .. Next_Argv'Last),
+                                         Recursive                 => True,
+                                         Ignore_Non_Existing_Files => True);
+                     begin
+                        for J in Arguments'Range loop
+                           Action (Arguments (J).all);
+                        end loop;
+                     end;
+                  end if;
+
+               else
+                  Action (Next_Argv);
+               end if;
+            end if;
+         end;
+
+         Next_Arg := Next_Arg + 1;
+      end loop;
+   end Generic_Scan_Bind_Args;
+
+   ---------------
+   -- Write_Arg --
+   ---------------
+
+   procedure Write_Arg (S : String) is
+   begin
+      Write_Str (" " & S);
+   end Write_Arg;
+
+   procedure Scan_Bind_Args is new Generic_Scan_Bind_Args (Scan_Bind_Arg);
+   procedure Put_Bind_Args is new Generic_Scan_Bind_Args (Write_Arg);
+
    procedure Check_Version_And_Help is
      new Check_Version_And_Help_G (Bindusg.Display);
 
@@ -510,40 +574,16 @@ begin
 
    Check_Version_And_Help ("GNATBIND", "1995");
 
-   --  Use low level argument routines to avoid dragging in the secondary stack
+   --  We need to Scan_Bind_Args first, to set Verbose_Mode, so we know whether
+   --  to Put_Bind_Args.
 
-   Next_Arg := 1;
-   Scan_Args : while Next_Arg < Arg_Count loop
-      declare
-         Next_Argv : String (1 .. Len_Arg (Next_Arg));
-      begin
-         Fill_Arg (Next_Argv'Address, Next_Arg);
+   Scan_Bind_Args;
 
-         if Next_Argv'Length > 0 then
-            if Next_Argv (1) = '@' then
-               if Next_Argv'Length > 1 then
-                  declare
-                     Arguments : constant Argument_List :=
-                                   Response_File.Arguments_From
-                                     (Response_File_Name        =>
-                                        Next_Argv (2 .. Next_Argv'Last),
-                                      Recursive                 => True,
-                                      Ignore_Non_Existing_Files => True);
-                  begin
-                     for J in Arguments'Range loop
-                        Scan_Bind_Arg (Arguments (J).all);
-                     end loop;
-                  end;
-               end if;
-
-            else
-               Scan_Bind_Arg (Next_Argv);
-            end if;
-         end if;
-      end;
-
-      Next_Arg := Next_Arg + 1;
-   end loop Scan_Args;
+   if Verbose_Mode then
+      Write_Str (Command_Name);
+      Put_Bind_Args;
+      Write_Eol;
+   end if;
 
    if Use_Pragma_Linker_Constructor then
       if Bind_Main_Program then

@@ -1522,7 +1522,7 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
   if (TREE_CODE (type) == METHOD_TYPE)
     {
       if (complain)
-	pedwarn (input_location, pedantic ? OPT_Wpedantic : OPT_Wpointer_arith, 
+	pedwarn (input_location, OPT_Wpointer_arith, 
 		 "invalid application of %qs to a member function", 
 		 operator_name_info[(int) op].name);
       value = size_one_node;
@@ -1725,15 +1725,19 @@ cxx_alignas_expr (tree e)
        
 	   When the alignment-specifier is of the form
 	   alignas(type-id ), it shall have the same effect as
-	   alignas( alignof(type-id )).  */
+	   alignas(alignof(type-id )).  */
 
     return cxx_sizeof_or_alignof_type (e, ALIGNOF_EXPR, false);
   
-
   /* If we reach this point, it means the alignas expression if of
      the form "alignas(assignment-expression)", so we should follow
      what is stated by [dcl.align]/2.  */
 
+  if (value_dependent_expression_p (e))
+    /* Leave value-dependent expression alone for now. */
+    return e;
+
+  e = fold_non_dependent_expr (e);
   e = mark_rvalue_use (e);
 
   /* [dcl.align]/2 says:
@@ -1741,18 +1745,7 @@ cxx_alignas_expr (tree e)
          the assignment-expression shall be an integral constant
 	 expression.  */
   
-  e = fold_non_dependent_expr (e);
-  if (value_dependent_expression_p (e))
-    /* Leave value-dependent expression alone for now. */;
-  else
-    e = cxx_constant_value (e);
-
-  if (e == NULL_TREE
-      || e == error_mark_node
-      || TREE_CODE (e) != INTEGER_CST)
-    return error_mark_node;
-
-  return e;
+  return cxx_constant_value (e);
 }
 
 
@@ -2483,7 +2476,9 @@ lookup_destructor (tree object, tree scope, tree dtor_name,
 	       scope, dtor_type);
       return error_mark_node;
     }
-  if (identifier_p (dtor_type))
+  if (is_auto (dtor_type))
+    dtor_type = object_type;
+  else if (identifier_p (dtor_type))
     {
       /* In a template, names we can't find a match for are still accepted
 	 destructor names, and we check them here.  */
@@ -5162,7 +5157,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 		       "  Say %<&%T::%D%>",
 		       base, name);
 	}
-      arg = build_offset_ref (base, fn, /*address_p=*/true);
+      arg = build_offset_ref (base, fn, /*address_p=*/true, complain);
     }
 
   /* Uninstantiated types are all functions.  Taking the
@@ -5599,8 +5594,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	    else if (!TYPE_PTROB_P (argtype)) 
               {
                 if (complain & tf_error)
-                  pedwarn (input_location,
-			   pedantic ? OPT_Wpedantic : OPT_Wpointer_arith,
+                  pedwarn (input_location, OPT_Wpointer_arith,
 			   (code == PREINCREMENT_EXPR
                               || code == POSTINCREMENT_EXPR)
 			   ? G_("ISO C++ forbids incrementing a pointer of type %qT")

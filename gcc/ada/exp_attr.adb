@@ -136,6 +136,10 @@ package body Exp_Attr is
    --  that takes two floating-point arguments. The function to be called
    --  is always the same as the attribute name.
 
+   procedure Expand_Loop_Entry_Attribute (Attr : Node_Id);
+   --  Handle the expansion of attribute 'Loop_Entry. As a result, the related
+   --  loop may be converted into a conditional block. See body for details.
+
    procedure Expand_Pred_Succ (N : Node_Id);
    --  Handles expansion of Pred or Succ attributes for case of non-real
    --  operand with overflow checking required.
@@ -635,10 +639,11 @@ package body Exp_Attr is
    --  by Expand_Fpt_Attribute
 
    procedure Expand_Fpt_Attribute_RR (N : Node_Id) is
-      E1  : constant Node_Id   := First (Expressions (N));
+      E1  : constant Node_Id := First (Expressions (N));
+      E2  : constant Node_Id := Next (E1);
       Ftp : Entity_Id;
       Pkg : RE_Id;
-      E2  : constant Node_Id   := Next (E1);
+
    begin
       Find_Fat_Info (Etype (E1), Ftp, Pkg);
       Expand_Fpt_Attribute
@@ -647,6 +652,388 @@ package body Exp_Attr is
            Unchecked_Convert_To (Ftp, Relocate_Node (E1)),
            Unchecked_Convert_To (Ftp, Relocate_Node (E2))));
    end Expand_Fpt_Attribute_RR;
+
+   ---------------------------------
+   -- Expand_Loop_Entry_Attribute --
+   ---------------------------------
+
+   procedure Expand_Loop_Entry_Attribute (Attr : Node_Id) is
+      procedure Build_Conditional_Block
+        (Loc       : Source_Ptr;
+         Cond      : Node_Id;
+         Loop_Stmt : Node_Id;
+         If_Stmt   : out Node_Id;
+         Blk_Stmt  : out Node_Id);
+      --  Create a block Blk_Stmt with an empty declarative list and a single
+      --  loop Loop_Stmt. The block is encased in an if statement If_Stmt with
+      --  condition Cond. If_Stmt is Empty when there is no condition provided.
+
+      function Is_Array_Iteration (N : Node_Id) return Boolean;
+      --  Determine whether loop statement N denotes an Ada 2012 iteration over
+      --  an array object.
+
+      -----------------------------
+      -- Build_Conditional_Block --
+      -----------------------------
+
+      procedure Build_Conditional_Block
+        (Loc       : Source_Ptr;
+         Cond      : Node_Id;
+         Loop_Stmt : Node_Id;
+         If_Stmt   : out Node_Id;
+         Blk_Stmt  : out Node_Id)
+      is
+      begin
+         --  Do not reanalyze the original loop statement because it is simply
+         --  being relocated.
+
+         Set_Analyzed (Loop_Stmt);
+
+         Blk_Stmt :=
+           Make_Block_Statement (Loc,
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Loop_Stmt)));
+
+         if Present (Cond) then
+            If_Stmt :=
+              Make_If_Statement (Loc,
+                Condition       => Cond,
+                Then_Statements => New_List (Blk_Stmt));
+         else
+            If_Stmt := Empty;
+         end if;
+      end Build_Conditional_Block;
+
+      ------------------------
+      -- Is_Array_Iteration --
+      ------------------------
+
+      function Is_Array_Iteration (N : Node_Id) return Boolean is
+         Stmt : constant Node_Id := Original_Node (N);
+         Iter : Node_Id;
+
+      begin
+         if Nkind (Stmt) = N_Loop_Statement
+           and then Present (Iteration_Scheme (Stmt))
+           and then Present (Iterator_Specification (Iteration_Scheme (Stmt)))
+         then
+            Iter := Iterator_Specification (Iteration_Scheme (Stmt));
+
+            return
+              Of_Present (Iter) and then Is_Array_Type (Etype (Name (Iter)));
+         end if;
+
+         return False;
+      end Is_Array_Iteration;
+
+      --  Local variables
+
+      Exprs     : constant List_Id   := Expressions (Attr);
+      Pref      : constant Node_Id   := Prefix (Attr);
+      Typ       : constant Entity_Id := Etype (Pref);
+      Blk       : Node_Id;
+      Decls     : List_Id;
+      Installed : Boolean;
+      Loc       : Source_Ptr;
+      Loop_Id   : Entity_Id;
+      Loop_Stmt : Node_Id;
+      Result    : Node_Id;
+      Scheme    : Node_Id;
+      Temp_Decl : Node_Id;
+      Temp_Id   : Entity_Id;
+
+   --  Start of processing for Expand_Loop_Entry_Attribute
+
+   begin
+      --  Step 1: Find the related loop
+
+      --  The loop label variant of attribute 'Loop_Entry already has all the
+      --  information in its expression.
+
+      if Present (Exprs) then
+         Loop_Id   := Entity (First (Exprs));
+         Loop_Stmt := Label_Construct (Parent (Loop_Id));
+
+      --  Climb the parent chain to find the nearest enclosing loop. Skip all
+      --  internally generated loops for quantified expressions.
+
+      else
+         Loop_Stmt := Attr;
+         while Present (Loop_Stmt) loop
+            if Nkind (Loop_Stmt) = N_Loop_Statement
+              and then Present (Identifier (Loop_Stmt))
+            then
+               exit;
+            end if;
+
+            Loop_Stmt := Parent (Loop_Stmt);
+         end loop;
+
+         Loop_Id := Entity (Identifier (Loop_Stmt));
+      end if;
+
+      Loc := Sloc (Loop_Stmt);
+
+      --  Step 2: Transform the loop
+
+      --  The loop has already been transformed during the expansion of a prior
+      --  'Loop_Entry attribute. Retrieve the declarative list of the block.
+
+      if Has_Loop_Entry_Attributes (Loop_Id) then
+
+         --  When the related loop name appears as the argument of attribute
+         --  Loop_Entry, the corresponding label construct is the generated
+         --  block statement. This is because the expander reuses the label.
+
+         if Nkind (Loop_Stmt) = N_Block_Statement then
+            Decls := Declarations (Loop_Stmt);
+
+         --  In all other cases, the loop must appear in the handled sequence
+         --  of statements of the generated block.
+
+         else
+            pragma Assert
+              (Nkind (Parent (Loop_Stmt)) = N_Handled_Sequence_Of_Statements
+                and then Nkind (Parent (Parent (Loop_Stmt))) =
+                                                      N_Block_Statement);
+
+            Decls := Declarations (Parent (Parent (Loop_Stmt)));
+         end if;
+
+         Result := Empty;
+
+      --  Transform the loop into a conditional block
+
+      else
+         Set_Has_Loop_Entry_Attributes (Loop_Id);
+         Scheme := Iteration_Scheme (Loop_Stmt);
+
+         --  Infinite loops are transformed into:
+
+         --    declare
+         --       Temp1 : constant <type of Pref1> := <Pref1>;
+         --       . . .
+         --       TempN : constant <type of PrefN> := <PrefN>;
+         --    begin
+         --       loop
+         --          <original source statements with attribute rewrites>
+         --       end loop;
+         --    end;
+
+         if No (Scheme) then
+            Build_Conditional_Block (Loc,
+              Cond      => Empty,
+              Loop_Stmt => Relocate_Node (Loop_Stmt),
+              If_Stmt   => Result,
+              Blk_Stmt  => Blk);
+
+            Result := Blk;
+
+         --  While loops are transformed into:
+
+         --    if <Condition> then
+         --       declare
+         --          Temp1 : constant <type of Pref1> := <Pref1>;
+         --          . . .
+         --          TempN : constant <type of PrefN> := <PrefN>;
+         --       begin
+         --          loop
+         --             <original source statements with attribute rewrites>
+         --             exit when not <Condition>;
+         --          end loop;
+         --       end;
+         --    end if;
+
+         --  Note that loops over iterators and containers are already
+         --  converted into while loops.
+
+         elsif Present (Condition (Scheme)) then
+            declare
+               Cond : constant Node_Id := Condition (Scheme);
+
+            begin
+               --  Transform the original while loop into an infinite loop
+               --  where the last statement checks the negated condition. This
+               --  placement ensures that the condition will not be evaluated
+               --  twice on the first iteration.
+
+               --  Generate:
+               --    exit when not <Cond>:
+
+               Append_To (Statements (Loop_Stmt),
+                 Make_Exit_Statement (Loc,
+                   Condition => Make_Op_Not (Loc, New_Copy_Tree (Cond))));
+
+               Build_Conditional_Block (Loc,
+                 Cond      => Relocate_Node (Cond),
+                 Loop_Stmt => Relocate_Node (Loop_Stmt),
+                 If_Stmt   => Result,
+                 Blk_Stmt  => Blk);
+            end;
+
+         --  Ada 2012 iteration over an array is transformed into:
+
+         --    if <Array_Nam>'Length (1) > 0
+         --      and then <Array_Nam>'Length (N) > 0
+         --    then
+         --       declare
+         --          Temp1 : constant <type of Pref1> := <Pref1>;
+         --          . . .
+         --          TempN : constant <type of PrefN> := <PrefN>;
+         --       begin
+         --          for X in ... loop  --  multiple loops depending on dims
+         --             <original source statements with attribute rewrites>
+         --          end loop;
+         --       end;
+         --    end if;
+
+         elsif Is_Array_Iteration (Loop_Stmt) then
+            declare
+               Array_Nam : constant Entity_Id :=
+                             Entity (Name (Iterator_Specification
+                              (Iteration_Scheme (Original_Node (Loop_Stmt)))));
+               Num_Dims  : constant Pos :=
+                             Number_Dimensions (Etype (Array_Nam));
+               Cond      : Node_Id := Empty;
+               Check     : Node_Id;
+
+            begin
+               --  Generate a check which determines whether all dimensions of
+               --  the array are non-null.
+
+               for Dim in 1 .. Num_Dims loop
+                  Check :=
+                    Make_Op_Gt (Loc,
+                      Left_Opnd  =>
+                        Make_Attribute_Reference (Loc,
+                          Prefix         => New_Reference_To (Array_Nam, Loc),
+                          Attribute_Name => Name_Length,
+                          Expressions    => New_List (
+                            Make_Integer_Literal (Loc, Dim))),
+                      Right_Opnd =>
+                        Make_Integer_Literal (Loc, 0));
+
+                  if No (Cond) then
+                     Cond := Check;
+                  else
+                     Cond :=
+                       Make_And_Then (Loc,
+                         Left_Opnd  => Cond,
+                         Right_Opnd => Check);
+                  end if;
+               end loop;
+
+               Build_Conditional_Block (Loc,
+                 Cond      => Cond,
+                 Loop_Stmt => Relocate_Node (Loop_Stmt),
+                 If_Stmt   => Result,
+                 Blk_Stmt  => Blk);
+            end;
+
+         --  For loops are transformed into:
+
+         --    if <Low> <= <High> then
+         --       declare
+         --          Temp1 : constant <type of Pref1> := <Pref1>;
+         --          . . .
+         --          TempN : constant <type of PrefN> := <PrefN>;
+         --       begin
+         --          for <Def_Id> in <Low> .. <High> loop
+         --             <original source statements with attribute rewrites>
+         --          end loop;
+         --       end;
+         --    end if;
+
+         elsif Present (Loop_Parameter_Specification (Scheme)) then
+            declare
+               Loop_Spec : constant Node_Id :=
+                             Loop_Parameter_Specification (Scheme);
+               Cond      : Node_Id;
+               Subt_Def  : Node_Id;
+
+            begin
+               Subt_Def := Discrete_Subtype_Definition (Loop_Spec);
+
+               --  When the loop iterates over a subtype indication with a
+               --  range, use the low and high bounds of the subtype itself.
+
+               if Nkind (Subt_Def) = N_Subtype_Indication then
+                  Subt_Def := Scalar_Range (Etype (Subt_Def));
+               end if;
+
+               pragma Assert (Nkind (Subt_Def) = N_Range);
+
+               --  Generate
+               --    Low <= High
+
+               Cond :=
+                 Make_Op_Le (Loc,
+                   Left_Opnd  => New_Copy_Tree (Low_Bound (Subt_Def)),
+                   Right_Opnd => New_Copy_Tree (High_Bound (Subt_Def)));
+
+               Build_Conditional_Block (Loc,
+                 Cond      => Cond,
+                 Loop_Stmt => Relocate_Node (Loop_Stmt),
+                 If_Stmt   => Result,
+                 Blk_Stmt  => Blk);
+            end;
+         end if;
+
+         Decls := Declarations (Blk);
+      end if;
+
+      --  Step 3: Create a constant to capture the value of the prefix at the
+      --  entry point into the loop.
+
+      --  Generate:
+      --    Temp : constant <type of Pref> := <Pref>;
+
+      Temp_Id := Make_Temporary (Loc, 'P');
+
+      Temp_Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Temp_Id,
+          Constant_Present    => True,
+          Object_Definition   => New_Reference_To (Typ, Loc),
+          Expression          => Relocate_Node (Pref));
+      Append_To (Decls, Temp_Decl);
+
+      --  Step 4: Analyze all bits
+
+      Rewrite (Attr, New_Reference_To (Temp_Id, Loc));
+
+      Installed := Current_Scope = Scope (Loop_Id);
+
+      --  Depending on the pracement of attribute 'Loop_Entry relative to the
+      --  associated loop, ensure the proper visibility for analysis.
+
+      if not Installed then
+         Push_Scope (Scope (Loop_Id));
+      end if;
+
+      --  The analysis of the conditional block takes care of the constant
+      --  declaration.
+
+      if Present (Result) then
+         Rewrite (Loop_Stmt, Result);
+         Analyze (Loop_Stmt);
+
+      --  The conditional block was analyzed when a previous 'Loop_Entry was
+      --  expanded. There is no point in reanalyzing the block, simply analyze
+      --  the declaration of the constant.
+
+      else
+         Analyze (Temp_Decl);
+      end if;
+
+      Analyze (Attr);
+
+      if not Installed then
+         Pop_Scope;
+      end if;
+   end Expand_Loop_Entry_Attribute;
 
    ----------------------------------
    -- Expand_N_Attribute_Reference --
@@ -1791,7 +2178,7 @@ package body Exp_Attr is
                          or else
                            (Nkind (Obj) = N_Explicit_Dereference
                               and then
-                                not Effectively_Has_Constrained_Partial_View
+                                not Object_Type_Has_Constrained_Partial_View
                                       (Typ  => Base_Type (Etype (Obj)),
                                        Scop => Current_Scope)));
             end if;
@@ -1915,7 +2302,7 @@ package body Exp_Attr is
                     or else
                      (Nkind (Pref) = N_Explicit_Dereference
                        and then
-                         not Effectively_Has_Constrained_Partial_View
+                         not Object_Type_Has_Constrained_Partial_View
                                (Typ  => Base_Type (Ptyp),
                                 Scop => Current_Scope))
                     or else Is_Constrained (Underlying_Type (Ptyp))
@@ -2354,20 +2741,20 @@ package body Exp_Attr is
          CE : constant Entity_Id := Entity (Selector_Name (Pref));
 
       begin
-         --  In Ada 2005 (or later) if we have the standard nondefault
-         --  bit order, then we return the original value as given in
-         --  the component clause (RM 2005 13.5.2(3/2)).
+         --  In Ada 2005 (or later) if we have the non-default bit order, then
+         --  we return the original value as given in the component clause
+         --  (RM 2005 13.5.2(3/2)).
 
          if Present (Component_Clause (CE))
            and then Ada_Version >= Ada_2005
-           and then not Reverse_Bit_Order (Scope (CE))
+           and then Reverse_Bit_Order (Scope (CE))
          then
             Rewrite (N,
               Make_Integer_Literal (Loc,
                 Intval => Expr_Value (First_Bit (Component_Clause (CE)))));
             Analyze_And_Resolve (N, Typ);
 
-         --  Otherwise (Ada 83/95 or Ada 2005 or later with reverse bit order),
+         --  Otherwise (Ada 83/95 or Ada 2005 or later with default bit order),
          --  rewrite with normalized value if we know it statically.
 
          elsif Known_Static_Component_Bit_Offset (CE) then
@@ -2934,20 +3321,20 @@ package body Exp_Attr is
          CE : constant Entity_Id := Entity (Selector_Name (Pref));
 
       begin
-         --  In Ada 2005 (or later) if we have the standard nondefault
-         --  bit order, then we return the original value as given in
-         --  the component clause (RM 2005 13.5.2(4/2)).
+         --  In Ada 2005 (or later) if we have the non-default bit order, then
+         --  we return the original value as given in the component clause
+         --  (RM 2005 13.5.2(3/2)).
 
          if Present (Component_Clause (CE))
            and then Ada_Version >= Ada_2005
-           and then not Reverse_Bit_Order (Scope (CE))
+           and then Reverse_Bit_Order (Scope (CE))
          then
             Rewrite (N,
               Make_Integer_Literal (Loc,
                 Intval => Expr_Value (Last_Bit (Component_Clause (CE)))));
             Analyze_And_Resolve (N, Typ);
 
-         --  Otherwise (Ada 83/95 or Ada 2005 or later with reverse bit order),
+         --  Otherwise (Ada 83/95 or Ada 2005 or later with default bit order),
          --  rewrite with normalized value if we know it statically.
 
          elsif Known_Static_Component_Bit_Offset (CE)
@@ -3138,11 +3525,12 @@ package body Exp_Attr is
          end if;
       end Length;
 
-      --  The expansion of this attribute is carried out when the target loop
-      --  is processed. See Expand_Loop_Entry_Attributes for details.
+      --  Attribute Loop_Entry is replaced with a reference to a constant value
+      --  which captures the prefix at the entry point of the related loop. The
+      --  loop itself may be transformed into a conditional block.
 
       when Attribute_Loop_Entry =>
-         null;
+         Expand_Loop_Entry_Attribute (N);
 
       -------------
       -- Machine --
@@ -3855,18 +4243,18 @@ package body Exp_Attr is
       begin
          if Present (Component_Clause (CE)) then
 
-            --  In Ada 2005 (or later) if we have the standard nondefault
-            --  bit order, then we return the original value as given in
-            --  the component clause (RM 2005 13.5.2(2/2)).
+            --  In Ada 2005 (or later) if we have the non-default bit order,
+            --  then we return the original value as given in the component
+            --  clause (RM 2005 13.5.2(2/2)).
 
             if Ada_Version >= Ada_2005
-              and then not Reverse_Bit_Order (Scope (CE))
+              and then Reverse_Bit_Order (Scope (CE))
             then
                Rewrite (N,
                   Make_Integer_Literal (Loc,
                     Intval => Expr_Value (Position (Component_Clause (CE)))));
 
-            --  Otherwise (Ada 83 or 95, or reverse bit order specified in
+            --  Otherwise (Ada 83 or 95, or default bit order specified in
             --  later Ada version), return the normalized value.
 
             else

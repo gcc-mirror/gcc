@@ -251,6 +251,12 @@
  (and (match_code "const_int")
       (match_test "TARGET_32BIT && const_ok_for_dimode_op (ival, PLUS)")))
 
+(define_constraint "De"
+ "@internal
+  In ARM/Thumb-2 state a const_int that can be used by insn anddi."
+ (and (match_code "const_int")
+      (match_test "TARGET_32BIT && const_ok_for_dimode_op (ival, AND)")))
+
 (define_constraint "Di"
  "@internal
   In ARM/Thumb-2 state a const_int or const_double where both the high

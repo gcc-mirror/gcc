@@ -361,7 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (static_cast<bool>(__res))
 	  {
 	    error_code __ec(make_error_code(future_errc::broken_promise));
-	    __res->_M_error = copy_exception(future_error(__ec));
+	    __res->_M_error = make_exception_ptr(future_error(__ec));
 	    {
 	      lock_guard<mutex> __lock(_M_mutex);
 	      _M_result.swap(__res);

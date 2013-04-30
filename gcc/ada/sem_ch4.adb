@@ -574,19 +574,6 @@ package body Sem_Ch4 is
                   Rewrite (E, New_Copy_Tree (Subtype_Mark (E)));
                   Analyze_Allocator (N);
                   return;
-
-               --  Ada 2005, AI-363: if the designated type has a constrained
-               --  partial view, it cannot receive a discriminant constraint,
-               --  and the allocated object is unconstrained.
-
-               elsif Ada_Version >= Ada_2005
-                 and then Effectively_Has_Constrained_Partial_View
-                            (Typ  => Base_Typ,
-                             Scop => Current_Scope)
-               then
-                  Error_Msg_N
-                    ("constraint not allowed when type " &
-                      "has a constrained partial view", Constraint (E));
                end if;
 
                if Expander_Active then
@@ -867,10 +854,10 @@ package body Sem_Ch4 is
       --  Flag indicates whether an interpretation of the prefix is a
       --  parameterless call that returns an access_to_subprogram.
 
-      procedure Check_Ghost_Function_Call;
-      --  Verify the legality of a call to a ghost function. Such calls can
+      procedure Check_Ghost_Subprogram_Call;
+      --  Verify the legality of a call to a ghost subprogram. Such calls can
       --  appear only in assertion expressions except subtype predicates or
-      --  from within another ghost function.
+      --  from within another ghost subprogram.
 
       procedure Check_Mixed_Parameter_And_Named_Associations;
       --  Check that parameter and named associations are not mixed. This is
@@ -886,15 +873,15 @@ package body Sem_Ch4 is
       procedure No_Interpretation;
       --  Output error message when no valid interpretation exists
 
-      -------------------------------
-      -- Check_Ghost_Function_Call --
-      -------------------------------
+      ---------------------------------
+      -- Check_Ghost_Subprogram_Call --
+      ---------------------------------
 
-      procedure Check_Ghost_Function_Call is
+      procedure Check_Ghost_Subprogram_Call is
          S : Entity_Id;
 
       begin
-         --  The ghost function appears inside an assertion expression
+         --  The ghost subprogram appears inside an assertion expression
 
          if In_Assertion_Expression (N) then
             return;
@@ -903,9 +890,9 @@ package body Sem_Ch4 is
             S := Current_Scope;
             while Present (S) and then S /= Standard_Standard loop
 
-               --  The call appears inside another ghost function
+               --  The call appears inside another ghost subprogram
 
-               if Is_Ghost_Function (S) then
+               if Is_Ghost_Subprogram (S) then
                   return;
                end if;
 
@@ -914,9 +901,9 @@ package body Sem_Ch4 is
          end if;
 
          Error_Msg_N
-           ("call to ghost function must appear in assertion expression or "
-            & "another ghost function", N);
-      end Check_Ghost_Function_Call;
+           ("call to ghost subprogram must appear in assertion expression or "
+            & "another ghost subprogram", N);
+      end Check_Ghost_Subprogram_Call;
 
       --------------------------------------------------
       -- Check_Mixed_Parameter_And_Named_Associations --
@@ -1288,11 +1275,11 @@ package body Sem_Ch4 is
          End_Interp_List;
       end if;
 
-      --  A call to a ghost function is allowed only in assertion expressions,
-      --  excluding subtype predicates, or from within another ghost function.
+      --  A call to a ghost subprogram is allowed only in assertion expressions
+      --  excluding subtype predicates or from within another ghost subprogram.
 
-      if Is_Ghost_Function (Get_Subprogram_Entity (N)) then
-         Check_Ghost_Function_Call;
+      if Is_Ghost_Subprogram (Get_Subprogram_Entity (N)) then
+         Check_Ghost_Subprogram_Call;
       end if;
    end Analyze_Call;
 
@@ -1814,8 +1801,8 @@ package body Sem_Ch4 is
       --  In formal verification mode, keep track of all reads and writes
       --  through explicit dereferences.
 
-      if Alfa_Mode then
-         Alfa.Generate_Dereference (N);
+      if SPARK_Mode then
+         SPARK_Specific.Generate_Dereference (N);
       end if;
 
       Analyze (P);
@@ -2401,12 +2388,20 @@ package body Sem_Ch4 is
 
       Analyze (P);
 
+      --  If P is an explicit dereference whose prefix is of a remote access-
+      --  to-subprogram type, then N has already been rewritten as a subprogram
+      --  call and analyzed.
+
       if Nkind (N) in N_Subprogram_Call then
+         return;
 
-         --  If P is an explicit dereference whose prefix is of a
-         --  remote access-to-subprogram type, then N has already
-         --  been rewritten as a subprogram call and analyzed.
+      --  When the prefix is attribute 'Loop_Entry and the sole expression of
+      --  the indexed component denotes a loop name, the indexed form is turned
+      --  into an attribute reference.
 
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Loop_Entry
+      then
          return;
       end if;
 
@@ -3506,12 +3501,14 @@ package body Sem_Ch4 is
    -----------------------------------
 
    procedure Analyze_Quantified_Expression (N : Node_Id) is
-      QE_Scop : Entity_Id;
-
       function Is_Empty_Range (Typ : Entity_Id) return Boolean;
       --  If the iterator is part of a quantified expression, and the range is
       --  known to be statically empty, emit a warning and replace expression
       --  with its static value. Returns True if the replacement occurs.
+
+      function No_Else_Or_Trivial_True (If_Expr : Node_Id) return Boolean;
+      --  Determine whether if expression If_Expr lacks an else part or if it
+      --  has one, it evaluates to True.
 
       --------------------
       -- Is_Empty_Range --
@@ -3550,6 +3547,26 @@ package body Sem_Ch4 is
          end if;
       end Is_Empty_Range;
 
+      -----------------------------
+      -- No_Else_Or_Trivial_True --
+      -----------------------------
+
+      function No_Else_Or_Trivial_True (If_Expr : Node_Id) return Boolean is
+         Else_Expr : constant Node_Id :=
+                       Next (Next (First (Expressions (If_Expr))));
+      begin
+         return
+           No (Else_Expr)
+             or else (Compile_Time_Known_Value (Else_Expr)
+                       and then Is_True (Expr_Value (Else_Expr)));
+      end No_Else_Or_Trivial_True;
+
+      --  Local variables
+
+      Cond    : constant Node_Id := Condition (N);
+      Loop_Id : Entity_Id;
+      QE_Scop : Entity_Id;
+
    --  Start of processing for Analyze_Quantified_Expression
 
    begin
@@ -3574,21 +3591,56 @@ package body Sem_Ch4 is
       if Present (Iterator_Specification (N)) then
          Preanalyze (Iterator_Specification (N));
 
+         --  Do not proceed with the analysis when the range of iteration is
+         --  empty. The appropriate error is issued by Is_Empty_Range.
+
          if Is_Entity_Name (Name (Iterator_Specification (N)))
            and then Is_Empty_Range (Etype (Name (Iterator_Specification (N))))
          then
             return;
          end if;
 
-      else
+      else pragma Assert (Present (Loop_Parameter_Specification (N)));
          Preanalyze (Loop_Parameter_Specification (N));
       end if;
 
-      Preanalyze_And_Resolve (Condition (N), Standard_Boolean);
+      Preanalyze_And_Resolve (Cond, Standard_Boolean);
 
       End_Scope;
-
       Set_Etype (N, Standard_Boolean);
+
+      --  Verify that the loop variable is used within the condition of the
+      --  quantified expression.
+
+      if Present (Iterator_Specification (N)) then
+         Loop_Id := Defining_Identifier (Iterator_Specification (N));
+      else
+         Loop_Id := Defining_Identifier (Loop_Parameter_Specification (N));
+      end if;
+
+      if Warn_On_Suspicious_Contract
+        and then not Referenced (Loop_Id, Cond)
+      then
+         Error_Msg_N ("?T?unused variable &", Loop_Id);
+      end if;
+
+      --  Diagnose a possible misuse of the "some" existential quantifier. When
+      --  we have a quantified expression of the form:
+
+      --    for some X => (if P then Q [else True])
+
+      --  the if expression will not hold and render the quantified expression
+      --  trivially True.
+
+      if Formal_Extensions
+        and then not All_Present (N)
+        and then Nkind (Cond) = N_If_Expression
+        and then No_Else_Or_Trivial_True (Cond)
+      then
+         Error_Msg_N ("?suspicious expression", N);
+         Error_Msg_N ("\\did you mean (for all X ='> (if P then Q))", N);
+         Error_Msg_N ("\\or (for some X ='> P and then Q) instead'?", N);
+      end if;
    end Analyze_Quantified_Expression;
 
    -------------------
@@ -4497,10 +4549,10 @@ package body Sem_Ch4 is
                      --  Emit appropriate message. Gigi will replace the
                      --  node subsequently with the appropriate Raise.
 
-                     --  In Alfa mode, this is made into an error to simplify
+                     --  In SPARK mode, this is made into an error to simplify
                      --  the processing of the formal verification backend.
 
-                     if Alfa_Mode then
+                     if SPARK_Mode then
                         Apply_Compile_Time_Constraint_Error
                           (N, "component not present in }",
                            CE_Discriminant_Check_Failed,

@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "tree-pass.h"
 #include "target.h"
+#include "cfgloop.h"
 
 #include "rtl.h"	/* FIXME: For asm_str_count.  */
 
@@ -1518,7 +1519,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
      basic_block_info automatically.  */
   copy_basic_block = create_basic_block (NULL, (void *) 0,
                                          (basic_block) prev->aux);
-  /* Update to use apply_probability().  */
+  /* Update to use apply_scale().  */
   copy_basic_block->count = bb->count * count_scale / REG_BR_PROB_BASE;
 
   /* We are going to rebuild frequencies from scratch.  These values
@@ -1866,7 +1867,8 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
    debug stmts are left after a statement that must end the basic block.  */
 
 static bool
-copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
+copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
+		   bool can_make_abnormal_goto)
 {
   basic_block new_bb = (basic_block) bb->aux;
   edge_iterator ei;
@@ -1889,7 +1891,7 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR)
 	  flags |= EDGE_FALLTHRU;
 	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
-        /* Update to use apply_probability().  */
+        /* Update to use apply_scale().  */
 	new_edge->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
 	new_edge->probability = old_edge->probability;
       }
@@ -1949,6 +1951,10 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
       else if (can_throw)
 	make_eh_edges (copy_stmt);
 
+      /* If the call we inline cannot make abnormal goto do not add
+         additional abnormal edges but only retain those already present
+	 in the original function body.  */
+      nonlocal_goto &= can_make_abnormal_goto;
       if (nonlocal_goto)
 	make_abnormal_goto_edges (gimple_bb (copy_stmt), true);
 
@@ -2083,7 +2089,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
   cfun->static_chain_decl = src_cfun->static_chain_decl;
   cfun->nonlocal_goto_save_area = src_cfun->nonlocal_goto_save_area;
   cfun->function_end_locus = src_cfun->function_end_locus;
-  cfun->curr_properties = src_cfun->curr_properties & ~PROP_loops;
+  cfun->curr_properties = src_cfun->curr_properties;
   cfun->last_verified = src_cfun->last_verified;
   cfun->va_list_gpr_size = src_cfun->va_list_gpr_size;
   cfun->va_list_fpr_size = src_cfun->va_list_fpr_size;
@@ -2188,6 +2194,45 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
     }
 }
 
+/* Make a copy of the sub-loops of SRC_PARENT and place them
+   as siblings of DEST_PARENT.  */
+
+static void
+copy_loops (bitmap blocks_to_copy,
+	    struct loop *dest_parent, struct loop *src_parent)
+{
+  struct loop *src_loop = src_parent->inner;
+  while (src_loop)
+    {
+      if (!blocks_to_copy
+	  || bitmap_bit_p (blocks_to_copy, src_loop->header->index))
+	{
+	  struct loop *dest_loop = alloc_loop ();
+
+	  /* Assign the new loop its header and latch and associate
+	     those with the new loop.  */
+	  dest_loop->header = (basic_block)src_loop->header->aux;
+	  dest_loop->header->loop_father = dest_loop;
+	  if (src_loop->latch != NULL)
+	    {
+	      dest_loop->latch = (basic_block)src_loop->latch->aux;
+	      dest_loop->latch->loop_father = dest_loop;
+	    }
+
+	  /* Copy loop meta-data.  */
+	  copy_loop_info (src_loop, dest_loop);
+
+	  /* Finally place it into the loop array and the loop tree.  */
+	  place_new_loop (dest_loop);
+	  flow_loop_tree_node_add (dest_parent, dest_loop);
+
+	  /* Recurse.  */
+	  copy_loops (blocks_to_copy, dest_loop, src_loop);
+	}
+      src_loop = src_loop->next;
+    }
+}
+
 /* Make a copy of the body of FN so that it can be inserted inline in
    another function.  Walks FN via CFG, returns new fndecl.  */
 
@@ -2233,7 +2278,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 	    incoming_frequency += EDGE_FREQUENCY (e);
 	    incoming_count += e->count;
 	  }
-      /* Update to use apply_probability().  */
+      /* Update to use apply_scale().  */
       incoming_count = incoming_count * count_scale / REG_BR_PROB_BASE;
       /* Update to use EDGE_FREQUENCY.  */
       incoming_frequency
@@ -2265,21 +2310,35 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 	basic_block new_bb = copy_bb (id, bb, frequency_scale, count_scale);
 	bb->aux = new_bb;
 	new_bb->aux = bb;
+	new_bb->loop_father = entry_block_map->loop_father;
       }
 
   last = last_basic_block;
 
   /* Now that we've duplicated the blocks, duplicate their edges.  */
+  bool can_make_abormal_goto
+    = id->gimple_call && stmt_can_make_abnormal_goto (id->gimple_call);
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     if (!blocks_to_copy
         || (bb->index > 0 && bitmap_bit_p (blocks_to_copy, bb->index)))
-      need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map);
+      need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map,
+					       can_make_abormal_goto);
 
   if (new_entry)
     {
       edge e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
       e->probability = REG_BR_PROB_BASE;
       e->count = incoming_count;
+    }
+
+  /* Duplicate the loop tree, if available and wanted.  */
+  if (id->src_cfun->x_current_loops != NULL
+      && current_loops != NULL)
+    {
+      copy_loops (blocks_to_copy, entry_block_map->loop_father,
+		  id->src_cfun->x_current_loops->tree_root);
+      /* Defer to cfgcleanup to update loop-father fields of basic-blocks.  */
+      loops_state_set (LOOPS_NEED_FIXUP);
     }
 
   if (gimple_in_ssa_p (cfun))
@@ -5137,6 +5196,14 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	  SSA_NAME_DEF_STMT (new_name) = gimple_build_nop ();
 	  set_ssa_default_def (cfun, DECL_RESULT (new_decl), new_name);
 	}
+    }
+
+  /* Set up the destination functions loop tree.  */
+  if (DECL_STRUCT_FUNCTION (old_decl)->x_current_loops)
+    {
+      cfun->curr_properties &= ~PROP_loops;
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+      cfun->curr_properties |= PROP_loops;
     }
 
   /* Copy the Function's body.  */

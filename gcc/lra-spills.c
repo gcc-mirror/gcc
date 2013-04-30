@@ -548,6 +548,11 @@ lra_spill (void)
   for (i = 0; i < n; i++)
     if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
       assign_mem_slot (pseudo_regnos[i]);
+  if (n > 0 && crtl->stack_alignment_needed)
+    /* If we have a stack frame, we must align it now.  The stack size
+       may be a part of the offset computation for register
+       elimination.  */
+    assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
   if (lra_dump_file != NULL)
     {
       for (i = 0; i < slots_num; i++)
@@ -644,10 +649,12 @@ lra_final_code_change (void)
 	    }
 
 	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+	  struct lra_static_insn_data *static_id = id->insn_static_data;
 	  bool insn_change_p = false;
 
 	  for (i = id->insn_static_data->n_operands - 1; i >= 0; i--)
-	    if (alter_subregs (id->operand_loc[i], ! DEBUG_INSN_P (insn)))
+	    if ((DEBUG_INSN_P (insn) || ! static_id->operand[i].is_operator)
+		&& alter_subregs (id->operand_loc[i], ! DEBUG_INSN_P (insn)))
 	      {
 		lra_update_dup (id, i);
 		insn_change_p = true;

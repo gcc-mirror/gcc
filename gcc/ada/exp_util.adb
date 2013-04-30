@@ -46,7 +46,6 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -561,10 +560,10 @@ package body Exp_Util is
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
    begin
-      --  Do not perform this expansion in Alfa mode because it is not
+      --  Do not perform this expansion in SPARK mode because it is not
       --  necessary.
 
-      if Alfa_Mode then
+      if SPARK_Mode then
          return;
       end if;
 
@@ -2040,8 +2039,19 @@ package body Exp_Util is
                    Make_Literal_Range (Loc,
                      Literal_Typ => Exp_Typ)))));
 
+      --  If the type of the expression is an internally generated type it
+      --  may not be necessary to create a new subtype. However there are two
+      --  exceptions: references to the current instances, and aliased array
+      --  object declarations for which the backend needs to create a template.
+
       elsif Is_Constrained (Exp_Typ)
         and then not Is_Class_Wide_Type (Unc_Type)
+        and then
+          (Nkind (N) /= N_Object_Declaration
+            or else not Is_Entity_Name (Expression (N))
+            or else not Comes_From_Source (Entity (Expression (N)))
+            or else not Is_Array_Type (Exp_Typ)
+            or else not Aliased_Present (N))
       then
          if Is_Itype (Exp_Typ) then
 
@@ -2066,7 +2076,7 @@ package body Exp_Util is
                   end if;
                end;
 
-            --  No need to generate a new one (new what???)
+            --  No need to generate a new subtype
 
             else
                T := Exp_Typ;
@@ -2221,8 +2231,7 @@ package body Exp_Util is
          return First_Elmt (Access_Disp_Table (Typ));
 
       else
-         ADT :=
-           Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Typ))));
+         ADT := Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Typ))));
          while Present (ADT)
            and then Present (Related_Type (Node (ADT)))
            and then Related_Type (Node (ADT)) /= Iface
@@ -2525,7 +2534,10 @@ package body Exp_Util is
    -- Fully_Qualified_Name_String --
    ---------------------------------
 
-   function Fully_Qualified_Name_String (E : Entity_Id) return String_Id is
+   function Fully_Qualified_Name_String
+     (E          : Entity_Id;
+      Append_NUL : Boolean := True) return String_Id
+   is
       procedure Internal_Full_Qualified_Name (E : Entity_Id);
       --  Compute recursively the qualified name without NUL at the end, adding
       --  it to the currently started string being generated
@@ -2573,7 +2585,11 @@ package body Exp_Util is
    begin
       Start_String;
       Internal_Full_Qualified_Name (E);
-      Store_String_Char (Get_Char_Code (ASCII.NUL));
+
+      if Append_NUL then
+         Store_String_Char (Get_Char_Code (ASCII.NUL));
+      end if;
+
       return End_String;
    end Fully_Qualified_Name_String;
 
@@ -5450,23 +5466,29 @@ package body Exp_Util is
 
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id is
       Loc : constant Source_Ptr := Sloc (Expr);
-      Typ : constant Entity_Id  := Etype (Expr);
+      Typ : Entity_Id;
 
    begin
+      Typ := Etype (Expr);
+
+      --  Subtypes may be subject to invariants coming from their respective
+      --  base types.
+
+      if Ekind_In (Typ, E_Array_Subtype,
+                        E_Private_Subtype,
+                        E_Record_Subtype)
+      then
+         Typ := Base_Type (Typ);
+      end if;
+
       pragma Assert
         (Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)));
 
-      if Check_Kind (Name_Invariant) = Name_Check then
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (Invariant_Procedure (Typ), Loc),
-             Parameter_Associations => New_List (Relocate_Node (Expr)));
-
-      else
-         return
-           Make_Null_Statement (Loc);
-      end if;
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (Invariant_Procedure (Typ), Loc),
+          Parameter_Associations => New_List (Relocate_Node (Expr)));
    end Make_Invariant_Call;
 
    ------------------------
@@ -5588,8 +5610,16 @@ package body Exp_Util is
       Nam : Name_Id;
 
    begin
+      --  If predicate checks are suppressed, then return a null statement.
+      --  For this call, we check only the scope setting. If the caller wants
+      --  to check a specific entity's setting, they must do it manually.
+
+      if Predicate_Checks_Suppressed (Empty) then
+         return Make_Null_Statement (Loc);
+      end if;
+
       --  Compute proper name to use, we need to get this right so that the
-      --  right set of check policies apply to the CHeck pragma we are making.
+      --  right set of check policies apply to the Check pragma we are making.
 
       if Has_Dynamic_Predicate_Aspect (Typ) then
          Nam := Name_Dynamic_Predicate;
@@ -6969,10 +6999,13 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the value
 
       else
-         --  An expression which is in Alfa mode is considered side effect free
-         --  if the resulting value is captured by a variable or a constant.
+         --  An expression which is in SPARK mode is considered side effect
+         --  free if the resulting value is captured by a variable or a
+         --  constant.
 
-         if Alfa_Mode and then Nkind (Parent (Exp)) = N_Object_Declaration then
+         if SPARK_Mode
+           and then Nkind (Parent (Exp)) = N_Object_Declaration
+         then
             goto Leave;
          end if;
 
@@ -7012,11 +7045,11 @@ package body Exp_Util is
 
          --  The regular expansion of functions with side effects involves the
          --  generation of an access type to capture the return value found on
-         --  the secondary stack. Since Alfa (and why) cannot process access
+         --  the secondary stack. Since SPARK (and why) cannot process access
          --  types, use a different approach which ignores the secondary stack
          --  and "copies" the returned object.
 
-         if Alfa_Mode then
+         if SPARK_Mode then
             Res := New_Reference_To (Def_Id, Loc);
             Ref_Type := Exp_Type;
 
@@ -7050,10 +7083,10 @@ package body Exp_Util is
          else
             E := Relocate_Node (E);
 
-            --  Do not generate a 'reference in Alfa mode since the access type
-            --  is not created in the first place.
+            --  Do not generate a 'reference in SPARK mode since the access
+            --  type is not created in the first place.
 
-            if Alfa_Mode then
+            if SPARK_Mode then
                New_Exp := E;
 
             --  Otherwise generate reference, marking the value as non-null
