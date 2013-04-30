@@ -1,3 +1,7 @@
+2013-04-30  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/thumb2.md: Remove trailing whitespaces.
+
 2013-04-30  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	* explow.c (plus_constant): Pass "mode" to immed_double_int_const.
