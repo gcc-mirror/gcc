@@ -1,3 +1,8 @@
+2013-04-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* value-prof.c (stream_in_histogram_value): Remove the trayed
+	debug_gimple_stmt.
+
 2013-04-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57122

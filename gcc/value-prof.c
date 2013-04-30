@@ -416,7 +416,6 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple stmt)
       new_val->n_counters = ncounters;
       for (i = 0; i < ncounters; i++)
 	new_val->hvalue.counters[i] = streamer_read_gcov_count (ib);
-      debug_gimple_stmt (stmt);
       if (!next_p)
 	gimple_add_histogram_value (cfun, stmt, new_val);
       else
