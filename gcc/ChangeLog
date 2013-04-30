@@ -1,3 +1,19 @@
+2013-04-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44578
+	* config/i386/i386.md (*zero_extendsidi2_rex64): Add "!" to m->?*y
+	alternative.
+	(*zero_extendsidi2): Ditto.
+
+	Backport from mainline
+	2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57098
+	* config/i386/i386.c (ix86_expand_vec_perm): Validize constant memory.
+
 2013-04-29  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/57108
