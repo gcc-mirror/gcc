@@ -1,3 +1,7 @@
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.c (omp_pragmas): Add PRAGMA_OMP_DISTRIBUTE.
+
 2013-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (DEF_FUNCTION_TYPE_8): Define.

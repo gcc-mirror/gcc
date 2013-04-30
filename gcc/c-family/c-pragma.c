@@ -1166,6 +1166,7 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "cancellation", PRAGMA_OMP_CANCELLATION_POINT },
   { "critical", PRAGMA_OMP_CRITICAL },
   { "declare", PRAGMA_OMP_DECLARE_REDUCTION },
+  { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
   { "for", PRAGMA_OMP_FOR },
