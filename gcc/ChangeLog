@@ -1,3 +1,9 @@
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57104
+	* tsan.c (instrument_expr): Don't instrument accesses to
+	DECL_HARD_REGISTER VAR_DECLs.
+
 2013-04-30  Richard Biener  <rguenther@suse.de>
 
 	* function.h (loops_for_fn): New inline function.

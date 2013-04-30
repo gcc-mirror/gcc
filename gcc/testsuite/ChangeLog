@@ -1,3 +1,8 @@
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57104
+	* gcc.dg/pr57104.c: New test.
+
 2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44578
