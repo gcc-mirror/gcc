@@ -80,7 +80,7 @@
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */
 #undef  LINK_SPEC
-#define LINK_SPEC BE8_LINK_SPEC						\
+#define LINK_SPEC EABI_LINK_SPEC					\
   LINUX_OR_ANDROID_LD (LINUX_TARGET_LINK_SPEC,				\
 		       LINUX_TARGET_LINK_SPEC " " ANDROID_LINK_SPEC)
 
