@@ -1,3 +1,13 @@
+2013-04-30  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/56957
+	PR rtl-optimization/57105
+
+	* sel-sched.c (move_op_orig_expr_found): Remove insn_emitted
+	variable.  Use just INSN_UID for determining whether an insn
+	should be only disconnected from the insn stream.
+	* sel-sched-ir.h (EXPR_WAS_CHANGED): Remove.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57104
