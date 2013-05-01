@@ -3400,6 +3400,23 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+;; fac(ge|gt)
+;; Note we can also handle what would be fac(le|lt) by
+;; generating fac(ge|gt).
+
+(define_insn "*aarch64_fac<optab><mode>"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w")
+	(neg:<V_cmp_result>
+	  (FAC_COMPARISONS:<V_cmp_result>
+	    (abs:VALLF (match_operand:VALLF 1 "register_operand" "w"))
+	    (abs:VALLF (match_operand:VALLF 2 "register_operand" "w"))
+  )))]
+  "TARGET_SIMD"
+  "fac<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>"
+  [(set_attr "simd_type" "simd_fcmp")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
 ;; addp
 
 (define_insn "aarch64_addp<mode>"

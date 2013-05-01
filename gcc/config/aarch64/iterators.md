@@ -553,6 +553,9 @@
 ;; Unsigned comparison operators.
 (define_code_iterator UCOMPARISONS [ltu leu geu gtu])
 
+;; Unsigned comparison operators.
+(define_code_iterator FAC_COMPARISONS [lt le ge gt])
+
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------

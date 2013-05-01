@@ -1,5 +1,10 @@
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd.md (*aarch64_fac<optab><mode>): New.
+	* config/aarch64/iterators.md (FAC_COMPARISONS): New.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-simd.md
 	(vcond<mode>_internal): Handle special cases for constant masks.
 	(vcond<mode><mode>): Allow nonmemory_operands for outcome vectors.
