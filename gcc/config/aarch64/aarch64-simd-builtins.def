@@ -230,8 +230,8 @@
   BUILTIN_VSDQ_I_DI (BINOP, cmle, 0)
   BUILTIN_VSDQ_I_DI (BINOP, cmlt, 0)
   /* Implemented by aarch64_cm<cmp><mode>.  */
-  BUILTIN_VSDQ_I_DI (BINOP, cmhs, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmhi, 0)
+  BUILTIN_VSDQ_I_DI (BINOP, cmgeu, 0)
+  BUILTIN_VSDQ_I_DI (BINOP, cmgtu, 0)
   BUILTIN_VSDQ_I_DI (BINOP, cmtst, 0)
 
   /* Implemented by aarch64_<fmaxmin><mode>.  */

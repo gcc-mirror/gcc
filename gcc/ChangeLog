@@ -1,3 +1,34 @@
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (cmhs): Rename to...
+	(cmgeu): ...This.
+	(cmhi): Rename to...
+	(cmgtu): ...This.
+	* config/aarch64/aarch64-simd.md
+	(simd_mode): Add SF.
+	(aarch64_vcond_internal): Use new names for unsigned comparison insns.
+	(aarch64_cm<optab><mode>): Rewrite to not use UNSPECs.
+	* config/aarch64/aarch64.md (*cstore<mode>_neg): Rename to...
+	(cstore<mode>_neg): ...This.
+	* config/aarch64/iterators.md
+	(VALLF): new.
+	(unspec): Remove UNSPEC_CM<EQ, LE, LT, GE, GT, HS, HI, TST>.
+	(COMPARISONS): New.
+	(UCOMPARISONS): Likewise.
+	(optab): Add missing comparisons.
+	(n_optab): New.
+	(cmp_1): Likewise.
+	(cmp_2): Likewise.
+	(CMP): Likewise.
+	(cmp): Remove.
+	(VCMP_S): Likewise.
+	(VCMP_U): Likewise.
+	(V_cmp_result): Add DF, SF modes.
+	(v_cmp_result): Likewise.
+	(v): Likewise.
+	(vmtype): Likewise.
+	* config/aarch64/predicates.md (aarch64_reg_or_fp_zero): New.
+
 2013-05-01  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/thumb2.md (thumb2_smaxsi3,thumb2_sminsi3): Convert
