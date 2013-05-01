@@ -1,5 +1,13 @@
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd.md
+	(vcond<mode>_internal): Handle special cases for constant masks.
+	(vcond<mode><mode>): Allow nonmemory_operands for outcome vectors.
+	(vcondu<mode><mode>): Likewise.
+	(vcond<v_cmp_result><mode>): New.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (BUILTIN_VALLDI): Define.
 	(aarch64_fold_builtin): Add folding for cm<eq,ge,gt,tst>.
 	* config/aarch64/aarch64-simd-builtins.def
