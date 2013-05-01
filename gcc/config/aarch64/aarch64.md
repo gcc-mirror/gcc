@@ -2409,7 +2409,7 @@
    (set_attr "mode" "SI")]
 )
 
-(define_insn "*cstore<mode>_neg"
+(define_insn "cstore<mode>_neg"
   [(set (match_operand:ALLI 0 "register_operand" "=r")
 	(neg:ALLI (match_operator:ALLI 1 "aarch64_comparison_operator"
 		  [(match_operand 2 "cc_register" "") (const_int 0)])))]
