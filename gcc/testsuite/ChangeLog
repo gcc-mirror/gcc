@@ -1,5 +1,10 @@
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc.target/aarch64/scalar-vca.c: New.
+	* gcc.target/aarch64/vect-vca.c: Likewise.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.target/aarch64/scalar_intrinsics.c (force_simd): New.
 	(test_vceqd_s64): Force arguments to SIMD registers.
 	(test_vceqzd_s64): Likewise.
