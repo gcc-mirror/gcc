@@ -1,3 +1,8 @@
+2013-05-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57091
+	* gcc.target/i386/pr57091.c: New test.
+
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect-vaddv.c: New.
