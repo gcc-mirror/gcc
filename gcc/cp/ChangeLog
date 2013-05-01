@@ -1,3 +1,9 @@
+2013-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57092
+	* semantics.c (finish_decltype_type): Handle instantiated template
+	non-type arguments.
+
 2013-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56450
