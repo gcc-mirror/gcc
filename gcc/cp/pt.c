@@ -13810,7 +13810,11 @@ tsubst_copy_and_build (tree t,
 
     case MODOP_EXPR:
       {
-	tree r = build_x_modify_expr
+	tree r;
+
+	++c_inhibit_evaluation_warnings;
+
+	r = build_x_modify_expr
 	  (EXPR_LOCATION (t),
 	   RECUR (TREE_OPERAND (t, 0)),
 	   TREE_CODE (TREE_OPERAND (t, 1)),
@@ -13824,6 +13828,9 @@ tsubst_copy_and_build (tree t,
 	   here.  */
 	if (TREE_NO_WARNING (t))
 	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+
+	--c_inhibit_evaluation_warnings;
+
 	RETURN (r);
       }
 
