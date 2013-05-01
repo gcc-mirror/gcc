@@ -1683,11 +1683,13 @@
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:VDQ 4 "register_operand")
 	     (match_operand:VDQ 5 "nonmemory_operand")])
-	  (match_operand:VDQ 1 "register_operand")
-	  (match_operand:VDQ 2 "register_operand")))]
+	  (match_operand:VDQ 1 "nonmemory_operand")
+	  (match_operand:VDQ 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
   int inverse = 0, has_zero_imm_form = 0;
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
   rtx mask = gen_reg_rtx (<MODE>mode);
 
   switch (GET_CODE (operands[3]))
@@ -1746,11 +1748,26 @@
     }
 
   if (inverse)
-    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[2],
-				    operands[1]));
-  else
-    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[1],
-				    operands[2]));
+    {
+      op1 = operands[2];
+      op2 = operands[1];
+    }
+
+    /* If we have (a = (b CMP c) ? -1 : 0);
+       Then we can simply move the generated mask.  */
+
+    if (op1 == CONSTM1_RTX (<V_cmp_result>mode)
+	&& op2 == CONST0_RTX (<V_cmp_result>mode))
+      emit_move_insn (operands[0], mask);
+    else
+      {
+	if (!REG_P (op1))
+	  op1 = force_reg (<MODE>mode, op1);
+	if (!REG_P (op2))
+	  op2 = force_reg (<MODE>mode, op2);
+	emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask,
+					       op1, op2));
+      }
 
   DONE;
 })
@@ -1761,13 +1778,15 @@
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:VDQF 4 "register_operand")
 	     (match_operand:VDQF 5 "nonmemory_operand")])
-	  (match_operand:VDQF 1 "register_operand")
-	  (match_operand:VDQF 2 "register_operand")))]
+	  (match_operand:VDQF 1 "nonmemory_operand")
+	  (match_operand:VDQF 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
   int inverse = 0;
   int use_zero_form = 0;
   int swap_bsl_operands = 0;
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
   rtx tmp = gen_reg_rtx (<V_cmp_result>mode);
 
@@ -1912,11 +1931,27 @@
     }
 
   if (swap_bsl_operands)
-    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[2],
-				    operands[1]));
-  else
-    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[1],
-				    operands[2]));
+    {
+      op1 = operands[2];
+      op2 = operands[1];
+    }
+
+    /* If we have (a = (b CMP c) ? -1 : 0);
+       Then we can simply move the generated mask.  */
+
+    if (op1 == CONSTM1_RTX (<V_cmp_result>mode)
+	&& op2 == CONST0_RTX (<V_cmp_result>mode))
+      emit_move_insn (operands[0], mask);
+    else
+      {
+	if (!REG_P (op1))
+	  op1 = force_reg (<MODE>mode, op1);
+	if (!REG_P (op2))
+	  op2 = force_reg (<MODE>mode, op2);
+	emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask,
+					       op1, op2));
+      }
+
   DONE;
 })
 
@@ -1926,8 +1961,8 @@
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:VALL 4 "register_operand")
 	     (match_operand:VALL 5 "nonmemory_operand")])
-	  (match_operand:VALL 1 "register_operand")
-	  (match_operand:VALL 2 "register_operand")))]
+	  (match_operand:VALL 1 "nonmemory_operand")
+	  (match_operand:VALL 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
   emit_insn (gen_aarch64_vcond_internal<mode> (operands[0], operands[1],
@@ -1936,6 +1971,22 @@
   DONE;
 })
 
+(define_expand "vcond<v_cmp_result><mode>"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand")
+	(if_then_else:<V_cmp_result>
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:VDQF 4 "register_operand")
+	     (match_operand:VDQF 5 "nonmemory_operand")])
+	  (match_operand:<V_cmp_result> 1 "nonmemory_operand")
+	  (match_operand:<V_cmp_result> 2 "nonmemory_operand")))]
+  "TARGET_SIMD"
+{
+  emit_insn (gen_aarch64_vcond_internal<v_cmp_result> (
+						operands[0], operands[1],
+						operands[2], operands[3],
+						operands[4], operands[5]));
+  DONE;
+})
 
 (define_expand "vcondu<mode><mode>"
   [(set (match_operand:VDQ 0 "register_operand")
@@ -1943,8 +1994,8 @@
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:VDQ 4 "register_operand")
 	     (match_operand:VDQ 5 "nonmemory_operand")])
-	  (match_operand:VDQ 1 "register_operand")
-	  (match_operand:VDQ 2 "register_operand")))]
+	  (match_operand:VDQ 1 "nonmemory_operand")
+	  (match_operand:VDQ 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
   emit_insn (gen_aarch64_vcond_internal<mode> (operands[0], operands[1],
