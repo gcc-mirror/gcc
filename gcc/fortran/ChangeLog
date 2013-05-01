@@ -1,3 +1,8 @@
+2013-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (optimize_power):  Fix typo
+	in comment.
+
 2013-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57071
