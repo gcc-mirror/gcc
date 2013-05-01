@@ -1,5 +1,10 @@
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc.target/aarch64/vect-vmaxv.c: New.
+	* gcc.target/aarch64/vect-vfmaxv.c: Likewise.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.target/aarch64/scalar-vca.c: New.
 	* gcc.target/aarch64/vect-vca.c: Likewise.
 
