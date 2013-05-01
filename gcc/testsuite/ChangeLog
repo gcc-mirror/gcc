@@ -1,3 +1,8 @@
+2013-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57092
+	* g++.dg/cpp0x/decltype53.C: New.
+
 2013-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/57071
