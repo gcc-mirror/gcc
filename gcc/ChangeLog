@@ -1,5 +1,36 @@
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_gimple_fold_builtin.c): Fold more modes for reduc_splus_.
+	* config/aarch64/aarch64-simd-builtins.def
+	(reduc_splus_): Add new modes.
+	(reduc_uplus_): New.
+	* config/aarch64/aarch64-simd.md (aarch64_addvv4sf): Remove.
+	(reduc_uplus_v4sf): Likewise.
+	(reduc_splus_v4sf): Likewise.
+	(aarch64_addv<mode>): Likewise.
+	(reduc_uplus_<mode>): Likewise.
+	(reduc_splus_<mode>): Likewise.
+	(aarch64_addvv2di): Likewise.
+	(reduc_uplus_v2di): Likewise.
+	(reduc_splus_v2di): Likewise.
+	(aarch64_addvv2si): Likewise.
+	(reduc_uplus_v2si): Likewise.
+	(reduc_splus_v2si): Likewise.
+	(reduc_<sur>plus_<mode>): New.
+	(reduc_<sur>plus_v2di): Likewise.
+	(reduc_<sur>plus_v2si): Likewise.
+	(reduc_<sur>plus_v4sf): Likewise.
+	(aarch64_addpv4sf): Likewise.
+	* config/aarch64/arm_neon.h
+	(vaddv<q>_<s,u,f><8, 16, 32, 64): Rewrite using builtins.
+	* config/aarch64/iterators.md (unspec): Remove UNSPEC_ADDV,
+	add UNSPEC_SADDV, UNSPEC_UADDV.
+	(SUADDV): New.
+	(sur): Add UNSPEC_SADDV, UNSPEC_UADDV.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/arm_neon.h
 	(v<max,min><nm><q><v>_<sfu><8, 16, 32, 64>): Rewrite using builtins.
 

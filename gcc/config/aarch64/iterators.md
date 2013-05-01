@@ -170,7 +170,8 @@
     UNSPEC_FMINNMV	; Used in aarch64-simd.md.
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
-    UNSPEC_ADDV		; Used in aarch64-simd.md.
+    UNSPEC_SADDV	; Used in aarch64-simd.md.
+    UNSPEC_UADDV	; Used in aarch64-simd.md.
     UNSPEC_SMAXV	; Used in aarch64-simd.md.
     UNSPEC_SMINV	; Used in aarch64-simd.md.
     UNSPEC_UMAXV	; Used in aarch64-simd.md.
@@ -686,6 +687,8 @@
 (define_int_iterator FMAXMINV [UNSPEC_FMAXV UNSPEC_FMINV
 			       UNSPEC_FMAXNMV UNSPEC_FMINNMV])
 
+(define_int_iterator SUADDV [UNSPEC_SADDV UNSPEC_UADDV])
+
 (define_int_iterator HADDSUB [UNSPEC_SHADD UNSPEC_UHADD
 			      UNSPEC_SRHADD UNSPEC_URHADD
 			      UNSPEC_SHSUB UNSPEC_UHSUB
@@ -777,6 +780,7 @@
 		      (UNSPEC_SUBHN2 "") (UNSPEC_RSUBHN2 "r")
 		      (UNSPEC_SQXTN "s") (UNSPEC_UQXTN "u")
 		      (UNSPEC_USQADD "us") (UNSPEC_SUQADD "su")
+		      (UNSPEC_SADDV "s") (UNSPEC_UADDV "u")
 		      (UNSPEC_SSLI  "s") (UNSPEC_USLI  "u")
 		      (UNSPEC_SSRI  "s") (UNSPEC_USRI  "u")
 		      (UNSPEC_USRA  "u") (UNSPEC_SSRA  "s")

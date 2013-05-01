@@ -4655,116 +4655,6 @@ vaddlvq_u32 (uint32x4_t a)
   return result;
 }
 
-__extension__ static __inline int8_t __attribute__ ((__always_inline__))
-vaddv_s8 (int8x8_t a)
-{
-  int8_t result;
-  __asm__ ("addv %b0,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16_t __attribute__ ((__always_inline__))
-vaddv_s16 (int16x4_t a)
-{
-  int16_t result;
-  __asm__ ("addv %h0,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8_t __attribute__ ((__always_inline__))
-vaddv_u8 (uint8x8_t a)
-{
-  uint8_t result;
-  __asm__ ("addv %b0,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
-vaddv_u16 (uint16x4_t a)
-{
-  uint16_t result;
-  __asm__ ("addv %h0,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8_t __attribute__ ((__always_inline__))
-vaddvq_s8 (int8x16_t a)
-{
-  int8_t result;
-  __asm__ ("addv %b0,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16_t __attribute__ ((__always_inline__))
-vaddvq_s16 (int16x8_t a)
-{
-  int16_t result;
-  __asm__ ("addv %h0,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32_t __attribute__ ((__always_inline__))
-vaddvq_s32 (int32x4_t a)
-{
-  int32_t result;
-  __asm__ ("addv %s0,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8_t __attribute__ ((__always_inline__))
-vaddvq_u8 (uint8x16_t a)
-{
-  uint8_t result;
-  __asm__ ("addv %b0,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
-vaddvq_u16 (uint16x8_t a)
-{
-  uint16_t result;
-  __asm__ ("addv %h0,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-vaddvq_u32 (uint32x4_t a)
-{
-  uint32_t result;
-  __asm__ ("addv %s0,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vbsl_f32 (uint32x2_t a, float32x2_t b, float32x2_t c)
 {
@@ -16995,22 +16885,6 @@ vaddlv_u32 (uint32x2_t a)
   return result;
 }
 
-__extension__ static __inline int32_t __attribute__ ((__always_inline__))
-vaddv_s32 (int32x2_t a)
-{
-  int32_t result;
-  __asm__ ("addp %0.2s, %1.2s, %1.2s" : "=w"(result) : "w"(a) : );
-  return result;
-}
-
-__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-vaddv_u32 (uint32x2_t a)
-{
-  uint32_t result;
-  __asm__ ("addp %0.2s, %1.2s, %1.2s" : "=w"(result) : "w"(a) : );
-  return result;
-}
-
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vpaddd_s64 (int64x2_t __a)
 {
@@ -18026,24 +17900,117 @@ vaddd_u64 (uint64x1_t __a, uint64x1_t __b)
   return __a + __b;
 }
 
+/* vaddv */
+
+__extension__ static __inline int8_t __attribute__ ((__always_inline__))
+vaddv_s8 (int8x8_t __a)
+{
+  return vget_lane_s8 (__builtin_aarch64_reduc_splus_v8qi (__a), 0);
+}
+
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vaddv_s16 (int16x4_t __a)
+{
+  return vget_lane_s16 (__builtin_aarch64_reduc_splus_v4hi (__a), 0);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vaddv_s32 (int32x2_t __a)
+{
+  return vget_lane_s32 (__builtin_aarch64_reduc_splus_v2si (__a), 0);
+}
+
+__extension__ static __inline uint8_t __attribute__ ((__always_inline__))
+vaddv_u8 (uint8x8_t __a)
+{
+  return vget_lane_u8 ((uint8x8_t)
+		__builtin_aarch64_reduc_uplus_v8qi ((int8x8_t) __a), 0);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vaddv_u16 (uint16x4_t __a)
+{
+  return vget_lane_u16 ((uint16x4_t)
+		__builtin_aarch64_reduc_uplus_v4hi ((int16x4_t) __a), 0);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vaddv_u32 (uint32x2_t __a)
+{
+  return vget_lane_u32 ((uint32x2_t)
+		__builtin_aarch64_reduc_uplus_v2si ((int32x2_t) __a), 0);
+}
+
+__extension__ static __inline int8_t __attribute__ ((__always_inline__))
+vaddvq_s8 (int8x16_t __a)
+{
+  return vgetq_lane_s8 (__builtin_aarch64_reduc_splus_v16qi (__a), 0);
+}
+
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vaddvq_s16 (int16x8_t __a)
+{
+  return vgetq_lane_s16 (__builtin_aarch64_reduc_splus_v8hi (__a), 0);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vaddvq_s32 (int32x4_t __a)
+{
+  return vgetq_lane_s32 (__builtin_aarch64_reduc_splus_v4si (__a), 0);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vaddvq_s64 (int64x2_t __a)
+{
+  return vgetq_lane_s64 (__builtin_aarch64_reduc_splus_v2di (__a), 0);
+}
+
+__extension__ static __inline uint8_t __attribute__ ((__always_inline__))
+vaddvq_u8 (uint8x16_t __a)
+{
+  return vgetq_lane_u8 ((uint8x16_t)
+		__builtin_aarch64_reduc_uplus_v16qi ((int8x16_t) __a), 0);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vaddvq_u16 (uint16x8_t __a)
+{
+  return vgetq_lane_u16 ((uint16x8_t)
+		__builtin_aarch64_reduc_uplus_v8hi ((int16x8_t) __a), 0);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vaddvq_u32 (uint32x4_t __a)
+{
+  return vgetq_lane_u32 ((uint32x4_t)
+		__builtin_aarch64_reduc_uplus_v4si ((int32x4_t) __a), 0);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vaddvq_u64 (uint64x2_t __a)
+{
+  return vgetq_lane_u64 ((uint64x2_t)
+		__builtin_aarch64_reduc_uplus_v2di ((int64x2_t) __a), 0);
+}
+
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vaddv_f32 (float32x2_t __a)
 {
-  float32x2_t t = __builtin_aarch64_addvv2sf (__a);
+  float32x2_t t = __builtin_aarch64_reduc_splus_v2sf (__a);
   return vget_lane_f32 (t, 0);
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vaddvq_f32 (float32x4_t __a)
 {
-  float32x4_t t = __builtin_aarch64_addvv4sf (__a);
+  float32x4_t t = __builtin_aarch64_reduc_splus_v4sf (__a);
   return vgetq_lane_f32 (t, 0);
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vaddvq_f64 (float64x2_t __a)
 {
-  float64x2_t t = __builtin_aarch64_addvv2df (__a);
+  float64x2_t t = __builtin_aarch64_reduc_splus_v2df (__a);
   return vgetq_lane_f64 (t, 0);
 }
 
