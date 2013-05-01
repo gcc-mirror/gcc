@@ -1,5 +1,12 @@
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/arm_neon.h
+	(vac<ge, gt><sd>_f<32, 64>): Rename to...
+	(vca<ge, gt><sd>_f<32, 64>): ...this, reimpliment in C.
+	(vca<ge, gt, lt, le><q>_f<32, 64>): Reimpliment in C.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-simd.md (*aarch64_fac<optab><mode>): New.
 	* config/aarch64/iterators.md (FAC_COMPARISONS): New.
 
