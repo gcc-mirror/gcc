@@ -940,12 +940,12 @@
 )
 
 ;; Max/Min operations.
-(define_insn "<maxmin><mode>3"
+(define_insn "<su><maxmin><mode>3"
  [(set (match_operand:VQ_S 0 "register_operand" "=w")
        (MAXMIN:VQ_S (match_operand:VQ_S 1 "register_operand" "w")
 		    (match_operand:VQ_S 2 "register_operand" "w")))]
  "TARGET_SIMD"
- "<maxmin>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+ "<su><maxmin>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_minmax")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -1417,44 +1417,23 @@
 ;; only introduces MIN_EXPR/MAX_EXPR in fast math mode or when not honouring
 ;; NaNs.
 
-(define_insn "smax<mode>3"
+(define_insn "<su><maxmin><mode>3"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
-        (smax:VDQF (match_operand:VDQF 1 "register_operand" "w")
+        (FMAXMIN:VDQF (match_operand:VDQF 1 "register_operand" "w")
 		   (match_operand:VDQF 2 "register_operand" "w")))]
   "TARGET_SIMD"
-  "fmaxnm\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  "f<maxmin>nm\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fminmax")
    (set_attr "simd_mode" "<MODE>")]
 )
 
-(define_insn "smin<mode>3"
+(define_insn "<maxmin_uns><mode>3"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
-        (smin:VDQF (match_operand:VDQF 1 "register_operand" "w")
-		   (match_operand:VDQF 2 "register_operand" "w")))]
+       (unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")
+		     (match_operand:VDQF 2 "register_operand" "w")]
+		    FMAXMIN_UNS))]
   "TARGET_SIMD"
-  "fminnm\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
-  [(set_attr "simd_type" "simd_fminmax")
-   (set_attr "simd_mode" "<MODE>")]
-)
-
-;; FP 'across lanes' max and min ops.
-
-(define_insn "reduc_s<fmaxminv>_v4sf"
- [(set (match_operand:V4SF 0 "register_operand" "=w")
-       (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "w")]
-		    FMAXMINV))]
- "TARGET_SIMD"
- "f<fmaxminv>nmv\\t%s0, %1.4s";
-  [(set_attr "simd_type" "simd_fminmaxv")
-   (set_attr "simd_mode" "V4SF")]
-)
-
-(define_insn "reduc_s<fmaxminv>_<mode>"
- [(set (match_operand:V2F 0 "register_operand" "=w")
-       (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
-		    FMAXMINV))]
- "TARGET_SIMD"
- "f<fmaxminv>nmp\\t%0.<Vtype>, %1.<Vtype>, %1.<Vtype>";
+  "<maxmin_uns_op>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fminmax")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -1609,24 +1588,56 @@
  ""
 )
 
-(define_insn "reduc_<maxminv>_<mode>"
+;; 'across lanes' max and min ops.
+
+(define_insn "reduc_<maxmin_uns>_<mode>"
  [(set (match_operand:VDQV 0 "register_operand" "=w")
        (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
 		    MAXMINV))]
  "TARGET_SIMD"
- "<maxminv>v\\t%<Vetype>0, %1.<Vtype>"
+ "<maxmin_uns_op>v\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "simd_type" "simd_minmaxv")
    (set_attr "simd_mode" "<MODE>")]
 )
 
-(define_insn "reduc_<maxminv>_v2si"
+(define_insn "reduc_<maxmin_uns>_v2di"
+ [(set (match_operand:V2DI 0 "register_operand" "=w")
+       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
+		    MAXMINV))]
+ "TARGET_SIMD"
+ "<maxmin_uns_op>p\\t%d0, %1.2d"
+  [(set_attr "simd_type" "simd_minmaxv")
+   (set_attr "simd_mode" "V2DI")]
+)
+
+(define_insn "reduc_<maxmin_uns>_v2si"
  [(set (match_operand:V2SI 0 "register_operand" "=w")
        (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
 		    MAXMINV))]
  "TARGET_SIMD"
- "<maxminv>p\\t%0.2s, %1.2s, %1.2s"
-  [(set_attr "simd_type" "simd_minmax")
+ "<maxmin_uns_op>p\\t%0.2s, %1.2s, %1.2s"
+  [(set_attr "simd_type" "simd_minmaxv")
    (set_attr "simd_mode" "V2SI")]
+)
+
+(define_insn "reduc_<maxmin_uns>_<mode>"
+ [(set (match_operand:V2F 0 "register_operand" "=w")
+       (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
+		    FMAXMINV))]
+ "TARGET_SIMD"
+ "<maxmin_uns_op>p\\t%<Vetype>0, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_fminmaxv")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "reduc_<maxmin_uns>_v4sf"
+ [(set (match_operand:V4SF 0 "register_operand" "=w")
+       (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "w")]
+		    FMAXMINV))]
+ "TARGET_SIMD"
+ "<maxmin_uns_op>v\\t%s0, %1.4s"
+  [(set_attr "simd_type" "simd_fminmaxv")
+   (set_attr "simd_mode" "V4SF")]
 )
 
 ;; aarch64_simd_bsl may compile to any of bsl/bif/bit depending on register
@@ -3440,17 +3451,6 @@
   "addp\t%d0, %1.2d"
   [(set_attr "simd_type" "simd_add")
    (set_attr "simd_mode" "DI")]
-)
-
-(define_insn "aarch64_<fmaxmin><mode>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-        (unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")
-		      (match_operand:VDQF 2 "register_operand" "w")]
-		      FMAXMIN))]
-  "TARGET_SIMD"
-  "<fmaxmin>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
-  [(set_attr "simd_type" "simd_fminmax")
-   (set_attr "simd_mode" "<MODE>")]
 )
 
 ;; sqrt

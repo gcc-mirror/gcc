@@ -163,7 +163,11 @@
  [
     UNSPEC_ASHIFT_SIGNED	; Used in aarch-simd.md.
     UNSPEC_ASHIFT_UNSIGNED	; Used in aarch64-simd.md.
+    UNSPEC_FMAX		; Used in aarch64-simd.md.
+    UNSPEC_FMAXNMV	; Used in aarch64-simd.md.
     UNSPEC_FMAXV	; Used in aarch64-simd.md.
+    UNSPEC_FMIN		; Used in aarch64-simd.md.
+    UNSPEC_FMINNMV	; Used in aarch64-simd.md.
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
     UNSPEC_ADDV		; Used in aarch64-simd.md.
@@ -223,8 +227,6 @@
     UNSPEC_SSHLL	; Used in aarch64-simd.md.
     UNSPEC_USHLL	; Used in aarch64-simd.md.
     UNSPEC_ADDP		; Used in aarch64-simd.md.
-    UNSPEC_FMAX		; Used in aarch64-simd.md.
-    UNSPEC_FMIN		; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
     UNSPEC_ZIP1		; Used in vector permute patterns.
@@ -535,6 +537,8 @@
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator MAXMIN [smax smin umax umin])
 
+(define_code_iterator FMAXMIN [smax smin])
+
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator ADDSUB [plus minus])
 
@@ -643,7 +647,9 @@
 (define_code_attr su [(sign_extend "s") (zero_extend "u")
 		      (sign_extract "s") (zero_extract "u")
 		      (fix "s") (unsigned_fix "u")
-		      (div "s") (udiv "u")])
+		      (div "s") (udiv "u")
+		      (smax "s") (umax "u")
+		      (smin "s") (umin "u")])
 
 ;; Emit cbz/cbnz depending on comparison type.
 (define_code_attr cbz [(eq "cbz") (ne "cbnz") (lt "cbnz") (ge "cbz")])
@@ -652,10 +658,10 @@
 (define_code_attr tbz [(eq "tbz") (ne "tbnz") (lt "tbnz") (ge "tbz")])
 
 ;; Max/min attributes.
-(define_code_attr maxmin [(smax "smax")
-			  (smin "smin")
-			  (umax "umax")
-			  (umin "umin")])
+(define_code_attr maxmin [(smax "max")
+			  (smin "min")
+			  (umax "max")
+			  (umin "min")])
 
 ;; MLA/MLS attributes.
 (define_code_attr as [(ss_plus "a") (ss_minus "s")])
@@ -677,7 +683,8 @@
 (define_int_iterator MAXMINV [UNSPEC_UMAXV UNSPEC_UMINV
 			      UNSPEC_SMAXV UNSPEC_SMINV])
 
-(define_int_iterator FMAXMINV [UNSPEC_FMAXV UNSPEC_FMINV])
+(define_int_iterator FMAXMINV [UNSPEC_FMAXV UNSPEC_FMINV
+			       UNSPEC_FMAXNMV UNSPEC_FMINNMV])
 
 (define_int_iterator HADDSUB [UNSPEC_SHADD UNSPEC_UHADD
 			      UNSPEC_SRHADD UNSPEC_URHADD
@@ -691,7 +698,7 @@
 (define_int_iterator ADDSUBHN2 [UNSPEC_ADDHN2 UNSPEC_RADDHN2
 			        UNSPEC_SUBHN2 UNSPEC_RSUBHN2])
 
-(define_int_iterator FMAXMIN [UNSPEC_FMAX UNSPEC_FMIN])
+(define_int_iterator FMAXMIN_UNS [UNSPEC_FMAX UNSPEC_FMIN])
 
 (define_int_iterator VQDMULH [UNSPEC_SQDMULH UNSPEC_SQRDMULH])
 
@@ -738,16 +745,27 @@
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
-(define_int_attr  maxminv [(UNSPEC_UMAXV "umax")
-			   (UNSPEC_UMINV "umin")
-			   (UNSPEC_SMAXV "smax")
-			   (UNSPEC_SMINV "smin")])
+(define_int_attr  maxmin_uns [(UNSPEC_UMAXV "umax")
+			      (UNSPEC_UMINV "umin")
+			      (UNSPEC_SMAXV "smax")
+			      (UNSPEC_SMINV "smin")
+			      (UNSPEC_FMAX  "smax_nan")
+			      (UNSPEC_FMAXNMV "smax")
+			      (UNSPEC_FMAXV "smax_nan")
+			      (UNSPEC_FMIN "smin_nan")
+			      (UNSPEC_FMINNMV "smin")
+			      (UNSPEC_FMINV "smin_nan")])
 
-(define_int_attr  fmaxminv [(UNSPEC_FMAXV "max")
-			    (UNSPEC_FMINV "min")])
-
-(define_int_attr  fmaxmin [(UNSPEC_FMAX "fmax")
-			   (UNSPEC_FMIN "fmin")])
+(define_int_attr  maxmin_uns_op [(UNSPEC_UMAXV "umax")
+				 (UNSPEC_UMINV "umin")
+				 (UNSPEC_SMAXV "smax")
+				 (UNSPEC_SMINV "smin")
+				 (UNSPEC_FMAX "fmax")
+				 (UNSPEC_FMAXNMV "fmaxnm")
+				 (UNSPEC_FMAXV "fmax")
+				 (UNSPEC_FMIN "fmin")
+				 (UNSPEC_FMINNMV "fminnm")
+				 (UNSPEC_FMINV "fmin")])
 
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
