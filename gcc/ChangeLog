@@ -1,3 +1,13 @@
+2013-05-01  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/thumb2.md (thumb2_smaxsi3,thumb2_sminsi3): Convert
+	define_insn to define_insn_and_split.
+	(thumb32_umaxsi3,thumb2_uminsi3): Likewise.
+	(thumb2_negdi2,thumb2_abssi2,thumb2_neg_abssi2): Likewise.
+	(thumb2_mov_scc,thumb2_mov_negscc,thumb2_mov_notscc): Likewise.
+	(thumb2_movsicc_insn,thumb2_and_scc,thumb2_ior_scc): Likewise.
+	(thumb2_negscc): Likewise.
+
 2013-04-30  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/thumb2.md (thumb2_incscc, thumb2_decscc): Delete.
