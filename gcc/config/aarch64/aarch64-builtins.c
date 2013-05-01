@@ -1372,6 +1372,21 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 						args[0],
 						NULL_TREE);
 		break;
+	      BUILTIN_VDQIF (UNOP, reduc_smax_, 10)
+		new_stmt = gimple_build_assign_with_ops (
+						REDUC_MAX_EXPR,
+						gimple_call_lhs (stmt),
+						args[0],
+						NULL_TREE);
+		break;
+	      BUILTIN_VDQIF (UNOP, reduc_smin_, 10)
+		new_stmt = gimple_build_assign_with_ops (
+						REDUC_MIN_EXPR,
+						gimple_call_lhs (stmt),
+						args[0],
+						NULL_TREE);
+		break;
+
 	    default:
 	      break;
 	    }
