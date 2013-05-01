@@ -4245,7 +4245,7 @@ finish_omp_clauses (tree clauses)
 	      if (!processing_template_decl)
 		{
 		  if (TREE_CODE (t) != INTEGER_CST
-		      || tree_int_cst_sgn (t) == -1)
+		      || tree_int_cst_sgn (t) != 1)
 		    {
 		      error ("%qs length expression must be positive constant"
 			     " integer expression",
@@ -4355,7 +4355,7 @@ finish_omp_clauses (tree clauses)
 	      if (!processing_template_decl)
 		{
 		  if (TREE_CODE (t) != INTEGER_CST
-		      || tree_int_cst_sgn (t) == -1)
+		      || tree_int_cst_sgn (t) != 1)
 		    {
 		      error ("%<aligned%> clause alignment expression must be "
 			     "positive constant integer expression");
@@ -5221,7 +5221,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv, tree initv,
 
 void
 finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
-		   tree rhs, tree v, tree lhs1, tree rhs1)
+		   tree rhs, tree v, tree lhs1, tree rhs1, bool seq_cst)
 {
   tree orig_lhs;
   tree orig_rhs;
@@ -5292,7 +5292,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 	  return;
 	}
       stmt = c_finish_omp_atomic (input_location, code, opcode, lhs, rhs,
-				  v, lhs1, rhs1, swapped);
+				  v, lhs1, rhs1, swapped, seq_cst);
       if (stmt == error_mark_node)
 	return;
     }
@@ -5302,6 +5302,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 	{
 	  stmt = build_min_nt_loc (EXPR_LOCATION (orig_lhs),
 				   OMP_ATOMIC_READ, orig_lhs);
+	  OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
 	  stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	}
       else
@@ -5317,10 +5318,12 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 	    {
 	      stmt = build_min_nt_loc (EXPR_LOCATION (orig_lhs1),
 				       code, orig_lhs1, stmt);
+	      OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
 	      stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	    }
 	}
       stmt = build2 (OMP_ATOMIC, void_type_node, integer_zero_node, stmt);
+      OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
     }
   add_stmt (stmt);
 }
@@ -5394,7 +5397,7 @@ finish_omp_cancel (tree clauses)
     mask = 8;
   else
     {
-      error ("%<#pragma omp cancellation point must specify one of "
+      error ("%<#pragma omp cancel must specify one of "
 	     "%<parallel%>, %<for%>, %<sections%> or %<taskgroup%> clauses");
       return;
     }

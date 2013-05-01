@@ -1863,9 +1863,21 @@ scan_omp_single (gimple stmt, omp_context *outer_ctx)
 static bool
 check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 {
+  if (ctx != NULL
+      && gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+      && (gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD
+	  || gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_FOR_SIMD))
+    {
+      error_at (gimple_location (stmt),
+		"OpenMP constructs may not be nested inside simd region");
+      return false;
+    }
   switch (gimple_code (stmt))
     {
     case GIMPLE_OMP_FOR:
+      if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_SIMD)
+	return true;
+      /* FALLTHRU */
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_CALL:
@@ -1878,8 +1890,12 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 	  case GIMPLE_OMP_ORDERED:
 	  case GIMPLE_OMP_MASTER:
 	  case GIMPLE_OMP_TASK:
+	  case GIMPLE_OMP_CRITICAL:
 	    if (is_gimple_call (stmt))
 	      {
+		if (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt))
+		    != BUILT_IN_GOMP_BARRIER)
+		  return true;
 		error_at (gimple_location (stmt),
 			  "barrier region may not be closely nested inside "
 			  "of work-sharing, critical, ordered, master or "
@@ -1936,7 +1952,10 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 	      }
 	    return true;
 	  case GIMPLE_OMP_PARALLEL:
-	    return true;
+	    error_at (gimple_location (stmt),
+		      "ordered region must be closely nested inside "
+		      "a loop region with an ordered clause");
+	    return false;
 	  default:
 	    break;
 	  }
@@ -2033,9 +2052,20 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       else if (is_gimple_call (stmt))
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
-	  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_GOMP_BARRIER)
-	    remove = !check_omp_nesting_restrictions (stmt, ctx);
+	  if (fndecl
+	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	    switch (DECL_FUNCTION_CODE (fndecl))
+	      {
+	      case BUILT_IN_GOMP_BARRIER:
+	      case BUILT_IN_GOMP_CANCEL:
+	      case BUILT_IN_GOMP_CANCELLATION_POINT:
+	      case BUILT_IN_GOMP_TASKYIELD:
+	      case BUILT_IN_GOMP_TASKWAIT:
+		remove = !check_omp_nesting_restrictions (stmt, ctx);
+		break;
+	      default:
+		break;
+	      }
 	}
       if (remove)
 	{
@@ -5446,7 +5476,10 @@ expand_omp_atomic_load (basic_block load_bb, tree addr,
   itype = TREE_TYPE (TREE_TYPE (decl));
 
   call = build_call_expr_loc (loc, decl, 2, addr,
-			      build_int_cst (NULL, MEMMODEL_RELAXED));
+			      build_int_cst (NULL,
+					     gimple_omp_atomic_seq_cst_p (stmt)
+					     ? MEMMODEL_SEQ_CST
+					     : MEMMODEL_RELAXED));
   if (!useless_type_conversion_p (type, itype))
     call = fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, call);
   call = build2_loc (loc, MODIFY_EXPR, void_type_node, loaded_val, call);
@@ -5518,7 +5551,10 @@ expand_omp_atomic_store (basic_block load_bb, tree addr,
   if (!useless_type_conversion_p (itype, type))
     stored_val = fold_build1_loc (loc, VIEW_CONVERT_EXPR, itype, stored_val);
   call = build_call_expr_loc (loc, decl, 3, addr, stored_val,
-			      build_int_cst (NULL, MEMMODEL_RELAXED));
+			      build_int_cst (NULL,
+					     gimple_omp_atomic_seq_cst_p (stmt)
+					     ? MEMMODEL_SEQ_CST
+					     : MEMMODEL_RELAXED));
   if (exchange)
     {
       if (!useless_type_conversion_p (type, itype))
@@ -5559,6 +5595,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   enum tree_code code;
   bool need_old, need_new;
   enum machine_mode imode;
+  bool seq_cst;
 
   /* We expect to find the following sequences:
 
@@ -5584,6 +5621,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
     return false;
   need_new = gimple_omp_atomic_need_value_p (gsi_stmt (gsi));
   need_old = gimple_omp_atomic_need_value_p (last_stmt (load_bb));
+  seq_cst = gimple_omp_atomic_seq_cst_p (last_stmt (load_bb));
   gcc_checking_assert (!need_old || !need_new);
 
   if (!operand_equal_p (gimple_assign_lhs (stmt), stored_val, 0))
@@ -5650,7 +5688,9 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
      use the RELAXED memory model.  */
   call = build_call_expr_loc (loc, decl, 3, addr,
 			      fold_convert_loc (loc, itype, rhs),
-			      build_int_cst (NULL, MEMMODEL_RELAXED));
+			      build_int_cst (NULL,
+					     seq_cst ? MEMMODEL_SEQ_CST
+						     : MEMMODEL_RELAXED));
 
   if (need_old || need_new)
     {

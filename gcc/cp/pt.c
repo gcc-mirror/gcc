@@ -13276,7 +13276,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  lhs = RECUR (TREE_OPERAND (op1, 0));
 	  rhs = RECUR (TREE_OPERAND (op1, 1));
 	  finish_omp_atomic (OMP_ATOMIC, TREE_CODE (op1), lhs, rhs,
-			     NULL_TREE, NULL_TREE, rhs1);
+			     NULL_TREE, NULL_TREE, rhs1,
+			     OMP_ATOMIC_SEQ_CST (t));
 	}
       else
 	{
@@ -13313,7 +13314,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	      lhs = RECUR (TREE_OPERAND (op1, 0));
 	      rhs = RECUR (TREE_OPERAND (op1, 1));
 	    }
-	  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1);
+	  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1,
+			     OMP_ATOMIC_SEQ_CST (t));
 	}
       break;
 

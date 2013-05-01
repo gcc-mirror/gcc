@@ -2442,6 +2442,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case OMP_ATOMIC:
       pp_string (buffer, "#pragma omp atomic");
+      if (OMP_ATOMIC_SEQ_CST (node))
+	pp_string (buffer, " seq_cst");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (buffer);
@@ -2452,6 +2454,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case OMP_ATOMIC_READ:
       pp_string (buffer, "#pragma omp atomic read");
+      if (OMP_ATOMIC_SEQ_CST (node))
+	pp_string (buffer, " seq_cst");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (buffer);
@@ -2460,6 +2464,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
       pp_string (buffer, "#pragma omp atomic capture");
+      if (OMP_ATOMIC_SEQ_CST (node))
+	pp_string (buffer, " seq_cst");
       newline_and_indent (buffer, spc + 2);
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (buffer);

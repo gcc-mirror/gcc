@@ -1,3 +1,28 @@
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_atomic_load,
+	dump_gimple_omp_atomic_store): Handle gimple_omp_atomic_seq_cst_p.
+	* gimple.h (enum gf_mask): Add GF_OMP_ATOMIC_SEQ_CST.
+	(gimple_omp_atomic_set_seq_cst, gimple_omp_atomic_seq_cst_p): New
+	inline functions.
+	* omp-low.c (expand_omp_atomic_load, expand_omp_atomic_store,
+	expand_omp_atomic_fetch_op): If gimple_omp_atomic_seq_cst_p,
+	pass MEMMODEL_SEQ_CST instead of MEMMODEL_RELAXED to the builtin.
+	* gimplify.c (gimplify_omp_atomic): Handle OMP_ATOMIC_SEQ_CST.
+	* tree-pretty-print.c (dump_generic_node): Handle OMP_ATOMIC_SEQ_CST.
+	* tree.def (OMP_ATOMIC): Add comment that OMP_ATOMIC* must stay
+	consecutive.
+	* tree.h (OMP_ATOMIC_SEQ_CST): Define.
+
+	* omp-low.c (check_omp_nesting_restrictions): Diagnose
+	OpenMP constructs nested inside simd region.  Don't treat
+	#pragma omp simd as work-sharing region.  Disallow work-sharing
+	constructs inside of critical region.  Complain if ordered
+	region is nested inside of parallel region without loop
+	region in between.
+	(scan_omp_1_stmt): Call check_omp_nesting_restrictions even
+	for GOMP_{cancel{,lation_point},taskyield,taskwait} calls.
+
 2013-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (omp-low.o): Depend on $(TARGET_H).
