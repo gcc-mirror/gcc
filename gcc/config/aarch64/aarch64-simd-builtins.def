@@ -234,8 +234,9 @@
   BUILTIN_VSDQ_I_DI (BINOP, cmgtu, 0)
   BUILTIN_VSDQ_I_DI (BINOP, cmtst, 0)
 
-  /* Implemented by aarch64_addv<mode>.  */
-  BUILTIN_VDQF (UNOP, addv, 0)
+  /* Implemented by reduc_<sur>plus_<mode>.  */
+  BUILTIN_VALL (UNOP, reduc_splus_, 10)
+  BUILTIN_VDQ (UNOP, reduc_uplus_, 10)
 
   /* Implemented by reduc_<maxmin_uns>_<mode>.  */
   BUILTIN_VDQIF (UNOP, reduc_smax_, 10)

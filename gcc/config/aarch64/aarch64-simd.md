@@ -1438,7 +1438,47 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
-;; FP 'across lanes' add.
+;; 'across lanes' add.
+
+(define_insn "reduc_<sur>plus_<mode>"
+ [(set (match_operand:VDQV 0 "register_operand" "=w")
+       (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
+		    SUADDV))]
+ "TARGET_SIMD"
+ "addv\\t%<Vetype>0, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_addv")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "reduc_<sur>plus_v2di"
+ [(set (match_operand:V2DI 0 "register_operand" "=w")
+       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
+		    SUADDV))]
+ "TARGET_SIMD"
+ "addp\\t%d0, %1.2d"
+  [(set_attr "simd_type" "simd_addv")
+   (set_attr "simd_mode" "V2DI")]
+)
+
+(define_insn "reduc_<sur>plus_v2si"
+ [(set (match_operand:V2SI 0 "register_operand" "=w")
+       (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
+		    SUADDV))]
+ "TARGET_SIMD"
+ "addp\\t%0.2s, %1.2s, %1.2s"
+  [(set_attr "simd_type" "simd_addv")
+   (set_attr "simd_mode" "V2SI")]
+)
+
+(define_insn "reduc_<sur>plus_<mode>"
+ [(set (match_operand:V2F 0 "register_operand" "=w")
+       (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
+		    SUADDV))]
+ "TARGET_SIMD"
+ "faddp\\t%<Vetype>0, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_fadd")
+   (set_attr "simd_mode" "<MODE>")]
+)
 
 (define_insn "aarch64_addpv4sf"
  [(set (match_operand:V4SF 0 "register_operand" "=w")
@@ -1450,9 +1490,10 @@
    (set_attr "simd_mode" "V4SF")]
 )
 
-(define_expand "reduc_uplus_v4sf"
- [(set (match_operand:V4SF 0 "register_operand" "=w")
-       (match_operand:V4SF 1 "register_operand" "w"))]
+(define_expand "reduc_<sur>plus_v4sf"
+ [(set (match_operand:V4SF 0 "register_operand")
+       (unspec:V4SF [(match_operand:V4SF 1 "register_operand")]
+		    SUADDV))]
  "TARGET_SIMD"
 {
   rtx tmp = gen_reg_rtx (V4SFmode);
@@ -1460,133 +1501,6 @@
   emit_insn (gen_aarch64_addpv4sf (operands[0], tmp));
   DONE;
 })
-
-(define_expand "reduc_splus_v4sf"
- [(set (match_operand:V4SF 0 "register_operand" "=w")
-       (match_operand:V4SF 1 "register_operand" "w"))]
- "TARGET_SIMD"
-{
-  rtx tmp = gen_reg_rtx (V4SFmode);
-  emit_insn (gen_aarch64_addpv4sf (tmp, operands[1]));
-  emit_insn (gen_aarch64_addpv4sf (operands[0], tmp));
-  DONE;
-})
-
-(define_expand "aarch64_addvv4sf"
- [(set (match_operand:V4SF 0 "register_operand" "=w")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "w")]
-		     UNSPEC_FADDV))]
- "TARGET_SIMD"
-{
-  emit_insn (gen_reduc_splus_v4sf (operands[0], operands[1]));
-  DONE;
-})
-
-(define_insn "aarch64_addv<mode>"
- [(set (match_operand:V2F 0 "register_operand" "=w")
-       (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
-		    UNSPEC_FADDV))]
- "TARGET_SIMD"
- "faddp\\t%<Vetype>0, %1.<Vtype>"
-  [(set_attr "simd_type" "simd_fadd")
-   (set_attr "simd_mode" "<MODE>")]
-)
-
-(define_expand "reduc_uplus_<mode>"
- [(set (match_operand:V2F 0 "register_operand" "=w")
-       (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
-		    UNSPEC_FADDV))]
- "TARGET_SIMD"
- ""
-)
-
-(define_expand "reduc_splus_<mode>"
- [(set (match_operand:V2F 0 "register_operand" "=w")
-       (unspec:V2F [(match_operand:V2F 1 "register_operand" "w")]
-		    UNSPEC_FADDV))]
- "TARGET_SIMD"
- ""
-)
-
-;; Reduction across lanes.
-
-(define_insn "aarch64_addv<mode>"
- [(set (match_operand:VDQV 0 "register_operand" "=w")
-       (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- "addv\\t%<Vetype>0, %1.<Vtype>"
-  [(set_attr "simd_type" "simd_addv")
-   (set_attr "simd_mode" "<MODE>")]
-)
-
-(define_expand "reduc_splus_<mode>"
- [(set (match_operand:VDQV 0 "register_operand" "=w")
-       (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- ""
-)
-
-(define_expand "reduc_uplus_<mode>"
- [(set (match_operand:VDQV 0 "register_operand" "=w")
-       (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- ""
-)
-
-(define_insn "aarch64_addvv2di"
- [(set (match_operand:V2DI 0 "register_operand" "=w")
-       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- "addp\\t%d0, %1.2d"
-  [(set_attr "simd_type" "simd_add")
-   (set_attr "simd_mode" "V2DI")]
-)
-
-(define_expand "reduc_uplus_v2di"
- [(set (match_operand:V2DI 0 "register_operand" "=w")
-       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- ""
-)
-
-(define_expand "reduc_splus_v2di"
- [(set (match_operand:V2DI 0 "register_operand" "=w")
-       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- ""
-)
-
-(define_insn "aarch64_addvv2si"
- [(set (match_operand:V2SI 0 "register_operand" "=w")
-       (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- "addp\\t%0.2s, %1.2s, %1.2s"
-  [(set_attr "simd_type" "simd_add")
-   (set_attr "simd_mode" "V2SI")]
-)
-
-(define_expand "reduc_uplus_v2si"
- [(set (match_operand:V2SI 0 "register_operand" "=w")
-       (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- ""
-)
-
-(define_expand "reduc_splus_v2si"
- [(set (match_operand:V2SI 0 "register_operand" "=w")
-       (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- ""
-)
 
 ;; 'across lanes' max and min ops.
 

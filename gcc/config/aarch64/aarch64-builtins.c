@@ -1365,7 +1365,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
 	  switch (fcode)
 	    {
-	      BUILTIN_VDQF (UNOP, addv, 0)
+	      BUILTIN_VALL (UNOP, reduc_splus_, 10)
 		new_stmt = gimple_build_assign_with_ops (
 						REDUC_PLUS_EXPR,
 						gimple_call_lhs (stmt),
