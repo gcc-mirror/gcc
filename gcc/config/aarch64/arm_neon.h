@@ -21544,7 +21544,7 @@ vld4q_f64 (const float64_t * __a)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vmax_f32 (float32x2_t __a, float32x2_t __b)
 {
-  return __builtin_aarch64_fmaxv2sf (__a, __b);
+  return __builtin_aarch64_smax_nanv2sf (__a, __b);
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
@@ -21589,13 +21589,13 @@ vmax_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vmaxq_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return __builtin_aarch64_fmaxv4sf (__a, __b);
+  return __builtin_aarch64_smax_nanv4sf (__a, __b);
 }
 
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vmaxq_f64 (float64x2_t __a, float64x2_t __b)
 {
-  return __builtin_aarch64_fmaxv2df (__a, __b);
+  return __builtin_aarch64_smax_nanv2df (__a, __b);
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
@@ -21642,7 +21642,7 @@ vmaxq_u32 (uint32x4_t __a, uint32x4_t __b)
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vmin_f32 (float32x2_t __a, float32x2_t __b)
 {
-  return __builtin_aarch64_fminv2sf (__a, __b);
+  return __builtin_aarch64_smin_nanv2sf (__a, __b);
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
@@ -21687,13 +21687,13 @@ vmin_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vminq_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return __builtin_aarch64_fminv4sf (__a, __b);
+  return __builtin_aarch64_smin_nanv4sf (__a, __b);
 }
 
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vminq_f64 (float64x2_t __a, float64x2_t __b)
 {
-  return __builtin_aarch64_fminv2df (__a, __b);
+  return __builtin_aarch64_smin_nanv2df (__a, __b);
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))

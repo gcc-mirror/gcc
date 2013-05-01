@@ -1,5 +1,44 @@
 2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def
+	(reduc_smax_): New.
+	(reduc_smin_): Likewise.
+	(reduc_umax_): Likewise.
+	(reduc_umin_): Likewise.
+	(reduc_smax_nan_): Likewise.
+	(reduc_smin_nan_): Likewise.
+	(fmax): Remove.
+	(fmin): Likewise.
+	(smax): Update for V2SF, V4SF and V2DF modes.
+	(smin): Likewise.
+	(smax_nan): New.
+	(smin_nan): Likewise.
+	* config/aarch64/aarch64-simd.md (<maxmin><mode>3): Rename to...
+	(<su><maxmin><mode>3): ...This, refactor.
+	(s<maxmin><mode>3): New.
+	(<maxmin_uns><mode>3): Likewise.
+	(reduc_<maxmin_uns>_<mode>): Refactor.
+	(reduc_<maxmin_uns>_v4sf): Likewise.
+	(reduc_<maxmin_uns>_v2si): Likewise.
+	(aarch64_<fmaxmin><mode>: Remove.
+	* config/aarch64/arm_neon.h (vmax<q>_f<32,64>): Rewrite to use
+	new builtin names.
+	(vmin<q>_f<32,64>): Likewise.
+	* config/iterators.md (unspec): Add UNSPEC_FMAXNMV, UNSPEC_FMINNMV.
+	(FMAXMIN): New.
+	(su): Add mappings for smax, smin, umax, umin.
+	(maxmin): New.
+	(FMAXMINV): Add UNSPEC_FMAXNMV, UNSPEC_FMINNMV.
+	(FMAXMIN): Rename as...
+	(FMAXMIN_UNS): ...This.
+	(maxminv): Remove.
+	(fmaxminv): Likewise.
+	(fmaxmin): Likewise.
+	(maxmin_uns): New.
+	(maxmin_uns_op): Likewise.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/arm_neon.h
 	(vac<ge, gt><sd>_f<32, 64>): Rename to...
 	(vca<ge, gt><sd>_f<32, 64>): ...this, reimpliment in C.
