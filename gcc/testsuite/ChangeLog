@@ -1,3 +1,8 @@
+2013-05-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/bics_1.c: New test.
+	* gcc.target/aarch64/bics_2.c: Likewise.
+
 2013-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57131

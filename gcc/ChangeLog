@@ -1,3 +1,11 @@
+2013-05-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*and_one_cmpl<mode>3_compare0):
+	New pattern.
+	(*and_one_cmplsi3_compare0_uxtw): Likewise.
+	(*and_one_cmpl_<SHIFT:optab><mode>3_compare0): Likewise.
+	(*and_one_cmpl_<SHIFT:optab>si3_compare0_uxtw): Likewise.
+
 2013-05-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-scalar-evolution.c (scev_info_hasher): Remove.
