@@ -1,3 +1,13 @@
+2013-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57142
+	* simplify.c (gfc_simplify_size): Renamed from
+	simplify_size; fix kind=8 handling.
+	(gfc_simplify_size): New function.
+	(gfc_simplify_shape): Add range check.
+	* resolve.c (resolve_function): Fix handling
+	for ISYM_SIZE.
+
 2013-05-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (optimize_power):  Fix typo
