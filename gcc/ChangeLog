@@ -1,6 +1,15 @@
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
+	2013-04-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+        PR target/57018
+        * lra-eliminations.c (mark_not_eliminable): Prevent elimination of
+        a set sp if no stack realignment.
+
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
 	2013-04-18  Vladimir Makarov  <vmakarov@redhat.com>
 
         PR rtl-optimization/56992

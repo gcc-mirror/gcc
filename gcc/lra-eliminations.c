@@ -716,7 +716,9 @@ mark_not_eliminable (rtx x)
 	       ep++)
 	    if (ep->to_rtx == SET_DEST (x)
 		&& SET_DEST (x) != hard_frame_pointer_rtx
-		&& (GET_CODE (SET_SRC (x)) != PLUS
+		&& (! (SUPPORTS_STACK_ALIGNMENT && stack_realign_fp
+		       && REGNO (ep->to_rtx) == STACK_POINTER_REGNUM)
+		    || GET_CODE (SET_SRC (x)) != PLUS
 		    || XEXP (SET_SRC (x), 0) != SET_DEST (x)
 		    || ! CONST_INT_P (XEXP (SET_SRC (x), 1))))
 	      setup_can_eliminate (ep, false);
