@@ -1,6 +1,14 @@
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
+	2013-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+        PR rtl-optimization/56992
+        * g++.dg/opt/pr56999.C: New test.
+
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
 	2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
 
         PR rtl-optimization/56847

@@ -2305,11 +2305,20 @@ lra (FILE *f)
 	    lra_assign ();
 	  else
 	    {
-	      /* Do coalescing only for regular algorithms.  */
-	      if (! lra_assign () && lra_coalesce ())
-		live_p = false;
+	      bool spill_p = !lra_assign ();
+
 	      if (lra_undo_inheritance ())
 		live_p = false;
+	      if (spill_p)
+		{
+		  if (! live_p)
+		    {
+		      lra_create_live_ranges (true);
+		      live_p = true;
+		    }
+		  if (lra_coalesce ())
+		    live_p = false;
+		}
 	      if (! live_p)
 		lra_clear_live_ranges ();
 	    }
