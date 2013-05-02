@@ -1,3 +1,8 @@
+2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cstdio: Add comment about LWG 2249.
+	* include/c_std/cstdio: Likewise.
+
 2013-04-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper): Fix
