@@ -1,3 +1,23 @@
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.c (scev_info_hasher): Remove.
+	(struct instantiate_cache_entry): New type.
+	(struct instantiate_cache_entry_hasher): New hashtable descriptor.
+	(struct instantiate_cache_type): New type.
+	(set_instantiated_value, get_instantiated_value): Remove.
+	(get_instantiated_value_entry): New function.
+	(instantiate_scev_name): Use the new cache and adjust.
+	(instantiate_scev_poly): Adjust.
+	(instantiate_scev_binary): Likewise.
+	(instantiate_array_ref): Likewise.
+	(instantiate_scev_convert): Likewise.
+	(instantiate_scev_not): Likewise.
+	(instantiate_scev_3): Likewise.
+	(instantiate_scev_2): Likewise.
+	(instantiate_scev_r): Likewise.
+	(instantiate_scev): Likewise.
+	(resolve_mixers): Likewise.
+
 2013-05-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/57091
