@@ -1,3 +1,9 @@
+2013-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57142
+	* gfortran.dg/size_kind_2.f90: New.
+	* gfortran.dg/size_kind_3.f90: New.
+
 2013-05-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57140
