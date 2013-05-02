@@ -2197,7 +2197,9 @@ process_alt_operands (int only_alternative)
 			 number of reload regs.  */
 		      && (reload_nregs < best_reload_nregs
 			  || (reload_nregs == best_reload_nregs
-			      && best_reload_sum < reload_sum))))))
+			      && (best_reload_sum < reload_sum
+				  || (best_reload_sum == reload_sum
+				      && nalt < goal_alt_number))))))))
 	{
 	  for (nop = 0; nop < n_operands; nop++)
 	    {
