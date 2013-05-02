@@ -2208,8 +2208,11 @@ copy_loops (bitmap blocks_to_copy,
 
 	  /* Assign the new loop its header and latch and associate
 	     those with the new loop.  */
-	  dest_loop->header = (basic_block)src_loop->header->aux;
-	  dest_loop->header->loop_father = dest_loop;
+	  if (src_loop->header != NULL)
+	    {
+	      dest_loop->header = (basic_block)src_loop->header->aux;
+	      dest_loop->header->loop_father = dest_loop;
+	    }
 	  if (src_loop->latch != NULL)
 	    {
 	      dest_loop->latch = (basic_block)src_loop->latch->aux;
@@ -2335,6 +2338,11 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
       /* Defer to cfgcleanup to update loop-father fields of basic-blocks.  */
       loops_state_set (LOOPS_NEED_FIXUP);
     }
+
+  /* If the loop tree in the source function needed fixup, mark the
+     destination loop tree for fixup, too.  */
+  if (loops_for_fn (src_cfun)->state & LOOPS_NEED_FIXUP)
+    loops_state_set (LOOPS_NEED_FIXUP);
 
   if (gimple_in_ssa_p (cfun))
     FOR_ALL_BB_FN (bb, cfun_to_copy)
