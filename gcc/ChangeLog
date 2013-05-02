@@ -1,5 +1,11 @@
 2013-05-02  Richard Biener  <rguenther@suse.de>
 
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Remove rename_virts
+	bitmap and its handling.
+	(pass_cleanup_eh): Set todo_flags_finish to TODO_verify_ssa.
+
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/57140
 	* tree-inline.c (copy_loops): Properly handle removed loops.
 	(copy_cfg_body): Mark destination loops for fixup if source
