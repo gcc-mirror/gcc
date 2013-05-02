@@ -1,3 +1,8 @@
+2013-05-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/56988
+	* gcc.dg/ipa/pr56988.c: New test.
+
 2013-05-02  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/bics_1.c: New test.
