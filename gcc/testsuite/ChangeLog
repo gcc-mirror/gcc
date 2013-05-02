@@ -1,3 +1,11 @@
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
+	2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+        PR rtl-optimization/56847
+        * gcc.dg/pr56847.c: New test.
+
 2013-05-02  Ian Bolton  <ian.bolton@arm.com>
 
 	Backport from mainline (fix to botched commit)

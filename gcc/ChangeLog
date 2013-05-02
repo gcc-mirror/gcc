@@ -1,3 +1,13 @@
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
+	2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+        PR rtl-optimization/56847
+        * lra-constraints.c (process_alt_operands): Discourage alternative
+        with non-matche doffsettable memory constraint fro memory with
+        known offset.
+
 2013-05-02  Ian Bolton  <ian.bolton@arm.com>
 
 	Backport from mainline
