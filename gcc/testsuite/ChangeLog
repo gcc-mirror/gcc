@@ -1,3 +1,8 @@
+2013-05-02  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/56732
+	* gcc.target/arm/pr56732-1.c: New test.
+
 2013-05-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/56988

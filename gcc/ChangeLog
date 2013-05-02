@@ -1,3 +1,9 @@
+2013-05-02  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/56732
+	* config/arm/arm.c (arm_expand_epilogue): Check really_return before
+	generating simple_return for naked functions.
+
 2013-05-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/56988
