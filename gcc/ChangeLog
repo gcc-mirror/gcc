@@ -1,5 +1,11 @@
 2013-05-02  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.md (movsi_aarch64): Only allow to/from
+	S reg when fp attribute set.
+	(movdi_aarch64): Only allow to/from D reg when fp attribute set.
+
+2013-05-02  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/aarch64/aarch64.md (*and_one_cmpl<mode>3_compare0):
 	New pattern.
 	(*and_one_cmplsi3_compare0_uxtw): Likewise.
