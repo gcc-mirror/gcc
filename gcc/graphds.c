@@ -58,8 +58,10 @@ new_graph (int n_vertices)
 {
   struct graph *g = XNEW (struct graph);
 
+  gcc_obstack_init (&g->ob);
   g->n_vertices = n_vertices;
-  g->vertices = XCNEWVEC (struct vertex, n_vertices);
+  g->vertices = XOBNEWVEC (&g->ob, struct vertex, n_vertices);
+  memset (g->vertices, 0, sizeof (struct vertex) * n_vertices);
 
   return g;
 }
@@ -69,9 +71,8 @@ new_graph (int n_vertices)
 struct graph_edge *
 add_edge (struct graph *g, int f, int t)
 {
-  struct graph_edge *e = XNEW (struct graph_edge);
+  struct graph_edge *e = XOBNEW (&g->ob, struct graph_edge);
   struct vertex *vf = &g->vertices[f], *vt = &g->vertices[t];
-
 
   e->src = f;
   e->dest = t;
@@ -324,20 +325,7 @@ for_each_edge (struct graph *g, graphds_edge_callback callback)
 void
 free_graph (struct graph *g)
 {
-  struct graph_edge *e, *n;
-  struct vertex *v;
-  int i;
-
-  for (i = 0; i < g->n_vertices; i++)
-    {
-      v = &g->vertices[i];
-      for (e = v->succ; e; e = n)
-	{
-	  n = e->succ_next;
-	  free (e);
-	}
-    }
-  free (g->vertices);
+  obstack_free (&g->ob, NULL);
   free (g);
 }
 

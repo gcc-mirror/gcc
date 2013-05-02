@@ -1,3 +1,12 @@
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	* graphds.h (struct graph): Add obstack member.
+	* graphds.c (new_graph): Initialize obstack and allocate
+	vertices from it.
+	(add_edge): Allocate edge from the obstack.
+	(free_graph): Free the obstack instead of all edges and
+	vertices.
+
 2013-05-02  Teresa Johnson  <tejohnson@google.com>
 
 	* loop-unswitch.c (unswitch_loop): Use helper routines with rounding
