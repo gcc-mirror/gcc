@@ -1,3 +1,8 @@
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (process_alt_operands): Add checking alt
+	number to choose the best alternative.
+
 2013-05-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-eh.c (cleanup_empty_eh_merge_phis): Remove rename_virts
