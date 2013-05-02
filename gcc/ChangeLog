@@ -1,3 +1,11 @@
+2013-05-02  Ian Bolton  <ian.bolton@arm.com>
+
+	Backport from mainline
+	2013-03-28  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_can_eliminate): Keep frame
+	record only when desired or required.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57104

@@ -3881,14 +3881,21 @@ aarch64_can_eliminate (const int from, const int to)
     }
   else
     {
-      /* If we decided that we didn't need a frame pointer but then used
-	 LR in the function, then we do need a frame pointer after all, so
-	 prevent this elimination to ensure a frame pointer is used.  */
+      /* If we decided that we didn't need a leaf frame pointer but then used
+	 LR in the function, then we'll want a frame pointer after all, so
+	 prevent this elimination to ensure a frame pointer is used.
 
+	 NOTE: the original value of flag_omit_frame_pointer gets trashed
+	 IFF flag_omit_leaf_frame_pointer is true, so we check the value
+	 of faked_omit_frame_pointer here (which is true when we always
+	 wish to keep non-leaf frame pointers but only wish to keep leaf frame
+	 pointers when LR is clobbered).  */
       if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM
-	  && df_regs_ever_live_p (LR_REGNUM))
+	  && df_regs_ever_live_p (LR_REGNUM)
+	  && faked_omit_frame_pointer)
 	return false;
     }
+
   return true;
 }
 
