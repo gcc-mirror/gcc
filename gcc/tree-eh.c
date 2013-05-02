@@ -3949,7 +3949,6 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
   gimple_stmt_iterator ngsi, ogsi;
   edge_iterator ei;
   edge e;
-  bitmap rename_virts;
   bitmap ophi_handled;
 
   /* The destination block must not be a regular successor for any
@@ -3972,7 +3971,6 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
     redirect_edge_var_map_clear (e);
 
   ophi_handled = BITMAP_ALLOC (NULL);
-  rename_virts = BITMAP_ALLOC (NULL);
 
   /* First, iterate through the PHIs on NEW_BB and set up the edge_var_map
      for the edges we're going to move.  */
@@ -4025,11 +4023,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	      redirect_edge_var_map_add (e, nresult, oop, oloc);
 	    }
 	}
-      /* If we didn't find the PHI, but it's a VOP, remember to rename
-	 it later, assuming all other tests succeed.  */
-      else if (virtual_operand_p (nresult))
-	bitmap_set_bit (rename_virts, SSA_NAME_VERSION (nresult));
-      /* If we didn't find the PHI, and it's a real variable, we know
+      /* If we didn't find the PHI, if it's a real variable or a VOP, we know
 	 from the fact that OLD_BB is tree_empty_eh_handler_p that the
 	 variable is unchanged from input to the block and we can simply
 	 re-use the input to NEW_BB from the OLD_BB_OUT edge.  */
@@ -4050,24 +4044,6 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
       tree oresult = gimple_phi_result (ophi);
       if (!bitmap_bit_p (ophi_handled, SSA_NAME_VERSION (oresult)))
 	goto fail;
-    }
-
-  /* At this point we know that the merge will succeed.  Remove the PHI
-     nodes for the virtuals that we want to rename.  */
-  if (!bitmap_empty_p (rename_virts))
-    {
-      for (ngsi = gsi_start_phis (new_bb); !gsi_end_p (ngsi); )
-	{
-	  gimple nphi = gsi_stmt (ngsi);
-	  tree nresult = gimple_phi_result (nphi);
-	  if (bitmap_bit_p (rename_virts, SSA_NAME_VERSION (nresult)))
-	    {
-	      mark_virtual_phi_result_for_renaming (nphi);
-	      remove_phi_node (&ngsi, true);
-	    }
-	  else
-	    gsi_next (&ngsi);
-	}
     }
 
   /* Finally, move the edges and update the PHIs.  */
@@ -4097,14 +4073,12 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
       ei_next (&ei);
 
   BITMAP_FREE (ophi_handled);
-  BITMAP_FREE (rename_virts);
   return true;
 
  fail:
   FOR_EACH_EDGE (e, ei, old_bb->preds)
     redirect_edge_var_map_clear (e);
   BITMAP_FREE (ophi_handled);
-  BITMAP_FREE (rename_virts);
   return false;
 }
 
@@ -4467,7 +4441,7 @@ struct gimple_opt_pass pass_cleanup_eh = {
    0,				/* properties_provided */
    0,				/* properties_destroyed */
    0,				/* todo_flags_start */
-   0             		/* todo_flags_finish */
+   TODO_verify_ssa    		/* todo_flags_finish */
    }
 };
 
