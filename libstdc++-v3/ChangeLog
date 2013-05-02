@@ -1,5 +1,22 @@
 2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/type_traits (is_null_pointer): Add.
+	(__is_nullptr_t): Implement in terms of the latter.
+	(is_fundamental, is_scalar): Adjust.
+	* testsuite/20_util/is_null_pointer/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/is_null_pointer/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_null_pointer/value.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/c_global/cstdio: Add comment about LWG 2249.
 	* include/c_std/cstdio: Likewise.
 

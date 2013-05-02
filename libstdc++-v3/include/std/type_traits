@@ -402,17 +402,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 
   template<typename>
-    struct __is_nullptr_t_helper
+    struct __is_null_pointer_helper
     : public false_type { };
 
   template<>
-    struct __is_nullptr_t_helper<std::nullptr_t>
+    struct __is_null_pointer_helper<std::nullptr_t>
     : public true_type { };
 
-  // __is_nullptr_t (extension).
+  /// is_null_pointer (LWG 2247).
+  template<typename _Tp>
+    struct is_null_pointer
+    : public __is_null_pointer_helper<typename remove_cv<_Tp>::type>::type
+    { };
+
+  /// __is_nullptr_t (extension).
   template<typename _Tp>
     struct __is_nullptr_t
-    : public __is_nullptr_t_helper<typename remove_cv<_Tp>::type>::type
+    : public is_null_pointer<_Tp>
     { };
 
   // Composite type categories.
@@ -433,7 +439,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_fundamental
   template<typename _Tp>
     struct is_fundamental
-    : public __or_<is_arithmetic<_Tp>, is_void<_Tp>, __is_nullptr_t<_Tp>>::type
+    : public __or_<is_arithmetic<_Tp>, is_void<_Tp>,
+		   is_null_pointer<_Tp>>::type
     { };
 
   /// is_object
@@ -450,7 +457,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_scalar
     : public __or_<is_arithmetic<_Tp>, is_enum<_Tp>, is_pointer<_Tp>,
-                   is_member_pointer<_Tp>, __is_nullptr_t<_Tp>>::type
+                   is_member_pointer<_Tp>, is_null_pointer<_Tp>>::type
     { };
 
   /// is_compound
