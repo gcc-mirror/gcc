@@ -825,7 +825,7 @@
    fmov\\t%s0, %s1"
   [(set_attr "v8type" "move,alu,load1,load1,store1,store1,fmov,fmov,fmov")
    (set_attr "mode" "SI")
-   (set_attr "fp" "*,*,*,*,*,*,yes,yes,yes")]
+   (set_attr "fp" "*,*,*,yes,*,yes,yes,yes,yes")]
 )
 
 (define_insn "*movdi_aarch64"
@@ -850,7 +850,7 @@
    movi\\t%d0, %1"
   [(set_attr "v8type" "move,move,move,alu,load1,load1,store1,store1,adr,adr,fmov,fmov,fmov,fmov")
    (set_attr "mode" "DI")
-   (set_attr "fp" "*,*,*,*,*,*,*,*,*,*,yes,yes,yes,yes")]
+   (set_attr "fp" "*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,yes")]
 )
 
 (define_insn "insv_imm<mode>"
