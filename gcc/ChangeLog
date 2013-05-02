@@ -1,3 +1,21 @@
+2013-05-02  Teresa Johnson  <tejohnson@google.com>
+
+	* loop-unswitch.c (unswitch_loop): Use helper routines with rounding
+	divides.
+	* cfg.c (update_bb_profile_for_threading): Ditto.
+	* tree-inline.c (copy_bb): Ditto.
+	(copy_edges_for_bb): Ditto.
+	(initialize_cfun): Ditto.
+	(copy_cfg_body): Ditto.
+	(expand_call_inline): Ditto.
+	* ipa-inline-analysis.c (estimate_edge_size_and_time): Ditto.
+	(estimate_node_size_and_time): Ditto.
+	(inline_merge_summary): Ditto.
+	* cgraphclones.c (cgraph_clone_edge): Ditto.
+	(cgraph_clone_node): Ditto.
+	* sched-rgn.c (compute_dom_prob_ps): Ditto.
+	(compute_trg_info): Ditto.
+
 2013-05-02  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (movsi_aarch64): Only allow to/from

@@ -2790,8 +2790,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *time,
       && hints && cgraph_maybe_hot_edge_p (e))
     *hints |= INLINE_HINT_indirect_call;
   *size += call_size * INLINE_SIZE_SCALE;
-  /* Update to use apply_probability().  */
-  *time += call_time * prob / REG_BR_PROB_BASE
+  *time += apply_probability ((gcov_type) call_time, prob)
     * e->frequency * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE);
   if (*time > MAX_TIME * INLINE_TIME_SCALE)
     *time = MAX_TIME * INLINE_TIME_SCALE;
@@ -2901,8 +2900,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
 					      inline_param_summary);
 	    gcc_checking_assert (prob >= 0);
 	    gcc_checking_assert (prob <= REG_BR_PROB_BASE);
-            /* Update to use apply_probability().  */
-	    time += ((gcov_type) e->time * prob) / REG_BR_PROB_BASE;
+	    time += apply_probability ((gcov_type) e->time, prob);
 	  }
 	if (time > MAX_TIME * INLINE_TIME_SCALE)
 	  time = MAX_TIME * INLINE_TIME_SCALE;
@@ -3311,8 +3309,7 @@ inline_merge_summary (struct cgraph_edge *edge)
 	  int prob = predicate_probability (callee_info->conds,
 					    &e->predicate,
 					    clause, es->param);
-          /* Update to use apply_probability().  */
-	  add_time = ((gcov_type) add_time * prob) / REG_BR_PROB_BASE;
+	  add_time = apply_probability ((gcov_type) add_time, prob);
 	  if (add_time > MAX_TIME * INLINE_TIME_SCALE)
 	    add_time = MAX_TIME * INLINE_TIME_SCALE;
 	  if (prob != REG_BR_PROB_BASE
