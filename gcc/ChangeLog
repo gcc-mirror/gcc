@@ -1,6 +1,15 @@
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
+	2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+        PR rtl-optimizations/57046
+        * lra-constraints (split_reg): Set up lra_risky_transformations_p
+        for multi-reg splits.
+
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
 	2013-04-22  Vladimir Makarov  <vmakarov@redhat.com>
 
         PR target/57018
