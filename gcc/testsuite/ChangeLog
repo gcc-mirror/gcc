@@ -1,3 +1,8 @@
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57140
+	* g++.dg/torture/pr57140.C: New testcase.
+
 2013-05-02  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	PR target/56732
