@@ -1,6 +1,14 @@
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
+	2013-04-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57097
+	* gcc.target/i386/pr57097.c: New test.
+
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
 	2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
         PR rtl-optimizations/57046
