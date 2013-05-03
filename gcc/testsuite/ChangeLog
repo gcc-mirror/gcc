@@ -1,3 +1,8 @@
+2013-05-03  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/tst_1.c: New test.
+	* gcc.target/aarch64/tst_2.c: Likewise
+
 2013-05-02  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/57144
