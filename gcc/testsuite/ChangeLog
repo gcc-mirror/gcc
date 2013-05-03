@@ -1,3 +1,13 @@
+2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/slsr-32.c: New.
+	* gcc.dg/tree-ssa/slsr-33.c: New.
+	* gcc.dg/tree-ssa/slsr-34.c: New.
+	* gcc.dg/tree-ssa/slsr-35.c: New.
+	* gcc.dg/tree-ssa/slsr-36.c: New.
+	* gcc.dg/tree-ssa/slsr-37.c: New.
+	* gcc.dg/tree-ssa/slsr-38.c: New.
+
 2013-05-03  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/tst_1.c: New test.
