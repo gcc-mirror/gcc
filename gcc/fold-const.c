@@ -1366,6 +1366,44 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 
       return build_vector (type, elts);
     }
+
+  /* Shifts allow a scalar offset for a vector.  */
+  if (TREE_CODE (arg1) == VECTOR_CST
+      && TREE_CODE (arg2) == INTEGER_CST)
+    {
+      tree type = TREE_TYPE (arg1);
+      int count = TYPE_VECTOR_SUBPARTS (type), i;
+      tree *elts = XALLOCAVEC (tree, count);
+
+      if (code == VEC_LSHIFT_EXPR
+	  || code == VEC_RSHIFT_EXPR)
+	{
+	  if (!host_integerp (arg2, 1))
+	    return NULL_TREE;
+
+	  unsigned HOST_WIDE_INT shiftc = tree_low_cst (arg2, 1);
+	  unsigned HOST_WIDE_INT outerc = tree_low_cst (TYPE_SIZE (type), 1);
+	  unsigned HOST_WIDE_INT innerc
+	    = tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+	  if (shiftc >= outerc || (shiftc % innerc) != 0)
+	    return NULL_TREE;
+	  int offset = shiftc / innerc;
+	  if (code == VEC_LSHIFT_EXPR)
+	    offset = -offset;
+	  tree zero = build_zero_cst (TREE_TYPE (type));
+	  for (i = 0; i < count; i++)
+	    {
+	      if (i + offset < 0 || i + offset >= count)
+		elts[i] = zero;
+	      else
+		elts[i] = VECTOR_CST_ELT (arg1, i + offset);
+	    }
+	}
+      else
+	return NULL_TREE;
+
+      return build_vector (type, elts);
+    }
   return NULL_TREE;
 }
 
@@ -9862,7 +9900,8 @@ fold_binary_loc (location_t loc,
       || (TREE_CODE (arg0) == FIXED_CST && TREE_CODE (arg1) == FIXED_CST)
       || (TREE_CODE (arg0) == FIXED_CST && TREE_CODE (arg1) == INTEGER_CST)
       || (TREE_CODE (arg0) == COMPLEX_CST && TREE_CODE (arg1) == COMPLEX_CST)
-      || (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST))
+      || (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
+      || (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == INTEGER_CST))
     {
       if (kind == tcc_binary)
 	{

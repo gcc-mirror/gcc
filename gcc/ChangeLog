@@ -1,3 +1,18 @@
+2013-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57051
+	* fold-const.c (const_binop): Handle VEC_LSHIFT_EXPR
+	and VEC_RSHIFT_EXPR if shift count is a multiple of element
+	bitsize.
+
+	2013-04-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_binary_loc): Call const_binop also for mixed
+	vector-scalar operations.
+
 2013-05-03  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
