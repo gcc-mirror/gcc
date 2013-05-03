@@ -1,6 +1,6 @@
 2013-05-03  Jeff Law  <law@redhat.com>
 
-	PR tree-optimization/57411
+	PR tree-optimization/57144
 	* tree-vrp.c (simplify_cond_using_ranges): Verify the constant
 	operand of the condition will bit into the new type when eliminating
 	a cast feeding a condition.
