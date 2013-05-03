@@ -1,3 +1,10 @@
+2013-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57130
+	* combine.c (make_compound_operation) <case SUBREG>: Pass
+	SET instead of COMPARE as in_code to the recursive call
+	if needed.
+
 2013-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (isa): Add x64_sse4_noavx and x64_avx members.
