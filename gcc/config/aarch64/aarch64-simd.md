@@ -556,6 +556,17 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "*fabd_scalar<mode>3"
+  [(set (match_operand:GPF 0 "register_operand" "=w")
+        (abs:GPF (minus:GPF
+                 (match_operand:GPF 1 "register_operand" "w")
+                 (match_operand:GPF 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "fabd\t%<s>0, %<s>1, %<s>2"
+  [(set_attr "simd_type" "simd_fabd")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "and<mode>3"
   [(set (match_operand:VDQ 0 "register_operand" "=w")
         (and:VDQ (match_operand:VDQ 1 "register_operand" "w")

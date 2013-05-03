@@ -1,3 +1,8 @@
+2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*fabd_scalar<mode>3): Support
+	scalar form of FABD instruction.
+
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (process_alt_operands): Add checking alt
