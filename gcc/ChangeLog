@@ -1,3 +1,11 @@
+2013-05-03  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2013-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57066
+        * builtins.c (fold_builtin_logb): Return +Inf for -Inf.
+
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline

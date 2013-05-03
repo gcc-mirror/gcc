@@ -1,3 +1,11 @@
+2013-05-03  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2013-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57066
+        * gcc.dg/torture/builtin-logb-1.c: Adjust testcase.
+
 2013-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57131
