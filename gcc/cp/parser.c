@@ -2872,8 +2872,16 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
   else if (parser->scope != error_mark_node)
     {
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
-	error_at (location, "%qE in namespace %qE does not name a type",
-		  id, parser->scope);
+	{
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	    error_at (location_of (id),
+		      "%qE in namespace %qE does not name a template type",
+		      id, parser->scope);
+	  else
+	    error_at (location_of (id),
+		      "%qE in namespace %qE does not name a type",
+		      id, parser->scope);
+	}
       else if (CLASS_TYPE_P (parser->scope)
 	       && constructor_name_p (id, parser->scope))
 	{
@@ -2890,8 +2898,16 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 		  "%qT is a dependent scope",
 		  parser->scope, id, parser->scope);
       else if (TYPE_P (parser->scope))
-	error_at (location, "%qE in %q#T does not name a type",
-		  id, parser->scope);
+	{
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	    error_at (location_of (id),
+		      "%qE in %q#T does not name a template type",
+		      id, parser->scope);
+	  else
+	    error_at (location_of (id),
+		      "%qE in %q#T does not name a type",
+		      id, parser->scope);
+	}
       else
 	gcc_unreachable ();
     }

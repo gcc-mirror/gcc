@@ -1,3 +1,9 @@
+2013-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/14283
+	* g++.dg/parse/error51.C: New.
+	* g++.dg/parse/error15.C: Adjust column numbers.
+
 2013-05-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57142
