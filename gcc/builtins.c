@@ -9692,7 +9692,16 @@ fold_builtin_logb (location_t loc, tree arg, tree rettype)
       case rvc_inf:
 	/* If arg is Inf or NaN and we're logb, return it.  */
 	if (TREE_CODE (rettype) == REAL_TYPE)
-	  return fold_convert_loc (loc, rettype, arg);
+	  {
+	    /* For logb(-Inf) we have to return +Inf.  */
+	    if (real_isinf (value) && real_isneg (value))
+	      {
+		REAL_VALUE_TYPE tem;
+		real_inf (&tem);
+		return build_real (rettype, tem);
+	      }
+	    return fold_convert_loc (loc, rettype, arg);
+	  }
 	/* Fall through... */
       case rvc_zero:
 	/* Zero may set errno and/or raise an exception for logb, also
