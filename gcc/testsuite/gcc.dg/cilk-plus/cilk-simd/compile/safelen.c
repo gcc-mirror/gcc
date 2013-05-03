@@ -6,7 +6,7 @@ int *a, *b;
 void foo()
 {
   int i;
-#pragma simd vectorlength(4, 8)
+#pragma simd vectorlength(8)
   for (i=0; i < 1000; ++i)
     a[i] = b[i];
 }

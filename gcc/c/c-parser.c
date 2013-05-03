@@ -11580,76 +11580,37 @@ c_parser_cilk_verify_simd (c_parser *parser,
 }
 
 /* Cilk Plus:
-   assert */
-
-static tree
-c_parser_cilk_clause_assert (c_parser *parser, tree clauses)
-{
-  check_no_duplicate_clause (clauses, OMP_CLAUSE_CILK_ASSERT, "assert");
-
-  location_t loc = c_parser_peek_token (parser)->location;
-  tree c = build_omp_clause (loc, OMP_CLAUSE_CILK_ASSERT);
-  OMP_CLAUSE_CHAIN (c) = clauses;
-  return c;
-}
-
-/* Cilk Plus:
-   noassert */
-
-static tree
-c_parser_cilk_clause_noassert (c_parser *parser ATTRIBUTE_UNUSED,
-			       tree clauses)
-{
-  /* Only check that we don't already have an assert clause.  */
-  check_no_duplicate_clause (clauses, OMP_CLAUSE_CILK_ASSERT, "assert");
-
-  return clauses;
-}
-
-/* Cilk Plus:
-   vectorlength ( constant-expression-list )
-
-   constant-expression-list:
-     constant-expression
-     constant-expression-list , constant-expression */
+   vectorlength ( constant-expression ) */
 
 static tree
 c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses)
 {
-  /* Multiple vectorlength clauses are allowed and treated as a
-     union, so we don't check for a duplicate clause.  */
+  /* The vectorlength clause behaves exactly like OpenMP's safelen
+     clause.  Represent it in OpenMP terms.  */
+  check_no_duplicate_clause (clauses, OMP_CLAUSE_SAFELEN, "vectorlength");
 
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return clauses;
 
   location_t loc = c_parser_peek_token (parser)->location;
-  while (true)
+  tree expr = c_parser_expr_no_commas (parser, NULL).value;
+  expr = c_fully_fold (expr, false, NULL);
+
+  if (!TREE_TYPE (expr)
+      || !TREE_CONSTANT (expr)
+      || !INTEGRAL_TYPE_P (TREE_TYPE (expr)))
+    error_at (loc, "vectorlength must be an integer constant");
+  else if (exact_log2 (TREE_INT_CST_LOW (expr)) == -1)
+    error_at (loc, "vectorlength must be a power of 2");
+  else
     {
-      tree expr = c_parser_expr_no_commas (parser, NULL).value;
-      expr = c_fully_fold (expr, false, NULL);
-
-      if (!TREE_TYPE (expr)
-	  || !TREE_CONSTANT (expr)
-	  || !INTEGRAL_TYPE_P (TREE_TYPE (expr)))
-	error_at (loc, "vectorlength must be an integer constant");
-      else if (exact_log2 (TREE_INT_CST_LOW (expr)) == -1)
-	error_at (loc, "vectorlength must be a power of 2");
-      else
-	{
-	  tree u = build_omp_clause (loc, OMP_CLAUSE_CILK_VECTORLENGTH);
-	  OMP_CLAUSE_CILK_VECTORLENGTH_EXPR (u) = expr;
-	  OMP_CLAUSE_CHAIN (u) = clauses;
-	  clauses = u;
-	}
-
-      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	{
-	  c_parser_consume_token (parser);
-	  return clauses;
-	}
-      if (c_parser_next_token_is (parser, CPP_COMMA))
-	c_parser_consume_token (parser);
+      tree u = build_omp_clause (loc, OMP_CLAUSE_SAFELEN);
+      OMP_CLAUSE_SAFELEN_EXPR (u) = expr;
+      OMP_CLAUSE_CHAIN (u) = clauses;
+      clauses = u;
     }
+
+  c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>");
 
   return clauses;
 }
@@ -11752,11 +11713,7 @@ c_parser_cilk_clause_name (c_parser *parser)
 
   const char *p = IDENTIFIER_POINTER (token->value);
 
-  if (!strcmp (p, "noassert"))
-    result = PRAGMA_CILK_CLAUSE_NOASSERT;
-  else if (!strcmp (p, "assert"))
-    result = PRAGMA_CILK_CLAUSE_ASSERT;
-  else if (!strcmp (p, "vectorlength"))
+  if (!strcmp (p, "vectorlength"))
     result = PRAGMA_CILK_CLAUSE_VECTORLENGTH;
   else if (!strcmp (p, "linear"))
     result = PRAGMA_CILK_CLAUSE_LINEAR;
@@ -11791,12 +11748,6 @@ c_parser_cilk_all_clauses (c_parser *parser)
 
       switch (c_kind)
 	{
-	case PRAGMA_CILK_CLAUSE_NOASSERT:
-	  clauses = c_parser_cilk_clause_noassert (parser, clauses);
-	  break;
-	case PRAGMA_CILK_CLAUSE_ASSERT:
-	  clauses = c_parser_cilk_clause_assert (parser, clauses);
-	  break;
 	case PRAGMA_CILK_CLAUSE_VECTORLENGTH:
 	  clauses = c_parser_cilk_clause_vectorlength (parser, clauses);
 	  break;
@@ -11809,6 +11760,12 @@ c_parser_cilk_all_clauses (c_parser *parser)
 	  break;
 	case PRAGMA_CILK_CLAUSE_FIRSTPRIVATE:
 	  /* Use the OpenMP counterpart.  */
+	  /* FIXME: Note from the Cilk Plus forum: "For the time
+	     being, assume that firstprivate refers to the vector
+	     lane. (This is what is implemented in the icc compiler.)
+	     As we update the spec, we will harmonize these
+	     definitions with OpenMP 4, possibly deprecating
+	     firstprivate."  */
 	  clauses = c_parser_omp_clause_firstprivate (parser, clauses);
 	  break;
 	case PRAGMA_CILK_CLAUSE_LASTPRIVATE:

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99 -fcilkplus" } */
+/* { dg-options "-O3 -std=c99 -fcilkplus -Werror -Wunknown-pragmas" } */
 
 volatile int *a, *b;
 
@@ -7,17 +7,9 @@ void foo()
 {
   int i, j, k;
 
-#pragma simd assert aoeu /* { dg-error "expected '#pragma simd' clause" } */
-  for (int i=0; i < 1000; ++i)
-    a[i] = b[j];
-
-#pragma simd noassert aoeu /* { dg-error "expected '#pragma simd' clause" } */
-  for (int i=0; i < 1000; ++i)
-    a[i] = b[j];
-
-#pragma simd assert noassert /* { dg-error "too many 'assert' clauses" } */
-  for (int i=0; i < 1000; ++i)
-    a[i] = b[j];
+#pragma simd assert /* { dg-error "expected '#pragma simd' clause" } */
+  for (i=0; i < 100; ++i)
+    a[i] = b[i];
 
 #pragma simd vectorlength /* { dg-error "expected '\\('" } */
   for (int i=0; i < 1000; ++i)
@@ -31,7 +23,7 @@ void foo()
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
-#pragma simd vectorlength(4,8)
+#pragma simd vectorlength(4,8) /* { dg-error "expected '\\)'" } */
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
@@ -44,12 +36,6 @@ void foo()
     a[i] = b[j];
 
 #pragma simd linear(blah) /* { dg-error "'blah' undeclared" } */
-  for (int i=0; i < 1000; ++i)
-    a[i] = b[j];
-
-#pragma simd linear(blah2, 36)
-  /* { dg-error "'blah2' undeclared" "undeclared" { target *-*-* } 50 } */
-  /* { dg-error "expected '\\)'" "expected" { target *-*-* } 50 } */
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
@@ -78,7 +64,13 @@ void foo()
     a[i] = b[j];
 
   // And now everyone in unison!
-#pragma simd assert linear(j : 4) vectorlength(4)
+#pragma simd linear(j : 4) vectorlength(4)
   for (i=0; i < 1000; ++i)
+    a[i] = b[j];
+
+#pragma simd linear(blah2, 36)
+  /* { dg-error "'blah2' undeclared" "undeclared" { target *-*-* } 71 } */
+  /* { dg-error "expected '\\)'" "expected" { target *-*-* } 71 } */
+  for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 }

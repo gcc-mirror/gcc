@@ -2,6 +2,7 @@
 /* { dg-options "-O3 -std=c99 -fcilkplus" } */
 
 int *a, *b, *c;
+int something;
 
 void foo()
 {
@@ -78,15 +79,19 @@ void foo()
   for (i=0; (char)i < 1234; ++i) /* { dg-error "invalid controlling predicate" } */
     a[i] = b[i];
 
-  // icc disallows !=, we'll do the same.
 #pragma simd
-  for (i=255; i != 5; --i) /* { dg-error "invalid controlling predicate" } */
+  for (i=255; i != something; --i)
     a[i] = b[i];
 
   // This condition gets folded into "i != 0" by
-  // c_parser_cilk_for_statement().  Disallow != like above.
+  // c_parser_cilk_for_statement().  This is allowed as per the "!="
+  // allowance above.
 #pragma simd
-  for (i=100; i; --i) /* { dg-error "invalid controlling predicate" } */
+  for (i=100; i; --i)
+    a[i] = b[i];
+
+#pragma simd
+  for (i=100; i != 5; i += something)
     a[i] = b[i];
 
   // Increment must be on the induction variable.

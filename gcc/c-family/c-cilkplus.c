@@ -261,7 +261,8 @@ c_check_cilk_loop (location_t loc, tree decl, tree cond, tree incr, tree body)
       return false;
     }
   bool cond_ok = false;
-  if (TREE_CODE (cond) == LT_EXPR
+  if (TREE_CODE (cond) == NE_EXPR
+      || TREE_CODE (cond) == LT_EXPR
       || TREE_CODE (cond) == LE_EXPR
       || TREE_CODE (cond) == GT_EXPR
       || TREE_CODE (cond) == GE_EXPR)
@@ -304,34 +305,6 @@ c_check_cilk_loop (location_t loc, tree decl, tree cond, tree incr, tree body)
 static tree
 adjust_clauses_for_omp (tree clauses)
 {
-  unsigned int max_vlen = 0;
-  tree c, max_vlen_tree = NULL;
-
-  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-    {
-      /* #pragma simd vectorlength (a, b, c)
-	 is equivalent to:
-	 #pragma omp simd safelen (max (a, b, c)).  */
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_CILK_VECTORLENGTH)
-	{
-	  unsigned int vlen;
-
-	  vlen = TREE_INT_CST_LOW (OMP_CLAUSE_CILK_VECTORLENGTH_EXPR (c));
-	  if (vlen > max_vlen)
-	    {
-	      max_vlen = vlen;
-	      max_vlen_tree = OMP_CLAUSE_CILK_VECTORLENGTH_EXPR (c);
-	    }
-	}
-    }
-  if (max_vlen)
-    {
-      c = build_omp_clause (EXPR_LOCATION (max_vlen_tree),
-			    OMP_CLAUSE_SAFELEN);
-      OMP_CLAUSE_SAFELEN_EXPR (c) = max_vlen_tree;
-      OMP_CLAUSE_CHAIN (c) = clauses;
-      clauses = c;
-    }
   return clauses;
 }
 
@@ -441,8 +414,7 @@ c_finish_cilk_clauses (tree clauses)
 	      case OMP_CLAUSE_REDUCTION:
 		break;
 
-	      case OMP_CLAUSE_CILK_ASSERT:
-	      case OMP_CLAUSE_CILK_VECTORLENGTH:
+	      case OMP_CLAUSE_SAFELEN:
 		goto next;
 
 	      default:

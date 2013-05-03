@@ -1491,8 +1491,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_SAFELEN:
-	case OMP_CLAUSE_CILK_ASSERT:
-	case OMP_CLAUSE_CILK_VECTORLENGTH:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1556,8 +1554,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_ALIGNED:
-	case OMP_CLAUSE_CILK_ASSERT:
-	case OMP_CLAUSE_CILK_VECTORLENGTH:
 	  break;
 
 	default:

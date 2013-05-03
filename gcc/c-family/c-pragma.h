@@ -115,8 +115,6 @@ typedef enum pragma_omp_clause {
 /* All Cilk Plus #pragma omp clauses.  */
 typedef enum pragma_cilk_clause {
   PRAGMA_CILK_CLAUSE_NONE = 0,
-  PRAGMA_CILK_CLAUSE_NOASSERT,
-  PRAGMA_CILK_CLAUSE_ASSERT,
   PRAGMA_CILK_CLAUSE_VECTORLENGTH,
   PRAGMA_CILK_CLAUSE_LINEAR,
   PRAGMA_CILK_CLAUSE_PRIVATE,

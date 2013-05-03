@@ -446,13 +446,7 @@ enum omp_clause_code
   OMP_CLAUSE_SECTIONS,
 
   /* OpenMP clause: taskgroup.  */
-  OMP_CLAUSE_TASKGROUP,
-
-  /* Cilk Plus clause: assert.  */
-  OMP_CLAUSE_CILK_ASSERT,
-
-  /* Cilk Plus clause: vectorlength (constant-expression-list).  */
-  OMP_CLAUSE_CILK_VECTORLENGTH
+  OMP_CLAUSE_TASKGROUP
 };
 
 /* The definition of tree nodes fills the next several pages.  */
@@ -1866,12 +1860,6 @@ extern void protected_set_expr_location (tree, location_t);
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
 					      OMP_CLAUSE_MAP), 0)
-
-/* In an OMP_SIMD_CLAUSE_CILK_VECTORLENGTH, one vectorlength
-   expression.  */
-#define OMP_CLAUSE_CILK_VECTORLENGTH_EXPR(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK \
-		      (NODE, OMP_CLAUSE_CILK_VECTORLENGTH), 0)
 
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
