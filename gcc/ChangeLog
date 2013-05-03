@@ -1,3 +1,11 @@
+2013-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (isa): Add x64_sse4_noavx and x64_avx members.
+	(enabled): Handle new members.
+	* config/i386/sse.md (*vec_concatv2si): Merge from
+	*vec_concatv2si_sse2 and vec_concatv2si_sse.
+	(vec_concatv2di): Merge with *vec_concatv2di_rex64.
+
 2013-05-03  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR tree-optimization/57027
@@ -80,8 +88,7 @@
 	* graphds.c (new_graph): Initialize obstack and allocate
 	vertices from it.
 	(add_edge): Allocate edge from the obstack.
-	(free_graph): Free the obstack instead of all edges and
-	vertices.
+	(free_graph): Free the obstack instead of all edges and vertices.
 
 2013-05-02  Teresa Johnson  <tejohnson@google.com>
 
@@ -321,8 +328,7 @@
 2013-04-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57122
-	* cfghooks.c (split_edge): Properly check for the loop
-	latch edge.
+	* cfghooks.c (split_edge): Properly check for the loop latch edge.
 
 2013-04-30  Richard Biener  <rguenther@suse.de>
 
@@ -333,7 +339,6 @@
 
 	PR rtl-optimization/56957
 	PR rtl-optimization/57105
-
 	* sel-sched.c (move_op_orig_expr_found): Remove insn_emitted
 	variable.  Use just INSN_UID for determining whether an insn
 	should be only disconnected from the insn stream.
@@ -1151,7 +1156,7 @@
 2013-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57066
-        * builtins.c (fold_builtin_logb): Return +Inf for -Inf.
+	* builtins.c (fold_builtin_logb): Return +Inf for -Inf.
 
 2013-04-25  James Greenhalgh  <jame.greenhalgh@arm.com>
 
@@ -1189,7 +1194,7 @@
 	(*ngcsi_uxtw): New pattern.
 
 2013-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Julian Brown  <julian@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (neon_builtin_type_mode): Add T_V4HF.
 	(TB_DREG): Add T_V4HF.

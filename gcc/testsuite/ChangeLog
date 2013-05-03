@@ -1,3 +1,7 @@
+2013-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Update scan assembler string.
+
 2013-05-03  Vidya Praveen <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/fabd.c: New file.
