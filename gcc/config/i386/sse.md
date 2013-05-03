@@ -7505,33 +7505,23 @@
 ;; ??? In theory we can match memory for the MMX alternative, but allowing
 ;; nonimmediate_operand for operand 2 and *not* allowing memory for the SSE
 ;; alternatives pretty much forces the MMX alternative to be chosen.
-(define_insn "*vec_concatv2si_sse2"
-  [(set (match_operand:V2SI 0 "register_operand"     "=x,x ,*y,*y")
+(define_insn "*vec_concatv2si"
+  [(set (match_operand:V2SI 0 "register_operand"     "=x,x ,*y,x,x,*y,*y")
 	(vec_concat:V2SI
-	  (match_operand:SI 1 "nonimmediate_operand" " 0,rm, 0,rm")
-	  (match_operand:SI 2 "reg_or_0_operand"     " x,C ,*y, C")))]
-  "TARGET_SSE2"
+	  (match_operand:SI 1 "nonimmediate_operand" " 0,rm,rm,0,m, 0,*rm")
+	  (match_operand:SI 2 "reg_or_0_operand"     " x,C ,C, x,C,*y,C")))]
+  "TARGET_SSE && !TARGET_SSE4_1"
   "@
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}
-   punpckldq\t{%2, %0|%0, %2}
-   movd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
-   (set_attr "mode" "TI,TI,DI,DI")])
-
-(define_insn "*vec_concatv2si_sse"
-  [(set (match_operand:V2SI 0 "register_operand"     "=x,x,*y,*y")
-	(vec_concat:V2SI
-	  (match_operand:SI 1 "nonimmediate_operand" " 0,m, 0,*rm")
-	  (match_operand:SI 2 "reg_or_0_operand"     " x,C,*y,C")))]
-  "TARGET_SSE"
-  "@
+   movd\t{%1, %0|%0, %1}
    unpcklps\t{%2, %0|%0, %2}
    movss\t{%1, %0|%0, %1}
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
-   (set_attr "mode" "V4SF,V4SF,DI,DI")])
+  [(set_attr "isa" "sse2,sse2,sse2,*,*,*,*")
+   (set_attr "type" "sselog,ssemov,mmxmov,sselog,ssemov,mmxcvt,mmxmov")
+   (set_attr "mode" "TI,TI,DI,V4SF,SF,DI,DI")])
 
 (define_insn "*vec_concatv4si"
   [(set (match_operand:V4SI 0 "register_operand"       "=x,x,x,x,x")
@@ -7551,49 +7541,19 @@
    (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
 
 ;; movd instead of movq is required to handle broken assemblers.
-(define_insn "*vec_concatv2di_rex64"
+(define_insn "vec_concatv2di"
   [(set (match_operand:V2DI 0 "register_operand"
-	  "=x,x ,x ,Yi,!x,x,x,x,x")
+	  "=x,x ,Yi,x ,!x,x,x,x,x,x")
 	(vec_concat:V2DI
 	  (match_operand:DI 1 "nonimmediate_operand"
-	  " 0,x ,xm,r ,*y,0,x,0,x")
+	  " 0,x ,r ,xm,*y,0,x,0,0,x")
 	  (match_operand:DI 2 "vector_move_operand"
-	  "rm,rm,C ,C ,C ,x,x,m,m")))]
-  "TARGET_64BIT"
+	  "rm,rm,C ,C ,C ,x,x,x,m,m")))]
+  "TARGET_SSE"
   "@
    pinsrq\t{$1, %2, %0|%0, %2, 1}
    vpinsrq\t{$1, %2, %1, %0|%0, %1, %2, 1}
-   %vmovq\t{%1, %0|%0, %1}
    %vmovd\t{%1, %0|%0, %1}
-   movq2dq\t{%1, %0|%0, %1}
-   punpcklqdq\t{%2, %0|%0, %2}
-   vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
-   movhps\t{%2, %0|%0, %2}
-   vmovhps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "sse4_noavx,avx,*,*,*,noavx,avx,noavx,avx")
-   (set (attr "type")
-     (if_then_else
-       (eq_attr "alternative" "0,1,5,6")
-       (const_string "sselog")
-       (const_string "ssemov")))
-   (set (attr "prefix_rex")
-     (if_then_else
-       (and (eq_attr "alternative" "0,3")
-	    (not (match_test "TARGET_AVX")))
-       (const_string "1")
-       (const_string "*")))
-   (set_attr "prefix_extra" "1,1,*,*,*,*,*,*,*")
-   (set_attr "length_immediate" "1,1,*,*,*,*,*,*,*")
-   (set_attr "prefix" "orig,vex,maybe_vex,maybe_vex,orig,orig,vex,orig,vex")
-   (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,V2SF,V2SF")])
-
-(define_insn "vec_concatv2di"
-  [(set (match_operand:V2DI 0 "register_operand"     "=x,?x,x,x,x,x,x")
-	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" "xm,*y,0,x,0,0,x")
-	  (match_operand:DI 2 "vector_move_operand"  " C, C,x,x,x,m,m")))]
-  "!TARGET_64BIT && TARGET_SSE"
-  "@
    %vmovq\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
@@ -7601,10 +7561,17 @@
    movlhps\t{%2, %0|%0, %2}
    movhps\t{%2, %0|%0, %2}
    vmovhps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "sse2,sse2,sse2_noavx,avx,noavx,noavx,avx")
-   (set_attr "type" "ssemov,ssemov,sselog,sselog,ssemov,ssemov,ssemov")
-   (set_attr "prefix" "maybe_vex,orig,orig,vex,orig,orig,vex")
-   (set_attr "mode" "TI,TI,TI,TI,V4SF,V2SF,V2SF")])
+  [(set_attr "isa" "x64_sse4_noavx,x64_avx,x64,sse2,sse2,sse2_noavx,avx,noavx,noavx,avx")
+   (set (attr "type")
+     (if_then_else
+       (eq_attr "alternative" "0,1,5,6")
+       (const_string "sselog")
+       (const_string "ssemov")))
+   (set_attr "prefix_rex" "1,1,1,*,*,*,*,*,*,*")
+   (set_attr "prefix_extra" "1,1,*,*,*,*,*,*,*,*")
+   (set_attr "length_immediate" "1,1,*,*,*,*,*,*,*,*")
+   (set_attr "prefix" "orig,vex,maybe_vex,maybe_vex,orig,orig,vex,orig,orig,vex")
+   (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")])
 
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
