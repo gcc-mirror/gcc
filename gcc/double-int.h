@@ -128,6 +128,7 @@ struct double_int
   double_int operator ^ (double_int) const;
   double_int and_not (double_int) const;
 
+  double_int lshift (HOST_WIDE_INT count) const;
   double_int lshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const;
   double_int rshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const;
   double_int alshift (HOST_WIDE_INT count, unsigned int prec) const;
@@ -254,27 +255,6 @@ inline double_int &
 double_int::operator -- ()
 {
   *this -= double_int_one;
-  return *this;
-}
-
-inline double_int &
-double_int::operator *= (double_int b)
-{
-  *this = *this * b;
-  return *this;
-}
-
-inline double_int &
-double_int::operator += (double_int b)
-{
-  *this = *this + b;
-  return *this;
-}
-
-inline double_int &
-double_int::operator -= (double_int b)
-{
-  *this = *this - b;
   return *this;
 }
 
