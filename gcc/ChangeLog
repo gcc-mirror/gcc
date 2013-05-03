@@ -1,3 +1,9 @@
+2013-05-03  Teresa Johnson  <tejohnson@google.com>
+
+	PR bootstrap/57154
+	* sched-rgn.c (compute_dom_prob_ps): Ensure accumulated probabilities
+	do not exceed REG_BR_PROB_BASE.
+
 2013-05-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/57144

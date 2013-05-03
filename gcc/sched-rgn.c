@@ -1442,6 +1442,12 @@ compute_dom_prob_ps (int bb)
 	bitmap_set_bit (pot_split[bb], EDGE_TO_BIT (out_edge));
 
       prob[bb] += combine_probabilities (prob[pred_bb], in_edge->probability);
+      // The rounding divide in combine_probabilities can result in an extra
+      // probability increment propagating along 50-50 edges. Eventually when
+      // the edges re-merge, the accumulated probability can go slightly above
+      // REG_BR_PROB_BASE.
+      if (prob[bb] > REG_BR_PROB_BASE)
+        prob[bb] = REG_BR_PROB_BASE;
     }
 
   bitmap_set_bit (dom[bb], bb);
