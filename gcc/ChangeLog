@@ -1,3 +1,49 @@
+2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (cand_kind): Add CAND_PHI.
+	(slsr_cand_d): Redefine def_phi.
+	(stride_status, phi_adjust_status, count_phis_status): New enums.
+	(find_phi_def): New.
+	(find_basis_for_base_expr): New.
+	(find_basis_for_candidate): Handle hidden bases.
+	(alloc_cand_and_find_basis): Handle phi candidates.
+	(slsr_process_phi): New.
+	(create_mul_ssa_cand): Exclude phi base candidates; use integer_onep.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Exclude phi base candidates.
+	(create_add_imm_cand): Likewise.
+	(slsr_process_cast): Likewise.
+	(slsr_process_copy): Likewise.
+	(find_candidates_in_block): Handle phi candidates.
+	(dump_candidate): Likewise.
+	(unconditional_cands): Delete.
+	(unconditional_cands_with_known_stride_p): Delete.
+	(phi_dependent_cand_p): New.
+	(cand_increment): Handle phi-dependent candidates.
+	(replace_dependent): Delete.
+	(replace_mult_candidate): New.
+	(replace_unconditional_candidate): New.
+	(incr_vec_index): Move to avoid forward reference.
+	(create_add_on_incoming_edge): New.
+	(create_phi_basis): New.
+	(replace_dependents): Delete.
+	(replace_conditional_candidate): New.
+	(phi_add_costs): New.
+	(replace_uncond_cands_and_profitable_phis): New.
+	(record_increment): Handle phi adjustments.
+	(record_phi_increments): New.
+	(record_increments): Handle phi adjustments.
+	(phi_incr_cost): New.
+	(lowest_cost_path): Handle phis.
+	(total_savings): Likewise.
+	(analyze_increments): Likewise.
+	(ncd_with_phi): New.
+	(ncd_of_cand_and_phis): New.
+	(nearest_common_dominator_for_cands): Handle phi increments.
+	(all_phi_incrs_profitable): New.
+	(replace_profitable_candidates): Handle phi-dependent candidates.
+	(analyze_candidates_and_replace): Likewise.
+
 2013-05-03  Teresa Johnson  <tejohnson@google.com>
 
 	PR bootstrap/57154
