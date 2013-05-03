@@ -1,3 +1,9 @@
+2013-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/14283
+	* parser.c (cp_parser_diagnose_invalid_type_name): Improve error
+	messages for template types and fix column numbers.
+
 2013-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57132
