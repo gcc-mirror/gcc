@@ -1,3 +1,8 @@
+2013-05-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+p
+	* gcc.target/i386/sse2-init-v2di-2.c: Remove "\\" from
+	scan-assembler-times.
+
 2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/slsr-32.c: New.
