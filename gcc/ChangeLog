@@ -1,3 +1,26 @@
+2013-05-03  Richard Biener  <rguenther@suse.de>
+
+	* double-int.h (lshift): New overload without precision
+	and arith argument.
+	(operator *=, operator +=, operator -=): Move ...
+	* double-int.c (operator *=, operator +=, operator -=): ... here
+	and implement more efficiently.
+	(mul_double_with_sign): Remove.
+	(lshift_double): Adjust to take unsinged shift argument, push
+	dispatching code to callers.
+	(mul_double_wide_with_sign): Add early out for callers that
+	are not interested in high parts or overflow.
+	(lshift): New function.
+	(lshift, rshift, alshift, arshift, llshift, lrshift): Add
+	dispatch code here.
+	(lrotate, rrotate): Use logical shifts.
+	* expr.c (get_inner_reference): Use lshift.
+	* fixed-value.c (do_fixed_divide): Likewise.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Likewise.
+	(indirect_refs_may_alias_p): Likewise.
+	(stmt_kills_ref_p_1): Likewise.
+
 2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* config/aarch64/aarch64-simd.md (simd_fabd): Correct the description.
