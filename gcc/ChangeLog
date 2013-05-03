@@ -1,5 +1,9 @@
 2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
 
+	* config/aarch64/aarch64-simd.md (simd_fabd): Correct the description.
+
+2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
+
 	* config/aarch64/aarch64-simd.md (*fabd_scalar<mode>3): Support
 	scalar form of FABD instruction.
 
