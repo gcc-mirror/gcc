@@ -1,3 +1,8 @@
+2013-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	* decl.c (gfc_verify_c_interop_param): Permit allocatable
+	and pointer with -std=f2008ts.
+
 2013-05-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57142
