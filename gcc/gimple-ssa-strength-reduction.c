@@ -657,6 +657,9 @@ add_cand_for_stmt (gimple gs, slsr_cand_t c)
   *slot = c;
 }
 
+// FORNOW: Disable conditional candidate processing until bootstrap
+// issue can be sorted out for i686-pc-linux-gnu.
+#if 0
 /* Given PHI which contains a phi statement, determine whether it
    satisfies all the requirements of a phi candidate.  If so, create
    a candidate.  Note that a CAND_PHI never has a basis itself, but
@@ -747,6 +750,7 @@ slsr_process_phi (gimple phi, bool speed)
   /* Add the candidate to the statement-candidate mapping.  */
   add_cand_for_stmt (phi, c);
 }
+#endif
 
 /* Look for the following pattern:
 
@@ -1519,8 +1523,12 @@ find_candidates_in_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   bool speed = optimize_bb_for_speed_p (bb);
   gimple_stmt_iterator gsi;
 
+// FORNOW: Disable conditional candidate processing until bootstrap
+// issue can be sorted out for i686-pc-linux-gnu.
+#if 0
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     slsr_process_phi (gsi_stmt (gsi), speed);
+#endif
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
