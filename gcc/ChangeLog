@@ -1,3 +1,33 @@
+2013-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (reg_or_add_cint_operand,
+	reg_or_sub_cint_operand): Delete "HOST_BITS_PER_WIDE_INT == 32" case.
+	(reg_or_logical_cint_operand, easy_fp_constant,
+	logical_const_operand): Delete "CONST_DOUBLE" case.
+	* config/rs6000/rs6000.c (num_insns_constant_wide): Delete
+	"HOST_BITS_PER_WIDE_INT == 64" test.
+	(num_insns_constant): Ditto.  Delete CONST_DOUBLE DImode/VOIDmode
+	case.
+	(build_mask64_2_operands): Delete "HOST_BITS_PER_WIDE_INT >= 64" test.
+	(rs6000_emit_set_const): Delete CONST_DOUBLE case.
+	(rs6000_emit_set_long_const): Delete "HOST_BITS_PER_WIDE_INT >= 64"
+	test.
+	(includes_rldic_lshift_p, includes_rldicr_lshift_p): Delete
+	CONST_DOUBLE DImode/VOIDmode case.
+	(INT_P, INT_LOWPART): Delete CONST_DOUBLE case.
+	(print_operand): Delete "HOST_BITS_PER_WIDE_INT == 32" case.  Delete
+	CONST_DOUBLE VOIDmode case.
+	(output_toc): Delete "HOST_BITS_PER_WIDE_INT == 32" case.
+	(rs6000_rtx_costs): Delete CONST_DOUBLE DImode/VOIDmode case.
+	* config/rs6000/rs6000.md (iordi3, xordi3, splitter for these):
+	Delete CONST_DOUBLE case.
+	(splitters for mov FMOVE64 const_double): Delete
+	"HOST_BITS_PER_WIDE_INT == 32" case.  Delete
+	"HOST_BITS_PER_WIDE_INT >= 64" test.
+	(splitter for mov DI const_int): Delete "HOST_BITS_PER_WIDE_INT == 32"
+	case.
+	(mov DI const_double): Delete.
+
 2013-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (combine_simplify_rtx) <case SUBREG>: If nonzero_bits
