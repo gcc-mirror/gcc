@@ -1,3 +1,9 @@
+2013-05-03  Guozhi Wei  <carrot@google.com>
+
+	* coverage.c (coverage_obj_init): Move the construction of gcov
+	constructor to
+	(build_init_ctor): here.
+
 2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (cand_kind): Add CAND_PHI.
