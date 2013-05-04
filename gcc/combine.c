@@ -5417,6 +5417,17 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 				SUBREG_BYTE (x));
 	if (temp)
 	  return temp;
+
+	/* If op is known to have all lower bits zero, the result is zero.  */
+	if (!in_dest
+	    && SCALAR_INT_MODE_P (mode)
+	    && SCALAR_INT_MODE_P (op0_mode)
+	    && GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (op0_mode)
+	    && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x)
+	    && HWI_COMPUTABLE_MODE_P (op0_mode)
+	    && (nonzero_bits (SUBREG_REG (x), op0_mode)
+		& GET_MODE_MASK (mode)) == 0)
+	  return CONST0_RTX (mode);
       }
 
       /* Don't change the mode of the MEM if that would change the meaning

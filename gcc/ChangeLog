@@ -1,3 +1,8 @@
+2013-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (combine_simplify_rtx) <case SUBREG>: If nonzero_bits
+	on op shows all bits zero in mode of a lowpart subreg, return zero.
+
 2013-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/57150
