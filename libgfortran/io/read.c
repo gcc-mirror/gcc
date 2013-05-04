@@ -91,7 +91,9 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
 GFC_UINTEGER_LARGEST
 si_max (int length)
 {
+#if defined HAVE_GFC_REAL_16 || defined HAVE_GFC_REAL_10
   GFC_UINTEGER_LARGEST value;
+#endif
 
   switch (length)
       {

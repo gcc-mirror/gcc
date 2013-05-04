@@ -30,7 +30,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h>
 #include <limits.h>
 
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <assert.h>
