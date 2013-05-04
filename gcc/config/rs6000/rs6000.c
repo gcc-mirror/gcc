@@ -14851,17 +14851,13 @@ rs6000_init_machine_status (void)
   return ggc_alloc_cleared_machine_function ();
 }
 
-/* These macros test for integers and extract the low-order bits.  */
-#define INT_P(X)  \
-(GET_CODE (X) == CONST_INT && GET_MODE (X) == VOIDmode)
-
-#define INT_LOWPART(X) INTVAL (X)
+#define INT_P(X) (GET_CODE (X) == CONST_INT && GET_MODE (X) == VOIDmode)
 
 int
 extract_MB (rtx op)
 {
   int i;
-  unsigned long val = INT_LOWPART (op);
+  unsigned long val = INTVAL (op);
 
   /* If the high bit is zero, the value is the first 1 bit we find
      from the left.  */
@@ -14893,7 +14889,7 @@ int
 extract_ME (rtx op)
 {
   int i;
-  unsigned long val = INT_LOWPART (op);
+  unsigned long val = INTVAL (op);
 
   /* If the low bit is zero, the value is the first 1 bit we find from
      the right.  */
@@ -15014,7 +15010,7 @@ print_operand (FILE *file, rtx x, int code)
       /* If constant, low-order 16 bits of constant, unsigned.
 	 Otherwise, write normally.  */
       if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 0xffff);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
       else
 	print_operand (file, x, 0);
       return;
@@ -15022,7 +15018,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'B':
       /* If the low-order bit is zero, write 'r'; otherwise, write 'l'
 	 for 64-bit mask direction.  */
-      putc (((INT_LOWPART (x) & 1) == 0 ? 'r' : 'l'), file);
+      putc (((INTVAL (x) & 1) == 0 ? 'r' : 'l'), file);
       return;
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
@@ -15080,7 +15076,7 @@ print_operand (FILE *file, rtx x, int code)
       /* If constant, output low-order five bits.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 31);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 31);
       else
 	print_operand (file, x, 0);
       return;
@@ -15089,7 +15085,7 @@ print_operand (FILE *file, rtx x, int code)
       /* If constant, output low-order six bits.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 63);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 63);
       else
 	print_operand (file, x, 0);
       return;
@@ -15126,7 +15122,7 @@ print_operand (FILE *file, rtx x, int code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%k value");
       else
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INT_LOWPART (x));
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INTVAL (x));
       return;
 
     case 'K':
@@ -15211,8 +15207,8 @@ print_operand (FILE *file, rtx x, int code)
     case 'p':
       /* X is a CONST_INT that is a power of two.  Output the logarithm.  */
       if (! INT_P (x)
-	  || INT_LOWPART (x) < 0
-	  || (i = exact_log2 (INT_LOWPART (x))) < 0)
+	  || INTVAL (x) < 0
+	  || (i = exact_log2 (INTVAL (x))) < 0)
 	output_operand_lossage ("invalid %%p value");
       else
 	fprintf (file, "%d", i);
@@ -15285,7 +15281,7 @@ print_operand (FILE *file, rtx x, int code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%s value");
       else
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INT_LOWPART (x)) & 31);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INTVAL (x)) & 31);
       return;
 
     case 'S':
@@ -15295,7 +15291,7 @@ print_operand (FILE *file, rtx x, int code)
       if (! mask64_operand (x, DImode))
 	output_operand_lossage ("invalid %%S value");
 
-      uval = INT_LOWPART (x);
+      uval = INTVAL (x);
 
       if (uval & 1)	/* Clear Left */
 	{
@@ -15346,7 +15342,7 @@ print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid %%u value");
       else
 	fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-		 (INT_LOWPART (x) >> 16) & 0xffff);
+		 (INTVAL (x) >> 16) & 0xffff);
       return;
 
     case 'v':
@@ -15355,7 +15351,7 @@ print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid %%v value");
       else
 	fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-		 (INT_LOWPART (x) >> 16) & 0xffff);
+		 (INTVAL (x) >> 16) & 0xffff);
       return;
 
     case 'U':
@@ -15411,7 +15407,7 @@ print_operand (FILE *file, rtx x, int code)
 	 normally.  */
       if (INT_P (x))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 ((INT_LOWPART (x) & 0xffff) ^ 0x8000) - 0x8000);
+		 ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	print_operand (file, x, 0);
       return;

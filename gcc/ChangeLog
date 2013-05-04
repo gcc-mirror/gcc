@@ -1,5 +1,13 @@
 2013-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (INT_P): Reformat.  Delete obsolete comment.
+	(INT_LOWPART): Delete.
+	(extract_MB): Adjust.
+	(extract_ME): Adjust.
+	(print_operand): Adjust.
+
+2013-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/predicates.md (reg_or_add_cint_operand,
 	reg_or_sub_cint_operand): Delete "HOST_BITS_PER_WIDE_INT == 32" case.
 	(reg_or_logical_cint_operand, easy_fp_constant,
