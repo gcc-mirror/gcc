@@ -9,7 +9,7 @@ contains
     integer(c_int), dimension(:) :: assumed_array
   end subroutine sub0
 
-  subroutine sub1(deferred_array) bind(c) ! { dg-error "cannot" } 
+  subroutine sub1(deferred_array) bind(c) ! { dg-error "TS 29113: Variable 'deferred_array' at .1. with POINTER attribute in procedure 'sub1' with BIND.C." }
     integer(c_int), pointer :: deferred_array(:)
   end subroutine sub1
 end module bind_c_array_params
