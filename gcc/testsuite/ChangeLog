@@ -1,3 +1,8 @@
+2013-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57150
+	* gcc.target/powerpc/pr57150.c: New file.
+
 2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/slsr-32.c: Skip test for now.
