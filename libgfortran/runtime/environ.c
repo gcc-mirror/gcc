@@ -28,6 +28,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h>
 #include <ctype.h>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 
 /* Environment scanner.  Examine the environment for controlling minor
  * aspects of the program's execution.  Our philosophy here that the
