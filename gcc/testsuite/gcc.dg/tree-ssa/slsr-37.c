@@ -4,6 +4,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-skip-if "" { *-*-* } } */
 
 int
 f (int s, int c, int i)

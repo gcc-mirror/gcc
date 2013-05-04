@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-skip-if "" { *-*-* } } */
 
 int
 f (int c, int i)
