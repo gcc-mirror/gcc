@@ -6508,6 +6508,9 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
 
       for (i = 0; i < e1->rank; i++)
 	{
+	  if (tail->u.ar.start[i] == NULL)
+	    break;
+
 	  if (tail->u.ar.end[i])
 	    {
 	      mpz_set (s, tail->u.ar.end[i]->value.integer);

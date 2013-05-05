@@ -1,5 +1,10 @@
 2013-05-05  Tobias Burnus  <burnus@net-b.de>
 
+	* resolve.c (conformable_arrays): Avoid segfault
+	when ar.start[i] == NULL.
+
+2013-05-05  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57141
 	* decl.c (gfc_match_null): Permit use-associated
 	NULL intrinsic.
