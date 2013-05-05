@@ -1,3 +1,9 @@
+2013-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53745
+	* g++.dg/cpp0x/enum27.C: New.
+	* g++.dg/cpp0x/enum_base.C: Adjust.
+
 2013-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56205

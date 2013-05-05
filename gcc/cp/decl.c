@@ -12847,8 +12847,8 @@ incremented enumerator value is too large for %<long%>");
           && TREE_CODE (value) == INTEGER_CST)
         {
 	  if (!int_fits_type_p (value, ENUM_UNDERLYING_TYPE (enumtype)))
-	    error ("enumerator value %E is too large for underlying type %<%T%>",
-		   value, ENUM_UNDERLYING_TYPE (enumtype));
+	    error ("enumerator value %E is outside the range of underlying "
+		   "type %<%T%>", value, ENUM_UNDERLYING_TYPE (enumtype));
 
           /* Convert the value to the appropriate type.  */
           value = convert (ENUM_UNDERLYING_TYPE (enumtype), value);
