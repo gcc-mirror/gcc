@@ -1,3 +1,21 @@
+2013-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_extract<ssevecmodelower>_0): Merge
+	from sse2_stored and *sse2_storeq_rex64 using SWI48 mode iterator.
+	Add m->r,x alternatives.
+	(*vec_extract<ssevecmodelower>_0 splitters): Merge V2DI and V4SI
+	splitters using SWI48x mode iterator.
+	(*vec_extract_v2di_0_sse): Rename from *sse2_storeq.  Disable for
+	TARGET_64BIT.  Add m->x alternative.
+	(*vec_extractv4si_mem): Rename from *vec_ext_v4si_mem.
+	Add o->x alternative.  Enable for TARGET_SSE.
+	(sse_storeq): Remove expander.
+	(*vec_extractv2di_1): Enable for TARGET_SSE. Split alternatives
+	with memory input operand.
+	(*vec_extractv2di_1 splitter): New.
+	(*vec_extractv4sf_mem): Rename from *vec_extract_v4sf_mem.
+	* config/i386/i386.md (ssevecmodelower): New mode attribute.
+
 2013-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (INT_P): Reformat.  Delete obsolete comment.
@@ -14,8 +32,7 @@
 	logical_const_operand): Delete "CONST_DOUBLE" case.
 	* config/rs6000/rs6000.c (num_insns_constant_wide): Delete
 	"HOST_BITS_PER_WIDE_INT == 64" test.
-	(num_insns_constant): Ditto.  Delete CONST_DOUBLE DImode/VOIDmode
-	case.
+	(num_insns_constant): Ditto.  Delete CONST_DOUBLE DImode/VOIDmode case.
 	(build_mask64_2_operands): Delete "HOST_BITS_PER_WIDE_INT >= 64" test.
 	(rs6000_emit_set_const): Delete CONST_DOUBLE case.
 	(rs6000_emit_set_long_const): Delete "HOST_BITS_PER_WIDE_INT >= 64"
@@ -62,8 +79,8 @@
 2013-05-03  Guozhi Wei  <carrot@google.com>
 
 	* coverage.c (coverage_obj_init): Move the construction of gcov
-	constructor to
-	(build_init_ctor): here.
+	constructor to ...
+	(build_init_ctor): ... here.
 
 2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -127,9 +144,8 @@
 2013-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57130
-	* combine.c (make_compound_operation) <case SUBREG>: Pass
-	SET instead of COMPARE as in_code to the recursive call
-	if needed.
+	* combine.c (make_compound_operation) <case SUBREG>: Pass SET instead
+	of COMPARE as in_code to the recursive call if needed.
 
 2013-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
