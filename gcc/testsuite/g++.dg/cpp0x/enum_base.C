@@ -6,11 +6,11 @@ enum E1 : char { };
 enum E2 : signed const short { };
 enum E3 : uvlonglong { };
 enum E4 : char { 
-  val = 500 // { dg-error "too large" }
+  val = 500 // { dg-error "outside the range" }
 };
 
 enum class E5 {
-  val = (unsigned long long)-1 // { dg-error "too large" }
+  val = (unsigned long long)-1 // { dg-error "outside the range" }
 };
 
 typedef float Float;
