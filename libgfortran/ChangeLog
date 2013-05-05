@@ -1,3 +1,8 @@
+2013-05-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* caf/libcaf.h (_gfortran_caf_critical): Add a prototype.
+	(_gfortran_caf_end_critical): Same.
+
 2013-05-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* runtime/environ.c: Include unistd.h.
