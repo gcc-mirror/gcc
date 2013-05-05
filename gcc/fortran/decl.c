@@ -1710,6 +1710,7 @@ gfc_match_null (gfc_expr **result)
   gfc_intrinsic_symbol (sym);
 
   if (sym->attr.proc != PROC_INTRINSIC
+      && !(sym->attr.use_assoc && sym->attr.intrinsic)
       && (!gfc_add_procedure(&sym->attr, PROC_INTRINSIC, sym->name, NULL)
 	  || !gfc_add_function (&sym->attr, sym->name, NULL)))
     return MATCH_ERROR;
