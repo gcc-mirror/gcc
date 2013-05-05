@@ -4927,20 +4927,14 @@ pa_adjust_insn_length (rtx insn, int length)
 	}
     }
 
-  /* Jumps inside switch tables which have unfilled delay slots need
-     adjustment.  */
-  if (JUMP_P (insn)
-      && GET_CODE (pat) == PARALLEL
-      && get_attr_type (insn) == TYPE_BTABLE_BRANCH)
-    length += 4;
   /* Block move pattern.  */
-  else if (NONJUMP_INSN_P (insn)
-	   && GET_CODE (pat) == PARALLEL
-	   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
-	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
-	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
-	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
-	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
+  if (NONJUMP_INSN_P (insn)
+      && GET_CODE (pat) == PARALLEL
+      && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+      && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
+      && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
+      && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
+      && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
     length += compute_movmem_length (insn) - 4;
   /* Block clear pattern.  */
   else if (NONJUMP_INSN_P (insn)
@@ -8947,36 +8941,10 @@ pa_following_call (rtx insn)
 /* We use this hook to perform a PA specific optimization which is difficult
    to do in earlier passes.
 
-   We want the delay slots of branches within jump tables to be filled.
-   None of the compiler passes at the moment even has the notion that a
-   PA jump table doesn't contain addresses, but instead contains actual
-   instructions!
-
-   Because we actually jump into the table, the addresses of each entry
-   must stay constant in relation to the beginning of the table (which
-   itself must stay constant relative to the instruction to jump into
-   it).  I don't believe we can guarantee earlier passes of the compiler
-   will adhere to those rules.
-
-   So, late in the compilation process we find all the jump tables, and
-   expand them into real code -- e.g. each entry in the jump table vector
-   will get an appropriate label followed by a jump to the final target.
-
-   Reorg and the final jump pass can then optimize these branches and
-   fill their delay slots.  We end up with smaller, more efficient code.
-
-   The jump instructions within the table are special; we must be able
-   to identify them during assembly output (if the jumps don't get filled
-   we need to emit a nop rather than nullifying the delay slot)).  We
-   identify jumps in switch tables by using insns with the attribute
-   type TYPE_BTABLE_BRANCH.
-
-   We also surround the jump table itself with BEGIN_BRTAB and END_BRTAB
-   insns.  This serves two purposes, first it prevents jump.c from
-   noticing that the last N entries in the table jump to the instruction
-   immediately after the table and deleting the jumps.  Second, those
-   insns mark where we should emit .begin_brtab and .end_brtab directives
-   when using GAS (allows for better link time optimizations).  */
+   We surround the jump table itself with BEGIN_BRTAB and END_BRTAB
+   insns.  Those insns mark where we should emit .begin_brtab and
+   .end_brtab directives when using GAS.  This allows for better link
+   time optimizations.  */
 
 static void
 pa_reorg (void)
@@ -8988,83 +8956,23 @@ pa_reorg (void)
   if (pa_cpu < PROCESSOR_8000)
     pa_combine_instructions ();
 
+    /* Still need brtab marker insns.  FIXME: the presence of these
+       markers disables output of the branch table to readonly memory,
+       and any alignment directives that might be needed.  Possibly,
+       the begin_brtab insn should be output before the label for the
+       table.  This doesn't matter at the moment since the tables are
+       always output in the text section.  */
+    for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      {
+	/* Find an ADDR_VEC insn.  */
+	if (! JUMP_TABLE_DATA_P (insn))
+	  continue;
 
-  /* This is fairly cheap, so always run it if optimizing.  */
-  if (optimize > 0 && !TARGET_BIG_SWITCH)
-    {
-      /* Find and explode all ADDR_VEC or ADDR_DIFF_VEC insns.  */
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	{
-	  rtx pattern, tmp, location, label;
-	  unsigned int length, i;
-
-	  /* Find an ADDR_VEC or ADDR_DIFF_VEC insn to explode.  */
-	  if (! JUMP_TABLE_DATA_P (insn))
-	    continue;
-
-	  /* Emit marker for the beginning of the branch table.  */
-	  emit_insn_before (gen_begin_brtab (), insn);
-
-	  pattern = PATTERN (insn);
-	  location = PREV_INSN (insn);
-          length = XVECLEN (pattern, GET_CODE (pattern) == ADDR_DIFF_VEC);
-
-	  for (i = 0; i < length; i++)
-	    {
-	      /* Emit a label before each jump to keep jump.c from
-		 removing this code.  */
-	      tmp = gen_label_rtx ();
-	      LABEL_NUSES (tmp) = 1;
-	      emit_label_after (tmp, location);
-	      location = NEXT_INSN (location);
-
-	      if (GET_CODE (pattern) == ADDR_VEC)
-		label = XEXP (XVECEXP (pattern, 0, i), 0);
-	      else
-		label = XEXP (XVECEXP (pattern, 1, i), 0);
-
-	      tmp = gen_short_jump (label);
-
-	      /* Emit the jump itself.  */
-	      tmp = emit_jump_insn_after (tmp, location);
-	      JUMP_LABEL (tmp) = label;
-	      LABEL_NUSES (label)++;
-	      location = NEXT_INSN (location);
-
-	      /* Emit a BARRIER after the jump.  */
-	      emit_barrier_after (location);
-	      location = NEXT_INSN (location);
-	    }
-
-	  /* Emit marker for the end of the branch table.  */
-	  emit_insn_before (gen_end_brtab (), location);
-	  location = NEXT_INSN (location);
-	  emit_barrier_after (location);
-
-	  /* Delete the ADDR_VEC or ADDR_DIFF_VEC.  */
-	  delete_insn (insn);
-	}
-    }
-  else
-    {
-      /* Still need brtab marker insns.  FIXME: the presence of these
-	 markers disables output of the branch table to readonly memory,
-	 and any alignment directives that might be needed.  Possibly,
-	 the begin_brtab insn should be output before the label for the
-	 table.  This doesn't matter at the moment since the tables are
-	 always output in the text section.  */
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	{
-	  /* Find an ADDR_VEC insn.  */
-	  if (! JUMP_TABLE_DATA_P (insn))
-	    continue;
-
-	  /* Now generate markers for the beginning and end of the
-	     branch table.  */
-	  emit_insn_before (gen_begin_brtab (), insn);
-	  emit_insn_after (gen_end_brtab (), insn);
-	}
-    }
+	/* Now generate markers for the beginning and end of the
+	   branch table.  */
+	emit_insn_before (gen_begin_brtab (), insn);
+	emit_insn_after (gen_end_brtab (), insn);
+      }
 }
 
 /* The PA has a number of odd instructions which can perform multiple

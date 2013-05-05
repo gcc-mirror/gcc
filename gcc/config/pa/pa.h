@@ -114,7 +114,7 @@ extern unsigned long total_code_bytes;
 #define TARGET_HPUX_UNWIND_LIBRARY 0
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_GAS | MASK_JUMP_IN_DELAY | MASK_BIG_SWITCH)
+#define TARGET_DEFAULT (MASK_GAS | MASK_JUMP_IN_DELAY)
 #endif
 
 #ifndef TARGET_CPU_DEFAULT
@@ -984,11 +984,9 @@ do {									     \
 #define FUNCTION_NAME_P(NAME)  (*(NAME) == '@')
 
 /* Specify the machine mode that this machine uses for the index in the
-   tablejump instruction.  For small tables, an element consists of a
-   ia-relative branch and its delay slot.  When -mbig-switch is specified,
-   we use a 32-bit absolute address for non-pic code, and a 32-bit offset
-   for both 32 and 64-bit pic code.  */
-#define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? SImode : DImode)
+   tablejump instruction.  We use a 32-bit absolute address for non-pic code,
+   and a 32-bit offset for 32 and 64-bit pic code.  */
+#define CASE_VECTOR_MODE SImode
 
 /* Jump tables must be 32-bit aligned, no matter the size of the element.  */
 #define ADDR_VEC_ALIGN(ADDR_VEC) 2
@@ -1165,13 +1163,16 @@ do {									     \
   pa_output_ascii ((FILE), (P), (SIZE))
 
 /* Jump tables are always placed in the text section.  Technically, it
-   is possible to put them in the readonly data section when -mbig-switch
-   is specified.  This has the benefit of getting the table out of .text
-   and reducing branch lengths as a result.  The downside is that an
-   additional insn (addil) is needed to access the table when generating
-   PIC code.  The address difference table also has to use 32-bit
-   pc-relative relocations.  Currently, GAS does not support these
-   relocations, although it is easily modified to do this operation.
+   is possible to put them in the readonly data section.  This has the
+   benefit of getting the table out of .text and reducing branch lengths
+   as a result.
+
+   The downside is that an additional insn (addil) is needed to access
+   the table when generating PIC code.  The address difference table
+   also has to use 32-bit pc-relative relocations.  Currently, GAS does
+   not support these relocations, although it is easily modified to do
+   this operation.
+
    The table entries need to look like "$L1+(.+8-$L0)-$PIC_pcrel$0"
    when using ELF GAS.  A simple difference can be used when using
    SOM GAS or the HP assembler.  The final downside is GDB complains
@@ -1182,20 +1183,14 @@ do {									     \
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  if (TARGET_BIG_SWITCH)						\
-    fprintf (FILE, "\t.word L$%04d\n", VALUE);				\
-  else									\
-    fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
+  fprintf (FILE, "\t.word L$%04d\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative. 
    Since we always place jump tables in the text section, the difference
    is absolute and requires no relocation.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
-  if (TARGET_BIG_SWITCH)						\
-    fprintf (FILE, "\t.word L$%04d-L$%04d\n", VALUE, REL);		\
-  else									\
-    fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
+  fprintf (FILE, "\t.word L$%04d-L$%04d\n", VALUE, REL)
 
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */

@@ -1,3 +1,30 @@
+2013-05-05  Steven Bosscher  <steven@gcc.gnu.org>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa*-*-*): Remove MASK_BIG_SWITCH from CPU default.
+	* config/pa/pa.opt: Make mbig-switch a no-op.
+	* config/pa/pa.h (TARGET_DEFAULT): Remove MASK_BIG_SWITCH.
+	(CASE_VECTOR_MODE): Always return SImode.
+	(ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Remove code
+	for the !TARGET_BIG_SWITCH case.
+	* config/pa/pa-linux.h: Likewise.
+	* config/pa/pa-openbsd.h: Likewise.
+	* config/pa/pa-hpux.h: Define TARGET_DEFAULT to 0.
+	* config/pa/pa.md (short_jump): Remove define_insn.
+	(casesi): Remove code for the !TARGET_BIG_SWITCH case.
+	(casesi0): Remove define_insn.
+	(type): Remove btable_branch.
+	(pa_combine_type): Likewise.
+	(in_nullified_branch_delay): Likewise.
+	(in_call_delay): Likewise.
+	(define_delay): Likewise.
+	(define_insn_reservation "Z3"): Likewise.
+	(define_insn_reservation "Z4"): Likewise.
+	* config/pa/pa.c  (pa_reorg): Remove code for !TARGET_BIG_SWITCH.
+	(pa_adjust_insn_length): Remove adjustment for btable branches.
+	* doc/invoke.texi (HPPA Options): Delete documentation for mbig-switch
+	and mno-big-switch
+
 2013-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*vec_extract<ssevecmodelower>_0): Merge
