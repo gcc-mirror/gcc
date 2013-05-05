@@ -1,3 +1,8 @@
+2013-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_nontype_argument): Add missing whitespace in
+	error message.
+
 2013-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53745
