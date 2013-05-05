@@ -4347,11 +4347,11 @@
    (set_attr "prefix" "maybe_vex,*,*")
    (set_attr "mode" "V4SF,*,*")])
 
-(define_insn_and_split "*vec_extract_v4sf_mem"
+(define_insn_and_split "*vec_extractv4sf_mem"
   [(set (match_operand:SF 0 "register_operand" "=x,*r,f")
-       (vec_select:SF
-	 (match_operand:V4SF 1 "memory_operand" "o,o,o")
-	 (parallel [(match_operand 2 "const_0_to_3_operand" "n,n,n")])))]
+	(vec_select:SF
+	  (match_operand:V4SF 1 "memory_operand" "o,o,o")
+	  (parallel [(match_operand 2 "const_0_to_3_operand" "n,n,n")])))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
@@ -7014,7 +7014,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
-;; It must come before *vec_extractv2di_1_rex64 since it is preferred.
+;; It must come before *vec_extractv2di_1 since it is preferred.
 (define_insn "*sse4_1_pextrq"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=rm")
 	(vec_select:DI
@@ -7357,98 +7357,84 @@
    (set_attr "prefix" "maybe_vex,maybe_vex,orig,orig,vex")
    (set_attr "mode" "TI,TI,V4SF,SF,SF")])
 
-(define_insn_and_split "sse2_stored"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=xm,r")
-	(vec_select:SI
-	  (match_operand:V4SI 1 "register_operand" "x,Yj")
+(define_insn "*vec_extract<ssevecmodelower>_0"
+  [(set (match_operand:SWI48 0 "nonimmediate_operand"	       "=x,m,r ,r")
+	(vec_select:SWI48
+	  (match_operand:<ssevecmode> 1 "nonimmediate_operand" "xm,x,Yj,m")
 	  (parallel [(const_int 0)])))]
-  "TARGET_SSE"
-  "#"
-  "&& reload_completed
-   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
-       || MEM_P (operands [0])
-       || !GENERAL_REGNO_P (true_regnum (operands [0])))"
-  [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));")
+  "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "#")
 
-(define_insn_and_split "*vec_ext_v4si_mem"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(vec_select:SI
-	  (match_operand:V4SI 1 "memory_operand" "o")
-	  (parallel [(match_operand 2 "const_0_to_3_operand")])))]
-  ""
-  "#"
-  "reload_completed"
-  [(const_int 0)]
-{
-  int i = INTVAL (operands[2]);
-
-  emit_move_insn (operands[0], adjust_address (operands[1], SImode, i*4));
-  DONE;
-})
-
-(define_expand "sse_storeq"
-  [(set (match_operand:DI 0 "nonimmediate_operand")
+(define_insn "*vec_extractv2di_0_sse"
+  [(set (match_operand:DI 0 "nonimmediate_operand"     "=x,m")
 	(vec_select:DI
-	  (match_operand:V2DI 1 "register_operand")
+	  (match_operand:V2DI 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0)])))]
-  "TARGET_SSE")
-
-(define_insn "*sse2_storeq_rex64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=xm,*r,r")
-	(vec_select:DI
-	  (match_operand:V2DI 1 "nonimmediate_operand" "x,Yj,o")
-	  (parallel [(const_int 0)])))]
-  "TARGET_64BIT && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "@
-   #
-   #
-   mov{q}\t{%1, %0|%0, %1}"
-  [(set_attr "type" "*,*,imov")
-   (set_attr "mode" "*,*,DI")])
-
-(define_insn "*sse2_storeq"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=xm")
-	(vec_select:DI
-	  (match_operand:V2DI 1 "register_operand" "x")
-	  (parallel [(const_int 0)])))]
-  "TARGET_SSE"
+  "TARGET_SSE && !TARGET_64BIT
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#")
 
 (define_split
-  [(set (match_operand:DI 0 "nonimmediate_operand")
-	(vec_select:DI
-	  (match_operand:V2DI 1 "register_operand")
+  [(set (match_operand:SWI48x 0 "register_operand")
+	(vec_select:SWI48x
+	  (match_operand:<ssevecmode> 1 "memory_operand")
 	  (parallel [(const_int 0)])))]
-  "TARGET_SSE
-   && reload_completed
-   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
-       || MEM_P (operands [0])
-       || !GENERAL_REGNO_P (true_regnum (operands [0])))"
+  "TARGET_SSE && reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));")
+  "operands[1] = adjust_address (operands[1], <MODE>mode, 0);")
+
+(define_split
+  [(set (match_operand:SWI48x 0 "nonimmediate_operand")
+	(vec_select:SWI48x
+	  (match_operand:<ssevecmode> 1 "register_operand")
+	  (parallel [(const_int 0)])))]
+  "TARGET_SSE && reload_completed
+   && (TARGET_INTER_UNIT_MOVES_FROM_VEC
+       || !GENERAL_REG_P (operands [0]))"
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));")
+
+(define_insn_and_split "*vec_extractv4si_mem"
+  [(set (match_operand:SI 0 "register_operand" "=x,r")
+	(vec_select:SI
+	  (match_operand:V4SI 1 "memory_operand" "o,o")
+	  (parallel [(match_operand 2 "const_0_to_3_operand")])))]
+  "TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
+})
 
 (define_insn "*vec_extractv2di_1"
-  [(set (match_operand:DI 0 "nonimmediate_operand"     "=m,x,x,x,x,x,r")
+  [(set (match_operand:DI 0 "nonimmediate_operand"     "=m,x,x,x,x,r")
 	(vec_select:DI
-	  (match_operand:V2DI 1 "nonimmediate_operand" " x,0,x,o,x,o,o")
+	  (match_operand:V2DI 1 "nonimmediate_operand" " x,0,x,x,o,o")
 	  (parallel [(const_int 1)])))]
-  "(TARGET_64BIT || TARGET_SSE)
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    %vmovhps\t{%1, %0|%0, %1}
    psrldq\t{$8, %0|%0, 8}
    vpsrldq\t{$8, %1, %0|%0, %1, 8}
-   %vmovq\t{%H1, %0|%0, %H1}
    movhlps\t{%1, %0|%0, %1}
-   movlps\t{%H1, %0|%0, %H1}
-   mov{q}\t{%H1, %0|%0, %H1}"
-  [(set_attr "isa" "*,sse2_noavx,avx,sse2,noavx,noavx,x64")
-   (set_attr "type" "ssemov,sseishft1,sseishft1,ssemov,ssemov,ssemov,imov")
-   (set_attr "length_immediate" "*,1,1,*,*,*,*")
-   (set_attr "memory" "*,none,none,*,*,*,*")
-   (set_attr "prefix" "maybe_vex,orig,vex,maybe_vex,orig,orig,orig")
-   (set_attr "mode" "V2SF,TI,TI,TI,V4SF,V2SF,DI")])
+   #
+   #"
+  [(set_attr "isa" "*,sse2_noavx,avx,noavx,*,x64")
+   (set_attr "type" "ssemov,sseishft1,sseishft1,ssemov,ssemov,imov")
+   (set_attr "length_immediate" "*,1,1,*,*,*")
+   (set_attr "memory" "*,none,none,*,*,*")
+   (set_attr "prefix" "maybe_vex,orig,vex,orig,*,*")
+   (set_attr "mode" "V2SF,TI,TI,V4SF,DI,DI")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(vec_select:DI
+	  (match_operand:V2DI 1 "memory_operand")
+	  (parallel [(const_int 1)])))]
+  "TARGET_SSE && reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = adjust_address (operands[1], DImode, 8);")
 
 (define_insn "*vec_dupv4si"
   [(set (match_operand:V4SI 0 "register_operand"     "=x,x,x")
