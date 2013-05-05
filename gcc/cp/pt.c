@@ -5651,7 +5651,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    }
 	  if (POINTER_TYPE_P (expr_type))
 	    {
-	      error ("%qE is not a valid template argument for %qT"
+	      error ("%qE is not a valid template argument for %qT "
 		     "because it is not the address of a variable",
 		     expr, type);
 	      return NULL_TREE;
