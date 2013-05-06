@@ -1,3 +1,12 @@
+2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57106
+	* config/i386/i386.c (add_parameter_dependencies): Add dependence
+	between "first_arg" and "insn", not "last" and "insn".
+
 2013-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57130
