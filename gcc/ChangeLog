@@ -1,3 +1,8 @@
+013-05-06  Graham Stott  <grahams@btinternet.com>
+
+	* gensupport.c (add_predicate_code): Also exclude SCRATCH from rtx
+	codes which allow non-lvalues.
+
 2013-05-06  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree.c (integer_all_onesp) <COMPLEX_CST>: Test that both
