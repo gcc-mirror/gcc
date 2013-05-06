@@ -1,3 +1,8 @@
+2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/57108
+	* config/sh/sh.md (tstsi_t_zero_extract_eq): Use QIHISIDI mode iterator.
+
 2013-05-06  Maxim Kuznetsov  <maks.kuznetsov@gmail.com>
 
 	* final.c (do_assembler_dialects): Don't handle curly braces and
