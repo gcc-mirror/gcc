@@ -1,5 +1,16 @@
 2013-05-06  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/sysv4.h (ENDIAN_SELECT): Define, extracted from
+	(ASM_SPEC): ..here.  Emit DEFAULT_ASM_ENDIAN too.
+	(DEFAULT_ASM_ENDIAN): Define.
+	(CC1_SPEC, LINK_TARGET_SPEC): Use ENDIAN_SELECT.
+	* config/rs6000/linux64.h (ASM_SPEC32): Remove endian options.
+	Update -K PIC clause from sysv4.h.
+	(ASM_SPEC_COMMON): Use ENDIAN_SELECT.
+	(LINK_OS_LINUX_EMUL32, LINK_OS_LINUX_EMUL64): Likewise.
+
+2013-05-06  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.md (bswapdi 2nd splitter): Don't swap words
 	twice for little-endian.
 	(ashrdi3_no_power, ashrdi3): Support little-endian.
