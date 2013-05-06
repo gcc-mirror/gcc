@@ -1,3 +1,9 @@
+2013-05-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Re-enable.
+	(find_candidates_in_block): Re-enable slsr_process_phi.
+	(create_phi_basis): Fix double counting of candidate adjustment.
+
 2013-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57147
