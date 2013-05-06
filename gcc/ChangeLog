@@ -1,4 +1,11 @@
-013-05-06  Graham Stott  <grahams@btinternet.com>
+2013-05-06  Graham Stott  <grahams@btinternet.com>
+
+	* expmed.c (init_expmed_rtl): Remove unused fields reg_fld, plus_fld,
+	mult_fld, sdiv_fld1, udiv_fld1, sdiv_32_fld1, smod_32_fld1,
+	wide_mult_fld1, wide_lshr_fld1, shift_fld1, shift_mult_fld1,
+	shift_add_fld1, shift_sub0_fld1, shift_sub1_fld1.
+
+2013-05-06  Graham Stott  <grahams@btinternet.com>
 
 	* gensupport.c (add_predicate_code): Also exclude SCRATCH from rtx
 	codes which allow non-lvalues.
