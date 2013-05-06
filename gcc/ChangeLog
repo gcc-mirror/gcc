@@ -1,3 +1,19 @@
+2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (isa): Add x64_sse4 member.
+	(enabled): Handle x64_sse4.
+	(*movdi_internal): Add *x->?r alternative to emit pextrq $0,%xmm,%reg
+	instruction for 64bit SSE4_1 targets.  Update insn attributes.
+	(*movsi_internal): Add *x->?r alternative to emit pextrd $0,%xmm,%reg
+	instruction for SSE4_1 targets.  Update insn attributes.
+	* config/i386/sse.md (*vec_extract<ssevecmodelower>_0): Merge
+	with *sse4_1_pextrd and *sse4_1_pextrq having const_0 selector.
+	(*vec_extractv2di_1): Merge with *sse4_1_pextrq having
+	const_1 selector.
+	(*vec_extractv4si): Rename from *sse4_1_pextrd.
+	(*vec_extractv4si_zext): Rename from *sse4_1_pextrd_zext.
+	(*vec_extract<ssevecmodelower>_0 splitters): Merge splitters together.
+
 2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/57108
@@ -13,7 +29,6 @@
 	* doc/tm.texi: Regenerated.
 
 2013-05-06  Steven Bosscher  <steven@gcc.gnu.org>
-
 
 	* config/mips/mips.c: Include tree-pass.h.
 	(mips_reorg): Split in pre- and post-dbr_schedule parts.
