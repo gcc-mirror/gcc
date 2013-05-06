@@ -964,9 +964,9 @@ add_field_for_reduction (reduction_info **slot, tree type)
 {
 
   struct reduction_info *const red = *slot;
-  tree var = SSA_NAME_VAR (gimple_assign_lhs (red->reduc_stmt));
-  tree field = build_decl (gimple_location (red->reduc_stmt),
-			   FIELD_DECL, DECL_NAME (var), TREE_TYPE (var));
+  tree var = gimple_assign_lhs (red->reduc_stmt);
+  tree field = build_decl (gimple_location (red->reduc_stmt), FIELD_DECL,
+			   SSA_NAME_IDENTIFIER (var), TREE_TYPE (var));
 
   insert_field_into_struct (type, field);
 
