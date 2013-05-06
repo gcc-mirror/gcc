@@ -3430,8 +3430,21 @@ do_assembler_dialects (const char *p, int *dialect)
            DIALECT_NUMBER of strings ending with '|'.  */
         for (i = 0; i < dialect_number; i++)
           {
-            while (*p && *p != '}' && *p++ != '|')
-	      ;
+            while (*p && *p != '}')
+	      {
+		if (*p == '|')
+		  {
+		    p++;
+		    break;
+		  }
+
+		/* Skip over any character after a percent sign.  */
+		if (*p == '%')
+		  p++;
+		if (*p)
+		  p++;
+	      }
+
             if (*p == '}')
 	      break;
           }
@@ -3452,8 +3465,19 @@ do_assembler_dialects (const char *p, int *dialect)
 		  output_operand_lossage ("unterminated assembly dialect alternative");
 		  break;
 		}
+
+	      /* Skip over any character after a percent sign.  */
+	      if (*p == '%' && p[1])
+		{
+		  p += 2;
+		  continue;
+		}
+
+	      if (*p++ == '}')
+		break;
             }
-          while (*p++ != '}');
+          while (1);
+
           *dialect = 0;
         }
       else
@@ -3546,11 +3570,17 @@ output_asm_insn (const char *templ, rtx *operands)
 #endif
 
       case '%':
-	/* %% outputs a single %.  */
-	if (*p == '%')
+	/* %% outputs a single %.  %{, %} and %| print {, } and | respectively
+	   if ASSEMBLER_DIALECT defined and these characters have a special
+	   meaning as dialect delimiters.*/
+	if (*p == '%'
+#ifdef ASSEMBLER_DIALECT
+	    || *p == '{' || *p == '}' || *p == '|'
+#endif
+	    )
 	  {
+	    putc (*p, asm_out_file);
 	    p++;
-	    putc (c, asm_out_file);
 	  }
 	/* %= outputs a number which is unique to each insn in the entire
 	   compilation.  This is useful for making local labels that are
