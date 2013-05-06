@@ -1930,7 +1930,6 @@ extern enum rtx_code swap_condition (enum rtx_code);
 extern enum rtx_code unsigned_condition (enum rtx_code);
 extern enum rtx_code signed_condition (enum rtx_code);
 extern void mark_jump_label (rtx, rtx, int);
-extern unsigned int cleanup_barriers (void);
 
 /* In jump.c */
 extern rtx delete_related_insns (rtx);
@@ -2673,9 +2672,6 @@ extern void regclass (rtx, int);
 extern void reg_scan (rtx, unsigned int);
 extern void fix_register (const char *, int, int);
 extern bool invalid_mode_change_p (unsigned int, enum reg_class);
-
-/* In reorg.c */
-extern void dbr_schedule (rtx);
 
 /* In reload1.c */
 extern int function_invariant_p (const_rtx);

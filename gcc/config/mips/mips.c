@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "target-globals.h"
 #include "opts.h"
+#include "tree-pass.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -16368,12 +16369,14 @@ mips_reorg (void)
       mips_df_reorg ();
       free_bb_for_insn ();
     }
+}
 
-  if (optimize > 0 && flag_delayed_branch)
-    {
-      cleanup_barriers ();
-      dbr_schedule (get_insns ());
-    }
+/* We use a machine specific pass to do a second machine dependent reorg
+   pass after delay branch scheduling.  */
+
+static unsigned int
+mips_machine_reorg2 (void)
+{
   mips_reorg_process_insns ();
   if (!TARGET_MIPS16
       && TARGET_EXPLICIT_RELOCS
@@ -16386,6 +16389,34 @@ mips_reorg (void)
     mips_reorg_process_insns ();
   mips16_split_long_branches ();
 }
+
+struct rtl_opt_pass pass_mips_machine_reorg2 =
+{
+ {
+  RTL_PASS,
+  "mach2",				/* name */
+  OPTGROUP_NONE,			/* optinfo_flags */
+  NULL,					/* gate */
+  mips_machine_reorg2,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_MACH_DEP,				/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_verify_rtl_sharing,		/* todo_flags_finish */
+ }
+};
+
+struct register_pass_info insert_pass_mips_machine_reorg2 =
+{
+  &pass_mips_machine_reorg2.pass,	/* pass */
+  "dbr",				/* reference_pass_name */
+  1,					/* ref_pass_instance_number */
+  PASS_POS_INSERT_AFTER			/* po_op */
+};
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
    in order to avoid duplicating too much logic from elsewhere.  */
@@ -17161,6 +17192,11 @@ mips_option_override (void)
      Do all CPP-sensitive stuff in uncompressed mode; we'll switch modes
      later if required.  */
   mips_set_compression_mode (0);
+
+  /* We register a second machine specific reorg pass after delay slot
+     filling.  Registering the pass must be done at start up.  It's
+     convenient to do it here.  */
+  register_pass (&insert_pass_mips_machine_reorg2);
 }
 
 /* Swap the register information for registers I and I + 1, which
