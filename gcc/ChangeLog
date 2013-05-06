@@ -1,3 +1,12 @@
+2013-05-06  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (integer_all_onesp) <COMPLEX_CST>: Test that both
+	components are all 1s.
+	(integer_minus_onep): New function.
+	* tree.h (integer_minus_onep): Declare it.
+	* fold-const.c (fold_binary_loc) <MULT_EXPR>: Test
+	integer_minus_onep instead of integer_all_onesp.
+
 2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52933

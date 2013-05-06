@@ -1781,7 +1781,7 @@ integer_onep (const_tree expr)
 }
 
 /* Return 1 if EXPR is an integer containing all 1's in as much precision as
-   it contains.  Likewise for the corresponding complex constant.  */
+   it contains, or a complex or vector whose subparts are such integers.  */
 
 int
 integer_all_onesp (const_tree expr)
@@ -1793,7 +1793,7 @@ integer_all_onesp (const_tree expr)
 
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_all_onesp (TREE_REALPART (expr))
-      && integer_zerop (TREE_IMAGPART (expr)))
+      && integer_all_onesp (TREE_IMAGPART (expr)))
     return 1;
 
   else if (TREE_CODE (expr) == VECTOR_CST)
@@ -1837,6 +1837,20 @@ integer_all_onesp (const_tree expr)
     }
   else
     return TREE_INT_CST_LOW (expr) == ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
+}
+
+/* Return 1 if EXPR is the integer constant minus one.  */
+
+int
+integer_minus_onep (const_tree expr)
+{
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == COMPLEX_CST)
+    return (integer_all_onesp (TREE_REALPART (expr))
+	    && integer_zerop (TREE_IMAGPART (expr)));
+  else
+    return integer_all_onesp (expr);
 }
 
 /* Return 1 if EXPR is an integer constant that is a power of 2 (i.e., has only

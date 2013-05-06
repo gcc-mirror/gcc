@@ -10870,7 +10870,7 @@ fold_binary_loc (location_t loc,
 	  /* Transform x * -1 into -x.  Make sure to do the negation
 	     on the original operand with conversions not stripped
 	     because we can only strip non-sign-changing conversions.  */
-	  if (integer_all_onesp (arg1))
+	  if (integer_minus_onep (arg1))
 	    return fold_convert_loc (loc, type, negate_expr (op0));
 	  /* Transform x * -C into -x * C if x is easily negatable.  */
 	  if (TREE_CODE (arg1) == INTEGER_CST
