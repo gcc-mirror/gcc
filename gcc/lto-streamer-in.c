@@ -673,6 +673,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 
   struct loops *loops = ggc_alloc_cleared_loops ();
   init_loops_structure (fn, loops, n_loops);
+  set_loops_for_fn (fn, loops);
 
   /* Input each loop and associate it with its loop header so
      flow_loops_find can rebuild the loop tree.  */
@@ -686,7 +687,6 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	}
 
       struct loop *loop = alloc_loop ();
-      loop->num = loops->larray->length ();
       loop->header = BASIC_BLOCK_FOR_FUNCTION (fn, header_index);
       loop->header->loop_father = loop;
 
@@ -705,7 +705,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  loop->nb_iterations_estimate.high = streamer_read_hwi (ib);
 	}
 
-      loops->larray->quick_push (loop);
+      place_new_loop (fn, loop);
 
       /* flow_loops_find doesn't like loops not in the tree, hook them
          all as siblings of the tree root temporarily.  */
@@ -713,7 +713,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
     }
 
   /* Rebuild the loop tree.  */
-  fn->x_current_loops = flow_loops_find (loops);
+  flow_loops_find (loops);
 }
 
 

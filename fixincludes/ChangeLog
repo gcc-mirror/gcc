@@ -1,4 +1,11 @@
-2013-01-16  Alexandre Oliva <aoliva@redhat.com>
+2013-05-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_null): New.
+	(void_null): Update replacement definition of NULL.
+	* fixincl.x: Regenerate.
+	* tests/base/curses.h: Update for new fix.
+
+2013-01-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* inclhack.def (feraiseexcept_nosse_invalid): New.
 	(feraiseexcept_nosse_divbyzero): Likewise.

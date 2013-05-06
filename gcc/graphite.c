@@ -198,7 +198,7 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
 static bool
 graphite_initialize (isl_ctx *ctx)
 {
-  if (number_of_loops () <= 1
+  if (number_of_loops (cfun) <= 1
       /* FIXME: This limit on the number of basic blocks of a function
 	 should be removed when the SCOP detection is faster.  */
       || n_basic_blocks > PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION))

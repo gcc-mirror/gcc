@@ -3342,7 +3342,24 @@ sink_clobbers (basic_block bb)
   if (!any_clobbers)
     return 0;
 
-  succbb = single_succ (bb);
+  edge succe = single_succ_edge (bb);
+  succbb = succe->dest;
+
+  /* See if there is a virtual PHI node to take an updated virtual
+     operand from.  */
+  gimple vphi = NULL;
+  tree vuse = NULL_TREE;
+  for (gsi = gsi_start_phis (succbb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      tree res = gimple_phi_result (gsi_stmt (gsi));
+      if (virtual_operand_p (res))
+	{
+	  vphi = gsi_stmt (gsi);
+	  vuse = res;
+	  break;
+	}
+    }
+
   dgsi = gsi_after_labels (succbb);
   gsi = gsi_last_bb (bb);
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
@@ -3353,7 +3370,6 @@ sink_clobbers (basic_block bb)
 	continue;
       if (gimple_code (stmt) == GIMPLE_LABEL)
 	break;
-      unlink_stmt_vdef (stmt);
       lhs = gimple_assign_lhs (stmt);
       /* Unfortunately we don't have dominance info updated at this
 	 point, so checking if
@@ -3365,21 +3381,33 @@ sink_clobbers (basic_block bb)
 	  && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (lhs, 0)))
 	{
+	  unlink_stmt_vdef (stmt);
 	  gsi_remove (&gsi, true);
 	  release_defs (stmt);
 	  continue;
 	}
+
+      /* As we do not change stmt order when sinking across a
+         forwarder edge we can keep virtual operands in place.  */
       gsi_remove (&gsi, false);
-      /* Trigger the operand scanner to cause renaming for virtual
-         operands for this statement.
-	 ???  Given the simple structure of this code manually
-	 figuring out the reaching definition should not be too hard.  */
-      if (gimple_vuse (stmt))
-	gimple_set_vuse (stmt, NULL_TREE);
-      gsi_insert_before (&dgsi, stmt, GSI_SAME_STMT);
+      gsi_insert_before (&dgsi, stmt, GSI_NEW_STMT);
+
+      /* But adjust virtual operands if we sunk across a PHI node.  */
+      if (vuse)
+	{
+	  gimple use_stmt;
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vuse)
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	      SET_USE (use_p, gimple_vdef (stmt));
+	  /* Adjust the incoming virtual operand.  */
+	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe), gimple_vuse (stmt));
+	  SET_USE (gimple_vuse_op (stmt), vuse);
+	}
     }
 
-  return TODO_update_ssa_only_virtuals;
+  return 0;
 }
 
 /* At the end of inlining, we can lower EH_DISPATCH.  Return true when 
@@ -3921,7 +3949,6 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
   gimple_stmt_iterator ngsi, ogsi;
   edge_iterator ei;
   edge e;
-  bitmap rename_virts;
   bitmap ophi_handled;
 
   /* The destination block must not be a regular successor for any
@@ -3944,7 +3971,6 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
     redirect_edge_var_map_clear (e);
 
   ophi_handled = BITMAP_ALLOC (NULL);
-  rename_virts = BITMAP_ALLOC (NULL);
 
   /* First, iterate through the PHIs on NEW_BB and set up the edge_var_map
      for the edges we're going to move.  */
@@ -3997,11 +4023,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	      redirect_edge_var_map_add (e, nresult, oop, oloc);
 	    }
 	}
-      /* If we didn't find the PHI, but it's a VOP, remember to rename
-	 it later, assuming all other tests succeed.  */
-      else if (virtual_operand_p (nresult))
-	bitmap_set_bit (rename_virts, SSA_NAME_VERSION (nresult));
-      /* If we didn't find the PHI, and it's a real variable, we know
+      /* If we didn't find the PHI, if it's a real variable or a VOP, we know
 	 from the fact that OLD_BB is tree_empty_eh_handler_p that the
 	 variable is unchanged from input to the block and we can simply
 	 re-use the input to NEW_BB from the OLD_BB_OUT edge.  */
@@ -4022,24 +4044,6 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
       tree oresult = gimple_phi_result (ophi);
       if (!bitmap_bit_p (ophi_handled, SSA_NAME_VERSION (oresult)))
 	goto fail;
-    }
-
-  /* At this point we know that the merge will succeed.  Remove the PHI
-     nodes for the virtuals that we want to rename.  */
-  if (!bitmap_empty_p (rename_virts))
-    {
-      for (ngsi = gsi_start_phis (new_bb); !gsi_end_p (ngsi); )
-	{
-	  gimple nphi = gsi_stmt (ngsi);
-	  tree nresult = gimple_phi_result (nphi);
-	  if (bitmap_bit_p (rename_virts, SSA_NAME_VERSION (nresult)))
-	    {
-	      mark_virtual_phi_result_for_renaming (nphi);
-	      remove_phi_node (&ngsi, true);
-	    }
-	  else
-	    gsi_next (&ngsi);
-	}
     }
 
   /* Finally, move the edges and update the PHIs.  */
@@ -4069,14 +4073,12 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
       ei_next (&ei);
 
   BITMAP_FREE (ophi_handled);
-  BITMAP_FREE (rename_virts);
   return true;
 
  fail:
   FOR_EACH_EDGE (e, ei, old_bb->preds)
     redirect_edge_var_map_clear (e);
   BITMAP_FREE (ophi_handled);
-  BITMAP_FREE (rename_virts);
   return false;
 }
 
@@ -4439,7 +4441,7 @@ struct gimple_opt_pass pass_cleanup_eh = {
    0,				/* properties_provided */
    0,				/* properties_destroyed */
    0,				/* todo_flags_start */
-   0             		/* todo_flags_finish */
+   TODO_verify_ssa    		/* todo_flags_finish */
    }
 };
 

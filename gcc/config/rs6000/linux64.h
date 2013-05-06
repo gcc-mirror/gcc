@@ -180,20 +180,14 @@ extern int dot_symbols;
 #endif
 
 #define ASM_SPEC32 "-a32 \
-%{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} \
-%{memb} %{!memb: %{msdata=eabi: -memb}} \
-%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-freebsd: -mbig} \
-    %{mcall-i960-old: -mlittle} \
-    %{mcall-linux: -mbig} \
-    %{mcall-netbsd: -mbig} \
-}}}}"
+%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
+%{memb|msdata=eabi: -memb}"
 
 #define ASM_SPEC64 "-a64"
 
 #define ASM_SPEC_COMMON "%(asm_cpu) \
-%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
-%{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
+%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}}" \
+  ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
 #undef	SUBSUBTARGET_EXTRA_SPECS
 #define SUBSUBTARGET_EXTRA_SPECS \
@@ -372,12 +366,23 @@ extern int dot_symbols;
 #define GNU_USER_DYNAMIC_LINKER64 \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
 
+#undef  DEFAULT_ASM_ENDIAN
 #if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
-#define LINK_OS_LINUX_EMUL32 "%{!mbig: %{!mbig-endian: -m elf32lppclinux}}%{mbig|mbig-endian: -m elf32ppclinux}"
-#define LINK_OS_LINUX_EMUL64 "%{!mbig: %{!mbig-endian: -m elf64lppc}}%{mbig|mbig-endian: -m elf64ppc}"
+#define DEFAULT_ASM_ENDIAN " -mlittle"
+#define LINK_OS_LINUX_EMUL32 ENDIAN_SELECT(" -m elf32ppclinux",		\
+					   " -m elf32lppclinux",	\
+					   " -m elf32lppclinux")
+#define LINK_OS_LINUX_EMUL64 ENDIAN_SELECT(" -m elf64ppc",		\
+					   " -m elf64lppc",		\
+					   " -m elf64lppc")
 #else
-#define LINK_OS_LINUX_EMUL32 "%{!mlittle: %{!mlittle-endian: -m elf32ppclinux}}%{mlittle|mlittle-endian: -m elf32lppclinux}"
-#define LINK_OS_LINUX_EMUL64 "%{!mlittle: %{!mlittle-endian: -m elf64ppc}}%{mlittle|mlittle-endian: -m elf64lppc}"
+#define DEFAULT_ASM_ENDIAN " -mbig"
+#define LINK_OS_LINUX_EMUL32 ENDIAN_SELECT(" -m elf32ppclinux",		\
+					   " -m elf32lppclinux",	\
+					   " -m elf32ppclinux")
+#define LINK_OS_LINUX_EMUL64 ENDIAN_SELECT(" -m elf64ppc",		\
+					   " -m elf64lppc",		\
+					   " -m elf64ppc")
 #endif
 
 #define LINK_OS_LINUX_SPEC32 LINK_OS_LINUX_EMUL32 " %{!shared: %{!static: \

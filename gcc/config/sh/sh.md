@@ -11711,6 +11711,140 @@ label:
    (set_attr "in_delay_slot" "no")])
 
 ;; -------------------------------------------------------------------------
+;; Minimum / maximum operations.
+;; -------------------------------------------------------------------------
+
+;; The SH2A clips.b and clips.w insns do a signed min-max function.  If smin
+;; and smax standard name patterns are defined, they will be used during
+;; initial expansion and combine will then be able to form the actual min-max
+;; pattern.
+;; The clips.b and clips.w set the SR.CS bit if the value in the register is
+;; clipped, but there is currently no way of making use of this information.
+;; The only way to read or reset the SR.CS bit is by accessing the SR.
+(define_expand "<code>si3"
+  [(parallel [(set (match_operand:SI 0 "arith_reg_dest")
+		   (SMIN_SMAX:SI (match_operand:SI 1 "arith_reg_operand")
+				 (match_operand 2 "const_int_operand")))
+	      (clobber (reg:SI T_REG))])]
+  "TARGET_SH2A"
+{
+  /* Force the comparison value into a register, because greater-than
+     comparisons can work only on registers.  Combine will be able to pick up
+     the constant value from the REG_EQUAL note when trying to form a min-max
+     pattern.  */
+  operands[2] = force_reg (SImode, operands[2]);
+})
+
+;; Convert
+;;	smax (smin (...))
+;; to
+;;	smin (smax (...))
+(define_insn_and_split "*clips"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(smax:SI (smin:SI (match_operand:SI 1 "arith_reg_operand")
+			  (match_operand 2 "clips_max_const_int"))
+		 (match_operand 3 "clips_min_const_int")))]
+  "TARGET_SH2A"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(smin:SI (smax:SI (match_dup 1) (match_dup 3)) (match_dup 2)))])
+
+(define_insn "*clips"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(smin:SI (smax:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			  (match_operand 2 "clips_min_const_int"))
+		 (match_operand 3 "clips_max_const_int")))]
+  "TARGET_SH2A"
+{
+  if (INTVAL (operands[3]) == 127)
+    return "clips.b	%0";
+  else if (INTVAL (operands[3]) == 32767)
+    return "clips.w	%0";
+  else
+    gcc_unreachable ();
+}
+  [(set_attr "type" "arith")])
+
+;; If the expanded smin or smax patterns were not combined, split them into
+;; a compare and branch sequence, because there are no real smin or smax
+;; insns.
+(define_insn_and_split "*<code>si3"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(SMIN_SMAX:SI (match_operand:SI 1 "arith_reg_operand")
+		      (match_operand:SI 2 "arith_reg_or_0_or_1_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH2A && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx skip_label = gen_label_rtx ();
+  emit_move_insn (operands[0], operands[1]);
+
+  rtx cmp_val = operands[2];
+  if (satisfies_constraint_M (cmp_val))
+    cmp_val = const0_rtx;
+
+  emit_insn (gen_cmpgtsi_t (operands[0], cmp_val));
+  emit_jump_insn (<CODE> == SMIN
+			    ? gen_branch_false (skip_label)
+			    : gen_branch_true (skip_label));
+
+  emit_label_after (skip_label, emit_move_insn (operands[0], operands[2]));
+  DONE;
+})
+
+;; The SH2A clipu.b and clipu.w insns can be used to implement a min function
+;; with a register and a constant.
+;; The clipu.b and clipu.w set the SR.CS bit if the value in the register is
+;; clipped, but there is currently no way of making use of this information.
+;; The only way to read or reset the SR.CS bit is by accessing the SR.
+(define_expand "uminsi3"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(umin:SI (match_operand:SI 1 "arith_reg_operand")
+		 (match_operand 2 "const_int_operand")))]
+  "TARGET_SH2A"
+{
+  if (INTVAL (operands[2]) == 1)
+    {
+      emit_insn (gen_clipu_one (operands[0], operands[1]));
+      DONE;
+    }
+  else if (! clipu_max_const_int (operands[2], VOIDmode))
+    FAIL;
+})
+
+(define_insn "*clipu"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(umin:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		 (match_operand 2 "clipu_max_const_int")))]
+  "TARGET_SH2A"
+{
+  if (INTVAL (operands[2]) == 255)
+    return "clipu.b	%0";
+  else if (INTVAL (operands[2]) == 65535)
+    return "clipu.w	%0";
+  else
+    gcc_unreachable ();
+}
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "clipu_one"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(umin:SI (match_operand:SI 1 "arith_reg_operand") (const_int 1)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH2A"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  emit_insn (gen_cmpeqsi_t (operands[1], const0_rtx));
+  emit_insn (gen_movnegt (operands[0], get_t_reg_rtx ()));
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
 ;; Misc
 ;; -------------------------------------------------------------------------
 

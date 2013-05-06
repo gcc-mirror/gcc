@@ -1441,8 +1441,13 @@ compute_dom_prob_ps (int bb)
       FOR_EACH_EDGE (out_edge, out_ei, in_edge->src->succs)
 	bitmap_set_bit (pot_split[bb], EDGE_TO_BIT (out_edge));
 
-      /* Update to use apply_probability().  */
-      prob[bb] += ((prob[pred_bb] * in_edge->probability) / REG_BR_PROB_BASE);
+      prob[bb] += combine_probabilities (prob[pred_bb], in_edge->probability);
+      // The rounding divide in combine_probabilities can result in an extra
+      // probability increment propagating along 50-50 edges. Eventually when
+      // the edges re-merge, the accumulated probability can go slightly above
+      // REG_BR_PROB_BASE.
+      if (prob[bb] > REG_BR_PROB_BASE)
+        prob[bb] = REG_BR_PROB_BASE;
     }
 
   bitmap_set_bit (dom[bb], bb);
@@ -1515,8 +1520,7 @@ compute_trg_info (int trg)
 	  int tf = prob[trg], cf = prob[i];
 
 	  /* In CFGs with low probability edges TF can possibly be zero.  */
-          /* Update to use GCOV_COMPUTE_SCALE.  */
-	  sp->src_prob = (tf ? ((cf * REG_BR_PROB_BASE) / tf) : 0);
+	  sp->src_prob = (tf ? GCOV_COMPUTE_SCALE (cf, tf) : 0);
 	  sp->is_valid = (sp->src_prob >= min_spec_prob);
 	}
 

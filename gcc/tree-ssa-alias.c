@@ -882,9 +882,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   /* The offset embedded in MEM_REFs can be negative.  Bias them
      so that the resulting offset adjustment is positive.  */
   moff = mem_ref_offset (base1);
-  moff = moff.alshift (BITS_PER_UNIT == 8
-		       ? 3 : exact_log2 (BITS_PER_UNIT),
-		       HOST_BITS_PER_DOUBLE_INT);
+  moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
   if (moff.is_negative ())
     offset2p += (-moff).low;
   else
@@ -960,9 +958,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
     {
       double_int moff = mem_ref_offset (dbase2);
-      moff = moff.alshift (BITS_PER_UNIT == 8
-			   ? 3 : exact_log2 (BITS_PER_UNIT),
-			   HOST_BITS_PER_DOUBLE_INT);
+      moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
       if (moff.is_negative ())
 	doffset1 -= (-moff).low;
       else
@@ -1056,17 +1052,13 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       /* The offset embedded in MEM_REFs can be negative.  Bias them
 	 so that the resulting offset adjustment is positive.  */
       moff = mem_ref_offset (base1);
-      moff = moff.alshift (BITS_PER_UNIT == 8
-			   ? 3 : exact_log2 (BITS_PER_UNIT),
-			   HOST_BITS_PER_DOUBLE_INT);
+      moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
       if (moff.is_negative ())
 	offset2 += (-moff).low;
       else
 	offset1 += moff.low;
       moff = mem_ref_offset (base2);
-      moff = moff.alshift (BITS_PER_UNIT == 8
-			   ? 3 : exact_log2 (BITS_PER_UNIT),
-			   HOST_BITS_PER_DOUBLE_INT);
+      moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
       if (moff.is_negative ())
 	offset1 += (-moff).low;
       else
@@ -2014,14 +2006,12 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 				       TREE_OPERAND (ref->base, 0)))
 		{
 		  double_int off1 = mem_ref_offset (base);
-		  off1 = off1.alshift (BITS_PER_UNIT == 8
-				       ? 3 : exact_log2 (BITS_PER_UNIT),
-				       HOST_BITS_PER_DOUBLE_INT);
+		  off1 = off1.lshift (BITS_PER_UNIT == 8
+				      ? 3 : exact_log2 (BITS_PER_UNIT));
 		  off1 = off1 + double_int::from_shwi (offset);
 		  double_int off2 = mem_ref_offset (ref->base);
-		  off2 = off2.alshift (BITS_PER_UNIT == 8
-				       ? 3 : exact_log2 (BITS_PER_UNIT),
-				       HOST_BITS_PER_DOUBLE_INT);
+		  off2 = off2.lshift (BITS_PER_UNIT == 8
+				      ? 3 : exact_log2 (BITS_PER_UNIT));
 		  off2 = off2 + double_int::from_shwi (ref_offset);
 		  if (off1.fits_shwi () && off2.fits_shwi ())
 		    {

@@ -279,22 +279,17 @@
 ;; or non-special register.
 (define_predicate "reg_or_add_cint_operand"
   (if_then_else (match_code "const_int")
-    (match_test "(HOST_BITS_PER_WIDE_INT == 32
-		  && (mode == SImode || INTVAL (op) < 0x7fff8000))
-		 || ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
-		     < (unsigned HOST_WIDE_INT) 0x100000000ll)")
+    (match_test "(unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
+		 < (unsigned HOST_WIDE_INT) 0x100000000ll")
     (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if op is a constant integer valid for subtraction
 ;; or non-special register.
 (define_predicate "reg_or_sub_cint_operand"
   (if_then_else (match_code "const_int")
-    (match_test "(HOST_BITS_PER_WIDE_INT == 32
-		  && (mode == SImode || - INTVAL (op) < 0x7fff8000))
-		 || ((unsigned HOST_WIDE_INT) (- INTVAL (op) 
-					       + (mode == SImode
-						  ? 0x80000000 : 0x80008000))
-		     < (unsigned HOST_WIDE_INT) 0x100000000ll)")
+    (match_test "(unsigned HOST_WIDE_INT)
+		   (- INTVAL (op) + (mode == SImode ? 0x80000000 : 0x80008000))
+		 < (unsigned HOST_WIDE_INT) 0x100000000ll")
     (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if op is any 32-bit unsigned constant integer
@@ -305,11 +300,7 @@
 		  && INTVAL (op) >= 0)
 		 || ((INTVAL (op) & GET_MODE_MASK (mode)
 		      & (~ (unsigned HOST_WIDE_INT) 0xffffffff)) == 0)")
-    (if_then_else (match_code "const_double")
-      (match_test "GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT
-		   && mode == DImode
-		   && CONST_DOUBLE_HIGH (op) == 0")
-      (match_operand 0 "gpc_reg_operand"))))
+    (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if operand is a CONST_DOUBLE that can be set in a register
 ;; with no more than one instruction per word.
@@ -403,9 +394,7 @@
       return num_insns_constant_wide (k[0]) == 1;
 
   case DImode:
-    return ((TARGET_POWERPC64
-	     && GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_LOW (op) == 0)
-	    || (num_insns_constant (op, DImode) <= 2));
+    return (num_insns_constant (op, DImode) <= 2);
 
   case SImode:
     return 1;
@@ -605,29 +594,11 @@
 ;; Return 1 if the operand is a constant that can be used as the operand
 ;; of an OR or XOR.
 (define_predicate "logical_const_operand"
-  (match_code "const_int,const_double")
+  (match_code "const_int")
 {
-  HOST_WIDE_INT opl, oph;
+  HOST_WIDE_INT opl;
 
-  if (GET_CODE (op) == CONST_INT)
-    {
-      opl = INTVAL (op) & GET_MODE_MASK (mode);
-
-      if (HOST_BITS_PER_WIDE_INT <= 32
-	  && GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT && opl < 0)
-	return 0;
-    }
-  else if (GET_CODE (op) == CONST_DOUBLE)
-    {
-      gcc_assert (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT);
-
-      opl = CONST_DOUBLE_LOW (op);
-      oph = CONST_DOUBLE_HIGH (op);
-      if (oph != 0)
-	return 0;
-    }
-  else
-    return 0;
+  opl = INTVAL (op) & GET_MODE_MASK (mode);
 
   return ((opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0
 	  || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000) == 0);

@@ -2335,8 +2335,16 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	reg_size = UNITS_PER_WORD;
 
       for (m = 0; m < NUM_MACHINE_MODES; ++m)
-	rs6000_class_max_nregs[m][c]
-	  = (GET_MODE_SIZE (m) + reg_size - 1) / reg_size;
+	{
+	  int reg_size2 = reg_size;
+
+	  /* TFmode/TDmode always takes 2 registers, even in VSX.  */
+	  if (m == TDmode || m == TFmode)
+	    reg_size2 = UNITS_PER_FP_WORD;
+
+	  rs6000_class_max_nregs[m][c]
+	    = (GET_MODE_SIZE (m) + reg_size2 - 1) / reg_size2;
+	}
     }
 
   if (TARGET_E500_DOUBLE)
@@ -4250,7 +4258,6 @@ num_insns_constant_wide (HOST_WIDE_INT value)
 	   && (value >> 31 == -1 || value >> 31 == 0))
     return 1;
 
-#if HOST_BITS_PER_WIDE_INT == 64
   else if (TARGET_POWERPC64)
     {
       HOST_WIDE_INT low  = ((value & 0xffffffff) ^ 0x80000000) - 0x80000000;
@@ -4269,7 +4276,6 @@ num_insns_constant_wide (HOST_WIDE_INT value)
 	return (num_insns_constant_wide (high)
 		+ num_insns_constant_wide (low) + 1);
     }
-#endif
 
   else
     return 2;
@@ -4283,12 +4289,10 @@ num_insns_constant (rtx op, enum machine_mode mode)
   switch (GET_CODE (op))
     {
     case CONST_INT:
-#if HOST_BITS_PER_WIDE_INT == 64
       if ((INTVAL (op) >> 31) != 0 && (INTVAL (op) >> 31) != -1
 	  && mask64_operand (op, mode))
 	return 2;
       else
-#endif
 	return num_insns_constant_wide (INTVAL (op));
 
       case CONST_DOUBLE:
@@ -4305,24 +4309,16 @@ num_insns_constant (rtx op, enum machine_mode mode)
 	    return num_insns_constant_wide ((HOST_WIDE_INT) l);
 	  }
 
-	if (mode == VOIDmode || mode == DImode)
-	  {
-	    high = CONST_DOUBLE_HIGH (op);
-	    low  = CONST_DOUBLE_LOW (op);
-	  }
-	else
-	  {
-	    long l[2];
-	    REAL_VALUE_TYPE rv;
+	long l[2];
+	REAL_VALUE_TYPE rv;
 
-	    REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-	    if (DECIMAL_FLOAT_MODE_P (mode))
-	      REAL_VALUE_TO_TARGET_DECIMAL64 (rv, l);
-	    else
-	      REAL_VALUE_TO_TARGET_DOUBLE (rv, l);
-	    high = l[WORDS_BIG_ENDIAN == 0];
-	    low  = l[WORDS_BIG_ENDIAN != 0];
-	  }
+	REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+	if (DECIMAL_FLOAT_MODE_P (mode))
+	  REAL_VALUE_TO_TARGET_DECIMAL64 (rv, l);
+	else
+	  REAL_VALUE_TO_TARGET_DOUBLE (rv, l);
+	high = l[WORDS_BIG_ENDIAN == 0];
+	low  = l[WORDS_BIG_ENDIAN != 0];
 
 	if (TARGET_32BIT)
 	  return (num_insns_constant_wide (low)
@@ -5023,7 +5019,6 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
 void
 build_mask64_2_operands (rtx in, rtx *out)
 {
-#if HOST_BITS_PER_WIDE_INT >= 64
   unsigned HOST_WIDE_INT c, lsb, m1, m2;
   int shift;
 
@@ -5080,11 +5075,6 @@ build_mask64_2_operands (rtx in, rtx *out)
   out[1] = GEN_INT (m1);
   out[2] = GEN_INT (shift);
   out[3] = GEN_INT (m2);
-#else
-  (void)in;
-  (void)out;
-  gcc_unreachable ();
-#endif
 }
 
 /* Return TRUE if OP is an invalid SUBREG operation on the e500.  */
@@ -7043,16 +7033,6 @@ rs6000_emit_set_const (rtx dest, enum machine_mode mode,
 	  c1 = -(c0 < 0);
 	  break;
 
-	case CONST_DOUBLE:
-#if HOST_BITS_PER_WIDE_INT >= 64
-	  c0 = CONST_DOUBLE_LOW (source);
-	  c1 = -(c0 < 0);
-#else
-	  c0 = CONST_DOUBLE_LOW (source);
-	  c1 = CONST_DOUBLE_HIGH (source);
-#endif
-	  break;
-
 	default:
 	  gcc_unreachable ();
 	}
@@ -7096,9 +7076,7 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 
       ud1 = c1 & 0xffff;
       ud2 = (c1 & 0xffff0000) >> 16;
-#if HOST_BITS_PER_WIDE_INT >= 64
       c2 = c1 >> 32;
-#endif
       ud3 = c2 & 0xffff;
       ud4 = (c2 & 0xffff0000) >> 16;
 
@@ -13568,60 +13546,6 @@ includes_rldic_lshift_p (rtx shiftop, rtx andop)
       lsb = c & -c;
       return c == -lsb;
     }
-  else if (GET_CODE (andop) == CONST_DOUBLE
-	   && (GET_MODE (andop) == VOIDmode || GET_MODE (andop) == DImode))
-    {
-      HOST_WIDE_INT low, high, lsb;
-      HOST_WIDE_INT shift_mask_low, shift_mask_high;
-
-      low = CONST_DOUBLE_LOW (andop);
-      if (HOST_BITS_PER_WIDE_INT < 64)
-	high = CONST_DOUBLE_HIGH (andop);
-
-      if ((low == 0 && (HOST_BITS_PER_WIDE_INT >= 64 || high == 0))
-	  || (low == ~0 && (HOST_BITS_PER_WIDE_INT >= 64 || high == ~0)))
-	return 0;
-
-      if (HOST_BITS_PER_WIDE_INT < 64 && low == 0)
-	{
-	  shift_mask_high = ~0;
-	  if (INTVAL (shiftop) > 32)
-	    shift_mask_high <<= INTVAL (shiftop) - 32;
-
-	  lsb = high & -high;
-
-	  if (-lsb != shift_mask_high || INTVAL (shiftop) < 32)
-	    return 0;
-
-	  high = ~high;
-	  high &= -lsb;
-
-	  lsb = high & -high;
-	  return high == -lsb;
-	}
-
-      shift_mask_low = ~0;
-      shift_mask_low <<= INTVAL (shiftop);
-
-      lsb = low & -low;
-
-      if (-lsb != shift_mask_low)
-	return 0;
-
-      if (HOST_BITS_PER_WIDE_INT < 64)
-	high = ~high;
-      low = ~low;
-      low &= -lsb;
-
-      if (HOST_BITS_PER_WIDE_INT < 64 && low == 0)
-	{
-	  lsb = high & -high;
-	  return high == -lsb;
-	}
-
-      lsb = low & -low;
-      return low == -lsb && (HOST_BITS_PER_WIDE_INT >= 64 || high == ~0);
-    }
   else
     return 0;
 }
@@ -13651,46 +13575,6 @@ includes_rldicr_lshift_p (rtx shiftop, rtx andop)
 
       /* Check we have all 1's above the transition, and reject all 1's.  */
       return c == -lsb && lsb != 1;
-    }
-  else if (GET_CODE (andop) == CONST_DOUBLE
-	   && (GET_MODE (andop) == VOIDmode || GET_MODE (andop) == DImode))
-    {
-      HOST_WIDE_INT low, lsb, shift_mask_low;
-
-      low = CONST_DOUBLE_LOW (andop);
-
-      if (HOST_BITS_PER_WIDE_INT < 64)
-	{
-	  HOST_WIDE_INT high, shift_mask_high;
-
-	  high = CONST_DOUBLE_HIGH (andop);
-
-	  if (low == 0)
-	    {
-	      shift_mask_high = ~0;
-	      if (INTVAL (shiftop) > 32)
-		shift_mask_high <<= INTVAL (shiftop) - 32;
-
-	      lsb = high & -high;
-
-	      if ((lsb & shift_mask_high) == 0)
-		return 0;
-
-	      return high == -lsb;
-	    }
-	  if (high != ~0)
-	    return 0;
-	}
-
-      shift_mask_low = ~0;
-      shift_mask_low <<= INTVAL (shiftop);
-
-      lsb = low & -low;
-
-      if ((lsb & shift_mask_low) == 0)
-	return 0;
-
-      return low == -lsb && lsb != 1;
     }
   else
     return 0;
@@ -14983,19 +14867,13 @@ rs6000_init_machine_status (void)
   return ggc_alloc_cleared_machine_function ();
 }
 
-/* These macros test for integers and extract the low-order bits.  */
-#define INT_P(X)  \
-((GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST_DOUBLE)	\
- && GET_MODE (X) == VOIDmode)
-
-#define INT_LOWPART(X) \
-  (GET_CODE (X) == CONST_INT ? INTVAL (X) : CONST_DOUBLE_LOW (X))
+#define INT_P(X) (GET_CODE (X) == CONST_INT && GET_MODE (X) == VOIDmode)
 
 int
 extract_MB (rtx op)
 {
   int i;
-  unsigned long val = INT_LOWPART (op);
+  unsigned long val = INTVAL (op);
 
   /* If the high bit is zero, the value is the first 1 bit we find
      from the left.  */
@@ -15027,7 +14905,7 @@ int
 extract_ME (rtx op)
 {
   int i;
-  unsigned long val = INT_LOWPART (op);
+  unsigned long val = INTVAL (op);
 
   /* If the low bit is zero, the value is the first 1 bit we find from
      the right.  */
@@ -15148,7 +15026,7 @@ print_operand (FILE *file, rtx x, int code)
       /* If constant, low-order 16 bits of constant, unsigned.
 	 Otherwise, write normally.  */
       if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 0xffff);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
       else
 	print_operand (file, x, 0);
       return;
@@ -15156,7 +15034,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'B':
       /* If the low-order bit is zero, write 'r'; otherwise, write 'l'
 	 for 64-bit mask direction.  */
-      putc (((INT_LOWPART (x) & 1) == 0 ? 'r' : 'l'), file);
+      putc (((INTVAL (x) & 1) == 0 ? 'r' : 'l'), file);
       return;
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
@@ -15214,7 +15092,7 @@ print_operand (FILE *file, rtx x, int code)
       /* If constant, output low-order five bits.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 31);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 31);
       else
 	print_operand (file, x, 0);
       return;
@@ -15223,7 +15101,7 @@ print_operand (FILE *file, rtx x, int code)
       /* If constant, output low-order six bits.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 63);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 63);
       else
 	print_operand (file, x, 0);
       return;
@@ -15260,7 +15138,7 @@ print_operand (FILE *file, rtx x, int code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%k value");
       else
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INT_LOWPART (x));
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INTVAL (x));
       return;
 
     case 'K':
@@ -15345,8 +15223,8 @@ print_operand (FILE *file, rtx x, int code)
     case 'p':
       /* X is a CONST_INT that is a power of two.  Output the logarithm.  */
       if (! INT_P (x)
-	  || INT_LOWPART (x) < 0
-	  || (i = exact_log2 (INT_LOWPART (x))) < 0)
+	  || INTVAL (x) < 0
+	  || (i = exact_log2 (INTVAL (x))) < 0)
 	output_operand_lossage ("invalid %%p value");
       else
 	fprintf (file, "%d", i);
@@ -15419,7 +15297,7 @@ print_operand (FILE *file, rtx x, int code)
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%s value");
       else
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INT_LOWPART (x)) & 31);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INTVAL (x)) & 31);
       return;
 
     case 'S':
@@ -15429,7 +15307,7 @@ print_operand (FILE *file, rtx x, int code)
       if (! mask64_operand (x, DImode))
 	output_operand_lossage ("invalid %%S value");
 
-      uval = INT_LOWPART (x);
+      uval = INTVAL (x);
 
       if (uval & 1)	/* Clear Left */
 	{
@@ -15480,7 +15358,7 @@ print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid %%u value");
       else
 	fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-		 (INT_LOWPART (x) >> 16) & 0xffff);
+		 (INTVAL (x) >> 16) & 0xffff);
       return;
 
     case 'v':
@@ -15489,7 +15367,7 @@ print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid %%v value");
       else
 	fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-		 (INT_LOWPART (x) >> 16) & 0xffff);
+		 (INTVAL (x) >> 16) & 0xffff);
       return;
 
     case 'U':
@@ -15545,22 +15423,14 @@ print_operand (FILE *file, rtx x, int code)
 	 normally.  */
       if (INT_P (x))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 ((INT_LOWPART (x) & 0xffff) ^ 0x8000) - 0x8000);
+		 ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	print_operand (file, x, 0);
       return;
 
     case 'W':
       /* MB value for a PowerPC64 rldic operand.  */
-      i = clz_hwi (GET_CODE (x) == CONST_INT
-		   ? INTVAL (x) : CONST_DOUBLE_HIGH (x));
-
-#if HOST_BITS_PER_WIDE_INT == 32
-      if (GET_CODE (x) == CONST_INT && i > 0)
-	i += 32;  /* zero-extend high-part was all 0's */
-      else if (GET_CODE (x) == CONST_DOUBLE && i == 32)
-	i = clz_hwi (CONST_DOUBLE_LOW (x)) + 32;
-#endif
+      i = clz_hwi (INTVAL (x));
 
       fprintf (file, "%d", i);
       return;
@@ -22520,29 +22390,13 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	  return;
 	}
     }
-  else if (GET_MODE (x) == VOIDmode
-	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE))
+  else if (GET_MODE (x) == VOIDmode && GET_CODE (x) == CONST_INT)
     {
       unsigned HOST_WIDE_INT low;
       HOST_WIDE_INT high;
 
-      if (GET_CODE (x) == CONST_DOUBLE)
-	{
-	  low = CONST_DOUBLE_LOW (x);
-	  high = CONST_DOUBLE_HIGH (x);
-	}
-      else
-#if HOST_BITS_PER_WIDE_INT == 32
-	{
-	  low = INTVAL (x);
-	  high = (low & 0x80000000) ? ~0 : 0;
-	}
-#else
-	{
-	  low = INTVAL (x) & 0xffffffff;
-	  high = (HOST_WIDE_INT) INTVAL (x) >> 32;
-	}
-#endif
+      low = INTVAL (x) & 0xffffffff;
+      high = (HOST_WIDE_INT) INTVAL (x) >> 32;
 
       /* TOC entries are always Pmode-sized, so when big-endian
 	 smaller integer constants in the TOC need to be padded.
@@ -22558,15 +22412,10 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 
       if (WORDS_BIG_ENDIAN && POINTER_SIZE > GET_MODE_BITSIZE (mode))
 	{
-#if HOST_BITS_PER_WIDE_INT == 32
-	  lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
-			 POINTER_SIZE, &low, &high, 0);
-#else
 	  low |= high << 32;
 	  low <<= POINTER_SIZE - GET_MODE_BITSIZE (mode);
 	  high = (HOST_WIDE_INT) low >> 32;
 	  low &= 0xffffffff;
-#endif
 	}
 
       if (TARGET_64BIT)
@@ -26361,28 +26210,6 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       /* FALLTHRU */
 
     case CONST_DOUBLE:
-      if (mode == DImode && code == CONST_DOUBLE)
-	{
-	  if ((outer_code == IOR || outer_code == XOR)
-	      && CONST_DOUBLE_HIGH (x) == 0
-	      && (CONST_DOUBLE_LOW (x)
-		  & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0)
-	    {
-	      *total = 0;
-	      return true;
-	    }
-	  else if ((outer_code == AND && and64_2_operand (x, DImode))
-		   || ((outer_code == SET
-			|| outer_code == IOR
-			|| outer_code == XOR)
-		       && CONST_DOUBLE_HIGH (x) == 0))
-	    {
-	      *total = COSTS_N_INSNS (1);
-	      return true;
-	    }
-	}
-      /* FALLTHRU */
-
     case CONST:
     case HIGH:
     case SYMBOL_REF:

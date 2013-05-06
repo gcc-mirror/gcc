@@ -5417,6 +5417,17 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 				SUBREG_BYTE (x));
 	if (temp)
 	  return temp;
+
+	/* If op is known to have all lower bits zero, the result is zero.  */
+	if (!in_dest
+	    && SCALAR_INT_MODE_P (mode)
+	    && SCALAR_INT_MODE_P (op0_mode)
+	    && GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (op0_mode)
+	    && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x)
+	    && HWI_COMPUTABLE_MODE_P (op0_mode)
+	    && (nonzero_bits (SUBREG_REG (x), op0_mode)
+		& GET_MODE_MASK (mode)) == 0)
+	  return CONST0_RTX (mode);
       }
 
       /* Don't change the mode of the MEM if that would change the meaning
@@ -7697,8 +7708,24 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	 what it originally did, do this SUBREG as a force_to_mode.  */
       {
 	rtx inner = SUBREG_REG (x), simplified;
-	
-	tem = make_compound_operation (inner, in_code);
+	enum rtx_code subreg_code = in_code;
+
+	/* If in_code is COMPARE, it isn't always safe to pass it through
+	   to the recursive make_compound_operation call.  */
+	if (subreg_code == COMPARE
+	    && (!subreg_lowpart_p (x)
+		|| GET_CODE (inner) == SUBREG
+		/* (subreg:SI (and:DI (reg:DI) (const_int 0x800000000)) 0)
+		   is (const_int 0), rather than
+		   (subreg:SI (lshiftrt:DI (reg:DI) (const_int 35)) 0).  */
+		|| (GET_CODE (inner) == AND
+		    && CONST_INT_P (XEXP (inner, 1))
+		    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
+		    && exact_log2 (UINTVAL (XEXP (inner, 1)))
+		       >= GET_MODE_BITSIZE (mode))))
+	  subreg_code = SET;
+
+	tem = make_compound_operation (inner, subreg_code);
 
 	simplified
 	  = simplify_subreg (mode, tem, GET_MODE (inner), SUBREG_BYTE (x));

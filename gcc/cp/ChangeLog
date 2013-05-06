@@ -1,3 +1,31 @@
+2013-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_nontype_argument): Add missing whitespace in
+	error message.
+
+2013-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53745
+	* decl.c (build_enumerator): Improve error message.
+
+2013-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/14283
+	* parser.c (cp_parser_diagnose_invalid_type_name): Improve error
+	messages for template types and fix column numbers.
+
+2013-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57132
+	* pt.c (tsubst_copy_and_build, MODOP_EXPR): Increase / decrease
+	c_inhibit_evaluation_warnings around build_x_modify_expr call.
+
+2013-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57092
+	* semantics.c (finish_decltype_type): Handle instantiated template
+	non-type arguments.
+
 2013-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56450

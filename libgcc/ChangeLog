@@ -1,3 +1,10 @@
+2013-05-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* fp-bit.c (unpack_d, pack_d): Properly preserve and restore a
+	NaN's payload.
+
+	* fp-bit.h [FLOAT] (QUIET_NAN): Correct value.
+
 2013-04-25  Alan Modra  <amodra@gmail.com>
 
 	* config.host: Match little-endian powerpc-linux.

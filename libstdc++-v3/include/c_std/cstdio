@@ -120,6 +120,7 @@ namespace std
   using ::getc;
   using ::getchar;
 #if __cplusplus <= 201103L
+  // LWG 2249
   using ::gets;
 #endif
   using ::perror;

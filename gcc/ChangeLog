@@ -1,3 +1,658 @@
+2013-05-06  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux.h (DEFAULT_ASM_ENDIAN): Define.
+	(LINK_OS_LINUX_EMUL): Use ENDIAN_SELECT.
+	* config/rs6000/linux64.h (DEFAULT_ASM_ENDIAN): Define.
+	* config/rs6000/sysv4le.h (DEFAULT_ASM_ENDIAN): Define.
+	(LINK_TARGET_SPEC): Use ENDIAN_SELECT.
+	* config/rs6000/sysv4.h (DEFAULT_ASM_ENDIAN): Define as -mbig.
+
+2013-05-06  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/sysv4.h (ENDIAN_SELECT): Define, extracted from
+	(ASM_SPEC): ..here.  Emit DEFAULT_ASM_ENDIAN too.
+	(DEFAULT_ASM_ENDIAN): Define.
+	(CC1_SPEC, LINK_TARGET_SPEC): Use ENDIAN_SELECT.
+	* config/rs6000/linux64.h (ASM_SPEC32): Remove endian options.
+	Update -K PIC clause from sysv4.h.
+	(ASM_SPEC_COMMON): Use ENDIAN_SELECT.
+	(LINK_OS_LINUX_EMUL32, LINK_OS_LINUX_EMUL64): Likewise.
+
+2013-05-06  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.md (bswapdi 2nd splitter): Don't swap words
+	twice for little-endian.
+	(ashrdi3_no_power, ashrdi3): Support little-endian.
+
+2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55303
+	* config/sh/sh.c (sh_rtx_costs): Handle SMIN and SMAX cases.
+	* config/sh/sh.md (*clips, uminsi3, *clipu, clipu_one): New insns and
+	related expanders.
+	* config/sh/iterators.md (SMIN_SMAX): New code iterator.
+	* config/sh/predicates.md (arith_reg_or_0_or_1_operand,
+	clips_min_const_int, clips_max_const_int, clipu_max_const_int):
+	New predicates.
+
+2013-05-05  Steven Bosscher  <steven@gcc.gnu.org>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa*-*-*): Remove MASK_BIG_SWITCH from CPU default.
+	* config/pa/pa.opt: Make mbig-switch a no-op.
+	* config/pa/pa.h (TARGET_DEFAULT): Remove MASK_BIG_SWITCH.
+	(CASE_VECTOR_MODE): Always return SImode.
+	(ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Remove code
+	for the !TARGET_BIG_SWITCH case.
+	* config/pa/pa-linux.h: Likewise.
+	* config/pa/pa-openbsd.h: Likewise.
+	* config/pa/pa-hpux.h: Define TARGET_DEFAULT to 0.
+	* config/pa/pa.md (short_jump): Remove define_insn.
+	(casesi): Remove code for the !TARGET_BIG_SWITCH case.
+	(casesi0): Remove define_insn.
+	(type): Remove btable_branch.
+	(pa_combine_type): Likewise.
+	(in_nullified_branch_delay): Likewise.
+	(in_call_delay): Likewise.
+	(define_delay): Likewise.
+	(define_insn_reservation "Z3"): Likewise.
+	(define_insn_reservation "Z4"): Likewise.
+	* config/pa/pa.c  (pa_reorg): Remove code for !TARGET_BIG_SWITCH.
+	(pa_adjust_insn_length): Remove adjustment for btable branches.
+	* doc/invoke.texi (HPPA Options): Delete documentation for mbig-switch
+	and mno-big-switch
+
+2013-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_extract<ssevecmodelower>_0): Merge
+	from sse2_stored and *sse2_storeq_rex64 using SWI48 mode iterator.
+	Add m->r,x alternatives.
+	(*vec_extract<ssevecmodelower>_0 splitters): Merge V2DI and V4SI
+	splitters using SWI48x mode iterator.
+	(*vec_extract_v2di_0_sse): Rename from *sse2_storeq.  Disable for
+	TARGET_64BIT.  Add m->x alternative.
+	(*vec_extractv4si_mem): Rename from *vec_ext_v4si_mem.
+	Add o->x alternative.  Enable for TARGET_SSE.
+	(sse_storeq): Remove expander.
+	(*vec_extractv2di_1): Enable for TARGET_SSE. Split alternatives
+	with memory input operand.
+	(*vec_extractv2di_1 splitter): New.
+	(*vec_extractv4sf_mem): Rename from *vec_extract_v4sf_mem.
+	* config/i386/i386.md (ssevecmodelower): New mode attribute.
+
+2013-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (INT_P): Reformat.  Delete obsolete comment.
+	(INT_LOWPART): Delete.
+	(extract_MB): Adjust.
+	(extract_ME): Adjust.
+	(print_operand): Adjust.
+
+2013-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (reg_or_add_cint_operand,
+	reg_or_sub_cint_operand): Delete "HOST_BITS_PER_WIDE_INT == 32" case.
+	(reg_or_logical_cint_operand, easy_fp_constant,
+	logical_const_operand): Delete "CONST_DOUBLE" case.
+	* config/rs6000/rs6000.c (num_insns_constant_wide): Delete
+	"HOST_BITS_PER_WIDE_INT == 64" test.
+	(num_insns_constant): Ditto.  Delete CONST_DOUBLE DImode/VOIDmode case.
+	(build_mask64_2_operands): Delete "HOST_BITS_PER_WIDE_INT >= 64" test.
+	(rs6000_emit_set_const): Delete CONST_DOUBLE case.
+	(rs6000_emit_set_long_const): Delete "HOST_BITS_PER_WIDE_INT >= 64"
+	test.
+	(includes_rldic_lshift_p, includes_rldicr_lshift_p): Delete
+	CONST_DOUBLE DImode/VOIDmode case.
+	(INT_P, INT_LOWPART): Delete CONST_DOUBLE case.
+	(print_operand): Delete "HOST_BITS_PER_WIDE_INT == 32" case.  Delete
+	CONST_DOUBLE VOIDmode case.
+	(output_toc): Delete "HOST_BITS_PER_WIDE_INT == 32" case.
+	(rs6000_rtx_costs): Delete CONST_DOUBLE DImode/VOIDmode case.
+	* config/rs6000/rs6000.md (iordi3, xordi3, splitter for these):
+	Delete CONST_DOUBLE case.
+	(splitters for mov FMOVE64 const_double): Delete
+	"HOST_BITS_PER_WIDE_INT == 32" case.  Delete
+	"HOST_BITS_PER_WIDE_INT >= 64" test.
+	(splitter for mov DI const_int): Delete "HOST_BITS_PER_WIDE_INT == 32"
+	case.
+	(mov DI const_double): Delete.
+
+2013-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (combine_simplify_rtx) <case SUBREG>: If nonzero_bits
+	on op shows all bits zero in mode of a lowpart subreg, return zero.
+
+2013-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57150
+	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Use DFmode
+	to save TFmode registers and DImode to save TImode registers for
+	caller save operations.
+	(HARD_REGNO_CALL_PART_CLOBBERED): TFmode and TDmode do not need to
+	mark being partially clobbered since they only use the first
+	double word.
+
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): TFmode
+	and TDmode only use the upper 64-bits of each VSX register.
+
+2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Disable.
+	(find_candidates_in_block): Disable slsr_process_phi.
+
+2013-05-03  Guozhi Wei  <carrot@google.com>
+
+	* coverage.c (coverage_obj_init): Move the construction of gcov
+	constructor to ...
+	(build_init_ctor): ... here.
+
+2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (cand_kind): Add CAND_PHI.
+	(slsr_cand_d): Redefine def_phi.
+	(stride_status, phi_adjust_status, count_phis_status): New enums.
+	(find_phi_def): New.
+	(find_basis_for_base_expr): New.
+	(find_basis_for_candidate): Handle hidden bases.
+	(alloc_cand_and_find_basis): Handle phi candidates.
+	(slsr_process_phi): New.
+	(create_mul_ssa_cand): Exclude phi base candidates; use integer_onep.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Exclude phi base candidates.
+	(create_add_imm_cand): Likewise.
+	(slsr_process_cast): Likewise.
+	(slsr_process_copy): Likewise.
+	(find_candidates_in_block): Handle phi candidates.
+	(dump_candidate): Likewise.
+	(unconditional_cands): Delete.
+	(unconditional_cands_with_known_stride_p): Delete.
+	(phi_dependent_cand_p): New.
+	(cand_increment): Handle phi-dependent candidates.
+	(replace_dependent): Delete.
+	(replace_mult_candidate): New.
+	(replace_unconditional_candidate): New.
+	(incr_vec_index): Move to avoid forward reference.
+	(create_add_on_incoming_edge): New.
+	(create_phi_basis): New.
+	(replace_dependents): Delete.
+	(replace_conditional_candidate): New.
+	(phi_add_costs): New.
+	(replace_uncond_cands_and_profitable_phis): New.
+	(record_increment): Handle phi adjustments.
+	(record_phi_increments): New.
+	(record_increments): Handle phi adjustments.
+	(phi_incr_cost): New.
+	(lowest_cost_path): Handle phis.
+	(total_savings): Likewise.
+	(analyze_increments): Likewise.
+	(ncd_with_phi): New.
+	(ncd_of_cand_and_phis): New.
+	(nearest_common_dominator_for_cands): Handle phi increments.
+	(all_phi_incrs_profitable): New.
+	(replace_profitable_candidates): Handle phi-dependent candidates.
+	(analyze_candidates_and_replace): Likewise.
+
+2013-05-03  Teresa Johnson  <tejohnson@google.com>
+
+	PR bootstrap/57154
+	* sched-rgn.c (compute_dom_prob_ps): Ensure accumulated probabilities
+	do not exceed REG_BR_PROB_BASE.
+
+2013-05-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/57144
+	* tree-vrp.c (simplify_cond_using_ranges): Verify the constant
+	operand of the condition will bit into the new type when eliminating
+	a cast feeding a condition.
+
+2013-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57130
+	* combine.c (make_compound_operation) <case SUBREG>: Pass SET instead
+	of COMPARE as in_code to the recursive call if needed.
+
+2013-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (isa): Add x64_sse4_noavx and x64_avx members.
+	(enabled): Handle new members.
+	* config/i386/sse.md (*vec_concatv2si): Merge from
+	*vec_concatv2si_sse2 and vec_concatv2si_sse.
+	(vec_concatv2di): Merge with *vec_concatv2di_rex64.
+
+2013-05-03  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR tree-optimization/57027
+	* tree-ssa-math-opts.c (convert_mult_to_fma): When checking
+	for fnms opportunity, check we got the prerequisite kind
+	of tree / gimple before using accessor functions.
+
+2013-05-03  Richard Biener  <rguenther@suse.de>
+
+	* double-int.h (lshift): New overload without precision
+	and arith argument.
+	(operator *=, operator +=, operator -=): Move ...
+	* double-int.c (operator *=, operator +=, operator -=): ... here
+	and implement more efficiently.
+	(mul_double_with_sign): Remove.
+	(lshift_double): Adjust to take unsinged shift argument, push
+	dispatching code to callers.
+	(mul_double_wide_with_sign): Add early out for callers that
+	are not interested in high parts or overflow.
+	(lshift): New function.
+	(lshift, rshift, alshift, arshift, llshift, lrshift): Add
+	dispatch code here.
+	(lrotate, rrotate): Use logical shifts.
+	* expr.c (get_inner_reference): Use lshift.
+	* fixed-value.c (do_fixed_divide): Likewise.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Likewise.
+	(indirect_refs_may_alias_p): Likewise.
+	(stmt_kills_ref_p_1): Likewise.
+
+2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* config/aarch64/aarch64-simd.md (simd_fabd): Correct the description.
+
+2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*fabd_scalar<mode>3): Support
+	scalar form of FABD instruction.
+
+2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (process_alt_operands): Add checking alt
+	number to choose the best alternative.
+
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Remove rename_virts
+	bitmap and its handling.
+	(pass_cleanup_eh): Set todo_flags_finish to TODO_verify_ssa.
+
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57140
+	* tree-inline.c (copy_loops): Properly handle removed loops.
+	(copy_cfg_body): Mark destination loops for fixup if source
+	loops needed fixup.
+
+2013-05-02  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/56732
+	* config/arm/arm.c (arm_expand_epilogue): Check really_return before
+	generating simple_return for naked functions.
+
+2013-05-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/56988
+	* ipa-prop.h (ipa_agg_replacement_value): New flag by_ref.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Also check that by_ref
+	flags match.
+	(find_aggregate_values_for_callers_subset): Fill in the by_ref flag of
+	ipa_agg_replacement_value structures.
+	(known_aggs_to_agg_replacement_list): Likewise.
+	* ipa-prop.c (write_agg_replacement_chain): Stream by_ref flag.
+	(read_agg_replacement_chain): Likewise.
+	(ipcp_transform_function): Also check that by_ref flags match.
+
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	* graphds.h (struct graph): Add obstack member.
+	* graphds.c (new_graph): Initialize obstack and allocate
+	vertices from it.
+	(add_edge): Allocate edge from the obstack.
+	(free_graph): Free the obstack instead of all edges and vertices.
+
+2013-05-02  Teresa Johnson  <tejohnson@google.com>
+
+	* loop-unswitch.c (unswitch_loop): Use helper routines with rounding
+	divides.
+	* cfg.c (update_bb_profile_for_threading): Ditto.
+	* tree-inline.c (copy_bb): Ditto.
+	(copy_edges_for_bb): Ditto.
+	(initialize_cfun): Ditto.
+	(copy_cfg_body): Ditto.
+	(expand_call_inline): Ditto.
+	* ipa-inline-analysis.c (estimate_edge_size_and_time): Ditto.
+	(estimate_node_size_and_time): Ditto.
+	(inline_merge_summary): Ditto.
+	* cgraphclones.c (cgraph_clone_edge): Ditto.
+	(cgraph_clone_node): Ditto.
+	* sched-rgn.c (compute_dom_prob_ps): Ditto.
+	(compute_trg_info): Ditto.
+
+2013-05-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (movsi_aarch64): Only allow to/from
+	S reg when fp attribute set.
+	(movdi_aarch64): Only allow to/from D reg when fp attribute set.
+
+2013-05-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*and_one_cmpl<mode>3_compare0):
+	New pattern.
+	(*and_one_cmplsi3_compare0_uxtw): Likewise.
+	(*and_one_cmpl_<SHIFT:optab><mode>3_compare0): Likewise.
+	(*and_one_cmpl_<SHIFT:optab>si3_compare0_uxtw): Likewise.
+
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.c (scev_info_hasher): Remove.
+	(struct instantiate_cache_entry): New type.
+	(struct instantiate_cache_entry_hasher): New hashtable descriptor.
+	(struct instantiate_cache_type): New type.
+	(set_instantiated_value, get_instantiated_value): Remove.
+	(get_instantiated_value_entry): New function.
+	(instantiate_scev_name): Use the new cache and adjust.
+	(instantiate_scev_poly): Adjust.
+	(instantiate_scev_binary): Likewise.
+	(instantiate_array_ref): Likewise.
+	(instantiate_scev_convert): Likewise.
+	(instantiate_scev_not): Likewise.
+	(instantiate_scev_3): Likewise.
+	(instantiate_scev_2): Likewise.
+	(instantiate_scev_r): Likewise.
+	(instantiate_scev): Likewise.
+	(resolve_mixers): Likewise.
+
+2013-05-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57091
+	* lra-constraints.c (best_small_class_operands_num): Remove.
+	(process_alt_operands): Remove small_class_operands_num.  Take
+	small classes operands into losers and only if the operand is not
+	matched.  Modify debugging output.
+	(curr_insn_transform): Remove best_small_class_operands_num.
+	Print insn name.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_gimple_fold_builtin.c): Fold more modes for reduc_splus_.
+	* config/aarch64/aarch64-simd-builtins.def
+	(reduc_splus_): Add new modes.
+	(reduc_uplus_): New.
+	* config/aarch64/aarch64-simd.md (aarch64_addvv4sf): Remove.
+	(reduc_uplus_v4sf): Likewise.
+	(reduc_splus_v4sf): Likewise.
+	(aarch64_addv<mode>): Likewise.
+	(reduc_uplus_<mode>): Likewise.
+	(reduc_splus_<mode>): Likewise.
+	(aarch64_addvv2di): Likewise.
+	(reduc_uplus_v2di): Likewise.
+	(reduc_splus_v2di): Likewise.
+	(aarch64_addvv2si): Likewise.
+	(reduc_uplus_v2si): Likewise.
+	(reduc_splus_v2si): Likewise.
+	(reduc_<sur>plus_<mode>): New.
+	(reduc_<sur>plus_v2di): Likewise.
+	(reduc_<sur>plus_v2si): Likewise.
+	(reduc_<sur>plus_v4sf): Likewise.
+	(aarch64_addpv4sf): Likewise.
+	* config/aarch64/arm_neon.h
+	(vaddv<q>_<s,u,f><8, 16, 32, 64): Rewrite using builtins.
+	* config/aarch64/iterators.md (unspec): Remove UNSPEC_ADDV,
+	add UNSPEC_SADDV, UNSPEC_UADDV.
+	(SUADDV): New.
+	(sur): Add UNSPEC_SADDV, UNSPEC_UADDV.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(v<max,min><nm><q><v>_<sfu><8, 16, 32, 64>): Rewrite using builtins.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins
+	(aarch64_gimple_fold_builtin): Fold reduc_<su><maxmin>_ builtins.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(reduc_smax_): New.
+	(reduc_smin_): Likewise.
+	(reduc_umax_): Likewise.
+	(reduc_umin_): Likewise.
+	(reduc_smax_nan_): Likewise.
+	(reduc_smin_nan_): Likewise.
+	(fmax): Remove.
+	(fmin): Likewise.
+	(smax): Update for V2SF, V4SF and V2DF modes.
+	(smin): Likewise.
+	(smax_nan): New.
+	(smin_nan): Likewise.
+	* config/aarch64/aarch64-simd.md (<maxmin><mode>3): Rename to...
+	(<su><maxmin><mode>3): ...This, refactor.
+	(s<maxmin><mode>3): New.
+	(<maxmin_uns><mode>3): Likewise.
+	(reduc_<maxmin_uns>_<mode>): Refactor.
+	(reduc_<maxmin_uns>_v4sf): Likewise.
+	(reduc_<maxmin_uns>_v2si): Likewise.
+	(aarch64_<fmaxmin><mode>: Remove.
+	* config/aarch64/arm_neon.h (vmax<q>_f<32,64>): Rewrite to use
+	new builtin names.
+	(vmin<q>_f<32,64>): Likewise.
+	* config/iterators.md (unspec): Add UNSPEC_FMAXNMV, UNSPEC_FMINNMV.
+	(FMAXMIN): New.
+	(su): Add mappings for smax, smin, umax, umin.
+	(maxmin): New.
+	(FMAXMINV): Add UNSPEC_FMAXNMV, UNSPEC_FMINNMV.
+	(FMAXMIN): Rename as...
+	(FMAXMIN_UNS): ...This.
+	(maxminv): Remove.
+	(fmaxminv): Likewise.
+	(fmaxmin): Likewise.
+	(maxmin_uns): New.
+	(maxmin_uns_op): Likewise.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(vac<ge, gt><sd>_f<32, 64>): Rename to...
+	(vca<ge, gt><sd>_f<32, 64>): ...this, reimpliment in C.
+	(vca<ge, gt, lt, le><q>_f<32, 64>): Reimpliment in C.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_fac<optab><mode>): New.
+	* config/aarch64/iterators.md (FAC_COMPARISONS): New.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(vcond<mode>_internal): Handle special cases for constant masks.
+	(vcond<mode><mode>): Allow nonmemory_operands for outcome vectors.
+	(vcondu<mode><mode>): Likewise.
+	(vcond<v_cmp_result><mode>): New.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (BUILTIN_VALLDI): Define.
+	(aarch64_fold_builtin): Add folding for cm<eq,ge,gt,tst>.
+	* config/aarch64/aarch64-simd-builtins.def
+	(cmeq): Update to BUILTIN_VALLDI.
+	(cmgt): Likewise.
+	(cmge): Likewise.
+	(cmle): Likewise.
+	(cmlt): Likewise.
+	* config/aarch64/arm_neon.h
+	(vc<eq, lt, le, gt, ge, tst><z><qsd>_<fpsu><8,16,32,64>): Remap
+	to builtins or C as appropriate.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (cmhs): Rename to...
+	(cmgeu): ...This.
+	(cmhi): Rename to...
+	(cmgtu): ...This.
+	* config/aarch64/aarch64-simd.md
+	(simd_mode): Add SF.
+	(aarch64_vcond_internal): Use new names for unsigned comparison insns.
+	(aarch64_cm<optab><mode>): Rewrite to not use UNSPECs.
+	* config/aarch64/aarch64.md (*cstore<mode>_neg): Rename to...
+	(cstore<mode>_neg): ...This.
+	* config/aarch64/iterators.md
+	(VALLF): new.
+	(unspec): Remove UNSPEC_CM<EQ, LE, LT, GE, GT, HS, HI, TST>.
+	(COMPARISONS): New.
+	(UCOMPARISONS): Likewise.
+	(optab): Add missing comparisons.
+	(n_optab): New.
+	(cmp_1): Likewise.
+	(cmp_2): Likewise.
+	(CMP): Likewise.
+	(cmp): Remove.
+	(VCMP_S): Likewise.
+	(VCMP_U): Likewise.
+	(V_cmp_result): Add DF, SF modes.
+	(v_cmp_result): Likewise.
+	(v): Likewise.
+	(vmtype): Likewise.
+	* config/aarch64/predicates.md (aarch64_reg_or_fp_zero): New.
+
+2013-05-01  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/thumb2.md (thumb2_smaxsi3,thumb2_sminsi3): Convert
+	define_insn to define_insn_and_split.
+	(thumb32_umaxsi3,thumb2_uminsi3): Likewise.
+	(thumb2_negdi2,thumb2_abssi2,thumb2_neg_abssi2): Likewise.
+	(thumb2_mov_scc,thumb2_mov_negscc,thumb2_mov_notscc): Likewise.
+	(thumb2_movsicc_insn,thumb2_and_scc,thumb2_ior_scc): Likewise.
+	(thumb2_negscc): Likewise.
+
+2013-04-30  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/thumb2.md (thumb2_incscc, thumb2_decscc): Delete.
+
+2013-04-30  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/thumb2.md: Remove trailing whitespaces.
+
+2013-04-30  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* explow.c (plus_constant): Pass "mode" to immed_double_int_const.
+	Use gen_int_mode rather than GEN_INT.
+
+2013-04-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* value-prof.c (stream_in_histogram_value): Remove the strayed
+	debug_gimple_stmt.
+
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57122
+	* cfghooks.c (split_edge): Properly check for the loop latch edge.
+
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57107
+	* tree-eh.c (sink_clobbers): Preserve virtual SSA form.
+
+2013-04-30  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/56957
+	PR rtl-optimization/57105
+	* sel-sched.c (move_op_orig_expr_found): Remove insn_emitted
+	variable.  Use just INSN_UID for determining whether an insn
+	should be only disconnected from the insn stream.
+	* sel-sched-ir.h (EXPR_WAS_CHANGED): Remove.
+
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57104
+	* tsan.c (instrument_expr): Don't instrument accesses to
+	DECL_HARD_REGISTER VAR_DECLs.
+
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
+	* function.h (loops_for_fn): New inline function.
+	(set_loops_for_fn): Likewise.
+	* cfgloop.h (place_new_loop): Add struct function parameter.
+	(get_loop): Likewise.
+	(get_loops): Likewise.
+	(number_of_loops): Likewise.
+	(fel_next): Adjust.
+	(fel_init): Likewise.
+	* cfg.c (get_loop_copy): Adjust.
+	* cfgloop.c (flow_loops_dump): Likewise.
+	(record_loop_exits): Likewise.
+	(verify_loop_structure): Likewise.
+	* cfgloopanal.c (mark_irreducible_loops): Likewise.
+	(estimate_reg_pressure_cost): Likewise.
+	(mark_loop_exit_edges): Likewise.
+	* cfgloopmanip.c (place_new_loop): Likewise.
+	(add_loop): Likewise.
+	(duplicate_loop): Likewise.
+	* graph.c (draw_cfg_nodes): Likewise.
+	* graphite-clast-to-gimple.c (translate_clast_user): Likewise.
+	* graphite-sese-to-poly.c (build_scop_scattering): Likewise.
+	(extract_affine_chrec): Likewise.
+	(build_scop_iteration_domain): Likewise.
+	* graphite.c (graphite_initialize): Likewise.
+	* ira-build.c (create_loop_tree_nodes): Likewise.
+	(more_one_region_p): Likewise.
+	(rebuild_regno_allocno_maps): Likewise.
+	(mark_loops_for_removal): Likewise.
+	(mark_all_loops_for_removal): Likewise.
+	(remove_unnecessary_regions): Likewise.
+	(ira_build): Likewise.
+	* ira-emit.c (setup_entered_from_non_parent_p): Likewise.
+	* loop-init.c (fix_loop_structure): Likewise.
+	(gate_rtl_move_loop_invariants): Likewise.
+	(gate_rtl_unswitch): Likewise.
+	(gate_rtl_unroll_and_peel_loops): Likewise.
+	(rtl_doloop): Likewise.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise.
+	* predict.c (tree_estimate_probability): Likewise.
+	(tree_estimate_probability_driver): Likewise.
+	(estimate_loops): Likewise.
+	* tree-cfg.c (fixup_loop_arrays_after_move): Likewise.
+	(move_sese_region_to_fn): Likewise.
+	(debug_loop_num): Likewise.
+	* tree-chrec.c (chrec_evaluate): Likewise.
+	(hide_evolution_in_other_loops_than_loop): Likewise.
+	(chrec_component_in_loop_num): Likewise.
+	(reset_evolution_in_loop): Likewise.
+	(evolution_function_is_invariant_rec_p): Likewise.
+	* tree-if-conv.c (main_tree_if_conversion): Likewise.
+	* tree-inline.c (copy_loops): Likewise.
+	(copy_cfg_body): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-loop-distribution.c (rdg_flag_loop_exits): Likewise.
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
+	Likewise.
+	(add_to_evolution_1): Likewise.
+	(scev_const_prop): Likewise.
+	* tree-scalar-evolution.h (get_chrec_loop): Likewise.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Likewise.
+	* tree-ssa-loop-im.c (analyze_memory_references): Likewise.
+	(tree_ssa_lim_initialize): Likewise.
+	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa): Likewise.
+	(verify_loop_closed_ssa): Likewise.
+	* tree-ssa-loop.c  (tree_ssa_loop_init): Likewise.
+	(tree_ssa_loop_im): Likewise.
+	(tree_ssa_loop_unswitch): Likewise.
+	(tree_vectorize): Likewise.
+	(check_data_deps): Likewise.
+	(tree_ssa_loop_ivcanon): Likewise.
+	(tree_ssa_loop_bounds): Likewise.
+	(tree_complete_unroll): Likewise.
+	(tree_complete_unroll_inner): Likewise.
+	(tree_parallelize_loops): Likewise.
+	(tree_ssa_loop_prefetch): Likewise.
+	(tree_ssa_loop_ivopts): Likewise.
+	* tree-ssa.c (execute_update_addresses_taken): Liekwise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+
+2013-04-29  Mike Frysinger  <vapier@gentoo.org>
+
+	* config/arm/bpabi.h (EABI_LINK_SPEC): Define.
+	(BPABI_LINK_SPEC): Use new EABI_LINK_SPEC.
+	* config/arm/linux-eabi.h (LINK_SPEC): Replace BE8_LINK_SPEC
+	with EABI_LINK_SPEC.
+
 2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44578
@@ -7,7 +662,7 @@
 2013-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/57097
-        * lra-constraints.c (process_alt_operands): Discourage a bit more
+	* lra-constraints.c (process_alt_operands): Discourage a bit more
 	using memory for pseudos.  Print cost dump for alternatives.
 	Modify cost values for conflicts with early clobbers.
 	(curr_insn_transform): Spill pseudos reassigned to NO_REGS.
@@ -714,7 +1369,7 @@
 2013-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57066
-        * builtins.c (fold_builtin_logb): Return +Inf for -Inf.
+	* builtins.c (fold_builtin_logb): Return +Inf for -Inf.
 
 2013-04-25  James Greenhalgh  <jame.greenhalgh@arm.com>
 
@@ -752,7 +1407,7 @@
 	(*ngcsi_uxtw): New pattern.
 
 2013-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Julian Brown  <julian@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (neon_builtin_type_mode): Add T_V4HF.
 	(TB_DREG): Add T_V4HF.
@@ -1033,12 +1688,6 @@
 2013-04-23  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Add simd attribute.
-
-2013-04-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
-
-	* config/s390/sjlj.S: New file.
-	* config/s390/target.h: New file.
-	* configure.tgt: Set options for S/390.
 
 2013-04-23  Andreas Schwab  <schwab@linux-m68k.org>
 

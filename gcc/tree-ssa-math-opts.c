@@ -2581,11 +2581,15 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 	  && optab_handler (fnma_optab, TYPE_MODE (type)) != CODE_FOR_nothing)
 	{
 	  tree rhs2 = gimple_assign_rhs2 (use_stmt);
-	  gimple stmt2 = SSA_NAME_DEF_STMT (rhs2);
 
-	  if (has_single_use (rhs2)
-	      && gimple_assign_rhs_code (stmt2) == MULT_EXPR)
-	    return false;
+	  if (TREE_CODE (rhs2) == SSA_NAME)
+	    {
+	      gimple stmt2 = SSA_NAME_DEF_STMT (rhs2);
+	      if (has_single_use (rhs2)
+		  && is_gimple_assign (stmt2)
+		  && gimple_assign_rhs_code (stmt2) == MULT_EXPR)
+	      return false;
+	    }
 	}
 
       /* We can't handle a * b + a * b.  */

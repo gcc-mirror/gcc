@@ -224,28 +224,37 @@
   BUILTIN_VSDQ_I (SHIFTIMM, uqshl_n, 0)
 
   /* Implemented by aarch64_cm<cmp><mode>.  */
-  BUILTIN_VSDQ_I_DI (BINOP, cmeq, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmge, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmgt, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmle, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmlt, 0)
+  BUILTIN_VALLDI (BINOP, cmeq, 0)
+  BUILTIN_VALLDI (BINOP, cmge, 0)
+  BUILTIN_VALLDI (BINOP, cmgt, 0)
+  BUILTIN_VALLDI (BINOP, cmle, 0)
+  BUILTIN_VALLDI (BINOP, cmlt, 0)
   /* Implemented by aarch64_cm<cmp><mode>.  */
-  BUILTIN_VSDQ_I_DI (BINOP, cmhs, 0)
-  BUILTIN_VSDQ_I_DI (BINOP, cmhi, 0)
+  BUILTIN_VSDQ_I_DI (BINOP, cmgeu, 0)
+  BUILTIN_VSDQ_I_DI (BINOP, cmgtu, 0)
   BUILTIN_VSDQ_I_DI (BINOP, cmtst, 0)
 
-  /* Implemented by aarch64_<fmaxmin><mode>.  */
-  BUILTIN_VDQF (BINOP, fmax, 0)
-  BUILTIN_VDQF (BINOP, fmin, 0)
+  /* Implemented by reduc_<sur>plus_<mode>.  */
+  BUILTIN_VALL (UNOP, reduc_splus_, 10)
+  BUILTIN_VDQ (UNOP, reduc_uplus_, 10)
 
-  /* Implemented by aarch64_addv<mode>.  */
-  BUILTIN_VDQF (UNOP, addv, 0)
+  /* Implemented by reduc_<maxmin_uns>_<mode>.  */
+  BUILTIN_VDQIF (UNOP, reduc_smax_, 10)
+  BUILTIN_VDQIF (UNOP, reduc_smin_, 10)
+  BUILTIN_VDQ_BHSI (UNOP, reduc_umax_, 10)
+  BUILTIN_VDQ_BHSI (UNOP, reduc_umin_, 10)
+  BUILTIN_VDQF (UNOP, reduc_smax_nan_, 10)
+  BUILTIN_VDQF (UNOP, reduc_smin_nan_, 10)
 
-  /* Implemented by <maxmin><mode>3.  */
-  BUILTIN_VDQ_BHSI (BINOP, smax, 3)
-  BUILTIN_VDQ_BHSI (BINOP, smin, 3)
+  /* Implemented by <maxmin><mode>3.
+     smax variants map to fmaxnm,
+     smax_nan variants map to fmax.  */
+  BUILTIN_VDQIF (BINOP, smax, 3)
+  BUILTIN_VDQIF (BINOP, smin, 3)
   BUILTIN_VDQ_BHSI (BINOP, umax, 3)
   BUILTIN_VDQ_BHSI (BINOP, umin, 3)
+  BUILTIN_VDQF (BINOP, smax_nan, 3)
+  BUILTIN_VDQF (BINOP, smin_nan, 3)
 
   /* Implemented by <frint_pattern><mode>2.  */
   BUILTIN_VDQF (UNOP, btrunc, 2)

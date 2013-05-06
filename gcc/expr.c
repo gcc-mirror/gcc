@@ -6704,9 +6704,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      if (!integer_zerop (off))
 		{
 		  double_int boff, coff = mem_ref_offset (exp);
-		  boff = coff.alshift (BITS_PER_UNIT == 8
-				       ? 3 : exact_log2 (BITS_PER_UNIT),
-				       HOST_BITS_PER_DOUBLE_INT);
+		  boff = coff.lshift (BITS_PER_UNIT == 8
+				      ? 3 : exact_log2 (BITS_PER_UNIT));
 		  bit_offset += boff;
 		}
 	      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -6732,8 +6731,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
     {
       double_int tem = tree_to_double_int (offset);
       tem = tem.sext (TYPE_PRECISION (sizetype));
-      tem = tem.alshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT),
-			 HOST_BITS_PER_DOUBLE_INT);
+      tem = tem.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
       tem += bit_offset;
       if (tem.fits_shwi ())
 	{

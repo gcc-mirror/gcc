@@ -76,7 +76,10 @@ void _gfortran_caf_sync_images (int, int[], int *, char *, int);
 
 /* FIXME: The CRITICAL functions should be removed;
    the functionality is better represented using Coarray's lock feature.  */
+void _gfortran_caf_critical (void);
 void _gfortran_caf_critical (void)  { }
+
+void _gfortran_caf_end_critical (void);
 void _gfortran_caf_end_critical (void)  { }
 
 

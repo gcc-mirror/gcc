@@ -1494,7 +1494,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	      while (agg_reps)
 		{
 		  if (agg_reps->index == param_index
-		      && agg_reps->offset == ie->indirect_info->offset)
+		      && agg_reps->offset == ie->indirect_info->offset
+		      && agg_reps->by_ref == ie->indirect_info->by_ref)
 		    {
 		      t = agg_reps->value;
 		      break;
@@ -3028,11 +3029,12 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
       struct cgraph_edge *cs;
       vec<ipa_agg_jf_item_t> inter = vNULL;
       struct ipa_agg_jf_item *item;
+      struct ipcp_param_lattices *plats = ipa_get_parm_lattices (dest_info, i);
       int j;
 
       /* Among other things, the following check should deal with all by_ref
 	 mismatches.  */
-      if (ipa_get_parm_lattices (dest_info, i)->aggs_bottom)
+      if (plats->aggs_bottom)
 	continue;
 
       FOR_EACH_VEC_ELT (callers, j, cs)
@@ -3054,6 +3056,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 	  v->index = i;
 	  v->offset = item->offset;
 	  v->value = item->value;
+	  v->by_ref = plats->aggs_by_ref;
 	  v->next = res;
 	  res = v;
 	}
@@ -3083,6 +3086,7 @@ known_aggs_to_agg_replacement_list (vec<ipa_agg_jump_function_t> known_aggs)
 	v->index = i;
 	v->offset = item->offset;
 	v->value = item->value;
+	v->by_ref = aggjf->by_ref;
 	v->next = res;
 	res = v;
       }

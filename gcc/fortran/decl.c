@@ -1061,20 +1061,27 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	  /* We have to make sure that any param to a bind(c) routine does
 	     not have the allocatable, pointer, or optional attributes,
 	     according to J3/04-007, section 5.1.  */
-	  if (sym->attr.allocatable == 1)
-	    {
-	      gfc_error ("Variable '%s' at %L cannot have the "
-			 "ALLOCATABLE attribute because procedure '%s'"
-			 " is BIND(C)", sym->name, &(sym->declared_at),
-			 sym->ns->proc_name->name);
-	      retval = false;
-	    }
+	  if (sym->attr.allocatable == 1
+	      && !gfc_notify_std (GFC_STD_F2008_TS, "Variable '%s' at %L with "
+				  "ALLOCATABLE attribute in procedure '%s' "
+				  "with BIND(C)", sym->name,
+				  &(sym->declared_at),
+				  sym->ns->proc_name->name))
+	    retval = false;
 
-	  if (sym->attr.pointer == 1)
+	  if (sym->attr.pointer == 1
+	      && !gfc_notify_std (GFC_STD_F2008_TS, "Variable '%s' at %L with "
+				  "POINTER attribute in procedure '%s' "
+				  "with BIND(C)", sym->name,
+				  &(sym->declared_at),
+				  sym->ns->proc_name->name))
+	    retval = false;
+
+	  if ((sym->attr.allocatable || sym->attr.pointer) && !sym->as)
 	    {
-	      gfc_error ("Variable '%s' at %L cannot have the "
-			 "POINTER attribute because procedure '%s'"
-			 " is BIND(C)", sym->name, &(sym->declared_at),
+	      gfc_error ("Scalar variable '%s' at %L with POINTER or "
+			 "ALLOCATABLE in procedure '%s' with BIND(C) is not yet"
+			 " supported", sym->name, &(sym->declared_at),
 			 sym->ns->proc_name->name);
 	      retval = false;
 	    }
@@ -1703,6 +1710,7 @@ gfc_match_null (gfc_expr **result)
   gfc_intrinsic_symbol (sym);
 
   if (sym->attr.proc != PROC_INTRINSIC
+      && !(sym->attr.use_assoc && sym->attr.intrinsic)
       && (!gfc_add_procedure(&sym->attr, PROC_INTRINSIC, sym->name, NULL)
 	  || !gfc_add_function (&sym->attr, sym->name, NULL)))
     return MATCH_ERROR;

@@ -1,3 +1,208 @@
+2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55303
+	* gcc.target/sh/pr55303-1.c: New.
+	* gcc.target/sh/pr55303-2.c: New.
+	* gcc.target/sh/pr55303-3.c: New.
+
+2013-05-05  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/allocate_with_source_3.f90: New.
+
+2013-05-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57141
+	* gfortran.dg/null_8.f90: New.
+
+2013-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53745
+	* g++.dg/cpp0x/enum27.C: New.
+	* g++.dg/cpp0x/enum_base.C: Adjust.
+
+2013-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56205
+	* gcc.dg/tree-ssa/stdarg-6.c: Add cleanup-tree-dump "stdarg".
+
+2013-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/bind_c_array_params.f03: Update dg-error.
+	* gfortran.dg/bind_c_usage_27.f90: New.
+	* gfortran.dg/bind_c_usage_28.f90: New.
+
+2013-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51927
+	* g++.dg/cpp0x/lambda/lambda-nsdmi4.C: New.
+
+2013-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57150
+	* gcc.target/powerpc/pr57150.c: New file.
+
+2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/slsr-32.c: Skip test for now.
+	* gcc.dg/tree-ssa/slsr-33.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-34.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-35.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-36.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-37.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-38.c: Likewise.
+
+2013-05-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Remove "\\" from
+	scan-assembler-times.
+
+2013-05-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/slsr-32.c: New.
+	* gcc.dg/tree-ssa/slsr-33.c: New.
+	* gcc.dg/tree-ssa/slsr-34.c: New.
+	* gcc.dg/tree-ssa/slsr-35.c: New.
+	* gcc.dg/tree-ssa/slsr-36.c: New.
+	* gcc.dg/tree-ssa/slsr-37.c: New.
+	* gcc.dg/tree-ssa/slsr-38.c: New.
+
+2013-05-03  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/tst_1.c: New test.
+	* gcc.target/aarch64/tst_2.c: Likewise
+
+2013-05-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/57144
+	* gcc.c-torture/execute/pr57144.c: New test.
+
+2013-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57130
+	* gcc.c-torture/execute/pr57130.c: New test.
+
+2013-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Update scan assembler string.
+
+2013-05-03  Vidya Praveen <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/fabd.c: New file.
+
+2013-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54318
+	* g++.dg/cpp0x/pr54318.C: New.
+
+2013-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/14283
+	* g++.dg/parse/error51.C: New.
+	* g++.dg/parse/error15.C: Adjust column numbers.
+
+2013-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57142
+	* gfortran.dg/size_kind_2.f90: New.
+	* gfortran.dg/size_kind_3.f90: New.
+
+2013-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57140
+	* g++.dg/torture/pr57140.C: New testcase.
+
+2013-05-02  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/56732
+	* gcc.target/arm/pr56732-1.c: New test.
+
+2013-05-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/56988
+	* gcc.dg/ipa/pr56988.c: New test.
+
+2013-05-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/bics_1.c: New test.
+	* gcc.target/aarch64/bics_2.c: Likewise.
+
+2013-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57131
+	* gcc.c-torture/execute/pr57131.c: New test.
+
+2013-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57132
+	* g++.dg/warn/Wdiv-by-zero-bogus-2.C: New.
+
+2013-05-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57091
+	* gcc.target/i386/pr57091.c: New test.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-vaddv.c: New.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-vmaxv.c: New.
+	* gcc.target/aarch64/vect-vfmaxv.c: Likewise.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar-vca.c: New.
+	* gcc.target/aarch64/vect-vca.c: Likewise.
+
+2013-05-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (force_simd): New.
+	(test_vceqd_s64): Force arguments to SIMD registers.
+	(test_vceqzd_s64): Likewise.
+	(test_vcged_s64): Likewise.
+	(test_vcled_s64): Likewise.
+	(test_vcgezd_s64): Likewise.
+	(test_vcged_u64): Likewise.
+	(test_vcgtd_s64): Likewise.
+	(test_vcltd_s64): Likewise.
+	(test_vcgtzd_s64): Likewise.
+	(test_vcgtd_u64): Likewise.
+	(test_vclezd_s64): Likewise.
+	(test_vcltzd_s64): Likewise.
+	(test_vtst_s64): Likewise.
+	(test_vtst_u64): Likewise.
+
+2013-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57092
+	* g++.dg/cpp0x/decltype53.C: New.
+
+2013-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/57071
+	* gfortran.dg/power_5.f90:  New test.
+
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57122
+	* gcc.dg/torture/pr57122.c: New testcase.
+
+2013-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57107
+	* g++.dg/torture/pr57107.C: New testcase.
+
+2013-04-30  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/57105
+	* gcc.dg/pr57105.c: New test.
+
+2013-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57104
+	* gcc.dg/pr57104.c: New test.
+
 2013-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44578

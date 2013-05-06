@@ -191,6 +191,9 @@ typedef struct
 #define BUILTIN_VALL(T, N, MAP) \
   VAR10 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
 	 v4si, v2di, v2sf, v4sf, v2df)
+#define BUILTIN_VALLDI(T, N, MAP) \
+  VAR11 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
+	 v4si, v2di, v2sf, v4sf, v2df, di)
 #define BUILTIN_VB(T, N, MAP) \
   VAR2 (T, N, MAP, v8qi, v16qi)
 #define BUILTIN_VD(T, N, MAP) \
@@ -1314,11 +1317,26 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
       BUILTIN_VDQF (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
 	break;
+      BUILTIN_VALLDI (BINOP, cmge, 0)
+	return fold_build2 (GE_EXPR, type, args[0], args[1]);
+	break;
+      BUILTIN_VALLDI (BINOP, cmgt, 0)
+	return fold_build2 (GT_EXPR, type, args[0], args[1]);
+	break;
+      BUILTIN_VALLDI (BINOP, cmeq, 0)
+	return fold_build2 (EQ_EXPR, type, args[0], args[1]);
+	break;
+      BUILTIN_VSDQ_I_DI (BINOP, cmtst, 0)
+	{
+	  tree and_node = fold_build2 (BIT_AND_EXPR, type, args[0], args[1]);
+	  tree vec_zero_node = build_zero_cst (type);
+	  return fold_build2 (NE_EXPR, type, and_node, vec_zero_node);
+	  break;
+	}
       VAR1 (UNOP, floatv2si, 2, v2sf)
       VAR1 (UNOP, floatv4si, 2, v4sf)
       VAR1 (UNOP, floatv2di, 2, v2df)
 	return fold_build1 (FLOAT_EXPR, type, args[0]);
-	break;
       default:
 	break;
     }
@@ -1347,13 +1365,28 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
 	  switch (fcode)
 	    {
-	      BUILTIN_VDQF (UNOP, addv, 0)
+	      BUILTIN_VALL (UNOP, reduc_splus_, 10)
 		new_stmt = gimple_build_assign_with_ops (
 						REDUC_PLUS_EXPR,
 						gimple_call_lhs (stmt),
 						args[0],
 						NULL_TREE);
 		break;
+	      BUILTIN_VDQIF (UNOP, reduc_smax_, 10)
+		new_stmt = gimple_build_assign_with_ops (
+						REDUC_MAX_EXPR,
+						gimple_call_lhs (stmt),
+						args[0],
+						NULL_TREE);
+		break;
+	      BUILTIN_VDQIF (UNOP, reduc_smin_, 10)
+		new_stmt = gimple_build_assign_with_ops (
+						REDUC_MIN_EXPR,
+						gimple_call_lhs (stmt),
+						args[0],
+						NULL_TREE);
+		break;
+
 	    default:
 	      break;
 	    }

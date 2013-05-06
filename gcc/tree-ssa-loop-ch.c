@@ -136,7 +136,7 @@ copy_loop_headers (void)
 
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 		       | LOOPS_HAVE_SIMPLE_LATCHES);
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     {
       loop_optimizer_finalize ();
       return 0;

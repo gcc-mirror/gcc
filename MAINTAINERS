@@ -274,7 +274,6 @@ Fortran			Thomas König		tkoenig@gcc.gnu.org
 Fortran			Daniel Kraft		d@domob.eu
 Fortran			Toon Moene		toon@moene.org
 Fortran			Mikael Morin		mikael.morin@sfr.fr
-Fortran			Brooks Moses		brooks.moses@codesourcery.com
 Fortran			Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
 Fortran			Paul Thomas		pault@gcc.gnu.org
 Fortran			Janus Weil		janus@gcc.gnu.org
@@ -467,6 +466,7 @@ Alan Modra					amodra@gmail.com
 Alexander Monakov				amonakov@ispras.ru
 Catherine Moore					clm@codesourcery.com
 James A. Morrison				phython@gcc.gnu.org
+Brooks Moses					bmoses@google.com
 Dirk Mueller					dmueller@suse.de
 Phil Muldoon					pmuldoon@redhat.com
 Quentin Neill					quentin.neill.gnu@gmail.com

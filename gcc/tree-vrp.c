@@ -8668,7 +8668,8 @@ simplify_cond_using_ranges (gimple stmt)
 	  if (range_int_cst_p (vr)
 	      && range_fits_type_p (vr,
 				    TYPE_PRECISION (TREE_TYPE (op0)),
-				    TYPE_UNSIGNED (TREE_TYPE (op0))))
+				    TYPE_UNSIGNED (TREE_TYPE (op0)))
+	      && int_fits_type_p (op1, TREE_TYPE (innerop)))
 	    {
 	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
 	      gimple_cond_set_lhs (stmt, innerop);
