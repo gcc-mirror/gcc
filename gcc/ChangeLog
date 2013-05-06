@@ -1,3 +1,9 @@
+2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52933
+	* config/sh/sh.md (*cmp_div0s_0, *cmp_div0s_1, *movsicc_div0s): Add
+	variations of these patterns.
+
 2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (isa): Add x64_sse4 member.
