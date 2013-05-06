@@ -8602,7 +8602,9 @@ first argument of @code{asm_fprintf}.  This construct outputs
 @code{ASSEMBLER_DIALECT} is zero, one, two, etc.  Any special characters
 within these strings retain their usual meaning.  If there are fewer
 alternatives within the braces than the value of
-@code{ASSEMBLER_DIALECT}, the construct outputs nothing.
+@code{ASSEMBLER_DIALECT}, the construct outputs nothing. If it's needed
+to print curly braces or @samp{|} character in assembler output directly,
+@samp{%@{}, @samp{%@}} and @samp{%|} can be used.
 
 If you do not define this macro, the characters @samp{@{}, @samp{|} and
 @samp{@}} do not have any special meaning when used in templates or

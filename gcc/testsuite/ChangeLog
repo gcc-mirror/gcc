@@ -1,3 +1,7 @@
+2013-05-06  Maxim Kuznetsov  <maks.kuznetsov@gmail.com>
+
+	* gcc.target/i386/asm-dialect-2.c: New testcase.
+
 2013-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57183
