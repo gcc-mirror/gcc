@@ -1,3 +1,11 @@
+2013-05-06  David Edelsohn  <dje.gcc@gmail.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* hashtab.c (hash_pointer): Remove conditional and avoid
+	unexecuted shift equal to wordsize.
+
 2013-04-22  Andi Kleen <ak@linux.intel.com>
 
 	* hashtab.c (hash_pointer): Move to end of file and reimplement.

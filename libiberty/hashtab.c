@@ -990,17 +990,8 @@ hash_pointer (const PTR p)
   unsigned a, b, c;
 
   a = b = 0x9e3779b9;
-  if (sizeof (intptr_t) == 4) 
-    {
-      /* Mix as 16bit for now */
-      a += v >> 16;
-      b += v & 0xffff;
-    }
-  else
-    {
-      a += v >> 32;
-      b += v & 0xffffffff;
-    }
+  a += v >> (sizeof (intptr_t) * CHAR_BIT / 2);
+  b += v & (((intptr_t) 1 << (sizeof (intptr_t) * CHAR_BIT / 2)) - 1);
   c = 0x42135234;
   mix (a, b, c);
   return c;
