@@ -3504,6 +3504,22 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       else
 	return false;
 
+    case SMIN:
+    case SMAX:
+      /* This is most likely a clips.b or clips.w insn that is being made up
+	 by combine.  */
+      if (TARGET_SH2A
+	  && (GET_CODE (XEXP (x, 0)) == SMAX || GET_CODE (XEXP (x, 0)) == SMIN)
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && CONST_INT_P (XEXP (x, 1)))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else
+	return false;
+
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
