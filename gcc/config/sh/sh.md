@@ -866,6 +866,16 @@
 	(lshiftrt:SI (xor:SI (match_dup 1) (match_dup 2)) (const_int 31)))
    (set (match_dup 0) (reg:SI T_REG))])
 
+(define_insn "*cmp_div0s_0"
+  [(set (reg:SI T_REG)
+	(eq:SI (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand")
+			    (const_int 31))
+	       (ge:SI (match_operand:SI 1 "arith_reg_operand")
+		      (const_int 0))))]
+  "TARGET_SH1"
+  "div0s	%0,%1"
+  [(set_attr "type" "arith")])
+
 (define_insn_and_split "*cmp_div0s_1"
   [(set (match_operand:SI 0 "arith_reg_dest" "")
 	(ge:SI (xor:SI (match_operand:SI 1 "arith_reg_operand" "")
@@ -889,6 +899,19 @@
 	(ge:SI (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
 		       (match_operand:SI 1 "arith_reg_operand" ""))
 	       (const_int 0)))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (reg:SI T_REG) (lt:SI (xor:SI (match_dup 0) (match_dup 1))
+			      (const_int 0)))
+   (set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))])
+
+(define_insn_and_split "*cmp_div0s_1"
+  [(set (reg:SI T_REG)
+	(eq:SI (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand")
+			    (const_int 31))
+	       (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+			    (const_int 31))))]
   "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
@@ -1062,6 +1085,27 @@
   "TARGET_PRETEND_CMOVE"
   "#"
   "&& 1"
+  [(set (reg:SI T_REG) (lt:SI (xor:SI (match_dup 1) (match_dup 2))
+			      (const_int 0)))
+   (set (match_dup 0)
+	(if_then_else (ne (reg:SI T_REG) (const_int 0))
+		      (match_dup 4)
+		      (match_dup 3)))])
+
+(define_insn_and_split "*movsicc_div0s"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(if_then_else:SI (eq (lshiftrt:SI
+				(match_operand:SI 1 "arith_reg_operand")
+				(const_int 31))
+			     (lshiftrt:SI
+				(match_operand:SI 2 "arith_reg_operand")
+				(const_int 31)))
+			 (match_operand:SI 3 "arith_reg_operand")
+			 (match_operand:SI 4 "general_movsrc_operand")))
+   (clobber (reg:SI T_REG))]
+   "TARGET_PRETEND_CMOVE"
+   "#"
+   "&& 1"
   [(set (reg:SI T_REG) (lt:SI (xor:SI (match_dup 1) (match_dup 2))
 			      (const_int 0)))
    (set (match_dup 0)
