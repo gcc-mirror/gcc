@@ -189,7 +189,7 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #	define EXPBIAS 127
 #	define FRACBITS 23
 #	define EXPMAX (0xff)
-#	define QUIET_NAN 0x100000L
+#	define QUIET_NAN 0x400000L
 #	define FRAC_NBITS 32
 #	define FRACHIGH  0x80000000L
 #	define FRACHIGH2 0xc0000000L
