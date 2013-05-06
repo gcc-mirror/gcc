@@ -1,3 +1,14 @@
+2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55303
+	* config/sh/sh.c (sh_rtx_costs): Handle SMIN and SMAX cases.
+	* config/sh/sh.md (*clips, uminsi3, *clipu, clipu_one): New insns and
+	related expanders.
+	* config/sh/iterators.md (SMIN_SMAX): New code iterator.
+	* config/sh/predicates.md (arith_reg_or_0_or_1_operand,
+	clips_min_const_int, clips_max_const_int, clipu_max_const_int):
+	New predicates.
+
 2013-05-05  Steven Bosscher  <steven@gcc.gnu.org>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
