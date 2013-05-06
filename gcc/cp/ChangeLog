@@ -1,3 +1,9 @@
+2013-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57183
+	* decl.c (cp_finish_decl): After do_auto_deduction copy the
+	qualifers with cp_apply_type_quals_to_decl.
+
 2013-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (convert_nontype_argument): Add missing whitespace in

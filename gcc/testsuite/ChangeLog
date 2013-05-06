@@ -1,3 +1,8 @@
+2013-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57183
+	* g++.dg/cpp0x/auto38.C: New.
+
 2013-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57185
