@@ -297,7 +297,7 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 /* numeric parameters */
 /* F_D_BITOFF is the number of bits offset between the MSB of the mantissa
    of a float and of a double. Assumes there are only two float types.
-   (double::FRAC_BITS+double::NGARDS-(float::FRAC_BITS-float::NGARDS))
+   (double::FRAC_BITS+double::NGARDS-(float::FRAC_BITS+float::NGARDS))
  */
 #define F_D_BITOFF (52+8-(23+7))
 
