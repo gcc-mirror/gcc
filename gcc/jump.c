@@ -118,7 +118,7 @@ rebuild_jump_labels_chain (rtx chain)
    This simple pass moves barriers and removes duplicates so that the
    old code is happy.
  */
-unsigned int
+static unsigned int
 cleanup_barriers (void)
 {
   rtx insn, next, prev;

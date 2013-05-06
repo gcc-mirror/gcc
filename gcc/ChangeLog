@@ -1,3 +1,17 @@
+2013-05-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+
+	* config/mips/mips.c: Include tree-pass.h.
+	(mips_reorg): Split in pre- and post-dbr_schedule parts.
+	(mips_machine_reorg2): Move mips_reorg post-dbr_schedule parts here.
+	(pass_mips_machine_reorg2): New machine specific pass.
+	(insert_pass_mips_machine_reorg2): New pass plugin definition.
+	(mips_option_override): Register the new pass.
+	* rtl.h (cleanup_barriers): Remove prototype.
+	(dbr_schedule): Likewise.
+	* jump.c (cleanup_barriers): Make static.
+	* reorg.c (dbr_schedule): Likewise.
+
 2013-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57185
