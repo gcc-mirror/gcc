@@ -1841,14 +1841,8 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 	    gcc_assert ((e->flags & EDGE_EH)
 			|| SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)));
 
-	    if (virtual_operand_p (PHI_RESULT (phi)))
-	      {
-		mark_virtual_operands_for_renaming (cfun);
-		continue;
-	      }
-
 	    re = find_edge (ret_bb, e->dest);
-	    gcc_assert (re);
+	    gcc_checking_assert (re);
 	    gcc_assert ((re->flags & (EDGE_EH | EDGE_ABNORMAL))
 			== (e->flags & (EDGE_EH | EDGE_ABNORMAL)));
 

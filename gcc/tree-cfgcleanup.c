@@ -57,7 +57,10 @@ remove_fallthru_edge (vec<edge, va_gc> *ev)
   FOR_EACH_EDGE (e, ei, ev)
     if ((e->flags & EDGE_FALLTHRU) != 0)
       {
-	remove_edge_and_dominated_blocks (e);
+	if (e->flags & EDGE_COMPLEX)
+	  e->flags &= ~EDGE_FALLTHRU;
+	else
+	  remove_edge_and_dominated_blocks (e);
 	return true;
       }
   return false;

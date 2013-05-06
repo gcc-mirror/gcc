@@ -1,3 +1,14 @@
+2013-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57147
+	* tree-cfg.c (gimple_purge_dead_abnormal_call_edges): If
+	the edge is also fallthru, preserve it and just clear the
+	abnormal flag.
+	* tree-cfgcleanup.c (remove_fallthru_edge): If the edge is
+	also complex, preserve that and just clear the fallthru flag.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Also
+	update virtual operands.
+
 2013-05-06  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/linux.h (DEFAULT_ASM_ENDIAN): Define.

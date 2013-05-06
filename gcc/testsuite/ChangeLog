@@ -1,3 +1,10 @@
+2013-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57147
+	* gcc.dg/torture/pr57147-1.c: New testcase.
+	* gcc.dg/torture/pr57147-2.c: Likewise.
+	* gcc.dg/torture/pr57147-3.c: Likewise.
+
 2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/55303
