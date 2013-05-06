@@ -1,5 +1,14 @@
 2013-05-06  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/linux.h (DEFAULT_ASM_ENDIAN): Define.
+	(LINK_OS_LINUX_EMUL): Use ENDIAN_SELECT.
+	* config/rs6000/linux64.h (DEFAULT_ASM_ENDIAN): Define.
+	* config/rs6000/sysv4le.h (DEFAULT_ASM_ENDIAN): Define.
+	(LINK_TARGET_SPEC): Use ENDIAN_SELECT.
+	* config/rs6000/sysv4.h (DEFAULT_ASM_ENDIAN): Define as -mbig.
+
+2013-05-06  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/sysv4.h (ENDIAN_SELECT): Define, extracted from
 	(ASM_SPEC): ..here.  Emit DEFAULT_ASM_ENDIAN too.
 	(DEFAULT_ASM_ENDIAN): Define.
