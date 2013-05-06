@@ -1,4 +1,14 @@
-2013-05-03  Teresa Johnson  <tejohnson@google.com>
+2013-05-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/slsr-32.c: Re-enable.
+	* gcc.dg/tree-ssa/slsr-33.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-34.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-35.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-36.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-37.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-38.c: Likewise.
+
+2013-05-06  Teresa Johnson  <tejohnson@google.com>
 
 	PR bootstrap/57154
 	* gcc.dg/pr57154.c: New test.
