@@ -1,3 +1,9 @@
+2013-05-06  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.md (bswapdi 2nd splitter): Don't swap words
+	twice for little-endian.
+	(ashrdi3_no_power, ashrdi3): Support little-endian.
+
 2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/55303
