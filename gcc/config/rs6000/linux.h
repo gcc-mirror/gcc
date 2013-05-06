@@ -79,10 +79,17 @@
 #undef	LINK_OS_DEFAULT_SPEC
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
+#undef  DEFAULT_ASM_ENDIAN
 #if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
-#define LINK_OS_LINUX_EMUL "%{!mbig: %{!mbig-endian: -m elf32lppclinux}}%{mbig|mbig-endian: -m elf32ppclinux}"
+#define DEFAULT_ASM_ENDIAN " -mlittle"
+#define LINK_OS_LINUX_EMUL ENDIAN_SELECT(" -m elf32ppclinux",	\
+					 " -m elf32lppclinux",	\
+					 " -m elf32lppclinux")
 #else
-#define LINK_OS_LINUX_EMUL "%{!mlittle: %{!mlittle-endian: -m elf32ppclinux}}%{mlittle|mlittle-endian: -m elf32lppclinux}"
+#define DEFAULT_ASM_ENDIAN " -mbig"
+#define LINK_OS_LINUX_EMUL ENDIAN_SELECT(" -m elf32ppclinux",	\
+					 " -m elf32lppclinux",	\
+					 " -m elf32ppclinux")
 #endif
 
 #undef LINK_OS_LINUX_SPEC

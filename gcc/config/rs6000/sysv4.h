@@ -527,11 +527,7 @@ extern int fixuplabelno;
   "mcall-i960-old:"		LITTLE_OPT ";"	\
   ":"				DEFAULT_OPT "}"
 
-#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
-#define DEFAULT_ASM_ENDIAN " -mlittle"
-#else
 #define DEFAULT_ASM_ENDIAN " -mbig"
-#endif
 
 #undef	ASM_SPEC
 #define	ASM_SPEC "%(asm_cpu) \

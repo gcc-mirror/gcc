@@ -366,7 +366,9 @@ extern int dot_symbols;
 #define GNU_USER_DYNAMIC_LINKER64 \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
 
+#undef  DEFAULT_ASM_ENDIAN
 #if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#define DEFAULT_ASM_ENDIAN " -mlittle"
 #define LINK_OS_LINUX_EMUL32 ENDIAN_SELECT(" -m elf32ppclinux",		\
 					   " -m elf32lppclinux",	\
 					   " -m elf32lppclinux")
@@ -374,6 +376,7 @@ extern int dot_symbols;
 					   " -m elf64lppc",		\
 					   " -m elf64lppc")
 #else
+#define DEFAULT_ASM_ENDIAN " -mbig"
 #define LINK_OS_LINUX_EMUL32 ENDIAN_SELECT(" -m elf32ppclinux",		\
 					   " -m elf32lppclinux",	\
 					   " -m elf32ppclinux")
