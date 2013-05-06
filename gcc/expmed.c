@@ -69,22 +69,22 @@ static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 
 struct init_expmed_rtl
 {
-  struct rtx_def reg;		rtunion reg_fld[2];
-  struct rtx_def plus;	rtunion plus_fld1;
+  struct rtx_def reg;
+  struct rtx_def plus;
   struct rtx_def neg;
-  struct rtx_def mult;	rtunion mult_fld1;
-  struct rtx_def sdiv;	rtunion sdiv_fld1;
-  struct rtx_def udiv;	rtunion udiv_fld1;
-  struct rtx_def sdiv_32;	rtunion sdiv_32_fld1;
-  struct rtx_def smod_32;	rtunion smod_32_fld1;
-  struct rtx_def wide_mult;	rtunion wide_mult_fld1;
-  struct rtx_def wide_lshr;	rtunion wide_lshr_fld1;
+  struct rtx_def mult;
+  struct rtx_def sdiv;
+  struct rtx_def udiv;
+  struct rtx_def sdiv_32;
+  struct rtx_def smod_32;
+  struct rtx_def wide_mult;
+  struct rtx_def wide_lshr;
   struct rtx_def wide_trunc;
-  struct rtx_def shift;	rtunion shift_fld1;
-  struct rtx_def shift_mult;	rtunion shift_mult_fld1;
-  struct rtx_def shift_add;	rtunion shift_add_fld1;
-  struct rtx_def shift_sub0;	rtunion shift_sub0_fld1;
-  struct rtx_def shift_sub1;	rtunion shift_sub1_fld1;
+  struct rtx_def shift;
+  struct rtx_def shift_mult;
+  struct rtx_def shift_add;
+  struct rtx_def shift_sub0;
+  struct rtx_def shift_sub1;
   struct rtx_def zext;
   struct rtx_def trunc;
 
