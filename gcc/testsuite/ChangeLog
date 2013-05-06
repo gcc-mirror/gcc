@@ -1,3 +1,11 @@
+2013-05-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from trunk
+	2013-05-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57150
+	* gcc.target/powerpc/pr57150.c: New file.
+
 2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

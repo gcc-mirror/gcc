@@ -2186,8 +2186,16 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	reg_size = UNITS_PER_WORD;
 
       for (m = 0; m < NUM_MACHINE_MODES; ++m)
-	rs6000_class_max_nregs[m][c]
-	  = (GET_MODE_SIZE (m) + reg_size - 1) / reg_size;
+	{
+	  int reg_size2 = reg_size;
+
+	  /* TFmode/TDmode always takes 2 registers, even in VSX.  */
+	  if (m == TDmode || m == TFmode)
+	    reg_size2 = UNITS_PER_FP_WORD;
+
+	  rs6000_class_max_nregs[m][c]
+	    = (GET_MODE_SIZE (m) + reg_size2 - 1) / reg_size2;
+	}
     }
 
   if (TARGET_E500_DOUBLE)
