@@ -7628,7 +7628,10 @@ gimple_purge_dead_abnormal_call_edges (basic_block bb)
     {
       if (e->flags & EDGE_ABNORMAL)
 	{
-	  remove_edge_and_dominated_blocks (e);
+	  if (e->flags & EDGE_FALLTHRU)
+	    e->flags &= ~EDGE_ABNORMAL;
+	  else
+	    remove_edge_and_dominated_blocks (e);
 	  changed = true;
 	}
       else
