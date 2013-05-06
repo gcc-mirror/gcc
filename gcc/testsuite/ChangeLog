@@ -1,3 +1,8 @@
+2013-05-03  Teresa Johnson  <tejohnson@google.com>
+
+	PR bootstrap/57154
+	* gcc.dg/pr57154.c: New test.
+
 2013-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57147
