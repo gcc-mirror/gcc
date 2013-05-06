@@ -5310,6 +5310,11 @@ extern int integer_onep (const_tree);
 
 extern int integer_all_onesp (const_tree);
 
+/* integer_minus_onep (tree x) is nonzero if X is an integer constant of
+   value -1.  */
+
+extern int integer_minus_onep (const_tree);
+
 /* integer_pow2p (tree x) is nonzero is X is an integer constant with
    exactly one bit 1.  */
 
