@@ -3,6 +3,11 @@
 	PR tree-optimization/57185
 	* gcc.dg/autopar/pr57185.c: New testcase.
 
+2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57106
+	* gcc.target/i386/pr57106.c: New test.
+
 2013-05-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/slsr-32.c: Re-enable.
