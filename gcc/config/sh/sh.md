@@ -687,9 +687,9 @@
   [(set_attr "type" "mt_group")])
 
 ;; Extract contiguous bits and compare them against zero.
-(define_insn "tstsi_t_zero_extract_eq"
+(define_insn "tst<mode>_t_zero_extract_eq"
   [(set (reg:SI T_REG)
-	(eq:SI (zero_extract:SI (match_operand:SI 0 "logical_operand" "z")
+	(eq:SI (zero_extract:SI (match_operand:QIHISIDI 0 "logical_operand" "z")
 				(match_operand:SI 1 "const_int_operand")
 				(match_operand:SI 2 "const_int_operand"))
 	       (const_int 0)))]
