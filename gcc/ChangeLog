@@ -1,3 +1,9 @@
+2013-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/57184
+	* expr.c (expand_expr_addr_expr_1): Handle COMPOUND_LITERAL_EXPR
+	for modifier == EXPAND_INITIALIZER.
+
 2013-05-07  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
