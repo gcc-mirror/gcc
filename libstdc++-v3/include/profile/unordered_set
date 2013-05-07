@@ -34,6 +34,7 @@
 # include <unordered_set>
 
 #include <profile/base.h>
+#include <profile/unordered_base.h>
 
 #define _GLIBCXX_BASE unordered_set<_Key, _Hash, _Pred, _Alloc>
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_C::_GLIBCXX_BASE
@@ -44,13 +45,21 @@ namespace __profile
 {
   /** @brief Unordered_set wrapper with performance instrumentation.  */
   template<typename _Key, 
-	   typename _Hash  = std::hash<_Key>,
+	   typename _Hash = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
 	   typename _Alloc =  std::allocator<_Key> >
     class unordered_set
-    : public _GLIBCXX_STD_BASE
+    : public _GLIBCXX_STD_BASE,
+      public _Unordered_profile<unordered_set<_Key, _Hash, _Pred, _Alloc>,
+				true>
     {
       typedef _GLIBCXX_STD_BASE _Base;
+
+      _Base&
+      _M_base() noexcept       { return *this; }
+
+      const _Base&
+      _M_base() const noexcept { return *this; }
 
     public:
       typedef typename _Base::size_type       size_type;
@@ -71,11 +80,8 @@ namespace __profile
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-      : _Base(__n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+	: _Base(__n, __hf, __eql, __a)
+      { }
 
       template<typename _InputIterator>
         unordered_set(_InputIterator __f, _InputIterator __l,
@@ -83,84 +89,64 @@ namespace __profile
 		      const hasher& __hf = hasher(),
 		      const key_equal& __eql = key_equal(),
 		      const allocator_type& __a = allocator_type())
-      : _Base(__f, __l, __n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+	  : _Base(__f, __l, __n, __hf, __eql, __a)
+      { }
 
-      unordered_set(const unordered_set& __x)
-      : _Base(__x) 
-      { 
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+      unordered_set(const unordered_set&) = default;
 
       unordered_set(const _Base& __x)
-      : _Base(__x) 
-      { 
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+	: _Base(__x)
+      { }
 
-      unordered_set(unordered_set&& __x)
-      : _Base(std::move(__x)) 
-      { 
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+      unordered_set(unordered_set&&) = default;
+
+      explicit
+      unordered_set(const allocator_type& __a)
+	: _Base(__a)
+      { }
+
+      unordered_set(const unordered_set& __uset,
+		    const allocator_type& __a)
+	: _Base(__uset._M_base(), __a)
+      { }
+
+      unordered_set(unordered_set&& __uset,
+		    const allocator_type& __a)
+	: _Base(std::move(__uset._M_base()), __a)
+      { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 0,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-      : _Base(__l, __n, __hf, __eql, __a) { }
+      : _Base(__l, __n, __hf, __eql, __a)
+      { }
 
       unordered_set&
-      operator=(const unordered_set& __x)
-      {
-	*static_cast<_Base*>(this) = __x;
-	return *this;
-      }
+      operator=(const unordered_set&) = default;
 
       unordered_set&
-      operator=(unordered_set&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;
-      }
+      operator=(unordered_set&&) = default;
 
       unordered_set&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
 	return *this;
-      }
-
-      ~unordered_set() noexcept
-      {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
-                                     _Base::size());
-        _M_profile_destruct();
       }
 
       void
       swap(unordered_set& __x)
-      {
-        _Base::swap(__x);
-      }
+      noexcept( noexcept(__x._M_base().swap(__x)) )
+      { _Base::swap(__x); }
 
       void
       clear() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
                                      _Base::size());
-        _M_profile_destruct();
+        this->_M_profile_destruct();
         _Base::clear();
       }
 
@@ -240,14 +226,7 @@ namespace __profile
 	}
 
       void
-      insert(const value_type* __first, const value_type* __last)
-      {
-        size_type __old_size = _Base::bucket_count(); 
-        _Base::insert(__first, __last);
-        _M_profile_resize(__old_size); 
-      }
-     
-      void rehash(size_type __n)
+      rehash(size_type __n)
       {
         size_type __old_size = _Base::bucket_count();
         _Base::rehash(__n);
@@ -261,29 +240,6 @@ namespace __profile
 	size_type __new_size = _Base::bucket_count();
 	if (__old_size != __new_size)
 	  __profcxx_hashtable_resize(this, __old_size, __new_size);
-      }
-
-      void
-      _M_profile_destruct()
-      {
-	size_type __hops = 0, __lc = 0, __chain = 0;
-	iterator __it = this->begin();
-	while (__it != this->end())
-	  {
-	    size_type __bkt = this->bucket(*__it);
-	    auto __lit = this->begin(__bkt);
-	    auto __lend = this->end(__bkt);
-	    for (++__it, ++__lit; __lit != __lend; ++__it, ++__lit)
-	      ++__chain;
-	    if (__chain)
-	      {
-		++__chain;
-		__lc = __lc > __chain ? __lc : __chain;
-		__hops += __chain * (__chain - 1) / 2;
-		__chain = 0;
-	      }
-	  }
-        __profcxx_hashtable_destruct2(this, __lc, _Base::size(), __hops);
       }
   };
 
@@ -312,13 +268,22 @@ namespace __profile
 
   /** @brief Unordered_multiset wrapper with performance instrumentation.  */
   template<typename _Value,
-       typename _Hash  = std::hash<_Value>,
-       typename _Pred = std::equal_to<_Value>,
-       typename _Alloc =  std::allocator<_Value> >
+	   typename _Hash = std::hash<_Value>,
+	   typename _Pred = std::equal_to<_Value>,
+	   typename _Alloc =  std::allocator<_Value> >
     class unordered_multiset
-    : public _GLIBCXX_STD_BASE
+    : public _GLIBCXX_STD_BASE,
+      public _Unordered_profile<unordered_multiset<_Value,
+						   _Hash, _Pred, _Alloc>,
+				false>
     {
       typedef _GLIBCXX_STD_BASE _Base;
+
+      _Base&
+      _M_base() noexcept       { return *this; }
+
+      const _Base&
+      _M_base() const noexcept { return *this; }
 
     public:
       typedef typename _Base::size_type       size_type;
@@ -339,10 +304,8 @@ namespace __profile
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
-      : _Base(__n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+	: _Base(__n, __hf, __eql, __a)
+      { }
 
       template<typename _InputIterator>
         unordered_multiset(_InputIterator __f, _InputIterator __l,
@@ -350,80 +313,64 @@ namespace __profile
 			   const hasher& __hf = hasher(),
 			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
-      : _Base(__f, __l, __n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+	  : _Base(__f, __l, __n, __hf, __eql, __a)
+      { }
 
-      unordered_multiset(const unordered_multiset& __x)
-      : _Base(__x)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+      unordered_multiset(const unordered_multiset&) = default;
 
       unordered_multiset(const _Base& __x)
-      : _Base(__x)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+	: _Base(__x)
+      { }
 
-      unordered_multiset(unordered_multiset&& __x)
-      : _Base(std::move(__x))
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+      unordered_multiset(unordered_multiset&&) = default;
+
+      explicit
+      unordered_multiset(const allocator_type& __a)
+	: _Base(__a)
+      { }
+
+      unordered_multiset(const unordered_multiset& __umset,
+			 const allocator_type& __a)
+	: _Base(__umset._M_base(), __a)
+      { }
+
+      unordered_multiset(unordered_multiset&& __umset,
+			 const allocator_type& __a)
+	: _Base(std::move(__umset._M_base()), __a)
+      { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 0,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
-      : _Base(__l, __n, __hf, __eql, __a) { }
+	: _Base(__l, __n, __hf, __eql, __a)
+      { }
 
       unordered_multiset&
-      operator=(const unordered_multiset& __x)
-      {
-	*static_cast<_Base*>(this) = __x;
-	return *this;
-      }
+      operator=(const unordered_multiset&) = default;
 
       unordered_multiset&
-      operator=(unordered_multiset&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;
-      }
+      operator=(unordered_multiset&&) = default;
 
       unordered_multiset&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
 	return *this;
-      }
-
-      ~unordered_multiset() noexcept
-      {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
-                                     _Base::size());
-        _M_profile_destruct();
       }
 
       void
       swap(unordered_multiset& __x)
-      {
-        _Base::swap(__x);
-      }
+      noexcept( noexcept(__x._M_base().swap(__x)) )
+      { _Base::swap(__x); }
 
       void
       clear() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
                                      _Base::size());
-        _M_profile_destruct();
+        this->_M_profile_destruct();
         _Base::clear();
       }
 
@@ -502,14 +449,7 @@ namespace __profile
 	}
 
       void
-      insert(const value_type* __first, const value_type* __last)
-      {
-        size_type __old_size = _Base::bucket_count(); 
-        _Base::insert(__first, __last);
-        _M_profile_resize(__old_size); 
-      }
-     
-      void rehash(size_type __n)
+      rehash(size_type __n)
       {
         size_type __old_size = _Base::bucket_count();
         _Base::rehash(__n);
@@ -523,29 +463,6 @@ namespace __profile
 	size_type __new_size = _Base::bucket_count();
         if (__old_size != __new_size)
           __profcxx_hashtable_resize(this, __old_size, __new_size);
-      }
-
-      void
-      _M_profile_destruct()
-      {
-	size_type __hops = 0, __lc = 0, __chain = 0;
-	iterator __it = this->begin();
-	while (__it != this->end())
-	  {
-	    size_type __bkt = this->bucket(*__it);
-	    auto __lit = this->begin(__bkt);
-	    auto __lend = this->end(__bkt);
-	    for (++__it, ++__lit; __lit != __lend; ++__it, ++__lit)
-	      ++__chain;
-	    if (__chain)
-	      {
-		++__chain;
-		__lc = __lc > __chain ? __lc : __chain;
-		__hops += __chain * (__chain - 1) / 2;
-		__chain = 0;
-	      }
-	  }
-        __profcxx_hashtable_destruct2(this, __lc, _Base::size(), __hops);
       }
    };
 

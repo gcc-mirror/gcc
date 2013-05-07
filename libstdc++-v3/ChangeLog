@@ -1,3 +1,20 @@
+2013-05-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/profile/unordered_base.h: New.
+	* include/Makefile.am: Add new profile header.
+	* include/Makefile.in: Regenerate.
+	* include/profile/impl/profiler.h
+	(__profcxx_inefficient_hash_is_on): New macro.
+	* include/profile/unordered_map (std::profile::unordered_map<>):
+	Use new _Unordered_profile base class. Use default implementations
+	for special functions.
+	(std::profile::unordered_multimap<>): Likewise.
+	* include/profile/unordered_set (std::profile::unordered_set<>):
+	Likewise.
+	(std::profile::unordered_multiset<>): Likewise.
+	* testsuite/23_containers/unordered_multiset/55043.cc: Fix
+	MoveOnly equality operator signature.
+
 2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/tr1/4_metaprogramming/integral_constant/requirements/
