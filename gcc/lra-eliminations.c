@@ -1042,11 +1042,12 @@ spill_pseudos (HARD_REG_SET set)
    registers.  Spill pseudos assigned to registers which became
    uneliminable, update LRA_NO_ALLOC_REGS and ELIMINABLE_REG_SET.  Add
    insns to INSNS_WITH_CHANGED_OFFSETS containing eliminable hard
-   registers whose offsets should be changed.  */
-static void
+   registers whose offsets should be changed.  Return true if any
+   elimination offset changed.  */
+static bool
 update_reg_eliminate (bitmap insns_with_changed_offsets)
 {
-  bool prev;
+  bool prev, result;
   struct elim_table *ep, *ep1;
   HARD_REG_SET temp_hard_reg_set;
 
@@ -1122,6 +1123,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
   AND_COMPL_HARD_REG_SET (eliminable_regset, temp_hard_reg_set);
   spill_pseudos (temp_hard_reg_set);
   setup_elimination_map ();
+  result = false;
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (elimination_map[ep->from] == ep && ep->previous_offset != ep->offset)
       {
@@ -1132,7 +1134,9 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	   changed.  */
 	lra_update_reg_val_offset (lra_reg_info[ep->from].val,
 				   ep->offset - ep->previous_offset);
+	result = true;
       }
+  return result;
 }
 
 /* Initialize the table of hard registers to eliminate.
@@ -1273,12 +1277,8 @@ lra_eliminate (bool final_p)
 	  bitmap_ior_into (&insns_with_changed_offsets,
 			   &lra_reg_info[ep->from].insn_bitmap);
     }
-  else
-    {
-      update_reg_eliminate (&insns_with_changed_offsets);
-      if (bitmap_empty_p (&insns_with_changed_offsets))
-	goto lra_eliminate_done;
-    }
+  else if (! update_reg_eliminate (&insns_with_changed_offsets))
+    goto lra_eliminate_done;
   if (lra_dump_file != NULL)
     {
       fprintf (lra_dump_file, "New elimination table:\n");
