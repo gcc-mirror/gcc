@@ -656,6 +656,47 @@ aarch64_split_128bit_move_p (rtx dst, rtx src)
 	  || ! (FP_REGNUM_P (REGNO (dst)) && FP_REGNUM_P (REGNO (src))));
 }
 
+/* Split a complex SIMD move.  */
+
+void
+aarch64_split_simd_move (rtx dst, rtx src)
+{
+  enum machine_mode src_mode = GET_MODE (src);
+  enum machine_mode dst_mode = GET_MODE (dst);
+
+  gcc_assert (VECTOR_MODE_P (dst_mode));
+
+  if (REG_P (dst) && REG_P (src))
+    {
+      gcc_assert (VECTOR_MODE_P (src_mode));
+
+      switch (src_mode)
+	{
+	case V16QImode:
+	  emit_insn (gen_aarch64_simd_movv16qi (dst, src));
+	  break;
+	case V8HImode:
+	  emit_insn (gen_aarch64_simd_movv8hi (dst, src));
+	  break;
+	case V4SImode:
+	  emit_insn (gen_aarch64_simd_movv4si (dst, src));
+	  break;
+	case V2DImode:
+	  emit_insn (gen_aarch64_simd_movv2di (dst, src));
+	  break;
+	case V4SFmode:
+	  emit_insn (gen_aarch64_simd_movv4sf (dst, src));
+	  break;
+	case V2DFmode:
+	  emit_insn (gen_aarch64_simd_movv2df (dst, src));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      return;
+    }
+}
+
 static rtx
 aarch64_force_temporary (rtx x, rtx value)
 {

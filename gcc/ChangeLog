@@ -1,3 +1,16 @@
+2013-05-07  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>): call splitter.
+	(aarch64_simd_mov<mode>): New expander.
+	(aarch64_simd_mov_to_<mode>low): New instruction pattern.
+	(aarch64_simd_mov_to_<mode>high): Likewise.
+	(aarch64_simd_mov_from_<mode>low): Likewise.
+	(aarch64_simd_mov_from_<mode>high): Likewise.
+	(aarch64_dup_lane<mode>): Update.
+	(aarch64_dup_lanedi): New instruction pattern.
+	* config/aarch64/aarch64-protos.h (aarch64_split_simd_move): New prototype.
+	* config/aarch64/aarch64.c (aarch64_split_simd_move): New function.
+
 2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (lazy_create_slsr_reg): Remove.

@@ -223,7 +223,7 @@ test_vdups_lane_u32 (uint32x4_t a)
   return vdups_lane_u32 (a, 2);
 }
 
-/* { dg-final { scan-assembler-times "\\tdup\\td\[0-9\]+, v\[0-9\]+\.d" 2 } } */
+/* { dg-final { scan-assembler-times "\\tumov\\tx\[0-9\]+, v\[0-9\]+\.d" 2 } } */
 
 int64x1_t
 test_vdupd_lane_s64 (int64x2_t a)
