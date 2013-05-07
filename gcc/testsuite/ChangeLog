@@ -1,3 +1,8 @@
+2013-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57190
+	* g++.dg/torture/pr57190.C: New testcase.
+
 2013-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57149

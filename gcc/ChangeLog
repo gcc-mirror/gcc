@@ -1,3 +1,9 @@
+2013-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57190
+	* tree-eh.c (sink_clobbers): Properly propagate
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
 2013-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57149
