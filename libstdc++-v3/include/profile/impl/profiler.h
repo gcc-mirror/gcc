@@ -188,7 +188,7 @@ namespace __gnu_profile
   _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__is_invalid())
 #define __profcxx_is_on() \
   _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__is_on())
-#define __profcxx__is_off() \
+#define __profcxx_is_off() \
   _GLIBCXX_PROFILE_REENTRANCE_GUARD(__gnu_profile::__is_off())
 #else
 #define __profcxx_report()
@@ -237,6 +237,8 @@ namespace __gnu_profile
 
 // Turn on/off instrumentation for INEFFICIENT_HASH.
 #if defined(_GLIBCXX_PROFILE_INEFFICIENT_HASH)
+#define __profcxx_inefficient_hash_is_on() \
+  __gnu_profile::__is_on()
 #define __profcxx_hashtable_construct2(__x...) \
   _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
       __gnu_profile::__trace_hash_func_construct(__x))
@@ -244,8 +246,9 @@ namespace __gnu_profile
   _GLIBCXX_PROFILE_REENTRANCE_GUARD( \
       __gnu_profile::__trace_hash_func_destruct(__x))
 #else
-#define __profcxx_hashtable_destruct2(__x...) 
-#define __profcxx_hashtable_construct2(__x...)  
+#define __profcxx_inefficient_hash_is_on() false
+#define __profcxx_hashtable_destruct2(__x...)
+#define __profcxx_hashtable_construct2(__x...)
 #endif
 
 // Turn on/off instrumentation for VECTOR_TO_LIST.

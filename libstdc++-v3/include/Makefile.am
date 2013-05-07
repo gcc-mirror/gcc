@@ -788,6 +788,7 @@ profile_builddir = ./profile
 profile_headers = \
 	${profile_srcdir}/array \
 	${profile_srcdir}/base.h \
+	${profile_srcdir}/unordered_base.h \
 	${profile_srcdir}/unordered_map \
 	${profile_srcdir}/unordered_set \
 	${profile_srcdir}/vector \
