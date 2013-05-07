@@ -1,3 +1,15 @@
+2013-05-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (ssescalarnummask): New mode attribute.
+	(PEXTR_MODE, PEXTR_MODEx): New mode iterators.
+	(*vec_extract<mode>): Merge from *sse4_1_pextrb_memory and
+	*sse4_1_pextrw_memory using PEXTR_MODE mode iterator. Handle
+	register target operands.
+	(*vec_extractv8hi_sse2): New pattern.
+	(*vec_extractv16qi_zext): Rename from *sse4_1_pextrb_<mode>.
+	(*vec_extractv8hi_zext): Rename from *sse2_pextrw_<mode>.
+	(*vec_extract<mode>_mem): New insn and split pattern.
+
 2013-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm.c (arm_asan_shadow_offset): New function.

@@ -362,6 +362,13 @@
    (V8SF "8") (V4DF "4")
    (V4SF "4") (V2DF "2")])
 
+;; Mask of scalar elements in each vector type
+(define_mode_attr ssescalarnummask
+  [(V32QI "31") (V16HI "15") (V8SI "7") (V4DI "3")
+   (V16QI "15") (V8HI "7") (V4SI "3") (V2DI "1")
+   (V8SF "7") (V4DF "3")
+   (V4SF "3") (V2DF "1")])
+
 ;; SSE prefix for integer vector modes
 (define_mode_attr sseintprefix
   [(V2DI "p") (V2DF "")
@@ -6933,60 +6940,6 @@
    (set_attr "prefix" "orig,orig,vex,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "*sse4_1_pextrb_<mode>"
-  [(set (match_operand:SWI48 0 "register_operand" "=r")
-	(zero_extend:SWI48
-	  (vec_select:QI
-	    (match_operand:V16QI 1 "register_operand" "x")
-	    (parallel [(match_operand:SI 2 "const_0_to_15_operand" "n")]))))]
-  "TARGET_SSE4_1"
-  "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_pextrb_memory"
-  [(set (match_operand:QI 0 "memory_operand" "=m")
-	(vec_select:QI
-	  (match_operand:V16QI 1 "register_operand" "x")
-	  (parallel [(match_operand:SI 2 "const_0_to_15_operand" "n")])))]
-  "TARGET_SSE4_1"
-  "%vpextrb\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse2_pextrw_<mode>"
-  [(set (match_operand:SWI48 0 "register_operand" "=r")
-	(zero_extend:SWI48
-	  (vec_select:HI
-	    (match_operand:V8HI 1 "register_operand" "x")
-	    (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n")]))))]
-  "TARGET_SSE2"
-  "%vpextrw\t{%2, %1, %k0|%k0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_data16" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_pextrw_memory"
-  [(set (match_operand:HI 0 "memory_operand" "=m")
-	(vec_select:HI
-	  (match_operand:V8HI 1 "register_operand" "x")
-	  (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n")])))]
-  "TARGET_SSE4_1"
-  "%vpextrw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
 (define_expand "avx2_pshufdv3"
   [(match_operand:V8SI 0 "register_operand")
    (match_operand:V8SI 1 "nonimmediate_operand")
@@ -7315,14 +7268,107 @@
    (set_attr "prefix" "maybe_vex,maybe_vex,orig,orig,vex")
    (set_attr "mode" "TI,TI,V4SF,SF,SF")])
 
+;; Modes handled by pextr patterns.
+(define_mode_iterator PEXTR_MODEx
+  [V16QI V8HI])
+
+(define_mode_iterator PEXTR_MODE
+  [(V16QI "TARGET_SSE4_1") V8HI])
+
+(define_insn "*vec_extract<mode>"
+  [(set (match_operand:<ssescalarmode> 0 "nonimmediate_operand" "=r,m")
+	(vec_select:<ssescalarmode>
+	  (match_operand:PEXTR_MODE 1 "register_operand" "x,x")
+	  (parallel
+	    [(match_operand:SI 2 "const_0_to_<ssescalarnummask>_operand")])))]
+  "TARGET_SSE4_1"
+  "@
+   %vpextr<ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}
+   %vpextr<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (and (eq_attr "alternative" "0")
+	    (eq (const_string "<MODE>mode") (const_string "V8HImode")))
+       (const_string "1")
+       (const_string "*")))
+   (set (attr "prefix_extra")
+     (if_then_else
+       (and (eq_attr "alternative" "0")
+	    (eq (const_string "<MODE>mode") (const_string "V8HImode")))
+       (const_string "*")
+       (const_string "1")))
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*vec_extractv8hi_sse2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(vec_select:HI
+	  (match_operand:V8HI 1 "register_operand" "x")
+	  (parallel
+	    [(match_operand:SI 2 "const_0_to_7_operand")])))]
+  "TARGET_SSE2 && !TARGET_SSE4_1"
+  "pextrw\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*vec_extractv16qi_zext"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(zero_extend:SWI48
+	  (vec_select:QI
+	    (match_operand:V16QI 1 "register_operand" "x")
+	    (parallel
+	      [(match_operand:SI 2 "const_0_to_15_operand")]))))]
+  "TARGET_SSE4_1"
+  "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*vec_extractv8hi_zext"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(zero_extend:SWI48
+	  (vec_select:HI
+	    (match_operand:V8HI 1 "register_operand" "x")
+	    (parallel
+	      [(match_operand:SI 2 "const_0_to_7_operand")]))))]
+  "TARGET_SSE2"
+  "%vpextrw\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn_and_split "*vec_extract<mode>_mem"
+  [(set (match_operand:<ssescalarmode> 0 "register_operand" "=r")
+	(vec_select:<ssescalarmode>
+	  (match_operand:PEXTR_MODEx 1 "memory_operand" "o")
+	  (parallel
+	    [(match_operand 2 "const_0_to_<ssescalarnummask>_operand")])))]
+  "TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  int offs = INTVAL (operands[2]) * GET_MODE_SIZE (<ssescalarmode>mode);
+
+  operands[1] = adjust_address (operands[1], <ssescalarmode>mode, offs);
+})
+
 (define_insn "*vec_extract<ssevecmodelower>_0"
-  [(set (match_operand:SWI48 0 "nonimmediate_operand"	       "=r,r,x ,m,r")
+  [(set (match_operand:SWI48 0 "nonimmediate_operand"	       "=r ,r,x ,m")
 	(vec_select:SWI48
-	  (match_operand:<ssevecmode> 1 "nonimmediate_operand" "Yj,x,xm,x,m")
+	  (match_operand:<ssevecmode> 1 "nonimmediate_operand" "mYj,x,xm,x")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
-  [(set_attr "isa" "*,sse4,*,*,*")])
+  [(set_attr "isa" "*,sse4,*,*")])
 
 (define_insn "*vec_extractv2di_0_sse"
   [(set (match_operand:DI 0 "nonimmediate_operand"     "=x,m")
