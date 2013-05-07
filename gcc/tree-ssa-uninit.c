@@ -101,6 +101,19 @@ ssa_undefined_value_p (tree t)
               && pointer_set_contains (possibly_undefined_names, t)));
 }
 
+/* Like ssa_undefined_value_p, but don't return true if TREE_NO_WARNING
+   is set on SSA_NAME_VAR.  */
+
+static inline bool
+uninit_undefined_value_p (tree t)
+{
+  if (!ssa_undefined_value_p (t))
+    return false;
+  if (SSA_NAME_VAR (t) && TREE_NO_WARNING (SSA_NAME_VAR (t)))
+    return false;
+  return true;
+}
+
 /* Checks if the operand OPND of PHI is defined by 
    another phi with one operand defined by this PHI, 
    but the rest operands are all defined. If yes, 
@@ -124,7 +137,7 @@ can_skip_redundant_opnd (tree opnd, gimple phi)
       tree op = gimple_phi_arg_def (op_def, i);
       if (TREE_CODE (op) != SSA_NAME)
         continue;
-      if (op != phi_def && ssa_undefined_value_p (op))
+      if (op != phi_def && uninit_undefined_value_p (op))
         return false;
     }
 
@@ -149,7 +162,7 @@ compute_uninit_opnds_pos (gimple phi)
     {
       tree op = gimple_phi_arg_def (phi, i);
       if (TREE_CODE (op) == SSA_NAME
-          && ssa_undefined_value_p (op)
+          && uninit_undefined_value_p (op)
           && !can_skip_redundant_opnd (op, phi))
 	{
 	  /* Ignore SSA_NAMEs on abnormal edges to setjmp
@@ -518,7 +531,7 @@ collect_phi_def_edges (gimple phi, basic_block cd_root,
                                  gimple_bb (def), cd_root))
             collect_phi_def_edges (def, cd_root, edges,
                                    visited_phis);
-          else if (!ssa_undefined_value_p (opnd))
+          else if (!uninit_undefined_value_p (opnd))
             {
               if (dump_file && (dump_flags & TDF_DETAILS))
                 {
@@ -2002,7 +2015,7 @@ execute_late_warn_uninitialized (void)
           {
             tree op = gimple_phi_arg_def (phi, i);
             if (TREE_CODE (op) == SSA_NAME
-                && ssa_undefined_value_p (op))
+                && uninit_undefined_value_p (op))
               {
                 worklist.safe_push (phi);
 		pointer_set_insert (added_to_worklist, phi);

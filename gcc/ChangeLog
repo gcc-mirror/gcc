@@ -1,5 +1,11 @@
 2013-05-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/57149
+	* tree-ssa-uninit.c (uninit_undefined_value_p): New inline.
+	(can_skip_redundant_opnd, compute_uninit_opnds_pos,
+	collect_phi_def_edges, execute_late_warn_uninitialized): Use
+	uninit_undefined_value_p instead of ssa_undefined_value_p.
+
 	PR debug/57184
 	* expr.c (expand_expr_addr_expr_1): Handle COMPOUND_LITERAL_EXPR
 	for modifier == EXPAND_INITIALIZER.
