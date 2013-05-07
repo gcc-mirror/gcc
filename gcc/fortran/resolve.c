@@ -3247,6 +3247,7 @@ resolve_function (gfc_expr *expr)
       for (arg = expr->value.function.actual; arg; arg = arg->next)
 	{
 	  if ((GENERIC_ID == GFC_ISYM_UBOUND || GENERIC_ID == GFC_ISYM_SIZE)
+	      && arg == expr->value.function.actual
 	      && arg->next != NULL && arg->next->expr)
 	    {
 	      if (arg->next->expr->expr_type != EXPR_CONSTANT)

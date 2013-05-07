@@ -1,3 +1,16 @@
+2013-05-07  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2013-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57142
+	* simplify.c (gfc_simplify_size): Renamed from
+	simplify_size; fix kind=8 handling.
+	(gfc_simplify_size): New function.
+	(gfc_simplify_shape): Add range check.
+	* resolve.c (resolve_function): Fix handling
+	for ISYM_SIZE.
+
 2013-04-26  Janus Weil  <janus@gcc.gnu.org>
 
 	Backports from trunk:
