@@ -1,3 +1,9 @@
+2013-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/56474
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Use
+	int_const_binop to shift bounds by 1 when they are integer constants.
+
 2013-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in (ADA_EXCLUDE_SRCS): Exclude s-init.ad{s,b}
