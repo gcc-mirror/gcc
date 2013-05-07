@@ -1,3 +1,9 @@
+2013-05-07  Anton Blanchard  <anton@samba.org>
+
+	* configure.ac (HAVE_LD_LARGE_TOC): Use correct linker emulation
+	for powerpc64 little endian.
+	* configure: Regenerate.
+
 2013-05-06  Graham Stott  <grahams@btinternet.com>
 
 	* expmed.c (init_expmed_rtl): Remove unused fields reg_fld, plus_fld,

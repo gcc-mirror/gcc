@@ -4573,6 +4573,9 @@ fi
 case "$target:$tm_file" in
   powerpc64-*-freebsd* | powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
   case "$target" in
+     *le-*-linux*)
+     emul_name="-melf64lppc"
+      ;;
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;
