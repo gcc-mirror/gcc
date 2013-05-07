@@ -1,3 +1,13 @@
+2013-05-07  Han Shen  <shenhan@google.com>
+
+	* cfgexpand.c (record_or_union_type_has_array_p): New function.
+	(expand_used_vars): Add logic handling '-fstack-protector-strong'.
+	* common.opt (fstack-protector-strong): New option.
+	* doc/cpp.texi (__SSP_STRONG__): New builtin "__SSP_STRONG__".
+	* doc/invoke.texi (Optimization Options): Document
+	"-fstack-protector-strong".
+	* gcc.c (LINK_SSP_SPEC): Add 'fstack-protector-strong'.
+
 2013-05-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/mips/mips.c (mips_machine_reorg2): Return 0.

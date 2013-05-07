@@ -1,3 +1,7 @@
+2013-05-07  Han Shen  <shenhan@google.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Added "__SSP_STRONG__=3".
+
 2013-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* c-common.c (check_user_alignment): Emit error for negative values.
