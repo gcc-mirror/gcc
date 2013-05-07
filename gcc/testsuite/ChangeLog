@@ -1,3 +1,19 @@
+2013-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_hw): New
+	function.
+	* c-c++-common/asan/clone-test-1.c: Call
+	check_effective_target_hw.
+	* c-c++-common/asan/rlimit-mmap-test-1.c: Likewise.
+	* c-c++-common/asan/heap-overflow-1.c: Update regexps to accept
+	possible decorations.
+	* c-c++-common/asan/null-deref-1.c: Likewise.
+	* c-c++-common/asan/stack-overflow-1.c: Likewise.
+	* c-c++-common/asan/strncpy-overflow-1.c: Likewise.
+	* c-c++-common/asan/use-after-free-1.c: Likewise.
+	* g++.dg/asan/deep-thread-stack-1.C: Likewise.
+	* g++.dg/asan/large-func-test-1.C: Likewise.
+
 2013-05-07  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c: Update.

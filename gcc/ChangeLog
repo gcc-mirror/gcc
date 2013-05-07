@@ -1,3 +1,10 @@
+2013-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.c (arm_asan_shadow_offset): New function.
+	(TARGET_ASAN_SHADOW_OFFSET): Define.
+	* config/arm/linux-eabi.h (ASAN_CC1_SPEC): Define.
+	(LINUX_OR_ANDROID_CC): Add ASAN_CC1_SPEC.
+
 2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (MAX_INCR_VEC_LEN): New constant.

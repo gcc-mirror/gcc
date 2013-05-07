@@ -1,3 +1,7 @@
+2013-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* configure.tgt: Add ARM pattern.
+
 2013-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620
