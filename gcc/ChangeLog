@@ -1,5 +1,21 @@
 2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* gimple-ssa-strength-reduction.c (lazy_create_slsr_reg): Remove.
+	(replace_mult_candidate): Remove unnecessary argument; remove
+	unnecessary parameter from call to introduce_cast_before_cand.
+	(replace_unconditional_candidate): Remove unnecessary parameter
+	from call to replace_mult_candidate.
+	(replace_conditional_candidate): Likewise.
+	(insert_initializers): Use make_temp_ssa_name.
+	(introduce_cast_before_cand): Remove unnecessary argument; use
+	make_temp_ssa_name.
+	(replace_one_candidate): Remove unnecessary argument; remove
+	unnecessary parameter from calls to introduce_cast_before_cand.
+	(replace_profitable_candidates): Remove unnecessary parameters
+	from calls to replace_one_candidate.
+
+2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* gimple-ssa-strength-reduction.c (find_phi_def): Don't record a
 	phi def as possibly hiding a basis for a CAND_ADD whose operands
 	have been commuted in the analysis.
