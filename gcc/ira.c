@@ -2188,7 +2188,7 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx insns)
       && (! ira_reg_equiv[to_regno].defined_p
 	  || ((x = ira_reg_equiv[to_regno].memory) != NULL_RTX
 	      && ! MEM_READONLY_P (x))))
-      return;
+    return;
   insn = insns;
   if (NEXT_INSN (insn) != NULL_RTX)
     {
@@ -2971,8 +2971,12 @@ update_equiv_regs (void)
 		 register.  */
 	      reg_equiv[regno].is_arg_equivalence = 1;
 
-	      /* Record for reload that this is an equivalencing insn.  */
-	      if (rtx_equal_p (src, XEXP (note, 0)))
+	      /* The insn result can have equivalence memory although
+		 the equivalence is not set up by the insn.  We add
+		 this insn to init insns as it is a flag for now that
+		 regno has an equivalence.  We will remove the insn
+		 from init insn list later.  */
+	      if (rtx_equal_p (src, XEXP (note, 0)) || MEM_P (XEXP (note, 0)))
 		ira_reg_equiv[regno].init_insns
 		  = gen_rtx_INSN_LIST (VOIDmode, insn,
 				       ira_reg_equiv[regno].init_insns);
@@ -3368,11 +3372,14 @@ static void
 setup_reg_equiv (void)
 {
   int i;
-  rtx elem, insn, set, x;
+  rtx elem, prev_elem, next_elem, insn, set, x;
 
   for (i = FIRST_PSEUDO_REGISTER; i < ira_reg_equiv_len; i++)
-    for (elem = ira_reg_equiv[i].init_insns; elem; elem = XEXP (elem, 1))
+    for (prev_elem = NULL, elem = ira_reg_equiv[i].init_insns;
+	 elem;
+	 prev_elem = elem, elem = next_elem)
       {
+	next_elem = XEXP (elem, 1);
 	insn = XEXP (elem, 0);
 	set = single_set (insn);
 	
@@ -3381,7 +3388,22 @@ setup_reg_equiv (void)
 	if (set != 0 && (REG_P (SET_DEST (set)) || REG_P (SET_SRC (set))))
 	  {
 	    if ((x = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != NULL)
-	      x = XEXP (x, 0);
+	      {
+		x = XEXP (x, 0);
+		if (REG_P (SET_DEST (set))
+		    && REGNO (SET_DEST (set)) == (unsigned int) i
+		    && ! rtx_equal_p (SET_SRC (set), x) && MEM_P (x))
+		  {
+		    /* This insn reporting the equivalence but
+		       actually not setting it.  Remove it from the
+		       list.  */
+		    if (prev_elem == NULL)
+		      ira_reg_equiv[i].init_insns = next_elem;
+		    else
+		      XEXP (prev_elem, 1) = next_elem;
+		    elem = prev_elem;
+		  }
+	      }
 	    else if (REG_P (SET_DEST (set))
 		     && REGNO (SET_DEST (set)) == (unsigned int) i)
 	      x = SET_SRC (set);
