@@ -1,9 +1,13 @@
+2013-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/56474
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Use
+	int_const_binop to shift bounds by 1 when they are integer constants.
+
 2013-04-23  Kai Tietz  <ktietz@redhat.com>
 
-	Merged from trunk.
 	PR target/55445
-	* raise-gcc.c (__SEH__): Additional check that
-	SjLj isn't active.
+	* raise-gcc.c (__SEH__): Additional check that SjLj isn't active.
 
 2013-03-22  Release Manager
 
