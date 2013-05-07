@@ -130,6 +130,7 @@ struct double_int
 
   double_int lshift (HOST_WIDE_INT count) const;
   double_int lshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const;
+  double_int rshift (HOST_WIDE_INT count) const;
   double_int rshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const;
   double_int alshift (HOST_WIDE_INT count, unsigned int prec) const;
   double_int arshift (HOST_WIDE_INT count, unsigned int prec) const;

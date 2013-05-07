@@ -1,5 +1,14 @@
 2013-05-07  Richard Biener  <rguenther@suse.de>
 
+	* double-int.h (rshift): New overload.
+	* double-int.c (rshift): New function.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Optimize.
+	(create_reference_ops_from_ref): Remove.
+	(vn_reference_insert): Use shared ops for constructing the
+	reference and copy it.
+
+2013-05-07  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/57190
 	* tree-eh.c (sink_clobbers): Properly propagate
 	SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
