@@ -1,3 +1,9 @@
+2013-05-07  Richard Biener  <rguenther@suse.de>
+
+	* calls.c (special_function_p): setjmp-like functions are leaf.
+	* builtins.def (BUILT_IN_SETJMP): setjmp is leaf.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Remove assert.
+
 2013-05-07  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>): call splitter.
