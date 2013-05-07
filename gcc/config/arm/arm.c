@@ -281,6 +281,7 @@ static unsigned arm_add_stmt_cost (void *data, int count,
 
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 					 bool op0_preserve_value);
+static unsigned HOST_WIDE_INT arm_asan_shadow_offset (void);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -656,6 +657,9 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON \
   arm_canonicalize_comparison
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET arm_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -28060,6 +28064,14 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
 
   return false;
 
+}
+
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+arm_asan_shadow_offset (void)
+{
+  return (unsigned HOST_WIDE_INT) 1 << 29;
 }
 
 #include "gt-arm.h"

@@ -2,6 +2,7 @@
 
 /* { dg-do run { target setrlimit } } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
+/* { dg-require-effective-target hw } */
 /* { dg-shouldfail "asan" } */
 
 #include <stdlib.h>
