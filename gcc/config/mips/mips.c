@@ -16388,6 +16388,7 @@ mips_machine_reorg2 (void)
        optimizations, but this should be an extremely rare case anyhow.  */
     mips_reorg_process_insns ();
   mips16_split_long_branches ();
+  return 0;
 }
 
 struct rtl_opt_pass pass_mips_machine_reorg2 =

@@ -1,3 +1,7 @@
+2013-05-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/mips/mips.c (mips_machine_reorg2): Return 0.
+
 2013-05-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.c (update_equiv_regs): Add insn having equiv memory even if
