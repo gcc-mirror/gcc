@@ -1116,6 +1116,39 @@ double_int::lshift (HOST_WIDE_INT count) const
   return ret;
 }
 
+/* Shift A right by COUNT places.  */
+
+double_int
+double_int::rshift (HOST_WIDE_INT count) const
+{
+  double_int ret;
+
+  gcc_checking_assert (count >= 0);
+
+  if (count >= HOST_BITS_PER_DOUBLE_INT)
+    {
+      /* Shifting by the host word size is undefined according to the
+	 ANSI standard, so we must handle this as a special case.  */
+      ret.high = 0;
+      ret.low = 0;
+    }
+  else if (count >= HOST_BITS_PER_WIDE_INT)
+    {
+      ret.high = 0;
+      ret.low
+	= (unsigned HOST_WIDE_INT) (high >> (count - HOST_BITS_PER_WIDE_INT));
+    }
+  else
+    {
+      ret.high = high >> count;
+      ret.low = ((low >> count)
+		 | ((unsigned HOST_WIDE_INT) high
+		    << (HOST_BITS_PER_WIDE_INT - count - 1) << 1));
+    }
+
+  return ret;
+}
+
 /* Shift A left by COUNT places keeping only PREC bits of result.  Shift
    right if COUNT is negative.  ARITH true specifies arithmetic shifting;
    otherwise use logical shift.  */
