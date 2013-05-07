@@ -1942,6 +1942,10 @@ fstack-protector-all
 Common Report RejectNegative Var(flag_stack_protect, 2)
 Use a stack protection method for every function
 
+fstack-protector-strong
+Common Report RejectNegative Var(flag_stack_protect, 3)
+Use a smart stack protection method for certain functions
+
 fstack-usage
 Common RejectNegative Var(flag_stack_usage)
 Output stack usage information on a per-function basis
