@@ -2349,7 +2349,7 @@
 	(compare:CC_SWP (ashift:GPI
 			 (ANY_EXTEND:GPI
 			  (match_operand:ALLX 0 "register_operand" "r"))
-			 (match_operand:QI 1 "aarch64_shift_imm_<mode>" "n"))
+			 (match_operand 1 "aarch64_imm3" "Ui3"))
 	(match_operand:GPI 2 "register_operand" "r")))]
   ""
   "cmp\\t%<GPI:w>2, %<GPI:w>0, <su>xt<ALLX:size> %1"
