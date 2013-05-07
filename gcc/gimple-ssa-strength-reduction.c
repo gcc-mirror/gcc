@@ -376,7 +376,7 @@ static bool address_arithmetic_p;
 
 /* Forward function declarations.  */
 static slsr_cand_t base_cand_from_table (tree);
-static tree introduce_cast_before_cand (slsr_cand_t, tree, tree, tree*);
+static tree introduce_cast_before_cand (slsr_cand_t, tree, tree);
 
 /* Produce a pointer to the IDX'th candidate in the candidate vector.  */
 
@@ -1834,16 +1834,6 @@ cand_abs_increment (slsr_cand_t c)
   return increment;
 }
 
-/* If *VAR is NULL or is not of a compatible type with TYPE, create a
-   new temporary reg of type TYPE and store it in *VAR.  */
-
-static inline void
-lazy_create_slsr_reg (tree *var, tree type)
-{
-  if (!*var || !types_compatible_p (TREE_TYPE (*var), type))
-    *var = create_tmp_reg (type, "slsr");
-}
-
 /* Return TRUE iff candidate C has already been replaced under
    another interpretation.  */
 
@@ -1857,8 +1847,7 @@ cand_already_replaced (slsr_cand_t c)
    replace_conditional_candidate.  */
 
 static void
-replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump,
-			tree *var)
+replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump)
 {
   tree target_type = TREE_TYPE (gimple_assign_lhs (c->cand_stmt));
   enum tree_code cand_code = gimple_assign_rhs_code (c->cand_stmt);
@@ -1885,8 +1874,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump,
       /* If the basis name and the candidate's LHS have incompatible
 	 types, introduce a cast.  */
       if (!useless_type_conversion_p (target_type, TREE_TYPE (basis_name)))
-	basis_name = introduce_cast_before_cand (c, target_type,
-						 basis_name, var);
+	basis_name = introduce_cast_before_cand (c, target_type, basis_name);
       if (bump.is_negative ())
 	{
 	  code = MINUS_EXPR;
@@ -1961,7 +1949,6 @@ replace_unconditional_candidate (slsr_cand_t c)
 {
   slsr_cand_t basis;
   double_int stride, bump;
-  tree var = NULL;
 
   if (cand_already_replaced (c))
     return;
@@ -1970,7 +1957,7 @@ replace_unconditional_candidate (slsr_cand_t c)
   stride = tree_to_double_int (c->stride);
   bump = cand_increment (c) * stride;
 
-  replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump, &var);
+  replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump);
 }
 
 /* Return the index in the increment vector of the given INCREMENT.  */
@@ -2166,7 +2153,7 @@ create_phi_basis (slsr_cand_t c, gimple from_phi, tree basis_name,
 static void
 replace_conditional_candidate (slsr_cand_t c)
 {
-  tree basis_name, name, var = NULL;
+  tree basis_name, name;
   slsr_cand_t basis;
   location_t loc;
   double_int stride, bump;
@@ -2185,7 +2172,7 @@ replace_conditional_candidate (slsr_cand_t c)
   stride = tree_to_double_int (c->stride);
   bump = c->index * stride;
 
-  replace_mult_candidate (c, name, bump, &var);
+  replace_mult_candidate (c, name, bump);
 }
 
 /* Compute the expected costs of inserting basis adjustments for
@@ -2941,7 +2928,6 @@ static void
 insert_initializers (slsr_cand_t c)
 {
   unsigned i;
-  tree new_var = NULL_TREE;
 
   for (i = 0; i < incr_vec_len; i++)
     {
@@ -2979,8 +2965,7 @@ insert_initializers (slsr_cand_t c)
 
       /* Create a new SSA name to hold the initializer's value.  */
       stride_type = TREE_TYPE (c->stride);
-      lazy_create_slsr_reg (&new_var, stride_type);
-      new_name = make_ssa_name (new_var, NULL);
+      new_name = make_temp_ssa_name (stride_type, NULL, "slsr");
       incr_vec[i].initializer = new_name;
 
       /* Create the initializer and insert it in the latest possible
@@ -3078,15 +3063,13 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
    the new SSA name.  */
 
 static tree
-introduce_cast_before_cand (slsr_cand_t c, tree to_type,
-			    tree from_expr, tree *new_var)
+introduce_cast_before_cand (slsr_cand_t c, tree to_type, tree from_expr)
 {
   tree cast_lhs;
   gimple cast_stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 
-  lazy_create_slsr_reg (new_var, to_type);
-  cast_lhs = make_ssa_name (*new_var, NULL);
+  cast_lhs = make_temp_ssa_name (to_type, NULL, "slsr");
   cast_stmt = gimple_build_assign_with_ops (NOP_EXPR, cast_lhs,
 					    from_expr, NULL_TREE);
   gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
@@ -3140,8 +3123,7 @@ replace_rhs_if_not_dup (enum tree_code new_code, tree new_rhs1, tree new_rhs2,
    is the rhs1 to use in creating the add/subtract.  */
 
 static void
-replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
-		       tree basis_name)
+replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 {
   gimple stmt_to_print = NULL;
   tree orig_rhs1, orig_rhs2;
@@ -3177,8 +3159,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
 	rhs2 = incr_vec[i].initializer;
       else
 	rhs2 = introduce_cast_before_cand (c, orig_type,
-					   incr_vec[i].initializer,
-					   new_var);
+					   incr_vec[i].initializer);
 
       if (incr_vec[i].incr != cand_incr)
 	{
@@ -3204,7 +3185,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
       if (types_compatible_p (orig_type, stride_type))
 	rhs2 = c->stride;
       else
-	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride, new_var);
+	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride);
       
       stmt_to_print = replace_rhs_if_not_dup (repl_code, basis_name, rhs2,
 					      orig_code, orig_rhs1, orig_rhs2,
@@ -3220,7 +3201,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
       if (types_compatible_p (orig_type, stride_type))
 	rhs2 = c->stride;
       else
-	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride, new_var);
+	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride);
       
       if (orig_code != MINUS_EXPR
 	  || !operand_equal_p (basis_name, orig_rhs1, 0)
@@ -3286,7 +3267,6 @@ replace_profitable_candidates (slsr_cand_t c)
   if (!cand_already_replaced (c))
     {
       double_int increment = cand_abs_increment (c);
-      tree new_var = NULL;
       enum tree_code orig_code = gimple_assign_rhs_code (c->cand_stmt);
       unsigned i;
 
@@ -3318,14 +3298,14 @@ replace_profitable_candidates (slsr_cand_t c)
 
 		  /* Replace C with an add of the new basis phi and the
 		     increment.  */
-		  replace_one_candidate (c, i, &new_var, name);
+		  replace_one_candidate (c, i, name);
 		}
 	    }
 	  else
 	    {
 	      slsr_cand_t basis = lookup_cand (c->basis);
 	      tree basis_name = gimple_assign_lhs (basis->cand_stmt);
-	      replace_one_candidate (c, i, &new_var, basis_name);
+	      replace_one_candidate (c, i, basis_name);
 	    }
 	}
     }
