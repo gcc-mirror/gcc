@@ -3401,6 +3401,11 @@ sink_clobbers (basic_block bb)
 	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vuse)
 	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 	      SET_USE (use_p, gimple_vdef (stmt));
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse))
+	    {
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_vdef (stmt)) = 1;
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 0;
+	    }
 	  /* Adjust the incoming virtual operand.  */
 	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe), gimple_vuse (stmt));
 	  SET_USE (gimple_vuse_op (stmt), vuse);
