@@ -1033,12 +1033,17 @@ extern unsigned rs6000_pointer_size;
 #define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs[(MODE)][(REGNO)]
 
 /* When setting up caller-save slots (MODE == VOIDmode) ensure we allocate
-   enough space to account for vectors in FP regs. */
+   enough space to account for vectors in FP regs.  However, TFmode/TDmode
+   should not use VSX instructions to do a caller save. */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)			\
   (TARGET_VSX								\
    && ((MODE) == VOIDmode || ALTIVEC_OR_VSX_VECTOR_MODE (MODE))		\
-   && FP_REGNO_P (REGNO)				\
-   ? V2DFmode						\
+   && FP_REGNO_P (REGNO)						\
+   ? V2DFmode								\
+   : ((MODE) == TFmode && FP_REGNO_P (REGNO))				\
+   ? DFmode								\
+   : ((MODE) == TDmode && FP_REGNO_P (REGNO))				\
+   ? DImode								\
    : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
@@ -1046,7 +1051,8 @@ extern unsigned rs6000_pointer_size;
      && (GET_MODE_SIZE (MODE) > 4)					\
      && INT_REGNO_P (REGNO)) ? 1 : 0)					\
    || (TARGET_VSX && FP_REGNO_P (REGNO)					\
-       && GET_MODE_SIZE (MODE) > 8))
+       && GET_MODE_SIZE (MODE) > 8 && ((MODE) != TDmode) 		\
+       && ((MODE) != TFmode)))
 
 #define VSX_VECTOR_MODE(MODE)		\
 	 ((MODE) == V4SFmode		\
