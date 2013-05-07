@@ -1,3 +1,10 @@
+2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (find_phi_def): Don't record a
+	phi def as possibly hiding a basis for a CAND_ADD whose operands
+	have been commuted in the analysis.
+	(alloc_cand_and_find_basis): Add parms to call to find_phi_def.
+
 2013-05-07  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
 	* config/aarch64/aarch64.md

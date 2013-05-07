@@ -413,14 +413,30 @@ cand_chain_hasher::equal (const value_type *chain1, const compare_type *chain2)
 static hash_table <cand_chain_hasher> base_cand_map;
 
 /* Look in the candidate table for a CAND_PHI that defines BASE and
-   return it if found; otherwise return NULL.  */
+   return it if found; otherwise return NULL.  GS is the candidate
+   statement with BASE, INDEX, and STRIDE.  If GS is a CAND_ADD with
+   an index of 1 and an SSA name for STRIDE, we must be careful that
+   we haven't commuted the operands for this candidate.  STRIDE must
+   correspond to the second addend of GS for the eventual transformation
+   to be legal.  If not, return NULL.  */
 
 static cand_idx
-find_phi_def (tree base)
+find_phi_def (gimple gs, enum cand_kind kind, tree base,
+              double_int index, tree stride)
 {
   slsr_cand_t c;
 
   if (TREE_CODE (base) != SSA_NAME)
+    return 0;
+
+  /* If we've commuted the operands (so "y + z" is represented as
+     "z + (1 * y)"), we don't have the pattern we're looking for.
+     Bail out to avoid doing a wrong replacement downstream.  */
+  if (kind == CAND_ADD
+      && index.is_one ()
+      && TREE_CODE (stride) == SSA_NAME
+      && gimple_assign_rhs_code (gs) == PLUS_EXPR
+      && stride != gimple_assign_rhs2 (gs))
     return 0;
   
   c = base_cand_from_table (base);
@@ -565,7 +581,7 @@ alloc_cand_and_find_basis (enum cand_kind kind, gimple gs, tree base,
   c->next_interp = 0;
   c->dependent = 0;
   c->sibling = 0;
-  c->def_phi = find_phi_def (base);
+  c->def_phi = find_phi_def (gs, kind, base, index, stride);
   c->dead_savings = savings;
 
   cand_vec.safe_push (c);
