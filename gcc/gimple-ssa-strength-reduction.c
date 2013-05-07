@@ -366,9 +366,11 @@ static struct obstack chain_obstack;
 
 /* An array INCR_VEC of incr_infos is used during analysis of related
    candidates having an SSA name for a stride.  INCR_VEC_LEN describes
-   its current length.  */
+   its current length.  MAX_INCR_VEC_LEN is used to avoid costly
+   pathological cases. */
 static incr_info_t incr_vec;
 static unsigned incr_vec_len;
+const int MAX_INCR_VEC_LEN = 16;
 
 /* For a chain of candidates with unknown stride, indicates whether or not
    we must generate pointer arithmetic when replacing statements.  */
@@ -1960,9 +1962,11 @@ replace_unconditional_candidate (slsr_cand_t c)
   replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump);
 }
 
-/* Return the index in the increment vector of the given INCREMENT.  */
+/* Return the index in the increment vector of the given INCREMENT,
+   or -1 if not found.  The latter can occur if more than
+   MAX_INCR_VEC_LEN increments have been found.  */
 
-static inline unsigned
+static inline int
 incr_vec_index (double_int increment)
 {
   unsigned i;
@@ -1970,8 +1974,10 @@ incr_vec_index (double_int increment)
   for (i = 0; i < incr_vec_len && increment != incr_vec[i].incr; i++)
     ;
 
-  gcc_assert (i < incr_vec_len);
-  return i;
+  if (i < incr_vec_len)
+    return i;
+  else
+    return -1;
 }
 
 /* Create a new statement along edge E to add BASIS_NAME to the product
@@ -2015,9 +2021,10 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
     }
   else
     {
-      unsigned i;
+      int i;
       bool negate_incr = (!address_arithmetic_p && increment.is_negative ());
       i = incr_vec_index (negate_incr ? -increment : increment);
+      gcc_assert (i >= 0);
 
       if (incr_vec[i].initializer)
 	{
@@ -2323,7 +2330,7 @@ record_increment (slsr_cand_t c, double_int increment, bool is_phi_adjust)
 	}
     }
 
-  if (!found)
+  if (!found && incr_vec_len < MAX_INCR_VEC_LEN - 1)
     {
       /* The first time we see an increment, create the entry for it.
 	 If this is the root candidate which doesn't have a basis, set
@@ -3025,7 +3032,7 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
 	    }
 	  else
 	    {
-	      unsigned j;
+	      int j;
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
 	      double_int increment = arg_cand->index - basis->index;
 
@@ -3041,14 +3048,19 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
 		  print_gimple_stmt (dump_file, phi, 0, 0);
 		  fputs ("    increment: ", dump_file);
 		  dump_double_int (dump_file, increment, false);
-		  fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
-		  if (profitable_increment_p (j))
-		    fputs ("  Replacing...\n", dump_file);
-		  else
-		    fputs ("  Not replaced.\n", dump_file);
+		  if (j < 0)
+		    fprintf (dump_file,
+			     "\n  Not replaced; incr_vec overflow.\n");
+		  else {
+		    fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
+		    if (profitable_increment_p (j))
+		      fputs ("  Replacing...\n", dump_file);
+		    else
+		      fputs ("  Not replaced.\n", dump_file);
+		  }
 		}
 
-	      if (!profitable_increment_p (j))
+	      if (j < 0 || !profitable_increment_p (j))
 		return false;
 	    }
 	}
@@ -3268,13 +3280,14 @@ replace_profitable_candidates (slsr_cand_t c)
     {
       double_int increment = cand_abs_increment (c);
       enum tree_code orig_code = gimple_assign_rhs_code (c->cand_stmt);
-      unsigned i;
+      int i;
 
       i = incr_vec_index (increment);
 
       /* Only process profitable increments.  Nothing useful can be done
 	 to a cast or copy.  */
-      if (profitable_increment_p (i) 
+      if (i >= 0
+	  && profitable_increment_p (i) 
 	  && orig_code != MODIFY_EXPR
 	  && orig_code != NOP_EXPR)
 	{
@@ -3378,6 +3391,8 @@ analyze_candidates_and_replace (void)
 	  length = count_candidates (c);
 	  if (!length)
 	    continue;
+	  if (length > MAX_INCR_VEC_LEN)
+	    length = MAX_INCR_VEC_LEN;
 
 	  /* Construct an array of increments for this candidate chain.  */
 	  incr_vec = XNEWVEC (incr_info, length);

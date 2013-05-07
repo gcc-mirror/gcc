@@ -1,3 +1,14 @@
+2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (MAX_INCR_VEC_LEN): New constant.
+	(incr_vec_index): Return -1 if increment not found.
+	(create_add_on_incoming_edge): Assert if increment not found.
+	(record_increment): Limit number of increments recorded.
+	(all_phi_incrs_profitable): Return false if an increment not found.
+	(replace_profitable_candidates): Don't process increments that were
+	not recorded.
+	(analyze_candidates_and_replace): Limit size of incr_vec.
+
 2013-05-07  Richard Biener  <rguenther@suse.de>
 
 	* calls.c (special_function_p): setjmp-like functions are leaf.
