@@ -1188,7 +1188,7 @@
 	instead of register_operand.
 	(vec_widen_<s>mult_odd_<mode>): Use general_vector_operand predicates.
 
-2013-04-28  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2013-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (finalize_size_functions): Allocate a structure and
 	reset cfun before dumping the functions.

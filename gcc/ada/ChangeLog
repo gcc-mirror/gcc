@@ -930,8 +930,7 @@
 2013-04-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55445
-	* raise-gcc.c (__SEH__): Additional check that
-	SjLj isn't active.
+	* raise-gcc.c (__SEH__): Additional check that SjLj isn't active.
 
 2013-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 	    Pascal Obry    <obry@adacore.com>
