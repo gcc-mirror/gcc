@@ -1,3 +1,8 @@
+2013-05-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	* typeck.c (cp_build_binary_op): Call save_expr before
+	build_vector_from_val.
+
 2013-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57183

@@ -1,3 +1,7 @@
+2013-05-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-c++-common/vector-scalar-2.c: New testcase.
+
 2013-05-07  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
