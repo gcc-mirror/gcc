@@ -14856,6 +14856,8 @@ cp_parser_enum_specifier (cp_parser* parser)
 	      type = NULL_TREE;
 	    }
 	}
+      else if (nested_name_specifier == error_mark_node)
+	/* We already issued an error.  */;
       else
 	error_at (type_start_token->location,
 		  "%qD is not an enumerator-name", identifier);
@@ -14965,7 +14967,8 @@ cp_parser_enum_specifier (cp_parser* parser)
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
       timevar_push (TV_PARSE_ENUM);
-      if (nested_name_specifier)
+      if (nested_name_specifier
+	  && nested_name_specifier != error_mark_node)
 	{
 	  /* The following catches invalid code such as:
 	     enum class S<int>::E { A, B, C }; */
