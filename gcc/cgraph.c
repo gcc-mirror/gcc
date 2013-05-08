@@ -1798,6 +1798,8 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 
       node->symbol.externally_visible = false;
       node->local.local = true;
+      node->symbol.unique_name = (node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
+				  || node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
       node->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
     }

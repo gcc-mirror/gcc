@@ -786,6 +786,9 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (whole_program || in_lto_p
 		      || !TREE_PUBLIC (node->symbol.decl));
+	  node->symbol.unique_name = ((node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
+				      || node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+				      && TREE_PUBLIC (node->symbol.decl));
 	  symtab_make_decl_local (node->symbol.decl);
 	  node->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	  if (node->symbol.same_comdat_group)
@@ -861,6 +864,9 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->symbol.decl));
 	  symtab_make_decl_local (vnode->symbol.decl);
+	  vnode->symbol.unique_name = ((vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
+				       || vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+				       && TREE_PUBLIC (vnode->symbol.decl));
 	  if (vnode->symbol.same_comdat_group)
 	    symtab_dissolve_same_comdat_group_list ((symtab_node) vnode);
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;

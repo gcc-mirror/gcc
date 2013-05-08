@@ -62,6 +62,8 @@ struct GTY(()) symtab_node_base
   /* Needed variables might become dead by optimization.  This flag
      forces the variable to be output even if it appears dead otherwise.  */
   unsigned force_output : 1;
+  /* True when the name is known to be unique and thus it does not need mangling.  */
+  unsigned unique_name : 1;
 
   /* Ordering of all symtab entries.  */
   int order;

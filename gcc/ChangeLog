@@ -1,3 +1,14 @@
+2013-05-08  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54095
+	* cgraph.c (cgraph_make_node_local_1): Se unique_name.
+	* cgraph.h (symtab_node_base): Add unique_name.
+	* lto-cgraph.c (lto_output_node, lto_output_varpool_node,
+	input_overwrite_node, input_varpool_node): Stream unique_name.
+	* cgraphclones.c (cgraph_create_virtual_clone,
+	cgraph_function_versioning): Set unique_name.
+	* ipa.c (function_and_variable_visibility): Set unique_name.
+
 2013-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (find_phi_def): Revert former	"fix."
