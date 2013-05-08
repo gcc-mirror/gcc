@@ -1,3 +1,8 @@
+2013-05-08  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/cygming-crtbegin.c (__register_frame_info): Make weak.
+	(__deregister_frame_info): Likewise.
+
 2013-05-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* fp-bit.c (unpack_d, pack_d): Properly preserve and restore a
