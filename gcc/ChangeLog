@@ -1,3 +1,12 @@
+2013-05-08  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54095
+	lto-symtab.c (lto_symtab_symbol_p): New function.
+	(lto_symtab_resolve_can_prevail_p, lto_symtab_resolve_symbols,
+	lto_symtab_resolve_symbols, lto_symtab_merge_decls_2,
+	lto_symtab_merge_decls_1, lto_symtab_merge_cgraph_nodes_1):
+	Skip static symbols.
+
 2013-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR tree-optimization/57200
