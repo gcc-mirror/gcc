@@ -1,3 +1,11 @@
+2013-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*vec_extract* splitters): Simplify post-reload
+	splitter preparation statements.
+	* config/i386/sse.md (*vec_extract* splitters): Ditto.
+	(*avx_vperm_broadcast_<mode>): Use adjust_address instead of
+	adjust_address_nv.
+
 2013-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (count_candidates): Change
