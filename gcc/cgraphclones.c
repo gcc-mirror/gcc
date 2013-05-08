@@ -324,6 +324,14 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   DECL_STATIC_DESTRUCTOR (new_node->symbol.decl) = 0;
   new_node->clone.tree_map = tree_map;
   new_node->clone.args_to_skip = args_to_skip;
+
+  /* Clones of global symbols or symbols with unique names are unique.  */
+  if ((TREE_PUBLIC (old_decl)
+       && !DECL_EXTERNAL (old_decl)
+       && !DECL_WEAK (old_decl)
+       && !DECL_COMDAT (old_decl))
+      || in_lto_p)
+    new_node->symbol.unique_name = true;
   FOR_EACH_VEC_SAFE_ELT (tree_map, i, map)
     {
       tree var = map->new_tree;
@@ -739,6 +747,13 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   new_version_node->symbol.externally_visible = 0;
   new_version_node->local.local = 1;
   new_version_node->lowered = true;
+  /* Clones of global symbols or symbols with unique names are unique.  */
+  if ((TREE_PUBLIC (old_decl)
+       && !DECL_EXTERNAL (old_decl)
+       && !DECL_WEAK (old_decl)
+       && !DECL_COMDAT (old_decl))
+      || in_lto_p)
+    new_version_node->symbol.unique_name = true;
 
   /* Update the call_expr on the edges to call the new version node. */
   update_call_expr (new_version_node);
