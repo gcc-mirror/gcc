@@ -4299,15 +4299,12 @@
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (SFmode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (SFmode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (SFmode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], SFmode, 0);
 })
 
 (define_insn_and_split "*sse4_1_extractps"
@@ -4395,15 +4392,12 @@
   "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (<ssehalfvecmode>mode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (<ssehalfvecmode>mode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (<ssehalfvecmode>mode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], <ssehalfvecmode>mode, 0);
 })
 
 (define_insn "vec_extract_hi_<mode>"
@@ -4429,15 +4423,12 @@
   "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (<ssehalfvecmode>mode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (<ssehalfvecmode>mode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (<ssehalfvecmode>mode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], <ssehalfvecmode>mode, 0);
 })
 
 (define_insn "vec_extract_hi_<mode>"
@@ -4466,15 +4457,12 @@
   "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (V8HImode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (V8HImode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (V8HImode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], V8HImode, 0);
 })
 
 (define_insn "vec_extract_hi_v16hi"
@@ -4509,15 +4497,12 @@
   "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (V16QImode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (V16QImode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (V16QImode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], V16QImode, 0);
 })
 
 (define_insn "vec_extract_hi_v32qi"
@@ -5009,15 +4994,12 @@
 	  (match_operand:V2DF 1 "nonimmediate_operand")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE2 && reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (DFmode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (DFmode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (DFmode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], DFmode, 0);
 })
 
 (define_insn "*vec_extractv2df_0_sse"
