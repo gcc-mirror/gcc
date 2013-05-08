@@ -1,3 +1,9 @@
+2013-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (find_phi_def): Revert former	"fix."
+	(alloc_cand_and_find_basis): Restrict conditional candidate
+	processing to CAND_MULTs.
+
 2013-05-08  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/54095
