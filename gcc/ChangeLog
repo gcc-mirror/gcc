@@ -1,3 +1,9 @@
+2013-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (count_candidates): Change
+	return value to int.
+	(analyze_candidates_and_replace): Change type of length to int.
+
 2013-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (PEXTR_MODE, PEXTR_MODEx): Remove.

@@ -2259,7 +2259,7 @@ replace_uncond_cands_and_profitable_phis (slsr_cand_t c)
 /* Count the number of candidates in the tree rooted at C that have
    not already been replaced under other interpretations.  */
 
-static unsigned
+static int
 count_candidates (slsr_cand_t c)
 {
   unsigned count = cand_already_replaced (c) ? 0 : 1;
@@ -3361,7 +3361,7 @@ analyze_candidates_and_replace (void)
 	 less expensive to calculate than the replaced statements.  */
       else
 	{
-	  unsigned length;
+	  int length;
 	  enum machine_mode mode;
 	  bool speed;
 
