@@ -226,12 +226,24 @@ lto_symtab_resolve_replaceable_p (symtab_node e)
   return false;
 }
 
+/* Return true, if the symbol E should be resolved by lto-symtab.
+   Those are all real symbols that are not static (we handle renaming
+   of static later in partitioning).  */
+
+static bool
+lto_symtab_symbol_p (symtab_node e)
+{
+  if (!TREE_PUBLIC (e->symbol.decl))
+    return false;
+  return symtab_real_symbol_p (e);
+}
+
 /* Return true if the symtab entry E can be the prevailing one.  */
 
 static bool
 lto_symtab_resolve_can_prevail_p (symtab_node e)
 {
-  if (!symtab_real_symbol_p (e))
+  if (!lto_symtab_symbol_p (e))
     return false;
 
   /* The C++ frontend ends up neither setting TREE_STATIC nor
@@ -261,7 +273,7 @@ lto_symtab_resolve_symbols (symtab_node first)
 
   /* Always set e->node so that edges are updated to reflect decl merging. */
   for (e = first; e; e = e->symbol.next_sharing_asm_name)
-    if (symtab_real_symbol_p (e)
+    if (lto_symtab_symbol_p (e)
 	&& (e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
 	    || e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 	    || e->symbol.resolution == LDPR_PREVAILING_DEF))
@@ -275,7 +287,7 @@ lto_symtab_resolve_symbols (symtab_node first)
     {
       /* Assert it's the only one.  */
       for (e = prevailing->symbol.next_sharing_asm_name; e; e = e->symbol.next_sharing_asm_name)
-	if (symtab_real_symbol_p (e)
+	if (lto_symtab_symbol_p (e)
 	    && (e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
 		|| e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 		|| e->symbol.resolution == LDPR_PREVAILING_DEF))
@@ -310,8 +322,7 @@ lto_symtab_resolve_symbols (symtab_node first)
   /* Do a second round choosing one from the replaceable prevailing decls.  */
   for (e = first; e; e = e->symbol.next_sharing_asm_name)
     {
-      if (!lto_symtab_resolve_can_prevail_p (e)
-	  || !symtab_real_symbol_p (e))
+      if (!lto_symtab_resolve_can_prevail_p (e))
 	continue;
 
       /* Choose the first function that can prevail as prevailing.  */
@@ -365,11 +376,12 @@ lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
   /* Try to merge each entry with the prevailing one.  */
   for (e = prevailing->symbol.next_sharing_asm_name;
        e; e = e->symbol.next_sharing_asm_name)
-    {
-      if (!lto_symtab_merge (prevailing, e)
-	  && !diagnosed_p)
-	mismatches.safe_push (e->symbol.decl);
-    }
+    if (TREE_PUBLIC (e->symbol.decl))
+      {
+	if (!lto_symtab_merge (prevailing, e)
+	    && !diagnosed_p)
+	  mismatches.safe_push (e->symbol.decl);
+      }
   if (mismatches.is_empty ())
     return;
 
@@ -411,7 +423,8 @@ lto_symtab_merge_decls_1 (symtab_node first)
       fprintf (cgraph_dump_file, "Merging nodes for %s. Candidates:\n",
 	       symtab_node_asm_name (first));
       for (e = first; e; e = e->symbol.next_sharing_asm_name)
-	dump_symtab_node (cgraph_dump_file, e);
+	if (TREE_PUBLIC (e->symbol.decl))
+	  dump_symtab_node (cgraph_dump_file, e);
     }
 
   /* Compute the symbol resolutions.  This is a no-op when using the
@@ -436,7 +449,8 @@ lto_symtab_merge_decls_1 (symtab_node first)
 	  for (e = prevailing->symbol.next_sharing_asm_name;
 	       e; e = e->symbol.next_sharing_asm_name)
 	    if (!COMPLETE_TYPE_P (TREE_TYPE (prevailing->symbol.decl))
-		&& COMPLETE_TYPE_P (TREE_TYPE (e->symbol.decl)))
+		&& COMPLETE_TYPE_P (TREE_TYPE (e->symbol.decl))
+		&& lto_symtab_symbol_p (e))
 	      prevailing = e;
 	}
       /* For variables prefer the non-builtin if one is available.  */
@@ -444,7 +458,8 @@ lto_symtab_merge_decls_1 (symtab_node first)
 	{
 	  for (e = first; e; e = e->symbol.next_sharing_asm_name)
 	    if (TREE_CODE (e->symbol.decl) == FUNCTION_DECL
-		&& !DECL_BUILT_IN (e->symbol.decl))
+		&& !DECL_BUILT_IN (e->symbol.decl)
+		&& lto_symtab_symbol_p (e))
 	      {
 		prevailing = e;
 		break;
@@ -460,6 +475,8 @@ lto_symtab_merge_decls_1 (symtab_node first)
     {
       if (TREE_CODE (prevailing->symbol.decl)
 	  == TREE_CODE (e->symbol.decl))
+	continue;
+      if (!lto_symtab_symbol_p (e))
 	continue;
 
       switch (TREE_CODE (prevailing->symbol.decl))
@@ -530,7 +547,7 @@ lto_symtab_merge_cgraph_nodes_1 (symtab_node prevailing)
     {
       next = e->symbol.next_sharing_asm_name;
 
-      if (!symtab_real_symbol_p (e))
+      if (!lto_symtab_symbol_p (e))
 	continue;
       cgraph_node *ce = dyn_cast <cgraph_node> (e);
       if (ce && !DECL_BUILT_IN (e->symbol.decl))
