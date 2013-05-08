@@ -2553,10 +2553,11 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
     return;
 
   gimple estmt = last_stmt (e->src);
-  warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
-	      "iteration %E invokes undefined behavior",
-	      double_int_to_tree (TREE_TYPE (loop->nb_iterations), i_bound));
-  inform (gimple_location (estmt), "containing loop");
+  if (warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
+		  "iteration %E invokes undefined behavior",
+		  double_int_to_tree (TREE_TYPE (loop->nb_iterations),
+				      i_bound)))
+    inform (gimple_location (estmt), "containing loop");
   loop->warned_aggressive_loop_optimizations = true;
 }
 

@@ -1,3 +1,9 @@
+2013-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR tree-optimization/57200
+	* tree-ssa-loop-niter.c (do_warn_aggressive_loop_optimizations):
+	Only call inform if the preceding warning_at returns true.
+
 2013-05-07  Han Shen  <shenhan@google.com>
 
 	* cfgexpand.c (record_or_union_type_has_array_p): New function.
