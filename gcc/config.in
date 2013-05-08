@@ -1297,12 +1297,6 @@
 #endif
 
 
-/* Define to 1 if you have the <libintl.h> header file. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LIBINTL_H
-#endif
-
-
 /* Define to 1 if you have the <limits.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LIMITS_H
