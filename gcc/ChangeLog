@@ -1,17 +1,23 @@
+2013-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (PEXTR_MODE, PEXTR_MODEx): Remove.
+	(*vec_extract<mode>): Use VI12_128 mode iterator.
+	(*vec_extract<mode>_mem): Ditto.
+	(*vec_extract*_mem splitters): Merge splitters using VI_128 mode
+	attribute.
+
 2013-05-08  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54659
 
 	Revert:
-
 	2012-08-17  Diego Novillo  <dnovillo@google.com>
 
-		PR bootstrap/54281
-		* configure.ac: Add libintl.h to AC_CHECK_HEADERS list.
-		* config.in: Regenerate.
-		* configure: Regenerate.
-		* intl.h: Always include libintl.h if HAVE_LIBINTL_H is
-		set.
+	PR bootstrap/54281
+	* configure.ac: Add libintl.h to AC_CHECK_HEADERS list.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* intl.h: Always include libintl.h if HAVE_LIBINTL_H is set.
 
 2013-05-08  Jan Hubicka  <jh@suse.cz>
 
