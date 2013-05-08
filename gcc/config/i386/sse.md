@@ -4277,12 +4277,8 @@
 	  (match_dup 0)
 	  (const_int 1)))]
   "TARGET_SSE && reload_completed"
-  [(const_int 0)]
-{
-  emit_move_insn (adjust_address (operands[0], <ssescalarmode>mode, 0),
-		  operands[1]);
-  DONE;
-})
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[0] = adjust_address (operands[0], <ssescalarmode>mode, 0);")
 
 (define_expand "vec_set<mode>"
   [(match_operand:V 0 "register_operand")
@@ -4362,12 +4358,9 @@
   "TARGET_SSE"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  int i = INTVAL (operands[2]);
-
-  emit_move_insn (operands[0], adjust_address (operands[1], SFmode, i*4));
-  DONE;
+  operands[1] = adjust_address (operands[1], SFmode, INTVAL (operands[2]) * 4);
 })
 
 (define_expand "avx_vextractf128<mode>"
@@ -10654,8 +10647,8 @@
       DONE;
     }
 
-  operands[1] = adjust_address_nv (op1, <ssescalarmode>mode,
-				   elt * GET_MODE_SIZE (<ssescalarmode>mode));
+  operands[1] = adjust_address (op1, <ssescalarmode>mode,
+				elt * GET_MODE_SIZE (<ssescalarmode>mode));
 })
 
 (define_expand "avx_vpermil<mode>"
