@@ -1,5 +1,7 @@
 2013-05-09  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (cp_finish_decl): Only check VLA bound in C++1y mode.
+
 	PR c++/57222
 	* pt.c (lookup_template_class_1): Handle getting a template
 	template parameter as D1.

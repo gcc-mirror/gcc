@@ -6402,7 +6402,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	   && TYPE_FOR_JAVA (type) && MAYBE_CLASS_TYPE_P (type))
     error ("non-static data member %qD has Java class type", decl);
 
-  if (array_of_runtime_bound_p (type))
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
     {
       /* If the VLA bound is larger than half the address space, or less
 	 than zero, throw std::bad_array_length.  */
