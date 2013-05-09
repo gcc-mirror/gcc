@@ -3951,8 +3951,13 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
     *fn = NULL_TREE;
   /* Set to (size_t)-1 if the size check fails.  */
   if (size_check != NULL_TREE)
-    *size = fold_build3 (COND_EXPR, sizetype, size_check,
-			 original_size, TYPE_MAX_VALUE (sizetype));
+    {
+      tree errval = TYPE_MAX_VALUE (sizetype);
+      if (cxx_dialect >= cxx11)
+	errval = throw_bad_array_new_length ();
+      *size = fold_build3 (COND_EXPR, sizetype, size_check,
+			   original_size, errval);
+    }
   vec_safe_insert (*args, 0, *size);
   *args = resolve_args (*args, complain);
   if (*args == NULL)

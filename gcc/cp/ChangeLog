@@ -1,5 +1,11 @@
 2013-05-08  Jason Merrill  <jason@redhat.com>
 
+	Core 624/N2932
+	* init.c (throw_bad_array_new_length): New.
+	(build_new_1): Use it.  Don't warn about braced-init-list.
+	(build_vec_init): Use it.
+	* call.c (build_operator_new_call): Use it.
+
 	PR c++/57068
 	* decl.c (grokdeclarator): Warn about ref-qualifiers here.
 	* parser.c (cp_parser_ref_qualifier_seq_opt): Not here.
