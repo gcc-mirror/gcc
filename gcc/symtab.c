@@ -756,23 +756,6 @@ symtab_make_decl_local (tree decl)
 
   if (DECL_ONE_ONLY (decl) || DECL_COMDAT (decl))
     {
-      /* It is possible that we are linking against library defining same COMDAT
-	 function.  To avoid conflict we need to rename our local name of the
-	 function just in the case WHOPR partitioning decide to make it hidden
-	 to avoid cross partition references.  */
-      if (flag_wpa)
-	{
-	  const char *old_name;
-          symtab_node node = symtab_get_node (decl);
-	  old_name  = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-	  change_decl_assembler_name (decl,
-				      clone_function_name (decl, "local"));
-	  if (node->symbol.lto_file_data)
-	    lto_record_renamed_decl (node->symbol.lto_file_data,
-				     old_name,
-				     IDENTIFIER_POINTER
-				       (DECL_ASSEMBLER_NAME (decl)));
-	}
       DECL_SECTION_NAME (decl) = 0;
       DECL_COMDAT (decl) = 0;
     }

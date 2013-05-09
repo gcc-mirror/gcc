@@ -1,4 +1,10 @@
 2013-05-09  Jan Hubicka  <jh@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR lto/54095
+	* symtab.c (symtab_make_decl_local): Do not add private names.
+
+2013-05-09  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/54095
 	* symtab.c (insert_to_assembler_name_hash): Handle clones.
