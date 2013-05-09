@@ -17199,9 +17199,6 @@ cp_parser_ref_qualifier_opt (cp_parser* parser)
 	}
     }
 
-  if (ref_qual)
-    maybe_warn_cpp0x (CPP0X_REF_QUALIFIER);
-
   return ref_qual;
 }
 
