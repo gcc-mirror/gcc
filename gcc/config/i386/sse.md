@@ -7331,6 +7331,18 @@
   "#"
   [(set_attr "isa" "*,sse4,*,*")])
 
+(define_insn_and_split "*vec_extractv4si_0_zext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V4SI 1 "register_operand" "x")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_FROM_VEC"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
+  "operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));")
+
 (define_insn "*vec_extractv2di_0_sse"
   [(set (match_operand:DI 0 "nonimmediate_operand"     "=x,m")
 	(vec_select:DI
@@ -7350,16 +7362,35 @@
   "operands[1] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));")
 
 (define_insn "*vec_extractv4si"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm,x,x")
 	(vec_select:SI
-	  (match_operand:V4SI 1 "register_operand" "x")
+	  (match_operand:V4SI 1 "register_operand" "x,0,x")
 	  (parallel [(match_operand:SI 2 "const_0_to_3_operand")])))]
   "TARGET_SSE4_1"
-  "%vpextrd\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog1")
-   (set_attr "prefix_extra" "1")
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "%vpextrd\t{%2, %1, %0|%0, %1, %2}";
+
+    case 1:
+      operands [2] = GEN_INT (INTVAL (operands[2]) * 4);
+      return "psrldq\t{%2, %0|%0, %2}";
+
+    case 2:
+      operands [2] = GEN_INT (INTVAL (operands[2]) * 4);
+      return "vpsrldq\t{%2, %1, %0|%0, %1, %2}";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "*,noavx,avx")
+   (set_attr "type" "sselog1,sseishft1,sseishft1")
+   (set_attr "memory" "*,none,none")
+   (set_attr "prefix_extra" "1,*,*")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex")
+   (set_attr "prefix" "maybe_vex,orig,vex")
    (set_attr "mode" "TI")])
 
 (define_insn "*vec_extractv4si_zext"
@@ -7383,6 +7414,20 @@
 	  (parallel [(match_operand 2 "const_0_to_3_operand")])))]
   "TARGET_SSE"
   "#")
+
+(define_insn_and_split "*vec_extractv4si_zext_mem"
+  [(set (match_operand:DI 0 "register_operand" "=x,r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V4SI 1 "memory_operand" "o,o")
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand")]))))]
+  "TARGET_64BIT && TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
+{
+  operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
+})
 
 (define_insn "*vec_extractv2di_1"
   [(set (match_operand:DI 0 "nonimmediate_operand"     "=rm,m,x,x,x,x,r")

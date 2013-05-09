@@ -1323,6 +1323,20 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = adjust_address (operands[1], SImode, 4);")
 
+(define_insn_and_split "*vec_extractv2si_zext_mem"
+  [(set (match_operand:DI 0 "register_operand" "=y,x,r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V2SI 1 "memory_operand" "o,o,o")
+	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))))]
+  "TARGET_64BIT && TARGET_MMX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
+{
+  operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
+})
+
 (define_expand "vec_extractv2si"
   [(match_operand:SI 0 "register_operand")
    (match_operand:V2SI 1 "register_operand")

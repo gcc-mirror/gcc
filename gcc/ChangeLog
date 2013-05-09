@@ -1,3 +1,11 @@
+2013-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_extractv4si_0_zext): New pattern.
+	(*vec_extractv4si_zext_mem): Ditto.
+	(*vec_extractv2di): Add 0->x and x->x alternatives.
+	* config/i386/mmx.md (*vec_extractv2si_zext_mem): New pattern.
+	* config/i386/i386.md (*zero_extendsidi2): Add *Yj->?r alternative.
+
 2013-05-09  Jason Merrill  <jason@redhat.com>
 
 	N3639 C++1y VLA support
