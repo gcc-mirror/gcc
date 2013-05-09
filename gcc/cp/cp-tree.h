@@ -5357,6 +5357,7 @@ extern tree build_value_init			(tree, tsubst_flags_t);
 extern tree build_value_init_noctor		(tree, tsubst_flags_t);
 extern tree build_offset_ref			(tree, tree, bool,
 						 tsubst_flags_t);
+extern tree throw_bad_array_new_length		(void);
 extern tree build_new				(vec<tree, va_gc> **, tree, tree,
 						 vec<tree, va_gc> **, int,
                                                  tsubst_flags_t);
