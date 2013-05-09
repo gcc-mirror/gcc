@@ -393,9 +393,12 @@ get_tinfo_decl (tree type)
 
   if (variably_modified_type_p (type, /*fn=*/NULL_TREE))
     {
-      error ("cannot create type information for type %qT because "
-	     "it involves types of variable size",
-	     type);
+      if (array_of_runtime_bound_p (type))
+	error ("typeid of array of runtime bound");
+      else
+	error ("cannot create type information for type %qT because "
+	       "it involves types of variable size",
+	       type);
       return error_mark_node;
     }
 

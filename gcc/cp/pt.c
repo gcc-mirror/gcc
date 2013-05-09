@@ -11560,6 +11560,18 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  r = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
 	r = cp_build_qualified_type_real (r, cp_type_quals (t), complain);
 
+	if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+	  {
+	    if (complain & tf_warning_or_error)
+	      pedwarn
+		(input_location, OPT_Wvla,
+		 code == REFERENCE_TYPE
+		 ? G_("cannot declare reference to array of runtime bound")
+		 : G_("cannot declare pointer to array of runtime bound"));
+	    else
+	      r = error_mark_node;
+	  }
+
 	if (r != error_mark_node)
 	  /* Will this ever be needed for TYPE_..._TO values?  */
 	  layout_type (r);
