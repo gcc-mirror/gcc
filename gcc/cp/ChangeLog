@@ -1,5 +1,12 @@
 2013-05-08  Jason Merrill  <jason@redhat.com>
 
+	* except.c (is_admissible_throw_operand_or_catch_parameter): Check
+	variably_modified_type_p.
+	(expand_start_catch_block): Mark the typeinfo used here.
+	* semantics.c (finish_handler_parms): Not here.
+
+	* error.c (dump_type_suffix): Try harder on VLA length.
+
 	Core 624/N2932
 	* init.c (throw_bad_array_new_length): New.
 	(build_new_1): Use it.  Don't warn about braced-init-list.
