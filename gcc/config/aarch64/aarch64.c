@@ -604,49 +604,85 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 {
   rtx low_dst;
 
-  gcc_assert (GET_MODE (dst) == TImode);
+  enum machine_mode src_mode = GET_MODE (src);
+  enum machine_mode dst_mode = GET_MODE (dst);
+  int src_regno = REGNO (src);
+  int dst_regno = REGNO (dst);
+
+  gcc_assert (dst_mode == TImode || dst_mode == TFmode);
 
   if (REG_P (dst) && REG_P (src))
     {
-      int src_regno = REGNO (src);
-      int dst_regno = REGNO (dst);
-
-      gcc_assert (GET_MODE (src) == TImode);
+      gcc_assert (src_mode == TImode || src_mode == TFmode);
 
       /* Handle r -> w, w -> r.  */
       if (FP_REGNUM_P (dst_regno) && GP_REGNUM_P (src_regno))
 	{
-	  emit_insn (gen_aarch64_movtilow_di (dst,
-					      gen_lowpart (word_mode, src)));
-	  emit_insn (gen_aarch64_movtihigh_di (dst,
-					       gen_highpart (word_mode, src)));
-	  return;
+	  switch (src_mode) {
+	  case TImode:
+	    emit_insn
+	      (gen_aarch64_movtilow_di (dst, gen_lowpart (word_mode, src)));
+	    emit_insn
+	      (gen_aarch64_movtihigh_di (dst, gen_highpart (word_mode, src)));
+	    return;
+	  case TFmode:
+	    emit_insn
+	      (gen_aarch64_movtflow_di (dst, gen_lowpart (word_mode, src)));
+	    emit_insn
+	      (gen_aarch64_movtfhigh_di (dst, gen_highpart (word_mode, src)));
+	    return;
+	  default:
+	    gcc_unreachable ();
+	  }
 	}
       else if (GP_REGNUM_P (dst_regno) && FP_REGNUM_P (src_regno))
 	{
-	  emit_insn (gen_aarch64_movdi_tilow (gen_lowpart (word_mode, dst),
-					      src));
-	  emit_insn (gen_aarch64_movdi_tihigh (gen_highpart (word_mode, dst),
-					       src));
-	  return;
+	  switch (src_mode) {
+	  case TImode:
+	    emit_insn
+	      (gen_aarch64_movdi_tilow (gen_lowpart (word_mode, dst), src));
+	    emit_insn
+	      (gen_aarch64_movdi_tihigh (gen_highpart (word_mode, dst), src));
+	    return;
+	  case TFmode:
+	    emit_insn
+	      (gen_aarch64_movdi_tflow (gen_lowpart (word_mode, dst), src));
+	    emit_insn
+	      (gen_aarch64_movdi_tfhigh (gen_highpart (word_mode, dst), src));
+	    return;
+	  default:
+	    gcc_unreachable ();
+	  }
 	}
       /* Fall through to r -> r cases.  */
     }
 
-  low_dst = gen_lowpart (word_mode, dst);
-  if (REG_P (low_dst)
-      && reg_overlap_mentioned_p (low_dst, src))
-    {
-      aarch64_emit_move (gen_highpart (word_mode, dst),
-			 gen_highpart_mode (word_mode, TImode, src));
-      aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
-    }
-  else
-    {
-      aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
-      aarch64_emit_move (gen_highpart (word_mode, dst),
-			 gen_highpart_mode (word_mode, TImode, src));
-    }
+  switch (dst_mode) {
+  case TImode:
+    low_dst = gen_lowpart (word_mode, dst);
+    if (REG_P (low_dst)
+	&& reg_overlap_mentioned_p (low_dst, src))
+      {
+	aarch64_emit_move (gen_highpart (word_mode, dst),
+			   gen_highpart_mode (word_mode, TImode, src));
+	aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
+      }
+    else
+      {
+	aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
+	aarch64_emit_move (gen_highpart (word_mode, dst),
+			   gen_highpart_mode (word_mode, TImode, src));
+      }
+    return;
+  case TFmode:
+    emit_move_insn (gen_rtx_REG (DFmode, dst_regno),
+		    gen_rtx_REG (DFmode, src_regno));
+    emit_move_insn (gen_rtx_REG (DFmode, dst_regno + 1),
+		    gen_rtx_REG (DFmode, src_regno + 1));
+    return;
+  default:
+    gcc_unreachable ();
+  }
 }
 
 bool
@@ -3322,26 +3358,6 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	}
 
       asm_fprintf (f, "%s", reg_names [REGNO (x) + 1]);
-      break;
-
-    case 'Q':
-      /* Print the least significant register of a pair (TImode) of regs.  */
-      if (GET_CODE (x) != REG || !GP_REGNUM_P (REGNO (x) + 1))
-	{
-	  output_operand_lossage ("invalid operand for '%%%c'", code);
-	  return;
-	}
-      asm_fprintf (f, "%s", reg_names [REGNO (x) + (WORDS_BIG_ENDIAN ? 1 : 0)]);
-      break;
-
-    case 'R':
-      /* Print the most significant register of a pair (TImode) of regs.  */
-      if (GET_CODE (x) != REG || !GP_REGNUM_P (REGNO (x) + 1))
-	{
-	  output_operand_lossage ("invalid operand for '%%%c'", code);
-	  return;
-	}
-      asm_fprintf (f, "%s", reg_names [REGNO (x) + (WORDS_BIG_ENDIAN ? 0 : 1)]);
       break;
 
     case 'm':
