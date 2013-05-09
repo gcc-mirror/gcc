@@ -8479,6 +8479,9 @@ create_array_type_for_decl (tree name, tree type, tree size)
       return error_mark_node;
     }
 
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+    pedwarn (input_location, OPT_Wvla, "array of array of runtime bound");
+
   /* Figure out the index type for the array.  */
   if (size)
     itype = compute_array_index_type (name, size, tf_warning_or_error);
@@ -9720,6 +9723,12 @@ grokdeclarator (const cp_declarator *declarator,
                    : G_("cannot declare pointer to qualified function type %qT"),
 		   type);
 
+	  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+	    pedwarn (input_location, OPT_Wvla,
+		     declarator->kind == cdk_reference
+		     ? G_("reference to array of runtime bound")
+		     : G_("pointer to array of runtime bound"));
+
 	  /* When the pointed-to type involves components of variable size,
 	     care must be taken to ensure that the size evaluation code is
 	     emitted early enough to dominate all the possible later uses
@@ -10073,6 +10082,10 @@ grokdeclarator (const cp_declarator *declarator,
 	  error ("typedef declared %<auto%>");
 	  type = error_mark_node;
 	}
+
+      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+	pedwarn (input_location, OPT_Wvla,
+		 "typedef naming array of runtime bound");
 
       if (decl_context == FIELD)
 	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);

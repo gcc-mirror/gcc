@@ -5456,6 +5456,15 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	}
     }
 
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+    {
+      if (complain & tf_warning_or_error)
+	pedwarn (input_location, OPT_Wvla,
+		 "taking decltype of array of runtime bound");
+      else
+	return error_mark_node;
+    }
+
   return type;
 }
 

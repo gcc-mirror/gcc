@@ -1,5 +1,15 @@
 2013-05-09  Jason Merrill  <jason@redhat.com>
 
+	N3639 C++1y VLA diagnostics
+	* decl.c (grokdeclarator): Complain about reference, pointer, or
+	typedef to VLA.
+	(create_array_type_for_decl): Complain about array of VLA.
+	* pt.c (tsubst): Likewise.
+	* rtti.c (get_tinfo_decl): Talk about "array of runtime bound".
+	* semantics.c (finish_decltype_type): Complain about decltype of VLA.
+	* typeck.c (cp_build_addr_expr_1): Complain about VLA.
+	(cxx_sizeof_or_alignof_type): Likewise.
+
 	N3639 C++1y VLA support
 	* decl.c (compute_array_index_type): Allow VLAs in C++1y mode.
 	(check_array_initializer): Allow VLA init.
