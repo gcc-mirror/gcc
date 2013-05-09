@@ -16994,7 +16994,6 @@ cp_parser_ref_qualifier_seq_opt (cp_parser* parser)
 
   if (ref_qual)
     {
-      maybe_warn_cpp0x (CPP0X_REF_QUALIFIER);
       cp_lexer_consume_token (parser->lexer);
     }
 

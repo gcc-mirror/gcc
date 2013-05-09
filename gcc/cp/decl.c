@@ -9562,6 +9562,7 @@ grokdeclarator (const cp_declarator *declarator,
 
 		if (rqual)
 		  {
+		    maybe_warn_cpp0x (CPP0X_REF_QUALIFIER);
 		    error ((flags == DTOR_FLAG)
 			   ? "destructors may not be ref-qualified"
 			   : "constructors may not be ref-qualified");
