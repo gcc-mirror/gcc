@@ -5064,7 +5064,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 		      tsubst_flags_t complain)
 {
   tree new_init;
-  bool sized_array_p = (max_index != NULL_TREE);
+  bool sized_array_p = (max_index && TREE_CONSTANT (max_index));
   unsigned HOST_WIDE_INT max_index_cst = 0;
   unsigned HOST_WIDE_INT index;
 
@@ -5514,15 +5514,12 @@ check_array_initializer (tree decl, tree type, tree init)
 	error ("elements of array %q#T have incomplete type", type);
       return true;
     }
-  /* It is not valid to initialize a VLA.  */
-  if (init
+  /* A compound literal can't have variable size.  */
+  if (init && !decl
       && ((COMPLETE_TYPE_P (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
 	  || !TREE_CONSTANT (TYPE_SIZE (element_type))))
     {
-      if (decl)
-	error ("variable-sized object %qD may not be initialized", decl);
-      else
-	error ("variable-sized compound literal");
+      error ("variable-sized compound literal");
       return true;
     }
   return false;
@@ -6404,6 +6401,21 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   else if (TREE_CODE (decl) == FIELD_DECL
 	   && TYPE_FOR_JAVA (type) && MAYBE_CLASS_TYPE_P (type))
     error ("non-static data member %qD has Java class type", decl);
+
+  if (array_of_runtime_bound_p (type))
+    {
+      /* If the VLA bound is larger than half the address space, or less
+	 than zero, throw std::bad_array_length.  */
+      tree max = convert (ssizetype, TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+      /* C++1y says we should throw for length <= 0, but we have
+	 historically supported zero-length arrays.  Let's treat that as an
+	 extension to be disabled by -std=c++NN.  */
+      int lower = flag_iso ? 0 : -1;
+      tree comp = build2 (LT_EXPR, boolean_type_node, max, ssize_int (lower));
+      comp = build3 (COND_EXPR, void_type_node, comp,
+		     throw_bad_array_length (), void_zero_node);
+      finish_expr_stmt (comp);
+    }
 
   /* Add this declaration to the statement-tree.  This needs to happen
      after the call to check_initializer so that the DECL_EXPR for a
@@ -8289,7 +8301,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	error ("size of array is not an integral constant-expression");
       size = integer_one_node;
     }
-  else if (pedantic && warn_vla != 0)
+  else if (cxx_dialect < cxx1y && pedantic && warn_vla != 0)
     {
       if (name)
 	pedwarn (input_location, OPT_Wvla, "ISO C++ forbids variable length array %qD", name);

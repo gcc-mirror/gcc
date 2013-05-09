@@ -1,3 +1,13 @@
+2013-05-08  Jason Merrill  <jason@redhat.com>
+
+	Add std::bad_array_length (N3639)
+	* libsupc++/new: Add std::bad_array_length.
+	* libsupc++/bad_array_length.cc: New.
+	* libsupc++/eh_aux_runtime.cc: Add __cxa_bad_array_length.
+	* libsupc++/Makefile.in: Build them.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* config/abi/pre/gnu-versioned-namespace.ver: Add new symbols.
+
 2013-05-08  Andi Kleen  <ak@linux.intel.com>
 
 	PR target/55947

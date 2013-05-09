@@ -154,6 +154,8 @@ namespace __cxxabiv1
   void
   __cxa_throw_bad_array_new_length() __attribute__((__noreturn__));
 
+  void
+  __cxa_throw_bad_array_length() __attribute__((__noreturn__));
 
   /**
    *  @brief Demangling routine.

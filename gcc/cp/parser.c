@@ -9842,13 +9842,21 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
     begin_expr = end_expr = iter_type = error_mark_node;
   else
     {
-      tree range_temp = build_range_temp (range_expr);
-      pushdecl (range_temp);
-      cp_finish_decl (range_temp, range_expr,
-		      /*is_constant_init*/false, NULL_TREE,
-		      LOOKUP_ONLYCONVERTING);
+      tree range_temp;
 
-      range_temp = convert_from_reference (range_temp);
+      if (TREE_CODE (range_expr) == VAR_DECL
+	  && array_of_runtime_bound_p (TREE_TYPE (range_expr)))
+	/* Can't bind a reference to an array of runtime bound.  */
+	range_temp = range_expr;
+      else
+	{
+	  range_temp = build_range_temp (range_expr);
+	  pushdecl (range_temp);
+	  cp_finish_decl (range_temp, range_expr,
+			  /*is_constant_init*/false, NULL_TREE,
+			  LOOKUP_ONLYCONVERTING);
+	  range_temp = convert_from_reference (range_temp);
+	}
       iter_type = cp_parser_perform_range_for_lookup (range_temp,
 						      &begin_expr, &end_expr);
     }

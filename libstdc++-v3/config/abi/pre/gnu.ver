@@ -1559,6 +1559,9 @@ CXXABI_1.3.7 {
 CXXABI_1.3.8 {
     __cxa_throw_bad_array_new_length;
     _Z*St20bad_array_new_length*;
+
+    __cxa_throw_bad_array_length;
+    _Z*St16bad_array_length*;
 } CXXABI_1.3.7;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.
