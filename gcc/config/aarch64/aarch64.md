@@ -997,9 +997,9 @@
     || register_operand (operands[1], TFmode))"
   "@
    orr\\t%0.16b, %1.16b, %1.16b
-   mov\\t%0, %1\;mov\\t%H0, %H1
-   fmov\\t%d0, %Q1\;fmov\\t%0.d[1], %R1
-   fmov\\t%Q0, %d1\;fmov\\t%R0, %1.d[1]
+   #
+   #
+   #
    movi\\t%0.2d, #0
    fmov\\t%s0, wzr
    ldr\\t%q0, %1
@@ -1011,6 +1011,17 @@
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4")
    (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*")
    (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*")]
+)
+
+(define_split
+   [(set (match_operand:TF 0 "register_operand" "")
+	 (match_operand:TF 1 "aarch64_reg_or_imm" ""))]
+  "reload_completed && aarch64_split_128bit_move_p (operands[0], operands[1])"
+  [(const_int 0)]
+  {
+    aarch64_split_128bit_move (operands[0], operands[1]);
+    DONE;
+  }
 )
 
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
@@ -3550,9 +3561,9 @@
 ;; after or during reload as we don't want these patterns to start
 ;; kicking in during the combiner.
  
-(define_insn "aarch64_movdi_tilow"
+(define_insn "aarch64_movdi_<mode>low"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (truncate:DI (match_operand:TI 1 "register_operand" "w")))]
+        (truncate:DI (match_operand:TX 1 "register_operand" "w")))]
   "reload_completed || reload_in_progress"
   "fmov\\t%x0, %d1"
   [(set_attr "v8type" "fmovf2i")
@@ -3560,10 +3571,10 @@
    (set_attr "length" "4")
   ])
 
-(define_insn "aarch64_movdi_tihigh"
+(define_insn "aarch64_movdi_<mode>high"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (truncate:DI
-	  (lshiftrt:TI (match_operand:TI 1 "register_operand" "w")
+	  (lshiftrt:TX (match_operand:TX 1 "register_operand" "w")
 		       (const_int 64))))]
   "reload_completed || reload_in_progress"
   "fmov\\t%x0, %1.d[1]"
@@ -3572,24 +3583,22 @@
    (set_attr "length" "4")
   ])
 
-(define_insn "aarch64_movtihigh_di"
-  [(set (zero_extract:TI (match_operand:TI 0 "register_operand" "+w")
+(define_insn "aarch64_mov<mode>high_di"
+  [(set (zero_extract:TX (match_operand:TX 0 "register_operand" "+w")
                          (const_int 64) (const_int 64))
-        (zero_extend:TI (match_operand:DI 1 "register_operand" "r")))]
+        (zero_extend:TX (match_operand:DI 1 "register_operand" "r")))]
   "reload_completed || reload_in_progress"
   "fmov\\t%0.d[1], %x1"
-
   [(set_attr "v8type" "fmovi2f")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")
   ])
 
-(define_insn "aarch64_movtilow_di"
-  [(set (match_operand:TI 0 "register_operand" "=w")
-        (zero_extend:TI (match_operand:DI 1 "register_operand" "r")))]
+(define_insn "aarch64_mov<mode>low_di"
+  [(set (match_operand:TX 0 "register_operand" "=w")
+        (zero_extend:TX (match_operand:DI 1 "register_operand" "r")))]
   "reload_completed || reload_in_progress"
   "fmov\\t%d0, %x1"
-
   [(set_attr "v8type" "fmovi2f")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")
@@ -3601,7 +3610,6 @@
 	  (truncate:DI (match_operand:TI 1 "register_operand" "w"))))]
   "reload_completed || reload_in_progress"
   "fmov\\t%d0, %d1"
-
   [(set_attr "v8type" "fmovi2f")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")

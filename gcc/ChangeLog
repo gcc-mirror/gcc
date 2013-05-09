@@ -1,3 +1,20 @@
+2013-05-09  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md: New movtf split.
+	(*movtf_aarch64): Update.
+	(aarch64_movdi_tilow): Handle TF modes and rename to
+	aarch64_movdi_<mode>low.
+	(aarch64_movdi_tihigh): Handle TF modes and rename to
+	aarch64_movdi_<mode>high
+	(aarch64_movtihigh_di): Handle TF modes and rename to
+	aarch64_mov<mode>high_di
+	(aarch64_movtilow_di): Handle TF modes and rename to
+	aarch64_mov<mode>low_di
+	(aarch64_movtilow_tilow): Remove spurious whitespace.
+	* config/aarch64/aarch64.c (aarch64_split_128bit_move): Handle TFmode
+	splits.
+	(aarch64_print_operand): Update.
+
 2013-05-09  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac (HAVE_AS_TLS): Enable tests for powerpcle and
