@@ -1111,6 +1111,11 @@ is_late_template_attribute (tree attr, tree decl)
   if (is_attribute_p ("unused", name))
     return false;
 
+  /* #pragma omp declare simd attribute needs to be always finalized.  */
+  if (flag_openmp
+      && is_attribute_p ("omp declare simd", name))
+    return true;
+
   /* If any of the arguments are dependent expressions, we can't evaluate
      the attribute until instantiation time.  */
   for (arg = args; arg; arg = TREE_CHAIN (arg))
@@ -1296,6 +1301,9 @@ cp_check_const_attributes (tree attributes)
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
       tree arg;
+      if (TREE_VALUE (attr) == NULL_TREE
+	  || TREE_CODE (TREE_VALUE (attr)) != TREE_LIST)
+	continue;
       for (arg = TREE_VALUE (attr); arg; arg = TREE_CHAIN (arg))
 	{
 	  tree expr = TREE_VALUE (arg);

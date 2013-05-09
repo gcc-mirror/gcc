@@ -1,3 +1,8 @@
+2013-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/declare-simd-1.C: New test.
+	* g++.dg/gomp/declare-simd-2.C: New test.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/gomp/appendix-a/a.35.5.f90: Add dg-error.

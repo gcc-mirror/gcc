@@ -4745,6 +4745,10 @@ typedef struct cp_decl_specifier_seq {
   /* If non-NULL, a built-in type that the user attempted to redefine
      to some other type.  */
   tree redefined_builtin_type;
+  /* When parsing #pragma omp declare simd, this is a vector of
+     the clauses, each tree is either NULL_TREE, or OMP_CLAUSE
+     with optional chain of other clauses.  */
+  vec<tree, va_gc> *omp_declare_simd_clauses;
   /* The storage class specified -- or sc_none if no storage class was
      explicitly specified.  */
   cp_storage_class storage_class;
@@ -5702,6 +5706,7 @@ extern void simplify_aggr_init_expr		(tree *);
 extern void finalize_nrv			(tree *, tree, tree);
 extern void note_decl_for_pch			(tree);
 extern tree finish_omp_clauses			(tree);
+extern void finish_omp_declare_simd		(tree, vec<tree, va_gc> *);
 extern void finish_omp_threadprivate		(tree);
 extern tree begin_omp_structured_block		(void);
 extern tree finish_omp_structured_block		(tree);

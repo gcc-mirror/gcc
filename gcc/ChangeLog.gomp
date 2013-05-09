@@ -1,3 +1,10 @@
+2013-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (omp_declare_simd_clauses_equal): New function.
+	(attribute_value_equal): Call it for -fopenmp if
+	TREE_VALUE of the attributes are both OMP_CLAUSEs.
+	* tree.h (omp_declare_simd_clauses_equal): Declare.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-pretty-print.c (dump_gimple_omp_atomic_load,

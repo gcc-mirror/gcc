@@ -5051,6 +5051,10 @@ extern tree build_type_attribute_variant (tree, tree);
 extern tree build_decl_attribute_variant (tree, tree);
 extern tree build_type_attribute_qual_variant (tree, tree, int);
 
+/* Check if "omp declare simd" attribute arguments, CLAUSES1 and CLAUSES2, are
+   the same.  */
+extern bool omp_declare_simd_clauses_equal (tree, tree);
+
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */

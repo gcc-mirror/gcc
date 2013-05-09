@@ -8431,6 +8431,8 @@ can_complete_type_without_circularity (tree type)
     return 1;
 }
 
+static tree tsubst_omp_clauses (tree, bool, tree, tsubst_flags_t, tree);
+
 /* Apply any attributes which had to be deferred until instantiation
    time.  DECL_P, ATTRIBUTES and ATTR_FLAGS are as cplus_decl_attributes;
    ARGS, COMPLAIN, IN_DECL are as tsubst.  */
@@ -8472,15 +8474,28 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	    {
 	      *p = TREE_CHAIN (t);
 	      TREE_CHAIN (t) = NULL_TREE;
+	      if (flag_openmp
+		  && is_attribute_p ("omp declare simd",
+				     get_attribute_name (t))
+		  && TREE_VALUE (t))
+		{
+		  tree clauses = TREE_VALUE (t);
+		  clauses = tsubst_omp_clauses (clauses, true, args,
+						complain, in_decl);
+		  c_omp_declare_simd_clauses_to_decls (*decl_p, clauses);
+		  clauses = finish_omp_clauses (clauses);
+		  TREE_VALUE (t)
+		    = c_omp_declare_simd_clauses_to_numbers (*decl_p, clauses);
+		}
 	      /* If the first attribute argument is an identifier, don't
 		 pass it through tsubst.  Attributes like mode, format,
 		 cleanup and several target specific attributes expect it
 		 unmodified.  */
-	      if (TREE_VALUE (t)
-		  && TREE_CODE (TREE_VALUE (t)) == TREE_LIST
-		  && TREE_VALUE (TREE_VALUE (t))
-		  && (TREE_CODE (TREE_VALUE (TREE_VALUE (t)))
-		      == IDENTIFIER_NODE))
+	      else if (TREE_VALUE (t)
+		       && TREE_CODE (TREE_VALUE (t)) == TREE_LIST
+		       && TREE_VALUE (TREE_VALUE (t))
+		       && (TREE_CODE (TREE_VALUE (TREE_VALUE (t)))
+			   == IDENTIFIER_NODE))
 		{
 		  tree chain
 		    = tsubst_expr (TREE_CHAIN (TREE_VALUE (t)), args, complain,
@@ -12562,8 +12577,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 /* Like tsubst_copy, but specifically for OpenMP clauses.  */
 
 static tree
-tsubst_omp_clauses (tree clauses, tree args, tsubst_flags_t complain,
-		    tree in_decl)
+tsubst_omp_clauses (tree clauses, bool declare_simd,
+		    tree args, tsubst_flags_t complain, tree in_decl)
 {
   tree new_clauses = NULL, nc, oc;
 
@@ -12596,22 +12611,52 @@ tsubst_omp_clauses (tree clauses, tree args, tsubst_flags_t complain,
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_FINAL:
+	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_UNIFORM:
+	case OMP_CLAUSE_MAP:
+	case OMP_CLAUSE_DEVICE:
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_SAFELEN:
+	case OMP_CLAUSE_SIMDLEN:
 	  OMP_CLAUSE_OPERAND (nc, 0)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 0), args, complain, 
 			   in_decl, /*integral_constant_expression_p=*/false);
 	  break;
+	case OMP_CLAUSE_LINEAR:
+	case OMP_CLAUSE_ALIGNED:
+	  OMP_CLAUSE_OPERAND (nc, 0)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 0), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  OMP_CLAUSE_OPERAND (nc, 1)
+	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
+			   in_decl, /*integral_constant_expression_p=*/false);
+	  break;
+
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	case OMP_CLAUSE_PROC_BIND:
+	case OMP_CLAUSE_FOR:
+	case OMP_CLAUSE_PARALLEL:
+	case OMP_CLAUSE_SECTIONS:
+	case OMP_CLAUSE_TASKGROUP:
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
     }
 
-  return finish_omp_clauses (nreverse (new_clauses));
+  new_clauses = nreverse (new_clauses);
+  if (!declare_simd)
+    new_clauses = finish_omp_clauses (new_clauses);
+  return new_clauses;
 }
 
 /* Like tsubst_copy_and_build, but unshare TREE_LIST nodes.  */
@@ -13181,7 +13226,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_PARALLEL:
-      tmp = tsubst_omp_clauses (OMP_PARALLEL_CLAUSES (t),
+      tmp = tsubst_omp_clauses (OMP_PARALLEL_CLAUSES (t), false,
 				args, complain, in_decl);
       stmt = begin_omp_parallel ();
       RECUR (OMP_PARALLEL_BODY (t));
@@ -13190,7 +13235,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_TASK:
-      tmp = tsubst_omp_clauses (OMP_TASK_CLAUSES (t),
+      tmp = tsubst_omp_clauses (OMP_TASK_CLAUSES (t), false,
 				args, complain, in_decl);
       stmt = begin_omp_task ();
       RECUR (OMP_TASK_BODY (t));
@@ -13206,7 +13251,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	tree declv, initv, condv, incrv;
 	int i;
 
-	clauses = tsubst_omp_clauses (OMP_FOR_CLAUSES (t),
+	clauses = tsubst_omp_clauses (OMP_FOR_CLAUSES (t), false,
 				      args, complain, in_decl);
 	declv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
 	initv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
@@ -13237,7 +13282,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case OMP_SECTIONS:
     case OMP_SINGLE:
-      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), args, complain, in_decl);
+      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), false,
+				args, complain, in_decl);
       stmt = push_stmt_list ();
       RECUR (OMP_BODY (t));
       stmt = pop_stmt_list (stmt);

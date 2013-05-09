@@ -340,6 +340,15 @@ typedef struct GTY(()) cp_parser {
   /* The number of template parameter lists that apply directly to the
      current declaration.  */
   unsigned num_template_parameter_lists;
+
+  /* When parsing #pragma omp declare simd, this is a vector of
+     the clauses, each tree is either NULL_TREE, or OMP_CLAUSE
+     with optional chain of other clauses.  If error regarding
+     omp declare simd has been reported already, either
+     omp_declare_simd_clauses is set to NULL, or first element set
+     to error_mark_node.  If a FUNCTION_DECL has been seen already,
+     first element is set to integer_zero_node.  */
+  vec<tree, va_gc> *omp_declare_simd_clauses;
 } cp_parser;
 
 /* In parser.c  */

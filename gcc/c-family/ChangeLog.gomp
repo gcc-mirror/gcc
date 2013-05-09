@@ -1,3 +1,14 @@
+2013-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (c_common_attribute_table): Add "omp declare simd"
+	attribute.
+	(handle_omp_declare_simd_attribute): New function.
+	* c-common.h (c_omp_declare_simd_clauses_to_numbers,
+	c_omp_declare_simd_clauses_to_decls): Declare.
+	* c-omp.c (c_omp_declare_simd_clause_cmp,
+	c_omp_declare_simd_clauses_to_numbers,
+	c_omp_declare_simd_clauses_to_decls): New functions.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_finish_omp_atomic): Add seq_cst argument, store it

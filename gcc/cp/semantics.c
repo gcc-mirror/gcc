@@ -4028,6 +4028,7 @@ finish_omp_clauses (tree clauses)
   bitmap_head aligned_head;
   tree c, t, *pc = &clauses;
   const char *name;
+  bool branch_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -4426,13 +4427,22 @@ finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_MERGEABLE:
-	case OMP_CLAUSE_INBRANCH:
-	case OMP_CLAUSE_NOTINBRANCH:
 	case OMP_CLAUSE_PARALLEL:
 	case OMP_CLAUSE_FOR:
 	case OMP_CLAUSE_SECTIONS:
 	case OMP_CLAUSE_TASKGROUP:
 	case OMP_CLAUSE_PROC_BIND:
+	  break;
+
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	  if (branch_seen)
+	    {
+	      error ("%<inbranch%> clause is incompatible with "
+		     "%<notinbranch%>");
+	      remove = true;
+	    }
+	  branch_seen = true;
 	  break;
 
 	default:
@@ -4617,6 +4627,90 @@ finish_omp_clauses (tree clauses)
 
   bitmap_obstack_release (NULL);
   return clauses;
+}
+
+/* Finalize #pragma omp declare simd clauses after FNDECL has been parsed,
+   and put that into "omp declare simd" attribute.  */
+
+void
+finish_omp_declare_simd (tree fndecl, vec<tree, va_gc> *clauses)
+{
+  tree cl;
+  int i;
+
+  if (TREE_CODE (fndecl) != FUNCTION_DECL)
+    return;
+  if ((*clauses)[0] == integer_zero_node)
+    {
+      error_at (DECL_SOURCE_LOCATION (fndecl),
+		"%<#pragma omp declare simd%> not immediately followed by "
+		"a single function declaration or definition");
+      (*clauses)[0] = error_mark_node;
+      return;
+    }
+  if ((*clauses)[0] == error_mark_node)
+    return;
+
+  FOR_EACH_VEC_SAFE_ELT (clauses, i, cl)
+    {
+      tree c, *pc, decl, name;
+      for (pc = &cl, c = cl; c; c = *pc)
+	{
+	  bool remove = false;
+	  switch (OMP_CLAUSE_CODE (c))
+	    {
+	    case OMP_CLAUSE_UNIFORM:
+	    case OMP_CLAUSE_LINEAR:
+	    case OMP_CLAUSE_ALIGNED:
+	    case OMP_CLAUSE_REDUCTION:
+	      name = OMP_CLAUSE_DECL (c);
+	      if (name == error_mark_node)
+		remove = true;
+	      else
+		{
+		  for (decl = DECL_ARGUMENTS (fndecl); decl;
+		       decl = TREE_CHAIN (decl))
+		    if (DECL_NAME (decl) == name)
+		      break;
+		  if (decl == NULL_TREE)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%qE is not a function parameter", name);
+		      remove = true;
+		    }
+		  else
+		    OMP_CLAUSE_DECL (c) = decl;
+		}
+	      break;
+	    default:
+	      break;
+	    }
+	  if (remove)
+	    *pc = OMP_CLAUSE_CHAIN (c);
+	  else
+	    pc = &OMP_CLAUSE_CHAIN (c);
+	}
+      cl = finish_omp_clauses (cl);
+      cl = c_omp_declare_simd_clauses_to_numbers (fndecl, cl);
+      if (!processing_template_decl)
+	{
+	  for (c = lookup_attribute ("omp declare simd",
+				     DECL_ATTRIBUTES (fndecl));
+	       c; c = lookup_attribute ("omp declare simd",
+					TREE_CHAIN (c)))
+	    if (omp_declare_simd_clauses_equal (TREE_VALUE (c), cl))
+	      break;
+	  if (c)
+	    continue;
+	}
+      c = build_tree_list (get_identifier ("omp declare simd"), cl);
+      TREE_CHAIN (c) = DECL_ATTRIBUTES (fndecl);
+      if (processing_template_decl)
+	ATTR_IS_DEPENDENT (c) = 1;
+      DECL_ATTRIBUTES (fndecl) = c;
+    }
+
+  (*clauses)[0] = integer_zero_node;
 }
 
 /* For all variables in the tree_list VARS, mark them as thread local.  */

@@ -637,6 +637,100 @@ c_split_parallel_clauses (location_t loc, tree clauses,
     }
 }
 
+/* qsort callback to compare #pragma omp declare simd clauses.  */
+
+static int
+c_omp_declare_simd_clause_cmp (const void *p, const void *q)
+{
+  tree a = *(const tree *) p;
+  tree b = *(const tree *) q;
+  if (OMP_CLAUSE_CODE (a) != OMP_CLAUSE_CODE (b))
+    {
+      if (OMP_CLAUSE_CODE (a) > OMP_CLAUSE_CODE (b))
+	return -1;
+      return 1;
+    }
+  if (OMP_CLAUSE_CODE (a) != OMP_CLAUSE_SIMDLEN
+      && OMP_CLAUSE_CODE (a) != OMP_CLAUSE_INBRANCH
+      && OMP_CLAUSE_CODE (a) != OMP_CLAUSE_NOTINBRANCH)
+    {
+      int c = tree_low_cst (OMP_CLAUSE_DECL (a), 0);
+      int d = tree_low_cst (OMP_CLAUSE_DECL (b), 0);
+      if (c < d)
+	return 1;
+      if (c > d)
+	return -1;
+    }
+  return 0;
+}
+
+/* Change PARM_DECLs in OMP_CLAUSE_DECL of #pragma omp declare simd
+   CLAUSES on FNDECL into argument indexes and sort them.  */
+
+tree
+c_omp_declare_simd_clauses_to_numbers (tree fndecl, tree clauses)
+{
+  tree c;
+  vec<tree> clvec = vNULL;
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SIMDLEN
+	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_INBRANCH
+	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_NOTINBRANCH)
+	{
+	  tree decl = OMP_CLAUSE_DECL (c);
+	  tree arg;
+	  int idx;
+	  for (arg = DECL_ARGUMENTS (fndecl), idx = 0; arg;
+	       arg = TREE_CHAIN (arg), idx++)
+	    if (arg == decl)
+	      break;
+	  if (arg == NULL_TREE)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD is not an argument of %qD", decl, fndecl);
+	      continue;
+	    }
+	  OMP_CLAUSE_DECL (c) = build_int_cst (integer_type_node, idx);
+	}
+      clvec.safe_push (c);
+    }
+  if (!clvec.is_empty ())
+    {
+      unsigned int len = clvec.length (), i;
+      clvec.qsort (c_omp_declare_simd_clause_cmp);
+      clauses = clvec[0];
+      for (i = 0; i < len; i++)
+	OMP_CLAUSE_CHAIN (clvec[i]) = (i < len - 1) ? clvec[i + 1] : NULL_TREE;
+    }
+  clvec.release ();
+  return clauses;
+}
+
+/* Change argument indexes in CLAUSES of FNDECL back to PARM_DECLs.  */
+
+void
+c_omp_declare_simd_clauses_to_decls (tree fndecl, tree clauses)
+{
+  tree c;
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SIMDLEN
+	&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_INBRANCH
+	&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_NOTINBRANCH)
+      {
+	int idx = tree_low_cst (OMP_CLAUSE_DECL (c), 0), i;
+	tree arg;
+	for (arg = DECL_ARGUMENTS (fndecl), i = 0; arg;
+	     arg = TREE_CHAIN (arg), i++)
+	  if (i == idx)
+	    break;
+	gcc_assert (arg);
+	OMP_CLAUSE_DECL (c) = arg;
+      }
+}
+
 /* True if OpenMP sharing attribute of DECL is predetermined.  */
 
 enum omp_clause_default_kind
