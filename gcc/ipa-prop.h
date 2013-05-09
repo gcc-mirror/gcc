@@ -386,6 +386,8 @@ struct GTY(()) ipa_agg_replacement_value
   tree value;
   /* The paramter index.  */
   int index;
+  /* Whether the value was passed by reference.  */
+  bool by_ref;
 };
 
 typedef struct ipa_agg_replacement_value *ipa_agg_replacement_value_p;

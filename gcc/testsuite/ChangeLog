@@ -1,3 +1,8 @@
+2013-05-09  Martin Jambor  <mjambor@suse.cz>
+
+        PR middle-end/56988
+        * gcc.dg/ipa/pr56988.c: New test.
+
 2013-05-08  Marc Glisse  <marc.glisse@inria.fr>
 
 	* c-c++-common/vector-scalar-2.c: New testcase.
