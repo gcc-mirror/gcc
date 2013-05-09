@@ -1,4 +1,4 @@
-/* Copyright (C) 2012
+/* Copyright (C) 2012, 2013
    Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -46,11 +46,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 	Path of log file where UPC runtime debug logs are written.
 
+ UPC_FIRSTTOUCH
+
+	Not used. Reserved for future use.
+
  UPC_FORCETOUCH
 
 	Force the thread to touch every memory page in its own shared
 	memory space on startup. This ensures the correct NUMA memory
-	allocation. By default it is "ON".
+	allocation. By default it is "YES".
 
  UPC_LOG
 
@@ -68,7 +72,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
  UPC_NODE_LOCAL_MEM
 
-	If set to "OFF", then disable node local memory optimization.
+	If set to "NO", then disable node local memory optimization.
 
  UPC_NODES
 
@@ -164,6 +168,7 @@ typedef enum
   ENV_NONE = 0,
   ENV_UPC_DEBUG,
   ENV_UPC_DEBUGFILE,
+  ENV_UPC_FIRSTTOUCH,
   ENV_UPC_FORCETOUCH,
   ENV_UPC_LOG,
   ENV_UPC_LOGFILE,
@@ -189,6 +194,7 @@ gupcr_env_var_table[] =
 {
   {"UPC_DEBUG", ENV_UPC_DEBUG},
   {"UPC_DEBUGFILE", ENV_UPC_DEBUGFILE},
+  {"UPC_FIRSTTOUCH", ENV_UPC_FIRSTTOUCH},
   {"UPC_FORCETOUCH", ENV_UPC_FORCETOUCH},
   {"UPC_LOG", ENV_UPC_LOG},
   {"UPC_LOGFILE", ENV_UPC_LOGFILE},
@@ -425,6 +431,9 @@ gupcr_env_init (void)
 	      filename = gupcr_env_filename (env_var);
 	      if (filename)
 		gupcr_set_debug_filename (filename);
+	      break;
+	    case ENV_UPC_FIRSTTOUCH:
+	      /* no-op */
 	      break;
 	    case ENV_UPC_FORCETOUCH:
 	      gupcr_set_forcetouch (gupcr_env_boolean (env_var));

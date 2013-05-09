@@ -1,5 +1,11 @@
 2013-05-09  Nenad Vukicevic  <nenad@intrepid.com>
 
+	portals4/gupcr_env.c: Add UPC_FIRSTTOUCH environment variable
+	as a no-op.  Misc fixes in comments for ON/OFF -> YES/NO.
+	(gupcr_env_init): Handle UPC_FIRSTTOUCH as no-op.
+
+2013-05-09  Nenad Vukicevic  <nenad@intrepid.com>
+
 	Add support for remote put optimization with usage of volatile MD.
 	configure.ac: Add configuration option
 	(--with-upc-max-outstanding-puts) for maximum number of
