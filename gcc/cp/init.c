@@ -2185,6 +2185,20 @@ throw_bad_array_new_length (void)
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
+/* Call __cxa_bad_array_length to indicate that there were too many
+   initializers.  */
+
+tree
+throw_bad_array_length (void)
+{
+  tree fn = get_identifier ("__cxa_throw_bad_array_length");
+  if (!get_global_value_if_present (fn, &fn))
+    fn = push_throw_library_fn (fn, build_function_type_list (void_type_node,
+							      NULL_TREE));
+
+  return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -3350,6 +3364,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 store_constructor will handle the semantics for us.  */
 
       stmt_expr = build2 (INIT_EXPR, atype, base, init);
+      if (length_check)
+	stmt_expr = build3 (COND_EXPR, atype, length_check,
+			    throw_bad_array_length (),
+			    stmt_expr);
       return stmt_expr;
     }
 
@@ -3467,6 +3485,9 @@ build_vec_init (tree base, tree maxindex, tree init,
       if (length_check)
 	{
 	  tree throw_call;
+	  if (array_of_runtime_bound_p (atype))
+	    throw_call = throw_bad_array_length ();
+	  else
 	    throw_call = throw_bad_array_new_length ();
 	  length_check = build3 (COND_EXPR, void_type_node, length_check,
 				 throw_call, void_zero_node);

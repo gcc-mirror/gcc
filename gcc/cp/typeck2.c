@@ -795,10 +795,12 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      will perform the dynamic initialization.  */
   if (value != error_mark_node
       && (TREE_SIDE_EFFECTS (value)
+	  || array_of_runtime_bound_p (type)
 	  || ! reduced_constant_expression_p (value)))
     {
       if (TREE_CODE (type) == ARRAY_TYPE
-	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type)))
+	  && (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (type))
+	      || array_of_runtime_bound_p (type)))
 	/* For an array, we only need/want a single cleanup region rather
 	   than one per element.  */
 	return build_vec_init (decl, NULL_TREE, value, false, 1,
@@ -1114,7 +1116,7 @@ process_init_constructor_array (tree type, tree init,
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree domain = TYPE_DOMAIN (type);
-      if (domain)
+      if (domain && TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
 	len = (tree_to_double_int (TYPE_MAX_VALUE (domain))
 	       - tree_to_double_int (TYPE_MIN_VALUE (domain))
 	       + double_int_one)

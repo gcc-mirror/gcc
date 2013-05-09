@@ -1382,6 +1382,10 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   gimplify_one_sizepos (&DECL_SIZE (decl), seq_p);
   gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), seq_p);
 
+  /* Don't mess with a DECL_VALUE_EXPR set by the front-end.  */
+  if (DECL_HAS_VALUE_EXPR_P (decl))
+    return;
+
   /* All occurrences of this decl in final gimplified code will be
      replaced by indirection.  Setting DECL_VALUE_EXPR does two
      things: First, it lets the rest of the gimplifier know what
