@@ -1,3 +1,9 @@
+2013-05-09  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac (HAVE_AS_TLS): Enable tests for powerpcle and
+	powerpc64le.
+	* configure: Regenerate.
+
 2013-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (*vec_extract* splitters): Simplify post-reload

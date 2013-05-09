@@ -3045,7 +3045,7 @@ a:
 	tls_first_major=0
 	tls_first_minor=0
 	;;
-  powerpc-*-*)
+  powerpc*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
 	.align 2
@@ -3071,7 +3071,7 @@ x3:	.space 4
 	tls_first_minor=14
 	tls_as_opt="-a32 --fatal-warnings"
 	;;
-  powerpc64-*-*)
+  powerpc64*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
 	.align 3
