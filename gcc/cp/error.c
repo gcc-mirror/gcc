@@ -3394,7 +3394,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 	break;
       case CPP0X_AUTO:
 	pedwarn (input_location, 0,
-		 "C++0x auto only available with -std=c++11 or -std=gnu++11");
+		 "C++11 auto only available with -std=c++11 or -std=gnu++11");
 	break;
       case CPP0X_SCOPED_ENUMS:
 	pedwarn (input_location, 0,
@@ -3443,7 +3443,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
       case CPP0X_REF_QUALIFIER:
 	pedwarn (input_location, 0,
 		 "ref-qualifiers "
-		 "only available with -std=c++0x or -std=gnu++0x");
+		 "only available with -std=c++11 or -std=gnu++11");
 	break;
       default:
 	gcc_unreachable ();

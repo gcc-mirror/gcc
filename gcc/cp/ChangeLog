@@ -1,3 +1,10 @@
+2013-05-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57068
+	* decl.c (grokdeclarator): Warn about ref-qualifiers here.
+	* parser.c (cp_parser_ref_qualifier_seq_opt): Not here.
+	* error.c (maybe_warn_cpp0x): s/0x/11/.
+
 2013-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51226
