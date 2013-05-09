@@ -1712,18 +1712,28 @@ epiphany_expand_prologue (void)
      register save.  */
   if (current_frame_info.last_slot >= 0)
     {
+      rtx ip, mem2, insn, note;
+
       gcc_assert (current_frame_info.last_slot != GPR_FP
 		  || (!current_frame_info.need_fp
 		      && current_frame_info.first_slot < 0));
       off = GEN_INT (-current_frame_info.last_slot_offset);
       mem = gen_frame_mem (BLKmode,
 			   gen_rtx_PLUS (Pmode, stack_pointer_rtx, off));
-      reg = gen_rtx_REG (Pmode, GPR_IP);
-      frame_move_insn (reg, off);
-      frame_insn (gen_stack_adjust_str
-		   (gen_frame_mem (word_mode, stack_pointer_rtx),
-		    gen_rtx_REG (word_mode, current_frame_info.last_slot),
-		    reg, mem));
+      ip = gen_rtx_REG (Pmode, GPR_IP);
+      frame_move_insn (ip, off);
+      reg = gen_rtx_REG (word_mode, current_frame_info.last_slot),
+      mem2 = gen_frame_mem (word_mode, stack_pointer_rtx),
+      insn = frame_insn (gen_stack_adjust_str (mem2, reg, ip, mem));
+      /* Instruction scheduling can separate the instruction setting IP from
+	 INSN so that dwarf2out_frame_debug_expr becomes confused what the
+	 temporary register is.  Example: _gcov.o  */
+      note = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			  gen_rtx_PLUS (Pmode, stack_pointer_rtx, off));
+      note = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (2, gen_rtx_SET (VOIDmode, mem2, reg),
+					  note));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
     }
   /* If there is only one or no register to save, yet we have a large frame,
      use an add.  */
