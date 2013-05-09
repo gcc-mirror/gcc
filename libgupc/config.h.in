@@ -68,6 +68,9 @@
 /* Maximum number of locks held per thread */
 #undef GUPCR_MAX_LOCKS
 
+/* Maximum number of outstanding remote puts */
+#undef GUPCR_MAX_OUTSTANDING_PUTS
+
 /* Target system memory page size. */
 #undef GUPCR_MEMORY_PAGE_SIZE
 

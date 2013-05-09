@@ -1,3 +1,24 @@
+2013-05-09  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Add support for remote put optimization with usage of volatile MD.
+	configure.ac: Add configuration option
+	(--with-upc-max-outstanding-puts) for maximum number of
+	outstanding remote put operations.
+	config.h.in: Re-generate.
+	configure: Re-generate.
+	portals4/gupcr_gmem.c: Add gupcr_gmem_high_mark_puts variable.
+	Add gupcr_gmem_low_mark_puts variable.
+	(gupcr_gmem_put): Use volatile MD if transfer size is
+	smaller then the volatile maximum size.  Add checking for maximum
+	number of outstanding puts (flow control).
+	portals4/gupcr_gmem.h (gupcr_gmem_xfer_info_t): Add md_volatile
+	field.
+	portals4/gupcr_portals.c: Add gupcr_max_volatile_size variable.
+	(gupcr_portals_ni_init): Initialize max volatile size from NI
+	limits.
+	portals4/gupcr_portals.h: Add GUPCR_PORTALS_MAX_VOLATILE_SIZE
+	define.  Add gupcr_max_volatile_size extern definition.
+
 2013-04-18  Nenad Vukicevic  <nenad@intrepid.com>
 
 	portals4/gupcr_gmem.c (gupcr_gmem_init): Add debug logging for

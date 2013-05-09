@@ -88,6 +88,8 @@ typedef struct gupcr_gmem_xfer_info_struct
   ptl_handle_ct_t ct_handle;
   /** Memory descriptor handle */
   ptl_handle_md_t md;
+  /** Volatile memory descriptor handle */
+  ptl_handle_md_t md_volatile;
 } gupcr_gmem_xfer_info_t;
 /** GET/PUT information tracking pointer type */
 typedef gupcr_gmem_xfer_info_t *gupcr_gmem_xfer_info_p;

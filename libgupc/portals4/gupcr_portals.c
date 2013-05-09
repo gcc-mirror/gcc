@@ -50,6 +50,7 @@ int gupcr_parent_thread;
 
 size_t gupcr_max_ordered_size;
 size_t gupcr_max_msg_size;
+size_t gupcr_max_volatile_size;
 
 /** Mapping to nid/pid for each rank */
 static ptl_process_t *gupcr_ptl_proc_map;
@@ -430,6 +431,7 @@ gupcr_portals_ni_init (void)
   /* Initialize limits used by GMEM.  */
   gupcr_max_ordered_size = gupcr_ptl_ni_limits.max_waw_ordered_size;
   gupcr_max_msg_size = gupcr_ptl_ni_limits.max_msg_size;
+  gupcr_max_volatile_size = gupcr_ptl_ni_limits.max_volatile_size;
 
   /* Initialize the mapping from rank -> nid/pid.  */
   gupcr_ptl_proc_map = gupcr_runtime_get_mapping (gupcr_ptl_ni);

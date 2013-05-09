@@ -1094,6 +1094,26 @@ if test "$upc_runtime_model" = "portals4"; then
   AC_DEFINE_UNQUOTED(GUPCR_BOUNCE_BUFFER_SIZE,[$upc_runtime_bounce_buffer_size],
     [Size of get/put bounce buffer])
 
+  AC_MSG_CHECKING([for UPC maximum number of outstanding remote puts])
+  AC_ARG_WITH(upc-max-outstanding-puts,
+  [AS_HELP_STRING([--with-upc-max-outstanding-puts=SIZE],
+		  [specify the maximum number of outstanding
+		   remote put requests. [default=256]])],
+  [
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[[0-9]]*$' >/dev/null 2>&1; then
+      AC_MSG_ERROR([$withval is an invalid option to
+			--with-upc-max-outstanding-puts])
+    fi
+    upc_max_puts_count="$withval"
+  ],
+  [
+    upc_max_puts_count="256"
+  ])
+  AC_MSG_RESULT([$upc_max_puts_count])
+  AC_DEFINE_UNQUOTED(GUPCR_MAX_OUTSTANDING_PUTS,[$upc_max_puts_count],
+    [Maximum number of outstanding remote puts])
+
   AC_MSG_CHECKING([for UPC runtime collectives tree fanout])
   AC_ARG_WITH(upc-runtime-tree-fanout,
   [AS_HELP_STRING([--with-upc-runtime-tree-fanout=WIDTH],

@@ -63,6 +63,9 @@ extern size_t gupcr_max_ordered_size;
 /** Max size of a message (put, get, or reply) */
 extern size_t gupcr_max_msg_size;
 #define GUPCR_PORTALS_MAX_MSG_SIZE gupcr_max_msg_size
+/** Max size of a message that can use volatile memory descriptor */
+extern size_t gupcr_max_volatile_size;
+#define GUPCR_PORTALS_MAX_VOLATILE_SIZE gupcr_max_volatile_size
 
 //end lib_portals
 
