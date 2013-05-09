@@ -1,3 +1,9 @@
+2013-05-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/57084
+	* gimple-fold.c (canonicalize_constructor_val): Call
+	cgraph_get_create_real_symbol_node instead of cgraph_get_create_node.
+
 2013-05-09  Jan Hubicka  <jh@suse.cz>
 	    Richard Biener  <rguenther@suse.de>
 
