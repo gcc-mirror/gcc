@@ -1,3 +1,12 @@
+2013-05-09  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54095
+	* symtab.c (insert_to_assembler_name_hash): Handle clones.
+	(unlink_from_assembler_name_hash): Likewise.
+	(symtab_prevail_in_asm_name_hash, symtab_register_node,
+	symtab_unregister_node, symtab_initialize_asm_name_hash,
+	change_decl_assembler_name): Update.
+
 2013-05-09  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64.md: New movtf split.
