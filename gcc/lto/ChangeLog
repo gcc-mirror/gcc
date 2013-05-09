@@ -1,3 +1,17 @@
+2013-05-09  Jan Hubicka  <jh@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	* lto.c (lto_register_var_decl_in_symtab): Don't do renaming.
+	(lto_register_var_decl_in_symtab): Likewise.
+	(lto_main): Promote statics.
+	* lto-partition.c (privatize_symbol_name): New function.
+	(promote_symbol): Use it.
+	(may_need_named_section_p): New predicate.
+	(rename_statics): New functions.
+	(lto_promote_cross_file_statics): Simplify; do renaming.
+	(lto_promote_statics_nonwpa): New function.
+	* lto-partition.h (lto_promote_statics_nonwpa): New function.
+
 2013-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR lto/56231

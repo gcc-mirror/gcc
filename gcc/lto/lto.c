@@ -1748,23 +1748,11 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
 {
   tree context;
 
-  /* Variable has file scope, not local. Need to ensure static variables
-     between different files don't clash unexpectedly.  */
+  /* Variable has file scope, not local.  */
   if (!TREE_PUBLIC (decl)
       && !((context = decl_function_context (decl))
 	   && auto_var_in_fn_p (decl, context)))
     {
-      /* ??? We normally pre-mangle names before we serialize them
-	 out.  Here, in lto1, we do not know the language, and
-	 thus cannot do the mangling again. Instead, we just
-	 append a suffix to the mangled name.  The resulting name,
-	 however, is not a properly-formed mangled name, and will
-	 confuse any attempt to unmangle it.  */
-      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      char *label;
-
-      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
       rest_of_decl_compilation (decl, 1, 0);
     }
 
@@ -1788,44 +1776,6 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
 static void
 lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
 {
-  /* Need to ensure static entities between different files
-     don't clash unexpectedly.  */
-  if (!TREE_PUBLIC (decl))
-    {
-      /* We must not use the DECL_ASSEMBLER_NAME macro here, as it
-	 may set the assembler name where it was previously empty.  */
-      tree old_assembler_name = decl->decl_with_vis.assembler_name;
-
-      /* FIXME lto: We normally pre-mangle names before we serialize
-	 them out.  Here, in lto1, we do not know the language, and
-	 thus cannot do the mangling again. Instead, we just append a
-	 suffix to the mangled name.  The resulting name, however, is
-	 not a properly-formed mangled name, and will confuse any
-	 attempt to unmangle it.  */
-      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      char *label;
-
-      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
-
-      /* We may arrive here with the old assembler name not set
-	 if the function body is not needed, e.g., it has been
-	 inlined away and does not appear in the cgraph.  */
-      if (old_assembler_name)
-	{
-	  tree new_assembler_name = DECL_ASSEMBLER_NAME (decl);
-
-	  /* Make the original assembler name available for later use.
-	     We may have used it to indicate the section within its
-	     object file where the function body may be found.
-	     FIXME lto: Find a better way to maintain the function decl
-	     to body section mapping so we don't need this hack.  */
-	  lto_record_renamed_decl (data_in->file_data,
-				   IDENTIFIER_POINTER (old_assembler_name),
-				   IDENTIFIER_POINTER (new_assembler_name));
-	}
-    }
-
   /* If this variable has already been declared, queue the
      declaration for merging.  */
   if (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl))
@@ -3396,6 +3346,8 @@ lto_main (void)
 	  timevar_start (TV_PHASE_OPT_GEN);
 
 	  materialize_cgraph ();
+	  if (!flag_ltrans)
+	    lto_promote_statics_nonwpa ();
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 
