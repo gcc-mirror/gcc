@@ -1,3 +1,8 @@
+2013-05-09  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_constructor_va): New.
+	* tree.h: Declare it.
+
 2013-05-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/57084
