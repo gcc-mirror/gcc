@@ -1,3 +1,7 @@
+2013-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.8.
+
 2013-05-08  Jason Merrill  <jason@redhat.com>
 
 	Add std::bad_array_length (N3639)
