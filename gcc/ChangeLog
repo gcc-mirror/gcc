@@ -1,5 +1,11 @@
 2013-05-10  Alan Modra  <amodra@gmail.com>
 
+	* configure.ac (HAVE_AS_TLS): Swap powerpc64 and powerpc cases.
+	(HAVE_LD_LARGE_TOC): Don't mention AIX in help text.
+	* configure: Regenerate.
+
+2013-05-10  Alan Modra  <amodra@gmail.com>
+
 	PR target/55033
 	* varasm.c (default_elf_select_section): Move !DECL_P check..
 	(get_named_section): ..to here before calling get_section_name.
