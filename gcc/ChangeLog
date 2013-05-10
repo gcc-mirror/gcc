@@ -1,3 +1,8 @@
+2013-05-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-assigns.c (find_hard_regno_for): Add 1 to the cost of call
+	saved registers.
+
 2013-05-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/t-rtems-eabi: Remove mthumb/march=armv7 multilib.
