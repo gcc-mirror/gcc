@@ -201,7 +201,8 @@
   (set_attr "type" "*,f_stored,*,f_loadd,*,*,alu,load2,store2")
   (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
   (set_attr "length" "4,4,4,4,4,4,8,8,8")
-  (set_attr "pool_range"     "*,*,*,1020,*,*,*,1020,*")
+  (set_attr "arm_pool_range"     "*,*,*,1020,*,*,*,1020,*")
+  (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,*,1018,*")
   (set_attr "neg_pool_range" "*,*,*,1004,*,*,*,1004,*")])
 
 (define_insn "*neon_mov<mode>"
@@ -246,7 +247,8 @@
    (set_attr "type" "*,*,*,*,*,*,alu,load4,store4")
    (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
    (set_attr "length" "4,8,4,8,8,8,16,8,16")
-   (set_attr "pool_range" "*,*,*,1020,*,*,*,1020,*")
+   (set_attr "arm_pool_range" "*,*,*,1020,*,*,*,1020,*")
+   (set_attr "thumb2_pool_range" "*,*,*,1018,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,996,*,*,*,996,*")])
 
 (define_expand "movti"

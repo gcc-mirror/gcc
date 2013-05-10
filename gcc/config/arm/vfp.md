@@ -126,7 +126,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "type" "*,*,*,*,load1,load1,store1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
    (set_attr "insn" "mov,mov,mvn,mov,*,*,*,*,*,*,*,*,*")
-   (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,*,1020,*")
+   (set_attr "pool_range"     "*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
 )
 
@@ -177,7 +177,8 @@
                                  (const_int 8)
                                  (const_int 4))]
                               (const_int 4)))
-   (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,1020,*")
+   (set_attr "arm_pool_range"     "*,*,*,*,1020,4096,*,*,*,*,1020,*")
+   (set_attr "thumb2_pool_range"     "*,*,*,*,1018,4094,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,1004,0,*,*,*,*,1004,*")
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
 )
@@ -222,7 +223,8 @@
                                  * 4")]
                               (const_int 4)))
    (set_attr "predicable"    "yes")
-   (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,1020,*")
+   (set_attr "arm_pool_range"     "*,*,*,*,1018,4094,*,*,*,*,1018,*")
+   (set_attr "thumb2_pool_range"     "*,*,*,*,1018,4094,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,1004,0,*,*,*,*,1004,*")
    (set (attr "ce_count") 
 	(symbol_ref "get_attr_length (insn) / 4"))
@@ -409,7 +411,7 @@
    (set_attr "type"
      "r_2_f,f_2_r,fconsts,f_loads,f_stores,load1,store1,fcpys,*")
    (set_attr "insn" "*,*,*,*,*,*,*,*,mov")
-   (set_attr "pool_range" "*,*,*,1020,*,4092,*,*,*")
+   (set_attr "pool_range" "*,*,*,1018,*,4090,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
 )
 
@@ -501,7 +503,7 @@
 				 (const_int 8)
 				 (const_int 4))]
 			      (const_int 4)))
-   (set_attr "pool_range" "*,*,*,1020,*,4096,*,*,*")
+   (set_attr "pool_range" "*,*,*,1018,*,4094,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
 )
 
