@@ -1,6 +1,7 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 
-// Copyright (C) 2007-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,12 +18,16 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1647 }
+#include <ext/vstring.h>
 
-#include <deque>
-
-void f()
+void test01() 
 {
-  std::deque<std::deque<int> > d(10, 1);
+  __gnu_cxx::__wvstring wvs1;
+  wvs1.push_back(L'1');
+  wvs1.erase(wvs1.cbegin());
+
+  __gnu_cxx::__wvstring wvs2;
+  wvs2.push_back(L'2');
+  wvs2.push_back(L'3');
+  wvs2.erase(wvs2.cbegin(), wvs2.cend());
 }

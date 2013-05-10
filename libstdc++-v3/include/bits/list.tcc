@@ -106,10 +106,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     typename list<_Tp, _Alloc>::iterator
     list<_Tp, _Alloc>::
+#if __cplusplus >= 201103L
+    erase(const_iterator __position)
+#else
     erase(iterator __position)
+#endif
     {
       iterator __ret = iterator(__position._M_node->_M_next);
+#if __cplusplus >= 201103L
+      _M_erase(__position._M_const_cast());
+#else
       _M_erase(__position);
+#endif
       return __ret;
     }
 

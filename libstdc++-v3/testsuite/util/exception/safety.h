@@ -287,51 +287,11 @@ namespace __gnu_test
 	typedef __gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>
 	                                                container_type;
 	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
 
-	iterator (container_type::* _F_erase_point)(iterator);
-	iterator (container_type::* _F_erase_range)(iterator, iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2>
-      struct erase_base<std::deque<_Tp1, _Tp2>>
-      {
-	typedef std::deque<_Tp1, _Tp2> 		        container_type;
-	typedef typename container_type::iterator 	iterator;
-
-	iterator (container_type::* _F_erase_point)(iterator);
-	iterator (container_type::* _F_erase_range)(iterator, iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2>
-      struct erase_base<std::list<_Tp1, _Tp2>>
-      {
-	typedef std::list<_Tp1, _Tp2> 		        container_type;
-	typedef typename container_type::iterator 	iterator;
-
-	iterator (container_type::* _F_erase_point)(iterator);
-	iterator (container_type::* _F_erase_range)(iterator, iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2>
-      struct erase_base<std::vector<_Tp1, _Tp2>>
-      {
-	typedef std::vector<_Tp1, _Tp2>		        container_type;
-	typedef typename container_type::iterator 	iterator;
-
-	iterator (container_type::* _F_erase_point)(iterator);
-	iterator (container_type::* _F_erase_range)(iterator, iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),

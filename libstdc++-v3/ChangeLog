@@ -1,3 +1,61 @@
+2013-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54577
+	* include/bits/stl_deque.h (erase): Fix signatures in C++11 mode.
+	(_Deque_iterator<>::_M_const_cast): Add.
+	(deque<>::_M_erase): Declare.
+	* include/bits/deque.tcc: ... and define.
+	* include/bits/stl_list.h (erase): Fix signatures in C++11 mode.
+	(_List_const_iterator<>::_M_const_cast): Add.
+	* include/bits/list.tcc (erase (iterator)): Fix.
+	* include/bits/stl_iterator.h (__normal_iterator<>::_M_const_cast):
+	Add; include <ext/cast.h>.
+	* include/bits/stl_vector.h (erase): Fix signatures in C++11 mode.
+	(vector<>::_M_erase): Declare.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/vector.tcc (vector<>::_M_erase): Define.
+	* include/ext/vstring.h (erase): Fix signatures in C++11 mode.
+	* include/debug/deque: Adjust.
+	* include/debug/list: Likewise.
+	* include/debug/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/vector: Likewise.
+	* testsuite/util/exception/safety.h (erase_base<deque>,
+	erase_base<deque>, erase_base<vector>): Remove.
+	(erase_base<__versa_string>): Update.
+	* testsuite/ext/vstring/modifiers/char/54577.cc: New.
+	* testsuite/ext/vstring/modifiers/wchar_t/54577.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/erase/54577.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.8.
