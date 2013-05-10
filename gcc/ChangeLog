@@ -1,3 +1,9 @@
+2013-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57214
+	* tree-ssa-loop-ivcanon.c (propagate_constants_for_unrolling): Do
+	not propagate from SSA names that occur in abnormal PHI nodes.
+
 2013-05-10  Marc Glisse  <marc.glisse@inria.fr>
 
 	* stor-layout.c (element_precision): New function.
