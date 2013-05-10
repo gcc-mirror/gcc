@@ -1,3 +1,7 @@
+2013-05-10  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config/v850/t-rtems: Add more multilibs.
+
 2013-05-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57214
