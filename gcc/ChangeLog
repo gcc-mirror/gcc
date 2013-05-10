@@ -1,3 +1,27 @@
+2013-05-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (m16_uimm3_b, m16_simm4_1, m16_nsimm4_1)
+	(m16_simm5_1, m16_nsimm5_1, m16_uimm5_4, m16_nuimm5_4, m16_simm8_1)
+	(m16_nsimm8_1, m16_uimm8_1, m16_nuimm8_1, m16_uimm8_m1_1, m16_uimm8_4)
+	(m16_nuimm8_4, m16_simm8_8, m16_nsimm8_8): Delete.
+	* config/mips/mips.c (m16_check_op, m16_uimm3_b, m16_simm4_1)
+	(m16_nsimm4_1, m16_simm5_1, m16_nsimm5_1, m16_uimm5_4, m16_nuimm5_4)
+	(m16_simm8_1, m16_nsimm8_1, m16_uimm8_1, m16_nuimm8_1, m16_uimm8_m1_1)
+	(m16_uimm8_4, m16_nuimm8_4, m16_simm8_8, m16_nsimm8_8): Delete.
+	* config/mips/constraints.md (Udb8, Usb5, Usb8, Usd8, Uub8, Uuw5)
+	(Uuw8): New constraints.
+	(Usb4): Move into alphabetical order.
+	* config/mips/predicates.md (db8_operand, sb5_operand, sb8_operand)
+	(sd8_operand, ub8_operand, uw8_operand): New predicates.
+	* config/mips/mips.md (*xor<mode>3, *xor<mode>3_mips16): Name
+	previously unnamed patterns.
+	(*add<mode>3_mips16, *xor<mode>3_mips16, *<optab>si3_mips16)
+	(*ashldi3_mips16, *ashrdi3_mips16, *lshrdi3_mips16)
+	(*slt<u>_<GPR:mode><GPR2:mode>_mips16)
+	(*sle<u>_<GPR:mode><GPR2:mode>_mips16): Use constraints instead
+	of set_attr_alternative/if_then_else.  Use extended_mips16 instead
+	of specific lengths.
+
 2013-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (rotateinv): New code attr.
