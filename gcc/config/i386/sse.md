@@ -7387,7 +7387,6 @@
 }
   [(set_attr "isa" "*,noavx,avx")
    (set_attr "type" "sselog1,sseishft1,sseishft1")
-   (set_attr "memory" "*,none,none")
    (set_attr "prefix_extra" "1,*,*")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex,orig,vex")
@@ -7446,7 +7445,6 @@
   [(set_attr "isa" "x64_sse4,*,sse2_noavx,avx,noavx,*,x64")
    (set_attr "type" "sselog1,ssemov,sseishft1,sseishft1,ssemov,ssemov,imov")
    (set_attr "length_immediate" "1,*,1,1,*,*,*")
-   (set_attr "memory" "*,*,none,none,*,*,*")
    (set_attr "prefix_rex" "1,*,*,*,*,*,*")
    (set_attr "prefix_extra" "1,*,*,*,*,*,*")
    (set_attr "prefix" "maybe_vex,maybe_vex,orig,vex,orig,*,*")
