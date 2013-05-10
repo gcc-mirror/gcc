@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::
-    erase(iterator __position)
+    _M_erase(iterator __position)
     {
       if (__position + 1 != end())
 	_GLIBCXX_MOVE3(__position + 1, end(), __position);
@@ -144,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::
-    erase(iterator __first, iterator __last)
+    _M_erase(iterator __first, iterator __last)
     {
       if (__first != __last)
 	{
@@ -788,6 +788,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 	  this->_M_impl._M_start = iterator(__q, 0);
 	}
+    }
+
+  template<typename _Alloc>
+    typename vector<bool, _Alloc>::iterator
+    vector<bool, _Alloc>::
+    _M_erase(iterator __position)
+    {
+      if (__position + 1 != end())
+        std::copy(__position + 1, end(), __position);
+      --this->_M_impl._M_finish;
+      return __position;
+    }
+
+  template<typename _Alloc>
+    typename vector<bool, _Alloc>::iterator
+    vector<bool, _Alloc>::
+    _M_erase(iterator __first, iterator __last)
+    {
+      if (__first != __last)
+	_M_erase_at_end(std::copy(__last, end(), __first));
+      return __first;
     }
 
 #if __cplusplus >= 201103L

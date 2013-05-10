@@ -1128,7 +1128,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  value of the string doesn't change if an error is thrown.
       */
       iterator
-      erase(iterator __position)
+#if __cplusplus >= 201103L
+      erase(const_iterator __position)
+#else
+      erase(iterator __position)	
+#endif
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__position >= _M_ibegin()
 				 && __position < _M_iend());
@@ -1149,7 +1153,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  is thrown.
       */
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __first, const_iterator __last)
+#else
       erase(iterator __first, iterator __last)
+#endif
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__first >= _M_ibegin() && __first <= __last
 				 && __last <= _M_iend());

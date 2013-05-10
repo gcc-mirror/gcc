@@ -514,7 +514,11 @@ namespace __debug
 	}
 
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __position)
+#else
       erase(iterator __position)
+#endif
       {
 	__glibcxx_check_erase(__position);
 	difference_type __offset = __position.base() - _Base::begin();
@@ -524,7 +528,11 @@ namespace __debug
       }
 
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __first, const_iterator __last)
+#else
       erase(iterator __first, iterator __last)
+#endif
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
@@ -539,7 +547,11 @@ namespace __debug
 	    return iterator(__res, this);
 	  }
 	else
+#if __cplusplus >= 201103L
+	  return iterator(__first.base()._M_const_cast(), this);
+#else
 	  return __first;
+#endif
       }
 
       void
