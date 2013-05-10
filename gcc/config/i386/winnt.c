@@ -476,7 +476,7 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
 	flags |= SECTION_PE_SHARED;
     }
 
-  if (decl && DECL_ONE_ONLY (decl))
+  if (decl && DECL_P (decl) && DECL_ONE_ONLY (decl))
     flags |= SECTION_LINKONCE;
 
   /* See if we already have an entry for this section.  */
