@@ -1,3 +1,8 @@
+2013-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57214
+	* gcc.dg/torture/pr57214.c: New testcase.
+
 2013-05-09  Martin Jambor  <mjambor@suse.cz>
 
         PR middle-end/56988
