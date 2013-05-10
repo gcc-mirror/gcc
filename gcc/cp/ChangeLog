@@ -1,3 +1,11 @@
+2013-05-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55149
+	* semantics.c (add_capture): Error rather than abort on copy
+	capture of VLA.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Don't
+	warn about capture proxy.
+
 2013-05-09  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_finish_decl): Only check VLA bound in C++1y mode.
