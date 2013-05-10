@@ -1,26 +1,13 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-load" } */
 
-#define N 1024
-
-char **ep;
-char **fp;
-
 void
-avx_test (void)
+avx_test (char **cp, char **ep)
 {
   int i;
-  char **ap;
-  char **bp;
-  char **cp;
-
-  ap = ep;
-  bp = fp;
-  for (i = 128; i >= 0; i--)
-    {
-      *ap++ = *cp++;
-      *bp++ = 0;
-    }
+  char **ap = __builtin_assume_aligned (ep, 32);
+  for (i = 128; i > 0; i--)
+    *ap++ = *cp++;
 }
 
 /* { dg-final { scan-assembler-not "avx_loaddqu256" } } */

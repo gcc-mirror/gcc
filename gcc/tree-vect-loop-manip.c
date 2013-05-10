@@ -1555,7 +1555,6 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location, "vect_can_advance_ivs_p:");
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      tree access_fn = NULL;
       tree evolution_part;
 
       phi = gsi_stmt (gsi);
@@ -1588,31 +1587,13 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       /* Analyze the evolution function.  */
 
-      access_fn = instantiate_parameters
-	(loop, analyze_scalar_evolution (loop, PHI_RESULT (phi)));
-
-      if (!access_fn)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "No Access function.");
-	  return false;
-	}
-
-      STRIP_NOPS (access_fn);
-      if (dump_enabled_p ())
-        {
-	  dump_printf_loc (MSG_NOTE, vect_location,
-                           "Access function of PHI: ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, access_fn);
-        }
-
-      evolution_part = evolution_part_in_loop_num (access_fn, loop->num);
-
+      evolution_part
+	= STMT_VINFO_LOOP_PHI_EVOLUTION_PART (vinfo_for_stmt (phi));
       if (evolution_part == NULL_TREE)
         {
 	  if (dump_enabled_p ())
-	    dump_printf (MSG_MISSED_OPTIMIZATION, "No evolution.");
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "No access function or evolution.");
 	  return false;
         }
 

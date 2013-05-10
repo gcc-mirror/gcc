@@ -1,3 +1,14 @@
+2013-05-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Do not
+	disable peeling when we version for aliasing.
+	(vector_alignment_reachable_p): Honor explicit user alignment.
+	(vect_supportable_dr_alignment): Likewise.
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Use
+	STMT_VINFO_LOOP_PHI_EVOLUTION_PART instead of recomputing it.
+	* tree-vect-loop.c (vect_transform_loop): First apply versioning,
+	then peeling to arrange for the cost-model check to come first.
+
 2013-05-10  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac (HAVE_AS_TLS): Swap powerpc64 and powerpc cases.

@@ -1024,7 +1024,8 @@ vector_alignment_reachable_p (struct data_reference *dr)
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
                          "Unknown misalignment, is_packed = %d",is_packed);
-      if (targetm.vectorize.vector_alignment_reachable (type, is_packed))
+      if ((TYPE_USER_ALIGN (type) && !is_packed)
+	  || targetm.vectorize.vector_alignment_reachable (type, is_packed))
 	return true;
       else
 	return false;
@@ -1323,7 +1324,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool stat;
   gimple stmt;
   stmt_vec_info stmt_info;
-  int vect_versioning_for_alias_required;
   unsigned int npeel = 0;
   bool all_misalignments_unknown = true;
   unsigned int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
@@ -1510,15 +1510,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         }
     }
 
-  vect_versioning_for_alias_required
-    = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
-
-  /* Temporarily, if versioning for alias is required, we disable peeling
-     until we support peeling and versioning.  Often peeling for alignment
-     will require peeling for loop-bound, which in turn requires that we
-     know how to adjust the loop ivs after the loop.  */
-  if (vect_versioning_for_alias_required
-      || !vect_can_advance_ivs_p (loop_vinfo)
+  /* Check if we can possibly peel the loop.  */
+  if (!vect_can_advance_ivs_p (loop_vinfo)
       || !slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
     do_peeling = false;
 
@@ -4722,9 +4715,10 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       if (!known_alignment_for_access_p (dr))
 	is_packed = not_size_aligned (DR_REF (dr));
 
-      if (targetm.vectorize.
-	  support_vector_misalignment (mode, type,
-				       DR_MISALIGNMENT (dr), is_packed))
+      if ((TYPE_USER_ALIGN (type) && !is_packed)
+	  || targetm.vectorize.
+	       support_vector_misalignment (mode, type,
+					    DR_MISALIGNMENT (dr), is_packed))
 	/* Can't software pipeline the loads, but can at least do them.  */
 	return dr_unaligned_supported;
     }
@@ -4736,9 +4730,10 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       if (!known_alignment_for_access_p (dr))
 	is_packed = not_size_aligned (DR_REF (dr));
 
-     if (targetm.vectorize.
-         support_vector_misalignment (mode, type,
-				      DR_MISALIGNMENT (dr), is_packed))
+     if ((TYPE_USER_ALIGN (type) && !is_packed)
+	 || targetm.vectorize.
+	      support_vector_misalignment (mode, type,
+					   DR_MISALIGNMENT (dr), is_packed))
        return dr_unaligned_supported;
     }
 
