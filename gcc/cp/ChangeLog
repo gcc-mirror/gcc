@@ -1,5 +1,8 @@
 2013-05-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57047
+	* semantics.c (cxx_fold_indirect_ref): Fix thinko.
+
 	PR c++/55149
 	* semantics.c (add_capture): Error rather than abort on copy
 	capture of VLA.
