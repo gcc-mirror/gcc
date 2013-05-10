@@ -1,3 +1,9 @@
+2013-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (memory): Handle sseishft1.
+	* config/i386/sse.md (*vec_extractv4si): Remove memory attribute.
+	(*vec_extractv2di_1): Ditto.
+
 2013-05-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-assigns.c (find_hard_regno_for): Add 1 to the cost of call
