@@ -1,4 +1,4 @@
-2013-05-10  Sebastian Huber <sebastian.huber@embedded-brains.de>
+2013-05-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/t-rtems-eabi: Remove mthumb/march=armv7 multilib.
 	Add mthumb/march=armv7-a multilib.
