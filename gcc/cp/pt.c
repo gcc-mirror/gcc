@@ -6368,7 +6368,8 @@ convert_template_argument (tree parm,
 	      val = error_mark_node;
 	    }
 	}
-      else if (!uses_template_parms (orig_arg) && !uses_template_parms (t))
+      else if (!dependent_template_arg_p (orig_arg)
+	       && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
