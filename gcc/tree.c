@@ -1643,6 +1643,45 @@ build_one_cst (tree type)
     }
 }
 
+/* Return a constant of arithmetic type TYPE which is the
+   opposite of the multiplicative identity of the set TYPE.  */
+
+tree
+build_minus_one_cst (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
+    case POINTER_TYPE: case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      return build_int_cst (type, -1);
+
+    case REAL_TYPE:
+      return build_real (type, dconstm1);
+
+    case FIXED_POINT_TYPE:
+      /* We can only generate 1 for accum types.  */
+      gcc_assert (ALL_SCALAR_ACCUM_MODE_P (TYPE_MODE (type)));
+      return build_fixed (type, fixed_from_double_int (double_int_minus_one,
+						       TYPE_MODE (type)));
+
+    case VECTOR_TYPE:
+      {
+	tree scalar = build_minus_one_cst (TREE_TYPE (type));
+
+	return build_vector_from_val (type, scalar);
+      }
+
+    case COMPLEX_TYPE:
+      return build_complex (type,
+			    build_minus_one_cst (TREE_TYPE (type)),
+			    build_zero_cst (TREE_TYPE (type)));
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Build 0 constant of type TYPE.  This is used by constructor folding
    and thus the constant should be represented in memory by
    zero(es).  */
@@ -6947,6 +6986,19 @@ valid_constant_size_p (const_tree size)
       || tree_int_cst_sign_bit (size) != 0)
     return false;
   return true;
+}
+
+/* Return the precision of the type, or for a complex or vector type the
+   precision of the type of its elements.  */
+
+unsigned int
+element_precision (const_tree type)
+{
+  enum tree_code code = TREE_CODE (type);
+  if (code == COMPLEX_TYPE || code == VECTOR_TYPE)
+    type = TREE_TYPE (type);
+
+  return TYPE_PRECISION (type);
 }
 
 /* Return true if CODE represents an associative tree code.  Otherwise
