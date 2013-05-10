@@ -1,3 +1,8 @@
+2013-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-common.c (vector_types_convertible_p): No TYPE_PRECISION for
+	vectors.
+
 2013-05-07  Han Shen  <shenhan@google.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Added "__SSP_STRONG__=3".

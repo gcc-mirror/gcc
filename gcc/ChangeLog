@@ -1,3 +1,17 @@
+2013-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* stor-layout.c (element_precision): New function.
+	* machmode.h (element_precision): Declare it.
+	* tree.c (build_minus_one_cst): New function.
+	(element_precision): Likewise.
+	* tree.h (build_minus_one_cst): Declare new function.
+	(element_precision): Likewise.
+	* fold-const.c (operand_equal_p): Use element_precision.
+	(fold_binary_loc): Handle vector types.
+	* convert.c (convert_to_integer): Use element_precision.
+	* gimple.c (iterative_hash_canonical_type): Handle complex and vectors
+	separately.
+
 2013-05-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips-protos.h (m16_uimm3_b, m16_simm4_1, m16_nsimm4_1)

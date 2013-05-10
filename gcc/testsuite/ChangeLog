@@ -1,3 +1,7 @@
+2013-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/vector-shift.c: New testcase.
+
 2013-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/rotate-1.c: Accept rolb or rorb instruction.
