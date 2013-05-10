@@ -1,5 +1,10 @@
 2013-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (rotateinv): New code attr.
+	(*<rotate_insn><mode>3_1, *<rotate_insn>si3_1_zext,
+	*<rotate_insn>qi3_1_slp): Emit rorl %eax instead of
+	roll $31, %eax, etc.
+
 	PR tree-optimization/45216
 	PR tree-optimization/57157
 	* tree-ssa-forwprop.c (simplify_rotate): New function.

@@ -13,4 +13,4 @@ main (void)
   return c;
 }
 
-/* { dg-final { scan-assembler "rolb" } } */
+/* { dg-final { scan-assembler "ro\[lr]b" } } */
