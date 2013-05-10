@@ -1,3 +1,16 @@
+2013-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45216
+	PR tree-optimization/57157
+	* c-c++-common/rotate-1.c: New test.
+	* c-c++-common/rotate-1a.c: New test.
+	* c-c++-common/rotate-2.c: New test.
+	* c-c++-common/rotate-2a.c: New test.
+	* c-c++-common/rotate-3.c: New test.
+	* c-c++-common/rotate-3a.c: New test.
+	* c-c++-common/rotate-4.c: New test.
+	* c-c++-common/rotate-4a.c: New test.
+
 2013-05-10  Richard Biener  <rguenther@suse.de>
 
 	* gcc.target/i386/avx256-unaligned-load-2.c: Make well-defined.

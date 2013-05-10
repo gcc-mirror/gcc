@@ -1,3 +1,10 @@
+2013-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45216
+	PR tree-optimization/57157
+	* tree-ssa-forwprop.c (simplify_rotate): New function.
+	(ssa_forward_propagate_and_combine): Call it.
+
 2013-05-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Do not
