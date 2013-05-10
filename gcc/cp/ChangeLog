@@ -1,3 +1,8 @@
+2013-05-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57047
+	* semantics.c (cxx_fold_indirect_ref): Fix thinko.
+
 2013-05-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57222
