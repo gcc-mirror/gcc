@@ -1448,6 +1448,16 @@
   [(set_attr "type" "flow")
    (set_attr "length" "20,4")])
 
+(define_insn_and_split "save_config"
+  [(set (match_operand:SI 0 "gpr_operand" "=r") (reg:SI CONFIG_REGNUM))
+   (use (reg:SI FP_NEAREST_REGNUM))
+   (use (reg:SI FP_TRUNCATE_REGNUM))
+   (use (reg:SI FP_ANYFP_REGNUM))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 0) (reg:SI CONFIG_REGNUM))])
+
 (define_insn_and_split "set_fp_mode"
   [(set (reg:SI FP_NEAREST_REGNUM)
 	(match_operand:SI 0 "set_fp_mode_operand" "rCfm"))
