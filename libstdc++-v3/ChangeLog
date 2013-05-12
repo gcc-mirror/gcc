@@ -439,7 +439,6 @@
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust links
 	for biblio.maverik_lowerbounds and biblio.nelson96stlpq.
-	Remove direct link to IBM Haifa Research Labs.
 
 	* doc/xml/manual/profile_mode.xml: Adjust two links to acm.org
 	papers.
