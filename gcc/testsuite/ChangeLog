@@ -1,3 +1,9 @@
+2013-05-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/57108
+	* gcc.target/sh/pr57108.c: Move this test case to ...
+	* gcc.c-torture/compile/pr57108.c: ... here.
+
 2013-05-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57214
