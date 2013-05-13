@@ -1,5 +1,8 @@
 2013-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57041
+	* decl.c (reshape_init_class): Handle error_mark_node.
+
 	PR c++/57254
 	* typeck.c (merge_types): Propagate ref-qualifier
 	in METHOD_TYPE case.
