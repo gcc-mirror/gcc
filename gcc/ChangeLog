@@ -1,3 +1,24 @@
+2013-05-13  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/56975
+	* config/i386/cygming.h (TARGET_PECOFF): Define as true.
+	* config/i386/i386.h (TARGET_PECOFF): Define by default
+	as false.
+	(PIC_OFFSET_TABLE_REGNUM): Use TARGET_PECOFF.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Likewise.
+	(ix86_expand_prologue): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise.
+	(legitimate_pic_address_disp_p): Likewise.
+	(legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	(legitimize_pe_coff_symbol): Likewise.
+	(output_pic_addr_const): Likewise.
+	(construct_plt_address): Likewise.
+	(ix86_expand_call): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(x86_function_profiler): Likewise.
+
 2013-05-13  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_simd_mov<mode>): Group
