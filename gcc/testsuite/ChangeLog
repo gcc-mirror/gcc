@@ -1,3 +1,8 @@
+2013-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57264
+	* gcc.target/i386/pr57264.c: New test.
+
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57230
