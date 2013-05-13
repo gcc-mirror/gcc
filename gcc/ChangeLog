@@ -6,7 +6,7 @@
 	Remove CONFIG_REGNUM initial value handling code.
 	(epiphany_optimize_mode_switching): Handle EPIPHANY_MSW_ENTITY_CONFIG.
 	(epiphany_mode_needed, epiphany_mode_entry_exit): Likewise.
-	(emit_set_fp_mode): Likewise.
+	(emit_set_fp_mode, epiphany_mode_after): Likewise.
 	(epiphany_mode_needed) <Handle EPIPHANY_MSW_ENTITY_AND>:
 	Don't return 1 for FP_MODE_NONE.
 	* config/epiphany/epiphany.h (NUM_MODES_FOR_MODE_SWITCHING):

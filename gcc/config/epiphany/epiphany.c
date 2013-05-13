@@ -2328,7 +2328,15 @@ epiphany_mode_needed (int entity, rtx insn)
        just unchanged from the function start.
        Because of the nature of the mode switching optimization,
        a restore will be dominated by a clobber.  */
-    return mode != FP_MODE_NONE && mode != FP_MODE_CALLER ? 1 : 2;
+    if (mode != FP_MODE_NONE && mode != FP_MODE_CALLER)
+      return 1;
+    /* A cpecial case are abnormal edges, which are deemed to clobber
+       the mode as well.  We need to pin this effect on a actually
+       dominating insn, and one where the frame can be accessed, too, in
+       case the pseudo used to save CONFIG doesn't get a hard register.  */
+    if (CALL_P (insn) && find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+      return 1;
+    return 2;
   case EPIPHANY_MSW_ENTITY_ROUND_KNOWN:
     if (recog_memoized (insn) == CODE_FOR_set_fp_mode)
       mode = (enum attr_fp_mode) epiphany_mode_after (entity, mode, insn);
@@ -2401,6 +2409,18 @@ epiphany_mode_after (int entity, int last_mode, rtx insn)
       if (CALL_P (insn))
 	return 0;
       return last_mode;
+    }
+  /* If there is an abnormal edge, we don't want the config register to
+     be 'saved' again at the destination.
+     The frame pointer adjustment is inside a PARALLEL because of the
+     flags clobber.  */
+  if (entity == EPIPHANY_MSW_ENTITY_CONFIG && NONJUMP_INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == PARALLEL
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET
+      && SET_DEST (XVECEXP (PATTERN (insn), 0, 0)) == frame_pointer_rtx)
+    {
+      gcc_assert (cfun->has_nonlocal_label);
+      return 1;
     }
   if (recog_memoized (insn) < 0)
     return last_mode;
