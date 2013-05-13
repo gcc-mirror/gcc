@@ -1,3 +1,10 @@
+2013-05-13  Jan Hubicka  <jh@suse.cz>
+
+	* mode-switching.c (optimize_mode_switching): Set correct RTL profile.
+	* config/i386/i386.c (ix86_compute_frame_layout,
+	ix86_expand_epilogue, emit_i387_cw_initialization, ix86_expand_vector_move_misalign,
+	ix86_fp_comparison_strategy, ix86_local_alignment): Fix use of size/speed predicates.
+
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45216
