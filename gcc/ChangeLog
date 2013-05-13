@@ -1,6 +1,10 @@
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57230
+	* tree-ssa-strlen.c (handle_char_store): Record length for
+	array store from STRING_CST.
+
+	PR tree-optimization/57230
 	* tree-ssa-strlen.c (handle_char_store): Add missing integer_zerop
 	check.
 

@@ -1,6 +1,9 @@
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57230
+	* gcc.dg/strlenopt-24.c: New test.
+
+	PR tree-optimization/57230
 	* gcc.dg/strlenopt-23.c: New test.
 
 2013-05-12  Oleg Endo  <olegendo@gcc.gnu.org>
