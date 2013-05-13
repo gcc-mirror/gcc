@@ -1,3 +1,8 @@
+2013-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57252
+	* decl.c (decls_match): Compare ref-qualifiers.
+
 2013-05-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57196
