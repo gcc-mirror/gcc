@@ -1,7 +1,7 @@
 /* Check rotate pattern detection.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times "r\[<>]\[<>]" 64 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "r\[<>]\[<>]" 96 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 
 unsigned int
@@ -386,4 +386,196 @@ unsigned char
 f64 (unsigned char x, unsigned long int y)
 {
   return (x << (__CHAR_BIT__ * sizeof (unsigned char) - y)) ^ (x >> y);
+}
+
+unsigned int
+f65 (unsigned int x, unsigned int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * __SIZEOF_INT__ - y));
+}
+
+unsigned int
+f66 (unsigned int x, unsigned long int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * __SIZEOF_INT__ - y));
+}
+
+unsigned int
+f67 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << 1) + (x >> (__CHAR_BIT__ * __SIZEOF_INT__ - 1));
+}
+
+unsigned int
+f68 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << (__CHAR_BIT__ * __SIZEOF_INT__ - 1)) + (x >> 1);
+}
+
+unsigned short int
+f69 (unsigned short int x, unsigned int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * __SIZEOF_SHORT__ - y));
+}
+
+unsigned short int
+f70 (unsigned short int x, unsigned long int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * __SIZEOF_SHORT__ - y));
+}
+
+unsigned char
+f71 (unsigned char x, unsigned int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ - y));
+}
+
+unsigned char
+f72 (unsigned char x, unsigned long int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ - y));
+}
+
+unsigned int
+f73 (unsigned int x, unsigned int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * sizeof (unsigned int) - y));
+}
+
+unsigned int
+f74 (unsigned int x, unsigned long int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * sizeof (unsigned int) - y));
+}
+
+unsigned int
+f75 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << 1) + (x >> (__CHAR_BIT__ * sizeof (unsigned int) - 1));
+}
+
+unsigned int
+f76 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned int) - 1)) + (x >> 1);
+}
+
+unsigned short int
+f77 (unsigned short int x, unsigned int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * sizeof (unsigned short) - y));
+}
+
+unsigned short int
+f78 (unsigned short int x, unsigned long int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * sizeof (unsigned short) - y));
+}
+
+unsigned char
+f79 (unsigned char x, unsigned int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * sizeof (unsigned char) - y));
+}
+
+unsigned char
+f80 (unsigned char x, unsigned long int y)
+{
+  return (x << y) + (x >> (__CHAR_BIT__ * sizeof (unsigned char) - y));
+}
+
+unsigned int
+f81 (unsigned int x, unsigned int y)
+{
+  return (x << (__CHAR_BIT__ * __SIZEOF_INT__ - y)) + (x >> y);
+}
+
+unsigned int
+f82 (unsigned int x, unsigned long int y)
+{
+  return (x << (__CHAR_BIT__ * __SIZEOF_INT__ - y)) + (x >> y);
+}
+
+unsigned int
+f83 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << (__CHAR_BIT__ * __SIZEOF_INT__ - 1)) + (x >> 1);
+}
+
+unsigned int
+f84 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << 1) + (x >> (__CHAR_BIT__ * __SIZEOF_INT__ - 1));
+}
+
+unsigned short int
+f85 (unsigned short int x, unsigned int y)
+{
+  return (x << (__CHAR_BIT__ * __SIZEOF_SHORT__ - y)) + (x >> y);
+}
+
+unsigned short int
+f86 (unsigned short int x, unsigned long int y)
+{
+  return (x << (__CHAR_BIT__ * __SIZEOF_SHORT__ - y)) + (x >> y);
+}
+
+unsigned char
+f87 (unsigned char x, unsigned int y)
+{
+  return (x << (__CHAR_BIT__ - y)) + (x >> y);
+}
+
+unsigned char
+f88 (unsigned char x, unsigned long int y)
+{
+  return (x << (__CHAR_BIT__ - y)) + (x >> y);
+}
+
+unsigned int
+f89 (unsigned int x, unsigned int y)
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned int) - y)) + (x >> y);
+}
+
+unsigned int
+f90 (unsigned int x, unsigned long int y)
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned int) - y)) + (x >> y);
+}
+
+unsigned int
+f91 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned int) - 1)) + (x >> 1);
+}
+
+unsigned int
+f92 (unsigned int x, int y __attribute__((unused)))
+{
+  return (x << 1) + (x >> (__CHAR_BIT__ * sizeof (unsigned int) - 1));
+}
+
+unsigned short int
+f93 (unsigned short int x, unsigned int y)
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned short) - y)) + (x >> y);
+}
+
+unsigned short int
+f94 (unsigned short int x, unsigned long int y)
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned short) - y)) + (x >> y);
+}
+
+unsigned char
+f95 (unsigned char x, unsigned int y)
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned char) - y)) + (x >> y);
+}
+
+unsigned char
+f96 (unsigned char x, unsigned long int y)
+{
+  return (x << (__CHAR_BIT__ * sizeof (unsigned char) - y)) + (x >> y);
 }

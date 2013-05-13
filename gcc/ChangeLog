@@ -1,3 +1,13 @@
+2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45216
+	PR tree-optimization/57157
+	* tree-ssa-forwprop.c (simplify_rotate): Only recognize
+	the (-Y) & (B - 1) variant if OP is |.
+	* expmed.c (expand_shift_1): For rotations by const0_rtx just
+	return shifted.  Use (-op1) & (prec - 1) as other_amount
+	instead of prec - op1.
+
 2013-05-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42371

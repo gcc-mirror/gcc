@@ -1,3 +1,18 @@
+2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45216
+	PR tree-optimization/57157
+	* c-c++-common/rotate-1.c: Add 32 tests with +.
+	* c-c++-common/rotate-1a.c: Adjust.
+	* c-c++-common/rotate-2.c: Add 32 tests with +, expect
+	only 48 rotates.
+	* c-c++-common/rotate-2b.c: New test.
+	* c-c++-common/rotate-3.c: Add 32 tests with +.
+	* c-c++-common/rotate-4.c: Add 32 tests with +, expect
+	only 48 rotates.
+	* c-c++-common/rotate-4b.c: New test.
+	* c-c++-common/rotate-5.c: New test.
+
 2013-05-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42371
