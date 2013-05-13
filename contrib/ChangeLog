@@ -1,3 +1,8 @@
+2013-05-13  Mike Stump  <mikestump@comcast.net>
+
+	* compare_tests: Limit lines to 2000 characters as comm on Mac OS
+	X 10.8.3 doesn't like long lines (those 2055 characters or more).
+
 2013-04-22  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config-list.mk (LIST): Add aarch64-elf and aarch64-linux-gnu.
