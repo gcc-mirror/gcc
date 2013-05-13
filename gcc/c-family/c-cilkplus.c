@@ -390,6 +390,9 @@ c_finish_cilk_simd_loop (location_t loc,
 tree
 c_finish_cilk_clauses (tree clauses)
 {
+  /* FIXME: Should we do some minimal type checking of the clauses
+     here, or at the minimum gcc_asserts?  */
+
   /* FIXME: Must validate reduction clauses too.  Right now we're
      ignoring them.  */
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))

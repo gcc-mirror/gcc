@@ -1860,7 +1860,6 @@ extern void protected_set_expr_location (tree, location_t);
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
 					      OMP_CLAUSE_MAP), 0)
-
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
   != UNKNOWN_LOCATION)
