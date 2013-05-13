@@ -1,3 +1,8 @@
+2013-05-13  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (processor_target_table): Modified default 
+	alignment values for AMD BD and BT architectures.
+
 2013-05-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-vect-generic.c (uniform_vector_p): Move ...
