@@ -852,6 +852,7 @@ merge_types (tree t1, tree t2)
 	tree raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
 						  TYPE_RAISES_EXCEPTIONS (t2),
 						  NULL_TREE);
+	cp_ref_qualifier rqual = type_memfn_rqual (t1);
 	tree t3;
 
 	/* If this was a member function type, get back to the
@@ -865,6 +866,7 @@ merge_types (tree t1, tree t2)
 	t3 = build_method_type_directly (basetype, TREE_TYPE (t3),
 					 TYPE_ARG_TYPES (t3));
 	t1 = build_exception_variant (t3, raises);
+	t1 = build_ref_qualified_type (t1, rqual);
 	break;
       }
 
