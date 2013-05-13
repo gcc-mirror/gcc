@@ -1,5 +1,9 @@
 2013-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57253
+	* decl.c (grokdeclarator): Apply ref-qualifier
+	in the TYPENAME case.
+
 	PR c++/57252
 	* decl.c (decls_match): Compare ref-qualifiers.
 
