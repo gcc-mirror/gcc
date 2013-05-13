@@ -1409,7 +1409,14 @@ cgraph_remove_node (struct cgraph_node *node)
 void
 cgraph_mark_address_taken_node (struct cgraph_node *node)
 {
-  gcc_assert (!node->global.inlined_to);
+  /* Indirect inlining can figure out that all uses of the address are
+     inlined.  */
+  if (node->global.inlined_to)
+    {
+      gcc_assert (cfun->after_inlining);
+      gcc_assert (node->callers->indirect_inlining_edge);
+      return;
+    }
   /* FIXME: address_taken flag is used both as a shortcut for testing whether
      IPA_REF_ADDR reference exists (and thus it should be set on node
      representing alias we take address of) and as a test whether address

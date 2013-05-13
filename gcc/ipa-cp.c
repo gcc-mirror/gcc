@@ -2276,8 +2276,36 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 					       aggvals);
       if (target)
 	{
-	  ipa_make_edge_direct_to_target (ie, target);
+	  struct cgraph_edge *cs = ipa_make_edge_direct_to_target (ie, target);
 	  found = true;
+
+	  if (cs && !ie->indirect_info->agg_contents
+	      && !ie->indirect_info->polymorphic)
+	    {
+	      struct ipa_node_params *info = IPA_NODE_REF (node);
+	      int param_index = ie->indirect_info->param_index;
+	      int c = ipa_get_controlled_uses (info, param_index);
+	      if (c != IPA_UNDESCRIBED_USE)
+		{
+		  struct ipa_ref *to_del;
+
+		  c--;
+		  ipa_set_controlled_uses (info, param_index, c);
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "     controlled uses count of param "
+			     "%i bumped down to %i\n", param_index, c);
+		  if (c == 0
+		      && (to_del = ipa_find_reference ((symtab_node) node,
+						       (symtab_node) cs->callee,
+						       NULL)))
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "       and even removing its "
+				 "cloning-created reference\n");
+		      ipa_remove_reference (to_del);
+		    }
+		}
+	    }
 	}
     }
   /* Turning calls to direct calls will improve overall summary.  */

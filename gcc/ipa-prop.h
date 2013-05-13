@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 /* The following definitions and interfaces are used by
    interprocedural analyses or parameters.  */
 
+#define IPA_UNDESCRIBED_USE -1
+
 /* ipa-prop.c stuff (ipa-cp, indirect inlining):  */
 
 /* A jump function for a callsite represents the values passed as actual
@@ -82,6 +84,17 @@ struct GTY(()) ipa_known_type_data
   tree base_type;
   /* Type of the component of the object that is being described.  */
   tree component_type;
+};
+
+struct ipa_cst_ref_desc;
+
+/* Structure holding data required to describe a constant jump function.  */
+struct GTY(()) ipa_constant_data
+{
+  /* THe value of the constant.  */
+  tree value;
+  /* Pointer to the structure that describes the reference.  */
+  struct ipa_cst_ref_desc GTY((skip)) *rdesc;
 };
 
 /* Structure holding data required to describe a pass-through jump function.  */
@@ -172,7 +185,7 @@ typedef struct GTY (()) ipa_jump_func
   union jump_func_value
   {
     struct ipa_known_type_data GTY ((tag ("IPA_JF_KNOWN_TYPE"))) known_type;
-    tree GTY ((tag ("IPA_JF_CONST"))) constant;
+    struct ipa_constant_data GTY ((tag ("IPA_JF_CONST"))) constant;
     struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
     struct ipa_ancestor_jf_data GTY ((tag ("IPA_JF_ANCESTOR"))) ancestor;
   } GTY ((desc ("%1.type"))) value;
@@ -213,7 +226,14 @@ static inline tree
 ipa_get_jf_constant (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_CONST);
-  return jfunc->value.constant;
+  return jfunc->value.constant.value;
+}
+
+static inline struct ipa_cst_ref_desc *
+ipa_get_jf_constant_rdesc (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_CONST);
+  return jfunc->value.constant.rdesc;
 }
 
 /* Return the operand of a pass through jmp function JFUNC.  */
@@ -296,6 +316,10 @@ struct ipa_param_descriptor
 {
   /* PARAM_DECL of this parameter.  */
   tree decl;
+  /* If all uses of the parameter are described by ipa-prop structures, this
+     says how many there are.  If any use could not be described by means of
+     ipa-prop structures, this is IPA_UNDESCRIBED_USE.  */
+  int controlled_uses;
   /* The parameter is used.  */
   unsigned used : 1;
 };
@@ -363,6 +387,23 @@ static inline void
 ipa_set_param_used (struct ipa_node_params *info, int i, bool val)
 {
   info->descriptors[i].used = val;
+}
+
+/* Return how many uses described by ipa-prop a parameter has or
+   IPA_UNDESCRIBED_USE if there is a use that is not described by these
+   structures.  */
+static inline int
+ipa_get_controlled_uses (struct ipa_node_params *info, int i)
+{
+  return info->descriptors[i].controlled_uses;
+}
+
+/* Set the controlled counter of a given parameter.  */
+
+static inline void
+ipa_set_controlled_uses (struct ipa_node_params *info, int i, int val)
+{
+  info->descriptors[i].controlled_uses = val;
 }
 
 /* Return the used flag corresponding to the Ith formal parameter of the
