@@ -181,6 +181,8 @@ epiphany_init (void)
     = { &pass_split_all_insns.pass, "mode_sw",
 	1, PASS_POS_INSERT_AFTER
       };
+  static const int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
+#define N_ENTITIES ARRAY_SIZE (num_modes)
 
   epiphany_init_reg_tables ();
 
@@ -196,6 +198,8 @@ epiphany_init (void)
   register_pass (&mode_sw3_info);
   register_pass (&insert_use_info);
   register_pass (&mode_sw2_info);
+  /* Verify that NUM_MODES_FOR_MODE_SWITCHING has one value per entity.  */
+  gcc_assert (N_ENTITIES == EPIPHANY_MSW_ENTITY_NUM);
 
 #if 1 /* As long as peep2_rescan is not implemented,
          (see http://gcc.gnu.org/ml/gcc-patches/2011-10/msg02819.html,)
@@ -1751,44 +1755,6 @@ epiphany_expand_prologue (void)
 	}
       frame_insn (gen_stack_adjust_add (off, mem));
     }
-
-  /* Mode switching uses get_hard_reg_initial_val after
-      emit_initial_value_sets, so we have to fix this up now.  */
-  save_config = has_hard_reg_initial_val (SImode, CONFIG_REGNUM);
-  if (save_config)
-    {
-      if (REG_P (save_config))
-	{
-	  if (REGNO (save_config) >= FIRST_PSEUDO_REGISTER)
-	    gcc_assert (!df_regs_ever_live_p (REGNO (save_config)));
-	  else
-	    frame_move_insn (save_config,
-			     get_hard_reg_initial_reg (save_config));
-	}
-      else
-	{
-	  rtx save_dst = save_config;
-
-	  reg = gen_rtx_REG (SImode, GPR_IP);
-	  gcc_assert (MEM_P (save_dst));
-	  if (!memory_operand (save_dst, SImode))
-	    {
-	      rtx addr = XEXP (save_dst, 0);
-	      rtx reg2 = gen_rtx_REG (SImode, GPR_16);
-
-	      gcc_assert (GET_CODE (addr) == PLUS);
-	      gcc_assert (XEXP (addr, 0) == hard_frame_pointer_rtx
-			  || XEXP (addr, 0) == stack_pointer_rtx);
-	      emit_move_insn (reg2, XEXP (addr, 1));
-	      save_dst
-		= replace_equiv_address (save_dst,
-					 gen_rtx_PLUS (Pmode, XEXP (addr, 0),
-						       reg2));
-	    }
-	  emit_move_insn (reg, get_hard_reg_initial_reg (save_config));
-	  emit_move_insn (save_dst, reg);
-	}
-    }
 }
 
 void
@@ -2249,6 +2215,7 @@ epiphany_optimize_mode_switching (int entity)
     {
     case EPIPHANY_MSW_ENTITY_AND:
     case EPIPHANY_MSW_ENTITY_OR:
+    case EPIPHANY_MSW_ENTITY_CONFIG:
       return true;
     case EPIPHANY_MSW_ENTITY_NEAREST:
     case EPIPHANY_MSW_ENTITY_TRUNC:
@@ -2267,7 +2234,8 @@ epiphany_optimize_mode_switching (int entity)
 int
 epiphany_mode_priority_to_mode (int entity, unsigned priority)
 {
-  if (entity == EPIPHANY_MSW_ENTITY_AND || entity == EPIPHANY_MSW_ENTITY_OR)
+  if (entity == EPIPHANY_MSW_ENTITY_AND || entity == EPIPHANY_MSW_ENTITY_OR
+      || entity== EPIPHANY_MSW_ENTITY_CONFIG)
     return priority;
   if (priority > 3)
     switch (priority)
@@ -2319,7 +2287,8 @@ epiphany_mode_needed (int entity, rtx insn)
   if (recog_memoized (insn) < 0)
     {
       if (entity == EPIPHANY_MSW_ENTITY_AND
-	  || entity == EPIPHANY_MSW_ENTITY_OR)
+	  || entity == EPIPHANY_MSW_ENTITY_OR
+	  || entity == EPIPHANY_MSW_ENTITY_CONFIG)
 	return 2;
       return FP_MODE_NONE;
     }
@@ -2328,9 +2297,24 @@ epiphany_mode_needed (int entity, rtx insn)
   switch (entity)
   {
   case EPIPHANY_MSW_ENTITY_AND:
-    return mode != FP_MODE_INT ? 1 : 2;
+    return mode != FP_MODE_NONE && mode != FP_MODE_INT ? 1 : 2;
   case EPIPHANY_MSW_ENTITY_OR:
     return mode == FP_MODE_INT ? 1 : 2;
+  case EPIPHANY_MSW_ENTITY_CONFIG:
+    /* We must know/save config before we set it to something else.
+       Where we need the original value, we are fine with having it
+       just unchanged from the function start.
+       Because of the nature of the mode switching optimization,
+       a restore will be dominated by a clobber.  */
+    if (mode != FP_MODE_NONE && mode != FP_MODE_CALLER)
+      return 1;
+    /* A cpecial case are abnormal edges, which are deemed to clobber
+       the mode as well.  We need to pin this effect on a actually
+       dominating insn, and one where the frame can be accessed, too, in
+       case the pseudo used to save CONFIG doesn't get a hard register.  */
+    if (CALL_P (insn) && find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+      return 1;
+    return 2;
   case EPIPHANY_MSW_ENTITY_ROUND_KNOWN:
     if (recog_memoized (insn) == CODE_FOR_set_fp_mode)
       mode = (enum attr_fp_mode) epiphany_mode_after (entity, mode, insn);
@@ -2374,6 +2358,10 @@ epiphany_mode_entry_exit (int entity, bool exit)
       if (exit)
 	return normal_mode == FP_MODE_INT ? 1 : 2;
       return 0;
+    case EPIPHANY_MSW_ENTITY_CONFIG:
+      if (exit)
+	return 2;
+      return normal_mode == FP_MODE_CALLER ? 0 : 1;
     case EPIPHANY_MSW_ENTITY_ROUND_UNKNOWN:
       if (normal_mode == FP_MODE_ROUND_NEAREST
 	  || normal_mode == FP_MODE_ROUND_TRUNC)
@@ -2399,6 +2387,18 @@ epiphany_mode_after (int entity, int last_mode, rtx insn)
       if (GET_CODE (insn) == CALL_INSN)
 	return 0;
       return last_mode;
+    }
+  /* If there is an abnormal edge, we don't want the config register to
+     be 'saved' again at the destination.
+     The frame pointer adjustment is inside a PARALLEL because of the
+     flags clobber.  */
+  if (entity == EPIPHANY_MSW_ENTITY_CONFIG && NONJUMP_INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == PARALLEL
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET
+      && SET_DEST (XVECEXP (PATTERN (insn), 0, 0)) == frame_pointer_rtx)
+    {
+      gcc_assert (cfun->has_nonlocal_label);
+      return 1;
     }
   if (recog_memoized (insn) < 0)
     return last_mode;
@@ -2453,12 +2453,25 @@ emit_set_fp_mode (int entity, int mode, HARD_REG_SET regs_live ATTRIBUTE_UNUSED)
 	emit_move_insn (MACHINE_FUNCTION (cfun)->or_mask, GEN_INT(0x00080000));
       return;
     }
+  else if (entity == EPIPHANY_MSW_ENTITY_CONFIG)
+    {
+      /* Mode switching optimization is done after emit_initial_value_sets,
+	 so we have to take care of CONFIG_REGNUM here.  */
+      gcc_assert (mode >= 0 && mode <= 2);
+      rtx save = get_hard_reg_initial_val (SImode, CONFIG_REGNUM);
+      if (mode == 1)
+	emit_insn (gen_save_config (save));
+      return;
+    }
   fp_mode = (enum attr_fp_mode) mode;
   src = NULL_RTX;
 
   switch (fp_mode)
     {
       case FP_MODE_CALLER:
+	/* The EPIPHANY_MSW_ENTITY_CONFIG processing must come later
+	   so that the config save gets inserted before the first use.  */
+	gcc_assert (entity > EPIPHANY_MSW_ENTITY_CONFIG);
 	src = get_hard_reg_initial_val (SImode, CONFIG_REGNUM);
 	mask = MACHINE_FUNCTION (cfun)->and_mask;
 	break;
