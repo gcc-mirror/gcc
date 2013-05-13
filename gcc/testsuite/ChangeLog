@@ -1,3 +1,7 @@
+2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vector-shift-2.c: Add -O to dg-options.
+
 2013-05-13  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* gcc.dg/tree-ssa/forwprop-26.c: Add -fno-short-enums
