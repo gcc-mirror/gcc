@@ -1,3 +1,8 @@
+2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/declare-simd-1.c: New test.
+	* gcc.dg/gomp/declare-simd-2.c: New test.
+
 2013-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/declare-simd-1.C: New test.

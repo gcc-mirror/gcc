@@ -10670,6 +10670,7 @@ c_finish_omp_clauses (tree clauses)
   bitmap_head aligned_head;
   tree c, t, *pc = &clauses;
   const char *name;
+  bool branch_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -10773,6 +10774,17 @@ c_finish_omp_clauses (tree clauses)
 			"linear clause applied to non-integral non-pointer");
 	      remove = true;
 	      break;
+	    }
+	  if (TREE_CODE (TREE_TYPE (OMP_CLAUSE_DECL (c))) == POINTER_TYPE)
+	    {
+	      tree s = OMP_CLAUSE_LINEAR_STEP (c);
+	      s = pointer_int_sum (OMP_CLAUSE_LOCATION (c), PLUS_EXPR,
+				   OMP_CLAUSE_DECL (c), s);
+	      s = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MINUS_EXPR,
+				   sizetype, s, OMP_CLAUSE_DECL (c));
+	      if (s == error_mark_node)
+		s = size_one_node;
+	      OMP_CLAUSE_LINEAR_STEP (c) = s;
 	    }
 	  goto check_dup_generic;
 
@@ -10919,13 +10931,25 @@ c_finish_omp_clauses (tree clauses)
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
-	case OMP_CLAUSE_INBRANCH:
-	case OMP_CLAUSE_NOTINBRANCH:
 	case OMP_CLAUSE_PARALLEL:
 	case OMP_CLAUSE_FOR:
 	case OMP_CLAUSE_SECTIONS:
 	case OMP_CLAUSE_TASKGROUP:
 	case OMP_CLAUSE_PROC_BIND:
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_INBRANCH:
+	case OMP_CLAUSE_NOTINBRANCH:
+	  if (branch_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<inbranch%> clause is incompatible with "
+			"%<notinbranch%>");
+	      remove = true;
+	      break;
+	    }
+	  branch_seen = true;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -10985,6 +11009,93 @@ c_finish_omp_clauses (tree clauses)
 
   bitmap_obstack_release (NULL);
   return clauses;
+}
+
+/* Finalize #pragma omp declare simd clauses after FNDECL has been parsed,
+   and put that into "omp declare simd" attribute.  */
+
+void
+c_finish_omp_declare_simd (tree fndecl, tree parms, vec<tree> clauses)
+{
+  tree cl;
+  int i;
+
+  if (clauses[0] == error_mark_node)
+    return;
+  if (fndecl == NULL_TREE || TREE_CODE (fndecl) != FUNCTION_DECL)
+    {
+      error ("%<#pragma omp declare simd%> not immediately followed by "
+	     "a function declaration or definition");
+      clauses[0] = error_mark_node;
+      return;
+    }
+  if (clauses[0] == integer_zero_node)
+    {
+      error_at (DECL_SOURCE_LOCATION (fndecl),
+		"%<#pragma omp declare simd%> not immediately followed by "
+		"a single function declaration or definition");
+      clauses[0] = error_mark_node;
+      return;
+    }
+
+  if (parms == NULL_TREE)
+    parms = DECL_ARGUMENTS (fndecl);
+
+  FOR_EACH_VEC_ELT (clauses, i, cl)
+    {
+      tree c, *pc, decl, name;
+      for (pc = &cl, c = cl; c; c = *pc)
+	{
+	  bool remove = false;
+	  switch (OMP_CLAUSE_CODE (c))
+	    {
+	    case OMP_CLAUSE_UNIFORM:
+	    case OMP_CLAUSE_LINEAR:
+	    case OMP_CLAUSE_ALIGNED:
+	    case OMP_CLAUSE_REDUCTION:
+	      name = OMP_CLAUSE_DECL (c);
+	      if (name == error_mark_node)
+		remove = true;
+	      else
+		{
+		  for (decl = parms; decl; decl = TREE_CHAIN (decl))
+		    if (DECL_NAME (decl) == name)
+		      break;
+		  if (decl == NULL_TREE)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%qE is not a function parameter", name);
+		      remove = true;
+		    }
+		  else
+		    OMP_CLAUSE_DECL (c) = decl;
+		}
+	      break;
+	    default:
+	      break;
+	    }
+	  if (remove)
+	    *pc = OMP_CLAUSE_CHAIN (c);
+	  else
+	    pc = &OMP_CLAUSE_CHAIN (c);
+	}
+      cl = c_finish_omp_clauses (cl);
+      tree saved_arguments = DECL_ARGUMENTS (fndecl);
+      DECL_ARGUMENTS (fndecl) = parms;
+      cl = c_omp_declare_simd_clauses_to_numbers (fndecl, cl);
+      DECL_ARGUMENTS (fndecl) = saved_arguments;
+      for (c = lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (fndecl));
+	   c; c = lookup_attribute ("omp declare simd", TREE_CHAIN (c)))
+	if (omp_declare_simd_clauses_equal (TREE_VALUE (c), cl))
+	  break;
+      if (c)
+	continue;
+      c = build_tree_list (get_identifier ("omp declare simd"), cl);
+      TREE_CHAIN (c) = DECL_ATTRIBUTES (fndecl);
+      DECL_ATTRIBUTES (fndecl) = c;
+    }
+
+  clauses[0] = integer_zero_node;
 }
 
 /* Create a transaction node.  */

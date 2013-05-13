@@ -1,3 +1,43 @@
+2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-tree.h (c_finish_omp_declare_simd): New prototype.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_LINEAR_STEP
+	adjustments for pointer-types here.  Diagnose inbranch notinbranch
+	being used together.
+	(c_finish_omp_declare_simd): New function.
+	* c-parser.c (enum pragma_context): Add pragma_struct and
+	pragma_param.
+	(c_parser_declaration_or_fndef): Add omp_declare_simd_clauses
+	argument.  Call c_finish_omp_declare_simd if needed.
+	(c_parser_external_declaration, c_parser_compound_statement_nostart,
+	c_parser_label, c_parser_for_statement, c_parser_objc_methodprotolist,
+	c_parser_omp_for_loop): Adjust c_parser_declaration_or_fndef callers.
+	(c_parser_struct_or_union_specifier): Use pragma_struct instead of
+	pragma_external.
+	(c_parser_parameter_declaration): Use pragma_param instead of
+	pragma_external.
+	(c_parser_pragma): Handle PRAGMA_OMP_DECLARE_REDUCTION.
+	Replace == pragma_external with != pragma_stmt && != pragma_compound
+	test.
+	(c_parser_omp_variable_list): Add declare_simd argument.  Don't lookup
+	vars if it is true, just store identifiers.
+	(c_parser_omp_var_list_parens, c_parser_omp_clause_depend,
+	c_parser_omp_clause_map): Adjust callers.
+	(c_parser_omp_clause_reduction, c_parser_omp_clause_aligned): Add
+	declare_simd argument, pass it through to c_parser_omp_variable_list.
+	(c_parser_omp_clause_linear): Likewise.  Don't handle
+	OMP_CLAUSE_LINEAR_STEP adjustements for pointer-types here.
+	(c_parser_omp_clause_uniform): Call c_parser_omp_variable_list
+	instead of c_parser_omp_var_list_parens to pass true as declare_simd.
+	(c_parser_omp_all_clauses): Add declare_simd argument, pass it through
+	clause parsing routines as needed.  Don't call c_finish_omp_clauses if
+	set.
+	(c_parser_omp_simd, c_parser_omp_for, c_parser_omp_sections,
+	c_parser_omp_parallel, c_parser_omp_single, c_parser_omp_task,
+	c_parser_omp_cancel, c_parser_omp_cancellation_point): Adjust callers.
+	(OMP_DECLARE_SIMD_CLAUSE_MASK): Define.
+	(c_parser_omp_declare_simd, c_parser_omp_declare): New functions.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_atomic): Parse seq_cst clause, pass
