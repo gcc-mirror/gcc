@@ -1,3 +1,8 @@
+2013-05-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ada/57188
+	* gcc-interface/Makefile.in: Allow for amd64 solaris2.
+
 2013-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/56474
