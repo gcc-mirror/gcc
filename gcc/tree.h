@@ -5291,6 +5291,11 @@ extern tree first_field (const_tree);
 
 extern bool initializer_zerop (const_tree);
 
+/* Given a vector VEC, return its first element if all elements are
+   the same.  Otherwise return NULL_TREE.  */
+
+extern tree uniform_vector_p (const_tree);
+
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 
 extern vec<tree, va_gc> *ctor_to_vec (tree);

@@ -12409,6 +12409,12 @@ fold_binary_loc (location_t loc,
       if (integer_zerop (arg0))
 	return omit_one_operand_loc (loc, type, arg0, arg1);
 
+      /* Prefer vector1 << scalar to vector1 << vector2
+	 if vector2 is uniform.  */
+      if (VECTOR_TYPE_P (TREE_TYPE (arg1))
+	  && (tem = uniform_vector_p (arg1)) != NULL_TREE)
+	return fold_build2_loc (loc, code, type, op0, tem);
+
       /* Since negative shift count is not well-defined,
 	 don't try to compute it in the compiler.  */
       if (TREE_CODE (arg1) == INTEGER_CST && tree_int_cst_sgn (arg1) < 0)

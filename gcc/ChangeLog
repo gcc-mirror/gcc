@@ -1,3 +1,11 @@
+2013-05-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-vect-generic.c (uniform_vector_p): Move ...
+	* tree.c (uniform_vector_p): ... here.
+	* tree.h (uniform_vector_p): Declare it.
+	* fold-const.c (fold_binary_loc) <shift>: Turn the second argument
+	into a scalar.
+
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57230
