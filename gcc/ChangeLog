@@ -1,3 +1,14 @@
+2013-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57264
+	Backport from mainline
+	2013-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55686
+	* config/i386/i386.md (UNSPEC_STOS): New.
+	(strset_singleop, *strsetdi_rex_1, *strsetsi_1, *strsethi_1,
+	*strsetqi_1): Add UNSPEC_STOS.
+
 2013-05-10  Joey Ye  <joey.ye@arm.com>
 
 	Backport from mainline
