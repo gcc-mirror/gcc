@@ -150,6 +150,10 @@
   (and (match_code "const_int")
        (match_test "mips_unsigned_immediate_p (INTVAL (op) + 1, 7, 0)")))
 
+(define_predicate "db8_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op) + 1, 8, 0)")))
+
 (define_predicate "ib3_operand"
   (and (match_code "const_int")
        (match_test "mips_unsigned_immediate_p (INTVAL (op) - 1, 3, 0)")))
@@ -158,9 +162,25 @@
   (and (match_code "const_int")
        (match_test "mips_signed_immediate_p (INTVAL (op), 4, 0)")))
 
+(define_predicate "sb5_operand"
+  (and (match_code "const_int")
+       (match_test "mips_signed_immediate_p (INTVAL (op), 5, 0)")))
+
+(define_predicate "sb8_operand"
+  (and (match_code "const_int")
+       (match_test "mips_signed_immediate_p (INTVAL (op), 8, 0)")))
+
+(define_predicate "sd8_operand"
+  (and (match_code "const_int")
+       (match_test "mips_signed_immediate_p (INTVAL (op), 8, 3)")))
+
 (define_predicate "ub4_operand"
   (and (match_code "const_int")
        (match_test "mips_unsigned_immediate_p (INTVAL (op), 4, 0)")))
+
+(define_predicate "ub8_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op), 8, 0)")))
 
 (define_predicate "uh4_operand"
   (and (match_code "const_int")
@@ -177,6 +197,10 @@
 (define_predicate "uw6_operand"
   (and (match_code "const_int")
        (match_test "mips_unsigned_immediate_p (INTVAL (op), 6, 2)")))
+
+(define_predicate "uw8_operand"
+  (and (match_code "const_int")
+       (match_test "mips_unsigned_immediate_p (INTVAL (op), 8, 2)")))
 
 (define_predicate "addiur2_operand"
   (and (match_code "const_int")

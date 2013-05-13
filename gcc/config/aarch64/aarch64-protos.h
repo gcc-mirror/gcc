@@ -219,6 +219,8 @@ void aarch64_split_128bit_move (rtx, rtx);
 
 bool aarch64_split_128bit_move_p (rtx, rtx);
 
+void aarch64_split_simd_move (rtx, rtx);
+
 /* Check for a legitimate floating point constant for FMOV.  */
 bool aarch64_float_const_representable_p (rtx);
 

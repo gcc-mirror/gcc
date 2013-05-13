@@ -12,7 +12,6 @@ class X
 int f(int n)
 {
   const float * pData = new const float[1] { 1.5, 2.5 }; // { dg-error "too many initializers" }
-  pData = new const float[n] { 1.5, 2.5 }; // { dg-warning "array size" }
 
   return 0;
 }

@@ -594,15 +594,12 @@
   "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (SFmode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (SFmode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (SFmode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], SFmode, 0);
 })
 
 ;; Avoid combining registers from different units in a single alternative,
@@ -629,12 +626,8 @@
 	  (match_operand:V2SF 1 "memory_operand")
 	  (parallel [(const_int 1)])))]
   "TARGET_MMX && reload_completed"
-  [(const_int 0)]
-{
-  operands[1] = adjust_address (operands[1], SFmode, 4);
-  emit_move_insn (operands[0], operands[1]);
-  DONE;
-})
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = adjust_address (operands[1], SFmode, 4);")
 
 (define_expand "vec_extractv2sf"
   [(match_operand:SF 0 "register_operand")
@@ -1289,15 +1282,12 @@
   "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
 {
-  rtx op1 = operands[1];
-  if (REG_P (op1))
-    op1 = gen_rtx_REG (SImode, REGNO (op1));
+  if (REG_P (operands[1]))
+    operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));
   else
-    op1 = gen_lowpart (SImode, op1);
-  emit_move_insn (operands[0], op1);
-  DONE;
+    operands[1] = adjust_address (operands[1], SImode, 0);
 })
 
 ;; Avoid combining registers from different units in a single alternative,
@@ -1330,11 +1320,21 @@
 	  (match_operand:V2SI 1 "memory_operand")
 	  (parallel [(const_int 1)])))]
   "TARGET_MMX && reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = adjust_address (operands[1], SImode, 4);")
+
+(define_insn_and_split "*vec_extractv2si_zext_mem"
+  [(set (match_operand:DI 0 "register_operand" "=y,x,r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V2SI 1 "memory_operand" "o,o,o")
+	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))))]
+  "TARGET_64BIT && TARGET_MMX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
 {
-  operands[1] = adjust_address (operands[1], SImode, 4);
-  emit_move_insn (operands[0], operands[1]);
-  DONE;
+  operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
 })
 
 (define_expand "vec_extractv2si"

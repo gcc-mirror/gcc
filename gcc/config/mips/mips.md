@@ -1166,32 +1166,23 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*add<mode>3_mips16"
-  [(set (match_operand:GPR 0 "register_operand" "=ks,d,d,d,d")
-	(plus:GPR (match_operand:GPR 1 "register_operand" "ks,ks,0,d,d")
-		  (match_operand:GPR 2 "arith_operand" "Q,Q,Q,O,d")))]
+  [(set (match_operand:GPR 0 "register_operand" "=ks,ks,d,d,d,d,d,d,d")
+	(plus:GPR (match_operand:GPR 1 "register_operand" "ks,ks,ks,ks,0,0,d,d,d")
+		  (match_operand:GPR 2 "arith_operand" "Usd8,Q,Uuw<si8_di5>,Q,Usb<si8_di5>,Q,Usb4,O,d")))]
   "TARGET_MIPS16"
   "@
     <d>addiu\t%0,%2
+    <d>addiu\t%0,%2
+    <d>addiu\t%0,%1,%2
     <d>addiu\t%0,%1,%2
     <d>addiu\t%0,%2
+    <d>addiu\t%0,%2
+    <d>addiu\t%0,%1,%2
     <d>addiu\t%0,%1,%2
     <d>addu\t%0,%1,%2"
   [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")
-   (set_attr_alternative "length"
-		[(if_then_else (match_operand 2 "m16_simm8_8")
-			       (const_int 4)
-			       (const_int 8))
-		 (if_then_else (match_operand 2 "m16_uimm<si8_di5>_4")
-			       (const_int 4)
-			       (const_int 8))
-		 (if_then_else (match_operand 2 "m16_simm<si8_di5>_1")
-			       (const_int 4)
-			       (const_int 8))
-		 (if_then_else (match_operand 2 "m16_simm4_1")
-			       (const_int 4)
-			       (const_int 8))
-		 (const_int 4)])])
+   (set_attr "extended_mips16" "no,yes,no,yes,no,yes,no,yes,no")])
 
 ;; On the mips16, we can sometimes split an add of a constant which is
 ;; a 4 byte instruction into two adds which are both 2 byte
@@ -3009,7 +3000,7 @@
   ""
   "")
 
-(define_insn ""
+(define_insn "*xor<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=!u,d,d")
 	(xor:GPR (match_operand:GPR 1 "register_operand" "%0,d,d")
 		 (match_operand:GPR 2 "uns_arith_operand" "!u,d,K")))]
@@ -3022,23 +3013,19 @@
    (set_attr "compression" "micromips,*,*")
    (set_attr "mode" "<MODE>")])
 
-(define_insn ""
-  [(set (match_operand:GPR 0 "register_operand" "=d,t,t")
-	(xor:GPR (match_operand:GPR 1 "register_operand" "%0,d,d")
-		 (match_operand:GPR 2 "uns_arith_operand" "d,K,d")))]
+(define_insn "*xor<mode>3_mips16"
+  [(set (match_operand:GPR 0 "register_operand" "=d,t,t,t")
+	(xor:GPR (match_operand:GPR 1 "register_operand" "%0,d,d,d")
+		 (match_operand:GPR 2 "uns_arith_operand" "d,Uub8,K,d")))]
   "TARGET_MIPS16"
   "@
    xor\t%0,%2
    cmpi\t%1,%2
+   cmpi\t%1,%2
    cmp\t%1,%2"
   [(set_attr "alu_type" "xor")
    (set_attr "mode" "<MODE>")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
-			       (const_int 4)
-			       (const_int 8))
-		 (const_int 4)])])
+   (set_attr "extended_mips16" "no,no,yes,no")])
 
 (define_insn "*nor<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5294,9 +5281,9 @@
    (set_attr "mode" "SI")])
 
 (define_insn "*<optab>si3_mips16"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(any_shift:SI (match_operand:SI 1 "register_operand" "0,d")
-		      (match_operand:SI 2 "arith_operand" "d,I")))]
+  [(set (match_operand:SI 0 "register_operand" "=d,d,d")
+	(any_shift:SI (match_operand:SI 1 "register_operand" "0,d,d")
+		      (match_operand:SI 2 "arith_operand" "d,Uib3,I")))]
   "TARGET_MIPS16"
 {
   if (which_alternative == 0)
@@ -5307,18 +5294,14 @@
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand 2 "m16_uimm3_b")
-			       (const_int 4)
-			       (const_int 8))])])
+   (set_attr "extended_mips16" "no,no,yes")])
 
 ;; We need separate DImode MIPS16 patterns because of the irregularity
 ;; of right shifts.
 (define_insn "*ashldi3_mips16"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(ashift:DI (match_operand:DI 1 "register_operand" "0,d")
-		   (match_operand:SI 2 "arith_operand" "d,I")))]
+  [(set (match_operand:DI 0 "register_operand" "=d,d,d")
+	(ashift:DI (match_operand:DI 1 "register_operand" "0,d,d")
+		   (match_operand:SI 2 "arith_operand" "d,Uib3,I")))]
   "TARGET_64BIT && TARGET_MIPS16"
 {
   if (which_alternative == 0)
@@ -5329,16 +5312,12 @@
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand 2 "m16_uimm3_b")
-			       (const_int 4)
-			       (const_int 8))])])
+   (set_attr "extended_mips16" "no,no,yes")])
 
 (define_insn "*ashrdi3_mips16"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "0,0")
-		     (match_operand:SI 2 "arith_operand" "d,I")))]
+  [(set (match_operand:DI 0 "register_operand" "=d,d,d")
+	(ashiftrt:DI (match_operand:DI 1 "register_operand" "0,0,0")
+		     (match_operand:SI 2 "arith_operand" "d,Uib3,I")))]
   "TARGET_64BIT && TARGET_MIPS16"
 {
   if (CONST_INT_P (operands[2]))
@@ -5348,16 +5327,12 @@
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand 2 "m16_uimm3_b")
-			       (const_int 4)
-			       (const_int 8))])])
+   (set_attr "extended_mips16" "no,no,yes")])
 
 (define_insn "*lshrdi3_mips16"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(lshiftrt:DI (match_operand:DI 1 "register_operand" "0,0")
-		     (match_operand:SI 2 "arith_operand" "d,I")))]
+  [(set (match_operand:DI 0 "register_operand" "=d,d,d")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand" "0,0,0")
+		     (match_operand:SI 2 "arith_operand" "d,Uib3,I")))]
   "TARGET_64BIT && TARGET_MIPS16"
 {
   if (CONST_INT_P (operands[2]))
@@ -5367,11 +5342,7 @@
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand 2 "m16_uimm3_b")
-			       (const_int 4)
-			       (const_int 8))])])
+   (set_attr "extended_mips16" "no,no,yes")])
 
 ;; On the mips16, we can split a 4 byte shift into 2 2 byte shifts.
 
@@ -5756,18 +5727,14 @@
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*slt<u>_<GPR:mode><GPR2:mode>_mips16"
-  [(set (match_operand:GPR2 0 "register_operand" "=t,t")
-	(any_lt:GPR2 (match_operand:GPR 1 "register_operand" "d,d")
-		     (match_operand:GPR 2 "arith_operand" "d,I")))]
+  [(set (match_operand:GPR2 0 "register_operand" "=t,t,t")
+	(any_lt:GPR2 (match_operand:GPR 1 "register_operand" "d,d,d")
+		     (match_operand:GPR 2 "arith_operand" "d,Uub8,I")))]
   "TARGET_MIPS16"
   "slt<u>\t%1,%2"
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand 2 "m16_uimm8_1")
-			       (const_int 4)
-			       (const_int 8))])])
+   (set_attr "extended_mips16" "no,no,yes")])
 
 (define_insn "*sle<u>_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
@@ -5782,9 +5749,9 @@
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*sle<u>_<GPR:mode><GPR2:mode>_mips16"
-  [(set (match_operand:GPR2 0 "register_operand" "=t")
-	(any_le:GPR2 (match_operand:GPR 1 "register_operand" "d")
-		     (match_operand:GPR 2 "sle_operand" "")))]
+  [(set (match_operand:GPR2 0 "register_operand" "=t,t")
+	(any_le:GPR2 (match_operand:GPR 1 "register_operand" "d,d")
+		     (match_operand:GPR 2 "sle_operand" "Udb8,i")))]
   "TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
@@ -5792,9 +5759,7 @@
 }
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")
-   (set (attr "length") (if_then_else (match_operand 2 "m16_uimm8_m1_1")
-				      (const_int 4)
-				      (const_int 8)))])
+   (set_attr "extended_mips16" "no,yes")])
 
 ;;
 ;;  ....................

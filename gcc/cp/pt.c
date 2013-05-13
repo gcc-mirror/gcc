@@ -6368,7 +6368,8 @@ convert_template_argument (tree parm,
 	      val = error_mark_node;
 	    }
 	}
-      else if (!uses_template_parms (orig_arg) && !uses_template_parms (t))
+      else if (!dependent_template_arg_p (orig_arg)
+	       && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
@@ -7016,7 +7017,7 @@ maybe_get_template_decl_from_type_decl (tree decl)
     ? CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)) : decl;
 }
 
-/* Given an IDENTIFIER_NODE (type TEMPLATE_DECL) and a chain of
+/* Given an IDENTIFIER_NODE (or type TEMPLATE_DECL) and a chain of
    parameters, find the desired type.
 
    D1 is the PTYPENAME terminal, and ARGLIST is the list of arguments.
@@ -7096,6 +7097,11 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       templ = d1;
       d1 = DECL_NAME (templ);
       context = DECL_CONTEXT (templ);
+    }
+  else if (DECL_TEMPLATE_TEMPLATE_PARM_P (d1))
+    {
+      templ = d1;
+      d1 = DECL_NAME (templ);
     }
 
   /* Issue an error message if we didn't find a template.  */
@@ -11559,6 +11565,18 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	else
 	  r = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
 	r = cp_build_qualified_type_real (r, cp_type_quals (t), complain);
+
+	if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+	  {
+	    if (complain & tf_warning_or_error)
+	      pedwarn
+		(input_location, OPT_Wvla,
+		 code == REFERENCE_TYPE
+		 ? G_("cannot declare reference to array of runtime bound")
+		 : G_("cannot declare pointer to array of runtime bound"));
+	    else
+	      r = error_mark_node;
+	  }
 
 	if (r != error_mark_node)
 	  /* Will this ever be needed for TYPE_..._TO values?  */

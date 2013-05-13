@@ -728,6 +728,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
     {
       vn_reference_op_s temp;
 
+      result->reserve (3);
+
       memset (&temp, 0, sizeof (temp));
       temp.type = TREE_TYPE (ref);
       temp.opcode = TREE_CODE (ref);
@@ -735,21 +737,21 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
       temp.op1 = TMR_STEP (ref);
       temp.op2 = TMR_OFFSET (ref);
       temp.off = -1;
-      result->safe_push (temp);
+      result->quick_push (temp);
 
       memset (&temp, 0, sizeof (temp));
       temp.type = NULL_TREE;
       temp.opcode = ERROR_MARK;
       temp.op0 = TMR_INDEX2 (ref);
       temp.off = -1;
-      result->safe_push (temp);
+      result->quick_push (temp);
 
       memset (&temp, 0, sizeof (temp));
       temp.type = NULL_TREE;
       temp.opcode = TREE_CODE (TMR_BASE (ref));
       temp.op0 = TMR_BASE (ref);
       temp.off = -1;
-      result->safe_push (temp);
+      result->quick_push (temp);
       return;
     }
 
@@ -802,9 +804,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		    double_int off
 		      = tree_to_double_int (this_offset)
 			+ tree_to_double_int (bit_offset)
-			  .arshift (BITS_PER_UNIT == 8
-				    ? 3 : exact_log2 (BITS_PER_UNIT),
-				    HOST_BITS_PER_DOUBLE_INT);
+			.rshift (BITS_PER_UNIT == 8
+				   ? 3 : exact_log2 (BITS_PER_UNIT));
 		    if (off.fits_shwi ())
 		      temp.off = off.low;
 		  }
@@ -846,7 +847,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  temp.off = 0;
 	  result->safe_push (temp);
 	  temp.opcode = ADDR_EXPR;
-	  temp.op0 = build_fold_addr_expr (ref);
+	  temp.op0 = build1 (ADDR_EXPR, TREE_TYPE (temp.op0), ref);
 	  temp.type = TREE_TYPE (temp.op0);
 	  temp.off = -1;
 	  break;
@@ -1112,18 +1113,6 @@ copy_reference_ops_from_call (gimple call,
       tree callarg = gimple_call_arg (call, i);
       copy_reference_ops_from_ref (callarg, result);
     }
-}
-
-/* Create a vector of vn_reference_op_s structures from REF, a
-   REFERENCE_CLASS_P tree.  The vector is not shared. */
-
-static vec<vn_reference_op_s> 
-create_reference_ops_from_ref (tree ref)
-{
-  vec<vn_reference_op_s> result = vNULL;
-
-  copy_reference_ops_from_ref (ref, &result);
-  return result;
 }
 
 /* Create a vector of vn_reference_op_s structures from CALL, a
@@ -2096,6 +2085,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
 {
   vn_reference_s **slot;
   vn_reference_t vr1;
+  bool tem;
 
   vr1 = (vn_reference_t) pool_alloc (current_info->references_pool);
   if (TREE_CODE (result) == SSA_NAME)
@@ -2103,7 +2093,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   else
     vr1->value_id = get_or_alloc_constant_value_id (result);
   vr1->vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1->operands = valueize_refs (create_reference_ops_from_ref (op));
+  vr1->operands = valueize_shared_reference_ops_from_ref (op, &tem).copy ();
   vr1->type = TREE_TYPE (op);
   vr1->set = get_alias_set (op);
   vr1->hashcode = vn_reference_compute_hash (vr1);

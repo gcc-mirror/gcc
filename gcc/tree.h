@@ -4912,9 +4912,11 @@ extern tree build_vector_from_val (tree, tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
+extern tree build_constructor_va (tree, int, ...);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_one_cst (tree);
+extern tree build_minus_one_cst (tree);
 extern tree build_zero_cst (tree);
 extern tree build_string (int, const char *);
 extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
@@ -5015,6 +5017,7 @@ extern bool may_negate_without_overflow_p (const_tree);
 extern tree strip_array_types (tree);
 extern tree excess_precision_type (tree);
 extern bool valid_constant_size_p (const_tree);
+extern unsigned int element_precision (const_tree);
 
 /* Construct various nodes representing fract or accum data types.  */
 
@@ -5468,6 +5471,11 @@ extern int integer_onep (const_tree);
    all of whose significant bits are 1.  */
 
 extern int integer_all_onesp (const_tree);
+
+/* integer_minus_onep (tree x) is nonzero if X is an integer constant of
+   value -1.  */
+
+extern int integer_minus_onep (const_tree);
 
 /* integer_pow2p (tree x) is nonzero is X is an integer constant with
    exactly one bit 1.  */

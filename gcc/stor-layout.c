@@ -453,6 +453,18 @@ get_mode_alignment (enum machine_mode mode)
   return MIN (BIGGEST_ALIGNMENT, MAX (1, mode_base_align[mode]*BITS_PER_UNIT));
 }
 
+/* Return the precision of the mode, or for a complex or vector mode the
+   precision of the mode of its elements.  */
+
+unsigned int
+element_precision (enum machine_mode mode)
+{
+  if (COMPLEX_MODE_P (mode) || VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  return GET_MODE_PRECISION (mode);
+}
+
 /* Return the natural mode of an array, given that it is SIZE bytes in
    total and has elements of type ELEM_TYPE.  */
 

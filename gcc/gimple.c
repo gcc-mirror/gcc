@@ -3083,14 +3083,21 @@ iterative_hash_canonical_type (tree type, hashval_t val)
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)
       || FIXED_POINT_TYPE_P (type)
-      || TREE_CODE (type) == VECTOR_TYPE
-      || TREE_CODE (type) == COMPLEX_TYPE
       || TREE_CODE (type) == OFFSET_TYPE
       || POINTER_TYPE_P (type))
     {
       v = iterative_hash_hashval_t (TYPE_PRECISION (type), v);
       v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
     }
+
+  if (VECTOR_TYPE_P (type))
+    {
+      v = iterative_hash_hashval_t (TYPE_VECTOR_SUBPARTS (type), v);
+      v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
+    }
+
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
 
   /* For pointer and reference types, fold in information about the type
      pointed to but do not recurse to the pointed-to type.  */

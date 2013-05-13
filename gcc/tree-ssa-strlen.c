@@ -1703,7 +1703,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	       its length may be decreased.  */
 	    adjust_last_stmt (si, stmt, false);
 	}
-      else if (si != NULL)
+      else if (si != NULL && integer_zerop (gimple_assign_rhs1 (stmt)))
 	{
 	  si = unshare_strinfo (si);
 	  si->length = build_int_cst (size_type_node, 0);
@@ -1739,6 +1739,25 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	}
       if (si != NULL)
 	si->writable = true;
+    }
+  else if (idx == 0
+	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == STRING_CST
+	   && ssaname == NULL_TREE
+	   && TREE_CODE (TREE_TYPE (lhs)) == ARRAY_TYPE)
+    {
+      size_t l = strlen (TREE_STRING_POINTER (gimple_assign_rhs1 (stmt)));
+      HOST_WIDE_INT a = int_size_in_bytes (TREE_TYPE (lhs));
+      if (a > 0 && (unsigned HOST_WIDE_INT) a > l)
+	{
+	  int idx = new_addr_stridx (lhs);
+	  if (idx != 0)
+	    {
+	      si = new_strinfo (build_fold_addr_expr (lhs), idx,
+				build_int_cst (size_type_node, l));
+	      set_strinfo (idx, si);
+	      si->dont_invalidate = true;
+	    }
+	}
     }
 
   if (si != NULL && initializer_zerop (gimple_assign_rhs1 (stmt)))

@@ -1470,6 +1470,27 @@ build_constructor_from_list (tree type, tree vals)
   return build_constructor (type, v);
 }
 
+/* Return a new CONSTRUCTOR node whose type is TYPE.  NELTS is the number
+   of elements, provided as index/value pairs.  */
+
+tree
+build_constructor_va (tree type, int nelts, ...)
+{
+  vec<constructor_elt, va_gc> *v = NULL;
+  va_list p;
+
+  va_start (p, nelts);
+  vec_alloc (v, nelts);
+  while (nelts--)
+    {
+      tree index = va_arg (p, tree);
+      tree value = va_arg (p, tree);
+      CONSTRUCTOR_APPEND_ELT (v, index, value);
+    }
+  va_end (p);
+  return build_constructor (type, v);
+}
+
 /* Return a new FIXED_CST node whose type is TYPE and value is F.  */
 
 tree
@@ -1618,6 +1639,45 @@ build_one_cst (tree type)
     case COMPLEX_TYPE:
       return build_complex (type,
 			    build_one_cst (TREE_TYPE (type)),
+			    build_zero_cst (TREE_TYPE (type)));
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return a constant of arithmetic type TYPE which is the
+   opposite of the multiplicative identity of the set TYPE.  */
+
+tree
+build_minus_one_cst (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
+    case POINTER_TYPE: case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      return build_int_cst (type, -1);
+
+    case REAL_TYPE:
+      return build_real (type, dconstm1);
+
+    case FIXED_POINT_TYPE:
+      /* We can only generate 1 for accum types.  */
+      gcc_assert (ALL_SCALAR_ACCUM_MODE_P (TYPE_MODE (type)));
+      return build_fixed (type, fixed_from_double_int (double_int_minus_one,
+						       TYPE_MODE (type)));
+
+    case VECTOR_TYPE:
+      {
+	tree scalar = build_minus_one_cst (TREE_TYPE (type));
+
+	return build_vector_from_val (type, scalar);
+      }
+
+    case COMPLEX_TYPE:
+      return build_complex (type,
+			    build_minus_one_cst (TREE_TYPE (type)),
 			    build_zero_cst (TREE_TYPE (type)));
 
     default:
@@ -1784,7 +1844,7 @@ integer_onep (const_tree expr)
 }
 
 /* Return 1 if EXPR is an integer containing all 1's in as much precision as
-   it contains.  Likewise for the corresponding complex constant.  */
+   it contains, or a complex or vector whose subparts are such integers.  */
 
 int
 integer_all_onesp (const_tree expr)
@@ -1796,7 +1856,7 @@ integer_all_onesp (const_tree expr)
 
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_all_onesp (TREE_REALPART (expr))
-      && integer_zerop (TREE_IMAGPART (expr)))
+      && integer_all_onesp (TREE_IMAGPART (expr)))
     return 1;
 
   else if (TREE_CODE (expr) == VECTOR_CST)
@@ -1840,6 +1900,20 @@ integer_all_onesp (const_tree expr)
     }
   else
     return TREE_INT_CST_LOW (expr) == ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
+}
+
+/* Return 1 if EXPR is the integer constant minus one.  */
+
+int
+integer_minus_onep (const_tree expr)
+{
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == COMPLEX_CST)
+    return (integer_all_onesp (TREE_REALPART (expr))
+	    && integer_zerop (TREE_IMAGPART (expr)));
+  else
+    return integer_all_onesp (expr);
 }
 
 /* Return 1 if EXPR is an integer constant that is a power of 2 (i.e., has only
@@ -6988,6 +7062,19 @@ valid_constant_size_p (const_tree size)
       || tree_int_cst_sign_bit (size) != 0)
     return false;
   return true;
+}
+
+/* Return the precision of the type, or for a complex or vector type the
+   precision of the type of its elements.  */
+
+unsigned int
+element_precision (const_tree type)
+{
+  enum tree_code code = TREE_CODE (type);
+  if (code == COMPLEX_TYPE || code == VECTOR_TYPE)
+    type = TREE_TYPE (type);
+
+  return TYPE_PRECISION (type);
 }
 
 /* Return true if CODE represents an associative tree code.  Otherwise

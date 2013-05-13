@@ -848,14 +848,24 @@ dump_type_suffix (tree t, int flags)
 	    pp_character (cxx_pp, '0');
 	  else if (host_integerp (max, 0))
 	    pp_wide_integer (cxx_pp, tree_low_cst (max, 0) + 1);
-	  else if (TREE_CODE (max) == MINUS_EXPR)
-	    dump_expr (TREE_OPERAND (max, 0),
-		       flags & ~TFF_EXPR_IN_PARENS);
 	  else
-	    dump_expr (fold_build2_loc (input_location,
-				    PLUS_EXPR, dtype, max,
-				    build_int_cst (dtype, 1)),
-		       flags & ~TFF_EXPR_IN_PARENS);
+	    {
+	      STRIP_NOPS (max);
+	      if (TREE_CODE (max) == SAVE_EXPR)
+		max = TREE_OPERAND (max, 0);
+	      if (TREE_CODE (max) == MINUS_EXPR
+		  || TREE_CODE (max) == PLUS_EXPR)
+		{
+		  max = TREE_OPERAND (max, 0);
+		  while (CONVERT_EXPR_P (max))
+		    max = TREE_OPERAND (max, 0);
+		}
+	      else
+		max = fold_build2_loc (input_location,
+				       PLUS_EXPR, dtype, max,
+				       build_int_cst (dtype, 1));
+	      dump_expr (max, flags & ~TFF_EXPR_IN_PARENS);
+	    }
 	}
       pp_cxx_right_bracket (cxx_pp);
       dump_type_suffix (TREE_TYPE (t), flags);
@@ -3394,7 +3404,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 	break;
       case CPP0X_AUTO:
 	pedwarn (input_location, 0,
-		 "C++0x auto only available with -std=c++11 or -std=gnu++11");
+		 "C++11 auto only available with -std=c++11 or -std=gnu++11");
 	break;
       case CPP0X_SCOPED_ENUMS:
 	pedwarn (input_location, 0,
@@ -3443,7 +3453,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
       case CPP0X_REF_QUALIFIER:
 	pedwarn (input_location, 0,
 		 "ref-qualifiers "
-		 "only available with -std=c++0x or -std=gnu++0x");
+		 "only available with -std=c++11 or -std=gnu++11");
 	break;
       default:
 	gcc_unreachable ();

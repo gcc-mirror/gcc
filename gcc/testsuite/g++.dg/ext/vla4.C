@@ -6,7 +6,7 @@
 void f(int i) {
   try {
     int a[i];
-    throw &a; // { dg-error "variable size" }
+    throw &a; // { dg-error "int \\(\\*\\)\\\[i\\\]" }
   } catch (int (*)[i]) { // { dg-error "variable size" }
   }
 }

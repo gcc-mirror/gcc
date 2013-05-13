@@ -1199,8 +1199,6 @@ finish_handler_parms (tree decl, tree handler)
   else
     type = expand_start_catch_block (decl);
   HANDLER_TYPE (handler) = type;
-  if (!processing_template_decl && type)
-    mark_used (eh_type_info (type));
 }
 
 /* Finish a handler, which may be given by HANDLER.  The BLOCKs are
@@ -5458,6 +5456,15 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	}
     }
 
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+    {
+      if (complain & tf_warning_or_error)
+	pedwarn (input_location, OPT_Wvla,
+		 "taking decltype of array of runtime bound");
+      else
+	return error_mark_node;
+    }
+
   return type;
 }
 
@@ -7636,15 +7643,17 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	    }
 	}
     }
-  /* *(foo *)fooarrptreturn> (*fooarrptr)[0] */
+  /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   else if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
 	   && (same_type_ignoring_top_level_qualifiers_p
 	       (type, TREE_TYPE (TREE_TYPE (subtype)))))
     {
       tree type_domain;
       tree min_val = size_zero_node;
-      sub = cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
-      if (!sub)
+      tree newsub = cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
+      if (newsub)
+	sub = newsub;
+      else
 	sub = build1_loc (loc, INDIRECT_REF, TREE_TYPE (subtype), sub);
       type_domain = TYPE_DOMAIN (TREE_TYPE (sub));
       if (type_domain && TYPE_MIN_VALUE (type_domain))
@@ -9381,6 +9390,21 @@ build_capture_proxy (tree member)
     name = DECL_NAME (member);
 
   type = lambda_proxy_type (object);
+
+  if (TREE_CODE (type) == RECORD_TYPE
+      && TYPE_NAME (type) == NULL_TREE)
+    {
+      /* Rebuild the VLA type from the pointer and maxindex.  */
+      tree field = next_initializable_field (TYPE_FIELDS (type));
+      tree ptr = build_simple_component_ref (object, field);
+      field = next_initializable_field (DECL_CHAIN (field));
+      tree max = build_simple_component_ref (object, field);
+      type = build_array_type (TREE_TYPE (TREE_TYPE (ptr)),
+			       build_index_type (max));
+      object = convert (build_reference_type (type), ptr);
+      object = convert_from_reference (object);
+    }
+
   var = build_decl (input_location, VAR_DECL, name, type);
   SET_DECL_VALUE_EXPR (var, object);
   DECL_HAS_VALUE_EXPR_P (var) = 1;
@@ -9402,6 +9426,28 @@ build_capture_proxy (tree member)
   return var;
 }
 
+/* Return a struct containing a pointer and a length for lambda capture of
+   an array of runtime length.  */
+
+static tree
+vla_capture_type (tree array_type)
+{
+  static tree ptr_id, max_id;
+  if (!ptr_id)
+    {
+      ptr_id = get_identifier ("ptr");
+      max_id = get_identifier ("max");
+    }
+  tree ptrtype = build_pointer_type (TREE_TYPE (array_type));
+  tree field1 = build_decl (input_location, FIELD_DECL, ptr_id, ptrtype);
+  tree field2 = build_decl (input_location, FIELD_DECL, max_id, sizetype);
+  DECL_CHAIN (field2) = field1;
+  tree type = make_node (RECORD_TYPE);
+  finish_builtin_struct (type, "__cap", field2, NULL_TREE);
+  TYPE_NAME (type) = NULL_TREE;
+  return type;
+}
+
 /* From an ID and INITIALIZER, create a capture (by reference if
    BY_REFERENCE_P is true), add it to the capture-list for LAMBDA,
    and return it.  */
@@ -9417,7 +9463,25 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
     initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
 						   tf_warning_or_error);
   type = lambda_capture_field_type (initializer, explicit_init_p);
-  if (by_reference_p)
+  if (array_of_runtime_bound_p (type))
+    {
+      if (!by_reference_p)
+	error ("array of runtime bound cannot be captured by copy, "
+	       "only by reference");
+
+      /* For a VLA, we capture the address of the first element and the
+	 maximum index, and then reconstruct the VLA for the proxy.  */
+      tree elt = cp_build_array_ref (input_location, initializer,
+				     integer_zero_node, tf_warning_or_error);
+      tree ctype = vla_capture_type (type);
+      tree ptr_field = next_initializable_field (TYPE_FIELDS (ctype));
+      tree nelts_field = next_initializable_field (DECL_CHAIN (ptr_field));
+      initializer = build_constructor_va (ctype, 2,
+					  ptr_field, build_address (elt),
+					  nelts_field, array_type_nelts (type));
+      type = ctype;
+    }
+  else if (by_reference_p)
     {
       type = build_reference_type (type);
       if (!real_lvalue_p (initializer))

@@ -1,3 +1,119 @@
+2013-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54577
+	* include/bits/stl_deque.h (erase): Fix signatures in C++11 mode.
+	(_Deque_iterator<>::_M_const_cast): Add.
+	(deque<>::_M_erase): Declare.
+	* include/bits/deque.tcc: ... and define.
+	* include/bits/stl_list.h (erase): Fix signatures in C++11 mode.
+	(_List_const_iterator<>::_M_const_cast): Add.
+	* include/bits/list.tcc (erase (iterator)): Fix.
+	* include/bits/stl_iterator.h (__normal_iterator<>::_M_const_cast):
+	Add; include <ext/cast.h>.
+	* include/bits/stl_vector.h (erase): Fix signatures in C++11 mode.
+	(vector<>::_M_erase): Declare.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/vector.tcc (vector<>::_M_erase): Define.
+	* include/ext/vstring.h (erase): Fix signatures in C++11 mode.
+	* include/debug/deque: Adjust.
+	* include/debug/list: Likewise.
+	* include/debug/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/vector: Likewise.
+	* testsuite/util/exception/safety.h (erase_base<deque>,
+	erase_base<deque>, erase_base<vector>): Remove.
+	(erase_base<__versa_string>): Update.
+	* testsuite/ext/vstring/modifiers/char/54577.cc: New.
+	* testsuite/ext/vstring/modifiers/wchar_t/54577.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/erase/54577.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2013-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.8.
+
+2013-05-08  Jason Merrill  <jason@redhat.com>
+
+	Add std::bad_array_length (N3639)
+	* libsupc++/new: Add std::bad_array_length.
+	* libsupc++/bad_array_length.cc: New.
+	* libsupc++/eh_aux_runtime.cc: Add __cxa_bad_array_length.
+	* libsupc++/Makefile.in: Build them.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* config/abi/pre/gnu-versioned-namespace.ver: Add new symbols.
+
+2013-05-08  Andi Kleen  <ak@linux.intel.com>
+
+	PR target/55947
+	* libstdc++-v3/include/bits/atomic_base.h
+	(_GLIBCXX_ALWAYS_INLINE): Add new macro.
+	(atomic_thread_fence, atomic_signal_fence, test_and_set,
+	clear, store, load, exchange, compare_exchange_weak)
+	compare_exchange_strong, fetch_add, fetch_sub, fetch_and,
+	fetch_or, fetch_xor): Mark _GLIBCXX_ALWAYS_INLINE.
+
+2013-05-08  Jason Merrill  <jason@redhat.com>
+
+	Add std::bad_array_new_length (N2932)
+	* libsupc++/new: Add std::bad_array_new_length.
+	* libsupc++/bad_array_new.cc: New.
+	* libsupc++/eh_aux_runtime.cc: Add __cxa_throw_bad_array_new_length.
+	* libsupc++/Makefile.in: Build them.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* config/abi/pre/gnu-versioned-namespace.ver: Add new symbols.
+
+2013-05-08  Andoni Morales Alastruey <ylatuya@gmail.com>
+
+	PR libstdc++/57212
+	* include/Makefile.am (_GLIBCXX___MINGW32_GLIBCXX___): Modify
+	to __MINGW32__.
+	* include/Makefile.in: Regenerated.
+
+2013-05-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/profile/unordered_base.h: New.
+	* include/Makefile.am: Add new profile header.
+	* include/Makefile.in: Regenerate.
+	* include/profile/impl/profiler.h
+	(__profcxx_inefficient_hash_is_on): New macro.
+	* include/profile/unordered_map (std::profile::unordered_map<>):
+	Use new _Unordered_profile base class. Use default implementations
+	for special functions.
+	(std::profile::unordered_multimap<>): Likewise.
+	* include/profile/unordered_set (std::profile::unordered_set<>):
+	Likewise.
+	(std::profile::unordered_multiset<>): Likewise.
+	* testsuite/23_containers/unordered_multiset/55043.cc: Fix
+	MoveOnly equality operator signature.
+
 2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/tr1/4_metaprogramming/integral_constant/requirements/
@@ -323,7 +439,6 @@
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust links
 	for biblio.maverik_lowerbounds and biblio.nelson96stlpq.
-	Remove direct link to IBM Haifa Research Labs.
 
 	* doc/xml/manual/profile_mode.xml: Adjust two links to acm.org
 	papers.

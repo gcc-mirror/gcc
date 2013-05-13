@@ -2170,6 +2170,35 @@ diagnose_uninitialized_cst_or_ref_member (tree type, bool using_new, bool compla
   return diagnose_uninitialized_cst_or_ref_member_1 (type, type, using_new, complain);
 }
 
+/* Call __cxa_bad_array_new_length to indicate that the size calculation
+   overflowed.  Pretend it returns sizetype so that it plays nicely in the
+   COND_EXPR.  */
+
+tree
+throw_bad_array_new_length (void)
+{
+  tree fn = get_identifier ("__cxa_throw_bad_array_new_length");
+  if (!get_global_value_if_present (fn, &fn))
+    fn = push_throw_library_fn (fn, build_function_type_list (sizetype,
+							      NULL_TREE));
+
+  return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
+}
+
+/* Call __cxa_bad_array_length to indicate that there were too many
+   initializers.  */
+
+tree
+throw_bad_array_length (void)
+{
+  tree fn = get_identifier ("__cxa_throw_bad_array_length");
+  if (!get_global_value_if_present (fn, &fn))
+    fn = push_throw_library_fn (fn, build_function_type_list (void_type_node,
+							      NULL_TREE));
+
+  return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -2472,9 +2501,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		outer_nelts_check = NULL_TREE;
 	    }
 	  /* Perform the overflow check.  */
+	  tree errval = TYPE_MAX_VALUE (sizetype);
+	  if (cxx_dialect >= cxx11)
+	    errval = throw_bad_array_new_length ();
 	  if (outer_nelts_check != NULL_TREE)
             size = fold_build3 (COND_EXPR, sizetype, outer_nelts_check,
-                                size, TYPE_MAX_VALUE (sizetype));
+                                size, errval);
 	  /* Create the argument list.  */
 	  vec_safe_insert (*placement, 0, size);
 	  /* Do name-lookup to find the appropriate operator.  */
@@ -2699,12 +2731,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		    domain = compute_array_index_type (NULL_TREE, nelts,
 						       complain);
 		  else
-		    {
-		      domain = NULL_TREE;
-		      if (CONSTRUCTOR_NELTS (vecinit) > 0)
-			warning (0, "non-constant array size in new, unable "
-				 "to verify length of initializer-list");
-		    }
+		    /* We'll check the length at runtime.  */
+		    domain = NULL_TREE;
 		  arraytype = build_cplus_array_type (type, domain);
 		  vecinit = digest_init (arraytype, vecinit, complain);
 		}
@@ -3291,6 +3319,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree obase = base;
   bool xvalue = false;
   bool errors = false;
+  tree length_check = NULL_TREE;
 
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))
     maxindex = array_type_nelts (atype);
@@ -3308,6 +3337,14 @@ build_vec_init (tree base, tree maxindex, tree init,
       && TREE_CODE (TARGET_EXPR_INITIAL (init)) == CONSTRUCTOR
       && from_array != 2)
     init = TARGET_EXPR_INITIAL (init);
+
+  /* If we have a braced-init-list, make sure that the array
+     is big enough for all the initializers.  */
+  if (init && TREE_CODE (init) == CONSTRUCTOR
+      && CONSTRUCTOR_NELTS (init) > 0
+      && !TREE_CONSTANT (maxindex))
+    length_check = fold_build2 (LT_EXPR, boolean_type_node, maxindex,
+				size_int (CONSTRUCTOR_NELTS (init) - 1));
 
   if (init
       && TREE_CODE (atype) == ARRAY_TYPE
@@ -3327,6 +3364,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 store_constructor will handle the semantics for us.  */
 
       stmt_expr = build2 (INIT_EXPR, atype, base, init);
+      if (length_check)
+	stmt_expr = build3 (COND_EXPR, atype, length_check,
+			    throw_bad_array_length (),
+			    stmt_expr);
       return stmt_expr;
     }
 
@@ -3440,6 +3481,18 @@ build_vec_init (tree base, tree maxindex, tree init,
       bool do_static_init = (DECL_P (obase) && TREE_STATIC (obase));
       vec<constructor_elt, va_gc> *new_vec;
       from_array = 0;
+
+      if (length_check)
+	{
+	  tree throw_call;
+	  if (array_of_runtime_bound_p (atype))
+	    throw_call = throw_bad_array_length ();
+	  else
+	    throw_call = throw_bad_array_new_length ();
+	  length_check = build3 (COND_EXPR, void_type_node, length_check,
+				 throw_call, void_zero_node);
+	  finish_expr_stmt (length_check);
+	}
 
       if (try_const)
 	vec_alloc (new_vec, CONSTRUCTOR_NELTS (init));

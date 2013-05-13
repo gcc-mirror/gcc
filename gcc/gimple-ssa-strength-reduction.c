@@ -366,9 +366,11 @@ static struct obstack chain_obstack;
 
 /* An array INCR_VEC of incr_infos is used during analysis of related
    candidates having an SSA name for a stride.  INCR_VEC_LEN describes
-   its current length.  */
+   its current length.  MAX_INCR_VEC_LEN is used to avoid costly
+   pathological cases. */
 static incr_info_t incr_vec;
 static unsigned incr_vec_len;
+const int MAX_INCR_VEC_LEN = 16;
 
 /* For a chain of candidates with unknown stride, indicates whether or not
    we must generate pointer arithmetic when replacing statements.  */
@@ -376,7 +378,7 @@ static bool address_arithmetic_p;
 
 /* Forward function declarations.  */
 static slsr_cand_t base_cand_from_table (tree);
-static tree introduce_cast_before_cand (slsr_cand_t, tree, tree, tree*);
+static tree introduce_cast_before_cand (slsr_cand_t, tree, tree);
 
 /* Produce a pointer to the IDX'th candidate in the candidate vector.  */
 
@@ -422,7 +424,7 @@ find_phi_def (tree base)
 
   if (TREE_CODE (base) != SSA_NAME)
     return 0;
-  
+
   c = base_cand_from_table (base);
 
   if (!c || c->kind != CAND_PHI)
@@ -565,7 +567,7 @@ alloc_cand_and_find_basis (enum cand_kind kind, gimple gs, tree base,
   c->next_interp = 0;
   c->dependent = 0;
   c->sibling = 0;
-  c->def_phi = find_phi_def (base);
+  c->def_phi = kind == CAND_MULT ? find_phi_def (base) : 0;
   c->dead_savings = savings;
 
   cand_vec.safe_push (c);
@@ -657,9 +659,6 @@ add_cand_for_stmt (gimple gs, slsr_cand_t c)
   *slot = c;
 }
 
-// FORNOW: Disable conditional candidate processing until bootstrap
-// issue can be sorted out for i686-pc-linux-gnu.
-#if 0
 /* Given PHI which contains a phi statement, determine whether it
    satisfies all the requirements of a phi candidate.  If so, create
    a candidate.  Note that a CAND_PHI never has a basis itself, but
@@ -750,7 +749,6 @@ slsr_process_phi (gimple phi, bool speed)
   /* Add the candidate to the statement-candidate mapping.  */
   add_cand_for_stmt (phi, c);
 }
-#endif
 
 /* Look for the following pattern:
 
@@ -1523,12 +1521,8 @@ find_candidates_in_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   bool speed = optimize_bb_for_speed_p (bb);
   gimple_stmt_iterator gsi;
 
-// FORNOW: Disable conditional candidate processing until bootstrap
-// issue can be sorted out for i686-pc-linux-gnu.
-#if 0
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     slsr_process_phi (gsi_stmt (gsi), speed);
-#endif
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -1826,16 +1820,6 @@ cand_abs_increment (slsr_cand_t c)
   return increment;
 }
 
-/* If *VAR is NULL or is not of a compatible type with TYPE, create a
-   new temporary reg of type TYPE and store it in *VAR.  */
-
-static inline void
-lazy_create_slsr_reg (tree *var, tree type)
-{
-  if (!*var || !types_compatible_p (TREE_TYPE (*var), type))
-    *var = create_tmp_reg (type, "slsr");
-}
-
 /* Return TRUE iff candidate C has already been replaced under
    another interpretation.  */
 
@@ -1849,8 +1833,7 @@ cand_already_replaced (slsr_cand_t c)
    replace_conditional_candidate.  */
 
 static void
-replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump,
-			tree *var)
+replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump)
 {
   tree target_type = TREE_TYPE (gimple_assign_lhs (c->cand_stmt));
   enum tree_code cand_code = gimple_assign_rhs_code (c->cand_stmt);
@@ -1877,8 +1860,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump,
       /* If the basis name and the candidate's LHS have incompatible
 	 types, introduce a cast.  */
       if (!useless_type_conversion_p (target_type, TREE_TYPE (basis_name)))
-	basis_name = introduce_cast_before_cand (c, target_type,
-						 basis_name, var);
+	basis_name = introduce_cast_before_cand (c, target_type, basis_name);
       if (bump.is_negative ())
 	{
 	  code = MINUS_EXPR;
@@ -1953,7 +1935,6 @@ replace_unconditional_candidate (slsr_cand_t c)
 {
   slsr_cand_t basis;
   double_int stride, bump;
-  tree var = NULL;
 
   if (cand_already_replaced (c))
     return;
@@ -1962,12 +1943,14 @@ replace_unconditional_candidate (slsr_cand_t c)
   stride = tree_to_double_int (c->stride);
   bump = cand_increment (c) * stride;
 
-  replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump, &var);
+  replace_mult_candidate (c, gimple_assign_lhs (basis->cand_stmt), bump);
 }
 
-/* Return the index in the increment vector of the given INCREMENT.  */
+/* Return the index in the increment vector of the given INCREMENT,
+   or -1 if not found.  The latter can occur if more than
+   MAX_INCR_VEC_LEN increments have been found.  */
 
-static inline unsigned
+static inline int
 incr_vec_index (double_int increment)
 {
   unsigned i;
@@ -1975,8 +1958,10 @@ incr_vec_index (double_int increment)
   for (i = 0; i < incr_vec_len && increment != incr_vec[i].incr; i++)
     ;
 
-  gcc_assert (i < incr_vec_len);
-  return i;
+  if (i < incr_vec_len)
+    return i;
+  else
+    return -1;
 }
 
 /* Create a new statement along edge E to add BASIS_NAME to the product
@@ -2020,9 +2005,10 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
     }
   else
     {
-      unsigned i;
+      int i;
       bool negate_incr = (!address_arithmetic_p && increment.is_negative ());
       i = incr_vec_index (negate_incr ? -increment : increment);
+      gcc_assert (i >= 0);
 
       if (incr_vec[i].initializer)
 	{
@@ -2098,7 +2084,7 @@ create_phi_basis (slsr_cand_t c, gimple from_phi, tree basis_name,
 	  feeding_def = gimple_assign_lhs (basis->cand_stmt);
 	else
 	  {
-	    double_int incr = c->index - basis->index;
+	    double_int incr = -basis->index;
 	    feeding_def = create_add_on_incoming_edge (c, basis_name, incr,
 						       e, loc, known_stride);
 	  }
@@ -2158,7 +2144,7 @@ create_phi_basis (slsr_cand_t c, gimple from_phi, tree basis_name,
 static void
 replace_conditional_candidate (slsr_cand_t c)
 {
-  tree basis_name, name, var = NULL;
+  tree basis_name, name;
   slsr_cand_t basis;
   location_t loc;
   double_int stride, bump;
@@ -2177,7 +2163,7 @@ replace_conditional_candidate (slsr_cand_t c)
   stride = tree_to_double_int (c->stride);
   bump = c->index * stride;
 
-  replace_mult_candidate (c, name, bump, &var);
+  replace_mult_candidate (c, name, bump);
 }
 
 /* Compute the expected costs of inserting basis adjustments for
@@ -2273,7 +2259,7 @@ replace_uncond_cands_and_profitable_phis (slsr_cand_t c)
 /* Count the number of candidates in the tree rooted at C that have
    not already been replaced under other interpretations.  */
 
-static unsigned
+static int
 count_candidates (slsr_cand_t c)
 {
   unsigned count = cand_already_replaced (c) ? 0 : 1;
@@ -2328,7 +2314,7 @@ record_increment (slsr_cand_t c, double_int increment, bool is_phi_adjust)
 	}
     }
 
-  if (!found)
+  if (!found && incr_vec_len < MAX_INCR_VEC_LEN - 1)
     {
       /* The first time we see an increment, create the entry for it.
 	 If this is the root candidate which doesn't have a basis, set
@@ -2933,7 +2919,6 @@ static void
 insert_initializers (slsr_cand_t c)
 {
   unsigned i;
-  tree new_var = NULL_TREE;
 
   for (i = 0; i < incr_vec_len; i++)
     {
@@ -2971,8 +2956,7 @@ insert_initializers (slsr_cand_t c)
 
       /* Create a new SSA name to hold the initializer's value.  */
       stride_type = TREE_TYPE (c->stride);
-      lazy_create_slsr_reg (&new_var, stride_type);
-      new_name = make_ssa_name (new_var, NULL);
+      new_name = make_temp_ssa_name (stride_type, NULL, "slsr");
       incr_vec[i].initializer = new_name;
 
       /* Create the initializer and insert it in the latest possible
@@ -3032,7 +3016,7 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
 	    }
 	  else
 	    {
-	      unsigned j;
+	      int j;
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
 	      double_int increment = arg_cand->index - basis->index;
 
@@ -3048,14 +3032,19 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
 		  print_gimple_stmt (dump_file, phi, 0, 0);
 		  fputs ("    increment: ", dump_file);
 		  dump_double_int (dump_file, increment, false);
-		  fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
-		  if (profitable_increment_p (j))
-		    fputs ("  Replacing...\n", dump_file);
-		  else
-		    fputs ("  Not replaced.\n", dump_file);
+		  if (j < 0)
+		    fprintf (dump_file,
+			     "\n  Not replaced; incr_vec overflow.\n");
+		  else {
+		    fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
+		    if (profitable_increment_p (j))
+		      fputs ("  Replacing...\n", dump_file);
+		    else
+		      fputs ("  Not replaced.\n", dump_file);
+		  }
 		}
 
-	      if (!profitable_increment_p (j))
+	      if (j < 0 || !profitable_increment_p (j))
 		return false;
 	    }
 	}
@@ -3070,15 +3059,13 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
    the new SSA name.  */
 
 static tree
-introduce_cast_before_cand (slsr_cand_t c, tree to_type,
-			    tree from_expr, tree *new_var)
+introduce_cast_before_cand (slsr_cand_t c, tree to_type, tree from_expr)
 {
   tree cast_lhs;
   gimple cast_stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 
-  lazy_create_slsr_reg (new_var, to_type);
-  cast_lhs = make_ssa_name (*new_var, NULL);
+  cast_lhs = make_temp_ssa_name (to_type, NULL, "slsr");
   cast_stmt = gimple_build_assign_with_ops (NOP_EXPR, cast_lhs,
 					    from_expr, NULL_TREE);
   gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
@@ -3132,8 +3119,7 @@ replace_rhs_if_not_dup (enum tree_code new_code, tree new_rhs1, tree new_rhs2,
    is the rhs1 to use in creating the add/subtract.  */
 
 static void
-replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
-		       tree basis_name)
+replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 {
   gimple stmt_to_print = NULL;
   tree orig_rhs1, orig_rhs2;
@@ -3169,8 +3155,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
 	rhs2 = incr_vec[i].initializer;
       else
 	rhs2 = introduce_cast_before_cand (c, orig_type,
-					   incr_vec[i].initializer,
-					   new_var);
+					   incr_vec[i].initializer);
 
       if (incr_vec[i].incr != cand_incr)
 	{
@@ -3196,7 +3181,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
       if (types_compatible_p (orig_type, stride_type))
 	rhs2 = c->stride;
       else
-	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride, new_var);
+	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride);
       
       stmt_to_print = replace_rhs_if_not_dup (repl_code, basis_name, rhs2,
 					      orig_code, orig_rhs1, orig_rhs2,
@@ -3212,7 +3197,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree *new_var,
       if (types_compatible_p (orig_type, stride_type))
 	rhs2 = c->stride;
       else
-	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride, new_var);
+	rhs2 = introduce_cast_before_cand (c, orig_type, c->stride);
       
       if (orig_code != MINUS_EXPR
 	  || !operand_equal_p (basis_name, orig_rhs1, 0)
@@ -3278,15 +3263,15 @@ replace_profitable_candidates (slsr_cand_t c)
   if (!cand_already_replaced (c))
     {
       double_int increment = cand_abs_increment (c);
-      tree new_var = NULL;
       enum tree_code orig_code = gimple_assign_rhs_code (c->cand_stmt);
-      unsigned i;
+      int i;
 
       i = incr_vec_index (increment);
 
       /* Only process profitable increments.  Nothing useful can be done
 	 to a cast or copy.  */
-      if (profitable_increment_p (i) 
+      if (i >= 0
+	  && profitable_increment_p (i) 
 	  && orig_code != MODIFY_EXPR
 	  && orig_code != NOP_EXPR)
 	{
@@ -3310,14 +3295,14 @@ replace_profitable_candidates (slsr_cand_t c)
 
 		  /* Replace C with an add of the new basis phi and the
 		     increment.  */
-		  replace_one_candidate (c, i, &new_var, name);
+		  replace_one_candidate (c, i, name);
 		}
 	    }
 	  else
 	    {
 	      slsr_cand_t basis = lookup_cand (c->basis);
 	      tree basis_name = gimple_assign_lhs (basis->cand_stmt);
-	      replace_one_candidate (c, i, &new_var, basis_name);
+	      replace_one_candidate (c, i, basis_name);
 	    }
 	}
     }
@@ -3376,7 +3361,7 @@ analyze_candidates_and_replace (void)
 	 less expensive to calculate than the replaced statements.  */
       else
 	{
-	  unsigned length;
+	  int length;
 	  enum machine_mode mode;
 	  bool speed;
 
@@ -3390,6 +3375,8 @@ analyze_candidates_and_replace (void)
 	  length = count_candidates (c);
 	  if (!length)
 	    continue;
+	  if (length > MAX_INCR_VEC_LEN)
+	    length = MAX_INCR_VEC_LEN;
 
 	  /* Construct an array of increments for this candidate chain.  */
 	  incr_vec = XNEWVEC (incr_info, length);

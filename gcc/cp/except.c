@@ -490,6 +490,7 @@ expand_start_catch_block (tree decl)
 	decl = error_mark_node;
 
       type = prepare_eh_type (TREE_TYPE (decl));
+      mark_used (eh_type_info (type));
     }
   else
     type = NULL_TREE;
@@ -980,6 +981,16 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
     {
       error ("cannot declare catch parameter to be of rvalue "
 	     "reference type %qT", type);
+      return false;
+    }
+  else if (variably_modified_type_p (type, NULL_TREE))
+    {
+      if (is_throw)
+	error ("cannot throw expression of type %qT because it involves "
+	       "types of variable size", type);
+      else
+	error ("cannot catch type %qT because it involves types of "
+	       "variable size", type);
       return false;
     }
 

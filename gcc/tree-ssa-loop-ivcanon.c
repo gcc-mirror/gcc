@@ -1085,8 +1085,9 @@ propagate_constants_for_unrolling (basic_block bb)
       tree lhs;
 
       if (is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == INTEGER_CST
 	  && (lhs = gimple_assign_lhs (stmt), TREE_CODE (lhs) == SSA_NAME)
-	  && gimple_assign_rhs_code (stmt) == INTEGER_CST)
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	{
 	  propagate_into_all_uses (lhs, gimple_assign_rhs1 (stmt));
 	  gsi_remove (&gsi, true);

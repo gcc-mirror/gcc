@@ -1,3 +1,510 @@
+2013-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57230
+	* tree-ssa-strlen.c (handle_char_store): Record length for
+	array store from STRING_CST.
+
+	PR tree-optimization/57230
+	* tree-ssa-strlen.c (handle_char_store): Add missing integer_zerop
+	check.
+
+2013-05-12  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_init): Check size of
+	NUM_MODES_FOR_MODE_SWITCHING.
+	(epiphany_expand_prologue):
+	Remove CONFIG_REGNUM initial value handling code.
+	(epiphany_optimize_mode_switching): Handle EPIPHANY_MSW_ENTITY_CONFIG.
+	(epiphany_mode_needed, epiphany_mode_entry_exit): Likewise.
+	(emit_set_fp_mode, epiphany_mode_after): Likewise.
+	(epiphany_mode_needed) <Handle EPIPHANY_MSW_ENTITY_AND>:
+	Don't return 1 for FP_MODE_NONE.
+	* config/epiphany/epiphany.h (NUM_MODES_FOR_MODE_SWITCHING):
+	Add value for EPIPHANY_MSW_ENTITY_CONFIG.
+	(EPIPHANY_MSW_ENTITY_CONFIG, EPIPHANY_MSW_ENTITY_NUM): Define.
+	* config/epiphany/epiphany.md (save_config): New pattern.
+
+2013-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*zero_extendsidi2): Add *x->?r alternative.
+
+2013-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (memory): Handle sseishft1.
+	* config/i386/sse.md (*vec_extractv4si): Remove memory attribute.
+	(*vec_extractv2di_1): Ditto.
+
+2013-05-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-assigns.c (find_hard_regno_for): Add 1 to the cost of call
+	saved registers.
+
+2013-05-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems-eabi: Remove mthumb/march=armv7 multilib.
+	Add mthumb/march=armv7-a multilib.
+	Add mthumb/march=armv7-r multilib.
+	Add mthumb/march=armv7-a/mfpu=neon/mfloat-abi=hard multilib.
+
+2013-05-10  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config/v850/t-rtems: Add more multilibs.
+
+2013-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57214
+	* tree-ssa-loop-ivcanon.c (propagate_constants_for_unrolling): Do
+	not propagate from SSA names that occur in abnormal PHI nodes.
+
+2013-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* stor-layout.c (element_precision): New function.
+	* machmode.h (element_precision): Declare it.
+	* tree.c (build_minus_one_cst): New function.
+	(element_precision): Likewise.
+	* tree.h (build_minus_one_cst): Declare new function.
+	(element_precision): Likewise.
+	* fold-const.c (operand_equal_p): Use element_precision.
+	(fold_binary_loc): Handle vector types.
+	* convert.c (convert_to_integer): Use element_precision.
+	* gimple.c (iterative_hash_canonical_type): Handle complex and vectors
+	separately.
+
+2013-05-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (m16_uimm3_b, m16_simm4_1, m16_nsimm4_1)
+	(m16_simm5_1, m16_nsimm5_1, m16_uimm5_4, m16_nuimm5_4, m16_simm8_1)
+	(m16_nsimm8_1, m16_uimm8_1, m16_nuimm8_1, m16_uimm8_m1_1, m16_uimm8_4)
+	(m16_nuimm8_4, m16_simm8_8, m16_nsimm8_8): Delete.
+	* config/mips/mips.c (m16_check_op, m16_uimm3_b, m16_simm4_1)
+	(m16_nsimm4_1, m16_simm5_1, m16_nsimm5_1, m16_uimm5_4, m16_nuimm5_4)
+	(m16_simm8_1, m16_nsimm8_1, m16_uimm8_1, m16_nuimm8_1, m16_uimm8_m1_1)
+	(m16_uimm8_4, m16_nuimm8_4, m16_simm8_8, m16_nsimm8_8): Delete.
+	* config/mips/constraints.md (Udb8, Usb5, Usb8, Usd8, Uub8, Uuw5)
+	(Uuw8): New constraints.
+	(Usb4): Move into alphabetical order.
+	* config/mips/predicates.md (db8_operand, sb5_operand, sb8_operand)
+	(sd8_operand, ub8_operand, uw8_operand): New predicates.
+	* config/mips/mips.md (*xor<mode>3, *xor<mode>3_mips16): Name
+	previously unnamed patterns.
+	(*add<mode>3_mips16, *xor<mode>3_mips16, *<optab>si3_mips16)
+	(*ashldi3_mips16, *ashrdi3_mips16, *lshrdi3_mips16)
+	(*slt<u>_<GPR:mode><GPR2:mode>_mips16)
+	(*sle<u>_<GPR:mode><GPR2:mode>_mips16): Use constraints instead
+	of set_attr_alternative/if_then_else.  Use extended_mips16 instead
+	of specific lengths.
+
+2013-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (rotateinv): New code attr.
+	(*<rotate_insn><mode>3_1, *<rotate_insn>si3_1_zext,
+	*<rotate_insn>qi3_1_slp): Emit rorl %eax instead of
+	roll $31, %eax, etc.
+
+	PR tree-optimization/45216
+	PR tree-optimization/57157
+	* tree-ssa-forwprop.c (simplify_rotate): New function.
+	(ssa_forward_propagate_and_combine): Call it.
+
+2013-05-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Do not
+	disable peeling when we version for aliasing.
+	(vector_alignment_reachable_p): Honor explicit user alignment.
+	(vect_supportable_dr_alignment): Likewise.
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Use
+	STMT_VINFO_LOOP_PHI_EVOLUTION_PART instead of recomputing it.
+	* tree-vect-loop.c (vect_transform_loop): First apply versioning,
+	then peeling to arrange for the cost-model check to come first.
+
+2013-05-10  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac (HAVE_AS_TLS): Swap powerpc64 and powerpc cases.
+	(HAVE_LD_LARGE_TOC): Don't mention AIX in help text.
+	* configure: Regenerate.
+
+2013-05-10  Alan Modra  <amodra@gmail.com>
+
+	PR target/55033
+	* varasm.c (default_elf_select_section): Move !DECL_P check..
+	(get_named_section): ..to here before calling get_section_name.
+	Adjust assertion.
+	(default_section_type_flags): Add DECL_P check.
+	* config/i386/winnt.c (i386_pe_section_type_flags): Likewise.
+	* config/rs6000/rs6000.c (rs6000_xcoff_section_type_flags): Likewise.
+
+2013-05-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_expand_prologue):
+	When using gen_stack_adjust_str with a register offset, add a
+	REG_FRAME_RELATED_EXPR note.
+
+2013-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_extractv4si_0_zext): New pattern.
+	(*vec_extractv4si_zext_mem): Ditto.
+	(*vec_extractv2di): Add 0->x and x->x alternatives.
+	* config/i386/mmx.md (*vec_extractv2si_zext_mem): New pattern.
+	* config/i386/i386.md (*zero_extendsidi2): Add *Yj->?r alternative.
+
+2013-05-09  Jason Merrill  <jason@redhat.com>
+
+	N3639 C++1y VLA support
+	* gimplify.c (gimplify_vla_decl): Don't touch an existing
+	DECL_VALUE_EXPR.
+
+	* tree.c (build_constructor_va): New.
+	* tree.h: Declare it.
+
+2013-05-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/57084
+	* gimple-fold.c (canonicalize_constructor_val): Call
+	cgraph_get_create_real_symbol_node instead of cgraph_get_create_node.
+
+2013-05-09  Jan Hubicka  <jh@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR lto/54095
+	* symtab.c (symtab_make_decl_local): Do not add private names.
+
+2013-05-09  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54095
+	* symtab.c (insert_to_assembler_name_hash): Handle clones.
+	(unlink_from_assembler_name_hash): Likewise.
+	(symtab_prevail_in_asm_name_hash, symtab_register_node,
+	symtab_unregister_node, symtab_initialize_asm_name_hash,
+	change_decl_assembler_name): Update.
+
+2013-05-09  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md: New movtf split.
+	(*movtf_aarch64): Update.
+	(aarch64_movdi_tilow): Handle TF modes and rename to
+	aarch64_movdi_<mode>low.
+	(aarch64_movdi_tihigh): Handle TF modes and rename to
+	aarch64_movdi_<mode>high
+	(aarch64_movtihigh_di): Handle TF modes and rename to
+	aarch64_mov<mode>high_di
+	(aarch64_movtilow_di): Handle TF modes and rename to
+	aarch64_mov<mode>low_di
+	(aarch64_movtilow_tilow): Remove spurious whitespace.
+	* config/aarch64/aarch64.c (aarch64_split_128bit_move): Handle TFmode
+	splits.
+	(aarch64_print_operand): Update.
+
+2013-05-09  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac (HAVE_AS_TLS): Enable tests for powerpcle and
+	powerpc64le.
+	* configure: Regenerate.
+
+2013-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*vec_extract* splitters): Simplify post-reload
+	splitter preparation statements.
+	* config/i386/sse.md (*vec_extract* splitters): Ditto.
+	(*avx_vperm_broadcast_<mode>): Use adjust_address instead of
+	adjust_address_nv.
+
+2013-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (count_candidates): Change
+	return value to int.
+	(analyze_candidates_and_replace): Change type of length to int.
+
+2013-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (PEXTR_MODE, PEXTR_MODEx): Remove.
+	(*vec_extract<mode>): Use VI12_128 mode iterator.
+	(*vec_extract<mode>_mem): Ditto.
+	(*vec_extract*_mem splitters): Merge splitters using VI_128 mode
+	attribute.
+
+2013-05-08  Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54659
+
+	Revert:
+	2012-08-17  Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54281
+	* configure.ac: Add libintl.h to AC_CHECK_HEADERS list.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* intl.h: Always include libintl.h if HAVE_LIBINTL_H is set.
+
+2013-05-08  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54095
+	* cgraph.c (cgraph_make_node_local_1): Se unique_name.
+	* cgraph.h (symtab_node_base): Add unique_name.
+	* lto-cgraph.c (lto_output_node, lto_output_varpool_node,
+	input_overwrite_node, input_varpool_node): Stream unique_name.
+	* cgraphclones.c (cgraph_create_virtual_clone,
+	cgraph_function_versioning): Set unique_name.
+	* ipa.c (function_and_variable_visibility): Set unique_name.
+
+2013-05-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (find_phi_def): Revert former	"fix."
+	(alloc_cand_and_find_basis): Restrict conditional candidate
+	processing to CAND_MULTs.
+
+2013-05-08  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54095
+	lto-symtab.c (lto_symtab_symbol_p): New function.
+	(lto_symtab_resolve_can_prevail_p, lto_symtab_resolve_symbols,
+	lto_symtab_resolve_symbols, lto_symtab_merge_decls_2,
+	lto_symtab_merge_decls_1, lto_symtab_merge_cgraph_nodes_1):
+	Skip static symbols.
+
+2013-05-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR tree-optimization/57200
+	* tree-ssa-loop-niter.c (do_warn_aggressive_loop_optimizations):
+	Only call inform if the preceding warning_at returns true.
+
+2013-05-07  Han Shen  <shenhan@google.com>
+
+	* cfgexpand.c (record_or_union_type_has_array_p): New function.
+	(expand_used_vars): Add logic handling '-fstack-protector-strong'.
+	* common.opt (fstack-protector-strong): New option.
+	* doc/cpp.texi (__SSP_STRONG__): New builtin "__SSP_STRONG__".
+	* doc/invoke.texi (Optimization Options): Document
+	"-fstack-protector-strong".
+	* gcc.c (LINK_SSP_SPEC): Add 'fstack-protector-strong'.
+
+2013-05-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/mips/mips.c (mips_machine_reorg2): Return 0.
+
+2013-05-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira.c (update_equiv_regs): Add insn having equiv memory even if
+	it is not lhs of the insn.
+	(setup_reg_equiv): Remove insn having equiv memory which it is not
+	lhs of the insn.
+	* lra-constraints.c (process_address): Try to improve generation
+	code for address base + disp.
+	(lra_constraints): Make correct the code for checking insn setting
+	up backward equivalence.  Remove insn only if it is in the init
+	insn list.
+	* lra-eliminations.c (update_reg_eliminate): Change return value.
+	(lra_eliminate): Use the result.
+
+2013-05-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (ssescalarnummask): New mode attribute.
+	(PEXTR_MODE, PEXTR_MODEx): New mode iterators.
+	(*vec_extract<mode>): Merge from *sse4_1_pextrb_memory and
+	*sse4_1_pextrw_memory using PEXTR_MODE mode iterator. Handle
+	register target operands.
+	(*vec_extractv8hi_sse2): New pattern.
+	(*vec_extractv16qi_zext): Rename from *sse4_1_pextrb_<mode>.
+	(*vec_extractv8hi_zext): Rename from *sse2_pextrw_<mode>.
+	(*vec_extract<mode>_mem): New insn and split pattern.
+
+2013-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.c (arm_asan_shadow_offset): New function.
+	(TARGET_ASAN_SHADOW_OFFSET): Define.
+	* config/arm/linux-eabi.h (ASAN_CC1_SPEC): Define.
+	(LINUX_OR_ANDROID_CC): Add ASAN_CC1_SPEC.
+
+2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (MAX_INCR_VEC_LEN): New constant.
+	(incr_vec_index): Return -1 if increment not found.
+	(create_add_on_incoming_edge): Assert if increment not found.
+	(record_increment): Limit number of increments recorded.
+	(all_phi_incrs_profitable): Return false if an increment not found.
+	(replace_profitable_candidates): Don't process increments that were
+	not recorded.
+	(analyze_candidates_and_replace): Limit size of incr_vec.
+
+2013-05-07  Richard Biener  <rguenther@suse.de>
+
+	* calls.c (special_function_p): setjmp-like functions are leaf.
+	* builtins.def (BUILT_IN_SETJMP): setjmp is leaf.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Remove assert.
+
+2013-05-07  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>): call splitter.
+	(aarch64_simd_mov<mode>): New expander.
+	(aarch64_simd_mov_to_<mode>low): New instruction pattern.
+	(aarch64_simd_mov_to_<mode>high): Likewise.
+	(aarch64_simd_mov_from_<mode>low): Likewise.
+	(aarch64_simd_mov_from_<mode>high): Likewise.
+	(aarch64_dup_lane<mode>): Update.
+	(aarch64_dup_lanedi): New instruction pattern.
+	* config/aarch64/aarch64-protos.h (aarch64_split_simd_move): New prototype.
+	* config/aarch64/aarch64.c (aarch64_split_simd_move): New function.
+
+2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (lazy_create_slsr_reg): Remove.
+	(replace_mult_candidate): Remove unnecessary argument; remove
+	unnecessary parameter from call to introduce_cast_before_cand.
+	(replace_unconditional_candidate): Remove unnecessary parameter
+	from call to replace_mult_candidate.
+	(replace_conditional_candidate): Likewise.
+	(insert_initializers): Use make_temp_ssa_name.
+	(introduce_cast_before_cand): Remove unnecessary argument; use
+	make_temp_ssa_name.
+	(replace_one_candidate): Remove unnecessary argument; remove
+	unnecessary parameter from calls to introduce_cast_before_cand.
+	(replace_profitable_candidates): Remove unnecessary parameters
+	from calls to replace_one_candidate.
+
+2013-05-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (find_phi_def): Don't record a
+	phi def as possibly hiding a basis for a CAND_ADD whose operands
+	have been commuted in the analysis.
+	(alloc_cand_and_find_basis): Add parms to call to find_phi_def.
+
+2013-05-07  Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.md
+	(cmp_swp_<optab><ALLX:mode>_shft_<GPI:mode>): Restrict the
+	shift value between 0-4.
+
+2013-05-07  Richard Biener  <rguenther@suse.de>
+
+	* double-int.h (rshift): New overload.
+	* double-int.c (rshift): New function.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Optimize.
+	(create_reference_ops_from_ref): Remove.
+	(vn_reference_insert): Use shared ops for constructing the
+	reference and copy it.
+
+2013-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57190
+	* tree-eh.c (sink_clobbers): Properly propagate
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
+2013-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57149
+	* tree-ssa-uninit.c (uninit_undefined_value_p): New inline.
+	(can_skip_redundant_opnd, compute_uninit_opnds_pos,
+	collect_phi_def_edges, execute_late_warn_uninitialized): Use
+	uninit_undefined_value_p instead of ssa_undefined_value_p.
+
+	PR debug/57184
+	* expr.c (expand_expr_addr_expr_1): Handle COMPOUND_LITERAL_EXPR
+	for modifier == EXPAND_INITIALIZER.
+
+2013-05-07  Anton Blanchard  <anton@samba.org>
+
+	* configure.ac (HAVE_LD_LARGE_TOC): Use correct linker emulation
+	for powerpc64 little endian.
+	* configure: Regenerate.
+
+2013-05-06  Graham Stott  <grahams@btinternet.com>
+
+	* expmed.c (init_expmed_rtl): Remove unused fields reg_fld, plus_fld,
+	mult_fld, sdiv_fld1, udiv_fld1, sdiv_32_fld1, smod_32_fld1,
+	wide_mult_fld1, wide_lshr_fld1, shift_fld1, shift_mult_fld1,
+	shift_add_fld1, shift_sub0_fld1, shift_sub1_fld1.
+
+2013-05-06  Graham Stott  <grahams@btinternet.com>
+
+	* gensupport.c (add_predicate_code): Also exclude SCRATCH from rtx
+	codes which allow non-lvalues.
+
+2013-05-06  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (integer_all_onesp) <COMPLEX_CST>: Test that both
+	components are all 1s.
+	(integer_minus_onep): New function.
+	* tree.h (integer_minus_onep): Declare it.
+	* fold-const.c (fold_binary_loc) <MULT_EXPR>: Test
+	integer_minus_onep instead of integer_all_onesp.
+
+2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52933
+	* config/sh/sh.md (*cmp_div0s_0, *cmp_div0s_1, *movsicc_div0s): Add
+	variations of these patterns.
+
+2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (isa): Add x64_sse4 member.
+	(enabled): Handle x64_sse4.
+	(*movdi_internal): Add *x->?r alternative to emit pextrq $0,%xmm,%reg
+	instruction for 64bit SSE4_1 targets.  Update insn attributes.
+	(*movsi_internal): Add *x->?r alternative to emit pextrd $0,%xmm,%reg
+	instruction for SSE4_1 targets.  Update insn attributes.
+	* config/i386/sse.md (*vec_extract<ssevecmodelower>_0): Merge
+	with *sse4_1_pextrd and *sse4_1_pextrq having const_0 selector.
+	(*vec_extractv2di_1): Merge with *sse4_1_pextrq having
+	const_1 selector.
+	(*vec_extractv4si): Rename from *sse4_1_pextrd.
+	(*vec_extractv4si_zext): Rename from *sse4_1_pextrd_zext.
+	(*vec_extract<ssevecmodelower>_0 splitters): Merge splitters together.
+
+2013-05-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/57108
+	* config/sh/sh.md (tstsi_t_zero_extract_eq): Use QIHISIDI mode iterator.
+
+2013-05-06  Maxim Kuznetsov  <maks.kuznetsov@gmail.com>
+
+	* final.c (do_assembler_dialects): Don't handle curly braces and
+	vertical bar escaped by % as dialect delimiters.
+	(output_asm_insn): Print curly braces and vertical bar if escaped
+	by % and ASSEMBLER_DIALECT defined.
+	* doc/tm.texi.in (ASSEMBLER_DIALECT): Document new standard escapes.
+	* doc/tm.texi: Regenerated.
+
+2013-05-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/mips/mips.c: Include tree-pass.h.
+	(mips_reorg): Split in pre- and post-dbr_schedule parts.
+	(mips_machine_reorg2): Move mips_reorg post-dbr_schedule parts here.
+	(pass_mips_machine_reorg2): New machine specific pass.
+	(insert_pass_mips_machine_reorg2): New pass plugin definition.
+	(mips_option_override): Register the new pass.
+	* rtl.h (cleanup_barriers): Remove prototype.
+	(dbr_schedule): Likewise.
+	* jump.c (cleanup_barriers): Make static.
+	* reorg.c (dbr_schedule): Likewise.
+
+2013-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57185
+	* tree-parloops.c (add_field_for_reduction): Handle anonymous
+	SSA names properly.
+
+2013-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57106
+	* config/i386/i386.c (add_parameter_dependencies): Add dependence
+	between "first_arg" and "insn", not "last" and "insn".
+
+2013-05-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Re-enable.
+	(find_candidates_in_block): Re-enable slsr_process_phi.
+	(create_phi_basis): Fix double counting of candidate adjustment.
+
+2013-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57147
+	* tree-cfg.c (gimple_purge_dead_abnormal_call_edges): If
+	the edge is also fallthru, preserve it and just clear the
+	abnormal flag.
+	* tree-cfgcleanup.c (remove_fallthru_edge): If the edge is
+	also complex, preserve that and just clear the fallthru flag.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Also
+	update virtual operands.
+
 2013-05-06  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/linux.h (DEFAULT_ASM_ENDIAN): Define.
@@ -944,7 +1451,7 @@
 	instead of register_operand.
 	(vec_widen_<s>mult_odd_<mode>): Use general_vector_operand predicates.
 
-2013-04-28  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2013-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (finalize_size_functions): Allocate a structure and
 	reset cfun before dumping the functions.

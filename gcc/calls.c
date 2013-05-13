@@ -545,7 +545,7 @@ special_function_p (const_tree fndecl, int flags)
 		  && ! strcmp (tname, "sigsetjmp"))
 	      || (tname[1] == 'a'
 		  && ! strcmp (tname, "savectx")))
-	    flags |= ECF_RETURNS_TWICE;
+	    flags |= ECF_RETURNS_TWICE | ECF_LEAF;
 
 	  if (tname[1] == 'i'
 	      && ! strcmp (tname, "siglongjmp"))
@@ -557,7 +557,7 @@ special_function_p (const_tree fndecl, int flags)
 		   && ! strcmp (tname, "vfork"))
 	       || (tname[0] == 'g' && tname[1] == 'e'
 		   && !strcmp (tname, "getcontext")))
-	flags |= ECF_RETURNS_TWICE;
+	flags |= ECF_RETURNS_TWICE | ECF_LEAF;
 
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))

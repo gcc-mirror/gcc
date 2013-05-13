@@ -232,6 +232,12 @@ CXXABI_2.0 {
     _ZTSSt17bad_function_call;
     _ZTVSt17bad_function_call;
 
+    __cxa_throw_bad_array_new_length;
+    _Z*St20bad_array_new_length*;
+
+    __cxa_throw_bad_array_length;
+    _Z*St16bad_array_length*;
+
     # Default function.
     _ZSt11_Hash_bytesPKv*;
 

@@ -219,6 +219,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _List_const_iterator(const iterator& __x)
       : _M_node(__x._M_node) { }
 
+      iterator
+      _M_const_cast() const
+      { return iterator(const_cast<__detail::_List_node_base*>(_M_node)); }
+
       // Must downcast from List_node_base to _List_node to get to
       // _M_data.
       reference
@@ -1169,7 +1173,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  any way.  Managing the pointer is the user's responsibility.
        */
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __position);
+#else
       erase(iterator __position);
+#endif
 
       /**
        *  @brief  Remove a range of elements.
@@ -1190,11 +1198,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is the user's responsibility.
        */
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __first, const_iterator __last)
+#else
       erase(iterator __first, iterator __last)
+#endif
       {
 	while (__first != __last)
 	  __first = erase(__first);
+#if __cplusplus >= 201103L
+	return __last._M_const_cast();
+#else
 	return __last;
+#endif
       }
 
       /**

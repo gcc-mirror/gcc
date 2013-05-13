@@ -3585,7 +3585,7 @@ make_return_insns (rtx first)
 
 /* Try to find insns to place in delay slots.  */
 
-void
+static void
 dbr_schedule (rtx first)
 {
   rtx insn, next, epilogue_insn = 0;

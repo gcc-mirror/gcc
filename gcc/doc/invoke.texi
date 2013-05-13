@@ -407,8 +407,8 @@ Objective-C and Objective-C++ Dialects}.
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
 -fsplit-ivs-in-unroller -fsplit-wide-types -fstack-protector @gol
--fstack-protector-all -fstrict-aliasing -fstrict-overflow @gol
--fthread-jumps -ftracer -ftree-bit-ccp @gol
+-fstack-protector-all -fstack-protector-strong -fstrict-aliasing @gol
+-fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
 -ftree-coalesce-inline-vars -ftree-coalesce-vars -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
@@ -8956,6 +8956,12 @@ If a guard check fails, an error message is printed and the program exits.
 @item -fstack-protector-all
 @opindex fstack-protector-all
 Like @option{-fstack-protector} except that all functions are protected.
+
+@item -fstack-protector-strong
+@opindex fstack-protector-strong
+Like @option{-fstack-protector} but includes additional functions to
+be protected --- those that have local array definitions, or have
+references to local frame addresses.
 
 @item -fsection-anchors
 @opindex fsection-anchors
