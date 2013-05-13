@@ -1,3 +1,8 @@
+2013-05-13  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.dg/tree-ssa/forwprop-26.c: Add -fno-short-enums
+	to dg-options.
+
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45216
