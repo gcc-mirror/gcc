@@ -429,16 +429,20 @@
 {
   switch (which_alternative)
     {
-    case 0: return "ld1\t{%0.<Vtype>}, %1";
-    case 1: return "st1\t{%1.<Vtype>}, %0";
-    case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
-    case 3: return "#";
-    case 4: return "#";
-    case 5: return "#";
+    case 0:
+	return "ld1\t{%0.<Vtype>}, %1";
+    case 1:
+	return "st1\t{%1.<Vtype>}, %0";
+    case 2:
+	return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
+    case 3:
+    case 4:
+    case 5:
+	return "#";
     case 6:
-	return aarch64_output_simd_mov_immediate (&operands[1],
-						  <MODE>mode, 128);
-    default: gcc_unreachable ();
+	return aarch64_output_simd_mov_immediate (&operands[1], <MODE>mode, 128);
+    default:
+	gcc_unreachable ();
     }
 }
   [(set_attr "simd_type" "simd_load1,simd_store1,simd_move,simd_movgp,simd_insgp,simd_move,simd_move_imm")
@@ -479,7 +483,7 @@
   DONE;
 })
 
-(define_expand "aarch64_simd_mov<mode>"
+(define_expand "aarch64_split_simd_mov<mode>"
   [(set (match_operand:VQ 0)
         (match_operand:VQ 1))]
   "TARGET_SIMD"
@@ -489,58 +493,30 @@
 
     if (GP_REGNUM_P (REGNO (src)))
       {
-        rtx low_part = gen_lowpart (<VHALF>mode, src);
-        rtx high_part = gen_highpart (<VHALF>mode, src);
+        rtx src_low_part = gen_lowpart (<VHALF>mode, src);
+        rtx src_high_part = gen_highpart (<VHALF>mode, src);
 
         emit_insn
-          (gen_aarch64_simd_mov_to_<mode>low (dst, low_part));
+          (gen_move_lo_quad_<mode> (dst, src_low_part));
         emit_insn
-          (gen_aarch64_simd_mov_to_<mode>high (dst, high_part));
+          (gen_move_hi_quad_<mode> (dst, src_high_part));
       }
 
     else
       {
-        rtx low_half = aarch64_simd_vect_par_cnst_half (<MODE>mode, false);
-        rtx high_half = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
-        rtx low_part = gen_lowpart (<VHALF>mode, dst);
-        rtx high_part = gen_highpart (<VHALF>mode, dst);
+        rtx dst_low_part = gen_lowpart (<VHALF>mode, dst);
+        rtx dst_high_part = gen_highpart (<VHALF>mode, dst);
+        rtx lo = aarch64_simd_vect_par_cnst_half (<MODE>mode, false);
+        rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
 
         emit_insn
-          (gen_aarch64_simd_mov_from_<mode>low (low_part, src, low_half));
+          (gen_aarch64_simd_mov_from_<mode>low (dst_low_part, src, lo));
         emit_insn
-          (gen_aarch64_simd_mov_from_<mode>high (high_part, src, high_half));
+          (gen_aarch64_simd_mov_from_<mode>high (dst_high_part, src, hi));
       }
     DONE;
   }
 )
-
-(define_insn "aarch64_simd_mov_to_<mode>low"
-  [(set (zero_extract:VQ
-          (match_operand:VQ 0 "register_operand" "+w")
-          (const_int 64) (const_int 0))
-        (vec_concat:VQ
-          (match_operand:<VHALF> 1 "register_operand" "r")
-          (vec_duplicate:<VHALF> (const_int 0))))]
-  "TARGET_SIMD && reload_completed"
-  "ins\t%0.d[0], %1"
-  [(set_attr "simd_type" "simd_move")
-   (set_attr "simd_mode" "<MODE>")
-   (set_attr "length" "4")
-  ])
-
-(define_insn "aarch64_simd_mov_to_<mode>high"
-  [(set (zero_extract:VQ
-          (match_operand:VQ 0 "register_operand" "+w")
-          (const_int 64) (const_int 64))
-        (vec_concat:VQ
-          (match_operand:<VHALF> 1 "register_operand" "r")
-          (vec_duplicate:<VHALF> (const_int 0))))]
-  "TARGET_SIMD && reload_completed"
-  "ins\t%0.d[1], %1"
-  [(set_attr "simd_type" "simd_move")
-   (set_attr "simd_mode" "<MODE>")
-   (set_attr "length" "4")
-  ])
 
 (define_insn "aarch64_simd_mov_from_<mode>low"
   [(set (match_operand:<VHALF> 0 "register_operand" "=r")
@@ -549,7 +525,7 @@
           (match_operand:VQ 2 "vect_par_cnst_lo_half" "")))]
   "TARGET_SIMD && reload_completed"
   "umov\t%0, %1.d[0]"
-  [(set_attr "simd_type" "simd_move")
+  [(set_attr "simd_type" "simd_movgp")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "length" "4")
   ])
@@ -561,7 +537,7 @@
           (match_operand:VQ 2 "vect_par_cnst_hi_half" "")))]
   "TARGET_SIMD && reload_completed"
   "umov\t%0, %1.d[1]"
-  [(set_attr "simd_type" "simd_move")
+  [(set_attr "simd_type" "simd_movgp")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "length" "4")
   ])
@@ -1076,29 +1052,39 @@
 ;; Move into low-half clearing high half to 0.
 
 (define_insn "move_lo_quad_<mode>"
-  [(set (match_operand:VQ 0 "register_operand" "=w")
+  [(set (match_operand:VQ 0 "register_operand" "=w,w,w")
         (vec_concat:VQ
-	  (match_operand:<VHALF> 1 "register_operand" "w")
+	  (match_operand:<VHALF> 1 "register_operand" "w,r,r")
 	  (vec_duplicate:<VHALF> (const_int 0))))]
   "TARGET_SIMD"
-  "mov\\t%d0, %d1";
-  [(set_attr "simd_type" "simd_dup")
-   (set_attr "simd_mode" "<MODE>")]
+  "@
+   mov\\t%d0, %d1
+   fmov\t%d0, %1
+   dup\t%d0, %1"
+  [(set_attr "v8type" "*,fmov,*")
+   (set_attr "simd_type" "simd_dup,*,simd_dup")
+   (set_attr "simd_mode" "<MODE>")
+   (set_attr "simd" "yes,*,yes")
+   (set_attr "fp" "*,yes,*")
+   (set_attr "length" "4")]
 )
 
 ;; Move into high-half.
 
 (define_insn "aarch64_simd_move_hi_quad_<mode>"
-  [(set (match_operand:VQ 0 "register_operand" "+w")
+  [(set (match_operand:VQ 0 "register_operand" "+w,w")
         (vec_concat:VQ
           (vec_select:<VHALF>
                 (match_dup 0)
                 (match_operand:VQ 2 "vect_par_cnst_lo_half" ""))
-	  (match_operand:<VHALF> 1 "register_operand" "w")))]
+	  (match_operand:<VHALF> 1 "register_operand" "w,r")))]
   "TARGET_SIMD"
-  "ins\\t%0.d[1], %1.d[0]";
-  [(set_attr "simd_type" "simd_ins")
-   (set_attr "simd_mode" "<MODE>")]
+  "@
+   ins\\t%0.d[1], %1.d[0]
+   ins\\t%0.d[1], %1"
+  [(set_attr "simd_type" "simd_ins,simd_ins")
+   (set_attr "simd_mode" "<MODE>")
+   (set_attr "length" "4")]
 )
 
 (define_expand "move_hi_quad_<mode>"

@@ -1,3 +1,16 @@
+2013-05-13  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_mov<mode>): Group
+	similar switch cases.
+	(aarch64_simd_mov): Rename to aarch64_split_simd_mov. Update.
+	(aarch64_simd_mov_to_<mode>low): Delete.
+	(aarch64_simd_mov_to_<mode>high): Delete.
+	(move_lo_quad_<mode>): Add w<-r alternative.
+	(aarch64_simd_move_hi_quad_<mode>): Likewise.
+	(aarch64_simd_mov_from_*): Update type attribute.
+	* config/aarch64/aarch64.c (aarch64_split_simd_move): Refacror switch
+	statement.
+
 2013-05-13  Jan Hubicka  <jh@suse.cz>
 
 	* mode-switching.c (optimize_mode_switching): Set correct RTL profile.
