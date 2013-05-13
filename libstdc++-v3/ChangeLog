@@ -1,3 +1,11 @@
+2013-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libsupc++/Makefile.am (sources): Add bad_array_length.cc,
+	bad_array_new.cc.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/bad_array_length.cc: Tweak.
+	* libsupc++/bad_array_new.cc: Tweak.
+
 2013-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/54577
