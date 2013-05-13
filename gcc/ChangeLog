@@ -1,3 +1,7 @@
+2013-05-13  Guozhi Wei  <carrot@google.com>
+
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Mark new decl STATIC.
+
 2013-05-13  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/56975
