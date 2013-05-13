@@ -1,3 +1,12 @@
+2013-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42371
+	* gcc.dg/ipa/remref-0.c: New test.
+	* gcc.dg/ipa/remref-1a.c: Likewise.
+	* gcc.dg/ipa/remref-1b.c: Likewise.
+	* gcc.dg/ipa/remref-2a.c: Likewise.
+	* gcc.dg/ipa/remref-2b.c: Likewise.
+
 2013-05-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/vector-shift-2.c: New testcase.

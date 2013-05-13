@@ -1,3 +1,42 @@
+2013-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42371
+	* ipa-prop.h (IPA_UNDESCRIBED_USE): New macro.
+	(ipa_constant_data): New type.
+	(ipa_jump_func): Use ipa_constant_data to hold information about
+	constant jump functions.
+	(ipa_get_jf_constant): Adjust to jump function type changes.
+	(ipa_get_jf_constant_rdesc): New function.
+	(ipa_param_descriptor): New field controlled_uses.
+	(ipa_get_controlled_uses): New function.
+	(ipa_set_controlled_uses): Likewise.
+	* ipa-ref.h (ipa_find_reference): Declare.
+	* ipa-prop.c (ipa_cst_ref_desc): New type.
+	(ipa_print_node_jump_functions_for_edge): Adjust for jump function type
+	changes.
+	(ipa_set_jf_constant): Likewise.  Also create reference descriptions.
+	New parameter cs.  Adjust all callers.
+	(ipa_analyze_params_uses): Detect uncontrolled and controlled uses.
+	(remove_described_reference): New function.
+	(jfunc_rdesc_usable): Likewise.
+	(try_make_edge_direct_simple_call): Decrement controlled use count,
+	attempt to remove reference if it hits zero.
+	(combine_controlled_uses_counters): New function.
+	(propagate_controlled_uses): Likewise.
+	(ipa_propagate_indirect_call_infos): Call propagate_controlled_uses.
+	(ipa_edge_duplication_hook): Duplicate reference descriptions.
+	(ipa_print_node_params): Print described use counter.
+	(ipa_write_jump_function): Adjust to jump function type changes.
+	(ipa_read_jump_function): New parameter CS, pass it to
+	ipa_set_jf_constant.  Adjust caller.
+	(ipa_write_node_info): Stream controlled use count
+	(ipa_read_node_info): Likewise.
+	* cgraph.c (cgraph_mark_address_taken_node): Bail out instead of
+	asserting.
+	* ipa-cp.c (ipcp_discover_new_direct_edges): Decrement controlled use
+	count.  Remove cloning-added reference if it reaches zero.
+	* ipa-ref.c (ipa_find_reference): New function.
+
 2013-05-13  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (processor_target_table): Modified default 
