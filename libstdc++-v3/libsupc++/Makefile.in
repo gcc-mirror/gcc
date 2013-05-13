@@ -93,18 +93,17 @@ LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libsupc___la_LIBADD =
 am__objects_1 = array_type_info.lo atexit_arm.lo atexit_thread.lo \
 	bad_alloc.lo bad_array_length.lo bad_array_new.lo bad_cast.lo \
-	bad_typeid.lo class_type_info.lo \
-	del_op.lo del_opnt.lo del_opv.lo del_opvnt.lo dyncast.lo \
-	eh_alloc.lo eh_arm.lo eh_aux_runtime.lo eh_call.lo eh_catch.lo \
-	eh_exception.lo eh_globals.lo eh_personality.lo eh_ptr.lo \
-	eh_term_handler.lo eh_terminate.lo eh_tm.lo eh_throw.lo \
-	eh_type.lo eh_unex_handler.lo enum_type_info.lo \
-	function_type_info.lo fundamental_type_info.lo guard.lo \
-	guard_error.lo hash_bytes.lo nested_exception.lo \
-	new_handler.lo new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo \
-	pbase_type_info.lo pmem_type_info.lo pointer_type_info.lo \
-	pure.lo si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
-	vmi_class_type_info.lo vterminate.lo
+	bad_typeid.lo class_type_info.lo del_op.lo del_opnt.lo \
+	del_opv.lo del_opvnt.lo dyncast.lo eh_alloc.lo eh_arm.lo \
+	eh_aux_runtime.lo eh_call.lo eh_catch.lo eh_exception.lo \
+	eh_globals.lo eh_personality.lo eh_ptr.lo eh_term_handler.lo \
+	eh_terminate.lo eh_tm.lo eh_throw.lo eh_type.lo \
+	eh_unex_handler.lo enum_type_info.lo function_type_info.lo \
+	fundamental_type_info.lo guard.lo guard_error.lo hash_bytes.lo \
+	nested_exception.lo new_handler.lo new_op.lo new_opnt.lo \
+	new_opv.lo new_opvnt.lo pbase_type_info.lo pmem_type_info.lo \
+	pointer_type_info.lo pure.lo si_class_type_info.lo tinfo.lo \
+	tinfo2.lo vec.lo vmi_class_type_info.lo vterminate.lo
 @GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
 am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libsupc___la_OBJECTS = $(am_libsupc___la_OBJECTS)
@@ -790,12 +789,11 @@ cp-demangle.lo: cp-demangle.c
 cp-demangle.o: cp-demangle.c
 	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
 
-# Use special rules for the C++11 and C++1y sources so that the proper
-# flags are passed.
+# Use special rules for the C++11 sources so that the proper flags are passed.
 bad_array_length.lo: bad_array_length.cc
-	$(LTCXXCOMPILE) -std=gnu++1y -c $<
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 bad_array_length.o: bad_array_length.cc
-	$(CXXCOMPILE) -std=gnu++1y -c $<
+	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 bad_array_new.lo: bad_array_new.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -c $<
@@ -803,9 +801,9 @@ bad_array_new.o: bad_array_new.cc
 	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 eh_aux_runtime.lo: eh_aux_runtime.cc
-	$(LTCXXCOMPILE) -std=gnu++1y -c $<
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 eh_aux_runtime.o: eh_aux_runtime.cc
-	$(CXXCOMPILE) -std=gnu++1y -c $<
+	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 eh_ptr.lo: eh_ptr.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -c $<
