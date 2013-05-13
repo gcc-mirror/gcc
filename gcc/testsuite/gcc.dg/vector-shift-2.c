@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-ccp1" } */
+/* { dg-options "-O -fdump-tree-ccp1" } */
 
 typedef unsigned vec __attribute__ ((vector_size (16)));
 void
