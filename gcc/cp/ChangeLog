@@ -1,5 +1,8 @@
 2013-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57252
+	* decl.c (decls_match): Compare ref-qualifiers.
+
 	PR c++/57196
 	* pt.c (convert_template_argument): Use dependent_template_arg_p,
 	not uses_template_parms.
