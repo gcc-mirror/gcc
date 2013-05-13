@@ -25,13 +25,13 @@
 using namespace std;
 
 reference_wrapper<int(float)>::argument_type                               i01;
-reference_wrapper<int(float) const>::argument_type                         i02;
-reference_wrapper<int(float) volatile>::argument_type                      i03;
-reference_wrapper<int(float) const volatile>::argument_type                i04;
+// reference_wrapper<int(float) const>::argument_type                         i02;
+// reference_wrapper<int(float) volatile>::argument_type                      i03;
+// reference_wrapper<int(float) const volatile>::argument_type                i04;
 reference_wrapper<int(float)>::result_type                                 i05;
-reference_wrapper<int(float) const>::result_type                           i06;
-reference_wrapper<int(float) volatile>::result_type                        i07;
-reference_wrapper<int(float) const volatile>::result_type                  i08;
+// reference_wrapper<int(float) const>::result_type                           i06;
+// reference_wrapper<int(float) volatile>::result_type                        i07;
+// reference_wrapper<int(float) const volatile>::result_type                  i08;
 
 reference_wrapper<int(*)(float)>::argument_type                            i09;
 reference_wrapper<int(* const)(float)>::argument_type                      i10;
@@ -43,17 +43,17 @@ reference_wrapper<int(* volatile)(float)>::result_type                     i15;
 reference_wrapper<int(* const volatile)(float)>::result_type               i16;
 
 reference_wrapper<int(float, char)>::first_argument_type                   i17;
-reference_wrapper<int(float, char) const>::first_argument_type             i18;
-reference_wrapper<int(float, char) volatile>::first_argument_type          i19;
-reference_wrapper<int(float, char) const volatile>::first_argument_type    i20;
+// reference_wrapper<int(float, char) const>::first_argument_type             i18;
+// reference_wrapper<int(float, char) volatile>::first_argument_type          i19;
+// reference_wrapper<int(float, char) const volatile>::first_argument_type    i20;
 reference_wrapper<int(float, char)>::second_argument_type                  i21;
-reference_wrapper<int(float, char) const>::second_argument_type            i22;
-reference_wrapper<int(float, char) volatile>::second_argument_type         i23;
-reference_wrapper<int(float, char) const volatile>::second_argument_type   i24;
+// reference_wrapper<int(float, char) const>::second_argument_type            i22;
+// reference_wrapper<int(float, char) volatile>::second_argument_type         i23;
+// reference_wrapper<int(float, char) const volatile>::second_argument_type   i24;
 reference_wrapper<int(float, char)>::result_type                           i25;
-reference_wrapper<int(float, char) const>::result_type                     i26;
-reference_wrapper<int(float, char) volatile>::result_type                  i27;
-reference_wrapper<int(float, char) const volatile>::result_type            i28;
+// reference_wrapper<int(float, char) const>::result_type                     i26;
+// reference_wrapper<int(float, char) volatile>::result_type                  i27;
+// reference_wrapper<int(float, char) const volatile>::result_type            i28;
 
 reference_wrapper<int(*)(float, char)>::first_argument_type                i29;
 reference_wrapper<int(* const)(float, char)>::first_argument_type          i30;

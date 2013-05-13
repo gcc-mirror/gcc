@@ -3,6 +3,7 @@
 
 /* { dg-do run { target { *-*-linux* } } } */
 /* { dg-require-effective-target clone } */
+/* { dg-require-effective-target hw } */
 /* { dg-options "-D_GNU_SOURCE" } */
 
 #include <stdio.h>

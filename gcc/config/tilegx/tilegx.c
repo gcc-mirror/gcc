@@ -1429,14 +1429,16 @@ expand_set_cint64_one_inst (rtx dest_reg,
     }
   else if (!three_wide_only)
     {
-      rtx imm_op = GEN_INT (val);
-
-      if (satisfies_constraint_J (imm_op)
-	  || satisfies_constraint_K (imm_op)
-	  || satisfies_constraint_N (imm_op)
-	  || satisfies_constraint_P (imm_op))
+      /* Test for the following constraints: J, K, N, P.  We avoid
+	 generating an rtx and using existing predicates because we
+	 can be testing and rejecting a lot of constants, and GEN_INT
+	 is O(N).  */
+      if ((val >= -32768 && val <= 65535)
+	  || ((val == (val & 0xFF) * 0x0101010101010101LL))
+	  || (val == ((trunc_int_for_mode (val, QImode) & 0xFFFF)
+		      * 0x0001000100010001LL)))
 	{
-	  emit_move_insn (dest_reg, imm_op);
+	  emit_move_insn (dest_reg, GEN_INT (val));
 	  return true;
 	}
     }
@@ -2895,6 +2897,7 @@ static struct tile_builtin_info tilegx_builtin_info[TILEGX_BUILTIN_max] = {
   { CODE_FOR_lshrdi3,                   NULL }, /* shru */
   { CODE_FOR_lshrsi3,                   NULL }, /* shrux */
   { CODE_FOR_insn_shufflebytes,         NULL }, /* shufflebytes */
+  { CODE_FOR_insn_shufflebytes1,        NULL }, /* shufflebytes1 */
   { CODE_FOR_insn_st,                   NULL }, /* st */
   { CODE_FOR_insn_st1,                  NULL }, /* st1 */
   { CODE_FOR_insn_st2,                  NULL }, /* st2 */
@@ -3223,6 +3226,7 @@ static const struct tilegx_builtin_def tilegx_builtins[] = {
   { "__insn_shrux",              TILEGX_INSN_SHRUX,              true,  "iii"  },
   { "__insn_shruxi",             TILEGX_INSN_SHRUX,              true,  "iii"  },
   { "__insn_shufflebytes",       TILEGX_INSN_SHUFFLEBYTES,       true,  "llll" },
+  { "__insn_shufflebytes1",      TILEGX_INSN_SHUFFLEBYTES1,      true,  "lll"  },
   { "__insn_st",                 TILEGX_INSN_ST,                 false, "vpl"  },
   { "__insn_st1",                TILEGX_INSN_ST1,                false, "vpl"  },
   { "__insn_st2",                TILEGX_INSN_ST2,                false, "vpl"  },
@@ -3995,11 +3999,10 @@ tilegx_expand_prologue (void)
 
 	if (r == NULL_RTX)
 	  {
-	    rtx p = compute_frame_addr (offset, &next_scratch_regno);
-	    r = gen_rtx_REG (Pmode, next_scratch_regno--);
-	    reg_save_addr[which_scratch] = r;
-
-	    emit_insn (gen_rtx_SET (VOIDmode, r, p));
+	    int prev_scratch_regno = next_scratch_regno;
+	    r = compute_frame_addr (offset, &next_scratch_regno);
+	    if (prev_scratch_regno != next_scratch_regno)
+	      reg_save_addr[which_scratch] = r;
 	  }
 	else
 	  {
@@ -4786,13 +4789,8 @@ tilegx_reorg (void)
 int
 tilegx_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
 {
-  if (flag_pic)
-    {
-      int type = TARGET_32BIT ? DW_EH_PE_sdata4 : DW_EH_PE_sdata8;
-      return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
-    }
-  else
-    return DW_EH_PE_absptr;
+  int type = TARGET_32BIT ? DW_EH_PE_sdata4 : DW_EH_PE_sdata8;
+  return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
 }
 
 

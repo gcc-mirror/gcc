@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Constants used to discriminate diagnostics.  */
 typedef enum
 {
-#define DEFINE_DIAGNOSTIC_KIND(K, msgid) K,
+#define DEFINE_DIAGNOSTIC_KIND(K, msgid, C) K,
 #include "diagnostic.def"
 #undef DEFINE_DIAGNOSTIC_KIND
   DK_LAST_DIAGNOSTIC_KIND,

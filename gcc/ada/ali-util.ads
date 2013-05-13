@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,6 +56,13 @@ package ALI.Util is
       --  This flag is set to True if the corresponding source file was
       --  located and the Stamp value was set from the actual source file.
       --  It is always false if Check_Source_Files is not set.
+
+      Stamp_File : File_Name_Type;
+      --  File that Stamp came from. If Source_Found is True, then Stamp is the
+      --  timestamp of the source file, and this is the name of the source
+      --  file. If Source_Found is False, then Stamp comes from a dependency
+      --  line in an ALI file, this is the name of that ALI file. Used only in
+      --  verbose mode, for messages.
 
       All_Timestamps_Match : Boolean;
       --  This flag is set only if all files referencing this source file

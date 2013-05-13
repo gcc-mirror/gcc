@@ -47,6 +47,8 @@
 #    else
 #      define SIZE 220
 #    endif
+#  elif defined (_AIX)
+#    define SIZE 208
 #  else
 #    define SIZE 240
 #  endif

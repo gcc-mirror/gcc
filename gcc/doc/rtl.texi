@@ -623,12 +623,13 @@ printed as @samp{/u}.
 @cindex @code{call_insn} and @samp{/v}
 @cindex @code{jump_insn} and @samp{/v}
 @cindex @code{code_label} and @samp{/v}
+@cindex @code{jump_table_data} and @samp{/v}
 @cindex @code{barrier} and @samp{/v}
 @cindex @code{note} and @samp{/v}
-@cindex @code{volatil}, in @code{insn}, @code{call_insn}, @code{jump_insn}, @code{code_label}, @code{barrier}, and @code{note}
+@cindex @code{volatil}, in @code{insn}, @code{call_insn}, @code{jump_insn}, @code{code_label}, @code{jump_table_data}, @code{barrier}, and @code{note}
 @item INSN_DELETED_P (@var{x})
 In an @code{insn}, @code{call_insn}, @code{jump_insn}, @code{code_label},
-@code{barrier}, or @code{note},
+@code{jump_table_data}, @code{barrier}, or @code{note},
 nonzero if the insn has been deleted.  Stored in the
 @code{volatil} field and printed as @samp{/v}.
 
@@ -782,10 +783,11 @@ Stored in the @code{unchanging} field and printed as @samp{/u}.
 @cindex @code{insn} and @samp{/s}
 @cindex @code{call_insn} and @samp{/s}
 @cindex @code{jump_insn} and @samp{/s}
-@cindex @code{in_struct}, in @code{insn}, @code{jump_insn} and @code{call_insn}
+@cindex @code{jump_table_data} and @samp{/s}
+@cindex @code{in_struct}, in @code{insn}, @code{call_insn}, @code{jump_insn} and @code{jump_table_data}
 @item SCHED_GROUP_P (@var{x})
-During instruction scheduling, in an @code{insn}, @code{call_insn} or
-@code{jump_insn}, indicates that the
+During instruction scheduling, in an @code{insn}, @code{call_insn},
+@code{jump_insn} or @code{jump_table_data}, indicates that the
 previous insn must be scheduled together with this insn.  This is used to
 ensure that certain groups of instructions will not be split up by the
 instruction scheduling pass, for example, @code{use} insns before
@@ -1454,6 +1456,20 @@ Returns the number of units contained in a mode, i.e.,
 @findex GET_CLASS_NARROWEST_MODE
 @item GET_CLASS_NARROWEST_MODE (@var{c})
 Returns the narrowest mode in mode class @var{c}.
+@end table
+
+The following 4 variables are defined on every target.   They can be
+used to allocate buffers that are guaranteed to be large enough to
+hold any value that can be represented on the target.   
+
+@table @code
+@findex MAX_BITSIZE_MODE_ANY_INT
+@item MAX_BITSIZE_MODE_ANY_INT
+The maximum of MAX_BITSIZE_MODE_INT and MAX_BITSIZE_MODE_PARTIAL_INT.
+
+@findex MAX_BITSIZE_MODE_ANY_MODE
+@item MAX_BITSIZE_MODE_ANY_MODE
+The bitsize of the largest mode on the target.   
 @end table
 
 @findex byte_mode
@@ -3083,17 +3099,10 @@ side-effects.
 
 @findex sequence
 @item (sequence [@var{insns} @dots{}])
-Represents a sequence of insns.  Each of the @var{insns} that appears
-in the vector is suitable for appearing in the chain of insns, so it
-must be an @code{insn}, @code{jump_insn}, @code{call_insn},
-@code{code_label}, @code{barrier} or @code{note}.
-
-A @code{sequence} RTX is never placed in an actual insn during RTL
-generation.  It represents the sequence of insns that result from a
-@code{define_expand} @emph{before} those insns are passed to
-@code{emit_insn} to insert them in the chain of insns.  When actually
-inserted, the individual sub-insns are separated out and the
-@code{sequence} is forgotten.
+Represents a sequence of insns.  If a @code{sequence} appears in the
+chain of insns, then each of the @var{insns} that appears in the sequence
+must be suitable for appearing in the chain of insns, i.e. must satisfy
+the @code{INSN_P} predicate.
 
 After delay-slot scheduling is completed, an insn and all the insns that
 reside in its delay slots are grouped together into a @code{sequence}.
@@ -3107,6 +3116,19 @@ the effect of the insns in the delay slots.  In such a case,
 the branch and should be executed only if the branch is taken; otherwise
 the insn should be executed only if the branch is not taken.
 @xref{Delay Slots}.
+
+Some back ends also use @code{sequence} objects for purposes other than
+delay-slot groups.  This is not supported in the common parts of the
+compiler, which treat such sequences as delay-slot groups.
+
+DWARF2 Call Frame Address (CFA) adjustments are sometimes also expressed
+using @code{sequence} objects as the value of a @code{RTX_FRAME_RELATED_P}
+note.  This only happens if the CFA adjustments cannot be easily derived
+from the pattern of the instruction to which the note is attached.  In
+such cases, the value of the note is used instead of best-guesing the
+semantics of the instruction.  The back end can attach notes containing
+a @code{sequence} of @code{set} patterns that express the effect of the
+parent instruction.
 @end table
 
 These expression codes appear in place of a side effect, as the body of
@@ -3523,6 +3545,18 @@ them, is the function @code{output_alternate_entry_point}, in
 
 To set the kind of a label, use the @code{SET_LABEL_KIND} macro.
 
+@findex jump_table_data
+@item jump_table_data
+A @code{jump_table_data} insn is a placeholder for the jump-table data
+of a @code{casesi} or @code{tablejump} insn.  They are placed after
+a @code{tablejump_p} insn.  A @code{jump_table_data} insn is not part o
+a basic blockm but it is associated with the basic block that ends with
+the @code{tablejump_p} insn.  The @code{PATTERN} of a @code{jump_table_data}
+is always either an @code{addr_vec} or an @code{addr_diff_vec}, and a
+@code{jump_table_data} insn is always preceded by a @code{code_label}.
+The @code{tablejump_p} insn refers to that @code{code_label} via its
+@code{JUMP_LABEL}.
+
 @findex barrier
 @item barrier
 Barriers are placed in the instruction stream when control cannot flow
@@ -3574,28 +3608,8 @@ of debugging information.
 @item NOTE_INSN_EH_REGION_BEG
 @itemx NOTE_INSN_EH_REGION_END
 These types of notes indicate the position of the beginning and end of a
-level of scoping for exception handling.  @code{NOTE_BLOCK_NUMBER}
-identifies which @code{CODE_LABEL} or @code{note} of type
-@code{NOTE_INSN_DELETED_LABEL} is associated with the given region.
-
-@findex NOTE_INSN_LOOP_BEG
-@findex NOTE_INSN_LOOP_END
-@item NOTE_INSN_LOOP_BEG
-@itemx NOTE_INSN_LOOP_END
-These types of notes indicate the position of the beginning and end
-of a @code{while} or @code{for} loop.  They enable the loop optimizer
-to find loops quickly.
-
-@findex NOTE_INSN_LOOP_CONT
-@item NOTE_INSN_LOOP_CONT
-Appears at the place in a loop that @code{continue} statements jump to.
-
-@findex NOTE_INSN_LOOP_VTOP
-@item NOTE_INSN_LOOP_VTOP
-This note indicates the place in a loop where the exit test begins for
-those loops in which the exit test has been duplicated.  This position
-becomes another virtual start of the loop when considering loop
-invariants.
+level of scoping for exception handling.  @code{NOTE_EH_HANDLER}
+identifies which region is associated with these notes.
 
 @findex NOTE_INSN_FUNCTION_BEG
 @item NOTE_INSN_FUNCTION_BEG

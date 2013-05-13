@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -807,64 +807,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
          end if;
       end Replace;
 
-      -----------------------------------
-      -- Update_Element_Preserving_Key --
-      -----------------------------------
-
-      procedure Update_Element_Preserving_Key
-        (Container : in out Set;
-         Position  : Cursor;
-         Process   : not null access procedure (Element : in out Element_Type))
-      is
-      begin
-         if not Has_Element (Container, Position) then
-            raise Constraint_Error with
-              "Position cursor has no element";
-         end if;
-
-         pragma Assert (Vet (Container, Position.Node),
-                        "bad cursor in Update_Element_Preserving_Key");
-
-         declare
-            N : Tree_Types.Nodes_Type renames Container.Nodes;
-
-            E : Element_Type renames N (Position.Node).Element;
-            K : constant Key_Type := Key (E);
-
-            B : Natural renames Container.Busy;
-            L : Natural renames Container.Lock;
-
-         begin
-            B := B + 1;
-            L := L + 1;
-
-            begin
-               Process (E);
-            exception
-               when others =>
-                  L := L - 1;
-                  B := B - 1;
-                  raise;
-            end;
-
-            L := L - 1;
-            B := B - 1;
-
-            if Equivalent_Keys (K, Key (E)) then
-               return;
-            end if;
-         end;
-
-         declare
-            X : constant Count_Type := Position.Node;
-         begin
-            Tree_Operations.Delete_Node_Sans_Free (Container, X);
-            Formal_Ordered_Sets.Free (Container, X);
-         end;
-
-         raise Program_Error with "key was modified";
-      end Update_Element_Preserving_Key;
-
    end Generic_Keys;
 
    -----------------
@@ -892,11 +834,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Insert (Container, New_Item, Position, Inserted);
 
       if not Inserted then
-         if Container.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (set is locked)";
-         end if;
-
          declare
             N : Tree_Types.Nodes_Type renames Container.Nodes;
          begin
@@ -1122,50 +1059,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       return Set_Ops.Set_Subset (Subset, Of_Set => Of_Set);
    end Is_Subset;
 
-   -------------
-   -- Iterate --
-   -------------
-
-   procedure Iterate
-     (Container : Set;
-      Process   : not null access procedure (Container : Set;
-                                             Position : Cursor))
-   is
-      procedure Process_Node (Node : Count_Type);
-      pragma Inline (Process_Node);
-
-      procedure Local_Iterate is
-        new Tree_Operations.Generic_Iteration (Process_Node);
-
-      ------------------
-      -- Process_Node --
-      ------------------
-
-      procedure Process_Node (Node : Count_Type) is
-      begin
-         Process (Container, (Node => Node));
-      end Process_Node;
-
-      --  Local variables
-
-      B : Natural renames Container'Unrestricted_Access.Busy;
-
-   --  Start of prccessing for Iterate
-
-   begin
-      B := B + 1;
-
-      begin
-         Local_Iterate (Container);
-      exception
-         when others =>
-            B := B - 1;
-            raise;
-      end;
-
-      B := B - 1;
-   end Iterate;
-
    ----------
    -- Last --
    ----------
@@ -1257,11 +1150,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
            "Source length exceeds Target capacity";
       end if;
 
-      if Source.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Source (list is busy)";
-      end if;
-
       Clear (Target);
 
       loop
@@ -1347,85 +1235,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       Position := Previous (Container, Position);
    end Previous;
 
-   -------------------
-   -- Query_Element --
-   -------------------
-
-   procedure Query_Element
-     (Container : in out Set;
-      Position  : Cursor;
-      Process   : not null access procedure (Element : Element_Type))
-   is
-   begin
-      if not Has_Element (Container, Position) then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      pragma Assert (Vet (Container, Position.Node),
-                     "bad cursor in Query_Element");
-
-      declare
-         B : Natural renames Container.Busy;
-         L : Natural renames Container.Lock;
-
-      begin
-         B := B + 1;
-         L := L + 1;
-
-         begin
-            Process (Container.Nodes (Position.Node).Element);
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-               raise;
-         end;
-
-         L := L - 1;
-         B := B - 1;
-      end;
-   end Query_Element;
-
-   ----------
-   -- Read --
-   ----------
-
-   procedure Read
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : out Set)
-   is
-      procedure Read_Element (Node : in out Node_Type);
-      pragma Inline (Read_Element);
-
-      procedure Allocate is
-        new Generic_Allocate (Read_Element);
-
-      procedure Read_Elements is
-        new Tree_Operations.Generic_Read (Allocate);
-
-      ------------------
-      -- Read_Element --
-      ------------------
-
-      procedure Read_Element (Node : in out Node_Type) is
-      begin
-         Element_Type'Read (Stream, Node.Element);
-      end Read_Element;
-
-   --  Start of processing for Read
-
-   begin
-      Read_Elements (Stream, Container);
-   end Read;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor)
-   is
-   begin
-      raise Program_Error with "attempt to stream set cursor";
-   end Read;
-
    -------------
    -- Replace --
    -------------
@@ -1437,11 +1246,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
       if Node = 0 then
          raise Constraint_Error with
            "attempt to replace element not in set";
-      end if;
-
-      if Container.Lock > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (set is locked)";
       end if;
 
       Container.Nodes (Node).Element := New_Item;
@@ -1502,11 +1306,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
          null;
 
       else
-         if Tree.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (set is locked)";
-         end if;
-
          NN (Node).Element := Item;
          return;
       end if;
@@ -1518,11 +1317,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       elsif Item < NN (Hint).Element then
          if Hint = Node then
-            if Tree.Lock > 0 then
-               raise Program_Error with
-                 "attempt to tamper with cursors (set is locked)";
-            end if;
-
             NN (Node).Element := Item;
             return;
          end if;
@@ -1532,7 +1326,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
          raise Program_Error with "attempt to replace existing element";
       end if;
 
-      Tree_Operations.Delete_Node_Sans_Free (Tree, Node);  -- Checks busy-bit
+      Tree_Operations.Delete_Node_Sans_Free (Tree, Node);
 
       Local_Insert_With_Hint
         (Tree     => Tree,
@@ -1561,48 +1355,6 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
       Replace_Element (Container, Position.Node, New_Item);
    end Replace_Element;
-
-   ---------------------
-   -- Reverse_Iterate --
-   ---------------------
-
-   procedure Reverse_Iterate
-     (Container : Set;
-      Process   : not null access procedure (Container : Set;
-                                             Position : Cursor))
-   is
-      procedure Process_Node (Node : Count_Type);
-      pragma Inline (Process_Node);
-
-      procedure Local_Reverse_Iterate is
-        new Tree_Operations.Generic_Reverse_Iteration (Process_Node);
-
-      ------------------
-      -- Process_Node --
-      ------------------
-
-      procedure Process_Node (Node : Count_Type) is
-      begin
-         Process (Container, (Node => Node));
-      end Process_Node;
-
-      B : Natural renames Container'Unrestricted_Access.Busy;
-
-   --  Start of processing for Reverse_Iterate
-
-   begin
-      B := B + 1;
-
-      begin
-         Local_Reverse_Iterate (Container);
-      exception
-         when others =>
-            B := B - 1;
-            raise;
-      end;
-
-      B := B - 1;
-   end Reverse_Iterate;
 
    -----------
    -- Right --
@@ -1780,47 +1532,5 @@ package body Ada.Containers.Formal_Ordered_Sets is
          S.Union (Right);
       end return;
    end Union;
-
-   -----------
-   -- Write --
-   -----------
-
-   procedure Write
-     (Stream    : not null access Root_Stream_Type'Class;
-      Container : Set)
-   is
-      procedure Write_Element
-        (Stream : not null access Root_Stream_Type'Class;
-         Node   : Node_Type);
-      pragma Inline (Write_Element);
-
-      procedure Write_Elements is
-        new Tree_Operations.Generic_Write (Write_Element);
-
-      -------------------
-      -- Write_Element --
-      -------------------
-
-      procedure Write_Element
-        (Stream : not null access Root_Stream_Type'Class;
-         Node   : Node_Type)
-      is
-      begin
-         Element_Type'Write (Stream, Node.Element);
-      end Write_Element;
-
-   --  Start of processing for Write
-
-   begin
-      Write_Elements (Stream, Container);
-   end Write;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor)
-   is
-   begin
-      raise Program_Error with "attempt to stream set cursor";
-   end Write;
 
 end Ada.Containers.Formal_Ordered_Sets;

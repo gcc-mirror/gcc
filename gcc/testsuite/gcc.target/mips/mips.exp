@@ -238,6 +238,7 @@ set mips_option_groups {
     fp "-mfp(32|64)"
     gp "-mgp(32|64)"
     long "-mlong(32|64)"
+    micromips "-mmicromips|-mno-micromips"
     mips16 "-mips16|-mno-mips16|-mflip-mips16"
     mips3d "-mips3d|-mno-mips3d"
     pic "-f(no-|)(pic|PIC)"
@@ -816,6 +817,8 @@ proc mips-dg-finish {} {
 #            |                           |
 #         -mips16/-mflip-mips16       -mno-mips16
 #            |                           |
+#         -micromips                  -mno-micromips
+#            |                           |
 #         -mips3d                     -mno-mips3d
 #            |                           |
 #         -mpaired-single             -mno-paired-single
@@ -904,6 +907,8 @@ proc mips-dg-options { args } {
 
     # Handle dependencies between options on the left of the
     # dependency diagram.
+    mips_option_dependency options "-mips16" "-mno-micromips"
+    mips_option_dependency options "-mmicromips" "-mno-mips16"
     mips_option_dependency options "-mips3d" "-mpaired-single"
     mips_option_dependency options "-mpaired-single" "-mfp64"
     mips_option_dependency options "-mfp64" "-mhard-float"
@@ -1246,6 +1251,10 @@ proc mips-dg-options { args } {
 	append extra_tool_flags " -DMIPS16=__attribute__((mips16))"
     }
 
+    if { [mips_have_test_option_p options "-mmicromips"] } {
+	append extra_tool_flags " -DMICROMIPS=__attribute__((micromips))"
+    }
+
     # Use our version of gcc-dg-test for this test.
     if { ![string equal [info procs "mips-gcc-dg-test"] ""] } {
 	rename gcc-dg-test mips-old-gcc-dg-test
@@ -1275,6 +1284,6 @@ proc mips-gcc-dg-test { prog do_what extra_tool_flags } {
 dg-init
 mips-dg-init
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
-    "-DNOMIPS16=__attribute__((nomips16))"
+    "-DNOMIPS16=__attribute__((nomips16)) -DNOMICROMIPS=__attribute__((nomicromips)) -DNOCOMPRESSION=__attribute__((nocompression))"
 mips-dg-finish
 dg-finish

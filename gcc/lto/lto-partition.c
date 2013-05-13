@@ -755,6 +755,56 @@ lto_balanced_map (void)
   free (order);
 }
 
+/* Mangle NODE symbol name into a local name.  
+   This is necessary to do
+   1) if two or more static vars of same assembler name
+      are merged into single ltrans unit.
+   2) if prevoiusly static var was promoted hidden to avoid possible conflict
+      with symbols defined out of the LTO world.
+*/
+
+static void
+privatize_symbol_name (symtab_node node)
+{
+  tree decl = node->symbol.decl;
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  char *label;
+
+  /* Our renaming machinery do not handle more than one change of assembler name.
+     We should not need more than one anyway.  */
+  if (node->symbol.lto_file_data
+      && lto_get_decl_name_mapping (node->symbol.lto_file_data, name) != name)
+    {
+      if (cgraph_dump_file)
+	fprintf (cgraph_dump_file,
+		"Not privatizing symbol name: %s. It privatized already.\n",
+		name);
+      return;
+    }
+  /* Avoid mangling of already mangled clones. 
+     ???  should have a flag whether a symbol has a 'private' name already,
+     since we produce some symbols like that i.e. for global constructors
+     that are not really clones.  */
+  if (node->symbol.unique_name)
+    {
+      if (cgraph_dump_file)
+	fprintf (cgraph_dump_file,
+		"Not privatizing symbol name: %s. Has unique name.\n",
+		name);
+      return;
+    }
+  ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+  change_decl_assembler_name (decl, clone_function_name (decl, "lto_priv"));
+  if (node->symbol.lto_file_data)
+    lto_record_renamed_decl (node->symbol.lto_file_data, name,
+			     IDENTIFIER_POINTER
+			     (DECL_ASSEMBLER_NAME (decl)));
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file,
+	    "Privatizing symbol name: %s -> %s\n",
+	    name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+}
+
 /* Promote variable VNODE to be static.  */
 
 static void
@@ -768,6 +818,9 @@ promote_symbol (symtab_node node)
 
   gcc_checking_assert (!TREE_PUBLIC (node->symbol.decl)
 		       && !DECL_EXTERNAL (node->symbol.decl));
+  /* Be sure that newly public symbol does not conflict with anything already
+     defined by the non-LTO part.  */
+  privatize_symbol_name (node);
   TREE_PUBLIC (node->symbol.decl) = 1;
   DECL_VISIBILITY (node->symbol.decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->symbol.decl) = true;
@@ -776,6 +829,85 @@ promote_symbol (symtab_node node)
 	    "Promoting as hidden: %s\n", symtab_node_name (node));
 }
 
+/* Return true if NODE needs named section even if it won't land in the partition
+   symbol table.
+   FIXME: we should really not use named sections for inline clones and master clones.  */
+
+static bool
+may_need_named_section_p (lto_symtab_encoder_t encoder, symtab_node node)
+{
+  struct cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+  if (!cnode)
+    return false;
+  if (symtab_real_symbol_p (node))
+    return false;
+  if (!cnode->global.inlined_to && !cnode->clones)
+    return false;
+  return (!encoder
+	  || (lto_symtab_encoder_lookup (encoder, node) != LCC_NOT_FOUND
+              && lto_symtab_encoder_encode_body_p (encoder,
+				                   cnode)));
+}
+
+/* If NODE represents a static variable.  See if there are other variables
+   of the same name in partition ENCODER (or in whole compilation unit if
+   ENCODER is NULL) and if so, mangle the statics.  Always mangle all
+   conflicting statics, so we reduce changes of silently miscompiling
+   asm statemnets refering to them by symbol name.  */
+
+static void
+rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
+{
+  tree decl = node->symbol.decl;
+  symtab_node s;
+  tree name = DECL_ASSEMBLER_NAME (decl);
+
+  /* See if this is static symbol. */
+  if ((node->symbol.externally_visible
+      /* FIXME: externally_visible is somewhat illogically not set for
+	 external symbols (i.e. those not defined).  Remove this test
+	 once this is fixed.  */
+        || DECL_EXTERNAL (node->symbol.decl)
+        || !symtab_real_symbol_p (node))
+       && !may_need_named_section_p (encoder, node))
+    return;
+
+  /* Now walk symbols sharing the same name and see if there are any conflicts.
+     (all types of symbols counts here, since we can not have static of the
+     same name as external or public symbol.)  */
+  for (s = symtab_node_for_asm (name);
+       s; s = s->symbol.next_sharing_asm_name)
+    if ((symtab_real_symbol_p (s) || may_need_named_section_p (encoder, s))
+	&& s->symbol.decl != node->symbol.decl
+	&& (!encoder
+	    || lto_symtab_encoder_lookup (encoder, s) != LCC_NOT_FOUND))
+       break;
+
+  /* OK, no confict, so we have nothing to do.  */
+  if (!s)
+    return;
+
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file,
+	    "Renaming statics with asm name: %s\n", symtab_node_name (node));
+
+  /* Assign every symbol in the set that shares the same ASM name an unique
+     mangled name.  */
+  for (s = symtab_node_for_asm (name); s;)
+    if (!s->symbol.externally_visible
+	&& ((symtab_real_symbol_p (s)
+             && !DECL_EXTERNAL (node->symbol.decl)
+	     && !TREE_PUBLIC (node->symbol.decl))
+ 	    || may_need_named_section_p (encoder, s))
+	&& (!encoder
+	    || lto_symtab_encoder_lookup (encoder, s) != LCC_NOT_FOUND))
+      {
+        privatize_symbol_name (s);
+	/* Re-start from beggining since we do not know how many symbols changed a name.  */
+	s = symtab_node_for_asm (name);
+      }
+   else s = s->symbol.next_sharing_asm_name;
+}
 
 /* Find out all static decls that need to be promoted to global because
    of cross file sharing.  This function must be run in the WPA mode after
@@ -801,15 +933,16 @@ lto_promote_cross_file_statics (void)
   for (i = 0; i < n_sets; i++)
     {
       lto_symtab_encoder_iterator lsei;
-      lto_symtab_encoder_t encoder;
-      ltrans_partition part
-	= ltrans_partitions[i];
+      lto_symtab_encoder_t encoder = ltrans_partitions[i]->encoder;
 
-      encoder = part->encoder;
       for (lsei = lsei_start (encoder); !lsei_end_p (lsei);
 	   lsei_next (&lsei))
         {
           symtab_node node = lsei_node (lsei);
+
+	  /* If symbol is static, rename it if its assembler name clash with
+	     anything else in this unit.  */
+	  rename_statics (encoder, node);
 
 	  /* No need to promote if symbol already is externally visible ... */
 	  if (node->symbol.externally_visible
@@ -823,4 +956,15 @@ lto_promote_cross_file_statics (void)
           promote_symbol (node);
         }
     }
+}
+
+/* Rename statics in the whole unit in the case that 
+   we do -flto-partition=none.  */
+
+void
+lto_promote_statics_nonwpa (void)
+{
+  symtab_node node;
+  FOR_EACH_SYMBOL (node)
+    rename_statics (NULL, node);
 }

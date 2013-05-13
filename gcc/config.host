@@ -214,7 +214,7 @@ case ${host} in
         ;;
     esac
     ;;
-  i[34567]86-*-cygwin*)
+  i[34567]86-*-cygwin* | x86_64-*-cygwin*)
     host_xm_file=i386/xm-cygwin.h
     out_host_hook_obj=host-cygwin.o
     host_xmake_file="${host_xmake_file} i386/x-cygwin"

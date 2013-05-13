@@ -57,3 +57,6 @@
 
 #define ANDROID_ENDFILE_SPEC \
   "%{shared: crtend_so%O%s;: crtend_android%O%s}"
+
+#undef TARGET_HAS_IFUNC_P
+#define TARGET_HAS_IFUNC_P linux_android_has_ifunc_p

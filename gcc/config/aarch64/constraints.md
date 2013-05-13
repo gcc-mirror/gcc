@@ -152,6 +152,22 @@
 							  NULL, NULL, NULL,
 							  NULL, NULL) != 0")))
 
+(define_constraint "Dh"
+  "@internal
+ A constraint that matches an immediate operand valid for\
+ AdvSIMD scalar move in HImode."
+ (and (match_code "const_int")
+      (match_test "aarch64_simd_scalar_immediate_valid_for_move (op,
+						 HImode)")))
+
+(define_constraint "Dq"
+  "@internal
+ A constraint that matches an immediate operand valid for\
+ AdvSIMD scalar move in QImode."
+ (and (match_code "const_int")
+      (match_test "aarch64_simd_scalar_immediate_valid_for_move (op,
+						 QImode)")))
+
 (define_constraint "Dl"
   "@internal
  A constraint that matches vector of immediates for left shifts."

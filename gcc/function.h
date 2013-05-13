@@ -700,6 +700,23 @@ extern void push_cfun (struct function *new_cfun);
 extern void pop_cfun (void);
 extern void instantiate_decl_rtl (rtx x);
 
+/* Return the loop tree of FN.  */
+
+inline struct loops *
+loops_for_fn (struct function *fn)
+{
+  return fn->x_current_loops;
+}
+
+/* Set the loop tree of FN to LOOPS.  */
+
+inline void
+set_loops_for_fn (struct function *fn, struct loops *loops)
+{
+  gcc_checking_assert (fn->x_current_loops == NULL || loops == NULL);
+  fn->x_current_loops = loops;
+}
+
 /* For backward compatibility... eventually these should all go away.  */
 #define current_function_funcdef_no (cfun->funcdef_no)
 

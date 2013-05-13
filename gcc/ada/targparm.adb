@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,6 +68,7 @@ package body Targparm is
       SSL,  --   Suppress_Standard_Library
       UAM,  --   Use_Ada_Main_Program_Name
       VMS,  --   OpenVMS
+      VXF,  --   VAX Float
       ZCD); --   ZCX_By_Default
 
    Targparm_Flags : array (Targparm_Tags) of Boolean := (others => False);
@@ -105,6 +106,7 @@ package body Targparm is
    SSL_Str : aliased constant Source_Buffer := "Suppress_Standard_Library";
    UAM_Str : aliased constant Source_Buffer := "Use_Ada_Main_Program_Name";
    VMS_Str : aliased constant Source_Buffer := "OpenVMS";
+   VXF_Str : aliased constant Source_Buffer := "VAX_Float";
    ZCD_Str : aliased constant Source_Buffer := "ZCX_By_Default";
 
    --  The following defines a set of pointers to the above strings,
@@ -142,6 +144,7 @@ package body Targparm is
       SSL_Str'Access,
       UAM_Str'Access,
       VMS_Str'Access,
+      VXF_Str'Access,
       ZCD_Str'Access);
 
    -----------------------
@@ -600,6 +603,7 @@ package body Targparm is
                      when SNZ => Signed_Zeros_On_Target              := Result;
                      when UAM => Use_Ada_Main_Program_Name_On_Target := Result;
                      when VMS => OpenVMS_On_Target                   := Result;
+                     when VXF => VAX_Float_On_Target                 := Result;
                      when ZCD => ZCX_By_Default_On_Target            := Result;
 
                      goto Line_Loop_Continue;

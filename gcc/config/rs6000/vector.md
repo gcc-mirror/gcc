@@ -54,7 +54,7 @@
 (define_mode_iterator VEC_64 [V2DI V2DF])
 
 ;; Vector reload iterator
-(define_mode_iterator VEC_R [V16QI V8HI V4SI V2DI V4SF V2DF DF TI])
+(define_mode_iterator VEC_R [V16QI V8HI V4SI V2DI V4SF V2DF SF SD SI DF DD DI TI])
 
 ;; Base type from vector mode
 (define_mode_attr VEC_base [(V16QI "QI")
@@ -249,7 +249,7 @@
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(mult:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
 		    (match_operand:VEC_F 2 "vfloat_operand" "")))]
-  "VECTOR_UNIT_VSX_P (<MODE>mode) || VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
     {
@@ -395,7 +395,7 @@
 			  (match_operand:VEC_I 5 "vint_operand" "")])
 	 (match_operand:VEC_I 1 "vint_operand" "")
 	 (match_operand:VEC_I 2 "vint_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
   if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
@@ -451,7 +451,7 @@
 			  (match_operand:VEC_I 5 "vint_operand" "")])
 	 (match_operand:VEC_I 1 "vint_operand" "")
 	 (match_operand:VEC_I 2 "vint_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "
 {
   if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
@@ -505,14 +505,14 @@
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(gtu:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 		   (match_operand:VEC_I 2 "vint_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "vector_geu<mode>"
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(geu:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 		   (match_operand:VEC_I 2 "vint_operand" "")))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_insn_and_split "*vector_uneq<mode>"
@@ -709,45 +709,55 @@
 
 
 ;; Vector logical instructions
+;; Do not support TImode logical instructions on 32-bit at present, because the
+;; compiler will see that we have a TImode and when it wanted DImode, and
+;; convert the DImode to TImode, store it on the stack, and load it in a VSX
+;; register.
 (define_expand "xor<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (xor:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 		   (match_operand:VEC_L 2 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
 
 (define_expand "ior<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (ior:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 		   (match_operand:VEC_L 2 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
 
 (define_expand "and<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (and:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 		   (match_operand:VEC_L 2 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
 
 (define_expand "one_cmpl<mode>2"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (not:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
 
 (define_expand "nor<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (not:VEC_L (ior:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
 			      (match_operand:VEC_L 2 "vlogical_operand" ""))))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
 
 (define_expand "andc<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (and:VEC_L (not:VEC_L (match_operand:VEC_L 2 "vlogical_operand" ""))
 		   (match_operand:VEC_L 1 "vlogical_operand" "")))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
 
 ;; Same size conversions

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -929,10 +929,10 @@ package body Exp_Ch7 is
       then
          return;
 
-      --  Do not create finalization masters in Alfa mode because they result
+      --  Do not create finalization masters in SPARK mode because they result
       --  in unwanted expansion.
 
-      elsif Alfa_Mode then
+      elsif SPARK_Mode then
          return;
       end if;
 
@@ -2805,10 +2805,10 @@ package body Exp_Ch7 is
    begin
       Fin_Id := Empty;
 
-      --  Do not perform this expansion in Alfa mode because it is not
+      --  Do not perform this expansion in SPARK mode because it is not
       --  necessary.
 
-      if Alfa_Mode then
+      if SPARK_Mode then
          return;
       end if;
 
@@ -2967,10 +2967,10 @@ package body Exp_Ch7 is
       HSS : Node_Id;
 
    begin
-      --  Do not perform this expansion in Alfa mode because we do not create
+      --  Do not perform this expansion in SPARK mode because we do not create
       --  finalizers in the first place.
 
-      if Alfa_Mode then
+      if SPARK_Mode then
          return;
       end if;
 
@@ -3653,7 +3653,7 @@ package body Exp_Ch7 is
       --  this node and enclosed expression are not expanded, so do not apply
       --  any transformations here.
 
-      elsif Alfa_Mode
+      elsif SPARK_Mode
         and then Nkind (Wrap_Node) = N_Pragma
         and then Get_Pragma_Id (Wrap_Node) = Pragma_Check
       then

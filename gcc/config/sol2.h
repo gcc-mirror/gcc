@@ -181,6 +181,11 @@ along with GCC; see the file COPYING3.  If not see
    %(link_arch) \
    %{Qy:} %{!Qn:-Qy}"
 
+/* Use --as-needed/-z ignore -lgcc_s for eh support.  */
+#ifdef HAVE_LD_AS_NEEDED
+#define USE_LD_AS_NEEDED 1
+#endif
+
 #ifdef USE_GLD
 /* Solaris 11 build 135+ implements dl_iterate_phdr.  GNU ld needs
    --eh-frame-hdr to create the required .eh_frame_hdr sections.  */

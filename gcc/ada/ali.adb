@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package body ALI is
       'Y'    => True,   -- limited_with
       'Z'    => True,   -- implicit with from instantiation
       'C'    => True,   -- SCO information
-      'F'    => True,   -- Alfa information
+      'F'    => True,   -- SPARK cross-reference information
       others => False);
 
    --------------------
@@ -1331,9 +1331,9 @@ package body ALI is
                                     when Constraint_Error =>
 
                                        --  A constraint error comes from the
-                                       --  additionh. We reset to the maximum
-                                       --  and indicate that the real value is
-                                       --  now unknown.
+                                       --  addition. We reset to the maximum
+                                       --  and indicate that the real value
+                                       --  is now unknown.
 
                                        Cumulative_Restrictions.Value (R) :=
                                          Integer'Last;
@@ -2670,7 +2670,7 @@ package body ALI is
       --  Here after dealing with xref sections
 
       --  Ignore remaining lines, which belong to an additional section of the
-      --  ALI file not considered here (like SCO or Alfa).
+      --  ALI file not considered here (like SCO or SPARK information).
 
       Check_Unknown_Line;
 

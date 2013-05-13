@@ -225,7 +225,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	{ return numeric_limits<_Rep>::lowest(); }
       };
 
-    template<typename T>
+    template<typename _Tp>
       struct __is_ratio
       : std::false_type
       { };

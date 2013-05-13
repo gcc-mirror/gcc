@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,7 @@ procedure Gnatname is
       Table_Initial        => 10,
       Table_Increment      => 100,
       Table_Name           => "Gnatname.Arguments");
-   --  Table to accumulate the foreign patterns
+   --  Table to accumulate directories and patterns
 
    package Preprocessor_Switches is new Table.Table
      (Table_Component_Type => String_Access,
@@ -346,6 +346,11 @@ procedure Gnatname is
                   Subdirs :=
                     new String'(Arg (Subdirs_Switch'Length + 1 .. Arg'Last));
 
+               --  --no-backup
+
+               elsif Arg = "--no-backup" then
+                  Opt.No_Backup := True;
+
                --  -c
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-c" then
@@ -515,6 +520,7 @@ procedure Gnatname is
          Display_Usage_Version_And_Help;
 
          Write_Line ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
+         Write_Line ("  --no-backup   do not create backup of project file");
          Write_Eol;
 
          Write_Line ("  --and        use different patterns");

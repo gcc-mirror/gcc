@@ -2661,7 +2661,7 @@ check_forall_dependencies (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
     return need_temp;
 
   new_symtree = NULL;
-  if (find_forall_index (c->expr1, lsym, 2) == SUCCESS)
+  if (find_forall_index (c->expr1, lsym, 2))
     {
       forall_make_variable_temp (c, pre, post);
       need_temp = 0;
@@ -4757,21 +4757,21 @@ gfc_trans_where (gfc_code * code)
 	     are the same.  In short, this is VERY conservative and this
 	     is needed because the two loops, required by the standard
 	     are coalesced in gfc_trans_where_3.  */
-	  if (!gfc_check_dependency(cblock->next->expr1,
+	  if (!gfc_check_dependency (cblock->next->expr1,
 				    cblock->expr1, 0)
-	      && !gfc_check_dependency(eblock->next->expr1,
+	      && !gfc_check_dependency (eblock->next->expr1,
 				       cblock->expr1, 0)
-	      && !gfc_check_dependency(cblock->next->expr1,
+	      && !gfc_check_dependency (cblock->next->expr1,
 				       eblock->next->expr2, 1)
-	      && !gfc_check_dependency(eblock->next->expr1,
+	      && !gfc_check_dependency (eblock->next->expr1,
 				       cblock->next->expr2, 1)
-	      && !gfc_check_dependency(cblock->next->expr1,
+	      && !gfc_check_dependency (cblock->next->expr1,
 				       cblock->next->expr2, 1)
-	      && !gfc_check_dependency(eblock->next->expr1,
+	      && !gfc_check_dependency (eblock->next->expr1,
 				       eblock->next->expr2, 1)
-	      && !gfc_check_dependency(cblock->next->expr1,
+	      && !gfc_check_dependency (cblock->next->expr1,
 				       eblock->next->expr1, 0)
-	      && !gfc_check_dependency(eblock->next->expr1,
+	      && !gfc_check_dependency (eblock->next->expr1,
 				       cblock->next->expr1, 0))
 	    return gfc_trans_where_3 (cblock, eblock);
 	}

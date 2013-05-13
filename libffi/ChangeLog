@@ -1,3 +1,8 @@
+2013-03-22  Kai Tietz  <ktietz@redhat.com>
+
+	* src/x86/win64.S: Make use of ffi_closure_win64_inner
+	symbol pc-relative.
+
 2013-03-07  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* src/closures.c (is_emutramp_enabled [!FFI_MMAP_EXEC_EMUTRAMP_PAX]):

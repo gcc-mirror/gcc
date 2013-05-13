@@ -165,6 +165,10 @@ extern const enum tree_code_class tree_code_type[];
 #define DECL_P(CODE)\
         (TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_declaration)
 
+/* True if NODE designates a variable declaration.  */
+#define VAR_P(NODE) \
+  (TREE_CODE (NODE) == VAR_DECL)
+
 /* Nonzero if DECL represents a VAR_DECL or FUNCTION_DECL.  */
 
 #define VAR_OR_FUNCTION_DECL_P(DECL)\
@@ -1047,6 +1051,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define STRIP_USELESS_TYPE_CONVERSION(EXP) \
   (EXP) = tree_ssa_strip_useless_type_conversions (EXP)
 
+/* Nonzero if TYPE represents a vector type.  */
+
+#define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
+
 /* Nonzero if TYPE represents an integral type.  Note that we do not
    include COMPLEX types here.  Keep these checks in ascending code
    order.  */
@@ -1082,15 +1090,15 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Nonzero if TYPE represents a vector integer type.  */
                 
-#define VECTOR_INTEGER_TYPE_P(TYPE)                   \
-             (TREE_CODE (TYPE) == VECTOR_TYPE      \
-                 && TREE_CODE (TREE_TYPE (TYPE)) == INTEGER_TYPE)
+#define VECTOR_INTEGER_TYPE_P(TYPE)			\
+  (VECTOR_TYPE_P (TYPE)					\
+   && TREE_CODE (TREE_TYPE (TYPE)) == INTEGER_TYPE)
 
 
 /* Nonzero if TYPE represents a vector floating-point type.  */
 
 #define VECTOR_FLOAT_TYPE_P(TYPE)	\
-  (TREE_CODE (TYPE) == VECTOR_TYPE	\
+  (VECTOR_TYPE_P (TYPE)			\
    && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE)
 
 /* Nonzero if TYPE represents a floating-point type, including complex
@@ -1100,7 +1108,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define FLOAT_TYPE_P(TYPE)			\
   (SCALAR_FLOAT_TYPE_P (TYPE)			\
    || ((TREE_CODE (TYPE) == COMPLEX_TYPE 	\
-        || TREE_CODE (TYPE) == VECTOR_TYPE)	\
+        || VECTOR_TYPE_P (TYPE))		\
        && SCALAR_FLOAT_TYPE_P (TREE_TYPE (TYPE))))
 
 /* Nonzero if TYPE represents a decimal floating-point type.  */
@@ -2258,7 +2266,7 @@ struct GTY(()) tree_block {
 /* Vector types need to check target flags to determine type.  */
 extern enum machine_mode vector_type_mode (const_tree);
 #define TYPE_MODE(NODE) \
-  (TREE_CODE (TYPE_CHECK (NODE)) == VECTOR_TYPE \
+  (VECTOR_TYPE_P (TYPE_CHECK (NODE)) \
    ? vector_type_mode (NODE) : (NODE)->type_common.mode)
 #define SET_TYPE_MODE(NODE, MODE) \
   (TYPE_CHECK (NODE)->type_common.mode = (MODE))
@@ -2851,8 +2859,6 @@ struct GTY(()) tree_decl_minimal {
    checked before any access to the former.  */
 #define DECL_FUNCTION_CODE(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.function_code)
-#define DECL_DEBUG_EXPR_IS_FROM(NODE) \
-  (DECL_COMMON_CHECK (NODE)->decl_common.debug_expr_is_from)
 
 #define DECL_FUNCTION_PERSONALITY(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.personality)
@@ -3365,9 +3371,9 @@ struct GTY(()) tree_decl_with_vis {
 
 extern tree decl_debug_expr_lookup (tree);
 extern void decl_debug_expr_insert (tree, tree);
-/* For VAR_DECL, this is set to either an expression that it was split
-   from (if DECL_DEBUG_EXPR_IS_FROM is true), otherwise a tree_list of
-   subexpressions that it was split into.  */
+/* For VAR_DECL, this is set to an expression that it was split from.  */
+#define DECL_HAS_DEBUG_EXPR_P(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl_common.debug_expr_is_from)
 #define DECL_DEBUG_EXPR(NODE) \
   (decl_debug_expr_lookup (VAR_DECL_CHECK (NODE)))
 
@@ -4899,9 +4905,11 @@ extern tree build_vector_from_val (tree, tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
+extern tree build_constructor_va (tree, int, ...);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_one_cst (tree);
+extern tree build_minus_one_cst (tree);
 extern tree build_zero_cst (tree);
 extern tree build_string (int, const char *);
 extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
@@ -5003,6 +5011,7 @@ extern bool may_negate_without_overflow_p (const_tree);
 extern tree strip_array_types (tree);
 extern tree excess_precision_type (tree);
 extern bool valid_constant_size_p (const_tree);
+extern unsigned int element_precision (const_tree);
 
 /* Construct various nodes representing fract or accum data types.  */
 
@@ -5429,6 +5438,11 @@ extern tree first_field (const_tree);
 
 extern bool initializer_zerop (const_tree);
 
+/* Given a vector VEC, return its first element if all elements are
+   the same.  Otherwise return NULL_TREE.  */
+
+extern tree uniform_vector_p (const_tree);
+
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 
 extern vec<tree, va_gc> *ctor_to_vec (tree);
@@ -5450,6 +5464,11 @@ extern int integer_onep (const_tree);
    all of whose significant bits are 1.  */
 
 extern int integer_all_onesp (const_tree);
+
+/* integer_minus_onep (tree x) is nonzero if X is an integer constant of
+   value -1.  */
+
+extern int integer_minus_onep (const_tree);
 
 /* integer_pow2p (tree x) is nonzero is X is an integer constant with
    exactly one bit 1.  */
@@ -5480,10 +5499,15 @@ extern tree staticp (tree);
 
 extern tree save_expr (tree);
 
-/* Look inside EXPR and into any simple arithmetic operations.  Return
-   the innermost non-arithmetic node.  */
+/* Look inside EXPR into any simple arithmetic operations.  Return the
+   outermost non-arithmetic or non-invariant node.  */
 
 extern tree skip_simple_arithmetic (tree);
+
+/* Look inside EXPR into simple arithmetic operations involving constants.
+   Return the outermost non-arithmetic or non-constant node.  */
+
+extern tree skip_simple_constant_arithmetic (tree);
 
 /* Return which tree structure is used by T.  */
 
@@ -5996,6 +6020,10 @@ fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off)
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
 
 /* In builtins.c */
+
+/* Non-zero if __builtin_constant_p should be folded right away.  */
+extern bool force_folding_builtin_constant_p;
+
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_fputs (location_t, tree, tree, bool, bool, tree);
@@ -6065,8 +6093,6 @@ extern hashval_t iterative_hash_host_wide_int (HOST_WIDE_INT, hashval_t);
 extern int compare_tree_int (const_tree, unsigned HOST_WIDE_INT);
 extern int type_list_equal (const_tree, const_tree);
 extern int chain_member (const_tree, const_tree);
-extern tree type_hash_lookup (unsigned int, tree);
-extern void type_hash_add (unsigned int, tree);
 extern int simple_cst_list_equal (const_tree, const_tree);
 extern void dump_tree_statistics (void);
 extern void recompute_tree_invariant_for_addr_expr (tree);
@@ -6130,7 +6156,19 @@ extern void print_rtl (FILE *, const_rtx);
 
 /* In print-tree.c */
 extern void debug_tree (tree);
+extern void debug_raw (const tree_node &ref);
+extern void debug_raw (const tree_node *ptr);
+extern void debug (const tree_node &ref);
+extern void debug (const tree_node *ptr);
+extern void debug_verbose (const tree_node &ref);
+extern void debug_verbose (const tree_node *ptr);
+extern void debug_head (const tree_node &ref);
+extern void debug_head (const tree_node *ptr);
+extern void debug_body (const tree_node &ref);
+extern void debug_body (const tree_node *ptr);
 extern void debug_vec_tree (vec<tree, va_gc> *);
+extern void debug (vec<tree, va_gc> &ref);
+extern void debug (vec<tree, va_gc> *ptr);
 #ifdef BUFSIZ
 extern void dump_addr (FILE*, const char *, const void *);
 extern void print_node (FILE *, const char *, tree, int);
@@ -6143,7 +6181,6 @@ extern void indent_to (FILE *, int);
 extern bool debug_find_tree (tree, tree);
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */
-extern tree unsave_expr_now (tree);
 extern tree build_duplicate_type (tree);
 
 /* In calls.c */

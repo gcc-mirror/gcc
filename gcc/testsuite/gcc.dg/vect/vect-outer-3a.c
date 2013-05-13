@@ -49,6 +49,5 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail vect_no_align } } } */
-/* { dg-final { scan-tree-dump-times "step doesn't divide the vector-size" 2 "vect" { target { ! vect_multiple_sizes } } } } */
-/* { dg-final { scan-tree-dump-times "step doesn't divide the vector-size" 3 "vect" { target vect_multiple_sizes } } } */
+/* { dg-final { scan-tree-dump-times "step doesn't divide the vector-size" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

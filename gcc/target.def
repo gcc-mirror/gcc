@@ -1289,12 +1289,23 @@ DEFHOOK
  "",
  tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
 
-/* Fold a target-specific builtin.  */
+/* Fold a target-specific builtin to a tree valid for both GIMPLE
+   and GENERIC.  */
 DEFHOOK
 (fold_builtin,
  "",
  tree, (tree fndecl, int n_args, tree *argp, bool ignore),
  hook_tree_tree_int_treep_bool_null)
+
+/* Fold a target-specific builtin to a valid GIMPLE tree.  */
+DEFHOOK
+(gimple_fold_builtin,
+ "Fold a call to a machine specific built-in function that was set up\n\
+by @samp{TARGET_INIT_BUILTINS}.  @var{gsi} points to the gimple\n\
+statement holding the function call.  Returns true if any change\n\
+was made to the GIMPLE stream.",
+ bool, (gimple_stmt_iterator *gsi),
+ hook_bool_gsiptr_false)
 
 /* Target hook is used to compare the target attributes in two functions to
    determine which function's features get higher priority.  This is used
@@ -1517,6 +1528,15 @@ DEFHOOK
  "",
  bool, (const_rtx x),
  default_use_anchors_for_symbol_p)
+
+/* True if target supports indirect functions.  */
+DEFHOOK
+(has_ifunc_p,
+ "It returns true if the target supports GNU indirect functions.\n\
+The support includes the assembler, linker and dynamic linker.\n\
+The default value of this hook is based on target's libc.",
+ bool, (void),
+ default_has_ifunc_p)
 
 /* True if it is OK to do sibling call optimization for the specified
    call expression EXP.  DECL will be the called function, or NULL if
@@ -2447,6 +2467,16 @@ DEFHOOK
   @code{NO_REGS} for all inputs.",
  reg_class_t, (reg_class_t, enum machine_mode),
  NULL)
+
+DEFHOOK
+(cstore_mode,
+ "This hook defines the machine mode to use for the boolean result of\
+  conditional store patterns.  The ICODE argument is the instruction code\
+  for the cstore being performed.  Not definiting this hook is the same\
+  as accepting the mode encoded into operand 0 of the cstore expander\
+  patterns.",
+  enum machine_mode, (enum insn_code icode),
+  default_cstore_mode)
 
 /* True if a structure, union or array with MODE containing FIELD should
    be accessed using BLKmode.  */

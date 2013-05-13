@@ -1993,6 +1993,7 @@ package body Sprint is
                if not Has_Parens then
                   Write_Char ('(');
                end if;
+
                Write_Str_With_Col_Check_Sloc ("if ");
                Sprint_Node (Condition);
                Write_Str_With_Col_Check (" then ");
@@ -2498,7 +2499,8 @@ package body Sprint is
             Write_Str_With_Col_Check_Sloc ("package ");
             Sprint_Node (Defining_Unit_Name (Node));
 
-            if Nkind (Parent (Node)) = N_Package_Declaration
+            if Nkind_In (Parent (Node), N_Package_Declaration,
+                                        N_Generic_Package_Declaration)
               and then Has_Aspects (Parent (Node))
             then
                Sprint_Aspect_Specifications
@@ -2762,6 +2764,32 @@ package body Sprint is
 
             Write_Str (" => ");
             Sprint_Node (Condition (Node));
+
+         when N_Raise_Expression =>
+            declare
+               Has_Parens : constant Boolean := Paren_Count (Node) > 0;
+
+            begin
+               --  The syntax for raise_expression does not include parentheses
+               --  but sometimes parentheses are required, so unconditionally
+               --  generate them here unless already present.
+
+               if not Has_Parens then
+                  Write_Char ('(');
+               end if;
+
+               Write_Str_With_Col_Check_Sloc ("raise ");
+               Sprint_Node (Name (Node));
+
+               if Present (Expression (Node)) then
+                  Write_Str_With_Col_Check (" with ");
+                  Sprint_Node (Expression (Node));
+               end if;
+
+               if not Has_Parens then
+                  Write_Char (')');
+               end if;
+            end;
 
          when N_Raise_Constraint_Error =>
 
@@ -3277,7 +3305,10 @@ package body Sprint is
       --  Print aspects, except for special case of package declaration,
       --  where the aspects are printed inside the package specification.
 
-      if Has_Aspects (Node) and Nkind (Node) /= N_Package_Declaration then
+      if Has_Aspects (Node)
+         and then not Nkind_In (Node, N_Package_Declaration,
+                                      N_Generic_Package_Declaration)
+      then
          Sprint_Aspect_Specifications (Node, Semicolon => True);
       end if;
 

@@ -2635,11 +2635,6 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       int offset = -1;
       int width = 0;
       
-      /* There are not explicit tests to make sure that this is not a
-	 float, but there is code here that would not be correct if it
-	 was.  */
-      gcc_assert (GET_MODE_CLASS (GET_MODE (SET_SRC (temp))) != MODE_FLOAT);
-
       if (GET_CODE (dest) == ZERO_EXTRACT)
 	{
 	  if (CONST_INT_P (XEXP (dest, 1))
@@ -2845,13 +2840,13 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
   /* See if the SETs in I1 or I2 need to be kept around in the merged
      instruction: whenever the value set there is still needed past I3.
-     For the SETs in I2, this is easy: we see if I2DEST dies or is set in I3.
+     For the SET in I2, this is easy: we see if I2DEST dies or is set in I3.
 
-     For the SET in I1, we have two cases:  If I1 and I2 independently
-     feed into I3, the set in I1 needs to be kept around if I1DEST dies
+     For the SET in I1, we have two cases: if I1 and I2 independently feed
+     into I3, the set in I1 needs to be kept around unless I1DEST dies
      or is set in I3.  Otherwise (if I1 feeds I2 which feeds I3), the set
      in I1 needs to be kept around unless I1DEST dies or is set in either
-     I2 or I3.  The same consideration applies to I0.  */
+     I2 or I3.  The same considerations apply to I0.  */
 
   added_sets_2 = !dead_or_set_p (i3, i2dest);
 
@@ -2863,8 +2858,9 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
   if (i0)
     added_sets_0 =  !(dead_or_set_p (i3, i0dest)
-		      || (i0_feeds_i2_n && dead_or_set_p (i2, i0dest))
-		      || (i0_feeds_i1_n && dead_or_set_p (i1, i0dest)));
+		      || (i0_feeds_i1_n && dead_or_set_p (i1, i0dest))
+		      || ((i0_feeds_i2_n || (i0_feeds_i1_n && i1_feeds_i2_n))
+			  && dead_or_set_p (i2, i0dest)));
   else
     added_sets_0 = 0;
 
@@ -4158,14 +4154,12 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
     if (i3dest_killed)
       {
+	rtx new_note = alloc_reg_note (REG_DEAD, i3dest_killed, NULL_RTX);
 	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
-	  distribute_notes (alloc_reg_note (REG_DEAD, i3dest_killed,
-					    NULL_RTX),
-			    NULL_RTX, i2, NULL_RTX, elim_i2, elim_i1, elim_i0);
+	  distribute_notes (new_note, NULL_RTX, i2, NULL_RTX, elim_i2,
+			    elim_i1, elim_i0);
 	else
-	  distribute_notes (alloc_reg_note (REG_DEAD, i3dest_killed,
-					    NULL_RTX),
-			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+	  distribute_notes (new_note, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
 			    elim_i2, elim_i1, elim_i0);
       }
 
@@ -5423,6 +5417,17 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 				SUBREG_BYTE (x));
 	if (temp)
 	  return temp;
+
+	/* If op is known to have all lower bits zero, the result is zero.  */
+	if (!in_dest
+	    && SCALAR_INT_MODE_P (mode)
+	    && SCALAR_INT_MODE_P (op0_mode)
+	    && GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (op0_mode)
+	    && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x)
+	    && HWI_COMPUTABLE_MODE_P (op0_mode)
+	    && (nonzero_bits (SUBREG_REG (x), op0_mode)
+		& GET_MODE_MASK (mode)) == 0)
+	  return CONST0_RTX (mode);
       }
 
       /* Don't change the mode of the MEM if that would change the meaning
@@ -7703,8 +7708,24 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	 what it originally did, do this SUBREG as a force_to_mode.  */
       {
 	rtx inner = SUBREG_REG (x), simplified;
-	
-	tem = make_compound_operation (inner, in_code);
+	enum rtx_code subreg_code = in_code;
+
+	/* If in_code is COMPARE, it isn't always safe to pass it through
+	   to the recursive make_compound_operation call.  */
+	if (subreg_code == COMPARE
+	    && (!subreg_lowpart_p (x)
+		|| GET_CODE (inner) == SUBREG
+		/* (subreg:SI (and:DI (reg:DI) (const_int 0x800000000)) 0)
+		   is (const_int 0), rather than
+		   (subreg:SI (lshiftrt:DI (reg:DI) (const_int 35)) 0).  */
+		|| (GET_CODE (inner) == AND
+		    && CONST_INT_P (XEXP (inner, 1))
+		    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
+		    && exact_log2 (UINTVAL (XEXP (inner, 1)))
+		       >= GET_MODE_BITSIZE (mode))))
+	  subreg_code = SET;
+
+	tem = make_compound_operation (inner, subreg_code);
 
 	simplified
 	  = simplify_subreg (mode, tem, GET_MODE (inner), SUBREG_BYTE (x));
@@ -10765,8 +10786,9 @@ simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
       && (code == EQ || code == NE || code == GE || code == GEU
 	  || code == LT || code == LTU)
       && mode_width <= HOST_BITS_PER_WIDE_INT
-      && exact_log2 (const_op) >= 0
-      && nonzero_bits (op0, mode) == (unsigned HOST_WIDE_INT) const_op)
+      && exact_log2 (const_op & GET_MODE_MASK (mode)) >= 0
+      && (nonzero_bits (op0, mode)
+	  == (unsigned HOST_WIDE_INT) (const_op & GET_MODE_MASK (mode))))
     {
       code = (code == EQ || code == GE || code == GEU ? NE : EQ);
       const_op = 0;
@@ -13823,7 +13845,6 @@ struct rtl_opt_pass pass_combine =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_ggc_collect,                     /* todo_flags_finish */
+  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
  }
 };

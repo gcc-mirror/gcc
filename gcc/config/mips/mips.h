@@ -47,8 +47,15 @@ extern int target_flags_explicit;
    PTF_AVOID_BRANCHLIKELY
 	Set if it is usually not profitable to use branch-likely instructions
 	for this target, typically because the branches are always predicted
-	taken and so incur a large overhead when not taken.  */
-#define PTF_AVOID_BRANCHLIKELY 0x1
+	taken and so incur a large overhead when not taken.
+
+   PTF_AVOID_IMADD
+	Set if it is usually not profitable to use the integer MADD or MSUB
+	instructions because of the overhead of getting the result out of
+	the HI/LO registers.  */
+
+#define PTF_AVOID_BRANCHLIKELY	0x1
+#define PTF_AVOID_IMADD		0x2
 
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
@@ -173,6 +180,9 @@ struct mips_cpu_info {
 #else
 #define ISA_HAS_DSP_MULT ISA_HAS_DSPR2
 #endif
+
+/* The ISA compression flags that are currently in effect.  */
+#define TARGET_COMPRESSION (target_flags & (MASK_MIPS16 | MASK_MICROMIPS))
 
 /* Generate mips16 code */
 #define TARGET_MIPS16		((target_flags & MASK_MIPS16) != 0)
@@ -374,7 +384,7 @@ struct mips_cpu_info {
       else								\
 	builtin_define ("__mips_fpr=32");				\
 									\
-      if (mips_base_mips16)						\
+      if (mips_base_compression_flags & MASK_MIPS16)			\
 	builtin_define ("__mips16");					\
 									\
       if (TARGET_MIPS3D)						\
@@ -382,6 +392,9 @@ struct mips_cpu_info {
 									\
       if (TARGET_SMARTMIPS)						\
 	builtin_define ("__mips_smartmips");				\
+									\
+      if (mips_base_compression_flags & MASK_MICROMIPS)			\
+	builtin_define ("__mips_micromips");				\
 									\
       if (TARGET_MCU)							\
 	builtin_define ("__mips_mcu");					\
@@ -702,7 +715,7 @@ struct mips_cpu_info {
        |march=r10000|march=r12000|march=r14000|march=r16000:-mips4} \
      %{march=mips32|march=4kc|march=4km|march=4kp|march=4ksc:-mips32} \
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
-       |march=34k*|march=74k*|march=1004k*: -mips32r2} \
+       |march=34k*|march=74k*|march=m14k*|march=1004k*: -mips32r2} \
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000 \
        |march=xlr|march=loongson3a: -mips64} \
      %{march=mips64r2|march=octeon|march=xlp: -mips64r2} \
@@ -716,7 +729,7 @@ struct mips_cpu_info {
   "%{mhard-float|msoft-float|mno-float|march=mips*:; \
      march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
      |march=34kc|march=34kn|march=74kc|march=1004kc|march=5kc \
-     |march=octeon|march=xlr: -msoft-float;		  \
+     |march=m14k*|march=octeon|march=xlr: -msoft-float;		  \
      march=*: -mhard-float}"
 
 /* A spec condition that matches 32-bit options.  It only works if
@@ -868,14 +881,13 @@ struct mips_cpu_info {
 				 && !TARGET_MIPS16)
 
 /* ISA has integer multiply-accumulate instructions, madd and msub.  */
-#define ISA_HAS_MADD_MSUB	((ISA_MIPS32				\
-				  || ISA_MIPS32R2			\
-				  || ISA_MIPS64				\
-				  || ISA_MIPS64R2)			\
-				 && !TARGET_MIPS16)
+#define ISA_HAS_MADD_MSUB	(ISA_MIPS32				\
+				 || ISA_MIPS32R2			\
+				 || ISA_MIPS64				\
+				 || ISA_MIPS64R2)
 
 /* Integer multiply-accumulate instructions should be generated.  */
-#define GENERATE_MADD_MSUB      (ISA_HAS_MADD_MSUB && !TUNE_74K)
+#define GENERATE_MADD_MSUB	(TARGET_IMADD && !TARGET_MIPS16)
 
 /* ISA has floating-point madd and msub instructions 'd = a * b [+-] c'.  */
 #define ISA_HAS_FP_MADD4_MSUB4  ISA_HAS_FP4
@@ -989,7 +1001,8 @@ struct mips_cpu_info {
 				     || ISA_MIPS64R2))
 
 /* ISA has lwxs instruction (load w/scaled index address.  */
-#define ISA_HAS_LWXS		(TARGET_SMARTMIPS && !TARGET_MIPS16)
+#define ISA_HAS_LWXS		((TARGET_SMARTMIPS || TARGET_MICROMIPS) \
+				 && !TARGET_MIPS16)
 
 /* ISA has lbx, lbux, lhx, lhx, lhux, lwx, lwux, or ldx instruction. */
 #define ISA_HAS_LBX		(TARGET_OCTEON2)
@@ -1012,7 +1025,8 @@ struct mips_cpu_info {
    and "addiu $4,$4,1".  */
 #define ISA_HAS_LOAD_DELAY	(ISA_MIPS1				\
 				 && !TARGET_MIPS3900			\
-				 && !TARGET_MIPS16)
+				 && !TARGET_MIPS16			\
+				 && !TARGET_MICROMIPS)
 
 /* Likewise mtc1 and mfc1.  */
 #define ISA_HAS_XFER_DELAY	(mips_isa <= 3			\
@@ -1123,6 +1137,7 @@ struct mips_cpu_info {
 %{G*} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} \
 %{mips32*} %{mips64*} \
 %{mips16} %{mno-mips16:-no-mips16} \
+%{mmicromips} %{mno-micromips} \
 %{mips3d} %{mno-mips3d:-no-mips3d} \
 %{mdmx} %{mno-mdmx:-no-mdmx} \
 %{mdsp} %{mno-dsp} \
@@ -1672,6 +1687,8 @@ struct mips_cpu_info {
   ((unsigned int) ((int) (REGNO) - GP_REG_FIRST) < GP_REG_NUM)
 #define M16_REG_P(REGNO) \
   (((REGNO) >= 2 && (REGNO) <= 7) || (REGNO) == 16 || (REGNO) == 17)
+#define M16STORE_REG_P(REGNO) \
+  (((REGNO) >= 2 && (REGNO) <= 7) || (REGNO) == 0 || (REGNO) == 17)
 #define FP_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 #define MD_REG_P(REGNO) \
@@ -2034,6 +2051,7 @@ enum reg_class
 #define SMALL_INT(X) SMALL_OPERAND (INTVAL (X))
 #define SMALL_INT_UNSIGNED(X) SMALL_OPERAND_UNSIGNED (INTVAL (X))
 #define LUI_INT(X) LUI_OPERAND (INTVAL (X))
+#define UMIPS_12BIT_OFFSET_P(OFFSET) (IN_RANGE (OFFSET, -2048, 2047))
 
 /* The HI and LO registers can only be reloaded via the general
    registers.  Condition code registers can only be loaded to the
@@ -2452,17 +2470,32 @@ typedef struct mips_args {
    all calls should use assembly macros.  Otherwise, all indirect
    calls should use "jr" or "jalr"; we will arrange to restore $gp
    afterwards if necessary.  Finally, we can only generate direct
-   calls for -mabicalls by temporarily switching to non-PIC mode.  */
+   calls for -mabicalls by temporarily switching to non-PIC mode.
+
+   For microMIPS jal(r), we try to generate jal(r)s when a 16-bit
+   instruction is in the delay slot of jal(r).  */
 #define MIPS_CALL(INSN, OPERANDS, TARGET_OPNO, SIZE_OPNO)	\
   (TARGET_USE_GOT && !TARGET_EXPLICIT_RELOCS			\
    ? "%*" INSN "\t%" #TARGET_OPNO "%/"				\
-   : (REG_P (OPERANDS[TARGET_OPNO])				\
-      && mips_get_pic_call_symbol (OPERANDS, SIZE_OPNO))	\
-   ? ("%*.reloc\t1f,R_MIPS_JALR,%" #SIZE_OPNO "\n"		\
-      "1:\t" INSN "r\t%" #TARGET_OPNO "%/")			\
    : REG_P (OPERANDS[TARGET_OPNO])				\
-   ? "%*" INSN "r\t%" #TARGET_OPNO "%/"				\
+   ? (mips_get_pic_call_symbol (OPERANDS, SIZE_OPNO)		\
+      ? ("%*.reloc\t1f,R_MIPS_JALR,%" #SIZE_OPNO "\n"		\
+	 "1:\t" INSN "r\t%" #TARGET_OPNO "%/")			\
+      : TARGET_MICROMIPS && !TARGET_INTERLINK_COMPRESSED	\
+      ? "%*" INSN "r%!\t%" #TARGET_OPNO "%/"			\
+      : "%*" INSN "r\t%" #TARGET_OPNO "%/")			\
    : MIPS_ABSOLUTE_JUMP ("%*" INSN "\t%" #TARGET_OPNO "%/"))
+
+/* Similar to MIPS_CALL, but this is for MICROMIPS "j" to generate
+   "jrc" when nop is in the delay slot of "jr".  */
+
+#define MICROMIPS_J(INSN, OPERANDS, OPNO)			\
+  (TARGET_USE_GOT && !TARGET_EXPLICIT_RELOCS			\
+   ? "%*j\t%" #OPNO "%/"					\
+   : REG_P (OPERANDS[OPNO])					\
+   ? "%*jr%:\t%" #OPNO						\
+   : MIPS_ABSOLUTE_JUMP ("%*" INSN "\t%" #OPNO "%/"))
+
 
 /* Control the assembler format that we output.  */
 
@@ -2877,7 +2910,7 @@ extern enum processor mips_tune;        /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
-extern bool mips_base_mips16;
+extern unsigned int mips_base_compression_flags;
 extern GTY(()) struct target_globals *mips16_globals;
 #endif
 

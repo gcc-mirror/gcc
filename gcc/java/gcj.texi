@@ -609,7 +609,7 @@ this because null pointer accesses are caught automatically by the
 processor.
 
 @item -fuse-atomic-builtins
-On some systems, gcc can generate code for built-in atomic operations.
+On some systems, GCC can generate code for built-in atomic operations.
 Use this option to force gcj to use these builtins when compiling Java
 code.  Where this capability is present it should be automatically
 detected, so you won't usually need to use this option.
@@ -2712,18 +2712,17 @@ While writing @command{gcj} and @code{libgcj} we have, of course, relied
 heavily on documentation from Sun Microsystems.  In particular we have
 used The Java Language Specification (both first and second editions),
 the Java Class Libraries (volumes one and two), and the Java Virtual
-Machine Specification.  In addition we've used the online documentation
-at @uref{http://java.sun.com/}.
+Machine Specification.  In addition we've used Sun's online documentation.
 
 The current @command{gcj} home page is
 @uref{http://gcc.gnu.org/java/}.
 
-For more information on gcc, see @uref{http://gcc.gnu.org/}.
+For more information on GCC, see @uref{http://gcc.gnu.org/}.
 
 Some @code{libgcj} testing is done using the Mauve test suite.  This is
 a free software Java class library test suite which is being written
 because the JCK is not free.  See
-@uref{http://sources.redhat.com/mauve/} for more information.
+@uref{http://www.sourceware.org/mauve/} for more information.
 
 
 @node Index

@@ -55,7 +55,8 @@ package Prj.Conf is
       Config_File_Path           : out String_Access;
       Target_Name                : String := "";
       Normalized_Hostname        : String;
-      On_Load_Config             : Config_File_Hook := null);
+      On_Load_Config             : Config_File_Hook := null;
+      Implicit_Project           : Boolean := False);
    --  Find the main configuration project and parse the project tree rooted at
    --  this configuration project.
    --
@@ -85,6 +86,13 @@ package Prj.Conf is
    --  Any error in generating or parsing the config file is reported via the
    --  Invalid_Config exception, with an appropriate message. Any error while
    --  parsing the project file results in No_Project.
+   --
+   --  If Implicit_Project is True, the main project file being parsed is
+   --  deemed to be in the current working directory, even if it is not the
+   --  case. Implicit_Project is set to True when a tool such as gprbuild is
+   --  invoked without a project file and is using an implicit project file
+   --  that is virtually in the current working directory, but is physically
+   --  in another directory.
 
    procedure Process_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;

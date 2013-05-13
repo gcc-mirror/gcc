@@ -82,6 +82,7 @@ struct alloc_pool_descriptor
   int elt_size;
 };
 
+/* Hashtable helpers.  */
 struct alloc_pool_hasher : typed_noop_remove <alloc_pool_descriptor>
 {
   typedef alloc_pool_descriptor value_type;
@@ -90,10 +91,6 @@ struct alloc_pool_hasher : typed_noop_remove <alloc_pool_descriptor>
   static inline bool equal (const value_type *, const compare_type *);
 };
 
-/* Hashtable mapping alloc_pool names to descriptors.  */
-static hash_table <alloc_pool_hasher>  alloc_pool_hash;
-
-/* Hashtable helpers.  */
 inline hashval_t
 alloc_pool_hasher::hash (const value_type *d)
 {
@@ -106,6 +103,9 @@ alloc_pool_hasher::equal (const value_type *d,
 {
   return d->name == p2;
 }
+
+/* Hashtable mapping alloc_pool names to descriptors.  */
+static hash_table <alloc_pool_hasher>  alloc_pool_hash;
 
 /* For given name, return descriptor, create new if needed.  */
 static struct alloc_pool_descriptor *

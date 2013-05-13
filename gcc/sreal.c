@@ -72,6 +72,22 @@ dump_sreal (FILE *file, sreal *x)
 #endif
 }
 
+DEBUG_FUNCTION void
+debug (sreal &ref)
+{
+  dump_sreal (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (sreal *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 /* Copy the sreal number.  */
 
 static inline void

@@ -24,8 +24,10 @@ namespace gnu
   using std::clearerr; 
   using std::tmpfile; 
   using std::fgets; 
-  using std::fscanf; 
-  using std::gets; 
+  using std::fscanf;
+#if __cplusplus <= 201103L
+  using std::gets;
+#endif
   using std::rename;
   using std::fclose; 
   using std::fopen; 

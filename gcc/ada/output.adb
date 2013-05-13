@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -344,7 +344,7 @@ package body Output is
 
    procedure Write_Eol is
    begin
-      --  Remove any trailing space
+      --  Remove any trailing spaces
 
       while Next_Col > 1 and then Buffer (Next_Col - 1) = ' ' loop
          Next_Col := Next_Col - 1;

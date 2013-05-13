@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,7 +97,8 @@ package System.CRTL is
    function fopen
      (filename : chars;
       mode     : chars;
-      encoding : Filename_Encoding := Unspecified) return FILEs;
+      encoding : Filename_Encoding := Unspecified;
+      vms_form : chars := System.Null_Address) return FILEs;
    pragma Import (C, fopen, "__gnat_fopen");
 
    function fputc (C : int; stream : FILEs) return int;
@@ -113,7 +114,8 @@ package System.CRTL is
      (filename : chars;
       mode     : chars;
       stream   : FILEs;
-      encoding : Filename_Encoding := Unspecified) return FILEs;
+      encoding : Filename_Encoding := Unspecified;
+      vms_form : chars := System.Null_Address) return FILEs;
    pragma Import (C, freopen, "__gnat_freopen");
 
    function fseek

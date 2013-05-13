@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-streamer.h"
 #include "tree-streamer.h"
 #include "streamer-hooks.h"
+#include "cfgloop.h"
 
 
 /* Clear the line info stored in DATA_IN.  */
@@ -77,8 +78,7 @@ create_output_block (enum lto_section_type section_type)
 
   clear_line_info (ob);
 
-  ob->string_hash_table = htab_create (37, hash_string_slot_node,
-				       eq_string_slot_node, NULL);
+  ob->string_hash_table.create (37);
   gcc_obstack_init (&ob->obstack);
 
   return ob;
@@ -92,7 +92,7 @@ destroy_output_block (struct output_block *ob)
 {
   enum lto_section_type section_type = ob->section_type;
 
-  htab_delete (ob->string_hash_table);
+  ob->string_hash_table.dispose ();
 
   free (ob->main_stream);
   free (ob->string_stream);
@@ -644,7 +644,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 	{
 	  streamer_write_uhwi (ob, e->dest->index);
 	  streamer_write_hwi (ob, e->probability);
-	  streamer_write_hwi (ob, e->count);
+	  streamer_write_gcov_count (ob, e->count);
 	  streamer_write_uhwi (ob, e->flags);
 	}
     }
@@ -659,6 +659,45 @@ output_cfg (struct output_block *ob, struct function *fn)
     }
 
   streamer_write_hwi (ob, -1);
+
+  /* ???  The cfgloop interface is tied to cfun.  */
+  gcc_assert (cfun == fn);
+
+  /* Output the number of loops.  */
+  streamer_write_uhwi (ob, number_of_loops (fn));
+
+  /* Output each loop, skipping the tree root which has number zero.  */
+  for (unsigned i = 1; i < number_of_loops (fn); ++i)
+    {
+      struct loop *loop = get_loop (fn, i);
+
+      /* Write the index of the loop header.  That's enough to rebuild
+         the loop tree on the reader side.  Stream -1 for an unused
+	 loop entry.  */
+      if (!loop)
+	{
+	  streamer_write_hwi (ob, -1);
+	  continue;
+	}
+      else
+	streamer_write_hwi (ob, loop->header->index);
+
+      /* Write everything copy_loop_info copies.  */
+      streamer_write_enum (ob->main_stream,
+			   loop_estimation, EST_LAST, loop->estimate_state);
+      streamer_write_hwi (ob, loop->any_upper_bound);
+      if (loop->any_upper_bound)
+	{
+	  streamer_write_uhwi (ob, loop->nb_iterations_upper_bound.low);
+	  streamer_write_hwi (ob, loop->nb_iterations_upper_bound.high);
+	}
+      streamer_write_hwi (ob, loop->any_estimate);
+      if (loop->any_estimate)
+	{
+	  streamer_write_uhwi (ob, loop->nb_iterations_estimate.low);
+	  streamer_write_hwi (ob, loop->nb_iterations_estimate.high);
+	}
+    }
 
   ob->main_stream = tmp_stream;
 }

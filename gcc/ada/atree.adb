@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2525,6 +2525,12 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          return Node_Id (Nodes.Table (N + 5).Field6);
       end Node30;
+
+      function Node31 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 5).Field7);
+      end Node31;
 
       function List1 (N : Node_Id) return List_Id is
       begin
@@ -5230,6 +5236,12 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 5).Field6 := Union_Id (Val);
       end Set_Node30;
+
+      procedure Set_Node31 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field7 := Union_Id (Val);
+      end Set_Node31;
 
       procedure Set_List1 (N : Node_Id; Val : List_Id) is
       begin

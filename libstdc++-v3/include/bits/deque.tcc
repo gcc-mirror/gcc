@@ -191,7 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template <typename _Tp, typename _Alloc>
     typename deque<_Tp, _Alloc>::iterator
     deque<_Tp, _Alloc>::
-    erase(iterator __position)
+    _M_erase(iterator __position)
     {
       iterator __next = __position;
       ++__next;
@@ -214,7 +214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template <typename _Tp, typename _Alloc>
     typename deque<_Tp, _Alloc>::iterator
     deque<_Tp, _Alloc>::
-    erase(iterator __first, iterator __last)
+    _M_erase(iterator __first, iterator __last)
     {
       if (__first == __last)
 	return __first;

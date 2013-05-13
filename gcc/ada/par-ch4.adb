@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -509,16 +509,25 @@ package body Ch4 is
               and then not
                 Is_Parameterless_Attribute (Get_Attribute_Id (Attr_Name))
             then
-               Set_Expressions (Name_Node, New_List);
+               --  Attribute Loop_Entry has no effect on the name extension
+               --  parsing logic, as if the attribute never existed in the
+               --  source. Continue parsing the subsequent expressions or
+               --  ranges.
+
+               if Attr_Name = Name_Loop_Entry then
+                  Scan; -- past left paren
+                  goto Scan_Name_Extension_Left_Paren;
 
                --  Attribute Update contains an array or record association
                --  list which provides new values for various components or
                --  elements. The list is parsed as an aggregate.
 
-               if Attr_Name = Name_Update then
+               elsif Attr_Name = Name_Update then
+                  Set_Expressions (Name_Node, New_List);
                   Append (P_Aggregate, Expressions (Name_Node));
 
                else
+                  Set_Expressions (Name_Node, New_List);
                   Scan; -- past left paren
 
                   loop
@@ -689,16 +698,17 @@ package body Ch4 is
 
          if Token = Tok_Arrow then
             Error_Msg
-              ("expect identifier in parameter association",
-                Sloc (Expr_Node));
+              ("expect identifier in parameter association", Sloc (Expr_Node));
             Scan;  -- past arrow
 
          elsif not Comma_Present then
             T_Right_Paren;
+
             Prefix_Node := Name_Node;
             Name_Node := New_Node (N_Indexed_Component, Sloc (Prefix_Node));
             Set_Prefix (Name_Node, Prefix_Node);
             Set_Expressions (Name_Node, Arg_List);
+
             goto Scan_Name_Extension;
          end if;
 
@@ -1818,12 +1828,15 @@ package body Ch4 is
 
    --  RELATION ::=
    --    SIMPLE_EXPRESSION [not] in MEMBERSHIP_CHOICE_LIST
+   --  | RAISE_EXPRESSION
 
    --  MEMBERSHIP_CHOICE_LIST ::=
    --    MEMBERSHIP_CHOICE {'|' MEMBERSHIP CHOICE}
 
    --  MEMBERSHIP_CHOICE ::=
    --    CHOICE_EXPRESSION | RANGE | SUBTYPE_MARK
+
+   --  RAISE_EXPRESSION ::= raise exception_NAME [with string_EXPRESSION]
 
    --  On return, Expr_Form indicates the categorization of the expression
 
@@ -1839,6 +1852,15 @@ package body Ch4 is
       Optok        : Source_Ptr;
 
    begin
+      --  First check for raise expression
+
+      if Token = Tok_Raise then
+         Expr_Form := EF_Non_Simple;
+         return P_Raise_Expression;
+      end if;
+
+      --  All other cases
+
       Node1 := P_Simple_Expression;
 
       if Token not in Token_Class_Relop then

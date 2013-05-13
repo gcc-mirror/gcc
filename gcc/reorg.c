@@ -458,69 +458,32 @@ find_end_label (rtx kind)
 /* Put INSN and LIST together in a SEQUENCE rtx of LENGTH, and replace
    the pattern of INSN with the SEQUENCE.
 
-   Chain the insns so that NEXT_INSN of each insn in the sequence points to
-   the next and NEXT_INSN of the last insn in the sequence points to
-   the first insn after the sequence.  Similarly for PREV_INSN.  This makes
-   it easier to scan all insns.
-
    Returns the SEQUENCE that replaces INSN.  */
 
 static rtx
 emit_delay_sequence (rtx insn, rtx list, int length)
 {
-  int i = 1;
-  rtx li;
-  int had_barrier = 0;
-
   /* Allocate the rtvec to hold the insns and the SEQUENCE.  */
   rtvec seqv = rtvec_alloc (length + 1);
   rtx seq = gen_rtx_SEQUENCE (VOIDmode, seqv);
   rtx seq_insn = make_insn_raw (seq);
-  rtx first = get_insns ();
-  rtx last = get_last_insn ();
 
-  /* Make a copy of the insn having delay slots.  */
-  rtx delay_insn = copy_rtx (insn);
+  /* If DELAY_INSN has a location, use it for SEQ_INSN.  If DELAY_INSN does
+     not have a location, but one of the delayed insns does, we pick up a
+     location from there later.  */
+  INSN_LOCATION (seq_insn) = INSN_LOCATION (insn);
 
-  /* If INSN is followed by a BARRIER, delete the BARRIER since it will only
-     confuse further processing.  Update LAST in case it was the last insn.
-     We will put the BARRIER back in later.  */
-  if (NEXT_INSN (insn) && BARRIER_P (NEXT_INSN (insn)))
-    {
-      delete_related_insns (NEXT_INSN (insn));
-      last = get_last_insn ();
-      had_barrier = 1;
-    }
-
-  /* Splice our SEQUENCE into the insn stream where INSN used to be.  */
-  NEXT_INSN (seq_insn) = NEXT_INSN (insn);
-  PREV_INSN (seq_insn) = PREV_INSN (insn);
-
-  if (insn != last)
-    PREV_INSN (NEXT_INSN (seq_insn)) = seq_insn;
-
-  if (insn != first)
-    NEXT_INSN (PREV_INSN (seq_insn)) = seq_insn;
-
-  /* Note the calls to set_new_first_and_last_insn must occur after
-     SEQ_INSN has been completely spliced into the insn stream.
-
-     Otherwise CUR_INSN_UID will get set to an incorrect value because
-     set_new_first_and_last_insn will not find SEQ_INSN in the chain.  */
-  if (insn == last)
-    set_new_first_and_last_insn (first, seq_insn);
-
-  if (insn == first)
-    set_new_first_and_last_insn (seq_insn, last);
+  /* Unlink INSN from the insn chain, so that we can put it into
+     the SEQUENCE.   Remember where we want to emit SEQUENCE in AFTER.  */
+  rtx after = PREV_INSN (insn);
+  remove_insn (insn);
+  NEXT_INSN (insn) = PREV_INSN (insn) = NULL;
 
   /* Build our SEQUENCE and rebuild the insn chain.  */
-  XVECEXP (seq, 0, 0) = delay_insn;
-  INSN_DELETED_P (delay_insn) = 0;
-  PREV_INSN (delay_insn) = PREV_INSN (seq_insn);
-
-  INSN_LOCATION (seq_insn) = INSN_LOCATION (delay_insn);
-
-  for (li = list; li; li = XEXP (li, 1), i++)
+  int i = 1;
+  start_sequence ();
+  XVECEXP (seq, 0, 0) = emit_insn (insn);
+  for (rtx li = list; li; li = XEXP (li, 1), i++)
     {
       rtx tem = XEXP (li, 0);
       rtx note, next;
@@ -528,9 +491,10 @@ emit_delay_sequence (rtx insn, rtx list, int length)
       /* Show that this copy of the insn isn't deleted.  */
       INSN_DELETED_P (tem) = 0;
 
-      XVECEXP (seq, 0, i) = tem;
-      PREV_INSN (tem) = XVECEXP (seq, 0, i - 1);
-      NEXT_INSN (XVECEXP (seq, 0, i - 1)) = tem;
+      /* Unlink insn from its original place, and re-emit it into
+	 the sequence.  */
+      NEXT_INSN (tem) = PREV_INSN (tem) = NULL;
+      XVECEXP (seq, 0, i) = emit_insn (tem);
 
       /* SPARC assembler, for instance, emit warning when debug info is output
          into the delay slot.  */
@@ -561,28 +525,11 @@ emit_delay_sequence (rtx insn, rtx list, int length)
 	    }
 	}
     }
-
-  NEXT_INSN (XVECEXP (seq, 0, length)) = NEXT_INSN (seq_insn);
-
-  /* If the previous insn is a SEQUENCE, update the NEXT_INSN pointer on the
-     last insn in that SEQUENCE to point to us.  Similarly for the first
-     insn in the following insn if it is a SEQUENCE.  */
-
-  if (PREV_INSN (seq_insn) && NONJUMP_INSN_P (PREV_INSN (seq_insn))
-      && GET_CODE (PATTERN (PREV_INSN (seq_insn))) == SEQUENCE)
-    NEXT_INSN (XVECEXP (PATTERN (PREV_INSN (seq_insn)), 0,
-			XVECLEN (PATTERN (PREV_INSN (seq_insn)), 0) - 1))
-      = seq_insn;
-
-  if (NEXT_INSN (seq_insn) && NONJUMP_INSN_P (NEXT_INSN (seq_insn))
-      && GET_CODE (PATTERN (NEXT_INSN (seq_insn))) == SEQUENCE)
-    PREV_INSN (XVECEXP (PATTERN (NEXT_INSN (seq_insn)), 0, 0)) = seq_insn;
-
-  /* If there used to be a BARRIER, put it back.  */
-  if (had_barrier)
-    emit_barrier_after (seq_insn);
-
+  end_sequence ();
   gcc_assert (i == length + 1);
+
+  /* Splice our SEQUENCE into the insn stream where INSN used to be.  */
+  add_insn_after (seq_insn, after, NULL);
 
   return seq_insn;
 }
@@ -921,8 +868,8 @@ get_branch_condition (rtx insn, rtx target)
   if (condjump_in_parallel_p (insn))
     pat = XVECEXP (pat, 0, 0);
 
-  if (ANY_RETURN_P (pat))
-    return pat == target ? const_true_rtx : 0;
+  if (ANY_RETURN_P (pat) && pat == target)
+    return const_true_rtx;
 
   if (GET_CODE (pat) != SET || SET_DEST (pat) != pc_rtx)
     return 0;
@@ -933,14 +880,16 @@ get_branch_condition (rtx insn, rtx target)
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 2) == pc_rtx
-	   && GET_CODE (XEXP (src, 1)) == LABEL_REF
-	   && XEXP (XEXP (src, 1), 0) == target)
+	   && ((GET_CODE (XEXP (src, 1)) == LABEL_REF
+	        && XEXP (XEXP (src, 1), 0) == target)
+	       || (ANY_RETURN_P (XEXP (src, 1)) && XEXP (src, 1) == target)))
     return XEXP (src, 0);
 
   else if (GET_CODE (src) == IF_THEN_ELSE
 	   && XEXP (src, 1) == pc_rtx
-	   && GET_CODE (XEXP (src, 2)) == LABEL_REF
-	   && XEXP (XEXP (src, 2), 0) == target)
+	   && ((GET_CODE (XEXP (src, 2)) == LABEL_REF
+		&& XEXP (XEXP (src, 2), 0) == target)
+	       || (ANY_RETURN_P (XEXP (src, 2)) && XEXP (src, 2) == target)))
     {
       enum rtx_code rev;
       rev = reversed_comparison_code (XEXP (src, 0), insn);
@@ -2129,99 +2078,79 @@ fill_simple_delay_slots (int non_jumps_p)
 	     Presumably, we should also check to see if we could get
 	     back to this function via `setjmp'.  */
 	  && ! can_throw_internal (insn)
-	  && (!JUMP_P (insn)
-	      || ((condjump_p (insn) || condjump_in_parallel_p (insn))
-		  && ! simplejump_p (insn)
-		  && !ANY_RETURN_P (JUMP_LABEL (insn)))))
+	  && !JUMP_P (insn))
 	{
-	  /* Invariant: If insn is a JUMP_INSN, the insn's jump
-	     label.  Otherwise, zero.  */
-	  rtx target = 0;
 	  int maybe_never = 0;
 	  rtx pat, trial_delay;
 
 	  CLEAR_RESOURCE (&needed);
 	  CLEAR_RESOURCE (&set);
+	  mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
+	  mark_referenced_resources (insn, &needed, true);
 
 	  if (CALL_P (insn))
+	    maybe_never = 1;
+
+	  for (trial = next_nonnote_insn (insn); !stop_search_p (trial, 1);
+	       trial = next_trial)
 	    {
-	      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
-	      mark_referenced_resources (insn, &needed, true);
-	      maybe_never = 1;
-	    }
-	  else
-	    {
-	      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
-	      mark_referenced_resources (insn, &needed, true);
-	      if (JUMP_P (insn))
-		target = JUMP_LABEL (insn);
-	    }
+	      next_trial = next_nonnote_insn (trial);
 
-	  if (target == 0 || ANY_RETURN_P (target))
-	    for (trial = next_nonnote_insn (insn); !stop_search_p (trial, 1);
-		 trial = next_trial)
-	      {
-		next_trial = next_nonnote_insn (trial);
+	      /* This must be an INSN or CALL_INSN.  */
+	      pat = PATTERN (trial);
 
-		/* This must be an INSN or CALL_INSN.  */
-		pat = PATTERN (trial);
+	      /* Stand-alone USE and CLOBBER are just for flow.  */
+	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+		continue;
 
-		/* Stand-alone USE and CLOBBER are just for flow.  */
-		if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+	      /* If this already has filled delay slots, get the insn needing
+		 the delay slots.  */
+	      if (GET_CODE (pat) == SEQUENCE)
+		trial_delay = XVECEXP (pat, 0, 0);
+	      else
+		trial_delay = trial;
+
+	      /* Stop our search when seeing a jump.  */
+	      if (JUMP_P (trial_delay))
+		break;
+
+	      /* See if we have a resource problem before we try to split.  */
+	      if (GET_CODE (pat) != SEQUENCE
+		  && ! insn_references_resource_p (trial, &set, true)
+		  && ! insn_sets_resource_p (trial, &set, true)
+		  && ! insn_sets_resource_p (trial, &needed, true)
+#ifdef HAVE_cc0
+		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
+#endif
+		  && ! (maybe_never && may_trap_or_fault_p (pat))
+		  && (trial = try_split (pat, trial, 0))
+		  && eligible_for_delay (insn, slots_filled, trial, flags)
+		  && ! can_throw_internal(trial))
+		{
+		  next_trial = next_nonnote_insn (trial);
+		  delay_list = add_to_delay_list (trial, delay_list);
+#ifdef HAVE_cc0
+		  if (reg_mentioned_p (cc0_rtx, pat))
+		    link_cc0_insns (trial);
+#endif
+		  delete_related_insns (trial);
+		  if (slots_to_fill == ++slots_filled)
+		    break;
 		  continue;
+		}
 
-		/* If this already has filled delay slots, get the insn needing
-		   the delay slots.  */
-		if (GET_CODE (pat) == SEQUENCE)
-		  trial_delay = XVECEXP (pat, 0, 0);
-		else
-		  trial_delay = trial;
+	      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
+	      mark_referenced_resources (trial, &needed, true);
 
-		/* Stop our search when seeing a jump.  */
-		if (JUMP_P (trial_delay))
-		  break;
+	      /* Ensure we don't put insns between the setting of cc and the
+		 comparison by moving a setting of cc into an earlier delay
+		 slot since these insns could clobber the condition code.  */
+	      set.cc = 1;
 
-		/* See if we have a resource problem before we try to
-		   split.  */
-		if (GET_CODE (pat) != SEQUENCE
-		    && ! insn_references_resource_p (trial, &set, true)
-		    && ! insn_sets_resource_p (trial, &set, true)
-		    && ! insn_sets_resource_p (trial, &needed, true)
-#ifdef HAVE_cc0
-		    && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
-#endif
-		    && ! (maybe_never && may_trap_or_fault_p (pat))
-		    && (trial = try_split (pat, trial, 0))
-		    && eligible_for_delay (insn, slots_filled, trial, flags)
-		    && ! can_throw_internal(trial))
-		  {
-		    next_trial = next_nonnote_insn (trial);
-		    delay_list = add_to_delay_list (trial, delay_list);
-
-#ifdef HAVE_cc0
-		    if (reg_mentioned_p (cc0_rtx, pat))
-		      link_cc0_insns (trial);
-#endif
-
-		    delete_related_insns (trial);
-		    if (slots_to_fill == ++slots_filled)
-		      break;
-		    continue;
-		  }
-
-		mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
-		mark_referenced_resources (trial, &needed, true);
-
-		/* Ensure we don't put insns between the setting of cc and the
-		   comparison by moving a setting of cc into an earlier delay
-		   slot since these insns could clobber the condition code.  */
-		set.cc = 1;
-
-		/* If this is a call or jump, we might not get here.  */
-		if (CALL_P (trial_delay)
-		    || JUMP_P (trial_delay))
-		  maybe_never = 1;
-	      }
+	      /* If this is a call, we might not get here.  */
+	      if (CALL_P (trial_delay))
+		maybe_never = 1;
+	    }
 
 	  /* If there are slots left to fill and our search was stopped by an
 	     unconditional branch, try the insn at the branch target.  We can
@@ -2232,7 +2161,6 @@ fill_simple_delay_slots (int non_jumps_p)
 	      && trial
 	      && jump_to_label_p (trial)
 	      && simplejump_p (trial)
-	      && (target == 0 || JUMP_LABEL (trial) == target)
 	      && (next_trial = next_active_insn (JUMP_LABEL (trial))) != 0
 	      && ! (NONJUMP_INSN_P (next_trial)
 		    && GET_CODE (PATTERN (next_trial)) == SEQUENCE)
@@ -2264,11 +2192,6 @@ fill_simple_delay_slots (int non_jumps_p)
 					 delay_list);
 		  slots_filled++;
 		  reorg_redirect_jump (trial, new_label);
-
-		  /* If we merged because we both jumped to the same place,
-		     redirect the original insn also.  */
-		  if (target)
-		    reorg_redirect_jump (insn, new_label);
 		}
 	    }
 	}
@@ -2339,9 +2262,7 @@ follow_jumps (rtx label, rtx jump, bool *crossing)
       if (ANY_RETURN_P (this_label))
 	return this_label;
       tem = next_active_insn (this_label);
-      if (tem
-	  && (GET_CODE (PATTERN (tem)) == ADDR_VEC
-	      || GET_CODE (PATTERN (tem)) == ADDR_DIFF_VEC))
+      if (tem && JUMP_TABLE_DATA_P (tem))
 	break;
 
       if (!targetm.can_follow_jump (jump, insn))
@@ -3664,7 +3585,7 @@ make_return_insns (rtx first)
 
 /* Try to find insns to place in delay slots.  */
 
-void
+static void
 dbr_schedule (rtx first)
 {
   rtx insn, next, epilogue_insn = 0;
@@ -3702,13 +3623,13 @@ dbr_schedule (rtx first)
     {
       rtx target;
 
-      if (JUMP_P (insn))
-        INSN_ANNULLED_BRANCH_P (insn) = 0;
-      INSN_FROM_TARGET_P (insn) = 0;
-
       /* Skip vector tables.  We can't get attributes for them.  */
       if (JUMP_TABLE_DATA_P (insn))
 	continue;
+
+      if (JUMP_P (insn))
+        INSN_ANNULLED_BRANCH_P (insn) = 0;
+      INSN_FROM_TARGET_P (insn) = 0;
 
       if (num_delay_slots (insn) > 0)
 	obstack_ptr_grow (&unfilled_slots_obstack, insn);
@@ -3909,7 +3830,7 @@ struct rtl_opt_pass pass_delay_slots =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect                      /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -3944,6 +3865,6 @@ struct rtl_opt_pass pass_machine_reorg =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect                      /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };

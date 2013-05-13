@@ -478,7 +478,7 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
     add_to_renaming_pragma_list (oldname, newname);
 }
 
-/* This is called from here and from ia64.c.  */
+/* This is called from here and from ia64-c.c.  */
 void
 add_to_renaming_pragma_list (tree oldname, tree newname)
 {

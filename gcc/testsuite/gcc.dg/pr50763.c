@@ -12,5 +12,5 @@ foo (int c, int d)
   while (c == d);
 }
 
-/* { dg-final { scan-tree-dump-times "== 33" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "== 33" 2 "pre"} } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

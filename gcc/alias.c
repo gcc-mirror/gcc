@@ -148,7 +148,7 @@ typedef struct alias_set_entry_d *alias_set_entry;
 static int rtx_equal_for_memref_p (const_rtx, const_rtx);
 static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
 static void record_set (rtx, const_rtx, void *);
-static int base_alias_check (rtx, rtx, enum machine_mode,
+static int base_alias_check (rtx, rtx, rtx, rtx, enum machine_mode,
 			     enum machine_mode);
 static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
@@ -1672,35 +1672,31 @@ find_base_term (rtx x)
 	if (tmp1 == pic_offset_table_rtx && CONSTANT_P (tmp2))
 	  return find_base_term (tmp2);
 
-	/* If either operand is known to be a pointer, then use it
+	/* If either operand is known to be a pointer, then prefer it
 	   to determine the base term.  */
 	if (REG_P (tmp1) && REG_POINTER (tmp1))
+	  ;
+	else if (REG_P (tmp2) && REG_POINTER (tmp2))
 	  {
-	    rtx base = find_base_term (tmp1);
-	    if (base)
-	      return base;
+	    rtx tem = tmp1;
+	    tmp1 = tmp2;
+	    tmp2 = tem;
 	  }
 
-	if (REG_P (tmp2) && REG_POINTER (tmp2))
-	  {
-	    rtx base = find_base_term (tmp2);
-	    if (base)
-	      return base;
-	  }
-
-	/* Neither operand was known to be a pointer.  Go ahead and find the
-	   base term for both operands.  */
-	tmp1 = find_base_term (tmp1);
-	tmp2 = find_base_term (tmp2);
-
-	/* If either base term is named object or a special address
+	/* Go ahead and find the base term for both operands.  If either base
+	   term is from a pointer or is a named object or a special address
 	   (like an argument or stack reference), then use it for the
 	   base term.  */
-	if (tmp1 != 0 && known_base_value_p (tmp1))
-	  return tmp1;
-
-	if (tmp2 != 0 && known_base_value_p (tmp2))
-	  return tmp2;
+	rtx base = find_base_term (tmp1);
+	if (base != NULL_RTX
+	    && ((REG_P (tmp1) && REG_POINTER (tmp1))
+		 || known_base_value_p (base)))
+	  return base;
+	base = find_base_term (tmp2);
+	if (base != NULL_RTX
+	    && ((REG_P (tmp2) && REG_POINTER (tmp2))
+		 || known_base_value_p (base)))
+	  return base;
 
 	/* We could not determine which of the two operands was the
 	   base register and which was the index.  So we can determine
@@ -1736,12 +1732,9 @@ may_be_sp_based_p (rtx x)
    objects, 1 if they might be pointers to the same object.  */
 
 static int
-base_alias_check (rtx x, rtx y, enum machine_mode x_mode,
-		  enum machine_mode y_mode)
+base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
+		  enum machine_mode x_mode, enum machine_mode y_mode)
 {
-  rtx x_base = find_base_term (x);
-  rtx y_base = find_base_term (y);
-
   /* If the address itself has no known base see if a known equivalent
      value has one.  If either address still has no known base, nothing
      is known about aliasing.  */
@@ -2511,7 +2504,9 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 		   && CONSTANT_POOL_ADDRESS_P (base))))
     return 0;
 
-  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
+  rtx mem_base = find_base_term (mem_addr);
+  if (! base_alias_check (x_addr, base, mem_addr, mem_base,
+			  GET_MODE (x), mem_mode))
     return 0;
 
   x_addr = canon_rtx (x_addr);
@@ -2603,16 +2598,16 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
       mem_addr = get_addr (mem_addr);
     }
 
-  if (! writep)
-    {
-      base = find_base_term (mem_addr);
-      if (base && (GET_CODE (base) == LABEL_REF
-		   || (GET_CODE (base) == SYMBOL_REF
-		       && CONSTANT_POOL_ADDRESS_P (base))))
-	return 0;
-    }
+  base = find_base_term (mem_addr);
+  if (! writep
+      && base
+      && (GET_CODE (base) == LABEL_REF
+	  || (GET_CODE (base) == SYMBOL_REF
+	      && CONSTANT_POOL_ADDRESS_P (base))))
+    return 0;
 
-  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x),
+  rtx x_base = find_base_term (x_addr);
+  if (! base_alias_check (x_addr, x_base, mem_addr, base, GET_MODE (x),
 			  GET_MODE (mem)))
     return 0;
 
@@ -2692,7 +2687,10 @@ may_alias_p (const_rtx mem, const_rtx x)
       mem_addr = get_addr (mem_addr);
     }
 
-  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), GET_MODE (mem_addr)))
+  rtx x_base = find_base_term (x_addr);
+  rtx mem_base = find_base_term (mem_addr);
+  if (! base_alias_check (x_addr, x_base, mem_addr, mem_base,
+			  GET_MODE (x), GET_MODE (mem_addr)))
     return 0;
 
   x_addr = canon_rtx (x_addr);

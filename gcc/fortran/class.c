@@ -543,7 +543,7 @@ gfc_intrinsic_hash_value (gfc_typespec *ts)
    which contains the declared type as '_data' component, plus a pointer
    component '_vptr' which determines the dynamic type.  */
 
-gfc_try
+bool
 gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 			gfc_array_spec **as, bool delayed_vtab)
 {
@@ -560,19 +560,19 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     {
       gfc_error ("Assumed size polymorphic objects or components, such "
 		 "as that at %C, have not yet been implemented");
-      return FAILURE;
+      return false;
     }
 
   if (attr->class_ok)
     /* Class container has already been built.  */
-    return SUCCESS;
+    return true;
 
   attr->class_ok = attr->dummy || attr->pointer || attr->allocatable
 		   || attr->select_type_temporary || attr->associate_var;
 
   if (!attr->class_ok)
     /* We can not build the class container yet.  */
-    return SUCCESS;
+    return true;
 
   /* Determine the name of the encapsulating type.  */
   rank = !(*as) || (*as)->rank == -1 ? GFC_MAX_DIMENSIONS : (*as)->rank;
@@ -614,13 +614,13 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       if (!ts->u.derived->attr.unlimited_polymorphic)
 	fclass->attr.abstract = ts->u.derived->attr.abstract;
       fclass->f2k_derived = gfc_get_namespace (NULL, 0);
-      if (gfc_add_flavor (&fclass->attr, FL_DERIVED,
-	  NULL, &gfc_current_locus) == FAILURE)
-	return FAILURE;
+      if (!gfc_add_flavor (&fclass->attr, FL_DERIVED, NULL, 
+			   &gfc_current_locus))
+	return false;
 
       /* Add component '_data'.  */
-      if (gfc_add_component (fclass, "_data", &c) == FAILURE)
-	return FAILURE;
+      if (!gfc_add_component (fclass, "_data", &c))
+	return false;
       c->ts = *ts;
       c->ts.type = BT_DERIVED;
       c->attr.access = ACCESS_PRIVATE;
@@ -636,8 +636,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->initializer = NULL;
 
       /* Add component '_vptr'.  */
-      if (gfc_add_component (fclass, "_vptr", &c) == FAILURE)
-	return FAILURE;
+      if (!gfc_add_component (fclass, "_vptr", &c))
+	return false;
       c->ts.type = BT_DERIVED;
       if (delayed_vtab
 	  || (ts->u.derived->f2k_derived
@@ -661,7 +661,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 	{
 	  gfc_error ("Maximum extension level reached with type '%s' at %L",
 		     ts->u.derived->name, &ts->u.derived->declared_at);
-	return FAILURE;
+	return false;
 	}
 
       fclass->attr.extension = ts->u.derived->attr.extension + 1;
@@ -672,7 +672,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   ts->u.derived = fclass;
   attr->allocatable = attr->pointer = attr->dimension = attr->codimension = 0;
   (*as) = NULL;
-  return SUCCESS;
+  return true;
 }
 
 
@@ -692,7 +692,7 @@ add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
   if (c == NULL)
     {
       /* Add procedure component.  */
-      if (gfc_add_component (vtype, name, &c) == FAILURE)
+      if (!gfc_add_component (vtype, name, &c))
 	return;
 
       if (!c->tb)
@@ -956,8 +956,10 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   block->resolved_sym = block->symtree->n.sym;
   block->resolved_sym->attr.flavor = FL_PROCEDURE;
   block->resolved_sym->attr.intrinsic = 1;
+  block->resolved_sym->attr.subroutine = 1;
   block->resolved_sym->from_intmod = INTMOD_ISO_C_BINDING;
   block->resolved_sym->intmod_sym_id = ISOCBINDING_F_POINTER;
+  block->resolved_isym = gfc_intrinsic_subroutine_by_id (GFC_ISYM_C_F_POINTER);
   gfc_commit_symbol (block->resolved_sym);
 
   /* C_F_POINTER's first argument: TRANSFER ( <addr>, c_intptr_t).  */
@@ -965,6 +967,7 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   block->ext.actual->next = gfc_get_actual_arglist ();
   block->ext.actual->next->expr = gfc_get_int_expr (gfc_index_integer_kind,
 						    NULL, 0);
+  block->ext.actual->next->next = gfc_get_actual_arglist (); /* SIZE. */
 
   /* The <addr> part: TRANSFER (C_LOC (array), c_intptr_t).  */
 
@@ -976,7 +979,7 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   expr->symtree->n.sym->intmod_sym_id = ISOCBINDING_LOC;
   expr->symtree->n.sym->attr.intrinsic = 1;
   expr->symtree->n.sym->from_intmod = INTMOD_ISO_C_BINDING;
-  expr->value.function.esym = expr->symtree->n.sym;
+  expr->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_C_LOC);
   expr->value.function.actual = gfc_get_actual_arglist ();
   expr->value.function.actual->expr
 	    = gfc_lval_expr_from_sym (array);
@@ -987,9 +990,9 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
 
   /* TRANSFER.  */
   expr2 = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_TRANSFER, "transfer",
-				    gfc_current_locus, 2, expr,
+				    gfc_current_locus, 3, expr,
 				    gfc_get_int_expr (gfc_index_integer_kind,
-						      NULL, 0));
+						      NULL, 0), NULL);
   expr2->ts.type = BT_INTEGER;
   expr2->ts.kind = gfc_index_integer_kind;
 
@@ -1200,9 +1203,9 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
   size_expr->value.op.op1
 	= gfc_build_intrinsic_call (sub_ns, GFC_ISYM_STORAGE_SIZE,
 				    "storage_size", gfc_current_locus, 2,
-				    gfc_lval_expr_from_sym (array));
+				    gfc_lval_expr_from_sym (array),
 				    gfc_get_int_expr (gfc_index_integer_kind,
-						      NULL, 0);
+						      NULL, 0));
 
   /* NUMERIC_STORAGE_SIZE.  */
   size_expr->value.op.op2 = gfc_get_int_expr (gfc_index_integer_kind, NULL,
@@ -1215,7 +1218,6 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
 			|| is_contiguous)
 		   || 0 == size_expr.  */
   block->expr1 = gfc_get_expr ();
-  block->expr1->expr_type = EXPR_FUNCTION;
   block->expr1->ts.type = BT_LOGICAL;
   block->expr1->ts.kind = gfc_default_logical_kind;
   block->expr1->expr_type = EXPR_OP;
@@ -1234,8 +1236,9 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
 	= gfc_lval_expr_from_sym (byte_stride);
   expr->value.op.op2 = size_expr;
 
-  /* If strides aren't allowd (not assumed shape or CONTIGUOUS),
+  /* If strides aren't allowed (not assumed shape or CONTIGUOUS),
      add is_contiguous check.  */
+
   if (fini->proc_tree->n.sym->formal->sym->as->type != AS_ASSUMED_SHAPE
       || fini->proc_tree->n.sym->formal->sym->attr.contiguous)
     {
@@ -1315,7 +1318,7 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
       gfc_expr *shape_expr;
       tmp_array->as->lower[i] = gfc_get_int_expr (gfc_default_integer_kind,
 						  NULL, 1);
-      /* SIZE (array, dim=i+1, kind=default_kind).  */
+      /* SIZE (array, dim=i+1, kind=gfc_index_integer_kind).  */
       shape_expr
 	= gfc_build_intrinsic_call (sub_ns, GFC_ISYM_SIZE, "size",
 				    gfc_current_locus, 3,
@@ -1323,7 +1326,9 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
 				    gfc_get_int_expr (gfc_default_integer_kind,
 						      NULL, i+1),
 				    gfc_get_int_expr (gfc_default_integer_kind,
-						      NULL, 0));
+						      NULL,
+						      gfc_index_integer_kind));
+      shape_expr->ts.kind = gfc_index_integer_kind;
       tmp_array->as->upper[i] = shape_expr;
     }
   gfc_set_sym_referenced (tmp_array);
@@ -1346,7 +1351,6 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
 
   /* Offset calculation for the new array: idx * size of type (in bytes).  */
   offset2 = gfc_get_expr ();
-  offset2 = block->ext.actual->expr;
   offset2->expr_type = EXPR_OP;
   offset2->value.op.op = INTRINSIC_TIMES;
   offset2->value.op.op1 = gfc_lval_expr_from_sym (idx);
@@ -1365,13 +1369,15 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
 					  sub_ns);
   block2 = block2->next;
   block2->next = finalization_scalarizer (tmp_array, ptr2, offset2, sub_ns);
+  block2 = block2->next;
 
   /* ptr2 = ptr.  */
   block2->next = XCNEW (gfc_code);
-  block2->next->op = EXEC_ASSIGN;
-  block2->next->loc = gfc_current_locus;
-  block2->next->expr1 = gfc_lval_expr_from_sym (ptr2);
-  block2->next->expr2 = gfc_lval_expr_from_sym (ptr);
+  block2 = block2->next;
+  block2->op = EXEC_ASSIGN;
+  block2->loc = gfc_current_locus;
+  block2->expr1 = gfc_lval_expr_from_sym (ptr2);
+  block2->expr2 = gfc_lval_expr_from_sym (ptr);
 
   /* Call now the user's final subroutine. */
   block->next  = XCNEW (gfc_code);
@@ -1414,7 +1420,8 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
 					  gfc_lval_expr_from_sym (offset),
 					  sub_ns);
   block2 = block2->next;
-  block2->next = finalization_scalarizer (tmp_array, ptr2, offset2, sub_ns);
+  block2->next = finalization_scalarizer (tmp_array, ptr2,
+					  gfc_copy_expr (offset2), sub_ns);
   block2 = block2->next;
 
   /* ptr = ptr2.  */
@@ -1717,7 +1724,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
      DO idx = 1, rank
        strides(idx) = _F._stride (array, dim=idx)
        sizes(idx) = sizes(i-1) * size(array, dim=idx, kind=index_kind)
-       if (strides(idx) /= sizes(i-1)) is_contiguous = .false.
+       if (strides (idx) /= sizes(i-1)) is_contiguous = .false.
      END DO.  */
 
   /* Create loop.  */
@@ -1799,10 +1806,12 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 				    gfc_lval_expr_from_sym (array),
 				    gfc_lval_expr_from_sym (idx),
 				    gfc_get_int_expr (gfc_index_integer_kind,
-						      NULL, 0));
+						      NULL,
+						      gfc_index_integer_kind));
+  block->expr2->value.op.op2->ts.kind = gfc_index_integer_kind;
   block->expr2->ts = idx->ts;
 
-  /* if (strides(idx) /= sizes(idx-1)) is_contiguous = .false.  */
+  /* if (strides (idx) /= sizes(idx-1)) is_contiguous = .false.  */
   block->next = XCNEW (gfc_code);
   block = block->next;
   block->loc = gfc_current_locus;
@@ -1960,7 +1969,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	    block->ext.block.case_list->low
 		= gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
 	  block->ext.block.case_list->high
-		= block->ext.block.case_list->low;
+		= gfc_copy_expr (block->ext.block.case_list->low);
 
 	  /* CALL fini_rank (array) - possibly with packing.  */
           if (fini->proc_tree->n.sym->formal->sym->attr.dimension)
@@ -2193,8 +2202,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  if (gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
-	                      &gfc_current_locus) == FAILURE)
+	  if (!gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL, 
+			       &gfc_current_locus))
 	    goto cleanup;
 	  vtab->attr.target = 1;
 	  vtab->attr.save = SAVE_IMPLICIT;
@@ -2210,15 +2219,15 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      gfc_symbol *parent = NULL, *parent_vtab = NULL;
 
 	      gfc_get_symbol (name, ns, &vtype);
-	      if (gfc_add_flavor (&vtype->attr, FL_DERIVED,
-				  NULL, &gfc_current_locus) == FAILURE)
+	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL, 
+				   &gfc_current_locus))
 		goto cleanup;
 	      vtype->attr.access = ACCESS_PUBLIC;
 	      vtype->attr.vtype = 1;
 	      gfc_set_sym_referenced (vtype);
 
 	      /* Add component '_hash'.  */
-	      if (gfc_add_component (vtype, "_hash", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_hash", &c))
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
@@ -2227,7 +2236,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 						 NULL, derived->hash_value);
 
 	      /* Add component '_size'.  */
-	      if (gfc_add_component (vtype, "_size", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_size", &c))
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
@@ -2240,7 +2249,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 						 NULL, 0);
 
 	      /* Add component _extends.  */
-	      if (gfc_add_component (vtype, "_extends", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_extends", &c))
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -2277,7 +2286,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		}
 
 	      /* Add component _def_init.  */
-	      if (gfc_add_component (vtype, "_def_init", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_def_init", &c))
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.artificial = 1;
@@ -2306,7 +2315,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		}
 
 	      /* Add component _copy.  */
-	      if (gfc_add_component (vtype, "_copy", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_copy", &c))
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -2376,7 +2385,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	    /* FIXME: Enable ABI-breaking "_final" generation.  */
 	    if (0)
 	    {
-	      if (gfc_add_component (vtype, "_final", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_final", &c))
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -2471,7 +2480,7 @@ gfc_symbol *
 gfc_find_intrinsic_vtab (gfc_typespec *ts)
 {
   gfc_namespace *ns;
-  gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
+  gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL;
   gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
   int charlen = 0;
 
@@ -2519,8 +2528,8 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  if (gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
-	                      &gfc_current_locus) == FAILURE)
+	  if (!gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL, 
+			       &gfc_current_locus))
 	    goto cleanup;
 	  vtab->attr.target = 1;
 	  vtab->attr.save = SAVE_IMPLICIT;
@@ -2538,15 +2547,15 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      gfc_namespace *contained;
 
 	      gfc_get_symbol (name, ns, &vtype);
-	      if (gfc_add_flavor (&vtype->attr, FL_DERIVED,
-				  NULL, &gfc_current_locus) == FAILURE)
+	      if (!gfc_add_flavor (&vtype->attr, FL_DERIVED, NULL, 
+				   &gfc_current_locus))
 		goto cleanup;
 	      vtype->attr.access = ACCESS_PUBLIC;
 	      vtype->attr.vtype = 1;
 	      gfc_set_sym_referenced (vtype);
 
 	      /* Add component '_hash'.  */
-	      if (gfc_add_component (vtype, "_hash", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_hash", &c))
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
@@ -2556,7 +2565,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 						 NULL, hash);
 
 	      /* Add component '_size'.  */
-	      if (gfc_add_component (vtype, "_size", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_size", &c))
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
@@ -2569,7 +2578,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 						   NULL, ts->kind);
 
 	      /* Add component _extends.  */
-	      if (gfc_add_component (vtype, "_extends", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_extends", &c))
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -2577,7 +2586,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      c->initializer = gfc_get_null_expr (NULL);
 
 	      /* Add component _def_init.  */
-	      if (gfc_add_component (vtype, "_def_init", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_def_init", &c))
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -2585,7 +2594,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      c->initializer = gfc_get_null_expr (NULL);
 
 	      /* Add component _copy.  */
-	      if (gfc_add_component (vtype, "_copy", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_copy", &c))
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -2657,7 +2666,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      c->ts.interface = copy;
 
 	      /* Add component _final.  */
-	      if (gfc_add_component (vtype, "_final", &c) == FAILURE)
+	      if (!gfc_add_component (vtype, "_final", &c))
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -2680,8 +2689,6 @@ cleanup:
       gfc_commit_symbol (vtab);
       if (vtype)
 	gfc_commit_symbol (vtype);
-      if (def_init)
-	gfc_commit_symbol (def_init);
       if (copy)
 	gfc_commit_symbol (copy);
       if (src)
@@ -2700,7 +2707,7 @@ cleanup:
    type-bound user operator.  */
 
 static gfc_symtree*
-find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
+find_typebound_proc_uop (gfc_symbol* derived, bool* t,
 			 const char* name, bool noaccess, bool uop,
 			 locus* where)
 {
@@ -2709,7 +2716,7 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
 
   /* Set default to failure.  */
   if (t)
-    *t = FAILURE;
+    *t = false;
 
   if (derived->f2k_derived)
     /* Set correct symbol-root.  */
@@ -2724,7 +2731,7 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
     {
       /* We found one.  */
       if (t)
-	*t = SUCCESS;
+	*t = true;
 
       if (!noaccess && derived->attr.use_assoc
 	  && res->n.tb->access == ACCESS_PRIVATE)
@@ -2733,7 +2740,7 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
 	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
 		       name, derived->name, where);
 	  if (t)
-	    *t = FAILURE;
+	    *t = false;
 	}
 
       return res;
@@ -2759,14 +2766,14 @@ find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
    (looking recursively through the super-types).  */
 
 gfc_symtree*
-gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
+gfc_find_typebound_proc (gfc_symbol* derived, bool* t,
 			 const char* name, bool noaccess, locus* where)
 {
   return find_typebound_proc_uop (derived, t, name, noaccess, false, where);
 }
 
 gfc_symtree*
-gfc_find_typebound_user_op (gfc_symbol* derived, gfc_try* t,
+gfc_find_typebound_user_op (gfc_symbol* derived, bool* t,
 			    const char* name, bool noaccess, locus* where)
 {
   return find_typebound_proc_uop (derived, t, name, noaccess, true, where);
@@ -2777,7 +2784,7 @@ gfc_find_typebound_user_op (gfc_symbol* derived, gfc_try* t,
    super-type hierarchy.  */
 
 gfc_typebound_proc*
-gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
+gfc_find_typebound_intrinsic_op (gfc_symbol* derived, bool* t,
 				 gfc_intrinsic_op op, bool noaccess,
 				 locus* where)
 {
@@ -2785,7 +2792,7 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
 
   /* Set default to failure.  */
   if (t)
-    *t = FAILURE;
+    *t = false;
 
   /* Try to find it in the current type's namespace.  */
   if (derived->f2k_derived)
@@ -2798,7 +2805,7 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
     {
       /* We found one.  */
       if (t)
-	*t = SUCCESS;
+	*t = true;
 
       if (!noaccess && derived->attr.use_assoc
 	  && res->access == ACCESS_PRIVATE)
@@ -2807,7 +2814,7 @@ gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
 	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
 		       gfc_op2string (op), derived->name, where);
 	  if (t)
-	    *t = FAILURE;
+	    *t = false;
 	}
 
       return res;

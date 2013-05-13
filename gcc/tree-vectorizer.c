@@ -87,7 +87,7 @@ vectorize_loops (void)
   loop_iterator li;
   struct loop *loop;
 
-  vect_loops_num = number_of_loops ();
+  vect_loops_num = number_of_loops (cfun);
 
   /* Bail out if there are no loops.  */
   if (vect_loops_num <= 1)
@@ -139,7 +139,7 @@ vectorize_loops (void)
     {
       loop_vec_info loop_vinfo;
 
-      loop = get_loop (i);
+      loop = get_loop (cfun, i);
       if (!loop)
 	continue;
       loop_vinfo = (loop_vec_info) loop->aux;
@@ -214,8 +214,7 @@ struct gimple_opt_pass pass_slp_vectorize =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect
-    | TODO_verify_ssa
+  TODO_verify_ssa
     | TODO_update_ssa
     | TODO_verify_stmts                 /* todo_flags_finish */
  }

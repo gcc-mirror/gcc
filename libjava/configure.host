@@ -81,6 +81,11 @@ ATOMICSPEC=
 
 # This case statement supports per-CPU defaults.
 case "${host}" in
+  aarch64*-linux*)
+	libgcj_interpreter=yes
+	sysdeps_dir=aarch64
+	ATOMICSPEC=-fuse-atomic-builtins
+	;;
   arm*-elf)
 	with_libffi_default=no
 	PROCESS=Ecos
@@ -288,6 +293,12 @@ EOF
   x86_64-*-solaris2.1[0-9]* )
 	sysdeps_dir=i386
 	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine
+	;;
+  aarch64*-linux* )
+	slow_pthread_self=no
+	can_unwind_signal=no
+	CHECKREFSPEC=-fcheck-references
+	DIVIDESPEC=-fuse-divide-subroutine
 	;;
   arm*-linux* )
 	slow_pthread_self=no

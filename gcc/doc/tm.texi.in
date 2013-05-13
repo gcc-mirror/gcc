@@ -260,7 +260,8 @@ line, but, unlike @code{LIBGCC_SPEC}, it is used unmodified.
 @defmac USE_LD_AS_NEEDED
 A macro that controls the modifications to @code{LIBGCC_SPEC}
 mentioned in @code{REAL_LIBGCC_SPEC}.  If nonzero, a spec will be
-generated that uses --as-needed and the shared libgcc in place of the
+generated that uses @option{--as-needed} or equivalent options and the
+shared @file{libgcc} in place of the
 static exception handler library, when linking without any of
 @code{-static}, @code{-static-libgcc}, or @code{-shared-libgcc}.
 @end defmac
@@ -2872,6 +2873,8 @@ as below:
 @hook TARGET_DIFFERENT_ADDR_DISPLACEMENT_P
 
 @hook TARGET_SPILL_CLASS
+
+@hook TARGET_CSTORE_MODE
 
 @node Old Constraints
 @section Obsolete Macros for Defining Constraints
@@ -8599,7 +8602,9 @@ first argument of @code{asm_fprintf}.  This construct outputs
 @code{ASSEMBLER_DIALECT} is zero, one, two, etc.  Any special characters
 within these strings retain their usual meaning.  If there are fewer
 alternatives within the braces than the value of
-@code{ASSEMBLER_DIALECT}, the construct outputs nothing.
+@code{ASSEMBLER_DIALECT}, the construct outputs nothing. If it's needed
+to print curly braces or @samp{|} character in assembler output directly,
+@samp{%@{}, @samp{%@}} and @samp{%|} can be used.
 
 If you do not define this macro, the characters @samp{@{}, @samp{|} and
 @samp{@}} do not have any special meaning when used in templates or
@@ -8673,7 +8678,7 @@ fprintf (@var{stream}, "\t.word L%d\n", @var{value})
 Define this if the label before a jump-table needs to be output
 specially.  The first three arguments are the same as for
 @code{(*targetm.asm_out.internal_label)}; the fourth argument is the
-jump-table which follows (a @code{jump_insn} containing an
+jump-table which follows (a @code{jump_table_data} containing an
 @code{addr_vec} or @code{addr_diff_vec}).
 
 This feature is used on system V to output a @code{swbeg} statement
@@ -8909,8 +8914,8 @@ The maximum number of bytes to skip before @var{label} when applying
 @end deftypefn
 
 @defmac LOOP_ALIGN (@var{label})
-The alignment (log base 2) to put in front of @var{label}, which follows
-a @code{NOTE_INSN_LOOP_BEG} note.
+The alignment (log base 2) to put in front of @var{label} that heads
+a frequently executed basic block (usually the header of a loop).
 
 This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
@@ -10772,9 +10777,12 @@ Fold a call to a machine specific built-in function that was set up by
 @samp{TARGET_INIT_BUILTINS}.  @var{fndecl} is the declaration of the
 built-in function.  @var{n_args} is the number of arguments passed to
 the function; the arguments themselves are pointed to by @var{argp}.
-The result is another tree containing a simplified expression for the
-call's result.  If @var{ignore} is true the value will be ignored.
+The result is another tree, valid for both GIMPLE and GENERIC,
+containing a simplified expression for the call's result.  If
+@var{ignore} is true the value will be ignored.
 @end deftypefn
+
+@hook TARGET_GIMPLE_FOLD_BUILTIN
 
 @hook TARGET_COMPARE_VERSION_PRIORITY
 This hook is used to compare the target attributes in two functions to
@@ -11177,3 +11185,5 @@ memory model bits are allowed.
 @end deftypefn
 
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
+
+@hook TARGET_HAS_IFUNC_P

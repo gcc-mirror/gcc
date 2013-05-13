@@ -155,9 +155,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
 
    begin
       if Nkind (Expression (Arg)) /= N_Identifier
-        or else (Chars (Argx) /= Name_On
-                   and then
-                 Chars (Argx) /= Name_Off)
+        or else not Nam_In (Chars (Argx), Name_On, Name_Off)
       then
          Error_Msg_Name_2 := Name_On;
          Error_Msg_Name_3 := Name_Off;
@@ -1029,8 +1027,15 @@ begin
       --  set well before any semantic analysis is performed. Note that we
       --  ignore this pragma if debug flag -gnatd.i is set.
 
+      --  Also note that the "one argument" case may have two arguments if the
+      --  second one is a reason argument.
+
       when Pragma_Warnings =>
-         if Arg_Count = 1 and then not Debug_Flag_Dot_I then
+         if not Debug_Flag_Dot_I
+           and then (Arg_Count = 1
+                      or else (Arg_Count = 2
+                                and then Chars (Arg2) = Name_Reason))
+         then
             Check_No_Identifier (Arg1);
 
             declare
@@ -1123,7 +1128,6 @@ begin
            Pragma_Compile_Time_Error             |
            Pragma_Compile_Time_Warning           |
            Pragma_Compiler_Unit                  |
-           Pragma_Contract_Case                  |
            Pragma_Contract_Cases                 |
            Pragma_Convention_Identifier          |
            Pragma_CPP_Class                      |
@@ -1140,6 +1144,7 @@ begin
            Pragma_Controlled                     |
            Pragma_Convention                     |
            Pragma_Debug_Policy                   |
+           Pragma_Depends                        |
            Pragma_Detect_Blocking                |
            Pragma_Default_Storage_Pool           |
            Pragma_Disable_Atomic_Synchronization |

@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/40705
-// { dg-options "-g -dA" }
+// { dg-options "-g -dA -fno-debug-types-section" }
 // { dg-do compile }
 // { dg-final { scan-assembler-times "DW_TAG_structure_type" 2 } }
 // { dg-final { scan-assembler-times "DW_AT_name: \"foo<1u>\"|\"foo<1u>..\"\[^\n\]*DW_AT_name" 1 } }

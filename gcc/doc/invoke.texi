@@ -226,6 +226,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
+-fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option -fno-diagnostics-show-caret}
 
 @item Warning Options
@@ -378,7 +379,7 @@ Objective-C and Objective-C++ Dialects}.
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
--flto-partition=@var{alg} -flto-report -fmerge-all-constants @gol
+-flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
 -fno-default-inline @gol
@@ -406,8 +407,8 @@ Objective-C and Objective-C++ Dialects}.
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
 -fsplit-ivs-in-unroller -fsplit-wide-types -fstack-protector @gol
--fstack-protector-all -fstrict-aliasing -fstrict-overflow @gol
--fthread-jumps -ftracer -ftree-bit-ccp @gol
+-fstack-protector-all -fstack-protector-strong -fstrict-aliasing @gol
+-fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
 -ftree-coalesce-inline-vars -ftree-coalesce-vars -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
@@ -510,7 +511,8 @@ Objective-C and Objective-C++ Dialects}.
 -mtp=@var{name} -mtls-dialect=@var{dialect} @gol
 -mword-relocations @gol
 -mfix-cortex-m3-ldrd @gol
--munaligned-access}
+-munaligned-access @gol
+-mneon-for-64bits}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
@@ -616,11 +618,11 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{HPPA Options}
 @gccoptlist{-march=@var{architecture-type} @gol
--mbig-switch  -mdisable-fpregs  -mdisable-indexing @gol
+-mdisable-fpregs  -mdisable-indexing @gol
 -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
 -mfixed-range=@var{register-range} @gol
 -mjump-in-delay -mlinker-opt -mlong-calls @gol
--mlong-load-store  -mno-big-switch  -mno-disable-fpregs @gol
+-mlong-load-store  -mno-disable-fpregs @gol
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
 -mno-jump-in-delay  -mno-long-load-store @gol
 -mno-portable-runtime  -mno-soft-float @gol
@@ -655,7 +657,8 @@ Objective-C and Objective-C++ Dialects}.
 -mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
 -m32 -m64 -mx32 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -m8bit-idiv @gol
--mavx256-split-unaligned-load -mavx256-split-unaligned-store}
+-mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
+-mstack-protector-guard=@var{guard}}
 
 @emph{i386 and x86-64 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -741,6 +744,7 @@ Objective-C and Objective-C++ Dialects}.
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2 @gol
 -mips64  -mips64r2 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
+-minterlink-compressed -mno-interlink-compressed @gol
 -minterlink-mips16  -mno-interlink-mips16 @gol
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
@@ -748,6 +752,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-float -msingle-float  -mdouble-float  @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
+-mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -763,7 +768,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mdivide-traps  -mdivide-breaks @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
--mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
+-mmad -mno-mad -mimadd -mno-imadd -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-24k -mno-fix-24k @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
 -mfix-r10000 -mno-fix-r10000  -mfix-vr4120  -mno-fix-vr4120 @gol
@@ -922,7 +927,6 @@ See RS/6000 and PowerPC Options.
 -mfaster-structs  -mno-faster-structs  -mflat  -mno-flat @gol
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
 -mhard-quad-float  -msoft-quad-float @gol
--mlittle-endian @gol
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
@@ -1651,7 +1655,7 @@ The name @samp{gnu++0x} is deprecated.
 
 @item c++1y
 The next revision of the ISO C++ standard, tentatively planned for
-2017.  Support is highly experimental, and will almost certainly
+2014.  Support is highly experimental, and will almost certainly
 change in incompatible ways in future releases.
 
 @item gnu++1y
@@ -2953,6 +2957,77 @@ Only meaningful in line-wrapping mode.  Instructs the diagnostic
 messages reporter to emit the same source location information (as
 prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
+
+@item -fdiagnostics-color[=@var{WHEN}]
+@itemx -fno-diagnostics-color
+@opindex fdiagnostics-color
+@cindex highlight, color, colour
+@vindex GCC_COLORS @r{environment variable}
+Use color in diagnostics.  @var{WHEN} is @samp{never}, @samp{always},
+or @samp{auto}.  The default is @samp{never} if @env{GCC_COLORS} environment
+variable isn't present in the environment, and @samp{auto} otherwise.
+@samp{auto} means to use color only when the standard error is a terminal.
+The forms @option{-fdiagnostics-color} and @option{-fno-diagnostics-color} are
+aliases for @option{-fdiagnostics-color=always} and
+@option{-fdiagnostics-color=never}, respectively.
+
+The colors are defined by the environment variable @env{GCC_COLORS}.
+Its value is a colon-separated list of capabilities and Select Graphic
+Rendition (SGR) substrings. SGR commands are interpreted by the
+terminal or terminal emulator.  (See the section in the documentation
+of your text terminal for permitted values and their meanings as
+character attributes.)  These substring values are integers in decimal
+representation and can be concatenated with semicolons.
+Common values to concatenate include
+@samp{1} for bold,
+@samp{4} for underline,
+@samp{5} for blink,
+@samp{7} for inverse,
+@samp{39} for default foreground color,
+@samp{30} to @samp{37} for foreground colors,
+@samp{90} to @samp{97} for 16-color mode foreground colors,
+@samp{38;5;0} to @samp{38;5;255}
+for 88-color and 256-color modes foreground colors,
+@samp{49} for default background color,
+@samp{40} to @samp{47} for background colors,
+@samp{100} to @samp{107} for 16-color mode background colors,
+and @samp{48;5;0} to @samp{48;5;255}
+for 88-color and 256-color modes background colors.
+
+The default @env{GCC_COLORS} is
+@samp{error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01}
+where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
+@samp{01;36} is bold cyan, @samp{01;32} is bold green and
+@samp{01} is bold. Setting @env{GCC_COLORS} to the empty
+string disables colors.
+Supported capabilities are as follows.
+
+@table @code
+@item error=
+@vindex error GCC_COLORS @r{capability}
+SGR substring for error: markers.
+
+@item warning=
+@vindex warning GCC_COLORS @r{capability}
+SGR substring for warning: markers.
+
+@item note=
+@vindex note GCC_COLORS @r{capability}
+SGR substring for note: markers.
+
+@item caret=
+@vindex caret GCC_COLORS @r{capability}
+SGR substring for caret line.
+
+@item locus=
+@vindex locus GCC_COLORS @r{capability}
+SGR substring for location information, @samp{file:line} or
+@samp{file:line:column} etc.
+
+@item quote=
+@vindex quote GCC_COLORS @r{capability}
+SGR substring for information printed within quotes.
+@end table
 
 @item -fno-diagnostics-show-option
 @opindex fno-diagnostics-show-option
@@ -8177,7 +8252,7 @@ compiled.  All public functions and variables with the exception of @code{main}
 and those merged by attribute @code{externally_visible} become static functions
 and in effect are optimized more aggressively by interprocedural optimizers.
 
-In combination with @code{-flto} using this option should not be used.
+This option should not be used in combination with @code{-flto}.
 Instead relying on a linker plugin should provide safer and more precise
 information.
 
@@ -8380,6 +8455,10 @@ It is meant to be useful to GCC developers when processing object
 files in LTO mode (via @option{-flto}).
 
 Disabled by default.
+
+@item -flto-report-wpa
+Like @option{-flto-report}, but only print for the WPA phase of Link
+Time Optimization.
 
 @item -fuse-linker-plugin
 Enables the use of a linker plugin during link-time optimization.  This
@@ -8877,6 +8956,12 @@ If a guard check fails, an error message is printed and the program exits.
 @item -fstack-protector-all
 @opindex fstack-protector-all
 Like @option{-fstack-protector} except that all functions are protected.
+
+@item -fstack-protector-strong
+@opindex fstack-protector-strong
+Like @option{-fstack-protector} but includes additional functions to
+be protected --- those that have local array definitions, or have
+references to local frame addresses.
 
 @item -fsection-anchors
 @opindex fsection-anchors
@@ -11264,8 +11349,8 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm1136j-s}, @samp{arm1136jf-s}, @samp{mpcore}, @samp{mpcorenovfp},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8}, @samp{cortex-a9}, 
-@samp{cortex-a15}, @samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5},
-@samp{cortex-m4}, @samp{cortex-m3},
+@samp{cortex-a15}, @samp{cortex-a53}, @samp{cortex-r4}, @samp{cortex-r4f},
+@samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-m4}, @samp{cortex-m3},
 @samp{cortex-m1},
 @samp{cortex-m0},
 @samp{cortex-m0plus},
@@ -11528,6 +11613,11 @@ setting of this option.  If unaligned access is enabled then the
 preprocessor symbol @code{__ARM_FEATURE_UNALIGNED} will also be
 defined.
 
+@item -mneon-for-64bits
+@opindex mneon-for-64bits
+Enables using Neon to handle scalar 64-bits operations. This is
+disabled by default since the cost of moving data from core registers
+to Neon is high.
 @end table
 
 @node AVR Options
@@ -11701,7 +11791,7 @@ points to.
 The startup code from libgcc never sets @code{EIND}.
 Notice that startup code is a blend of code from libgcc and AVR-LibC.
 For the impact of AVR-LibC on @code{EIND}, see the
-@w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC user manual}}.
+@w{@uref{http://nongnu.org/avr-libc/user-manual/,AVR-LibC user manual}}.
 
 @item
 It is legitimate for user-specific startup code to set up @code{EIND}
@@ -13426,12 +13516,6 @@ other way around.
 @opindex mpa-risc-2-0
 Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0} respectively.
 
-@item -mbig-switch
-@opindex mbig-switch
-Generate code suitable for big switch tables.  Use this option only if
-the assembler/linker complain about out-of-range branches within a switch
-table.
-
 @item -mjump-in-delay
 @opindex mjump-in-delay
 Fill delay slots of function calls with unconditional jump instructions
@@ -14513,6 +14597,13 @@ to 255, 8-bit unsigned integer divide is used instead of
 @opindex avx256-split-unaligned-load
 @opindex avx256-split-unaligned-store
 Split 32-byte AVX unaligned load and store.
+
+@item -mstack-protector-guard=@var{guard}
+@opindex mstack-protector-guard=@var{guard}
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for global canary or @samp{tls} for per-thread
+canary in the TLS block (the default).  This option has effect only when
+@option{-fstack-protector} or @option{-fstack-protector-all} is specified.
 
 @end table
 
@@ -15902,6 +15993,7 @@ The processor names are:
 @samp{1004kc}, @samp{1004kf2_1}, @samp{1004kf1_1},
 @samp{loongson2e}, @samp{loongson2f}, @samp{loongson3a},
 @samp{m4k},
+@samp{m14k}, @samp{m14ke}, @samp{m14kec},
 @samp{octeon}, @samp{octeon+}, @samp{octeon2},
 @samp{orion},
 @samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},
@@ -16015,17 +16107,25 @@ Generate MIPS16 code on alternating functions.  This option is provided
 for regression testing of mixed MIPS16/non-MIPS16 code generation, and is
 not intended for ordinary use in compiling user code.
 
+@item -minterlink-compressed
+@item -mno-interlink-compressed
+@opindex minterlink-compressed
+@opindex mno-interlink-compressed
+Require (do not require) that code using the standard (uncompressed) MIPS ISA
+be link-compatible with MIPS16 and microMIPS code, and vice versa.
+
+For example, code using the standard ISA encoding cannot jump directly
+to MIPS16 or microMIPS code; it must either use a call or an indirect jump.
+@option{-minterlink-compressed} therefore disables direct jumps unless GCC
+knows that the target of the jump is not compressed.
+
 @item -minterlink-mips16
 @itemx -mno-interlink-mips16
 @opindex minterlink-mips16
 @opindex mno-interlink-mips16
-Require (do not require) that non-MIPS16 code be link-compatible with
-MIPS16 code.
-
-For example, non-MIPS16 code cannot jump directly to MIPS16 code;
-it must either use a call or an indirect jump.  @option{-minterlink-mips16}
-therefore disables direct jumps unless GCC knows that the target of the
-jump is not MIPS16.
+Aliases of @option{-minterlink-compressed} and
+@option{-mno-interlink-compressed}.  These options predate the microMIPS ASE
+and are retained for backwards compatiblity.
 
 @item -mabi=32
 @itemx -mabi=o64
@@ -16240,6 +16340,16 @@ hardware floating-point support to be enabled.
 Use (do not use) the MIPS-3D ASE@.  @xref{MIPS-3D Built-in Functions}.
 The option @option{-mips3d} implies @option{-mpaired-single}.
 
+@item -mmicromips
+@itemx -mno-micromips
+@opindex mmicromips
+@opindex mno-mmicromips
+Generate (do not generate) microMIPS code.
+
+MicroMIPS code generation can also be controlled on a per-function basis
+by means of @code{micromips} and @code{nomicromips} attributes.
+@xref{Function Attributes}, for more information.
+
 @item -mmt
 @itemx -mno-mt
 @opindex mmt
@@ -16453,6 +16563,15 @@ This option has no effect on abicalls code.  The default is
 @opindex mno-mad
 Enable (disable) use of the @code{mad}, @code{madu} and @code{mul}
 instructions, as provided by the R4650 ISA@.
+
+@item -mimadd
+@itemx -mno-imadd
+@opindex mimadd
+@opindex mno-imadd
+Enable (disable) use of the @code{madd} and @code{msub} integer
+instructions.  The default is @option{-mimadd} on architectures
+that support @code{madd} and @code{msub} except for the 74k 
+architecture where it was found to generate slower code.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
@@ -19291,11 +19410,6 @@ These @samp{-m} options are supported in addition to the above
 on SPARC-V9 processors in 64-bit environments:
 
 @table @gcctabopt
-@item -mlittle-endian
-@opindex mlittle-endian
-Generate code for a processor running in little-endian mode.  It is only
-available for a few configurations and most notably not on Solaris and Linux.
-
 @item -m32
 @itemx -m64
 @opindex m32

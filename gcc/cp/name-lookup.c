@@ -69,14 +69,12 @@ get_anonymous_namespace_name (void)
 {
   if (!anonymous_namespace_name)
     {
-      /* The anonymous namespace has to have a unique name
-	 if typeinfo objects are being compared by name.  */
-      if (! flag_weak || ! SUPPORTS_ONE_ONLY)
-       anonymous_namespace_name = get_file_function_name ("N");
-      else
-       /* The demangler expects anonymous namespaces to be called
-          something starting with '_GLOBAL__N_'.  */
-       anonymous_namespace_name = get_identifier ("_GLOBAL__N_1");
+      /* We used to use get_file_function_name here, but that isn't
+	 necessary now that anonymous namespace typeinfos
+	 are !TREE_PUBLIC, and thus compared by address.  */
+      /* The demangler expects anonymous namespaces to be called
+	 something starting with '_GLOBAL__N_'.  */
+      anonymous_namespace_name = get_identifier ("_GLOBAL__N_1");
     }
   return anonymous_namespace_name;
 }
@@ -511,8 +509,8 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 
        A member shall not be declared twice in the
        member-specification.  */
-  else if (TREE_CODE (target_decl) == VAR_DECL
-	   && TREE_CODE (target_bval) == VAR_DECL
+  else if (VAR_P (target_decl)
+	   && VAR_P (target_bval)
 	   && DECL_EXTERNAL (target_decl) && DECL_EXTERNAL (target_bval)
 	   && !DECL_CLASS_SCOPE_P (target_decl))
     {
@@ -576,7 +574,7 @@ add_decl_to_level (tree decl, cp_binding_level *b)
 {
   /* We used to record virtual tables as if they were ordinary
      variables, but no longer do so.  */
-  gcc_assert (!(TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl)));
+  gcc_assert (!(VAR_P (decl) && DECL_VIRTUAL_P (decl)));
 
   if (TREE_CODE (decl) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (decl))
@@ -596,7 +594,7 @@ add_decl_to_level (tree decl, cp_binding_level *b)
 	 static later.  It's OK for this list to contain a few false
 	 positives.  */
       if (b->kind == sk_namespace)
-	if ((TREE_CODE (decl) == VAR_DECL
+	if ((VAR_P (decl)
 	     && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
 	    || (TREE_CODE (decl) == FUNCTION_DECL
 		&& (!TREE_PUBLIC (decl) || DECL_DECLARED_INLINE_P (decl))))
@@ -638,7 +636,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  /* A local declaration for an `extern' variable is in the
 	     scope of the current namespace, not the current
 	     function.  */
-	  && !(TREE_CODE (x) == VAR_DECL && DECL_EXTERNAL (x))
+	  && !(VAR_P (x) && DECL_EXTERNAL (x))
 	  /* When parsing the parameter list of a function declarator,
 	     don't set DECL_CONTEXT to an enclosing function.  When we
 	     push the PARM_DECLs in order to process the function body,
@@ -680,7 +678,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	 block scope declaration declares that same entity and
 	 receives the linkage of the previous declaration.  */
       if (! t && current_function_decl && x != current_function_decl
-	  && (TREE_CODE (x) == FUNCTION_DECL || TREE_CODE (x) == VAR_DECL)
+	  && VAR_OR_FUNCTION_DECL_P (x)
 	  && DECL_EXTERNAL (x))
 	{
 	  /* Look in block scope.  */
@@ -889,7 +887,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    add_decl_to_level (x, NAMESPACE_LEVEL (CP_DECL_CONTEXT (t)));
 	}
 
-      if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
+      if (DECL_DECLARES_FUNCTION_P (t))
 	check_default_args (t);
 
       if (t != x || DECL_FUNCTION_TEMPLATE_P (t))
@@ -975,7 +973,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  if (!(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
 		&& t != NULL_TREE)
 	      && (TREE_CODE (x) == TYPE_DECL
-		  || TREE_CODE (x) == VAR_DECL
+		  || VAR_P (x)
 		  || TREE_CODE (x) == NAMESPACE_DECL
 		  || TREE_CODE (x) == CONST_DECL
 		  || TREE_CODE (x) == TEMPLATE_DECL))
@@ -1023,7 +1021,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      tree d = oldlocal;
 
 	      while (oldlocal
-		     && TREE_CODE (oldlocal) == VAR_DECL
+		     && VAR_P (oldlocal)
 		     && DECL_DEAD_FOR_LOCAL (oldlocal))
 		oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
 
@@ -1067,7 +1065,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		   /* Inline decls shadow nothing.  */
 		   && !DECL_FROM_INLINE (x)
 		   && (TREE_CODE (oldlocal) == PARM_DECL
-		       || TREE_CODE (oldlocal) == VAR_DECL
+		       || VAR_P (oldlocal)
                        /* If the old decl is a type decl, only warn if the
                           old decl is an explicit typedef or if both the old
                           and new decls are type decls.  */
@@ -1127,7 +1125,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		 outermost block of the controlled statement.
 		 Redeclaring a variable from a for or while condition is
 		 detected elsewhere.  */
-	      else if (TREE_CODE (oldlocal) == VAR_DECL
+	      else if (VAR_P (oldlocal)
 		       && oldscope == current_binding_level->level_chain
 		       && (oldscope->kind == sk_cond
 			   || oldscope->kind == sk_for))
@@ -1165,8 +1163,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    {
 	      tree member;
 
-	      if (current_class_ptr)
-		member = lookup_member (current_class_type,
+	      if (nonlambda_method_basetype ())
+		member = lookup_member (current_nonlambda_class_type (),
 					name,
 					/*protect=*/0,
 					/*want_type=*/false,
@@ -1181,7 +1179,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 			   x);
 		}
 	      else if (oldglobal != NULL_TREE
-		       && (TREE_CODE (oldglobal) == VAR_DECL
+		       && (VAR_P (oldglobal)
                            /* If the old decl is a type decl, only warn if the
                               old decl is an explicit typedef or if both the
                               old and new decls are type decls.  */
@@ -1198,7 +1196,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    }
 	}
 
-      if (TREE_CODE (x) == VAR_DECL)
+      if (VAR_P (x))
 	maybe_register_incomplete_var (x);
     }
 
@@ -1311,12 +1309,12 @@ check_for_out_of_scope_variable (tree decl)
   tree shadowed;
 
   /* We only care about out of scope variables.  */
-  if (!(TREE_CODE (decl) == VAR_DECL && DECL_DEAD_FOR_LOCAL (decl)))
+  if (!(VAR_P (decl) && DECL_DEAD_FOR_LOCAL (decl)))
     return decl;
 
   shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (decl)
     ? DECL_SHADOWED_FOR_VAR (decl) : NULL_TREE ;
-  while (shadowed != NULL_TREE && TREE_CODE (shadowed) == VAR_DECL
+  while (shadowed != NULL_TREE && VAR_P (shadowed)
 	 && DECL_DEAD_FOR_LOCAL (shadowed))
     shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed)
       ? DECL_SHADOWED_FOR_VAR (shadowed) : NULL_TREE;
@@ -1802,6 +1800,22 @@ print_binding_level (cp_binding_level* lvl)
     }
 }
 
+DEBUG_FUNCTION void
+debug (cp_binding_level &ref)
+{
+  print_binding_level (&ref);
+}
+
+DEBUG_FUNCTION void
+debug (cp_binding_level *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 void
 print_other_binding_stack (cp_binding_level *stack)
 {
@@ -1961,7 +1975,7 @@ constructor_name_p (tree name, tree type)
   if (!name)
     return false;
 
-  if (TREE_CODE (name) != IDENTIFIER_NODE)
+  if (!identifier_p (name))
     return false;
 
   /* These don't have names.  */
@@ -2075,7 +2089,7 @@ lookup_extern_c_fun_in_all_ns (tree function)
   gcc_assert (function && TREE_CODE (function) == FUNCTION_DECL);
 
   name = DECL_NAME (function);
-  gcc_assert (name && TREE_CODE (name) == IDENTIFIER_NODE);
+  gcc_assert (name && identifier_p (name));
 
   for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name);
        iter;
@@ -2138,7 +2152,7 @@ push_using_decl_1 (tree scope, tree name)
   tree decl;
 
   gcc_assert (TREE_CODE (scope) == NAMESPACE_DECL);
-  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  gcc_assert (identifier_p (name));
   for (decl = current_binding_level->usings; decl; decl = DECL_CHAIN (decl))
     if (USING_DECL_SCOPE (decl) == scope && DECL_NAME (decl) == name)
       break;
@@ -2421,7 +2435,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
 
   if (using_decl == NULL_TREE
       && at_function_scope_p ()
-      && TREE_CODE (decl) == VAR_DECL)
+      && VAR_P (decl))
     /* C++11 7.3.3/10.  */
     error ("%qD is already declared in this scope", name);
   
@@ -3047,7 +3061,7 @@ push_class_level_binding_1 (tree name, tree x)
 
      (Non-static data members were also forbidden to have the same
      name as T until TC1.)  */
-  if ((TREE_CODE (x) == VAR_DECL
+  if ((VAR_P (x)
        || TREE_CODE (x) == CONST_DECL
        || (TREE_CODE (x) == TYPE_DECL
 	   && !DECL_SELF_REFERENCE_P (x))
@@ -4941,7 +4955,7 @@ lookup_name_innermost_nonclass_level_1 (tree name)
       while (1)
 	{
 	  if (binding->scope == b
-	      && !(TREE_CODE (binding->value) == VAR_DECL
+	      && !(VAR_P (binding->value)
 		   && DECL_DEAD_FOR_LOCAL (binding->value)))
 	    return binding->value;
 
@@ -4980,7 +4994,7 @@ is_local_extern (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return DECL_LOCAL_FUNCTION_P (decl);
 
-  if (TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_P (decl))
     return false;
   if (!current_function_decl)
     return false;
@@ -5540,7 +5554,7 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args,
   fns = k.functions;
   
   if (fns
-      && TREE_CODE (fns) != VAR_DECL
+      && !VAR_P (fns)
       && !is_overloaded_fn (fns))
     {
       error ("argument dependent lookup finds %q+D", fns);
@@ -5726,7 +5740,7 @@ pushtag_1 (tree name, tree type, tag_scope scope)
 		 || COMPLETE_TYPE_P (b->this_entity))))
     b = b->level_chain;
 
-  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  gcc_assert (identifier_p (name));
 
   /* Do C++ gratuitous typedefing.  */
   if (identifier_type_value_1 (name) != type)
@@ -5809,8 +5823,7 @@ pushtag_1 (tree name, tree type, tag_scope scope)
 	 convenient way.  (It's otherwise tricky to find a member
 	 function definition it's only pointed to from within a local
 	 class.)  */
-      if (TYPE_CONTEXT (type)
-	  && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
+      if (TYPE_FUNCTION_SCOPE_P (type))
 	{
 	  if (processing_template_decl)
 	    {

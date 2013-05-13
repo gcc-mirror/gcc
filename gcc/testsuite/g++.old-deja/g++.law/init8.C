@@ -8,7 +8,7 @@
 
 
 const int ic = 1;
-void f(int& arg)  // { dg-error "passing argument 1" }
+void f(int& arg)  // { dg-message "passing argument 1" }
 {
         if (arg) ;
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,10 @@ package Sem_Ch6 is
    procedure Analyze_Simple_Return_Statement         (N : Node_Id);
    procedure Analyze_Subprogram_Declaration          (N : Node_Id);
    procedure Analyze_Subprogram_Body                 (N : Node_Id);
+
+   procedure Analyze_Subprogram_Contract (Subp : Entity_Id);
+   --  Analyze all delayed aspects chained on the contract of subprogram Subp
+   --  as if they appeared at the end of a declarative region.
 
    function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id;
    --  Analyze subprogram specification in both subprogram declarations
@@ -138,10 +142,6 @@ package Sem_Ch6 is
    --  if the scope where we are introducing the subprogram contains a
    --  type-conformant subprogram that becomes hidden by the new subprogram.
    --  Is_Primitive indicates whether the subprogram is primitive.
-
-   procedure Check_Subprogram_Contract (Spec_Id : Entity_Id);
-   --  Spec_Id is the spec entity for a subprogram. This routine issues
-   --  warnings on suspicious contracts if Warn_On_Suspicious_Contract is set.
 
    procedure Check_Subtype_Conformant
      (New_Id                   : Entity_Id;

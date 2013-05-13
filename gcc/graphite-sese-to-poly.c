@@ -550,7 +550,7 @@ build_scop_scattering (scop_p scop)
   isl_space *dc = isl_set_get_space (scop->context);
   isl_aff *static_sched;
 
-  dc = isl_space_add_dims (dc, isl_dim_set, number_of_loops());
+  dc = isl_space_add_dims (dc, isl_dim_set, number_of_loops (cfun));
   static_sched = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
 
   /* We have to start schedules at 0 on the first component and
@@ -590,8 +590,7 @@ extract_affine_chrec (scop_p s, tree e, __isl_take isl_space *space)
   isl_pw_aff *lhs = extract_affine (s, CHREC_LEFT (e), isl_space_copy (space));
   isl_pw_aff *rhs = extract_affine (s, CHREC_RIGHT (e), isl_space_copy (space));
   isl_local_space *ls = isl_local_space_from_space (space);
-  unsigned pos = sese_loop_depth ((sese) s->region,
-				  get_loop (CHREC_VARIABLE (e))) - 1;
+  unsigned pos = sese_loop_depth ((sese) s->region, get_chrec_loop (e)) - 1;
   isl_aff *loop = isl_aff_set_coefficient_si
     (isl_aff_zero_on_domain (ls), isl_dim_in, pos, 1);
   isl_pw_aff *l = isl_pw_aff_from_aff (loop);
@@ -1404,7 +1403,7 @@ build_scop_iteration_domain (scop_p scop)
   sese region = SCOP_REGION (scop);
   int i;
   poly_bb_p pbb;
-  int nb_loops = number_of_loops ();
+  int nb_loops = number_of_loops (cfun);
   isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
 
   FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), i, loop)

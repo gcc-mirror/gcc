@@ -63,6 +63,7 @@
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
 #include <bits/move.h>
+#include <ext/cast.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -732,6 +733,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       	       (std::__are_same<_Iter, typename _Container::pointer>::__value),
 		      _Container>::__type>& __i)
         : _M_current(__i.base()) { }
+
+      __normal_iterator<typename _Container::pointer, _Container>
+      _M_const_cast() const
+      { return __normal_iterator<typename _Container::pointer, _Container>
+	  (__gnu_cxx::__const_pointer_cast<typename _Container::pointer>
+	   (_M_current)); }
 
       // Forward iterator requirements
       reference

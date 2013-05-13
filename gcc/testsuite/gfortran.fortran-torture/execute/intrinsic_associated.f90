@@ -121,7 +121,7 @@ subroutine associated_2 ()
    interface
       subroutine sub1 (a, ap)
          integer, pointer :: ap(:, :)
-         integer, target  :: a(10, 1)
+         integer, target  :: a(10, 10)
       end
    endinterface
 

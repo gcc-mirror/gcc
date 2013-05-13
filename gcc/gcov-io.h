@@ -617,6 +617,28 @@ GCOV_LINKAGE gcov_position_t gcov_write_tag (gcov_unsigned_t);
 GCOV_LINKAGE void gcov_write_length (gcov_position_t /*position*/);
 #endif
 
+#if IN_GCOV <= 0 && !IN_LIBGCOV
+/* Available in gcov-dump and the compiler.  */
+
+/* Number of data points in the working set summary array. Using 128
+   provides information for at least every 1% increment of the total
+   profile size. The last entry is hardwired to 99.9% of the total.  */
+#define NUM_GCOV_WORKING_SETS 128
+
+/* Working set size statistics for a given percentage of the entire
+   profile (sum_all from the counter summary).  */
+typedef struct gcov_working_set_info
+{
+  /* Number of hot counters included in this working set.  */
+  unsigned num_counters;
+  /* Smallest counter included in this working set.  */
+  gcov_type min_counter;
+} gcov_working_set_t;
+
+GCOV_LINKAGE void compute_working_sets (const struct gcov_ctr_summary *summary,
+                                        gcov_working_set_t *gcov_working_sets);
+#endif
+
 #if IN_GCOV > 0
 /* Available in gcov */
 GCOV_LINKAGE time_t gcov_time (void);

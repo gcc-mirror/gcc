@@ -166,7 +166,7 @@ including the global binding level.
 end
 
 define pbb
-set dump_bb ($, stderr, 0)
+set debug ($)
 end
 
 document pbb

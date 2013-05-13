@@ -48,7 +48,7 @@ DEFCIFCODE(REDEFINED_EXTERN_INLINE,
 /* Function is not inlinable.  */
 DEFCIFCODE(FUNCTION_NOT_INLINABLE, N_("function not inlinable"))
 
-/* Function is not overwritable.  */
+/* Function is overwritable.  */
 DEFCIFCODE(OVERWRITABLE, N_("function body can be overwritten at link time"))
 
 /* Function is not an inlining candidate.  */

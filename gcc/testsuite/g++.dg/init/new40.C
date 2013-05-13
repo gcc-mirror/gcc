@@ -1,5 +1,7 @@
 // Testcase for overflow handling in operator new[].
 // Optimization of unnecessary overflow checks.
+// In C++11 we throw bad_array_new_length instead.
+// { dg-options -std=c++03 }
 // { dg-do run }
 
 #include <assert.h>

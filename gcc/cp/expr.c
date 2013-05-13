@@ -43,6 +43,10 @@ cplus_expand_constant (tree cst)
 	/* Find the member.  */
 	member = PTRMEM_CST_MEMBER (cst);
 
+	/* We can't lower this until the class is complete.  */
+	if (!COMPLETE_TYPE_P (DECL_CONTEXT (member)))
+	  return cst;
+
 	if (TREE_CODE (member) == FIELD_DECL)
 	  {
 	    /* Find the offset for the field.  */

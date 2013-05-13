@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "backtrace.h"
 #include "diagnostic.h"
+#include "diagnostic-color.h"
 
 #define pedantic_warning_kind(DC)			\
   ((DC)->pedantic_errors ? DK_ERROR : DK_WARNING)
@@ -53,7 +54,6 @@ const char *progname;
 /* A diagnostic_context surrogate for stderr.  */
 static diagnostic_context global_diagnostic_context;
 diagnostic_context *global_dc = &global_diagnostic_context;
-
 
 /* Return a malloc'd string containing MSG formatted a la printf.  The
    caller is responsible for freeing the memory.  */
@@ -72,9 +72,12 @@ build_message_string (const char *msg, ...)
 
 /* Same as diagnostic_build_prefix, but only the source FILE is given.  */
 char *
-file_name_as_prefix (const char *f)
+file_name_as_prefix (diagnostic_context *context, const char *f)
 {
-  return build_message_string ("%s: ", f);
+  const char *locus_cs
+    = colorize_start (pp_show_color (context->printer), "locus");
+  const char *locus_ce = colorize_stop (pp_show_color (context->printer));
+  return build_message_string ("%s%s:%s ", locus_cs, f, locus_ce);
 }
 
 
@@ -210,12 +213,31 @@ diagnostic_build_prefix (diagnostic_context *context,
 			 const diagnostic_info *diagnostic)
 {
   static const char *const diagnostic_kind_text[] = {
-#define DEFINE_DIAGNOSTIC_KIND(K, T) (T),
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
 #include "diagnostic.def"
 #undef DEFINE_DIAGNOSTIC_KIND
     "must-not-happen"
   };
+  static const char *const diagnostic_kind_color[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (C),
+#include "diagnostic.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+    NULL
+  };
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
+  const char *text_cs = "", *text_ce = "";
+  const char *locus_cs, *locus_ce;
+  pretty_printer *pp = context->printer;
+
+  if (diagnostic_kind_color[diagnostic->kind])
+    {
+      text_cs = colorize_start (pp_show_color (pp),
+				diagnostic_kind_color[diagnostic->kind]);
+      text_ce = colorize_stop (pp_show_color (pp));
+    }
+  locus_cs = colorize_start (pp_show_color (pp), "locus");
+  locus_ce = colorize_stop (pp_show_color (pp));
+
   expanded_location s = expand_location_to_spelling_point (diagnostic->location);
   if (diagnostic->override_column)
     s.column = diagnostic->override_column;
@@ -223,10 +245,13 @@ diagnostic_build_prefix (diagnostic_context *context,
 
   return
     (s.file == NULL
-     ? build_message_string ("%s: %s", progname, text)
+     ? build_message_string ("%s%s:%s %s%s%s", locus_cs, progname, locus_ce,
+			     text_cs, text, text_ce)
      : context->show_column
-     ? build_message_string ("%s:%d:%d: %s", s.file, s.line, s.column, text)
-     : build_message_string ("%s:%d: %s", s.file, s.line, text));
+     ? build_message_string ("%s%s:%d:%d:%s %s%s%s", locus_cs, s.file, s.line,
+			     s.column, locus_ce, text_cs, text, text_ce)
+     : build_message_string ("%s%s:%d:%s %s%s%s", locus_cs, s.file, s.line, locus_ce,
+			     text_cs, text, text_ce));
 }
 
 /* If LINE is longer than MAX_WIDTH, and COLUMN is not smaller than
@@ -262,7 +287,7 @@ diagnostic_show_locus (diagnostic_context * context,
   expanded_location s;
   int max_width;
   const char *saved_prefix;
-
+  const char *caret_cs, *caret_ce;
 
   if (!context->show_caret
       || diagnostic->location <= BUILTINS_LOCATION
@@ -290,9 +315,13 @@ diagnostic_show_locus (diagnostic_context * context,
       line++;
     }
   pp_newline (context->printer);
+  caret_cs = colorize_start (pp_show_color (context->printer), "caret");
+  caret_ce = colorize_stop (pp_show_color (context->printer));
+
   /* pp_printf does not implement %*c.  */
-  buffer = XALLOCAVEC (char, s.column + 3);
-  snprintf (buffer, s.column + 3, " %*c", s.column, '^');
+  size_t len = s.column + 3 + strlen (caret_cs) + strlen (caret_ce);
+  buffer = XALLOCAVEC (char, len);
+  snprintf (buffer, len, "%s %*c%s", caret_cs, s.column, '^', caret_ce);
   pp_string (context->printer, buffer);
   pp_set_prefix (context->printer, saved_prefix);
 }
@@ -729,7 +758,10 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 				    diagnostic->message.format_spec,
 				    diagnostic->message.args_ptr);
     }
-  ++diagnostic_kind_count (context, diagnostic->kind);
+  if (diagnostic->kind == DK_ERROR && orig_diag_kind == DK_WARNING)
+    ++diagnostic_kind_count (context, DK_WERROR);
+  else
+    ++diagnostic_kind_count (context, diagnostic->kind);
 
   saved_format_spec = diagnostic->message.format_spec;
   if (context->show_option_requested)

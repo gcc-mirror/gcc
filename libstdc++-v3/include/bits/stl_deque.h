@@ -136,6 +136,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_cur(__x._M_cur), _M_first(__x._M_first),
         _M_last(__x._M_last), _M_node(__x._M_node) { }
 
+      iterator
+      _M_const_cast() const
+      { return iterator(_M_cur, _M_node); }
+
       reference
       operator*() const
       { return *_M_cur; }
@@ -1562,7 +1566,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Managing the pointer is the user's responsibility.
        */
       iterator
-      erase(iterator __position);
+#if __cplusplus >= 201103L
+      erase(const_iterator __position)
+      { return _M_erase(__position._M_const_cast()); }
+#else
+      erase(iterator __position)
+      { return _M_erase(__position); }
+#endif
 
       /**
        *  @brief  Remove a range of elements.
@@ -1581,7 +1591,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  way.  Managing the pointer is the user's responsibility.
        */
       iterator
-      erase(iterator __first, iterator __last);
+#if __cplusplus >= 201103L
+      erase(const_iterator __first, const_iterator __last)
+      { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
+#else
+      erase(iterator __first, iterator __last)
+      { return _M_erase(__first, __last); }
+#endif
 
       /**
        *  @brief  Swaps data with another %deque.
@@ -1872,6 +1888,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			 this->_M_impl._M_finish._M_node + 1);
 	this->_M_impl._M_finish = __pos;
       }
+
+      iterator
+      _M_erase(iterator __pos);
+
+      iterator
+      _M_erase(iterator __first, iterator __last);
 
 #if __cplusplus >= 201103L
       // Called by resize(sz).

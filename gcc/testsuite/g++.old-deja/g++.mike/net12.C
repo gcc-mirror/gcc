@@ -7,7 +7,7 @@ struct Foo {
   void m() const;
 };
 
-void other(char &x);	// { dg-error "" } reference below
+void other(char &x);	// { dg-message "" } reference below
 
 void
 Foo::m() const

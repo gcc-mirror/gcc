@@ -187,12 +187,6 @@ do {									\
 	     rs6000_abi_name);						\
     }									\
 									\
-  if (rs6000_current_abi == ABI_AIX && TARGET_LITTLE_ENDIAN)		\
-    {									\
-      rs6000_isa_flags &= ~OPTION_MASK_LITTLE_ENDIAN;			\
-      error ("-mcall-aixdesc must be big endian");			\
-    }									\
-									\
   if (TARGET_SECURE_PLT != secure_plt)					\
     {									\
       error ("-msecure-plt not supported by your assembler");		\
@@ -523,19 +517,24 @@ extern int fixuplabelno;
   while (0)
 #endif
 
+/* Select one of BIG_OPT, LITTLE_OPT or DEFAULT_OPT depending
+   on various -mbig, -mlittle and -mcall- options.  */
+#define ENDIAN_SELECT(BIG_OPT, LITTLE_OPT, DEFAULT_OPT)	\
+"%{mlittle|mlittle-endian:"	LITTLE_OPT ";"	\
+  "mbig|mbig-endian:"		BIG_OPT    ";"	\
+  "mcall-aixdesc|mcall-freebsd|mcall-netbsd|"	\
+  "mcall-openbsd|mcall-linux:"	BIG_OPT    ";"	\
+  "mcall-i960-old:"		LITTLE_OPT ";"	\
+  ":"				DEFAULT_OPT "}"
+
+#define DEFAULT_ASM_ENDIAN " -mbig"
+
 #undef	ASM_SPEC
 #define	ASM_SPEC "%(asm_cpu) \
 %{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
 %{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
-%{memb|msdata=eabi: -memb} \
-%{mlittle|mlittle-endian:-mlittle; \
-  mbig|mbig-endian      :-mbig;    \
-  mcall-aixdesc |		   \
-  mcall-freebsd |		   \
-  mcall-netbsd  |		   \
-  mcall-openbsd |		   \
-  mcall-linux           :-mbig;    \
-  mcall-i960-old        :-mlittle}"
+%{memb|msdata=eabi: -memb}" \
+ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
 #define	CC1_ENDIAN_BIG_SPEC ""
 
@@ -553,17 +552,10 @@ extern int fixuplabelno;
 #endif
 
 /* Pass -G xxx to the compiler and set correct endian mode.  */
-#define	CC1_SPEC "%{G*} %(cc1_cpu) \
-%{mlittle|mlittle-endian: %(cc1_endian_little);           \
-  mbig   |mbig-endian   : %(cc1_endian_big);              \
-  mcall-aixdesc |					  \
-  mcall-freebsd |					  \
-  mcall-netbsd  |					  \
-  mcall-openbsd |					  \
-  mcall-linux           : -mbig %(cc1_endian_big);        \
-  mcall-i960-old        : -mlittle %(cc1_endian_little);  \
-                        : %(cc1_endian_default)}          \
-%{meabi: %{!mcall-*: -mcall-sysv }} \
+#define	CC1_SPEC "%{G*} %(cc1_cpu)" \
+  ENDIAN_SELECT(" %(cc1_endian_big)", " %(cc1_endian_little)",	\
+		" %(cc1_endian_default)")			\
+"%{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \
     %{mrelocatable: -meabi } \
     %{mcall-freebsd: -mno-eabi } \
@@ -607,11 +599,8 @@ extern int fixuplabelno;
 %{symbolic:-Bsymbolic -G -dy -z text }"
 
 /* Override the default target of the linker.  */
-#define	LINK_TARGET_SPEC "\
-%{mlittle: --oformat elf32-powerpcle } %{mlittle-endian: --oformat elf32-powerpcle } \
-%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-i960-old: --oformat elf32-powerpcle} \
-  }}}}"
+#define	LINK_TARGET_SPEC \
+  ENDIAN_SELECT("", " --oformat elf32-powerpcle", "")
 
 /* Any specific OS flags.  */
 #define LINK_OS_SPEC "\

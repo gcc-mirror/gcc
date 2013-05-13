@@ -195,6 +195,34 @@
   return 0;
 })
 
+;; Returns true if OP is either a register or constant 0 or constant 1.
+(define_predicate "arith_reg_or_0_or_1_operand"
+  (match_code "subreg,reg,const_int,const_vector")
+{
+  return arith_reg_or_0_operand (op, mode) || satisfies_constraint_M (op);
+})
+
+;; Returns true if OP is a suitable constant for the minimum value of a
+;; clips.b or clips.w insn.
+(define_predicate "clips_min_const_int"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == -128")
+	    (match_test "INTVAL (op) == -32768"))))
+
+;; Returns true if OP is a suitable constant for the maximum value of a
+;; clips.b or clips.w insn.
+(define_predicate "clips_max_const_int"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == 127")
+	    (match_test "INTVAL (op) == 32767"))))
+
+;; Returns true if OP is a suitable constant for the maximum value of a
+;; clipu.b or clipu.w insn.
+(define_predicate "clipu_max_const_int"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == 255")
+	    (match_test "INTVAL (op) == 65535"))))
+
 ;; Returns 1 if OP is a floating point operator with two operands.
 (define_predicate "binary_float_operator"
   (and (match_code "plus,minus,mult,div")

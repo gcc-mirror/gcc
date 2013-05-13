@@ -662,6 +662,23 @@ debug_rtx (const_rtx x)
   fprintf (stderr, "\n");
 }
 
+/* Dump rtx REF.  */
+
+DEBUG_FUNCTION void
+debug (const rtx_def &ref)
+{
+  debug_rtx (&ref);
+}
+
+DEBUG_FUNCTION void
+debug (const rtx_def *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 /* Count of rtx's to print with debug_rtx_list.
    This global exists because gdb user defined commands have no arguments.  */
 
@@ -761,6 +778,7 @@ print_rtl (FILE *outf, const_rtx rtx_first)
       case CALL_INSN:
       case NOTE:
       case CODE_LABEL:
+      case JUMP_TABLE_DATA:
       case BARRIER:
 	for (tmp_rtx = rtx_first; tmp_rtx != 0; tmp_rtx = NEXT_INSN (tmp_rtx))
 	  {

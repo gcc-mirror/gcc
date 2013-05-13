@@ -716,7 +716,9 @@ mark_not_eliminable (rtx x)
 	       ep++)
 	    if (ep->to_rtx == SET_DEST (x)
 		&& SET_DEST (x) != hard_frame_pointer_rtx
-		&& (GET_CODE (SET_SRC (x)) != PLUS
+		&& (! (SUPPORTS_STACK_ALIGNMENT && stack_realign_fp
+		       && REGNO (ep->to_rtx) == STACK_POINTER_REGNUM)
+		    || GET_CODE (SET_SRC (x)) != PLUS
 		    || XEXP (SET_SRC (x), 0) != SET_DEST (x)
 		    || ! CONST_INT_P (XEXP (SET_SRC (x), 1))))
 	      setup_can_eliminate (ep, false);
@@ -769,8 +771,6 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
     {
       lra_assert (GET_CODE (PATTERN (insn)) == USE
 		  || GET_CODE (PATTERN (insn)) == CLOBBER
-		  || GET_CODE (PATTERN (insn)) == ADDR_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 		  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
       return;
     }
@@ -977,6 +977,9 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 	}
     }
 
+  if (! validate_p)
+    return;
+
   /* Substitute the operands; the new values are in the substed_operand
      array.  */
   for (i = 0; i < static_id->n_operands; i++)
@@ -984,16 +987,13 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
   for (i = 0; i < static_id->n_dups; i++)
     *id->dup_loc[i] = substed_operand[(int) static_id->dup_num[i]];
 
-  if (validate_p)
-    {
-      /* If we had a move insn but now we don't, re-recognize it.
-	 This will cause spurious re-recognition if the old move had a
-	 PARALLEL since the new one still will, but we can't call
-	 single_set without having put new body into the insn and the
-	 re-recognition won't hurt in this rare case.  */
-      id = lra_update_insn_recog_data (insn);
-      static_id = id->insn_static_data;
-    }
+  /* If we had a move insn but now we don't, re-recognize it.
+     This will cause spurious re-recognition if the old move had a
+     PARALLEL since the new one still will, but we can't call
+     single_set without having put new body into the insn and the
+     re-recognition won't hurt in this rare case.  */
+  id = lra_update_insn_recog_data (insn);
+  static_id = id->insn_static_data;
 }
 
 /* Spill pseudos which are assigned to hard registers in SET.  Add
@@ -1042,11 +1042,12 @@ spill_pseudos (HARD_REG_SET set)
    registers.  Spill pseudos assigned to registers which became
    uneliminable, update LRA_NO_ALLOC_REGS and ELIMINABLE_REG_SET.  Add
    insns to INSNS_WITH_CHANGED_OFFSETS containing eliminable hard
-   registers whose offsets should be changed.  */
-static void
+   registers whose offsets should be changed.  Return true if any
+   elimination offset changed.  */
+static bool
 update_reg_eliminate (bitmap insns_with_changed_offsets)
 {
-  bool prev;
+  bool prev, result;
   struct elim_table *ep, *ep1;
   HARD_REG_SET temp_hard_reg_set;
 
@@ -1122,10 +1123,20 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
   AND_COMPL_HARD_REG_SET (eliminable_regset, temp_hard_reg_set);
   spill_pseudos (temp_hard_reg_set);
   setup_elimination_map ();
+  result = false;
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (elimination_map[ep->from] == ep && ep->previous_offset != ep->offset)
-      bitmap_ior_into (insns_with_changed_offsets,
-		       &lra_reg_info[ep->from].insn_bitmap);
+      {
+	bitmap_ior_into (insns_with_changed_offsets,
+			 &lra_reg_info[ep->from].insn_bitmap);
+
+	/* Update offset when the eliminate offset have been
+	   changed.  */
+	lra_update_reg_val_offset (lra_reg_info[ep->from].val,
+				   ep->offset - ep->previous_offset);
+	result = true;
+      }
+  return result;
 }
 
 /* Initialize the table of hard registers to eliminate.
@@ -1266,12 +1277,8 @@ lra_eliminate (bool final_p)
 	  bitmap_ior_into (&insns_with_changed_offsets,
 			   &lra_reg_info[ep->from].insn_bitmap);
     }
-  else
-    {
-      update_reg_eliminate (&insns_with_changed_offsets);
-      if (bitmap_empty_p (&insns_with_changed_offsets))
-	goto lra_eliminate_done;
-    }
+  else if (! update_reg_eliminate (&insns_with_changed_offsets))
+    goto lra_eliminate_done;
   if (lra_dump_file != NULL)
     {
       fprintf (lra_dump_file, "New elimination table:\n");

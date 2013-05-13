@@ -996,7 +996,7 @@ extern df_ref df_ref_create (rtx, rtx *, rtx,basic_block,
 extern void df_uses_create (rtx *, rtx, int);
 extern void df_ref_remove (df_ref);
 extern struct df_insn_info * df_insn_create_insn_record (rtx);
-extern void df_insn_delete (basic_block, unsigned int);
+extern void df_insn_delete (rtx);
 extern void df_bb_refs_record (int, bool);
 extern bool df_insn_rescan (rtx);
 extern bool df_insn_rescan_debug_internal (rtx);

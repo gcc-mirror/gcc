@@ -138,3 +138,17 @@ long long reduce_add_s64 (pRINT64 a)
 
   return s;
 }
+
+void sabd (pRINT a, pRINT b, pRINT c)
+{
+  int i;
+  for (i = 0; i < 16; i++)
+    c[i] = abs (a[i] - b[i]);
+}
+
+void saba (pRINT a, pRINT b, pRINT c)
+{
+  int i;
+  for (i = 0; i < 16; i++)
+    c[i] += abs (a[i] - b[i]);
+}

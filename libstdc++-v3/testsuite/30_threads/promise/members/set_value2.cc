@@ -65,7 +65,7 @@ void test02()
 
   try
   {
-    p1.set_exception(std::copy_exception(4));
+    p1.set_exception(std::make_exception_ptr(4));
     VERIFY( false );
   }
   catch (std::future_error& e)

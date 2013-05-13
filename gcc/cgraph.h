@@ -62,6 +62,8 @@ struct GTY(()) symtab_node_base
   /* Needed variables might become dead by optimization.  This flag
      forces the variable to be output even if it appears dead otherwise.  */
   unsigned force_output : 1;
+  /* True when the name is known to be unique and thus it does not need mangling.  */
+  unsigned unique_name : 1;
 
   /* Ordering of all symtab entries.  */
   int order;
@@ -726,7 +728,7 @@ void debug_varpool_node_set (varpool_node_set);
 void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
 bool cgraph_comdat_can_be_unshared_p (struct cgraph_node *);
-bool varpool_externally_visible_p (struct varpool_node *, bool);
+bool varpool_externally_visible_p (struct varpool_node *);
 
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);

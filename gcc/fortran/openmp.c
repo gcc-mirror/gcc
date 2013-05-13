@@ -316,9 +316,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, int mask)
 		  && ! sym->attr.intrinsic
 		  && ! sym->attr.use_assoc
 		  && ((sym->attr.flavor == FL_UNKNOWN
-		       && gfc_add_flavor (&sym->attr, FL_PROCEDURE,
-					  sym->name, NULL) == FAILURE)
-		      || gfc_add_intrinsic (&sym->attr, NULL) == FAILURE))
+		       && !gfc_add_flavor (&sym->attr, FL_PROCEDURE, sym->name, NULL))
+		      || !gfc_add_intrinsic (&sym->attr, NULL)))
 		{
 		  gfc_free_omp_clauses (c);
 		  return MATCH_ERROR;
@@ -573,8 +572,7 @@ gfc_match_omp_threadprivate (void)
 	  if (sym->attr.in_common)
 	    gfc_error_now ("Threadprivate variable at %C is an element of "
 			   "a COMMON block");
-	  else if (gfc_add_threadprivate (&sym->attr, sym->name,
-		   &sym->declared_at) == FAILURE)
+	  else if (!gfc_add_threadprivate (&sym->attr, sym->name, &sym->declared_at))
 	    goto cleanup;
 	  goto next_item;
 	case MATCH_NO:
@@ -597,8 +595,7 @@ gfc_match_omp_threadprivate (void)
 	}
       st->n.common->threadprivate = 1;
       for (sym = st->n.common->head; sym; sym = sym->common_next)
-	if (gfc_add_threadprivate (&sym->attr, sym->name,
-				   &sym->declared_at) == FAILURE)
+	if (!gfc_add_threadprivate (&sym->attr, sym->name, &sym->declared_at))
 	  goto cleanup;
 
     next_item:
@@ -814,7 +811,7 @@ resolve_omp_clauses (gfc_code *code)
   if (omp_clauses->if_expr)
     {
       gfc_expr *expr = omp_clauses->if_expr;
-      if (gfc_resolve_expr (expr) == FAILURE
+      if (!gfc_resolve_expr (expr)
 	  || expr->ts.type != BT_LOGICAL || expr->rank != 0)
 	gfc_error ("IF clause at %L requires a scalar LOGICAL expression",
 		   &expr->where);
@@ -822,7 +819,7 @@ resolve_omp_clauses (gfc_code *code)
   if (omp_clauses->final_expr)
     {
       gfc_expr *expr = omp_clauses->final_expr;
-      if (gfc_resolve_expr (expr) == FAILURE
+      if (!gfc_resolve_expr (expr)
 	  || expr->ts.type != BT_LOGICAL || expr->rank != 0)
 	gfc_error ("FINAL clause at %L requires a scalar LOGICAL expression",
 		   &expr->where);
@@ -830,7 +827,7 @@ resolve_omp_clauses (gfc_code *code)
   if (omp_clauses->num_threads)
     {
       gfc_expr *expr = omp_clauses->num_threads;
-      if (gfc_resolve_expr (expr) == FAILURE
+      if (!gfc_resolve_expr (expr)
 	  || expr->ts.type != BT_INTEGER || expr->rank != 0)
 	gfc_error ("NUM_THREADS clause at %L requires a scalar "
 		   "INTEGER expression", &expr->where);
@@ -838,7 +835,7 @@ resolve_omp_clauses (gfc_code *code)
   if (omp_clauses->chunk_size)
     {
       gfc_expr *expr = omp_clauses->chunk_size;
-      if (gfc_resolve_expr (expr) == FAILURE
+      if (!gfc_resolve_expr (expr)
 	  || expr->ts.type != BT_INTEGER || expr->rank != 0)
 	gfc_error ("SCHEDULE clause's chunk_size at %L requires "
 		   "a scalar INTEGER expression", &expr->where);

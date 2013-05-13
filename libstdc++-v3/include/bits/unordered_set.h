@@ -108,10 +108,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       //@{
       ///  Iterator-related typedefs.
-      typedef typename allocator_type::pointer		pointer;
-      typedef typename allocator_type::const_pointer	const_pointer;
-      typedef typename allocator_type::reference	reference;
-      typedef typename allocator_type::const_reference	const_reference;
+      typedef typename _Hashtable::pointer		pointer;
+      typedef typename _Hashtable::const_pointer	const_pointer;
+      typedef typename _Hashtable::reference		reference;
+      typedef typename _Hashtable::const_reference	const_reference;
       typedef typename _Hashtable::iterator		iterator;
       typedef typename _Hashtable::const_iterator	const_iterator;
       typedef typename _Hashtable::local_iterator	local_iterator;
@@ -163,6 +163,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Move constructor.
       unordered_set(unordered_set&&) = default;
+
+      /**
+       *  @brief Creates an %unordered_set with no elements.
+       *  @param __a An allocator object.
+       */
+      explicit
+      unordered_set(const allocator_type& __a)
+	: _M_h(__a)
+      { }
+
+      /*
+       *  @brief Copy constructor with allocator argument.
+       * @param  __uset  Input %unordered_set to copy.
+       * @param  __a  An allocator object.
+       */
+      unordered_set(const unordered_set& __uset,
+		    const allocator_type& __a)
+	: _M_h(__uset._M_h, __a)
+      { }
+
+      /*
+       *  @brief  Move constructor with allocator argument.
+       *  @param  __uset Input %unordered_set to move.
+       *  @param  __a    An allocator object.
+       */
+      unordered_set(unordered_set&& __uset,
+		    const allocator_type& __a)
+	: _M_h(std::move(__uset._M_h), __a)
+      { }
 
       /**
        *  @brief  Builds an %unordered_set from an initializer_list.
@@ -482,6 +511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       swap(unordered_set& __x)
+      noexcept( noexcept(_M_h.swap(__x._M_h)) )
       { _M_h.swap(__x._M_h); }
 
       // observers.
@@ -713,10 +743,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       //@{
       ///  Iterator-related typedefs.
-      typedef typename allocator_type::pointer		pointer;
-      typedef typename allocator_type::const_pointer	const_pointer;
-      typedef typename allocator_type::reference	reference;
-      typedef typename allocator_type::const_reference	const_reference;
+      typedef typename _Hashtable::pointer		pointer;
+      typedef typename _Hashtable::const_pointer	const_pointer;
+      typedef typename _Hashtable::reference		reference;
+      typedef typename _Hashtable::const_reference	const_reference;
       typedef typename _Hashtable::iterator		iterator;
       typedef typename _Hashtable::const_iterator	const_iterator;
       typedef typename _Hashtable::local_iterator	local_iterator;
@@ -794,7 +824,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Move assignment operator.
       unordered_multiset&
-      operator=(unordered_multiset&& __x) = default;
+      operator=(unordered_multiset&&) = default;
+
+      /**
+       *  @brief Creates an %unordered_multiset with no elements.
+       *  @param __a An allocator object.
+       */
+      explicit
+      unordered_multiset(const allocator_type& __a)
+	: _M_h(__a)
+      { }
+
+      /*
+       *  @brief Copy constructor with allocator argument.
+       * @param  __uset  Input %unordered_multiset to copy.
+       * @param  __a  An allocator object.
+       */
+      unordered_multiset(const unordered_multiset& __umset,
+			 const allocator_type& __a)
+	: _M_h(__umset._M_h, __a)
+      { }
+
+      /*
+       *  @brief  Move constructor with allocator argument.
+       *  @param  __umset  Input %unordered_multiset to move.
+       *  @param  __a  An allocator object.
+       */
+      unordered_multiset(unordered_multiset&& __umset,
+			 const allocator_type& __a)
+	: _M_h(std::move(__umset._M_h), __a)
+      { }
 
       /**
        *  @brief  %Unordered_multiset list assignment operator.
@@ -1070,6 +1129,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       swap(unordered_multiset& __x)
+      noexcept( noexcept(_M_h.swap(__x._M_h)) )
       { _M_h.swap(__x._M_h); }
 
       // observers.

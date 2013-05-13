@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,6 +138,7 @@ package body Ch7 is
          end if;
 
          T_Body;
+         Scope.Table (Scope.Last).Sloc := Token_Ptr;
          Name_Node := P_Defining_Program_Unit_Name;
          Scope.Table (Scope.Last).Labl := Name_Node;
          TF_Is;
@@ -182,6 +183,7 @@ package body Ch7 is
       --  Cases other than Package_Body
 
       else
+         Scope.Table (Scope.Last).Sloc := Token_Ptr;
          Name_Node := P_Defining_Program_Unit_Name;
          Scope.Table (Scope.Last).Labl := Name_Node;
 

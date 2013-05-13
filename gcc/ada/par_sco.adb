@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -917,7 +917,7 @@ package body Par_SCO is
       From : Nat;
 
       procedure Traverse_Aux_Decls (N : Node_Id);
-      --  Traverse the Aux_Decl_Nodes of compilation unit N
+      --  Traverse the Aux_Decls_Node of compilation unit N
 
       ------------------------
       -- Traverse_Aux_Decls --
@@ -927,8 +927,14 @@ package body Par_SCO is
          ADN : constant Node_Id := Aux_Decls_Node (N);
       begin
          Traverse_Declarations_Or_Statements (Config_Pragmas (ADN));
-         Traverse_Declarations_Or_Statements (Declarations   (ADN));
          Traverse_Declarations_Or_Statements (Pragmas_After  (ADN));
+
+         --  Declarations and Actions do not correspond to source constructs,
+         --  they contain only nodes from expansion, so at this point they
+         --  should still be empty:
+
+         pragma Assert (No (Declarations (ADN)));
+         pragma Assert (No (Actions (ADN)));
       end Traverse_Aux_Decls;
 
    --  Start of processing for SCO_Record
@@ -1448,18 +1454,18 @@ package body Par_SCO is
 
             C1 := ASCII.NUL;
 
-            case Get_Aspect_Id (Chars (Identifier (AN))) is
+            case Get_Aspect_Id (AN) is
 
                --  Aspects rewritten into pragmas controlled by a Check_Policy:
                --  Current_Pragma_Sloc must be set to the sloc of the aspect
                --  specification. The corresponding pragma will have the same
                --  sloc.
 
-               when Aspect_Pre               |
-                    Aspect_Precondition      |
-                    Aspect_Post              |
-                    Aspect_Postcondition     |
-                    Aspect_Invariant         =>
+               when Aspect_Pre           |
+                    Aspect_Precondition  |
+                    Aspect_Post          |
+                    Aspect_Postcondition |
+                    Aspect_Invariant     =>
 
                   C1 := 'a';
 

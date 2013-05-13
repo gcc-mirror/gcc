@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "pretty-print.h"
+#include "diagnostic-color.h"
 
 #if HAVE_ICONV
 #include <iconv.h>
@@ -226,6 +227,8 @@ pp_base_indent (pretty_printer *pp)
    %c: character.
    %s: string.
    %p: pointer.
+   %r: if pp_show_color(pp), switch to color identified by const char *.
+   %R: if pp_show_color(pp), reset color.
    %m: strerror(text->err_no) - does not consume a value from args_ptr.
    %%: '%'.
    %<: opening quote.
@@ -300,17 +303,36 @@ pp_base_format (pretty_printer *pp, text_info *text)
 	  continue;
 
 	case '<':
-	  obstack_grow (&buffer->chunk_obstack,
-			open_quote, strlen (open_quote));
-	  p++;
-	  continue;
+	  {
+	    obstack_grow (&buffer->chunk_obstack,
+			  open_quote, strlen (open_quote));
+	    const char *colorstr
+	      = colorize_start (pp_show_color (pp), "quote");
+	    obstack_grow (&buffer->chunk_obstack, colorstr, strlen (colorstr));
+	    p++;
+	    continue;
+	  }
 
 	case '>':
+	  {
+	    const char *colorstr = colorize_stop (pp_show_color (pp));
+	    obstack_grow (&buffer->chunk_obstack, colorstr, strlen (colorstr));
+	  }
+	  /* FALLTHRU */
 	case '\'':
 	  obstack_grow (&buffer->chunk_obstack,
 			close_quote, strlen (close_quote));
 	  p++;
 	  continue;
+
+	case 'R':
+	  {
+	    const char *colorstr = colorize_stop (pp_show_color (pp));
+	    obstack_grow (&buffer->chunk_obstack, colorstr,
+			  strlen (colorstr));
+	    p++;
+	    continue;
+	  }
 
 	case 'm':
 	  {
@@ -466,10 +488,19 @@ pp_base_format (pretty_printer *pp, text_info *text)
       gcc_assert (!wide || precision == 0);
 
       if (quote)
-	pp_string (pp, open_quote);
+	{
+	  pp_string (pp, open_quote);
+	  pp_string (pp, colorize_start (pp_show_color (pp), "quote"));
+	}
 
       switch (*p)
 	{
+	case 'r':
+	  pp_string (pp, colorize_start (pp_show_color (pp),
+					 va_arg (*text->args_ptr,
+						 const char *)));
+	  break;
+
 	case 'c':
 	  pp_character (pp, va_arg (*text->args_ptr, int));
 	  break;
@@ -563,7 +594,10 @@ pp_base_format (pretty_printer *pp, text_info *text)
 	}
 
       if (quote)
-	pp_string (pp, close_quote);
+	{
+	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+	  pp_string (pp, close_quote);
+	}
 
       obstack_1grow (&buffer->chunk_obstack, '\0');
       *formatters[argno] = XOBFINISH (&buffer->chunk_obstack, const char *);

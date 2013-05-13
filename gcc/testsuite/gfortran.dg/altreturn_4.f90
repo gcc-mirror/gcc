@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=gnu" }
+!
 ! Tests the fix for PR28172, in which an ICE would result from
 ! the contained call with an alternate retrun.
 

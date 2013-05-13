@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2011, AdaCore                     --
+--                     Copyright (C) 2001-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -858,7 +858,9 @@ package GNAT.Sockets is
    --  whether the operation completed successfully, timed out, or was aborted.
    --  If Selector is not null, the designated selector is used to wait for the
    --  socket to become available, else a private selector object is created
-   --  by this procedure and destroyed before it returns.
+   --  by this procedure and destroyed before it returns. If Timeout is 0.0,
+   --  no attempt is made to detect whether the connection has succeeded; it
+   --  is up to the user to determine this using Check_Selector later on.
 
    procedure Control_Socket
      (Socket  : Socket_Type;
@@ -976,6 +978,17 @@ package GNAT.Sockets is
    --  Transmit data gathered from the set of vector elements Vector to a
    --  socket. Count is set to the count of transmitted stream elements. Flags
    --  allow control over transmission.
+
+   procedure Set_Close_On_Exec
+     (Socket        : Socket_Type;
+      Close_On_Exec : Boolean;
+      Status        : out Boolean);
+   --  When Close_On_Exec is True, mark Socket to be closed automatically when
+   --  a new program is executed by the calling process (i.e. prevent Socket
+   --  from being inherited by child processes). When Close_On_Exec is False,
+   --  mark Socket to not be closed on exec (i.e. allow it to be inherited).
+   --  Status is False if the operation could not be performed, or is not
+   --  supported on the target platform.
 
    procedure Set_Socket_Option
      (Socket : Socket_Type;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,6 @@ with XUtil; use XUtil;
 procedure XOSCons is
 
    use Ada.Strings;
-   use ASCII;
 
    Unit_Name : constant String := Argument (1);
    Tmpl_Name : constant String := Unit_Name & "-tmplt";
@@ -516,7 +515,7 @@ procedure XOSCons is
          Current_Line := Current_Line + 1;
          exit when Line (1 .. Last) = "@END_IF";
 
-         if Line (1 .. 4) = "@IF " then
+         if Last > 4 and then Line (1 .. 4) = "@IF " then
             Parse_Cond
               (Line (1 .. Last), Res,
                Tmpl_File, Ada_Ofile, C_Ofile, Current_Line);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,87 +25,90 @@
 
 --  This package provides an Import to the C functions which provide
 --  values related to types on the target system. It is only needed for
---  exp_dbug and the elaboration of ttypes.
+--  exp_dbug and the elaboration of ttypes, via the Set_Targs package.
+--  It also contains the routine for registering floating-point types.
 
 --  NOTE:  Any changes in this package must be reflected in jgettarg.ads
---  and aa_getta.ads!
+--  and aa_getta.ads and any other versions of this package.
 
 --  Note that all these values return sizes of C types with corresponding
 --  names. This allows GNAT to define the corresponding Ada types to have
---  the same representation. There is one exception to this: the
---  Wide_Character_Type uses twice the size of a C char, instead of the
+--  the same representation. There is one exception to this general rule:
+--  the Wide_Character_Type uses twice the size of a C char, instead of the
 --  size of wchar_t.
 
+with Einfo; use Einfo;
 with Types; use Types;
 
 package Get_Targ is
-   pragma Preelaborate;
 
-   function Get_Bits_Per_Unit return Pos;
-   pragma Import (C, Get_Bits_Per_Unit, "get_target_bits_per_unit");
+   --  Functions returning individual runtime values
 
-   function Get_Bits_Per_Word return Pos;
-   pragma Import (C, Get_Bits_Per_Word, "get_target_bits_per_word");
+   function Get_Bits_Per_Unit              return Pos;
+   --  System.Storage_Unit
 
-   function Get_Char_Size return Pos; -- Standard.Character'Size
-   pragma Import (C, Get_Char_Size, "get_target_char_size");
+   function Get_Bits_Per_Word              return Pos;
+   --  System.Word_Size
 
-   function Get_Wchar_T_Size return Pos; -- Interfaces.C.wchar_t'Size
-   pragma Import (C, Get_Wchar_T_Size, "get_target_wchar_t_size");
+   function Get_Char_Size                  return Pos;
+   --  Size of Standard.Character
 
-   function Get_Short_Size return Pos; -- Standard.Short_Integer'Size
-   pragma Import (C, Get_Short_Size, "get_target_short_size");
+   function Get_Wchar_T_Size               return Pos;
+   --  Size of Interfaces.C.wchar_t
 
-   function Get_Int_Size return Pos; -- Standard.Integer'Size
-   pragma Import (C, Get_Int_Size, "get_target_int_size");
+   function Get_Short_Size                 return Pos;
+   --  Size of Standard.Short_Integer
 
-   function Get_Long_Size return Pos; -- Standard.Long_Integer'Size
-   pragma Import (C, Get_Long_Size, "get_target_long_size");
+   function Get_Int_Size                   return Pos;
+   --  Size of Standard.Integer
 
-   function Get_Long_Long_Size return Pos; -- Standard.Long_Long_Integer'Size
-   pragma Import (C, Get_Long_Long_Size, "get_target_long_long_size");
+   function Get_Long_Size                  return Pos;
+   --  Size of Standard.Long_Integer
 
-   function Get_Float_Size return Pos; -- Standard.Float'Size
-   pragma Import (C, Get_Float_Size, "get_target_float_size");
+   function Get_Long_Long_Size             return Pos;
+   --  Size of Standard.Long_Long_Integer
 
-   function Get_Double_Size return Pos; -- Standard.Long_Float'Size
-   pragma Import (C, Get_Double_Size, "get_target_double_size");
+   function Get_Float_Size                 return Pos;
+   --  Size of Standard.Float
 
-   function Get_Long_Double_Size return Pos; -- Standard.Long_Long_Float'Size
-   pragma Import (C, Get_Long_Double_Size, "get_target_long_double_size");
+   function Get_Double_Size                return Pos;
+   --  Size of Standard.Long_Float
 
-   function Get_Pointer_Size return Pos; -- System.Address'Size
-   pragma Import (C, Get_Pointer_Size, "get_target_pointer_size");
+   function Get_Long_Double_Size           return Pos;
+   --  Size of Standard.Long_Long_Float
 
-   function Get_Maximum_Alignment return Pos;
-   pragma Import (C, Get_Maximum_Alignment, "get_target_maximum_alignment");
+   function Get_Pointer_Size               return Pos;
+   --  Size of System.Address
 
-   function Get_Float_Words_BE return Nat;
-   pragma Import (C, Get_Float_Words_BE, "get_float_words_be");
+   function Get_Maximum_Alignment          return Pos;
+   --  Maximum supported alignment
 
-   function Get_Words_BE return Nat;
-   pragma Import (C, Get_Words_BE, "get_words_be");
+   function Get_Float_Words_BE             return Nat;
+   --  Non-zero iff float words big endian
 
-   function Get_Bytes_BE return Nat;
-   pragma Import (C, Get_Bytes_BE, "get_bytes_be");
+   function Get_Words_BE                   return Nat;
+   --  Non-zero iff integer words big endian
 
-   function Get_Bits_BE return Nat;
-   pragma Import (C, Get_Bits_BE, "get_bits_be");
+   function Get_Bytes_BE                   return Nat;
+   --  Non-zero iff bytes big-endian
 
-   function Get_Strict_Alignment return Nat;
-   pragma Import (C, Get_Strict_Alignment, "get_target_strict_alignment");
+   function Get_Bits_BE                    return Nat;
+   --  Non-zero iff bit order big endian
+
+   function Get_Strict_Alignment           return Nat;
+   --  Non-zero if target requires strict alignent
 
    function Get_System_Allocator_Alignment return Nat;
-   pragma Import (C, Get_System_Allocator_Alignment,
-                  "get_target_system_allocator_alignment");
+   --  Alignment guaranteed by malloc falls
 
-   function Get_Double_Float_Alignment return Nat;
-   pragma Import (C, Get_Double_Float_Alignment,
-                  "get_target_double_float_alignment");
+   function Get_Double_Float_Alignment     return Nat;
+   --  Alignment required for Long_Float or 0 if no special requirement
 
-   function Get_Double_Scalar_Alignment return Nat;
-   pragma Import (C, Get_Double_Scalar_Alignment,
-                  "get_target_double_scalar_alignment");
+   function Get_Double_Scalar_Alignment    return Nat;
+   --  Alignment required for Long_Long_Integer or larger integer types
+   --  or 0 if no special requirement.
+
+   --  Other subprograms
 
    function Get_Max_Unaligned_Field return Pos;
    --  Returns the maximum supported size in bits for a field that is
@@ -114,5 +117,24 @@ package Get_Targ is
    function Width_From_Size  (Size : Pos) return Pos;
    function Digits_From_Size (Size : Pos) return Pos;
    --  Calculate values for 'Width or 'Digits from 'Size
+
+   type C_String is array (0 .. 255) of aliased Character;
+   pragma Convention (C, C_String);
+
+   type Register_Type_Proc is access procedure
+     (C_Name    : C_String;       -- Nul-terminated string with name of type
+      Digs      : Natural;        -- Digits for floating point, 0 otherwise
+      Complex   : Boolean;        -- True iff type has real and imaginary parts
+      Count     : Natural;        -- Number of elements in vector, 0 otherwise
+      Float_Rep : Float_Rep_Kind; -- Representation used for fpt type
+      Size      : Positive;       -- Size of representation in bits
+      Alignment : Natural);       -- Required alignment in bits
+   pragma Convention (C, Register_Type_Proc);
+   --  Call back procedure for Register_Back_End_Types. This is to be used by
+   --  Create_Standard to create predefined types for all types supported by
+   --  the back end.
+
+   procedure Register_Back_End_Types (Call_Back : Register_Type_Proc);
+   --  Calls the Call_Back function with information for each supported type
 
 end Get_Targ;

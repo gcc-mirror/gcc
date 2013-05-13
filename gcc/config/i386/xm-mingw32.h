@@ -29,6 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 /*  The st_ino field of struct stat is always 0.  */
 #define HOST_LACKS_INODE_NUMBERS
 
+#ifdef __MINGW32__
+#undef __USE_MINGW_ANSI_STDIO
+#define __USE_MINGW_ANSI_STDIO 1
+#else
 /* MSVCRT does not support the "ll" format specifier for printing
    "long long" values.  Instead, we use "I64".  */
 #define HOST_LONG_LONG_FORMAT "I64"
+#endif
+

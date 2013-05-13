@@ -65,7 +65,7 @@
 --  The latest implementation avoids both this problem by using a named
 --  scheme for recording restrictions, rather than a positional scheme which
 --  fails completely if restrictions are added or subtracted. Now the worst
---  that happens at bind time in incosistent builds is that unrecognized
+--  that happens at bind time in inconsistent builds is that unrecognized
 --  restrictions are ignored, and the consistency checking for restrictions
 --  might be incomplete, which is no big deal.
 
@@ -88,69 +88,71 @@ package System.Rident is
       --  binder will check that every unit either has the restriction set, or
       --  does not violate the restriction.
 
-     (Simple_Barriers,                         -- GNAT (Ravenscar)
-      No_Abort_Statements,                     -- (RM D.7(5), H.4(3))
-      No_Access_Subprograms,                   -- (RM H.4(17))
-      No_Allocators,                           -- (RM H.4(7))
-      No_Allocators_After_Elaboration,         -- Ada 2012 (RM D.7(19.1/2))
-      No_Anonymous_Allocators,                 -- Ada 2012 (RM H.4(8/1))
-      No_Asynchronous_Control,                 -- (RM J.13(3/2)
-      No_Calendar,                             -- GNAT
-      No_Default_Stream_Attributes,            -- Ada 2012 (RM 13.12.1(4/2))
-      No_Delay,                                -- (RM H.4(21))
-      No_Direct_Boolean_Operators,             -- GNAT
-      No_Dispatch,                             -- (RM H.4(19))
-      No_Dispatching_Calls,                    -- GNAT
-      No_Dynamic_Attachment,                   -- GNAT
-      No_Dynamic_Priorities,                   -- (RM D.9(9))
-      No_Enumeration_Maps,                     -- GNAT
-      No_Entry_Calls_In_Elaboration_Code,      -- GNAT
-      No_Entry_Queue,                          -- GNAT (Ravenscar)
-      No_Exception_Handlers,                   -- GNAT
-      No_Exception_Propagation,                -- GNAT
-      No_Exception_Registration,               -- GNAT
-      No_Exceptions,                           -- (RM H.4(12))
-      No_Finalization,                         -- GNAT
-      No_Fixed_Point,                          -- (RM H.4(15))
-      No_Floating_Point,                       -- (RM H.4(14))
-      No_IO,                                   -- (RM H.4(20))
-      No_Implicit_Conditionals,                -- GNAT
-      No_Implicit_Dynamic_Code,                -- GNAT
-      No_Implicit_Heap_Allocations,            -- (RM D.8(8), H.4(3))
-      No_Implicit_Loops,                       -- GNAT
-      No_Initialize_Scalars,                   -- GNAT
-      No_Local_Allocators,                     -- (RM H.4(8))
-      No_Local_Timing_Events,                  -- (RM D.7(10.2/2))
-      No_Local_Protected_Objects,              -- GNAT
-      No_Nested_Finalization,                  -- (RM D.7(4))
-      No_Protected_Type_Allocators,            -- GNAT
-      No_Protected_Types,                      -- (RM H.4(5))
-      No_Recursion,                            -- (RM H.4(22))
-      No_Reentrancy,                           -- (RM H.4(23))
-      No_Relative_Delay,                       -- GNAT (Ravenscar)
-      No_Requeue_Statements,                   -- GNAT
-      No_Secondary_Stack,                      -- GNAT
-      No_Select_Statements,                    -- GNAT (Ravenscar)
-      No_Specific_Termination_Handlers,        -- (RM D.7(10.7/2))
-      No_Standard_Storage_Pools,               -- GNAT
-      No_Stream_Optimizations,                 -- GNAT
-      No_Streams,                              -- GNAT
-      No_Task_Allocators,                      -- (RM D.7(7))
-      No_Task_Attributes_Package,              -- GNAT
-      No_Task_Hierarchy,                       -- (RM D.7(3), H.4(3))
-      No_Task_Termination,                     -- GNAT (Ravenscar)
-      No_Tasking,                              -- GNAT
-      No_Terminate_Alternatives,               -- (RM D.7(6))
-      No_Unchecked_Access,                     -- (RM H.4(18))
-      No_Unchecked_Conversion,                 -- (RM J.13(4/2))
-      No_Unchecked_Deallocation,               -- (RM J.13(5/2))
-      Static_Priorities,                       -- GNAT
-      Static_Storage_Size,                     -- GNAT
+     (Simple_Barriers,                           -- Ada 2012 (D.7 (10.9/3))
+      No_Abort_Statements,                       -- (RM D.7(5), H.4(3))
+      No_Access_Parameter_Allocators,            -- Ada 2012 (RM H.4 (8.3/3))
+      No_Access_Subprograms,                     -- (RM H.4(17))
+      No_Allocators,                             -- (RM H.4(7))
+      No_Anonymous_Allocators,                   -- Ada 2012 (RM H.4(8/1))
+      No_Asynchronous_Control,                   -- (RM J.13(3/2)
+      No_Calendar,                               -- GNAT
+      No_Coextensions,                           -- Ada 2012 (RM H.4(8.2/3))
+      No_Default_Stream_Attributes,              -- Ada 2012 (RM 13.12.1(4/2))
+      No_Delay,                                  -- (RM H.4(21))
+      No_Direct_Boolean_Operators,               -- GNAT
+      No_Dispatch,                               -- (RM H.4(19))
+      No_Dispatching_Calls,                      -- GNAT
+      No_Dynamic_Attachment,                     -- Ada 2012 (RM E.7(10/3))
+      No_Dynamic_Priorities,                     -- (RM D.9(9))
+      No_Enumeration_Maps,                       -- GNAT
+      No_Entry_Calls_In_Elaboration_Code,        -- GNAT
+      No_Entry_Queue,                            -- GNAT (Ravenscar)
+      No_Exception_Handlers,                     -- GNAT
+      No_Exception_Propagation,                  -- GNAT
+      No_Exception_Registration,                 -- GNAT
+      No_Exceptions,                             -- (RM H.4(12))
+      No_Finalization,                           -- GNAT
+      No_Fixed_Point,                            -- (RM H.4(15))
+      No_Floating_Point,                         -- (RM H.4(14))
+      No_IO,                                     -- (RM H.4(20))
+      No_Implicit_Conditionals,                  -- GNAT
+      No_Implicit_Dynamic_Code,                  -- GNAT
+      No_Implicit_Heap_Allocations,              -- (RM D.8(8), H.4(3))
+      No_Implicit_Loops,                         -- GNAT
+      No_Initialize_Scalars,                     -- GNAT
+      No_Local_Allocators,                       -- (RM H.4(8))
+      No_Local_Timing_Events,                    -- (RM D.7(10.2/2))
+      No_Local_Protected_Objects,                -- Ada 2012 (D.7(10/1.3))
+      No_Nested_Finalization,                    -- (RM D.7(4))
+      No_Protected_Type_Allocators,              -- Ada 2012 (D.7 (10.3/2))
+      No_Protected_Types,                        -- (RM H.4(5))
+      No_Recursion,                              -- (RM H.4(22))
+      No_Reentrancy,                             -- (RM H.4(23))
+      No_Relative_Delay,                         -- Ada 2012 (D.7 (10.5/3))
+      No_Requeue_Statements,                     -- Ada 2012 (D.7 (10.6/3))
+      No_Secondary_Stack,                        -- GNAT
+      No_Select_Statements,                      -- Ada 2012 (D.7 (10.7/4))
+      No_Specific_Termination_Handlers,          -- (RM D.7(10.7/2))
+      No_Standard_Allocators_After_Elaboration,  -- Ada 2012 (RM D.7(19.1/2))
+      No_Standard_Storage_Pools,                 -- GNAT
+      No_Stream_Optimizations,                   -- GNAT
+      No_Streams,                                -- GNAT
+      No_Task_Allocators,                        -- (RM D.7(7))
+      No_Task_Attributes_Package,                -- GNAT
+      No_Task_Hierarchy,                         -- (RM D.7(3), H.4(3))
+      No_Task_Termination,                       -- GNAT (Ravenscar)
+      No_Tasking,                                -- GNAT
+      No_Terminate_Alternatives,                 -- (RM D.7(6))
+      No_Unchecked_Access,                       -- (RM H.4(18))
+      No_Unchecked_Conversion,                   -- (RM J.13(4/2))
+      No_Unchecked_Deallocation,                 -- (RM J.13(5/2))
+      Static_Priorities,                         -- GNAT
+      Static_Storage_Size,                       -- GNAT
 
       --  The following require consistency checking with special rules. See
       --  individual routines in unit Bcheck for details of what is required.
 
-      No_Default_Initialization,               -- GNAT
+      No_Default_Initialization,                 -- GNAT
 
       --  The following cases do not require consistency checking and if used
       --  as a configuration pragma within a specific unit, apply only to that
@@ -162,20 +164,24 @@ package System.Rident is
       --  it is sticky, in that if it is found anywhere within any of these
       --  units, it applies to all units in this extended main source.
 
-      Immediate_Reclamation,                   -- (RM H.4(10))
-      No_Implementation_Aspect_Specifications, -- Ada 2012 AI-241
-      No_Implementation_Attributes,            -- Ada 2005 AI-257
-      No_Implementation_Identifiers,           -- Ada 2012 AI-246
-      No_Implementation_Pragmas,               -- Ada 2005 AI-257
-      No_Implementation_Restrictions,          -- GNAT
-      No_Implementation_Units,                 -- Ada 2012 AI-242
-      No_Implicit_Aliasing,                    -- GNAT
-      No_Elaboration_Code,                     -- GNAT
-      No_Obsolescent_Features,                 -- Ada 2005 AI-368
-      No_Wide_Characters,                      -- GNAT
-      SPARK,                                   -- GNAT
+      Immediate_Reclamation,                     -- (RM H.4(10))
+      No_Implementation_Aspect_Specifications,   -- Ada 2012 AI-241
+      No_Implementation_Attributes,              -- Ada 2005 AI-257
+      No_Implementation_Identifiers,             -- Ada 2012 AI-246
+      No_Implementation_Pragmas,                 -- Ada 2005 AI-257
+      No_Implementation_Restrictions,            -- GNAT
+      No_Implementation_Units,                   -- Ada 2012 AI-242
+      No_Implicit_Aliasing,                      -- GNAT
+      No_Elaboration_Code,                       -- GNAT
+      No_Obsolescent_Features,                   -- Ada 2005 AI-368
+      No_Wide_Characters,                        -- GNAT
+      SPARK,                                     -- GNAT
 
       --  The following cases require a parameter value
+
+      No_Specification_Of_Aspect,                -- 2012 (RM 13.12.1 (6.1/3))
+      No_Use_Of_Attribute,                       -- 2012 (RM 13.12.1 (6.2/3))
+      No_Use_Of_Pragma,                          -- 2012 (RM 13.12.1 (6.3/3))
 
       --  The following entries are fully checked at compile/bind time, which
       --  means that the compiler can in general tell the minimum value which
@@ -183,9 +189,9 @@ package System.Rident is
       --  appropriate minimum value for the partition by taking the maximum
       --  value required by any unit.
 
-      Max_Protected_Entries,                   -- (RM D.7(14))
-      Max_Select_Alternatives,                 -- (RM D.7(12))
-      Max_Task_Entries,                        -- (RM D.7(13), H.4(3))
+      Max_Protected_Entries,                     -- (RM D.7(14))
+      Max_Select_Alternatives,                   -- (RM D.7(12))
+      Max_Task_Entries,                          -- (RM D.7(13), H.4(3))
 
       --  The following entries are also fully checked at compile/bind time,
       --  and the compiler can also at least in some cases tell the minimum
@@ -193,19 +199,19 @@ package System.Rident is
       --  is that the contributions are additive, so the binder deduces this
       --  value by adding the unit contributions.
 
-      Max_Tasks,                               -- (RM D.7(19), H.4(3))
+      Max_Tasks,                                 -- (RM D.7(19), H.4(3))
 
       --  The following entries are checked at compile time only for zero/
       --  nonzero entries. This means that the compiler can tell at compile
       --  time if a restriction value of zero is (would be) violated, but that
       --  the compiler cannot distinguish between different non-zero values.
 
-      Max_Asynchronous_Select_Nesting,         -- (RM D.7(18), H.4(3))
-      Max_Entry_Queue_Length,                  -- GNAT
+      Max_Asynchronous_Select_Nesting,           -- (RM D.7(18), H.4(3))
+      Max_Entry_Queue_Length,                    -- Ada 2012 (RM D.7 (19.1/2))
 
       --  The remaining entries are not checked at compile/bind time
 
-      Max_Storage_At_Blocking,                 -- (RM D.7(17))
+      Max_Storage_At_Blocking,                   -- (RM D.7(17))
 
       Not_A_Restriction_Id);
 
@@ -242,7 +248,7 @@ package System.Rident is
 
    subtype All_Parameter_Restrictions is
      Restriction_Id range
-       Max_Protected_Entries .. Max_Storage_At_Blocking;
+       No_Specification_Of_Aspect .. Max_Storage_At_Blocking;
    --  All restrictions that take a parameter
 
    subtype Checked_Parameter_Restrictions is

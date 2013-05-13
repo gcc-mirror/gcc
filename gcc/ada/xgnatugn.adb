@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,12 +85,6 @@
 --       output. A line containing this escape sequence may not also contain
 --       a ^alpha^beta^ sequence.
 
---       Process @ifset and @ifclear for the target flags (unw, vms);
---       this is because we have menu problems if we let makeinfo handle
---       these ifset/ifclear pairs.
---       Note: @ifset/@ifclear commands for the edition flags (FSFEDITION,
---       PROEDITION, GPLEDITION) are passed through unchanged
-
 with Ada.Command_Line;           use Ada.Command_Line;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
@@ -129,6 +123,7 @@ procedure Xgnatugn is
    procedure Put_Line (F : Sfile; S : String);
    --  Local version of Put_Line ensures Unix style line endings
 
+   First_Time         : Boolean := True;
    Number_Of_Warnings : Natural := 0;
    Number_Of_Errors   : Natural := 0;
    Warnings_Enabled   : Boolean;
@@ -148,10 +143,6 @@ procedure Xgnatugn is
      (Input        : Input_File;
       At_Character : Natural;
       Message      : String);
-   procedure Warning
-     (Input        : Input_File;
-      Message      : String);
-   --  Like Error, but just print a warning message
 
    Dictionary_File : aliased Input_File;
    procedure Read_Dictionary_File;
@@ -180,13 +171,11 @@ procedure Xgnatugn is
    --  Conditional commands for edition are passed through unchanged
 
    subtype Target_Type is Flag_Type range UNW .. VMS;
-   subtype Edition_Type is Flag_Type range FSFEDITION .. GPLEDITION;
 
    Target : Target_Type;
    --  The Target variable is initialized using the command line
 
-   Valid_Characters : constant Character_Set :=
-                        To_Set (Span => (' ',  '~'));
+   Valid_Characters : constant Character_Set := To_Set (Span => (' ',  '~'));
    --  This array controls which characters are permitted in the input
    --  file (after line breaks have been removed). Valid characters
    --  are all printable ASCII characters and the space character.
@@ -194,7 +183,7 @@ procedure Xgnatugn is
    Word_Characters : constant Character_Set :=
                        (To_Set (Ranges =>
                                   (('0', '9'), ('a', 'z'), ('A', 'Z')))
-                        or To_Set ("?-_~"));
+                         or To_Set ("?-_~"));
    --  The characters which are permitted in words. Other (valid)
    --  characters are assumed to be delimiters between words. Note that
    --  this set has to include all characters of the source words of the
@@ -235,47 +224,6 @@ procedure Xgnatugn is
    function Rewrite_Source_Line (Line : String) return String;
    --  This subprogram takes a line and rewrites it according to Target.
    --  It relies on information in Source_File to generate error messages.
-
-   type Conditional is (Set, Clear);
-   procedure Push_Conditional (Cond : Conditional; Flag : Target_Type);
-   procedure Pop_Conditional  (Cond : Conditional);
-   --  These subprograms deal with conditional processing (@ifset/@ifclear).
-   --  They rely on information in Source_File to generate error messages.
-
-   function Currently_Excluding return Boolean;
-   --  Returns true if conditional processing directives imply that the
-   --  current line should not be included in the output.
-
-   function VMS_Context_Determined return Boolean;
-   --  Returns true if, in the current conditional preprocessing context, we
-   --  always have a VMS or a non-VMS version, regardless of the value of
-   --  Target.
-
-   function In_VMS_Section return Boolean;
-   --  Returns True if in an "@ifset vms" section
-
-   procedure Check_No_Pending_Conditional;
-   --  Checks that all preprocessing directives have been properly matched by
-   --  their @end counterpart. If this is not the case, print an error
-   --  message.
-
-   --  The following definitions implement a stack to track the conditional
-   --  preprocessing context.
-
-   type Conditional_Context is record
-      Starting_Line : Positive;
-      Cond          : Conditional;
-      Flag          : Flag_Type;
-      Excluding     : Boolean;
-   end record;
-
-   Conditional_Stack_Depth : constant := 3;
-
-   Conditional_Stack :
-     array (1 .. Conditional_Stack_Depth) of Conditional_Context;
-
-   Conditional_TOS : Natural := 0;
-   --  Pointer to the Top Of Stack for Conditional_Stack
 
    -----------
    -- Usage --
@@ -415,16 +363,6 @@ procedure Xgnatugn is
    -------------
 
    procedure Warning
-     (Input   : Input_File;
-      Message : String)
-   is
-   begin
-      if Warnings_Enabled then
-         Warning (Input, 0, Message);
-      end if;
-   end Warning;
-
-   procedure Warning
      (Input        : Input_File;
       At_Character : Natural;
       Message      : String)
@@ -487,8 +425,9 @@ procedure Xgnatugn is
                              Trim (Line (1 .. Split - 1), Both);
                   Target : constant String :=
                              Trim (Line (Split + 1 .. Line'Last), Both);
-                  Two_Spaces : constant Natural :=
-                                 Index (Source, "  ");
+
+                  Two_Spaces : constant Natural := Index (Source, "  ");
+
                   Non_Word_Character : constant Natural :=
                                          Index (Source,
                                                 Word_Characters or
@@ -524,7 +463,6 @@ procedure Xgnatugn is
                            declare
                               Prefix : String renames
                                          Source (Source'First .. J - 1);
-
                            begin
                               if not Is_Known_Word (Prefix) then
                                  Error (Dictionary_File,
@@ -678,7 +616,7 @@ procedure Xgnatugn is
                          (VMS_Second_Character + 1, VMS_Third_Character - 1));
                return;
             end;
-         end if;                        --  VMS_Alternative
+         end if;
 
          --  The Word case. Search for characters not in Word_Characters.
          --  We have found a word if the first non-word character is not
@@ -718,7 +656,7 @@ procedure Xgnatugn is
 
       procedure Rewrite_Word is
          First_Word : String
-           renames Line (Token.Span.First .. Token.Span.Last);
+                        renames Line (Token.Span.First .. Token.Span.Last);
 
       begin
          --  We do not perform any error checking below, so we can just skip
@@ -736,7 +674,7 @@ procedure Xgnatugn is
             --  longest possible sequence we can rewrite.
 
             declare
-               Seq : Token_Span := Token.Span;
+               Seq        : Token_Span := Token.Span;
                Lost_Space : Boolean := False;
 
             begin
@@ -746,23 +684,25 @@ procedure Xgnatugn is
                     and then Line (Token.Span.First .. Token.Span.Last) = " "
                   then
                      Next_Token;
+
                      if Token.Kind /= Word
                        or else not Is_Known_Word (Line (Seq.First
                                                         .. Token.Span.Last))
                      then
-                        --  When we reach this point, the following
-                        --  conditions are true:
-                        --
-                        --  Seq is a known word.
-                        --  The previous token was a space character.
-                        --  Seq extended to the current token is not a
-                        --  known word.
+                        --  When we reach this point, the following conditions
+                        --  are true:
+
+                        --    Seq is a known word
+
+                        --    The previous token was a space character
+
+                        --    Seq extended to the current token is not a
+                        --    known word.
 
                         Lost_Space := True;
                         exit;
 
                      else
-
                         --  Extend Seq to cover the current (known) word
 
                         Seq.Last := Token.Span.Last;
@@ -772,10 +712,12 @@ procedure Xgnatugn is
                   else
                      --  When we reach this point, the following conditions
                      --  are true:
-                     --
-                     --  Seq is a known word.
-                     --  The previous token was a word.
-                     --  The current token is not a space character.
+
+                     --    Seq is a known word
+
+                     --    The previous token was a word
+
+                     --    The current token is not a space character.
 
                      exit;
                   end if;
@@ -804,8 +746,8 @@ procedure Xgnatugn is
 
             Next_Token;
             if Token.Kind = Word
-              and then Is_Extension (Line (Token.Span.First
-                                           .. Token.Span.Last))
+              and then
+                Is_Extension (Line (Token.Span.First .. Token.Span.Last))
             then
                --  We have discovered a file extension. Convert the file
                --  name to upper case.
@@ -848,6 +790,7 @@ procedure Xgnatugn is
             --  Rewrite_Word would have handled it.
 
             Next_Token;
+
             if Token.Kind = Word
               and then Is_Extension (Line (Token.Span.First
                                            .. Token.Span.Last))
@@ -858,6 +801,7 @@ procedure Xgnatugn is
             else
                Append (Rewritten_Line, '.');
             end if;
+
          else
             Append (Rewritten_Line, Line (Token.Span.First
                                           .. Token.Span.Last));
@@ -887,17 +831,6 @@ procedure Xgnatugn is
                Maybe_Rewrite_Extension;
 
             when VMS_Alternative =>
-               if VMS_Context_Determined then
-                  if (not In_VMS_Section)
-                    or else
-                    Line (Token.VMS.First .. Token.VMS.Last) /=
-                    Line (Token.Non_VMS.First .. Token.Non_VMS.Last)
-                  then
-                     Warning (Source_File, Token.First,
-                              "VMS alternative already determined "
-                                & "by conditionals");
-                  end if;
-               end if;
                if Target = VMS then
                   Append (Rewritten_Line, Line (Token.VMS.First
                                                 .. Token.VMS.Last));
@@ -905,6 +838,7 @@ procedure Xgnatugn is
                   Append (Rewritten_Line, Line (Token.Non_VMS.First
                                                 .. Token.Non_VMS.Last));
                end if;
+
                Next_Token;
 
             when VMS_Error =>
@@ -921,155 +855,27 @@ procedure Xgnatugn is
    -------------------------
 
    procedure Process_Source_File is
-      Ifset       : constant String := "@ifset ";
-      Ifclear     : constant String := "@ifclear ";
-      Endsetclear : constant String := "@end ";
-      --  Strings to be recognized for conditional processing
-
    begin
       while not End_Of_File (Source_File.Data) loop
          declare
             Line      : constant String := Get_Line (Source_File'Access);
+
             Rewritten : constant String := Rewrite_Source_Line (Line);
             --  We unconditionally rewrite the line so that we can check the
             --  syntax of all lines, and not only those which are actually
             --  included in the output.
 
-            Have_Conditional : Boolean := False;
-            --  True if we have encountered a conditional preprocessing
-            --  directive.
-
-            Cond : Conditional;
-            --  The kind of the directive
-
-            Flag : Flag_Type;
-            --  Its flag
-
          begin
-            --  If the line starts with @ifset or @ifclear, we try to convert
-            --  the following flag to one of our flag types. If we fail,
-            --  Have_Conditional remains False.
-
-            if Line'Length >= Ifset'Length
-              and then Line (1 .. Ifset'Length) = Ifset
+            if First_Time
+              and then Line'Length > 3 and then Line (1 .. 3) = "@if"
             then
-               Cond := Set;
-
-               declare
-                  Arg : constant String :=
-                          Trim (Line (Ifset'Length + 1 .. Line'Last), Both);
-
-               begin
-                  Flag := Flag_Type'Value (Arg);
-                  Have_Conditional := True;
-
-                  case Flag is
-                     when Target_Type =>
-                        if Translate (Target_Type'Image (Flag),
-                                      Lower_Case_Map)
-                                                      /= Arg
-                        then
-                           Error (Source_File, "flag has to be lowercase");
-                        end if;
-
-                     when Edition_Type =>
-                        null;
-                  end case;
-               exception
-                  when Constraint_Error =>
-                     Error (Source_File, "unknown flag for '@ifset'");
-               end;
-
-            elsif Line'Length >= Ifclear'Length
-              and then Line (1 .. Ifclear'Length) = Ifclear
-            then
-               Cond := Clear;
-
-               declare
-                  Arg : constant String :=
-                          Trim (Line (Ifclear'Length + 1 .. Line'Last), Both);
-
-               begin
-                  Flag := Flag_Type'Value (Arg);
-                  Have_Conditional := True;
-
-                  case Flag is
-                     when Target_Type =>
-                        if Translate (Target_Type'Image (Flag),
-                                      Lower_Case_Map)
-                                                      /= Arg
-                        then
-                           Error (Source_File, "flag has to be lowercase");
-                        end if;
-
-                     when Edition_Type =>
-                        null;
-                  end case;
-               exception
-                  when Constraint_Error =>
-                     Error (Source_File, "unknown flag for '@ifclear'");
-               end;
+               Put_Line (Output_File, "@set " & Argument (1));
+               First_Time := False;
             end if;
 
-            if Have_Conditional and (Flag in Target_Type) then
-
-               --  We create a new conditional context and suppress the
-               --  directive in the output.
-
-               Push_Conditional (Cond, Flag);
-
-            elsif Line'Length >= Endsetclear'Length
-              and then Line (1 .. Endsetclear'Length) = Endsetclear
-              and then (Flag in Target_Type)
-            then
-               --  The '@end ifset'/'@end ifclear' case is handled here. We
-               --  have to pop the conditional context.
-
-               declare
-                  First, Last : Natural;
-
-               begin
-                  Find_Token (Source => Line (Endsetclear'Length + 1
-                                              .. Line'Length),
-                              Set    => Letter_Set,
-                              Test   => Inside,
-                              First  => First,
-                              Last   => Last);
-
-                  if Last = 0 then
-                     Error (Source_File, "'@end' without argument");
-                  else
-                     if Line (First .. Last) = "ifset" then
-                        Have_Conditional := True;
-                        Cond := Set;
-                     elsif Line (First .. Last) = "ifclear" then
-                        Have_Conditional := True;
-                        Cond := Clear;
-                     end if;
-
-                     if Have_Conditional then
-                        Pop_Conditional (Cond);
-                     end if;
-
-                     --  We fall through to the ordinary case for other @end
-                     --  directives.
-
-                  end if;               --  @end without argument
-               end;
-            end if;                     --  Have_Conditional
-
-            if (not Have_Conditional) or (Flag in Edition_Type) then
-
-               --  The ordinary case
-
-               if not Currently_Excluding then
-                  Put_Line (Output_File, Rewritten);
-               end if;
-            end if;
+            Put_Line (Output_File, Rewritten);
          end;
       end loop;
-
-      Check_No_Pending_Conditional;
    end Process_Source_File;
 
    ---------------------------
@@ -1079,8 +885,7 @@ procedure Xgnatugn is
    procedure Initialize_Extensions is
 
       procedure Add (Extension : String);
-      --  Adds an extension which is replaced with itself (in upper
-      --  case).
+      --  Adds an extension which is replaced with itself (in upper case)
 
       procedure Add (Extension, Replacement : String);
       --  Adds an extension with a custom replacement
@@ -1151,148 +956,6 @@ procedure Xgnatugn is
    begin
       return S (Get (Ug_Words, Word));
    end Get_Replacement_Word;
-
-   ----------------------
-   -- Push_Conditional --
-   ----------------------
-
-   procedure Push_Conditional (Cond : Conditional; Flag : Target_Type) is
-      Will_Exclude : Boolean;
-
-   begin
-      --  If we are already in an excluding context, inherit this property,
-      --  otherwise calculate it from scratch.
-
-      if Conditional_TOS > 0
-        and then Conditional_Stack (Conditional_TOS).Excluding
-      then
-         Will_Exclude := True;
-      else
-         case Cond is
-            when Set =>
-               Will_Exclude := Flag /= Target;
-            when Clear =>
-               Will_Exclude := Flag = Target;
-         end case;
-      end if;
-
-      --  Check if the current directive is pointless because of a previous,
-      --  enclosing directive.
-
-      for J in 1 .. Conditional_TOS loop
-         if Conditional_Stack (J).Flag = Flag then
-            Warning (Source_File, "directive without effect because of line"
-                     & Integer'Image (Conditional_Stack (J).Starting_Line));
-         end if;
-      end loop;
-
-      Conditional_TOS := Conditional_TOS + 1;
-      Conditional_Stack (Conditional_TOS) :=
-        (Starting_Line => Source_File.Line,
-         Cond          => Cond,
-         Flag          => Flag,
-         Excluding     => Will_Exclude);
-   end Push_Conditional;
-
-   ---------------------
-   -- Pop_Conditional --
-   ---------------------
-
-   procedure Pop_Conditional (Cond : Conditional) is
-   begin
-      if Conditional_TOS > 0 then
-         case Cond is
-            when Set =>
-               if Conditional_Stack (Conditional_TOS).Cond /= Set then
-                  Error (Source_File,
-                         "'@end ifset' does not match '@ifclear' at line"
-                         & Integer'Image (Conditional_Stack
-                                          (Conditional_TOS).Starting_Line));
-               end if;
-
-            when Clear =>
-               if Conditional_Stack (Conditional_TOS).Cond /= Clear then
-                  Error (Source_File,
-                         "'@end ifclear' does not match '@ifset' at line"
-                         & Integer'Image (Conditional_Stack
-                                          (Conditional_TOS).Starting_Line));
-               end if;
-         end case;
-
-         Conditional_TOS := Conditional_TOS - 1;
-
-      else
-         case Cond is
-            when Set =>
-               Error (Source_File,
-                      "'@end ifset' without corresponding '@ifset'");
-
-            when Clear =>
-               Error (Source_File,
-                      "'@end ifclear' without corresponding '@ifclear'");
-         end case;
-      end if;
-   end Pop_Conditional;
-
-   -------------------------
-   -- Currently_Excluding --
-   -------------------------
-
-   function Currently_Excluding return Boolean is
-   begin
-      return Conditional_TOS > 0
-        and then Conditional_Stack (Conditional_TOS).Excluding;
-   end Currently_Excluding;
-
-   ----------------------------
-   -- VMS_Context_Determined --
-   ----------------------------
-
-   function VMS_Context_Determined return Boolean is
-   begin
-      for J in 1 .. Conditional_TOS loop
-         if Conditional_Stack (J).Flag = VMS then
-            return True;
-         end if;
-      end loop;
-
-      return False;
-   end VMS_Context_Determined;
-
-   --------------------
-   -- In_VMS_Section --
-   --------------------
-
-   function In_VMS_Section return Boolean is
-   begin
-      for J in 1 .. Conditional_TOS loop
-         if Conditional_Stack (J).Flag = VMS then
-            return Conditional_Stack (J).Cond = Set;
-         end if;
-      end loop;
-
-      return False;
-   end In_VMS_Section;
-
-   ----------------------------------
-   -- Check_No_Pending_Conditional --
-   ----------------------------------
-
-   procedure Check_No_Pending_Conditional is
-   begin
-      for J in 1 .. Conditional_TOS loop
-         case Conditional_Stack (J).Cond is
-            when Set =>
-               Error (Source_File, "Missing '@end ifset' for '@ifset' at line"
-                      & Integer'Image (Conditional_Stack (J).Starting_Line));
-
-            when Clear =>
-               Error (Source_File,
-                      "Missing '@end ifclear' for '@ifclear' at line"
-                      & Integer'Image (Conditional_Stack (J).Starting_Line));
-         end case;
-      end loop;
-   end Check_No_Pending_Conditional;
 
 --  Start of processing for Xgnatugn
 

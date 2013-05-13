@@ -2298,8 +2298,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 		 is neither : nor >, the < is treated as a preprocessor
 		 token by itself".  */
 	      if (CPP_OPTION (pfile, cplusplus)
-		  && (CPP_OPTION (pfile, lang) == CLK_CXX11
-		      || CPP_OPTION (pfile, lang) == CLK_GNUCXX11)
+		  && CPP_OPTION (pfile, lang) != CLK_CXX98
+		  && CPP_OPTION (pfile, lang) != CLK_GNUCXX
 		  && buffer->cur[1] == ':'
 		  && buffer->cur[2] != ':' && buffer->cur[2] != '>')
 		break;

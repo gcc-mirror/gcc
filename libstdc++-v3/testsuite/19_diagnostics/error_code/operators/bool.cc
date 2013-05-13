@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
 // 2007-08-22 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2007-2013 Free Software Foundation, Inc.

@@ -1260,7 +1260,10 @@ cgraph_node_remove_callers (struct cgraph_node *node)
   node->callers = NULL;
 }
 
-/* Release memory used to represent body of function NODE.  */
+/* Release memory used to represent body of function NODE.
+   Use this only for functions that are released before being translated to
+   target code (i.e. RTL).  Functions that are compiled to RTL and beyond
+   are free'd in final.c via free_after_compilation().  */
 
 void
 cgraph_release_function_body (struct cgraph_node *node)
@@ -1285,6 +1288,7 @@ cgraph_release_function_body (struct cgraph_node *node)
 	  gcc_assert (dom_computed[0] == DOM_NONE);
 	  gcc_assert (dom_computed[1] == DOM_NONE);
 	  clear_edges ();
+	  cfun->cfg = NULL;
 	}
       if (cfun->value_histograms)
 	free_histograms ();
@@ -1405,7 +1409,14 @@ cgraph_remove_node (struct cgraph_node *node)
 void
 cgraph_mark_address_taken_node (struct cgraph_node *node)
 {
-  gcc_assert (!node->global.inlined_to);
+  /* Indirect inlining can figure out that all uses of the address are
+     inlined.  */
+  if (node->global.inlined_to)
+    {
+      gcc_assert (cfun->after_inlining);
+      gcc_assert (node->callers->indirect_inlining_edge);
+      return;
+    }
   /* FIXME: address_taken flag is used both as a shortcut for testing whether
      IPA_REF_ADDR reference exists (and thus it should be set on node
      representing alias we take address of) and as a test whether address
@@ -1794,6 +1805,8 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 
       node->symbol.externally_visible = false;
       node->local.local = true;
+      node->symbol.unique_name = (node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
+				  || node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
       node->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
     }

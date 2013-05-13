@@ -164,6 +164,8 @@ delete_insn (rtx insn)
     {
       /* If this insn has already been deleted, something is very wrong.  */
       gcc_assert (!INSN_DELETED_P (insn));
+      if (INSN_P (insn))
+	df_insn_delete (insn);
       remove_insn (insn);
       INSN_DELETED_P (insn) = 1;
     }
@@ -1362,6 +1364,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  int prob = INTVAL (XEXP (note, 0));
 
 	  b->probability = prob;
+          /* Update this to use GCOV_COMPUTE_SCALE.  */
 	  b->count = e->count * prob / REG_BR_PROB_BASE;
 	  e->probability -= e->probability;
 	  e->count -= b->count;
@@ -2488,7 +2491,7 @@ rtl_verify_flow_info (void)
 	      break;
 
 	    case CODE_LABEL:
-	      /* An addr_vec is placed outside any basic block.  */
+	      /* An ADDR_VEC is placed outside any basic block.  */
 	      if (NEXT_INSN (x)
 		  && JUMP_TABLE_DATA_P (NEXT_INSN (x)))
 		x = NEXT_INSN (x);
@@ -2675,6 +2678,7 @@ purge_dead_edges (basic_block bb)
 	  f = FALLTHRU_EDGE (bb);
 	  b->probability = INTVAL (XEXP (note, 0));
 	  f->probability = REG_BR_PROB_BASE - b->probability;
+          /* Update these to use GCOV_COMPUTE_SCALE.  */
 	  b->count = bb->count * b->probability / REG_BR_PROB_BASE;
 	  f->count = bb->count * f->probability / REG_BR_PROB_BASE;
 	}
@@ -3244,7 +3248,7 @@ fixup_reorder_chain (void)
 		{
 		  gcc_assert (!onlyjump_p (bb_end_insn)
 			      || returnjump_p (bb_end_insn));
-		  BB_FOOTER (bb) = emit_barrier_after (bb_end_insn);
+		  emit_barrier_after (bb_end_insn);
 		  continue;
 		}
 
@@ -3604,7 +3608,7 @@ cfg_layout_can_duplicate_bb_p (const_basic_block bb)
 rtx
 duplicate_insn_chain (rtx from, rtx to)
 {
-  rtx insn, last, copy;
+  rtx insn, next, last, copy;
 
   /* Avoid updating of boundaries of previous basic block.  The
      note will get removed from insn stream in fixup.  */
@@ -3624,30 +3628,26 @@ duplicate_insn_chain (rtx from, rtx to)
 	case INSN:
 	case CALL_INSN:
 	case JUMP_INSN:
-	  /* Avoid copying of dispatch tables.  We never duplicate
-	     tablejumps, so this can hit only in case the table got
-	     moved far from original jump.  */
-	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-	    {
-	      /* Avoid copying following barrier as well if any
-		 (and debug insns in between).  */
-	      rtx next;
-
-	      for (next = NEXT_INSN (insn);
-		   next != NEXT_INSN (to);
-		   next = NEXT_INSN (next))
-		if (!DEBUG_INSN_P (next))
-		  break;
-	      if (next != NEXT_INSN (to) && BARRIER_P (next))
-		insn = next;
-	      break;
-	    }
 	  copy = emit_copy_of_insn_after (insn, get_last_insn ());
 	  if (JUMP_P (insn) && JUMP_LABEL (insn) != NULL_RTX
 	      && ANY_RETURN_P (JUMP_LABEL (insn)))
 	    JUMP_LABEL (copy) = JUMP_LABEL (insn);
           maybe_copy_prologue_epilogue_insn (insn, copy);
+	  break;
+
+	case JUMP_TABLE_DATA:
+	  /* Avoid copying of dispatch tables.  We never duplicate
+	     tablejumps, so this can hit only in case the table got
+	     moved far from original jump.
+	     Avoid copying following barrier as well if any
+	     (and debug insns in between).  */
+	  for (next = NEXT_INSN (insn);
+	       next != NEXT_INSN (to);
+	       next = NEXT_INSN (next))
+	    if (!DEBUG_INSN_P (next))
+	      break;
+	  if (next != NEXT_INSN (to) && BARRIER_P (next))
+	    insn = next;
 	  break;
 
 	case CODE_LABEL:
@@ -4083,18 +4083,40 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (!optimize)
     emit_nop_for_unique_locus_between (a, b);
 
-  /* Possible line number notes should appear in between.  */
-  if (BB_HEADER (b))
+  /* Move things from b->footer after a->footer.  */
+  if (BB_FOOTER (b))
     {
-      rtx first = BB_END (a), last;
+      if (!BB_FOOTER (a))
+	BB_FOOTER (a) = BB_FOOTER (b);
+      else
+	{
+	  rtx last = BB_FOOTER (a);
 
-      last = emit_insn_after_noloc (BB_HEADER (b), BB_END (a), a);
-      /* The above might add a BARRIER as BB_END, but as barriers
-	 aren't valid parts of a bb, remove_insn doesn't update
-	 BB_END if it is a barrier.  So adjust BB_END here.  */
-      while (BB_END (a) != first && BARRIER_P (BB_END (a)))
-	BB_END (a) = PREV_INSN (BB_END (a));
-      delete_insn_chain (NEXT_INSN (first), last, false);
+	  while (NEXT_INSN (last))
+	    last = NEXT_INSN (last);
+	  NEXT_INSN (last) = BB_FOOTER (b);
+	  PREV_INSN (BB_FOOTER (b)) = last;
+	}
+      BB_FOOTER (b) = NULL;
+    }
+
+  /* Move things from b->header before a->footer.
+     Note that this may include dead tablejump data, but we don't clean
+     those up until we go out of cfglayout mode.  */
+   if (BB_HEADER (b))
+     {
+      if (! BB_FOOTER (a))
+	BB_FOOTER (a) = BB_HEADER (b);
+      else
+	{
+	  rtx last = BB_HEADER (b);
+ 
+	  while (NEXT_INSN (last))
+	    last = NEXT_INSN (last);
+	  NEXT_INSN (last) = BB_FOOTER (a);
+	  PREV_INSN (BB_FOOTER (a)) = last;
+	  BB_FOOTER (a) = BB_HEADER (b);
+	}
       BB_HEADER (b) = NULL;
     }
 
@@ -4120,27 +4142,10 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (!NOTE_INSN_BASIC_BLOCK_P (insn))
     insn = NEXT_INSN (insn);
   gcc_assert (NOTE_INSN_BASIC_BLOCK_P (insn));
-  BB_HEAD (b) = NULL;
+  BB_HEAD (b) = BB_END (b) = NULL;
   delete_insn (insn);
 
   df_bb_delete (b->index);
-
-  /* Possible tablejumps and barriers should appear after the block.  */
-  if (BB_FOOTER (b))
-    {
-      if (!BB_FOOTER (a))
-	BB_FOOTER (a) = BB_FOOTER (b);
-      else
-	{
-	  rtx last = BB_FOOTER (a);
-
-	  while (NEXT_INSN (last))
-	    last = NEXT_INSN (last);
-	  NEXT_INSN (last) = BB_FOOTER (b);
-	  PREV_INSN (BB_FOOTER (b)) = last;
-	}
-      BB_FOOTER (b) = NULL;
-    }
 
   /* If B was a forwarder block, propagate the locus on the edge.  */
   if (forwarder_p

@@ -216,7 +216,7 @@ for chapter in $chapters; do
    counti=0
    for i in `cat $dir/tests/$chapter/${chapter}.lst`; do 
       counti=`expr $counti + 1`
-      extraflags=""
+      extraflags="-gnat95"
       grep $i $testdir/overflow.lst > /dev/null 2>&1
       if [ $? -eq 0 ]; then
          extraflags="$extraflags -gnato"
@@ -228,10 +228,6 @@ for chapter in $chapters; do
       grep $i $testdir/stackcheck.lst > /dev/null 2>&1
       if [ $? -eq 0 ]; then
          extraflags="$extraflags -fstack-check"
-      fi
-      grep $i $testdir/ada95.lst > /dev/null 2>&1
-      if [ $? -eq 0 ]; then
-         extraflags="$extraflags -gnat95"
       fi
       test=$dir/tests/$chapter/$i
       mkdir $test && cd $test >> $dir/acats.log 2>&1

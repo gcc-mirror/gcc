@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,16 +218,27 @@ package body Bcheck is
                end if;
 
                if (not Tolerate_Consistency_Errors) and Verbose_Mode then
-                  Error_Msg_File_1 := Sdep.Table (D).Sfile;
+                  Error_Msg_File_1 := Source.Table (Src).Stamp_File;
+
+                  if Source.Table (Src).Source_Found then
+                     Error_Msg_File_1 :=
+                       Osint.Full_Source_Name (Error_Msg_File_1);
+                  else
+                     Error_Msg_File_1 :=
+                       Osint.Full_Lib_File_Name (Error_Msg_File_1);
+                  end if;
+
                   Error_Msg
-                    ("{ time stamp " & String (Source.Table (Src).Stamp));
+                    ("time stamp from { " & String (Source.Table (Src).Stamp));
 
                   Error_Msg_File_1 := Sdep.Table (D).Sfile;
-                  --  Something wrong here, should be different file ???
-
                   Error_Msg
                     (" conflicts with { timestamp " &
                      String (Sdep.Table (D).Stamp));
+
+                  Error_Msg_File_1 :=
+                    Osint.Full_Lib_File_Name (ALIs.Table (A).Afile);
+                  Error_Msg (" from {");
                end if;
 
                --  Exit from the loop through Sdep entries once we find one
@@ -923,9 +934,9 @@ package body Bcheck is
         and then ALIs.Table (ALIs.First).Allocator_In_Body
       then
          Cumulative_Restrictions.Violated
-           (No_Allocators_After_Elaboration) := True;
+           (No_Standard_Allocators_After_Elaboration) := True;
          ALIs.Table (ALIs.First).Restrictions.Violated
-           (No_Allocators_After_Elaboration) := True;
+           (No_Standard_Allocators_After_Elaboration) := True;
       end if;
 
       --  Loop through all restriction violations

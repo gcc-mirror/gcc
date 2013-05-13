@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-streamer.h"
 #include "lto-streamer.h"
 #include "tree-streamer.h"
+#include "value-prof.h"
 
 /* Output PHI function PHI to the main stream in OB.  */
 
@@ -59,6 +60,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   enum gimple_code code;
   enum LTO_tags tag;
   struct bitpack_d bp;
+  histogram_value hist;
 
   /* Emit identifying tag.  */
   code = gimple_code (stmt);
@@ -72,6 +74,8 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   if (is_gimple_assign (stmt))
     bp_pack_value (&bp, gimple_assign_nontemporal_move_p (stmt), 1);
   bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
+  hist = gimple_histogram_value (cfun, stmt);
+  bp_pack_value (&bp, hist != NULL, 1);
   bp_pack_var_len_unsigned (&bp, stmt->gsbase.subcode);
 
   /* Emit location information for the statement.  */
@@ -167,6 +171,8 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
     default:
       gcc_unreachable ();
     }
+  if (hist)
+    stream_out_histogram_value (ob, hist);
 }
 
 
@@ -183,7 +189,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 				: LTO_bb0);
 
   streamer_write_uhwi (ob, bb->index);
-  streamer_write_hwi (ob, bb->count);
+  streamer_write_gcov_count (ob, bb->count);
   streamer_write_hwi (ob, bb->frequency);
   streamer_write_hwi (ob, bb->flags);
 

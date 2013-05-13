@@ -595,9 +595,7 @@ try_forward_edges (int mode, basic_block b)
 	  /* We successfully forwarded the edge.  Now update profile
 	     data: for each edge we traversed in the chain, remove
 	     the original edge's execution count.  */
-	  edge_frequency = ((edge_probability * b->frequency
-			     + REG_BR_PROB_BASE / 2)
-			    / REG_BR_PROB_BASE);
+	  edge_frequency = apply_probability (b->frequency, edge_probability);
 
 	  do
 	    {
@@ -3057,7 +3055,7 @@ struct rtl_opt_pass pass_jump =
   0,					/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
-  TODO_ggc_collect,			/* todo_flags_start */
+  0,					/* todo_flags_start */
   TODO_verify_rtl_sharing,		/* todo_flags_finish */
  }
 };
@@ -3084,7 +3082,7 @@ struct rtl_opt_pass pass_jump2 =
   0,					/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
-  TODO_ggc_collect,			/* todo_flags_start */
+  0,					/* todo_flags_start */
   TODO_verify_rtl_sharing,		/* todo_flags_finish */
  }
 };

@@ -175,14 +175,12 @@ next_insn_no_annul (rtx insn)
 	  && NEXT_INSN (PREV_INSN (insn)) != insn)
 	{
 	  rtx next = NEXT_INSN (insn);
-	  enum rtx_code code = GET_CODE (next);
 
-	  while ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
+	  while ((NONJUMP_INSN_P (next) || JUMP_P (next) || CALL_P (next))
 		 && INSN_FROM_TARGET_P (next))
 	    {
 	      insn = next;
 	      next = NEXT_INSN (insn);
-	      code = GET_CODE (next);
 	    }
 	}
 
@@ -992,9 +990,10 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
 	  /* If this insn is a USE made by update_block, we care about the
 	     underlying insn.  */
-	  if (code == INSN && GET_CODE (PATTERN (insn)) == USE
+	  if (code == INSN
+	      && GET_CODE (PATTERN (insn)) == USE
 	      && INSN_P (XEXP (PATTERN (insn), 0)))
-	      real_insn = XEXP (PATTERN (insn), 0);
+	    real_insn = XEXP (PATTERN (insn), 0);
 
 	  if (CALL_P (real_insn))
 	    {

@@ -161,7 +161,7 @@ int test2_17()
 }
 
 one   sink_2_18(               A&);
-eight sink_2_18(const volatile A&&); // { dg-error "argument" }
+eight sink_2_18(const volatile A&&); // { dg-message "argument" }
 
 int test2_18()
 {
@@ -288,7 +288,7 @@ int test2_27()
 }
 
 two   sink_2_28(const          A&);
-eight sink_2_28(const volatile A&&); // { dg-error "argument" }
+eight sink_2_28(const volatile A&&); // { dg-message "argument" }
 
 int test2_28()
 {
@@ -362,7 +362,7 @@ int test2_37()
 }
 
 three sink_2_38(volatile       A&);
-eight sink_2_38(const volatile A&&); // { dg-error "argument" }
+eight sink_2_38(const volatile A&&); // { dg-message "argument" }
 
 int test2_38()
 {
@@ -468,8 +468,8 @@ int test2_57()
     return 0;
 }
 
-five  sink_2_58(               A&&); // { dg-error "argument" }
-eight sink_2_58(const volatile A&&); // { dg-error "argument" }
+five  sink_2_58(               A&&); // { dg-message "argument" }
+eight sink_2_58(const volatile A&&); // { dg-message "argument" }
 
 int test2_58()
 {
@@ -505,8 +505,8 @@ int test2_67()
     return 0;
 }
 
-six   sink_2_68(const          A&&); // { dg-error "argument" }
-eight sink_2_68(const volatile A&&); // { dg-error "argument" }
+six   sink_2_68(const          A&&); // { dg-message "argument" }
+eight sink_2_68(const volatile A&&); // { dg-message "argument" }
 
 int test2_68()
 {
@@ -520,8 +520,8 @@ int test2_68()
     sink_2_68(cva);		// { dg-error "lvalue" }
 }
 
-seven sink_2_78(volatile       A&&); // { dg-error "argument" }
-eight sink_2_78(const volatile A&&); // { dg-error "argument" }
+seven sink_2_78(volatile       A&&); // { dg-message "argument" }
+eight sink_2_78(const volatile A&&); // { dg-message "argument" }
 
 int test2_78()
 {

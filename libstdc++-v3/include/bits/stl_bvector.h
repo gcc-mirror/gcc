@@ -308,6 +308,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _Bit_const_iterator(const _Bit_iterator& __x)
     : _Bit_iterator_base(__x._M_p, __x._M_offset) { }
 
+    _Bit_iterator
+    _M_const_cast() const
+    { return _Bit_iterator(_M_p, _M_offset); }
+
     const_reference
     operator*() const
     { return _Bit_reference(_M_p, 1UL << _M_offset); }
@@ -898,21 +902,22 @@ template<typename _Alloc>
     { --this->_M_impl._M_finish; }
 
     iterator
+#if __cplusplus >= 201103L
+    erase(const_iterator __position)
+    { return _M_erase(__position._M_const_cast()); }
+#else
     erase(iterator __position)
-    {
-      if (__position + 1 != end())
-        std::copy(__position + 1, end(), __position);
-      --this->_M_impl._M_finish;
-      return __position;
-    }
+    { return _M_erase(__position); }
+#endif
 
     iterator
+#if __cplusplus >= 201103L
+    erase(const_iterator __first, const_iterator __last)
+    { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
+#else
     erase(iterator __first, iterator __last)
-    {
-      if (__first != __last)
-	_M_erase_at_end(std::copy(__last, end(), __first));
-      return __first;
-    }
+    { return _M_erase(__first, __last); }
+#endif
 
     void
     resize(size_type __new_size, bool __x = bool())
@@ -1124,6 +1129,12 @@ template<typename _Alloc>
     void
     _M_erase_at_end(iterator __pos)
     { this->_M_impl._M_finish = __pos; }
+
+    iterator
+    _M_erase(iterator __pos);
+
+    iterator
+    _M_erase(iterator __first, iterator __last);
   };
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

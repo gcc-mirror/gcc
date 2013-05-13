@@ -32,6 +32,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "pointer-set.h"
 #include "ipa-inline.h"
+#include "hash-table.h"
+#include "tree-inline.h"
+#include "profile.h"
+#include "params.h"
+#include "lto-streamer.h"
+#include "data-streamer.h"
 
 /* Look for all functions inlined to NODE and update their inlined_to pointers
    to INLINED_TO.  */
@@ -567,7 +573,7 @@ cgraph_comdat_can_be_unshared_p (struct cgraph_node *node)
 
 static bool
 cgraph_externally_visible_p (struct cgraph_node *node,
-			     bool whole_program, bool aliased)
+			     bool whole_program)
 {
   if (!node->local.finalized)
     return false;
@@ -575,11 +581,6 @@ cgraph_externally_visible_p (struct cgraph_node *node,
       && (!TREE_PUBLIC (node->symbol.decl)
 	  || DECL_EXTERNAL (node->symbol.decl)))
     return false;
-
-  /* Do not even try to be smart about aliased nodes.  Until we properly
-     represent everything by same body alias, these are just evil.  */
-  if (aliased)
-    return true;
 
   /* Do not try to localize built-in functions yet.  One of problems is that we
      end up mangling their asm for WHOPR that makes it impossible to call them
@@ -632,7 +633,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 /* Return true when variable VNODE should be considered externally visible.  */
 
 bool
-varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
+varpool_externally_visible_p (struct varpool_node *vnode)
 {
   /* Do not touch weakrefs; while they are not externally visible,
      dropping their DECL_EXTERNAL flags confuse most
@@ -645,11 +646,6 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 
   if (!DECL_COMDAT (vnode->symbol.decl) && !TREE_PUBLIC (vnode->symbol.decl))
     return false;
-
-  /* Do not even try to be smart about aliased nodes.  Until we properly
-     represent everything by same body alias, these are just evil.  */
-  if (aliased)
-    return true;
 
   /* If linker counts on us, we must preserve the function.  */
   if (symtab_used_from_object_file_p ((symtab_node) vnode))
@@ -727,42 +723,9 @@ function_and_variable_visibility (bool whole_program)
 {
   struct cgraph_node *node;
   struct varpool_node *vnode;
-  struct pointer_set_t *aliased_nodes = pointer_set_create ();
-  struct pointer_set_t *aliased_vnodes = pointer_set_create ();
-  unsigned i;
-  alias_pair *p;
 
-  /* Discover aliased nodes.  */
-  FOR_EACH_VEC_SAFE_ELT (alias_pairs, i, p)
-    {
-      if (dump_file)
-      fprintf (dump_file, "Alias %s->%s",
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p->decl)),
-	       IDENTIFIER_POINTER (p->target));
-		
-      if ((node = cgraph_node_for_asm (p->target)) != NULL
-	   && !DECL_EXTERNAL (node->symbol.decl))
-	{
-	  if (!node->analyzed)
-	    continue;
-	  cgraph_mark_force_output_node (node);
-	  pointer_set_insert (aliased_nodes, node);
-	  if (dump_file)
-	    fprintf (dump_file, "  node %s/%i",
-		     cgraph_node_name (node), node->uid);
-	}
-      else if ((vnode = varpool_node_for_asm (p->target)) != NULL
-	       && !DECL_EXTERNAL (vnode->symbol.decl))
-	{
-	  vnode->symbol.force_output = 1;
-	  pointer_set_insert (aliased_vnodes, vnode);
-	  if (dump_file)
-	    fprintf (dump_file, "  varpool node %s",
-		     varpool_node_name (vnode));
-	}
-      if (dump_file)
-	fprintf (dump_file, "\n");
-    }
+  /* All aliases should be procssed at this point.  */
+  gcc_checking_assert (!alias_pairs || !alias_pairs->length());
 
   FOR_EACH_FUNCTION (node)
     {
@@ -811,9 +774,7 @@ function_and_variable_visibility (bool whole_program)
 		  && !DECL_COMDAT (node->symbol.decl))
       	          || TREE_PUBLIC (node->symbol.decl)
 		  || DECL_EXTERNAL (node->symbol.decl));
-      if (cgraph_externally_visible_p (node, whole_program,
-				       pointer_set_contains (aliased_nodes,
-							     node)))
+      if (cgraph_externally_visible_p (node, whole_program))
         {
 	  gcc_assert (!node->global.inlined_to);
 	  node->symbol.externally_visible = true;
@@ -825,6 +786,9 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (whole_program || in_lto_p
 		      || !TREE_PUBLIC (node->symbol.decl));
+	  node->symbol.unique_name = ((node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
+				      || node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+				      && TREE_PUBLIC (node->symbol.decl));
 	  symtab_make_decl_local (node->symbol.decl);
 	  node->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	  if (node->symbol.same_comdat_group)
@@ -892,9 +856,7 @@ function_and_variable_visibility (bool whole_program)
     {
       if (!vnode->finalized)
         continue;
-      if (varpool_externally_visible_p
-	    (vnode, 
-	     pointer_set_contains (aliased_vnodes, vnode)))
+      if (varpool_externally_visible_p (vnode))
 	vnode->symbol.externally_visible = true;
       else
         vnode->symbol.externally_visible = false;
@@ -902,13 +864,14 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->symbol.decl));
 	  symtab_make_decl_local (vnode->symbol.decl);
+	  vnode->symbol.unique_name = ((vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
+				       || vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+				       && TREE_PUBLIC (vnode->symbol.decl));
 	  if (vnode->symbol.same_comdat_group)
 	    symtab_dissolve_same_comdat_group_list ((symtab_node) vnode);
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
     }
-  pointer_set_destroy (aliased_nodes);
-  pointer_set_destroy (aliased_vnodes);
 
   if (dump_file)
     {
@@ -957,8 +920,7 @@ struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_remove_functions | TODO_dump_symtab
-  | TODO_ggc_collect			/* todo_flags_finish */
+  TODO_remove_functions | TODO_dump_symtab /* todo_flags_finish */
  }
 };
 
@@ -987,7 +949,7 @@ struct simple_ipa_opt_pass pass_ipa_free_inline_summary =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect			/* todo_flags_finish */
+  0					/* todo_flags_finish */
  }
 };
 
@@ -1026,8 +988,7 @@ struct ipa_opt_pass_d pass_ipa_whole_program_visibility =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_remove_functions | TODO_dump_symtab
-  | TODO_ggc_collect			/* todo_flags_finish */
+  TODO_remove_functions | TODO_dump_symtab /* todo_flags_finish */
  },
  NULL,					/* generate_summary */
  NULL,					/* write_summary */
@@ -1040,6 +1001,201 @@ struct ipa_opt_pass_d pass_ipa_whole_program_visibility =
  NULL,					/* variable_transform */
 };
 
+/* Entry in the histogram.  */
+
+struct histogram_entry
+{
+  gcov_type count;
+  int time;
+  int size;
+};
+
+/* Histogram of profile values.
+   The histogram is represented as an ordered vector of entries allocated via
+   histogram_pool. During construction a separate hashtable is kept to lookup
+   duplicate entries.  */
+
+vec<histogram_entry *> histogram;
+static alloc_pool histogram_pool;
+
+/* Hashtable support for storing SSA names hashed by their SSA_NAME_VAR.  */
+
+struct histogram_hash : typed_noop_remove <histogram_entry>
+{
+  typedef histogram_entry value_type;
+  typedef histogram_entry compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline int equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+histogram_hash::hash (const histogram_entry *val)
+{
+  return val->count;
+}
+
+inline int
+histogram_hash::equal (const histogram_entry *val, const histogram_entry *val2)
+{
+  return val->count == val2->count;
+}
+
+/* Account TIME and SIZE executed COUNT times into HISTOGRAM.
+   HASHTABLE is the on-side hash kept to avoid duplicates.  */
+
+static void
+account_time_size (hash_table <histogram_hash> hashtable,
+		   vec<histogram_entry *> &histogram,
+		   gcov_type count, int time, int size)
+{
+  histogram_entry key = {count, 0, 0};
+  histogram_entry **val = hashtable.find_slot (&key, INSERT);
+
+  if (!*val)
+    {
+      *val = (histogram_entry *) pool_alloc (histogram_pool);
+      **val = key;
+      histogram.safe_push (*val);
+    }
+  (*val)->time += time;
+  (*val)->size += size;
+}
+
+int
+cmp_counts (const void *v1, const void *v2)
+{
+  const histogram_entry *h1 = *(const histogram_entry * const *)v1;
+  const histogram_entry *h2 = *(const histogram_entry * const *)v2;
+  if (h1->count < h2->count)
+    return 1;
+  if (h1->count > h2->count)
+    return -1;
+  return 0;
+}
+
+/* Dump HISTOGRAM to FILE.  */
+
+static void
+dump_histogram (FILE *file, vec<histogram_entry *> histogram)
+{
+  unsigned int i;
+  gcov_type overall_time = 0, cumulated_time = 0, cumulated_size = 0, overall_size = 0;
+  
+  fprintf (dump_file, "Histogram:\n");
+  for (i = 0; i < histogram.length (); i++)
+    {
+      overall_time += histogram[i]->count * histogram[i]->time;
+      overall_size += histogram[i]->size;
+    }
+  if (!overall_time)
+    overall_time = 1;
+  if (!overall_size)
+    overall_size = 1;
+  for (i = 0; i < histogram.length (); i++)
+    {
+      cumulated_time += histogram[i]->count * histogram[i]->time;
+      cumulated_size += histogram[i]->size;
+      fprintf (file, "  "HOST_WIDEST_INT_PRINT_DEC": time:%i (%2.2f) size:%i (%2.2f)\n",
+	       (HOST_WIDEST_INT) histogram[i]->count,
+	       histogram[i]->time,
+	       cumulated_time * 100.0 / overall_time,
+	       histogram[i]->size,
+	       cumulated_size * 100.0 / overall_size);
+   }
+}
+
+/* Collect histogram from CFG profiles.  */
+
+static void
+ipa_profile_generate_summary (void)
+{
+  struct cgraph_node *node;
+  gimple_stmt_iterator gsi;
+  hash_table <histogram_hash> hashtable;
+  basic_block bb;
+
+  hashtable.create (10);
+  histogram_pool = create_alloc_pool ("IPA histogram", sizeof (struct histogram_entry),
+				      10);
+  
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->symbol.decl))
+      {
+	int time = 0;
+	int size = 0;
+        for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    time += estimate_num_insns (gsi_stmt (gsi), &eni_time_weights);
+	    size += estimate_num_insns (gsi_stmt (gsi), &eni_size_weights);
+	  }
+	account_time_size (hashtable, histogram, bb->count, time, size);
+      }
+  hashtable.dispose ();
+  histogram.qsort (cmp_counts);
+}
+
+/* Serialize the ipa info for lto.  */
+
+static void
+ipa_profile_write_summary (void)
+{
+  struct lto_simple_output_block *ob
+    = lto_create_simple_output_block (LTO_section_ipa_profile);
+  unsigned int i;
+
+  streamer_write_uhwi_stream (ob->main_stream, histogram.length());
+  for (i = 0; i < histogram.length (); i++)
+    {
+      streamer_write_gcov_count_stream (ob->main_stream, histogram[i]->count);
+      streamer_write_uhwi_stream (ob->main_stream, histogram[i]->time);
+      streamer_write_uhwi_stream (ob->main_stream, histogram[i]->size);
+    }
+  lto_destroy_simple_output_block (ob);
+}
+
+/* Deserialize the ipa info for lto.  */
+
+static void
+ipa_profile_read_summary (void)
+{
+  struct lto_file_decl_data ** file_data_vec
+    = lto_get_file_decl_data ();
+  struct lto_file_decl_data * file_data;
+  hash_table <histogram_hash> hashtable;
+  int j = 0;
+
+  hashtable.create (10);
+  histogram_pool = create_alloc_pool ("IPA histogram", sizeof (struct histogram_entry),
+				      10);
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      const char *data;
+      size_t len;
+      struct lto_input_block *ib
+	= lto_create_simple_input_block (file_data,
+					 LTO_section_ipa_profile,
+					 &data, &len);
+      if (ib)
+	{
+          unsigned int num = streamer_read_uhwi (ib);
+	  unsigned int n;
+	  for (n = 0; n < num; n++)
+	    {
+	      gcov_type count = streamer_read_gcov_count (ib);
+	      int time = streamer_read_uhwi (ib);
+	      int size = streamer_read_uhwi (ib);
+	      account_time_size (hashtable, histogram,
+				 count, time, size);
+	    }
+	  lto_destroy_simple_input_block (file_data,
+					  LTO_section_ipa_profile,
+					  ib, data, len);
+	}
+    }
+  hashtable.dispose ();
+  histogram.qsort (cmp_counts);
+}
 
 /* Simple ipa profile pass propagating frequencies across the callgraph.  */
 
@@ -1051,6 +1207,75 @@ ipa_profile (void)
   int order_pos;
   bool something_changed = false;
   int i;
+  gcov_type overall_time = 0, cutoff = 0, cumulated = 0, overall_size = 0;
+
+  if (dump_file)
+    dump_histogram (dump_file, histogram);
+  for (i = 0; i < (int)histogram.length (); i++)
+    {
+      overall_time += histogram[i]->count * histogram[i]->time;
+      overall_size += histogram[i]->size;
+    }
+  if (overall_time)
+    {
+      gcov_type threshold;
+
+      gcc_assert (overall_size);
+      if (dump_file)
+	{
+	  gcov_type min, cumulated_time = 0, cumulated_size = 0;
+
+	  fprintf (dump_file, "Overall time: "HOST_WIDEST_INT_PRINT_DEC"\n", 
+		   (HOST_WIDEST_INT)overall_time);
+	  min = get_hot_bb_threshold ();
+          for (i = 0; i < (int)histogram.length () && histogram[i]->count >= min;
+	       i++)
+	    {
+	      cumulated_time += histogram[i]->count * histogram[i]->time;
+	      cumulated_size += histogram[i]->size;
+	    }
+	  fprintf (dump_file, "GCOV min count: "HOST_WIDEST_INT_PRINT_DEC
+		   " Time:%3.2f%% Size:%3.2f%%\n", 
+		   (HOST_WIDEST_INT)min,
+		   cumulated_time * 100.0 / overall_time,
+		   cumulated_size * 100.0 / overall_size);
+	}
+      cutoff = (overall_time * PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE) + 500) / 1000;
+      threshold = 0;
+      for (i = 0; cumulated < cutoff; i++)
+	{
+	  cumulated += histogram[i]->count * histogram[i]->time;
+          threshold = histogram[i]->count;
+	}
+      if (!threshold)
+	threshold = 1;
+      if (dump_file)
+	{
+	  gcov_type cumulated_time = 0, cumulated_size = 0;
+
+          for (i = 0;
+	       i < (int)histogram.length () && histogram[i]->count >= threshold;
+	       i++)
+	    {
+	      cumulated_time += histogram[i]->count * histogram[i]->time;
+	      cumulated_size += histogram[i]->size;
+	    }
+	  fprintf (dump_file, "Determined min count: "HOST_WIDEST_INT_PRINT_DEC
+		   " Time:%3.2f%% Size:%3.2f%%\n", 
+		   (HOST_WIDEST_INT)threshold,
+		   cumulated_time * 100.0 / overall_time,
+		   cumulated_size * 100.0 / overall_size);
+	}
+      if (threshold > get_hot_bb_threshold ()
+	  || in_lto_p)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Threshold updated.\n");
+          set_hot_bb_threshold (threshold);
+	}
+    }
+  histogram.release();
+  free_alloc_pool (histogram_pool);
 
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)
@@ -1112,9 +1337,9 @@ struct ipa_opt_pass_d pass_ipa_profile =
   0,					/* todo_flags_start */
   0                                     /* todo_flags_finish */
  },
- NULL,				        /* generate_summary */
- NULL,					/* write_summary */
- NULL,					/* read_summary */
+ ipa_profile_generate_summary,	        /* generate_summary */
+ ipa_profile_write_summary,		/* write_summary */
+ ipa_profile_read_summary,		/* read_summary */
  NULL,					/* write_optimization_summary */
  NULL,					/* read_optimization_summary */
  NULL,					/* stmt_fixup */

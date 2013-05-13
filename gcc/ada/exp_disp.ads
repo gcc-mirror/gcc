@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -222,12 +222,10 @@ package Exp_Disp is
    --  Ada 2005 (AI-251): Displace all the actuals corresponding to class-wide
    --  interfaces to reference the interface tag of the actual object
 
-   procedure Expand_Interface_Conversion
-     (N         : Node_Id;
-      Is_Static : Boolean := True);
-   --  Ada 2005 (AI-251): N is a type-conversion node. Reference the base of
-   --  the object to give access to the interface tag associated with the
-   --  secondary dispatch table.
+   procedure Expand_Interface_Conversion (N : Node_Id);
+   --  Ada 2005 (AI-251): N is a type-conversion node. Displace the pointer
+   --  to the object to give access to the interface tag associated with the
+   --  dispatch table of the target type.
 
    procedure Expand_Interface_Thunk
      (Prim       : Node_Id;

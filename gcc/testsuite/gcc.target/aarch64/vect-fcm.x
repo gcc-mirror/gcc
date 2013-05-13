@@ -40,6 +40,15 @@ foobar (FTYPE *in1, FTYPE *in2, FTYPE *output)
     output[i] = (in1[i] OP 0.0) ? 4.0 : 2.0;
 }
 
+void
+foobarbar (FTYPE *in1, FTYPE *in2, FTYPE *output)
+{
+  int i = 0;
+  /* Vectorizable.  */
+  for (i = 0; i < N; i++)
+    output[i] = (in1[i] INV_OP 0.0) ? 4.0 : 2.0;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -50,6 +59,11 @@ main (int argc, char **argv)
   bar (input1, input2, out2);
   for (i = 0; i < N; i++)
     if (out1[i] != out2[i])
+      abort ();
+  foobar (input1, input2, out1);
+  foobarbar (input1, input2, out2);
+  for (i = 0; i < N; i++)
+    if (out1[i] == out2[i])
       abort ();
   return 0;
 }

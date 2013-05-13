@@ -3887,8 +3887,7 @@ gen_one_bundle (rtx slot[3])
       rtx t = NEXT_INSN (slot[0]);
       while (t != slot[1])
 	{
-	  if (GET_CODE (t) != NOTE
-	      || NOTE_KIND (t) != NOTE_INSN_DELETED)
+	  if (! NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_DELETED)
 	    return false;
 	  t = NEXT_INSN (t);
 	}
@@ -3898,8 +3897,7 @@ gen_one_bundle (rtx slot[3])
       rtx t = NEXT_INSN (slot[1]);
       while (t != slot[2])
 	{
-	  if (GET_CODE (t) != NOTE
-	      || NOTE_KIND (t) != NOTE_INSN_DELETED)
+	  if (! NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_DELETED)
 	    return false;
 	  t = NEXT_INSN (t);
 	}
@@ -4086,12 +4084,15 @@ workaround_rts_anomaly (void)
       if (NOTE_P (insn) || LABEL_P (insn))
 	continue;
 
+      if (JUMP_TABLE_DATA_P (insn))
+	continue;
+
       if (first_insn == NULL_RTX)
 	first_insn = insn;
       pat = PATTERN (insn);
       if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-	  || GET_CODE (pat) == ASM_INPUT || GET_CODE (pat) == ADDR_VEC
-	  || GET_CODE (pat) == ADDR_DIFF_VEC || asm_noperands (pat) >= 0)
+	  || GET_CODE (pat) == ASM_INPUT
+	  || asm_noperands (pat) >= 0)
 	continue;
 
       if (CALL_P (insn))
@@ -4279,6 +4280,8 @@ workaround_speculation (void)
       
       if (NOTE_P (insn) || BARRIER_P (insn))
 	continue;
+      if (JUMP_TABLE_DATA_P (insn))
+	continue;
 
       if (LABEL_P (insn))
 	{
@@ -4287,8 +4290,7 @@ workaround_speculation (void)
 	}
 
       pat = PATTERN (insn);
-      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-	  || GET_CODE (pat) == ADDR_VEC || GET_CODE (pat) == ADDR_DIFF_VEC)
+      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	continue;
       
       if (GET_CODE (pat) == ASM_INPUT || asm_noperands (pat) >= 0)
@@ -4436,10 +4438,13 @@ workaround_speculation (void)
 	      if (NOTE_P (target) || BARRIER_P (target) || LABEL_P (target))
 		continue;
 
+	      if (JUMP_TABLE_DATA_P (target))
+		continue;
+
 	      pat = PATTERN (target);
 	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-		  || GET_CODE (pat) == ASM_INPUT || GET_CODE (pat) == ADDR_VEC
-		  || GET_CODE (pat) == ADDR_DIFF_VEC || asm_noperands (pat) >= 0)
+		  || GET_CODE (pat) == ASM_INPUT
+		  || asm_noperands (pat) >= 0)
 		continue;
 
 	      if (NONDEBUG_INSN_P (target))
@@ -4512,11 +4517,13 @@ add_sched_insns_for_speculation (void)
 
       if (NOTE_P (insn) || BARRIER_P (insn) || LABEL_P (insn))
 	continue;
+      if (JUMP_TABLE_DATA_P (insn))
+	continue;
 
       pat = PATTERN (insn);
       if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-	  || GET_CODE (pat) == ASM_INPUT || GET_CODE (pat) == ADDR_VEC
-	  || GET_CODE (pat) == ADDR_DIFF_VEC || asm_noperands (pat) >= 0)
+	  || GET_CODE (pat) == ASM_INPUT
+	  || asm_noperands (pat) >= 0)
 	continue;
 
       if (JUMP_P (insn))

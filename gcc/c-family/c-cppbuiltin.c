@@ -888,6 +888,8 @@ c_cpp_builtins (cpp_reader *pfile)
   /* Make the choice of the stack protector runtime visible to source code.
      The macro names and values here were chosen for compatibility with an
      earlier implementation, i.e. ProPolice.  */
+  if (flag_stack_protect == 3)
+    cpp_define (pfile, "__SSP_STRONG__=3");
   if (flag_stack_protect == 2)
     cpp_define (pfile, "__SSP_ALL__=2");
   else if (flag_stack_protect == 1)

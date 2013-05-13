@@ -41,6 +41,6 @@ C
 ! we want to check that predictive commoning did something on the
 ! vectorized loop, which means we have to have exactly 13 vector
 ! additions.
-! { dg-final { scan-tree-dump-times "vect_var\[^\\n\]*\\+ " 13 "optimized" } }
+! { dg-final { scan-tree-dump-times "vect_\[^\\n\]*\\+ " 13 "optimized" } }
 ! { dg-final { cleanup-tree-dump "vect" } }
 ! { dg-final { cleanup-tree-dump "optimized" } }

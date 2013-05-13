@@ -48,9 +48,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "tree-pass.h"
 #include "streamer-hooks.h"
+#include "cfgloop.h"
+
+
+struct freeing_string_slot_hasher : string_slot_hasher
+{
+  static inline void remove (value_type *);
+};
+
+inline void
+freeing_string_slot_hasher::remove (value_type *v)
+{
+  free (v);
+}
 
 /* The table to hold the file names.  */
-static htab_t file_name_hash_table;
+static hash_table <freeing_string_slot_hasher> file_name_hash_table;
 
 
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
@@ -94,14 +107,14 @@ lto_input_data_block (struct lto_input_block *ib, void *addr, size_t length)
 static const char *
 canon_file_name (const char *string)
 {
-  void **slot;
+  string_slot **slot;
   struct string_slot s_slot;
   size_t len = strlen (string);
 
   s_slot.s = string;
   s_slot.len = len;
 
-  slot = htab_find_slot (file_name_hash_table, &s_slot, INSERT);
+  slot = file_name_hash_table.find_slot (&s_slot, INSERT);
   if (*slot == NULL)
     {
       char *saved_string;
@@ -117,7 +130,7 @@ canon_file_name (const char *string)
     }
   else
     {
-      struct string_slot *old_slot = (struct string_slot *) *slot;
+      struct string_slot *old_slot = *slot;
       return old_slot->s;
     }
 }
@@ -622,8 +635,8 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 
 	  dest_index = streamer_read_uhwi (ib);
 	  probability = (int) streamer_read_hwi (ib);
-	  count = ((gcov_type) streamer_read_hwi (ib) * count_materialization_scale
-		   + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
+	  count = apply_scale ((gcov_type) streamer_read_gcov_count (ib),
+                               count_materialization_scale);
 	  edge_flags = streamer_read_uhwi (ib);
 
 	  dest = BASIC_BLOCK_FOR_FUNCTION (fn, dest_index);
@@ -649,6 +662,58 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
       p_bb = bb;
       index = streamer_read_hwi (ib);
     }
+
+  /* ???  The cfgloop interface is tied to cfun.  */
+  gcc_assert (cfun == fn);
+
+  /* Input the loop tree.  */
+  unsigned n_loops = streamer_read_uhwi (ib);
+  if (n_loops == 0)
+    return;
+
+  struct loops *loops = ggc_alloc_cleared_loops ();
+  init_loops_structure (fn, loops, n_loops);
+  set_loops_for_fn (fn, loops);
+
+  /* Input each loop and associate it with its loop header so
+     flow_loops_find can rebuild the loop tree.  */
+  for (unsigned i = 1; i < n_loops; ++i)
+    {
+      int header_index = streamer_read_hwi (ib);
+      if (header_index == -1)
+	{
+	  loops->larray->quick_push (NULL);
+	  continue;
+	}
+
+      struct loop *loop = alloc_loop ();
+      loop->header = BASIC_BLOCK_FOR_FUNCTION (fn, header_index);
+      loop->header->loop_father = loop;
+
+      /* Read everything copy_loop_info copies.  */
+      loop->estimate_state = streamer_read_enum (ib, loop_estimation, EST_LAST);
+      loop->any_upper_bound = streamer_read_hwi (ib);
+      if (loop->any_upper_bound)
+	{
+	  loop->nb_iterations_upper_bound.low = streamer_read_uhwi (ib);
+	  loop->nb_iterations_upper_bound.high = streamer_read_hwi (ib);
+	}
+      loop->any_estimate = streamer_read_hwi (ib);
+      if (loop->any_estimate)
+	{
+	  loop->nb_iterations_estimate.low = streamer_read_uhwi (ib);
+	  loop->nb_iterations_estimate.high = streamer_read_hwi (ib);
+	}
+
+      place_new_loop (fn, loop);
+
+      /* flow_loops_find doesn't like loops not in the tree, hook them
+         all as siblings of the tree root temporarily.  */
+      flow_loop_tree_node_add (loops->tree_root, loop);
+    }
+
+  /* Rebuild the loop tree.  */
+  flow_loops_find (loops);
 }
 
 
@@ -1137,8 +1202,7 @@ void
 lto_reader_init (void)
 {
   lto_streamer_init ();
-  file_name_hash_table = htab_create (37, hash_string_slot_node,
-				      eq_string_slot_node, free);
+  file_name_hash_table.create (37);
 }
 
 

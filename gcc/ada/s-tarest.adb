@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1999-2012, Free Software Foundation, Inc.          --
+--         Copyright (C) 1999-2013, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,49 +268,45 @@ package body System.Tasking.Restricted.Stages is
             Save_Occurrence (EO, E);
       end;
 
-      --  Look for a fall-back handler. It can be either in the task itself
-      --  or in the environment task. Note that this code is always executed
-      --  by a task whose master is the environment task. The task termination
-      --  code for the environment task is executed by
-      --  SSL.Task_Termination_Handler.
+      --  Look for a fall-back handler
 
       --  This package is part of the restricted run time which supports
       --  neither task hierarchies (No_Task_Hierarchy) nor specific task
       --  termination handlers (No_Specific_Termination_Handlers).
 
-      --  There is no need for explicit protection against race conditions
-      --  for Self_ID.Common.Fall_Back_Handler because this procedure can
-      --  only be executed by Self, and the Fall_Back_Handler can only be
-      --  modified by Self.
+      --  As specified in ARM C.7.3 par. 9/2, "the fall-back handler applies
+      --  only to the dependent tasks of the task". Hence, if the terminating
+      --  tasks (Self_ID) had a fall-back handler, it would not apply to
+      --  itself. This code is always executed by a task whose master is the
+      --  environment task (the task termination code for the environment task
+      --  is executed by SSL.Task_Termination_Handler), so the fall-back
+      --  handler to execute for this task can only be defined by its parent
+      --  (there is no grandparent).
 
-      if Self_ID.Common.Fall_Back_Handler /= null then
-         Self_ID.Common.Fall_Back_Handler (Cause, Self_ID, EO);
-      else
-         declare
-            TH : Termination_Handler := null;
+      declare
+         TH : Termination_Handler := null;
 
-         begin
-            if Single_Lock then
-               Lock_RTS;
-            end if;
+      begin
+         if Single_Lock then
+            Lock_RTS;
+         end if;
 
-            Write_Lock (Self_ID.Common.Parent);
+         Write_Lock (Self_ID.Common.Parent);
 
-            TH := Self_ID.Common.Parent.Common.Fall_Back_Handler;
+         TH := Self_ID.Common.Parent.Common.Fall_Back_Handler;
 
-            Unlock (Self_ID.Common.Parent);
+         Unlock (Self_ID.Common.Parent);
 
-            if Single_Lock then
-               Unlock_RTS;
-            end if;
+         if Single_Lock then
+            Unlock_RTS;
+         end if;
 
-            --  Execute the task termination handler if we found it
+         --  Execute the task termination handler if we found it
 
-            if TH /= null then
-               TH.all (Cause, Self_ID, EO);
-            end if;
-         end;
-      end if;
+         if TH /= null then
+            TH.all (Cause, Self_ID, EO);
+         end if;
+      end;
 
       Terminate_Task (Self_ID);
    end Task_Wrapper;

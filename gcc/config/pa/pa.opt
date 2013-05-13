@@ -38,8 +38,8 @@ Target RejectNegative
 Generate PA2.0 code (requires binutils 2.10 or later)
 
 mbig-switch
-Target Report Mask(BIG_SWITCH)
-Generate code for huge switch statements
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 mdisable-fpregs
 Target Report Mask(DISABLE_FPREGS)

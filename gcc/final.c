@@ -391,18 +391,8 @@ get_attr_length_1 (rtx insn, int (*fallback_fn) (rtx))
 	return 0;
 
       case CALL_INSN:
-	length = fallback_fn (insn);
-	break;
-
       case JUMP_INSN:
-	body = PATTERN (insn);
-	if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
-	  {
-	    /* Alignment is machine-dependent and should be handled by
-	       ADDR_VEC_ALIGN.  */
-	  }
-	else
-	  length = fallback_fn (insn);
+	length = fallback_fn (insn);
 	break;
 
       case INSN:
@@ -821,8 +811,7 @@ struct rtl_opt_pass pass_compute_alignments =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing
-  | TODO_ggc_collect                    /* todo_flags_finish */
+  TODO_verify_rtl_sharing               /* todo_flags_finish */
  }
 };
 
@@ -1020,7 +1009,7 @@ shorten_branches (rtx first)
 	  int min_align;
 	  addr_diff_vec_flags flags;
 
-	  if (!JUMP_P (insn)
+	  if (! JUMP_TABLE_DATA_P (insn)
 	      || GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
 	    continue;
 	  pat = PATTERN (insn);
@@ -1094,7 +1083,7 @@ shorten_branches (rtx first)
 	continue;
 
       body = PATTERN (insn);
-      if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
+      if (JUMP_TABLE_DATA_P (insn))
 	{
 	  /* This only takes room if read-only data goes into the text
 	     section.  */
@@ -1230,7 +1219,8 @@ shorten_branches (rtx first)
 	  INSN_ADDRESSES (uid) = insn_current_address;
 
 #ifdef CASE_VECTOR_SHORTEN_MODE
-	  if (optimize && JUMP_P (insn)
+	  if (optimize
+	      && JUMP_TABLE_DATA_P (insn)
 	      && GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    {
 	      rtx body = PATTERN (insn);
@@ -2404,7 +2394,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	/* Detect insns that are really jump-tables
 	   and output them as such.  */
 
-	if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
+        if (JUMP_TABLE_DATA_P (insn))
 	  {
 #if !(defined(ASM_OUTPUT_ADDR_VEC) || defined(ASM_OUTPUT_ADDR_DIFF_VEC))
 	    int vlen, idx;
@@ -3440,8 +3430,21 @@ do_assembler_dialects (const char *p, int *dialect)
            DIALECT_NUMBER of strings ending with '|'.  */
         for (i = 0; i < dialect_number; i++)
           {
-            while (*p && *p != '}' && *p++ != '|')
-	      ;
+            while (*p && *p != '}')
+	      {
+		if (*p == '|')
+		  {
+		    p++;
+		    break;
+		  }
+
+		/* Skip over any character after a percent sign.  */
+		if (*p == '%')
+		  p++;
+		if (*p)
+		  p++;
+	      }
+
             if (*p == '}')
 	      break;
           }
@@ -3462,8 +3465,19 @@ do_assembler_dialects (const char *p, int *dialect)
 		  output_operand_lossage ("unterminated assembly dialect alternative");
 		  break;
 		}
+
+	      /* Skip over any character after a percent sign.  */
+	      if (*p == '%' && p[1])
+		{
+		  p += 2;
+		  continue;
+		}
+
+	      if (*p++ == '}')
+		break;
             }
-          while (*p++ != '}');
+          while (1);
+
           *dialect = 0;
         }
       else
@@ -3556,11 +3570,17 @@ output_asm_insn (const char *templ, rtx *operands)
 #endif
 
       case '%':
-	/* %% outputs a single %.  */
-	if (*p == '%')
+	/* %% outputs a single %.  %{, %} and %| print {, } and | respectively
+	   if ASSEMBLER_DIALECT defined and these characters have a special
+	   meaning as dialect delimiters.*/
+	if (*p == '%'
+#ifdef ASSEMBLER_DIALECT
+	    || *p == '{' || *p == '}' || *p == '|'
+#endif
+	    )
 	  {
+	    putc (*p, asm_out_file);
 	    p++;
-	    putc (c, asm_out_file);
 	  }
 	/* %= outputs a number which is unique to each insn in the entire
 	   compilation.  This is useful for making local labels that are
@@ -4405,7 +4425,7 @@ struct rtl_opt_pass pass_final =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect                      /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 

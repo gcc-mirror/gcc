@@ -16,5 +16,7 @@
 /* { dg-final { scan-assembler "uminv" } } */
 /* { dg-final { scan-assembler "smaxv" } } */
 /* { dg-final { scan-assembler "sminv" } } */
+/* { dg-final { scan-assembler "sabd" } } */
+/* { dg-final { scan-assembler "saba" } } */
 /* { dg-final { scan-assembler-times "addv" 2} } */
 /* { dg-final { scan-assembler-times "addp" 2} } */

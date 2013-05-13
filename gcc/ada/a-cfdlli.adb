@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,29 +26,8 @@
 ------------------------------------------------------------------------------
 
 with System;  use type System.Address;
-with Ada.Finalization;
 
 package body Ada.Containers.Formal_Doubly_Linked_Lists is
-
-   type Iterator is new Ada.Finalization.Limited_Controlled and
-     List_Iterator_Interfaces.Reversible_Iterator with
-   record
-      Container : List_Access;
-      Node      : Count_Type;
-   end record;
-
-   overriding procedure Finalize (Object : in out Iterator);
-
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Last  (Object : Iterator) return Cursor;
-
-   overriding function Next
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
-
-   overriding function Previous
-     (Object   : Iterator;
-      Position : Cursor) return Cursor;
 
    -----------------------
    -- Local Subprograms --
@@ -197,8 +176,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       if Container.Length = 0 then
          pragma Assert (Container.First = 0);
          pragma Assert (Container.Last = 0);
-         pragma Assert (Container.Busy = 0);
-         pragma Assert (Container.Lock = 0);
          return;
       end if;
 
@@ -206,11 +183,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       pragma Assert (Container.Last >= 1);
       pragma Assert (N (Container.First).Prev = 0);
       pragma Assert (N (Container.Last).Next = 0);
-
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
 
       while Container.Length > 1 loop
          X := Container.First;
@@ -318,11 +290,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          return;
       end if;
 
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
-
       for Index in 1 .. Count loop
          pragma Assert (Container.Length >= 2);
 
@@ -371,11 +338,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          return;
       end if;
 
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
-
       for J in 1 .. Count loop
          X := Container.First;
          pragma Assert (N (N (X).Next).Prev = Container.First);
@@ -410,11 +372,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          return;
       end if;
 
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
-
       for J in 1 .. Count loop
          X := Container.Last;
          pragma Assert (N (N (X).Prev).Next = Container.Last);
@@ -444,21 +401,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
       return Container.Nodes (Position.Node).Element;
    end Element;
-
-   --------------
-   -- Finalize --
-   --------------
-
-   procedure Finalize (Object : in out Iterator) is
-   begin
-      if Object.Container /= null then
-         declare
-            B : Natural renames Object.Container.all.Busy;
-         begin
-            B := B - 1;
-         end;
-      end if;
-   end Finalize;
 
    ----------
    -- Find --
@@ -509,28 +451,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       end if;
 
       return (Node => Container.First);
-   end First;
-
-   function First (Object : Iterator) return Cursor is
-   begin
-      --  The value of the iterator object's Node component influences the
-      --  behavior of the First (and Last) selector function.
-
-      --  When the Node component is null, this means the iterator object was
-      --  constructed without a start expression, in which case the (forward)
-      --  iteration starts from the (logical) beginning of the entire sequence
-      --  of items (corresponding to Container.First, for a forward iterator).
-
-      --  Otherwise, this is iteration over a partial sequence of items. When
-      --  the Node component is non-null, the iterator object was constructed
-      --  with a start expression, that specifies the position from which the
-      --  (forward) partial iteration begins.
-
-      if Object.Node = 0 then
-         return First (Object.Container.all);
-      else
-         return (Node => Object.Node);
-      end if;
    end First;
 
    -------------------
@@ -632,16 +552,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       begin
          if Target'Address = Source'Address then
             return;
-         end if;
-
-         if Target.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors of Target (list is busy)";
-         end if;
-
-         if Source.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors of Source (list is busy)";
          end if;
 
          LI := First (Target);
@@ -760,11 +670,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          pragma Assert (N (Container.First).Prev = 0);
          pragma Assert (N (Container.Last).Next = 0);
 
-         if Container.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with elements (list is busy)";
-         end if;
-
          Sort (Front => 0, Back => 0);
 
          pragma Assert (N (Container.First).Prev = 0);
@@ -813,11 +718,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          raise Constraint_Error with "new length exceeds capacity";
       end if;
 
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
-
       Allocate (Container, New_Item, New_Node => J);
       Insert_Internal (Container, Before.Node, New_Node => J);
       Position := (Node => J);
@@ -859,11 +759,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
       if Container.Length > Container.Capacity - Count then
          raise Constraint_Error with "new length exceeds capacity";
-      end if;
-
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
       end if;
 
       Allocate (Container, New_Node => J);
@@ -940,103 +835,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       return Length (Container) = 0;
    end Is_Empty;
 
-   -------------
-   -- Iterate --
-   -------------
-
-   procedure Iterate
-     (Container : List;
-      Process   :
-      not null access procedure (Container : List; Position : Cursor))
-   is
-      C    : List renames Container'Unrestricted_Access.all;
-      B    : Natural renames C.Busy;
-      Node : Count_Type;
-
-   begin
-      B := B + 1;
-
-      begin
-         Node := Container.First;
-         while Node /= 0 loop
-            Process (Container, (Node => Node));
-            Node := Container.Nodes (Node).Next;
-         end loop;
-
-      exception
-         when others =>
-            B := B - 1;
-            raise;
-      end;
-
-      B := B - 1;
-   end Iterate;
-
-   function Iterate (Container : List)
-     return List_Iterator_Interfaces.Reversible_Iterator'Class
-   is
-      B : Natural renames Container'Unrestricted_Access.all.Busy;
-
-   begin
-      --  The value of the Node component influences the behavior of the First
-      --  and Last selector functions of the iterator object. When the Node
-      --  component is null (as is the case here), this means the iterator
-      --  object was constructed without a start expression. This is a
-      --  complete iterator, meaning that the iteration starts from the
-      --  (logical) beginning of the sequence of items.
-
-      --  Note: For a forward iterator, Container.First is the beginning, and
-      --  for a reverse iterator, Container.Last is the beginning.
-
-      return It : constant Iterator :=
-        Iterator'(Ada.Finalization.Limited_Controlled with
-                    Container => Container'Unrestricted_Access,
-                    Node      => 0)
-      do
-         B := B + 1;
-      end return;
-   end Iterate;
-
-   function Iterate (Container : List; Start : Cursor)
-     return List_Iterator_Interfaces.Reversible_Iterator'Class
-   is
-      B  : Natural renames Container'Unrestricted_Access.all.Busy;
-
-   begin
-      --  It was formerly the case that when Start = No_Element, the partial
-      --  iterator was defined to behave the same as for a complete iterator,
-      --  and iterate over the entire sequence of items. However, those
-      --  semantics were unintuitive and arguably error-prone (it is too easy
-      --  to accidentally create an endless loop), and so they were changed,
-      --  per the ARG meeting in Denver on 2011/11. However, there was no
-      --  consensus about what positive meaning this corner case should have,
-      --  and so it was decided to simply raise an exception. This does imply,
-      --  however, that it is not possible to use a partial iterator to specify
-      --  an empty sequence of items.
-
-      if not Has_Element (Container, Start) then
-         raise Constraint_Error with
-           "Start position for iterator is not a valid cursor";
-      end if;
-
-      --  The value of the Node component influences the behavior of the First
-      --  and Last selector functions of the iterator object. When the Node
-      --  component is non-null (as is the case here), it means that this
-      --  is a partial iteration, over a subset of the complete sequence of
-      --  items. The iterator object was constructed with a start expression,
-      --  indicating the position from which the iteration begins. Note that
-      --  the start position has the same value irrespective of whether this
-      --  is a forward or reverse iteration.
-
-      return It : constant Iterator :=
-        Iterator'(Ada.Finalization.Limited_Controlled with
-                    Container => Container'Unrestricted_Access,
-                    Node      => Start.Node)
-      do
-         B := B + 1;
-      end return;
-   end Iterate;
-
    ----------
    -- Last --
    ----------
@@ -1047,28 +845,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          return No_Element;
       end if;
       return (Node => Container.Last);
-   end Last;
-
-   function Last (Object : Iterator) return Cursor is
-   begin
-      --  The value of the iterator object's Node component influences the
-      --  behavior of the Last (and First) selector function.
-
-      --  When the Node component is null, this means the iterator object was
-      --  constructed without a start expression, in which case the (reverse)
-      --  iteration starts from the (logical) beginning of the entire sequence
-      --  (corresponding to Container.Last, for a reverse iterator).
-
-      --  Otherwise, this is iteration over a partial sequence of items. When
-      --  the Node component is non-null, the iterator object was constructed
-      --  with a start expression, that specifies the position from which the
-      --  (reverse) partial iteration begins.
-
-      if Object.Node = 0 then
-         return Last (Object.Container.all);
-      else
-         return (Node => Object.Node);
-      end if;
    end Last;
 
    ------------------
@@ -1140,11 +916,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       if Target.Capacity < Source.Length then
          raise Constraint_Error with  -- ???
            "Source length exceeds Target capacity";
-      end if;
-
-      if Source.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Source (list is busy)";
       end if;
 
       Clear (Target);
@@ -1229,23 +1000,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       return (Node => Container.Nodes (Position.Node).Next);
    end Next;
 
-   function Next
-     (Object   : Iterator;
-      Position : Cursor) return Cursor
-   is
-   begin
-      return Next (Object.Container.all, Position);
-   end Next;
-
-   --------------------
-   -- Not_No_Element --
-   --------------------
-
-   function Not_No_Element (Position : Cursor) return Boolean is
-   begin
-      return Position /= No_Element;
-   end Not_No_Element;
-
    -------------
    -- Prepend --
    -------------
@@ -1281,106 +1035,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       return (Node => Container.Nodes (Position.Node).Prev);
    end Previous;
 
-   function Previous
-     (Object   : Iterator;
-      Position : Cursor) return Cursor
-   is
-   begin
-      return Previous (Object.Container.all, Position);
-   end Previous;
-
-   -------------------
-   -- Query_Element --
-   -------------------
-
-   procedure Query_Element
-     (Container : List; Position : Cursor;
-      Process   : not null access procedure (Element : Element_Type))
-   is
-      C : List renames Container'Unrestricted_Access.all;
-      B : Natural renames C.Busy;
-      L : Natural renames C.Lock;
-
-   begin
-      if not Has_Element (Container, Position) then
-         raise Constraint_Error with
-           "Position cursor has no element";
-      end if;
-
-      B := B + 1;
-      L := L + 1;
-
-      declare
-         N : Node_Type renames C.Nodes (Position.Node);
-      begin
-         Process (N.Element);
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-            raise;
-      end;
-
-      L := L - 1;
-      B := B - 1;
-   end Query_Element;
-
-   ----------
-   -- Read --
-   ----------
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out List)
-   is
-      N : Count_Type'Base;
-
-   begin
-      Clear (Item);
-
-      Count_Type'Base'Read (Stream, N);
-
-      if N < 0 then
-         raise Program_Error with "bad list length";
-      end if;
-
-      if N = 0 then
-         return;
-      end if;
-
-      if N > Item.Capacity then
-         raise Constraint_Error with "length exceeds capacity";
-      end if;
-
-      for J in 1 .. N loop
-         Item.Append (Element_Type'Input (Stream));  -- ???
-      end loop;
-   end Read;
-
-   procedure Read
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : out Cursor)
-   is
-   begin
-      raise Program_Error with "attempt to stream list cursor";
-   end Read;
-
-   ---------------
-   -- Reference --
-   ---------------
-
-   function Constant_Reference
-     (Container : List;
-      Position  : Cursor) return Constant_Reference_Type
-   is
-   begin
-      if not Has_Element (Container, Position) then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      return (Element => Container.Nodes (Position.Node).Element'Access);
-   end Constant_Reference;
-
    ---------------------
    -- Replace_Element --
    ---------------------
@@ -1393,11 +1047,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
    begin
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      if Container.Lock > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (list is locked)";
       end if;
 
       pragma Assert
@@ -1465,11 +1114,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       pragma Assert (N (Container.First).Prev = 0);
       pragma Assert (N (Container.Last).Next = 0);
 
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
-
       Container.First := J;
       Container.Last := I;
       loop
@@ -1523,39 +1167,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
       return No_Element;
    end Reverse_Find;
-
-   ---------------------
-   -- Reverse_Iterate --
-   ---------------------
-
-   procedure Reverse_Iterate
-     (Container : List;
-      Process   :
-      not null access procedure (Container : List; Position : Cursor))
-   is
-      C : List renames Container'Unrestricted_Access.all;
-      B : Natural renames C.Busy;
-
-      Node : Count_Type;
-
-   begin
-      B := B + 1;
-
-      begin
-         Node := Container.Last;
-         while Node /= 0 loop
-            Process (Container, (Node => Node));
-            Node := Container.Nodes (Node).Prev;
-         end loop;
-
-      exception
-         when others =>
-            B := B - 1;
-            raise;
-      end;
-
-      B := B - 1;
-   end Reverse_Iterate;
 
    -----------
    -- Right --
@@ -1618,16 +1229,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          raise Constraint_Error;
       end if;
 
-      if Target.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Target (list is busy)";
-      end if;
-
-      if Source.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Source (list is busy)";
-      end if;
-
       loop
          Insert (Target, Before, SN (Source.Last).Element);
          Delete_Last (Source);
@@ -1657,16 +1258,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
       if Target.Length >= Target.Capacity then
          raise Constraint_Error;
-      end if;
-
-      if Target.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Target (list is busy)";
-      end if;
-
-      if Source.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors of Source (list is busy)";
       end if;
 
       Insert
@@ -1706,11 +1297,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       end if;
 
       pragma Assert (Container.Length >= 2);
-
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
 
       if Before.Node = 0 then
          pragma Assert (Position.Node /= Container.Last);
@@ -1821,11 +1407,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          return;
       end if;
 
-      if Container.Lock > 0 then
-         raise Program_Error with
-           "attempt to tamper with cursors (list is locked)";
-      end if;
-
       pragma Assert (Vet (Container, I), "bad I cursor in Swap");
       pragma Assert (Vet (Container, J), "bad J cursor in Swap");
 
@@ -1865,11 +1446,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          return;
       end if;
 
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (list is busy)";
-      end if;
-
       pragma Assert (Vet (Container, I), "bad I cursor in Swap_Links");
       pragma Assert (Vet (Container, J), "bad J cursor in Swap_Links");
 
@@ -1891,47 +1467,6 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
          end if;
       end if;
    end Swap_Links;
-
-   --------------------
-   -- Update_Element --
-   --------------------
-
-   procedure Update_Element
-     (Container : in out List;
-      Position  : Cursor;
-      Process   : not null access procedure (Element : in out Element_Type))
-   is
-   begin
-      if Position.Node = 0 then
-         raise Constraint_Error with "Position cursor has no element";
-      end if;
-
-      pragma Assert
-        (Vet (Container, Position), "bad cursor in Update_Element");
-
-      declare
-         B : Natural renames Container.Busy;
-         L : Natural renames Container.Lock;
-
-      begin
-         B := B + 1;
-         L := L + 1;
-
-         declare
-            N : Node_Type renames Container.Nodes (Position.Node);
-         begin
-            Process (N.Element);
-         exception
-            when others =>
-               L := L - 1;
-               B := B - 1;
-               raise;
-         end;
-
-         L := L - 1;
-         B := B - 1;
-      end;
-   end Update_Element;
 
    ---------
    -- Vet --
@@ -2067,34 +1602,5 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
       return True;
    end Vet;
-
-   -----------
-   -- Write --
-   -----------
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : List)
-   is
-      N    : Node_Array renames Item.Nodes;
-      Node : Count_Type;
-
-   begin
-      Count_Type'Base'Write (Stream, Item.Length);
-
-      Node := Item.First;
-      while Node /= 0 loop
-         Element_Type'Write (Stream, N (Node).Element);
-         Node := N (Node).Next;
-      end loop;
-   end Write;
-
-   procedure Write
-     (Stream : not null access Root_Stream_Type'Class;
-      Item   : Cursor)
-   is
-   begin
-      raise Program_Error with "attempt to stream list cursor";
-   end Write;
 
 end Ada.Containers.Formal_Doubly_Linked_Lists;

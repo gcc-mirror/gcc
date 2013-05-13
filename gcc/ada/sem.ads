@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -177,7 +177,7 @@
 --  repeatedly (for instance in the above aggregate "new Thing (Function_Call)"
 --  needs to be called 100 times.)
 
---  The reason why this mechanism does not work is that, the expanded code for
+--  The reason why this mechanism does not work is that the expanded code for
 --  the children is typically inserted above the parent and thus when the
 --  father gets expanded no re-evaluation takes place. For instance in the case
 --  of aggregates if "new Thing (Function_Call)" is expanded before of the
@@ -429,11 +429,11 @@ package Sem is
    --  compilation unit. These sections are separated by distinct occurrences
    --  of package Standard. The currently active section of the scope stack
    --  goes from the current scope to the first (innermost) occurrence of
-   --  Standard, which is additionally marked with the flag
-   --  Is_Active_Stack_Base. The basic visibility routine (Find_Direct_Name, in
-   --  Sem_Ch8) uses this contiguous section of the scope stack to determine
-   --  whether a given entity is or is not visible at a point. In_Open_Scopes
-   --  only examines the currently active section of the scope stack.
+   --  Standard, which is additionally marked with flag Is_Active_Stack_Base.
+   --  The basic visibility routine (Find_Direct_Name, in Sem_Ch8) uses this
+   --  contiguous section of the scope stack to determine whether a given
+   --  entity is or is not visible at a point. In_Open_Scopes only examines
+   --  the currently active section of the scope stack.
 
    --  Similar complications arise when processing child instances. These
    --  must be compiled in the context of parent instances, and therefore the
@@ -464,7 +464,12 @@ package Sem is
       --  Save contents of Local_Suppress_Stack on entry to restore on exit
 
       Save_Check_Policy_List : Node_Id;
-      --  Save contents of Check_Policy_List on entry to restore on exit
+      --  Save contents of Check_Policy_List on entry to restore on exit. The
+      --  Check_Policy pragmas are chained with Check_Policy_List pointing to
+      --  the most recent entry. This list is searched starting here, so that
+      --  the search finds the most recent appicable entry. When we restore
+      --  Check_Policy_List on exit from the scope, the effect is to remove
+      --  all entries set in the scope being exited.
 
       Save_Default_Storage_Pool : Node_Id;
       --  Save contents of Default_Storage_Pool on entry to restore on exit

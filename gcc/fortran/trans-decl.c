@@ -2142,6 +2142,27 @@ create_function_arglist (gfc_symbol * sym)
 		type = gfc_sym_type (f->sym);
 	    }
 	}
+      /* For noncharacter scalar intrinsic types, VALUE passes the value,
+	 hence, the optional status cannot be transfered via a NULL pointer.
+	 Thus, we will use a hidden argument in that case.  */
+      else if (f->sym->attr.optional && f->sym->attr.value
+	       && !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
+	       && f->sym->ts.type != BT_DERIVED)
+	{
+          tree tmp;
+          strcpy (&name[1], f->sym->name);
+          name[0] = '_';
+          tmp = build_decl (input_location,
+			    PARM_DECL, get_identifier (name),
+			    boolean_type_node);
+
+          hidden_arglist = chainon (hidden_arglist, tmp);
+          DECL_CONTEXT (tmp) = fndecl;
+          DECL_ARTIFICIAL (tmp) = 1;
+          DECL_ARG_TYPE (tmp) = boolean_type_node;
+          TREE_READONLY (tmp) = 1;
+          gfc_finish_decl (tmp);
+	}
 
       /* For non-constant length array arguments, make sure they use
 	 a different type node from TYPE_ARG_TYPES type.  */
@@ -3628,7 +3649,37 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 				NULL_TREE);
 	}
 
-      if (sym->attr.dimension || sym->attr.codimension)
+      if (sym->ts.type == BT_CLASS
+	  && (sym->attr.save || gfc_option.flag_max_stack_var_size == 0)
+	  && CLASS_DATA (sym)->attr.allocatable)
+	{
+	  tree vptr;
+
+          if (UNLIMITED_POLY (sym))
+	    vptr = null_pointer_node;
+	  else
+	    {
+	      gfc_symbol *vsym;
+	      vsym = gfc_find_derived_vtab (sym->ts.u.derived);
+	      vptr = gfc_get_symbol_decl (vsym);
+	      vptr = gfc_build_addr_expr (NULL, vptr);
+	    }
+
+	  if (CLASS_DATA (sym)->attr.dimension
+	      || (CLASS_DATA (sym)->attr.codimension
+		  && gfc_option.coarray != GFC_FCOARRAY_LIB))
+	    {
+	      tmp = gfc_class_data_get (sym->backend_decl);
+	      tmp = gfc_build_null_descriptor (TREE_TYPE (tmp));
+	    }
+	  else
+	    tmp = null_pointer_node;
+
+	  DECL_INITIAL (sym->backend_decl)
+		= gfc_class_set_static_fields (sym->backend_decl, vptr, tmp);
+	  TREE_CONSTANT (DECL_INITIAL (sym->backend_decl)) = 1;
+	}
+      else if (sym->attr.dimension || sym->attr.codimension)
 	{
           /* Assumed-size Cray pointees need to be treated as AS_EXPLICIT.  */
           array_type tmp = sym->as->type;

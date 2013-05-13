@@ -85,4 +85,9 @@ enum ix86_veclibabi {
   ix86_veclibabi_type_acml
 };
 
+enum stack_protector_guard {
+  SSP_TLS,      /* per-thread canary in TLS block */
+  SSP_GLOBAL    /* global canary */
+};
+
 #endif

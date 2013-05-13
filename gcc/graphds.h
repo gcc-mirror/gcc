@@ -43,10 +43,9 @@ struct vertex
 
 struct graph
 {
-  int n_vertices;	/* Number of vertices.  */
-  struct vertex *vertices;
-			/* The vertices.  */
-  htab_t indices;	/* Fast lookup for indices.  */
+  int n_vertices;	   /* Number of vertices.  */
+  struct vertex *vertices; /* The vertices.  */
+  struct obstack ob;	   /* Obstack for vertex and edge allocation.  */
 };
 
 struct graph *new_graph (int);

@@ -41,6 +41,10 @@
 #ifndef _GLIBCXX_ATOMIC
 #define _GLIBCXX_ATOMIC 1
 
+#ifndef __always_inline
+#define __always_inline inline __attribute__((always_inline))
+#endif
+
 // #pragma GCC system_header
 
 // #ifndef __GXX_EXPERIMENTAL_CXX0X__
@@ -71,7 +75,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
       memory_order_seq_cst
     } memory_order;
 
-  inline memory_order
+  __always_inline memory_order
   __calculate_memory_order(memory_order __m) noexcept
   {
     const bool __cond1 = __m == memory_order_release;
@@ -81,13 +85,13 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     return __mo2;
   }
 
-  inline void
+  __always_inline void
   atomic_thread_fence(memory_order __m) noexcept
   {
     __atomic_thread_fence (__m);
   }
 
-  inline void
+  __always_inline void
   atomic_signal_fence(memory_order __m) noexcept
   {
     __atomic_thread_fence (__m);
@@ -277,19 +281,19 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     // Conversion to ATOMIC_FLAG_INIT.
     atomic_flag(bool __i) noexcept : __atomic_flag_base({ __i }) { }
 
-    bool
+    __always_inline bool
     test_and_set(memory_order __m = memory_order_seq_cst) noexcept
     {
       return __atomic_test_and_set (&_M_i, __m);
     }
 
-    bool
+    __always_inline bool
     test_and_set(memory_order __m = memory_order_seq_cst) volatile noexcept
     {
       return __atomic_test_and_set (&_M_i, __m);
     }
 
-    void
+    __always_inline void
     clear(memory_order __m = memory_order_seq_cst) noexcept
     {
       // __glibcxx_assert(__m != memory_order_consume);
@@ -299,7 +303,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
       __atomic_clear (&_M_i, __m);
     }
 
-    void
+    __always_inline void
     clear(memory_order __m = memory_order_seq_cst) volatile noexcept
     {
       // __glibcxx_assert(__m != memory_order_consume);
@@ -452,7 +456,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
       is_lock_free() const volatile noexcept
       { return __atomic_is_lock_free (sizeof (_M_i), &_M_i); }
 
-      void
+      __always_inline void
       store(__int_type __i, memory_order __m = memory_order_seq_cst) noexcept
       {
 	// __glibcxx_assert(__m != memory_order_acquire);
@@ -462,7 +466,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	__atomic_store_n(&_M_i, __i, __m);
       }
 
-      void
+      __always_inline void
       store(__int_type __i,
 	    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
@@ -473,7 +477,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	__atomic_store_n(&_M_i, __i, __m);
       }
 
-      __int_type
+      __always_inline __int_type
       load(memory_order __m = memory_order_seq_cst) const noexcept
       {
 	// __glibcxx_assert(__m != memory_order_release);
@@ -482,7 +486,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_load_n(&_M_i, __m);
       }
 
-      __int_type
+      __always_inline __int_type
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       {
 	// __glibcxx_assert(__m != memory_order_release);
@@ -491,22 +495,21 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_load_n(&_M_i, __m);
       }
 
-      __int_type
+      __always_inline __int_type
       exchange(__int_type __i,
 	       memory_order __m = memory_order_seq_cst) noexcept
       {
 	return __atomic_exchange_n(&_M_i, __i, __m);
       }
 
-
-      __int_type
+      __always_inline __int_type
       exchange(__int_type __i,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
       {
 	return __atomic_exchange_n(&_M_i, __i, __m);
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__int_type& __i1, __int_type __i2,
 			    memory_order __m1, memory_order __m2) noexcept
       {
@@ -517,7 +520,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 1, __m1, __m2);
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__int_type& __i1, __int_type __i2,
 			    memory_order __m1,
 			    memory_order __m2) volatile noexcept
@@ -529,7 +532,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 1, __m1, __m2);
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__int_type& __i1, __int_type __i2,
 			    memory_order __m = memory_order_seq_cst) noexcept
       {
@@ -537,7 +540,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 				     __calculate_memory_order(__m));
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__int_type& __i1, __int_type __i2,
 		   memory_order __m = memory_order_seq_cst) volatile noexcept
       {
@@ -545,7 +548,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 				     __calculate_memory_order(__m));
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__int_type& __i1, __int_type __i2,
 			      memory_order __m1, memory_order __m2) noexcept
       {
@@ -556,7 +559,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 0, __m1, __m2);
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__int_type& __i1, __int_type __i2,
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
@@ -568,7 +571,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 0, __m1, __m2);
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__int_type& __i1, __int_type __i2,
 			      memory_order __m = memory_order_seq_cst) noexcept
       {
@@ -576,7 +579,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 				       __calculate_memory_order(__m));
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__int_type& __i1, __int_type __i2,
 		 memory_order __m = memory_order_seq_cst) volatile noexcept
       {
@@ -584,52 +587,52 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 				       __calculate_memory_order(__m));
       }
 
-      __int_type
+      __always_inline __int_type
       fetch_add(__int_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_fetch_add(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_add(__int_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_add(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_sub(__int_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_fetch_sub(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_sub(__int_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_sub(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_and(__int_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_fetch_and(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_and(__int_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_and(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_or(__int_type __i,
 	       memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_fetch_or(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_or(__int_type __i,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_or(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_xor(__int_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_fetch_xor(&_M_i, __i, __m); }
 
-      __int_type
+      __always_inline __int_type
       fetch_xor(__int_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_xor(&_M_i, __i, __m); }
@@ -731,7 +734,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
       is_lock_free() const volatile noexcept
       { return __atomic_is_lock_free (sizeof (_M_p), &_M_p); }
 
-      void
+      __always_inline void
       store(__pointer_type __p,
 	    memory_order __m = memory_order_seq_cst) noexcept
       {
@@ -742,7 +745,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	__atomic_store_n(&_M_p, __p, __m);
       }
 
-      void
+      __always_inline void
       store(__pointer_type __p,
 	    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
@@ -753,7 +756,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	__atomic_store_n(&_M_p, __p, __m);
       }
 
-      __pointer_type
+      __always_inline __pointer_type
       load(memory_order __m = memory_order_seq_cst) const noexcept
       {
 	// __glibcxx_assert(__m != memory_order_release);
@@ -762,7 +765,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_load_n(&_M_p, __m);
       }
 
-      __pointer_type
+      __always_inline __pointer_type
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       {
 	// __glibcxx_assert(__m != memory_order_release);
@@ -771,22 +774,21 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_load_n(&_M_p, __m);
       }
 
-      __pointer_type
+      __always_inline __pointer_type
       exchange(__pointer_type __p,
 	       memory_order __m = memory_order_seq_cst) noexcept
       {
 	return __atomic_exchange_n(&_M_p, __p, __m);
       }
 
-
-      __pointer_type
+      __always_inline __pointer_type
       exchange(__pointer_type __p,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
       {
 	return __atomic_exchange_n(&_M_p, __p, __m);
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1,
 			      memory_order __m2) noexcept
@@ -798,7 +800,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 0, __m1, __m2);
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
@@ -810,22 +812,22 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 0, __m1, __m2);
       }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_fetch_add(&_M_p, __d, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_add(&_M_p, __d, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_fetch_sub(&_M_p, __d, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_sub(&_M_p, __d, __m); }
@@ -869,67 +871,67 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     bool
     is_lock_free() const volatile noexcept { return _M_base.is_lock_free(); }
 
-    void
+    __always_inline void
     store(bool __i, memory_order __m = memory_order_seq_cst) noexcept
     { _M_base.store(__i, __m); }
 
-    void
+    __always_inline void
     store(bool __i, memory_order __m = memory_order_seq_cst) volatile noexcept
     { _M_base.store(__i, __m); }
 
-    bool
+    __always_inline bool
     load(memory_order __m = memory_order_seq_cst) const noexcept
     { return _M_base.load(__m); }
 
-    bool
+    __always_inline bool
     load(memory_order __m = memory_order_seq_cst) const volatile noexcept
     { return _M_base.load(__m); }
 
-    bool
+    __always_inline bool
     exchange(bool __i, memory_order __m = memory_order_seq_cst) noexcept
     { return _M_base.exchange(__i, __m); }
 
-    bool
+    __always_inline bool
     exchange(bool __i,
 	     memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.exchange(__i, __m); }
 
-    bool
+    __always_inline bool
     compare_exchange_weak(bool& __i1, bool __i2, memory_order __m1,
 			  memory_order __m2) noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m1, __m2); }
 
-    bool
+    __always_inline bool
     compare_exchange_weak(bool& __i1, bool __i2, memory_order __m1,
 			  memory_order __m2) volatile noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m1, __m2); }
 
-    bool
+    __always_inline bool
     compare_exchange_weak(bool& __i1, bool __i2,
 			  memory_order __m = memory_order_seq_cst) noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m); }
 
-    bool
+    __always_inline bool
     compare_exchange_weak(bool& __i1, bool __i2,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m); }
 
-    bool
+    __always_inline bool
     compare_exchange_strong(bool& __i1, bool __i2, memory_order __m1,
 			    memory_order __m2) noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m1, __m2); }
 
-    bool
+    __always_inline bool
     compare_exchange_strong(bool& __i1, bool __i2, memory_order __m1,
 			    memory_order __m2) volatile noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m1, __m2); }
 
-    bool
+    __always_inline bool
     compare_exchange_strong(bool& __i1, bool __i2,
 			    memory_order __m = memory_order_seq_cst) noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
 
-    bool
+    __always_inline bool
     compare_exchange_strong(bool& __i1, bool __i2,
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
@@ -979,11 +981,11 @@ namespace std // _GLIBCXX_VISIBILITY(default)
       store(_Tp __i, memory_order _m = memory_order_seq_cst) noexcept
       { __atomic_store(&_M_i, &__i, _m); }
 
-      void
+      __always_inline void
       store(_Tp __i, memory_order _m = memory_order_seq_cst) volatile noexcept
       { __atomic_store(&_M_i, &__i, _m); }
 
-      _Tp
+      __always_inline _Tp
       load(memory_order _m = memory_order_seq_cst) const noexcept
       { 
         _Tp tmp;
@@ -991,7 +993,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return tmp;
       }
 
-      _Tp
+      __always_inline _Tp
       load(memory_order _m = memory_order_seq_cst) const volatile noexcept
       { 
         _Tp tmp;
@@ -999,7 +1001,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return tmp;
       }
 
-      _Tp
+      __always_inline _Tp
       exchange(_Tp __i, memory_order _m = memory_order_seq_cst) noexcept
       { 
         _Tp tmp;
@@ -1007,7 +1009,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return tmp;
       }
 
-      _Tp
+      __always_inline _Tp
       exchange(_Tp __i, 
 	       memory_order _m = memory_order_seq_cst) volatile noexcept
       { 
@@ -1016,50 +1018,50 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 	return tmp;
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
 			    memory_order __f) noexcept
       {
 	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f); 
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s, 
 			    memory_order __f) volatile noexcept
       {
 	return __atomic_compare_exchange(&_M_i, &__e, &__i, true, __s, __f); 
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(_Tp& __e, _Tp __i,
 			    memory_order __m = memory_order_seq_cst) noexcept
       { return compare_exchange_weak(__e, __i, __m, __m); }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(_Tp& __e, _Tp __i,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
       { return compare_exchange_weak(__e, __i, __m, __m); }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
 			      memory_order __f) noexcept
       {
 	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f); 
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
 			      memory_order __f) volatile noexcept
       {
 	return __atomic_compare_exchange(&_M_i, &__e, &__i, false, __s, __f); 
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(_Tp& __e, _Tp __i,
 			       memory_order __m = memory_order_seq_cst) noexcept
       { return compare_exchange_strong(__e, __i, __m, __m); }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(_Tp& __e, _Tp __i,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
       { return compare_exchange_strong(__e, __i, __m, __m); }
@@ -1152,46 +1154,46 @@ namespace std // _GLIBCXX_VISIBILITY(default)
       is_lock_free() const volatile noexcept
       { return _M_b.is_lock_free(); }
 
-      void
+      __always_inline void
       store(__pointer_type __p,
 	    memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.store(__p, __m); }
 
-      void
+      __always_inline void
       store(__pointer_type __p,
 	    memory_order __m = memory_order_seq_cst) volatile noexcept
       { return _M_b.store(__p, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       load(memory_order __m = memory_order_seq_cst) const noexcept
       { return _M_b.load(__m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       { return _M_b.load(__m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       exchange(__pointer_type __p,
 	       memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.exchange(__p, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       exchange(__pointer_type __p,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
       { return _M_b.exchange(__p, __m); }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m1, memory_order __m2) noexcept
       { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m1,
 			    memory_order __m2) volatile noexcept
       { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m = memory_order_seq_cst) noexcept
       {
@@ -1199,7 +1201,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 				     __calculate_memory_order(__m));
       }
 
-      bool
+      __always_inline bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
@@ -1207,18 +1209,18 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 				     __calculate_memory_order(__m));
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1, memory_order __m2) noexcept
       { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
       { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m = memory_order_seq_cst) noexcept
       {
@@ -1226,7 +1228,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 					    __calculate_memory_order(__m));
       }
 
-      bool
+      __always_inline bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
       {
@@ -1234,22 +1236,22 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 					    __calculate_memory_order(__m));
       }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.fetch_add(__d, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return _M_b.fetch_add(__d, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.fetch_sub(__d, __m); }
 
-      __pointer_type
+      __always_inline __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return _M_b.fetch_sub(__d, __m); }
@@ -1543,98 +1545,98 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 
 
   // Function definitions, atomic_flag operations.
-  inline bool
+  __always_inline bool
   atomic_flag_test_and_set_explicit(atomic_flag* __a,
 				    memory_order __m) noexcept
   { return __a->test_and_set(__m); }
 
-  inline bool
+  __always_inline bool
   atomic_flag_test_and_set_explicit(volatile atomic_flag* __a,
 				    memory_order __m) noexcept
   { return __a->test_and_set(__m); }
 
-  inline void
+  __always_inline void
   atomic_flag_clear_explicit(atomic_flag* __a, memory_order __m) noexcept
   { __a->clear(__m); }
 
-  inline void
+  __always_inline void
   atomic_flag_clear_explicit(volatile atomic_flag* __a,
 			     memory_order __m) noexcept
   { __a->clear(__m); }
 
-  inline bool
+  __always_inline bool
   atomic_flag_test_and_set(atomic_flag* __a) noexcept
   { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
 
-  inline bool
+  __always_inline bool
   atomic_flag_test_and_set(volatile atomic_flag* __a) noexcept
   { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
 
-  inline void
+  __always_inline void
   atomic_flag_clear(atomic_flag* __a) noexcept
   { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
 
-  inline void
+  __always_inline void
   atomic_flag_clear(volatile atomic_flag* __a) noexcept
   { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
 
 
   // Function templates generally applicable to atomic types.
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_is_lock_free(const atomic<_ITp>* __a) noexcept
     { return __a->is_lock_free(); }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_is_lock_free(const volatile atomic<_ITp>* __a) noexcept
     { return __a->is_lock_free(); }
 
   template<typename _ITp>
-    inline void
+    __always_inline void
     atomic_init(atomic<_ITp>* __a, _ITp __i) noexcept;
 
   template<typename _ITp>
-    inline void
+    __always_inline void
     atomic_init(volatile atomic<_ITp>* __a, _ITp __i) noexcept;
 
   template<typename _ITp>
-    inline void
+    __always_inline void
     atomic_store_explicit(atomic<_ITp>* __a, _ITp __i,
 			  memory_order __m) noexcept
     { __a->store(__i, __m); }
 
   template<typename _ITp>
-    inline void
+    __always_inline void
     atomic_store_explicit(volatile atomic<_ITp>* __a, _ITp __i,
 			  memory_order __m) noexcept
     { __a->store(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_load_explicit(const atomic<_ITp>* __a, memory_order __m) noexcept
     { return __a->load(__m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_load_explicit(const volatile atomic<_ITp>* __a,
 			 memory_order __m) noexcept
     { return __a->load(__m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_exchange_explicit(atomic<_ITp>* __a, _ITp __i,
 			     memory_order __m) noexcept
     { return __a->exchange(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_exchange_explicit(volatile atomic<_ITp>* __a, _ITp __i,
 			     memory_order __m) noexcept
     { return __a->exchange(__i, __m); }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_weak_explicit(atomic<_ITp>* __a,
 					  _ITp* __i1, _ITp __i2,
 					  memory_order __m1,
@@ -1642,7 +1644,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     { return __a->compare_exchange_weak(*__i1, __i2, __m1, __m2); }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_weak_explicit(volatile atomic<_ITp>* __a,
 					  _ITp* __i1, _ITp __i2,
 					  memory_order __m1,
@@ -1650,7 +1652,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     { return __a->compare_exchange_weak(*__i1, __i2, __m1, __m2); }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_strong_explicit(atomic<_ITp>* __a,
 					    _ITp* __i1, _ITp __i2,
 					    memory_order __m1,
@@ -1658,7 +1660,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     { return __a->compare_exchange_strong(*__i1, __i2, __m1, __m2); }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_strong_explicit(volatile atomic<_ITp>* __a,
 					    _ITp* __i1, _ITp __i2,
 					    memory_order __m1,
@@ -1667,37 +1669,37 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 
 
   template<typename _ITp>
-    inline void
+    __always_inline void
     atomic_store(atomic<_ITp>* __a, _ITp __i) noexcept
     { atomic_store_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline void
+    __always_inline void
     atomic_store(volatile atomic<_ITp>* __a, _ITp __i) noexcept
     { atomic_store_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_load(const atomic<_ITp>* __a) noexcept
     { return atomic_load_explicit(__a, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_load(const volatile atomic<_ITp>* __a) noexcept
     { return atomic_load_explicit(__a, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_exchange(atomic<_ITp>* __a, _ITp __i) noexcept
     { return atomic_exchange_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_exchange(volatile atomic<_ITp>* __a, _ITp __i) noexcept
     { return atomic_exchange_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_weak(atomic<_ITp>* __a,
 				 _ITp* __i1, _ITp __i2) noexcept
     {
@@ -1707,7 +1709,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_weak(volatile atomic<_ITp>* __a,
 				 _ITp* __i1, _ITp __i2) noexcept
     {
@@ -1717,7 +1719,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_strong(atomic<_ITp>* __a,
 				   _ITp* __i1, _ITp __i2) noexcept
     {
@@ -1727,7 +1729,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     }
 
   template<typename _ITp>
-    inline bool
+    __always_inline bool
     atomic_compare_exchange_strong(volatile atomic<_ITp>* __a,
 				   _ITp* __i1, _ITp __i2) noexcept
     {
@@ -1741,158 +1743,158 @@ namespace std // _GLIBCXX_VISIBILITY(default)
   // intergral types as specified in the standard, excluding address
   // types.
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_add_explicit(__atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_add(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_add_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_add(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_sub_explicit(__atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_sub(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_sub_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_sub(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_and_explicit(__atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_and(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_and_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_and(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_or_explicit(__atomic_base<_ITp>* __a, _ITp __i,
 			     memory_order __m) noexcept
     { return __a->fetch_or(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_or_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			     memory_order __m) noexcept
     { return __a->fetch_or(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_xor_explicit(__atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_xor(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_xor_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m) noexcept
     { return __a->fetch_xor(__i, __m); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_add(__atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_add_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_add(volatile __atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_add_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_sub(__atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_sub_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_sub(volatile __atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_sub_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_and(__atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_and_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_and(volatile __atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_and_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_or(__atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_or_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_or(volatile __atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_or_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_xor(__atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
-    inline _ITp
+    __always_inline _ITp
     atomic_fetch_xor(volatile __atomic_base<_ITp>* __a, _ITp __i) noexcept
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
 
   // Partial specializations for pointers.
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_add_explicit(atomic<_ITp*>* __a, ptrdiff_t __d,
 			      memory_order __m) noexcept
     { return __a->fetch_add(__d, __m); }
 
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_add_explicit(volatile atomic<_ITp*>* __a, ptrdiff_t __d,
 			      memory_order __m) noexcept
     { return __a->fetch_add(__d, __m); }
 
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_add(volatile atomic<_ITp*>* __a, ptrdiff_t __d) noexcept
     { return __a->fetch_add(__d); }
 
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_add(atomic<_ITp*>* __a, ptrdiff_t __d) noexcept
     { return __a->fetch_add(__d); }
 
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_sub_explicit(volatile atomic<_ITp*>* __a,
 			      ptrdiff_t __d, memory_order __m) noexcept
     { return __a->fetch_sub(__d, __m); }
 
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_sub_explicit(atomic<_ITp*>* __a, ptrdiff_t __d,
 			      memory_order __m) noexcept
     { return __a->fetch_sub(__d, __m); }
 
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_sub(volatile atomic<_ITp*>* __a, ptrdiff_t __d) noexcept
     { return __a->fetch_sub(__d); }
 
   template<typename _ITp>
-    inline _ITp*
+    __always_inline _ITp*
     atomic_fetch_sub(atomic<_ITp*>* __a, ptrdiff_t __d) noexcept
     { return __a->fetch_sub(__d); }
   // @} group atomics

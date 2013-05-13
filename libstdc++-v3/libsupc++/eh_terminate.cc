@@ -27,6 +27,15 @@
 #include <cstdlib>
 #include "unwind-cxx.h"
 #include <bits/exception_defines.h>
+#include <bits/atomic_lockfree_defines.h>
+
+#if ATOMIC_POINTER_LOCK_FREE < 2
+#include <ext/concurrence.h>
+namespace
+{
+  __gnu_cxx::__mutex mx;
+}
+#endif
 
 using namespace __cxxabiv1;
 
@@ -45,7 +54,7 @@ __cxxabiv1::__terminate (std::terminate_handler handler) throw ()
 void
 std::terminate () throw()
 {
-  __terminate (__terminate_handler);
+  __terminate (get_terminate ());
 }
 
 void
@@ -58,21 +67,59 @@ __cxxabiv1::__unexpected (std::unexpected_handler handler)
 void
 std::unexpected ()
 {
-  __unexpected (__unexpected_handler);
+  __unexpected (get_unexpected ());
 }
 
 std::terminate_handler
 std::set_terminate (std::terminate_handler func) throw()
 {
-  std::terminate_handler old = __terminate_handler;
+  std::terminate_handler old;
+#if ATOMIC_POINTER_LOCK_FREE > 1
+  __atomic_exchange (&__terminate_handler, &func, &old, __ATOMIC_ACQ_REL);
+#else
+  __gnu_cxx::__scoped_lock l(mx);
+  old = __terminate_handler;
   __terminate_handler = func;
+#endif
   return old;
+}
+
+std::terminate_handler
+std::get_terminate () noexcept
+{
+  std::terminate_handler func;
+#if ATOMIC_POINTER_LOCK_FREE > 1
+  __atomic_load (&__terminate_handler, &func, __ATOMIC_ACQUIRE);
+#else
+  __gnu_cxx::__scoped_lock l(mx);
+  func = __terminate_handler;
+#endif
+  return func;
 }
 
 std::unexpected_handler
 std::set_unexpected (std::unexpected_handler func) throw()
 {
-  std::unexpected_handler old = __unexpected_handler;
+  std::unexpected_handler old;
+#if ATOMIC_POINTER_LOCK_FREE > 1
+  __atomic_exchange (&__unexpected_handler, &func, &old, __ATOMIC_ACQ_REL);
+#else
+  __gnu_cxx::__scoped_lock l(mx);
+  old = __unexpected_handler;
   __unexpected_handler = func;
+#endif
   return old;
+}
+
+std::unexpected_handler
+std::get_unexpected () noexcept
+{
+  std::unexpected_handler func;
+#if ATOMIC_POINTER_LOCK_FREE > 1
+  __atomic_load (&__unexpected_handler, &func, __ATOMIC_ACQUIRE);
+#else
+  __gnu_cxx::__scoped_lock l(mx);
+  func = __unexpected_handler;
+#endif
+  return func;
 }

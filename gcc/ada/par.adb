@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -838,6 +838,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    package Ch11 is
       function P_Handled_Sequence_Of_Statements       return Node_Id;
+      function P_Raise_Expression                     return Node_Id;
       function P_Raise_Statement                      return Node_Id;
 
       function Parse_Exception_Handlers               return List_Id;

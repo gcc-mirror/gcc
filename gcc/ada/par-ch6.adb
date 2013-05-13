@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -150,7 +150,7 @@ package body Ch6 is
    --  PARAMETER_AND_RESULT_PROFILE ::= [FORMAL_PART] return SUBTYPE_MARK
 
    --  SUBPROGRAM_BODY ::=
-   --    SUBPROGRAM_SPECIFICATION is
+   --    SUBPROGRAM_SPECIFICATION [ASPECT_SPECIFICATIONS] is
    --      DECLARATIVE_PART
    --    begin
    --      HANDLED_SEQUENCE_OF_STATEMENTS
@@ -684,6 +684,15 @@ package body Ch6 is
             Stub_Node :=
               New_Node (N_Subprogram_Body_Stub, Sloc (Specification_Node));
             Set_Specification (Stub_Node, Specification_Node);
+
+            --  The specification has been parsed as part of a subprogram
+            --  declaration, and aspects have already been collected.
+
+            if Is_Non_Empty_List (Aspects) then
+               Set_Parent (Aspects, Stub_Node);
+               Set_Aspect_Specifications (Stub_Node, Aspects);
+            end if;
+
             Scan; -- past SEPARATE
             Pop_Scope_Stack;
             TF_Semicolon;
@@ -827,6 +836,22 @@ package body Ch6 is
                        ("expression function is an Ada 2012 feature!");
                      Error_Msg_SC
                        ("\unit must be compiled with -gnat2012 switch!");
+                  end if;
+
+                  --  Catch an illegal placement of the aspect specification
+                  --  list:
+
+                  --    function_specification
+                  --      [aspect_specification] is (expression);
+
+                  --  This case is correctly processed by the parser because
+                  --  the expression function first appears as a subprogram
+                  --  declaration to the parser.
+
+                  if Is_Non_Empty_List (Aspects) then
+                     Error_Msg
+                       ("aspect specifications must come after parenthesized "
+                        & "expression", Sloc (First (Aspects)));
                   end if;
 
                   --  Parse out expression and build expression function

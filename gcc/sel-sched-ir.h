@@ -191,8 +191,6 @@ typedef expr_def *expr_t;
 #define EXPR_WAS_RENAMED(EXPR) ((EXPR)->was_renamed)
 #define EXPR_CANT_MOVE(EXPR) ((EXPR)->cant_move)
 
-#define EXPR_WAS_CHANGED(EXPR) (EXPR_HISTORY_OF_CHANGES (EXPR).length () > 0)
-
 /* Insn definition for list of original insns in find_used_regs.  */
 struct _def
 {
@@ -530,7 +528,7 @@ typedef _list_iterator av_set_iterator;
 #define FOR_EACH_EXPR(EXPR, I, AV) _FOR_EACH (expr, (EXPR), (I), (AV))
 #define FOR_EACH_EXPR_1(EXPR, I, AV) _FOR_EACH_1 (expr, (EXPR), (I), (AV))
 
-static bool
+inline bool
 _list_iter_cond_expr (av_set_t av, expr_t *exprp)
 {
   if (av)

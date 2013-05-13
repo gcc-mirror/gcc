@@ -79,8 +79,8 @@ package body Sem_Ch10 is
    --  Build and decorate the list of shadow entities for a package mentioned
    --  in a limited_with clause. If the package was not previously analyzed
    --  then it also performs a basic decoration of the real entities. This is
-   --  required to do not pass non-decorated entities to the back-end.
-   --  Implements Ada 2005 (AI-50217).
+   --  required in order to avoid passing non-decorated entities to the
+   --  back-end. Implements Ada 2005 (AI-50217).
 
    procedure Check_Body_Needed_For_SAL (Unit_Name : Entity_Id);
    --  Check whether the source for the body of a compilation unit must be
@@ -401,9 +401,8 @@ package body Sem_Ch10 is
 
                elsif Nkind (Cont_Item) = N_Pragma
                  and then
-                   (Pragma_Name (Cont_Item) = Name_Elaborate
-                      or else
-                    Pragma_Name (Cont_Item) = Name_Elaborate_All)
+                   Nam_In (Pragma_Name (Cont_Item), Name_Elaborate,
+                                                     Name_Elaborate_All)
                  and then not Used_Type_Or_Elab
                then
                   Prag_Unit :=
@@ -2457,14 +2456,6 @@ package body Sem_Ch10 is
          return;
       end if;
 
-      --  We reset ordinary style checking during the analysis of a with'ed
-      --  unit, but we do NOT reset GNAT special analysis mode (the latter
-      --  definitely *does* apply to with'ed units).
-
-      if not GNAT_Mode then
-         Style_Check := False;
-      end if;
-
       --  If the library unit is a predefined unit, and we are in high
       --  integrity mode, then temporarily reset Configurable_Run_Time_Mode
       --  for the analysis of the with'ed unit. This mode does not prevent
@@ -2501,9 +2492,9 @@ package body Sem_Ch10 is
          if Nkind (Nam) = N_Selected_Component
            and then Nkind (Prefix (Nam)) = N_Identifier
            and then Chars (Prefix (Nam)) = Name_Gnat
-           and then (Chars (Selector_Name (Nam)) = Name_Most_Recent_Exception
-                       or else
-                     Chars (Selector_Name (Nam)) = Name_Exception_Traces)
+           and then Nam_In (Chars (Selector_Name (Nam)),
+                            Name_Most_Recent_Exception,
+                            Name_Exception_Traces)
          then
             Check_Restriction (No_Exception_Propagation, N);
             Special_Exception_Package_Used := True;

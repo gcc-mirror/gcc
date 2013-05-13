@@ -181,6 +181,8 @@ epiphany_init (void)
     = { &pass_split_all_insns.pass, "mode_sw",
 	1, PASS_POS_INSERT_AFTER
       };
+  static const int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
+#define N_ENTITIES ARRAY_SIZE (num_modes)
 
   epiphany_init_reg_tables ();
 
@@ -196,6 +198,8 @@ epiphany_init (void)
   register_pass (&mode_sw3_info);
   register_pass (&insert_use_info);
   register_pass (&mode_sw2_info);
+  /* Verify that NUM_MODES_FOR_MODE_SWITCHING has one value per entity.  */
+  gcc_assert (N_ENTITIES == EPIPHANY_MSW_ENTITY_NUM);
 
 #if 1 /* As long as peep2_rescan is not implemented,
          (see http://gcc.gnu.org/ml/gcc-patches/2011-10/msg02819.html,)
@@ -335,7 +339,8 @@ epiphany_select_cc_mode (enum rtx_code op,
 {
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
     {
-      if (TARGET_SOFT_CMPSF)
+      if (TARGET_SOFT_CMPSF
+	  || op == ORDERED || op == UNORDERED)
 	{
 	  if (op == EQ || op == NE)
 	    return CC_FP_EQmode;
@@ -537,24 +542,47 @@ gen_compare_reg (enum machine_mode cmode, enum rtx_code code,
       if (mode == CC_FP_GTEmode
 	  && (code == LE || code == LT || code == UNGT || code == UNGE))
 	{
-	  rtx tmp = x; x = y; y = tmp;
-	  code = swap_condition (code);
+	  if (flag_finite_math_only
+	      && ((REG_P (x) && REGNO (x) == GPR_0)
+		  || (REG_P (y) && REGNO (y) == GPR_1)))
+	    switch (code)
+	      {
+	      case LE: code = UNLE; break;
+	      case LT: code = UNLT; break;
+	      case UNGT: code = GT; break;
+	      case UNGE: code = GE; break;
+	      default: gcc_unreachable ();
+	      }
+	  else
+	    {
+	      rtx tmp = x; x = y; y = tmp;
+	      code = swap_condition (code);
+	    }
 	}
       cc_reg = gen_rtx_REG (mode, CC_REGNUM);
     }
   if ((mode == CC_FP_EQmode || mode == CC_FP_GTEmode
        || mode == CC_FP_ORDmode || mode == CC_FP_UNEQmode)
       /* mov<mode>cc might want to re-emit a comparison during ifcvt.  */
-      && (!REG_P (x) || REGNO (x) != 0 || !REG_P (y) || REGNO (y) != 1))
+      && (!REG_P (x) || REGNO (x) != GPR_0
+	  || !REG_P (y) || REGNO (y) != GPR_1))
     {
       rtx reg;
 
+#if 0
+      /* ??? We should really do the r0/r1 clobber only during rtl expansion,
+	 but just like the flag clobber of movsicc, we have to allow
+	 this for ifcvt to work, on the assumption that we'll only want
+	 to do this if these registers have been used before by the
+	 pre-ifcvt  code.  */
       gcc_assert (currently_expanding_to_rtl);
-      reg = gen_rtx_REG (in_mode, 0);
-      gcc_assert (!reg_overlap_mentioned_p (reg, y));
+#endif
+      reg = gen_rtx_REG (in_mode, GPR_0);
+      if (reg_overlap_mentioned_p (reg, y))
+	return 0;
       emit_move_insn (reg, x);
       x = reg;
-      reg = gen_rtx_REG (in_mode, 1);
+      reg = gen_rtx_REG (in_mode, GPR_1);
       emit_move_insn (reg, y);
       y = reg;
     }
@@ -964,7 +992,6 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
   int first_slot, last_slot, first_slot_offset, last_slot_offset;
   int first_slot_size;
   int small_slots = 0;
-  long lr_slot_offset;
 
   var_size	= size;
   args_size	= crtl->outgoing_args_size;
@@ -1021,7 +1048,7 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
 	    first_slot = regno;
 	  else if (last_slot < 0
 		   && (first_slot ^ regno) != 1
-		   && (!interrupt_p || regno > GPR_0 + 1))
+		   && (!interrupt_p || regno > GPR_1))
 	    last_slot = regno;
 	}
     }
@@ -1116,28 +1143,6 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
     }
   total_size = first_slot_offset + last_slot_offset;
 
-  lr_slot_offset
-    = (frame_pointer_needed ? first_slot_offset : (long) total_size);
-  if (first_slot != GPR_LR)
-    {
-      int stack_offset = epiphany_stack_offset - UNITS_PER_WORD;
-
-      for (regno = 0; ; regno++)
-	{
-	  if (stack_offset + UNITS_PER_WORD - first_slot_size == 0
-	      && first_slot >= 0)
-	    {
-	      stack_offset -= first_slot_size;
-	      regno--;
-	    }
-	  else if (regno == GPR_LR)
-	    break;
-	  else if TEST_HARD_REG_BIT (gmask, regno)
-	    stack_offset -= UNITS_PER_WORD;
-	}
-      lr_slot_offset += stack_offset;
-    }
-
   /* Save computed information.  */
   current_frame_info.total_size   = total_size;
   current_frame_info.pretend_size = pretend_size;
@@ -1150,7 +1155,6 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
   current_frame_info.first_slot_offset	= first_slot_offset;
   current_frame_info.first_slot_size	= first_slot_size;
   current_frame_info.last_slot_offset	= last_slot_offset;
-  MACHINE_FUNCTION (cfun)->lr_slot_offset = lr_slot_offset;
 
   current_frame_info.initialized  = reload_completed;
 
@@ -1622,6 +1626,28 @@ epiphany_emit_save_restore (int min, int limit, rtx addr, int epilogue_p)
 	mem = skipped_mem;
       else
 	mem = gen_mem (mode, addr);
+
+      /* If we are loading / storing LR, note the offset that
+	 gen_reload_insi_ra requires.  Since GPR_LR is even,
+	 we only need to test n, even if mode is DImode.  */
+      gcc_assert ((GPR_LR & 1) == 0);
+      if (n == GPR_LR)
+	{
+	  long lr_slot_offset = 0;
+	  rtx m_addr = XEXP (mem, 0);
+
+	  if (GET_CODE (m_addr) == PLUS)
+	    lr_slot_offset = INTVAL (XEXP (m_addr, 1));
+	  if (frame_pointer_needed)
+	    lr_slot_offset += (current_frame_info.first_slot_offset
+			       - current_frame_info.total_size);
+	  if (MACHINE_FUNCTION (cfun)->lr_slot_known)
+	    gcc_assert (MACHINE_FUNCTION (cfun)->lr_slot_offset
+			== lr_slot_offset);
+	  MACHINE_FUNCTION (cfun)->lr_slot_offset = lr_slot_offset;
+	  MACHINE_FUNCTION (cfun)->lr_slot_known = 1;
+	}
+
       if (!epilogue_p)
 	frame_move_insn (mem, reg);
       else if (n >= MAX_EPIPHANY_PARM_REGS || !crtl->args.pretend_args_size)
@@ -1667,7 +1693,7 @@ epiphany_expand_prologue (void)
 			 gen_rtx_REG (DImode, GPR_0));
       frame_move_insn (gen_rtx_REG (SImode, GPR_0),
 		       gen_rtx_REG (word_mode, STATUS_REGNUM));
-      frame_move_insn (gen_rtx_REG (SImode, GPR_0+1),
+      frame_move_insn (gen_rtx_REG (SImode, GPR_1),
 		       gen_rtx_REG (word_mode, IRET_REGNUM));
       mem = gen_frame_mem (BLKmode, stack_pointer_rtx);
       off = GEN_INT (-current_frame_info.first_slot_offset);
@@ -1712,18 +1738,28 @@ epiphany_expand_prologue (void)
      register save.  */
   if (current_frame_info.last_slot >= 0)
     {
+      rtx ip, mem2, insn, note;
+
       gcc_assert (current_frame_info.last_slot != GPR_FP
 		  || (!current_frame_info.need_fp
 		      && current_frame_info.first_slot < 0));
       off = GEN_INT (-current_frame_info.last_slot_offset);
       mem = gen_frame_mem (BLKmode,
 			   gen_rtx_PLUS (Pmode, stack_pointer_rtx, off));
-      reg = gen_rtx_REG (Pmode, GPR_IP);
-      frame_move_insn (reg, off);
-      frame_insn (gen_stack_adjust_str
-		   (gen_frame_mem (word_mode, stack_pointer_rtx),
-		    gen_rtx_REG (word_mode, current_frame_info.last_slot),
-		    reg, mem));
+      ip = gen_rtx_REG (Pmode, GPR_IP);
+      frame_move_insn (ip, off);
+      reg = gen_rtx_REG (word_mode, current_frame_info.last_slot),
+      mem2 = gen_frame_mem (word_mode, stack_pointer_rtx),
+      insn = frame_insn (gen_stack_adjust_str (mem2, reg, ip, mem));
+      /* Instruction scheduling can separate the instruction setting IP from
+	 INSN so that dwarf2out_frame_debug_expr becomes confused what the
+	 temporary register is.  Example: _gcov.o  */
+      note = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			  gen_rtx_PLUS (Pmode, stack_pointer_rtx, off));
+      note = gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (2, gen_rtx_SET (VOIDmode, mem2, reg),
+					  note));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
     }
   /* If there is only one or no register to save, yet we have a large frame,
      use an add.  */
@@ -1740,44 +1776,6 @@ epiphany_expand_prologue (void)
 	  off = reg;
 	}
       frame_insn (gen_stack_adjust_add (off, mem));
-    }
-
-  /* Mode switching uses get_hard_reg_initial_val after
-      emit_initial_value_sets, so we have to fix this up now.  */
-  save_config = has_hard_reg_initial_val (SImode, CONFIG_REGNUM);
-  if (save_config)
-    {
-      if (REG_P (save_config))
-	{
-	  if (REGNO (save_config) >= FIRST_PSEUDO_REGISTER)
-	    gcc_assert (!df_regs_ever_live_p (REGNO (save_config)));
-	  else
-	    frame_move_insn (save_config,
-			     get_hard_reg_initial_reg (save_config));
-	}
-      else
-	{
-	  rtx save_dst = save_config;
-
-	  reg = gen_rtx_REG (SImode, GPR_IP);
-	  gcc_assert (MEM_P (save_dst));
-	  if (!memory_operand (save_dst, SImode))
-	    {
-	      rtx addr = XEXP (save_dst, 0);
-	      rtx reg2 = gen_rtx_REG (SImode, GPR_16);
-
-	      gcc_assert (GET_CODE (addr) == PLUS);
-	      gcc_assert (XEXP (addr, 0) == hard_frame_pointer_rtx
-			  || XEXP (addr, 0) == stack_pointer_rtx);
-	      emit_move_insn (reg2, XEXP (addr, 1));
-	      save_dst
-		= replace_equiv_address (save_dst,
-					 gen_rtx_PLUS (Pmode, XEXP (addr, 0),
-						       reg2));
-	    }
-	  emit_move_insn (reg, get_hard_reg_initial_reg (save_config));
-	  emit_move_insn (save_dst, reg);
-	}
     }
 }
 
@@ -1843,7 +1841,7 @@ epiphany_expand_epilogue (int sibcall_p)
       emit_move_insn (gen_rtx_REG (word_mode, STATUS_REGNUM),
 		      gen_rtx_REG (SImode, GPR_0));
       emit_move_insn (gen_rtx_REG (word_mode, IRET_REGNUM),
-		      gen_rtx_REG (SImode, GPR_0+1));
+		      gen_rtx_REG (SImode, GPR_1));
       addr = plus_constant (Pmode, stack_pointer_rtx,
 			    - (HOST_WIDE_INT) 2 * UNITS_PER_WORD);
       emit_move_insn (gen_rtx_REG (DImode, GPR_0),
@@ -2239,6 +2237,7 @@ epiphany_optimize_mode_switching (int entity)
     {
     case EPIPHANY_MSW_ENTITY_AND:
     case EPIPHANY_MSW_ENTITY_OR:
+    case EPIPHANY_MSW_ENTITY_CONFIG:
       return true;
     case EPIPHANY_MSW_ENTITY_NEAREST:
     case EPIPHANY_MSW_ENTITY_TRUNC:
@@ -2257,7 +2256,8 @@ epiphany_optimize_mode_switching (int entity)
 int
 epiphany_mode_priority_to_mode (int entity, unsigned priority)
 {
-  if (entity == EPIPHANY_MSW_ENTITY_AND || entity == EPIPHANY_MSW_ENTITY_OR)
+  if (entity == EPIPHANY_MSW_ENTITY_AND || entity == EPIPHANY_MSW_ENTITY_OR
+      || entity== EPIPHANY_MSW_ENTITY_CONFIG)
     return priority;
   if (priority > 3)
     switch (priority)
@@ -2309,7 +2309,8 @@ epiphany_mode_needed (int entity, rtx insn)
   if (recog_memoized (insn) < 0)
     {
       if (entity == EPIPHANY_MSW_ENTITY_AND
-	  || entity == EPIPHANY_MSW_ENTITY_OR)
+	  || entity == EPIPHANY_MSW_ENTITY_OR
+	  || entity == EPIPHANY_MSW_ENTITY_CONFIG)
 	return 2;
       return FP_MODE_NONE;
     }
@@ -2318,9 +2319,24 @@ epiphany_mode_needed (int entity, rtx insn)
   switch (entity)
   {
   case EPIPHANY_MSW_ENTITY_AND:
-    return mode != FP_MODE_INT ? 1 : 2;
+    return mode != FP_MODE_NONE && mode != FP_MODE_INT ? 1 : 2;
   case EPIPHANY_MSW_ENTITY_OR:
     return mode == FP_MODE_INT ? 1 : 2;
+  case EPIPHANY_MSW_ENTITY_CONFIG:
+    /* We must know/save config before we set it to something else.
+       Where we need the original value, we are fine with having it
+       just unchanged from the function start.
+       Because of the nature of the mode switching optimization,
+       a restore will be dominated by a clobber.  */
+    if (mode != FP_MODE_NONE && mode != FP_MODE_CALLER)
+      return 1;
+    /* A cpecial case are abnormal edges, which are deemed to clobber
+       the mode as well.  We need to pin this effect on a actually
+       dominating insn, and one where the frame can be accessed, too, in
+       case the pseudo used to save CONFIG doesn't get a hard register.  */
+    if (CALL_P (insn) && find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+      return 1;
+    return 2;
   case EPIPHANY_MSW_ENTITY_ROUND_KNOWN:
     if (recog_memoized (insn) == CODE_FOR_set_fp_mode)
       mode = (enum attr_fp_mode) epiphany_mode_after (entity, mode, insn);
@@ -2364,6 +2380,10 @@ epiphany_mode_entry_exit (int entity, bool exit)
       if (exit)
 	return normal_mode == FP_MODE_INT ? 1 : 2;
       return 0;
+    case EPIPHANY_MSW_ENTITY_CONFIG:
+      if (exit)
+	return 2;
+      return normal_mode == FP_MODE_CALLER ? 0 : 1;
     case EPIPHANY_MSW_ENTITY_ROUND_UNKNOWN:
       if (normal_mode == FP_MODE_ROUND_NEAREST
 	  || normal_mode == FP_MODE_ROUND_TRUNC)
@@ -2386,9 +2406,21 @@ epiphany_mode_after (int entity, int last_mode, rtx insn)
      calls.  */
   if (entity == EPIPHANY_MSW_ENTITY_AND || entity == EPIPHANY_MSW_ENTITY_OR)
     {
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	return 0;
       return last_mode;
+    }
+  /* If there is an abnormal edge, we don't want the config register to
+     be 'saved' again at the destination.
+     The frame pointer adjustment is inside a PARALLEL because of the
+     flags clobber.  */
+  if (entity == EPIPHANY_MSW_ENTITY_CONFIG && NONJUMP_INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == PARALLEL
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET
+      && SET_DEST (XVECEXP (PATTERN (insn), 0, 0)) == frame_pointer_rtx)
+    {
+      gcc_assert (cfun->has_nonlocal_label);
+      return 1;
     }
   if (recog_memoized (insn) < 0)
     return last_mode;
@@ -2443,12 +2475,25 @@ emit_set_fp_mode (int entity, int mode, HARD_REG_SET regs_live ATTRIBUTE_UNUSED)
 	emit_move_insn (MACHINE_FUNCTION (cfun)->or_mask, GEN_INT(0x00080000));
       return;
     }
+  else if (entity == EPIPHANY_MSW_ENTITY_CONFIG)
+    {
+      /* Mode switching optimization is done after emit_initial_value_sets,
+	 so we have to take care of CONFIG_REGNUM here.  */
+      gcc_assert (mode >= 0 && mode <= 2);
+      rtx save = get_hard_reg_initial_val (SImode, CONFIG_REGNUM);
+      if (mode == 1)
+	emit_insn (gen_save_config (save));
+      return;
+    }
   fp_mode = (enum attr_fp_mode) mode;
   src = NULL_RTX;
 
   switch (fp_mode)
     {
       case FP_MODE_CALLER:
+	/* The EPIPHANY_MSW_ENTITY_CONFIG processing must come later
+	   so that the config save gets inserted before the first use.  */
+	gcc_assert (entity > EPIPHANY_MSW_ENTITY_CONFIG);
 	src = get_hard_reg_initial_val (SImode, CONFIG_REGNUM);
 	mask = MACHINE_FUNCTION (cfun)->and_mask;
 	break;

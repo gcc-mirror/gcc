@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,8 +110,9 @@ package body Sem_Mech is
          Class := First (Expressions (Mech_Name));
 
          if Nkind (Prefix (Mech_Name)) /= N_Identifier
-           or else not (Chars (Prefix (Mech_Name)) = Name_Descriptor or else
-                        Chars (Prefix (Mech_Name)) = Name_Short_Descriptor)
+           or else
+             not Nam_In (Chars (Prefix (Mech_Name)), Name_Descriptor,
+                                                     Name_Short_Descriptor)
            or else Present (Next (Class))
          then
             Bad_Mechanism;
@@ -129,8 +130,9 @@ package body Sem_Mech is
          Param := First (Parameter_Associations (Mech_Name));
 
          if Nkind (Name (Mech_Name)) /= N_Identifier
-           or else not (Chars (Name (Mech_Name)) = Name_Descriptor or else
-                        Chars (Name (Mech_Name)) = Name_Short_Descriptor)
+           or else
+             not Nam_In (Chars (Name (Mech_Name)), Name_Descriptor,
+                                                   Name_Short_Descriptor)
            or else Present (Next (Param))
            or else No (Selector_Name (Param))
            or else Chars (Selector_Name (Param)) /= Name_Class
@@ -298,12 +300,14 @@ package body Sem_Mech is
                -- Ada --
                ---------
 
-               --  Note: all RM defined conventions are treated the same
-               --  from the point of view of parameter passing mechanism
+               --  Note: all RM defined conventions are treated the same from
+               --  the point of view of parameter passing mechanism. Convention
+               --  Ghost has the same dynamic semantics as convention Ada.
 
                when Convention_Ada       |
                     Convention_Intrinsic |
                     Convention_Entry     |
+                    Convention_Ghost     |
                     Convention_Protected |
                     Convention_Stubbed   =>
 
@@ -484,7 +488,6 @@ package body Sem_Mech is
                   else
                      Set_Mechanism (Formal, By_Reference);
                   end if;
-
             end case;
          end if;
 

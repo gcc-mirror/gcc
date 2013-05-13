@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2012, AdaCore                     --
+--                     Copyright (C) 2001-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -199,6 +199,12 @@ package body GNAT.Sockets is
    pragma Inline (Check_For_Fd_Set);
    --  Raise Constraint_Error if Fd is less than 0 or greater than or equal to
    --  FD_SETSIZE, on platforms where fd_set is a bitmap.
+
+   function Connect_Socket
+     (Socket : Socket_Type;
+      Server : Sock_Addr_Type) return C.int;
+   pragma Inline (Connect_Socket);
+   --  Underlying implementation for the Connect_Socket procedures
 
    --  Types needed for Datagram_Socket_Stream_Type
 
@@ -510,10 +516,6 @@ package body GNAT.Sockets is
         (Selector, R_Socket_Set, W_Socket_Set, E_Socket_Set, Status, Timeout);
    end Check_Selector;
 
-   --------------------
-   -- Check_Selector --
-   --------------------
-
    procedure Check_Selector
      (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
@@ -662,11 +664,10 @@ package body GNAT.Sockets is
    -- Connect_Socket --
    --------------------
 
-   procedure Connect_Socket
+   function Connect_Socket
      (Socket : Socket_Type;
-      Server : Sock_Addr_Type)
+      Server : Sock_Addr_Type) return C.int
    is
-      Res : C.int;
       Sin : aliased Sockaddr_In;
       Len : constant C.int := Sin'Size / 8;
 
@@ -681,16 +682,18 @@ package body GNAT.Sockets is
         (Sin'Unchecked_Access,
          Short_To_Network (C.unsigned_short (Server.Port)));
 
-      Res := C_Connect (C.int (Socket), Sin'Address, Len);
+      return C_Connect (C.int (Socket), Sin'Address, Len);
+   end Connect_Socket;
 
-      if Res = Failure then
+   procedure Connect_Socket
+     (Socket : Socket_Type;
+      Server : Sock_Addr_Type)
+   is
+   begin
+      if Connect_Socket (Socket, Server) = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
    end Connect_Socket;
-
-   --------------------
-   -- Connect_Socket --
-   --------------------
 
    procedure Connect_Socket
      (Socket   : Socket_Type;
@@ -719,28 +722,32 @@ package body GNAT.Sockets is
       Req := (Name => Non_Blocking_IO, Enabled => True);
       Control_Socket (Socket, Request => Req);
 
-      --  Start operation (non-blocking), will raise Socket_Error with
-      --  EINPROGRESS.
+      --  Start operation (non-blocking), will return Failure with errno set
+      --  to EINPROGRESS.
 
-      begin
-         Connect_Socket (Socket, Server);
-      exception
-         when E : Socket_Error =>
-            if Resolve_Exception (E) = Operation_Now_In_Progress then
-               null;
-            else
-               raise;
-            end if;
-      end;
+      Res := Connect_Socket (Socket, Server);
+      if Res = Failure then
+         Conn_Err := Socket_Errno;
+         if Conn_Err /= SOSC.EINPROGRESS then
+            Raise_Socket_Error (Conn_Err);
+         end if;
+      end if;
 
-      --  Wait for socket to become available for writing
+      --  Wait for socket to become available for writing (unless the Timeout
+      --  is zero, in which case we consider that it has already expired, and
+      --  we do not need to wait at all).
 
-      Wait_On_Socket
-        (Socket   => Socket,
-         For_Read => False,
-         Timeout  => Timeout,
-         Selector => Selector,
-         Status   => Status);
+      if Timeout = 0.0 then
+         Status := Expired;
+
+      else
+         Wait_On_Socket
+           (Socket   => Socket,
+            For_Read => False,
+            Timeout  => Timeout,
+            Selector => Selector,
+            Status   => Status);
+      end if;
 
       --  Check error condition (the asynchronous connect may have terminated
       --  with an error, e.g. ECONNREFUSED) if select(2) completed.
@@ -2204,6 +2211,22 @@ package body GNAT.Sockets is
       Insert_Socket_In_Set (Item.Set'Access, C.int (Socket));
    end Set;
 
+   -----------------------
+   -- Set_Close_On_Exec --
+   -----------------------
+
+   procedure Set_Close_On_Exec
+     (Socket        : Socket_Type;
+      Close_On_Exec : Boolean;
+      Status        : out Boolean)
+   is
+      function C_Set_Close_On_Exec
+        (Socket : Socket_Type; Close_On_Exec : C.int) return C.int;
+      pragma Import (C, C_Set_Close_On_Exec, "__gnat_set_close_on_exec");
+   begin
+      Status := C_Set_Close_On_Exec (Socket, Boolean'Pos (Close_On_Exec)) = 0;
+   end Set_Close_On_Exec;
+
    ----------------------
    -- Set_Forced_Flags --
    ----------------------
@@ -2462,8 +2485,8 @@ package body GNAT.Sockets is
 
       Aliases_Count, Addresses_Count : Natural;
 
-      --  H_Length is not used because it is currently only set to 4
-      --  H_Addrtype is always AF_INET
+      --  H_Length is not used because it is currently only ever set to 4, as
+      --  H_Addrtype is always AF_INET.
 
    begin
       Aliases_Count := 0;
@@ -2491,10 +2514,24 @@ package body GNAT.Sockets is
          for J in Result.Addresses'Range loop
             declare
                Addr : In_Addr;
-               for Addr'Address use
-                 Hostent_H_Addr (E, C.int (J - Result.Addresses'First));
-               pragma Import (Ada, Addr);
+
+               --  Hostent_H_Addr (E, <index>) may return an address that is
+               --  not correctly aligned for In_Addr, so we need to use
+               --  an intermediate copy operation on a type with an alignemnt
+               --  of 1 to recover the value.
+
+               subtype Addr_Buf_T is C.char_array (1 .. Addr'Size / 8);
+               Unaligned_Addr : Addr_Buf_T;
+               for Unaligned_Addr'Address
+                 use Hostent_H_Addr (E, C.int (J - Result.Addresses'First));
+               pragma Import (Ada, Unaligned_Addr);
+
+               Aligned_Addr : Addr_Buf_T;
+               for Aligned_Addr'Address use Addr'Address;
+               pragma Import (Ada, Aligned_Addr);
+
             begin
+               Aligned_Addr := Unaligned_Addr;
                To_Inet_Addr (Addr, Result.Addresses (J));
             end;
          end loop;

@@ -755,7 +755,7 @@ synthesize_method (tree fndecl)
   tree stmt;
   location_t save_input_location = input_location;
   int error_count = errorcount;
-  int warning_count = warningcount;
+  int warning_count = warningcount + werrorcount;
 
   /* Reset the source location, we might have been previously
      deferred, and thus have saved where we were first needed.  */
@@ -817,7 +817,7 @@ synthesize_method (tree fndecl)
 
   pop_deferring_access_checks ();
 
-  if (error_count != errorcount || warning_count != warningcount)
+  if (error_count != errorcount || warning_count != warningcount + werrorcount)
     inform (input_location, "synthesized method %qD first required here ",
 	    fndecl);
 }

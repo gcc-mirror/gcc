@@ -156,6 +156,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   /**
+   *  struct _Hash_node_value_base
+   *
+   *  Node type with the value to store.
+   */
+  template<typename _Value>
+    struct _Hash_node_value_base : _Hash_node_base
+    {
+      __gnu_cxx::__aligned_buffer<_Value> _M_storage;
+
+      _Value*
+      _M_valptr() noexcept
+      { return _M_storage._M_ptr(); }
+
+      const _Value*
+      _M_valptr() const noexcept
+      { return _M_storage._M_ptr(); }
+
+      _Value&
+      _M_v() noexcept
+      { return *_M_valptr(); }
+
+      const _Value&
+      _M_v() const noexcept
+      { return *_M_valptr(); }
+    };
+
+  /**
    *  Primary template struct _Hash_node.
    */
   template<typename _Value, bool _Cache_hash_code>
@@ -164,38 +191,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Specialization for nodes with caches, struct _Hash_node.
    *
-   *  Base class is __detail::_Hash_node_base.
+   *  Base class is __detail::_Hash_node_value_base.
    */
   template<typename _Value>
-    struct _Hash_node<_Value, true> : _Hash_node_base
+    struct _Hash_node<_Value, true> : _Hash_node_value_base<_Value>
     {
-      _Value       _M_v;
       std::size_t  _M_hash_code;
 
-      template<typename... _Args>
-	_Hash_node(_Args&&... __args)
-	: _M_v(std::forward<_Args>(__args)...), _M_hash_code() { }
-
       _Hash_node*
-      _M_next() const { return static_cast<_Hash_node*>(_M_nxt); }
+      _M_next() const { return static_cast<_Hash_node*>(this->_M_nxt); }
     };
 
   /**
    *  Specialization for nodes without caches, struct _Hash_node.
    *
-   *  Base class is __detail::_Hash_node_base.
+   *  Base class is __detail::_Hash_node_value_base.
    */
   template<typename _Value>
-    struct _Hash_node<_Value, false> : _Hash_node_base
+    struct _Hash_node<_Value, false> : _Hash_node_value_base<_Value>
     {
-      _Value       _M_v;
-
-      template<typename... _Args>
-	_Hash_node(_Args&&... __args)
-	: _M_v(std::forward<_Args>(__args)...) { }
-
       _Hash_node*
-      _M_next() const { return static_cast<_Hash_node*>(_M_nxt); }
+      _M_next() const { return static_cast<_Hash_node*>(this->_M_nxt); }
     };
 
   /// Base class for node iterators.
@@ -255,11 +271,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       reference
       operator*() const
-      { return this->_M_cur->_M_v; }
+      { return this->_M_cur->_M_v(); }
 
       pointer
       operator->() const
-      { return std::__addressof(this->_M_cur->_M_v); }
+      { return this->_M_cur->_M_valptr(); }
 
       _Node_iterator&
       operator++()
@@ -307,11 +323,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       reference
       operator*() const
-      { return this->_M_cur->_M_v; }
+      { return this->_M_cur->_M_v(); }
 
       pointer
       operator->() const
-      { return std::__addressof(this->_M_cur->_M_v); }
+      { return this->_M_cur->_M_valptr(); }
 
       _Node_const_iterator&
       operator++()
@@ -341,7 +357,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef std::size_t result_type;
 
     result_type
-    operator()(first_argument_type __num, second_argument_type __den) const
+    operator()(first_argument_type __num,
+	       second_argument_type __den) const noexcept
     { return __num % __den; }
   };
 
@@ -385,6 +402,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _State
     _M_state() const
     { return _M_next_resize; }
+
+    void
+    _M_reset() noexcept
+    { _M_next_resize = 0; }
 
     void
     _M_reset(_State __state)
@@ -496,7 +517,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __h->_M_insert_unique_node(__n, __code, __p)->second;
 	}
 
-      return (__p->_M_v).second;
+      return __p->_M_v().second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -522,7 +543,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __h->_M_insert_unique_node(__n, __code, __p)->second;
 	}
 
-      return (__p->_M_v).second;
+      return __p->_M_v().second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -542,7 +563,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (!__p)
 	__throw_out_of_range(__N("_Map_base::at"));
-      return (__p->_M_v).second;
+      return __p->_M_v().second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -562,7 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (!__p)
 	__throw_out_of_range(__N("_Map_base::at"));
-      return (__p->_M_v).second;
+      return __p->_M_v().second;
     }
 
   /**
@@ -644,7 +665,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __h._M_rehash(__do_rehash.second, __saved_state);
 
 	for (; __first != __last; ++__first)
-	  this->insert(*__first);
+	  __h._M_insert(*__first, __unique_keys());
       }
 
   /**
@@ -823,8 +844,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Primary class template _Hashtable_ebo_helper.
    *
-   *  Helper class using EBO when it is not forbidden, type is not
-   *  final, and when it worth it, type is empty.
+   *  Helper class using EBO when it is not forbidden (the type is not
+   *  final) and when it is worth it (the type is empty.)
    */
   template<int _Nm, typename _Tp,
 	   bool __use_ebo = !__is_final(_Tp) && __is_empty(_Tp)>
@@ -939,7 +960,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       std::size_t
       _M_bucket_index(const __node_type* __p, std::size_t __n) const
-      { return _M_ranged_hash()(_M_extract()(__p->_M_v), __n); }
+	noexcept( noexcept(declval<const _Hash&>()(declval<const _Key&>(), (std::size_t)0)) )
+      { return _M_ranged_hash()(_M_extract()(__p->_M_v()), __n); }
 
       void
       _M_store_code(__node_type*, __hash_code) const
@@ -1023,9 +1045,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_h2()(__c, __n); }
 
       std::size_t
-      _M_bucket_index(const __node_type* __p,
-		      std::size_t __n) const
-      { return _M_h2()(_M_h1()(_M_extract()(__p->_M_v)), __n); }
+      _M_bucket_index(const __node_type* __p, std::size_t __n) const
+	noexcept( noexcept(declval<const _H1&>()(declval<const _Key&>()))
+		  && noexcept(declval<const _H2&>()((__hash_code)0, (std::size_t)0)) )
+      { return _M_h2()(_M_h1()(_M_extract()(__p->_M_v())), __n); }
 
       void
       _M_store_code(__node_type*, __hash_code) const
@@ -1109,6 +1132,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       std::size_t
       _M_bucket_index(const __node_type* __p, std::size_t __n) const
+	noexcept( noexcept(declval<const _H2&>()((__hash_code)0,
+						 (std::size_t)0)) )
       { return _M_h2()(__p->_M_hash_code, __n); }
 
       void
@@ -1163,7 +1188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static bool
     _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
 	      const _Key& __k, _HashCodeType __c, _Hash_node<_Value, true>* __n)
-    { return __c == __n->_M_hash_code && __eq(__k, __extract(__n->_M_v)); }
+    { return __c == __n->_M_hash_code && __eq(__k, __extract(__n->_M_v())); }
   };
 
   /// Specialization.
@@ -1174,7 +1199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static bool
     _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
 	      const _Key& __k, _HashCodeType, _Hash_node<_Value, false>* __n)
-    { return __eq(__k, __extract(__n->_M_v)); }
+    { return __eq(__k, __extract(__n->_M_v())); }
   };
 
 
@@ -1305,11 +1330,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       reference
       operator*() const
-      { return this->_M_cur->_M_v; }
+      { return this->_M_cur->_M_v(); }
 
       pointer
       operator->() const
-      { return std::__addressof(this->_M_cur->_M_v); }
+      { return this->_M_cur->_M_valptr(); }
 
       _Local_iterator&
       operator++()
@@ -1364,11 +1389,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       reference
       operator*() const
-      { return this->_M_cur->_M_v; }
+      { return this->_M_cur->_M_v(); }
 
       pointer
       operator->() const
-      { return std::__addressof(this->_M_cur->_M_v); }
+      { return this->_M_cur->_M_valptr(); }
 
       _Local_const_iterator&
       operator++()
@@ -1660,6 +1685,120 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Before_begin(_Alloc&& __a)
 	  : _NodeAlloc(std::forward<_Alloc>(__a))
 	{ }
+    };
+
+  /*
+   * Following are functors recyclicing a pool of nodes and using allocation
+   * once the pool is empty.
+   */
+  /// Version using copy semantic through the copy constructor.
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash,
+	   typename _RehashPolicy, typename _Traits>
+    struct _ReuseOrAllocNode
+    {
+    private:
+      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
+				     _Equal, _H1, _H2, _Hash,
+				     _RehashPolicy, _Traits>;
+      using __val_alloc_type = typename __hashtable::_Value_alloc_type;
+      using __val_alloc_traits = typename __hashtable::_Value_alloc_traits;
+      using __node_alloc_traits = typename __hashtable::_Node_alloc_traits;
+      using __node_type = typename __hashtable::__node_type;
+
+    public:
+      _ReuseOrAllocNode(__node_type* __nodes, __hashtable& __h)
+	: _M_nodes(__nodes), _M_h(__h) { }
+      _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
+
+      ~_ReuseOrAllocNode()
+      { _M_h._M_deallocate_nodes(_M_nodes); }
+
+      __node_type*
+      operator()(const __node_type* __n) const
+      {
+	if (_M_nodes)
+	  {
+	    __node_type* __node = _M_nodes;
+	    _M_nodes = _M_nodes->_M_next();
+	    __node->_M_nxt = nullptr;
+	    __val_alloc_type __a(_M_h._M_node_allocator());
+	    __val_alloc_traits::destroy(__a, __node->_M_valptr());
+	    __try
+	      {
+		__val_alloc_traits::construct(__a, __node->_M_valptr(),
+					      __n->_M_v());
+	      }
+	    __catch(...)
+	      {
+		__node->~__node_type();
+		__node_alloc_traits::deallocate(_M_h._M_node_allocator(),
+						__node, 1);
+		__throw_exception_again;
+	      }
+	    return __node;
+	  }
+	return _M_h._M_allocate_node(__n->_M_v());
+      }
+
+      mutable __node_type* _M_nodes;
+      __hashtable& _M_h;
+    };
+
+  /// Version using move semantic through the move constructor.
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash,
+	   typename _RehashPolicy, typename _Traits>
+    struct _MoveReuseOrAllocNode
+    {
+    private:
+      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
+				     _Equal, _H1, _H2, _Hash,
+				     _RehashPolicy, _Traits>;
+      using __val_alloc_type = typename __hashtable::_Value_alloc_type;
+      using __val_alloc_traits = typename __hashtable::_Value_alloc_traits;
+      using __node_alloc_traits = typename __hashtable::_Node_alloc_traits;
+      using __node_type = typename __hashtable::__node_type;
+
+    public:
+      _MoveReuseOrAllocNode(__node_type* __nodes, __hashtable& __h)
+	: _M_nodes(__nodes), _M_h(__h) { }
+      _MoveReuseOrAllocNode(const _MoveReuseOrAllocNode&) = delete;
+
+      ~_MoveReuseOrAllocNode()
+      { _M_h._M_deallocate_nodes(_M_nodes); }
+
+      __node_type*
+      operator()(__node_type* __n) const
+      {
+	if (_M_nodes)
+	  {
+	    __node_type* __node = _M_nodes;
+	    _M_nodes = _M_nodes->_M_next();
+	    __node->_M_nxt = nullptr;
+	    __val_alloc_type  __a(_M_h._M_node_allocator());
+	    __val_alloc_traits::destroy(__a, __node->_M_valptr());
+	    __try
+	      {
+		__val_alloc_traits::construct(__a, __node->_M_valptr(),
+					std::move_if_noexcept(__n->_M_v()));
+	      }
+	    __catch(...)
+	      {
+		__node->~__node_type();
+		__node_alloc_traits::deallocate(_M_h._M_node_allocator(),
+						__node, 1);
+		__throw_exception_again;
+	      }
+	    return __node;
+	  }
+	return _M_h._M_allocate_node(std::move_if_noexcept(__n->_M_v()));
+      }
+
+      mutable __node_type* _M_nodes;
+      __hashtable& _M_h;
     };
 
  //@} hashtable-detail

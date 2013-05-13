@@ -64,7 +64,8 @@ along with GCC; see the file COPYING3.  If not see
      RTX_BITFIELD_OPS
          an rtx code for a bit-field operation (ZERO_EXTRACT, SIGN_EXTRACT)
      RTX_INSN
-         an rtx code for a machine insn (INSN, JUMP_INSN, CALL_INSN)
+         an rtx code for a machine insn (INSN, JUMP_INSN, CALL_INSN) or
+	 data that will be output as assembly pseudo-ops (DEBUG_INSN)
      RTX_MATCH
          an rtx code for something that matches in insns (e.g, MATCH_DUP)
      RTX_AUTOINC
@@ -101,10 +102,24 @@ DEF_RTL_EXPR(EXPR_LIST, "expr_list", "ee", RTX_EXTRA)
    The insns are represented in print by their uids.  */
 DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", RTX_EXTRA)
 
-/* SEQUENCE appears in the result of a `gen_...' function
-   for a DEFINE_EXPAND that wants to make several insns.
-   Its elements are the bodies of the insns that should be made.
-   `emit_insn' takes the SEQUENCE apart and makes separate insns.  */
+/* SEQUENCE is used in late passes of the compiler to group insns for
+   one reason or another.
+
+   For example, after delay slot filling, branch instructions with filled
+   delay slots are represented as a SEQUENCE of length 1 + n_delay_slots,
+   with the branch instruction in XEXPVEC(seq, 0, 0) and the instructions
+   occupying the delay slots in the remaining XEXPVEC slots.
+
+   Another place where a SEQUENCE may appear, is in REG_FRAME_RELATED_EXPR
+   notes, to express complex operations that are not obvious from the insn
+   to which the REG_FRAME_RELATED_EXPR note is attached.  In this usage of
+   SEQUENCE, the sequence vector slots do not hold real instructions but
+   only pseudo-instructions that can be translated to DWARF CFA expressions.
+
+   Some back ends also use SEQUENCE to group insns in bundles.
+
+   Much of the compiler infrastructure is not prepared to handle SEQUENCE
+   objects.  Only passes after pass_free_cfg are expected to handle them.  */
 DEF_RTL_EXPR(SEQUENCE, "sequence", "E", RTX_EXTRA)
 
 /* Represents a non-global base address.  This is only used in alias.c.  */
@@ -136,6 +151,13 @@ DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBeiie0", RTX_INSN)
    Field ( rtx->u.fld[8] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
 DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBeiiee", RTX_INSN)
+
+/* Placeholder for tablejump JUMP_INSNs.  The pattern of this kind
+   of rtx is always either an ADDR_VEC or an ADDR_DIFF_VEC.  These
+   placeholders do not appear as real instructions inside a basic
+   block, but are considered active_insn_p instructions for historical
+   reasons, when jump table data was represented with JUMP_INSNs.  */
+DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "iuuBe0000", RTX_INSN)
 
 /* A marker that indicates that control will not flow through.  */
 DEF_RTL_EXPR(BARRIER, "barrier", "iuu00000", RTX_EXTRA)
@@ -214,8 +236,12 @@ DEF_RTL_EXPR(UNSPEC, "unspec", "Ei", RTX_EXTRA)
 /* Similar, but a volatile operation and one which may trap.  */
 DEF_RTL_EXPR(UNSPEC_VOLATILE, "unspec_volatile", "Ei", RTX_EXTRA)
 
-/* Vector of addresses, stored as full words.  */
-/* Each element is a LABEL_REF to a CODE_LABEL whose address we want.  */
+/* ----------------------------------------------------------------------
+   Table jump addresses.
+   ---------------------------------------------------------------------- */
+
+/* Vector of addresses, stored as full words.
+   Each element is a LABEL_REF to a CODE_LABEL whose address we want.  */
 DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", RTX_EXTRA)
 
 /* Vector of address differences X0 - BASE, X1 - BASE, ...
@@ -240,7 +266,6 @@ DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", RTX_EXTRA)
    The third, fourth and fifth operands are only valid when
    CASE_VECTOR_SHORTEN_MODE is defined, and only in an optimizing
    compilation.  */
-
 DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEee0", RTX_EXTRA)
 
 /* Memory prefetch, with attributes supported on some targets.
@@ -1279,8 +1304,41 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", RTX_EXTRA)
    true, the second operand will be used as the value of the conditional.  */
 DEF_RTL_EXPR(COND, "cond", "Ee", RTX_EXTRA)
 
+/* Definition of a pattern substitution meta operation on a DEFINE_EXPAND
+   or a DEFINE_INSN.  Automatically generates new instances of DEFINE_INSNs
+   that match the substitution pattern.
+
+   Operand:
+   0: The name of the substitition template.
+   1: Input template to match to see if a substitution is applicable.
+   2: A C expression giving an additional condition for the generated
+      new define_expand or define_insn.
+   3: Output tempalate to generate via substitution.
+
+   Within a DEFINE_SUBST template, the meaning of some RTL expressions is
+   different from their usual interpretation: a MATCH_OPERAND matches any
+   expression tree with matching machine mode or with VOIDmode.  Likewise,
+   MATCH_OP_DUP and MATCH_DUP match more liberally in a DEFINE_SUBST than
+   in other RTL expressions.  MATCH_OPERATOR matches all common operators
+   but also UNSPEC, UNSPEC_VOLATILE, and MATCH_OPERATORS from the input
+   DEFINE_EXPAND or DEFINE_INSN.  */
 DEF_RTL_EXPR(DEFINE_SUBST, "define_subst", "sEsE", RTX_EXTRA)
+
+/* Substitution attribute to apply a DEFINE_SUBST to a pattern.
+
+   Operand:
+   0: The name of the subst-attribute.
+   1: The name of the DEFINE_SUBST to be applied for this attribute.
+   2: String to substitute for the subst-attribute name in the pattern
+      name, for the case that the DEFINE_SUBST is not applied (i.e. the
+      unmodified version of the pattern).
+   3: String to substitute for the subst-attribute name in the pattern
+      name, for the case that the DEFINE_SUBST is applied to the patten.
+      
+   The use of DEFINE_SUBST and DEFINE_SUBST_ATTR is explained in the
+   GCC internals manual, under "RTL Templates Transformations".  */
 DEF_RTL_EXPR(DEFINE_SUBST_ATTR, "define_subst_attr", "ssss", RTX_EXTRA)
+
 #endif /* GENERATOR_FILE */
 
 /*
