@@ -1,3 +1,9 @@
+2013-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/fstack-protector-strong.c: Don't include <stdlib.h>.
+	(alloca): Remove declaration.
+	(foo9): Replace alloca by __builtin_alloca.
+
 2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* testsuite/gcc.c-torture/compile/limits-externdecl.c [target avr-*-*]:
