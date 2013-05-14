@@ -1,3 +1,8 @@
+2013-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/57274
+	* c-common.c (verify_tree): Don't recurse into SIZEOF_EXPR.
+
 2013-03-22  Release Manager
 
 	* GCC 4.8.0 released.
