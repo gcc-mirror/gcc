@@ -1,3 +1,8 @@
+2013-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57041
+	* pt.c (tsubst_copy_and_build): Don't recur into a designator.
+
 2013-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53903

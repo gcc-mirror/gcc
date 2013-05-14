@@ -1,6 +1,5 @@
 // PR c++/57041
 // { dg-options "-std=gnu++11" }
-// { dg-prune-output "error:" }
 
 template<typename T>
 union u {
