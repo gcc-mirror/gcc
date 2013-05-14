@@ -9735,7 +9735,7 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
       if (range_expr != error_mark_node
 	  && !type_dependent_expression_p (range_expr)
 	  /* The length of an array might be dependent.  */
-	  && COMPLETE_TYPE_P (TREE_TYPE (range_expr))
+	  && COMPLETE_TYPE_P (complete_type (TREE_TYPE (range_expr)))
 	  /* do_auto_deduction doesn't mess with template init-lists.  */
 	  && !BRACE_ENCLOSED_INITIALIZER_P (range_expr))
 	do_range_for_auto_deduction (range_decl, range_expr);
