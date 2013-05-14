@@ -1,3 +1,14 @@
+2013-05-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-fcm.x: Add cases testing
+	FLOAT cmp FLOAT ? INT : INT.
+	* gcc.target/aarch64/vect-fcm-eq-d.c: Define IMODE.
+	* gcc.target/aarch64/vect-fcm-eq-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-f.c: Likewise.
+
 2013-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53903
