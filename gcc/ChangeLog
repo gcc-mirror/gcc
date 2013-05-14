@@ -1,3 +1,12 @@
+2013-05-14  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/57269
+	Backport from mainline
+	2012-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* coverage.c (coverage_init): Read counts file before writing
+	graph header.
+
 2013-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/57264
