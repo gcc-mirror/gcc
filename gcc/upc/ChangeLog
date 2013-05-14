@@ -1,3 +1,11 @@
+2013-05-14 Gary Funck  <gary@intrepid.com>
+
+	upc-pts-packed.c (upc_pts_packed_build_cvt):
+	When checking whether the phase of a PTS should be reset,
+	if the source type is an array type, then bypass
+        the check for equal type sizes.
+	upc-pts-struct.c (upc_pts_struct_build_cvt): Ditto.
+
 2013-04-02 Gary Funck  <gary@intrepid.com>
 
 	Revert revision 178346 (2011-08-30)

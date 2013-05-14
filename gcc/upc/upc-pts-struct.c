@@ -545,6 +545,19 @@ upc_pts_struct_build_cvt (location_t loc, tree exp)
 	s1 = NULL;
       if (s2 && integer_zerop (s2))
 	s2 = NULL;
+      /* If the source type is an array type, then bypass
+         the check for equal type sizes.  This arises when
+	 an array is implicitly converted to a pointer to
+	 the element type.  */
+      if ((TREE_CODE (tt1) != ARRAY_TYPE)
+          && (TREE_CODE (tt2) == ARRAY_TYPE))
+        {
+          const tree elem_type1 = strip_array_types (tt1);
+          const tree elem_type2 = strip_array_types (tt2);
+	  if (TYPE_MAIN_VARIANT (elem_type1)
+	      == TYPE_MAIN_VARIANT (elem_type2))
+	    s2 = s1;
+        }
       /* If the source type is a not a generic pointer to shared, and
          either its block size or type size differs from the target,
          then the result must have zero phase.  If the source type is
