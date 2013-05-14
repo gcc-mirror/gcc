@@ -83,6 +83,9 @@
 ;; Vector Float modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
 
+;; Modes suitable to use as the return type of a vcond expression.
+(define_mode_iterator VDQF_COND [V2SF V2SI V4SF V4SI V2DF V2DI])
+
 ;; All Float modes.
 (define_mode_iterator VALLF [V2SF V4SF V2DF SF DF])
 

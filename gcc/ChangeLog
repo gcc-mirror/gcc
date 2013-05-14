@@ -1,3 +1,15 @@
+2013-05-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_vcond_internal<mode>): Rename to...
+	(aarch64_vcond_internal<mode><mode>): ...This, for integer modes.
+	(aarch64_vcond_internal<VDQF_COND:mode><VDQF:mode>): ...This for
+	float modes. Clarify all iterator modes.
+	(vcond<mode><mode>): Use new name for vcond expanders.
+	(vcond<v_cmp_result><mode>): Likewise.
+	(vcondu<mode><mode>: Likewise.
+	* config/aarch64/iterators.md (VDQF_COND): New.
+
 2013-05-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR bootstrap/57266
