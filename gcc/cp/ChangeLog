@@ -1,8 +1,8 @@
 2013-05-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56998
-	* call.c (null_ptr_cst_p): An expression with side-effects can't
-	be a C++03 null pointer constant.
+	* semantics.c (potential_constant_expression_1): Make sure the
+	called function is potentially constant.
 
 	PR c++/57041
 	* decl.c (reshape_init_class): Handle error_mark_node.
