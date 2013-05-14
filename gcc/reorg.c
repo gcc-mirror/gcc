@@ -314,7 +314,6 @@ static int
 resource_conflicts_p (struct resources *res1, struct resources *res2)
 {
   if ((res1->cc && res2->cc) || (res1->memory && res2->memory)
-      || (res1->unch_memory && res2->unch_memory)
       || res1->volatil || res2->volatil)
     return 1;
 
@@ -1580,7 +1579,6 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
   /* Insns we pass may not set either NEEDED or SET, so merge them for
      simpler tests.  */
   needed.memory |= set.memory;
-  needed.unch_memory |= set.unch_memory;
   IOR_HARD_REG_SET (needed.regs, set.regs);
 
   /* This insn isn't redundant if it conflicts with an insn that either is

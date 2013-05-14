@@ -1300,11 +1300,7 @@ compare_for_stack_reg (rtx insn, stack_ptr regstack, rtx pat_src)
 	  /* The 386 can only represent death of the first operand in
 	     the case handled above.  In all other cases, emit a separate
 	     pop and remove the death note from here.  */
-
-	  /* link_cc0_insns (insn); */
-
 	  remove_regno_note (insn, REG_DEAD, REGNO (XEXP (src2_note, 0)));
-
 	  emit_pop_insn (insn, regstack, XEXP (src2_note, 0),
 			 EMIT_AFTER);
 	}

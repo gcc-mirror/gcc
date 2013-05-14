@@ -25,14 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Macro to clear all resources.  */
 #define CLEAR_RESOURCE(RES)	\
- do { (RES)->memory = (RES)->unch_memory = (RES)->volatil = (RES)->cc = 0; \
+ do { (RES)->memory = (RES)->volatil = (RES)->cc = 0; \
       CLEAR_HARD_REG_SET ((RES)->regs); } while (0)
 
 /* The resources used by a given insn.  */
 struct resources
 {
   char memory;		/* Insn sets or needs a memory location.  */
-  char unch_memory;	/* Insn sets or needs an "unchanging" MEM.  */
   char volatil;		/* Insn sets or needs a volatile memory loc.  */
   char cc;		/* Insn sets or needs the condition codes.  */
   HARD_REG_SET regs;	/* Which registers are set or needed.  */
