@@ -101,7 +101,8 @@ vectorize_loops (void)
      than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
   FOR_EACH_LOOP (li, loop, 0)
-    if (optimize_loop_nest_for_speed_p (loop))
+    if ((flag_tree_vectorize && optimize_loop_nest_for_speed_p (loop))
+	|| loop->force_vect)
       {
 	loop_vec_info loop_vinfo;
 	vect_location = find_loop_location (loop);
@@ -122,6 +123,9 @@ vectorize_loops (void)
                        LOC_FILE (vect_location), LOC_LINE (vect_location));
 	vect_transform_loop (loop_vinfo);
 	num_vectorized_loops++;
+	/* Now that the loop has been vectorized, allow it to be unrolled
+	   etc.  */
+	loop->force_vect = false;
       }
 
   vect_location = UNKNOWN_LOC;

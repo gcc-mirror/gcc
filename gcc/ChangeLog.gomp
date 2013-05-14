@@ -1,3 +1,24 @@
+2013-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgloop.h (struct loop): Add safelen and force_vect fields.
+	* function.h (struct function): Add has_force_vect_loops field.
+	* omp-low.c (expand_omp_simd): If !broken_loop, create loop for
+	the simd region and set safelen and force_vect fields in it.
+	* tree-vectorizer.c (vectorize_loops): If loop has force_vect set,
+	vectorize it even if flag_vectorize isn't set.  Clear loop->force_vect
+	after vectorization.
+	* tree-ssa-loop.c (gate_tree_vectorize): Return true even
+	cfun->has_force_vect_loops.
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1): Don't
+	unroll loops with loop->force_vect.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): For
+	unknown or bad data dependency, if loop->safelen is non-zero, just
+	decrease *max_vf to loop->safelen if needed and return false.
+	* tree-if-conv.c (main_tree_if_conversion): If-convert also loops with
+	loop->force_vect.
+	(gate_tree_if_conversion): Return true even if
+	cfun->has_force_vect_loops.
+
 2013-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (omp_declare_simd_clauses_equal): New function.

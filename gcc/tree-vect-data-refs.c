@@ -255,6 +255,15 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
+      /* If user asserted safelen consecutive iterations can be
+	 executed concurrently, assume independence.  */
+      if (loop->safelen >= 2)
+	{
+	  if (loop->safelen < *max_vf)
+	    *max_vf = loop->safelen;
+	  return false;
+	}
+
       if (STMT_VINFO_GATHER_P (stmtinfo_a)
 	  || STMT_VINFO_GATHER_P (stmtinfo_b))
 	{
@@ -291,6 +300,15 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   /* Known data dependence.  */
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
+      /* If user asserted safelen consecutive iterations can be
+	 executed concurrently, assume independence.  */
+      if (loop->safelen >= 2)
+	{
+	  if (loop->safelen < *max_vf)
+	    *max_vf = loop->safelen;
+	  return false;
+	}
+
       if (STMT_VINFO_GATHER_P (stmtinfo_a)
 	  || STMT_VINFO_GATHER_P (stmtinfo_b))
 	{

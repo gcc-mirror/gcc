@@ -225,7 +225,7 @@ tree_vectorize (void)
 static bool
 gate_tree_vectorize (void)
 {
-  return flag_tree_vectorize;
+  return flag_tree_vectorize || cfun->has_force_vect_loops;
 }
 
 struct gimple_opt_pass pass_vectorize =
