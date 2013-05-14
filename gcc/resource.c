@@ -240,9 +240,7 @@ mark_referenced_resources (rtx x, struct resources *res,
     case MEM:
       /* If this memory shouldn't change, it really isn't referencing
 	 memory.  */
-      if (MEM_READONLY_P (x))
-	res->unch_memory = 1;
-      else
+      if (! MEM_READONLY_P (x))
 	res->memory = 1;
       res->volatil |= MEM_VOLATILE_P (x);
 
@@ -740,7 +738,6 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
       if (in_dest)
 	{
 	  res->memory = 1;
-	  res->unch_memory |= MEM_READONLY_P (x);
 	  res->volatil |= MEM_VOLATILE_P (x);
 	}
 
@@ -896,7 +893,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
   /* We have to assume memory is needed, but the CC isn't.  */
   res->memory = 1;
-  res->volatil = res->unch_memory = 0;
+  res->volatil = 0;
   res->cc = 0;
 
   /* See if we have computed this value already.  */
@@ -1145,7 +1142,6 @@ init_resource_info (rtx epilogue_insn)
 
   end_of_function_needs.cc = 0;
   end_of_function_needs.memory = 1;
-  end_of_function_needs.unch_memory = 0;
   CLEAR_HARD_REG_SET (end_of_function_needs.regs);
 
   if (frame_pointer_needed)

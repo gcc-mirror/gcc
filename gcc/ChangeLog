@@ -1,5 +1,14 @@
 2013-05-14  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* resource.h (struct resources): Remove unch_memory member.
+	(CLEAR_RESOURCE): Don't clear unch_memory.
+	* resource.c (mark_referenced_resources): Don't set it.
+	(mark_set_resources): Likewise.
+	(mark_target_live_regs): Don't clear it.
+	(init_resource_info): Likewise.
+	* reorg.c (resource_conflicts_p): Don't compare it.
+	(redundant_insn): Don't set it.
+
 	* rtl.h (next_label, skip_consecutive_labels, link_cc0_insns):
 	Remove prototypes.
 	* emit-rtl.c (next_label): Remove unused function.
