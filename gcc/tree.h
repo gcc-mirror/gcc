@@ -5770,7 +5770,6 @@ extern tree omit_two_operands_loc (location_t, tree, tree, tree, tree);
 #define invert_truthvalue(T)\
    invert_truthvalue_loc(UNKNOWN_LOCATION, T)
 extern tree invert_truthvalue_loc (location_t, tree);
-extern tree fold_truth_not_expr (location_t, tree);
 extern tree fold_unary_to_constant (enum tree_code, tree, tree);
 extern tree fold_binary_to_constant (enum tree_code, tree, tree, tree);
 extern tree fold_read_from_constant_string (tree);

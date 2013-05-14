@@ -1,3 +1,8 @@
+2013-05-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/ext/vector22.C: New testcase.
+	* gcc.dg/binop-xor3.c: Remove xfail.
+
 2013-05-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect-fcm.x: Add cases testing
