@@ -6,6 +6,8 @@
 #include<string.h>
 #include<stdlib.h>
 
+extern void *alloca(__SIZE_TYPE__);
+
 extern int g0;
 extern int* pg0;
 int
