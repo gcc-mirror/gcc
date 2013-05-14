@@ -1,5 +1,9 @@
 2013-05-14  Mike Stump  <mikestump@comcast.net>
 
+	* gdbinit.in: Add __null.
+
+2013-05-14  Mike Stump  <mikestump@comcast.net>
+
 	* recog.h: Rename struct recog_data to Recog_data.
 	* recog.c: Likewise.
 	* reload.c (can_reload_into): Likewise.
