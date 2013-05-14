@@ -1522,6 +1522,21 @@ ira_print_live_range_list (FILE *f, live_range_t r)
   fprintf (f, "\n");
 }
 
+DEBUG_FUNCTION void
+debug (live_range &ref)
+{
+  ira_print_live_range_list (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (live_range *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 /* Print live ranges R to stderr.  */
 void
 ira_debug_live_range_list (live_range_t r)

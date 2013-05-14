@@ -59,7 +59,6 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure GNATCmd is
    Project_Node_Tree : Project_Node_Tree_Ref;
-   Root_Environment  : Prj.Tree.Environment;
    Project_File      : String_Access;
    Project           : Prj.Project_Id;
    Current_Verbosity : Prj.Verbosity := Prj.Default;
@@ -1395,9 +1394,6 @@ begin
    Snames.Initialize;
 
    Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
-   Prj.Env.Initialize_Default_Project_Path
-     (Root_Environment.Project_Path,
-      Target_Name => Sdefault.Target_Name.all);
 
    Project_Node_Tree := new Project_Node_Tree_Data;
    Prj.Tree.Initialize (Project_Node_Tree);
@@ -1769,7 +1765,13 @@ begin
                        (Root_Environment.Project_Path,
                         Argv (Argv'First + 3 .. Argv'Last));
 
-                     Remove_Switch (Arg_Num);
+                     --  Pass -aPdir to gnatls, but not to other tools
+
+                     if The_Command = List then
+                        Arg_Num := Arg_Num + 1;
+                     else
+                        Remove_Switch (Arg_Num);
+                     end if;
 
                   --  -eL  Follow links for files
 
@@ -1910,6 +1912,13 @@ begin
             end loop;
          end Inspect_Switches;
       end if;
+
+      --  Add the default project search directories now, after the directories
+      --  that have been specified by switches -aP<dir>.
+
+      Prj.Env.Initialize_Default_Project_Path
+        (Root_Environment.Project_Path,
+         Target_Name => Sdefault.Target_Name.all);
 
       --  If there is a project file specified, parse it, get the switches
       --  for the tool and setup PATH environment variables.

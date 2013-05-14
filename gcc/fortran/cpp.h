@@ -43,7 +43,7 @@ int gfc_cpp_handle_option(size_t scode, const char *arg, int value);
 
 void gfc_cpp_post_options (void);
 
-gfc_try gfc_cpp_preprocess (const char *source_file);
+bool gfc_cpp_preprocess (const char *source_file);
 
 void gfc_cpp_done (void);
 

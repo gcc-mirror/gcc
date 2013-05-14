@@ -545,7 +545,7 @@ special_function_p (const_tree fndecl, int flags)
 		  && ! strcmp (tname, "sigsetjmp"))
 	      || (tname[1] == 'a'
 		  && ! strcmp (tname, "savectx")))
-	    flags |= ECF_RETURNS_TWICE;
+	    flags |= ECF_RETURNS_TWICE | ECF_LEAF;
 
 	  if (tname[1] == 'i'
 	      && ! strcmp (tname, "siglongjmp"))
@@ -557,7 +557,7 @@ special_function_p (const_tree fndecl, int flags)
 		   && ! strcmp (tname, "vfork"))
 	       || (tname[0] == 'g' && tname[1] == 'e'
 		   && !strcmp (tname, "getcontext")))
-	flags |= ECF_RETURNS_TWICE;
+	flags |= ECF_RETURNS_TWICE | ECF_LEAF;
 
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))
@@ -3171,7 +3171,9 @@ expand_call (tree exp, rtx target, int ignore)
 	 group load/store machinery below.  */
       if (!structure_value_addr
 	  && !pcc_struct_value
+	  && TYPE_MODE (rettype) != VOIDmode
 	  && TYPE_MODE (rettype) != BLKmode
+	  && REG_P (valreg)
 	  && targetm.calls.return_in_msb (rettype))
 	{
 	  if (shift_return_value (TYPE_MODE (rettype), false, valreg))
@@ -3186,7 +3188,7 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  /* The return value from a malloc-like function is a pointer.  */
 	  if (TREE_CODE (rettype) == POINTER_TYPE)
-	    mark_reg_pointer (temp, BIGGEST_ALIGNMENT);
+	    mark_reg_pointer (temp, MALLOC_ABI_ALIGNMENT);
 
 	  emit_move_insn (temp, valreg);
 

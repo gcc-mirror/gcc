@@ -996,7 +996,7 @@ package body Checks is
          elsif Dsiz <= Standard_Long_Long_Integer_Size then
             Ctyp := Standard_Long_Long_Integer;
 
-            --  No check type exists, use runtime call
+         --  No check type exists, use runtime call
 
          else
             if Nkind (N) = N_Op_Add then
@@ -1479,7 +1479,7 @@ package body Checks is
       --  partial view that is constrained.
 
       elsif Ada_Version >= Ada_2005
-        and then Effectively_Has_Constrained_Partial_View
+        and then Object_Type_Has_Constrained_Partial_View
                    (Typ  => Base_Type (T_Typ),
                     Scop => Current_Scope)
       then
@@ -1907,6 +1907,15 @@ package body Checks is
       Reason : RT_Exception_Code;
 
    begin
+      --  We do not need checks if we are not generating code (i.e. the full
+      --  expander is not active). In SPARK mode, we specifically don't want
+      --  the frontend to expand these checks, which are dealt with directly
+      --  in the formal verification backend.
+
+      if not Full_Expander_Active then
+         return;
+      end if;
+
       if not Compile_Time_Known_Value (LB)
           or not Compile_Time_Known_Value (HB)
       then
@@ -2490,28 +2499,13 @@ package body Checks is
               Make_Raise_Storage_Error (Sloc (N),
                 Reason => SE_Infinite_Recursion));
 
-         --  Here for normal case of predicate active.
+         --  Here for normal case of predicate active
 
          else
-            --  If the predicate is a static predicate and the operand is
-            --  static, the predicate must be evaluated statically. If the
-            --  evaluation fails this is a static constraint error. This check
-            --  is disabled in -gnatc mode, because the compiler is incapable
-            --  of evaluating static expressions in that case.
+            --  If the type has a static predicate and the expression is known
+            --  at compile time, see if the expression satisfies the predicate.
 
-            if Is_OK_Static_Expression (N) then
-               if Present (Static_Predicate (Typ)) then
-                  if Operating_Mode < Generate_Code
-                    or else Eval_Static_Predicate_Check (N, Typ)
-                  then
-                     return;
-                  else
-                     Error_Msg_NE
-                       ("static expression fails static predicate check on&",
-                        N, Typ);
-                  end if;
-               end if;
-            end if;
+            Check_Expression_Against_Static_Predicate (N, Typ);
 
             Insert_Action (N,
               Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
@@ -3244,13 +3238,20 @@ package body Checks is
                 Reason    => CE_Discriminant_Check_Failed));
          end;
 
-      --  For arrays, conversions are applied during expansion, to take into
-      --  accounts changes of representation. The checks become range checks on
-      --  the base type or length checks on the subtype, depending on whether
-      --  the target type is unconstrained or constrained.
+      --  For arrays, checks are set now, but conversions are applied during
+      --  expansion, to take into accounts changes of representation. The
+      --  checks become range checks on the base type or length checks on the
+      --  subtype, depending on whether the target type is unconstrained or
+      --  constrained. Note that the range check is put on the expression of a
+      --  type conversion, while the length check is put on the type conversion
+      --  itself.
 
-      else
-         null;
+      elsif Is_Array_Type (Target_Type) then
+         if Is_Constrained (Target_Type) then
+            Set_Do_Length_Check (N);
+         else
+            Set_Do_Range_Check (Expr);
+         end if;
       end if;
    end Apply_Type_Conversion_Checks;
 
@@ -6221,6 +6222,7 @@ package body Checks is
 
    procedure Insert_Valid_Check (Expr : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Expr);
+      Typ : constant Entity_Id  := Etype (Expr);
       Exp : Node_Id;
 
    begin
@@ -6230,6 +6232,16 @@ package body Checks is
       if not Validity_Checks_On
         or else Range_Or_Validity_Checks_Suppressed (Expr)
         or else Expr_Known_Valid (Expr)
+      then
+         return;
+      end if;
+
+      --  Do not insert checks within a predicate function. This will arise
+      --  if the current unit and the predicate function are being compiled
+      --  with validity checks enabled.
+
+      if Present (Predicate_Function (Typ))
+        and then Current_Scope = Predicate_Function (Typ)
       then
          return;
       end if;
@@ -6573,6 +6585,13 @@ package body Checks is
         and then Is_Concurrent_Record_Type
                    (Directly_Designated_Type (Etype (N)))
       then
+         return;
+      end if;
+
+      --  No check needed in interface thunks since the runtime check is
+      --  already performed at the caller side.
+
+      if Is_Thunk (Current_Scope) then
          return;
       end if;
 
@@ -7724,6 +7743,19 @@ package body Checks is
          return Scope_Suppress.Suppress (Overflow_Check);
       end if;
    end Overflow_Checks_Suppressed;
+
+   ---------------------------------
+   -- Predicate_Checks_Suppressed --
+   ---------------------------------
+
+   function Predicate_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Predicate_Check);
+      else
+         return Scope_Suppress.Suppress (Predicate_Check);
+      end if;
+   end Predicate_Checks_Suppressed;
 
    -----------------------------
    -- Range_Checks_Suppressed --

@@ -1,4 +1,4 @@
-int a[250];
+int a[251];
 __attribute__ ((noinline))
 t(int i)
 {

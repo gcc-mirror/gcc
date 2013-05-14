@@ -9,7 +9,7 @@ struct X {
   }
 };
 
-void add_one (X & ref) { /* { dg-error "in passing argument" } */
+void add_one (X & ref) { /* { dg-message "in passing argument" } */
   ++ ref.x;
 }
 

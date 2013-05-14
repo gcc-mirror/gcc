@@ -7,7 +7,7 @@ extern "C"
 }
 
 
-void Munge(int& x) 	// { dg-error "passing argument 1" }
+void Munge(int& x) 	// { dg-message "passing argument 1" }
 {
    x = 2;
 }

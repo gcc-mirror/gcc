@@ -2,7 +2,7 @@
 ! PR33162 INTRINSIC functions as ACTUAL argument
 ! Test case adapted from PR by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 real function t(x)
-  real ::x
+  real, intent(in) ::x
   t = x
 end function
 

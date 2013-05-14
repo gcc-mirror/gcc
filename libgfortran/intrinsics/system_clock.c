@@ -29,20 +29,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "time_1.h"
 
 
+#if !defined(__MINGW32__) && !defined(__CYGWIN__)
+
 /* POSIX states that CLOCK_REALTIME must be present if clock_gettime
    is available, others are optional.  */
 #if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_CLOCK_GETTIME_LIBRT)
-#ifdef CLOCK_MONOTONIC
+#if defined(CLOCK_MONOTONIC) && defined(_POSIX_MONOTONIC_CLOCK) \
+  && _POSIX_MONOTONIC_CLOCK >= 0
 #define GF_CLOCK_MONOTONIC CLOCK_MONOTONIC
 #else
 #define GF_CLOCK_MONOTONIC CLOCK_REALTIME
 #endif
 #endif
 
-/* Weakref trickery for clock_gettime().  On Glibc, clock_gettime()
-   requires us to link in librt, which also pulls in libpthread.  In
-   order to avoid this by default, only call clock_gettime() through a
-   weak reference. 
+/* Weakref trickery for clock_gettime().  On Glibc <= 2.16,
+   clock_gettime() requires us to link in librt, which also pulls in
+   libpthread.  In order to avoid this by default, only call
+   clock_gettime() through a weak reference.
 
    Some targets don't support weak undefined references; on these
    GTHREAD_USE_WEAK is 0. So we need to define it to 1 on other
@@ -62,7 +65,7 @@ static int weak_gettime (clockid_t, struct timespec *)
 
    Arguments:
    secs     - OUTPUT, seconds
-   nanosecs - OUTPUT, nanoseconds
+   fracsecs - OUTPUT, fractional seconds, units given by tk argument
    tk       - OUTPUT, clock resolution [counts/sec]
 
    If the target supports a monotonic clock, the OUTPUT arguments
@@ -76,7 +79,7 @@ static int weak_gettime (clockid_t, struct timespec *)
    is set.
 */
 static int
-gf_gettime_mono (time_t * secs, long * nanosecs, long * tck)
+gf_gettime_mono (time_t * secs, long * fracsecs, long * tck)
 {
   int err;
 #ifdef HAVE_CLOCK_GETTIME
@@ -84,7 +87,7 @@ gf_gettime_mono (time_t * secs, long * nanosecs, long * tck)
   *tck = 1000000000;
   err = clock_gettime (GF_CLOCK_MONOTONIC, &ts);
   *secs = ts.tv_sec;
-  *nanosecs = ts.tv_nsec;
+  *fracsecs = ts.tv_nsec;
   return err;
 #else
 #if defined(HAVE_CLOCK_GETTIME_LIBRT) && SUPPORTS_WEAK && GTHREAD_USE_WEAK
@@ -94,16 +97,17 @@ gf_gettime_mono (time_t * secs, long * nanosecs, long * tck)
       *tck = 1000000000;
       err = weak_gettime (GF_CLOCK_MONOTONIC, &ts);
       *secs = ts.tv_sec;
-      *nanosecs = ts.tv_nsec;
+      *fracsecs = ts.tv_nsec;
       return err;
     }
 #endif
   *tck = 1000000;
-  err = gf_gettime (secs, nanosecs);
-  *nanosecs *= 1000;
+  err = gf_gettime (secs, fracsecs);
   return err;
 #endif
 }
+
+#endif /* !__MINGW32 && !__CYGWIN__  */
 
 extern void system_clock_4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
 export_proto(system_clock_4);
@@ -115,49 +119,56 @@ export_proto(system_clock_8);
 /* prefix(system_clock_4) is the INTEGER(4) version of the SYSTEM_CLOCK
    intrinsic subroutine.  It returns the number of clock ticks for the current
    system time, the number of ticks per second, and the maximum possible value
-   for COUNT.  On the first call to SYSTEM_CLOCK, COUNT is set to zero. */
+   for COUNT.  */
 
 void
 system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	       GFC_INTEGER_4 *count_max)
 {
-  GFC_INTEGER_4 cnt;
-  GFC_INTEGER_4 mx;
-
-  time_t secs;
-  long nanosecs, tck;
-
-  if (sizeof (secs) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "secs too small");
-
-  if (gf_gettime_mono (&secs, &nanosecs, &tck) == 0)
+#if defined(__MINGW32__) || defined(__CYGWIN__) 
+  if (count)
     {
-      tck = tck>1000 ? 1000 : tck;
-      GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) secs * tck;
-      ucnt += (nanosecs + 500000000 / tck) / (1000000000 / tck);
+      /* Use GetTickCount here as the resolution and range is
+	 sufficient for the INTEGER(kind=4) version, and
+	 QueryPerformanceCounter has potential issues.  */
+      uint32_t cnt = GetTickCount ();
+      if (cnt > GFC_INTEGER_4_HUGE)
+	cnt = cnt - GFC_INTEGER_4_HUGE - 1;
+      *count = cnt;
+    }
+  if (count_rate)
+    *count_rate = 1000;
+  if (count_max)
+    *count_max = GFC_INTEGER_4_HUGE;
+#else
+  time_t secs;
+  long fracsecs, tck;
+
+  if (gf_gettime_mono (&secs, &fracsecs, &tck) == 0)
+    {
+      long tck_out = tck > 1000 ? 1000 : tck;
+      long tck_r = tck / tck_out;
+      GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) secs * tck_out;
+      ucnt += fracsecs / tck_r;
       if (ucnt > GFC_INTEGER_4_HUGE)
-	cnt = ucnt - GFC_INTEGER_4_HUGE - 1;
-      else
-	cnt = ucnt;
-      mx = GFC_INTEGER_4_HUGE;
+	ucnt = ucnt - GFC_INTEGER_4_HUGE - 1;
+      if (count)
+	*count = ucnt;
+      if (count_rate)
+	*count_rate = tck_out;
+      if (count_max)
+	*count_max = GFC_INTEGER_4_HUGE;
     }
   else
     {
-      if (count != NULL)
+      if (count)
 	*count = - GFC_INTEGER_4_HUGE;
-      if (count_rate != NULL)
+      if (count_rate)
 	*count_rate = 0;
-      if (count_max != NULL)
+      if (count_max)
 	*count_max = 0;
-      return;
     }
-
-  if (count != NULL)
-    *count = cnt;
-  if (count_rate != NULL)
-    *count_rate = tck;
-  if (count_max != NULL)
-    *count_max = mx;
+#endif
 }
 
 
@@ -167,41 +178,57 @@ void
 system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 		GFC_INTEGER_8 *count_max)
 {
-  GFC_INTEGER_8 cnt;
-  GFC_INTEGER_8 mx;
-
-  time_t secs;
-  long nanosecs, tck;
-
-  if (sizeof (secs) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "secs too small");
-
-  if (gf_gettime_mono (&secs, &nanosecs, &tck) == 0)
+#if defined(__MINGW32__) || defined(__CYGWIN__) 
+  LARGE_INTEGER cnt;
+  LARGE_INTEGER freq;
+  bool fail = false;
+  if (count && !QueryPerformanceCounter (&cnt))
+    fail = true;
+  if (count_rate && !QueryPerformanceFrequency (&freq))
+    fail = true;
+  if (fail)
     {
-      GFC_UINTEGER_8 ucnt = (GFC_UINTEGER_8) secs * tck;
-      ucnt += (nanosecs + 500000000 / tck) / (1000000000 / tck);
-      if (ucnt > GFC_INTEGER_8_HUGE)
-	cnt = ucnt - GFC_INTEGER_8_HUGE - 1;
-      else
-	cnt = ucnt;
-      mx = GFC_INTEGER_8_HUGE;
+      if (count)
+	*count = - GFC_INTEGER_8_HUGE;
+      if (count_rate)
+	*count_rate = 0;
+      if (count_max)
+	*count_max = 0;
     }
   else
     {
-      if (count != NULL)
-	*count = - GFC_INTEGER_8_HUGE;
-      if (count_rate != NULL)
-	*count_rate = 0;
-      if (count_max != NULL)
-	*count_max = 0;
-
-      return;
+      if (count)
+	*count = cnt.QuadPart;
+      if (count_rate)
+	*count_rate = freq.QuadPart;
+      if (count_max)
+	*count_max = GFC_INTEGER_8_HUGE;
     }
+#else
+  time_t secs;
+  long fracsecs, tck;
 
-  if (count != NULL)
-    *count = cnt;
-  if (count_rate != NULL)
-    *count_rate = tck;
-  if (count_max != NULL)
-    *count_max = mx;
+  if (gf_gettime_mono (&secs, &fracsecs, &tck) == 0)
+    {
+      GFC_UINTEGER_8 ucnt = (GFC_UINTEGER_8) secs * tck;
+      ucnt += fracsecs;
+      if (ucnt > GFC_INTEGER_8_HUGE)
+	ucnt = ucnt - GFC_INTEGER_8_HUGE - 1;
+      if (count)
+	*count = ucnt;
+      if (count_rate)
+	*count_rate = tck;
+      if (count_max)
+	*count_max = GFC_INTEGER_8_HUGE;
+    }
+  else
+    {
+      if (count)
+	*count = - GFC_INTEGER_8_HUGE;
+      if (count_rate)
+	*count_rate = 0;
+      if (count_max)
+	*count_max = 0;
+    }
+#endif
 }

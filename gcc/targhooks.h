@@ -72,6 +72,8 @@ extern bool targhook_float_words_big_endian (void);
 extern bool default_decimal_float_supported_p (void);
 extern bool default_fixed_point_supported_p (void);
 
+extern bool default_has_ifunc_p (void);
+
 extern const char * default_invalid_within_doloop (const_rtx);
 
 extern tree default_builtin_vectorized_function (tree, tree, tree);
@@ -193,4 +195,5 @@ extern const char *default_pch_valid_p (const void *, size_t);
 
 extern void default_asm_output_ident_directive (const char*);
 
+extern enum machine_mode default_cstore_mode (enum insn_code);
 extern bool default_member_type_forces_blk (const_tree, enum machine_mode);

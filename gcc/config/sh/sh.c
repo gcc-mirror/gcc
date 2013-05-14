@@ -3504,6 +3504,22 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       else
 	return false;
 
+    case SMIN:
+    case SMAX:
+      /* This is most likely a clips.b or clips.w insn that is being made up
+	 by combine.  */
+      if (TARGET_SH2A
+	  && (GET_CODE (XEXP (x, 0)) == SMAX || GET_CODE (XEXP (x, 0)) == SMIN)
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && CONST_INT_P (XEXP (x, 1)))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else
+	return false;
+
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
@@ -5213,7 +5229,8 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	  if (found_si > count_si)
 	    count_si = found_si;
 	}
-      else if (JUMP_TABLE_DATA_P (from))
+      else if (JUMP_TABLE_DATA_P (from)
+	       && GET_CODE (PATTERN (from)) == ADDR_DIFF_VEC)
 	{
 	  if ((num_mova > 1 && GET_MODE (prev_nonnote_insn (from)) == VOIDmode)
 	      || (num_mova
@@ -5247,7 +5264,7 @@ find_barrier (int num_mova, rtx mova, rtx from)
 
       /* There is a possibility that a bf is transformed into a bf/s by the
 	 delay slot scheduler.  */
-      if (JUMP_P (from) && !JUMP_TABLE_DATA_P (from) 
+      if (JUMP_P (from)
 	  && get_attr_type (from) == TYPE_CBRANCH
 	  && ! sequence_insn_p (from))
 	inc += 2;
@@ -5799,7 +5816,7 @@ fixup_addr_diff_vecs (rtx first)
     {
       rtx vec_lab, pat, prev, prevpat, x, braf_label;
 
-      if (!JUMP_P (insn)
+      if (! JUMP_TABLE_DATA_P (insn)
 	  || GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
 	continue;
       pat = PATTERN (insn);
@@ -5841,7 +5858,7 @@ fixup_addr_diff_vecs (rtx first)
 int
 barrier_align (rtx barrier_or_label)
 {
-  rtx next = next_real_insn (barrier_or_label), pat, prev;
+  rtx next = next_active_insn (barrier_or_label), pat, prev;
 
   if (! next)
     return 0;
@@ -5855,7 +5872,7 @@ barrier_align (rtx barrier_or_label)
     /* This is a barrier in front of a constant table.  */
     return 0;
 
-  prev = prev_real_insn (barrier_or_label);
+  prev = prev_active_insn (barrier_or_label);
   if (GET_CODE (PATTERN (prev)) == ADDR_DIFF_VEC)
     {
       pat = PATTERN (prev);
@@ -5973,7 +5990,6 @@ sh_loop_align (rtx label)
 
   if (! next
       || ! INSN_P (next)
-      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC
       || recog_memoized (next) == CODE_FOR_consttable_2)
     return 0;
 
@@ -6233,7 +6249,7 @@ sh_reorg (void)
 	      num_mova = 0;
 	    }
 	}
-      else if (JUMP_P (insn)
+      else if (JUMP_TABLE_DATA_P (insn)
 	       && GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 	       && num_mova
 	       /* ??? loop invariant motion can also move a mova out of a
@@ -6494,10 +6510,7 @@ split_branches (rtx first)
 	   so transform it into a note.  */
 	SET_INSN_DELETED (insn);
       }
-    else if (JUMP_P (insn)
-	     /* Don't mess with ADDR_DIFF_VEC */
-	     && (GET_CODE (PATTERN (insn)) == SET
-		 || GET_CODE (PATTERN (insn)) == RETURN))
+    else if (JUMP_P (insn))
       {
 	enum attr_type type = get_attr_type (insn);
 	if (type == TYPE_CBRANCH)
@@ -10123,8 +10136,7 @@ sh_insn_length_adjustment (rtx insn)
   if (((NONJUMP_INSN_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
 	&& GET_CODE (PATTERN (insn)) != CLOBBER)
-       || CALL_P (insn)
-       || (JUMP_P (insn) && !JUMP_TABLE_DATA_P (insn)))
+       || CALL_P (insn) || JUMP_P (insn))
       && ! sequence_insn_p (insn)
       && get_attr_needs_delay_slot (insn) == NEEDS_DELAY_SLOT_YES)
     return 2;
@@ -10132,7 +10144,7 @@ sh_insn_length_adjustment (rtx insn)
   /* SH2e has a bug that prevents the use of annulled branches, so if
      the delay slot is not filled, we'll have to put a NOP in it.  */
   if (sh_cpu_attr == CPU_SH2E
-      && JUMP_P (insn) && !JUMP_TABLE_DATA_P (insn)
+      && JUMP_P (insn)
       && get_attr_type (insn) == TYPE_CBRANCH
       && ! sequence_insn_p (insn))
     return 2;
@@ -12167,7 +12179,7 @@ sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
       else
 	{
 	  if (GET_MODE_SIZE (from) < 8)
-	    return reg_classes_intersect_p (DF_HI_REGS, rclass);
+	    return reg_classes_intersect_p (DF_REGS, rclass);
 	}
     }
   return false;
@@ -13214,9 +13226,7 @@ sh_conditional_register_usage (void)
       call_really_used_regs[MACH_REG] = 0;
       call_really_used_regs[MACL_REG] = 0;
     }
-  for (regno = FIRST_FP_REG + (TARGET_LITTLE_ENDIAN != 0);
-       regno <= LAST_FP_REG; regno += 2)
-    SET_HARD_REG_BIT (reg_class_contents[DF_HI_REGS], regno);
+
   if (TARGET_SHMEDIA)
     {
       for (regno = FIRST_TARGET_REG; regno <= LAST_TARGET_REG; regno ++)

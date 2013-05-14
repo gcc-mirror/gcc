@@ -1,3 +1,51 @@
+2013-05-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-common.c (vector_types_convertible_p): No TYPE_PRECISION for
+	vectors.
+
+2013-05-07  Han Shen  <shenhan@google.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Added "__SSP_STRONG__=3".
+
+2013-04-29  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* c-common.c (check_user_alignment): Emit error for negative values.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-opts.c (set_std_cxx11): Use CLK_CXX1Y and CLK_GNUCXX1Y.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Do not define
+	__GXX_EXPERIMENTAL_CXX1Y__.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* c.opt ([Wpointer-arith]): Enabled by -Wpedantic, as documented.
+	* c-common.c (pointer_int_sum): Change -Wpointer-arith pedwarns
+	to simply use OPT_Wpointer_arith.
+	(c_sizeof_or_alignof_type): Likewise.
+
+2013-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __GXX_EXPERIMENTAL_CXX1Y__.
+
+2013-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-format.c (gcc_diag_char_table, gcc_tdiag_char_table,
+	gcc_cdiag_char_table, gcc_cxxdiag_char_table): Add %r and %R format
+	specifiers.
+
+2013-04-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-pragma.c (add_to_renaming_pragma_list): Fix leading comment.
+
+2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-common.c (pointer_int_sum): Remove dead code.
+
 2013-03-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/56524

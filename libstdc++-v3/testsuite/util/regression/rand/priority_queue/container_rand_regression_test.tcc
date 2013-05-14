@@ -352,11 +352,11 @@ operator()()
   try 
     { 
       for (size_t n = starting_label; n <= m_n; ++n)
-	m_alloc.check_allocated(n); 
+	m_alloc.check(n); 
     }
   catch (std::logic_error& obj)
     {
-      // On fail, check_allocated should throw std::logic_error.
+      // On fail, check should throw std::logic_error.
       std::cerr << obj.what() << std::endl;
       std::cerr << typeid(Cntnr).name() << std::endl;
       throw;

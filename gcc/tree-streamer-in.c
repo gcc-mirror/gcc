@@ -203,7 +203,6 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   DECL_ARTIFICIAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PRESERVE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_DEBUG_EXPR_IS_FROM (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_EXTERNAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_ALIGN (expr) = (unsigned) bp_unpack_var_len_unsigned (bp);
@@ -226,7 +225,10 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
     }
 
   if (TREE_CODE (expr) == VAR_DECL)
-    DECL_NONLOCAL_FRAME (expr) = (unsigned) bp_unpack_value (bp, 1);
+    {
+      DECL_HAS_DEBUG_EXPR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      DECL_NONLOCAL_FRAME (expr) = (unsigned) bp_unpack_value (bp, 1);
+    }
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL

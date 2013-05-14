@@ -501,6 +501,20 @@ gfc_resolve_btest (gfc_expr *f, gfc_expr *i, gfc_expr *pos)
 
 
 void
+gfc_resolve_c_loc (gfc_expr *f, gfc_expr *x ATTRIBUTE_UNUSED)
+{
+  f->ts = f->value.function.isym->ts;
+}
+
+
+void
+gfc_resolve_c_funloc (gfc_expr *f, gfc_expr *x ATTRIBUTE_UNUSED)
+{
+  f->ts = f->value.function.isym->ts;
+}
+
+
+void
 gfc_resolve_ceiling (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
@@ -2140,10 +2154,7 @@ gfc_resolve_reshape (gfc_expr *f, gfc_expr *source, gfc_expr *shape,
       break;
     }
 
-  /* TODO: Make this work with a constant ORDER parameter.  */
-  if (shape->expr_type == EXPR_ARRAY
-      && gfc_is_constant_expr (shape)
-      && order == NULL)
+  if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_expr (shape))
     {
       gfc_constructor *c;
       f->shape = gfc_get_shape (f->rank);

@@ -1653,51 +1653,17 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
     attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
 
-  else if (TREE_CODE (t) == MEM_REF)
-    {
-      tree op0 = TREE_OPERAND (t, 0);
-      if (TREE_CODE (op0) == ADDR_EXPR
-	  && (DECL_P (TREE_OPERAND (op0, 0))
-	      || CONSTANT_CLASS_P (TREE_OPERAND (op0, 0))))
-	{
-	  if (DECL_P (TREE_OPERAND (op0, 0)))
-	    attrs.align = DECL_ALIGN (TREE_OPERAND (op0, 0));
-	  else if (CONSTANT_CLASS_P (TREE_OPERAND (op0, 0)))
-	    {
-	      attrs.align = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (op0, 0)));
-#ifdef CONSTANT_ALIGNMENT
-	      attrs.align = CONSTANT_ALIGNMENT (TREE_OPERAND (op0, 0),
-						attrs.align);
-#endif
-	    }
-	  if (TREE_INT_CST_LOW (TREE_OPERAND (t, 1)) != 0)
-	    {
-	      unsigned HOST_WIDE_INT ioff
-		= TREE_INT_CST_LOW (TREE_OPERAND (t, 1));
-	      unsigned HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
-	      attrs.align = MIN (aoff, attrs.align);
-	    }
-	}
-      else
-	/* ??? This isn't fully correct, we can't set the alignment from the
-	   type in all cases.  */
-	attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
-    }
-
-  else if (TREE_CODE (t) == TARGET_MEM_REF)
-    /* ??? This isn't fully correct, we can't set the alignment from the
-       type in all cases.  */
-    attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
-
   /* If the size is known, we can set that.  */
   tree new_size = TYPE_SIZE_UNIT (type);
+
+  /* The address-space is that of the type.  */
+  as = TYPE_ADDR_SPACE (type);
 
   /* If T is not a type, we may be able to deduce some more information about
      the expression.  */
   if (! TYPE_P (t))
     {
       tree base;
-      bool align_computed = false;
 
       if (TREE_THIS_VOLATILE (t))
 	MEM_VOLATILE_P (ref) = 1;
@@ -1727,6 +1693,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      && TREE_STATIC (base))
 	    MEM_READONLY_P (ref) = 1;
 
+	  /* Address-space information is on the base object.  */
 	  if (TREE_CODE (base) == MEM_REF
 	      || TREE_CODE (base) == TARGET_MEM_REF)
 	    as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (base,
@@ -1734,8 +1701,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  else
 	    as = TYPE_ADDR_SPACE (TREE_TYPE (base));
 	}
-      else
-	as = TYPE_ADDR_SPACE (type);
 
       /* If this expression uses it's parent's alias set, mark it such
 	 that we won't change it.  */
@@ -1750,19 +1715,11 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  attrs.offset = 0;
 	  apply_bitpos = bitpos;
 	  new_size = DECL_SIZE_UNIT (t);
-	  attrs.align = DECL_ALIGN (t);
-	  align_computed = true;
 	}
 
-      /* If this is a constant, we know the alignment.  */
+      /* ???  If we end up with a constant here do record a MEM_EXPR.  */
       else if (CONSTANT_CLASS_P (t))
-	{
-	  attrs.align = TYPE_ALIGN (type);
-#ifdef CONSTANT_ALIGNMENT
-	  attrs.align = CONSTANT_ALIGNMENT (t, attrs.align);
-#endif
-	  align_computed = true;
-	}
+	;
 
       /* If this is a field reference, record it.  */
       else if (TREE_CODE (t) == COMPONENT_REF)
@@ -1807,24 +1764,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    }
 	  while (TREE_CODE (t2) == ARRAY_REF);
 
-	  if (DECL_P (t2))
-	    {
-	      attrs.expr = t2;
-	      attrs.offset_known_p = false;
-	      if (host_integerp (off_tree, 1))
-		{
-		  HOST_WIDE_INT ioff = tree_low_cst (off_tree, 1);
-		  HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
-		  attrs.align = DECL_ALIGN (t2);
-		  if (aoff && (unsigned HOST_WIDE_INT) aoff < attrs.align)
-	            attrs.align = aoff;
-		  align_computed = true;
-		  attrs.offset_known_p = true;
-		  attrs.offset = ioff;
-		  apply_bitpos = bitpos;
-		}
-	    }
-	  else if (TREE_CODE (t2) == COMPONENT_REF)
+	  if (DECL_P (t2)
+	      || TREE_CODE (t2) == COMPONENT_REF)
 	    {
 	      attrs.expr = t2;
 	      attrs.offset_known_p = false;
@@ -1834,9 +1775,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		  attrs.offset = tree_low_cst (off_tree, 1);
 		  apply_bitpos = bitpos;
 		}
-	      /* ??? Any reason the field size would be different than
-		 the size we got from the type?  */
 	    }
+	  /* Else do not record a MEM_EXPR.  */
 	}
 
       /* If this is an indirect reference, record it.  */
@@ -1849,19 +1789,15 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  apply_bitpos = bitpos;
 	}
 
-      if (!align_computed)
-	{
-	  unsigned int obj_align;
-	  unsigned HOST_WIDE_INT obj_bitpos;
-	  get_object_alignment_1 (t, &obj_align, &obj_bitpos);
-	  obj_bitpos = (obj_bitpos - bitpos) & (obj_align - 1);
-	  if (obj_bitpos != 0)
-	    obj_align = (obj_bitpos & -obj_bitpos);
-	  attrs.align = MAX (attrs.align, obj_align);
-	}
+      /* Compute the alignment.  */
+      unsigned int obj_align;
+      unsigned HOST_WIDE_INT obj_bitpos;
+      get_object_alignment_1 (t, &obj_align, &obj_bitpos);
+      obj_bitpos = (obj_bitpos - bitpos) & (obj_align - 1);
+      if (obj_bitpos != 0)
+	obj_align = (obj_bitpos & -obj_bitpos);
+      attrs.align = MAX (attrs.align, obj_align);
     }
-  else
-    as = TYPE_ADDR_SPACE (type);
 
   if (host_integerp (new_size, 1))
     {
@@ -2660,6 +2596,52 @@ verify_rtx_sharing (rtx orig, rtx insn)
   return;
 }
 
+/* Reset used-flags for INSN.  */
+
+static void
+reset_insn_used_flags (rtx insn)
+{
+  gcc_assert (INSN_P (insn));
+  reset_used_flags (PATTERN (insn));
+  reset_used_flags (REG_NOTES (insn));
+  if (CALL_P (insn))
+    reset_used_flags (CALL_INSN_FUNCTION_USAGE (insn));
+}
+
+/* Go through all the RTL insn bodies and clear all the USED bits.  */
+
+static void
+reset_all_used_flags (void)
+{
+  rtx p;
+
+  for (p = get_insns (); p; p = NEXT_INSN (p))
+    if (INSN_P (p))
+      {
+	rtx pat = PATTERN (p);
+	if (GET_CODE (pat) != SEQUENCE)
+	  reset_insn_used_flags (p);
+	else
+	  {
+	    gcc_assert (REG_NOTES (p) == NULL);
+	    for (int i = 0; i < XVECLEN (pat, 0); i++)
+	      reset_insn_used_flags (XVECEXP (pat, 0, i));
+	  }
+      }
+}
+
+/* Verify sharing in INSN.  */
+
+static void
+verify_insn_sharing (rtx insn)
+{
+  gcc_assert (INSN_P (insn));
+  reset_used_flags (PATTERN (insn));
+  reset_used_flags (REG_NOTES (insn));
+  if (CALL_P (insn))
+    reset_used_flags (CALL_INSN_FUNCTION_USAGE (insn));
+}
+
 /* Go through all the RTL insn bodies and check that there is no unexpected
    sharing in between the subexpressions.  */
 
@@ -2670,38 +2652,20 @@ verify_rtl_sharing (void)
 
   timevar_push (TV_VERIFY_RTL_SHARING);
 
-  for (p = get_insns (); p; p = NEXT_INSN (p))
-    if (INSN_P (p))
-      {
-	reset_used_flags (PATTERN (p));
-	reset_used_flags (REG_NOTES (p));
-	if (CALL_P (p))
-	  reset_used_flags (CALL_INSN_FUNCTION_USAGE (p));
-	if (GET_CODE (PATTERN (p)) == SEQUENCE)
-	  {
-	    int i;
-	    rtx q, sequence = PATTERN (p);
-
-	    for (i = 0; i < XVECLEN (sequence, 0); i++)
-	      {
-		q = XVECEXP (sequence, 0, i);
-		gcc_assert (INSN_P (q));
-		reset_used_flags (PATTERN (q));
-		reset_used_flags (REG_NOTES (q));
-		if (CALL_P (q))
-		  reset_used_flags (CALL_INSN_FUNCTION_USAGE (q));
-	      }
-	  }
-      }
+  reset_all_used_flags ();
 
   for (p = get_insns (); p; p = NEXT_INSN (p))
     if (INSN_P (p))
       {
-	verify_rtx_sharing (PATTERN (p), p);
-	verify_rtx_sharing (REG_NOTES (p), p);
-	if (CALL_P (p))
-	  verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (p), p);
+	rtx pat = PATTERN (p);
+	if (GET_CODE (pat) != SEQUENCE)
+	  verify_insn_sharing (p);
+	else
+	  for (int i = 0; i < XVECLEN (pat, 0); i++)
+	    verify_insn_sharing (XVECEXP (pat, 0, i));
       }
+
+  reset_all_used_flags ();
 
   timevar_pop (TV_VERIFY_RTL_SHARING);
 }
@@ -3332,6 +3296,7 @@ int
 active_insn_p (const_rtx insn)
 {
   return (CALL_P (insn) || JUMP_P (insn)
+	  || JUMP_TABLE_DATA_P (insn) /* FIXME */
 	  || (NONJUMP_INSN_P (insn)
 	      && (! reload_completed
 		  || (GET_CODE (PATTERN (insn)) != USE
@@ -3814,62 +3779,142 @@ make_call_insn_raw (rtx pattern)
 
   return insn;
 }
+
+/* Like `make_insn_raw' but make a NOTE instead of an insn.  */
+
+static rtx
+make_note_raw (enum insn_note subtype)
+{
+  /* Some notes are never created this way at all.  These notes are
+     only created by patching out insns.  */
+  gcc_assert (subtype != NOTE_INSN_DELETED_LABEL
+	      && subtype != NOTE_INSN_DELETED_DEBUG_LABEL);
+
+  rtx note = rtx_alloc (NOTE);
+  INSN_UID (note) = cur_insn_uid++;
+  NOTE_KIND (note) = subtype;
+  BLOCK_FOR_INSN (note) = NULL;
+  memset (&NOTE_DATA (note), 0, sizeof (NOTE_DATA (note)));
+  return note;
+}
 
+/* Add INSN to the end of the doubly-linked list, between PREV and NEXT.
+   INSN may be any object that can appear in the chain: INSN_P and NOTE_P objects,
+   but also BARRIERs and JUMP_TABLE_DATAs.  PREV and NEXT may be NULL.  */
+
+static inline void
+link_insn_into_chain (rtx insn, rtx prev, rtx next)
+{
+  PREV_INSN (insn) = prev;
+  NEXT_INSN (insn) = next;
+  if (prev != NULL)
+    {
+      NEXT_INSN (prev) = insn;
+      if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
+	{
+	  rtx sequence = PATTERN (prev);
+	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
+	}
+    }
+  if (next != NULL)
+    {
+      PREV_INSN (next) = insn;
+      if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
+	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
+    }
+
+  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    {
+      rtx sequence = PATTERN (insn);
+      PREV_INSN (XVECEXP (sequence, 0, 0)) = prev;
+      NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+    }
+}
+
 /* Add INSN to the end of the doubly-linked list.
    INSN may be an INSN, JUMP_INSN, CALL_INSN, CODE_LABEL, BARRIER or NOTE.  */
 
 void
 add_insn (rtx insn)
 {
-  PREV_INSN (insn) = get_last_insn();
-  NEXT_INSN (insn) = 0;
-
-  if (NULL != get_last_insn())
-    NEXT_INSN (get_last_insn ()) = insn;
-
+  rtx prev = get_last_insn ();
+  link_insn_into_chain (insn, prev, NULL);
   if (NULL == get_insns ())
     set_first_insn (insn);
-
   set_last_insn (insn);
 }
 
-/* Add INSN into the doubly-linked list after insn AFTER.  This and
-   the next should be the only functions called to insert an insn once
-   delay slots have been filled since only they know how to update a
-   SEQUENCE.  */
+/* Add INSN into the doubly-linked list after insn AFTER.  */
 
-void
-add_insn_after (rtx insn, rtx after, basic_block bb)
+static void
+add_insn_after_nobb (rtx insn, rtx after)
 {
   rtx next = NEXT_INSN (after);
 
   gcc_assert (!optimize || !INSN_DELETED_P (after));
 
-  NEXT_INSN (insn) = next;
-  PREV_INSN (insn) = after;
+  link_insn_into_chain (insn, after, next);
 
-  if (next)
+  if (next == NULL)
     {
-      PREV_INSN (next) = insn;
-      if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
+      if (get_last_insn () == after)
+	set_last_insn (insn);
+      else
+	{
+	  struct sequence_stack *stack = seq_stack;
+	  /* Scan all pending sequences too.  */
+	  for (; stack; stack = stack->next)
+	    if (after == stack->last)
+	      {
+		stack->last = insn;
+		break;
+	      }
+	}
     }
-  else if (get_last_insn () == after)
-    set_last_insn (insn);
-  else
+}
+
+/* Add INSN into the doubly-linked list before insn BEFORE.  */
+
+static void
+add_insn_before_nobb (rtx insn, rtx before)
+{
+  rtx prev = PREV_INSN (before);
+
+  gcc_assert (!optimize || !INSN_DELETED_P (before));
+
+  link_insn_into_chain (insn, prev, before);
+
+  if (prev == NULL)
     {
-      struct sequence_stack *stack = seq_stack;
-      /* Scan all pending sequences too.  */
-      for (; stack; stack = stack->next)
-	if (after == stack->last)
-	  {
-	    stack->last = insn;
-	    break;
-	  }
+      if (get_insns () == before)
+	set_first_insn (insn);
+      else
+	{
+	  struct sequence_stack *stack = seq_stack;
+	  /* Scan all pending sequences too.  */
+	  for (; stack; stack = stack->next)
+	    if (before == stack->first)
+	      {
+		stack->first = insn;
+		break;
+	      }
 
-      gcc_assert (stack);
+	  gcc_assert (stack);
+	}
     }
+}
 
+/* Like add_insn_after_nobb, but try to set BLOCK_FOR_INSN.
+   If BB is NULL, an attempt is made to infer the bb from before.
+
+   This and the next function should be the only functions called
+   to insert an insn once delay slots have been filled since only
+   they know how to update a SEQUENCE. */
+
+void
+add_insn_after (rtx insn, rtx after, basic_block bb)
+{
+  add_insn_after_nobb (insn, after);
   if (!BARRIER_P (after)
       && !BARRIER_P (insn)
       && (bb = BLOCK_FOR_INSN (after)))
@@ -3885,55 +3930,19 @@ add_insn_after (rtx insn, rtx after, basic_block bb)
 	  && !NOTE_INSN_BASIC_BLOCK_P (insn))
 	BB_END (bb) = insn;
     }
-
-  NEXT_INSN (after) = insn;
-  if (NONJUMP_INSN_P (after) && GET_CODE (PATTERN (after)) == SEQUENCE)
-    {
-      rtx sequence = PATTERN (after);
-      NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
-    }
 }
 
-/* Add INSN into the doubly-linked list before insn BEFORE.  This and
-   the previous should be the only functions called to insert an insn
-   once delay slots have been filled since only they know how to
-   update a SEQUENCE.  If BB is NULL, an attempt is made to infer the
-   bb from before.  */
+/* Like add_insn_before_nobb, but try to set BLOCK_FOR_INSN.
+   If BB is NULL, an attempt is made to infer the bb from before.
+
+   This and the previous function should be the only functions called
+   to insert an insn once delay slots have been filled since only
+   they know how to update a SEQUENCE. */
 
 void
 add_insn_before (rtx insn, rtx before, basic_block bb)
 {
-  rtx prev = PREV_INSN (before);
-
-  gcc_assert (!optimize || !INSN_DELETED_P (before));
-
-  PREV_INSN (insn) = prev;
-  NEXT_INSN (insn) = before;
-
-  if (prev)
-    {
-      NEXT_INSN (prev) = insn;
-      if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	{
-	  rtx sequence = PATTERN (prev);
-	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
-	}
-    }
-  else if (get_insns () == before)
-    set_first_insn (insn);
-  else
-    {
-      struct sequence_stack *stack = seq_stack;
-      /* Scan all pending sequences too.  */
-      for (; stack; stack = stack->next)
-	if (before == stack->first)
-	  {
-	    stack->first = insn;
-	    break;
-	  }
-
-      gcc_assert (stack);
-    }
+  add_insn_before_nobb (insn, before);
 
   if (!bb
       && !BARRIER_P (before)
@@ -3952,35 +3961,41 @@ add_insn_before (rtx insn, rtx before, basic_block bb)
 		  || BARRIER_P (insn)
 		  || NOTE_INSN_BASIC_BLOCK_P (insn));
     }
-
-  PREV_INSN (before) = insn;
-  if (NONJUMP_INSN_P (before) && GET_CODE (PATTERN (before)) == SEQUENCE)
-    PREV_INSN (XVECEXP (PATTERN (before), 0, 0)) = insn;
 }
-
 
 /* Replace insn with an deleted instruction note.  */
 
 void
 set_insn_deleted (rtx insn)
 {
-  df_insn_delete (BLOCK_FOR_INSN (insn), INSN_UID (insn));
+  if (INSN_P (insn))
+    df_insn_delete (insn);
   PUT_CODE (insn, NOTE);
   NOTE_KIND (insn) = NOTE_INSN_DELETED;
 }
 
 
-/* Remove an insn from its doubly-linked list.  This function knows how
-   to handle sequences.  */
+/* Unlink INSN from the insn chain.
+
+   This function knows how to handle sequences.
+   
+   This function does not invalidate data flow information associated with
+   INSN (i.e. does not call df_insn_delete).  That makes this function
+   usable for only disconnecting an insn from the chain, and re-emit it
+   elsewhere later.
+
+   To later insert INSN elsewhere in the insn chain via add_insn and
+   similar functions, PREV_INSN and NEXT_INSN must be nullified by
+   the caller.  Nullifying them here breaks many insn chain walks.
+
+   To really delete an insn and related DF information, use delete_insn.  */
+
 void
 remove_insn (rtx insn)
 {
   rtx next = NEXT_INSN (insn);
   rtx prev = PREV_INSN (insn);
   basic_block bb;
-
-  /* Later in the code, the block will be marked dirty.  */
-  df_insn_delete (NULL, INSN_UID (insn));
 
   if (prev)
     {
@@ -4032,11 +4047,11 @@ remove_insn (rtx insn)
 
       gcc_assert (stack);
     }
+
+  /* Fix up basic block boundaries, if necessary.  */
   if (!BARRIER_P (insn)
       && (bb = BLOCK_FOR_INSN (insn)))
     {
-      if (NONDEBUG_INSN_P (insn))
-	df_set_bb_dirty (bb);
       if (BB_HEAD (bb) == insn)
 	{
 	  /* Never ever delete the basic block note without deleting whole
@@ -4291,21 +4306,6 @@ emit_label_before (rtx label, rtx before)
   add_insn_before (label, before, NULL);
   return label;
 }
-
-/* Emit a note of subtype SUBTYPE before the insn BEFORE.  */
-
-rtx
-emit_note_before (enum insn_note subtype, rtx before)
-{
-  rtx note = rtx_alloc (NOTE);
-  INSN_UID (note) = cur_insn_uid++;
-  NOTE_KIND (note) = subtype;
-  BLOCK_FOR_INSN (note) = NULL;
-  memset (&NOTE_DATA (note), 0, sizeof (NOTE_DATA (note)));
-
-  add_insn_before (note, before, NULL);
-  return note;
-}
 
 /* Helper for emit_insn_after, handles lists of instructions
    efficiently.  */
@@ -4452,18 +4452,68 @@ emit_label_after (rtx label, rtx after)
   add_insn_after (label, after, NULL);
   return label;
 }
+
+/* Notes require a bit of special handling: Some notes need to have their
+   BLOCK_FOR_INSN set, others should never have it set, and some should
+   have it set or clear depending on the context.   */
+
+/* Return true iff a note of kind SUBTYPE should be emitted with routines
+   that never set BLOCK_FOR_INSN on NOTE.  BB_BOUNDARY is true if the
+   caller is asked to emit a note before BB_HEAD, or after BB_END.  */
+
+static bool
+note_outside_basic_block_p (enum insn_note subtype, bool on_bb_boundary_p)
+{
+  switch (subtype)
+    {
+      /* NOTE_INSN_SWITCH_TEXT_SECTIONS only appears between basic blocks.  */
+      case NOTE_INSN_SWITCH_TEXT_SECTIONS:
+	return true;
+
+      /* Notes for var tracking and EH region markers can appear between or
+	 inside basic blocks.  If the caller is emitting on the basic block
+	 boundary, do not set BLOCK_FOR_INSN on the new note.  */
+      case NOTE_INSN_VAR_LOCATION:
+      case NOTE_INSN_CALL_ARG_LOCATION:
+      case NOTE_INSN_EH_REGION_BEG:
+      case NOTE_INSN_EH_REGION_END:
+	return on_bb_boundary_p;
+
+      /* Otherwise, BLOCK_FOR_INSN must be set.  */
+      default:
+	return false;
+    }
+}
 
 /* Emit a note of subtype SUBTYPE after the insn AFTER.  */
 
 rtx
 emit_note_after (enum insn_note subtype, rtx after)
 {
-  rtx note = rtx_alloc (NOTE);
-  INSN_UID (note) = cur_insn_uid++;
-  NOTE_KIND (note) = subtype;
-  BLOCK_FOR_INSN (note) = NULL;
-  memset (&NOTE_DATA (note), 0, sizeof (NOTE_DATA (note)));
-  add_insn_after (note, after, NULL);
+  rtx note = make_note_raw (subtype);
+  basic_block bb = BARRIER_P (after) ? NULL : BLOCK_FOR_INSN (after);
+  bool on_bb_boundary_p = (bb != NULL && BB_END (bb) == after);
+
+  if (note_outside_basic_block_p (subtype, on_bb_boundary_p))
+    add_insn_after_nobb (note, after);
+  else
+    add_insn_after (note, after, bb);
+  return note;
+}
+
+/* Emit a note of subtype SUBTYPE before the insn BEFORE.  */
+
+rtx
+emit_note_before (enum insn_note subtype, rtx before)
+{
+  rtx note = make_note_raw (subtype);
+  basic_block bb = BARRIER_P (before) ? NULL : BLOCK_FOR_INSN (before);
+  bool on_bb_boundary_p = (bb != NULL && BB_HEAD (bb) == before);
+
+  if (note_outside_basic_block_p (subtype, on_bb_boundary_p))
+    add_insn_before_nobb (note, before);
+  else
+    add_insn_before (note, before, bb);
   return note;
 }
 
@@ -4723,6 +4773,7 @@ emit_insn (rtx x)
       break;
 
 #ifdef ENABLE_RTL_CHECKING
+    case JUMP_TABLE_DATA:
     case SEQUENCE:
       gcc_unreachable ();
       break;
@@ -4769,6 +4820,7 @@ emit_debug_insn (rtx x)
       break;
 
 #ifdef ENABLE_RTL_CHECKING
+    case JUMP_TABLE_DATA:
     case SEQUENCE:
       gcc_unreachable ();
       break;
@@ -4811,6 +4863,7 @@ emit_jump_insn (rtx x)
       break;
 
 #ifdef ENABLE_RTL_CHECKING
+    case JUMP_TABLE_DATA:
     case SEQUENCE:
       gcc_unreachable ();
       break;
@@ -4847,6 +4900,7 @@ emit_call_insn (rtx x)
 
 #ifdef ENABLE_RTL_CHECKING
     case SEQUENCE:
+    case JUMP_TABLE_DATA:
       gcc_unreachable ();
       break;
 #endif
@@ -4871,6 +4925,20 @@ emit_label (rtx label)
   return label;
 }
 
+/* Make an insn of code JUMP_TABLE_DATA
+   and add it to the end of the doubly-linked list.  */
+
+rtx
+emit_jump_table_data (rtx table)
+{
+  rtx jump_table_data = rtx_alloc (JUMP_TABLE_DATA);
+  INSN_UID (jump_table_data) = cur_insn_uid++;
+  PATTERN (jump_table_data) = table;
+  BLOCK_FOR_INSN (jump_table_data) = NULL;
+  add_insn (jump_table_data);
+  return jump_table_data;
+}
+
 /* Make an insn of code BARRIER
    and add it to the end of the doubly-linked list.  */
 
@@ -4888,16 +4956,10 @@ emit_barrier (void)
 rtx
 emit_note_copy (rtx orig)
 {
-  rtx note;
-
-  note = rtx_alloc (NOTE);
-
-  INSN_UID (note) = cur_insn_uid++;
+  enum insn_note kind = (enum insn_note) NOTE_KIND (orig);
+  rtx note = make_note_raw (kind);
   NOTE_DATA (note) = NOTE_DATA (orig);
-  NOTE_KIND (note) = NOTE_KIND (orig);
-  BLOCK_FOR_INSN (note) = NULL;
   add_insn (note);
-
   return note;
 }
 
@@ -4907,13 +4969,7 @@ emit_note_copy (rtx orig)
 rtx
 emit_note (enum insn_note kind)
 {
-  rtx note;
-
-  note = rtx_alloc (NOTE);
-  INSN_UID (note) = cur_insn_uid++;
-  NOTE_KIND (note) = kind;
-  memset (&NOTE_DATA (note), 0, sizeof (NOTE_DATA (note)));
-  BLOCK_FOR_INSN (note) = NULL;
+  rtx note = make_note_raw (kind);
   add_insn (note);
   return note;
 }

@@ -266,7 +266,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
   else if (avail <= AVAIL_OVERWRITABLE)
     {
       e->inline_failed = CIF_OVERWRITABLE;
-      return false;
+      inlinable = false;
     }
   else if (e->call_stmt_cannot_inline_p)
     {
@@ -2123,7 +2123,7 @@ struct ipa_opt_pass_d pass_ipa_inline =
   0,					/* properties_destroyed */
   TODO_remove_functions,		/* todo_flags_finish */
   TODO_dump_symtab 
-  | TODO_remove_functions | TODO_ggc_collect	/* todo_flags_finish */
+  | TODO_remove_functions		/* todo_flags_finish */
  },
  inline_generate_summary,		/* generate_summary */
  inline_write_summary,			/* write_summary */

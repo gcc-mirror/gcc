@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -203,6 +203,11 @@ package body Ch12 is
       if Token = Tok_Package then
          Gen_Decl := New_Node (N_Generic_Package_Declaration, Gen_Sloc);
          Set_Specification (Gen_Decl, P_Package (Pf_Spcn));
+
+         --  Aspects have been parsed by the package spec. Move them to the
+         --  generic declaration where they belong.
+
+         Move_Aspects (Specification (Gen_Decl), Gen_Decl);
 
       else
          Gen_Decl := New_Node (N_Generic_Subprogram_Declaration, Gen_Sloc);

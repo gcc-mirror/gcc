@@ -42,6 +42,7 @@ extern bool hook_bool_tree_false (tree);
 extern bool hook_bool_const_tree_false (const_tree);
 extern bool hook_bool_tree_true (tree);
 extern bool hook_bool_const_tree_true (const_tree);
+extern bool hook_bool_gsiptr_false (gimple_stmt_iterator *);
 extern bool hook_bool_const_tree_hwi_hwi_const_tree_false (const_tree,
 							   HOST_WIDE_INT,
 							   HOST_WIDE_INT,

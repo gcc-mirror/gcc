@@ -1,3 +1,49 @@
+2013-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (cp_decl_specifier_seq): Add omp_declare_simd_clauses
+	field.
+	(finish_omp_declare_simd): Declare.
+	* decl2.c (is_late_template_attribute): Return true for
+	"omp declare simd" attribute.
+	(cp_check_const_attributes): Don't check TREE_VALUE of arg if
+	arg isn't a TREE_LIST.
+	* decl.c (grokfndecl): Add omp_declare_simd_clauses argument, call
+	finish_omp_declare_simd if non-NULL.
+	(grokdeclarator): Pass it declspecs->omp_declare_simd_clauses
+	to grokfndecl.
+	* pt.c (apply_late_template_attributes): Handle "omp declare simd"
+	attribute specially.
+	(tsubst_omp_clauses): Add declare_simd argument, don't call
+	finish_omp_clauses if it is set.  Handle OpenMP 4.0 clauses.
+	(tsubst_expr): Adjust tsubst_omp_clauses callers.
+	* semantics.c (finish_omp_clauses): Diagnose inbranch notinbranch.
+	(finish_omp_declare_simd): New function.
+	* parser.h (struct cp_parser): Add omp_declare_simd_clauses field.
+	* parser.c (cp_ensure_no_omp_declare_simd,
+	cp_finish_omp_declare_simd): New functions.
+	(enum pragma_context): Add pragma_member and pragma_objc_icode.
+	(cp_parser_linkage_specification, cp_parser_namespace_definition,
+	cp_parser_class_specifier_1): Call cp_ensure_no_omp_declare_simd.
+	(cp_parser_init_declarator, cp_parser_member_declaration,
+	cp_parser_function_definition_from_specifiers_and_declarator,
+	cp_parser_save_member_function_body): Copy
+	parser->omp_declare_simd_clauses to
+	decl_specifiers->omp_declare_simd_clauses, call
+	cp_finish_omp_declare_simd.
+	(cp_parser_member_specification_opt): Pass pragma_member instead
+	of pragma_external to cp_parser_pragma.
+	(cp_parser_objc_interstitial_code): Pass pragma_objc_icode instead
+	of pragma_external to cp_parser_pragma.
+	(cp_parser_omp_var_list_no_open): If parser->omp_declare_simd_clauses,
+	just cp_parser_identifier the argument names.
+	(cp_parser_omp_all_clauses): Don't call finish_omp_clauses for
+	parser->omp_declare_simd_clauses.
+	(OMP_DECLARE_SIMD_CLAUSE_MASK): Define.
+	(cp_parser_omp_declare_simd, cp_parser_omp_declare): New functions.
+	(cp_parser_pragma): Call cp_ensure_no_omp_declare_simd.  Handle
+	PRAGMA_OMP_DECLARE_REDUCTION.  Replace == pragma_external with
+	!= pragma_stmt and != pragma_compound.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* pt.c (tsubst_expr): Pass OMP_ATOMIC_SEQ_CST to finish_omp_atomic.

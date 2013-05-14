@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #define HPUX_LONG_DOUBLE_LIBRARY 1
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_BIG_SWITCH
+#define TARGET_DEFAULT 0
 
 /* Make GCC agree with types.h.  */
 #undef SIZE_TYPE

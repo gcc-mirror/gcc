@@ -1072,89 +1072,93 @@ package body Exp_Disp is
       --  to avoid the generation of spurious warnings under ZFP run-time.
 
       Analyze_And_Resolve (Call_Node, Call_Typ, Suppress => All_Checks);
-
-      --  For functions returning interface types add implicit conversion to
-      --  force the displacement of the pointer to the object to reference
-      --  the corresponding secondary dispatch table. This is needed to
-      --  handle well nested calls through secondary dispatch tables
-      --  (for example Obj.Prim1.Prim2).
-
-      if Is_Interface (Res_Typ) then
-         Rewrite (Call_Node,
-           Make_Type_Conversion (Loc,
-             Subtype_Mark => New_Occurrence_Of (Res_Typ, Loc),
-             Expression => Relocate_Node (Call_Node)));
-         Set_Etype (Call_Node, Res_Typ);
-         Expand_Interface_Conversion (Call_Node, Is_Static => False);
-         Force_Evaluation (Call_Node);
-
-         pragma Assert (Nkind (Call_Node) = N_Explicit_Dereference
-           and then Nkind (Prefix (Call_Node)) = N_Identifier
-           and then Nkind (Parent (Entity (Prefix (Call_Node))))
-                             = N_Object_Declaration);
-         Set_Assignment_OK (Parent (Entity (Prefix (Call_Node))));
-
-         if Nkind (Parent (Call_Node)) = N_Object_Declaration then
-            Set_Assignment_OK (Parent (Call_Node));
-         end if;
-      end if;
    end Expand_Dispatching_Call;
 
    ---------------------------------
    -- Expand_Interface_Conversion --
    ---------------------------------
 
-   procedure Expand_Interface_Conversion
-     (N         : Node_Id;
-      Is_Static : Boolean := True)
-   is
+   procedure Expand_Interface_Conversion (N : Node_Id) is
+      function Underlying_Record_Type (Typ : Entity_Id) return Entity_Id;
+      --  Return the underlying record type of Typ.
+
+      ----------------------------
+      -- Underlying_Record_Type --
+      ----------------------------
+
+      function Underlying_Record_Type (Typ : Entity_Id) return Entity_Id is
+         E : Entity_Id := Typ;
+
+      begin
+         --  Handle access to class-wide interface types
+
+         if Is_Access_Type (E) then
+            E := Etype (Directly_Designated_Type (E));
+         end if;
+
+         --  Handle class-wide types. This conversion can appear explicitly in
+         --  the source code. Example: I'Class (Obj)
+
+         if Is_Class_Wide_Type (E) then
+            E := Root_Type (E);
+         end if;
+
+         --  If the target type is a tagged synchronized type, the dispatch
+         --  table info is in the corresponding record type.
+
+         if Is_Concurrent_Type (E) then
+            E := Corresponding_Record_Type (E);
+         end if;
+
+         --  Handle private types
+
+         E := Underlying_Type (E);
+
+         --  Handle subtypes
+
+         return Base_Type (E);
+      end Underlying_Record_Type;
+
+      --  Local variables
+
       Loc         : constant Source_Ptr := Sloc (N);
       Etyp        : constant Entity_Id  := Etype (N);
       Operand     : constant Node_Id    := Expression (N);
       Operand_Typ : Entity_Id           := Etype (Operand);
       Func        : Node_Id;
-      Iface_Typ   : Entity_Id           := Etype (N);
+      Iface_Typ   : constant Entity_Id  := Underlying_Record_Type (Etype (N));
       Iface_Tag   : Entity_Id;
+      Is_Static   : Boolean;
+
+   --  Start of processing for Expand_Interface_Conversion
 
    begin
+      --  Freeze the entity associated with the target interface to have
+      --  available the attribute Access_Disp_Table.
+
+      Freeze_Before (N, Iface_Typ);
+
       --  Ada 2005 (AI-345): Handle synchronized interface type derivations
 
       if Is_Concurrent_Type (Operand_Typ) then
          Operand_Typ := Base_Type (Corresponding_Record_Type (Operand_Typ));
       end if;
 
-      --  Handle access to class-wide interface types
+      --  Evaluate if we can statically displace the pointer to the object
 
-      if Is_Access_Type (Iface_Typ) then
-         Iface_Typ := Etype (Directly_Designated_Type (Iface_Typ));
-      end if;
+      declare
+         Opnd_Typ : constant Node_Id := Underlying_Record_Type (Operand_Typ);
 
-      --  Handle class-wide interface types. This conversion can appear
-      --  explicitly in the source code. Example: I'Class (Obj)
-
-      if Is_Class_Wide_Type (Iface_Typ) then
-         Iface_Typ := Root_Type (Iface_Typ);
-      end if;
-
-      --  If the target type is a tagged synchronized type, the dispatch table
-      --  info is in the corresponding record type.
-
-      if Is_Concurrent_Type (Iface_Typ) then
-         Iface_Typ := Corresponding_Record_Type (Iface_Typ);
-      end if;
-
-      --  Handle private types
-
-      Iface_Typ := Underlying_Type (Iface_Typ);
-
-      --  Freeze the entity associated with the target interface to have
-      --  available the attribute Access_Disp_Table.
-
-      Freeze_Before (N, Iface_Typ);
-
-      pragma Assert (not Is_Static
-        or else (not Is_Class_Wide_Type (Iface_Typ)
-                  and then Is_Interface (Iface_Typ)));
+      begin
+         Is_Static :=
+            not Is_Interface (Opnd_Typ)
+              and then Interface_Present_In_Ancestor
+                         (Typ   => Opnd_Typ,
+                          Iface => Iface_Typ)
+              and then (Etype (Opnd_Typ) = Opnd_Typ
+                         or else not
+                           Is_Variable_Size_Record (Etype (Opnd_Typ)));
+      end;
 
       if not Tagged_Type_Expansion then
          if VM_Target /= No_VM then
@@ -1166,16 +1170,14 @@ package body Exp_Disp is
                Operand_Typ := Root_Type (Operand_Typ);
             end if;
 
-            if not Is_Static
-              and then Operand_Typ /= Iface_Typ
-            then
+            if not Is_Static and then Operand_Typ /= Iface_Typ then
                Insert_Action (N,
                  Make_Procedure_Call_Statement (Loc,
                    Name => New_Occurrence_Of
                             (RTE (RE_Check_Interface_Conversion), Loc),
                    Parameter_Associations => New_List (
                      Make_Attribute_Reference (Loc,
-                       Prefix => Duplicate_Subexpr (Expression (N)),
+                       Prefix         => Duplicate_Subexpr (Expression (N)),
                        Attribute_Name => Name_Tag),
                      Make_Attribute_Reference (Loc,
                        Prefix         => New_Reference_To (Iface_Typ, Loc),
@@ -1881,8 +1883,10 @@ package body Exp_Disp is
       end loop;
 
       Thunk_Id := Make_Temporary (Loc, 'T');
+      Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
+      Set_Thunk_Entity (Thunk_Id, Target);
 
       --  Procedure case
 
@@ -1904,22 +1908,69 @@ package body Exp_Disp is
       --  Function case
 
       else pragma Assert (Ekind (Target) = E_Function);
-         Thunk_Code :=
-           Make_Subprogram_Body (Loc,
-              Specification =>
-                Make_Function_Specification (Loc,
-                  Defining_Unit_Name       => Thunk_Id,
-                  Parameter_Specifications => Formals,
-                  Result_Definition =>
-                    New_Copy (Result_Definition (Parent (Target)))),
-              Declarations => Decl,
-              Handled_Statement_Sequence =>
-                Make_Handled_Sequence_Of_Statements (Loc,
-                  Statements => New_List (
-                    Make_Simple_Return_Statement (Loc,
-                      Make_Function_Call (Loc,
-                        Name => New_Occurrence_Of (Target, Loc),
-                        Parameter_Associations => Actuals)))));
+         declare
+            Result_Def : Node_Id;
+            Call_Node  : Node_Id;
+
+         begin
+            Call_Node :=
+              Make_Function_Call (Loc,
+                Name                   => New_Occurrence_Of (Target, Loc),
+                Parameter_Associations => Actuals);
+
+            if not Is_Interface (Etype (Prim)) then
+               Result_Def := New_Copy (Result_Definition (Parent (Target)));
+
+            --  Thunk of function returning a class-wide interface object. No
+            --  extra displacement needed since the displacement is generated
+            --  in the return statement of Prim. Example:
+
+            --    type Iface is interface ...
+            --    function F (O : Iface) return Iface'Class;
+
+            --    type T is new ... and Iface with ...
+            --    function F (O : T) return Iface'Class;
+
+            elsif Is_Class_Wide_Type (Etype (Prim)) then
+               Result_Def := New_Occurrence_Of (Etype (Prim), Loc);
+
+            --  Thunk of function returning an interface object. Displacement
+            --  needed. Example:
+
+            --    type Iface is interface ...
+            --    function F (O : Iface) return Iface;
+
+            --    type T is new ... and Iface with ...
+            --    function F (O : T) return T;
+
+            else
+               Result_Def :=
+                 New_Occurrence_Of (Class_Wide_Type (Etype (Prim)), Loc);
+
+               --  Adding implicit conversion to force the displacement of
+               --  the pointer to the object to reference the corresponding
+               --  secondary dispatch table.
+
+               Call_Node :=
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark =>
+                     New_Occurrence_Of (Class_Wide_Type (Etype (Prim)), Loc),
+                   Expression   => Relocate_Node (Call_Node));
+            end if;
+
+            Thunk_Code :=
+              Make_Subprogram_Body (Loc,
+                Specification =>
+                  Make_Function_Specification (Loc,
+                    Defining_Unit_Name       => Thunk_Id,
+                    Parameter_Specifications => Formals,
+                    Result_Definition        => Result_Def),
+                Declarations => Decl,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Simple_Return_Statement (Loc, Call_Node))));
+         end;
       end if;
    end Expand_Interface_Thunk;
 
@@ -2055,11 +2106,10 @@ package body Exp_Disp is
            TSS_Name_Type
              (Name_Buffer (Name_Len - TSS_Name'Length + 1 .. Name_Len));
 
-         if        Chars (E) = Name_uSize
+         if Nam_In (Chars (E), Name_uSize, Name_uAssign)
            or else
              (Chars (E) = Name_Op_Eq
-                and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
-           or else Chars (E) = Name_uAssign
+               and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize
            or else Is_Predefined_Interface_Primitive (E)
@@ -8382,10 +8432,10 @@ package body Exp_Disp is
          --  excluded from this check because interfaces must be visible in
          --  the public and private part (RM 7.3 (7.3/2))
 
-         --  We disable this check in CodePeer mode, to accommodate legacy
-         --  Ada code.
+         --  We disable this check in Relaxed_RM_Semantics mode, to
+         --  accommodate legacy Ada code.
 
-         if not CodePeer_Mode
+         if not Relaxed_RM_Semantics
            and then Is_Abstract_Type (Typ)
            and then Is_Abstract_Subprogram (Prim)
            and then Present (Alias (Prim))

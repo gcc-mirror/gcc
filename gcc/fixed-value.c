@@ -569,14 +569,14 @@ do_fixed_divide (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
 	  int leftmost_mod = (mod.high < 0);
 
 	  /* Shift left mod by 1 bit.  */
-	  mod = mod.llshift (1, HOST_BITS_PER_DOUBLE_INT);
+	  mod = mod.lshift (1);
 
 	  /* Test the leftmost bit of s to add to mod.  */
 	  if (s.high < 0)
 	    mod.low += 1;
 
 	  /* Shift left quo_s by 1 bit.  */
-	  quo_s = quo_s.llshift (1, HOST_BITS_PER_DOUBLE_INT);
+	  quo_s = quo_s.lshift (1);
 
 	  /* Try to calculate (mod - pos_b).  */
 	  temp = mod - pos_b;
@@ -588,7 +588,7 @@ do_fixed_divide (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
 	    }
 
 	  /* Shift left s by 1 bit.  */
-	  s = s.llshift (1, HOST_BITS_PER_DOUBLE_INT);
+	  s = s.lshift (1);
 
 	}
 

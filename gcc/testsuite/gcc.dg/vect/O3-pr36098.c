@@ -17,6 +17,5 @@ void foo (int ncons, t_sortblock *sb, int *iatom)
      iatom[m]=sb[i].iatom[m];
 }
 
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
-

@@ -381,7 +381,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
 {
   tree field;
 
-  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  gcc_assert (identifier_p (name));
 
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
       || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
@@ -424,8 +424,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
 		  do
 		    field = fields[i--];
 		  while (i >= lo && DECL_NAME (fields[i]) == name);
-		  if (TREE_CODE (field) != TYPE_DECL
-		      && !DECL_TYPE_TEMPLATE_P (field))
+		  if (!DECL_DECLARES_TYPE_P (field))
 		    field = NULL_TREE;
 		}
 	      else
@@ -478,9 +477,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
 	}
 
       if (DECL_NAME (decl) == name
-	  && (!want_type
-	      || TREE_CODE (decl) == TYPE_DECL
-	      || DECL_TYPE_TEMPLATE_P (decl)))
+	  && (!want_type || DECL_DECLARES_TYPE_P (decl)))
 	return decl;
     }
   /* Not found.  */
@@ -777,8 +774,7 @@ friend_accessible_p (tree scope, tree decl, tree binfo)
   if (!scope)
     return 0;
 
-  if (TREE_CODE (scope) == FUNCTION_DECL
-      || DECL_FUNCTION_TEMPLATE_P (scope))
+  if (DECL_DECLARES_FUNCTION_P (scope))
     befriending_classes = DECL_BEFRIENDING_CLASSES (scope);
   else if (TYPE_P (scope))
     befriending_classes = CLASSTYPE_BEFRIENDING_CLASSES (scope);
@@ -796,8 +792,7 @@ friend_accessible_p (tree scope, tree decl, tree binfo)
       if (protected_accessible_p (decl, t, binfo))
 	return 1;
 
-  if (TREE_CODE (scope) == FUNCTION_DECL
-      || DECL_FUNCTION_TEMPLATE_P (scope))
+  if (DECL_DECLARES_FUNCTION_P (scope))
     {
       /* Perhaps this SCOPE is a member of a class which is a
 	 friend.  */
@@ -983,7 +978,7 @@ struct lookup_field_info {
 int
 shared_member_p (tree t)
 {
-  if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == TYPE_DECL \
+  if (VAR_P (t) || TREE_CODE (t) == TYPE_DECL \
       || TREE_CODE (t) == CONST_DECL)
     return 1;
   if (is_overloaded_fn (t))
@@ -1059,8 +1054,7 @@ lookup_field_r (tree binfo, void *data)
 
   /* If we're looking up a type (as with an elaborated type specifier)
      we ignore all non-types we find.  */
-  if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL
-      && !DECL_TYPE_TEMPLATE_P (nval))
+  if (lfi->want_type && !DECL_DECLARES_TYPE_P (nval))
     {
       if (lfi->name == TYPE_IDENTIFIER (type))
 	{
@@ -1190,7 +1184,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       || xbasetype == error_mark_node)
     return NULL_TREE;
 
-  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  gcc_assert (identifier_p (name));
 
   if (TREE_CODE (xbasetype) == TREE_BINFO)
     {
@@ -1509,8 +1503,7 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
 int
 class_method_index_for_fn (tree class_type, tree function)
 {
-  gcc_assert (TREE_CODE (function) == FUNCTION_DECL
-	      || DECL_FUNCTION_TEMPLATE_P (function));
+  gcc_assert (DECL_DECLARES_FUNCTION_P (function));
 
   return lookup_fnfields_1 (class_type,
 			    DECL_CONSTRUCTOR_P (function) ? ctor_identifier :
@@ -1849,8 +1842,8 @@ check_final_overrider (tree overrider, tree basefn)
 {
   tree over_type = TREE_TYPE (overrider);
   tree base_type = TREE_TYPE (basefn);
-  tree over_return = TREE_TYPE (over_type);
-  tree base_return = TREE_TYPE (base_type);
+  tree over_return = fndecl_declared_return_type (overrider);
+  tree base_return = fndecl_declared_return_type (basefn);
   tree over_throw, base_throw;
 
   int fail = 0;
@@ -1904,8 +1897,7 @@ check_final_overrider (tree overrider, tree basefn)
 	{
 	  /* can_convert will permit user defined conversion from a
 	     (reference to) class type. We must reject them.  */
-	  over_return = non_reference (TREE_TYPE (over_type));
-	  if (CLASS_TYPE_P (over_return))
+	  if (CLASS_TYPE_P (non_reference (over_return)))
 	    fail = 2;
 	  else
 	    {

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,7 @@ package body Lib.Xref is
       --  Unit number corresponding to Loc. Value is undefined and not
       --  referenced if Loc is set to No_Location.
 
-      --  The following components are only used for Alfa cross-references
+      --  The following components are only used for SPARK cross-references
 
       Ref_Scope : Entity_Id;
       --  Entity of the closest subprogram or package enclosing the reference
@@ -151,11 +151,11 @@ package body Lib.Xref is
      Hash       => Hash,
      Equal      => Equal);
 
-   ----------------------
-   -- Alfa Information --
-   ----------------------
+   -----------------------------
+   -- SPARK Xrefs Information --
+   -----------------------------
 
-   package body Alfa is separate;
+   package body SPARK_Specific is separate;
 
    ------------------------
    --  Local Subprograms --
@@ -516,11 +516,9 @@ package body Lib.Xref is
                P := Parent (P);
 
                if Nkind (P) = N_Pragma then
-                  if Pragma_Name (P) = Name_Warnings
-                       or else
-                     Pragma_Name (P) = Name_Unmodified
-                       or else
-                     Pragma_Name (P) = Name_Unreferenced
+                  if Nam_In (Pragma_Name (P), Name_Warnings,
+                                              Name_Unmodified,
+                                              Name_Unreferenced)
                   then
                      return False;
                   end if;
@@ -634,10 +632,10 @@ package body Lib.Xref is
            or else (Typ = 'b' and then Is_Generic_Instance (E))
 
             --  Allow the generation of references to reads, writes and calls
-            --  in Alfa mode when the related context comes from an instance.
+            --  in SPARK mode when the related context comes from an instance.
 
            or else
-             (Alfa_Mode
+             (SPARK_Mode
                 and then In_Extended_Main_Code_Unit (N)
                 and then (Typ = 'm' or else Typ = 'r' or else Typ = 's'))
          then
@@ -887,12 +885,12 @@ package body Lib.Xref is
 
          --  Ignore references from within an instance. The only exceptions to
          --  this are default subprograms, for which we generate an implicit
-         --  reference and compilations in Alfa_Mode.
+         --  reference and compilations in SPARK mode.
 
          and then
            (Instantiation_Location (Sloc (N)) = No_Location
              or else Typ = 'i'
-             or else Alfa_Mode)
+             or else SPARK_Mode)
 
         --  Ignore dummy references
 
@@ -975,11 +973,11 @@ package body Lib.Xref is
             return;
          end if;
 
-         --  In Alfa mode, consider the underlying entity renamed instead of
+         --  In SPARK mode, consider the underlying entity renamed instead of
          --  the renaming, which is needed to compute a valid set of effects
          --  (reads, writes) for the enclosing subprogram.
 
-         if Alfa_Mode then
+         if SPARK_Mode then
             Ent := Get_Through_Renamings (Ent);
 
             --  If no enclosing object, then it could be a reference to any
@@ -989,10 +987,10 @@ package body Lib.Xref is
 
             if No (Ent) then
                if Actual_Typ = 'w' then
-                  Alfa.Generate_Dereference (Nod, 'r');
-                  Alfa.Generate_Dereference (Nod, 'w');
+                  SPARK_Specific.Generate_Dereference (Nod, 'r');
+                  SPARK_Specific.Generate_Dereference (Nod, 'w');
                else
-                  Alfa.Generate_Dereference (Nod, 'r');
+                  SPARK_Specific.Generate_Dereference (Nod, 'r');
                end if;
 
                return;
@@ -1008,14 +1006,14 @@ package body Lib.Xref is
             Actual_Typ := 'P';
          end if;
 
-         if Alfa_Mode then
+         if SPARK_Mode then
             Ref := Sloc (Nod);
             Def := Sloc (Ent);
 
-            Ref_Scope := Alfa.Enclosing_Subprogram_Or_Package (Nod);
-            Ent_Scope := Alfa.Enclosing_Subprogram_Or_Package (Ent);
+            Ref_Scope := SPARK_Specific.Enclosing_Subprogram_Or_Package (Nod);
+            Ent_Scope := SPARK_Specific.Enclosing_Subprogram_Or_Package (Ent);
 
-            --  Since we are reaching through renamings in Alfa mode, we may
+            --  Since we are reaching through renamings in SPARK mode, we may
             --  end up with standard constants. Ignore those.
 
             if Sloc (Ent_Scope) <= Standard_Location
@@ -1363,6 +1361,23 @@ package body Lib.Xref is
               or else Ekind (Tref) = E_Operator
             then
                Tref := Etype (Tref);
+
+               --  Another special case: an object of a classwide type
+               --  initialized with a tag-indeterminate call gets a subtype
+               --  of the classwide type during expansion. See if the original
+               --  type in the declaration is named, and return it instead
+               --  of going to the root type.
+
+               if Ekind (Tref) = E_Class_Wide_Subtype
+                 and then Nkind (Parent (Ent)) = N_Object_Declaration
+                 and then
+                   Nkind (Original_Node (Object_Definition (Parent (Ent))))
+                     = N_Identifier
+               then
+                  Tref :=
+                    Entity
+                      (Original_Node ((Object_Definition (Parent (Ent)))));
+               end if;
 
             --  For anything else, exit
 
@@ -2047,8 +2062,8 @@ package body Lib.Xref is
                      Ctyp := '*';
                   end if;
 
-                  --  Special handling for access parameters and objects of
-                  --  an anonymous access type.
+                  --  Special handling for access parameters and objects and
+                  --  components of an anonymous access type.
 
                   if Ekind_In (Etype (XE.Key.Ent),
                                E_Anonymous_Access_Type,
@@ -2056,7 +2071,9 @@ package body Lib.Xref is
                                E_Anonymous_Access_Protected_Subprogram_Type)
                   then
                      if Is_Formal (XE.Key.Ent)
-                       or else Ekind_In (XE.Key.Ent, E_Variable, E_Constant)
+                       or else
+                         Ekind_In
+                           (XE.Key.Ent, E_Variable, E_Constant, E_Component)
                      then
                         Ctyp := 'p';
                      end if;

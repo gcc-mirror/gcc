@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 // prms-id: 3836
 
-void f(int &i) {	// { dg-error "" } ref line
+void f(int &i) {	// { dg-message "" } ref line
   i = 10;
 }
 

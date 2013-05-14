@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_CP_PARSER_H
 
 #include "tree.h"
+#include "cp/cp-tree.h"
 #include "c-family/c-pragma.h"
 
 /* A token's value and its associated deferred access checks and
@@ -340,10 +341,25 @@ typedef struct GTY(()) cp_parser {
   /* The number of template parameter lists that apply directly to the
      current declaration.  */
   unsigned num_template_parameter_lists;
+
+  /* When parsing #pragma omp declare simd, this is a vector of
+     the clauses, each tree is either NULL_TREE, or OMP_CLAUSE
+     with optional chain of other clauses.  If error regarding
+     omp declare simd has been reported already, either
+     omp_declare_simd_clauses is set to NULL, or first element set
+     to error_mark_node.  If a FUNCTION_DECL has been seen already,
+     first element is set to integer_zero_node.  */
+  vec<tree, va_gc> *omp_declare_simd_clauses;
 } cp_parser;
 
 /* In parser.c  */
+extern void debug (cp_token &ref);
+extern void debug (cp_token *ptr);
 extern void cp_lexer_debug_tokens (vec<cp_token, va_gc> *);
+extern void debug (vec<cp_token, va_gc> &ref);
+extern void debug (vec<cp_token, va_gc> *ptr);
 extern void cp_debug_parser (FILE *, cp_parser *);
+extern void debug (cp_parser &ref);
+extern void debug (cp_parser *ptr);
 
 #endif  /* GCC_CP_PARSER_H  */

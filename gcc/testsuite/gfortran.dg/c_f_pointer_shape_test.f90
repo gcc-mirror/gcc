@@ -13,7 +13,7 @@ contains
     type(c_ptr), value :: cPtr
     
     myArrayPtr => myArray
-    call c_f_pointer(cPtr, myArrayPtr) ! { dg-error "Missing SHAPE argument" }
+    call c_f_pointer(cPtr, myArrayPtr) ! { dg-error "Expected SHAPE argument to C_F_POINTER with array FPTR" }
   end subroutine test_0
 end module c_f_pointer_shape_test
 

@@ -2075,8 +2075,23 @@ VSX vector register to hold vector double data
 @item wf
 VSX vector register to hold vector float data
 
+@item wg
+If @option{-mmfpgpr} was used, a floating point register
+
+@item wl
+If the LFIWAX instruction is enabled, a floating point register
+
 @item ws
 VSX vector register to hold scalar float data
+
+@item wt
+VSX vector register to hold 128 bit integer
+
+@item wx
+If the STFIWX instruction is enabled, a floating point register
+
+@item wz
+If the LFIWZX instruction is enabled, a floating point register
 
 @item wa
 Any VSX register
@@ -2916,6 +2931,19 @@ Floating-point zero.
 
 @item R
 An address that can be used in a non-macro load or store.
+
+@item ZC
+When compiling microMIPS code, this constraint matches a memory operand
+whose address is formed from a base register and a 12-bit offset.  These
+operands can be used for microMIPS instructions such as @code{ll} and
+@code{sc}.  When not compiling for microMIPS code, @code{ZC} is
+equivalent to @code{R}.
+
+@item ZD
+When compiling microMIPS code, this constraint matches an address operand
+that is formed from a base register and a 12-bit offset.  These operands
+can be used for microMIPS instructions such as @code{prefetch}.  When
+not compiling for microMIPS code, @code{ZD} is equivalent to @code{p}.
 @end table
 
 @item Motorola 680x0---@file{config/m68k/constraints.md}
@@ -5613,7 +5641,7 @@ A label to jump to if the index has a value outside the bounds.
 @end enumerate
 
 The table is an @code{addr_vec} or @code{addr_diff_vec} inside of a
-@code{jump_insn}.  The number of elements in the table is one plus the
+@code{jump_table_data}.  The number of elements in the table is one plus the
 difference between the upper bound and the lower bound.
 
 @cindex @code{tablejump} instruction pattern

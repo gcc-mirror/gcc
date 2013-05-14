@@ -23,6 +23,9 @@
 
 ; Please try to keep this file in ASCII collating order.
 
+pthread
+Ignore
+
 qnolinkcmds
 Driver
 

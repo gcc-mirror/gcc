@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "pointer-set.h"
 #include "profile.h"
+#include "data-streamer.h"
 
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
@@ -333,7 +334,95 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	}
       fprintf (dump_file, ".\n");
       break;
+    case HIST_TYPE_MAX:
+      gcc_unreachable ();
    }
+}
+
+/* Dump information about HIST to DUMP_FILE.  */
+
+void
+stream_out_histogram_value (struct output_block *ob, histogram_value hist)
+{
+  struct bitpack_d bp;
+  unsigned int i;
+
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_enum (&bp, hist_type, HIST_TYPE_MAX, hist->type);
+  bp_pack_value (&bp, hist->hvalue.next != NULL, 1);
+  streamer_write_bitpack (&bp);
+  switch (hist->type)
+    {
+    case HIST_TYPE_INTERVAL:
+      streamer_write_hwi (ob, hist->hdata.intvl.int_start);
+      streamer_write_uhwi (ob, hist->hdata.intvl.steps);
+      break;
+    default:
+      break;
+    }
+  for (i = 0; i < hist->n_counters; i++)
+    streamer_write_gcov_count (ob, hist->hvalue.counters[i]);
+  if (hist->hvalue.next)
+    stream_out_histogram_value (ob, hist->hvalue.next);
+}
+/* Dump information about HIST to DUMP_FILE.  */
+
+void
+stream_in_histogram_value (struct lto_input_block *ib, gimple stmt)
+{
+  enum hist_type type;
+  unsigned int ncounters = 0;
+  struct bitpack_d bp;
+  unsigned int i;
+  histogram_value new_val;
+  bool next;
+  histogram_value *next_p = NULL;
+
+  do
+    {
+      bp = streamer_read_bitpack (ib);
+      type = bp_unpack_enum (&bp, hist_type, HIST_TYPE_MAX);
+      next = bp_unpack_value (&bp, 1);
+      new_val = gimple_alloc_histogram_value (cfun, type, stmt, NULL);
+      switch (type)
+	{
+	case HIST_TYPE_INTERVAL:
+	  new_val->hdata.intvl.int_start = streamer_read_hwi (ib);
+	  new_val->hdata.intvl.steps = streamer_read_uhwi (ib);
+	  ncounters = new_val->hdata.intvl.steps + 2;
+	  break;
+
+	case HIST_TYPE_POW2:
+	case HIST_TYPE_AVERAGE:
+	  ncounters = 2;
+	  break;
+
+	case HIST_TYPE_SINGLE_VALUE:
+	case HIST_TYPE_INDIR_CALL:
+	  ncounters = 3;
+	  break;
+
+	case HIST_TYPE_CONST_DELTA:
+	  ncounters = 4;
+	  break;
+
+	case HIST_TYPE_IOR:
+	  ncounters = 1;
+	  break;
+	case HIST_TYPE_MAX:
+	  gcc_unreachable ();
+	}
+      new_val->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new_val->hvalue.counters) * ncounters);
+      new_val->n_counters = ncounters;
+      for (i = 0; i < ncounters; i++)
+	new_val->hvalue.counters[i] = streamer_read_gcov_count (ib);
+      if (!next_p)
+	gimple_add_histogram_value (cfun, stmt, new_val);
+      else
+	*next_p = new_val;
+      next_p = &new_val->hvalue.next;
+    }
+  while (next);
 }
 
 /* Dump all histograms attached to STMT to DUMP_FILE.  */
@@ -712,7 +801,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
 
   /* Compute probability of taking the optimal path.  */
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
 
@@ -872,7 +961,7 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
     return false;
 
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
 
@@ -1066,8 +1155,8 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   /* Compute probability of taking the optimal path(s).  */
   if (all > 0)
     {
-      prob1 = (count1 * REG_BR_PROB_BASE + all / 2) / all;
-      prob2 = (count2 * REG_BR_PROB_BASE + all / 2) / all;
+      prob1 = GCOV_COMPUTE_SCALE (count1, all);
+      prob2 = GCOV_COMPUTE_SCALE (count2, all);
     }
   else
     {
@@ -1340,7 +1429,7 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
     return false;
 
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
   direct_call = find_func_by_funcdef_no ((int)val);
@@ -1546,7 +1635,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   if (check_counter (stmt, "value", &count, &all, gimple_bb (stmt)->count))
     return false;
   if (all > 0)
-    prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+    prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
   dest = gimple_call_arg (stmt, 0);

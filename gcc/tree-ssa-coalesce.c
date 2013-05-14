@@ -49,6 +49,41 @@ typedef struct coalesce_pair
 } * coalesce_pair_p;
 typedef const struct coalesce_pair *const_coalesce_pair_p;
 
+/* Coalesce pair hashtable helpers.  */
+
+struct coalesce_pair_hasher : typed_noop_remove <coalesce_pair>
+{
+  typedef coalesce_pair value_type;
+  typedef coalesce_pair compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+/* Hash function for coalesce list.  Calculate hash for PAIR.   */
+
+inline hashval_t
+coalesce_pair_hasher::hash (const value_type *pair)
+{
+  hashval_t a = (hashval_t)(pair->first_element);
+  hashval_t b = (hashval_t)(pair->second_element);
+
+  return b * (b - 1) / 2 + a;
+}
+
+/* Equality function for coalesce list hash table.  Compare PAIR1 and PAIR2,
+   returning TRUE if the two pairs are equivalent.  */
+
+inline bool
+coalesce_pair_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  return (p1->first_element == p2->first_element
+	  && p1->second_element == p2->second_element);
+}
+
+typedef hash_table <coalesce_pair_hasher> coalesce_table_type;
+typedef coalesce_table_type::iterator coalesce_iterator_type;
+
+
 typedef struct cost_one_pair_d
 {
   int first_element;
@@ -60,7 +95,7 @@ typedef struct cost_one_pair_d
 
 typedef struct coalesce_list_d
 {
-  htab_t list;			/* Hash table.  */
+  coalesce_table_type list;	/* Hash table.  */
   coalesce_pair_p *sorted;	/* List when sorted.  */
   int num_sorted;		/* Number in the sorted list.  */
   cost_one_pair_p cost_one_list;/* Single use coalesces with cost 1.  */
@@ -185,34 +220,6 @@ pop_best_coalesce (coalesce_list_p cl, int *p1, int *p2)
 }
 
 
-#define COALESCE_HASH_FN(R1, R2) ((R2) * ((R2) - 1) / 2 + (R1))
-
-/* Hash function for coalesce list.  Calculate hash for PAIR.   */
-
-static unsigned int
-coalesce_pair_map_hash (const void *pair)
-{
-  hashval_t a = (hashval_t)(((const_coalesce_pair_p)pair)->first_element);
-  hashval_t b = (hashval_t)(((const_coalesce_pair_p)pair)->second_element);
-
-  return COALESCE_HASH_FN (a,b);
-}
-
-
-/* Equality function for coalesce list hash table.  Compare PAIR1 and PAIR2,
-   returning TRUE if the two pairs are equivalent.  */
-
-static int
-coalesce_pair_map_eq (const void *pair1, const void *pair2)
-{
-  const_coalesce_pair_p const p1 = (const_coalesce_pair_p) pair1;
-  const_coalesce_pair_p const p2 = (const_coalesce_pair_p) pair2;
-
-  return (p1->first_element == p2->first_element
-	  && p1->second_element == p2->second_element);
-}
-
-
 /* Create a new empty coalesce list object and return it.  */
 
 static inline coalesce_list_p
@@ -225,8 +232,7 @@ create_coalesce_list (void)
     size = 40;
 
   list = (coalesce_list_p) xmalloc (sizeof (struct coalesce_list_d));
-  list->list = htab_create (size, coalesce_pair_map_hash,
-  			    coalesce_pair_map_eq, NULL);
+  list->list.create (size);
   list->sorted = NULL;
   list->num_sorted = 0;
   list->cost_one_list = NULL;
@@ -240,7 +246,7 @@ static inline void
 delete_coalesce_list (coalesce_list_p cl)
 {
   gcc_assert (cl->cost_one_list == NULL);
-  htab_delete (cl->list);
+  cl->list.dispose ();
   free (cl->sorted);
   gcc_assert (cl->num_sorted == 0);
   free (cl);
@@ -255,7 +261,7 @@ static coalesce_pair_p
 find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
 {
   struct coalesce_pair p;
-  void **slot;
+  coalesce_pair **slot;
   unsigned int hash;
 
   /* Normalize so that p1 is the smaller value.  */
@@ -270,9 +276,8 @@ find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
       p.second_element = p2;
     }
 
-  hash = coalesce_pair_map_hash (&p);
-  slot = htab_find_slot_with_hash (cl->list, &p, hash,
-				   create ? INSERT : NO_INSERT);
+  hash = coalesce_pair_hasher::hash (&p);
+  slot = cl->list.find_slot_with_hash (&p, hash, create ? INSERT : NO_INSERT);
   if (!slot)
     return NULL;
 
@@ -283,7 +288,7 @@ find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
       pair->first_element = p.first_element;
       pair->second_element = p.second_element;
       pair->cost = 0;
-      *slot = (void *)pair;
+      *slot = pair;
     }
 
   return (struct coalesce_pair *) *slot;
@@ -355,56 +360,14 @@ compare_pairs (const void *p1, const void *p2)
 static inline int
 num_coalesce_pairs (coalesce_list_p cl)
 {
-  return htab_elements (cl->list);
-}
-
-
-/* Iterator over hash table pairs.  */
-typedef struct
-{
-  htab_iterator hti;
-} coalesce_pair_iterator;
-
-
-/* Return first partition pair from list CL, initializing iterator ITER.  */
-
-static inline coalesce_pair_p
-first_coalesce_pair (coalesce_list_p cl, coalesce_pair_iterator *iter)
-{
-  coalesce_pair_p pair;
-
-  pair = (coalesce_pair_p) first_htab_element (&(iter->hti), cl->list);
-  return pair;
-}
-
-
-/* Return TRUE if there are no more partitions in for ITER to process.  */
-
-static inline bool
-end_coalesce_pair_p (coalesce_pair_iterator *iter)
-{
-  return end_htab_p (&(iter->hti));
-}
-
-
-/* Return the next partition pair to be visited by ITER.  */
-
-static inline coalesce_pair_p
-next_coalesce_pair (coalesce_pair_iterator *iter)
-{
-  coalesce_pair_p pair;
-
-  pair = (coalesce_pair_p) next_htab_element (&(iter->hti));
-  return pair;
+  return cl->list.elements ();
 }
 
 
 /* Iterate over CL using ITER, returning values in PAIR.  */
 
 #define FOR_EACH_PARTITION_PAIR(PAIR, ITER, CL)		\
-  for ((PAIR) = first_coalesce_pair ((CL), &(ITER));	\
-       !end_coalesce_pair_p (&(ITER));			\
-       (PAIR) = next_coalesce_pair (&(ITER)))
+  FOR_EACH_HASH_TABLE_ELEMENT ((CL)->list, (PAIR), coalesce_pair_p, (ITER))
 
 
 /* Prepare CL for removal of preferred pairs.  When finished they are sorted
@@ -415,7 +378,7 @@ sort_coalesce_list (coalesce_list_p cl)
 {
   unsigned x, num;
   coalesce_pair_p p;
-  coalesce_pair_iterator ppi;
+  coalesce_iterator_type ppi;
 
   gcc_assert (cl->sorted == NULL);
 
@@ -461,7 +424,8 @@ static void
 dump_coalesce_list (FILE *f, coalesce_list_p cl)
 {
   coalesce_pair_p node;
-  coalesce_pair_iterator ppi;
+  coalesce_iterator_type ppi;
+
   int x;
   tree var;
 

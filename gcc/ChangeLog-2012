@@ -4535,17 +4535,17 @@
 	* config/i386/i386.c (ix86_function_ok_for_sibcall): Put back exception
 	to make a sibcall if one of the functions has void return type.
 
-2012-11-07  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
 	* doc/invoke.texi (Wformat): Update.
 
-2012-11-07  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* optc-gen.awk: Factor code out to...
 	* opt-functions.awk (lang_enabled_by): ... this new function.
 
-2012-11-07  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
 	* common.opt (Wswitch,Wswitch-default,Wswitch-enum): Move to c.opt.
@@ -5673,7 +5673,7 @@
 
 	* expmed.c (store_bit_field_1): Remove test for BLKmode values.
 
-2012-10-31  Ralf CorsÃ©pius  <ralf.corsepius@rtems.org>,
+2012-10-31  Ralf Corsépius  <ralf.corsepius@rtems.org>,
 	    Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config/sparc/t-rtems: New (Custom multilibs).
@@ -5886,7 +5886,7 @@
 	* lra-spills.c: Likewise.
 	* lra.c: Likewise.
 
-2012-10-29  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53066
 	* tree.h (FUNCTION_POINTER_TYPE_P): New.
@@ -6197,7 +6197,7 @@
 	* config/i386/x86intrin.h: Include
 	xsaveintrin.h, fxsrintrin.h, xsaveoptintrin.h.
 
-2012-10-26  Ralf CorsÃ©pius  <ralf.corsepius@rtems.org>
+2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/avr/t-rtems: Revert previous commit.
 
@@ -6253,7 +6253,7 @@
 	* lra-constraints.c (check_and_process_move): Remove #if
 	ENABLE_ASSERT_CHECKING.
 
-2012-10-26  Ralf CorsÃ©pius  <ralf.corsepius@rtems.org>
+2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/avr/rtems.h (TARGET_OS_CPP_BUILTINS): Remove
 	__USE_INIT_FINI__.
@@ -6308,7 +6308,7 @@
 	* lra-assigns.c (assign_by_spills): Add non-reload pseudos
 	assigned to hard register to changed_pseudo_bitmap.
 
-2012-10-25  Ralf CorsÃ©pius  <ralf.corsepius@rtems.org>
+2012-10-25  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (microblaze*-*-rtems*): New target.
 	* config/microblaze/rtems.h: New.
@@ -6362,7 +6362,7 @@
 	* config/rs6000/rs6000.c (rs6000_density_test): Use dump_enabled_p
 	instead of dump_kind_p.
 
-2012-10-24  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-10-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/54928
 	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc):
@@ -7023,7 +7023,7 @@
 	* loop-iv.c (iv_number_of_iterations): Record the upper bound
 	only if there are no further conditions on it.
 
-2012-10-20  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
 	PR c/40989
@@ -7660,7 +7660,7 @@
 	out of ...
 	(forwarder_block_p): ... here.
 
-2012-10-16  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
 	PR c/40989
@@ -7671,7 +7671,7 @@
 	* opts.c (finish_options): Do not handle them explicitly.
 	* opt-functions.awk (search_var_name): New.
 
-2012-10-16  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
 	PR c/40989
@@ -11075,7 +11075,7 @@
 	and -meb.
 
 2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
-	    Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53210
 	* doc/invoke.texi ([Winit-self]): Document as enabled by -Wall in C++.
@@ -18313,7 +18313,7 @@
 	(ASM_SPEC): Pass mcu options to the assembler.
 	* doc/invoke.texi (MIPS Options): Document -mmcu and -mno-mcu.
 
-2012-07-18  Ralf CorsÃ©pius  <ralf.corsepius@rtems.org>
+2012-07-18  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (v850-*-rtems*): New target.
 	* config/v850/rtems.h: New.
@@ -22797,7 +22797,7 @@
 	(generate_code_for_partition): Generate code according
 	to partition classification.
 
-2012-06-01  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-06-01  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/50134
@@ -24303,7 +24303,7 @@
 	(decide_is_variable_needed): Handle externals.
 	(varpool_remove_unreferenced_decls): Likewise.
 
-2012-05-17  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* opts.c (common_handle_option): -pedantic-errors enables -Wpedantic.
 	(enable_warning_as_error): Do not special case Wuninitialized.
@@ -24631,7 +24631,7 @@
 	strided loads.
 	* tree-vect-stmts.c (vect_model_load_cost): Handle strided loads.
 
-2012-05-14  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53063
 	* doc/options.texi: (LangEnabledBy): Document it.
@@ -24705,7 +24705,7 @@
 
 	* config/pa/pa.md: Use define_c_enum for "unspec" and "unspecv".
 
-2012-05-13  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* common.opt (Wtype-limits): Use EnabledBy.
 
@@ -24739,7 +24739,7 @@
 	(*<code><mode>3): Ditto.
 	(<code>tf3): Ditto.
 
-2012-05-13  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* optc-gen.awk: Error instead of warning for conflicting help.
 
@@ -24786,7 +24786,7 @@
 	(delete_tree_ssa): Do not call fini_phinodes.
 	* tree-flow.h (init_phinodes, fini_phinodes): Remove.
 
-2012-05-11  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 53063
 	* doc/options.texi (EnabledBy): Document
@@ -24986,14 +24986,14 @@
 	(xop_mulv2div2di3_low): Remove insn_and_split pattern.
 	(xop_mulv2div2di3_high): Ditto.
 
-2012-05-09  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53289
 	* diagnostic.h (diagnostic_context): Add last_location.
 	* diagnostic.c (diagnostic_initialize): Initialize it.
 	(diagnostic_show_locus): Use it.
 
-2012-05-09  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/extend.texi (Function Attributes): Point xref to section
 	about Pragmas.
@@ -25807,13 +25807,13 @@
 	Same stands for reloads with type RELOAD_FOR_OUTPUT_ADDRESS and
 	RELOAD_FOR_OUTADDR_ADDRESS.
 
-2012-05-04  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/24985
 	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Show caret
 	for macro expansion.
 
-2012-05-03  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* flags.h (flag_permissive): Do not declare.
 	* diagnostic.c (diagnostic_report_diagnostic): Handle fpermissive
@@ -26743,7 +26743,7 @@
 	* config/i386/i386.c (ix86_handle_struct_attribute): Use the proper
 	predicate to discriminate types.
 
-2012-04-30  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wmissing-format-attribute): Document as an
 	alias of Wsuggest-attribute=format.
@@ -26751,7 +26751,7 @@
 	Wmissing-format-attribute with Wsuggest-attribute=format.
 	(digest_init): Likewise.
 
-2012-04-29  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* opts.c (finish_options): Do not handle -Wmissing-noreturn here.
 	* common.opt (Wmissing-noreturn): Alias of
@@ -26839,7 +26839,7 @@
 	PR middle-end/27139
 	* tree-ssa-forwprop.c (combine_conversions): Handle INT->FP->INT.
 
-2012-04-25  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53130
 	* c-typeck.c (pop_init_level): Use %qD instead of %qT.
@@ -27001,7 +27001,7 @@
 	* reload.c (find_reloads): Change the loop nesting when trying an
 	alternative with swapped operands.
 
-2012-04-26  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc): Fix
 	comment. Delete unused parameter first_exp_point_map.
@@ -27135,7 +27135,7 @@
 	set_nonincremental_init_from_string): Pass true instead of false
 	as IMPLICIT to add_pending_init.
 
-2012-04-25  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-typeck.c (pop_init_level): Improve diagnostics.
 
@@ -27252,7 +27252,7 @@
 	* config/vxworks.c (vxworks_override_options): Default to strict-dwarf
 	and dwarf_version 2.
 
-2012-04-24  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-pretty-print.h (default_tree_printer): Do not declare.
 	* tree-diagnostic.c: Include tree-pretty-print.h, tree-pass.h and
@@ -27536,7 +27536,7 @@
 	Likewise.
 	* tree-switch-conversion.c (build_one_array): Likewise.
 
-2012-04-22  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/44774
 	* doc/invoke.texi (pedantic): Rename to Wpedantic.
@@ -27624,7 +27624,7 @@
 
 	* fold-const.c (fold_checksum_tree): Fix VECTOR_CST case.
 
-2012-04-21  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 35441
 	* c-typeck.c (inform_declaration): New.
@@ -27811,7 +27811,7 @@
 
 	* config/arm/sync.md (sync_optab): Change ior attribute to "or".
 
-2012-04-19  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/52283/37985
 	* stmt.c (warn_if_unused_value): Skip NOP_EXPR.
@@ -28041,7 +28041,7 @@
 	* varpoo.c (varpool_node_name): Remove.
 	(dump_varpool_node): Use dump_symtab_base; reformat.
 
-2012-04-18  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Language Independent Options): @item should be
 	before @opindex.
@@ -28908,7 +28908,7 @@
 
 	* doc/extend.texi (Type Attributes): Move paragraph.
 
-2012-04-11  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 24985
 	* diagnostic.h (show_caret): Declare.
@@ -28943,7 +28943,7 @@
 	manipulation code we are threading through a loop header
 	to an exit destination.
 
-2012-04-10  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-10  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree.h (warn_if_unused_value): Move declaration from here.
 	* stmt.c (warn_if_unused_value): Move definition from here.
@@ -29083,7 +29083,7 @@
 	comment block.
 	(Sr0): Remove unused memory constraint.
 
-2012-04-08  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-04-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree-pretty-print.h: Update comment.
 
@@ -30605,7 +30605,7 @@
 	* tree-data-ref.c (subscript_dependence_tester_1): Check
 	all dimensions for non-conflicting access functions.
 
-2012-03-15  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
+2012-03-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/44783
 	* doc/invoke.texi [C++ Language Options]: Document
@@ -31556,7 +31556,7 @@
 	in new variable 'empty'.  Increase issue_rate only for
 	non-empty insns.
 
-2012-03-07  Ralf CorsÃ©pius  <ralf.corsepius@rtems.org>
+2012-03-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	PR target/51417
 	* Makefile.in: Let install-gcc-ar depend on installdirs,

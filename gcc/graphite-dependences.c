@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_cloog
 #include "graphite-poly.h"
+#include "graphite-htab.h"
 
 /* Add the constraints from the set S to the domain of MAP.  */
 
@@ -579,7 +580,7 @@ loop_level_carries_dependences (scop_p scop, vec<poly_bb_p> body,
    poly_bb_p.  */
 
 bool
-loop_is_parallel_p (loop_p loop, htab_t bb_pbb_mapping, int depth)
+loop_is_parallel_p (loop_p loop, bb_pbb_htab_type bb_pbb_mapping, int depth)
 {
   bool dependences;
   scop_p scop;

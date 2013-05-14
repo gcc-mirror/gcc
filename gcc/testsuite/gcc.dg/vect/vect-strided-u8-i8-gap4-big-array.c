@@ -18,6 +18,8 @@ typedef struct {
 
 s check_res[N];
 
+volatile int y = 0;
+
 __attribute__ ((noinline)) int
 main1 (s *arr)
 {
@@ -103,8 +105,8 @@ int main (void)
       check_res[i].h = arr[i].c;
       check_res[i].g = arr[i].b + arr[i].c;
 
-      if (arr[i].a == 178)
-         abort ();
+      if (y) /* Avoid vectorization.  */
+        abort ();
     }
   main1 (arr);
 

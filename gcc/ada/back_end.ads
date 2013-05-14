@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Call the back end with all the information needed. Also contains other
---  back-end specific interfaces required by the front end.
-
-with Einfo; use Einfo;
+--  Call the back end with all the information needed
 
 package Back_End is
 
@@ -46,30 +43,11 @@ package Back_End is
    pragma Convention (C, Back_End_Mode_Type);
    for Back_End_Mode_Type use (0, 1, 2);
 
-   type C_String is array (0 .. 255) of aliased Character;
-   pragma Convention (C, C_String);
-
-   type Register_Type_Proc is access procedure
-     (C_Name    : C_String; -- Nul-terminated string with name of type
-      Digs      : Natural;  -- Nr or digits for floating point, 0 otherwise
-      Complex   : Boolean;  -- True iff type has real and imaginary parts
-      Count     : Natural;  -- Number of elements in vector, 0 otherwise
-      Float_Rep : Float_Rep_Kind; -- Representation used for fpt type
-      Size      : Positive; -- Size of representation in bits
-      Alignment : Natural); -- Required alignment in bits
-   pragma Convention (C, Register_Type_Proc);
-   --  Call back procedure for Register_Back_End_Types. This is to be used by
-   --  Create_Standard to create predefined types for all types supported by
-   --  the back end.
-
-   procedure Register_Back_End_Types (Call_Back : Register_Type_Proc);
-   --  Calls the Call_Back function with information for each supported type.
-
    procedure Call_Back_End (Mode : Back_End_Mode_Type);
    --  Call back end, i.e. make call to driver traversing the tree and
-   --  outputting code. This call is made with all tables locked.
-   --  The back end is responsible for unlocking any tables it may need
-   --  to change, and locking them again before returning.
+   --  outputting code. This call is made with all tables locked. The back
+   --  end is responsible for unlocking any tables it may need to change,
+   --  and locking them again before returning.
 
    procedure Scan_Compiler_Arguments;
    --  Acquires command-line parameters passed to the compiler and processes

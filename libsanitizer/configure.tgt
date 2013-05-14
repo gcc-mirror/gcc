@@ -29,6 +29,8 @@ case "${target}" in
 	;;
   sparc*-*-linux*)
 	;;
+  arm*-*-linux*)
+	;;
   x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
 	TSAN_SUPPORTED=no
 	;;

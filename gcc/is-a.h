@@ -181,7 +181,7 @@ template <typename T, typename U>
 inline T *
 as_a (U *p)
 {
-  gcc_assert (is_a <T> (p));
+  gcc_checking_assert (is_a <T> (p));
   return is_a_helper <T>::cast (p);
 }
 

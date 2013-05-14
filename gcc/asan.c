@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "hash-table.h"
 #include "alloc-pool.h"
+#include "cfgloop.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -412,7 +413,8 @@ get_mem_ref_of_assignment (const gimple assignment,
 {
   gcc_assert (gimple_assign_single_p (assignment));
 
-  if (gimple_store_p (assignment))
+  if (gimple_store_p (assignment)
+      && !gimple_clobber_p (assignment))
     {
       ref->start = gimple_assign_lhs (assignment);
       *ref_is_store = true;
@@ -1219,6 +1221,11 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
   basic_block cond_bb = e->src;
   basic_block fallthru_bb = e->dest;
   basic_block then_bb = create_empty_bb (cond_bb);
+  if (current_loops)
+    {
+      add_bb_to_loop (then_bb, cond_bb->loop_father);
+      loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   /* Set up the newly created 'then block'.  */
   e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
@@ -1379,57 +1386,23 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
       /* Slow path for 1, 2 and 4 byte accesses.
 	 Test (shadow != 0)
 	      & ((base_addr & 7) + (size_in_bytes - 1)) >= shadow).  */
-      g = gimple_build_assign_with_ops (NE_EXPR,
-					make_ssa_name (boolean_type_node,
-						       NULL),
-					shadow,
-					build_int_cst (shadow_type, 0));
-      gimple_set_location (g, location);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-      t = gimple_assign_lhs (g);
-
-      g = gimple_build_assign_with_ops (BIT_AND_EXPR,
-					make_ssa_name (uintptr_type,
-						       NULL),
-					base_addr,
-					build_int_cst (uintptr_type, 7));
-      gimple_set_location (g, location);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-
-      g = gimple_build_assign_with_ops (NOP_EXPR,
-					make_ssa_name (shadow_type,
-						       NULL),
-					gimple_assign_lhs (g), NULL_TREE);
-      gimple_set_location (g, location);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-
+      gimple_seq seq = NULL;
+      gimple shadow_test = build_assign (NE_EXPR, shadow, 0);
+      gimple_seq_add_stmt (&seq, shadow_test);
+      gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, base_addr, 7));
+      gimple_seq_add_stmt (&seq, build_type_cast (shadow_type,
+                                                  gimple_seq_last (seq)));
       if (size_in_bytes > 1)
-	{
-	  g = gimple_build_assign_with_ops (PLUS_EXPR,
-					    make_ssa_name (shadow_type,
-							   NULL),
-					    gimple_assign_lhs (g),
-					    build_int_cst (shadow_type,
-							   size_in_bytes - 1));
-	  gimple_set_location (g, location);
-	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-	}
-
-      g = gimple_build_assign_with_ops (GE_EXPR,
-					make_ssa_name (boolean_type_node,
-						       NULL),
-					gimple_assign_lhs (g),
-					shadow);
-      gimple_set_location (g, location);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-
-      g = gimple_build_assign_with_ops (BIT_AND_EXPR,
-					make_ssa_name (boolean_type_node,
-						       NULL),
-					t, gimple_assign_lhs (g));
-      gimple_set_location (g, location);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-      t = gimple_assign_lhs (g);
+        gimple_seq_add_stmt (&seq,
+                             build_assign (PLUS_EXPR, gimple_seq_last (seq),
+                                           size_in_bytes - 1));
+      gimple_seq_add_stmt (&seq, build_assign (GE_EXPR, gimple_seq_last (seq),
+                                               shadow));
+      gimple_seq_add_stmt (&seq, build_assign (BIT_AND_EXPR, shadow_test,
+                                               gimple_seq_last (seq)));
+      t = gimple_assign_lhs (gimple_seq_last (seq));
+      gimple_seq_set_location (seq, location);
+      gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
     }
   else
     t = shadow;

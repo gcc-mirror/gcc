@@ -102,7 +102,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 		   int freq_scale, bool update_original)
 {
   struct cgraph_edge *new_edge;
-  gcov_type count = e->count * count_scale / REG_BR_PROB_BASE;
+  gcov_type count = apply_probability (e->count, count_scale);
   gcov_type freq;
 
   /* We do not want to ignore loop nest after frequency drops to 0.  */
@@ -204,7 +204,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
       if (new_node->count > n->count)
         count_scale = REG_BR_PROB_BASE;
       else
-        count_scale = new_node->count * REG_BR_PROB_BASE / n->count;
+        count_scale = GCOV_COMPUTE_SCALE (new_node->count, n->count);
     }
   else
     count_scale = 0;
@@ -324,6 +324,14 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   DECL_STATIC_DESTRUCTOR (new_node->symbol.decl) = 0;
   new_node->clone.tree_map = tree_map;
   new_node->clone.args_to_skip = args_to_skip;
+
+  /* Clones of global symbols or symbols with unique names are unique.  */
+  if ((TREE_PUBLIC (old_decl)
+       && !DECL_EXTERNAL (old_decl)
+       && !DECL_WEAK (old_decl)
+       && !DECL_COMDAT (old_decl))
+      || in_lto_p)
+    new_node->symbol.unique_name = true;
   FOR_EACH_VEC_SAFE_ELT (tree_map, i, map)
     {
       tree var = map->new_tree;
@@ -739,6 +747,13 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   new_version_node->symbol.externally_visible = 0;
   new_version_node->local.local = 1;
   new_version_node->lowered = true;
+  /* Clones of global symbols or symbols with unique names are unique.  */
+  if ((TREE_PUBLIC (old_decl)
+       && !DECL_EXTERNAL (old_decl)
+       && !DECL_WEAK (old_decl)
+       && !DECL_COMDAT (old_decl))
+      || in_lto_p)
+    new_version_node->symbol.unique_name = true;
 
   /* Update the call_expr on the edges to call the new version node. */
   update_call_expr (new_version_node);

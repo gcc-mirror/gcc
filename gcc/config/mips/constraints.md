@@ -43,6 +43,9 @@
 (define_register_constraint "b" "ALL_REGS"
   "@internal")
 
+(define_register_constraint "u" "M16_REGS"
+  "@internal")
+
 ;; MIPS16 code always calls through a MIPS16 register; see mips_emit_call_insn
 ;; for details.
 (define_register_constraint "c" "TARGET_MIPS16 ? M16_REGS
@@ -170,6 +173,76 @@
   (and (match_operand 0 "call_insn_operand")
        (match_test "CONSTANT_P (op)")))
 
+(define_constraint "Udb7"
+  "@internal
+   A decremented unsigned constant of 7 bits."
+  (match_operand 0 "db7_operand"))
+
+(define_constraint "Udb8"
+  "@internal
+   A decremented unsigned constant of 8 bits."
+  (match_operand 0 "db8_operand"))
+
+(define_constraint "Uead"
+  "@internal
+   A microMIPS encoded ADDIUR2 immediate operand."
+  (match_operand 0 "addiur2_operand"))
+  
+(define_constraint "Uean"
+  "@internal
+   A microMIPS encoded ANDI operand."
+  (match_operand 0 "andi16_operand"))
+
+(define_constraint "Uesp"
+  "@internal
+   A microMIPS encoded ADDIUSP operand."
+  (match_operand 0 "addiusp_operand"))
+
+(define_constraint "Uib3"
+  "@internal
+   An unsigned, incremented constant of 3 bits."
+  (match_operand 0 "ib3_operand"))
+
+(define_constraint "Usb4"
+  "@internal
+   A signed constant of 4 bits."
+  (match_operand 0 "sb4_operand"))
+
+(define_constraint "Usb5"
+  "@internal
+   A signed constant of 5 bits."
+  (match_operand 0 "sb5_operand"))
+
+(define_constraint "Usb8"
+  "@internal
+   A signed constant of 8 bits."
+  (match_operand 0 "sb8_operand"))
+
+(define_constraint "Usd8"
+  "@internal
+   A signed constant of 8 bits, shifted left three places."
+  (match_operand 0 "sd8_operand"))
+
+(define_constraint "Uub8"
+  "@internal
+   An unsigned constant of 8 bits."
+  (match_operand 0 "ub8_operand"))
+
+(define_constraint "Uuw5"
+  "@internal
+   An unsigned constant of 5 bits, shifted left two places."
+  (match_operand 0 "uw5_operand"))
+
+(define_constraint "Uuw6"
+  "@internal
+   An unsigned constant of 6 bits, shifted left two places."
+  (match_operand 0 "uw6_operand"))
+
+(define_constraint "Uuw8"
+  "@internal
+   An unsigned constant of 8 bits, shifted left two places."
+  (match_operand 0 "uw8_operand"))
+
 (define_memory_constraint "W"
   "@internal
    A memory address based on a member of @code{BASE_REG_CLASS}.  This is
@@ -232,7 +305,59 @@
    "@internal"
    (match_operand 0 "low_bitmask_operand"))
 
+(define_memory_constraint "ZC"
+  "When compiling microMIPS code, this constraint matches a memory operand
+   whose address is formed from a base register and a 12-bit offset.  These
+   operands can be used for microMIPS instructions such as @code{ll} and
+   @code{sc}.  When not compiling for microMIPS code, @code{ZC} is
+   equivalent to @code{R}."
+  (and (match_code "mem")
+       (if_then_else
+	 (match_test "TARGET_MICROMIPS")
+	 (match_test "umips_12bit_offset_address_p (XEXP (op, 0), mode)")
+	 (match_test "mips_address_insns (XEXP (op, 0), mode, false)"))))
+
+(define_address_constraint "ZD"
+  "When compiling microMIPS code, this constraint matches an address operand
+   that is formed from a base register and a 12-bit offset.  These operands
+   can be used for microMIPS instructions such as @code{prefetch}.  When
+   not compiling for microMIPS code, @code{ZD} is equivalent to @code{p}."
+   (if_then_else (match_test "TARGET_MICROMIPS")
+		 (match_test "umips_12bit_offset_address_p (op, mode)")
+		 (match_test "mips_address_insns (op, mode, false)")))
+
 (define_memory_constraint "ZR"
  "@internal
   An address valid for loading/storing register exclusive"
  (match_operand 0 "mem_noofs_operand"))
+
+(define_memory_constraint "ZS"
+  "@internal
+   A microMIPS memory operand for use with the LWSP/SWSP insns."
+  (and (match_code "mem")
+       (match_operand 0 "lwsp_swsp_operand")))
+
+(define_memory_constraint "ZT"
+  "@internal
+   A microMIPS memory operand for use with the LW16/SW16 insns."
+  (and (match_code "mem")
+       (match_operand 0 "lw16_sw16_operand")))
+
+(define_memory_constraint "ZU"
+  "@internal
+   A microMIPS memory operand for use with the LHU16/SH16 insns."
+  (and (match_code "mem")
+       (match_operand 0 "lhu16_sh16_operand")))
+
+(define_memory_constraint "ZV"
+  "@internal
+   A microMIPS memory operand for use with the SB16 insn."
+  (and (match_code "mem")
+       (match_operand 0 "sb16_operand")))
+
+(define_memory_constraint "ZW"
+  "@internal
+   A microMIPS memory operand for use with the LBU16 insn."
+  (and (match_code "mem")
+       (match_operand 0 "lbu16_operand")))
+

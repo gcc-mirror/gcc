@@ -369,10 +369,16 @@ extern bool compute_data_dependences_for_bb (basic_block, bool,
                                              vec<ddr_p> *);
 extern void debug_ddrs (vec<ddr_p> );
 extern void dump_data_reference (FILE *, struct data_reference *);
+extern void debug (data_reference &ref);
+extern void debug (data_reference *ptr);
 extern void debug_data_reference (struct data_reference *);
 extern void debug_data_references (vec<data_reference_p> );
+extern void debug (vec<data_reference_p> &ref);
+extern void debug (vec<data_reference_p> *ptr);
 extern void debug_data_dependence_relation (struct data_dependence_relation *);
 extern void dump_data_dependence_relations (FILE *, vec<ddr_p> );
+extern void debug (vec<ddr_p> &ref);
+extern void debug (vec<ddr_p> *ptr);
 extern void debug_data_dependence_relations (vec<ddr_p> );
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (vec<ddr_p> );

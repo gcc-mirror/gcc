@@ -4882,7 +4882,7 @@ mep_reorg_regmove (rtx insns)
 
   if (dump_file)
     for (insn = insns; insn; insn = NEXT_INSN (insn))
-      if (GET_CODE (insn) == INSN)
+      if (NONJUMP_INSN_P (insn))
 	before++;
 
   /* We're looking for (set r2 r1) moves where r1 dies, followed by a
@@ -4896,7 +4896,7 @@ mep_reorg_regmove (rtx insns)
       for (insn = insns; insn; insn = next)
 	{
 	  next = next_nonnote_nondebug_insn (insn);
-	  if (GET_CODE (insn) != INSN)
+	  if (! NONJUMP_INSN_P (insn))
 	    continue;
 	  pat = PATTERN (insn);
 
@@ -4912,7 +4912,7 @@ mep_reorg_regmove (rtx insns)
 	      if (dump_file)
 		fprintf (dump_file, "superfluous moves: considering %d\n", INSN_UID (insn));
 
-	      while (follow && GET_CODE (follow) == INSN
+	      while (follow && NONJUMP_INSN_P (follow)
 		     && GET_CODE (PATTERN (follow)) == SET
 		     && !dead_or_set_p (follow, SET_SRC (pat))
 		     && !mep_mentioned_p (PATTERN (follow), SET_SRC (pat), 0)
@@ -4925,7 +4925,7 @@ mep_reorg_regmove (rtx insns)
 
 	      if (dump_file)
 		fprintf (dump_file, "\tfollow is %d\n", INSN_UID (follow));
-	      if (follow && GET_CODE (follow) == INSN
+	      if (follow && NONJUMP_INSN_P (follow)
 		  && GET_CODE (PATTERN (follow)) == SET
 		  && find_regno_note (follow, REG_DEAD, REGNO (SET_DEST (pat))))
 		{
@@ -5511,7 +5511,6 @@ mep_reorg_erepeat (rtx insns)
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (JUMP_P (insn)
-	&& ! JUMP_TABLE_DATA_P (insn)
 	&& mep_invertable_branch_p (insn))
       {
 	if (dump_file)
@@ -5523,8 +5522,7 @@ mep_reorg_erepeat (rtx insns)
 	count = simplejump_p (insn) ? 0 : 1;
 	for (prev = PREV_INSN (insn); prev; prev = PREV_INSN (prev))
 	  {
-	    if (GET_CODE (prev) == CALL_INSN
-		|| BARRIER_P (prev))
+	    if (CALL_P (prev) || BARRIER_P (prev))
 	      break;
 
 	    if (prev == JUMP_LABEL (insn))
@@ -5543,10 +5541,10 @@ mep_reorg_erepeat (rtx insns)
 		       *after* the label.  */
 		    rtx barrier;
 		    for (barrier = PREV_INSN (prev);
-			 barrier && GET_CODE (barrier) == NOTE;
+			 barrier && NOTE_P (barrier);
 			 barrier = PREV_INSN (barrier))
 		      ;
-		    if (barrier && GET_CODE (barrier) != BARRIER)
+		    if (barrier && ! BARRIER_P (barrier))
 		      break;
 		  }
 		else
@@ -5590,10 +5588,9 @@ mep_reorg_erepeat (rtx insns)
 		if (LABEL_NUSES (prev) == 1)
 		  {
 		    for (user = PREV_INSN (prev);
-			 user && (INSN_P (user) || GET_CODE (user) == NOTE);
+			 user && (INSN_P (user) || NOTE_P (user));
 			 user = PREV_INSN (user))
-		      if (GET_CODE (user) == JUMP_INSN
-			  && JUMP_LABEL (user) == prev)
+		      if (JUMP_P (user) && JUMP_LABEL (user) == prev)
 			{
 			  safe = INSN_UID (user);
 			  break;
@@ -5631,8 +5628,8 @@ mep_jmp_return_reorg (rtx insns)
       /* Find the fist real insn the jump jumps to.  */
       label = ret = JUMP_LABEL (insn);
       while (ret
-	     && (GET_CODE (ret) == NOTE
-		 || GET_CODE (ret) == CODE_LABEL
+	     && (NOTE_P (ret)
+		 || LABEL_P (ret)
 		 || GET_CODE (PATTERN (ret)) == USE))
 	ret = NEXT_INSN (ret);
 
@@ -7018,7 +7015,7 @@ mep_bundle_insns (rtx insns)
       if (recog_memoized (insn) >= 0
 	  && get_attr_slot (insn) == SLOT_COP)
 	{
-	  if (GET_CODE (insn) == JUMP_INSN
+	  if (JUMP_P (insn)
 	      || ! last
 	      || recog_memoized (last) < 0
 	      || get_attr_slot (last) != SLOT_CORE

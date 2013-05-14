@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "tree-hasher.h"
+#include "cfgloop.h"
 
 
 /* For each complex ssa name, a lattice value.  We're interested in finding
@@ -53,7 +55,7 @@ static vec<complex_lattice_t> complex_lattice_values;
 
 /* For each complex variable, a pair of variables for the components exists in
    the hashtable.  */
-static htab_t complex_variable_components;
+static int_tree_htab_type complex_variable_components;
 
 /* For each complex SSA_NAME, a pair of ssa names for the components.  */
 static vec<tree> complex_ssa_name_components;
@@ -65,7 +67,7 @@ cvc_lookup (unsigned int uid)
 {
   struct int_tree_map *h, in;
   in.uid = uid;
-  h = (struct int_tree_map *) htab_find_with_hash (complex_variable_components, &in, uid);
+  h = complex_variable_components.find_with_hash (&in, uid);
   return h ? h->to : NULL;
 }
 
@@ -75,14 +77,13 @@ static void
 cvc_insert (unsigned int uid, tree to)
 {
   struct int_tree_map *h;
-  void **loc;
+  int_tree_map **loc;
 
   h = XNEW (struct int_tree_map);
   h->uid = uid;
   h->to = to;
-  loc = htab_find_slot_with_hash (complex_variable_components, h,
-				  uid, INSERT);
-  *(struct int_tree_map **) loc = h;
+  loc = complex_variable_components.find_slot_with_hash (h, uid, INSERT);
+  *loc = h;
 }
 
 /* Return true if T is not a zero constant.  In the case of real values,
@@ -428,7 +429,7 @@ create_one_component_var (tree type, tree orig, const char *prefix,
       DECL_NAME (r) = get_identifier (ACONCAT ((name, suffix, NULL)));
 
       SET_DECL_DEBUG_EXPR (r, build1 (code, type, orig));
-      DECL_DEBUG_EXPR_IS_FROM (r) = 1;
+      DECL_HAS_DEBUG_EXPR_P (r) = 1;
       DECL_IGNORED_P (r) = 0;
       TREE_NO_WARNING (r) = TREE_NO_WARNING (orig);
     }
@@ -1139,6 +1140,11 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       make_edge (bb_cond, bb_false, EDGE_FALSE_VALUE);
       make_edge (bb_true, bb_join, EDGE_FALLTHRU);
       make_edge (bb_false, bb_join, EDGE_FALLTHRU);
+      if (current_loops)
+	{
+	  add_bb_to_loop (bb_true, bb_cond->loop_father);
+	  add_bb_to_loop (bb_false, bb_cond->loop_father);
+	}
 
       /* Update dominance info.  Note that bb_join's data was
          updated by split_block.  */
@@ -1604,8 +1610,7 @@ tree_lower_complex (void)
   init_parameter_lattice_values ();
   ssa_propagate (complex_visit_stmt, complex_visit_phi);
 
-  complex_variable_components = htab_create (10,  int_tree_map_hash,
-					     int_tree_map_eq, free);
+  complex_variable_components.create (10);
 
   complex_ssa_name_components.create (2 * num_ssa_names);
   complex_ssa_name_components.safe_grow_cleared (2 * num_ssa_names);
@@ -1626,7 +1631,7 @@ tree_lower_complex (void)
 
   gsi_commit_edge_inserts ();
 
-  htab_delete (complex_variable_components);
+  complex_variable_components.dispose ();
   complex_ssa_name_components.release ();
   complex_lattice_values.release ();
   return 0;
@@ -1648,9 +1653,8 @@ struct gimple_opt_pass pass_lower_complex =
   PROP_gimple_lcx,			/* properties_provided */
   0,                       		/* properties_destroyed */
   0,					/* todo_flags_start */
-    TODO_ggc_collect
-    | TODO_update_ssa
-    | TODO_verify_stmts	 		/* todo_flags_finish */
+  TODO_update_ssa
+  | TODO_verify_stmts	 		/* todo_flags_finish */
  }
 };
 
@@ -1679,8 +1683,7 @@ struct gimple_opt_pass pass_lower_complex_O0 =
   PROP_gimple_lcx,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect
-    | TODO_update_ssa
-    | TODO_verify_stmts	 		/* todo_flags_finish */
+  TODO_update_ssa
+  | TODO_verify_stmts	 		/* todo_flags_finish */
  }
 };

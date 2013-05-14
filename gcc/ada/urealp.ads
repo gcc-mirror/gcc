@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,7 @@ package Urealp is
    --  use the UR_Eq function).
 
    --  A Ureal value represents an arbitrary precision universal real value,
-   --  stored internally using four components
+   --  stored internally using four components:
 
    --    the numerator (Uint, always non-negative)
    --    the denominator (Uint, always non-zero, always positive if base = 0)
@@ -125,7 +125,7 @@ package Urealp is
    --  Returns value 10.0 ** 36
 
    function Ureal_M_10_36 return Ureal;
-   --  Returns value -(10.0
+   --  Returns value -10.0 ** 36
 
    -----------------
    -- Subprograms --

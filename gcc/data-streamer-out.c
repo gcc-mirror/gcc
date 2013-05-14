@@ -42,8 +42,7 @@ streamer_string_index (struct output_block *ob, const char *s, unsigned int len,
   s_slot.len = len;
   s_slot.slot_num = 0;
 
-  slot = (struct string_slot **) htab_find_slot (ob->string_hash_table,
-						 &s_slot, INSERT);
+  slot = ob->string_hash_table.find_slot (&s_slot, INSERT);
   if (*slot == NULL)
     {
       struct lto_output_stream *string_stream = ob->string_stream;
@@ -174,6 +173,13 @@ streamer_write_hwi (struct output_block *ob, HOST_WIDE_INT work)
   streamer_write_hwi_stream (ob->main_stream, work);
 }
 
+/* Write a gcov counter value WORK to OB->main_stream.  */
+
+void
+streamer_write_gcov_count (struct output_block *ob, gcov_type work)
+{
+  streamer_write_gcov_count_stream (ob->main_stream, work);
+}
 
 /* Write an unsigned HOST_WIDE_INT value WORK to OBS.  */
 
@@ -215,4 +221,14 @@ streamer_write_hwi_stream (struct lto_output_stream *obs, HOST_WIDE_INT work)
       streamer_write_char_stream (obs, byte);
     }
   while (more);
+}
+
+/* Write a GCOV counter value WORK to OBS.  */
+
+void
+streamer_write_gcov_count_stream (struct lto_output_stream *obs, gcov_type work)
+{
+  gcc_assert (work >= 0);
+  gcc_assert ((HOST_WIDE_INT) work == work);
+  streamer_write_hwi_stream (obs, work);
 }

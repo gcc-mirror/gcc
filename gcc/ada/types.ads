@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,8 +102,8 @@ package Types is
    --  Graphic characters, as defined in ARM
 
    subtype Line_Terminator is Character range ASCII.LF .. ASCII.CR;
-   --  Line terminator characters (LF, VT, FF, CR). For further details,
-   --  see the extensive discussion of line termination in the Sinput spec.
+   --  Line terminator characters (LF, VT, FF, CR). For further details, see
+   --  the extensive discussion of line termination in the Sinput spec.
 
    subtype Upper_Half_Character is
      Character range Character'Val (16#80#) .. Character'Val (16#FF#);
@@ -577,7 +577,7 @@ package Types is
    --  the source file (we assume that the host system has the concept of a
    --  file time stamp which is modified when a file is modified). These
    --  time stamps are used to ensure consistency of the set of units that
-   --  constitutes a library. Time stamps are 12 character strings with
+   --  constitutes a library. Time stamps are 14-character strings with
    --  with the following format:
 
    --     YYYYMMDDHHMMSS
@@ -666,15 +666,16 @@ package Types is
    Index_Check            : constant :=  8;
    Length_Check           : constant :=  9;
    Overflow_Check         : constant := 10;
-   Range_Check            : constant := 11;
-   Storage_Check          : constant := 12;
-   Tag_Check              : constant := 13;
-   Validity_Check         : constant := 14;
+   Predicate_Check        : constant := 11;
+   Range_Check            : constant := 12;
+   Storage_Check          : constant := 13;
+   Tag_Check              : constant := 14;
+   Validity_Check         : constant := 15;
    --  Values used to represent individual predefined checks (including the
    --  setting of Atomic_Synchronization, which is implemented internally using
-   --  a "check" whose name is Atomic_Synchronization.
+   --  a "check" whose name is Atomic_Synchronization).
 
-   All_Checks : constant := 15;
+   All_Checks : constant := 16;
    --  Value used to represent All_Checks value
 
    subtype Predefined_Check_Id is Check_Id range 1 .. All_Checks;

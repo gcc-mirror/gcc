@@ -2447,15 +2447,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 							gnu_orig_max,
 							gnu_orig_min),
 				       gnu_min,
-				       size_binop (PLUS_EXPR, gnu_max,
-						   size_one_node));
+				       int_const_binop (PLUS_EXPR, gnu_max,
+							size_one_node));
 		}
 
 	      /* Finally we use (hb >= lb) ? hb : lb - 1 for the upper bound
 		 in all the other cases.  Note that, here as well as above,
 		 the condition used in the comparison must be equivalent to
 		 the condition (length != 0).  This is relied upon in order
-		 to optimize array comparisons in compare_arrays.  */
+		 to optimize array comparisons in compare_arrays.  Moreover
+		 we use int_const_binop for the shift by 1 if the bound is
+		 constant to avoid any unwanted overflow.  */
 	      else
 		gnu_high
 		  = build_cond_expr (sizetype,
@@ -2464,8 +2466,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 						      gnu_orig_max,
 						      gnu_orig_min),
 				     gnu_max,
-				     size_binop (MINUS_EXPR, gnu_min,
-						 size_one_node));
+				     TREE_CODE (gnu_min) == INTEGER_CST
+				     ? int_const_binop (MINUS_EXPR, gnu_min,
+							size_one_node)
+				     : size_binop (MINUS_EXPR, gnu_min,
+						   size_one_node));
 
 	      /* Reuse the index type for the range type.  Then make an index
 		 type with the size range in sizetype.  */
@@ -6186,12 +6191,13 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
     expr_variable_p = false;
   else
     {
-      /* Skip any conversions and simple arithmetics to see if the expression
-	 is based on a read-only variable.
+      /* Skip any conversions and simple constant arithmetics to see if the
+	 expression is based on a read-only variable.
 	 ??? This really should remain read-only, but we have to think about
 	 the typing of the tree here.  */
-      tree inner
-	= skip_simple_arithmetic (remove_conversions (gnu_expr, true));
+      tree inner = remove_conversions (gnu_expr, true);
+
+      inner = skip_simple_constant_arithmetic (inner);
 
       if (handled_component_p (inner))
 	{

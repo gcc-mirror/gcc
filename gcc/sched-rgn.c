@@ -1441,7 +1441,13 @@ compute_dom_prob_ps (int bb)
       FOR_EACH_EDGE (out_edge, out_ei, in_edge->src->succs)
 	bitmap_set_bit (pot_split[bb], EDGE_TO_BIT (out_edge));
 
-      prob[bb] += ((prob[pred_bb] * in_edge->probability) / REG_BR_PROB_BASE);
+      prob[bb] += combine_probabilities (prob[pred_bb], in_edge->probability);
+      // The rounding divide in combine_probabilities can result in an extra
+      // probability increment propagating along 50-50 edges. Eventually when
+      // the edges re-merge, the accumulated probability can go slightly above
+      // REG_BR_PROB_BASE.
+      if (prob[bb] > REG_BR_PROB_BASE)
+        prob[bb] = REG_BR_PROB_BASE;
     }
 
   bitmap_set_bit (dom[bb], bb);
@@ -1514,7 +1520,7 @@ compute_trg_info (int trg)
 	  int tf = prob[trg], cf = prob[i];
 
 	  /* In CFGs with low probability edges TF can possibly be zero.  */
-	  sp->src_prob = (tf ? ((cf * REG_BR_PROB_BASE) / tf) : 0);
+	  sp->src_prob = (tf ? GCOV_COMPUTE_SCALE (cf, tf) : 0);
 	  sp->is_valid = (sp->src_prob >= min_spec_prob);
 	}
 
@@ -2449,7 +2455,7 @@ add_branch_dependences (rtx head, rtx tail)
   insn = tail;
   last = 0;
   while (CALL_P (insn)
-	 || JUMP_P (insn)
+	 || JUMP_P (insn) || JUMP_TABLE_DATA_P (insn)
 	 || (NONJUMP_INSN_P (insn)
 	     && (GET_CODE (PATTERN (insn)) == USE
 		 || GET_CODE (PATTERN (insn)) == CLOBBER
@@ -2536,7 +2542,7 @@ add_branch_dependences (rtx head, rtx tail)
      possible improvement for handling COND_EXECs in this scheduler: it
      could remove always-true predicates.  */
 
-  if (!reload_completed || ! JUMP_P (tail))
+  if (!reload_completed || ! (JUMP_P (tail) || JUMP_TABLE_DATA_P (tail)))
     return;
 
   insn = tail;
@@ -3628,8 +3634,7 @@ struct rtl_opt_pass pass_sched =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow |
-  TODO_ggc_collect                      /* todo_flags_finish */
+  TODO_verify_flow                      /* todo_flags_finish */
  }
 };
 
@@ -3650,7 +3655,6 @@ struct rtl_opt_pass pass_sched2 =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow |
-  TODO_ggc_collect                      /* todo_flags_finish */
+  TODO_verify_flow                      /* todo_flags_finish */
  }
 };

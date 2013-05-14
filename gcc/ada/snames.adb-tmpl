@@ -147,14 +147,15 @@ package body Snames is
       case N is
          when Name_Ada                   => return Convention_Ada;
          when Name_Ada_Pass_By_Copy      => return Convention_Ada_Pass_By_Copy;
-         when Name_Ada_Pass_By_Reference =>
-            return Convention_Ada_Pass_By_Reference;
+         when Name_Ada_Pass_By_Reference => return
+                                              Convention_Ada_Pass_By_Reference;
          when Name_Assembler             => return Convention_Assembler;
          when Name_C                     => return Convention_C;
          when Name_CIL                   => return Convention_CIL;
          when Name_COBOL                 => return Convention_COBOL;
          when Name_CPP                   => return Convention_CPP;
          when Name_Fortran               => return Convention_Fortran;
+         when Name_Ghost                 => return Convention_Ghost;
          when Name_Intrinsic             => return Convention_Intrinsic;
          when Name_Java                  => return Convention_Java;
          when Name_Stdcall               => return Convention_Stdcall;
@@ -192,6 +193,7 @@ package body Snames is
          when Convention_CPP                   => return Name_CPP;
          when Convention_Entry                 => return Name_Entry;
          when Convention_Fortran               => return Name_Fortran;
+         when Convention_Ghost                 => return Name_Ghost;
          when Convention_Intrinsic             => return Name_Intrinsic;
          when Convention_Java                  => return Name_Java;
          when Convention_Protected             => return Name_Protected;
@@ -293,14 +295,14 @@ package body Snames is
          exit when Preset_Names (P_Index) = '#';
       end loop;
 
-      --  Make sure that number of names in standard table is correct. If
-      --  this check fails, run utility program XSNAMES to construct a new
-      --  properly matching version of the body.
+      --  Make sure that number of names in standard table is correct. If this
+      --  check fails, run utility program XSNAMES to construct a new properly
+      --  matching version of the body.
 
       pragma Assert (Discard_Name = Last_Predefined_Name);
 
-      --  Initialize the convention identifiers table with the standard
-      --  set of synonyms that we recognize for conventions.
+      --  Initialize the convention identifiers table with the standard set of
+      --  synonyms that we recognize for conventions.
 
       Convention_Identifiers.Init;
 

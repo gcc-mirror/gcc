@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ package Exp_Ch11 is
    procedure Expand_N_Exception_Declaration          (N : Node_Id);
    procedure Expand_N_Handled_Sequence_Of_Statements (N : Node_Id);
    procedure Expand_N_Raise_Constraint_Error         (N : Node_Id);
+   procedure Expand_N_Raise_Expression               (N : Node_Id);
    procedure Expand_N_Raise_Program_Error            (N : Node_Id);
    procedure Expand_N_Raise_Statement                (N : Node_Id);
    procedure Expand_N_Raise_Storage_Error            (N : Node_Id);
@@ -95,4 +96,5 @@ package Exp_Ch11 is
    --  handler (and restriction No_Exception_Propagation is set), or if there
    --  is a local handler marking that it has a local raise. E is the entity
    --  of the corresponding exception.
+
 end Exp_Ch11;

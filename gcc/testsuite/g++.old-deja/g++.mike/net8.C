@@ -11,14 +11,14 @@ public:
   int bar;
 };
 
-void func(Base&);			// { dg-error "passing argument 1" } 
+void func(Base&);			// { dg-message "passing argument 1" } 
 
 void func2(const Derived& d) {
   func(d);				// { dg-error "invalid initialization" }
 }
 
 void
-foo (int& a)				// { dg-error "in passing argument 1" } 
+foo (int& a)				// { dg-message "in passing argument 1" } 
 {
 }
 

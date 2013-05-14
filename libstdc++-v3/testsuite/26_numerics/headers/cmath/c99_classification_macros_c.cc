@@ -20,8 +20,8 @@
 // { dg-do compile }
 // { dg-add-options no_pch }
 
-// { dg-xfail-if "" { { *-*-linux* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* } || { uclibc || newlib } } { "*" } { "" } }
-// { dg-excess-errors "" { target { { *-*-linux* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* } || { uclibc || newlib } } } }
+// { dg-xfail-if "" { { *-*-linux* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* *-*-mingw* } || { uclibc || newlib } } { "*" } { "" } }
+// { dg-excess-errors "" { target { { *-*-linux* *-*-darwin* *-*-solaris2.1[0-9]* hppa*-*-hpux* *-*-mingw* } || { uclibc || newlib } } } }
 
 #include <math.h>
 

@@ -1962,7 +1962,7 @@ struct spu_bb_info
 static struct spu_bb_info *spu_bb_info;
 
 #define STOP_HINT_P(INSN) \
-		(GET_CODE(INSN) == CALL_INSN \
+		(CALL_P(INSN) \
 		 || INSN_CODE(INSN) == CODE_FOR_divmodsi4 \
 		 || INSN_CODE(INSN) == CODE_FOR_udivmodsi4)
 
@@ -1978,13 +1978,22 @@ static struct spu_bb_info *spu_bb_info;
 /* Emit a nop for INSN such that the two will dual issue.  This assumes
    INSN is 8-byte aligned.  When INSN is inline asm we emit an lnop.
    We check for TImode to handle a MULTI1 insn which has dual issued its
-   first instruction.  get_pipe returns -1 for MULTI0, inline asm, or
-   ADDR_VEC insns. */
+   first instruction.  get_pipe returns -1 for MULTI0 or inline asm.  */
 static void
 emit_nop_for_insn (rtx insn)
 {
   int p;
   rtx new_insn;
+
+  /* We need to handle JUMP_TABLE_DATA separately.  */
+  if (JUMP_TABLE_DATA_P (insn))
+    {
+      new_insn = emit_insn_after (gen_lnop(), insn);
+      recog_memoized (new_insn);
+      INSN_LOCATION (new_insn) = UNKNOWN_LOCATION;
+      return;
+    }
+
   p = get_pipe (insn);
   if ((CALL_P (insn) || JUMP_P (insn)) && SCHED_ON_EVEN_P (insn))
     new_insn = emit_insn_after (gen_lnop (), insn);
@@ -2163,18 +2172,13 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
 static rtx
 get_branch_target (rtx branch)
 {
-  if (GET_CODE (branch) == JUMP_INSN)
+  if (JUMP_P (branch))
     {
       rtx set, src;
 
       /* Return statements */
       if (GET_CODE (PATTERN (branch)) == RETURN)
 	return gen_rtx_REG (SImode, LINK_REGISTER_REGNUM);
-
-      /* jump table */
-      if (GET_CODE (PATTERN (branch)) == ADDR_VEC
-	  || GET_CODE (PATTERN (branch)) == ADDR_DIFF_VEC)
-	return 0;
 
      /* ASM GOTOs. */
      if (extract_asm_operands (PATTERN (branch)) != NULL)
@@ -2212,7 +2216,7 @@ get_branch_target (rtx branch)
 
       return src;
     }
-  else if (GET_CODE (branch) == CALL_INSN)
+  else if (CALL_P (branch))
     {
       rtx call;
       /* All of our call patterns are in a PARALLEL and the CALL is

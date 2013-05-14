@@ -165,7 +165,8 @@ enum cpp_ttype
 /* C language kind, used when calling cpp_create_reader.  */
 enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11,
 	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11,
-	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11, CLK_ASM};
+	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
+	     CLK_GNUCXX1Y, CLK_CXX1Y, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -422,7 +423,7 @@ struct cpp_options
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
-  /* Nonzero for C++ 2011 Standard user-defnied literals.  */
+  /* Nonzero for C++ 2011 Standard user-defined literals.  */
   unsigned char user_literals;
 
   /* Nonzero means warn when a string or character literal is followed by a
@@ -432,6 +433,9 @@ struct cpp_options
   /* Nonzero means interpret imaginary, fixed-point, or other gnu extension
      literal number suffixes as user-defined literal number suffixes.  */
   unsigned char ext_numeric_literals;
+
+  /* Nonzero for C++ 2014 Standard binary constants.  */
+  unsigned char binary_constants;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;

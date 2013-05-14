@@ -16,9 +16,9 @@ contains
     type(myF90Derived), pointer :: my_f90_type_ptr
 
     my_f90_type%my_c_ptr = c_null_ptr
-    print *, 'my_f90_type is: ', my_f90_type
+    print *, 'my_f90_type is: ', my_f90_type%my_c_ptr
     my_f90_type_ptr => my_f90_type
-    print *, 'my_f90_type_ptr is: ', my_f90_type_ptr
+    print *, 'my_f90_type_ptr is: ', my_f90_type_ptr%my_c_ptr
   end subroutine sub0
 end module c_ptr_tests_9
 

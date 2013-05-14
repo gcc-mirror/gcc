@@ -106,10 +106,10 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 	  if (overflow)
 	    gcc_unreachable ();
 
-	  return immed_double_int_const (v, VOIDmode);
+	  return immed_double_int_const (v, mode);
 	}
 
-      return GEN_INT (INTVAL (x) + c);
+      return gen_int_mode (INTVAL (x) + c, mode);
 
     case CONST_DOUBLE:
       {
@@ -124,7 +124,7 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 	     To fix, add constant support wider than CONST_DOUBLE.  */
 	  gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT);
 
-	return immed_double_int_const (v, VOIDmode);
+	return immed_double_int_const (v, mode);
       }
 
     case MEM:

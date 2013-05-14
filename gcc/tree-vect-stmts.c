@@ -3851,6 +3851,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       && is_pattern_stmt_p (stmt_info))
     scalar_dest = TREE_OPERAND (scalar_dest, 0);
   if (TREE_CODE (scalar_dest) != ARRAY_REF
+      && TREE_CODE (scalar_dest) != BIT_FIELD_REF
       && TREE_CODE (scalar_dest) != INDIRECT_REF
       && TREE_CODE (scalar_dest) != COMPONENT_REF
       && TREE_CODE (scalar_dest) != IMAGPART_EXPR
@@ -4316,7 +4317,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   gimple ptr_incr;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
-  int i, j, group_size;
+  int i, j, group_size, group_gap;
   tree msq = NULL_TREE, lsq;
   tree offset = NULL_TREE;
   tree realignment_token = NULL_TREE;
@@ -4385,6 +4386,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   code = gimple_assign_rhs_code (stmt);
   if (code != ARRAY_REF
+      && code != BIT_FIELD_REF
       && code != INDIRECT_REF
       && code != COMPONENT_REF
       && code != IMAGPART_EXPR
@@ -4463,7 +4465,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       if (negative)
 	{
-	  gcc_assert (!grouped_load);
+	  if (grouped_load)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "negative step for group load not supported");
+	      return false;
+	    }
 	  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
 	  if (alignment_support_scheme != dr_aligned
 	      && alignment_support_scheme != dr_unaligned_supported)
@@ -4746,12 +4754,21 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       if (slp
-          && !SLP_INSTANCE_LOAD_PERMUTATION (slp_node_instance).exists ()
+          && !SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
 	  && first_stmt != SLP_TREE_SCALAR_STMTS (slp_node)[0])
         first_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[0];
 
       /* Check if the chain of loads is already vectorized.  */
-      if (STMT_VINFO_VEC_STMT (vinfo_for_stmt (first_stmt)))
+      if (STMT_VINFO_VEC_STMT (vinfo_for_stmt (first_stmt))
+	  /* For SLP we would need to copy over SLP_TREE_VEC_STMTS.
+	     ???  But we can only do so if there is exactly one
+	     as we have no way to get at the rest.  Leave the CSE
+	     opportunity alone.
+	     ???  With the group load eventually participating
+	     in multiple different permutations (having multiple
+	     slp nodes which refer to the same group) the CSE
+	     is even wrong code.  See PR56270.  */
+	  && !slp)
 	{
 	  *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
 	  return true;
@@ -4764,17 +4781,22 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  grouped_load = false;
 	  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-          if (SLP_INSTANCE_LOAD_PERMUTATION (slp_node_instance).exists ())
+          if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
             slp_perm = true;
+	  group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
     	}
       else
-	vec_num = group_size;
+	{
+	  vec_num = group_size;
+	  group_gap = 0;
+	}
     }
   else
     {
       first_stmt = stmt;
       first_dr = dr;
       group_size = vec_num = 1;
+      group_gap = 0;
     }
 
   alignment_support_scheme = vect_supportable_dr_alignment (first_dr, false);
@@ -5134,6 +5156,15 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      if (slp && !slp_perm)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 	    }
+	  /* Bump the vector pointer to account for a gap.  */
+	  if (slp && group_gap != 0)
+	    {
+	      tree bump = size_binop (MULT_EXPR,
+				      TYPE_SIZE_UNIT (elem_type),
+				      size_int (group_gap));
+	      dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
+					     stmt, bump);
+	    }
 	}
 
       if (slp && !slp_perm)
@@ -5141,7 +5172,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       if (slp_perm)
         {
-          if (!vect_transform_slp_perm_load (stmt, dr_chain, gsi, vf,
+          if (!vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
                                              slp_node_instance, false))
             {
               dr_chain.release ();
@@ -5265,7 +5296,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   vec<tree> vec_oprnds1 = vNULL;
   vec<tree> vec_oprnds2 = vNULL;
   vec<tree> vec_oprnds3 = vNULL;
-  tree vec_cmp_type = vectype;
+  tree vec_cmp_type;
 
   if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
@@ -5338,14 +5369,12 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 	   && TREE_CODE (else_clause) != FIXED_CST)
     return false;
 
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
-    {
-      unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype)));
-      tree cmp_type = build_nonstandard_integer_type (prec, 1);
-      vec_cmp_type = get_same_sized_vectype (cmp_type, vectype);
-      if (vec_cmp_type == NULL_TREE)
-	return false;
-    }
+  unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype)));
+  /* The result of a vector comparison should be signed type.  */
+  tree cmp_type = build_nonstandard_integer_type (prec, 0);
+  vec_cmp_type = get_same_sized_vectype (cmp_type, vectype);
+  if (vec_cmp_type == NULL_TREE)
+    return false;
 
   if (!vec_stmt)
     {
@@ -5948,7 +5977,6 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   GROUP_STORE_COUNT (res) = 0;
   GROUP_GAP (res) = 0;
   GROUP_SAME_DR_STMT (res) = NULL;
-  GROUP_READ_WRITE_DEPENDENCE (res) = false;
 
   return res;
 }
@@ -6080,30 +6108,10 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
     return NULL_TREE;
 
   vectype = build_vector_type (scalar_type, nunits);
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "get vectype with %d units of type ", nunits);
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-    }
-
-  if (!vectype)
-    return NULL_TREE;
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-    }
 
   if (!VECTOR_MODE_P (TYPE_MODE (vectype))
       && !INTEGRAL_MODE_P (TYPE_MODE (vectype)))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "mode not supported by target.");
-      return NULL_TREE;
-    }
+    return NULL_TREE;
 
   return vectype;
 }

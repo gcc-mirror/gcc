@@ -1818,7 +1818,7 @@ main_tree_if_conversion (void)
   bool changed = false;
   unsigned todo = 0;
 
-  if (number_of_loops () <= 1)
+  if (number_of_loops (cfun) <= 1)
     return 0;
 
   FOR_EACH_LOOP (li, loop, 0)

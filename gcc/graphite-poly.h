@@ -1376,10 +1376,6 @@ struct scop
     *must_war, *may_war, *must_war_no_source, *may_war_no_source,
     *must_waw, *may_waw, *must_waw_no_source, *may_waw_no_source;
 
-  /* A hashtable of the data dependence relations for the original
-     scattering.  */
-  htab_t original_pddrs;
-
   /* True when the scop has been converted to its polyhedral
      representation.  */
   bool poly_scop_p;
@@ -1388,7 +1384,6 @@ struct scop
 #define SCOP_BBS(S) (S->bbs)
 #define SCOP_REGION(S) ((sese) S->region)
 #define SCOP_CONTEXT(S) (NULL)
-#define SCOP_ORIGINAL_PDDRS(S) (S->original_pddrs)
 #define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
 #define SCOP_TRANSFORMED_SCHEDULE(S) (S->transformed_schedule)
 #define SCOP_SAVED_SCHEDULE(S) (S->saved_schedule)
@@ -1536,9 +1531,6 @@ restore_scattering (scop_p scop)
 }
 
 bool graphite_legal_transform (scop_p);
-poly_bb_p find_pbb_via_hash (htab_t, basic_block);
-bool loop_is_parallel_p (loop_p, htab_t, int);
-scop_p get_loop_body_pbbs (loop_p, htab_t, vec<poly_bb_p> *);
 isl_map *reverse_loop_at_level (poly_bb_p, int);
 isl_union_map *reverse_loop_for_pbbs (scop_p, vec<poly_bb_p> , int);
 __isl_give isl_union_map *extend_schedule (__isl_take isl_union_map *);

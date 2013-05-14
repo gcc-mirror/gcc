@@ -9,7 +9,7 @@ typedef int u_array[];
 typedef b_array &b_array_ref;
 typedef u_array &u_array_ref;
 
-void take_b_array_ref (b_array_ref arg) { } // { dg-error "" } passed to here
+void take_b_array_ref (b_array_ref arg) { } // { dg-message "" } passed to here
 
 extern u_array u_array_gbl_obj;
 

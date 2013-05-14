@@ -379,25 +379,25 @@ namespace __profile
       }
 
       iterator
-      erase(iterator __position)
+#if __cplusplus >= 201103L
+      erase(const_iterator __position)
+#else
+      erase(iterator __position)	
+#endif
       {
-	if (__position == begin() || __position == end()-1)
-	  {
-	    return iterator(_Base::erase(__position));
-	  }
-	else
-	  {
-	    typename _Base::iterator __res = _Base::erase(__position);
-	    return iterator(__res);
-	  }
+	return _Base::erase(__position);
       }
 
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __first, const_iterator __last)
+#else
       erase(iterator __first, iterator __last)
+#endif
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
-        return iterator(_Base::erase(__first, __last));
+        return _Base::erase(__first, __last);
       }
 
       void

@@ -297,6 +297,10 @@ extern unsigned get_mode_alignment (enum machine_mode);
 
 #define GET_MODE_ALIGNMENT(MODE) get_mode_alignment (MODE)
 
+/* Get the precision of the mode or its inner mode if it has one.  */
+
+extern unsigned int element_precision (enum machine_mode);
+
 /* For each class, get the narrowest mode in that class.  */
 
 extern const unsigned char class_narrowest_mode[MAX_MODE_CLASS];

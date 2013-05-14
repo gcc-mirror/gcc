@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *        Copyright (C) 2002-2009, Free Software Foundation, Inc.           *
+ *        Copyright (C) 2002-2013, Free Software Foundation, Inc.           *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -50,7 +50,24 @@ void __gnat_uninstall_int_handler (void);
 /* POSIX implementation */
 
 #if (defined (__unix__) || defined (_AIX) || defined (__APPLE__)) \
- && !defined (__vxworks)
+ || defined (VMS) && !defined (__vxworks)
+
+#ifdef VMS
+/* On VMS _gnat_handle_vms_condition gets control first, and it has to
+   resignal the Ctrl/C in order for sigaction to gain control and execute
+   the user handler routine, but in doing so propagates the condition
+   causing the program to terminate.   So instead we install a dummy handler
+   routine and put the real user handler in a special global variable so
+   that __gnat_handle_vms_condition  can declare an AST to asynchronously
+   execute the Ctrl/C user handler at some future time and allow
+   __gnat_handle_vms_condition to return and not be held up waiting for
+   the potentially unbounded time required to execute the Crtl/C handler.  */
+void
+dummy_handler () {}
+
+/* Lives in init.c.  */
+extern void (*__gnat_ctrl_c_handler) (void);
+#endif
 
 #include <signal.h>
 
@@ -75,8 +92,8 @@ __gnat_install_int_handler (void (*proc) (void))
   if (sigint_intercepted == 0)
     {
       act.sa_handler = __gnat_int_handler;
-#if defined (__Lynx__)
-      /* LynxOS does not support SA_RESTART. */
+#if defined (__Lynx__) || defined (VMS)
+      /* LynxOS and VMS do not support SA_RESTART. */
       act.sa_flags = 0;
 #else
       act.sa_flags = SA_RESTART;
@@ -85,7 +102,12 @@ __gnat_install_int_handler (void (*proc) (void))
       sigaction (SIGINT, &act, &original_act);
     }
 
+#ifdef VMS
+  sigint_intercepted = &dummy_handler;
+  __gnat_ctrl_c_handler = proc;
+#else
   sigint_intercepted = proc;
+#endif
 }
 
 /* Restore original handler */
@@ -98,6 +120,10 @@ __gnat_uninstall_int_handler (void)
      sigaction (SIGINT, &original_act, 0);
      sigint_intercepted = 0;
    }
+#ifdef VMS
+  if (__gnat_ctrl_c_handler)
+    __gnat_ctrl_c_handler = 0;
+#endif
 }
 
 /* Windows implementation */

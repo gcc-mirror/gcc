@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cloog/cloog.h"
 #include "graphite-poly.h"
 #include "graphite-clast-to-gimple.h"
+#include "graphite-htab.h"
 
 typedef const struct clast_expr *clast_name_p;
 
@@ -124,6 +125,55 @@ typedef struct clast_name_index {
   char *free_name;
 } *clast_name_index_p;
 
+/* Helper for hashing clast_name_index.  */
+
+struct clast_index_hasher
+{
+  typedef clast_name_index value_type;
+  typedef clast_name_index compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
+
+/* Computes a hash function for database element E.  */
+
+inline hashval_t
+clast_index_hasher::hash (const value_type *e)
+{
+  hashval_t hash = 0;
+
+  int length = strlen (e->name);
+  int i;
+
+  for (i = 0; i < length; ++i)
+    hash = hash | (e->name[i] << (i % 4));
+
+  return hash;
+}
+
+/* Compares database elements ELT1 and ELT2.  */
+
+inline bool
+clast_index_hasher::equal (const value_type *elt1, const compare_type *elt2)
+{
+  return strcmp (elt1->name, elt2->name) == 0;
+}
+
+/* Free the memory taken by a clast_name_index struct.  */
+
+inline void
+clast_index_hasher::remove (value_type *c)
+{
+  if (c->free_name)
+    free (c->free_name);
+  mpz_clear (c->bound_one);
+  mpz_clear (c->bound_two);
+  free (c);
+}
+
+typedef hash_table <clast_index_hasher> clast_index_htab_type;
+
 /* Returns a pointer to a new element of type clast_name_index_p built
    from NAME, INDEX, LEVEL, BOUND_ONE, and BOUND_TWO.  */
 
@@ -146,35 +196,22 @@ new_clast_name_index (const char *name, int index, int level,
   return res;
 }
 
-/* Free the memory taken by a clast_name_index struct.  */
-
-static void
-free_clast_name_index (void *ptr)
-{
-  struct clast_name_index *c = (struct clast_name_index *) ptr;
-  if (c->free_name)
-    free (c->free_name);
-  mpz_clear (c->bound_one);
-  mpz_clear (c->bound_two);
-  free (ptr);
-}
-
 /* For a given clast NAME, returns -1 if NAME is not in the
    INDEX_TABLE, otherwise returns the loop level for the induction
    variable NAME, or if it is a parameter, the parameter number in the
    vector of parameters.  */
 
 static inline int
-clast_name_to_level (clast_name_p name, htab_t index_table)
+clast_name_to_level (clast_name_p name, clast_index_htab_type index_table)
 {
   struct clast_name_index tmp;
-  PTR *slot;
+  clast_name_index **slot;
 
   gcc_assert (name->type == clast_expr_name);
   tmp.name = ((const struct clast_name *) name)->name;
   tmp.free_name = NULL;
 
-  slot = htab_find_slot (index_table, &tmp, NO_INSERT);
+  slot = index_table.find_slot (&tmp, NO_INSERT);
 
   if (slot && *slot)
     return ((struct clast_name_index *) *slot)->level;
@@ -187,18 +224,18 @@ clast_name_to_level (clast_name_p name, htab_t index_table)
    SCATTERING_DIMENSIONS vector.  */
 
 static inline int
-clast_name_to_index (struct clast_name *name, htab_t index_table)
+clast_name_to_index (struct clast_name *name, clast_index_htab_type index_table)
 {
   struct clast_name_index tmp;
-  PTR *slot;
+  clast_name_index **slot;
 
   tmp.name = ((const struct clast_name *) name)->name;
   tmp.free_name = NULL;
 
-  slot = htab_find_slot (index_table, &tmp, NO_INSERT);
+  slot = index_table.find_slot (&tmp, NO_INSERT);
 
   if (slot && *slot)
-    return ((struct clast_name_index *) *slot)->index;
+    return (*slot)->index;
 
   return -1;
 }
@@ -208,16 +245,16 @@ clast_name_to_index (struct clast_name *name, htab_t index_table)
    found in the INDEX_TABLE, false otherwise.  */
 
 static inline bool
-clast_name_to_lb_ub (struct clast_name *name, htab_t index_table,
+clast_name_to_lb_ub (struct clast_name *name, clast_index_htab_type index_table,
 		     mpz_t bound_one, mpz_t bound_two)
 {
   struct clast_name_index tmp;
-  PTR *slot;
+  clast_name_index **slot;
 
   tmp.name = name->name;
   tmp.free_name = NULL;
 
-  slot = htab_find_slot (index_table, &tmp, NO_INSERT);
+  slot = index_table.find_slot (&tmp, NO_INSERT);
 
   if (slot && *slot)
     {
@@ -232,15 +269,15 @@ clast_name_to_lb_ub (struct clast_name *name, htab_t index_table,
 /* Records in INDEX_TABLE the INDEX and LEVEL for NAME.  */
 
 static inline void
-save_clast_name_index (htab_t index_table, const char *name,
+save_clast_name_index (clast_index_htab_type index_table, const char *name,
 		       int index, int level, mpz_t bound_one, mpz_t bound_two)
 {
   struct clast_name_index tmp;
-  PTR *slot;
+  clast_name_index **slot;
 
   tmp.name = name;
   tmp.free_name = NULL;
-  slot = htab_find_slot (index_table, &tmp, INSERT);
+  slot = index_table.find_slot (&tmp, INSERT);
 
   if (slot)
     {
@@ -249,35 +286,6 @@ save_clast_name_index (htab_t index_table, const char *name,
       *slot = new_clast_name_index (name, index, level, bound_one, bound_two);
     }
 }
-
-/* Computes a hash function for database element ELT.  */
-
-static inline hashval_t
-clast_name_index_elt_info (const void *elt)
-{
-  const struct clast_name_index *e = ((const struct clast_name_index *) elt);
-  hashval_t hash = 0;
-
-  int length = strlen (e->name);
-  int i;
-
-  for (i = 0; i < length; ++i)
-    hash = hash | (e->name[i] << (i % 4));
-
-  return hash;
-}
-
-/* Compares database elements E1 and E2.  */
-
-static inline int
-eq_clast_name_indexes (const void *e1, const void *e2)
-{
-  const struct clast_name_index *elt1 = (const struct clast_name_index *) e1;
-  const struct clast_name_index *elt2 = (const struct clast_name_index *) e2;
-
-  return strcmp (elt1->name, elt2->name) == 0;
-}
-
 
 
 /* NEWIVS_INDEX binds CLooG's scattering name to the index of the tree
@@ -288,7 +296,7 @@ eq_clast_name_indexes (const void *e1, const void *e2)
 
 typedef struct ivs_params {
   vec<tree> params, *newivs;
-  htab_t newivs_index, params_index;
+  clast_index_htab_type newivs_index, params_index;
   sese region;
 } *ivs_params_p;
 
@@ -300,7 +308,7 @@ clast_name_to_gcc (struct clast_name *name, ivs_params_p ip)
 {
   int index;
 
-  if (ip->params.exists () && ip->params_index)
+  if (ip->params.exists () && ip->params_index.is_created ())
     {
       index = clast_name_to_index (name, ip->params_index);
 
@@ -308,7 +316,7 @@ clast_name_to_gcc (struct clast_name *name, ivs_params_p ip)
 	return ip->params[index];
     }
 
-  gcc_assert (ip->newivs && ip->newivs_index);
+  gcc_assert (ip->newivs && ip->newivs_index.is_created ());
   index = clast_name_to_index (name, ip->newivs_index);
   gcc_assert (index >= 0);
 
@@ -699,12 +707,12 @@ type_for_clast_name (struct clast_name *name, ivs_params_p ip, mpz_t bound_one,
 {
   bool found = false;
 
-  if (ip->params.exists () && ip->params_index)
+  if (ip->params.exists () && ip->params_index.is_created ())
     found = clast_name_to_lb_ub (name, ip->params_index, bound_one, bound_two);
 
   if (!found)
     {
-      gcc_assert (ip->newivs && ip->newivs_index);
+      gcc_assert (ip->newivs && ip->newivs_index.is_created ());
       found = clast_name_to_lb_ub (name, ip->newivs_index, bound_one,
 				   bound_two);
       gcc_assert (found);
@@ -1009,13 +1017,14 @@ new_bb_pbb_def (basic_block bb, poly_bb_p pbb)
 /* Mark BB with it's relevant PBB via hashing table BB_PBB_MAPPING.  */
 
 static void
-mark_bb_with_pbb (poly_bb_p pbb, basic_block bb, htab_t bb_pbb_mapping)
+mark_bb_with_pbb (poly_bb_p pbb, basic_block bb,
+		  bb_pbb_htab_type bb_pbb_mapping)
 {
   bb_pbb_def tmp;
-  PTR *x;
+  bb_pbb_def **x;
 
   tmp.bb = bb;
-  x = htab_find_slot (bb_pbb_mapping, &tmp, INSERT);
+  x = bb_pbb_mapping.find_slot (&tmp, INSERT);
 
   if (x && !*x)
     *x = new_bb_pbb_def (bb, pbb);
@@ -1024,13 +1033,13 @@ mark_bb_with_pbb (poly_bb_p pbb, basic_block bb, htab_t bb_pbb_mapping)
 /* Find BB's related poly_bb_p in hash table BB_PBB_MAPPING.  */
 
 poly_bb_p
-find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
+find_pbb_via_hash (bb_pbb_htab_type bb_pbb_mapping, basic_block bb)
 {
   bb_pbb_def tmp;
-  PTR *slot;
+  bb_pbb_def **slot;
 
   tmp.bb = bb;
-  slot = htab_find_slot (bb_pbb_mapping, &tmp, NO_INSERT);
+  slot = bb_pbb_mapping.find_slot (&tmp, NO_INSERT);
 
   if (slot && *slot)
     return ((bb_pbb_def *) *slot)->pbb;
@@ -1044,7 +1053,7 @@ find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
    related poly_bb_p.  */
 
 scop_p
-get_loop_body_pbbs (loop_p loop, htab_t bb_pbb_mapping,
+get_loop_body_pbbs (loop_p loop, bb_pbb_htab_type bb_pbb_mapping,
 		    vec<poly_bb_p> *pbbs)
 {
   unsigned i;
@@ -1074,7 +1083,7 @@ get_loop_body_pbbs (loop_p loop, htab_t bb_pbb_mapping,
 
 static edge
 translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
-		      htab_t bb_pbb_mapping, ivs_params_p ip)
+		      bb_pbb_htab_type bb_pbb_mapping, ivs_params_p ip)
 {
   int i, nb_loops;
   basic_block new_bb;
@@ -1085,7 +1094,7 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
   if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
     return next_e;
 
-  nb_loops = number_of_loops ();
+  nb_loops = number_of_loops (cfun);
   iv_map.create (nb_loops);
   for (i = 0; i < nb_loops; i++)
     iv_map.quick_push (NULL_TREE);
@@ -1143,7 +1152,8 @@ graphite_create_new_loop_guard (edge entry_edge, struct clast_for *stmt,
 }
 
 static edge
-translate_clast (loop_p, struct clast_stmt *, edge, htab_t, int, ivs_params_p);
+translate_clast (loop_p, struct clast_stmt *, edge, bb_pbb_htab_type,
+		 int, ivs_params_p);
 
 /* Create the loop for a clast for statement.
 
@@ -1152,8 +1162,9 @@ translate_clast (loop_p, struct clast_stmt *, edge, htab_t, int, ivs_params_p);
 
 static edge
 translate_clast_for_loop (loop_p context_loop, struct clast_for *stmt,
-			  edge next_e, htab_t bb_pbb_mapping, int level,
-			  tree type, tree lb, tree ub, ivs_params_p ip)
+			  edge next_e, bb_pbb_htab_type bb_pbb_mapping,
+			  int level, tree type, tree lb, tree ub,
+			  ivs_params_p ip)
 {
   struct loop *loop = graphite_create_new_loop (next_e, stmt, context_loop,
 						type, lb, ub, level, ip);
@@ -1186,7 +1197,8 @@ translate_clast_for_loop (loop_p context_loop, struct clast_for *stmt,
 
 static edge
 translate_clast_for (loop_p context_loop, struct clast_for *stmt, edge next_e,
-		     htab_t bb_pbb_mapping, int level, ivs_params_p ip)
+		     bb_pbb_htab_type bb_pbb_mapping, int level,
+		     ivs_params_p ip)
 {
   tree type, lb, ub;
   edge last_e = graphite_create_new_loop_guard (next_e, stmt, &type,
@@ -1244,7 +1256,7 @@ translate_clast_assignment (struct clast_assignment *stmt, edge next_e,
 
 static edge
 translate_clast_guard (loop_p context_loop, struct clast_guard *stmt,
-		       edge next_e, htab_t bb_pbb_mapping, int level,
+		       edge next_e, bb_pbb_htab_type bb_pbb_mapping, int level,
 		       ivs_params_p ip)
 {
   edge last_e = graphite_create_new_guard (next_e, stmt, ip);
@@ -1263,7 +1275,7 @@ translate_clast_guard (loop_p context_loop, struct clast_guard *stmt,
 
 static edge
 translate_clast (loop_p context_loop, struct clast_stmt *stmt, edge next_e,
-		 htab_t bb_pbb_mapping, int level, ivs_params_p ip)
+		 bb_pbb_htab_type bb_pbb_mapping, int level, ivs_params_p ip)
 {
   if (!stmt)
     return next_e;
@@ -1304,7 +1316,8 @@ translate_clast (loop_p context_loop, struct clast_stmt *stmt, edge next_e,
 
 static CloogUnionDomain *
 add_names_to_union_domain (scop_p scop, CloogUnionDomain *union_domain,
-			   int nb_scattering_dims, htab_t params_index)
+			   int nb_scattering_dims,
+			   clast_index_htab_type params_index)
 {
   sese region = SCOP_REGION (scop);
   int i;
@@ -1547,7 +1560,7 @@ int get_max_scattering_dimensions (scop_p scop)
 }
 
 static CloogInput *
-generate_cloog_input (scop_p scop, htab_t params_index)
+generate_cloog_input (scop_p scop, clast_index_htab_type params_index)
 {
   CloogUnionDomain *union_domain;
   CloogInput *cloog_input;
@@ -1570,7 +1583,7 @@ generate_cloog_input (scop_p scop, htab_t params_index)
    without a program.  */
 
 static struct clast_stmt *
-scop_to_clast (scop_p scop, htab_t params_index)
+scop_to_clast (scop_p scop, clast_index_htab_type params_index)
 {
   CloogInput *cloog_input;
   struct clast_stmt *clast;
@@ -1599,11 +1612,10 @@ void
 print_generated_program (FILE *file, scop_p scop)
 {
   CloogOptions *options = set_cloog_options ();
-  htab_t params_index;
+  clast_index_htab_type params_index;
   struct clast_stmt *clast;
 
-  params_index = htab_create (10, clast_name_index_elt_info,
-            eq_clast_name_indexes, free_clast_name_index);
+  params_index.create (10);
 
   clast = scop_to_clast (scop, params_index);
 
@@ -1629,22 +1641,21 @@ debug_generated_program (scop_p scop)
 */
 
 bool
-gloog (scop_p scop, htab_t bb_pbb_mapping)
+gloog (scop_p scop, bb_pbb_htab_type bb_pbb_mapping)
 {
   vec<tree> newivs;
   newivs.create (10);
   loop_p context_loop;
   sese region = SCOP_REGION (scop);
   ifsese if_region = NULL;
-  htab_t newivs_index, params_index;
+  clast_index_htab_type newivs_index, params_index;
   struct clast_stmt *clast;
   struct ivs_params ip;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
   gloog_error = false;
 
-  params_index = htab_create (10, clast_name_index_elt_info,
-			      eq_clast_name_indexes, free_clast_name_index);
+  params_index.create (10);
 
   clast = scop_to_clast (scop, params_index);
 
@@ -1667,8 +1678,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   graphite_verify ();
 
   context_loop = SESE_ENTRY (region)->src->loop_father;
-  newivs_index = htab_create (10, clast_name_index_elt_info,
-			      eq_clast_name_indexes, free_clast_name_index);
+  newivs_index.create (10);
 
   ip.newivs = &newivs;
   ip.newivs_index = newivs_index;
@@ -1690,8 +1700,8 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   free (if_region->region);
   free (if_region);
 
-  htab_delete (newivs_index);
-  htab_delete (params_index);
+  newivs_index.dispose ();
+  params_index.dispose ();
   newivs.release ();
   cloog_clast_free (clast);
   timevar_pop (TV_GRAPHITE_CODE_GEN);

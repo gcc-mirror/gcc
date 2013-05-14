@@ -6,6 +6,14 @@
 /* { dg-final { scan-assembler-times "xvresp" 5 } } */
 /* { dg-final { scan-assembler-times "xsredp" 2 } } */
 /* { dg-final { scan-assembler-times "fres" 2 } } */
+/* { dg-final { scan-assembler-times "fmuls" 2 } } */
+/* { dg-final { scan-assembler-times "fnmsubs" 2 } } */
+/* { dg-final { scan-assembler-times "xsmuldp" 2 } } */
+/* { dg-final { scan-assembler-times "xsnmsub.dp" 4 } } */
+/* { dg-final { scan-assembler-times "xvmulsp" 7 } } */
+/* { dg-final { scan-assembler-times "xvnmsub.sp" 5 } } */
+/* { dg-final { scan-assembler-times "xvmuldp" 6 } } */
+/* { dg-final { scan-assembler-times "xvnmsub.dp" 8 } } */
 
 #include <altivec.h>
 

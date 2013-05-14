@@ -82,11 +82,6 @@ struct bb_info {
 
 const struct gcov_ctr_summary *profile_info;
 
-/* Number of data points in the working set summary array. Using 128
-   provides information for at least every 1% increment of the total
-   profile size. The last entry is hardwired to 99.9% of the total.  */
-#define NUM_GCOV_WORKING_SETS 128
-
 /* Counter working set information computed from the current counter
    summary. Not initialized unless profile_info summary is non-NULL.  */
 static gcov_working_set_t gcov_working_sets[NUM_GCOV_WORKING_SETS];
@@ -199,110 +194,18 @@ instrument_values (histogram_values values)
 }
 
 
-/* Compute the working set information from the counter histogram in
-   the profile summary. This is an array of information corresponding to a
-   range of percentages of the total execution count (sum_all), and includes
-   the number of counters required to cover that working set percentage and
-   the minimum counter value in that working set.  */
+/* Fill the working set information into the profile_info structure.  */
 
 void
-compute_working_sets (void)
+get_working_sets (void)
 {
-  gcov_type working_set_cum_values[NUM_GCOV_WORKING_SETS];
-  gcov_type ws_cum_hotness_incr;
-  gcov_type cum, tmp_cum;
-  const gcov_bucket_type *histo_bucket;
-  unsigned ws_ix, c_num, count, pctinc, pct;
-  int h_ix;
+  unsigned ws_ix, pctinc, pct;
   gcov_working_set_t *ws_info;
 
   if (!profile_info)
     return;
 
-  /* Compute the amount of sum_all that the cumulative hotness grows
-     by in each successive working set entry, which depends on the
-     number of working set entries.  */
-  ws_cum_hotness_incr = profile_info->sum_all / NUM_GCOV_WORKING_SETS;
-
-  /* Next fill in an array of the cumulative hotness values corresponding
-     to each working set summary entry we are going to compute below.
-     Skip 0% statistics, which can be extrapolated from the
-     rest of the summary data.  */
-  cum = ws_cum_hotness_incr;
-  for (ws_ix = 0; ws_ix < NUM_GCOV_WORKING_SETS;
-       ws_ix++, cum += ws_cum_hotness_incr)
-    working_set_cum_values[ws_ix] = cum;
-  /* The last summary entry is reserved for (roughly) 99.9% of the
-     working set. Divide by 1024 so it becomes a shift, which gives
-     almost exactly 99.9%.  */
-  working_set_cum_values[NUM_GCOV_WORKING_SETS-1]
-      = profile_info->sum_all - profile_info->sum_all/1024;
-
-  /* Next, walk through the histogram in decending order of hotness
-     and compute the statistics for the working set summary array.
-     As histogram entries are accumulated, we check to see which
-     working set entries have had their expected cum_value reached
-     and fill them in, walking the working set entries in increasing
-     size of cum_value.  */
-  ws_ix = 0; /* The current entry into the working set array.  */
-  cum = 0; /* The current accumulated counter sum.  */
-  count = 0; /* The current accumulated count of block counters.  */
-  for (h_ix = GCOV_HISTOGRAM_SIZE - 1;
-       h_ix >= 0 && ws_ix < NUM_GCOV_WORKING_SETS; h_ix--)
-    {
-      histo_bucket = &profile_info->histogram[h_ix];
-
-      /* If we haven't reached the required cumulative counter value for
-         the current working set percentage, simply accumulate this histogram
-         entry into the running sums and continue to the next histogram
-         entry.  */
-      if (cum + histo_bucket->cum_value < working_set_cum_values[ws_ix])
-        {
-          cum += histo_bucket->cum_value;
-          count += histo_bucket->num_counters;
-          continue;
-        }
-
-      /* If adding the current histogram entry's cumulative counter value
-         causes us to exceed the current working set size, then estimate
-         how many of this histogram entry's counter values are required to
-         reach the working set size, and fill in working set entries
-         as we reach their expected cumulative value.  */
-      for (c_num = 0, tmp_cum = cum;
-           c_num < histo_bucket->num_counters && ws_ix < NUM_GCOV_WORKING_SETS;
-           c_num++)
-        {
-          count++;
-          /* If we haven't reached the last histogram entry counter, add
-             in the minimum value again. This will underestimate the
-             cumulative sum so far, because many of the counter values in this
-             entry may have been larger than the minimum. We could add in the
-             average value every time, but that would require an expensive
-             divide operation.  */
-          if (c_num + 1 < histo_bucket->num_counters)
-            tmp_cum += histo_bucket->min_value;
-          /* If we have reached the last histogram entry counter, then add
-             in the entire cumulative value.  */
-          else
-            tmp_cum = cum + histo_bucket->cum_value;
-
-	  /* Next walk through successive working set entries and fill in
-	     the statistics for any whose size we have reached by accumulating
-	     this histogram counter.  */
-	  while (ws_ix < NUM_GCOV_WORKING_SETS
-		 && tmp_cum >= working_set_cum_values[ws_ix])
-            {
-              gcov_working_sets[ws_ix].num_counters = count;
-              gcov_working_sets[ws_ix].min_counter
-                  = histo_bucket->min_value;
-              ws_ix++;
-            }
-        }
-      /* Finally, update the running cumulative value since we were
-         using a temporary above.  */
-      cum += histo_bucket->cum_value;
-    }
-  gcc_assert (ws_ix == NUM_GCOV_WORKING_SETS);
+  compute_working_sets (profile_info, gcov_working_sets);
 
   if (dump_file)
     {
@@ -372,7 +275,7 @@ get_exec_counts (unsigned cfg_checksum, unsigned lineno_checksum)
   if (!counts)
     return NULL;
 
-  compute_working_sets();
+  get_working_sets();
 
   if (dump_file && profile_info)
     fprintf(dump_file, "Merged %u profiles with maximal count %u.\n",
@@ -849,7 +752,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       if (bb->count)
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    e->probability = (e->count * REG_BR_PROB_BASE + bb->count / 2) / bb->count;
+	    e->probability = GCOV_COMPUTE_SCALE (e->count, bb->count);
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)
 	      && EDGE_COUNT (bb->succs) >= 2)

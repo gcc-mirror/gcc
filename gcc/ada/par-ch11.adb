@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -199,11 +199,43 @@ package body Ch11 is
          return Error;
    end P_Exception_Choice;
 
+   ----------------------------
+   -- 11.3  Raise Expression --
+   ----------------------------
+
+   --  RAISE_EXPRESSION ::= raise [exception_NAME [with string_EXPRESSION]]
+
+   --  The caller has verified that the initial token is RAISE
+
+   --  Error recovery: can raise Error_Resync
+
+   function P_Raise_Expression return Node_Id is
+      Raise_Node : Node_Id;
+
+   begin
+      if Ada_Version < Ada_2012 then
+         Error_Msg_SC ("raise expression is an Ada 2012 feature");
+         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
+      end if;
+
+      Raise_Node := New_Node (N_Raise_Expression, Token_Ptr);
+      Scan; -- past RAISE
+
+      Set_Name (Raise_Node, P_Name);
+
+      if Token = Tok_With then
+         Scan; -- past WITH
+         Set_Expression (Raise_Node, P_Expression);
+      end if;
+
+      return Raise_Node;
+   end P_Raise_Expression;
+
    ---------------------------
    -- 11.3  Raise Statement --
    ---------------------------
 
-   --  RAISE_STATEMENT ::= raise [exception_NAME];
+   --  RAISE_STATEMENT ::= raise [exception_NAME with string_EXPRESSION];
 
    --  The caller has verified that the initial token is RAISE
 

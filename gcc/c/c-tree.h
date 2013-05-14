@@ -642,6 +642,7 @@ extern void c_finish_omp_taskgroup (location_t, tree);
 extern void c_finish_omp_cancel (location_t, tree);
 extern void c_finish_omp_cancellation_point (location_t, tree);
 extern tree c_finish_omp_clauses (tree);
+extern void c_finish_omp_declare_simd (tree, tree, vec<tree>);
 extern tree c_build_va_arg (location_t, tree, tree);
 extern tree c_finish_transaction (location_t, tree, int);
 extern bool c_tree_equal (tree, tree);

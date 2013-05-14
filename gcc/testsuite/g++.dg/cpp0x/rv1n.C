@@ -30,7 +30,7 @@ const volatile A cv_source();
 
 // 1 at a time
 
-one   sink_1_1(               A&);  // { dg-error "" }
+one   sink_1_1(               A&);  // { dg-message "" }
 
 int test1_1()
 {
@@ -48,7 +48,7 @@ int test1_1()
     return 0;
 }
 
-two   sink_1_2(const          A&);  // { dg-error "" }
+two   sink_1_2(const          A&);  // { dg-message "" }
 
 int test1_2()
 {
@@ -63,7 +63,7 @@ int test1_2()
     return 0;
 }
 
-three sink_1_3(volatile       A&);  // { dg-error "" }
+three sink_1_3(volatile       A&);  // { dg-message "" }
 
 int test1_3()
 {
@@ -80,7 +80,7 @@ int test1_3()
     return 0;
 }
 
-four  sink_1_4(const volatile A&);  // { dg-error "" }
+four  sink_1_4(const volatile A&);  // { dg-message "" }
 
 int test1_4()
 {
@@ -95,7 +95,7 @@ int test1_4()
     return 0;
 }
 
-five  sink_1_5(               A&&);  // { dg-error "" }
+five  sink_1_5(               A&&);  // { dg-message "" }
 
 int test1_5()
 {
@@ -113,7 +113,7 @@ int test1_5()
     return 0;
 }
 
-six   sink_1_6(const          A&&);  // { dg-error "" }
+six   sink_1_6(const          A&&);  // { dg-message "" }
 
 int test1_6()
 {
@@ -130,7 +130,7 @@ int test1_6()
     return 0;
 }
 
-seven sink_1_7(volatile       A&&);  // { dg-error "" }
+seven sink_1_7(volatile       A&&);  // { dg-message "" }
 
 int test1_7()
 {
@@ -147,7 +147,7 @@ int test1_7()
     return 0;
 }
 
-eight sink_1_8(const volatile A&&); // { dg-error "" }
+eight sink_1_8(const volatile A&&); // { dg-message "" }
 
 int test1_8()
 {

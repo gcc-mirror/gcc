@@ -611,6 +611,8 @@ esac
 
 # Disable Java if libffi is not supported.
 case "${target}" in
+  aarch64-*-*)
+    ;;
   alpha*-*-*)
     ;;
   arm*-*-*)

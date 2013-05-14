@@ -28,7 +28,7 @@ void test01()
 {
   bool test = true;
  
-  std::exception_ptr p1 = std::copy_exception(test);
+  std::exception_ptr p1 = std::make_exception_ptr(test);
   std::exception_ptr p2 = std::move(p1);
   VERIFY( p1 == 0 );
   VERIFY( !(p2 == 0) );

@@ -16,6 +16,8 @@ typedef struct {
    unsigned char h;
 } s;
 
+volatile int y = 0;
+
 __attribute__ ((noinline)) int
 main1 ()
 {
@@ -50,8 +52,8 @@ main1 ()
       check_res[i].h = arr[i].d;
       check_res[i].g = u + t;
 
-      if (arr[i].a == 178)
-         abort ();
+      if (y) /* Avoid vectorization.  */
+        abort ();
     }
 
   for (i = 0; i < N; i++)

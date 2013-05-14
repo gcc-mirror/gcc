@@ -194,14 +194,6 @@ higher_prime_index (unsigned long n)
   return low;
 }
 
-/* Returns a hash code for P.  */
-
-static hashval_t
-hash_pointer (const PTR p)
-{
-  return (hashval_t) ((intptr_t)p >> 3);
-}
-
 /* Returns non-zero if P1 and P2 are equal.  */
 
 static int
@@ -986,5 +978,21 @@ iterative_hash (const PTR k_in /* the key */,
     }
   mix(a,b,c);
   /*-------------------------------------------- report the result */
+  return c;
+}
+
+/* Returns a hash code for pointer P. Simplified version of evahash */
+
+static hashval_t
+hash_pointer (const PTR p)
+{
+  intptr_t v = (intptr_t) p;
+  unsigned a, b, c;
+
+  a = b = 0x9e3779b9;
+  a += v >> (sizeof (intptr_t) * CHAR_BIT / 2);
+  b += v & (((intptr_t) 1 << (sizeof (intptr_t) * CHAR_BIT / 2)) - 1);
+  c = 0x42135234;
+  mix (a, b, c);
   return c;
 }

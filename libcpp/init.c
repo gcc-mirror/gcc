@@ -83,26 +83,29 @@ struct lang_flags
   char uliterals;
   char rliterals;
   char user_literals;
+  char binary_constants;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid std  //   digr ulit rlit user_literals */
-  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0,   0,    0 },
-  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,    0 },
-  /* GNUC11   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,    0 },
-  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0,   0,    0 },
-  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0,   0,    0 },
-  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0,   0,    0 },
-  /* STDC11   */  { 1,  0,  1,   0,  1,   1,   1,   1,   0,    0 },
-  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0,   0,    0 },
-  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0,   0,    0 },
-  /* GNUCXX11 */  { 1,  1,  1,   0,  0,   1,   1,   1,   1,    1 },
-  /* CXX11    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1,    1 },
-  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0,   0,    0 }
-  /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX11, and
-     CXX11 when no longer experimental (when all uses of identifiers
-     in the compiler have been audited for correct handling of
-     extended identifiers).  */
+{ /*              c99 c++ xnum xid std  //   digr ulit rlit udlit bin_cst */
+  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0,   0,   0,    0 },
+  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,   0,    0 },
+  /* GNUC11   */  { 1,  0,  1,   0,  0,   1,   1,   1,   1,   0,    0 },
+  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0,   0,   0,    0 },
+  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0,   0,   0,    0 },
+  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0,   0,   0,    0 },
+  /* STDC11   */  { 1,  0,  1,   0,  1,   1,   1,   1,   0,   0,    0 },
+  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0,   0,   0,    0 },
+  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0,   0,   0,    0 },
+  /* GNUCXX11 */  { 1,  1,  1,   0,  0,   1,   1,   1,   1,   1,    0 },
+  /* CXX11    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1,   1,    0 },
+  /* GNUCXX1Y */  { 1,  1,  1,   0,  0,   1,   1,   1,   1,   1,    1 },
+  /* CXX1Y    */  { 1,  1,  1,   0,  1,   1,   1,   1,   1,   1,    1 },
+  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0,   0,   0,    0 }
+  /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX11, CXX11,
+     GNUCXX1Y, and CXX1Y when no longer experimental (when all uses of
+     identifiers in the compiler have been audited for correct handling
+     of extended identifiers).  */
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -124,6 +127,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, uliterals)			 = l->uliterals;
   CPP_OPTION (pfile, rliterals)			 = l->rliterals;
   CPP_OPTION (pfile, user_literals)		 = l->user_literals;
+  CPP_OPTION (pfile, binary_constants)		 = l->binary_constants;
 }
 
 /* Initialize library global state.  */
@@ -476,8 +480,11 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, cplusplus))
     {
-      if (CPP_OPTION (pfile, lang) == CLK_CXX11
-	   || CPP_OPTION (pfile, lang) == CLK_GNUCXX11)
+      if (CPP_OPTION (pfile, lang) == CLK_CXX1Y
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX1Y)
+	_cpp_define_builtin (pfile, "__cplusplus 201300L");
+      else if (CPP_OPTION (pfile, lang) == CLK_CXX11
+	       || CPP_OPTION (pfile, lang) == CLK_GNUCXX11)
 	_cpp_define_builtin (pfile, "__cplusplus 201103L");
       else
 	_cpp_define_builtin (pfile, "__cplusplus 199711L");

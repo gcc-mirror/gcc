@@ -14,10 +14,10 @@ integer(4) :: i1
 integer(c_int) :: i2
 type(t) :: x
 
-print *,c_sizeof(i1)                ! { dg-error "must be an interoperable data entity" }
+print *,c_sizeof(i1)
 print *,c_sizeof(i2)
 print *,c_sizeof(x)
-print *, c_sizeof(ran())            ! { dg-error "must be an interoperable data entity" }
+print *, c_sizeof(ran())
 
 print *,storage_size(1.0,4)
 print *,storage_size(1.0,3.2)       ! { dg-error "must be INTEGER" }

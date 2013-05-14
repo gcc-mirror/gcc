@@ -160,7 +160,7 @@ flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *,
   if (!current_loops || ! file)
     return;
 
-  fprintf (file, ";; %d loops found\n", number_of_loops ());
+  fprintf (file, ";; %d loops found\n", number_of_loops (cfun));
 
   FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
     {
@@ -339,8 +339,9 @@ alloc_loop (void)
 /* Initializes loops structure LOOPS, reserving place for NUM_LOOPS loops
    (including the root of the loop tree).  */
 
-static void
-init_loops_structure (struct loops *loops, unsigned num_loops)
+void
+init_loops_structure (struct function *fn,
+		      struct loops *loops, unsigned num_loops)
 {
   struct loop *root;
 
@@ -349,11 +350,11 @@ init_loops_structure (struct loops *loops, unsigned num_loops)
 
   /* Dummy loop containing whole function.  */
   root = alloc_loop ();
-  root->num_nodes = n_basic_blocks;
-  root->latch = EXIT_BLOCK_PTR;
-  root->header = ENTRY_BLOCK_PTR;
-  ENTRY_BLOCK_PTR->loop_father = root;
-  EXIT_BLOCK_PTR->loop_father = root;
+  root->num_nodes = n_basic_blocks_for_function (fn);
+  root->latch = EXIT_BLOCK_PTR_FOR_FUNCTION (fn);
+  root->header = ENTRY_BLOCK_PTR_FOR_FUNCTION (fn);
+  ENTRY_BLOCK_PTR_FOR_FUNCTION (fn)->loop_father = root;
+  EXIT_BLOCK_PTR_FOR_FUNCTION (fn)->loop_father = root;
 
   loops->larray->quick_push (root);
   loops->tree_root = root;
@@ -411,7 +412,7 @@ flow_loops_find (struct loops *loops)
   if (!loops)
     {
       loops = ggc_alloc_cleared_loops ();
-      init_loops_structure (loops, 1);
+      init_loops_structure (cfun, loops, 1);
     }
 
   /* Ensure that loop exits were released.  */
@@ -1076,7 +1077,7 @@ record_loop_exits (void)
   loops_state_set (LOOPS_HAVE_RECORDED_EXITS);
 
   gcc_assert (current_loops->exits == NULL);
-  current_loops->exits = htab_create_ggc (2 * number_of_loops (),
+  current_loops->exits = htab_create_ggc (2 * number_of_loops (cfun),
 					  loop_exit_hash, loop_exit_eq,
 					  loop_exit_free);
 
@@ -1319,15 +1320,21 @@ verify_loop_structure (void)
 {
   unsigned *sizes, i, j;
   sbitmap irreds;
-  basic_block bb;
+  basic_block bb, *bbs;
   struct loop *loop;
   int err = 0;
   edge e;
-  unsigned num = number_of_loops ();
+  unsigned num = number_of_loops (cfun);
   loop_iterator li;
   struct loop_exit *exit, *mexit;
   bool dom_available = dom_info_available_p (CDI_DOMINATORS);
   sbitmap visited;
+
+  if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+    {
+      error ("loop verification on loop tree that needs fixup");
+      err = 1;
+    }
 
   /* We need up-to-date dominators, compute or verify them.  */
   if (!dom_available)
@@ -1335,43 +1342,51 @@ verify_loop_structure (void)
   else
     verify_dominators (CDI_DOMINATORS);
 
-  /* Check sizes.  */
-  sizes = XCNEWVEC (unsigned, num);
-  sizes[0] = 2;
-
-  FOR_EACH_BB (bb)
-    for (loop = bb->loop_father; loop; loop = loop_outer (loop))
-      sizes[loop->num]++;
-
-  FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
-    {
-      i = loop->num;
-
-      if (loop->num_nodes != sizes[i])
-	{
-	  error ("size of loop %d should be %d, not %d",
-		   i, sizes[i], loop->num_nodes);
-	  err = 1;
-	}
-    }
-
   /* Check the headers.  */
   FOR_EACH_BB (bb)
-    if (bb_loop_header_p (bb)
-	&& bb->loop_father->header != bb)
+    if (bb_loop_header_p (bb))
       {
-	error ("loop with header %d not in loop tree", bb->index);
+	if (bb->loop_father->header == NULL)
+	  {
+	    error ("loop with header %d marked for removal", bb->index);
+	    err = 1;
+	  }
+	else if (bb->loop_father->header != bb)
+	  {
+	    error ("loop with header %d not in loop tree", bb->index);
+	    err = 1;
+	  }
+      }
+    else if (bb->loop_father->header == bb)
+      {
+	error ("non-loop with header %d not marked for removal", bb->index);
 	err = 1;
       }
 
-  /* Check get_loop_body.  */
+  /* Check the recorded loop father and sizes of loops.  */
   visited = sbitmap_alloc (last_basic_block);
   bitmap_clear (visited);
+  bbs = XNEWVEC (basic_block, n_basic_blocks);
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      basic_block *bbs = get_loop_body (loop);
+      unsigned n;
 
-      for (j = 0; j < loop->num_nodes; j++)
+      if (loop->header == NULL)
+	{
+	  error ("removed loop %d in loop tree", loop->num);
+	  err = 1;
+	  continue;
+	}
+
+      n = get_loop_body_with_size (loop, bbs, n_basic_blocks);
+      if (loop->num_nodes != n)
+	{
+	  error ("size of loop %d should be %d, not %d",
+		 loop->num, n, loop->num_nodes);
+	  err = 1;
+	}
+
+      for (j = 0; j < n; j++)
 	{
 	  bb = bbs[j];
 
@@ -1394,16 +1409,16 @@ verify_loop_structure (void)
 	      err = 1;
 	    }
 	}
-
-      free (bbs);
     }
+  free (bbs);
   sbitmap_free (visited);
 
   /* Check headers and latches.  */
   FOR_EACH_LOOP (li, loop, 0)
     {
       i = loop->num;
-
+      if (loop->header == NULL)
+	continue;
       if (!bb_loop_header_p (loop->header))
 	{
 	  error ("loop %d%'s header is not a loop header", i);
@@ -1561,6 +1576,7 @@ verify_loop_structure (void)
     {
       unsigned n_exits = 0, eloops;
 
+      sizes = XCNEWVEC (unsigned, num);
       memset (sizes, 0, sizeof (unsigned) * num);
       FOR_EACH_BB (bb)
 	{
@@ -1624,11 +1640,12 @@ verify_loop_structure (void)
 	      err = 1;
 	    }
 	}
+
+      free (sizes);
     }
 
   gcc_assert (!err);
 
-  free (sizes);
   if (!dom_available)
     free_dominance_info (CDI_DOMINATORS);
 }

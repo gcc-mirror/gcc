@@ -8,9 +8,9 @@ contains
     type(c_funptr) :: my_c_funptr
     integer :: my_local_variable
     
-    my_c_funptr = c_funloc() ! { dg-error "Missing argument" }
+    my_c_funptr = c_funloc() ! { dg-error "Missing actual argument 'x' in call to 'c_funloc'" }
     my_c_funptr = c_funloc(sub0)
-    my_c_funptr = c_funloc(sub0, sub0) ! { dg-error "More actual than formal" }
-    my_c_funptr = c_funloc(my_local_variable) ! { dg-error "must be a procedure" }
+    my_c_funptr = c_funloc(sub0, sub0) ! { dg-error "Too many arguments in call to 'c_funloc'" }
+    my_c_funptr = c_funloc(my_local_variable) ! { dg-error "Argument X at .1. to C_FUNLOC shall be a procedure or a procedure pointer" }
   end subroutine sub0
 end module c_funloc_tests_2

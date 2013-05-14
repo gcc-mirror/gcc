@@ -140,6 +140,7 @@ bool aarch64_constant_address_p (rtx);
 bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
 bool aarch64_gen_movmemqi (rtx *);
+bool aarch64_gimple_fold_builtin (gimple_stmt_iterator *);
 bool aarch64_is_extend_from_extract (enum machine_mode, rtx, rtx);
 bool aarch64_is_long_call_p (rtx);
 bool aarch64_label_mentioned_p (rtx);
@@ -151,6 +152,7 @@ bool aarch64_regno_ok_for_base_p (int, bool);
 bool aarch64_regno_ok_for_index_p (int, bool);
 bool aarch64_simd_imm_scalar_p (rtx x, enum machine_mode mode);
 bool aarch64_simd_imm_zero_p (rtx, enum machine_mode);
+bool aarch64_simd_scalar_immediate_valid_for_move (rtx, enum machine_mode);
 bool aarch64_simd_shift_imm_p (rtx, enum machine_mode, bool);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_symbolic_constant_p (rtx, enum aarch64_symbol_context,
@@ -177,6 +179,7 @@ rtx aarch64_simd_gen_const_vector_dup (enum machine_mode, int);
 bool aarch64_simd_mem_operand_p (rtx);
 rtx aarch64_simd_vect_par_cnst_half (enum machine_mode, bool);
 rtx aarch64_tls_get_addr (void);
+tree aarch64_fold_builtin (tree, int, tree *, bool);
 unsigned aarch64_dbx_register_number (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
@@ -215,6 +218,8 @@ void aarch64_simd_reinterpret (rtx, rtx);
 void aarch64_split_128bit_move (rtx, rtx);
 
 bool aarch64_split_128bit_move_p (rtx, rtx);
+
+void aarch64_split_simd_move (rtx, rtx);
 
 /* Check for a legitimate floating point constant for FMOV.  */
 bool aarch64_float_const_representable_p (rtx);

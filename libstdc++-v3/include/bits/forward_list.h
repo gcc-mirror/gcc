@@ -32,10 +32,14 @@
 
 #pragma GCC system_header
 
-#include <memory>
-#if __cplusplus >= 201103L
 #include <initializer_list>
-#endif
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator.h>
+#include <bits/stl_algobase.h>
+#include <bits/stl_function.h>
+#include <bits/allocator.h>
+#include <ext/alloc_traits.h>
+#include <ext/aligned_buffer.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -96,20 +100,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Fwd_list_node() = default;
 
-      typename aligned_storage<sizeof(_Tp), alignment_of<_Tp>::value>::type
-	_M_storage;
+      __gnu_cxx::__aligned_buffer<_Tp> _M_storage;
 
       _Tp*
       _M_valptr() noexcept
-      {
-	return static_cast<_Tp*>(static_cast<void*>(&_M_storage));
-      }
+      { return _M_storage._M_ptr(); }
 
       const _Tp*
       _M_valptr() const noexcept
-      {
-	return static_cast<const _Tp*>(static_cast<const void*>(&_M_storage));
-      }
+      { return _M_storage._M_ptr(); }
     };
 
   /**
@@ -421,8 +420,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Tp                                          value_type;
       typedef typename _Alloc_traits::pointer              pointer;
       typedef typename _Alloc_traits::const_pointer        const_pointer;
-      typedef typename _Alloc_traits::reference            reference;
-      typedef typename _Alloc_traits::const_reference      const_reference;
+      typedef value_type&				   reference;
+      typedef const value_type&				   const_reference;
  
       typedef _Fwd_list_iterator<_Tp>                      iterator;
       typedef _Fwd_list_const_iterator<_Tp>                const_iterator;

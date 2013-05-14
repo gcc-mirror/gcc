@@ -431,35 +431,48 @@ namespace __debug
 
     private:
       _Base_iterator
+#if __cplusplus >= 201103L
+      _M_erase(_Base_const_iterator __position)
+#else
       _M_erase(_Base_iterator __position)
+#endif
       {
 	this->_M_invalidate_if(_Equal(__position));
 	return _Base::erase(__position);
       }
+
     public:
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __position)
+#else
       erase(iterator __position)
+#endif
       {
 	__glibcxx_check_erase(__position);
 	return iterator(_M_erase(__position.base()), this);
       }
 
       iterator
-      erase(iterator __position, iterator __last)
+#if __cplusplus >= 201103L
+      erase(const_iterator __first, const_iterator __last)
+#else
+      erase(iterator __first, iterator __last)
+#endif
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
-	__glibcxx_check_erase_range(__position, __last);
-	for (_Base_iterator __victim = __position.base();
+	__glibcxx_check_erase_range(__first, __last);
+	for (_Base_const_iterator __victim = __first.base();
 	     __victim != __last.base(); ++__victim)
 	  {
 	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
 			          _M_message(__gnu_debug::__msg_valid_range)
-				  ._M_iterator(__position, "position")
+				  ._M_iterator(__first, "position")
 				  ._M_iterator(__last, "last"));
 	    this->_M_invalidate_if(_Equal(__victim));
 	  }
-	return iterator(_Base::erase(__position.base(), __last.base()), this);
+	return iterator(_Base::erase(__first.base(), __last.base()), this);
       }
 
       void

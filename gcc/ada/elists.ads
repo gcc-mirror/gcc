@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -152,6 +152,10 @@ package Elists is
    --  Removes the last element of the given list. The node itself is not
    --  affected, but the space used by the list element may be (but is not
    --  required to be) freed for reuse in a subsequent Append_Elmt call.
+
+   function Contains (List : Elist_Id; N : Node_Or_Entity_Id) return Boolean;
+   --  Perform a sequential search to determine whether the given list contains
+   --  a node or an entity.
 
    function No (List : Elist_Id) return Boolean;
    pragma Inline (No);

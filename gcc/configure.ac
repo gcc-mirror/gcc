@@ -942,7 +942,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h iconv.h \
 		 fcntl.h unistd.h sys/file.h sys/time.h sys/mman.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
-		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h libintl.h)
+		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h)
 
 # Check for thread headers.
 AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
@@ -2299,10 +2299,11 @@ AC_ARG_ENABLE(gnu-indirect-function,
 Valid choices are 'yes' and 'no'.]) ;;
   esac],
  [enable_gnu_indirect_function="$default_gnu_indirect_function"])
-if test x$enable_gnu_indirect_function = xyes; then
-  AC_DEFINE(HAVE_GNU_INDIRECT_FUNCTION, 1,
-   [Define if your system supports gnu indirect functions.])
-fi
+
+gif=`if test x$enable_gnu_indirect_function = xyes; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(HAVE_GNU_INDIRECT_FUNCTION, $gif,
+[Define if your system supports gnu indirect functions.])
+
 
 changequote(,)dnl
 if test $in_tree_ld != yes ; then
@@ -3044,33 +3045,7 @@ a:
 	tls_first_major=0
 	tls_first_minor=0
 	;;
-  powerpc-*-*)
-    conftest_s='
-	.section ".tdata","awT",@progbits
-	.align 2
-ld0:	.space 4
-ld1:	.space 4
-x1:	.space 4
-x2:	.space 4
-x3:	.space 4
-	.text
-	addi 3,31,ld0@got@tlsgd
-	bl __tls_get_addr
-	addi 3,31,x1@got@tlsld
-	bl __tls_get_addr
-	addi 9,3,x1@dtprel
-	addis 9,3,x2@dtprel@ha
-	addi 9,9,x2@dtprel@l
-	lwz 9,x3@got@tprel(31)
-	add 9,9,x@tls
-	addi 9,2,x1@tprel
-	addis 9,2,x2@tprel@ha
-	addi 9,9,x2@tprel@l'
-	tls_first_major=2
-	tls_first_minor=14
-	tls_as_opt="-a32 --fatal-warnings"
-	;;
-  powerpc64-*-*)
+  powerpc64*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
 	.align 3
@@ -3103,6 +3078,32 @@ x3:	.space 8
 	tls_first_major=2
 	tls_first_minor=14
 	tls_as_opt="-a64 --fatal-warnings"
+	;;
+  powerpc*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+	.align 2
+ld0:	.space 4
+ld1:	.space 4
+x1:	.space 4
+x2:	.space 4
+x3:	.space 4
+	.text
+	addi 3,31,ld0@got@tlsgd
+	bl __tls_get_addr
+	addi 3,31,x1@got@tlsld
+	bl __tls_get_addr
+	addi 9,3,x1@dtprel
+	addis 9,3,x2@dtprel@ha
+	addi 9,9,x2@dtprel@l
+	lwz 9,x3@got@tprel(31)
+	add 9,9,x@tls
+	addi 9,2,x1@tprel
+	addis 9,2,x2@tprel@ha
+	addi 9,9,x2@tprel@l'
+	tls_first_major=2
+	tls_first_minor=14
+	tls_as_opt="-a32 --fatal-warnings"
 	;;
   s390-*-*)
     conftest_s='
@@ -3623,7 +3624,7 @@ changequote([,])dnl
 	# wrappers to aid in interposing and redirecting operators new, delete,
 	# etc., as per n2800 #17.6.4.6 [replacement.functions].  Check if we
 	# are configuring for a version of Cygwin that exports the wrappers.
-	if test x$host = x$target; then
+	if test x$host = x$target && test x$host_cpu = xi686; then
 	  AC_CHECK_FUNC([__wrap__Znaj],[gcc_ac_cygwin_dll_wrappers=yes],[gcc_ac_cygwin_dll_wrappers=no])
 	else
 	  # Can't check presence of libc functions during cross-compile, so
@@ -3722,6 +3723,14 @@ foo:	nop
        sahf],,
       [AC_DEFINE(HAVE_AS_IX86_SAHF, 1,
         [Define if your assembler supports the sahf mnemonic in 64bit mode.])])
+
+    gcc_GAS_CHECK_FEATURE([interunit movq mnemonic],
+      gcc_cv_as_ix86_interunit_movq,,,
+      [.code64
+       movq %mm0, %rax
+       movq %rax, %xmm0],,
+      [AC_DEFINE(HAVE_AS_IX86_INTERUNIT_MOVQ, 1,
+        [Define if your assembler supports interunit movq mnemonic.])])
 
     gcc_GAS_CHECK_FEATURE([hle prefixes],
       gcc_cv_as_ix86_hle,,,
@@ -4048,6 +4057,12 @@ LCF0:
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
 
+    gcc_GAS_CHECK_FEATURE([.micromips support],
+      gcc_cv_as_micromips_support,,[--fatal-warnings],
+      [.set micromips],,
+      [AC_DEFINE(HAVE_GAS_MICROMIPS, 1,
+          [Define if your assembler supports the .set micromips directive])])
+
     gcc_GAS_CHECK_FEATURE([.dtprelword support],
       gcc_cv_as_mips_dtprelword, [2,18,0],,
       [.section .tdata,"awT",@progbits
@@ -4335,6 +4350,42 @@ if test x"$gcc_cv_ld_eh_frame_hdr" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_ld_eh_frame_hdr)
 
+AC_MSG_CHECKING(linker CIEv3 in .eh_frame support)
+gcc_cv_ld_eh_frame_ciev3=no
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
+     && test $in_tree_ld_is_elf = yes; then
+    gcc_cv_ld_eh_frame_ciev3=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+  if echo "$ld_ver" | grep GNU > /dev/null; then
+    gcc_cv_ld_eh_frame_ciev3=yes
+    if test 0"$ld_date" -lt 20040513; then
+      if test -n "$ld_date"; then
+	# If there was date string, but was earlier than 2004-05-13, fail
+	gcc_cv_ld_eh_frame_ciev3=no
+      elif test "$ld_vers_major" -lt 2; then
+	gcc_cv_ld_eh_frame_ciev3=no
+      elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 16; then
+	gcc_cv_ld_eh_frame_ciev3=no
+      fi
+    fi
+  else
+    case "$target" in
+      *-*-solaris2*)
+        # Sun ld added support for CIE v3 in .eh_frame in Solaris 11.1.
+        if test "$ld_vers_major" -gt 1 || test "$ld_vers_minor" -ge 2324; then
+          gcc_cv_ld_eh_frame_ciev3=yes
+        fi
+        ;;
+    esac
+  fi
+fi
+AC_DEFINE_UNQUOTED(HAVE_LD_EH_FRAME_CIEV3,
+  [`if test x"$gcc_cv_ld_eh_frame_ciev3" = xyes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your linker supports CIE v3 in .eh_frame.])
+AC_MSG_RESULT($gcc_cv_ld_eh_frame_ciev3)
+
 AC_MSG_CHECKING(linker position independent executable support)
 gcc_cv_ld_pie=no
 if test $in_tree_ld = yes ; then
@@ -4487,6 +4538,8 @@ AC_MSG_RESULT($gcc_cv_ld_eh_gc_sections_bug)
 AC_CACHE_CHECK(linker --as-needed support,
 gcc_cv_ld_as_needed,
 [gcc_cv_ld_as_needed=no
+gcc_cv_ld_as_needed_option='--as-needed'
+gcc_cv_ld_no_as_needed_option='--no-as-needed'
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
@@ -4496,17 +4549,33 @@ elif test x$gcc_cv_ld != x; then
 	# Check if linker supports --as-needed and --no-as-needed options
 	if $gcc_cv_ld --help 2>/dev/null | grep as-needed > /dev/null; then
 		gcc_cv_ld_as_needed=yes
+	else
+	  case "$target" in
+	    # Solaris 2 ld always supports -z ignore/-z record.
+	    *-*-solaris2*)
+	      gcc_cv_ld_as_needed=yes
+	      gcc_cv_ld_as_needed_option="-z ignore"
+	      gcc_cv_ld_no_as_needed_option="-z record"
+	      ;;
+	  esac
 	fi
 fi
 ])
 if test x"$gcc_cv_ld_as_needed" = xyes; then
 	AC_DEFINE(HAVE_LD_AS_NEEDED, 1,
-[Define if your linker supports --as-needed and --no-as-needed options.])
+[Define if your linker supports --as-needed/--no-as-needed or equivalent options.])
+	AC_DEFINE_UNQUOTED(LD_AS_NEEDED_OPTION, "$gcc_cv_ld_as_needed_option",
+[Define to the linker option to ignore unused dependencies.])
+	AC_DEFINE_UNQUOTED(LD_NO_AS_NEEDED_OPTION, "$gcc_cv_ld_no_as_needed_option",
+[Define to the linker option to keep unused dependencies.])
 fi
 
 case "$target:$tm_file" in
   powerpc64-*-freebsd* | powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
   case "$target" in
+     *le-*-linux*)
+     emul_name="-melf64lppc"
+      ;;
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;
@@ -4611,7 +4680,7 @@ EOF
     ])
     if test x"$gcc_cv_ld_large_toc" = xyes; then
       AC_DEFINE(HAVE_LD_LARGE_TOC, 1,
-    [Define if your AIX linker supports a large TOC.])
+    [Define if your PowerPC64 linker supports a large TOC.])
     fi
     ;;
 esac

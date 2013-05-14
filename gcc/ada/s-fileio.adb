@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,15 +29,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;            use Ada.Finalization;
-with Ada.IO_Exceptions;           use Ada.IO_Exceptions;
+with Ada.Finalization;  use Ada.Finalization;
+with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
 with Interfaces.C;
-with Interfaces.C.Strings;        use Interfaces.C.Strings;
-with Interfaces.C_Streams;        use Interfaces.C_Streams;
+with Interfaces.C.Strings; use Interfaces.C.Strings;
+with Interfaces.C_Streams; use Interfaces.C_Streams;
 
 with System.CRTL.Runtime;
-with System.Case_Util;            use System.Case_Util;
+with System.Case_Util;    use System.Case_Util;
 with System.OS_Lib;
 with System.Soft_Links;
 
@@ -51,6 +51,12 @@ package body System.File_IO is
 
    use type Interfaces.C.int;
    use type CRTL.size_t;
+
+   subtype String_Access is System.OS_Lib.String_Access;
+   procedure Free (X : in out String_Access) renames System.OS_Lib.Free;
+
+   function "=" (X, Y : String_Access) return Boolean
+     renames System.OS_Lib."=";
 
    ----------------------
    -- Global Variables --
@@ -98,6 +104,9 @@ package body System.File_IO is
      (C, text_translation_required, "__gnat_text_translation_required");
    --  If true, add appropriate suffix to control string for Open
 
+   VMS_Formstr : String_Access := null;
+   --  For special VMS RMS keywords and values
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -132,10 +141,19 @@ package body System.File_IO is
    --  with Name includes that file name in the message.
 
    procedure Raise_Device_Error
-     (File : AFCB_Ptr; Errno : Integer := OS_Lib.Errno);
+     (File  : AFCB_Ptr;
+      Errno : Integer := OS_Lib.Errno);
    pragma No_Return (Raise_Device_Error);
    --  Clear error indication on File and raise Device_Error with an exception
    --  message providing errno information.
+
+   procedure Form_VMS_RMS_Keys (Form : String; VMS_Form : out String_Access);
+   --  Parse the RMS Keys
+
+   function Form_RMS_Context_Key
+     (Form     : String;
+      VMS_Form : String_Access) return Natural;
+   --  Parse the RMS Context Key
 
    ----------------
    -- Append_Set --
@@ -514,7 +532,6 @@ package body System.File_IO is
             Fopstr (1) := (if Creat then 'w' else 'r');
             Fopstr (2) := '+';
             Fptr := 3;
-
       end case;
 
       --  If text_translation_required is true then we need to append either a
@@ -558,13 +575,10 @@ package body System.File_IO is
 
       if V1 = 0 then
          return Default;
-
       elsif Form (V1) = 'y' then
          return True;
-
       elsif Form (V1) = 'n' then
          return False;
-
       else
          raise Use_Error with "invalid Form";
       end if;
@@ -639,6 +653,197 @@ package body System.File_IO is
       Start := 0;
       Stop  := 0;
    end Form_Parameter;
+
+   --------------------------
+   -- Form_RMS_Context_Key --
+   --------------------------
+
+   function Form_RMS_Context_Key
+     (Form     : String;
+      VMS_Form : String_Access) return Natural
+   is
+      type Context_Parms is
+        (Binary_Data, Convert_Fortran_Carriage_Control, Force_Record_Mode,
+         Force_Stream_Mode, Explicit_Write);
+      --  Ada-fied list of all possible Context keyword values
+
+      Pos   : Natural := 0;
+      Klen  : Natural := 0;
+      Index : Natural;
+
+   begin
+      --  Find the end of the occupation
+
+      for J in VMS_Form'First .. VMS_Form'Last loop
+         if VMS_Form (J) = ASCII.NUL then
+            Pos := J;
+            exit;
+         end if;
+      end loop;
+
+      Index := Form'First;
+      while Index < Form'Last loop
+         if Form (Index) = '=' then
+            Index := Index + 1;
+
+            --  Loop through the context values and look for a match
+
+            for Parm in Context_Parms loop
+               declare
+                  KImage : String := Context_Parms'Image (Parm);
+
+               begin
+                  Klen := KImage'Length;
+                  To_Lower (KImage);
+
+                  if Index + Klen - 1 <= Form'Last
+                    and then Form (Index .. Index + Klen - 1) = KImage
+                  then
+                     case Parm is
+                        when Force_Record_Mode =>
+                           VMS_Form (Pos) := '"';
+                           Pos := Pos + 1;
+                           VMS_Form (Pos .. Pos + 6) := "ctx=rec";
+                           Pos := Pos + 7;
+                           VMS_Form (Pos) := '"';
+                           Pos := Pos + 1;
+                           VMS_Form (Pos) := ',';
+                           return Index + Klen;
+
+                        when Force_Stream_Mode =>
+                           VMS_Form (Pos) := '"';
+                           Pos := Pos + 1;
+                           VMS_Form (Pos .. Pos + 6) := "ctx=stm";
+                           Pos := Pos + 7;
+                           VMS_Form (Pos) := '"';
+                           Pos := Pos + 1;
+                           VMS_Form (Pos) := ',';
+                           return Index + Klen;
+
+                        when others =>
+                           raise Use_Error
+                             with "unimplemented RMS Context Value";
+                     end case;
+                  end if;
+               end;
+            end loop;
+
+            raise Use_Error with "unrecognized RMS Context Value";
+         end if;
+      end loop;
+
+      raise Use_Error with "malformed RMS Context Value";
+   end Form_RMS_Context_Key;
+
+   -----------------------
+   -- Form_VMS_RMS_Keys --
+   -----------------------
+
+   procedure Form_VMS_RMS_Keys (Form : String; VMS_Form : out String_Access)
+   is
+      VMS_RMS_Keys_Token : constant String := "vms_rms_keys";
+      Klen : Natural := VMS_RMS_Keys_Token'Length;
+      Index : Natural;
+
+      --  Ada-fied list of all RMS keywords, translated from the HP C Run-Time
+      --  Library Reference Manual, Table REF-3: RMS Valid Keywords and Values.
+
+      type RMS_Keys is
+       (Access_Callback, Allocation_Quantity, Block_Size, Context,
+        Default_Extension_Quantity, Default_File_Name_String, Error_Callback,
+        File_Processing_Options, Fixed_Header_Size, Global_Buffer_Count,
+        Multiblock_Count, Multibuffer_Count, Maximum_Record_Size,
+        Terminal_Input_Prompt, Record_Attributes, Record_Format,
+        Record_Processing_Options, Retrieval_Pointer_Count, Sharing_Options,
+        Timeout_IO_Value);
+
+   begin
+      Index := Form'First + Klen - 1;
+      while Index < Form'Last loop
+         Index := Index + 1;
+
+         --  Scan for the token signalling VMS RMS Keys ahead.  Should
+         --  whitespace be eaten???
+
+         if Form (Index - Klen .. Index - 1) = VMS_RMS_Keys_Token then
+
+            --  Allocate the VMS form string that will contain the cryptic
+            --  CRTL RMS strings and initialize it to all nulls.  Since the
+            --  CRTL strings are always shorter than the Ada-fied strings,
+            --  it follows that an allocation of the original size will be
+            --  more than adequate.
+            VMS_Form := new String'(Form (Form'First .. Form'Last));
+            VMS_Form.all := (others => ASCII.NUL);
+
+            if Form (Index) = '=' then
+               Index := Index + 1;
+               if Form (Index) = '(' then
+                  while Index < Form'Last loop
+                     Index := Index + 1;
+
+                     --  Loop through the RMS Keys and dispatch.
+
+                     for Key in RMS_Keys loop
+                        declare
+                           KImage : String := RMS_Keys'Image (Key);
+
+                        begin
+                           Klen := KImage'Length;
+                           To_Lower (KImage);
+
+                           if Form (Index .. Index + Klen - 1) = KImage then
+                              case Key is
+                                 when Context =>
+                                    Index := Form_RMS_Context_Key
+                                     (Form (Index + Klen .. Form'Last),
+                                      VMS_Form);
+                                    exit;
+
+                                 when others =>
+                                    raise Use_Error
+                                     with "unimplemented VMS RMS Form Key";
+                              end case;
+                           end if;
+                        end;
+                     end loop;
+
+                     if Form (Index) = ')' then
+
+                        --  Done, erase the unneeded trailing comma and return
+
+                        for J in reverse VMS_Form'First .. VMS_Form'Last loop
+                           if VMS_Form (J) = ',' then
+                              VMS_Form (J) := ASCII.NUL;
+                              return;
+                           end if;
+                        end loop;
+
+                        --  Shouldn't be possible to get here
+
+                        raise Use_Error;
+
+                     elsif Form (Index) = ',' then
+
+                        --  Another key ahead, exit inner loop
+
+                        null;
+
+                     else
+
+                        --  Keyword value not terminated correctly
+
+                        raise Use_Error with "malformed VMS RMS Form";
+                     end if;
+                  end loop;
+               end if;
+            end if;
+
+            --  Found the keyword, but not followed by correct syntax
+
+            raise Use_Error with "malformed VMS RMS Form";
+         end if;
+      end loop;
+   end Form_VMS_RMS_Keys;
 
    -------------
    -- Is_Open --
@@ -822,13 +1027,10 @@ package body System.File_IO is
 
          if V1 = 0 then
             Shared := None;
-
          elsif Formstr (V1 .. V2) = "yes" then
             Shared := Yes;
-
          elsif Formstr (V1 .. V2) = "no" then
             Shared := No;
-
          else
             raise Use_Error with "invalid Form";
          end if;
@@ -844,13 +1046,10 @@ package body System.File_IO is
 
          if V1 = 0 then
             Encoding := CRTL.Unspecified;
-
          elsif Formstr (V1 .. V2) = "utf8" then
             Encoding := CRTL.UTF8;
-
          elsif Formstr (V1 .. V2) = "8bits" then
             Encoding := CRTL.ASCII_8bits;
-
          else
             raise Use_Error with "invalid Form";
          end if;
@@ -867,6 +1066,17 @@ package body System.File_IO is
          Is_Text_File :=
            Form_Boolean (Formstr, "text_translation", Default => True);
       end if;
+
+      --  Acquire settings of target specific form parameters on VMS. Only
+      --  Context is currently implemented, for forcing a byte stream mode
+      --  read. On non-VMS systems, the settings are ultimately ignored in
+      --  the implementation of __gnat_fopen.
+
+      --  Should a warning be issued on non-VMS systems?  That's not possible
+      --  without testing System.OpenVMS boolean which isn't present in most
+      --  non-VMS versions of package System.
+
+      Form_VMS_RMS_Keys (Formstr, VMS_Formstr);
 
       --  If we were given a stream (call from xxx.C_Streams.Open), then set
       --  the full name to the given one, and skip to end of processing.
@@ -1030,7 +1240,19 @@ package body System.File_IO is
             --  since by the time of the delete, the current working directory
             --  may have changed and we do not want to delete a different file!
 
-            Stream := fopen (Namestr'Address, Fopstr'Address, Encoding);
+            if VMS_Formstr = null then
+               Stream := fopen (Namestr'Address, Fopstr'Address, Encoding,
+                                Null_Address);
+            else
+               Stream := fopen (Namestr'Address, Fopstr'Address, Encoding,
+                                VMS_Formstr.all'Address);
+            end if;
+
+            --   No need to keep this around
+
+            if VMS_Formstr /= null then
+               Free (VMS_Formstr);
+            end if;
 
             if Stream = NULL_Stream then
 
@@ -1042,15 +1264,15 @@ package body System.File_IO is
                declare
                   function Is_File_Not_Found_Error
                     (Errno_Value : Integer) return Integer;
-                  --  Non-zero when the given errno value indicates a non-
-                  --  existing file.
-
                   pragma Import
                     (C, Is_File_Not_Found_Error,
                      "__gnat_is_file_not_found_error");
+                  --  Non-zero when the given errno value indicates a non-
+                  --  existing file.
 
-                  Errno : constant Integer := OS_Lib.Errno;
+                  Errno   : constant Integer := OS_Lib.Errno;
                   Message : constant String := Errno_Message (Name, Errno);
+
                begin
                   if Is_File_Not_Found_Error (Errno) /= 0 then
                      raise Name_Error with Message;
@@ -1089,7 +1311,8 @@ package body System.File_IO is
    ------------------------
 
    procedure Raise_Device_Error
-     (File : AFCB_Ptr; Errno : Integer := OS_Lib.Errno)
+     (File  : AFCB_Ptr;
+      Errno : Integer := OS_Lib.Errno)
    is
    begin
       --  Clear error status so that the same error is not reported twice
@@ -1123,7 +1346,6 @@ package body System.File_IO is
       else -- 0 < Nread < Siz
          raise Data_Error with "not enough data read";
       end if;
-
    end Read_Buf;
 
    procedure Read_Buf
@@ -1196,13 +1418,25 @@ package body System.File_IO is
          Fopen_Mode
            (Mode, File.Is_Text_File, False, File.Access_Method, Fopstr);
 
-         File.Stream := freopen
-           (File.Name.all'Address, Fopstr'Address, File.Stream, File.Encoding);
+         Form_VMS_RMS_Keys (File.Form.all, VMS_Formstr);
+
+         if VMS_Formstr = null then
+            File.Stream := freopen
+              (File.Name.all'Address, Fopstr'Address, File.Stream,
+               File.Encoding, Null_Address);
+         else
+            File.Stream := freopen
+              (File.Name.all'Address, Fopstr'Address, File.Stream,
+               File.Encoding, VMS_Formstr.all'Address);
+         end if;
+
+         if VMS_Formstr /= null then
+            Free (VMS_Formstr);
+         end if;
 
          if File.Stream = NULL_Stream then
             Close (File_Ptr);
             raise Use_Error;
-
          else
             File.Mode := Mode;
             Append_Set (File);

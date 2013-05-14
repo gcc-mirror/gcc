@@ -4893,7 +4893,9 @@ case "${target}" in
     hppa*64*-*-hpux*)
 	# PIC is the default for 64-bit PA HP-UX.
 	;;
-    i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
+    i[34567]86-*-cygwin* | x86_64-*-cygwin*)
+	;;
+    i[34567]86-*-mingw* | x86_64-*-mingw*)
 	;;
     i[34567]86-*-interix[3-9]*)
 	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
@@ -7079,7 +7081,7 @@ else
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
     i?86*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
-    i?86*-*-cygwin*)
+    i?86*-*-cygwin* | x86_64*-*-cygwin*)
       enable_decimal_float=yes
       ;;
     *)
@@ -8290,7 +8292,7 @@ fi
 for ac_header in limits.h stddef.h string.h strings.h stdlib.h time.h iconv.h \
 		 fcntl.h unistd.h sys/file.h sys/time.h sys/mman.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
-		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h libintl.h
+		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_preproc "$LINENO" "$ac_header" "$as_ac_Header"
@@ -17828,7 +17830,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17831 "configure"
+#line 17833 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17934,7 +17936,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17937 "configure"
+#line 17939 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22055,11 +22057,14 @@ else
   enable_gnu_indirect_function="$default_gnu_indirect_function"
 fi
 
-if test x$enable_gnu_indirect_function = xyes; then
 
-$as_echo "#define HAVE_GNU_INDIRECT_FUNCTION 1" >>confdefs.h
+gif=`if test x$enable_gnu_indirect_function = xyes; then echo 1; else echo 0; fi`
 
-fi
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GNU_INDIRECT_FUNCTION $gif
+_ACEOF
+
+
 
 if test $in_tree_ld != yes ; then
   ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
@@ -23281,33 +23286,7 @@ a:
 	tls_first_major=0
 	tls_first_minor=0
 	;;
-  powerpc-*-*)
-    conftest_s='
-	.section ".tdata","awT",@progbits
-	.align 2
-ld0:	.space 4
-ld1:	.space 4
-x1:	.space 4
-x2:	.space 4
-x3:	.space 4
-	.text
-	addi 3,31,ld0@got@tlsgd
-	bl __tls_get_addr
-	addi 3,31,x1@got@tlsld
-	bl __tls_get_addr
-	addi 9,3,x1@dtprel
-	addis 9,3,x2@dtprel@ha
-	addi 9,9,x2@dtprel@l
-	lwz 9,x3@got@tprel(31)
-	add 9,9,x@tls
-	addi 9,2,x1@tprel
-	addis 9,2,x2@tprel@ha
-	addi 9,9,x2@tprel@l'
-	tls_first_major=2
-	tls_first_minor=14
-	tls_as_opt="-a32 --fatal-warnings"
-	;;
-  powerpc64-*-*)
+  powerpc64*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
 	.align 3
@@ -23340,6 +23319,32 @@ x3:	.space 8
 	tls_first_major=2
 	tls_first_minor=14
 	tls_as_opt="-a64 --fatal-warnings"
+	;;
+  powerpc*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+	.align 2
+ld0:	.space 4
+ld1:	.space 4
+x1:	.space 4
+x2:	.space 4
+x3:	.space 4
+	.text
+	addi 3,31,ld0@got@tlsgd
+	bl __tls_get_addr
+	addi 3,31,x1@got@tlsld
+	bl __tls_get_addr
+	addi 9,3,x1@dtprel
+	addis 9,3,x2@dtprel@ha
+	addi 9,9,x2@dtprel@l
+	lwz 9,x3@got@tprel(31)
+	add 9,9,x@tls
+	addi 9,2,x1@tprel
+	addis 9,2,x2@tprel@ha
+	addi 9,9,x2@tprel@l'
+	tls_first_major=2
+	tls_first_minor=14
+	tls_as_opt="-a32 --fatal-warnings"
 	;;
   s390-*-*)
     conftest_s='
@@ -24273,7 +24278,7 @@ fi
 	# wrappers to aid in interposing and redirecting operators new, delete,
 	# etc., as per n2800 #17.6.4.6 [replacement.functions].  Check if we
 	# are configuring for a version of Cygwin that exports the wrappers.
-	if test x$host = x$target; then
+	if test x$host = x$target && test x$host_cpu = xi686; then
 	  ac_fn_c_check_func "$LINENO" "__wrap__Znaj" "ac_cv_func___wrap__Znaj"
 if test "x$ac_cv_func___wrap__Znaj" = x""yes; then :
   gcc_ac_cygwin_dll_wrappers=yes
@@ -24641,6 +24646,39 @@ $as_echo "$gcc_cv_as_ix86_sahf" >&6; }
 if test $gcc_cv_as_ix86_sahf = yes; then
 
 $as_echo "#define HAVE_AS_IX86_SAHF 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for interunit movq mnemonic" >&5
+$as_echo_n "checking assembler for interunit movq mnemonic... " >&6; }
+if test "${gcc_cv_as_ix86_interunit_movq+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_ix86_interunit_movq=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.code64
+       movq %mm0, %rax
+       movq %rax, %xmm0' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_ix86_interunit_movq=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_interunit_movq" >&5
+$as_echo "$gcc_cv_as_ix86_interunit_movq" >&6; }
+if test $gcc_cv_as_ix86_interunit_movq = yes; then
+
+$as_echo "#define HAVE_AS_IX86_INTERUNIT_MOVQ 1" >>confdefs.h
 
 fi
 
@@ -25720,6 +25758,37 @@ $as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
 
 fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .micromips support" >&5
+$as_echo_n "checking assembler for .micromips support... " >&6; }
+if test "${gcc_cv_as_micromips_support+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_micromips_support=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.set micromips' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_micromips_support=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_micromips_support" >&5
+$as_echo "$gcc_cv_as_micromips_support" >&6; }
+if test $gcc_cv_as_micromips_support = yes; then
+
+$as_echo "#define HAVE_GAS_MICROMIPS 1" >>confdefs.h
+
+fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .dtprelword support" >&5
 $as_echo_n "checking assembler for .dtprelword support... " >&6; }
 if test "${gcc_cv_as_mips_dtprelword+set}" = set; then :
@@ -26286,6 +26355,46 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_eh_frame_hdr" >&5
 $as_echo "$gcc_cv_ld_eh_frame_hdr" >&6; }
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker CIEv3 in .eh_frame support" >&5
+$as_echo_n "checking linker CIEv3 in .eh_frame support... " >&6; }
+gcc_cv_ld_eh_frame_ciev3=no
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
+     && test $in_tree_ld_is_elf = yes; then
+    gcc_cv_ld_eh_frame_ciev3=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+  if echo "$ld_ver" | grep GNU > /dev/null; then
+    gcc_cv_ld_eh_frame_ciev3=yes
+    if test 0"$ld_date" -lt 20040513; then
+      if test -n "$ld_date"; then
+	# If there was date string, but was earlier than 2004-05-13, fail
+	gcc_cv_ld_eh_frame_ciev3=no
+      elif test "$ld_vers_major" -lt 2; then
+	gcc_cv_ld_eh_frame_ciev3=no
+      elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 16; then
+	gcc_cv_ld_eh_frame_ciev3=no
+      fi
+    fi
+  else
+    case "$target" in
+      *-*-solaris2*)
+        # Sun ld added support for CIE v3 in .eh_frame in Solaris 11.1.
+        if test "$ld_vers_major" -gt 1 || test "$ld_vers_minor" -ge 2324; then
+          gcc_cv_ld_eh_frame_ciev3=yes
+        fi
+        ;;
+    esac
+  fi
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LD_EH_FRAME_CIEV3 `if test x"$gcc_cv_ld_eh_frame_ciev3" = xyes; then echo 1; else echo 0; fi`
+_ACEOF
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_eh_frame_ciev3" >&5
+$as_echo "$gcc_cv_ld_eh_frame_ciev3" >&6; }
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker position independent executable support" >&5
 $as_echo_n "checking linker position independent executable support... " >&6; }
 gcc_cv_ld_pie=no
@@ -26448,6 +26557,8 @@ if test "${gcc_cv_ld_as_needed+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_ld_as_needed=no
+gcc_cv_ld_as_needed_option='--as-needed'
+gcc_cv_ld_no_as_needed_option='--no-as-needed'
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
@@ -26457,6 +26568,15 @@ elif test x$gcc_cv_ld != x; then
 	# Check if linker supports --as-needed and --no-as-needed options
 	if $gcc_cv_ld --help 2>/dev/null | grep as-needed > /dev/null; then
 		gcc_cv_ld_as_needed=yes
+	else
+	  case "$target" in
+	    # Solaris 2 ld always supports -z ignore/-z record.
+	    *-*-solaris2*)
+	      gcc_cv_ld_as_needed=yes
+	      gcc_cv_ld_as_needed_option="-z ignore"
+	      gcc_cv_ld_no_as_needed_option="-z record"
+	      ;;
+	  esac
 	fi
 fi
 
@@ -26467,11 +26587,24 @@ if test x"$gcc_cv_ld_as_needed" = xyes; then
 
 $as_echo "#define HAVE_LD_AS_NEEDED 1" >>confdefs.h
 
+
+cat >>confdefs.h <<_ACEOF
+#define LD_AS_NEEDED_OPTION "$gcc_cv_ld_as_needed_option"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD_NO_AS_NEEDED_OPTION "$gcc_cv_ld_no_as_needed_option"
+_ACEOF
+
 fi
 
 case "$target:$tm_file" in
   powerpc64-*-freebsd* | powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
   case "$target" in
+     *le-*-linux*)
+     emul_name="-melf64lppc"
+      ;;
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;

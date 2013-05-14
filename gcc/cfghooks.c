@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "diagnostic-core.h"
 #include "cfgloop.h"
+#include "pretty-print.h"
 
 /* A pointer to one of the hooks containers.  */
 static struct cfg_hooks *cfg_hooks;
@@ -279,6 +280,22 @@ dump_bb (FILE *outf, basic_block bb, int indent, int flags)
   fputc ('\n', outf);
 }
 
+DEBUG_FUNCTION void
+debug (basic_block_def &ref)
+{
+  dump_bb (stderr, &ref, 0, 0);
+}
+
+DEBUG_FUNCTION void
+debug (basic_block_def *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+
 /* Dumps basic block BB to pretty-printer PP, for use as a label of
    a DOT graph record-node.  The implementation of this hook is
    expected to write the label to the stream that is attached to PP.
@@ -292,7 +309,12 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   if (!cfg_hooks->dump_bb_for_graph)
     internal_error ("%s does not support dump_bb_for_graph",
 		    cfg_hooks->name);
-  cfg_hooks->dump_bb_for_graph (pp, bb);
+  if (bb->count)
+    pp_printf (pp, "COUNT:" HOST_WIDEST_INT_PRINT_DEC, bb->count);
+  pp_printf (pp, " FREQ:%i |", bb->frequency);
+  pp_write_text_to_stream (pp);
+  if (!(dump_flags & TDF_SLIM))
+    cfg_hooks->dump_bb_for_graph (pp, bb);
 }
 
 /* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */
@@ -640,7 +662,9 @@ split_edge (edge e)
       loop = find_common_loop (src->loop_father, dest->loop_father);
       add_bb_to_loop (ret, loop);
 
-      if (loop->latch == src)
+      /* If we split the latch edge of loop adjust the latch block.  */
+      if (loop->latch == src
+	  && loop->header == dest)
 	loop->latch = ret;
     }
 

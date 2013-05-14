@@ -102,6 +102,14 @@ extern void __gthread_set_tls_data (void *data);
 extern void __gthread_enter_tls_dtor_context (void);
 extern void __gthread_leave_tls_dtor_context (void);
 
+#ifndef __RTP__
+
+extern void *__gthread_get_tsd_data (WIND_TCB *tcb);
+extern void __gthread_set_tsd_data (WIND_TCB *tcb, void *data);
+extern void __gthread_enter_tsd_dtor_context (WIND_TCB *tcb);
+extern void __gthread_leave_tsd_dtor_context (WIND_TCB *tcb);
+
+#endif /* __RTP__ */
 
 /* This is a global structure which records all of the active keys.
 
@@ -185,7 +193,7 @@ tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
 #ifdef __RTP__
       __gthread_leave_tls_dtor_context ();
 #else
-      __gthread_leave_tsd_dtor_context ();
+      __gthread_leave_tsd_dtor_context (tcb);
 #endif
 
 #ifdef __RTP__

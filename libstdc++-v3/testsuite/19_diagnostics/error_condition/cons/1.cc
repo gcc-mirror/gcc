@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
 
 // Copyright (C) 2008-2013 Free Software Foundation, Inc.
 //

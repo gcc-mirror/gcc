@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "dwarf2asm.h"
 #include "ggc.h"
+#include "hash-table.h"
 #include "tm_p.h"
 #include "target.h"
 #include "common/common-target.h"
@@ -153,10 +154,33 @@ typedef struct
 typedef dw_trace_info *dw_trace_info_ref;
 
 
+/* Hashtable helpers.  */
+
+struct trace_info_hasher : typed_noop_remove <dw_trace_info>
+{
+  typedef dw_trace_info value_type;
+  typedef dw_trace_info compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+trace_info_hasher::hash (const value_type *ti)
+{
+  return INSN_UID (ti->head);
+}
+
+inline bool
+trace_info_hasher::equal (const value_type *a, const compare_type *b)
+{
+  return a->head == b->head;
+}
+
+
 /* The variables making up the pseudo-cfg, as described above.  */
 static vec<dw_trace_info> trace_info;
 static vec<dw_trace_info_ref> trace_work_list;
-static htab_t trace_index;
+static hash_table <trace_info_hasher> trace_index;
 
 /* A vector of call frame insns for the CIE.  */
 cfi_vec cie_cfi_vec;
@@ -275,28 +299,12 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 }
 
 
-static hashval_t
-dw_trace_info_hash (const void *ptr)
-{
-  const dw_trace_info *ti = (const dw_trace_info *) ptr;
-  return INSN_UID (ti->head);
-}
-
-static int
-dw_trace_info_eq (const void *ptr_a, const void *ptr_b)
-{
-  const dw_trace_info *a = (const dw_trace_info *) ptr_a;
-  const dw_trace_info *b = (const dw_trace_info *) ptr_b;
-  return a->head == b->head;
-}
-
 static dw_trace_info *
 get_trace_info (rtx insn)
 {
   dw_trace_info dummy;
   dummy.head = insn;
-  return (dw_trace_info *)
-    htab_find_with_hash (trace_index, &dummy, INSN_UID (insn));
+  return trace_index.find_with_hash (&dummy, INSN_UID (insn));
 }
 
 static bool
@@ -2744,22 +2752,20 @@ create_pseudo_cfg (void)
 
   /* Create the trace index after we've finished building trace_info,
      avoiding stale pointer problems due to reallocation.  */
-  trace_index = htab_create (trace_info.length (),
-			     dw_trace_info_hash, dw_trace_info_eq, NULL);
+  trace_index.create (trace_info.length ());
   dw_trace_info *tp;
   FOR_EACH_VEC_ELT (trace_info, i, tp)
     {
-      void **slot;
+      dw_trace_info **slot;
 
       if (dump_file)
 	fprintf (dump_file, "Creating trace %u : start at %s %d%s\n", i,
 		 rtx_name[(int) GET_CODE (tp->head)], INSN_UID (tp->head),
 		 tp->switch_sections ? " (section switch)" : "");
 
-      slot = htab_find_slot_with_hash (trace_index, tp,
-				       INSN_UID (tp->head), INSERT);
+      slot = trace_index.find_slot_with_hash (tp, INSN_UID (tp->head), INSERT);
       gcc_assert (*slot == NULL);
-      *slot = (void *) tp;
+      *slot = tp;
     }
 }
 
@@ -2908,8 +2914,7 @@ execute_dwarf2_frame (void)
   }
   trace_info.release ();
 
-  htab_delete (trace_index);
-  trace_index = NULL;
+  trace_index.dispose ();
 
   return 0;
 }

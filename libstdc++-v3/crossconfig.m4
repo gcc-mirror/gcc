@@ -141,7 +141,7 @@ case "${host}" in
 	;;
     esac
     ;;
-  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu)
+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu | *-cygwin*)
     GLIBCXX_CHECK_COMPILER_FEATURES
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_MATH_SUPPORT

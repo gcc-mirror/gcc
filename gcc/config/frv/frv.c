@@ -1408,10 +1408,7 @@ frv_function_contains_far_jump (void)
 {
   rtx insn = get_insns ();
   while (insn != NULL
-	 && !(GET_CODE (insn) == JUMP_INSN
-	      /* Ignore tablejump patterns.  */
-	      && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	      && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
+	 && !(JUMP_P (insn)
 	      && get_attr_far_jump (insn) == FAR_JUMP_YES))
     insn = NEXT_INSN (insn);
   return (insn != NULL);
@@ -1446,7 +1443,7 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	 simply emit a different assembly directive because bralr and jmpl
 	 execute in different units.  */
       for (insn = get_insns(); insn != NULL; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == JUMP_INSN)
+	if (JUMP_P (insn))
 	  {
 	    rtx pattern = PATTERN (insn);
 	    if (GET_CODE (pattern) == PARALLEL
@@ -2649,7 +2646,7 @@ frv_print_operand_jump_hint (rtx insn)
   HOST_WIDE_INT prob = -1;
   enum { UNKNOWN, BACKWARD, FORWARD } jump_type = UNKNOWN;
 
-  gcc_assert (GET_CODE (insn) == JUMP_INSN);
+  gcc_assert (JUMP_P (insn));
 
   /* Assume any non-conditional jump is likely.  */
   if (! any_condjump_p (insn))
@@ -7387,7 +7384,7 @@ frv_pack_insn_p (rtx insn)
        - There's no point putting a call in its own packet unless
 	 we have to.  */
   if (frv_packet.num_insns > 0
-      && GET_CODE (insn) == INSN
+      && NONJUMP_INSN_P (insn)
       && GET_MODE (insn) == TImode
       && GET_CODE (PATTERN (insn)) != COND_EXEC)
     return false;
@@ -7430,7 +7427,7 @@ frv_insert_nop_in_packet (rtx insn)
 
   packet_group = &frv_packet.groups[frv_unit_groups[frv_insn_unit (insn)]];
   last = frv_packet.insns[frv_packet.num_insns - 1];
-  if (GET_CODE (last) != INSN)
+  if (! NONJUMP_INSN_P (last))
     {
       insn = emit_insn_before (PATTERN (insn), last);
       frv_packet.insns[frv_packet.num_insns - 1] = insn;
@@ -7486,13 +7483,11 @@ frv_for_each_packet (void (*handle_packet) (void))
 	  {
 	  case USE:
 	  case CLOBBER:
-	  case ADDR_VEC:
-	  case ADDR_DIFF_VEC:
 	    break;
 
 	  default:
 	    /* Calls mustn't be packed on a TOMCAT.  */
-	    if (GET_CODE (insn) == CALL_INSN && frv_cpu_type == FRV_CPU_TOMCAT)
+	    if (CALL_P (insn) && frv_cpu_type == FRV_CPU_TOMCAT)
 	      frv_finish_packet (handle_packet);
 
 	    /* Since the last instruction in a packet determines the EH
@@ -7913,7 +7908,7 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
   CLEAR_HARD_REG_SET (used_regs);
 
   for (insn = BB_END (bb); insn != BB_HEAD (bb); insn = PREV_INSN (insn))
-    if (GET_CODE (insn) == CALL_INSN)
+    if (CALL_P (insn))
       {
 	/* We can't predict what a call will do to volatile memory.  */
 	memset (next_io, 0, sizeof (struct frv_io));

@@ -1,3 +1,118 @@
+2013-05-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* caf/libcaf.h (_gfortran_caf_critical): Add a prototype.
+	(_gfortran_caf_end_critical): Same.
+
+2013-05-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* runtime/environ.c: Include unistd.h.
+	* runtime/pause.c: Test HAVE_UNISTD_H.
+	* runtime/stop.c: Same.
+	* io/open.c: Same.
+	* io/unix.c: Same.
+	* io/read.c (si_max): Protect declaration of value.
+
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * intrinsics/system_clock (gf_gettime_mono): Use variable
+        resolution for fractional seconds argument.
+        (system_clock_4): Simplify, update for gf_gettime_mono change.
+        (system_clock_8): Likewise.
+
+2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/56981
+        * io/transfer.c (next_record_w_unf): First fix head marker, then
+        write tail.
+        (next_record): Call flush_if_unbuffered.
+        * io/unix.c (struct unix_stream): Add field unbuffered.
+        (flush_if_unbuffered): New function.
+        (fd_to_stream): New argument.
+        (open_external): Fix fd_to_stream call.
+        (input_stream): Likewise.
+        (output_stream): Likewise.
+        (error_stream): Likewise.
+        * io/unix.h (flush_if_unbuffered): New prototype.
+
+2013-04-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/system_clock.c (system_clock_4): Fix sign error in
+	Windows version.
+
+2013-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	* list_read.c (finish_separator): Initialize variable.
+
+2013-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/56919
+	* intrinsics/time_1.h: Check __CYGWIN__ in addition to
+	__MINGW32__.
+	* intrinsics/system_clock.c (GF_CLOCK_MONOTONIC): Check
+	_POSIX_MONOTONIC_CLOCK as well.
+	(system_clock_4): Use GetTickCount on Windows.
+	(system_clock_8): Use QueryPerformanceCounter and
+	QueryPerformanceCounterFrequency on Windows.
+
+2013-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56810
+	* io/list_read.c (check_type): Fix kind checking for COMPLEX.
+
+2013-04-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56660
+	* io/list_read.c (nml_read_obj): Do not reset the read error flag
+	inside nml_read_obj. If the read error flag is found set just exit.
+	Fix some whitespace on comments.
+	(nml_read_obj_data): Reset the read error flag before the first call
+	to nml_read_object.
+
+2013-03-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/56786
+	* io/list_read.c (nml_parse_qualifier): Remove spurious next_char call
+	when checking for EOF. Use error return mechanism when EOF detected.
+	Do not return false unless parse_err_msg and parse_err_msg_size have
+	been set. Use hit_eof.
+	(nml_get_obj_data): Likewise use the correct error mechanism.
+	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
+	mode.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format_list): Also cache FMT_STRING.
+	(parse_format): Update call.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format): With caching, copy
+	dtp->format string.
+	(save_parsed_format): Use dtp->format directy without
+	copying.
+
+2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* io/list_read.c (nml_query): Only abort when
+	an error occured.
+	(namelist_read): Add goto instead of falling through.
+
+2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/52512
+	* io/list_read.c (nml_parse_qualifier): To check for a derived type
+	don't use the namelist head element type but the current element type.
+	(nml_get_obj_data): Add current namelist element type to
+	nml_parse_qualifier call.
+
+2013-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56696
+	* io/list_read.c (read_real): Fix EOF diagnostic.
+
 2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
 
 	PR libfortran/51825

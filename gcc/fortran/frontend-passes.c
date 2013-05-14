@@ -135,6 +135,10 @@ optimize_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   else
     count_arglist = 0;
 
+  current_code = c;
+  inserted_block = NULL;
+  changed_statement = NULL;
+
   if (op == EXEC_ASSIGN)
     optimize_assignment (*c);
   return 0;
@@ -188,36 +192,48 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
    old one can be freed.  */
 
 static gfc_expr *
-copy_walk_reduction_arg (gfc_expr *e, gfc_expr *fn)
+copy_walk_reduction_arg (gfc_constructor *c, gfc_expr *fn)
 {
-  gfc_expr *fcn;
-  gfc_isym_id id;
+  gfc_expr *fcn, *e = c->expr;
 
-  if (e->rank == 0 || e->expr_type == EXPR_FUNCTION)
-    fcn = gfc_copy_expr (e);
-  else
+  fcn = gfc_copy_expr (e);
+  if (c->iterator)
     {
-      id = fn->value.function.isym->id;
+      gfc_constructor_base newbase;
+      gfc_expr *new_expr;
+      gfc_constructor *new_c;
+
+      newbase = NULL;
+      new_expr = gfc_get_expr ();
+      new_expr->expr_type = EXPR_ARRAY;
+      new_expr->ts = e->ts;
+      new_expr->where = e->where;
+      new_expr->rank = 1;
+      new_c = gfc_constructor_append_expr (&newbase, fcn, &(e->where));
+      new_c->iterator = c->iterator;
+      new_expr->value.constructor = newbase;
+      c->iterator = NULL;
+
+      fcn = new_expr;
+    }
+
+  if (fcn->rank != 0)
+    {
+      gfc_isym_id id = fn->value.function.isym->id;
 
       if (id == GFC_ISYM_SUM || id == GFC_ISYM_PRODUCT)
-	fcn = gfc_build_intrinsic_call (current_ns,
-					fn->value.function.isym->id,
+	fcn = gfc_build_intrinsic_call (current_ns, id,
 					fn->value.function.isym->name,
-					fn->where, 3, gfc_copy_expr (e),
-					NULL, NULL);
+					fn->where, 3, fcn, NULL, NULL);
       else if (id == GFC_ISYM_ANY || id == GFC_ISYM_ALL)
-	fcn = gfc_build_intrinsic_call (current_ns,
-					fn->value.function.isym->id,
+	fcn = gfc_build_intrinsic_call (current_ns, id,
 					fn->value.function.isym->name,
-					fn->where, 2, gfc_copy_expr (e),
-					NULL);
+					fn->where, 2, fcn, NULL);
       else
 	gfc_internal_error ("Illegal id in copy_walk_reduction_arg");
 
       fcn->symtree->n.sym->attr.access = ACCESS_PRIVATE;
     }
-
-  (void) gfc_expr_walker (&fcn, callback_reduction, NULL);
 
   return fcn;
 }
@@ -296,10 +312,15 @@ callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   c = gfc_constructor_first (arg->value.constructor);
 
+  /* Don't do any simplififcation if we have
+     - no element in the constructor or
+     - only have a single element in the array which contains an
+     iterator.  */
+
   if (c == NULL)
     return 0;
 
-  res = copy_walk_reduction_arg (c->expr, fn);
+  res = copy_walk_reduction_arg (c, fn);
 
   c = gfc_constructor_next (c);
   while (c)
@@ -311,7 +332,7 @@ callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
       new_expr->where = fn->where;
       new_expr->value.op.op = op;
       new_expr->value.op.op1 = res;
-      new_expr->value.op.op2 = copy_walk_reduction_arg (c->expr, fn);
+      new_expr->value.op.op2 = copy_walk_reduction_arg (c, fn);
       res = new_expr;
       c = gfc_constructor_next (c);
     }
@@ -579,7 +600,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
       newvar = NULL;
       for (j=0; j<i; j++)
 	{
-	  if (gfc_dep_compare_functions(*(expr_array[i]),
+	  if (gfc_dep_compare_functions (*(expr_array[i]),
 					*(expr_array[j]), true)	== 0)
 	    {
 	      if (newvar == NULL)
@@ -927,7 +948,7 @@ optimize_assignment (gfc_code * c)
       remove_trim (rhs);
 
       /* Replace a = '   ' by a = '' to optimize away a memcpy.  */
-      if (is_empty_string(rhs))
+      if (is_empty_string (rhs))
 	rhs->value.character.length = 0;
     }
 
@@ -991,12 +1012,173 @@ optimize_lexical_comparison (gfc_expr *e)
   return false;
 }
 
+/* Combine stuff like [a]>b into [a>b], for easier optimization later.  Do not
+   do CHARACTER because of possible pessimization involving character
+   lengths.  */
+
+static bool
+combine_array_constructor (gfc_expr *e)
+{
+
+  gfc_expr *op1, *op2;
+  gfc_expr *scalar;
+  gfc_expr *new_expr;
+  gfc_constructor *c, *new_c;
+  gfc_constructor_base oldbase, newbase;
+  bool scalar_first;
+
+  /* Array constructors have rank one.  */
+  if (e->rank != 1)
+    return false;
+
+  op1 = e->value.op.op1;
+  op2 = e->value.op.op2;
+
+  if (op1->expr_type == EXPR_ARRAY && op2->rank == 0)
+    scalar_first = false;
+  else if (op2->expr_type == EXPR_ARRAY && op1->rank == 0)
+    {
+      scalar_first = true;
+      op1 = e->value.op.op2;
+      op2 = e->value.op.op1;
+    }
+  else
+    return false;
+
+  if (op2->ts.type == BT_CHARACTER)
+    return false;
+
+  if (op2->expr_type == EXPR_CONSTANT)
+    scalar = gfc_copy_expr (op2);
+  else
+    scalar = create_var (gfc_copy_expr (op2));
+
+  oldbase = op1->value.constructor;
+  newbase = NULL;
+  e->expr_type = EXPR_ARRAY;
+
+  for (c = gfc_constructor_first (oldbase); c;
+       c = gfc_constructor_next (c))
+    {
+      new_expr = gfc_get_expr ();
+      new_expr->ts = e->ts;
+      new_expr->expr_type = EXPR_OP;
+      new_expr->rank = c->expr->rank;
+      new_expr->where = c->where;
+      new_expr->value.op.op = e->value.op.op;
+
+      if (scalar_first)
+	{
+	  new_expr->value.op.op1 = gfc_copy_expr (scalar);
+	  new_expr->value.op.op2 = gfc_copy_expr (c->expr);
+	}
+      else
+	{
+	  new_expr->value.op.op1 = gfc_copy_expr (c->expr);
+	  new_expr->value.op.op2 = gfc_copy_expr (scalar);
+	}
+
+      new_c = gfc_constructor_append_expr (&newbase, new_expr, &(e->where));
+      new_c->iterator = c->iterator;
+      c->iterator = NULL;
+    }
+
+  gfc_free_expr (op1);
+  gfc_free_expr (op2);
+  gfc_free_expr (scalar);
+
+  e->value.constructor = newbase;
+  return true;
+}
+
+/* Change (-1)**k into 1-ishift(iand(k,1),1) and
+ 2**k into ishift(1,k) */
+
+static bool
+optimize_power (gfc_expr *e)
+{
+  gfc_expr *op1, *op2;
+  gfc_expr *iand, *ishft;
+
+  if (e->ts.type != BT_INTEGER)
+    return false;
+
+  op1 = e->value.op.op1;
+
+  if (op1 == NULL || op1->expr_type != EXPR_CONSTANT)
+    return false;
+
+  if (mpz_cmp_si (op1->value.integer, -1L) == 0)
+    {
+      gfc_free_expr (op1);
+
+      op2 = e->value.op.op2;
+
+      if (op2 == NULL)
+	return false;
+
+      iand = gfc_build_intrinsic_call (current_ns, GFC_ISYM_IAND,
+				       "_internal_iand", e->where, 2, op2,
+				       gfc_get_int_expr (e->ts.kind,
+							 &e->where, 1));
+				   
+      ishft = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ISHFT,
+					"_internal_ishft", e->where, 2, iand,
+					gfc_get_int_expr (e->ts.kind,
+							  &e->where, 1));
+
+      e->value.op.op = INTRINSIC_MINUS;
+      e->value.op.op1 = gfc_get_int_expr (e->ts.kind, &e->where, 1);
+      e->value.op.op2 = ishft;
+      return true;
+    }
+  else if (mpz_cmp_si (op1->value.integer, 2L) == 0)
+    {
+      gfc_free_expr (op1);
+
+      op2 = e->value.op.op2;
+      if (op2 == NULL)
+	return false;
+
+      ishft = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ISHFT,
+					"_internal_ishft", e->where, 2,
+					gfc_get_int_expr (e->ts.kind,
+							  &e->where, 1),
+					op2);
+      *e = *ishft;
+      return true;
+    }
+
+  else if (mpz_cmp_si (op1->value.integer, 1L) == 0)
+    {
+      op2 = e->value.op.op2;
+      if (op2 == NULL)
+	return false;
+
+      gfc_free_expr (op1);
+      gfc_free_expr (op2);
+
+      e->expr_type = EXPR_CONSTANT;
+      e->value.op.op1 = NULL;
+      e->value.op.op2 = NULL;
+      mpz_init_set_si (e->value.integer, 1);
+      /* Typespec and location are still OK.  */
+      return true;
+    }
+
+  return false;
+}
+
 /* Recursive optimization of operators.  */
 
 static bool
 optimize_op (gfc_expr *e)
 {
+  bool changed;
+
   gfc_intrinsic_op op = e->value.op.op;
+
+  changed = false;
 
   /* Only use new-style comparisons.  */
   switch(op)
@@ -1037,7 +1219,19 @@ optimize_op (gfc_expr *e)
     case INTRINSIC_NE:
     case INTRINSIC_GT:
     case INTRINSIC_LT:
-      return optimize_comparison (e, op);
+      changed = optimize_comparison (e, op);
+
+      /* Fall through */
+      /* Look at array constructors.  */
+    case INTRINSIC_PLUS:
+    case INTRINSIC_MINUS:
+    case INTRINSIC_TIMES:
+    case INTRINSIC_DIVIDE:
+      return combine_array_constructor (e) || changed;
+
+    case INTRINSIC_POWER:
+      return optimize_power (e);
+      break;
 
     default:
       break;

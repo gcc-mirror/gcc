@@ -792,6 +792,11 @@ Driver Undocumented
 ; 7: The version of the ABI that treats nullptr_t as a builtin type and
 ;    corrects the mangling of lambdas in default argument scope.
 ;    First selectable in G++ 4.8.
+;
+; 8: The version of the ABI that corrects the substitution behavior of
+;    function types with function-cv-qualifiers.
+;    First selectable in G++ 4.9.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
@@ -1022,6 +1027,30 @@ Enum(diagnostic_prefixing_rule) String(every-line) Value(DIAGNOSTICS_SHOW_PREFIX
 fdiagnostics-show-caret
 Common Var(flag_diagnostics_show_caret) Init(1)
 Show the source line with a caret indicating the column
+
+fdiagnostics-color
+Common Alias(fdiagnostics-color=,always,never)
+;
+
+fdiagnostics-color=
+Common Joined RejectNegative Var(flag_diagnostics_show_color) Enum(diagnostic_color_rule) Init(DIAGNOSTICS_COLOR_NO)
+-fdiagnostics-color=[never|always|auto]	Colorize diagnostics
+
+; Required for these enum values.
+SourceInclude
+diagnostic-color.h
+
+Enum
+Name(diagnostic_color_rule) Type(int)
+
+EnumValue
+Enum(diagnostic_color_rule) String(never) Value(DIAGNOSTICS_COLOR_NO)
+
+EnumValue
+Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
+
+EnumValue
+Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
@@ -1475,6 +1504,10 @@ flto-report
 Common Report Var(flag_lto_report) Init(0)
 Report various link-time optimization statistics
 
+flto-report-wpa
+Common Report Var(flag_lto_report_wpa) Init(0)
+Report various link-time optimization statistics for WPA only
+
 fmath-errno
 Common Report Var(flag_errno_math) Init(1) Optimization SetByCombined
 Set errno after built-in math functions
@@ -1909,6 +1942,10 @@ fstack-protector-all
 Common Report RejectNegative Var(flag_stack_protect, 2)
 Use a stack protection method for every function
 
+fstack-protector-strong
+Common Report RejectNegative Var(flag_stack_protect, 3)
+Use a smart stack protection method for certain functions
+
 fstack-usage
 Common RejectNegative Var(flag_stack_usage)
 Output stack usage information on a per-function basis
@@ -2303,8 +2340,12 @@ Common JoinedOrMissing
 Generate debug information in default format
 
 gcoff
-Common JoinedOrMissing Negative(gdwarf-)
+Common JoinedOrMissing Negative(gdwarf)
 Generate debug information in COFF format
+
+gdwarf
+Common JoinedOrMissing Negative(gdwarf-)
+Generate debug information in default version of DWARF format
 
 gdwarf-
 Common Joined UInteger Var(dwarf_version) Init(4) Negative(gstabs)

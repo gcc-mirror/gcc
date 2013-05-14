@@ -55,6 +55,8 @@ int main (void)
   int smin_vector[] = {0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15};
   unsigned int umax_vector[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
   unsigned int umin_vector[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+  int sabd_vector[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int saba_vector[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   int reduce_smax_value = 0;
   int reduce_smin_value = -15;
   unsigned int reduce_umax_value = 15;
@@ -81,6 +83,8 @@ int main (void)
   TEST (smin, s);
   TEST (umax, u);
   TEST (umin, u);
+  TEST (sabd, s);
+  TEST (saba, s);
   TESTV (reduce_smax, s);
   TESTV (reduce_smin, s);
   TESTV (reduce_umax, u);

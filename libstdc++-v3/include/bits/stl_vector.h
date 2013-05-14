@@ -1072,7 +1072,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the pointer is the user's responsibility.
        */
       iterator
-      erase(iterator __position);
+#if __cplusplus >= 201103L
+      erase(const_iterator __position)
+      { return _M_erase(__position._M_const_cast()); }
+#else
+      erase(iterator __position)
+      { return _M_erase(__position); }
+#endif
 
       /**
        *  @brief  Remove a range of elements.
@@ -1093,7 +1099,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Managing the pointer is the user's responsibility.
        */
       iterator
-      erase(iterator __first, iterator __last);
+#if __cplusplus >= 201103L
+      erase(const_iterator __first, const_iterator __last)
+      { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
+#else
+      erase(iterator __first, iterator __last)
+      { return _M_erase(__first, __last); }
+#endif
 
       /**
        *  @brief  Swaps data with another %vector.
@@ -1352,6 +1364,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	std::_Destroy(__pos, this->_M_impl._M_finish, _M_get_Tp_allocator());
 	this->_M_impl._M_finish = __pos;
       }
+
+      iterator
+      _M_erase(iterator __position);
+
+      iterator
+      _M_erase(iterator __first, iterator __last);
 
 #if __cplusplus >= 201103L
     private:

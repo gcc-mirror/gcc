@@ -14,8 +14,8 @@
 extern const int cint_obj;
 extern volatile int vint_obj;
 
-void take_cint_ref (const int& arg) { }	// { dg-error "" } 
-void take_vint_ref (volatile int& arg) { } // { dg-error "" } 
+void take_cint_ref (const int& arg) { }	// { dg-message "" } 
+void take_vint_ref (volatile int& arg) { } // { dg-message "" } 
 
 const int& global_cint_ref2 = vint_obj;		// { dg-error "" } 
 

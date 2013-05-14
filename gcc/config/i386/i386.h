@@ -304,7 +304,8 @@ enum ix86_tune_indices {
   X86_TUNE_EPILOGUE_USING_MOVE,
   X86_TUNE_SHIFT1,
   X86_TUNE_USE_FFREEP,
-  X86_TUNE_INTER_UNIT_MOVES,
+  X86_TUNE_INTER_UNIT_MOVES_TO_VEC,
+  X86_TUNE_INTER_UNIT_MOVES_FROM_VEC,
   X86_TUNE_INTER_UNIT_CONVERSIONS,
   X86_TUNE_FOUR_JUMP_LIMIT,
   X86_TUNE_SCHEDULE,
@@ -395,8 +396,11 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_EPILOGUE_USING_MOVE]
 #define TARGET_SHIFT1		ix86_tune_features[X86_TUNE_SHIFT1]
 #define TARGET_USE_FFREEP	ix86_tune_features[X86_TUNE_USE_FFREEP]
-#define TARGET_INTER_UNIT_MOVES	ix86_tune_features[X86_TUNE_INTER_UNIT_MOVES]
-#define TARGET_INTER_UNIT_CONVERSIONS\
+#define TARGET_INTER_UNIT_MOVES_TO_VEC \
+	ix86_tune_features[X86_TUNE_INTER_UNIT_MOVES_TO_VEC]
+#define TARGET_INTER_UNIT_MOVES_FROM_VEC \
+	ix86_tune_features[X86_TUNE_INTER_UNIT_MOVES_FROM_VEC]
+#define TARGET_INTER_UNIT_CONVERSIONS \
 	ix86_tune_features[X86_TUNE_INTER_UNIT_CONVERSIONS]
 #define TARGET_FOUR_JUMP_LIMIT	ix86_tune_features[X86_TUNE_FOUR_JUMP_LIMIT]
 #define TARGET_SCHEDULE		ix86_tune_features[X86_TUNE_SCHEDULE]
@@ -485,6 +489,9 @@ extern unsigned char x86_prefetch_sse;
 #ifndef TARGET_TLS_DIRECT_SEG_REFS_DEFAULT
 #define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT 0
 #endif
+
+#define TARGET_SSP_GLOBAL_GUARD (ix86_stack_protector_guard == SSP_GLOBAL)
+#define TARGET_SSP_TLS_GUARD    (ix86_stack_protector_guard == SSP_TLS)
 
 /* Fence to use after loop using storent.  */
 
@@ -1179,7 +1186,8 @@ enum target_cpu_default
 #define REAL_PIC_OFFSET_TABLE_REGNUM  BX_REG
 
 #define PIC_OFFSET_TABLE_REGNUM				\
-  ((TARGET_64BIT && ix86_cmodel == CM_SMALL_PIC)	\
+  ((TARGET_64BIT && (ix86_cmodel == CM_SMALL_PIC	\
+                     || DEFAULT_ABI == MS_ABI))		\
    || !flag_pic ? INVALID_REGNUM			\
    : reload_completed ? REGNO (pic_offset_table_rtx)	\
    : REAL_PIC_OFFSET_TABLE_REGNUM)
@@ -1959,6 +1967,8 @@ extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
 extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
 extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
+extern int const x86_64_ms_sysv_extra_clobbered_registers[12];
+
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
@@ -2378,6 +2388,10 @@ struct GTY(()) machine_function {
 #define SYMBOL_FLAG_DLLEXPORT		(SYMBOL_FLAG_MACH_DEP << 2)
 #define SYMBOL_REF_DLLEXPORT_P(X) \
 	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_DLLEXPORT) != 0)
+
+#define SYMBOL_FLAG_STUBVAR	(SYMBOL_FLAG_MACH_DEP << 4)
+#define SYMBOL_REF_STUBVAR_P(X) \
+	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_STUBVAR) != 0)
 
 extern void debug_ready_dispatch (void);
 extern void debug_dispatch_window (int);

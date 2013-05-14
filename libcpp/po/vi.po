@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.8-b20130224\n"
+"Project-Id-Version: cpplib-4.8.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2013-02-24 01:05+0000\n"
-"PO-Revision-Date: 2013-02-27 14:17+0700\n"
+"POT-Creation-Date: 2013-03-15 17:42+0000\n"
+"PO-Revision-Date: 2013-03-29 14:34+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
 "Language: vi\n"
@@ -28,7 +28,7 @@ msgstr "iconv không hỗ trợ khả năng chuyển đổi từ %s sang %s"
 
 #: charset.c:676
 msgid "iconv_open"
-msgstr "iconv_open (mở)"
+msgstr "iconv_open"
 
 #: charset.c:684
 #, c-format
@@ -383,7 +383,7 @@ msgstr "thiếu “(” nằm sau vị ngữ"
 
 #: directives.c:2139
 msgid "missing ')' to complete answer"
-msgstr "thiếu “)” để xong trả lời"
+msgstr "thiếu “)” để hoàn tất câu trả lời"
 
 #: directives.c:2159
 msgid "predicate's answer is empty"
@@ -402,7 +402,7 @@ msgstr "vị ngữ phải là định danh"
 msgid "\"%s\" re-asserted"
 msgstr "“%s” được khẳng định lại"
 
-#: directives.c:2566
+#: directives.c:2567
 #, c-format
 msgid "unterminated #%s"
 msgstr "#%s chưa chấm dứt"
@@ -574,39 +574,39 @@ msgstr "toán tử dấu phẩy nằm trong toán hạng của #if (nếu)"
 msgid "division by zero in #if"
 msgstr "chia cho số không trong #if (nếu)"
 
-#: files.c:504
+#: files.c:505
 msgid "NULL directory in find_file"
 msgstr "thư mục RỖNG trong “find_file”  (tìm tập tin)"
 
-#: files.c:542
+#: files.c:553
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "tìm thấy một hay nhiều tập tin PCH, nhưng chúng không hợp lệ"
 
-#: files.c:545
+#: files.c:556
 msgid "use -Winvalid-pch for more information"
-msgstr "hãy thử lệnh “-Winvalid-pch” để tìm thấy thông tin thêm"
+msgstr "hãy thử lệnh “-Winvalid-pch” để tìm thấy thêm thông tin cần thiết"
 
-#: files.c:643
+#: files.c:660
 #, c-format
 msgid "%s is a block device"
 msgstr "%s là một thiết bị khối"
 
-#: files.c:660
+#: files.c:677
 #, c-format
 msgid "%s is too large"
 msgstr "%s quá lớn"
 
-#: files.c:700
+#: files.c:717
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s ngắn hơn mong đợi"
 
-#: files.c:935
+#: files.c:953
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "không có đường dẫn bao gồm trong đó có thể tìm kiếm %s"
 
-#: files.c:1363
+#: files.c:1381
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Nhiều bộ bảo vệ bao gồm có lẽ hiệu ích cho :\n"
 
@@ -655,12 +655,12 @@ msgstr "gặp dấu gạch ngược tại kết thúc của tập tin"
 #: lex.c:931
 #, c-format
 msgid "trigraph ??%c converted to %c"
-msgstr "chữ ba “??%c” đã được chuyển đổi thành “%c”"
+msgstr "bộ ba “??%c” đã được chuyển đổi thành “%c”"
 
 #: lex.c:939
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
-msgstr "chữ ba “??%c” bị bỏ qua nên hãy sử dụng tùy chọn “-trigraphs” (chữ ba) để hiệu lực nó"
+msgstr "bộ ba “??%c” bị bỏ qua nên hãy sử dụng tùy chọn “-trigraphs” (bộ ba) để hiệu lực nó"
 
 #: lex.c:988
 msgid "\"/*\" within comment"
@@ -867,36 +867,36 @@ msgstr "đối số vĩ lệnh “%s” nên được chuyển đổi thành chu
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "gặp kiểu băm không hợp lệ %d trong “cpp_macro_definition” (lời định nghĩa vĩ lệnh)"
 
-#: pch.c:87 pch.c:335 pch.c:347 pch.c:365 pch.c:371 pch.c:380 pch.c:387
+#: pch.c:87 pch.c:345 pch.c:359 pch.c:377 pch.c:383 pch.c:392 pch.c:399
 msgid "while writing precompiled header"
 msgstr "trong khi ghi đầu trang biên dịch sẵn"
 
-#: pch.c:607
+#: pch.c:619
 #, c-format
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr "%s: không được dùng vì “%.*s” không còn tin cậy lại (bị dữ liệu sai thay thế)"
 
-#: pch.c:629
+#: pch.c:641
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr "%s: không được dùng vì chưa định nghĩa “%.*s”"
 
-#: pch.c:641
+#: pch.c:653
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr "%s: không được dùng vì “%.*s” đã được định nghĩa là “%s” không phải “%.*s”"
 
-#: pch.c:682
+#: pch.c:694
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr "%s: không được dùng vì “%s” đã được định nghĩa"
 
-#: pch.c:702
+#: pch.c:714
 #, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: không được dùng vì “__COUNTER__” không hợp lệ"
 
-#: pch.c:711 pch.c:886
+#: pch.c:723 pch.c:898
 msgid "while reading precompiled header"
 msgstr "trong khi đọc đầu trang biên dịch sẵn"
 

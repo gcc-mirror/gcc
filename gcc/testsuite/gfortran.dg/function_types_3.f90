@@ -5,7 +5,7 @@
 ! PR 50401: SIGSEGV in resolve_transfer
 
   interface 
-    function f()      ! { dg-error "must be a dummy argument" }
+    function f()      ! { dg-error "must be a dummy argument|Interface mismatch in global procedure" }
       dimension f(*)
     end function
   end interface

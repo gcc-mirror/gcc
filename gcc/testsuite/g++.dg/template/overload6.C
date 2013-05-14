@@ -4,7 +4,7 @@
 // PR 21592:ICE
 // Origin:  Volker Reichelt <reichelt@gcc.gnu.org>
 
-template<typename T> void unique(T,T); // { dg-message "note" }
+template<typename T> void unique(T,T);
 
 struct A
 {
@@ -13,6 +13,5 @@ struct A
 
 template<int> void foo()
 {
-  unique(A().begin); // { dg-error "no matching function" "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
+  unique(A().begin); // { dg-error "invalid use of non-static member function" }
 }

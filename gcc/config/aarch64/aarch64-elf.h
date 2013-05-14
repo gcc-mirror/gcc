@@ -106,7 +106,6 @@
 
 #define ASM_COMMENT_START "//"
 
-#define REGISTER_PREFIX		""
 #define LOCAL_LABEL_PREFIX	"."
 #define USER_LABEL_PREFIX	""
 

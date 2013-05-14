@@ -848,9 +848,6 @@ slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
   gimple orig_cond = get_loop_exit_condition (loop);
   gimple_stmt_iterator loop_exit_gsi = gsi_last_bb (exit_e->src);
 
-  if (need_ssa_update_p (cfun))
-    return false;
-
   if (loop->inner
       /* All loops have an outer scope; the only case loop->outer is NULL is for
          the function itself.  */
@@ -1060,6 +1057,15 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
 
+  /* We might have a queued need to update virtual SSA form.  As we
+     delete the update SSA machinery below after doing a regular
+     incremental SSA update during loop copying make sure we don't
+     lose that fact.
+     ???  Needing to update virtual SSA form by renaming is unfortunate
+     but not all of the vectorizer code inserting new loads / stores
+     properly assigns virtual operands to those statements.  */
+  update_ssa (TODO_update_ssa_only_virtuals);
+ 
   /* If the loop has a virtual PHI, but exit bb doesn't, create a virtual PHI
      in the exit bb and rename all the uses after the loop.  This simplifies
      the *guard[12] routines, which assume loop closed SSA form for all PHIs
@@ -1230,8 +1236,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
      same frequencies.  Loop exit probablities are however easy to get wrong.
      It is safer to copy value from original loop entry.  */
   bb_before_second_loop->frequency
-     = apply_probability (bb_before_first_loop->frequency,
-			  probability_of_second_loop);
+     = combine_probabilities (bb_before_first_loop->frequency,
+                              probability_of_second_loop);
   bb_before_second_loop->count
      = apply_probability (bb_before_first_loop->count,
 			  probability_of_second_loop);
@@ -1549,7 +1555,6 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location, "vect_can_advance_ivs_p:");
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      tree access_fn = NULL;
       tree evolution_part;
 
       phi = gsi_stmt (gsi);
@@ -1582,31 +1587,13 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       /* Analyze the evolution function.  */
 
-      access_fn = instantiate_parameters
-	(loop, analyze_scalar_evolution (loop, PHI_RESULT (phi)));
-
-      if (!access_fn)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "No Access function.");
-	  return false;
-	}
-
-      STRIP_NOPS (access_fn);
-      if (dump_enabled_p ())
-        {
-	  dump_printf_loc (MSG_NOTE, vect_location,
-                           "Access function of PHI: ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, access_fn);
-        }
-
-      evolution_part = evolution_part_in_loop_num (access_fn, loop->num);
-
+      evolution_part
+	= STMT_VINFO_LOOP_PHI_EVOLUTION_PART (vinfo_for_stmt (phi));
       if (evolution_part == NULL_TREE)
         {
 	  if (dump_enabled_p ())
-	    dump_printf (MSG_MISSED_OPTIMIZATION, "No evolution.");
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "No access function or evolution.");
 	  return false;
         }
 
@@ -2470,11 +2457,11 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
   /* End loop-exit-fixes after versioning.  */
 
-  update_ssa (TODO_update_ssa);
   if (cond_expr_stmt_list)
     {
       cond_exp_gsi = gsi_last_bb (condition_bb);
       gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list,
 			     GSI_SAME_STMT);
     }
+  update_ssa (TODO_update_ssa);
 }

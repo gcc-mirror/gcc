@@ -389,11 +389,19 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 	}
 
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __position)
+#else
       erase(iterator __position)
+#endif
       {	return iterator(_Base::erase(__position.base()), this); }
 
       iterator
+#if __cplusplus >= 201103L
+      erase(const_iterator __position, const_iterator __last)
+#else
       erase(iterator __position, iterator __last)
+#endif
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container

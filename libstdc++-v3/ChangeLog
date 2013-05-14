@@ -1,3 +1,485 @@
+2013-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54577
+	* include/bits/stl_deque.h (erase): Fix signatures in C++11 mode.
+	(_Deque_iterator<>::_M_const_cast): Add.
+	(deque<>::_M_erase): Declare.
+	* include/bits/deque.tcc: ... and define.
+	* include/bits/stl_list.h (erase): Fix signatures in C++11 mode.
+	(_List_const_iterator<>::_M_const_cast): Add.
+	* include/bits/list.tcc (erase (iterator)): Fix.
+	* include/bits/stl_iterator.h (__normal_iterator<>::_M_const_cast):
+	Add; include <ext/cast.h>.
+	* include/bits/stl_vector.h (erase): Fix signatures in C++11 mode.
+	(vector<>::_M_erase): Declare.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/vector.tcc (vector<>::_M_erase): Define.
+	* include/ext/vstring.h (erase): Fix signatures in C++11 mode.
+	* include/debug/deque: Adjust.
+	* include/debug/list: Likewise.
+	* include/debug/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/vector: Likewise.
+	* testsuite/util/exception/safety.h (erase_base<deque>,
+	erase_base<deque>, erase_base<vector>): Remove.
+	(erase_base<__versa_string>): Update.
+	* testsuite/ext/vstring/modifiers/char/54577.cc: New.
+	* testsuite/ext/vstring/modifiers/wchar_t/54577.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/erase/54577.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/erase/54577.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2013-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.8.
+
+2013-05-08  Jason Merrill  <jason@redhat.com>
+
+	Add std::bad_array_length (N3639)
+	* libsupc++/new: Add std::bad_array_length.
+	* libsupc++/bad_array_length.cc: New.
+	* libsupc++/eh_aux_runtime.cc: Add __cxa_bad_array_length.
+	* libsupc++/Makefile.in: Build them.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* config/abi/pre/gnu-versioned-namespace.ver: Add new symbols.
+
+2013-05-08  Andi Kleen  <ak@linux.intel.com>
+
+	PR target/55947
+	* libstdc++-v3/include/bits/atomic_base.h
+	(_GLIBCXX_ALWAYS_INLINE): Add new macro.
+	(atomic_thread_fence, atomic_signal_fence, test_and_set,
+	clear, store, load, exchange, compare_exchange_weak)
+	compare_exchange_strong, fetch_add, fetch_sub, fetch_and,
+	fetch_or, fetch_xor): Mark _GLIBCXX_ALWAYS_INLINE.
+
+2013-05-08  Jason Merrill  <jason@redhat.com>
+
+	Add std::bad_array_new_length (N2932)
+	* libsupc++/new: Add std::bad_array_new_length.
+	* libsupc++/bad_array_new.cc: New.
+	* libsupc++/eh_aux_runtime.cc: Add __cxa_throw_bad_array_new_length.
+	* libsupc++/Makefile.in: Build them.
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* config/abi/pre/gnu-versioned-namespace.ver: Add new symbols.
+
+2013-05-08  Andoni Morales Alastruey <ylatuya@gmail.com>
+
+	PR libstdc++/57212
+	* include/Makefile.am (_GLIBCXX___MINGW32_GLIBCXX___): Modify
+	to __MINGW32__.
+	* include/Makefile.in: Regenerated.
+
+2013-05-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/profile/unordered_base.h: New.
+	* include/Makefile.am: Add new profile header.
+	* include/Makefile.in: Regenerate.
+	* include/profile/impl/profiler.h
+	(__profcxx_inefficient_hash_is_on): New macro.
+	* include/profile/unordered_map (std::profile::unordered_map<>):
+	Use new _Unordered_profile base class. Use default implementations
+	for special functions.
+	(std::profile::unordered_multimap<>): Likewise.
+	* include/profile/unordered_set (std::profile::unordered_set<>):
+	Likewise.
+	(std::profile::unordered_multiset<>): Likewise.
+	* testsuite/23_containers/unordered_multiset/55043.cc: Fix
+	MoveOnly equality operator signature.
+
+2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/tr1/4_metaprogramming/integral_constant/requirements/
+	constexpr_data.cc: Move...
+	* testsuite/20_util/integral_constant/requirements/constexpr_data.cc:
+	... here.
+	* testsuite/20_util/integral_constant/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/integral_constant/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/integral_constant/static_definition.cc: Likewise.
+	* testsuite/20_util/integral_constant/true_false_type_typedefs.cc:
+	Likewise.
+	* testsuite/20_util/integral_constant/true_false_value.cc: Likewise.
+	* testsuite/20_util/integral_constant/operator_value_type.cc: Likewise.
+
+2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (is_null_pointer): Add.
+	(__is_nullptr_t): Implement in terms of the latter.
+	(is_fundamental, is_scalar): Adjust.
+	* testsuite/20_util/is_null_pointer/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/is_null_pointer/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_null_pointer/value.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2013-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cstdio: Add comment about LWG 2249.
+	* include/c_std/cstdio: Likewise.
+
+2013-04-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper): Fix
+	comment.
+	* include/std/mutex (__recursive_mutex_base): Likewise.
+
+2013-04-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/51365
+	* include/bits/shared_ptr_base (_Sp_ebo_helper): Helper class to
+	implement EBO safely.
+	(_Sp_counted_base::_M_get_deleter): Add noexcept.
+	(_Sp_counter_ptr): Use noexcept instead of comments.
+	(_Sp_counted_deleter): Likewise. Use _Sp_ebo_helper.
+	(_Sp_counted_ptr_inplace): Likewise.
+	* testsuite/20_util/shared_ptr/cons/51365.cc: New.
+	* testsuite/20_util/shared_ptr/cons/52924.cc: Add rebind member to
+	custom allocator and test construction with custom allocator.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error
+	line number.
+
+2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/unordered_set/insert/move_range.cc: Adjust
+	dialect to -std=gnu++11.
+
+2013-04-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Insert_base<>::insert<_It>(_It, _It)): Enable move semantics.
+	* testsuite/23_containers/unordered_set/insert/move_range.cc: New.
+
+2013-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cstdio (gets): Provide only in C++98 and C++11.
+	* include/c_std/cstdio (gets): Likewise.
+	* testsuite/27_io/headers/cstdio/functions_std.cc: Adjust.
+
+2013-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57065
+	* include/debug/unordered_map (unordered_map, unordered_multimap):
+	Fix default allocator type.
+	* include/profile/unordered_map (unordered_map, unordered_multimap):
+	Likewise.
+	* include/bits/unordered_map.h: Fix comments.
+
+2013-04-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56905
+	* libsupc++/exception_ptr.h (copy_exception): Deprecate and
+	move implementation to make_exception_ptr.
+	* include/std/future (_State_base::_M_break_promise): Replace
+	copy_exception with make_exception_ptr.
+	* testsuite/18_support/exception_ptr/move.cc: Likewise.
+	* testsuite/18_support/exception_ptr/rethrow_exception.cc: Likewise.
+	* testsuite/30_threads/future/members/get2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get2.cc: Likewise.
+
+2013-04-22  Jason Merrill  <jason@redhat.com>
+
+	* src/c++11/hashtable_c++0x.cc: Include ext/aligned_buffer.h.
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Also ignore "In
+	substitution" lines.
+
+	* testsuite/20_util/is_assignable/value.cc: Comment out tests involving
+	function-cv-quals.
+	* testsuite/20_util/is_constructible/value-2.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/result_type.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs-2.cc: Likewise.
+
+2013-04-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h: Add C++11 allocator support.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/std/unordered_set: Remove bits/algobase.h
+	include. Replace bits/alloc_traits.h by ext/alloc_traits.h.
+	* include/std/unordered_map: Likewise.
+	* include/ext/throw_allocator.h: Add checks on calls to allocator
+	construct/destroy.
+	(std::hash<__gnu_cxx::throw_value_limit>): Add conditional throw.
+	(std::hash<__gnu_cxx::throw_value_random>): Likewise.
+	* testsuite/util/regression/rand/priority_queue
+	/container_rand_regression_test.tcc: Adapt.
+	* testsuite/util/regression/rand/assoc
+	/container_rand_regression_test.tcc: Likewise.
+	* testsuite/util/testsuite_counter_type.h: Add count of destructors.
+	* testsuite/23_containers/unordered_set
+	/not_default_constructible_hash_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/copy_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/move_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_multiset/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/move_assign.cc: New.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	New.
+	* testsuite/23_containers/unordered_map/allocator/swap.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/copy.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/copy_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/allocator/minimal.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/move_assign.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc: New.
+	* testsuite/23_containers/unordered_multimap/allocator/swap.cc: New.
+
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (is_signed): Simplify.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	N3669
+	* include/std/complex (complex<float>::real, complex<float>::imag,
+	complex<double>::real, complex<double>::imag,
+	complex<long double>::real, complex<long double>::imag): Declare
+	as const member functions.
+	* include/std/type_traits (integral_constant<>::operator value_type):
+	Likewise.
+
+2013-04-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57010
+	* include/bits/stl_heap.h (pop_heap): Avoid self move-assignment.
+	* testsuite/25_algorithms/pop_heap/57010.cc: New.
+
+2013-04-21  Evgeniy Stepanov  <eugenis@google.com>
+
+	* src/c++11/system_error.cc (generic_category_instance): Add
+	initializer.
+	(system_category_instance): Likewise.
+	* src/c++11/future.cc (__fec): Likewise.
+
+2013-04-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/extensions.xml: Fix anachronism.
+
+2013-04-09  Tom Tromey  <tromey@redhat.com>
+
+	* configure, config.h.in: Rebuild.
+	* configure.ac: Use GLIBCXX_CHECK_SDT_H.  Don't check for
+	sys/sdt.h.
+	* acinclude.m4 (GLIBCXX_CHECK_SDT_H): New defun.
+
+2013-04-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2013-04-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Include <memory>.
+
+2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/Makefile.am: Add ext/aligned_buffer.h
+	* include/Makefile.in: Regenerate.
+	* include/ext/aligned_buffer.h: New.
+	* include/std/future (_Result): Use __aligned_buffer.
+	* include/bits/forward_list.h (_Fwd_list_node): Likewise.
+	* include/bits/shared_ptr_base.h (_Sp_counted_ptr_inplace): Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error line
+	number.
+
+2013-04-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/forward_list.h: Only include required headers.
+	(forward_list::reference): Define directly, not using __alloc_traits.
+	(forward_list::const_reference): Likewise.
+
+2013-04-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/functional (_Derives_from_unary_function): Remove.
+	(_Derives_from_binary_function): Remove.
+	* include/std/type_traits (__sfinae_types): Remove.
+	(__is_assignable_helper): Adapt.
+	(__is_convertible_helper): Adapt.
+	(_GLIBCXX_HAS_NESTED_TYPE): Adapt.
+	Remove several explicit instantiations of integral_constant.
+	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Adapt.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adapt dg-error line number.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/bind/ref_neg.cc: Likewise.
+
+2013-04-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56841
+	* libsupc++/eh_ptr.cc (rethrow_exception): Use get_unexpected() and
+	get_terminate() accessors.
+	* libsupc++/eh_throw.cc (__cxa_throw): Likewise.
+	* libsupc++/eh_terminate.cc: Use mutex when atomic builtins not
+	available.
+	* libsupc++/new_handler.cc: Likewise.
+
+2013-04-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.19 version.
+
+2013-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56834
+	* include/debug/array (tuple_size, tuple_element): Do not declare.
+	* include/profile/array: Likewise.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Adjust dg-error line number.
+
+2013-04-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* libsupc++/exception (get_terminate(), get_unexpected()): Declare.
+	* libsupc++/eh_terminate.cc (get_terminate() , set_unexpected()):
+	Define.
+	(set_terminate(terminate_handler)): Set atomically.
+	(set_unexpected(terminate_handler)): Likewise.
+	* libsupc++/new (get_new_handler()): Declare.
+	* libsupc++/new_handler.cc (get_new_handler()): Define.
+	(set_new_handler(new_handler)): Set atomically.
+	(__new_handler): Use internal linkage.
+	* libsupc++/new_op.cc (operator new): Use get_new_handler().
+	* libsupc++/new_opnt.cc (operator new): Likewise.
+	* acinclude.m4: Bump libtool_VERSION to 6:19:0.
+	* configure: Regenerate.
+	* libsupc++/Makefile.am: Compile above files with -std=gnu++11.
+	* libsupc++/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add new exports.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* testsuite/18_support/headers/exception/synopsis.cc: Check accessors
+	for handlers.
+	* testsuite/18_support/headers/new/synopsis.cc: Likewise.
+	* testsuite/18_support/new_handler.cc: New.
+	* testsuite/18_support/terminate_handler.cc: New.
+	* testsuite/18_support/unexpected_handler.cc: New.
+
+2013-04-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Remove broken link and
+	defer to general documentation on contributing to GCC.
+	* doc/html/*: Regenerate.
+
+2013-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Adjust link to Dr.Dobb's article.
+
+	* doc/xml/manual/appendix_contributing.xml: Adjust link to GNU
+	Coding Standards.
+
+	* doc/xml/manual/debug.xml: Adjust link for ThreadSanitizer.
+
+	* doc/xml/manual/debug_mode.xml: Adjust link for SafeSTL.
+
+	* doc/xml/manual/documentation_hacking.xml: Adjust Doxygen link.
+
+	* doc/xml/manual/messages.xml: Adjust link to Java API specs.
+
+	* doc/xml/manual/policy_data_structures: Remove direct link to
+	IBM Haifa Research Labs.
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Adjust links
+	for biblio.maverik_lowerbounds and biblio.nelson96stlpq.
+
+	* doc/xml/manual/profile_mode.xml: Adjust two links to acm.org
+	papers.
+
+	* doc/xml/manual/shared_ptr.xml: Use canonical address for
+	www.boost.org.
+
+2013-03-27  Kai Tietz  <ktietz@redhat.com>
+
+	* crossconfig.m4: Add support for cygwin x64 target.
+	* configure: Regenerated.
+
+2013-03-25  Kai Tietz  <ktietz@redhat.com>
+
+	* testsuite/18_support/50594.cc: For mingw-targets use only static
+	libstdc++-version.
+	* testsuite/19_diagnostics/error_category/operators/equal.cc
+	* testsuite/19_diagnostics/error_code/cons/1.cc
+	* testsuite/19_diagnostics/error_code/operators/bool.cc
+	* testsuite/19_diagnostics/error_code/operators/equal.cc
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc
+	* testsuite/19_diagnostics/error_condition/cons/1.cc
+	* testsuite/19_diagnostics/error_condition/operators/bool.cc
+	* testsuite/19_diagnostics/error_condition/operators/equal.cc
+	* testsuite/19_diagnostics/error_condition/operators/not_equal.cc
+	* testsuite/23_containers/set/requirements/exception/basic.cc
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc
+	* testsuite/lib/dg-options.exp (dg-additional-options): New option.
+
+2013-03-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/56170
+	* include/ext/debug_allocator.h (debug_allocator): Add missing members
+	to meet allocator requirements.
+	* testsuite/ext/debug_allocator/56170.cc: New.
+
+2013-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56678
+	* include/std/chrono (__is_ratio): Uglify T.
+
 2013-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55977 (partial, std::vector and std::deque bits)

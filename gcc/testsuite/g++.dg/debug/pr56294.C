@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fno-ipa-sra -fcompare-debug" }
+// { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } }
 
 struct comp_cost { int cost; unsigned complexity; };
 struct cost_pair { struct iv_cand *cand; };

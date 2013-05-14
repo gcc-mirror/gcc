@@ -78,6 +78,7 @@ extern char *neon_output_shift_immediate (const char *, char, rtx *,
 extern void neon_pairwise_reduce (rtx, rtx, enum machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
 extern rtx neon_make_constant (rtx);
+extern tree arm_builtin_vectorized_function (tree, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void neon_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
@@ -117,6 +118,7 @@ extern rtx arm_gen_load_multiple (int *, int, rtx, int, rtx, HOST_WIDE_INT *);
 extern rtx arm_gen_store_multiple (int *, int, rtx, int, rtx, HOST_WIDE_INT *);
 extern bool offset_ok_for_ldrd_strd (HOST_WIDE_INT);
 extern bool operands_ok_ldrd_strd (rtx, rtx, rtx, HOST_WIDE_INT, bool, bool);
+extern bool gen_operands_ldrd_strd (rtx *, bool, bool, bool);
 extern int arm_gen_movmemqi (rtx *);
 extern enum machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
 extern enum machine_mode arm_select_dominance_cc_mode (rtx, rtx,
@@ -269,6 +271,8 @@ struct tune_params
   bool logical_op_non_short_circuit[2];
   /* Vectorizer costs.  */
   const struct cpu_vec_costs* vec_costs;
+  /* Prefer Neon for 64-bit bitops.  */
+  bool prefer_neon_for_64bits;
 };
 
 extern const struct tune_params *current_tune;

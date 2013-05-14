@@ -34,11 +34,6 @@ static int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 static int neg_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
 
-static int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-				 bool);
-
 static int mul_double_wide_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				      unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				      unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
@@ -46,11 +41,7 @@ static int mul_double_wide_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				      bool);
 
 #define mul_double(l1,h1,l2,h2,lv,hv) \
-  mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
-
-static void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			   HOST_WIDE_INT, unsigned int,
-			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
+  mul_double_wide_with_sign (l1, h1, l2, h2, lv, hv, NULL, NULL, false)
 
 static int div_and_round_double (unsigned, int, unsigned HOST_WIDE_INT,
 				 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
@@ -158,25 +149,13 @@ neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
     }
 }
 
-/* Multiply two doubleword integers with doubleword result.
+/* Multiply two doubleword integers with quadword result.
    Return nonzero if the operation overflows according to UNSIGNED_P.
    Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
-   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
-
-static int
-mul_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-		      unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
-		      unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
-		      bool unsigned_p)
-{
-  unsigned HOST_WIDE_INT toplow;
-  HOST_WIDE_INT tophigh;
-
-  return mul_double_wide_with_sign (l1, h1, l2, h2,
-				    lv, hv, &toplow, &tophigh,
-				    unsigned_p);
-}
+   The value is stored as four `HOST_WIDE_INT' pieces in *LV and *HV,
+   *LW and *HW.
+   If lw is NULL then only the low part and no overflow is computed.  */
 
 static int
 mul_double_wide_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
@@ -215,6 +194,11 @@ mul_double_wide_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
     }
 
   decode (prod, lv, hv);
+
+  /* We are not interested in the wide part nor in overflow.  */
+  if (lw == NULL)
+    return 0;
+
   decode (prod + 4, lw, hw);
 
   /* Unsigned overflow is immediate.  */
@@ -306,16 +290,10 @@ rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 
 static void
 lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-	       HOST_WIDE_INT count, unsigned int prec,
-	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, bool arith)
+	       unsigned HOST_WIDE_INT count, unsigned int prec,
+	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
   unsigned HOST_WIDE_INT signmask;
-
-  if (count < 0)
-    {
-      rshift_double (l1, h1, absu_hwi (count), prec, lv, hv, arith);
-      return;
-    }
 
   if (SHIFT_COUNT_TRUNCATED)
     count %= prec;
@@ -832,6 +810,15 @@ double_int::operator * (double_int b) const
   return ret;
 }
 
+/* Multiplies *this with B and returns a reference to *this.  */
+
+double_int &
+double_int::operator *= (double_int b)
+{
+  mul_double (low, high, b.low, b.high, &low, &high);
+  return *this;
+}
+
 /* Returns A * B. If the operation overflows according to UNSIGNED_P,
    *OVERFLOW is set to nonzero.  */
 
@@ -839,9 +826,10 @@ double_int
 double_int::mul_with_sign (double_int b, bool unsigned_p, bool *overflow) const
 {
   const double_int &a = *this;
-  double_int ret;
-  *overflow = mul_double_with_sign (a.low, a.high, b.low, b.high,
-                                    &ret.low, &ret.high, unsigned_p);
+  double_int ret, tem;
+  *overflow = mul_double_wide_with_sign (a.low, a.high, b.low, b.high,
+					 &ret.low, &ret.high,
+					 &tem.low, &tem.high, unsigned_p);
   return ret;
 }
 
@@ -869,6 +857,16 @@ double_int::operator + (double_int b) const
   return ret;
 }
 
+/* Adds B to *this and returns a reference to *this.  */
+
+double_int &
+double_int::operator += (double_int b)
+{
+  add_double (low, high, b.low, b.high, &low, &high);
+  return *this;
+}
+
+
 /* Returns A + B. If the operation overflows according to UNSIGNED_P,
    *OVERFLOW is set to nonzero.  */
 
@@ -893,6 +891,17 @@ double_int::operator - (double_int b) const
   add_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
   return ret;
 }
+
+/* Subtracts B from *this and returns a reference to *this.  */
+
+double_int &
+double_int::operator -= (double_int b)
+{
+  neg_double (b.low, b.high, &b.low, &b.high);
+  add_double (low, high, b.low, b.high, &low, &high);
+  return *this;
+}
+
 
 /* Returns A - B. If the operation overflows via inconsistent sign bits,
    *OVERFLOW is set to nonzero.  */
@@ -1076,6 +1085,70 @@ double_int::trailing_zeros () const
   return bits;
 }
 
+/* Shift A left by COUNT places.  */
+
+double_int
+double_int::lshift (HOST_WIDE_INT count) const
+{
+  double_int ret;
+
+  gcc_checking_assert (count >= 0);
+
+  if (count >= HOST_BITS_PER_DOUBLE_INT)
+    {
+      /* Shifting by the host word size is undefined according to the
+	 ANSI standard, so we must handle this as a special case.  */
+      ret.high = 0;
+      ret.low = 0;
+    }
+  else if (count >= HOST_BITS_PER_WIDE_INT)
+    {
+      ret.high = low << (count - HOST_BITS_PER_WIDE_INT);
+      ret.low = 0;
+    }
+  else
+    {
+      ret.high = (((unsigned HOST_WIDE_INT) high << count)
+	     | (low >> (HOST_BITS_PER_WIDE_INT - count - 1) >> 1));
+      ret.low = low << count;
+    }
+
+  return ret;
+}
+
+/* Shift A right by COUNT places.  */
+
+double_int
+double_int::rshift (HOST_WIDE_INT count) const
+{
+  double_int ret;
+
+  gcc_checking_assert (count >= 0);
+
+  if (count >= HOST_BITS_PER_DOUBLE_INT)
+    {
+      /* Shifting by the host word size is undefined according to the
+	 ANSI standard, so we must handle this as a special case.  */
+      ret.high = 0;
+      ret.low = 0;
+    }
+  else if (count >= HOST_BITS_PER_WIDE_INT)
+    {
+      ret.high = 0;
+      ret.low
+	= (unsigned HOST_WIDE_INT) (high >> (count - HOST_BITS_PER_WIDE_INT));
+    }
+  else
+    {
+      ret.high = high >> count;
+      ret.low = ((low >> count)
+		 | ((unsigned HOST_WIDE_INT) high
+		    << (HOST_BITS_PER_WIDE_INT - count - 1) << 1));
+    }
+
+  return ret;
+}
+
 /* Shift A left by COUNT places keeping only PREC bits of result.  Shift
    right if COUNT is negative.  ARITH true specifies arithmetic shifting;
    otherwise use logical shift.  */
@@ -1083,9 +1156,11 @@ double_int::trailing_zeros () const
 double_int
 double_int::lshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const
 {
-  const double_int &a = *this;
   double_int ret;
-  lshift_double (a.low, a.high, count, prec, &ret.low, &ret.high, arith);
+  if (count > 0)
+    lshift_double (low, high, count, prec, &ret.low, &ret.high);
+  else
+    rshift_double (low, high, absu_hwi (count), prec, &ret.low, &ret.high, arith);
   return ret;
 }
 
@@ -1096,9 +1171,11 @@ double_int::lshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const
 double_int
 double_int::rshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const
 {
-  const double_int &a = *this;
   double_int ret;
-  lshift_double (a.low, a.high, -count, prec, &ret.low, &ret.high, arith);
+  if (count > 0)
+    rshift_double (low, high, count, prec, &ret.low, &ret.high, arith);
+  else
+    lshift_double (low, high, absu_hwi (count), prec, &ret.low, &ret.high);
   return ret;
 }
 
@@ -1109,7 +1186,10 @@ double_int
 double_int::alshift (HOST_WIDE_INT count, unsigned int prec) const
 {
   double_int r;
-  lshift_double (low, high, count, prec, &r.low, &r.high, true);
+  if (count > 0)
+    lshift_double (low, high, count, prec, &r.low, &r.high);
+  else
+    rshift_double (low, high, absu_hwi (count), prec, &r.low, &r.high, true);
   return r;
 }
 
@@ -1120,7 +1200,10 @@ double_int
 double_int::arshift (HOST_WIDE_INT count, unsigned int prec) const
 {
   double_int r;
-  lshift_double (low, high, -count, prec, &r.low, &r.high, true);
+  if (count > 0)
+    rshift_double (low, high, count, prec, &r.low, &r.high, true);
+  else
+    lshift_double (low, high, absu_hwi (count), prec, &r.low, &r.high);
   return r;
 }
 
@@ -1131,7 +1214,10 @@ double_int
 double_int::llshift (HOST_WIDE_INT count, unsigned int prec) const
 {
   double_int r;
-  lshift_double (low, high, count, prec, &r.low, &r.high, false);
+  if (count > 0)
+    lshift_double (low, high, count, prec, &r.low, &r.high);
+  else
+    rshift_double (low, high, absu_hwi (count), prec, &r.low, &r.high, false);
   return r;
 }
 
@@ -1142,7 +1228,10 @@ double_int
 double_int::lrshift (HOST_WIDE_INT count, unsigned int prec) const
 {
   double_int r;
-  lshift_double (low, high, -count, prec, &r.low, &r.high, false);
+  if (count > 0)
+    rshift_double (low, high, count, prec, &r.low, &r.high, false);
+  else
+    lshift_double (low, high, absu_hwi (count), prec, &r.low, &r.high);
   return r;
 }
 
@@ -1158,8 +1247,8 @@ double_int::lrotate (HOST_WIDE_INT count, unsigned int prec) const
   if (count < 0)
     count += prec;
 
-  t1 = this->lshift (count, prec, false);
-  t2 = this->rshift (prec - count, prec, false);
+  t1 = this->llshift (count, prec);
+  t2 = this->lrshift (prec - count, prec);
 
   return t1 | t2;
 }
@@ -1176,8 +1265,8 @@ double_int::rrotate (HOST_WIDE_INT count, unsigned int prec) const
   if (count < 0)
     count += prec;
 
-  t1 = this->rshift (count, prec, false);
-  t2 = this->lshift (prec - count, prec, false);
+  t1 = this->lrshift (count, prec);
+  t2 = this->llshift (prec - count, prec);
 
   return t1 | t2;
 }

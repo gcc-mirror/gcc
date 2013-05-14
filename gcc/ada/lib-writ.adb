@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,6 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib.Util; use Lib.Util;
 with Lib.Xref; use Lib.Xref;
-               use Lib.Xref.Alfa;
 with Nlists;   use Nlists;
 with Gnatvsn;  use Gnatvsn;
 with Opt;      use Opt;
@@ -49,7 +48,6 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
 with Uname;    use Uname;
 
 with System.Case_Util; use System.Case_Util;
@@ -817,11 +815,11 @@ package body Lib.Writ is
                      Nkind (Unit (Cunit)) in N_Generic_Renaming_Declaration)
                     and then Generic_May_Lack_ALI (Fname))
 
-              --  In Alfa mode, always generate the dependencies on ALI
+              --  In SPARK mode, always generate the dependencies on ALI
               --  files, which are required to compute frame conditions
               --  of subprograms.
 
-              or else Alfa_Mode
+              or else SPARK_Mode
             then
                Write_Info_Tab (25);
 
@@ -1434,98 +1432,12 @@ package body Lib.Writ is
          SCO_Output;
       end if;
 
-      --  Output Alfa information if needed
+      --  Output SPARK cross-reference information if needed
 
-      if Opt.Xref_Active and then Alfa_Mode then
-         Collect_Alfa (Sdep_Table => Sdep_Table, Num_Sdep => Num_Sdep);
-         Output_Alfa;
-      end if;
-
-      --  Output target dependent information if needed
-
-      if Generate_Target_Dependent_Info then
-         Gen_TDI : declare
-            subtype Str4 is String (1 .. 4);
-
-            procedure Gen_TDI_Bool (Code : Str4; Val : Boolean);
-            --  Generate T line for Bool value
-
-            procedure Gen_TDI_Nat (Code : Str4; Val : Int);
-            --  Generate T line for Pos or Nat value
-
-            ------------------
-            -- Gen_TDI_Bool --
-            ------------------
-
-            procedure Gen_TDI_Bool (Code : Str4; Val : Boolean) is
-            begin
-               Write_Info_Initiate ('T');
-               Write_Info_Char (' ');
-               Write_Info_Str (Code);
-
-               if Val then
-                  Write_Info_Str (" TRUE");
-               else
-                  Write_Info_Str (" FALSE");
-               end if;
-
-               Write_Info_EOL;
-            end Gen_TDI_Bool;
-
-            -----------------
-            -- Gen_TDI_Nat --
-            -----------------
-
-            procedure Gen_TDI_Nat (Code : Str4; Val : Int) is
-            begin
-               Write_Info_Initiate ('T');
-               Write_Info_Char (' ');
-               Write_Info_Str (Code);
-               Write_Info_Char (' ');
-               Write_Info_Nat (Val);
-
-               Write_Info_EOL;
-            end Gen_TDI_Nat;
-
-         --  Start of processing for Gen_TDI
-
-         begin
-            Gen_TDI_Nat  ("SINS", Standard_Short_Short_Integer_Size);
-            Gen_TDI_Nat  ("SINW", Standard_Short_Short_Integer_Width);
-            Gen_TDI_Nat  ("SHIS", Standard_Short_Integer_Size);
-            Gen_TDI_Nat  ("SHIW", Standard_Short_Integer_Width);
-            Gen_TDI_Nat  ("INTS", Standard_Integer_Size);
-            Gen_TDI_Nat  ("INTW", Standard_Integer_Width);
-            Gen_TDI_Nat  ("LINS", Standard_Long_Integer_Size);
-            Gen_TDI_Nat  ("LINW", Standard_Long_Integer_Width);
-            Gen_TDI_Nat  ("LLIS", Standard_Long_Long_Integer_Size);
-            Gen_TDI_Nat  ("LLIW", Standard_Long_Long_Integer_Width);
-            Gen_TDI_Nat  ("SFLS", Standard_Short_Float_Size);
-            Gen_TDI_Nat  ("SFLD", Standard_Short_Float_Digits);
-            Gen_TDI_Nat  ("FLTS", Standard_Float_Size);
-            Gen_TDI_Nat  ("FLTD", Standard_Float_Digits);
-            Gen_TDI_Nat  ("LFLS", Standard_Long_Float_Size);
-            Gen_TDI_Nat  ("LFLD", Standard_Long_Float_Digits);
-            Gen_TDI_Nat  ("LLFS", Standard_Long_Long_Float_Size);
-            Gen_TDI_Nat  ("LLFD", Standard_Long_Long_Float_Digits);
-            Gen_TDI_Nat  ("CHAS", Standard_Character_Size);
-            Gen_TDI_Nat  ("WCHS", Standard_Wide_Character_Size);
-            Gen_TDI_Nat  ("WWCS", Standard_Wide_Wide_Character_Size);
-            Gen_TDI_Nat  ("ADRS", System_Address_Size);
-            Gen_TDI_Nat  ("MBMP", System_Max_Binary_Modulus_Power);
-            Gen_TDI_Nat  ("MNMP", System_Max_Nonbinary_Modulus_Power);
-            Gen_TDI_Nat  ("SUNI", System_Storage_Unit);
-            Gen_TDI_Nat  ("WRDS", System_Word_Size);
-            Gen_TDI_Nat  ("TICK", System_Tick_Nanoseconds);
-            Gen_TDI_Nat  ("WCTS", Interfaces_Wchar_T_Size);
-            Gen_TDI_Nat  ("MAXA", Maximum_Alignment);
-            Gen_TDI_Nat  ("ALLA", System_Allocator_Alignment);
-            Gen_TDI_Nat  ("MUNF", Max_Unaligned_Field);
-            Gen_TDI_Bool ("BEND", Bytes_Big_Endian);
-            Gen_TDI_Bool ("STRA", Target_Strict_Alignment);
-            Gen_TDI_Nat  ("DFLA", Target_Double_Float_Alignment);
-            Gen_TDI_Nat  ("DSCA", Target_Double_Scalar_Alignment);
-         end Gen_TDI;
+      if Opt.Xref_Active and then SPARK_Mode then
+         SPARK_Specific.Collect_SPARK_Xrefs (Sdep_Table => Sdep_Table,
+                                             Num_Sdep   => Num_Sdep);
+         SPARK_Specific.Output_SPARK_Xrefs;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

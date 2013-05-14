@@ -126,25 +126,20 @@ execute_fixup_cfg (void)
   edge e;
   edge_iterator ei;
 
-  if (ENTRY_BLOCK_PTR->count)
-    count_scale = ((cgraph_get_node (current_function_decl)->count
-		    * REG_BR_PROB_BASE + ENTRY_BLOCK_PTR->count / 2)
-		   / ENTRY_BLOCK_PTR->count);
-  else
-    count_scale = REG_BR_PROB_BASE;
+  count_scale
+      = GCOV_COMPUTE_SCALE (cgraph_get_node (current_function_decl)->count,
+                            ENTRY_BLOCK_PTR->count);
 
   ENTRY_BLOCK_PTR->count = cgraph_get_node (current_function_decl)->count;
-  EXIT_BLOCK_PTR->count = (EXIT_BLOCK_PTR->count * count_scale
-  			   + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
+  EXIT_BLOCK_PTR->count = apply_scale (EXIT_BLOCK_PTR->count,
+                                       count_scale);
 
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    e->count = (e->count * count_scale
-       + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
+    e->count = apply_scale (e->count, count_scale);
 
   FOR_EACH_BB (bb)
     {
-      bb->count = (bb->count * count_scale
-		   + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
+      bb->count = apply_scale (bb->count, count_scale);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
@@ -177,8 +172,7 @@ execute_fixup_cfg (void)
 	}
 
       FOR_EACH_EDGE (e, ei, bb->succs)
-        e->count = (e->count * count_scale
-		    + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
+        e->count = apply_scale (e->count, count_scale);
 
       /* If we have a basic block with no successors that does not
 	 end with a control statement or a noreturn call end it with
@@ -209,6 +203,10 @@ execute_fixup_cfg (void)
   /* Dump a textual representation of the flowgraph.  */
   if (dump_file)
     gimple_dump_cfg (dump_file, dump_flags);
+
+  if (current_loops
+      && (todo & TODO_cleanup_cfg))
+    loops_state_set (LOOPS_NEED_FIXUP);
 
   return todo;
 }

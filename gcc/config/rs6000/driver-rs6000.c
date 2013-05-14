@@ -190,7 +190,7 @@ elf_platform (void)
   return NULL;
 }
 
-/* Returns AT_PLATFORM if present, otherwise generic 32.  */
+/* Returns AT_DCACHEBSIZE if present, otherwise generic 32.  */
 
 static int
 elf_dcachebsize (void)

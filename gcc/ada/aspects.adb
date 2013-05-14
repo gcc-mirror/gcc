@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,36 @@ with Tree_IO;  use Tree_IO;
 with GNAT.HTable;           use GNAT.HTable;
 
 package body Aspects is
+
+   --  The following array indicates aspects that a subtype inherits from its
+   --  base type. True means that the subtype inherits the aspect from its base
+   --  type. False means it is not inherited.
+
+   Base_Aspect : constant array (Aspect_Id) of Boolean :=
+     (Aspect_Atomic                  => True,
+      Aspect_Atomic_Components       => True,
+      Aspect_Constant_Indexing       => True,
+      Aspect_Default_Iterator        => True,
+      Aspect_Discard_Names           => True,
+      Aspect_Independent_Components  => True,
+      Aspect_Iterator_Element        => True,
+      Aspect_Type_Invariant          => True,
+      Aspect_Unchecked_Union         => True,
+      Aspect_Variable_Indexing       => True,
+      Aspect_Volatile                => True,
+      others                         => False);
+
+   --  The following array indicates type aspects that are inherited and apply
+   --  to the class-wide type as well.
+
+   Inherited_Aspect : constant array (Aspect_Id) of Boolean :=
+     (Aspect_Constant_Indexing    => True,
+      Aspect_Default_Iterator     => True,
+      Aspect_Implicit_Dereference => True,
+      Aspect_Iterator_Element     => True,
+      Aspect_Remote_Types         => True,
+      Aspect_Variable_Indexing    => True,
+      others                      => False);
 
    procedure Set_Aspect_Specifications_No_Check (N : Node_Id; L : List_Id);
    --  Same as Set_Aspect_Specifications, but does not contain the assertion
@@ -110,6 +140,99 @@ package body Aspects is
       end if;
    end Aspect_Specifications;
 
+   -----------------
+   -- Find_Aspect --
+   -----------------
+
+   function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id is
+      Decl  : Node_Id;
+      Item  : Node_Id;
+      Owner : Entity_Id;
+      Spec  : Node_Id;
+
+   begin
+      Owner := Id;
+
+      --  Handle various cases of base or inherited aspects for types
+
+      if Is_Type (Id) then
+         if Base_Aspect (A) then
+            Owner := Base_Type (Owner);
+         end if;
+
+         if Is_Class_Wide_Type (Owner) and then Inherited_Aspect (A) then
+            Owner := Root_Type (Owner);
+         end if;
+
+         if Is_Private_Type (Owner) and then Present (Full_View (Owner)) then
+            Owner := Full_View (Owner);
+         end if;
+      end if;
+
+      --  Search the representation items for the desired aspect
+
+      Item := First_Rep_Item (Owner);
+      while Present (Item) loop
+         if Nkind (Item) = N_Aspect_Specification
+           and then Get_Aspect_Id (Item) = A
+         then
+            return Item;
+         end if;
+
+         Next_Rep_Item (Item);
+      end loop;
+
+      --  Note that not all aspects are added to the chain of representation
+      --  items. In such cases, search the list of aspect specifications. First
+      --  find the declaration node where the aspects reside. This is usually
+      --  the parent or the parent of the parent.
+
+      Decl := Parent (Owner);
+      if not Permits_Aspect_Specifications (Decl) then
+         Decl := Parent (Decl);
+      end if;
+
+      --  Search the list of aspect specifications for the desired aspect
+
+      if Permits_Aspect_Specifications (Decl) then
+         Spec := First (Aspect_Specifications (Decl));
+         while Present (Spec) loop
+            if Get_Aspect_Id (Spec) = A then
+               return Spec;
+            end if;
+
+            Next (Spec);
+         end loop;
+      end if;
+
+      --  The entity does not carry any aspects or the desired aspect was not
+      --  found.
+
+      return Empty;
+   end Find_Aspect;
+
+   --------------------------
+   -- Find_Value_Of_Aspect --
+   --------------------------
+
+   function Find_Value_Of_Aspect
+     (Id : Entity_Id;
+      A  : Aspect_Id) return Node_Id
+   is
+      Spec : constant Node_Id := Find_Aspect (Id, A);
+
+   begin
+      if Present (Spec) then
+         if A = Aspect_Default_Iterator then
+            return Expression (Aspect_Rep_Item (Spec));
+         else
+            return Expression (Spec);
+         end if;
+      end if;
+
+      return Empty;
+   end Find_Value_Of_Aspect;
+
    -------------------
    -- Get_Aspect_Id --
    -------------------
@@ -119,55 +242,20 @@ package body Aspects is
       return Aspect_Id_Hash_Table.Get (Name);
    end Get_Aspect_Id;
 
-   -----------------
-   -- Find_Aspect --
-   -----------------
-
-   function Find_Aspect (Ent : Entity_Id; A : Aspect_Id) return Node_Id is
-      Ritem : Node_Id;
-      Typ   : Entity_Id;
-
+   function Get_Aspect_Id (Aspect : Node_Id) return Aspect_Id is
    begin
+      pragma Assert (Nkind (Aspect) = N_Aspect_Specification);
+      return Aspect_Id_Hash_Table.Get (Chars (Identifier (Aspect)));
+   end Get_Aspect_Id;
 
-      --  If the aspect is an inherited one and the entity is a class-wide
-      --  type, use the aspect of the specific type. If the type is a base
-      --  aspect, examine the rep. items of the base type.
+   ----------------
+   -- Has_Aspect --
+   ----------------
 
-      if Is_Type (Ent) then
-         if Base_Aspect (A) then
-            Typ := Base_Type (Ent);
-         else
-            Typ := Ent;
-         end if;
-
-         if Is_Class_Wide_Type (Typ)
-           and then Inherited_Aspect (A)
-         then
-            Ritem := First_Rep_Item (Etype (Typ));
-         else
-            Ritem := First_Rep_Item (Typ);
-         end if;
-
-      else
-         Ritem := First_Rep_Item (Ent);
-      end if;
-
-      while Present (Ritem) loop
-         if Nkind (Ritem) = N_Aspect_Specification
-           and then Get_Aspect_Id (Chars (Identifier (Ritem))) = A
-         then
-            if A = Aspect_Default_Iterator then
-               return Expression (Aspect_Rep_Item (Ritem));
-            else
-               return Expression (Ritem);
-            end if;
-         end if;
-
-         Next_Rep_Item (Ritem);
-      end loop;
-
-      return Empty;
-   end Find_Aspect;
+   function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean is
+   begin
+      return Present (Find_Aspect (Id, A));
+   end Has_Aspect;
 
    ------------------
    -- Move_Aspects --
@@ -220,6 +308,7 @@ package body Aspects is
       N_Subprogram_Body                        => True,
       N_Subprogram_Declaration                 => True,
       N_Subprogram_Renaming_Declaration        => True,
+      N_Subprogram_Body_Stub                   => True,
       N_Subtype_Declaration                    => True,
       N_Task_Body                              => True,
       N_Task_Type_Declaration                  => True,
@@ -252,13 +341,13 @@ package body Aspects is
     Aspect_Compiler_Unit                => Aspect_Compiler_Unit,
     Aspect_Component_Size               => Aspect_Component_Size,
     Aspect_Constant_Indexing            => Aspect_Constant_Indexing,
-    Aspect_Contract_Case                => Aspect_Contract_Case,
     Aspect_Contract_Cases               => Aspect_Contract_Cases,
     Aspect_Convention                   => Aspect_Convention,
     Aspect_CPU                          => Aspect_CPU,
     Aspect_Default_Component_Value      => Aspect_Default_Component_Value,
     Aspect_Default_Iterator             => Aspect_Default_Iterator,
     Aspect_Default_Value                => Aspect_Default_Value,
+    Aspect_Depends                      => Aspect_Depends,
     Aspect_Dimension                    => Aspect_Dimension,
     Aspect_Dimension_System             => Aspect_Dimension_System,
     Aspect_Discard_Names                => Aspect_Discard_Names,

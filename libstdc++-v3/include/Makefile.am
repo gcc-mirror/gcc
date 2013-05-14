@@ -495,6 +495,7 @@ ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
+	${ext_srcdir}/aligned_buffer.h \
 	${ext_srcdir}/alloc_traits.h \
 	${ext_srcdir}/atomicity.h \
 	${ext_srcdir}/array_allocator.h \
@@ -787,6 +788,7 @@ profile_builddir = ./profile
 profile_headers = \
 	${profile_srcdir}/array \
 	${profile_srcdir}/base.h \
+	${profile_srcdir}/unordered_base.h \
 	${profile_srcdir}/unordered_map \
 	${profile_srcdir}/unordered_set \
 	${profile_srcdir}/vector \
@@ -1131,6 +1133,7 @@ ${host_builddir}/gthr.h: ${toplevel_srcdir}/libgcc/gthr.h stamp-${host_alias}
 	sed -e '/^#pragma/b' \
 	    -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCXX_\1/g' \
 	    -e 's/_GLIBCXX_SUPPORTS_WEAK/__GXX_WEAK__/g' \
+	    -e 's/_GLIBCXX___MINGW32_GLIBCXX___/__MINGW32__/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < $< > $@
 

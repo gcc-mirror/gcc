@@ -24,7 +24,7 @@ B::operator const A&() const {
         return a;
 }
 
-void f(A &a) { // { dg-error "" } in passing argument
+void f(A &a) { // { dg-message "" } in passing argument
         printf("A at %x is %d\n", &a, a.i);
 }
 

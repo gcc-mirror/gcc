@@ -98,7 +98,7 @@
 {
   if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
     return add_reg_operand (op, mode);
-  return satisfies_constraint_L (op);
+  return satisfies_constraint_L (op) || satisfies_constraint_CnL (op);
 })
 
 ;; Ordinary 3rd operand for arithmetic operations

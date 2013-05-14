@@ -79,6 +79,24 @@
 #undef	LINK_OS_DEFAULT_SPEC
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
+#undef  DEFAULT_ASM_ENDIAN
+#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#define DEFAULT_ASM_ENDIAN " -mlittle"
+#define LINK_OS_LINUX_EMUL ENDIAN_SELECT(" -m elf32ppclinux",	\
+					 " -m elf32lppclinux",	\
+					 " -m elf32lppclinux")
+#else
+#define DEFAULT_ASM_ENDIAN " -mbig"
+#define LINK_OS_LINUX_EMUL ENDIAN_SELECT(" -m elf32ppclinux",	\
+					 " -m elf32lppclinux",	\
+					 " -m elf32ppclinux")
+#endif
+
+#undef LINK_OS_LINUX_SPEC
+#define LINK_OS_LINUX_SPEC LINK_OS_LINUX_EMUL " %{!shared: %{!static: \
+  %{rdynamic:-export-dynamic} \
+  -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
+
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
 

@@ -1031,6 +1031,7 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   stmtblock_t block;
   gfc_se se;
   tree final_fndecl, array, size, tmp;
+  symbol_attribute attr;
 
   gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
   gcc_assert (var);
@@ -1040,6 +1041,8 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   final_fndecl = se.expr;
   if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
     final_fndecl = build_fold_indirect_ref_loc (input_location, final_fndecl);
+
+  attr = gfc_expr_attr (var);
 
   if (ts.type == BT_DERIVED)
     {
@@ -1052,8 +1055,12 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 
       gfc_init_se (&se, NULL);
       se.want_pointer = 1;
-      if (var->rank || gfc_expr_attr (var).dimension)
+      if (var->rank || attr.dimension
+	  || (attr.codimension && attr.allocatable
+	      && gfc_option.coarray == GFC_FCOARRAY_LIB))
 	{
+	  if (var->rank == 0)
+	    se.want_coarray = 1;
 	  se.descriptor_only = 1;
 	  gfc_conv_expr_descriptor (&se, var);
 	  array = se.expr;
@@ -1062,7 +1069,6 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 	}
       else
 	{
-	  symbol_attribute attr;
 	  gfc_clear_attr (&attr);
 	  gfc_conv_expr (&se, var);
 	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
@@ -1087,22 +1093,25 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
       size = se.expr;
 
       array_expr = gfc_copy_expr (var);
-      gfc_add_data_component (array_expr);
       gfc_init_se (&se, NULL);
       se.want_pointer = 1;
-      if (array_expr->rank || gfc_expr_attr (array_expr).dimension)
+      if (array_expr->rank || attr.dimension
+	  || (attr.codimension && attr.allocatable
+	      && gfc_option.coarray == GFC_FCOARRAY_LIB))
 	{
+	  gfc_add_class_array_ref (array_expr);
+	  if (array_expr->rank == 0)
+	    se.want_coarray = 1;
 	  se.descriptor_only = 1;
-	  gfc_conv_expr_descriptor (&se, var);
+	  gfc_conv_expr_descriptor (&se, array_expr);
 	  array = se.expr;
 	  if (! POINTER_TYPE_P (TREE_TYPE (array)))
 	    array = gfc_build_addr_expr (NULL, array);
 	}
       else
 	{
-	  symbol_attribute attr;
-
 	  gfc_clear_attr (&attr);
+	  gfc_add_data_component (array_expr);
 	  gfc_conv_expr (&se, array_expr);
 	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
 	  array = se.expr;

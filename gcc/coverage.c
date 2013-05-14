@@ -967,6 +967,32 @@ build_info (tree info_type, tree fn_ary)
   return build_constructor (info_type, v1);
 }
 
+/* Generate the constructor function to call __gcov_init.  */
+
+static void
+build_init_ctor (tree gcov_info_type)
+{
+  tree ctor, stmt, init_fn;
+
+  /* Build a decl for __gcov_init.  */
+  init_fn = build_pointer_type (gcov_info_type);
+  init_fn = build_function_type_list (void_type_node, init_fn, NULL);
+  init_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			get_identifier ("__gcov_init"), init_fn);
+  TREE_PUBLIC (init_fn) = 1;
+  DECL_EXTERNAL (init_fn) = 1;
+  DECL_ASSEMBLER_NAME (init_fn);
+
+  /* Generate a call to __gcov_init(&gcov_info).  */
+  ctor = NULL;
+  stmt = build_fold_addr_expr (gcov_info_var);
+  stmt = build_call_expr (init_fn, 1, stmt);
+  append_to_statement_list (stmt, &ctor);
+
+  /* Generate a constructor to run it.  */
+  cgraph_build_static_cdtor ('I', ctor, DEFAULT_INIT_PRIORITY);
+}
+
 /* Create the gcov_info types and object.  Generate the constructor
    function to call __gcov_init.  Does not generate the initializer
    for the object.  Returns TRUE if coverage data is being emitted.  */
@@ -974,7 +1000,7 @@ build_info (tree info_type, tree fn_ary)
 static bool
 coverage_obj_init (void)
 {
-  tree gcov_info_type, ctor, stmt, init_fn;
+  tree gcov_info_type;
   unsigned n_counters = 0;
   unsigned ix;
   struct coverage_data *fn;
@@ -1020,23 +1046,7 @@ coverage_obj_init (void)
   ASM_GENERATE_INTERNAL_LABEL (name_buf, "LPBX", 0);
   DECL_NAME (gcov_info_var) = get_identifier (name_buf);
 
-  /* Build a decl for __gcov_init.  */
-  init_fn = build_pointer_type (gcov_info_type);
-  init_fn = build_function_type_list (void_type_node, init_fn, NULL);
-  init_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
-			get_identifier ("__gcov_init"), init_fn);
-  TREE_PUBLIC (init_fn) = 1;
-  DECL_EXTERNAL (init_fn) = 1;
-  DECL_ASSEMBLER_NAME (init_fn);
-
-  /* Generate a call to __gcov_init(&gcov_info).  */
-  ctor = NULL;
-  stmt = build_fold_addr_expr (gcov_info_var);
-  stmt = build_call_expr (init_fn, 1, stmt);
-  append_to_statement_list (stmt, &ctor);
-
-  /* Generate a constructor to run it.  */
-  cgraph_build_static_cdtor ('I', ctor, DEFAULT_INIT_PRIORITY);
+  build_init_ctor (gcov_info_type);
 
   return true;
 }

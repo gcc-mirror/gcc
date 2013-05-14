@@ -191,7 +191,7 @@ varpool_add_new_variable (tree decl)
   struct varpool_node *node;
   varpool_finalize_decl (decl);
   node = varpool_node_for_decl (decl);
-  if (varpool_externally_visible_p (node, false))
+  if (varpool_externally_visible_p (node))
     node->symbol.externally_visible = true;
 }
 

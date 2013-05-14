@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,13 +54,14 @@ package Hostparm is
    Normalized_CWD : constant String := "." & Direct_Separator;
    --  Normalized string to access current directory
 
-   Max_Line_Length : constant := Types.Column_Number'Pred
-                       (Types.Column_Number'Last);
+   Max_Line_Length : constant :=
+     Types.Column_Number'Pred (Types.Column_Number'Last);
    --  Maximum source line length. By default we set it to the maximum
    --  value that can be supported, which is given by the range of the
    --  Column_Number type. We subtract 1 because need to be able to
    --  have a valid Column_Number equal to Max_Line_Length to represent
    --  the location of a "line too long" error.
+   --
    --  200 is the minimum value required (RM 2.2(15)). The value set here
    --  can be reduced by the explicit use of the -gnatyM style switch.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1252,6 +1252,7 @@ procedure Gnatls is
    procedure Scan_Ls_Arg (Argv : String) is
       FD  : File_Descriptor;
       Len : Integer;
+      OK  : Boolean;
 
    begin
       pragma Assert (Argv'First = 1);
@@ -1260,6 +1261,7 @@ procedure Gnatls is
          return;
       end if;
 
+      OK := True;
       if Argv (1) = '-' then
          if Argv'Length = 1 then
             Fail ("switch character cannot be followed by a blank");
@@ -1297,6 +1299,11 @@ procedure Gnatls is
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aL" then
             Add_Lib_Dir (Argv (4 .. Argv'Last));
 
+         --  Processing for -aP<dir>
+
+         elsif Argv'Length > 3 and then Argv (1 .. 3) = "-aP" then
+            Add_Directories (Prj_Path, Argv (4 .. Argv'Last));
+
          --  Processing for -nostdinc
 
          elsif Argv (2 .. Argv'Last) = "nostdinc" then
@@ -1316,7 +1323,7 @@ procedure Gnatls is
                when 'l' => License                   := True;
                when 'V' => Very_Verbose_Mode         := True;
 
-               when others => null;
+               when others => OK := False;
             end case;
 
          --  Processing for -files=file
@@ -1396,6 +1403,9 @@ procedure Gnatls is
                Opt.No_Stdinc := True;
                Opt.RTS_Switch := True;
             end if;
+
+         else
+            OK := False;
          end if;
 
       --  If not a switch, it must be a file name
@@ -1403,6 +1413,13 @@ procedure Gnatls is
       else
          Add_File (Argv);
       end if;
+
+      if not OK then
+         Write_Str ("warning: unknown switch """);
+         Write_Str (Argv);
+         Write_Line ("""");
+      end if;
+
    end Scan_Ls_Arg;
 
    -----------
@@ -1482,6 +1499,11 @@ procedure Gnatls is
       --  Line for -aO switch
 
       Write_Str ("  -aOdir     specify object files search path");
+      Write_Eol;
+
+      --  Line for -aP switch
+
+      Write_Str ("  -aPdir     specify project search path");
       Write_Eol;
 
       --  Line for -I switch

@@ -195,9 +195,9 @@ match gfc_match_volatile (void);
 /* Fortran 2003 c interop.
    TODO: some of these should be moved to another file rather than decl.c */
 void set_com_block_bind_c (gfc_common_head *, int);
-gfc_try set_verify_bind_c_sym (gfc_symbol *, int);
-gfc_try set_verify_bind_c_com_block (gfc_common_head *, int);
-gfc_try get_bind_c_idents (void);
+bool set_verify_bind_c_sym (gfc_symbol *, int);
+bool set_verify_bind_c_com_block (gfc_common_head *, int);
+bool get_bind_c_idents (void);
 match gfc_match_bind_c_stmt (void);
 match gfc_match_suffix (gfc_symbol *, gfc_symbol **);
 match gfc_match_bind_c (gfc_symbol *, bool);
@@ -213,7 +213,7 @@ match gfc_match_literal_constant (gfc_expr **, int);
 /* expr.c -- FIXME: this one should be eliminated by moving the
    matcher to matchexp.c and a call to a new function in expr.c that
    only makes sure the init expr. is valid.  */
-gfc_try gfc_reduce_init_expr (gfc_expr *expr);
+bool gfc_reduce_init_expr (gfc_expr *expr);
 match gfc_match_init_expr (gfc_expr **);
 
 /* array.c.  */

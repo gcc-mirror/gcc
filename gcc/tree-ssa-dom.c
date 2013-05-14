@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
@@ -101,15 +102,6 @@ struct edge_info
   vec<cond_equivalence> cond_equivalences;
 };
 
-/* Hash table with expressions made available during the renaming process.
-   When an assignment of the form X_i = EXPR is found, the statement is
-   stored in this table.  If the same expression EXPR is later found on the
-   RHS of another statement, it is replaced with X_i (thus performing
-   global redundancy elimination).  Similarly as we pass through conditionals
-   we record the conditional itself as having either a true or false value
-   in this table.  */
-static htab_t avail_exprs;
-
 /* Stack of available expressions in AVAIL_EXPRs.  Each block pushes any
    expressions it enters into the hash table along with a marker entry
    (null).  When we finish processing the block, we pop off entries and
@@ -140,6 +132,81 @@ struct expr_hash_elt
   struct expr_hash_elt *stamp;
 };
 
+/* Hashtable helpers.  */
+
+static bool hashable_expr_equal_p (const struct hashable_expr *,
+				   const struct hashable_expr *);
+static void free_expr_hash_elt (void *);
+
+struct expr_elt_hasher
+{
+  typedef expr_hash_elt value_type;
+  typedef expr_hash_elt compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
+
+inline hashval_t
+expr_elt_hasher::hash (const value_type *p)
+{
+  return p->hash;
+}
+
+inline bool
+expr_elt_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  gimple stmt1 = p1->stmt;
+  const struct hashable_expr *expr1 = &p1->expr;
+  const struct expr_hash_elt *stamp1 = p1->stamp;
+  gimple stmt2 = p2->stmt;
+  const struct hashable_expr *expr2 = &p2->expr;
+  const struct expr_hash_elt *stamp2 = p2->stamp;
+
+  /* This case should apply only when removing entries from the table.  */
+  if (stamp1 == stamp2)
+    return true;
+
+  /* FIXME tuples:
+     We add stmts to a hash table and them modify them. To detect the case
+     that we modify a stmt and then search for it, we assume that the hash
+     is always modified by that change.
+     We have to fully check why this doesn't happen on trunk or rewrite
+     this in a more  reliable (and easier to understand) way. */
+  if (((const struct expr_hash_elt *)p1)->hash
+      != ((const struct expr_hash_elt *)p2)->hash)
+    return false;
+
+  /* In case of a collision, both RHS have to be identical and have the
+     same VUSE operands.  */
+  if (hashable_expr_equal_p (expr1, expr2)
+      && types_compatible_p (expr1->type, expr2->type))
+    {
+      /* Note that STMT1 and/or STMT2 may be NULL.  */
+      return ((stmt1 ? gimple_vuse (stmt1) : NULL_TREE)
+	      == (stmt2 ? gimple_vuse (stmt2) : NULL_TREE));
+    }
+
+  return false;
+}
+
+/* Delete an expr_hash_elt and reclaim its storage.  */
+
+inline void
+expr_elt_hasher::remove (value_type *element)
+{
+  free_expr_hash_elt (element);
+}
+
+/* Hash table with expressions made available during the renaming process.
+   When an assignment of the form X_i = EXPR is found, the statement is
+   stored in this table.  If the same expression EXPR is later found on the
+   RHS of another statement, it is replaced with X_i (thus performing
+   global redundancy elimination).  Similarly as we pass through conditionals
+   we record the conditional itself as having either a true or false value
+   in this table.  */
+static hash_table <expr_elt_hasher> avail_exprs;
+
 /* Stack of dest,src pairs that need to be restored during finalization.
 
    A NULL entry is used to mark the end of pairs which need to be
@@ -169,9 +236,7 @@ static struct opt_stats_d opt_stats;
 static void optimize_stmt (basic_block, gimple_stmt_iterator);
 static tree lookup_avail_expr (gimple, bool);
 static hashval_t avail_expr_hash (const void *);
-static hashval_t real_avail_expr_hash (const void *);
-static int avail_expr_eq (const void *, const void *);
-static void htab_statistics (FILE *, htab_t);
+static void htab_statistics (FILE *, hash_table <expr_elt_hasher>);
 static void record_cond (cond_equivalence *);
 static void record_const_or_copy (tree, tree);
 static void record_equality (tree, tree);
@@ -722,7 +787,7 @@ tree_ssa_dominator_optimize (void)
   memset (&opt_stats, 0, sizeof (opt_stats));
 
   /* Create our hash tables.  */
-  avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free_expr_hash_elt);
+  avail_exprs.create (1024);
   avail_exprs_stack.create (20);
   const_and_copies_stack.create (20);
   need_eh_cleanup = BITMAP_ALLOC (NULL);
@@ -830,7 +895,7 @@ tree_ssa_dominator_optimize (void)
   loop_optimizer_finalize ();
 
   /* Delete our main hashtable.  */
-  htab_delete (avail_exprs);
+  avail_exprs.dispose ();
 
   /* And finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
@@ -935,7 +1000,7 @@ remove_local_expressions_from_table (void)
   while (avail_exprs_stack.length () > 0)
     {
       expr_hash_elt_t victim = avail_exprs_stack.pop ();
-      void **slot;
+      expr_hash_elt **slot;
 
       if (victim == NULL)
 	break;
@@ -949,10 +1014,9 @@ remove_local_expressions_from_table (void)
           print_expr_hash_elt (dump_file, victim);
         }
 
-      slot = htab_find_slot_with_hash (avail_exprs,
-				       victim, victim->hash, NO_INSERT);
-      gcc_assert (slot && *slot == (void *) victim);
-      htab_clear_slot (avail_exprs, slot);
+      slot = avail_exprs.find_slot_with_hash (victim, victim->hash, NO_INSERT);
+      gcc_assert (slot && *slot == victim);
+      avail_exprs.clear_slot (slot);
     }
 }
 
@@ -1135,6 +1199,39 @@ record_equivalences_from_incoming_edge (basic_block bb)
 	  if (lhs)
 	    record_equality (lhs, rhs);
 
+	  /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
+	     set via a widening type conversion, then we may be able to record
+	     additional equivalences.  */
+	  if (lhs
+	      && TREE_CODE (lhs) == SSA_NAME
+	      && is_gimple_constant (rhs)
+	      && TREE_CODE (rhs) == INTEGER_CST)
+	    {
+	      gimple defstmt = SSA_NAME_DEF_STMT (lhs);
+
+	      if (defstmt
+		  && is_gimple_assign (defstmt)
+		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (defstmt)))
+		{
+		  tree old_rhs = gimple_assign_rhs1 (defstmt);
+
+		  /* If the conversion widens the original value and
+		     the constant is in the range of the type of OLD_RHS,
+		     then convert the constant and record the equivalence. 
+
+		     Note that int_fits_type_p does not check the precision
+		     if the upper and lower bounds are OK.  */
+		  if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
+		      && (TYPE_PRECISION (TREE_TYPE (lhs))
+			  > TYPE_PRECISION (TREE_TYPE (old_rhs)))
+		      && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
+		    {
+		      tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
+		      record_equality (old_rhs, newval);
+		    }
+		}
+	    }
+
 	  for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
 	    record_cond (eq);
 	}
@@ -1170,12 +1267,12 @@ debug_dominator_optimization_stats (void)
 /* Dump statistics for the hash table HTAB.  */
 
 static void
-htab_statistics (FILE *file, htab_t htab)
+htab_statistics (FILE *file, hash_table <expr_elt_hasher> htab)
 {
   fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-	   (long) htab_size (htab),
-	   (long) htab_elements (htab),
-	   htab_collisions (htab));
+	   (long) htab.size (),
+	   (long) htab.elements (),
+	   htab.collisions ());
 }
 
 
@@ -1187,15 +1284,14 @@ static void
 record_cond (cond_equivalence *p)
 {
   struct expr_hash_elt *element = XCNEW (struct expr_hash_elt);
-  void **slot;
+  expr_hash_elt **slot;
 
   initialize_hash_element_from_expr (&p->cond, p->value, element);
 
-  slot = htab_find_slot_with_hash (avail_exprs, (void *)element,
-				   element->hash, INSERT);
+  slot = avail_exprs.find_slot_with_hash (element, element->hash, INSERT);
   if (*slot == NULL)
     {
-      *slot = (void *) element;
+      *slot = element;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
         {
@@ -2371,7 +2467,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 static tree
 lookup_avail_expr (gimple stmt, bool insert)
 {
-  void **slot;
+  expr_hash_elt **slot;
   tree lhs;
   tree temp;
   struct expr_hash_elt element;
@@ -2399,8 +2495,8 @@ lookup_avail_expr (gimple stmt, bool insert)
     return NULL_TREE;
 
   /* Finally try to find the expression in the main expression hash table.  */
-  slot = htab_find_slot_with_hash (avail_exprs, &element, element.hash,
-				   (insert ? INSERT : NO_INSERT));
+  slot = avail_exprs.find_slot_with_hash (&element, element.hash,
+					  (insert ? INSERT : NO_INSERT));
   if (slot == NULL)
     {
       free_expr_hash_elt_contents (&element);
@@ -2411,7 +2507,7 @@ lookup_avail_expr (gimple stmt, bool insert)
       struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
       *element2 = element;
       element2->stamp = element2;
-      *slot = (void *) element2;
+      *slot = element2;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
         {
@@ -2476,49 +2572,6 @@ avail_expr_hash (const void *p)
     val = iterative_hash_expr (vuse, val);
 
   return val;
-}
-
-static hashval_t
-real_avail_expr_hash (const void *p)
-{
-  return ((const struct expr_hash_elt *)p)->hash;
-}
-
-static int
-avail_expr_eq (const void *p1, const void *p2)
-{
-  gimple stmt1 = ((const struct expr_hash_elt *)p1)->stmt;
-  const struct hashable_expr *expr1 = &((const struct expr_hash_elt *)p1)->expr;
-  const struct expr_hash_elt *stamp1 = ((const struct expr_hash_elt *)p1)->stamp;
-  gimple stmt2 = ((const struct expr_hash_elt *)p2)->stmt;
-  const struct hashable_expr *expr2 = &((const struct expr_hash_elt *)p2)->expr;
-  const struct expr_hash_elt *stamp2 = ((const struct expr_hash_elt *)p2)->stamp;
-
-  /* This case should apply only when removing entries from the table.  */
-  if (stamp1 == stamp2)
-    return true;
-
-  /* FIXME tuples:
-     We add stmts to a hash table and them modify them. To detect the case
-     that we modify a stmt and then search for it, we assume that the hash
-     is always modified by that change.
-     We have to fully check why this doesn't happen on trunk or rewrite
-     this in a more  reliable (and easier to understand) way. */
-  if (((const struct expr_hash_elt *)p1)->hash
-      != ((const struct expr_hash_elt *)p2)->hash)
-    return false;
-
-  /* In case of a collision, both RHS have to be identical and have the
-     same VUSE operands.  */
-  if (hashable_expr_equal_p (expr1, expr2)
-      && types_compatible_p (expr1->type, expr2->type))
-    {
-      /* Note that STMT1 and/or STMT2 may be NULL.  */
-      return ((stmt1 ? gimple_vuse (stmt1) : NULL_TREE)
-	      == (stmt2 ? gimple_vuse (stmt2) : NULL_TREE));
-    }
-
-  return false;
 }
 
 /* PHI-ONLY copy and constant propagation.  This pass is meant to clean
@@ -3043,7 +3096,6 @@ struct gimple_opt_pass pass_phi_only_cprop =
   0,		                        /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_cleanup_cfg
-    | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_verify_stmts
     | TODO_update_ssa			/* todo_flags_finish */

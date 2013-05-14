@@ -43,32 +43,32 @@ along with GCC; see the file COPYING3.	If not see
 
    Here is block diagram of LRA passes:
 
-	  ---------------------
-	 | Undo inheritance    |      ---------------	     ---------------
-	 | for spilled pseudos)|     | Memory-memory |	    | New (and old) |
-	 | and splits (for     |<----| move coalesce |<-----|	 pseudos    |
-	 | pseudos got the     |      ---------------	    |	assignment  |
-  Start	 |  same  hard regs)   |			     ---------------
-    |	  ---------------------					    ^
-    V		  |		 ----------------		    |
- -----------	  V		| Update virtual |		    |
-|  Remove   |----> ------------>|    register	 |		    |
-| scratches |	  ^		|  displacements |		    |
- -----------	  |		 ----------------		    |
-		  |			 |			    |
-		  |			 V	   New		    |
-	 ----------------    No	   ------------	 pseudos   -------------------
-	| Spilled pseudo | change |Constraints:| or insns | Inheritance/split |
-	|    to memory	 |<-------|    RTL     |--------->|  transformations  |
-	|  substitution	 |	  | transfor-  |	  |    in EBB scope   |
-	 ----------------	  |  mations   |	   -------------------
-		|		    ------------
-		V
+                                ---------------------
+           ---------------     | Undo inheritance    |     ---------------
+          | Memory-memory |    | for spilled pseudos)|    | New (and old) |
+          | move coalesce |<---| and splits (for     |<-- |   pseudos     |
+           ---------------     | pseudos got the     |    |  assignment   |
+  Start           |            |  same  hard regs)   |     ---------------
+    |             |             ---------------------               ^
+    V             |              ----------------                   |
+ -----------      V             | Update virtual |                  |
+|  Remove   |----> ------------>|    register    |                  |
+| scratches |     ^             |  displacements |                  |
+ -----------      |              ----------------                   |
+                  |                      |                          |
+                  |                      V         New              |
+         ----------------    No    ------------  pseudos   -------------------
+        | Spilled pseudo | change |Constraints:| or insns | Inheritance/split |
+        |    to memory   |<-------|    RTL     |--------->|  transformations  |
+        |  substitution  |        | transfor-  |          |    in EBB scope   |
+         ----------------         |  mations   |           -------------------
+                |                   ------------
+                V
     -------------------------
    | Hard regs substitution, |
    |  devirtalization, and   |------> Finish
    | restoring scratches got |
-   |	     memory	     |
+   |         memory          |
     -------------------------
 
    To speed up the process:
@@ -194,7 +194,7 @@ lra_create_new_reg (enum machine_mode md_mode, rtx original,
   new_reg
     = lra_create_new_reg_with_unique_value (md_mode, original, rclass, title);
   if (original != NULL_RTX && REG_P (original))
-    lra_reg_info[REGNO (new_reg)].val = lra_reg_info[REGNO (original)].val;
+    lra_assign_reg_val (REGNO (original), REGNO (new_reg));
   return new_reg;
 }
 
@@ -1392,6 +1392,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].last_reload = 0;
   lra_reg_info[i].restore_regno = -1;
   lra_reg_info[i].val = get_new_reg_value ();
+  lra_reg_info[i].offset = 0;
   lra_reg_info[i].copies = NULL;
 }
 
@@ -1619,18 +1620,10 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
 static int
 get_insn_freq (rtx insn)
 {
-  basic_block bb;
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
-  if ((bb = BLOCK_FOR_INSN (insn)) != NULL)
-    return REG_FREQ_FROM_BB (bb);
-  else
-    {
-      lra_assert (lra_insn_recog_data[INSN_UID (insn)]
-		  ->insn_static_data->n_operands == 0);
-      /* We don't care about such insn, e.g. it might be jump with
-	 addr_vec.  */
-      return 1;
-    }
+  gcc_checking_assert (bb != NULL);
+  return REG_FREQ_FROM_BB (bb);
 }
 
 /* Invalidate all reg info of INSN with DATA and execution frequency
@@ -1999,8 +1992,6 @@ check_rtl (bool final_p)
     if (NONDEBUG_INSN_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
 	&& GET_CODE (PATTERN (insn)) != CLOBBER
-	&& GET_CODE (PATTERN (insn)) != ADDR_VEC
-	&& GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
 	&& GET_CODE (PATTERN (insn)) != ASM_INPUT)
       {
 	if (final_p)
@@ -2212,6 +2203,10 @@ lra (FILE *f)
 
   timevar_push (TV_LRA);
 
+  /* Make sure that the last insn is a note.  Some subsequent passes
+     need it.  */
+  emit_note (NOTE_INSN_DELETED);
+
   COPY_HARD_REG_SET (lra_no_alloc_regs, ira_no_alloc_regs);
 
   init_reg_info ();
@@ -2268,6 +2263,11 @@ lra (FILE *f)
   bitmap_initialize (&lra_split_regs, &reg_obstack);
   bitmap_initialize (&lra_optional_reload_pseudos, &reg_obstack);
   live_p = false;
+  if (get_frame_size () != 0 && crtl->stack_alignment_needed)
+    /* If we have a stack frame, we must align it now.  The stack size
+       may be a part of the offset computation for register
+       elimination.  */
+    assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
   for (;;)
     {
       for (;;)
@@ -2305,11 +2305,20 @@ lra (FILE *f)
 	    lra_assign ();
 	  else
 	    {
-	      /* Do coalescing only for regular algorithms.  */
-	      if (! lra_assign () && lra_coalesce ())
-		live_p = false;
+	      bool spill_p = !lra_assign ();
+
 	      if (lra_undo_inheritance ())
 		live_p = false;
+	      if (spill_p)
+		{
+		  if (! live_p)
+		    {
+		      lra_create_live_ranges (true);
+		      live_p = true;
+		    }
+		  if (lra_coalesce ())
+		    live_p = false;
+		}
 	      if (! live_p)
 		lra_clear_live_ranges ();
 	    }

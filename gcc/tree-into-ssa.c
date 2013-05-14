@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "gimple.h"
 #include "tree-inline.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "domwalk.h"
@@ -160,9 +160,32 @@ struct var_info_d
 typedef struct var_info_d *var_info_p;
 
 
+/* VAR_INFOS hashtable helpers.  */
+
+struct var_info_hasher : typed_free_remove <var_info_d>
+{
+  typedef var_info_d value_type;
+  typedef var_info_d compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+var_info_hasher::hash (const value_type *p)
+{
+  return DECL_UID (p->var);
+}
+
+inline bool
+var_info_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  return p1->var == p2->var;
+}
+
+
 /* Each entry in VAR_INFOS contains an element of type STRUCT 
    VAR_INFO_D.  */
-static htab_t var_infos;
+static hash_table <var_info_hasher> var_infos;
 
 
 /* Information stored for SSA names.  */
@@ -340,17 +363,17 @@ static inline var_info_p
 get_var_info (tree decl)
 {
   struct var_info_d vi;
-  void **slot;
+  var_info_d **slot;
   vi.var = decl;
-  slot = htab_find_slot_with_hash (var_infos, &vi, DECL_UID (decl), INSERT);
+  slot = var_infos.find_slot_with_hash (&vi, DECL_UID (decl), INSERT);
   if (*slot == NULL)
     {
       var_info_p v = XCNEW (struct var_info_d);
       v->var = decl;
-      *slot = (void *)v;
+      *slot = v;
       return v;
     }
-  return (var_info_p) *slot;
+  return *slot;
 }
 
 
@@ -1044,15 +1067,15 @@ insert_phi_nodes_compare_var_infos (const void *a, const void *b)
 static void
 insert_phi_nodes (bitmap_head *dfs)
 {
-  htab_iterator hi;
+  hash_table <var_info_hasher>::iterator hi;
   unsigned i;
   var_info_p info;
   vec<var_info_p> vars;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
-  vars.create (htab_elements (var_infos));
-  FOR_EACH_HTAB_ELEMENT (var_infos, info, var_info_p, hi)
+  vars.create (var_infos.elements ());
+  FOR_EACH_HASH_TABLE_ELEMENT (var_infos, info, var_info_p, hi)
     if (info->info.need_phi_state != NEED_PHI_STATE_NO)
       vars.quick_push (info);
 
@@ -1632,12 +1655,12 @@ debug_tree_ssa (void)
 /* Dump statistics for the hash table HTAB.  */
 
 static void
-htab_statistics (FILE *file, htab_t htab)
+htab_statistics (FILE *file, hash_table <var_info_hasher> htab)
 {
   fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-	   (long) htab_size (htab),
-	   (long) htab_elements (htab),
-	   htab_collisions (htab));
+	   (long) htab.size (),
+	   (long) htab.elements (),
+	   htab.collisions ());
 }
 
 
@@ -1646,7 +1669,7 @@ htab_statistics (FILE *file, htab_t htab)
 void
 dump_tree_ssa_stats (FILE *file)
 {
-  if (var_infos)
+  if (var_infos.is_created ())
     {
       fprintf (file, "\nHash table statistics:\n");
       fprintf (file, "    var_infos:   ");
@@ -1665,29 +1688,12 @@ debug_tree_ssa_stats (void)
 }
 
 
-/* Hashing and equality functions for VAR_INFOS.  */
-
-static hashval_t
-var_info_hash (const void *p)
-{
-  return DECL_UID (((const struct var_info_d *)p)->var);
-}
-
-static int
-var_info_eq (const void *p1, const void *p2)
-{
-  return ((const struct var_info_d *)p1)->var
-	 == ((const struct var_info_d *)p2)->var;
-}
-
-
 /* Callback for htab_traverse to dump the VAR_INFOS hash table.  */
 
-static int
-debug_var_infos_r (void **slot, void *data)
+int
+debug_var_infos_r (var_info_d **slot, FILE *file)
 {
-  FILE *file = (FILE *) data;
-  struct var_info_d *info = (struct var_info_d *) *slot;
+  struct var_info_d *info = *slot;
 
   fprintf (file, "VAR: ");
   print_generic_expr (file, info->var, dump_flags);
@@ -1708,8 +1714,8 @@ void
 dump_var_infos (FILE *file)
 {
   fprintf (file, "\n\nDefinition and live-in blocks:\n\n");
-  if (var_infos)
-    htab_traverse (var_infos, debug_var_infos_r, file);
+  if (var_infos.is_created ())
+    var_infos.traverse <FILE *, debug_var_infos_r> (file);
 }
 
 
@@ -2216,7 +2222,7 @@ rewrite_blocks (basic_block entry, enum rewrite_mode what)
   if (dump_file && (dump_flags & TDF_STATS))
     {
       dump_dfa_stats (dump_file);
-      if (var_infos)
+      if (var_infos.is_created ())
 	dump_tree_ssa_stats (dump_file);
     }
 
@@ -2296,9 +2302,8 @@ init_ssa_renamer (void)
   cfun->gimple_df->in_ssa_p = false;
 
   /* Allocate memory for the DEF_BLOCKS hash table.  */
-  gcc_assert (var_infos == NULL);
-  var_infos = htab_create (vec_safe_length (cfun->local_decls),
-			   var_info_hash, var_info_eq, free);
+  gcc_assert (!var_infos.is_created ());
+  var_infos.create (vec_safe_length (cfun->local_decls));
 
   bitmap_obstack_initialize (&update_ssa_obstack);
 }
@@ -2309,11 +2314,8 @@ init_ssa_renamer (void)
 static void
 fini_ssa_renamer (void)
 {
-  if (var_infos)
-    {
-      htab_delete (var_infos);
-      var_infos = NULL;
-    }
+  if (var_infos.is_created ())
+    var_infos.dispose ();
 
   bitmap_obstack_release (&update_ssa_obstack);
 
@@ -3189,7 +3191,7 @@ update_ssa (unsigned update_flags)
     {
       /* If we rename bare symbols initialize the mapping to
          auxiliar info we need to keep track of.  */
-      var_infos = htab_create (47, var_info_hash, var_info_eq, free);
+      var_infos.create (47);
 
       /* If we have to rename some symbols from scratch, we need to
 	 start the process at the root of the CFG.  FIXME, it should

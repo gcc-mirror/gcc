@@ -71,6 +71,18 @@
 	  && (REGNO (op) > LAST_VIRTUAL_REGISTER || REGNO (op) <= BX_REG));
 })
 
+;; Match nonimmediate operands, but exclude memory operands on 64bit targets.
+(define_predicate "nonimmediate_x64nomem_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "register_operand")
+    (match_operand 0 "nonimmediate_operand")))
+
+;; Match general operands, but exclude memory operands on 64bit targets.
+(define_predicate "general_x64nomem_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "nonmemory_operand")
+    (match_operand 0 "general_operand")))
+
 ;; Return true if op is the AX register.
 (define_predicate "ax_reg_operand"
   (and (match_code "reg")
@@ -311,15 +323,15 @@
 	 (match_operand 0 "x86_64_immediate_operand"))
     (match_operand 0 "general_operand")))
 
-;; Return true if OP is general operand representable on x86_64
-;; as zero extended constant.  This predicate is used in zero-extending
-;; conversion operations that require non-VOIDmode immediate operands.
-(define_predicate "x86_64_zext_general_operand"
+;; Return true if OP is representable on x86_64 as zero-extended operand.
+;; This predicate is used in zero-extending conversion operations that
+;; require non-VOIDmode immediate operands.
+(define_predicate "x86_64_zext_operand"
   (if_then_else (match_test "TARGET_64BIT")
     (ior (match_operand 0 "nonimmediate_operand")
 	 (and (match_operand 0 "x86_64_zext_immediate_operand")
 	      (match_test "GET_MODE (op) != VOIDmode")))
-    (match_operand 0 "general_operand")))
+    (match_operand 0 "nonimmediate_operand")))
 
 ;; Return true if OP is general operand representable on x86_64
 ;; as either sign extended or zero extended constant.
@@ -436,6 +448,9 @@
   if (SYMBOL_REF_TLS_MODEL (op))
     return false;
 
+  /* Dll-imported symbols are always external.  */
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES && SYMBOL_REF_DLLIMPORT_P (op))
+    return false;
   if (SYMBOL_REF_LOCAL_P (op))
     return true;
 
@@ -557,6 +572,36 @@
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "register_no_elim_operand")))
+
+;; Return true if OP is a call from MS ABI to SYSV ABI function.
+(define_predicate "call_rex64_ms_sysv_operation"
+  (match_code "parallel")
+{
+  unsigned creg_size = ARRAY_SIZE (x86_64_ms_sysv_extra_clobbered_registers);
+  unsigned i;
+
+  if ((unsigned) XVECLEN (op, 0) != creg_size + 2)
+    return false;
+
+  for (i = 0; i < creg_size; i++)
+    {
+      rtx elt = XVECEXP (op, 0, i+2);
+      enum machine_mode mode;
+      unsigned regno;
+
+      if (GET_CODE (elt) != CLOBBER
+          || GET_CODE (SET_DEST (elt)) != REG)
+        return false;
+
+      regno = x86_64_ms_sysv_extra_clobbered_registers[i];
+      mode = SSE_REGNO_P (regno) ? TImode : DImode;
+
+      if (GET_MODE (SET_DEST (elt)) != mode
+	  || REGNO (SET_DEST (elt)) != regno)
+	return false;
+    }
+  return true;
+})
 
 ;; Match exactly zero.
 (define_predicate "const0_operand"
@@ -1258,3 +1303,8 @@
   HOST_WIDE_INT low = val & 0xff;
   return val == ((low << 8) | low);
 })
+
+;; Return true if OP is nonimmediate_operand or CONST_VECTOR.
+(define_predicate "general_vector_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_code "const_vector")))

@@ -75,12 +75,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @ingroup unordered_associative_containers
    *
-   *  @tparam  _Key  Type of key objects.
-   *  @tparam  _Tp  Type of mapped objects.
-   *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.
-   *  @tparam  _Pred  Predicate function object type, defaults
-   *                  to equal_to<_Value>.
-   *  @tparam  _Alloc  Allocator type, defaults to allocator<_Key>.
+   *  @tparam  _Key    Type of key objects.
+   *  @tparam  _Tp     Type of mapped objects.
+   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Value>.
+   *  @tparam  _Pred   Predicate function object type, defaults
+   *                   to equal_to<_Value>.
+   *  @tparam  _Alloc  Allocator type, defaults to 
+   *                   std::allocator<std::pair<const _Key, _Tp>>.
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, and
    *  <a href="tables.html#xx">unordered associative container</a>
@@ -113,10 +114,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       //@{
       ///  Iterator-related typedefs.
-      typedef typename allocator_type::pointer		pointer;
-      typedef typename allocator_type::const_pointer	const_pointer;
-      typedef typename allocator_type::reference	reference;
-      typedef typename allocator_type::const_reference	const_reference;
+      typedef typename _Hashtable::pointer		pointer;
+      typedef typename _Hashtable::const_pointer	const_pointer;
+      typedef typename _Hashtable::reference		reference;
+      typedef typename _Hashtable::const_reference	const_reference;
       typedef typename _Hashtable::iterator		iterator;
       typedef typename _Hashtable::const_iterator	const_iterator;
       typedef typename _Hashtable::local_iterator	local_iterator;
@@ -169,6 +170,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Move constructor.
       unordered_map(unordered_map&&) = default;
+
+      /**
+       *  @brief Creates an %unordered_map with no elements.
+       *  @param __a An allocator object.
+       */
+      explicit
+      unordered_map(const allocator_type& __a)
+	: _M_h(__a)
+      { }
+
+      /*
+       *  @brief Copy constructor with allocator argument.
+       * @param  __uset  Input %unordered_map to copy.
+       * @param  __a  An allocator object.
+       */
+      unordered_map(const unordered_map& __umap,
+		    const allocator_type& __a)
+	: _M_h(__umap._M_h, __a)
+      { }
+
+      /*
+       *  @brief  Move constructor with allocator argument.
+       *  @param  __uset Input %unordered_map to move.
+       *  @param  __a    An allocator object.
+       */
+      unordered_map(unordered_map&& __umap,
+		    const allocator_type& __a)
+	: _M_h(std::move(__umap._M_h), __a)
+      { }
 
       /**
        *  @brief  Builds an %unordered_map from an initializer_list.
@@ -508,6 +538,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       swap(unordered_map& __x)
+      noexcept( noexcept(_M_h.swap(__x._M_h)) )
       { _M_h.swap(__x._M_h); }
 
       // observers.
@@ -756,12 +787,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *
    *  @ingroup unordered_associative_containers
    *
-   *  @tparam  _Key  Type of key objects.
-   *  @tparam  _Tp  Type of mapped objects.
-   *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.
-   *  @tparam  _Pred  Predicate function object type, defaults
-   *                  to equal_to<_Value>.
-   *  @tparam  _Alloc  Allocator type, defaults to allocator<_Key>.
+   *  @tparam  _Key    Type of key objects.
+   *  @tparam  _Tp     Type of mapped objects.
+   *  @tparam  _Hash   Hashing function object type, defaults to hash<_Value>.
+   *  @tparam  _Pred   Predicate function object type, defaults
+   *                   to equal_to<_Value>.
+   *  @tparam  _Alloc  Allocator type, defaults to
+   *                   std::allocator<std::pair<const _Key, _Tp>>.
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, and
    *  <a href="tables.html#xx">unordered associative container</a>
@@ -794,10 +826,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       //@{
       ///  Iterator-related typedefs.
-      typedef typename allocator_type::pointer		pointer;
-      typedef typename allocator_type::const_pointer	const_pointer;
-      typedef typename allocator_type::reference	reference;
-      typedef typename allocator_type::const_reference	const_reference;
+      typedef typename _Hashtable::pointer		pointer;
+      typedef typename _Hashtable::const_pointer	const_pointer;
+      typedef typename _Hashtable::reference		reference;
+      typedef typename _Hashtable::const_reference	const_reference;
       typedef typename _Hashtable::iterator		iterator;
       typedef typename _Hashtable::const_iterator	const_iterator;
       typedef typename _Hashtable::local_iterator	local_iterator;
@@ -850,6 +882,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Move constructor.
       unordered_multimap(unordered_multimap&&) = default;
+
+      /**
+       *  @brief Creates an %unordered_multimap with no elements.
+       *  @param __a An allocator object.
+       */
+      explicit
+      unordered_multimap(const allocator_type& __a)
+	: _M_h(__a)
+      { }
+
+      /*
+       *  @brief Copy constructor with allocator argument.
+       * @param  __uset  Input %unordered_multimap to copy.
+       * @param  __a  An allocator object.
+       */
+      unordered_multimap(const unordered_multimap& __ummap,
+			 const allocator_type& __a)
+	: _M_h(__ummap._M_h, __a)
+      { }
+
+      /*
+       *  @brief  Move constructor with allocator argument.
+       *  @param  __uset Input %unordered_multimap to move.
+       *  @param  __a    An allocator object.
+       */
+      unordered_multimap(unordered_multimap&& __ummap,
+			 const allocator_type& __a)
+	: _M_h(std::move(__ummap._M_h), __a)
+      { }
 
       /**
        *  @brief  Builds an %unordered_multimap from an initializer_list.
@@ -1173,6 +1234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       swap(unordered_multimap& __x)
+      noexcept( noexcept(_M_h.swap(__x._M_h)) )
       { _M_h.swap(__x._M_h); }
 
       // observers.

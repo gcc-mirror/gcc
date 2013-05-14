@@ -51,6 +51,9 @@ along with GCC; see the file COPYING3.  If not see
 static bool rtl_slim_pp_initialized = false;
 static pretty_printer rtl_slim_pp;
 
+/* For insns we print patterns, and for some patterns we print insns...  */
+static void print_insn_with_notes (pretty_printer *, const_rtx);
+
 /* This recognizes rtx'en classified as expressions.  These are always
    represent some action on values or results of other expression, that
    may be stored in objects representing values.  */
@@ -562,13 +565,31 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
       break;
     case SEQUENCE:
       {
-	int i;
-
 	pp_string (pp, "sequence{");
-	for (i = 0; i < XVECLEN (x, 0); i++)
+	if (INSN_P (XVECEXP (x, 0, 0)))
 	  {
-	    print_pattern (pp, XVECEXP (x, 0, i), verbose);
-	    pp_character (pp, ';');
+	    /* Print the sequence insns indented.  */
+	    const char * save_print_rtx_head = print_rtx_head;
+	    char indented_print_rtx_head[32];
+
+	    pp_newline (pp);
+	    gcc_assert (strlen (print_rtx_head) < sizeof (indented_print_rtx_head) - 4);
+	    snprintf (indented_print_rtx_head,
+		      sizeof (indented_print_rtx_head),
+		      "%s     ", print_rtx_head);
+	    print_rtx_head = indented_print_rtx_head;
+	    for (int i = 0; i < XVECLEN (x, 0); i++)
+	      print_insn_with_notes (pp, XVECEXP (x, 0, i));
+	    pp_printf (pp, "%s      ", save_print_rtx_head);
+	    print_rtx_head = save_print_rtx_head;
+	  }
+	else
+	  {
+	    for (int i = 0; i < XVECLEN (x, 0); i++)
+	      {
+		print_pattern (pp, XVECEXP (x, 0, i), verbose);
+		pp_character (pp, ';');
+	      }
 	  }
 	pp_character (pp, '}');
       }
@@ -665,6 +686,11 @@ print_insn (pretty_printer *pp, const_rtx x, int verbose)
       break;
     case CODE_LABEL:
       pp_printf (pp, "L%d:", INSN_UID (x));
+      break;
+    case JUMP_TABLE_DATA:
+      pp_string (pp, "jump_table_data{\n");
+      print_pattern (pp, PATTERN (x), verbose);
+      pp_string (pp, "}");
       break;
     case BARRIER:
       pp_string (pp, "barrier");

@@ -7,7 +7,7 @@ template<const A* a> class C {};
 template<const B* b> class D {};
 template<B* b> class E {};
 
-template<const B* b> void f(D<b> &, C<static_cast<const A*>(b)> &) {} // { dg-error "" "" { target c++98 } }
+template<const B* b> void f(D<b> &, C<static_cast<const A*>(b)> &) {} // { dg-error "" "" }
 template<const B* b> void g(D<b> &, E<const_cast<B*>(b)> &) {} // { dg-error "" "" { target c++98 } }
 
 B b;

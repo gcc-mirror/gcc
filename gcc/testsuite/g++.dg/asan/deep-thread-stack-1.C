@@ -45,9 +45,9 @@ int main(int argc, char *argv[]) {
 }
 
 // { dg-output "ERROR: AddressSanitizer: heap-use-after-free.*(\n|\r\n|\r)" }
-// { dg-output "WRITE of size 4 at 0x\[0-9a-f\]+ thread T(\[0-9\]+).*(\n|\r\n|\r)" }
-// { dg-output "freed by thread T(\[0-9\]+) here:.*(\n|\r\n|\r)" }
-// { dg-output "previously allocated by thread T(\[0-9\]+) here:.*(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*WRITE of size 4 at 0x\[0-9a-f\]+ thread T(\[0-9\]+).*(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*freed by thread T(\[0-9\]+) here:.*(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*previously allocated by thread T(\[0-9\]+) here:.*(\n|\r\n|\r)" }
 // { dg-output "Thread T\\2 created by T(\[0-9\]+) here:.*(\n|\r\n|\r)" }
 // { dg-output "Thread T\\8 created by T0 here:.*(\n|\r\n|\r)" }
 // { dg-output "Thread T\\4 created by T(\[0-9\]+) here:.*(\n|\r\n|\r)" }

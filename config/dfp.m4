@@ -23,7 +23,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
     i?86*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
-    i?86*-*-cygwin*)
+    i?86*-*-cygwin* | x86_64*-*-cygwin*)
       enable_decimal_float=yes
       ;;
     *)

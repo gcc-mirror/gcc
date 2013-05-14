@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GIMPLE_H
 
 #include "pointer-set.h"
+#include "hash-table.h"
 #include "vec.h"
 #include "ggc.h"
 #include "basic-block.h"
@@ -32,6 +33,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 
 typedef gimple gimple_seq_node;
+
+/* Types of supported temporaries.  GIMPLE temporaries may be symbols
+   in normal form (i.e., regular decls) or SSA names.  This enum is
+   used by create_gimple_tmp to tell it what kind of temporary the
+   caller wants.  */
+enum ssa_mode {
+    M_SSA = 0,
+    M_NORMAL
+};
 
 /* For each block, the PHI nodes that need to be rewritten are stored into
    these vectors.  */
@@ -136,7 +146,7 @@ enum plf_mask {
 
 /* Iterator object for GIMPLE statement sequences.  */
 
-typedef struct
+struct gimple_stmt_iterator_d
 {
   /* Sequence node holding the current statement.  */
   gimple_seq_node ptr;
@@ -147,8 +157,7 @@ typedef struct
      block/sequence is removed.  */
   gimple_seq *seq;
   basic_block bb;
-} gimple_stmt_iterator;
-
+};
 
 /* Data structure definitions for GIMPLE tuples.  NOTE: word markers
    are for 64 bit hosts.  */
@@ -726,6 +735,17 @@ union GTY ((desc ("gimple_statement_structure (&%h)"),
 
 /* In gimple.c.  */
 
+/* Helper functions to build GIMPLE statements.  */
+tree create_gimple_tmp (tree, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, tree, int, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, gimple, int, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, tree, tree, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, gimple, tree, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, tree, gimple, enum ssa_mode = M_SSA);
+gimple build_assign (enum tree_code, gimple, gimple, enum ssa_mode = M_SSA);
+gimple build_type_cast (tree, tree, enum ssa_mode = M_SSA);
+gimple build_type_cast (tree, gimple, enum ssa_mode = M_SSA);
+
 /* Offset in bytes to the location of the operand vector.
    Zero if there is no operand vector for this tuple structure.  */
 extern size_t const gimple_ops_offset_[];
@@ -946,6 +966,55 @@ enum gimplify_status {
   GS_ALL_DONE	= 1	/* The expression is fully gimplified.  */
 };
 
+/* Formal (expression) temporary table handling: multiple occurrences of
+   the same scalar expression are evaluated into the same temporary.  */
+
+typedef struct gimple_temp_hash_elt
+{
+  tree val;   /* Key */
+  tree temp;  /* Value */
+} elt_t;
+
+/* Gimplify hashtable helper.  */
+
+struct gimplify_hasher : typed_free_remove <elt_t>
+{
+  typedef elt_t value_type;
+  typedef elt_t compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+gimplify_hasher::hash (const value_type *p)
+{
+  tree t = p->val;
+  return iterative_hash_expr (t, 0);
+}
+
+inline bool
+gimplify_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  tree t1 = p1->val;
+  tree t2 = p2->val;
+  enum tree_code code = TREE_CODE (t1);
+
+  if (TREE_CODE (t2) != code
+      || TREE_TYPE (t1) != TREE_TYPE (t2))
+    return false;
+
+  if (!operand_equal_p (t1, t2, 0))
+    return false;
+
+#ifdef ENABLE_CHECKING
+  /* Only allow them to compare equal if they also hash equal; otherwise
+     results are nondeterminate, and we fail bootstrap comparison.  */
+  gcc_assert (hash (p1) == hash (p2));
+#endif
+
+  return true;
+}
+
 struct gimplify_ctx
 {
   struct gimplify_ctx *prev_context;
@@ -958,7 +1027,7 @@ struct gimplify_ctx
 
   vec<tree> case_labels;
   /* The formal temporary table.  Should this be persistent?  */
-  htab_t temp_htab;
+  hash_table <gimplify_hasher> temp_htab;
 
   int conditions;
   bool save_stack;
@@ -1101,7 +1170,6 @@ gimple_seq_empty_p (gimple_seq s)
 {
   return s == NULL;
 }
-
 
 void gimple_seq_add_stmt (gimple_seq *, gimple);
 
@@ -5376,4 +5444,15 @@ extern tree maybe_fold_or_comparisons (enum tree_code, tree, tree,
 				       enum tree_code, tree, tree);
 
 bool gimple_val_nonnegative_real_p (tree);
+
+
+/* Set the location of all statements in SEQ to LOC.  */
+
+static inline void
+gimple_seq_set_location (gimple_seq seq, location_t loc)
+{
+  for (gimple_stmt_iterator i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
+    gimple_set_location (gsi_stmt (i), loc);
+}
+
 #endif  /* GCC_GIMPLE_H */

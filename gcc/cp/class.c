@@ -244,7 +244,7 @@ build_base_path (enum tree_code code,
   tree null_test = NULL;
   tree ptr_target_type;
   int fixed_type_p;
-  int want_pointer = TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE;
+  int want_pointer = TYPE_PTR_P (TREE_TYPE (expr));
   bool has_empty = false;
   bool virtual_access;
 
@@ -1045,6 +1045,12 @@ add_method (tree type, tree method, tree using_decl)
 	 overloaded if any of them is a static member
 	 function declaration.
 
+	 [over.load] Member function declarations with the same name and
+	 the same parameter-type-list as well as member function template
+	 declarations with the same name, the same parameter-type-list, and
+	 the same template parameter lists cannot be overloaded if any of
+	 them, but not all, have a ref-qualifier.
+
 	 [namespace.udecl] When a using-declaration brings names
 	 from a base class into a derived class scope, member
 	 functions in the derived class override and/or hide member
@@ -1060,11 +1066,13 @@ add_method (tree type, tree method, tree using_decl)
 	 coming from the using class in overload resolution.  */
       if (! DECL_STATIC_FUNCTION_P (fn)
 	  && ! DECL_STATIC_FUNCTION_P (method)
-	  && TREE_TYPE (TREE_VALUE (parms1)) != error_mark_node
-	  && TREE_TYPE (TREE_VALUE (parms2)) != error_mark_node
-	  && (cp_type_quals (TREE_TYPE (TREE_VALUE (parms1)))
-	      != cp_type_quals (TREE_TYPE (TREE_VALUE (parms2)))))
-	continue;
+	  /* Either both or neither need to be ref-qualified for
+	     differing quals to allow overloading.  */
+	  && (FUNCTION_REF_QUALIFIED (fn_type)
+	      == FUNCTION_REF_QUALIFIED (method_type))
+	  && (type_memfn_quals (fn_type) != type_memfn_quals (method_type)
+	      || type_memfn_rqual (fn_type) != type_memfn_rqual (method_type)))
+	  continue;
 
       /* For templates, the return type and template parameters
 	 must be identical.  */
@@ -1311,7 +1319,7 @@ struct abi_tag_data
 static tree
 find_abi_tags_r (tree *tp, int */*walk_subtrees*/, void *data)
 {
-  if (!TAGGED_TYPE_P (*tp))
+  if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
   if (tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (*tp)))
@@ -2058,12 +2066,12 @@ same_signature_p (const_tree fndecl, const_tree base_fndecl)
 	  && same_type_p (DECL_CONV_FN_TYPE (fndecl),
 			  DECL_CONV_FN_TYPE (base_fndecl))))
     {
-      tree types, base_types;
-      types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-      base_types = TYPE_ARG_TYPES (TREE_TYPE (base_fndecl));
-      if ((cp_type_quals (TREE_TYPE (TREE_VALUE (base_types)))
-	   == cp_type_quals (TREE_TYPE (TREE_VALUE (types))))
-	  && compparms (TREE_CHAIN (base_types), TREE_CHAIN (types)))
+      tree fntype = TREE_TYPE (fndecl);
+      tree base_fntype = TREE_TYPE (base_fndecl);
+      if (type_memfn_quals (fntype) == type_memfn_quals (base_fntype)
+	  && type_memfn_rqual (fntype) == type_memfn_rqual (base_fntype)
+	  && compparms (FUNCTION_FIRST_USER_PARMTYPE (fndecl),
+			FUNCTION_FIRST_USER_PARMTYPE (base_fndecl)))
 	return 1;
     }
   return 0;
@@ -3327,7 +3335,7 @@ check_field_decls (tree t, tree *access_decls,
 
 	     If a union contains a static data member, or a member of
 	     reference type, the program is ill-formed.  */
-	  if (TREE_CODE (x) == VAR_DECL)
+	  if (VAR_P (x))
 	    {
 	      error ("%q+D may not be static because it is a member of a union", x);
 	      continue;
@@ -3359,7 +3367,7 @@ check_field_decls (tree t, tree *access_decls,
       if (type == error_mark_node)
 	continue;
 
-      if (TREE_CODE (x) == CONST_DECL || TREE_CODE (x) == VAR_DECL)
+      if (TREE_CODE (x) == CONST_DECL || VAR_P (x))
 	continue;
 
       /* Now it can only be a FIELD_DECL.  */
@@ -5826,7 +5834,7 @@ layout_class_type (tree t, tree *virtuals_p)
 
 	     At this point, finish_record_layout will be called, but
 	     S1 is still incomplete.)  */
-	  if (TREE_CODE (field) == VAR_DECL)
+	  if (VAR_P (field))
 	    {
 	      maybe_register_incomplete_var (field);
 	      /* The visibility of static data members is determined
@@ -6327,7 +6335,7 @@ finish_struct_1 (tree t)
   /* Complete the rtl for any static member objects of the type we're
      working on.  */
   for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-    if (TREE_CODE (x) == VAR_DECL && TREE_STATIC (x)
+    if (VAR_P (x) && TREE_STATIC (x)
         && TREE_TYPE (x) != error_mark_node
 	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       DECL_MODE (x) = TYPE_MODE (t);
@@ -6700,7 +6708,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	  /* Enter the INSTANCE in a table to prevent recursion; a
 	     variable's initializer may refer to the variable
 	     itself.  */
-	  if (TREE_CODE (instance) == VAR_DECL
+	  if (VAR_P (instance)
 	      && DECL_INITIAL (instance)
 	      && !type_dependent_expression_p_push (DECL_INITIAL (instance))
 	      && !fixed_type_or_null_ref_ht.find (instance))
@@ -7142,7 +7150,7 @@ resolve_address_of_overloaded_function (tree target_type,
   /* By the time we get here, we should be seeing only real
      pointer-to-member types, not the internal POINTER_TYPE to
      METHOD_TYPE representation.  */
-  gcc_assert (TREE_CODE (target_type) != POINTER_TYPE
+  gcc_assert (!TYPE_PTR_P (target_type)
 	      || TREE_CODE (TREE_TYPE (target_type)) != METHOD_TYPE);
 
   gcc_assert (is_overloaded_fn (overload));
@@ -7248,19 +7256,38 @@ resolve_address_of_overloaded_function (tree target_type,
 	       one, or vice versa.  */
 	    continue;
 
+	  tree ret = target_ret_type;
+
+	  /* If the template has a deduced return type, don't expose it to
+	     template argument deduction.  */
+	  if (undeduced_auto_decl (fn))
+	    ret = NULL_TREE;
+
 	  /* Try to do argument deduction.  */
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  instantiation = fn_type_unification (fn, explicit_targs, targs, args,
-					      nargs, target_ret_type,
+					       nargs, ret,
 					      DEDUCE_EXACT, LOOKUP_NORMAL,
-					       false);
+					       false, false);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;
 
+	  /* And now force instantiation to do return type deduction.  */
+	  if (undeduced_auto_decl (instantiation))
+	    {
+	      ++function_depth;
+	      instantiate_decl (instantiation, /*defer*/false, /*class*/false);
+	      --function_depth;
+
+	      require_deduced_type (instantiation);
+	    }
+
 	  /* See if there's a match.  */
 	  if (same_type_p (target_fn_type, static_fn_type (instantiation)))
 	    matches = tree_cons (instantiation, fn, matches);
+
+	  ggc_free (targs);
 	}
 
       /* Now, remove all but the most specialized of the matches.  */
@@ -7766,7 +7793,7 @@ get_vtbl_decl_for_binfo (tree binfo)
       decl = TREE_OPERAND (TREE_OPERAND (decl, 0), 0);
     }
   if (decl)
-    gcc_assert (TREE_CODE (decl) == VAR_DECL);
+    gcc_assert (VAR_P (decl));
   return decl;
 }
 

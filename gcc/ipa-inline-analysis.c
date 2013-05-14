@@ -2093,8 +2093,7 @@ param_change_prob (gimple stmt, int i)
       if (!init_freq)
 	init_freq = 1;
       if (init_freq < bb->frequency)
-	return MAX ((init_freq * REG_BR_PROB_BASE +
-		     bb->frequency / 2) / bb->frequency, 1);
+	return MAX (GCOV_COMPUTE_SCALE (init_freq, bb->frequency), 1);
       else
 	return REG_BR_PROB_BASE;
     }
@@ -2136,8 +2135,7 @@ param_change_prob (gimple stmt, int i)
 
       BITMAP_FREE (info.bb_set);
       if (max < bb->frequency)
-	return MAX ((max * REG_BR_PROB_BASE +
-		     bb->frequency / 2) / bb->frequency, 1);
+	return MAX (GCOV_COMPUTE_SCALE (max, bb->frequency), 1);
       else
 	return REG_BR_PROB_BASE;
     }
@@ -2792,7 +2790,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *time,
       && hints && cgraph_maybe_hot_edge_p (e))
     *hints |= INLINE_HINT_indirect_call;
   *size += call_size * INLINE_SIZE_SCALE;
-  *time += call_time * prob / REG_BR_PROB_BASE
+  *time += apply_probability ((gcov_type) call_time, prob)
     * e->frequency * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE);
   if (*time > MAX_TIME * INLINE_TIME_SCALE)
     *time = MAX_TIME * INLINE_TIME_SCALE;
@@ -2902,7 +2900,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
 					      inline_param_summary);
 	    gcc_checking_assert (prob >= 0);
 	    gcc_checking_assert (prob <= REG_BR_PROB_BASE);
-	    time += ((gcov_type) e->time * prob) / REG_BR_PROB_BASE;
+	    time += apply_probability ((gcov_type) e->time, prob);
 	  }
 	if (time > MAX_TIME * INLINE_TIME_SCALE)
 	  time = MAX_TIME * INLINE_TIME_SCALE;
@@ -3120,8 +3118,7 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 	      int jf_formal_id = ipa_get_jf_pass_through_formal_id (jfunc);
 	      int prob1 = es->param[i].change_prob;
 	      int prob2 = inlined_es->param[jf_formal_id].change_prob;
-	      int prob = ((prob1 * prob2 + REG_BR_PROB_BASE / 2)
-			  / REG_BR_PROB_BASE);
+	      int prob = combine_probabilities (prob1, prob2);
 
 	      if (prob1 && prob2 && !prob)
 		prob = 1;
@@ -3312,7 +3309,7 @@ inline_merge_summary (struct cgraph_edge *edge)
 	  int prob = predicate_probability (callee_info->conds,
 					    &e->predicate,
 					    clause, es->param);
-	  add_time = ((gcov_type) add_time * prob) / REG_BR_PROB_BASE;
+	  add_time = apply_probability ((gcov_type) add_time, prob);
 	  if (add_time > MAX_TIME * INLINE_TIME_SCALE)
 	    add_time = MAX_TIME * INLINE_TIME_SCALE;
 	  if (prob != REG_BR_PROB_BASE

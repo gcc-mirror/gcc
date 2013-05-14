@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2007-2013 Free Software Foundation, Inc.
 //
@@ -25,10 +26,12 @@ namespace std {
 
   typedef void (*unexpected_handler)();
   unexpected_handler set_unexpected(unexpected_handler  f ) throw();
+  unexpected_handler get_unexpected() noexcept;
   void unexpected();
 
   typedef void (*terminate_handler)();
   terminate_handler set_terminate(terminate_handler  f ) throw();
+  terminate_handler get_terminate() noexcept;
   void terminate() throw();
 
   bool uncaught_exception() throw();

@@ -1,3 +1,26 @@
+2013-04-30  Brooks Moses  <bmoses@google.com>
+
+	* MAINTAINERS: Update my email; move myself from Fortran
+	reviewer to Write After Approval.
+
+2013-04-16  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac (aarch64-*-*): Don't disable java.
+	* configure: Regenerate.
+
+2013-04-10  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2013-03-30  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.def (target_modules): Don't install libffi.
+	* Makefile.in: Regenerate.
+
+2013-02-24  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2013-02-20  Andrew Sutton  <andrew.n.sutton@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

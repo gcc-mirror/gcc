@@ -22,14 +22,12 @@
 
 // libstdc++/52924
 
-struct A { } a;
+struct A { };
 
 struct D {
   ~D() noexcept(false) { }
   void operator()(A*) { }
-} d;
-
-auto sp = std::shared_ptr<A>(&a, d);
+};
 
 template<typename T>
 struct Alloc : std::allocator<T>
@@ -37,8 +35,16 @@ struct Alloc : std::allocator<T>
   Alloc() = default;
   ~Alloc() noexcept(false) { }
   template<typename U> Alloc(const Alloc<U>&) { }
+
+  template<typename U>
+    struct rebind
+    { typedef Alloc<U> other; };
 };
 
+A a;
+D d;
 Alloc<A> al;
 
+auto sd = std::shared_ptr<A>(&a, d);
+auto sa = std::shared_ptr<A>(&a, d, al);
 auto as = std::allocate_shared<A>(al);

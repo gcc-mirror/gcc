@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,29 +23,29 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug_A;  use Debug_A;
-with Exp_Aggr; use Exp_Aggr;
-with Exp_Alfa; use Exp_Alfa;
-with Exp_Attr; use Exp_Attr;
-with Exp_Ch2;  use Exp_Ch2;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch4;  use Exp_Ch4;
-with Exp_Ch5;  use Exp_Ch5;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch8;  use Exp_Ch8;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Ch12; use Exp_Ch12;
-with Exp_Ch13; use Exp_Ch13;
-with Exp_Prag; use Exp_Prag;
-with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
+with Atree;     use Atree;
+with Debug_A;   use Debug_A;
+with Exp_Aggr;  use Exp_Aggr;
+with Exp_SPARK; use Exp_SPARK;
+with Exp_Attr;  use Exp_Attr;
+with Exp_Ch2;   use Exp_Ch2;
+with Exp_Ch3;   use Exp_Ch3;
+with Exp_Ch4;   use Exp_Ch4;
+with Exp_Ch5;   use Exp_Ch5;
+with Exp_Ch6;   use Exp_Ch6;
+with Exp_Ch7;   use Exp_Ch7;
+with Exp_Ch8;   use Exp_Ch8;
+with Exp_Ch9;   use Exp_Ch9;
+with Exp_Ch11;  use Exp_Ch11;
+with Exp_Ch12;  use Exp_Ch12;
+with Exp_Ch13;  use Exp_Ch13;
+with Exp_Prag;  use Exp_Prag;
+with Opt;       use Opt;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Util;  use Sem_Util;
+with Sinfo;     use Sinfo;
 with Table;
 
 package body Expander is
@@ -127,13 +127,13 @@ package body Expander is
          Debug_A_Entry ("expanding  ", N);
 
          begin
-            --  In Alfa mode we only need a very limited subset of the usual
-            --  expansions. This limited subset is implemented in Expand_Alfa.
+            --  In SPARK mode we only need a very limited subset of the usual
+            --  expansions. This limited subset is implemented in Expand_SPARK.
 
-            if Alfa_Mode then
-               Expand_Alfa (N);
+            if SPARK_Mode then
+               Expand_SPARK (N);
 
-            --  Here for normal non-Alfa mode
+            --  Here for normal non-SPARK mode
 
             else
                --  Processing depends on node kind. For full details on the
@@ -387,6 +387,9 @@ package body Expander is
 
                   when N_Raise_Constraint_Error =>
                      Expand_N_Raise_Constraint_Error (N);
+
+                  when N_Raise_Expression =>
+                     Expand_N_Raise_Expression (N);
 
                   when N_Raise_Program_Error =>
                      Expand_N_Raise_Program_Error (N);

@@ -151,11 +151,11 @@ create_loop_tree_nodes (void)
       init_loop_tree_node (ira_loop_nodes, 0);
       return;
     }
-  ira_loop_nodes_count = number_of_loops ();
+  ira_loop_nodes_count = number_of_loops (cfun);
   ira_loop_nodes = ((struct ira_loop_tree_node *)
 		    ira_allocate (sizeof (struct ira_loop_tree_node)
 				  * ira_loop_nodes_count));
-  FOR_EACH_VEC_SAFE_ELT (get_loops (), i, loop)
+  FOR_EACH_VEC_SAFE_ELT (get_loops (cfun), i, loop)
     {
       if (loop_outer (loop) != NULL)
 	{
@@ -194,7 +194,7 @@ more_one_region_p (void)
   loop_p loop;
 
   if (current_loops != NULL)
-    FOR_EACH_VEC_SAFE_ELT (get_loops (), i, loop)
+    FOR_EACH_VEC_SAFE_ELT (get_loops (cfun), i, loop)
       if (ira_loop_nodes[i].regno_allocno_map != NULL
 	  && ira_loop_tree_root != &ira_loop_nodes[i])
 	return true;
@@ -379,7 +379,7 @@ rebuild_regno_allocno_maps (void)
 
   ira_assert (current_loops != NULL);
   max_regno = max_reg_num ();
-  FOR_EACH_VEC_SAFE_ELT (get_loops (), l, loop)
+  FOR_EACH_VEC_SAFE_ELT (get_loops (cfun), l, loop)
     if (ira_loop_nodes[l].regno_allocno_map != NULL)
       {
 	ira_free (ira_loop_nodes[l].regno_allocno_map);
@@ -1321,6 +1321,21 @@ print_copy (FILE *f, ira_copy_t cp)
 	   ? "move" : cp->constraint_p ? "constraint" : "shuffle");
 }
 
+DEBUG_FUNCTION void
+debug (ira_allocno_copy &ref)
+{
+  print_copy (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (ira_allocno_copy *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 /* Print info about copy CP into stderr.  */
 void
 ira_debug_copy (ira_copy_t cp)
@@ -1373,6 +1388,22 @@ print_allocno_copies (FILE *f, ira_allocno_t a)
     }
   fprintf (f, "\n");
 }
+
+DEBUG_FUNCTION void
+debug (ira_allocno &ref)
+{
+  print_allocno_copies (stderr, &ref);
+}
+
+DEBUG_FUNCTION void
+debug (ira_allocno *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
 
 /* Print info about copies involving allocno A into stderr.  */
 void
@@ -2022,8 +2053,8 @@ mark_loops_for_removal (void)
   ira_assert (current_loops != NULL);
   sorted_loops
     = (ira_loop_tree_node_t *) ira_allocate (sizeof (ira_loop_tree_node_t)
-					     * number_of_loops ());
-  for (n = i = 0; vec_safe_iterate (get_loops (), i, &loop); i++)
+					     * number_of_loops (cfun));
+  for (n = i = 0; vec_safe_iterate (get_loops (cfun), i, &loop); i++)
     if (ira_loop_nodes[i].regno_allocno_map != NULL)
       {
 	if (ira_loop_nodes[i].parent == NULL)
@@ -2067,7 +2098,7 @@ mark_all_loops_for_removal (void)
   loop_p loop;
 
   ira_assert (current_loops != NULL);
-  FOR_EACH_VEC_SAFE_ELT (get_loops (), i, loop)
+  FOR_EACH_VEC_SAFE_ELT (get_loops (cfun), i, loop)
     if (ira_loop_nodes[i].regno_allocno_map != NULL)
       {
 	if (ira_loop_nodes[i].parent == NULL)
@@ -2377,8 +2408,8 @@ remove_unnecessary_regions (bool all_p)
     mark_all_loops_for_removal ();
   else
     mark_loops_for_removal ();
-  children_vec.create(last_basic_block + number_of_loops ());
-  removed_loop_vec.create(last_basic_block + number_of_loops ());
+  children_vec.create(last_basic_block + number_of_loops (cfun));
+  removed_loop_vec.create(last_basic_block + number_of_loops (cfun));
   remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_root);
   children_vec.release ();
   if (all_p)
@@ -3259,7 +3290,7 @@ ira_build (void)
 	    }
 	}
       fprintf (ira_dump_file, "  regions=%d, blocks=%d, points=%d\n",
-	       current_loops == NULL ? 1 : number_of_loops (),
+	       current_loops == NULL ? 1 : number_of_loops (cfun),
 	       n_basic_blocks, ira_max_point);
       fprintf (ira_dump_file,
 	       "    allocnos=%d (big %d), copies=%d, conflicts=%d, ranges=%d\n",

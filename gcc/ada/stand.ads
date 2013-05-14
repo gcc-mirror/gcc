@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -362,10 +362,23 @@ package Stand is
    --  identifier references to prevent cascaded errors.
 
    Any_Type : Entity_Id;
-   --  Used to represent some unknown type. Plays an important role in
-   --  avoiding cascaded errors, since any node that remains labeled with
-   --  this type corresponds to an already issued error message. Any_Type
-   --  is propagated to avoid cascaded errors from a single type error.
+   --  Used to represent some unknown type. Any_Type is the type of an
+   --  unresolved operator, and it is the type of a node where a type error
+   --  has been detected. Any_Type plays an important role in avoiding cascaded
+   --  errors, because it is compatible with all other types, and is propagated
+   --  to any expression that has a subexpression of Any_Type. When resolving
+   --  operators, Any_Type is the initial type of the node before any of its
+   --  candidate interpretations has been examined. If after examining all of
+   --  them the type is still Any_Type, the node has no possible interpretation
+   --  and an error can be emitted (and Any_Type will be propagated upwards).
+   --
+   --  There is one situation in which Any_Type is used to legitimately
+   --  represent a case where the type is not known pre-resolution, and that
+   --  is for the N_Raise_Expression node. In this case, the Etype being set to
+   --  Any_Type is normal and does not represent an error. In particular, it is
+   --  compatible with the type of any constituent of the enclosing expression,
+   --  if any. The type is eventually replaced with the type of the context,
+   --  which plays no role in the resolution of the Raise_Expression.
 
    Any_Access : Entity_Id;
    --  Used to resolve the overloaded literal NULL

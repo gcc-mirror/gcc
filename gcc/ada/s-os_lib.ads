@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -924,7 +924,6 @@ package System.OS_Lib is
 
    procedure OS_Exit (Status : Integer);
    pragma No_Return (OS_Exit);
-
    --  Exit to OS with given status code (program is terminated). Note that
    --  this is abrupt termination. All tasks are immediately terminated. There
    --  are no finalization or other Ada-specific cleanup actions performed. On
