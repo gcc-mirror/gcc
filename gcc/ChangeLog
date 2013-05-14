@@ -1,5 +1,12 @@
 2013-05-14  Mike Stump  <mikestump@comcast.net>
 
+	* recog.h: Rename struct recog_data to Recog_data.
+	* recog.c: Likewise.
+	* reload.c (can_reload_into): Likewise.
+	* config/picochip/picochip.c: Likewise.
+
+2013-05-14  Mike Stump  <mikestump@comcast.net>
+
 	* web.c (union_match_dups): Also check DF_REF_REAL_LOC.
 
 2013-05-14  Steven Bosscher  <steven@gcc.gnu.org>
