@@ -60,7 +60,7 @@ namespace
   const future_error_category&
   __future_category_instance() noexcept
   {
-    static const future_error_category __fec;
+    static const future_error_category __fec{};
     return __fec;
   }
 }
