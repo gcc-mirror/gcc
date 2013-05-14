@@ -1,3 +1,9 @@
+2013-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (warn_deprecated_use): Print file:line using locus color.
+	* diagnostic.c (diagnostic_report_current_module): Print file:line
+	and file:line:column using locus color.
+
 2013-05-14  Mike Stump  <mikestump@comcast.net>
 
 	* gdbinit.in: Add __null.
